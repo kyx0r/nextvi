@@ -787,7 +787,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 1a35a776..40cafb0a 100644
+index ed8acf8d..bc0ba26d 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -835,7 +835,7 @@ index 1a35a776..40cafb0a 100644
  	goto noredraw; \
  } \
  
-@@ -427,7 +430,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -429,7 +432,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  	int len, c, i;
  	sbuf *reg;
  	do {
@@ -845,7 +845,7 @@ index 1a35a776..40cafb0a 100644
  		len = sb->s_n;
  		c = term_read(TK_CTL('l'));
  		noredraw:
-@@ -619,6 +623,73 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -623,6 +627,73 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			else if (!i)
  				term_clean();
  			continue;
@@ -919,7 +919,7 @@ index 1a35a776..40cafb0a 100644
  		case TK_CTL('o'): {
  			if (!*postref)
  				*postref = *post = uc_dup(*post);
-@@ -654,7 +725,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -658,7 +729,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg)
  {
  	int n = !(flg & 2) ? sb->s_n : 0, key, off;
@@ -928,7 +928,7 @@ index 1a35a776..40cafb0a 100644
  	ins_state _is;
  	vi_lncol = 0;
  	if (insert)
-@@ -669,6 +740,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
+@@ -673,6 +744,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
  			&off, kmap, is, 0, xrow, xtop, flg);
  	restore(xtd)
  	restore(xleft)
@@ -937,7 +937,7 @@ index 1a35a776..40cafb0a 100644
  	if (key == '\n' && flg & 1) {
  		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
  		temp_pos(0, -1, 0, 0);
-@@ -699,7 +772,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -703,7 +776,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  			return key;
  		}
  		sbuf_chr(sb, key)
@@ -947,7 +947,7 @@ index 1a35a776..40cafb0a 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 21296e45..9676e74d 100644
+index 357df5ff..acc7a899 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -835,6 +835,8 @@ static void vi_indents(char *ln, int *l)

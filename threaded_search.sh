@@ -766,7 +766,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
-index 2372d3b8..3b294bc7 100755
+index 05822fe7..9f2d8b42 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -47,6 +47,7 @@ CFLAGS="\
@@ -958,7 +958,7 @@ index b1002c4e..d80628bb 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 21296e45..28611862 100644
+index 357df5ff..a41f2167 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -970,7 +970,7 @@ index 21296e45..28611862 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index f889876a..7c275705 100644
+index 11a1d1e9..a1fdceb8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -263,7 +263,8 @@ int syn_addhl(char *reg, int id);

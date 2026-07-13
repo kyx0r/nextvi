@@ -757,10 +757,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 6feec501..bbbea9a5 100644
+index 67e5e1a6..b8c2e7a9 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -412,7 +412,9 @@ int ex_edit(const char *path, int len)
+@@ -413,7 +413,9 @@ int ex_edit(const char *path, int len)
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
@@ -771,7 +771,7 @@ index 6feec501..bbbea9a5 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -431,6 +433,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -432,6 +434,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -781,7 +781,7 @@ index 6feec501..bbbea9a5 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1851,15 +1856,36 @@ void ex(void)
+@@ -1856,15 +1861,36 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
@@ -821,7 +821,7 @@ index 6feec501..bbbea9a5 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 3ae4769f..2a87e085 100644
+index 75ada7cc..0f4809bd 100644
 --- a/term.c
 +++ b/term.c
 @@ -6,6 +6,8 @@ int term_resized;
@@ -884,7 +884,7 @@ index 3ae4769f..2a87e085 100644
  			if (term_winch && winch && xquit >= 0) {
  				*ibuf = winch;
  				goto ret;
-@@ -293,7 +300,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -297,7 +304,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	fds[0].events = POLLIN;
  	fds[1].fd = ifd;
  	fds[1].events = POLLOUT;
@@ -893,7 +893,7 @@ index 3ae4769f..2a87e085 100644
  	fds[2].events = POLLIN;
  	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
  		if (fds[0].revents & POLLIN) {
-@@ -336,7 +343,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -340,7 +347,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  		close(ifd);
  	waitpid(pid, status, 0);
  	signal(SIGTTOU, SIG_IGN);
@@ -903,7 +903,7 @@ index 3ae4769f..2a87e085 100644
  	if (!ibuf) {
  		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index 21296e45..949cc848 100644
+index 357df5ff..27cdf42d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1833,6 +1833,7 @@ static void setup_signals(void)
@@ -925,10 +925,10 @@ index 21296e45..949cc848 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index f889876a..60bd452f 100644
+index 11a1d1e9..58d596f6 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -539,6 +539,7 @@ int conf_kmapfind(char *name);
+@@ -540,6 +540,7 @@ int conf_kmapfind(char *name);
  char *conf_digraph(int c1, int c2);
  
  /* vi.c: main */

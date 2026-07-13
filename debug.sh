@@ -298,10 +298,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 6feec501..af3edac5 100644
+index 67e5e1a6..31df1b69 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1849,6 +1849,22 @@ void ex(void)
+@@ -1854,6 +1854,22 @@ void ex(void)
  	xgrec--;
  }
  
@@ -373,7 +373,7 @@ index 9b4776c8..3eb1a39b 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 21296e45..06f65b0c 100644
+index 357df5ff..9777694e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1878,6 +1878,12 @@ int main(int argc, char *argv[])
@@ -388,9 +388,9 @@ index 21296e45..06f65b0c 100644
 +	free(ibuf);
  	if (xvis & 8)
  		term_scrl;
- 	return abs(xquit) - 1;
+ 	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index f889876a..3e79a336 100644
+index 11a1d1e9..31ca906f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,6 +219,7 @@ int ren_noeol(char *s, int p);
@@ -409,7 +409,7 @@ index f889876a..3e79a336 100644
  
  /* uc.c: utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -481,6 +483,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+@@ -482,6 +484,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
  #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
  void ex_init(char **files, int n);

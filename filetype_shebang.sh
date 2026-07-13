@@ -93,10 +93,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 6feec501..7cb2c5d7 100644
+index 67e5e1a6..557dd0e0 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -436,6 +436,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -437,6 +437,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  			fd < 0 || rd ? 'f' : 'r');
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)

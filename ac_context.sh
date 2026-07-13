@@ -582,7 +582,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 1a35a776..986d93d8 100644
+index ed8acf8d..bf3e98f5 100644
 --- a/led.c
 +++ b/led.c
 @@ -9,25 +9,30 @@ int dstrlen(const char *s, char delim)
@@ -622,7 +622,7 @@ index 1a35a776..986d93d8 100644
  	}
  	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
  	free(sylsb->s);
-@@ -426,6 +431,10 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -428,6 +433,10 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  	char *cs;
  	int len, c, i;
  	sbuf *reg;
@@ -633,7 +633,7 @@ index 1a35a776..986d93d8 100644
  	do {
  		led_printparts(sb, pre, ps, *post, postn, poff);
  		len = sb->s_n;
-@@ -524,7 +533,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -526,7 +535,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		case TK_CTL('n'):
  			if (!suggestsb)
  				continue;
@@ -642,7 +642,7 @@ index 1a35a776..986d93d8 100644
  			if (is->_sug) {
  				if (suggestsb->s_n == is->sug - suggestsb->s)
  					continue;
-@@ -535,13 +544,14 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -537,13 +546,14 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				}
  				suggest:
  				*is->_sug = '\0';
@@ -660,7 +660,7 @@ index 1a35a776..986d93d8 100644
  				is->sug = suggestsb->s;
  				if (!(is->_sug = strchr(is->sug, '\n')))
  					continue;
-@@ -555,8 +565,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -557,8 +567,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				int r = crow-ctop+1;
  				if (is->sug)
  					goto pac_;

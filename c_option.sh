@@ -368,10 +368,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 6feec501..95996dca 100644
+index 67e5e1a6..91c6f175 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1849,7 +1849,7 @@ void ex(void)
+@@ -1854,7 +1854,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -380,7 +380,7 @@ index 6feec501..95996dca 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1862,4 +1862,6 @@ void ex_init(char **files, int n)
+@@ -1867,4 +1867,6 @@ void ex_init(char **files, int n)
  	xvis &= ~4;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -388,7 +388,7 @@ index 6feec501..95996dca 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 21296e45..2f64ecaa 100644
+index 357df5ff..df47b0e8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1837,7 +1837,8 @@ static void setup_signals(void)
@@ -434,10 +434,10 @@ index 21296e45..2f64ecaa 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index f889876a..2103974a 100644
+index 11a1d1e9..85cf3075 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -480,7 +480,7 @@ void *ex_exec(const char *ln);
+@@ -481,7 +481,7 @@ void *ex_exec(const char *ln);
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
  #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }

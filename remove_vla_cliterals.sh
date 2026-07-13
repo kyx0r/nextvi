@@ -1886,7 +1886,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 23eedcc1..b562d498 100644
+index 4841b06a..0f60b436 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -62,7 +62,7 @@ const int ftslen = LEN(fts);
@@ -1899,10 +1899,10 @@ index 23eedcc1..b562d498 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 6feec501..e5003526 100644
+index 67e5e1a6..ddd0a718 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -577,13 +577,16 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -578,13 +578,16 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  	else if (xgrp >= xkwdrs->nsubc)
  		return xgerr;
  	if (xfr) {
@@ -1921,7 +1921,7 @@ index 6feec501..e5003526 100644
  			return NULL;
  		}
  		off = MAX(0, lbuf_pos2off(xb, beg, o1, end - 1, o2,
-@@ -591,8 +594,11 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -592,8 +595,11 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  		if (off >= sb->s_n || rset_find(xkwdrs, sb->s + off, offs, 0) < 0
  				|| offs[xgrp] < 0
  				|| lbuf_off2pos(xb, beg, o1, end - 1, o2,
@@ -1934,7 +1934,7 @@ index 6feec501..e5003526 100644
  		return NULL;
  	}
  	off = xoff;
-@@ -1120,7 +1126,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1123,7 +1129,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = ex_re_read(&s);
  	}
  	free(pat);
@@ -1943,7 +1943,7 @@ index 6feec501..e5003526 100644
  	for (i = beg; i < end; i++) {
  		char *ln = lbuf_get(xb, i);
  		sbuf *r = NULL;
-@@ -1172,6 +1178,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1175,6 +1181,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -1984,7 +1984,7 @@ index 75dd0ce8..0a7afb01 100644
  }
  
 diff --git a/led.c b/led.c
-index 1a35a776..12cda5f6 100644
+index ed8acf8d..1c6b7bb4 100644
 --- a/led.c
 +++ b/led.c
 @@ -45,7 +45,7 @@ static void file_index(struct lbuf *buf)
@@ -2171,7 +2171,7 @@ index 9b4776c8..87cf17fa 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 21296e45..d775a7ea 100644
+index 357df5ff..084981bf 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -2251,10 +2251,10 @@ index 21296e45..d775a7ea 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index f889876a..23fb743e 100644
+index 11a1d1e9..6da02df3 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -502,7 +502,7 @@ extern const int ftslen;
+@@ -503,7 +503,7 @@ extern const int ftslen;
  struct highlight {
  	char *ft;		/* the filetype of this pattern */
  	char *pat;		/* regular expression */

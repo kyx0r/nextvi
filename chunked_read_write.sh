@@ -788,10 +788,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 6feec501..347b3d64 100644
+index 67e5e1a6..e3c9ff63 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -386,10 +386,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
+@@ -387,10 +387,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
  	return key;
  }
  
@@ -804,7 +804,7 @@ index 6feec501..347b3d64 100644
  	close(fd); \
  } \
  
-@@ -405,7 +405,7 @@ int ex_edit(const char *path, int len)
+@@ -406,7 +406,7 @@ int ex_edit(const char *path, int len)
  		return 1;
  	}
  	bufs_switch(bufs_open(path, len));
@@ -813,7 +813,7 @@ index 6feec501..347b3d64 100644
  	return 0;
  }
  
-@@ -426,7 +426,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -427,7 +427,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -975,7 +975,7 @@ index 75dd0ce8..e2aef0eb 100644
  }
  
 diff --git a/vi.h b/vi.h
-index f889876a..1793f090 100644
+index 11a1d1e9..ec0694c8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -156,7 +156,8 @@ struct lbuf {

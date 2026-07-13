@@ -240,12 +240,12 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 23eedcc1..622ce3cd 100644
+index 4841b06a..2aa9bbd1 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -295,7 +295,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -296,7 +296,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
- ((pac|pr|ai|ish|err|fr|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+ ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 -(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
 +(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|q?a!?|[q!])?|u[czbd]|xa?!?|ya[!+]?|cm!?|cd?)?",
@@ -253,10 +253,10 @@ index 23eedcc1..622ce3cd 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 6feec501..ee3d0fbd 100644
+index 67e5e1a6..88614e41 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -802,6 +802,29 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -805,6 +805,29 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -286,9 +286,9 @@ index 6feec501..ee3d0fbd 100644
  static void *ec_termexec(char *loc, char *cmd, char *arg)
  {
  	if (*arg && term_sbuf)
-@@ -1653,8 +1676,12 @@ static struct excmd {
- 	{"re", ec_krsset},
+@@ -1657,8 +1680,12 @@ static struct excmd {
  	{"rd", ec_undoredo},
+ 	EO(rr),
  	{"r", ec_read},
 +	{"wqa!", ec_writeall},
 +	{"wqa", ec_writeall},
@@ -299,7 +299,7 @@ index 6feec501..ee3d0fbd 100644
  	{"w!", ec_write},
  	{"w", ec_write},
  	{"uc", ec_setenc},
-@@ -1666,6 +1693,8 @@ static struct excmd {
+@@ -1670,6 +1697,8 @@ static struct excmd {
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
  	{"s", ec_substitute},

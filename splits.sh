@@ -4507,20 +4507,20 @@ s/f!\](.*)\\\\/qf!]\1vs|sp|\\\\/
 === END ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 23eedcc1..7ac95cf7 100644
+index 4841b06a..f4dd564a 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -294,7 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -295,7 +295,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
- ((pac|pr|ai|ish|err|fr|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+ ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 6feec501..3f637a28 100644
+index 67e5e1a6..ec563f4b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -4530,7 +4530,7 @@ index 6feec501..3f637a28 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -149,6 +152,9 @@ void bufs_switch(int idx)
+@@ -150,6 +153,9 @@ void bufs_switch(int idx)
  		ex_buf = &bufs[idx];
  	}
  	exbuf_load(ex_buf)
@@ -4540,7 +4540,7 @@ index 6feec501..3f637a28 100644
  }
  
  static int bufs_open(const char *path, int len)
-@@ -208,6 +214,9 @@ void temp_switch(int i, int swap)
+@@ -209,6 +215,9 @@ void temp_switch(int i, int swap)
  	}
  	exbuf_load(ex_buf)
  	syn_setft(xb_ft);
@@ -4550,7 +4550,7 @@ index 6feec501..3f637a28 100644
  }
  
  void temp_write(int i, char *str)
-@@ -643,10 +652,19 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -644,10 +653,19 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  
  static void *ec_quit(char *loc, char *cmd, char *arg)
  {
@@ -4573,8 +4573,8 @@ index 6feec501..3f637a28 100644
 +	}
  	xquit = !xquit ? 1 : xquit;
  	xqprop = *loc ? atoi(loc) : -1;
- 	if (*arg)
-@@ -1593,6 +1611,112 @@ _EO(left,
+ 	/* recursion unwind: 256 increments preserve the first 8 bits
+@@ -1596,6 +1614,112 @@ _EO(left,
  	return NULL;
  )
  
@@ -4687,7 +4687,7 @@ index 6feec501..3f637a28 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1625,6 +1749,7 @@ static struct excmd {
+@@ -1628,6 +1752,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -4695,7 +4695,7 @@ index 6feec501..3f637a28 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1665,6 +1790,7 @@ static struct excmd {
+@@ -1669,6 +1794,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -4703,7 +4703,7 @@ index 6feec501..3f637a28 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-@@ -1688,6 +1814,7 @@ static struct excmd {
+@@ -1692,6 +1818,7 @@ static struct excmd {
  	EO(lim),
  	EO(led),
  	EO(vis),
@@ -4711,7 +4711,7 @@ index 6feec501..3f637a28 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
  };
-@@ -1849,6 +1976,244 @@ void ex(void)
+@@ -1854,6 +1981,244 @@ void ex(void)
  	xgrec--;
  }
  
@@ -4957,7 +4957,7 @@ index 6feec501..3f637a28 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 1a35a776..ac8d851b 100644
+index ed8acf8d..af335cf0 100644
 --- a/led.c
 +++ b/led.c
 @@ -91,8 +91,9 @@ static char *kmap_map(int kmap, int c)
@@ -5041,7 +5041,7 @@ index 1a35a776..ac8d851b 100644
  	rstate--;
  }
  
-@@ -514,7 +523,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -516,7 +525,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		case TK_CTL('z'):
  			term_suspend();
  			if (ai_max >= 0)
@@ -5050,7 +5050,7 @@ index 1a35a776..ac8d851b 100644
  			continue;
  		case TK_CTL('x'):
  			is->sug_pt = is->sug_pt == len ? -1 : len;
-@@ -553,6 +562,10 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -555,6 +564,10 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				pac:;
  				sbuf_null(sb)
  				int r = crow-ctop+1;
@@ -5061,7 +5061,7 @@ index 1a35a776..ac8d851b 100644
  				if (is->sug)
  					goto pac_;
  				i = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s + pre) + pre;
-@@ -562,9 +575,9 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -564,9 +577,9 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  					preserve(int, xtd, xtd = 2;)
  					preserve(int, ftidx,)
  					syn_setft(ac_ft);
@@ -5074,7 +5074,7 @@ index 1a35a776..ac8d851b 100644
  						if (left >= rstates[2].pos[rstates[2].n])
  							break;
  					}
-@@ -572,7 +585,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -574,7 +587,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  					restore(ftidx)
  					r++;
  				}
@@ -5083,7 +5083,7 @@ index 1a35a776..ac8d851b 100644
  				continue;
  			}
  			temp_pos(0, -1, 0, 0);
-@@ -593,6 +606,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -595,6 +608,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			else
  				restore(ex_buf)
  			exbuf_load(ex_buf)
@@ -5092,7 +5092,7 @@ index 1a35a776..ac8d851b 100644
  			syn_setft(xb_ft);
  			vi(1); /* redraw past screen */
  			restore(ftidx)
-@@ -615,7 +630,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -619,7 +634,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			term_done();
  			term_init();
  			if (ai_max >= 0)
@@ -5102,7 +5102,7 @@ index 1a35a776..ac8d851b 100644
  				term_clean();
  			continue;
 diff --git a/term.c b/term.c
-index 3ae4769f..ce877cfe 100644
+index 75ada7cc..fd0f9540 100644
 --- a/term.c
 +++ b/term.c
 @@ -85,6 +85,15 @@ void term_kill(void)
@@ -5122,7 +5122,7 @@ index 3ae4769f..ce877cfe 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 21296e45..b52dbb5d 100644
+index 357df5ff..e855e42f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -41,7 +41,7 @@ static int vi_col;			/* the column requested by | command */
@@ -5698,7 +5698,7 @@ index 21296e45..b52dbb5d 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index f889876a..55d5366b 100644
+index 11a1d1e9..21adca01 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -321,6 +321,7 @@ void term_suspend(void);

@@ -170,10 +170,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 23eedcc1..6f5f2ec1 100644
+index 4841b06a..f5785594 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -324,6 +324,10 @@ const int hlslen = LEN(hls);
+@@ -325,6 +325,10 @@ const int hlslen = LEN(hls);
  /* how to highlight text in the reverse direction */
  const int conf_hlrev = SYN_BGMK(8);
  
@@ -185,10 +185,10 @@ index 23eedcc1..6f5f2ec1 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index 1a35a776..499c1d9c 100644
+index ed8acf8d..dbb356c2 100644
 --- a/led.c
 +++ b/led.c
-@@ -683,11 +683,13 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -687,11 +687,13 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  	int n, key, ps = 0, crow = xrow, ctop = xtop;
  	char *postref = NULL;
  	ins_state is;
@@ -203,10 +203,10 @@ index 1a35a776..499c1d9c 100644
  			if (!xled) {
  				xoff = uc_slen(sb->s+ps);
 diff --git a/vi.h b/vi.h
-index f889876a..906963e6 100644
+index 11a1d1e9..32f17029 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -534,6 +534,8 @@ extern struct placeholder _ph[];
+@@ -535,6 +535,8 @@ extern struct placeholder _ph[];
  extern struct placeholder *ph;
  extern int phlen;
  extern const int conf_hlrev;

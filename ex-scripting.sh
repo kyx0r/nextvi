@@ -224,7 +224,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 6feec501..892768e9 100644
+index 67e5e1a6..7064838d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -232,7 +232,7 @@ index 6feec501..892768e9 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1563,6 +1564,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1566,6 +1567,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -276,7 +276,7 @@ index 6feec501..892768e9 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1665,6 +1703,8 @@ static struct excmd {
+@@ -1669,6 +1707,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -286,10 +286,10 @@ index 6feec501..892768e9 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 3ae4769f..011f4e43 100644
+index 75ada7cc..2f64396e 100644
 --- a/term.c
 +++ b/term.c
-@@ -231,7 +231,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -235,7 +235,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}
@@ -302,7 +302,7 @@ index 3ae4769f..011f4e43 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index f889876a..6cf2a389 100644
+index 11a1d1e9..b22a99f7 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@

@@ -814,20 +814,20 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 23eedcc1..74e3d599 100644
+index 4841b06a..2632a07a 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -293,7 +293,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -294,7 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
--((pac|pr|ai|ish|err|fr|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+((pac|sw|et|idt|pr|ai|ish|err|fr|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+-((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((pac|sw|et|idt|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 6feec501..648cac03 100644
+index 67e5e1a6..befcfb90 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -840,7 +840,7 @@ index 6feec501..648cac03 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -165,6 +168,9 @@ static int bufs_open(const char *path, int len)
+@@ -166,6 +169,9 @@ static int bufs_open(const char *path, int len)
  	bufs[i].off = 0;
  	bufs[i].top = 0;
  	bufs[i].td = +1;
@@ -850,7 +850,7 @@ index 6feec501..648cac03 100644
  	bufs[i].mtime = -1;
  	return i;
  }
-@@ -177,6 +183,9 @@ void temp_open(int i, char *name, char *ft)
+@@ -178,6 +184,9 @@ void temp_open(int i, char *name, char *ft)
  	tempbufs[i].off = 0;
  	tempbufs[i].top = 0;
  	tempbufs[i].td = +1;
@@ -860,7 +860,7 @@ index 6feec501..648cac03 100644
  	tempbufs[i].mtime = -1;
  	tempbufs[i].ft = ft;
  }
-@@ -409,6 +418,51 @@ int ex_edit(const char *path, int len)
+@@ -410,6 +419,51 @@ int ex_edit(const char *path, int len)
  	return 0;
  }
  
@@ -912,7 +912,7 @@ index 6feec501..648cac03 100644
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
-@@ -661,6 +715,8 @@ void ex_bufpostfix(struct buf *p, int clear)
+@@ -664,6 +718,8 @@ void ex_bufpostfix(struct buf *p, int clear)
  	p->mtime = mtime(p->path);
  	p->ft = syn_filetype(p->path);
  	lbuf_saved(p->lb, clear);
@@ -921,8 +921,8 @@ index 6feec501..648cac03 100644
  }
  
  static void *ec_setpath(char *loc, char *cmd, char *arg)
-@@ -1581,6 +1637,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
- EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+@@ -1584,6 +1640,9 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
+ EO(rr) EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
 +EO(et) EO(idt)
@@ -931,7 +931,7 @@ index 6feec501..648cac03 100644
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
  _EO(left,
-@@ -1625,6 +1684,7 @@ static struct excmd {
+@@ -1628,6 +1687,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -939,7 +939,7 @@ index 6feec501..648cac03 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1636,6 +1696,7 @@ static struct excmd {
+@@ -1639,6 +1699,7 @@ static struct excmd {
  	{"f>", ec_find},
  	{"f<", ec_find},
  	{"f", ec_fuzz},
@@ -947,7 +947,7 @@ index 6feec501..648cac03 100644
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
-@@ -1665,6 +1726,7 @@ static struct excmd {
+@@ -1669,6 +1730,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -956,10 +956,10 @@ index 6feec501..648cac03 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/led.c b/led.c
-index 1a35a776..6795dfe5 100644
+index ed8acf8d..62a3f1ab 100644
 --- a/led.c
 +++ b/led.c
-@@ -452,18 +452,37 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -454,18 +454,37 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		case TK_CTL('t'):
  			cs = uc_dup(sb->s + ps);
  			sbuf_cut(sb, ps)
@@ -1001,7 +1001,7 @@ index 1a35a776..6795dfe5 100644
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
-index 21296e45..8b45861b 100644
+index 357df5ff..30c30e94 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -935,9 +935,19 @@ static void vi_shift(int r1, int r2, int dir, int count)
@@ -1028,7 +1028,7 @@ index 21296e45..8b45861b 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index f889876a..ec146445 100644
+index 11a1d1e9..0dc52791 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -403,6 +403,9 @@ struct buf {
@@ -1051,7 +1051,7 @@ index f889876a..ec146445 100644
  extern int xish;
  extern int xgrp;
  extern int xpac;
-@@ -459,12 +465,18 @@ extern struct buf *ex_pbuf;
+@@ -460,12 +466,18 @@ extern struct buf *ex_pbuf;
  	xoff = buf->off; \
  	xtop = buf->top; \
  	xtd = buf->td; \

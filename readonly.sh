@@ -392,12 +392,12 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 23eedcc1..365426a4 100644
+index 4841b06a..8cb44748 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -295,7 +295,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -296,7 +296,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
- ((pac|pr|ai|ish|err|fr|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+ ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 -(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
 +(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|ro|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
@@ -405,7 +405,7 @@ index 23eedcc1..365426a4 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 6feec501..37943503 100644
+index 67e5e1a6..d8ce8b92 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -413,7 +413,7 @@ index 6feec501..37943503 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -166,6 +167,7 @@ static int bufs_open(const char *path, int len)
+@@ -167,6 +168,7 @@ static int bufs_open(const char *path, int len)
  	bufs[i].top = 0;
  	bufs[i].td = +1;
  	bufs[i].mtime = -1;
@@ -421,7 +421,7 @@ index 6feec501..37943503 100644
  	return i;
  }
  
-@@ -426,6 +428,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -427,6 +429,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -430,7 +430,7 @@ index 6feec501..37943503 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -774,6 +778,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -777,6 +781,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	} else if (ret)
  		return "other buffers modified";
  	if (!strchr(cmd, '!')) {
@@ -439,7 +439,7 @@ index 6feec501..37943503 100644
  		if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  			return "write failed: file changed";
  		if (arg[0] && mtime(path) >= 0)
-@@ -1563,6 +1569,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1566,6 +1572,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -452,16 +452,16 @@ index 6feec501..37943503 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1652,6 +1664,7 @@ static struct excmd {
+@@ -1655,6 +1667,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},
 +	{"ro", ec_readonly},
+ 	EO(rr),
  	{"r", ec_read},
  	{"wq!", ec_write},
- 	{"wq", ec_write},
 diff --git a/vi.c b/vi.c
-index 21296e45..d7573077 100644
+index 357df5ff..d29bde4a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1858,11 +1858,13 @@ int main(int argc, char *argv[])
@@ -480,7 +480,7 @@ index 21296e45..d7573077 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index f889876a..969ad755 100644
+index 11a1d1e9..09488688 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -403,6 +403,7 @@ struct buf {
@@ -491,7 +491,7 @@ index f889876a..969ad755 100644
  };
  /* ex options */
  extern int xleft;
-@@ -545,3 +546,4 @@ extern int vi_lncol;
+@@ -546,3 +547,4 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);

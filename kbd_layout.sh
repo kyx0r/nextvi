@@ -118,15 +118,15 @@ index d025f5f1..e549d13b 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index 3ae4769f..5b6bcb4b 100644
+index 75ada7cc..3fbea513 100644
 --- a/term.c
 +++ b/term.c
 @@ -167,6 +167,8 @@ int term_read(int winch)
  			err:
  			*ibuf = 0;
- 		}
+ 		} else if (xrr) {
 +		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 +			*ibuf = *conf_kmap(0)[*ibuf];
- 		ret:
- 		ibuf_cnt = 1;
- 		ibuf_pos = 0;
+ 			static char buf[2];
+ 			buf[0] = *ibuf;
+ 			ex_regput(xrr, buf, 1);
