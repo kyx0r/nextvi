@@ -329,7 +329,7 @@ void syn_highlight(int *att, char *s, int n)
 		sl = rs->grpnsubc[sl];
 		catt = hls[hl].att;
 		for (i = 0, ii = i; ii < sl; ii += 2) {
-			int inc = 1, pb = blockhl >= 0 && syn_blockhl >= 0;
+			int inc = 1;
 			if (subs[ii] < 0 || SYN_SET(IGN, catt[i])) {
 				skip:
 				if (SYN_SET(ATT, catt[i]))
@@ -347,6 +347,7 @@ void syn_highlight(int *att, char *s, int n)
 			int beg = uc_off(s, sidx + subs[ii]);
 			int end = beg + uc_off(s + sidx + subs[ii], subs[ii + 1] - subs[ii]);
 			if (SYN_SET(ATT, catt[i])) {
+				int pb = blockhl >= 0 && syn_blockhl >= 0;
 				iatt = &catt[i + 1];
 				c = *iatt;
 				inc += c + 1;
@@ -361,6 +362,7 @@ void syn_highlight(int *att, char *s, int n)
 					break;
 			}
 			if (SYN_SET(OATT, catt[i])) {
+				int pb = blockhl >= 0 && syn_blockhl >= 0;
 				iatt = &catt[i + inc];
 				inc += *iatt + 1;
 				for (j = beg; j < end; j++) {
