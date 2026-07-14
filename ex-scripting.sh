@@ -302,7 +302,7 @@ index 75ada7cc..2f64396e 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 11a1d1e9..b22a99f7 100644
+index 62ca3766..922dedd4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@

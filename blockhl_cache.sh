@@ -163,17 +163,17 @@ ${ESC}${SEP}%f+ 	int fti = ftidx, blockhl = syn_blockhl, blockcont = -1;
 	re:;
 	rset \\*rs = ftmap\\[fti]\\.rs;
 	int subs\\[rs->nsubc], \\*catt, \\*iatt, sl, c;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:320:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
 void syn_highlight\\(int \\*att, char \\*s, int n\\)
 \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:320:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	int fti = ftidx, blockhl = syn_blockhl, blockcont = -1;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:320:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	re:;
 	rset \\*rs = ftmap\\[fti]\\.rs;
 	int subs\\[rs->nsubc], \\*catt, \\*iatt, sl, c;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:320:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
 .......n.........t..nt .a..,..... .s,.......
 \\{
@@ -181,25 +181,25 @@ ${ESC}${SEP}%f+
 ..e.;
 .r...........tm.....i..r..
 .i.........s...........c.t....i..t. s...c.${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:320:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ .*?
 void syn_highlight\\(int \\*att, char \\*s, int n\\).*?
 \\{.*?
 (	int fti = ftidx, blockhl = syn_blockhl, blockcont = -1;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	int flg = \\(\\(old \\| new\\) & SYN_FLG\\) \\| \\(new & SYN_MK\\);
-	return flg \\| \\(bg << 8\\) \\| fg;
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:320:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		return blockatt & 0xffff;
+	return att\\[j] & 0xffff;
 }.*(	int cend, sidx = 0, flg = 0, hl, j, i, ii;)
 	while \\(\\(sl = rset_find\\(rs, s \\+ sidx, subs, flg\\)\\) >= 0\\) \\{
 		cend = 1;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		return new & ~SYN_OWR;
-	int fg = SYN_FGSET\\(new\\) \\? SYN_FG\\(new\\) : SYN_FG\\(old\\);
-	int bg = SYN_BGSET\\(new\\) \\? SYN_BG\\(new\\) : SYN_BG\\(old\\);.*(		hl = sl \\+ ftmap\\[fti]\\.setbidx;)
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:320:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> static int syn_tatt\\(int \\*att, int j, int ga, int pb\\)
+\\{
+	if \\(pb && SYN_SET\\(BATT, ga\\) && \\(!\\(att\\[j] & ~SYN_BATT\\) \\|\\| !SYN_SET\\(BP, blockflg\\)\\)\\).*(		hl = sl \\+ ftmap\\[fti]\\.setbidx;)
 		sl = rs->grpnsubc\\[sl];
 		catt = hls\\[hl]\\.att;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:313:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:313${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:320:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:320${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	fti\\+\\+;
 	if \\(ftmidx > fti && ftmap\\[fti-1]\\.ft == ftmap\\[fti]\\.ft\\)
@@ -211,24 +211,24 @@ ${ESC}${SEP}1??+2m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	fti\\+\\+;
 	if \\(ftmidx > fti && ftmap\\[fti-1]\\.ft == ftmap\\[fti]\\.ft\\)
 		goto re;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:390:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:397:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	fti\\+\\+;.*?
 	if \\(ftmidx > fti && ftmap\\[fti-1]\\.ft == ftmap\\[fti]\\.ft\\).*?
 (		goto re;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:390:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:397:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		sidx \\+= cend;
 		flg = REG_NOTBOL;
-	}.*(		if \\(!att\\[j] \\|\\| !SYN_SET\\(BP, blockflg\\)\\))
+	}.*(		if \\(!\\(att\\[j] & ~SYN_BATT\\) \\|\\| \\(!SYN_SET\\(BATT, att\\[j]\\) && !SYN_SET\\(BP, blockflg\\)\\)\\))
 			att\\[j] = blockatt;
 }${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:390:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:397:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			}
 			i \\+= inc;
 		}.*(char \\*syn_filetype\\(char \\*path\\))
 \\{
 	int hl = rset_find\\(syn_ftrs, path, NULL, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:390:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:390${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:397:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:397${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i /* block-highlight pair cache, keyed by lbuf line pointer */
 struct hl_cache_entry {
@@ -380,10 +380,10 @@ ${SEP}'4c 	int fti = ftidx, blockhl, blockcont = -1, trusted = 0;
 			}
 		}
 	}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:313:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:320:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5i 	if (trusted && cur_ln)
 		hl_cache_set(cur_ln, syn_blockhl, blockatt, ftidx);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:390:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:397:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> static void vi_drawrow\\(int row\\)
 \\{
 	int l1, i, i1, lnnum = vi_lnnum;
@@ -672,28 +672,28 @@ ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> int syn_findhl\\(int id\\);
 int syn_addhl\\(char \\*reg, int id\\);
 void syn_init\\(void\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:263:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:264:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f> int syn_findhl\\(int id\\);.*?
 int syn_addhl\\(char \\*reg, int id\\);.*?
 (void syn_init\\(void\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:263:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:264:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> char \\*syn_filetype\\(char \\*path\\);
 int syn_merge\\(int old, int new\\);
 void syn_reloadft\\(int hl, int flg\\);.*(extern int zwlen, def_zwlen;)
 extern int bclen, def_bclen;
 /\\* the length of a given utf-8 character \\*/${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:263:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:264:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> char \\*syn_setft\\(char \\*ft\\);
 void syn_scdir\\(int scdir\\);
 void syn_highlight\\(int \\*att, char \\*s, int n\\);.*(#define uc_len\\(s\\) utf8_length\\[\\(unsigned char\\)s\\[0]])
 /\\* the unicode codepoint of a given utf-8 character \\*/
 #define uc_code\\(dst, s, l\\) \\\\${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:263:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:263${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:264:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:264${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i void syn_setrow(struct lbuf *lb, int row);
 void syn_blockhl_invalidate(void);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:263:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}2q" > "$P2VIF"
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:264:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}b3${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'lbuf.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -712,7 +712,7 @@ index 75dd0ce8..0a2a1edc 100644
  		for (; *s; n_ins++) {
  			int l = linelength(s);
 diff --git a/ren.c b/ren.c
-index 9b4776c8..6f497355 100644
+index 8249a55b..45b27b30 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -249,6 +249,118 @@ static int blockatt, blockflg;
@@ -849,7 +849,7 @@ index 9b4776c8..6f497355 100644
  		last_scdir = scdir;
  		syn_blockhl = -1;
  	}
-@@ -310,7 +427,36 @@ int syn_merge(int old, int new)
+@@ -317,7 +434,36 @@ static int syn_tatt(int *att, int j, int ga, int pb)
  
  void syn_highlight(int *att, char *s, int n)
  {
@@ -887,7 +887,7 @@ index 9b4776c8..6f497355 100644
  	re:;
  	rset *rs = ftmap[fti].rs;
  	int subs[rs->nsubc], *catt, *iatt, sl, c;
-@@ -388,6 +534,8 @@ void syn_highlight(int *att, char *s, int n)
+@@ -395,6 +541,8 @@ void syn_highlight(int *att, char *s, int n)
  	fti++;
  	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft)
  		goto re;
@@ -954,10 +954,10 @@ index 357df5ff..3267972b 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 11a1d1e9..fc90c505 100644
+index 62ca3766..3193c2c1 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -261,6 +261,8 @@ void syn_reloadft(int hl, int flg);
+@@ -262,6 +262,8 @@ void syn_reloadft(int hl, int flg);
  int syn_findhl(int id);
  int syn_addhl(char *reg, int id);
  void syn_init(void);
