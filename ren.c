@@ -304,8 +304,15 @@ int syn_merge(int old, int new)
 		return new & ~SYN_OWR;
 	int fg = SYN_FGSET(new) ? SYN_FG(new) : SYN_FG(old);
 	int bg = SYN_BGSET(new) ? SYN_BG(new) : SYN_BG(old);
-	int flg = ((old | new) & SYN_FLG) | (new & SYN_MK);
+	int flg = ((old | new) & SYN_FLG) | (new & (SYN_MK | SYN_BATT));
 	return flg | (bg << 8) | fg;
+}
+
+static int syn_tatt(int *att, int j, int ga, int pb)
+{
+	if (pb && SYN_SET(BATT, ga) && (!(att[j] & ~SYN_BATT) || !SYN_SET(BP, blockflg)))
+		return blockatt & 0xffff;
+	return att[j] & 0xffff;
 }
 
 void syn_highlight(int *att, char *s, int n)
@@ -321,7 +328,7 @@ void syn_highlight(int *att, char *s, int n)
 		sl = rs->grpnsubc[sl];
 		catt = hls[hl].att;
 		for (i = 0, ii = i; ii < sl; ii += 2) {
-			int inc = 1;
+			int inc = 1, pb = blockhl >= 0 && syn_blockhl >= 0;
 			if (subs[ii] < 0 || SYN_SET(IGN, catt[i])) {
 				skip:
 				if (SYN_SET(ATT, catt[i]))
@@ -344,11 +351,11 @@ void syn_highlight(int *att, char *s, int n)
 				inc += c + 1;
 				if (SYN_SET(ATT, catt[i]) == SYN_ATT) {
 					for (j = beg; c && j < end; j++)
-						for (c = *iatt; c && (att[j] & 0xffff) != iatt[c]; c--);
+						for (c = *iatt; c && syn_tatt(att, j, catt[i], pb) != iatt[c]; c--);
 				} else if (SYN_SET(SATT, catt[i]))
-					for (; c && (att[beg] & 0xffff) != iatt[c]; c--);
+					for (; c && syn_tatt(att, beg, catt[i], pb) != iatt[c]; c--);
 				else if (SYN_SET(EATT, catt[i]))
-					for (; c && (att[MAX(0, end-1)] & 0xffff) != iatt[c]; c--);
+					for (; c && syn_tatt(att, MAX(0, end-1), catt[i], pb) != iatt[c]; c--);
 				if (!c)
 					break;
 			}
@@ -356,7 +363,7 @@ void syn_highlight(int *att, char *s, int n)
 				iatt = &catt[i + inc];
 				inc += *iatt + 1;
 				for (j = beg; j < end; j++) {
-					for (c = *iatt; c && (att[j] & 0xffff) != iatt[c]; c--);
+					for (c = *iatt; c && syn_tatt(att, j, catt[i], pb) != iatt[c]; c--);
 					if (c)
 						att[j] = syn_merge(att[j], catt[i]);
 				}
@@ -391,7 +398,7 @@ void syn_highlight(int *att, char *s, int n)
 	if (syn_blockhl < 0 || blockhl < 0)
 		return;
 	for (j = 0; j < n; j++)
-		if (!att[j] || !SYN_SET(BP, blockflg))
+		if (!(att[j] & ~SYN_BATT) || (!SYN_SET(BATT, att[j]) && !SYN_SET(BP, blockflg)))
 			att[j] = blockatt;
 }
 
