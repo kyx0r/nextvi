@@ -308,12 +308,11 @@ int syn_merge(int old, int new)
 	return flg | (bg << 8) | fg;
 }
 
-static int syn_tatt(int *att, int j, int a, int pb)
+static int syn_tatt(int *att, int a, int pb)
 {
-	if (SYN_SET(BATT, a))
-		return pb && (!att[j] || !SYN_SET(BP, blockflg))
-			&& (blockatt & 0xffff) == (a & 0xffff);
-	return (att[j] & 0xffff) == (a & 0xffff);
+	if (SYN_SET(BATT, a) && pb && (!*att || !SYN_SET(BP, blockflg)))
+		att = &blockatt;
+	return (*att & 0xffff) == (a & 0xffff);
 }
 
 void syn_highlight(int *att, char *s, int n)
@@ -353,11 +352,11 @@ void syn_highlight(int *att, char *s, int n)
 				inc += c + 1;
 				if (SYN_SET(ATT, catt[i]) == SYN_ATT) {
 					for (j = beg; c && j < end; j++)
-						for (c = *iatt; c && !syn_tatt(att, j, iatt[c], pb); c--);
+						for (c = *iatt; c && !syn_tatt(att + j, iatt[c], pb); c--);
 				} else if (SYN_SET(SATT, catt[i]))
-					for (; c && !syn_tatt(att, beg, iatt[c], pb); c--);
+					for (; c && !syn_tatt(att + beg, iatt[c], pb); c--);
 				else if (SYN_SET(EATT, catt[i]))
-					for (; c && !syn_tatt(att, MAX(0, end-1), iatt[c], pb); c--);
+					for (; c && !syn_tatt(att + MAX(0, end-1), iatt[c], pb); c--);
 				if (!c)
 					break;
 			}
@@ -366,7 +365,7 @@ void syn_highlight(int *att, char *s, int n)
 				iatt = &catt[i + inc];
 				inc += *iatt + 1;
 				for (j = beg; j < end; j++) {
-					for (c = *iatt; c && !syn_tatt(att, j, iatt[c], pb); c--);
+					for (c = *iatt; c && !syn_tatt(att + j, iatt[c], pb); c--);
 					if (c)
 						att[j] = syn_merge(att[j], catt[i]);
 				}
