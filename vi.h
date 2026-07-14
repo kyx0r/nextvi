@@ -225,9 +225,9 @@ void dir_init(void);
 #define SYN_BD		0x10000
 #define SYN_IT		0x20000
 #define SYN_RV		0x40000
-#define SYN_FLG		0x1f0000
 #define SYN_FGMK(f)	(0x80000 | (f))
 #define SYN_BGMK(b)	(0x100000 | (b << 8))
+#define SYN_FLG		0x1f0000
 #define SYN_FGSET(a)	(a & 0x800ff)
 #define SYN_BGSET(a)	(a & 0x10ff00)
 #define SYN_FG(a)	(a & 0xff)
