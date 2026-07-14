@@ -250,6 +250,7 @@ void dir_init(void);
 #define SYN_BED		0x10		/* grp block highlight end direction up */
 #define SYN_BSDP	0x20		/* grp block highlight start direction pass */
 #define SYN_BEDP	0x40		/* grp block highlight end direction pass */
+#define SYN_BN		0x80		/* grp block highlight nests into itself */
 #define SYN_SET(flg, a) (a & SYN_##flg)
 extern int ftidx;
 extern int syn_blockhl;

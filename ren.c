@@ -245,7 +245,7 @@ static struct ftmap *ftmap;
 static int ftmidx;
 static rset *syn_ftrs;
 static int last_scdir;
-static int blockatt, blockflg;
+static int blockatt, blockflg, blockdep;
 int ftidx;
 int syn_blockhl;
 
@@ -295,6 +295,7 @@ void syn_scdir(int scdir)
 	if (!scdir || abs(scdir) > xrows || (last_scdir > 0) != (scdir > 0)) {
 		last_scdir = scdir;
 		syn_blockhl = -1;
+		blockdep = 0;
 	}
 }
 
@@ -377,9 +378,15 @@ void syn_highlight(int *att, char *s, int n)
 				inc++;
 				j = SYN_SET(BSDP, *iatt) || !!SYN_SET(BSD, *iatt) == (last_scdir > 0);
 				c = SYN_SET(BEDP, *iatt) || !!SYN_SET(BED, *iatt) == (last_scdir > 0);
-				if (syn_blockhl == hl && SYN_SET(BE, *iatt) && c) {
-					blockcont = -1;
-					syn_blockhl = blockcont;
+				if (syn_blockhl == hl && SYN_SET(BN, *iatt) && j) {
+					blockdep++;
+				} else if (syn_blockhl == hl && SYN_SET(BE, *iatt) && c) {
+					if (blockdep) {
+						blockdep--;
+					} else {
+						blockcont = -1;
+						syn_blockhl = blockcont;
+					}
 				} else if (syn_blockhl < 0 && SYN_SET(BS, *iatt)) {
 					if (j && blockcont <= 0) {
 						blockflg = *iatt;
