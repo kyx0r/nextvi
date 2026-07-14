@@ -580,7 +580,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 9e63c70e..8c5e8859 100644
+index 70157040..8b04942c 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -296,7 +296,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -767,7 +767,7 @@ index 75dd0ce8..fa9a271d 100644
  	lb->modified = 0;
  	lb->saved = lb->hist_u;
 diff --git a/vi.h b/vi.h
-index 3f41bac9..7dd027bb 100644
+index 6466711d..023fa083 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -137,6 +137,7 @@ struct linfo {
