@@ -73,7 +73,7 @@ mem##func(sb->s + sb->s_n, x, len); \
 #define sbuf_mem(sb, s, len) { int __l_ = len; sbuf_(sb, s, __l_, cpy) sb->s_n += __l_; }
 #define sbuf_str(sb, s) { sbuf_mem(sb, s, strlen(s)) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
-/* sbuf functions that null-terminate strings */
+/* sbuf functions that nul-terminate strings */
 #define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
 #define sbufn_null(sb) { sbuf_(sb, '\0', 4, set) }
 #define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_null(sb) }
@@ -227,20 +227,21 @@ void dir_init(void);
 #define SYN_RV		0x40000
 #define SYN_FGMK(f)	(0x80000 | (f))
 #define SYN_BGMK(b)	(0x100000 | (b << 8))
-#define SYN_FLG		0xff0000
+#define SYN_FLG		0x1f0000
 #define SYN_FGSET(a)	(a & 0x800ff)
 #define SYN_BGSET(a)	(a & 0x10ff00)
 #define SYN_FG(a)	(a & 0xff)
 #define SYN_BG(a)	((a >> 8) & 0xff)
-#define SYN_IGN		0x1000000	/* grp is ignored */
-#define SYN_SKIP	0x2000000	/* grp is skipped */
-#define SYN_SATT	0x4000000	/* grp inclusion check at start offset */
-#define SYN_EATT	0x8000000	/* grp inclusion check at end offset */
-#define SYN_ATT		0xc000000	/* grp inclusion check from start to end */
-#define SYN_OATT	0x10000000	/* grp overwrite of listed attributes only */
-#define SYN_BLK		0x20000000	/* grp block highlight */
-#define SYN_OWR		0x40000000	/* attribute overwrite */
-#define SYN_MK		0x80000000	/* marker holds id in color field, not rendered */
+#define SYN_IGN		0x200000	/* grp is ignored */
+#define SYN_SKIP	0x400000	/* grp is skipped */
+#define SYN_SATT	0x800000	/* grp inclusion check at start offset */
+#define SYN_EATT	0x1000000	/* grp inclusion check at end offset */
+#define SYN_ATT		0x1800000	/* grp inclusion check from start to end */
+#define SYN_OATT	0x2000000	/* grp overwrite of listed attributes only */
+#define SYN_BATT	0x4000000	/* listed attribute tests pending block highlight */
+#define SYN_BLK		0x8000000	/* grp block highlight */
+#define SYN_OWR		0x10000000	/* attribute overwrite */
+#define SYN_MK		0x20000000	/* marker holds id in color field, not rendered */
 #define SYN_BS		0x1		/* grp starting block highlight */
 #define SYN_BE		0x2		/* grp ending block highlight */
 #define SYN_BSE		0x3		/* grp self terminating block highlight */
@@ -249,6 +250,7 @@ void dir_init(void);
 #define SYN_BED		0x10		/* grp block highlight end direction up */
 #define SYN_BSDP	0x20		/* grp block highlight start direction pass */
 #define SYN_BEDP	0x40		/* grp block highlight end direction pass */
+#define SYN_BN		0x80		/* grp block highlight nests into itself */
 #define SYN_SET(flg, a) (a & SYN_##flg)
 extern int ftidx;
 extern int syn_blockhl;
@@ -427,6 +429,8 @@ extern int xpr;
 extern int xlim;
 extern int xseq;
 extern int xerr;
+extern int xfr;
+extern int xrr;
 /* global variables */
 extern int xquit;
 extern int xrow, xoff, xtop;

@@ -21,8 +21,10 @@ int xlim = -1;			/* rendering cutoff for non cursor lines */
 int xseq = 1;			/* undo/redo sequence */
 int xerr = 1;			/* error handling -
 				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
+int xfr;			/* ec_find register */
+int xrr;			/* record register */
 
-int xquit;			/* exit if positive, force quit if negative */
+int xquit;			/* exit if positive, force quit or unwind if negative */
 int xrow, xoff, xtop;		/* current row, column, and top row */
 int xbufcur;			/* number of active buffers */
 int xgrec;			/* global vi/ex recursion depth */
@@ -455,7 +457,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 		if (!end || *loc) {
 			if (*cmd !='f')
 				temp_switch(1, 1);
-			return xrerr;
+			return *loc ? xrerr : xirerr;
 		}
 		beg = 0;
 		max = xrows ? xrows * 3 : end;
@@ -559,42 +561,40 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 
 static void *ec_find(char *loc, char *cmd, char *arg)
 {
-	int e, pskip, nskip, dir, off, nbeg, beg, end, o1 = -1, o2 = -1;
-	if ((e = ex_region(loc, &beg, &end, &o1, &o2)))
-		if (!xdefreg || (*loc && e != 2))
-			return xrerr;
+	int e, pskip, nskip, dir, off, nbeg, beg, end, o1 = 0, o2 = -1;
+	e = ex_region(loc, &beg, &end, &o1, &o2);
+	if (e && (!xfr || (*loc && e != 2)))
+		return xrerr;
 	dir = cmd[1] == '+' || cmd[1] == '>' ? 2 : -2;
+	if (xfr) {
+		if (dir < 0)
+			return "register search is forward only";
+		if (cmd[1] == '+' && (!*loc || e == 2))
+			return "cannot increment without range";
+	}
 	ex_krsset(arg, dir);
 	if (!xkwdrs)
 		return xserr;
 	else if (xgrp >= xkwdrs->nsubc)
 		return xgerr;
-	if ((xdefreg || o1 >= 0) && dir > 0) {
+	if (xfr) {
 		int offs[xkwdrs->nsubc];
-		int r2 = end - 1;
-		int skip = cmd[1] == '+' ? 1 : 0;
-		int soff = o1 >= 0 ? MAX(0, lbuf_pos2off(xb, beg, o1, r2, o2,
-					xrow, xoff + skip)) : 0;
-		if (xdefreg) {
-			sbuf *sb = ex_regget(xdefreg);
-			if (!sb)
-				return "uninitialized register";
-			if (soff >= sb->s_n || rset_find(xkwdrs, sb->s + soff, offs, 0) < 0
-					|| offs[xgrp] < 0
-					|| (o1 >= 0 && lbuf_off2pos(xb, beg, o1, r2, o2,
-							soff + offs[xgrp], &xrow, &xoff)))
+		sbuf *sb = ex_regget(xfr);
+		if (!sb)
+			return "uninitialized register";
+		if (!*loc || e == 2) {
+			if (rset_find(xkwdrs, sb->s, offs, 0) < 0 || offs[xgrp] < 0)
 				return xuerr;
 			return NULL;
 		}
-		sbuf sb;
-		void *ret = NULL;
-		lbuf_region(xb, &sb, beg, o1, r2, o2);
-		if (rset_find(xkwdrs, sb.s + soff, offs, 0) < 0 || offs[xgrp] < 0
-				|| lbuf_off2pos(xb, beg, o1, r2, o2,
-						soff + offs[xgrp], &xrow, &xoff))
-			ret = xuerr;
-		free(sb.s);
-		return ret;
+		off = MAX(0, lbuf_pos2off(xb, beg, o1, end - 1, o2,
+					xrow, xoff + (cmd[1] == '+')));
+		if (off >= sb->s_n || rset_find(xkwdrs, sb->s + off, offs, 0) < 0
+				|| offs[xgrp] < 0
+				|| lbuf_off2pos(xb, beg, o1, end - 1, o2,
+						off + offs[xgrp], &xrow, &xoff))
+			return xuerr;
+		return NULL;
 	}
 	off = xoff;
 	if (xrow < beg || xrow >= end) {
@@ -619,6 +619,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 
 static void *ec_buffer(char *loc, char *cmd, char *arg)
 {
+	int n = atoi(arg);
 	if (!arg[0]) {
 		char ln[512];
 		for (int i = 0; i < xbufcur; i++) {
@@ -629,13 +630,13 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
 			ex_print(ln, msg_ft)
 		}
 		return NULL;
-	} else if (atoi(arg) < 0) {
-		if (abs(atoi(arg)) <= LEN(tempbufs)) {
-			temp_switch(abs(atoi(arg))-1, 1);
+	} else if (n < 0) {
+		if (-n <= LEN(tempbufs)) {
+			temp_switch(-n-1, 1);
 			return NULL;
 		}
-	} else if (atoi(arg) < xbufcur) {
-		bufs_switchwft(atoi(arg))
+	} else if (n < xbufcur) {
+		bufs_switchwft(n)
 		return NULL;
 	}
 	return "no such buffer";
@@ -649,10 +650,12 @@ static void *ec_quit(char *loc, char *cmd, char *arg)
 				return "buffers modified";
 	xquit = !xquit ? 1 : xquit;
 	xqprop = *loc ? atoi(loc) : -1;
+	/* recursion unwind: 256 increments preserve the first 8 bits
+	for exit code and -257 is the offset for comparisons. */
 	if (*arg)
-		xquit = abs(atoi(arg)) + 1;
+		xquit = (abs(atoi(arg)) & 255) + 1;
 	if (strchr(cmd, '!'))
-		xquit = -xquit;
+		xquit = *loc ? -xqprop * 256 - 257 - (abs(xquit) - 1) : -xquit;
 	return NULL;
 }
 
@@ -701,12 +704,12 @@ static void *ec_read(char *loc, char *cmd, char *arg)
 	if (!*loc || ex_region(loc, &beg, &end, &o1, &o2)) {
 		end = lbuf_len(xb);
 		if (!end || *loc) {
-			ret = xrerr;
+			ret = *loc ? xrerr : xirerr;
 			goto err;
 		}
 		beg = 0;
 	}
-	lbuf_region(lb, &obuf, beg, o1, end-1, o2);
+	lbuf_region(lb, &obuf, beg, o1, end - 1, o2);
 	lbuf_edit(pxb, obuf.s, row, row, 0, 0);
 	free(obuf.s);
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [r]", path, end - beg);
@@ -766,11 +769,11 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 	if (arg[0] == '!') {
 		if (ret)
 			return ret;
-		lbuf_region(xb, &ibuf, beg, MAX(0, o1), end-1, o2);
+		lbuf_region(xb, &ibuf, beg, MAX(0, o1), end - 1, o2);
 		ret = ex_pipeout(arg + 1, &ibuf);
 		free(ibuf.s);
 		xquit = quit;
-		return NULL;
+		return ret;
 	} else if (ret)
 		return "other buffers modified";
 	if (!strchr(cmd, '!')) {
@@ -783,7 +786,7 @@ static void *ec_write(char *loc, char *cmd, char *arg)
 	if (fd < 0)
 		return "write failed: cannot create file";
 	if (o1 >= 0) {
-		lbuf_region(xb, &ibuf, beg, o1, end-1, o2);
+		lbuf_region(xb, &ibuf, beg, o1, end - 1, o2);
 		o1 = write(fd, ibuf.s, ibuf.s_n);
 		free(ibuf.s);
 	} else
@@ -888,7 +891,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 			sb->s_n = strlen(arg);
 		if (!sb->s_n && o2 <= o1)
 			goto ret;
-		char *p = lbuf_joinsb(xb, beg, end-1, sb, &o1, &o2);
+		char *p = lbuf_joinsb(xb, beg, end - 1, sb, &o1, &o2);
 		o1 -= sb->s[0] == '\n';
 		if (sb->s != arg)
 			free(sb->s);
@@ -931,11 +934,11 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		o = NULL;
 		rstate->s = o;
 		ln = lbuf_get(xb, i);
-		if (o1 >= 0 && o2 >= 0 && beg == end-1)
+		if (o1 >= 0 && o2 >= 0 && beg == end - 1)
 			o = uc_sub(ln, o1, o2);
 		else if (o1 >= 0 && i == beg)
 			o = uc_sub(ln, o1, -1);
-		else if (o2 >= 0 && i == end-1)
+		else if (o2 >= 0 && i == end - 1)
 			o = uc_sub(ln, 0, o2);
 		else {
 			ex_cprint(ln, msg_ft, -1, 0, *loc ? 0 : xleft, 1);
@@ -959,7 +962,7 @@ static void *ec_delete(char *loc, char *cmd, char *arg)
 	if (o1 >= 0) {
 		sb.s = "";
 		sb.s_n = 0;
-		p = lbuf_joinsb(xb, beg, end-1, &sb, &o1, &o2);
+		p = lbuf_joinsb(xb, beg, end - 1, &sb, &o1, &o2);
 		xoff = o1;
 	}
 	lbuf_edit(xb, p, beg, end, o1, o2);
@@ -1009,7 +1012,7 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 	} else if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	sbuf sb;
-	lbuf_region(xb, &sb, beg, o1, end-1, o2);
+	lbuf_region(xb, &sb, beg, o1, end - 1, o2);
 	ex_regput(reg, sb.s, cmd[2] == '+');
 	free(sb.s);
 	return NULL;
@@ -1037,8 +1040,8 @@ static void *ec_put(char *loc, char *cmd, char *arg)
 		}
 	}
 	if (o1 >= 0) {
-		char *p = lbuf_joinsb(xb, end-1, end-1, buf, &o1, &o2);
-		lbuf_edit(xb, p, end-1, end, o1, o1);
+		char *p = lbuf_joinsb(xb, end - 1, end - 1, buf, &o1, &o2);
+		lbuf_edit(xb, p, end - 1, end, o1, o1);
 		free(p);
 	} else
 		lbuf_edit(xb, buf->s, end, end, o1, o1);
@@ -1188,13 +1191,13 @@ static void *ec_exec(char *loc, char *cmd, char *arg)
 	if (o1 < 0)
 		o1 = 0;
 	sbuf text;
-	lbuf_region(xb, &text, beg, o1, end-1, o2);
+	lbuf_region(xb, &text, beg, o1, end - 1, o2);
 	sbuf *rep = cmd_pipe(arg, &text, 1, NULL);
 	free(text.s);
 	if (!rep)
 		return "fork failed";
 	if (o1 > 0) {
-		char *p = lbuf_joinsb(xb, beg, end-1, rep, &o1, &o2);
+		char *p = lbuf_joinsb(xb, beg, end - 1, rep, &o1, &o2);
 		lbuf_edit(xb, p, beg, end, o1, o2);
 		free(p);
 	} else
@@ -1424,9 +1427,9 @@ static void *ec_setbufsmax(char *loc, char *cmd, char *arg)
 		bufs_free(xbufcur - 1);
 	bufs = erealloc(bufs, sizeof(struct buf) * xbufsmax);
 	if (!istemp)
-		ex_buf = bufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+bufidx;
-	ex_pbuf = pbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+pbufidx;
-	ex_tpbuf = tpbufidx >= &bufs[xbufsmax] - bufs ? bufs : bufs+tpbufidx;
+		ex_buf = bufidx >= xbufsmax ? bufs : bufs+bufidx;
+	ex_pbuf = pbufidx >= xbufsmax ? bufs : bufs+pbufidx;
+	ex_tpbuf = tpbufidx >= xbufsmax ? bufs : bufs+tpbufidx;
 	return NULL;
 }
 
@@ -1537,7 +1540,7 @@ void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
 		}
 		if (ex && (*beg == xsep || *beg == xexp || *beg == xexe))
 			sbuf_chr(sb, xesc)
-		else if (strchr("!%{[]().?^$|*/+", *beg))
+		else if (strchr("!%{[().?^$|*/+", *beg))
 			sbuf_chr(sb, '\\')
 		sbuf_chr(sb, *beg)
 	}
@@ -1577,8 +1580,8 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 #define EO(opt) \
 	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
 
-EO(pac) EO(pr) EO(ai) EO(err) EO(ish) EO(ic) EO(mpt)
-EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
+EO(rr) EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
 EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 
 _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
@@ -1630,6 +1633,7 @@ static struct excmd {
 	{"ft", ec_ft},
 	{"fd", ec_setdir},
 	{"fp", ec_setdir},
+	EO(fr),
 	{"f+", ec_find},
 	{"f-", ec_find},
 	{"f>", ec_find},
@@ -1651,6 +1655,7 @@ static struct excmd {
 	{"reg", ec_regprint},
 	{"re", ec_krsset},
 	{"rd", ec_undoredo},
+	EO(rr),
 	{"r", ec_read},
 	{"wq!", ec_write},
 	{"wq", ec_write},
@@ -1811,7 +1816,8 @@ void *ex_exec(const char *ln)
 	} while (*ln && !xquit);
 	free(sb->s);
 	xexec_dep--;
-	if (xquit > 0 && (xexec_dep || xqprop >= 0) && --xqprop < 0)
+	if ((xquit > 0 && (xexec_dep || xqprop >= 0) && --xqprop < 0)
+			|| tmpxquit < -256)
 		restore(xquit)
 	if (!xexec_dep) {
 		if (xanchor) {

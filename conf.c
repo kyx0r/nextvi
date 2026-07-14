@@ -76,15 +76,17 @@ struct highlight hls[] = {
 		A(BL | SYN_IT, BL | SYN_BLK, SYN_BSE | SYN_BEDP, BL | SYN_BLK, SYN_BSE | SYN_BSD)},
 	{FT(c), "\\<(?:signed|unsigned|char|short|int|[a-z0-9_]+_t|FILE|DIR|long|f(?:loat|64|32)|\
 double|void|enum|union|typedef|static|extern|register|struct|s(?:64|32|16|8)|u(?:64|32|16|8)|b32|\
-bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|malloc|free|realloc|\
-NULL|std(?:in|out|err)|errno)|(return|for|while|if|else|do|sizeof|goto|switch|case|default|break|\
-continue))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|(?:posix_)?memalign|\
+(?:m|c|v|aligned_)alloc|realloc(?:f|array)?|NULL|std(?:in|out|err)|errno)|\
+(return|for|while|if|else|do|sizeof|goto|switch|case|default|break|continue))\\>",
+		A(GR1, BL1 | SYN_BD, YE1)},
 	{FT(c), "//.*", A(BL | SYN_IT)},
 	{FT(c), "\"(?#2)(?<^\\\\)(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
 	{FT(c), "#[ \t]*(?:[a-zA-Z0-9_]+([ \t]*<.*>)?)", A(CY, MA)},
 	{FT(c), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
 	{FT(c), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", A(MA)},
-	{FT(c), "[-+.]?\\<(?:0[xX][0-9a-fA-FUL]+|[0-9]+\\.?[0-9eEfFuULl]+|[0-9]+)\\>", A(RE1)},
+	{FT(c), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+\\.?[0-9]*(?:[eE][-+]?[0-9]+)?)([fFlLuU]{0,3})\\>",
+		A(RE1, RE)},
 	{FT(c), "(\"[^\"]*\\\\\n$)|^(.*\"(?!\\\\\n$))",
 		A(MA | SYN_IGN, MA | SYN_SATT | SYN_OWR | SYN_BLK, 1, NA, SYN_BSE | SYN_BED,
 		MA | SYN_OWR | SYN_EATT | SYN_BLK, 1, NA, SYN_BSE | SYN_BSD), 1},
@@ -206,19 +208,19 @@ title|tr|track|u|ul|var|video|wbr))\\>(?!^-)",
 	{FT(html), "(<!--(?:(?!^-->).)*)|((?:(?!^<!--).)*-->)",
 		A(MA | SYN_IGN, MA | SYN_BLK | SYN_SATT, 3, NA, 69, YE, SYN_BSE | SYN_BEDP,
 		MA | SYN_EATT | SYN_BLK, 3, NA, 69, YE, SYN_BSE | SYN_BSD), 1},
-	{FT(html), "((\\{)[^}]*)|((?:^[^{]*)?(}))",
-		A(AY1 | SYN_IGN, AY1 | SYN_SATT, 1, NA, GR1 | SYN_BLK, SYN_BP | SYN_BSE | SYN_BEDP,
-		AY1 | SYN_EATT, 1, NA, GR1 | SYN_BLK, SYN_BP | SYN_BSE | SYN_BSD), 1},
 	{FT(html), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/)",
 		A(MA | SYN_IT | SYN_IGN, MA | SYN_IT | SYN_SATT | SYN_BLK, 2, NA, AY1,
 		SYN_BSE | SYN_BEDP, MA | SYN_IT | SYN_EATT | SYN_BLK, 2, NA, AY1, SYN_BSE | SYN_BSD), 2},
+	{FT(html), "((\\{)[^}]*)|((?:^[^{]*)?(}))",
+		A(AY1 | SYN_IGN, AY1 | SYN_SATT, 1, NA, GR1 | SYN_BLK, SYN_BN | SYN_BP | SYN_BSE | SYN_BEDP,
+		AY1 | SYN_EATT, 1, NA, GR1 | SYN_BLK, SYN_BN | SYN_BP | SYN_BSE | SYN_BSD), 2},
 	{FT(html), "(?:#\\<[A-Fa-f0-9]+\\>)|[-+]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+\
 (?:\\.[0-9]+)?(?:em|rem|px|pt|pc|cm|mm|in|ch|ex|vw|vh|vmin|vmax|dvh|dvw|svh|svw|lvh|lvw|\
-fr|deg|rad|turn|grad|ms|s|hz|khz|dpi|dpcm|dppx|%|))\\>", A(RE1 | SYN_ATT, 4, 69, NA, AY1, YE), 2},
-	{FT(html), "^[^{]*(?=^\\{)", A(SYN_SKIP), 3},
-	{FT(html), "((?:^[^\t -,.-/:-@[-^{-~]|[^\t -,.-/:-@[-^{-~](?#2)(?>^[ \t{]))\
-[^\t -,.-/:-@[-^{-~]*:)(?:[ \t]*(fixed|absolute|relative|.+!important)|.+?)(?:;|}\n$)",
-		A(NA | SYN_EATT, 3, NA, AY1, GR1, YE | SYN_OWR | SYN_EATT, 2, NA, AY1, MA1), 3},
+fr|deg|rad|turn|grad|ms|s|hz|khz|dpi|dpcm|dppx|%|))\\>", A(RE1 | SYN_ATT, 4, 69, NA, AY1, YE), 3},
+	{FT(html), "^[^{]*(?=^\\{)", A(SYN_SKIP), 4},
+	{FT(html), "(?:^|[ \t{;])([^\t -,.-/:-@[-^{-~]+:)\
+(?:[ \t]*(fixed|absolute|relative|.+!important)|.+?)(?:(?=^;)|(?=^}\n))",
+		A(NA | SYN_IGN, YE | SYN_OWR | SYN_EATT, 2, AY1 | SYN_BATT, GR1 | SYN_BATT, MA1), 4},
 	{FT(html), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(html), NULL, A(RE1), 0, 1},
 	{FT(html), NULL, A(AY | SYN_BGMK(RE1)), 0, 3},
@@ -292,7 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
 (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
 (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
-((pac|pr|ai|ish|err|ic|grp|mpt|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
@@ -300,8 +302,11 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 
 	{vs_ft, ".+", A(AY1 | SYN_BD), 1},
-	{vs_ft, "(^[?/])|(\\\\[<>]|\\(\\?[:=!<>#]|[.^$[\\]\\()*+|?]|\\{(?:.*})?)|\\\\(.)",
-		A(SYN_BD, BL1, WH1, YE)},
+	{vs_ft, "(^[?/])|(\\\\[<>]|\\(\\?[:=!<>#]|\\[\\^?((?:\\\\.?|[^\\]])*)]|\\[|[.^$\\()*+|?]|\\{([0-9]*(,)?[0-9]*)?}?)|\\\\(.)",
+		A(SYN_BD, BL1, WH1, GR1, RE1, WH1, YE)},
+	{vs_ft, "(\\\\)(.)(?:(-)(?:(\\\\(.))|[^\\\\\\]]))?|[^\\\\[^](-)(?:(\\\\(.))|.)|\
+[^\\\\[^]\\^(-)(?:(\\\\(.))|[^\\\\])|\\^(-)[^\\\\]",
+		A(GR1 | SYN_BD | SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1), 2},
 
 	{bar_ft, "^(\".*\").*(\\[[wrf]\\]).*$", A(AY1 | SYN_BD, BL, RE)},
 	{bar_ft, "^<(.+)> (?:[^ ]+ )*([0-9]+L) ([0-9]+W) (S[0-9]+) (O[0-9]+) (C[0-9]+)$",

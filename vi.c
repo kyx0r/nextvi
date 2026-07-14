@@ -154,7 +154,9 @@ static void vi_drawrow(int row)
 			vi_drawnum(vi_nextcol(c, -1, &noff))
 		} else
 			vi_drawnum(lbuf_wordend(xb, i1, -2, &nrow, &noff))
-		tmp[ren_next(c, ren_pos(c, xoff), 1)-1-xleft+vi_lncol] = *vi_word;
+		l1 = ren_next(c, ren_pos(c, xoff), 1)-1-xleft+vi_lncol;
+		if (l1 >= 0 && l1 <= xcols)
+			tmp[l1] = *vi_word;
 		preserve(int, xorder, xorder = 0;)
 		preserve(int, syn_blockhl, syn_blockhl = -1;)
 		preserve(int, xtd, xtd = dir_context(c) * 2;)
@@ -318,13 +320,15 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
 			return 1;
 		}
 		ex_krsset(kw + i, cmd == '/' ? +2 : -2);
-		if (!xkwdrs)
-			vi_drawmsg_mpt("syntax error")
 		free(kw);
 	} else if (msg)
 		ex_krsset(ex_regget('/') ? ex_regget('/')->s : NULL, xkwddir);
-	if (!lbuf_len(xb) || !xkwddir || !xkwdrs || xgrp >= xkwdrs->nsubc)
+	if (!lbuf_len(xb) || !xkwddir)
 		return 1;
+	else if (!xkwdrs || xgrp >= xkwdrs->nsubc) {
+		vi_drawmsg_mpt(xkwdrs ? "invalid grp" : "syntax error")
+		return 1;
+	}
 	dir = cmd == 'N' ? -xkwddir : xkwddir;
 	for (i = 0; i < cnt; i++) {
 		if (lbuf_search(xb, xkwdrs, dir, 0, lbuf_len(xb),
@@ -408,7 +412,7 @@ void dir_calc(char *path)
 			memcpy(&cpath[pathlen+1], dirp->d_name, len);
 			ret = lstat(cpath, &statbuf);
 			if (ret >= 0 && S_ISDIR(statbuf.st_mode)) {
-				if (!(sdp = opendir(cpath)) || i >= LEN(ptrs))
+				if (i >= LEN(ptrs) || !(sdp = opendir(cpath)))
 					break;
 				dps[i] = sdp;
 				ptrs[i] = cpath;
@@ -1044,12 +1048,12 @@ static int vc_put(int cmd)
 {
 	int cnt = MAX(1, vi_arg);
 	int i, off;
-	sbuf *buf = ex_regget(vi_ybuf);
 	char *ln;
-	if (!buf)
-		vi_drawmsg_mpt("yank buffer empty")
-	if (!buf || !buf->s_n)
+	sbuf *buf = ex_regget(vi_ybuf);
+	if (!buf || !buf->s_n) {
+		vi_drawmsg_mpt(buf ? "empty register" : "uninitialized register")
 		return 0;
+	}
 	rep_record()
 	sbuf_smake(sb, 1024)
 	if (buf->s[buf->s_n-1] == '\n' || strchr(buf->s, '\n')) {
@@ -1131,7 +1135,7 @@ static void vc_execute(int cmd)
 	if (c == cmd && exec_buf >= 0)
 		c = exec_buf;
 	if (!ex_regget(c)) {
-		vi_drawmsg_mpt("exec buffer empty")
+		vi_drawmsg_mpt("uninitialized register")
 		return;
 	}
 	exec_buf = c;
@@ -1264,7 +1268,7 @@ void vi(int init)
 			case TK_CTL('i'): {
 				if (!(ln = lbuf_get(xb, xrow)))
 					break;
-				ln += xoff;
+				ln = uc_chr(ln, xoff);
 				n = strlen(ln);
 				char buf[n + 4];
 				memcpy(buf, ":e ", 3);
@@ -1473,7 +1477,7 @@ void vi(int init)
 					case '>': case '<': pairs[0]='<'; pairs[1]='>'; break;
 					default: pairs[0] = k; pairs[1] = k; break;
 					}
-					if (TK_INT(pairs[0]))
+					if (TK_INT(pairs[0]) || !lbuf_get(xb, xrow))
 						break;
 					int r1 = xrow, o1 = xoff, r2, o2;
 					int dir = (k == pairs[1] && pairs[0] != pairs[1]) ? -1 : 1;
@@ -1689,7 +1693,7 @@ void vi(int init)
 					ex_exec("x");
 					continue;
 				}
-				xquit = texec == '&' ? -1 : 1;
+				xquit = vi_arg ? -vi_arg * 256 - 257 : 1;
 				if (k == 'z')
 					term_push("\n", 1);
 				else if (xgrec == 1) {
@@ -1858,7 +1862,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-6.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-7.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
@@ -1876,5 +1880,5 @@ int main(int argc, char *argv[])
 	term_done();
 	if (xvis & 8)
 		term_scrl;
-	return abs(xquit) - 1;
+	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 }

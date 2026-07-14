@@ -32,28 +32,24 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: kmap.h term.c
 # Body too large for EXINIT/argv: stage it in a file
-if ( : > /tmp/p2vi.$$ ) 2>/dev/null; then
-    P2VIF=/tmp/p2vi.$$
-else
-    P2VIF=./p2vi.$$
-fi
+( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> static char \\*kmap_en\\[256\\] = \\{
-	\\[0\\] = \"en\",
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%f> static char \\*kmap_en\\[256] = \\{
+	\\[0] = \"en\",
 };
 
-static char \\*kmap_fa\\[256\\] = \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
+static char \\*kmap_fa\\[256] = \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+1m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> static char \\*kmap_en\\[256\\] = \\{
-	\\[0\\] = \"en\",${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}%f> static char \\*kmap_en\\[256] = \\{
+	\\[0] = \"en\",${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> static char \\*kmap_en\\[256\\] = \\{.*?
-(	\\[0\\] = \"en\",)${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f> static char \\*kmap_en\\[256] = \\{.*?
+(	\\[0] = \"en\",)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK kmap.h:2:a7${SEP}${LB}
 ${SEP}1;3;7??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
@@ -66,38 +62,38 @@ ${SEP}'1i 	['y'] = \"h\",
 	['k'] = \"e\",
 	['l'] = \"o\",
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL kmap.h:2:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 			err:
-			\\*ibuf = 0;
+${ESC}${SEP}%f> 			buf\\[0] = \\*ibuf;
+			ex_regput\\(xrr, buf, 1\\);
 		}
 		ret:
 		ibuf_cnt = 1;
 		ibuf_pos = 0;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 			err:
-			\\*ibuf = 0;
+${ESC}${SEP}%f> 			buf\\[0] = \\*ibuf;
+			ex_regput\\(xrr, buf, 1\\);
 		}${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			err:.*?
-			\\*ibuf = 0;.*?
+${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:173:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f> 			buf\\[0] = \\*ibuf;.*?
+			ex_regput\\(xrr, buf, 1\\);.*?
 (		})${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				cw = term_winch;
-				goto re;
-			}.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))
-		icmd\\[icmd_pos\\+\\+\\] = ibuf\\[ibuf_pos\\];
-	return ibuf\\[ibuf_pos\\+\\+\\];${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 				\\*ibuf = winch;
-				goto ret;
-			} else if \\(term_winch != cw && !winch && xquit >= 0\\) \\{.*(/\\* return a static string that changes text attributes to att \\*/)
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:173:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			\\*ibuf = 0;
+		} else if \\(xrr\\) \\{
+			static char buf\\[2];.*(	if \\(icmd_pos < sizeof\\(icmd\\)\\))
+		icmd\\[icmd_pos\\+\\+] = ibuf\\[ibuf_pos];
+	return ibuf\\[ibuf_pos\\+\\+];${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:173:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				goto re;
+			}
+			err:.*(/\\* return a static string that changes text attributes to att \\*/)
 char \\*term_att\\(int att\\)
 \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:169:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:169${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:173:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:173${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:169:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}2q" > "$P2VIF"
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:173:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'kmap.h' 'term.c' "$P2VIF"
 
 exit 0
@@ -122,12 +118,12 @@ index d025f5f1..e549d13b 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index 3ae4769f..5b6bcb4b 100644
+index 75ada7cc..2b935513 100644
 --- a/term.c
 +++ b/term.c
-@@ -167,6 +167,8 @@ int term_read(int winch)
- 			err:
- 			*ibuf = 0;
+@@ -171,6 +171,8 @@ int term_read(int winch)
+ 			buf[0] = *ibuf;
+ 			ex_regput(xrr, buf, 1);
  		}
 +		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 +			*ibuf = *conf_kmap(0)[*ibuf];

@@ -32,18 +32,14 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: ex.c
 # Body too large for EXINIT/argv: stage it in a file
-if ( : > /tmp/p2vi.$$ ) 2>/dev/null; then
-    P2VIF=/tmp/p2vi.$$
-else
-    P2VIF=./p2vi.$$
-fi
+( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
 	if \\(!\\(xvis & 4\\)\\)
 		ex_print\\(msg, bar_ft\\)
 	return \\(fd < 0 \\|\\| rd\\) && \\*arg \\? xuerr : NULL;
@@ -51,27 +47,27 @@ ${ESC}${SEP}%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
 
 ${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
+${ESC}${SEP}%f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);
 	if \\(!\\(xvis & 4\\)\\)
 		ex_print\\(msg, bar_ft\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:437:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);.*?
+${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:439:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f> 			fd < 0 \\|\\| rd \\? 'f' : 'r'\\);.*?
 	if \\(!\\(xvis & 4\\)\\).*?
 (		ex_print\\(msg, bar_ft\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:437:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	}
-	snprintf\\(msg, sizeof\\(msg\\), \"\\\\\"%s\\\\\" %dL \\[%c\\]\",
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:439:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	}
+	snprintf\\(msg, sizeof\\(msg\\), \"\\\\\"%s\\\\\" %dL \\[%c]\",
 			\\*xb_path \\? xb_path : \"unnamed\", lbuf_len\\(xb\\),.*(static void \\*ec_fuzz\\(char \\*loc, char \\*cmd, char \\*arg\\))
 \\{
 	rset \\*rs;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:437:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	if \\(cd == 3 \\|\\| \\(!rd && fd >= 0\\)\\) \\{
-		ex_bufpostfix\\(ex_buf, arg\\[0\\]\\);
-		syn_setft\\(xb_ft\\);.*(	char \\*path, \\*p, buf\\[128\\], trunc\\[128\\], \\*sret = NULL;)
-	int c, pos, subs\\[2\\], inst = -1, lnum = -1;
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:439:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	if \\(cd == 3 \\|\\| \\(!rd && fd >= 0\\)\\) \\{
+		ex_bufpostfix\\(ex_buf, arg\\[0]\\);
+		syn_setft\\(xb_ft\\);.*(	char \\*path, \\*p, buf\\[128], trunc\\[128], \\*sret = NULL;)
+	int c, pos, subs\\[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX, dwid1, dwid2;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:437:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:437${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:439:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:439${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
@@ -90,17 +86,17 @@ ${SEP}'1i 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 			xb_ft = syn_setft(lfts[hl].ft);
 		rset_free(rs);
 	}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:437:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:439:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' "$P2VIF"
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 48e83e73..6c4e2499 100644
+index 67e5e1a6..557dd0e0 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -435,6 +435,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -437,6 +437,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  			fd < 0 || rd ? 'f' : 'r');
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)

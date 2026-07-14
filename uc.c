@@ -38,13 +38,14 @@ char *uc_beg(char *beg, char *s)
 
 char *uc_chrn(char *s, int off, int *n)
 {
+	int l;
 	*n = 0;
 	if (!s)
 		return "";
-	for (; uc_len(s); ++*n) {
+	for (; (l = uc_len(s)); ++*n) {
 		if (*n == off)
 			return s;
-		s += uc_len(s);
+		s += l;
 	}
 	return s;
 }
@@ -53,9 +54,9 @@ char *uc_chrn(char *s, int off, int *n)
 int uc_off(char *s, int off)
 {
 	char *e = s + off;
-	int i;
-	for (i = 0; s < e && uc_len(s); i++)
-		s += uc_len(s);
+	int i, l;
+	for (i = 0; s < e && (l = uc_len(s)); i++)
+		s += l;
 	return i;
 }
 

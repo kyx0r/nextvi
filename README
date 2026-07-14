@@ -125,7 +125,8 @@ VI NORMAL
                    <x X D C s S Y p P r d c ~ gu gU g~ ! > < ^W i I a A o O ci
                    di J K>
      [#]v.         Repeat last normal command moving down across # lines
-     [#]Q          Enter ex mode. # retains current horizontal scroll
+     [#]Q          Enter ex mode recursively. # retains current horizontal
+                   scroll
      :             Enter ex prompt
      [#]!{arg}     Enter pipe ex prompt based on # or arg region
      vv            Enter ex prompt with the last line from history buffer b-1
@@ -167,7 +168,7 @@ VI NORMAL
      [#]x          Delete # characters from cursor forward
      [#]X          Delete # characters from cursor backward
      di{<arg>}     Delete inside arg pairs
-     ci{<arg>}     Change inside arg pairs
+     ci{<arg>}     Delete inside arg pairs and enter insert mode
      [#]r{arg}     Replace # characters with arg from cursor forward
      [#]K          Split a line # times
      [#]J          Join # lines
@@ -221,9 +222,9 @@ VI NORMAL
      [#]<^P>       Filesystem regex search backward
      <^Z>          Suspend vi
      <^L>          Force redraw whole screen and update terminal dimensions
-     Z{<Any>}      Force exit and clean terminal, force quit in an & macro
-     Zz            Force exit and submit history command, force quit in an &
-                   macro
+     [#]Z{<Any>}   Exit and clean terminal, force quit # recursion levels
+     [#]Zz         Exit and submit history command, force quit # recursion
+                   levels
      ZZ            Exit and write unsaved changes to a file
      <ESC ^C>      Cancel any pending input or command
 
@@ -317,11 +318,13 @@ EX PARSING
 EX ESCAPES
      Special characters in [args] and [prefix] blocks will become
      regular when escaped with <\>. Escapes are governed by a non-POSIX
-     parity rule.
+     parity rule: escapes directly before a special are halved, an
+     odd amount makes the special regular, and escapes anywhere else
+     are literal.
 
      ( ^ ] -
              Specials in regex "[]" expression
-     ( ) { + * ? ^ $ [ ] | \ . \< \>
+     ( ) { + * ? ^ $ [ | \ . \< \>
              Specials in regex
      \ : % !
              Specials in ex
@@ -359,7 +362,7 @@ EX RANGES
      [% |][, ;][#][. $ ' > <][- + * / %][#num]
              All ranges structure
      {|}{cmd}[|]
-             Ex command structure
+             Ex subcommand structure
      {>}[regex][>]
              Search forward structure
      {<}[regex][<]
@@ -368,7 +371,7 @@ EX RANGES
              Mark structure
 
      %       Range from first to last line
-     |       Begin ex command block
+     |       Begin ex subcommand block
      ,       Vertical range separator
      ;       Horizontal range separator
      #       Rebase to previous value in range structure
@@ -428,9 +431,6 @@ EX COMMANDS
      [vrange]f<[regex]
              Ranged search
 
-             Horizontal range performs a scoped multi-line search forward.
-             In multi-line mode, <Newline> is a regular character.
-             If the default register is reassigned, searches its contents.
              Returns error if target not found.
 
              Example: no range given, current line only
@@ -439,8 +439,6 @@ EX COMMANDS
              :f<int
              Example: range given
              :10,100f>int
-             Example: search for "int" followed by "void" on next line
-             :%;0f>int.void
 
      [range]f+[regex]
      [vrange]f-[regex]
@@ -462,7 +460,7 @@ EX COMMANDS
              No range evaluates to <%> range.
              No range displays a maximum of xrows * 3 matches.
 
-     [vrange]g[<Any>][regex][<Any>][cmd]
+     [vrange]g[<Delim>][regex][<Delim>][cmd]
              Global command
 
              Execute an ex command on a range of lines that matches an
@@ -495,7 +493,7 @@ EX COMMANDS
              Example: extract/print data enclosed in "()"
              :grp1:err4:g/./;0\:;>(\().+\)>;#>.+(\))>+1p:err1:grp
 
-     [vrange]g![<Any>][regex][<Any>][cmd]
+     [vrange]g![<Delim>][regex][<Delim>][cmd]
              Inverted global command
 
      [range]re[regex]
@@ -574,7 +572,7 @@ EX COMMANDS
              Example: join all lines with space padding
              :%-1j x
 
-     [vrange]s[<Any>][regex][<Any>][str][<Any>][<g>]
+     [vrange]s[<Delim>][regex][<Delim>][str][<Delim>][<g>]
              Substitute
 
              Find and replace text in a range of lines that matches an
@@ -769,15 +767,24 @@ EX COMMANDS
      [range]x![path]
              Force write unsaved changes and force quit
 
-     [#lvl]q[#code]
-     [#lvl]q![#code]
-             Exit or force quit
+     [#lvl]q[0-255]
+             Exit
 
-             [#code] specifies shell exit code.
-             [#lvl] defines the number of scopes to exit.
+             Prefix exits [#lvl] ex recursion levels.
+             Argument specifies shell exit code.
 
-             Example: conditionally exit this scope and 1 above
+             Example: conditionally exit this level and 1 above
              :%f>marker:??!p no marker\:1q:s/old/new/g:w
+
+     [#lvl]q![0-255]
+             Force quit
+
+             Prefix force quits [#lvl] recursion levels.
+             No prefix quits all recursion levels.
+
+             Example: set register 0 to "hello" 3 levels deep, force quit
+             this level and 2 above, print the register outside
+             :&Q&Q\\\:&Q0reg hello\\\\\\\:2q\\\\\\\!:p %@0
 
      b[index]
              Print buffers or switch to a buffer
@@ -1155,6 +1162,35 @@ EX OPTIONS
              Example: store a line printed with :p
              :pr A:ya! 65:p
 
+     fr[val=0]
+             Find register
+
+             Set a register using a character or a number.
+             Once the register is set, the :f> and :f+ commands perform a
+             multi-line search forward on the contents of the register instead
+             of the current buffer. Range maps the match to a position in
+             the current buffer. No range tests for a match inplace.
+
+             Example: search register <a> for "int"
+             :fr a:f>int:??p yes:??!p no:fr
+             Example: search for "int" followed by "void" on next line
+             :%ya97:fr 97:%f>int.void:fr
+
+     rr[val=0]
+             Record register
+
+             Set a register using a character or a number.
+             Once the register is set, every byte read from the terminal is
+             appended to the register. Input replayed from registers is not
+             recorded, so replaying a recorded register cannot record itself.
+
+             Example: record keystrokes into register <a>
+             :rr a
+             Example: stop recording
+             :rr
+             Example: replay recording from register <a>
+             :& %@97
+
      lim[val=-1]
              Line length render limit
 
@@ -1237,6 +1273,14 @@ EXINIT ENV VAR
 
              @b macro pipes the current line into X11 clipboard.
 
+     export EXINIT="$(printf 'rr z:vis 2:&Q\n:b-3:pu 122:wq! bugreport.txt')"
+             Capture session for a bug report
+
+             Recording starts into register <z>. Setting vis 2 makes <Q>
+             toggle straight into a regular vi session where the user takes
+             over.  Quitting it with :q resumes the macro, which writes the
+             recording to bugreport.txt.
+
 REGEX
      Pikevm is a fast non-backtracking NFA simulation regex engine
      developed for Nextvi. It ensures regular expressions are evaluated
@@ -1308,23 +1352,22 @@ SPECIAL REGISTERS
      <1-9>   Previous value(s) of default register (nonatomic)
 
 CODE MAP
-     +------------------+-----------------------+
-     | 537 kmap.h       |  keymap translation   |
-     | 546 vi.h         |  definitions/aux      |
-     +------------------+-----------------------+
-     | 44 common.c      |  shared with patch2vi |
-     | 347 term.c       |  low level IO         |
-     | 367 conf.c       |  hl/ft/td config      |
-     | 444 ren.c        |  positioning/syntax   |
-     | 614 uc.c         |  UTF-8 support        |
-     | 665 lbuf.c       |  file/line buffer     |
-     | 726 led.c        |  insert mode/output   |
-     | 751 regex.c      |  pikevm               |
-     | 1864 ex.c        |  ex options/commands  |
-     | 1880 vi.c        |  normal mode/general  |
-     | 4909 patch2vi.c  |  patch converter      |
-     | 12611 total      |  wc -l *.c|sort       |
-     +------------------+-----------------------+
+     +------------------+----------------------+
+     | 537 kmap.h       |  keymap translation  |
+     | 550 vi.h         |  definitions/aux     |
+     +------------------+----------------------+
+     | 351 term.c       |  low level IO        |
+     | 372 conf.c       |  hl/ft/td config     |
+     | 460 ren.c        |  positioning/syntax  |
+     | 615 uc.c         |  UTF-8 support       |
+     | 665 lbuf.c       |  file/line buffer    |
+     | 730 led.c        |  insert mode/output  |
+     | 751 regex.c      |  pikevm              |
+     | 1870 ex.c        |  ex options/commands |
+     | 1884 vi.c        |  normal mode/general |
+     | 5335 patch2vi.c  |  patch converter     |
+     | 13033 total      |  wc -l *.c|sort      |
+     +------------------+----------------------+
 
 COMPILING
      export CC='g++ -x c'
@@ -1404,7 +1447,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 6.1                       June 30, 2026                      Nextvi 6.1
+Nextvi 7.0                       July 14, 2026                      Nextvi 7.0
 
 NEXTVI PATCHES
 ==============
@@ -1606,11 +1649,6 @@ binary files, since it would be truncated earlier before loading
 the whole file into memory.
 In addition, optimizes the number of write syscalls using chunks
 when writing a file.
-
-record_input.sh
---------------
-Adds ex option "rec". This option specifies a register in which
-to record all user input. Makes it easier to record macros.
 
 visual.sh
 --------------

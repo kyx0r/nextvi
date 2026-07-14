@@ -32,33 +32,29 @@ LB="0?"
 [ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
 # Enters vi at failing code line in this script
 # Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:0reg:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
 
 # Patch: led.c ren.c uc.c vi.c
 # Body too large for EXINIT/argv: stage it in a file
-if ( : > /tmp/p2vi.$$ ) 2>/dev/null; then
-    P2VIF=/tmp/p2vi.$$
-else
-    P2VIF=./p2vi.$$
-fi
+( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}98reg${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%f> 
 int dstrlen\\(const char \\*s, char delim\\)
 \\{
 	register const char \\*i;
 	for \\(i=s; \\*i && \\*i != delim; \\+\\+i\\);
 	return i-s;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 
+${ESC}${SEP}%f> 
 int dstrlen\\(const char \\*s, char delim\\)
 \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:6:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> .*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f> .*?
 int dstrlen\\(const char \\*s, char delim\\).*?
 (\\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:6:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> static sbuf \\*suggestsb;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> static sbuf \\*suggestsb;
 static sbuf \\*acsb;
 sbuf \\*led_attsb;.*(	if \\(!\\*pattern\\))
 		return 0;
@@ -66,22 +62,22 @@ sbuf \\*led_attsb;.*(	if \\(!\\*pattern\\))
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:6:a8${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:6${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 	register const char \\*i;
+${ESC}${SEP}%f+ 	register const char \\*i;
 	for \\(i=s; \\*i && \\*i != delim; \\+\\+i\\);
 	return i-s;
 }
 
 static int search\\(const char \\*pattern, int l\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 	register const char \\*i;
+${ESC}${SEP}%f+ 	register const char \\*i;
 	for \\(i=s; \\*i && \\*i != delim; \\+\\+i\\);
 	return i-s;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:9:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f+ 	register const char \\*i;.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	register const char \\*i;.*?
 	for \\(i=s; \\*i && \\*i != delim; \\+\\+i\\);.*?
 (	return i-s;)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:9:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> static sbuf \\*suggestsb;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> static sbuf \\*suggestsb;
 static sbuf \\*acsb;
 sbuf \\*led_attsb;.*(	if \\(!\\*pattern\\))
 		return 0;
@@ -110,69 +106,69 @@ ${SEP}'1i #ifdef __SSE2__
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:6:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2i #endif
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:9:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 		rstate->holelen = uc_len\\(ss\\);
+${ESC}${SEP}%f> 		rstate->holelen = uc_len\\(ss\\);
 		memcpy\\(rstate->nullhole, ss, rstate->holelen\\);
 		memset\\(ss, 0, rstate->holelen\\);
 	} else
 		for \\(n = 0; \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)
 			ss \\+= l;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 	} else
+${ESC}${SEP}%f> 	} else
 		for \\(n = 0; \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)
 			ss \\+= l;${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 		rstate->holelen = uc_len\\(ss\\);
+${ESC}${SEP}%f> 		rstate->holelen = uc_len\\(ss\\);
 		memcpy\\(rstate->nullhole, ss, rstate->holelen\\);
 		memset\\(ss, 0, rstate->holelen\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> 	} else
+${ESC}${SEP}%f> 	} else
 		for \\(n = 0; \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^			ss \\+= l;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a5${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> ...s.a....h.....n = .._.e..ss\\).
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^			ss \\+= l;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}%f> ...s.a....h.....n = .._.e..ss\\).
 ..m..c......a.e.>n..l..l..........at.-.h....en..
 	....s...... ................e...
 .}....e
 	.... \\(......... ...c.l.n....\\)..n.\\+\\)
 .	.s......;${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		rstate->holelen = uc_len\\(ss\\);.*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f> 		rstate->holelen = uc_len\\(ss\\);.*?
 		memcpy\\(rstate->nullhole, ss, rstate->holelen\\);.*?
 		memset\\(ss, 0, rstate->holelen\\);.*?
 (	} else)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		max = \\(unsigned int\\)xlim;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		max = \\(unsigned int\\)xlim;
 		for \\(n = 0; n < max && \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)
-			ss \\+= l;.*(	int \\*off = &pos\\[b\\];)
-	char \\*\\*chrs = \\(char\\*\\*\\)&off\\[b\\];
+			ss \\+= l;.*(	int \\*off = &pos\\[b];)
+	char \\*\\*chrs = \\(char\\*\\*\\)&off\\[b];
 	if \\(xorder && dir_reorder\\(s, ss, off, n, rstate->ctx\\)\\) \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	unsigned int n, max, l;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	unsigned int n, max, l;
 	char \\*ss = s;
 	if \\(xlim >= 0 && rstate == rstates\\+1\\) \\{.*(		for \\(i = 0; i < b; i\\+\\+\\) \\{)
-			chrs\\[i\\] = s;
+			chrs\\[i] = s;
 			s \\+= uc_len\\(s\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:111:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:111${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f+ 			ss \\+= l;
+${ESC}${SEP}%f+ 			ss \\+= l;
 	unsigned int b = n \\+ 1, c = 2, i;
 	int cpos = 0, wid, \\*col;
-	int \\*pos = emalloc\\(\\(b \\* 2 \\* sizeof\\(pos\\[0\\]\\)\\) \\+ b \\* sizeof\\(char\\*\\)\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
+	int \\*pos = emalloc\\(\\(b \\* 2 \\* sizeof\\(pos\\[0]\\)\\) \\+ b \\* sizeof\\(char\\*\\)\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f+ ^			ss \\+= l;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:113:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}98reg${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 		max = \\(unsigned int\\)xlim;
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			ss \\+= l;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:113:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		max = \\(unsigned int\\)xlim;
 		for \\(n = 0; n < max && \\(l = uc_len\\(ss\\)\\); n\\+\\+\\)
-			ss \\+= l;.*(	int \\*off = &pos\\[b\\];)
-	char \\*\\*chrs = \\(char\\*\\*\\)&off\\[b\\];
+			ss \\+= l;.*(	int \\*off = &pos\\[b];)
+	char \\*\\*chrs = \\(char\\*\\*\\)&off\\[b];
 	if \\(xorder && dir_reorder\\(s, ss, off, n, rstate->ctx\\)\\) \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:113:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	unsigned int n, max, l;
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	unsigned int n, max, l;
 	char \\*ss = s;
 	if \\(xlim >= 0 && rstate == rstates\\+1\\) \\{.*(		for \\(i = 0; i < b; i\\+\\+\\) \\{)
-			chrs\\[i\\] = s;
+			chrs\\[i] = s;
 			s \\+= uc_len\\(s\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ren.c:113:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:113${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
@@ -214,30 +210,30 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:111:m1${ESC}${SEP
 ${SEP}'2i count_done:;
 	}
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ren.c:113:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> int uc_slen\\(char \\*s\\)
+${ESC}${SEP}%f> int uc_slen\\(char \\*s\\)
 \\{
 	int n = 0, l;
 	for \\(; \\(l = uc_len\\(s\\)\\); n\\+\\+\\)
 		s \\+= l;
 	return n;${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> int uc_slen\\(char \\*s\\)
+${ESC}${SEP}%f> int uc_slen\\(char \\*s\\)
 \\{
 	int n = 0, l;${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK uc.c:24:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%;f> int uc_slen\\(char \\*s\\).*?
+${ESC}${SEP}grp 1${ESC}${SEP}%f> int uc_slen\\(char \\*s\\).*?
 \\{.*?
 (	int n = 0, l;)${ESC}${SEP}7??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK uc.c:24:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	/\\* E \\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	/\\* E \\*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	/\\* F \\*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
-};.*(/\\* find the beginning of the character at s\\[i\\] \\*/)
+};.*(/\\* find the beginning of the character at s\\[i] \\*/)
 char \\*uc_beg\\(char \\*beg, char \\*s\\)
 \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK uc.c:24:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%;f> 	/\\* B \\*/ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	/\\* B \\*/ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	/\\* C \\*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	/\\* D \\*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,.*(	if \\(utf8_length\\[0xc0\\] == 1\\))
+	/\\* D \\*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,.*(	if \\(utf8_length\\[0xc0] == 1\\))
 		return s;
 	for \\(; s > beg && \\(\\(unsigned char\\)\\*s & 0xc0\\) == 0x80; s--\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK uc.c:24:a9${ESC}${SEP}'0${SEP}${LB}
@@ -272,12 +268,12 @@ ${SEP}'1i #ifdef __SSE2__
 	}
 #endif
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL uc.c:24:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b3${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%;f> #include <ctype\\.h>
+${ESC}${SEP}%f> #include <ctype\\.h>
 #include <fcntl\\.h>
 #include <stdio\\.h>${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}0reg${ESC}${SEP}.,\$f> ^#include <ctype\\.h>\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:0:a3${ESC}${ESC}${ESC}${SEP}98reg${ESC}${SEP}98reg${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^#include <ctype\\.h>\$${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:0:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${SEP}fr 98${SEP}${LB}
 ${SEP}1;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:0${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1-1i #ifdef __SSE2__
@@ -291,7 +287,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 1a35a776..96ce5547 100644
+index 96d2e3ba..838bcd9d 100644
 --- a/led.c
 +++ b/led.c
 @@ -4,9 +4,28 @@ sbuf *led_attsb;
@@ -324,7 +320,7 @@ index 1a35a776..96ce5547 100644
  
  static int search(const char *pattern, int l)
 diff --git a/ren.c b/ren.c
-index 9b4776c8..b9e46ae5 100644
+index 4fd79fba..54f9f22f 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -108,9 +108,42 @@ ren_state *ren_position(char *s)
@@ -373,7 +369,7 @@ index 9b4776c8..b9e46ae5 100644
  	int cpos = 0, wid, *col;
  	int *pos = emalloc((b * 2 * sizeof(pos[0])) + b * sizeof(char*));
 diff --git a/uc.c b/uc.c
-index 583ee5de..d4b8e4a5 100644
+index b1002c4e..e1637ca5 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -22,6 +22,34 @@ unsigned char utf8_length[256] = {
@@ -412,7 +408,7 @@ index 583ee5de..d4b8e4a5 100644
  		s += l;
  	return n;
 diff --git a/vi.c b/vi.c
-index 342991b5..e8960994 100644
+index 357df5ff..cca05855 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,3 +1,7 @@
