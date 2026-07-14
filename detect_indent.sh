@@ -1028,7 +1028,7 @@ index 357df5ff..30c30e94 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index 62ca3766..452f024b 100644
+index 3f41bac9..e3d39936 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -404,6 +404,9 @@ struct buf {

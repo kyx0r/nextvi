@@ -480,7 +480,7 @@ index 357df5ff..33787d85 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 62ca3766..fb4861fb 100644
+index 3f41bac9..a9778953 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -365,6 +365,7 @@ typedef struct {

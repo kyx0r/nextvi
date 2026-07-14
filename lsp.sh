@@ -4320,7 +4320,7 @@ index 357df5ff..67a9f8d8 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 diff --git a/vi.h b/vi.h
-index 62ca3766..74bf05f4 100644
+index 3f41bac9..70fcd850 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,7 @@ struct lbuf {

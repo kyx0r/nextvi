@@ -222,9 +222,9 @@ int ren_noeol\\(char \\*s, int p\\);.*(#define SYN_BD		0x10000)
 ${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:221:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> ren_state \\*ren_position\\(char \\*s\\);
 int ren_next\\(char \\*s, int p, int dir\\);
-int ren_eol\\(char \\*s, int dir\\);.*(#define SYN_FLG		0x1f0000)
-#define SYN_FGMK\\(f\\)	\\(0x80000 \\| \\(f\\)\\)
-#define SYN_BGMK\\(b\\)	\\(0x100000 \\| \\(b << 8\\)\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
+int ren_eol\\(char \\*s, int dir\\);.*(#define SYN_FGMK\\(f\\)	\\(0x80000 \\| \\(f\\)\\))
+#define SYN_BGMK\\(b\\)	\\(0x100000 \\| \\(b << 8\\)\\)
+#define SYN_FLG		0x1f0000${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:221:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:221${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
@@ -390,7 +390,7 @@ index 357df5ff..9777694e 100644
  		term_scrl;
  	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index 62ca3766..1d288ef7 100644
+index 3f41bac9..3f23b9e1 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,6 +219,7 @@ int ren_noeol(char *s, int p);

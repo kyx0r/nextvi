@@ -916,7 +916,7 @@ index 357df5ff..9575f1b2 100644
  	rstate += row != xrow;
  	if (!s)
 diff --git a/vi.h b/vi.h
-index 62ca3766..3d80b562 100644
+index 3f41bac9..9a9ba55c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -133,6 +133,8 @@ struct lopt {

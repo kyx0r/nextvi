@@ -2251,7 +2251,7 @@ index 357df5ff..084981bf 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 62ca3766..35204cc9 100644
+index 3f41bac9..88b0b837 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -504,7 +504,7 @@ extern const int ftslen;

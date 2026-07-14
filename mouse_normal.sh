@@ -1010,7 +1010,7 @@ index 357df5ff..33e57f48 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 62ca3766..47a85018 100644
+index 3f41bac9..9d1d6859 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -324,6 +324,9 @@ void term_pos(int r, int c);

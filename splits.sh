@@ -5698,7 +5698,7 @@ index 357df5ff..e855e42f 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 62ca3766..2b02ccdf 100644
+index 3f41bac9..5c0c7ebc 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -322,6 +322,7 @@ void term_suspend(void);

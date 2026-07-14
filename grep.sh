@@ -978,7 +978,7 @@ index 357df5ff..ccc7bd85 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 62ca3766..21074109 100644
+index 3f41bac9..e46ba143 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -449,7 +449,7 @@ extern sbuf **xregs;

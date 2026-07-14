@@ -925,7 +925,7 @@ index 357df5ff..27cdf42d 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index 62ca3766..0f1b9e4b 100644
+index 3f41bac9..a1756185 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -541,6 +541,7 @@ int conf_kmapfind(char *name);

@@ -203,7 +203,7 @@ index 96d2e3ba..a9a1b347 100644
  			if (!xled) {
  				xoff = uc_slen(sb->s+ps);
 diff --git a/vi.h b/vi.h
-index 62ca3766..a005b30a 100644
+index 3f41bac9..7f9aadd4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -536,6 +536,8 @@ extern struct placeholder _ph[];

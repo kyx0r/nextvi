@@ -1102,7 +1102,7 @@ index 357df5ff..8ccc33be 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index 62ca3766..07f5c838 100644
+index 3f41bac9..58c7be1a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -471,6 +471,7 @@ extern struct buf *ex_pbuf;
