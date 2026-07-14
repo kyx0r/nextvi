@@ -238,7 +238,7 @@ void dir_init(void);
 #define SYN_EATT	0x1000000	/* grp inclusion check at end offset */
 #define SYN_ATT		0x1800000	/* grp inclusion check from start to end */
 #define SYN_OATT	0x2000000	/* grp overwrite of listed attributes only */
-#define SYN_BATT	0x4000000	/* grp ATT test against pending block highlight */
+#define SYN_BATT	0x4000000	/* listed attribute tests pending block highlight */
 #define SYN_BLK		0x8000000	/* grp block highlight */
 #define SYN_OWR		0x10000000	/* attribute overwrite */
 #define SYN_MK		0x20000000	/* marker holds id in color field, not rendered */
@@ -250,6 +250,7 @@ void dir_init(void);
 #define SYN_BED		0x10		/* grp block highlight end direction up */
 #define SYN_BSDP	0x20		/* grp block highlight start direction pass */
 #define SYN_BEDP	0x40		/* grp block highlight end direction pass */
+#define SYN_BN		0x80		/* grp block highlight nests into itself */
 #define SYN_SET(flg, a) (a & SYN_##flg)
 extern int ftidx;
 extern int syn_blockhl;
