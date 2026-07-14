@@ -1,4 +1,58 @@
 ------------------
+7.0 Basilisk
+------------------
+
+Breaking changes since 6.1:
+1. q's [#lvl] prefix is unchanged: local ex chain exits. q!'s [#lvl] prefix
+   is new: global recursion levels to force quit. Exit code clamped to 0-255.
+2. :f>/:f+/:f< no longer auto-search a reassigned default register. Register
+   search is now explicit via the new :fr command, is forward-only, and :f+
+   requires a range to increment from.
+
+New in core:
+1. :fr sets a register that :f>/:f+ search instead of the current buffer;
+   range maps a match back to a buffer position, no range tests in place.
+2. :rr records every byte read from the terminal into a register.
+3. Z and Zz take a [#] argument to force quit # recursion levels.
+4. q/q! recursion levels and the exit code share one xquit encoding
+   (-257 - lvl*256 - code for a leveled force quit); ex_exec and led_modeswap
+   unwind through this as recursion barriers absorb or pass along the count.
+5. New SYN_BN flag: lets a multiline block highlight nest inside itself.
+   Only the same block nests this way, not other blocks.
+6. New SYN_BATT flag: a listed attribute marked SYN_BATT is tested against
+   the enclosing block's own attribute instead of the current char's, when
+   inside a pending block highlight and the char has no attribute yet (or
+   the block itself isn't pending). Lets a rule key off block state before
+   per-char attributes have settled.
+
+Bug fixes:
+1. ] dropped from the set of ex-escaped regex specials; it was never actually
+   special outside "[]" and escaping it there was a no-op.
+2. vi_drawrow: guarded a word-highlight index against writing outside the
+   row buffer.
+3. vi_search: distinguished "invalid grp" from "syntax error" instead of
+   reporting a spurious syntax error on every search.
+4. dir_calc: check the ptrs array bound before opendir, not after, so a full
+   directory list no longer leaks an open directory handle.
+5. vc_put/vc_execute: "empty register" and "uninitialized register" are
+   reported separately instead of one message for both.
+6. <^i> (edit word under cursor) now advances by a UTF-8-aware offset
+   instead of a raw byte offset.
+7. Fixed ci{<arg>}/di{<arg>} crash on empty buffer.
+8. :w \!cmd (pipe out) now returns the pipe's error instead of always NULL.
+
+Patch2vi changes:
+1. Rewritten to run entirely in memory: interactive editing goes through
+   vi.c directly via hoisted edit_buffers instead of temp files, argv, or
+   EXINIT, and the emit layer moved from FILE*/fprintf to sbuf/sb_printf.
+2. Verbatim overrides and structured edits merge per group by edit time,
+   ties going to verbatim; a structured edit discards a stale verbatim
+   override instead of silently losing to it.
+
+Patch changes:
+1. Dropped record_input.sh, superseded by the core :rr command.
+
+------------------
 6.1 Surjective
 ------------------
 
