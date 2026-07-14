@@ -220,7 +220,7 @@ fr|deg|rad|turn|grad|ms|s|hz|khz|dpi|dpcm|dppx|%|))\\>", A(RE1 | SYN_ATT, 4, 69,
 	{FT(html), "^[^{]*(?=^\\{)", A(SYN_SKIP), 3},
 	{FT(html), "(?:^|[ \t{;])([^\t -,.-/:-@[-^{-~]+:)\
 (?:[ \t]*(fixed|absolute|relative|.+!important)|.+?)(?:(?=^;)|(?=^}\n))",
-		A(NA | SYN_IGN, YE | SYN_OWR | SYN_EATT | SYN_BATT, 2, AY1, GR1, MA1), 3},
+		A(NA | SYN_IGN, YE | SYN_OWR | SYN_EATT, 2, AY1 | SYN_BATT, GR1 | SYN_BATT, MA1), 3},
 	{FT(html), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(html), NULL, A(RE1), 0, 1},
 	{FT(html), NULL, A(AY | SYN_BGMK(RE1)), 0, 3},
