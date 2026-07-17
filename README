@@ -304,6 +304,11 @@ ins_cursor.sh
 Changes cursor to a thin vertical bar when in insert mode.
 This is a good indicator for insert mode.
 
+cbas.sh
+--------------
+Adds syntax highlighing for Coders Basilisk
+https://codeberg.org/gek/coders_basilisk/src/branch/main
+
 My current EXINIT setup:
 --------------
 How it works:
