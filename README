@@ -167,8 +167,9 @@ VI NORMAL
      D             Delete from cursor to end of line
      [#]x          Delete # characters from cursor forward
      [#]X          Delete # characters from cursor backward
-     di{<arg>}     Delete inside arg pairs
-     ci{<arg>}     Delete inside arg pairs and enter insert mode
+     [#]di{<arg>}  Delete inside arg pairs, skip # matches
+     [#]ci{<arg>}  Delete inside arg pairs and enter insert mode. Skip #
+                   matches
      [#]r{arg}     Replace # characters with arg from cursor forward
      [#]K          Split a line # times
      [#]J          Join # lines
@@ -782,7 +783,7 @@ EX COMMANDS
              Prefix force quits [#lvl] recursion levels.
              No prefix quits all recursion levels.
 
-             Example: set register 0 to "hello" 3 levels deep, force quit
+             Example: set register <#0> to "hello" 3 levels deep, force quit
              this level and 2 above, print the register outside
              :&Q&Q\\\:&Q0reg hello\\\\\\\:2q\\\\\\\!:p %@0
 
@@ -1364,8 +1365,8 @@ CODE MAP
      | 730 led.c    |  insert mode/output  |
      | 751 regex.c  |  pikevm              |
      | 1870 ex.c    |  ex options/commands |
-     | 1884 vi.c    |  normal mode/general |
-     | 7698 total   |  wc -l *.c|sort      |
+     | 1885 vi.c    |  normal mode/general |
+     | 7699 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1446,4 +1447,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.0                       July 14, 2026                      Nextvi 7.0
+Nextvi 7.1                       July 17, 2026                      Nextvi 7.1
