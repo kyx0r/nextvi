@@ -124,8 +124,8 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:34:m2${ESC}${SEP
 ${SEP}'3i 	{FT(cbas), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(cbas), \"(/\\\\*(?:(?!^\\\\*/).)*)|((?:(?!^/\\\\*).)*\\\\*/(?#-1)(?<\\\".*\\\\*/.*(?:\\\"|\\\\\\\\\\n\$)))\",
 		A(BL | SYN_IT, BL | SYN_BLK, SYN_BSE | SYN_BEDP, BL | SYN_BLK, SYN_BSE | SYN_BSD)},
-	{FT(cbas), \"<\\\\{(?:(?!^\\\\}>).)*|(?:(?!^<\\\\{).)*\\\\}>(?#-1)\",
-		A(CY | SYN_IT | SYN_BLK, SYN_BSE | SYN_BEDP, CY | SYN_IT | SYN_BLK, SYN_BSE | SYN_BSD)},
+	{FT(cbas), \"(<\\\\{(?:(?!^\\\\}>).)*)|((?:(?!^<\\\\{).)*\\\\}>)\",
+		A(CY | SYN_IT, CY | SYN_BLK, SYN_BSE | SYN_BEDP, CY | SYN_BLK, SYN_BSE | SYN_BSD)},
 	{FT(cbas), \"\\\\<(?:u8|i8|u16|i16|u32|i32|u64|i64|f32|f64|char|uchar|schar|byte|ubyte|sbyte|\\
 uint|int|sint|long|slong|ulong|llong|sllong|ullong|qword|uqword|uptr|sqword|short|ushort|sshort|\\
 float|double|string|struct|class|union|static|noexport|atomic|volatile|inline|pure|predecl|pub|\\
@@ -155,7 +155,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 70157040..96a7f0e2 100644
+index 70157040..01ff169f 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -7,6 +7,7 @@ const int conf_mode = 0600;
@@ -181,8 +181,8 @@ index 70157040..96a7f0e2 100644
 +	{FT(cbas), NULL, A(CY1 | SYN_BD), 1, 2},
 +	{FT(cbas), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?#-1)(?<\".*\\*/.*(?:\"|\\\\\n$)))",
 +		A(BL | SYN_IT, BL | SYN_BLK, SYN_BSE | SYN_BEDP, BL | SYN_BLK, SYN_BSE | SYN_BSD)},
-+	{FT(cbas), "<\\{(?:(?!^\\}>).)*|(?:(?!^<\\{).)*\\}>(?#-1)",
-+		A(CY | SYN_IT | SYN_BLK, SYN_BSE | SYN_BEDP, CY | SYN_IT | SYN_BLK, SYN_BSE | SYN_BSD)},
++	{FT(cbas), "(<\\{(?:(?!^\\}>).)*)|((?:(?!^<\\{).)*\\}>)",
++		A(CY | SYN_IT, CY | SYN_BLK, SYN_BSE | SYN_BEDP, CY | SYN_BLK, SYN_BSE | SYN_BSD)},
 +	{FT(cbas), "\\<(?:u8|i8|u16|i16|u32|i32|u64|i64|f32|f64|char|uchar|schar|byte|ubyte|sbyte|\
 +uint|int|sint|long|slong|ulong|llong|sllong|ullong|qword|uqword|uptr|sqword|short|ushort|sshort|\
 +float|double|string|struct|class|union|static|noexport|atomic|volatile|inline|pure|predecl|pub|\
