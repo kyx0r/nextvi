@@ -1010,7 +1010,7 @@ index 00000000..683c8fe6
 +(out (3 + 9 - 5 + 23 / 10))
 +(out (asd3+9))
 diff --git a/vi.c b/vi.c
-index 357df5ff..1e8f601a 100644
+index eecf2335..7d34cc49 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -15,6 +15,7 @@
