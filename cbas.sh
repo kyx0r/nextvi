@@ -105,10 +105,10 @@ ${ESC}${SEP}3??${ESC}${SEP}${LB}
 ${ESC}${SEP}3??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:274:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(md\\), \"\\^>\\[ \\\\n]\\.\\*\", A\\(MA\\)},
 	\\{FT\\(md\\), \"\\^\\[ \\\\t]\\*\\[\\*\\\\\\\\-\\+] \", A\\(YE\\)},
-	\\{FT\\(md\\), \"\\^\\[ \\\\t]\\*\\[0-9]\\+\\[\\.] \", A\\(YE\\)},.*(	\\{n_ft, \"\\[0lewEW]\", A\\(CY1 \\| SYN_BD\\)},)
-	\\{n_ft, \"1\\(\\[ \\\\t]\\*\\[1-9]\\[ \\\\t]\\*\\)9\", A\\(RE1, MA1 \\| SYN_BD\\)},
-	\\{n_ft, \"9\\[ \\\\t]\\*\\(\\[1-9]\\[ \\\\t]\\*\\)1\", A\\(RE1, MA1 \\| SYN_BD\\)},${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:274:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+	\\{FT\\(md\\), \"\\^\\[ \\\\t]\\*\\[0-9]\\+\\[\\.] \", A\\(YE\\)},.*(	\\{n_ft, \"1\\(\\[ \\\\t]\\*\\[1-9]\\[ \\\\t]\\*\\)9\", A\\(RE1, MA1 \\| SYN_BD\\)},)
+	\\{n_ft, \"9\\[ \\\\t]\\*\\(\\[1-9]\\[ \\\\t]\\*\\)1\", A\\(RE1, MA1 \\| SYN_BD\\)},
+	\\{n_ft, \"\\[1-9]\", A\\(RE1\\)},${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:274:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(md\\), \"\`\\[\\^\`]\\*\`\", A\\(CY\\)},
 	\\{FT\\(md\\), \"\\^\\(---\\+\\|\\\\\\\\\\*\\\\\\\\\\*\\\\\\\\\\*\\+\\|___\\+\\)\\\\n\\\$\", A\\(BL\\)},
 	\\{FT\\(md\\), \"\\(  \\)\\\\n\\\$\", A\\(SYN_IGN, SYN_BGMK\\(MA\\)\\)},.*(	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\(\\?:\\(\\\\n\\\$\\)\\|\\\\n\\)\\|\\\\n\\|\\(\\[\\^\\\\n]\\+\\(\\\\n\\)\\)\",)
@@ -116,6 +116,56 @@ ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(md\\), \
 	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\\$\\|\\(\\.\\+\\\$\\)\", A\\(NA, SYN_BGMK\\(AY1\\)\\)},${ESC}${SEP}9??${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-14m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:274:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:274${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	\\{fm_ft, \"\\^\\.\\+\\\\n\\\$\", A\\(AY1\\), 1},
+	\\{fm_ft, \"\\(\\^\\\\\\\\\\.\\?\\\\\\\\\\.\\?\\)/\\|\\(\\\\\\\\\\.\\\\\\\\\\.\\(/\\)\\)\\|\\(\\?:\\[\\^/]\\+/\\)\\+\", A\\(CY, BL, BL, CY\\), 2},
+	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.sh\\\\n\\\$\", A\\(GR\\)},
+	\\{fm_ft, \"\\[\\^/]\\*\\(\\?:\\\\\\\\\\.c\\|\\\\\\\\\\.h\\|\\\\\\\\\\.cpp\\|\\\\\\\\\\.cc\\)\\\\n\\\$\", A\\(MA\\)},
+	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.go\\\\n\\\$\", A\\(CY\\)},
+
+	\\{n_ft, \"\\[0lewEW]\", A\\(CY1 \\| SYN_BD\\)},${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	\\{fm_ft, \"\\[\\^/]\\*\\(\\?:\\\\\\\\\\.c\\|\\\\\\\\\\.h\\|\\\\\\\\\\.cpp\\|\\\\\\\\\\.cc\\)\\\\n\\\$\", A\\(MA\\)},
+	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.go\\\\n\\\$\", A\\(CY\\)},
+
+	\\{n_ft, \"\\[0lewEW]\", A\\(CY1 \\| SYN_BD\\)},${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	\\{fm_ft, \"\\^\\.\\+\\\\n\\\$\", A\\(AY1\\), 1},
+	\\{fm_ft, \"\\(\\^\\\\\\\\\\.\\?\\\\\\\\\\.\\?\\)/\\|\\(\\\\\\\\\\.\\\\\\\\\\.\\(/\\)\\)\\|\\(\\?:\\[\\^/]\\+/\\)\\+\", A\\(CY, BL, BL, CY\\), 2},
+	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.sh\\\\n\\\$\", A\\(GR\\)},${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	\\{fm_ft, \"\\[\\^/]\\*\\(\\?:\\\\\\\\\\.c\\|\\\\\\\\\\.h\\|\\\\\\\\\\.cpp\\|\\\\\\\\\\.cc\\)\\\\n\\\$\", A\\(MA\\)},\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.go\\\\n\\\$\", A\\(CY\\)},
+
+	\\{n_ft, \"\\[0lewEW]\", A\\(CY1 \\| SYN_BD\\)},${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ ...._....\"......\", A...1...1.,
+.\\{....t...\\(...\\....\\......\\\\\\\\...\\..................,.......B.. .L....\\). .},
+.\\{.m_ft..........\\.......,..\\(.....
+...m.f.......]..\\?.....\\|.\\\\..\\|\\\\...p.\\|.....\\).........A..,
+...._f..................,.A.C.\\)..
+
+..............E..., ....1....Y..B...,${ESC}${SEP}6??${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	\\{fm_ft, \"\\^\\.\\+\\\\n\\\$\", A\\(AY1\\), 1},.*?
+	\\{fm_ft, \"\\(\\^\\\\\\\\\\.\\?\\\\\\\\\\.\\?\\)/\\|\\(\\\\\\\\\\.\\\\\\\\\\.\\(/\\)\\)\\|\\(\\?:\\[\\^/]\\+/\\)\\+\", A\\(CY, BL, BL, CY\\), 2},.*?
+	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.sh\\\\n\\\$\", A\\(GR\\)},.*?
+(	\\{fm_ft, \"\\[\\^/]\\*\\(\\?:\\\\\\\\\\.c\\|\\\\\\\\\\.h\\|\\\\\\\\\\.cpp\\|\\\\\\\\\\.cc\\)\\\\n\\\$\", A\\(MA\\)},)${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(md\\), \"\\^>\\[ \\\\n]\\.\\*\", A\\(MA\\)},
+	\\{FT\\(md\\), \"\\^\\[ \\\\t]\\*\\[\\*\\\\\\\\-\\+] \", A\\(YE\\)},
+	\\{FT\\(md\\), \"\\^\\[ \\\\t]\\*\\[0-9]\\+\\[\\.] \", A\\(YE\\)},.*(	\\{n_ft, \"1\\(\\[ \\\\t]\\*\\[1-9]\\[ \\\\t]\\*\\)9\", A\\(RE1, MA1 \\| SYN_BD\\)},)
+	\\{n_ft, \"9\\[ \\\\t]\\*\\(\\[1-9]\\[ \\\\t]\\*\\)1\", A\\(RE1, MA1 \\| SYN_BD\\)},
+	\\{n_ft, \"\\[1-9]\", A\\(RE1\\)},${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(md\\), \"\`\\[\\^\`]\\*\`\", A\\(CY\\)},
+	\\{FT\\(md\\), \"\\^\\(---\\+\\|\\\\\\\\\\*\\\\\\\\\\*\\\\\\\\\\*\\+\\|___\\+\\)\\\\n\\\$\", A\\(BL\\)},
+	\\{FT\\(md\\), \"\\(  \\)\\\\n\\\$\", A\\(SYN_IGN, SYN_BGMK\\(MA\\)\\)},.*(	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\(\\?:\\(\\\\n\\\$\\)\\|\\\\n\\)\\|\\\\n\\|\\(\\[\\^\\\\n]\\+\\(\\\\n\\)\\)\",)
+		A\\(NA, SYN_BGMK\\(RE1\\), SYN_BGMK\\(AY1\\), SYN_BGMK\\(AY\\)\\)},
+	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\\$\\|\\(\\.\\+\\\$\\)\", A\\(NA, SYN_BGMK\\(AY1\\)\\)},${ESC}${SEP}9??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:278${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i FTGEN(cbas)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:9:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
@@ -148,14 +198,15 @@ public|codegen|constexpri|constexprf|method|\\
 	{FT(cbas), NULL, A(RE1), 0, 1},
 	{FT(cbas), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:274:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:274:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'4s/c\\)/c|\\\\\\\\.cbas|\\\\\\\\.hbas)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:278:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' "$P2VIF"
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 70157040..01ff169f 100644
+index 70157040..a937b73a 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -7,6 +7,7 @@ const int conf_mode = 0600;
@@ -174,7 +225,7 @@ index 70157040..01ff169f 100644
  	{_ft, NULL},
  	{fm_ft, NULL},
  	{n_ft, NULL},
-@@ -272,6 +274,33 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -272,10 +274,37 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  	{FT(md), "[[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(CY)},
  	{FT(md), "![[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(MA)},
  
@@ -208,3 +259,8 @@ index 70157040..01ff169f 100644
  	{fm_ft, "^.+\n$", A(AY1), 1},
  	{fm_ft, "(^\\.?\\.?)/|(\\.\\.(/))|(?:[^/]+/)+", A(CY, BL, BL, CY), 2},
  	{fm_ft, "[^/]*\\.sh\n$", A(GR)},
+-	{fm_ft, "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc)\n$", A(MA)},
++	{fm_ft, "[^/]*(?:\\.c|\\.h|\\.cpp|\\.cc|\\.cbas|\\.hbas)\n$", A(MA)},
+ 	{fm_ft, "[^/]*\\.go\n$", A(CY)},
+ 
+ 	{n_ft, "[0lewEW]", A(CY1 | SYN_BD)},
