@@ -191,9 +191,7 @@ public|codegen|constexpri|constexprf|method|\\
 	{FT(cbas), \"'(?:[^\\\\\\\\]|\\\\\\\\.|\\\\\\\\x[0-9a-fA-F]{1,2}|\\\\\\\\[0-9]+?)'\", A(MA)},
 	{FT(cbas), \"[-+.]?\\\\<(?:0[xX][0-9a-fA-F]+|[0-9]+\\\\.?[0-9]*(?:[eE][-+]?[0-9]+)?)([fFlLuU]{0,3})\\\\>\",
 		A(RE1, RE)},
-	{FT(cbas), \"(\\\"[^\\\"]*\\\\\\\\\\n\$)|^(.*\\\"(?!\\\\\\\\\\n\$))\",
-		A(MA | SYN_IGN, MA | SYN_SATT | SYN_OWR | SYN_BLK, 1, NA, SYN_BSE | SYN_BED,
-		MA | SYN_OWR | SYN_EATT | SYN_BLK, 1, NA, SYN_BSE | SYN_BSD), 1},
+	{FT(html), \"\\\"(?:[^\\\"\\\\\\\\]|\\\\\\\\.)*\\\"\", A(MA)},
 	{FT(cbas), \"^.+\\\\\\\\\\n\$\", A(CY1 | SYN_EATT | SYN_OATT, 2, NA, BL, 1, NA), 2},
 	{FT(cbas), NULL, A(RE1), 0, 1},
 	{FT(cbas), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
@@ -206,7 +204,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 70157040..a937b73a 100644
+index 70157040..d1e181e0 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -7,6 +7,7 @@ const int conf_mode = 0600;
@@ -225,7 +223,7 @@ index 70157040..a937b73a 100644
  	{_ft, NULL},
  	{fm_ft, NULL},
  	{n_ft, NULL},
-@@ -272,10 +274,37 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -272,10 +274,35 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  	{FT(md), "[[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(CY)},
  	{FT(md), "![[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(MA)},
  
@@ -249,9 +247,7 @@ index 70157040..a937b73a 100644
 +	{FT(cbas), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", A(MA)},
 +	{FT(cbas), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+\\.?[0-9]*(?:[eE][-+]?[0-9]+)?)([fFlLuU]{0,3})\\>",
 +		A(RE1, RE)},
-+	{FT(cbas), "(\"[^\"]*\\\\\n$)|^(.*\"(?!\\\\\n$))",
-+		A(MA | SYN_IGN, MA | SYN_SATT | SYN_OWR | SYN_BLK, 1, NA, SYN_BSE | SYN_BED,
-+		MA | SYN_OWR | SYN_EATT | SYN_BLK, 1, NA, SYN_BSE | SYN_BSD), 1},
++	{FT(html), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
 +	{FT(cbas), "^.+\\\\\n$", A(CY1 | SYN_EATT | SYN_OATT, 2, NA, BL, 1, NA), 2},
 +	{FT(cbas), NULL, A(RE1), 0, 1},
 +	{FT(cbas), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
