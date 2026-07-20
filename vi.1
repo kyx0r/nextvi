@@ -1465,24 +1465,12 @@ Number of spaces used to represent a tab
 .
 .It Cm td[\fIval=1\fP]
 Current text direction context
-
-This option accepts four meaningful values:
-.Bl -tag -width Ds -compact
-.It Ar 2
-Exclusively left-to-right
-.It Ar 1
-Follow
-.Va dctxs[]
-(in
-.Pa conf.c ) ,
-defaulting to left-to-right
-.It Ar -1
-Follow
-.Va dctxs[] ,
-defaulting to right-to-left
-.It Ar -2
-Exclusively right-to-left
-.El
+.Bd -literal
+val  2: exclusively left-to-right
+val  1: follow dctxs[] in conf.c, default left-to-right
+val -1: follow dctxs[] in conf.c, default right-to-left
+val -2: exclusively right-to-left
+.Ed
 
 .It Cm pr[\fIval=0\fP]
 Print register
