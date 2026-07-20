@@ -193,7 +193,8 @@ VI NORMAL
      <^^>
      <^6>
                    Swap to previous buffer
-     [#]<^N>       Swap to next buffer, # changes direction [forward backward]
+     [#]<^N>       Swap to next buffer, # reverses direction between forward
+                   and backward
      \             Swap to /fm/ buffer b-2
      {#}\          Refresh secondary directory listing in b-2
      vb            Recurse into b-1 history buffer. Insert current line into
@@ -208,12 +209,11 @@ VI NORMAL
      zR            Set td ex option to -2
      [#]/          Regex search prompt, move down 1 or # matches
      [#]?          Regex search prompt, move up 1 or # matches
-     [#]n
-     [#]N
-                   Repeat regex search, move [down up] 1 or # matches
+     [#]n          Repeat regex search, move 1 or # matches
+     [#]N          Repeat regex search, inverted move 1 or # matches
      <^A>          Regex search 1 word from cursor, no center, wraparound move
-                   [up down]
-     *             Regex search, no center, wraparound move [up down]
+                   up or down
+     *             Regex search, no center, wraparound move up or down
      {#}*
      {#}<^A>       Regex search, set keyword to # words from cursor
      <^]>          Filesystem regex search forward based on directory listing
@@ -300,13 +300,13 @@ EX
 EX PARSING
      Parsing follows the structure:
      [<sep>][prefix][cmd][<pad>][args]
-     Ex commands are initiated and separated by <sep>. Fields can be
-     padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
-     which accepts [range] structure characters. Padding inside [prefix]
-     structure is collapsed, except within nested blocks. There
-     can only be one pad in between [cmd] and [args]. To avoid ambiguity
-     in scripts, it is recommended to always use a pad between [cmd]
-     and [args].
+     Ex commands are initiated and separated by <sep>. Fields can
+     be padded by <Space> or <Tab>. [prefix] is a field consumed by
+     [cmd], which accepts [range] structure characters. Padding inside
+     [prefix] structure is collapsed, except within nested blocks.
+     There can only be one pad in between [cmd] and [args]. To avoid
+     ambiguity in scripts, it is recommended to always use a pad between
+     [cmd] and [args].
 
      Examples:
      :evi.c
@@ -623,7 +623,7 @@ EX COMMANDS
              Print range numbers
 
              Argument 0-3 selects a specific number.
-             Any or any extra argument circumvents buffer range check.
+             Any non-<0-3> or extra argument bypasses the buffer range check.
              No argument prints all range numbers.
 
              Example: print current character offset only
@@ -787,7 +787,7 @@ EX COMMANDS
              this level and 2 above, print the register outside
              :&Q&Q\\\:&Q0reg hello\\\\\\\:2q\\\\\\\!:p %@0
 
-     b[index]
+     b[#index]
              Print buffers or switch to a buffer
 
              Temporary buffers are separate from the main buffers
@@ -814,7 +814,7 @@ EX COMMANDS
 
              Buffers will be deallocated if the number specified is lower
              than the number of buffers currently in use.
-             No argument will reset to the default value of 10.
+             No argument resets to the default value of 10.
 
      cd[path]
              Set a working directory
@@ -932,7 +932,7 @@ EX COMMANDS
 
              A prefix with arguments branches based on the boolean expression
              in DNF over the most recent captures of each referenced id.
-             If any id has no capture, neither branch executes.
+             If id has no capture, the branch is skipped.
 
              Prefix operators:
              Numerical id tag
@@ -1015,7 +1015,7 @@ EX COMMANDS
              Example: disable <exp> and <exe>
              :sc! \\\:
 
-     uc      Toggle multi-byte utf-8 decoding
+     uc      Toggle multi-byte UTF-8 decoding
 
              This command is particularly useful when editing files with
              mixed encodings, binary files, or when the terminal does not
@@ -1139,11 +1139,10 @@ EX OPTIONS
      td[val=1]
              Current text direction context
 
-             This option accepts four meaningful values:
-             2       Exclusively left-to-right
-             1       Follow dctxs[] (in conf.c), defaulting to left-to-right
-             -1      Follow dctxs[], defaulting to right-to-left
-             -2      Exclusively right-to-left
+             val  2: exclusively left-to-right
+             val  1: follow dctxs[] in conf.c, default left-to-right
+             val -1: follow dctxs[] in conf.c, default right-to-left
+             val -2: exclusively right-to-left
 
      pr[val=0]
              Print register
@@ -1274,7 +1273,7 @@ EXINIT ENV VAR
 
              @b macro pipes the current line into X11 clipboard.
 
-     export EXINIT="$(printf 'rr z:vis 2:&Q\n:b-3:pu 122:wq! bugreport.txt')"
+     export EXINIT="$(printf 'rr z:vis 2:&Q:b-3:pu 122:wq! bugreport.txt')"
              Capture session for a bug report
 
              Recording starts into register <z>. Setting vis 2 makes <Q>
@@ -1447,4 +1446,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.1                       July 17, 2026                      Nextvi 7.1
+Nextvi 7.1                       July 20, 2026                      Nextvi 7.1
