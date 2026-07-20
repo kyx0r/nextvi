@@ -453,6 +453,11 @@ static int mouse_pull(void)
 		ibuf = erealloc(ibuf, ibuf_sz);
 	}
 	ibuf[ibuf_cnt++] = c;
+	if (xrr) {
+		static char buf[2];
+		buf[0] = c;
+		ex_regput(xrr, buf, 1);
+	}
 	return c;
 }
 
@@ -836,7 +841,7 @@ index 96d2e3ba..e1823a93 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 75ada7cc..66556673 100644
+index 75ada7cc..4dfd0410 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,16 @@
@@ -871,7 +876,7 @@ index 75ada7cc..66556673 100644
  	term_commit();
  	sbuf_free(term_sbuf)
  	tcsetattr(0, 0, &termios);
-@@ -137,6 +152,91 @@ void term_push(char *s, unsigned int n)
+@@ -137,6 +152,96 @@ void term_push(char *s, unsigned int n)
  	ibuf_cnt += n;
  }
  
@@ -890,6 +895,11 @@ index 75ada7cc..66556673 100644
 +		ibuf = erealloc(ibuf, ibuf_sz);
 +	}
 +	ibuf[ibuf_cnt++] = c;
++	if (xrr) {
++		static char buf[2];
++		buf[0] = c;
++		ex_regput(xrr, buf, 1);
++	}
 +	return c;
 +}
 +
