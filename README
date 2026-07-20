@@ -209,8 +209,8 @@ VI NORMAL
      zR            Set td ex option to -2
      [#]/          Regex search prompt, move down 1 or # matches
      [#]?          Regex search prompt, move up 1 or # matches
-     [#]n          Repeat regex search, move down 1 or # matches
-     [#]N          Repeat regex search, move up 1 or # matches
+     [#]n          Repeat regex search, move 1 or # matches
+     [#]N          Repeat regex search, inverted move 1 or # matches
      <^A>          Regex search 1 word from cursor, no center, wraparound move
                    up or down
      *             Regex search, no center, wraparound move up or down
