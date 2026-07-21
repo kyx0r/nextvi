@@ -1147,17 +1147,16 @@ ${SEP}${LB}
 ${SEP}'1i 	if (xhllw && s) {
 		led_att la;
 		int lw = lbuf_s(s)->lwrap;
-		int lwp = row > 0 && lbuf_get(xb, row - 1) ? lbuf_i(xb, row - 1)->lwrap : 0;
-		la.s = s;
-		if (lw && !lwp) {		/* block start */
-			la.off = 0;
-			la.att = SYN_BGMK(8);
-		} else if (!lw && lwp) {	/* block end */
-			la.off = uc_slen(s) - 1;
-			la.att = SYN_BGMK(9);
-		} else
-			la.off = -1;
-		if (la.off >= 0) {
+		int lwp = lbuf_get(xb, row - 1) ? lbuf_i(xb, row - 1)->lwrap : 0;
+		if (lw != lwp) {
+			la.s = s;
+			if (lw) {		/* block start */
+				la.off = 0;
+				la.att = SYN_BGMK(8);
+			} else {		/* block end */
+				la.off = uc_slen(s) - 1;
+				la.att = SYN_BGMK(9);
+			}
 			if (!led_attsb)
 				sbuf_make(led_attsb, sizeof(la))
 			sbuf_mem(led_attsb, &la, (int)sizeof(la))
@@ -1640,27 +1639,26 @@ index 4fd79fba..56c26d35 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index eecf2335..be8b21b7 100644
+index eecf2335..5581d981 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -170,6 +170,25 @@ static void vi_drawrow(int row)
+@@ -170,6 +170,24 @@ static void vi_drawrow(int row)
  		return;
  	}
  	s = lbuf_get(xb, row);
 +	if (xhllw && s) {
 +		led_att la;
 +		int lw = lbuf_s(s)->lwrap;
-+		int lwp = row > 0 && lbuf_get(xb, row - 1) ? lbuf_i(xb, row - 1)->lwrap : 0;
-+		la.s = s;
-+		if (lw && !lwp) {		/* block start */
-+			la.off = 0;
-+			la.att = SYN_BGMK(8);
-+		} else if (!lw && lwp) {	/* block end */
-+			la.off = uc_slen(s) - 1;
-+			la.att = SYN_BGMK(9);
-+		} else
-+			la.off = -1;
-+		if (la.off >= 0) {
++		int lwp = lbuf_get(xb, row - 1) ? lbuf_i(xb, row - 1)->lwrap : 0;
++		if (lw != lwp) {
++			la.s = s;
++			if (lw) {		/* block start */
++				la.off = 0;
++				la.att = SYN_BGMK(8);
++			} else {		/* block end */
++				la.off = uc_slen(s) - 1;
++				la.att = SYN_BGMK(9);
++			}
 +			if (!led_attsb)
 +				sbuf_make(led_attsb, sizeof(la))
 +			sbuf_mem(led_attsb, &la, (int)sizeof(la))
