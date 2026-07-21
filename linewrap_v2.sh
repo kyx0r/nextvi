@@ -39,7 +39,8 @@ LB="0?"
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> \\(\\?:\\(\\[,;]#\\?\\)\\[ \\\\t]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\
+${ESC}${SEP}%f> \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.%\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\[0-9]\\+\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\)\\[ \\\\t]\\*\\\\
+\\(\\?:\\(\\[,;]#\\?\\)\\[ \\\\t]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\
 \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\(\\[0-9]\\+\\)\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t]\\*\\)\\*\\)\\\\
 \\(\\(pac\\|pr\\|ai\\|ish\\|err\\|fr\\|ic\\|grp\\|mpt\\|rr\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr]\\?\\|left\\|lim\\|led\\|vis\\)\\\\
 \\|\\[@&!dmj]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!]\\?\\|b\\[psx]\\?\\|p\\[uh]\\?\\|ac\\|e\\[f!]\\?!\\?\\|f\\[-\\+><tdp]\\?\\|inc\\|i\\|sc!\\?\\|\\\\
@@ -47,49 +48,54 @@ ${ESC}${SEP}%f> \\(\\?:\\(\\[,;]#\\?\\)\\[ \\\\t]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:
 		A\\(BL1 \\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\)},
 	\\{ex_ft, \"\\\\\\\\\\\\\\\\\\(\\.\\)\", A\\(AY1 \\| SYN_BD, YE\\)},${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> \\|\\[@&!dmj]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!]\\?\\|b\\[psx]\\?\\|p\\[uh]\\?\\|ac\\|e\\[f!]\\?!\\?\\|f\\[-\\+><tdp]\\?\\|inc\\|i\\|sc!\\?\\|\\\\
+${ESC}${SEP}%f> \\(\\(pac\\|pr\\|ai\\|ish\\|err\\|fr\\|ic\\|grp\\|mpt\\|rr\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr]\\?\\|left\\|lim\\|led\\|vis\\)\\\\
+\\|\\[@&!dmj]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!]\\?\\|b\\[psx]\\?\\|p\\[uh]\\?\\|ac\\|e\\[f!]\\?!\\?\\|f\\[-\\+><tdp]\\?\\|inc\\|i\\|sc!\\?\\|\\\\
 \\(\\?:g!\\?\\|s\\)\\[ \\\\t]\\?\\(\\.\\)\\?\\|q!\\?\\|reg\\?\\\\\\\\\\+\\?\\|rd\\?\\|w\\(\\?:q!\\|\\[q!]\\)\\?\\|u\\[czbd]\\|x!\\?\\|ya\\[!\\+]\\?\\|cm!\\?\\|cd\\?\\)\\?\",
 		A\\(BL1 \\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\)},
 	\\{ex_ft, \"\\\\\\\\\\\\\\\\\\(\\.\\)\", A\\(AY1 \\| SYN_BD, YE\\)},${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> \\(\\?:\\(\\[,;]#\\?\\)\\[ \\\\t]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\
-\\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\(\\[0-9]\\+\\)\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t]\\*\\)\\*\\)\\\\
-\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|fr\\|ic\\|grp\\|mpt\\|rr\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr]\\?\\|left\\|lim\\|led\\|vis\\)\\\\${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^\\|\\[@&!dmj]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!]\\?\\|b\\[psx]\\?\\|p\\[uh]\\?\\|ac\\|e\\[f!]\\?!\\?\\|f\\[-\\+><tdp]\\?\\|inc\\|i\\|sc!\\?\\|\\\\\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f> \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.%\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\[0-9]\\+\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\)\\[ \\\\t]\\*\\\\
+\\(\\?:\\(\\[,;]#\\?\\)\\[ \\\\t]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\
+\\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\(\\[0-9]\\+\\)\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t]\\*\\)\\*\\)\\\\${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f> \\(\\(pac\\|pr\\|ai\\|ish\\|err\\|fr\\|ic\\|grp\\|mpt\\|rr\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr]\\?\\|left\\|lim\\|led\\|vis\\)\\\\
+\\|\\[@&!dmj]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!]\\?\\|b\\[psx]\\?\\|p\\[uh]\\?\\|ac\\|e\\[f!]\\?!\\?\\|f\\[-\\+><tdp]\\?\\|inc\\|i\\|sc!\\?\\|\\\\${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> \\(\\?:g!\\?\\|s\\)\\[ \\\\t]\\?\\(\\.\\)\\?\\|q!\\?\\|reg\\?\\\\\\\\\\+\\?\\|rd\\?\\|w\\(\\?:q!\\|\\[q!]\\)\\?\\|u\\[czbd]\\|x!\\?\\|ya\\[!\\+]\\?\\|cm!\\?\\|cd\\?\\)\\?\",
 		A\\(BL1 \\| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\\)},
 	\\{ex_ft, \"\\\\\\\\\\\\\\\\\\(\\.\\)\", A\\(AY1 \\| SYN_BD, YE\\)},${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> .\\?...............................\\\\].......\\)\\*..\\|.\\[..t...\\*.\\?..\\?:........\\\\.......\\\\.............>\\\\.\\\\....\\\\...\\?.\\*.....
-......-..........\\|......t............\\*../........................\\*.....\\\\..\\*\\\\\\\\...........]\\|....\\.\\?...\\\\\\|..\\*...t]\\*.\\*..
-.....\\|p.....is.....\\|........p............e.........d......\\|..\\[l.pr...l.....im......i...
-.\\[..!...........,1.......,.........\\[..x]..........c....!]\\?......\\+...d...\\|...\\|i.......
-\\(\\?..!\\?..\\).................g.\\\\.\\+\\?..d.\\|w...........\\?.....b.....\\?...\\[...\\?........\\?....
-	.A\\(......S.._.D..RE, ... R.,..., .....M.........E. .H..............1......},
-	....f.......\\\\\\(.\\).....A...\\|........ ....,${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f> \\(\\?:\\(\\[,;]#\\?\\)\\[ \\\\t]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\.*?
+${ESC}${SEP}5??-2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f> .\\?...0...\\+..\\(\\[..\\\$...0...\\\\......\\)..:.......%..\\[ ......-.]\\+.......\\*.......]..\\\\\\|........\\\\......\\\\..\\).......\\\\...\\)\\*.\\[......
+..:\\(.,.]...................\\[.........\\\\.............t]..................\\\\.].\\\\.....\\)\\*<........>........\\\\.....>....
+....\\[....\\+....\\..........t.....\\)......\\*........\\\\.]..\\[..9]\\+.....]\\*.......\\\\...\\\\.....\\[.........\\\\.\\\\.\\?....\\|.....\\\\t]..\\*..
+..p.c..r..i.....e.r...\\|i....p..p........p.\\|.......td....e..h.........l....l.m.l...v....
+..@.....].=...\\{....\\|\\\\\\\\..............p.....p\\[.h........f.]..\\?\\|.\\[-...t.p........\\|..!.\\|.
+...g....\\)..\\\\..\\?.....q......\\?......d............]\\)...\\[c.b.............\\?....\\?...\\?....
+	.........S.........,......E............A., .., ........................A....
+.\\{.._f.. \".\\\\.\\\\......................Y..}.${ESC}${SEP}6??${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f> \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.%\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\[0-9]\\+\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\)\\[ \\\\t]\\*\\\\.*?
+\\(\\?:\\(\\[,;]#\\?\\)\\[ \\\\t]\\*\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\.*?
 \\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\(\\[0-9]\\+\\)\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\)\\*\\[ \\\\t]\\*\\)\\*\\)\\\\.*?
-\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|fr\\|ic\\|grp\\|mpt\\|rr\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr]\\?\\|left\\|lim\\|led\\|vis\\)\\\\.*?
-(\\|\\[@&!dmj]\\|=\\\\\\\\\\?\\{0,1}\\|\\\\\\\\\\?\\{1,2}\\[\\?!]\\?\\|b\\[psx]\\?\\|p\\[uh]\\?\\|ac\\|e\\[f!]\\?!\\?\\|f\\[-\\+><tdp]\\?\\|inc\\|i\\|sc!\\?\\|\\\\)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{ex_ft, \"\\.\\+\", A\\(AY1 \\| SYN_BD\\), 1},
-	\\{ex_ft, \":\\[ \\\\t]\\*\\(\\(\\(\\(\\?:\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\(\\?:\\(\\?:<\\(\\?:\\[\\^<\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*<\\?\\|>\\(\\?:\\[\\^>\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*>\\?\\)\\|\\\\
-\\(\\?:'\\[0-9]\\+\\)\\|\\(\\[\\.%\\\$]\\|\\[0-9 \\\\t]\\*\\)\\?\\)\\)\\(\\?:\\(\\[-\\*-\\+/%]\\)\\[ \\\\t]\\*\\[0-9]\\+\\[ \\\\t]\\*\\)\\*\\(\\?:\\[ \\\\t]\\*\\\\\\\\\\|\\(\\?:\\[\\^\\|\\\\\\\\\\\\\\\\]\\|\\\\\\\\\\\\\\\\\\.\\?\\)\\*\\\\\\\\\\|\\?\\[ \\\\t]\\*\\)\\*\\)\\[ \\\\t]\\*\\\\.*(	\\{vs_ft, \"\\.\\+\", A\\(AY1 \\| SYN_BD\\), 1},)
-	\\{vs_ft, \"\\(\\^\\[\\?/]\\)\\|\\(\\\\\\\\\\\\\\\\\\[<>]\\|\\\\\\\\\\(\\\\\\\\\\?\\[:=!<>#]\\|\\\\\\\\\\[\\\\\\\\\\^\\?\\(\\(\\?:\\\\\\\\\\\\\\\\\\.\\?\\|\\[\\^\\\\\\\\]]\\)\\*\\)]\\|\\\\\\\\\\[\\|\\[\\.\\^\\\$\\\\\\\\\\(\\)\\*\\+\\|\\?]\\|\\\\\\\\\\{\\(\\[0-9]\\*\\(,\\)\\?\\[0-9]\\*\\)\\?}\\?\\)\\|\\\\\\\\\\\\\\\\\\(\\.\\)\",
-		A\\(SYN_BD, BL1, WH1, GR1, RE1, WH1, YE\\)},${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+(\\(\\(pac\\|pr\\|ai\\|ish\\|err\\|fr\\|ic\\|grp\\|mpt\\|rr\\|shape\\|seq\\|ts\\|td\\|order\\|hl\\[lwpr]\\?\\|left\\|lim\\|led\\|vis\\)\\\\)${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\(\\?:\\(\\\\n\\\$\\)\\|\\\\n\\)\\|\\\\n\\|\\(\\[\\^\\\\n]\\+\\(\\\\n\\)\\)\",
 		A\\(NA, SYN_BGMK\\(RE1\\), SYN_BGMK\\(AY1\\), SYN_BGMK\\(AY\\)\\)},
-	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\\$\\|\\(\\.\\+\\\$\\)\", A\\(NA, SYN_BGMK\\(AY1\\)\\)},.*(	\\{vs_ft, \"\\(\\\\\\\\\\\\\\\\\\)\\(\\.\\)\\(\\?:\\(-\\)\\(\\?:\\(\\\\\\\\\\\\\\\\\\(\\.\\)\\)\\|\\[\\^\\\\\\\\\\\\\\\\\\\\\\\\]]\\)\\)\\?\\|\\[\\^\\\\\\\\\\\\\\\\\\[\\^]\\(-\\)\\(\\?:\\(\\\\\\\\\\\\\\\\\\(\\.\\)\\)\\|\\.\\)\\|\\\\)
+	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\\$\\|\\(\\.\\+\\\$\\)\", A\\(NA, SYN_BGMK\\(AY1\\)\\)},.*(	\\{vs_ft, \"\\.\\+\", A\\(AY1 \\| SYN_BD\\), 1},)
+	\\{vs_ft, \"\\(\\^\\[\\?/]\\)\\|\\(\\\\\\\\\\\\\\\\\\[<>]\\|\\\\\\\\\\(\\\\\\\\\\?\\[:=!<>#]\\|\\\\\\\\\\[\\\\\\\\\\^\\?\\(\\(\\?:\\\\\\\\\\\\\\\\\\.\\?\\|\\[\\^\\\\\\\\]]\\)\\*\\)]\\|\\\\\\\\\\[\\|\\[\\.\\^\\\$\\\\\\\\\\(\\)\\*\\+\\|\\?]\\|\\\\\\\\\\{\\(\\[0-9]\\*\\(,\\)\\?\\[0-9]\\*\\)\\?}\\?\\)\\|\\\\\\\\\\\\\\\\\\(\\.\\)\",
+		A\\(SYN_BD, BL1, WH1, GR1, RE1, WH1, YE\\)},${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{n_ft, \"1\\(\\[ \\\\t]\\*\\[1-9]\\[ \\\\t]\\*\\)9\", A\\(RE1, MA1 \\| SYN_BD\\)},
+	\\{n_ft, \"9\\[ \\\\t]\\*\\(\\[1-9]\\[ \\\\t]\\*\\)1\", A\\(RE1, MA1 \\| SYN_BD\\)},
+	\\{n_ft, \"\\[1-9]\", A\\(RE1\\)},.*(	\\{vs_ft, \"\\(\\\\\\\\\\\\\\\\\\)\\(\\.\\)\\(\\?:\\(-\\)\\(\\?:\\(\\\\\\\\\\\\\\\\\\(\\.\\)\\)\\|\\[\\^\\\\\\\\\\\\\\\\\\\\\\\\]]\\)\\)\\?\\|\\[\\^\\\\\\\\\\\\\\\\\\[\\^]\\(-\\)\\(\\?:\\(\\\\\\\\\\\\\\\\\\(\\.\\)\\)\\|\\.\\)\\|\\\\)
 \\[\\^\\\\\\\\\\\\\\\\\\[\\^]\\\\\\\\\\^\\(-\\)\\(\\?:\\(\\\\\\\\\\\\\\\\\\(\\.\\)\\)\\|\\[\\^\\\\\\\\\\\\\\\\]\\)\\|\\\\\\\\\\^\\(-\\)\\[\\^\\\\\\\\\\\\\\\\]\",
 		A\\(GR1 \\| SYN_BD \\| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\\), 2},${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:298:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:298${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:297:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'1s/\\?\\|\\\\\\\\/?|lw|\\\\\\\\/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:298:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}'1,#+1c ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl(?:lw|[lwpr])?|left|lim|led|vis)\\
+|[@&!dmj]|=\\\\?{0,1}|\\\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|lw|\\
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:297:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> int xmpt;			/\\* whether to prompt after printing > 1 lines in vi \\*/
 int xpr;			/\\* ex_cprint register \\*/
 int xlim = -1;			/\\* rendering cutoff for non cursor lines \\*/
@@ -148,31 +154,118 @@ int xesc = '\\\\\\\\';		/\\* ex command arg escape character \\*/${ESC}${SEP}9??
 ${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:28:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:28${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	_EO\\(opt, x##opt = !\\*arg \\? !x##opt : eo_val\\(arg\\); return NULL;\\)
+
+EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(fr\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\)
+EO\\(rr\\) EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\)
+EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\)
+
+_EO\\(grp, xgrp = \\(!\\*arg \\? !xgrp : eo_val\\(arg\\)\\) \\* 2; return NULL;\\)
+
+${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ EO\\(rr\\) EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\)
+EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\)
+
+_EO\\(grp, xgrp = \\(!\\*arg \\? !xgrp : eo_val\\(arg\\)\\) \\* 2; return NULL;\\)
+
+${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1584:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	_EO\\(opt, x##opt = !\\*arg \\? !x##opt : eo_val\\(arg\\); return NULL;\\)
+
+EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(fr\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1584:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ EO\\(rr\\) EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\)
+EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\)${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1584:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 
+_EO\\(grp, xgrp = \\(!\\*arg \\? !xgrp : eo_val\\(arg\\)\\) \\* 2; return NULL;\\)
+
+${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1584:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	.E...p.,..#...t ...\\*..... ....o.t.: .._....a...; ....rn.....;.
+
+..\\(.a.. .....\\) ...ai.............f.\\).E.\\(..h......c..EO.mp..
+.O.rr\\) EO..h.........e........\\).....d\\).....rd......\\(h..........\\)
+........E...l.\\)....h...E.\\(..m...O.l.......vi..
+
+_..\\(g.......p ...!.........gr......_va..a..\\)...... ........U....
+
+${ESC}${SEP}6??${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1584:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	_EO\\(opt, x##opt = !\\*arg \\? !x##opt : eo_val\\(arg\\); return NULL;\\).*?
+.*?
+EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(fr\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\).*?
+(EO\\(rr\\) EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1584:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		return \\(unsigned char\\)\\*arg;
+	return val;
+}.*(	else if \\(\\*arg\\))
+		xleft = atoi\\(arg\\);
+	else if \\(lbuf_get\\(xb, xrow\\)\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1584:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> \\{
+	int val = atoi\\(arg\\);
+	if \\(!val && !uc_isdigit\\(\\*arg\\)\\).*(		xleft = ren_position\\(lbuf_get\\(xb, xrow\\)\\)->pos\\[MIN\\(xoff, rstate->n\\)];)
+	return NULL;
+\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1584:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1584${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
 _EO\\(grp, xgrp = \\(!\\*arg \\? !xgrp : eo_val\\(arg\\)\\) \\* 2; return NULL;\\)
 
 _EO\\(left,
 	if \\(\\*loc\\)
 		xleft = \\(xcols / 2\\) \\* atoi\\(loc\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
 _EO\\(grp, xgrp = \\(!\\*arg \\? !xgrp : eo_val\\(arg\\)\\) \\* 2; return NULL;\\)
 
 ${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1588:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(fr\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\)
-EO\\(rr\\) EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\)
-EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\).*(	else if \\(\\*arg\\))
-		xleft = atoi\\(arg\\);
-	else if \\(lbuf_get\\(xb, xrow\\)\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1588:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1588:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		return \\(unsigned char\\)\\*arg;
 	return val;
-}.*(		xleft = ren_position\\(lbuf_get\\(xb, xrow\\)\\)->pos\\[MIN\\(xoff, rstate->n\\)];)
+}.*(	else if \\(\\*arg\\))
+		xleft = atoi\\(arg\\);
+	else if \\(lbuf_get\\(xb, xrow\\)\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1588:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> \\{
+	int val = atoi\\(arg\\);
+	if \\(!val && !uc_isdigit\\(\\*arg\\)\\).*(		xleft = ren_position\\(lbuf_get\\(xb, xrow\\)\\)->pos\\[MIN\\(xoff, rstate->n\\)];)
 	return NULL;
 \\)${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1588:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1588:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1588${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	EO\\(ts\\),
+	EO\\(td\\),
+	EO\\(order\\),
+	EO\\(hll\\),
+	EO\\(hlw\\),
+	EO\\(hlp\\),${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	EO\\(ts\\),
+	EO\\(td\\),
+	EO\\(order\\),${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1685:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	EO\\(ts\\),.*?
+	EO\\(td\\),.*?
+(	EO\\(order\\),)${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1685:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{\"cd\", ec_chdir},
+	\\{\"c\", ec_insert},
+	\\{\"j\", ec_join},.*(	EO\\(hlr\\),)
+	EO\\(hl\\),
+	EO\\(left\\),${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1685:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{\"ya\", ec_yank},
+	\\{\"cm!\", ec_cmap},
+	\\{\"cm\", ec_cmap},.*(	EO\\(lim\\),)
+	EO\\(led\\),
+	EO\\(vis\\),${ESC}${SEP}9??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1685:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1685${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	EO\\(left\\),
 	EO\\(lim\\),
@@ -180,34 +273,38 @@ ${ESC}${SEP}%f+ 	EO\\(left\\),
 	EO\\(vis\\),
 	\\{\"\", ec_print}, /\\* do not remove \\*/
 	\\{\"\", ec_print}, /\\* do not remove \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	EO\\(left\\),
 	EO\\(lim\\),
 	EO\\(led\\),${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1693:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1693:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	EO\\(left\\),.*?
 	EO\\(lim\\),.*?
 (	EO\\(led\\),)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1693:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1693:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	EO\\(hlp\\),
 	EO\\(hlr\\),
 	EO\\(hl\\),.*(/\\* parse command argument expanding % and ! \\*/)
 static const char \\*ex_arg\\(const char \\*src, sbuf \\*sb, int \\*arg\\)
 \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1693:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1693:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	EO\\(order\\),
 	EO\\(hll\\),
 	EO\\(hlw\\),.*(	\\*arg = sb->s_n;)
 	while \\(\\*src && \\*src != xsep\\) \\{
 		if \\(\\*src == xexp\\) \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1693:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1693:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1693${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
 ${SEP}'1i int xlw;			/* soft line wrap column, 0 = off */
+int xhllw = 1;			/* highlight soft linewrap block start/end */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:20:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'2i int xtopsub;			/* the first visible segment of xtop */
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:28:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3i _EO(lw,
+${SEP}'3,#+1c EO(rr) EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hllw) EO(hll)
+EO(hlw) EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1584:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'4i _EO(lw,
 	xlw = !*arg ? (xlw ? 0 : xcols) : eo_val(arg);
 	xleft = 0;
 	xtopsub = 0;
@@ -216,9 +313,11 @@ ${SEP}'3i _EO(lw,
 	return NULL;
 )
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1588:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'4i 	EO(lw),
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1693:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1588:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'5i 	EO(hllw),
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1685:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'6i 	EO(lw),
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1693:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> 	return r - s;
 }
 
@@ -981,16 +1080,16 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		preserve\\(int, xtd, xtd = dir_context\\(c\\)
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:165:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			tmp\\[l1] = \\*vi_word;
 		preserve\\(int, xorder, xorder = 0;\\)
-		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\).*(	rstate \\+= row != xrow;)
-	if \\(!s\\)
-		s = row \\? ch : ch\\+1;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-9m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:165:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\).*(		s = row \\? ch : ch\\+1;)
+	else if \\(lnnum && xled\\) \\{
+		char tmp\\[32], tmp1\\[32], \\*p;${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-11m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:165:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			vi_drawnum\\(lbuf_wordend\\(xb, i1, -2, &nrow, &noff\\)\\)
 		l1 = ren_next\\(c, ren_pos\\(c, xoff\\), 1\\)-1-xleft\\+vi_lncol;
-		if \\(l1 >= 0 && l1 <= xcols\\).*(	else if \\(lnnum && xled\\) \\{)
-		char tmp\\[32], tmp1\\[32], \\*p;
-		c = tmp, i = 0, i1 = 0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:165:a9${ESC}${SEP}'0${SEP}${LB}
+		if \\(l1 >= 0 && l1 <= xcols\\).*(		c = tmp, i = 0, i1 = 0;)
+		if \\(lnnum == 1 \\|\\| lnnum & 2\\) \\{
+			c = itoa\\(row\\+1-vi_rshift, tmp\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-14m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:165:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:165${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		restore\\(syn_blockhl\\)
@@ -998,13 +1097,11 @@ ${ESC}${SEP}%f+ 		restore\\(syn_blockhl\\)
 		restore\\(ftidx\\)
 		return;
 	}
-	s = lbuf_get\\(xb, row\\);
-	skip:${ESC}${SEP}1??${ESC}${SEP}${LB}
+	s = lbuf_get\\(xb, row\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
 ${ESC}${SEP}1??+3m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		return;
 	}
-	s = lbuf_get\\(xb, row\\);
-	skip:${ESC}${SEP}2??${ESC}${SEP}${LB}
+	s = lbuf_get\\(xb, row\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
 ${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		restore\\(syn_blockhl\\)
 		restore\\(xtd\\)
@@ -1013,16 +1110,14 @@ ${ESC}${SEP}3??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a3${ESC}${ESC}${
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		return;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
 ${ESC}${SEP}4??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	}
-	s = lbuf_get\\(xb, row\\);
-	skip:${ESC}${SEP}5??${ESC}${SEP}${LB}
+	s = lbuf_get\\(xb, row\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
 ${ESC}${SEP}5??-1m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ ..r.........n..l......
-..r...........
-	.r....r....i...
-	.....r..
+${ESC}${SEP}%f+ .	....o.e\\(..n_....kh..
+..r...o...x...
+.......r...ti...
+.	....r..
 	.
-.s....b.._....... ...\\);
-...ip:${ESC}${SEP}6??${ESC}${SEP}${LB}
+.s .......g....b.....\\).${ESC}${SEP}6??${ESC}${SEP}${LB}
 ${ESC}${SEP}6??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		restore\\(syn_blockhl\\).*?
 		restore\\(xtd\\).*?
@@ -1031,17 +1126,43 @@ ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		restore\\(syn_blockhl\\).*?
 ${ESC}${SEP}grp 0${ESC}${SEP}7??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			tmp\\[l1] = \\*vi_word;
 		preserve\\(int, xorder, xorder = 0;\\)
-		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\).*(	rstate \\+= row != xrow;)
-	if \\(!s\\)
-		s = row \\? ch : ch\\+1;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\).*(		s = row \\? ch : ch\\+1;)
+	else if \\(lnnum && xled\\) \\{
+		char tmp\\[32], tmp1\\[32], \\*p;${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			vi_drawnum\\(lbuf_wordend\\(xb, i1, -2, &nrow, &noff\\)\\)
 		l1 = ren_next\\(c, ren_pos\\(c, xoff\\), 1\\)-1-xleft\\+vi_lncol;
-		if \\(l1 >= 0 && l1 <= xcols\\).*(	else if \\(lnnum && xled\\) \\{)
-		char tmp\\[32], tmp1\\[32], \\*p;
-		c = tmp, i = 0, i1 = 0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a9${ESC}${SEP}'0${SEP}${LB}
+		if \\(l1 >= 0 && l1 <= xcols\\).*(		c = tmp, i = 0, i1 = 0;)
+		if \\(lnnum == 1 \\|\\| lnnum & 2\\) \\{
+			c = itoa\\(row\\+1-vi_rshift, tmp\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:170:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:170${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	}
+	s = lbuf_get\\(xb, row\\);
+	skip:
+	rstate \\+= row != xrow;
+	if \\(!s\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+1m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 	}
+	s = lbuf_get\\(xb, row\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:172:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	}.*?
+(	s = lbuf_get\\(xb, row\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:172:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			tmp\\[l1] = \\*vi_word;
+		preserve\\(int, xorder, xorder = 0;\\)
+		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\).*(		s = row \\? ch : ch\\+1;)
+	else if \\(lnnum && xled\\) \\{
+		char tmp\\[32], tmp1\\[32], \\*p;${ESC}${SEP}8??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:172:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			vi_drawnum\\(lbuf_wordend\\(xb, i1, -2, &nrow, &noff\\)\\)
+		l1 = ren_next\\(c, ren_pos\\(c, xoff\\), 1\\)-1-xleft\\+vi_lncol;
+		if \\(l1 >= 0 && l1 <= xcols\\).*(		c = tmp, i = 0, i1 = 0;)
+		if \\(lnnum == 1 \\|\\| lnnum & 2\\) \\{
+			c = itoa\\(row\\+1-vi_rshift, tmp\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:172:a9${ESC}${SEP}'0${SEP}${LB}
+${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:172${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		if \\(lnnum == 1 \\|\\| lnnum & 2\\) \\{
 			c = itoa\\(row\\+1-vi_rshift, tmp\\);
@@ -1050,22 +1171,22 @@ ${ESC}${SEP}%f+ 		if \\(lnnum == 1 \\|\\| lnnum & 2\\) \\{
 		}
 		p = c;
 		if \\(lnnum == 1 \\|\\| lnnum & 4 \\|\\| lnnum & 8\\) \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			i = itoalen\\(xtop\\+xrows\\);
 		}
 		p = c;
 		if \\(lnnum == 1 \\|\\| lnnum & 4 \\|\\| lnnum & 8\\) \\{${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		if \\(lnnum == 1 \\|\\| lnnum & 2\\) \\{
 			c = itoa\\(row\\+1-vi_rshift, tmp\\);
 			\\*c\\+\\+ = ' ';${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			i = itoalen\\(xtop\\+xrows\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		}
 		p = c;
 		if \\(lnnum == 1 \\|\\| lnnum & 4 \\|\\| lnnum & 8\\) \\{${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		.f ......... 1 ....nn.m....\\)..
 ..	. ........o.\\+...i..s....,......
 .		...... ..'.
@@ -1073,24 +1194,24 @@ ${ESC}${SEP}%f+ 		.f ......... 1 ....nn.m....\\)..
 		.
 		......
 ...f............... l.n.....4................${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		if \\(lnnum == 1 \\|\\| lnnum & 2\\) \\{.*?
 			c = itoa\\(row\\+1-vi_rshift, tmp\\);.*?
 			\\*c\\+\\+ = ' ';.*?
 (			i = itoalen\\(xtop\\+xrows\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	else if \\(lnnum && xled\\) \\{
 		char tmp\\[32], tmp1\\[32], \\*p;
 		c = tmp, i = 0, i1 = 0;.*(			c = itoa\\(abs\\(xrow-row\\+vi_rshift\\), c\\);)
 			\\*c\\+\\+ = ' ';
 			i1 = itoalen\\(xrows\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	rstate \\+= row != xrow;
 	if \\(!s\\)
 		s = row \\? ch : ch\\+1;.*(		\\*c = '\\\\0';)
 		l1 = \\(c - tmp\\) \\+ \\(i\\+i1 - \\(strlen\\(tmp\\) - !!i - !!i1\\)\\);
 		vi_lncol = dir_context\\(s\\) < 0 \\? 0 : l1;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:183:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:183${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		vi_lncol = dir_context\\(s\\) < 0 \\? 0 : l1;
@@ -1100,22 +1221,22 @@ ${ESC}${SEP}%f+ 		vi_lncol = dir_context\\(s\\) < 0 \\? 0 : l1;
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\)
 		syn_setft\\(nn_ft\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 8${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\)
 		syn_setft\\(nn_ft\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		vi_lncol = dir_context\\(s\\) < 0 \\? 0 : l1;
 		memset\\(c, ' ', l1 - \\(c - tmp\\)\\);
 		c\\[l1 - \\(c - tmp\\)] = '\\\\0';${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\)
 		syn_setft\\(nn_ft\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ...i..nc.. =.........e......<.. . ..:....
 ............. ....1 .....-.t.p..;
 .	........... .m.\\)......0..
@@ -1123,24 +1244,24 @@ ${ESC}${SEP}%f+ ...i..nc.. =.........e......<.. . ..:....
 ........v...nt....n..l..k..,.....b........ ....
 .	.......e........idx..
 ...............f..;${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		vi_lncol = dir_context\\(s\\) < 0 \\? 0 : l1;.*?
 		memset\\(c, ' ', l1 - \\(c - tmp\\)\\);.*?
 		c\\[l1 - \\(c - tmp\\)] = '\\\\0';.*?
 (		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		}
 		\\*c = '\\\\0';
 		l1 = \\(c - tmp\\) \\+ \\(i\\+i1 - \\(strlen\\(tmp\\) - !!i - !!i1\\)\\);.*(		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{)
 			for \\(i1 = 0; i1 < rstate->cmax &&
 					memchr\\(\" \\\\t\", \\*rstate->chrs\\[ren_off\\(s, i1\\)], 2\\);\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			c = itoa\\(abs\\(xrow-row\\+vi_rshift\\), c\\);
 			\\*c\\+\\+ = ' ';
 			i1 = itoalen\\(xrows\\);.*(				i1 = ren_next\\(s, i1, 1\\);)
 			i1 -= \\(itoa\\(abs\\(xrow-row\\+vi_rshift\\), tmp1\\) - tmp1\\)\\+1;
 			if \\(i1 >= 0\\) \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:196:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:196${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					memchr\\(\" \\\\t\", \\*rstate->chrs\\[ren_off\\(s, i1\\)], 2\\);\\)
@@ -1148,79 +1269,79 @@ ${ESC}${SEP}%f+ 					memchr\\(\" \\\\t\", \\*rstate->chrs\\[ren_off\\(s, i1\\)],
 			i1 -= \\(itoa\\(abs\\(xrow-row\\+vi_rshift\\), tmp1\\) - tmp1\\)\\+1;
 			if \\(i1 >= 0\\) \\{
 				memset\\(p, ' ', strlen\\(p\\)\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 8${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 9${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			if \\(i1 >= 0\\) \\{
 				memset\\(p, ' ', strlen\\(p\\)\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					memchr\\(\" \\\\t\", \\*rstate->chrs\\[ren_off\\(s, i1\\)], 2\\);\\)
 				i1 = ren_next\\(s, i1, 1\\);
 			i1 -= \\(itoa\\(abs\\(xrow-row\\+vi_rshift\\), tmp1\\) - tmp1\\)\\+1;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			if \\(i1 >= 0\\) \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				memset\\(p, ' ', strlen\\(p\\)\\);\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			.	m.....\\(. \\\\..,...st..e.>..rs.......f....i...,....\\)
 .	..i1...r...ne.t.....1, 1..
 .	... .........a....r............h.f.......1.....m......
 ..	if.... ....\\) .
 	....e.s..\\(......,...r.e..p\\)\\).${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 					memchr\\(\" \\\\t\", \\*rstate->chrs\\[ren_off\\(s, i1\\)], 2\\);\\).*?
 				i1 = ren_next\\(s, i1, 1\\);.*?
 			i1 -= \\(itoa\\(abs\\(xrow-row\\+vi_rshift\\), tmp1\\) - tmp1\\)\\+1;.*?
 (			if \\(i1 >= 0\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-40m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-40m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-43m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-43m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:205:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:205${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				memset\\(p, ' ', strlen\\(p\\)\\);
 				RS\\(2, led_prender\\(tmp1, row - xtop, l1\\+i1, 0, l1\\)\\)
 			}
 		}${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+1m 9${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+1m 10${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				RS\\(2, led_prender\\(tmp1, row - xtop, l1\\+i1, 0, l1\\)\\)
 			}
 		}${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				memset\\(p, ' ', strlen\\(p\\)\\);\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				RS\\(2, led_prender\\(tmp1, row - xtop, l1\\+i1, 0, l1\\)\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			}
 		}${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .........t.p, .....s.....\\(...;
 	......2....._.r......t......o... ..o............ ....
 .	..
 	.}${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+1m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+1m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 				memset\\(p, ' ', strlen\\(p\\)\\);.*?
 (				RS\\(2, led_prender\\(tmp1, row - xtop, l1\\+i1, 0, l1\\)\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-38m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-38m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-41m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-41m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:207:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:207${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			}
@@ -1228,161 +1349,161 @@ ${ESC}${SEP}%f+ 			}
 		RS\\(2, led_prender\\(tmp, row - xtop, 0, 0, l1\\)\\)
 		restore\\(syn_blockhl\\)
 		restore\\(ftidx\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 10${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 11${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		RS\\(2, led_prender\\(tmp, row - xtop, 0, 0, l1\\)\\)
 		restore\\(syn_blockhl\\)
 		restore\\(ftidx\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			}
 		}${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		RS\\(2, led_prender\\(tmp, row - xtop, 0, 0, l1\\)\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		restore\\(syn_blockhl\\)
 		restore\\(ftidx\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ..	.
 	..
 .	..... l.d.p.....r.t......................l...
 	...s...e...._........
 .....t.re\\(..i..\\)${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+2m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+2m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 			}.*?
 		}.*?
 (		RS\\(2, led_prender\\(tmp, row - xtop, 0, 0, l1\\)\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-35m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-35m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-38m 10${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-38m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:210:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:210${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		restore\\(syn_blockhl\\)
 		restore\\(ftidx\\)
 		return;
 	}${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 11${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 12${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		return;
 	}${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		restore\\(syn_blockhl\\)
 		restore\\(ftidx\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		return;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	}\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .	..s......y._..o.k...
 ..r.s......t....
 ..r.t..n.
 	.${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+2m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+2m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		restore\\(syn_blockhl\\).*?
 		restore\\(ftidx\\).*?
 (		return;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-32m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-32m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-35m 11${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-35m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:213:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:213${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	}
 	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\)
 	rstate = rstates;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+1m 12${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+1m 13${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\)
 	rstate = rstates;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	}\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	rstate = rstates;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	.
 	l.._...n.e......o....x.........left,....f..........
 ....... ..........${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+1m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+1m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	}.*?
 (	led_crender\\(s, row - xtop, 0, xleft, xleft \\+ xcols\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-30m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-30m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-33m 12${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-33m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:215:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:215${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	rstate = rstates;
 }
 
 /\\* redraw the screen \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??m 13${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??m 14${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	rstate = rstates;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:216:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:216:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-29m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:216:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-29m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:216:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-32m 13${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:216:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-32m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:216:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:216${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ /\\* redraw the screen \\*/
 static void vi_drawagain\\(int i\\)
 \\{
 	syn_scdir\\(0\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 14${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 15${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ /\\* redraw the screen \\*/
 static void vi_drawagain\\(int i\\)
 \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:221:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:221:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ /\\* redraw the screen \\*/.*?
 static void vi_drawagain\\(int i\\).*?
 (\\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:221:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:221:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-24m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:221:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-24m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:221:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-27m 14${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:221:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-27m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:221:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:221${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	syn_scdir\\(0\\);
@@ -1391,44 +1512,44 @@ ${ESC}${SEP}%f+ 	syn_scdir\\(0\\);
 }
 
 /\\* update the screen \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+1m 15${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+1m 16${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	for \\(; i < xtop \\+ xrows; i\\+\\+\\)
 		vi_drawrow\\(i\\);
 }
 
 /\\* update the screen \\*/${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	syn_scdir\\(0\\);\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	for \\(; i < xtop \\+ xrows; i\\+\\+\\)
 		vi_drawrow\\(i\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ }
 
 /\\* update the screen \\*/${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	..._.........
 .f..... ..<..........o..;...\\+.
 		.........w\\(.\\);
 }
 
 ....p.... ..e........\\*/${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+1m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+1m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	syn_scdir\\(0\\);.*?
 (	for \\(; i < xtop \\+ xrows; i\\+\\+\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-22m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-22m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-25m 15${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-25m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:223:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:223${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ static void vi_drawupdate\\(int i\\)
@@ -1437,27 +1558,27 @@ ${ESC}${SEP}%f+ static void vi_drawupdate\\(int i\\)
 	term_pos\\(0, 0\\);
 	term_room\\(i\\);
 	syn_scdir\\(i\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 16${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 17${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ static void vi_drawupdate\\(int i\\)
 \\{
 	int n;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:230:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:230:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ static void vi_drawupdate\\(int i\\).*?
 \\{.*?
 (	int n;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:230:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:230:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-15m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:230:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-15m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:230:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-18m 16${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:230:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-18m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:230:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:230${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	if \\(i < 0\\) \\{
@@ -1467,22 +1588,22 @@ ${ESC}${SEP}%f+ 	if \\(i < 0\\) \\{
 	} else \\{
 		n = MIN\\(i, xrows\\);
 		for \\(i = n-1; i >= 0; i--\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 17${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 18${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawrow\\(xtop \\+ xrows - n \\+ i\\);
 	} else \\{
 		n = MIN\\(i, xrows\\);
 		for \\(i = n-1; i >= 0; i--\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	if \\(i < 0\\) \\{
 		n = MIN\\(-i, xrows\\);
 		for \\(i = 0; i < n; i\\+\\+\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			vi_drawrow\\(xtop \\+ xrows - n \\+ i\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	} else \\{
 		n = MIN\\(i, xrows\\);
 		for \\(i = n-1; i >= 0; i--\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .i...i.<....\\{
 	.n = ....-....r.....
 	..o..\\(........ ...;.....
@@ -1490,24 +1611,24 @@ ${ESC}${SEP}%f+ .i...i.<....\\{
 ....l.. .
 .............x......
 		............... .. 0...-..${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	if \\(i < 0\\) \\{.*?
 		n = MIN\\(-i, xrows\\);.*?
 		for \\(i = 0; i < n; i\\+\\+\\).*?
 (			vi_drawrow\\(xtop \\+ xrows - n \\+ i\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 17${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:237:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:237${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	} else \\{
@@ -1518,24 +1639,24 @@ ${ESC}${SEP}%f+ 	} else \\{
 }
 
 ${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 18${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 19${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawrow\\(xtop \\+ i\\);
 	}
 }
 
 ${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	} else \\{
 		n = MIN\\(i, xrows\\);
 		for \\(i = n-1; i >= 0; i--\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			vi_drawrow\\(xtop \\+ i\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	}
 }
 
 ${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .} else.\\{
 ..n =..I......r..s\\).
 	.... .i.= ..............-.\\)
@@ -1544,24 +1665,24 @@ ${ESC}${SEP}%f+ .} else.\\{
 }
 
 ${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	} else \\{.*?
 		n = MIN\\(i, xrows\\);.*?
 		for \\(i = n-1; i >= 0; i--\\).*?
 (			vi_drawrow\\(xtop \\+ i\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		syn_setft\\(nn_ft\\);
 		if \\(\\(lnnum == 1 \\|\\| lnnum & 4\\) && !xleft && vi_lncol\\) \\{
 			for \\(i1 = 0; i1 < rstate->cmax &&.*(static char \\*vi_prompt\\(char \\*msg, char \\*ft, char \\*insert, int \\*ret, int \\*kmap, int \\*mlen\\))
 \\{
 	sbuf_smake\\(sb, xcols\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		led_crender\\(s, row - xtop, l1, xleft, xleft \\+ xcols - l1\\)
 		preserve\\(int, syn_blockhl, syn_blockhl = -1;\\)
 		preserve\\(int, ftidx,\\).*(	sbuf_str\\(sb, msg\\))
 	\\*mlen = sb->s_n;
 	term_pos\\(xrows, 0\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 18${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:241:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:241${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			ex_bufpostfix\\(&bufs\\[i], 1\\);
@@ -1571,22 +1692,22 @@ ${ESC}${SEP}%f+ 			ex_bufpostfix\\(&bufs\\[i], 1\\);
 		vi_mod \\|= 1;
 		break;
 	case TK_CTL\\('t'\\):${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 19${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 20${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		xtop = MAX\\(0, \\*row - xrows / 2\\);
 		vi_mod \\|= 1;
 		break;
 	case TK_CTL\\('t'\\):${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			ex_bufpostfix\\(&bufs\\[i], 1\\);
 		syn_setft\\(xb_ft\\);
 		vc_status\\(0\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		xtop = MAX\\(0, \\*row - xrows / 2\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		vi_mod \\|= 1;
 		break;
 	case TK_CTL\\('t'\\):${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .......u...s.....&b.fs..]...\\).
 .	s...............;
 ........t..\\(...
@@ -1594,24 +1715,24 @@ ${ESC}${SEP}%f+ .......u...s.....&b.fs..]...\\).
 ...i.m...\\|...;
 .	......
 .cas. .....L..t...${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 			ex_bufpostfix\\(&bufs\\[i], 1\\);.*?
 		syn_setft\\(xb_ft\\);.*?
 		vc_status\\(0\\);.*?
 (		xtop = MAX\\(0, \\*row - xrows / 2\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			ex_pbuf = tmpex_buf;
 		bsync_ret:
 		for \\(i = xbufcur-1; i >= 0 && bufs\\[i]\\.mtime == -1; i--\\).*(		if \\(vi_arg >= LEN\\(savepath\\) \\* 2\\))
 			break;
 		if \\(vi_arg % 2 == 0\\) \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			fspos = MAX\\(fspos, 0\\);
 		}
 		if \\(tmpex_buf != ex_buf\\).*(			vi_arg /= 2;)
 			if \\(!savepath\\[vi_arg]\\)
 				sbuf_make\\(savepath\\[vi_arg], 128\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 19${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:698:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:698${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		if \\(vi_search\\(mv, cnt, row, off, 1\\)\\)
@@ -1621,22 +1742,22 @@ ${ESC}${SEP}%f+ 		if \\(vi_search\\(mv, cnt, row, off, 1\\)\\)
 		vi_mod \\|= mv == '/' \\|\\| mv == '\\?';
 		break;
 	case '\\*':${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 20${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 21${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			xtop = MAX\\(0, \\*row - xrows / 2\\);
 		vi_mod \\|= mv == '/' \\|\\| mv == '\\?';
 		break;
 	case '\\*':${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		if \\(vi_search\\(mv, cnt, row, off, 1\\)\\)
 			return -1;
 		if \\(cmd < 0\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			xtop = MAX\\(0, \\*row - xrows / 2\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		vi_mod \\|= mv == '/' \\|\\| mv == '\\?';
 		break;
 	case '\\*':${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .	.. \\(.....a......,.c........ ..f,....
 .	....u......
 ..i. ........\\)
@@ -1644,24 +1765,24 @@ ${ESC}${SEP}%f+ .	.. \\(.....a......,.c........ ..f,....
 ......o..\\|........./. ...m.......'.
 	.......
 ..a.. '...${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		if \\(vi_search\\(mv, cnt, row, off, 1\\)\\).*?
 			return -1;.*?
 		if \\(cmd < 0\\).*?
 (			xtop = MAX\\(0, \\*row - xrows / 2\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case '\\?':
 	case 'n':
 	case 'N':.*(	case TK_CTL\\('a'\\):)
 		if \\(mv == TK_CTL\\('a'\\) \\|\\| vi_arg\\) \\{
 			if \\(!\\(cs = vi_curword\\(xb, \\*row, \\*off, cnt, 0\\)\\)\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		vi_col = cnt - 1;
 		break;
 	case '/':.*(		if \\(vi_search\\(cadir < 0 \\? 'N' : 'n', 1, row, off, 1\\)\\))
 			cadir = -cadir;
 		else if \\(cmd < 0 && \\(\\*row < xtop \\|\\| \\*row >= xtop \\+ xrows - !vi_status\\)\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 20${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:734:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:734${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		}
@@ -1672,24 +1793,24 @@ ${ESC}${SEP}%f+ 		}
 		break;
 	case '\\\\n':
 	case '\\+':${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 21${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 22${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		else if \\(cmd < 0 && \\(\\*row < xtop \\|\\| \\*row >= xtop \\+ xrows - !vi_status\\)\\)
 			xtop = MAX\\(0, \\*row - xrows / 2\\);
 		break;
 	case '\\\\n':
 	case '\\+':${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		}
 		if \\(vi_search\\(cadir < 0 \\? 'N' : 'n', 1, row, off, 1\\)\\)
 			cadir = -cadir;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		else if \\(cmd < 0 && \\(\\*row < xtop \\|\\| \\*row >= xtop \\+ xrows - !vi_status\\)\\)
 			xtop = MAX\\(0, \\*row - xrows / 2\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		break;
 	case '\\\\n':
 	case '\\+':${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		}
 ...............\\(....r ... . ..'.....', .....w, .f.,....
 .	....i. ....a....
@@ -1698,24 +1819,24 @@ ${ESC}${SEP}%f+ 		}
 ..br....
 .c.s. .....
 ..a.e ....${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		}.*?
 		if \\(vi_search\\(cadir < 0 \\? 'N' : 'n', 1, row, off, 1\\)\\).*?
 			cadir = -cadir;.*?
 (		else if \\(cmd < 0 && \\(\\*row < xtop \\|\\| \\*row >= xtop \\+ xrows - !vi_status\\)\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				return -1;
 			ex_krsset\\(cs, \\+1\\);
 			free\\(cs\\);.*(	case '%':)
 		if \\(vi_arg\\) \\{
 			if \\(cnt > 100\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-34m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-34m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case TK_CTL\\('a'\\):
 		if \\(mv == TK_CTL\\('a'\\) \\|\\| vi_arg\\) \\{
 			if \\(!\\(cs = vi_curword\\(xb, \\*row, \\*off, cnt, 0\\)\\)\\).*(				return -1;)
 			\\*row = lbuf_len\\(xb\\) \\* cnt / 100;
 			goto lnregion;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-37m 21${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-37m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:747:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:747${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	case '\\\\n':
@@ -1725,22 +1846,22 @@ ${ESC}${SEP}%f+ 	case '\\\\n':
 		goto lnregion;
 	case 'k':
 	case '-':${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 22${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 23${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		\\*row = MIN\\(\\*row \\+ cnt, lbuf_len\\(xb\\) - 1\\);
 		goto lnregion;
 	case 'k':
 	case '-':${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	case '\\\\n':
 	case '\\+':
 	case 'j':${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		\\*row = MIN\\(\\*row \\+ cnt, lbuf_len\\(xb\\) - 1\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
 	case 'k':
 	case '-':${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .c.se '....
 	.........
 	..s. ....
@@ -1748,24 +1869,24 @@ ${ESC}${SEP}%f+ .c.se '....
 ..g....l.r...o..
 ......'...
 ..a.. .-..${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	case '\\\\n':.*?
 	case '\\+':.*?
 	case 'j':.*?
 (		\\*row = MIN\\(\\*row \\+ cnt, lbuf_len\\(xb\\) - 1\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				return -1;
 			ex_krsset\\(cs, \\+1\\);
 			free\\(cs\\);.*(	case '%':)
 		if \\(vi_arg\\) \\{
 			if \\(cnt > 100\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-28m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-28m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case TK_CTL\\('a'\\):
 		if \\(mv == TK_CTL\\('a'\\) \\|\\| vi_arg\\) \\{
 			if \\(!\\(cs = vi_curword\\(xb, \\*row, \\*off, cnt, 0\\)\\)\\).*(				return -1;)
 			\\*row = lbuf_len\\(xb\\) \\* cnt / 100;
 			goto lnregion;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-31m 22${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-31m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:753:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:753${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
@@ -1775,22 +1896,22 @@ ${ESC}${SEP}%f+ 		goto lnregion;
 		goto lnregion;
 	case 'G':
 		\\*row = vi_arg \\? cnt - 1 : lbuf_len\\(xb\\) - 1;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 23${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 24${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		\\*row = MAX\\(\\*row - cnt, 0\\);
 		goto lnregion;
 	case 'G':
 		\\*row = vi_arg \\? cnt - 1 : lbuf_len\\(xb\\) - 1;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
 	case 'k':
 	case '-':${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		\\*row = MAX\\(\\*row - cnt, 0\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
 	case 'G':
 		\\*row = vi_arg \\? cnt - 1 : lbuf_len\\(xb\\) - 1;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ....t. .nr.g....
 .......k..
 .c..e.'-'.
@@ -1798,24 +1919,24 @@ ${ESC}${SEP}%f+ ....t. .nr.g....
 		...o.l..e.....
 	..s......
 ....o....v......\\?...t.....:....f.len.xb\\).....${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		goto lnregion;.*?
 	case 'k':.*?
 	case '-':.*?
 (		\\*row = MAX\\(\\*row - cnt, 0\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				return -1;
 			ex_krsset\\(cs, \\+1\\);
 			free\\(cs\\);.*(	case '%':)
 		if \\(vi_arg\\) \\{
 			if \\(cnt > 100\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-24m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-24m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case TK_CTL\\('a'\\):
 		if \\(mv == TK_CTL\\('a'\\) \\|\\| vi_arg\\) \\{
 			if \\(!\\(cs = vi_curword\\(xb, \\*row, \\*off, cnt, 0\\)\\)\\).*(				return -1;)
 			\\*row = lbuf_len\\(xb\\) \\* cnt / 100;
 			goto lnregion;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-27m 23${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-27m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:757:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:757${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		\\*row = vi_arg \\? cnt - 1 : lbuf_len\\(xb\\) - 1;
@@ -1824,44 +1945,44 @@ ${ESC}${SEP}%f+ 		\\*row = vi_arg \\? cnt - 1 : lbuf_len\\(xb\\) - 1;
 		\\*row = MIN\\(xtop \\+ cnt - 1, lbuf_len\\(xb\\) - 1\\);
 		goto lnregion;
 	case 'L':${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 24${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 25${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		\\*row = MIN\\(xtop \\+ cnt - 1, lbuf_len\\(xb\\) - 1\\);
 		goto lnregion;
 	case 'L':${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		\\*row = vi_arg \\? cnt - 1 : lbuf_len\\(xb\\) - 1;
 		goto lnregion;
 	case 'H':${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		\\*row = MIN\\(xtop \\+ cnt - 1, lbuf_len\\(xb\\) - 1\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
 	case 'L':${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	.........._.r..\\?.c.t...1 ..l.u..l..\\(....- ..
 		......n...i...
 ..as..'...
 .....w.= .......p....nt..............\\(..\\).. 1..
 .	......n...i.n.
 ..a.......${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		\\*row = vi_arg \\? cnt - 1 : lbuf_len\\(xb\\) - 1;.*?
 		goto lnregion;.*?
 	case 'H':.*?
 (		\\*row = MIN\\(xtop \\+ cnt - 1, lbuf_len\\(xb\\) - 1\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				return -1;
 			ex_krsset\\(cs, \\+1\\);
 			free\\(cs\\);.*(	case '%':)
 		if \\(vi_arg\\) \\{
 			if \\(cnt > 100\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-18m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-18m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case TK_CTL\\('a'\\):
 		if \\(mv == TK_CTL\\('a'\\) \\|\\| vi_arg\\) \\{
 			if \\(!\\(cs = vi_curword\\(xb, \\*row, \\*off, cnt, 0\\)\\)\\).*(				return -1;)
 			\\*row = lbuf_len\\(xb\\) \\* cnt / 100;
 			goto lnregion;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-21m 24${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-21m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:763:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:763${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
@@ -1869,41 +1990,41 @@ ${ESC}${SEP}%f+ 		goto lnregion;
 		\\*row = MIN\\(xtop \\+ xrows - 1 - cnt \\+ 1, lbuf_len\\(xb\\) - 1\\);
 		goto lnregion;
 	case 'M':${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 25${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 26${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		\\*row = MIN\\(xtop \\+ xrows - 1 - cnt \\+ 1, lbuf_len\\(xb\\) - 1\\);
 		goto lnregion;
 	case 'M':${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
 	case 'L':${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		\\*row = MIN\\(xtop \\+ xrows - 1 - cnt \\+ 1, lbuf_len\\(xb\\) - 1\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
 	case 'M':${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ...... ...e.....
 ....e.....
 .	.r.w...M...xt......r......1.. ... ..., .b...l.....\\)...1.;
 	..o...........;
 .........:${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+2m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+2m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		goto lnregion;.*?
 	case 'L':.*?
 (		\\*row = MIN\\(xtop \\+ xrows - 1 - cnt \\+ 1, lbuf_len\\(xb\\) - 1\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				return -1;
 			ex_krsset\\(cs, \\+1\\);
 			free\\(cs\\);.*(	case '%':)
 		if \\(vi_arg\\) \\{
 			if \\(cnt > 100\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-15m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-15m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case TK_CTL\\('a'\\):
 		if \\(mv == TK_CTL\\('a'\\) \\|\\| vi_arg\\) \\{
 			if \\(!\\(cs = vi_curword\\(xb, \\*row, \\*off, cnt, 0\\)\\)\\).*(				return -1;)
 			\\*row = lbuf_len\\(xb\\) \\* cnt / 100;
 			goto lnregion;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-18m 25${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-18m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:766:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:766${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
@@ -1912,44 +2033,44 @@ ${ESC}${SEP}%f+ 		goto lnregion;
 		goto lnregion;
 	case '\\\\'':
 	case '\`':${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 26${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 27${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		\\*row = MIN\\(xtop \\+ xrows / 2, lbuf_len\\(xb\\) - 1\\);
 		goto lnregion;
 	case '\\\\'':
 	case '\`':${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
 	case 'M':${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		\\*row = MIN\\(xtop \\+ xrows / 2, lbuf_len\\(xb\\) - 1\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		goto lnregion;
 	case '\\\\'':
 	case '\`':${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ..g... ....gi...
 .ca.......
 	........M....top ....o.. ...,....._....x.... ...
 .	.o......egi.n;
 	..........
 .c.s......${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+2m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+2m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		goto lnregion;.*?
 	case 'M':.*?
 (		\\*row = MIN\\(xtop \\+ xrows / 2, lbuf_len\\(xb\\) - 1\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				return -1;
 			ex_krsset\\(cs, \\+1\\);
 			free\\(cs\\);.*(	case '%':)
 		if \\(vi_arg\\) \\{
 			if \\(cnt > 100\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-12m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-12m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case TK_CTL\\('a'\\):
 		if \\(mv == TK_CTL\\('a'\\) \\|\\| vi_arg\\) \\{
 			if \\(!\\(cs = vi_curword\\(xb, \\*row, \\*off, cnt, 0\\)\\)\\).*(				return -1;)
 			\\*row = lbuf_len\\(xb\\) \\* cnt / 100;
 			goto lnregion;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-15m 26${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-15m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:769:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:769${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	case '\`':
@@ -1960,24 +2081,24 @@ ${ESC}${SEP}%f+ 	case '\`':
 		if \\(mv == '\\\\''\\)
 			goto lnregion;
 		\\*off = var;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 27${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 28${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		if \\(cmd < 0 && \\(\\*row < xtop \\|\\| \\*row >= xtop \\+ xrows\\)\\)
 			xtop = MAX\\(0, \\*row - xrows / 2\\);
 		if \\(mv == '\\\\''\\)
 			goto lnregion;
 		\\*off = var;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	case '\`':
 		if \\(lbuf_jump\\(xb, term_read\\(0\\), row, &var\\)\\)
 			return -1;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		if \\(cmd < 0 && \\(\\*row < xtop \\|\\| \\*row >= xtop \\+ xrows\\)\\)
 			xtop = MAX\\(0, \\*row - xrows / 2\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		if \\(mv == '\\\\''\\)
 			goto lnregion;
 		\\*off = var;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	c....'\`'.
 ..i...l.....ump\\(....t.....e.d\\(......w,.......
 .	...t..n....
@@ -1986,24 +2107,24 @@ ${ESC}${SEP}%f+ 	c....'\`'.
 .	....m.... .....
 ...g....ln.....n.
 .........var;${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	case '\`':.*?
 		if \\(lbuf_jump\\(xb, term_read\\(0\\), row, &var\\)\\).*?
 			return -1;.*?
 (		if \\(cmd < 0 && \\(\\*row < xtop \\|\\| \\*row >= xtop \\+ xrows\\)\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				return -1;
 			ex_krsset\\(cs, \\+1\\);
 			free\\(cs\\);.*(	case '%':)
 		if \\(vi_arg\\) \\{
 			if \\(cnt > 100\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case TK_CTL\\('a'\\):
 		if \\(mv == TK_CTL\\('a'\\) \\|\\| vi_arg\\) \\{
 			if \\(!\\(cs = vi_curword\\(xb, \\*row, \\*off, cnt, 0\\)\\)\\).*(				return -1;)
 			\\*row = lbuf_len\\(xb\\) \\* cnt / 100;
 			goto lnregion;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 27${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:775:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:775${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	}
@@ -2013,22 +2134,22 @@ ${ESC}${SEP}%f+ 	}
 	term_room\\(r1 < xtop \\? xtop - xrow : r1 - r2 -
 			\\(\\*vi_word && ln && \\*ln != '\\\\n' && r1 != r2\\)\\);
 	xrow = r1;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 28${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 29${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	term_pos\\(r1 - xtop < 0 \\? 0 : r1 - xtop, 0\\);
 	term_room\\(r1 < xtop \\? xtop - xrow : r1 - r2 -
 			\\(\\*vi_word && ln && \\*ln != '\\\\n' && r1 != r2\\)\\);
 	xrow = r1;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	}
 	vi_regput\\(vi_ybuf, rsb\\.s, lnmode\\);
 	free\\(rsb\\.s\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	term_pos\\(r1 - xtop < 0 \\? 0 : r1 - xtop, 0\\);
 	term_room\\(r1 < xtop \\? xtop - xrow : r1 - r2 -
 			\\(\\*vi_word && ln && \\*ln != '\\\\n' && r1 != r2\\)\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	xrow = r1;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-3m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}5??-3m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	.
 ..._r.gpu.\\(....b........s. ....d.\\).
 	.r.......s..
@@ -2036,79 +2157,79 @@ ${ESC}${SEP}%f+ 	.
 ..e.m...o............\\?...........w ...........
 .............&&..n...........'....&& .. .=......
 ..........;${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	}.*?
 	vi_regput\\(vi_ybuf, rsb\\.s, lnmode\\);.*?
 	free\\(rsb\\.s\\);.*?
 (	term_pos\\(r1 - xtop < 0 \\? 0 : r1 - xtop, 0\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		l2 = uc_chrn\\(post, -1, &postn\\) - post;
 		tlen = lbuf_s\\(ln\\)->len\\+1;
 		lbuf_region\\(xb, &rsb, r1, o1, r2, o2\\);.*(		lbuf_edit\\(xb, sb->s, r1, r2 \\+ 1, o1, xoff\\);)
 	free\\(sb->s\\);
 	return key;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-9m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-9m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	} else \\{
 		l1 = uc_chr\\(ln, o1\\) - ln;
 		post = uc_chr\\(lbuf_get\\(xb, r2\\), o2\\);.*(static void vi_case\\(int r1, int o1, int r2, int o2, int lnmode, int cmd\\))
 \\{
 	sbuf rsb;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-14m 28${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-14m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:859:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:859${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	xrow = r1;
 	if \\(r1 < xtop\\)
 		xtop = r1;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+1m 29${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+1m 30${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	if \\(r1 < xtop\\)
 		xtop = r1;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	xrow = r1;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	if \\(r1 < xtop\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		xtop = r1;\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ...ow.=...;
 ..f.......xt...
 ..xt........${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+1m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+1m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	xrow = r1;.*?
 (	if \\(r1 < xtop\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		l2 = uc_chrn\\(post, -1, &postn\\) - post;
 		tlen = lbuf_s\\(ln\\)->len\\+1;
 		lbuf_region\\(xb, &rsb, r1, o1, r2, o2\\);.*(		lbuf_edit\\(xb, sb->s, r1, r2 \\+ 1, o1, xoff\\);)
 	free\\(sb->s\\);
 	return key;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	} else \\{
 		l1 = uc_chr\\(ln, o1\\) - ln;
 		post = uc_chr\\(lbuf_get\\(xb, r2\\), o2\\);.*(static void vi_case\\(int r1, int o1, int r2, int o2, int lnmode, int cmd\\))
 \\{
 	sbuf rsb;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 29${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:863:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:863${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		xtop = r1;
 	sbuf_mem\\(sb, ln, l1\\)
 	key = led_input\\(sb, post, postn, r1 - \\(r1 - r2\\), 0, &postn\\);
 	if \\(postn \\+ l2 != tlen \\|\\| memcmp\\(ln \\+ l1, sb->s \\+ l1, tlen - l2 - l1\\)\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??m 30${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??m 31${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		xtop = r1;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:864:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}3??m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:864:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		l2 = uc_chrn\\(post, -1, &postn\\) - post;
 		tlen = lbuf_s\\(ln\\)->len\\+1;
 		lbuf_region\\(xb, &rsb, r1, o1, r2, o2\\);.*(		lbuf_edit\\(xb, sb->s, r1, r2 \\+ 1, o1, xoff\\);)
 	free\\(sb->s\\);
 	return key;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:864:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:864:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	} else \\{
 		l1 = uc_chr\\(ln, o1\\) - ln;
 		post = uc_chr\\(lbuf_get\\(xb, r2\\), o2\\);.*(static void vi_case\\(int r1, int o1, int r2, int o2, int lnmode, int cmd\\))
 \\{
 	sbuf rsb;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 30${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:864:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:864:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:864${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		xoff = lbuf_eol\\(xb, xrow, 1\\);
@@ -2118,22 +2239,22 @@ ${ESC}${SEP}%f+ 		xoff = lbuf_eol\\(xb, xrow, 1\\);
 			vi_drawagain\\(\\+\\+xtop\\);
 	}
 	xoff = ren_noeol\\(ln, xoff\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 31${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 32${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		if \\(xrow - xtop == xrows\\)
 			vi_drawagain\\(\\+\\+xtop\\);
 	}
 	xoff = ren_noeol\\(ln, xoff\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		xoff = lbuf_eol\\(xb, xrow, 1\\);
 	else if \\(cmd == 'o'\\) \\{
 		xrow\\+\\+;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		if \\(xrow - xtop == xrows\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawagain\\(\\+\\+xtop\\);
 	}
 	xoff = ren_noeol\\(ln, xoff\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ...o.... l..._....x....r....1..
 .e... .. \\(....=.....\\).\\{
 	........
@@ -2141,24 +2262,24 @@ ${ESC}${SEP}%f+ ...o.... l..._....x....r....1..
 .	..............\\+..to.\\).
 	.
 ...f. ....._......... x....;${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		xoff = lbuf_eol\\(xb, xrow, 1\\);.*?
 	else if \\(cmd == 'o'\\) \\{.*?
 		xrow\\+\\+;.*?
 (		if \\(xrow - xtop == xrows\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	if \\(cmd == 'I'\\)
 		xoff = lbuf_indents\\(xb, xrow\\);
 	else if \\(cmd == 'A'\\).*(	row = xrow;)
 	if \\(cmd == 'a' \\|\\| cmd == 'A'\\)
 		xoff\\+\\+;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	char \\*post, \\*ln = lbuf_get\\(xb, xrow\\);
 	int row, cmdo, l1, off, key, postn = 1;
 	sbuf_smake\\(sb, xcols\\).*(	if \\(ln && ln\\[0] == '\\\\n'\\))
 		xoff = 0;
 	cmdo = cmd == 'o' \\|\\| cmd == 'O';${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 31${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1015:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1015${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		postn = rstate->n - off;
@@ -2169,24 +2290,24 @@ ${ESC}${SEP}%f+ 		postn = rstate->n - off;
 	sbuf_mem\\(sb, ln, l1\\)
 	key = led_input\\(sb, post, postn, row, cmdo << 2, &postn\\);
 	if \\(postn != l1 \\|\\| cmdo \\|\\| !ln\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 32${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 33${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	term_pos\\(row - xtop, 0\\);
 	term_room\\(cmdo\\);
 	sbuf_mem\\(sb, ln, l1\\)
 	key = led_input\\(sb, post, postn, row, cmdo << 2, &postn\\);
 	if \\(postn != l1 \\|\\| cmdo \\|\\| !ln\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		postn = rstate->n - off;
 		post = ln \\+ l1;
 	}${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	term_pos\\(row - xtop, 0\\);
 	term_room\\(cmdo\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	sbuf_mem\\(sb, ln, l1\\)
 	key = led_input\\(sb, post, postn, row, cmdo << 2, &postn\\);
 	if \\(postn != l1 \\|\\| cmdo \\|\\| !ln\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .	p.....=.r.......n ..o..;
 ...os...... \\+ .1.
 	}
@@ -2195,24 +2316,24 @@ ${ESC}${SEP}%f+ .	p.....=.r.......n ..o..;
 ....._.em...,.......\\)
 .k...=..ed.i.p.t............o..n.......c.d. ...2.....s....
 ... \\(..s...!...1..\\|..........ln.${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		postn = rstate->n - off;.*?
 		post = ln \\+ l1;.*?
 	}.*?
 (	term_pos\\(row - xtop, 0\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	} else \\{
 		off = xoff;
 		l1 = rstate->chrs\\[off] - ln;.*(		lbuf_edit\\(xb, sb->s, row, row \\+ !cmdo, off, xoff\\);)
 	free\\(sb->s\\);
 	return key;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		vi_indents\\(ln, &l1\\);
 		off = l1;
 		post = \"\\\\n\";.*(static int vc_put\\(int cmd\\))
 \\{
 	int cnt = MAX\\(1, vi_arg\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 32${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1037:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1037${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
@@ -2223,24 +2344,24 @@ static void vi_scrollforward\\(int cnt\\)
 }
 
 static void vi_scrollbackward\\(int cnt\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 33${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 34${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	xtop = MIN\\(lbuf_len\\(xb\\) - 1, xtop \\+ cnt\\);
 	xrow = MAX\\(xrow, xtop\\);
 }
 
 static void vi_scrollbackward\\(int cnt\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
 static void vi_scrollforward\\(int cnt\\)
 \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	xtop = MIN\\(lbuf_len\\(xb\\) - 1, xtop \\+ cnt\\);
 	xrow = MAX\\(xrow, xtop\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ }
 
 static void vi_scrollbackward\\(int cnt\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
 .......v.......s.....f.....d\\(..t....\\)
 \\{
@@ -2249,24 +2370,24 @@ ${ESC}${SEP}%f+
 }
 
 .t........d .._s.......c...rd..n......${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ .*?
 static void vi_scrollforward\\(int cnt\\).*?
 \\{.*?
 (	xtop = MIN\\(lbuf_len\\(xb\\) - 1, xtop \\+ cnt\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		return;
 	xoff = o2;
 }.*(	int cnt = MAX\\(1, vi_arg\\);)
 	char \\*cs = led_read\\(&xkmap, term_read\\(0\\)\\);
 	char \\*ln = lbuf_get\\(xb, xrow\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-12m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-12m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> \\{
 	int o2 = 0;
 	if \\(lbuf_join\\(xb, xrow, xrow \\+ cnt, xoff, &o2, spc\\)\\).*(	int off, i;)
 	if \\(!ln \\|\\| !cs\\)
 		return 0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-15m 33${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-15m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1094:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1094${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
@@ -2277,24 +2398,24 @@ static void vi_scrollbackward\\(int cnt\\)
 }
 
 static int vc_replace\\(void\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 34${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 35${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	xtop = MAX\\(0, xtop - cnt\\);
 	xrow = MIN\\(xrow, xtop \\+ xrows - 1\\);
 }
 
 static int vc_replace\\(void\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
 static void vi_scrollbackward\\(int cnt\\)
 \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	xtop = MAX\\(0, xtop - cnt\\);
 	xrow = MIN\\(xrow, xtop \\+ xrows - 1\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ }
 
 static int vc_replace\\(void\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
 ..a.i....i. v...cr.ll.......d......n..
 \\{
@@ -2303,24 +2424,24 @@ ${ESC}${SEP}%f+
 }
 
 .......... vc..e.......o..\\)${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ .*?
 static void vi_scrollbackward\\(int cnt\\).*?
 \\{.*?
 (	xtop = MAX\\(0, xtop - cnt\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		return;
 	xoff = o2;
 }.*(	int cnt = MAX\\(1, vi_arg\\);)
 	char \\*cs = led_read\\(&xkmap, term_read\\(0\\)\\);
 	char \\*ln = lbuf_get\\(xb, xrow\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> \\{
 	int o2 = 0;
 	if \\(lbuf_join\\(xb, xrow, xrow \\+ cnt, xoff, &o2, spc\\)\\).*(	int off, i;)
 	if \\(!ln \\|\\| !cs\\)
 		return 0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 34${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1100:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1100${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ #define topfix\\(\\) \\\\
@@ -2328,41 +2449,41 @@ if \\(xrow < 0 \\|\\| xrow >= lbuf_len\\(xb\\)\\) \\\\
 	xrow = lbuf_len\\(xb\\) \\? lbuf_len\\(xb\\) - 1 : 0; \\\\
 if \\(xrow < xtop\\) \\\\
 	xtop = xrow; \\\\${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 35${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 36${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ if \\(xrow < xtop\\) \\\\
 	xtop = xrow; \\\\${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ #define topfix\\(\\) \\\\
 if \\(xrow < 0 \\|\\| xrow >= lbuf_len\\(xb\\)\\) \\\\
 	xrow = lbuf_len\\(xb\\) \\? lbuf_len\\(xb\\) - 1 : 0; \\\\${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^if \\(xrow < xtop\\) \\\\\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	xtop = xrow; \\\\\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ...f.n..t...ix....
 .....r..........x..w... lbuf.l.....\\)\\)..
 	...w.=...u._.e.\\(.b...................1...0..\\\\
 ....x... ........\\\\
 .........r.w...${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ #define topfix\\(\\) \\\\.*?
 if \\(xrow < 0 \\|\\| xrow >= lbuf_len\\(xb\\)\\) \\\\.*?
 	xrow = lbuf_len\\(xb\\) \\? lbuf_len\\(xb\\) - 1 : 0; \\\\.*?
 (if \\(xrow < xtop\\) \\\\)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\*cs = cmd;
 	term_push\\(str, cs - str \\+ 1\\);
 }.*(	char \\*ln, \\*cs;)
 	int mv, n, k, c;
 	xgrec\\+\\+;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> \\{
 	char str\\[32];
 	char \\*cs = itoa\\(arg, str\\);.*(	if \\(init\\) \\{)
 		topfix\\(\\)
 		vi_col = vi_off2col\\(xb, xrow, xoff\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 35${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1164:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1164${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	xtop = xrow; \\\\
@@ -2371,44 +2492,44 @@ else if \\(xrow >= xtop \\+ xrows\\) \\\\
 
 void vi\\(int init\\)
 \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+1m 36${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+1m 37${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ else if \\(xrow >= xtop \\+ xrows\\) \\\\
 	xtop = xrow - xrows \\+ 1; \\\\
 
 void vi\\(int init\\)
 \\{${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	xtop = xrow; \\\\\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ else if \\(xrow >= xtop \\+ xrows\\) \\\\
 	xtop = xrow - xrows \\+ 1; \\\\${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 
 void vi\\(int init\\)
 \\{${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ..t.....x......
 e..e.......o......to......o.s. .
 .x..p . .r.. . .........;..
 
 ...d ........n...
 \\{${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+1m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+1m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	xtop = xrow; \\\\.*?
 (else if \\(xrow >= xtop \\+ xrows\\) \\\\)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\*cs = cmd;
 	term_push\\(str, cs - str \\+ 1\\);
 }.*(	char \\*ln, \\*cs;)
 	int mv, n, k, c;
 	xgrec\\+\\+;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> \\{
 	char str\\[32];
 	char \\*cs = itoa\\(arg, str\\);.*(	if \\(init\\) \\{)
 		topfix\\(\\)
 		vi_col = vi_off2col\\(xb, xrow, xoff\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 36${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1166:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1166${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		topfix\\(\\)
@@ -2418,22 +2539,22 @@ ${ESC}${SEP}%f+ 		topfix\\(\\)
 	}
 	while \\(!xquit\\) \\{
 		int nrow = xrow;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 37${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 38${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		term_pos\\(xrow - xtop, led_pos\\(lbuf_get\\(xb, xrow\\), vi_col\\)\\);
 	}
 	while \\(!xquit\\) \\{
 		int nrow = xrow;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		topfix\\(\\)
 		vi_col = vi_off2col\\(xb, xrow, xoff\\);
 		vi_drawagain\\(xtop\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		term_pos\\(xrow - xtop, led_pos\\(lbuf_get\\(xb, xrow\\), vi_col\\)\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	}
 	while \\(!xquit\\) \\{
 		int nrow = xrow;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	.....i..\\)
 ..v...o. ..v........l.....x..w......\\).
 ...._..a.a...n.......
@@ -2441,24 +2562,24 @@ ${ESC}${SEP}%f+ 	.....i..\\)
 .}
 ....l.......it. .
 	.int....... ..o..${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		topfix\\(\\).*?
 		vi_col = vi_off2col\\(xb, xrow, xoff\\);.*?
 		vi_drawagain\\(xtop\\);.*?
 (		term_pos\\(xrow - xtop, led_pos\\(lbuf_get\\(xb, xrow\\), vi_col\\)\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	int mv, n, k, c;
 	xgrec\\+\\+;
 	if \\(init\\) \\{.*(		int noff = xoff;)
 		int orow = nrow;
 		int ooff = noff;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> void vi\\(int init\\)
 \\{
 	char \\*ln, \\*cs;.*(		int otop = xtop;)
 		int oleft = xleft;
 		icmd_pos = 0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 37${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1178:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1178${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		int orow = nrow;
@@ -2467,27 +2588,27 @@ ${ESC}${SEP}%f+ 		int orow = nrow;
 		int oleft = xleft;
 		icmd_pos = 0;
 		vi_mod = 0;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 38${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 40${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		int orow = nrow;
 		int ooff = noff;
 		int otop = xtop;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1185:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1185:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		int orow = nrow;.*?
 		int ooff = noff;.*?
 (		int otop = xtop;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1185:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1185:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	while \\(!xquit\\) \\{
 		int nrow = xrow;
 		int noff = xoff;.*(		vi_ybuf = vi_yankbuf\\(TK_CTL\\('l'\\)\\);)
 		vi_arg = vi_prefix\\(\\);
 		term_dec\\(\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1185:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1185:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		vi_drawagain\\(xtop\\);
 		term_pos\\(xrow - xtop, led_pos\\(lbuf_get\\(xb, xrow\\), vi_col\\)\\);
 	}.*(		if \\(vi_lnnum == 1\\) \\{)
 			vi_lnnum = 0;
 			vi_lncol = 0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 38${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1185:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1185:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1185${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		}
@@ -2497,22 +2618,22 @@ ${ESC}${SEP}%f+ 		}
 		}
 		if \\(led_attsb\\)
 			sbuf_cut\\(led_attsb, 0\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 40${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 41${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawrow\\(otop \\+ xrows - 1\\);
 		}
 		if \\(led_attsb\\)
 			sbuf_cut\\(led_attsb, 0\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		}
 		if \\(xmpt == 1\\) \\{
 			xmpt = 0;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			vi_drawrow\\(otop \\+ xrows - 1\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		}
 		if \\(led_attsb\\)
 			sbuf_cut\\(led_attsb, 0\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	..
 		.......t..=..\\) .
 ...x... =...
@@ -2520,24 +2641,24 @@ ${ESC}${SEP}%f+ 	..
 	.}
 ......l.d...t..\\)
 ..	.............at.s.. ..${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		}.*?
 		if \\(xmpt == 1\\) \\{.*?
 			xmpt = 0;.*?
 (			vi_drawrow\\(otop \\+ xrows - 1\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			vi_lnnum = 0;
 			vi_lncol = 0;
 			vi_mod \\|= 1;.*(		if \\(!vi_ybuf\\))
 			vi_ybuf = vi_yankbuf\\(0\\);
 		mv = vi_region\\(-1, &nrow, &noff\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		vi_arg = vi_prefix\\(\\);
 		term_dec\\(\\)
 		if \\(vi_lnnum == 1\\) \\{.*(		if \\(mv > 0 && nrow >= 0\\) \\{)
 			if \\(strchr\\(\"\\|jk\", mv\\)\\) \\{
 				noff = vi_col2off\\(xb, nrow, vi_col\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 40${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1199:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1199${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				n = vi_scrollud \\? vi_scrollud : xrows / 2;
@@ -2547,22 +2668,22 @@ ${ESC}${SEP}%f+ 				n = vi_scrollud \\? vi_scrollud : xrows / 2;
 				xoff = lbuf_indents\\(xb, xrow\\);
 				vi_mod \\|= 4;
 				break;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 41${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 43${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					xtop = MAX\\(0, xtop - n\\);
 				xoff = lbuf_indents\\(xb, xrow\\);
 				vi_mod \\|= 4;
 				break;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				n = vi_scrollud \\? vi_scrollud : xrows / 2;
 				xrow = MAX\\(0, xrow - n\\);
 				if \\(xtop > 0\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^					xtop = MAX\\(0, xtop - n\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				xoff = lbuf_indents\\(xb, xrow\\);
 				vi_mod \\|= 4;
 				break;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ...	. . ......oll.d....._s...l....:..r..s./..;
 ..		x.o................-..\\).
 	...i..\\(........\\)
@@ -2570,24 +2691,24 @@ ${ESC}${SEP}%f+ ...	. . ......oll.d....._s...l....:..r..s./..;
 .	...o.f.= l..._.n.....\\(..........
 ....vi.mo.......
 .	....e..;${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 				n = vi_scrollud \\? vi_scrollud : xrows / 2;.*?
 				xrow = MAX\\(0, xrow - n\\);.*?
 				if \\(xtop > 0\\).*?
 (					xtop = MAX\\(0, xtop - n\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				if \\(xrow == 0\\)
 					break;
 				if \\(vi_arg\\).*(			case TK_CTL\\('d'\\):)
 				if \\(xrow == lbuf_len\\(xb\\) - 1\\)
 					break;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				xoff = vi_col2off\\(xb, xrow, vi_col\\);
 				break;
 			case TK_CTL\\('u'\\):.*(					vi_scrollud = vi_arg;)
 				n = vi_scrollud \\? vi_scrollud : xrows / 2;
 				xrow = MIN\\(MAX\\(0, lbuf_len\\(xb\\) - 1\\), xrow \\+ n\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 41${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1252:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1252${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					vi_scrollud = vi_arg;
@@ -2597,22 +2718,22 @@ ${ESC}${SEP}%f+ 					vi_scrollud = vi_arg;
 					xtop = MIN\\(lbuf_len\\(xb\\) - xrows, xtop \\+ n\\);
 				xoff = lbuf_indents\\(xb, xrow\\);
 				vi_mod \\|= 4;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 43${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 44${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				if \\(xtop < lbuf_len\\(xb\\) - xrows\\)
 					xtop = MIN\\(lbuf_len\\(xb\\) - xrows, xtop \\+ n\\);
 				xoff = lbuf_indents\\(xb, xrow\\);
 				vi_mod \\|= 4;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					vi_scrollud = vi_arg;
 				n = vi_scrollud \\? vi_scrollud : xrows / 2;
 				xrow = MIN\\(MAX\\(0, lbuf_len\\(xb\\) - 1\\), xrow \\+ n\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				if \\(xtop < lbuf_len\\(xb\\) - xrows\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					xtop = MIN\\(lbuf_len\\(xb\\) - xrows, xtop \\+ n\\);
 				xoff = lbuf_indents\\(xb, xrow\\);
 				vi_mod \\|= 4;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ......i..c...l.....v._..g.
 .		.....vi.scr.ll......i...ro.lu..............
 ..	..... ...I.\\(..X\\(.. ......e........1.. .r.... ...
@@ -2620,24 +2741,24 @@ ${ESC}${SEP}%f+ ......i..c...l.....v._..g.
 ...	...op.= ..N.l........x.... .ro......o.......
 ..	..o...=.l....i....t..x...x.....
 	...v._.o......;${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 					vi_scrollud = vi_arg;.*?
 				n = vi_scrollud \\? vi_scrollud : xrows / 2;.*?
 				xrow = MIN\\(MAX\\(0, lbuf_len\\(xb\\) - 1\\), xrow \\+ n\\);.*?
 (				if \\(xtop < lbuf_len\\(xb\\) - xrows\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				if \\(xrow == lbuf_len\\(xb\\) - 1\\)
 					break;
 				if \\(vi_arg\\).*(			case TK_CTL\\('i'\\): \\{)
 				if \\(!\\(ln = lbuf_get\\(xb, xrow\\)\\)\\)
 					break;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				vi_mod \\|= 4;
 				break;
 			case TK_CTL\\('d'\\):.*(				ln = uc_chr\\(ln, xoff\\);)
 				n = strlen\\(ln\\);
 				char buf\\[n \\+ 4];${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 43${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1263:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1263${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					goto undo;
@@ -2648,24 +2769,24 @@ ${ESC}${SEP}%f+ 					goto undo;
 				break;
 			case TK_CTL\\('r'\\):
 				redo:${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 44${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 45${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				else if \\(xrow < xtop \\|\\| xrow >= xtop \\+ xrows\\)
 					xtop = MAX\\(0, xrow - xrows / 2\\);
 				break;
 			case TK_CTL\\('r'\\):
 				redo:${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					goto undo;
 				} else if \\(!vi_arg\\)
 					vi_drawmsg_mpt\\(\"undo failed\"\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				else if \\(xrow < xtop \\|\\| xrow >= xtop \\+ xrows\\)
 					xtop = MAX\\(0, xrow - xrows / 2\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				break;
 			case TK_CTL\\('r'\\):
 				redo:${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ......o.. .....
 .	... ..s.............\\)
 	......_....m.._.p....n...........
@@ -2674,24 +2795,24 @@ ${ESC}${SEP}%f+ ......o.. .....
 ..	.......
 ......e.......\\('r.\\).
 .....e...${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 					goto undo;.*?
 				} else if \\(!vi_arg\\).*?
 					vi_drawmsg_mpt\\(\"undo failed\"\\).*?
 (				else if \\(xrow < xtop \\|\\| xrow >= xtop \\+ xrows\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				if \\(vi_arg >= 0 && !lbuf_undo\\(xb, &xrow, &xoff\\)\\) \\{
 					vi_mod \\|= 1;
 					vi_arg--;.*(				if \\(vi_arg >= 0 && !lbuf_redo\\(xb, &xrow, &xoff\\)\\) \\{)
 					vi_mod \\|= 1;
 					vi_arg--;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				break;
 			case 'u':
 				undo:.*(					goto redo;)
 				} else if \\(!vi_arg\\)
 					vi_drawmsg_mpt\\(\"redo failed\"\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 44${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1302:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1302${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					goto redo;
@@ -2702,24 +2823,24 @@ ${ESC}${SEP}%f+ 					goto redo;
 				break;
 			case TK_CTL\\('g'\\):
 				vi_tsm = 0;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 45${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 46${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				else if \\(xrow < xtop \\|\\| xrow >= xtop \\+ xrows\\)
 					xtop = MAX\\(0, xrow - xrows / 2\\);
 				break;
 			case TK_CTL\\('g'\\):
 				vi_tsm = 0;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					goto redo;
 				} else if \\(!vi_arg\\)
 					vi_drawmsg_mpt\\(\"redo failed\"\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				else if \\(xrow < xtop \\|\\| xrow >= xtop \\+ xrows\\)
 					xtop = MAX\\(0, xrow - xrows / 2\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				break;
 			case TK_CTL\\('g'\\):
 				vi_tsm = 0;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .	.....t.....o.
 .	....e.s...f.\\(..i...g\\)
 ..	...._d..............d. f.....\".
@@ -2728,24 +2849,24 @@ ${ESC}${SEP}%f+ .	.....t.....o.
 .....r..k.
 ..	c.se....C.L...'\\).
 	....._.sm.....${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 					goto redo;.*?
 				} else if \\(!vi_arg\\).*?
 					vi_drawmsg_mpt\\(\"redo failed\"\\).*?
 (				else if \\(xrow < xtop \\|\\| xrow >= xtop \\+ xrows\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				if \\(vi_arg >= 0 && !lbuf_redo\\(xb, &xrow, &xoff\\)\\) \\{
 					vi_mod \\|= 1;
 					vi_arg--;.*(				status:)
 				if \\(vi_arg\\) \\{
 					vi_status = vi_arg > 1 \\? 0 : term_resized;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				break;
 			case TK_CTL\\('r'\\):
 				redo:.*(					xrows \\+= vi_status \\? -1 : 1;)
 				}
 				vc_status\\(vi_tsm\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 45${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1313:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1313${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				do_excmd:
@@ -2757,26 +2878,26 @@ ${ESC}${SEP}%f+ 				do_excmd:
 				}
 				vi_mod \\|= 1;
 				if \\(!xmpt\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 46${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 47${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					if \\(xrow != orow && \\(xrow < xtop \\|\\|
 							xrow >= xtop \\+ xrows - !vi_status\\)\\)
 						xtop = MAX\\(0, xrow - xrows / 2\\);
 				}
 				vi_mod \\|= 1;
 				if \\(!xmpt\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				do_excmd:
 				if \\(k && ln\\[n]\\) \\{
 					ex_command\\(ln \\+ n\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					if \\(xrow != orow && \\(xrow < xtop \\|\\|
 							xrow >= xtop \\+ xrows - !vi_status\\)\\)
 						xtop = MAX\\(0, xrow - xrows / 2\\);${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				}
 				vi_mod \\|= 1;
 				if \\(!xmpt\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-3m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-3m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	.	....e..m..
 .......\\(...& ..\\[... .
 	.	......o.ma.d........
@@ -2786,24 +2907,24 @@ ${ESC}${SEP}%f+ 	.	....e..m..
 	...}
 ..	....mo...=...
 	.	.i.........${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 				do_excmd:.*?
 				if \\(k && ln\\[n]\\) \\{.*?
 					ex_command\\(ln \\+ n\\).*?
 (					if \\(xrow != orow && \\(xrow < xtop \\|\\|)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				break;
 			case ':':
 				ln = vi_enprompt\\(\":\", NULL, &k, &n\\);.*(					vi_drawmsg\\(ln\\);)
 				free\\(ln\\);
 				if \\(xquit\\) \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 					vi_word = _vi_word \\+ \\(!\\*vi_word \\* vi_wsel\\);
 				vi_rshift = 0;
 				vi_mod \\|= 1;.*(					xmpt = xmpt \\? xmpt : \\(xgrec > 1\\);)
 					continue;
 				} else if \\(!xmpt\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 46${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1453:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1453${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				}
@@ -2813,22 +2934,22 @@ ${ESC}${SEP}%f+ 				}
 				break;
 			case 'J':
 				vc_join\\(1, vi_arg <= 1 \\? 2 : vi_arg\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 47${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 48${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				vi_mod \\|= !xpac && xrow == orow \\? 8 : 1;
 				break;
 			case 'J':
 				vc_join\\(1, vi_arg <= 1 \\? 2 : vi_arg\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				}
 				xoff--;
 				rep_record\\(\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				vi_mod \\|= !xpac && xrow == orow \\? 8 : 1;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				break;
 			case 'J':
 				vc_join\\(1, vi_arg <= 1 \\? 2 : vi_arg\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	.	.}
 		.....f.-.
 ..	......e.....\\)
@@ -2836,24 +2957,24 @@ ${ESC}${SEP}%f+ 	.	.}
 .	.	......
 	....s.....:
 .............,....a......1.....:.........${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 				}.*?
 				xoff--;.*?
 				rep_record\\(\\).*?
 (				vi_mod \\|= !xpac && xrow == orow \\? 8 : 1;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 					c = xoff != lbuf_eol\\(xb, xrow, 1\\) \\? 'i' : 'a';
 					xb->useq \\+= xseq;
 					goto insert;.*(			case 'K': \\{)
 				preserve\\(int, xvis, xvis = 1;\\)
 				do \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 						} else
 							vi_delete\\(xrow, xoff - 1, xrow, xoff, 0\\);
 					}.*(					ex_exec\\(\";\\+1c\\\\n:-1\"\\);)
 				} while \\(vi_arg--\\);
 				restore\\(xvis\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 47${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1551:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1551${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				k = term_read\\(0\\);
@@ -2862,44 +2983,44 @@ ${ESC}${SEP}%f+ 				k = term_read\\(0\\);
 					xtop = xrow;
 					break;
 				case '\\.':${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 48${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 49${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					xtop = xrow;
 					break;
 				case '\\.':${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				k = term_read\\(0\\);
 				switch \\(k\\) \\{
 				case '\\\\n':${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^					xtop = xrow;\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					break;
 				case '\\.':${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .			.........r..d....
 ......i... ..\\).\\{
 ..	..... .....
 	....x........o..
 ..	..br...;
 ....ca....\\...${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 				k = term_read\\(0\\);.*?
 				switch \\(k\\) \\{.*?
 				case '\\\\n':.*?
 (					xtop = xrow;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				vi_mod \\|= vc_put\\(c\\);
 				break;
 			case 'z':.*(				case 'L':)
 				case 'R':
 					xtd = isupper\\(k\\)\\+1;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-10m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-10m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				break;
 			case 'p':
 			case 'P':.*(					xtd = tolower\\(k\\) == 'r' \\? -xtd : xtd;)
 					rstates\\[0]\\.s = NULL;
 					rstates\\[1]\\.s = NULL;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-13m 48${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-13m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1589:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1589${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					break;
@@ -2907,41 +3028,41 @@ ${ESC}${SEP}%f+ 					break;
 					xtop = MAX\\(0, xrow - xrows / 2\\);
 					break;
 				case '-':${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 49${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 50${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					xtop = MAX\\(0, xrow - xrows / 2\\);
 					break;
 				case '-':${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					break;
 				case '\\.':${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^					xtop = MAX\\(0, xrow - xrows / 2\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					break;
 				case '-':${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .......eak;
 ...	.as..'..:
 	..		xt.p..........x..w...x...../..\\).
 ..........;
 .	.	........:${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+2m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+2m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 					break;.*?
 				case '\\.':.*?
 (					xtop = MAX\\(0, xrow - xrows / 2\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				vi_mod \\|= vc_put\\(c\\);
 				break;
 			case 'z':.*(				case 'L':)
 				case 'R':
 					xtd = isupper\\(k\\)\\+1;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				break;
 			case 'p':
 			case 'P':.*(					xtd = tolower\\(k\\) == 'r' \\? -xtd : xtd;)
 					rstates\\[0]\\.s = NULL;
 					rstates\\[1]\\.s = NULL;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 49${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1592:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1592${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					break;
@@ -2950,44 +3071,44 @@ ${ESC}${SEP}%f+ 					break;
 					break;
 				case 'l':
 				case 'r':${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 50${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 51${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					xtop = MAX\\(0, xrow - xrows \\+ 1\\);
 					break;
 				case 'l':
 				case 'r':${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					break;
 				case '-':${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^					xtop = MAX\\(0, xrow - xrows \\+ 1\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					break;
 				case 'l':
 				case 'r':${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ....	......
 .	...... ..':
 ..		...o.......... ..ow......w.......
 ...	...eak.
 ...	c.se..l':
 ...	..s......${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+2m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+2m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 					break;.*?
 				case '-':.*?
 (					xtop = MAX\\(0, xrow - xrows \\+ 1\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				vi_mod \\|= vc_put\\(c\\);
 				break;
 			case 'z':.*(				case 'L':)
 				case 'R':
 					xtd = isupper\\(k\\)\\+1;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				break;
 			case 'p':
 			case 'P':.*(					xtd = tolower\\(k\\) == 'r' \\? -xtd : xtd;)
 					rstates\\[0]\\.s = NULL;
 					rstates\\[1]\\.s = NULL;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 50${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1595:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1595${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		}
@@ -2997,22 +3118,22 @@ ${ESC}${SEP}%f+ 		}
 			xleft = vi_col < xcols \\? 0 : vi_col - xcols / 2;
 		n = led_pos\\(ln, ren_cursor\\(ln, vi_col\\)\\);
 		if \\(xmpt > 1\\) \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 51${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 52${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		if \\(vi_col >= xleft \\+ xcols \\|\\| vi_col < xleft\\)
 			xleft = vi_col < xcols \\? 0 : vi_col - xcols / 2;
 		n = led_pos\\(ln, ren_cursor\\(ln, vi_col\\)\\);
 		if \\(xmpt > 1\\) \\{${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		}
 		if \\(vi_mod\\)
 			vi_col = vi_off2col\\(xb, xrow, xoff\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		if \\(vi_col >= xleft \\+ xcols \\|\\| vi_col < xleft\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			xleft = vi_col < xcols \\? 0 : vi_col - xcols / 2;
 		n = led_pos\\(ln, ren_cursor\\(ln, vi_col\\)\\);
 		if \\(xmpt > 1\\) \\{${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	..
 ......v.....\\)
 ...v..c.. ...._.f.2.........ro.....f...
@@ -3020,24 +3141,24 @@ ${ESC}${SEP}%f+ 	..
 		....f. =..i_..........s.. 0 ........ .....ls....;
 ....= ....p.s\\(.n,..e..c.r.o.........c..\\)..
 ..i....... ..1\\) .${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		}.*?
 		if \\(vi_mod\\).*?
 			vi_col = vi_off2col\\(xb, xrow, xoff\\);.*?
 (		if \\(vi_col >= xleft \\+ xcols \\|\\| vi_col < xleft\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			}
 			if \\(k < rstate->n\\)
 				xoff = k;.*(			if \\(!xpln\\))
 				term_chr\\('\\\\n'\\);
 			vi_drawmsg\\(\"\\[any key to continue] \"\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				if \\(!k\\)
 					n = ooff\\+1;
 				k \\+= n > ooff \\? 1 : -1;.*(			term_read\\(0\\);)
 			xmpt = 0;
 			vi_mod \\|= 1;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 51${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1741:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1741${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\)
@@ -3045,41 +3166,41 @@ ${ESC}${SEP}%f+ 				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\
 			vi_drawagain\\(xtop\\);
 		else if \\(\\*vi_word && \\(ooff != xoff \\|\\| vi_mod & 2\\)
 				&& xrow\\+1 < xtop \\+ xrows\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 52${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 53${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		else if \\(\\*vi_word && \\(ooff != xoff \\|\\| vi_mod & 2\\)
 				&& xrow\\+1 < xtop \\+ xrows\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\)
 				\\|\\| \\(\\*vi_word && orow != xrow\\)\\)
 			vi_drawagain\\(xtop\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		else if \\(\\*vi_word && \\(ooff != xoff \\|\\| vi_mod & 2\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				&& xrow\\+1 < xtop \\+ xrows\\)\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .	.... ..._.........or.w..=.x.........vi_...um.=.....
 ..........i..... &..o...... ..o...
 .......r...g.i....o..;
 .................rd ....oo.f.......f ..........&.2.
 .....&....w.. .....p.\\+.....s.${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 				\\|\\| \\(vi_lnnum && orow != xrow && !\\(vi_lnnum == 2\\)\\).*?
 				\\|\\| \\(\\*vi_word && orow != xrow\\)\\).*?
 			vi_drawagain\\(xtop\\);.*?
 (		else if \\(\\*vi_word && \\(ooff != xoff \\|\\| vi_mod & 2\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		}
 		term_record = 1;
 		if \\(vi_mod & 1 \\|\\| xleft != oleft.*(			vi_status = term_resized;)
 			vc_status\\(vi_tsm\\);
 			if \\(xmpt > 0\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-20m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-20m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 					vi_mod \\|= row1 == row && orow == xrow \\? 2 : 1;
 				}
 			}.*(				xmpt = 0;)
 		}
 		term_pos\\(xrow - xtop, n \\+ vi_lncol\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-23m 52${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-23m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1788:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1788${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				&& xrow\\+1 < xtop \\+ xrows\\)
@@ -3088,44 +3209,44 @@ ${ESC}${SEP}%f+ 				&& xrow\\+1 < xtop \\+ xrows\\)
 			vi_drawupdate\\(otop - xtop\\);
 		if \\(xhll\\) \\{
 			syn_blockhl = -1;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+1m 53${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+1m 54${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawrow\\(xrow\\+1\\);
 		else if \\(xtop != otop\\)
 			vi_drawupdate\\(otop - xtop\\);
 		if \\(xhll\\) \\{
 			syn_blockhl = -1;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				&& xrow\\+1 < xtop \\+ xrows\\)\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawrow\\(xrow\\+1\\);
 		else if \\(xtop != otop\\)${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawupdate\\(otop - xtop\\);
 		if \\(xhll\\) \\{
 			syn_blockhl = -1;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-2m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-2m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ..	.........1....top \\+.x..w.\\)
 ....i.........xr....\\).
 ..e..e..f ...op ...oto..
 ....i.d.a..p...e\\(o....-.xt..\\).
 ..i. \\(....\\) .
 ...s.........l.= .1.${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+1m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+1m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 				&& xrow\\+1 < xtop \\+ xrows\\).*?
 (			vi_drawrow\\(xrow\\+1\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		}
 		term_record = 1;
 		if \\(vi_mod & 1 \\|\\| xleft != oleft.*(			vi_status = term_resized;)
 			vc_status\\(vi_tsm\\);
 			if \\(xmpt > 0\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-18m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-18m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 					vi_mod \\|= row1 == row && orow == xrow \\? 2 : 1;
 				}
 			}.*(				xmpt = 0;)
 		}
 		term_pos\\(xrow - xtop, n \\+ vi_lncol\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-21m 53${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-21m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1790:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1790${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawupdate\\(otop - xtop\\);
@@ -3133,79 +3254,79 @@ ${ESC}${SEP}%f+ 			vi_drawupdate\\(otop - xtop\\);
 			syn_blockhl = -1;
 			if \\(xrow != orow && orow >= xtop && orow < xtop \\+ xrows\\)
 				if \\(!\\(vi_mod & 1\\)\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 54${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 55${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			if \\(xrow != orow && orow >= xtop && orow < xtop \\+ xrows\\)
 				if \\(!\\(vi_mod & 1\\)\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawupdate\\(otop - xtop\\);
 		if \\(xhll\\) \\{
 			syn_blockhl = -1;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			if \\(xrow != orow && orow >= xtop && orow < xtop \\+ xrows\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				if \\(!\\(vi_mod & 1\\)\\)\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ..	........p.a...o.op.-....p\\).
 	.........\\) .
 	..syn..l...h..=....
 	........ow........ ....r....=...o...&........x..........s.
 ....if.\\(.\\(.......&....${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 			vi_drawupdate\\(otop - xtop\\);.*?
 		if \\(xhll\\) \\{.*?
 			syn_blockhl = -1;.*?
 (			if \\(xrow != orow && orow >= xtop && orow < xtop \\+ xrows\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		}
 		term_record = 1;
 		if \\(vi_mod & 1 \\|\\| xleft != oleft.*(			vi_status = term_resized;)
 			vc_status\\(vi_tsm\\);
 			if \\(xmpt > 0\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-13m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-13m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 					vi_mod \\|= row1 == row && orow == xrow \\? 2 : 1;
 				}
 			}.*(				xmpt = 0;)
 		}
 		term_pos\\(xrow - xtop, n \\+ vi_lncol\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-16m 54${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-16m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1795:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1795${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 				if \\(!\\(vi_mod & 1\\)\\)
 					vi_drawrow\\(orow\\);
 			syn_blockhl = -1;
 			syn_reloadft\\(syn_addhl\\(\"\\^\\.\\+\", 2\\), 0\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+1m 55${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+1m 56${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 					vi_drawrow\\(orow\\);
 			syn_blockhl = -1;
 			syn_reloadft\\(syn_addhl\\(\"\\^\\.\\+\", 2\\), 0\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				if \\(!\\(vi_mod & 1\\)\\)\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}3??+1m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^					vi_drawrow\\(orow\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			syn_blockhl = -1;
 			syn_reloadft\\(syn_addhl\\(\"\\^\\.\\+\", 2\\), 0\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ ...... ....._... &....
 ......._.r...o....o.\\).
 ....y...loc... .....
 ......_.e.....t...._.........\\+.,..\\)....;${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+1m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+1m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 				if \\(!\\(vi_mod & 1\\)\\).*?
 (					vi_drawrow\\(orow\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		}
 		term_record = 1;
 		if \\(vi_mod & 1 \\|\\| xleft != oleft.*(			vi_status = term_resized;)
 			vc_status\\(vi_tsm\\);
 			if \\(xmpt > 0\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-11m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-11m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 					vi_mod \\|= row1 == row && orow == xrow \\? 2 : 1;
 				}
 			}.*(				xmpt = 0;)
 		}
 		term_pos\\(xrow - xtop, n \\+ vi_lncol\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-14m 55${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-14m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1797:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1797${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			syn_blockhl = -1;
@@ -3214,44 +3335,44 @@ ${ESC}${SEP}%f+ 			syn_blockhl = -1;
 			syn_reloadft\\(syn_addhl\\(NULL, 2\\), 0\\);
 		} else if \\(vi_mod & 2 && !\\(vi_mod & 1\\)\\) \\{
 			syn_blockhl = -1;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 56${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+2m 57${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawrow\\(xrow\\);
 			syn_reloadft\\(syn_addhl\\(NULL, 2\\), 0\\);
 		} else if \\(vi_mod & 2 && !\\(vi_mod & 1\\)\\) \\{
 			syn_blockhl = -1;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			syn_blockhl = -1;
 			syn_reloadft\\(syn_addhl\\(\"\\^\\.\\+\", 2\\), 0\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+2m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			vi_drawrow\\(xrow\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			syn_reloadft\\(syn_addhl\\(NULL, 2\\), 0\\);
 		} else if \\(vi_mod & 2 && !\\(vi_mod & 1\\)\\) \\{
 			syn_blockhl = -1;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .......bl..... .....
 .		.y....l.ad.t.s...........\\.......,.0\\).
 ..	.._..a..o..x...\\);
 .....n_...o....\\(sy..a....\\(N.LL..... ...
 		..e..e.i. ..i...d......&....i...... 1....
 .	..................${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+2m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+2m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 			syn_blockhl = -1;.*?
 			syn_reloadft\\(syn_addhl\\(\"\\^\\.\\+\", 2\\), 0\\);.*?
 (			vi_drawrow\\(xrow\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		}
 		term_record = 1;
 		if \\(vi_mod & 1 \\|\\| xleft != oleft.*(			vi_status = term_resized;)
 			vc_status\\(vi_tsm\\);
 			if \\(xmpt > 0\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 					vi_mod \\|= row1 == row && orow == xrow \\? 2 : 1;
 				}
 			}.*(				xmpt = 0;)
 		}
 		term_pos\\(xrow - xtop, n \\+ vi_lncol\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 56${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-11m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1800:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1800${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			syn_reloadft\\(syn_addhl\\(NULL, 2\\), 0\\);
@@ -3261,22 +3382,22 @@ ${ESC}${SEP}%f+ 			syn_reloadft\\(syn_addhl\\(NULL, 2\\), 0\\);
 		}
 		if \\(vi_status && xmpt < 1\\) \\{
 			xrows -= term_resized != vi_status;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 57${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 58${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			vi_drawrow\\(xrow\\);
 		}
 		if \\(vi_status && xmpt < 1\\) \\{
 			xrows -= term_resized != vi_status;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			syn_reloadft\\(syn_addhl\\(NULL, 2\\), 0\\);
 		} else if \\(vi_mod & 2 && !\\(vi_mod & 1\\)\\) \\{
 			syn_blockhl = -1;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			vi_drawrow\\(xrow\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		}
 		if \\(vi_status && xmpt < 1\\) \\{
 			xrows -= term_resized != vi_status;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ .........l.......y...d.......L...\\)...\\);
 	......e.i......m.... ...&....i.... ...\\)\\)..
 ........l..........;
@@ -3284,24 +3405,24 @@ ${ESC}${SEP}%f+ .........l.......y...d.......L...\\)...\\);
 	..
 .... ..._..a..........t . ....
 .	.x.o...-...e.m.r.....d........t.....${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 			syn_reloadft\\(syn_addhl\\(NULL, 2\\), 0\\);.*?
 		} else if \\(vi_mod & 2 && !\\(vi_mod & 1\\)\\) \\{.*?
 			syn_blockhl = -1;.*?
 (			vi_drawrow\\(xrow\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		}
 		term_record = 1;
 		if \\(vi_mod & 1 \\|\\| xleft != oleft.*(			vi_status = term_resized;)
 			vc_status\\(vi_tsm\\);
 			if \\(xmpt > 0\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 					vi_mod \\|= row1 == row && orow == xrow \\? 2 : 1;
 				}
 			}.*(				xmpt = 0;)
 		}
 		term_pos\\(xrow - xtop, n \\+ vi_lncol\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 57${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1804:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1804${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			if \\(xmpt > 0\\)
@@ -3311,22 +3432,22 @@ ${ESC}${SEP}%f+ 			if \\(xmpt > 0\\)
 		term_commit\\(\\);
 		xb->useq \\+= xseq;
 	}${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 58${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 59${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		term_pos\\(xrow - xtop, n \\+ vi_lncol\\);
 		term_commit\\(\\);
 		xb->useq \\+= xseq;
 	}${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 59${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 			if \\(xmpt > 0\\)
 				xmpt = 0;
 		}${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 59${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		term_pos\\(xrow - xtop, n \\+ vi_lncol\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 59${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 		term_commit\\(\\);
 		xb->useq \\+= xseq;
 	}${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 59${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}%f+ 	.......mpt....\\)
 .	..x... . .;
 	..
@@ -3334,28 +3455,29 @@ ${ESC}${SEP}%f+ 	.......mpt....\\)
 ..t..m.........;
 ....->.........s..;
 	.${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}6??+3m 59${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}grp 1${ESC}${SEP}%f+ 			if \\(xmpt > 0\\).*?
 				xmpt = 0;.*?
 		}.*?
 (		term_pos\\(xrow - xtop, n \\+ vi_lncol\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}7??m 59${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			xrows -= term_resized != vi_status;
 			vi_status = term_resized;
 			vc_status\\(vi_tsm\\);.*(	if \\(--xgrec == 0\\) \\{)
 		term_pos\\(xrows - !vi_status, 0\\);
 		if \\(xmpt > 0 && !xpln\\)${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 59${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
 ${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			vi_drawrow\\(xrow\\);
 		}
 		if \\(vi_status && xmpt < 1\\) \\{.*(			term_chr\\('\\\\n'\\);)
 		else
 			term_kill\\(\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 58${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a9${ESC}${SEP}'0${SEP}${LB}
+${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 59${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1813:a9${ESC}${SEP}'0${SEP}${LB}
 ${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1813${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'1i /* the last rendered column of the given line, measured out of band */
-static int vi_lncmax(char *s)
+${SEP}'1i /* the last rendered column of the given line, measured out of band;
+ * nl keeps the trailing newline, which is drawn as a blank cell */
+static int vi_lncmax(char *s, int nl)
 {
 	int cmax;
 	ren_state *r;
@@ -3364,7 +3486,7 @@ static int vi_lncmax(char *s)
 	preserve(ren_state*, rstate, rstate = rstates+2;)
 	r = ren_position(s);
 	cmax = MAX(0, r->cmax);
-	if (r->cmax >= 0 && *r->chrs[r->col[r->cmax]] == '\\n')
+	if (!nl && r->cmax >= 0 && *r->chrs[r->col[r->cmax]] == '\\n')
 		cmax = MAX(0, cmax - 1);
 	restore(rstate)
 	return cmax;
@@ -3375,7 +3497,7 @@ int vi_lnrows(char *s)
 {
 	if (!xlw || !s)
 		return 1;
-	return vi_lncmax(s) / ren_wrapw(vi_lncol) + 1;
+	return vi_lncmax(s, 1) / ren_wrapw(vi_lncol) + 1;
 }
 
 /* the terminal row at which the given line starts */
@@ -3476,7 +3598,7 @@ static void vi_wrapstep(int *row, int cnt, int dir)
 {
 	int w = ren_wrapw(vi_lncol), cmax;
 	for (; cnt > 0; cnt--) {
-		cmax = vi_lncmax(lbuf_get(xb, *row));
+		cmax = vi_lncmax(lbuf_get(xb, *row), 0);
 		if (dir > 0 && vi_col + w <= cmax) {
 			vi_col += w;
 		} else if (dir > 0) {
@@ -3489,7 +3611,7 @@ static void vi_wrapstep(int *row, int cnt, int dir)
 		} else {
 			if (*row <= 0)
 				break;
-			cmax = vi_lncmax(lbuf_get(xb, --(*row)));
+			cmax = vi_lncmax(lbuf_get(xb, --(*row)), 0);
 			vi_col = MIN(cmax / w * w + vi_col % w, cmax);
 		}
 	}
@@ -3505,7 +3627,7 @@ static int vi_rendrow(char *s, int trow, int lncol)
 		return 1;
 	}
 	w = ren_wrapw(lncol);
-	h = vi_lncmax(s) / w + 1;
+	h = vi_lncmax(s, 1) / w + 1;
 	for (k = MAX(0, -trow); k < h && trow + k < xrows; k++) {
 		if (k && lncol) {		/* blank gutter of continuation rows */
 			term_pos(trow + k, 0);
@@ -3524,30 +3646,43 @@ ${SEP}'3,#+2c 	if (xmpt == 1 && !vi_status && trow == xrows - 1)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:133:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4s/row - xtop/trow/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:165:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5s/n;/n 1;/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:170:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'6s/xt/xlw ? vi_botrow() + 1 : xt/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:183:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'7c 		i = vi_rendrow(s, trow, l1);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:196:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'8s/0\\)/0 && trow >= 0)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:205:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'9s/row - xtop/trow/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:207:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'10c 		if (trow >= 0)
+${SEP}'6i 	if (xhllw && s && vi_lnrows(s) > 1) {
+		led_att la;
+		la.s = s;
+		la.off = 0;			/* block start */
+		la.att = SYN_BGMK(8);
+		if (!led_attsb)
+			sbuf_make(led_attsb, sizeof(la) * 2)
+		sbuf_mem(led_attsb, &la, (int)sizeof(la))
+		la.off = uc_slen(s) - 1;	/* block end */
+		la.att = SYN_BGMK(9);
+		sbuf_mem(led_attsb, &la, (int)sizeof(la))
+	}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:172:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'7s/xt/xlw ? vi_botrow() + 1 : xt/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:183:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'8c 		i = vi_rendrow(s, trow, l1);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:196:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'9s/0\\)/0 && trow >= 0)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:205:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'10s/row - xtop/trow/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:207:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'11c 		if (trow >= 0)
 			RS(2, led_prender(tmp, trow, 0, 0, l1))
 		else
 			rstate = rstates;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:210:m10${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'11s/n;/n i;/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:213:m11${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'12c 	i = vi_rendrow(s, trow, 0);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:215:m12${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'13i 	return i;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:210:m11${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'12s/n;/n i;/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:213:m12${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'13c 	i = vi_rendrow(s, trow, 0);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:215:m13${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'14i 	return i;
 }
 
 /* draw a buffer line during insertion; return the rows it occupies */
 int vi_drawline(int row, int trow)
 {
 	return vi_drawrow(row, trow);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:216:m13${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'14i 	int trow;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:221:m14${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'15,#+1c 	if (!xlw) {
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:216:m14${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'15i 	int trow;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:221:m15${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'16,#+1c 	if (!xlw) {
 		for (; i < xtop + xrows; i++)
 			vi_drawrow(i, i - xtop);
 		return;
@@ -3555,38 +3690,38 @@ ${SEP}'15,#+1c 	if (!xlw) {
 	vi_rshift = 0;			/* the word overlay is not drawn when wrapping */
 	for (trow = vi_srow(i); trow < xrows; i++)
 		trow += vi_drawrow(i, trow);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:223:m15${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'16i 	if (xlw) {
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:223:m16${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'17i 	if (xlw) {
 		vi_drawagain(xtop);
 		return;
 	}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:230:m16${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'17s/i\\)/i, xrows - n + i)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:237:m17${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'18s/i\\)/i, i)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:241:m18${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'19c 		vi_center(*row);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:698:m19${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'20c 			vi_center(*row);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:734:m20${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'21,#+1c 		else if (cmd < 0 && vi_unseen(*row, !vi_status))
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:230:m17${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'18s/i\\)/i, xrows - n + i)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:237:m18${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'19s/i\\)/i, i)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:241:m19${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'20c 		vi_center(*row);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:698:m20${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'21c 			vi_center(*row);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:734:m21${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'22,#+1c 		else if (cmd < 0 && vi_unseen(*row, !vi_status))
 			vi_center(*row);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:747:m21${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'22c 		if (xlw && mv != '\\n')
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:747:m22${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'23c 		if (xlw && mv != '\\n')
 			vi_wrapstep(row, cnt, 1);
 		else
 			*row = MIN(*row + cnt, lbuf_len(xb) - 1);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:753:m22${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'23c 		if (xlw && mv != '-')
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:753:m23${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'24c 		if (xlw && mv != '-')
 			vi_wrapstep(row, cnt, -1);
 		else
 			*row = MAX(*row - cnt, 0);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:757:m23${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'24c 		*row = xlw ? MIN(vi_fullrow() + cnt - 1, vi_botrow())
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:757:m24${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'25c 		*row = xlw ? MIN(vi_fullrow() + cnt - 1, vi_botrow())
 			: MIN(xtop + cnt - 1, lbuf_len(xb) - 1);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:763:m24${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'25c 		*row = xlw ? MAX(vi_fullrow(), vi_lastrow() - cnt + 1)
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:763:m25${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'26c 		*row = xlw ? MAX(vi_fullrow(), vi_lastrow() - cnt + 1)
 			: MIN(xtop + xrows - 1 - cnt + 1, lbuf_len(xb) - 1);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:766:m25${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'26c 		if (!xlw) {
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:766:m26${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'27c 		if (!xlw) {
 			*row = MIN(xtop + xrows / 2, lbuf_len(xb) - 1);
 			goto lnregion;
 		}
@@ -3596,44 +3731,44 @@ ${SEP}'26c 		if (!xlw) {
 		*row = xtop;
 		restore(xtop)
 		restore(xtopsub)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:769:m26${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'27,#+1c 		if (cmd < 0 && vi_unseen(*row, 0))
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:769:m27${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'28,#+1c 		if (cmd < 0 && vi_unseen(*row, 0))
 			vi_center(*row);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:775:m27${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'28,#+2c 	if (!xlw) {
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:775:m28${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'29,#+2c 	if (!xlw) {
 		term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
 		term_room(r1 < xtop ? xtop - xrow : r1 - r2 -
 				(*vi_word && ln && *ln != '\\n' && r1 != r2));
 	}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:859:m28${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'29s/\\)/) {/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:863:m29${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'30i 		xtopsub = 0;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:859:m29${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'30s/\\)/) {/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:863:m30${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'31i 		xtopsub = 0;
 	}
 	led_row = xlw ? MAX(0, vi_srow(r1)) : -1;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:864:m30${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'31c 		if (xlw) {
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:864:m31${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'32c 		if (xlw) {
 			if (vi_srow(xrow) >= xrows) {
 				while (vi_srow(xrow) >= xrows && vi_topadv(1));
 				vi_drawagain(xtop);
 			}
 		} else if (xrow - xtop == xrows)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1015:m31${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'32,#+1c 	if (xlw) {
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1015:m32${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'33,#+1c 	if (xlw) {
 		led_row = MAX(0, vi_srow(row));
 	} else {
 		led_row = -1;
 		term_pos(row - xtop, 0);
 		term_room(cmdo);
 	}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1037:m32${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'33,#+1c 	vi_topadv(cnt);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1037:m33${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'34,#+1c 	vi_topadv(cnt);
 	xrow = MAX(xrow, vi_fullrow());
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1094:m33${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'34,#+1c 	vi_topadv(-cnt);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1094:m34${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'35,#+1c 	vi_topadv(-cnt);
 	xrow = MIN(xrow, vi_lastrow());
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1100:m34${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'35s/ \\\\\\\\/ { \\\\\\\\/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1164:m35${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'36,#+1c 	xtopsub = 0; \\
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1100:m35${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'36s/ \\\\\\\\/ { \\\\\\\\/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1164:m36${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'37,#+1c 	xtopsub = 0; \\
 } else if (!xlw) { \\
 	if (xrow >= xtop + xrows) \\
 		xtop = xrow - xrows + 1; \\
@@ -3652,55 +3787,55 @@ ${SEP}'36,#+1c 	xtopsub = 0; \\
 	} else \\
 		term_pos(xrow - xtop, (pos) + (lncol)); \\
 } \\
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1166:m36${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'37c 		vi_curpos(led_pos(lbuf_get(xb, xrow), vi_col), 0)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1178:m37${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'38i 		int otopsub = xtopsub;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1185:m38${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'40c 			if (xlw)
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1166:m37${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'38c 		vi_curpos(led_pos(lbuf_get(xb, xrow), vi_col), 0)
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1178:m38${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'40i 		int otopsub = xtopsub;
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1185:m40${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'41c 			if (xlw)
 				vi_drawrow(vi_botrow(), vi_srow(vi_botrow()));
 			else
 				vi_drawrow(otop + xrows - 1, xrows - 1);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1199:m40${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'41c 					vi_topadv(-n);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1252:m41${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'43c 				if (xlw)
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1199:m41${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'43c 					vi_topadv(-n);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1252:m43${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'44c 				if (xlw)
 					vi_topadv(n);
 				else if (xtop < lbuf_len(xb) - xrows)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1263:m43${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'44,#+1c 				else if (vi_unseen(xrow, 0))
-					vi_center(xrow);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1302:m44${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1263:m44${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'45,#+1c 				else if (vi_unseen(xrow, 0))
 					vi_center(xrow);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1313:m45${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'46,#+2c 					if (xrow != orow && vi_unseen(xrow, !vi_status))
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1302:m45${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'46,#+1c 				else if (vi_unseen(xrow, 0))
+					vi_center(xrow);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1313:m46${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'47,#+2c 					if (xrow != orow && vi_unseen(xrow, !vi_status))
 						vi_center(xrow);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1453:m46${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'47s/xp/xlw && !xp/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1551:m47${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'48c 					vi_toprows(xrow, 0);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1589:m48${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'49c 					vi_center(xrow);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1592:m49${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'50c 					vi_toprows(xrow, xrows -
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1453:m47${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'48s/xp/xlw && !xp/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1551:m48${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'49c 					vi_toprows(xrow, 0);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1589:m49${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'50c 					vi_center(xrow);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1592:m50${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'51c 					vi_toprows(xrow, xrows -
 						vi_lnrows(lbuf_get(xb, xrow)));
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1595:m50${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'51c 		if (xlw)
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1595:m51${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'52c 		if (xlw)
 			xleft = 0;
 		else if (vi_col >= xleft + xcols || vi_col < xleft)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1741:m51${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'52s/& \\(/& !xlw && (/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1788:m52${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'53,#+1c 			vi_drawrow(xrow+1, xrow+1 - xtop);
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1741:m52${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'53s/& \\(/& !xlw && (/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1788:m53${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'54,#+1c 			vi_drawrow(xrow+1, xrow+1 - xtop);
 		else if (xtop != otop || xtopsub != otopsub)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1790:m53${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}?'54s/ xtop \\+ xrows/= vi_botrow()/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'54s/ xtop \\+ x(.*)s(\\))/= vi_bot\\1(\\2)/${ESC}${SEP}2??${ESC}${SEP}2??'54${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:1795:s2${SEP}${LB}
-${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1795:m54${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1790:m54${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}?'55s/ xtop \\+ xrows/= vi_botrow()/${ESC}${SEP}1??${ESC}${SEP}1??1q${ESC}${SEP}'55s/ xtop \\+ x(.*)s(\\))/= vi_bot\\1(\\2)/${ESC}${SEP}2??${ESC}${SEP}2??'55${ESC}${ESC}${ESC}${SEP}${OK2}p OK vi.c:1795:s2${SEP}${LB}
+${SEP}1;2??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1795:m55${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}${LB}
-${SEP}'55s/w\\)/w, vi_srow(orow))/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1797:m55${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'56s/w\\)/w, vi_srow(xrow))/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1800:m56${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'57s/w\\)/w, vi_srow(xrow))/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1804:m57${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'58c 		vi_curpos(n, vi_lncol)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1813:m58${ESC}${SEP}pr${INTR}${QF2}}${SEP}b5${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${SEP}'56s/w\\)/w, vi_srow(orow))/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1797:m56${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'57s/w\\)/w, vi_srow(xrow))/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1800:m57${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'58s/w\\)/w, vi_srow(xrow))/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1804:m58${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'59c 		vi_curpos(n, vi_lncol)
+${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1813:m59${ESC}${SEP}pr${INTR}${QF2}}${SEP}b5${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
 ${ESC}${SEP}%f> int ren_cursor\\(char \\*s, int pos\\);
 int ren_noeol\\(char \\*s, int p\\);
 int ren_off\\(char \\*s, int p\\);
@@ -3890,6 +4025,7 @@ ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:219:m1${ESC}${SEP}
 ${SEP}'2i extern int led_row;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:396:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'3i extern int xlw;
+extern int xhllw;
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:429:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'4s/p;/p, xtopsub;/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:436:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
 ${SEP}'5i 	xtopsub = 0; \\
@@ -3905,31 +4041,34 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 70157040..59afc11c 100644
+index 70157040..04ae3307 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -295,7 +295,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -294,8 +294,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+ (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
- ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+-((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl(?:lw|[lwpr])?|left|lim|led|vis)\
 +|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|lw|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 67e5e1a6..1308e9d9 100644
+index 67e5e1a6..8b19f747 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -18,6 +18,7 @@ int xpac;			/* print autocomplete options */
+@@ -18,6 +18,8 @@ int xpac;			/* print autocomplete options */
  int xmpt;			/* whether to prompt after printing > 1 lines in vi */
  int xpr;			/* ex_cprint register */
  int xlim = -1;			/* rendering cutoff for non cursor lines */
 +int xlw;			/* soft line wrap column, 0 = off */
++int xhllw = 1;			/* highlight soft linewrap block start/end */
  int xseq = 1;			/* undo/redo sequence */
  int xerr = 1;			/* error handling -
  				bit 1: print errors, bit 2: early return, bit 3: ignore errors */
-@@ -26,6 +27,7 @@ int xrr;			/* record register */
+@@ -26,6 +28,7 @@ int xrr;			/* record register */
  
  int xquit;			/* exit if positive, force quit or unwind if negative */
  int xrow, xoff, xtop;		/* current row, column, and top row */
@@ -3937,7 +4076,14 @@ index 67e5e1a6..1308e9d9 100644
  int xbufcur;			/* number of active buffers */
  int xgrec;			/* global vi/ex recursion depth */
  int xkmap;			/* the current keymap */
-@@ -1586,6 +1588,15 @@ EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
+@@ -1581,11 +1584,20 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ 	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
+ 
+ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
+-EO(rr) EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+-EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
++EO(rr) EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hllw) EO(hll)
++EO(hlw) EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
@@ -3953,7 +4099,15 @@ index 67e5e1a6..1308e9d9 100644
  _EO(left,
  	if (*loc)
  		xleft = (xcols / 2) * atoi(loc);
-@@ -1691,6 +1702,7 @@ static struct excmd {
+@@ -1683,6 +1695,7 @@ static struct excmd {
+ 	EO(ts),
+ 	EO(td),
+ 	EO(order),
++	EO(hllw),
+ 	EO(hll),
+ 	EO(hlw),
+ 	EO(hlp),
+@@ -1691,6 +1704,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -4139,15 +4293,16 @@ index 4fd79fba..f4bf1835 100644
  		for (n = 0; n < max && (l = uc_len(ss)); n++)
  			ss += l;
 diff --git a/vi.c b/vi.c
-index eecf2335..3e541769 100644
+index eecf2335..b4a61adb 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -111,6 +111,147 @@ static int vi_nextcol(char *ln, int dir, int *off)
+@@ -111,6 +111,148 @@ static int vi_nextcol(char *ln, int dir, int *off)
  	return 0;
  }
  
-+/* the last rendered column of the given line, measured out of band */
-+static int vi_lncmax(char *s)
++/* the last rendered column of the given line, measured out of band;
++ * nl keeps the trailing newline, which is drawn as a blank cell */
++static int vi_lncmax(char *s, int nl)
 +{
 +	int cmax;
 +	ren_state *r;
@@ -4156,7 +4311,7 @@ index eecf2335..3e541769 100644
 +	preserve(ren_state*, rstate, rstate = rstates+2;)
 +	r = ren_position(s);
 +	cmax = MAX(0, r->cmax);
-+	if (r->cmax >= 0 && *r->chrs[r->col[r->cmax]] == '\n')
++	if (!nl && r->cmax >= 0 && *r->chrs[r->col[r->cmax]] == '\n')
 +		cmax = MAX(0, cmax - 1);
 +	restore(rstate)
 +	return cmax;
@@ -4167,7 +4322,7 @@ index eecf2335..3e541769 100644
 +{
 +	if (!xlw || !s)
 +		return 1;
-+	return vi_lncmax(s) / ren_wrapw(vi_lncol) + 1;
++	return vi_lncmax(s, 1) / ren_wrapw(vi_lncol) + 1;
 +}
 +
 +/* the terminal row at which the given line starts */
@@ -4268,7 +4423,7 @@ index eecf2335..3e541769 100644
 +{
 +	int w = ren_wrapw(vi_lncol), cmax;
 +	for (; cnt > 0; cnt--) {
-+		cmax = vi_lncmax(lbuf_get(xb, *row));
++		cmax = vi_lncmax(lbuf_get(xb, *row), 0);
 +		if (dir > 0 && vi_col + w <= cmax) {
 +			vi_col += w;
 +		} else if (dir > 0) {
@@ -4281,7 +4436,7 @@ index eecf2335..3e541769 100644
 +		} else {
 +			if (*row <= 0)
 +				break;
-+			cmax = vi_lncmax(lbuf_get(xb, --(*row)));
++			cmax = vi_lncmax(lbuf_get(xb, --(*row)), 0);
 +			vi_col = MIN(cmax / w * w + vi_col % w, cmax);
 +		}
 +	}
@@ -4290,7 +4445,7 @@ index eecf2335..3e541769 100644
  #define vi_drawnum(func) \
  { \
  nrow = xrow; \
-@@ -125,14 +266,34 @@ for (i = 0, ret = 0;; i++) { \
+@@ -125,14 +267,34 @@ for (i = 0, ret = 0;; i++) { \
  	ret = func; \
  } } \
  
@@ -4304,7 +4459,7 @@ index eecf2335..3e541769 100644
 +		return 1;
 +	}
 +	w = ren_wrapw(lncol);
-+	h = vi_lncmax(s) / w + 1;
++	h = vi_lncmax(s, 1) / w + 1;
 +	for (k = MAX(0, -trow); k < h && trow + k < xrows; k++) {
 +		if (k && lncol) {		/* blank gutter of continuation rows */
 +			term_pos(trow + k, 0);
@@ -4329,7 +4484,7 @@ index eecf2335..3e541769 100644
  		int noff, nrow, ret;
  		c = lbuf_get(xb, xrow);
  		if (row != xrow+1 || !c || *c == '\n') {
-@@ -162,12 +323,12 @@ static void vi_drawrow(int row)
+@@ -162,14 +324,26 @@ static void vi_drawrow(int row)
  		preserve(int, xtd, xtd = dir_context(c) * 2;)
  		preserve(int, ftidx,)
  		syn_setft(n_ft);
@@ -4343,8 +4498,22 @@ index eecf2335..3e541769 100644
 +		return 1;
  	}
  	s = lbuf_get(xb, row);
++	if (xhllw && s && vi_lnrows(s) > 1) {
++		led_att la;
++		la.s = s;
++		la.off = 0;			/* block start */
++		la.att = SYN_BGMK(8);
++		if (!led_attsb)
++			sbuf_make(led_attsb, sizeof(la) * 2)
++		sbuf_mem(led_attsb, &la, (int)sizeof(la))
++		la.off = uc_slen(s) - 1;	/* block end */
++		la.att = SYN_BGMK(9);
++		sbuf_mem(led_attsb, &la, (int)sizeof(la))
++	}
  	skip:
-@@ -180,7 +341,7 @@ static void vi_drawrow(int row)
+ 	rstate += row != xrow;
+ 	if (!s)
+@@ -180,7 +354,7 @@ static void vi_drawrow(int row)
  		if (lnnum == 1 || lnnum & 2) {
  			c = itoa(row+1-vi_rshift, tmp);
  			*c++ = ' ';
@@ -4353,7 +4522,7 @@ index eecf2335..3e541769 100644
  		}
  		p = c;
  		if (lnnum == 1 || lnnum & 4 || lnnum & 8) {
-@@ -193,7 +354,7 @@ static void vi_drawrow(int row)
+@@ -193,7 +367,7 @@ static void vi_drawrow(int row)
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -4362,7 +4531,7 @@ index eecf2335..3e541769 100644
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
  		syn_setft(nn_ft);
-@@ -202,43 +363,64 @@ static void vi_drawrow(int row)
+@@ -202,43 +376,64 @@ static void vi_drawrow(int row)
  					memchr(" \t", *rstate->chrs[ren_off(s, i1)], 2);)
  				i1 = ren_next(s, i1, 1);
  			i1 -= (itoa(abs(xrow-row+vi_rshift), tmp1) - tmp1)+1;
@@ -4436,7 +4605,7 @@ index eecf2335..3e541769 100644
  	}
  }
  
-@@ -695,7 +877,7 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -695,7 +890,7 @@ static int vi_region(int cmd, int *row, int *off)
  			ex_bufpostfix(&bufs[i], 1);
  		syn_setft(xb_ft);
  		vc_status(0);
@@ -4445,7 +4614,7 @@ index eecf2335..3e541769 100644
  		vi_mod |= 1;
  		break;
  	case TK_CTL('t'):
-@@ -731,7 +913,7 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -731,7 +926,7 @@ static int vi_region(int cmd, int *row, int *off)
  		if (vi_search(mv, cnt, row, off, 1))
  			return -1;
  		if (cmd < 0)
@@ -4454,7 +4623,7 @@ index eecf2335..3e541769 100644
  		vi_mod |= mv == '/' || mv == '?';
  		break;
  	case '*':
-@@ -744,36 +926,53 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -744,36 +939,53 @@ static int vi_region(int cmd, int *row, int *off)
  		}
  		if (vi_search(cadir < 0 ? 'N' : 'n', 1, row, off, 1))
  			cadir = -cadir;
@@ -4517,7 +4686,7 @@ index eecf2335..3e541769 100644
  		if (mv == '\'')
  			goto lnregion;
  		*off = var;
-@@ -856,12 +1055,17 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -856,12 +1068,17 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	}
  	vi_regput(vi_ybuf, rsb.s, lnmode);
  	free(rsb.s);
@@ -4539,7 +4708,7 @@ index eecf2335..3e541769 100644
  	sbuf_mem(sb, ln, l1)
  	key = led_input(sb, post, postn, r1 - (r1 - r2), 0, &postn);
  	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
-@@ -1012,7 +1216,12 @@ static int vc_insert(int cmd)
+@@ -1012,7 +1229,12 @@ static int vc_insert(int cmd)
  		xoff = lbuf_eol(xb, xrow, 1);
  	else if (cmd == 'o') {
  		xrow++;
@@ -4553,7 +4722,7 @@ index eecf2335..3e541769 100644
  			vi_drawagain(++xtop);
  	}
  	xoff = ren_noeol(ln, xoff);
-@@ -1034,8 +1243,13 @@ static int vc_insert(int cmd)
+@@ -1034,8 +1256,13 @@ static int vc_insert(int cmd)
  		postn = rstate->n - off;
  		post = ln + l1;
  	}
@@ -4569,7 +4738,7 @@ index eecf2335..3e541769 100644
  	sbuf_mem(sb, ln, l1)
  	key = led_input(sb, post, postn, row, cmdo << 2, &postn);
  	if (postn != l1 || cmdo || !ln)
-@@ -1091,14 +1305,14 @@ static void vc_join(int spc, int cnt)
+@@ -1091,14 +1318,14 @@ static void vc_join(int spc, int cnt)
  
  static void vi_scrollforward(int cnt)
  {
@@ -4588,7 +4757,7 @@ index eecf2335..3e541769 100644
  }
  
  static int vc_replace(void)
-@@ -1161,10 +1375,27 @@ static void vi_argcmd(int arg, char cmd)
+@@ -1161,10 +1388,27 @@ static void vi_argcmd(int arg, char cmd)
  #define topfix() \
  if (xrow < 0 || xrow >= lbuf_len(xb)) \
  	xrow = lbuf_len(xb) ? lbuf_len(xb) - 1 : 0; \
@@ -4619,7 +4788,7 @@ index eecf2335..3e541769 100644
  
  void vi(int init)
  {
-@@ -1175,7 +1406,7 @@ void vi(int init)
+@@ -1175,7 +1419,7 @@ void vi(int init)
  		topfix()
  		vi_col = vi_off2col(xb, xrow, xoff);
  		vi_drawagain(xtop);
@@ -4628,7 +4797,7 @@ index eecf2335..3e541769 100644
  	}
  	while (!xquit) {
  		int nrow = xrow;
-@@ -1183,6 +1414,7 @@ void vi(int init)
+@@ -1183,6 +1427,7 @@ void vi(int init)
  		int orow = nrow;
  		int ooff = noff;
  		int otop = xtop;
@@ -4636,7 +4805,7 @@ index eecf2335..3e541769 100644
  		int oleft = xleft;
  		icmd_pos = 0;
  		vi_mod = 0;
-@@ -1196,7 +1428,10 @@ void vi(int init)
+@@ -1196,7 +1441,10 @@ void vi(int init)
  		}
  		if (xmpt == 1) {
  			xmpt = 0;
@@ -4648,7 +4817,7 @@ index eecf2335..3e541769 100644
  		}
  		if (led_attsb)
  			sbuf_cut(led_attsb, 0)
-@@ -1249,7 +1484,7 @@ void vi(int init)
+@@ -1249,7 +1497,7 @@ void vi(int init)
  				n = vi_scrollud ? vi_scrollud : xrows / 2;
  				xrow = MAX(0, xrow - n);
  				if (xtop > 0)
@@ -4657,7 +4826,7 @@ index eecf2335..3e541769 100644
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
  				break;
-@@ -1260,7 +1495,9 @@ void vi(int init)
+@@ -1260,7 +1508,9 @@ void vi(int init)
  					vi_scrollud = vi_arg;
  				n = vi_scrollud ? vi_scrollud : xrows / 2;
  				xrow = MIN(MAX(0, lbuf_len(xb) - 1), xrow + n);
@@ -4668,7 +4837,7 @@ index eecf2335..3e541769 100644
  					xtop = MIN(lbuf_len(xb) - xrows, xtop + n);
  				xoff = lbuf_indents(xb, xrow);
  				vi_mod |= 4;
-@@ -1299,8 +1536,8 @@ void vi(int init)
+@@ -1299,8 +1549,8 @@ void vi(int init)
  					goto undo;
  				} else if (!vi_arg)
  					vi_drawmsg_mpt("undo failed")
@@ -4679,7 +4848,7 @@ index eecf2335..3e541769 100644
  				break;
  			case TK_CTL('r'):
  				redo:
-@@ -1310,8 +1547,8 @@ void vi(int init)
+@@ -1310,8 +1560,8 @@ void vi(int init)
  					goto redo;
  				} else if (!vi_arg)
  					vi_drawmsg_mpt("redo failed")
@@ -4690,7 +4859,7 @@ index eecf2335..3e541769 100644
  				break;
  			case TK_CTL('g'):
  				vi_tsm = 0;
-@@ -1450,9 +1687,8 @@ void vi(int init)
+@@ -1450,9 +1700,8 @@ void vi(int init)
  				do_excmd:
  				if (k && ln[n]) {
  					ex_command(ln + n)
@@ -4702,7 +4871,7 @@ index eecf2335..3e541769 100644
  				}
  				vi_mod |= 1;
  				if (!xmpt)
-@@ -1548,7 +1784,7 @@ void vi(int init)
+@@ -1548,7 +1797,7 @@ void vi(int init)
  				}
  				xoff--;
  				rep_record()
@@ -4711,7 +4880,7 @@ index eecf2335..3e541769 100644
  				break;
  			case 'J':
  				vc_join(1, vi_arg <= 1 ? 2 : vi_arg);
-@@ -1586,13 +1822,14 @@ void vi(int init)
+@@ -1586,13 +1835,14 @@ void vi(int init)
  				k = term_read(0);
  				switch (k) {
  				case '\n':
@@ -4729,7 +4898,7 @@ index eecf2335..3e541769 100644
  					break;
  				case 'l':
  				case 'r':
-@@ -1738,7 +1975,9 @@ void vi(int init)
+@@ -1738,7 +1988,9 @@ void vi(int init)
  		}
  		if (vi_mod)
  			vi_col = vi_off2col(xb, xrow, xoff);
@@ -4740,7 +4909,7 @@ index eecf2335..3e541769 100644
  			xleft = vi_col < xcols ? 0 : vi_col - xcols / 2;
  		n = led_pos(ln, ren_cursor(ln, vi_col));
  		if (xmpt > 1) {
-@@ -1785,23 +2024,23 @@ void vi(int init)
+@@ -1785,23 +2037,23 @@ void vi(int init)
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
  				|| (*vi_word && orow != xrow))
  			vi_drawagain(xtop);
@@ -4771,7 +4940,7 @@ index eecf2335..3e541769 100644
  		}
  		if (vi_status && xmpt < 1) {
  			xrows -= term_resized != vi_status;
-@@ -1810,7 +2049,7 @@ void vi(int init)
+@@ -1810,7 +2062,7 @@ void vi(int init)
  			if (xmpt > 0)
  				xmpt = 0;
  		}
@@ -4781,7 +4950,7 @@ index eecf2335..3e541769 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 6466711d..26aa37b4 100644
+index 6466711d..ca0823f3 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -217,6 +217,7 @@ int ren_pos(char *s, int off);
@@ -4800,11 +4969,12 @@ index 6466711d..26aa37b4 100644
  int led_pos(char *s, int pos);
  void led_done(void);
  
-@@ -427,13 +429,14 @@ extern int xpac;
+@@ -427,13 +429,15 @@ extern int xpac;
  extern int xmpt;
  extern int xpr;
  extern int xlim;
 +extern int xlw;
++extern int xhllw;
  extern int xseq;
  extern int xerr;
  extern int xfr;
@@ -4816,7 +4986,7 @@ index 6466711d..26aa37b4 100644
  extern int xbufcur;
  extern int xgrec;
  extern int xkmap;
-@@ -461,6 +464,7 @@ extern struct buf *ex_pbuf;
+@@ -461,6 +465,7 @@ extern struct buf *ex_pbuf;
  	xrow = buf->row; \
  	xoff = buf->off; \
  	xtop = buf->top; \
@@ -4824,7 +4994,7 @@ index 6466711d..26aa37b4 100644
  	xtd = buf->td; \
  
  #define exbuf_save(buf) \
-@@ -545,6 +549,10 @@ char *conf_digraph(int c1, int c2);
+@@ -545,6 +550,10 @@ char *conf_digraph(int c1, int c2);
  void vi(int init);
  extern int vi_hidch;
  extern int vi_lncol;
