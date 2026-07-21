@@ -175,7 +175,8 @@ linewrap_v1.sh
 --------------
 Soft line wrap implementation using buffer only approach.
 Adds new :lw command which can be used to specify the max column
-to which soft linewrap lines.
+to which soft linewrap lines. Adds a new ex option "hllw" to
+highlight linewrapped boundaries.
 Trades off flexibility for simplicity. Cannot change linewrapping
 when buffer is modified. Different edit semantics. Visual edits
 are line based.
@@ -184,7 +185,8 @@ linewrap_v2.sh
 --------------
 Soft line wrap implementation using render only approach.
 Adds new :lw command which can be used to specify the max column
-to which soft linewrap lines.
+to which soft linewrap lines. Adds a new ex option "hllw" to
+highlight linewrapped boundaries.
 No limitation from v1. Default edit semantics. Visual edits are
 geometry based.
 
