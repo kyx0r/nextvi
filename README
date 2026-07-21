@@ -171,9 +171,17 @@ Improvements to autocomplete, now the word completion will also use
 text that prefixes the insert when it makes sense. Makes it possible
 to autocomplete in more desired situations.
 
-linewrap.sh
+linewrap_v1.sh
 --------------
-Soft line wrap
+Soft line wrap implementation using buffer only approach.
+Adds new :lw command which can be used to specify the max column
+to which soft linewrap lines.
+Trades off flexibility to simplicity. Cannot change linewrapping
+when buffer is modified.
+
+linewrap_v2.sh
+--------------
+Soft line wrap implementation using render only approach.
 Adds new :lw command which can be used to specify the max column to which
 soft linewrap lines.
 
