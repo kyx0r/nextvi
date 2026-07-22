@@ -1269,6 +1269,96 @@ else
 fi
 
 echo ""
+echo "=== replay (-pr/-po) tests ==="
+
+# The compat session replays a generated script in ONE editor: buffers
+# persist across blocks, nothing is written, and the last block hands the
+# session over. The handover is driven by P2VI_EX, which writes the
+# session's buffers out so their in-RAM state can be checked - the disk
+# copies of the replayed files must stay untouched.
+if command -v script >/dev/null 2>&1; then
+
+R="$TMPDIR/rp"
+R_P2VI="$PWD/patch2vi"
+mkdir -p "$R"
+
+# <script> <P2VI_EX>: replay under a pty, ignoring the exit status (the
+# derivation stage after the handover is not implemented yet)
+run_pr() {
+	P2VI_EX="$2" script -qec \
+		"sh -c 'cd $R && $R_P2VI -pr $1 /dev/null'" /dev/null \
+		> "$R/log" 2>&1 || true
+}
+
+printf 'a\nb\nc\n' > "$R/f1.txt"
+printf 'x\ny\nz\n' > "$R/f2.txt"
+cp "$R/f1.txt" "$R/f1.orig"
+cp "$R/f2.txt" "$R/f2.orig"
+
+# Two blocks over the same files, listed in a DIFFERENT order by each:
+# block 2 edits its own b1 (f1.txt), which is the session's buffer 0, and
+# its edit only matches if it sees block 1's edit rather than the disk.
+{
+	printf '#!/bin/sh -e\nVI=${VI:-vi}\n'
+	printf 'SEP="$(printf '"'"'\\001'"'"')"\n'
+	printf 'ESC="$(printf '"'"'\\002'"'"')"\n'
+	printf 'printf '"'"'%%s\\n'"'"' "|sc! ${ESC}${SEP}|:vis 3${SEP}b0${SEP}%%ya 98${SEP}1s/a/A/${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}2q" > "$P2VIF"\n'
+	printf "EXINIT='%%ya 97:? %%@97' \$VI -e 'f1.txt' 'f2.txt' \"\$P2VIF\"\n"
+	printf 'printf '"'"'%%s\\n'"'"' "|sc! ${ESC}${SEP}|:vis 3${SEP}b1${SEP}1s/A/AA/${SEP}vis 2${SEP}b1${SEP}w${SEP}2q" > "$P2VIF"\n'
+	printf "EXINIT='%%ya 97:? %%@97' \$VI -e 'f2.txt' 'f1.txt' \"\$P2VIF\"\n"
+	printf 'exit 0\n'
+} > "$R/two.sh"
+
+rm -f "$R/out0" "$R/out1"
+run_pr two.sh "b0:w! $R/out0:b1:w! $R/out1:q!"
+if [ "$(cat "$R/out0" 2>/dev/null)" = "$(printf 'AA\nb\nc')" ]; then
+	ok "replay: a block sees the previous block's edits (b<N> remapped)"
+else
+	fail "replay: a block sees the previous block's edits (b<N> remapped)"
+	cat "$R/out0" 2>/dev/null | sed 's/^/    /'
+fi
+if diff -q "$R/f1.txt" "$R/f1.orig" >/dev/null 2>&1 &&
+   diff -q "$R/f2.txt" "$R/f2.orig" >/dev/null 2>&1; then
+	ok "replay writes nothing to disk"
+else
+	fail "replay writes nothing to disk"
+fi
+
+# A real generated script (multi-file, multi-line body) replays the same
+# way: its edits land in the buffers, never in the files
+printf 'a\nB\nc\n' > "$R/f1.want"
+printf 'x\nY\nz\n' > "$R/f2.want"
+{
+	diff -u "$R/f1.orig" "$R/f1.want" | sed '1s|.*|--- a/f1.txt|;2s|.*|+++ b/f1.txt|'
+	diff -u "$R/f2.orig" "$R/f2.want" | sed '1s|.*|--- a/f2.txt|;2s|.*|+++ b/f2.txt|'
+} > "$R/d.diff" || true
+"$R_P2VI" -r "$R/d.diff" > "$R/real.sh"
+sed -i "s|\$VI -e '[^']*' '[^']*'|\$VI -e 'f1.txt' 'f2.txt'|" "$R/real.sh"
+rm -f "$R/out0" "$R/out1"
+run_pr real.sh "b0:w! $R/out0:b1:w! $R/out1:q!"
+if diff -q "$R/out0" "$R/f1.want" >/dev/null 2>&1 &&
+   diff -q "$R/out1" "$R/f2.want" >/dev/null 2>&1 &&
+   diff -q "$R/f1.txt" "$R/f1.orig" >/dev/null 2>&1; then
+	ok "replay applies a generated script in RAM only"
+else
+	fail "replay applies a generated script in RAM only"
+fi
+
+# A script that does not apply must abort the replay, not hand over a
+# half-patched session: phase 1/2 failures are made fatal and loud
+printf 'zzz\nqqq\n' > "$R/f1.txt"
+run_pr real.sh 'q!'
+cp "$R/f1.orig" "$R/f1.txt"
+if tr -d '\r' < "$R/log" | grep -q "^replay: block 1 failed with status 1"; then
+	ok "replay aborts when a replayed block fails"
+else
+	fail "replay aborts when a replayed block fails"
+	tail -3 "$R/log" | sed 's/^/    /'
+fi
+
+fi
+
+echo ""
 echo "=== Results ==="
 echo "Passed: $PASS"
 echo "Failed: $FAIL"

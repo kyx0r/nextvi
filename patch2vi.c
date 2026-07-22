@@ -3656,20 +3656,14 @@ static int ed_done(void)
 	return st;
 }
 
-/* Drop every trace of the session: buffers (and with them marks and undo
- * history), temporary buffers, registers, the anchored-status tags of
- * "??" and the last search. A block started after this sees exactly what
- * a freshly spawned editor sees. */
-static void ed_free(void)
+/* The session state that is not a buffer: temporary buffers, registers,
+ * the anchored-status tags of "??", the last search and the globals a
+ * body may have changed. Dropped between blocks even when the buffers
+ * themselves persist (replay mode), so no block inherits another's
+ * register cache, tags or separators. */
+static void ed_free_session(void)
 {
 	int i;
-	for (i = 0; i < xbufcur; i++)
-		bufs_free(i);
-	xbufcur = 0;
-	free(bufs);
-	bufs = NULL;
-	ex_buf = ex_pbuf = ex_tpbuf = NULL;
-	xbufsmax = 0;
 	for (i = 0; i < (int)LEN(tempbufs); i++) {
 		free(tempbufs[i].path);
 		lbuf_free(tempbufs[i].lb);
@@ -3702,6 +3696,21 @@ static void ed_free(void)
 	xerr = 1;
 	xseq = 1;
 	xvis = 0;
+}
+
+/* Drop every trace of the session: the state above plus the buffers (and
+ * with them their marks and undo history). A block started after this
+ * sees exactly what a freshly spawned editor sees. */
+static void ed_free(void)
+{
+	for (int i = 0; i < xbufcur; i++)
+		bufs_free(i);
+	xbufcur = 0;
+	free(bufs);
+	bufs = NULL;
+	ex_buf = ex_pbuf = ex_tpbuf = NULL;
+	xbufsmax = 0;
+	ed_free_session();
 }
 
 /* Run the embedded nextvi on in-memory buffers: text under name and, when
@@ -4931,6 +4940,18 @@ static const char *sh_get(const char *name)
 	return getenv(name);
 }
 
+/* Header assignments belong to one script; a session replaying two of
+ * them (-po) must not let the first script's assignments shadow the
+ * environment while the second's conditionals are read. */
+static void sh_reset(void)
+{
+	for (int i = 0; i < nshvars; i++) {
+		free(shvars[i].name);
+		free(shvars[i].val);
+	}
+	nshvars = 0;
+}
+
 static void sh_set(const char *name, const char *val)
 {
 	for (int i = 0; i < nshvars; i++)
@@ -5227,15 +5248,16 @@ static int parse_vi_call(const char *s, p2vi_block_t *blk)
 	return 0;
 }
 
-/* Read the script's executable region (everything before "exit 0") and
- * run every block it holds, in order, stopping at the first failure the
- * way "sh -e" does. */
-static int exec_p2vi_script(FILE *in)
+/* Read the script's executable region (everything before "exit 0") into
+ * one block per editor invocation. Parsing is separate from running: -e
+ * runs each block in its own editor lifetime, while the compat session
+ * replays them all in one, and that needs the whole list up front. */
+static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 {
 	char line[MAX_LINE];
 	const char *body_end = " > \"$P2VIF\"";
 	p2vi_block_t blk = {0};
-	int st = 0, skip = 0, in_body = 0, ret = 0, j;
+	int skip = 0, in_body = 0, ret = 0, j;
 	sbuf_smake(body, MAX_LINE)
 	while (ret >= 0 && fgets(line, sizeof(line), in)) {
 		char *seg = line;
@@ -5286,15 +5308,14 @@ static int exec_p2vi_script(FILE *in)
 			if (!(ret = sh_expand(body->s, exp))) {
 				sbuf_null(exp)
 				blk.body = uc_dup(exp->s);
-				st = run_body(&blk);
-				if (st < 0)
-					ret = -1;
-			}
+				*blks = erealloc(*blks, (*nblks + 1)
+						 * sizeof(**blks));
+				(*blks)[(*nblks)++] = blk;
+				memset(&blk, 0, sizeof(blk));
+			} else
+				free_block(&blk);
 			free(exp->s);
-			free_block(&blk);
 			sbuf_cut(body, 0)
-			if (st > 0)
-				break;
 			continue;
 		}
 		/* the name of a leading NAME=value assignment */
@@ -5311,7 +5332,234 @@ static int exec_p2vi_script(FILE *in)
 	free(body->s);
 	if (in_body && ret >= 0)
 		ret = sh_err("body", "unterminated printf");
+	return ret;
+}
+
+static void free_blocks(p2vi_block_t *blks, int nblks)
+{
+	for (int i = 0; i < nblks; i++)
+		free_block(&blks[i]);
+	free(blks);
+}
+
+/* -e: every block in order, each in its own editor lifetime, stopping at
+ * the first failure the way "sh -e" does. */
+static int exec_p2vi_script(FILE *in)
+{
+	p2vi_block_t *blks = NULL;
+	int nblks = 0, st = 0, ret = parse_p2vi_script(in, &blks, &nblks);
+	for (int i = 0; ret >= 0 && i < nblks; i++) {
+		if ((st = run_body(&blks[i])) < 0)
+			ret = -1;
+		if (st)
+			break;
+	}
+	free_blocks(blks, nblks);
 	return ret < 0 ? 1 : st;
+}
+
+/*
+ * Replay: the same blocks, but as one editor session. Deriving a
+ * compatibility patch means seeing the tree an origin script leaves
+ * behind, so the buffers persist across blocks (a later block naming a
+ * file an earlier one edited switches to the edited buffer, ec.c's
+ * bufs_find path, with no disk round-trip), nothing is ever written, and
+ * the last block hands the session to the user. Everything that is not a
+ * buffer is still reset per block, as it is under -e: an editor the shell
+ * spawned per block shares no register cache, "??" tag or separator with
+ * the one before it.
+ */
+
+/* The script's separator byte, the delimiter of the body's commands */
+static int sh_sepbyte(void)
+{
+	const char *s = sh_get("SEP");
+	if (!s || !s[0] || s[1]) {
+		fprintf(stderr, "replay: script has no single-byte SEP\n");
+		return -1;
+	}
+	return (unsigned char)s[0];
+}
+
+#define BODY_DELIM(c) ((c) == sep || (c) == '\n')
+
+/* Drop the body's trailing writes: "b<N> SEP w" per file and the final
+ * "2q". Parsed from the end, since "vis 2" (which stays) also occurs
+ * inside the QF1/QF2/INTR fragments and so anchors nothing. */
+static int strip_body_tail(char *body, int sep)
+{
+	int n = strlen(body), s;
+	while (n && (body[n - 1] == '\n' || body[n - 1] == sep))
+		n--;
+	for (s = n; s && !BODY_DELIM(body[s - 1]); s--);
+	if (n - s != 2 || strncmp(body + s, "2q", 2))
+		return sh_err("body", "no trailing quit");
+	for (n = s ? s - 1 : 0; n > 0; ) {
+		for (s = n; s && !BODY_DELIM(body[s - 1]); s--);
+		if (n - s != 1 || body[s] != 'w')
+			break;
+		n = s ? s - 1 : 0;
+		for (s = n; s && !BODY_DELIM(body[s - 1]); s--);
+		if (n - s < 2 || body[s] != 'b')
+			return sh_err("body", "write without a buffer");
+		n = s ? s - 1 : 0;
+	}
+	body[n] = '\0';
+	return 0;
+}
+
+/* b<N> indexes the block's own file list, but a replay session's buffer
+ * indices are session-global: a file another block opened first keeps its
+ * index here. Rewrite the tokens with the session's own numbers. Only a
+ * whole command counts as one, so the literal ":b0:" inside INTR (whose
+ * commands are colon-separated) is left alone. */
+static char *remap_bufnums(const char *body, int sep, int *bmap, int nmap)
+{
+	const char *s = body, *e, *d;
+	sbuf_smake(out, MAX_LINE)
+	while (*s) {
+		for (e = s; *e && !BODY_DELIM(*e); e++);
+		for (d = s + 1; d < e && isdigit((unsigned char)*d); d++);
+		if (*s == 'b' && d > s + 1 && d == e) {
+			int n = atoi(s + 1);
+			if (n >= nmap) {
+				free(out->s);
+				sh_err("body", "buffer out of range");
+				return NULL;
+			}
+			sb_printf(out, "b%d", bmap[n]);
+		} else
+			sbuf_mem(out, s, e - s)
+		if (*e)
+			sbuf_chr(out, *e++)
+		s = e;
+	}
+	sbufn_ret(out, out->s)
+}
+
+/* The session's buffer index for a path, opening it if this is the first
+ * block to name it. Mirrors bufs_open()'s append order, so the index the
+ * body sees is the index the editor uses. */
+static int sess_buf(char ***paths, int *npaths, const char *path)
+{
+	for (int i = 0; i < *npaths; i++)
+		if (!strcmp((*paths)[i], path))
+			return i;
+	*paths = erealloc(*paths, (*npaths + 1) * sizeof(char *));
+	(*paths)[*npaths] = uc_dup(path);
+	return (*npaths)++;
+}
+
+/* Run every block in one session. With handover, the last block leaves
+ * the editor to the user (a full vi(1), on the terminal) instead of
+ * returning at the end of its body. The session's buffers are left alive
+ * for the caller to read back; ed_free() drops them. */
+static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
+{
+	char **paths = NULL, *body, *ln;
+	int npaths = 0, *bmap = NULL, nmap = 0, i, k, st = 0, sep, bad = 0;
+	if ((sep = sh_sepbyte()) < 0)
+		return -1;
+	/* sized for the union of every block's files: an eviction would
+	 * silently drop an edited buffer from the derived patch */
+	xbufsalloc = MAX(64, xbufsalloc);
+	for (i = 0; i < nblks && st == 0; i++) {
+		int last = handover && i == nblks - 1;
+		if (ed_init(last) < 0) {
+			st = -1;
+			break;
+		}
+		xvis |= 2;
+		if (blks[i].npaths > nmap) {
+			nmap = blks[i].npaths;
+			bmap = erealloc(bmap, nmap * sizeof(int));
+		}
+		for (k = 0; k < blks[i].npaths; k++) {
+			bmap[k] = sess_buf(&paths, &npaths, blks[i].paths[k]);
+			xmpt = 0;
+			ec_edit("", "e", blks[i].paths[k]);
+		}
+		xmpt = 0;
+		xvis &= ~4;
+		body = uc_dup(blks[i].body);
+		if (strip_body_tail(body, sep) < 0
+		    || !(ln = remap_bufnums(body, sep, bmap, blks[i].npaths))) {
+			free(body);
+			ed_done();
+			st = -1;
+			break;
+		}
+		free(body);
+		body = ln;
+		ex_regput(P2VI_REG, body, 0);
+		ex_exec(body);
+		free(body);
+		/* a body that quit did so on failure (its own quit tail is
+		 * gone), so the user is handed nothing and the status
+		 * stands */
+		if (last && !xquit) {
+			/* hand over a plain editor: the body's own separator,
+			 * escape and mode came from its "|sc!" prologue and
+			 * the "vis 2" the stripped tail left behind */
+			xvis = 0;
+			xsep = ':';
+			xesc = '\\';
+			xerr = 1;
+			if ((ln = getenv("P2VI_EX")))	/* test harness hook */
+				ex_command(ln)
+			if (!xquit)
+				vi(1);
+		}
+		if (!xquit)	/* no counted quit: the block simply ended */
+			xquit = -1;
+		st = ed_done();
+		bad = i + 1;
+		if (i + 1 < nblks || !handover) {
+			/* the next block starts as a fresh editor over the
+			 * same buffers: saved (so :e and :q see no
+			 * modification and undo cannot cross the boundary),
+			 * and with no session state carried over */
+			if (xbufcur)
+				bufs_switch(0);
+			for (k = 0; k < xbufcur; k++)
+				lbuf_saved(bufs[k].lb, 1);
+			ed_free_session();
+		}
+	}
+	for (i = 0; i < npaths; i++)
+		free(paths[i]);
+	free(paths);
+	free(bmap);
+	if (st > 0)
+		fprintf(stderr, "replay: block %d failed with status %d\n",
+			bad, st);
+	return st;
+}
+
+/* Replay a generated script over the tree as it is on disk, in one
+ * session whose buffers the caller reads back. Phase 1 is made fatal
+ * (QF1) and loud (DBG1) through the script's own conditionals, which read
+ * the environment: a compat patch derived from a half-applied origin
+ * would silently lack the changes that did not land. */
+static int replay_script(const char *path, int handover)
+{
+	p2vi_block_t *blks = NULL;
+	int nblks = 0, st;
+	FILE *f = fopen(path, "r");
+	if (!f) {
+		perror(path);
+		return -1;
+	}
+	sh_reset();
+	exec_script = path;
+	setenv("DBG1", "1", 1);
+	setenv("QF1", "1", 1);
+	st = parse_p2vi_script(f, &blks, &nblks);
+	fclose(f);
+	if (st >= 0)
+		st = replay_blocks(blks, nblks, handover);
+	free_blocks(blks, nblks);
+	return st;
 }
 
 /*
@@ -5323,6 +5571,8 @@ static int exec_p2vi_script(FILE *in)
  * built-in differ below.
  */
 static int edit_mode;		/* -E: edit, then emit the diff as a script */
+static int compat_mode;		/* -pr: 1 (pre), -po: 2 (post) */
+static const char *compat_origin;	/* the script it is derived against */
 
 #define DIFF_CTX 3		/* context lines around a hunk */
 #define DIFF_MAX_CELLS 4000000	/* largest LCS table worth building */
@@ -5798,6 +6048,22 @@ int main(int argc, char **argv)
 			}
 			continue;
 		}
+		/* -pr/-po origin.sh: derive a compatibility patch against
+		 * that script, applied before (pre) or after (post) the
+		 * target, which is the ordinary positional input */
+		if (argv[i][1] == 'p' && (argv[i][2] == 'r' || argv[i][2] == 'o')) {
+			compat_mode = argv[i][2] == 'r' ? 1 : 2;
+			if (argv[i][3])
+				compat_origin = argv[i] + 3;
+			else if (i + 1 < argc)
+				compat_origin = argv[++i];
+			else {
+				fprintf(stderr, "Option -p%c requires an argument\n",
+					argv[i][2]);
+				usage(argv[0]);
+			}
+			continue;
+		}
 		/* bare -e: execute the script; tested after -er/-ew so it
 		 * cannot shadow them, and kept out of the cluster loop
 		 * whose letters are a r i h d E */
@@ -6101,6 +6367,21 @@ int main(int argc, char **argv)
 
 	if (in && in != stdin)
 		fclose(in);
+
+	/* -pr/-po: replay the origin script in one session and hand the
+	 * tree it leaves behind to the user, who reshapes it so the target
+	 * applies. Runs before the separator is picked, so the bytes of
+	 * whatever the session produces are seen by find_unused_byte(). */
+	if (compat_mode) {
+		if (replay_script(compat_origin, 1) != 0) {
+			ed_free();
+			return 1;
+		}
+		ed_free();
+		fprintf(stderr, "-p%c: compat derivation is not implemented yet\n",
+			compat_mode == 1 ? 'r' : 'o');
+		return 1;
+	}
 
 	/* Find separator character */
 	int sep = find_unused_byte();
