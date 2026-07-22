@@ -1066,6 +1066,99 @@ else
 	fail "custom_text + override -d fixed point"
 fi
 
+echo ""
+echo "=== -E edit-to-script tests ==="
+
+# -E edits a file in the built-in editor and turns the buffer it leaves
+# behind into the script; the file itself is never written, so the diff
+# comes from patch2vi's own differ, not from disk.
+E_P2VI="$PWD/patch2vi"
+
+# run_E <workdir> <excmds> <patch2vi args...>
+run_E() {
+	local d="$1" ex="$2"
+	shift 2
+	P2VI_EX="$ex" script -qec \
+		"sh -c 'cd $d && $E_P2VI -E $*'" /dev/null >/dev/null 2>&1
+}
+
+mkdir -p "$TMPDIR/E1"
+printf 'one\ntwo\nthree\nfour\nfive\nsix\n' > "$TMPDIR/E1/f.txt"
+cp "$TMPDIR/E1/f.txt" "$TMPDIR/E1/orig.txt"
+printf 'one\ntwo\nTHREE\nfour\nfive\nsix\n' > "$TMPDIR/E1/want.txt"
+printf '/^three$/ { print "THREE"; next }\n{ print }\n' > "$TMPDIR/E1/filt.awk"
+run_E "$TMPDIR/E1" '%!awk -f filt.awk:q!' f.txt out.sh
+
+# the edited file stays untouched and the script is ready to run
+if [ -x "$TMPDIR/E1/out.sh" ] &&
+   diff -q "$TMPDIR/E1/f.txt" "$TMPDIR/E1/orig.txt" >/dev/null 2>&1; then
+	ok "-E writes an executable script, not the file"
+else
+	fail "-E writes an executable script, not the file"
+fi
+
+# and applying it reproduces the edit
+( cd "$TMPDIR/E1" && VI="$VI" ./out.sh ) >/dev/null 2>&1
+if diff -q "$TMPDIR/E1/f.txt" "$TMPDIR/E1/want.txt" >/dev/null 2>&1; then
+	ok "-E script applies the edit"
+else
+	fail "-E script applies the edit"
+fi
+
+# the embedded patch is a plain unified diff, byte for byte diff(1)'s
+awk '/^=== PATCH2VI PATCH ===$/ { f = 1; next } f' "$TMPDIR/E1/out.sh" |
+	tail -n +3 > "$TMPDIR/E1/mine.diff"
+diff -u "$TMPDIR/E1/orig.txt" "$TMPDIR/E1/want.txt" |
+	tail -n +3 > "$TMPDIR/E1/gnu.diff"
+if diff -q "$TMPDIR/E1/gnu.diff" "$TMPDIR/E1/mine.diff" >/dev/null 2>&1; then
+	ok "-E diff matches diff -u"
+else
+	fail "-E diff matches diff -u"
+	diff "$TMPDIR/E1/gnu.diff" "$TMPDIR/E1/mine.diff" | sed 's/^/    /'
+fi
+
+# without a second argument the script goes to stdout
+mkdir -p "$TMPDIR/E2"
+cp "$TMPDIR/E1/orig.txt" "$TMPDIR/E2/f.txt"
+cp "$TMPDIR/E1/filt.awk" "$TMPDIR/E2/filt.awk"
+run_E "$TMPDIR/E2" '%!awk -f filt.awk:q!' 'f.txt > gen.sh'
+chmod +x "$TMPDIR/E2/gen.sh"
+( cd "$TMPDIR/E2" && VI="$VI" ./gen.sh ) >/dev/null 2>&1
+if diff -q "$TMPDIR/E2/f.txt" "$TMPDIR/E1/want.txt" >/dev/null 2>&1; then
+	ok "-E emits to stdout without an output file"
+else
+	fail "-E emits to stdout without an output file"
+fi
+
+# an unchanged buffer has nothing to convert
+mkdir -p "$TMPDIR/E4"
+cp "$TMPDIR/E1/orig.txt" "$TMPDIR/E4/f.txt"
+run_E "$TMPDIR/E4" 'q' f.txt out.sh
+if [ -x "$TMPDIR/E4/out.sh" ] &&
+   ! grep -q '^# Patch:' "$TMPDIR/E4/out.sh"; then
+	ok "-E on an untouched buffer emits no patch"
+else
+	fail "-E on an untouched buffer emits no patch"
+fi
+
+# a file that does not exist yet is a creation: /dev/null on the left,
+# and -E still leaves the filesystem alone
+mkdir -p "$TMPDIR/E3"
+printf 'hello\nworld\n' > "$TMPDIR/E3/content.txt"
+run_E "$TMPDIR/E3" 'r content.txt:q!' new.txt out.sh
+if [ ! -e "$TMPDIR/E3/new.txt" ] &&
+   grep -q '^--- /dev/null$' "$TMPDIR/E3/out.sh"; then
+	ok "-E diffs a missing file as a creation"
+else
+	fail "-E diffs a missing file as a creation"
+fi
+( cd "$TMPDIR/E3" && VI="$VI" ./out.sh ) >/dev/null 2>&1
+if diff -q "$TMPDIR/E3/new.txt" "$TMPDIR/E3/content.txt" >/dev/null 2>&1; then
+	ok "-E creation script creates the file"
+else
+	fail "-E creation script creates the file"
+fi
+
 else
 	echo "  SKIP: script(1) not available"
 fi

@@ -3,6 +3,7 @@
  *
  * Usage: patch2vi [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]
  *        patch2vi -e script.sh
+ *        patch2vi -E file [out.sh]
  *
  * Uses raw ex mode (:vis 3) with dynamic separator and escape character
  * selection via :sc! to avoid conflicts with : % ! \ characters in
@@ -21,7 +22,10 @@
  * files, no argv, no EXINIT. build_patch2vi.sh renames nextvi's main()
  * out of the way for the build and restores it after. The same embedded
  * editor also executes generated scripts without a shell (-e), one
- * editor lifetime per script block.
+ * editor lifetime per script block, and turns a plain editing session
+ * into a script (-E): the file is opened for editing, never written, and
+ * the buffer the editor leaves behind is diffed against it by the
+ * built-in differ to produce the input the converter normally reads.
  */
 
 #include "vi.c"
@@ -5275,10 +5279,361 @@ static int exec_p2vi_script(FILE *in)
 	return ret < 0 ? 1 : st;
 }
 
+/*
+ * -E: edit a file in the built-in nextvi and convert what changed into a
+ * script. Nothing is written back: the buffer the editor leaves behind is
+ * diffed against the file as it was on disk, and that diff feeds the same
+ * pipeline a diff read from stdin would. Hence the built-in differ below.
+ */
+static int edit_mode;		/* -E: edit, then emit the diff as a script */
+static const char *edit_out;	/* where the script goes, NULL for stdout */
+
+#define DIFF_CTX 3		/* context lines around a hunk */
+#define DIFF_MAX_CELLS 4000000	/* largest LCS table worth building */
+
+typedef struct {
+	char t;		/* ' ' keep, '-' delete, '+' insert */
+	char *s;	/* the line, owned by the old/new arrays */
+} dop_t;
+
+typedef struct {
+	dop_t *v;
+	int n, cap;
+} dops_t;
+
+static void dop_add(dops_t *d, char t, char *s)
+{
+	if (d->n >= d->cap) {
+		d->cap = d->cap ? d->cap * 2 : 64;
+		d->v = erealloc(d->v, d->cap * sizeof(dop_t));
+	}
+	d->v[d->n].t = t;
+	d->v[d->n++].s = s;
+}
+
+/* Ops turning old[os..oe) into new[ns..ne), by way of the classic longest
+ * common subsequence table. A table too large to be worth building degrades
+ * to deleting the whole range and inserting the whole replacement. */
+static void diff_region(dops_t *d, char **old, int os, int oe,
+			char **new, int ns, int ne)
+{
+	int n = oe - os, m = ne - ns, i, j;
+	int *c;
+	if ((double)(n + 1) * (m + 1) > DIFF_MAX_CELLS) {
+		for (i = os; i < oe; i++)
+			dop_add(d, '-', old[i]);
+		for (j = ns; j < ne; j++)
+			dop_add(d, '+', new[j]);
+		return;
+	}
+	c = emalloc((size_t)(n + 1) * (m + 1) * sizeof(int));
+#define LCS(i, j) c[(i) * (m + 1) + (j)]
+	for (i = n; i >= 0; i--) {
+		for (j = m; j >= 0; j--) {
+			if (i == n || j == m)
+				LCS(i, j) = 0;
+			else if (!strcmp(old[os + i], new[ns + j]))
+				LCS(i, j) = LCS(i + 1, j + 1) + 1;
+			else
+				LCS(i, j) = MAX(LCS(i + 1, j), LCS(i, j + 1));
+		}
+	}
+	i = j = 0;
+	while (i < n && j < m) {
+		if (!strcmp(old[os + i], new[ns + j])) {
+			dop_add(d, ' ', old[os + i]);
+			i++;
+			j++;
+		} else if (LCS(i + 1, j) >= LCS(i, j + 1)) {
+			/* deletions first, so a change reads -... then +... */
+			dop_add(d, '-', old[os + i]);
+			i++;
+		} else {
+			dop_add(d, '+', new[ns + j]);
+			j++;
+		}
+	}
+	for (; i < n; i++)
+		dop_add(d, '-', old[os + i]);
+	for (; j < m; j++)
+		dop_add(d, '+', new[ns + j]);
+#undef LCS
+	free(c);
+}
+
+/* An op list as unified diff text for path: header, then one hunk per run
+ * of changes, DIFF_CTX context lines around it. Nothing is written when
+ * the list holds no change at all. The op list is the only input, so any
+ * other way of deriving one (line identity, say) serializes through here. */
+static void emit_dops(sbuf *out, const char *path, int is_new, dops_t *dp)
+{
+	dops_t d = *dp;
+	int i, j, k, start, end, last, oc, nc, changed = 0;
+	int *ono, *nno;
+	for (i = 0; i < d.n; i++)
+		if (d.v[i].t != ' ')
+			changed = 1;
+	if (!changed)
+		return;
+	/* the original and the new line number each op sits at */
+	ono = emalloc((d.n + 1) * sizeof(int));
+	nno = emalloc((d.n + 1) * sizeof(int));
+	for (i = 0, j = 1, k = 1; i < d.n; i++) {
+		ono[i] = j;
+		nno[i] = k;
+		j += d.v[i].t != '+';
+		k += d.v[i].t != '-';
+	}
+	ono[d.n] = j;
+	nno[d.n] = k;
+	if (is_new)
+		sbuf_str(out, "--- /dev/null\n")
+	else {
+		sbuf_str(out, "--- a/")
+		sbuf_str(out, path)
+		sbuf_chr(out, '\n')
+	}
+	sbuf_str(out, "+++ b/")
+	sbuf_str(out, path)
+	sbuf_chr(out, '\n')
+	for (i = 0; i < d.n; ) {
+		if (d.v[i].t == ' ') {
+			i++;
+			continue;
+		}
+		/* one hunk: from here to the last change still close enough
+		 * that its context would touch this one's */
+		start = MAX(i - DIFF_CTX, 0);
+		last = i;
+		for (j = i; j < d.n; ) {
+			if (d.v[j].t != ' ') {
+				last = j++;
+				continue;
+			}
+			for (k = j; k < d.n && d.v[k].t == ' '; k++)
+				;
+			if (k >= d.n || k - j > 2 * DIFF_CTX)
+				break;
+			j = k;
+		}
+		end = last + 1 + DIFF_CTX;
+		if (end > d.n)
+			end = d.n;
+		oc = nc = 0;
+		for (k = start; k < end; k++) {
+			oc += d.v[k].t != '+';
+			nc += d.v[k].t != '-';
+		}
+		sb_printf(out, "@@ -%d,%d +%d,%d @@\n",
+			  oc ? ono[start] : ono[start] - 1, oc,
+			  nc ? nno[start] : nno[start] - 1, nc);
+		for (k = start; k < end; k++) {
+			sbuf_chr(out, d.v[k].t)
+			sbuf_str(out, d.v[k].s)
+			sbuf_chr(out, '\n')
+		}
+		i = end;
+	}
+	free(ono);
+	free(nno);
+}
+
+/* The difference between old[] and new[] as a unified diff for path. */
+static void emit_unified_diff(sbuf *out, const char *path, int is_new,
+			      char **old, int nold, char **new, int nnew)
+{
+	dops_t d;
+	int pre = 0, suf = 0, i;
+	memset(&d, 0, sizeof(d));
+	/* the LCS table only ever sees what head and tail trimming leaves */
+	while (pre < nold && pre < nnew && !strcmp(old[pre], new[pre]))
+		pre++;
+	while (suf < nold - pre && suf < nnew - pre &&
+	       !strcmp(old[nold - 1 - suf], new[nnew - 1 - suf]))
+		suf++;
+	for (i = 0; i < pre; i++)
+		dop_add(&d, ' ', old[i]);
+	diff_region(&d, old, pre, nold - suf, new, pre, nnew - suf);
+	for (i = nold - suf; i < nold; i++)
+		dop_add(&d, ' ', old[i]);
+	emit_dops(out, path, is_new, &d);
+	free(d.v);
+}
+
+static void free_lines(char **v, int n)
+{
+	for (int i = 0; i < n; i++)
+		free(v[i]);
+	free(v);
+}
+
+/* Edit path in the built-in editor and write the resulting unified diff to
+ * out. A path that does not exist yet is diffed as a file creation. */
+static int edit_to_diff(const char *path, sbuf *out)
+{
+	char **old = NULL, **new = NULL, *edited, *p, *nl;
+	int nold = 0, nnew = 0, ocap = 0, ncap = 0, is_new = 0;
+	char buf[MAX_LINE];
+	FILE *f = fopen(path, "r");
+	sbuf_smake(sb, MAX_LINE)
+	if (!f)
+		is_new = 1;
+	else {
+		while (fgets(buf, sizeof(buf), f)) {
+			int len = strlen(buf);
+			if (len && buf[len - 1] == '\n')
+				buf[len - 1] = '\0';
+			arr_append(&old, &nold, &ocap, buf);
+			sbuf_str(sb, buf)
+			sbuf_chr(sb, '\n')
+		}
+		fclose(f);
+	}
+	sbuf_null(sb)
+	edited = edit_buffers(path, sb->s, NULL, NULL);
+	free(sb->s);
+	ed_free();
+	if (!edited) {
+		free_lines(old, nold);
+		return -1;
+	}
+	for (p = edited; *p; p = nl + 1) {
+		if ((nl = strchr(p, '\n')))
+			*nl = '\0';
+		arr_append(&new, &nnew, &ncap, p);
+		if (!nl)
+			break;
+	}
+	free(edited);
+	emit_unified_diff(out, path, is_new, old, nold, new, nnew);
+	free_lines(old, nold);
+	free_lines(new, nnew);
+	return 0;
+}
+
+/* One line of unified diff, wherever it came from: a file, stdin, or the
+ * built-in differ under -E. The line is consumed in place (chomped, and
+ * paths are cut out of it). */
+static int diff_in_hunk;	/* inside an @@ hunk */
+static int diff_old_line;	/* the original line the next op sits at */
+
+static void parse_diff_line(char *line)
+{
+	/* New file: +++ b/path[\ttimestamp] */
+	if (strncmp(line, "+++ ", 4) == 0) {
+		char *path = line + 4;
+		/* Skip common prefixes like b/ */
+		if (path[0] && path[1] == '/')
+			path += 2;
+		/* Strip trailing tab/space + timestamp (unified diff suffix) */
+		char *t = strpbrk(path, "\t ");
+		if (t)
+			*t = '\0';
+		new_file(path);
+		diff_in_hunk = 0;
+		return;
+	}
+
+	/* --- line: /dev/null means the next +++ creates a new file.
+	 * Otherwise stash the original path: on disk it holds the
+	 * pre-patch content the script will run against, used for
+	 * file-aware anchor validation. */
+	if (strncmp(line, "--- ", 4) == 0) {
+		char *p = line + 4;
+		pending_is_new = strncmp(p, "/dev/null", 9) == 0
+				 && (!p[9] || p[9] == '\t' || p[9] == ' ');
+		free(pending_orig_path);
+		pending_orig_path = NULL;
+		if (!pending_is_new) {
+			if (p[0] && p[1] == '/')
+				p += 2;  /* strip a/ prefix */
+			char *t = strpbrk(p, "\t ");
+			if (t)
+				*t = '\0';
+			pending_orig_path = uc_dup(p);
+		}
+		return;
+	}
+
+	/* Skip diff line */
+	if (strncmp(line, "diff ", 5) == 0)
+		return;
+
+	/* Skip index line */
+	if (strncmp(line, "index ", 6) == 0)
+		return;
+
+	/* Hunk header */
+	int os, oc;
+	if (parse_hunk_header(line, &os, &oc)) {
+		diff_in_hunk = 1;
+		diff_old_line = os;
+		cur_hunk_lo = os;
+		cur_hunk_hi = oc > 0 ? os + oc - 1 : os;
+		/* GNU diff -N marks created files with the nonexistent
+		 * path and an epoch timestamp instead of /dev/null, so
+		 * also detect them by their sole "@@ -0,0" hunk: the
+		 * original had no lines. A later hunk addressing real
+		 * lines means the file existed after all. */
+		if (nfiles) {
+			if (os == 0 && oc == 0 && files[nfiles - 1].nops == 0)
+				files[nfiles - 1].is_new = 1;
+			else if (os > 0)
+				files[nfiles - 1].is_new = 0;
+		}
+		return;
+	}
+
+	if (!diff_in_hunk || nfiles == 0)
+		return;
+
+	/* Process hunk content */
+	if (line[0] == ' ') {
+		/* Context line - store content for relative mode */
+		add_op('c', diff_old_line, line + 1);
+		diff_old_line++;
+	} else if (line[0] == '-') {
+		/* Delete line - store content for horizontal edit detection */
+		add_op('d', diff_old_line, line + 1);
+		diff_old_line++;
+	} else if (line[0] == '+') {
+		/* Add line */
+		add_op('a', diff_old_line, line + 1);
+	} else if (line[0] == '\\') {
+		/* "\ No newline at end of file" - skip */
+		return;
+	} else {
+		/* Unknown line in hunk */
+		diff_in_hunk = 0;
+	}
+}
+
+/* Feed a whole in-memory unified diff through the line parser. */
+static void parse_diff_text(const char *text)
+{
+	char line[MAX_LINE];
+	const char *p, *nl;
+	for (p = text; *p; p = nl + 1) {
+		nl = strchr(p, '\n');
+		int len = nl ? (int)(nl - p) : (int)strlen(p);
+		if (len > (int)sizeof(line) - 2)
+			len = sizeof(line) - 2;
+		memcpy(line, p, len);
+		line[len] = '\n';
+		line[len + 1] = '\0';
+		add_raw(line);
+		line[len] = '\0';
+		parse_diff_line(line);
+		if (!nl)
+			break;
+	}
+}
+
 static void usage(const char *prog)
 {
 	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n"
-		"       %s -e script.sh\n", prog, prog);
+		"       %s -e script.sh\n"
+		"       %s -E file [out.sh]\n", prog, prog, prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
@@ -5306,6 +5661,11 @@ static void usage(const char *prog)
 		"  -e    Execute a generated script with the built-in nextvi,\n"
 		"        no shell involved (one editor per script block)\n");
 	fprintf(stderr,
+		"  -E    Edit a file in the built-in nextvi and convert the edits\n"
+		"        into a script; the file itself is never written. With a\n"
+		"        second argument the script goes to that file (made\n"
+		"        executable), otherwise to stdout\n");
+	fprintf(stderr,
 		"  -er   Read section end tag (default: \"%s\")\n", end_tag_rd);
 	fprintf(stderr,
 		"  -ew   Write section end tag (default: \"%s\")\n", end_tag_wr);
@@ -5318,8 +5678,6 @@ static void usage(const char *prog)
 int main(int argc, char **argv)
 {
 	char line[MAX_LINE];
-	int in_hunk = 0;
-	int old_line = 0;
 	int i, j;
 
 	/* Parse arguments */
@@ -5352,7 +5710,7 @@ int main(int argc, char **argv)
 		}
 		/* bare -e: execute the script; tested after -er/-ew so it
 		 * cannot shadow them, and kept out of the cluster loop
-		 * whose letters are a r i h d */
+		 * whose letters are a r i h d E */
 		if (argv[i][1] == 'e' && !argv[i][2]) {
 			exec_mode = 1;
 			continue;
@@ -5364,6 +5722,11 @@ int main(int argc, char **argv)
 				relative_mode = 1;
 			else if (argv[i][j] == 'i')
 				interactive_mode = 1;
+			/* -E takes no argument of its own: its two
+			 * positional arguments are the file to edit and,
+			 * optionally, the script to write */
+			else if (argv[i][j] == 'E')
+				edit_mode = 1;
 			else if (argv[i][j] == 'd') {
 				if (argv[i][j+1] >= '1' && argv[i][j+1] <= '5') {
 					j++;
@@ -5382,6 +5745,8 @@ int main(int argc, char **argv)
 	}
 	if (i < argc)
 		input_file = argv[i];
+	if (edit_mode && i + 1 < argc)
+		edit_out = argv[i + 1];
 
 	/* Mark chars that cannot be ex separators. */
 	static const char *forbidden =
@@ -5394,8 +5759,28 @@ int main(int argc, char **argv)
 	if (relative_mode || interactive_mode)
 		mark_bytes_used("FAIL OK");
 
-	FILE *in = stdin;
-	if (input_file) {
+	/* -E: the diff is not read, it is made. The editor runs on the file
+	 * first (a missing one counts as a creation), the buffer it leaves
+	 * behind is diffed against the disk copy, and that diff goes through
+	 * the parser in place of an input stream. */
+	sbuf_smake(dsb, MAX_LINE)
+	if (edit_mode) {
+		if (!input_file) {
+			fprintf(stderr, "-E requires a file argument\n");
+			return 1;
+		}
+		if (edit_to_diff(input_file, dsb) < 0)
+			return 1;
+		sbuf_null(dsb)
+		if (edit_out && !freopen(edit_out, "w", stdout)) {
+			perror(edit_out);
+			return 1;
+		}
+		parse_diff_text(dsb->s);
+	}
+
+	FILE *in = edit_mode ? NULL : stdin;
+	if (input_file && !edit_mode) {
 		in = fopen(input_file, "r");
 		if (!in) {
 			perror(input_file);
@@ -5417,7 +5802,7 @@ int main(int argc, char **argv)
 	}
 
 	/* Detect if input is a previously generated patch2vi script */
-	if (fgets(line, sizeof(line), in)) {
+	if (in && fgets(line, sizeof(line), in)) {
 		if (strncmp(line, "#!/bin/sh", 9) == 0) {
 			/* Skip until "exit 0" line */
 			while (fgets(line, sizeof(line), in)) {
@@ -5613,105 +5998,17 @@ int main(int argc, char **argv)
 			/* Not a script; store and process this first line */
 			add_raw(line);
 			chomp(line);
-			goto process_line;
+			parse_diff_line(line);
 		}
 	}
 
-	while (fgets(line, sizeof(line), in)) {
+	while (in && fgets(line, sizeof(line), in)) {
 		add_raw(line);
 		chomp(line);
-process_line:
-
-		/* New file: +++ b/path[\ttimestamp] */
-		if (strncmp(line, "+++ ", 4) == 0) {
-			char *path = line + 4;
-			/* Skip common prefixes like b/ */
-			if (path[0] && path[1] == '/')
-				path += 2;
-			/* Strip trailing tab/space + timestamp (unified diff suffix) */
-			char *t = strpbrk(path, "\t ");
-			if (t)
-				*t = '\0';
-			new_file(path);
-			in_hunk = 0;
-			continue;
-		}
-
-		/* --- line: /dev/null means the next +++ creates a new file.
-		 * Otherwise stash the original path: on disk it holds the
-		 * pre-patch content the script will run against, used for
-		 * file-aware anchor validation. */
-		if (strncmp(line, "--- ", 4) == 0) {
-			char *p = line + 4;
-			pending_is_new = strncmp(p, "/dev/null", 9) == 0
-					 && (!p[9] || p[9] == '\t' || p[9] == ' ');
-			free(pending_orig_path);
-			pending_orig_path = NULL;
-			if (!pending_is_new) {
-				if (p[0] && p[1] == '/')
-					p += 2;  /* strip a/ prefix */
-				char *t = strpbrk(p, "\t ");
-				if (t)
-					*t = '\0';
-				pending_orig_path = uc_dup(p);
-			}
-			continue;
-		}
-
-		/* Skip diff line */
-		if (strncmp(line, "diff ", 5) == 0)
-			continue;
-
-		/* Skip index line */
-		if (strncmp(line, "index ", 6) == 0)
-			continue;
-
-		/* Hunk header */
-		int os, oc;
-		if (parse_hunk_header(line, &os, &oc)) {
-			in_hunk = 1;
-			old_line = os;
-			cur_hunk_lo = os;
-			cur_hunk_hi = oc > 0 ? os + oc - 1 : os;
-			/* GNU diff -N marks created files with the nonexistent
-			 * path and an epoch timestamp instead of /dev/null, so
-			 * also detect them by their sole "@@ -0,0" hunk: the
-			 * original had no lines. A later hunk addressing real
-			 * lines means the file existed after all. */
-			if (nfiles) {
-				if (os == 0 && oc == 0 && files[nfiles - 1].nops == 0)
-					files[nfiles - 1].is_new = 1;
-				else if (os > 0)
-					files[nfiles - 1].is_new = 0;
-			}
-			continue;
-		}
-
-		if (!in_hunk || nfiles == 0)
-			continue;
-
-		/* Process hunk content */
-		if (line[0] == ' ') {
-			/* Context line - store content for relative mode */
-			add_op('c', old_line, line + 1);
-			old_line++;
-		} else if (line[0] == '-') {
-			/* Delete line - store content for horizontal edit detection */
-			add_op('d', old_line, line + 1);
-			old_line++;
-		} else if (line[0] == '+') {
-			/* Add line */
-			add_op('a', old_line, line + 1);
-		} else if (line[0] == '\\') {
-			/* "\ No newline at end of file" - skip */
-			continue;
-		} else {
-			/* Unknown line in hunk */
-			in_hunk = 0;
-		}
+		parse_diff_line(line);
 	}
 
-	if (in != stdin)
+	if (in && in != stdin)
 		fclose(in);
 
 	/* Find separator character */
@@ -5855,5 +6152,14 @@ process_line:
 		fputs(raw_lines[i], stdout);
 
 	free(osb->s);
+	free(dsb->s);
+	/* a script written to a file is meant to be run, so spare the chmod */
+	if (edit_out) {
+		fflush(stdout);
+		if (chmod(edit_out, 0755)) {
+			perror(edit_out);
+			return 1;
+		}
+	}
 	return 0;
 }
