@@ -6694,7 +6694,8 @@ static void usage(const char *prog)
 {
 	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n"
 		"       %s -e script.sh\n"
-		"       %s [-ari]E [nextvi-opts...]\n", prog, prog, prog);
+		"       %s [-ari]E [nextvi-opts...]\n"
+		"       %s -pr|-po origin.sh target.sh\n", prog, prog, prog, prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
@@ -6731,6 +6732,15 @@ static void usage(const char *prog)
 		"  -er   Read section end tag (default: \"%s\")\n", end_tag_rd);
 	fprintf(stderr,
 		"  -ew   Write section end tag (default: \"%s\")\n", end_tag_wr);
+	fprintf(stderr,
+		"  -pr   Patch prefix: derive a compat patch and emit it BEFORE the\n"
+		"        target block: interactively resolve a collision against\n"
+		"        origin.sh, then ship the fix as a gated block that runs\n"
+		"        first, on the origin-only tree, and self-skips when the\n"
+		"        origin change is absent (patch2vi -pr origin.sh target.sh)\n");
+	fprintf(stderr,
+		"  -po   Patch postfix: like -pr, but emit the compat block AFTER\n"
+		"        the target block, on the post-origin+target tree\n");
 	fprintf(stderr, "  -h    Show this help\n");
 	fprintf(stderr,
 		"Input can be a unified diff or a previously generated patch2vi script\n");
