@@ -25,15 +25,30 @@ check() {
 	cp "$TMPDIR/orig.txt" "$TMPDIR/result.txt"
 	# Redirect $VI -e arg from expected.txt to result.txt
 	sed -i "s|\$VI -e '[^']*'|\$VI -e '$TMPDIR/result.txt'|" "$TMPDIR/apply.sh"
-	if VI="$VI" "$TMPDIR/apply.sh" >/dev/null 2>&1 &&
-	   diff -q "$TMPDIR/result.txt" "$TMPDIR/expected.txt" >/dev/null 2>&1; then
-		ok "$name"
-	else
+	# same script without a shell (-e), on its own copy: both paths must
+	# produce the same bytes and the same status
+	cp "$TMPDIR/orig.txt" "$TMPDIR/result2.txt"
+	sed "s|\$VI -e '[^']*'|\$VI -e '$TMPDIR/result2.txt'|" \
+		"$TMPDIR/apply.sh" > "$TMPDIR/apply2.sh"
+	local sh_rc=0 e_rc=0
+	VI="$VI" "$TMPDIR/apply.sh" >/dev/null 2>&1 || sh_rc=$?
+	./patch2vi -e "$TMPDIR/apply2.sh" >/dev/null 2>&1 || e_rc=$?
+	if [ $sh_rc -ne 0 ] ||
+	   ! diff -q "$TMPDIR/result.txt" "$TMPDIR/expected.txt" >/dev/null 2>&1; then
 		fail "$name"
 		echo "    --- expected ---"
 		cat "$TMPDIR/expected.txt" | sed 's/^/    /'
 		echo "    --- got ---"
 		cat "$TMPDIR/result.txt" | sed 's/^/    /'
+	elif [ "$e_rc" != "$sh_rc" ] ||
+	     ! diff -q "$TMPDIR/result2.txt" "$TMPDIR/result.txt" >/dev/null 2>&1; then
+		fail "$name (-e diverges: status $e_rc vs $sh_rc)"
+		echo "    --- sh ---"
+		cat "$TMPDIR/result.txt" | sed 's/^/    /'
+		echo "    --- -e ---"
+		cat "$TMPDIR/result2.txt" | sed 's/^/    /'
+	else
+		ok "$name"
 	fi
 }
 
@@ -72,13 +87,24 @@ check_drift() {
 	printf '%s' "$4" > "$TMPDIR/result.txt"
 	printf '%s' "$5" > "$TMPDIR/drifted.txt"
 	sed -i "s|\$VI -e '[^']*'|\$VI -e '$TMPDIR/result.txt'|" "$TMPDIR/apply.sh"
-	if VI="$VI" "$TMPDIR/apply.sh" >/dev/null 2>&1 &&
-	   diff -q "$TMPDIR/result.txt" "$TMPDIR/drifted.txt" >/dev/null 2>&1; then
-		ok "$name"
-	else
+	printf '%s' "$4" > "$TMPDIR/result2.txt"
+	sed "s|\$VI -e '[^']*'|\$VI -e '$TMPDIR/result2.txt'|" \
+		"$TMPDIR/apply.sh" > "$TMPDIR/apply2.sh"
+	local sh_rc=0 e_rc=0
+	VI="$VI" "$TMPDIR/apply.sh" >/dev/null 2>&1 || sh_rc=$?
+	./patch2vi -e "$TMPDIR/apply2.sh" >/dev/null 2>&1 || e_rc=$?
+	if [ $sh_rc -ne 0 ] ||
+	   ! diff -q "$TMPDIR/result.txt" "$TMPDIR/drifted.txt" >/dev/null 2>&1; then
 		fail "$name"
 		echo "    --- want ---"; sed 's/^/    /' "$TMPDIR/drifted.txt"
 		echo "    --- got ---"; sed 's/^/    /' "$TMPDIR/result.txt"
+	elif [ "$e_rc" != "$sh_rc" ] ||
+	     ! diff -q "$TMPDIR/result2.txt" "$TMPDIR/result.txt" >/dev/null 2>&1; then
+		fail "$name (-e diverges: status $e_rc vs $sh_rc)"
+		echo "    --- sh ---"; sed 's/^/    /' "$TMPDIR/result.txt"
+		echo "    --- -e ---"; sed 's/^/    /' "$TMPDIR/result2.txt"
+	else
+		ok "$name"
 	fi
 }
 
@@ -1042,6 +1068,45 @@ fi
 
 else
 	echo "  SKIP: script(1) not available"
+fi
+
+echo ""
+echo "=== -e multi-block tests ==="
+
+# Two blocks in one script: the shell spawns a $VI per block, so block 2
+# starts with empty registers. Block 2 gates its edit on a search served
+# from register 98, which only block 1 filled - leaking that state (or
+# block 1's buffer list, which would make b0 the wrong file) rewrites
+# f1.txt instead and the comparison against the shell run fails.
+mkdir -p "$TMPDIR/mb/sh" "$TMPDIR/mb/e"
+for d in "$TMPDIR/mb/sh" "$TMPDIR/mb/e"; do
+	printf 'alpha\nbeta\n' > "$d/f1.txt"
+	printf 'gamma\ndelta\n' > "$d/f2.txt"
+done
+cat > "$TMPDIR/mb/two.sh" <<'EOS'
+#!/bin/sh -e
+VI=${VI:-vi}
+SEP="$(printf '\001')"
+( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
+trap 'rm -f "$P2VIF"' EXIT
+printf '%s\n' "b0:%ya 98:1s/alpha/ALPHA/:w:2q" > "$P2VIF"
+EXINIT='%ya 97:? %@97' $VI -e 'f1.txt' "$P2VIF"
+printf '%s\n' "b0:fr 98:%f> beta:??1s/[ag][lm][pa][hm][aa]/LEAK/:w:2q" > "$P2VIF"
+EXINIT='%ya 97:? %@97' $VI -e 'f2.txt' "$P2VIF"
+exit 0
+EOS
+chmod +x "$TMPDIR/mb/two.sh"
+mb_sh_rc=0 mb_e_rc=0
+mb_p2vi="$PWD/patch2vi"
+( cd "$TMPDIR/mb/sh" && VI="$VI" ../two.sh ) >/dev/null 2>&1 || mb_sh_rc=$?
+( cd "$TMPDIR/mb/e" && "$mb_p2vi" -e ../two.sh ) >/dev/null 2>&1 || mb_e_rc=$?
+if [ "$mb_sh_rc" = 0 ] && [ "$mb_e_rc" = 0 ] &&
+   diff -r "$TMPDIR/mb/sh" "$TMPDIR/mb/e" >/dev/null 2>&1 &&
+   grep -q ALPHA "$TMPDIR/mb/e/f1.txt" && grep -q gamma "$TMPDIR/mb/e/f2.txt"; then
+	ok "-e runs every block with its own editor state"
+else
+	fail "-e runs every block with its own editor state (status $mb_e_rc vs $mb_sh_rc)"
+	diff -r "$TMPDIR/mb/sh" "$TMPDIR/mb/e" | sed 's/^/    /'
 fi
 
 echo ""

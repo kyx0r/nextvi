@@ -2,6 +2,7 @@
  * patch2vi - Convert unified diff patches to shell scripts using Nextvi ex commands
  *
  * Usage: patch2vi [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]
+ *        patch2vi -e script.sh
  *
  * Uses raw ex mode (:vis 3) with dynamic separator and escape character
  * selection via :sc! to avoid conflicts with : % ! \ characters in
@@ -18,7 +19,9 @@
  * is compiled into this translation unit, and interactive mode runs the
  * built-in editor on in-memory buffers (see edit_buffers) - no temp
  * files, no argv, no EXINIT. build_patch2vi.sh renames nextvi's main()
- * out of the way for the build and restores it after.
+ * out of the way for the build and restores it after. The same embedded
+ * editor also executes generated scripts without a shell (-e), one
+ * editor lifetime per script block.
  */
 
 #include "vi.c"
@@ -3563,42 +3566,128 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 	g->ovr_esc = 0;
 }
 
+/* Editor bring-up, hoisted from nextvi's main()/ex_init() — no argv
+ * processing, no EXINIT. Split into init/teardown so one process can run
+ * several independent editor lifetimes: the interactive buffer session
+ * (edit_buffers) and, one per script block, the -e runner (run_body).
+ * The global config tables and the input buffer are process-wide and
+ * built once; everything else is per session and released by ed_free().
+ * With use_tty, the editor gets the controlling terminal on fds 0/1 for
+ * the session (patch2vi's stdin/stdout may be the patch pipe and the
+ * generated script); ed_done() restores the original fds. */
+static int ed_in = -1, ed_out = -1;
+
+static int ed_init(int use_tty)
+{
+	static int once;
+	if (use_tty) {
+		int tty = open("/dev/tty", O_RDWR);
+		if (tty < 0) {
+			perror("/dev/tty");
+			return -1;
+		}
+		fflush(stdout);
+		ed_in = dup(0);
+		ed_out = dup(1);
+		dup2(tty, 0);
+		dup2(tty, 1);
+		close(tty);
+	}
+	if (!once) {
+		setup_signals();
+		dir_init();
+		syn_init();
+		ibuf = emalloc(ibuf_sz);
+		once = 1;
+	}
+	temp_open(0, "/hist/", _ft);
+	temp_open(1, "/fm/", fm_ft);
+	temp_open(2, "/sc/", _ft);
+	term_init();
+	ec_setbufsmax(NULL, NULL, "");
+	xmpt = 0;
+	return 0;
+}
+
+/* End the session and report it as nextvi's main() would */
+static int ed_done(void)
+{
+	int st;
+	term_done();
+	st = xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
+	xquit = 0;
+	fflush(stdout);
+	if (ed_in >= 0) {
+		dup2(ed_in, 0);
+		dup2(ed_out, 1);
+		close(ed_in);
+		close(ed_out);
+		ed_in = ed_out = -1;
+	}
+	return st;
+}
+
+/* Drop every trace of the session: buffers (and with them marks and undo
+ * history), temporary buffers, registers, the anchored-status tags of
+ * "??" and the last search. A block started after this sees exactly what
+ * a freshly spawned editor sees. */
+static void ed_free(void)
+{
+	int i;
+	for (i = 0; i < xbufcur; i++)
+		bufs_free(i);
+	xbufcur = 0;
+	free(bufs);
+	bufs = NULL;
+	ex_buf = ex_pbuf = ex_tpbuf = NULL;
+	xbufsmax = 0;
+	for (i = 0; i < (int)LEN(tempbufs); i++) {
+		free(tempbufs[i].path);
+		lbuf_free(tempbufs[i].lb);
+		memset(&tempbufs[i], 0, sizeof(tempbufs[i]));
+	}
+	for (i = 0; i < xregs_n; i++)
+		if (xregs[i])
+			sbuf_free(xregs[i])
+	free(xregs);
+	xregs = NULL;
+	xregs_n = 0;
+	if (xanchor) {
+		sbuf_free(xanchor)
+		xanchor = NULL;
+	}
+	if (xacreg) {
+		sbuf_free(xacreg)
+		xacreg = NULL;
+	}
+	rset_free(xkwdrs);
+	xkwdrs = NULL;
+	xrow = xoff = xtop = 0;
+	xleft = 0;
+	xquit = xgrec = xgdep = xexec_dep = 0;
+	xkwddir = xkwdcnt = 0;
+	xfr = xrr = xpr = xgrp = xdefreg = 0;
+	xpret = NULL;
+	xsep = ':';
+	xesc = '\\';
+	xerr = 1;
+	xseq = 1;
+	xvis = 0;
+}
+
 /* Run the embedded nextvi on in-memory buffers: text under name and, when
- * given, rejtext under rejname. The editor setup is hoisted from nextvi's
- * main()/ex_init() — no argv processing, no EXINIT — and the buffers never
- * touch the filesystem: the names are labels (referencing the original
- * input where possible) and the main buffer's final content is returned
- * (heap-allocated) however the session ended, saved or not. NULL on error.
- * patch2vi's stdin/stdout may be the patch pipe and the generated script,
- * so the editor gets the controlling terminal on fds 0/1 for the session
- * and the original fds are restored afterwards. */
+ * given, rejtext under rejname. The buffers never touch the filesystem:
+ * the names are labels (referencing the original input where possible)
+ * and the main buffer's final content is returned (heap-allocated)
+ * however the session ended, saved or not. NULL on error. */
 static char *edit_buffers(const char *name, char *text,
 			  const char *rejname, char *rejtext)
 {
 	char *ln, msg[512];
 	struct lbuf *lb;
-	int i, in, out;
-	int tty = open("/dev/tty", O_RDWR);
-	if (tty < 0) {
-		perror("/dev/tty");
+	int i;
+	if (ed_init(1) < 0)
 		return NULL;
-	}
-	fflush(stdout);
-	in = dup(0);
-	out = dup(1);
-	dup2(tty, 0);
-	dup2(tty, 1);
-	close(tty);
-	setup_signals();
-	dir_init();
-	syn_init();
-	temp_open(0, "/hist/", _ft);
-	temp_open(1, "/fm/", fm_ft);
-	temp_open(2, "/sc/", _ft);
-	ibuf = emalloc(ibuf_sz);
-	term_init();
-	ec_setbufsmax(NULL, NULL, "");
-	xmpt = 0;
 	bufs_switch(bufs_open(name, strlen(name)));
 	lbuf_edit(xb, text, 0, 0, 0, 0);
 	ex_bufpostfix(ex_buf, 1);
@@ -3616,14 +3705,7 @@ static char *edit_buffers(const char *name, char *text,
 	if ((ln = getenv("P2VI_EX")))	/* test harness hook */
 		ex_command(ln)
 	vi(1);
-	term_done();
-	i = xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
-	xquit = 0;
-	fflush(stdout);
-	dup2(in, 0);
-	dup2(out, 1);
-	close(in);
-	close(out);
+	i = ed_done();
 	if (i != 0) {
 		fprintf(stderr, "editor exited with error %d\n", i);
 		return NULL;
@@ -4774,10 +4856,430 @@ static void add_op(int type, int oline, const char *text)
 		mark_bytes_used(text);
 }
 
+/*
+ * -e: run a generated patch2vi script through the embedded editor, no
+ * shell involved. The script's grammar is closed and self-generated —
+ * header assignments, one printf'd ex body per editor invocation and the
+ * "$VI -e <files> $P2VIF" line that runs it — so it is parsed exactly,
+ * and anything outside that grammar is an error rather than a
+ * best-effort guess. Each block gets its own editor lifetime, mirroring
+ * the separate $VI process the shell would spawn.
+ */
+
+static int exec_mode;		/* -e: execute the input script */
+static const char *exec_script;	/* its path, i.e. the script's $0 */
+
+/* Shell variables assigned by the script header. Looked up before the
+ * environment, so a header assignment shadows an inherited value while
+ * the header's own conditionals still test the inherited one. */
+typedef struct {
+	char *name;
+	char *val;
+} shvar_t;
+
+static shvar_t shvars[64];
+static int nshvars;
+
+static const char *sh_get(const char *name)
+{
+	for (int i = 0; i < nshvars; i++)
+		if (!strcmp(shvars[i].name, name))
+			return shvars[i].val;
+	return getenv(name);
+}
+
+static void sh_set(const char *name, const char *val)
+{
+	for (int i = 0; i < nshvars; i++)
+		if (!strcmp(shvars[i].name, name)) {
+			free(shvars[i].val);
+			shvars[i].val = uc_dup(val);
+			return;
+		}
+	if (nshvars == LEN(shvars)) {
+		fprintf(stderr, "-e: too many shell variables\n");
+		exit(1);
+	}
+	shvars[nshvars].name = uc_dup(name);
+	shvars[nshvars].val = uc_dup(val);
+	nshvars++;
+}
+
+/* byte-exact substring; uc_sub() counts characters, not bytes */
+static char *str_dupn(const char *s, int n)
+{
+	char *r = emalloc(n + 1);
+	memcpy(r, s, n);
+	r[n] = '\0';
+	return r;
+}
+
+static int sh_err(const char *what, const char *s)
+{
+	fprintf(stderr, "-e: unsupported %s: %s\n", what, s);
+	return -1;
+}
+
+/* Expand one double-quoted shell word: ${VAR}, ${VAR:-default} (nestable,
+ * as ${DBG1:-...${QF1}} is), $VAR, $0, $(printf '\NNN') and the escapes
+ * that survive double quotes. Everything else is literal. */
+static int sh_expand(const char *s, sbuf *out)
+{
+	char name[128];
+	int j;
+	while (*s) {
+		if (*s == '\\' && (s[1] == '$' || s[1] == '"' || s[1] == '\\'
+				   || s[1] == '`')) {
+			sbuf_chr(out, s[1])
+			s += 2;
+			continue;
+		}
+		if (*s != '$') {
+			sbuf_chr(out, *s++)
+			continue;
+		}
+		s++;
+		if (*s == '(') {	/* $(printf 'escapes') */
+			if (strncmp(s, "(printf '", 9))
+				return sh_err("substitution", s);
+			for (s += 9; *s && *s != '\''; ) {
+				if (*s != '\\') {
+					sbuf_chr(out, *s++)
+					continue;
+				}
+				s++;
+				if (*s >= '0' && *s <= '7') {
+					int v = 0;
+					for (j = 0; j < 3 && *s >= '0'
+					     && *s <= '7'; j++, s++)
+						v = v * 8 + (*s - '0');
+					sbuf_chr(out, v)
+					continue;
+				}
+				if (*s == 'n')
+					sbuf_chr(out, '\n')
+				else if (*s == 't')
+					sbuf_chr(out, '\t')
+				else if (*s == '\\' || *s == '\'')
+					sbuf_chr(out, *s)
+				else
+					return sh_err("printf escape", s - 1);
+				s++;
+			}
+			if (strncmp(s, "')", 2))
+				return sh_err("substitution", s);
+			s += 2;
+			continue;
+		}
+		if (*s == '0') {	/* $0: the script itself */
+			s++;
+			sbuf_str(out, exec_script ? exec_script : "patch2vi")
+			continue;
+		}
+		if (*s == '{') {
+			const char *val;
+			s++;
+			for (j = 0; *s && (isalnum((unsigned char)*s)
+					   || *s == '_'); s++)
+				if (j < (int)sizeof(name) - 1)
+					name[j++] = *s;
+			name[j] = '\0';
+			if (!j)
+				return sh_err("expansion", s);
+			val = sh_get(name);
+			if (*s == '}') {
+				s++;
+				if (val)
+					sbuf_str(out, val)
+				continue;
+			}
+			if (s[0] != ':' || s[1] != '-')
+				return sh_err("expansion", s);
+			s += 2;
+			/* the default runs to the matching brace and is
+			 * skipped whether or not it is the one used */
+			const char *b = s;
+			for (int depth = 1; depth; ) {
+				if (!*s)
+					return sh_err("expansion", b);
+				else if (s[0] == '$' && s[1] == '{') {
+					depth++;
+					s += 2;
+				} else if (*s == '}') {
+					if (!--depth)
+						break;
+					s++;
+				} else
+					s++;
+			}
+			if (val && *val) {
+				sbuf_str(out, val)
+			} else {
+				sbuf_smake(def, MAX_LINE)
+				sbuf_mem(def, b, s - b)
+				sbuf_null(def)
+				j = sh_expand(def->s, out);
+				free(def->s);
+				if (j < 0)
+					return -1;
+			}
+			s++;	/* the closing brace */
+			continue;
+		}
+		if (isalpha((unsigned char)*s) || *s == '_') {
+			const char *val;
+			for (j = 0; *s && (isalnum((unsigned char)*s)
+					   || *s == '_'); s++)
+				if (j < (int)sizeof(name) - 1)
+					name[j++] = *s;
+			name[j] = '\0';
+			if ((val = sh_get(name)))
+				sbuf_str(out, val)
+			continue;
+		}
+		return sh_err("expansion", s - 1);
+	}
+	return 0;
+}
+
+/* NAME=value, with value optionally double quoted */
+static int sh_assign(const char *s)
+{
+	char name[128];
+	int j, ret;
+	for (j = 0; *s && (isalnum((unsigned char)*s) || *s == '_'); s++)
+		if (j < (int)sizeof(name) - 1)
+			name[j++] = *s;
+	name[j] = '\0';
+	if (!j || *s != '=')
+		return sh_err("assignment", s);
+	s++;
+	sbuf_smake(val, MAX_LINE)
+	if (*s == '"') {
+		int n = strlen(s);
+		if (n < 2 || s[n - 1] != '"') {
+			free(val->s);
+			return sh_err("assignment", s);
+		}
+		sbuf_mem(val, s + 1, n - 2)
+		sbuf_null(val)
+		s = val->s;
+	}
+	sbuf_smake(out, MAX_LINE)
+	if (!(ret = sh_expand(s, out))) {
+		sbuf_null(out)
+		sh_set(name, out->s);
+	}
+	free(out->s);
+	free(val->s);
+	return ret;
+}
+
+/* [ "$X" = "1" ] && A=v || B=w */
+static int sh_cond(const char *s)
+{
+	char name[128];
+	const char *p, *alt;
+	char *cmp, *pick;
+	int j, ret;
+	if (strncmp(s, "[ \"$", 4))
+		return sh_err("conditional", s);
+	for (s += 4, j = 0; *s && (isalnum((unsigned char)*s) || *s == '_'); s++)
+		if (j < (int)sizeof(name) - 1)
+			name[j++] = *s;
+	name[j] = '\0';
+	if (strncmp(s, "\" = \"", 5))
+		return sh_err("conditional", s);
+	s += 5;
+	if (!(p = strstr(s, "\" ] && ")))
+		return sh_err("conditional", s);
+	cmp = str_dupn(s, p - s);
+	p += 7;
+	/* the last " || " separates the arms; a quoted value may contain
+	 * anything else but never that */
+	for (alt = NULL, s = p; (s = strstr(s, " || ")); s += 4)
+		alt = s;
+	if (!alt) {
+		free(cmp);
+		return sh_err("conditional", p);
+	}
+	s = sh_get(name);
+	pick = !strcmp(s ? s : "", cmp) ? str_dupn(p, alt - p)
+		: uc_dup((char *)alt + 4);
+	ret = sh_assign(pick);
+	free(pick);
+	free(cmp);
+	return ret;
+}
+
+typedef struct {
+	char **paths;	/* real files, in $VI argument order */
+	int npaths;
+	char *body;	/* the printf'd ex command body */
+	char *exinit;	/* the EXINIT prefixed to the $VI call */
+} p2vi_block_t;
+
+/* One editor lifetime: the files as b0..bN-1, the command body as the
+ * last (current) buffer, EXINIT replayed on top, exactly as "$VI -e" is
+ * handed them by the shell. */
+static int run_body(p2vi_block_t *blk)
+{
+	int st;
+	const char *bodyname = "p2vi.body";
+	if (ed_init(0) < 0)
+		return -1;
+	xvis |= 2;
+	xbufsalloc = MAX(blk->npaths + 1, xbufsalloc);
+	ec_setbufsmax(NULL, NULL, "");
+	for (int i = 0; i < blk->npaths; i++) {
+		xmpt = 0;
+		ec_edit("", "e", blk->paths[i]);
+	}
+	xmpt = 0;
+	bufs_switch(bufs_open(bodyname, strlen(bodyname)));
+	lbuf_edit(xb, blk->body, 0, 0, 0, 0);
+	ex_bufpostfix(ex_buf, 1);
+	syn_setft(xb_ft);
+	xvis &= ~4;
+	if (blk->exinit && *blk->exinit)
+		ex_command(blk->exinit)
+	if (!xquit)
+		ex();
+	st = ed_done();
+	ed_free();
+	return st;
+}
+
+static void free_block(p2vi_block_t *blk)
+{
+	for (int i = 0; i < blk->npaths; i++)
+		free(blk->paths[i]);
+	free(blk->paths);
+	free(blk->body);
+	free(blk->exinit);
+	memset(blk, 0, sizeof(*blk));
+}
+
+/* EXINIT='<init>' $VI -e 'file' ... "$P2VIF" */
+static int parse_vi_call(const char *s, p2vi_block_t *blk)
+{
+	const char *p;
+	if (strncmp(s, "EXINIT='", 8) || !(p = strchr(s + 8, '\'')))
+		return sh_err("vi call", s);
+	blk->exinit = str_dupn(s + 8, p - s - 8);
+	s = p + 1;
+	if (strncmp(s, " $VI -e", 7))
+		return sh_err("vi call", s);
+	for (s += 7; *s; ) {
+		if (*s == ' ') {
+			s++;
+			continue;
+		}
+		if (!strncmp(s, "\"$P2VIF\"", 8)) {
+			s += 8;
+			continue;
+		}
+		if (*s != '\'' || !(p = strchr(s + 1, '\'')))
+			return sh_err("vi call", s);
+		blk->paths = erealloc(blk->paths,
+				      (blk->npaths + 1) * sizeof(char *));
+		blk->paths[blk->npaths++] = str_dupn(s + 1, p - s - 1);
+		s = p + 1;
+	}
+	return 0;
+}
+
+/* Read the script's executable region (everything before "exit 0") and
+ * run every block it holds, in order, stopping at the first failure the
+ * way "sh -e" does. */
+static int exec_p2vi_script(FILE *in)
+{
+	char line[MAX_LINE];
+	const char *body_end = " > \"$P2VIF\"";
+	p2vi_block_t blk = {0};
+	int st = 0, skip = 0, in_body = 0, ret = 0, j;
+	sbuf_smake(body, MAX_LINE)
+	while (ret >= 0 && fgets(line, sizeof(line), in)) {
+		char *seg = line;
+		chomp(line);
+		if (!in_body && !strncmp(line, "printf '%s\\n' \"", 15)) {
+			sbuf_cut(body, 0)
+			in_body = 1;
+			seg = line + 15;
+		}
+		if (in_body) {
+			/* the body ends at the closing quote of the printf
+			 * argument; inside it a quote is always escaped */
+			int n = strlen(seg);
+			int el = strlen(body_end);
+			if (n >= el + 1 && seg[n - el - 1] == '"'
+			    && !strcmp(seg + n - el, body_end)) {
+				seg[n - el - 1] = '\0';
+				in_body = 0;
+			}
+			sbuf_str(body, seg)
+			sbuf_chr(body, '\n')
+			continue;
+		}
+		if (!strcmp(line, "exit 0"))
+			break;
+		if (skip) {
+			if (!strcmp(line, "fi"))
+				skip--;
+			else if (!strncmp(line, "if ", 3))
+				skip++;
+			continue;
+		}
+		if (!line[0] || line[0] == '#')
+			continue;
+		if (!strncmp(line, "if ", 3)) {
+			skip++;
+			continue;
+		}
+		/* the temp file the body would be staged in, and its trap:
+		 * -e keeps the body in RAM, so both are moot */
+		if (!strncmp(line, "( : > ", 6) || !strncmp(line, "trap ", 5))
+			continue;
+		if (!strncmp(line, "EXINIT=", 7)) {
+			sbuf_null(body)
+			if ((ret = parse_vi_call(line, &blk)) < 0)
+				break;
+			sbuf_smake(exp, MAX_LINE)
+			if (!(ret = sh_expand(body->s, exp))) {
+				sbuf_null(exp)
+				blk.body = uc_dup(exp->s);
+				st = run_body(&blk);
+				if (st < 0)
+					ret = -1;
+			}
+			free(exp->s);
+			free_block(&blk);
+			sbuf_cut(body, 0)
+			if (st > 0)
+				break;
+			continue;
+		}
+		/* the name of a leading NAME=value assignment */
+		j = 0;
+		while (isalnum((unsigned char)line[j]) || line[j] == '_')
+			j++;
+		if (line[0] == '[')
+			ret = sh_cond(line);
+		else if (j && line[j] == '=')
+			ret = sh_assign(line);
+		else
+			ret = sh_err("command", line);
+	}
+	free(body->s);
+	if (in_body && ret >= 0)
+		ret = sh_err("body", "unterminated printf");
+	return ret < 0 ? 1 : st;
+}
+
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n",
-		prog);
+	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n"
+		"       %s -e script.sh\n", prog, prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
@@ -4801,6 +5303,9 @@ static void usage(const char *prog)
 		"  -d4   Delta mode: match by deleted/inserted text or regex if custom\n");
 	fprintf(stderr,
 		"  -d5   Delta mode: match by entire hunk\n");
+	fprintf(stderr,
+		"  -e    Execute a generated script with the built-in nextvi,\n"
+		"        no shell involved (one editor per script block)\n");
 	fprintf(stderr,
 		"  -er   Read section end tag (default: \"%s\")\n", end_tag_rd);
 	fprintf(stderr,
@@ -4844,6 +5349,13 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Option -ew requires an argument\n");
 				usage(argv[0]);
 			}
+			continue;
+		}
+		/* bare -e: execute the script; tested after -er/-ew so it
+		 * cannot shadow them, and kept out of the cluster loop
+		 * whose letters are a r i h d */
+		if (argv[i][1] == 'e' && !argv[i][2]) {
+			exec_mode = 1;
 			continue;
 		}
 		for (j = 1; argv[i][j]; j++) {
@@ -4890,6 +5402,19 @@ int main(int argc, char **argv)
 			perror(input_file);
 			return 1;
 		}
+	}
+
+	/* -e: no conversion, just run the script through the embedded
+	 * editor and report the status the shell would have reported */
+	if (exec_mode) {
+		if (!input_file) {
+			fprintf(stderr, "-e requires a script argument\n");
+			return 1;
+		}
+		exec_script = input_file;
+		i = exec_p2vi_script(in);
+		fclose(in);
+		return i;
 	}
 
 	/* Detect if input is a previously generated patch2vi script */
