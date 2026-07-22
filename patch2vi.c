@@ -3,7 +3,7 @@
  *
  * Usage: patch2vi [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]
  *        patch2vi -e script.sh
- *        patch2vi -E file [out.sh]
+ *        patch2vi [-ari]E [nextvi-opts...]
  *
  * Uses raw ex mode (:vis 3) with dynamic separator and escape character
  * selection via :sc! to avoid conflicts with : % ! \ characters in
@@ -23,13 +23,19 @@
  * out of the way for the build and restores it after. The same embedded
  * editor also executes generated scripts without a shell (-e), one
  * editor lifetime per script block, and turns a plain editing session
- * into a script (-E): the file is opened for editing, never written, and
- * every buffer the editor leaves behind - the one opened here and any
- * file reached with :e - is diffed against its disk copy by the built-in
- * differ to produce the input the converter normally reads.
+ * into a script (-E): that session is nextvi's own main() (nextvi_main()
+ * after the rename), so everything past -E is a nextvi command line -
+ * its flags, its files, EXINIT - and every buffer it leaves behind is
+ * diffed against its
+ * disk copy by the built-in differ to produce the input the converter
+ * normally reads. Nothing is written to disk; quitting is what emits.
  */
 
 #include "vi.c"
+
+/* nextvi's own main(), renamed for this build by build_patch2vi.sh; -E
+ * runs a whole editing session through it, flags, EXINIT and all */
+int nextvi_main(int argc, char *argv[]);
 
 #define MAX_LINE 8192
 #define MAX_OPS 65536
@@ -3576,8 +3582,10 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 }
 
 /* Editor bring-up, hoisted from nextvi's main()/ex_init() — no argv
- * processing, no EXINIT. Split into init/teardown so one process can run
- * several independent editor lifetimes: the interactive buffer session
+ * processing, no EXINIT, for the sessions that edit buffers patch2vi
+ * built rather than files (-E goes through nextvi_main() instead, argv
+ * and all). Split into init/teardown so one process can run several
+ * independent editor lifetimes: the interactive buffer session
  * (edit_buffers) and, one per script block, the -e runner (run_body).
  * The global config tables and the input buffer are process-wide and
  * built once; everything else is per session and released by ed_free().
@@ -3585,29 +3593,48 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
  * the session (patch2vi's stdin/stdout may be the patch pipe and the
  * generated script); ed_done() restores the original fds. */
 static int ed_in = -1, ed_out = -1;
+static int ed_once;	/* the process-wide half of the bring-up is done */
+
+/* Put the controlling terminal on fds 0/1 for the session; ed_ungrabtty()
+ * puts the caller's own stdin/stdout back. */
+static int ed_grabtty(void)
+{
+	int tty = open("/dev/tty", O_RDWR);
+	if (tty < 0) {
+		perror("/dev/tty");
+		return -1;
+	}
+	fflush(stdout);
+	ed_in = dup(0);
+	ed_out = dup(1);
+	dup2(tty, 0);
+	dup2(tty, 1);
+	close(tty);
+	return 0;
+}
+
+static void ed_ungrabtty(void)
+{
+	fflush(stdout);
+	if (ed_in >= 0) {
+		dup2(ed_in, 0);
+		dup2(ed_out, 1);
+		close(ed_in);
+		close(ed_out);
+		ed_in = ed_out = -1;
+	}
+}
 
 static int ed_init(int use_tty)
 {
-	static int once;
-	if (use_tty) {
-		int tty = open("/dev/tty", O_RDWR);
-		if (tty < 0) {
-			perror("/dev/tty");
-			return -1;
-		}
-		fflush(stdout);
-		ed_in = dup(0);
-		ed_out = dup(1);
-		dup2(tty, 0);
-		dup2(tty, 1);
-		close(tty);
-	}
-	if (!once) {
+	if (use_tty && ed_grabtty() < 0)
+		return -1;
+	if (!ed_once) {
 		setup_signals();
 		dir_init();
 		syn_init();
 		ibuf = emalloc(ibuf_sz);
-		once = 1;
+		ed_once = 1;
 	}
 	temp_open(0, "/hist/", _ft);
 	temp_open(1, "/fm/", fm_ft);
@@ -3625,14 +3652,7 @@ static int ed_done(void)
 	term_done();
 	st = xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 	xquit = 0;
-	fflush(stdout);
-	if (ed_in >= 0) {
-		dup2(ed_in, 0);
-		dup2(ed_out, 1);
-		close(ed_in);
-		close(ed_out);
-		ed_in = ed_out = -1;
-	}
+	ed_ungrabtty();
 	return st;
 }
 
@@ -5303,7 +5323,6 @@ static int exec_p2vi_script(FILE *in)
  * built-in differ below.
  */
 static int edit_mode;		/* -E: edit, then emit the diff as a script */
-static const char *edit_out;	/* where the script goes, NULL for stdout */
 
 #define DIFF_CTX 3		/* context lines around a hunk */
 #define DIFF_MAX_CELLS 4000000	/* largest LCS table worth building */
@@ -5537,33 +5556,40 @@ static void buf_to_diff(sbuf *out, const char *path, struct lbuf *lb)
 	free_lines(new, nnew);
 }
 
-/* Edit path in the built-in editor and write the resulting unified diff to
- * out. Every buffer the session leaves behind is diffed, not just the one
- * opened here: files reached with :e during the session join the same diff,
+/* Run an editing session over args and write the resulting unified diff to
+ * out. Every buffer the session leaves behind is diffed, not just the ones
+ * named here: files reached with :e during the session join the same diff,
  * in the order they were opened, and the script covers all of them. A path
- * that does not exist yet is diffed as a file creation. */
-static int edit_to_diff(const char *path, sbuf *out)
+ * that does not exist yet is diffed as a file creation.
+ *
+ * The session is nextvi's own main(), renamed nextvi_main() by
+ * build_patch2vi.sh, so args is a nextvi command line: its flags (-aemsv,
+ * -- ) and its file list behave exactly as they do in vi(1), EXINIT is
+ * honoured, and repeated paths share one buffer. Only the framing is
+ * patch2vi's - the terminal is claimed first because stdout is the script,
+ * and the buffers are read back and freed after, which is the whole point:
+ * nextvi_main() returns without touching them and nothing is ever written
+ * to disk. Its process-wide bring-up doubles as ed_init()'s, so a later
+ * session (-i) must not repeat it. */
+static int edit_to_diff(char **args, int nargs, sbuf *out)
 {
-	char **old;
-	int nold, is_new, i;
-	sbuf_smake(sb, MAX_LINE)
-	old = read_lines(path, &nold, &is_new);
-	for (i = 0; i < nold; i++) {
-		sbuf_str(sb, old[i])
-		sbuf_chr(sb, '\n')
-	}
-	sbuf_null(sb)
-	free_lines(old, nold);
+	char **argv;
+	int i, st;
 	/* every buffer of the session ends up in the diff, so the session
 	 * gets room for more of them than a plain editor would keep */
 	xbufsalloc = MAX(64, xbufsalloc);
-	if (ed_init(1) < 0) {
-		free(sb->s);
+	if (ed_grabtty() < 0)
 		return -1;
-	}
-	ed_loadbuf(path, sb->s);
-	free(sb->s);
-	if (ed_run() != 0) {
+	argv = emalloc((nargs + 1) * sizeof(argv[0]));
+	argv[0] = "vi";
+	for (i = 0; i < nargs; i++)
+		argv[i + 1] = args[i];
+	st = nextvi_main(nargs + 1, argv);
+	free(argv);
+	ed_once = 1;
+	ed_ungrabtty();
+	if (st != 0) {
+		fprintf(stderr, "editor exited with error %d\n", st);
 		ed_free();
 		return -1;
 	}
@@ -5696,7 +5722,7 @@ static void usage(const char *prog)
 {
 	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n"
 		"       %s -e script.sh\n"
-		"       %s -E file [out.sh]\n", prog, prog, prog);
+		"       %s [-ari]E [nextvi-opts...]\n", prog, prog, prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
@@ -5724,11 +5750,11 @@ static void usage(const char *prog)
 		"  -e    Execute a generated script with the built-in nextvi,\n"
 		"        no shell involved (one editor per script block)\n");
 	fprintf(stderr,
-		"  -E    Edit a file in the built-in nextvi and convert the edits\n"
-		"        into a script; no file is ever written, and files opened\n"
-		"        with :e during the session join the same script. With a\n"
-		"        second argument the script goes to that file (made\n"
-		"        executable), otherwise to stdout\n");
+		"  -E    Edit the named files in the built-in nextvi and convert\n"
+		"        the edits into a script on stdout; no file is ever\n"
+		"        written, and files opened with :e during the session\n"
+		"        join the same script. Everything after -E is a plain\n"
+		"        nextvi command line, EXINIT included\n");
 	fprintf(stderr,
 		"  -er   Read section end tag (default: \"%s\")\n", end_tag_rd);
 	fprintf(stderr,
@@ -5786,9 +5812,10 @@ int main(int argc, char **argv)
 				relative_mode = 1;
 			else if (argv[i][j] == 'i')
 				interactive_mode = 1;
-			/* -E takes no argument of its own: its two
-			 * positional arguments are the file to edit and,
-			 * optionally, the script to write */
+			/* -E takes no argument of its own and ends patch2vi's
+			 * own option parsing: whatever follows its cluster is
+			 * a nextvi command line, options and files alike, and
+			 * the script goes to stdout as in every other mode */
 			else if (argv[i][j] == 'E')
 				edit_mode = 1;
 			else if (argv[i][j] == 'd') {
@@ -5806,11 +5833,13 @@ int main(int argc, char **argv)
 				usage(argv[0]);
 			}
 		}
+		if (edit_mode) {	/* the rest belongs to nextvi */
+			i++;
+			break;
+		}
 	}
-	if (i < argc)
+	if (i < argc && !edit_mode)
 		input_file = argv[i];
-	if (edit_mode && i + 1 < argc)
-		edit_out = argv[i + 1];
 
 	/* Mark chars that cannot be ex separators. */
 	static const char *forbidden =
@@ -5823,23 +5852,21 @@ int main(int argc, char **argv)
 	if (relative_mode || interactive_mode)
 		mark_bytes_used("FAIL OK");
 
-	/* -E: the diff is not read, it is made. The editor runs on the file
-	 * first (a missing one counts as a creation), the buffer it leaves
-	 * behind is diffed against the disk copy, and that diff goes through
-	 * the parser in place of an input stream. */
+	/* -E: the diff is not read, it is made. Everything patch2vi's own
+	 * option loop did not consume is a nextvi command line - flags after
+	 * "--", then files (a missing one counts as a creation) - and the
+	 * buffers that session leaves behind are diffed against their disk
+	 * copies, that diff going through the parser in place of an input
+	 * stream. The script itself goes to stdout, like every other mode. */
 	sbuf_smake(dsb, MAX_LINE)
 	if (edit_mode) {
-		if (!input_file) {
+		if (i >= argc) {
 			fprintf(stderr, "-E requires a file argument\n");
 			return 1;
 		}
-		if (edit_to_diff(input_file, dsb) < 0)
+		if (edit_to_diff(argv + i, argc - i, dsb) < 0)
 			return 1;
 		sbuf_null(dsb)
-		if (edit_out && !freopen(edit_out, "w", stdout)) {
-			perror(edit_out);
-			return 1;
-		}
 		parse_diff_text(dsb->s);
 	}
 
@@ -6217,13 +6244,5 @@ int main(int argc, char **argv)
 
 	free(osb->s);
 	free(dsb->s);
-	/* a script written to a file is meant to be run, so spare the chmod */
-	if (edit_out) {
-		fflush(stdout);
-		if (chmod(edit_out, 0755)) {
-			perror(edit_out);
-			return 1;
-		}
-	}
 	return 0;
 }

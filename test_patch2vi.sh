@@ -1074,11 +1074,12 @@ echo "=== -E edit-to-script tests ==="
 # comes from patch2vi's own differ, not from disk.
 E_P2VI="$PWD/patch2vi"
 
-# run_E <workdir> <excmds> <patch2vi args...>
+# run_E <workdir> <excmds> <patch2vi args...>; the session is nextvi's own
+# main(), so the ex commands are driven through EXINIT like in vi(1)
 run_E() {
 	local d="$1" ex="$2"
 	shift 2
-	P2VI_EX="$ex" script -qec \
+	EXINIT="$ex" script -qec \
 		"sh -c 'cd $d && $E_P2VI -E $*'" /dev/null >/dev/null 2>&1
 }
 
@@ -1087,18 +1088,18 @@ printf 'one\ntwo\nthree\nfour\nfive\nsix\n' > "$TMPDIR/E1/f.txt"
 cp "$TMPDIR/E1/f.txt" "$TMPDIR/E1/orig.txt"
 printf 'one\ntwo\nTHREE\nfour\nfive\nsix\n' > "$TMPDIR/E1/want.txt"
 printf '/^three$/ { print "THREE"; next }\n{ print }\n' > "$TMPDIR/E1/filt.awk"
-run_E "$TMPDIR/E1" '%!awk -f filt.awk:q!' f.txt out.sh
+run_E "$TMPDIR/E1" '%!awk -f filt.awk:q!' 'f.txt > out.sh'
 
-# the edited file stays untouched and the script is ready to run
-if [ -x "$TMPDIR/E1/out.sh" ] &&
+# the script goes to stdout, the edited file stays untouched
+if [ -s "$TMPDIR/E1/out.sh" ] &&
    diff -q "$TMPDIR/E1/f.txt" "$TMPDIR/E1/orig.txt" >/dev/null 2>&1; then
-	ok "-E writes an executable script, not the file"
+	ok "-E writes a script to stdout, not the file"
 else
-	fail "-E writes an executable script, not the file"
+	fail "-E writes a script to stdout, not the file"
 fi
 
 # and applying it reproduces the edit
-( cd "$TMPDIR/E1" && VI="$VI" ./out.sh ) >/dev/null 2>&1
+( cd "$TMPDIR/E1" && VI="$VI" sh out.sh ) >/dev/null 2>&1
 if diff -q "$TMPDIR/E1/f.txt" "$TMPDIR/E1/want.txt" >/dev/null 2>&1; then
 	ok "-E script applies the edit"
 else
@@ -1117,24 +1118,37 @@ else
 	diff "$TMPDIR/E1/gnu.diff" "$TMPDIR/E1/mine.diff" | sed 's/^/    /'
 fi
 
-# without a second argument the script goes to stdout
+# every positional argument is a file to open, in order: b0 is the first
+# one, the rest are reachable with :b without a single :e
 mkdir -p "$TMPDIR/E2"
-cp "$TMPDIR/E1/orig.txt" "$TMPDIR/E2/f.txt"
-cp "$TMPDIR/E1/filt.awk" "$TMPDIR/E2/filt.awk"
-run_E "$TMPDIR/E2" '%!awk -f filt.awk:q!' 'f.txt > gen.sh'
-chmod +x "$TMPDIR/E2/gen.sh"
-( cd "$TMPDIR/E2" && VI="$VI" ./gen.sh ) >/dev/null 2>&1
-if diff -q "$TMPDIR/E2/f.txt" "$TMPDIR/E1/want.txt" >/dev/null 2>&1; then
-	ok "-E emits to stdout without an output file"
+printf 'p1\np2\n' > "$TMPDIR/E2/p.txt"
+printf 'q1\nq2\n' > "$TMPDIR/E2/q.txt"
+printf 'r1\nr2\n' > "$TMPDIR/E2/r.txt"
+run_E "$TMPDIR/E2" '%s/p1/P1/:b1:%s/q2/Q2/:b2:%s/r1/R1/:q!' \
+	'p.txt q.txt r.txt p.txt > out.sh'
+if grep -q '^# Patch: p.txt q.txt r.txt$' "$TMPDIR/E2/out.sh"; then
+	ok "-E opens every file named on the command line, once each"
 else
-	fail "-E emits to stdout without an output file"
+	fail "-E opens every file named on the command line, once each"
+	grep '^# Patch:' "$TMPDIR/E2/out.sh" | sed 's/^/    /'
+fi
+( cd "$TMPDIR/E2" && VI="$VI" sh out.sh ) >/dev/null 2>&1
+printf 'P1\np2\n' > "$TMPDIR/E2/want_p.txt"
+printf 'q1\nQ2\n' > "$TMPDIR/E2/want_q.txt"
+printf 'R1\nr2\n' > "$TMPDIR/E2/want_r.txt"
+if diff -q "$TMPDIR/E2/p.txt" "$TMPDIR/E2/want_p.txt" >/dev/null 2>&1 &&
+   diff -q "$TMPDIR/E2/q.txt" "$TMPDIR/E2/want_q.txt" >/dev/null 2>&1 &&
+   diff -q "$TMPDIR/E2/r.txt" "$TMPDIR/E2/want_r.txt" >/dev/null 2>&1; then
+	ok "-E multi-file script applies to every file"
+else
+	fail "-E multi-file script applies to every file"
 fi
 
 # an unchanged buffer has nothing to convert
 mkdir -p "$TMPDIR/E4"
 cp "$TMPDIR/E1/orig.txt" "$TMPDIR/E4/f.txt"
-run_E "$TMPDIR/E4" 'q' f.txt out.sh
-if [ -x "$TMPDIR/E4/out.sh" ] &&
+run_E "$TMPDIR/E4" 'q' 'f.txt > out.sh'
+if [ -s "$TMPDIR/E4/out.sh" ] &&
    ! grep -q '^# Patch:' "$TMPDIR/E4/out.sh"; then
 	ok "-E on an untouched buffer emits no patch"
 else
@@ -1145,14 +1159,14 @@ fi
 # and -E still leaves the filesystem alone
 mkdir -p "$TMPDIR/E3"
 printf 'hello\nworld\n' > "$TMPDIR/E3/content.txt"
-run_E "$TMPDIR/E3" 'r content.txt:q!' new.txt out.sh
+run_E "$TMPDIR/E3" 'r content.txt:q!' 'new.txt > out.sh'
 if [ ! -e "$TMPDIR/E3/new.txt" ] &&
    grep -q '^--- /dev/null$' "$TMPDIR/E3/out.sh"; then
 	ok "-E diffs a missing file as a creation"
 else
 	fail "-E diffs a missing file as a creation"
 fi
-( cd "$TMPDIR/E3" && VI="$VI" ./out.sh ) >/dev/null 2>&1
+( cd "$TMPDIR/E3" && VI="$VI" sh out.sh ) >/dev/null 2>&1
 if diff -q "$TMPDIR/E3/new.txt" "$TMPDIR/E3/content.txt" >/dev/null 2>&1; then
 	ok "-E creation script creates the file"
 else
@@ -1165,7 +1179,7 @@ mkdir -p "$TMPDIR/E5"
 printf 'a1\na2\na3\n' > "$TMPDIR/E5/a.txt"
 printf 'b1\nb2\nb3\n' > "$TMPDIR/E5/b.txt"
 run_E "$TMPDIR/E5" \
-	'%s/a2/A2/:e b.txt:%s/b3/B3/:e c.txt:r a.txt:q!' a.txt out.sh
+	'%s/a2/A2/:e b.txt:%s/b3/B3/:e c.txt:r a.txt:q!' 'a.txt > out.sh'
 if grep -q '^# Patch: a.txt b.txt c.txt$' "$TMPDIR/E5/out.sh" &&
    [ ! -e "$TMPDIR/E5/c.txt" ]; then
 	ok "-E collects every session buffer"
@@ -1173,7 +1187,7 @@ else
 	fail "-E collects every session buffer"
 	grep '^# Patch:' "$TMPDIR/E5/out.sh" | sed 's/^/    /'
 fi
-( cd "$TMPDIR/E5" && VI="$VI" ./out.sh ) >/dev/null 2>&1
+( cd "$TMPDIR/E5" && VI="$VI" sh out.sh ) >/dev/null 2>&1
 printf 'a1\nA2\na3\n' > "$TMPDIR/E5/want_a.txt"
 printf 'b1\nb2\nB3\n' > "$TMPDIR/E5/want_b.txt"
 # c.txt got a.txt read off disk, that is before the buffer's own edit
@@ -1190,12 +1204,25 @@ fi
 mkdir -p "$TMPDIR/E6"
 printf 'x1\nx2\n' > "$TMPDIR/E6/x.txt"
 printf 'y1\ny2\n' > "$TMPDIR/E6/y.txt"
-run_E "$TMPDIR/E6" ':e y.txt:%s/y1/Y1/:q!' x.txt out.sh
+run_E "$TMPDIR/E6" ':e y.txt:%s/y1/Y1/:q!' 'x.txt > out.sh'
 if grep -q '^# Patch: y.txt$' "$TMPDIR/E6/out.sh"; then
 	ok "-E skips buffers with no edits"
 else
 	fail "-E skips buffers with no edits"
 	grep '^# Patch:' "$TMPDIR/E6/out.sh" | sed 's/^/    /'
+fi
+
+# everything after -E is nextvi's own command line: -e runs the session in
+# ex mode, where EXINIT does the editing and there is no vi loop at all
+mkdir -p "$TMPDIR/E7"
+printf 'z1\nz2\n' > "$TMPDIR/E7/z.txt"
+printf 'Z1\nz2\n' > "$TMPDIR/E7/want_z.txt"
+run_E "$TMPDIR/E7" '%s/z1/Z1/:q!' '-e z.txt > out.sh'
+( cd "$TMPDIR/E7" && VI="$VI" sh out.sh ) >/dev/null 2>&1
+if diff -q "$TMPDIR/E7/z.txt" "$TMPDIR/E7/want_z.txt" >/dev/null 2>&1; then
+	ok "-E passes nextvi flags straight through"
+else
+	fail "-E passes nextvi flags straight through"
 fi
 
 else
