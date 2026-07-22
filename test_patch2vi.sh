@@ -1159,6 +1159,45 @@ else
 	fail "-E creation script creates the file"
 fi
 
+# every buffer of the session lands in one script: two more files reached
+# with :e, one of them new, all diffed against disk in the order opened
+mkdir -p "$TMPDIR/E5"
+printf 'a1\na2\na3\n' > "$TMPDIR/E5/a.txt"
+printf 'b1\nb2\nb3\n' > "$TMPDIR/E5/b.txt"
+run_E "$TMPDIR/E5" \
+	'%s/a2/A2/:e b.txt:%s/b3/B3/:e c.txt:r a.txt:q!' a.txt out.sh
+if grep -q '^# Patch: a.txt b.txt c.txt$' "$TMPDIR/E5/out.sh" &&
+   [ ! -e "$TMPDIR/E5/c.txt" ]; then
+	ok "-E collects every session buffer"
+else
+	fail "-E collects every session buffer"
+	grep '^# Patch:' "$TMPDIR/E5/out.sh" | sed 's/^/    /'
+fi
+( cd "$TMPDIR/E5" && VI="$VI" ./out.sh ) >/dev/null 2>&1
+printf 'a1\nA2\na3\n' > "$TMPDIR/E5/want_a.txt"
+printf 'b1\nb2\nB3\n' > "$TMPDIR/E5/want_b.txt"
+# c.txt got a.txt read off disk, that is before the buffer's own edit
+printf 'a1\na2\na3\n' > "$TMPDIR/E5/want_c.txt"
+if diff -q "$TMPDIR/E5/a.txt" "$TMPDIR/E5/want_a.txt" >/dev/null 2>&1 &&
+   diff -q "$TMPDIR/E5/b.txt" "$TMPDIR/E5/want_b.txt" >/dev/null 2>&1 &&
+   diff -q "$TMPDIR/E5/c.txt" "$TMPDIR/E5/want_c.txt" >/dev/null 2>&1; then
+	ok "-E multi-buffer script applies to every file"
+else
+	fail "-E multi-buffer script applies to every file"
+fi
+
+# buffers left untouched contribute nothing, changed ones still do
+mkdir -p "$TMPDIR/E6"
+printf 'x1\nx2\n' > "$TMPDIR/E6/x.txt"
+printf 'y1\ny2\n' > "$TMPDIR/E6/y.txt"
+run_E "$TMPDIR/E6" ':e y.txt:%s/y1/Y1/:q!' x.txt out.sh
+if grep -q '^# Patch: y.txt$' "$TMPDIR/E6/out.sh"; then
+	ok "-E skips buffers with no edits"
+else
+	fail "-E skips buffers with no edits"
+	grep '^# Patch:' "$TMPDIR/E6/out.sh" | sed 's/^/    /'
+fi
+
 else
 	echo "  SKIP: script(1) not available"
 fi

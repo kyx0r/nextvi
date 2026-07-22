@@ -24,8 +24,9 @@
  * editor also executes generated scripts without a shell (-e), one
  * editor lifetime per script block, and turns a plain editing session
  * into a script (-E): the file is opened for editing, never written, and
- * the buffer the editor leaves behind is diffed against it by the
- * built-in differ to produce the input the converter normally reads.
+ * every buffer the editor leaves behind - the one opened here and any
+ * file reached with :e - is diffed against its disk copy by the built-in
+ * differ to produce the input the converter normally reads.
  */
 
 #include "vi.c"
@@ -3688,43 +3689,57 @@ static void ed_free(void)
  * the names are labels (referencing the original input where possible)
  * and the main buffer's final content is returned (heap-allocated)
  * however the session ended, saved or not. NULL on error. */
-static char *edit_buffers(const char *name, char *text,
-			  const char *rejname, char *rejtext)
+static void ed_loadbuf(const char *name, char *text)
 {
-	char *ln, msg[512];
-	struct lbuf *lb;
-	int i;
-	if (ed_init(1) < 0)
-		return NULL;
+	char msg[512];
 	bufs_switch(bufs_open(name, strlen(name)));
 	lbuf_edit(xb, text, 0, 0, 0, 0);
 	ex_bufpostfix(ex_buf, 1);
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [f]", xb_path, lbuf_len(xb));
 	ex_print(msg, bar_ft)
-	if (rejtext) {
-		xmpt = 0;
-		bufs_switch(bufs_open(rejname, strlen(rejname)));
-		lbuf_edit(xb, rejtext, 0, 0, 0, 0);
-		ex_bufpostfix(ex_buf, 1);
-		snprintf(msg, sizeof(msg), "\"%s\" %dL [f]", xb_path, lbuf_len(xb));
-		ex_print(msg, bar_ft)
-	}
+}
+
+/* Hand the loaded buffers to the user and end the session. The buffers
+ * outlive it, so the caller can read them back; ed_free() drops them. */
+static int ed_run(void)
+{
+	char *ln;
+	int st;
 	syn_setft(xb_ft);
 	if ((ln = getenv("P2VI_EX")))	/* test harness hook */
 		ex_command(ln)
 	vi(1);
-	i = ed_done();
-	if (i != 0) {
-		fprintf(stderr, "editor exited with error %d\n", i);
-		return NULL;
-	}
-	lb = bufs[0].lb;
+	st = ed_done();
+	if (st != 0)
+		fprintf(stderr, "editor exited with error %d\n", st);
+	return st;
+}
+
+/* A buffer's content as one heap-allocated string */
+static char *lbuf_text(struct lbuf *lb)
+{
+	char *ln;
 	sbuf_smake(sb, MAX_LINE)
-	for (i = 0; i < lbuf_len(lb); i++) {
+	for (int i = 0; i < lbuf_len(lb); i++) {
 		ln = lbuf_get(lb, i);
 		sbuf_mem(sb, ln, lbuf_s(ln)->len + 1)
 	}
 	sbufn_ret(sb, sb->s)
+}
+
+static char *edit_buffers(const char *name, char *text,
+			  const char *rejname, char *rejtext)
+{
+	if (ed_init(1) < 0)
+		return NULL;
+	ed_loadbuf(name, text);
+	if (rejtext) {
+		xmpt = 0;
+		ed_loadbuf(rejname, rejtext);
+	}
+	if (ed_run() != 0)
+		return NULL;
+	return lbuf_text(bufs[0].lb);
 }
 
 /*
@@ -5281,9 +5296,11 @@ static int exec_p2vi_script(FILE *in)
 
 /*
  * -E: edit a file in the built-in nextvi and convert what changed into a
- * script. Nothing is written back: the buffer the editor leaves behind is
- * diffed against the file as it was on disk, and that diff feeds the same
- * pipeline a diff read from stdin would. Hence the built-in differ below.
+ * script. Nothing is written back: every buffer the editor leaves behind
+ * is diffed against the file as it was on disk, and that diff feeds the
+ * same pipeline a diff read from stdin would - so a session that visits
+ * several files with :e yields one script covering all of them. Hence the
+ * built-in differ below.
  */
 static int edit_mode;		/* -E: edit, then emit the diff as a script */
 static const char *edit_out;	/* where the script goes, NULL for stdout */
@@ -5467,47 +5484,93 @@ static void free_lines(char **v, int n)
 	free(v);
 }
 
-/* Edit path in the built-in editor and write the resulting unified diff to
- * out. A path that does not exist yet is diffed as a file creation. */
-static int edit_to_diff(const char *path, sbuf *out)
+/* A file as a line array, newlines stripped. Missing file: no lines, and
+ * *is_new is set, so it is diffed as a creation. */
+static char **read_lines(const char *path, int *n, int *is_new)
 {
-	char **old = NULL, **new = NULL, *edited, *p, *nl;
-	int nold = 0, nnew = 0, ocap = 0, ncap = 0, is_new = 0;
-	char buf[MAX_LINE];
+	char **v = NULL, buf[MAX_LINE];
+	int cap = 0, len;
 	FILE *f = fopen(path, "r");
-	sbuf_smake(sb, MAX_LINE)
-	if (!f)
-		is_new = 1;
-	else {
-		while (fgets(buf, sizeof(buf), f)) {
-			int len = strlen(buf);
-			if (len && buf[len - 1] == '\n')
-				buf[len - 1] = '\0';
-			arr_append(&old, &nold, &ocap, buf);
-			sbuf_str(sb, buf)
-			sbuf_chr(sb, '\n')
-		}
-		fclose(f);
+	*n = 0;
+	*is_new = 0;
+	if (!f) {
+		*is_new = 1;
+		return NULL;
 	}
-	sbuf_null(sb)
-	edited = edit_buffers(path, sb->s, NULL, NULL);
-	free(sb->s);
-	ed_free();
-	if (!edited) {
-		free_lines(old, nold);
-		return -1;
+	while (fgets(buf, sizeof(buf), f)) {
+		len = strlen(buf);
+		if (len && buf[len - 1] == '\n')
+			buf[len - 1] = '\0';
+		arr_append(&v, n, &cap, buf);
 	}
-	for (p = edited; *p; p = nl + 1) {
+	fclose(f);
+	return v;
+}
+
+/* Text as a line array, newlines stripped. The text is consumed in place. */
+static char **split_lines(char *text, int *n)
+{
+	char **v = NULL, *p, *nl;
+	int cap = 0;
+	*n = 0;
+	for (p = text; *p; p = nl + 1) {
 		if ((nl = strchr(p, '\n')))
 			*nl = '\0';
-		arr_append(&new, &nnew, &ncap, p);
+		arr_append(&v, n, &cap, p);
 		if (!nl)
 			break;
 	}
-	free(edited);
+	return v;
+}
+
+/* One buffer left behind by the session, against the file it names. */
+static void buf_to_diff(sbuf *out, const char *path, struct lbuf *lb)
+{
+	char **old, **new, *text;
+	int nold, nnew, is_new;
+	old = read_lines(path, &nold, &is_new);
+	text = lbuf_text(lb);
+	new = split_lines(text, &nnew);
 	emit_unified_diff(out, path, is_new, old, nold, new, nnew);
+	free(text);
 	free_lines(old, nold);
 	free_lines(new, nnew);
+}
+
+/* Edit path in the built-in editor and write the resulting unified diff to
+ * out. Every buffer the session leaves behind is diffed, not just the one
+ * opened here: files reached with :e during the session join the same diff,
+ * in the order they were opened, and the script covers all of them. A path
+ * that does not exist yet is diffed as a file creation. */
+static int edit_to_diff(const char *path, sbuf *out)
+{
+	char **old;
+	int nold, is_new, i;
+	sbuf_smake(sb, MAX_LINE)
+	old = read_lines(path, &nold, &is_new);
+	for (i = 0; i < nold; i++) {
+		sbuf_str(sb, old[i])
+		sbuf_chr(sb, '\n')
+	}
+	sbuf_null(sb)
+	free_lines(old, nold);
+	/* every buffer of the session ends up in the diff, so the session
+	 * gets room for more of them than a plain editor would keep */
+	xbufsalloc = MAX(64, xbufsalloc);
+	if (ed_init(1) < 0) {
+		free(sb->s);
+		return -1;
+	}
+	ed_loadbuf(path, sb->s);
+	free(sb->s);
+	if (ed_run() != 0) {
+		ed_free();
+		return -1;
+	}
+	for (i = 0; i < xbufcur; i++)
+		if (bufs[i].path && bufs[i].path[0])
+			buf_to_diff(out, bufs[i].path, bufs[i].lb);
+	ed_free();
 	return 0;
 }
 
@@ -5662,7 +5725,8 @@ static void usage(const char *prog)
 		"        no shell involved (one editor per script block)\n");
 	fprintf(stderr,
 		"  -E    Edit a file in the built-in nextvi and convert the edits\n"
-		"        into a script; the file itself is never written. With a\n"
+		"        into a script; no file is ever written, and files opened\n"
+		"        with :e during the session join the same script. With a\n"
 		"        second argument the script goes to that file (made\n"
 		"        executable), otherwise to stdout\n");
 	fprintf(stderr,
