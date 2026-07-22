@@ -131,6 +131,31 @@ static void sb_printf(sbuf *sb, const char *fmt, ...)
  * its global search; edit marks start at 1 (see next_mark_id callers). */
 #define WIN_SAVE_MARK 0
 
+/* Compatibility-block gate (-pr/-po). A compat block only applies to a tree
+ * that carries the origin script's change; the gate is the question "is the
+ * origin change that causes this collision present here?", asked as an exact
+ * multi-line literal search before any edit and answered by quitting (q!0)
+ * when the answer is no. Probes come from the origin's own landing (see
+ * derive_gates): its inserted lines for GATE_PRESENT, its removed lines for
+ * GATE_ABSENT. */
+#define GATE_MAXLINES 8   /* longest probe window: locality beats length */
+#define GATE_MAXPROBES 2  /* probe sections per block, ANDed in order */
+
+enum {
+	GATE_ALWAYS = 0,  /* no probe: the block is unconditional */
+	GATE_PRESENT,     /* quit when the probe is missing (??!) */
+	GATE_ABSENT,      /* quit when the probe is found (??) */
+};
+
+typedef struct {
+	char **lines;     /* probe window, owned */
+	int nlines;
+	int polarity;     /* GATE_ALWAYS / GATE_PRESENT / GATE_ABSENT */
+	int mode;         /* search mode: 0 = register window, 1 = single line */
+	int tag;          /* allocated ?? capture id */
+	int pre_escaped;  /* 1 = user-edited regex (exarg escaping only) */
+} gate_t;
+
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
 	int group_idx;      /* 1-based */
@@ -1951,6 +1976,74 @@ static void emit_chain_pattern(sbuf *out, pat_spec_t *p)
 	/* Ensure trailing newline when last line is empty */
 	if (p->nlines > 0 && !p->lines[p->nlines - 1][0])
 		sb_chr(out, '\n');
+}
+
+/* Emit a compat block's gate: search the probe, capture the result under the
+ * gate's own tag, and on the polarity's failing side quit before any edit.
+ *
+ *   ?<esc><sep>f> <probe><esc><sep><tag>??<esc><sep><tag>??!<esc3><sep>q!0<sep>
+ *
+ * With the register cache active (fr 98) a bare "f> " has no location, so
+ * ec_find takes its existence-test branch and the cursor never moves - the
+ * groups that follow search from exactly where they would have without a
+ * gate. Without the cache the search must be located ("%f> ") and the cursor
+ * is put back with "1;0". A mode-1 probe searches the buffer directly, from
+ * the top, and restores the cache afterwards.
+ *
+ * The quit is q!0, never a counted Nq: ex_exec drops one xqprop level per
+ * conditional arm, so a counted quit inside the ?? arm would be absorbed and
+ * the block would apply unconditionally - a silent failure in the dangerous
+ * direction. q!0 sets xquit = -1, unwinds regardless of depth, skips the
+ * trailing writes and exits 0, so "sh -e" carries on to the next block. */
+static void emit_gate(sbuf *out, gate_t *g, int use_cache)
+{
+	pat_spec_t ps;
+	if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
+		return;
+	memset(&ps, 0, sizeof(ps));
+	ps.lines = g->lines;
+	ps.nlines = g->nlines;
+	ps.pre_escaped = g->pre_escaped;
+	ps.mode = g->mode;
+	sb_chr(out, '?');
+	EMIT_ESCSEP(out);
+	sb_str(out, "${LB}\n");
+	EMIT_ESCSEP(out);
+	if (g->mode == 1) {
+		/* search the live buffer from the top: ";0" resets xoff, "fr"
+		 * drops the register so f> reads the buffer itself */
+		sb_str(out, "1;0");
+		EMIT_ESCSEP(out);
+		sb_str(out, "fr");
+		EMIT_ESCSEP(out);
+		sb_str(out, ".,\\$f> ");
+	} else
+		sb_str(out, use_cache ? "f> " : "%f> ");
+	emit_chain_pattern(out, &ps);
+	EMIT_ESCSEP(out);
+	sb_printf(out, "%d??", g->tag);
+	if (g->mode == 1) {
+		if (use_cache) {
+			EMIT_ESCSEP(out);
+			sb_str(out, "fr 98");
+		}
+		EMIT_ESCSEP(out);
+		sb_str(out, "1;0");
+	} else if (!use_cache) {
+		/* the located search moved the cursor; the groups below expect
+		 * to start at the top of the file */
+		EMIT_ESCSEP(out);
+		sb_str(out, "1;0");
+	}
+	EMIT_ESCSEP(out);
+	sb_printf(out, "%d??%s", g->tag,
+		  g->polarity == GATE_PRESENT ? "!" : "");
+	/* the quit sits inside the tag's then-arg, one level deeper */
+	EMIT_ESC3SEP(out);
+	sb_str(out, "q!0");
+	EMIT_SEP(out);
+	sb_str(out, "${LB}\n");
+	EMIT_SEP(out);
 }
 
 /* Phase 1 fallback chain: try each pattern in order, first match wins.
@@ -5180,6 +5273,7 @@ typedef struct {
 	char **paths;	/* real files, in $VI argument order */
 	int npaths;
 	char *body;	/* the printf'd ex command body */
+	int sep;	/* the script's separator byte, its commands' delimiter */
 } p2vi_block_t;
 
 /* One editor lifetime: the files as b0..bN-1, then the body. EXINIT only
@@ -5216,6 +5310,19 @@ static void free_block(p2vi_block_t *blk)
 	free(blk->paths);
 	free(blk->body);
 	memset(blk, 0, sizeof(*blk));
+}
+
+/* The script's separator byte, the delimiter of the body's commands. Read
+ * per block at parse time: a replay may span two scripts, each with its own
+ * header, and the bodies keep their own separator once expanded. */
+static int sh_sepbyte(void)
+{
+	const char *s = sh_get("SEP");
+	if (!s || !s[0] || s[1]) {
+		fprintf(stderr, "replay: script has no single-byte SEP\n");
+		return -1;
+	}
+	return (unsigned char)s[0];
 }
 
 /* EXINIT='<init>' $VI -e 'file' ... "$P2VIF"; the init is the fixed one
@@ -5308,6 +5415,9 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 			if (!(ret = sh_expand(body->s, exp))) {
 				sbuf_null(exp)
 				blk.body = uc_dup(exp->s);
+				/* -e never needs it, but reading it here keeps
+				 * every block self-contained for the replay */
+				blk.sep = sh_sepbyte();
 				*blks = erealloc(*blks, (*nblks + 1)
 						 * sizeof(**blks));
 				(*blks)[(*nblks)++] = blk;
@@ -5369,17 +5479,6 @@ static int exec_p2vi_script(FILE *in)
  * spawned per block shares no register cache, "??" tag or separator with
  * the one before it.
  */
-
-/* The script's separator byte, the delimiter of the body's commands */
-static int sh_sepbyte(void)
-{
-	const char *s = sh_get("SEP");
-	if (!s || !s[0] || s[1]) {
-		fprintf(stderr, "replay: script has no single-byte SEP\n");
-		return -1;
-	}
-	return (unsigned char)s[0];
-}
 
 #define BODY_DELIM(c) ((c) == sep || (c) == '\n')
 
@@ -5458,13 +5557,15 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 {
 	char **paths = NULL, *body, *ln;
 	int npaths = 0, *bmap = NULL, nmap = 0, i, k, st = 0, sep, bad = 0;
-	if ((sep = sh_sepbyte()) < 0)
-		return -1;
 	/* sized for the union of every block's files: an eviction would
 	 * silently drop an edited buffer from the derived patch */
 	xbufsalloc = MAX(64, xbufsalloc);
 	for (i = 0; i < nblks && st == 0; i++) {
 		int last = handover && i == nblks - 1;
+		if ((sep = blks[i].sep) < 0) {
+			st = -1;
+			break;
+		}
 		if (ed_init(last) < 0) {
 			st = -1;
 			break;
@@ -5536,30 +5637,41 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 	return st;
 }
 
-/* Replay a generated script over the tree as it is on disk, in one
- * session whose buffers the caller reads back. Phase 1 is made fatal
- * (QF1) and loud (DBG1) through the script's own conditionals, which read
- * the environment: a compat patch derived from a half-applied origin
- * would silently lack the changes that did not land. */
-static int replay_script(const char *path, int handover)
+/* Replay generated scripts over the tree as it is on disk, all in one
+ * session whose buffers the caller reads back: -po replays the origin and
+ * then the target, so the user is handed the state both have been applied
+ * to. Header assignments are per script (sh_reset), while each block carries
+ * its own separator, so the two headers never mix. Phase 1 is made fatal
+ * (QF1) and loud (DBG1) through the scripts' own conditionals, which read
+ * the environment: a compat patch derived from a half-applied origin would
+ * silently lack the changes that did not land. */
+static int replay_scripts(const char **paths, int nscripts, int handover)
 {
 	p2vi_block_t *blks = NULL;
-	int nblks = 0, st;
-	FILE *f = fopen(path, "r");
-	if (!f) {
-		perror(path);
-		return -1;
-	}
-	sh_reset();
-	exec_script = path;
+	int nblks = 0, st = 0, i;
 	setenv("DBG1", "1", 1);
 	setenv("QF1", "1", 1);
-	st = parse_p2vi_script(f, &blks, &nblks);
-	fclose(f);
+	for (i = 0; i < nscripts && st >= 0; i++) {
+		FILE *f = fopen(paths[i], "r");
+		if (!f) {
+			perror(paths[i]);
+			st = -1;
+			break;
+		}
+		sh_reset();
+		exec_script = paths[i];
+		st = parse_p2vi_script(f, &blks, &nblks);
+		fclose(f);
+	}
 	if (st >= 0)
 		st = replay_blocks(blks, nblks, handover);
 	free_blocks(blks, nblks);
 	return st;
+}
+
+static int replay_script(const char *path, int handover)
+{
+	return replay_scripts(&path, 1, handover);
 }
 
 /*
@@ -5645,6 +5757,231 @@ static void diff_region(dops_t *d, char **old, int os, int oe,
 		dop_add(d, '+', new[ns + j]);
 #undef LCS
 	free(c);
+}
+
+/* One changed region of the origin script's landing: the span the origin
+ * inserted, in post-origin line numbers, plus the lines it removed there. A
+ * region with lo == hi removed only. */
+static void free_lines(char **v, int n);
+
+typedef struct {
+	int lo, hi;	/* inserted span [lo,hi) in post coordinates */
+	char **del;	/* removed lines */
+	int ndel, dcap;
+} chg_t;
+
+static void free_regions(chg_t *r, int n)
+{
+	for (int i = 0; i < n; i++)
+		free_lines(r[i].del, r[i].ndel);
+	free(r);
+}
+
+/* Where the origin actually landed, after its own fuzz: the changed regions
+ * of pre[] -> post[]. Strictly better than reading the origin's stored diff,
+ * whose line numbers are the pre-fuzz ones. */
+static int gate_regions(chg_t **out, char **pre, int npre,
+			char **post, int npost)
+{
+	dops_t d;
+	chg_t c;
+	int i, ni = 0, n = 0, cap = 0;
+	memset(&d, 0, sizeof(d));
+	*out = NULL;
+	diff_region(&d, pre, 0, npre, post, 0, npost);
+	for (i = 0; i < d.n; ) {
+		if (d.v[i].t == ' ') {
+			ni++;
+			i++;
+			continue;
+		}
+		memset(&c, 0, sizeof(c));
+		c.lo = c.hi = ni;
+		for (; i < d.n && d.v[i].t != ' '; i++) {
+			if (d.v[i].t == '+') {
+				if (c.lo == c.hi)
+					c.lo = ni;
+				c.hi = ++ni;
+			} else
+				arr_append(&c.del, &c.ndel, &c.dcap, d.v[i].s);
+		}
+		if (n >= cap) {
+			cap = cap ? cap * 2 : 8;
+			*out = erealloc(*out, cap * sizeof(chg_t));
+		}
+		(*out)[n++] = c;
+	}
+	free(d.v);
+	return n;
+}
+
+/* count_window() reads the global original; a probe is counted against three
+ * texts in turn, so the global is swapped rather than the counter duplicated. */
+static int count_in(char **src, int nsrc, char **win, int n)
+{
+	char **sv = orig_lines;
+	int svn = n_orig_lines, first, cnt;
+	orig_lines = src;
+	n_orig_lines = nsrc;
+	cnt = count_window(win, n, &first);
+	orig_lines = sv;
+	n_orig_lines = svn;
+	return cnt;
+}
+
+/* Distance from a region to the compat hunk's anchor span, both in post
+ * coordinates; 0 when they touch. Regions are tried nearest first, so the
+ * gate probes the change that causes this collision and not some unrelated
+ * hunk of the origin. */
+static int span_dist(int lo, int hi, int alo, int ahi)
+{
+	if (hi < alo)
+		return alo - hi;
+	if (lo > ahi)
+		return lo - ahi;
+	return 0;
+}
+
+/* A probe window is usable when it names the post-origin text and nothing
+ * else: unique there (or at least present, for an ANDed pair), absent from
+ * the pre-origin text, and - for -po, where the gate must also separate
+ * "origin + target" from "target alone" - absent from the target-only text. */
+static int probe_ok(char **win, int n, char **pre, int npre,
+		    char **post, int npost, char **x2o, int nx2o, int uniq)
+{
+	int cnt = count_in(post, npost, win, n);
+	if (uniq ? cnt != 1 : cnt < 1)
+		return 0;
+	if (count_in(pre, npre, win, n))
+		return 0;
+	return !(x2o && count_in(x2o, nx2o, win, n));
+}
+
+/* The shortest window of post[r->lo .. r->hi) that qualifies, growing one
+ * line at a time up to GATE_MAXLINES and never overlapping [xlo,xhi) - the
+ * compat hunk's own edit span and anchors, which the block would otherwise
+ * be free to destroy or duplicate along with its gate condition.
+ * Returns the window length, 0 when the region yields none. */
+static int probe_from_region(gate_t *g, chg_t *r, char **pre, int npre,
+			     char **post, int npost, char **x2o, int nx2o,
+			     int xlo, int xhi, int uniq)
+{
+	int len, s, i;
+	for (len = 1; len <= GATE_MAXLINES && len <= r->hi - r->lo; len++) {
+		for (s = r->lo; s + len <= r->hi; s++) {
+			if (s < xhi && xlo < s + len)
+				continue;
+			if (!probe_ok(post + s, len, pre, npre, post, npost,
+				      x2o, nx2o, uniq))
+				continue;
+			g->lines = emalloc(len * sizeof(char *));
+			for (i = 0; i < len; i++)
+				g->lines[i] = uc_dup(post[s + i]);
+			g->nlines = len;
+			g->polarity = GATE_PRESENT;
+			g->mode = 0;
+			return len;
+		}
+	}
+	return 0;
+}
+
+/* Delete-only region: nothing the origin inserted is available to probe, so
+ * probe a line it removed and invert the polarity - quit when the probe IS
+ * found. The window must be gone from the post-origin text and present in
+ * both the pre-origin text and (for -po) the target-only one, which is the
+ * mirror of probe_ok(). */
+static int probe_removed(gate_t *g, chg_t *r, char **pre, int npre,
+			 char **post, int npost, char **x2o, int nx2o)
+{
+	int len, s, i;
+	for (len = 1; len <= GATE_MAXLINES && len <= r->ndel; len++) {
+		for (s = 0; s + len <= r->ndel; s++) {
+			if (count_in(post, npost, r->del + s, len))
+				continue;
+			if (count_in(pre, npre, r->del + s, len) != 1)
+				continue;
+			if (x2o && count_in(x2o, nx2o, r->del + s, len) < 1)
+				continue;
+			g->lines = emalloc(len * sizeof(char *));
+			for (i = 0; i < len; i++)
+				g->lines[i] = uc_dup(r->del[s + i]);
+			g->nlines = len;
+			g->polarity = GATE_ABSENT;
+			g->mode = 0;
+			return len;
+		}
+	}
+	return 0;
+}
+
+static void free_gates(gate_t *g, int n)
+{
+	for (int i = 0; i < n; i++) {
+		free_lines(g[i].lines, g[i].nlines);
+		g[i].lines = NULL;
+		g[i].nlines = 0;
+	}
+}
+
+/* Derive the gate for one compat block over one file. pre[]/post[] are the
+ * file before and after the origin's blocks ran, x2o[] (optional, -po) the
+ * same file with the target applied but not the origin. [alo,ahi) is the
+ * compat hunk's anchor span and [xlo,xhi) the span the compat edit rewrites,
+ * both in post coordinates.
+ *
+ * Regions are tried nearest the anchor first, and a single unique probe wins;
+ * failing that, two individually ambiguous probes from distinct regions are
+ * ANDed (sequential early exits, no nesting). Returns the number of gate
+ * sections, 0 when no probe validates - a hard error for the caller, never a
+ * reason to ship a weak gate. */
+static int derive_gates(gate_t *g, int maxg, char **pre, int npre,
+			char **post, int npost, char **x2o, int nx2o,
+			int alo, int ahi, int xlo, int xhi)
+{
+	chg_t *r;
+	int nr = gate_regions(&r, pre, npre, post, npost);
+	int *ord = nr ? emalloc(nr * sizeof(int)) : NULL;
+	int i, j, t, n = 0;
+	if (maxg > GATE_MAXPROBES)
+		maxg = GATE_MAXPROBES;
+	for (i = 0; i < nr; i++)
+		ord[i] = i;
+	for (i = 1; i < nr; i++)		/* insertion sort, nearest first */
+		for (j = i; j > 0 &&
+		     span_dist(r[ord[j]].lo, r[ord[j]].hi, alo, ahi) <
+		     span_dist(r[ord[j - 1]].lo, r[ord[j - 1]].hi, alo, ahi);
+		     j--) {
+			t = ord[j];
+			ord[j] = ord[j - 1];
+			ord[j - 1] = t;
+		}
+	for (i = 0; i < nr && !n; i++) {
+		chg_t *c = &r[ord[i]];
+		if (probe_from_region(g, c, pre, npre, post, npost,
+				      x2o, nx2o, xlo, xhi, 1))
+			n = 1;
+		else if (c->lo == c->hi && probe_removed(g, c, pre, npre,
+							 post, npost, x2o, nx2o))
+			n = 1;
+	}
+	/* no region names the origin's landing on its own: AND two that each
+	 * rule out the pre-origin text */
+	if (!n && maxg > 1) {
+		int got = 0;
+		for (j = 0; j < nr && got < maxg; j++)
+			if (probe_from_region(&g[got], &r[ord[j]], pre, npre,
+					      post, npost, x2o, nx2o,
+					      xlo, xhi, 0))
+				got++;
+		if (got == maxg)
+			n = got;
+		else
+			free_gates(g, got);
+	}
+	free(ord);
+	free_regions(r, nr);
+	return n;
 }
 
 /* An op list as unified diff text for path: header, then one hunk per run
@@ -5790,6 +6127,56 @@ static char **split_lines(char *text, int *n)
 			break;
 	}
 	return v;
+}
+
+/* Stage B1 diagnostic, until the extraction and emission of stage B2 give it
+ * a real consumer: for every buffer the origin's replay changed, derive and
+ * report the gate that would guard a compat block over that file. The anchor
+ * span is the whole file and nothing is excluded, so this exercises probe
+ * selection and validation but not yet locality. */
+static int compat_report_gates(char **x2o, int nx2o)
+{
+	gate_t g[GATE_MAXPROBES];
+	char **pre, **post, *text;
+	int npre, npost, is_new, n, i, j, k, bad = 0, next_id = 1;
+	for (i = 0; i < xbufcur; i++) {
+		if (!bufs[i].lb->modified)
+			continue;
+		pre = read_lines(bufs[i].path, &npre, &is_new);
+		text = lbuf_text(bufs[i].lb);
+		post = split_lines(text, &npost);
+		n = derive_gates(g, GATE_MAXPROBES, pre, npre, post, npost,
+				 x2o, nx2o, 0, npost, -1, -1);
+		/* a fresh id per probe: the gate's ?? tag must not fuse with
+		 * any group's, so it is allocated before the groups' (B2) */
+		for (j = 0; j < n; j++)
+			g[j].tag = next_mark_id(&next_id);
+		if (!n) {
+			fprintf(stderr, "gate: %s: no probe validates, "
+				"supply a gate by hand\n", bufs[i].path);
+			bad = 1;
+		}
+		for (j = 0; j < n; j++) {
+			sbuf_smake(body, MAX_LINE)
+			fprintf(stderr, "=== GATE %d %s mode %d tag %d ===\n",
+				j + 1, g[j].polarity == GATE_ABSENT ? "absent"
+				: "present", g[j].mode, g[j].tag);
+			for (k = 0; k < g[j].nlines; k++)
+				fprintf(stderr, "%s\n", g[j].lines[k]);
+			fprintf(stderr, "%s\n", end_tag_wr);
+			/* the ex-body fragment the gate would emit, so the
+			 * q!0 early exit is exercised before B2 consumes it */
+			emit_gate(body, &g[j], 1);
+			sbuf_null(body)
+			fprintf(stderr, "gate-body: %s\n", body->s);
+			free(body->s);
+		}
+		free_gates(g, n);
+		free_lines(pre, npre);
+		free(post);
+		free(text);
+	}
+	return bad ? -1 : 0;
 }
 
 /* One buffer left behind by the session, against the file it names. */
@@ -6377,7 +6764,10 @@ int main(int argc, char **argv)
 			ed_free();
 			return 1;
 		}
+		i = compat_report_gates(NULL, 0);
 		ed_free();
+		if (i < 0)
+			return 1;
 		fprintf(stderr, "-p%c: compat derivation is not implemented yet\n",
 			compat_mode == 1 ? 'r' : 'o');
 		return 1;

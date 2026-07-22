@@ -1356,6 +1356,53 @@ else
 	tail -3 "$R/log" | sed 's/^/    /'
 fi
 
+# Gate derivation (stage B1). The gate asks "is the origin change that
+# causes this collision present?", so its probe comes from where the origin
+# actually landed: the lines it inserted (polarity present), or - when it
+# only removed lines - the lines it removed, with the polarity inverted.
+# The replay leaves the post-origin text in RAM and the pre-origin text on
+# disk, which are the two texts a probe must discriminate.
+gate_of() {	# <pre-text> <post-text>: report the derived gate for f1.txt
+	printf "$1" > "$R/f1.txt"
+	printf "$2" > "$R/g.want"
+	diff -u "$R/f1.txt" "$R/g.want" \
+		| sed '1s|.*|--- a/f1.txt|;2s|.*|+++ b/f1.txt|' > "$R/g.diff" || true
+	"$R_P2VI" -r "$R/g.diff" > "$R/gate.sh"
+	sed -i "s|\$VI -e '[^']*'|\$VI -e 'f1.txt'|" "$R/gate.sh"
+	run_pr gate.sh 'q!'
+	tr -d '\r' < "$R/log" | sed -n '/^=== GATE /,/^=== END ===$/p'
+}
+
+got=$(gate_of 'a\nb\nc\n' 'a\nb\nNEW\nc\n')
+if [ "$got" = "$(printf '=== GATE 1 present mode 0 tag 1 ===\nNEW\n=== END ===')" ]; then
+	ok "gate: an inserted line becomes a present-polarity probe"
+else
+	fail "gate: an inserted line becomes a present-polarity probe"
+	printf '%s\n' "$got" | sed 's/^/    /'
+fi
+
+got=$(gate_of 'a\ngone\nc\n' 'a\nc\n')
+if [ "$got" = "$(printf '=== GATE 1 absent mode 0 tag 1 ===\ngone\n=== END ===')" ]; then
+	ok "gate: a delete-only origin hunk inverts the polarity"
+else
+	fail "gate: a delete-only origin hunk inverts the polarity"
+	printf '%s\n' "$got" | sed 's/^/    /'
+fi
+
+# The inserted text already occurs in the pre-origin file, so no window of
+# it tells the two trees apart: a hard error, never a weak probe
+got=$(gate_of 'dup\nb\ndup\n' 'dup\nb\ndup\ndup\n')
+if printf '%s\n' "$got" | grep -q .; then
+	fail "gate: an undiscriminating insertion is refused"
+	printf '%s\n' "$got" | sed 's/^/    /'
+elif tr -d '\r' < "$R/log" | grep -q "^gate: f1.txt: no probe validates"; then
+	ok "gate: an undiscriminating insertion is refused"
+else
+	fail "gate: an undiscriminating insertion is refused"
+	tail -3 "$R/log" | sed 's/^/    /'
+fi
+cp "$R/f1.orig" "$R/f1.txt"
+
 fi
 
 echo ""
