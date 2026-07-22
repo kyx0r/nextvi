@@ -14,9 +14,9 @@
 
 # Convert a .patch file to a nextvi shell script.
 # Usage: patch2vi <flag> input.patch [output.sh]
-patch2vi() {
+patch2vi_wrapper() {
 	if [ -z "$1" ]; then
-		echo "Usage: patch2vi <flag> input.patch [output.sh]" >&2
+		echo "Usage: patch2vi_wrapper <flag> input.patch [output.sh]" >&2
 		return 1
 	fi
 
@@ -85,9 +85,9 @@ edelta() {
 	fi
 
 	if [ "$2" ]; then
-		patch2vi -i "$1"
+		patch2vi_wrapper -i "$1"
 	else
-		patch2vi -d "$1"
+		patch2vi_wrapper -d "$1"
 	fi
 	mv "${1}.sh" "$1"
 }
