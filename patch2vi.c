@@ -956,6 +956,10 @@ static void emit_escaped_line(sbuf *out, const char *s)
 
 static void emit_escaped_text(sbuf *out, const char *s);
 
+/* the body register, and the EXINIT that yanks the body buffer into it
+ * and runs it; -e fills the register itself and needs neither */
+#define P2VI_REG 97
+#define P2VI_VICALL "EXINIT='%ya 97:? %@97'"
 /* separator: shell expands ${SEP} in double-quoted EXINIT */
 #define EMIT_SEP(out) sb_str(out, "${SEP}")
 /* escaped separator inside ??! block: <esc><sep> for ex_arg */
@@ -5116,33 +5120,28 @@ typedef struct {
 	char **paths;	/* real files, in $VI argument order */
 	int npaths;
 	char *body;	/* the printf'd ex command body */
-	char *exinit;	/* the EXINIT prefixed to the $VI call */
 } p2vi_block_t;
 
-/* One editor lifetime: the files as b0..bN-1, the command body as the
- * last (current) buffer, EXINIT replayed on top, exactly as "$VI -e" is
- * handed them by the shell. */
+/* One editor lifetime: the files as b0..bN-1, then the body. EXINIT only
+ * exists to lift the body out of the buffer the shell had to pass it in;
+ * -e holds the body already, so it fills the register the body may recurse
+ * through and runs the chain itself. */
 static int run_body(p2vi_block_t *blk)
 {
 	int st;
-	const char *bodyname = "p2vi.body";
 	if (ed_init(0) < 0)
 		return -1;
 	xvis |= 2;
-	xbufsalloc = MAX(blk->npaths + 1, xbufsalloc);
+	xbufsalloc = MAX(blk->npaths, xbufsalloc);
 	ec_setbufsmax(NULL, NULL, "");
 	for (int i = 0; i < blk->npaths; i++) {
 		xmpt = 0;
 		ec_edit("", "e", blk->paths[i]);
 	}
 	xmpt = 0;
-	bufs_switch(bufs_open(bodyname, strlen(bodyname)));
-	lbuf_edit(xb, blk->body, 0, 0, 0, 0);
-	ex_bufpostfix(ex_buf, 1);
-	syn_setft(xb_ft);
 	xvis &= ~4;
-	if (blk->exinit && *blk->exinit)
-		ex_command(blk->exinit)
+	ex_regput(P2VI_REG, blk->body, 0);
+	ex_exec(blk->body);
 	if (!xquit)
 		ex();
 	st = ed_done();
@@ -5156,18 +5155,18 @@ static void free_block(p2vi_block_t *blk)
 		free(blk->paths[i]);
 	free(blk->paths);
 	free(blk->body);
-	free(blk->exinit);
 	memset(blk, 0, sizeof(*blk));
 }
 
-/* EXINIT='<init>' $VI -e 'file' ... "$P2VIF" */
+/* EXINIT='<init>' $VI -e 'file' ... "$P2VIF"; the init is the fixed one
+ * emit_script() writes and -e supplies its effect itself, so it is only
+ * checked, never interpreted */
 static int parse_vi_call(const char *s, p2vi_block_t *blk)
 {
 	const char *p;
-	if (strncmp(s, "EXINIT='", 8) || !(p = strchr(s + 8, '\'')))
+	if (strncmp(s, P2VI_VICALL, strlen(P2VI_VICALL)))
 		return sh_err("vi call", s);
-	blk->exinit = str_dupn(s + 8, p - s - 8);
-	s = p + 1;
+	s += strlen(P2VI_VICALL);
 	if (strncmp(s, " $VI -e", 7))
 		return sh_err("vi call", s);
 	for (s += 7; *s; ) {
@@ -5829,7 +5828,7 @@ process_line:
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, "b%d${SEP}w${SEP}", k);
 		fputs("2q\" > \"$P2VIF\"\n"
-		      "EXINIT='%ya 97:? %@97' $VI -e", stdout);
+		      P2VI_VICALL " $VI -e", stdout);
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, " '%s'", active[k]->path);
 		/* body file is always the last buffer; vi makes it current at startup */
