@@ -2034,37 +2034,31 @@ static void emit_gate(sbuf *out, gate_t *g, int use_cache)
 	ps.lines = g->lines;
 	ps.nlines = g->nlines;
 	ps.pre_escaped = g->pre_escaped;
-	ps.mode = g->mode;
+	ps.mode = 1;
 	sb_chr(out, '?');
 	EMIT_ESCSEP(out);
 	sb_str(out, "${LB}\n");
 	EMIT_ESCSEP(out);
-	if (g->mode == 1) {
-		/* search the live buffer from the top: ";0" resets xoff, "fr"
-		 * drops the register so f> reads the buffer itself */
-		sb_str(out, "1;0");
-		EMIT_ESCSEP(out);
-		sb_str(out, "fr");
-		EMIT_ESCSEP(out);
-		sb_str(out, ".,\\$f> ");
-	} else
-		sb_str(out, use_cache ? "f> " : "%f> ");
+	/* Always search the live buffer, never the fr 98 register: the register
+	 * holds the whole file as one string, so a probe's ^/$ would anchor the
+	 * register's ends and never a mid-file line, and the gate would never
+	 * match. ";0" resets xoff, bare "fr" inverts the register option (98 -> 0)
+	 * so f> reads the buffer itself, where the ^...$ line anchors are valid;
+	 * "fr 98" restores the cache for the groups and "1;0" the cursor. */
+	sb_str(out, "1;0");
+	EMIT_ESCSEP(out);
+	sb_str(out, "fr");
+	EMIT_ESCSEP(out);
+	sb_str(out, ".,\\$f> ");
 	emit_chain_pattern(out, &ps);
 	EMIT_ESCSEP(out);
 	sb_printf(out, "%d??", g->tag);
-	if (g->mode == 1) {
-		if (use_cache) {
-			EMIT_ESCSEP(out);
-			sb_str(out, "fr 98");
-		}
+	if (use_cache) {
 		EMIT_ESCSEP(out);
-		sb_str(out, "1;0");
-	} else if (!use_cache) {
-		/* the located search moved the cursor; the groups below expect
-		 * to start at the top of the file */
-		EMIT_ESCSEP(out);
-		sb_str(out, "1;0");
+		sb_str(out, "fr 98");
 	}
+	EMIT_ESCSEP(out);
+	sb_str(out, "1;0");
 	EMIT_ESCSEP(out);
 	sb_printf(out, "%d??%s", g->tag,
 		  g->polarity == GATE_PRESENT ? "!" : "");
@@ -5079,6 +5073,50 @@ static void emit_compat_blocks(void)
 	}
 }
 
+/* -pr: emit one host file that a compat block also edits as its own $VI
+ * invocation, gated with the INVERSE probe (quit when the origin's change is
+ * present). The compat block already performs the merge on an origin tree, so
+ * this hunk must fire only on a clean tree - where its file is the exact
+ * pre-origin text the target was authored against, so the compat-building exact
+ * anchors (no fuzz) match without drift and the tags never exceed NPAT+1. */
+static void emit_host_gated(file_patch_t *fp, compat_block_t *cb)
+{
+	file_patch_t *ca[1];
+	gate_t inv[GATE_MAXPROBES];
+	int sv_rel = relative_mode;
+	ca[0] = fp;
+	for (int j = 0; j < cb->ngates; j++) {
+		inv[j] = cb->gates[j];
+		if (inv[j].polarity == GATE_PRESENT)
+			inv[j].polarity = GATE_ABSENT;
+		else if (inv[j].polarity == GATE_ABSENT)
+			inv[j].polarity = GATE_PRESENT;
+	}
+	fprintf(stdout, "\n# Patch (gated) %s"
+		" - skipped on an origin tree, the compat block merges it there\n",
+		fp->path);
+	relative_mode = 1;
+	compat_building = 1;
+	ncompat_res = cb->ngates;
+	for (int j = 0; j < cb->ngates; j++)
+		compat_res_marks[j] = inv[j].tag;
+	emit_vi_block(ca, 1, inv, cb->ngates);
+	ncompat_res = 0;
+	compat_building = 0;
+	relative_mode = sv_rel;
+}
+
+/* The compat block that also edits path, or NULL. -pr only. */
+static compat_block_t *compat_for_path(const char *path)
+{
+	if (compat_mode != 1)
+		return NULL;
+	for (int c = 0; c < ncompat; c++)
+		if (!strcmp(compat_blocks[c].path, path))
+			return &compat_blocks[c];
+	return NULL;
+}
+
 /* set by "--- /dev/null", consumed by the next "+++" */
 static int pending_is_new;
 /* "---" path (pre-patch original), consumed by the next "+++" */
@@ -6477,6 +6515,11 @@ static int compat_double_apply(file_patch_t **active, int nactive)
 			int gi;
 			if (strcmp(active[k]->path, compat_blocks[c].path))
 				continue;
+			/* this host hunk is emitted as its own inverse-gated
+			 * block, so it cannot fire on the same tree as the
+			 * compat block - no runtime double-apply to guard */
+			if (compat_for_path(active[k]->path))
+				continue;
 			dup = uc_dup(compat_blocks[c].final);
 			lines = split_lines(dup, &nlines);
 			orig_lines = lines;
@@ -7222,12 +7265,23 @@ int main(int argc, char **argv)
 	if (compat_mode == 1)
 		emit_compat_blocks();
 
-	if (nactive > 0) {
+	/* Split host files a compat block also edits into their own inverse-gated
+	 * invocations (-pr); the rest form the plain host block. */
+	file_patch_t *plain[256];
+	int nplain = 0;
+	for (int k = 0; k < nactive; k++) {
+		compat_block_t *cb = compat_for_path(active[k]->path);
+		if (cb)
+			emit_host_gated(active[k], cb);
+		else
+			plain[nplain++] = active[k];
+	}
+	if (nplain > 0) {
 		fputs("\n# Patch:", stdout);
-		for (int k = 0; k < nactive; k++)
-			fprintf(stdout, " %s", active[k]->path);
+		for (int k = 0; k < nplain; k++)
+			fprintf(stdout, " %s", plain[k]->path);
 		fputc('\n', stdout);
-		emit_vi_block(active, nactive, NULL, 0);
+		emit_vi_block(plain, nplain, NULL, 0);
 	}
 
 	/* -po: the compat block resolves the post-origin+target state, so it
