@@ -141,6 +141,22 @@ static void sb_printf(sbuf *sb, const char *fmt, ...)
 #define GATE_MAXLINES 8   /* longest probe window: locality beats length */
 #define GATE_MAXPROBES 2  /* probe sections per block, ANDed in order */
 
+/* ?? tags reserved by a compat block's gate while its groups regenerate, so
+ * gen_group_segments() skips them (the id is shared numeric space with the ??
+ * capture tags); empty when no gate is being emitted. */
+static int compat_res_marks[GATE_MAXPROBES];
+static int ncompat_res;
+/* Set while the replay session is the compat one, so replay_blocks() snapshots
+ * the post-origin baseline right before handing over to the user. */
+static int compat_capturing;
+/* Set while a compat block's groups are generated/emitted: they use the exact
+ * strategies (slots 1-NPAT) only - a compat patch is a local touch-up, so the
+ * file-validated fuzz/grp/straddle generators (which read the pre-origin file
+ * that is the wrong text here) are disabled. */
+static int compat_building;
+static int compat_mode;			/* -pr: 1 (pre), -po: 2 (post) */
+static const char *compat_origin;	/* the script it is derived against */
+
 enum {
 	GATE_ALWAYS = 0,  /* no probe: the block is unconditional */
 	GATE_PRESENT,     /* quit when the probe is missing (??!) */
@@ -239,6 +255,16 @@ static int is_substitute(const char *s)
 static char *raw_lines[MAX_OPS * 4];
 static int nraw = 0;
 
+/* Dynamic string vector: a compat block owns its own === PATCH === lines
+ * rather than splicing them into the host's raw_lines[]. */
+typedef struct { char **v; int n, cap; } strv_t;
+static void arr_append(char ***arr, int *n, int *cap, const char *s);
+
+/* When set, add_raw() appends into this sink instead of the host's raw_lines[]
+ * - so a compat diff parsed through parse_diff_text() lands in the compat
+ * block's own storage, leaving the host === PATCH === section byte-identical. */
+static strv_t *raw_sink;
+
 /* Track which bytes appear in patch content */
 static unsigned char byte_used[256];
 
@@ -263,6 +289,10 @@ static void *ecalloc(size_t n, size_t sz)
 
 static void add_raw(const char *line)
 {
+	if (raw_sink) {
+		arr_append(&raw_sink->v, &raw_sink->n, &raw_sink->cap, line);
+		return;
+	}
 	if (nraw >= (int)(sizeof(raw_lines) / sizeof(raw_lines[0]))) {
 		fprintf(stderr, "too many input lines\n");
 		exit(1);
@@ -3794,7 +3824,7 @@ static void ed_free_session(void)
 /* Drop every trace of the session: the state above plus the buffers (and
  * with them their marks and undo history). A block started after this
  * sees exactly what a freshly spawned editor sees. */
-static void ed_free(void)
+static void ed_free_bufs(void)
 {
 	for (int i = 0; i < xbufcur; i++)
 		bufs_free(i);
@@ -3803,6 +3833,11 @@ static void ed_free(void)
 	bufs = NULL;
 	ex_buf = ex_pbuf = ex_tpbuf = NULL;
 	xbufsmax = 0;
+}
+
+static void ed_free(void)
+{
+	ed_free_bufs();
 	ed_free_session();
 }
 
@@ -4565,12 +4600,16 @@ static void gen_group_segments(file_patch_t *fp)
 	 * uniqueness; new files have no original to read. Prefer the "---"
 	 * path (it names the pre-patch content); fall back to the edit
 	 * target, which holds that same content before the script runs. */
-	if (!fp->is_new)
+	if (!fp->is_new && !compat_building)
 		load_orig_file(fp->orig_path ? fp->orig_path : fp->path);
 
 	/* Drop stale segments from a previous (pre-editor display) run and
 	 * reserve every override's mark before any allocation. */
 	nreserved_marks = 0;
+	/* a compat block's gate holds allocated ?? tags; reserve them so the
+	 * group tags below never fuse with them through xanchor */
+	for (int ri = 0; ri < ncompat_res; ri++)
+		reserve_mark(compat_res_marks[ri]);
 	for (int gi = 0; gi < ngroups; gi++) {
 		group_t *g = &groups[gi];
 		free(g->ph1_gen);
@@ -4953,6 +4992,91 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
 	}
 	for (int gi = 0; gi < ngroups; gi++)
 		free_group(&groups[gi]);
+}
+
+/* One derived compatibility block: its guarded/edited file, the files[] range
+ * its own diff parsed into, its own === PATCH === lines, its final (post-user)
+ * text (for the -pr double-apply check) and its gate probes. */
+typedef struct {
+	char *path;
+	int first, count;	/* files[] range this block owns */
+	strv_t raw;		/* the block's own === PATCH === lines */
+	char *final;		/* post-compat text, for the double-apply check */
+	gate_t gates[GATE_MAXPROBES];
+	int ngates;
+} compat_block_t;
+static compat_block_t compat_blocks[64];
+static int ncompat;
+
+/* Emit one "$VI -e" invocation: the printf body (|sc! prologue, per-file
+ * b<k>/%ya 98/groups, vis 2, the writes and the 2q) staged into $P2VIF, then
+ * the EXINIT $VI line naming the files in b<k> order. The host block passes no
+ * gate; a compat block passes its gate probes, emitted after the guarded
+ * (first) file's register is cached and before its groups, so a tree without
+ * the origin's change quits (q!0) before any edit. Buffer indices are the
+ * position in active[], which is what vi opens. */
+static void emit_vi_block(file_patch_t **active, int nactive,
+			  gate_t *gates, int ngates)
+{
+	int forward = relative_mode || interactive_mode;
+	sbuf_smake(osb, MAX_LINE)
+	printf("printf '%%s\\n' \"|sc! %s|:vis 3${SEP}",
+	       dyn_esc ? "${ESC}${SEP}" : "\\\\\\\\${SEP}");
+	if (forward)
+		fputs("fr 98${SEP}", stdout);
+	for (int k = 0; k < nactive; k++) {
+		int cache = forward && !active[k]->is_new;
+		fprintf(stdout, "b%d${SEP}", k);
+		if (cache)
+			fputs("%ya 98${SEP}", stdout);
+		sbuf_cut(osb, 0)
+		if (k == 0)
+			for (int j = 0; j < ngates; j++)
+				emit_gate(osb, &gates[j], cache);
+		cur_file_path = active[k]->path;
+		emit_file_script(osb, active[k]);
+		sbuf_null(osb)
+		fputs(osb->s, stdout);
+	}
+	fputs("vis 2${SEP}", stdout);
+	for (int k = 0; k < nactive; k++)
+		fprintf(stdout, "b%d${SEP}w${SEP}", k);
+	fputs("2q\" > \"$P2VIF\"\n" P2VI_VICALL " $VI -e", stdout);
+	for (int k = 0; k < nactive; k++)
+		fprintf(stdout, " '%s'", active[k]->path);
+	fputs(" \"$P2VIF\"\n", stdout);
+	free(osb->s);
+}
+
+/* Emit every derived compat block as its own gated $VI invocation. Compat
+ * groups are always search-anchored (their line numbers live in post-origin
+ * RAM, nowhere on the target), so relative mode is forced and the
+ * file-validated generators are off. Ordering relative to the host block is
+ * the caller's, by polarity: pre before, post after. */
+static void emit_compat_blocks(void)
+{
+	for (int c = 0; c < ncompat; c++) {
+		compat_block_t *cb = &compat_blocks[c];
+		file_patch_t *ca[256];
+		int nca = 0, sv_rel = relative_mode;
+		for (int i = cb->first; i < cb->first + cb->count; i++)
+			if (files[i].ngroups > 0)
+				ca[nca++] = &files[i];
+		if (!nca)
+			continue;
+		fprintf(stdout, "\n# Compat (%s) from %s"
+			" - gated on the origin's change\n",
+			compat_mode == 1 ? "pre" : "post", compat_origin);
+		relative_mode = 1;
+		compat_building = 1;
+		ncompat_res = cb->ngates;
+		for (int j = 0; j < cb->ngates; j++)
+			compat_res_marks[j] = cb->gates[j].tag;
+		emit_vi_block(ca, nca, cb->gates, cb->ngates);
+		ncompat_res = 0;
+		compat_building = 0;
+		relative_mode = sv_rel;
+	}
 }
 
 /* set by "--- /dev/null", consumed by the next "+++" */
@@ -5549,6 +5673,29 @@ static int sess_buf(char ***paths, int *npaths, const char *path)
 	return (*npaths)++;
 }
 
+/* Post-origin baseline: each named buffer's text at the moment the origin
+ * (and, for -po, the target) has been replayed but before the user edits it.
+ * The compat diff is measured from here to the buffer's final state. */
+typedef struct { char *path, *text; } snap_t;
+static snap_t compat_base[64];
+static int ncompat_base;
+
+static void compat_snapshot(void)
+{
+	for (int i = 0; i < ncompat_base; i++) {
+		free(compat_base[i].path);
+		free(compat_base[i].text);
+	}
+	ncompat_base = 0;
+	for (int i = 0; i < xbufcur && ncompat_base < 64; i++) {
+		if (!bufs[i].path || !bufs[i].path[0])
+			continue;
+		compat_base[ncompat_base].path = uc_dup(bufs[i].path);
+		compat_base[ncompat_base].text = lbuf_text(bufs[i].lb);
+		ncompat_base++;
+	}
+}
+
 /* Run every block in one session. With handover, the last block leaves
  * the editor to the user (a full vi(1), on the terminal) instead of
  * returning at the end of its body. The session's buffers are left alive
@@ -5566,7 +5713,11 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 			st = -1;
 			break;
 		}
-		if (ed_init(last) < 0) {
+		/* In a handover session every block claims the tty, not just the
+		 * last: term_init() always draws, and a non-final block left on
+		 * fd 1 would leak its status line into stdout (the script). The
+		 * headless x2-only pass runs handover 0 but grabs the tty itself. */
+		if (ed_init(handover) < 0) {
 			st = -1;
 			break;
 		}
@@ -5599,6 +5750,11 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 		 * gone), so the user is handed nothing and the status
 		 * stands */
 		if (last && !xquit) {
+			/* the origin (and target, for -po) has now been replayed
+			 * and every buffer saved: this is the baseline the compat
+			 * diff measures from, captured before the user's edits */
+			if (compat_capturing)
+				compat_snapshot();
 			/* hand over a plain editor: the body's own separator,
 			 * escape and mode came from its "|sc!" prologue and
 			 * the "vis 2" the stripped tail left behind */
@@ -5683,8 +5839,6 @@ static int replay_script(const char *path, int handover)
  * built-in differ below.
  */
 static int edit_mode;		/* -E: edit, then emit the diff as a script */
-static int compat_mode;		/* -pr: 1 (pre), -po: 2 (post) */
-static const char *compat_origin;	/* the script it is derived against */
 
 #define DIFF_CTX 3		/* context lines around a hunk */
 #define DIFF_MAX_CELLS 4000000	/* largest LCS table worth building */
@@ -6129,53 +6283,222 @@ static char **split_lines(char *text, int *n)
 	return v;
 }
 
-/* Stage B1 diagnostic, until the extraction and emission of stage B2 give it
- * a real consumer: for every buffer the origin's replay changed, derive and
- * report the gate that would guard a compat block over that file. The anchor
- * span is the whole file and nothing is excluded, so this exercises probe
- * selection and validation but not yet locality. */
-static int compat_report_gates(char **x2o, int nx2o)
+static void parse_diff_text(const char *text);
+static void parse_diff_reset(void);
+
+/* The target-only tree, one text per path: -po must separate "origin+target"
+ * from "target alone", so the gate probe is proven absent here too. Built by
+ * replaying the target without the origin in its own session. */
+static snap_t compat_x2o[64];
+static int ncompat_x2o;
+
+/* The baseline lines the compat edit rewrites, in baseline coordinates:
+ * common head/tail trimming leaves [*lo,*hi). A pure insertion gives lo == hi
+ * at the insertion point. Anchors the gate's locality and, via [xlo,xhi),
+ * keeps a probe out of the region the block would overwrite. */
+static void diff_span(char **base, int nbase, char **fin, int nfin,
+		      int *lo, int *hi)
+{
+	int pre = 0, suf = 0;
+	while (pre < nbase && pre < nfin && !strcmp(base[pre], fin[pre]))
+		pre++;
+	while (suf < nbase - pre && suf < nfin - pre &&
+	       !strcmp(base[nbase - 1 - suf], fin[nfin - 1 - suf]))
+		suf++;
+	*lo = pre;
+	*hi = nbase - suf;
+}
+
+/* -po: replay the target alone (no origin) in its own session and record each
+ * buffer's text, so the gate can prove its probe absent from a target-only
+ * tree. Replay never writes, so the disk is still the pre-origin state and the
+ * session starts clean by construction. */
+static int compat_capture_x2o(void)
+{
+	const char *tgt = input_file;
+	int i;
+	if (!tgt) {
+		fprintf(stderr, "-po requires a target script\n");
+		return -1;
+	}
+	/* headless replay, but term_init/term_done still emit to the terminal;
+	 * claim the tty so those bytes go to /dev/tty and not to stdout (the
+	 * script), as -E's session does */
+	if (ed_grabtty() < 0)
+		return -1;
+	if (replay_scripts(&tgt, 1, 0) != 0) {	/* handover 0: no UI */
+		ed_free_bufs();
+		ed_ungrabtty();
+		return -1;
+	}
+	for (i = 0; i < xbufcur && ncompat_x2o < 64; i++) {
+		if (!bufs[i].path || !bufs[i].path[0])
+			continue;
+		compat_x2o[ncompat_x2o].path = uc_dup(bufs[i].path);
+		compat_x2o[ncompat_x2o].text = lbuf_text(bufs[i].lb);
+		ncompat_x2o++;
+	}
+	/* handover 0 already ran ed_free_session() for the last block, so only
+	 * the buffers remain to drop; a full ed_free() would double-free it */
+	ed_free_bufs();
+	ed_ungrabtty();
+	return 0;
+}
+
+/* Derive one compat block per buffer the user reshaped. Replays the origin
+ * (and, for -po, the target) into one session, hands it to the user, then
+ * measures each changed buffer from its post-origin baseline to its final
+ * state: the diff is the compat patch, and the origin's own landing yields the
+ * gate. Blocks are stored (not emitted); their bytes are marked used so the
+ * script-global SEP/ESC, chosen after this, cover them. Returns 0 on success,
+ * -1 on any hard error (a nonzero handover status, an underivable gate, or a
+ * session that changed nothing), in which case main() writes nothing. */
+static int compat_derive(void)
 {
 	gate_t g[GATE_MAXPROBES];
-	char **pre, **post, *text;
-	int npre, npost, is_new, n, i, j, k, bad = 0, next_id = 1;
+	int i, j, k, next_id, n;
+	if (compat_mode == 2 && compat_capture_x2o() != 0)
+		return -1;
+	compat_capturing = 1;
+	if (compat_mode == 2) {
+		const char *sc[2] = { compat_origin, input_file };
+		if (replay_scripts(sc, 2, 1) != 0) {
+			ed_free();
+			return -1;
+		}
+	} else if (replay_script(compat_origin, 1) != 0) {
+		ed_free();
+		return -1;
+	}
+	compat_capturing = 0;
 	for (i = 0; i < xbufcur; i++) {
-		if (!bufs[i].lb->modified)
+		char **pre, **base, **fin, **xo = NULL;
+		char *basetext = NULL, *fintext, *bdup, *fdup, *xodup = NULL;
+		int npre, nbase, nfin, nxo = 0, is_new, alo, ahi, xlo, xhi;
+		if (!bufs[i].path || !bufs[i].path[0])
 			continue;
+		for (j = 0; j < ncompat_base; j++)
+			if (!strcmp(compat_base[j].path, bufs[i].path)) {
+				basetext = compat_base[j].text;
+				break;
+			}
+		if (!basetext)		/* opened after the baseline: not ours */
+			continue;
+		fintext = lbuf_text(bufs[i].lb);
+		if (!strcmp(basetext, fintext)) {	/* user left it as it was */
+			free(fintext);
+			continue;
+		}
+		bdup = uc_dup(basetext);
+		fdup = uc_dup(fintext);
+		base = split_lines(bdup, &nbase);
+		fin = split_lines(fdup, &nfin);
 		pre = read_lines(bufs[i].path, &npre, &is_new);
-		text = lbuf_text(bufs[i].lb);
-		post = split_lines(text, &npost);
-		n = derive_gates(g, GATE_MAXPROBES, pre, npre, post, npost,
-				 x2o, nx2o, 0, npost, -1, -1);
-		/* a fresh id per probe: the gate's ?? tag must not fuse with
-		 * any group's, so it is allocated before the groups' (B2) */
-		for (j = 0; j < n; j++)
-			g[j].tag = next_mark_id(&next_id);
+		for (j = 0; j < ncompat_x2o; j++)
+			if (!strcmp(compat_x2o[j].path, bufs[i].path)) {
+				xodup = uc_dup(compat_x2o[j].text);
+				xo = split_lines(xodup, &nxo);
+				break;
+			}
+		diff_span(base, nbase, fin, nfin, &xlo, &xhi);
+		alo = xlo;
+		ahi = xhi > xlo ? xhi : xlo;
+		n = derive_gates(g, GATE_MAXPROBES, pre, npre, base, nbase,
+				 xo, nxo, alo, ahi, xlo, xhi);
 		if (!n) {
 			fprintf(stderr, "gate: %s: no probe validates, "
 				"supply a gate by hand\n", bufs[i].path);
-			bad = 1;
+			free(fintext); free(bdup); free(fdup); free(xodup);
+			free(base); free(fin); free(xo);
+			free_lines(pre, npre);
+			ed_free();
+			return -1;
 		}
-		for (j = 0; j < n; j++) {
-			sbuf_smake(body, MAX_LINE)
-			fprintf(stderr, "=== GATE %d %s mode %d tag %d ===\n",
-				j + 1, g[j].polarity == GATE_ABSENT ? "absent"
-				: "present", g[j].mode, g[j].tag);
+		/* the phase-1 fallback chain's per-pattern ?? capture tags are
+		 * fixed at the pattern slot + 1 (1..NPAT for a compat block, whose
+		 * file-validated slots are off), and the DNF failure check ANDs
+		 * every one of them; the gate's tag must sit above that range so
+		 * xanchor never fuses the gate's result into a group's */
+		next_id = NPAT + 1;
+		for (j = 0; j < n; j++)
+			g[j].tag = next_mark_id(&next_id);
+		compat_block_t *cb = &compat_blocks[ncompat++];
+		memset(cb, 0, sizeof(*cb));
+		cb->path = uc_dup(bufs[i].path);
+		cb->final = uc_dup(fintext);
+		for (j = 0; j < n; j++)
+			cb->gates[j] = g[j];	/* ownership transferred */
+		cb->ngates = n;
+		/* the block's own diff parses into a fresh files[] range and its
+		 * own raw sink, so the host === PATCH === stays byte-identical */
+		sbuf_smake(diff, MAX_LINE)
+		emit_unified_diff(diff, bufs[i].path, is_new, base, nbase,
+				  fin, nfin);
+		sbuf_null(diff)
+		raw_sink = &cb->raw;
+		parse_diff_reset();
+		cb->first = nfiles;
+		parse_diff_text(diff->s);
+		cb->count = nfiles - cb->first;
+		raw_sink = NULL;
+		mark_bytes_used(diff->s);
+		for (j = 0; j < n; j++)
 			for (k = 0; k < g[j].nlines; k++)
-				fprintf(stderr, "%s\n", g[j].lines[k]);
-			fprintf(stderr, "%s\n", end_tag_wr);
-			/* the ex-body fragment the gate would emit, so the
-			 * q!0 early exit is exercised before B2 consumes it */
-			emit_gate(body, &g[j], 1);
-			sbuf_null(body)
-			fprintf(stderr, "gate-body: %s\n", body->s);
-			free(body->s);
-		}
-		free_gates(g, n);
+				mark_bytes_used(g[j].lines[k]);
+		free(diff->s);
+		free(fintext); free(bdup); free(fdup); free(xodup);
+		free(base); free(fin); free(xo);
 		free_lines(pre, npre);
-		free(post);
-		free(text);
 	}
+	ed_free();
+	if (!ncompat) {
+		fprintf(stderr, "no compat patch derived\n");
+		return -1;
+	}
+	return 0;
+}
+
+/* -pr: the compat block performs the merged edit, so the target's own hunk
+ * then runs against a tree that already holds the text it wanted to insert. A
+ * fuzzed match would apply it twice; if a host group's inserted lines already
+ * appear in the post-compat text of the same file, that is a hard error. -po
+ * is immune by construction (the target ran before the baseline). */
+static int compat_double_apply(file_patch_t **active, int nactive)
+{
+	char **sv = orig_lines;
+	int svn = n_orig_lines, bad = 0;
+	if (compat_mode != 1)
+		return 0;
+	for (int c = 0; c < ncompat; c++) {
+		char *dup, **lines;
+		int nlines, first;
+		for (int k = 0; k < nactive; k++) {
+			group_t *grp;
+			int gi;
+			if (strcmp(active[k]->path, compat_blocks[c].path))
+				continue;
+			dup = uc_dup(compat_blocks[c].final);
+			lines = split_lines(dup, &nlines);
+			orig_lines = lines;
+			n_orig_lines = nlines;
+			for (gi = 0; gi < active[k]->ngroups; gi++) {
+				grp = &active[k]->groups[gi];
+				if (grp->nadd &&
+				    count_window(grp->add_texts, grp->nadd,
+						 &first) > 0) {
+					fprintf(stderr, "compat: %s: group %d "
+						"would apply twice on an "
+						"origin tree\n",
+						active[k]->path, gi + 1);
+					bad = 1;
+				}
+			}
+			free(lines);
+			free(dup);
+		}
+	}
+	orig_lines = sv;
+	n_orig_lines = svn;
 	return bad ? -1 : 0;
 }
 
@@ -6242,6 +6565,18 @@ static int edit_to_diff(char **args, int nargs, sbuf *out)
  * paths are cut out of it). */
 static int diff_in_hunk;	/* inside an @@ hunk */
 static int diff_old_line;	/* the original line the next op sits at */
+
+/* A parse always begins at a file header, so there is no cursor state to save
+ * when switching destinations (a compat diff into its own files[] range); just
+ * clear what a mid-file header would otherwise carry over. */
+static void parse_diff_reset(void)
+{
+	diff_in_hunk = 0;
+	diff_old_line = 0;
+	pending_is_new = 0;
+	free(pending_orig_path);
+	pending_orig_path = NULL;
+}
 
 static void parse_diff_line(char *line)
 {
@@ -6502,7 +6837,7 @@ int main(int argc, char **argv)
 	for (const char *p = forbidden; *p; p++)
 		byte_used[(unsigned char)*p] = 1;
 
-	if (relative_mode || interactive_mode)
+	if (relative_mode || interactive_mode || compat_mode)
 		mark_bytes_used("FAIL OK");
 
 	/* -E: the diff is not read, it is made. Everything patch2vi's own
@@ -6760,17 +7095,13 @@ int main(int argc, char **argv)
 	 * applies. Runs before the separator is picked, so the bytes of
 	 * whatever the session produces are seen by find_unused_byte(). */
 	if (compat_mode) {
-		if (replay_script(compat_origin, 1) != 0) {
-			ed_free();
+		if (compat_derive() < 0)
 			return 1;
-		}
-		i = compat_report_gates(NULL, 0);
-		ed_free();
-		if (i < 0)
-			return 1;
-		fprintf(stderr, "-p%c: compat derivation is not implemented yet\n",
-			compat_mode == 1 ? 'r' : 'o');
-		return 1;
+		/* The host (target) is regenerated search-anchored too: on a tree
+		 * the compat block already merged, its own hunk must fail to find
+		 * its anchor and be skipped (QF1 empty), rather than an absolute
+		 * edit clobbering a line by number. */
+		relative_mode = 1;
 	}
 
 	/* Find separator character */
@@ -6810,7 +7141,7 @@ int main(int argc, char **argv)
 	printf("SEP=\"$(printf '\\%03o')\"\n", sep);
 	if (dyn_esc)
 		printf("ESC=\"$(printf '\\%03o')\"\n", dyn_esc);
-	if (relative_mode || interactive_mode) {
+	if (relative_mode || interactive_mode || compat_mode) {
 		/* <esc><sep> and <esc><esc><esc><sep> as they appear inside
 		 * the script's double-quoted strings, matching what
 		 * EMIT_ESCSEP / EMIT_ESC3SEP emit into the command body */
@@ -6839,60 +7170,61 @@ int main(int argc, char **argv)
 		       e1, e1, e3, e1);
 	}
 
-	/* Build groups for every file */
+	/* Build groups for every file (host and compat) */
 	for (int i = 0; i < nfiles; i++)
 		build_file_groups(&files[i]);
 
-	/* Collect files with groups */
+	/* Host active = files with groups outside every compat block's range;
+	 * each compat block's own files are emitted as its own $VI invocation. */
 	file_patch_t *active[256];
 	int nactive = 0;
-	for (int i = 0; i < nfiles; i++)
-		if (files[i].ngroups > 0)
+	for (int i = 0; i < nfiles; i++) {
+		int owned = 0;
+		if (files[i].ngroups == 0)
+			continue;
+		for (int c = 0; c < ncompat; c++)
+			if (i >= compat_blocks[c].first &&
+			    i < compat_blocks[c].first + compat_blocks[c].count)
+				owned = 1;
+		if (!owned)
 			active[nactive++] = &files[i];
+	}
 
 	/* Interactive editing: one built-in editor session for all files */
 	if (interactive_mode)
 		interactive_edit_all_files(active, nactive);
+
+	/* -pr: the compat block already made the merged edit, so a host group
+	 * whose inserted text is now present would apply it a second time */
+	if (compat_double_apply(active, nactive) < 0)
+		return 1;
+
+	/* A large body overflows EXINIT/argv, so each $VI invocation stages its
+	 * ex command body in a temp file the shell expands; one staging setup is
+	 * shared by every block (compat blocks first, then the host). */
+	if (ncompat || nactive > 0)
+		fputs("# Body too large for EXINIT/argv: stage it in a file\n"
+		      "( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
+		      "trap 'rm -f \"$P2VIF\"' EXIT\n", stdout);
+
+	/* -pr: the compat block is applied BEFORE the target, so it runs first,
+	 * on the origin-only tree its anchors were derived against. */
+	if (compat_mode == 1)
+		emit_compat_blocks();
 
 	if (nactive > 0) {
 		fputs("\n# Patch:", stdout);
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, " %s", active[k]->path);
 		fputc('\n', stdout);
-		/* A large patch overflows the EXINIT env var / argv limits, so the
-		 * ex command body is written to a temp file (letting the shell do its
-		 * expansion pass) and passed to vi as the last filename. The fixed
-		 * EXINIT yanks that buffer into register 97 and executes it. */
-		fputs("# Body too large for EXINIT/argv: stage it in a file\n"
-		      "( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
-		      "trap 'rm -f \"$P2VIF\"' EXIT\n", stdout);
-		printf("printf '%%s\\n' \"|sc! %s|:vis 3${SEP}",
-		       dyn_esc ? "${ESC}${SEP}" : "\\\\\\\\${SEP}");
-		/* register <b> caches the buffer; fr gates f> searches to it */
-		if (relative_mode || interactive_mode)
-			fputs("fr 98${SEP}", stdout);
-		for (int k = 0; k < nactive; k++) {
-			fprintf(stdout, "b%d${SEP}", k);
-			/* nothing to cache or search in a brand new file */
-			if ((relative_mode || interactive_mode) && !active[k]->is_new)
-				fputs("%ya 98${SEP}", stdout);
-			cur_file_path = active[k]->path;
-			sbuf_cut(osb, 0)
-			emit_file_script(osb, active[k]);
-			sbuf_null(osb)
-			fputs(osb->s, stdout);
-		}
-		fputs("vis 2${SEP}", stdout);
-		/* Write all buffers at the end */
-		for (int k = 0; k < nactive; k++)
-			fprintf(stdout, "b%d${SEP}w${SEP}", k);
-		fputs("2q\" > \"$P2VIF\"\n"
-		      P2VI_VICALL " $VI -e", stdout);
-		for (int k = 0; k < nactive; k++)
-			fprintf(stdout, " '%s'", active[k]->path);
-		/* body file is always the last buffer; vi makes it current at startup */
-		fputs(" \"$P2VIF\"\n", stdout);
+		emit_vi_block(active, nactive, NULL, 0);
 	}
+
+	/* -po: the compat block resolves the post-origin+target state, so it
+	 * runs AFTER the host block has re-applied the target - only then does
+	 * the tree match the baseline the compat anchors were derived from. */
+	if (compat_mode == 2)
+		emit_compat_blocks();
 
 	/* Embed delta and original patch after exit 0 */
 	printf("\nexit 0\n");

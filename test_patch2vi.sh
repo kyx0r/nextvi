@@ -1356,52 +1356,73 @@ else
 	tail -3 "$R/log" | sed 's/^/    /'
 fi
 
-# Gate derivation (stage B1). The gate asks "is the origin change that
-# causes this collision present?", so its probe comes from where the origin
-# actually landed: the lines it inserted (polarity present), or - when it
-# only removed lines - the lines it removed, with the polarity inverted.
-# The replay leaves the post-origin text in RAM and the pre-origin text on
-# disk, which are the two texts a probe must discriminate.
-gate_of() {	# <pre-text> <post-text>: report the derived gate for f1.txt
-	printf "$1" > "$R/f1.txt"
-	printf "$2" > "$R/g.want"
-	diff -u "$R/f1.txt" "$R/g.want" \
-		| sed '1s|.*|--- a/f1.txt|;2s|.*|+++ b/f1.txt|' > "$R/g.diff" || true
-	"$R_P2VI" -r "$R/g.diff" > "$R/gate.sh"
-	sed -i "s|\$VI -e '[^']*'|\$VI -e 'f1.txt'|" "$R/gate.sh"
-	run_pr gate.sh 'q!'
-	tr -d '\r' < "$R/log" | sed -n '/^=== GATE /,/^=== END ===$/p'
+# Compat derivation (stage B2). -pr replays the origin, hands the tree to the
+# user, and turns the user's merge into a gated compat block emitted before the
+# target's own hunk. The gate's probe comes from where the origin actually
+# landed (its inserted line), so on an origin tree the block fires and merges,
+# while on a clean tree the gate quits (q!0) before any edit and the target
+# applies alone.
+prderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit x2.new to $R/new.sh
+	rm -f "$R/new.sh"
+	P2VI_EX="$3" script -qec \
+		"sh -c 'cd $R && $R_P2VI -pr $1 $2 > $R/new.sh 2>$R/nerr'" \
+		/dev/null > /dev/null 2>&1 || true
 }
 
-got=$(gate_of 'a\nb\nc\n' 'a\nb\nNEW\nc\n')
-if [ "$got" = "$(printf '=== GATE 1 present mode 0 tag 1 ===\nNEW\n=== END ===')" ]; then
-	ok "gate: an inserted line becomes a present-polarity probe"
+# origin (x1) inserts a buffer line and rewrites the call; target (x2, authored
+# against the original) appends flush() to the call. After x1 the target's
+# anchor (render();) is gone, so its hunk is rejected - the -pr case.
+printf 'void draw(void)\n{\n\tclear();\n\trender();\n}\n' > "$R/draw.orig"
+printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,4 +1,5 @@\n void draw(void)\n {\n+\tchar *buf = getbuf();\n \tclear();\n-\trender();\n+\trender(buf);\n }\n' > "$R/x1.diff"
+printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,4 +1,4 @@\n void draw(void)\n {\n \tclear();\n-\trender();\n+\trender(); flush();\n }\n' > "$R/x2.diff"
+"$R_P2VI" -r "$R/x1.diff" > "$R/x1.sh"
+"$R_P2VI" -r "$R/x2.diff" > "$R/x2.sh"
+cp "$R/draw.orig" "$R/draw.c"	# pre-origin tree the replay reads
+prderive x1.sh x2.sh '%s/render\(buf\);/render(buf); flush();/:q!'
+
+if grep -q '^# Compat (pre) from x1.sh' "$R/new.sh" 2>/dev/null; then
+	ok "compat: -pr emits a gated pre-block from the user's merge"
 else
-	fail "gate: an inserted line becomes a present-polarity probe"
-	printf '%s\n' "$got" | sed 's/^/    /'
+	fail "compat: -pr emits a gated pre-block from the user's merge"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
-got=$(gate_of 'a\ngone\nc\n' 'a\nc\n')
-if [ "$got" = "$(printf '=== GATE 1 absent mode 0 tag 1 ===\ngone\n=== END ===')" ]; then
-	ok "gate: a delete-only origin hunk inverts the polarity"
+# origin tree: origin then regenerated target => merged, and merged only once
+# (the target's own hunk self-skips, no double apply)
+cp "$R/draw.orig" "$R/draw.c"
+( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/draw.c")" = "$(printf 'void draw(void)\n{\n\tchar *buf = getbuf();\n\tclear();\n\trender(buf); flush();\n}')" ]; then
+	ok "compat: fires on an origin tree and merges exactly once"
 else
-	fail "gate: a delete-only origin hunk inverts the polarity"
-	printf '%s\n' "$got" | sed 's/^/    /'
+	fail "compat: fires on an origin tree and merges exactly once"
+	sed 's/^/    /' "$R/draw.c"
 fi
 
-# The inserted text already occurs in the pre-origin file, so no window of
-# it tells the two trees apart: a hard error, never a weak probe
-got=$(gate_of 'dup\nb\ndup\n' 'dup\nb\ndup\ndup\n')
-if printf '%s\n' "$got" | grep -q .; then
-	fail "gate: an undiscriminating insertion is refused"
-	printf '%s\n' "$got" | sed 's/^/    /'
-elif tr -d '\r' < "$R/log" | grep -q "^gate: f1.txt: no probe validates"; then
-	ok "gate: an undiscriminating insertion is refused"
+# clean tree: the gate quits before any edit and the target applies alone
+cp "$R/draw.orig" "$R/draw.c"
+( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/draw.c")" = "$(printf 'void draw(void)\n{\n\tclear();\n\trender(); flush();\n}')" ]; then
+	ok "compat: gate no-ops on a clean tree, target applies alone"
 else
-	fail "gate: an undiscriminating insertion is refused"
-	tail -3 "$R/log" | sed 's/^/    /'
+	fail "compat: gate no-ops on a clean tree, target applies alone"
+	sed 's/^/    /' "$R/draw.c"
 fi
-cp "$R/f1.orig" "$R/f1.txt"
+
+# an origin whose inserted line is not unique gives no window that tells the
+# two trees apart: a hard error, empty output, never a weak gate
+printf 'dup\nb\ndup\n' > "$R/u.orig"
+printf -- '--- a/u.c\n+++ b/u.c\n@@ -1,3 +1,4 @@\n dup\n b\n+dup\n dup\n' > "$R/u1.diff"
+printf -- '--- a/u.c\n+++ b/u.c\n@@ -1,3 +1,3 @@\n dup\n-b\n+B\n dup\n' > "$R/u2.diff"
+cp "$R/u.orig" "$R/u.c"
+"$R_P2VI" -r "$R/u1.diff" > "$R/u1.sh"
+"$R_P2VI" -r "$R/u2.diff" > "$R/u2.sh"
+prderive u1.sh u2.sh '%s/^b$/b changed/:q!'
+if [ ! -s "$R/new.sh" ] && tr -d '\r' < "$R/nerr" | grep -q 'no probe validates'; then
+	ok "compat: an undiscriminating origin insertion is refused"
+else
+	fail "compat: an undiscriminating origin insertion is refused"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+fi
 
 fi
 
