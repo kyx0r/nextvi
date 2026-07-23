@@ -5744,11 +5744,19 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 		 * gone), so the user is handed nothing and the status
 		 * stands */
 		if (last && !xquit) {
-			/* the origin (and target, for -po) has now been replayed
-			 * and every buffer saved: this is the baseline the compat
-			 * diff measures from, captured before the user's edits */
+			/* the origin (and target, for -po) has now been replayed:
+			 * this is the baseline the compat diff measures from,
+			 * captured before the user's edits */
 			if (compat_capturing)
 				compat_snapshot();
+			/* Present that baseline as a clean, saved file. The script's
+			 * trailing "w" (which would have marked it saved) was stripped
+			 * with the tail, so without this the handover editor shows every
+			 * buffer as modified and its undo stack still holds the replay's
+			 * own edits. Clear the history and the modified flag so :w/:q see
+			 * no change and the user's undo reaches only their own edits. */
+			for (k = 0; k < xbufcur; k++)
+				lbuf_saved(bufs[k].lb, 1);
 			/* hand over a plain editor: the body's own separator,
 			 * escape and mode came from its "|sc!" prologue and
 			 * the "vis 2" the stripped tail left behind */
