@@ -5772,8 +5772,23 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 			 * and with no session state carried over */
 			if (xbufcur)
 				bufs_switch(0);
-			for (k = 0; k < xbufcur; k++)
-				lbuf_saved(bufs[k].lb, 1);
+			for (k = 0; k < xbufcur; k++) {
+				struct lbuf *lb = bufs[k].lb;
+				lbuf_saved(lb, 1);
+				/* exbuf_save() persists the cursor per buffer,
+				 * and marks live on the lbuf, so the next block
+				 * would :e each file with the previous block's
+				 * row/off/top loaded and its marks still set. A
+				 * non-fatal phase-1 miss then falls through to a
+				 * phase-2 edit steered by that stale cursor or
+				 * landing on a stale mark. Deny both: rewind the
+				 * buffer to the top and drop its marks, as a
+				 * freshly opened file has none. Zeroing the
+				 * counts is enough (the arrays are reused). */
+				bufs[k].row = bufs[k].off = bufs[k].top = 0;
+				lb->mark_n = 0;
+				lb->mark_sb[0] = lb->mark_se[0] = -1;
+			}
 			ed_free_session();
 		}
 	}
@@ -5791,33 +5806,16 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
  * session whose buffers the caller reads back: -po replays the origin and
  * then the target, so the user is handed the state both have been applied
  * to. Header assignments are per script (sh_reset), while each block carries
- * its own separator, so the two headers never mix. Phase 1 is made fatal
- * (QF1) and loud (DBG1) through the scripts' own conditionals, which read
- * the environment: a compat patch derived from a half-applied origin would
- * silently lack the changes that did not land. */
+ * its own separator, so the two headers never mix. The scripts run with their
+ * own default phase policy (no env forced here): the shell header is the single
+ * source of truth. Stale state is instead denied at the block boundary — every
+ * buffer is rewound and its marks cleared — so a non-fatal phase-1 miss cannot
+ * fall through to a phase-2 edit at a previous block's mark or cursor. */
 static int replay_scripts(const char **paths, int nscripts, int handover)
 {
 	p2vi_block_t *blks = NULL;
 	int nblks = 0, st = 0, i;
 	for (i = 0; i < nscripts && st >= 0; i++) {
-		/* The origin must fully apply, so both its phases stay fatal
-		 * (QF1 phase 1, default-fatal QF2 phase 2) and loud (DBG1) — a
-		 * half-applied origin would silently lack the changes that did
-		 * not land. The target (-po) is best-effort: whatever it cannot
-		 * apply on the origin-modified tree is exactly what the compat
-		 * patch absorbs, so neither of its phases may abort the replay.
-		 * Env is baked into each block at parse time (sh_expand), so it
-		 * is set per script here, before parse_p2vi_script. */
-		int is_origin = !compat_origin
-			|| !strcmp(paths[i], compat_origin);
-		setenv("DBG1", "1", 1);
-		if (is_origin) {
-			setenv("QF1", "1", 1);
-			unsetenv("QF2");
-		} else {
-			unsetenv("QF1");
-			setenv("QF2", "1", 1);
-		}
 		FILE *f = fopen(paths[i], "r");
 		if (!f) {
 			perror(paths[i]);

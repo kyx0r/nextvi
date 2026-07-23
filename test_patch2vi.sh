@@ -1433,31 +1433,43 @@ else
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
-# -po replays the origin AND the target into one session before the handover.
-# The target is best-effort there: it drifts on the origin-modified tree (x1
-# rewrote the very line x2 targets), so its phase-2 edit cannot match. That is
-# exactly what the compat patch is for, so the replay must tolerate it and reach
-# the handover, not abort. origin (x1): L2 -> L2x; target (x2): L2 -> L2y, which
-# conflicts on the origin tree; the user's compat edit is a disjoint L3 -> L3c.
+# -po replays the origin AND the target into one session before the handover,
+# so the target must apply cleanly on the origin-modified tree. That exercises
+# the block boundary: the origin leaves its cursor deep in the buffer, and a
+# leftover row would steer the target's searches - so every buffer is rewound to
+# the top before the next block. origin (x1) inserts PROBE (the gate landmark);
+# target (x2) changes a disjoint line (L3 -> L3x); the compat block is emitted
+# AFTER the target and gated on PROBE. In the handover the user edits L2 -> L2c.
 printf 'L1\nL2\nL3\n' > "$R/po.orig"
-printf -- '--- a/po.c\n+++ b/po.c\n@@ -1,3 +1,3 @@\n L1\n-L2\n+L2x\n L3\n' > "$R/p1.diff"
-printf -- '--- a/po.c\n+++ b/po.c\n@@ -1,3 +1,3 @@\n L1\n-L2\n+L2y\n L3\n' > "$R/p2.diff"
+printf -- '--- a/po.c\n+++ b/po.c\n@@ -1,3 +1,4 @@\n L1\n+PROBE\n L2\n L3\n' > "$R/p1.diff"
+printf -- '--- a/po.c\n+++ b/po.c\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' > "$R/p2.diff"
 "$R_P2VI" -r "$R/p1.diff" > "$R/p1.sh"
 "$R_P2VI" -r "$R/p2.diff" > "$R/p2.sh"
 cp "$R/po.orig" "$R/po.c"	# pre-origin tree the replay reads
-poderive p1.sh p2.sh '%s/^L3$/L3c/:q!'
+poderive p1.sh p2.sh '%s/^L2$/L2c/:q!'
 if grep -q '^# Compat (post) from p1.sh' "$R/new.sh" 2>/dev/null; then
-	ok "compat: -po tolerates a target that conflicts on the origin tree"
+	ok "compat: -po emits a gated post-block from the user's merge"
 else
-	fail "compat: -po tolerates a target that conflicts on the origin tree"
+	fail "compat: -po emits a gated post-block from the user's merge"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
-# clean tree: x2 applies (L2 -> L2y) and the postfix gate quits (L2x absent), so
-# only the target's own change lands
+# origin tree: PROBE present, so the target's own change lands (L3 -> L3x) and
+# then the postfix compat block fires (L2 -> L2c) - the units stack
+cp "$R/po.orig" "$R/po.c"
+( cd "$R" && VI="$VI" sh p1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/po.c")" = "$(printf 'L1\nPROBE\nL2c\nL3x')" ]; then
+	ok "compat: -po fires on an origin tree, stacks with the target hunk"
+else
+	fail "compat: -po fires on an origin tree, stacks with the target hunk"
+	sed 's/^/    /' "$R/po.c"
+fi
+
+# clean tree: PROBE absent, so the postfix gate quits before its edit; only the
+# target's own change lands
 cp "$R/po.orig" "$R/po.c"
 ( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
-if [ "$(cat "$R/po.c")" = "$(printf 'L1\nL2y\nL3')" ]; then
+if [ "$(cat "$R/po.c")" = "$(printf 'L1\nL2\nL3x')" ]; then
 	ok "compat: -po postfix gate no-ops on a clean tree"
 else
 	fail "compat: -po postfix gate no-ops on a clean tree"
