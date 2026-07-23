@@ -1369,16 +1369,18 @@ prderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit x2.new to $R/new.sh
 		/dev/null > /dev/null 2>&1 || true
 }
 
-# origin (x1) inserts a buffer line and rewrites the call; target (x2, authored
-# against the original) appends flush() to the call. After x1 the target's
-# anchor (render();) is gone, so its hunk is rejected - the -pr case.
-printf 'void draw(void)\n{\n\tclear();\n\trender();\n}\n' > "$R/draw.orig"
-printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,4 +1,5 @@\n void draw(void)\n {\n+\tchar *buf = getbuf();\n \tclear();\n-\trender();\n+\trender(buf);\n }\n' > "$R/x1.diff"
-printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,4 +1,4 @@\n void draw(void)\n {\n \tclear();\n-\trender();\n+\trender(); flush();\n }\n' > "$R/x2.diff"
+# The compat block and the target's own hunk are independent units that stack:
+# patch2vi reasons across neither. origin (x1) inserts PROBE, which gives the
+# gate a unique landmark; the target (x2) makes its own change (L3 -> L3x); and
+# in the handover the user edits a third, disjoint line (L2 -> L2c) - the compat
+# edit. On an origin tree all three compound; on a clean tree only x2 runs.
+printf 'L1\nL2\nL3\n' > "$R/draw.orig"
+printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,4 @@\n L1\n+PROBE\n L2\n L3\n' > "$R/x1.diff"
+printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' > "$R/x2.diff"
 "$R_P2VI" -r "$R/x1.diff" > "$R/x1.sh"
 "$R_P2VI" -r "$R/x2.diff" > "$R/x2.sh"
 cp "$R/draw.orig" "$R/draw.c"	# pre-origin tree the replay reads
-prderive x1.sh x2.sh '%s/render\(buf\);/render(buf); flush();/:q!'
+prderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
 
 if grep -q '^# Compat (pre) from x1.sh' "$R/new.sh" 2>/dev/null; then
 	ok "compat: -pr emits a gated pre-block from the user's merge"
@@ -1387,21 +1389,21 @@ else
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
-# origin tree: origin then regenerated target => merged, and merged only once
-# (the target's own hunk self-skips, no double apply)
+# origin tree: x1 lands PROBE, the compat block fires (L2 -> L2c) because PROBE
+# is present, and x2 applies its own change (L3 -> L3x) - the units stack
 cp "$R/draw.orig" "$R/draw.c"
 ( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
-if [ "$(cat "$R/draw.c")" = "$(printf 'void draw(void)\n{\n\tchar *buf = getbuf();\n\tclear();\n\trender(buf); flush();\n}')" ]; then
-	ok "compat: fires on an origin tree and merges exactly once"
+if [ "$(cat "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2c\nL3x')" ]; then
+	ok "compat: fires on an origin tree, stacks with the target hunk"
 else
-	fail "compat: fires on an origin tree and merges exactly once"
+	fail "compat: fires on an origin tree, stacks with the target hunk"
 	sed 's/^/    /' "$R/draw.c"
 fi
 
-# clean tree: the gate quits before any edit and the target applies alone
+# clean tree: PROBE is absent, so the gate quits before any edit; only x2 runs
 cp "$R/draw.orig" "$R/draw.c"
 ( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
-if [ "$(cat "$R/draw.c")" = "$(printf 'void draw(void)\n{\n\tclear();\n\trender(); flush();\n}')" ]; then
+if [ "$(cat "$R/draw.c")" = "$(printf 'L1\nL2\nL3x')" ]; then
 	ok "compat: gate no-ops on a clean tree, target applies alone"
 else
 	fail "compat: gate no-ops on a clean tree, target applies alone"

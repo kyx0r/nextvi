@@ -5073,50 +5073,6 @@ static void emit_compat_blocks(void)
 	}
 }
 
-/* -pr: emit one host file that a compat block also edits as its own $VI
- * invocation, gated with the INVERSE probe (quit when the origin's change is
- * present). The compat block already performs the merge on an origin tree, so
- * this hunk must fire only on a clean tree - where its file is the exact
- * pre-origin text the target was authored against, so the compat-building exact
- * anchors (no fuzz) match without drift and the tags never exceed NPAT+1. */
-static void emit_host_gated(file_patch_t *fp, compat_block_t *cb)
-{
-	file_patch_t *ca[1];
-	gate_t inv[GATE_MAXPROBES];
-	int sv_rel = relative_mode;
-	ca[0] = fp;
-	for (int j = 0; j < cb->ngates; j++) {
-		inv[j] = cb->gates[j];
-		if (inv[j].polarity == GATE_PRESENT)
-			inv[j].polarity = GATE_ABSENT;
-		else if (inv[j].polarity == GATE_ABSENT)
-			inv[j].polarity = GATE_PRESENT;
-	}
-	fprintf(stdout, "\n# Patch (gated) %s"
-		" - skipped on an origin tree, the compat block merges it there\n",
-		fp->path);
-	relative_mode = 1;
-	compat_building = 1;
-	ncompat_res = cb->ngates;
-	for (int j = 0; j < cb->ngates; j++)
-		compat_res_marks[j] = inv[j].tag;
-	emit_vi_block(ca, 1, inv, cb->ngates);
-	ncompat_res = 0;
-	compat_building = 0;
-	relative_mode = sv_rel;
-}
-
-/* The compat block that also edits path, or NULL. -pr only. */
-static compat_block_t *compat_for_path(const char *path)
-{
-	if (compat_mode != 1)
-		return NULL;
-	for (int c = 0; c < ncompat; c++)
-		if (!strcmp(compat_blocks[c].path, path))
-			return &compat_blocks[c];
-	return NULL;
-}
-
 /* set by "--- /dev/null", consumed by the next "+++" */
 static int pending_is_new;
 /* "---" path (pre-patch original), consumed by the next "+++" */
@@ -6496,55 +6452,6 @@ static int compat_derive(void)
 	return 0;
 }
 
-/* -pr: the compat block performs the merged edit, so the target's own hunk
- * then runs against a tree that already holds the text it wanted to insert. A
- * fuzzed match would apply it twice; if a host group's inserted lines already
- * appear in the post-compat text of the same file, that is a hard error. -po
- * is immune by construction (the target ran before the baseline). */
-static int compat_double_apply(file_patch_t **active, int nactive)
-{
-	char **sv = orig_lines;
-	int svn = n_orig_lines, bad = 0;
-	if (compat_mode != 1)
-		return 0;
-	for (int c = 0; c < ncompat; c++) {
-		char *dup, **lines;
-		int nlines, first;
-		for (int k = 0; k < nactive; k++) {
-			group_t *grp;
-			int gi;
-			if (strcmp(active[k]->path, compat_blocks[c].path))
-				continue;
-			/* this host hunk is emitted as its own inverse-gated
-			 * block, so it cannot fire on the same tree as the
-			 * compat block - no runtime double-apply to guard */
-			if (compat_for_path(active[k]->path))
-				continue;
-			dup = uc_dup(compat_blocks[c].final);
-			lines = split_lines(dup, &nlines);
-			orig_lines = lines;
-			n_orig_lines = nlines;
-			for (gi = 0; gi < active[k]->ngroups; gi++) {
-				grp = &active[k]->groups[gi];
-				if (grp->nadd &&
-				    count_window(grp->add_texts, grp->nadd,
-						 &first) > 0) {
-					fprintf(stderr, "compat: %s: group %d "
-						"would apply twice on an "
-						"origin tree\n",
-						active[k]->path, gi + 1);
-					bad = 1;
-				}
-			}
-			free(lines);
-			free(dup);
-		}
-	}
-	orig_lines = sv;
-	n_orig_lines = svn;
-	return bad ? -1 : 0;
-}
-
 /* One buffer left behind by the session, against the file it names. */
 static void buf_to_diff(sbuf *out, const char *path, struct lbuf *lb)
 {
@@ -7247,10 +7154,11 @@ int main(int argc, char **argv)
 	if (interactive_mode)
 		interactive_edit_all_files(active, nactive);
 
-	/* -pr: the compat block already made the merged edit, so a host group
-	 * whose inserted text is now present would apply it a second time */
-	if (compat_double_apply(active, nactive) < 0)
-		return 1;
+	/* The host block and each compat block are independent units that stack
+	 * blindly; patch2vi never reasons across them. If a compat edit and a
+	 * host hunk would both touch the same text on an origin tree, structuring
+	 * the edits so they compound correctly is the user's job, not a hard
+	 * error here. */
 
 	/* A large body overflows EXINIT/argv, so each $VI invocation stages its
 	 * ex command body in a temp file the shell expands; one staging setup is
@@ -7265,23 +7173,12 @@ int main(int argc, char **argv)
 	if (compat_mode == 1)
 		emit_compat_blocks();
 
-	/* Split host files a compat block also edits into their own inverse-gated
-	 * invocations (-pr); the rest form the plain host block. */
-	file_patch_t *plain[256];
-	int nplain = 0;
-	for (int k = 0; k < nactive; k++) {
-		compat_block_t *cb = compat_for_path(active[k]->path);
-		if (cb)
-			emit_host_gated(active[k], cb);
-		else
-			plain[nplain++] = active[k];
-	}
-	if (nplain > 0) {
+	if (nactive > 0) {
 		fputs("\n# Patch:", stdout);
-		for (int k = 0; k < nplain; k++)
-			fprintf(stdout, " %s", plain[k]->path);
+		for (int k = 0; k < nactive; k++)
+			fprintf(stdout, " %s", active[k]->path);
 		fputc('\n', stdout);
-		emit_vi_block(plain, nplain, NULL, 0);
+		emit_vi_block(active, nactive, NULL, 0);
 	}
 
 	/* -po: the compat block resolves the post-origin+target state, so it
