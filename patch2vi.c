@@ -66,6 +66,10 @@ static int nfiles;
 static const char *cur_file_path;  /* set per-file for error messages */
 static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
+/* 1 = re-read and re-apply stored deltas/compat regions from a generated
+ * script, distinct from opening the group-editing session. -i/-d set both;
+ * -pr/-po set only this so regen keeps host customizations without a UI. */
+static int read_deltas;
 /* -1=per-group stored levels, 0=off, 1-5=forced level */
 static int delta_mode;
 /* patch (or previously generated script) path, NULL = stdin */
@@ -4988,16 +4992,24 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
 		free_group(&groups[gi]);
 }
 
-/* One derived compatibility block: its guarded/edited file, the files[] range
- * its own diff parsed into, its own === PATCH === lines, its final (post-user)
- * text (for the -pr double-apply check) and its gate probes. */
+/* One derived (or re-read) compatibility block: its guarded/edited file, its
+ * polarity (pre/post) and origin (src= label, human annotation only), the
+ * files[] range its own diff parsed into, its own === PATCH === lines, its
+ * per-block delta customizations and its gate probes. A script holding both
+ * pre and post blocks needs polarity/origin per-block (the compat_mode/
+ * compat_origin globals only describe the current run). */
 typedef struct {
 	char *path;
+	int polarity;		/* 1 = pre, 2 = post (same code as compat_mode) */
+	char *origin;		/* src= label; annotation, never a matcher input */
 	int first, count;	/* files[] range this block owns */
 	strv_t raw;		/* the block's own === PATCH === lines */
-	char *final;		/* post-compat text, for the double-apply check */
 	gate_t gates[GATE_MAXPROBES];
 	int ngates;
+	/* per-block delta customizations, filled either from the editor
+	 * (out) or re-read from a stored block (in) */
+	file_delta_t deltas[8];
+	int ndeltas;
 } compat_block_t;
 static compat_block_t compat_blocks[64];
 static int ncompat;
@@ -5042,17 +5054,21 @@ static void emit_vi_block(file_patch_t **active, int nactive,
 	free(osb->s);
 }
 
-/* Emit every derived compat block as its own gated $VI invocation. Compat
- * groups are always search-anchored (their line numbers live in post-origin
- * RAM, nowhere on the target), so relative mode is forced and the
- * file-validated generators are off. Ordering relative to the host block is
- * the caller's, by polarity: pre before, post after. */
-static void emit_compat_blocks(void)
+/* Emit every derived compat block of the given polarity as its own gated $VI
+ * invocation. Compat groups are always search-anchored (their line numbers
+ * live in post-origin RAM, nowhere on the target), so relative mode is forced
+ * and the file-validated generators are off. Ordering relative to the host
+ * block is the caller's, by polarity: pre before, post after. A script may
+ * carry both pre and post blocks (stacked over runs), so blocks are filtered
+ * on their own recorded polarity, not the current run's flag. */
+static void emit_compat_blocks(int polarity)
 {
 	for (int c = 0; c < ncompat; c++) {
 		compat_block_t *cb = &compat_blocks[c];
 		file_patch_t *ca[256];
 		int nca = 0, sv_rel = relative_mode;
+		if (cb->polarity != polarity)
+			continue;
 		for (int i = cb->first; i < cb->first + cb->count; i++)
 			if (files[i].ngroups > 0)
 				ca[nca++] = &files[i];
@@ -5060,7 +5076,8 @@ static void emit_compat_blocks(void)
 			continue;
 		fprintf(stdout, "\n# Compat (%s) from %s"
 			" - gated on the origin's change\n",
-			compat_mode == 1 ? "pre" : "post", compat_origin);
+			cb->polarity == 1 ? "pre" : "post",
+			cb->origin ? cb->origin : "");
 		relative_mode = 1;
 		compat_building = 1;
 		ncompat_res = cb->ngates;
@@ -5071,6 +5088,59 @@ static void emit_compat_blocks(void)
 		compat_building = 0;
 		relative_mode = sv_rel;
 	}
+}
+
+static const char *gate_polarity_word(int p)
+{
+	return p == GATE_PRESENT ? "present"
+	     : p == GATE_ABSENT  ? "absent" : "always";
+}
+
+/* Serialize every compat block into a terminator-fenced tail region after
+ * exit 0 and before the host === PATCH2VI PATCH === (which stays last, to EOF,
+ * so the patch(1) fallback's sed is unaffected). Each region is self-contained
+ * - its gate probes, its per-block delta customizations and its own unified
+ * diff - so -d regenerates it and -i edits it without re-running the origin.
+ * The inner sub-sections are === END ===-closed exactly like the host DELTA
+ * sub-sections, so the reader closes them through its existing end_tag handling
+ * and reaches === END COMPAT === with no section open. */
+static void emit_compat_storage(void)
+{
+	sbuf_smake(sb, MAX_LINE)
+	for (int c = 0; c < ncompat; c++) {
+		compat_block_t *cb = &compat_blocks[c];
+		printf("=== PATCH2VI COMPAT %s %s src=%s ===\n",
+		       cb->polarity == 1 ? "pre" : "post", cb->path,
+		       cb->origin ? cb->origin : "");
+		for (int j = 0; j < cb->ngates; j++) {
+			gate_t *g = &cb->gates[j];
+			printf("=== GATE %d %s mode %d tag %d ===\n", j + 1,
+			       gate_polarity_word(g->polarity), g->mode, g->tag);
+			for (int k = 0; k < g->nlines; k++)
+				printf("%s\n", g->lines[k]);
+			printf("%s\n", end_tag_wr);
+		}
+		printf("=== COMPAT DELTA ===\n");
+		for (int d = 0; d < cb->ndeltas; d++) {
+			file_delta_t *od = &cb->deltas[d];
+			if (od->ngrps == 0)
+				continue;
+			printf("=== DELTA %s ===\n", od->filepath);
+			sbuf_cut(sb, 0)
+			for (int j = 0; j < od->ngrps; j++)
+				emit_grp_delta(sb, &od->grps[j]);
+			sbuf_null(sb)
+			fputs(sb->s, stdout);
+			printf("%s\n", end_tag_wr);
+		}
+		printf("%s\n", end_tag_wr);
+		printf("=== COMPAT PATCH ===\n");
+		for (int i = 0; i < cb->raw.n; i++)
+			fputs(cb->raw.v[i], stdout);
+		printf("%s\n", end_tag_wr);
+		printf("=== END COMPAT ===\n");
+	}
+	free(sb->s);
 }
 
 /* set by "--- /dev/null", consumed by the next "+++" */
@@ -6441,7 +6511,8 @@ static int compat_derive(void)
 		compat_block_t *cb = &compat_blocks[ncompat++];
 		memset(cb, 0, sizeof(*cb));
 		cb->path = uc_dup(bufs[i].path);
-		cb->final = uc_dup(fintext);
+		cb->polarity = compat_mode;
+		cb->origin = uc_dup(compat_origin ? compat_origin : "");
 		for (j = 0; j < n; j++)
 			cb->gates[j] = g[j];	/* ownership transferred */
 		cb->ngates = n;
@@ -6757,6 +6828,7 @@ int main(int argc, char **argv)
 		 * target, which is the ordinary positional input */
 		if (argv[i][1] == 'p' && (argv[i][2] == 'r' || argv[i][2] == 'o')) {
 			compat_mode = argv[i][2] == 'r' ? 1 : 2;
+			read_deltas = 1;
 			if (argv[i][3])
 				compat_origin = argv[i] + 3;
 			else if (i + 1 < argc)
@@ -6780,8 +6852,10 @@ int main(int argc, char **argv)
 				relative_mode = 0;
 			else if (argv[i][j] == 'r')
 				relative_mode = 1;
-			else if (argv[i][j] == 'i')
+			else if (argv[i][j] == 'i') {
 				interactive_mode = 1;
+				read_deltas = 1;
+			}
 			/* -E takes no argument of its own and ends patch2vi's
 			 * own option parsing: whatever follows its cluster is
 			 * a nextvi command line, options and files alike, and
@@ -6796,6 +6870,7 @@ int main(int argc, char **argv)
 					delta_mode = -1;
 				}
 				interactive_mode = 1;
+				read_deltas = 1;
 			} else if (argv[i][j] == 'h')
 				usage(argv[0]);
 			else {
@@ -6877,6 +6952,15 @@ int main(int argc, char **argv)
 			int in_sect = GS_NONE;
 			int pat_idx = 1; /* pattern[] slot for GS_PAT */
 			int in_ph = 0;   /* 1/2 = inside a verbatim phase blob */
+			/* Compat tail-region state (single pass, depth 1). cur_cb
+			 * redirects DELTA sub-sections into the block's own array,
+			 * cur_gate holds an open GATE probe list, in_compat_patch
+			 * routes the block's === COMPAT PATCH === diff body into its
+			 * own files[] range + raw sink; all closed by === END ===,
+			 * the region by === END COMPAT ===. */
+			compat_block_t *cur_cb = NULL;
+			gate_t *cur_gate = NULL;
+			int in_compat_patch = 0;
 			sbuf_smake(ph, MAX_LINE)
 			while (fgets(line, sizeof(line), in)) {
 				chomp(line);
@@ -6904,8 +6988,119 @@ int main(int argc, char **argv)
 					}
 					continue;
 				}
-				if (strncmp(line, "=== PATCH2VI PATCH ===", 22) == 0)
+				/* === COMPAT PATCH === diff body: raw diff lines
+				 * (prefixed +/-/ /@@/---/+++), so a source line that
+				 * looks like a section tag is harmless; only a
+				 * column-0 === END === closes it. Parsed into the
+				 * block's own files[] range with its own raw sink so
+				 * the host === PATCH === stays byte-identical. */
+				if (in_compat_patch) {
+					if (strcmp(line, end_tag_rd) == 0) {
+						cur_cb->count = nfiles - cur_cb->first;
+						raw_sink = NULL;
+						in_compat_patch = 0;
+					} else {
+						char lb[MAX_LINE + 2];
+						snprintf(lb, sizeof(lb), "%s\n", line);
+						add_raw(lb);
+						parse_diff_line(line);
+					}
+					continue;
+				}
+				/* GATE probe lines: raw until the section's === END ===,
+				 * their bytes marked so SEP/ESC avoid them. */
+				if (cur_gate) {
+					if (strcmp(line, end_tag_rd) == 0) {
+						cur_cb->ngates++;
+						cur_gate = NULL;
+					} else {
+						cur_gate->lines = erealloc(cur_gate->lines,
+							(cur_gate->nlines + 1) * sizeof(char *));
+						cur_gate->lines[cur_gate->nlines++] = uc_dup(line);
+						mark_bytes_used(line);
+					}
+					continue;
+				}
+				if (strncmp(line, "=== PATCH2VI COMPAT ", 20) == 0) {
+					if (cur_cb) {
+						fprintf(stderr, "nested COMPAT region\n");
+						return 1;
+					}
+					if (ncompat >= (int)(sizeof(compat_blocks) /
+					    sizeof(compat_blocks[0]))) {
+						fprintf(stderr, "too many compat blocks\n");
+						return 1;
+					}
+					cur_cb = &compat_blocks[ncompat++];
+					memset(cur_cb, 0, sizeof(*cur_cb));
+					{
+					char *p = line + 20;
+					cur_cb->polarity = strncmp(p, "pre", 3) == 0 ? 1 : 2;
+					p += cur_cb->polarity == 1 ? 4 : 5;  /* "pre "/"post " */
+					char *src = strstr(p, " src=");
+					char *e = strstr(p, " ===");
+					if (src) {
+						*src = '\0';
+						cur_cb->path = uc_dup(p);
+						char *o = src + 5;
+						char *oe = strstr(o, " ===");
+						if (oe)
+							*oe = '\0';
+						cur_cb->origin = uc_dup(o);
+					} else {
+						if (e)
+							*e = '\0';
+						cur_cb->path = uc_dup(p);
+						cur_cb->origin = uc_dup("");
+					}
+					}
+					cur_fd = NULL;
+					cur_gd = NULL;
+					continue;
+				}
+				if (cur_cb && strcmp(line, "=== END COMPAT ===") == 0) {
+					cur_cb = NULL;
+					cur_fd = NULL;
+					cur_gd = NULL;
+					continue;
+				}
+				if (cur_cb && strncmp(line, "=== GATE ", 9) == 0) {
+					/* "=== GATE <n> <pol> mode <m> tag <id> ===" */
+					if (cur_cb->ngates >= GATE_MAXPROBES) {
+						fprintf(stderr, "too many gates\n");
+						return 1;
+					}
+					cur_gate = &cur_cb->gates[cur_cb->ngates];
+					memset(cur_gate, 0, sizeof(*cur_gate));
+					char *m = strstr(line, " mode ");
+					char *t = strstr(line, " tag ");
+					cur_gate->mode = m ? atoi(m + 6) : 0;
+					cur_gate->tag = t ? atoi(t + 5) : 0;
+					cur_gate->polarity =
+						strstr(line, " present ") ? GATE_PRESENT :
+						strstr(line, " absent ") ? GATE_ABSENT :
+						GATE_ALWAYS;
+					continue;
+				}
+				if (cur_cb && strcmp(line, "=== COMPAT DELTA ===") == 0) {
+					cur_fd = NULL;
+					cur_gd = NULL;
+					continue;
+				}
+				if (cur_cb && strcmp(line, "=== COMPAT PATCH ===") == 0) {
+					in_compat_patch = 1;
+					raw_sink = &cur_cb->raw;
+					parse_diff_reset();
+					cur_cb->first = nfiles;
+					continue;
+				}
+				if (strncmp(line, "=== PATCH2VI PATCH ===", 22) == 0) {
+					if (cur_cb) {
+						fprintf(stderr, "unterminated COMPAT region\n");
+						return 1;
+					}
 					break;
+				}
 				if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
 					continue;
 				if (strcmp(line, end_tag_rd) == 0) {
@@ -6919,13 +7114,28 @@ int main(int argc, char **argv)
 				if (strncmp(line, "=== DELTA ", 10) == 0) {
 					in_sect = 0;
 					cur_gd = NULL;
-					if (interactive_mode && nin_deltas <
-					    (int)(sizeof(in_deltas) / sizeof(in_deltas[0]))) {
+					/* Route a compat block's own DELTA sub-sections into
+					 * its per-block array (always read, so the region
+					 * round-trips); host DELTA only when re-applying. */
+					file_delta_t *dst = NULL;
+					int *ndst = NULL, dcap = 0;
+					if (cur_cb) {
+						dst = cur_cb->deltas;
+						ndst = &cur_cb->ndeltas;
+						dcap = (int)(sizeof(cur_cb->deltas) /
+							     sizeof(cur_cb->deltas[0]));
+					} else if (read_deltas) {
+						dst = in_deltas;
+						ndst = &nin_deltas;
+						dcap = (int)(sizeof(in_deltas) /
+							     sizeof(in_deltas[0]));
+					}
+					if (dst && *ndst < dcap) {
 						char *p = line + 10;
 						char *end = strstr(p, " ===");
 						if (end)
 							*end = '\0';
-						cur_fd = &in_deltas[nin_deltas++];
+						cur_fd = &dst[(*ndst)++];
 						cur_fd->filepath = uc_dup(p);
 						cur_fd->grps = NULL;
 						cur_fd->ngrps = 0;
@@ -6935,7 +7145,7 @@ int main(int argc, char **argv)
 					}
 					continue;
 				}
-				if (!interactive_mode || !cur_fd)
+				if (!cur_fd)
 					continue;
 				if (line[0] == '=' && strncmp(line, "=== ", 4) == 0) {
 					if (strncmp(line, "=== GROUP ", 10) == 0) {
@@ -7192,8 +7402,7 @@ int main(int argc, char **argv)
 
 	/* -pr: the compat block is applied BEFORE the target, so it runs first,
 	 * on the origin-only tree its anchors were derived against. */
-	if (compat_mode == 1)
-		emit_compat_blocks();
+	emit_compat_blocks(1);
 
 	if (nactive > 0) {
 		fputs("\n# Patch:", stdout);
@@ -7206,8 +7415,7 @@ int main(int argc, char **argv)
 	/* -po: the compat block resolves the post-origin+target state, so it
 	 * runs AFTER the host block has re-applied the target - only then does
 	 * the tree match the baseline the compat anchors were derived from. */
-	if (compat_mode == 2)
-		emit_compat_blocks();
+	emit_compat_blocks(2);
 
 	/* Embed delta and original patch after exit 0 */
 	printf("\nexit 0\n");
@@ -7224,6 +7432,7 @@ int main(int argc, char **argv)
 		fputs(osb->s, stdout);
 		printf("%s\n", end_tag_wr);
 	}
+	emit_compat_storage();
 	printf("=== PATCH2VI PATCH ===\n");
 	for (int i = 0; i < nraw; i++)
 		fputs(raw_lines[i], stdout);

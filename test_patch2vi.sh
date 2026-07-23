@@ -1476,6 +1476,64 @@ else
 	sed 's/^/    /' "$R/po.c"
 fi
 
+# Stage B3: storage, round-trip and stacking. The -pr script above (new.sh from
+# draw.c) carries a pre COMPAT region after exit 0. -d must reproduce the whole
+# script - host block and compat region - byte-identically, without re-running
+# the origin, driven under a pty and quit with :q.
+dregen() {	# <script>: regenerate to $R/dregen.sh via a no-op -d session
+	rm -f "$R/dregen.sh"
+	P2VI_EX=':q' script -qec \
+		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dregen.sh 2>$R/derr'" \
+		/dev/null > /dev/null 2>&1 || true
+}
+# rebuild the -pr script (the earlier -po run clobbered new.sh)
+printf 'L1\nL2\nL3\n' > "$R/draw.orig"
+printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,4 @@\n L1\n+PROBE\n L2\n L3\n' > "$R/x1.diff"
+printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' > "$R/x2.diff"
+"$R_P2VI" -r "$R/x1.diff" > "$R/x1.sh"
+"$R_P2VI" -r "$R/x2.diff" > "$R/x2.sh"
+cp "$R/draw.orig" "$R/draw.c"
+prderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
+cp "$R/new.sh" "$R/pr.sh"
+
+cp "$R/draw.orig" "$R/draw.c"
+dregen pr.sh
+if diff "$R/pr.sh" "$R/dregen.sh" >/dev/null 2>&1; then
+	ok "compat: -d round-trips a stored compat block byte-identically"
+else
+	fail "compat: -d round-trips a stored compat block byte-identically"
+	diff "$R/pr.sh" "$R/dregen.sh" | sed 's/^/    /' | head -20
+fi
+
+# Re-running -pr on a script that already carries a pre block appends a NEW
+# block at the group tail (existing block untouched); the user reshapes a
+# different line (L3 -> L3z).
+cp "$R/draw.orig" "$R/draw.c"
+prderive x1.sh pr.sh '%s/^L3$/L3z/:q!'
+if [ "$(grep -c '^=== PATCH2VI COMPAT pre draw.c' "$R/new.sh")" = 2 ] &&
+   grep -q '^+L2c$' "$R/new.sh" && grep -q '^+L3z$' "$R/new.sh"; then
+	ok "compat: re-running -pr stacks a new block, keeps the existing one"
+else
+	fail "compat: re-running -pr stacks a new block, keeps the existing one"
+	grep -n 'PATCH2VI COMPAT' "$R/new.sh" | sed 's/^/    /'
+fi
+
+# The stacked script fires both compat units plus the host on an origin tree,
+# and only the host on a clean tree (both gates quit before any edit).
+cp "$R/new.sh" "$R/stack.sh"
+cp "$R/draw.orig" "$R/draw.c"
+( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh stack.sh ) >/dev/null 2>&1
+origin_ok=0
+[ "$(sed -n 1,3p "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2c')" ] && origin_ok=1
+cp "$R/draw.orig" "$R/draw.c"
+( cd "$R" && VI="$VI" sh stack.sh ) >/dev/null 2>&1
+if [ "$origin_ok" = 1 ] && [ "$(cat "$R/draw.c")" = "$(printf 'L1\nL2\nL3x')" ]; then
+	ok "compat: stacked script fires on origin, gates no-op on clean"
+else
+	fail "compat: stacked script fires on origin, gates no-op on clean"
+	sed 's/^/    /' "$R/draw.c"
+fi
+
 fi
 
 echo ""
