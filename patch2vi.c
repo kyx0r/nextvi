@@ -7295,6 +7295,8 @@ static void usage(const char *prog)
 		"       %s -pr|-po origin.sh target.sh\n", prog, prog, prog, prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
+	fprintf(stderr,
+		"Input can be a unified diff or a previously generated patch2vi script\n");
 	fprintf(stderr, "  -a    Use absolute line numbers\n");
 	fprintf(stderr,
 		"  -r    Use relative regex patterns instead of line numbers\n");
@@ -7339,8 +7341,6 @@ static void usage(const char *prog)
 		"  -po   Patch postfix: like -pr, but emit the compat block AFTER\n"
 		"        the target block, on the post-origin+target tree\n");
 	fprintf(stderr, "  -h    Show this help\n");
-	fprintf(stderr,
-		"Input can be a unified diff or a previously generated patch2vi script\n");
 	exit(1);
 }
 
