@@ -1214,8 +1214,94 @@ ${SEP}'25i 		if (vi_visual)
 ${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1782:m25${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}2q" > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF"
 
+# Compat (post) from lsp.sh - gated on the origin's change
+printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}1;0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^#include \"lsp\\.c\"\$${ESC}${SEP}6??${ESC}${SEP}fr 98${ESC}${SEP}1;0${ESC}${SEP}6??!${ESC}${ESC}${ESC}${SEP}q!0${SEP}${LB}
+${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%f> 					ex_command\\(cmd\\)
+					restore\\(xled\\)
+					vi_mod \\|= 1;
+				} else if \\(k == '~' \\|\\| k == 'u' \\|\\| k == 'U'\\) \\{ \\{
+					vc_motion\\(k\\);
+				} else if \\(k == 'v' \\|\\| k == 'V' \\|\\| k == 'b'\\) \\{
+					if \\(!vi_visual\\) \\{		/\\* fresh selection \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f> 				} else if \\(k == '~' \\|\\| k == 'u' \\|\\| k == 'U'\\) \\{ \\{
+					vc_motion\\(k\\);
+				} else if \\(k == 'v' \\|\\| k == 'V' \\|\\| k == 'b'\\) \\{
+					if \\(!vi_visual\\) \\{		/\\* fresh selection \\*/${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1948:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f> 					ex_command\\(cmd\\)
+					restore\\(xled\\)
+					vi_mod \\|= 1;${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1948:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^				} else if \\(k == '~' \\|\\| k == 'u' \\|\\| k == 'U'\\) \\{ \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1948:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}%f> 					vc_motion\\(k\\);
+				} else if \\(k == 'v' \\|\\| k == 'V' \\|\\| k == 'b'\\) \\{
+					if \\(!vi_visual\\) \\{		/\\* fresh selection \\*/${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1948:a5${SEP}${LB}
+${SEP}1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1948${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}?${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 					}
+					vi_visual = vi_visual == k \\? 0 : k;
+					vi_mod \\|= 1;
+				}
+				} else if \\(k == 'K'\\) \\{
+					if \\(xb_path && xb_path\\[0]\\)
+						lsp_hover\\(xb_path, xrow, xoff\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
+${ESC}${SEP}1??+3m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 				}
+				} else if \\(k == 'K'\\) \\{
+					if \\(xb_path && xb_path\\[0]\\)
+						lsp_hover\\(xb_path, xrow, xoff\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
+${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1957:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 					}
+					vi_visual = vi_visual == k \\? 0 : k;
+					vi_mod \\|= 1;${ESC}${SEP}3??${ESC}${SEP}${LB}
+${ESC}${SEP}3??+3m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1957:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
+${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				}\$${ESC}${SEP}4??${ESC}${SEP}${LB}
+${ESC}${SEP}4??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1957:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
+${ESC}${SEP}%f+ 				} else if \\(k == 'K'\\) \\{
+					if \\(xb_path && xb_path\\[0]\\)
+						lsp_hover\\(xb_path, xrow, xoff\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
+${ESC}${SEP}5??-1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:1957:a5${SEP}${LB}
+${SEP}1;2;3;4;5??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1957${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
+${SEP}${LB}
+${SEP}'1s/\\{ \\{/{/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1948:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
+${SEP}'2d${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:1957:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
+EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF"
+
 exit 0
 === PATCH2VI DELTA ===
+=== PATCH2VI COMPAT post vi.c src=lsp.sh ===
+=== GATE 1 present mode 0 tag 6 ===
+#include "lsp.c"
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/vi.c
++++ b/vi.c
+@@ -1945,7 +1945,7 @@
+ 					ex_command(cmd)
+ 					restore(xled)
+ 					vi_mod |= 1;
+-				} else if (k == '~' || k == 'u' || k == 'U') { {
++				} else if (k == '~' || k == 'u' || k == 'U') {
+ 					vc_motion(k);
+ 				} else if (k == 'v' || k == 'V' || k == 'b') {
+ 					if (!vi_visual) {		/* fresh selection */
+@@ -1954,7 +1954,6 @@
+ 					}
+ 					vi_visual = vi_visual == k ? 0 : k;
+ 					vi_mod |= 1;
+-				}
+ 				} else if (k == 'K') {
+ 					if (xb_path && xb_path[0])
+ 						lsp_hover(xb_path, xrow, xoff);
+=== END ===
+=== END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 70157040..c0d2d3b9 100644
