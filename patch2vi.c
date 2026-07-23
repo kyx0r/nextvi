@@ -6174,6 +6174,59 @@ static int replay_script(const char *path, int handover)
 	return replay_scripts(&path, 1, handover);
 }
 
+/* -pr against a target that already carries pre blocks: replay the origin, then
+ * the target's leading pre blocks, so the new block derives on top of them
+ * rather than on x1 alone. Emit order puts every pre block before the host
+ * (emit_compat_blocks(1) -> host -> emit_compat_blocks(2)), so the pre prefix is
+ * exactly the first npre executable blocks of the target; the host block (which
+ * rejects on the origin tree - the -pr trigger) and any post blocks follow it
+ * and are dropped. npre comes from the target's own tail (its stored polarity-1
+ * blocks), so it always matches a valid target's leading-block count. */
+static int replay_pr_prefix(const char *origin, const char *target,
+			    int npre, int handover)
+{
+	p2vi_block_t *blks = NULL;
+	int nblks = 0, norigin, i, st;
+	FILE *f = fopen(origin, "r");
+	if (!f) {
+		perror(origin);
+		return -1;
+	}
+	sh_reset();
+	exec_script = origin;
+	st = parse_p2vi_script(f, &blks, &nblks);
+	fclose(f);
+	if (st < 0) {
+		free_blocks(blks, nblks);
+		return st;
+	}
+	norigin = nblks;
+	f = fopen(target, "r");
+	if (!f) {
+		perror(target);
+		free_blocks(blks, nblks);
+		return -1;
+	}
+	sh_reset();
+	exec_script = target;
+	st = parse_p2vi_script(f, &blks, &nblks);
+	fclose(f);
+	if (st < 0) {
+		free_blocks(blks, nblks);
+		return st;
+	}
+	/* keep the origin's blocks plus the target's first npre; drop the host
+	 * and post blocks that follow them */
+	if (nblks > norigin + npre) {
+		for (i = norigin + npre; i < nblks; i++)
+			free_block(&blks[i]);
+		nblks = norigin + npre;
+	}
+	st = replay_blocks(blks, nblks, handover);
+	free_blocks(blks, nblks);
+	return st;
+}
+
 /*
  * -E: edit a file in the built-in nextvi and convert what changed into a
  * script. Nothing is written back: every buffer the editor leaves behind
@@ -6700,9 +6753,20 @@ static int compat_capture_x2o(void)
 static int compat_derive(void)
 {
 	gate_t g[GATE_MAXPROBES];
-	int i, j, k, next_id, n;
+	int i, j, k, next_id, n, nprepfx = 0;
 	if (compat_mode == 2 && compat_capture_x2o() != 0)
 		return -1;
+	/* Existing pre blocks already read from the target's tail: -pr must
+	 * replay them after the origin so the new block stacks on top (they lead
+	 * the target's executable blocks). Counted before the derive loop appends
+	 * this run's block. */
+	for (i = 0; i < ncompat; i++)
+		if (compat_blocks[i].polarity == 1)
+			nprepfx++;
+	if (nprepfx > 0 && !input_file) {
+		fprintf(stderr, "-pr: target with pre blocks must be a file\n");
+		return -1;
+	}
 	compat_capturing = 1;
 	if (compat_mode == 2) {
 		const char *sc[2] = { compat_origin, input_file };
@@ -6710,7 +6774,9 @@ static int compat_derive(void)
 			ed_free();
 			return -1;
 		}
-	} else if (replay_script(compat_origin, 1) != 0) {
+	} else if ((nprepfx > 0
+		    ? replay_pr_prefix(compat_origin, input_file, nprepfx, 1)
+		    : replay_script(compat_origin, 1)) != 0) {
 		ed_free();
 		return -1;
 	}

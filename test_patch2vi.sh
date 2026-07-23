@@ -1540,6 +1540,36 @@ else
 	sed 's/^/    /' "$R/draw.c"
 fi
 
+# Pre-prefix replay: re-running -pr on a target that already carries a pre block
+# derives the NEW block on top of that block's output, not on x1 alone. The
+# stored pre block turns L2 -> L2c; the new session edits L2c -> L2cc, a line
+# that exists only if the stored pre block was replayed before handover. Without
+# the pre-prefix (x1 only) the buffer would still read L2, the edit would match
+# nothing, and -pr would fail with "no compat derived" / empty output.
+cp "$R/draw.orig" "$R/draw.c"
+prderive x1.sh pr.sh '%s/^L2c$/L2cc/:q!'
+if [ -s "$R/new.sh" ] &&
+   [ "$(grep -c '^=== PATCH2VI COMPAT pre draw.c' "$R/new.sh")" = 2 ] &&
+   grep -q '^-L2c$' "$R/new.sh" && grep -q '^+L2cc$' "$R/new.sh"; then
+	ok "compat: -pr pre-prefix derives the new block atop the existing pre block"
+else
+	fail "compat: -pr pre-prefix derives the new block atop the existing pre block"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+	grep -n 'PATCH2VI COMPAT\|^[-+]L2' "$R/new.sh" 2>/dev/null | sed 's/^/    /'
+fi
+
+# The doubly-stacked script applies all three units in order on an origin tree:
+# pre block 1 (L2 -> L2c), pre block 2 (L2c -> L2cc), then the host (L3 -> L3x).
+cp "$R/new.sh" "$R/stack2.sh"
+cp "$R/draw.orig" "$R/draw.c"
+( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh stack2.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2cc\nL3x')" ]; then
+	ok "compat: pre-prefix stack applies all blocks in order on an origin tree"
+else
+	fail "compat: pre-prefix stack applies all blocks in order on an origin tree"
+	sed 's/^/    /' "$R/draw.c"
+fi
+
 # Part A: a stored === COMPAT DELTA === shapes the emitted compat body and
 # survives -d regen (no editor UI needed). Rebuild a single-block pr.sh, then
 # hand-edit its empty COMPAT DELTA to flip group 1's strategy to abs. -d must
