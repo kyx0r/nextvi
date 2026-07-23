@@ -1486,6 +1486,12 @@ dregen() {	# <script>: regenerate to $R/dregen.sh via a no-op -d session
 		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dregen.sh 2>$R/derr'" \
 		/dev/null > /dev/null 2>&1 || true
 }
+dedit() {	# <script> <P2VI_EX>: -d session running <P2VI_EX>, out $R/dedit.sh
+	rm -f "$R/dedit.sh"
+	P2VI_EX="$2" script -qec \
+		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dedit.sh 2>$R/derr'" \
+		/dev/null > /dev/null 2>&1 || true
+}
 # rebuild the -pr script (the earlier -po run clobbered new.sh)
 printf 'L1\nL2\nL3\n' > "$R/draw.orig"
 printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,4 @@\n L1\n+PROBE\n L2\n L3\n' > "$R/x1.diff"
@@ -1532,6 +1538,130 @@ if [ "$origin_ok" = 1 ] && [ "$(cat "$R/draw.c")" = "$(printf 'L1\nL2\nL3x')" ];
 else
 	fail "compat: stacked script fires on origin, gates no-op on clean"
 	sed 's/^/    /' "$R/draw.c"
+fi
+
+# Part A: a stored === COMPAT DELTA === shapes the emitted compat body and
+# survives -d regen (no editor UI needed). Rebuild a single-block pr.sh, then
+# hand-edit its empty COMPAT DELTA to flip group 1's strategy to abs. -d must
+# re-emit the compat body from that delta - an absolute "3c L2c" replacing the
+# relative "f> ^L2$" search anchor - and re-deriving it stays byte-identical.
+cp "$R/draw.orig" "$R/draw.c"
+prderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
+cp "$R/new.sh" "$R/pr.sh"
+awk '
+/^=== COMPAT DELTA ===$/ {
+	print; getline;			# drop the empty "=== END ==="
+	print "=== DELTA draw.c ===";
+	print "=== GROUP 1 ===";
+	print "-L2"; print "+L2c";
+	print "=== END ===";
+	print "=== LEVEL 2 ===";
+	print "=== strategy ===";
+	print "abs";
+	print "=== END ===";
+	print "=== END ===";
+	print "=== END ===";
+	next
+}
+{ print }
+' "$R/pr.sh" > "$R/edited.sh"
+
+cp "$R/draw.orig" "$R/draw.c"
+dregen edited.sh
+cp "$R/dregen.sh" "$R/edd.sh"
+if grep -q '3c L2c' "$R/edd.sh" &&
+   ! sed -n '/# Compat (pre)/,/EXINIT/p' "$R/edd.sh" | grep -q 'f> \^L2\$'; then
+	ok "compat: a stored COMPAT DELTA reshapes the emitted body (-d, no UI)"
+else
+	fail "compat: a stored COMPAT DELTA reshapes the emitted body (-d, no UI)"
+	sed -n '/# Compat (pre)/,/EXINIT/p' "$R/edd.sh" | sed 's/^/    /' | head
+fi
+
+# the delta-shaped block still applies on an origin tree (abs line numbers
+# line up post-origin) and no-ops on a clean tree; -d of it is stable
+cp "$R/draw.orig" "$R/draw.c"
+( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh edd.sh ) >/dev/null 2>&1
+deltaA_ok=0
+[ "$(sed -n 1,3p "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2c')" ] && deltaA_ok=1
+cp "$R/draw.orig" "$R/draw.c"
+dregen edd.sh
+if [ "$deltaA_ok" = 1 ] && diff "$R/edd.sh" "$R/dregen.sh" >/dev/null 2>&1; then
+	ok "compat: delta-shaped block applies on origin and -d is stable"
+else
+	fail "compat: delta-shaped block applies on origin and -d is stable"
+	[ "$deltaA_ok" = 1 ] || { echo "    apply:"; sed 's/^/    /' "$R/draw.c"; }
+	diff "$R/edd.sh" "$R/dregen.sh" | sed 's/^/    /' | head
+fi
+
+# Part B: the in-editor surface. Under -d each compat block opens as its own
+# editable buffer (host = b0, compat block c = b<c+1>); edits read back into
+# that block's === COMPAT DELTA === and, via Part A, into its emitted body,
+# with the host buffer untouched. Edit compat buffer b1's COMMAND STRATEGY to
+# select abs (uncomment #abs); the effect must match Test A's hand-edit.
+cp "$R/draw.orig" "$R/draw.c"
+prderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
+cp "$R/new.sh" "$R/pr.sh"
+cp "$R/draw.orig" "$R/draw.c"
+dedit pr.sh 'b1:%s/^#abs$/abs/:q!'
+host_pr="$(sed -n '/# Patch:/,/\$P2VIF/p' "$R/pr.sh")"
+host_ed="$(sed -n '/# Patch:/,/\$P2VIF/p' "$R/dedit.sh")"
+if sed -n '/# Compat (pre)/,/EXINIT/p' "$R/dedit.sh" | grep -q '3c L2c' &&
+   sed -n '/=== COMPAT DELTA/,/=== COMPAT PATCH/p' "$R/dedit.sh" |
+	grep -q '^abs$' &&
+   [ "$host_pr" = "$host_ed" ]; then
+	ok "compat: editing a block's buffer under -d shapes its body + storage"
+else
+	fail "compat: editing a block's buffer under -d shapes its body + storage"
+	grep -v snapshot "$R/derr" | sed 's/^/    /' | head
+fi
+
+# the edited block still applies on an origin tree and -d is stable
+cp "$R/dedit.sh" "$R/bedd.sh"
+cp "$R/draw.orig" "$R/draw.c"
+( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh bedd.sh ) >/dev/null 2>&1
+bB_ok=0
+[ "$(sed -n 1,3p "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2c')" ] && bB_ok=1
+cp "$R/draw.orig" "$R/draw.c"
+dregen bedd.sh
+if [ "$bB_ok" = 1 ] && diff "$R/bedd.sh" "$R/dregen.sh" >/dev/null 2>&1; then
+	ok "compat: buffer-edited block applies on origin and -d is stable"
+else
+	fail "compat: buffer-edited block applies on origin and -d is stable"
+	[ "$bB_ok" = 1 ] || { echo "    apply:"; sed 's/^/    /' "$R/draw.c"; }
+fi
+
+# A session touching no buffer reproduces a multi-block script byte-identically
+# (per-buffer read-back across host + N compat buffers). Build a two-block
+# script first, then a no-op -d must round-trip it.
+cp "$R/draw.orig" "$R/draw.c"
+prderive x1.sh pr.sh '%s/^L3$/L3z/:q!'	# stacks a 2nd pre block
+cp "$R/new.sh" "$R/two.sh"
+if [ "$(grep -c '^=== PATCH2VI COMPAT pre' "$R/two.sh")" = 2 ]; then
+	cp "$R/draw.orig" "$R/draw.c"
+	dregen two.sh
+	if diff "$R/two.sh" "$R/dregen.sh" >/dev/null 2>&1; then
+		ok "compat: -d untouched reproduces a two-block script byte-identically"
+	else
+		fail "compat: -d untouched reproduces a two-block script byte-identically"
+		diff "$R/two.sh" "$R/dregen.sh" | sed 's/^/    /' | head
+	fi
+else
+	fail "compat: -d untouched reproduces a two-block script byte-identically"
+	echo "    could not build a two-block script"
+fi
+
+# Two blocks over one file open two DISTINCT buffers (indexed names): editing
+# only b1 routes to the first block; the second block is left untouched.
+cp "$R/draw.orig" "$R/draw.c"
+dedit two.sh 'b1:%s/^#abs$/abs/:q!'
+blk1="$(awk '/=== PATCH2VI COMPAT/{n++} n==1 && /^abs$/{print "hit"}' "$R/dedit.sh")"
+blk2="$(awk '/=== PATCH2VI COMPAT/{n++} n==2 && /^abs$/{print "hit"}' "$R/dedit.sh")"
+if [ "$blk1" = "hit" ] && [ -z "$blk2" ]; then
+	ok "compat: editing b1 routes to block 1 only, block 2 untouched"
+else
+	fail "compat: editing b1 routes to block 1 only, block 2 untouched"
+	echo "    blk1=[$blk1] blk2=[$blk2]"
+	grep -v snapshot "$R/derr" | sed 's/^/    /' | head
 fi
 
 fi
