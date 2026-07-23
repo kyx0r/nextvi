@@ -1369,6 +1369,13 @@ prderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit x2.new to $R/new.sh
 		/dev/null > /dev/null 2>&1 || true
 }
 
+poderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit -po result to $R/new.sh
+	rm -f "$R/new.sh"
+	P2VI_EX="$3" script -qec \
+		"sh -c 'cd $R && $R_P2VI -po $1 $2 > $R/new.sh 2>$R/nerr'" \
+		/dev/null > /dev/null 2>&1 || true
+}
+
 # The compat block and the target's own hunk are independent units that stack:
 # patch2vi reasons across neither. origin (x1) inserts PROBE, which gives the
 # gate a unique landmark; the target (x2) makes its own change (L3 -> L3x); and
@@ -1424,6 +1431,37 @@ if [ ! -s "$R/new.sh" ] && tr -d '\r' < "$R/nerr" | grep -q 'no probe validates'
 else
 	fail "compat: an undiscriminating origin insertion is refused"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+fi
+
+# -po replays the origin AND the target into one session before the handover.
+# The target is best-effort there: it drifts on the origin-modified tree (x1
+# rewrote the very line x2 targets), so its phase-2 edit cannot match. That is
+# exactly what the compat patch is for, so the replay must tolerate it and reach
+# the handover, not abort. origin (x1): L2 -> L2x; target (x2): L2 -> L2y, which
+# conflicts on the origin tree; the user's compat edit is a disjoint L3 -> L3c.
+printf 'L1\nL2\nL3\n' > "$R/po.orig"
+printf -- '--- a/po.c\n+++ b/po.c\n@@ -1,3 +1,3 @@\n L1\n-L2\n+L2x\n L3\n' > "$R/p1.diff"
+printf -- '--- a/po.c\n+++ b/po.c\n@@ -1,3 +1,3 @@\n L1\n-L2\n+L2y\n L3\n' > "$R/p2.diff"
+"$R_P2VI" -r "$R/p1.diff" > "$R/p1.sh"
+"$R_P2VI" -r "$R/p2.diff" > "$R/p2.sh"
+cp "$R/po.orig" "$R/po.c"	# pre-origin tree the replay reads
+poderive p1.sh p2.sh '%s/^L3$/L3c/:q!'
+if grep -q '^# Compat (post) from p1.sh' "$R/new.sh" 2>/dev/null; then
+	ok "compat: -po tolerates a target that conflicts on the origin tree"
+else
+	fail "compat: -po tolerates a target that conflicts on the origin tree"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+fi
+
+# clean tree: x2 applies (L2 -> L2y) and the postfix gate quits (L2x absent), so
+# only the target's own change lands
+cp "$R/po.orig" "$R/po.c"
+( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/po.c")" = "$(printf 'L1\nL2y\nL3')" ]; then
+	ok "compat: -po postfix gate no-ops on a clean tree"
+else
+	fail "compat: -po postfix gate no-ops on a clean tree"
+	sed 's/^/    /' "$R/po.c"
 fi
 
 fi

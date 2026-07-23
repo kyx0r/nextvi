@@ -5799,9 +5799,25 @@ static int replay_scripts(const char **paths, int nscripts, int handover)
 {
 	p2vi_block_t *blks = NULL;
 	int nblks = 0, st = 0, i;
-	setenv("DBG1", "1", 1);
-	setenv("QF1", "1", 1);
 	for (i = 0; i < nscripts && st >= 0; i++) {
+		/* The origin must fully apply, so both its phases stay fatal
+		 * (QF1 phase 1, default-fatal QF2 phase 2) and loud (DBG1) — a
+		 * half-applied origin would silently lack the changes that did
+		 * not land. The target (-po) is best-effort: whatever it cannot
+		 * apply on the origin-modified tree is exactly what the compat
+		 * patch absorbs, so neither of its phases may abort the replay.
+		 * Env is baked into each block at parse time (sh_expand), so it
+		 * is set per script here, before parse_p2vi_script. */
+		int is_origin = !compat_origin
+			|| !strcmp(paths[i], compat_origin);
+		setenv("DBG1", "1", 1);
+		if (is_origin) {
+			setenv("QF1", "1", 1);
+			unsetenv("QF2");
+		} else {
+			unsetenv("QF1");
+			setenv("QF2", "1", 1);
+		}
 		FILE *f = fopen(paths[i], "r");
 		if (!f) {
 			perror(paths[i]);
