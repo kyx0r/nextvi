@@ -1695,6 +1695,102 @@ else
 	grep -v snapshot "$R/derr" | sed 's/^/    /' | head
 fi
 
+# Stacked blocks must not share a gate anchor tag. xanchor is global and a
+# lookup ORs every entry recorded under the id, so one shared tag would make
+# either sensor answer for both blocks. Tag numbering continues across blocks
+# (next_gate_tag), so the two stored gates carry different ids.
+tags="$(sed -n 's/^=== GATE .* tag \([0-9]*\) ===$/\1/p' "$R/two.sh" | sort)"
+if [ "$(echo "$tags" | wc -l)" = 2 ] &&
+   [ "$(echo "$tags" | sort -u | wc -l)" = 2 ]; then
+	ok "compat: stacked blocks get distinct gate tags"
+else
+	fail "compat: stacked blocks get distinct gate tags"
+	echo "    tags=[$(echo "$tags" | tr '\n' ' ')]"
+fi
+
+# Two blocks of one origin answer the same question, so derivation gives them
+# identical gates; a hand-edit that widens only one makes them fire on different
+# trees while the runtime subset test still reads a single per-origin flag. -d
+# reports that, without refusing the script (a deliberate widening is the
+# author's call) and without leaking the warning into the output.
+awk 'BEGIN{n=0} /^=== PATCH2VI COMPAT/{n++} {if (n==2 && $0=="PROBE") print "PROBE2"; else print}' \
+	"$R/two.sh" > "$R/badgate.sh"
+cp "$R/draw.orig" "$R/draw.c"
+dregen badgate.sh
+warn="$(tr -d '\r' < "$R/derr" | grep -c 'carry different gates' || true)"
+cp "$R/draw.orig" "$R/draw.c"
+dregen two.sh
+quiet="$(tr -d '\r' < "$R/derr" | grep -c 'carry different gates' || true)"
+if [ "$warn" = 1 ] && [ "$quiet" = 0 ] && [ -s "$R/dregen.sh" ]; then
+	ok "compat: -d reports blocks of one origin whose gates disagree"
+else
+	fail "compat: -d reports blocks of one origin whose gates disagree"
+	echo "    warn=$warn quiet=$quiet"
+fi
+
+# A stored gate is authoritative for its origin: deriving another block against
+# the same origin reuses it instead of deriving a fresh (narrower) one, so a
+# hand-widened gate propagates. Widen the single-block script's gate to a line
+# both trees carry, stack a second block on it, and the new block must carry the
+# widened probe - and the two must not then disagree.
+sed 's/^PROBE$/L1/' "$R/pr.sh" > "$R/wide.sh"
+cp "$R/draw.orig" "$R/draw.c"
+coderive x1.sh wide.sh '%s/^L3x$/L3w/:q!'
+probes="$(sed -n '/^=== GATE /{n;p;}' "$R/new.sh" | tr '\n' ' ')"
+if [ "$probes" = "L1 L1 " ]; then
+	ok "compat: a stored gate is reused for the origin's next block"
+else
+	fail "compat: a stored gate is reused for the origin's next block"
+	echo "    probes=[$probes]"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+fi
+
+# Mixed origins, the subset matrix. Two independent origins over one file: A
+# inserts PA at the top, B inserts PB at the bottom; the target's own hunk is a
+# third, disjoint line. A's compat block is derived first, B's on top of it, so
+# a single script carries two blocks with two different origins. Each of the
+# four trees (none / A / B / A+B) must run exactly the blocks whose origin is
+# present - the case a shared gate tag gets wrong, since an absent origin's
+# block then fires off the other's sensor.
+printf 'L1\nL2\nL3\nL4\n' > "$R/m.orig"
+printf -- '--- a/m.c\n+++ b/m.c\n@@ -1,4 +1,5 @@\n L1\n+PA\n L2\n L3\n L4\n' > "$R/a1.diff"
+printf -- '--- a/m.c\n+++ b/m.c\n@@ -1,4 +1,5 @@\n L1\n L2\n L3\n L4\n+PB\n' > "$R/b1.diff"
+printf -- '--- a/m.c\n+++ b/m.c\n@@ -1,4 +1,4 @@\n L1\n L2\n-L3\n+L3x\n L4\n' > "$R/mx.diff"
+"$R_P2VI" -r "$R/a1.diff" > "$R/a1.sh"
+"$R_P2VI" -r "$R/b1.diff" > "$R/b1.sh"
+"$R_P2VI" -r "$R/mx.diff" > "$R/mx.sh"
+cp "$R/m.orig" "$R/m.c"
+coderive a1.sh mx.sh '%s/^L2$/L2a/:q!'		# block from origin A
+cp "$R/new.sh" "$R/mix1.sh"
+cp "$R/m.orig" "$R/m.c"
+coderive b1.sh mix1.sh '%s/^L4$/L4b/:q!'	# block from origin B, stacked
+cp "$R/new.sh" "$R/mix2.sh"
+mixrun() {	# <origin scripts> -> tree of m.c after mix2.sh, '|'-joined
+	cp "$R/m.orig" "$R/m.c"
+	for s in $1; do ( cd "$R" && VI="$VI" sh "$s" ) >/dev/null 2>&1; done
+	( cd "$R" && VI="$VI" sh mix2.sh ) >/dev/null 2>&1
+	tr '\n' '|' < "$R/m.c"
+}
+if [ "$(grep -c '^=== PATCH2VI COMPAT post m.c' "$R/mix2.sh" 2>/dev/null)" = 2 ] &&
+   grep -q '^# Compat (post) from a1.sh' "$R/mix2.sh" &&
+   grep -q '^# Compat (post) from b1.sh' "$R/mix2.sh"; then
+	ok "compat: two origins stack into one script"
+else
+	fail "compat: two origins stack into one script"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+fi
+t_none="$(mixrun '')"
+t_a="$(mixrun 'a1.sh')"
+t_b="$(mixrun 'b1.sh')"
+t_ab="$(mixrun 'a1.sh b1.sh')"
+if [ "$t_none" = 'L1|L2|L3x|L4|' ] && [ "$t_a" = 'L1|PA|L2a|L3x|L4|' ] &&
+   [ "$t_b" = 'L1|L2|L3x|L4b|PB|' ] && [ "$t_ab" = 'L1|PA|L2a|L3x|L4b|PB|' ]; then
+	ok "compat: mixed origins fire per subset (none/A/B/A+B)"
+else
+	fail "compat: mixed origins fire per subset (none/A/B/A+B)"
+	echo "    none=[$t_none] A=[$t_a] B=[$t_b] A+B=[$t_ab]"
+fi
+
 fi
 
 echo ""

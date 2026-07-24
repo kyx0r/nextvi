@@ -1156,6 +1156,18 @@ static void emit_escaped_text(sbuf *out, const char *s);
 #define REG_FLAG_ANY  230	/* shared any-origin-fired register */
 #define REG_FLAG_BASE 231	/* per-origin flag registers: REG_FLAG_BASE+k */
 #define FLAG_SLOT_BASE 10	/* ec_while subset-test anchor slots (>= 10) */
+/*
+ * Gate probe tags live in their own band, far above both the group chain tags
+ * (pattern slot + 1, 1..NSEARCH <= 9) and the per-block subset slots
+ * (FLAG_SLOT_BASE + k). xanchor is global to the process and a lookup ORs every
+ * recorded entry carrying the id (ec_while, ex.c), so a tag shared with a
+ * group's fallback capture - or with another block's gate - would let one
+ * sensor answer for another: on a mixed single-origin tree the absent origin's
+ * block would fire anyway. Numbering is continuous across blocks (next_gate_tag
+ * takes the next id above every tag already stored), so stacked blocks never
+ * share one, and a tag read back from storage keeps the sequence going.
+ */
+#define GATE_TAG_BASE 1000
 /* One escape run of n bytes followed by the separator. n = 0 is the plain
  * command separator, 1 escapes it for a ??! block's argument, 3 for a ??
  * then-arg nested one level further in. */
@@ -3964,6 +3976,90 @@ typedef struct {
 static compat_block_t *compat_blocks;
 static int ncompat, compat_cap;
 
+/* The next free gate anchor tag: one above the highest tag any block already
+ * holds (stored blocks read back from the target script included), never below
+ * GATE_TAG_BASE. Called once per newly derived block, so a stack of blocks -
+ * over one file or over several - numbers its gates continuously instead of
+ * every derivation restarting and colliding. */
+static int next_gate_tag(void)
+{
+	int top = GATE_TAG_BASE - 1;
+	for (int c = 0; c < ncompat; c++)
+		for (int j = 0; j < compat_blocks[c].ngates; j++)
+			if (compat_blocks[c].gates[j].tag > top)
+				top = compat_blocks[c].gates[j].tag;
+	return top + 1;
+}
+
+/* Do two blocks probe for the same thing? Everything but the anchor tag, which
+ * is per block by construction. */
+static int gates_agree(compat_block_t *a, compat_block_t *b)
+{
+	if (a->ngates != b->ngates)
+		return 0;
+	for (int j = 0; j < a->ngates; j++) {
+		gate_t *x = &a->gates[j], *y = &b->gates[j];
+		if (x->polarity != y->polarity || x->mode != y->mode ||
+		    x->nlines != y->nlines || x->pre_escaped != y->pre_escaped)
+			return 0;
+		for (int k = 0; k < x->nlines; k++)
+			if (strcmp(x->lines[k], y->lines[k]))
+				return 0;
+	}
+	return 1;
+}
+
+/* Warn when two blocks over one file, derived against the same origin, carry
+ * different gates. A block fires iff its origin is present, and every block of
+ * one origin is derived under that same condition, so their gates answer the
+ * same question and derivation produces them identically. A disagreement means
+ * one of them was hand-edited: the two now fire on different trees, and the
+ * back-to-front subset test - which reads one flag per origin, not per block -
+ * predicts a sequence that cannot happen. Diagnostic only: widening one gate by
+ * hand is legitimate if the author means it, so this reports rather than
+ * refuses, and it stays out of the emitted script. */
+static void check_compat_gates(void)
+{
+	for (int a = 0; a < ncompat; a++)
+		for (int b = a + 1; b < ncompat; b++) {
+			compat_block_t *x = &compat_blocks[a];
+			compat_block_t *y = &compat_blocks[b];
+			if (strcmp(x->path, y->path) ||
+			    strcmp(x->origin, y->origin) || gates_agree(x, y))
+				continue;
+			fprintf(stderr, "patch2vi: warning: compat blocks %d "
+				"and %d (%s src=%s) carry different gates; "
+				"they fire on different trees\n",
+				a + 1, b + 1, x->path, x->origin);
+		}
+}
+
+/* Copy the gates of the first stored block over <path> derived against
+ * <origin> into g[] (fresh line storage, tag left for the caller to allocate);
+ * 0 when there is none. Every block of one origin fires on the same condition,
+ * so the first block's gate is the origin's gate - including one the author
+ * widened by hand, which a fresh derivation would silently narrow again. */
+static int copy_origin_gates(gate_t *g, char *path, const char *origin)
+{
+	compat_block_t *src = NULL;
+	for (int c = 0; c < ncompat && !src; c++)
+		if (compat_blocks[c].ngates > 0 &&
+		    !strcmp(compat_blocks[c].path, path) &&
+		    !strcmp(compat_blocks[c].origin, origin))
+			src = &compat_blocks[c];
+	if (!src)
+		return 0;
+	for (int j = 0; j < src->ngates; j++) {
+		gate_t *s = &src->gates[j];
+		g[j] = *s;
+		g[j].tag = 0;
+		g[j].lines = emalloc(s->nlines * sizeof(char *));
+		for (int k = 0; k < s->nlines; k++)
+			g[j].lines[k] = uc_dup(s->lines[k]);
+	}
+	return src->ngates;
+}
+
 /* The block's own files that have groups to emit; *n = how many. */
 static file_patch_t **block_files(compat_block_t *cb, int *n)
 {
@@ -5601,28 +5697,29 @@ static int sections_share_file(section_t *a, section_t *b)
 /* Redefine REG_QF2 (211) to the plain assert form ("vis 2; q!1"): an error site
  * that calls 211 reports (already done upstream) and quits 1. deep=0 emits at
  * the driver's top level (like emit_reg_defaults); deep=1 emits inside a ??/??!
- * then-arg, one ex_exec level down, so its inner and terminating separators each
- * carry the extra escape level. */
+ * then-arg, one ex_exec level down, so the separator 211 must *capture* carries
+ * the extra escape level.
+ * The trailing separator is always raw: it ends this command in the stream the
+ * driver's top level parses, and ex_arg stops a ??-arm's argument at the first
+ * unescaped separator. Escaping it would fold every following driver command
+ * into the arm - the arm's own body would then only run when the arm fired, and
+ * the block's buffer select and %ya would go with it. */
 static void emit_qf2_assert(sbuf *out, int deep)
 {
 	sb_printf(out, "%dreg vis 2", REG_QF2);
 	emit_sep_lvl(out, deep);
 	sb_str(out, "q!1");
-	if (deep)
-		EMIT_ESCSEP(out);
-	else
-		EMIT_SEP(out);
+	EMIT_SEP(out);
 }
 
 /* Redefine REG_QF2 (211) to empty: suppress the quit so error sites in the
- * following body still report (via REG_ERR2 -> REG_HDLR) but do not abort. */
-static void emit_qf2_clear(sbuf *out, int deep)
+ * following body still report (via REG_ERR2 -> REG_HDLR) but do not abort.
+ * deep is unused for the same reason the assert's terminator is raw - there is
+ * no payload separator here, only the terminator. */
+static void emit_qf2_clear(sbuf *out)
 {
 	sb_printf(out, "%dreg", REG_QF2);
-	if (deep)
-		EMIT_ESCSEP(out);
-	else
-		EMIT_SEP(out);
+	EMIT_SEP(out);
 }
 
 /* Host quit override, emitted once before the host body when sensors exist:
@@ -5677,7 +5774,7 @@ static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
 	for (int k = 0; k < nlater; k++)
 		sb_printf(out, "%s%d", k ? ";" : "", FLAG_SLOT_BASE + k);
 	sb_str(out, "?" "?");
-	emit_qf2_clear(out, 1);
+	emit_qf2_clear(out);
 	for (int k = 0; k < nlater; k++)
 		sb_printf(out, "%s%d", k ? ";" : "", FLAG_SLOT_BASE + k);
 	sb_str(out, "?" "?!");
@@ -5691,7 +5788,7 @@ static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
  * driver is one top-level ex_exec, so a tag recorded here is still readable when
  * the matching call runs after the host body. */
 static void emit_driver_sensors(sbuf *out, section_t *s,
-				file_patch_t **uf, int nuf)
+				file_patch_t **uf, int nuf, int *anyinit)
 {
 	int real = 0;
 	for (int j = 0; j < s->ngates; j++) {
@@ -5703,9 +5800,21 @@ static void emit_driver_sensors(sbuf *out, section_t *s,
 	}
 	if (!real)
 		return;
+	/* Define both flags as "0" before anything reads them. An unset register
+	 * also reads false, but through the "uninitialized register" error, which
+	 * the reader prints: every clean-tree subset test would announce itself.
+	 * "0" misses the flags' "f> 1" search silently, and a later "reg+ 1"
+	 * appends to it, so the fired side still reads true. */
+	if (!*anyinit) {
+		sb_printf(out, "%dreg 0", REG_FLAG_ANY);
+		EMIT_SEP(out);
+		*anyinit = 1;
+	}
+	sb_printf(out, "%dreg 0", REG_FLAG_BASE + s->flagk);
+	EMIT_SEP(out);
 	/* On the fired side, raise this block's per-origin flag (read by the
 	 * per-block subset test) and append to the shared any-origin flag (read
-	 * once by the host override). A miss leaves both empty (= false). */
+	 * once by the host override). A miss leaves both at "0" (= false). */
 	emit_gate_expr(out, s);
 	sb_printf(out, "%dreg 1", REG_FLAG_BASE + s->flagk);
 	EMIT_SEP(out);
@@ -5832,9 +5941,9 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	/* All sensors first (they record their tags), then the bodies in run
 	 * order: host, then every compat block. Sensors-before-bodies is the C1
 	 * layout - the host body can consult the sensor results. */
-	int any_sensor = 0;
+	int any_sensor = 0, anyinit = 0;
 	for (int i = 0; i < nsec; i++) {
-		emit_driver_sensors(osb, &secs[i], uf, nuf);
+		emit_driver_sensors(osb, &secs[i], uf, nuf, &anyinit);
 		if (secs[i].cb && section_has_gate(&secs[i]))
 			any_sensor = 1;
 	}
@@ -7455,8 +7564,18 @@ static int compat_derive(void)
 		diff_span(base, nbase, fin, nfin, &xlo, &xhi);
 		alo = xlo;
 		ahi = xhi > xlo ? xhi : xlo;
-		n = derive_gates(g, GATE_MAXPROBES, pre, npre, base, nbase,
-				 xo, nxo, alo, ahi, xlo, xhi);
+		/* An existing block over the same file and origin already carries
+		 * the answer to "is this origin present": reuse its gate instead
+		 * of deriving a second one. Blocks of one origin must agree (the
+		 * subset test reads one flag per origin, not per block), and a
+		 * gate the author widened by hand is authoritative, exactly as a
+		 * stored delta is. Derivation runs only for the first block of a
+		 * given (file, origin) pair. */
+		n = copy_origin_gates(g, bufs[i].path,
+				      compat_origin ? compat_origin : "");
+		if (!n)
+			n = derive_gates(g, GATE_MAXPROBES, pre, npre, base,
+					 nbase, xo, nxo, alo, ahi, xlo, xhi);
 		if (!n) {
 			fprintf(stderr, "gate: %s: no probe validates, "
 				"supply a gate by hand\n", bufs[i].path);
@@ -7467,11 +7586,12 @@ static int compat_derive(void)
 			return -1;
 		}
 		/* the phase-1 fallback chain's per-pattern ?? capture tags are
-		 * fixed at the pattern slot + 1 (1..NPAT for a compat block, whose
-		 * file-validated slots are off), and the DNF failure check ANDs
-		 * every one of them; the gate's tag must sit above that range so
-		 * xanchor never fuses the gate's result into a group's */
-		next_id = NPAT + 1;
+		 * fixed at the pattern slot + 1 (1..NSEARCH for the host, whose
+		 * file-validated slots are on), and the DNF failure check ANDs
+		 * every one of them; the gate's tag comes from its own band above
+		 * that range, continued across blocks, so xanchor never fuses the
+		 * gate's result into a group's or into another block's gate */
+		next_id = next_gate_tag();
 		for (j = 0; j < n; j++)
 			g[j].tag = next_mark_id(&next_id);
 		ARR_PUSH(compat_blocks, ncompat, compat_cap)
@@ -8210,6 +8330,7 @@ int main(int argc, char **argv)
 		if (!strncmp(lb->s, "#!/bin/sh", 9)) {
 			if (read_delta_sections(in) < 0)
 				return 1;
+			check_compat_gates();
 		} else {
 			/* Not a script; store and process this first line */
 			add_raw(lb->s);
