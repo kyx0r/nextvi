@@ -1269,7 +1269,7 @@ else
 fi
 
 echo ""
-echo "=== replay (-pr/-po) tests ==="
+echo "=== replay (-co) tests ==="
 
 # The compat session replays a generated script in ONE editor: buffers
 # persist across blocks, nothing is written, and the last block hands the
@@ -1286,7 +1286,7 @@ mkdir -p "$R"
 # derivation stage after the handover is not implemented yet)
 run_pr() {
 	P2VI_EX="$2" script -qec \
-		"sh -c 'cd $R && $R_P2VI -pr $1 /dev/null'" /dev/null \
+		"sh -c 'cd $R && $R_P2VI -co $1 /dev/null'" /dev/null \
 		> "$R/log" 2>&1 || true
 }
 
@@ -1356,23 +1356,16 @@ else
 	tail -3 "$R/log" | sed 's/^/    /'
 fi
 
-# Compat derivation (stage B2). -pr replays the origin, hands the tree to the
-# user, and turns the user's merge into a gated compat block emitted before the
+# Compat derivation (stage B2). -co replays the origin and target, hands the tree to the
+# user, and turns the user's merge into a gated compat block emitted after the
 # target's own hunk. The gate's probe comes from where the origin actually
 # landed (its inserted line), so on an origin tree the block fires and merges,
-# while on a clean tree the gate quits (q!0) before any edit and the target
+# while on a clean tree the gate self-skips before any edit and the target
 # applies alone.
-prderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit x2.new to $R/new.sh
+coderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit -co result to $R/new.sh
 	rm -f "$R/new.sh"
 	P2VI_EX="$3" script -qec \
-		"sh -c 'cd $R && $R_P2VI -pr $1 $2 > $R/new.sh 2>$R/nerr'" \
-		/dev/null > /dev/null 2>&1 || true
-}
-
-poderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit -po result to $R/new.sh
-	rm -f "$R/new.sh"
-	P2VI_EX="$3" script -qec \
-		"sh -c 'cd $R && $R_P2VI -po $1 $2 > $R/new.sh 2>$R/nerr'" \
+		"sh -c 'cd $R && $R_P2VI -co $1 $2 > $R/new.sh 2>$R/nerr'" \
 		/dev/null > /dev/null 2>&1 || true
 }
 
@@ -1387,12 +1380,12 @@ printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' >
 "$R_P2VI" -r "$R/x1.diff" > "$R/x1.sh"
 "$R_P2VI" -r "$R/x2.diff" > "$R/x2.sh"
 cp "$R/draw.orig" "$R/draw.c"	# pre-origin tree the replay reads
-prderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
+coderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
 
-if grep -q '^# Compat (pre) from x1.sh' "$R/new.sh" 2>/dev/null; then
-	ok "compat: -pr emits a gated pre-block from the user's merge"
+if grep -q '^# Compat (post) from x1.sh' "$R/new.sh" 2>/dev/null; then
+	ok "compat: -co emits a gated post-block from the user's merge"
 else
-	fail "compat: -pr emits a gated pre-block from the user's merge"
+	fail "compat: -co emits a gated post-block from the user's merge"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
@@ -1425,7 +1418,7 @@ printf -- '--- a/u.c\n+++ b/u.c\n@@ -1,3 +1,3 @@\n dup\n-b\n+B\n dup\n' > "$R/u2
 cp "$R/u.orig" "$R/u.c"
 "$R_P2VI" -r "$R/u1.diff" > "$R/u1.sh"
 "$R_P2VI" -r "$R/u2.diff" > "$R/u2.sh"
-prderive u1.sh u2.sh '%s/^b$/b changed/:q!'
+coderive u1.sh u2.sh '%s/^b$/b changed/:q!'
 if [ ! -s "$R/new.sh" ] && tr -d '\r' < "$R/nerr" | grep -q 'no probe validates'; then
 	ok "compat: an undiscriminating origin insertion is refused"
 else
@@ -1433,7 +1426,7 @@ else
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
-# -po replays the origin AND the target into one session before the handover,
+# -co replays the origin AND the target into one session before the handover,
 # so the target must apply cleanly on the origin-modified tree. That exercises
 # the block boundary: the origin leaves its cursor deep in the buffer, and a
 # leftover row would steer the target's searches - so every buffer is rewound to
@@ -1446,11 +1439,11 @@ printf -- '--- a/po.c\n+++ b/po.c\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' > "$R
 "$R_P2VI" -r "$R/p1.diff" > "$R/p1.sh"
 "$R_P2VI" -r "$R/p2.diff" > "$R/p2.sh"
 cp "$R/po.orig" "$R/po.c"	# pre-origin tree the replay reads
-poderive p1.sh p2.sh '%s/^L2$/L2c/:q!'
+coderive p1.sh p2.sh '%s/^L2$/L2c/:q!'
 if grep -q '^# Compat (post) from p1.sh' "$R/new.sh" 2>/dev/null; then
-	ok "compat: -po emits a gated post-block from the user's merge"
+	ok "compat: -co emits a gated post-block from the user's merge"
 else
-	fail "compat: -po emits a gated post-block from the user's merge"
+	fail "compat: -co emits a gated post-block from the user's merge"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
@@ -1459,9 +1452,9 @@ fi
 cp "$R/po.orig" "$R/po.c"
 ( cd "$R" && VI="$VI" sh p1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
 if [ "$(cat "$R/po.c")" = "$(printf 'L1\nPROBE\nL2c\nL3x')" ]; then
-	ok "compat: -po fires on an origin tree, stacks with the target hunk"
+	ok "compat: -co fires on an origin tree, stacks with the target hunk"
 else
-	fail "compat: -po fires on an origin tree, stacks with the target hunk"
+	fail "compat: -co fires on an origin tree, stacks with the target hunk"
 	sed 's/^/    /' "$R/po.c"
 fi
 
@@ -1470,13 +1463,13 @@ fi
 cp "$R/po.orig" "$R/po.c"
 ( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
 if [ "$(cat "$R/po.c")" = "$(printf 'L1\nL2\nL3x')" ]; then
-	ok "compat: -po postfix gate no-ops on a clean tree"
+	ok "compat: -co postfix gate no-ops on a clean tree"
 else
-	fail "compat: -po postfix gate no-ops on a clean tree"
+	fail "compat: -co postfix gate no-ops on a clean tree"
 	sed 's/^/    /' "$R/po.c"
 fi
 
-# Stage B3: storage, round-trip and stacking. The -pr script above (new.sh from
+# Stage B3: storage, round-trip and stacking. The -co script above (new.sh from
 # draw.c) carries a pre COMPAT region after exit 0. -d must reproduce the whole
 # script - host block and compat region - byte-identically, without re-running
 # the origin, driven under a pty and quit with :q.
@@ -1492,14 +1485,14 @@ dedit() {	# <script> <P2VI_EX>: -d session running <P2VI_EX>, out $R/dedit.sh
 		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dedit.sh 2>$R/derr'" \
 		/dev/null > /dev/null 2>&1 || true
 }
-# rebuild the -pr script (the earlier -po run clobbered new.sh)
+# rebuild the -co script (the earlier -co run clobbered new.sh)
 printf 'L1\nL2\nL3\n' > "$R/draw.orig"
 printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,4 @@\n L1\n+PROBE\n L2\n L3\n' > "$R/x1.diff"
 printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' > "$R/x2.diff"
 "$R_P2VI" -r "$R/x1.diff" > "$R/x1.sh"
 "$R_P2VI" -r "$R/x2.diff" > "$R/x2.sh"
 cp "$R/draw.orig" "$R/draw.c"
-prderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
+coderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
 cp "$R/new.sh" "$R/pr.sh"
 
 cp "$R/draw.orig" "$R/draw.c"
@@ -1511,16 +1504,17 @@ else
 	diff "$R/pr.sh" "$R/dregen.sh" | sed 's/^/    /' | head -20
 fi
 
-# Re-running -pr on a script that already carries a pre block appends a NEW
+# Re-running -co on a script that already carries a post block appends a NEW
 # block at the group tail (existing block untouched); the user reshapes a
-# different line (L3 -> L3z).
+# different line. The origin+target replay applies the host (L3 -> L3x) and the
+# stored post block (L2 -> L2c), so the new edit targets the post-replay line L3x.
 cp "$R/draw.orig" "$R/draw.c"
-prderive x1.sh pr.sh '%s/^L3$/L3z/:q!'
-if [ "$(grep -c '^=== PATCH2VI COMPAT pre draw.c' "$R/new.sh")" = 2 ] &&
+coderive x1.sh pr.sh '%s/^L3x$/L3z/:q!'
+if [ "$(grep -c '^=== PATCH2VI COMPAT post draw.c' "$R/new.sh")" = 2 ] &&
    grep -q '^+L2c$' "$R/new.sh" && grep -q '^+L3z$' "$R/new.sh"; then
-	ok "compat: re-running -pr stacks a new block, keeps the existing one"
+	ok "compat: re-running -co stacks a new block, keeps the existing one"
 else
-	fail "compat: re-running -pr stacks a new block, keeps the existing one"
+	fail "compat: re-running -co stacks a new block, keeps the existing one"
 	grep -n 'PATCH2VI COMPAT' "$R/new.sh" | sed 's/^/    /'
 fi
 
@@ -1540,33 +1534,33 @@ else
 	sed 's/^/    /' "$R/draw.c"
 fi
 
-# Pre-prefix replay: re-running -pr on a target that already carries a pre block
-# derives the NEW block on top of that block's output, not on x1 alone. The
-# stored pre block turns L2 -> L2c; the new session edits L2c -> L2cc, a line
-# that exists only if the stored pre block was replayed before handover. Without
-# the pre-prefix (x1 only) the buffer would still read L2, the edit would match
-# nothing, and -pr would fail with "no compat derived" / empty output.
+# Post stacking: re-running -co on a target that already carries a post block
+# derives the NEW block on top of that block's output. The origin+target replay
+# applies the stored post block (L2 -> L2c), so L2c exists before handover; the
+# new session edits L2c -> L2cc. Without replaying the target's own blocks the
+# buffer would still read L2, the edit would match nothing, and -co would fail
+# with "no compat derived" / empty output.
 cp "$R/draw.orig" "$R/draw.c"
-prderive x1.sh pr.sh '%s/^L2c$/L2cc/:q!'
+coderive x1.sh pr.sh '%s/^L2c$/L2cc/:q!'
 if [ -s "$R/new.sh" ] &&
-   [ "$(grep -c '^=== PATCH2VI COMPAT pre draw.c' "$R/new.sh")" = 2 ] &&
+   [ "$(grep -c '^=== PATCH2VI COMPAT post draw.c' "$R/new.sh")" = 2 ] &&
    grep -q '^-L2c$' "$R/new.sh" && grep -q '^+L2cc$' "$R/new.sh"; then
-	ok "compat: -pr pre-prefix derives the new block atop the existing pre block"
+	ok "compat: -co stacks the new block atop the existing post block"
 else
-	fail "compat: -pr pre-prefix derives the new block atop the existing pre block"
+	fail "compat: -co stacks the new block atop the existing post block"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 	grep -n 'PATCH2VI COMPAT\|^[-+]L2' "$R/new.sh" 2>/dev/null | sed 's/^/    /'
 fi
 
 # The doubly-stacked script applies all three units in order on an origin tree:
-# pre block 1 (L2 -> L2c), pre block 2 (L2c -> L2cc), then the host (L3 -> L3x).
+# the host (L3 -> L3x), post block 1 (L2 -> L2c), post block 2 (L2c -> L2cc).
 cp "$R/new.sh" "$R/stack2.sh"
 cp "$R/draw.orig" "$R/draw.c"
 ( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh stack2.sh ) >/dev/null 2>&1
 if [ "$(cat "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2cc\nL3x')" ]; then
-	ok "compat: pre-prefix stack applies all blocks in order on an origin tree"
+	ok "compat: post stack applies all blocks in order on an origin tree"
 else
-	fail "compat: pre-prefix stack applies all blocks in order on an origin tree"
+	fail "compat: post stack applies all blocks in order on an origin tree"
 	sed 's/^/    /' "$R/draw.c"
 fi
 
@@ -1576,7 +1570,7 @@ fi
 # re-emit the compat body from that delta - an absolute "3c L2c" replacing the
 # relative "f> ^L2$" search anchor - and re-deriving it stays byte-identical.
 cp "$R/draw.orig" "$R/draw.c"
-prderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
+coderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
 cp "$R/new.sh" "$R/pr.sh"
 awk '
 /^=== COMPAT DELTA ===$/ {
@@ -1600,11 +1594,11 @@ cp "$R/draw.orig" "$R/draw.c"
 dregen edited.sh
 cp "$R/dregen.sh" "$R/edd.sh"
 if grep -q '3c L2c' "$R/edd.sh" &&
-   ! sed -n '/# Compat (pre)/,/EXINIT/p' "$R/edd.sh" | grep -q 'f> \^L2\$'; then
+   ! sed -n '/# Compat (post)/,/EXINIT/p' "$R/edd.sh" | grep -q 'f> \^L2\$'; then
 	ok "compat: a stored COMPAT DELTA reshapes the emitted body (-d, no UI)"
 else
 	fail "compat: a stored COMPAT DELTA reshapes the emitted body (-d, no UI)"
-	sed -n '/# Compat (pre)/,/EXINIT/p' "$R/edd.sh" | sed 's/^/    /' | head
+	sed -n '/# Compat (post)/,/EXINIT/p' "$R/edd.sh" | sed 's/^/    /' | head
 fi
 
 # the delta-shaped block still applies on an origin tree (abs line numbers
@@ -1629,13 +1623,13 @@ fi
 # with the host buffer untouched. Edit compat buffer b1's COMMAND STRATEGY to
 # select abs (uncomment #abs); the effect must match Test A's hand-edit.
 cp "$R/draw.orig" "$R/draw.c"
-prderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
+coderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
 cp "$R/new.sh" "$R/pr.sh"
 cp "$R/draw.orig" "$R/draw.c"
 dedit pr.sh 'b1:%s/^#abs$/abs/:q!'
 host_pr="$(sed -n '/# Patch:/,/\$P2VIF/p' "$R/pr.sh")"
 host_ed="$(sed -n '/# Patch:/,/\$P2VIF/p' "$R/dedit.sh")"
-if sed -n '/# Compat (pre)/,/EXINIT/p' "$R/dedit.sh" | grep -q '3c L2c' &&
+if sed -n '/# Compat (post)/,/EXINIT/p' "$R/dedit.sh" | grep -q '3c L2c' &&
    sed -n '/=== COMPAT DELTA/,/=== COMPAT PATCH/p' "$R/dedit.sh" |
 	grep -q '^abs$' &&
    [ "$host_pr" = "$host_ed" ]; then
@@ -1664,9 +1658,9 @@ fi
 # (per-buffer read-back across host + N compat buffers). Build a two-block
 # script first, then a no-op -d must round-trip it.
 cp "$R/draw.orig" "$R/draw.c"
-prderive x1.sh pr.sh '%s/^L3$/L3z/:q!'	# stacks a 2nd pre block
+coderive x1.sh pr.sh '%s/^L3x$/L3z/:q!'	# stacks a 2nd pre block
 cp "$R/new.sh" "$R/two.sh"
-if [ "$(grep -c '^=== PATCH2VI COMPAT pre' "$R/two.sh")" = 2 ]; then
+if [ "$(grep -c '^=== PATCH2VI COMPAT post' "$R/two.sh")" = 2 ]; then
 	cp "$R/draw.orig" "$R/draw.c"
 	dregen two.sh
 	if diff "$R/two.sh" "$R/dregen.sh" >/dev/null 2>&1; then

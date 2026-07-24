@@ -5,7 +5,7 @@
  * Usage: patch2vi [-arih] [-d[N]] [-er TAG] [-ew TAG] [patch|script]
  *        patch2vi -e script.sh
  *        patch2vi [-ari]E [nextvi-opts...]
- *        patch2vi -pr|-po origin.sh [target.sh|patch]
+ *        patch2vi -co origin.sh target.sh
  *
  * The script applies the patch in raw ex mode (:vis 3). The command
  * separator and the escape byte are picked per patch via :sc! so that
@@ -26,7 +26,7 @@
  *     is a nextvi command line - its flags, its files, EXINIT - and every
  *     buffer it leaves behind is diffed against its disk copy to produce
  *     the input the converter normally reads;
- *   - replays two scripts (-pr/-po) to derive a compatibility patch that
+ *   - replays two scripts (-co) to derive a compatibility patch that
  *     applies before/after the target, gated on the origin's own change.
  * No mode writes to disk; quitting is what emits.
  */
@@ -78,7 +78,7 @@ static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
 /* 1 = re-read and re-apply stored deltas/compat regions from a generated
  * script, distinct from opening the group-editing session. -i/-d set both;
- * -pr/-po set only this so regen keeps host customizations without a UI. */
+ * -co set only this so regen keeps host customizations without a UI. */
 static int read_deltas;
 /* -1=per-group stored levels, 0=off, 1-5=forced level */
 static int delta_mode;
@@ -145,7 +145,7 @@ static void sb_printf(sbuf *sb, const char *fmt, ...)
  * its global search; edit marks start at 1 (see next_mark_id callers). */
 #define WIN_SAVE_MARK 0
 
-/* Compatibility-block gate (-pr/-po). A compat block only applies to a tree
+/* Compatibility-block gate (-co). A compat block only applies to a tree
  * that carries the origin script's change; the gate is the question "is the
  * origin change that causes this collision present here?", asked as an exact
  * multi-line literal search before any edit and answered by quitting (q!0)
@@ -168,7 +168,7 @@ static int compat_capturing;
  * file-validated fuzz/grp/straddle generators (which read the pre-origin file
  * that is the wrong text here) are disabled. */
 static int compat_building;
-static int compat_mode;			/* -pr: 1 (pre), -po: 2 (post) */
+static int compat_mode;			/* -co: derive a post-only compat patch */
 static const char *compat_origin;	/* the script it is derived against */
 
 enum {
@@ -5913,7 +5913,7 @@ static const char *sh_get(const char *name)
 }
 
 /* Header assignments belong to one script; a session replaying two of
- * them (-po) must not let the first script's assignments shadow the
+ * the target (-co) must not let the first script's assignments shadow the
  * environment while the second's conditionals are read. */
 static void sh_reset(void)
 {
@@ -6585,7 +6585,7 @@ static int sess_buf(char ***paths, int *npaths, const char *path)
 }
 
 /* Post-origin baseline: each named buffer's text at the moment the origin
- * (and, for -po, the target) has been replayed but before the user edits it.
+ * (and, for -co, the target) has been replayed but before the user edits it.
  * The compat diff is measured from here to the buffer's final state. */
 typedef struct { char *path, *text; } snap_t;
 typedef struct { snap_t *v; int n, cap; } snaps_t;
@@ -6695,7 +6695,7 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 		 * gone), so the user is handed nothing and the status
 		 * stands */
 		if (last && !xquit) {
-			/* the origin (and target, for -po) has now been replayed:
+			/* the origin (and target, for -co) has now been replayed:
 			 * this is the baseline the compat diff measures from,
 			 * captured before the user's edits */
 			if (compat_capturing)
@@ -6762,7 +6762,7 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 }
 
 /* Replay generated scripts over the tree as it is on disk, all in one
- * session whose buffers the caller reads back: -po replays the origin and
+ * session whose buffers the caller reads back: -co replays the origin and
  * then the target, so the user is handed the state both have been applied
  * to. The scripts run with their
  * own default phase policy (no env forced here): the shell header is the single
@@ -6795,45 +6795,6 @@ static int replay_scripts(const char **paths, int nscripts, int handover)
 		st = parse_script(paths[i], &blks, &nblks);
 	if (st >= 0)
 		st = replay_blocks(blks, nblks, handover);
-	free_blocks(blks, nblks);
-	return st;
-}
-
-static int replay_script(const char *path, int handover)
-{
-	return replay_scripts(&path, 1, handover);
-}
-
-/* -pr against a target that already carries pre blocks: replay the origin, then
- * the target's leading pre blocks, so the new block derives on top of them
- * rather than on x1 alone. Emit order puts every pre block before the host
- * (emit_compat_blocks(1) -> host -> emit_compat_blocks(2)), so the pre prefix is
- * exactly the first npre executable blocks of the target; the host block (which
- * rejects on the origin tree - the -pr trigger) and any post blocks follow it
- * and are dropped. npre comes from the target's own tail (its stored polarity-1
- * blocks), so it always matches a valid target's leading-block count. */
-static int replay_pr_prefix(const char *origin, const char *target,
-			    int npre, int handover)
-{
-	p2vi_block_t *blks = NULL;
-	int nblks = 0, norigin, i, st;
-	if ((st = parse_script(origin, &blks, &nblks)) < 0) {
-		free_blocks(blks, nblks);
-		return st;
-	}
-	norigin = nblks;
-	if ((st = parse_script(target, &blks, &nblks)) < 0) {
-		free_blocks(blks, nblks);
-		return st;
-	}
-	/* keep the origin's blocks plus the target's first npre; drop the host
-	 * and post blocks that follow them */
-	if (nblks > norigin + npre) {
-		for (i = norigin + npre; i < nblks; i++)
-			free_block(&blks[i]);
-		nblks = norigin + npre;
-	}
-	st = replay_blocks(blks, nblks, handover);
 	free_blocks(blks, nblks);
 	return st;
 }
@@ -7006,7 +6967,7 @@ static int span_dist(int lo, int hi, int alo, int ahi)
 
 /* A probe window is usable when it names the post-origin text and nothing
  * else: unique there (or at least present, for an ANDed pair), absent from
- * the pre-origin text, and - for -po, where the gate must also separate
+ * the pre-origin text, and - for -co, where the gate must also separate
  * "origin + target" from "target alone" - absent from the target-only text. */
 static int probe_ok(char **win, int n, char **pre, int npre,
 		    char **post, int npost, char **x2o, int nx2o, int uniq)
@@ -7051,7 +7012,7 @@ static int probe_from_region(gate_t *g, chg_t *r, char **pre, int npre,
 /* Delete-only region: nothing the origin inserted is available to probe, so
  * probe a line it removed and invert the polarity - quit when the probe IS
  * found. The window must be gone from the post-origin text and present in
- * both the pre-origin text and (for -po) the target-only one, which is the
+ * both the pre-origin text and (for -co) the target-only one, which is the
  * mirror of probe_ok(). */
 static int probe_removed(gate_t *g, chg_t *r, char **pre, int npre,
 			 char **post, int npost, char **x2o, int nx2o)
@@ -7087,7 +7048,7 @@ static void free_gates(gate_t *g, int n)
 }
 
 /* Derive the gate for one compat block over one file. pre[]/post[] are the
- * file before and after the origin's blocks ran, x2o[] (optional, -po) the
+ * file before and after the origin's blocks ran, x2o[] (-co) the
  * same file with the target applied but not the origin. [alo,ahi) is the
  * compat hunk's anchor span and [xlo,xhi) the span the compat edit rewrites,
  * both in post coordinates.
@@ -7271,7 +7232,7 @@ static char **split_lines(char *text, int *n)
 static void parse_diff_text(const char *text);
 static void parse_diff_reset(void);
 
-/* The target-only tree, one text per path: -po must separate "origin+target"
+/* The target-only tree, one text per path: -co must separate "origin+target"
  * from "target alone", so the gate probe is proven absent here too. Built by
  * replaying the target without the origin in its own session. */
 static snaps_t compat_x2o;
@@ -7293,7 +7254,7 @@ static void diff_span(char **base, int nbase, char **fin, int nfin,
 	*hi = nbase - suf;
 }
 
-/* -po: replay the target alone (no origin) in its own session and record each
+/* -co: replay the target alone (no origin) in its own session and record each
  * buffer's text, so the gate can prove its probe absent from a target-only
  * tree. Replay never writes, so the disk is still the pre-origin state and the
  * session starts clean by construction. */
@@ -7301,7 +7262,7 @@ static int compat_capture_x2o(void)
 {
 	const char *tgt = input_file;
 	if (!tgt) {
-		fprintf(stderr, "-po requires a target script\n");
+		fprintf(stderr, "-co requires a target script\n");
 		return -1;
 	}
 	/* headless replay, but term_init/term_done still emit to the terminal;
@@ -7323,7 +7284,7 @@ static int compat_capture_x2o(void)
 }
 
 /* Derive one compat block per buffer the user reshaped. Replays the origin
- * (and, for -po, the target) into one session, hands it to the user, then
+ * (and, for -co, the target) into one session, hands it to the user, then
  * measures each changed buffer from its post-origin baseline to its final
  * state: the diff is the compat patch, and the origin's own landing yields the
  * gate. Blocks are stored (not emitted); their bytes are marked used so the
@@ -7333,30 +7294,15 @@ static int compat_capture_x2o(void)
 static int compat_derive(void)
 {
 	gate_t g[GATE_MAXPROBES];
-	int i, j, k, next_id, n, nprepfx = 0;
-	if (compat_mode == 2 && compat_capture_x2o() != 0)
+	int i, j, k, next_id, n;
+	const char *sc[2] = { compat_origin, input_file };
+	if (compat_capture_x2o() != 0)
 		return -1;
-	/* Existing pre blocks already read from the target's tail: -pr must
-	 * replay them after the origin so the new block stacks on top (they lead
-	 * the target's executable blocks). Counted before the derive loop appends
-	 * this run's block. */
-	for (i = 0; i < ncompat; i++)
-		if (compat_blocks[i].polarity == 1)
-			nprepfx++;
-	if (nprepfx > 0 && !input_file) {
-		fprintf(stderr, "-pr: target with pre blocks must be a file\n");
-		return -1;
-	}
 	compat_capturing = 1;
-	if (compat_mode == 2) {
-		const char *sc[2] = { compat_origin, input_file };
-		if (replay_scripts(sc, 2, 1) != 0) {
-			ed_free();
-			return -1;
-		}
-	} else if ((nprepfx > 0
-		    ? replay_pr_prefix(compat_origin, input_file, nprepfx, 1)
-		    : replay_script(compat_origin, 1)) != 0) {
+	/* Replay origin then target into one session so the new block derives on
+	 * top of every block the target already carries; existing compat blocks
+	 * stack in stored order (post-only, one group). */
+	if (replay_scripts(sc, 2, 1) != 0) {
 		ed_free();
 		return -1;
 	}
@@ -7409,7 +7355,7 @@ static int compat_derive(void)
 		ARR_PUSH(compat_blocks, ncompat, compat_cap)
 		compat_block_t *cb = &compat_blocks[ncompat++];
 		cb->path = uc_dup(bufs[i].path);
-		cb->polarity = compat_mode;
+		cb->polarity = 2;	/* post */
 		cb->origin = uc_dup(compat_origin ? compat_origin : "");
 		for (j = 0; j < n; j++)
 			cb->gates[j] = g[j];	/* ownership transferred */
@@ -7949,7 +7895,7 @@ static void usage(const char *prog)
 	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n"
 		"       %s -e script.sh\n"
 		"       %s [-ari]E [nextvi-opts...]\n"
-		"       %s -pr|-po origin.sh target.sh\n", prog, prog, prog, prog);
+		"       %s -co origin.sh target.sh\n", prog, prog, prog, prog);
 	fprintf(stderr,
 		"Converts unified diff to shell script using nextvi ex commands\n");
 	fprintf(stderr,
@@ -7989,14 +7935,11 @@ static void usage(const char *prog)
 	fprintf(stderr,
 		"  -ew   Write section end tag (default: \"%s\")\n", end_tag_wr);
 	fprintf(stderr,
-		"  -pr   Patch prefix: derive a compat patch and emit it BEFORE the\n"
-		"        target block: interactively resolve a collision against\n"
-		"        origin.sh, then ship the fix as a gated block that runs\n"
-		"        first, on the origin-only tree, and self-skips when the\n"
-		"        origin change is absent (patch2vi -pr origin.sh target.sh)\n");
-	fprintf(stderr,
-		"  -po   Patch postfix: like -pr, but emit the compat block AFTER\n"
-		"        the target block, on the post-origin+target tree\n");
+		"  -co   Compat patch: interactively resolve a collision against\n"
+		"        origin.sh, then ship the fix as a gated block emitted\n"
+		"        AFTER the target block, on the post-origin+target tree;\n"
+		"        the block self-skips when the origin change is absent\n"
+		"        (patch2vi -co origin.sh target.sh)\n");
 	fprintf(stderr, "  -h    Show this help\n");
 	exit(1);
 }
@@ -8032,11 +7975,11 @@ int main(int argc, char **argv)
 			end_tag_wr = opt_arg(argc, argv, &i);
 			continue;
 		}
-		/* -pr/-po origin.sh: derive a compatibility patch against
-		 * that script, applied before (pre) or after (post) the
-		 * target, which is the ordinary positional input */
-		if (argv[i][1] == 'p' && (argv[i][2] == 'r' || argv[i][2] == 'o')) {
-			compat_mode = argv[i][2] == 'r' ? 1 : 2;
+		/* -co origin.sh: derive a compatibility patch against that
+		 * script, applied AFTER the target (the ordinary positional
+		 * input). Post-only; replaces the old -co split. */
+		if (argv[i][1] == 'c' && argv[i][2] == 'o') {
+			compat_mode = 1;
 			read_deltas = 1;
 			compat_origin = opt_arg(argc, argv, &i);
 			continue;
@@ -8161,7 +8104,7 @@ int main(int argc, char **argv)
 	if (in && in != stdin)
 		fclose(in);
 
-	/* -pr/-po: replay the origin script in one session and hand the
+	/* -co: replay the origin script in one session and hand the
 	 * tree it leaves behind to the user, who reshapes it so the target
 	 * applies. Runs before the separator is picked, so the bytes of
 	 * whatever the session produces are seen by find_unused_byte(). */
