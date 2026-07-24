@@ -5564,6 +5564,114 @@ static void emit_gate_expr(sbuf *out, section_t *s)
 		sb_str(out, "? ");
 }
 
+/* Whether a section carries a real (non-ALWAYS, non-empty) gate, i.e. it emits
+ * a sensor and thus a per-origin / shared flag. The host never does. */
+static int section_has_gate(section_t *s)
+{
+	for (int j = 0; j < s->ngates; j++)
+		if (s->gates[j].polarity != GATE_ALWAYS && s->gates[j].nlines > 0)
+			return 1;
+	return 0;
+}
+
+/* Do two sections edit any file in common (by path)? Blocks only stack over a
+ * shared file, so the per-block subset test only considers later blocks that
+ * touch the same file. */
+static int sections_share_file(section_t *a, section_t *b)
+{
+	for (int i = 0; i < a->nf; i++)
+		for (int j = 0; j < b->nf; j++)
+			if (!strcmp(a->files[i]->path, b->files[j]->path))
+				return 1;
+	return 0;
+}
+
+/* Redefine REG_QF2 (211) to the plain assert form ("vis 2; q!1"): an error site
+ * that calls 211 reports (already done upstream) and quits 1. deep=0 emits at
+ * the driver's top level (like emit_reg_defaults); deep=1 emits inside a ??/??!
+ * then-arg, one ex_exec level down, so its inner and terminating separators each
+ * carry the extra escape level. */
+static void emit_qf2_assert(sbuf *out, int deep)
+{
+	sb_printf(out, "%dreg vis 2", REG_QF2);
+	emit_sep_lvl(out, deep);
+	sb_str(out, "q!1");
+	if (deep)
+		EMIT_ESCSEP(out);
+	else
+		EMIT_SEP(out);
+}
+
+/* Redefine REG_QF2 (211) to empty: suppress the quit so error sites in the
+ * following body still report (via REG_ERR2 -> REG_HDLR) but do not abort. */
+static void emit_qf2_clear(sbuf *out, int deep)
+{
+	sb_printf(out, "%dreg", REG_QF2);
+	if (deep)
+		EMIT_ESCSEP(out);
+	else
+		EMIT_SEP(out);
+}
+
+/* Host quit override, emitted once before the host body when sensors exist:
+ * "211reg fr <ANY>:f> 1:??!vis 2:q!1". A miss on the shared any-origin flag
+ * (no sensor fired, e.g. a clean tree) is an error that ??! catches and quits
+ * on, exactly as a non-compat script does; a hit (some origin present) leaves
+ * 211's ??! silent, so the host is best-effort and falls through its own
+ * mismatches. This lives inside 211 and re-runs per error site, so the shared
+ * flag is read with a register f>, never an accumulating anchor. */
+static void emit_host_override(sbuf *out)
+{
+	sb_printf(out, "%dreg fr %d", REG_QF2, REG_FLAG_ANY);
+	EMIT_ESCSEP(out);
+	sb_str(out, "f> 1");
+	EMIT_ESCSEP(out);
+	sb_str(out, "?" "?!vis 2");
+	EMIT_ESC3SEP(out);
+	sb_str(out, "q!1");
+	EMIT_SEP(out);
+}
+
+/* Block-head quit policy: a compat block asserts iff no later block over the
+ * same file has a fired origin. secs[i] is the block; scan secs[i+1..nsec) for
+ * later same-file blocks and record each origin's presence as an anchor slot,
+ * then OR the slots to (re)define 211 for this block's body: any later present
+ * -> suppress (clear 211); none later -> assert (default 211). A statically-last
+ * block (no later same-file blocks) skips the test and unconditionally asserts,
+ * since the host override left 211 relaxed and it must be restored. */
+static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
+{
+	int nlater = 0, slot;
+	for (int j = i + 1; j < nsec; j++)
+		if (secs[j].cb && secs[j].flagk >= 0 &&
+		    sections_share_file(&secs[i], &secs[j]))
+			nlater++;
+	if (!nlater) {
+		emit_qf2_assert(out, 0);
+		return;
+	}
+	slot = FLAG_SLOT_BASE;
+	for (int j = i + 1; j < nsec; j++) {
+		if (!(secs[j].cb && secs[j].flagk >= 0 &&
+		      sections_share_file(&secs[i], &secs[j])))
+			continue;
+		sb_printf(out, "fr %d", REG_FLAG_BASE + secs[j].flagk);
+		EMIT_SEP(out);
+		sb_str(out, "f> 1");
+		EMIT_SEP(out);
+		sb_printf(out, "%d?" "?", slot++);
+		EMIT_SEP(out);
+	}
+	for (int k = 0; k < nlater; k++)
+		sb_printf(out, "%s%d", k ? ";" : "", FLAG_SLOT_BASE + k);
+	sb_str(out, "?" "?");
+	emit_qf2_clear(out, 1);
+	for (int k = 0; k < nlater; k++)
+		sb_printf(out, "%s%d", k ? ";" : "", FLAG_SLOT_BASE + k);
+	sb_str(out, "?" "?!");
+	emit_qf2_assert(out, 1);
+}
+
 /* Sensor half of a section's orchestration: run its gate searches, recording
  * each under its own tag. The host section has no gates and contributes
  * nothing. Every sensor runs before any body (the driver emits all sensors
@@ -5599,9 +5707,10 @@ static void emit_driver_sensors(sbuf *out, section_t *s,
  * Every %@ call is bracketed with the "2sc %" / "2sc" expansion window
  * (emit_reg_call's discipline) because the driver prologue's |sc! leaves xexp
  * inert. */
-static void emit_driver_call(sbuf *out, section_t *s,
+static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 			     file_patch_t **uf, int nuf)
 {
+	section_t *s = &secs[i];
 	/* Rewind every real file this section touches to line 1 before running
 	 * it: the gate sensors and any earlier block leave the cursor deep in
 	 * the buffer, and the body's relative searches (";0fr.,$f>") key off
@@ -5618,6 +5727,9 @@ static void emit_driver_call(sbuf *out, section_t *s,
 	 * tree). Unconditional in the sense that no DBG switch hides it - the only
 	 * proof from the outside that a compat block executed. */
 	if (s->cb) {
+		/* Set this block's quit policy before its body runs: assert if it
+		 * is the last firing block over its file, suppress otherwise. */
+		emit_block_qf2(out, secs, nsec, i);
 		emit_gate_expr(out, s);
 		sb_printf(out, "p compat applied: %s src=%s",
 			  s->files[0]->path,
@@ -5719,10 +5831,19 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	/* All sensors first (they record their tags), then the bodies in run
 	 * order: host, then every compat block. Sensors-before-bodies is the C1
 	 * layout - the host body can consult the sensor results. */
-	for (int i = 0; i < nsec; i++)
+	int any_sensor = 0;
+	for (int i = 0; i < nsec; i++) {
 		emit_driver_sensors(osb, &secs[i], uf, nuf);
+		if (secs[i].cb && section_has_gate(&secs[i]))
+			any_sensor = 1;
+	}
+	/* Host quit override goes after every sensor (they set the flags) and
+	 * before any body. Only when a sensor exists; otherwise 211 stays at its
+	 * emit_reg_defaults value and non-compat scripts remain byte-identical. */
+	if (any_sensor)
+		emit_host_override(osb);
 	for (int i = 0; i < nsec; i++)
-		emit_driver_call(osb, &secs[i], uf, nuf);
+		emit_driver_call(osb, secs, nsec, i, uf, nuf);
 	sb_str(osb, "vis 2");
 	EMIT_SEP(osb);
 	for (int i = 0; i < nuf; i++) {
