@@ -15,155 +15,152 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     exit 1
 fi
 
-SEP="$(printf '\001')"
-ESC="$(printf '\002')"
-# Command that handles readability line breaks
-LB="0?"
-# Phase 1 (search/mark): errors disabled by default,
-# DBG1=1 enables error reporting, QF1=1 quits on failure
-# OK1: with DBG1=1 also report fallback anchor successes
-[ "$DBG1" = "1" ] && OK1= || OK1="0?"
-[ "$DBG1" = "1" ] && DBG1= || DBG1="0?"
-[ "$QF1" = "1" ] && QF1="${ESC}${SEP}vis 2${ESC}${SEP}q!1" || QF1=
-# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
-# OK2: with DBG2= also report fallback substitute successes
-[ "$DBG2" = "1" ] && OK2="0?" || OK2=
-[ "$DBG2" = "1" ] && DBG2="0?" || DBG2=
-[ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
-# Enters vi at failing code line in this script
-# Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+# Env switches:
+# Phase 1 (search/mark) reports nothing by default
+#   DBG1=1 reports failures and which fallback anchor
+#   resolved a group, QF1=1 also quits on failure
+# Phase 2 (edits) reports and quits by default
+#   DBG2=1 silences it, QF2=1 keeps going after an error
+# INTR=1 enters vi at the failing code line in this
+#   script, for state inspection mid execution
+
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: conf.c led.c vi.h
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> /\\* how to highlight text in the reverse direction \\*/
-const int conf_hlrev = SYN_BGMK\\(8\\);
+printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr?%@212214reg ?%@217?%@211216reg ?%@220211reg vis 2q!1'\
+"${DBG1:+213reg ?%@217?%@210215reg ?%@220}\
+${DBG2:+ya!214ya!216}\
+${QF1:+210reg vis 2q!1}\
+${QF2:+ya!211}\
+${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
+'fr 98b0%ya 98?0?
+%f> /\* how to highlight text in the reverse direction \*/
+const int conf_hlrev = SYN_BGMK\(8\);
 
-/\\* right-to-left characters \\*/
-#define CR2L		\"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ\"
-/\\* neutral characters \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> /\\* how to highlight text in the reverse direction \\*/
-const int conf_hlrev = SYN_BGMK\\(8\\);
+/\* right-to-left characters \*/
+#define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
+/\* neutral characters \*/1??0?
+1??+2m 11q0?
+%f> /\* how to highlight text in the reverse direction \*/
+const int conf_hlrev = SYN_BGMK\(8\);
 
-${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:327:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{msg_ft, \"\\.\\+\", A\\(AY1 \\| SYN_BD\\)},
+3??0?
+3??+2m 1220reg p OK conf.c:327:a32sc %?%@2152sc1q0?
+m 01;0grp 1%f> 	\{msg_ft, "\.\+", A\(AY1 \| SYN_BD\)},
 };
-const int hlslen = LEN\\(hls\\);.*(struct dircontext dctxs\\[] = \\{)
-	\\{\"\\^\\[\" CR2L \"]\", -1},
-	\\{\"\\^\\[a-zA-Z_0-9]\", \\+1},${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:327:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{bar_ft, \"\\^\\(\\\\\"\\.\\*\\\\\"\\)\\.\\* \\(\\[0-9]\\{1,3}%\\) \\(L\\[0-9]\\+\\) \\(C\\[0-9]\\+\\) \\(B-\\?\\[0-9]\\+\\)\\?\\.\\*\\\$\",
-		A\\(AY1 \\| SYN_BD, BL, RE1, BL, YE1, GR\\)},
-	\\{bar_ft, \"\\^\\.\\*\\\$\", A\\(AY1 \\| SYN_BD\\)},.*(struct dirmark dmarks\\[] = \\{)
-	\\{\"\\[\" CR2L \"]\\[\" CNEUT CR2L \"]\\*\\[\" CR2L \"]\", \\+1, \\{-1}},
-	\\{\"\\^\\(\\[ \\\\t]\\+\\)\\?\\(\\[\" CNEUT \"]\\*\\[\\^\" CR2L \"]\\*\\[\\^\" CR2L CNEUT \"]\\(\\?:\\[\" CNEUT \"]\\+\\\$\\)\\?\\)\", -1, \\{0, 1, -1}},${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:327:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:327${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}${LB}
-${SEP}'1i /* cursor shape escapes (DECSCUSR): set on entering insert, reset on leaving */
-char conf_curins[] = \"\\x1b[5 q\";	/* insert mode: vertical bar */
-char conf_curnorm[] = \"\\x1b[2 q\";	/* normal mode: block */
+const int hlslen = LEN\(hls\);.*(struct dircontext dctxs\[] = \{)
+	\{"\^\[" CR2L "]", -1},
+	\{"\^\[a-zA-Z_0-9]", \+1},8??0?
+grp 08??-6m 1220reg p OK conf.c:327:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\* \(\[0-9]\{1,3}%\) \(L\[0-9]\+\) \(C\[0-9]\+\) \(B-\?\[0-9]\+\)\?\.\*\$",
+		A\(AY1 \| SYN_BD, BL, RE1, BL, YE1, GR\)},
+	\{bar_ft, "\^\.\*\$", A\(AY1 \| SYN_BD\)},.*(struct dirmark dmarks\[] = \{)
+	\{"\[" CR2L "]\[" CNEUT CR2L "]\*\[" CR2L "]", \+1, \{-1}},
+	\{"\^\(\[ \\t]\+\)\?\(\[" CNEUT "]\*\[\^" CR2L "]\*\[\^" CR2L CNEUT "]\(\?:\[" CNEUT "]\+\$\)\?\)", -1, \{0, 1, -1}},9??0?
+grp 09??-12m 1220reg p OK conf.c:327:a92sc %?%@2152sc'\''00?
+1;3;8;9??!219reg conf.c:3272sc %?%@2132sc0?
+0?
+'\''1i /* cursor shape escapes (DECSCUSR): set on entering insert, reset on leaving */
+char conf_curins[] = "\x1b[5 q";	/* insert mode: vertical bar */
+char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:327:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
-	char \\*postref = NULL;
+??!219reg conf.c:327:m12sc %?%@2142scb1%ya 98?0?
+%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
+	char \*postref = NULL;
 	ins_state is;
-	while \\(1\\) \\{
-		ins_init\\(is\\)
-		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
-	char \\*postref = NULL;
-	ins_state is;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:689:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;.*?
-	char \\*postref = NULL;.*?
-(	ins_state is;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:689:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> int led_input\\(sbuf \\*sb, char \\*post, int postn, int row, int flg, int \\*pren\\)
-\\{
-	int ai_max = 128 \\* xai;.*(				sbufn_str\\(sb, post\\))
+	while \(1\) \{
+		ins_init\(is\)
+		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,1??0?
+1??+2m 11q0?
+%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
+	char \*postref = NULL;
+	ins_state is;3??0?
+3??+2m 1220reg p OK led.c:689:a32sc %?%@2152sc1q0?
+grp 1%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;.*?
+	char \*postref = NULL;.*?
+(	ins_state is;)7??0?
+grp 07??m 1220reg p OK led.c:689:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\)
+\{
+	int ai_max = 128 \* xai;.*(				sbufn_str\(sb, post\))
 			} else
-				sb->s\\[\\*pren] = \\*post;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-9m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:689:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	}
+				sb->s\[\*pren] = \*post;8??0?
+grp 08??-9m 1220reg p OK led.c:689:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	}
 	return key;
-}.*(			free\\(postref\\);)
+}.*(			free\(postref\);)
 			xrow = crow;
-			return key;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-12m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:689:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:689${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,
-			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\\);
-		if \\(key != '\\\\n'\\) \\{
-			\\*pren = sb->s_n;
-			if \\(!xled\\) \\{
-				xoff = uc_slen\\(sb->s\\+ps\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,
-			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\\);
-		if \\(key != '\\\\n'\\) \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:694:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		key = led_line\\(sb, ps, sb->s_n, &post, postn, &postref,.*?
-			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\\);.*?
-(		if \\(key != '\\\\n'\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:694:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> int led_input\\(sbuf \\*sb, char \\*post, int postn, int row, int flg, int \\*pren\\)
-\\{
-	int ai_max = 128 \\* xai;.*(				sbufn_str\\(sb, post\\))
+			return key;9??0?
+grp 09??-12m 1220reg p OK led.c:689:a92sc %?%@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6892sc %?%@2132sc0?
+?0?
+%f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,
+			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);
+		if \(key != '\''\\n'\''\) \{
+			\*pren = sb->s_n;
+			if \(!xled\) \{
+				xoff = uc_slen\(sb->s\+ps\);1??0?
+1??+2m 21q0?
+%f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,
+			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);
+		if \(key != '\''\\n'\''\) \{3??0?
+3??+2m 2220reg p OK led.c:694:a32sc %?%@2152sc1q0?
+grp 1%f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,.*?
+			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);.*?
+(		if \(key != '\''\\n'\''\) \{)7??0?
+grp 07??m 2220reg p OK led.c:694:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\)
+\{
+	int ai_max = 128 \* xai;.*(				sbufn_str\(sb, post\))
 			} else
-				sb->s\\[\\*pren] = \\*post;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:694:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	}
+				sb->s\[\*pren] = \*post;8??0?
+grp 08??-4m 2220reg p OK led.c:694:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	}
 	return key;
-}.*(			free\\(postref\\);)
+}.*(			free\(postref\);)
 			xrow = crow;
-			return key;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:694:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:694${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}${LB}
-${SEP}'1i 	term_write(conf_curins, sizeof(conf_curins) - 1)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:689:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2i 			term_write(conf_curnorm, sizeof(conf_curnorm) - 1)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:694:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> extern struct placeholder \\*ph;
+			return key;9??0?
+grp 09??-7m 2220reg p OK led.c:694:a92sc %?%@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6942sc %?%@2132sc0?
+0?
+'\''1i 	term_write(conf_curins, sizeof(conf_curins) - 1)
+??!219reg led.c:689:m12sc %?%@2142sc0?
+'\''2i 			term_write(conf_curnorm, sizeof(conf_curnorm) - 1)
+??!219reg led.c:694:m22sc %?%@2142scb2%ya 98?0?
+%f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;
-char \\*\\*conf_kmap\\(int id\\);
-int conf_kmapfind\\(char \\*name\\);
-char \\*conf_digraph\\(int c1, int c2\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> extern struct placeholder \\*ph;
+char \*\*conf_kmap\(int id\);
+int conf_kmapfind\(char \*name\);
+char \*conf_digraph\(int c1, int c2\);1??0?
+1??+2m 11q0?
+%f> extern struct placeholder \*ph;
 extern int phlen;
-extern const int conf_hlrev;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:539:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f> extern struct placeholder \\*ph;.*?
+extern const int conf_hlrev;3??0?
+3??+2m 1220reg p OK vi.h:539:a32sc %?%@2152sc1q0?
+grp 1%f> extern struct placeholder \*ph;.*?
 extern int phlen;.*?
-(extern const int conf_hlrev;)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:539:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	int l;		/\\* the length of the codepoint \\*/
+(extern const int conf_hlrev;)7??0?
+grp 07??m 1220reg p OK vi.h:539:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 	int l;		/\* the length of the codepoint \*/
 };
-extern struct placeholder _ph\\[];.*(/\\* vi\\.c: main \\*/)
-void vi\\(int init\\);
-extern int vi_hidch;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:539:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	int cp\\[2];	/\\* the source character codepoint \\*/
-	char d\\[8];	/\\* the placeholder \\*/
-	int wid;	/\\* the width of the placeholder \\*/.*(extern int vi_lncol;)
-/\\* filesystem \\*/
-extern rset \\*fsincl;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:539:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:539${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}${LB}
-${SEP}'1i extern char conf_curins[];
+extern struct placeholder _ph\[];.*(/\* vi\.c: main \*/)
+void vi\(int init\);
+extern int vi_hidch;8??0?
+grp 08??-5m 1220reg p OK vi.h:539:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	int cp\[2];	/\* the source character codepoint \*/
+	char d\[8];	/\* the placeholder \*/
+	int wid;	/\* the width of the placeholder \*/.*(extern int vi_lncol;)
+/\* filesystem \*/
+extern rset \*fsincl;9??0?
+grp 09??-8m 1220reg p OK vi.h:539:a92sc %?%@2152sc'\''00?
+1;3;7;8;9??!219reg vi.h:5392sc %?%@2132sc0?
+0?
+'\''1i extern char conf_curins[];
 extern char conf_curnorm[];
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:539:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}2q" > "$P2VIF"
+??!219reg vi.h:539:m12sc %?%@2142scvis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'led.c' 'vi.h' "$P2VIF"
 
 exit 0

@@ -15,116 +15,113 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     exit 1
 fi
 
-SEP="$(printf '\001')"
-ESC="$(printf '\002')"
-# Command that handles readability line breaks
-LB="0?"
-# Phase 1 (search/mark): errors disabled by default,
-# DBG1=1 enables error reporting, QF1=1 quits on failure
-# OK1: with DBG1=1 also report fallback anchor successes
-[ "$DBG1" = "1" ] && OK1= || OK1="0?"
-[ "$DBG1" = "1" ] && DBG1= || DBG1="0?"
-[ "$QF1" = "1" ] && QF1="${ESC}${SEP}vis 2${ESC}${SEP}q!1" || QF1=
-# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
-# OK2: with DBG2= also report fallback substitute successes
-[ "$DBG2" = "1" ] && OK2="0?" || OK2=
-[ "$DBG2" = "1" ] && DBG2="0?" || DBG2=
-[ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
-# Enters vi at failing code line in this script
-# Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+# Env switches:
+# Phase 1 (search/mark) reports nothing by default
+#   DBG1=1 reports failures and which fallback anchor
+#   resolved a group, QF1=1 also quits on failure
+# Phase 2 (edits) reports and quits by default
+#   DBG2=1 silences it, QF2=1 keeps going after an error
+# INTR=1 enters vi at the failing code line in this
+#   script, for state inspection mid execution
+
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: vi.c
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 	case 'w':
-	case 'W':
-		var = mv == 'W';
-		for \\(i = 0; i < cnt; i\\+\\+\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 	case 'w':
-	case 'W':
-		var = mv == 'W';${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:608:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case 'w':.*?
-	case 'W':.*?
-(		var = mv == 'W';)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:608:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			if \\(lbuf_wordend\\(xb, var, vi_nlmode\\+1, row, off\\)\\)
+printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr?%@212214reg ?%@217?%@211216reg ?%@220211reg vis 2q!1'\
+"${DBG1:+213reg ?%@217?%@210215reg ?%@220}\
+${DBG2:+ya!214ya!216}\
+${QF1:+210reg vis 2q!1}\
+${QF2:+ya!211}\
+${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
+'fr 98b0%ya 98?0?
+%f> 	case '\''w'\'':
+	case '\''W'\'':
+		var = mv == '\''W'\'';
+		for \(i = 0; i < cnt; i\+\+\)1??0?
+1??+2m 11q0?
+%f> 	case '\''w'\'':
+	case '\''W'\'':
+		var = mv == '\''W'\'';3??0?
+3??+2m 1220reg p OK vi.c:608:a32sc %?%@2152sc1q0?
+grp 1%f> 	case '\''w'\'':.*?
+	case '\''W'\'':.*?
+(		var = mv == '\''W'\'';)7??0?
+grp 07??m 1220reg p OK vi.c:608:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 			if \(lbuf_wordend\(xb, var, vi_nlmode\+1, row, off\)\)
 				break;
-		break;.*(		dir = mv == '\\(' \\? 1 : -1;)
-		if \\(!bre\\)
-			bre = rset_smake\\(\"\\^\\[\\.\\?!]\\+\\['\\\\\\\\]\\)]\\*\\(\\?:\\[ \\\\t]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:608:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case 'E':
-		var = mv == 'E';
-		for \\(i = 0; i < cnt; i\\+\\+\\).*(		int subs\\[2], org;)
-		for \\(i = 0; i < cnt; i\\+\\+\\) \\{
-			var = \\*row;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:608:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:608${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 		for \\(i = 0; i < cnt; i\\+\\+\\)
-			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\)
+		break;.*(		dir = mv == '\''\('\'' \? 1 : -1;)
+		if \(!bre\)
+			bre = rset_smake\("\^\[\.\?!]\+\['\''\\\\]\)]\*\(\?:\[ \\t]\+\\n\?\|\\n\)", 0\);8??0?
+grp 08??-7m 1220reg p OK vi.c:608:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	case '\''E'\'':
+		var = mv == '\''E'\'';
+		for \(i = 0; i < cnt; i\+\+\).*(		int subs\[2], org;)
+		for \(i = 0; i < cnt; i\+\+\) \{
+			var = \*row;9??0?
+grp 09??-10m 1220reg p OK vi.c:608:a92sc %?%@2152sc'\''00?
+1;3;7;8;9??!219reg vi.c:6082sc %?%@2132sc0?
+?0?
+%f+ 		for \(i = 0; i < cnt; i\+\+\)
+			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\)
 				break;
 		break;
-	case '\\(':${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+1m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\)
+	case '\''\('\'':1??0?
+1??+1m 21q0?
+%f+ 			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\)
 				break;
 		break;
-	case '\\(':${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:610:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		for \\(i = 0; i < cnt; i\\+\\+\\)\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:610:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\)\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:610:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 				break;
+	case '\''\('\'':2??0?
+2??m 2220reg p OK vi.c:610:a22sc %?%@2152sc1q0?
+;0fr.,$f+ ^		for \(i = 0; i < cnt; i\+\+\)$3??0?
+3??+1m 2220reg p OK vi.c:610:a32sc %?%@2152scfr 981qfr 980?
+;0fr.,$f+ ^			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\)$4??0?
+4??m 2220reg p OK vi.c:610:a42sc %?%@2152scfr 981qfr 980?
+%f+ 				break;
 		break;
-	case '\\(':${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:610:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	..or ............c..; i\\+..
-..	.. ..b...w..d.eg\\(x.....r. .........\\+...r... .f.\\).
+	case '\''\('\'':5??0?
+5??-1m 2220reg p OK vi.c:610:a52sc %?%@2152sc1q0?
+%f+ 	..or ............c..; i\+..
+..	.. ..b...w..d.eg\(x.....r. .........\+...r... .f.\).
 	..	b...k.
 ....e...
-.cas......${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+1m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:610:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		for \\(i = 0; i < cnt; i\\+\\+\\).*?
-(			if \\(lbuf_wordbeg\\(xb, var, vi_nlmode\\+1, row, off\\)\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:610:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			if \\(lbuf_wordend\\(xb, var, vi_nlmode\\+1, row, off\\)\\)
+.cas......6??0?
+6??+1m 2220reg p OK vi.c:610:a62sc %?%@2152sc1q0?
+grp 1%f+ 		for \(i = 0; i < cnt; i\+\+\).*?
+(			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\))7??0?
+grp 07??m 2220reg p OK vi.c:610:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 			if \(lbuf_wordend\(xb, var, vi_nlmode\+1, row, off\)\)
 				break;
-		break;.*(		dir = mv == '\\(' \\? 1 : -1;)
-		if \\(!bre\\)
-			bre = rset_smake\\(\"\\^\\[\\.\\?!]\\+\\['\\\\\\\\]\\)]\\*\\(\\?:\\[ \\\\t]\\+\\\\n\\?\\|\\\\n\\)\", 0\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:610:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	case 'E':
-		var = mv == 'E';
-		for \\(i = 0; i < cnt; i\\+\\+\\).*(		int subs\\[2], org;)
-		for \\(i = 0; i < cnt; i\\+\\+\\) \\{
-			var = \\*row;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:610:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:610${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}${LB}
-${SEP}'1i 		if (cmd >= 0 && cnt == 1)
+		break;.*(		dir = mv == '\''\('\'' \? 1 : -1;)
+		if \(!bre\)
+			bre = rset_smake\("\^\[\.\?!]\+\['\''\\\\]\)]\*\(\?:\[ \\t]\+\\n\?\|\\n\)", 0\);8??0?
+grp 08??-5m 2220reg p OK vi.c:610:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	case '\''E'\'':
+		var = mv == '\''E'\'';
+		for \(i = 0; i < cnt; i\+\+\).*(		int subs\[2], org;)
+		for \(i = 0; i < cnt; i\+\+\) \{
+			var = \*row;9??0?
+grp 09??-8m 2220reg p OK vi.c:610:a92sc %?%@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:6102sc %?%@2132sc0?
+0?
+'\''1i 		if (cmd >= 0 && cnt == 1)
 			dir = 2;
 		else
 			dir = vi_nlmode+1;
-		if (cmd == 'c') {
+		if (cmd == '\''c'\'') {
 			/* vim: cw/cW acts like ce/cE (no trailing whitespace) */
 			int prow = *row, poff = *off;
 			for (i = 0; i < cnt; i++)
 				if (lbuf_wordend(xb, var, dir, row, off))
 					break;
 			if (prow == *row)
-				return mv == 'w' ? 'e' : 'E';
+				return mv == '\''w'\'' ? '\''e'\'' : '\''E'\'';
 			*row = prow;
 			*off = poff;
 		}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:608:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2s/vi_nlmode\\+1/dir/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:610:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
+??!219reg vi.c:608:m12sc %?%@2142sc0?
+'\''2s/vi_nlmode\+1/dir/??!219reg vi.c:610:m22sc %?%@2142scvis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF"
 
 exit 0

@@ -15,83 +15,80 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     exit 1
 fi
 
-SEP="$(printf '\001')"
-ESC="$(printf '\002')"
-# Command that handles readability line breaks
-LB="0?"
-# Phase 1 (search/mark): errors disabled by default,
-# DBG1=1 enables error reporting, QF1=1 quits on failure
-# OK1: with DBG1=1 also report fallback anchor successes
-[ "$DBG1" = "1" ] && OK1= || OK1="0?"
-[ "$DBG1" = "1" ] && DBG1= || DBG1="0?"
-[ "$QF1" = "1" ] && QF1="${ESC}${SEP}vis 2${ESC}${SEP}q!1" || QF1=
-# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
-# OK2: with DBG2= also report fallback substitute successes
-[ "$DBG2" = "1" ] && OK2="0?" || OK2=
-[ "$DBG2" = "1" ] && DBG2="0?" || DBG2=
-[ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
-# Enters vi at failing code line in this script
-# Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+# Env switches:
+# Phase 1 (search/mark) reports nothing by default
+#   DBG1=1 reports failures and which fallback anchor
+#   resolved a group, QF1=1 also quits on failure
+# Phase 2 (edits) reports and quits by default
+#   DBG2=1 silences it, QF2=1 keeps going after an error
+# INTR=1 enters vi at the failing code line in this
+#   script, for state inspection mid execution
+
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: vi.c
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 
-	mv = term_read\\(0\\);
-	switch \\(mv\\) \\{
-	case ',':
-	case ';':
-		if \\(!vi_charlast\\[0]\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 
-	mv = term_read\\(0\\);
-	switch \\(mv\\) \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:527:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f> .*?
-	mv = term_read\\(0\\);.*?
-(	switch \\(mv\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:527:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	char \\*cs;
-	int cnt = vi_arg \\? vi_arg : 1;
-	int mv, i, dir, var;.*(		if \\(mv == ','\\))
-			mv = vi_charcmd == 'F' \\|\\| vi_charcmd == 'T'
-				\\? tolower\\(vi_charcmd\\) : toupper\\(vi_charcmd\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:527:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	static rset \\*bre;
-	static int srow\\[5], soff\\[5], lkwdcnt;
+printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr?%@212214reg ?%@217?%@211216reg ?%@220211reg vis 2q!1'\
+"${DBG1:+213reg ?%@217?%@210215reg ?%@220}\
+${DBG2:+ya!214ya!216}\
+${QF1:+210reg vis 2q!1}\
+${QF2:+ya!211}\
+${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
+'fr 98b0%ya 98?0?
+%f> 
+	mv = term_read\(0\);
+	switch \(mv\) \{
+	case '\'','\'':
+	case '\'';'\'':
+		if \(!vi_charlast\[0]\)1??0?
+1??+2m 11q0?
+%f> 
+	mv = term_read\(0\);
+	switch \(mv\) \{3??0?
+3??+2m 1220reg p OK vi.c:527:a32sc %?%@2152sc1q0?
+grp 1%f> .*?
+	mv = term_read\(0\);.*?
+(	switch \(mv\) \{)7??0?
+grp 07??m 1220reg p OK vi.c:527:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 	char \*cs;
+	int cnt = vi_arg \? vi_arg : 1;
+	int mv, i, dir, var;.*(		if \(mv == '\'','\''\))
+			mv = vi_charcmd == '\''F'\'' \|\| vi_charcmd == '\''T'\''
+				\? tolower\(vi_charcmd\) : toupper\(vi_charcmd\);8??0?
+grp 08??-5m 1220reg p OK vi.c:527:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	static rset \*bre;
+	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;.*(			mv = vi_charcmd;)
-		if \\(lbuf_findchar\\(xb, vi_charlast, mv, cnt, row, off\\)\\)
-			return -1;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.c:527:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:527${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}${LB}
-${SEP}'1i 	case '\\033':	/* Arrow keys */
+		if \(lbuf_findchar\(xb, vi_charlast, mv, cnt, row, off\)\)
+			return -1;9??0?
+grp 09??-9m 1220reg p OK vi.c:527:a92sc %?%@2152sc'\''00?
+1;3;7;8;9??!219reg vi.c:5272sc %?%@2132sc0?
+0?
+'\''1i 	case '\''\033'\'':	/* Arrow keys */
 		mv = term_read(0);
-		if (mv == '[') {
+		if (mv == '\''['\'') {
 			mv = term_read(0);
 			switch (mv) {
-			case 'A':	/* ↑ */
+			case '\''A'\'':	/* ↑ */
 				*row = MAX(*row - cnt, 0);
-				mv = 'k';
+				mv = '\''k'\'';
 				break;
-			case 'B':	/* ↓ */
+			case '\''B'\'':	/* ↓ */
 				*row = MIN(*row + cnt, lbuf_len(xb) - 1);
-				mv = 'j';
+				mv = '\''j'\'';
 				break;
-			case 'D':	/* ← */
-			case 'C':	/* → */
+			case '\''D'\'':	/* ← */
+			case '\''C'\'':	/* → */
 				if (!(cs = lbuf_get(xb, *row)))
 					return -1;
 				dir = dir_context(lbuf_get(xb, *row));
-				if (mv == 'D')
+				if (mv == '\''D'\'')
 					dir = -dir;
 				for (i = 0; i < cnt; i++)
 					if (vi_nextcol(cs, dir, off))
 						break;
-				mv = mv == 'D' ? 'h' : 'l';
+				mv = mv == '\''D'\'' ? '\''h'\'' : '\''l'\'';
 				break;
 			default:
 				return 0;
@@ -99,7 +96,7 @@ ${SEP}'1i 	case '\\033':	/* Arrow keys */
 		} else	/* Not a 033[X command so we abort */
 			return 0;
 		break;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.c:527:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
+??!219reg vi.c:527:m12sc %?%@2142scvis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF"
 
 exit 0

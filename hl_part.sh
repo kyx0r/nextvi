@@ -15,384 +15,381 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     exit 1
 fi
 
-SEP="$(printf '\001')"
-ESC="$(printf '\002')"
-# Command that handles readability line breaks
-LB="0?"
-# Phase 1 (search/mark): errors disabled by default,
-# DBG1=1 enables error reporting, QF1=1 quits on failure
-# OK1: with DBG1=1 also report fallback anchor successes
-[ "$DBG1" = "1" ] && OK1= || OK1="0?"
-[ "$DBG1" = "1" ] && DBG1= || DBG1="0?"
-[ "$QF1" = "1" ] && QF1="${ESC}${SEP}vis 2${ESC}${SEP}q!1" || QF1=
-# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
-# OK2: with DBG2= also report fallback substitute successes
-[ "$DBG2" = "1" ] && OK2="0?" || OK2=
-[ "$DBG2" = "1" ] && DBG2="0?" || DBG2=
-[ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
-# Enters vi at failing code line in this script
-# Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+# Env switches:
+# Phase 1 (search/mark) reports nothing by default
+#   DBG1=1 reports failures and which fallback anchor
+#   resolved a group, QF1=1 also quits on failure
+# Phase 2 (edits) reports and quits by default
+#   DBG2=1 silences it, QF2=1 keeps going after an error
+# INTR=1 enters vi at the failing code line in this
+#   script, for state inspection mid execution
+
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: led.c
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> static sbuf \\*suggestsb;
-static sbuf \\*acsb;
-sbuf \\*led_attsb;
+printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr?%@212214reg ?%@217?%@211216reg ?%@220211reg vis 2q!1'\
+"${DBG1:+213reg ?%@217?%@210215reg ?%@220}\
+${DBG2:+ya!214ya!216}\
+${QF1:+210reg vis 2q!1}\
+${QF2:+ya!211}\
+${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
+'fr 98b0%ya 98?0?
+%f> static sbuf \*suggestsb;
+static sbuf \*acsb;
+sbuf \*led_attsb;
 
-${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^static sbuf \\*suggestsb;\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:1:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${SEP}fr 98${SEP}${LB}
-${SEP}1;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:1${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	if \\(!xled\\)
+1??0?
+1??m 11q0?
+;0fr.,$f> ^static sbuf \*suggestsb;$3??0?
+3??m 1220reg p OK led.c:1:a32sc %?%@2152scfr 98fr 980?
+1;3??!219reg led.c:12sc %?%@2132sc0?
+?0?
+%f+ 	if \(!xled\)
 		return;
-	ren_state \\*r = ren_position\\(s0\\);
+	ren_state \*r = ren_position\(s0\);
 	int j, c, l, i, o, n = r->n;
 	int att_old = 0, atti = 0, cterm = cend - cbeg;
-	char \\*bound = NULL;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	if \\(!xled\\)
+	char \*bound = NULL;1??0?
+1??+2m 21q0?
+%f+ 	if \(!xled\)
 		return;
-	ren_state \\*r = ren_position\\(s0\\);${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:146:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	if \\(!xled\\).*?
+	ren_state \*r = ren_position\(s0\);3??0?
+3??+2m 2220reg p OK led.c:146:a32sc %?%@2152sc1q0?
+grp 1%f+ 	if \(!xled\).*?
 		return;.*?
-(	ren_state \\*r = ren_position\\(s0\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:146:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> /\\* render and highlight a line \\*/
-void led_render\\(char \\*s0, int cbeg, int cend\\)
-\\{.*(		o = cbeg;)
-		for \\(c = cterm-1; c >= 0; c--, o\\+\\+\\)
-			off\\[c] = o <= r->cmax \\? r->col\\[o] : -1;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-12m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:146:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	} \\\\
-	att_old = att_new; \\\\
-} } \\\\.*(		for \\(c = cbeg; c < cend; c\\+\\+\\))
-			off\\[c - cbeg] = c <= r->cmax \\? r->col\\[c] : -1;
-	}${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-16m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:146:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:146${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	char \\*bound = NULL;
-	char \\*\\*chrs = r->chrs;	/\\* chrs\\[i]: the i-th character in s0 \\*/
-	int off\\[cterm\\+1];	/\\* off\\[i]: the character at screen position i \\*/
-	int att\\[cterm\\+1];	/\\* att\\[i]: the attributes of i-th character \\*/
-	int stt\\[cterm\\+1];	/\\* stt\\[i]: remap off indexes \\*/
-	int ctt\\[cterm\\+1];	/\\* ctt\\[i]: cterm bound attrs \\*/
+(	ren_state \*r = ren_position\(s0\);)7??0?
+grp 07??m 2220reg p OK led.c:146:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> /\* render and highlight a line \*/
+void led_render\(char \*s0, int cbeg, int cend\)
+\{.*(		o = cbeg;)
+		for \(c = cterm-1; c >= 0; c--, o\+\+\)
+			off\[c] = o <= r->cmax \? r->col\[o] : -1;8??0?
+grp 08??-12m 2220reg p OK led.c:146:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	} \\
+	att_old = att_new; \\
+} } \\.*(		for \(c = cbeg; c < cend; c\+\+\))
+			off\[c - cbeg] = c <= r->cmax \? r->col\[c] : -1;
+	}9??0?
+grp 09??-16m 2220reg p OK led.c:146:a92sc %?%@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:1462sc %?%@2132sc0?
+?0?
+%f+ 	char \*bound = NULL;
+	char \*\*chrs = r->chrs;	/\* chrs\[i]: the i-th character in s0 \*/
+	int off\[cterm\+1];	/\* off\[i]: the character at screen position i \*/
+	int att\[cterm\+1];	/\* att\[i]: the attributes of i-th character \*/
+	int stt\[cterm\+1];	/\* stt\[i]: remap off indexes \*/
+	int ctt\[cterm\+1];	/\* ctt\[i]: cterm bound attrs \*/
 	int ctx = r->ctx;
-	off\\[cterm] = -1;
-	if \\(ctx < 0\\) \\{${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	int att\\[cterm\\+1];	/\\* att\\[i]: the attributes of i-th character \\*/
-	int stt\\[cterm\\+1];	/\\* stt\\[i]: remap off indexes \\*/
-	int ctt\\[cterm\\+1];	/\\* ctt\\[i]: cterm bound attrs \\*/
+	off\[cterm] = -1;
+	if \(ctx < 0\) \{1??0?
+1??+3m 31q0?
+%f+ 	int att\[cterm\+1];	/\* att\[i]: the attributes of i-th character \*/
+	int stt\[cterm\+1];	/\* stt\[i]: remap off indexes \*/
+	int ctt\[cterm\+1];	/\* ctt\[i]: cterm bound attrs \*/
 	int ctx = r->ctx;
-	off\\[cterm] = -1;
-	if \\(ctx < 0\\) \\{${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:152:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	char \\*bound = NULL;
-	char \\*\\*chrs = r->chrs;	/\\* chrs\\[i]: the i-th character in s0 \\*/
-	int off\\[cterm\\+1];	/\\* off\\[i]: the character at screen position i \\*/${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:152:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	int att\\[cterm\\+1];	/\\* att\\[i]: the attributes of i-th character \\*/
-	int stt\\[cterm\\+1];	/\\* stt\\[i]: remap off indexes \\*/
-	int ctt\\[cterm\\+1];	/\\* ctt\\[i]: cterm bound attrs \\*/${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:152:a4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	int ctx = r->ctx;
-	off\\[cterm] = -1;
-	if \\(ctx < 0\\) \\{${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:152:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ ...ar..b............
+	off\[cterm] = -1;
+	if \(ctx < 0\) \{2??0?
+2??m 3220reg p OK led.c:152:a22sc %?%@2152sc1q0?
+%f+ 	char \*bound = NULL;
+	char \*\*chrs = r->chrs;	/\* chrs\[i]: the i-th character in s0 \*/
+	int off\[cterm\+1];	/\* off\[i]: the character at screen position i \*/3??0?
+3??+3m 3220reg p OK led.c:152:a32sc %?%@2152sc1q0?
+%f+ 	int att\[cterm\+1];	/\* att\[i]: the attributes of i-th character \*/
+	int stt\[cterm\+1];	/\* stt\[i]: remap off indexes \*/
+	int ctt\[cterm\+1];	/\* ctt\[i]: cterm bound attrs \*/4??0?
+4??m 3220reg p OK led.c:152:a42sc %?%@2152sc1q0?
+%f+ 	int ctx = r->ctx;
+	off\[cterm] = -1;
+	if \(ctx < 0\) \{5??0?
+5??-3m 3220reg p OK led.c:152:a52sc %?%@2152sc1q0?
+%f+ ...ar..b............
 	.ha. .....s.=....c.rs......h.s........ .....ch.ra...r.........
-	i.t o...c......].	.....f.i.....e.....a.ter....s.r..n......i.. i \\*.
-..........t...\\+1.;.....tt..]..... a...i..........-....h..a.......
-	.nt....\\[c....\\+.......s.......r.ma...f....d...s...
-..n. ct..c...m.1..	/\\*..tt\\[.]. ...r........a.tr....
+	i.t o...c......].	.....f.i.....e.....a.ter....s.r..n......i.. i \*.
+..........t...\+1.;.....tt..]..... a...i..........-....h..a.......
+	.nt....\[c....\+.......s.......r.ma...f....d...s...
+..n. ct..c...m.1..	/\*..tt\[.]. ...r........a.tr....
 	.n......=........
 .of..cte... =..1.
-	....c.x.<... \\{${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:152:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	char \\*bound = NULL;.*?
-	char \\*\\*chrs = r->chrs;	/\\* chrs\\[i]: the i-th character in s0 \\*/.*?
-	int off\\[cterm\\+1];	/\\* off\\[i]: the character at screen position i \\*/.*?
-(	int att\\[cterm\\+1];	/\\* att\\[i]: the attributes of i-th character \\*/)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:152:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> /\\* render and highlight a line \\*/
-void led_render\\(char \\*s0, int cbeg, int cend\\)
-\\{.*(		o = cbeg;)
-		for \\(c = cterm-1; c >= 0; c--, o\\+\\+\\)
-			off\\[c] = o <= r->cmax \\? r->col\\[o] : -1;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:152:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	} \\\\
-	att_old = att_new; \\\\
-} } \\\\.*(		for \\(c = cbeg; c < cend; c\\+\\+\\))
-			off\\[c - cbeg] = c <= r->cmax \\? r->col\\[c] : -1;
-	}${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:152:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:152${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 			off\\[c - cbeg] = c <= r->cmax \\? r->col\\[c] : -1;
+	....c.x.<... \{6??0?
+6??+3m 3220reg p OK led.c:152:a62sc %?%@2152sc1q0?
+grp 1%f+ 	char \*bound = NULL;.*?
+	char \*\*chrs = r->chrs;	/\* chrs\[i]: the i-th character in s0 \*/.*?
+	int off\[cterm\+1];	/\* off\[i]: the character at screen position i \*/.*?
+(	int att\[cterm\+1];	/\* att\[i]: the attributes of i-th character \*/)7??0?
+grp 07??m 3220reg p OK led.c:152:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> /\* render and highlight a line \*/
+void led_render\(char \*s0, int cbeg, int cend\)
+\{.*(		o = cbeg;)
+		for \(c = cterm-1; c >= 0; c--, o\+\+\)
+			off\[c] = o <= r->cmax \? r->col\[o] : -1;8??0?
+grp 08??-6m 3220reg p OK led.c:152:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	} \\
+	att_old = att_new; \\
+} } \\.*(		for \(c = cbeg; c < cend; c\+\+\))
+			off\[c - cbeg] = c <= r->cmax \? r->col\[c] : -1;
+	}9??0?
+grp 09??-10m 3220reg p OK led.c:152:a92sc %?%@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:1522sc %?%@2132sc0?
+?0?
+%f+ 			off\[c - cbeg] = c <= r->cmax \? r->col\[c] : -1;
 	}
-	if \\(r->cmax > cterm \\|\\| cbeg\\) \\{
-		i = ctx < 0 \\? cterm-1 : 0;
-		o = off\\[i];
-		if \\(o >= 0 && cbeg && r->pos\\[o] < cbeg\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 			off\\[c - cbeg] = c <= r->cmax \\? r->col\\[c] : -1;
+	if \(r->cmax > cterm \|\| cbeg\) \{
+		i = ctx < 0 \? cterm-1 : 0;
+		o = off\[i];
+		if \(o >= 0 && cbeg && r->pos\[o] < cbeg\)1??0?
+1??+2m 41q0?
+%f+ 			off\[c - cbeg] = c <= r->cmax \? r->col\[c] : -1;
 	}
-	if \\(r->cmax > cterm \\|\\| cbeg\\) \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:165:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 			off\\[c - cbeg] = c <= r->cmax \\? r->col\\[c] : -1;.*?
+	if \(r->cmax > cterm \|\| cbeg\) \{3??0?
+3??+2m 4220reg p OK led.c:165:a32sc %?%@2152sc1q0?
+grp 1%f+ 			off\[c - cbeg] = c <= r->cmax \? r->col\[c] : -1;.*?
 	}.*?
-(	if \\(r->cmax > cterm \\|\\| cbeg\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:165:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			off\\[c] = o <= r->cmax \\? r->col\\[o] : -1;
-	} else \\{
-		for \\(c = cbeg; c < cend; c\\+\\+\\).*(				off\\[ctx < 0 \\? i-- : i\\+\\+] = -1;)
-		i = ctx < 0 \\? 0 : cterm-1;
-		o = off\\[i];${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:165:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	if \\(ctx < 0\\) \\{
+(	if \(r->cmax > cterm \|\| cbeg\) \{)7??0?
+grp 07??m 4220reg p OK led.c:165:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 			off\[c] = o <= r->cmax \? r->col\[o] : -1;
+	} else \{
+		for \(c = cbeg; c < cend; c\+\+\).*(				off\[ctx < 0 \? i-- : i\+\+] = -1;)
+		i = ctx < 0 \? 0 : cterm-1;
+		o = off\[i];8??0?
+grp 08??-5m 4220reg p OK led.c:165:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	if \(ctx < 0\) \{
 		o = cbeg;
-		for \\(c = cterm-1; c >= 0; c--, o\\+\\+\\).*(		if \\(o >= 0 && r->cmax > cterm && r->pos\\[o] \\+ r->wid\\[o] > cend\\))
-			while \\(off\\[i] == o\\)
-				off\\[ctx < 0 \\? i\\+\\+ : i--] = -1;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:165:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:165${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 		if \\(o >= 0 && r->cmax > cterm && r->pos\\[o] \\+ r->wid\\[o] > cend\\)
-			while \\(off\\[i] == o\\)
-				off\\[ctx < 0 \\? i\\+\\+ : i--] = -1;
-		for \\(i = 0, c = 0; i < cterm;\\) \\{
-			if \\(\\(o = off\\[i\\+\\+]\\) >= 0\\) \\{
-				att\\[c\\+\\+] = o;
-				for \\(; off\\[i] == o; i\\+\\+\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 		for \\(i = 0, c = 0; i < cterm;\\) \\{
-			if \\(\\(o = off\\[i\\+\\+]\\) >= 0\\) \\{
-				att\\[c\\+\\+] = o;
-				for \\(; off\\[i] == o; i\\+\\+\\);${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:176:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 		if \\(o >= 0 && r->cmax > cterm && r->pos\\[o] \\+ r->wid\\[o] > cend\\)
-			while \\(off\\[i] == o\\)
-				off\\[ctx < 0 \\? i\\+\\+ : i--] = -1;${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:176:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		for \\(i = 0, c = 0; i < cterm;\\) \\{\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:176:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 			if \\(\\(o = off\\[i\\+\\+]\\) >= 0\\) \\{
-				att\\[c\\+\\+] = o;
-				for \\(; off\\[i] == o; i\\+\\+\\);${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:176:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ .... \\(...=....&....c..x.. ..... &. r.>...\\[.. ..r...id........n.\\)
-..........o..\\[.. ....\\)
+		for \(c = cterm-1; c >= 0; c--, o\+\+\).*(		if \(o >= 0 && r->cmax > cterm && r->pos\[o] \+ r->wid\[o] > cend\))
+			while \(off\[i] == o\)
+				off\[ctx < 0 \? i\+\+ : i--] = -1;9??0?
+grp 09??-8m 4220reg p OK led.c:165:a92sc %?%@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:1652sc %?%@2132sc0?
+?0?
+%f+ 		if \(o >= 0 && r->cmax > cterm && r->pos\[o] \+ r->wid\[o] > cend\)
+			while \(off\[i] == o\)
+				off\[ctx < 0 \? i\+\+ : i--] = -1;
+		for \(i = 0, c = 0; i < cterm;\) \{
+			if \(\(o = off\[i\+\+]\) >= 0\) \{
+				att\[c\+\+] = o;
+				for \(; off\[i] == o; i\+\+\);1??0?
+1??+3m 51q0?
+%f+ 		for \(i = 0, c = 0; i < cterm;\) \{
+			if \(\(o = off\[i\+\+]\) >= 0\) \{
+				att\[c\+\+] = o;
+				for \(; off\[i] == o; i\+\+\);2??0?
+2??m 5220reg p OK led.c:176:a22sc %?%@2152sc1q0?
+%f+ 		if \(o >= 0 && r->cmax > cterm && r->pos\[o] \+ r->wid\[o] > cend\)
+			while \(off\[i] == o\)
+				off\[ctx < 0 \? i\+\+ : i--] = -1;3??0?
+3??+3m 5220reg p OK led.c:176:a32sc %?%@2152sc1q0?
+;0fr.,$f+ ^		for \(i = 0, c = 0; i < cterm;\) \{$4??0?
+4??m 5220reg p OK led.c:176:a42sc %?%@2152scfr 981qfr 980?
+%f+ 			if \(\(o = off\[i\+\+]\) >= 0\) \{
+				att\[c\+\+] = o;
+				for \(; off\[i] == o; i\+\+\);5??0?
+5??-1m 5220reg p OK led.c:176:a52sc %?%@2152sc1q0?
+%f+ .... \(...=....&....c..x.. ..... &. r.>...\[.. ..r...id........n.\)
+..........o..\[.. ....\)
 	.......c.. ..... ....: i........;
 ..f..... ..., ...... i.. ....m.. .
-...i...\\(. . .ff..............
-	........\\+\\+. ..o.
-...	........f.\\[i...=.o.....\\).${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:176:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		if \\(o >= 0 && r->cmax > cterm && r->pos\\[o] \\+ r->wid\\[o] > cend\\).*?
-			while \\(off\\[i] == o\\).*?
-				off\\[ctx < 0 \\? i\\+\\+ : i--] = -1;.*?
-(		for \\(i = 0, c = 0; i < cterm;\\) \\{)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:176:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				off\\[ctx < 0 \\? i-- : i\\+\\+] = -1;
-		i = ctx < 0 \\? 0 : cterm-1;
-		o = off\\[i];.*(			while \\(j >= 0 && att\\[j] > key0\\) \\{)
-				att\\[j \\+ 1] = att\\[j];
-				stt\\[j \\+ 1] = stt\\[j];${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-10m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:176:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		o = off\\[i];
-		if \\(o >= 0 && cbeg && r->pos\\[o] < cbeg\\)
-			while \\(off\\[i] == o\\).*(				j = j - 1;)
+...i...\(. . .ff..............
+	........\+\+. ..o.
+...	........f.\[i...=.o.....\).6??0?
+6??+3m 5220reg p OK led.c:176:a62sc %?%@2152sc1q0?
+grp 1%f+ 		if \(o >= 0 && r->cmax > cterm && r->pos\[o] \+ r->wid\[o] > cend\).*?
+			while \(off\[i] == o\).*?
+				off\[ctx < 0 \? i\+\+ : i--] = -1;.*?
+(		for \(i = 0, c = 0; i < cterm;\) \{)7??0?
+grp 07??m 5220reg p OK led.c:176:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 				off\[ctx < 0 \? i-- : i\+\+] = -1;
+		i = ctx < 0 \? 0 : cterm-1;
+		o = off\[i];.*(			while \(j >= 0 && att\[j] > key0\) \{)
+				att\[j \+ 1] = att\[j];
+				stt\[j \+ 1] = stt\[j];8??0?
+grp 08??-10m 5220reg p OK led.c:176:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 		o = off\[i];
+		if \(o >= 0 && cbeg && r->pos\[o] < cbeg\)
+			while \(off\[i] == o\).*(				j = j - 1;)
 			}
-			att\\[j \\+ 1] = key0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-13m 5${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:176:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:176${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 				for \\(; off\\[i] == o; i\\+\\+\\);
+			att\[j \+ 1] = key0;9??0?
+grp 09??-13m 5220reg p OK led.c:176:a92sc %?%@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:1762sc %?%@2132sc0?
+?0?
+%f+ 				for \(; off\[i] == o; i\+\+\);
 			}
 		}
-		stt\\[0] = 0;
-		for \\(i = 1; i < c; i\\+\\+\\) \\{
-			int key0 = att\\[i];${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 				for \\(; off\\[i] == o; i\\+\\+\\);
+		stt\[0] = 0;
+		for \(i = 1; i < c; i\+\+\) \{
+			int key0 = att\[i];1??0?
+1??+2m 61q0?
+%f+ 				for \(; off\[i] == o; i\+\+\);
 			}
-		}${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:181:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 				for \\(; off\\[i] == o; i\\+\\+\\);.*?
+		}3??0?
+3??+2m 6220reg p OK led.c:181:a32sc %?%@2152sc1q0?
+grp 1%f+ 				for \(; off\[i] == o; i\+\+\);.*?
 			}.*?
-(		})${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:181:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 				off\\[ctx < 0 \\? i-- : i\\+\\+] = -1;
-		i = ctx < 0 \\? 0 : cterm-1;
-		o = off\\[i];.*(			while \\(j >= 0 && att\\[j] > key0\\) \\{)
-				att\\[j \\+ 1] = att\\[j];
-				stt\\[j \\+ 1] = stt\\[j];${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:181:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		o = off\\[i];
-		if \\(o >= 0 && cbeg && r->pos\\[o] < cbeg\\)
-			while \\(off\\[i] == o\\).*(				j = j - 1;)
+(		})7??0?
+grp 07??m 6220reg p OK led.c:181:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 				off\[ctx < 0 \? i-- : i\+\+] = -1;
+		i = ctx < 0 \? 0 : cterm-1;
+		o = off\[i];.*(			while \(j >= 0 && att\[j] > key0\) \{)
+				att\[j \+ 1] = att\[j];
+				stt\[j \+ 1] = stt\[j];8??0?
+grp 08??-5m 6220reg p OK led.c:181:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 		o = off\[i];
+		if \(o >= 0 && cbeg && r->pos\[o] < cbeg\)
+			while \(off\[i] == o\).*(				j = j - 1;)
 			}
-			att\\[j \\+ 1] = key0;${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 6${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:181:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:181${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 		sbufn_null\\(bsb\\)
+			att\[j \+ 1] = key0;9??0?
+grp 09??-8m 6220reg p OK led.c:181:a92sc %?%@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:1812sc %?%@2132sc0?
+?0?
+%f+ 		sbufn_null\(bsb\)
 		bound = bsb->s;
 	}
-	memset\\(att, 0, MIN\\(n, cterm\\+1\\) \\* sizeof\\(att\\[0]\\)\\);
-	if \\(xhl\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	memset\\(att, 0, MIN\\(n, cterm\\+1\\) \\* sizeof\\(att\\[0]\\)\\);
-	if \\(xhl\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:203:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 		sbufn_null\\(bsb\\)
+	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);
+	if \(xhl\)1??0?
+1??+3m 71q0?
+%f+ 	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);
+	if \(xhl\)2??0?
+2??m 7220reg p OK led.c:203:a22sc %?%@2152sc1q0?
+%f+ 		sbufn_null\(bsb\)
 		bound = bsb->s;
-	}${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:203:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	memset\\(att, 0, MIN\\(n, cterm\\+1\\) \\* sizeof\\(att\\[0]\\)\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:203:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	if \\(xhl\\)\$${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:203:a5${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	.....n_....\\(.s.\\)
+	}3??0?
+3??+3m 7220reg p OK led.c:203:a32sc %?%@2152sc1q0?
+;0fr.,$f+ ^	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);$4??0?
+4??m 7220reg p OK led.c:203:a42sc %?%@2152scfr 981qfr 980?
+;0fr.,$f+ ^	if \(xhl\)$5??0?
+5??-1m 7220reg p OK led.c:203:a52sc %?%@2152scfr 981qfr 980?
+%f+ 	.....n_....\(.s.\)
 ........=..s.->.;
 	.
-.me............ ............... ........\\(...\\[..\\)\\);
-........\\)${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:203:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 		sbufn_null\\(bsb\\).*?
+.me............ ............... ........\(...\[..\)\);
+........\)6??0?
+6??+3m 7220reg p OK led.c:203:a62sc %?%@2152sc1q0?
+grp 1%f+ 		sbufn_null\(bsb\).*?
 		bound = bsb->s;.*?
 	}.*?
-(	memset\\(att, 0, MIN\\(n, cterm\\+1\\) \\* sizeof\\(att\\[0]\\)\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:203:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			stt\\[i] = att\\[i];
-			sbuf_mem\\(bsb, chrs\\[att\\[i]], uc_len\\(chrs\\[att\\[i]]\\)\\)
-		}.*(		for \\(; \\(char\\*\\)p < &led_attsb->s\\[led_attsb->s_n]; p\\+\\+\\) \\{)
-			if \\(p->s != s0 && p->s\\)
-				continue;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-6m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:203:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		sbuf_smake\\(bsb, cterm\\*4\\);
-		for \\(i = 0; i < c; i\\+\\+\\) \\{
-			ctt\\[stt\\[i]] = i;.*(			if \\(!bound\\))
-				att\\[p->off] = syn_merge\\(att\\[p->off], p->att\\);
-			else if \\(c && stt\\[0] <= p->off && stt\\[c-1] >= p->off\\) \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-9m 7${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:203:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:203${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	if \\(xhl\\)
-		syn_highlight\\(att, bound \\? bound : s0, MIN\\(n, cterm\\)\\);
-	free\\(bound\\);
-	if \\(led_attsb && xhl\\) \\{
-		led_att \\*p = \\(led_att\\*\\)led_attsb->s;${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+1m 8${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 		syn_highlight\\(att, bound \\? bound : s0, MIN\\(n, cterm\\)\\);
-	free\\(bound\\);
-	if \\(led_attsb && xhl\\) \\{
-		led_att \\*p = \\(led_att\\*\\)led_attsb->s;${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	if \\(xhl\\)\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+1m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^		syn_highlight\\(att, bound \\? bound : s0, MIN\\(n, cterm\\)\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	free\\(bound\\);
-	if \\(led_attsb && xhl\\) \\{
-		led_att \\*p = \\(led_att\\*\\)led_attsb->s;${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ .if \\(...\\)
-	.s.........g...........n. ....un..........N........m.\\).
-..r.e\\(..u.d.;
-....\\(...................
-..l.._.......=...e...t.....d.a..s.-...${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+1m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	if \\(xhl\\).*?
-(		syn_highlight\\(att, bound \\? bound : s0, MIN\\(n, cterm\\)\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			stt\\[i] = att\\[i];
-			sbuf_mem\\(bsb, chrs\\[att\\[i]], uc_len\\(chrs\\[att\\[i]]\\)\\)
-		}.*(		for \\(; \\(char\\*\\)p < &led_attsb->s\\[led_attsb->s_n]; p\\+\\+\\) \\{)
-			if \\(p->s != s0 && p->s\\)
-				continue;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		sbuf_smake\\(bsb, cterm\\*4\\);
-		for \\(i = 0; i < c; i\\+\\+\\) \\{
-			ctt\\[stt\\[i]] = i;.*(			if \\(!bound\\))
-				att\\[p->off] = syn_merge\\(att\\[p->off], p->att\\);
-			else if \\(c && stt\\[0] <= p->off && stt\\[c-1] >= p->off\\) \\{${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 8${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:205:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:205${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 			if \\(!bound\\)
-				att\\[p->off] = syn_merge\\(att\\[p->off], p->att\\);
-			else if \\(c && stt\\[0] <= p->off && stt\\[c-1] >= p->off\\) \\{
-				i = p->off - stt\\[0];
-				if \\(i < c && stt\\[i] == p->off\\) \\{
-					att\\[i] = syn_merge\\(att\\[i], p->att\\);
-					continue; /\\* text not reordered \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 9${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 				i = p->off - stt\\[0];
-				if \\(i < c && stt\\[i] == p->off\\) \\{
-					att\\[i] = syn_merge\\(att\\[i], p->att\\);
-					continue; /\\* text not reordered \\*/${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:215:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 			if \\(!bound\\)
-				att\\[p->off] = syn_merge\\(att\\[p->off], p->att\\);
-			else if \\(c && stt\\[0] <= p->off && stt\\[c-1] >= p->off\\) \\{${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:215:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^				i = p->off - stt\\[0];\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:215:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 				if \\(i < c && stt\\[i] == p->off\\) \\{
-					att\\[i] = syn_merge\\(att\\[i], p->att\\);
-					continue; /\\* text not reordered \\*/${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:215:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ ....f.\\(!......
-...	.......o........n.........t\\[...off.........\\).
-.		...e....\\(.....s......<..p.>..f ...s...c.1. ...p....f...
+(	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);)7??0?
+grp 07??m 7220reg p OK led.c:203:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 			stt\[i] = att\[i];
+			sbuf_mem\(bsb, chrs\[att\[i]], uc_len\(chrs\[att\[i]]\)\)
+		}.*(		for \(; \(char\*\)p < &led_attsb->s\[led_attsb->s_n]; p\+\+\) \{)
+			if \(p->s != s0 && p->s\)
+				continue;8??0?
+grp 08??-6m 7220reg p OK led.c:203:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 		sbuf_smake\(bsb, cterm\*4\);
+		for \(i = 0; i < c; i\+\+\) \{
+			ctt\[stt\[i]] = i;.*(			if \(!bound\))
+				att\[p->off] = syn_merge\(att\[p->off], p->att\);
+			else if \(c && stt\[0] <= p->off && stt\[c-1] >= p->off\) \{9??0?
+grp 09??-9m 7220reg p OK led.c:203:a92sc %?%@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:2032sc %?%@2132sc0?
+?0?
+%f+ 	if \(xhl\)
+		syn_highlight\(att, bound \? bound : s0, MIN\(n, cterm\)\);
+	free\(bound\);
+	if \(led_attsb && xhl\) \{
+		led_att \*p = \(led_att\*\)led_attsb->s;1??0?
+1??+1m 81q0?
+%f+ 		syn_highlight\(att, bound \? bound : s0, MIN\(n, cterm\)\);
+	free\(bound\);
+	if \(led_attsb && xhl\) \{
+		led_att \*p = \(led_att\*\)led_attsb->s;2??0?
+2??m 8220reg p OK led.c:205:a22sc %?%@2152sc1q0?
+;0fr.,$f+ ^	if \(xhl\)$3??0?
+3??+1m 8220reg p OK led.c:205:a32sc %?%@2152scfr 981qfr 980?
+;0fr.,$f+ ^		syn_highlight\(att, bound \? bound : s0, MIN\(n, cterm\)\);$4??0?
+4??m 8220reg p OK led.c:205:a42sc %?%@2152scfr 981qfr 980?
+%f+ 	free\(bound\);
+	if \(led_attsb && xhl\) \{
+		led_att \*p = \(led_att\*\)led_attsb->s;5??0?
+5??-1m 8220reg p OK led.c:205:a52sc %?%@2152sc1q0?
+%f+ .if \(...\)
+	.s.........g...........n. ....un..........N........m.\).
+..r.e\(..u.d.;
+....\(...................
+..l.._.......=...e...t.....d.a..s.-...6??0?
+6??+1m 8220reg p OK led.c:205:a62sc %?%@2152sc1q0?
+grp 1%f+ 	if \(xhl\).*?
+(		syn_highlight\(att, bound \? bound : s0, MIN\(n, cterm\)\);)7??0?
+grp 07??m 8220reg p OK led.c:205:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 			stt\[i] = att\[i];
+			sbuf_mem\(bsb, chrs\[att\[i]], uc_len\(chrs\[att\[i]]\)\)
+		}.*(		for \(; \(char\*\)p < &led_attsb->s\[led_attsb->s_n]; p\+\+\) \{)
+			if \(p->s != s0 && p->s\)
+				continue;8??0?
+grp 08??-4m 8220reg p OK led.c:205:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 		sbuf_smake\(bsb, cterm\*4\);
+		for \(i = 0; i < c; i\+\+\) \{
+			ctt\[stt\[i]] = i;.*(			if \(!bound\))
+				att\[p->off] = syn_merge\(att\[p->off], p->att\);
+			else if \(c && stt\[0] <= p->off && stt\[c-1] >= p->off\) \{9??0?
+grp 09??-7m 8220reg p OK led.c:205:a92sc %?%@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:2052sc %?%@2132sc0?
+?0?
+%f+ 			if \(!bound\)
+				att\[p->off] = syn_merge\(att\[p->off], p->att\);
+			else if \(c && stt\[0] <= p->off && stt\[c-1] >= p->off\) \{
+				i = p->off - stt\[0];
+				if \(i < c && stt\[i] == p->off\) \{
+					att\[i] = syn_merge\(att\[i], p->att\);
+					continue; /\* text not reordered \*/1??0?
+1??+3m 91q0?
+%f+ 				i = p->off - stt\[0];
+				if \(i < c && stt\[i] == p->off\) \{
+					att\[i] = syn_merge\(att\[i], p->att\);
+					continue; /\* text not reordered \*/2??0?
+2??m 9220reg p OK led.c:215:a22sc %?%@2152sc1q0?
+%f+ 			if \(!bound\)
+				att\[p->off] = syn_merge\(att\[p->off], p->att\);
+			else if \(c && stt\[0] <= p->off && stt\[c-1] >= p->off\) \{3??0?
+3??+3m 9220reg p OK led.c:215:a32sc %?%@2152sc1q0?
+;0fr.,$f+ ^				i = p->off - stt\[0];$4??0?
+4??m 9220reg p OK led.c:215:a42sc %?%@2152scfr 981qfr 980?
+%f+ 				if \(i < c && stt\[i] == p->off\) \{
+					att\[i] = syn_merge\(att\[i], p->att\);
+					continue; /\* text not reordered \*/5??0?
+5??-1m 9220reg p OK led.c:215:a52sc %?%@2152sc1q0?
+%f+ ....f.\(!......
+...	.......o........n.........t\[...off.........\).
+.		...e....\(.....s......<..p.>..f ...s...c.1. ...p....f...
 .	....=...>........t....
-.......\\(........ st.........-......\\{
-............. ..n....g................\\).
-......on...... /\\* ..xt.....r.....red...${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:215:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 			if \\(!bound\\).*?
-				att\\[p->off] = syn_merge\\(att\\[p->off], p->att\\);.*?
-			else if \\(c && stt\\[0] <= p->off && stt\\[c-1] >= p->off\\) \\{.*?
-(				i = p->off - stt\\[0];)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:215:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		for \\(; \\(char\\*\\)p < &led_attsb->s\\[led_attsb->s_n]; p\\+\\+\\) \\{
-			if \\(p->s != s0 && p->s\\)
-				continue;.*(				for \\(l = 0, j = c - 1; l <= j;\\) \\{)
-					i = l \\+ \\(j - l\\) / 2;
-					if \\(stt\\[i] == p->off\\) \\{${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-5m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:215:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	free\\(bound\\);
-	if \\(led_attsb && xhl\\) \\{
-		led_att \\*p = \\(led_att\\*\\)led_attsb->s;.*(						att\\[i] = syn_merge\\(att\\[i], p->att\\);)
+.......\(........ st.........-......\{
+............. ..n....g................\).
+......on...... /\* ..xt.....r.....red...6??0?
+6??+3m 9220reg p OK led.c:215:a62sc %?%@2152sc1q0?
+grp 1%f+ 			if \(!bound\).*?
+				att\[p->off] = syn_merge\(att\[p->off], p->att\);.*?
+			else if \(c && stt\[0] <= p->off && stt\[c-1] >= p->off\) \{.*?
+(				i = p->off - stt\[0];)7??0?
+grp 07??m 9220reg p OK led.c:215:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 		for \(; \(char\*\)p < &led_attsb->s\[led_attsb->s_n]; p\+\+\) \{
+			if \(p->s != s0 && p->s\)
+				continue;.*(				for \(l = 0, j = c - 1; l <= j;\) \{)
+					i = l \+ \(j - l\) / 2;
+					if \(stt\[i] == p->off\) \{8??0?
+grp 08??-5m 9220reg p OK led.c:215:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	free\(bound\);
+	if \(led_attsb && xhl\) \{
+		led_att \*p = \(led_att\*\)led_attsb->s;.*(						att\[i] = syn_merge\(att\[i], p->att\);)
 						break;
-					} else if \\(stt\\[i] < p->off\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-8m 9${ESC}${ESC}${ESC}${SEP}${OK1}p OK led.c:215:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:215${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}${LB}
-${SEP}'1i #define LEDBACK 300
+					} else if \(stt\[i] < p->off\)9??0?
+grp 09??-8m 9220reg p OK led.c:215:a92sc %?%@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:2152sc %?%@2132sc0?
+0?
+'\''1i #define LEDBACK 300
 #define LEDFORW 300
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:1:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2i 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
+??!219reg led.c:1:m12sc %?%@2142sc0?
+'\''2i 	int fcbeg = cbeg - LEDBACK < 0 ? 0 : cbeg - LEDBACK;
 	int fcend = cend + LEDFORW;
 	int fcterm = fcend - fcbeg; /* fake the render dimensions */
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:146:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
+??!219reg led.c:146:m22sc %?%@2142sc0?
+'\''3,#+2c 	int att[fcterm+1];	/* att[i]: the attributes of i-th character */
 	int stt[fcterm+1];	/* stt[i]: remap off indexes */
 	int ctt[fcterm+1];	/* ctt[i]: cterm bound attrs */
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:152:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'4i 		c = 0;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:165:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'5c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
+??!219reg led.c:152:m32sc %?%@2142sc0?
+'\''4i 		c = 0;
+??!219reg led.c:165:m42sc %?%@2142sc0?
+'\''5c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDBACK; o++) {
 			if (r->pos[l] < cbeg && c < fcterm) {
 				atti++;
@@ -401,18 +398,18 @@ ${SEP}'5c 		l = cbeg <= r->cmax ? r->col[cbeg] : -1;
 			l -= ctx;
 		}
 		for (i = 0; i < cterm;) {
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:176:m5${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'6i 		l = cend <= r->cmax ? r->col[cend] : -1;
+??!219reg led.c:176:m52sc %?%@2142sc0?
+'\''6i 		l = cend <= r->cmax ? r->col[cend] : -1;
 		for (o = 0; l > 0 && l <= n && o < LEDFORW; o++) {
 			if (r->pos[l] >= cend && c < fcterm) {
 				att[c++] = l;
 			}
 			l += ctx;
 		}
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:181:m6${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'7s/ c/ fc/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:203:m7${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'8s/ c/ fc/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:205:m8${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'9s/0/atti/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL led.c:215:m9${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
+??!219reg led.c:181:m62sc %?%@2142sc0?
+'\''7s/ c/ fc/??!219reg led.c:203:m72sc %?%@2142sc0?
+'\''8s/ c/ fc/??!219reg led.c:205:m82sc %?%@2142sc0?
+'\''9s/0/atti/??!219reg led.c:215:m92sc %?%@2142scvis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' "$P2VIF"
 
 exit 0

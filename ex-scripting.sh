@@ -15,96 +15,93 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     exit 1
 fi
 
-SEP="$(printf '\001')"
-ESC="$(printf '\002')"
-# Command that handles readability line breaks
-LB="0?"
-# Phase 1 (search/mark): errors disabled by default,
-# DBG1=1 enables error reporting, QF1=1 quits on failure
-# OK1: with DBG1=1 also report fallback anchor successes
-[ "$DBG1" = "1" ] && OK1= || OK1="0?"
-[ "$DBG1" = "1" ] && DBG1= || DBG1="0?"
-[ "$QF1" = "1" ] && QF1="${ESC}${SEP}vis 2${ESC}${SEP}q!1" || QF1=
-# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
-# OK2: with DBG2= also report fallback substitute successes
-[ "$DBG2" = "1" ] && OK2="0?" || OK2=
-[ "$DBG2" = "1" ] && DBG2="0?" || DBG2=
-[ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
-# Enters vi at failing code line in this script
-# Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+# Env switches:
+# Phase 1 (search/mark) reports nothing by default
+#   DBG1=1 reports failures and which fallback anchor
+#   resolved a group, QF1=1 also quits on failure
+# Phase 2 (edits) reports and quits by default
+#   DBG2=1 silences it, QF2=1 keeps going after an error
+# INTR=1 enters vi at the failing code line in this
+#   script, for state inspection mid execution
+
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: ex.c term.c vi.h
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> int xleft;			/\\* the first visible column \\*/
-int xvis;			/\\* startup flags \\*/
-int xai = 1;			/\\* autoindent option \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^int xleft;			/\\* the first visible column \\*/\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:0:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${SEP}fr 98${SEP}${LB}
-${SEP}1;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:0${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	return xkwdrs \\? NULL : xserr;
+printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr?%@212214reg ?%@217?%@211216reg ?%@220211reg vis 2q!1'\
+"${DBG1:+213reg ?%@217?%@210215reg ?%@220}\
+${DBG2:+ya!214ya!216}\
+${QF1:+210reg vis 2q!1}\
+${QF2:+ya!211}\
+${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
+'fr 98b0%ya 98?0?
+%f> int xleft;			/\* the first visible column \*/
+int xvis;			/\* startup flags \*/
+int xai = 1;			/\* autoindent option \*/1??0?
+1??m 11q0?
+;0fr.,$f> ^int xleft;			/\* the first visible column \*/$3??0?
+3??m 1220reg p OK ex.c:0:a32sc %?%@2152scfr 98fr 980?
+1;3??!219reg ex.c:02sc %?%@2132sc0?
+?0?
+%f+ 	return xkwdrs \? NULL : xserr;
 }
 
-static int eo_val\\(char \\*arg\\)
-\\{
-	int val = atoi\\(arg\\);${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	return xkwdrs \\? NULL : xserr;
+static int eo_val\(char \*arg\)
+\{
+	int val = atoi\(arg\);1??0?
+1??+2m 21q0?
+%f+ 	return xkwdrs \? NULL : xserr;
 }
 
-${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1568:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		ex_krsset\\(sb->s, \\+1\\);
-		free\\(sb->s\\);
-	}.*(	if \\(!val && !uc_isdigit\\(\\*arg\\)\\))
-		return \\(unsigned char\\)\\*arg;
-	return val;${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1568:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		ex_regesc\\(sb, reg\\.s, reg\\.s \\+ reg\\.s_n, 1\\);
-		free\\(reg\\.s\\);
-		sbuf_null\\(sb\\).*(EO\\(pac\\) EO\\(pr\\) EO\\(ai\\) EO\\(err\\) EO\\(fr\\) EO\\(ish\\) EO\\(ic\\) EO\\(mpt\\))
-EO\\(rr\\) EO\\(shape\\) EO\\(seq\\) EO\\(ts\\) EO\\(td\\) EO\\(order\\) EO\\(hll\\) EO\\(hlw\\)
-EO\\(hlp\\) EO\\(hlr\\) EO\\(hl\\) EO\\(lim\\) EO\\(led\\) EO\\(vis\\)${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-15m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1568:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1568${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	EO\\(seq\\),
-	\\{\"sc!\", ec_specials},
-	\\{\"sc\", ec_specials},
-	\\{\"s\", ec_substitute},
-	\\{\"x!\", ec_write},
-	\\{\"x\", ec_write},${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	EO\\(seq\\),
-	\\{\"sc!\", ec_specials},
-	\\{\"sc\", ec_specials},${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1671:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	EO\\(seq\\),.*?
-	\\{\"sc!\", ec_specials},.*?
-(	\\{\"sc\", ec_specials},)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1671:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{\"ub\", ec_setenc},
-	\\{\"ud\", ec_undoredo},
-	EO\\(shape\\),.*(	\\{\"ya!\", ec_yank},)
-	\\{\"ya\\+\", ec_yank},
-	\\{\"ya\", ec_yank},${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1671:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{\"w\", ec_write},
-	\\{\"uc\", ec_setenc},
-	\\{\"uz\", ec_setenc},.*(	\\{\"cm!\", ec_cmap},)
-	\\{\"cm\", ec_cmap},
-	\\{\"cd\", ec_chdir},${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK ex.c:1671:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1671${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}${LB}
-${SEP}'1-1i char **xenvp;
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:0:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2i static void *ec_script(char *loc, char *cmd, char *arg)
+3??0?
+3??+2m 2220reg p OK ex.c:1570:a32sc %?%@2152sc1q0?
+m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
+		free\(sb->s\);
+	}.*(	if \(!val && !uc_isdigit\(\*arg\)\))
+		return \(unsigned char\)\*arg;
+	return val;8??0?
+grp 08??-4m 2220reg p OK ex.c:1570:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
+		free\(reg\.s\);
+		sbuf_null\(sb\).*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
+EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
+EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
+grp 09??-15m 2220reg p OK ex.c:1570:a92sc %?%@2152sc'\''00?
+1;3;8;9??!219reg ex.c:15702sc %?%@2132sc0?
+?0?
+%f+ 	EO\(seq\),
+	\{"sc!", ec_specials},
+	\{"sc", ec_specials},
+	\{"s", ec_substitute},
+	\{"x!", ec_write},
+	\{"x", ec_write},1??0?
+1??+2m 31q0?
+%f+ 	EO\(seq\),
+	\{"sc!", ec_specials},
+	\{"sc", ec_specials},3??0?
+3??+2m 3220reg p OK ex.c:1673:a32sc %?%@2152sc1q0?
+grp 1%f+ 	EO\(seq\),.*?
+	\{"sc!", ec_specials},.*?
+(	\{"sc", ec_specials},)7??0?
+grp 07??m 3220reg p OK ex.c:1673:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 	\{"ub", ec_setenc},
+	\{"ud", ec_undoredo},
+	EO\(shape\),.*(	\{"ya!", ec_yank},)
+	\{"ya\+", ec_yank},
+	\{"ya", ec_yank},8??0?
+grp 08??-4m 3220reg p OK ex.c:1673:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	\{"w", ec_write},
+	\{"uc", ec_setenc},
+	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
+	\{"cm", ec_cmap},
+	\{"cd", ec_chdir},9??0?
+grp 09??-7m 3220reg p OK ex.c:1673:a92sc %?%@2152sc'\''00?
+1;3;7;8;9??!219reg ex.c:16732sc %?%@2132sc0?
+0?
+'\''1-1i char **xenvp;
+??!219reg ex.c:0:m12sc %?%@2142sc0?
+'\''2i static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
 	char buf[100];
@@ -112,104 +109,104 @@ ${SEP}'2i static void *ec_script(char *loc, char *cmd, char *arg)
 	char *ln = lbuf_get(xb, row);
 	if (!*arg)
 		return xserr;
-	setenv(\"NEXTVI_FT\", xb_ft, 1);
+	setenv("NEXTVI_FT", xb_ft, 1);
 	itoa(row, buf);
-	setenv(\"NEXTVI_ROW\", buf, 1);
+	setenv("NEXTVI_ROW", buf, 1);
 	itoa(ln ? uc_chr(ln, off) - ln : 0, buf);
-	setenv(\"NEXTVI_OFF\", buf, 1);
+	setenv("NEXTVI_OFF", buf, 1);
 	itoa(off, buf);
-	setenv(\"NEXTVI_COFF\", buf, 1);
-	setenv(\"NEXTVI_LINE\", ln ? ln : \"\", 1);
+	setenv("NEXTVI_COFF", buf, 1);
+	setenv("NEXTVI_LINE", ln ? ln : "", 1);
 	if (!lbuf_wordend(xb, 0, 1, &row, &off)) {
 		rep = uc_sub(lbuf_get(xb, row), xoff, off+1);
-		setenv(\"NEXTVI_WORD\", rep, 1);
+		setenv("NEXTVI_WORD", rep, 1);
 		free(rep);
 	} else
-		setenv(\"NEXTVI_WORD\", \"\", 1);
-	if (!(xvis & 4) && cmd[1] == 'c') {
-		term_chr('\\n');
+		setenv("NEXTVI_WORD", "", 1);
+	if (!(xvis & 4) && cmd[1] == '\''c'\'') {
+		term_chr('\''\n'\'');
 		xmpt = xmpt >= 0 ? 2 : xmpt;
 	}
 	xenvp = environ;
-	sbuf *sb = cmd_pipe(arg, NULL, cmd[1] == 'x', &ret);
+	sbuf *sb = cmd_pipe(arg, NULL, cmd[1] == '\''x'\'', &ret);
 	xenvp = NULL;
 	if (!sb)
-		return \"fork failed\";
-	if (cmd[1] == 'x')
+		return "fork failed";
+	if (cmd[1] == '\''x'\'')
 		ex_exec(sb->s);
 	sbuf_free(sb);
 	return ret ? xuerr : NULL;
 }
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1568:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3i 	{\"sr\", ec_script},
-	{\"sx\", ec_script},
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL ex.c:1671:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}b1${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 			close\\(pipefds1\\[0]\\);
-			close\\(pipefds1\\[1]\\);
+??!219reg ex.c:1570:m22sc %?%@2142sc0?
+'\''3i 	{"sr", ec_script},
+	{"sx", ec_script},
+??!219reg ex.c:1673:m32sc %?%@2142scb1%ya 98?0?
+%f> 			close\(pipefds1\[0]\);
+			close\(pipefds1\[1]\);
 		}
-		execvp\\(argv\\[0], argv\\);
-		exit\\(1\\);
+		execvp\(argv\[0], argv\);
+		exit\(1\);
 	}
-	if \\(ifd\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 		execvp\\(argv\\[0], argv\\);
-		exit\\(1\\);
+	if \(ifd\)1??0?
+1??+3m 11q0?
+%f> 		execvp\(argv\[0], argv\);
+		exit\(1\);
 	}
-	if \\(ifd\\)${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:238:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 			close\\(pipefds1\\[0]\\);
-			close\\(pipefds1\\[1]\\);
-		}${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:238:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^		execvp\\(argv\\[0], argv\\);\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:238:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 		exit\\(1\\);
+	if \(ifd\)2??0?
+2??m 1220reg p OK term.c:238:a22sc %?%@2152sc1q0?
+%f> 			close\(pipefds1\[0]\);
+			close\(pipefds1\[1]\);
+		}3??0?
+3??+3m 1220reg p OK term.c:238:a32sc %?%@2152sc1q0?
+;0fr.,$f> ^		execvp\(argv\[0], argv\);$4??0?
+4??m 1220reg p OK term.c:238:a42sc %?%@2152scfr 981qfr 980?
+%f> 		exit\(1\);
 	}
-	if \\(ifd\\)${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:238:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> 	......e.pi....s.\\[0]..
-........\\(....fd......;
+	if \(ifd\)5??0?
+5??-1m 1220reg p OK term.c:238:a52sc %?%@2152sc1q0?
+%f> 	......e.pi....s.\[0]..
+........\(....fd......;
 	..
-...x...p.a.gv\\[.].......;
+...x...p.a.gv\[.].......;
 .........;
 .}
-.i...if..${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:238:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f> 			close\\(pipefds1\\[0]\\);.*?
-			close\\(pipefds1\\[1]\\);.*?
+.i...if..6??0?
+6??+3m 1220reg p OK term.c:238:a62sc %?%@2152sc1q0?
+grp 1%f> 			close\(pipefds1\[0]\);.*?
+			close\(pipefds1\[1]\);.*?
 		}.*?
-(		execvp\\(argv\\[0], argv\\);)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:238:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 		if \\(ofd\\) \\{		/\\* setting up stdout and stderr \\*/
-			dup2\\(pipefds1\\[1], 1\\);
-			dup2\\(pipefds1\\[1], 2\\);.*(		close\\(pipefds0\\[0]\\);)
-	if \\(ofd\\)
-		close\\(pipefds1\\[1]\\);${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:238:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 			close\\(pipefds0\\[1]\\);
-			close\\(pipefds0\\[0]\\);
-		}.*(	if \\(pid < 0\\) \\{)
-		if \\(ifd\\)
-			close\\(pipefds0\\[1]\\);${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK term.c:238:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:238${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}${LB}
-${SEP}'1c 		if (xenvp)
+(		execvp\(argv\[0], argv\);)7??0?
+grp 07??m 1220reg p OK term.c:238:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 		if \(ofd\) \{		/\* setting up stdout and stderr \*/
+			dup2\(pipefds1\[1], 1\);
+			dup2\(pipefds1\[1], 2\);.*(		close\(pipefds0\[0]\);)
+	if \(ofd\)
+		close\(pipefds1\[1]\);8??0?
+grp 08??-4m 1220reg p OK term.c:238:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 			close\(pipefds0\[1]\);
+			close\(pipefds0\[0]\);
+		}.*(	if \(pid < 0\) \{)
+		if \(ifd\)
+			close\(pipefds0\[1]\);9??0?
+grp 09??-7m 1220reg p OK term.c:238:a92sc %?%@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:2382sc %?%@2132sc0?
+0?
+'\''1c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL term.c:238:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}b2${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> /\\* vi\\.h: shared definitions across files \\*/
+??!219reg term.c:238:m12sc %?%@2142scb2%ya 98?0?
+%f> /\* vi\.h: shared definitions across files \*/
 
-/\\* helper macros \\*/
-#define LEN\\(a\\)		\\(int\\)\\(sizeof\\(a\\) / sizeof\\(\\(a\\)\\[0]\\)\\)${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f> ^/\\* vi\\.h: shared definitions across files \\*/\$${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK vi.h:1:a3${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${SEP}fr 98${SEP}${LB}
-${SEP}1;3??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:1${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}${LB}
-${SEP}'1i #ifdef __APPLE__
+/\* helper macros \*/
+#define LEN\(a\)		\(int\)\(sizeof\(a\) / sizeof\(\(a\)\[0]\)\)1??0?
+1??m 11q0?
+;0fr.,$f> ^/\* vi\.h: shared definitions across files \*/$3??0?
+3??m 1220reg p OK vi.h:1:a32sc %?%@2152scfr 98fr 980?
+1;3??!219reg vi.h:12sc %?%@2132sc0?
+0?
+'\''1i #ifdef __APPLE__
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())
 #else
@@ -217,14 +214,14 @@ extern char **environ;
 #endif
 extern char **xenvp;
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL vi.h:1:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}b1${SEP}w${SEP}b2${SEP}w${SEP}2q" > "$P2VIF"
+??!219reg vi.h:1:m12sc %?%@2142scvis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'term.c' 'vi.h' "$P2VIF"
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 67e5e1a6..7064838d 100644
+index 448d1ea5..0ef26b40 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -232,7 +229,7 @@ index 67e5e1a6..7064838d 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1566,6 +1567,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1568,6 +1569,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -276,7 +273,7 @@ index 67e5e1a6..7064838d 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1669,6 +1707,8 @@ static struct excmd {
+@@ -1671,6 +1709,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},

@@ -15,189 +15,186 @@ if ! $VI -? 2>&1 | grep -q 'Nextvi'; then
     exit 1
 fi
 
-SEP="$(printf '\001')"
-ESC="$(printf '\002')"
-# Command that handles readability line breaks
-LB="0?"
-# Phase 1 (search/mark): errors disabled by default,
-# DBG1=1 enables error reporting, QF1=1 quits on failure
-# OK1: with DBG1=1 also report fallback anchor successes
-[ "$DBG1" = "1" ] && OK1= || OK1="0?"
-[ "$DBG1" = "1" ] && DBG1= || DBG1="0?"
-[ "$QF1" = "1" ] && QF1="${ESC}${SEP}vis 2${ESC}${SEP}q!1" || QF1=
-# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them
-# OK2: with DBG2= also report fallback substitute successes
-[ "$DBG2" = "1" ] && OK2="0?" || OK2=
-[ "$DBG2" = "1" ] && DBG2="0?" || DBG2=
-[ "$QF2" = "1" ] && QF2= || QF2="${ESC}${SEP}vis 2${ESC}${SEP}q!1"
-# Enters vi at failing code line in this script
-# Designed for state inspection mid execution
-[ "$INTR" = "1" ] && INTR="${ESC}${SEP}|sc|${ESC}${SEP}vis 2:fr 0:e $0:83reg %@47:%f> %@112:&Q:b0:|sc! ${ESC}${ESC}${ESC}${SEP}|:vis 3${ESC}${SEP}q1" || INTR=
+# Env switches:
+# Phase 1 (search/mark) reports nothing by default
+#   DBG1=1 reports failures and which fallback anchor
+#   resolved a group, QF1=1 also quits on failure
+# Phase 2 (edits) reports and quits by default
+#   DBG2=1 silences it, QF2=1 keeps going after an error
+# INTR=1 enters vi at the failing code line in this
+#   script, for state inspection mid execution
+
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: conf.c
-printf '%s\n' "|sc! ${ESC}${SEP}|:vis 3${SEP}fr 98${SEP}b0${SEP}%ya 98${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f> FTGEN\\(c\\) FTGEN\\(roff\\) FTGEN\\(tex\\) FTGEN\\(mbox\\)
-FTGEN\\(mk\\) FTGEN\\(sh\\) FTGEN\\(py\\) FTGEN\\(js\\)
-FTGEN\\(html\\) FTGEN\\(diff\\) FTGEN\\(go\\) FTGEN\\(md\\)
+printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr?%@212214reg ?%@217?%@211216reg ?%@220211reg vis 2q!1'\
+"${DBG1:+213reg ?%@217?%@210215reg ?%@220}\
+${DBG2:+ya!214ya!216}\
+${QF1:+210reg vis 2q!1}\
+${QF2:+ya!211}\
+${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
+'fr 98b0%ya 98?0?
+%f> FTGEN\(c\) FTGEN\(roff\) FTGEN\(tex\) FTGEN\(mbox\)
+FTGEN\(mk\) FTGEN\(sh\) FTGEN\(py\) FTGEN\(js\)
+FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\)
 
-char _ft\\[] = \"/\";	/\\* default hl \\*/
-char fm_ft\\[] = \"/fm\";	/\\* file manager \\*/${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 1${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f> FTGEN\\(c\\) FTGEN\\(roff\\) FTGEN\\(tex\\) FTGEN\\(mbox\\)
-FTGEN\\(mk\\) FTGEN\\(sh\\) FTGEN\\(py\\) FTGEN\\(js\\)
-FTGEN\\(html\\) FTGEN\\(diff\\) FTGEN\\(go\\) FTGEN\\(md\\)${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:9:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f> FTGEN\\(c\\) FTGEN\\(roff\\) FTGEN\\(tex\\) FTGEN\\(mbox\\).*?
-FTGEN\\(mk\\) FTGEN\\(sh\\) FTGEN\\(py\\) FTGEN\\(js\\).*?
-(FTGEN\\(html\\) FTGEN\\(diff\\) FTGEN\\(go\\) FTGEN\\(md\\))${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:9:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> const int conf_mode = 0600;
-#define FTGEN\\(ft\\) static char ft##_ft\\[] = #ft;
-#define FT\\(ft\\) ft##_ft.*(char n_ft\\[] = \"/#\";	/\\* numbers highlight for \\^v \\*/)
-char nn_ft\\[] = \"/##\";	/\\* numbers highlight for # \\*/
-char ac_ft\\[] = \"/ac\";	/\\* autocomplete dropdown \\*/${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 1${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:9:a8${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:9${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	\\{FT\\(diff\\), \"\\\\\\\\\\.\\(patch\\|diff\\|rej\\)\\\$\"},			/\\* diff \\*/
-	\\{FT\\(go\\), \"\\\\\\\\\\.go\\\$\"},					/\\* go \\*/
-	\\{FT\\(md\\), \"\\\\\\\\\\.md\\\$\"},					/\\* markdown \\*/
-	\\{_ft, NULL},
-	\\{fm_ft, NULL},
-	\\{n_ft, NULL},${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	\\{FT\\(diff\\), \"\\\\\\\\\\.\\(patch\\|diff\\|rej\\)\\\$\"},			/\\* diff \\*/
-	\\{FT\\(go\\), \"\\\\\\\\\\.go\\\$\"},					/\\* go \\*/
-	\\{FT\\(md\\), \"\\\\\\\\\\.md\\\$\"},					/\\* markdown \\*/${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:34:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	\\{FT\\(diff\\), \"\\\\\\\\\\.\\(patch\\|diff\\|rej\\)\\\$\"},			/\\* diff \\*/.*?
-	\\{FT\\(go\\), \"\\\\\\\\\\.go\\\$\"},					/\\* go \\*/.*?
-(	\\{FT\\(md\\), \"\\\\\\\\\\.md\\\$\"},					/\\* markdown \\*/)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:34:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(py\\), \"\\\\\\\\\\.py\\\$\"},					/\\* python \\*/
-	\\{FT\\(js\\), \"\\\\\\\\\\.js\\\$\"},					/\\* javascript \\*/
-	\\{FT\\(html\\), \"\\\\\\\\\\.\\(html\\?\\|css\\)\\\$\"},				/\\* html,css \\*/.*(	\\{nn_ft, NULL},)
-	\\{ac_ft, NULL},
-	\\{ex_ft, NULL},${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:34:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(mbox\\), \"letter\\\$\\|mbox\\\$\\|mail\\\$\"},			/\\* email \\*/
-	\\{FT\\(mk\\), \"\\[Mm]akefile\\\$\\|\\\\\\\\\\.mk\\\$\"},			/\\* makefile \\*/
-	\\{FT\\(sh\\), \"\\\\\\\\\\.\\(ba\\|z\\)\\?sh\\\$\\|\\(ba\\|z\\|k\\)shrc\\\$\\|profile\\\$\"},	/\\* shell script \\*/.*(	\\{vs_ft, NULL},)
-	\\{bar_ft, NULL},
-	\\{fuzz_ft, NULL},${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-7m 2${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:34:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:34${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	\\{FT\\(md\\), \"\\[\\[]\\[\\^\\[\\\\\\\\]]\\+\\[\\\\\\\\]]\\\\\\\\\\(\\[\\^\\\\\\\\\\(\\\\\\\\\\)]\\+\\\\\\\\\\)\", A\\(CY\\)},
-	\\{FT\\(md\\), \"!\\[\\[]\\[\\^\\[\\\\\\\\]]\\+\\[\\\\\\\\]]\\\\\\\\\\(\\[\\^\\\\\\\\\\(\\\\\\\\\\)]\\+\\\\\\\\\\)\", A\\(MA\\)},
+char _ft\[] = "/";	/\* default hl \*/
+char fm_ft\[] = "/fm";	/\* file manager \*/1??0?
+1??+2m 11q0?
+%f> FTGEN\(c\) FTGEN\(roff\) FTGEN\(tex\) FTGEN\(mbox\)
+FTGEN\(mk\) FTGEN\(sh\) FTGEN\(py\) FTGEN\(js\)
+FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\)3??0?
+3??+2m 1220reg p OK conf.c:9:a32sc %?%@2152sc1q0?
+grp 1%f> FTGEN\(c\) FTGEN\(roff\) FTGEN\(tex\) FTGEN\(mbox\).*?
+FTGEN\(mk\) FTGEN\(sh\) FTGEN\(py\) FTGEN\(js\).*?
+(FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\))7??0?
+grp 07??m 1220reg p OK conf.c:9:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> const int conf_mode = 0600;
+#define FTGEN\(ft\) static char ft##_ft\[] = #ft;
+#define FT\(ft\) ft##_ft.*(char n_ft\[] = "/#";	/\* numbers highlight for \^v \*/)
+char nn_ft\[] = "/##";	/\* numbers highlight for # \*/
+char ac_ft\[] = "/ac";	/\* autocomplete dropdown \*/8??0?
+grp 08??-4m 1220reg p OK conf.c:9:a82sc %?%@2152sc'\''00?
+1;3;7;8??!219reg conf.c:92sc %?%@2132sc0?
+?0?
+%f+ 	\{FT\(diff\), "\\\\\.\(patch\|diff\|rej\)\$"},			/\* diff \*/
+	\{FT\(go\), "\\\\\.go\$"},					/\* go \*/
+	\{FT\(md\), "\\\\\.md\$"},					/\* markdown \*/
+	\{_ft, NULL},
+	\{fm_ft, NULL},
+	\{n_ft, NULL},1??0?
+1??+2m 21q0?
+%f+ 	\{FT\(diff\), "\\\\\.\(patch\|diff\|rej\)\$"},			/\* diff \*/
+	\{FT\(go\), "\\\\\.go\$"},					/\* go \*/
+	\{FT\(md\), "\\\\\.md\$"},					/\* markdown \*/3??0?
+3??+2m 2220reg p OK conf.c:34:a32sc %?%@2152sc1q0?
+grp 1%f+ 	\{FT\(diff\), "\\\\\.\(patch\|diff\|rej\)\$"},			/\* diff \*/.*?
+	\{FT\(go\), "\\\\\.go\$"},					/\* go \*/.*?
+(	\{FT\(md\), "\\\\\.md\$"},					/\* markdown \*/)7??0?
+grp 07??m 2220reg p OK conf.c:34:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 	\{FT\(py\), "\\\\\.py\$"},					/\* python \*/
+	\{FT\(js\), "\\\\\.js\$"},					/\* javascript \*/
+	\{FT\(html\), "\\\\\.\(html\?\|css\)\$"},				/\* html,css \*/.*(	\{nn_ft, NULL},)
+	\{ac_ft, NULL},
+	\{ex_ft, NULL},8??0?
+grp 08??-4m 2220reg p OK conf.c:34:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	\{FT\(mbox\), "letter\$\|mbox\$\|mail\$"},			/\* email \*/
+	\{FT\(mk\), "\[Mm]akefile\$\|\\\\\.mk\$"},			/\* makefile \*/
+	\{FT\(sh\), "\\\\\.\(ba\|z\)\?sh\$\|\(ba\|z\|k\)shrc\$\|profile\$"},	/\* shell script \*/.*(	\{vs_ft, NULL},)
+	\{bar_ft, NULL},
+	\{fuzz_ft, NULL},9??0?
+grp 09??-7m 2220reg p OK conf.c:34:a92sc %?%@2152sc'\''00?
+1;3;7;8;9??!219reg conf.c:342sc %?%@2132sc0?
+?0?
+%f+ 	\{FT\(md\), "\[\[]\[\^\[\\\\]]\+\[\\\\]]\\\\\(\[\^\\\\\(\\\\\)]\+\\\\\)", A\(CY\)},
+	\{FT\(md\), "!\[\[]\[\^\[\\\\]]\+\[\\\\]]\\\\\(\[\^\\\\\(\\\\\)]\+\\\\\)", A\(MA\)},
 
-	\\{fm_ft, \"\\^\\.\\+\\\\n\\\$\", A\\(AY1\\), 1},
-	\\{fm_ft, \"\\(\\^\\\\\\\\\\.\\?\\\\\\\\\\.\\?\\)/\\|\\(\\\\\\\\\\.\\\\\\\\\\.\\(/\\)\\)\\|\\(\\?:\\[\\^/]\\+/\\)\\+\", A\\(CY, BL, BL, CY\\), 2},
-	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.sh\\\\n\\\$\", A\\(GR\\)},${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+2m 3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	\\{FT\\(md\\), \"\\[\\[]\\[\\^\\[\\\\\\\\]]\\+\\[\\\\\\\\]]\\\\\\\\\\(\\[\\^\\\\\\\\\\(\\\\\\\\\\)]\\+\\\\\\\\\\)\", A\\(CY\\)},
-	\\{FT\\(md\\), \"!\\[\\[]\\[\\^\\[\\\\\\\\]]\\+\\[\\\\\\\\]]\\\\\\\\\\(\\[\\^\\\\\\\\\\(\\\\\\\\\\)]\\+\\\\\\\\\\)\", A\\(MA\\)},
+	\{fm_ft, "\^\.\+\\n\$", A\(AY1\), 1},
+	\{fm_ft, "\(\^\\\\\.\?\\\\\.\?\)/\|\(\\\\\.\\\\\.\(/\)\)\|\(\?:\[\^/]\+/\)\+", A\(CY, BL, BL, CY\), 2},
+	\{fm_ft, "\[\^/]\*\\\\\.sh\\n\$", A\(GR\)},1??0?
+1??+2m 31q0?
+%f+ 	\{FT\(md\), "\[\[]\[\^\[\\\\]]\+\[\\\\]]\\\\\(\[\^\\\\\(\\\\\)]\+\\\\\)", A\(CY\)},
+	\{FT\(md\), "!\[\[]\[\^\[\\\\]]\+\[\\\\]]\\\\\(\[\^\\\\\(\\\\\)]\+\\\\\)", A\(MA\)},
 
-${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+2m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:274:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(md\\), \"\\^>\\[ \\\\n]\\.\\*\", A\\(MA\\)},
-	\\{FT\\(md\\), \"\\^\\[ \\\\t]\\*\\[\\*\\\\\\\\-\\+] \", A\\(YE\\)},
-	\\{FT\\(md\\), \"\\^\\[ \\\\t]\\*\\[0-9]\\+\\[\\.] \", A\\(YE\\)},.*(	\\{n_ft, \"1\\(\\[ \\\\t]\\*\\[1-9]\\[ \\\\t]\\*\\)9\", A\\(RE1, MA1 \\| SYN_BD\\)},)
-	\\{n_ft, \"9\\[ \\\\t]\\*\\(\\[1-9]\\[ \\\\t]\\*\\)1\", A\\(RE1, MA1 \\| SYN_BD\\)},
-	\\{n_ft, \"\\[1-9]\", A\\(RE1\\)},${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-8m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:274:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(md\\), \"\`\\[\\^\`]\\*\`\", A\\(CY\\)},
-	\\{FT\\(md\\), \"\\^\\(---\\+\\|\\\\\\\\\\*\\\\\\\\\\*\\\\\\\\\\*\\+\\|___\\+\\)\\\\n\\\$\", A\\(BL\\)},
-	\\{FT\\(md\\), \"\\(  \\)\\\\n\\\$\", A\\(SYN_IGN, SYN_BGMK\\(MA\\)\\)},.*(	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\(\\?:\\(\\\\n\\\$\\)\\|\\\\n\\)\\|\\\\n\\|\\(\\[\\^\\\\n]\\+\\(\\\\n\\)\\)\",)
-		A\\(NA, SYN_BGMK\\(RE1\\), SYN_BGMK\\(AY1\\), SYN_BGMK\\(AY\\)\\)},
-	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\\$\\|\\(\\.\\+\\\$\\)\", A\\(NA, SYN_BGMK\\(AY1\\)\\)},${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-14m 3${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:274:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;3;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:274${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}?${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	\\{fm_ft, \"\\^\\.\\+\\\\n\\\$\", A\\(AY1\\), 1},
-	\\{fm_ft, \"\\(\\^\\\\\\\\\\.\\?\\\\\\\\\\.\\?\\)/\\|\\(\\\\\\\\\\.\\\\\\\\\\.\\(/\\)\\)\\|\\(\\?:\\[\\^/]\\+/\\)\\+\", A\\(CY, BL, BL, CY\\), 2},
-	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.sh\\\\n\\\$\", A\\(GR\\)},
-	\\{fm_ft, \"\\[\\^/]\\*\\(\\?:\\\\\\\\\\.c\\|\\\\\\\\\\.h\\|\\\\\\\\\\.cpp\\|\\\\\\\\\\.cc\\)\\\\n\\\$\", A\\(MA\\)},
-	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.go\\\\n\\\$\", A\\(CY\\)},
+3??0?
+3??+2m 3220reg p OK conf.c:274:a32sc %?%@2152sc1q0?
+m 01;0grp 1%f> 	\{FT\(md\), "\^>\[ \\n]\.\*", A\(MA\)},
+	\{FT\(md\), "\^\[ \\t]\*\[\*\\\\-\+] ", A\(YE\)},
+	\{FT\(md\), "\^\[ \\t]\*\[0-9]\+\[\.] ", A\(YE\)},.*(	\{n_ft, "1\(\[ \\t]\*\[1-9]\[ \\t]\*\)9", A\(RE1, MA1 \| SYN_BD\)},)
+	\{n_ft, "9\[ \\t]\*\(\[1-9]\[ \\t]\*\)1", A\(RE1, MA1 \| SYN_BD\)},
+	\{n_ft, "\[1-9]", A\(RE1\)},8??0?
+grp 08??-8m 3220reg p OK conf.c:274:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	\{FT\(md\), "`\[\^`]\*`", A\(CY\)},
+	\{FT\(md\), "\^\(---\+\|\\\\\*\\\\\*\\\\\*\+\|___\+\)\\n\$", A\(BL\)},
+	\{FT\(md\), "\(  \)\\n\$", A\(SYN_IGN, SYN_BGMK\(MA\)\)},.*(	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\(\?:\(\\n\$\)\|\\n\)\|\\n\|\(\[\^\\n]\+\(\\n\)\)",)
+		A\(NA, SYN_BGMK\(RE1\), SYN_BGMK\(AY1\), SYN_BGMK\(AY\)\)},
+	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},9??0?
+grp 09??-14m 3220reg p OK conf.c:274:a92sc %?%@2152sc'\''00?
+1;3;8;9??!219reg conf.c:2742sc %?%@2132sc0?
+?0?
+%f+ 	\{fm_ft, "\^\.\+\\n\$", A\(AY1\), 1},
+	\{fm_ft, "\(\^\\\\\.\?\\\\\.\?\)/\|\(\\\\\.\\\\\.\(/\)\)\|\(\?:\[\^/]\+/\)\+", A\(CY, BL, BL, CY\), 2},
+	\{fm_ft, "\[\^/]\*\\\\\.sh\\n\$", A\(GR\)},
+	\{fm_ft, "\[\^/]\*\(\?:\\\\\.c\|\\\\\.h\|\\\\\.cpp\|\\\\\.cc\)\\n\$", A\(MA\)},
+	\{fm_ft, "\[\^/]\*\\\\\.go\\n\$", A\(CY\)},
 
-	\\{n_ft, \"\\[0lewEW]\", A\\(CY1 \\| SYN_BD\\)},${ESC}${SEP}1??${ESC}${SEP}${LB}
-${ESC}${SEP}1??+3m 4${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	\\{fm_ft, \"\\[\\^/]\\*\\(\\?:\\\\\\\\\\.c\\|\\\\\\\\\\.h\\|\\\\\\\\\\.cpp\\|\\\\\\\\\\.cc\\)\\\\n\\\$\", A\\(MA\\)},
-	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.go\\\\n\\\$\", A\\(CY\\)},
+	\{n_ft, "\[0lewEW]", A\(CY1 \| SYN_BD\)},1??0?
+1??+3m 41q0?
+%f+ 	\{fm_ft, "\[\^/]\*\(\?:\\\\\.c\|\\\\\.h\|\\\\\.cpp\|\\\\\.cc\)\\n\$", A\(MA\)},
+	\{fm_ft, "\[\^/]\*\\\\\.go\\n\$", A\(CY\)},
 
-	\\{n_ft, \"\\[0lewEW]\", A\\(CY1 \\| SYN_BD\\)},${ESC}${SEP}2??${ESC}${SEP}${LB}
-${ESC}${SEP}2??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a2${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	\\{fm_ft, \"\\^\\.\\+\\\\n\\\$\", A\\(AY1\\), 1},
-	\\{fm_ft, \"\\(\\^\\\\\\\\\\.\\?\\\\\\\\\\.\\?\\)/\\|\\(\\\\\\\\\\.\\\\\\\\\\.\\(/\\)\\)\\|\\(\\?:\\[\\^/]\\+/\\)\\+\", A\\(CY, BL, BL, CY\\), 2},
-	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.sh\\\\n\\\$\", A\\(GR\\)},${ESC}${SEP}3??${ESC}${SEP}${LB}
-${ESC}${SEP}3??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a3${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP};0${ESC}${SEP}fr${ESC}${SEP}.,\$f+ ^	\\{fm_ft, \"\\[\\^/]\\*\\(\\?:\\\\\\\\\\.c\\|\\\\\\\\\\.h\\|\\\\\\\\\\.cpp\\|\\\\\\\\\\.cc\\)\\\\n\\\$\", A\\(MA\\)},\$${ESC}${SEP}4??${ESC}${SEP}${LB}
-${ESC}${SEP}4??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a4${ESC}${ESC}${ESC}${SEP}fr 98${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}fr 98${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ 	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.go\\\\n\\\$\", A\\(CY\\)},
+	\{n_ft, "\[0lewEW]", A\(CY1 \| SYN_BD\)},2??0?
+2??m 4220reg p OK conf.c:278:a22sc %?%@2152sc1q0?
+%f+ 	\{fm_ft, "\^\.\+\\n\$", A\(AY1\), 1},
+	\{fm_ft, "\(\^\\\\\.\?\\\\\.\?\)/\|\(\\\\\.\\\\\.\(/\)\)\|\(\?:\[\^/]\+/\)\+", A\(CY, BL, BL, CY\), 2},
+	\{fm_ft, "\[\^/]\*\\\\\.sh\\n\$", A\(GR\)},3??0?
+3??+3m 4220reg p OK conf.c:278:a32sc %?%@2152sc1q0?
+;0fr.,$f+ ^	\{fm_ft, "\[\^/]\*\(\?:\\\\\.c\|\\\\\.h\|\\\\\.cpp\|\\\\\.cc\)\\n\$", A\(MA\)},$4??0?
+4??m 4220reg p OK conf.c:278:a42sc %?%@2152scfr 981qfr 980?
+%f+ 	\{fm_ft, "\[\^/]\*\\\\\.go\\n\$", A\(CY\)},
 
-	\\{n_ft, \"\\[0lewEW]\", A\\(CY1 \\| SYN_BD\\)},${ESC}${SEP}5??${ESC}${SEP}${LB}
-${ESC}${SEP}5??-1m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a5${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}%f+ ...._....\"......\", A...1...1.,
-.\\{....t...\\(...\\....\\......\\\\\\\\...\\..................,.......B.. .L....\\). .},
-.\\{.m_ft..........\\.......,..\\(.....
-...m.f.......]..\\?.....\\|.\\\\..\\|\\\\...p.\\|.....\\).........A..,
-...._f..................,.A.C.\\)..
+	\{n_ft, "\[0lewEW]", A\(CY1 \| SYN_BD\)},5??0?
+5??-1m 4220reg p OK conf.c:278:a52sc %?%@2152sc1q0?
+%f+ ...._...."......", A...1...1.,
+.\{....t...\(...\....\......\\\\...\..................,.......B.. .L....\). .},
+.\{.m_ft..........\.......,..\(.....
+...m.f.......]..\?.....\|.\\..\|\\...p.\|.....\).........A..,
+...._f..................,.A.C.\)..
 
-..............E..., ....1....Y..B...,${ESC}${SEP}6??${ESC}${SEP}${LB}
-${ESC}${SEP}6??+3m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a6${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}grp 1${ESC}${SEP}%f+ 	\\{fm_ft, \"\\^\\.\\+\\\\n\\\$\", A\\(AY1\\), 1},.*?
-	\\{fm_ft, \"\\(\\^\\\\\\\\\\.\\?\\\\\\\\\\.\\?\\)/\\|\\(\\\\\\\\\\.\\\\\\\\\\.\\(/\\)\\)\\|\\(\\?:\\[\\^/]\\+/\\)\\+\", A\\(CY, BL, BL, CY\\), 2},.*?
-	\\{fm_ft, \"\\[\\^/]\\*\\\\\\\\\\.sh\\\\n\\\$\", A\\(GR\\)},.*?
-(	\\{fm_ft, \"\\[\\^/]\\*\\(\\?:\\\\\\\\\\.c\\|\\\\\\\\\\.h\\|\\\\\\\\\\.cpp\\|\\\\\\\\\\.cc\\)\\\\n\\\$\", A\\(MA\\)},)${ESC}${SEP}7??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}7??m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a7${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(md\\), \"\\^>\\[ \\\\n]\\.\\*\", A\\(MA\\)},
-	\\{FT\\(md\\), \"\\^\\[ \\\\t]\\*\\[\\*\\\\\\\\-\\+] \", A\\(YE\\)},
-	\\{FT\\(md\\), \"\\^\\[ \\\\t]\\*\\[0-9]\\+\\[\\.] \", A\\(YE\\)},.*(	\\{n_ft, \"1\\(\\[ \\\\t]\\*\\[1-9]\\[ \\\\t]\\*\\)9\", A\\(RE1, MA1 \\| SYN_BD\\)},)
-	\\{n_ft, \"9\\[ \\\\t]\\*\\(\\[1-9]\\[ \\\\t]\\*\\)1\", A\\(RE1, MA1 \\| SYN_BD\\)},
-	\\{n_ft, \"\\[1-9]\", A\\(RE1\\)},${ESC}${SEP}8??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}8??-4m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a8${ESC}${SEP}'0${ESC}${SEP}8??${ESC}${ESC}${ESC}${SEP}1q${ESC}${SEP}${LB}
-${ESC}${SEP}m 0${ESC}${SEP}1;0${ESC}${SEP}grp 1${ESC}${SEP}%f> 	\\{FT\\(md\\), \"\`\\[\\^\`]\\*\`\", A\\(CY\\)},
-	\\{FT\\(md\\), \"\\^\\(---\\+\\|\\\\\\\\\\*\\\\\\\\\\*\\\\\\\\\\*\\+\\|___\\+\\)\\\\n\\\$\", A\\(BL\\)},
-	\\{FT\\(md\\), \"\\(  \\)\\\\n\\\$\", A\\(SYN_IGN, SYN_BGMK\\(MA\\)\\)},.*(	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\(\\?:\\(\\\\n\\\$\\)\\|\\\\n\\)\\|\\\\n\\|\\(\\[\\^\\\\n]\\+\\(\\\\n\\)\\)\",)
-		A\\(NA, SYN_BGMK\\(RE1\\), SYN_BGMK\\(AY1\\), SYN_BGMK\\(AY\\)\\)},
-	\\{ac_ft, \"\\[\\^ \\\\t-/:-@\\[-\\^\\{-~]\\+\\\$\\|\\(\\.\\+\\\$\\)\", A\\(NA, SYN_BGMK\\(AY1\\)\\)},${ESC}${SEP}9??${ESC}${SEP}${LB}
-${ESC}${SEP}grp 0${ESC}${SEP}9??-10m 4${ESC}${ESC}${ESC}${SEP}${OK1}p OK conf.c:278:a9${ESC}${SEP}'0${SEP}${LB}
-${SEP}1;2;3;4;5;6;7;8;9??!${DBG1:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:278${ESC}${SEP}pr${INTR}${QF1}}${SEP}${LB}
-${SEP}${LB}
-${SEP}'1i FTGEN(cbas)
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:9:m1${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'2i 	{FT(cbas), \"\\\\.(cbas|hbas)\$\"},				/* coder's basilisk */
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:34:m2${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'3i 	{FT(cbas), NULL, A(CY1 | SYN_BD), 1, 2},
-	{FT(cbas), \"(/\\\\*(?:(?!^\\\\*/).)*)|((?:(?!^/\\\\*).)*\\\\*/(?#-1)(?<\\\".*\\\\*/.*(?:\\\"|\\\\\\\\\\n\$)))\",
+..............E..., ....1....Y..B...,6??0?
+6??+3m 4220reg p OK conf.c:278:a62sc %?%@2152sc1q0?
+grp 1%f+ 	\{fm_ft, "\^\.\+\\n\$", A\(AY1\), 1},.*?
+	\{fm_ft, "\(\^\\\\\.\?\\\\\.\?\)/\|\(\\\\\.\\\\\.\(/\)\)\|\(\?:\[\^/]\+/\)\+", A\(CY, BL, BL, CY\), 2},.*?
+	\{fm_ft, "\[\^/]\*\\\\\.sh\\n\$", A\(GR\)},.*?
+(	\{fm_ft, "\[\^/]\*\(\?:\\\\\.c\|\\\\\.h\|\\\\\.cpp\|\\\\\.cc\)\\n\$", A\(MA\)},)7??0?
+grp 07??m 4220reg p OK conf.c:278:a72sc %?%@2152sc1q0?
+m 01;0grp 1%f> 	\{FT\(md\), "\^>\[ \\n]\.\*", A\(MA\)},
+	\{FT\(md\), "\^\[ \\t]\*\[\*\\\\-\+] ", A\(YE\)},
+	\{FT\(md\), "\^\[ \\t]\*\[0-9]\+\[\.] ", A\(YE\)},.*(	\{n_ft, "1\(\[ \\t]\*\[1-9]\[ \\t]\*\)9", A\(RE1, MA1 \| SYN_BD\)},)
+	\{n_ft, "9\[ \\t]\*\(\[1-9]\[ \\t]\*\)1", A\(RE1, MA1 \| SYN_BD\)},
+	\{n_ft, "\[1-9]", A\(RE1\)},8??0?
+grp 08??-4m 4220reg p OK conf.c:278:a82sc %?%@2152sc'\''08??1q0?
+m 01;0grp 1%f> 	\{FT\(md\), "`\[\^`]\*`", A\(CY\)},
+	\{FT\(md\), "\^\(---\+\|\\\\\*\\\\\*\\\\\*\+\|___\+\)\\n\$", A\(BL\)},
+	\{FT\(md\), "\(  \)\\n\$", A\(SYN_IGN, SYN_BGMK\(MA\)\)},.*(	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\(\?:\(\\n\$\)\|\\n\)\|\\n\|\(\[\^\\n]\+\(\\n\)\)",)
+		A\(NA, SYN_BGMK\(RE1\), SYN_BGMK\(AY1\), SYN_BGMK\(AY\)\)},
+	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},9??0?
+grp 09??-10m 4220reg p OK conf.c:278:a92sc %?%@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg conf.c:2782sc %?%@2132sc0?
+0?
+'\''1i FTGEN(cbas)
+??!219reg conf.c:9:m12sc %?%@2142sc0?
+'\''2i 	{FT(cbas), "\\.(cbas|hbas)$"},				/* coder'\''s basilisk */
+??!219reg conf.c:34:m22sc %?%@2142sc0?
+'\''3i 	{FT(cbas), NULL, A(CY1 | SYN_BD), 1, 2},
+	{FT(cbas), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?#-1)(?<\".*\\*/.*(?:\"|\\\\\n$)))",
 		A(BL | SYN_IT, BL | SYN_BLK, SYN_BSE | SYN_BEDP, BL | SYN_BLK, SYN_BSE | SYN_BSD)},
-	{FT(cbas), \"(<\\\\{(?:(?!^\\\\}>).)*)|((?:(?!^<\\\\{).)*\\\\}>)\",
+	{FT(cbas), "(<\\{(?:(?!^\\}>).)*)|((?:(?!^<\\{).)*\\}>)",
 		A(CY | SYN_IT, CY | SYN_BLK, SYN_BSE | SYN_BEDP, CY | SYN_BLK, SYN_BSE | SYN_BSD)},
-	{FT(cbas), \"\\\\<(?:u8|i8|u16|i16|u32|i32|u64|i64|f32|f64|char|uchar|schar|byte|ubyte|sbyte|\\
-uint|int|sint|long|slong|ulong|llong|sllong|ullong|qword|uqword|uptr|sqword|short|ushort|sshort|\\
-float|double|string|struct|class|union|static|noexport|atomic|volatile|inline|pure|predecl|pub|\\
-public|codegen|constexpri|constexprf|method|\\
-(fn|function|func|procedure|proc|cast|data|asm|getfnptr|callfnptr|getglobalptr)|\\
-(break|continue|if|elif|elseif|else|while|for|goto|jump|switch|return|tail|sizeof|end))\\\\>\",
+	{FT(cbas), "\\<(?:u8|i8|u16|i16|u32|i32|u64|i64|f32|f64|char|uchar|schar|byte|ubyte|sbyte|\
+uint|int|sint|long|slong|ulong|llong|sllong|ullong|qword|uqword|uptr|sqword|short|ushort|sshort|\
+float|double|string|struct|class|union|static|noexport|atomic|volatile|inline|pure|predecl|pub|\
+public|codegen|constexpri|constexprf|method|\
+(fn|function|func|procedure|proc|cast|data|asm|getfnptr|callfnptr|getglobalptr)|\
+(break|continue|if|elif|elseif|else|while|for|goto|jump|switch|return|tail|sizeof|end))\\>",
 		A(GR1, BL1 | SYN_BD, YE1)},
-	{FT(cbas), \"//.*\", A(BL | SYN_IT)},
-	{FT(cbas), \"\\\"(?#2)(?<^\\\\\\\\)(?:[^\\\"\\\\\\\\]|\\\\\\\\.)*\\\"\", A(MA)},
-	{FT(cbas), \"#[ \\t]*(?:[a-zA-Z0-9_]+([ \\t]*<.*>)?)\", A(CY, MA)},
-	{FT(cbas), \"@[a-zA-Z_][a-zA-Z0-9_]*\", A(YE1 | SYN_BD)},
-	{FT(cbas), \"[a-zA-Z0-9_]+(?=^\\\\()\", A(SYN_BD)},
-	{FT(cbas), \"'(?:[^\\\\\\\\]|\\\\\\\\.|\\\\\\\\x[0-9a-fA-F]{1,2}|\\\\\\\\[0-9]+?)'\", A(MA)},
-	{FT(cbas), \"[-+.]?\\\\<(?:0[xX][0-9a-fA-F]+|[0-9]+\\\\.?[0-9]*(?:[eE][-+]?[0-9]+)?)([fFlLuU]{0,3})\\\\>\",
+	{FT(cbas), "//.*", A(BL | SYN_IT)},
+	{FT(cbas), "\"(?#2)(?<^\\\\)(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
+	{FT(cbas), "#[ \t]*(?:[a-zA-Z0-9_]+([ \t]*<.*>)?)", A(CY, MA)},
+	{FT(cbas), "@[a-zA-Z_][a-zA-Z0-9_]*", A(YE1 | SYN_BD)},
+	{FT(cbas), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
+	{FT(cbas), "'\''(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'\''", A(MA)},
+	{FT(cbas), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+\\.?[0-9]*(?:[eE][-+]?[0-9]+)?)([fFlLuU]{0,3})\\>",
 		A(RE1, RE)},
-	{FT(html), \"\\\"(?:[^\\\"\\\\\\\\]|\\\\\\\\.)*\\\"\", A(MA)},
-	{FT(cbas), \"^.+\\\\\\\\\\n\$\", A(CY1 | SYN_EATT | SYN_OATT, 2, NA, BL, 1, NA), 2},
+	{FT(html), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
+	{FT(cbas), "^.+\\\\\n$", A(CY1 | SYN_EATT | SYN_OATT, 2, NA, BL, 1, NA), 2},
 	{FT(cbas), NULL, A(RE1), 0, 1},
 	{FT(cbas), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
 
-${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:274:m3${ESC}${SEP}pr${INTR}${QF2}}${SEP}${LB}
-${SEP}'4s/c\\)/c|\\\\\\\\.cbas|\\\\\\\\.hbas)/${SEP}??!${DBG2:-ya!112${ESC}${SEP}prp${ESC}${SEP}p FAIL conf.c:278:m4${ESC}${SEP}pr${INTR}${QF2}}${SEP}vis 2${SEP}b0${SEP}w${SEP}2q" > "$P2VIF"
+??!219reg conf.c:274:m32sc %?%@2142sc0?
+'\''4s/c\)/c|\\\\.cbas|\\\\.hbas)/??!219reg conf.c:278:m42sc %?%@2142scvis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' "$P2VIF"
 
 exit 0
