@@ -2129,68 +2129,6 @@ static void emit_chain_pattern(sbuf *out, pat_spec_t *p)
 		sb_chr(out, '\n');
 }
 
-/* Emit a compat block's gate: search the probe, capture the result under the
- * gate's own tag, and on the polarity's failing side quit before any edit.
- *
- *   ?<esc><sep>f> <probe><esc><sep><tag>??<esc><sep><tag>??!<esc3><sep>q!0<sep>
- *
- * With the register cache active (fr 98) a bare "f> " has no location, so
- * ec_find takes its existence-test branch and the cursor never moves - the
- * groups that follow search from exactly where they would have without a
- * gate. Without the cache the search must be located ("%f> ") and the cursor
- * is put back with "1;0". A mode-1 probe searches the buffer directly, from
- * the top, and restores the cache afterwards.
- *
- * The quit is q!0, never a counted Nq: ex_exec drops one xqprop level per
- * conditional arm, so a counted quit inside the ?? arm would be absorbed and
- * the block would apply unconditionally - a silent failure in the dangerous
- * direction. q!0 sets xquit = -1, unwinds regardless of depth, skips the
- * trailing writes and exits 0, so "sh -e" carries on to the next block. */
-static void emit_gate(sbuf *out, gate_t *g, int use_cache)
-{
-	pat_spec_t ps;
-	if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
-		return;
-	memset(&ps, 0, sizeof(ps));
-	ps.lines = g->lines;
-	ps.nlines = g->nlines;
-	ps.pre_escaped = g->pre_escaped;
-	ps.mode = 1;
-	sb_chr(out, '?');
-	EMIT_ESCSEP(out);
-	EMIT_LB(out);
-	EMIT_ESCSEP(out);
-	/* Always search the live buffer, never the fr 98 register: the register
-	 * holds the whole file as one string, so a probe's ^/$ would anchor the
-	 * register's ends and never a mid-file line, and the gate would never
-	 * match. ";0" resets xoff, bare "fr" inverts the register option (98 -> 0)
-	 * so f> reads the buffer itself, where the ^...$ line anchors are valid;
-	 * "fr 98" restores the cache for the groups and "1;0" the cursor. */
-	sb_str(out, "1;0");
-	EMIT_ESCSEP(out);
-	sb_str(out, "fr");
-	EMIT_ESCSEP(out);
-	sb_str(out, ".,$f> ");
-	emit_chain_pattern(out, &ps);
-	EMIT_ESCSEP(out);
-	sb_printf(out, "%d??", g->tag);
-	if (use_cache) {
-		EMIT_ESCSEP(out);
-		sb_str(out, "fr 98");
-	}
-	EMIT_ESCSEP(out);
-	sb_str(out, "1;0");
-	EMIT_ESCSEP(out);
-	sb_printf(out, "%d??%s", g->tag,
-		  g->polarity == GATE_PRESENT ? "!" : "");
-	/* the quit sits inside the tag's then-arg, one level deeper */
-	EMIT_ESC3SEP(out);
-	sb_str(out, "q!0");
-	EMIT_SEP(out);
-	EMIT_LB(out);
-	EMIT_SEP(out);
-}
-
 /* Phase 1 fallback chain: try each pattern in order, first match wins.
  * All attempts are nested into a single ? conditional, chained with
  * escaped separators; per pattern n (capture tag n):
@@ -4008,14 +3946,12 @@ static char *lbuf_text(struct lbuf *lb)
 }
 
 /* One derived (or re-read) compatibility block: its guarded/edited file, its
- * polarity (pre/post) and origin (src= label, human annotation only), the
- * files[] range its own diff parsed into, its own === PATCH === lines, its
- * per-block delta customizations and its gate probes. A script holding both
- * pre and post blocks needs polarity/origin per-block (the compat_mode/
- * compat_origin globals only describe the current run). */
+ * origin (src= label, human annotation only), the files[] range its own diff
+ * parsed into, its own === PATCH === lines, its per-block delta customizations
+ * and its gate probes. A block is always emitted after the host (post); origin
+ * is per-block because the compat_origin global only describes the current run. */
 typedef struct {
 	char *path;
-	int polarity;		/* 1 = pre, 2 = post (same code as compat_mode) */
 	char *origin;		/* src= label; annotation, never a matcher input */
 	int first, count;	/* files[] range this block owns */
 	strv_t raw;		/* the block's own === PATCH === lines */
@@ -4364,8 +4300,8 @@ typedef struct {
 
 /* Enter/leave the compat emission window (relative anchoring, file-validated
  * generators off, the block's gate marks reserved) around a compat unit's
- * blob build and derivation, mirroring emit_compat_blocks. sv holds the saved
- * relative_mode for restore. */
+ * blob build and derivation, mirroring emit_one_call's per-section window. sv
+ * holds the saved relative_mode for restore. */
 static void compat_win_enter(unit_t *u, int *sv)
 {
 	*sv = relative_mode;
@@ -4434,7 +4370,7 @@ static void build_unit_blobs(unit_t *u)
  * the customizations that were written into it, so unedited units reproduce
  * their input. Host edits land in out_deltas (serialized by the DELTA tail);
  * compat edits are written back into each block's cb->deltas (serialized by
- * emit_compat_storage), and the edited groups feed emit_compat_blocks directly.
+ * emit_compat_storage), and the edited groups feed emit_one_call directly.
  */
 static void interactive_edit_all_files(file_patch_t **active, int nactive)
 {
@@ -4595,9 +4531,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		cu->ngates = cb->ngates;
 		/* index prefix keeps two blocks over one file from colliding on
 		 * bufs_find (ex.c matches on the name) */
-		snprintf(cu->name, sizeof(cu->name), "%d.%s.compat-%s.p2v.diff",
-			 c, cb->origin ? cb->origin : "",
-			 cb->polarity == 1 ? "pre" : "post");
+		snprintf(cu->name, sizeof(cu->name), "%d.%s.compat-post.p2v.diff",
+			 c, cb->origin ? cb->origin : "");
 		build_unit_blobs(cu);
 		nu++;
 	}
@@ -5429,8 +5364,7 @@ static void emit_reg_switches(sbuf *out)
  * (first) file's register is cached and before its groups, so a tree without
  * the origin's change quits (q!0) before any edit. Buffer indices are the
  * position in active[], which is what vi opens. */
-static void emit_vi_block(file_patch_t **active, int nactive,
-			  gate_t *gates, int ngates)
+static void emit_vi_block(file_patch_t **active, int nactive)
 {
 	int forward = relative_mode || interactive_mode;
 	int regs = relative_mode || interactive_mode || compat_mode;
@@ -5472,9 +5406,6 @@ static void emit_vi_block(file_patch_t **active, int nactive,
 			sb_str(osb, "%ya 98");
 			EMIT_SEP(osb);
 		}
-		if (k == 0)
-			for (int j = 0; j < ngates; j++)
-				emit_gate(osb, &gates[j], cache);
 		cur_file_path = active[k]->path;
 		emit_file_script(osb, active[k]);
 	}
@@ -5595,43 +5526,75 @@ typedef struct {
 	int ngates;
 	int reg;		/* register the driver yanks/executes the body from */
 	int secbuf;		/* global buffer index of the staged body */
+	int flagk;		/* per-origin flag slot (REG_FLAG_BASE+flagk); -1 host */
 	compat_block_t *cb;	/* NULL for the host section */
 } section_t;
 
-/* Emit the driver's orchestration for one section: run its gate sensors,
- * yank its body into its register, then call it - unconditionally for the
- * host, or gated on the recorded tags for a compat block. Every %@ call is
- * bracketed with the "2sc %" / "2sc" expansion window (emit_reg_call's
- * discipline) because the driver prologue's |sc! leaves xexp inert. */
-static void emit_driver_section(sbuf *out, section_t *s,
-				file_patch_t **uf, int nuf)
+/* Emit a section's combined gate expression - "tag1,tag2??" (present) or
+ * "tag1,tag2??!" (absent), or a bare "?" when the section has no real gate.
+ * ',' is AND; every gate in a block shares one polarity, so the trailing "!"
+ * is decided by the last real gate. Written raw at the driver's top level. */
+static void emit_gate_expr(sbuf *out, section_t *s)
 {
 	int present = 1, real = 0;
 	for (int j = 0; j < s->ngates; j++) {
 		gate_t *g = &s->gates[j];
 		if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
 			continue;
-		emit_gate_record(out, g, uf_index(uf, nuf, s->files[0]));
+		sb_printf(out, "%s%d", real ? "," : "", g->tag);
 		present = g->polarity == GATE_PRESENT;
 		real++;
 	}
+	if (real)
+		sb_printf(out, "??%s", present ? "" : "!");
+	else
+		sb_chr(out, '?');
+}
+
+/* Sensor half of a section's orchestration: run its gate searches, recording
+ * each under its own tag. The host section has no gates and contributes
+ * nothing. Every sensor runs before any body (the driver emits all sensors
+ * first), and their tags persist in xanchor to the call half below - the whole
+ * driver is one top-level ex_exec, so a tag recorded here is still readable when
+ * the matching call runs after the host body. */
+static void emit_driver_sensors(sbuf *out, section_t *s,
+				file_patch_t **uf, int nuf)
+{
+	int real = 0;
+	for (int j = 0; j < s->ngates; j++) {
+		gate_t *g = &s->gates[j];
+		if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
+			continue;
+		emit_gate_record(out, g, uf_index(uf, nuf, s->files[0]));
+		real++;
+	}
+	if (!real)
+		return;
+	/* On the fired side, raise this block's per-origin flag (read by the
+	 * per-block subset test) and append to the shared any-origin flag (read
+	 * once by the host override). A miss leaves both empty (= false). */
+	emit_gate_expr(out, s);
+	sb_printf(out, "%dreg 1", REG_FLAG_BASE + s->flagk);
+	EMIT_SEP(out);
+	emit_gate_expr(out, s);
+	sb_printf(out, "%dreg+ 1", REG_FLAG_ANY);
+	EMIT_SEP(out);
+}
+
+/* Call half: yank the section body into its register, then %@-call it -
+ * unconditionally for the host, or gated on the sensor tags for a compat block.
+ * Every %@ call is bracketed with the "2sc %" / "2sc" expansion window
+ * (emit_reg_call's discipline) because the driver prologue's |sc! leaves xexp
+ * inert. */
+static void emit_driver_call(sbuf *out, section_t *s)
+{
 	sb_printf(out, "b%d", s->secbuf);
 	EMIT_SEP(out);
 	sb_printf(out, "%%ya %d", s->reg);
 	EMIT_SEP(out);
 	sb_str(out, "2sc %");
 	EMIT_SEP(out);
-	if (real) {
-		for (int j = 0, first = 1; j < s->ngates; j++) {
-			gate_t *g = &s->gates[j];
-			if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
-				continue;
-			sb_printf(out, "%s%d", first ? "" : ",", g->tag);
-			first = 0;
-		}
-		sb_printf(out, "??%s", present ? "" : "!");
-	} else
-		sb_chr(out, '?');
+	emit_gate_expr(out, s);
 	sb_printf(out, "%%@%d", s->reg);
 	EMIT_SEP(out);
 	sb_str(out, "2sc");
@@ -5641,8 +5604,8 @@ static void emit_driver_section(sbuf *out, section_t *s,
 /* Emit the whole patch as a single $VI call: the real files as b0..bN-1, then
  * one staged buffer per section (the host and each compat block), then a driver
  * buffer that EXINIT yanks into register 97 and runs. The driver defines the
- * state registers once, runs each section in application order (pre-compat,
- * host, post-compat) through a %@ call, and finally writes every real file and
+ * state registers once, runs each section in application order (host, then
+ * every post-compat block) through a %@ call, and finally writes every real file and
  * quits. A gate that misses simply skips its block's call; nothing quits the
  * shared process, so later sections still run. */
 static void emit_one_call(file_patch_t **active, int nactive)
@@ -5655,39 +5618,34 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		if (files[i].ngroups > 0 && uf_index(uf, nuf, &files[i]) < 0)
 			uf[nuf++] = &files[i];
 
-	/* Sections in run order: pre-compat blocks, host, post-compat blocks. */
-	for (int pass = 0; pass < 3; pass++) {
-		if (pass == 1) {
-			if (nactive <= 0)
-				continue;
-			secs[nsec].files = active;
-			secs[nsec].nf = nactive;
-			secs[nsec].gates = NULL;
-			secs[nsec].ngates = 0;
-			secs[nsec].reg = P2VI_REG;
-			secs[nsec].cb = NULL;
-			nsec++;
+	/* Sections in run order: host, then every compat block (all post). */
+	if (nactive > 0) {
+		secs[nsec].files = active;
+		secs[nsec].nf = nactive;
+		secs[nsec].gates = NULL;
+		secs[nsec].ngates = 0;
+		secs[nsec].reg = P2VI_REG;
+		secs[nsec].flagk = -1;
+		secs[nsec].cb = NULL;
+		nsec++;
+	}
+	int nflag = 0;
+	for (int c = 0; c < ncompat; c++) {
+		compat_block_t *cb = &compat_blocks[c];
+		int nca;
+		file_patch_t **ca = block_files(cb, &nca);
+		if (!nca) {
+			free(ca);
 			continue;
 		}
-		int polarity = pass == 0 ? 1 : 2;
-		for (int c = 0; c < ncompat; c++) {
-			compat_block_t *cb = &compat_blocks[c];
-			int nca;
-			if (cb->polarity != polarity)
-				continue;
-			file_patch_t **ca = block_files(cb, &nca);
-			if (!nca) {
-				free(ca);
-				continue;
-			}
-			secs[nsec].files = ca;
-			secs[nsec].nf = nca;
-			secs[nsec].gates = cb->gates;
-			secs[nsec].ngates = cb->ngates;
-			secs[nsec].reg = compat_reg++;
-			secs[nsec].cb = cb;
-			nsec++;
-		}
+		secs[nsec].files = ca;
+		secs[nsec].nf = nca;
+		secs[nsec].gates = cb->gates;
+		secs[nsec].ngates = cb->ngates;
+		secs[nsec].reg = compat_reg++;
+		secs[nsec].flagk = nflag++;
+		secs[nsec].cb = cb;
+		nsec++;
 	}
 
 	fputs("# One $VI call: real files, one staged body per section, then a\n"
@@ -5722,8 +5680,13 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	fputs(osb->s, stdout);
 	printf("\"\\\n'");
 	sbuf_cut(osb, 0)
+	/* All sensors first (they record their tags), then the bodies in run
+	 * order: host, then every compat block. Sensors-before-bodies is the C1
+	 * layout - the host body can consult the sensor results. */
 	for (int i = 0; i < nsec; i++)
-		emit_driver_section(osb, &secs[i], uf, nuf);
+		emit_driver_sensors(osb, &secs[i], uf, nuf);
+	for (int i = 0; i < nsec; i++)
+		emit_driver_call(osb, &secs[i]);
 	sb_str(osb, "vis 2");
 	EMIT_SEP(osb);
 	for (int i = 0; i < nuf; i++) {
@@ -5742,8 +5705,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		section_t *s = &secs[i];
 		int sv_rel = relative_mode;
 		if (s->cb) {
-			printf("# Compat (%s) from %s\n",
-			       s->cb->polarity == 1 ? "pre" : "post",
+			printf("# Compat (post) from %s\n",
 			       s->cb->origin ? s->cb->origin : "");
 			relative_mode = 1;
 			compat_building = 1;
@@ -5819,9 +5781,8 @@ static void emit_compat_storage(void)
 {
 	for (int c = 0; c < ncompat; c++) {
 		compat_block_t *cb = &compat_blocks[c];
-		printf("=== PATCH2VI COMPAT %s %s src=%s ===\n",
-		       cb->polarity == 1 ? "pre" : "post", cb->path,
-		       cb->origin ? cb->origin : "");
+		printf("=== PATCH2VI COMPAT post %s src=%s ===\n",
+		       cb->path, cb->origin ? cb->origin : "");
 		for (int j = 0; j < cb->ngates; j++) {
 			gate_t *g = &cb->gates[j];
 			printf("=== GATE %d %s mode %d tag %d ===\n", j + 1,
@@ -7355,7 +7316,6 @@ static int compat_derive(void)
 		ARR_PUSH(compat_blocks, ncompat, compat_cap)
 		compat_block_t *cb = &compat_blocks[ncompat++];
 		cb->path = uc_dup(bufs[i].path);
-		cb->polarity = 2;	/* post */
 		cb->origin = uc_dup(compat_origin ? compat_origin : "");
 		for (j = 0; j < n; j++)
 			cb->gates[j] = g[j];	/* ownership transferred */
@@ -7678,10 +7638,12 @@ static int read_delta_sections(FILE *in)
 			}
 			ARR_PUSH(compat_blocks, ncompat, compat_cap)
 			cur_cb = &compat_blocks[ncompat++];
-			/* "=== PATCH2VI COMPAT pre|post <path> [src=<o>] ===" */
+			/* "=== PATCH2VI COMPAT post <path> [src=<o>] ===" */
 			char *p = line + 20;
-			cur_cb->polarity = !strncmp(p, "pre", 3) ? 1 : 2;
-			p += cur_cb->polarity == 1 ? 4 : 5;  /* "pre "/"post " */
+			while (*p && *p != ' ')	/* skip the "post" word */
+				p++;
+			if (*p == ' ')
+				p++;
 			char *src = strstr(p, " src=");
 			char *e = strstr(src ? src : p, " ===");
 			if (e)
@@ -8202,7 +8164,7 @@ int main(int argc, char **argv)
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, " %s", active[k]->path);
 		fputc('\n', stdout);
-		emit_vi_block(active, nactive, NULL, 0);
+		emit_vi_block(active, nactive);
 	}
 
 	/* Embed delta and original patch after exit 0 */
