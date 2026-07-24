@@ -1526,6 +1526,8 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 			xexp = *arg;
 		else if (i == 3)
 			xexe = *arg;
+		if (!*arg)
+			break;
 	}
 	return NULL;
 }
