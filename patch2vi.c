@@ -5906,8 +5906,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		nsec++;
 	}
 
-	fputs("# One $VI call: real files, one staged body per section, then a\n"
-	      "# driver buffer that EXINIT runs; sections gate themselves.\n"
+	fputs("# Body too large for EXINIT/argv: stage it in a file\n"
 	      "( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
 	      "trap 'rm -f \"$P2VIF\".*' EXIT\n", stdout);
 
