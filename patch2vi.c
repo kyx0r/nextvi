@@ -5364,7 +5364,9 @@ static void emit_reg_defaults(sbuf *out)
 
 /* The switches, as whole commands the shell either contributes or not.
  * This is the only part of a body sh writes, and it is written into a
- * double-quoted word, so its raw separator bytes are escaped for it. */
+ * double-quoted word, so its raw separator bytes are escaped for it.
+ * Backslash-newline breaks split the long word for readability; inside the
+ * double quotes they are line continuations, so the value is unchanged. */
 static void emit_reg_switches(sbuf *out)
 {
 	sb_printf(out, "${DBG1:+%dreg ?%%@%d", REG_ERR1, REG_HDLR);
@@ -5373,19 +5375,23 @@ static void emit_reg_switches(sbuf *out)
 	sb_dq_esc_sep(out, 0);
 	sb_printf(out, "%dreg ?%%@%d", REG_OK1, REG_MSG);
 	sb_dq_esc_sep(out, 0);
-	sb_printf(out, "}${DBG2:+ya!%d", REG_ERR2);
+	sb_str(out, "}\\\n");
+	sb_printf(out, "${DBG2:+ya!%d", REG_ERR2);
 	sb_dq_esc_sep(out, 0);
 	sb_printf(out, "ya!%d", REG_OK2);
 	sb_dq_esc_sep(out, 0);
-	sb_printf(out, "}${QF1:+%dreg vis 2", REG_QF1);
+	sb_str(out, "}\\\n");
+	sb_printf(out, "${QF1:+%dreg vis 2", REG_QF1);
 	sb_dq_esc_sep(out, 1);
 	sb_str(out, "q!1");
 	sb_dq_esc_sep(out, 0);
-	sb_printf(out, "}${QF2:+ya!%d", REG_QF2);
+	sb_str(out, "}\\\n");
+	sb_printf(out, "${QF2:+ya!%d", REG_QF2);
 	sb_dq_esc_sep(out, 0);
+	sb_str(out, "}\\\n");
 	/* the failing site is where the script wrote the location register,
 	 * so INTR searches itself for that command's argument */
-	sb_printf(out, "}${INTR:+%dreg |sc|", REG_INTR);
+	sb_printf(out, "${INTR:+%dreg |sc|", REG_INTR);
 	sb_dq_esc_sep(out, 1);
 	sb_printf(out, "vis 2:fr 0:e $0:83reg %%@47:%%f> %dreg %%@%d:&Q:b0:"
 		  "|sc! ", REG_LOC, REG_LOC);
@@ -5421,16 +5427,19 @@ static void emit_vi_block(file_patch_t **active, int nactive,
 	EMIT_SEP(osb);
 	if (regs)
 		emit_reg_defaults(osb);
+	/* the three printf arguments sit on their own source lines, joined by
+	 * backslash-newline continuations: outside the quotes these splice the
+	 * adjacent words with no separator, so the printf output is unchanged */
 	fputs("printf '%s%s%s\\n' '", stdout);
 	sq_write(osb->s, osb->s_n);
-	fputs("' \"", stdout);
+	fputs("'\\\n\"", stdout);
 	sbuf_cut(osb, 0)
 	if (regs)
 		emit_reg_switches(osb);
 	sbuf_null(osb)
 	fputs(osb->s, stdout);
 	/* third argument: the body proper, verbatim */
-	fputs("\" '", stdout);
+	fputs("\"\\\n'", stdout);
 	sbuf_cut(osb, 0)
 	if (forward) {
 		sb_str(osb, "fr 98");
@@ -5697,6 +5706,10 @@ static int sh_expand(const char *s, sbuf *out)
 	char *name;
 	int j;
 	while (*s) {
+		if (*s == '\\' && s[1] == '\n') {	/* line continuation */
+			s += 2;
+			continue;
+		}
 		if (*s == '\\' && (s[1] == '$' || s[1] == '"' || s[1] == '\\'
 				   || s[1] == '`')) {
 			sbuf_chr(out, s[1])
@@ -5950,6 +5963,13 @@ static int sh_word(const char **sp, sbuf *out)
 			continue;
 		}
 		if (*s != '"') {
+			/* backslash-newline is a line continuation: both bytes
+			 * vanish, so a word wrapped across lines stays one word
+			 * (this is what splices the three printf arguments) */
+			if (*s == '\\' && s[1] == '\n') {
+				s += 2;
+				continue;
+			}
 			if (*s == '\\' && s[1])
 				s++;
 			sbuf_chr(out, *s++)
