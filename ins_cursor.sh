@@ -29,8 +29,8 @@ fi
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: conf.c led.c vi.h
-printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr?%@212214reg ?%@217?%@211216reg ?%@220211reg vis 2q!1'\
-"${DBG1:+213reg ?%@217?%@210215reg ?%@220}\
+printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220211reg vis 2q!1'\
+"${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!211}\
@@ -47,26 +47,26 @@ const int conf_hlrev = SYN_BGMK\(8\);
 const int conf_hlrev = SYN_BGMK\(8\);
 
 3??0?
-3??+2m 1220reg p OK conf.c:327:a32sc %?%@2152sc1q0?
+3??+2m 1220reg p OK conf.c:327:a32sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	\{msg_ft, "\.\+", A\(AY1 \| SYN_BD\)},
 };
 const int hlslen = LEN\(hls\);.*(struct dircontext dctxs\[] = \{)
 	\{"\^\[" CR2L "]", -1},
 	\{"\^\[a-zA-Z_0-9]", \+1},8??0?
-grp 08??-6m 1220reg p OK conf.c:327:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-6m 1220reg p OK conf.c:327:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\* \(\[0-9]\{1,3}%\) \(L\[0-9]\+\) \(C\[0-9]\+\) \(B-\?\[0-9]\+\)\?\.\*\$",
 		A\(AY1 \| SYN_BD, BL, RE1, BL, YE1, GR\)},
 	\{bar_ft, "\^\.\*\$", A\(AY1 \| SYN_BD\)},.*(struct dirmark dmarks\[] = \{)
 	\{"\[" CR2L "]\[" CNEUT CR2L "]\*\[" CR2L "]", \+1, \{-1}},
 	\{"\^\(\[ \\t]\+\)\?\(\[" CNEUT "]\*\[\^" CR2L "]\*\[\^" CR2L CNEUT "]\(\?:\[" CNEUT "]\+\$\)\?\)", -1, \{0, 1, -1}},9??0?
-grp 09??-12m 1220reg p OK conf.c:327:a92sc %?%@2152sc'\''00?
-1;3;8;9??!219reg conf.c:3272sc %?%@2132sc0?
+grp 09??-12m 1220reg p OK conf.c:327:a92sc %? %@2152sc'\''00?
+1;3;8;9??!219reg conf.c:3272sc %? %@2132sc0?
 0?
 '\''1i /* cursor shape escapes (DECSCUSR): set on entering insert, reset on leaving */
 char conf_curins[] = "\x1b[5 q";	/* insert mode: vertical bar */
 char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 
-??!219reg conf.c:327:m12sc %?%@2142scb1%ya 98?0?
+??!219reg conf.c:327:m12sc %? %@2142scb1%ya 98?0?
 %f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \*postref = NULL;
 	ins_state is;
@@ -77,24 +77,24 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 %f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \*postref = NULL;
 	ins_state is;3??0?
-3??+2m 1220reg p OK led.c:689:a32sc %?%@2152sc1q0?
+3??+2m 1220reg p OK led.c:689:a32sc %? %@2152sc1q0?
 grp 1%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;.*?
 	char \*postref = NULL;.*?
 (	ins_state is;)7??0?
-grp 07??m 1220reg p OK led.c:689:a72sc %?%@2152sc1q0?
+grp 07??m 1220reg p OK led.c:689:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\)
 \{
 	int ai_max = 128 \* xai;.*(				sbufn_str\(sb, post\))
 			} else
 				sb->s\[\*pren] = \*post;8??0?
-grp 08??-9m 1220reg p OK led.c:689:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-9m 1220reg p OK led.c:689:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return key;
 }.*(			free\(postref\);)
 			xrow = crow;
 			return key;9??0?
-grp 09??-12m 1220reg p OK led.c:689:a92sc %?%@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:6892sc %?%@2132sc0?
+grp 09??-12m 1220reg p OK led.c:689:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6892sc %? %@2132sc0?
 ?0?
 %f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);
@@ -106,29 +106,29 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 %f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);
 		if \(key != '\''\\n'\''\) \{3??0?
-3??+2m 2220reg p OK led.c:694:a32sc %?%@2152sc1q0?
+3??+2m 2220reg p OK led.c:694:a32sc %? %@2152sc1q0?
 grp 1%f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,.*?
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);.*?
 (		if \(key != '\''\\n'\''\) \{)7??0?
-grp 07??m 2220reg p OK led.c:694:a72sc %?%@2152sc1q0?
+grp 07??m 2220reg p OK led.c:694:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\)
 \{
 	int ai_max = 128 \* xai;.*(				sbufn_str\(sb, post\))
 			} else
 				sb->s\[\*pren] = \*post;8??0?
-grp 08??-4m 2220reg p OK led.c:694:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:694:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return key;
 }.*(			free\(postref\);)
 			xrow = crow;
 			return key;9??0?
-grp 09??-7m 2220reg p OK led.c:694:a92sc %?%@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:6942sc %?%@2132sc0?
+grp 09??-7m 2220reg p OK led.c:694:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6942sc %? %@2132sc0?
 0?
 '\''1i 	term_write(conf_curins, sizeof(conf_curins) - 1)
-??!219reg led.c:689:m12sc %?%@2142sc0?
+??!219reg led.c:689:m12sc %? %@2142sc0?
 '\''2i 			term_write(conf_curnorm, sizeof(conf_curnorm) - 1)
-??!219reg led.c:694:m22sc %?%@2142scb2%ya 98?0?
+??!219reg led.c:694:m22sc %? %@2142scb2%ya 98?0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;
@@ -139,28 +139,28 @@ char \*conf_digraph\(int c1, int c2\);1??0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;3??0?
-3??+2m 1220reg p OK vi.h:539:a32sc %?%@2152sc1q0?
+3??+2m 1220reg p OK vi.h:539:a32sc %? %@2152sc1q0?
 grp 1%f> extern struct placeholder \*ph;.*?
 extern int phlen;.*?
 (extern const int conf_hlrev;)7??0?
-grp 07??m 1220reg p OK vi.h:539:a72sc %?%@2152sc1q0?
+grp 07??m 1220reg p OK vi.h:539:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	int l;		/\* the length of the codepoint \*/
 };
 extern struct placeholder _ph\[];.*(/\* vi\.c: main \*/)
 void vi\(int init\);
 extern int vi_hidch;8??0?
-grp 08??-5m 1220reg p OK vi.h:539:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.h:539:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	int cp\[2];	/\* the source character codepoint \*/
 	char d\[8];	/\* the placeholder \*/
 	int wid;	/\* the width of the placeholder \*/.*(extern int vi_lncol;)
 /\* filesystem \*/
 extern rset \*fsincl;9??0?
-grp 09??-8m 1220reg p OK vi.h:539:a92sc %?%@2152sc'\''00?
-1;3;7;8;9??!219reg vi.h:5392sc %?%@2132sc0?
+grp 09??-8m 1220reg p OK vi.h:539:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg vi.h:5392sc %? %@2132sc0?
 0?
 '\''1i extern char conf_curins[];
 extern char conf_curnorm[];
-??!219reg vi.h:539:m12sc %?%@2142scvis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.h:539:m12sc %? %@2142scvis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'led.c' 'vi.h' "$P2VIF"
 
 exit 0

@@ -29,8 +29,8 @@ fi
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: ex.c term.c vi.h
-printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr?%@212214reg ?%@217?%@211216reg ?%@220211reg vis 2q!1'\
-"${DBG1:+213reg ?%@217?%@210215reg ?%@220}\
+printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220211reg vis 2q!1'\
+"${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!211}\
@@ -41,8 +41,8 @@ int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/1??0?
 1??m 11q0?
 ;0fr.,$f> ^int xleft;			/\* the first visible column \*/$3??0?
-3??m 1220reg p OK ex.c:0:a32sc %?%@2152scfr 98fr 980?
-1;3??!219reg ex.c:02sc %?%@2132sc0?
+3??m 1220reg p OK ex.c:0:a32sc %? %@2152scfr 98fr 980?
+1;3??!219reg ex.c:02sc %? %@2132sc0?
 ?0?
 %f+ 	return xkwdrs \? NULL : xserr;
 }
@@ -55,20 +55,20 @@ static int eo_val\(char \*arg\)
 }
 
 3??0?
-3??+2m 2220reg p OK ex.c:1570:a32sc %?%@2152sc1q0?
+3??+2m 2220reg p OK ex.c:1570:a32sc %? %@2152sc1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	if \(!val && !uc_isdigit\(\*arg\)\))
 		return \(unsigned char\)\*arg;
 	return val;8??0?
-grp 08??-4m 2220reg p OK ex.c:1570:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1570:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_null\(sb\).*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
-grp 09??-15m 2220reg p OK ex.c:1570:a92sc %?%@2152sc'\''00?
-1;3;8;9??!219reg ex.c:15702sc %?%@2132sc0?
+grp 09??-15m 2220reg p OK ex.c:1570:a92sc %? %@2152sc'\''00?
+1;3;8;9??!219reg ex.c:15702sc %? %@2132sc0?
 ?0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
@@ -80,27 +80,27 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},3??0?
-3??+2m 3220reg p OK ex.c:1673:a32sc %?%@2152sc1q0?
+3??+2m 3220reg p OK ex.c:1673:a32sc %? %@2152sc1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
-grp 07??m 3220reg p OK ex.c:1673:a72sc %?%@2152sc1q0?
+grp 07??m 3220reg p OK ex.c:1673:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},
 	EO\(shape\),.*(	\{"ya!", ec_yank},)
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},8??0?
-grp 08??-4m 3220reg p OK ex.c:1673:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1673:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	\{"w", ec_write},
 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
-grp 09??-7m 3220reg p OK ex.c:1673:a92sc %?%@2152sc'\''00?
-1;3;7;8;9??!219reg ex.c:16732sc %?%@2132sc0?
+grp 09??-7m 3220reg p OK ex.c:1673:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg ex.c:16732sc %? %@2132sc0?
 0?
 '\''1-1i char **xenvp;
-??!219reg ex.c:0:m12sc %?%@2142sc0?
+??!219reg ex.c:0:m12sc %? %@2142sc0?
 '\''2i static void *ec_script(char *loc, char *cmd, char *arg)
 {
 	char *rep;
@@ -138,10 +138,10 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 	return ret ? xuerr : NULL;
 }
 
-??!219reg ex.c:1570:m22sc %?%@2142sc0?
+??!219reg ex.c:1570:m22sc %? %@2142sc0?
 '\''3i 	{"sr", ec_script},
 	{"sx", ec_script},
-??!219reg ex.c:1673:m32sc %?%@2142scb1%ya 98?0?
+??!219reg ex.c:1673:m32sc %? %@2142scb1%ya 98?0?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
 		}
@@ -154,17 +154,17 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 		exit\(1\);
 	}
 	if \(ifd\)2??0?
-2??m 1220reg p OK term.c:238:a22sc %?%@2152sc1q0?
+2??m 1220reg p OK term.c:238:a22sc %? %@2152sc1q0?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
 		}3??0?
-3??+3m 1220reg p OK term.c:238:a32sc %?%@2152sc1q0?
+3??+3m 1220reg p OK term.c:238:a32sc %? %@2152sc1q0?
 ;0fr.,$f> ^		execvp\(argv\[0], argv\);$4??0?
-4??m 1220reg p OK term.c:238:a42sc %?%@2152scfr 981qfr 980?
+4??m 1220reg p OK term.c:238:a42sc %? %@2152scfr 981qfr 980?
 %f> 		exit\(1\);
 	}
 	if \(ifd\)5??0?
-5??-1m 1220reg p OK term.c:238:a52sc %?%@2152sc1q0?
+5??-1m 1220reg p OK term.c:238:a52sc %? %@2152sc1q0?
 %f> 	......e.pi....s.\[0]..
 ........\(....fd......;
 	..
@@ -172,39 +172,39 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 .........;
 .}
 .i...if..6??0?
-6??+3m 1220reg p OK term.c:238:a62sc %?%@2152sc1q0?
+6??+3m 1220reg p OK term.c:238:a62sc %? %@2152sc1q0?
 grp 1%f> 			close\(pipefds1\[0]\);.*?
 			close\(pipefds1\[1]\);.*?
 		}.*?
 (		execvp\(argv\[0], argv\);)7??0?
-grp 07??m 1220reg p OK term.c:238:a72sc %?%@2152sc1q0?
+grp 07??m 1220reg p OK term.c:238:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 		if \(ofd\) \{		/\* setting up stdout and stderr \*/
 			dup2\(pipefds1\[1], 1\);
 			dup2\(pipefds1\[1], 2\);.*(		close\(pipefds0\[0]\);)
 	if \(ofd\)
 		close\(pipefds1\[1]\);8??0?
-grp 08??-4m 1220reg p OK term.c:238:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-4m 1220reg p OK term.c:238:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 			close\(pipefds0\[1]\);
 			close\(pipefds0\[0]\);
 		}.*(	if \(pid < 0\) \{)
 		if \(ifd\)
 			close\(pipefds0\[1]\);9??0?
-grp 09??-7m 1220reg p OK term.c:238:a92sc %?%@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:2382sc %?%@2132sc0?
+grp 09??-7m 1220reg p OK term.c:238:a92sc %? %@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:2382sc %? %@2132sc0?
 0?
 '\''1c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);
-??!219reg term.c:238:m12sc %?%@2142scb2%ya 98?0?
+??!219reg term.c:238:m12sc %? %@2142scb2%ya 98?0?
 %f> /\* vi\.h: shared definitions across files \*/
 
 /\* helper macros \*/
 #define LEN\(a\)		\(int\)\(sizeof\(a\) / sizeof\(\(a\)\[0]\)\)1??0?
 1??m 11q0?
 ;0fr.,$f> ^/\* vi\.h: shared definitions across files \*/$3??0?
-3??m 1220reg p OK vi.h:1:a32sc %?%@2152scfr 98fr 980?
-1;3??!219reg vi.h:12sc %?%@2132sc0?
+3??m 1220reg p OK vi.h:1:a32sc %? %@2152scfr 98fr 980?
+1;3??!219reg vi.h:12sc %? %@2132sc0?
 0?
 '\''1i #ifdef __APPLE__
 #include <crt_externs.h>
@@ -214,7 +214,7 @@ extern char **environ;
 #endif
 extern char **xenvp;
 
-??!219reg vi.h:1:m12sc %?%@2142scvis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.h:1:m12sc %? %@2142scvis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'term.c' 'vi.h' "$P2VIF"
 
 exit 0

@@ -29,8 +29,8 @@ fi
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: vi.c
-printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr?%@212214reg ?%@217?%@211216reg ?%@220211reg vis 2q!1'\
-"${DBG1:+213reg ?%@217?%@210215reg ?%@220}\
+printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220211reg vis 2q!1'\
+"${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!211}\
@@ -46,24 +46,24 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 %f> 
 	mv = term_read\(0\);
 	switch \(mv\) \{3??0?
-3??+2m 1220reg p OK vi.c:527:a32sc %?%@2152sc1q0?
+3??+2m 1220reg p OK vi.c:527:a32sc %? %@2152sc1q0?
 grp 1%f> .*?
 	mv = term_read\(0\);.*?
 (	switch \(mv\) \{)7??0?
-grp 07??m 1220reg p OK vi.c:527:a72sc %?%@2152sc1q0?
+grp 07??m 1220reg p OK vi.c:527:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	char \*cs;
 	int cnt = vi_arg \? vi_arg : 1;
 	int mv, i, dir, var;.*(		if \(mv == '\'','\''\))
 			mv = vi_charcmd == '\''F'\'' \|\| vi_charcmd == '\''T'\''
 				\? tolower\(vi_charcmd\) : toupper\(vi_charcmd\);8??0?
-grp 08??-5m 1220reg p OK vi.c:527:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.c:527:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	static rset \*bre;
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;.*(			mv = vi_charcmd;)
 		if \(lbuf_findchar\(xb, vi_charlast, mv, cnt, row, off\)\)
 			return -1;9??0?
-grp 09??-9m 1220reg p OK vi.c:527:a92sc %?%@2152sc'\''00?
-1;3;7;8;9??!219reg vi.c:5272sc %?%@2132sc0?
+grp 09??-9m 1220reg p OK vi.c:527:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg vi.c:5272sc %? %@2132sc0?
 0?
 '\''1i 	case '\''\033'\'':	/* Arrow keys */
 		mv = term_read(0);
@@ -96,7 +96,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		} else	/* Not a 033[X command so we abort */
 			return 0;
 		break;
-??!219reg vi.c:527:m12sc %?%@2142scvis 2b0w2q' > "$P2VIF"
+??!219reg vi.c:527:m12sc %? %@2142scvis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF"
 
 exit 0

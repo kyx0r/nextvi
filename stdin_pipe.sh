@@ -29,8 +29,8 @@ fi
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: ex.c term.c vi.c vi.h
-printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr?%@212214reg ?%@217?%@211216reg ?%@220211reg vis 2q!1'\
-"${DBG1:+213reg ?%@217?%@210215reg ?%@220}\
+printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220211reg vis 2q!1'\
+"${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!211}\
@@ -48,17 +48,17 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	if \(arg\[0] == '\''\.'\'' && arg\[1] == '\''/'\''\)
 		cd = 2;
 	len = strlen\(arg\+cd\);2??0?
-2??m 1220reg p OK ex.c:416:a22sc %?%@2152sc1q0?
+2??m 1220reg p OK ex.c:416:a22sc %? %@2152sc1q0?
 %f> static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
 \{
 	char msg\[512];3??0?
-3??+3m 1220reg p OK ex.c:416:a32sc %?%@2152sc1q0?
+3??+3m 1220reg p OK ex.c:416:a32sc %? %@2152sc1q0?
 ;0fr.,$f> ^	int fd, len, rd = 0, cd = 0;$4??0?
-4??m 1220reg p OK ex.c:416:a42sc %?%@2152scfr 981qfr 980?
+4??m 1220reg p OK ex.c:416:a42sc %? %@2152scfr 981qfr 980?
 %f> 	if \(arg\[0] == '\''\.'\'' && arg\[1] == '\''/'\''\)
 		cd = 2;
 	len = strlen\(arg\+cd\);5??0?
-5??-1m 1220reg p OK ex.c:416:a52sc %?%@2152sc1q0?
+5??-1m 1220reg p OK ex.c:416:a52sc %? %@2152sc1q0?
 %f> ........o.........it\(.ha. ....,......\*.m......r ..r.\)
 \{
 .........\[..2].
@@ -66,25 +66,25 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 .i......\[0..=........ ...\[....=.....
 .	...=...
 ...... .t..en.a....d..6??0?
-6??+3m 1220reg p OK ex.c:416:a62sc %?%@2152sc1q0?
+6??+3m 1220reg p OK ex.c:416:a62sc %? %@2152sc1q0?
 grp 1%f> static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\).*?
 \{.*?
 	char msg\[512];.*?
 (	int fd, len, rd = 0, cd = 0;)7??0?
-grp 07??m 1220reg p OK ex.c:416:a72sc %?%@2152sc1q0?
+grp 07??m 1220reg p OK ex.c:416:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	readfile\(\)
 	return 0;
 }.*(	if \(len && \(\(fd = bufs_find\(arg\+cd, len\)\) >= 0\)\) \{)
 		bufs_switchwft\(fd\)
 		return NULL;8??0?
-grp 08??-4m 1220reg p OK ex.c:416:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:416:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 		return 1;
 	}
 	bufs_switch\(bufs_open\(path, len\)\);.*(	} else if \(xbufcur == xbufsmax && !strchr\(cmd, '\''!'\''\) &&)
 			bufs\[xbufsmax - 1]\.lb->modified\) \{
 		return "last buffer modified";9??0?
-grp 09??-7m 1220reg p OK ex.c:416:a92sc %?%@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:4162sc %?%@2132sc0?
+grp 09??-7m 1220reg p OK ex.c:416:a92sc %? %@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:4162sc %? %@2132sc0?
 ?0?
 %f+ 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);
@@ -96,24 +96,24 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 %f+ 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);
 	}3??0?
-3??+2m 2220reg p OK ex.c:434:a32sc %?%@2152sc1q0?
+3??+2m 2220reg p OK ex.c:434:a32sc %? %@2152sc1q0?
 grp 1%f+ 		ex_bufpostfix\(ex_buf, arg\[0]\);.*?
 		syn_setft\(xb_ft\);.*?
 (	})7??0?
-grp 07??m 2220reg p OK ex.c:434:a72sc %?%@2152sc1q0?
+grp 07??m 2220reg p OK ex.c:434:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	}
 	readfile\(rd =\)
 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{.*(	if \(!\(xvis & 4\)\))
 		ex_print\(msg, bar_ft\)
 	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;8??0?
-grp 08??-4m 2220reg p OK ex.c:434:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:434:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{
 		bufs_switch\(bufs_open\(arg\+cd, len\)\);
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/.*(static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\))
 \{
 	rset \*rs;9??0?
-grp 09??-9m 2220reg p OK ex.c:434:a92sc %?%@2152sc'\''00?
-1;3;7;8;9??!219reg ex.c:4342sc %?%@2132sc0?
+grp 09??-9m 2220reg p OK ex.c:434:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg ex.c:4342sc %? %@2132sc0?
 ?0?
 %f+ 
 void ex_init\(char \*\*files, int n\)
@@ -125,29 +125,29 @@ void ex_init\(char \*\*files, int n\)
 %f+ 	xbufsalloc = MAX\(n, xbufsalloc\);
 	ec_setbufsmax\(NULL, NULL, ""\);
 	char \*s = files\[0] \? files\[0] : "";2??0?
-2??m 3220reg p OK ex.c:1861:a22sc %?%@2152sc1q0?
+2??m 3220reg p OK ex.c:1861:a22sc %? %@2152sc1q0?
 %f+ 
 void ex_init\(char \*\*files, int n\)
 \{3??0?
-3??+3m 3220reg p OK ex.c:1861:a32sc %?%@2152sc1q0?
+3??+3m 3220reg p OK ex.c:1861:a32sc %? %@2152sc1q0?
 ;0fr.,$f+ ^	xbufsalloc = MAX\(n, xbufsalloc\);$4??0?
-4??m 3220reg p OK ex.c:1861:a42sc %?%@2152scfr 981qfr 980?
+4??m 3220reg p OK ex.c:1861:a42sc %? %@2152scfr 981qfr 980?
 %f+ 	ec_setbufsmax\(NULL, NULL, ""\);
 	char \*s = files\[0] \? files\[0] : "";5??0?
-5??-1m 3220reg p OK ex.c:1861:a52sc %?%@2152sc1q0?
+5??-1m 3220reg p OK ex.c:1861:a52sc %? %@2152sc1q0?
 %f+ 
 .o...e...n..\(.......fi.... .nt.n.
 \{
 .xb.....l.c.. .....,...u...llo...
 .......b.f....\(..L.. ...L......
 ..... ...=...l....].\?...l..........;6??0?
-6??+3m 3220reg p OK ex.c:1861:a62sc %?%@2152sc1q0?
+6??+3m 3220reg p OK ex.c:1861:a62sc %? %@2152sc1q0?
 grp 1%f+ .*?
 void ex_init\(char \*\*files, int n\).*?
 \{.*?
 (	xbufsalloc = MAX\(n, xbufsalloc\);)7??0?
-grp 07??m 3220reg p OK ex.c:1861:a72sc %?%@2152sc0?
-1;2;3;4;5;6;7??!219reg ex.c:18612sc %?%@2132sc0?
+grp 07??m 3220reg p OK ex.c:1861:a72sc %? %@2152sc0?
+1;2;3;4;5;6;7??!219reg ex.c:18612sc %? %@2132sc0?
 ?0?
 %f+ 	ec_setbufsmax\(NULL, NULL, ""\);
 	char \*s = files\[0] \? files\[0] : "";
@@ -156,11 +156,11 @@ void ex_init\(char \*\*files, int n\).*?
 1??+1m 41q0?
 %f+ 	ec_setbufsmax\(NULL, NULL, ""\);
 	char \*s = files\[0] \? files\[0] : "";3??0?
-3??+1m 4220reg p OK ex.c:1863:a32sc %?%@2152sc1q0?
+3??+1m 4220reg p OK ex.c:1863:a32sc %? %@2152sc1q0?
 grp 1%f+ 	ec_setbufsmax\(NULL, NULL, ""\);.*?
 (	char \*s = files\[0] \? files\[0] : "";)7??0?
-grp 07??m 4220reg p OK ex.c:1863:a72sc %?%@2152sc0?
-1;3;7??!219reg ex.c:18632sc %?%@2132sc0?
+grp 07??m 4220reg p OK ex.c:1863:a72sc %? %@2152sc0?
+1;3;7??!219reg ex.c:18632sc %? %@2132sc0?
 ?0?
 %f+ 	do \{
 		xmpt = 0;
@@ -171,26 +171,26 @@ void ex_init\(char \*\*files, int n\).*?
 %f+ 		ec_edit\("", "e", s\);
 		s = \*\(\+\+files\);
 	} while \(--n > 0\);2??0?
-2??m 5220reg p OK ex.c:1866:a22sc %?%@2152sc1q0?
+2??m 5220reg p OK ex.c:1866:a22sc %? %@2152sc1q0?
 %f+ 	do \{
 		xmpt = 0;3??0?
-3??+2m 5220reg p OK ex.c:1866:a32sc %?%@2152sc1q0?
+3??+2m 5220reg p OK ex.c:1866:a32sc %? %@2152sc1q0?
 ;0fr.,$f+ ^		ec_edit\("", "e", s\);$4??0?
-4??m 5220reg p OK ex.c:1866:a42sc %?%@2152scfr 981qfr 980?
+4??m 5220reg p OK ex.c:1866:a42sc %? %@2152scfr 981qfr 980?
 %f+ 		s = \*\(\+\+files\);
 	} while \(--n > 0\);5??0?
-5??-1m 5220reg p OK ex.c:1866:a52sc %?%@2152sc1q0?
+5??-1m 5220reg p OK ex.c:1866:a52sc %? %@2152sc1q0?
 %f+ ... \{
 ...m.......
 ......di....,..... ...
 ..s =...\+........
 	....i....... . ..;6??0?
-6??+2m 5220reg p OK ex.c:1866:a62sc %?%@2152sc1q0?
+6??+2m 5220reg p OK ex.c:1866:a62sc %? %@2152sc1q0?
 grp 1%f+ 	do \{.*?
 		xmpt = 0;.*?
 (		ec_edit\("", "e", s\);)7??0?
-grp 07??m 5220reg p OK ex.c:1866:a72sc %?%@2152sc0?
-1;2;3;4;5;6;7??!219reg ex.c:18662sc %?%@2132sc0?
+grp 07??m 5220reg p OK ex.c:1866:a72sc %? %@2152sc0?
+1;2;3;4;5;6;7??!219reg ex.c:18662sc %? %@2132sc0?
 ?0?
 %f+ 		s = \*\(\+\+files\);
 	} while \(--n > 0\);
@@ -198,11 +198,11 @@ void ex_init\(char \*\*files, int n\).*?
 1??+1m 61q0?
 %f+ 		s = \*\(\+\+files\);
 	} while \(--n > 0\);3??0?
-3??+1m 6220reg p OK ex.c:1868:a32sc %?%@2152sc1q0?
+3??+1m 6220reg p OK ex.c:1868:a32sc %? %@2152sc1q0?
 grp 1%f+ 		s = \*\(\+\+files\);.*?
 (	} while \(--n > 0\);)7??0?
-grp 07??m 6220reg p OK ex.c:1868:a72sc %?%@2152sc0?
-1;3;7??!219reg ex.c:18682sc %?%@2132sc0?
+grp 07??m 6220reg p OK ex.c:1868:a72sc %? %@2152sc0?
+1;3;7??!219reg ex.c:18682sc %? %@2132sc0?
 ?0?
 %f+ 	xvis &= ~4;
 	if \(\(s = getenv\("EXINIT"\)\)\)
@@ -210,21 +210,21 @@ void ex_init\(char \*\*files, int n\).*?
 }1??0?
 1??m 71q0?
 ;0fr.,$f+ ^	xvis &= ~4;$3??0?
-3??m 7220reg p OK ex.c:1869:a32sc %?%@2152scfr 98fr 980?
-1;3??!219reg ex.c:18692sc %?%@2132sc0?
+3??m 7220reg p OK ex.c:1869:a32sc %? %@2152scfr 98fr 980?
+1;3??!219reg ex.c:18692sc %? %@2132sc0?
 0?
 '\''1c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
-??!219reg ex.c:416:m12sc %?%@2142sc0?
+??!219reg ex.c:416:m12sc %? %@2142sc0?
 '\''2i 	if (!loc)
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
-??!219reg ex.c:434:m22sc %?%@2142sc0?
-'\''3s/n,/n + !!stdin_fd,/??!219reg ex.c:1861:m32sc %?%@2142sc0?
+??!219reg ex.c:434:m22sc %? %@2142sc0?
+'\''3s/n,/n + !!stdin_fd,/??!219reg ex.c:1861:m32sc %? %@2142sc0?
 '\''4i 	int i = n;
-??!219reg ex.c:1863:m42sc %?%@2142sc0?
-'\''5s/\("/(!n && stdin_fd ? NULL : "/??!219reg ex.c:1866:m52sc %?%@2142sc0?
+??!219reg ex.c:1863:m42sc %? %@2142sc0?
+'\''5s/\("/(!n && stdin_fd ? NULL : "/??!219reg ex.c:1866:m52sc %? %@2142sc0?
 '\''6i 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, "", "");
@@ -244,9 +244,9 @@ void ex_init\(char \*\*files, int n\).*?
 		}
 		xmpt = MIN(xmpt, 1);
 	}
-??!219reg ex.c:1868:m62sc %?%@2142sc0?
+??!219reg ex.c:1868:m62sc %? %@2142sc0?
 '\''7i 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
-??!219reg ex.c:1869:m72sc %?%@2142scb1%ya 98?0?
+??!219reg ex.c:1869:m72sc %? %@2142scb1%ya 98?0?
 %f> int xrows, xcols;
 unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char \*ibuf, icmd\[4096];
@@ -257,18 +257,18 @@ void term_init\(void\)1??0?
 %f> int xrows, xcols;
 unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char \*ibuf, icmd\[4096];3??0?
-3??+2m 1220reg p OK term.c:8:a32sc %?%@2152sc1q0?
+3??+2m 1220reg p OK term.c:8:a32sc %? %@2152sc1q0?
 grp 1%f> int xrows, xcols;.*?
 unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;.*?
 (unsigned char \*ibuf, icmd\[4096];)7??0?
-grp 07??m 1220reg p OK term.c:8:a72sc %?%@2152sc1q0?
+grp 07??m 1220reg p OK term.c:8:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> int term_record;
 int term_winch;
 int term_resized;.*(	struct winsize win;)
 	struct termios newtermios;
 	char \*s;8??0?
-grp 08??-5m 1220reg p OK term.c:8:a82sc %?%@2152sc'\''00?
-1;3;7;8??!219reg term.c:82sc %?%@2132sc0?
+grp 08??-5m 1220reg p OK term.c:8:a82sc %? %@2152sc'\''00?
+1;3;7;8??!219reg term.c:82sc %? %@2132sc0?
 ?0?
 %f+ 	term_winch = 0;
 	term_resized\+\+;
@@ -278,39 +278,39 @@ int term_resized;.*(	struct winsize win;)
 1??+3m 21q0?
 %f+ 	tcgetattr\(0, &termios\);
 	newtermios = termios;2??0?
-2??m 2220reg p OK term.c:19:a22sc %?%@2152sc1q0?
+2??m 2220reg p OK term.c:19:a22sc %? %@2152sc1q0?
 %f+ 	term_winch = 0;
 	term_resized\+\+;
 	sbuf_make\(term_sbuf, 2048\)3??0?
-3??+3m 2220reg p OK term.c:19:a32sc %?%@2152sc1q0?
+3??+3m 2220reg p OK term.c:19:a32sc %? %@2152sc1q0?
 ;0fr.,$f+ ^	tcgetattr\(0, &termios\);$4??0?
-4??m 2220reg p OK term.c:19:a42sc %?%@2152scfr 981qfr 980?
+4??m 2220reg p OK term.c:19:a42sc %? %@2152scfr 981qfr 980?
 ;0fr.,$f+ ^	newtermios = termios;$5??0?
-5??-1m 2220reg p OK term.c:19:a52sc %?%@2152scfr 981qfr 980?
+5??-1m 2220reg p OK term.c:19:a52sc %? %@2152scfr 981qfr 980?
 %f+ ........n.......
 .......e........
 ...u......\(t..m...u.. .....
 	t....att..0..&.e.m.....
 .n........s.. ......s;6??0?
-6??+3m 2220reg p OK term.c:19:a62sc %?%@2152sc1q0?
+6??+3m 2220reg p OK term.c:19:a62sc %? %@2152sc1q0?
 grp 1%f+ 	term_winch = 0;.*?
 	term_resized\+\+;.*?
 	sbuf_make\(term_sbuf, 2048\).*?
 (	tcgetattr\(0, &termios\);)7??0?
-grp 07??m 2220reg p OK term.c:19:a72sc %?%@2152sc1q0?
+grp 07??m 2220reg p OK term.c:19:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	struct winsize win;
 	struct termios newtermios;
 	char \*s;.*(		if \(\(s = getenv\("LINES"\)\)\))
 			xrows = atoi\(s\);
 		if \(\(s = getenv\("COLUMNS"\)\)\)8??0?
-grp 08??-8m 2220reg p OK term.c:19:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-8m 2220reg p OK term.c:19:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char \*ibuf, icmd\[4096];
 unsigned int texec, tn;.*(			xcols = atoi\(s\);)
 	}
 	xcols = xcols \? xcols : 80;9??0?
-grp 09??-11m 2220reg p OK term.c:19:a92sc %?%@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:192sc %?%@2132sc0?
+grp 09??-11m 2220reg p OK term.c:19:a92sc %? %@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:192sc %? %@2132sc0?
 ?0?
 %f+ 	newtermios = termios;
 	newtermios\.c_lflag &= ~\(ICANON \| ISIG \| ECHO\);
@@ -326,17 +326,17 @@ unsigned int texec, tn;.*(			xcols = atoi\(s\);)
 		xcols = win\.ws_col;
 		xrows = win\.ws_row;
 	} else \{2??0?
-2??m 3220reg p OK term.c:21:a22sc %?%@2152sc1q0?
+2??m 3220reg p OK term.c:21:a22sc %? %@2152sc1q0?
 ;0fr.,$f+ ^	newtermios = termios;$3??0?
-3??+1m 3220reg p OK term.c:21:a32sc %?%@2152scfr 981qfr 980?
+3??+1m 3220reg p OK term.c:21:a32sc %? %@2152scfr 981qfr 980?
 %f+ 	newtermios\.c_lflag &= ~\(ICANON \| ISIG \| ECHO\);
 	tcsetattr\(0, TCSAFLUSH, &newtermios\);
 	if \(!ioctl\(0, TIOCGWINSZ, &win\)\) \{4??0?
-4??m 3220reg p OK term.c:21:a42sc %?%@2152sc1q0?
+4??m 3220reg p OK term.c:21:a42sc %? %@2152sc1q0?
 %f+ 		xcols = win\.ws_col;
 		xrows = win\.ws_row;
 	} else \{5??0?
-5??-3m 3220reg p OK term.c:21:a52sc %?%@2152sc1q0?
+5??-3m 3220reg p OK term.c:21:a52sc %? %@2152sc1q0?
 %f+ 	..w....... ...e...o..
 ...w.......\.........&..~\(I...O...........E..O..
 ..c.................U... ...w.........
@@ -344,23 +344,23 @@ unsigned int texec, tn;.*(			xcols = atoi\(s\);)
 .	x.o.s....i......o.;
 ....ow... wi...._r...
 .}.e... .6??0?
-6??+1m 3220reg p OK term.c:21:a62sc %?%@2152sc1q0?
+6??+1m 3220reg p OK term.c:21:a62sc %? %@2152sc1q0?
 grp 1%f+ 	newtermios = termios;.*?
 (	newtermios\.c_lflag &= ~\(ICANON \| ISIG \| ECHO\);)7??0?
-grp 07??m 3220reg p OK term.c:21:a72sc %?%@2152sc1q0?
+grp 07??m 3220reg p OK term.c:21:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	struct winsize win;
 	struct termios newtermios;
 	char \*s;.*(		if \(\(s = getenv\("LINES"\)\)\))
 			xrows = atoi\(s\);
 		if \(\(s = getenv\("COLUMNS"\)\)\)8??0?
-grp 08??-6m 3220reg p OK term.c:21:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-6m 3220reg p OK term.c:21:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char \*ibuf, icmd\[4096];
 unsigned int texec, tn;.*(			xcols = atoi\(s\);)
 	}
 	xcols = xcols \? xcols : 80;9??0?
-grp 09??-9m 3220reg p OK term.c:21:a92sc %?%@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:212sc %?%@2132sc0?
+grp 09??-9m 3220reg p OK term.c:21:a92sc %? %@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:212sc %? %@2132sc0?
 ?0?
 %f+ 	}
 	xcols = xcols \? xcols : 80;
@@ -372,24 +372,24 @@ void term_done\(void\)1??0?
 %f+ 	}
 	xcols = xcols \? xcols : 80;
 	xrows = xrows \? xrows : 25;3??0?
-3??+2m 4220reg p OK term.c:33:a32sc %?%@2152sc1q0?
+3??+2m 4220reg p OK term.c:33:a32sc %? %@2152sc1q0?
 grp 1%f+ 	}.*?
 	xcols = xcols \? xcols : 80;.*?
 (	xrows = xrows \? xrows : 25;)7??0?
-grp 07??m 4220reg p OK term.c:33:a72sc %?%@2152sc1q0?
+grp 07??m 4220reg p OK term.c:33:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 			xrows = atoi\(s\);
 		if \(\(s = getenv\("COLUMNS"\)\)\)
 			xcols = atoi\(s\);.*(	if \(!term_sbuf\))
 		return;
 	term_commit\(\);8??0?
-grp 08??-5m 4220reg p OK term.c:33:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-5m 4220reg p OK term.c:33:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 		xrows = win\.ws_row;
 	} else \{
 		if \(\(s = getenv\("LINES"\)\)\).*(	sbuf_free\(term_sbuf\))
 	tcsetattr\(0, 0, &termios\);
 }9??0?
-grp 09??-8m 4220reg p OK term.c:33:a92sc %?%@2152sc'\''00?
-1;3;7;8;9??!219reg term.c:332sc %?%@2132sc0?
+grp 09??-8m 4220reg p OK term.c:33:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg term.c:332sc %? %@2132sc0?
 ?0?
 %f+ 		return;
 	term_commit\(\);
@@ -403,17 +403,17 @@ void term_clean\(void\)1??0?
 }
 
 void term_clean\(void\)2??0?
-2??m 5220reg p OK term.c:42:a22sc %?%@2152sc1q0?
+2??m 5220reg p OK term.c:42:a22sc %? %@2152sc1q0?
 %f+ 		return;
 	term_commit\(\);
 	sbuf_free\(term_sbuf\)3??0?
-3??+3m 5220reg p OK term.c:42:a32sc %?%@2152sc1q0?
+3??+3m 5220reg p OK term.c:42:a32sc %? %@2152sc1q0?
 ;0fr.,$f+ ^	tcsetattr\(0, 0, &termios\);$4??0?
-4??m 5220reg p OK term.c:42:a42sc %?%@2152scfr 981qfr 980?
+4??m 5220reg p OK term.c:42:a42sc %? %@2152scfr 981qfr 980?
 %f+ }
 
 void term_clean\(void\)5??0?
-5??-1m 5220reg p OK term.c:42:a52sc %?%@2152sc1q0?
+5??-1m 5220reg p OK term.c:42:a52sc %? %@2152sc1q0?
 %f+ ...et.r..
 	t.r._.....t.\);
 ..b.f..re......_s..f.
@@ -421,25 +421,25 @@ void term_clean\(void\)5??0?
 }
 
 .....t.......a..v.id.6??0?
-6??+3m 5220reg p OK term.c:42:a62sc %?%@2152sc1q0?
+6??+3m 5220reg p OK term.c:42:a62sc %? %@2152sc1q0?
 grp 1%f+ 		return;.*?
 	term_commit\(\);.*?
 	sbuf_free\(term_sbuf\).*?
 (	tcsetattr\(0, 0, &termios\);)7??0?
-grp 07??m 5220reg p OK term.c:42:a72sc %?%@2152sc1q0?
+grp 07??m 5220reg p OK term.c:42:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> void term_done\(void\)
 \{
 	if \(!term_sbuf\).*(	term_write\("\\x1b\[2J", 4\)	/\* clear screen \*/)
 	term_write\("\\x1b\[H", 3\)		/\* cursor topleft \*/
 }8??0?
-grp 08??-5m 5220reg p OK term.c:42:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-5m 5220reg p OK term.c:42:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	xcols = xcols \? xcols : 80;
 	xrows = xrows \? xrows : 25;
 }.*(void term_suspend\(void\))
 \{
 	if \(xvis & 8\)9??0?
-grp 09??-9m 5220reg p OK term.c:42:a92sc %?%@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:422sc %?%@2132sc0?
+grp 09??-9m 5220reg p OK term.c:42:a92sc %? %@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:422sc %? %@2132sc0?
 ?0?
 %f+ 			goto ret;
 		}
@@ -451,24 +451,24 @@ void term_clean\(void\)5??0?
 %f+ 			goto ret;
 		}
 		cw = 0;3??0?
-3??+2m 6220reg p OK term.c:154:a32sc %?%@2152sc1q0?
+3??+2m 6220reg p OK term.c:154:a32sc %? %@2152sc1q0?
 grp 1%f+ 			goto ret;.*?
 		}.*?
 (		cw = 0;)7??0?
-grp 07??m 6220reg p OK term.c:154:a72sc %?%@2152sc1q0?
+grp 07??m 6220reg p OK term.c:154:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 		}
 		if \(term_winch && winch\) \{
 			\*ibuf = winch;	/\* yield until term_winch is cleared \*/.*(			} else if \(term_winch != cw && !winch && xquit >= 0\) \{)
 				cw = term_winch;
 				goto re;8??0?
-grp 08??-9m 6220reg p OK term.c:154:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-9m 6220reg p OK term.c:154:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 			xquit = !xquit \? 1 : xquit;
 			if \(texec == '\''&'\''\)
 				goto err;.*(			err:)
 			\*ibuf = 0;
 		} else if \(xrr\) \{9??0?
-grp 09??-13m 6220reg p OK term.c:154:a92sc %?%@2152sc'\''00?
-1;3;7;8;9??!219reg term.c:1542sc %?%@2132sc0?
+grp 09??-13m 6220reg p OK term.c:154:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg term.c:1542sc %? %@2132sc0?
 ?0?
 %f+ 		re:
 		/\* read a single input character \*/
@@ -484,18 +484,18 @@ void term_clean\(void\)5??0?
 			if \(term_winch && winch && xquit >= 0\) \{
 				\*ibuf = winch;
 				goto ret;2??0?
-2??m 7220reg p OK term.c:158:a22sc %?%@2152sc1q0?
+2??m 7220reg p OK term.c:158:a22sc %? %@2152sc1q0?
 %f+ 		re:
 		/\* read a single input character \*/
 		if \(xquit < 0 \|\| poll\(&ufd, 1, -1\) <= 0 \|\|3??0?
-3??+3m 7220reg p OK term.c:158:a32sc %?%@2152sc1q0?
+3??+3m 7220reg p OK term.c:158:a32sc %? %@2152sc1q0?
 %f+ 				read\(STDIN_FILENO, ibuf, 1\) <= 0\) \{
 			xquit = !isatty\(STDIN_FILENO\) \? -1 : xquit;4??0?
-4??m 7220reg p OK term.c:158:a42sc %?%@2152sc1q0?
+4??m 7220reg p OK term.c:158:a42sc %? %@2152sc1q0?
 %f+ 			if \(term_winch && winch && xquit >= 0\) \{
 				\*ibuf = winch;
 				goto ret;5??0?
-5??-2m 7220reg p OK term.c:158:a52sc %?%@2152sc1q0?
+5??-2m 7220reg p OK term.c:158:a52sc %? %@2152sc1q0?
 %f+ 	.r..
 ................l. .n..t....r........
 	....\(x.................&........-.\)........
@@ -504,25 +504,25 @@ void term_clean\(void\)5??0?
 ..	i.....r._..........i..h .&.x.........\).\{
 ..	..i..... .in...
 .	........e..6??0?
-6??+3m 7220reg p OK term.c:158:a62sc %?%@2152sc1q0?
+6??+3m 7220reg p OK term.c:158:a62sc %? %@2152sc1q0?
 grp 1%f+ 		re:.*?
 		/\* read a single input character \*/.*?
 		if \(xquit < 0 \|\| poll\(&ufd, 1, -1\) <= 0 \|\|.*?
 (				read\(STDIN_FILENO, ibuf, 1\) <= 0\) \{)7??0?
-grp 07??m 7220reg p OK term.c:158:a72sc %?%@2152sc1q0?
+grp 07??m 7220reg p OK term.c:158:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 		}
 		if \(term_winch && winch\) \{
 			\*ibuf = winch;	/\* yield until term_winch is cleared \*/.*(			} else if \(term_winch != cw && !winch && xquit >= 0\) \{)
 				cw = term_winch;
 				goto re;8??0?
-grp 08??-5m 7220reg p OK term.c:158:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-5m 7220reg p OK term.c:158:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 			xquit = !xquit \? 1 : xquit;
 			if \(texec == '\''&'\''\)
 				goto err;.*(			err:)
 			\*ibuf = 0;
 		} else if \(xrr\) \{9??0?
-grp 09??-9m 7220reg p OK term.c:158:a92sc %?%@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:1582sc %?%@2132sc0?
+grp 09??-9m 7220reg p OK term.c:158:a92sc %? %@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:1582sc %? %@2132sc0?
 ?0?
 %f+ 	fds\[0]\.events = POLLIN;
 	fds\[1]\.fd = ifd;
@@ -536,17 +536,17 @@ void term_clean\(void\)5??0?
 	fds\[2]\.events = POLLIN;
 	while \(\(fds\[0]\.fd >= 0 \|\| fds\[1]\.fd >= 0\) && poll\(fds, 3, 200\) >= 0\) \{
 		if \(fds\[0]\.revents & POLLIN\) \{2??0?
-2??m 8220reg p OK term.c:300:a22sc %?%@2152sc1q0?
+2??m 8220reg p OK term.c:300:a22sc %? %@2152sc1q0?
 %f+ 	fds\[0]\.events = POLLIN;
 	fds\[1]\.fd = ifd;
 	fds\[1]\.events = POLLOUT;3??0?
-3??+3m 8220reg p OK term.c:300:a32sc %?%@2152sc1q0?
+3??+3m 8220reg p OK term.c:300:a32sc %? %@2152sc1q0?
 ;0fr.,$f+ ^	fds\[2]\.fd = ibuf \? 0 : -1;$4??0?
-4??m 8220reg p OK term.c:300:a42sc %?%@2152scfr 981qfr 980?
+4??m 8220reg p OK term.c:300:a42sc %? %@2152scfr 981qfr 980?
 %f+ 	fds\[2]\.events = POLLIN;
 	while \(\(fds\[0]\.fd >= 0 \|\| fds\[1]\.fd >= 0\) && poll\(fds, 3, 200\) >= 0\) \{
 		if \(fds\[0]\.revents & POLLIN\) \{5??0?
-5??-1m 8220reg p OK term.c:300:a52sc %?%@2152sc1q0?
+5??-1m 8220reg p OK term.c:300:a52sc %? %@2152sc1q0?
 %f+ .....0......t. ...O..I..
 .......\.f.......;
 ...s................LO..;
@@ -554,25 +554,25 @@ void term_clean\(void\)5??0?
 ......]....nt... P......
 	.hi...\(.f......fd..=...\|\|.f......f...=.0...&.p.....d...3,....\).....\) .
 ..i. ...........e......PO.LI.. .6??0?
-6??+3m 8220reg p OK term.c:300:a62sc %?%@2152sc1q0?
+6??+3m 8220reg p OK term.c:300:a62sc %? %@2152sc1q0?
 grp 1%f+ 	fds\[0]\.events = POLLIN;.*?
 	fds\[1]\.fd = ifd;.*?
 	fds\[1]\.events = POLLOUT;.*?
 (	fds\[2]\.fd = ibuf \? 0 : -1;)7??0?
-grp 07??m 8220reg p OK term.c:300:a72sc %?%@2152sc1q0?
+grp 07??m 8220reg p OK term.c:300:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	} else if \(ifd >= 0\)
 		fcntl\(ifd, F_SETFL, fcntl\(ifd, F_GETFL, 0\) \| O_NONBLOCK\);
 	fds\[0]\.fd = ofd;.*(			int ret = read\(fds\[0]\.fd, buf, sizeof\(buf\)\);)
 			if \(ret > 0 && oproc == 2\)
 				term_write\(buf, ret\)8??0?
-grp 08??-4m 8220reg p OK term.c:300:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-4m 8220reg p OK term.c:300:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	if \(!ibuf\) \{
 		signal\(SIGINT, SIG_IGN\);
 		term_done\(\);.*(				sbuf_mem\(sb, buf, ret\))
 			else \{
 				close\(fds\[0]\.fd\);9??0?
-grp 09??-8m 8220reg p OK term.c:300:a92sc %?%@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:3002sc %?%@2132sc0?
+grp 09??-8m 8220reg p OK term.c:300:a92sc %? %@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:3002sc %? %@2132sc0?
 ?0?
 %f+ 		close\(ifd\);
 	waitpid\(pid, status, 0\);
@@ -586,17 +586,17 @@ void term_clean\(void\)5??0?
 	signal\(SIGTTOU, SIG_DFL\);
 	if \(!ibuf\) \{
 		if \(term_sbuf\)2??0?
-2??m 9220reg p OK term.c:343:a22sc %?%@2152sc1q0?
+2??m 9220reg p OK term.c:343:a22sc %? %@2152sc1q0?
 %f+ 		close\(ifd\);
 	waitpid\(pid, status, 0\);
 	signal\(SIGTTOU, SIG_IGN\);3??0?
-3??+3m 9220reg p OK term.c:343:a32sc %?%@2152sc1q0?
+3??+3m 9220reg p OK term.c:343:a32sc %? %@2152sc1q0?
 ;0fr.,$f+ ^	tcsetpgrp\(STDIN_FILENO, getpgrp\(\)\);$4??0?
-4??m 9220reg p OK term.c:343:a42sc %?%@2152scfr 981qfr 980?
+4??m 9220reg p OK term.c:343:a42sc %? %@2152scfr 981qfr 980?
 %f+ 	signal\(SIGTTOU, SIG_DFL\);
 	if \(!ibuf\) \{
 		if \(term_sbuf\)5??0?
-5??-1m 9220reg p OK term.c:343:a52sc %?%@2152sc1q0?
+5??-1m 9220reg p OK term.c:343:a52sc %? %@2152sc1q0?
 %f+ .	c.o..\(.f...
 	...............atu....\).
 ..i.na..S...T..,..........
@@ -604,41 +604,41 @@ void term_clean\(void\)5??0?
 .s....l.S..T.O....I.......
 .i..\(...u....
 .... ...rm.....\)6??0?
-6??+3m 9220reg p OK term.c:343:a62sc %?%@2152sc1q0?
+6??+3m 9220reg p OK term.c:343:a62sc %? %@2152sc1q0?
 grp 1%f+ 		close\(ifd\);.*?
 	waitpid\(pid, status, 0\);.*?
 	signal\(SIGTTOU, SIG_IGN\);.*?
 (	tcsetpgrp\(STDIN_FILENO, getpgrp\(\)\);)7??0?
-grp 07??m 9220reg p OK term.c:343:a72sc %?%@2152sc1q0?
+grp 07??m 9220reg p OK term.c:343:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	if \(fds\[0]\.fd >= 0\)
 		close\(ofd\);
 	if \(fds\[1]\.fd >= 0\).*(			term_init\(\);)
 		signal\(SIGINT, SIG_DFL\);
 	}8??0?
-grp 08??-4m 9220reg p OK term.c:343:a82sc %?%@2152sc'\''00?
-1;2;3;4;5;6;7;8??!219reg term.c:3432sc %?%@2132sc0?
+grp 08??-4m 9220reg p OK term.c:343:a82sc %? %@2152sc'\''00?
+1;2;3;4;5;6;7;8??!219reg term.c:3432sc %? %@2132sc0?
 0?
 '\''1i int stdin_fd;
 static int isig;
-??!219reg term.c:8:m12sc %?%@2142sc0?
-'\''2s/0/stdin_fd/??!219reg term.c:19:m22sc %?%@2142sc0?
+??!219reg term.c:8:m12sc %? %@2142sc0?
+'\''2s/0/stdin_fd/??!219reg term.c:19:m22sc %? %@2142sc0?
 '\''3,#+2c 	if (!isig && stdin_fd)
 		newtermios.c_lflag &= ~(ICANON);
 	else
 		newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
 	tcsetattr(stdin_fd, TCSAFLUSH, &newtermios);
 	if (!ioctl(stdin_fd, TIOCGWINSZ, &win)) {
-??!219reg term.c:21:m32sc %?%@2142sc0?
+??!219reg term.c:21:m32sc %? %@2142sc0?
 '\''4i 	isig = 1;
-??!219reg term.c:33:m42sc %?%@2142sc0?
-'\''5s/\(0/(stdin_fd/??!219reg term.c:42:m52sc %?%@2142sc0?
+??!219reg term.c:33:m42sc %? %@2142sc0?
+'\''5s/\(0/(stdin_fd/??!219reg term.c:42:m52sc %? %@2142sc0?
 '\''6i 		ufd.fd = stdin_fd;
-??!219reg term.c:154:m62sc %?%@2142sc0?
+??!219reg term.c:154:m62sc %? %@2142sc0?
 '\''7,#+1c 				read(stdin_fd, ibuf, 1) <= 0) {
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
-??!219reg term.c:158:m72sc %?%@2142sc0?
-'\''8s/0/stdin_fd/??!219reg term.c:300:m82sc %?%@2142sc0?
-'\''9s/STDIN_FILENO/stdin_fd/??!219reg term.c:343:m92sc %?%@2142scb2%ya 98?0?
+??!219reg term.c:158:m72sc %? %@2142sc0?
+'\''8s/0/stdin_fd/??!219reg term.c:300:m82sc %? %@2142sc0?
+'\''9s/STDIN_FILENO/stdin_fd/??!219reg term.c:343:m92sc %? %@2142scb2%ya 98?0?
 %f> 	memset\(&sa, 0, sizeof\(sa\)\);
 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);
@@ -649,24 +649,24 @@ int main\(int argc, char \*argv\[]\)1??0?
 %f> 	memset\(&sa, 0, sizeof\(sa\)\);
 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);3??0?
-3??+2m 1220reg p OK vi.c:1836:a32sc %?%@2152sc1q0?
+3??+2m 1220reg p OK vi.c:1836:a32sc %? %@2152sc1q0?
 grp 1%f> 	memset\(&sa, 0, sizeof\(sa\)\);.*?
 	sa\.sa_handler = sighandler;.*?
 (	sigaction\(SIGWINCH, &sa, NULL\);)7??0?
-grp 07??m 1220reg p OK vi.c:1836:a72sc %?%@2152sc1q0?
+grp 07??m 1220reg p OK vi.c:1836:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> static void setup_signals\(void\)
 \{
 	struct sigaction sa;.*(	int i, j;)
 	setup_signals\(\);
 	dir_init\(\);8??0?
-grp 08??-5m 1220reg p OK vi.c:1836:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.c:1836:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> \{
 	term_winch\+\+;
 }.*(	syn_init\(\);)
 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);9??0?
-grp 09??-8m 1220reg p OK vi.c:1836:a92sc %?%@2152sc'\''00?
-1;3;7;8;9??!219reg vi.c:18362sc %?%@2132sc0?
+grp 09??-8m 1220reg p OK vi.c:1836:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg vi.c:18362sc %? %@2132sc0?
 ?0?
 %f+ 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{
 			i\+\+;
@@ -680,17 +680,17 @@ int main\(int argc, char \*argv\[]\)1??0?
 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
 			if \(argv\[i]\[j] == '\''s'\''\)
 				xvis \|= 1\|2;2??0?
-2??m 2220reg p OK vi.c:1852:a22sc %?%@2152sc1q0?
+2??m 2220reg p OK vi.c:1852:a22sc %? %@2152sc1q0?
 %f+ 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{
 			i\+\+;
 			break;3??0?
-3??+3m 2220reg p OK vi.c:1852:a32sc %?%@2152sc1q0?
+3??+3m 2220reg p OK vi.c:1852:a32sc %? %@2152sc1q0?
 ;0fr.,$f+ ^		}$4??0?
-4??m 2220reg p OK vi.c:1852:a42sc %?%@2152scfr 981qfr 980?
+4??m 2220reg p OK vi.c:1852:a42sc %? %@2152scfr 981qfr 980?
 %f+ 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
 			if \(argv\[i]\[j] == '\''s'\''\)
 				xvis \|= 1\|2;5??0?
-5??-1m 2220reg p OK vi.c:1852:a52sc %?%@2152sc1q0?
+5??-1m 2220reg p OK vi.c:1852:a52sc %? %@2152sc1q0?
 %f+ 	.....a...........=...'\''.........\[i.......
 ...i...
 ...b..ak.
@@ -698,31 +698,31 @@ int main\(int argc, char \*argv\[]\)1??0?
 ..f.r ...=.1;..r......j.. .\+.. \{
 	.	...\(.rg..i...] .=..s..
 	...x.i. .......6??0?
-6??+3m 2220reg p OK vi.c:1852:a62sc %?%@2152sc1q0?
+6??+3m 2220reg p OK vi.c:1852:a62sc %? %@2152sc1q0?
 grp 1%f+ 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{.*?
 			i\+\+;.*?
 			break;.*?
 (		})7??0?
-grp 07??m 2220reg p OK vi.c:1852:a72sc %?%@2152sc1q0?
+grp 07??m 2220reg p OK vi.c:1852:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);
 	for \(i = 1; i < argc && argv\[i]\[0] == '\''-'\''; i\+\+\) \{.*(			else if \(argv\[i]\[j] == '\''e'\''\))
 				xvis \|= 2;
 			else if \(argv\[i]\[j] == '\''m'\''\)8??0?
-grp 08??-4m 2220reg p OK vi.c:1852:a82sc %?%@2152sc'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1852:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	dir_init\(\);
 	syn_init\(\);
 	temp_open\(0, "/hist/", _ft\);.*(				xvis \|= 4;)
 			else if \(argv\[i]\[j] == '\''a'\''\)
 				xvis \|= 8;9??0?
-grp 09??-7m 2220reg p OK vi.c:1852:a92sc %?%@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18522sc %?%@2132sc0?
+grp 09??-7m 2220reg p OK vi.c:1852:a92sc %? %@2152sc'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18522sc %? %@2132sc0?
 0?
 '\''1i 	sigaction(SIGINT, &sa, NULL);
-??!219reg vi.c:1836:m12sc %?%@2142sc0?
+??!219reg vi.c:1836:m12sc %? %@2142sc0?
 '\''2c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
-??!219reg vi.c:1852:m22sc %?%@2142scb3%ya 98?0?
+??!219reg vi.c:1852:m22sc %? %@2142scb3%ya 98?0?
 %f> char \*conf_digraph\(int c1, int c2\);
 
 /\* vi\.c: main \*/
@@ -733,21 +733,21 @@ extern int vi_lncol;1??0?
 %f> char \*conf_digraph\(int c1, int c2\);
 
 /\* vi\.c: main \*/3??0?
-3??+2m 1220reg p OK vi.h:544:a32sc %?%@2152sc1q0?
+3??+2m 1220reg p OK vi.h:544:a32sc %? %@2152sc1q0?
 grp 1%f> char \*conf_digraph\(int c1, int c2\);.*?
 .*?
 (/\* vi\.c: main \*/)7??0?
-grp 07??m 1220reg p OK vi.h:544:a72sc %?%@2152sc1q0?
+grp 07??m 1220reg p OK vi.h:544:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> extern const int conf_hlrev;
 char \*\*conf_kmap\(int id\);
 int conf_kmapfind\(char \*name\);.*(/\* filesystem \*/)
 extern rset \*fsincl;
 void dir_calc\(char \*path\);8??0?
-grp 08??-4m 1220reg p OK vi.h:544:a82sc %?%@2152sc'\''00?
-1;3;7;8??!219reg vi.h:5442sc %?%@2132sc0?
+grp 08??-4m 1220reg p OK vi.h:544:a82sc %? %@2152sc'\''00?
+1;3;7;8??!219reg vi.h:5442sc %? %@2132sc0?
 0?
 '\''1i extern int stdin_fd;
-??!219reg vi.h:544:m12sc %?%@2142scvis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:544:m12sc %? %@2142scvis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
