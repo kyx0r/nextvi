@@ -5521,6 +5521,18 @@ static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
 		out->s_n--;
 }
 
+/* A compat block announces itself as the *last* command of its own body: the
+ * body only runs when the block's gate resolved present (the driver's %@ call is
+ * gated), and reaching its end means every edit in it applied, so the print is
+ * proof of application rather than of intent. Silent on a clean tree, where the
+ * body is never called. No DBG switch hides it - it is the only outside evidence
+ * that a compat block ran. */
+static void emit_compat_announce(sbuf *out, char *path, char *origin)
+{
+	EMIT_SEP(out);
+	sb_printf(out, "p compat applied: %s src=%s", path, origin ? origin : "");
+}
+
 /* Stage one section body as a shell here-string into "$P2VIF".<idx>, the file
  * the single $VI call opens as a buffer. */
 static void stage_section(sbuf *body, int idx)
@@ -5721,21 +5733,10 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 		sb_str(out, "1");
 		EMIT_SEP(out);
 	}
-	/* Compat blocks announce themselves when they fire: a "p" print gated on
-	 * the same sensor tags as the call, so it shows exactly when the block's
-	 * gate resolves present and the body actually runs (silent on a clean
-	 * tree). Unconditional in the sense that no DBG switch hides it - the only
-	 * proof from the outside that a compat block executed. */
-	if (s->cb) {
-		/* Set this block's quit policy before its body runs: assert if it
-		 * is the last firing block over its file, suppress otherwise. */
+	/* Set this block's quit policy before its body runs: assert if it is the
+	 * last firing block over its file, suppress otherwise. */
+	if (s->cb)
 		emit_block_qf2(out, secs, nsec, i);
-		emit_gate_expr(out, s);
-		sb_printf(out, "p compat applied: %s src=%s",
-			  s->files[0]->path,
-			  s->cb->origin ? s->cb->origin : "");
-		EMIT_SEP(out);
-	}
 	sb_printf(out, "b%d", s->secbuf);
 	EMIT_SEP(out);
 	sb_printf(out, "%%ya %d", s->reg);
@@ -5874,6 +5875,9 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		}
 		sbuf_smake(bsb, SB_INIT)
 		emit_section_body(bsb, s->files, s->nf, uf, nuf);
+		if (s->cb)
+			emit_compat_announce(bsb, s->files[0]->path,
+					     s->cb->origin);
 		sbuf_null(bsb)
 		stage_section(bsb, i);
 		free(bsb->s);
