@@ -5695,34 +5695,15 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	      "( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
 	      "trap 'rm -f \"$P2VIF\".*' EXIT\n", stdout);
 
-	/* Stage each section body; assign its global buffer index. */
-	for (int i = 0; i < nsec; i++) {
-		section_t *s = &secs[i];
-		int sv_rel = relative_mode;
-		s->secbuf = nuf + i;
-		if (s->cb) {
-			relative_mode = 1;
-			compat_building = 1;
-			ncompat_res = s->cb->ngates;
-			for (int j = 0; j < s->cb->ngates; j++)
-				compat_res_marks[j] = s->cb->gates[j].tag;
-			if (!interactive_mode)
-				inject_deltas(s->files, s->nf, &s->cb->deltas);
-		}
-		sbuf_smake(bsb, SB_INIT)
-		emit_section_body(bsb, s->files, s->nf, uf, nuf);
-		sbuf_null(bsb)
-		stage_section(bsb, i);
-		free(bsb->s);
-		if (s->cb) {
-			ncompat_res = 0;
-			compat_building = 0;
-			relative_mode = sv_rel;
-		}
-	}
+	/* Assign each section its global buffer index up front so the driver can
+	 * reference them before the bodies are staged. */
+	for (int i = 0; i < nsec; i++)
+		secs[i].secbuf = nuf + i;
 
-	/* Stage the driver: prologue + register defaults (arg1), shell switches
-	 * (arg2), orchestration + final writes (arg3). */
+	/* Stage the driver (".d") first: it carries every gate, and the gates
+	 * must run before any section body, so it heads the list of printfs.
+	 * Layout: prologue + register defaults (arg1), shell switches (arg2),
+	 * orchestration + final writes (arg3). */
 	sbuf_smake(osb, SB_INIT)
 	sb_str(osb, "|sc! ");
 	sb_chr(osb, dyn_esc ? dyn_esc : '\\');
@@ -5755,6 +5736,34 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	sq_write(osb->s, osb->s_n);
 	printf("' > \"$P2VIF\".d\n");
 	free(osb->s);
+
+	/* Stage each section body after the driver. */
+	for (int i = 0; i < nsec; i++) {
+		section_t *s = &secs[i];
+		int sv_rel = relative_mode;
+		if (s->cb) {
+			printf("# Compat (%s) from %s\n",
+			       s->cb->polarity == 1 ? "pre" : "post",
+			       s->cb->origin ? s->cb->origin : "");
+			relative_mode = 1;
+			compat_building = 1;
+			ncompat_res = s->cb->ngates;
+			for (int j = 0; j < s->cb->ngates; j++)
+				compat_res_marks[j] = s->cb->gates[j].tag;
+			if (!interactive_mode)
+				inject_deltas(s->files, s->nf, &s->cb->deltas);
+		}
+		sbuf_smake(bsb, SB_INIT)
+		emit_section_body(bsb, s->files, s->nf, uf, nuf);
+		sbuf_null(bsb)
+		stage_section(bsb, i);
+		free(bsb->s);
+		if (s->cb) {
+			ncompat_res = 0;
+			compat_building = 0;
+			relative_mode = sv_rel;
+		}
+	}
 
 	/* The single call: real files, section bodies, driver last (current at
 	 * EXINIT, so %ya 97 yanks it). */
@@ -6103,25 +6112,38 @@ static int sh_assign(const char *s)
 typedef struct {
 	char **paths;	/* real files, in $VI argument order */
 	int npaths;
-	char *body;	/* the printf'd ex command body */
+	char *body;	/* the printf'd ex command body (driver body, new shape) */
 	int sep;	/* the script's separator byte, its commands' delimiter */
+	char **sects;	/* new shape: one staged section body per buffer, in index
+			 * order; NULL/0 for the old single-body shape */
+	int nsects;
 } p2vi_block_t;
 
-/* One editor lifetime: the files as b0..bN-1, then the body. EXINIT only
- * exists to lift the body out of the buffer the shell had to pass it in;
- * -e holds the body already, so it fills the register the body may recurse
- * through and runs the chain itself. */
+/* One editor lifetime: the real files as b0..bN-1, then (new shape) one
+ * in-RAM buffer per staged section body b<N>..b<N+nsects-1>, then the driver
+ * body. EXINIT only exists to lift the body out of the buffer the shell had
+ * to pass it in; -e holds the body already, so it fills the register the body
+ * may recurse through and runs the chain itself. In the new multi-buffer
+ * shape the driver does its own per-section "b<k>:%ya <reg>:...%@<reg>", so
+ * the section bodies must be resident as buffers before the driver runs -
+ * their buffer indices are exactly the emitter's uf-count + section index. */
 static int run_body(p2vi_block_t *blk)
 {
 	int st;
 	if (ed_init(0) < 0)
 		return -1;
 	xvis |= 2;
-	xbufsalloc = MAX(blk->npaths, xbufsalloc);
+	xbufsalloc = MAX(blk->npaths + blk->nsects + 1, MAX(64, xbufsalloc));
 	ec_setbufsmax(NULL, NULL, "");
 	for (int i = 0; i < blk->npaths; i++) {
 		xmpt = 0;
 		ec_edit("", "e", blk->paths[i]);
+	}
+	for (int i = 0; i < blk->nsects; i++) {
+		char sname[32];
+		snprintf(sname, sizeof(sname), "*p2vi-sec-%d*", i);
+		xmpt = 0;
+		ed_loadbuf(sname, blk->sects[i]);
 	}
 	xmpt = 0;
 	xvis &= ~4;
@@ -6139,6 +6161,9 @@ static void free_block(p2vi_block_t *blk)
 	for (int i = 0; i < blk->npaths; i++)
 		free(blk->paths[i]);
 	free(blk->paths);
+	for (int i = 0; i < blk->nsects; i++)
+		free(blk->sects[i]);
+	free(blk->sects);
 	free(blk->body);
 	memset(blk, 0, sizeof(*blk));
 }
@@ -6181,6 +6206,12 @@ static int parse_vi_call(const char *s, p2vi_block_t *blk)
 		}
 		if (!strncmp(s, "\"$P2VIF\"", 8)) {
 			s += 8;
+			/* new shape names section/driver buffers as "$P2VIF".<sfx>;
+			 * the section bodies are loaded from the staged printfs, so
+			 * here the suffix is only skipped, not turned into a path */
+			if (*s == '.')
+				while (*s && *s != ' ')
+					s++;
 			continue;
 		}
 		if (*s != '\'' || !(p = strchr(s + 1, '\'')))
@@ -6271,6 +6302,82 @@ static int sh_printf_body(const char *s, sbuf *out)
 	return ret;
 }
 
+/* Expand one raw "printf <fmt> <word>..." command into its emitted text. */
+static int expand_body(const char *raw, char **out)
+{
+	int ret;
+	sbuf_smake(exp, SB_INIT)
+	ret = sh_printf_body(raw, exp);
+	sbuf_null(exp)
+	if (ret >= 0)
+		*out = uc_dup(exp->s);
+	free(exp->s);
+	return ret;
+}
+
+/* Staged bodies gathered between two "$VI" calls, keyed by the "$P2VIF"
+ * suffix the printf redirects into: "" for the old single-body shape,
+ * "d" for the new driver, and "0","1",... for the section bodies. */
+typedef struct {
+	char **raw;	/* the raw printf command, one per staged body */
+	char **suf;	/* its "$P2VIF" suffix */
+	int n;
+} pend_t;
+
+static void pend_push(pend_t *p, const char *raw, const char *suf)
+{
+	p->raw = erealloc(p->raw, (p->n + 1) * sizeof(char *));
+	p->suf = erealloc(p->suf, (p->n + 1) * sizeof(char *));
+	p->raw[p->n] = uc_dup(raw);
+	p->suf[p->n] = uc_dup(suf);
+	p->n++;
+}
+
+static void pend_clear(pend_t *p)
+{
+	for (int i = 0; i < p->n; i++) {
+		free(p->raw[i]);
+		free(p->suf[i]);
+	}
+	free(p->raw);
+	free(p->suf);
+	memset(p, 0, sizeof(*p));
+}
+
+/* Turn the gathered staged bodies into one block. Old shape: a single "" body
+ * becomes blk.body. New shape: the "d" body is the driver (blk.body) and the
+ * numeric bodies are the per-buffer section bodies (blk.sects, in index
+ * order). parse_vi_call has already filled blk.paths. */
+static int pend_finish(pend_t *p, p2vi_block_t *blk)
+{
+	int drv = -1, old = -1, nsec = 0, ret = 0;
+	for (int i = 0; i < p->n; i++) {
+		if (!p->suf[i][0])
+			old = i;
+		else if (!strcmp(p->suf[i], "d"))
+			drv = i;
+		else if (atoi(p->suf[i]) + 1 > nsec)
+			nsec = atoi(p->suf[i]) + 1;
+	}
+	if (old >= 0) {
+		ret = expand_body(p->raw[old], &blk->body);
+	} else if (drv >= 0) {
+		blk->sects = ecalloc(nsec, sizeof(char *));
+		blk->nsects = nsec;
+		for (int i = 0; ret >= 0 && i < p->n; i++) {
+			if (p->suf[i][0] == 'd' || !p->suf[i][0])
+				continue;
+			ret = expand_body(p->raw[i], &blk->sects[atoi(p->suf[i])]);
+		}
+		if (ret >= 0)
+			ret = expand_body(p->raw[drv], &blk->body);
+	} else
+		ret = sh_err("body", "no staged body before $VI call");
+	if (ret >= 0)
+		blk->sep = body_sepbyte(blk->body);
+	return ret;
+}
+
 /* Read the script's executable region (everything before "exit 0") into
  * one block per editor invocation. Parsing is separate from running: -e
  * runs each block in its own editor lifetime, while the compat session
@@ -6279,8 +6386,9 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 {
 	const char *body_end = " > \"$P2VIF\"";
 	p2vi_block_t blk = {0};
+	pend_t pend = {0};
 	int skip = 0, in_body = 0, ret = 0, j;
-	char *line;
+	char *line, *sufdup = NULL;
 	sbuf_smake(lb, SB_INIT)
 	sbuf_smake(body, SB_INIT)
 	while (ret >= 0 && (line = read_line(in, lb))) {
@@ -6293,16 +6401,33 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 		if (in_body) {
 			/* the printf ends where it is redirected; its words
 			 * span lines, so they are gathered raw and read as
-			 * words once the whole command is in hand */
-			int n = strlen(seg);
-			int el = strlen(body_end);
+			 * words once the whole command is in hand. The redirect
+			 * is "> $P2VIF" (old single body) or "> $P2VIF.<sfx>"
+			 * (new driver ".d" / sections ".0",".1",...); the suffix
+			 * routes the body in pend_finish. */
+			int n = strlen(seg), el = strlen(body_end);
+			const char *suf = NULL;
 			if (n >= el && !strcmp(seg + n - el, body_end)) {
 				seg[n - el] = '\0';
-				in_body = 0;
+				suf = "";
+			} else for (int i = n - el; i >= 0; i--) {
+				if (strncmp(seg + i, body_end, el) || seg[i+el] != '.')
+					continue;
+				suf = seg + i + el + 1;
+				seg[i] = '\0';
+				break;
 			}
 			sbuf_str(body, seg)
-			if (in_body)
+			if (!suf) {
 				sbuf_chr(body, '\n')
+				continue;
+			}
+			in_body = 0;
+			sbuf_null(body)
+			free(sufdup);
+			sufdup = uc_dup(suf);
+			pend_push(&pend, body->s, sufdup);
+			sbuf_cut(body, 0)
 			continue;
 		}
 		if (!strcmp(line, "exit 0"))
@@ -6325,24 +6450,16 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 		if (!strncmp(line, "( : > ", 6) || !strncmp(line, "trap ", 5))
 			continue;
 		if (!strncmp(line, "EXINIT=", 7)) {
-			sbuf_null(body)
 			if ((ret = parse_vi_call(line, &blk)) < 0)
 				break;
-			sbuf_smake(exp, SB_INIT)
-			if (!(ret = sh_printf_body(body->s, exp))) {
-				sbuf_null(exp)
-				blk.body = uc_dup(exp->s);
-				/* -e never needs it, but reading it here keeps
-				 * every block self-contained for the replay */
-				blk.sep = body_sepbyte(blk.body);
+			if (!(ret = pend_finish(&pend, &blk))) {
 				*blks = erealloc(*blks, (*nblks + 1)
 						 * sizeof(**blks));
 				(*blks)[(*nblks)++] = blk;
 				memset(&blk, 0, sizeof(blk));
 			} else
 				free_block(&blk);
-			free(exp->s);
-			sbuf_cut(body, 0)
+			pend_clear(&pend);
 			continue;
 		}
 		/* the name of a leading NAME=value assignment */
@@ -6356,6 +6473,8 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 	}
 	free(body->s);
 	free(lb->s);
+	free(sufdup);
+	pend_clear(&pend);
 	if (in_body && ret >= 0)
 		ret = sh_err("body", "unterminated printf");
 	return ret;
