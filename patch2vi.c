@@ -7820,14 +7820,14 @@ int main(int argc, char **argv)
 	      "    exit 1\n"
 	      "fi\n\n", stdout);
 	if (relative_mode || interactive_mode || compat_mode)
-		fputs("# Switches, read where each body defines its registers:\n"
-		      "# Phase 1 (search/mark) reports nothing by default;\n"
+		fputs("# Env switches:\n"
+		      "# Phase 1 (search/mark) reports nothing by default\n"
 		      "#   DBG1=1 reports failures and which fallback anchor\n"
 		      "#   resolved a group, QF1=1 also quits on failure\n"
-		      "# Phase 2 (edits) reports and quits by default;\n"
+		      "# Phase 2 (edits) reports and quits by default\n"
 		      "#   DBG2=1 silences it, QF2=1 keeps going after an error\n"
 		      "# INTR=1 enters vi at the failing code line in this\n"
-		      "#   script, for state inspection mid execution\n", stdout);
+		      "#   script, for state inspection mid execution\n\n", stdout);
 
 	/* Build groups for every file (host and compat) */
 	for (int i = 0; i < nfiles; i++)
