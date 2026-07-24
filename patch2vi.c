@@ -6643,8 +6643,13 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 			break;
 		}
 		xvis |= 2;
-		if (blks[i].npaths > nmap) {
-			nmap = blks[i].npaths;
+		/* real files map to session-global buffers; a new-shape block's
+		 * staged section bodies load as extra scaffolding buffers above
+		 * them, and its driver references both by index (b<real> and
+		 * b<secbuf>), so the map must cover the whole span. */
+		int nb = blks[i].npaths + blks[i].nsects;
+		if (nb > nmap) {
+			nmap = nb;
 			bmap = erealloc(bmap, nmap * sizeof(int));
 		}
 		for (k = 0; k < blks[i].npaths; k++) {
@@ -6652,11 +6657,18 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 			xmpt = 0;
 			ec_edit("", "e", blks[i].paths[k]);
 		}
+		for (k = 0; k < blks[i].nsects; k++) {
+			char sname[32];
+			snprintf(sname, sizeof(sname), "*p2vi-sec-%d*", k);
+			bmap[blks[i].npaths + k] = xbufcur;	/* appended next */
+			xmpt = 0;
+			ed_loadbuf(sname, blks[i].sects[k]);
+		}
 		xmpt = 0;
 		xvis &= ~4;
 		body = uc_dup(blks[i].body);
 		if (strip_body_tail(body, sep) < 0
-		    || !(ln = remap_bufnums(body, sep, bmap, blks[i].npaths))) {
+		    || !(ln = remap_bufnums(body, sep, bmap, nb))) {
 			free(body);
 			ed_done();
 			st = -1;
@@ -6667,6 +6679,18 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 		ex_regput(P2VI_REG, body, 0);
 		ex_exec(body);
 		free(body);
+		/* Drop the section scaffolding: the driver's %ya/%@ calls have
+		 * run and applied their edits to the real buffers, so the handover
+		 * session and the read-back must see only the real files, exactly
+		 * as the old single-body shape left them. The section buffers are
+		 * the topmost xbufcur slots (loaded after the real files); switch
+		 * to a real buffer first so ex_buf/ex_pbuf never dangle. */
+		if (blks[i].nsects) {
+			bufs_switch(bmap[0]);
+			ex_pbuf = ex_tpbuf = ex_buf;
+			for (k = 0; k < blks[i].nsects; k++)
+				bufs_free(--xbufcur);
+		}
 		/* a body that quit did so on failure (its own quit tail is
 		 * gone), so the user is handed nothing and the status
 		 * stands */
