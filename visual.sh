@@ -24,18 +24,18 @@ fi
 # INTR=1 enters vi at the failing code line in this
 #   script, for state inspection mid execution
 
-# Body too large for EXINIT/argv: stage it in a file
-( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
-trap 'rm -f "$P2VIF"' EXIT
-
-# Patch: conf.c vi.c
+# One $VI call: real files, one staged body per section, then a
+# driver buffer that EXINIT runs; sections gate themselves.
+( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
+trap 'rm -f "$P2VIF".*' EXIT
 printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220211reg vis 2q!1'\
 "${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!211}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'b11;0fr 0%f> ^#include "lsp\.c"$1000??230reg 0231reg 01000?? 231reg 11000?? 230reg+ 1211reg fr 230f> 1??!vis 2q!1b01b11b2%ya 972sc %? %@972scb11211reg vis 2q!1b3%ya 502sc %1000?? %@502scvis 2b0wb1w2q' > "$P2VIF".d
+printf '%s\n' '2scfr 98b0%ya 98?0?
 %f> 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},
 
 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
@@ -1208,11 +1208,93 @@ static int vc_visual_op(int cmd)
 ??!219reg vi.c:1722:m242sc %? %@2142sc0?
 '\''25i 		if (vi_visual)
 			vi_mod |= 1;
-??!219reg vi.c:1782:m252sc %? %@2142scvis 2b0wb1w2q' > "$P2VIF"
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF"
+??!219reg vi.c:1782:m252sc %? %@2142sc' > "$P2VIF".0
+# Compat (post) from lsp.sh
+printf '%s\n' '2scfr 98b1%ya 98?0?
+%f> 					ex_command\(cmd\)
+					restore\(xled\)
+					vi_mod \|= 1;
+				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{
+					vc_motion\(k\);
+				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
+					if \(!vi_visual\) \{		/\* fresh selection \*/1??0?
+1??+3m 11q0?
+%f> 				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{
+					vc_motion\(k\);
+				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
+					if \(!vi_visual\) \{		/\* fresh selection \*/2??0?
+2??m 1220reg p OK vi.c:1948:a22sc %? %@2152sc1q0?
+%f> 					ex_command\(cmd\)
+					restore\(xled\)
+					vi_mod \|= 1;3??0?
+3??+3m 1220reg p OK vi.c:1948:a32sc %? %@2152sc1q0?
+;0fr.,$f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{$4??0?
+4??m 1220reg p OK vi.c:1948:a42sc %? %@2152scfr 981qfr 980?
+%f> 					vc_motion\(k\);
+				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
+					if \(!vi_visual\) \{		/\* fresh selection \*/5??0?
+5??-1m 1220reg p OK vi.c:1948:a52sc %? %@2152sc0?
+1;2;3;4;5??!219reg vi.c:19482sc %? %@2132sc0?
+?0?
+%f+ 					}
+					vi_visual = vi_visual == k \? 0 : k;
+					vi_mod \|= 1;
+				}
+				} else if \(k == '\''K'\''\) \{
+					if \(xb_path && xb_path\[0]\)
+						lsp_hover\(xb_path, xrow, xoff\);1??0?
+1??+3m 21q0?
+%f+ 				}
+				} else if \(k == '\''K'\''\) \{
+					if \(xb_path && xb_path\[0]\)
+						lsp_hover\(xb_path, xrow, xoff\);2??0?
+2??m 2220reg p OK vi.c:1957:a22sc %? %@2152sc1q0?
+%f+ 					}
+					vi_visual = vi_visual == k \? 0 : k;
+					vi_mod \|= 1;3??0?
+3??+3m 2220reg p OK vi.c:1957:a32sc %? %@2152sc1q0?
+;0fr.,$f+ ^				}$4??0?
+4??m 2220reg p OK vi.c:1957:a42sc %? %@2152scfr 981qfr 980?
+%f+ 				} else if \(k == '\''K'\''\) \{
+					if \(xb_path && xb_path\[0]\)
+						lsp_hover\(xb_path, xrow, xoff\);5??0?
+5??-1m 2220reg p OK vi.c:1957:a52sc %? %@2152sc0?
+1;2;3;4;5??!219reg vi.c:19572sc %? %@2132sc0?
+0?
+'\''1s/\{ \{/{/??!219reg vi.c:1948:m12sc %? %@2142sc0?
+'\''2d??!219reg vi.c:1957:m22sc %? %@2142scp compat applied: vi.c src=lsp.sh' > "$P2VIF".1
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
+=== PATCH2VI COMPAT post vi.c src=lsp.sh ===
+=== GATE 1 present mode 0 tag 1000 ===
+#include "lsp.c"
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/vi.c
++++ b/vi.c
+@@ -1945,7 +1945,7 @@
+ 					ex_command(cmd)
+ 					restore(xled)
+ 					vi_mod |= 1;
+-				} else if (k == '~' || k == 'u' || k == 'U') { {
++				} else if (k == '~' || k == 'u' || k == 'U') {
+ 					vc_motion(k);
+ 				} else if (k == 'v' || k == 'V' || k == 'b') {
+ 					if (!vi_visual) {		/* fresh selection */
+@@ -1954,7 +1954,6 @@
+ 					}
+ 					vi_visual = vi_visual == k ? 0 : k;
+ 					vi_mod |= 1;
+-				}
+ 				} else if (k == 'K') {
+ 					if (xb_path && xb_path[0])
+ 						lsp_hover(xb_path, xrow, xoff);
+=== END ===
+=== END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 70157040..c0d2d3b9 100644
