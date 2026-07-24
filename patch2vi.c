@@ -5612,6 +5612,18 @@ static void emit_driver_call(sbuf *out, section_t *s,
 		sb_str(out, "1");
 		EMIT_SEP(out);
 	}
+	/* Compat blocks announce themselves when they fire: a "p" print gated on
+	 * the same sensor tags as the call, so it shows exactly when the block's
+	 * gate resolves present and the body actually runs (silent on a clean
+	 * tree). Unconditional in the sense that no DBG switch hides it - the only
+	 * proof from the outside that a compat block executed. */
+	if (s->cb) {
+		emit_gate_expr(out, s);
+		sb_printf(out, "p compat applied: %s src=%s",
+			  s->files[0]->path,
+			  s->cb->origin ? s->cb->origin : "");
+		EMIT_SEP(out);
+	}
 	sb_printf(out, "b%d", s->secbuf);
 	EMIT_SEP(out);
 	sb_printf(out, "%%ya %d", s->reg);
