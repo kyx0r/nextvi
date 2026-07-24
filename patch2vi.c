@@ -221,6 +221,7 @@ typedef struct {
 	char *ph1, *ph2;
 	int ovr_mark;       /* mark id the blobs reference */
 	int ovr_esc;        /* dyn_esc byte at capture time (0 = backslash) */
+	int ovr_sep;        /* separator byte at capture time */
 } grp_delta_t;
 
 typedef struct {
@@ -290,6 +291,11 @@ static unsigned char byte_used[256];
  * (it relies on capture tags), so ? never needs escaping inside a
  * ? block; only the separator does. */
 static int dyn_esc;
+
+/* Ex command separator byte, likewise picked from the bytes the patch does
+ * not use. Both go into the script as raw bytes: the command body is a
+ * single-quoted printf argument, so sh passes every byte but ' through. */
+static int sep;
 
 static void *ecalloc(size_t n, size_t sz)
 {
@@ -1002,6 +1008,17 @@ static void mark_bytes_used(const char *s)
 		byte_used[(unsigned char)*s] = 1;
 }
 
+/* Mark a stored verbatim blob's bytes, minus the two the script it came
+ * from reserved for itself. Those are structure, not content: counting
+ * them would move the next generation onto different bytes and strand
+ * every blob captured under the old pair. */
+static void mark_verbatim_bytes(const char *s, int esc, int sp)
+{
+	for (; *s; s++)
+		if (*s != esc && *s != sp)
+			byte_used[(unsigned char)*s] = 1;
+}
+
 /* Find an unused byte to use as separator.
  * Prefer non-printable bytes so printable chars stay available
  * for ex commands and patterns. */
@@ -1058,22 +1075,27 @@ static int parse_hunk_header(const char *line, int *old_start, int *old_count)
 	return *p == '+';
 }
 
-/* Escape a string for shell double-quoted string */
-static void emit_escaped_line(sbuf *out, const char *s)
+/* One raw byte into a shell double-quoted word. Only the four bytes sh
+ * still reads there need escaping; the body is single quoted and needs
+ * none of this (see sq_write). */
+static void sb_dq(sbuf *out, int c)
 {
-	for (; *s; s++) {
-		unsigned char c = *s;
-		/* the dynamic escape byte never occurs in content; emit it
-		 * as the readable ${ESC} expansion */
-		if (dyn_esc && c == (unsigned char)dyn_esc) {
-			sb_str(out, "${ESC}");
-			continue;
-		}
-		/* Shell double-quote escapes: $, `, ", \ */
-		if (c == '\\' || c == '$' || c == '`' || c == '"') {
-			sb_chr(out, '\\');
-		}
-		sb_chr(out, c);
+	if (c == '\\' || c == '$' || c == '`' || c == '"')
+		sb_chr(out, '\\');
+	sb_chr(out, c);
+}
+
+/* Write a command body to the script as a single-quoted printf argument.
+ * Single quotes are the one thing such a word cannot hold, so each is
+ * closed, escaped and reopened; every other byte, control bytes and the
+ * separator included, goes out verbatim. */
+static void sq_write(const char *s, int n)
+{
+	for (int i = 0; i < n; i++) {
+		if (s[i] == '\'')
+			fputs("'\\''", stdout);
+		else
+			putchar((unsigned char)s[i]);
 	}
 }
 
@@ -1083,15 +1105,65 @@ static void emit_escaped_text(sbuf *out, const char *s);
  * and runs it; -e fills the register itself and needs neither */
 #define P2VI_REG 97
 #define P2VI_VICALL "EXINIT='%ya 97:? %@97'"
-/* separator: shell expands ${SEP} in double-quoted EXINIT */
-#define EMIT_SEP(out) sb_str(out, "${SEP}")
+
+/*
+ * Script state lives in ex registers, not shell variables.
+ *
+ * A shell variable is a flat string spliced into a site whose nesting depth
+ * the shell cannot know, and whose escaping depends on which bytes are
+ * special there. A register sidesteps both: its content is escaped once,
+ * where it is defined, and "?%@<id>" runs it verbatim at any depth
+ * (ex_arg sbuf_mem's the expansion and never rescans it).
+ *
+ * Definedness is the switch. An undefined register expands to nothing, and
+ * "?" with an empty argument runs nothing, so a gate register is simply
+ * left undefined when its switch is off; the shell only ever contributes
+ * whole commands ("${DBG1:+213reg ...}") that define or clear one.
+ *
+ * Expansion is turned on ("2sc %") for the call and off again ("2sc")
+ * immediately: with xexp live every % in an argument would expand, and
+ * arguments carry regexes derived from file content. Argument registers
+ * are therefore always written before the window, never inside it. xexe
+ * (!) stays 0 throughout - the |sc! prologue zeroes it - since a stray !
+ * in a live argument forks a shell.
+ */
+#define REG_QF1  210	/* phase-1 quit chain, set by QF1=1 */
+#define REG_QF2  211	/* phase-2 quit chain, cleared by QF2=1 */
+#define REG_INTR 212	/* interrupt chain, set by INTR=1 */
+#define REG_ERR1 213	/* phase-1 FAIL gate, set by DBG1=1 */
+#define REG_ERR2 214	/* phase-2 FAIL gate, cleared by DBG2=1 */
+#define REG_OK1  215	/* phase-1 OK gate, set by DBG1=1 */
+#define REG_OK2  216	/* phase-2 OK gate, cleared by DBG2=1 */
+#define REG_HDLR 217	/* the FAIL report chain both phases share */
+#define REG_LOC  219	/* argument: the FAIL location of the current site */
+#define REG_MSG  220	/* argument: the OK report command of the current site */
+/* One escape run of n bytes followed by the separator. n = 0 is the plain
+ * command separator, 1 escapes it for a ??! block's argument, 3 for a ??
+ * then-arg nested one level further in. */
+static void emit_esc_sep(sbuf *out, int n)
+{
+	while (n-- > 0)
+		sb_chr(out, dyn_esc ? dyn_esc : '\\');
+	sb_chr(out, sep);
+}
+
+/* the same, for the one part of a body the shell writes: a double-quoted
+ * word, where a raw escape or separator byte may need escaping again */
+static void sb_dq_esc_sep(sbuf *out, int n)
+{
+	while (n-- > 0)
+		sb_dq(out, dyn_esc ? dyn_esc : '\\');
+	sb_dq(out, sep);
+}
+
+#define EMIT_SEP(out) emit_esc_sep(out, 0)
 /* escaped separator inside ??! block: <esc><sep> for ex_arg */
-#define EMIT_ESCSEP(out) \
-	sb_str(out, dyn_esc ? "${ESC}${SEP}" : "\\\\${SEP}")
+#define EMIT_ESCSEP(out) emit_esc_sep(out, 1)
 /* triply-escaped separator inside a ?? then-arg nested in a ? cond:
  * <esc><esc><esc><sep> */
-#define EMIT_ESC3SEP(out) \
-	sb_str(out, dyn_esc ? "${ESC}${ESC}${ESC}${SEP}" : "\\\\\\\\\\\\${SEP}")
+#define EMIT_ESC3SEP(out) emit_esc_sep(out, 3)
+/* the no-op command that lets a long chain break across source lines */
+#define EMIT_LB(out) sb_str(out, "0?\n")
 
 /*
  * Ex commands emitted by patch2vi and their default range (no address given):
@@ -1232,10 +1304,34 @@ static void emit_change(sbuf *out, int from, int to, char **texts, int ntexts)
  * m<mark id> message. All search paths escape uniformly through ex_arg.
  */
 
+/* One separator at the caller's nesting depth: deep = 0 for a command
+ * inside a ??/??! argument, 1 for one nested a further level in. */
+static void emit_sep_lvl(sbuf *out, int deep)
+{
+	if (deep)
+		EMIT_ESC3SEP(out);
+	else
+		EMIT_ESCSEP(out);
+}
+
+/* Emit the expansion window that calls gate register <gate>: turn % on,
+ * run the register's chain, turn % off. The argument register the chain
+ * reads must already be written, while % was still inert. */
+static void emit_reg_call(sbuf *out, int gate, int deep)
+{
+	sb_str(out, "2sc %");
+	emit_sep_lvl(out, deep);
+	sb_printf(out, "?%%@%d", gate);
+	emit_sep_lvl(out, deep);
+	sb_str(out, "2sc");
+}
+
 /* Emit ??! error check after a command that may fail.
  * loc: location text in the FAIL message ("path:line" for phase-1
- * searches, "path:line:m<id>" for phase-2 edits at a mark).
- * phase selects the DBG<n>/QF<n> variable set; INTR is shared.
+ * searches, "path:line:m<id>" for phase-2 edits at a mark), handed to the
+ * shared report chain in REG_LOC.
+ * phase selects the gate register, whose definedness is the DBG<n> switch
+ * and whose chain ends in the phase's INTR and QF<n> calls.
  * tags (optional, may be NULL) prefixes the conditional with a DNF
  * capture-id expression so it branches on recorded statuses instead
  * of the last command's. */
@@ -1245,15 +1341,9 @@ static void emit_err_check_loc(sbuf *out, const char *loc, int phase,
 	if (tags && *tags)
 		sb_str(out, tags);
 	/* "?" "?!" split: "??!" in one literal is the trigraph for '|' */
-	sb_printf(out, "?" "?!${DBG%d:-ya!112", phase);
+	sb_printf(out, "?" "?!%dreg %s", REG_LOC, loc);
 	EMIT_ESCSEP(out);
-	sb_printf(out, "prp");
-	EMIT_ESCSEP(out);
-	sb_printf(out, "p FAIL %s", loc);
-	EMIT_ESCSEP(out);
-	sb_printf(out, "pr");
-	sb_str(out, "${INTR}");
-	sb_printf(out, "${QF%d}}", phase);
+	emit_reg_call(out, phase == 1 ? REG_ERR1 : REG_ERR2, 0);
 	EMIT_SEP(out);
 }
 
@@ -1299,7 +1389,7 @@ static char *escape_exarg(const char *s)
 static void emit_escaped_text(sbuf *out, const char *s)
 {
 	char *exarg_esc = escape_exarg(s);
-	emit_escaped_line(out, exarg_esc);
+	sb_str(out, exarg_esc);
 	free(exarg_esc);
 }
 
@@ -1354,7 +1444,7 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
 		EMIT_SEP(out);
 		sb_str(out, "fr");
 		EMIT_SEP(out);
-		sb_str(out, first ? ".,\\$f> " : ".,\\$f+ ");
+		sb_str(out, first ? ".,$f> " : ".,$f+ ");
 		/* pre-escaped (interactive) patterns carry their own ^...$
 		 * from the displayed default; the user may have removed them */
 		if (!pre_escaped)
@@ -1366,12 +1456,12 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
 	for (int i = 0; i < nanchors; i++) {
 		if (pre_escaped) {
 			char *e = escape_exarg(anchors[i]);
-			emit_escaped_line(out, e);
+			sb_str(out, e);
 			free(e);
 		} else {
 			char *r = escape_regex(anchors[i]);
 			char *e = escape_exarg(r);
-			emit_escaped_line(out, e);
+			sb_str(out, e);
 			free(e);
 			free(r);
 		}
@@ -1379,7 +1469,7 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
 			sb_chr(out, '\n');
 	}
 	if (single && !pre_escaped)
-		sb_str(out, "\\$");  /* $ anchor, shell-escaped */
+		sb_str(out, "$");	/* $ anchor */
 	/* Ensure trailing newline when last anchor is empty */
 	if (nanchors > 0 && !anchors[nanchors - 1][0])
 		sb_chr(out, '\n');
@@ -1396,7 +1486,7 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
 		sb_str(out, "fr 98");
 		EMIT_SEP(out);
 	}
-	sb_str(out, "${LB}\n");
+	EMIT_LB(out);
 	EMIT_SEP(out);
 	if (offset)
 		sb_printf(out, "%+d", offset);
@@ -1501,6 +1591,7 @@ typedef struct group_s {
 	char *ph1_ovr, *ph2_ovr;
 	int ovr_mark;            /* forced mark id for override blobs */
 	int ovr_esc;             /* escape regime the override was captured under */
+	int ovr_sep;             /* separator the override was captured under */
 } group_t;
 
 /* Emit a line with exarg + shell escaping only (no regex escaping).
@@ -1508,7 +1599,7 @@ typedef struct group_s {
 static void emit_escaped_exarg_only(sbuf *out, const char *s)
 {
 	char *e = escape_exarg(s);
-	emit_escaped_line(out, e);
+	sb_str(out, e);
 	free(e);
 }
 
@@ -2006,14 +2097,14 @@ static void emit_chain_pattern(sbuf *out, pat_spec_t *p)
 			x = escape_chars(e, "\\");
 			free(e);
 		}
-		emit_escaped_line(out, x);
+		sb_str(out, x);
 		free(x);
 		free(r);
 		if (i < p->nlines - 1)
 			sb_chr(out, '\n');
 	}
 	if (wrap)
-		sb_str(out, "\\$");  /* $ anchor, shell-escaped */
+		sb_str(out, "$");	/* $ anchor */
 	/* Ensure trailing newline when last line is empty */
 	if (p->nlines > 0 && !p->lines[p->nlines - 1][0])
 		sb_chr(out, '\n');
@@ -2048,7 +2139,7 @@ static void emit_gate(sbuf *out, gate_t *g, int use_cache)
 	ps.mode = 1;
 	sb_chr(out, '?');
 	EMIT_ESCSEP(out);
-	sb_str(out, "${LB}\n");
+	EMIT_LB(out);
 	EMIT_ESCSEP(out);
 	/* Always search the live buffer, never the fr 98 register: the register
 	 * holds the whole file as one string, so a probe's ^/$ would anchor the
@@ -2060,7 +2151,7 @@ static void emit_gate(sbuf *out, gate_t *g, int use_cache)
 	EMIT_ESCSEP(out);
 	sb_str(out, "fr");
 	EMIT_ESCSEP(out);
-	sb_str(out, ".,\\$f> ");
+	sb_str(out, ".,$f> ");
 	emit_chain_pattern(out, &ps);
 	EMIT_ESCSEP(out);
 	sb_printf(out, "%d??", g->tag);
@@ -2077,7 +2168,7 @@ static void emit_gate(sbuf *out, gate_t *g, int use_cache)
 	EMIT_ESC3SEP(out);
 	sb_str(out, "q!0");
 	EMIT_SEP(out);
-	sb_str(out, "${LB}\n");
+	EMIT_LB(out);
 	EMIT_SEP(out);
 }
 
@@ -2112,11 +2203,11 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		int g2 = ps[n].mode == 2 || g3;   /* grp bracketing covers both */
 		/* Readability line break before each attempt's search: a leading
 		 * separator (after the '?' for the first attempt, after the
-		 * previous block otherwise), a ${LB} no-op clause and a real
+		 * previous block otherwise), a line-break no-op clause and a real
 		 * newline, then the separator before the search setup. Every
 		 * attempt thus starts on its own source line. */
 		EMIT_ESCSEP(out);
-		sb_str(out, "${LB}\n");
+		EMIT_LB(out);
 		EMIT_ESCSEP(out);
 		if (g3) {
 			/* pattern-8 global window: save the cursor and reset to
@@ -2139,7 +2230,7 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 			EMIT_ESCSEP(out);
 			sb_str(out, "fr");
 			EMIT_ESCSEP(out);
-			sb_str(out, first ? ".,\\$f> " : ".,\\$f+ ");
+			sb_str(out, first ? ".,$f> " : ".,$f+ ");
 		} else
 			/* g3 always searches forward from the reset top */
 			sb_str(out, (g3 || first) ? "%f> " : "%f+ ");
@@ -2147,13 +2238,13 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		EMIT_ESCSEP(out);
 		sb_printf(out, "%d??", ps[n].pid);
 		/* Readability line break once the search result is captured
-		 * into tag <n>: a ${LB} (no-op) clause and a real newline split
+		 * into tag <n>: a line-break (no-op) clause and a real newline split
 		 * the long single-line chain so each attempt's match and its
 		 * mark action sit on separate source lines. Placed after the
 		 * tag capture (and before grp 0 / the action re-test) so it
 		 * never separates a tag test from its then-arm. */
 		EMIT_ESCSEP(out);
-		sb_str(out, "${LB}\n");
+		EMIT_LB(out);
 		if (g2) {
 			/* reset the search group on both match and no-match
 			 * paths. Must come AFTER the <n>?? tag capture above,
@@ -2167,13 +2258,15 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		if (ps[n].offset)
 			sb_printf(out, "%+d", ps[n].offset);
 		sb_printf(out, "m %d", mark_id);
-		/* fallback (non-primary) match: with DBG1=1, OK1 expands
-		 * empty and reports which anchor resolved the group */
+		/* fallback (non-primary) match: with DBG1=1 the OK gate is
+		 * defined and reports which anchor resolved the group */
 		if (n) {
 			EMIT_ESC3SEP(out);
-			sb_printf(out, "${OK1}p OK %s:%d:a%d",
+			sb_printf(out, "%dreg p OK %s:%d:a%d", REG_MSG,
 				  cur_file_path ? cur_file_path : "?",
 				  target_line, ps[n].pid);
+			EMIT_ESC3SEP(out);
+			emit_reg_call(out, REG_OK1, 1);
 		}
 		if (m1) {
 			/* restore the register cache on the success path,
@@ -2210,12 +2303,12 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		}
 	}
 	EMIT_SEP(out);
-	sb_str(out, "${LB}\n");
+	EMIT_LB(out);
 	EMIT_SEP(out);
 	for (int n = 0; n < nps; n++)
 		pids[n] = ps[n].pid;
 	emit_err_check(out, 1, target_line, -1, pids, nps);
-	sb_str(out, "${LB}\n");
+	EMIT_LB(out);
 	EMIT_SEP(out);
 }
 
@@ -2719,7 +2812,7 @@ static int build_grp_variant(const char *old, const char *new,
 static void emit_sub_field(sbuf *out, const char *escaped)
 {
 	char *ea = escape_exarg(escaped);
-	emit_escaped_line(out, ea);
+	sb_str(out, ea);
 	free(ea);
 }
 
@@ -2801,11 +2894,14 @@ static void emit_substitute_chain(sbuf *out, int line, int mark_id,
 		sb_printf(out, "%d??", v[n].sid);   /* on success (fire): */
 		if (n) {
 			/* harmless mark jump as the immediate then-arg keeps
-			 * ${OK2} non-immediate (mirrors OK1 after "m id") */
+			 * the OK report non-immediate (mirrors phase 1's
+			 * report after "m id") */
 			sb_printf(out, "'%d", mark_id);
 			EMIT_ESC3SEP(out);
-			sb_printf(out, "${OK2}p OK %s:%d:s%d",
+			sb_printf(out, "%dreg p OK %s:%d:s%d", REG_MSG,
 				  cur_file_path ? cur_file_path : "?", line, v[n].sid);
+			EMIT_ESC3SEP(out);
+			emit_reg_call(out, REG_OK2, 1);
 			if (n < nv - 1) {
 				EMIT_ESC3SEP(out);
 				sb_str(out, "1q");
@@ -2815,12 +2911,12 @@ static void emit_substitute_chain(sbuf *out, int line, int mark_id,
 		}
 	}
 	EMIT_SEP(out);
-	sb_str(out, "${LB}\n");
+	EMIT_LB(out);
 	EMIT_SEP(out);
 	for (int n = 0; n < nv; n++)
 		sids[n] = v[n].sid;
 	emit_err_check(out, 2, line, mark_id, sids, nv);
-	sb_str(out, "${LB}\n");
+	EMIT_LB(out);
 	EMIT_SEP(out);
 }
 
@@ -3269,8 +3365,8 @@ static void emit_grp_delta(sbuf *out, grp_delta_t *gd)
 		sb_printf(out, "%s\n", end_tag_wr);
 	}
 	if (gd->ph1 || gd->ph2) {
-		sb_printf(out, "=== verbatim mark %d esc %d ===\n",
-			  gd->ovr_mark, gd->ovr_esc);
+		sb_printf(out, "=== verbatim mark %d esc %d sep %d ===\n",
+			  gd->ovr_mark, gd->ovr_esc, gd->ovr_sep);
 		sb_printf(out, "=== phase1 ===\n%s\n%s\n",
 			  gd->ph1 ? gd->ph1 : "", end_tag_wr);
 		sb_printf(out, "=== phase2 ===\n%s\n%s\n",
@@ -3694,6 +3790,7 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 		tmp.ph2 = g->ph2_ovr;
 		tmp.ovr_mark = g->ovr_mark;
 		tmp.ovr_esc = g->ovr_esc;
+		tmp.ovr_sep = g->ovr_sep;
 		sbuf_smake(sb, SB_INIT)
 		sb_printf(sb, "=== FILE: %s ===\n", path);
 		emit_grp_delta(sb, &tmp);
@@ -3708,6 +3805,7 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 	g->ph2_ovr = NULL;
 	g->ovr_mark = 0;
 	g->ovr_esc = 0;
+	g->ovr_sep = 0;
 }
 
 /* Editor bring-up, hoisted from nextvi's main()/ex_init() — no argv
@@ -4028,6 +4126,7 @@ static void inject_deltas(file_patch_t **fps, int n, dstore_t *ds)
 			g->ph2_ovr = gd->ph2 ? uc_dup(gd->ph2) : NULL;
 			g->ovr_mark = gd->ovr_mark;
 			g->ovr_esc = gd->ovr_esc;
+			g->ovr_sep = gd->ovr_sep;
 			if (gd->ovr_esc != dyn_esc)
 				fprintf(stderr, "%s group %d: verbatim override "
 						"captured under escape byte %d, current is %d\n",
@@ -4115,6 +4214,7 @@ static void derive_unit(file_patch_t **fps, int n, dstore_t *ins,
 				g->ovr_mark = eg->ovr_mark > 0 ? eg->ovr_mark
 					      : g->mark_id;
 				g->ovr_esc = dyn_esc;
+				g->ovr_sep = sep;
 			} else if (struct_ch && (g->ph1_ovr || g->ph2_ovr)) {
 				discard_verbatim_ovr(fps[k]->path, gi + 1,
 						     g, rejname);
@@ -4179,6 +4279,7 @@ static void derive_unit(file_patch_t **fps, int n, dstore_t *ins,
 				gout->ovr_mark = g->ovr_mark > 0 ? g->ovr_mark
 						 : g->mark_id;
 				gout->ovr_esc = g->ovr_esc;
+				gout->ovr_sep = g->ovr_sep;
 				continue;
 			}
 			if (strat_ch)
@@ -5097,7 +5198,7 @@ ph1_done:
 		sbuf_smake(out, SB_INIT)
 		int strat = g->res_strat;
 		int tline = g->del_start ? g->del_start : g->add_after;
-		sb_str(out, "${LB}\n");
+		EMIT_LB(out);
 		EMIT_SEP(out);
 
 		/* Custom abs/rel edit commands apply regardless of del/add shape */
@@ -5226,6 +5327,76 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
 		free_group(&groups[gi]);
 }
 
+/* The state registers, defined at the top of every $VI body. Registers are
+ * per editor process and every block is its own $VI, so each body carries
+ * its own copy; the body defines the default state first and the shell then
+ * contributes whole commands (never fragments) that flip individual
+ * switches. Any non-empty value counts as set.
+ *
+ * The chains: REG_HDLR captures the FAIL line into register 112 (where the
+ * INTR chain reads it back), prints it and calls INTR; a phase gate calls
+ * REG_HDLR and then the phase's quit chain, so QF only ever fires where the
+ * report does, as it did when both were shell fragments. */
+static void emit_reg_defaults(sbuf *out)
+{
+	sb_printf(out, "%dreg ya!112", REG_HDLR);
+	EMIT_ESCSEP(out);
+	sb_str(out, "prp");
+	EMIT_ESCSEP(out);
+	sb_printf(out, "p FAIL %%@%d", REG_LOC);
+	EMIT_ESCSEP(out);
+	sb_str(out, "pr");
+	EMIT_ESCSEP(out);
+	sb_printf(out, "?%%@%d", REG_INTR);
+	EMIT_SEP(out);
+	/* phase 2 reports and quits by default, phase 1 does neither */
+	sb_printf(out, "%dreg ?%%@%d", REG_ERR2, REG_HDLR);
+	EMIT_ESCSEP(out);
+	sb_printf(out, "?%%@%d", REG_QF2);
+	EMIT_SEP(out);
+	sb_printf(out, "%dreg ?%%@%d", REG_OK2, REG_MSG);
+	EMIT_SEP(out);
+	sb_printf(out, "%dreg vis 2", REG_QF2);
+	EMIT_ESCSEP(out);
+	sb_str(out, "q!1");
+	EMIT_SEP(out);
+}
+
+/* The switches, as whole commands the shell either contributes or not.
+ * This is the only part of a body sh writes, and it is written into a
+ * double-quoted word, so its raw separator bytes are escaped for it. */
+static void emit_reg_switches(sbuf *out)
+{
+	sb_printf(out, "${DBG1:+%dreg ?%%@%d", REG_ERR1, REG_HDLR);
+	sb_dq_esc_sep(out, 1);
+	sb_printf(out, "?%%@%d", REG_QF1);
+	sb_dq_esc_sep(out, 0);
+	sb_printf(out, "%dreg ?%%@%d", REG_OK1, REG_MSG);
+	sb_dq_esc_sep(out, 0);
+	sb_printf(out, "}${DBG2:+ya!%d", REG_ERR2);
+	sb_dq_esc_sep(out, 0);
+	sb_printf(out, "ya!%d", REG_OK2);
+	sb_dq_esc_sep(out, 0);
+	sb_printf(out, "}${QF1:+%dreg vis 2", REG_QF1);
+	sb_dq_esc_sep(out, 1);
+	sb_str(out, "q!1");
+	sb_dq_esc_sep(out, 0);
+	sb_printf(out, "}${QF2:+ya!%d", REG_QF2);
+	sb_dq_esc_sep(out, 0);
+	/* the failing site is where the script wrote the location register,
+	 * so INTR searches itself for that command's argument */
+	sb_printf(out, "}${INTR:+%dreg |sc|", REG_INTR);
+	sb_dq_esc_sep(out, 1);
+	sb_printf(out, "vis 2:fr 0:e $0:83reg %%@47:%%f> %dreg %%@%d:&Q:b0:"
+		  "|sc! ", REG_LOC, REG_LOC);
+	sb_dq_esc_sep(out, 3);
+	sb_str(out, "|:vis 3");
+	sb_dq_esc_sep(out, 1);
+	sb_str(out, "q1");
+	sb_dq_esc_sep(out, 0);
+	sb_str(out, "}");
+}
+
 /* Emit one "$VI -e" invocation: the printf body (|sc! prologue, per-file
  * b<k>/%ya 98/groups, vis 2, the writes and the 2q) staged into $P2VIF, then
  * the EXINIT $VI line naming the files in b<k> order. The host block passes no
@@ -5237,29 +5408,59 @@ static void emit_vi_block(file_patch_t **active, int nactive,
 			  gate_t *gates, int ngates)
 {
 	int forward = relative_mode || interactive_mode;
+	int regs = relative_mode || interactive_mode || compat_mode;
 	sbuf_smake(osb, SB_INIT)
-	printf("printf '%%s\\n' \"|sc! %s|:vis 3${SEP}",
-	       dyn_esc ? "${ESC}${SEP}" : "\\\\\\\\${SEP}");
-	if (forward)
-		fputs("fr 98${SEP}", stdout);
+	/* first argument: the specials prologue and the default register
+	 * state, which the switches in the second argument then flip */
+	sb_str(osb, "|sc! ");
+	sb_chr(osb, dyn_esc ? dyn_esc : '\\');
+	if (!dyn_esc)
+		sb_chr(osb, '\\');	/* the |...| loc halves it back to one */
+	sb_chr(osb, sep);
+	sb_str(osb, "|:vis 3");
+	EMIT_SEP(osb);
+	if (regs)
+		emit_reg_defaults(osb);
+	fputs("printf '%s%s%s\\n' '", stdout);
+	sq_write(osb->s, osb->s_n);
+	fputs("' \"", stdout);
+	sbuf_cut(osb, 0)
+	if (regs)
+		emit_reg_switches(osb);
+	sbuf_null(osb)
+	fputs(osb->s, stdout);
+	/* third argument: the body proper, verbatim */
+	fputs("\" '", stdout);
+	sbuf_cut(osb, 0)
+	if (forward) {
+		sb_str(osb, "fr 98");
+		EMIT_SEP(osb);
+	}
 	for (int k = 0; k < nactive; k++) {
 		int cache = forward && !active[k]->is_new;
-		fprintf(stdout, "b%d${SEP}", k);
-		if (cache)
-			fputs("%ya 98${SEP}", stdout);
-		sbuf_cut(osb, 0)
+		sb_printf(osb, "b%d", k);
+		EMIT_SEP(osb);
+		if (cache) {
+			sb_str(osb, "%ya 98");
+			EMIT_SEP(osb);
+		}
 		if (k == 0)
 			for (int j = 0; j < ngates; j++)
 				emit_gate(osb, &gates[j], cache);
 		cur_file_path = active[k]->path;
 		emit_file_script(osb, active[k]);
-		sbuf_null(osb)
-		fputs(osb->s, stdout);
 	}
-	fputs("vis 2${SEP}", stdout);
-	for (int k = 0; k < nactive; k++)
-		fprintf(stdout, "b%d${SEP}w${SEP}", k);
-	fputs("2q\" > \"$P2VIF\"\n" P2VI_VICALL " $VI -e", stdout);
+	sb_str(osb, "vis 2");
+	EMIT_SEP(osb);
+	for (int k = 0; k < nactive; k++) {
+		sb_printf(osb, "b%d", k);
+		EMIT_SEP(osb);
+		sb_str(osb, "w");
+		EMIT_SEP(osb);
+	}
+	sb_str(osb, "2q");
+	sq_write(osb->s, osb->s_n);
+	fputs("' > \"$P2VIF\"\n" P2VI_VICALL " $VI -e", stdout);
 	for (int k = 0; k < nactive; k++)
 		fprintf(stdout, " '%s'", active[k]->path);
 	fputs(" \"$P2VIF\"\n", stdout);
@@ -5488,9 +5689,9 @@ static char *sh_name(const char **s)
 	sbufn_ret(sb, sb->s)
 }
 
-/* Expand one double-quoted shell word: ${VAR}, ${VAR:-default} (nestable,
- * as ${DBG1:-...${QF1}} is), $VAR, $0, $(printf '\NNN') and the escapes
- * that survive double quotes. Everything else is literal. */
+/* Expand one double-quoted shell word: ${VAR}, ${VAR:-default} and
+ * ${VAR:+alternate} (both nestable), $VAR, $0, $(printf '\NNN') and the
+ * escapes that survive double quotes. Everything else is literal. */
 static int sh_expand(const char *s, sbuf *out)
 {
 	char *name;
@@ -5559,10 +5760,11 @@ static int sh_expand(const char *s, sbuf *out)
 					sbuf_str(out, val)
 				continue;
 			}
-			if (s[0] != ':' || s[1] != '-')
+			if (s[0] != ':' || (s[1] != '-' && s[1] != '+'))
 				return sh_err("expansion", s);
+			int alt = s[1] == '+';
 			s += 2;
-			/* the default runs to the matching brace and is
+			/* the word runs to the matching brace and is
 			 * skipped whether or not it is the one used */
 			const char *b = s;
 			for (int depth = 1; depth; ) {
@@ -5578,8 +5780,10 @@ static int sh_expand(const char *s, sbuf *out)
 				} else
 					s++;
 			}
-			if (val && *val) {
-				sbuf_str(out, val)
+			/* ":-" takes the word when unset, ":+" when set */
+			if ((val && *val ? 1 : 0) != alt) {
+				if (!alt)
+					sbuf_str(out, val)
 			} else {
 				sbuf_smake(def, SB_INIT)
 				sbuf_mem(def, b, s - b)
@@ -5636,42 +5840,6 @@ static int sh_assign(const char *s)
 	return ret;
 }
 
-/* [ "$X" = "1" ] && A=v || B=w */
-static int sh_cond(const char *s)
-{
-	const char *p, *alt;
-	char *name, *cmp, *pick;
-	int ret;
-	if (strncmp(s, "[ \"$", 4))
-		return sh_err("conditional", s);
-	s += 4;
-	name = sh_name(&s);
-	if (strncmp(s, "\" = \"", 5) || !(p = strstr(s + 5, "\" ] && "))) {
-		free(name);
-		return sh_err("conditional", s);
-	}
-	s += 5;
-	cmp = dup_n(s, p - s);
-	p += 7;
-	/* the last " || " separates the arms; a quoted value may contain
-	 * anything else but never that */
-	for (alt = NULL, s = p; (s = strstr(s, " || ")); s += 4)
-		alt = s;
-	if (!alt) {
-		free(cmp);
-		free(name);
-		return sh_err("conditional", p);
-	}
-	s = sh_get(name);
-	pick = !strcmp(s ? s : "", cmp) ? dup_n(p, alt - p)
-		: uc_dup((char *)alt + 4);
-	ret = sh_assign(pick);
-	free(pick);
-	free(cmp);
-	free(name);
-	return ret;
-}
-
 typedef struct {
 	char **paths;	/* real files, in $VI argument order */
 	int npaths;
@@ -5715,17 +5883,24 @@ static void free_block(p2vi_block_t *blk)
 	memset(blk, 0, sizeof(*blk));
 }
 
-/* The script's separator byte, the delimiter of the body's commands. Read
- * per block at parse time: a replay may span two scripts, each with its own
- * header, and the bodies keep their own separator once expanded. */
-static int sh_sepbyte(void)
+/* The script's separator byte, the delimiter of the body's commands. It is
+ * declared where ex learns it, in the body's own "|sc! <esc><sep>|"
+ * prologue: with a dynamic escape byte the loc holds the two bytes as they
+ * are, with the default backslash escape it holds a doubled one that the
+ * loc's ex_se_read halves. Read per block, since a replay may span two
+ * scripts and each body keeps its own separator. */
+static int body_sepbyte(const char *body)
 {
-	const char *s = sh_get("SEP");
-	if (!s || !s[0] || s[1]) {
-		fprintf(stderr, "replay: script has no single-byte SEP\n");
-		return -1;
+	const char *p = body, *e;
+	if (!strncmp(p, "|sc! ", 5) && (e = strchr(p + 5, '|'))) {
+		p += 5;
+		if (e - p == 2)
+			return (unsigned char)p[1];
+		if (e - p == 3 && p[0] == '\\' && p[1] == '\\')
+			return (unsigned char)p[2];
 	}
-	return (unsigned char)s[0];
+	fprintf(stderr, "replay: body has no specials prologue\n");
+	return -1;
 }
 
 /* EXINIT='<init>' $VI -e 'file' ... "$P2VIF"; the init is the fixed one
@@ -5758,6 +5933,77 @@ static int parse_vi_call(const char *s, p2vi_block_t *blk)
 	return 0;
 }
 
+/* One shell word: adjacent single-quoted, double-quoted and unquoted runs
+ * concatenate into it. A single-quoted run is verbatim (and holds no
+ * quote of its own, the generator writes '\'' for those), a double-quoted
+ * one goes through sh_expand. Advances *sp past the word. */
+static int sh_word(const char **sp, sbuf *out)
+{
+	const char *s = *sp, *e;
+	int ret = 0;
+	while (*s && *s != ' ' && *s != '\n') {
+		if (*s == '\'') {
+			if (!(e = strchr(++s, '\'')))
+				return sh_err("quoting", s);
+			sbuf_mem(out, s, e - s)
+			s = e + 1;
+			continue;
+		}
+		if (*s != '"') {
+			if (*s == '\\' && s[1])
+				s++;
+			sbuf_chr(out, *s++)
+			continue;
+		}
+		for (e = ++s; *e && *e != '"'; e++)
+			e += *e == '\\' && e[1];
+		if (!*e)
+			return sh_err("quoting", s);
+		sbuf_smake(dq, SB_INIT)
+		sbuf_mem(dq, s, e - s)
+		sbuf_null(dq)
+		ret = sh_expand(dq->s, out);
+		free(dq->s);
+		if (ret < 0)
+			return ret;
+		s = e + 1;
+	}
+	*sp = s;
+	return 0;
+}
+
+/* The staged body: "printf <format> <word>..." with a format that only
+ * concatenates its arguments and ends the line. The words carry the
+ * command chain; sh writes at most one of them, and only ever whole
+ * commands, so nothing here can change how the rest is parsed. */
+static int sh_printf_body(const char *s, sbuf *out)
+{
+	int ret;
+	sbuf_smake(fmt, SB_INIT)
+	if (strncmp(s, "printf ", 7)) {
+		free(fmt->s);
+		return sh_err("body", s);
+	}
+	s += 7;
+	if (!(ret = sh_word(&s, fmt))) {
+		const char *p = fmt->s;
+		sbuf_null(fmt)
+		while (p[0] == '%' && p[1] == 's')
+			p += 2;
+		if (p == fmt->s || strcmp(p, "\\n"))
+			ret = sh_err("body format", fmt->s);
+	}
+	free(fmt->s);
+	while (ret >= 0 && *s == ' ') {
+		while (*s == ' ')
+			s++;
+		ret = sh_word(&s, out);
+	}
+	if (ret >= 0)
+		sbuf_chr(out, '\n')
+	return ret;
+}
+
 /* Read the script's executable region (everything before "exit 0") into
  * one block per editor invocation. Parsing is separate from running: -e
  * runs each block in its own editor lifetime, while the compat session
@@ -5773,23 +6019,23 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 	while (ret >= 0 && (line = read_line(in, lb))) {
 		char *seg = line;
 		chomp(line);
-		if (!in_body && !strncmp(line, "printf '%s\\n' \"", 15)) {
+		if (!in_body && !strncmp(line, "printf '", 8)) {
 			sbuf_cut(body, 0)
 			in_body = 1;
-			seg = line + 15;
 		}
 		if (in_body) {
-			/* the body ends at the closing quote of the printf
-			 * argument; inside it a quote is always escaped */
+			/* the printf ends where it is redirected; its words
+			 * span lines, so they are gathered raw and read as
+			 * words once the whole command is in hand */
 			int n = strlen(seg);
 			int el = strlen(body_end);
-			if (n >= el + 1 && seg[n - el - 1] == '"'
-			    && !strcmp(seg + n - el, body_end)) {
-				seg[n - el - 1] = '\0';
+			if (n >= el && !strcmp(seg + n - el, body_end)) {
+				seg[n - el] = '\0';
 				in_body = 0;
 			}
 			sbuf_str(body, seg)
-			sbuf_chr(body, '\n')
+			if (in_body)
+				sbuf_chr(body, '\n')
 			continue;
 		}
 		if (!strcmp(line, "exit 0"))
@@ -5816,12 +6062,12 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 			if ((ret = parse_vi_call(line, &blk)) < 0)
 				break;
 			sbuf_smake(exp, SB_INIT)
-			if (!(ret = sh_expand(body->s, exp))) {
+			if (!(ret = sh_printf_body(body->s, exp))) {
 				sbuf_null(exp)
 				blk.body = uc_dup(exp->s);
 				/* -e never needs it, but reading it here keeps
 				 * every block self-contained for the replay */
-				blk.sep = sh_sepbyte();
+				blk.sep = body_sepbyte(blk.body);
 				*blks = erealloc(*blks, (*nblks + 1)
 						 * sizeof(**blks));
 				(*blks)[(*nblks)++] = blk;
@@ -5836,9 +6082,7 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 		j = 0;
 		while (isalnum((unsigned char)line[j]) || line[j] == '_')
 			j++;
-		if (line[0] == '[')
-			ret = sh_cond(line);
-		else if (j && line[j] == '=')
+		if (j && line[j] == '=')
 			ret = sh_assign(line);
 		else
 			ret = sh_err("command", line);
@@ -5889,7 +6133,7 @@ static int exec_p2vi_script(FILE *in)
 
 /* Drop the body's trailing writes: "b<N> SEP w" per file and the final
  * "2q". Parsed from the end, since "vis 2" (which stays) also occurs
- * inside the QF1/QF2/INTR fragments and so anchors nothing. */
+ * inside the quit/interrupt register chains and so anchors nothing. */
 static int strip_body_tail(char *body, int sep)
 {
 	int n = strlen(body), s;
@@ -7027,7 +7271,8 @@ static int read_delta_sections(FILE *in)
 						     ? &cur_gd->ph1 : &cur_gd->ph2;
 					free(*dst);
 					*dst = uc_dup(ph->s);
-					mark_bytes_used(*dst);
+					mark_verbatim_bytes(*dst, cur_gd->ovr_esc,
+							    cur_gd->ovr_sep);
 				}
 				sbufn_cut(ph, 0)
 				in_ph = 0;
@@ -7254,6 +7499,8 @@ static int read_delta_sections(FILE *in)
 					char *e = strstr(line + 18, " esc ");
 					if (e)
 						cur_gd->ovr_esc = atoi(e + 5);
+					if ((e = strstr(line + 18, " sep ")))
+						cur_gd->ovr_sep = atoi(e + 5);
 				}
 				continue;
 			}
@@ -7519,7 +7766,7 @@ int main(int argc, char **argv)
 	}
 
 	/* Find separator character */
-	int sep = find_unused_byte();
+	sep = find_unused_byte();
 	if (sep < 0) {
 		fprintf(stderr,
 			"error: patch uses all possible byte values, cannot find separator\n");
@@ -7552,37 +7799,15 @@ int main(int argc, char **argv)
 	      "    echo \"Set VI environment variable to point to nextvi binary\" >&2\n"
 	      "    exit 1\n"
 	      "fi\n\n", stdout);
-	printf("SEP=\"$(printf '\\%03o')\"\n", sep);
-	if (dyn_esc)
-		printf("ESC=\"$(printf '\\%03o')\"\n", dyn_esc);
-	if (relative_mode || interactive_mode || compat_mode) {
-		/* <esc><sep> and <esc><esc><esc><sep> as they appear inside
-		 * the script's double-quoted strings, matching what
-		 * EMIT_ESCSEP / EMIT_ESC3SEP emit into the command body */
-		const char *e1 = dyn_esc ? "${ESC}${SEP}" : "\\\\${SEP}";
-		const char *e3 = dyn_esc ? "${ESC}${ESC}${ESC}${SEP}"
-				 : "\\\\\\\\\\\\${SEP}";
-		fputs("# Command that handles readability line breaks\n"
-		      "LB=\"0?\"\n"
-		      "# Phase 1 (search/mark): errors disabled by default,\n"
-		      "# DBG1=1 enables error reporting, QF1=1 quits on failure\n"
-		      "# OK1: with DBG1=1 also report fallback anchor successes\n"
-		      "[ \"$DBG1\" = \"1\" ] && OK1= || OK1=\"0?\"\n"
-		      "[ \"$DBG1\" = \"1\" ] && DBG1= || DBG1=\"0?\"\n", stdout);
-		printf("[ \"$QF1\" = \"1\" ] && QF1=\"%svis 2%sq!1\" || QF1=\n",
-		       e1, e1);
-		fputs("# Phase 2 (edits): DBG2=1 disables errors, QF2=1 ignores them\n"
-		      "# OK2: with DBG2= also report fallback substitute successes\n"
-		      "[ \"$DBG2\" = \"1\" ] && OK2=\"0?\" || OK2=\n"
-		      "[ \"$DBG2\" = \"1\" ] && DBG2=\"0?\" || DBG2=\n", stdout);
-		printf("[ \"$QF2\" = \"1\" ] && QF2= || QF2=\"%svis 2%sq!1\"\n",
-		       e1, e1);
-		fputs("# Enters vi at failing code line in this script\n"
-		      "# Designed for state inspection mid execution\n", stdout);
-		printf("[ \"$INTR\" = \"1\" ] && INTR=\"%s|sc|%svis 2:fr 0:e $0:83reg "
-		       "%%@47:%%f> %%@112:&Q:b0:|sc! %s|:vis 3%sq1\" || INTR=\n",
-		       e1, e1, e3, e1);
-	}
+	if (relative_mode || interactive_mode || compat_mode)
+		fputs("# Switches, read where each body defines its registers:\n"
+		      "# Phase 1 (search/mark) reports nothing by default;\n"
+		      "#   DBG1=1 reports failures and which fallback anchor\n"
+		      "#   resolved a group, QF1=1 also quits on failure\n"
+		      "# Phase 2 (edits) reports and quits by default;\n"
+		      "#   DBG2=1 silences it, QF2=1 keeps going after an error\n"
+		      "# INTR=1 enters vi at the failing code line in this\n"
+		      "#   script, for state inspection mid execution\n", stdout);
 
 	/* Build groups for every file (host and compat) */
 	for (int i = 0; i < nfiles; i++)
