@@ -24,8 +24,7 @@ fi
 # INTR=1 enters vi at the failing code line in this
 #   script, for state inspection mid execution
 
-# One $VI call: real files, one staged body per section, then a
-# driver buffer that EXINIT runs; sections gate themselves.
+# Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF".*' EXIT
 printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220211reg vis 2q!1'\
@@ -34,8 +33,8 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!211}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'b11;0fr 0%f> ^#include "lsp\.c"$1000??230reg 0231reg 01000?? 231reg 11000?? 230reg+ 1211reg fr 230f> 1??!vis 2q!1b01b11b2%ya 972sc %? %@972scb11211reg vis 2q!1b3%ya 502sc %1000?? %@502scvis 2b0wb1w2q' > "$P2VIF".d
-printf '%s\n' '2scfr 98b0%ya 98?0?
+'b01;0fr 0%f> ^#include "lsp\.c"$1000??230reg 0231reg 01000?? 231reg 11000?? 230reg+ 1211reg fr 230f> 1??!vis 2q!1b11b01b2%ya 972sc %? %@972scb01211reg vis 2q!1b3%ya 502sc %1000?? %@502scvis 2b0wb1w2q' > "$P2VIF".d
+printf '%s\n' '2scfr 98b1%ya 98?0?
 %f> 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},
 
 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
@@ -86,7 +85,7 @@ const int hlslen = LEN\(hls\);8??0?
 grp 09??-16m 1220reg p OK conf.c:312:a92sc %? %@2152sc'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3122sc %? %@2132sc0?
 0?
-'\''1s/\)\$/).*$/??!219reg conf.c:312:m12sc %? %@2142scb1%ya 98?0?
+'\''1s/\)\$/).*$/??!219reg conf.c:312:m12sc %? %@2142scb0%ya 98?0?
 %f> static int vi_status;			/\* permanent status bar \*/
 static int vi_tsm;			/\* type of the status message \*/
 static int vi_nlmode;			/\* new line mode for vi regions \*/
@@ -1210,7 +1209,7 @@ static int vc_visual_op(int cmd)
 			vi_mod |= 1;
 ??!219reg vi.c:1782:m252sc %? %@2142sc' > "$P2VIF".0
 # Compat (post) from lsp.sh
-printf '%s\n' '2scfr 98b1%ya 98?0?
+printf '%s\n' '2scfr 98b0%ya 98?0?
 %f> 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;
@@ -1263,7 +1262,7 @@ printf '%s\n' '2scfr 98b1%ya 98?0?
 0?
 '\''1s/\{ \{/{/??!219reg vi.c:1948:m12sc %? %@2142sc0?
 '\''2d??!219reg vi.c:1957:m22sc %? %@2142scp compat applied: vi.c src=lsp.sh' > "$P2VIF".1
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+EXINIT='%ya 97:? %@97' $VI -e 'vi.c' 'conf.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
