@@ -5599,8 +5599,19 @@ static void emit_driver_sensors(sbuf *out, section_t *s,
  * Every %@ call is bracketed with the "2sc %" / "2sc" expansion window
  * (emit_reg_call's discipline) because the driver prologue's |sc! leaves xexp
  * inert. */
-static void emit_driver_call(sbuf *out, section_t *s)
+static void emit_driver_call(sbuf *out, section_t *s,
+			     file_patch_t **uf, int nuf)
 {
+	/* Rewind every real file this section touches to line 1 before running
+	 * it: the gate sensors and any earlier block leave the cursor deep in
+	 * the buffer, and the body's relative searches (";0fr.,$f>") key off
+	 * the current line, so a leftover row would steer them past matches. */
+	for (int k = 0; k < s->nf; k++) {
+		sb_printf(out, "b%d", uf_index(uf, nuf, s->files[k]));
+		EMIT_SEP(out);
+		sb_str(out, "1");
+		EMIT_SEP(out);
+	}
 	sb_printf(out, "b%d", s->secbuf);
 	EMIT_SEP(out);
 	sb_printf(out, "%%ya %d", s->reg);
@@ -5699,7 +5710,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	for (int i = 0; i < nsec; i++)
 		emit_driver_sensors(osb, &secs[i], uf, nuf);
 	for (int i = 0; i < nsec; i++)
-		emit_driver_call(osb, &secs[i]);
+		emit_driver_call(osb, &secs[i], uf, nuf);
 	sb_str(osb, "vis 2");
 	EMIT_SEP(osb);
 	for (int i = 0; i < nuf; i++) {
