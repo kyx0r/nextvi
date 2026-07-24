@@ -1340,7 +1340,7 @@ static void emit_reg_call(sbuf *out, int gate, int deep)
 {
 	sb_str(out, "2sc %");
 	emit_sep_lvl(out, deep);
-	sb_printf(out, "?%%@%d", gate);
+	sb_printf(out, "? %%@%d", gate);
 	emit_sep_lvl(out, deep);
 	sb_str(out, "2sc");
 }
@@ -5301,14 +5301,14 @@ static void emit_reg_defaults(sbuf *out)
 	EMIT_ESCSEP(out);
 	sb_str(out, "pr");
 	EMIT_ESCSEP(out);
-	sb_printf(out, "?%%@%d", REG_INTR);
+	sb_printf(out, "? %%@%d", REG_INTR);
 	EMIT_SEP(out);
 	/* phase 2 reports and quits by default, phase 1 does neither */
-	sb_printf(out, "%dreg ?%%@%d", REG_ERR2, REG_HDLR);
+	sb_printf(out, "%dreg ? %%@%d", REG_ERR2, REG_HDLR);
 	EMIT_ESCSEP(out);
-	sb_printf(out, "?%%@%d", REG_QF2);
+	sb_printf(out, "? %%@%d", REG_QF2);
 	EMIT_SEP(out);
-	sb_printf(out, "%dreg ?%%@%d", REG_OK2, REG_MSG);
+	sb_printf(out, "%dreg ? %%@%d", REG_OK2, REG_MSG);
 	EMIT_SEP(out);
 	sb_printf(out, "%dreg vis 2", REG_QF2);
 	EMIT_ESCSEP(out);
@@ -5323,11 +5323,11 @@ static void emit_reg_defaults(sbuf *out)
  * double quotes they are line continuations, so the value is unchanged. */
 static void emit_reg_switches(sbuf *out)
 {
-	sb_printf(out, "${DBG1:+%dreg ?%%@%d", REG_ERR1, REG_HDLR);
+	sb_printf(out, "${DBG1:+%dreg ? %%@%d", REG_ERR1, REG_HDLR);
 	sb_dq_esc_sep(out, 1);
-	sb_printf(out, "?%%@%d", REG_QF1);
+	sb_printf(out, "? %%@%d", REG_QF1);
 	sb_dq_esc_sep(out, 0);
-	sb_printf(out, "%dreg ?%%@%d", REG_OK1, REG_MSG);
+	sb_printf(out, "%dreg ? %%@%d", REG_OK1, REG_MSG);
 	sb_dq_esc_sep(out, 0);
 	sb_str(out, "}\\\n");
 	sb_printf(out, "${DBG2:+ya!%d", REG_ERR2);
@@ -5559,9 +5559,9 @@ static void emit_gate_expr(sbuf *out, section_t *s)
 		real++;
 	}
 	if (real)
-		sb_printf(out, "??%s", present ? "" : "!");
+		sb_printf(out, "??%s ", present ? "" : "!");
 	else
-		sb_chr(out, '?');
+		sb_str(out, "? ");
 }
 
 /* Sensor half of a section's orchestration: run its gate searches, recording
