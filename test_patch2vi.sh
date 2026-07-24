@@ -3,6 +3,13 @@
 # Run from the nextvi source directory
 set -e
 
+# The generated scripts' phase switches are read from the environment (a
+# replay resolves ${DBG1:+...} etc through getenv too), so an exported one
+# silently rewrites what every test runs. INTR=1 is the worst of them: an
+# error site opens the script in vi and a pty test then waits for a
+# keystroke forever. Start from the documented defaults.
+unset DBG1 DBG2 QF1 QF2 INTR
+
 VI=${VI:-/bin/vi}
 PASS=0
 FAIL=0
