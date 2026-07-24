@@ -1137,6 +1137,25 @@ static void emit_escaped_text(sbuf *out, const char *s);
 #define REG_HDLR 217	/* the FAIL report chain both phases share */
 #define REG_LOC  219	/* argument: the FAIL location of the current site */
 #define REG_MSG  220	/* argument: the OK report command of the current site */
+/*
+ * -co sensor flags. In the single-vi-call model (one process, one body) a
+ * sensor gate that fires before the host body writes a flag register that a
+ * later block reads after it; registers are global and never cleared between
+ * chains, so the bit crosses the host body. Two writes per firing sensor:
+ *   REG_FLAG_ANY      one shared register, appended to by every firing sensor,
+ *                     so "any origin fired" is "this register is non-empty" -
+ *                     answered by a single f> at the host's per-site override.
+ *   REG_FLAG_BASE+k   one per origin k, read by the per-block back-to-front
+ *                     subset test that decides which block asserts.
+ * Both sit ABOVE the 210-220 control band so they never overwrite a quit/error
+ * register; an unset flag reads false (ex_regget NULL -> "uninitialized
+ * register" -> xuerr), so no initialisation pass is needed. The per-block
+ * subset anchors use ec_while slot ids >= 10, above every single-digit group
+ * chain tag (NSEARCH <= 9), so they never fuse with a group's result.
+ */
+#define REG_FLAG_ANY  230	/* shared any-origin-fired register */
+#define REG_FLAG_BASE 231	/* per-origin flag registers: REG_FLAG_BASE+k */
+#define FLAG_SLOT_BASE 10	/* ec_while subset-test anchor slots (>= 10) */
 /* One escape run of n bytes followed by the separator. n = 0 is the plain
  * command separator, 1 escapes it for a ??! block's argument, 3 for a ??
  * then-arg nested one level further in. */
@@ -5476,53 +5495,281 @@ static void emit_vi_block(file_patch_t **active, int nactive,
 	free(osb->s);
 }
 
-/* Emit every derived compat block of the given polarity as its own gated $VI
- * invocation. Compat groups are always search-anchored (their line numbers
- * live in post-origin RAM, nowhere on the target), so relative mode is forced
- * and the file-validated generators are off. Ordering relative to the host
- * block is the caller's, by polarity: pre before, post after. A script may
- * carry both pre and post blocks (stacked over runs), so blocks are filtered
- * on their own recorded polarity, not the current run's flag.
- *
- * The host block and each compat block are independent units that stack
- * blindly; patch2vi never reasons across them. Structuring a compat edit and
- * a host hunk so they compound correctly on an origin tree is the user's
- * job, not a hard error here. */
-static void emit_compat_blocks(int polarity)
+/* Global buffer index of fp in the unified file list uf[] (the order in which
+ * the single $VI call opens the real files as b0..bN-1). Matched by path: the
+ * host's and a compat block's entries for the same file are distinct
+ * file_patch_t but one physical file, so one shared buffer. */
+static int uf_index(file_patch_t **uf, int nuf, file_patch_t *fp)
 {
-	for (int c = 0; c < ncompat; c++) {
-		compat_block_t *cb = &compat_blocks[c];
-		int nca, sv_rel = relative_mode;
-		if (cb->polarity != polarity)
+	for (int i = 0; i < nuf; i++)
+		if (!strcmp(uf[i]->path, fp->path))
+			return i;
+	return -1;
+}
+
+/* One-call sensor: select the block's first file buffer and search it live for
+ * the gate pattern, recording the search status under the gate's tag. Unlike
+ * emit_gate() this neither quits nor touches the register cache - the driver's
+ * conditional call reads the recorded tag and decides whether to run the block.
+ * The search is cacheless (%f> over the live buffer), so its ^...$ anchors mean
+ * per-line, which is what a gate pattern wants. The tag record lives inside a
+ * '?' sub-chain so emit_chain_pattern's escaped separators sit one level deep,
+ * exactly as in emit_gate; xanchor persists to the driver's top level, where
+ * the call fragment evaluates the tag. */
+static void emit_gate_record(sbuf *out, gate_t *g, int gbuf)
+{
+	pat_spec_t ps;
+	if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
+		return;
+	memset(&ps, 0, sizeof(ps));
+	ps.lines = g->lines;
+	ps.nlines = g->nlines;
+	ps.pre_escaped = g->pre_escaped;
+	ps.mode = 1;
+	sb_printf(out, "b%d", gbuf);
+	EMIT_SEP(out);
+	sb_chr(out, '?');
+	EMIT_ESCSEP(out);
+	sb_str(out, "1;0");
+	EMIT_ESCSEP(out);
+	/* Force a live-buffer search: a prior section left the find register at
+	 * its file cache (fr 98), where ^...$ would anchor the whole-file string
+	 * and never a mid-file line. "fr 0" points f> back at the buffer. */
+	sb_str(out, "fr 0");
+	EMIT_ESCSEP(out);
+	sb_str(out, "%f> ");
+	emit_chain_pattern(out, &ps);
+	EMIT_ESCSEP(out);
+	sb_printf(out, "%d??", g->tag);
+	EMIT_SEP(out);
+}
+
+/* One section's edit body (no prologue, no register defaults, no gate and no
+ * vis 2/w/2q tail): the per-file buffer select, its register cache and its
+ * generated groups. Buffer indices are global (uf_index), because one $VI call
+ * opens every file. The body is staged as its own buffer and executed verbatim
+ * through a %@ call, so its top-level separators are raw (EMIT_SEP): %@ inserts
+ * the yanked bytes with no rescanning, so the body runs at whatever depth the
+ * call sits without any change to its escaping. */
+static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
+			      file_patch_t **uf, int nuf)
+{
+	/* The driver expands this body through "2sc % : ?%@<reg>", so xexp is
+	 * still '%' when the body begins - but the body's own %ya/%f> use '%'
+	 * as the all-lines range, not as an expansion trigger. Reset xexp to 0
+	 * up front (the driver prologue's |sc! does the same for the driver);
+	 * the body's error sites re-enable it locally through emit_reg_call. */
+	sb_str(out, "2sc");
+	EMIT_SEP(out);
+	sb_str(out, "fr 98");
+	EMIT_SEP(out);
+	for (int k = 0; k < nf; k++) {
+		int gi = uf_index(uf, nuf, files[k]);
+		int cache = !files[k]->is_new;
+		sb_printf(out, "b%d", gi);
+		EMIT_SEP(out);
+		if (cache) {
+			sb_str(out, "%ya 98");
+			EMIT_SEP(out);
+		}
+		cur_file_path = files[k]->path;
+		emit_file_script(out, files[k]);
+	}
+}
+
+/* Stage one section body as a shell here-string into "$P2VIF".<idx>, the file
+ * the single $VI call opens as a buffer. */
+static void stage_section(sbuf *body, int idx)
+{
+	printf("printf '%%s\\n' '");
+	sq_write(body->s, body->s_n);
+	printf("' > \"$P2VIF\".%d\n", idx);
+}
+
+/* A section to run in the single call: its files, its register, and (for a
+ * compat block) its gate and the block it customizes from. */
+typedef struct {
+	file_patch_t **files;
+	int nf;
+	gate_t *gates;
+	int ngates;
+	int reg;		/* register the driver yanks/executes the body from */
+	int secbuf;		/* global buffer index of the staged body */
+	compat_block_t *cb;	/* NULL for the host section */
+} section_t;
+
+/* Emit the driver's orchestration for one section: run its gate sensors,
+ * yank its body into its register, then call it - unconditionally for the
+ * host, or gated on the recorded tags for a compat block. Every %@ call is
+ * bracketed with the "2sc %" / "2sc" expansion window (emit_reg_call's
+ * discipline) because the driver prologue's |sc! leaves xexp inert. */
+static void emit_driver_section(sbuf *out, section_t *s,
+				file_patch_t **uf, int nuf)
+{
+	int present = 1, real = 0;
+	for (int j = 0; j < s->ngates; j++) {
+		gate_t *g = &s->gates[j];
+		if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
 			continue;
-		file_patch_t **ca = block_files(cb, &nca);
-		if (!nca) {
-			free(ca);
+		emit_gate_record(out, g, uf_index(uf, nuf, s->files[0]));
+		present = g->polarity == GATE_PRESENT;
+		real++;
+	}
+	sb_printf(out, "b%d", s->secbuf);
+	EMIT_SEP(out);
+	sb_printf(out, "%%ya %d", s->reg);
+	EMIT_SEP(out);
+	sb_str(out, "2sc %");
+	EMIT_SEP(out);
+	if (real) {
+		for (int j = 0, first = 1; j < s->ngates; j++) {
+			gate_t *g = &s->gates[j];
+			if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
+				continue;
+			sb_printf(out, "%s%d", first ? "" : ",", g->tag);
+			first = 0;
+		}
+		sb_printf(out, "??%s", present ? "" : "!");
+	} else
+		sb_chr(out, '?');
+	sb_printf(out, "%%@%d", s->reg);
+	EMIT_SEP(out);
+	sb_str(out, "2sc");
+	EMIT_SEP(out);
+}
+
+/* Emit the whole patch as a single $VI call: the real files as b0..bN-1, then
+ * one staged buffer per section (the host and each compat block), then a driver
+ * buffer that EXINIT yanks into register 97 and runs. The driver defines the
+ * state registers once, runs each section in application order (pre-compat,
+ * host, post-compat) through a %@ call, and finally writes every real file and
+ * quits. A gate that misses simply skips its block's call; nothing quits the
+ * shared process, so later sections still run. */
+static void emit_one_call(file_patch_t **active, int nactive)
+{
+	section_t *secs = emalloc((ncompat + 1) * sizeof(*secs));
+	int nsec = 0, compat_reg = 50;
+	file_patch_t **uf = emalloc((nfiles + 1) * sizeof(*uf));
+	int nuf = 0;
+	for (int i = 0; i < nfiles; i++)
+		if (files[i].ngroups > 0 && uf_index(uf, nuf, &files[i]) < 0)
+			uf[nuf++] = &files[i];
+
+	/* Sections in run order: pre-compat blocks, host, post-compat blocks. */
+	for (int pass = 0; pass < 3; pass++) {
+		if (pass == 1) {
+			if (nactive <= 0)
+				continue;
+			secs[nsec].files = active;
+			secs[nsec].nf = nactive;
+			secs[nsec].gates = NULL;
+			secs[nsec].ngates = 0;
+			secs[nsec].reg = P2VI_REG;
+			secs[nsec].cb = NULL;
+			nsec++;
 			continue;
 		}
-		fprintf(stdout, "\n# Compat (%s) from %s"
-			" - gated on the origin's change\n",
-			cb->polarity == 1 ? "pre" : "post",
-			cb->origin ? cb->origin : "");
-		relative_mode = 1;
-		compat_building = 1;
-		ncompat_res = cb->ngates;
-		for (int j = 0; j < cb->ngates; j++)
-			compat_res_marks[j] = cb->gates[j].tag;
-		/* Shape the emitted body with the block's stored deltas
-		 * (hand-edited or -i-produced); compat_building=1 keeps the
-		 * file-validated generators off so injection sees the same
-		 * slot set the storage was written against. Under interactive
-		 * mode the editor driver already injected the deltas and
-		 * applied the edits onto these groups, so injecting again would
-		 * double-apply; skip it. */
-		if (!interactive_mode)
-			inject_deltas(ca, nca, &cb->deltas);
-		emit_vi_block(ca, nca, cb->gates, cb->ngates);
-		ncompat_res = 0;
-		compat_building = 0;
-		relative_mode = sv_rel;
+		int polarity = pass == 0 ? 1 : 2;
+		for (int c = 0; c < ncompat; c++) {
+			compat_block_t *cb = &compat_blocks[c];
+			int nca;
+			if (cb->polarity != polarity)
+				continue;
+			file_patch_t **ca = block_files(cb, &nca);
+			if (!nca) {
+				free(ca);
+				continue;
+			}
+			secs[nsec].files = ca;
+			secs[nsec].nf = nca;
+			secs[nsec].gates = cb->gates;
+			secs[nsec].ngates = cb->ngates;
+			secs[nsec].reg = compat_reg++;
+			secs[nsec].cb = cb;
+			nsec++;
+		}
 	}
+
+	fputs("# One $VI call: real files, one staged body per section, then a\n"
+	      "# driver buffer that EXINIT runs; sections gate themselves.\n"
+	      "( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
+	      "trap 'rm -f \"$P2VIF\".*' EXIT\n", stdout);
+
+	/* Stage each section body; assign its global buffer index. */
+	for (int i = 0; i < nsec; i++) {
+		section_t *s = &secs[i];
+		int sv_rel = relative_mode;
+		s->secbuf = nuf + i;
+		if (s->cb) {
+			relative_mode = 1;
+			compat_building = 1;
+			ncompat_res = s->cb->ngates;
+			for (int j = 0; j < s->cb->ngates; j++)
+				compat_res_marks[j] = s->cb->gates[j].tag;
+			if (!interactive_mode)
+				inject_deltas(s->files, s->nf, &s->cb->deltas);
+		}
+		sbuf_smake(bsb, SB_INIT)
+		emit_section_body(bsb, s->files, s->nf, uf, nuf);
+		sbuf_null(bsb)
+		stage_section(bsb, i);
+		free(bsb->s);
+		if (s->cb) {
+			ncompat_res = 0;
+			compat_building = 0;
+			relative_mode = sv_rel;
+		}
+	}
+
+	/* Stage the driver: prologue + register defaults (arg1), shell switches
+	 * (arg2), orchestration + final writes (arg3). */
+	sbuf_smake(osb, SB_INIT)
+	sb_str(osb, "|sc! ");
+	sb_chr(osb, dyn_esc ? dyn_esc : '\\');
+	if (!dyn_esc)
+		sb_chr(osb, '\\');
+	sb_chr(osb, sep);
+	sb_str(osb, "|:vis 3");
+	EMIT_SEP(osb);
+	emit_reg_defaults(osb);
+	printf("printf '%%s%%s%%s\\n' '");
+	sq_write(osb->s, osb->s_n);
+	printf("'\\\n\"");
+	sbuf_cut(osb, 0)
+	emit_reg_switches(osb);
+	sbuf_null(osb)
+	fputs(osb->s, stdout);
+	printf("\"\\\n'");
+	sbuf_cut(osb, 0)
+	for (int i = 0; i < nsec; i++)
+		emit_driver_section(osb, &secs[i], uf, nuf);
+	sb_str(osb, "vis 2");
+	EMIT_SEP(osb);
+	for (int i = 0; i < nuf; i++) {
+		sb_printf(osb, "b%d", i);
+		EMIT_SEP(osb);
+		sb_str(osb, "w");
+		EMIT_SEP(osb);
+	}
+	sb_str(osb, "2q");
+	sq_write(osb->s, osb->s_n);
+	printf("' > \"$P2VIF\".d\n");
+	free(osb->s);
+
+	/* The single call: real files, section bodies, driver last (current at
+	 * EXINIT, so %ya 97 yanks it). */
+	fputs(P2VI_VICALL " $VI -e", stdout);
+	for (int i = 0; i < nuf; i++)
+		printf(" '%s'", uf[i]->path);
+	for (int i = 0; i < nsec; i++)
+		printf(" \"$P2VIF\".%d", i);
+	printf(" \"$P2VIF\".d\n");
+
+	for (int i = 0; i < nsec; i++)
+		if (secs[i].cb)
+			free(secs[i].files);
+	free(secs);
+	free(uf);
 }
 
 /* Serialize a delta store as === DELTA <path> === sections; empty entries
@@ -7853,30 +8100,24 @@ int main(int argc, char **argv)
 	if (interactive_mode)
 		interactive_edit_all_files(active, nactive);
 
-	/* A large body overflows EXINIT/argv, so each $VI invocation stages its
-	 * ex command body in a temp file the shell expands; one staging setup is
-	 * shared by every block (compat blocks first, then the host). */
-	if (ncompat || nactive > 0)
+	/* With compat blocks present, the whole patch is one $VI call: host and
+	 * every compat block share one process so a gate's answer crosses the
+	 * host body through global registers/anchors. Without them the common
+	 * case stays a single host block, emitted byte-identically as before. */
+	if (ncompat) {
+		emit_one_call(active, nactive);
+	} else if (nactive > 0) {
+		/* A large body overflows EXINIT/argv, so the $VI invocation stages
+		 * its ex command body in a temp file the shell expands. */
 		fputs("# Body too large for EXINIT/argv: stage it in a file\n"
 		      "( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
 		      "trap 'rm -f \"$P2VIF\"' EXIT\n", stdout);
-
-	/* -pr: the compat block is applied BEFORE the target, so it runs first,
-	 * on the origin-only tree its anchors were derived against. */
-	emit_compat_blocks(1);
-
-	if (nactive > 0) {
 		fputs("\n# Patch:", stdout);
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, " %s", active[k]->path);
 		fputc('\n', stdout);
 		emit_vi_block(active, nactive, NULL, 0);
 	}
-
-	/* -po: the compat block resolves the post-origin+target state, so it
-	 * runs AFTER the host block has re-applied the target - only then does
-	 * the tree match the baseline the compat anchors were derived from. */
-	emit_compat_blocks(2);
 
 	/* Embed delta and original patch after exit 0 */
 	printf("\nexit 0\n");
