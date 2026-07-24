@@ -5438,18 +5438,19 @@ static int uf_index(file_patch_t **uf, int nuf, file_patch_t *fp)
 	return -1;
 }
 
-/* One-call sensor: select the block's first file buffer and search it live for
- * the gate pattern, recording the search status under the gate's tag. Unlike
- * emit_gate() this neither quits nor touches the register cache - the driver's
- * conditional call reads the recorded tag and decides whether to run the block.
- * The search is cacheless (%f> over the live buffer), so its ^...$ anchors mean
- * per-line, which is what a gate pattern wants. The tag record lives inside a
- * '?' sub-chain so emit_chain_pattern's escaped separators sit one level deep,
- * exactly as in emit_gate; xanchor persists to the driver's top level, where
- * the call fragment evaluates the tag. */
+/* Emit a gate's probe search as top-level commands, recording the result into
+ * the anchor slot identified by g->tag. The driver's conditional call later
+ * reads that anchor to decide whether to run the block.  No sub-chain wrapper
+ * is needed: the commands run at the driver's top level with plain EMIT_SEP
+ * separators.
+ * Single-line patterns use %f> over the live buffer with fr 0 (so ^...$ are
+ * per-line anchors). Multi-line patterns fall back to the register cache
+ * (fr 98 + %ya 98) where the whole file is one string, so the regex engine
+ * sees the embedded newlines and matches correctly. */
 static void emit_gate_record(sbuf *out, gate_t *g, int gbuf)
 {
 	pat_spec_t ps;
+	int multi;
 	if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
 		return;
 	memset(&ps, 0, sizeof(ps));
@@ -5457,20 +5458,26 @@ static void emit_gate_record(sbuf *out, gate_t *g, int gbuf)
 	ps.nlines = g->nlines;
 	ps.pre_escaped = g->pre_escaped;
 	ps.mode = 1;
+	multi = ps.nlines > 1;
 	sb_printf(out, "b%d", gbuf);
 	EMIT_SEP(out);
-	sb_chr(out, '?');
-	EMIT_ESCSEP(out);
-	sb_str(out, "1;0");
-	EMIT_ESCSEP(out);
-	/* Force a live-buffer search: a prior section left the find register at
-	 * its file cache (fr 98), where ^...$ would anchor the whole-file string
-	 * and never a mid-file line. "fr 0" points f> back at the buffer. */
-	sb_str(out, "fr 0");
-	EMIT_ESCSEP(out);
-	sb_str(out, "%f> ");
+	if (multi) {
+		/* Multi-line gate: search the register cache so the whole file
+		 * is one string and embedded newlines are visible to the regex. */
+		sb_str(out, "%ya 98");
+		EMIT_SEP(out);
+		sb_str(out, "fr 98");
+		EMIT_SEP(out);
+		sb_str(out, "%f> ");
+	} else {
+		sb_str(out, "1;0");
+		EMIT_SEP(out);
+		sb_str(out, "fr 0");
+		EMIT_SEP(out);
+		sb_str(out, "%f> ");
+	}
 	emit_chain_pattern(out, &ps);
-	EMIT_ESCSEP(out);
+	EMIT_SEP(out);
 	sb_printf(out, "%d??", g->tag);
 	EMIT_SEP(out);
 }
@@ -5506,6 +5513,12 @@ static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
 		cur_file_path = files[k]->path;
 		emit_file_script(out, files[k]);
 	}
+	/* Strip any trailing separator emitted by the last error check in
+	 * emit_file_script: when this body is yanked into a register and
+	 * executed via %@, a dangling separator produces an empty command
+	 * that ex prints as "unknown command". */
+	if (out->s_n > 0 && out->s[out->s_n - 1] == sep)
+		out->s_n--;
 }
 
 /* Stage one section body as a shell here-string into "$P2VIF".<idx>, the file
