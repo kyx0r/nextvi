@@ -1191,7 +1191,7 @@ static void sb_dq_esc_sep(sbuf *out, int n)
  * +N / -N are equivalent to .+N / .-N since +/- default to current line.
  */
 
-/* Emit content lines for an a/c/i ex command. */
+/* Emit content lines for a c/i ex command. */
 static void emit_content(sbuf *out, char **texts, int ntexts)
 {
 	for (int i = 0; i < ntexts; i++) {
@@ -3231,7 +3231,7 @@ static void emit_grp_delta(sbuf *out, grp_delta_t *gd)
 	}
 }
 
-/* An a/c/i command's inline content as the EDIT COMMAND sections show it: the
+/* A c/i command's inline content as the EDIT COMMAND sections show it: the
  * verb takes the first added line on its own line, the rest follow below; a
  * group that adds nothing just ends the verb line. */
 static void wg_content(sbuf *fp, group_t *g)
