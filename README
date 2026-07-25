@@ -7,6 +7,10 @@ Apply using patch(1): ./name.sh 1
 Nextvi features a robust, context aware and customizable patching system.
 patch2vi support program facilitates script transformations.
 
+patch2vi.sh
+--------------
+Maintainer utils.
+
 64bit.sh
 --------------
 Convert entire codebase to 64 bit integers instead of 32 bit.
