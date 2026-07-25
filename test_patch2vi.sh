@@ -1551,6 +1551,114 @@ else
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
+# The origin's landing is what a gate probes, and the target can overwrite it:
+# origin (c1) changes X3 -> X3o and target (c2) then replaces the whole X2..X4
+# region, so the post-origin+target text carries no trace of the origin - it is
+# byte-identical to a target-only tree. The probe must come from the
+# post-origin, pre-target text, which is what a sensor reads at run time (every
+# sensor runs before any body writes).
+printf 'X1\nX2\nX3\nX4\nX5\nX6\n' > "$R/pc.orig"
+printf -- '--- a/pc.c\n+++ b/pc.c\n@@ -2,3 +2,3 @@\n X2\n-X3\n+X3o\n X4\n' > "$R/c1.diff"
+printf -- '--- a/pc.c\n+++ b/pc.c\n@@ -1,5 +1,5 @@\n X1\n-X2\n-X3\n-X4\n+T2\n+T3\n+T4\n X5\n' > "$R/c2.diff"
+"$R_P2VI" -r "$R/c1.diff" > "$R/c1.sh"
+"$R_P2VI" -r "$R/c2.diff" > "$R/c2.sh"
+cp "$R/pc.orig" "$R/pc.c"
+coderive c1.sh c2.sh '%s/^X6$/X6c/:q!'
+if grep -q '^# Compat (post) from c1.sh' "$R/new.sh" 2>/dev/null; then
+	ok "compat: a gate derives though the target overwrote the origin's line"
+else
+	fail "compat: a gate derives though the target overwrote the origin's line"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+fi
+
+cp "$R/pc.orig" "$R/pc.c"
+( cd "$R" && VI="$VI" sh c1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+o1=$(cat "$R/pc.c")
+cp "$R/pc.orig" "$R/pc.c"
+( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+o2=$(cat "$R/pc.c")
+if [ "$o1" = "$(printf 'X1\nT2\nT3\nT4\nX5\nX6c')" ] &&
+   [ "$o2" = "$(printf 'X1\nT2\nT3\nT4\nX5\nX6')" ]; then
+	ok "compat: overwritten-trace gate fires on origin, no-ops on clean"
+else
+	fail "compat: overwritten-trace gate fires on origin, no-ops on clean"
+	printf '%s\n--\n%s\n' "$o1" "$o2" | sed 's/^/    /'
+fi
+
+# Cross-file gate: the block edits a file the origin never touched, so no probe
+# exists there. "Did this origin land" is a property of the tree, not of one
+# file, so the probe comes from a file the origin did change and the gate
+# records that path.
+printf 'Y1\nY2\nY3\n' > "$R/pd.orig"
+printf 'Z1\nZ2\nZ3\n' > "$R/pe.orig"
+printf -- '--- a/pd.c\n+++ b/pd.c\n@@ -1,3 +1,4 @@\n Y1\n+YPROBE\n Y2\n Y3\n' > "$R/d1.diff"
+printf -- '--- a/pe.c\n+++ b/pe.c\n@@ -1,3 +1,3 @@\n Z1\n-Z2\n+Z2t\n Z3\n' > "$R/d2.diff"
+"$R_P2VI" -r "$R/d1.diff" > "$R/d1.sh"
+"$R_P2VI" -r "$R/d2.diff" > "$R/d2.sh"
+cp "$R/pd.orig" "$R/pd.c"
+cp "$R/pe.orig" "$R/pe.c"
+coderive d1.sh d2.sh '%s/^Z3$/Z3c/:q!'
+if grep -q '^=== GATE 1 present tag [0-9]* probe pd.c ===' "$R/new.sh" 2>/dev/null; then
+	ok "compat: a block over an untouched file probes another file"
+else
+	fail "compat: a block over an untouched file probes another file"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+	grep -n '=== GATE' "$R/new.sh" | sed 's/^/    /'
+fi
+
+cp "$R/pd.orig" "$R/pd.c"
+cp "$R/pe.orig" "$R/pe.c"
+( cd "$R" && VI="$VI" sh d1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+o1=$(cat "$R/pe.c")
+cp "$R/pd.orig" "$R/pd.c"
+cp "$R/pe.orig" "$R/pe.c"
+( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+o2=$(cat "$R/pe.c")
+if [ "$o1" = "$(printf 'Z1\nZ2t\nZ3c')" ] &&
+   [ "$o2" = "$(printf 'Z1\nZ2t\nZ3')" ]; then
+	ok "compat: cross-file gate fires on origin, no-ops on clean"
+	cp "$R/new.sh" "$R/xf.sh"
+else
+	fail "compat: cross-file gate fires on origin, no-ops on clean"
+	printf '%s\n--\n%s\n' "$o1" "$o2" | sed 's/^/    /'
+fi
+
+coderiveq() {	# coderive with QF2=1: the target is expected to miss
+	rm -f "$R/new.sh"
+	P2VI_EX="$3" script -qec \
+		"sh -c 'cd $R && QF2=1 $R_P2VI -co $1 $2 > $R/new.sh 2>$R/nerr'" \
+		/dev/null > /dev/null 2>&1 || true
+}
+
+# A host group the origin made impossible must not take the rest of the body
+# with it. On a tree where some origin is present the host runs best-effort
+# through register 211, which reads its flag with a register search - and ex's
+# register redirection is global (xfr), so leaving it set sends every later
+# multi-line search to the flag instead of the file cache. Origin (e1) deletes
+# W2, target (e2) edits W2 in pf.c (a guaranteed miss, so the relaxed chain
+# runs) and inserts into pg.c behind a duplicated anchor, whose group searches
+# the cache and must still find it.
+printf 'W1\nW2\nW3\nW4\n' > "$R/pf.orig"
+printf 'V1\nDUP\nV2\nDUP\nV3\n' > "$R/pg.orig"
+printf -- '--- a/pf.c\n+++ b/pf.c\n@@ -1,3 +1,2 @@\n W1\n-W2\n W3\n' > "$R/e1.diff"
+printf -- '--- a/pf.c\n+++ b/pf.c\n@@ -1,3 +1,3 @@\n W1\n-W2\n+W2t\n W3\n--- a/pg.c\n+++ b/pg.c\n@@ -3,3 +3,4 @@\n V2\n DUP\n+NEW\n V3\n' > "$R/e2.diff"
+"$R_P2VI" -r "$R/e1.diff" > "$R/e1.sh"
+"$R_P2VI" -r "$R/e2.diff" > "$R/e2.sh"
+cp "$R/pf.orig" "$R/pf.c"
+cp "$R/pg.orig" "$R/pg.c"
+coderiveq e1.sh e2.sh ':e pg.c:%s/^V3$/V3c/:q!'
+cp "$R/pf.orig" "$R/pf.c"
+cp "$R/pg.orig" "$R/pg.c"
+( cd "$R" && VI="$VI" sh e1.sh && VI="$VI" QF2=1 sh new.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/pf.c")" = "$(printf 'W1\nW3\nW4')" ] &&
+   [ "$(cat "$R/pg.c")" = "$(printf 'V1\nDUP\nV2\nDUP\nNEW\nV3c')" ]; then
+	ok "compat: a host miss does not derail the groups after it"
+else
+	fail "compat: a host miss does not derail the groups after it"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+	sed 's/^/    /' "$R/pf.c" "$R/pg.c"
+fi
+
 # Stage B3: storage, round-trip and stacking. The -co script above (new.sh from
 # draw.c) carries a pre COMPAT region after exit 0. -d must reproduce the whole
 # script - host block and compat region - byte-identically, without re-running
@@ -1567,6 +1675,19 @@ dedit() {	# <script> <P2VI_EX>: -d session running <P2VI_EX>, out $R/dedit.sh
 		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dedit.sh 2>$R/derr'" \
 		/dev/null > /dev/null 2>&1 || true
 }
+# a cross-file gate survives storage: -d reparses the recorded probe path and
+# emits the same script, so the sensor keeps searching the origin's file
+cp "$R/pd.orig" "$R/pd.c"
+cp "$R/pe.orig" "$R/pe.c"
+dregen xf.sh
+if [ -s "$R/dregen.sh" ] && cmp -s "$R/xf.sh" "$R/dregen.sh"; then
+	ok "compat: -d round-trips a cross-file gate byte-identically"
+else
+	fail "compat: -d round-trips a cross-file gate byte-identically"
+	tr -d '\r' < "$R/derr" | sed 's/^/    /'
+	diff "$R/xf.sh" "$R/dregen.sh" | head -10 | sed 's/^/    /'
+fi
+
 # rebuild the -co script (the earlier -co run clobbered new.sh)
 printf 'L1\nL2\nL3\n' > "$R/draw.orig"
 printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,4 @@\n L1\n+PROBE\n L2\n L3\n' > "$R/x1.diff"

@@ -170,7 +170,10 @@ static void sb_printf(sbuf *sb, const char *fmt, ...)
  * multi-line literal search before any edit and answered by quitting (q!0)
  * when the answer is no. Probes come from the origin's own landing (see
  * derive_gates): its inserted lines for GATE_PRESENT, its removed lines for
- * GATE_ABSENT. */
+ * GATE_ABSENT. Every sensor runs before any body writes, so a probe describes
+ * the tree with the origin applied and the target not yet - and when this
+ * block's file carries no trace of the origin, the probe is taken from another
+ * file the origin did change (gate_t's path). */
 #define GATE_MAXLINES 8   /* longest probe window: locality beats length */
 #define GATE_MAXPROBES 2  /* probe sections per block, ANDed in order */
 
@@ -206,6 +209,11 @@ typedef struct {
 	int nlines;
 	int polarity;     /* GATE_ALWAYS / GATE_PRESENT / GATE_ABSENT */
 	int tag;          /* allocated ?? capture id */
+	/* the file the probe is searched in, owned; NULL = the block's own first
+	 * file. "Is the origin on this tree" is a property of the tree, not of one
+	 * file, so a block over a file the origin never touched (or whose landing
+	 * the target overwrote) probes a file the origin did change. */
+	char *path;
 } gate_t;
 
 /* Per-group delta: structured customizations from interactive editing */
@@ -3896,6 +3904,9 @@ static int gates_agree(compat_block_t *a, compat_block_t *b)
 		gate_t *x = &a->gates[j], *y = &b->gates[j];
 		if (x->polarity != y->polarity || x->nlines != y->nlines)
 			return 0;
+		if (!!x->path != !!y->path ||
+		    (x->path && strcmp(x->path, y->path)))
+			return 0;
 		for (int k = 0; k < x->nlines; k++)
 			if (strcmp(x->lines[k], y->lines[k]))
 				return 0;
@@ -3950,6 +3961,7 @@ static int copy_origin_gates(gate_t *g, char *path, const char *origin)
 		g[j].lines = emalloc(s->nlines * sizeof(char *));
 		for (int k = 0; k < s->nlines; k++)
 			g[j].lines[k] = uc_dup(s->lines[k]);
+		g[j].path = s->path ? uc_dup(s->path) : NULL;
 	}
 	return src->ngates;
 }
@@ -5391,12 +5403,17 @@ static void emit_vi_block(file_patch_t **active, int nactive)
  * the single $VI call opens the real files as b0..bN-1). Matched by path: the
  * host's and a compat block's entries for the same file are distinct
  * file_patch_t but one physical file, so one shared buffer. */
-static int uf_index(file_patch_t **uf, int nuf, file_patch_t *fp)
+static int uf_index_path(file_patch_t **uf, int nuf, const char *path)
 {
 	for (int i = 0; i < nuf; i++)
-		if (!strcmp(uf[i]->path, fp->path))
+		if (!strcmp(uf[i]->path, path))
 			return i;
 	return -1;
+}
+
+static int uf_index(file_patch_t **uf, int nuf, file_patch_t *fp)
+{
+	return uf_index_path(uf, nuf, fp->path);
 }
 
 /* Emit a gate's probe search as top-level commands, recording the result into
@@ -5581,7 +5598,16 @@ static void emit_qf2_clear(sbuf *out)
  * on, exactly as a non-compat script does; a hit (some origin present) leaves
  * 211's ??! silent, so the host is best-effort and falls through its own
  * mismatches. This lives inside 211 and re-runs per error site, so the shared
- * flag is read with a register f>, never an accumulating anchor. */
+ * flag is read with a register f>, never an accumulating anchor.
+ *
+ * The trailing "fr 98" is not decoration: ex_find's register redirection is the
+ * global xfr, so reading the flag through "fr <ANY>" leaves every later search
+ * pointed at that register. Since this chain fires from inside a body - at an
+ * error site, on the very tree where the host is expected to miss - the next
+ * group's search would read the flag's "1" instead of the file cache and miss
+ * too, and the whole rest of the body would fall over silently. Restore the
+ * body's invariant (a group's search reads the cache) on the way out; the
+ * firing side quits, so it needs none. */
 static void emit_host_override(sbuf *out)
 {
 	sb_printf(out, "%dreg fr %d", REG_QF2, REG_FLAG_ANY);
@@ -5591,6 +5617,8 @@ static void emit_host_override(sbuf *out)
 	sb_str(out, "?" "?!vis 2");
 	EMIT_ESC3SEP(out);
 	sb_str(out, "q!1");
+	EMIT_ESCSEP(out);
+	sb_str(out, "fr 98");
 	EMIT_SEP(out);
 }
 
@@ -5648,7 +5676,10 @@ static void emit_driver_sensors(sbuf *out, section_t *s,
 		gate_t *g = &s->gates[j];
 		if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
 			continue;
-		emit_gate_record(out, g, uf_index(uf, nuf, s->files[0]));
+		/* a cross-file probe names its own file; otherwise the block's */
+		emit_gate_record(out, g, g->path
+				 ? uf_index_path(uf, nuf, g->path)
+				 : uf_index(uf, nuf, s->files[0]));
 		real++;
 	}
 	if (!real)
@@ -5723,11 +5754,27 @@ static void emit_one_call(file_patch_t **active, int nactive)
 {
 	section_t *secs = emalloc((ncompat + 1) * sizeof(*secs));
 	int nsec = 0, compat_reg = 50;
-	file_patch_t **uf = emalloc((nfiles + 1) * sizeof(*uf));
+	int nprobe = 0, nwrite;
+	file_patch_t *probes;
+	file_patch_t **uf = emalloc((nfiles + ncompat * GATE_MAXPROBES + 1) *
+				    sizeof(*uf));
 	int nuf = 0;
 	for (int i = 0; i < nfiles; i++)
 		if (files[i].ngroups > 0 && uf_index(uf, nuf, &files[i]) < 0)
 			uf[nuf++] = &files[i];
+	/* Files only a cross-file gate probe reads: the call must open them so
+	 * the sensor has a buffer to search, but nothing edits them, so they go
+	 * after every edited file and the write tail stops short of them. */
+	nwrite = nuf;
+	probes = ecalloc(ncompat * GATE_MAXPROBES + 1, sizeof(*probes));
+	for (int c = 0; c < ncompat; c++)
+		for (int j = 0; j < compat_blocks[c].ngates; j++) {
+			char *gp = compat_blocks[c].gates[j].path;
+			if (!gp || uf_index_path(uf, nuf, gp) >= 0)
+				continue;
+			probes[nprobe].path = gp;
+			uf[nuf++] = &probes[nprobe++];
+		}
 
 	/* Sections in run order: host, then every compat block (all post). */
 	if (nactive > 0) {
@@ -5790,7 +5837,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		emit_host_override(osb);
 	for (int i = 0; i < nsec; i++)
 		emit_driver_call(osb, secs, nsec, i, uf, nuf);
-	emit_write_tail(osb, nuf);
+	emit_write_tail(osb, nwrite);
 	sq_write(osb->s, osb->s_n);
 	printf("' > \"$P2VIF\".d\n");
 	free(osb->s);
@@ -5832,6 +5879,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			free(secs[i].files);
 	free(secs);
 	free(uf);
+	free(probes);
 }
 
 /* Serialize a delta store as === DELTA <path> === sections; empty entries
@@ -5876,8 +5924,15 @@ static void emit_compat_storage(void)
 		       cb->path, cb->origin ? cb->origin : "");
 		for (int j = 0; j < cb->ngates; j++) {
 			gate_t *g = &cb->gates[j];
-			printf("=== GATE %d %s tag %d ===\n", j + 1,
-			       gate_polarity_word(g->polarity), g->tag);
+			/* a cross-file probe records the file it searches; a
+			 * plain one has none and reads the block's own file */
+			if (g->path)
+				printf("=== GATE %d %s tag %d probe %s ===\n",
+				       j + 1, gate_polarity_word(g->polarity),
+				       g->tag, g->path);
+			else
+				printf("=== GATE %d %s tag %d ===\n", j + 1,
+				       gate_polarity_word(g->polarity), g->tag);
 			for (int k = 0; k < g->nlines; k++)
 				printf("%s\n", g->lines[k]);
 			printf("%s\n", end_tag_wr);
@@ -6643,6 +6698,15 @@ typedef struct { char *path, *text; } snap_t;
 typedef struct { snap_t *v; int n, cap; } snaps_t;
 static snaps_t compat_base;
 
+/* Post-origin, pre-target text of each buffer the origin opened: the tree a
+ * clean apply of the origin alone leaves behind. This - not the baseline - is
+ * what a gate probe must name, because every gate sensor runs before any
+ * section body writes (emit_one_call's sensors-before-bodies layout), so the
+ * text a gate sees at run time is the tree with the origin applied and the
+ * target not yet. A probe read off the baseline could be a line the target
+ * rewrote, which never exists when the sensor looks. */
+static snaps_t compat_x1;
+
 /* Replace sn with one entry per named buffer in the live session. */
 static void snap_bufs(snaps_t *sn)
 {
@@ -6703,9 +6767,10 @@ static int compat_pre_script;	/* the third argument is a generated script */
  * for the caller to read back; ed_free() drops them. snap_blk names the block
  * the compat baseline is taken after (-1 = the last one): the blocks past it
  * are a pre-applied resolution, which belongs to the derived patch and so must
- * land above the baseline, not in it. */
+ * land above the baseline, not in it. snap1_blk names the block the origin ends
+ * with, snapshotted into compat_x1 for gate derivation (-1 = never). */
 static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
-			 int snap_blk)
+			 int snap_blk, int snap1_blk)
 {
 	char **paths = NULL, *body, *ln;
 	int npaths = 0, *bmap = NULL, nmap = 0, i, k, st = 0, sep, bad = 0;
@@ -6722,8 +6787,8 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 		}
 		/* In a handover session every block claims the tty, not just the
 		 * last: term_init() always draws, and a non-final block left on
-		 * fd 1 would leak its status line into stdout (the script). The
-		 * headless x2-only pass runs handover 0 but grabs the tty itself. */
+		 * fd 1 would leak its status line into stdout (the script). A
+		 * headless pass runs handover 0 but grabs the tty itself. */
 		if (ed_init(handover) < 0) {
 			st = -1;
 			break;
@@ -6801,6 +6866,9 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 		 * pre-applied resolution and the user's own edits. Every path only
 		 * the later blocks name is seeded from disk so its edits are not
 		 * mistaken for an unrelated buffer's. */
+		/* the origin alone has now run: the tree a gate probe will see */
+		if (compat_capturing && !xquit && i == snap1_blk)
+			snap_bufs(&compat_x1);
 		if (compat_capturing && !xquit && i == snap_blk) {
 			snap_bufs(&compat_base);
 			for (k = i + 1; k < nblks; k++)
@@ -6905,20 +6973,23 @@ static int parse_script(const char *path, p2vi_block_t **blks, int *nblks)
 }
 
 /* snap_sc is the script index the compat baseline is taken after (-1 = the
- * last one), translated into the block index replay_blocks() wants: a script
- * contributes as many blocks as it has $VI calls. */
+ * last one) and snap1_sc the one the origin ends with (-1 = none), translated
+ * into the block indices replay_blocks() wants: a script contributes as many
+ * blocks as it has $VI calls. */
 static int replay_scripts(const char **paths, int nscripts, int handover,
-			  int snap_sc)
+			  int snap_sc, int snap1_sc)
 {
 	p2vi_block_t *blks = NULL;
-	int nblks = 0, st = 0, i, snap_blk = -1;
+	int nblks = 0, st = 0, i, snap_blk = -1, snap1_blk = -1;
 	for (i = 0; i < nscripts && st >= 0; i++) {
 		st = parse_script(paths[i], &blks, &nblks);
 		if (i == snap_sc)
 			snap_blk = nblks - 1;
+		if (i == snap1_sc)
+			snap1_blk = nblks - 1;
 	}
 	if (st >= 0)
-		st = replay_blocks(blks, nblks, handover, snap_blk);
+		st = replay_blocks(blks, nblks, handover, snap_blk, snap1_blk);
 	free_blocks(blks, nblks);
 	return st;
 }
@@ -7088,36 +7159,31 @@ static int span_dist(int lo, int hi, int alo, int ahi)
 }
 
 /* A probe window is usable when it names the post-origin text and nothing
- * else: unique there (or at least present, for an ANDed pair), absent from
- * the pre-origin text, and - for -co, where the gate must also separate
- * "origin + target" from "target alone" - absent from the target-only text. */
+ * else: unique there (or at least present, for an ANDed pair) and absent from
+ * the pre-origin text. Those two texts are the only trees the sensor can be
+ * looking at - it runs before any body writes - so they are the whole test. */
 static int probe_ok(char **win, int n, char **pre, int npre,
-		    char **post, int npost, char **x2o, int nx2o, int uniq)
+		    char **post, int npost, int uniq)
 {
 	int cnt = count_in(post, npost, win, n);
 	if (uniq ? cnt != 1 : cnt < 1)
 		return 0;
-	if (count_in(pre, npre, win, n))
-		return 0;
-	return !(x2o && count_in(x2o, nx2o, win, n));
+	return !count_in(pre, npre, win, n);
 }
 
 /* The shortest window of post[r->lo .. r->hi) that qualifies, growing one
- * line at a time up to GATE_MAXLINES and never overlapping [xlo,xhi) - the
- * compat hunk's own edit span and anchors, which the block would otherwise
- * be free to destroy or duplicate along with its gate condition.
- * Returns the window length, 0 when the region yields none. */
+ * line at a time up to GATE_MAXLINES. Returns the window length, 0 when the
+ * region yields none. Nothing is excluded on account of the compat hunk's own
+ * edit span: the sensor reads its probe before any body runs, so a block
+ * cannot destroy the condition it is gated on. */
 static int probe_from_region(gate_t *g, chg_t *r, char **pre, int npre,
-			     char **post, int npost, char **x2o, int nx2o,
-			     int xlo, int xhi, int uniq)
+			     char **post, int npost, int uniq)
 {
 	int len, s, i;
 	for (len = 1; len <= GATE_MAXLINES && len <= r->hi - r->lo; len++) {
 		for (s = r->lo; s + len <= r->hi; s++) {
-			if (s < xhi && xlo < s + len)
-				continue;
 			if (!probe_ok(post + s, len, pre, npre, post, npost,
-				      x2o, nx2o, uniq))
+				      uniq))
 				continue;
 			memset(g, 0, sizeof(*g));
 			g->lines = emalloc(len * sizeof(char *));
@@ -7133,11 +7199,10 @@ static int probe_from_region(gate_t *g, chg_t *r, char **pre, int npre,
 
 /* Delete-only region: nothing the origin inserted is available to probe, so
  * probe a line it removed and invert the polarity - quit when the probe IS
- * found. The window must be gone from the post-origin text and present in
- * both the pre-origin text and (for -co) the target-only one, which is the
- * mirror of probe_ok(). */
+ * found. The window must be gone from the post-origin text and unique in the
+ * pre-origin one, which is the mirror of probe_ok(). */
 static int probe_removed(gate_t *g, chg_t *r, char **pre, int npre,
-			 char **post, int npost, char **x2o, int nx2o)
+			 char **post, int npost)
 {
 	int len, s, i;
 	for (len = 1; len <= GATE_MAXLINES && len <= r->ndel; len++) {
@@ -7145,8 +7210,6 @@ static int probe_removed(gate_t *g, chg_t *r, char **pre, int npre,
 			if (count_in(post, npost, r->del + s, len))
 				continue;
 			if (count_in(pre, npre, r->del + s, len) != 1)
-				continue;
-			if (x2o && count_in(x2o, nx2o, r->del + s, len) < 1)
 				continue;
 			memset(g, 0, sizeof(*g));
 			g->lines = emalloc(len * sizeof(char *));
@@ -7166,14 +7229,17 @@ static void free_gates(gate_t *g, int n)
 		free_lines(g[i].lines, g[i].nlines);
 		g[i].lines = NULL;
 		g[i].nlines = 0;
+		free(g[i].path);
+		g[i].path = NULL;
 	}
 }
 
 /* Derive the gate for one compat block over one file. pre[]/post[] are the
- * file before and after the origin's blocks ran, x2o[] (-co) the
- * same file with the target applied but not the origin. [alo,ahi) is the
- * compat hunk's anchor span and [xlo,xhi) the span the compat edit rewrites,
- * both in post coordinates.
+ * file before and after the origin's blocks ran - the two trees the sensor can
+ * find at run time, since it reads its probe before any body writes. [alo,ahi)
+ * is the compat hunk's anchor span, used only to order the candidate regions
+ * (it is in baseline coordinates and post[] is in post-origin ones, so the
+ * distance is a preference, never a constraint).
  *
  * Regions are tried nearest the anchor first, and a single unique probe wins;
  * failing that, two individually ambiguous probes from distinct regions are
@@ -7181,8 +7247,7 @@ static void free_gates(gate_t *g, int n)
  * sections, 0 when no probe validates - a hard error for the caller, never a
  * reason to ship a weak gate. */
 static int derive_gates(gate_t *g, int maxg, char **pre, int npre,
-			char **post, int npost, char **x2o, int nx2o,
-			int alo, int ahi, int xlo, int xhi)
+			char **post, int npost, int alo, int ahi)
 {
 	chg_t *r;
 	int nr = gate_regions(&r, pre, npre, post, npost);
@@ -7203,11 +7268,10 @@ static int derive_gates(gate_t *g, int maxg, char **pre, int npre,
 		}
 	for (i = 0; i < nr && !n; i++) {
 		chg_t *c = &r[ord[i]];
-		if (probe_from_region(g, c, pre, npre, post, npost,
-				      x2o, nx2o, xlo, xhi, 1))
+		if (probe_from_region(g, c, pre, npre, post, npost, 1))
 			n = 1;
 		else if (c->lo == c->hi && probe_removed(g, c, pre, npre,
-							 post, npost, x2o, nx2o))
+							 post, npost))
 			n = 1;
 	}
 	/* no region names the origin's landing on its own: AND two that each
@@ -7216,8 +7280,7 @@ static int derive_gates(gate_t *g, int maxg, char **pre, int npre,
 		int got = 0;
 		for (j = 0; j < nr && got < maxg; j++)
 			if (probe_from_region(&g[got], &r[ord[j]], pre, npre,
-					      post, npost, x2o, nx2o,
-					      xlo, xhi, 0))
+					      post, npost, 0))
 				got++;
 		if (got == maxg)
 			n = got;
@@ -7508,15 +7571,10 @@ static int compat_apply_diff(const char *path)
 	return st;
 }
 
-/* The target-only tree, one text per path: -co must separate "origin+target"
- * from "target alone", so the gate probe is proven absent here too. Built by
- * replaying the target without the origin in its own session. */
-static snaps_t compat_x2o;
-
 /* The baseline lines the compat edit rewrites, in baseline coordinates:
  * common head/tail trimming leaves [*lo,*hi). A pure insertion gives lo == hi
- * at the insertion point. Anchors the gate's locality and, via [xlo,xhi),
- * keeps a probe out of the region the block would overwrite. */
+ * at the insertion point. Anchors the gate's locality: candidate probe regions
+ * are ordered by their distance from here. */
 static void diff_span(char **base, int nbase, char **fin, int nfin,
 		      int *lo, int *hi)
 {
@@ -7530,32 +7588,36 @@ static void diff_span(char **base, int nbase, char **fin, int nfin,
 	*hi = nbase - suf;
 }
 
-/* -co: replay the target alone (no origin) in its own session and record each
- * buffer's text, so the gate can prove its probe absent from a target-only
- * tree. Replay never writes, so the disk is still the pre-origin state and the
- * session starts clean by construction. */
-static int compat_capture_x2o(void)
+/* Cross-file gate: derive the origin's probe from some other file it changed,
+ * for a block whose own file yields none - either the origin never touched it,
+ * or the target overwrote the origin's only trace there so pre and post-origin
+ * read alike. The question a gate answers ("did this origin land on this tree")
+ * is per origin, not per file, so any file the origin demonstrably changed
+ * answers it. Files are tried in snapshot order, skipping <own>; the derived
+ * gates carry the probe's path so the sensor selects that buffer. Returns the
+ * number of gate sections, 0 when no file yields one. */
+static int derive_gates_crossfile(gate_t *g, const char *own)
 {
-	const char *tgt = input_file;
-	if (!tgt) {
-		fprintf(stderr, "-co requires a target script\n");
-		return -1;
+	for (int i = 0; i < compat_x1.n; i++) {
+		char **pre, **post;
+		char *dup;
+		int npre, npost, is_new, n;
+		if (!strcmp(compat_x1.v[i].path, own))
+			continue;
+		dup = uc_dup(compat_x1.v[i].text);
+		post = split_lines(dup, &npost);
+		pre = read_lines(compat_x1.v[i].path, &npre, &is_new);
+		/* no anchor to be near: another file's coordinates say nothing
+		 * about where this block edits, so every region ranks alike */
+		n = derive_gates(g, GATE_MAXPROBES, pre, npre, post, npost, 0, 0);
+		for (int j = 0; j < n; j++)
+			g[j].path = uc_dup(compat_x1.v[i].path);
+		free_lines(pre, npre);
+		free(post);
+		free(dup);
+		if (n)
+			return n;
 	}
-	/* headless replay, but term_init/term_done still emit to the terminal;
-	 * claim the tty so those bytes go to /dev/tty and not to stdout (the
-	 * script), as -E's session does */
-	if (ed_grabtty() < 0)
-		return -1;
-	if (replay_scripts(&tgt, 1, 0, -1) != 0) {	/* handover 0: no UI */
-		ed_free_bufs();
-		ed_ungrabtty();
-		return -1;
-	}
-	snap_bufs(&compat_x2o);
-	/* handover 0 already ran ed_free_session() for the last block, so only
-	 * the buffers remain to drop; a full ed_free() would double-free it */
-	ed_free_bufs();
-	ed_ungrabtty();
 	return 0;
 }
 
@@ -7572,8 +7634,6 @@ static int compat_derive(void)
 	gate_t g[GATE_MAXPROBES];
 	int i, j, k, next_id, n, nsc = 2;
 	const char *sc[3] = { compat_origin, input_file, NULL };
-	if (compat_capture_x2o() != 0)
-		return -1;
 	/* A pre-applied resolution in script form is simply one more block of the
 	 * replay, run after the baseline is taken; its diff form is spliced into
 	 * the buffers at that same point (compat_apply_diff). Either way the user
@@ -7588,15 +7648,15 @@ static int compat_derive(void)
 	/* Replay origin then target into one session so the new block derives on
 	 * top of every block the target already carries; existing compat blocks
 	 * stack in stored order (post-only, one group). */
-	if (replay_scripts(sc, nsc, 1, 1) != 0) {
+	if (replay_scripts(sc, nsc, 1, 1, 0) != 0) {
 		ed_free();
 		return -1;
 	}
 	compat_capturing = 0;
 	for (i = 0; i < xbufcur; i++) {
-		char **pre, **base, **fin, **xo = NULL;
-		char *basetext = NULL, *fintext, *bdup, *fdup, *xodup = NULL;
-		int npre, nbase, nfin, nxo = 0, is_new, alo, ahi, xlo, xhi;
+		char **pre, **base, **fin, **x1 = NULL;
+		char *basetext = NULL, *fintext, *bdup, *fdup, *x1dup = NULL;
+		int npre, nbase, nfin, nx1 = 0, is_new, alo, ahi, xlo, xhi;
 		if (!bufs[i].path || !bufs[i].path[0])
 			continue;
 		basetext = snap_find(&compat_base, bufs[i].path);
@@ -7612,9 +7672,12 @@ static int compat_derive(void)
 		base = split_lines(bdup, &nbase);
 		fin = split_lines(fdup, &nfin);
 		pre = read_lines(bufs[i].path, &npre, &is_new);
-		if ((xodup = snap_find(&compat_x2o, bufs[i].path))) {
-			xodup = uc_dup(xodup);
-			xo = split_lines(xodup, &nxo);
+		/* the tree the gate sensor will read: this file with the origin
+		 * applied and the target not yet. A file the origin never opened
+		 * has no entry, so it has no landing of its own to probe. */
+		if ((x1dup = snap_find(&compat_x1, bufs[i].path))) {
+			x1dup = uc_dup(x1dup);
+			x1 = split_lines(x1dup, &nx1);
 		}
 		diff_span(base, nbase, fin, nfin, &xlo, &xhi);
 		alo = xlo;
@@ -7628,14 +7691,16 @@ static int compat_derive(void)
 		 * given (file, origin) pair. */
 		n = copy_origin_gates(g, bufs[i].path,
 				      compat_origin ? compat_origin : "");
+		if (!n && x1)
+			n = derive_gates(g, GATE_MAXPROBES, pre, npre,
+					 x1, nx1, alo, ahi);
 		if (!n)
-			n = derive_gates(g, GATE_MAXPROBES, pre, npre, base,
-					 nbase, xo, nxo, alo, ahi, xlo, xhi);
+			n = derive_gates_crossfile(g, bufs[i].path);
 		if (!n) {
 			fprintf(stderr, "gate: %s: no probe validates, "
 				"supply a gate by hand\n", bufs[i].path);
-			free(fintext); free(bdup); free(fdup); free(xodup);
-			free(base); free(fin); free(xo);
+			free(fintext); free(bdup); free(fdup); free(x1dup);
+			free(base); free(fin); free(x1);
 			free_lines(pre, npre);
 			ed_free();
 			return -1;
@@ -7673,8 +7738,8 @@ static int compat_derive(void)
 			for (k = 0; k < g[j].nlines; k++)
 				mark_bytes_used(g[j].lines[k]);
 		free(diff->s);
-		free(fintext); free(bdup); free(fdup); free(xodup);
-		free(base); free(fin); free(xo);
+		free(fintext); free(bdup); free(fdup); free(x1dup);
+		free(base); free(fin); free(x1);
 		free_lines(pre, npre);
 	}
 	ed_free();
@@ -8011,7 +8076,7 @@ static int read_delta_sections(FILE *in)
 			continue;
 		}
 		if (cur_cb && strncmp(line, "=== GATE ", 9) == 0) {
-			/* "=== GATE <n> <pol> tag <id> ===" */
+			/* "=== GATE <n> <pol> tag <id> [probe <path>] ===" */
 			if (cur_cb->ngates >= GATE_MAXPROBES) {
 				fprintf(stderr, "too many gates\n");
 				return -1;
@@ -8024,6 +8089,14 @@ static int read_delta_sections(FILE *in)
 				strstr(line, " present ") ? GATE_PRESENT :
 				strstr(line, " absent ") ? GATE_ABSENT :
 				GATE_ALWAYS;
+			if ((t = strstr(line, " probe "))) {
+				char *e = strstr(t + 7, " ===");
+				int len = e ? (int)(e - (t + 7))
+					    : (int)strlen(t + 7);
+				cur_gate->path = emalloc(len + 1);
+				memcpy(cur_gate->path, t + 7, len);
+				cur_gate->path[len] = '\0';
+			}
 			continue;
 		}
 		if (cur_cb && strcmp(line, "=== COMPAT DELTA ===") == 0) {
