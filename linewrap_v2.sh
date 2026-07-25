@@ -33,7 +33,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!211}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'b01;0fr 0%f> ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[qf!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|vs\|sp\|\\$1000??230reg 0231reg 01000?? 231reg 11000?? 230reg+ 1211reg fr 230f> 1??!vis 2q!1fr 98b01b11b21b31b41b51b6%ya 972sc %? %@972scb01b11b21b41b51b31211reg vis 2q!1b7%ya 502sc %1000?? %@502scvis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
+'b01;0fr 0%f> ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[qf!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|vs\|sp\|\\$1000??230reg 0231reg 01000?? 231reg 11000?? 230reg+ 1211reg fr 230f> 1??!vis 2q!1fr 98b01b11b21b51b31b41b6%ya 972sc %? %@972scb01b11b21b31b41b51211reg vis 2q!1b7%ya 502sc %1000?? %@502scvis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
 printf '%s\n' '2scfr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -816,7 +816,7 @@ static int led_nobelow;		/* keep the rows below the edited line intact */
 			term_chr('\''\n'\'');
 			term_room(1);
 		}
-??!219reg led.c:707:m112sc %? %@2142scb3%ya 98?0?
+??!219reg led.c:707:m112sc %? %@2142scb5%ya 98?0?
 %f> 	return uc_wid\(c\);
 }
 
@@ -902,7 +902,7 @@ int ren_wrapw(int lncol)
 }
 
 ??!219reg ren.c:87:m12sc %? %@2142sc0?
-'\''2s/& r/& !xlw && r/??!219reg ren.c:104:m22sc %? %@2142scb4%ya 98?0?
+'\''2s/& r/& !xlw && r/??!219reg ren.c:104:m22sc %? %@2142scb3%ya 98?0?
 %f> 	return 0;
 }
 
@@ -3831,7 +3831,7 @@ int vi_drawline(int row, int trow)
 '\''57s/w\)/w, vi_srow(xrow))/??!219reg vi.c:1800:m572sc %? %@2142sc0?
 '\''58s/w\)/w, vi_srow(xrow))/??!219reg vi.c:1804:m582sc %? %@2142sc0?
 '\''59c 		vi_curpos(n, vi_lncol)
-??!219reg vi.c:1813:m592sc %? %@2142scb5%ya 98?0?
+??!219reg vi.c:1813:m592sc %? %@2142scb4%ya 98?0?
 %f> int ren_cursor\(char \*s, int pos\);
 int ren_noeol\(char \*s, int p\);
 int ren_off\(char \*s, int p\);
@@ -4402,7 +4402,7 @@ printf '%s\n' '2scfr 98b0%ya 98?0?
 ??!219reg led.c:782:m112sc %? %@2142sc0?
 '\''12,#+1c 			if (led_row >= wh) {	/* scroll the finished lines up */
 				n = led_row - wh + 1;
-??!219reg led.c:784:m122sc %? %@2142scb4%ya 98?0?
+??!219reg led.c:784:m122sc %? %@2142scb3%ya 98?0?
 %f> 	}
 }
 
@@ -5649,7 +5649,7 @@ static int win_height(void)
 ??!219reg vi.c:2198:m502sc %? %@2142sc0?
 '\''51c 			if (xrow != orow && orow >= xtop && (xlw ? orow <= vi_botrow()
 					: orow < xtop + win_height()))
-??!219reg vi.c:2207:m512sc %? %@2142scb5%ya 98?0?
+??!219reg vi.c:2207:m512sc %? %@2142scb4%ya 98?0?
 %f> 	int y, x;			/\* top-left screen position \*/
 	int h, w;			/\* height and width \*/
 	int row, off, top;		/\* cursor position within window \*/
@@ -5664,7 +5664,7 @@ static int win_height(void)
 1;3??!219reg vi.h:4192sc %? %@2132sc0?
 0?
 '\''1i 	int topsub;			/* the first visible segment of top */
-??!219reg vi.h:419:m12sc %? %@2142scb3%ya 98?0?
+??!219reg vi.h:419:m12sc %? %@2142scb5%ya 98?0?
 %f> /\* the number of columns a wrapped segment holds \*/
 int ren_wrapw\(int lncol\)
 \{
@@ -5694,7 +5694,7 @@ int ren_wrapw\(int lncol\)
 1;2;3;4;5??!219reg ren.c:912sc %? %@2132sc0?
 0?
 '\''1s/ x/ curwin ? curwin->w : x/??!219reg ren.c:91:m12sc %? %@2142scp compat applied: src=splits.sh' > "$P2VIF".1
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' 'ren.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
