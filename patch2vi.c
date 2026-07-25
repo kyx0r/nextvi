@@ -7533,8 +7533,16 @@ static int out_redirect(const char *path)
 		perror(out_tmp);
 		return -1;
 	}
-	if (!stat(path, &st))	/* a generated script is executable */
+	/* What is emitted is a script meant to be run: a file being replaced
+	 * keeps its own mode, a file created here gets the executable bits the
+	 * umask allows, so no caller has to chmod what patch2vi wrote. */
+	if (!stat(path, &st)) {
 		chmod(out_tmp, st.st_mode);
+	} else {
+		mode_t um = umask(0);
+		umask(um);
+		chmod(out_tmp, 0777 & ~um);
+	}
 	return 0;
 }
 

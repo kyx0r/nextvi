@@ -1321,6 +1321,19 @@ else
 	fail "-o writes the script to the named file, not stdout"
 fi
 
+# what -o writes is a script: a file it creates comes out executable, a file
+# it replaces keeps the mode it had
+rm -f "$A/o2.sh"
+"$E_P2VI" -r -o "$A/o2.sh" "$A/x.diff"
+printf 'placeholder\n' > "$A/o3.sh"
+chmod 600 "$A/o3.sh"
+"$E_P2VI" -r -o "$A/o3.sh" "$A/x.diff"
+if [ -x "$A/o2.sh" ] && [ ! -x "$A/o3.sh" ]; then
+	ok "-o makes a new script executable, keeps an existing file's mode"
+else
+	fail "-o makes a new script executable, keeps an existing file's mode"
+fi
+
 # -o may name the very script -E is updating: everything is read before
 # anything is written, and the file is replaced atomically at the end
 cp "$A/base.txt" "$A/f.txt"
