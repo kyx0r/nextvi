@@ -1623,6 +1623,48 @@ else
 	printf '%s\n--\n%s\n' "$o1" "$o2" | sed 's/^/    /'
 fi
 
+# A compat patch is one unified diff, however many files it spans: one
+# invocation reshaping two buffers must yield ONE block - one metadata region,
+# one gate, one staged body - whose === COMPAT PATCH === carries both files.
+printf 'H1\nH2\nH3\n' > "$R/ph.orig"
+printf 'I1\nI2\nI3\n' > "$R/pi.orig"
+printf -- '--- a/ph.c\n+++ b/ph.c\n@@ -1,3 +1,4 @@\n H1\n+HPROBE\n H2\n H3\n' > "$R/g1.diff"
+printf -- '--- a/ph.c\n+++ b/ph.c\n@@ -1,3 +1,3 @@\n H1\n-H2\n+H2t\n H3\n--- a/pi.c\n+++ b/pi.c\n@@ -1,3 +1,3 @@\n I1\n-I2\n+I2t\n I3\n' > "$R/g2.diff"
+"$R_P2VI" -r "$R/g1.diff" > "$R/g1.sh"
+"$R_P2VI" -r "$R/g2.diff" > "$R/g2.sh"
+cp "$R/ph.orig" "$R/ph.c"
+cp "$R/pi.orig" "$R/pi.c"
+coderive g1.sh g2.sh ':e ph.c:%s/^H3$/H3c/:e pi.c:%s/^I3$/I3c/:q!'
+nreg="$(grep -c '^=== PATCH2VI COMPAT post src=' "$R/new.sh" 2>/dev/null || true)"
+ngate="$(grep -c '^=== GATE ' "$R/new.sh" 2>/dev/null || true)"
+nbody="$(grep -c '^# Compat (post) from g1.sh' "$R/new.sh" 2>/dev/null || true)"
+nfile="$(sed -n '/^=== COMPAT PATCH ===$/,/^=== END /p' "$R/new.sh" |
+	 grep -c '^--- ' || true)"
+if [ "$nreg" = 1 ] && [ "$ngate" = 1 ] && [ "$nbody" = 1 ] && [ "$nfile" = 2 ]; then
+	ok "compat: a two-file compat patch is one block, one gate, one diff"
+else
+	fail "compat: a two-file compat patch is one block, one gate, one diff"
+	echo "    regions=$nreg gates=$ngate bodies=$nbody files=$nfile"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+fi
+
+cp "$R/ph.orig" "$R/ph.c"
+cp "$R/pi.orig" "$R/pi.c"
+( cd "$R" && VI="$VI" sh g1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+o1="$(cat "$R/ph.c")|$(cat "$R/pi.c")"
+cp "$R/ph.orig" "$R/ph.c"
+cp "$R/pi.orig" "$R/pi.c"
+( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+o2="$(cat "$R/ph.c")|$(cat "$R/pi.c")"
+if [ "$o1" = "$(printf 'H1\nHPROBE\nH2t\nH3c|I1\nI2t\nI3c')" ] &&
+   [ "$o2" = "$(printf 'H1\nH2t\nH3|I1\nI2t\nI3')" ]; then
+	ok "compat: one block edits every file it spans, gated once"
+	cp "$R/new.sh" "$R/mf.sh"
+else
+	fail "compat: one block edits every file it spans, gated once"
+	printf '%s\n--\n%s\n' "$o1" "$o2" | sed 's/^/    /'
+fi
+
 coderiveq() {	# coderive with QF2=1: the target is expected to miss
 	rm -f "$R/new.sh"
 	P2VI_EX="$3" script -qec \
@@ -1688,6 +1730,17 @@ else
 	diff "$R/xf.sh" "$R/dregen.sh" | head -10 | sed 's/^/    /'
 fi
 
+# -d must round-trip a multi-file block: one region back out, byte-identically.
+cp "$R/ph.orig" "$R/ph.c"
+cp "$R/pi.orig" "$R/pi.c"
+dregen mf.sh
+if cmp -s "$R/mf.sh" "$R/dregen.sh"; then
+	ok "compat: -d round-trips a two-file compat block byte-identically"
+else
+	fail "compat: -d round-trips a two-file compat block byte-identically"
+	diff "$R/mf.sh" "$R/dregen.sh" 2>&1 | sed 's/^/    /' | head
+fi
+
 # rebuild the -co script (the earlier -co run clobbered new.sh)
 printf 'L1\nL2\nL3\n' > "$R/draw.orig"
 printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,4 @@\n L1\n+PROBE\n L2\n L3\n' > "$R/x1.diff"
@@ -1713,7 +1766,7 @@ fi
 # stored post block (L2 -> L2c), so the new edit targets the post-replay line L3x.
 cp "$R/draw.orig" "$R/draw.c"
 coderive x1.sh pr.sh '%s/^L3x$/L3z/:q!'
-if [ "$(grep -c '^=== PATCH2VI COMPAT post draw.c' "$R/new.sh")" = 2 ] &&
+if [ "$(grep -c '^=== PATCH2VI COMPAT post src=' "$R/new.sh")" = 2 ] &&
    grep -q '^+L2c$' "$R/new.sh" && grep -q '^+L3z$' "$R/new.sh"; then
 	ok "compat: re-running -co stacks a new block, keeps the existing one"
 else
@@ -1746,7 +1799,7 @@ fi
 cp "$R/draw.orig" "$R/draw.c"
 coderive x1.sh pr.sh '%s/^L2c$/L2cc/:q!'
 if [ -s "$R/new.sh" ] &&
-   [ "$(grep -c '^=== PATCH2VI COMPAT post draw.c' "$R/new.sh")" = 2 ] &&
+   [ "$(grep -c '^=== PATCH2VI COMPAT post src=' "$R/new.sh")" = 2 ] &&
    grep -q '^-L2c$' "$R/new.sh" && grep -q '^+L2cc$' "$R/new.sh"; then
 	ok "compat: -co stacks the new block atop the existing post block"
 else
@@ -1895,7 +1948,7 @@ fi
 # lookup ORs every entry recorded under the id, so one shared tag would make
 # either sensor answer for both blocks. Tag numbering continues across blocks
 # (next_gate_tag), so the two stored gates carry different ids.
-tags="$(sed -n 's/^=== GATE .* tag \([0-9]*\) ===$/\1/p' "$R/two.sh" | sort)"
+tags="$(sed -n 's/^=== GATE .* tag \([0-9]*\).*$/\1/p' "$R/two.sh" | sort)"
 if [ "$(echo "$tags" | wc -l)" = 2 ] &&
    [ "$(echo "$tags" | sort -u | wc -l)" = 2 ]; then
 	ok "compat: stacked blocks get distinct gate tags"
@@ -1924,19 +1977,20 @@ else
 	echo "    warn=$warn quiet=$quiet"
 fi
 
-# A stored gate is authoritative for its origin: deriving another block against
-# the same origin reuses it instead of deriving a fresh (narrower) one, so a
-# hand-widened gate propagates. Widen the single-block script's gate to a line
-# both trees carry, stack a second block on it, and the new block must carry the
-# widened probe - and the two must not then disagree.
+# Every invocation derives its own gate: no block inherits a stored one, not even
+# from a block of the same origin. Widen the single-block script's gate by hand to
+# a line both trees carry, stack a second block on it, and the new block must
+# carry the freshly derived probe, leaving the hand-widened one untouched. (A
+# dedup pass over a stack is the author's job - concatenate the regions' patches
+# and run them through patch2vi again.)
 sed 's/^PROBE$/L1/' "$R/pr.sh" > "$R/wide.sh"
 cp "$R/draw.orig" "$R/draw.c"
 coderive x1.sh wide.sh '%s/^L3x$/L3w/:q!'
 probes="$(sed -n '/^=== GATE /{n;p;}' "$R/new.sh" | tr '\n' ' ')"
-if [ "$probes" = "L1 L1 " ]; then
-	ok "compat: a stored gate is reused for the origin's next block"
+if [ "$probes" = "L1 PROBE " ]; then
+	ok "compat: each invocation derives its own gate, inheriting none"
 else
-	fail "compat: a stored gate is reused for the origin's next block"
+	fail "compat: each invocation derives its own gate, inheriting none"
 	echo "    probes=[$probes]"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
@@ -1967,7 +2021,7 @@ mixrun() {	# <origin scripts> -> tree of m.c after mix2.sh, '|'-joined
 	( cd "$R" && VI="$VI" sh mix2.sh ) >/dev/null 2>&1
 	tr '\n' '|' < "$R/m.c"
 }
-if [ "$(grep -c '^=== PATCH2VI COMPAT post m.c' "$R/mix2.sh" 2>/dev/null)" = 2 ] &&
+if [ "$(grep -c '^=== PATCH2VI COMPAT post src=' "$R/mix2.sh" 2>/dev/null)" = 2 ] &&
    grep -q '^# Compat (post) from a1.sh' "$R/mix2.sh" &&
    grep -q '^# Compat (post) from b1.sh' "$R/mix2.sh"; then
 	ok "compat: two origins stack into one script"

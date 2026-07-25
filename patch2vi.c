@@ -3860,13 +3860,15 @@ static char *lbuf_text(struct lbuf *lb)
 	sbufn_ret(sb, sb->s)
 }
 
-/* One derived (or re-read) compatibility block: its guarded/edited file, its
- * origin (src= label, human annotation only), the files[] range its own diff
- * parsed into, its own === PATCH === lines, its per-block delta customizations
- * and its gate probes. A block is always emitted after the host (post); origin
- * is per-block because the compat_origin global only describes the current run. */
+/* One derived (or re-read) compatibility block: one whole compatibility patch,
+ * i.e. one unified diff over however many files it touches - not one file. It
+ * carries its origin (src= label, human annotation only), the files[] range its
+ * diff parsed into, its own === PATCH === lines, its delta customizations and
+ * its gate probes. A block is always emitted after the host (post); origin is
+ * per-block because the compat_origin global only describes the current run.
+ * One block = one section = one staged body = one storage region = one -i
+ * buffer, so a compat patch is authored and shipped as the single diff it is. */
 typedef struct {
-	char *path;
 	char *origin;		/* src= label; annotation, never a matcher input */
 	int first, count;	/* files[] range this block owns */
 	strv_t raw;		/* the block's own === PATCH === lines */
@@ -3914,56 +3916,28 @@ static int gates_agree(compat_block_t *a, compat_block_t *b)
 	return 1;
 }
 
-/* Warn when two blocks over one file, derived against the same origin, carry
- * different gates. A block fires iff its origin is present, and every block of
- * one origin is derived under that same condition, so their gates answer the
- * same question and derivation produces them identically. A disagreement means
- * one of them was hand-edited: the two now fire on different trees, and the
- * back-to-front subset test - which reads one flag per origin, not per block -
- * predicts a sequence that cannot happen. Diagnostic only: widening one gate by
- * hand is legitimate if the author means it, so this reports rather than
- * refuses, and it stays out of the emitted script. */
+/* Warn when two blocks derived against the same origin carry different gates. A
+ * block fires iff its origin is present, and every block of one origin is
+ * derived under that same condition, so their gates answer the same question and
+ * derivation produces them identically. A disagreement means one of them was
+ * hand-edited: the two now fire on different trees, and the back-to-front subset
+ * test - which reads one flag per origin, not per block - predicts a sequence
+ * that cannot happen. Diagnostic only: widening one gate by hand is legitimate
+ * if the author means it, so this reports rather than refuses, and it stays out
+ * of the emitted script. */
 static void check_compat_gates(void)
 {
 	for (int a = 0; a < ncompat; a++)
 		for (int b = a + 1; b < ncompat; b++) {
 			compat_block_t *x = &compat_blocks[a];
 			compat_block_t *y = &compat_blocks[b];
-			if (strcmp(x->path, y->path) ||
-			    strcmp(x->origin, y->origin) || gates_agree(x, y))
+			if (strcmp(x->origin, y->origin) || gates_agree(x, y))
 				continue;
 			fprintf(stderr, "patch2vi: warning: compat blocks %d "
-				"and %d (%s src=%s) carry different gates; "
+				"and %d (src=%s) carry different gates; "
 				"they fire on different trees\n",
-				a + 1, b + 1, x->path, x->origin);
+				a + 1, b + 1, x->origin);
 		}
-}
-
-/* Copy the gates of the first stored block over <path> derived against
- * <origin> into g[] (fresh line storage, tag left for the caller to allocate);
- * 0 when there is none. Every block of one origin fires on the same condition,
- * so the first block's gate is the origin's gate - including one the author
- * widened by hand, which a fresh derivation would silently narrow again. */
-static int copy_origin_gates(gate_t *g, char *path, const char *origin)
-{
-	compat_block_t *src = NULL;
-	for (int c = 0; c < ncompat && !src; c++)
-		if (compat_blocks[c].ngates > 0 &&
-		    !strcmp(compat_blocks[c].path, path) &&
-		    !strcmp(compat_blocks[c].origin, origin))
-			src = &compat_blocks[c];
-	if (!src)
-		return 0;
-	for (int j = 0; j < src->ngates; j++) {
-		gate_t *s = &src->gates[j];
-		g[j] = *s;
-		g[j].tag = 0;
-		g[j].lines = emalloc(s->nlines * sizeof(char *));
-		for (int k = 0; k < s->nlines; k++)
-			g[j].lines[k] = uc_dup(s->lines[k]);
-		g[j].path = s->path ? uc_dup(s->path) : NULL;
-	}
-	return src->ngates;
 }
 
 /* The block's own files that have groups to emit; *n = how many. */
@@ -5493,10 +5467,10 @@ static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
  * proof of application rather than of intent. Silent on a clean tree, where the
  * body is never called. No DBG switch hides it - it is the only outside evidence
  * that a compat block ran. */
-static void emit_compat_announce(sbuf *out, char *path, char *origin)
+static void emit_compat_announce(sbuf *out, char *origin)
 {
 	EMIT_SEP(out);
-	sb_printf(out, "p compat applied: %s src=%s", path, origin ? origin : "");
+	sb_printf(out, "p compat applied: src=%s", origin ? origin : "");
 }
 
 /* Stage one section body as a shell here-string into "$P2VIF".<idx>, the file
@@ -5856,8 +5830,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		sbuf_smake(bsb, SB_INIT)
 		emit_section_body(bsb, s->files, s->nf, uf, nuf);
 		if (s->cb)
-			emit_compat_announce(bsb, s->files[0]->path,
-					     s->cb->origin);
+			emit_compat_announce(bsb, s->cb->origin);
 		sbuf_null(bsb)
 		stage_section(bsb, i);
 		free(bsb->s);
@@ -5910,9 +5883,12 @@ static const char *gate_polarity_word(int p)
 
 /* Serialize every compat block into a terminator-fenced tail region after
  * exit 0 and before the host === PATCH2VI PATCH === (which stays last, to EOF,
- * so the patch(1) fallback's sed is unaffected). Each region is self-contained
- * - its gate probes, its per-block delta customizations and its own unified
- * diff - so -d regenerates it and -i edits it without re-running the origin.
+ * so the patch(1) fallback's sed is unaffected). One region per compat patch,
+ * self-contained - its gate probes, its delta customizations and its whole
+ * unified diff, every file of it - so -d regenerates it and -i edits it without
+ * re-running the origin. === COMPAT PATCH === is that diff and nothing else: a
+ * verbatim store, so a -co third argument comes back out of it as the patch the
+ * author handed in (modulo the user's edits on top).
  * The inner sub-sections are === END ===-closed exactly like the host DELTA
  * sub-sections, so the reader closes them through its existing end_tag handling
  * and reaches === END COMPAT === with no section open. */
@@ -5920,8 +5896,8 @@ static void emit_compat_storage(void)
 {
 	for (int c = 0; c < ncompat; c++) {
 		compat_block_t *cb = &compat_blocks[c];
-		printf("=== PATCH2VI COMPAT post %s src=%s ===\n",
-		       cb->path, cb->origin ? cb->origin : "");
+		printf("=== PATCH2VI COMPAT post src=%s ===\n",
+		       cb->origin ? cb->origin : "");
 		for (int j = 0; j < cb->ngates; j++) {
 			gate_t *g = &cb->gates[j];
 			/* a cross-file probe records the file it searches; a
@@ -7588,22 +7564,22 @@ static void diff_span(char **base, int nbase, char **fin, int nfin,
 	*hi = nbase - suf;
 }
 
-/* Cross-file gate: derive the origin's probe from some other file it changed,
- * for a block whose own file yields none - either the origin never touched it,
- * or the target overwrote the origin's only trace there so pre and post-origin
- * read alike. The question a gate answers ("did this origin land on this tree")
- * is per origin, not per file, so any file the origin demonstrably changed
- * answers it. Files are tried in snapshot order, skipping <own>; the derived
- * gates carry the probe's path so the sensor selects that buffer. Returns the
- * number of gate sections, 0 when no file yields one. */
-static int derive_gates_crossfile(gate_t *g, const char *own)
+/* Cross-file gate: derive the origin's probe from a file the block does not
+ * itself edit, for a block whose own files yield none - either the origin never
+ * touched them, or the target overwrote the origin's only trace there so pre and
+ * post-origin read alike. The question a gate answers ("did this origin land on
+ * this tree") is per origin, not per file, so any file the origin demonstrably
+ * changed answers it. Every file the origin opened is tried in snapshot order
+ * (those the block edits were tried first by the caller and failed, so retrying
+ * them costs a failure each); the derived gates carry the probe's path so the
+ * sensor selects that buffer. Returns the number of gate sections, 0 when no
+ * file yields one. */
+static int derive_gates_crossfile(gate_t *g)
 {
 	for (int i = 0; i < compat_x1.n; i++) {
 		char **pre, **post;
 		char *dup;
 		int npre, npost, is_new, n;
-		if (!strcmp(compat_x1.v[i].path, own))
-			continue;
 		dup = uc_dup(compat_x1.v[i].text);
 		post = split_lines(dup, &npost);
 		pre = read_lines(compat_x1.v[i].path, &npre, &is_new);
@@ -7621,19 +7597,22 @@ static int derive_gates_crossfile(gate_t *g, const char *own)
 	return 0;
 }
 
-/* Derive one compat block per buffer the user reshaped. Replays the origin
- * (and, for -co, the target) into one session, hands it to the user, then
- * measures each changed buffer from its post-origin baseline to its final
- * state: the diff is the compat patch, and the origin's own landing yields the
- * gate. Blocks are stored (not emitted); their bytes are marked used so the
- * script-global SEP/ESC, chosen after this, cover them. Returns 0 on success,
- * -1 on any hard error (a nonzero handover status, an underivable gate, or a
- * session that changed nothing), in which case main() writes nothing. */
+/* Derive the one compat block this run produces. Replays the origin (and, for
+ * -co, the target) into one session, hands it to the user, then measures every
+ * changed buffer from its post-origin baseline to its final state and
+ * concatenates the results into a single unified diff: that diff, over however
+ * many files it spans, *is* the compatibility patch, and one landing of the
+ * origin gates all of it. The block is stored (not emitted); its bytes are
+ * marked used so the script-global SEP/ESC, chosen after this, cover them.
+ * Returns 0 on success, -1 on any hard error (a nonzero handover status, an
+ * underivable gate, or a session that changed nothing), in which case main()
+ * writes nothing. */
 static int compat_derive(void)
 {
 	gate_t g[GATE_MAXPROBES];
-	int i, j, k, next_id, n, nsc = 2;
+	int i, j, k, next_id, n, nsc = 2, nchanged = 0;
 	const char *sc[3] = { compat_origin, input_file, NULL };
+	sbuf_smake(diff, SB_INIT)
 	/* A pre-applied resolution in script form is simply one more block of the
 	 * replay, run after the baseline is taken; its diff form is spliced into
 	 * the buffers at that same point (compat_apply_diff). Either way the user
@@ -7653,6 +7632,10 @@ static int compat_derive(void)
 		return -1;
 	}
 	compat_capturing = 0;
+	n = 0;
+	/* One diff over every buffer the user reshaped, in buffer order: the
+	 * compat patch is that whole diff, so it lands in one block, one section
+	 * and one storage region, exactly as its author would have written it. */
 	for (i = 0; i < xbufcur; i++) {
 		char **pre, **base, **fin, **x1 = NULL;
 		char *basetext = NULL, *fintext, *bdup, *fdup, *x1dup = NULL;
@@ -7672,81 +7655,74 @@ static int compat_derive(void)
 		base = split_lines(bdup, &nbase);
 		fin = split_lines(fdup, &nfin);
 		pre = read_lines(bufs[i].path, &npre, &is_new);
-		/* the tree the gate sensor will read: this file with the origin
-		 * applied and the target not yet. A file the origin never opened
-		 * has no entry, so it has no landing of its own to probe. */
-		if ((x1dup = snap_find(&compat_x1, bufs[i].path))) {
-			x1dup = uc_dup(x1dup);
-			x1 = split_lines(x1dup, &nx1);
-		}
-		diff_span(base, nbase, fin, nfin, &xlo, &xhi);
-		alo = xlo;
-		ahi = xhi > xlo ? xhi : xlo;
-		/* An existing block over the same file and origin already carries
-		 * the answer to "is this origin present": reuse its gate instead
-		 * of deriving a second one. Blocks of one origin must agree (the
-		 * subset test reads one flag per origin, not per block), and a
-		 * gate the author widened by hand is authoritative, exactly as a
-		 * stored delta is. Derivation runs only for the first block of a
-		 * given (file, origin) pair. */
-		n = copy_origin_gates(g, bufs[i].path,
-				      compat_origin ? compat_origin : "");
-		if (!n && x1)
-			n = derive_gates(g, GATE_MAXPROBES, pre, npre,
-					 x1, nx1, alo, ahi);
-		if (!n)
-			n = derive_gates_crossfile(g, bufs[i].path);
-		if (!n) {
-			fprintf(stderr, "gate: %s: no probe validates, "
-				"supply a gate by hand\n", bufs[i].path);
-			free(fintext); free(bdup); free(fdup); free(x1dup);
-			free(base); free(fin); free(x1);
-			free_lines(pre, npre);
-			ed_free();
-			return -1;
-		}
-		/* the phase-1 fallback chain's per-pattern ?? capture tags are
-		 * fixed at the pattern slot + 1 (1..NSEARCH for the host, whose
-		 * file-validated slots are on), and the DNF failure check ANDs
-		 * every one of them; the gate's tag comes from its own band above
-		 * that range, continued across blocks, so xanchor never fuses the
-		 * gate's result into a group's or into another block's gate */
-		next_id = next_gate_tag();
-		for (j = 0; j < n; j++)
-			g[j].tag = next_mark_id(&next_id);
-		ARR_PUSH(compat_blocks, ncompat, compat_cap)
-		compat_block_t *cb = &compat_blocks[ncompat++];
-		cb->path = uc_dup(bufs[i].path);
-		cb->origin = uc_dup(compat_origin ? compat_origin : "");
-		for (j = 0; j < n; j++)
-			cb->gates[j] = g[j];	/* ownership transferred */
-		cb->ngates = n;
-		/* the block's own diff parses into a fresh files[] range and its
-		 * own raw sink, so the host === PATCH === stays byte-identical */
-		sbuf_smake(diff, SB_INIT)
 		emit_unified_diff(diff, bufs[i].path, is_new, base, nbase,
 				  fin, nfin);
-		sbuf_null(diff)
-		raw_sink = &cb->raw;
-		parse_diff_reset();
-		cb->first = nfiles;
-		parse_diff_text(diff->s);
-		cb->count = nfiles - cb->first;
-		raw_sink = NULL;
-		mark_bytes_used(diff->s);
-		for (j = 0; j < n; j++)
-			for (k = 0; k < g[j].nlines; k++)
-				mark_bytes_used(g[j].lines[k]);
-		free(diff->s);
+		nchanged++;
+		/* Gate: the first of these files whose own landing is visible
+		 * answers for the whole block, probed near where that file is
+		 * edited. The tree the sensor reads is the file with the origin
+		 * applied and the target not yet; a file the origin never opened
+		 * has no entry, so it has no landing of its own to probe. */
+		if (!n && (x1dup = snap_find(&compat_x1, bufs[i].path))) {
+			x1dup = uc_dup(x1dup);
+			x1 = split_lines(x1dup, &nx1);
+			diff_span(base, nbase, fin, nfin, &xlo, &xhi);
+			alo = xlo;
+			ahi = xhi > xlo ? xhi : xlo;
+			n = derive_gates(g, GATE_MAXPROBES, pre, npre,
+					 x1, nx1, alo, ahi);
+			for (j = 0; j < n; j++)
+				g[j].path = uc_dup(bufs[i].path);
+		}
 		free(fintext); free(bdup); free(fdup); free(x1dup);
 		free(base); free(fin); free(x1);
 		free_lines(pre, npre);
 	}
 	ed_free();
-	if (!ncompat) {
+	sbuf_null(diff)
+	if (!nchanged) {
 		fprintf(stderr, "no compat patch derived\n");
+		free(diff->s);
 		return -1;
 	}
+	/* No edited file shows the origin: some other file it changed still does,
+	 * since "did this origin land" is a question about the tree. */
+	if (!n)
+		n = derive_gates_crossfile(g);
+	if (!n) {
+		fprintf(stderr, "gate: %s: no probe validates, supply a gate "
+			"by hand\n", compat_origin ? compat_origin : "");
+		free(diff->s);
+		return -1;
+	}
+	/* the phase-1 fallback chain's per-pattern ?? capture tags are fixed at
+	 * the pattern slot + 1 (1..NSEARCH for the host, whose file-validated
+	 * slots are on), and the DNF failure check ANDs every one of them; the
+	 * gate's tag comes from its own band above that range, continued across
+	 * blocks, so xanchor never fuses the gate's result into a group's or into
+	 * another block's gate */
+	next_id = next_gate_tag();
+	for (j = 0; j < n; j++)
+		g[j].tag = next_mark_id(&next_id);
+	ARR_PUSH(compat_blocks, ncompat, compat_cap)
+	compat_block_t *cb = &compat_blocks[ncompat++];
+	cb->origin = uc_dup(compat_origin ? compat_origin : "");
+	for (j = 0; j < n; j++)
+		cb->gates[j] = g[j];	/* ownership transferred */
+	cb->ngates = n;
+	/* the block's diff parses into a fresh files[] range and its own raw
+	 * sink, so the host === PATCH === stays byte-identical */
+	raw_sink = &cb->raw;
+	parse_diff_reset();
+	cb->first = nfiles;
+	parse_diff_text(diff->s);
+	cb->count = nfiles - cb->first;
+	raw_sink = NULL;
+	mark_bytes_used(diff->s);
+	for (j = 0; j < n; j++)
+		for (k = 0; k < g[j].nlines; k++)
+			mark_bytes_used(g[j].lines[k]);
+	free(diff->s);
 	return 0;
 }
 
@@ -8051,19 +8027,11 @@ static int read_delta_sections(FILE *in)
 			}
 			ARR_PUSH(compat_blocks, ncompat, compat_cap)
 			cur_cb = &compat_blocks[ncompat++];
-			/* "=== PATCH2VI COMPAT post <path> [src=<o>] ===" */
-			char *p = line + 20;
-			while (*p && *p != ' ')	/* skip the "post" word */
-				p++;
-			if (*p == ' ')
-				p++;
-			char *src = strstr(p, " src=");
-			char *e = strstr(src ? src : p, " ===");
+			/* "=== PATCH2VI COMPAT post [src=<origin>] ===" */
+			char *src = strstr(line + 20, " src=");
+			char *e = src ? strstr(src, " ===") : NULL;
 			if (e)
 				*e = '\0';
-			if (src)
-				*src = '\0';
-			cur_cb->path = uc_dup(p);
 			cur_cb->origin = uc_dup(src ? src + 5 : "");
 			cur_fd = NULL;
 			cur_gd = NULL;
