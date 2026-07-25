@@ -1363,9 +1363,9 @@ CODE MAP
      | 665 lbuf.c   |  file/line buffer    |
      | 730 led.c    |  insert mode/output  |
      | 751 regex.c  |  pikevm              |
-     | 1870 ex.c    |  ex options/commands |
+     | 1872 ex.c    |  ex options/commands |
      | 1885 vi.c    |  normal mode/general |
-     | 7699 total   |  wc -l *.c|sort      |
+     | 7701 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1446,4 +1446,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.1                       July 20, 2026                      Nextvi 7.1
+Nextvi 7.1                       July 24, 2026                      Nextvi 7.1
