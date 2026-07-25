@@ -26,10 +26,10 @@
  *     is a nextvi command line - its flags, its files, EXINIT - and every
  *     buffer it leaves behind is diffed against its disk copy to produce
  *     the input the converter normally reads;
- *   - replays two scripts (-co) to derive a compatibility patch that
- *     applies before/after the target, gated on the origin's own change; an
- *     optional third argument (diff or script) pre-applies a known compat
- *     patch that the session then continues from.
+ *   - replays two scripts (-co) to derive a compatibility patch, applied
+ *     after the target and gated on the origin's own change; an optional
+ *     third argument (diff or script) pre-applies a known compat patch that
+ *     the session then continues from.
  * No mode writes to disk; quitting is what emits.
  */
 #include "vi.c"
@@ -90,8 +90,7 @@ static const char *end_tag_rd = "=== END ===";
 static const char *end_tag_wr = "=== END ===";
 
 /* The emit layer builds everything in memory. Function (not macro) wrappers
- * around the sbuf appenders let call sites sit in unbraced if/else bodies,
- * and sb_printf is printf into an sbuf (C99 vsnprintf, no streams). */
+ * around the sbuf appenders let call sites sit in unbraced if/else bodies. */
 static void sb_str(sbuf *sb, const char *s)
 {
 	sbuf_str(sb, s)
@@ -124,15 +123,40 @@ static void sb_printf(sbuf *sb, const char *fmt, ...)
 	sb->s_n += n;
 }
 
-/* Number of f> anchor search strategies (SEARCH PATTERN slots), tried
- * strict-to-loose with first match wins. See default_pat_lines() for the
- * per-slot pattern composition. NFUZZ extra slots hold file-validated
- * relaxed (fuzzed) variants generated after the exact strategies; NGRP holds
- * the file-validated :grp-capture window (pattern 7, see gen_grp_window); NWIN
- * holds the file-validated global straddle window (pattern 8, mode 3, see
- * gen_win_window); NWIN2 holds a second straddle window with anchors one step
- * farther out (pattern 9, mode 3, same gen_win_window with skip=1). NSEARCH is
- * the total SEARCH PATTERN capacity per group. */
+/* printf into a fresh string, so a label built from user paths has no
+ * length limit. */
+static char *str_fmt(const char *fmt, ...)
+{
+	va_list ap;
+	int n;
+	char *s;
+	va_start(ap, fmt);
+	n = vsnprintf(NULL, 0, fmt, ap);
+	va_end(ap);
+	s = emalloc(n + 1);
+	va_start(ap, fmt);
+	vsnprintf(s, n + 1, fmt, ap);
+	va_end(ap);
+	return s;
+}
+
+/* The section terminator, and a plain body of n lines. */
+static void sb_end(sbuf *fp)
+{
+	sb_printf(fp, "%s\n", end_tag_wr);
+}
+
+static void sb_lines(sbuf *fp, char **v, int n)
+{
+	for (int i = 0; i < n; i++)
+		sb_printf(fp, "%s\n", v[i]);
+}
+
+/* f> anchor search strategies (SEARCH PATTERN slots), tried strict-to-loose,
+ * first match wins: NPAT exact ones (default_pat_lines), then the
+ * file-validated relaxed windows - fuzz (gen_fuzz_windows), the :grp-capture
+ * window 7 (gen_grp_window) and the straddle windows 8 and 9 (gen_win_window,
+ * skip 0 and 1). */
 #define NPAT 5
 #define NFUZZ 1   /* max file-validated fuzzed candidates per group (loosest kept) */
 #define NGRP 1    /* file-validated :grp-capture window (TEXT.*? + last captured) */
@@ -143,8 +167,8 @@ static void sb_printf(sbuf *sb, const char *fmt, ...)
 #define WIN2_SLOT (NPAT + NFUZZ + NGRP + NWIN)  /* 0-based slot index of the farther straddle window */
 #define NSEARCH (NPAT + NFUZZ + NGRP + NWIN + NWIN2)  /* must stay <= 9: section numbers are 1 digit */
 
-/* Scratch line mark reserved for pattern 8's save/restore of the cursor around
- * its global search; edit marks start at 1 (see next_mark_id callers). */
+/* Cursor save/restore scratch for the global (mode 3) searches; edit marks
+ * start at 1. */
 #define WIN_SAVE_MARK 0
 
 /*
@@ -164,38 +188,30 @@ static void sb_printf(sbuf *sb, const char *fmt, ...)
  *      top and restored after (patterns 8 and 9's straddle windows).
  */
 
-/* Compatibility-block gate (-co). A compat block only applies to a tree
- * that carries the origin script's change; the gate is the question "is the
- * origin change that causes this collision present here?", asked as an exact
- * multi-line literal search before any edit and answered by quitting (q!0)
- * when the answer is no. Probes come from the origin's own landing (see
- * derive_gates): its inserted lines for GATE_PRESENT, its removed lines for
- * GATE_ABSENT. Every sensor runs before any body writes, so a probe describes
- * the tree with the origin applied and the target not yet - and when this
- * block's file carries no trace of the origin, the probe is taken from another
- * file the origin did change (gate_t's path). */
+/* Compatibility-block gate (-co): "is the origin change that causes this
+ * collision present here?", asked as an exact literal search before any edit.
+ * Probes come from the origin's own landing (derive_gates): inserted lines for
+ * GATE_PRESENT, removed ones for GATE_ABSENT. Sensors all run before any body
+ * writes, so a probe sees the origin applied and the target not yet. */
 #define GATE_MAXLINES 8   /* longest probe window: locality beats length */
-#define GATE_MAXPROBES 2  /* probe sections per block, ANDed in order */
+#define GATE_MAXPROBES 2  /* probes one derivation may AND; storage is unbounded */
 
-/* ?? tags reserved by a compat block's gate while its groups regenerate, so
- * gen_group_segments() skips them (the id is shared numeric space with the ??
- * capture tags); empty when no gate is being emitted. */
-static int compat_res_marks[GATE_MAXPROBES];
-static int ncompat_res;
+/* ?? tags a compat block's gate holds while its groups regenerate (shared
+ * numeric space with the group capture tags), so the latter skip them. */
+static int *compat_res_marks;
+static int ncompat_res, compat_res_cap;
 /* Set while the replay session is the compat one, so replay_blocks() snapshots
  * the post-origin baseline right before handing over to the user. */
 static int compat_capturing;
-/* Set while a compat block's groups are generated/emitted: they use the exact
- * strategies (slots 1-NPAT) only - a compat patch is a local touch-up, so the
- * file-validated fuzz/grp/straddle generators (which read the pre-origin file
- * that is the wrong text here) are disabled. */
+/* Set while a compat block's groups are generated/emitted: exact strategies
+ * only, since the file-validated generators would read the pre-origin file -
+ * the wrong text for a block derived on top of it. */
 static int compat_building;
 static int compat_mode;			/* -co: derive a post-only compat patch */
 static const char *compat_origin;	/* the script it is derived against */
-/* -co third argument: an already written compat fix (a unified diff or a
- * generated script) applied to the post-origin+target tree before the user
- * is handed the editor, so a known resolution is not retyped. It lands after
- * the baseline snapshot, hence it is part of the derived compat patch. */
+/* -co third argument: an already written fix (diff or script) applied to the
+ * post-origin+target tree before handover. It lands after the baseline
+ * snapshot, so it is part of the derived compat patch. */
 static const char *compat_pre;
 
 enum {
@@ -209,10 +225,9 @@ typedef struct {
 	int nlines;
 	int polarity;     /* GATE_ALWAYS / GATE_PRESENT / GATE_ABSENT */
 	int tag;          /* allocated ?? capture id */
-	/* the file the probe is searched in, owned; NULL = the block's own first
-	 * file. "Is the origin on this tree" is a property of the tree, not of one
-	 * file, so a block over a file the origin never touched (or whose landing
-	 * the target overwrote) probes a file the origin did change. */
+	/* the file the probe is searched in, owned; NULL = the block's own first.
+	 * "Is the origin on this tree" is a property of the tree, so a block whose
+	 * own files show no trace probes one the origin did change. */
 	char *path;
 } gate_t;
 
@@ -260,8 +275,8 @@ typedef struct {
 	int gcap;
 } file_delta_t;
 
-/* A growable per-file delta store: the host's input (read from a script)
- * and output (captured from the editor) sets, plus one per compat block. */
+/* Per-file delta store: the host's input (read from a script) and output
+ * (captured from the editor) sets, plus one per compat block. */
 typedef struct { file_delta_t *v; int n, cap; } dstore_t;
 
 static dstore_t out_deltas, in_deltas;
@@ -295,35 +310,28 @@ static int is_substitute(const char *s)
 		 (c >= '0' && c <= '9'));
 }
 
-/* Raw input lines for embedding in output */
+/* Raw input lines, re-emitted as the === PATCH === tail */
 static char **raw_lines;
 static int nraw, raw_cap;
 
-/* Dynamic string vector: a compat block owns its own === PATCH === lines
- * rather than splicing them into the host's raw_lines[]. */
+/* String vector; a compat block owns its === PATCH === lines this way. */
 typedef struct { char **v; int n, cap; } strv_t;
 static void arr_append(char ***arr, int *n, int *cap, const char *s);
 
-/* When set, add_raw() appends into this sink instead of the host's raw_lines[]
- * - so a compat diff parsed through parse_diff_text() lands in the compat
- * block's own storage, leaving the host === PATCH === section byte-identical. */
+/* When set, add_raw() appends here instead of raw_lines[], so a compat diff
+ * lands in its block's storage and the host === PATCH === stays byte-identical. */
 static strv_t *raw_sink;
 
-/* Track which bytes appear in patch content */
+/* Bytes appearing in the patch content, so SEP/ESC can avoid them */
 static unsigned char byte_used[256];
 
-/* Dynamic ex escape byte set via :sc (like the separator); exported to
- * the script as $ESC. 0 = no free byte, keep the default backslash
- * escape paths. With a dynamic escape, backslash is no longer special
- * to ex_arg, so content and regex escapes pass through unmodified.
- * The ? conditional/while no longer delimiter-scans its argument
- * (it relies on capture tags), so ? never needs escaping inside a
- * ? block; only the separator does. */
+/* Ex escape byte, picked from the bytes the patch does not use (0 = none left,
+ * keep the default backslash paths). With it, backslash is not special to
+ * ex_arg and content/regex escapes pass through unmodified. */
 static int dyn_esc;
 
-/* Ex command separator byte, likewise picked from the bytes the patch does
- * not use. Both go into the script as raw bytes: the command body is a
- * single-quoted printf argument, so sh passes every byte but ' through. */
+/* Ex command separator, likewise. Both go into the script as raw bytes: the
+ * body is a single-quoted printf argument, so sh passes all but ' through. */
 static int sep;
 
 static void *ecalloc(size_t n, size_t sz)
@@ -345,6 +353,14 @@ static file_delta_t *dstore_get(dstore_t *ds, const char *path)
 	ARR_PUSH(ds->v, ds->n, ds->cap)
 	ds->v[ds->n].filepath = uc_dup(path);
 	return &ds->v[ds->n++];
+}
+
+/* A fresh zeroed group slot in fd, carrying its 1-based index. */
+static grp_delta_t *fd_add_grp(file_delta_t *fd, int idx)
+{
+	ARR_PUSH(fd->grps, fd->ngrps, fd->gcap)
+	fd->grps[fd->ngrps].group_idx = idx;
+	return &fd->grps[fd->ngrps++];
 }
 
 /* One store entry per fps[k] (NULL where the file has no delta), the
@@ -379,7 +395,6 @@ static char *chomp_sb(sbuf *sb)
 	sbufn_ret(sb, sb->s)
 }
 
-/* Remove trailing newline */
 static void chomp(char *s)
 {
 	int n = strlen(s);
@@ -387,9 +402,8 @@ static void chomp(char *s)
 		s[--n] = '\0';
 }
 
-/* Read one line of any length into sb, newline included (as fgets leaves
- * it); NULL at EOF. sb is reused across calls, so callers may modify it in
- * place and leave the loop at any point without freeing. */
+/* One line of any length into sb, newline included; NULL at EOF. sb is reused,
+ * so callers may modify it in place and leave the loop without freeing. */
 static char *read_line(FILE *f, sbuf *sb)
 {
 	int c;
@@ -422,7 +436,25 @@ static char *escape_regex(const char *s)
 	return escape_chars(s, REGEX_META);
 }
 
-/* Append a string to a dynamic array */
+/* Double backslashes for ex_arg level escaping.
+ * ex_arg treats \\ as escaped \, so \\\\ is needed to preserve \\.
+ * With a dynamic escape byte, backslash is not special to ex_arg and
+ * passes through as-is (the escape byte never occurs in content). */
+static char *escape_exarg(const char *s)
+{
+	return escape_chars(s, dyn_esc ? "" : "\\");
+}
+
+/* Append s through the ex_arg escape layer: content text, a user-edited regex
+ * and an already sub-escaped s/// field all need exactly this and nothing more. */
+static void sb_exarg(sbuf *out, const char *s)
+{
+	char *e = escape_exarg(s);
+	sb_str(out, e);
+	free(e);
+}
+
+/* Append a copy of s to a dynamic array. */
 static void arr_append(char ***arr, int *n, int *cap, const char *s)
 {
 	if (*n >= *cap) {
@@ -430,6 +462,16 @@ static void arr_append(char ***arr, int *n, int *cap, const char *s)
 		*arr = erealloc(*arr, *cap * sizeof(char *));
 	}
 	(*arr)[(*n)++] = uc_dup(s);
+}
+
+/* A NUL-terminated copy of n bytes of s (byte-exact, where uc_sub() would
+ * count characters). */
+static char *dup_n(const char *s, int n)
+{
+	char *r = emalloc(n + 1);
+	memcpy(r, s, n);
+	r[n] = '\0';
+	return r;
 }
 
 /* Free n owned strings and the array holding them. */
@@ -451,12 +493,11 @@ static int lines_equal(char **a, int na, char **b, int nb)
 }
 
 /*
- * File-aware anchor validation. patch2vi normally compiles blind, emitting a
- * strict-to-loose fallback chain that nextvi resolves at apply time. When the
- * pre-patch original is readable (it usually is - the script applies in the same
- * tree), we count each candidate anchor's occurrences and sort the proven-unique
- * one to the front. The full chain is still emitted, so the script stays portable
- * and drift-tolerant; file access only improves ordering.
+ * File-aware anchor validation. The strict-to-loose fallback chain is emitted
+ * blind and resolved by nextvi at apply time; when the pre-patch original is
+ * readable (it usually is - the script applies in the same tree), candidate
+ * anchors are counted against it so only proven-unique ones are added. The
+ * chain is emitted either way, so the script stays portable.
  */
 static char **orig_lines;   /* pre-patch original, NULL if unreadable */
 static int n_orig_lines;
@@ -557,11 +598,8 @@ static int count_window(char **window, int n, int *first)
 	return count_window_by(window, n, first, m_exact);
 }
 
-/* Count consecutive-line matches of a substring window in orig_lines: each
- * win[j] must occur as a substring of the aligned original line (an empty
- * win[j] matches any line, mirroring ".*.*"). This is the match semantics of
- * the pattern-7 ".*TEXT.*" window. Sets *first to the 0-based start of the
- * first match (-1 if none). */
+/* count_window with substring semantics: win[j] must occur inside the aligned
+ * original line (empty matches any), as pattern 7's ".*TEXT.*" window does. */
 static int m_substr(const char *ln, const void *win, int j)
 {
 	const char *w = ((char **)win)[j];
@@ -573,10 +611,9 @@ static int count_window_substr(char **win, int n, int *first)
 	return count_window_by(win, n, first, m_substr);
 }
 
-/* Count orig lines in the 0-based inclusive range [from..to] that contain s as
- * a substring. Used to prove a pattern-8 bottom anchor is unambiguous below the
- * hunk: greedy ".*(bottom)" captures the last occurrence, so the chosen line
- * must be the only one carrying that text from its position to EOF. */
+/* Orig lines in [from..to] containing s. Proves a pattern-8 bottom anchor
+ * unambiguous: greedy ".*(bottom)" takes the last occurrence, so the chosen
+ * line must be the only one carrying that text down to EOF. */
 static int count_substr_range(const char *s, int from, int to)
 {
 	int cnt = 0;
@@ -591,14 +628,10 @@ static int count_substr_range(const char *s, int from, int to)
 }
 
 /*
- * File-validated fuzzed (relaxed) anchors. With the original readable we can
- * relax an exact anchor into a drift-tolerant regex, verifying the relaxed form
- * still resolves uniquely to the right place. A fuzzed window replaces selected
- * runes with '.' (the nextvi one-rune wildcard). Length-preserving: each '.' is
- * one rune, so a fuzzed line matches only same-rune-length lines - it tolerates
- * in-place character drift (renamed equal-length token, changed digit), nothing
- * else. A candidate is kept only if it still matches uniquely at the expected
- * location. Without the file, no fuzzed anchors are emitted.
+ * File-validated fuzzed (relaxed) anchors: an exact anchor with selected runes
+ * replaced by '.', kept only if the relaxed form still resolves uniquely to the
+ * right place. Length-preserving (one '.' = one rune), so it tolerates in-place
+ * drift - a renamed equal-length token, a changed digit - and nothing else.
  */
 
 /* Count runes in the first len bytes of s. */
@@ -669,6 +702,7 @@ static char *fuzzy_regex(const fline_t *f)
 	sbufn_ret(sb, sb->s)
 }
 
+/* Seeded string hash; the fuzz seed and the diff line census share it. */
 static unsigned hash_str(const char *s, unsigned h)
 {
 	while (*s)
@@ -676,8 +710,7 @@ static unsigned hash_str(const char *s, unsigned h)
 	return h;
 }
 
-/* Deterministic per-position pseudo-value, content-seeded so the fuzzing of a
- * given hunk is reproducible across runs. */
+/* Per-position pseudo-value, content-seeded so fuzzing is reproducible. */
 static unsigned hash_pos(unsigned seed, int i)
 {
 	unsigned h = seed ^ 0x9e3779b9u;
@@ -688,16 +721,13 @@ static unsigned hash_pos(unsigned seed, int i)
 	return h;
 }
 
-/* Highest fuzz level tried; level 0 is the lightest relaxation, the top level
- * approaches the ~80% wildcard budget the anchor is allowed (FUZZ_MASK_MAX). */
+/* Highest fuzz level tried; level 0 is the lightest relaxation. */
 #define FUZZ_MAXLVL 8
 #define FUZZ_MASK_MAX 800   /* per-mille: mask up to ~80% of runes (~20% literal) */
 
-/* Fill mask[0..nrune) for fuzz level lvl over a window-global rune index that
- * starts at *gi (advanced by nrune). Each level drops runes by a content-seeded
- * threshold that grows with lvl but never past FUZZ_MASK_MAX, so the loosest
- * variant wildcards ~80% of its runes (~20% kept literal). At least one rune is
- * always kept literal. */
+/* Fill mask[0..nrune) for fuzz level lvl over a window-global rune index
+ * starting at *gi. The drop threshold grows with lvl but never past
+ * FUZZ_MASK_MAX; at least one rune always stays literal. */
 static void fuzz_mask(unsigned char *mask, int nrune, int lvl, unsigned seed,
 		      int *gi)
 {
@@ -751,8 +781,7 @@ static char *build_default_text(char **del, int ndel, char **add, int nadd)
 	sbufn_ret(sb, sb->s)
 }
 
-/* True if gd's stored del/add lines match the supplied content (or weren't recorded).
- * Used when * is absent (non-regex path) — always compares del_lines/add_lines. */
+/* Do gd's stored del/add lines match this content (or weren't recorded)? */
 static int grp_content_matches(grp_delta_t *gd, char **del, int ndel,
 			       char **add, int nadd)
 {
@@ -780,7 +809,7 @@ static int grp_content_regex_matches(grp_delta_t *gd, char **del, int ndel,
 	return ok;
 }
 
-/* True if gd's stored full hunk (pre_ctx + del + add + post_ctx) matches the supplied content. */
+/* Does gd's stored full hunk (pre + del + add + post) match this content? */
 static int grp_full_hunk_matches(grp_delta_t *gd,
 				 char **pre_ctx, int npre_ctx,
 				 char **del_texts, int ndel,
@@ -800,59 +829,22 @@ static int grp_full_hunk_matches(grp_delta_t *gd,
 	return 1;
 }
 
-static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx,
-				   char **del_texts, int ndel,
-				   char **add_texts, int nadd,
-				   char **pre_ctx, int npre_ctx,
-				   char **post_ctx, int npost_ctx,
-				   int force_level)
+/* Does a stored delta's recorded content match this hunk at strictness lvl?
+ * 1 accepts anything, 2/4 compare the -/+ lines (a starred delta of that same
+ * level may instead match its custom_text as one regex), 3/5 the whole hunk
+ * with its context. The index check that levels 1-3 add is the caller's. */
+static int delta_matches(grp_delta_t *st, char **del, int ndel,
+			 char **add, int nadd, char **pre, int npre,
+			 char **post, int npost, int lvl)
 {
-	for (int i = 0; fd && i < fd->ngrps; i++) {
-		grp_delta_t *gd = &fd->grps[i];
-		int lvl = force_level > 0 ? force_level : gd->level;
-		if (lvl == 0)
-			lvl = 2;  /* default for old format deltas */
-
-		if (lvl == 4) {
-			/* Level 4: content match (like lvl 2), no index check */
-			if (gd->has_star && gd->level == 4
-			    && grp_content_regex_matches(gd, del_texts, ndel, add_texts, nadd))
-				return gd;
-			if (grp_content_matches(gd, del_texts, ndel, add_texts, nadd))
-				return gd;
-			continue;
-		}
-
-		if (lvl == 5) {
-			/* Level 5: full hunk match, no index check */
-			if (grp_full_hunk_matches(gd, pre_ctx, npre_ctx,
-						  del_texts, ndel,
-						  add_texts, nadd,
-						  post_ctx, npost_ctx))
-				return gd;
-			continue;
-		}
-
-		/* Levels 1, 2, 3: group index must match first */
-		if (gd->group_idx != idx)
-			continue;
-
-		if (lvl == 1)
-			return gd;
-		if (lvl == 2) {
-			if (gd->has_star && gd->level == 2
-			    && grp_content_regex_matches(gd, del_texts, ndel, add_texts, nadd))
-				return gd;
-			if (grp_content_matches(gd, del_texts, ndel, add_texts, nadd))
-				return gd;
-		}
-		if (lvl == 3 && grp_full_hunk_matches(gd, pre_ctx, npre_ctx,
-						      del_texts, ndel,
-						      add_texts, nadd,
-						      post_ctx, npost_ctx))
-			return gd;
-	}
-	return NULL;
+	if (lvl == 1)
+		return 1;
+	if (lvl == 2 || lvl == 4)
+		return (st->has_star && st->level == lvl
+			&& grp_content_regex_matches(st, del, ndel, add, nadd))
+		       || grp_content_matches(st, del, ndel, add, nadd);
+	return grp_full_hunk_matches(st, pre, npre, del, ndel, add, nadd,
+				     post, npost);
 }
 
 /* Number of (overlapping) occurrences of needle in haystack, both counted. */
@@ -899,9 +891,8 @@ static int diff_expand_right(const char *old, int olen, int *oe, int *ne)
 	return 1;
 }
 
-/* The common byte prefix and suffix of two lines, each snapped back to a rune
- * boundary so runes sharing lead bytes (e.g. é vs è) are never split; the
- * suffix never overlaps the prefix. */
+/* Common byte prefix and suffix of two lines, each snapped back to a rune
+ * boundary so runes sharing lead bytes are never split; they never overlap. */
 static void common_affix(const char *old, const char *new, int *pre, int *suf)
 {
 	int old_len = strlen(old), new_len = strlen(new), prefix = 0, suffix = 0;
@@ -931,19 +922,15 @@ static int find_line_diff(const char *old, const char *new,
 	int new_len = strlen(new);
 	int prefix, suffix;
 	common_affix(old, new, &prefix, &suffix);
-
-	/* Calculate the differing regions */
 	int old_diff_start = prefix;
 	int old_diff_end = old_len - suffix;
 	int new_diff_start = prefix;
 	int new_diff_end = new_len - suffix;
 
-	/* Require at least 50% of the line to be common */
+	/* at least half the line common, and less than half of it changing */
 	int common = prefix + suffix;
 	if (common < old_len / 2 && common < new_len / 2)
 		return 0;
-
-	/* Don't bother with horizontal edit if most of line changes */
 	int old_diff_len = old_diff_end - old_diff_start;
 	int new_diff_len = new_diff_end - new_diff_start;
 	if (old_diff_len > old_len / 2 && new_diff_len > new_len / 2)
@@ -974,34 +961,20 @@ static int find_line_diff(const char *old, const char *new,
 			break;
 	}
 
-	/* Recalculate diff lengths after expansion */
-	old_diff_len = old_diff_end - old_diff_start;
-	new_diff_len = new_diff_end - new_diff_start;
-
-	/* Extract the old text */
-	*old_text = emalloc(old_diff_len + 1);
-	memcpy(*old_text, old + old_diff_start, old_diff_len);
-	(*old_text)[old_diff_len] = '\0';
-
-	/* Extract the new text */
-	*new_text = emalloc(new_diff_len + 1);
-	memcpy(*new_text, new + new_diff_start, new_diff_len);
-	(*new_text)[new_diff_len] = '\0';
-
+	*old_text = dup_n(old + old_diff_start, old_diff_end - old_diff_start);
+	*new_text = dup_n(new + new_diff_start, new_diff_end - new_diff_start);
 	return 1;
 }
 
-/* Mark all bytes in a string as used */
 static void mark_bytes_used(const char *s)
 {
 	for (; *s; s++)
 		byte_used[(unsigned char)*s] = 1;
 }
 
-/* Mark a stored verbatim blob's bytes, minus the two the script it came
- * from reserved for itself. Those are structure, not content: counting
- * them would move the next generation onto different bytes and strand
- * every blob captured under the old pair. */
+/* A stored verbatim blob's bytes, minus the two its script reserved: those are
+ * structure, and counting them would move the next generation onto different
+ * bytes and strand every blob captured under the old pair. */
 static void mark_verbatim_bytes(const char *s, int esc, int sp)
 {
 	for (; *s; s++)
@@ -1009,9 +982,8 @@ static void mark_verbatim_bytes(const char *s, int esc, int sp)
 			byte_used[(unsigned char)*s] = 1;
 }
 
-/* Find an unused byte to use as separator.
- * Prefer non-printable bytes so printable chars stay available
- * for ex commands and patterns. */
+/* The lowest unused byte; the low (non-printable) ones come first so printable
+ * chars stay available for ex commands and patterns. */
 static int find_unused_byte(void)
 {
 	for (int c = 1; c < 256; c++)
@@ -1065,9 +1037,8 @@ static int parse_hunk_header(const char *line, int *old_start, int *old_count)
 	return *p == '+';
 }
 
-/* One raw byte into a shell double-quoted word. Only the four bytes sh
- * still reads there need escaping; the body is single quoted and needs
- * none of this (see sq_write). */
+/* One raw byte into a shell double-quoted word: only the four bytes sh still
+ * reads there need escaping. */
 static void sb_dq(sbuf *out, int c)
 {
 	if (c == '\\' || c == '$' || c == '`' || c == '"')
@@ -1075,10 +1046,9 @@ static void sb_dq(sbuf *out, int c)
 	sb_chr(out, c);
 }
 
-/* Write a command body to the script as a single-quoted printf argument.
- * Single quotes are the one thing such a word cannot hold, so each is
- * closed, escaped and reopened; every other byte, control bytes and the
- * separator included, goes out verbatim. */
+/* A command body as a single-quoted printf argument. A quote is the one byte
+ * such a word cannot hold, so each is closed, escaped and reopened; everything
+ * else, control bytes and the separator included, goes out verbatim. */
 static void sq_write(const char *s, int n)
 {
 	for (int i = 0; i < n; i++) {
@@ -1089,33 +1059,26 @@ static void sq_write(const char *s, int n)
 	}
 }
 
-static void emit_escaped_text(sbuf *out, const char *s);
-
 /* the body register, and the EXINIT that yanks the body buffer into it
  * and runs it; -e fills the register itself and needs neither */
 #define P2VI_REG 97
 #define P2VI_VICALL "EXINIT='%ya 97:? %@97'"
 
 /*
- * Script state lives in ex registers, not shell variables.
+ * Script state lives in ex registers, not shell variables. A shell variable is
+ * a flat string spliced into a site whose nesting depth the shell cannot know;
+ * a register is escaped once where it is defined and "?%@<id>" runs it verbatim
+ * at any depth (ex_arg sbuf_mem's the expansion, never rescanning it).
  *
- * A shell variable is a flat string spliced into a site whose nesting depth
- * the shell cannot know, and whose escaping depends on which bytes are
- * special there. A register sidesteps both: its content is escaped once,
- * where it is defined, and "?%@<id>" runs it verbatim at any depth
- * (ex_arg sbuf_mem's the expansion and never rescans it).
+ * Definedness is the switch: an undefined register expands to nothing and "?"
+ * with an empty argument runs nothing, so the shell only ever contributes whole
+ * commands ("${DBG1:+213reg ...}") that define or clear one.
  *
- * Definedness is the switch. An undefined register expands to nothing, and
- * "?" with an empty argument runs nothing, so a gate register is simply
- * left undefined when its switch is off; the shell only ever contributes
- * whole commands ("${DBG1:+213reg ...}") that define or clear one.
- *
- * Expansion is turned on ("2sc %") for the call and off again ("2sc")
- * immediately: with xexp live every % in an argument would expand, and
- * arguments carry regexes derived from file content. Argument registers
- * are therefore always written before the window, never inside it. xexe
- * (!) stays 0 throughout - the |sc! prologue zeroes it - since a stray !
- * in a live argument forks a shell.
+ * Expansion is turned on ("2sc %") for a call and off again ("2sc") at once,
+ * since with xexp live every % in an argument would expand and arguments carry
+ * file-derived regexes; argument registers are therefore written before the
+ * window, never inside it. xexe (!) stays 0 throughout - a stray ! in a live
+ * argument would fork a shell.
  */
 #define REG_QF1  210	/* phase-1 quit chain, set by QF1=1 */
 #define REG_QF2  211	/* phase-2 quit chain, cleared by QF2=1 */
@@ -1128,39 +1091,28 @@ static void emit_escaped_text(sbuf *out, const char *s);
 #define REG_LOC  219	/* argument: the FAIL location of the current site */
 #define REG_MSG  220	/* argument: the OK report command of the current site */
 /*
- * -co sensor flags. In the single-vi-call model (one process, one body) a
- * sensor gate that fires before the host body writes a flag register that a
- * later block reads after it; registers are global and never cleared between
- * chains, so the bit crosses the host body. Two writes per firing sensor:
- *   REG_FLAG_ANY      one shared register, appended to by every firing sensor,
- *                     so "any origin fired" is "this register is non-empty" -
- *                     answered by a single f> at the host's per-site override.
- *   REG_FLAG_BASE+k   one per origin k, read by the per-block back-to-front
- *                     subset test that decides which block asserts.
- * Both sit ABOVE the 210-220 control band so they never overwrite a quit/error
- * register; an unset flag reads false (ex_regget NULL -> "uninitialized
- * register" -> xuerr), so no initialisation pass is needed. The per-block
- * subset anchors use ec_while slot ids >= 10, above every single-digit group
- * chain tag (NSEARCH <= 9), so they never fuse with a group's result.
+ * -co sensor flags. Registers are global to the process and never cleared
+ * between chains, so a bit a sensor sets crosses the host body:
+ *   REG_FLAG_ANY      appended to by every firing sensor, so "any origin fired"
+ *                     is "non-empty", read once by the host override.
+ *   REG_FLAG_BASE+k   one per origin k, read by the per-block subset test that
+ *                     decides which block asserts.
+ * Both sit above the 210-220 control band. The subset anchors use ec_while slot
+ * ids >= 10, above every single-digit group chain tag, so they never fuse.
  */
 #define REG_FLAG_ANY  230	/* shared any-origin-fired register */
 #define REG_FLAG_BASE 231	/* per-origin flag registers: REG_FLAG_BASE+k */
 #define FLAG_SLOT_BASE 10	/* ec_while subset-test anchor slots (>= 10) */
 /*
- * Gate probe tags live in their own band, far above both the group chain tags
- * (pattern slot + 1, 1..NSEARCH <= 9) and the per-block subset slots
- * (FLAG_SLOT_BASE + k). xanchor is global to the process and a lookup ORs every
- * recorded entry carrying the id (ec_while, ex.c), so a tag shared with a
- * group's fallback capture - or with another block's gate - would let one
- * sensor answer for another: on a mixed single-origin tree the absent origin's
- * block would fire anyway. Numbering is continuous across blocks (next_gate_tag
- * takes the next id above every tag already stored), so stacked blocks never
- * share one, and a tag read back from storage keeps the sequence going.
+ * Gate probe tags live in their own band, above the group chain tags and the
+ * subset slots. An xanchor lookup ORs every recorded entry carrying the id, so
+ * a tag shared with a group's capture - or another block's gate - would let one
+ * sensor answer for another. next_gate_tag numbers continuously across blocks,
+ * stored ones included, so no two ever share.
  */
 #define GATE_TAG_BASE 1000
-/* One escape run of n bytes followed by the separator. n = 0 is the plain
- * command separator, 1 escapes it for a ??! block's argument, 3 for a ??
- * then-arg nested one level further in. */
+/* n escape bytes then the separator: 0 = plain, 1 = inside a ??-arm's
+ * argument, 3 = one level further in. */
 static void emit_esc_sep(sbuf *out, int n)
 {
 	while (n-- > 0)
@@ -1168,8 +1120,8 @@ static void emit_esc_sep(sbuf *out, int n)
 	sb_chr(out, sep);
 }
 
-/* the same, for the one part of a body the shell writes: a double-quoted
- * word, where a raw escape or separator byte may need escaping again */
+/* the same in the one part of a body the shell writes: a double-quoted word,
+ * where a raw escape or separator byte may need escaping again */
 static void sb_dq_esc_sep(sbuf *out, int n)
 {
 	while (n-- > 0)
@@ -1187,45 +1139,24 @@ static void sb_dq_esc_sep(sbuf *out, int n)
 #define EMIT_LB(out) sb_str(out, "0?\n")
 
 /*
- * Ex commands emitted by patch2vi and their default range (no address given):
- *
- * All commands default to the current line (xrow) when no range is given,
- * per ex_region(): beg = xrow, end = xrow+1 when vaddr == 0.
- *
- * Commands that advance xrow (and thus affect subsequent relative addresses):
- *   i (insert)     - ec_insert: inserts after the addressed line ("0i" is
- *                    above line 1); xrow = beg + inserted_lines - 1
- *   c (change)     - ec_insert: xrow = end + inserted_lines - deleted - 1
- *   d (delete)     - ec_delete: xrow = beg (or last line if past end)
- *   f>/f+/f- (find)- ec_find: xrow = matched line, xoff = match position
- *   (bare address) - ec_print (!*cmd && *loc): xrow = end - 1
- *                    This is how +N / -N move xrow without a command.
- *
- * Commands that do NOT advance xrow:
- *   s (substitute) - ec_substitute: does not modify xrow/xoff
- *   p (print)      - ec_print: an explicit command letter skips the
- *                    xrow = end - 1 bare-address path (only used for debug)
- *
- * Commands used for setup/teardown (no range relevance):
- *   vis (visual)   - ec_print: sets xvis mode
- *   w / q! (write, quit) - ec_write / ec_quit
- *   sc! (specials) - ec_specials: sets ex separator character
- *   ??! (while)    - ec_while: conditional execution (error check)
- *   m (mark)       - ec_mark: sets a line mark, does not move xrow.
- *                    "+2m 0" marks cursor+2 as mark <0>; the mark
- *                    auto-adjusts in lbuf_replace() when edits above
- *                    it insert or delete lines.
- *   'N             - mark address: "'0c" edits the marked line.
- *
- * When emitting relative-mode positions (offset from search result),
- * +N / -N are equivalent to .+N / .-N since +/- default to current line.
+ * The ex commands emitted here, and what they do to xrow (every one defaults to
+ * the current line when given no range, per ex_region()):
+ *   i / c / d      advance xrow past what they inserted or deleted; "0i"
+ *                  inserts above line 1
+ *   f> / f+ / f-   xrow = matched line, xoff = match position
+ *   bare address   xrow = end - 1; this is how +N / -N move without a command
+ *   s / p          leave xrow and xoff alone
+ *   m              sets a line mark ("+2m 0" marks cursor+2 as <0>); the mark
+ *                  auto-adjusts in lbuf_replace() as edits above it shift lines
+ *   'N             addresses that mark ("'0c" edits the marked line)
+ *   vis, w, q!, sc!, ??!   setup, writes, quits, specials, conditionals
  */
 
-/* Emit content lines for a c/i ex command. */
+/* The content lines of a c/i command. */
 static void emit_content(sbuf *out, char **texts, int ntexts)
 {
 	for (int i = 0; i < ntexts; i++) {
-		emit_escaped_text(out, texts[i]);
+		sb_exarg(out, texts[i]);
 		sb_chr(out, '\n');
 	}
 }
@@ -1250,7 +1181,7 @@ static void emit_insert_after(sbuf *out, int line, char **texts, int ntexts,
 	EMIT_SEP(out);
 }
 
-/* Emit ex commands for deleting lines from N to M inclusive */
+/* Delete lines N to M inclusive. */
 static void emit_delete(sbuf *out, int from, int to)
 {
 	if (from == to)
@@ -1260,9 +1191,8 @@ static void emit_delete(sbuf *out, int from, int to)
 	EMIT_SEP(out);
 }
 
-/* The ";A[;B]c/d" tail of a horizontal (character-level) edit, emitted after
- * the caller's address prefix (a line number, or "'N" for a mark). An empty
- * replacement over a non-empty span deletes it. */
+/* The ";A[;B]c/d" tail of a character-level edit, after the caller's address
+ * prefix. An empty replacement over a non-empty span deletes it. */
 static void emit_horiz_span(sbuf *out, int start, int end, const char *new_text)
 {
 	if (!*new_text && start != end) {
@@ -1272,7 +1202,7 @@ static void emit_horiz_span(sbuf *out, int start, int end, const char *new_text)
 			sb_printf(out, ";%dc ", start);
 		else
 			sb_printf(out, ";%d;%dc ", start, end);
-		emit_escaped_text(out, new_text);
+		sb_exarg(out, new_text);
 	}
 	EMIT_SEP(out);
 }
@@ -1287,7 +1217,7 @@ static void emit_horizontal_change(sbuf *out, int line, int start, int end,
 	emit_horiz_span(out, start, end, new_text);
 }
 
-/* Emit ex commands for changing lines (delete and insert) */
+/* Change lines N to M (an empty replacement deletes them). */
 static void emit_change(sbuf *out, int from, int to, char **texts, int ntexts)
 {
 	if (ntexts == 0) {
@@ -1306,31 +1236,21 @@ static void emit_change(sbuf *out, int from, int to, char **texts, int ntexts)
 /*
  * Relative mode: anchor edits by regex search instead of line number.
  *
- * Phase 1 (resolve). The whole buffer is yanked once into the find
- * register (fr 98) right after the file opens, so every group's search
- * runs against a cache that stays byte-identical to the buffer - no edit
- * happens in this phase. Each group records its target line in a line
- * mark ("+<off>m <id>", ids counting up from 0, skipping nextvi's special
- * ids) and gets up to NSEARCH fallback patterns tried strict-to-loose,
- * first match wins (emit_fallback_chain; slots past NPAT are the
- * file-validated fuzz/grp/straddle windows, slots 1-5 are
- * default_pat_lines'). Searches use %f> (first of a file) / %f+
- * (subsequent) against the cache: a range maps the match back to a buffer
- * position and f+ resumes one char past the previous match start. A lone
- * surviving single-line pattern searches the buffer directly instead
- * (";0 fr .,$f> ^pattern$ .. fr 98"), where ;0 resets xoff and the ^...$
- * anchors disambiguate repeated text. ABS-strategy groups mark their
- * original line number as-is - the buffer is still pristine here, so no
- * cumulative line-delta correction is needed.
+ * Phase 1 (resolve). The whole buffer is yanked once into the find register
+ * (fr 98) right after the file opens, so every group's search runs against a
+ * cache that stays byte-identical to the buffer - nothing is edited in this
+ * phase. Each group records its target line in a line mark ("+<off>m <id>") and
+ * gets up to NSEARCH fallback patterns, strict to loose, first match wins
+ * (emit_fallback_chain). ABS-strategy groups mark their original line number
+ * as-is: the buffer is still pristine, so no line-delta correction is needed.
  *
- * Phase 2 (commit). Edits address the marks ('0c, '0d, '0,#+Nc,
- * '0s/../../, '0;A;Bc ...), which auto-adjust as edits above them shift
- * lines, so groups apply forward in patch order. Since every search ran
- * before the first edit, a failed anchor aborts with the file untouched.
+ * Phase 2 (commit). Edits address the marks ('0c, '0d, '0,#+Nc, '0s/../../,
+ * '0;A;Bc ...), which auto-adjust as edits above them shift lines, so groups
+ * apply forward in patch order. Since every search ran before the first edit, a
+ * failed anchor aborts with the file untouched.
  *
- * Every search is followed by a ??! check that reports and quits before
- * corrupting the file; each phase-2 edit gets the same check with a FAIL
- * m<mark id> message. All search paths escape uniformly through ex_arg.
+ * Every search and every phase-2 edit is followed by a ??! check that reports
+ * and quits before corrupting the file.
  */
 
 /* One separator at the caller's nesting depth: deep = 0 for a command
@@ -1343,9 +1263,8 @@ static void emit_sep_lvl(sbuf *out, int deep)
 		EMIT_ESCSEP(out);
 }
 
-/* Emit the expansion window that calls gate register <gate>: turn % on,
- * run the register's chain, turn % off. The argument register the chain
- * reads must already be written, while % was still inert. */
+/* The expansion window calling gate register <gate>: % on, run the chain, %
+ * off. Its argument register must already be written, while % was inert. */
 static void emit_reg_call(sbuf *out, int gate, int deep)
 {
 	sb_str(out, "2sc %");
@@ -1403,32 +1322,10 @@ static void emit_err_check(sbuf *out, int phase, int line, int mark_id,
 	free(tags->s);
 }
 
-/* Double backslashes for ex_arg level escaping.
- * ex_arg treats \\ as escaped \, so \\\\ is needed to preserve \\.
- * With a dynamic escape byte, backslash is not special to ex_arg and
- * passes through as-is (the escape byte never occurs in content). */
-static char *escape_exarg(const char *s)
-{
-	return escape_chars(s, dyn_esc ? "" : "\\");
-}
 
-/* Emit text that passes through ex_arg then shell double-quotes.
- * ex_arg consumes \\ -> \, so backslashes need doubling for ex_arg,
- * then doubling again for shell. */
-static void emit_escaped_text(sbuf *out, const char *s)
-{
-	char *exarg_esc = escape_exarg(s);
-	sb_str(out, exarg_esc);
-	free(exarg_esc);
-}
-
-/* Everything a search of the given mode needs before its f> argument, and the
- * search verb itself. Mode 3 saves the cursor to WIN_SAVE_MARK and resets to
- * the top ("1;0") so its window search runs globally; modes 2 and 3 open the
- * grp bracket; mode 1 leaves the register cache ("fr") to search the live
- * buffer from the current line's first column (";0"). lvl is the caller's
- * separator nesting depth: 0 at a body's top level, 1 inside a ??-arm. first
- * selects f> over f+, and a global (mode 3) window always forces f>, since it
+/* Everything a search of the given mode needs before its f> argument, plus the
+ * verb itself (see SEARCH MODES). lvl is the caller's separator nesting depth,
+ * first selects f> over f+; a global mode-3 window always forces f>, since it
  * restarts from the reset top. */
 static void emit_search_setup(sbuf *out, int mode, int first, int lvl)
 {
@@ -1453,10 +1350,9 @@ static void emit_search_setup(sbuf *out, int mode, int first, int lvl)
 		sb_str(out, (g3 || first) ? "%f> " : "%f+ ");
 }
 
-/* The lone-pattern phase-1 search: the mode's setup and f> (see SEARCH MODES),
- * the anchors, the error check, then "+<offset>m <mark_id>" to mark the target
- * line without moving the cursor. pre_escaped 0 = anchors are raw text (apply
- * regex+exarg escape), 1 = pre-escaped regex (apply exarg only). */
+/* The lone-pattern phase-1 search: setup and f>, the anchors, the error check,
+ * then "+<offset>m <mark_id>" to mark the target without moving the cursor.
+ * pre_escaped 0 = raw text (regex+exarg escape), 1 = regex (exarg only). */
 static void emit_search(sbuf *out, char **anchors, int nanchors,
 			int offset, int mark_id,
 			int target_line, int pre_escaped, int first, int mode)
@@ -1516,21 +1412,15 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
 	}
 }
 
-/* Next mark id, skipping nextvi's internal special mark ids:
- * <'> 39 <*> 42 <[> 91 <]> 93 <`> 96 are rewritten by the editor
- * itself (<*> on every ex command, <[>/<]> on every change). */
 /* Mark ids reserved per file by verbatim overrides (their blobs reference a
- * fixed id), so regenerated groups can't collide with them. */
+ * fixed id), so regenerated groups cannot collide with them. next_mark_id also
+ * skips the ids the editor rewrites itself: <'> <*> <[> <]> <`>. */
 static int *reserved_marks;
 static int nreserved_marks, reserved_marks_cap;
 
 static void reserve_mark(int id)
 {
-	if (nreserved_marks >= reserved_marks_cap) {
-		reserved_marks_cap = reserved_marks_cap ? reserved_marks_cap * 2 : 8;
-		reserved_marks = erealloc(reserved_marks,
-					  reserved_marks_cap * sizeof(int));
-	}
+	ARR_PUSH(reserved_marks, nreserved_marks, reserved_marks_cap)
 	reserved_marks[nreserved_marks++] = id;
 }
 
@@ -1610,9 +1500,31 @@ typedef struct group_s {
 	int ovr_sep;             /* separator the override was captured under */
 } group_t;
 
-/* Does the group carry any text a search could anchor on - leading context, a
- * following context line, or a non-empty deleted line? Decides REL vs ABS and
- * which EDIT COMMAND sections are offered. */
+static int delta_matches_group(grp_delta_t *st, group_t *g, int lvl)
+{
+	return delta_matches(st, g->del_texts, g->ndel, g->add_texts, g->nadd,
+			     g->all_pre_ctx, g->nall_pre_ctx,
+			     g->post_ctx, g->npost_ctx, lvl);
+}
+
+/* The store's delta for group idx of this file, or NULL. Levels 1-3 test the
+ * group at the stored index, 4-5 any group whose content matches. */
+static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx, group_t *g)
+{
+	for (int i = 0; fd && i < fd->ngrps; i++) {
+		grp_delta_t *gd = &fd->grps[i];
+		int lvl = delta_mode > 0 ? delta_mode
+			  : gd->level ? gd->level : 2;   /* old format: 2 */
+		if (lvl < 4 && gd->group_idx != idx)
+			continue;
+		if (delta_matches_group(gd, g, lvl))
+			return gd;
+	}
+	return NULL;
+}
+
+/* Any text a search could anchor on - leading context, a following context
+ * line, a non-empty deleted line? Decides REL vs ABS. */
 static int group_has_anchors(group_t *g)
 {
 	return g->nanchors >= 2
@@ -1621,14 +1533,6 @@ static int group_has_anchors(group_t *g)
 	       || (g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]);
 }
 
-/* Emit a line with exarg + shell escaping only (no regex escaping).
- * Used for user-edited regex lines in interactive mode. */
-static void emit_escaped_exarg_only(sbuf *out, const char *s)
-{
-	char *e = escape_exarg(s);
-	sb_str(out, e);
-	free(e);
-}
 
 /* One fallback search pattern (phase 1) */
 typedef struct {
@@ -1643,23 +1547,16 @@ typedef struct {
 			   * to its real pattern regardless of which slots survived */
 } pat_spec_t;
 
-/* Default (non-edited) lines for fallback pattern pi, ordered strict to
- * loose (first match wins at apply time):
- *   0 = whole hunk: pre-ctx anchors + deleted lines + following ctx,
- *   1 = deleted lines + following ctx (bottom-anchored, no pre-ctx) -
- *       used when the pre-context is ambiguous but the trailing context
- *       disambiguates,
- *   2 = top context anchors only (the historical single pattern),
- *   3 = deleted lines only,
- *   4 = following ctx only (pure bottom anchor) - used when the whole
- *       pre-context/deleted region is volatile but the line after the
- *       hunk is a stable landmark.
- * Strategies 1 and 4 are deletion/change oriented (they need deleted
- * lines); for pure adds they return 0 and are dropped. Redundant slots
- * (e.g. no following context makes 1 == 3 and 4 empty) are dropped by
- * the caller's dedup.
- * raw[] receives borrowed pointers (3 + ndel + 3 entries max).
- * Returns the line count; *off = lines from match start to target. */
+/* Default (non-edited) lines for fallback pattern pi, strict to loose:
+ *   0 = whole hunk (pre-ctx + deleted + following ctx)
+ *   1 = deleted + following ctx: pre-context ambiguous, trailing not
+ *   2 = top context only (the historical single pattern)
+ *   3 = deleted lines only
+ *   4 = following ctx only: the whole hunk region is volatile but the line
+ *       after it is a stable landmark
+ * 1 and 4 need deleted lines and return 0 for a pure add; redundant slots (no
+ * following context makes 1 == 3, 4 empty) are dropped by the caller's dedup.
+ * raw[] takes borrowed pointers; *off = lines from match start to target. */
 static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 {
 	int n = 0;
@@ -1735,8 +1632,8 @@ static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 	return n;
 }
 
-/* One file-validated fuzzed anchor window: pre-escaped regex lines plus the
- * offset/mode needed to emit it like an exact pattern. */
+/* A file-validated relaxed window: pre-escaped regex lines plus the offset and
+ * mode needed to emit it like an exact pattern. */
 typedef struct {
 	char **lines;   /* owned: nlines malloc'd regex strings */
 	int nlines;
@@ -1760,12 +1657,10 @@ static int push_win_pat(pat_spec_t *ps, int nps, fuzzwin_t *w, int pid,
 }
 
 /*
- * Generate up to max file-validated fuzzed (relaxed) anchor windows for group
- * g into out[]. Relaxes the whole-hunk window at increasing fuzz levels and
- * keeps each variant the original file proves still resolves to exactly one
- * place - the right one. Requires orig_lines loaded and the hunk pristine
- * (its deleted lines sit at their expected position on disk); otherwise none
- * are produced. Each out[i].lines is owned by the caller. Returns the count.
+ * Up to max fuzzed windows for group g into out[]: the whole-hunk window
+ * relaxed at increasing levels, keeping each variant the original file proves
+ * still resolves to exactly one place - the right one. Needs orig_lines loaded
+ * and the hunk pristine. Caller owns out[i].lines.
  */
 static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 {
@@ -1804,9 +1699,8 @@ static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 			win[j].mask = m;
 			win[j].nrune = nr;
 		}
-		/* Keep at least ~20% of runes literal: a window relaxed past
-		 * four runes in five is too thin an anchor to trust, even if it
-		 * still validates uniquely on this particular file. */
+		/* keep ~20% of runes literal: a window relaxed past four in
+		 * five is too thin to trust, however it validates here */
 		int too_loose = total > 0 && masked * 5 > total * 4;
 		int first, cnt = any && !too_loose
 				 ? count_window_fuzzy(win, bn, &first) : 0;
@@ -1862,21 +1756,16 @@ static void free_fuzz_windows(fuzzwin_t *w, int n)
 
 /*
  * Pattern 7: a :grp-capture window (mode 2). The top of the hunk - preceding
- * context anchors plus the first deleted line on change/delete - becomes
- * "TEXT.*?" line by line, the final line captured "(TEXT)". A ":grp 1" search
- * lands on that captured line; the trailing non-greedy ".*?" on leading lines
- * absorbs text added after the anchors (inserted token, widened line) without
- * shifting the target. Unanchored, so no leading ".*".
- *
- * Voided (returns 0) when degenerate: fewer than two lines (a bare "(text)" just
- * duplicates the exact single-line strategies), or an empty captured last line
- * (zero-width "()" resolves anywhere).
+ * context plus the first deleted line on change/delete - becomes "TEXT.*?" line
+ * by line, the final line captured "(TEXT)". ":grp 1" lands on that captured
+ * line, and the non-greedy ".*?" on the leading ones absorbs text added after
+ * an anchor without shifting the target. Unanchored, so no leading ".*".
  *
  * The captured last line IS the target at offset 0: change/delete captures the
- * first deleted line (edited in place), pure insert captures the last anchor
- * (phase-2 "'Ni" appends after it). File-validated like the fuzzed windows:
- * emitted only when the wrapped window resolves uniquely to the expected place.
- * Returns 1, fills *out (owned lines), else 0.
+ * first deleted line, a pure insert the last anchor ("'Ni" appends after it).
+ * Voided when degenerate - under two lines (a bare "(text)" duplicates the
+ * exact single-line strategies) or an empty capture (zero-width "()" resolves
+ * anywhere) - and file-validated like the fuzzed windows.
  */
 static int gen_grp_window(group_t *g, fuzzwin_t *out)
 {
@@ -1937,13 +1826,12 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
 	return 1;
 }
 
-/* How far above/below a hunk gen_win_window will look for a unique anchor block
- * before giving up. Bounds the O(scan * file) validation cost per group. */
+/* How far above/below a hunk gen_win_window looks for a unique anchor block;
+ * bounds its O(scan * file) validation cost. */
 #define WIN_SCAN 200
 
-/* Lines per straddle anchor block: each side of the window is a block of this
- * many consecutive non-empty original lines (a 3-line block is far more
- * discriminating than a single line, so the global search false-matches less). */
+/* Lines per straddle anchor block: a 3-line block is far more discriminating
+ * than a single line, so the global search false-matches less. */
 #define WIN_ANCHOR 3
 
 /* True if orig_lines[s .. s+WIN_ANCHOR) are all in-range and non-empty: the
@@ -1960,24 +1848,21 @@ static int anchor_block_at(int s)
 
 /*
  * Pattern 8: global "top.*(bottom)" straddle window (mode 3). Both anchors lie
- * OUTSIDE the diff's shown region: the nearest unique WIN_ANCHOR-line block above
- * the enclosing @@ hunk (top) and below it (bottom). These lines exist only in
- * the original, never in the diff, so this requires reading the original. Regex
- * "t1\nt2\nt3.*(b1)\nb2\nb3": each block's lines newline-joined (consecutive-line
- * match), one greedy ".*" between them absorbing the whole hunk (in multi-line
- * mode "." spans newlines). Only b1 is captured, so ":grp 1" lands on it and the
- * target is a negative offset back up. The search runs globally from the file top
- * (emit brackets it with mark-0 save / "1;0" reset / "'0" restore).
+ * OUTSIDE the diff's shown region - the nearest unique WIN_ANCHOR-line block
+ * above the enclosing @@ hunk and below it - so these lines exist only in the
+ * original and this needs it readable. Regex "t1\nt2\nt3.*(b1)\nb2\nb3": each
+ * block newline-joined (consecutive-line match), one greedy ".*" between them
+ * absorbing the whole hunk. Only b1 is captured, so ":grp 1" lands on it and the
+ * target is a negative offset back up. Emitted bracketed by mark-0 save / "1;0"
+ * reset / "'0" restore, so the search runs from the file top.
  *
- * Pattern 9 reuses this with skip=1: skip the first qualifying block on each side
- * (advancing a WHOLE block so the windows stay disjoint), giving a wider, looser
- * straddle that sits last in the chain. skip=0 reproduces pattern 8.
+ * skip=1 is pattern 9: skip the first qualifying block on each side, advancing a
+ * WHOLE block so the two windows stay disjoint - a wider, looser straddle last
+ * in the chain.
  *
- * File-validated (original readable and pristine): top block unique; bottom block
- * unique AND its captured first line carries its text nowhere to EOF, so greedy
- * ".*" lands on exactly it. Change/delete marks the first deleted line; pure
- * insert marks add_after (phase-2 "'Ni" appends after it). Returns 1, fills *out
- * (owned lines), else 0.
+ * File-validated: top block unique; bottom block unique AND its captured first
+ * line carries its text nowhere down to EOF, so the greedy ".*" lands on
+ * exactly it.
  */
 static int gen_win_window(group_t *g, fuzzwin_t *out, int skip)
 {
@@ -2117,13 +2002,10 @@ static void free_extra_windows(winset_t *ws)
 			free_fuzz_windows(&ws->w[i], 1);
 }
 
-/* Emit one fallback pattern as the f> argument inside a ? conditional.
- * The conditional nesting consumes one more escape layer than a
- * top-level search: with the default backslash escape, every backslash
- * is doubled again for the extra ex_arg layer. The ? conditional no
- * longer delimiter-scans its argument, so literal/quantifier ? pass
- * through untouched. With a dynamic escape, backslash is not special to
- * ex_arg, so the regex needs no extra escaping at all. */
+/* One fallback pattern as the f> argument inside a ? conditional, which
+ * consumes one more ex_arg escape layer than a top-level search - so with the
+ * default backslash escape every backslash is doubled again, and with a dynamic
+ * one nothing extra is needed. */
 static void emit_chain_pattern(sbuf *out, pat_spec_t *p)
 {
 	int wrap = p->nlines == 1 && !p->pre_escaped;
@@ -2152,21 +2034,16 @@ static void emit_chain_pattern(sbuf *out, pat_spec_t *p)
 		sb_chr(out, '\n');
 }
 
-/* Phase 1 fallback chain: try each pattern in order, first match wins.
- * All attempts are nested into a single ? conditional, chained with
- * escaped separators; per pattern n (capture tag n):
+/* Phase 1 fallback chain: every pattern nested into one ? conditional, chained
+ * with escaped separators, first match wins. Per pattern n (capture tag n):
  *   %f> <pat>\:<n>??\:<n>??[+off]m <id>\\\:${OK1}p OK <loc>:a<n>\\\:1q\:
- * (the ${OK1} success report only on fallback blocks, n >= 1)
- * The search's error status is captured into tag <n>; on success the
- * <n>?? branch marks the target and 1q short-circuits out of the
- * block, skipping the remaining attempts and the check. After the
- * last block (no 1q) a single <0;1;..>??! DNF check over all tags
- * reports the failure.
- * Each attempt opens with its own mode setup (see SEARCH MODES); the teardown
- * that setup implies is emitted per attempt too - a mode-1 attempt restores the
- * register cache ("fr 98") on both the success and no-match paths, a mode-2/3
- * one resets the search group ("grp 0"), and a mode-3 one restores the saved
- * cursor unconditionally, before the success-gated 1q. */
+ * (the ${OK1} report only on fallback blocks, n >= 1). The search's status is
+ * captured into tag <n>; on success that branch marks the target and 1q
+ * short-circuits out. After the last block a single <0;1;..>??! DNF check over
+ * all tags reports the failure.
+ * Each attempt carries its mode's setup and the teardown it implies: mode 1
+ * restores the register cache ("fr 98") on both paths, modes 2 and 3 reset the
+ * search group, mode 3 restores the saved cursor before the gated 1q. */
 static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 				int mark_id, int target_line, int first)
 {
@@ -2313,15 +2190,11 @@ static void emit_mark_change(sbuf *out, int line, int mark_id,
 	emit_err_check(out, 2, line, mark_id, NULL, 0);
 }
 
-/* A trailing run of backslashes sitting immediately before the closing
- * delimiter is halved by nextvi's ex_re_read parity rule (commit d94cd92):
- * a run of n escapes before the delim emits ceil(n/2). Our escapers
- * already doubled each literal backslash (k literals -> 2k here), but
- * ex_re_read would then halve 2k back to k, leaving a dangling escape. So
- * double the trailing run once more (-> 4k) so ex_re_read restores the
- * intended 2k. Only the run adjacent to the delimiter is affected; an
- * interior escape is followed by an ordinary char and passes through
- * unchanged, so this must not touch non-trailing backslashes. */
+/* ex_re_read halves a run of escapes sitting against the closing delimiter
+ * (ceil(n/2), commit d94cd92). Our escapers already doubled each literal
+ * backslash, so double the trailing run once more for ex_re_read to halve back.
+ * Only the run adjacent to the delimiter is affected - an interior escape is
+ * followed by an ordinary char and passes through unchanged. */
 static char *double_trailing_esc(char *s)
 {
 	int len = strlen(s), t = 0;
@@ -2336,21 +2209,16 @@ static char *double_trailing_esc(char *s)
 	sbufn_ret(sb, sb->s)
 }
 
-/* Escape replacement text for substitute command.
- * In nextvi :s replacement, only \ is special (for backreferences \0-\9).
- * Delimiter must also be escaped. delim is always '/' in current callers. */
-/* Raw escapers omit double_trailing_esc so segments can be concatenated with
- * raw regex (groups, backrefs) before the trailing-run fixup is applied once to
- * the assembled string. The _raw form is correct for interior segments; the
- * non-raw wrappers are for a whole standalone field. */
+/* s/// replacement text: only \ (backreferences) and the delimiter are
+ * special. The _raw escapers omit double_trailing_esc so segments can be
+ * concatenated with raw regex before the fixup is applied once to the whole. */
 static char *escape_sub_repl_raw(const char *s, char delim)
 {
 	char set[3] = { '\\', delim, 0 };
 	return escape_chars(s, set);
 }
 
-/* Escape regex pattern for substitute command.
- * Like escape_regex() but also escapes the delimiter for ex_re_read. */
+/* escape_regex plus the delimiter, for ex_re_read. */
 static char *escape_sub_pat_raw(const char *s, char delim)
 {
 	char set[sizeof(REGEX_META) + 1];
@@ -2358,19 +2226,8 @@ static char *escape_sub_pat_raw(const char *s, char delim)
 	return escape_chars(s, set);
 }
 
-/* A NUL-terminated copy of n bytes from s (byte-exact, where
- * uc_sub() would count characters). */
-static char *dup_n(const char *s, int n)
-{
-	char *r = emalloc(n + 1);
-	memcpy(r, s, n);
-	r[n] = '\0';
-	return r;
-}
-
-/* Longest common substring of a[0..alen) and b[0..blen). Returns its byte
- * length and sets ai, bi to the start offsets in a/b. Plain O(alen*blen) DP;
- * diff lines are short. */
+/* Longest common substring of a and b: its byte length, with ai/bi set to the
+ * start offsets. Plain O(alen*blen) DP; diff lines are short. */
 static int lcs_substr(const char *a, int alen, const char *b, int blen,
 		      int *ai, int *bi)
 {
@@ -2417,20 +2274,15 @@ typedef struct {
 
 static void bv_add(blockvec_t *bv, int oa, int na, int len)
 {
-	if (bv->n == bv->cap) {
-		bv->cap = bv->cap ? bv->cap * 2 : 8;
-		bv->v = erealloc(bv->v, bv->cap * sizeof(block_t));
-	}
+	ARR_PUSH(bv->v, bv->n, bv->cap)
 	bv->v[bv->n].oa = oa;
 	bv->v[bv->n].na = na;
-	bv->v[bv->n].len = len;
-	bv->n++;
+	bv->v[bv->n++].len = len;
 }
 
-/* Recursively decompose om[os..oe)/nm[ns..ne) into in-order common blocks
- * (difflib-style: longest common substring, then recurse on the two flanks).
- * Each block is rune-trimmed; the trimmed-off edges and gaps fall through as
- * changed text. */
+/* Decompose om/nm into in-order common blocks, difflib-style: longest common
+ * substring, then recurse on the flanks. Blocks are rune-trimmed; the trimmed
+ * edges and the gaps fall through as changed text. */
 static void collect_blocks(const char *om, int os, int oe,
 			   const char *nm, int ns, int ne, blockvec_t *bv)
 {
@@ -2487,13 +2339,11 @@ static int rune_take(const char *s, int len, int k)
 }
 
 /*
- * For a stable run [o,olen] (a slice of the whole old line [old,oldlen]), pick
- * the MINIMAL head and tail (in runes) that each occur exactly once in old, so
- * the pattern "(head.*tail)" matches the run deterministically: the leading
- * "(.*)" can only end at the sole head position, and the middle ".*" can only
- * reach the sole tail. Minimal anchors maximize the wildcarded interior. Needs
- * non-overlapping head/tail leaving >= 1 rune of middle. Returns 1 with byte
- * lengths written to hb and tb, else 0 (caller falls back to a literal capture).
+ * The MINIMAL head and tail (in runes) of a stable run that each occur exactly
+ * once in the whole old line, so "(head.*tail)" matches it deterministically -
+ * minimal anchors maximize the wildcarded interior. Needs non-overlapping
+ * head/tail leaving at least one rune of middle; 0 = caller falls back to a
+ * literal capture.
  */
 static int fuzz_anchors(const char *old, int oldlen,
 			const char *o, int olen, int *hb, int *tb)
@@ -2525,31 +2375,23 @@ static int fuzz_anchors(const char *old, int oldlen,
 }
 
 /*
- * Grp-capture absorbing substitute (rung 1 of the progression).
+ * Grp-capture absorbing substitute (rung 1 of the progression). The changed
+ * line is decomposed into stable common runs and the edits between them, and
+ * the pattern covers the EXACT SPAN ONLY - first edit to last edit. The stable
+ * runs outside it are dropped: the substitute matches as an unanchored
+ * substring, so wrapping the unchanged prefix/suffix in "(.*)" would only
+ * duplicate the exact rung.
  *
- * Decompose the changed line into stable common runs and the edits between
- * them, then build a pattern over the EXACT SPAN ONLY -- from the first edit to
- * the last edit. The stable runs OUTSIDE that span (the unchanged line prefix
- * and suffix) are dropped: the substitute matches as an unanchored substring,
- * so prefix/suffix are already free, and wrapping them in leading/trailing
- * "(.*)" would just duplicate the exact rung (s/old/new/ over the same span).
- *
- * Each in-span stable run becomes a capture group; each edit is matched
- * literally (old text) and re-emitted (new text). A stable run is wildcarded so
- * it absorbs drift *inside* itself:
+ * Each in-span run becomes a capture group, each edit is matched literally and
+ * re-emitted. A run is wildcarded so it absorbs drift inside itself:
  *   - full "(.*)" when flanked by non-empty edits whose old-texts are each
- *     UNIQUE in the old line (the literal separators pin the greedy boundaries),
- *     e.g. two-spot "X bbbb Y" -> "P bbbb Q": s/X(.*)Y/P\1Q/.
- *   - else "(head.*tail)" keeping the MINIMAL head/tail runes that are each
- *     unique in the old line (see fuzz_anchors) -- used when a separator is an
- *     insertion (empty old) or repeats, where a bare "(.*)" would be ambiguous.
- *   - else a literal "(text)" capture (no unique anchors / no interior left).
- *
- * The variant is emitted only if at least one in-span run is wildcarded
- * ("(.*)" or "(head.*tail)"); otherwise it reproduces the span verbatim and is
- * a pure dup of the exact rung, so it returns 0.
- *
- * Returns 1 and sets pre-escaped pat/repl (sub layer + trailing fixup), else 0.
+ *     UNIQUE in the old line, so the literal separators pin the greedy
+ *     boundaries: "X bbbb Y" -> "P bbbb Q" gives s/X(.*)Y/P\1Q/.
+ *   - else "(head.*tail)" over the minimal unique anchors (fuzz_anchors), for
+ *     when a separator is an insertion or repeats and "(.*)" would be ambiguous
+ *   - else a literal "(text)" capture.
+ * Returns 0 unless at least one run is wildcarded: otherwise the variant
+ * reproduces the span verbatim and is a pure dup of the exact rung.
  */
 static int build_grp_variant(const char *old, const char *new,
 			     char **pat_out, char **repl_out)
@@ -2566,11 +2408,10 @@ static int build_grp_variant(const char *old, const char *new,
 	int nt = 0, pos_o = 0, pos_n = 0;
 	for (int i = 0; i < bv.n; i++) {
 		block_t *b = &bv.v[i];
-		/* Fold small INTERIOR common runs into the surrounding edit; keep the
-		 * boundary runs (leftmost/rightmost) regardless of size, since they
-		 * become "(.*)" absorbers where literal length is irrelevant. Folding
-		 * a short trailing/leading anchor would strand an insertion against a
-		 * wildcard and force the whole variant to be rejected. */
+		/* Fold small INTERIOR runs into the surrounding edit, but keep the
+		 * boundary ones regardless of size: they become "(.*)" absorbers, and
+		 * folding one would strand an insertion against a wildcard and force
+		 * the whole variant to be rejected. */
 		int boundary = (i == 0 || i == bv.n - 1);
 		if (!boundary && rune_count_n(old + b->oa, b->len) < GRP_MIN_ISLAND)
 			continue;
@@ -2727,22 +2568,14 @@ static int build_grp_variant(const char *old, const char *new,
 	return 1;
 }
 
-/* Emit one s/// field (pattern or replacement): apply the outer ex_arg + shell
- * layers to an already sub-escaped string. */
-static void emit_sub_field(sbuf *out, const char *escaped)
-{
-	char *ea = escape_exarg(escaped);
-	sb_str(out, ea);
-	free(ea);
-}
 
-/* Emit a substitute from pre-escaped pat/repl strings (one progression rung). */
+/* One progression rung, from pre-escaped pat/repl. */
 static void emit_substitute_grp(sbuf *out, const char *pat, const char *repl)
 {
 	sb_str(out, "s/");
-	emit_sub_field(out, pat);
+	sb_exarg(out, pat);
 	sb_chr(out, '/');
-	emit_sub_field(out, repl);
+	sb_exarg(out, repl);
 	sb_chr(out, '/');
 }
 
@@ -2780,15 +2613,13 @@ static int parse_sub_line(const char *line, char **pat, char **repl)
 }
 
 /*
- * Phase 2 substitute progression: try each variant (exact -> grp-absorbing)
- * in order at the mark, first success wins. The s/// is both
- * test and action: a failed match leaves the line untouched, so the next, looser
- * variant is safe to try; the first success short-circuits with 1q so no later
- * variant can re-edit the (now changed) line. A non-primary success reports via
- * ${OK2}. If every variant fails the trailing <0;1;..>??! DNF * check reports FAIL.
- * Structure mirrors emit_fallback_chain (phase 1).
- *
- * A single-variant chain degrades to a plain addressed s/// + check.
+ * Phase 2 substitute progression, mirroring emit_fallback_chain: each variant
+ * (exact -> grp-absorbing) at the mark, first success wins. The s/// is both
+ * test and action - a failed match leaves the line untouched, so the next,
+ * looser variant is safe to try, and the first success short-circuits with 1q
+ * so no later one re-edits the now changed line. A non-primary success reports
+ * via ${OK2}; if every variant fails the trailing DNF check reports FAIL. A
+ * single-variant chain degrades to a plain addressed s/// + check.
  */
 static void emit_substitute_chain(sbuf *out, int line, int mark_id,
 				  subvar_t *v, int nv)
@@ -2840,12 +2671,10 @@ static void emit_substitute_chain(sbuf *out, int line, int mark_id,
 	EMIT_SEP(out);
 }
 
-/* Build the substitute progression for a single-line change into v[0..1]:
- * rung 0 exact (minimal-span s/old/new/), rung 1 grp-capture absorbing variant
- * over the exact span (built from the full hunk line, no original-file reach).
- * The grp rung is skipped when it would not absorb any interior drift (i.e.
- * would be a pure dup of the exact rung). Returns the count. Fields are fully
- * escaped (as displayed in interactive mode). Caller frees. */
+/* The substitute progression for a single-line change: rung 0 the minimal-span
+ * exact s/old/new/, rung 1 the grp-absorbing variant over that same span
+ * (skipped when it would absorb nothing). Fields are fully escaped, as
+ * interactive mode displays them; caller frees. */
 static int build_sub_variants(group_t *g, subvar_t *v)
 {
 	int nv = 0;
@@ -2862,9 +2691,7 @@ static int build_sub_variants(group_t *g, subvar_t *v)
 	return nv;
 }
 
-/* Phase 2: substitute at a mark, building the exact -> grp-absorbing
- * progression. The pattern can fail to match within the (possibly drifted)
- * line, so each rung is error-checked; see emit_substitute_chain. */
+/* Phase 2: substitute at a mark, through the exact -> grp-absorbing chain. */
 static void emit_mark_substitute(sbuf *out, int line, int mark_id,
 				 group_t *g)
 {
@@ -2877,12 +2704,8 @@ static void emit_mark_substitute(sbuf *out, int line, int mark_id,
 	}
 }
 
-/* Parse and strip relative offset prefix from custom edit lines (rel/relc).
- * "+N" or "-N" alone as lines[0]: offset-only line (substitute with offset).
- *   Extract offset, remove lines[0], shift remaining lines down, decrement *nlines.
- * "+N" or "-N" followed immediately by verb (e.g. "+3a text"): embedded prefix.
- *   Extract offset number, strip prefix from lines[0] in-place.
- * Returns the extracted offset (0 if no prefix found). */
+/* Strip a +N/-N prefix off a custom rel/relc command and return it: a bare
+ * "+N" line is removed outright, a "+3a text" one loses just the prefix. */
 static int parse_ecmd_offset(char **lines, int *nlines)
 {
 	if (*nlines == 0)
@@ -2909,9 +2732,8 @@ static int parse_ecmd_offset(char **lines, int *nlines)
 	return offset;
 }
 
-/* Match a SEARCH PATTERN section line that is only a +N/-N offset
- * override. Real pattern lines starting with + are regex-escaped
- * (\+), so a bare signed number is unambiguous. */
+/* Is this SEARCH PATTERN line only a +N/-N offset override? Real pattern lines
+ * starting with + are regex-escaped, so a bare signed number is unambiguous. */
 static int pat_off_line(const char *s, int *off)
 {
 	if ((s[0] != '+' && s[0] != '-') || !s[1])
@@ -2923,10 +2745,8 @@ static int pat_off_line(const char *s, int *off)
 	return 1;
 }
 
-/* grp_delta_t doubles as the per-group editor-buffer parse result; the parse
- * path just leaves group_idx/pre_ctx/post_ctx unset. */
-
-/* Free every array a grp_delta_t owns (scalars need no cleanup). */
+/* grp_delta_t doubles as the per-group editor-buffer parse result (that path
+ * just leaves group_idx/pre_ctx/post_ctx unset). Free every array it owns. */
 static void free_grp(grp_delta_t *p)
 {
 	free_lines(p->del_lines, p->ndel_lines);
@@ -2944,10 +2764,8 @@ static void free_grp(grp_delta_t *p)
 }
 
 /* Section codes shared by the editor-buffer (parse_grp_blob) and embedded-delta
- * (main) parsers. The two formats carry the same per-group fields under
- * different header spellings; each section's body appends through gsect_add so
- * the field set lives in one place. CONTENT (-/+ -> del/add) stays per-parser:
- * the two formats split it differently. */
+ * parsers: the two formats carry the same fields under different header
+ * spellings, and both append through gsect_add. CONTENT stays per-parser. */
 enum {
 	GS_NONE = 0, GS_PAT, GS_ABS, GS_REL, GS_RELC,
 	GS_CONTENT, GS_PRE, GS_POST, GS_CUSTOM, GS_STRAT,
@@ -2987,9 +2805,8 @@ static void gsect_add(grp_delta_t *gd, int sect, int pat_idx, const char *line)
 	}
 }
 
-/* The slot digit right after a "=== <tag>" prefix of n bytes, as a 0-based
- * pattern index; a legacy tag with no digit means the top-context slot
- * (historically the single pattern, now SEARCH PATTERN 3). */
+/* The slot digit after a "=== <tag>" prefix of n bytes, 0-based; a legacy tag
+ * with no digit means the top-context slot, SEARCH PATTERN 3. */
 static int pat_slot(const char *line, int n)
 {
 	char c = line[n];
@@ -3011,12 +2828,10 @@ static void parse_level(grp_delta_t *gd, char *line)
 }
 
 /*
- * Parse a multi-file interactive editor blob (mutated in place: each line
- * gets its newline replaced with a terminator, so parse a blob only once).
- * Sections marked by "=== FILE: <path> ===" route subsequent groups to
- * per_file_results[k] (k = matching index in active[]). Stores raw content
- * (no parse_ecmd_offset stripping) for apples-to-apples comparison between
- * the generated baseline and the edited buffer.
+ * Parse a multi-file interactive editor blob, mutated in place (so parse a blob
+ * only once). "=== FILE: <path> ===" routes the groups after it to
+ * per_file_results[k]. Content is stored raw, with no parse_ecmd_offset
+ * stripping, so the baseline and the edited buffer compare like for like.
  */
 static void parse_grp_blob(char *blob, file_patch_t **active, int nactive,
 			   grp_delta_t **per_file_results)
@@ -3040,10 +2855,9 @@ static void parse_grp_blob(char *blob, file_patch_t **active, int nactive,
 			break;  /* blob ends in a newline: no final line */
 		chomp(line);
 
-		/* PHASE blobs are byte-verbatim: only the end tag terminates,
-		 * every other line (including "=== ..." lines) is content. The
-		 * display pass appended one newline after the blob; strip it
-		 * back off (exact inverse). */
+		/* PHASE blobs are byte-verbatim: only the end tag ends them,
+		 * every other line is content. Strip the one newline the
+		 * display pass appended. */
 		if (in_ph) {
 			if (strcmp(line, end_tag_rd) == 0) {
 				if (ph->s_n > 0 && ph->s[ph->s_n - 1] == '\n')
@@ -3206,19 +3020,18 @@ static void parse_grp_blob(char *blob, file_patch_t **active, int nactive,
 	free(ph->s);
 }
 
-/* One "=== <name> ===" body of n lines, closed by the write end tag; nothing at
- * all when the array is empty, so an untouched field leaves no section. */
+/* One "=== <name> ===" section; an empty array writes nothing at all, so an
+ * untouched field leaves no section behind. */
 static void emit_delta_sect(sbuf *out, const char *name, char **v, int n)
 {
 	if (n <= 0)
 		return;
 	sb_printf(out, "=== %s ===\n", name);
-	for (int i = 0; i < n; i++)
-		sb_printf(out, "%s\n", v[i]);
-	sb_printf(out, "%s\n", end_tag_wr);
+	sb_lines(out, v, n);
+	sb_end(out);
 }
 
-/* Emit one group's delta in the human-readable structured format */
+/* One group's delta, in the structured storage format. */
 static void emit_grp_delta(sbuf *out, grp_delta_t *gd)
 {
 	char name[32];
@@ -3227,7 +3040,7 @@ static void emit_grp_delta(sbuf *out, grp_delta_t *gd)
 		sb_printf(out, "-%s\n", gd->del_lines[i]);
 	for (int i = 0; i < gd->nadd_lines; i++)
 		sb_printf(out, "+%s\n", gd->add_lines[i]);
-	sb_printf(out, "%s\n", end_tag_wr);
+	sb_end(out);
 	sb_printf(out, "=== LEVEL %d%s ===\n", gd->level ? gd->level : 2,
 		  gd->has_star ? "*" : "");
 	emit_delta_sect(out, "custom_text", gd->custom_text, gd->ncustom_text);
@@ -3277,9 +3090,8 @@ static void wg_content(sbuf *fp, group_t *g)
 	}
 }
 
-/* Emit one file-validated window SEARCH PATTERN (fuzz/grp/straddle slots). A
- * recorded delta wins; else the freshly generated window w (when has). def_mode
- * is the recorded-delta mode default (consulted only when recorded). */
+/* One file-validated window SEARCH PATTERN (fuzz/grp/straddle slots): a
+ * recorded delta wins, else the freshly generated window w. */
 static void emit_win_section(sbuf *fp, grp_delta_t *gd, int slot,
 			     fuzzwin_t *w, int has, int def_mode)
 {
@@ -3293,26 +3105,101 @@ static void emit_win_section(sbuf *fp, grp_delta_t *gd, int slot,
 		    : recorded ? def_mode : w->mode;
 	sb_printf(fp, "=== OFFSET %+d MODE %d ===\n", poff, pmode);
 	if (recorded)
-		for (int i = 0; i < gd->npattern[slot]; i++)
-			sb_printf(fp, "%s\n", gd->pattern[slot][i]);
+		sb_lines(fp, gd->pattern[slot], gd->npattern[slot]);
 	else
-		for (int i = 0; i < w->nlines; i++)
-			sb_printf(fp, "%s\n", w->lines[i]);
-	sb_printf(fp, "%s\n", end_tag_wr);
+		sb_lines(fp, w->lines, w->nlines);
+	sb_end(fp);
+}
+
+/* The three EDIT COMMAND sections. A recorded delta wins over the generated
+ * default; abs is always offered, relc only for a single-line change with a
+ * usable ;c span, rel whenever the group has something to anchor on. */
+static void wg_edit_cmds(sbuf *fp, group_t *g, grp_delta_t *gd, int is_new,
+			 int has_anchors, int add_a)
+{
+	int show_relc = has_anchors && g->ndel == 1 && g->nadd == 1
+			&& g->has_line_diff;
+	sb_str(fp, "=== EDIT COMMAND (abs) ===\n");
+	if (gd && gd->nabs > 0) {
+		sb_lines(fp, gd->abs_cmd, gd->nabs);
+	} else if (g->del_start && g->nadd) {
+		if (g->ndel == 1)
+			sb_printf(fp, "%dc", g->del_start);
+		else
+			sb_printf(fp, "%d,%dc", g->del_start, g->del_end);
+		wg_content(fp, g);
+	} else if (g->del_start) {
+		if (g->ndel == 1)
+			sb_printf(fp, "%dd\n", g->del_start);
+		else
+			sb_printf(fp, "%d,%dd\n", g->del_start, g->del_end);
+	} else if (g->nadd) {
+		if (is_new)
+			sb_str(fp, "i");
+		else if (g->add_after <= 0)
+			sb_str(fp, "0i");
+		else
+			sb_printf(fp, "%di", g->add_after);
+		wg_content(fp, g);
+	}
+	sb_end(fp);
+
+	if (show_relc || (gd && gd->nrelc > 0)) {
+		sb_str(fp, "=== EDIT COMMAND (relc) ===\n");
+		if (gd && gd->nrelc > 0)
+			sb_lines(fp, gd->relc_cmd, gd->nrelc);
+		else if (g->ldc_start == g->ldc_end)
+			sb_printf(fp, ".;%dc %s\n", g->ldc_start, g->ldc_new_text);
+		else
+			sb_printf(fp, ".;%d;%dc %s\n", g->ldc_start, g->ldc_end,
+				  g->ldc_new_text);
+		sb_end(fp);
+	}
+
+	if (!has_anchors && !(gd && gd->nrel > 0))
+		return;
+	sb_str(fp, "=== EDIT COMMAND (rel) ===\n");
+	if (gd && gd->nrel > 0) {
+		sb_lines(fp, gd->rel_cmd, gd->nrel);
+	} else if (show_relc) {
+		/* the substitute progression, one s/// per rung (exact ->
+		 * grp-absorbing); >1 rung becomes a first-wins chain at emit */
+		subvar_t v[2];
+		int nv = build_sub_variants(g, v);
+		for (int k = 0; k < nv; k++) {
+			sb_printf(fp, "s/%s/%s/\n", v[k].pat, v[k].repl);
+			free(v[k].pat);
+			free(v[k].repl);
+		}
+	} else if (g->del_start && g->nadd) {
+		if (g->ndel == 1)
+			sb_str(fp, "c");
+		else
+			sb_printf(fp, ",#+%dc", g->ndel - 1);
+		wg_content(fp, g);
+	} else if (g->del_start) {
+		if (g->ndel == 1)
+			sb_str(fp, "d\n");
+		else
+			sb_printf(fp, ",#+%dd\n", g->ndel - 1);
+	} else if (g->nadd) {
+		sb_str(fp, add_a ? "i" : "-1i");
+		wg_content(fp, g);
+	}
+	sb_end(fp);
 }
 
 /*
- * Write all groups to fp, optionally injecting stored delta from in_fd.
- * with_phase adds the MARK header field and the per-group PHASE 1/PHASE 2
- * sections holding the group's verbatim segment bytes (override, else
- * generated); requires gen_group_segments to have run.
+ * Every group to fp, optionally injecting stored delta from in_fd. with_phase
+ * adds the MARK header field and the per-group PHASE 1/PHASE 2 sections holding
+ * the verbatim segment bytes (override, else generated), and so requires
+ * gen_group_segments to have run.
  */
 static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 				 file_delta_t *in_fd, int is_new,
 				 const char *orig_path, int with_phase)
 {
-	/* Load the pre-patch original so the fuzzed SEARCH PATTERN sections
-	 * can be validated against it; freed before returning. */
+	/* the pre-patch original, to validate the relaxed windows against */
 	if (orig_path && !is_new)
 		load_orig_file(orig_path);
 	for (int gi = 0; gi < ngroups; gi++) {
@@ -3321,12 +3208,7 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 			continue;
 		int target = g->del_start ? g->del_start : g->add_after;
 
-		grp_delta_t *gd = find_grp_delta(in_fd, gi + 1,
-						 g->del_texts, g->ndel,
-						 g->add_texts, g->nadd,
-						 g->all_pre_ctx, g->nall_pre_ctx,
-						 g->post_ctx, g->npost_ctx,
-						 delta_mode > 0 ? delta_mode : 0);
+		grp_delta_t *gd = find_grp_delta(in_fd, gi + 1, g);
 
 		int has_anchors = group_has_anchors(g);
 
@@ -3340,12 +3222,6 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 		else if (!(g->ndel > 0 && g->del_texts[0] && g->del_texts[0][0]))
 			default_offset = g->block_change_idx;
 
-		/* A +N/-N prefix on a stored rel/relc EDIT COMMAND stays on
-		 * the verb: it rides the mark address at apply time (see
-		 * emit_mark_edit, which folds custom_offset into "'N+off"),
-		 * so an insert-above-line-1 ("-1i") survives replay instead
-		 * of underflowing a pattern search offset to line 0. */
-
 		/* Group header; MARK names the phase-1 mark id the PHASE
 		 * blobs reference (edit it when renumbering marks in them) */
 		if (with_phase && g->mark_id >= 0)
@@ -3355,15 +3231,14 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 			sb_printf(fp, "=== GROUP %d/%d (line %d) ===\n",
 				  gi + 1, ngroups, target);
 		if (gd && gd->ncustom_text > 0 && gd->has_star && in_fd) {
-			for (int i = 0; i < gd->ncustom_text; i++)
-				sb_printf(fp, "%s\n", gd->custom_text[i]);
+			sb_lines(fp, gd->custom_text, gd->ncustom_text);
 		} else {
 			for (int i = 0; i < g->ndel; i++)
 				sb_printf(fp, "-%s\n", g->del_texts[i]);
 			for (int i = 0; i < g->nadd; i++)
 				sb_printf(fp, "+%s\n", g->add_texts[i]);
 		}
-		sb_printf(fp, "%s\n", end_tag_wr);
+		sb_end(fp);
 		int lvl = (gd && gd->level) ? gd->level : 2;
 		sb_printf(fp, "=== LEVEL %d%s ===\n", lvl, gd && gd->has_star ? "*" : "");
 
@@ -3377,16 +3252,12 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 		if (has_anchors)
 			sb_printf(fp, "%srel\n", sel_strat == STRAT_REL ? "" : "#");
 
-		/* SEARCH PATTERN 1-NPAT (fallbacks, first match wins):
-		 * 1 = whole hunk, 2 = deleted lines + post ctx, 3 = top
-		 * context only, 4 = deleted lines, 5 = post ctx only.
-		 * Single-line patterns show the ^...$ disamb anchors so the
-		 * user can remove them; emit respects the edit. */
-		sb_printf(fp, "%s\n", end_tag_wr);
-		/* Pure adds position on the line to append after, so the
-		 * displayed offsets include the -1 step the append-after "i"
-		 * implies (matching the "i"/"-1i" choice in the rel EDIT
-		 * COMMAND). */
+		/* SEARCH PATTERN 1-NPAT, first match wins (see
+		 * default_pat_lines). Single-line patterns show their ^...$
+		 * anchors so the user can remove them; emit respects that. */
+		sb_end(fp);
+		/* Pure adds position on the line to append after, so the shown
+		 * offsets include the -1 step the append-after "i" implies. */
 		int pure_add = !g->del_start && g->nadd;
 		int add_a = pure_add && default_offset - 1 >= 0;
 		char **praw = emalloc((g->ndel + 7) * sizeof(char *));
@@ -3394,9 +3265,8 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 			sb_printf(fp, "=== SEARCH PATTERN %d ===\n", pi + 1);
 			int doff;
 			int n = default_pat_lines(g, pi, praw, &doff);
-			/* OFFSET marker: lines from match start to the edit
-			 * target when this pattern matches; MODE selects the
-			 * search form (see SEARCH MODES). */
+			/* OFFSET: lines from match start to the edit target;
+			 * MODE: the search form (see SEARCH MODES). */
 			int poff = (gd && gd->pat_has_off[pi])
 				   ? gd->pat_off[pi]
 				   : doff - (add_a ? 1 : 0);
@@ -3417,119 +3287,28 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 					free(esc);
 				}
 			}
-			sb_printf(fp, "%s\n", end_tag_wr);
+			sb_end(fp);
 		}
 		free(praw);
 
-		/* File-validated relaxed SEARCH PATTERN slots (fuzz NPAT..,
-		 * grp 7, straddle 8/9). Generated fresh from the original; a
-		 * recorded delta wins so user tweaks round-trip. Pre-escaped
-		 * regex, written verbatim. */
+		/* The relaxed slots, generated fresh from the original; a
+		 * recorded delta wins so user tweaks round-trip. */
 		winset_t ws;
 		gen_extra_windows(g, &ws);
 		for (int pi = NPAT; pi < NSEARCH; pi++) {
 			int i = pi - NPAT;
-			/* recorded-delta mode default: the generator's own mode
-			 * for the window slots, single-line for a fuzz slot */
+			/* recorded-delta mode default: the generator's own */
 			int def_mode = pi == GRP_SLOT ? 2 : pi >= WIN_SLOT ? 3
 				       : (gd && gd->npattern[pi] == 1);
 			emit_win_section(fp, gd, pi, &ws.w[i], ws.has[i], def_mode);
 		}
 		free_extra_windows(&ws);
 
-		/* EDIT COMMAND sections */
-		/* abs */
-		sb_str(fp, "=== EDIT COMMAND (abs) ===\n");
-		if (gd && gd->nabs > 0) {
-			for (int k = 0; k < gd->nabs; k++)
-				sb_printf(fp, "%s\n", gd->abs_cmd[k]);
-		} else {
-			if (g->del_start && g->nadd) {
-				if (g->ndel == 1)
-					sb_printf(fp, "%dc", g->del_start);
-				else
-					sb_printf(fp, "%d,%dc", g->del_start, g->del_end);
-				wg_content(fp, g);
-			} else if (g->del_start) {
-				if (g->ndel == 1)
-					sb_printf(fp, "%dd\n", g->del_start);
-				else
-					sb_printf(fp, "%d,%dd\n", g->del_start, g->del_end);
-			} else if (g->nadd) {
-				if (is_new)
-					sb_str(fp, "i");
-				else if (g->add_after <= 0)
-					sb_str(fp, "0i");
-				else
-					sb_printf(fp, "%di", g->add_after);
-				wg_content(fp, g);
-			}
-		}
-		sb_printf(fp, "%s\n", end_tag_wr);
+		wg_edit_cmds(fp, g, gd, is_new, has_anchors, add_a);
 
-		/* relc */
-		int show_relc = has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff;
-		if (show_relc || (gd && gd->nrelc > 0)) {
-			sb_str(fp, "=== EDIT COMMAND (relc) ===\n");
-			if (gd && gd->nrelc > 0) {
-				for (int k = 0; k < gd->nrelc; k++)
-					sb_printf(fp, "%s\n", gd->relc_cmd[k]);
-			} else if (show_relc) {
-				if (g->ldc_start == g->ldc_end)
-					sb_printf(fp, ".;%dc %s\n",
-						  g->ldc_start, g->ldc_new_text);
-				else
-					sb_printf(fp, ".;%d;%dc %s\n",
-						  g->ldc_start, g->ldc_end,
-						  g->ldc_new_text);
-			}
-			sb_printf(fp, "%s\n", end_tag_wr);
-		}
-
-		/* rel */
-		if (has_anchors || (gd && gd->nrel > 0)) {
-			sb_str(fp, "=== EDIT COMMAND (rel) ===\n");
-			if (gd && gd->nrel > 0) {
-				for (int k = 0; k < gd->nrel; k++)
-					sb_printf(fp, "%s\n", gd->rel_cmd[k]);
-			} else if (has_anchors) {
-				if (g->ndel == 1 && g->nadd == 1 &&
-				    g->has_line_diff) {
-					/* substitute progression: one s/// per rung
-					 * (exact -> grp-absorbing), newline separated.
-					 * All target the same marked line; the emit
-					 * side turns >1 rung into a first-wins chain. */
-					subvar_t v[2];
-					int nv = build_sub_variants(g, v);
-					for (int k = 0; k < nv; k++) {
-						sb_printf(fp, "s/%s/%s/\n",
-							  v[k].pat, v[k].repl);
-						free(v[k].pat);
-						free(v[k].repl);
-					}
-				} else if (g->del_start && g->nadd) {
-					if (g->ndel == 1)
-						sb_str(fp, "c");
-					else
-						sb_printf(fp, ",#+%dc", g->ndel - 1);
-					wg_content(fp, g);
-				} else if (g->del_start) {
-					if (g->ndel == 1)
-						sb_str(fp, "d\n");
-					else
-						sb_printf(fp, ",#+%dd\n", g->ndel - 1);
-				} else if (g->nadd) {
-					sb_str(fp, add_a ? "i" : "-1i");
-					wg_content(fp, g);
-				}
-			}
-			sb_printf(fp, "%s\n", end_tag_wr);
-		}
-
-		/* PHASE 1/2: the verbatim ex-body bytes this group contributes
-		 * (override wins over generated). Inside these sections only
-		 * the end tag terminates; editing them supersedes every
-		 * structured section above for this group. */
+		/* PHASE 1/2: the group's verbatim ex-body bytes (override
+		 * wins). Only the end tag terminates them, and editing them
+		 * supersedes every structured section above. */
 		if (with_phase) {
 			const char *b1 = g->ph1_ovr ? g->ph1_ovr : g->ph1_gen;
 			const char *b2 = g->ph2_ovr ? g->ph2_ovr : g->ph2_gen;
@@ -3546,43 +3325,49 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 
 static void gen_group_segments(file_patch_t *fp);
 
-/* Drop every custom_* override on g so apply_grp_edits starts from a clean
- * slate; an emptied editor section then reverts to defaults instead of
- * leaving the previous pass's values behind. */
+/* Drop every custom_* override so apply_grp_edits starts clean: an emptied
+ * editor section then reverts to defaults instead of keeping the last pass. */
+static void free_cmd(char ***v, int *n)
+{
+	free_lines(*v, *n);
+	*v = NULL;
+	*n = 0;
+}
+
 static void clear_group_customs(group_t *g)
 {
 	for (int pi = 0; pi < NSEARCH; pi++) {
-		free_lines(g->custom_pat[pi], g->ncustom_pat[pi]);
-		g->custom_pat[pi] = NULL;
-		g->ncustom_pat[pi] = 0;
-		g->custom_pat_has_off[pi] = 0;
-		g->custom_pat_off[pi] = 0;
-		g->custom_pat_has_mode[pi] = 0;
-		g->custom_pat_mode[pi] = 0;
+		free_cmd(&g->custom_pat[pi], &g->ncustom_pat[pi]);
+		g->custom_pat_has_off[pi] = g->custom_pat_off[pi] = 0;
+		g->custom_pat_has_mode[pi] = g->custom_pat_mode[pi] = 0;
 	}
-	free_lines(g->custom_abs_lines, g->custom_abs_nlines);
-	g->custom_abs_lines = NULL;
-	g->custom_abs_nlines = 0;
-	free_lines(g->custom_relc_lines, g->custom_relc_nlines);
-	g->custom_relc_lines = NULL;
-	g->custom_relc_nlines = 0;
-	free_lines(g->custom_rel_lines, g->custom_rel_nlines);
-	g->custom_rel_lines = NULL;
-	g->custom_rel_nlines = 0;
+	free_cmd(&g->custom_abs_lines, &g->custom_abs_nlines);
+	free_cmd(&g->custom_relc_lines, &g->custom_relc_nlines);
+	free_cmd(&g->custom_rel_lines, &g->custom_rel_nlines);
 	g->custom_offset = 0;
 }
 
-/* Transfer parsed per-group sections eg into g's custom_* overrides (steals
- * eg's arrays). Runs twice per session - pre-editor to bake stored structured
- * deltas into the PHASE baselines, post-editor with the user's edits - so the
- * previous pass's values are cleared first. */
+/* Move a parsed section's array into a group's override slot, emptying the
+ * source. Nothing moves when the section was left untouched. */
+static void steal_lines(char ***dv, int *dn, char ***sv, int *sn, int *scap)
+{
+	if (*sn <= 0)
+		return;
+	*dv = *sv;
+	*dn = *sn;
+	*sv = NULL;
+	*sn = *scap = 0;
+}
+
+/* Move parsed sections eg into g's custom_* overrides. Runs twice per session -
+ * pre-editor to bake stored deltas into the PHASE baselines, post-editor with
+ * the user's own edits - so the previous pass is cleared first. */
 static void apply_grp_edits(group_t *g, grp_delta_t *eg)
 {
 	clear_group_customs(g);
 	g->strategy = eg->strategy;
 	for (int pi = 0; pi < NSEARCH; pi++) {
-		/* OFFSET marker: per-pattern offset, wins over
-		 * the legacy +N first-line override */
+		/* the OFFSET marker wins over a legacy +N first line */
 		if (eg->pat_has_off[pi]) {
 			g->custom_pat_has_off[pi] = 1;
 			g->custom_pat_off[pi] = eg->pat_off[pi];
@@ -3606,45 +3391,25 @@ static void apply_grp_edits(group_t *g, grp_delta_t *eg)
 				(eg->npattern[pi] - 1) * sizeof(char *));
 			eg->npattern[pi]--;
 		}
-		if (eg->npattern[pi] > 0) {
-			g->custom_pat[pi] = eg->pattern[pi];
-			g->ncustom_pat[pi] = eg->npattern[pi];
-			eg->pattern[pi] = NULL;
-			eg->npattern[pi] = 0;
-			eg->pat_cap[pi] = 0;
-		}
+		steal_lines(&g->custom_pat[pi], &g->ncustom_pat[pi],
+			    &eg->pattern[pi], &eg->npattern[pi], &eg->pat_cap[pi]);
 	}
-	if (eg->nabs > 0) {
-		g->custom_abs_lines = eg->abs_cmd;
-		g->custom_abs_nlines = eg->nabs;
-		eg->abs_cmd = NULL;
-		eg->nabs = 0;
-		eg->abs_cap = 0;
-	}
-	/* Process in file order (relc before rel) so the last-written
-	 * custom_offset is the one from the section that appears last in
-	 * the file: whichever the user edited last wins. */
-	if (eg->nrelc > 0) {
+	steal_lines(&g->custom_abs_lines, &g->custom_abs_nlines,
+		    &eg->abs_cmd, &eg->nabs, &eg->abs_cap);
+	/* file order (relc before rel), so the last-written
+	 * custom_offset comes from the later section */
+	if (eg->nrelc > 0)
 		g->custom_offset = parse_ecmd_offset(eg->relc_cmd, &eg->nrelc);
-		g->custom_relc_lines = eg->relc_cmd;
-		g->custom_relc_nlines = eg->nrelc;
-		eg->relc_cmd = NULL;
-		eg->nrelc = 0;
-		eg->relc_cap = 0;
-	}
-	if (eg->nrel > 0) {
+	steal_lines(&g->custom_relc_lines, &g->custom_relc_nlines,
+		    &eg->relc_cmd, &eg->nrelc, &eg->relc_cap);
+	if (eg->nrel > 0)
 		g->custom_offset = parse_ecmd_offset(eg->rel_cmd, &eg->nrel);
-		g->custom_rel_lines = eg->rel_cmd;
-		g->custom_rel_nlines = eg->nrel;
-		eg->rel_cmd = NULL;
-		eg->nrel = 0;
-		eg->rel_cap = 0;
-	}
+	steal_lines(&g->custom_rel_lines, &g->custom_rel_nlines,
+		    &eg->rel_cmd, &eg->nrel, &eg->rel_cap);
 }
 
-/* A structured edit supersedes a stale verbatim override: drop it, but
- * preserve the blobs (with the group's identity) in the .rej file so the
- * user can re-derive a fix from them. */
+/* A structured edit supersedes a stale verbatim override: drop it, keeping the
+ * blobs and the group's identity in the .rej file to re-derive a fix from. */
 static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 				 const char *rejpath)
 {
@@ -3666,7 +3431,7 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 		sbuf_smake(sb, SB_INIT)
 		sb_printf(sb, "=== FILE: %s ===\n", path);
 		emit_grp_delta(sb, &tmp);
-		sb_printf(sb, "%s\n", end_tag_wr);
+		sb_end(sb);
 		fwrite(sb->s, 1, sb->s_n, rej);
 		free(sb->s);
 		fclose(rej);
@@ -3680,17 +3445,14 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 	g->ovr_sep = 0;
 }
 
-/* Editor bring-up, hoisted from nextvi's main()/ex_init() — no argv
- * processing, no EXINIT, for the sessions that edit buffers patch2vi
- * built rather than files (-E goes through nextvi_main() instead, argv
- * and all). Split into init/teardown so one process can run several
- * independent editor lifetimes: the interactive buffer session
- * (edit_buffers) and, one per script block, the -e runner (run_body).
- * The global config tables and the input buffer are process-wide and
- * built once; everything else is per session and released by ed_free().
- * With use_tty, the editor gets the controlling terminal on fds 0/1 for
- * the session (patch2vi's stdin/stdout may be the patch pipe and the
- * generated script); ed_done() restores the original fds. */
+/* Editor bring-up, hoisted from nextvi's main()/ex_init(): no argv, no EXINIT,
+ * for the sessions that edit buffers patch2vi built rather than files (-E goes
+ * through nextvi_main() instead). Split into init/teardown so one process can
+ * run several independent editor lifetimes - the interactive session and, one
+ * per script block, the -e runner. The config tables and the input buffer are
+ * process-wide and built once; the rest is per session, freed by ed_free().
+ * With use_tty the editor takes the controlling terminal on fds 0/1, since
+ * patch2vi's own stdin/stdout may be the patch and the generated script. */
 static int ed_in = -1, ed_out = -1;
 static int ed_once;	/* the process-wide half of the bring-up is done */
 
@@ -3755,11 +3517,9 @@ static int ed_done(void)
 	return st;
 }
 
-/* The session state that is not a buffer: temporary buffers, registers,
- * the anchored-status tags of "??", the last search and the globals a
- * body may have changed. Dropped between blocks even when the buffers
- * themselves persist (replay mode), so no block inherits another's
- * register cache, tags or separators. */
+/* Everything that is not a buffer: temp buffers, registers, the "??" tags, the
+ * last search and the globals a body may have changed. Dropped between blocks
+ * even where the buffers persist (replay), so nothing is inherited. */
 static void ed_free_session(void)
 {
 	int i;
@@ -3795,17 +3555,14 @@ static void ed_free_session(void)
 	xerr = 1;
 	xseq = 1;
 	xvis = 0;
-	/* every pattern in this tool is literal source text, and nextvi's
-	 * ignorecase defaults on, so a case-folded match is always the wrong line
-	 * or the wrong byte (see emit_prologue's "ic 0"). Reset it here too, so a
-	 * replay/-i session behaves like the scripts it emits whether or not a
-	 * replayed prologue already turned it off. */
+	/* ignorecase defaults on in nextvi and every pattern here is literal
+	 * source text (see emit_prologue), so a replay/-i session must turn it
+	 * off too, whether or not a replayed prologue already did. */
 	xic = 0;
 }
 
-/* Drop every trace of the session: the state above plus the buffers (and
- * with them their marks and undo history). A block started after this
- * sees exactly what a freshly spawned editor sees. */
+/* The state above plus the buffers, their marks and their undo history: a block
+ * started after this sees exactly what a freshly spawned editor sees. */
 static void ed_free_bufs(void)
 {
 	for (int i = 0; i < xbufcur; i++)
@@ -3823,11 +3580,8 @@ static void ed_free(void)
 	ed_free_session();
 }
 
-/* Run the embedded nextvi on in-memory buffers: text under name and, when
- * given, rejtext under rejname. The buffers never touch the filesystem:
- * the names are labels (referencing the original input where possible)
- * and the main buffer's final content is returned (heap-allocated)
- * however the session ended, saved or not. NULL on error. */
+/* Load one in-memory buffer under a label; nothing here touches the
+ * filesystem. */
 static void ed_loadbuf(const char *name, char *text)
 {
 	char msg[512];
@@ -3838,8 +3592,8 @@ static void ed_loadbuf(const char *name, char *text)
 	ex_print(msg, bar_ft)
 }
 
-/* Hand the loaded buffers to the user and end the session. The buffers
- * outlive it, so the caller can read them back; ed_free() drops them. */
+/* Hand the loaded buffers to the user and end the session; they outlive it so
+ * the caller can read them back, and ed_free() drops them. */
 static int ed_run(void)
 {
 	char *ln;
@@ -3866,20 +3620,17 @@ static char *lbuf_text(struct lbuf *lb)
 	sbufn_ret(sb, sb->s)
 }
 
-/* One derived (or re-read) compatibility block: one whole compatibility patch,
- * i.e. one unified diff over however many files it touches - not one file. It
- * carries its origin (src= label, human annotation only), the files[] range its
- * diff parsed into, its own === PATCH === lines, its delta customizations and
- * its gate probes. A block is always emitted after the host (post); origin is
- * per-block because the compat_origin global only describes the current run.
- * One block = one section = one staged body = one storage region = one -i
- * buffer, so a compat patch is authored and shipped as the single diff it is. */
+/* One derived (or re-read) compatibility block: one whole compat patch, i.e.
+ * one unified diff over however many files it touches. One block = one section
+ * = one staged body = one storage region = one -i buffer, so a compat patch is
+ * authored and shipped as the single diff it is. Always emitted after the host;
+ * origin is per-block, since the global only describes the current run. */
 typedef struct {
 	char *origin;		/* src= label; annotation, never a matcher input */
 	int first, count;	/* files[] range this block owns */
 	strv_t raw;		/* the block's own === PATCH === lines */
-	gate_t gates[GATE_MAXPROBES];
-	int ngates;
+	gate_t *gates;		/* grown as read/derived: no stored-probe cap */
+	int ngates, gcap;
 	/* per-block delta customizations, filled either from the editor
 	 * (out) or re-read from a stored block (in) */
 	dstore_t deltas;
@@ -3887,11 +3638,9 @@ typedef struct {
 static compat_block_t *compat_blocks;
 static int ncompat, compat_cap;
 
-/* The next free gate anchor tag: one above the highest tag any block already
- * holds (stored blocks read back from the target script included), never below
- * GATE_TAG_BASE. Called once per newly derived block, so a stack of blocks -
- * over one file or over several - numbers its gates continuously instead of
- * every derivation restarting and colliding. */
+/* One above the highest gate tag any block already holds, stored ones included,
+ * never below GATE_TAG_BASE - so a stack of blocks numbers continuously
+ * instead of every derivation restarting and colliding. */
 static int next_gate_tag(void)
 {
 	int top = GATE_TAG_BASE - 1;
@@ -3922,15 +3671,11 @@ static int gates_agree(compat_block_t *a, compat_block_t *b)
 	return 1;
 }
 
-/* Warn when two blocks derived against the same origin carry different gates. A
- * block fires iff its origin is present, and every block of one origin is
- * derived under that same condition, so their gates answer the same question and
- * derivation produces them identically. A disagreement means one of them was
- * hand-edited: the two now fire on different trees, and the back-to-front subset
- * test - which reads one flag per origin, not per block - predicts a sequence
- * that cannot happen. Diagnostic only: widening one gate by hand is legitimate
- * if the author means it, so this reports rather than refuses, and it stays out
- * of the emitted script. */
+/* Warn when two blocks of one origin carry different gates. Derivation produces
+ * them identically, so a disagreement means a hand edit: the two now fire on
+ * different trees, and the subset test - which reads one flag per origin, not
+ * per block - predicts a sequence that cannot happen. Diagnostic only, since
+ * widening a gate by hand is legitimate when the author means it. */
 static void check_compat_gates(void)
 {
 	for (int a = 0; a < ncompat; a++)
@@ -3961,24 +3706,19 @@ static file_patch_t **block_files(compat_block_t *cb, int *n)
 struct edit_ub { const char *name; char *text; };
 
 /*
- * Open one built-in nextvi session over nu named buffers (the host unit first,
- * then one per compat block, in application order) plus an optional trailing
- * .rej buffer, and read every unit's buffer back into out[i]. Buffer i is
- * unit i by bufs_open()'s append order; the name-match assert turns a
- * bufs_find collision (two identically named units) or an eviction that
- * dropped a buffer into a hard error rather than silently routing one unit's
- * edits into another. Returns 0 on success, -1 on error (out[] undefined).
+ * One built-in nextvi session over nu named buffers (host unit first, then one
+ * per compat block in application order) plus an optional trailing .rej buffer,
+ * reading every unit's buffer back into out[i]. Buffer i is unit i by
+ * bufs_open()'s append order. -1 on error, out[] then undefined.
  */
 static int edit_units(struct edit_ub *u, int nu,
 		      const char *rejname, char *rejtext, char **out)
 {
 	int need = nu + (rejtext ? 1 : 0);
-	/* Keep the whole union resident before the session starts: ed_init()
-	 * commits xbufsmax from xbufsalloc, and bufs_open() evicts the top
-	 * slot once full - so an undersized cap would silently drop a unit's
-	 * buffer instead of appending. Sized above nu, eviction only ever
-	 * targets buffers the user opened past the union, never a unit's, so
-	 * buffer i stays unit i (bufs_open appends, never reorders). */
+	/* Keep the whole union resident: ed_init() commits xbufsmax from
+	 * xbufsalloc and bufs_open() evicts the top slot once full, so an
+	 * undersized cap would silently drop a unit's buffer. Sized above nu,
+	 * eviction only ever reaches buffers the user opened past the union. */
 	xbufsalloc = MAX(need + 1, MAX(64, xbufsalloc));
 	if (ed_init(1) < 0)
 		return -1;
@@ -3990,10 +3730,9 @@ static int edit_units(struct edit_ub *u, int nu,
 	}
 	if (ed_run() != 0)
 		return -1;
-	/* A shrunk buffer count means the user closed one of ours (:bd) or an
-	 * eviction reached into the union - either way a unit is gone and its
-	 * edits would be mis-read from a wrong buffer. Hard error. The buffer
-	 * name is NOT re-checked: :w legitimately renames a buffer's path. */
+	/* A shrunk count means a unit is gone (:bd, or an eviction reached
+	 * into the union) and its edits would be read from the wrong buffer.
+	 * The names are NOT re-checked: :w legitimately renames a path. */
 	if (xbufcur < need) {
 		fprintf(stderr, "patch2vi: editor buffer count shrank to %d "
 			"(expected at least %d); a unit was dropped\n",
@@ -4006,13 +3745,11 @@ static int edit_units(struct edit_ub *u, int nu,
 }
 
 /*
- * Inject a unit's stored per-file deltas into fps[]->groups so a later emit
- * (or the interactive PHASE baselines) carry the customizations. Mirrors the
- * host interactive path's first pass: build a delta-injected structured blob,
- * parse it right back and apply to the groups, then attach stored verbatim
- * PHASE overrides (reserving their marks). ds is the unit's store (host
- * in_deltas, or a compat block's own); a NULL/empty store leaves the groups
- * untouched. Files are matched to their delta by path.
+ * Inject a unit's stored per-file deltas into fps[]->groups, so a later emit (or
+ * the interactive PHASE baselines) carries the customizations: build a
+ * delta-injected structured blob, parse it right back onto the groups, then
+ * attach the stored verbatim PHASE overrides. ds is the unit's store (host
+ * in_deltas, or a compat block's own); files match their delta by path.
  */
 static void inject_deltas(file_patch_t **fps, int n, dstore_t *ds)
 {
@@ -4051,12 +3788,7 @@ static void inject_deltas(file_patch_t **fps, int n, dstore_t *ds)
 			group_t *g = &fps[k]->groups[gi];
 			if (!g->del_start && !g->nadd)
 				continue;
-			grp_delta_t *gd = find_grp_delta(fd_per[k], gi + 1,
-							 g->del_texts, g->ndel,
-							 g->add_texts, g->nadd,
-							 g->all_pre_ctx, g->nall_pre_ctx,
-							 g->post_ctx, g->npost_ctx,
-							 delta_mode > 0 ? delta_mode : 0);
+			grp_delta_t *gd = find_grp_delta(fd_per[k], gi + 1, g);
 			if (!gd || (!gd->ph1 && !gd->ph2))
 				continue;
 			g->ph1_ovr = gd->ph1 ? uc_dup(gd->ph1) : NULL;
@@ -4074,13 +3806,11 @@ static void inject_deltas(file_patch_t **fps, int n, dstore_t *ds)
 }
 
 /*
- * Derive one unit's structured delta by comparing its no-injection baseline
- * (orig_blob) against the buffer the user edited, storing only changed groups
- * into the unit's out store, then apply the edits onto fps[]->groups so the
- * later emit sees them. ins is the store consulted to preserve a group-locator
- * custom_text a structured-only edit left untouched. This is the exact host
- * single-unit derivation; the only per-unit variance is the in/out store and
- * (for compat) the relative/compat_building window the caller holds.
+ * One unit's structured delta: compare its no-injection baseline (orig_blob)
+ * against the buffer the user edited, store the changed groups into out, then
+ * apply the edits onto fps[]->groups so the later emit sees them. ins is
+ * consulted to preserve a group-locator custom_text a structured-only edit left
+ * alone. Per-unit variance is only the stores and the compat window.
  */
 static void derive_unit(file_patch_t **fps, int n, dstore_t *ins,
 			char *orig_blob, char *edited, dstore_t *out,
@@ -4127,11 +3857,10 @@ static void derive_unit(file_patch_t **fps, int n, dstore_t *ins,
 					rel_ch || relc_ch || level_ch ||
 					custom_ch;
 
-			/* Verbatim PHASE edits are detected against the
-			 * displayed bytes (override, else generated), so a
-			 * structured-only edit leaves them untouched and the
-			 * blobs regenerate from it next session. Latest-edited
-			 * representation wins per group; tie goes to verbatim. */
+			/* PHASE edits are detected against the displayed bytes
+			 * (override, else generated), so a structured-only edit
+			 * leaves them alone and they regenerate from it next
+			 * session. Latest edit wins; a tie goes to verbatim. */
 			group_t *g = &fps[k]->groups[gi];
 			const char *d1 = g->ph1_ovr ? g->ph1_ovr : g->ph1_gen;
 			const char *d2 = g->ph2_ovr ? g->ph2_ovr : g->ph2_gen;
@@ -4163,51 +3892,35 @@ static void derive_unit(file_patch_t **fps, int n, dstore_t *ins,
 
 			if (!od)
 				od = dstore_get(out, fps[k]->path);
-			if (od->ngrps >= od->gcap) {
-				od->gcap = od->gcap ? od->gcap * 2 : 4;
-				od->grps = erealloc(od->grps,
-						    od->gcap * sizeof(grp_delta_t));
-			}
-			grp_delta_t *gout = &od->grps[od->ngrps++];
-			memset(gout, 0, sizeof(*gout));
-			gout->group_idx = gi + 1;
+			grp_delta_t *gout = fd_add_grp(od, gi + 1);
 			gout->level = eg->level ? eg->level : 2;
 			gout->has_star = eg->has_star;
 			/* original del/add always from patch */
-			arr_clone(&gout->del_lines, &gout->ndel_lines, &gout->del_cap,
-				  fps[k]->groups[gi].del_texts, fps[k]->groups[gi].ndel);
-			arr_clone(&gout->add_lines, &gout->nadd_lines, &gout->add_cap,
-				  fps[k]->groups[gi].add_texts, fps[k]->groups[gi].nadd);
-			arr_clone(&gout->pre_ctx, &gout->npre_ctx, &gout->pre_cap,
-				  fps[k]->groups[gi].all_pre_ctx, fps[k]->groups[gi].nall_pre_ctx);
-			arr_clone(&gout->post_ctx, &gout->npost_ctx, &gout->post_cap,
-				  fps[k]->groups[gi].post_ctx, fps[k]->groups[gi].npost_ctx);
-			/* customization from user's edits; kept even under a
-			 * verbatim override — custom_text doubles as the
-			 * group-locator regex for starred LEVEL 2/4 matching,
-			 * so dropping it would degrade re-entry matching to
-			 * index-only (or first-group at level 4). */
+			arr_clone(&gout->del_lines, &gout->ndel_lines,
+				  &gout->del_cap, g->del_texts, g->ndel);
+			arr_clone(&gout->add_lines, &gout->nadd_lines,
+				  &gout->add_cap, g->add_texts, g->nadd);
+			arr_clone(&gout->pre_ctx, &gout->npre_ctx,
+				  &gout->pre_cap, g->all_pre_ctx, g->nall_pre_ctx);
+			arr_clone(&gout->post_ctx, &gout->npost_ctx,
+				  &gout->post_cap, g->post_ctx, g->npost_ctx);
+			/* kept even under a verbatim override: custom_text is
+			 * also the group-locator regex for starred LEVEL 2/4,
+			 * so dropping it degrades re-entry to index-only */
 			if (custom_ch) {
 				arr_clone(&gout->custom_text, &gout->ncustom_text, &gout->custom_text_cap,
 					  eg->custom_text, eg->ncustom_text);
 			} else if (fd_per[k]) {
 				/* preserve existing customization from stored delta */
-				grp_delta_t *stored = find_grp_delta(fd_per[k], gi + 1,
-								     fps[k]->groups[gi].del_texts, fps[k]->groups[gi].ndel,
-								     fps[k]->groups[gi].add_texts, fps[k]->groups[gi].nadd,
-								     fps[k]->groups[gi].all_pre_ctx, fps[k]->groups[gi].nall_pre_ctx,
-								     fps[k]->groups[gi].post_ctx, fps[k]->groups[gi].npost_ctx,
-								     delta_mode > 0 ? delta_mode : 0);
+				grp_delta_t *stored = find_grp_delta(fd_per[k], gi + 1, g);
 				if (stored && stored->ncustom_text > 0) {
 					arr_clone(&gout->custom_text, &gout->ncustom_text, &gout->custom_text_cap,
 						  stored->custom_text, stored->ncustom_text);
 				}
 			}
-			/* A verbatim override supersedes the structured edit
-			 * customizations (strategy/patterns/commands): store
-			 * the pair of blobs (both phases, so the group is
-			 * frozen as one consistent unit) plus its mark and
-			 * escape regime. */
+			/* A verbatim override supersedes the structured
+			 * customizations: store both blobs, so the group is
+			 * frozen as one unit, with its mark and escape regime. */
 			if (has_ovr) {
 				gout->ph1 = uc_dup(g->ph1_ovr ? g->ph1_ovr
 						   : (g->ph1_gen ? g->ph1_gen : ""));
@@ -4262,11 +3975,9 @@ static void derive_unit(file_patch_t **fps, int n, dstore_t *ins,
 	free(fd_per);
 }
 
-/* An edit unit driven by interactive_edit_all_files: its file range, its
- * inject/preserve store (in), its derived-delta store (out), and - for a
- * compat block - the relative/compat_building window and gate probes its
- * blobs must be built and emitted under. Buffer 0 is always the host; units
- * 1..N are compat blocks in application order. */
+/* One edit unit: its file range, its inject/preserve store, its derived-delta
+ * store, and - for a compat block - the window and gate probes its blobs are
+ * built under. Unit 0 is the host, 1..N the compat blocks in order. */
 typedef struct {
 	file_patch_t **fps;
 	int n;
@@ -4275,24 +3986,25 @@ typedef struct {
 	int compat;		/* 1 = compat block: hold the compat window */
 	gate_t *gates;
 	int ngates;
-	char name[288];		/* buffer label (unique across units) */
+	char *name;		/* buffer label (unique across units), owned */
 	char *orig;		/* no-injection baseline blob (owned) */
 	char *phased;		/* editor text: injected + MARK/PHASE (owned) */
 } unit_t;
 
 /* Enter/leave the compat emission window: relative anchoring, the
- * file-validated generators off (they read the pre-origin file, the wrong text
- * for a compat block) and the block's gate tags reserved so regenerated group
- * tags never fuse with them. Held around a block's blob build, its derivation
- * and its body emission alike. sv holds the saved relative_mode for restore. */
+ * file-validated generators off, and the block's gate tags reserved so
+ * regenerated group tags never fuse with them. Held around a block's blob
+ * build, its derivation and its body emission alike. */
 static void compat_win_enter(gate_t *gates, int ngates, int *sv)
 {
 	*sv = relative_mode;
 	relative_mode = 1;
 	compat_building = 1;
-	ncompat_res = ngates;
-	for (int j = 0; j < ngates; j++)
-		compat_res_marks[j] = gates[j].tag;
+	ncompat_res = 0;
+	for (int j = 0; j < ngates; j++) {
+		ARR_PUSH(compat_res_marks, ncompat_res, compat_res_cap)
+		compat_res_marks[ncompat_res++] = gates[j].tag;
+	}
 }
 
 static void compat_win_leave(int sv)
@@ -4302,9 +4014,8 @@ static void compat_win_leave(int sv)
 	relative_mode = sv;
 }
 
-/* Build a unit's two blobs: the no-injection baseline (for the later diff)
- * and the injected + MARK/PHASE text shown in the editor. Wraps the compat
- * window for compat units. */
+/* A unit's two blobs: the no-injection baseline (for the later diff) and the
+ * injected + MARK/PHASE text shown in the editor. */
 static void build_unit_blobs(unit_t *u)
 {
 	int sv = 0;
@@ -4346,37 +4057,9 @@ static void build_unit_blobs(unit_t *u)
 		compat_win_leave(sv);
 }
 
-/* Does a stored delta's recorded content match this group at strictness lvl?
- * 1 accepts anything, 2/4 compare the -/+ lines (a starred delta compares its
- * custom_text as one regex instead), 3/5 the whole hunk with its context. */
-static int delta_matches_group(grp_delta_t *st, group_t *g, int lvl)
-{
-	switch (lvl) {
-	case 1:
-		return 1;
-	case 2:
-		if (st->has_star && st->level == 2)
-			return grp_content_regex_matches(st, g->del_texts, g->ndel,
-							 g->add_texts, g->nadd);
-		return grp_content_matches(st, g->del_texts, g->ndel,
-					   g->add_texts, g->nadd);
-	case 4:
-		return (st->has_star && st->level == 4
-			&& grp_content_regex_matches(st, g->del_texts, g->ndel,
-						     g->add_texts, g->nadd))
-		       || grp_content_matches(st, g->del_texts, g->ndel,
-					      g->add_texts, g->nadd);
-	default:   /* 3, 5 */
-		return grp_full_hunk_matches(st, g->all_pre_ctx, g->nall_pre_ctx,
-					     g->del_texts, g->ndel,
-					     g->add_texts, g->nadd,
-					     g->post_ctx, g->npost_ctx);
-	}
-}
 
-/* Will this stored delta find a group to re-apply to? Levels 1-3 test the group
- * at its stored index, levels 4-5 any group of the file. A delta that finds
- * none is rejected: dumped to the .rej buffer and stripped of its star. */
+/* Will this stored delta find a group to re-apply to? One that finds none is
+ * rejected: dumped to the .rej buffer and stripped of its star. */
 static int delta_applies(grp_delta_t *st, file_patch_t *fp, int lvl)
 {
 	if (lvl >= 4) {
@@ -4390,14 +4073,11 @@ static int delta_applies(grp_delta_t *st, file_patch_t *fp, int lvl)
 }
 
 /*
- * Interactive editing of the host groups and every compat block, one built-in
- * nextvi buffer per unit (host buffer 0, then one per compat block in
- * application order), all held in RAM. Pattern lines are shown regex-escaped
- * (as they'll appear to the regex engine); an untouched buffer parses back to
- * the customizations that were written into it, so unedited units reproduce
- * their input. Host edits land in out_deltas (serialized by the DELTA tail);
- * compat edits are written back into each block's cb->deltas (serialized by
- * emit_compat_storage), and the edited groups feed emit_one_call directly.
+ * Interactive editing of the host groups and every compat block, one in-RAM
+ * nextvi buffer per unit. Pattern lines are shown regex-escaped, as the regex
+ * engine will see them, and an untouched buffer parses back to what was written
+ * into it, so an unedited unit reproduces its input. Host edits land in
+ * out_deltas, compat edits in each block's own cb->deltas.
  */
 static void interactive_edit_all_files(file_patch_t **active, int nactive)
 {
@@ -4407,18 +4087,16 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 	/* Buffer labels, not files: reference the original input (the patch,
 	 * or the previously generated script under -d) when it has a name;
 	 * .diff/.rej pick up nextvi's diff highlighting. */
-	char rejname[288];
 	const char *base = input_file ? input_file : "patch2vi";
-	snprintf(rejname, sizeof(rejname), "%s.p2v.rej", base);
+	char *rejname = str_fmt("%s.p2v.rej", base);
 
 	/* --- Host unit (buffer 0): its reject pass mutates in_deltas before
 	 * injection, so it runs here, not in build_unit_blobs. --- */
 	file_delta_t **in_fd_per = dstore_per_file(delta_mode ? &in_deltas : NULL,
 						   active, nactive);
 	if (nactive > 0) {
-		/* Rejection check: before building the editor buffer so we can
-		 * clear has_star on rejected deltas (prevents custom_text
-		 * injection). */
+		/* before the editor buffer is built, so a rejected delta can
+		 * lose its star and not inject its custom_text */
 		for (int k = 0; k < nactive; k++) {
 			file_delta_t *in_fd = in_fd_per[k];
 			if (!in_fd)
@@ -4449,10 +4127,9 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 				sb_printf(rej, "%s\n\n", end_tag_wr);
 		}
 
-		/* -i (interactive, non-delta): every stored delta is rejected
-		 * wholesale. in_fd_per stays NULL so nothing is injected or
-		 * preserved; the deltas are dumped to the .rej buffer so the
-		 * user can re-apply them by hand, mirroring -d's reject flow. */
+		/* -i without -d rejects every stored delta wholesale: nothing
+		 * is injected or preserved, and they are dumped to the .rej
+		 * buffer to re-apply by hand, mirroring -d's reject flow. */
 		if (!delta_mode && in_deltas.n) {
 			sbuf_make(rej, SB_INIT)
 			sb_printf(rej, "# Rejected: interactive (-i)"
@@ -4474,13 +4151,13 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		hu->ins = delta_mode ? &in_deltas : NULL;
 		hu->out = &out_deltas;
 		hu->compat = 0;
-		snprintf(hu->name, sizeof(hu->name), "%s.p2v.diff", base);
+		hu->name = str_fmt("%s.p2v.diff", base);
 		build_unit_blobs(hu);
 	}
 
-	/* --- Compat units: one buffer per block, in application order. Its
-	 * baseline is its own stored deltas (no fresh diff to fall back to), so
-	 * -i does not discard them; an untouched buffer re-derives them. --- */
+	/* Compat units: one buffer per block, in application order. Their
+	 * baseline is their own stored deltas - there is no fresh diff to fall
+	 * back to - so -i keeps them and an untouched buffer re-derives them. */
 	file_patch_t ***ca_store = ecalloc(ncompat + 1, sizeof(*ca_store));
 	for (int c = 0; c < ncompat; c++) {
 		compat_block_t *cb = &compat_blocks[c];
@@ -4502,8 +4179,8 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		cu->ngates = cb->ngates;
 		/* index prefix keeps two blocks over one file from colliding on
 		 * bufs_find (ex.c matches on the name) */
-		snprintf(cu->name, sizeof(cu->name), "%d.%s.compat-post.p2v.diff",
-			 c, cb->origin ? cb->origin : "");
+		cu->name = str_fmt("%d.%s.compat-post.p2v.diff", c,
+				   cb->origin ? cb->origin : "");
 		build_unit_blobs(cu);
 		nu++;
 	}
@@ -4512,12 +4189,12 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		free(units);
 		free(ca_store);
 		free(in_fd_per);
+		free(rejname);
 		return;
 	}
 
-	/* Assert buffer names are unique before opening: the index prefix
-	 * guarantees it, but a mis-map would route one unit's edits into
-	 * another, so verify rather than trust. */
+	/* The index prefix guarantees unique names, but a mis-map would route
+	 * one unit's edits into another, so verify rather than trust. */
 	for (int i = 0; i < nu; i++)
 		for (int j = i + 1; j < nu; j++)
 			if (strcmp(units[i].name, units[j].name) == 0) {
@@ -4543,10 +4220,10 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		nu = 0;
 	}
 
-	/* Derive each unit's delta from its own buffer. Compat units clear
-	 * their store first (a snapshot preserves the pre-edit deltas for the
-	 * custom_text preservation lookup) and hold the compat window, since
-	 * apply_grp_edits regenerates segments. */
+	/* Each unit's delta from its own buffer. A compat unit clears its store
+	 * first - a snapshot keeps the pre-edit deltas for the custom_text
+	 * lookup - and holds the compat window, since apply_grp_edits
+	 * regenerates segments. */
 	for (int i = 0; i < nu; i++) {
 		unit_t *u = &units[i];
 		dstore_t *ins = u->ins;
@@ -4578,22 +4255,24 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		free(ca_store[c]);
 	free(ca_store);
 	free(in_fd_per);
+	for (int i = 0; i < nu; i++)
+		free(units[i].name);
+	free(rejname);
 	free(units);
 	free(ubs);
 	free(outs);
 }
 
-/* Emit a custom EDIT COMMAND lines array + trailing SEP.
- * lines[0] = "cmd [first-content]", lines[1..n] = extra content lines.
- * s/pat/repl/: emit_escaped_exarg_only.
- * bare cmd (d, etc.): output verbatim. */
+/* A custom EDIT COMMAND: lines[0] is "cmd [first-content]", the rest are
+ * further content lines. An s/// goes out through the exarg layer only, a
+ * bare command (d, ,#+Nd) verbatim. */
 static void emit_custom_edit_lines(sbuf *out, char **lines, int nlines)
 {
 	if (nlines == 0)
 		return;
 	const char *first = lines[0];
 	if (is_substitute(first)) {
-		emit_escaped_exarg_only(out, first);
+		sb_exarg(out, first);
 		return;
 	}
 	/* Find first space: split command prefix from inline content */
@@ -4602,11 +4281,11 @@ static void emit_custom_edit_lines(sbuf *out, char **lines, int nlines)
 		int horiz = memchr(first, ';', sp - first) != NULL;
 		sb_mem(out, first, sp - first);  /* command prefix verbatim */
 		sb_chr(out, ' ');
-		emit_escaped_text(out, sp + 1);     /* first content line escaped */
+		sb_exarg(out, sp + 1);     /* first content line escaped */
 		if (!horiz)
 			sb_chr(out, '\n');
 		for (int k = 1; k < nlines; k++) {
-			emit_escaped_text(out, lines[k]);
+			sb_exarg(out, lines[k]);
 			sb_chr(out, '\n');
 		}
 	} else {
@@ -4616,9 +4295,8 @@ static void emit_custom_edit_lines(sbuf *out, char **lines, int nlines)
 }
 
 /*
- * Build groups[] for a file from its ops[]. A group is a contiguous
- * sequence of deletes/adds with optional context anchors. Stored in
- * fp->groups (heap-allocated) for later interactive editing and emission.
+ * groups[] for a file, from its ops[]: a group is a contiguous run of
+ * deletes/adds with optional context anchors.
  */
 static void build_file_groups(file_patch_t *fp)
 {
@@ -4735,12 +4413,10 @@ static void build_file_groups(file_patch_t *fp)
 			g->follow_offset = fp->ops[i].oline - first_change_line;
 		}
 
-		/* Collect post-change context for fallback patterns. Both
-		 * relative and interactive mode use up to 3 following context
-		 * lines (default_pat_lines pi 0/1/4); without this, relative
-		 * mode falls back to the single g->follow_ctx line and the
-		 * lower post-context lines of pattern 1 are lost, drifting from
-		 * the interactive output. */
+		/* Up to 3 following context lines, for the patterns that
+		 * key on them (default_pat_lines 0/1/4). Without them
+		 * relative mode would fall back to the single follow_ctx
+		 * line and drift from the interactive output. */
 		if ((relative_mode || interactive_mode) && (g->del_start || g->nadd)) {
 			/* Peek at up to 3 following context lines */
 			int post_cap = 3;
@@ -4757,8 +4433,7 @@ static void build_file_groups(file_patch_t *fp)
 					g->post_ctx[j] = fp->ops[i + j].text;
 			}
 		}
-		/* Interactive mode: also retain all leading context and the
-		 * block split point for editable SEARCH PATTERN sections. */
+		/* interactive mode also shows all leading context */
 		if (interactive_mode && (g->del_start || g->nadd)) {
 			g->all_pre_ctx = all_ctx;
 			g->nall_pre_ctx = nall_ctx;
@@ -4778,17 +4453,14 @@ static void build_file_groups(file_patch_t *fp)
 				const char *old = g->del_texts[0];
 				const char *new = g->add_texts[0];
 				int olen = strlen(old), nlen = strlen(new);
-				/* ;c positions are rune indexes, so the affix is
-				 * rune-snapped: a split rune would shift
-				 * ldc_start/ldc_end and splice invalid UTF-8 */
+				/* ;c positions are rune indexes, and a split rune
+				 * would shift them and splice invalid UTF-8 */
 				int prefix, suffix;
 				common_affix(old, new, &prefix, &suffix);
 				g->ldc_start = rune_count_n(old, prefix);
 				g->ldc_end = rune_count_n(old, olen - suffix);
-				int ns = prefix, ne = nlen - suffix;
-				g->ldc_new_text = emalloc(ne - ns + 1);
-				memcpy(g->ldc_new_text, new + ns, ne - ns);
-				g->ldc_new_text[ne - ns] = '\0';
+				g->ldc_new_text = dup_n(new + prefix,
+							nlen - suffix - prefix);
 			}
 		}
 
@@ -4825,11 +4497,10 @@ static int group_mark_id(group_t *g, int *next_id)
 	return next_mark_id(next_id);
 }
 
-/* A custom EDIT COMMAND at the group's mark. A nonzero custom_offset (a +N/-N
- * pulled off the verb) rides on the mark address as "'N+off", so an
- * insert-above-line-1 ("'N-1i", resolving to the line-0 insert) survives the
- * template round-trip instead of being lost against the patterns' explicit
- * OFFSETs. */
+/* A custom EDIT COMMAND at the group's mark. A custom_offset (the +N/-N pulled
+ * off the verb) rides the mark address as "'N+off", so an insert-above-line-1
+ * survives the round-trip instead of being lost against the patterns'
+ * explicit OFFSETs. */
 static void emit_mark_edit(sbuf *out, group_t *g, int tline,
 			   char **lines, int nlines)
 {
@@ -4842,14 +4513,11 @@ static void emit_mark_edit(sbuf *out, group_t *g, int tline,
 	emit_err_check(out, 2, tline, g->mark_id, NULL, 0);
 }
 
-/* Generate every group's verbatim phase-1/phase-2 segment bytes into
- * g->ph1_gen/g->ph2_gen (forward/relative layout only), regenerating from the
- * current structured state on every call. emit_file_script substitutes
- * g->ph1_ovr/g->ph2_ovr for the generated bytes at write time; groups carrying
- * an override still generate normally (their bytes are discarded) so
- * cross-group state - mark allocation, first-search flag - evolves exactly as
- * when the override was captured, with the mark id forced to the reserved
- * override mark. */
+/* Every group's verbatim phase-1/phase-2 segment bytes into ph1_gen/ph2_gen
+ * (forward layout only), regenerated from the current structured state on every
+ * call. A group carrying an override still generates normally and its bytes are
+ * discarded, so the cross-group state - mark allocation, first-search flag -
+ * evolves exactly as it did when the override was captured. */
 static void gen_group_segments(file_patch_t *fp)
 {
 	group_t *groups = fp->groups;
@@ -4857,15 +4525,13 @@ static void gen_group_segments(file_patch_t *fp)
 
 	cur_file_path = fp->path;
 
-	/* Read the pre-patch original (if present) to validate anchor
-	 * uniqueness; new files have no original to read. Prefer the "---"
-	 * path (it names the pre-patch content); fall back to the edit
-	 * target, which holds that same content before the script runs. */
+	/* the pre-patch original, for anchor validation: the "---" path
+	 * names it, and the edit target holds the same content until the
+	 * script runs */
 	if (!fp->is_new && !compat_building)
 		load_orig_file(fp->orig_path ? fp->orig_path : fp->path);
 
-	/* Drop stale segments from a previous (pre-editor display) run and
-	 * reserve every override's mark before any allocation. */
+	/* drop stale segments and reserve the override marks first */
 	nreserved_marks = 0;
 	/* a compat block's gate holds allocated ?? tags; reserve them so the
 	 * group tags below never fuse with them through xanchor */
@@ -4881,14 +4547,9 @@ static void gen_group_segments(file_patch_t *fp)
 			reserve_mark(g->ovr_mark);
 	}
 
-	/*
-	 * Phase 1 (resolve): run every group's search against the register
-	 * cache yanked once after file open and record the target line in
-	 * a mark. No edits happen here, so the cache never goes stale and
-	 * a failed anchor aborts with the file untouched.
-	 */
-	/* edit marks start at 1; mark WIN_SAVE_MARK (0) is reserved as pattern
-	 * 8's save/restore scratch around its global search */
+	/* Phase 1 (resolve): every group's search against the register cache,
+	 * recording its target line in a mark. Edit marks start at 1, mark 0
+	 * being the global searches' cursor scratch. */
 	int next_id = WIN_SAVE_MARK + 1;
 	int first_search = 1;
 	for (int gi = 0; gi < ngroups; gi++) {
@@ -4900,9 +4561,7 @@ static void gen_group_segments(file_patch_t *fp)
 		sbuf_smake(out, SB_INIT)
 		int target_line = g->del_start ? g->del_start : g->add_after;
 
-		/* Strategy: the flags decide non-interactively (relative_mode
-		 * -> REL, else ABS); interactively it is the user's choice,
-		 * with STRAT_DEFAULT resolved here. */
+		/* non-interactively the flags decide, interactively the user */
 		int strat = g->strategy;
 
 		int has_anchors = group_has_anchors(g);
@@ -4944,9 +4603,8 @@ static void gen_group_segments(file_patch_t *fp)
 			goto ph1_done;
 		}
 
-		/* Build the fallback pattern list: edited SEARCH PATTERN
-		 * sections if any, else auto defaults. Duplicates dropped,
-		 * first match wins at apply time. */
+		/* The fallback list: edited SEARCH PATTERN sections if any,
+		 * else the defaults. Duplicates dropped. */
 		pat_spec_t ps[NSEARCH];
 		int nps = 0;
 		char **raw = NULL;
@@ -4958,11 +4616,9 @@ static void gen_group_segments(file_patch_t *fp)
 			ps[nps].lines = g->custom_pat[pi];
 			ps[nps].nlines = g->ncustom_pat[pi];
 			ps[nps].pre_escaped = 1;
-			/* Default offset (no explicit OFFSET marker) mirrors
-			 * default_pat_lines: deletion-rooted slots (del+post,
-			 * deleted only) start on the target line, post-only
-			 * starts g->ndel lines below it, the rest anchor on
-			 * leading context. */
+			/* mirrors default_pat_lines: the deletion-rooted
+			 * slots start on the target line, post-only sits
+			 * ndel below it, the rest anchor on leading context */
 			ps[nps].offset = g->custom_pat_has_off[pi]
 					 ? g->custom_pat_off[pi]
 					 : (pi == 1 || pi == 3) ? 0
@@ -4993,20 +4649,17 @@ static void gen_group_segments(file_patch_t *fp)
 				ps[nps].pid = pi + 1;
 				nps++;
 			}
-			/* File-validated relaxed windows appended loosest-last
-			 * (fuzz, grp 7 mode 2, straddle 8/9 mode 3). off_final on the
-			 * latter three preserves their offsets through the pure-add
-			 * shift. Interactive mode surfaces these as custom_pat instead;
-			 * this is the plain -r path. */
+			/* the relaxed windows, loosest last; off_final on the
+			 * last three keeps their offsets through the pure-add
+			 * shift. Interactive mode surfaces them as custom_pat. */
 			gen_extra_windows(g, &ws);
 			for (int pi = NPAT; pi < NSEARCH && nps < NSEARCH; pi++)
 				if (ws.has[pi - NPAT])
 					nps = push_win_pat(ps, nps, &ws.w[pi - NPAT],
 							   pi + 1, pi >= GRP_SLOT);
-			/* No re-sort: default_pat_lines already orders strict to loose
-			 * and every pattern is file-proven, so order only picks the
-			 * winner on a drifted apply. The -i chain emits in this same
-			 * slot order, so sorting only -r would diverge the modes. */
+			/* No re-sort: the slots are already strict to loose, and
+			 * -i emits in this same order, so sorting only -r would
+			 * diverge the two modes. */
 		}
 		int w = 0;
 		for (int pi = 0; pi < nps; pi++) {
@@ -5021,10 +4674,9 @@ static void gen_group_segments(file_patch_t *fp)
 		}
 		nps = w;
 
-		/* Pure insert: position lands on the line to append after.
-		 * Custom edit lines carry their own verb and a verb-relative
-		 * offset (the displayed "+Ni" already includes the insert step),
-		 * so no adjustment is applied for them. */
+		/* Pure insert: the mark lands on the line to append after.
+		 * Custom edit lines carry their own verb-relative offset, so
+		 * they take no adjustment. */
 		if (!g->del_start && g->nadd
 		    && !(g->custom_rel_lines && g->custom_rel_nlines > 0)) {
 			if (g->add_after <= 0)
@@ -5060,10 +4712,8 @@ ph1_done:
 		g->ph1_gen = out->s;
 	}
 
-	/*
-	 * Phase 2 (commit): apply edits at the marks, forward order.
-	 * Marks auto-adjust as edits shift lines above them.
-	 */
+	/* Phase 2 (commit): the edits at their marks, forward order; the marks
+	 * auto-adjust as edits above them shift lines. */
 
 	for (int gi = 0; gi < ngroups; gi++) {
 		group_t *g = &groups[gi];
@@ -5084,9 +4734,8 @@ ph1_done:
 		} else if (strat == STRAT_REL && g->custom_rel_lines
 			   && g->custom_rel_nlines > 0) {
 			/* A multi-line rel block of pure substitutes is the
-			 * editable substitute progression: rebuild it as a
-			 * first-wins chain. Anything else (single command, or a
-			 * multi-line c with content) emits verbatim at the mark. */
+			 * editable progression: rebuild it as a first-wins
+			 * chain. Anything else emits verbatim at the mark. */
 			subvar_t cv[NSEARCH];
 			int cn = 0, all_sub = g->custom_rel_nlines > 1;
 			for (int k = 0; all_sub && k < g->custom_rel_nlines
@@ -5152,11 +4801,9 @@ ph1_done:
 	free_orig_file();
 }
 
-/* One file's groups as ex commands: absolute mode writes them bottom-to-top
- * (line numbers stay valid, no searches and no marks), the forward modes write
- * every group's phase-1 segment and then every group's phase-2 one. Requires
- * fp->groups from build_file_groups(), plus interactive editing where it
- * applies; the groups are freed here. */
+/* One file's groups as ex commands: absolute mode bottom-to-top (line numbers
+ * stay valid, no searches, no marks), the forward modes every phase-1 segment
+ * and then every phase-2 one. The groups are freed here. */
 static void emit_file_script(sbuf *out, file_patch_t *fp)
 {
 	if (fp->ngroups == 0)
@@ -5210,16 +4857,12 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
 		free_group(&groups[gi]);
 }
 
-/* The state registers, defined at the top of every $VI body. Registers are
- * per editor process and every block is its own $VI, so each body carries
- * its own copy; the body defines the default state first and the shell then
- * contributes whole commands (never fragments) that flip individual
- * switches. Any non-empty value counts as set.
- *
- * The chains: REG_HDLR captures the FAIL line into register 112 (where the
- * INTR chain reads it back), prints it and calls INTR; a phase gate calls
- * REG_HDLR and then the phase's quit chain, so QF only ever fires where the
- * report does, as it did when both were shell fragments. */
+/* The state registers, defined at the top of every $VI body: the body writes
+ * the default state and the shell then contributes whole commands that flip
+ * individual switches (any non-empty value counts as set).
+ * REG_HDLR captures the FAIL line into register 112, where the INTR chain reads
+ * it back, prints it and calls INTR; a phase gate calls REG_HDLR and then the
+ * phase's quit chain, so QF only fires where the report does. */
 static void emit_reg_defaults(sbuf *out)
 {
 	sb_printf(out, "%dreg ya!112", REG_HDLR);
@@ -5245,11 +4888,10 @@ static void emit_reg_defaults(sbuf *out)
 	EMIT_SEP(out);
 }
 
-/* The switches, as whole commands the shell either contributes or not.
- * This is the only part of a body sh writes, and it is written into a
- * double-quoted word, so its raw separator bytes are escaped for it.
- * Backslash-newline breaks split the long word for readability; inside the
- * double quotes they are line continuations, so the value is unchanged. */
+/* The switches, as whole commands the shell either contributes or not - the
+ * only part of a body sh writes, and a double-quoted word, so its raw separator
+ * bytes are escaped for it. The backslash-newline breaks are continuations
+ * inside the quotes, so they only split the word for readability. */
 static void emit_reg_switches(sbuf *out)
 {
 	sb_printf(out, "${DBG1:+%dreg ? %%@%d", REG_ERR1, REG_HDLR);
@@ -5272,8 +4914,8 @@ static void emit_reg_switches(sbuf *out)
 	sb_printf(out, "${QF2:+ya!%d", REG_QF2);
 	sb_dq_esc_sep(out, 0);
 	sb_str(out, "}\\\n");
-	/* the failing site is where the script wrote the location register,
-	 * so INTR searches itself for that command's argument */
+	/* the failing site is where the script wrote the location
+	 * register, so INTR searches itself for that argument */
 	sb_printf(out, "${INTR:+%dreg |sc|", REG_INTR);
 	sb_dq_esc_sep(out, 1);
 	sb_printf(out, "vis 2:fr 0:e $0:83reg %%@47:%%f> %dreg %%@%d:&Q:b0:"
@@ -5303,17 +4945,14 @@ static void emit_write_tail(sbuf *out, int nbufs)
 
 /* The specials prologue every body opens with: "|sc! <esc><sep>|" declares the
  * escape and separator bytes to ex (with the default backslash escape the loc
- * halves a doubled one), then "vis 3" enters raw ex mode and "ic 0" makes every
- * pattern case-sensitive.
+ * halves a doubled one), "vis 3" enters raw ex mode, "ic 0" makes every pattern
+ * case-sensitive.
  *
- * That last one is not cosmetic: nextvi's ignorecase option defaults ON (xic in
- * ex.c), and it feeds every rset this script relies on - the group searches
- * (ec_find) and the substitutions. Patterns here are literal source text, so a
- * case-folded match is simply the wrong line or the wrong byte: "s/x/w/" meant
- * for "xrows" lands on the "X" of a "MAX(" earlier in the line. The shorter and
- * more precise a generated pattern is, the more likely it is to have an
- * upper-case impostor before it, so this is a correctness requirement, not a
- * preference. */
+ * That last one is a correctness requirement, not a preference: nextvi's
+ * ignorecase defaults ON and feeds every rset this script relies on, while the
+ * patterns here are literal source text. A case-folded match is simply the
+ * wrong line or the wrong byte - "s/x/w/" meant for "xrows" lands on the "X" of
+ * an earlier "MAX(" - and the shorter the pattern, the likelier the impostor. */
 static void emit_prologue(sbuf *out)
 {
 	sb_str(out, "|sc! ");
@@ -5327,12 +4966,12 @@ static void emit_prologue(sbuf *out)
 	EMIT_SEP(out);
 }
 
-/* Open the "printf '%s%s%s\n' ..." that stages a body and write its first two
+/* Open the "printf '%s%s%s\n' ..." that stages a body, writing its first two
  * arguments: the prologue plus the default register state (single quoted, so
- * every byte goes out verbatim) and the switches the shell contributes (a
- * double-quoted word). The printf is left open on its third argument - the body
- * proper - which the caller writes. regs = 0 omits both register halves, as a
- * plain absolute script has no state to switch. osb is scratch, left empty. */
+ * every byte goes out verbatim), and the switches the shell contributes (a
+ * double-quoted word). The printf is left open on its third argument, the body
+ * proper. regs = 0 omits both halves, as a plain absolute script has no state
+ * to switch. osb is scratch, left empty. */
 static void emit_body_head(sbuf *osb, int regs)
 {
 	sbuf_cut(osb, 0)
@@ -5351,21 +4990,17 @@ static void emit_body_head(sbuf *osb, int regs)
 	sbuf_cut(osb, 0)
 }
 
-/* Emit one "$VI -e" invocation: the printf body (|sc! prologue, per-file
- * b<k>/%ya 98/groups, vis 2, the writes and the 2q) staged into $P2VIF, then
- * the EXINIT $VI line naming the files in b<k> order. The host block passes no
- * gate; a compat block passes its gate probes, emitted after the guarded
- * (first) file's register is cached and before its groups, so a tree without
- * the origin's change quits (q!0) before any edit. Buffer indices are the
+/* One "$VI -e" invocation: the printf body (|sc! prologue, per-file
+ * b<k>/%ya 98/groups, vis 2, the writes, the 2q) staged into $P2VIF, then the
+ * EXINIT $VI line naming the files in b<k> order. Buffer indices are the
  * position in active[], which is what vi opens. */
 static void emit_vi_block(file_patch_t **active, int nactive)
 {
 	int forward = relative_mode || interactive_mode;
 	int regs = relative_mode || interactive_mode || compat_mode;
 	sbuf_smake(osb, SB_INIT)
-	/* the three printf arguments sit on their own source lines, joined by
-	 * backslash-newline continuations: outside the quotes these splice the
-	 * adjacent words with no separator, so the printf output is unchanged */
+	/* the three printf arguments sit on their own source lines, spliced by
+	 * backslash-newline continuations, so the output is unchanged */
 	emit_body_head(osb, regs);
 	if (forward) {
 		sb_str(osb, "fr 98");
@@ -5391,10 +5026,9 @@ static void emit_vi_block(file_patch_t **active, int nactive)
 	free(osb->s);
 }
 
-/* Global buffer index of fp in the unified file list uf[] (the order in which
- * the single $VI call opens the real files as b0..bN-1). Matched by path: the
- * host's and a compat block's entries for the same file are distinct
- * file_patch_t but one physical file, so one shared buffer. */
+/* Global buffer index in uf[], the order the single $VI call opens the real
+ * files in. Matched by path: the host's and a compat block's entries for one
+ * file are distinct file_patch_t but one physical file, so one buffer. */
 static int uf_index_path(file_patch_t **uf, int nuf, const char *path)
 {
 	for (int i = 0; i < nuf; i++)
@@ -5408,15 +5042,11 @@ static int uf_index(file_patch_t **uf, int nuf, file_patch_t *fp)
 	return uf_index_path(uf, nuf, fp->path);
 }
 
-/* Emit a gate's probe search as top-level commands, recording the result into
- * the anchor slot identified by g->tag. The driver's conditional call later
- * reads that anchor to decide whether to run the block.  No sub-chain wrapper
- * is needed: the commands run at the driver's top level with plain EMIT_SEP
- * separators.
- * Single-line patterns use %f> over the live buffer with fr 0 (so ^...$ are
- * per-line anchors). Multi-line patterns fall back to the register cache
- * (fr 98 + %ya 98) where the whole file is one string, so the regex engine
- * sees the embedded newlines and matches correctly. */
+/* A gate's probe search, as top-level driver commands recording the result
+ * into anchor slot g->tag; the conditional call later reads it. A single-line
+ * probe searches the live buffer (fr 0), so ^...$ are per-line anchors; a
+ * multi-line one the register cache, where the whole file is one string and the
+ * embedded newlines are visible to the regex. */
 static void emit_gate_record(sbuf *out, gate_t *g, int gbuf)
 {
 	pat_spec_t ps;
@@ -5440,21 +5070,19 @@ static void emit_gate_record(sbuf *out, gate_t *g, int gbuf)
 	EMIT_SEP(out);
 }
 
-/* One section's edit body (no prologue, no register defaults, no gate and no
- * vis 2/w/2q tail): the per-file buffer select, its register cache and its
- * generated groups. Buffer indices are global (uf_index), because one $VI call
- * opens every file. The body is staged as its own buffer and executed verbatim
- * through a %@ call, so its top-level separators are raw (EMIT_SEP): %@ inserts
- * the yanked bytes with no rescanning, so the body runs at whatever depth the
- * call sits without any change to its escaping. */
+/* One section's edit body - no prologue, no register defaults, no gate, no
+ * vis 2/w/2q tail: the per-file buffer select, its register cache and its
+ * groups. Buffer indices are global (uf_index), since one $VI call opens every
+ * file. The body is staged as its own buffer and run verbatim through %@, which
+ * inserts the yanked bytes without rescanning them, so its top-level separators
+ * stay raw however deep the call sits. */
 static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
 			      file_patch_t **uf, int nuf)
 {
 	/* The driver expands this body through "2sc % : ?%@<reg>", so xexp is
-	 * still '%' when the body begins - but the body's own %ya/%f> use '%'
-	 * as the all-lines range, not as an expansion trigger. Reset xexp to 0
-	 * up front (the driver prologue's |sc! does the same for the driver);
-	 * the body's error sites re-enable it locally through emit_reg_call. */
+	 * still '%' here - but the body's own %ya/%f> mean the all-lines range,
+	 * not expansion. Reset it up front; the error sites re-enable it
+	 * locally through emit_reg_call. */
 	sb_str(out, "2sc");
 	EMIT_SEP(out);
 	sb_str(out, "fr 98");
@@ -5471,20 +5099,17 @@ static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
 		cur_file_path = files[k]->path;
 		emit_file_script(out, files[k]);
 	}
-	/* Strip any trailing separator emitted by the last error check in
-	 * emit_file_script: when this body is yanked into a register and
-	 * executed via %@, a dangling separator produces an empty command
-	 * that ex prints as "unknown command". */
+	/* A dangling separator from the last error check would be an empty
+	 * command when %@ runs the body, which ex reports as unknown. */
 	if (out->s_n > 0 && out->s[out->s_n - 1] == sep)
 		out->s_n--;
 }
 
-/* A compat block announces itself as the *last* command of its own body: the
- * body only runs when the block's gate resolved present (the driver's %@ call is
- * gated), and reaching its end means every edit in it applied, so the print is
- * proof of application rather than of intent. Silent on a clean tree, where the
- * body is never called. No DBG switch hides it - it is the only outside evidence
- * that a compat block ran. */
+/* A compat block announces itself as the LAST command of its own body: the body
+ * only runs when the gate resolved present, and reaching its end means every
+ * edit applied - so the print is proof of application, not of intent. Silent on
+ * a clean tree. No DBG switch hides it: it is the only outside evidence that a
+ * compat block ran. */
 static void emit_compat_announce(sbuf *out, char *origin)
 {
 	EMIT_SEP(out);
@@ -5513,10 +5138,9 @@ typedef struct {
 	compat_block_t *cb;	/* NULL for the host section */
 } section_t;
 
-/* Emit a section's combined gate expression - "tag1,tag2??" (present) or
- * "tag1,tag2??!" (absent), or a bare "?" when the section has no real gate.
- * ',' is AND; every gate in a block shares one polarity, so the trailing "!"
- * is decided by the last real gate. Written raw at the driver's top level. */
+/* A section's combined gate expression: "tag1,tag2??" (present) or "...??!"
+ * (absent), or a bare "?" when it has no real gate. ',' is AND, and every gate
+ * of a block shares one polarity, so the last one decides the "!". */
 static void emit_gate_expr(sbuf *out, section_t *s)
 {
 	int present = 1, real = 0;
@@ -5556,16 +5180,13 @@ static int sections_share_file(section_t *a, section_t *b)
 	return 0;
 }
 
-/* Redefine REG_QF2 (211) to the plain assert form ("vis 2; q!1"): an error site
- * that calls 211 reports (already done upstream) and quits 1. deep=0 emits at
- * the driver's top level (like emit_reg_defaults); deep=1 emits inside a ??/??!
- * then-arg, one ex_exec level down, so the separator 211 must *capture* carries
- * the extra escape level.
- * The trailing separator is always raw: it ends this command in the stream the
- * driver's top level parses, and ex_arg stops a ??-arm's argument at the first
- * unescaped separator. Escaping it would fold every following driver command
- * into the arm - the arm's own body would then only run when the arm fired, and
- * the block's buffer select and %ya would go with it. */
+/* Redefine REG_QF2 to the plain assert form ("vis 2; q!1"), so an error site
+ * calling it quits 1. deep=1 emits inside a ??-arm, one ex_exec level down, so
+ * the separator 211 must capture carries the extra escape level.
+ * The trailing separator stays raw either way: it ends this command in the
+ * stream the driver's top level parses, and escaping it would fold every
+ * following driver command - the block's buffer select and %ya included - into
+ * the arm, to run only when the arm fires. */
 static void emit_qf2_assert(sbuf *out, int deep)
 {
 	sb_printf(out, "%dreg vis 2", REG_QF2);
@@ -5574,10 +5195,8 @@ static void emit_qf2_assert(sbuf *out, int deep)
 	EMIT_SEP(out);
 }
 
-/* Redefine REG_QF2 (211) to empty: suppress the quit so error sites in the
- * following body still report (via REG_ERR2 -> REG_HDLR) but do not abort.
- * deep is unused for the same reason the assert's terminator is raw - there is
- * no payload separator here, only the terminator. */
+/* Redefine REG_QF2 to empty: error sites in the following body still report,
+ * through REG_ERR2 -> REG_HDLR, but no longer abort. */
 static void emit_qf2_clear(sbuf *out)
 {
 	sb_printf(out, "%dreg", REG_QF2);
@@ -5585,21 +5204,16 @@ static void emit_qf2_clear(sbuf *out)
 }
 
 /* Host quit override, emitted once before the host body when sensors exist:
- * "211reg fr <ANY>:f> 1:??!vis 2:q!1". A miss on the shared any-origin flag
- * (no sensor fired, e.g. a clean tree) is an error that ??! catches and quits
- * on, exactly as a non-compat script does; a hit (some origin present) leaves
- * 211's ??! silent, so the host is best-effort and falls through its own
- * mismatches. This lives inside 211 and re-runs per error site, so the shared
- * flag is read with a register f>, never an accumulating anchor.
+ * "211reg fr <ANY>:f> 1:??!vis 2:q!1". A miss on the shared any-origin flag (a
+ * clean tree, no sensor fired) is an error ??! catches and quits on, exactly as
+ * a non-compat script does; a hit leaves it silent, so the host is best-effort
+ * and falls through its own mismatches. It lives inside 211 and re-runs per
+ * error site, so the flag is read with a register f>, never an anchor.
  *
- * The trailing "fr 98" is not decoration: ex_find's register redirection is the
- * global xfr, so reading the flag through "fr <ANY>" leaves every later search
- * pointed at that register. Since this chain fires from inside a body - at an
- * error site, on the very tree where the host is expected to miss - the next
- * group's search would read the flag's "1" instead of the file cache and miss
- * too, and the whole rest of the body would fall over silently. Restore the
- * body's invariant (a group's search reads the cache) on the way out; the
- * firing side quits, so it needs none. */
+ * The trailing "fr 98" is load-bearing: ex_find's register redirection is the
+ * global xfr, so reading the flag leaves every later search pointed at it, and
+ * the next group would search the flag's "1" instead of the file cache. The
+ * firing side quits, so only the falling-through side needs the restore. */
 static void emit_host_override(sbuf *out)
 {
 	sb_printf(out, "%dreg fr %d", REG_QF2, REG_FLAG_ANY);
@@ -5614,12 +5228,10 @@ static void emit_host_override(sbuf *out)
 	EMIT_SEP(out);
 }
 
-/* Block-head quit policy: a compat block asserts iff no later block over the
- * same file has a fired origin. secs[i] is the block; scan secs[i+1..nsec) for
- * later same-file blocks and record each origin's presence as an anchor slot,
- * then OR the slots to (re)define 211 for this block's body: any later present
- * -> suppress (clear 211); none later -> assert (default 211). A statically-last
- * block (no later same-file blocks) skips the test and unconditionally asserts,
+/* Block-head quit policy: a block asserts iff no later block over the same file
+ * has a fired origin. Each later same-file origin's presence is recorded as an
+ * anchor slot and the slots ORed to redefine 211 - any present suppresses, none
+ * asserts. A statically-last block skips the test and asserts unconditionally,
  * since the host override left 211 relaxed and it must be restored. */
 static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
 {
@@ -5654,12 +5266,10 @@ static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
 	emit_qf2_assert(out, 1);
 }
 
-/* Sensor half of a section's orchestration: run its gate searches, recording
- * each under its own tag. The host section has no gates and contributes
- * nothing. Every sensor runs before any body (the driver emits all sensors
- * first), and their tags persist in xanchor to the call half below - the whole
- * driver is one top-level ex_exec, so a tag recorded here is still readable when
- * the matching call runs after the host body. */
+/* Sensor half of a section's orchestration: its gate searches, each recorded
+ * under its own tag (the host has none). Every sensor runs before any body, and
+ * the whole driver is one top-level ex_exec, so the tags persist in xanchor and
+ * are still readable when the matching call runs after the host body. */
 static void emit_driver_sensors(sbuf *out, section_t *s,
 				file_patch_t **uf, int nuf, int *anyinit)
 {
@@ -5676,11 +5286,10 @@ static void emit_driver_sensors(sbuf *out, section_t *s,
 	}
 	if (!real)
 		return;
-	/* Define both flags as "0" before anything reads them. An unset register
-	 * also reads false, but through the "uninitialized register" error, which
-	 * the reader prints: every clean-tree subset test would announce itself.
-	 * "0" misses the flags' "f> 1" search silently, and a later "reg+ 1"
-	 * appends to it, so the fired side still reads true. */
+	/* Both flags as "0" before anything reads them. An unset register
+	 * reads false too, but through an error the reader prints, so every
+	 * clean-tree subset test would announce itself. "0" misses the "f> 1"
+	 * search silently, and a later "reg+ 1" still appends to it. */
 	if (!*anyinit) {
 		sb_printf(out, "%dreg 0", REG_FLAG_ANY);
 		EMIT_SEP(out);
@@ -5699,19 +5308,17 @@ static void emit_driver_sensors(sbuf *out, section_t *s,
 	EMIT_SEP(out);
 }
 
-/* Call half: yank the section body into its register, then %@-call it -
- * unconditionally for the host, or gated on the sensor tags for a compat block.
- * Every %@ call is bracketed with the "2sc %" / "2sc" expansion window
- * (emit_reg_call's discipline) because the driver prologue's |sc! leaves xexp
- * inert. */
+/* Call half: yank the section body into its register and %@-call it -
+ * unconditionally for the host, gated on the sensor tags for a compat block.
+ * Bracketed with the "2sc %" / "2sc" expansion window, since the driver
+ * prologue's |sc! leaves xexp inert. */
 static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 			     file_patch_t **uf, int nuf)
 {
 	section_t *s = &secs[i];
-	/* Rewind every real file this section touches to line 1 before running
-	 * it: the gate sensors and any earlier block leave the cursor deep in
-	 * the buffer, and the body's relative searches (";0fr.,$f>") key off
-	 * the current line, so a leftover row would steer them past matches. */
+	/* Rewind every real file this section touches: the sensors and any
+	 * earlier block leave the cursor deep in the buffer, and the body's
+	 * relative searches key off the current line. */
 	for (int k = 0; k < s->nf; k++) {
 		sb_printf(out, "b%d", uf_index(uf, nuf, s->files[k]));
 		EMIT_SEP(out);
@@ -5735,30 +5342,31 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 	EMIT_SEP(out);
 }
 
-/* Emit the whole patch as a single $VI call: the real files as b0..bN-1, then
- * one staged buffer per section (the host and each compat block), then a driver
- * buffer that EXINIT yanks into register 97 and runs. The driver defines the
- * state registers once, runs each section in application order (host, then
- * every post-compat block) through a %@ call, and finally writes every real file and
- * quits. A gate that misses simply skips its block's call; nothing quits the
+/* The whole patch as a single $VI call: the real files as b0..bN-1, one staged
+ * buffer per section (host, then each compat block), and a driver buffer EXINIT
+ * yanks into register 97 and runs. The driver defines the state registers once,
+ * %@-calls each section in application order, then writes every real file and
+ * quits. A gate that misses only skips its block's call - nothing quits the
  * shared process, so later sections still run. */
 static void emit_one_call(file_patch_t **active, int nactive)
 {
 	section_t *secs = emalloc((ncompat + 1) * sizeof(*secs));
 	int nsec = 0, compat_reg = 50;
-	int nprobe = 0, nwrite;
+	int nprobe = 0, nwrite, ngate = 0;
 	file_patch_t *probes;
-	file_patch_t **uf = emalloc((nfiles + ncompat * GATE_MAXPROBES + 1) *
-				    sizeof(*uf));
+	file_patch_t **uf;
 	int nuf = 0;
+	for (int c = 0; c < ncompat; c++)
+		ngate += compat_blocks[c].ngates;
+	uf = emalloc((nfiles + ngate + 1) * sizeof(*uf));
 	for (int i = 0; i < nfiles; i++)
 		if (files[i].ngroups > 0 && uf_index(uf, nuf, &files[i]) < 0)
 			uf[nuf++] = &files[i];
-	/* Files only a cross-file gate probe reads: the call must open them so
-	 * the sensor has a buffer to search, but nothing edits them, so they go
-	 * after every edited file and the write tail stops short of them. */
+	/* Files only a cross-file probe reads: the call opens them so the
+	 * sensor has a buffer, but nothing edits them, so they go last and
+	 * the write tail stops short of them. */
 	nwrite = nuf;
-	probes = ecalloc(ncompat * GATE_MAXPROBES + 1, sizeof(*probes));
+	probes = ecalloc(ngate + 1, sizeof(*probes));
 	for (int c = 0; c < ncompat; c++)
 		for (int j = 0; j < compat_blocks[c].ngates; j++) {
 			char *gp = compat_blocks[c].gates[j].path;
@@ -5802,29 +5410,24 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	      "( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
 	      "trap 'rm -f \"$P2VIF\".*' EXIT\n", stdout);
 
-	/* Assign each section its global buffer index up front so the driver can
-	 * reference them before the bodies are staged. */
+	/* the driver references these before the bodies are staged */
 	for (int i = 0; i < nsec; i++)
 		secs[i].secbuf = nuf + i;
 
-	/* Stage the driver (".d") first: it carries every gate, and the gates
-	 * must run before any section body, so it heads the list of printfs.
-	 * Layout: prologue + register defaults (arg1), shell switches (arg2),
-	 * orchestration + final writes (arg3). */
+	/* The driver (".d") is staged first: prologue + register defaults,
+	 * shell switches, then orchestration and the final writes. */
 	sbuf_smake(osb, SB_INIT)
 	emit_body_head(osb, 1);
-	/* All sensors first (they record their tags), then the bodies in run
-	 * order: host, then every compat block. Sensors-before-bodies is the C1
-	 * layout - the host body can consult the sensor results. */
+	/* All sensors first, so their tags are recorded, then the bodies in
+	 * run order - which is what lets the host body consult the results. */
 	int any_sensor = 0, anyinit = 0;
 	for (int i = 0; i < nsec; i++) {
 		emit_driver_sensors(osb, &secs[i], uf, nuf, &anyinit);
 		if (secs[i].cb && section_has_gate(&secs[i]))
 			any_sensor = 1;
 	}
-	/* Host quit override goes after every sensor (they set the flags) and
-	 * before any body. Only when a sensor exists; otherwise 211 stays at its
-	 * emit_reg_defaults value and non-compat scripts remain byte-identical. */
+	/* after every sensor (they set the flags), before any body; without
+	 * one, 211 keeps its default and plain scripts stay byte-identical */
 	if (any_sensor)
 		emit_host_override(osb);
 	for (int i = 0; i < nsec; i++)
@@ -5856,8 +5459,8 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			compat_win_leave(sv_rel);
 	}
 
-	/* The single call: real files, section bodies, driver last (current at
-	 * EXINIT, so %ya 97 yanks it). */
+	/* real files, section bodies, driver last - so it is current at EXINIT
+	 * and "%ya 97" yanks it */
 	fputs(P2VI_VICALL " $VI -e", stdout);
 	for (int i = 0; i < nuf; i++)
 		printf(" '%s'", uf[i]->path);
@@ -5873,8 +5476,8 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	free(probes);
 }
 
-/* Serialize a delta store as === DELTA <path> === sections; empty entries
- * (a file whose groups were all left alone) are skipped. */
+/* A delta store as === DELTA <path> === sections; a file whose groups were all
+ * left alone contributes nothing. */
 static void emit_dstore(dstore_t *ds)
 {
 	sbuf_smake(sb, SB_INIT)
@@ -5899,17 +5502,15 @@ static const char *gate_polarity_word(int p)
 	     : p == GATE_ABSENT  ? "absent" : "always";
 }
 
-/* Serialize every compat block into a terminator-fenced tail region after
- * exit 0 and before the host === PATCH2VI PATCH === (which stays last, to EOF,
- * so the patch(1) fallback's sed is unaffected). One region per compat patch,
- * self-contained - its gate probes, its delta customizations and its whole
- * unified diff, every file of it - so -d regenerates it and -i edits it without
- * re-running the origin. === COMPAT PATCH === is that diff and nothing else: a
- * verbatim store, so a -co third argument comes back out of it as the patch the
- * author handed in (modulo the user's edits on top).
- * The inner sub-sections are === END ===-closed exactly like the host DELTA
- * sub-sections, so the reader closes them through its existing end_tag handling
- * and reaches === END COMPAT === with no section open. */
+/* Every compat block as a terminator-fenced tail region after exit 0 and before
+ * the host === PATCH2VI PATCH === (which stays last, to EOF, so the patch(1)
+ * fallback's sed is unaffected). One region per compat patch, self-contained -
+ * its gate probes, its delta customizations and its whole unified diff - so -d
+ * regenerates it and -i edits it without re-running the origin.
+ * === COMPAT PATCH === is that diff and nothing else, stored verbatim, so a -co
+ * third argument comes back out as the patch its author handed in. The inner
+ * sub-sections close with === END === like the host's, so the reader reaches
+ * === END COMPAT === with no section open. */
 static void emit_compat_storage(void)
 {
 	for (int c = 0; c < ncompat; c++) {
@@ -5982,21 +5583,20 @@ static void add_op(int type, int oline, const char *text)
 }
 
 /*
- * -e: run a generated patch2vi script through the embedded editor, no
- * shell involved. The script's grammar is closed and self-generated —
- * header assignments, one printf'd ex body per editor invocation and the
- * "$VI -e <files> $P2VIF" line that runs it — so it is parsed exactly,
- * and anything outside that grammar is an error rather than a
- * best-effort guess. Each block gets its own editor lifetime, mirroring
- * the separate $VI process the shell would spawn.
+ * -e: run a generated script through the embedded editor, no shell involved.
+ * The grammar is closed and self-generated - header assignments, one printf'd
+ * ex body per editor invocation, the "$VI -e <files> $P2VIF" line that runs it -
+ * so it is parsed exactly and anything outside it is an error, not a
+ * best-effort guess. Each block gets its own editor lifetime, mirroring the
+ * separate $VI process the shell would spawn.
  */
 
 static int exec_mode;		/* -e: execute the input script */
 static const char *exec_script;	/* its path, i.e. the script's $0 */
 
-/* Shell variables assigned by the script header. Looked up before the
- * environment, so a header assignment shadows an inherited value while
- * the header's own conditionals still test the inherited one. */
+/* Shell variables assigned by the script header, looked up before the
+ * environment - so an assignment shadows an inherited value while the header's
+ * own conditionals still test the inherited one. */
 typedef struct {
 	char *name;
 	char *val;
@@ -6013,9 +5613,8 @@ static const char *sh_get(const char *name)
 	return getenv(name);
 }
 
-/* Header assignments belong to one script; a session replaying two of
- * the target (-co) must not let the first script's assignments shadow the
- * environment while the second's conditionals are read. */
+/* Header assignments belong to one script: replaying two (-co) must not let the
+ * first's shadow the environment while the second's conditionals are read. */
 static void sh_reset(void)
 {
 	for (int i = 0; i < nshvars; i++) {
@@ -6045,8 +5644,7 @@ static int sh_err(const char *what, const char *s)
 	return -1;
 }
 
-/* The [A-Za-z0-9_] run at *s as a fresh string, advancing *s past it.
- * Empty when *s does not start a name; the caller frees. */
+/* The [A-Za-z0-9_] run at *s as a fresh string, advancing *s past it. */
 static char *sh_name(const char **s)
 {
 	sbuf_smake(sb, 32)
@@ -6055,9 +5653,9 @@ static char *sh_name(const char **s)
 	sbufn_ret(sb, sb->s)
 }
 
-/* Expand one double-quoted shell word: ${VAR}, ${VAR:-default} and
- * ${VAR:+alternate} (both nestable), $VAR, $0, $(printf '\NNN') and the
- * escapes that survive double quotes. Everything else is literal. */
+/* One double-quoted shell word: ${VAR}, ${VAR:-default} and ${VAR:+alternate}
+ * (both nestable), $VAR, $0, $(printf '\NNN') and the escapes that survive
+ * double quotes. Everything else is literal. */
 static int sh_expand(const char *s, sbuf *out)
 {
 	char *name;
@@ -6220,14 +5818,13 @@ typedef struct {
 	int nsects;
 } p2vi_block_t;
 
-/* One editor lifetime: the real files as b0..bN-1, then (new shape) one
- * in-RAM buffer per staged section body b<N>..b<N+nsects-1>, then the driver
- * body. EXINIT only exists to lift the body out of the buffer the shell had
- * to pass it in; -e holds the body already, so it fills the register the body
- * may recurse through and runs the chain itself. In the new multi-buffer
- * shape the driver does its own per-section "b<k>:%ya <reg>:...%@<reg>", so
- * the section bodies must be resident as buffers before the driver runs -
- * their buffer indices are exactly the emitter's uf-count + section index. */
+/* One editor lifetime: the real files as b0..bN-1, then one in-RAM buffer per
+ * staged section body, then the driver body. EXINIT only exists to lift the
+ * body out of the buffer the shell had to pass it in; -e holds it already, so
+ * it fills the register the body may recurse through and runs the chain itself.
+ * The driver does its own "b<k>:%ya <reg>:...%@<reg>" per section, so the
+ * section bodies must be resident before it runs - at exactly the emitter's
+ * uf-count + section index. */
 static int run_body(p2vi_block_t *blk)
 {
 	int st;
@@ -6269,12 +5866,10 @@ static void free_block(p2vi_block_t *blk)
 	memset(blk, 0, sizeof(*blk));
 }
 
-/* The script's separator byte, the delimiter of the body's commands. It is
- * declared where ex learns it, in the body's own "|sc! <esc><sep>|"
- * prologue: with a dynamic escape byte the loc holds the two bytes as they
- * are, with the default backslash escape it holds a doubled one that the
- * loc's ex_se_read halves. Read per block, since a replay may span two
- * scripts and each body keeps its own separator. */
+/* The script's separator byte, read where ex learns it - the body's own
+ * "|sc! <esc><sep>|" prologue, which holds the bytes as they are with a dynamic
+ * escape and a doubled one with the default backslash. Per block, since a
+ * replay may span two scripts and each body keeps its own. */
 static int body_sepbyte(const char *body)
 {
 	const char *p = body, *e;
@@ -6289,9 +5884,8 @@ static int body_sepbyte(const char *body)
 	return -1;
 }
 
-/* EXINIT='<init>' $VI -e 'file' ... "$P2VIF"; the init is the fixed one
- * emit_script() writes and -e supplies its effect itself, so it is only
- * checked, never interpreted */
+/* EXINIT='<init>' $VI -e 'file' ... "$P2VIF": the init is the fixed one the
+ * emitter writes and -e supplies its effect itself, so it is only checked */
 static int parse_vi_call(const char *s, p2vi_block_t *blk)
 {
 	const char *p;
@@ -6326,9 +5920,8 @@ static int parse_vi_call(const char *s, p2vi_block_t *blk)
 }
 
 /* One shell word: adjacent single-quoted, double-quoted and unquoted runs
- * concatenate into it. A single-quoted run is verbatim (and holds no
- * quote of its own, the generator writes '\'' for those), a double-quoted
- * one goes through sh_expand. Advances *sp past the word. */
+ * concatenate into it. A single-quoted run is verbatim, a double-quoted one
+ * goes through sh_expand. */
 static int sh_word(const char **sp, sbuf *out)
 {
 	const char *s = *sp, *e;
@@ -6372,9 +5965,8 @@ static int sh_word(const char **sp, sbuf *out)
 }
 
 /* The staged body: "printf <format> <word>..." with a format that only
- * concatenates its arguments and ends the line. The words carry the
- * command chain; sh writes at most one of them, and only ever whole
- * commands, so nothing here can change how the rest is parsed. */
+ * concatenates its arguments and ends the line. sh writes at most one word, and
+ * only ever whole commands, so nothing here changes how the rest parses. */
 static int sh_printf_body(const char *s, sbuf *out)
 {
 	int ret;
@@ -6416,22 +6008,21 @@ static int expand_body(const char *raw, char **out)
 	return ret;
 }
 
-/* Staged bodies gathered between two "$VI" calls, keyed by the "$P2VIF"
- * suffix the printf redirects into: "" for the old single-body shape,
- * "d" for the new driver, and "0","1",... for the section bodies. */
+/* Staged bodies gathered between two "$VI" calls, keyed by the "$P2VIF" suffix
+ * they redirect into: "" single-body, "d" driver, "0","1",... sections. */
 typedef struct {
 	char **raw;	/* the raw printf command, one per staged body */
 	char **suf;	/* its "$P2VIF" suffix */
-	int n;
+	int n, cap;
 } pend_t;
 
 static void pend_push(pend_t *p, const char *raw, const char *suf)
 {
-	p->raw = erealloc(p->raw, (p->n + 1) * sizeof(char *));
-	p->suf = erealloc(p->suf, (p->n + 1) * sizeof(char *));
+	int cap = p->cap;
+	ARR_PUSH(p->raw, p->n, p->cap)
+	ARR_PUSH(p->suf, p->n, cap)
 	p->raw[p->n] = uc_dup(raw);
-	p->suf[p->n] = uc_dup(suf);
-	p->n++;
+	p->suf[p->n++] = uc_dup(suf);
 }
 
 static void pend_clear(pend_t *p)
@@ -6445,10 +6036,8 @@ static void pend_clear(pend_t *p)
 	memset(p, 0, sizeof(*p));
 }
 
-/* Turn the gathered staged bodies into one block. Old shape: a single "" body
- * becomes blk.body. New shape: the "d" body is the driver (blk.body) and the
- * numeric bodies are the per-buffer section bodies (blk.sects, in index
- * order). parse_vi_call has already filled blk.paths. */
+/* The gathered bodies as one block: either the single "" body, or the "d"
+ * driver plus the numeric section bodies in index order. */
 static int pend_finish(pend_t *p, p2vi_block_t *blk)
 {
 	int drv = -1, old = -1, nsec = 0, ret = 0;
@@ -6479,10 +6068,10 @@ static int pend_finish(pend_t *p, p2vi_block_t *blk)
 	return ret;
 }
 
-/* Read the script's executable region (everything before "exit 0") into
- * one block per editor invocation. Parsing is separate from running: -e
- * runs each block in its own editor lifetime, while the compat session
- * replays them all in one, and that needs the whole list up front. */
+/* The script's executable region (everything before "exit 0") as one block per
+ * editor invocation. Parsing is separate from running because -e gives each
+ * block its own lifetime while the compat session replays them all in one, and
+ * that needs the whole list up front. */
 static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 {
 	const char *body_end = " > \"$P2VIF\"";
@@ -6501,11 +6090,9 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 		}
 		if (in_body) {
 			/* the printf ends where it is redirected; its words
-			 * span lines, so they are gathered raw and read as
-			 * words once the whole command is in hand. The redirect
-			 * is "> $P2VIF" (old single body) or "> $P2VIF.<sfx>"
-			 * (new driver ".d" / sections ".0",".1",...); the suffix
-			 * routes the body in pend_finish. */
+			 * span lines, so they are gathered raw and read once
+			 * the whole command is in hand. The redirect's suffix
+			 * ("" / ".d" / ".0"...) routes it in pend_finish. */
 			int n = strlen(seg), el = strlen(body_end);
 			const char *suf = NULL;
 			if (n >= el && !strcmp(seg + n - el, body_end)) {
@@ -6605,22 +6192,19 @@ static int exec_p2vi_script(FILE *in)
 }
 
 /*
- * Replay: the same blocks, but as one editor session. Deriving a
- * compatibility patch means seeing the tree an origin script leaves
- * behind, so the buffers persist across blocks (a later block naming a
- * file an earlier one edited switches to the edited buffer, ec.c's
- * bufs_find path, with no disk round-trip), nothing is ever written, and
- * the last block hands the session to the user. Everything that is not a
- * buffer is still reset per block, as it is under -e: an editor the shell
- * spawned per block shares no register cache, "??" tag or separator with
- * the one before it.
+ * Replay: the same blocks, but as one editor session. Deriving a compat patch
+ * means seeing the tree an origin script leaves behind, so the buffers persist
+ * across blocks (a later block naming an already edited file switches to that
+ * buffer, no disk round-trip), nothing is ever written, and the last block
+ * hands the session to the user. Everything that is not a buffer is still reset
+ * per block, as under -e: no register cache, "??" tag or separator carries.
  */
 
 #define BODY_DELIM(c) ((c) == sep || (c) == '\n')
 
-/* Drop the body's trailing writes: "b<N> SEP w" per file and the final
- * "2q". Parsed from the end, since "vis 2" (which stays) also occurs
- * inside the quit/interrupt register chains and so anchors nothing. */
+/* Drop the body's trailing writes ("b<N> SEP w" per file, then "2q"), parsed
+ * from the end: "vis 2", which stays, also occurs inside the quit and interrupt
+ * chains and so anchors nothing. */
 static int strip_body_tail(char *body, int sep)
 {
 	int n = strlen(body), s;
@@ -6643,11 +6227,10 @@ static int strip_body_tail(char *body, int sep)
 	return 0;
 }
 
-/* b<N> indexes the block's own file list, but a replay session's buffer
- * indices are session-global: a file another block opened first keeps its
- * index here. Rewrite the tokens with the session's own numbers. Only a
- * whole command counts as one, so the literal ":b0:" inside INTR (whose
- * commands are colon-separated) is left alone. */
+/* b<N> indexes the block's own file list, but a replay session's indices are
+ * session-global, so the tokens are rewritten with the session's numbers. Only
+ * a whole command counts as one, leaving the literal ":b0:" inside INTR (whose
+ * commands are colon-separated) alone. */
 static char *remap_bufnums(const char *body, int sep, int *bmap, int nmap)
 {
 	const char *s = body, *e, *d;
@@ -6672,9 +6255,8 @@ static char *remap_bufnums(const char *body, int sep, int *bmap, int nmap)
 	sbufn_ret(out, out->s)
 }
 
-/* The session's buffer index for a path, opening it if this is the first
- * block to name it. Mirrors bufs_open()'s append order, so the index the
- * body sees is the index the editor uses. */
+/* The session's buffer index for a path, opened if this is the first block to
+ * name it; mirrors bufs_open()'s append order. */
 static int sess_buf(char ***paths, int *npaths, const char *path)
 {
 	for (int i = 0; i < *npaths; i++)
@@ -6692,13 +6274,11 @@ typedef struct { char *path, *text; } snap_t;
 typedef struct { snap_t *v; int n, cap; } snaps_t;
 static snaps_t compat_base;
 
-/* Post-origin, pre-target text of each buffer the origin opened: the tree a
- * clean apply of the origin alone leaves behind. This - not the baseline - is
- * what a gate probe must name, because every gate sensor runs before any
- * section body writes (emit_one_call's sensors-before-bodies layout), so the
- * text a gate sees at run time is the tree with the origin applied and the
- * target not yet. A probe read off the baseline could be a line the target
- * rewrote, which never exists when the sensor looks. */
+/* Post-origin, pre-target text of each buffer the origin opened. This - not the
+ * baseline - is what a gate probe must name: every sensor runs before any body
+ * writes, so the text a gate sees at run time is the tree with the origin
+ * applied and the target not yet, and a probe read off the baseline could name
+ * a line the target rewrote, which never exists when the sensor looks. */
 static snaps_t compat_x1;
 
 /* Replace sn with one entry per named buffer in the live session. */
@@ -6727,10 +6307,10 @@ static char *snap_find(snaps_t *sn, const char *path)
 	return NULL;
 }
 
-/* Give path a baseline entry holding its on-disk text, unless it already has
- * one. A path no baseline block named is untouched by the baseline, so disk is
- * its post-replay state; without the entry compat_derive() would write it off
- * as "opened after the baseline" and drop the edits made to it. */
+/* A baseline entry holding path's on-disk text, unless it has one. A path no
+ * baseline block named is untouched, so disk is its post-replay state; without
+ * the entry compat_derive() would take it for "opened after the baseline" and
+ * drop the edits made to it. */
 static void snap_seed(snaps_t *sn, const char *path)
 {
 	char **v;
@@ -6755,14 +6335,13 @@ static void snap_seed(snaps_t *sn, const char *path)
 static int compat_apply_diff(const char *path);
 static int compat_pre_script;	/* the third argument is a generated script */
 
-/* Run every block in one session. With handover, the last block leaves
- * the editor to the user (a full vi(1), on the terminal) instead of
- * returning at the end of its body. The session's buffers are left alive
- * for the caller to read back; ed_free() drops them. snap_blk names the block
- * the compat baseline is taken after (-1 = the last one): the blocks past it
- * are a pre-applied resolution, which belongs to the derived patch and so must
- * land above the baseline, not in it. snap1_blk names the block the origin ends
- * with, snapshotted into compat_x1 for gate derivation (-1 = never). */
+/* Every block in one session, leaving its buffers alive for the caller to read
+ * back. With handover the last block leaves the editor to the user instead of
+ * returning at the end of its body. snap_blk names the block the compat
+ * baseline is taken after (-1 = the last): the blocks past it are a pre-applied
+ * resolution, which belongs to the derived patch and so must land above the
+ * baseline. snap1_blk names the block the origin ends with, snapshotted into
+ * compat_x1 for gate derivation. */
 static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			 int snap_blk, int snap1_blk)
 {
@@ -6781,17 +6360,15 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 		}
 		/* In a handover session every block claims the tty, not just the
 		 * last: term_init() always draws, and a non-final block left on
-		 * fd 1 would leak its status line into stdout (the script). A
-		 * headless pass runs handover 0 but grabs the tty itself. */
+		 * fd 1 would leak its status line into the script on stdout. */
 		if (ed_init(handover) < 0) {
 			st = -1;
 			break;
 		}
 		xvis |= 2;
-		/* real files map to session-global buffers; a new-shape block's
-		 * staged section bodies load as extra scaffolding buffers above
-		 * them, and its driver references both by index (b<real> and
-		 * b<secbuf>), so the map must cover the whole span. */
+		/* the staged section bodies load as scaffolding buffers above
+		 * the real files and the driver references both by index, so
+		 * the map must cover the whole span */
 		int nb = blks[i].npaths + blks[i].nsects;
 		if (nb > nmap) {
 			nmap = nb;
@@ -6806,12 +6383,8 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			char sname[32];
 			snprintf(sname, sizeof(sname), "*p2vi-sec-%d*", k);
 			bmap[blks[i].npaths + k] = xbufcur;	/* appended next */
-			/* Remap the section body's b<N> references to match the
-			 * session's buffer indices, exactly as the driver body is
-			 * remapped below: earlier blocks may have opened additional
-			 * files that shift the real-file buffer numbers, and the
-			 * hardcoded b<N> in the section body would point to the
-			 * wrong buffer. */
+			/* remapped like the driver body below: earlier blocks may
+			 * have opened files that shift the real-file numbers */
 			char *sec_body = uc_dup(blks[i].sects[k]);
 			char *remapped;
 			if (!(remapped = remap_bufnums(sec_body, sep, bmap,
@@ -6843,24 +6416,17 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 		ex_regput(P2VI_REG, body, 0);
 		ex_exec(body);
 		free(body);
-		/* Drop the section scaffolding: the driver's %ya/%@ calls have
-		 * run and applied their edits to the real buffers, so the handover
-		 * session and the read-back must see only the real files, exactly
-		 * as the old single-body shape left them. The section buffers are
-		 * the topmost xbufcur slots (loaded after the real files); switch
-		 * to a real buffer first so ex_buf/ex_pbuf never dangle. */
+		/* Drop the section scaffolding: its %@ calls have run and applied
+		 * their edits, so the handover and the read-back must see only the
+		 * real files. The section buffers are the topmost slots; switch to
+		 * a real one first so ex_buf/ex_pbuf never dangle. */
 		if (blks[i].nsects) {
 			bufs_switch(bmap[0]);
 			ex_pbuf = ex_tpbuf = ex_buf;
 			for (k = 0; k < blks[i].nsects; k++)
 				bufs_free(--xbufcur);
 		}
-		/* the origin (and target, for -co) has now been replayed: this is
-		 * the baseline the compat diff measures from, captured before the
-		 * pre-applied resolution and the user's own edits. Every path only
-		 * the later blocks name is seeded from disk so its edits are not
-		 * mistaken for an unrelated buffer's. */
-		/* the origin alone has now run: the tree a gate probe will see */
+		/* the origin alone has run: the tree a gate probe will see */
 		if (compat_capturing && !xquit && i == snap1_blk)
 			snap_bufs(&compat_x1);
 		if (compat_capturing && !xquit && i == snap_blk) {
@@ -6879,12 +6445,10 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 		 * gone), so the user is handed nothing and the status
 		 * stands */
 		if (last && !xquit) {
-			/* Present the baseline as a clean, saved file. The script's
-			 * trailing "w" (which would have marked it saved) was stripped
-			 * with the tail, so without this the handover editor shows every
-			 * buffer as modified and its undo stack still holds the replay's
-			 * own edits. Clear the history and the modified flag so :w/:q see
-			 * no change and the user's undo reaches only their own edits. */
+			/* Present the baseline as a clean, saved file: the "w" that
+			 * would have marked it saved went with the stripped tail, so
+			 * without this every buffer shows as modified and undo still
+			 * reaches back into the replay's own edits. */
 			for (k = 0; k < xbufcur; k++)
 				lbuf_saved(bufs[k].lb, 1);
 			/* hand over a plain editor: the body's own separator,
@@ -6904,25 +6468,21 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 		st = ed_done();
 		bad = i + 1;
 		if (i + 1 < nblks || !handover) {
-			/* the next block starts as a fresh editor over the
-			 * same buffers: saved (so :e and :q see no
-			 * modification and undo cannot cross the boundary),
-			 * and with no session state carried over */
+			/* the next block starts as a fresh editor over the same
+			 * buffers: saved, so :e and :q see no modification and
+			 * undo cannot cross the boundary, and with no state */
 			if (xbufcur)
 				bufs_switch(0);
 			for (k = 0; k < xbufcur; k++) {
 				struct lbuf *lb = bufs[k].lb;
 				lbuf_saved(lb, 1);
-				/* exbuf_save() persists the cursor per buffer,
-				 * and marks live on the lbuf, so the next block
-				 * would :e each file with the previous block's
-				 * row/off/top loaded and its marks still set. A
-				 * non-fatal phase-1 miss then falls through to a
-				 * phase-2 edit steered by that stale cursor or
-				 * landing on a stale mark. Deny both: rewind the
-				 * buffer to the top and drop its marks, as a
-				 * freshly opened file has none. Zeroing the
-				 * counts is enough (the arrays are reused). */
+				/* exbuf_save() persists the cursor and the marks
+				 * live on the lbuf, so the next block would :e
+				 * each file with the previous one's position and
+				 * marks - and a non-fatal phase-1 miss would fall
+				 * through to a phase-2 edit steered by them.
+				 * Rewind and drop the marks, as a freshly opened
+				 * file has none. */
 				bufs[k].row = bufs[k].off = bufs[k].top = 0;
 				lb->mark_n = 0;
 				lb->mark_sb[0] = lb->mark_se[0] = -1;
@@ -6940,17 +6500,8 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 	return st;
 }
 
-/* Replay generated scripts over the tree as it is on disk, all in one
- * session whose buffers the caller reads back: -co replays the origin and
- * then the target, so the user is handed the state both have been applied
- * to. The scripts run with their
- * own default phase policy (no env forced here): the shell header is the single
- * source of truth. Stale state is instead denied at the block boundary — every
- * buffer is rewound and its marks cleared — so a non-fatal phase-1 miss cannot
- * fall through to a phase-2 edit at a previous block's mark or cursor. */
-/* Append one script's blocks to *blks. Header assignments are per script
- * (sh_reset) and each block carries its own separator, so two scripts'
- * headers never mix. */
+/* Append one script's blocks to *blks. Header assignments are per script and
+ * each block carries its own separator, so two scripts' headers never mix. */
 static int parse_script(const char *path, p2vi_block_t **blks, int *nblks)
 {
 	FILE *f = fopen(path, "r");
@@ -6966,10 +6517,12 @@ static int parse_script(const char *path, p2vi_block_t **blks, int *nblks)
 	return st;
 }
 
-/* snap_sc is the script index the compat baseline is taken after (-1 = the
- * last one) and snap1_sc the one the origin ends with (-1 = none), translated
- * into the block indices replay_blocks() wants: a script contributes as many
- * blocks as it has $VI calls. */
+/* Replay the scripts over the tree as it is on disk, in one session the caller
+ * reads back: -co replays the origin and then the target, so the user is handed
+ * the state both applied to. The scripts keep their own phase policy - the
+ * shell header is the single source of truth. snap_sc/snap1_sc are the script
+ * indices of the two snapshots, translated into the block indices
+ * replay_blocks() wants (a script contributes one block per $VI call). */
 static int replay_scripts(const char **paths, int nscripts, int handover,
 			  int snap_sc, int snap1_sc)
 {
@@ -6989,12 +6542,11 @@ static int replay_scripts(const char **paths, int nscripts, int handover,
 }
 
 /*
- * -E: edit a file in the built-in nextvi and convert what changed into a
- * script. Nothing is written back: every buffer the editor leaves behind
- * is diffed against the file as it was on disk, and that diff feeds the
- * same pipeline a diff read from stdin would - so a session that visits
- * several files with :e yields one script covering all of them. Hence the
- * built-in differ below.
+ * -E: edit in the built-in nextvi and convert what changed into a script.
+ * Nothing is written back: every buffer the editor leaves behind is diffed
+ * against the file as it was on disk, and that diff feeds the same pipeline a
+ * diff read from stdin would - so a session that visits several files with :e
+ * yields one script covering all of them. Hence the built-in differ below.
  */
 static int edit_mode;		/* -E: edit, then emit the diff as a script */
 
@@ -7013,47 +6565,33 @@ typedef struct {
 
 static void dop_add(dops_t *d, char t, char *s)
 {
-	if (d->n >= d->cap) {
-		d->cap = d->cap ? d->cap * 2 : 64;
-		d->v = erealloc(d->v, d->cap * sizeof(dop_t));
-	}
+	ARR_PUSH(d->v, d->n, d->cap)
 	d->v[d->n].t = t;
 	d->v[d->n++].s = s;
 }
 
 /* Line census over one span, for patience anchoring: how often a line occurs on
- * each side and where it last occurred. Open addressing, strcmp on collision. */
+ * each side, and where last. Open addressing, strcmp on collision. */
 typedef struct {
 	const char *s;
 	int co, cn;		/* occurrences in old[] / new[] */
 	int io, in;		/* the last index seen on each side */
 } lmap_t;
 
-static unsigned long line_hash(const char *s)
-{
-	unsigned long h = 5381;
-	for (; *s; s++)
-		h = h * 33 + (unsigned char)*s;
-	return h;
-}
-
 static lmap_t *lmap_slot(lmap_t *t, unsigned mask, const char *s)
 {
-	unsigned i = (unsigned)(line_hash(s) & mask);
+	unsigned i = hash_str(s, 5381) & mask;
 	while (t[i].s && strcmp(t[i].s, s))
 		i = (i + 1) & mask;
 	return &t[i];
 }
 
-/* Patience anchors for a span too large to diff outright: the lines occurring
+/* Patience anchors for a span too large to diff outright: lines occurring
  * exactly once on each side pair up unambiguously, and the longest increasing
- * subsequence of those pairs (by new-side index) is a set of matches no sane
- * diff would cross. Their indices land in *aop / *anp (caller frees); returns
- * how many, 0 when the span has no unique common line at all. Splitting there
- * beats the old whole-range degrade by orders of magnitude: the sub-spans
- * between anchors are small enough for the exact LCS below, so a 2000-line
- * function whose body moved by two lines diffs as the handful of lines that
- * really changed instead of as 4000 lines of delete-all/insert-all. */
+ * subsequence of those pairs is a set of matches no sane diff would cross.
+ * Splitting there leaves sub-spans small enough for the exact LCS below, so a
+ * 2000-line function whose body moved by two lines diffs as the handful of
+ * lines that really changed, not as 4000 lines of delete-all/insert-all. */
 static int diff_anchors(char **old, int os, int oe, char **new, int ns, int ne,
 			int **aop, int **anp)
 {
@@ -7127,13 +6665,11 @@ static int diff_anchors(char **old, int os, int oe, char **new, int ns, int ne,
 	return len;
 }
 
-/* Ops turning old[os..oe) into new[ns..ne). Common head and tail lines are
- * taken first (the span the table sees is only what is left), then either the
- * classic longest common subsequence table, or - for a span whose table would
- * be too large to be worth building - a patience split into sub-spans around
- * unique common lines, each diffed by the same routine. Only a span that is
- * both too large and anchorless degrades to deleting the whole range and
- * inserting the whole replacement. */
+/* Ops turning old[os..oe) into new[ns..ne): common head and tail lines first,
+ * so the table only sees what is left, then either the classic LCS table or -
+ * where that table would be too large - a patience split into sub-spans around
+ * unique common lines, each diffed by the same routine. Only a span both too
+ * large and anchorless degrades to delete-all/insert-all. */
 static void diff_region(dops_t *d, char **old, int os, int oe,
 			char **new, int ns, int ne)
 {
@@ -7212,9 +6748,9 @@ tail:
 		dop_add(d, ' ', old[oe + k]);
 }
 
-/* One changed region of the origin script's landing: the span the origin
- * inserted, in post-origin line numbers, plus the lines it removed there. A
- * region with lo == hi removed only. */
+/* One changed region of the origin's landing: the span it inserted, in
+ * post-origin line numbers, plus the lines it removed there (lo == hi = a
+ * removal only). */
 typedef struct {
 	int lo, hi;	/* inserted span [lo,hi) in post coordinates */
 	char **del;	/* removed lines */
@@ -7228,9 +6764,9 @@ static void free_regions(chg_t *r, int n)
 	free(r);
 }
 
-/* Where the origin actually landed, after its own fuzz: the changed regions
- * of pre[] -> post[]. Strictly better than reading the origin's stored diff,
- * whose line numbers are the pre-fuzz ones. */
+/* Where the origin actually landed, after its own fuzz: the changed regions of
+ * pre[] -> post[], which the origin's stored diff (pre-fuzz line numbers)
+ * cannot tell us. */
 static int gate_regions(chg_t **out, char **pre, int npre,
 			char **post, int npost)
 {
@@ -7266,8 +6802,8 @@ static int gate_regions(chg_t **out, char **pre, int npre,
 	return n;
 }
 
-/* count_window() reads the global original; a probe is counted against three
- * texts in turn, so the global is swapped rather than the counter duplicated. */
+/* count_window() reads the global original, and a probe is counted against
+ * three texts in turn, so swap the global rather than duplicate the counter. */
 static int count_in(char **src, int nsrc, char **win, int n)
 {
 	char **sv = orig_lines;
@@ -7280,10 +6816,9 @@ static int count_in(char **src, int nsrc, char **win, int n)
 	return cnt;
 }
 
-/* Distance from a region to the compat hunk's anchor span, both in post
- * coordinates; 0 when they touch. Regions are tried nearest first, so the
- * gate probes the change that causes this collision and not some unrelated
- * hunk of the origin. */
+/* Distance from a region to the compat hunk's anchor span; 0 when they touch.
+ * Regions are tried nearest first, so the gate probes the change that causes
+ * this collision and not some unrelated hunk of the origin. */
 static int span_dist(int lo, int hi, int alo, int ahi)
 {
 	if (hi < alo)
@@ -7293,10 +6828,10 @@ static int span_dist(int lo, int hi, int alo, int ahi)
 	return 0;
 }
 
-/* A probe window is usable when it names the post-origin text and nothing
- * else: unique there (or at least present, for an ANDed pair) and absent from
- * the pre-origin text. Those two texts are the only trees the sensor can be
- * looking at - it runs before any body writes - so they are the whole test. */
+/* A probe is usable when it names the post-origin text and nothing else:
+ * unique there (or merely present, for an ANDed pair) and absent from the
+ * pre-origin one. Those are the only two trees a sensor can be looking at, so
+ * they are the whole test. */
 static int probe_ok(char **win, int n, char **pre, int npre,
 		    char **post, int npost, int uniq)
 {
@@ -7306,10 +6841,9 @@ static int probe_ok(char **win, int n, char **pre, int npre,
 	return !count_in(pre, npre, win, n);
 }
 
-/* The shortest window of post[r->lo .. r->hi) that qualifies, growing one
- * line at a time up to GATE_MAXLINES. Returns the window length, 0 when the
- * region yields none. Nothing is excluded on account of the compat hunk's own
- * edit span: the sensor reads its probe before any body runs, so a block
+/* The shortest qualifying window of post[r->lo .. r->hi), growing a line at a
+ * time up to GATE_MAXLINES. Nothing is excluded on account of the compat hunk's
+ * own edit span: the sensor reads its probe before any body runs, so a block
  * cannot destroy the condition it is gated on. */
 static int probe_from_region(gate_t *g, chg_t *r, char **pre, int npre,
 			     char **post, int npost, int uniq)
@@ -7332,10 +6866,9 @@ static int probe_from_region(gate_t *g, chg_t *r, char **pre, int npre,
 	return 0;
 }
 
-/* Delete-only region: nothing the origin inserted is available to probe, so
- * probe a line it removed and invert the polarity - quit when the probe IS
- * found. The window must be gone from the post-origin text and unique in the
- * pre-origin one, which is the mirror of probe_ok(). */
+/* Delete-only region: nothing inserted is available to probe, so probe a
+ * removed line and invert the polarity - quit when it IS found. The mirror of
+ * probe_ok: gone from the post-origin text, unique in the pre-origin one. */
 static int probe_removed(gate_t *g, chg_t *r, char **pre, int npre,
 			 char **post, int npost)
 {
@@ -7369,18 +6902,16 @@ static void free_gates(gate_t *g, int n)
 	}
 }
 
-/* Derive the gate for one compat block over one file. pre[]/post[] are the
- * file before and after the origin's blocks ran - the two trees the sensor can
- * find at run time, since it reads its probe before any body writes. [alo,ahi)
- * is the compat hunk's anchor span, used only to order the candidate regions
- * (it is in baseline coordinates and post[] is in post-origin ones, so the
- * distance is a preference, never a constraint).
+/* The gate for one compat block over one file. pre[]/post[] are the file before
+ * and after the origin's blocks ran, the two trees the sensor can find at run
+ * time; [alo,ahi) is the compat hunk's anchor span, used only to order the
+ * candidate regions (it is in baseline coordinates, so the distance is a
+ * preference, never a constraint).
  *
- * Regions are tried nearest the anchor first, and a single unique probe wins;
- * failing that, two individually ambiguous probes from distinct regions are
- * ANDed (sequential early exits, no nesting). Returns the number of gate
- * sections, 0 when no probe validates - a hard error for the caller, never a
- * reason to ship a weak gate. */
+ * Nearest region first, and a single unique probe wins; failing that, two
+ * individually ambiguous probes from distinct regions are ANDed. 0 when none
+ * validates - a hard error for the caller, never a reason to ship a weak
+ * gate. */
 static int derive_gates(gate_t *g, int maxg, char **pre, int npre,
 			char **post, int npost, int alo, int ahi)
 {
@@ -7427,10 +6958,10 @@ static int derive_gates(gate_t *g, int maxg, char **pre, int npre,
 	return n;
 }
 
-/* An op list as unified diff text for path: header, then one hunk per run
- * of changes, DIFF_CTX context lines around it. Nothing is written when
- * the list holds no change at all. The op list is the only input, so any
- * other way of deriving one (line identity, say) serializes through here. */
+/* An op list as unified diff text for path: header, then one hunk per run of
+ * changes with DIFF_CTX context lines around it. Nothing is written when the
+ * list holds no change; the op list is the only input, so every way of deriving
+ * one serializes through here. */
 static void emit_dops(sbuf *out, const char *path, int is_new, dops_t *dp)
 {
 	dops_t d = *dp;
@@ -7467,8 +6998,7 @@ static void emit_dops(sbuf *out, const char *path, int is_new, dops_t *dp)
 			i++;
 			continue;
 		}
-		/* one hunk: from here to the last change still close enough
-		 * that its context would touch this one's */
+		/* to the last change whose context still touches this one's */
 		start = MAX(i - DIFF_CTX, 0);
 		last = i;
 		for (j = i; j < d.n; ) {
@@ -7545,10 +7075,9 @@ static char **split_lines(char *text, int *n)
 static void parse_diff_text(const char *text);
 static void parse_diff_reset(void);
 
-/* Which form the -co third argument takes: 1 = a generated patch2vi script
- * (it replays as another block), 0 = a unified diff (spliced into the live
- * buffers), -1 = unreadable. Sniffed from the first line, exactly as the
- * ordinary input is. */
+/* The -co third argument's form, sniffed from its first line as the ordinary
+ * input is: 1 = a generated script (replayed as another block), 0 = a unified
+ * diff (spliced into the live buffers), -1 = unreadable. */
 static int compat_pre_isscript(const char *path)
 {
 	FILE *f = fopen(path, "r");
@@ -7565,10 +7094,10 @@ static int compat_pre_isscript(const char *path)
 	return rc;
 }
 
-/* Where img[] sits in lines[], searching at or after from and preferring the
- * occurrence nearest hint (the diff's own coordinate, stale by construction on
- * a tree the origin and the target already changed). An empty image is a pure
- * insertion: hint itself, clamped to what is left. -1 = nowhere. */
+/* Where img[] sits in lines[], at or after from, preferring the occurrence
+ * nearest hint - the diff's own coordinate, stale by construction on a tree the
+ * origin and the target already changed. An empty image is a pure insertion:
+ * hint itself, clamped. */
 static int find_image(char **lines, int nlines, char **img, int nimg,
 		      int from, int hint)
 {
@@ -7586,9 +7115,8 @@ static int find_image(char **lines, int nlines, char **img, int nimg,
 	return best;
 }
 
-/* The live session buffer holding path, opened if no replayed block named it
- * (in which case disk is its baseline text, so it is snapshotted too).
- * NULL if the editor would not open it. */
+/* The live session buffer holding path, opened if no replayed block named it -
+ * in which case disk is its baseline text, so it is snapshotted too. */
 static struct lbuf *compat_openbuf(char *path)
 {
 	for (int i = 0; i < xbufcur; i++)
@@ -7603,11 +7131,10 @@ static struct lbuf *compat_openbuf(char *path)
 	return NULL;
 }
 
-/* Apply one parsed file of the pre-applied diff to its session buffer. Each
- * hunk's pre-image (its context and deleted lines) is searched for rather than
- * trusted at its line number, and the buffer is rebuilt around the post-image.
- * A hunk whose pre-image is gone is a hard error: dropping it silently would
- * ship a compat patch the author did not write. */
+/* One parsed file of the pre-applied diff onto its session buffer: each hunk's
+ * pre-image is searched for rather than trusted at its line number, and the
+ * buffer rebuilt around the post-image. A hunk whose pre-image is gone is a
+ * hard error - dropping it would ship a compat patch nobody wrote. */
 static int compat_apply_file(file_patch_t *fp)
 {
 	struct lbuf *lb;
@@ -7672,11 +7199,10 @@ static int compat_apply_file(file_patch_t *fp)
 	return st;
 }
 
-/* -co third argument, unified-diff form: parse it into its own files[] range
- * (and its own raw sink, so the host === PATCH === stays byte-identical) and
- * splice every hunk into the live buffers. The range is dropped right after:
- * the diff is applied, not shipped, and the emitter must not see it as a host
- * file - what the user is left holding gets re-diffed from the baseline. */
+/* -co third argument, unified-diff form: parsed into its own files[] range and
+ * raw sink (so the host === PATCH === stays byte-identical) and spliced into the
+ * live buffers. The range is dropped right after - the diff is applied, not
+ * shipped, and what the user is left holding is re-diffed from the baseline. */
 static int compat_apply_diff(const char *path)
 {
 	strv_t sink;
@@ -7706,10 +7232,9 @@ static int compat_apply_diff(const char *path)
 	return st;
 }
 
-/* The baseline lines the compat edit rewrites, in baseline coordinates:
- * common head/tail trimming leaves [*lo,*hi). A pure insertion gives lo == hi
- * at the insertion point. Anchors the gate's locality: candidate probe regions
- * are ordered by their distance from here. */
+/* The baseline lines the compat edit rewrites, common head/tail trimmed away (a
+ * pure insertion gives lo == hi at the insertion point). Anchors the gate's
+ * locality: probe regions are ordered by their distance from here. */
 static void diff_span(char **base, int nbase, char **fin, int nfin,
 		      int *lo, int *hi)
 {
@@ -7723,16 +7248,12 @@ static void diff_span(char **base, int nbase, char **fin, int nfin,
 	*hi = nbase - suf;
 }
 
-/* Cross-file gate: derive the origin's probe from a file the block does not
- * itself edit, for a block whose own files yield none - either the origin never
- * touched them, or the target overwrote the origin's only trace there so pre and
- * post-origin read alike. The question a gate answers ("did this origin land on
- * this tree") is per origin, not per file, so any file the origin demonstrably
- * changed answers it. Every file the origin opened is tried in snapshot order
- * (those the block edits were tried first by the caller and failed, so retrying
- * them costs a failure each); the derived gates carry the probe's path so the
- * sensor selects that buffer. Returns the number of gate sections, 0 when no
- * file yields one. */
+/* Cross-file gate, for a block whose own files yield no probe - the origin
+ * never touched them, or the target overwrote its only trace there. "Did this
+ * origin land on this tree" is a question about the tree, so any file the origin
+ * demonstrably changed answers it: every one it opened is tried in snapshot
+ * order, and the derived gates carry the probe's path so the sensor selects
+ * that buffer. */
 static int derive_gates_crossfile(gate_t *g)
 {
 	for (int i = 0; i < compat_x1.n; i++) {
@@ -7756,15 +7277,14 @@ static int derive_gates_crossfile(gate_t *g)
 	return 0;
 }
 
-/* Derive the one compat block this run produces. Replays the origin (and, for
- * -co, the target) into one session, hands it to the user, then measures every
- * changed buffer from its post-origin baseline to its final state and
- * concatenates the results into a single unified diff: that diff, over however
- * many files it spans, *is* the compatibility patch, and one landing of the
- * origin gates all of it. The block is stored (not emitted); its bytes are
- * marked used so the script-global SEP/ESC, chosen after this, cover them.
- * Returns 0 on success, -1 on any hard error (a nonzero handover status, an
- * underivable gate, or a session that changed nothing), in which case main()
+/* The one compat block this run produces: replay the origin and the target into
+ * one session, hand it to the user, then measure every changed buffer from its
+ * post-origin baseline to its final state and concatenate the results into a
+ * single unified diff. That diff, over however many files it spans, IS the
+ * compatibility patch, and one landing of the origin gates all of it. The block
+ * is stored, not emitted, and its bytes are marked used so the script-global
+ * SEP/ESC chosen after this cover them. -1 on any hard error (a nonzero handover
+ * status, an underivable gate, a session that changed nothing), and main() then
  * writes nothing. */
 static int compat_derive(void)
 {
@@ -7772,10 +7292,9 @@ static int compat_derive(void)
 	int i, j, k, next_id, n, nsc = 2, nchanged = 0;
 	const char *sc[3] = { compat_origin, input_file, NULL };
 	sbuf_smake(diff, SB_INIT)
-	/* A pre-applied resolution in script form is simply one more block of the
-	 * replay, run after the baseline is taken; its diff form is spliced into
-	 * the buffers at that same point (compat_apply_diff). Either way the user
-	 * still gets the editor on top of it. */
+	/* A pre-applied resolution in script form is one more replay block, run
+	 * after the baseline is taken; its diff form is spliced into the buffers
+	 * at that same point. Either way the user edits on top of it. */
 	if (compat_pre) {
 		if ((compat_pre_script = compat_pre_isscript(compat_pre)) < 0)
 			return -1;
@@ -7792,9 +7311,8 @@ static int compat_derive(void)
 	}
 	compat_capturing = 0;
 	n = 0;
-	/* One diff over every buffer the user reshaped, in buffer order: the
-	 * compat patch is that whole diff, so it lands in one block, one section
-	 * and one storage region, exactly as its author would have written it. */
+	/* One diff over every buffer the user reshaped, in buffer order: one
+	 * block, one section, one storage region. */
 	for (i = 0; i < xbufcur; i++) {
 		char **pre, **base, **fin, **x1 = NULL;
 		char *basetext = NULL, *fintext, *bdup, *fdup, *x1dup = NULL;
@@ -7817,11 +7335,9 @@ static int compat_derive(void)
 		emit_unified_diff(diff, bufs[i].path, is_new, base, nbase,
 				  fin, nfin);
 		nchanged++;
-		/* Gate: the first of these files whose own landing is visible
-		 * answers for the whole block, probed near where that file is
-		 * edited. The tree the sensor reads is the file with the origin
-		 * applied and the target not yet; a file the origin never opened
-		 * has no entry, so it has no landing of its own to probe. */
+		/* the first of these files whose own landing is visible
+		 * answers for the whole block, probed near where it is
+		 * edited; a file the origin never opened has no entry */
 		if (!n && (x1dup = snap_find(&compat_x1, bufs[i].path))) {
 			x1dup = uc_dup(x1dup);
 			x1 = split_lines(x1dup, &nx1);
@@ -7854,21 +7370,19 @@ static int compat_derive(void)
 		free(diff->s);
 		return -1;
 	}
-	/* the phase-1 fallback chain's per-pattern ?? capture tags are fixed at
-	 * the pattern slot + 1 (1..NSEARCH for the host, whose file-validated
-	 * slots are on), and the DNF failure check ANDs every one of them; the
-	 * gate's tag comes from its own band above that range, continued across
-	 * blocks, so xanchor never fuses the gate's result into a group's or into
-	 * another block's gate */
+	/* group capture tags are the pattern slot + 1 and the DNF check ANDs
+	 * every one of them, so the gate takes its tag from its own band above
+	 * that range, continued across blocks */
 	next_id = next_gate_tag();
 	for (j = 0; j < n; j++)
 		g[j].tag = next_mark_id(&next_id);
 	ARR_PUSH(compat_blocks, ncompat, compat_cap)
 	compat_block_t *cb = &compat_blocks[ncompat++];
 	cb->origin = uc_dup(compat_origin ? compat_origin : "");
+	cb->gates = emalloc(n * sizeof(gate_t));
 	for (j = 0; j < n; j++)
 		cb->gates[j] = g[j];	/* ownership transferred */
-	cb->ngates = n;
+	cb->ngates = cb->gcap = n;
 	/* the block's diff parses into a fresh files[] range and its own raw
 	 * sink, so the host === PATCH === stays byte-identical */
 	raw_sink = &cb->raw;
@@ -7899,21 +7413,18 @@ static void buf_to_diff(sbuf *out, const char *path, struct lbuf *lb)
 	free_lines(new, nnew);
 }
 
-/* Run an editing session over args and write the resulting unified diff to
- * out. Every buffer the session leaves behind is diffed, not just the ones
- * named here: files reached with :e during the session join the same diff,
- * in the order they were opened, and the script covers all of them. A path
- * that does not exist yet is diffed as a file creation.
+/* An editing session over args, its resulting unified diff written to out.
+ * Every buffer the session leaves behind is diffed, not just the ones named
+ * here: files reached with :e join the same diff, in the order they were
+ * opened, and a path that does not exist yet is diffed as a creation.
  *
- * The session is nextvi's own main(), renamed nextvi_main() by
- * build_patch2vi.sh, so args is a nextvi command line: its flags (-aemsv,
- * -- ) and its file list behave exactly as they do in vi(1), EXINIT is
- * honoured, and repeated paths share one buffer. Only the framing is
- * patch2vi's - the terminal is claimed first because stdout is the script,
- * and the buffers are read back and freed after, which is the whole point:
- * nextvi_main() returns without touching them and nothing is ever written
- * to disk. Its process-wide bring-up doubles as ed_init()'s, so a later
- * session (-i) must not repeat it. */
+ * The session is nextvi's own main(), renamed nextvi_main() for this build, so
+ * args is a nextvi command line - flags, files and EXINIT behave exactly as in
+ * vi(1). Only the framing is patch2vi's: the terminal is claimed first because
+ * stdout is the script, and the buffers are read back and freed after, which is
+ * the whole point - nextvi_main() returns without touching them and nothing is
+ * ever written to disk. Its process-wide bring-up doubles as ed_init()'s, so a
+ * later session must not repeat it. */
 static int edit_to_diff(char **args, int nargs, sbuf *out)
 {
 	char **argv;
@@ -7943,15 +7454,14 @@ static int edit_to_diff(char **args, int nargs, sbuf *out)
 	return 0;
 }
 
-/* One line of unified diff, wherever it came from: a file, stdin, or the
- * built-in differ under -E. The line is consumed in place (chomped, and
- * paths are cut out of it). */
+/* One line of unified diff, from a file, stdin or the built-in differ under -E;
+ * consumed in place (chomped, and paths cut out of it). */
 static int diff_in_hunk;	/* inside an @@ hunk */
 static int diff_old_line;	/* the original line the next op sits at */
 
-/* A parse always begins at a file header, so there is no cursor state to save
- * when switching destinations (a compat diff into its own files[] range); just
- * clear what a mid-file header would otherwise carry over. */
+/* A parse always begins at a file header, so switching destinations (a compat
+ * diff into its own files[] range) only has to clear what a mid-file header
+ * would otherwise carry over. */
 static void parse_diff_reset(void)
 {
 	diff_in_hunk = 0;
@@ -7961,64 +7471,50 @@ static void parse_diff_reset(void)
 	pending_orig_path = NULL;
 }
 
+/* A "--- "/"+++ " header's path, in place: the a//b/ prefix dropped and the
+ * trailing tab/space timestamp cut off. */
+static char *diff_path(char *p)
+{
+	char *t;
+	if (p[0] && p[1] == '/')
+		p += 2;
+	if ((t = strpbrk(p, "\t ")))
+		*t = '\0';
+	return p;
+}
+
 static void parse_diff_line(char *line)
 {
-	/* New file: +++ b/path[\ttimestamp] */
 	if (strncmp(line, "+++ ", 4) == 0) {
-		char *path = line + 4;
-		/* Skip common prefixes like b/ */
-		if (path[0] && path[1] == '/')
-			path += 2;
-		/* Strip trailing tab/space + timestamp (unified diff suffix) */
-		char *t = strpbrk(path, "\t ");
-		if (t)
-			*t = '\0';
-		new_file(path);
+		new_file(diff_path(line + 4));
 		diff_in_hunk = 0;
 		return;
 	}
-
-	/* --- line: /dev/null means the next +++ creates a new file.
-	 * Otherwise stash the original path: on disk it holds the
-	 * pre-patch content the script will run against, used for
-	 * file-aware anchor validation. */
+	/* "--- /dev/null" means the next +++ creates the file; otherwise the
+	 * path names the pre-patch content, which on disk is what the script
+	 * runs against - the input to file-aware anchor validation. */
 	if (strncmp(line, "--- ", 4) == 0) {
 		char *p = line + 4;
 		pending_is_new = strncmp(p, "/dev/null", 9) == 0
 				 && (!p[9] || p[9] == '\t' || p[9] == ' ');
 		free(pending_orig_path);
-		pending_orig_path = NULL;
-		if (!pending_is_new) {
-			if (p[0] && p[1] == '/')
-				p += 2;  /* strip a/ prefix */
-			char *t = strpbrk(p, "\t ");
-			if (t)
-				*t = '\0';
-			pending_orig_path = uc_dup(p);
-		}
+		pending_orig_path = pending_is_new ? NULL
+				    : uc_dup(diff_path(p));
 		return;
 	}
-
-	/* Skip diff line */
-	if (strncmp(line, "diff ", 5) == 0)
+	if (strncmp(line, "diff ", 5) == 0 || strncmp(line, "index ", 6) == 0)
 		return;
 
-	/* Skip index line */
-	if (strncmp(line, "index ", 6) == 0)
-		return;
-
-	/* Hunk header */
 	int os, oc;
 	if (parse_hunk_header(line, &os, &oc)) {
 		diff_in_hunk = 1;
 		diff_old_line = os;
 		cur_hunk_lo = os;
 		cur_hunk_hi = oc > 0 ? os + oc - 1 : os;
-		/* GNU diff -N marks created files with the nonexistent
+		/* GNU diff -N marks a created file with the nonexistent
 		 * path and an epoch timestamp instead of /dev/null, so
-		 * also detect them by their sole "@@ -0,0" hunk: the
-		 * original had no lines. A later hunk addressing real
-		 * lines means the file existed after all. */
+		 * detect it by its sole "@@ -0,0" hunk too; a later hunk
+		 * addressing real lines means it existed after all. */
 		if (nfiles) {
 			if (os == 0 && oc == 0 && files[nfiles - 1].nops == 0)
 				files[nfiles - 1].is_new = 1;
@@ -8030,26 +7526,13 @@ static void parse_diff_line(char *line)
 
 	if (!diff_in_hunk || nfiles == 0)
 		return;
-
-	/* Process hunk content */
-	if (line[0] == ' ') {
-		/* Context line - store content for relative mode */
-		add_op('c', diff_old_line, line + 1);
+	if (line[0] == ' ' || line[0] == '-') {
+		add_op(line[0] == ' ' ? 'c' : 'd', diff_old_line, line + 1);
 		diff_old_line++;
-	} else if (line[0] == '-') {
-		/* Delete line - store content for horizontal edit detection */
-		add_op('d', diff_old_line, line + 1);
-		diff_old_line++;
-	} else if (line[0] == '+') {
-		/* Add line */
+	} else if (line[0] == '+')
 		add_op('a', diff_old_line, line + 1);
-	} else if (line[0] == '\\') {
-		/* "\ No newline at end of file" - skip */
-		return;
-	} else {
-		/* Unknown line in hunk */
+	else if (line[0] != '\\')   /* not "\ No newline at end of file" */
 		diff_in_hunk = 0;
-	}
 }
 
 /* Feed a whole in-memory unified diff through the line parser. */
@@ -8073,13 +7556,12 @@ static void parse_diff_text(const char *text)
 }
 
 /*
- * Read a generated script's tail metadata in one left-to-right pass: the
- * host === DELTA === sections and every === PATCH2VI COMPAT === region
- * (its GATE probes, its own DELTA sub-sections and its === COMPAT PATCH ===
- * diff). Regions nest one deep and are fenced by === END COMPAT ===, never
- * by a line count, so a hand-edit that adds or drops a line still parses.
- * Stops at === PATCH2VI PATCH ===, leaving the host diff to the caller.
- * Returns 0, or -1 on damaged metadata.
+ * A generated script's tail metadata in one left-to-right pass: the host
+ * === DELTA === sections and every === PATCH2VI COMPAT === region (its GATE
+ * probes, its own DELTA sub-sections, its === COMPAT PATCH === diff). Regions
+ * nest one deep and are fenced by === END COMPAT ===, never by a line count, so
+ * a hand-edit that adds or drops a line still parses. Stops at
+ * === PATCH2VI PATCH ===, leaving the host diff to the caller.
  */
 /* The DELTA sub-sections that only select where the following body lines go. */
 static const struct { const char *tag; int sect; } gsects[] = {
@@ -8109,22 +7591,20 @@ static int read_delta_sections(FILE *in)
 	int in_sect = GS_NONE;
 	int pat_idx = 1; /* pattern[] slot for GS_PAT */
 	int in_ph = 0;   /* 1/2 = inside a verbatim phase blob */
-	/* Compat tail-region state (single pass, depth 1). cur_cb
-	 * redirects DELTA sub-sections into the block's own array,
-	 * cur_gate holds an open GATE probe list, in_compat_patch
-	 * routes the block's === COMPAT PATCH === diff body into its
-	 * own files[] range + raw sink; all closed by === END ===,
-	 * the region by === END COMPAT ===. */
+	/* Compat tail-region state, depth 1: cur_cb redirects DELTA
+	 * sub-sections into the block's own array, cur_gate holds an open
+	 * probe list, in_compat_patch routes the block's diff into its own
+	 * files[] range and raw sink. All closed by === END ===, the region
+	 * by === END COMPAT ===. */
 	compat_block_t *cur_cb = NULL;
 	gate_t *cur_gate = NULL;
-	int in_compat_patch = 0;
+	int in_compat_patch = 0, gate_cap = 0;
 	sbuf_smake(ph, SB_INIT)
 	while (read_line(in, lb)) {
 		line = chomp_sb(lb);
-		/* Verbatim blobs are raw: only the end tag
-		 * terminates. Their bytes are marked used so a
-		 * changed patch can't pick a SEP/ESC that
-		 * collides with the stored segments. */
+		/* Verbatim blobs are raw: only the end tag ends them.
+		 * Their bytes are marked used so a changed patch cannot
+		 * pick a SEP/ESC that collides with them. */
 		if (in_ph) {
 			if (strcmp(line, end_tag_rd) == 0) {
 				if (ph->s_n > 0 && ph->s[ph->s_n - 1] == '\n')
@@ -8146,12 +7626,9 @@ static int read_delta_sections(FILE *in)
 			}
 			continue;
 		}
-		/* === COMPAT PATCH === diff body: raw diff lines
-		 * (prefixed +/-/ /@@/---/+++), so a source line that
-		 * looks like a section tag is harmless; only a
-		 * column-0 === END === closes it. Parsed into the
-		 * block's own files[] range with its own raw sink so
-		 * the host === PATCH === stays byte-identical. */
+		/* === COMPAT PATCH === body: raw diff lines, so a source
+		 * line that looks like a section tag is harmless and only
+		 * a column-0 === END === closes it. */
 		if (in_compat_patch) {
 			if (strcmp(line, end_tag_rd) == 0) {
 				cur_cb->count = nfiles - cur_cb->first;
@@ -8165,16 +7642,15 @@ static int read_delta_sections(FILE *in)
 			}
 			continue;
 		}
-		/* GATE probe lines: raw until the section's === END ===,
-		 * their bytes marked so SEP/ESC avoid them. */
+		/* GATE probe lines: raw until === END ===, their bytes
+		 * marked so SEP/ESC avoid them. */
 		if (cur_gate) {
 			if (strcmp(line, end_tag_rd) == 0) {
 				cur_cb->ngates++;
 				cur_gate = NULL;
 			} else {
-				cur_gate->lines = erealloc(cur_gate->lines,
-					(cur_gate->nlines + 1) * sizeof(char *));
-				cur_gate->lines[cur_gate->nlines++] = uc_dup(line);
+				arr_append(&cur_gate->lines, &cur_gate->nlines,
+					   &gate_cap, line);
 				mark_bytes_used(line);
 			}
 			continue;
@@ -8204,12 +7680,9 @@ static int read_delta_sections(FILE *in)
 		}
 		if (cur_cb && strncmp(line, "=== GATE ", 9) == 0) {
 			/* "=== GATE <n> <pol> tag <id> [probe <path>] ===" */
-			if (cur_cb->ngates >= GATE_MAXPROBES) {
-				fprintf(stderr, "too many gates\n");
-				return -1;
-			}
+			ARR_PUSH(cur_cb->gates, cur_cb->ngates, cur_cb->gcap)
 			cur_gate = &cur_cb->gates[cur_cb->ngates];
-			memset(cur_gate, 0, sizeof(*cur_gate));
+			gate_cap = 0;
 			char *t = strstr(line, " tag ");
 			cur_gate->tag = t ? atoi(t + 5) : 0;
 			cur_gate->polarity =
@@ -8258,9 +7731,8 @@ static int read_delta_sections(FILE *in)
 		if (strncmp(line, "=== DELTA ", 10) == 0) {
 			in_sect = 0;
 			cur_gd = NULL;
-			/* Route a compat block's own DELTA sub-sections into
-			 * its per-block store (always read, so the region
-			 * round-trips); host DELTA only when re-applying. */
+			/* a compat block's DELTA is always read, so the region
+			 * round-trips; the host's only when re-applying */
 			dstore_t *dst = cur_cb ? &cur_cb->deltas :
 					read_deltas ? &in_deltas : NULL;
 			cur_fd = NULL;
@@ -8276,19 +7748,7 @@ static int read_delta_sections(FILE *in)
 			continue;
 		if (line[0] == '=' && strncmp(line, "=== ", 4) == 0) {
 			if (strncmp(line, "=== GROUP ", 10) == 0) {
-				const char *p = line + 10;
-				int idx = atoi(p);
-				if (cur_fd->ngrps >= cur_fd->gcap) {
-					cur_fd->gcap = cur_fd->gcap
-						       ? cur_fd->gcap * 2 : 4;
-					cur_fd->grps = erealloc(
-							       cur_fd->grps,
-							       cur_fd->gcap *
-							       sizeof(grp_delta_t));
-				}
-				cur_gd = &cur_fd->grps[cur_fd->ngrps++];
-				memset(cur_gd, 0, sizeof(*cur_gd));
-				cur_gd->group_idx = idx;
+				cur_gd = fd_add_grp(cur_fd, atoi(line + 10));
 				in_sect = GS_CONTENT;
 				continue;
 			}
@@ -8414,8 +7874,7 @@ static void usage(const char *prog)
 	exit(1);
 }
 
-/* The argument of a two-letter option, attached (-erTAG) or separate
- * (-er TAG). Missing argument is fatal. */
+/* A two-letter option's argument, attached (-erTAG) or separate (-er TAG). */
 static const char *opt_arg(int argc, char **argv, int *i)
 {
 	if (argv[*i][3])
