@@ -6568,6 +6568,7 @@ static int replay_scripts(const char **paths, int nscripts, int handover,
  */
 static int edit_mode;		/* -I: edit, then emit the diff as a script */
 static int amend_mode;		/* -E: replay a script, edit, re-emit it */
+static int amend_inplace;	/* -oE: -o's file is -E's own script */
 
 #define DIFF_CTX 3		/* context lines around a hunk */
 #define DIFF_MAX_CELLS 4000000	/* largest LCS table worth building */
@@ -7965,7 +7966,7 @@ static void usage(const char *prog)
 		" [input.patch]\n"
 		"       %s -e script.sh\n"
 		"       %s [-ari]I [nextvi-opts...]\n"
-		"       %s [-o FILE] [-ari]E script.sh [nextvi-opts...]\n"
+		"       %s [-o FILE] [-ario]E script.sh [nextvi-opts...]\n"
 		"       %s -co origin.sh target.sh [compat.patch|compat.sh]\n",
 		prog, prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
@@ -7984,6 +7985,8 @@ static void usage(const char *prog)
 	      "        Rest of the line is a nextvi command line; -d[N] keeps deltas\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\n"
 	      "        run reads, so -E updates its own script in place\n"
+	      "  -oE   Clustered with -E, -o takes no FILE of its own: the\n"
+	      "        script -E names is the output, updated in place\n"
 	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\n"
 	      "        Rest of the line is a nextvi command line, EXINIT included\n",
 	      stderr);
@@ -8007,6 +8010,21 @@ static const char *opt_arg(int argc, char **argv, int *i)
 	fprintf(stderr, "Option -%.2s requires an argument\n", argv[*i] + 1);
 	usage(argv[0]);
 	return NULL;
+}
+
+/* Is what follows a leading "-o" an option cluster naming -E rather than a
+ * file name? Only when it holds an E and nothing but cluster letters, so that
+ * "-oE" (and "-oEd2", "-od3E") means "update the script in place" while any
+ * ordinary -oFILE, even -oEDITED, still names a file. */
+static int amend_cluster(const char *s)
+{
+	int k;
+	if (!strchr(s, 'E'))
+		return 0;
+	for (k = 0; s[k]; k++)
+		if (!strchr("ariIEod12345", s[k]))
+			return 0;
+	return 1;
 }
 
 int main(int argc, char **argv)
@@ -8039,7 +8057,7 @@ int main(int argc, char **argv)
 		/* -o FILE (or -oFILE): the script, wherever it comes from,
 		 * lands in that file rather than on stdout; tested after -co
 		 * so it cannot shadow it */
-		if (argv[i][1] == 'o') {
+		if (argv[i][1] == 'o' && !amend_cluster(argv[i] + 2)) {
 			if (argv[i][2])
 				out_file = argv[i] + 2;
 			else if (i + 1 < argc)
@@ -8075,6 +8093,11 @@ int main(int argc, char **argv)
 				edit_mode = 1;
 			else if (argv[i][j] == 'E')
 				amend_mode = 1;
+			/* -o inside an -E cluster takes no argument of its
+			 * own: the script -E names is also the output, so
+			 * -oE updates it in place */
+			else if (argv[i][j] == 'o')
+				amend_inplace = 1;
 			else if (argv[i][j] == 'd') {
 				if (argv[i][j+1] >= '1' && argv[i][j+1] <= '5') {
 					j++;
@@ -8096,6 +8119,10 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
+	if (amend_inplace && !amend_mode) {
+		fprintf(stderr, "Clustered -o is only for -E\n");
+		usage(argv[0]);
+	}
 	if (i < argc && !edit_mode)
 		input_file = argv[i];
 	/* -co takes a third positional: an already written compat fix, applied
@@ -8109,6 +8136,8 @@ int main(int argc, char **argv)
 			fprintf(stderr, "-E requires a script argument\n");
 			return 1;
 		}
+		if (amend_inplace)
+			out_file = argv[i];
 		if (parse_hand_args(argv + i + 1, argc - i - 1) < 0)
 			usage(argv[0]);
 	}

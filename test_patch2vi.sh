@@ -1347,6 +1347,28 @@ else
 	tr -d '\r' < "$A/nerr4" | sed 's/^/    /'
 fi
 
+# -oE says the same thing in one word: clustered with -E, -o takes no file
+# name of its own and reuses the script -E names
+cp "$A/base.txt" "$A/f.txt"
+cp "$A/old.sh" "$A/self2.sh"
+run_A "$A" '%s/^L2$/L2c/:q!' '-oE self2.sh 2> nerr5'
+( cd "$A" && VI="$VI" sh self2.sh ) >/dev/null 2>&1
+if diff -q "$A/f.txt" "$A/want.txt" >/dev/null 2>&1; then
+	ok "-oE updates the script it names in place"
+else
+	fail "-oE updates the script it names in place"
+	tr -d '\r' < "$A/nerr5" | sed 's/^/    /'
+fi
+
+# -o keeps naming a file whenever what follows is not an -E cluster
+( cd "$A" && "$E_P2VI" -r -oE2.sh x.diff ) > "$A/o4.out" 2>&1
+if [ -s "$A/E2.sh" ] && [ ! -s "$A/o4.out" ]; then
+	ok "-oFILE still names a file when FILE looks like a cluster"
+else
+	fail "-oFILE still names a file when FILE looks like a cluster"
+fi
+rm -f "$A/E2.sh"
+
 # a run that fails leaves the -o file alone and drops its temp
 cp "$A/old.sh" "$A/keep.sh"
 cp "$A/keep.sh" "$A/keep.want"
