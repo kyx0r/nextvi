@@ -5,9 +5,10 @@
 #                     gitdiff2vi [flags] [output.sh]
 #                     edelta file [inplace]
 #                     redelta input.sh
+#                     extract_patches [file.sh]
 #                     reindex [file.sh | 1]
 #                     migrate_deltas
-#                     run_patches [1|2]
+#                     run_patches [1]
 #                     conv [1]
 #
 # Requires the ./patch2vi binary in the current directory.
@@ -150,6 +151,31 @@ redelta() {
 
 # --- bulk operations ---------------------------------------------------------
 
+# Write each generated script's embedded patch out as <script>.patch. Nothing is
+# run and no file but the .patch is touched, so this works on a dirty tree and
+# on scripts that no longer apply. To have the .patch files reflect what the
+# scripts actually do instead, reindex first: that refreshes every embedded
+# patch from a real run, and this then writes those out.
+# Usage: extract_patches [file.sh]
+extract_patches() (
+	set -e
+	case "$1" in
+	"")	list=$(p2v_scripts) ;;
+	*)	p2v_ours "$1" || exit 1; list="$1" ;;
+	esac
+	for s in $list
+	do
+		out="${s%.sh}.patch"
+		sed '1,/^=== PATCH2VI PATCH ===$/d' "$s" > "$out"
+		if [ -s "$out" ]; then
+			printf "%s\n" "EXTRACTED: $out"
+		else	# no patch section, or an empty one
+			rm -f "$out"
+			printf "%s\n" "EMPTY: $s" >&2
+		fi
+	done
+)
+
 # Re-run patch2vi-generated script(s) and refresh their embedded patch from the
 # resulting diff. With a file arg, only that script; otherwise all of them
 # (pass 1 to also rebuild via ./cbuild.sh after each).
@@ -189,10 +215,11 @@ migrate_deltas() (
 	done
 )
 
-# Run every patch2vi-generated script, optionally rebuilding or refreshing patches.
-# Usage: run_patches [1|2]
-#   1 = rebuild via ./cbuild.sh after each script
-#   2 = regenerate each script's .patch from the resulting diff
+# Run every patch2vi-generated script, restoring the tree after each one. Pass 1
+# to also rebuild via ./cbuild.sh after each, which is what turns this into a
+# smoke test of the patch set. Writing the .patch files is not its job:
+# "reindex && extract_patches" refreshes them from what the scripts actually do.
+# Usage: run_patches [1]
 run_patches() (
 	set -e
 	for s in $(p2v_scripts)
@@ -200,11 +227,8 @@ run_patches() (
 		printf "%s\n" "RUNNING: $s"
 		"./$s"
 		[ "$1" = "1" ] && ./cbuild.sh build
+		# extracted patches are not the run's leavings: keep them
 		new=$(p2v_newfiles | grep -v '\.patch$' || true)
-		if [ "$1" = "2" ]; then
-			p2v_addnew "$new"
-			git diff > "${s%.sh}.patch"
-		fi
 		git checkout . >/dev/null 2>&1
 		p2v_dropnew "$new"
 		printf "\n"
