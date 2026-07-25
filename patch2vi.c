@@ -5,7 +5,7 @@
  * Usage: patch2vi [-arih] [-d[N]] [-er TAG] [-ew TAG] [patch|script]
  *        patch2vi -e script.sh
  *        patch2vi [-ari]E [nextvi-opts...]
- *        patch2vi -co origin.sh target.sh
+ *        patch2vi -co origin.sh target.sh [compat.diff|compat.sh]
  *
  * The script applies the patch in raw ex mode (:vis 3). The command
  * separator and the escape byte are picked per patch via :sc! so that
@@ -27,7 +27,9 @@
  *     buffer it leaves behind is diffed against its disk copy to produce
  *     the input the converter normally reads;
  *   - replays two scripts (-co) to derive a compatibility patch that
- *     applies before/after the target, gated on the origin's own change.
+ *     applies before/after the target, gated on the origin's own change; an
+ *     optional third argument (diff or script) pre-applies a known compat
+ *     patch that the session then continues from.
  * No mode writes to disk; quitting is what emits.
  */
 #include "vi.c"
@@ -187,6 +189,11 @@ static int compat_capturing;
 static int compat_building;
 static int compat_mode;			/* -co: derive a post-only compat patch */
 static const char *compat_origin;	/* the script it is derived against */
+/* -co third argument: an already written compat fix (a unified diff or a
+ * generated script) applied to the post-origin+target tree before the user
+ * is handed the editor, so a known resolution is not retyped. It lands after
+ * the baseline snapshot, hence it is part of the derived compat patch. */
+static const char *compat_pre;
 
 enum {
 	GATE_ALWAYS = 0,  /* no probe: the block is unconditional */
@@ -466,6 +473,21 @@ static char **read_lines(const char *path, int *n, int *is_new)
 	free(lb->s);
 	fclose(f);
 	return v;
+}
+
+/* A whole file as one string, NULL if it cannot be opened. */
+static char *file_text(const char *path)
+{
+	FILE *f = fopen(path, "r");
+	if (!f)
+		return NULL;
+	sbuf_smake(sb, SB_INIT)
+	sbuf_smake(lb, SB_INIT)
+	while (read_line(f, lb))
+		sbuf_str(sb, lb->s)
+	free(lb->s);
+	fclose(f);
+	sbufn_ret(sb, sb->s)
 }
 
 static void load_orig_file(const char *path)
@@ -6647,14 +6669,48 @@ static char *snap_find(snaps_t *sn, const char *path)
 	return NULL;
 }
 
+/* Give path a baseline entry holding its on-disk text, unless it already has
+ * one. A path no baseline block named is untouched by the baseline, so disk is
+ * its post-replay state; without the entry compat_derive() would write it off
+ * as "opened after the baseline" and drop the edits made to it. */
+static void snap_seed(snaps_t *sn, const char *path)
+{
+	char **v;
+	int n, is_new;
+	if (snap_find(sn, path))
+		return;
+	v = read_lines(path, &n, &is_new);
+	sbuf_smake(sb, SB_INIT)
+	for (int i = 0; i < n; i++) {
+		sbuf_str(sb, v[i])
+		sbuf_chr(sb, '\n')
+	}
+	sbuf_null(sb)
+	free_lines(v, n);
+	ARR_PUSH(sn->v, sn->n, sn->cap)
+	sn->v[sn->n].path = uc_dup(path);
+	sn->v[sn->n++].text = sb->s;
+}
+
+/* -co third argument in its unified-diff form, applied to the live buffers
+ * of the handover session (its script form replays as another block). */
+static int compat_apply_diff(const char *path);
+static int compat_pre_script;	/* the third argument is a generated script */
+
 /* Run every block in one session. With handover, the last block leaves
  * the editor to the user (a full vi(1), on the terminal) instead of
  * returning at the end of its body. The session's buffers are left alive
- * for the caller to read back; ed_free() drops them. */
-static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
+ * for the caller to read back; ed_free() drops them. snap_blk names the block
+ * the compat baseline is taken after (-1 = the last one): the blocks past it
+ * are a pre-applied resolution, which belongs to the derived patch and so must
+ * land above the baseline, not in it. */
+static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
+			 int snap_blk)
 {
 	char **paths = NULL, *body, *ln;
 	int npaths = 0, *bmap = NULL, nmap = 0, i, k, st = 0, sep, bad = 0;
+	if (snap_blk < 0 || snap_blk >= nblks)
+		snap_blk = nblks - 1;
 	/* sized for the union of every block's files: an eviction would
 	 * silently drop an edited buffer from the derived patch */
 	xbufsalloc = MAX(64, xbufsalloc);
@@ -6740,16 +6796,28 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 			for (k = 0; k < blks[i].nsects; k++)
 				bufs_free(--xbufcur);
 		}
+		/* the origin (and target, for -co) has now been replayed: this is
+		 * the baseline the compat diff measures from, captured before the
+		 * pre-applied resolution and the user's own edits. Every path only
+		 * the later blocks name is seeded from disk so its edits are not
+		 * mistaken for an unrelated buffer's. */
+		if (compat_capturing && !xquit && i == snap_blk) {
+			snap_bufs(&compat_base);
+			for (k = i + 1; k < nblks; k++)
+				for (int p = 0; p < blks[k].npaths; p++)
+					snap_seed(&compat_base, blks[k].paths[p]);
+			if (compat_pre && !compat_pre_script &&
+					compat_apply_diff(compat_pre) < 0) {
+				ed_done();
+				st = -1;
+				break;
+			}
+		}
 		/* a body that quit did so on failure (its own quit tail is
 		 * gone), so the user is handed nothing and the status
 		 * stands */
 		if (last && !xquit) {
-			/* the origin (and target, for -co) has now been replayed:
-			 * this is the baseline the compat diff measures from,
-			 * captured before the user's edits */
-			if (compat_capturing)
-				snap_bufs(&compat_base);
-			/* Present that baseline as a clean, saved file. The script's
+			/* Present the baseline as a clean, saved file. The script's
 			 * trailing "w" (which would have marked it saved) was stripped
 			 * with the tail, so without this the handover editor shows every
 			 * buffer as modified and its undo stack still holds the replay's
@@ -6836,14 +6904,21 @@ static int parse_script(const char *path, p2vi_block_t **blks, int *nblks)
 	return st;
 }
 
-static int replay_scripts(const char **paths, int nscripts, int handover)
+/* snap_sc is the script index the compat baseline is taken after (-1 = the
+ * last one), translated into the block index replay_blocks() wants: a script
+ * contributes as many blocks as it has $VI calls. */
+static int replay_scripts(const char **paths, int nscripts, int handover,
+			  int snap_sc)
 {
 	p2vi_block_t *blks = NULL;
-	int nblks = 0, st = 0, i;
-	for (i = 0; i < nscripts && st >= 0; i++)
+	int nblks = 0, st = 0, i, snap_blk = -1;
+	for (i = 0; i < nscripts && st >= 0; i++) {
 		st = parse_script(paths[i], &blks, &nblks);
+		if (i == snap_sc)
+			snap_blk = nblks - 1;
+	}
 	if (st >= 0)
-		st = replay_blocks(blks, nblks, handover);
+		st = replay_blocks(blks, nblks, handover, snap_blk);
 	free_blocks(blks, nblks);
 	return st;
 }
@@ -7272,6 +7347,167 @@ static char **split_lines(char *text, int *n)
 static void parse_diff_text(const char *text);
 static void parse_diff_reset(void);
 
+/* Which form the -co third argument takes: 1 = a generated patch2vi script
+ * (it replays as another block), 0 = a unified diff (spliced into the live
+ * buffers), -1 = unreadable. Sniffed from the first line, exactly as the
+ * ordinary input is. */
+static int compat_pre_isscript(const char *path)
+{
+	FILE *f = fopen(path, "r");
+	int rc = 0;
+	if (!f) {
+		perror(path);
+		return -1;
+	}
+	sbuf_smake(lb, SB_INIT)
+	if (read_line(f, lb))
+		rc = !strncmp(lb->s, "#!/bin/sh", 9);
+	free(lb->s);
+	fclose(f);
+	return rc;
+}
+
+/* Where img[] sits in lines[], searching at or after from and preferring the
+ * occurrence nearest hint (the diff's own coordinate, stale by construction on
+ * a tree the origin and the target already changed). An empty image is a pure
+ * insertion: hint itself, clamped to what is left. -1 = nowhere. */
+static int find_image(char **lines, int nlines, char **img, int nimg,
+		      int from, int hint)
+{
+	int best = -1, i, j;
+	if (!nimg)
+		return hint < from ? from : (hint > nlines ? nlines : hint);
+	for (i = from; i + nimg <= nlines; i++) {
+		for (j = 0; j < nimg && !strcmp(lines[i + j], img[j]); j++)
+			;
+		if (j < nimg)
+			continue;
+		if (best < 0 || abs(i - hint) < abs(best - hint))
+			best = i;
+	}
+	return best;
+}
+
+/* The live session buffer holding path, opened if no replayed block named it
+ * (in which case disk is its baseline text, so it is snapshotted too).
+ * NULL if the editor would not open it. */
+static struct lbuf *compat_openbuf(char *path)
+{
+	for (int i = 0; i < xbufcur; i++)
+		if (bufs[i].path && !strcmp(bufs[i].path, path))
+			return bufs[i].lb;
+	snap_seed(&compat_base, path);
+	xmpt = 0;
+	ec_edit("", "e", path);
+	for (int i = 0; i < xbufcur; i++)
+		if (bufs[i].path && !strcmp(bufs[i].path, path))
+			return bufs[i].lb;
+	return NULL;
+}
+
+/* Apply one parsed file of the pre-applied diff to its session buffer. Each
+ * hunk's pre-image (its context and deleted lines) is searched for rather than
+ * trusted at its line number, and the buffer is rebuilt around the post-image.
+ * A hunk whose pre-image is gone is a hard error: dropping it silently would
+ * ship a compat patch the author did not write. */
+static int compat_apply_file(file_patch_t *fp)
+{
+	struct lbuf *lb;
+	char **lines, **out = NULL, **old = NULL, **new = NULL, *text;
+	int nlines, nout = 0, ocap = 0, ncap = 0, cap = 0;
+	int nold, nnew, cur = 0, i, k, lo, hi, pos, hint, st = 0;
+	if (!(lb = compat_openbuf(fp->path))) {
+		fprintf(stderr, "%s: cannot open %s\n", compat_pre, fp->path);
+		return -1;
+	}
+	text = lbuf_text(lb);	/* consumed in place by split_lines() */
+	lines = split_lines(text, &nlines);
+	for (i = 0; i < fp->nops && st == 0;) {
+		lo = fp->ops[i].hunk_lo;
+		hi = fp->ops[i].hunk_hi;
+		nold = nnew = 0;
+		while (i < fp->nops && fp->ops[i].hunk_lo == lo &&
+				fp->ops[i].hunk_hi == hi) {
+			op_t *o = &fp->ops[i++];
+			if (o->type != 'a')
+				arr_append(&old, &nold, &ocap, o->text);
+			if (o->type != 'd')
+				arr_append(&new, &nnew, &ncap, o->text);
+		}
+		/* the hunk's first original line, 0-based; a pure insertion goes
+		 * after original line lo, which is that same index */
+		hint = nold ? lo - 1 : lo;
+		pos = find_image(lines, nlines, old, nold, cur, hint);
+		if (pos < 0) {
+			fprintf(stderr, "%s: %s: hunk at line %d does not apply\n",
+				compat_pre, fp->path, lo);
+			st = -1;
+			break;
+		}
+		for (k = cur; k < pos; k++)
+			arr_append(&out, &nout, &cap, lines[k]);
+		for (k = 0; k < nnew; k++)
+			arr_append(&out, &nout, &cap, new[k]);
+		cur = pos + nold;
+		free_lines(old, nold);
+		free_lines(new, nnew);
+		old = new = NULL;
+		nold = nnew = ocap = ncap = 0;
+	}
+	if (st == 0) {
+		for (k = cur; k < nlines; k++)
+			arr_append(&out, &nout, &cap, lines[k]);
+		sbuf_smake(sb, SB_INIT)
+		for (k = 0; k < nout; k++) {
+			sbuf_str(sb, out[k])
+			sbuf_chr(sb, '\n')
+		}
+		sbuf_null(sb)
+		lbuf_edit(lb, sb->s, 0, lbuf_len(lb), 0, 0);
+		free(sb->s);
+	}
+	free_lines(old, nold);
+	free_lines(new, nnew);
+	free_lines(out, nout);
+	free_lines(lines, nlines);
+	free(text);
+	return st;
+}
+
+/* -co third argument, unified-diff form: parse it into its own files[] range
+ * (and its own raw sink, so the host === PATCH === stays byte-identical) and
+ * splice every hunk into the live buffers. The range is dropped right after:
+ * the diff is applied, not shipped, and the emitter must not see it as a host
+ * file - what the user is left holding gets re-diffed from the baseline. */
+static int compat_apply_diff(const char *path)
+{
+	strv_t sink;
+	char *text = file_text(path);
+	int first = nfiles, st = 0, i;
+	memset(&sink, 0, sizeof(sink));
+	if (!text) {
+		perror(path);
+		return -1;
+	}
+	raw_sink = &sink;
+	parse_diff_reset();
+	parse_diff_text(text);
+	raw_sink = NULL;
+	for (i = first; i < nfiles && st == 0; i++)
+		st = compat_apply_file(&files[i]);
+	for (i = first; i < nfiles; i++) {
+		for (int j = 0; j < files[i].nops; j++)
+			free(files[i].ops[j].text);
+		free(files[i].ops);
+		free(files[i].path);
+		free(files[i].orig_path);
+	}
+	nfiles = first;
+	free_lines(sink.v, sink.n);
+	free(text);
+	return st;
+}
+
 /* The target-only tree, one text per path: -co must separate "origin+target"
  * from "target alone", so the gate probe is proven absent here too. Built by
  * replaying the target without the origin in its own session. */
@@ -7310,7 +7546,7 @@ static int compat_capture_x2o(void)
 	 * script), as -E's session does */
 	if (ed_grabtty() < 0)
 		return -1;
-	if (replay_scripts(&tgt, 1, 0) != 0) {	/* handover 0: no UI */
+	if (replay_scripts(&tgt, 1, 0, -1) != 0) {	/* handover 0: no UI */
 		ed_free_bufs();
 		ed_ungrabtty();
 		return -1;
@@ -7334,15 +7570,25 @@ static int compat_capture_x2o(void)
 static int compat_derive(void)
 {
 	gate_t g[GATE_MAXPROBES];
-	int i, j, k, next_id, n;
-	const char *sc[2] = { compat_origin, input_file };
+	int i, j, k, next_id, n, nsc = 2;
+	const char *sc[3] = { compat_origin, input_file, NULL };
 	if (compat_capture_x2o() != 0)
 		return -1;
+	/* A pre-applied resolution in script form is simply one more block of the
+	 * replay, run after the baseline is taken; its diff form is spliced into
+	 * the buffers at that same point (compat_apply_diff). Either way the user
+	 * still gets the editor on top of it. */
+	if (compat_pre) {
+		if ((compat_pre_script = compat_pre_isscript(compat_pre)) < 0)
+			return -1;
+		if (compat_pre_script)
+			sc[nsc++] = compat_pre;
+	}
 	compat_capturing = 1;
 	/* Replay origin then target into one session so the new block derives on
 	 * top of every block the target already carries; existing compat blocks
 	 * stack in stored order (post-only, one group). */
-	if (replay_scripts(sc, 2, 1) != 0) {
+	if (replay_scripts(sc, nsc, 1, 1) != 0) {
 		ed_free();
 		return -1;
 	}
@@ -7927,7 +8173,8 @@ static void usage(const char *prog)
 	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n"
 		"       %s -e script.sh\n"
 		"       %s [-ari]E [nextvi-opts...]\n"
-		"       %s -co origin.sh target.sh\n", prog, prog, prog, prog);
+		"       %s -co origin.sh target.sh [compat.diff|compat.sh]\n",
+		prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\n"
 	      "  -a    Use absolute line numbers\n"
@@ -7958,6 +8205,11 @@ static void usage(const char *prog)
 	      "        AFTER the target block, on the post-origin+target tree;\n"
 	      "        the block self-skips when the origin change is absent\n"
 	      "        (patch2vi -co origin.sh target.sh)\n"
+	      "        A third argument is an already written fix - a unified\n"
+	      "        diff or a generated script - applied to that tree before\n"
+	      "        the editor is handed over, so a known resolution is not\n"
+	      "        retyped; it is part of the derived block, and the session\n"
+	      "        is still interactive on top of it\n"
 	      "  -h    Show this help\n", stderr);
 	exit(1);
 }
@@ -8047,6 +8299,10 @@ int main(int argc, char **argv)
 	}
 	if (i < argc && !edit_mode)
 		input_file = argv[i];
+	/* -co takes a third positional: an already written compat fix, applied
+	 * before the editor is handed over */
+	if (compat_mode && i + 1 < argc && !edit_mode)
+		compat_pre = argv[i + 1];
 
 	/* Mark chars that cannot be ex separators. */
 	static const char *forbidden =

@@ -1476,6 +1476,81 @@ else
 	sed 's/^/    /' "$R/po.c"
 fi
 
+# A third -co argument is an already written compat patch, applied to the
+# post-origin+target tree before the handover: the author does not retype a
+# resolution they already have, and the editor still opens on top of it, so the
+# derived block covers the pre-applied edits AND whatever the user adds.
+coderive3() {	# <origin.sh> <target.sh> <compat> <P2VI_EX>: out $R/new.sh
+	rm -f "$R/new.sh"
+	P2VI_EX="$4" script -qec \
+		"sh -c 'cd $R && $R_P2VI -co $1 $2 $3 > $R/new.sh 2>$R/nerr'" \
+		/dev/null > /dev/null 2>&1 || true
+}
+
+# origin (b1) inserts PROBE, target (b2) changes A6 -> A6x, and the compat patch
+# (written against the tree both leave behind) changes A3 -> A3c. The user quits
+# without touching anything, so the derived block is exactly that patch.
+printf 'A1\nA2\nA3\nA4\nA5\nA6\n' > "$R/pb.orig"
+printf -- '--- a/pb.c\n+++ b/pb.c\n@@ -1,3 +1,4 @@\n A1\n+PROBE\n A2\n A3\n' > "$R/b1.diff"
+printf -- '--- a/pb.c\n+++ b/pb.c\n@@ -4,3 +4,3 @@\n A4\n A5\n-A6\n+A6x\n' > "$R/b2.diff"
+printf -- '--- a/pb.c\n+++ b/pb.c\n@@ -3,3 +3,3 @@\n A2\n-A3\n+A3c\n A4\n' > "$R/bc.diff"
+"$R_P2VI" -r "$R/b1.diff" > "$R/b1.sh"
+"$R_P2VI" -r "$R/b2.diff" > "$R/b2.sh"
+cp "$R/pb.orig" "$R/pb.c"	# pre-origin tree the replay reads
+coderive3 b1.sh b2.sh bc.diff ':q!'
+if grep -q '^# Compat (post) from b1.sh' "$R/new.sh" 2>/dev/null; then
+	ok "compat: -co derives a block from a pre-applied diff alone"
+else
+	fail "compat: -co derives a block from a pre-applied diff alone"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+fi
+
+cp "$R/pb.orig" "$R/pb.c"
+( cd "$R" && VI="$VI" sh b1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/pb.c")" = "$(printf 'A1\nPROBE\nA2\nA3c\nA4\nA5\nA6x')" ]; then
+	ok "compat: pre-applied diff fires gated on an origin tree"
+else
+	fail "compat: pre-applied diff fires gated on an origin tree"
+	sed 's/^/    /' "$R/pb.c"
+fi
+
+cp "$R/pb.orig" "$R/pb.c"
+( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/pb.c")" = "$(printf 'A1\nA2\nA3\nA4\nA5\nA6x')" ]; then
+	ok "compat: pre-applied diff still self-skips on a clean tree"
+else
+	fail "compat: pre-applied diff still self-skips on a clean tree"
+	sed 's/^/    /' "$R/pb.c"
+fi
+
+# the same fix in script form is replayed as one more block of the session, and
+# the handover is not subverted: the user's own edit (A5 -> A5u) compounds with
+# the pre-applied A3 -> A3c in a single derived block
+"$R_P2VI" -r "$R/bc.diff" > "$R/bc.sh"
+cp "$R/pb.orig" "$R/pb.c"
+coderive3 b1.sh b2.sh bc.sh '%s/^A5$/A5u/:q!'
+cp "$R/pb.orig" "$R/pb.c"
+( cd "$R" && VI="$VI" sh b1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/pb.c")" = "$(printf 'A1\nPROBE\nA2\nA3c\nA4\nA5u\nA6x')" ]; then
+	ok "compat: pre-applied script plus the user's own edit in one block"
+else
+	fail "compat: pre-applied script plus the user's own edit in one block"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+	sed 's/^/    /' "$R/pb.c"
+fi
+
+# a compat patch whose pre-image is not on the tree is a hard error, not a
+# silent skip: the author would ship a block they never wrote
+printf -- '--- a/pb.c\n+++ b/pb.c\n@@ -3,3 +3,3 @@\n A2\n-NOPE\n+A3c\n A4\n' > "$R/bb.diff"
+cp "$R/pb.orig" "$R/pb.c"
+coderive3 b1.sh b2.sh bb.diff ':q!'
+if [ ! -s "$R/new.sh" ] && tr -d '\r' < "$R/nerr" | grep -q 'does not apply'; then
+	ok "compat: a pre-applied diff that does not apply is refused"
+else
+	fail "compat: a pre-applied diff that does not apply is refused"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+fi
+
 # Stage B3: storage, round-trip and stacking. The -co script above (new.sh from
 # draw.c) carries a pre COMPAT region after exit 0. -d must reproduce the whole
 # script - host block and compat region - byte-identically, without re-running
