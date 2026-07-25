@@ -6335,6 +6335,14 @@ static void snap_seed(snaps_t *sn, const char *path)
 static int compat_apply_diff(const char *path);
 static int compat_pre_script;	/* the third argument is a generated script */
 
+/* -E: the nextvi command line that follows the script name. Its option letters
+ * are vi(1)'s own, applied to the handed-over session, and its files are opened
+ * on top of the ones the replay itself named - so a session can visit a file
+ * the script never touched and still have it end up in the emitted diff. */
+static int hand_vis = -1;	/* xvis for the handover, -1 = plain visual */
+static char **hand_files;
+static int nhand_files;
+
 /* Every block in one session, leaving its buffers alive for the caller to read
  * back. With handover the last block leaves the editor to the user instead of
  * returning at the end of its body. snap_blk names the block the compat
@@ -6454,10 +6462,14 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			/* hand over a plain editor: the body's own separator,
 			 * escape and mode came from its "|sc!" prologue and
 			 * the "vis 2" the stripped tail left behind */
-			xvis = 0;
+			xvis = hand_vis >= 0 ? hand_vis : 0;
 			xsep = ':';
 			xesc = '\\';
 			xerr = 1;
+			/* the -E command line's own files, opened last so the
+			 * session lands on one of them */
+			for (k = 0; k < nhand_files; k++)
+				ec_edit("", "e", hand_files[k]);
 			if ((ln = getenv("P2VI_EX")))	/* test harness hook */
 				ex_command(ln)
 			if (!xquit)
@@ -6542,13 +6554,20 @@ static int replay_scripts(const char **paths, int nscripts, int handover,
 }
 
 /*
- * -E: edit in the built-in nextvi and convert what changed into a script.
+ * -I: edit in the built-in nextvi and convert what changed into a script.
  * Nothing is written back: every buffer the editor leaves behind is diffed
  * against the file as it was on disk, and that diff feeds the same pipeline a
  * diff read from stdin would - so a session that visits several files with :e
  * yields one script covering all of them. Hence the built-in differ below.
+ *
+ * -E is the same emit stage over a different session: instead of opening bare
+ * files, it replays a generated script and hands over the tree that replay
+ * leaves behind. The diff base is still the file on disk, so the new script
+ * carries the old one's effect plus the user's changes - it replaces the input
+ * script rather than extending it (extending is -co).
  */
-static int edit_mode;		/* -E: edit, then emit the diff as a script */
+static int edit_mode;		/* -I: edit, then emit the diff as a script */
+static int amend_mode;		/* -E: replay a script, edit, re-emit it */
 
 #define DIFF_CTX 3		/* context lines around a hunk */
 #define DIFF_MAX_CELLS 4000000	/* largest LCS table worth building */
@@ -7454,6 +7473,64 @@ static int edit_to_diff(char **args, int nargs, sbuf *out)
 	return 0;
 }
 
+/* -E: everything after the script name is a nextvi command line, kept for the
+ * handed-over session - option letters as in vi(1), then files. */
+static int parse_hand_args(char **args, int n)
+{
+	int i, j, vis = 0;
+	for (i = 0; i < n && args[i][0] == '-'; i++) {
+		if (args[i][1] == '-' && !args[i][2]) {
+			i++;
+			break;
+		}
+		for (j = 1; args[i][j]; j++) {
+			if (args[i][j] == 's')
+				vis |= 1|2;
+			else if (args[i][j] == 'e')
+				vis |= 2;
+			else if (args[i][j] == 'm')
+				vis |= 4;
+			else if (args[i][j] == 'a')
+				vis |= 8;
+			else if (args[i][j] == 'v')
+				vis = 0;
+			else {
+				fprintf(stderr, "Unknown editor option: -%c\n",
+					args[i][j]);
+				return -1;
+			}
+		}
+		hand_vis = vis;
+	}
+	hand_files = args + i;
+	nhand_files = n - i;
+	return 0;
+}
+
+/* -E: replay one generated script into a single session, hand it to the user,
+ * and diff every buffer it leaves behind against disk. The replay is the same
+ * one -co drives, so the blocks keep their own phase policy and nothing is
+ * written; a block that fails aborts the whole thing, since a partial replay
+ * would silently drop the hunks it never reached from the emitted script. */
+static int amend_to_diff(const char *path, sbuf *out)
+{
+	const char *sc[1];
+	int i;
+	sc[0] = path;
+	/* every buffer of the session ends up in the diff */
+	xbufsalloc = MAX(64, xbufsalloc);
+	if (replay_scripts(sc, 1, 1, -1, -1) != 0) {
+		fprintf(stderr, "%s: replay failed, script left alone\n", path);
+		ed_free();
+		return -1;
+	}
+	for (i = 0; i < xbufcur; i++)
+		if (bufs[i].path && bufs[i].path[0])
+			buf_to_diff(out, bufs[i].path, bufs[i].lb);
+	ed_free();
+	return 0;
+}
+
 /* One line of unified diff, from a file, stdin or the built-in differ under -E;
  * consumed in place (chomped, and paths cut out of it). */
 static int diff_in_hunk;	/* inside an @@ hunk */
@@ -7832,44 +7909,33 @@ static void usage(const char *prog)
 {
 	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n"
 		"       %s -e script.sh\n"
-		"       %s [-ari]E [nextvi-opts...]\n"
+		"       %s [-ari]I [nextvi-opts...]\n"
+		"       %s [-ari]E script.sh [nextvi-opts...]\n"
 		"       %s -co origin.sh target.sh [compat.patch|compat.sh]\n",
-		prog, prog, prog, prog);
+		prog, prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\n"
-	      "  -a    Use absolute line numbers\n"
-	      "  -r    Use relative regex patterns instead of line numbers\n"
-	      "  -i    Interactive mode: edit search patterns in the built-in nextvi\n"
-	      "        Each group's PHASE 1/2 sections hold its verbatim ex-body\n"
-	      "        bytes; editing them supersedes the structured sections for\n"
-	      "        that group (latest edit wins, tie goes to verbatim)\n"
-	      "  -d    Delta mode: re-apply previous customizations (-d implies -i)\n"
-	      "  -d1   Delta mode: match by group index only\n"
-	      "  -d2   Delta mode: match by group index + deleted/inserted text or"
-	      " regex if custom\n"
-	      "  -d3   Delta mode: match by group index + entire hunk\n"
-	      "  -d4   Delta mode: match by deleted/inserted text or regex if custom\n"
-	      "  -d5   Delta mode: match by entire hunk\n"
-	      "  -e    Execute a generated script with the built-in nextvi,\n"
-	      "        no shell involved (one editor per script block)\n"
-	      "  -E    Edit the named files in the built-in nextvi and convert\n"
-	      "        the edits into a script on stdout; no file is ever\n"
-	      "        written, and files opened with :e during the session\n"
-	      "        join the same script. Everything after -E is a plain\n"
-	      "        nextvi command line, EXINIT included\n", stderr);
+	      "  -a    Absolute line numbers\n"
+	      "  -r    Relative regex patterns instead of line numbers\n"
+	      "  -i    Interactive: edit patterns and ex bodies in the built-in nextvi\n"
+	      "  -d    Delta: re-apply previous customizations (implies -i)\n"
+	      "  -d1   Delta: match by group index\n"
+	      "  -d2   Delta: match by group index + deleted/inserted text or regex\n"
+	      "  -d3   Delta: match by group index + entire hunk\n"
+	      "  -d4   Delta: match by deleted/inserted text or regex\n"
+	      "  -d5   Delta: match by entire hunk\n"
+	      "  -e    Execute a script with the built-in nextvi, no shell involved\n"
+	      "  -E    Update a script: replay it, edit, re-emit it on stdout\n"
+	      "        Rest of the line is a nextvi command line; -d[N] keeps deltas\n"
+	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\n"
+	      "        Rest of the line is a nextvi command line, EXINIT included\n",
+	      stderr);
 	fprintf(stderr, "  -er   Read section end tag (default: \"%s\")\n"
 		"  -ew   Write section end tag (default: \"%s\")\n",
 		end_tag_rd, end_tag_wr);
-	fputs("  -co   Compat patch: interactively resolve a collision against\n"
-	      "        origin.sh, then ship the fix as a gated block emitted\n"
-	      "        AFTER the target block, on the post-origin+target tree;\n"
-	      "        the block self-skips when the origin change is absent\n"
-	      "        (patch2vi -co origin.sh target.sh)\n"
-	      "        A third argument is an already written fix - a unified\n"
-	      "        diff or a generated script - applied to that tree before\n"
-	      "        the editor is handed over, so a known resolution is not\n"
-	      "        retyped; it is part of the derived block, and the session\n"
-	      "        is still interactive on top of it\n"
+	fputs("  -co   Compat patch: resolve a collision with origin.sh, ship the\n"
+	      "        fix as a block after the target's, gated on origin being\n"
+	      "        present; a third argument pre-applies a written fix\n"
 	      "  -h    Show this help\n", stderr);
 	exit(1);
 }
@@ -7915,7 +7981,7 @@ int main(int argc, char **argv)
 		}
 		/* bare -e: execute the script; tested after -er/-ew so it
 		 * cannot shadow them, and kept out of the cluster loop
-		 * whose letters are a r i h d E */
+		 * whose letters are a r i h d E I */
 		if (argv[i][1] == 'e' && !argv[i][2]) {
 			exec_mode = 1;
 			continue;
@@ -7929,12 +7995,15 @@ int main(int argc, char **argv)
 				interactive_mode = 1;
 				read_deltas = 1;
 			}
-			/* -E takes no argument of its own and ends patch2vi's
-			 * own option parsing: whatever follows its cluster is
-			 * a nextvi command line, options and files alike, and
-			 * the script goes to stdout as in every other mode */
-			else if (argv[i][j] == 'E')
+			/* -I and -E both end patch2vi's own option parsing:
+			 * whatever follows the cluster is a nextvi command
+			 * line, options and files alike - for -E all but its
+			 * first word, which names the script to update. Either
+			 * way the script goes to stdout, as in every mode */
+			else if (argv[i][j] == 'I')
 				edit_mode = 1;
+			else if (argv[i][j] == 'E')
+				amend_mode = 1;
 			else if (argv[i][j] == 'd') {
 				if (argv[i][j+1] >= '1' && argv[i][j+1] <= '5') {
 					j++;
@@ -7951,7 +8020,7 @@ int main(int argc, char **argv)
 				usage(argv[0]);
 			}
 		}
-		if (edit_mode) {	/* the rest belongs to nextvi */
+		if (edit_mode || amend_mode) {	/* the rest belongs to nextvi */
 			i++;
 			break;
 		}
@@ -7960,8 +8029,18 @@ int main(int argc, char **argv)
 		input_file = argv[i];
 	/* -co takes a third positional: an already written compat fix, applied
 	 * before the editor is handed over */
-	if (compat_mode && i + 1 < argc && !edit_mode)
+	if (compat_mode && i + 1 < argc && !edit_mode && !amend_mode)
 		compat_pre = argv[i + 1];
+	/* -E: the first word after the cluster is the script to update, read
+	 * like any other input; the rest is the editor's command line */
+	if (amend_mode) {
+		if (i >= argc) {
+			fprintf(stderr, "-E requires a script argument\n");
+			return 1;
+		}
+		if (parse_hand_args(argv + i + 1, argc - i - 1) < 0)
+			usage(argv[0]);
+	}
 
 	/* Mark chars that cannot be ex separators. */
 	static const char *forbidden =
@@ -7974,7 +8053,7 @@ int main(int argc, char **argv)
 	if (relative_mode || interactive_mode || compat_mode)
 		mark_bytes_used("FAIL OK");
 
-	/* -E: the diff is not read, it is made. Everything patch2vi's own
+	/* -I: the diff is not read, it is made. Everything patch2vi's own
 	 * option loop did not consume is a nextvi command line - flags after
 	 * "--", then files (a missing one counts as a creation) - and the
 	 * buffers that session leaves behind are diffed against their disk
@@ -7983,7 +8062,7 @@ int main(int argc, char **argv)
 	sbuf_smake(dsb, SB_INIT)
 	if (edit_mode) {
 		if (i >= argc) {
-			fprintf(stderr, "-E requires a file argument\n");
+			fprintf(stderr, "-I requires a file argument\n");
 			return 1;
 		}
 		if (edit_to_diff(argv + i, argc - i, dsb) < 0)
@@ -8021,12 +8100,32 @@ int main(int argc, char **argv)
 			if (read_delta_sections(in) < 0)
 				return 1;
 			check_compat_gates();
+		} else if (amend_mode) {
+			fprintf(stderr, "%s: not a patch2vi script\n", input_file);
+			return 1;
 		} else {
 			/* Not a script; store and process this first line */
 			add_raw(lb->s);
 			chomp(lb->s);
 			parse_diff_line(lb->s);
 		}
+	}
+	/* -E: the delta sections are read as under -d, but the old patch
+	 * section is not - the new one is what the session produces, over the
+	 * files as they are on disk. Close before the loop below reads it. */
+	if (amend_mode) {
+		if (in)
+			fclose(in);
+		in = NULL;
+		if (ncompat) {
+			fprintf(stderr, "%s: script carries compat blocks, "
+				"which -E cannot round-trip\n", input_file);
+			return 1;
+		}
+		if (amend_to_diff(input_file, dsb) < 0)
+			return 1;
+		sbuf_null(dsb)
+		parse_diff_text(dsb->s);
 	}
 	while (in && read_line(in, lb)) {
 		add_raw(lb->s);

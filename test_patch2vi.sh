@@ -1074,20 +1074,20 @@ else
 fi
 
 echo ""
-echo "=== -E edit-to-script tests ==="
+echo "=== -I edit-to-script tests ==="
 
-# -E edits a file in the built-in editor and turns the buffer it leaves
+# -I edits a file in the built-in editor and turns the buffer it leaves
 # behind into the script; the file itself is never written, so the diff
 # comes from patch2vi's own differ, not from disk.
 E_P2VI="$PWD/patch2vi"
 
-# run_E <workdir> <excmds> <patch2vi args...>; the session is nextvi's own
+# run_I <workdir> <excmds> <patch2vi args...>; the session is nextvi's own
 # main(), so the ex commands are driven through EXINIT like in vi(1)
-run_E() {
+run_I() {
 	local d="$1" ex="$2"
 	shift 2
 	EXINIT="$ex" script -qec \
-		"sh -c 'cd $d && $E_P2VI -E $*'" /dev/null >/dev/null 2>&1
+		"sh -c 'cd $d && $E_P2VI -I $*'" /dev/null >/dev/null 2>&1
 }
 
 mkdir -p "$TMPDIR/E1"
@@ -1095,22 +1095,22 @@ printf 'one\ntwo\nthree\nfour\nfive\nsix\n' > "$TMPDIR/E1/f.txt"
 cp "$TMPDIR/E1/f.txt" "$TMPDIR/E1/orig.txt"
 printf 'one\ntwo\nTHREE\nfour\nfive\nsix\n' > "$TMPDIR/E1/want.txt"
 printf '/^three$/ { print "THREE"; next }\n{ print }\n' > "$TMPDIR/E1/filt.awk"
-run_E "$TMPDIR/E1" '%!awk -f filt.awk:q!' 'f.txt > out.sh'
+run_I "$TMPDIR/E1" '%!awk -f filt.awk:q!' 'f.txt > out.sh'
 
 # the script goes to stdout, the edited file stays untouched
 if [ -s "$TMPDIR/E1/out.sh" ] &&
    diff -q "$TMPDIR/E1/f.txt" "$TMPDIR/E1/orig.txt" >/dev/null 2>&1; then
-	ok "-E writes a script to stdout, not the file"
+	ok "-I writes a script to stdout, not the file"
 else
-	fail "-E writes a script to stdout, not the file"
+	fail "-I writes a script to stdout, not the file"
 fi
 
 # and applying it reproduces the edit
 ( cd "$TMPDIR/E1" && VI="$VI" sh out.sh ) >/dev/null 2>&1
 if diff -q "$TMPDIR/E1/f.txt" "$TMPDIR/E1/want.txt" >/dev/null 2>&1; then
-	ok "-E script applies the edit"
+	ok "-I script applies the edit"
 else
-	fail "-E script applies the edit"
+	fail "-I script applies the edit"
 fi
 
 # the embedded patch is a plain unified diff, byte for byte diff(1)'s
@@ -1119,9 +1119,9 @@ awk '/^=== PATCH2VI PATCH ===$/ { f = 1; next } f' "$TMPDIR/E1/out.sh" |
 diff -u "$TMPDIR/E1/orig.txt" "$TMPDIR/E1/want.txt" |
 	tail -n +3 > "$TMPDIR/E1/gnu.diff"
 if diff -q "$TMPDIR/E1/gnu.diff" "$TMPDIR/E1/mine.diff" >/dev/null 2>&1; then
-	ok "-E diff matches diff -u"
+	ok "-I diff matches diff -u"
 else
-	fail "-E diff matches diff -u"
+	fail "-I diff matches diff -u"
 	diff "$TMPDIR/E1/gnu.diff" "$TMPDIR/E1/mine.diff" | sed 's/^/    /'
 fi
 
@@ -1131,12 +1131,12 @@ mkdir -p "$TMPDIR/E2"
 printf 'p1\np2\n' > "$TMPDIR/E2/p.txt"
 printf 'q1\nq2\n' > "$TMPDIR/E2/q.txt"
 printf 'r1\nr2\n' > "$TMPDIR/E2/r.txt"
-run_E "$TMPDIR/E2" '%s/p1/P1/:b1:%s/q2/Q2/:b2:%s/r1/R1/:q!' \
+run_I "$TMPDIR/E2" '%s/p1/P1/:b1:%s/q2/Q2/:b2:%s/r1/R1/:q!' \
 	'p.txt q.txt r.txt p.txt > out.sh'
 if grep -q '^# Patch: p.txt q.txt r.txt$' "$TMPDIR/E2/out.sh"; then
-	ok "-E opens every file named on the command line, once each"
+	ok "-I opens every file named on the command line, once each"
 else
-	fail "-E opens every file named on the command line, once each"
+	fail "-I opens every file named on the command line, once each"
 	grep '^# Patch:' "$TMPDIR/E2/out.sh" | sed 's/^/    /'
 fi
 ( cd "$TMPDIR/E2" && VI="$VI" sh out.sh ) >/dev/null 2>&1
@@ -1146,38 +1146,38 @@ printf 'R1\nr2\n' > "$TMPDIR/E2/want_r.txt"
 if diff -q "$TMPDIR/E2/p.txt" "$TMPDIR/E2/want_p.txt" >/dev/null 2>&1 &&
    diff -q "$TMPDIR/E2/q.txt" "$TMPDIR/E2/want_q.txt" >/dev/null 2>&1 &&
    diff -q "$TMPDIR/E2/r.txt" "$TMPDIR/E2/want_r.txt" >/dev/null 2>&1; then
-	ok "-E multi-file script applies to every file"
+	ok "-I multi-file script applies to every file"
 else
-	fail "-E multi-file script applies to every file"
+	fail "-I multi-file script applies to every file"
 fi
 
 # an unchanged buffer has nothing to convert
 mkdir -p "$TMPDIR/E4"
 cp "$TMPDIR/E1/orig.txt" "$TMPDIR/E4/f.txt"
-run_E "$TMPDIR/E4" 'q' 'f.txt > out.sh'
+run_I "$TMPDIR/E4" 'q' 'f.txt > out.sh'
 if [ -s "$TMPDIR/E4/out.sh" ] &&
    ! grep -q '^# Patch:' "$TMPDIR/E4/out.sh"; then
-	ok "-E on an untouched buffer emits no patch"
+	ok "-I on an untouched buffer emits no patch"
 else
-	fail "-E on an untouched buffer emits no patch"
+	fail "-I on an untouched buffer emits no patch"
 fi
 
 # a file that does not exist yet is a creation: /dev/null on the left,
-# and -E still leaves the filesystem alone
+# and -I still leaves the filesystem alone
 mkdir -p "$TMPDIR/E3"
 printf 'hello\nworld\n' > "$TMPDIR/E3/content.txt"
-run_E "$TMPDIR/E3" 'r content.txt:q!' 'new.txt > out.sh'
+run_I "$TMPDIR/E3" 'r content.txt:q!' 'new.txt > out.sh'
 if [ ! -e "$TMPDIR/E3/new.txt" ] &&
    grep -q '^--- /dev/null$' "$TMPDIR/E3/out.sh"; then
-	ok "-E diffs a missing file as a creation"
+	ok "-I diffs a missing file as a creation"
 else
-	fail "-E diffs a missing file as a creation"
+	fail "-I diffs a missing file as a creation"
 fi
 ( cd "$TMPDIR/E3" && VI="$VI" sh out.sh ) >/dev/null 2>&1
 if diff -q "$TMPDIR/E3/new.txt" "$TMPDIR/E3/content.txt" >/dev/null 2>&1; then
-	ok "-E creation script creates the file"
+	ok "-I creation script creates the file"
 else
-	fail "-E creation script creates the file"
+	fail "-I creation script creates the file"
 fi
 
 # every buffer of the session lands in one script: two more files reached
@@ -1185,13 +1185,13 @@ fi
 mkdir -p "$TMPDIR/E5"
 printf 'a1\na2\na3\n' > "$TMPDIR/E5/a.txt"
 printf 'b1\nb2\nb3\n' > "$TMPDIR/E5/b.txt"
-run_E "$TMPDIR/E5" \
+run_I "$TMPDIR/E5" \
 	'%s/a2/A2/:e b.txt:%s/b3/B3/:e c.txt:r a.txt:q!' 'a.txt > out.sh'
 if grep -q '^# Patch: a.txt b.txt c.txt$' "$TMPDIR/E5/out.sh" &&
    [ ! -e "$TMPDIR/E5/c.txt" ]; then
-	ok "-E collects every session buffer"
+	ok "-I collects every session buffer"
 else
-	fail "-E collects every session buffer"
+	fail "-I collects every session buffer"
 	grep '^# Patch:' "$TMPDIR/E5/out.sh" | sed 's/^/    /'
 fi
 ( cd "$TMPDIR/E5" && VI="$VI" sh out.sh ) >/dev/null 2>&1
@@ -1202,34 +1202,114 @@ printf 'a1\na2\na3\n' > "$TMPDIR/E5/want_c.txt"
 if diff -q "$TMPDIR/E5/a.txt" "$TMPDIR/E5/want_a.txt" >/dev/null 2>&1 &&
    diff -q "$TMPDIR/E5/b.txt" "$TMPDIR/E5/want_b.txt" >/dev/null 2>&1 &&
    diff -q "$TMPDIR/E5/c.txt" "$TMPDIR/E5/want_c.txt" >/dev/null 2>&1; then
-	ok "-E multi-buffer script applies to every file"
+	ok "-I multi-buffer script applies to every file"
 else
-	fail "-E multi-buffer script applies to every file"
+	fail "-I multi-buffer script applies to every file"
 fi
 
 # buffers left untouched contribute nothing, changed ones still do
 mkdir -p "$TMPDIR/E6"
 printf 'x1\nx2\n' > "$TMPDIR/E6/x.txt"
 printf 'y1\ny2\n' > "$TMPDIR/E6/y.txt"
-run_E "$TMPDIR/E6" ':e y.txt:%s/y1/Y1/:q!' 'x.txt > out.sh'
+run_I "$TMPDIR/E6" ':e y.txt:%s/y1/Y1/:q!' 'x.txt > out.sh'
 if grep -q '^# Patch: y.txt$' "$TMPDIR/E6/out.sh"; then
-	ok "-E skips buffers with no edits"
+	ok "-I skips buffers with no edits"
 else
-	fail "-E skips buffers with no edits"
+	fail "-I skips buffers with no edits"
 	grep '^# Patch:' "$TMPDIR/E6/out.sh" | sed 's/^/    /'
 fi
 
-# everything after -E is nextvi's own command line: -e runs the session in
+# everything after -I is nextvi's own command line: -e runs the session in
 # ex mode, where EXINIT does the editing and there is no vi loop at all
 mkdir -p "$TMPDIR/E7"
 printf 'z1\nz2\n' > "$TMPDIR/E7/z.txt"
 printf 'Z1\nz2\n' > "$TMPDIR/E7/want_z.txt"
-run_E "$TMPDIR/E7" '%s/z1/Z1/:q!' '-e z.txt > out.sh'
+run_I "$TMPDIR/E7" '%s/z1/Z1/:q!' '-e z.txt > out.sh'
 ( cd "$TMPDIR/E7" && VI="$VI" sh out.sh ) >/dev/null 2>&1
 if diff -q "$TMPDIR/E7/z.txt" "$TMPDIR/E7/want_z.txt" >/dev/null 2>&1; then
-	ok "-E passes nextvi flags straight through"
+	ok "-I passes nextvi flags straight through"
 else
-	fail "-E passes nextvi flags straight through"
+	fail "-I passes nextvi flags straight through"
+fi
+
+echo ""
+echo "=== -E script-update tests ==="
+
+# -E replays a generated script into one session, hands it over, and emits
+# the updated script: the old script's own effect plus what the user did,
+# diffed against the files on disk. The replay never writes, so the tree
+# the new script is measured against is the untouched one.
+A="$TMPDIR/Am"
+mkdir -p "$A"
+
+# run_A <workdir> <P2VI_EX> <patch2vi args...>; the handover is driven by
+# P2VI_EX, since a replayed session is not nextvi's own main()
+run_A() {
+	local d="$1" ex="$2"
+	shift 2
+	P2VI_EX="$ex" script -qec \
+		"sh -c 'cd $d && $E_P2VI -E $*'" /dev/null >/dev/null 2>&1
+}
+
+printf 'L1\nL2\nL3\n' > "$A/base.txt"
+printf -- '--- a/f.txt\n+++ b/f.txt\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' \
+	> "$A/x.diff"
+cp "$A/base.txt" "$A/f.txt"
+"$E_P2VI" -r "$A/x.diff" > "$A/old.sh"
+
+# the user changes a second, disjoint line during the handover
+run_A "$A" '%s/^L2$/L2c/:q!' 'old.sh > new.sh 2> nerr'
+
+if diff -q "$A/f.txt" "$A/base.txt" >/dev/null 2>&1; then
+	ok "-E leaves the replayed files on disk alone"
+else
+	fail "-E leaves the replayed files on disk alone"
+fi
+
+printf 'L1\nL2c\nL3x\n' > "$A/want.txt"
+cp "$A/base.txt" "$A/f.txt"
+( cd "$A" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+if diff -q "$A/f.txt" "$A/want.txt" >/dev/null 2>&1; then
+	ok "-E script carries the old effect plus the new edit"
+else
+	fail "-E script carries the old effect plus the new edit"
+	tr -d '\r' < "$A/nerr" | sed 's/^/    /'
+fi
+
+# an untouched handover is a fixed point: the new script does what the old
+# one did, no more
+cp "$A/base.txt" "$A/f.txt"
+run_A "$A" 'q!' 'old.sh > same.sh 2> nerr2'
+printf 'L1\nL2\nL3x\n' > "$A/want2.txt"
+( cd "$A" && VI="$VI" sh same.sh ) >/dev/null 2>&1
+if diff -q "$A/f.txt" "$A/want2.txt" >/dev/null 2>&1; then
+	ok "-E without edits reproduces the script's own effect"
+else
+	fail "-E without edits reproduces the script's own effect"
+	tr -d '\r' < "$A/nerr2" | sed 's/^/    /'
+fi
+
+# a file named after the script is opened on top of the replay's own buffers
+# and joins the same output script
+cp "$A/base.txt" "$A/f.txt"
+printf 'g1\ng2\n' > "$A/g.txt"
+cp "$A/g.txt" "$A/g.base"
+run_A "$A" '%s/^g1$/G1/:q!' 'old.sh g.txt > new2.sh 2> nerr3'
+printf 'G1\ng2\n' > "$A/wantg.txt"
+( cd "$A" && VI="$VI" sh new2.sh ) >/dev/null 2>&1
+if diff -q "$A/f.txt" "$A/want2.txt" >/dev/null 2>&1 &&
+   diff -q "$A/g.txt" "$A/wantg.txt" >/dev/null 2>&1; then
+	ok "-E opens the files named after the script and emits them too"
+else
+	fail "-E opens the files named after the script and emits them too"
+	tr -d '\r' < "$A/nerr3" | sed 's/^/    /'
+fi
+
+# the input must be a generated script, not a patch
+if "$E_P2VI" -E "$A/x.diff" > /dev/null 2>&1; then
+	fail "-E rejects an input that is not a patch2vi script"
+else
+	ok "-E rejects an input that is not a patch2vi script"
 fi
 
 else
