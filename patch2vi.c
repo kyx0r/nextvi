@@ -6891,9 +6891,28 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover)
 			char sname[32];
 			snprintf(sname, sizeof(sname), "*p2vi-sec-%d*", k);
 			bmap[blks[i].npaths + k] = xbufcur;	/* appended next */
+			/* Remap the section body's b<N> references to match the
+			 * session's buffer indices, exactly as the driver body is
+			 * remapped below: earlier blocks may have opened additional
+			 * files that shift the real-file buffer numbers, and the
+			 * hardcoded b<N> in the section body would point to the
+			 * wrong buffer. */
+			char *sec_body = uc_dup(blks[i].sects[k]);
+			char *remapped;
+			if (!(remapped = remap_bufnums(sec_body, sep, bmap,
+							 blks[i].npaths + k + 1))) {
+				free(sec_body);
+				ed_done();
+				st = -1;
+				break;
+			}
+			free(sec_body);
 			xmpt = 0;
-			ed_loadbuf(sname, blks[i].sects[k]);
+			ed_loadbuf(sname, remapped);
+			free(remapped);
 		}
+		if (st < 0)
+			break;
 		xmpt = 0;
 		xvis &= ~4;
 		body = uc_dup(blks[i].body);
