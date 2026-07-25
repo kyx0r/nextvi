@@ -1267,7 +1267,7 @@ EXINIT='%ya 97:? %@97' $VI -e 'vi.c' 'conf.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI COMPAT post vi.c src=lsp.sh ===
-=== GATE 1 present mode 0 tag 1000 ===
+=== GATE 1 present tag 1000 ===
 #include "lsp.c"
 === END ===
 === COMPAT DELTA ===
