@@ -29,7 +29,7 @@ fi
 trap 'rm -f "$P2VIF"' EXIT
 
 # Patch: conf.c ex.c vi.c
-printf '%s%s%s\n' '|sc! |:vis 3217reg ya!112prpp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220211reg vis 2q!1'\
+printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg ya!112prpp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220211reg vis 2q!1'\
 "${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
