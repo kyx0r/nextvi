@@ -1425,7 +1425,7 @@ printf -- '--- a/u.c\n+++ b/u.c\n@@ -1,3 +1,3 @@\n dup\n-b\n+B\n dup\n' > "$R/u2
 cp "$R/u.orig" "$R/u.c"
 "$R_P2VI" -r "$R/u1.diff" > "$R/u1.sh"
 "$R_P2VI" -r "$R/u2.diff" > "$R/u2.sh"
-coderive u1.sh u2.sh '%s/^b$/b changed/:q!'
+coderive u1.sh u2.sh '%s/^B$/B changed/:q!'	# the target left B, and patterns are case-sensitive
 if [ ! -s "$R/new.sh" ] && tr -d '\r' < "$R/nerr" | grep -q 'no probe validates'; then
 	ok "compat: an undiscriminating origin insertion is refused"
 else
@@ -1728,6 +1728,57 @@ else
 	fail "compat: -d round-trips a cross-file gate byte-identically"
 	tr -d '\r' < "$R/derr" | sed 's/^/    /'
 	diff "$R/xf.sh" "$R/dregen.sh" | head -10 | sed 's/^/    /'
+fi
+
+# The built-in differ must not overextend. A span wider than the LCS table budget
+# (DIFF_MAX_CELLS) used to degrade to delete-all/insert-all, so two edits far
+# apart in a big file came out as a diff rewriting everything between them.
+# Patience anchoring splits such a span on its unique common lines instead, so
+# the compat patch stays the handful of lines that really changed.
+awk 'BEGIN{for (i = 1; i <= 2200; i++) printf "L%04d\n", i}' > "$R/big.orig"
+printf -- '--- a/big.c\n+++ b/big.c\n@@ -1,3 +1,4 @@\n L0001\n+BIGPROBE\n L0002\n L0003\n' > "$R/k1.diff"
+printf -- '--- a/big.c\n+++ b/big.c\n@@ -1099,3 +1099,3 @@\n L1099\n-L1100\n+L1100t\n L1101\n' > "$R/k2.diff"
+"$R_P2VI" -r "$R/k1.diff" > "$R/k1.sh"
+"$R_P2VI" -r "$R/k2.diff" > "$R/k2.sh"
+cp "$R/big.orig" "$R/big.c"
+coderive k1.sh k2.sh '%s/^L0005$/L0005c/:%s/^L2100$/L2100c/:q!'
+chg="$(sed -n '/^=== COMPAT PATCH ===$/,/^=== END /p' "$R/new.sh" |
+       grep -c '^[-+][^-+]' || true)"
+if [ "$chg" -ge 4 ] && [ "$chg" -le 12 ]; then
+	ok "compat: the differ splits a huge span instead of rewriting it"
+else
+	fail "compat: the differ splits a huge span instead of rewriting it"
+	echo "    changed lines in COMPAT PATCH=$chg (expected 4)"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+fi
+
+cp "$R/big.orig" "$R/big.c"
+( cd "$R" && VI="$VI" sh k1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+if [ "$(sed -n '6p;1101p;2101p' "$R/big.c")" = "$(printf 'L0005c\nL1100t\nL2100c')" ]; then
+	ok "compat: a split-span compat patch applies on an origin tree"
+else
+	fail "compat: a split-span compat patch applies on an origin tree"
+	sed -n '6p;1101p;2101p' "$R/big.c" | sed 's/^/    /'
+fi
+
+# Patterns are case-sensitive: nextvi's ignorecase defaults ON, so a one-byte
+# substitution like s/x/w/ meant for "xrows" would land on the "X" of "MAX("
+# earlier in the line. The emitted prologue turns it off ("ic 0"); without that
+# this tree comes out with "MAw(" and an untouched "xrows".
+printf 'A1\n\tfor (k = MAX(0, -t); k < xrows; k++)\nA3\n' > "$R/cs.orig"
+printf -- '--- a/cs.c\n+++ b/cs.c\n@@ -1,3 +1,4 @@\n A1\n+CSPROBE\n \tfor (k = MAX(0, -t); k < xrows; k++)\n A3\n' > "$R/n1.diff"
+printf -- '--- a/cs.c\n+++ b/cs.c\n@@ -1,3 +1,3 @@\n A1\n \tfor (k = MAX(0, -t); k < xrows; k++)\n-A3\n+A3t\n' > "$R/n2.diff"
+"$R_P2VI" -r "$R/n1.diff" > "$R/n1.sh"
+"$R_P2VI" -r "$R/n2.diff" > "$R/n2.sh"
+cp "$R/cs.orig" "$R/cs.c"
+coderive n1.sh n2.sh '%s/xrows/wrows/:q!'
+cp "$R/cs.orig" "$R/cs.c"
+( cd "$R" && VI="$VI" sh n1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+if [ "$(sed -n '3p' "$R/cs.c")" = "$(printf '\tfor (k = MAX(0, -t); k < wrows; k++)')" ]; then
+	ok "compat: a one-byte substitution is matched case-sensitively"
+else
+	fail "compat: a one-byte substitution is matched case-sensitively"
+	sed 's/^/    /' "$R/cs.c"
 fi
 
 # -d must round-trip a multi-file block: one region back out, byte-identically.

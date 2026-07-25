@@ -3795,6 +3795,12 @@ static void ed_free_session(void)
 	xerr = 1;
 	xseq = 1;
 	xvis = 0;
+	/* every pattern in this tool is literal source text, and nextvi's
+	 * ignorecase defaults on, so a case-folded match is always the wrong line
+	 * or the wrong byte (see emit_prologue's "ic 0"). Reset it here too, so a
+	 * replay/-i session behaves like the scripts it emits whether or not a
+	 * replayed prologue already turned it off. */
+	xic = 0;
 }
 
 /* Drop every trace of the session: the state above plus the buffers (and
@@ -5297,7 +5303,17 @@ static void emit_write_tail(sbuf *out, int nbufs)
 
 /* The specials prologue every body opens with: "|sc! <esc><sep>|" declares the
  * escape and separator bytes to ex (with the default backslash escape the loc
- * halves a doubled one), then "vis 3" enters raw ex mode. */
+ * halves a doubled one), then "vis 3" enters raw ex mode and "ic 0" makes every
+ * pattern case-sensitive.
+ *
+ * That last one is not cosmetic: nextvi's ignorecase option defaults ON (xic in
+ * ex.c), and it feeds every rset this script relies on - the group searches
+ * (ec_find) and the substitutions. Patterns here are literal source text, so a
+ * case-folded match is simply the wrong line or the wrong byte: "s/x/w/" meant
+ * for "xrows" lands on the "X" of a "MAX(" earlier in the line. The shorter and
+ * more precise a generated pattern is, the more likely it is to have an
+ * upper-case impostor before it, so this is a correctness requirement, not a
+ * preference. */
 static void emit_prologue(sbuf *out)
 {
 	sb_str(out, "|sc! ");
@@ -5306,6 +5322,8 @@ static void emit_prologue(sbuf *out)
 		sb_chr(out, '\\');
 	sb_chr(out, sep);
 	sb_str(out, "|:vis 3");
+	EMIT_SEP(out);
+	sb_str(out, "ic 0");
 	EMIT_SEP(out);
 }
 
@@ -7003,20 +7021,157 @@ static void dop_add(dops_t *d, char t, char *s)
 	d->v[d->n++].s = s;
 }
 
-/* Ops turning old[os..oe) into new[ns..ne), by way of the classic longest
- * common subsequence table. A table too large to be worth building degrades
- * to deleting the whole range and inserting the whole replacement. */
+/* Line census over one span, for patience anchoring: how often a line occurs on
+ * each side and where it last occurred. Open addressing, strcmp on collision. */
+typedef struct {
+	const char *s;
+	int co, cn;		/* occurrences in old[] / new[] */
+	int io, in;		/* the last index seen on each side */
+} lmap_t;
+
+static unsigned long line_hash(const char *s)
+{
+	unsigned long h = 5381;
+	for (; *s; s++)
+		h = h * 33 + (unsigned char)*s;
+	return h;
+}
+
+static lmap_t *lmap_slot(lmap_t *t, unsigned mask, const char *s)
+{
+	unsigned i = (unsigned)(line_hash(s) & mask);
+	while (t[i].s && strcmp(t[i].s, s))
+		i = (i + 1) & mask;
+	return &t[i];
+}
+
+/* Patience anchors for a span too large to diff outright: the lines occurring
+ * exactly once on each side pair up unambiguously, and the longest increasing
+ * subsequence of those pairs (by new-side index) is a set of matches no sane
+ * diff would cross. Their indices land in *aop / *anp (caller frees); returns
+ * how many, 0 when the span has no unique common line at all. Splitting there
+ * beats the old whole-range degrade by orders of magnitude: the sub-spans
+ * between anchors are small enough for the exact LCS below, so a 2000-line
+ * function whose body moved by two lines diffs as the handful of lines that
+ * really changed instead of as 4000 lines of delete-all/insert-all. */
+static int diff_anchors(char **old, int os, int oe, char **new, int ns, int ne,
+			int **aop, int **anp)
+{
+	int n = oe - os, m = ne - ns, nc = 0, len = 0, i, k;
+	int *co, *cn, *pile, *prev, *ao, *an;
+	unsigned cap = 8, mask;
+	lmap_t *t;
+	while (cap < (unsigned)(n + m) * 2)
+		cap <<= 1;
+	mask = cap - 1;
+	t = ecalloc(cap, sizeof(*t));
+	for (k = os; k < oe; k++) {
+		lmap_t *e = lmap_slot(t, mask, old[k]);
+		e->s = old[k];
+		e->co++;
+		e->io = k;
+	}
+	for (k = ns; k < ne; k++) {
+		lmap_t *e = lmap_slot(t, mask, new[k]);
+		e->s = new[k];
+		e->cn++;
+		e->in = k;
+	}
+	/* candidates in old order, so the LIS below only has to sort by new */
+	co = emalloc(n * sizeof(int));
+	cn = emalloc(n * sizeof(int));
+	for (k = os; k < oe; k++) {
+		lmap_t *e = lmap_slot(t, mask, old[k]);
+		if (e->co == 1 && e->cn == 1) {
+			co[nc] = k;
+			cn[nc++] = e->in;
+		}
+	}
+	free(t);
+	if (!nc) {
+		free(co);
+		free(cn);
+		return 0;
+	}
+	/* longest strictly increasing subsequence of cn[], patience piles:
+	 * pile[l] = candidate ending the smallest length-l run so far */
+	pile = emalloc((nc + 1) * sizeof(int));
+	prev = emalloc(nc * sizeof(int));
+	for (k = 0; k < nc; k++) {
+		int lo = 1, hi = len, pos;
+		while (lo <= hi) {
+			int mid = (lo + hi) / 2;
+			if (cn[pile[mid]] < cn[k])
+				lo = mid + 1;
+			else
+				hi = mid - 1;
+		}
+		pos = lo;
+		prev[k] = pos > 1 ? pile[pos - 1] : -1;
+		pile[pos] = k;
+		if (pos > len)
+			len = pos;
+	}
+	ao = emalloc(len * sizeof(int));
+	an = emalloc(len * sizeof(int));
+	for (k = len - 1, i = pile[len]; k >= 0; k--, i = prev[i]) {
+		ao[k] = co[i];
+		an[k] = cn[i];
+	}
+	free(co);
+	free(cn);
+	free(pile);
+	free(prev);
+	*aop = ao;
+	*anp = an;
+	return len;
+}
+
+/* Ops turning old[os..oe) into new[ns..ne). Common head and tail lines are
+ * taken first (the span the table sees is only what is left), then either the
+ * classic longest common subsequence table, or - for a span whose table would
+ * be too large to be worth building - a patience split into sub-spans around
+ * unique common lines, each diffed by the same routine. Only a span that is
+ * both too large and anchorless degrades to deleting the whole range and
+ * inserting the whole replacement. */
 static void diff_region(dops_t *d, char **old, int os, int oe,
 			char **new, int ns, int ne)
 {
-	int n = oe - os, m = ne - ns, i, j;
-	int *c;
-	if ((double)(n + 1) * (m + 1) > DIFF_MAX_CELLS) {
+	int n, m, nsuf = 0, na = 0, i, j, k;
+	int *c, *ao = NULL, *an = NULL;
+	while (os < oe && ns < ne && !strcmp(old[os], new[ns])) {
+		dop_add(d, ' ', old[os]);
+		os++;
+		ns++;
+	}
+	while (oe > os && ne > ns && !strcmp(old[oe - 1], new[ne - 1])) {
+		oe--;
+		ne--;
+		nsuf++;
+	}
+	n = oe - os;
+	m = ne - ns;
+	if (n > 0 && m > 0 && (double)(n + 1) * (m + 1) > DIFF_MAX_CELLS)
+		na = diff_anchors(old, os, oe, new, ns, ne, &ao, &an);
+	if (na > 0) {
+		int po = os, pn = ns;
+		for (k = 0; k < na; k++) {
+			diff_region(d, old, po, ao[k], new, pn, an[k]);
+			dop_add(d, ' ', old[ao[k]]);
+			po = ao[k] + 1;
+			pn = an[k] + 1;
+		}
+		diff_region(d, old, po, oe, new, pn, ne);
+		free(ao);
+		free(an);
+		goto tail;
+	}
+	if (n == 0 || m == 0 || (double)(n + 1) * (m + 1) > DIFF_MAX_CELLS) {
 		for (i = os; i < oe; i++)
 			dop_add(d, '-', old[i]);
 		for (j = ns; j < ne; j++)
 			dop_add(d, '+', new[j]);
-		return;
+		goto tail;
 	}
 	c = emalloc((size_t)(n + 1) * (m + 1) * sizeof(int));
 #define LCS(i, j) c[(i) * (m + 1) + (j)]
@@ -7051,6 +7206,10 @@ static void diff_region(dops_t *d, char **old, int os, int oe,
 		dop_add(d, '+', new[ns + j]);
 #undef LCS
 	free(c);
+tail:
+	/* the tail trimmed above closes the span, after whatever filled it */
+	for (k = 0; k < nsuf; k++)
+		dop_add(d, ' ', old[oe + k]);
 }
 
 /* One changed region of the origin script's landing: the span the origin
