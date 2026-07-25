@@ -1248,7 +1248,7 @@ run_A() {
 	local d="$1" ex="$2"
 	shift 2
 	P2VI_EX="$ex" script -qec \
-		"sh -c 'cd $d && $E_P2VI -E $*'" /dev/null >/dev/null 2>&1
+		"sh -c 'cd $d && $E_P2VI $*'" /dev/null >/dev/null 2>&1
 }
 
 printf 'L1\nL2\nL3\n' > "$A/base.txt"
@@ -1258,7 +1258,7 @@ cp "$A/base.txt" "$A/f.txt"
 "$E_P2VI" -r "$A/x.diff" > "$A/old.sh"
 
 # the user changes a second, disjoint line during the handover
-run_A "$A" '%s/^L2$/L2c/:q!' 'old.sh > new.sh 2> nerr'
+run_A "$A" '%s/^L2$/L2c/:q!' '-E old.sh > new.sh 2> nerr'
 
 if diff -q "$A/f.txt" "$A/base.txt" >/dev/null 2>&1; then
 	ok "-E leaves the replayed files on disk alone"
@@ -1279,7 +1279,7 @@ fi
 # an untouched handover is a fixed point: the new script does what the old
 # one did, no more
 cp "$A/base.txt" "$A/f.txt"
-run_A "$A" 'q!' 'old.sh > same.sh 2> nerr2'
+run_A "$A" 'q!' '-E old.sh > same.sh 2> nerr2'
 printf 'L1\nL2\nL3x\n' > "$A/want2.txt"
 ( cd "$A" && VI="$VI" sh same.sh ) >/dev/null 2>&1
 if diff -q "$A/f.txt" "$A/want2.txt" >/dev/null 2>&1; then
@@ -1294,7 +1294,7 @@ fi
 cp "$A/base.txt" "$A/f.txt"
 printf 'g1\ng2\n' > "$A/g.txt"
 cp "$A/g.txt" "$A/g.base"
-run_A "$A" '%s/^g1$/G1/:q!' 'old.sh g.txt > new2.sh 2> nerr3'
+run_A "$A" '%s/^g1$/G1/:q!' '-E old.sh g.txt > new2.sh 2> nerr3'
 printf 'G1\ng2\n' > "$A/wantg.txt"
 ( cd "$A" && VI="$VI" sh new2.sh ) >/dev/null 2>&1
 if diff -q "$A/f.txt" "$A/want2.txt" >/dev/null 2>&1 &&
@@ -1310,6 +1310,40 @@ if "$E_P2VI" -E "$A/x.diff" > /dev/null 2>&1; then
 	fail "-E rejects an input that is not a patch2vi script"
 else
 	ok "-E rejects an input that is not a patch2vi script"
+fi
+
+# -o names the output file for any mode: here a plain diff conversion
+"$E_P2VI" -r -o "$A/o1.sh" "$A/x.diff" > "$A/o1.out" 2>&1
+if [ -s "$A/o1.sh" ] && [ ! -s "$A/o1.out" ] &&
+   head -n1 "$A/o1.sh" | grep -q '^#!/bin/sh'; then
+	ok "-o writes the script to the named file, not stdout"
+else
+	fail "-o writes the script to the named file, not stdout"
+fi
+
+# -o may name the very script -E is updating: everything is read before
+# anything is written, and the file is replaced atomically at the end
+cp "$A/base.txt" "$A/f.txt"
+cp "$A/old.sh" "$A/self.sh"
+run_A "$A" '%s/^L2$/L2c/:q!' '-o self.sh -E self.sh 2> nerr4'
+( cd "$A" && VI="$VI" sh self.sh ) >/dev/null 2>&1
+if diff -q "$A/f.txt" "$A/want.txt" >/dev/null 2>&1; then
+	ok "-E -o on its own script updates it in place"
+else
+	fail "-E -o on its own script updates it in place"
+	tr -d '\r' < "$A/nerr4" | sed 's/^/    /'
+fi
+
+# a run that fails leaves the -o file alone and drops its temp
+cp "$A/old.sh" "$A/keep.sh"
+cp "$A/keep.sh" "$A/keep.want"
+printf 'nothing like the script\n' > "$A/drift.txt"
+"$E_P2VI" -o "$A/keep.sh" -E "$A/x.diff" >/dev/null 2>&1 || true
+if diff -q "$A/keep.sh" "$A/keep.want" >/dev/null 2>&1 &&
+   [ ! -e "$A/keep.sh.p2v.tmp" ]; then
+	ok "-o leaves the target untouched when the run fails"
+else
+	fail "-o leaves the target untouched when the run fails"
 fi
 
 else

@@ -7507,6 +7507,52 @@ static int parse_hand_args(char **args, int n)
 	return 0;
 }
 
+/* -o: the script goes to a named file instead of stdout. It is built in a temp
+ * file beside it and renamed over it once the whole run succeeded, so a failure
+ * anywhere - a refused replay, an unusable separator, a signal - leaves that
+ * file untouched and no half-built script is ever visible under its name. That
+ * is what makes "-o" naming the very script -E is updating safe: by the time
+ * anything is written the input has been replayed, read and closed, whereas a
+ * shell redirection onto it would have truncated it before patch2vi started. */
+static const char *out_file;
+static char *out_tmp;
+
+static void out_cleanup(void)
+{
+	if (out_tmp)
+		unlink(out_tmp);
+}
+
+static int out_redirect(const char *path)
+{
+	struct stat st;
+	out_tmp = str_fmt("%s.p2v.tmp", path);
+	atexit(out_cleanup);
+	fflush(stdout);
+	if (!freopen(out_tmp, "w", stdout)) {
+		perror(out_tmp);
+		return -1;
+	}
+	if (!stat(path, &st))	/* a generated script is executable */
+		chmod(out_tmp, st.st_mode);
+	return 0;
+}
+
+static int out_commit(const char *path)
+{
+	if (fflush(stdout) || ferror(stdout)) {
+		perror(out_tmp);
+		return -1;
+	}
+	if (rename(out_tmp, path) < 0) {
+		perror(path);
+		return -1;
+	}
+	free(out_tmp);
+	out_tmp = NULL;
+	return 0;
+}
+
 /* -E: replay one generated script into a single session, hand it to the user,
  * and diff every buffer it leaves behind against disk. The replay is the same
  * one -co drives, so the blocks keep their own phase policy and nothing is
@@ -7907,10 +7953,11 @@ static int read_delta_sections(FILE *in)
 
 static void usage(const char *prog)
 {
-	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n"
+	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG]"
+		" [input.patch]\n"
 		"       %s -e script.sh\n"
 		"       %s [-ari]I [nextvi-opts...]\n"
-		"       %s [-ari]E script.sh [nextvi-opts...]\n"
+		"       %s [-o FILE] [-ari]E script.sh [nextvi-opts...]\n"
 		"       %s -co origin.sh target.sh [compat.patch|compat.sh]\n",
 		prog, prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
@@ -7925,8 +7972,10 @@ static void usage(const char *prog)
 	      "  -d4   Delta: match by deleted/inserted text or regex\n"
 	      "  -d5   Delta: match by entire hunk\n"
 	      "  -e    Execute a script with the built-in nextvi, no shell involved\n"
-	      "  -E    Update a script: replay it, edit, re-emit it on stdout\n"
+	      "  -E    Update a script: replay it, edit, re-emit it\n"
 	      "        Rest of the line is a nextvi command line; -d[N] keeps deltas\n"
+	      "  -o    Write the script to FILE, atomically; may be a file this\n"
+	      "        run reads, so -E updates its own script in place\n"
 	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\n"
 	      "        Rest of the line is a nextvi command line, EXINIT included\n",
 	      stderr);
@@ -7977,6 +8026,20 @@ int main(int argc, char **argv)
 			compat_mode = 1;
 			read_deltas = 1;
 			compat_origin = opt_arg(argc, argv, &i);
+			continue;
+		}
+		/* -o FILE (or -oFILE): the script, wherever it comes from,
+		 * lands in that file rather than on stdout; tested after -co
+		 * so it cannot shadow it */
+		if (argv[i][1] == 'o') {
+			if (argv[i][2])
+				out_file = argv[i] + 2;
+			else if (i + 1 < argc)
+				out_file = argv[++i];
+			else {
+				fprintf(stderr, "Option -o requires an argument\n");
+				usage(argv[0]);
+			}
 			continue;
 		}
 		/* bare -e: execute the script; tested after -er/-ew so it
@@ -8167,6 +8230,14 @@ int main(int argc, char **argv)
 	else
 		byte_used[dyn_esc] = 1;
 
+	/* -o: from here on stdout is the output file's temp twin. Every mode
+	 * that emits a script passes through this point, and everything any of
+	 * them reads - the patch, the script's delta sections, the files a
+	 * replay or an -I session opened - has been read by now, so -o may name
+	 * a file the same run consumed (-E updating its own script). */
+	if (out_file && out_redirect(out_file) < 0)
+		return 1;
+
 	/* Emit shell script header; the emit layer targets sbufs, so build
 	 * stdout pieces in one scratch sbuf and flush it after each use */
 	sbuf_smake(osb, SB_INIT)
@@ -8249,5 +8320,8 @@ int main(int argc, char **argv)
 
 	free(osb->s);
 	free(dsb->s);
+	/* the script is whole: put it under the name -o asked for */
+	if (out_tmp && out_commit(out_file) < 0)
+		return 1;
 	return 0;
 }
