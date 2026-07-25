@@ -36,7 +36,7 @@ p2v_splice() {
 	cat "$2" >> "$P2VITMP.splice"
 	cp "$P2VITMP.splice" "$1"
 	rm -f "$P2VITMP.splice"
-	chmod +x "$1"
+	chmod +x "$1"	# written by sed, not by patch2vi's own -o
 }
 
 # Untracked files are invisible to git diff, so they are staged as
@@ -81,8 +81,7 @@ patch2vi_wrapper() {
 			*) output="${2}.sh" ;;
 		esac
 	fi
-	$P2VI "$1" -o "$output" "$2"
-	chmod +x "$output"
+	$P2VI "$1" -o "$output" "$2"	# -o already makes it executable
 	echo "Generated: $output"
 }
 
