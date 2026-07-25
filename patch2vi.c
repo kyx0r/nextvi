@@ -7833,7 +7833,7 @@ static void usage(const char *prog)
 	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-er TAG] [-ew TAG] [input.patch]\n"
 		"       %s -e script.sh\n"
 		"       %s [-ari]E [nextvi-opts...]\n"
-		"       %s -co origin.sh target.sh [compat.diff|compat.sh]\n",
+		"       %s -co origin.sh target.sh [compat.patch|compat.sh]\n",
 		prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\n"
