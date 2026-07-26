@@ -41,11 +41,10 @@ aka libpthread.
 
 async.sh
 --------------
-Adds 2 new ex commands "as" and "as!". Then next command executed in ex
-command chain after "as" is run on a separate thread. "as!" is a join command
-that waits for all threads to finish. Posix thread support is required.
-Patch is intended for expert users because races are possible depending on commands
-being used.
+Adds 2 new ex commands "as" and "as!". Ex command executed in command chain after
+"as" is run on a separate thread. "as!" is a join command that waits for all threads
+to finish. Posix thread support is required. Patch is intended for expert users because
+races are possible depending on commands used.
 Example: fun :fd command without blocking the editor
 :as:fd
 
