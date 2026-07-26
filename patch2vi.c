@@ -5496,7 +5496,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 
 	fputs("# Body too large for EXINIT/argv: stage it in a file\n"
 	      "( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
-	      "trap 'rm -f \"$P2VIF\".*' EXIT\n", stdout);
+	      "trap 'rm -f \"$P2VIF\".*' EXIT\n\n", stdout);
 
 	/* the driver references these before the bodies are staged */
 	for (int i = 0; i < nsec; i++)
@@ -8568,8 +8568,8 @@ int main(int argc, char **argv)
 		 * its ex command body in a temp file the shell expands. */
 		fputs("# Body too large for EXINIT/argv: stage it in a file\n"
 		      "( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
-		      "trap 'rm -f \"$P2VIF\"' EXIT\n", stdout);
-		fputs("\n# Patch:", stdout);
+		      "trap 'rm -f \"$P2VIF\"' EXIT\n\n", stdout);
+		fputs("# Patch:", stdout);
 		for (int k = 0; k < nactive; k++)
 			fprintf(stdout, " %s", active[k]->path);
 		fputc('\n', stdout);
