@@ -27,19 +27,19 @@ fi
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF".*' EXIT
-printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg ya!112prpp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220211reg vis 2q!1'\
+printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg ya!112prpp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
 "${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
-${QF2:+ya!211}\
+${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 'b11;0fr 0%f> ^		if \(xb_path && xb_path\[0]\)$1000??0?
 b11;0fr 0%f> ^			case 0:	/\* lsp_wake yield; redraw via lsp_dirty \*/$1001??0?
 b11;0fr 0%f> ^				} else if \(k == '\''K'\''\) \{$1002??0?
 b11;0fr 0%f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{$1003??0?
 b11;0fr 0%f> ^		lsp_wake = 0;$1004??0?
-230reg 0231reg 01000,1001,1002,1003,1004?? 231reg 11000,1001,1002,1003,1004?? 230reg+ 1211reg fr 230f> 1??!vis 2q!1fr 98b01b110?
-b2%ya 972sc %? %@972scb11211reg vis 2q!10?
+230reg 0231reg 01000,1001,1002,1003,1004?? 231reg 11000,1001,1002,1003,1004?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b110?
+b2%ya 972sc %? %@972scb11211reg ? %@2210?
 b3%ya 502sc %1000,1001,1002,1003,1004?? %@502scvis 2b0wb1w2q' > "$P2VIF".d
 printf '%s\n' '2scfr 98b0%ya 98?0?
 %f> 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},
