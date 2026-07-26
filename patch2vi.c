@@ -7985,8 +7985,6 @@ static void usage(const char *prog)
 	      "        Rest of the line is a nextvi command line; -d[N] keeps deltas\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\n"
 	      "        run reads, so -E updates its own script in place\n"
-	      "  -oE   Clustered with -E, -o takes no FILE of its own: the\n"
-	      "        script -E names is the output, updated in place\n"
 	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\n"
 	      "        Rest of the line is a nextvi command line, EXINIT included\n",
 	      stderr);
