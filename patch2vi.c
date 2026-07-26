@@ -3529,9 +3529,13 @@ static int ed_done(void)
 static void ed_free_session(void)
 {
 	int i;
+	/* a run that dies before ed_setup() (a script that will not even parse)
+	 * still unwinds through here, and so does a second free: both leave the
+	 * temp buffers zeroed, which lbuf_free() does not take */
 	for (i = 0; i < (int)LEN(tempbufs); i++) {
 		free(tempbufs[i].path);
-		lbuf_free(tempbufs[i].lb);
+		if (tempbufs[i].lb)
+			lbuf_free(tempbufs[i].lb);
 		memset(&tempbufs[i], 0, sizeof(tempbufs[i]));
 	}
 	for (i = 0; i < xregs_n; i++)
