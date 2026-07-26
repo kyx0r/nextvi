@@ -113,7 +113,9 @@ gitdiff2vi() {
 	git diff -- ":!$2" > "$P2VITMP"
 	case "$1" in
 	-d*)	p2v_splice "$2" "$P2VITMP" ;;	# keep the stored deltas
-	*)	cp "$P2VITMP" "$2" ;;		# start from the bare diff
+	# start from the bare diff; -o keeps the mode of a file that already
+	# exists, so the executable bit has to be set here
+	*)	cp "$P2VITMP" "$2"; chmod +x "$2" ;;
 	esac
 	rm -f "$P2VITMP"
 	patch2vi_stashed "$1" "$2"
