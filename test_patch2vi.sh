@@ -1984,6 +1984,25 @@ else
 	diff "$R/mf.sh" "$R/dregen.sh" 2>&1 | sed 's/^/    /' | head
 fi
 
+# Buffer numbering survives a regeneration even when the block's file set is
+# not the host's. Storage puts the compat regions before === PATCH2VI PATCH ===,
+# so -d parses the block's files first and a files[]-ordered b<N> would open
+# them in the other order: here the host edits ph.c and pi.c while the block
+# edits pi.c alone, so every b<N> in the emitted driver would shift by one.
+cp "$R/ph.orig" "$R/ph.c"
+cp "$R/pi.orig" "$R/pi.c"
+coderive g1.sh g2.sh ':e pi.c:%s/^I3$/I3d/:q!'
+cp "$R/new.sh" "$R/sf.sh"
+cp "$R/ph.orig" "$R/ph.c"
+cp "$R/pi.orig" "$R/pi.c"
+dregen sf.sh
+if [ -s "$R/sf.sh" ] && cmp -s "$R/sf.sh" "$R/dregen.sh"; then
+	ok "compat: -d keeps the buffer order of a block over one host file"
+else
+	fail "compat: -d keeps the buffer order of a block over one host file"
+	diff "$R/sf.sh" "$R/dregen.sh" 2>&1 | sed 's/^/    /' | head
+fi
+
 # rebuild the -co script (the earlier -co run clobbered new.sh)
 printf 'L1\nL2\nL3\n' > "$R/draw.orig"
 printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,4 @@\n L1\n+PROBE\n L2\n L3\n' > "$R/x1.diff"

@@ -5380,23 +5380,6 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	int nuf = 0;
 	for (int c = 0; c < ncompat; c++)
 		ngate += compat_blocks[c].ngates;
-	uf = emalloc((nfiles + ngate + 1) * sizeof(*uf));
-	for (int i = 0; i < nfiles; i++)
-		if (files[i].ngroups > 0 && uf_index(uf, nuf, &files[i]) < 0)
-			uf[nuf++] = &files[i];
-	/* Files only a cross-file probe reads: the call opens them so the
-	 * sensor has a buffer, but nothing edits them, so they go last and
-	 * the write tail stops short of them. */
-	nwrite = nuf;
-	probes = ecalloc(ngate + 1, sizeof(*probes));
-	for (int c = 0; c < ncompat; c++)
-		for (int j = 0; j < compat_blocks[c].ngates; j++) {
-			char *gp = compat_blocks[c].gates[j].path;
-			if (!gp || uf_index_path(uf, nuf, gp) >= 0)
-				continue;
-			probes[nprobe].path = gp;
-			uf[nuf++] = &probes[nprobe++];
-		}
 
 	/* Sections in run order: host, then every compat block (all post). */
 	if (nactive > 0) {
@@ -5427,6 +5410,29 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		secs[nsec].cb = cb;
 		nsec++;
 	}
+
+	/* Buffer order follows the sections, not files[]: a script's stored
+	 * compat regions sit before its host patch, so -d parses them in the
+	 * other order than the run that derived them did, and a files[]-ordered
+	 * b<N> would renumber every buffer across a regeneration. */
+	uf = emalloc((nfiles + ngate + 1) * sizeof(*uf));
+	for (int i = 0; i < nsec; i++)
+		for (int j = 0; j < secs[i].nf; j++)
+			if (uf_index(uf, nuf, secs[i].files[j]) < 0)
+				uf[nuf++] = secs[i].files[j];
+	/* Files only a cross-file probe reads: the call opens them so the
+	 * sensor has a buffer, but nothing edits them, so they go last and
+	 * the write tail stops short of them. */
+	nwrite = nuf;
+	probes = ecalloc(ngate + 1, sizeof(*probes));
+	for (int c = 0; c < ncompat; c++)
+		for (int j = 0; j < compat_blocks[c].ngates; j++) {
+			char *gp = compat_blocks[c].gates[j].path;
+			if (!gp || uf_index_path(uf, nuf, gp) >= 0)
+				continue;
+			probes[nprobe].path = gp;
+			uf[nuf++] = &probes[nprobe++];
+		}
 
 	fputs("# Body too large for EXINIT/argv: stage it in a file\n"
 	      "( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
