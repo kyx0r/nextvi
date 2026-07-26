@@ -134,7 +134,7 @@ edelta() {
 	if [ "$2" ]; then
 		$P2VI -i -o "$1" "$1"	# discard the stored deltas
 	else
-		$P2VI -d -o "$1" "$1"	# re-apply them
+		$P2VI -od "$1"		# re-apply them, in place
 	fi
 }
 
@@ -304,7 +304,7 @@ discard_compats() (
 		cp "$P2VITMP.compat" "$s"
 		rm -f "$P2VITMP.compat"
 		chmod +x "$s"	# written by awk, not by patch2vi's own -o
-		$P2VI -d -o "$s" "$s"
+		$P2VI -od "$s"
 		printf "%s\n" "DISCARDED: $s"
 	done
 )
