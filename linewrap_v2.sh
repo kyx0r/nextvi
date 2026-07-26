@@ -34,9 +34,13 @@ ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!211}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 'b01;0fr 0%f> ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[qf!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|vs\|sp\|\\$1000??0?
-230reg 0231reg 01000?? 231reg 11000?? 230reg+ 1211reg fr 230f> 1??!vis 2q!1fr 98b01b11b21b31b41b510?
+b11;0fr 0%f> ^/\* window management functions \*/$1001??0?
+b21;0fr 0%f> ^	if \(pos >= xleft \+ winw \|\| pos < xleft\)$1002??0?
+b41;0fr 0%f> ^/\* draw horizontal separator line at screen row, from x for w columns \*/$1003??0?
+b51;0fr 0%f> ^/\* window management for splits \*/$1004??0?
+230reg 0231reg 01000,1001,1002,1003,1004?? 231reg 11000,1001,1002,1003,1004?? 230reg+ 1211reg fr 230f> 1??!vis 2q!1fr 98b01b11b21b31b41b510?
 b6%ya 972sc %? %@972scb01b11b21b41b51b31211reg vis 2q!10?
-b7%ya 502sc %1000?? %@502scvis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
+b7%ya 502sc %1000,1001,1002,1003,1004?? %@502scvis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
 printf '%s\n' '2scfr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -5704,6 +5708,18 @@ exit 0
 === PATCH2VI COMPAT post src=splits.sh ===
 === GATE 1 present tag 1000 probe conf.c ===
 |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp|\
+=== END ===
+=== GATE 2 present tag 1001 probe ex.c ===
+/* window management functions */
+=== END ===
+=== GATE 3 present tag 1002 probe led.c ===
+	if (pos >= xleft + winw || pos < xleft)
+=== END ===
+=== GATE 4 present tag 1003 probe vi.c ===
+/* draw horizontal separator line at screen row, from x for w columns */
+=== END ===
+=== GATE 5 present tag 1004 probe vi.h ===
+/* window management for splits */
 === END ===
 === COMPAT DELTA ===
 === END ===
