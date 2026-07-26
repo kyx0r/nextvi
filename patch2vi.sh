@@ -8,10 +8,8 @@
 #                     extract_patches [file.sh]
 #                     extract_compats [file.sh]
 #                     reindex [file.sh | 1]
-#                     discard_delta file.sh
-#                     discard_deltas
-#                     discard_compat file.sh
-#                     discard_compats
+#                     discard_deltas [file.sh]
+#                     discard_compats [file.sh]
 #                     run_patches [1]
 #                     conv [1]
 #
@@ -263,59 +261,51 @@ reindex() (
 	rm -f tmp *.orig *.rej
 )
 
-# DESTRUCTIVE. Discards the stored delta in one patch2vi-generated script and
-# regenerates it from scratch in the new format. Only for migrating to a format
-# whose breaking changes cannot be reconciled otherwise. Rare.
-# Usage: discard_delta file.sh
-discard_delta() (
-	set -e
-	p2v_ours "$1" || exit 1
-	export P2VI_EX="${P2VI_EX:-q}"	# -i implies the editor; do not stop in it
-	edelta "$1" 1
-)
-
-# DESTRUCTIVE. discard_delta over every patch2vi-generated script.
-# Usage: discard_deltas
+# DESTRUCTIVE. Discards the stored delta and regenerates the script from scratch
+# in the new format. With a file arg, only that script; otherwise all of them.
+# Only for migrating to a format whose breaking changes cannot be reconciled
+# otherwise. Rare.
+# Usage: discard_deltas [file.sh]
 discard_deltas() (
 	set -e
-	export P2VI_EX="${P2VI_EX:-q}"
-	for s in $(p2v_scripts)
+	case "$1" in
+	"")	list=$(p2v_scripts) ;;
+	*)	p2v_ours "$1" || exit 1; list="$1" ;;
+	esac
+	export P2VI_EX="${P2VI_EX:-q}"	# -i implies the editor; do not stop in it
+	for s in $list
 	do
-		discard_delta "$s"
+		edelta "$s" 1
 	done
 )
 
-# DESTRUCTIVE. Drops every compat block one patch2vi-generated script carries:
-# the stored === PATCH2VI COMPAT === regions go, then the script is regenerated
-# from what is left, which is what takes the blocks' gates and bodies out of it.
-# Stored deltas are kept, so only the compat side is lost - extract_compats
-# first if the diffs are worth keeping.
-# Usage: discard_compat file.sh
-discard_compat() (
-	set -e
-	p2v_ours "$1" || exit 1
-	grep -q '^=== PATCH2VI COMPAT ' "$1" || exit 0
-	awk '
-	/^=== PATCH2VI COMPAT /	{ skip = 1 }
-	!skip			{ print }
-	/^=== END COMPAT ===$/	{ skip = 0 }
-	' "$1" > "$P2VITMP.compat"
-	cp "$P2VITMP.compat" "$1"
-	rm -f "$P2VITMP.compat"
-	chmod +x "$1"	# written by awk, not by patch2vi's own -o
-	export P2VI_EX="${P2VI_EX:-q}"	# -d implies the editor; do not stop in it
-	$P2VI -d -o "$1" "$1"
-	printf "%s\n" "DISCARDED: $1"
-)
-
-# DESTRUCTIVE. discard_compat over every patch2vi-generated script.
-# Usage: discard_compats
+# DESTRUCTIVE. Drops every compat block a generated script carries: the stored
+# === PATCH2VI COMPAT === regions go, then the script is regenerated from what
+# is left, which is what takes the blocks' gates and bodies out of it. Stored
+# deltas are kept, so only the compat side is lost - extract_compats first if
+# the diffs are worth keeping. With a file arg, only that script; otherwise all
+# of them.
+# Usage: discard_compats [file.sh]
 discard_compats() (
 	set -e
-	export P2VI_EX="${P2VI_EX:-q}"
-	for s in $(p2v_scripts)
+	case "$1" in
+	"")	list=$(p2v_scripts) ;;
+	*)	p2v_ours "$1" || exit 1; list="$1" ;;
+	esac
+	export P2VI_EX="${P2VI_EX:-q}"	# -d implies the editor; do not stop in it
+	for s in $list
 	do
-		discard_compat "$s"
+		grep -q '^=== PATCH2VI COMPAT ' "$s" || continue
+		awk '
+		/^=== PATCH2VI COMPAT /	{ skip = 1 }
+		!skip			{ print }
+		/^=== END COMPAT ===$/	{ skip = 0 }
+		' "$s" > "$P2VITMP.compat"
+		cp "$P2VITMP.compat" "$s"
+		rm -f "$P2VITMP.compat"
+		chmod +x "$s"	# written by awk, not by patch2vi's own -o
+		$P2VI -d -o "$s" "$s"
+		printf "%s\n" "DISCARDED: $s"
 	done
 )
 
