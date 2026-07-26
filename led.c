@@ -657,10 +657,15 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 
 int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg)
 {
-	int n = !(flg & 2) ? sb->s_n : 0, key, off;
+	int n, key, off;
 	char *post = "", *postref = post;
 	ins_state _is;
 	vi_lncol = 0;
+	if (flg & 2) {
+		n = ps;
+		ps = 0;
+	} else
+		n = sb->s_n;
 	if (insert)
 		sbuf_str(sb, insert)
 	if (!is) {
