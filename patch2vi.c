@@ -8040,8 +8040,8 @@ static void usage(const char *prog, int err)
 		" [input.patch]\n"
 		"       %s -e script.sh\n"
 		"       %s [-ari]I [nextvi-opts...]\n"
-		"       %s [-o FILE] [-ario]E script.sh [nextvi-opts...]\n"
-		"       %s -co origin.sh target.sh [compat.patch|compat.sh]\n",
+		"       %s [-ario]E script.sh [nextvi-opts...]\n"
+		"       %s [-o]co origin.sh target.sh [compat.patch|compat.sh]\n",
 		prog, prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\n"
@@ -8058,7 +8058,8 @@ static void usage(const char *prog, int err)
 	      "  -E    Update a script: replay it, edit, re-emit it\n"
 	      "        Rest of the line is a nextvi command line; -d[N] keeps deltas\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\n"
-	      "        run reads, so -E updates its own script in place\n"
+	      "        run reads. Clustered with another option it takes no FILE\n"
+	      "        and updates that option's own script in place\n"
 	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\n"
 	      "        Rest of the line is a nextvi command line, EXINIT included\n",
 	      f);
@@ -8072,14 +8073,17 @@ static void usage(const char *prog, int err)
 	exit(err ? 1 : 0);
 }
 
-/* A two-letter option's argument, attached (-erTAG) or separate (-er TAG). */
-static const char *opt_arg(int argc, char **argv, int *i)
+/* A multi-letter option's argument, attached (-erTAG) or separate (-er TAG);
+ * n is where the attached form starts, i.e. one past the option's last
+ * letter (3 for -er/-ew/-co, 4 for the clustered -oco). */
+static const char *opt_arg(int argc, char **argv, int *i, int n)
 {
-	if (argv[*i][3])
-		return argv[*i] + 3;
+	if (argv[*i][n])
+		return argv[*i] + n;
 	if (*i + 1 < argc)
 		return argv[++*i];
-	fprintf(stderr, "Option -%.2s requires an argument\n", argv[*i] + 1);
+	fprintf(stderr, "Option -%.*s requires an argument\n",
+		n - 1, argv[*i] + 1);
 	usage(argv[0], 1);
 	return NULL;
 }
@@ -8110,20 +8114,27 @@ int main(int argc, char **argv)
 			break;
 		}
 		if (argv[i][1] == 'e' && argv[i][2] == 'r') {
-			end_tag_rd = opt_arg(argc, argv, &i);
+			end_tag_rd = opt_arg(argc, argv, &i, 3);
 			continue;
 		}
 		if (argv[i][1] == 'e' && argv[i][2] == 'w') {
-			end_tag_wr = opt_arg(argc, argv, &i);
+			end_tag_wr = opt_arg(argc, argv, &i, 3);
 			continue;
 		}
 		/* -co origin.sh: derive a compatibility patch against that
 		 * script, applied AFTER the target (the ordinary positional
-		 * input). Post-only; replaces the old -co split. */
-		if (argv[i][1] == 'c' && argv[i][2] == 'o') {
+		 * input). Post-only; replaces the old -co split.
+		 *
+		 * "-oco" clusters the top-level -o into it, as "-oE" does: no
+		 * FILE of its own, the result lands back on the target script
+		 * the block extends. A file literally named "co" is still
+		 * reachable as "-o co". */
+		j = argv[i][1] == 'o' && argv[i][2] == 'c' && argv[i][3] == 'o';
+		if (argv[i][1 + j] == 'c' && argv[i][2 + j] == 'o') {
 			compat_mode = 1;
 			read_deltas = 1;
-			compat_origin = opt_arg(argc, argv, &i);
+			amend_inplace = j;
+			compat_origin = opt_arg(argc, argv, &i, 3 + j);
 			continue;
 		}
 		/* -o FILE (or -oFILE): the script, wherever it comes from,
@@ -8191,12 +8202,21 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
-	if (amend_inplace && !amend_mode) {
-		fprintf(stderr, "Clustered -o is only for -E\n");
+	if (amend_inplace && !amend_mode && !compat_mode) {
+		fprintf(stderr, "Clustered -o is only for -E and -co\n");
 		usage(argv[0], 1);
 	}
 	if (i < argc && !edit_mode)
 		input_file = argv[i];
+	/* -oco: the block extends the target script, so that is what the run
+	 * writes back; the write is atomic, so reading it first is safe */
+	if (compat_mode && amend_inplace) {
+		if (!input_file) {
+			fprintf(stderr, "-oco requires a target script\n");
+			return 1;
+		}
+		out_file = input_file;
+	}
 	/* -co takes a third positional: an already written compat fix, applied
 	 * before the editor is handed over */
 	if (compat_mode && i + 1 < argc && !edit_mode && !amend_mode)

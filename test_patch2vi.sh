@@ -2283,6 +2283,48 @@ else
 	echo "    full=[$g_full] partial=[$g_part] clean=[$g_none]"
 fi
 
+# -oco clusters the top-level -o into -co: no FILE of its own, the derived
+# block lands back on the target script it extends (the same rule -oE follows),
+# and nothing goes to stdout.
+printf 'P1\nP2\nP3\n' > "$R/p.orig"
+printf -- '--- a/p.c\n+++ b/p.c\n@@ -1,3 +1,4 @@\n P1\n+PROBE\n P2\n P3\n' > "$R/o1.diff"
+printf -- '--- a/p.c\n+++ b/p.c\n@@ -1,3 +1,3 @@\n P1\n P2\n-P3\n+P3x\n' > "$R/o2.diff"
+"$R_P2VI" -r "$R/o1.diff" > "$R/o1.sh"
+"$R_P2VI" -r "$R/o2.diff" > "$R/o2.sh"
+cp "$R/o2.sh" "$R/o2.keep"
+cp "$R/p.orig" "$R/p.c"
+rm -f "$R/ostdout"
+P2VI_EX='%s/^P2$/P2c/:q!' script -qec \
+	"sh -c 'cd $R && $R_P2VI -oco o1.sh o2.sh > $R/ostdout 2>$R/nerr'" \
+	/dev/null > /dev/null 2>&1 || true
+if [ ! -s "$R/ostdout" ] &&
+   grep -q '^# Compat (post) from o1.sh' "$R/o2.sh" 2>/dev/null; then
+	ok "compat: -oco updates the target script in place"
+else
+	fail "compat: -oco updates the target script in place"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+fi
+cp "$R/p.orig" "$R/p.c"
+( cd "$R" && VI="$VI" sh o1.sh && VI="$VI" sh o2.sh ) >/dev/null 2>&1
+p_full="$(tr '\n' '|' < "$R/p.c")"
+cp "$R/p.orig" "$R/p.c"
+( cd "$R" && VI="$VI" sh o2.sh ) >/dev/null 2>&1
+p_clean="$(tr '\n' '|' < "$R/p.c")"
+if [ "$p_full" = 'P1|PROBE|P2c|P3x|' ] && [ "$p_clean" = 'P1|P2|P3x|' ]; then
+	ok "compat: the in-place updated script fires and no-ops like any other"
+else
+	fail "compat: the in-place updated script fires and no-ops like any other"
+	echo "    origin=[$p_full] clean=[$p_clean]"
+fi
+# a file literally named "co" is still reachable through a separate argument
+rm -f "$R/co"
+"$R_P2VI" -r -o "$R/co" "$R/o2.diff" >/dev/null 2>&1
+if [ -s "$R/co" ] && cmp -s "$R/co" "$R/o2.keep"; then
+	ok "compat: -o co still names a file, not a -co cluster"
+else
+	fail "compat: -o co still names a file, not a -co cluster"
+fi
+
 fi
 
 echo ""
