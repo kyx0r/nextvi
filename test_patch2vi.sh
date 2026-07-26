@@ -2241,6 +2241,48 @@ else
 	echo "    none=[$t_none] A=[$t_a] B=[$t_b] A+B=[$t_ab]"
 fi
 
+# One string does not rule a gate: an origin that lands in several places is
+# probed in several of them, one probe per region, and the sensors AND. A tree
+# carrying only a slice of that origin (here just the first region) is not the
+# origin's tree, so the block must not fire there.
+i=1
+: > "$R/g.orig"
+while [ $i -le 30 ]; do printf 'G%d\n' "$i" >> "$R/g.orig"; i=$((i + 1)); done
+sed -e 's/^G3$/G3o/' -e 's/^G9$/G9o/' -e 's/^G15$/G15o/' \
+    -e 's/^G21$/G21o/' -e 's/^G27$/G27o/' "$R/g.orig" > "$R/g.new"
+diff -u "$R/g.orig" "$R/g.new" |
+	sed -e '1s|.*|--- a/g.c|' -e '2s|.*|+++ b/g.c|' > "$R/go.diff"
+printf -- '--- a/g.c\n+++ b/g.c\n@@ -28,3 +28,3 @@\n G28\n-G29\n+G29t\n G30\n' > "$R/gt.diff"
+printf -- '--- a/g.c\n+++ b/g.c\n@@ -2,3 +2,3 @@\n G2\n-G3\n+G3o\n G4\n' > "$R/gp.diff"
+"$R_P2VI" -r "$R/go.diff" > "$R/go.sh"
+"$R_P2VI" -r "$R/gt.diff" > "$R/gt.sh"
+"$R_P2VI" -r "$R/gp.diff" > "$R/gp.sh"
+cp "$R/g.orig" "$R/g.c"
+coderive go.sh gt.sh '%s/^G30$/G30c/:q!'
+nprobe="$("$R_P2VI" -d "$R/new.sh" 2>/dev/null | grep -c '^=== GATE .* probe ')"
+if [ "$nprobe" -ge 5 ]; then
+	ok "compat: a multi-region origin is ruled by five probes"
+else
+	fail "compat: a multi-region origin is ruled by five probes"
+	echo "    probes=$nprobe"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+fi
+grun() {	# <origin scripts> -> last line of g.c after new.sh
+	cp "$R/g.orig" "$R/g.c"
+	for s in $1; do ( cd "$R" && VI="$VI" sh "$s" ) >/dev/null 2>&1; done
+	( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+	tail -n 1 "$R/g.c"
+}
+g_full="$(grun 'go.sh')"
+g_part="$(grun 'gp.sh')"
+g_none="$(grun '')"
+if [ "$g_full" = 'G30c' ] && [ "$g_part" = 'G30' ] && [ "$g_none" = 'G30' ]; then
+	ok "compat: the ANDed gate fires on the whole origin, not a slice of it"
+else
+	fail "compat: the ANDed gate fires on the whole origin, not a slice of it"
+	echo "    full=[$g_full] partial=[$g_part] clean=[$g_none]"
+fi
+
 fi
 
 echo ""

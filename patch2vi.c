@@ -192,9 +192,15 @@ static void sb_lines(sbuf *fp, char **v, int n)
  * collision present here?", asked as an exact literal search before any edit.
  * Probes come from the origin's own landing (derive_gates): inserted lines for
  * GATE_PRESENT, removed ones for GATE_ABSENT. Sensors all run before any body
- * writes, so a probe sees the origin applied and the target not yet. */
+ * writes, so a probe sees the origin applied and the target not yet.
+ *
+ * One string never rules a gate: in a contested tree it is one refactor away
+ * from naming some other change, so a derivation ANDs as many distinct probes
+ * as the origin's landing offers, up to GATE_MAXPROBES, spread over its regions
+ * (one per region before any region gives a second). Fewer is shipped only when
+ * the landing itself is too small to yield more. */
 #define GATE_MAXLINES 8   /* longest probe window: locality beats length */
-#define GATE_MAXPROBES 2  /* probes one derivation may AND; storage is unbounded */
+#define GATE_MAXPROBES 5  /* probes one derivation ANDs; storage is unbounded */
 
 /* ?? tags a compat block's gate holds while its groups regenerate (shared
  * numeric space with the group capture tags), so the latter skip them. */
@@ -5068,6 +5074,11 @@ static void emit_gate_record(sbuf *out, gate_t *g, int gbuf)
 	EMIT_SEP(out);
 	sb_printf(out, "%d??", g->tag);
 	EMIT_SEP(out);
+	/* Readability line break once the result is captured into the tag: a
+	 * no-op clause and a real newline, so each probe of a multi-probe gate
+	 * sits on its own source line instead of one endless driver line. */
+	EMIT_LB(out);
+	EMIT_SEP(out);
 }
 
 /* One section's edit body - no prologue, no register defaults, no gate, no
@@ -6864,16 +6875,25 @@ static int probe_ok(char **win, int n, char **pre, int npre,
 /* The shortest qualifying window of post[r->lo .. r->hi), growing a line at a
  * time up to GATE_MAXLINES. Nothing is excluded on account of the compat hunk's
  * own edit span: the sensor reads its probe before any body runs, so a block
- * cannot destroy the condition it is gated on. */
+ * cannot destroy the condition it is gated on.
+ *
+ * used[] marks the post lines earlier probes of this derivation already took,
+ * and a window overlapping one is skipped: five slices of a single insertion
+ * are one string said five times, not five strings. */
 static int probe_from_region(gate_t *g, chg_t *r, char **pre, int npre,
-			     char **post, int npost, int uniq)
+			     char **post, int npost, int uniq, char *used)
 {
 	int len, s, i;
 	for (len = 1; len <= GATE_MAXLINES && len <= r->hi - r->lo; len++) {
 		for (s = r->lo; s + len <= r->hi; s++) {
+			for (i = 0; i < len && !used[s + i]; i++);
+			if (i < len)
+				continue;
 			if (!probe_ok(post + s, len, pre, npre, post, npost,
 				      uniq))
 				continue;
+			for (i = 0; i < len; i++)
+				used[s + i] = 1;
 			memset(g, 0, sizeof(*g));
 			g->lines = emalloc(len * sizeof(char *));
 			for (i = 0; i < len; i++)
@@ -6888,17 +6908,23 @@ static int probe_from_region(gate_t *g, chg_t *r, char **pre, int npre,
 
 /* Delete-only region: nothing inserted is available to probe, so probe a
  * removed line and invert the polarity - quit when it IS found. The mirror of
- * probe_ok: gone from the post-origin text, unique in the pre-origin one. */
+ * probe_ok: gone from the post-origin text, unique in the pre-origin one.
+ * used[] strikes out the removed lines earlier probes took, as above. */
 static int probe_removed(gate_t *g, chg_t *r, char **pre, int npre,
-			 char **post, int npost)
+			 char **post, int npost, char *used)
 {
 	int len, s, i;
 	for (len = 1; len <= GATE_MAXLINES && len <= r->ndel; len++) {
 		for (s = 0; s + len <= r->ndel; s++) {
+			for (i = 0; i < len && !used[s + i]; i++);
+			if (i < len)
+				continue;
 			if (count_in(post, npost, r->del + s, len))
 				continue;
 			if (count_in(pre, npre, r->del + s, len) != 1)
 				continue;
+			for (i = 0; i < len; i++)
+				used[s + i] = 1;
 			memset(g, 0, sizeof(*g));
 			g->lines = emalloc(len * sizeof(char *));
 			for (i = 0; i < len; i++)
@@ -6922,22 +6948,66 @@ static void free_gates(gate_t *g, int n)
 	}
 }
 
+/* Inserted-text probes of one polarity, filling g[n..maxg) and returning the
+ * new count. Two passes over the regions in nearest-first order: the first
+ * takes one probe per region, the second drains them, so the strings a gate
+ * ANDs are spread over the origin's landing before any one region repeats
+ * itself. */
+static int collect_probes(gate_t *g, int n, int maxg, chg_t *r, int *ord,
+			  int nr, char **pre, int npre, char **post, int npost,
+			  int uniq, char *used)
+{
+	for (int pass = 0; pass < 2 && n < maxg; pass++)
+		for (int i = 0; i < nr && n < maxg; i++)
+			while (probe_from_region(&g[n], &r[ord[i]], pre, npre,
+						 post, npost, uniq, used)) {
+				n++;
+				if (!pass || n >= maxg)
+					break;
+			}
+	return n;
+}
+
+/* Removed-text probes, for the delete-only regions the inserted-text pass
+ * cannot see. Regions are drained one at a time (each needs its own used[] over
+ * its del[] lines, and delete-only regions are few), still nearest first. */
+static int collect_removed(gate_t *g, int n, int maxg, chg_t *r, int *ord,
+			   int nr, char **pre, int npre, char **post, int npost)
+{
+	for (int i = 0; i < nr && n < maxg; i++) {
+		chg_t *c = &r[ord[i]];
+		char *used;
+		if (c->lo != c->hi || c->ndel <= 0)
+			continue;
+		used = ecalloc(c->ndel, 1);
+		while (n < maxg && probe_removed(&g[n], c, pre, npre,
+						 post, npost, used))
+			n++;
+		free(used);
+	}
+	return n;
+}
+
 /* The gate for one compat block over one file. pre[]/post[] are the file before
  * and after the origin's blocks ran, the two trees the sensor can find at run
  * time; [alo,ahi) is the compat hunk's anchor span, used only to order the
  * candidate regions (it is in baseline coordinates, so the distance is a
  * preference, never a constraint).
  *
- * Nearest region first, and a single unique probe wins; failing that, two
- * individually ambiguous probes from distinct regions are ANDed. 0 when none
- * validates - a hard error for the caller, never a reason to ship a weak
- * gate. */
+ * Nearest region first, and every probe the landing offers is ANDed, up to
+ * maxg: unique ones first, then merely-present ones (each still absent from the
+ * pre-origin text, so each still rules it out) to top the gate up. Only when
+ * the inserted text yields nothing at all does the removed text answer instead,
+ * with the polarity inverted - the two kinds are never mixed, since one gate
+ * expression carries one polarity. 0 when nothing validates - a hard error for
+ * the caller, never a reason to ship a weak gate. */
 static int derive_gates(gate_t *g, int maxg, char **pre, int npre,
 			char **post, int npost, int alo, int ahi)
 {
 	chg_t *r;
 	int nr = gate_regions(&r, pre, npre, post, npost);
 	int *ord = nr ? emalloc(nr * sizeof(int)) : NULL;
+	char *used = ecalloc(npost > 0 ? npost : 1, 1);
 	int i, j, t, n = 0;
 	if (maxg > GATE_MAXPROBES)
 		maxg = GATE_MAXPROBES;
@@ -6952,27 +7022,22 @@ static int derive_gates(gate_t *g, int maxg, char **pre, int npre,
 			ord[j] = ord[j - 1];
 			ord[j - 1] = t;
 		}
-	for (i = 0; i < nr && !n; i++) {
-		chg_t *c = &r[ord[i]];
-		if (probe_from_region(g, c, pre, npre, post, npost, 1))
-			n = 1;
-		else if (c->lo == c->hi && probe_removed(g, c, pre, npre,
-							 post, npost))
-			n = 1;
+	int nuniq = collect_probes(g, n, maxg, r, ord, nr, pre, npre,
+				   post, npost, 1, used);
+	/* no region names the origin's landing uniquely, or too few do: AND in
+	 * the ambiguous ones, which each still rule out the pre-origin text */
+	n = collect_probes(g, nuniq, maxg, r, ord, nr, pre, npre, post, npost,
+			   0, used);
+	/* nothing unique at all: a lone ambiguous string is not a gate, two are
+	 * the old minimum */
+	if (!nuniq && n < 2) {
+		free_gates(g, n);
+		n = 0;
 	}
-	/* no region names the origin's landing on its own: AND two that each
-	 * rule out the pre-origin text */
-	if (!n && maxg > 1) {
-		int got = 0;
-		for (j = 0; j < nr && got < maxg; j++)
-			if (probe_from_region(&g[got], &r[ord[j]], pre, npre,
-					      post, npost, 0))
-				got++;
-		if (got == maxg)
-			n = got;
-		else
-			free_gates(g, got);
-	}
+	if (!n)
+		n = collect_removed(g, n, maxg, r, ord, nr, pre, npre,
+				    post, npost);
+	free(used);
 	free(ord);
 	free_regions(r, nr);
 	return n;
