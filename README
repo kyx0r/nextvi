@@ -339,7 +339,7 @@ Example: highlight multiple different keywords
 Example: disable rules
 :hi
 Example: highlight text inside parens
-:0,5hi \(.*?\)
+:5hi \(.*?\)
 
 My current EXINIT setup:
 --------------
