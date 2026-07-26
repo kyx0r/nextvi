@@ -8025,9 +8025,13 @@ static int read_delta_sections(FILE *in)
 	return 0;
 }
 
-static void usage(const char *prog)
+/* The whole help, on stdout for -h (a request, answered with success) and on
+ * stderr for a misused option (a diagnostic, following the message that says
+ * what was wrong); err picks both the stream and the exit status. */
+static void usage(const char *prog, int err)
 {
-	fprintf(stderr, "Usage: %s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG]"
+	FILE *f = err ? stderr : stdout;
+	fprintf(f, "Usage: %s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG]"
 		" [input.patch]\n"
 		"       %s -e script.sh\n"
 		"       %s [-ari]I [nextvi-opts...]\n"
@@ -8052,15 +8056,15 @@ static void usage(const char *prog)
 	      "        run reads, so -E updates its own script in place\n"
 	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\n"
 	      "        Rest of the line is a nextvi command line, EXINIT included\n",
-	      stderr);
-	fprintf(stderr, "  -er   Read section end tag (default: \"%s\")\n"
+	      f);
+	fprintf(f, "  -er   Read section end tag (default: \"%s\")\n"
 		"  -ew   Write section end tag (default: \"%s\")\n",
 		end_tag_rd, end_tag_wr);
 	fputs("  -co   Compat patch: resolve a collision with origin.sh, ship the\n"
 	      "        fix as a block after the target's, gated on origin being\n"
 	      "        present; a third argument pre-applies a written fix\n"
-	      "  -h    Show this help\n", stderr);
-	exit(1);
+	      "  -h    Show this help\n", f);
+	exit(err ? 1 : 0);
 }
 
 /* A two-letter option's argument, attached (-erTAG) or separate (-er TAG). */
@@ -8071,7 +8075,7 @@ static const char *opt_arg(int argc, char **argv, int *i)
 	if (*i + 1 < argc)
 		return argv[++*i];
 	fprintf(stderr, "Option -%.2s requires an argument\n", argv[*i] + 1);
-	usage(argv[0]);
+	usage(argv[0], 1);
 	return NULL;
 }
 
@@ -8127,7 +8131,7 @@ int main(int argc, char **argv)
 				out_file = argv[++i];
 			else {
 				fprintf(stderr, "Option -o requires an argument\n");
-				usage(argv[0]);
+				usage(argv[0], 1);
 			}
 			continue;
 		}
@@ -8171,10 +8175,10 @@ int main(int argc, char **argv)
 				interactive_mode = 1;
 				read_deltas = 1;
 			} else if (argv[i][j] == 'h')
-				usage(argv[0]);
+				usage(argv[0], 0);	/* asked for: stdout, ok */
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				usage(argv[0]);
+				usage(argv[0], 1);
 			}
 		}
 		if (edit_mode || amend_mode) {	/* the rest belongs to nextvi */
@@ -8184,7 +8188,7 @@ int main(int argc, char **argv)
 	}
 	if (amend_inplace && !amend_mode) {
 		fprintf(stderr, "Clustered -o is only for -E\n");
-		usage(argv[0]);
+		usage(argv[0], 1);
 	}
 	if (i < argc && !edit_mode)
 		input_file = argv[i];
@@ -8202,7 +8206,7 @@ int main(int argc, char **argv)
 		if (amend_inplace)
 			out_file = argv[i];
 		if (parse_hand_args(argv + i + 1, argc - i - 1) < 0)
-			usage(argv[0]);
+			usage(argv[0], 1);
 	}
 
 	/* Mark chars that cannot be ex separators. */
