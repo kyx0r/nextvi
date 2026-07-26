@@ -2,10 +2,11 @@
  * patch2vi - turn a unified diff into a /bin/sh script driving nextvi's ex
  * engine, and back.
  *
- * Usage: patch2vi [-arih] [-d[N]] [-er TAG] [-ew TAG] [patch|script]
+ * Usage: patch2vi [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG] [patch|script]
  *        patch2vi -e script.sh
- *        patch2vi [-ari]E [nextvi-opts...]
- *        patch2vi -co origin.sh target.sh [compat.diff|compat.sh]
+ *        patch2vi [-ari]I [nextvi-opts...]
+ *        patch2vi [-ario]E script.sh [nextvi-opts...]
+ *        patch2vi [-o]co origin.sh target.sh [compat.diff|compat.sh]
  *
  * The script applies the patch in raw ex mode (:vis 3). The command
  * separator and the escape byte are picked per patch via :sc! so that
@@ -22,15 +23,18 @@
  *     files, no argv, no EXINIT;
  *   - executes a generated script with no shell (-e), one editor lifetime
  *     per script block;
- *   - turns a plain editing session into a script (-E): everything past -E
+ *   - turns a plain editing session into a script (-I): everything past -I
  *     is a nextvi command line - its flags, its files, EXINIT - and every
  *     buffer it leaves behind is diffed against its disk copy to produce
  *     the input the converter normally reads;
+ *   - updates a script (-E): replays it, hands the tree it leaves over to
+ *     the user and re-emits it through that same diff pass;
  *   - replays two scripts (-co) to derive a compatibility patch, applied
  *     after the target and gated on the origin's own change; an optional
  *     third argument (diff or script) pre-applies a known compat patch that
  *     the session then continues from.
- * No mode writes to disk; quitting is what emits.
+ * No session ever writes a buffer back; quitting is what emits, to stdout or
+ * (-o) atomically onto a named file.
  */
 #include "vi.c"
 
@@ -1026,7 +1030,7 @@ static int find_unused_byte(void)
 static void list_unused_bytes(sbuf *out)
 {
 	int n = 0;
-	sb_printf(out, "# Available separators:");
+	sb_str(out, "# Available separators:");
 	int range_start = -1;
 	for (int c = 1; c <= 256; c++) {
 		int unused = (c < 256) && !byte_used[c];
@@ -1043,7 +1047,7 @@ static void list_unused_bytes(sbuf *out)
 		}
 	}
 	if (!n)
-		sb_printf(out, " (none)");
+		sb_str(out, " (none)");
 	sb_chr(out, '\n');
 }
 
@@ -1111,7 +1115,7 @@ static void sq_write(const char *s, int n)
  * argument would fork a shell.
  */
 #define REG_QF1  210	/* phase-1 quit chain, set by QF1=1 */
-#define REG_QF2  211	/* phase-2 quit chain, cleared by QF2=1 */
+#define REG_QF2  211	/* phase-2 quit chain, emptied through REG_QF2A by QF2=1 */
 #define REG_INTR 212	/* interrupt chain, set by INTR=1 */
 #define REG_ERR1 213	/* phase-1 FAIL gate, set by DBG1=1 */
 #define REG_ERR2 214	/* phase-2 FAIL gate, cleared by DBG2=1 */
@@ -1135,17 +1139,20 @@ static void sq_write(const char *s, int n)
  *   REG_FLAG_BASE+k   one per origin k, read by the per-block subset test that
  *                     decides which block asserts.
  * Both sit above the 210-220 control band. The subset anchors use ec_while slot
- * ids >= 10, above every single-digit group chain tag, so they never fuse.
+ * ids >= 10, above every single-digit group chain tag, so they never fuse; two
+ * blocks reusing the same slots is fine, since each records them immediately
+ * before reading them and a lookup takes the last record.
  */
 #define REG_FLAG_ANY  230	/* shared any-origin-fired register */
 #define REG_FLAG_BASE 231	/* per-origin flag registers: REG_FLAG_BASE+k */
 #define FLAG_SLOT_BASE 10	/* ec_while subset-test anchor slots (>= 10) */
 /*
  * Gate probe tags live in their own band, above the group chain tags and the
- * subset slots. An xanchor lookup ORs every recorded entry carrying the id, so
- * a tag shared with a group's capture - or another block's gate - would let one
- * sensor answer for another. next_gate_tag numbers continuously across blocks,
- * stored ones included, so no two ever share.
+ * subset slots. An xanchor lookup reads the LAST entry recorded under the id
+ * (which is what lets every group reuse the chain tags 1-9), so a tag shared
+ * with a group's capture - or another block's gate - would silently answer for
+ * the other. next_gate_tag numbers continuously across blocks, stored ones
+ * included, so no two ever share.
  */
 #define GATE_TAG_BASE 1000
 /* n escape bytes then the separator: 0 = plain, 1 = inside a ??-arm's
@@ -1209,9 +1216,9 @@ static void emit_insert_after(sbuf *out, int line, char **texts, int ntexts,
 		return;
 
 	if (is_new)
-		sb_printf(out, "i ");
+		sb_str(out, "i ");
 	else if (line <= 0)
-		sb_printf(out, "0i ");
+		sb_str(out, "0i ");
 	else
 		sb_printf(out, "%di ", line);
 	emit_content(out, texts, ntexts);
@@ -1418,7 +1425,7 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
 			sb_chr(out, '\n');
 	}
 	if (single && !pre_escaped)
-		sb_str(out, "$");	/* $ anchor */
+		sb_chr(out, '$');
 	/* Ensure trailing newline when last anchor is empty */
 	if (nanchors > 0 && !anchors[nanchors - 1][0])
 		sb_chr(out, '\n');
@@ -2065,7 +2072,7 @@ static void emit_chain_pattern(sbuf *out, pat_spec_t *p)
 			sb_chr(out, '\n');
 	}
 	if (wrap)
-		sb_str(out, "$");	/* $ anchor */
+		sb_chr(out, '$');
 	/* Ensure trailing newline when last line is empty */
 	if (p->nlines > 0 && !p->lines[p->nlines - 1][0])
 		sb_chr(out, '\n');
@@ -2090,11 +2097,9 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		int m1 = ps[n].mode == 1;
 		int g3 = ps[n].mode == 3;
 		int g2 = ps[n].mode == 2 || g3;   /* grp bracketing covers both */
-		/* Readability line break before each attempt's search: a leading
-		 * separator (after the '?' for the first attempt, after the
-		 * previous block otherwise), a line-break no-op clause and a real
-		 * newline, then the separator before the search setup. Every
-		 * attempt thus starts on its own source line. */
+		/* Readability line break, so every attempt starts on its own
+		 * source line: separator, no-op clause, newline, then the
+		 * separator before the search setup. */
 		EMIT_ESCSEP(out);
 		EMIT_LB(out);
 		EMIT_ESCSEP(out);
@@ -2105,12 +2110,10 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		emit_chain_pattern(out, &ps[n]);
 		EMIT_ESCSEP(out);
 		sb_printf(out, "%d??", ps[n].pid);
-		/* Readability line break once the search result is captured
-		 * into tag <n>: a line-break (no-op) clause and a real newline split
-		 * the long single-line chain so each attempt's match and its
-		 * mark action sit on separate source lines. Placed after the
-		 * tag capture (and before grp 0 / the action re-test) so it
-		 * never separates a tag test from its then-arm. */
+		/* The same once the result is captured into tag <n>, splitting
+		 * the match from its mark action. After the capture (and before
+		 * grp 0 / the action re-test), so it never separates a tag test
+		 * from its then-arm. */
 		EMIT_ESCSEP(out);
 		EMIT_LB(out);
 		if (g2) {
@@ -3112,14 +3115,10 @@ static void emit_grp_delta(sbuf *out, grp_delta_t *gd)
 }
 
 /* A c/i command's inline content as the EDIT COMMAND sections show it: the
- * verb takes the first added line on its own line, the rest follow below; a
- * group that adds nothing just ends the verb line. */
+ * verb takes the first added line, the rest follow below. Every call site is
+ * an adding shape, so nadd > 0. */
 static void wg_content(sbuf *fp, group_t *g)
 {
-	if (!g->nadd) {
-		sb_chr(fp, '\n');
-		return;
-	}
 	sb_chr(fp, ' ');
 	for (int k = 0; k < g->nadd; k++) {
 		sb_str(fp, g->add_texts[k]);
@@ -3267,7 +3266,8 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 		else
 			sb_printf(fp, "=== GROUP %d/%d (line %d) ===\n",
 				  gi + 1, ngroups, target);
-		if (gd && gd->ncustom_text > 0 && gd->has_star && in_fd) {
+		/* gd is non-NULL only when in_fd is: find_grp_delta bails on NULL */
+		if (gd && gd->ncustom_text > 0 && gd->has_star) {
 			sb_lines(fp, gd->custom_text, gd->ncustom_text);
 		} else {
 			for (int i = 0; i < g->ndel; i++)
@@ -3282,7 +3282,7 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 		/* COMMAND STRATEGY: inject stored strategy or keep all commented */
 		int sel_strat = (gd && gd->strategy != STRAT_DEFAULT)
 				? gd->strategy : STRAT_DEFAULT;
-		sb_printf(fp, "=== COMMAND STRATEGY ===\n");
+		sb_str(fp, "=== COMMAND STRATEGY ===\n");
 		sb_printf(fp, "%sabs\n", sel_strat == STRAT_ABS ? "" : "#");
 		if (has_anchors && g->ndel == 1 && g->nadd == 1 && g->has_line_diff)
 			sb_printf(fp, "%srelc\n", sel_strat == STRAT_RELC ? "" : "#");
@@ -5100,8 +5100,6 @@ static void emit_gate_record(sbuf *out, gate_t *g, int gbuf)
 	ps.nlines = g->nlines;
 	sb_printf(out, "b%d", gbuf);
 	EMIT_SEP(out);
-	/* Multi-line gate: search the register cache, where the whole file is one
-	 * string and the embedded newlines are visible to the regex. */
 	sb_str(out, ps.nlines > 1 ? "%ya 98" : "1;0");
 	EMIT_SEP(out);
 	sb_str(out, ps.nlines > 1 ? "fr 98" : "fr 0");
@@ -6106,6 +6104,8 @@ typedef struct {
 
 static void pend_push(pend_t *p, const char *raw, const char *suf)
 {
+	/* one capacity for two arrays: the saved copy gives the second ARR_PUSH
+	 * the same pre-growth value, so both grow in step */
 	int cap = p->cap;
 	ARR_PUSH(p->raw, p->n, p->cap)
 	ARR_PUSH(p->suf, p->n, cap)
@@ -6166,7 +6166,7 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 	p2vi_block_t blk = {0};
 	pend_t pend = {0};
 	int skip = 0, in_body = 0, ret = 0, j;
-	char *line, *sufdup = NULL;
+	char *line;
 	sbuf_smake(lb, SB_INIT)
 	sbuf_smake(body, SB_INIT)
 	while (ret >= 0 && (line = read_line(in, lb))) {
@@ -6200,9 +6200,7 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 			}
 			in_body = 0;
 			sbuf_null(body)
-			free(sufdup);
-			sufdup = uc_dup(suf);
-			pend_push(&pend, body->s, sufdup);
+			pend_push(&pend, body->s, suf);
 			sbuf_cut(body, 0)
 			continue;
 		}
@@ -6249,7 +6247,6 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 	}
 	free(body->s);
 	free(lb->s);
-	free(sufdup);
 	pend_clear(&pend);
 	if (in_body && ret >= 0)
 		ret = sh_err("body", "unterminated printf");
