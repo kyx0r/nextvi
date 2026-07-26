@@ -97,6 +97,17 @@ running a specialized search code instead of full regex engine. rstr can
 yeild up to 30% faster search on non regex patterns. This is not included in
 base nextvi due to underlying complexity.
 
+incsearch.sh
+--------------
+Search as you go in the / and ? prompts. Every typed key redraws the screen
+with the matches of the keyword highlighted and the cursor moved to the first
+match, scrolling the buffer when the match is off screen. Enter keeps that
+position and searches normally, so counts and messages are unchanged. An
+interrupt, or an erase key on an already empty keyword, restores the view,
+the previous keyword and the search direction. Nothing is previewed while
+the "led" option is off. Requires rstr.sh to be applied first if both are
+wanted.
+
 stdin_pipe.sh
 --------------
 Allows the user to use vi like a pager (less) except you need to specify
