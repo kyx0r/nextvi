@@ -326,6 +326,21 @@ cbas.sh
 Adds syntax highlighing for Coders Basilisk
 https://codeberg.org/gek/coders_basilisk/src/branch/main
 
+highlight_cmd.sh
+--------------
+Adds a new ex command "hi". This command can be used to create
+additional syntax highlighting rules on demand. It inherits
+full power of attributes so any mask will work. Figuring out
+the right value requires some effort and reading vi.h helps.
+Example: highlight int as keyword (RE color)
+:1hi int
+Example: highlight multiple different keywords
+:0,1,5,3hi \<(int)|(void)|(if)\>
+Example: disable rules
+:hi
+Example: highlight text inside parens
+:0,5hi \(.*?\)
+
 My current EXINIT setup:
 --------------
 How it works:
