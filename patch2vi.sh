@@ -6,6 +6,7 @@
 #                     edelta file [inplace]
 #                     redelta input.sh
 #                     extract_patches [file.sh]
+#                     extract_compats [file.sh]
 #                     reindex [file.sh | 1]
 #                     migrate_deltas
 #                     run_patches [1]
@@ -175,6 +176,61 @@ extract_patches() (
 			rm -f "$out"
 			printf "%s\n" "EMPTY: $s" >&2
 		fi
+	done
+)
+
+# Write every compat block a generated script carries out as a standalone
+# .patch (its === COMPAT PATCH === diff, verbatim, exactly what its author
+# handed to -co) and convert each one into its own runnable script. Both land
+# in ./compat/ so the results stay out of p2v_scripts: they are generated
+# scripts too, and reindex/run_patches must not pick them up as patches of
+# their own. A block whose diff no longer applies to the tree still converts,
+# with whatever fuzz patch2vi needs; a block with an empty diff is skipped.
+# Naming: compat/<script>-<n>-<origin>.patch, numbered in storage order, since
+# one script may carry several blocks from the same origin.
+# Usage: extract_compats [file.sh]
+extract_compats() (
+	set -e
+	case "$1" in
+	"")	list=$(p2v_scripts) ;;
+	*)	p2v_ours "$1" || exit 1; list="$1" ;;
+	esac
+	mkdir -p compat
+	for s in $list
+	do
+		for p in $(awk -v base="compat/${s%.sh}" '
+		/^=== PATCH2VI COMPAT /	{
+			n++
+			src = ""
+			for (i = 1; i <= NF; i++)
+				if (substr($i, 1, 4) == "src=")
+					src = substr($i, 5)
+			sub(/\.sh$/, "", src)
+			out = base "-" n (src == "" ? "" : "-" src) ".patch"
+			incb = 1
+			inpat = 0
+			next
+		}
+		incb && $0 == "=== COMPAT PATCH ===" {
+			inpat = 1
+			printf "" > out	# an empty diff still makes the file
+			print out
+			next
+		}
+		incb && inpat && $0 == "=== END ===" { inpat = 0; next }
+		incb && $0 == "=== END COMPAT ===" { incb = 0; next }
+		inpat			{ print > out }
+		' "$s")
+		do
+			if [ ! -s "$p" ]; then
+				rm -f "$p"
+				printf "%s\n" "EMPTY: $p" >&2
+				continue
+			fi
+			printf "%s\n" "EXTRACTED: $p"
+			$P2VI -o "${p%.patch}.sh" "$p"
+			printf "%s\n" "GENERATED: ${p%.patch}.sh"
+		done
 	done
 )
 
