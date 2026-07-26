@@ -196,8 +196,10 @@ static void sb_lines(sbuf *fp, char **v, int n)
  *
  * One string never rules a gate: in a contested tree it is one refactor away
  * from naming some other change, so a derivation ANDs as many distinct probes
- * as the origin's landing offers, up to GATE_MAXPROBES, spread over its regions
- * (one per region before any region gives a second). Fewer is shipped only when
+ * as the origin's landing offers, up to GATE_MAXPROBES, spread over its files
+ * and then its regions (one per file, one per region, before any of them gives
+ * a second): a block whose diff spans several buffers is caused by the landing
+ * in all of them and has to ask about all of them. Fewer is shipped only when
  * the landing itself is too small to yield more. */
 #define GATE_MAXLINES 8   /* longest probe window: locality beats length */
 #define GATE_MAXPROBES 5  /* probes one derivation ANDs; storage is unbounded */
@@ -7342,33 +7344,76 @@ static void diff_span(char **base, int nbase, char **fin, int nfin,
 	*hi = nbase - suf;
 }
 
+/* Merge the per-file probe sets of one derivation into a single gate, taking
+ * one probe from each file before any file gives a second. A compat patch that
+ * spans several files is caused by the origin's landing in all of them, so the
+ * gate has to ask about all of them: gating a multi-file block on whichever
+ * file came first leaves the rest of its diff answering to a question about one
+ * buffer. GATE_MAXPROBES caps the total, and one gate expression carries one
+ * polarity, so a set that disagrees with the first probe's is dropped whole
+ * (derive_gates never mixes polarities within a file). Probes taken move into
+ * g[]; the rest are freed. */
+static int merge_gates(gate_t *g, gate_t *fg, int *fgn, int nfg, int stride)
+{
+	int n = 0, pol = GATE_ALWAYS;
+	for (int i = 0; i < nfg && pol == GATE_ALWAYS; i++)
+		if (fgn[i] > 0)
+			pol = fg[i * stride].polarity;
+	for (int pass = 0; pass < stride && n < GATE_MAXPROBES; pass++)
+		for (int i = 0; i < nfg && n < GATE_MAXPROBES; i++) {
+			gate_t *s = &fg[i * stride + pass];
+			if (pass >= fgn[i] || s->nlines <= 0 ||
+					s->polarity != pol)
+				continue;
+			g[n++] = *s;		/* ownership moves to g[] */
+			s->lines = NULL;
+			s->nlines = 0;
+			s->path = NULL;
+		}
+	for (int i = 0; i < nfg; i++)
+		free_gates(&fg[i * stride], fgn[i]);
+	return n;
+}
+
 /* Cross-file gate, for a block whose own files yield no probe - the origin
  * never touched them, or the target overwrote its only trace there. "Did this
  * origin land on this tree" is a question about the tree, so any file the origin
- * demonstrably changed answers it: every one it opened is tried in snapshot
+ * demonstrably changed answers it: every one it opened is probed, in snapshot
  * order, and the derived gates carry the probe's path so the sensor selects
- * that buffer. */
+ * that buffer. As on the main path the sets are merged round-robin, so the
+ * question spans the origin's landing rather than one file of it. */
 static int derive_gates_crossfile(gate_t *g)
 {
+	gate_t *fg;
+	int *fgn, nfg = 0, n;
+	if (compat_x1.n <= 0)
+		return 0;
+	fg = ecalloc(compat_x1.n * GATE_MAXPROBES, sizeof(*fg));
+	fgn = ecalloc(compat_x1.n, sizeof(*fgn));
 	for (int i = 0; i < compat_x1.n; i++) {
 		char **pre, **post;
 		char *dup;
-		int npre, npost, is_new, n;
+		int npre, npost, is_new;
 		dup = uc_dup(compat_x1.v[i].text);
 		post = split_lines(dup, &npost);
 		pre = read_lines(compat_x1.v[i].path, &npre, &is_new);
 		/* no anchor to be near: another file's coordinates say nothing
 		 * about where this block edits, so every region ranks alike */
-		n = derive_gates(g, GATE_MAXPROBES, pre, npre, post, npost, 0, 0);
-		for (int j = 0; j < n; j++)
-			g[j].path = uc_dup(compat_x1.v[i].path);
+		fgn[nfg] = derive_gates(&fg[nfg * GATE_MAXPROBES],
+					GATE_MAXPROBES, pre, npre, post, npost,
+					0, 0);
+		for (int j = 0; j < fgn[nfg]; j++)
+			fg[nfg * GATE_MAXPROBES + j].path =
+				uc_dup(compat_x1.v[i].path);
+		nfg++;
 		free_lines(pre, npre);
 		free(post);
 		free(dup);
-		if (n)
-			return n;
 	}
-	return 0;
+	n = merge_gates(g, fg, fgn, nfg, GATE_MAXPROBES);
+	free(fg);
+	free(fgn);
+	return n;
 }
 
 /* The one compat block this run produces: replay the origin and the target into
@@ -7405,6 +7450,11 @@ static int compat_derive(void)
 	}
 	compat_capturing = 0;
 	n = 0;
+	/* Per-changed-file probe sets, merged into the block's one gate below. */
+	gate_t *fg = ecalloc((xbufcur > 0 ? xbufcur : 1) * GATE_MAXPROBES,
+			     sizeof(*fg));
+	int *fgn = ecalloc(xbufcur > 0 ? xbufcur : 1, sizeof(*fgn));
+	int nfg = 0;
 	/* One diff over every buffer the user reshaped, in buffer order: one
 	 * block, one section, one storage region. */
 	for (i = 0; i < xbufcur; i++) {
@@ -7429,24 +7479,31 @@ static int compat_derive(void)
 		emit_unified_diff(diff, bufs[i].path, is_new, base, nbase,
 				  fin, nfin);
 		nchanged++;
-		/* the first of these files whose own landing is visible
-		 * answers for the whole block, probed near where it is
-		 * edited; a file the origin never opened has no entry */
-		if (!n && (x1dup = snap_find(&compat_x1, bufs[i].path))) {
+		/* every one of these files whose own landing is visible is
+		 * probed, near where it is edited: the diff spans them all, so
+		 * the gate does too (a file the origin never opened has no
+		 * entry, and merge_gates spreads the budget over the rest) */
+		if ((x1dup = snap_find(&compat_x1, bufs[i].path))) {
 			x1dup = uc_dup(x1dup);
 			x1 = split_lines(x1dup, &nx1);
 			diff_span(base, nbase, fin, nfin, &xlo, &xhi);
 			alo = xlo;
 			ahi = xhi > xlo ? xhi : xlo;
-			n = derive_gates(g, GATE_MAXPROBES, pre, npre,
-					 x1, nx1, alo, ahi);
-			for (j = 0; j < n; j++)
-				g[j].path = uc_dup(bufs[i].path);
+			fgn[nfg] = derive_gates(&fg[nfg * GATE_MAXPROBES],
+						GATE_MAXPROBES, pre, npre,
+						x1, nx1, alo, ahi);
+			for (j = 0; j < fgn[nfg]; j++)
+				fg[nfg * GATE_MAXPROBES + j].path =
+					uc_dup(bufs[i].path);
+			nfg++;
 		}
 		free(fintext); free(bdup); free(fdup); free(x1dup);
 		free(base); free(fin); free(x1);
 		free_lines(pre, npre);
 	}
+	n = merge_gates(g, fg, fgn, nfg, GATE_MAXPROBES);
+	free(fg);
+	free(fgn);
 	ed_free();
 	sbuf_null(diff)
 	if (!nchanged) {

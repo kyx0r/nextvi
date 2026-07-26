@@ -1814,6 +1814,49 @@ else
 	printf '%s\n--\n%s\n' "$o1" "$o2" | sed 's/^/    /'
 fi
 
+# The gate spans the files the block does. Origin (h1) lands in BOTH pj.c and
+# pk.c and the compat patch reshapes both, so a probe from one file alone would
+# leave the other half of the diff answering to a question about a buffer it
+# never touches: the derivation takes a probe per file and ANDs them, each
+# recorded against its own path.
+printf 'J1\nJ2\nJ3\n' > "$R/pj.orig"
+printf 'K1\nK2\nK3\n' > "$R/pk.orig"
+printf -- '--- a/pj.c\n+++ b/pj.c\n@@ -1,3 +1,4 @@\n J1\n+JPROBE\n J2\n J3\n--- a/pk.c\n+++ b/pk.c\n@@ -1,3 +1,4 @@\n K1\n+KPROBE\n K2\n K3\n' > "$R/h1.diff"
+printf -- '--- a/pj.c\n+++ b/pj.c\n@@ -1,3 +1,3 @@\n J1\n-J2\n+J2t\n J3\n--- a/pk.c\n+++ b/pk.c\n@@ -1,3 +1,3 @@\n K1\n-K2\n+K2t\n K3\n' > "$R/h2.diff"
+"$R_P2VI" -r "$R/h1.diff" > "$R/h1.sh"
+"$R_P2VI" -r "$R/h2.diff" > "$R/h2.sh"
+cp "$R/pj.orig" "$R/pj.c"
+cp "$R/pk.orig" "$R/pk.c"
+coderive h1.sh h2.sh ':e pj.c:%s/^J3$/J3c/:e pk.c:%s/^K3$/K3c/:q!'
+if grep -q '^=== GATE [0-9]* present tag [0-9]* probe pj.c ===' "$R/new.sh" \
+	2>/dev/null &&
+   grep -q '^=== GATE [0-9]* present tag [0-9]* probe pk.c ===' "$R/new.sh" \
+	2>/dev/null; then
+	ok "compat: a two-file block gates on the origin's landing in both"
+else
+	fail "compat: a two-file block gates on the origin's landing in both"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+	grep -n '=== GATE' "$R/new.sh" | sed 's/^/    /'
+fi
+
+# Both probes are ANDed, so the block fires on the whole origin and no-ops when
+# only half of it landed (pj.c patched by hand, pk.c clean).
+cp "$R/pj.orig" "$R/pj.c"
+cp "$R/pk.orig" "$R/pk.c"
+( cd "$R" && VI="$VI" sh h1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+o1="$(cat "$R/pj.c")|$(cat "$R/pk.c")"
+printf 'J1\nJPROBE\nJ2\nJ3\n' > "$R/pj.c"
+cp "$R/pk.orig" "$R/pk.c"
+( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+o2="$(cat "$R/pj.c")|$(cat "$R/pk.c")"
+if [ "$o1" = "$(printf 'J1\nJPROBE\nJ2t\nJ3c|K1\nKPROBE\nK2t\nK3c')" ] &&
+   [ "$o2" = "$(printf 'J1\nJPROBE\nJ2t\nJ3|K1\nK2t\nK3')" ]; then
+	ok "compat: the multi-file gate misses when only one file landed"
+else
+	fail "compat: the multi-file gate misses when only one file landed"
+	printf '%s\n--\n%s\n' "$o1" "$o2" | sed 's/^/    /'
+fi
+
 coderiveq() {	# coderive with QF2=1: the target is expected to miss
 	rm -f "$R/new.sh"
 	P2VI_EX="$3" script -qec \
