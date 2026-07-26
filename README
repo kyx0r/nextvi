@@ -39,6 +39,16 @@ Multithreaded version of lbuf_search(). Adjust the number of threads in use
 and buffer stepping in lbuf.c Ensure that your system supports posix threads,
 aka libpthread.
 
+async.sh
+--------------
+Adds 2 new ex commands "as" and "as!". Then next command executed in ex
+command chain after "as" is run on a separate thread. "as!" is a join command
+that waits for all threads to finish. Posix thread support is required.
+Patch is intended for expert users because races are possible depending on commands
+being used.
+Example: fun :fd command without blocking the editor
+:as:fd
+
 hl_part.sh
 --------------
 Allow syntax highlight to continue past the terminal dimensions up to a
@@ -97,7 +107,7 @@ $ dmesg | vi -
 
 ec_closebuf.sh
 --------------
-Allows the user to close the buffer using new ex command :cx
+Allows the user to close the buffer using new ex command "cx"
 Specify a number as an arg for what buffer to close.
 Specifying no argument(s) will close the current buffer.
 When the buffer is closed all buffers above will be shifted
@@ -160,9 +170,9 @@ without actually doing undo.
 
 undo_branches.sh
 --------------
-Adds a basic multi-level undo implementation. Use the new ex command :up
-to print the divergent changes. Each path has an index, to switch to it
-use :up with a number as an argument. Example: :up1
+Adds a basic multi-level undo implementation. New ex command "up"
+prints divergent changes. Each path has an index, switching to it
+with "up" and a number as an argument. Example: :up1
 The current undo branch is stored as the last index before swapping.
 
 alternate-w-behaviour.sh
@@ -196,15 +206,15 @@ geometry based.
 
 ex-scripting.sh
 --------------
-Adds new commands :sr and :sx
+Adds new ex commands "sr" and "sx"
 NEXTVI_FT - current buffer filetype
 NEXTVI_ROW - current line number
 NEXTVI_OFF - current byte offset
 NEXTVI_COFF - current character offset
 NEXTVI_LINE - current line
 NEXTVI_WORD - current word
-:sr runs a command with the environment variables above
-:sx runs a command with the environment variables above and
+"sr" runs a command with the environment variables above
+"sx" runs a command with the environment variables above and
 executes its stdout as ex commands
 
 chunked_read_write.sh
@@ -238,10 +248,10 @@ Block mode (gb) also supports:
 
 splits.sh
 --------------
-Implements :sp and :vs commands for vertical and horizontal splits.
-Adds vc and vd normal commands to switch and close views. View
-can also be closed using :q
-New command :eq can be used to balance the vertical and horizontal
+Implements "sp" and "vs" ex commands for vertical and horizontal splits.
+Adds vc and vd normal commands to switch and close views. View can also be closed
+with "q".
+New ex command "eq" can be used to balance the vertical and horizontal
 split space in the nearest dimension.
 
 alt_sections.sh
@@ -256,7 +266,7 @@ Implements closer to standard vi(1) sections keybinding:
 
 key_remap_cmds.sh
 --------------
-Adds :im :im! and :nm :nm! commands to dynamically remap keybinds
+Adds "im" "im!" and "nm "nm!" ex commands to dynamically remap keybinds
 in normal and insert modes.
 Remapping a to hello in insert mode
 :im ahello
@@ -290,7 +300,7 @@ SIMD optimizations for Nextvi.
 
 mouse_normal.sh
 --------------
-Adds mouse support in normal mode. Adds a new ex option :ms
+Adds mouse support in normal mode. Adds a new ex option "ms"
 to toggle the mouse support. Clicking positions the cursor
 and mouse wheel scrolls using ^Y or ^E. Terminal mouse selections
 can still be made while holding Shift on most terminal emulators.
@@ -312,7 +322,7 @@ regular use.
 
 writeall.sh
 --------------
-Adds :wa :wa! :wqa :wqa! :xa :xa! commands to write all buffers
+Adds "wa" "wa!" "wqa" "wqa!" "xa" "xa!" ex commands to write all buffers
 to the filesystem. q commands always write while x commands only
 write modified buffers.
 
@@ -349,7 +359,8 @@ How it works:
 :ish - enable interactive shell
 :inc (^(?:(?!^\.git).)+[^/]+$) always exclude .git folder from :fd
 :pac - print autocomplete options
-:|sc|? - default special characters
+:|sc|? - default special characters; ? is a nop cycle required for
+separator reset. Scripts can append more commands to EXINIT.
 
 Macros:
 @q = creates structure like this:
