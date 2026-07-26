@@ -5340,6 +5340,11 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 	 * last firing block over its file, suppress otherwise. */
 	if (s->cb)
 		emit_block_qf2(out, secs, nsec, i);
+	/* Readability line break where the setup ends and the dispatch begins:
+	 * everything above is this section's rewinds and quit policy, everything
+	 * below its staged buffer, register and gated call. */
+	EMIT_LB(out);
+	EMIT_SEP(out);
 	sb_printf(out, "b%d", s->secbuf);
 	EMIT_SEP(out);
 	sb_printf(out, "%%ya %d", s->reg);
