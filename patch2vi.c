@@ -6558,6 +6558,10 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			 * session lands on one of them */
 			for (k = 0; k < nhand_files; k++)
 				ec_edit("", "e", hand_files[k]);
+			/* the highlighter still carries whatever ft the last
+			 * setft in the body left (a section scaffold buffer has
+			 * none), and vi() only refreshes it on a buffer switch */
+			syn_setft(xb_ft);
 			if ((ln = getenv("P2VI_EX")))	/* test harness hook */
 				ex_command(ln)
 			if (!xquit)
