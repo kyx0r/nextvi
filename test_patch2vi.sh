@@ -1360,6 +1360,44 @@ else
 	tr -d '\r' < "$A/nerr5" | sed 's/^/    /'
 fi
 
+# -od[N] clusters the same way: a delta run reads a script and emits one, so
+# the script it names is also what it writes back. Nothing reaches stdout, and
+# the result is what "-d -o SCRIPT SCRIPT" writes.
+cp "$A/base.txt" "$A/f.txt"
+cp "$A/old.sh" "$A/self3.sh"
+cp "$A/old.sh" "$A/self4.sh"
+run_A "$A" 'q!' '-od self3.sh > od.out 2> nerr6'
+run_A "$A" 'q!' '-d -o self4.sh self4.sh 2> nerr7'
+if [ -s "$A/self3.sh" ] && [ ! -s "$A/od.out" ] && [ ! -e "$A/d" ] &&
+   cmp -s "$A/self3.sh" "$A/self4.sh"; then
+	ok "-od updates the delta script it names in place"
+else
+	fail "-od updates the delta script it names in place"
+	tr -d '\r' < "$A/nerr6" | sed 's/^/    /'
+fi
+
+cp "$A/base.txt" "$A/f.txt"
+( cd "$A" && VI="$VI" sh self3.sh ) >/dev/null 2>&1
+if diff -q "$A/f.txt" "$A/want2.txt" >/dev/null 2>&1; then
+	ok "-od leaves a working script behind"
+else
+	fail "-od leaves a working script behind"
+	sed 's/^/    /' "$A/f.txt"
+fi
+
+# a name that merely starts with d is still a file name, and the cluster
+# without a script to update is an error, not a run that writes stdout
+( cd "$A" && "$E_P2VI" -r -odelta.sh x.diff ) > "$A/o5.out" 2>&1
+"$E_P2VI" -od > "$A/o6.out" 2> "$A/o6.err" || true
+if [ -s "$A/delta.sh" ] && [ ! -s "$A/o5.out" ] && [ ! -s "$A/o6.out" ] &&
+   grep -q 'requires a script argument' "$A/o6.err"; then
+	ok "-odFILE names a file, bare -od needs a script"
+else
+	fail "-odFILE names a file, bare -od needs a script"
+	sed 's/^/    /' "$A/o5.out" "$A/o6.err"
+fi
+rm -f "$A/delta.sh"
+
 # -o keeps naming a file whenever what follows is not an -E cluster
 ( cd "$A" && "$E_P2VI" -r -oE2.sh x.diff ) > "$A/o4.out" 2>&1
 if [ -s "$A/E2.sh" ] && [ ! -s "$A/o4.out" ]; then

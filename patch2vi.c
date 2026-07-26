@@ -8155,14 +8155,16 @@ static const char *opt_arg(int argc, char **argv, int *i, int n)
 	return NULL;
 }
 
-/* Is what follows a leading "-o" an option cluster naming -E rather than a
- * file name? Only when it holds an E and nothing but cluster letters, so that
- * "-oE" (and "-oEd2", "-od3E") means "update the script in place" while any
- * ordinary -oFILE, even -oEDITED, still names a file. */
+/* Is what follows a leading "-o" an option cluster naming -E or -d rather than
+ * a file name? Only when it holds one of those and nothing but cluster letters,
+ * so that "-oE" and "-od2" (and "-oEd2", "-od3E") mean "update the script in
+ * place" while any ordinary -oFILE, even -oEDITED or -odelta.sh, still names a
+ * file. Both modes read a script and emit one, so in place is what an author
+ * means; the file literally named "d" is still reachable as "-o d". */
 static int amend_cluster(const char *s)
 {
 	int k;
-	if (!strchr(s, 'E'))
+	if (!strchr(s, 'E') && !strchr(s, 'd'))
 		return 0;
 	for (k = 0; s[k]; k++)
 		if (!strchr("ariIEod12345", s[k]))
@@ -8269,12 +8271,21 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
-	if (amend_inplace && !amend_mode && !compat_mode) {
-		fprintf(stderr, "Clustered -o is only for -E and -co\n");
+	if (amend_inplace && !amend_mode && !compat_mode && !delta_mode) {
+		fprintf(stderr, "Clustered -o is only for -E, -d and -co\n");
 		usage(argv[0], 1);
 	}
 	if (i < argc && !edit_mode)
 		input_file = argv[i];
+	/* -od[N]: the delta run regenerates the script it read, so that is what
+	 * it writes back (atomically, so reading it first is safe) */
+	if (delta_mode && amend_inplace && !amend_mode && !compat_mode) {
+		if (!input_file) {
+			fprintf(stderr, "-od requires a script argument\n");
+			return 1;
+		}
+		out_file = input_file;
+	}
 	/* -oco: the block extends the target script, so that is what the run
 	 * writes back; the write is atomic, so reading it first is safe */
 	if (compat_mode && amend_inplace) {
