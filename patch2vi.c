@@ -195,14 +195,36 @@ static void sb_lines(sbuf *fp, char **v, int n)
  * writes, so a probe sees the origin applied and the target not yet.
  *
  * One string never rules a gate: in a contested tree it is one refactor away
- * from naming some other change, so a derivation ANDs as many distinct probes
+ * from naming some other change, so a derivation takes as many distinct probes
  * as the origin's landing offers, up to GATE_MAXPROBES, spread over its files
  * and then its regions (one per file, one per region, before any of them gives
  * a second): a block whose diff spans several buffers is caused by the landing
  * in all of them and has to ask about all of them. Fewer is shipped only when
- * the landing itself is too small to yield more. */
+ * the landing itself is too small to yield more.
+ *
+ * The probes are then read as clusters: GATE_CLUSTER of them ANDed (','), up to
+ * GATE_MAXCLUST such clusters ORed (';'), i.e. the gate fires when any one
+ * cluster answers in full. Detection stays reliable - firing still needs a
+ * whole cluster of concurring strings, never a lone one - while a noisy tree
+ * that overwrote a few of the origin's lines only costs the clusters those
+ * lines sat in, instead of vetoing the block outright. Clusters are cut from
+ * the derivation order, which is round-robin over files, so each spans the
+ * landing rather than one buffer of it; sizes are balanced, since a short
+ * cluster would be a cheap way to fire the whole gate. Below GATE_CLUSTER*2
+ * probes there is only one cluster and the gate is the plain AND it always was.
+ *
+ * Clusters cost no sensor: they are a shape of the ??-expression over tags the
+ * sensors already recorded, so they are derived from probe count and order at
+ * emit time and nothing about them is stored.
+ *
+ * Polarity dualizes the shape. The '!' of a GATE_ABSENT gate negates the whole
+ * expression, so there the same text means "every cluster shows at least one of
+ * the origin's removed lines gone" - several independent pieces of evidence,
+ * each with cluster-wide redundancy. Same two properties, mirrored. */
 #define GATE_MAXLINES 8   /* longest probe window: locality beats length */
-#define GATE_MAXPROBES 5  /* probes one derivation ANDs; storage is unbounded */
+#define GATE_MAXPROBES 20 /* probes one derivation takes; storage is unbounded */
+#define GATE_CLUSTER 5    /* probes ANDed within one cluster */
+#define GATE_MAXCLUST 4   /* clusters ORed across one gate */
 
 /* ?? tags a compat block's gate holds while its groups regenerate (shared
  * numeric space with the group capture tags), so the latter skip them. */
@@ -1098,6 +1120,13 @@ static void sq_write(const char *s, int n)
 #define REG_HDLR 217	/* the FAIL report chain both phases share */
 #define REG_LOC  219	/* argument: the FAIL location of the current site */
 #define REG_MSG  220	/* argument: the OK report command of the current site */
+/* The "vis 2; q!1" body every assert runs through, and the one register QF2=1
+ * clears. REG_QF2 only ever points at it ("? %@221"), so the -co blocks that
+ * rewrite REG_QF2 at run time - the host override and each block's quit policy -
+ * rewrite which assert applies, never whether asserting is enabled at all: with
+ * QF2=1 in the environment 221 is empty and every one of those rewrites lands
+ * on a body that reports and falls through. */
+#define REG_QF2A 221
 /*
  * -co sensor flags. Registers are global to the process and never cleared
  * between chains, so a bit a sensor sets crosses the host body:
@@ -4894,9 +4923,11 @@ static void emit_reg_defaults(sbuf *out)
 	EMIT_SEP(out);
 	sb_printf(out, "%dreg ? %%@%d", REG_OK2, REG_MSG);
 	EMIT_SEP(out);
-	sb_printf(out, "%dreg vis 2", REG_QF2);
+	sb_printf(out, "%dreg vis 2", REG_QF2A);
 	EMIT_ESCSEP(out);
 	sb_str(out, "q!1");
+	EMIT_SEP(out);
+	sb_printf(out, "%dreg ? %%@%d", REG_QF2, REG_QF2A);
 	EMIT_SEP(out);
 }
 
@@ -4923,7 +4954,7 @@ static void emit_reg_switches(sbuf *out)
 	sb_str(out, "q!1");
 	sb_dq_esc_sep(out, 0);
 	sb_str(out, "}\\\n");
-	sb_printf(out, "${QF2:+ya!%d", REG_QF2);
+	sb_printf(out, "${QF2:+ya!%d", REG_QF2A);
 	sb_dq_esc_sep(out, 0);
 	sb_str(out, "}\\\n");
 	/* the failing site is where the script wrote the location
@@ -5155,24 +5186,53 @@ typedef struct {
 	compat_block_t *cb;	/* NULL for the host section */
 } section_t;
 
-/* A section's combined gate expression: "tag1,tag2??" (present) or "...??!"
- * (absent), or a bare "?" when it has no real gate. ',' is AND, and every gate
- * of a block shares one polarity, so the last one decides the "!". */
+/* How many clusters a gate of n real probes splits into: one per GATE_CLUSTER
+ * probes, capped at GATE_MAXCLUST, never fewer than one - a derivation too
+ * small to fill two clusters stays a single AND. */
+static int gate_nclusters(int n)
+{
+	int ncl = n / GATE_CLUSTER;
+	if (ncl > GATE_MAXCLUST)
+		ncl = GATE_MAXCLUST;
+	return ncl > 0 ? ncl : 1;
+}
+
+/* A section's combined gate expression: "tag1,tag2;tag3,tag4??" (present) or
+ * "...??!" (absent), or a bare "?" when it has no real gate. ',' ANDs within a
+ * cluster and ';' ORs the clusters, so the gate answers yes when any one
+ * cluster is complete (see the GATE_CLUSTER comment for the shape and for what
+ * the '!' of an absent gate makes of it). Sizes are balanced across the
+ * clusters - n/ncl, the first n%ncl one longer - so no cluster is short while
+ * another is full. Every gate of a block shares one polarity, so the last one
+ * decides the "!". */
 static void emit_gate_expr(sbuf *out, section_t *s)
 {
-	int present = 1, real = 0;
+	int sizes[GATE_MAXCLUST];
+	int present = 1, real = 0, ncl, ci = 0, k = 0;
+	for (int j = 0; j < s->ngates; j++)
+		if (s->gates[j].polarity != GATE_ALWAYS &&
+				s->gates[j].nlines > 0)
+			real++;
+	if (!real) {
+		sb_str(out, "? ");
+		return;
+	}
+	ncl = gate_nclusters(real);
+	for (int j = 0; j < ncl; j++)
+		sizes[j] = real / ncl + (j < real % ncl);
 	for (int j = 0; j < s->ngates; j++) {
 		gate_t *g = &s->gates[j];
 		if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
 			continue;
-		sb_printf(out, "%s%d", real ? "," : "", g->tag);
+		if (k == sizes[ci] && ci + 1 < ncl) {
+			ci++;
+			k = 0;
+		}
+		sb_printf(out, "%s%d", k ? "," : ci ? ";" : "", g->tag);
 		present = g->polarity == GATE_PRESENT;
-		real++;
+		k++;
 	}
-	if (real)
-		sb_printf(out, "??%s ", present ? "" : "!");
-	else
-		sb_str(out, "? ");
+	sb_printf(out, "??%s ", present ? "" : "!");
 }
 
 /* Whether a section carries a real (non-ALWAYS, non-empty) gate, i.e. it emits
@@ -5197,18 +5257,19 @@ static int sections_share_file(section_t *a, section_t *b)
 	return 0;
 }
 
-/* Redefine REG_QF2 to the plain assert form ("vis 2; q!1"), so an error site
- * calling it quits 1. deep=1 emits inside a ??-arm, one ex_exec level down, so
- * the separator 211 must capture carries the extra escape level.
+/* Redefine REG_QF2 to the assert form, so an error site calling it quits 1 -
+ * unless QF2=1 emptied REG_QF2A, which is the whole point of routing through
+ * it: a run told to fall through must keep falling through however many times
+ * a block rewrites the policy. The body is one command with no separator of
+ * its own, so it needs no escape level and reads the same inside a ??-arm as
+ * at the driver's top level.
  * The trailing separator stays raw either way: it ends this command in the
  * stream the driver's top level parses, and escaping it would fold every
  * following driver command - the block's buffer select and %ya included - into
  * the arm, to run only when the arm fires. */
-static void emit_qf2_assert(sbuf *out, int deep)
+static void emit_qf2_assert(sbuf *out)
 {
-	sb_printf(out, "%dreg vis 2", REG_QF2);
-	emit_sep_lvl(out, deep);
-	sb_str(out, "q!1");
+	sb_printf(out, "%dreg ? %%@%d", REG_QF2, REG_QF2A);
 	EMIT_SEP(out);
 }
 
@@ -5221,25 +5282,24 @@ static void emit_qf2_clear(sbuf *out)
 }
 
 /* Host quit override, emitted once before the host body when sensors exist:
- * "211reg fr <ANY>:f> 1:??!vis 2:q!1". A miss on the shared any-origin flag (a
- * clean tree, no sensor fired) is an error ??! catches and quits on, exactly as
- * a non-compat script does; a hit leaves it silent, so the host is best-effort
- * and falls through its own mismatches. It lives inside 211 and re-runs per
- * error site, so the flag is read with a register f>, never an anchor.
+ * "211reg fr <ANY>:f> 1:??!? %@221:fr 98". A miss on the shared any-origin flag
+ * (a clean tree, no sensor fired) is an error ??! catches and asserts on,
+ * exactly as a non-compat script does; a hit leaves it silent, so the host is
+ * best-effort and falls through its own mismatches. It lives inside 211 and
+ * re-runs per error site, so the flag is read with a register f>, never an
+ * anchor. The assert is the shared 221 body, so QF2=1 relaxes this arm too.
  *
  * The trailing "fr 98" is load-bearing: ex_find's register redirection is the
  * global xfr, so reading the flag leaves every later search pointed at it, and
- * the next group would search the flag's "1" instead of the file cache. The
- * firing side quits, so only the falling-through side needs the restore. */
+ * the next group would search the flag's "1" instead of the file cache. It sits
+ * outside the arm, so the restore happens whether the arm asserts or not. */
 static void emit_host_override(sbuf *out)
 {
 	sb_printf(out, "%dreg fr %d", REG_QF2, REG_FLAG_ANY);
 	EMIT_ESCSEP(out);
 	sb_str(out, "f> 1");
 	EMIT_ESCSEP(out);
-	sb_str(out, "?" "?!vis 2");
-	EMIT_ESC3SEP(out);
-	sb_str(out, "q!1");
+	sb_printf(out, "?" "?!? %%@%d", REG_QF2A);
 	EMIT_ESCSEP(out);
 	sb_str(out, "fr 98");
 	EMIT_SEP(out);
@@ -5258,7 +5318,7 @@ static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
 		    sections_share_file(&secs[i], &secs[j]))
 			nlater++;
 	if (!nlater) {
-		emit_qf2_assert(out, 0);
+		emit_qf2_assert(out);
 		return;
 	}
 	slot = FLAG_SLOT_BASE;
@@ -5280,7 +5340,7 @@ static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
 	for (int k = 0; k < nlater; k++)
 		sb_printf(out, "%s%d", k ? ";" : "", FLAG_SLOT_BASE + k);
 	sb_str(out, "?" "?!");
-	emit_qf2_assert(out, 1);
+	emit_qf2_assert(out);
 }
 
 /* Sensor half of a section's orchestration: its gate searches, each recorded

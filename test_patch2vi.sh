@@ -1931,6 +1931,36 @@ else
 	sed 's/^/    /' "$R/pf.c" "$R/pg.c"
 fi
 
+# QF2=1 is the run's own decision and outranks the script's: a compat block
+# rewrites register 211 at run time (its quit policy, the host override), and
+# those rewrites must re-point the assert, never re-enable asserting. The block
+# below misses its first group on a tree where the origin's line was taken away,
+# which is a phase-2 error the last block over the file asserts on: unset it
+# quits before anything is written, QF2=1 reports and finishes the rest.
+printf 'Q1\nQ2\nQ3\nQ4\nQ5\n' > "$R/q.orig"
+printf -- '--- a/q.c\n+++ b/q.c\n@@ -1,3 +1,4 @@\n Q1\n+QPROBE\n Q2\n Q3\n' > "$R/qo.diff"
+printf -- '--- a/q.c\n+++ b/q.c\n@@ -3,3 +3,3 @@\n Q3\n Q4\n-Q5\n+Q5t\n' > "$R/qt.diff"
+"$R_P2VI" -r "$R/qo.diff" > "$R/qo.sh"
+"$R_P2VI" -r "$R/qt.diff" > "$R/qt.sh"
+cp "$R/q.orig" "$R/q.c"
+coderive qo.sh qt.sh '%s/^Q2$/Q2c/:%s/^Q4$/Q4c/:q!'
+cp "$R/q.orig" "$R/q.c"
+( cd "$R" && VI="$VI" sh qo.sh ) >/dev/null 2>&1
+sed '/^Q2$/d' "$R/q.c" > "$R/q.worn"	# the compat block's first group misses
+cp "$R/q.worn" "$R/q.c"
+( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+q_strict="$(tr '\n' '|' < "$R/q.c")"
+cp "$R/q.worn" "$R/q.c"
+( cd "$R" && VI="$VI" QF2=1 sh new.sh ) >/dev/null 2>&1
+q_soft="$(tr '\n' '|' < "$R/q.c")"
+if [ "$q_strict" = 'Q1|QPROBE|Q3|Q4|Q5|' ] &&
+   [ "$q_soft" = 'Q1|QPROBE|Q3|Q4c|Q5t|' ]; then
+	ok "compat: QF2=1 survives a block's own quit policy"
+else
+	fail "compat: QF2=1 survives a block's own quit policy"
+	echo "    strict=[$q_strict] qf2=[$q_soft]"
+fi
+
 # Stage B3: storage, round-trip and stacking. The -co script above (new.sh from
 # draw.c) carries a pre COMPAT region after exit 0. -d must reproduce the whole
 # script - host block and compat region - byte-identically, without re-running
@@ -2381,6 +2411,60 @@ if [ "$g_full" = 'G30c' ] && [ "$g_part" = 'G30' ] && [ "$g_none" = 'G30' ]; the
 else
 	fail "compat: the ANDed gate fires on the whole origin, not a slice of it"
 	echo "    full=[$g_full] partial=[$g_part] clean=[$g_none]"
+fi
+
+# Detection is absorbant as well as reliable: an origin landing wide enough to
+# fill several clusters is read as "any complete cluster", so a tree that lost
+# one of the origin's lines to some later change still fires the block, while a
+# tree carrying one region of the origin still does not.
+i=1
+: > "$R/c.orig"
+while [ $i -le 40 ]; do printf 'C%d\n' "$i" >> "$R/c.orig"; i=$((i + 1)); done
+awk '{ print }
+     /^C5$|^C13$|^C21$|^C29$|^C37$/ {
+	n = substr($0, 2)
+	for (k = 1; k <= 4; k++) printf "X%s_%d\n", n, k }' "$R/c.orig" > "$R/c.new"
+awk '{ print } /^C5$/ { for (k = 1; k <= 4; k++) printf "X5_%d\n", k }' \
+	"$R/c.orig" > "$R/c.part"
+diff -u "$R/c.orig" "$R/c.new" |
+	sed -e '1s|.*|--- a/c.c|' -e '2s|.*|+++ b/c.c|' > "$R/co.diff"
+diff -u "$R/c.orig" "$R/c.part" |
+	sed -e '1s|.*|--- a/c.c|' -e '2s|.*|+++ b/c.c|' > "$R/cp.diff"
+printf -- '--- a/c.c\n+++ b/c.c\n@@ -38,3 +38,3 @@\n C38\n C39\n-C40\n+C40t\n' \
+	> "$R/ct.diff"
+"$R_P2VI" -r "$R/co.diff" > "$R/co.sh"
+"$R_P2VI" -r "$R/cp.diff" > "$R/cp.sh"
+"$R_P2VI" -r "$R/ct.diff" > "$R/ct.sh"
+cp "$R/c.orig" "$R/c.c"
+coderive co.sh ct.sh '%s/^C40t$/C40c/:q!'
+cprobe="$("$R_P2VI" -d "$R/new.sh" 2>/dev/null | grep -c '^=== GATE .* probe ')"
+if [ "$cprobe" -ge 10 ] &&
+   grep -qE '[0-9]{4},[0-9]{4};[0-9]{4}' "$R/new.sh" 2>/dev/null; then
+	ok "compat: a wide landing is probed past one cluster and ORs them"
+else
+	fail "compat: a wide landing is probed past one cluster and ORs them"
+	echo "    probes=$cprobe"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+fi
+crun() {	# <origin scripts> <sed expr|""> -> last line of c.c after new.sh
+	cp "$R/c.orig" "$R/c.c"
+	for s in $1; do ( cd "$R" && VI="$VI" sh "$s" ) >/dev/null 2>&1; done
+	if [ -n "$2" ]; then
+		sed "$2" "$R/c.c" > "$R/c.tmp" && mv "$R/c.tmp" "$R/c.c"
+	fi
+	( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+	tail -n 1 "$R/c.c"
+}
+c_full="$(crun 'co.sh' '')"
+c_worn="$(crun 'co.sh' '/^X5_1$/d')"
+c_part="$(crun 'cp.sh' '')"
+c_none="$(crun '' '')"
+if [ "$c_full" = 'C40c' ] && [ "$c_worn" = 'C40c' ] &&
+   [ "$c_part" = 'C40t' ] && [ "$c_none" = 'C40t' ]; then
+	ok "compat: a clustered gate absorbs a lost probe, still refuses a slice"
+else
+	fail "compat: a clustered gate absorbs a lost probe, still refuses a slice"
+	echo "    full=[$c_full] worn=[$c_worn] partial=[$c_part] clean=[$c_none]"
 fi
 
 # -oco clusters the top-level -o into -co: no FILE of its own, the derived
