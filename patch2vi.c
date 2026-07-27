@@ -1108,7 +1108,7 @@ static void sq_write(const char *s, int n)
  * with an empty argument runs nothing, so the shell only ever contributes whole
  * commands ("${DBG1:+213reg ...}") that define or clear one.
  *
- * Expansion is turned on ("2sc %") for a call and off again ("2sc") at once,
+ * Expansion is turned on ("2sc %") for a call and off again ("2sc!") at once,
  * since with xexp live every % in an argument would expand and arguments carry
  * file-derived regexes; argument registers are therefore written before the
  * window, never inside it. xexe (!) stays 0 throughout - a stray ! in a live
@@ -1315,7 +1315,7 @@ static void emit_reg_call(sbuf *out, int gate, int deep)
 	emit_sep_lvl(out, deep);
 	sb_printf(out, "? %%@%d", gate);
 	emit_sep_lvl(out, deep);
-	sb_str(out, "2sc");
+	sb_str(out, "2sc!");
 }
 
 /* Emit ??! error check after a command that may fail.
@@ -5129,7 +5129,7 @@ static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
 	 * still '%' here - but the body's own %ya/%f> mean the all-lines range,
 	 * not expansion. Reset it up front; the error sites re-enable it
 	 * locally through emit_reg_call. */
-	sb_str(out, "2sc");
+	sb_str(out, "2sc!");
 	EMIT_SEP(out);
 	sb_str(out, "fr 98");
 	EMIT_SEP(out);
@@ -5385,7 +5385,7 @@ static void emit_driver_sensors(sbuf *out, section_t *s,
 
 /* Call half: yank the section body into its register and %@-call it -
  * unconditionally for the host, gated on the sensor tags for a compat block.
- * Bracketed with the "2sc %" / "2sc" expansion window, since the driver
+ * Bracketed with the "2sc %" / "2sc!" expansion window, since the driver
  * prologue's |sc! leaves xexp inert. */
 static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 			     file_patch_t **uf, int nuf)
@@ -5418,7 +5418,7 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 	emit_gate_expr(out, s);
 	sb_printf(out, "%%@%d", s->reg);
 	EMIT_SEP(out);
-	sb_str(out, "2sc");
+	sb_str(out, "2sc!");
 	EMIT_SEP(out);
 }
 
