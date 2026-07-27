@@ -1512,7 +1512,7 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
 	if (*loc) {
 		i = (unsigned char)*loc ^ '0';
 		if (!*arg && i < LEN(sp))
-			*sp[i] = 0;
+			*sp[i] = cmd[2] ? 0 : "\\:%!"[i];
 	} else
 		for (int j = 0; j < LEN(sp); j++)
 			*sp[j] = cmd[2] ? 0 : "\\:%!"[j];
