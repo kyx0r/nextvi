@@ -47,20 +47,20 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 }
 
 3??0?
-3??+2m 1220reg p OK lbuf.c:395:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK lbuf.c:395:a32sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	free\(sb->s\);
 	return 0;
 }.*(	struct lopt \*lo = &lb->hist\[lb->hist_u - 1];)
 	const int useq = lo->seq;
 	sbuf sb;8??0?
-grp 08??-5m 1220reg p OK lbuf.c:395:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-5m 1220reg p OK lbuf.c:395:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	sbufn_chr\(sb, '\''\\n'\''\)
 	lbuf_edit\(lb, sb->s, beg, end, o1, \*o2\);.*(	if \(lb->hist_u == lb->hist_n\) \{)
 		lbuf_copymark\(lb->tmp_mark, lb->mark_sb\)
 		lbuf_copymark\(\(lb->tmp_mark \+ 2\), lb->mark_se\)9??0?
-grp 09??-8m 1220reg p OK lbuf.c:395:a92sc %? %@2152sc'\''00?
-1;3;8;9??!219reg lbuf.c:3952sc %? %@2132sc0?
+grp 09??-8m 1220reg p OK lbuf.c:395:a92sc %? %@2152sc!'\''00?
+1;3;8;9??!219reg lbuf.c:3952sc %? %@2132sc!0?
 0?
 '\''1i int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
@@ -97,7 +97,7 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 	return ret;
 }
 
-??!219reg lbuf.c:395:m12sc %? %@2142scb1%ya 98?0?
+??!219reg lbuf.c:395:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 				vi_hidch = !vi_hidch;
 				vi_mod \|= 1;
 				break;
@@ -108,24 +108,24 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 %f> 				vi_hidch = !vi_hidch;
 				vi_mod \|= 1;
 				break;3??0?
-3??+2m 1220reg p OK vi.c:1436:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK vi.c:1436:a32sc %? %@2152sc!1q0?
 grp 1%f> 				vi_hidch = !vi_hidch;.*?
 				vi_mod \|= 1;.*?
 (				break;)7??0?
-grp 07??m 1220reg p OK vi.c:1436:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK vi.c:1436:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				}
 				break;
 			case '\''V'\'':.*(				if \(vi_arg && vi_arg <= 5\) \{)
 					vi_wsel = vi_arg;
 					vi_word = _vi_word \+ vi_arg;8??0?
-grp 08??-4m 1220reg p OK vi.c:1436:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.c:1436:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					goto do_excmd; }
 				default:
 					term_dec\(\).*(					vi_word = _vi_word \+ \(!\*vi_word \* vi_wsel\);)
 				vi_rshift = 0;
 				vi_mod \|= 1;9??0?
-grp 09??-8m 1220reg p OK vi.c:1436:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg vi.c:14362sc %? %@2132sc0?
+grp 09??-8m 1220reg p OK vi.c:1436:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg vi.c:14362sc %? %@2132sc!0?
 0?
 '\''1i 			case TK_CTL('\''o'\''):
 				next_hop:
@@ -138,7 +138,7 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
-??!219reg vi.c:1436:m12sc %? %@2142scb2%ya 98?0?
+??!219reg vi.c:1436:m12sc %? %@2142sc!b2%ya 98?0?
 %f> void lbuf_smark\(struct lbuf \*lb, struct lopt \*lo, int beg, int o1\);
 void lbuf_emark\(struct lbuf \*lb, struct lopt \*lo, int end, int o2\);
 struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\);
@@ -149,27 +149,27 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\);1??0?
 %f> void lbuf_smark\(struct lbuf \*lb, struct lopt \*lo, int beg, int o1\);
 void lbuf_emark\(struct lbuf \*lb, struct lopt \*lo, int end, int o2\);
 struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\);3??0?
-3??+2m 1220reg p OK vi.h:170:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK vi.h:170:a32sc %? %@2152sc!1q0?
 grp 1%f> void lbuf_smark\(struct lbuf \*lb, struct lopt \*lo, int beg, int o1\);.*?
 void lbuf_emark\(struct lbuf \*lb, struct lopt \*lo, int end, int o2\);.*?
 (struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\);)7??0?
-grp 07??m 1220reg p OK vi.h:170:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK vi.h:170:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> char \*lbuf_joinsb\(struct lbuf \*lb, int r1, int r2, sbuf \*i, int \*o1, int \*o2\);
 int lbuf_join\(struct lbuf \*lb, int beg, int end, int o1, int \*o2, int flg\);
 char \*lbuf_get\(struct lbuf \*lb, int pos\);.*(int lbuf_redo\(struct lbuf \*lb, int \*row, int \*off\);)
 void lbuf_saved\(struct lbuf \*lb, int clear\);
 int lbuf_indents\(struct lbuf \*lb, int r\);8??0?
-grp 08??-4m 1220reg p OK vi.h:170:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:170:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void lbuf_region\(struct lbuf \*lb, sbuf \*sb, int r1, int o1, int r2, int o2\);
 int lbuf_pos2off\(struct lbuf \*lb, int r1, int o1, int r2, int o2, int row, int off\);
 int lbuf_off2pos\(struct lbuf \*lb, int r1, int o1, int r2, int o2, int boff, int \*row, int \*off\);.*(int lbuf_eol\(struct lbuf \*lb, int r, int state\);)
 int lbuf_next\(struct lbuf \*lb, int dir, int \*r, int \*o\);
 int lbuf_findchar\(struct lbuf \*lb, char \*cs, int cmd, int n, int \*r, int \*o\);9??0?
-grp 09??-7m 1220reg p OK vi.h:170:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg vi.h:1702sc %? %@2132sc0?
+grp 09??-7m 1220reg p OK vi.h:170:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg vi.h:1702sc %? %@2132sc!0?
 0?
 '\''1i int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
-??!219reg vi.h:170:m12sc %? %@2142scvis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.h:170:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'lbuf.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0

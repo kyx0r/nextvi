@@ -47,20 +47,20 @@ void ex_init\(char \*\*files, int n\)
 }
 
 3??0?
-3??+2m 1220reg p OK ex.c:1858:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK ex.c:1847:a32sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	syn_setft\(xb_ft\);
 	free\(sb->s\);.*(	ec_setbufsmax\(NULL, NULL, ""\);)
 	char \*s = files\[0] \? files\[0] : "";
 	do \{8??0?
-grp 08??-4m 1220reg p OK ex.c:1858:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1847:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else
 			esc = 0;
 		sbuf_cut\(sb, 0\).*(		xmpt = 0;)
 		ec_edit\("", "e", s\);
 		s = \*\(\+\+files\);9??0?
-grp 09??-7m 1220reg p OK ex.c:1858:a92sc %? %@2152sc'\''00?
-1;3;8;9??!219reg ex.c:18582sc %? %@2132sc0?
+grp 09??-7m 1220reg p OK ex.c:1847:a92sc %? %@2152sc!'\''00?
+1;3;8;9??!219reg ex.c:18472sc %? %@2132sc!0?
 0?
 '\''1i void ex_done(void)
 {
@@ -78,7 +78,7 @@ void ex_init\(char \*\*files, int n\)
 	free(bufs);
 }
 
-??!219reg ex.c:1858:m12sc %? %@2142scb1%ya 98?0?
+??!219reg ex.c:1847:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;
@@ -89,27 +89,27 @@ void ex_init\(char \*\*files, int n\)
 %f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;3??0?
-3??+2m 1220reg p OK regex.c:645:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK regex.c:645:a32sc %? %@2152sc!1q0?
 grp 1%f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;.*?
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;.*?
 (	unsigned int sdense\[prog->sparsesz], sparsesz = 0;)7??0?
-grp 07??m 1220reg p OK regex.c:645:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK regex.c:645:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	const char \*_subp\[2], \*lb\[prog->laidx\+1];
 	int rsubsize = prog->presub, suboff = 0;
 	int cnt, spc, i, c, j, osubp = nsubc \* sizeof\(char\*\);.*(	if \(eol_ch\))
 		utf8_length\[eol_ch] = 0;
 	if \(flg & REG_ICASE\)8??0?
-grp 08??-4m 1220reg p OK regex.c:645:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 1220reg p OK regex.c:645:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	rsub \*nsub, \*sub, \*matched = NULL, \*freesub = NULL;
 	rthread _clist\[prog->len], _nlist\[prog->len];
 	rthread \*clist = _clist, \*nlist = _nlist, \*tmp;.*(		goto jmp_start1;)
 	goto jmp_start2;
 	match\(1, if \(\(unsigned int\)c < 128\) c = tolower\(c\);\)9??0?
-grp 09??-7m 1220reg p OK regex.c:645:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg regex.c:6452sc %? %@2132sc0?
+grp 09??-7m 1220reg p OK regex.c:645:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg regex.c:6452sc %? %@2132sc!0?
 0?
 '\''1i 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
-??!219reg regex.c:645:m12sc %? %@2142scb2%ya 98?0?
+??!219reg regex.c:645:m12sc %? %@2142sc!b2%ya 98?0?
 %f> }
 
 ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux rendering \*/
@@ -120,24 +120,24 @@ ren_state \*rstate = rstates;
 %f> }
 
 ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux rendering \*/3??0?
-3??+2m 1220reg p OK ren.c:88:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK ren.c:88:a32sc %? %@2152sc!1q0?
 grp 1%f> }.*?
 .*?
 (ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux rendering \*/)7??0?
-grp 07??m 1220reg p OK ren.c:88:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK ren.c:88:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		if \(c >= ph\[i]\.cp\[0] && c <= ph\[i]\.cp\[1] && l == ph\[i]\.l\)
 			return ph\[i]\.wid;
 	return uc_wid\(c\);.*(ren_state \*ren_position\(char \*s\))
 \{
 	if \(rstate->s == s\)8??0?
-grp 08??-4m 1220reg p OK ren.c:88:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 1220reg p OK ren.c:88:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		return 1;
 	int c, l; uc_code\(c, s, l\)
 	for \(int i = 0; i < phlen; i\+\+\).*(		return rstate;)
 	else if \(rstate->col\) \{
 		free\(rstate->col - 2\);9??0?
-grp 09??-7m 1220reg p OK ren.c:88:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg ren.c:882sc %? %@2132sc0?
+grp 09??-7m 1220reg p OK ren.c:88:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg ren.c:882sc %? %@2132sc!0?
 ?0?
 %f+ 		pats\[i] = fts\[i]\.pat;
 	syn_ftrs = rset_make\(i, pats, 0\);
@@ -146,8 +146,8 @@ ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux render
 grp 1%f+ 		pats\[i] = fts\[i]\.pat;.*?
 	syn_ftrs = rset_make\(i, pats, 0\);.*?
 (})7??0?
-grp 07??m 2220reg p OK ren.c:460:a72sc %? %@2152sc0?
-1;7??!219reg ren.c:4602sc %? %@2132sc0?
+grp 07??m 2220reg p OK ren.c:460:a72sc %? %@2152sc!0?
+1;7??!219reg ren.c:4602sc %? %@2132sc!0?
 0?
 '\''1i void ren_done(void)
 {
@@ -162,7 +162,7 @@ ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux render
 	}
 }
 
-??!219reg ren.c:88:m12sc %? %@2142sc0?
+??!219reg ren.c:88:m12sc %? %@2142sc!0?
 '\''2i 
 void syn_done(void)
 {
@@ -171,7 +171,7 @@ void syn_done(void)
 	free(ftmap);
 	rset_free(syn_ftrs);
 }
-??!219reg ren.c:460:m22sc %? %@2142scb3%ya 98?0?
+??!219reg ren.c:460:m22sc %? %@2142sc!b3%ya 98?0?
 %f> 	else
 		vi\(1\);
 	term_done\(\);
@@ -182,12 +182,12 @@ void syn_done(void)
 %f> 	else
 		vi\(1\);
 	term_done\(\);3??0?
-3??+2m 1220reg p OK vi.c:1881:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK vi.c:1881:a32sc %? %@2152sc!1q0?
 grp 1%f> 	else.*?
 		vi\(1\);.*?
 (	term_done\(\);)7??0?
-grp 07??m 1220reg p OK vi.c:1881:a72sc %? %@2152sc0?
-1;3;7??!219reg vi.c:18812sc %? %@2132sc0?
+grp 07??m 1220reg p OK vi.c:1881:a72sc %? %@2152sc!0?
+1;3;7??!219reg vi.c:18812sc %? %@2132sc!0?
 0?
 '\''1i 	ex_done();
 	syn_done();
@@ -195,7 +195,7 @@ void syn_done(void)
 	if (led_attsb)
 		sbuf_free(led_attsb)
 	free(ibuf);
-??!219reg vi.c:1881:m12sc %? %@2142scb4%ya 98?0?
+??!219reg vi.c:1881:m12sc %? %@2142sc!b4%ya 98?0?
 %f> int ren_off\(char \*s, int p\);
 char \*ren_translate\(char \*s, char \*ln\);
 /\* text direction \*/
@@ -206,24 +206,24 @@ void dir_init\(void\);
 %f> int ren_off\(char \*s, int p\);
 char \*ren_translate\(char \*s, char \*ln\);
 /\* text direction \*/3??0?
-3??+2m 1220reg p OK vi.h:221:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK vi.h:221:a32sc %? %@2152sc!1q0?
 grp 1%f> int ren_off\(char \*s, int p\);.*?
 char \*ren_translate\(char \*s, char \*ln\);.*?
 (/\* text direction \*/)7??0?
-grp 07??m 1220reg p OK vi.h:221:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK vi.h:221:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> int ren_pos\(char \*s, int off\);
 int ren_cursor\(char \*s, int pos\);
 int ren_noeol\(char \*s, int p\);.*(#define SYN_BD		0x10000)
 #define SYN_IT		0x20000
 #define SYN_RV		0x400008??0?
-grp 08??-4m 1220reg p OK vi.h:221:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:221:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> ren_state \*ren_position\(char \*s\);
 int ren_next\(char \*s, int p, int dir\);
 int ren_eol\(char \*s, int dir\);.*(#define SYN_FGMK\(f\)	\(0x80000 \| \(f\)\))
 #define SYN_BGMK\(b\)	\(0x100000 \| \(b << 8\)\)
 #define SYN_FLG		0x1f00009??0?
-grp 09??-7m 1220reg p OK vi.h:221:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg vi.h:2212sc %? %@2132sc0?
+grp 09??-7m 1220reg p OK vi.h:221:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg vi.h:2212sc %? %@2132sc!0?
 ?0?
 %f+ int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);
@@ -235,24 +235,24 @@ extern unsigned char utf8_length\[256];1??0?
 %f+ int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);
 void syn_init\(void\);3??0?
-3??+2m 2220reg p OK vi.h:265:a32sc %? %@2152sc1q0?
+3??+2m 2220reg p OK vi.h:265:a32sc %? %@2152sc!1q0?
 grp 1%f+ int syn_findhl\(int id\);.*?
 int syn_addhl\(char \*reg, int id\);.*?
 (void syn_init\(void\);)7??0?
-grp 07??m 2220reg p OK vi.h:265:a72sc %? %@2152sc1q0?
+grp 07??m 2220reg p OK vi.h:265:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> char \*syn_filetype\(char \*path\);
 int syn_merge\(int old, int new\);
 void syn_reloadft\(int hl, int flg\);.*(extern int zwlen, def_zwlen;)
 extern int bclen, def_bclen;
 /\* the length of a given utf-8 character \*/8??0?
-grp 08??-4m 2220reg p OK vi.h:265:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.h:265:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> char \*syn_setft\(char \*ft\);
 void syn_scdir\(int scdir\);
 void syn_highlight\(int \*att, char \*s, int n\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)s\[0]])
 /\* the unicode codepoint of a given utf-8 character \*/
 #define uc_code\(dst, s, l\) \\9??0?
-grp 09??-7m 2220reg p OK vi.h:265:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg vi.h:2652sc %? %@2132sc0?
+grp 09??-7m 2220reg p OK vi.h:265:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg vi.h:2652sc %? %@2132sc!0?
 ?0?
 %f+ #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }
 #define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }
@@ -264,41 +264,41 @@ void ex_krsset\(char \*kwd, int dir\);1??0?
 %f+ #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }
 #define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }
 void ex_init\(char \*\*files, int n\);3??0?
-3??+2m 3220reg p OK vi.h:486:a32sc %? %@2152sc1q0?
+3??+2m 3220reg p OK vi.h:486:a32sc %? %@2152sc!1q0?
 grp 1%f+ #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }.*?
 #define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }.*?
 (void ex_init\(char \*\*files, int n\);)7??0?
-grp 07??m 3220reg p OK vi.h:486:a72sc %? %@2152sc1q0?
+grp 07??m 3220reg p OK vi.h:486:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> void \*ex_exec\(const char \*ln\);
 #define ex_command\(ln\) \{ ex_exec\(ln\); ex_regput\('\'':'\'', ln, 0\); }
 void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);.*(void ex_regesc\(sbuf \*sb, char \*beg, char \*end, int ex\);)
 int ex_edit\(const char \*path, int len\);
 sbuf \*ex_regget\(int id\);8??0?
-grp 08??-4m 3220reg p OK vi.h:486:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 3220reg p OK vi.h:486:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void temp_write\(int i, char \*str\);
 void temp_pos\(int i, int row, int off, int top\);
 void ex\(void\);.*(/\* conf\.c: configuration variables \*/)
 extern const int conf_mode;
 /\* map file names to file types \*/9??0?
-grp 09??-9m 3220reg p OK vi.h:486:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg vi.h:4862sc %? %@2132sc0?
+grp 09??-9m 3220reg p OK vi.h:486:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg vi.h:4862sc %? %@2132sc!0?
 0?
 '\''1i void dir_done(void);
-??!219reg vi.h:221:m12sc %? %@2142sc0?
+??!219reg vi.h:221:m12sc %? %@2142sc!0?
 '\''2i void syn_done(void);
-??!219reg vi.h:265:m22sc %? %@2142sc0?
+??!219reg vi.h:265:m22sc %? %@2142sc!0?
 '\''3i void ex_done(void);
-??!219reg vi.h:486:m32sc %? %@2142scvis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+??!219reg vi.h:486:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 448d1ea5..21bc47e6 100644
+index 82cd1654..4136b49a 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1856,6 +1856,22 @@ void ex(void)
+@@ -1845,6 +1845,22 @@ void ex(void)
  	xgrec--;
  }
  

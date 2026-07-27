@@ -44,11 +44,11 @@ static char \*kmap_fa\[256] = \{1??0?
 1??+1m 11q0?
 %f> static char \*kmap_en\[256] = \{
 	\[0] = "en",3??0?
-3??+1m 1220reg p OK kmap.h:2:a32sc %? %@2152sc1q0?
+3??+1m 1220reg p OK kmap.h:2:a32sc %? %@2152sc!1q0?
 grp 1%f> static char \*kmap_en\[256] = \{.*?
 (	\[0] = "en",)7??0?
-grp 07??m 1220reg p OK kmap.h:2:a72sc %? %@2152sc0?
-1;3;7??!219reg kmap.h:22sc %? %@2132sc0?
+grp 07??m 1220reg p OK kmap.h:2:a72sc %? %@2152sc!0?
+1;3;7??!219reg kmap.h:22sc %? %@2132sc!0?
 0?
 '\''1i 	['\''y'\''] = "h",
 	['\''n'\''] = "j",
@@ -58,7 +58,7 @@ static char \*kmap_fa\[256] = \{1??0?
 	['\''j'\''] = "n",
 	['\''k'\''] = "e",
 	['\''l'\''] = "o",
-??!219reg kmap.h:2:m12sc %? %@2142scb1%ya 98?0?
+??!219reg kmap.h:2:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 			buf\[0] = \*ibuf;
 			ex_regput\(xrr, buf, 1\);
 		}
@@ -69,28 +69,28 @@ static char \*kmap_fa\[256] = \{1??0?
 %f> 			buf\[0] = \*ibuf;
 			ex_regput\(xrr, buf, 1\);
 		}3??0?
-3??+2m 1220reg p OK term.c:173:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK term.c:173:a32sc %? %@2152sc!1q0?
 grp 1%f> 			buf\[0] = \*ibuf;.*?
 			ex_regput\(xrr, buf, 1\);.*?
 (		})7??0?
-grp 07??m 1220reg p OK term.c:173:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK term.c:173:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			\*ibuf = 0;
 		} else if \(xrr\) \{
 			static char buf\[2];.*(	if \(icmd_pos < sizeof\(icmd\)\))
 		icmd\[icmd_pos\+\+] = ibuf\[ibuf_pos];
 	return ibuf\[ibuf_pos\+\+];8??0?
-grp 08??-5m 1220reg p OK term.c:173:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-5m 1220reg p OK term.c:173:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				goto re;
 			}
 			err:.*(/\* return a static string that changes text attributes to att \*/)
 char \*term_att\(int att\)
 \{9??0?
-grp 09??-10m 1220reg p OK term.c:173:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg term.c:1732sc %? %@2132sc0?
+grp 09??-10m 1220reg p OK term.c:173:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg term.c:1732sc %? %@2132sc!0?
 0?
 '\''1i 		if (*ibuf > 0 && conf_kmap(0)[*ibuf])
 			*ibuf = *conf_kmap(0)[*ibuf];
-??!219reg term.c:173:m12sc %? %@2142scvis 2b0wb1w2q' > "$P2VIF"
+??!219reg term.c:173:m12sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'kmap.h' 'term.c' "$P2VIF"
 
 exit 0

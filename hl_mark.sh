@@ -48,17 +48,17 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 \|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
 \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},2??0?
-2??m 1220reg p OK conf.c:297:a22sc %? %@2152sc1q0?
+2??m 1220reg p OK conf.c:297:a22sc %? %@2152sc!1q0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\3??0?
-3??+3m 1220reg p OK conf.c:297:a32sc %? %@2152sc1q0?
+3??+3m 1220reg p OK conf.c:297:a32sc %? %@2152sc!1q0?
 ;0fr.,$f> ^\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\$4??0?
-4??m 1220reg p OK conf.c:297:a42sc %? %@2152scfr 981qfr 980?
+4??m 1220reg p OK conf.c:297:a42sc %? %@2152sc!fr 981qfr 980?
 %f> \|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
 \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},5??0?
-5??-1m 1220reg p OK conf.c:297:a52sc %? %@2152sc1q0?
+5??-1m 1220reg p OK conf.c:297:a52sc %? %@2152sc!1q0?
 %f> .....0.9].....\....\|.0-9..t.\*...\).\?........%... \\.]\*\[0....\[......\*...\[ ...\*..\|......\\..\\].....\..\)\*...\?..\\.]......\\t..\\
 ....\[,;...\)....].\(......\(\?....\\.....\\.\\\\..\).....\[.\\..\*.......:.\(..\[\^.\\........\\\.......>.\?.....\\........\.\?.\*...\|.
 .....0...\+\).\(.\..........t].....\(.......\+...........\[...].\)..\\....\*..:....]...\|...\[...\\.\\.\|.....\?\)..\\..... ........
@@ -66,27 +66,27 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 ..@..d.j...\\....,1..\\......}.\?.].........\|p.uh.\?....e\[....!\?\|.\[-\+..tdp....n..i..c..\|.
 .\?:..\?.... \\.]...\)\?..!.....\?...\?.r..............\)..............y..!..\?.c...........
 ......1....Y...., ....RE..R...R....H.....1....,......H., RE, .R1, .Y......\)..6??0?
-6??+3m 1220reg p OK conf.c:297:a62sc %? %@2152sc1q0?
+6??+3m 1220reg p OK conf.c:297:a62sc %? %@2152sc!1q0?
 grp 1%f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\.*?
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\.*?
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\.*?
 (\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\)7??0?
-grp 07??m 1220reg p OK conf.c:297:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK conf.c:297:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\(\?:\(\\n\$\)\|\\n\)\|\\n\|\(\[\^\\n]\+\(\\n\)\)",
 		A\(NA, SYN_BGMK\(RE1\), SYN_BGMK\(AY1\), SYN_BGMK\(AY\)\)},
 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},.*(	\{vs_ft, "\.\+", A\(AY1 \| SYN_BD\), 1},)
 	\{vs_ft, "\(\^\[\?/]\)\|\(\\\\\\\\\[<>]\|\\\\\(\\\\\?\[:=!<>#]\|\\\\\[\\\\\^\?\(\(\?:\\\\\\\\\.\?\|\[\^\\\\]]\)\*\)]\|\\\\\[\|\[\.\^\$\\\\\(\)\*\+\|\?]\|\\\\\{\(\[0-9]\*\(,\)\?\[0-9]\*\)\?}\?\)\|\\\\\\\\\(\.\)",
 		A\(SYN_BD, BL1, WH1, GR1, RE1, WH1, YE\)},8??0?
-grp 08??-7m 1220reg p OK conf.c:297:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-7m 1220reg p OK conf.c:297:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{n_ft, "1\(\[ \\t]\*\[1-9]\[ \\t]\*\)9", A\(RE1, MA1 \| SYN_BD\)},
 	\{n_ft, "9\[ \\t]\*\(\[1-9]\[ \\t]\*\)1", A\(RE1, MA1 \| SYN_BD\)},
 	\{n_ft, "\[1-9]", A\(RE1\)},.*(	\{vs_ft, "\(\\\\\\\\\)\(\.\)\(\?:\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\[\^\\\\\\\\\\\\]]\)\)\?\|\[\^\\\\\\\\\[\^]\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\.\)\|\\)
 \[\^\\\\\\\\\[\^]\\\\\^\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\[\^\\\\\\\\]\)\|\\\\\^\(-\)\[\^\\\\\\\\]",
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
-grp 09??-10m 1220reg p OK conf.c:297:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg conf.c:2972sc %? %@2132sc0?
+grp 09??-10m 1220reg p OK conf.c:297:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg conf.c:2972sc %? %@2132sc!0?
 0?
-'\''1s/wp/wmp/??!219reg conf.c:297:m12sc %? %@2142scb1%ya 98?0?
+'\''1s/wp/wmp/??!219reg conf.c:297:m12sc %? %@2142sc!b1%ya 98?0?
 %f> int xhlw;			/\* highlight current word \*/
 int xhlp;			/\* highlight \{}\[]\(\) pair \*/
 int xhlr;			/\* highlight text in reverse direction \*/
@@ -97,24 +97,24 @@ int xshape = 1;			/\* perform letter shaping \*/1??0?
 %f> int xhlw;			/\* highlight current word \*/
 int xhlp;			/\* highlight \{}\[]\(\) pair \*/
 int xhlr;			/\* highlight text in reverse direction \*/3??0?
-3??+2m 1220reg p OK ex.c:9:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK ex.c:9:a32sc %? %@2152sc!1q0?
 grp 1%f> int xhlw;			/\* highlight current word \*/.*?
 int xhlp;			/\* highlight \{}\[]\(\) pair \*/.*?
 (int xhlr;			/\* highlight text in reverse direction \*/)7??0?
-grp 07??m 1220reg p OK ex.c:9:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK ex.c:9:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> int xic = 1;			/\* ignorecase option \*/
 int xhl = 1;			/\* syntax highlight option \*/
 int xhll;			/\* highlight current line \*/.*(int xorder = 1;			/\* change the order of characters \*/)
 int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/8??0?
-grp 08??-4m 1220reg p OK ex.c:9:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:9:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/.*(int xgrp;			/\* regex search group \*/)
 int xpac;			/\* print autocomplete options \*/
 int xmpt;			/\* whether to prompt after printing > 1 lines in vi \*/9??0?
-grp 09??-7m 1220reg p OK ex.c:9:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg ex.c:92sc %? %@2132sc0?
+grp 09??-7m 1220reg p OK ex.c:9:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg ex.c:92sc %? %@2132sc!0?
 ?0?
 %f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
@@ -127,24 +127,24 @@ _EO\(grp, xgrp = \(!\*arg \? !xgrp : eo_val\(arg\)\) \* 2; return NULL;\)
 %f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)3??0?
-3??+2m 2220reg p OK ex.c:1587:a32sc %? %@2152sc1q0?
+3??+2m 2220reg p OK ex.c:1576:a32sc %? %@2152sc!1q0?
 grp 1%f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\).*?
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 (EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\))7??0?
-grp 07??m 2220reg p OK ex.c:1587:a72sc %? %@2152sc1q0?
+grp 07??m 2220reg p OK ex.c:1576:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		return \(unsigned char\)\*arg;
 	return val;
 }.*(_EO\(left,)
 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);8??0?
-grp 08??-4m 2220reg p OK ex.c:1587:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1576:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	int val = atoi\(arg\);
 	if \(!val && !uc_isdigit\(\*arg\)\).*(	else if \(\*arg\))
 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)9??0?
-grp 09??-7m 2220reg p OK ex.c:1587:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg ex.c:15872sc %? %@2132sc0?
+grp 09??-7m 2220reg p OK ex.c:1576:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg ex.c:15762sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(ts\),
 	EO\(td\),
@@ -156,31 +156,31 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 %f+ 	EO\(ts\),
 	EO\(td\),
 	EO\(order\),3??0?
-3??+2m 3220reg p OK ex.c:1687:a32sc %? %@2152sc1q0?
+3??+2m 3220reg p OK ex.c:1676:a32sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(ts\),.*?
 	EO\(td\),.*?
 (	EO\(order\),)7??0?
-grp 07??m 3220reg p OK ex.c:1687:a72sc %? %@2152sc1q0?
+grp 07??m 3220reg p OK ex.c:1676:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"cd", ec_chdir},
 	\{"c", ec_insert},
 	\{"j", ec_join},.*(	EO\(hlr\),)
 	EO\(hl\),
 	EO\(left\),8??0?
-grp 08??-4m 3220reg p OK ex.c:1687:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1676:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"ya", ec_yank},
 	\{"cm!", ec_cmap},
 	\{"cm", ec_cmap},.*(	EO\(lim\),)
 	EO\(led\),
 	EO\(vis\),9??0?
-grp 09??-7m 3220reg p OK ex.c:1687:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg ex.c:16872sc %? %@2132sc0?
+grp 09??-7m 3220reg p OK ex.c:1676:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg ex.c:16762sc %? %@2132sc!0?
 0?
 '\''1i int xhlm;			/* highlight marks */
-??!219reg ex.c:9:m12sc %? %@2142sc0?
+??!219reg ex.c:9:m12sc %? %@2142sc!0?
 '\''2i EO(hlm)
-??!219reg ex.c:1587:m22sc %? %@2142sc0?
+??!219reg ex.c:1576:m22sc %? %@2142sc!0?
 '\''3i 	EO(hlm),
-??!219reg ex.c:1687:m32sc %? %@2142scb2%ya 98?0?
+??!219reg ex.c:1676:m32sc %? %@2142sc!b2%ya 98?0?
 %f> 				word = cs;
 			}
 		}
@@ -191,24 +191,24 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 %f> 				word = cs;
 			}
 		}3??0?
-3??+2m 1220reg p OK vi.c:1763:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK vi.c:1763:a32sc %? %@2152sc!1q0?
 grp 1%f> 				word = cs;.*?
 			}.*?
 (		})7??0?
-grp 07??m 1220reg p OK vi.c:1763:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK vi.c:1763:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					vi_mod \|= 1;
 				}
 				free\(word\);.*(			if \(!led_attsb\))
 				sbuf_make\(led_attsb, sizeof\(la\) \* 2\)
 			if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{8??0?
-grp 08??-4m 1220reg p OK vi.c:1763:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.c:1763:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(\(cs = vi_curword\(xb, xrow, xoff, xhlw, 0\)\)\) \{
 				if \(!word \|\| strcmp\(word, cs\)\) \{
 					syn_reloadft\(syn_addhl\(cs, 1\), 0\);.*(				row1 = row; off1 = off;)
 				if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{
 					la\.s = ln;9??0?
-grp 09??-7m 1220reg p OK vi.c:1763:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg vi.c:17632sc %? %@2132sc0?
+grp 09??-7m 1220reg p OK vi.c:1763:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg vi.c:17632sc %? %@2132sc!0?
 0?
 '\''1i 		if (xhlm) {
 			int mrow, moff;
@@ -225,7 +225,7 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 				sbuf_mem(led_attsb, &la, (int)sizeof(la))
 			}
 		}
-??!219reg vi.c:1763:m12sc %? %@2142scvis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.c:1763:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' "$P2VIF"
 
 exit 0
@@ -245,7 +245,7 @@ index 70157040..58ee4e39 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 448d1ea5..58cd112a 100644
+index 82cd1654..ede621eb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -256,7 +256,7 @@ index 448d1ea5..58cd112a 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1585,6 +1586,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1574,6 +1575,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -264,7 +264,7 @@ index 448d1ea5..58cd112a 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1685,6 +1687,7 @@ static struct excmd {
+@@ -1674,6 +1676,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),

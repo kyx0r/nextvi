@@ -44,40 +44,40 @@ static int search\(const char \*pattern, int l\)
 1??+3m 11q0?
 %f> static int search\(const char \*pattern, int l\)
 \{2??0?
-2??m 1220reg p OK led.c:12:a22sc %? %@2152sc1q0?
+2??m 1220reg p OK led.c:12:a22sc %? %@2152sc!1q0?
 %f> 	return i-s;
 }
 
 3??0?
-3??+3m 1220reg p OK led.c:12:a32sc %? %@2152sc1q0?
+3??+3m 1220reg p OK led.c:12:a32sc %? %@2152sc!1q0?
 ;0fr.,$f> ^static int search\(const char \*pattern, int l\)$4??0?
-4??m 1220reg p OK led.c:12:a42sc %? %@2152scfr 981qfr 980?
+4??m 1220reg p OK led.c:12:a42sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f> ^\{$5??0?
-5??-1m 1220reg p OK led.c:12:a52sc %? %@2152scfr 981qfr 980?
+5??-1m 1220reg p OK led.c:12:a52sc %? %@2152sc!fr 981qfr 980?
 %f> ......n.....
 }
 
 ....i...n......c....... .h...\*.....rn..... ..
 \{6??0?
-6??+3m 1220reg p OK led.c:12:a62sc %? %@2152sc1q0?
+6??+3m 1220reg p OK led.c:12:a62sc %? %@2152sc!1q0?
 grp 1%f> 	return i-s;.*?
 }.*?
 .*?
 (static int search\(const char \*pattern, int l\))7??0?
-grp 07??m 1220reg p OK led.c:12:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK led.c:12:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
 	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
-grp 08??-22m 1220reg p OK led.c:12:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-22m 1220reg p OK led.c:12:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 \{
 	char reg\[] = "\[\^\\t !-/:-@\[-\\\\]\^`\{-\\x7f]\+";9??0?
-grp 09??-26m 1220reg p OK led.c:12:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:122sc %? %@2132sc0?
+grp 09??-26m 1220reg p OK led.c:12:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:122sc %? %@2132sc!0?
 ?0?
 %f+ \{
 	if \(!\*pattern\)
@@ -89,37 +89,37 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 		return 0;
 	sbuf_cut\(suggestsb, 0\)
 	sbuf_smake\(sylsb, 1024\)2??0?
-2??m 2220reg p OK led.c:14:a22sc %? %@2152sc1q0?
+2??m 2220reg p OK led.c:14:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^\{$3??0?
-3??+1m 2220reg p OK led.c:14:a32sc %? %@2152scfr 981qfr 980?
+3??+1m 2220reg p OK led.c:14:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	if \(!\*pattern\)$4??0?
-4??m 2220reg p OK led.c:14:a42sc %? %@2152scfr 981qfr 980?
+4??m 2220reg p OK led.c:14:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		return 0;
 	sbuf_cut\(suggestsb, 0\)
 	sbuf_smake\(sylsb, 1024\)5??0?
-5??-1m 2220reg p OK led.c:14:a52sc %? %@2152sc1q0?
+5??-1m 2220reg p OK led.c:14:a52sc %? %@2152sc!1q0?
 %f+ \{
 ......\*pat.e...
 ..r..u.....
 	s..f.......g.....b..0\)
 .s..._sma...............6??0?
-6??+1m 2220reg p OK led.c:14:a62sc %? %@2152sc1q0?
+6??+1m 2220reg p OK led.c:14:a62sc %? %@2152sc!1q0?
 grp 1%f+ \{.*?
 (	if \(!\*pattern\))7??0?
-grp 07??m 2220reg p OK led.c:14:a72sc %? %@2152sc1q0?
+grp 07??m 2220reg p OK led.c:14:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
 	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
-grp 08??-20m 2220reg p OK led.c:14:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-20m 2220reg p OK led.c:14:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 \{
 	char reg\[] = "\[\^\\t !-/:-@\[-\\\\]\^`\{-\\x7f]\+";9??0?
-grp 09??-24m 2220reg p OK led.c:14:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:142sc %? %@2132sc0?
+grp 09??-24m 2220reg p OK led.c:14:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:142sc %? %@2132sc!0?
 ?0?
 %f+ 		return 0;
 	sbuf_cut\(suggestsb, 0\)
@@ -133,17 +133,17 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 	while \(part\) \{
 		char \*part1 = part;
 		while \(\*part != '\''\\n'\''\)2??0?
-2??m 3220reg p OK led.c:18:a22sc %? %@2152sc1q0?
+2??m 3220reg p OK led.c:18:a22sc %? %@2152sc!1q0?
 %f+ 		return 0;
 	sbuf_cut\(suggestsb, 0\)
 	sbuf_smake\(sylsb, 1024\)3??0?
-3??+3m 3220reg p OK led.c:18:a32sc %? %@2152sc1q0?
+3??+3m 3220reg p OK led.c:18:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	char \*part = strstr\(acsb->s, pattern\);$4??0?
-4??m 3220reg p OK led.c:18:a42sc %? %@2152scfr 981qfr 980?
+4??m 3220reg p OK led.c:18:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	while \(part\) \{
 		char \*part1 = part;
 		while \(\*part != '\''\\n'\''\)5??0?
-5??-1m 3220reg p OK led.c:18:a52sc %? %@2152sc1q0?
+5??-1m 3220reg p OK led.c:18:a52sc %? %@2152sc!1q0?
 %f+ .........0;
 .sb...........e...b,.0.
 	.....s......yl... 1....
@@ -151,25 +151,25 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 ..h............
 ..c.......r.....p..t.
 ...h................n'\''.6??0?
-6??+3m 3220reg p OK led.c:18:a62sc %? %@2152sc1q0?
+6??+3m 3220reg p OK led.c:18:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		return 0;.*?
 	sbuf_cut\(suggestsb, 0\).*?
 	sbuf_smake\(sylsb, 1024\).*?
 (	char \*part = strstr\(acsb->s, pattern\);)7??0?
-grp 07??m 3220reg p OK led.c:18:a72sc %? %@2152sc1q0?
+grp 07??m 3220reg p OK led.c:18:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
 	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
-grp 08??-16m 3220reg p OK led.c:18:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-16m 3220reg p OK led.c:18:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 \{
 	char reg\[] = "\[\^\\t !-/:-@\[-\\\\]\^`\{-\\x7f]\+";9??0?
-grp 09??-20m 3220reg p OK led.c:18:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:182sc %? %@2132sc0?
+grp 09??-20m 3220reg p OK led.c:18:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:182sc %? %@2132sc!0?
 ?0?
 %f+ 		while \(\*part != '\''\\n'\''\)
 			part--;
@@ -181,41 +181,41 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 %f+ 		if \(len\+\+ != l\) \{
 			if \(part == part1\)
 				sbuf_mem\(suggestsb, part, len\)2??0?
-2??m 4220reg p OK led.c:24:a22sc %? %@2152sc1q0?
+2??m 4220reg p OK led.c:24:a22sc %? %@2152sc!1q0?
 %f+ 		while \(\*part != '\''\\n'\''\)
 			part--;
 		int len = dstrlen\(\+\+part, '\''\\n'\''\);3??0?
-3??+3m 4220reg p OK led.c:24:a32sc %? %@2152sc1q0?
+3??+3m 4220reg p OK led.c:24:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(len\+\+ != l\) \{$4??0?
-4??m 4220reg p OK led.c:24:a42sc %? %@2152scfr 981qfr 980?
+4??m 4220reg p OK led.c:24:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 			if \(part == part1\)
 				sbuf_mem\(suggestsb, part, len\)5??0?
-5??-1m 4220reg p OK led.c:24:a52sc %? %@2152sc1q0?
+5??-1m 4220reg p OK led.c:24:a52sc %? %@2152sc!1q0?
 %f+ ....il.........!..'\''....
 	.........
 	.....l.n......rle.\(...a....'\''.n...
 	..................
 	..i. \(p..t....p.....
 ......u...e.\(su....ts......., ....6??0?
-6??+3m 4220reg p OK led.c:24:a62sc %? %@2152sc1q0?
+6??+3m 4220reg p OK led.c:24:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		while \(\*part != '\''\\n'\''\).*?
 			part--;.*?
 		int len = dstrlen\(\+\+part, '\''\\n'\''\);.*?
 (		if \(len\+\+ != l\) \{)7??0?
-grp 07??m 4220reg p OK led.c:24:a72sc %? %@2152sc1q0?
+grp 07??m 4220reg p OK led.c:24:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
 	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
-grp 08??-10m 4220reg p OK led.c:24:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-10m 4220reg p OK led.c:24:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 \{
 	char reg\[] = "\[\^\\t !-/:-@\[-\\\\]\^`\{-\\x7f]\+";9??0?
-grp 09??-14m 4220reg p OK led.c:24:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:242sc %? %@2132sc0?
+grp 09??-14m 4220reg p OK led.c:24:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:242sc %? %@2132sc!0?
 ?0?
 %f+ 			if \(part == part1\)
 				sbuf_mem\(suggestsb, part, len\)
@@ -226,38 +226,38 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 %f+ 			else
 				sbuf_mem\(sylsb, part, len\)
 		}2??0?
-2??m 5220reg p OK led.c:27:a22sc %? %@2152sc1q0?
+2??m 5220reg p OK led.c:27:a22sc %? %@2152sc!1q0?
 %f+ 			if \(part == part1\)
 				sbuf_mem\(suggestsb, part, len\)3??0?
-3??+2m 5220reg p OK led.c:27:a32sc %? %@2152sc1q0?
+3??+2m 5220reg p OK led.c:27:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			else$4??0?
-4??m 5220reg p OK led.c:27:a42sc %? %@2152scfr 981qfr 980?
+4??m 5220reg p OK led.c:27:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 				sbuf_mem\(sylsb, part, len\)
 		}5??0?
-5??-1m 5220reg p OK led.c:27:a52sc %? %@2152sc1q0?
+5??-1m 5220reg p OK led.c:27:a52sc %? %@2152sc!1q0?
 %f+ .	....\(...t.== ..r...
 	......._.em.s...........ar.. .en.
 ...e...
 ...	s..f..........,.p.... l..\)
 ..}6??0?
-6??+2m 5220reg p OK led.c:27:a62sc %? %@2152sc1q0?
+6??+2m 5220reg p OK led.c:27:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			if \(part == part1\).*?
 				sbuf_mem\(suggestsb, part, len\).*?
 (			else)7??0?
-grp 07??m 5220reg p OK led.c:27:a72sc %? %@2152sc1q0?
+grp 07??m 5220reg p OK led.c:27:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
 	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
-grp 08??-7m 5220reg p OK led.c:27:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-7m 5220reg p OK led.c:27:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 \{
 	char reg\[] = "\[\^\\t !-/:-@\[-\\\\]\^`\{-\\x7f]\+";9??0?
-grp 09??-11m 5220reg p OK led.c:27:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:272sc %? %@2132sc0?
+grp 09??-11m 5220reg p OK led.c:27:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:272sc %? %@2132sc!0?
 ?0?
 %f+ 				sbuf_mem\(sylsb, part, len\)
 		}
@@ -270,40 +270,40 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 	}
 	sbuf_mem\(suggestsb, sylsb->s, sylsb->s_n\)
 	free\(sylsb->s\);2??0?
-2??m 6220reg p OK led.c:30:a22sc %? %@2152sc1q0?
+2??m 6220reg p OK led.c:30:a22sc %? %@2152sc!1q0?
 %f+ 				sbuf_mem\(sylsb, part, len\)
 		}3??0?
-3??+2m 6220reg p OK led.c:30:a32sc %? %@2152sc1q0?
+3??+2m 6220reg p OK led.c:30:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		part = strstr\(part\+len, pattern\);$4??0?
-4??m 6220reg p OK led.c:30:a42sc %? %@2152scfr 981qfr 980?
+4??m 6220reg p OK led.c:30:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	}
 	sbuf_mem\(suggestsb, sylsb->s, sylsb->s_n\)
 	free\(sylsb->s\);5??0?
-5??-1m 6220reg p OK led.c:30:a52sc %? %@2152sc1q0?
+5??-1m 6220reg p OK led.c:30:a52sc %? %@2152sc!1q0?
 %f+ ..		s......m\(....., p.r....e..
 .	}
 ..........t.st.....t.l..,..a.t....;
 	.
 ....f.m.....g..s..b,.sy....>...s..s......\)
 	...e.....b.>...6??0?
-6??+2m 6220reg p OK led.c:30:a62sc %? %@2152sc1q0?
+6??+2m 6220reg p OK led.c:30:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				sbuf_mem\(sylsb, part, len\).*?
 		}.*?
 (		part = strstr\(part\+len, pattern\);)7??0?
-grp 07??m 6220reg p OK led.c:30:a72sc %? %@2152sc1q0?
+grp 07??m 6220reg p OK led.c:30:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
 	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
-grp 08??-4m 6220reg p OK led.c:30:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 6220reg p OK led.c:30:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 \{
 	char reg\[] = "\[\^\\t !-/:-@\[-\\\\]\^`\{-\\x7f]\+";9??0?
-grp 09??-8m 6220reg p OK led.c:30:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:302sc %? %@2132sc0?
+grp 09??-8m 6220reg p OK led.c:30:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:302sc %? %@2132sc!0?
 ?0?
 %f+ 	char \*cs;
 	int len, c, i;
@@ -315,24 +315,24 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 %f+ 	char \*cs;
 	int len, c, i;
 	sbuf \*reg;3??0?
-3??+2m 7220reg p OK led.c:430:a32sc %? %@2152sc1q0?
+3??+2m 7220reg p OK led.c:430:a32sc %? %@2152sc!1q0?
 grp 1%f+ 	char \*cs;.*?
 	int len, c, i;.*?
 (	sbuf \*reg;)7??0?
-grp 07??m 7220reg p OK led.c:430:a72sc %? %@2152sc1q0?
+grp 07??m 7220reg p OK led.c:430:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static int led_line\(sbuf \*sb, int ps, int pre, char \*\*post, int postn, char \*\*postref,
 	int ai_max, int \*poff, int \*kmap, ins_state \*is, int orow, int crow, int ctop, int flg\)
 \{.*(		c = term_read\(TK_CTL\('\''l'\''\)\);)
 		noredraw:
 		switch \(c\) \{8??0?
-grp 08??-4m 7220reg p OK led.c:430:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 7220reg p OK led.c:430:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	restore\(xvis\)
 	restore\(xexec_dep\)
 }.*(		case TK_CTL\('\''h'\''\):)
 			c = 127;
 		case 127:9??0?
-grp 09??-7m 7220reg p OK led.c:430:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:4302sc %? %@2132sc0?
+grp 09??-7m 7220reg p OK led.c:430:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg led.c:4302sc %? %@2132sc!0?
 ?0?
 %f+ 		case TK_CTL\('\''n'\''\):
 			if \(!suggestsb\)
@@ -346,17 +346,17 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 			if \(is->_sug\) \{
 				if \(suggestsb->s_n == is->sug - suggestsb->s\)
 					continue;2??0?
-2??m 8220reg p OK led.c:529:a22sc %? %@2152sc1q0?
+2??m 8220reg p OK led.c:529:a22sc %? %@2152sc!1q0?
 %f+ 		case TK_CTL\('\''n'\''\):
 			if \(!suggestsb\)
 				continue;3??0?
-3??+3m 8220reg p OK led.c:529:a32sc %? %@2152sc1q0?
+3??+3m 8220reg p OK led.c:529:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			is->lsug = is->sug_pt >= 0 \? is->sug_pt : led_lastword\(sb->s \+ pre\) \+ pre;$4??0?
-4??m 8220reg p OK led.c:529:a42sc %? %@2152scfr 981qfr 980?
+4??m 8220reg p OK led.c:529:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 			if \(is->_sug\) \{
 				if \(suggestsb->s_n == is->sug - suggestsb->s\)
 					continue;5??0?
-5??-1m 8220reg p OK led.c:529:a52sc %? %@2152sc1q0?
+5??-1m 8220reg p OK led.c:529:a52sc %? %@2152sc!1q0?
 %f+ 	.c..e..K..T.\(...\).
 ...i....s....st...
 	.......i....
@@ -364,25 +364,25 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 ......\(.....s.g...
 ....i...s.......b..s.n ...i...su. -......s...-...
 ...	..o.ti....6??0?
-6??+3m 8220reg p OK led.c:529:a62sc %? %@2152sc1q0?
+6??+3m 8220reg p OK led.c:529:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		case TK_CTL\('\''n'\''\):.*?
 			if \(!suggestsb\).*?
 				continue;.*?
 (			is->lsug = is->sug_pt >= 0 \? is->sug_pt : led_lastword\(sb->s \+ pre\) \+ pre;)7??0?
-grp 07??m 8220reg p OK led.c:529:a72sc %? %@2152sc1q0?
+grp 07??m 8220reg p OK led.c:529:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			char buf\[100];
 			itoa\(is->sug_pt, buf\);
 			led_info\(buf\).*(				redo_suggest:)
 				if \(!\(is->_sug = strchr\(is->sug, '\''\\n'\''\)\)\) \{
 					is->sug = suggestsb->s;8??0?
-grp 08??-4m 8220reg p OK led.c:529:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 8220reg p OK led.c:529:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			continue;
 		case TK_CTL\('\''x'\''\):
 			is->sug_pt = is->sug_pt == len \? -1 : len;.*(					goto lookup;)
 				}
 				suggest:9??0?
-grp 09??-7m 8220reg p OK led.c:529:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:5292sc %? %@2132sc0?
+grp 09??-7m 8220reg p OK led.c:529:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:5292sc %? %@2132sc!0?
 ?0?
 %f+ 				}
 				suggest:
@@ -398,18 +398,18 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 				is->sug = is->_sug\+1;
 				continue;
 			}2??0?
-2??m 9220reg p OK led.c:540:a22sc %? %@2152sc1q0?
+2??m 9220reg p OK led.c:540:a22sc %? %@2152sc!1q0?
 %f+ 				}
 				suggest:
 				\*is->_sug = '\''\\0'\'';3??0?
-3??+3m 9220reg p OK led.c:540:a32sc %? %@2152sc1q0?
+3??+3m 9220reg p OK led.c:540:a32sc %? %@2152sc!1q0?
 %f+ 				sbuf_cut\(sb, is->lsug\)
 				sbuf_str\(sb, is->sug\)4??0?
-4??m 9220reg p OK led.c:540:a42sc %? %@2152sc1q0?
+4??m 9220reg p OK led.c:540:a42sc %? %@2152sc!1q0?
 %f+ 				is->sug = is->_sug\+1;
 				continue;
 			}5??0?
-5??-2m 9220reg p OK led.c:540:a52sc %? %@2152sc1q0?
+5??-2m 9220reg p OK led.c:540:a52sc %? %@2152sc!1q0?
 %f+ .	..}
 	..	...g....
 			.....>..u..= ..0'\''.
@@ -418,25 +418,25 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 .....s->..... ......u....
 .....o.......
 ..	.6??0?
-6??+3m 9220reg p OK led.c:540:a62sc %? %@2152sc1q0?
+6??+3m 9220reg p OK led.c:540:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				}.*?
 				suggest:.*?
 				\*is->_sug = '\''\\0'\'';.*?
 (				sbuf_cut\(sb, is->lsug\))7??0?
-grp 07??m 9220reg p OK led.c:540:a72sc %? %@2152sc1q0?
+grp 07??m 9220reg p OK led.c:540:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				if \(!\(is->_sug = strchr\(is->sug, '\''\\n'\''\)\)\) \{
 					is->sug = suggestsb->s;
 					goto lookup;.*(				goto suggest;)
 			}
 			continue;8??0?
-grp 08??-10m 9220reg p OK led.c:540:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-10m 9220reg p OK led.c:540:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(suggestsb->s_n == is->sug - suggestsb->s\)
 					continue;
 				redo_suggest:.*(		case TK_CTL\('\''b'\''\):)
 			if \(ai_max >= 0\) \{
 				pac:;9??0?
-grp 09??-13m 9220reg p OK led.c:540:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:5402sc %? %@2132sc0?
+grp 09??-13m 9220reg p OK led.c:540:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:5402sc %? %@2132sc!0?
 ?0?
 %f+ 				continue;
 			}
@@ -450,17 +450,17 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 				is->sug = suggestsb->s;
 				if \(!\(is->_sug = strchr\(is->sug, '\''\\n'\''\)\)\)
 					continue;2??0?
-2??m 10220reg p OK led.c:546:a22sc %? %@2152sc1q0?
+2??m 10220reg p OK led.c:546:a22sc %? %@2152sc!1q0?
 %f+ 				continue;
 			}
 			lookup:3??0?
-3??+3m 10220reg p OK led.c:546:a32sc %? %@2152sc1q0?
+3??+3m 10220reg p OK led.c:546:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			if \(search\(sb->s \+ is->lsug, len - is->lsug\)\) \{$4??0?
-4??m 10220reg p OK led.c:546:a42sc %? %@2152scfr 981qfr 980?
+4??m 10220reg p OK led.c:546:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 				is->sug = suggestsb->s;
 				if \(!\(is->_sug = strchr\(is->sug, '\''\\n'\''\)\)\)
 					continue;5??0?
-5??-1m 10220reg p OK led.c:546:a52sc %? %@2152sc1q0?
+5??-1m 10220reg p OK led.c:546:a52sc %? %@2152sc!1q0?
 %f+ ..		....in...
 	.	.
 		..o...p:
@@ -468,25 +468,25 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 .	....-..u.......ge........
 	.		.......s-......=....c.......s.........\).
 	.	.	c....nu..6??0?
-6??+3m 10220reg p OK led.c:546:a62sc %? %@2152sc1q0?
+6??+3m 10220reg p OK led.c:546:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				continue;.*?
 			}.*?
 			lookup:.*?
 (			if \(search\(sb->s \+ is->lsug, len - is->lsug\)\) \{)7??0?
-grp 07??m 10220reg p OK led.c:546:a72sc %? %@2152sc1q0?
+grp 07??m 10220reg p OK led.c:546:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				if \(!\(is->_sug = strchr\(is->sug, '\''\\n'\''\)\)\) \{
 					is->sug = suggestsb->s;
 					goto lookup;.*(				goto suggest;)
 			}
 			continue;8??0?
-grp 08??-4m 10220reg p OK led.c:546:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 10220reg p OK led.c:546:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(suggestsb->s_n == is->sug - suggestsb->s\)
 					continue;
 				redo_suggest:.*(		case TK_CTL\('\''b'\''\):)
 			if \(ai_max >= 0\) \{
 				pac:;9??0?
-grp 09??-7m 10220reg p OK led.c:546:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:5462sc %? %@2132sc0?
+grp 09??-7m 10220reg p OK led.c:546:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:5462sc %? %@2132sc!0?
 ?0?
 %f+ 				int r = crow-ctop\+1;
 				if \(is->sug\)
@@ -502,18 +502,18 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 					is->sug = suggestsb->s;
 					pac_:;
 					preserve\(int, xtd, xtd = 2;\)2??0?
-2??m 11220reg p OK led.c:560:a22sc %? %@2152sc1q0?
+2??m 11220reg p OK led.c:560:a22sc %? %@2152sc!1q0?
 %f+ 				int r = crow-ctop\+1;
 				if \(is->sug\)
 					goto pac_;3??0?
-3??+3m 11220reg p OK led.c:560:a32sc %? %@2152sc1q0?
+3??+3m 11220reg p OK led.c:560:a32sc %? %@2152sc!1q0?
 %f+ 				i = is->sug_pt >= 0 \? is->sug_pt : led_lastword\(sb->s \+ pre\) \+ pre;
 				if \(suggestsb && search\(sb->s \+ i, sb->s_n - i\)\) \{4??0?
-4??m 11220reg p OK led.c:560:a42sc %? %@2152sc1q0?
+4??m 11220reg p OK led.c:560:a42sc %? %@2152sc!1q0?
 %f+ 					is->sug = suggestsb->s;
 					pac_:;
 					preserve\(int, xtd, xtd = 2;\)5??0?
-5??-2m 11220reg p OK led.c:560:a52sc %? %@2152sc1q0?
+5??-2m 11220reg p OK led.c:560:a52sc %? %@2152sc!1q0?
 %f+ .	...n. ... c...........
 		.	.f ....>....
 	...	..t....c..
@@ -522,57 +522,57 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 .	.	..............ge...b.>..
 .	.		.....;
 .....pr........n.....d. .t..=.2;.6??0?
-6??+3m 11220reg p OK led.c:560:a62sc %? %@2152sc1q0?
+6??+3m 11220reg p OK led.c:560:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				int r = crow-ctop\+1;.*?
 				if \(is->sug\).*?
 					goto pac_;.*?
 (				i = is->sug_pt >= 0 \? is->sug_pt : led_lastword\(sb->s \+ pre\) \+ pre;)7??0?
-grp 07??m 11220reg p OK led.c:560:a72sc %? %@2152sc1q0?
+grp 07??m 11220reg p OK led.c:560:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			if \(ai_max >= 0\) \{
 				pac:;
 				sbuf_null\(sb\).*(					preserve\(int, ftidx,\))
 					syn_setft\(ac_ft\);
 					for \(int left = 0; r < xrows; r\+\+\) \{8??0?
-grp 08??-5m 11220reg p OK led.c:560:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-5m 11220reg p OK led.c:560:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			}
 			continue;
 		case TK_CTL\('\''b'\''\):.*(						RS\(2, led_crender\(is->sug, r, 0, left, left\+xcols\)\))
 						left \+= xcols;
 						if \(left >= rstates\[2]\.pos\[rstates\[2]\.n]\)9??0?
-grp 09??-8m 11220reg p OK led.c:560:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:5602sc %? %@2132sc0?
+grp 09??-8m 11220reg p OK led.c:560:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:5602sc %? %@2132sc!0?
 0?
 '\''1c static int search(sbuf *sb, int l, int pre)
-??!219reg led.c:12:m12sc %? %@2142sc0?
+??!219reg led.c:12:m12sc %? %@2142sc!0?
 '\''2c 	if (!sb->s[l])
-??!219reg led.c:14:m22sc %? %@2142sc0?
+??!219reg led.c:14:m22sc %? %@2142sc!0?
 '\''3c 	again:;
 	char *part = strstr(acsb->s, sb->s+l);
-??!219reg led.c:18:m32sc %? %@2142sc0?
-'\''4s/ l/ sb->s_n - l/??!219reg led.c:24:m42sc %? %@2142sc0?
-'\''5s/se/se if (l >= pre)/??!219reg led.c:27:m52sc %? %@2142sc0?
+??!219reg led.c:18:m32sc %? %@2142sc!0?
+'\''4s/ l/ sb->s_n - l/??!219reg led.c:24:m42sc %? %@2142sc!0?
+'\''5s/se/se if (l >= pre)/??!219reg led.c:27:m52sc %? %@2142sc!0?
 '\''6c 		part = strstr(part+len, sb->s+l);
 	}
 	if (l < pre && sb->s[pre]) {
 		l = pre;
 		goto again;
-??!219reg led.c:30:m62sc %? %@2142sc0?
+??!219reg led.c:30:m62sc %? %@2142sc!0?
 '\''7i 	if (ai_max >= 0 && xpac) {
 		c = 0;
 		goto pac;
 	}
-??!219reg led.c:430:m72sc %? %@2142sc0?
-'\''8s/ \+ pre\) \+ pre/)/??!219reg led.c:529:m82sc %? %@2142sc0?
+??!219reg led.c:430:m72sc %? %@2142sc!0?
+'\''8s/ \+ pre\) \+ pre/)/??!219reg led.c:529:m82sc %? %@2142sc!0?
 '\''9,#+1c 				for (i = 0; is->sug[i] && sb->s[i+is->lsug] == is->sug[i]; i++){}
 				sbuf_cut(sb, MAX(is->lsug+i, pre))
 				sbuf_str(sb, is->sug+i)
-??!219reg led.c:540:m92sc %? %@2142sc0?
-?'\''10s/->s \+ is->lsug, len - is->lsug/, is->lsug, pre/1??1??1q'\''10s/->s \+(.*)len - is->lsug/,\1pre/2??2??'\''10220reg p OK led.c:546:s22sc %? %@2162sc0?
-1;2??!219reg led.c:546:m102sc %? %@2142sc0?
+??!219reg led.c:540:m92sc %? %@2142sc!0?
+?'\''10s/->s \+ is->lsug, len - is->lsug/, is->lsug, pre/1??1??1q'\''10s/->s \+(.*)len - is->lsug/,\1pre/2??2??'\''10220reg p OK led.c:546:s22sc %? %@2162sc!0?
+1;2??!219reg led.c:546:m102sc %? %@2142sc!0?
 0?
 '\''11,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
-??!219reg led.c:560:m112sc %? %@2142scvis 2b0w2q' > "$P2VIF"
+??!219reg led.c:560:m112sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' "$P2VIF"
 
 exit 0

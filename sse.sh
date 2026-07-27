@@ -46,18 +46,18 @@ int dstrlen\(const char \*s, char delim\)
 %f> 
 int dstrlen\(const char \*s, char delim\)
 \{3??0?
-3??+2m 1220reg p OK led.c:6:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK led.c:6:a32sc %? %@2152sc!1q0?
 grp 1%f> .*?
 int dstrlen\(const char \*s, char delim\).*?
 (\{)7??0?
-grp 07??m 1220reg p OK led.c:6:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK led.c:6:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 sbuf \*led_attsb;.*(	if \(!\*pattern\))
 		return 0;
 	sbuf_cut\(suggestsb, 0\)8??0?
-grp 08??-8m 1220reg p OK led.c:6:a82sc %? %@2152sc'\''00?
-1;3;7;8??!219reg led.c:62sc %? %@2132sc0?
+grp 08??-8m 1220reg p OK led.c:6:a82sc %? %@2152sc!'\''00?
+1;3;7;8??!219reg led.c:62sc %? %@2132sc!0?
 ?0?
 %f+ 	register const char \*i;
 	for \(i=s; \*i && \*i != delim; \+\+i\);
@@ -69,18 +69,18 @@ static int search\(const char \*pattern, int l\)1??0?
 %f+ 	register const char \*i;
 	for \(i=s; \*i && \*i != delim; \+\+i\);
 	return i-s;3??0?
-3??+2m 2220reg p OK led.c:9:a32sc %? %@2152sc1q0?
+3??+2m 2220reg p OK led.c:9:a32sc %? %@2152sc!1q0?
 grp 1%f+ 	register const char \*i;.*?
 	for \(i=s; \*i && \*i != delim; \+\+i\);.*?
 (	return i-s;)7??0?
-grp 07??m 2220reg p OK led.c:9:a72sc %? %@2152sc1q0?
+grp 07??m 2220reg p OK led.c:9:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 sbuf \*led_attsb;.*(	if \(!\*pattern\))
 		return 0;
 	sbuf_cut\(suggestsb, 0\)8??0?
-grp 08??-5m 2220reg p OK led.c:9:a82sc %? %@2152sc'\''00?
-1;3;7;8??!219reg led.c:92sc %? %@2132sc0?
+grp 08??-5m 2220reg p OK led.c:9:a82sc %? %@2152sc!'\''00?
+1;3;7;8??!219reg led.c:92sc %? %@2132sc!0?
 0?
 '\''1i #ifdef __SSE2__
 	const char *i = s;
@@ -100,9 +100,9 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 		i += 16;
 	}
 #else
-??!219reg led.c:6:m12sc %? %@2142sc0?
+??!219reg led.c:6:m12sc %? %@2142sc!0?
 '\''2i #endif
-??!219reg led.c:9:m22sc %? %@2142scb1%ya 98?0?
+??!219reg led.c:9:m22sc %? %@2142sc!b1%ya 98?0?
 %f> 		rstate->holelen = uc_len\(ss\);
 		memcpy\(rstate->nullhole, ss, rstate->holelen\);
 		memset\(ss, 0, rstate->holelen\);
@@ -113,41 +113,41 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 %f> 	} else
 		for \(n = 0; \(l = uc_len\(ss\)\); n\+\+\)
 			ss \+= l;2??0?
-2??m 1220reg p OK ren.c:111:a22sc %? %@2152sc1q0?
+2??m 1220reg p OK ren.c:111:a22sc %? %@2152sc!1q0?
 %f> 		rstate->holelen = uc_len\(ss\);
 		memcpy\(rstate->nullhole, ss, rstate->holelen\);
 		memset\(ss, 0, rstate->holelen\);3??0?
-3??+3m 1220reg p OK ren.c:111:a32sc %? %@2152sc1q0?
+3??+3m 1220reg p OK ren.c:111:a32sc %? %@2152sc!1q0?
 %f> 	} else
 		for \(n = 0; \(l = uc_len\(ss\)\); n\+\+\)4??0?
-4??m 1220reg p OK ren.c:111:a42sc %? %@2152sc1q0?
+4??m 1220reg p OK ren.c:111:a42sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			ss \+= l;$5??0?
-5??-2m 1220reg p OK ren.c:111:a52sc %? %@2152scfr 981qfr 980?
+5??-2m 1220reg p OK ren.c:111:a52sc %? %@2152sc!fr 981qfr 980?
 %f> ...s.a....h.....n = .._.e..ss\).
 ..m..c......a.e.>n..l..l..........at.-.h....en..
 	....s...... ................e...
 .}....e
 	.... \(......... ...c.l.n....\)..n.\+\)
 .	.s......;6??0?
-6??+3m 1220reg p OK ren.c:111:a62sc %? %@2152sc1q0?
+6??+3m 1220reg p OK ren.c:111:a62sc %? %@2152sc!1q0?
 grp 1%f> 		rstate->holelen = uc_len\(ss\);.*?
 		memcpy\(rstate->nullhole, ss, rstate->holelen\);.*?
 		memset\(ss, 0, rstate->holelen\);.*?
 (	} else)7??0?
-grp 07??m 1220reg p OK ren.c:111:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK ren.c:111:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		max = \(unsigned int\)xlim;
 		for \(n = 0; n < max && \(l = uc_len\(ss\)\); n\+\+\)
 			ss \+= l;.*(	int \*off = &pos\[b];)
 	char \*\*chrs = \(char\*\*\)&off\[b];
 	if \(xorder && dir_reorder\(s, ss, off, n, rstate->ctx\)\) \{8??0?
-grp 08??-6m 1220reg p OK ren.c:111:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-6m 1220reg p OK ren.c:111:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	unsigned int n, max, l;
 	char \*ss = s;
 	if \(xlim >= 0 && rstate == rstates\+1\) \{.*(		for \(i = 0; i < b; i\+\+\) \{)
 			chrs\[i] = s;
 			s \+= uc_len\(s\);9??0?
-grp 09??-9m 1220reg p OK ren.c:111:a92sc %? %@2152sc'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ren.c:1112sc %? %@2132sc0?
+grp 09??-9m 1220reg p OK ren.c:111:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ren.c:1112sc %? %@2132sc!0?
 ?0?
 %f+ 			ss \+= l;
 	unsigned int b = n \+ 1, c = 2, i;
@@ -155,20 +155,20 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 	int \*pos = emalloc\(\(b \* 2 \* sizeof\(pos\[0]\)\) \+ b \* sizeof\(char\*\)\);1??0?
 1??m 21q0?
 ;0fr.,$f+ ^			ss \+= l;$3??0?
-3??m 2220reg p OK ren.c:113:a32sc %? %@2152scfr 981qfr 980?
+3??m 2220reg p OK ren.c:113:a32sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 		max = \(unsigned int\)xlim;
 		for \(n = 0; n < max && \(l = uc_len\(ss\)\); n\+\+\)
 			ss \+= l;.*(	int \*off = &pos\[b];)
 	char \*\*chrs = \(char\*\*\)&off\[b];
 	if \(xorder && dir_reorder\(s, ss, off, n, rstate->ctx\)\) \{8??0?
-grp 08??-4m 2220reg p OK ren.c:113:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 2220reg p OK ren.c:113:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	unsigned int n, max, l;
 	char \*ss = s;
 	if \(xlim >= 0 && rstate == rstates\+1\) \{.*(		for \(i = 0; i < b; i\+\+\) \{)
 			chrs\[i] = s;
 			s \+= uc_len\(s\);9??0?
-grp 09??-7m 2220reg p OK ren.c:113:a92sc %? %@2152sc'\''00?
-1;3;8;9??!219reg ren.c:1132sc %? %@2132sc0?
+grp 09??-7m 2220reg p OK ren.c:113:a92sc %? %@2152sc!'\''00?
+1;3;8;9??!219reg ren.c:1132sc %? %@2132sc!0?
 0?
 '\''1,#+1c 	} else {
 		n = 0;
@@ -203,10 +203,10 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 		} else
 #endif
 		for (; (l = uc_len(ss)); n++)
-??!219reg ren.c:111:m12sc %? %@2142sc0?
+??!219reg ren.c:111:m12sc %? %@2142sc!0?
 '\''2i count_done:;
 	}
-??!219reg ren.c:113:m22sc %? %@2142scb2%ya 98?0?
+??!219reg ren.c:113:m22sc %? %@2142sc!b2%ya 98?0?
 %f> int uc_slen\(char \*s\)
 \{
 	int n = 0, l;
@@ -217,24 +217,24 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 %f> int uc_slen\(char \*s\)
 \{
 	int n = 0, l;3??0?
-3??+2m 1220reg p OK uc.c:24:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK uc.c:24:a32sc %? %@2152sc!1q0?
 grp 1%f> int uc_slen\(char \*s\).*?
 \{.*?
 (	int n = 0, l;)7??0?
-grp 07??m 1220reg p OK uc.c:24:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK uc.c:24:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	/\* E \*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	/\* F \*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
 };.*(/\* find the beginning of the character at s\[i] \*/)
 char \*uc_beg\(char \*beg, char \*s\)
 \{8??0?
-grp 08??-6m 1220reg p OK uc.c:24:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-6m 1220reg p OK uc.c:24:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	/\* B \*/ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	/\* C \*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 	/\* D \*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,.*(	if \(utf8_length\[0xc0] == 1\))
 		return s;
 	for \(; s > beg && \(\(unsigned char\)\*s & 0xc0\) == 0x80; s--\);9??0?
-grp 09??-9m 1220reg p OK uc.c:24:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg uc.c:242sc %? %@2132sc0?
+grp 09??-9m 1220reg p OK uc.c:24:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg uc.c:242sc %? %@2132sc!0?
 0?
 '\''1i #ifdef __SSE2__
 	if (utf8_length[0xc0] != 1) {
@@ -264,20 +264,20 @@ char \*uc_beg\(char \*beg, char \*s\)
 		return n;
 	}
 #endif
-??!219reg uc.c:24:m12sc %? %@2142scb3%ya 98?0?
+??!219reg uc.c:24:m12sc %? %@2142sc!b3%ya 98?0?
 %f> #include <ctype\.h>
 #include <fcntl\.h>
 #include <stdio\.h>1??0?
 1??m 11q0?
 ;0fr.,$f> ^#include <ctype\.h>$3??0?
-3??m 1220reg p OK vi.c:0:a32sc %? %@2152scfr 98fr 980?
-1;3??!219reg vi.c:02sc %? %@2132sc0?
+3??m 1220reg p OK vi.c:0:a32sc %? %@2152sc!fr 98fr 980?
+1;3??!219reg vi.c:02sc %? %@2132sc!0?
 0?
 '\''1-1i #ifdef __SSE2__
 #include <stdint.h>
 #include <emmintrin.h>
 #endif
-??!219reg vi.c:0:m12sc %? %@2142scvis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.c:0:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' 'ren.c' 'uc.c' 'vi.c' "$P2VIF"
 
 exit 0
