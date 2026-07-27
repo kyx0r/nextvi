@@ -1507,28 +1507,17 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 
 static void *ec_specials(char *loc, char *cmd, char *arg)
 {
+	static int *const sp[] = {&xesc, &xsep, &xexp, &xexe};
 	int i = 0;
 	if (*loc) {
-		i = atoi(loc);
-		goto direct;
-	}
-	xesc = cmd[2] ? 0 : '\\';
-	xsep = cmd[2] ? 0 : ':';
-	xexp = cmd[2] ? 0 : '%';
-	xexe = cmd[2] ? 0 : '!';
-	for (; *arg; arg++, i++) {
-		direct:
-		if (i == 0)
-			xesc = *arg;
-		else if (i == 1)
-			xsep = *arg;
-		else if (i == 2)
-			xexp = *arg;
-		else if (i == 3)
-			xexe = *arg;
-		if (!*arg)
-			break;
-	}
+		i = (unsigned char)*loc ^ '0';
+		if (!*arg && i < LEN(sp))
+			*sp[i] = 0;
+	} else
+		for (int j = 0; j < LEN(sp); j++)
+			*sp[j] = cmd[2] ? 0 : "\\:%!"[j];
+	for (; *arg && i < LEN(sp); i++)
+		*sp[i] = *arg++;
 	return NULL;
 }
 
