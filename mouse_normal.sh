@@ -202,24 +202,24 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\9??0?
 %f+ 	}
 	preserve\(int, xleft, xleft = 0;\)
 	preserve\(int, xtd, xtd = 2;\)3??0?
-3??+2m 2220reg p OK led.c:671:a32sc %? %@2152sc1q0?
+3??+2m 2220reg p OK led.c:676:a32sc %? %@2152sc1q0?
 grp 1%f+ 	}.*?
 	preserve\(int, xleft, xleft = 0;\).*?
 (	preserve\(int, xtd, xtd = 2;\))7??0?
-grp 07??m 2220reg p OK led.c:671:a72sc %? %@2152sc1q0?
+grp 07??m 2220reg p OK led.c:676:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	if \(!is\) \{
 		ins_init\(_is\)
 		is = &_is;.*(		temp_write\(0, sb->s \+ n\);)
 	}
 	return key;8??0?
-grp 08??-8m 2220reg p OK led.c:671:a82sc %? %@2152sc'\''08??1q0?
-m 01;0grp 1%f> 	vi_lncol = 0;
+grp 08??-8m 2220reg p OK led.c:676:a82sc %? %@2152sc'\''08??1q0?
+m 01;0grp 1%f> 		n = sb->s_n;
 	if \(insert\)
 		sbuf_str\(sb, insert\).*(int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\))
 \{
 	int ai_max = 128 \* xai;9??0?
-grp 09??-13m 2220reg p OK led.c:671:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:6712sc %? %@2132sc0?
+grp 09??-13m 2220reg p OK led.c:676:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6762sc %? %@2132sc0?
 ?0?
 %f+ 			&off, kmap, is, 0, xrow, xtop, flg\);
 	restore\(xtd\)
@@ -231,24 +231,24 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\9??0?
 %f+ 			&off, kmap, is, 0, xrow, xtop, flg\);
 	restore\(xtd\)
 	restore\(xleft\)3??0?
-3??+2m 3220reg p OK led.c:675:a32sc %? %@2152sc1q0?
+3??+2m 3220reg p OK led.c:680:a32sc %? %@2152sc1q0?
 grp 1%f+ 			&off, kmap, is, 0, xrow, xtop, flg\);.*?
 	restore\(xtd\).*?
 (	restore\(xleft\))7??0?
-grp 07??m 3220reg p OK led.c:675:a72sc %? %@2152sc1q0?
+grp 07??m 3220reg p OK led.c:680:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 	if \(!is\) \{
 		ins_init\(_is\)
 		is = &_is;.*(		temp_write\(0, sb->s \+ n\);)
 	}
 	return key;8??0?
-grp 08??-4m 3220reg p OK led.c:675:a82sc %? %@2152sc'\''08??1q0?
-m 01;0grp 1%f> 	vi_lncol = 0;
+grp 08??-4m 3220reg p OK led.c:680:a82sc %? %@2152sc'\''08??1q0?
+m 01;0grp 1%f> 		n = sb->s_n;
 	if \(insert\)
 		sbuf_str\(sb, insert\).*(int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\))
 \{
 	int ai_max = 128 \* xai;9??0?
-grp 09??-9m 3220reg p OK led.c:675:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:6752sc %? %@2132sc0?
+grp 09??-9m 3220reg p OK led.c:680:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6802sc %? %@2132sc0?
 ?0?
 %f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \*postref = NULL;
@@ -260,24 +260,24 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\9??0?
 %f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \*postref = NULL;
 	ins_state is;3??0?
-3??+2m 4220reg p OK led.c:689:a32sc %? %@2152sc1q0?
+3??+2m 4220reg p OK led.c:694:a32sc %? %@2152sc1q0?
 grp 1%f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;.*?
 	char \*postref = NULL;.*?
 (	ins_state is;)7??0?
-grp 07??m 4220reg p OK led.c:689:a72sc %? %@2152sc1q0?
+grp 07??m 4220reg p OK led.c:694:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\)
 \{
 	int ai_max = 128 \* xai;.*(			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);)
 		if \(key != '\''\\n'\''\) \{
 			\*pren = sb->s_n;8??0?
-grp 08??-4m 4220reg p OK led.c:689:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 4220reg p OK led.c:694:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return key;
 }.*(			if \(!xled\) \{)
 				xoff = uc_slen\(sb->s\+ps\);
 				sbufn_str\(sb, post\)9??0?
-grp 09??-7m 4220reg p OK led.c:689:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:6892sc %? %@2132sc0?
+grp 09??-7m 4220reg p OK led.c:694:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6942sc %? %@2132sc0?
 ?0?
 %f+ 				sb->s\[\*pren] = \*post;
 			free\(postref\);
@@ -289,24 +289,24 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\9??0?
 %f+ 				sb->s\[\*pren] = \*post;
 			free\(postref\);
 			xrow = crow;3??0?
-3??+2m 5220reg p OK led.c:702:a32sc %? %@2152sc1q0?
+3??+2m 5220reg p OK led.c:707:a32sc %? %@2152sc1q0?
 grp 1%f+ 				sb->s\[\*pren] = \*post;.*?
 			free\(postref\);.*?
 (			xrow = crow;)7??0?
-grp 07??m 5220reg p OK led.c:702:a72sc %? %@2152sc1q0?
+grp 07??m 5220reg p OK led.c:707:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> 				xoff = uc_slen\(sb->s\+ps\);
 				sbufn_str\(sb, post\)
 			} else.*(		led_printparts\(sb, -1, ps, "", 0, &xoff\);)
 		term_chr\('\''\\n'\''\);
 		term_room\(1\);8??0?
-grp 08??-4m 5220reg p OK led.c:702:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 5220reg p OK led.c:707:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 		if \(key != '\''\\n'\''\) \{
 			\*pren = sb->s_n;
 			if \(!xled\) \{.*(		crow\+\+;)
 		n = ps;
 		ps = sb->s_n;9??0?
-grp 09??-7m 5220reg p OK led.c:702:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:7022sc %? %@2132sc0?
+grp 09??-7m 5220reg p OK led.c:707:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:7072sc %? %@2132sc0?
 0?
 '\''1i /* map terminal column number to cursor horizontal position (inverse of led_pos) */
 int led_col(char *s, int col)
@@ -318,13 +318,13 @@ int led_col(char *s, int col)
 
 ??!219reg led.c:98:m12sc %? %@2142sc0?
 '\''2i 	term_mouse_off();
-??!219reg led.c:671:m22sc %? %@2142sc0?
+??!219reg led.c:676:m22sc %? %@2142sc0?
 '\''3i 	term_mouse_on();
-??!219reg led.c:675:m32sc %? %@2142sc0?
+??!219reg led.c:680:m32sc %? %@2142sc0?
 '\''4i 	term_mouse_off();
-??!219reg led.c:689:m42sc %? %@2142sc0?
+??!219reg led.c:694:m42sc %? %@2142sc0?
 '\''5i 			term_mouse_on();
-??!219reg led.c:702:m52sc %? %@2142scb3%ya 98?0?
+??!219reg led.c:707:m52sc %? %@2142scb3%ya 98?0?
 %f> static struct termios termios;
 sbuf \*term_sbuf;
 int term_record;1??0?
@@ -790,7 +790,7 @@ index 448d1ea5..76bfbd65 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index 96d2e3ba..e1823a93 100644
+index eb6ec78d..87f19d1e 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
@@ -808,7 +808,7 @@ index 96d2e3ba..e1823a93 100644
  #define print_ch1(out) sbuf_mem(out, chrs[o], l)
  #define print_ch2(out) sbuf_mem(out, *chrs[o] == ' ' ? "_" : chrs[o], l)
  
-@@ -669,10 +677,12 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
+@@ -674,10 +682,12 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
  	}
  	preserve(int, xleft, xleft = 0;)
  	preserve(int, xtd, xtd = 2;)
@@ -821,7 +821,7 @@ index 96d2e3ba..e1823a93 100644
  	if (key == '\n' && flg & 1) {
  		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
  		temp_pos(0, -1, 0, 0);
-@@ -687,6 +697,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -692,6 +702,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  	int n, key, ps = 0, crow = xrow, ctop = xtop;
  	char *postref = NULL;
  	ins_state is;
@@ -829,7 +829,7 @@ index 96d2e3ba..e1823a93 100644
  	while (1) {
  		ins_init(is)
  		key = led_line(sb, ps, sb->s_n, &post, postn, &postref,
-@@ -700,6 +711,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -705,6 +716,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  				sb->s[*pren] = *post;
  			free(postref);
  			xrow = crow;

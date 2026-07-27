@@ -202,24 +202,24 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 %f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \*postref = NULL;
 	ins_state is;3??0?
-3??+2m 5220reg p OK led.c:689:a32sc %? %@2152sc1q0?
+3??+2m 5220reg p OK led.c:694:a32sc %? %@2152sc1q0?
 grp 1%f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;.*?
 	char \*postref = NULL;.*?
 (	ins_state is;)7??0?
-grp 07??m 5220reg p OK led.c:689:a72sc %? %@2152sc1q0?
+grp 07??m 5220reg p OK led.c:694:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\)
 \{
 	int ai_max = 128 \* xai;.*(				sbufn_str\(sb, post\))
 			} else
 				sb->s\[\*pren] = \*post;8??0?
-grp 08??-9m 5220reg p OK led.c:689:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-9m 5220reg p OK led.c:694:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return key;
 }.*(			free\(postref\);)
 			xrow = crow;
 			return key;9??0?
-grp 09??-12m 5220reg p OK led.c:689:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:6892sc %? %@2132sc0?
+grp 09??-12m 5220reg p OK led.c:694:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6942sc %? %@2132sc0?
 ?0?
 %f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);
@@ -231,24 +231,24 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 %f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);
 		if \(key != '\''\\n'\''\) \{3??0?
-3??+2m 6220reg p OK led.c:694:a32sc %? %@2152sc1q0?
+3??+2m 6220reg p OK led.c:699:a32sc %? %@2152sc1q0?
 grp 1%f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,.*?
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);.*?
 (		if \(key != '\''\\n'\''\) \{)7??0?
-grp 07??m 6220reg p OK led.c:694:a72sc %? %@2152sc1q0?
+grp 07??m 6220reg p OK led.c:699:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\)
 \{
 	int ai_max = 128 \* xai;.*(				sbufn_str\(sb, post\))
 			} else
 				sb->s\[\*pren] = \*post;8??0?
-grp 08??-4m 6220reg p OK led.c:694:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 6220reg p OK led.c:699:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return key;
 }.*(			free\(postref\);)
 			xrow = crow;
 			return key;9??0?
-grp 09??-7m 6220reg p OK led.c:694:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:6942sc %? %@2132sc0?
+grp 09??-7m 6220reg p OK led.c:699:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6992sc %? %@2132sc0?
 0?
 '\''1,#+1c 			if (ai_max >= 0) {
 				term_write(conf_curnorm, sizeof(conf_curnorm) - 1)
@@ -265,9 +265,9 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 				term_write(conf_curins, sizeof(conf_curins) - 1)
 ??!219reg led.c:633:m42sc %? %@2142sc0?
 '\''5i 	term_write(conf_curins, sizeof(conf_curins) - 1)
-??!219reg led.c:689:m52sc %? %@2142sc0?
+??!219reg led.c:694:m52sc %? %@2142sc0?
 '\''6i 			term_write(conf_curnorm, sizeof(conf_curnorm) - 1)
-??!219reg led.c:694:m62sc %? %@2142scb2%ya 98?0?
+??!219reg led.c:699:m62sc %? %@2142scb2%ya 98?0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;
@@ -321,7 +321,7 @@ index 70157040..aa7c5648 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index 96d2e3ba..39753236 100644
+index eb6ec78d..8ca8dba2 100644
 --- a/led.c
 +++ b/led.c
 @@ -514,9 +514,13 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -356,7 +356,7 @@ index 96d2e3ba..39753236 100644
  			if (bidx < 0) {
  				if (ex_buf == tmpex_buf)
  					continue;
-@@ -687,11 +695,13 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -692,11 +700,13 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  	int n, key, ps = 0, crow = xrow, ctop = xtop;
  	char *postref = NULL;
  	ins_state is;

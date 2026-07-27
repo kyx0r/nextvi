@@ -4954,7 +4954,7 @@ index 448d1ea5..0f5a78df 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 96d2e3ba..e1d19b6e 100644
+index eb6ec78d..36f830da 100644
 --- a/led.c
 +++ b/led.c
 @@ -91,8 +91,9 @@ static char *kmap_map(int kmap, int c)

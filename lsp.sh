@@ -901,24 +901,24 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 %f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \*postref = NULL;
 	ins_state is;3??0?
-3??+2m 1220reg p OK led.c:689:a32sc %? %@2152sc1q0?
+3??+2m 1220reg p OK led.c:694:a32sc %? %@2152sc1q0?
 grp 1%f> 	int n, key, ps = 0, crow = xrow, ctop = xtop;.*?
 	char \*postref = NULL;.*?
 (	ins_state is;)7??0?
-grp 07??m 1220reg p OK led.c:689:a72sc %? %@2152sc1q0?
+grp 07??m 1220reg p OK led.c:694:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\)
 \{
 	int ai_max = 128 \* xai;.*(				sbufn_str\(sb, post\))
 			} else
 				sb->s\[\*pren] = \*post;8??0?
-grp 08??-9m 1220reg p OK led.c:689:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-9m 1220reg p OK led.c:694:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return key;
 }.*(			free\(postref\);)
 			xrow = crow;
 			return key;9??0?
-grp 09??-12m 1220reg p OK led.c:689:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:6892sc %? %@2132sc0?
+grp 09??-12m 1220reg p OK led.c:694:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6942sc %? %@2132sc0?
 ?0?
 %f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);
@@ -930,29 +930,29 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 %f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);
 		if \(key != '\''\\n'\''\) \{3??0?
-3??+2m 2220reg p OK led.c:694:a32sc %? %@2152sc1q0?
+3??+2m 2220reg p OK led.c:699:a32sc %? %@2152sc1q0?
 grp 1%f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,.*?
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);.*?
 (		if \(key != '\''\\n'\''\) \{)7??0?
-grp 07??m 2220reg p OK led.c:694:a72sc %? %@2152sc1q0?
+grp 07??m 2220reg p OK led.c:699:a72sc %? %@2152sc1q0?
 m 01;0grp 1%f> int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\)
 \{
 	int ai_max = 128 \* xai;.*(				sbufn_str\(sb, post\))
 			} else
 				sb->s\[\*pren] = \*post;8??0?
-grp 08??-4m 2220reg p OK led.c:694:a82sc %? %@2152sc'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:699:a82sc %? %@2152sc'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return key;
 }.*(			free\(postref\);)
 			xrow = crow;
 			return key;9??0?
-grp 09??-7m 2220reg p OK led.c:694:a92sc %? %@2152sc'\''00?
-1;3;7;8;9??!219reg led.c:6942sc %? %@2132sc0?
+grp 09??-7m 2220reg p OK led.c:699:a92sc %? %@2152sc'\''00?
+1;3;7;8;9??!219reg led.c:6992sc %? %@2132sc0?
 0?
 '\''1i 	term_write(conf_curins, sizeof(conf_curins) - 1)
-??!219reg led.c:689:m12sc %? %@2142sc0?
+??!219reg led.c:694:m12sc %? %@2142sc0?
 '\''2i 			term_write(conf_curnorm, sizeof(conf_curnorm) - 1)
-??!219reg led.c:694:m22sc %? %@2142scb50?
+??!219reg led.c:699:m22sc %? %@2142scb50?
 i /* lsp.c - Language Server Protocol client for nextvi */
 #include "jsmn.h"
 #include <errno.h>
@@ -3320,10 +3320,10 @@ index 75dd0ce8..1460c2d5 100644
  		lb->ln[pos + i] = *((char**)sb->s + i);
  	for (i = 0; i < lb->mark_n; i++) {	/* updating marks */
 diff --git a/led.c b/led.c
-index 96d2e3ba..a9a1b347 100644
+index eb6ec78d..a6317acd 100644
 --- a/led.c
 +++ b/led.c
-@@ -687,11 +687,13 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -692,11 +692,13 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  	int n, key, ps = 0, crow = xrow, ctop = xtop;
  	char *postref = NULL;
  	ins_state is;

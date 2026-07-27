@@ -421,7 +421,7 @@ index 448d1ea5..79fe1116 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 96d2e3ba..b616a798 100644
+index eb6ec78d..ee287ecd 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
