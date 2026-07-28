@@ -1252,6 +1252,100 @@ out=$(run_ex ':0;i TOP:%p:q!')
 check ':0;i ignores column range, inserts above first line' \
 	"$(printf 'TOP\na\nb\nc')" "$out"
 
+# :s full [range] with :p-style o1/o2 column offsets, and the m (region) flag.
+# Without m the offsets bound the first/last line and the rest of each line is
+# preserved verbatim; with m the whole region is one string, so a pattern may
+# span newlines and the region is rewritten as a unit.
+S3='aaa bbb aaa\nccc bbb ccc\nddd bbb ddd\n'
+
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1,3s/bbb/Q/:%p:q!')
+check ':s line range substitutes each line' \
+	"$(printf 'aaa Q aaa\nccc Q ccc\nddd Q ddd')" "$out"
+
+# o1 alone: search starts at column 4, so the first "aaa" is out of reach
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1;4s/aaa/Q/:%p:q!')
+check ':s ;o1 starts the search at the column offset' \
+	"$(printf 'aaa bbb Q\nccc bbb ccc\nddd bbb ddd')" "$out"
+
+# o1 of 0 is a real offset, not "absent"
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1;0s/aaa/Q/:%p:q!')
+check ':s ;0 is column 0, not an absent offset' \
+	"$(printf 'Q bbb aaa\nccc bbb ccc\nddd bbb ddd')" "$out"
+
+# o1;o2 bound one line; prefix and suffix outside the window are untouched
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1;4;8s/bbb/Q/:%p:q!')
+check ':s ;o1;o2 bounds the line, keeps prefix and suffix' \
+	"$(printf 'aaa Q aaa\nccc bbb ccc\nddd bbb ddd')" "$out"
+
+# a pattern confined to the window cannot reach text outside it
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1;4;7s/aaa/Q/:??!p out of window:q!')
+check ':s ;o1;o2 window hides text outside it' 'out of window' "$out"
+
+# o1 applies to the first line, o2 to the last; middle lines are unbounded
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1;4,3;7s/b/Q/g:%p:q!')
+check ':s o1 bounds first line, o2 bounds last line' \
+	"$(printf 'aaa QQQ aaa\nccc QQQ ccc\nddd QQQ ddd')" "$out"
+
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1;8,2s/a/Q/g:%p:q!')
+check ':s ;o1 on first line only, later lines unbounded' \
+	"$(printf 'aaa bbb QQQ\nccc bbb ccc\nddd bbb ddd')" "$out"
+
+# m: the region is one string, so . spans the newline and joins the two lines
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':%s/aaa.ccc/X/m:%p:q!')
+check ':s m flag matches across a newline' \
+	"$(printf 'aaa bbb X bbb ccc\nddd bbb ddd')" "$out"
+
+# m without g is one substitution for the whole region, not one per line
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':%s/bbb/Q/m:%p:q!')
+check ':s m without g substitutes once per region' \
+	"$(printf 'aaa Q aaa\nccc bbb ccc\nddd bbb ddd')" "$out"
+
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':%s/bbb/Q/gm:%p:q!')
+check ':s gm substitutes every match in the region' \
+	"$(printf 'aaa Q aaa\nccc Q ccc\nddd Q ddd')" "$out"
+
+# m honours the column offsets too; o2 defaults to end of the last line
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1;4;8s/bbb/Q/m:%p:q!')
+check ':s m with ;o1;o2 rewrites only the bounded window' \
+	"$(printf 'aaa Q aaa\nccc bbb ccc\nddd bbb ddd')" "$out"
+
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1;4,3s/bbb/Q/m:%p:q!')
+check ':s m with ;o1 spans to end of the last line' \
+	"$(printf 'aaa Q aaa\nccc bbb ccc\nddd bbb ddd')" "$out"
+
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1;4,3;7s/b/Q/gm:%p:q!')
+check ':s gm with ;o1 and ;o2 bounds both ends of the region' \
+	"$(printf 'aaa QQQ aaa\nccc QQQ ccc\nddd QQQ ddd')" "$out"
+
+# an offset past end of line leaves nothing to match; the buffer is untouched
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1;99s/aaa/Q/m:??!p nomatch:q!')
+check ':s ;o1 past end of line matches nothing' 'nomatch' "$out"
+
+# a region substitution is a single undo unit even though it rewrote 2 lines
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':%s/aaa.ccc/X/m:ud:%p:q!')
+check ':s m substitution undone in one step' \
+	"$(printf 'aaa bbb aaa\nccc bbb ccc\nddd bbb ddd')" "$out"
+
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':%s/aaa.ccc/X/m:ud:rd:%p:q!')
+check ':s m substitution redone in one step' \
+	"$(printf 'aaa bbb X bbb ccc\nddd bbb ddd')" "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
