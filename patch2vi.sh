@@ -7,6 +7,7 @@
 #                     redelta input.sh
 #                     extract_patches [file.sh]
 #                     extract_compats [file.sh]
+#                     recompat target.sh [origin.sh]
 #                     reindex [file.sh | 1]
 #                     discard_deltas [file.sh]
 #                     discard_compats [file.sh]
@@ -55,6 +56,59 @@ p2v_dropnew() {
 		printf '%s\n' $1 | xargs rm -f
 	fi
 	return 0
+}
+
+# The sources a patch may touch: everything but our own scripts and the files
+# extracted from them. Word-split on purpose, it is a git pathspec list.
+P2V_SRC=":!*.sh :!*.patch :!compat"
+
+# patch2vi opens /dev/tty for its editor, which a pipeline or a CI job does not
+# have; script(1) then supplies one. Paths with spaces do not survive this.
+p2v_tty() {
+	if { : >/dev/tty; } 2>/dev/null; then
+		"$@"
+	else
+		script -qec "$*" /dev/null
+	fi
+}
+
+# Undo a script run: sources back to HEAD, leavings dropped. Scoped to the
+# sources, so a script this very run rewrote is not reverted along with them.
+p2v_restore() {
+	new=$(p2v_newfiles | grep -v '^compat/' || true)
+	git checkout -- $P2V_SRC >/dev/null 2>&1
+	p2v_dropnew "$new"
+}
+
+# Write the working tree's sources to a tree object, the index left alone.
+# Snapshots taken this way diff with git diff-tree, so files a run adds or
+# removes come out right, unlike a diff of two copied directories.
+p2v_snaptree() {
+	rm -f "$P2VITMP.idx"
+	GIT_INDEX_FILE="$P2VITMP.idx" git add -A -- $P2V_SRC
+	GIT_INDEX_FILE="$P2VITMP.idx" git write-tree
+	rm -f "$P2VITMP.idx"
+}
+
+# The src= of every compat block $1 carries, one per line, in storage order.
+p2v_compatsrc() {
+	sed -n 's/^=== PATCH2VI COMPAT .*src=\([^ ]*\).*/\1/p' "$1"
+}
+
+# $1 without the stored compat blocks whose src= is $2, on stdout. A block is
+# only the record of a resolution: the ex commands that carry it out sit in the
+# emitted body, so a stripped script has to be re-emitted ($P2VI -od) before it
+# runs as one that never had them.
+p2v_stripcompat() {
+	awk -v src="$2" '
+	/^=== PATCH2VI COMPAT /	{
+		for (i = 1; i <= NF; i++)
+			if ($i == "src=" src)
+				skip = 1
+	}
+	!skip			{ print }
+	/^=== END COMPAT ===$/	{ skip = 0 }
+	' "$1"
 }
 
 # The diff a just-run script produced, into $1, tree restored afterwards.
@@ -233,6 +287,81 @@ extract_compats() (
 			printf "%s\n" "GENERATED: ${p%.patch}.sh"
 		done
 	done
+)
+
+# Collapse the compat blocks a script carries from one origin into a single one.
+#
+# A compat fix grows by addition: run origin.sh and target.sh, edit the sources
+# until the collision is resolved again, and hand that edit to -co, which stacks
+# another block on the target. Blocks stay stacked, so the stack is the history
+# of the fix, and this turns it back into the one block it is meant to be.
+#
+# Nothing is read out of the old blocks, only the two trees the scripts really
+# produce: A, the collision with every block from origin.sh stripped out, and B,
+# the same run with all of them in. Their diff is the whole resolution as it
+# stands today, and -co re-derives its gates from that, which is what makes a
+# collapse survive a patch2vi whose patterns now collide differently.
+#
+# The tree is restored, target.sh is rewritten in place: commit it afterwards.
+# With no origin, every origin the target has more than one block from.
+# Usage: recompat target.sh [origin.sh]
+recompat() (
+	set -e
+	if [ -z "$1" ]; then
+		echo "Usage: recompat target.sh [origin.sh]" >&2
+		return 1
+	fi
+	target="$1"
+	p2v_ours "$target"
+	if [ -n "$2" ]; then
+		list="$2"
+	else	# an origin with a single block is already collapsed
+		list=$(p2v_compatsrc "$target" | sort | uniq -d)
+		if [ -z "$list" ]; then
+			printf "%s\n" "NOTHING TO COLLAPSE: $target" >&2
+			return 0
+		fi
+	fi
+	export P2VI_EX="${P2VI_EX:-q}"	# -d and -co imply the editor
+	work="$P2VITMP.recompat"
+	for origin in $list
+	do
+		p2v_ours "$origin"
+		n=$(p2v_compatsrc "$target" | grep -c "^$origin$") || n=0
+		if [ "$n" -eq 0 ]; then
+			printf "%s\n" "NO BLOCKS: $target from $origin" >&2
+			continue
+		fi
+		rm -rf "$work"
+		mkdir -p "$work"
+		p2v_restore
+		# A: the collision on its own
+		p2v_stripcompat "$target" "$origin" > "$work/bare.sh"
+		chmod +x "$work/bare.sh"
+		p2v_tty $P2VI -od "$work/bare.sh"
+		"./$origin"
+		"$work/bare.sh"
+		a=$(p2v_snaptree)
+		p2v_restore
+		# B: the collision with every block from this origin resolving it
+		"./$origin"
+		"./$target"
+		b=$(p2v_snaptree)
+		git diff-tree -p "$a" "$b" > "$work/compat.patch"
+		p2v_restore
+		if [ ! -s "$work/compat.patch" ]; then
+			printf "%s\n" "EMPTY: $origin resolves nothing, $target kept" >&2
+			continue
+		fi
+		p2v_stripcompat "$target" "$origin" > "$work/new.sh"
+		cp "$work/new.sh" "$target"
+		chmod +x "$target"		# written by awk, not by -o
+		p2v_tty $P2VI -od "$target"	# re-emit without the old blocks
+		p2v_tty $P2VI -oco "$origin" "$target" "$work/compat.patch"
+		p2v_restore
+		printf "%s\n" "COLLAPSED: $target <- $origin, $n blocks into 1"
+	done
+	rm -rf "$work"
 )
 
 # Re-run patch2vi-generated script(s) and refresh their embedded patch from the
