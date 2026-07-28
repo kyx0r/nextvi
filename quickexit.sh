@@ -106,24 +106,24 @@ _EO\(grp, xgrp = \(!\*arg \? !xgrp : eo_val\(arg\)\) \* 2; return NULL;\)
 %f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)3??0?
-3??+2m 2220reg p OK ex.c:1576:a32sc %? %@2152sc!1q0?
+3??+2m 2220reg p OK ex.c:1647:a32sc %? %@2152sc!1q0?
 grp 1%f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\).*?
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 (EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\))7??0?
-grp 07??m 2220reg p OK ex.c:1576:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1647:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		return \(unsigned char\)\*arg;
 	return val;
 }.*(_EO\(left,)
 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);8??0?
-grp 08??-4m 2220reg p OK ex.c:1576:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1647:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	int val = atoi\(arg\);
 	if \(!val && !uc_isdigit\(\*arg\)\).*(	else if \(\*arg\))
 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)9??0?
-grp 09??-7m 2220reg p OK ex.c:1576:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:15762sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1647:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg ex.c:16472sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g", ec_glob},
 	EO\(mpt\),
@@ -135,31 +135,31 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 %f+ 	\{"g", ec_glob},
 	EO\(mpt\),
 	\{"m", ec_mark},3??0?
-3??+2m 3220reg p OK ex.c:1642:a32sc %? %@2152sc!1q0?
+3??+2m 3220reg p OK ex.c:1713:a32sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g", ec_glob},.*?
 	EO\(mpt\),.*?
 (	\{"m", ec_mark},)7??0?
-grp 07??m 3220reg p OK ex.c:1642:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1713:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"d", ec_delete},
 	EO\(grp\),
 	\{"g!", ec_glob},.*(	\{"reg", ec_regprint},)
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},8??0?
-grp 08??-4m 3220reg p OK ex.c:1642:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1713:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"inc", ec_setincl},
 	EO\(ic\),
 	\{"i", ec_insert},.*(	EO\(rr\),)
 	\{"r", ec_read},
 	\{"wq!", ec_write},9??0?
-grp 09??-7m 3220reg p OK ex.c:1642:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:16422sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1713:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg ex.c:17132sc %? %@2132sc!0?
 0?
 '\''1-1i int xqe = 1000;			/* exit insert via kj (delay in ms) */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i EO(qe)
-??!219reg ex.c:1576:m22sc %? %@2142sc!0?
+??!219reg ex.c:1647:m22sc %? %@2142sc!0?
 '\''3i 	EO(qe),
-??!219reg ex.c:1642:m32sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1713:m32sc %? %@2142sc!b2%ya 98?0?
 %f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 sbuf \*led_attsb;
@@ -396,7 +396,7 @@ index 70157040..9a22c860 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 82cd1654..4f15351d 100644
+index 92efe600..90d93804 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -404,7 +404,7 @@ index 82cd1654..4f15351d 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1574,6 +1575,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1645,6 +1646,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -412,7 +412,7 @@ index 82cd1654..4f15351d 100644
  
  _EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
  
-@@ -1640,6 +1642,7 @@ static struct excmd {
+@@ -1711,6 +1713,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},

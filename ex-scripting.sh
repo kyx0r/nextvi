@@ -55,20 +55,20 @@ static int eo_val\(char \*arg\)
 }
 
 3??0?
-3??+2m 2220reg p OK ex.c:1559:a32sc %? %@2152sc!1q0?
+3??+2m 2220reg p OK ex.c:1630:a32sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	if \(!val && !uc_isdigit\(\*arg\)\))
 		return \(unsigned char\)\*arg;
 	return val;8??0?
-grp 08??-4m 2220reg p OK ex.c:1559:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1630:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_null\(sb\).*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
-grp 09??-15m 2220reg p OK ex.c:1559:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg ex.c:15592sc %? %@2132sc!0?
+grp 09??-15m 2220reg p OK ex.c:1630:a92sc %? %@2152sc!'\''00?
+1;3;8;9??!219reg ex.c:16302sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
@@ -80,24 +80,24 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},3??0?
-3??+2m 3220reg p OK ex.c:1662:a32sc %? %@2152sc!1q0?
+3??+2m 3220reg p OK ex.c:1733:a32sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
-grp 07??m 3220reg p OK ex.c:1662:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1733:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},
 	EO\(shape\),.*(	\{"ya!", ec_yank},)
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},8??0?
-grp 08??-4m 3220reg p OK ex.c:1662:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1733:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"w", ec_write},
 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
-grp 09??-7m 3220reg p OK ex.c:1662:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:16622sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1733:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg ex.c:17332sc %? %@2132sc!0?
 0?
 '\''1-1i char **xenvp;
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -138,10 +138,10 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 	return ret ? xuerr : NULL;
 }
 
-??!219reg ex.c:1559:m22sc %? %@2142sc!0?
+??!219reg ex.c:1630:m22sc %? %@2142sc!0?
 '\''3i 	{"sr", ec_script},
 	{"sx", ec_script},
-??!219reg ex.c:1662:m32sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1733:m32sc %? %@2142sc!b1%ya 98?0?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
 		}
@@ -221,7 +221,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 82cd1654..55092a8b 100644
+index 92efe600..288693d6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -229,7 +229,7 @@ index 82cd1654..55092a8b 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1557,6 +1558,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1628,6 +1629,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -273,7 +273,7 @@ index 82cd1654..55092a8b 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1660,6 +1698,8 @@ static struct excmd {
+@@ -1731,6 +1769,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},

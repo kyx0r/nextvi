@@ -747,7 +747,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index 75dd0ce8..83ae5867 100644
+index 18170218..f8f72713 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -22,26 +22,45 @@ static void lopt_done(struct lopt *lo)

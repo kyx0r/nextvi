@@ -99,20 +99,20 @@ static void \*eo_##opt\(char \*loc, char \*cmd, char \*arg\) \{ inner }
 }
 
 3??0?
-3??+2m 1220reg p OK ex.c:1567:a32sc %? %@2152sc!1q0?
+3??+2m 1220reg p OK ex.c:1638:a32sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int val = atoi\(arg\);
 	if \(!val && !uc_isdigit\(\*arg\)\)
 		return \(unsigned char\)\*arg;.*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
-grp 08??-7m 1220reg p OK ex.c:1567:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 1220reg p OK ex.c:1638:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return xkwdrs \? NULL : xserr;
 }.*(_EO\(left,)
 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);9??0?
-grp 09??-13m 1220reg p OK ex.c:1567:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg ex.c:15672sc %? %@2132sc!0?
+grp 09??-13m 1220reg p OK ex.c:1638:a92sc %? %@2152sc!'\''00?
+1;3;8;9??!219reg ex.c:16382sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"cm!", ec_cmap},
 	\{"cm", ec_cmap},
@@ -124,24 +124,24 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 %f+ 	\{"cm!", ec_cmap},
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},3??0?
-3??+2m 2220reg p OK ex.c:1671:a32sc %? %@2152sc!1q0?
+3??+2m 2220reg p OK ex.c:1742:a32sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"cm!", ec_cmap},.*?
 	\{"cm", ec_cmap},.*?
 (	\{"cd", ec_chdir},)7??0?
-grp 07??m 2220reg p OK ex.c:1671:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1742:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ya!", ec_yank},
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},.*(	EO\(td\),)
 	EO\(order\),
 	EO\(hll\),8??0?
-grp 08??-4m 2220reg p OK ex.c:1671:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1742:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"s", ec_substitute},
 	\{"x!", ec_write},
 	\{"x", ec_write},.*(	EO\(hlw\),)
 	EO\(hlp\),
 	EO\(hlr\),9??0?
-grp 09??-7m 2220reg p OK ex.c:1671:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:16712sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1742:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg ex.c:17422sc %? %@2132sc!0?
 0?
 '\''1i static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
@@ -186,9 +186,9 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 	return NULL;
 }
 
-??!219reg ex.c:1567:m12sc %? %@2142sc!0?
+??!219reg ex.c:1638:m12sc %? %@2142sc!0?
 '\''2i 	{"cx", ec_closebuf},
-??!219reg ex.c:1671:m22sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
+??!219reg ex.c:1742:m22sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' "$P2VIF"
 
 exit 0
@@ -208,10 +208,10 @@ index 70157040..05a598ca 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 82cd1654..0edc043e 100644
+index 92efe600..ac9f8b44 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1565,6 +1565,49 @@ static int eo_val(char *arg)
+@@ -1636,6 +1636,49 @@ static int eo_val(char *arg)
  	return val;
  }
  
@@ -261,7 +261,7 @@ index 82cd1654..0edc043e 100644
  #define _EO(opt, inner) \
  static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  
-@@ -1669,6 +1712,7 @@ static struct excmd {
+@@ -1740,6 +1783,7 @@ static struct excmd {
  	{"cm!", ec_cmap},
  	{"cm", ec_cmap},
  	{"cd", ec_chdir},

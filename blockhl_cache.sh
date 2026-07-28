@@ -697,7 +697,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index 75dd0ce8..0a2a1edc 100644
+index 18170218..b6eef3f0 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -99,6 +99,7 @@ static int linelength(char *s)

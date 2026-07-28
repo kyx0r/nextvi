@@ -47,20 +47,20 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 }
 
 3??0?
-3??+2m 1220reg p OK lbuf.c:395:a32sc %? %@2152sc!1q0?
+3??+2m 1220reg p OK lbuf.c:396:a32sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	free\(sb->s\);
 	return 0;
 }.*(	struct lopt \*lo = &lb->hist\[lb->hist_u - 1];)
 	const int useq = lo->seq;
 	sbuf sb;8??0?
-grp 08??-5m 1220reg p OK lbuf.c:395:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK lbuf.c:396:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	sbufn_chr\(sb, '\''\\n'\''\)
 	lbuf_edit\(lb, sb->s, beg, end, o1, \*o2\);.*(	if \(lb->hist_u == lb->hist_n\) \{)
 		lbuf_copymark\(lb->tmp_mark, lb->mark_sb\)
 		lbuf_copymark\(\(lb->tmp_mark \+ 2\), lb->mark_se\)9??0?
-grp 09??-8m 1220reg p OK lbuf.c:395:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg lbuf.c:3952sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK lbuf.c:396:a92sc %? %@2152sc!'\''00?
+1;3;8;9??!219reg lbuf.c:3962sc %? %@2132sc!0?
 0?
 '\''1i int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
@@ -97,7 +97,7 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 	return ret;
 }
 
-??!219reg lbuf.c:395:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg lbuf.c:396:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 				vi_hidch = !vi_hidch;
 				vi_mod \|= 1;
 				break;
@@ -176,10 +176,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index 75dd0ce8..6498250f 100644
+index 18170218..f1b08d3d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -393,6 +393,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
+@@ -394,6 +394,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
  	return pos >= 0 && pos < lb->ln_n ? lb->ln[pos] : NULL;
  }
  

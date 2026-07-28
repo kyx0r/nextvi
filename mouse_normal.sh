@@ -107,20 +107,20 @@ int xai = 1;			/\* autoindent option \*/1??0?
 \)
 
 3??0?
-3??+2m 2220reg p OK ex.c:1589:a32sc %? %@2152sc!1q0?
+3??+2m 2220reg p OK ex.c:1660:a32sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 2220reg p OK ex.c:1589:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1660:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 2220reg p OK ex.c:1589:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg ex.c:15892sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1660:a92sc %? %@2152sc!'\''00?
+1;3;8;9??!219reg ex.c:16602sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
@@ -132,24 +132,24 @@ static struct excmd \{
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
 	EO\(mpt\),3??0?
-3??+2m 3220reg p OK ex.c:1641:a32sc %? %@2152sc!1q0?
+3??+2m 3220reg p OK ex.c:1712:a32sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g!", ec_glob},.*?
 	\{"g", ec_glob},.*?
 (	EO\(mpt\),)7??0?
-grp 07??m 3220reg p OK ex.c:1641:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1712:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"i", ec_insert},
 	\{"d", ec_delete},
 	EO\(grp\),.*(	\{"reg\+", ec_regprint},)
 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},8??0?
-grp 08??-4m 3220reg p OK ex.c:1641:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1712:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(ish\),
 	\{"inc", ec_setincl},
 	EO\(ic\),.*(	\{"rd", ec_undoredo},)
 	EO\(rr\),
 	\{"r", ec_read},9??0?
-grp 09??-7m 3220reg p OK ex.c:1641:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:16412sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1712:a92sc %? %@2152sc!'\''00?
+1;3;7;8;9??!219reg ex.c:17122sc %? %@2132sc!0?
 0?
 '\''1-1i int xms = 1;			/* mouse in normal mode */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -162,9 +162,9 @@ static struct excmd \{
 	return NULL;
 )
 
-??!219reg ex.c:1589:m22sc %? %@2142sc!0?
+??!219reg ex.c:1660:m22sc %? %@2142sc!0?
 '\''3i 	EO(ms),
-??!219reg ex.c:1641:m32sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1712:m32sc %? %@2142sc!b2%ya 98?0?
 %f> 	return pos - xleft;
 }
 
@@ -757,7 +757,7 @@ index 70157040..71f2030a 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 82cd1654..b797c7e3 100644
+index 92efe600..a446ebac 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -765,7 +765,7 @@ index 82cd1654..b797c7e3 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1587,6 +1588,15 @@ _EO(left,
+@@ -1658,6 +1659,15 @@ _EO(left,
  	return NULL;
  )
  
@@ -781,7 +781,7 @@ index 82cd1654..b797c7e3 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1639,6 +1649,7 @@ static struct excmd {
+@@ -1710,6 +1720,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
