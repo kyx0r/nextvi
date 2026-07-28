@@ -1,4 +1,4 @@
-.Dd Jul 24, 2026
+.Dd Jul 28, 2026
 .Dt Nextvi 1
 .Os Nextvi 7.1
 .
@@ -833,21 +833,21 @@ Example: join all lines with space padding
 :%-1j x
 .Ed
 
-.It Cm [\fIvrange\fP]s[<\fIDelim\fP>][\fIregex\fP][<\fIDelim\fP>][\fIstr\fP][<\fIDelim\fP>][<\fIg\fP>]
+.It Cm [\fIrange\fP]s[<\fIDelim\fP>][\fIregex\fP][<\fIDelim\fP>][\fIstr\fP][<\fIDelim\fP>][<\fIg\fP>][<\fIm\fP>][\fI#reg\fP]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
 enclosed regex with an enclosed replacement string.
 Returns error if no substitution is performed.
 
-Example: global replacement
-:%s/term1/term2/g
+Example: range scoping
+:1,5;5;5s/term1/term2/
 
 Example: replace matching previously set regex
-:%s//term2/g
+:%s//term2/
 
-Substitution backreference inserts the text of matched group
-specified by \ex where x is group number.
+Substitution backreference in [str] inserts the text of matched 
+group specified by \ex where x is group number.
 
 Example: substitution backreference
 this is an example text for subs and has int or void
@@ -855,6 +855,15 @@ this is an example text for subs and has int or void
 this is an example text for subs and has preintafter or void
 :%s/(int)|(void)/pre\e2after/g
 this is an example text for subs and has prepreafterafter or prevoidafter
+
+Example: global replacement with <g>
+:%s/term1/term2/g
+
+Example: multiline mode <m>
+:.,+1s/term1<^V><^M>term2/term3/m
+
+Example: edit register <a> inplace
+:s/term1/term2/97g
 .Ed
 
 .It Cm ud
@@ -1745,12 +1754,12 @@ _
  372 conf.c | hl/ft/td config
  460 ren.c | positioning/syntax
  615 uc.c | UTF-8 support
- 665 lbuf.c | file/line buffer
- 730 led.c | insert mode/output
+ 666 lbuf.c | file/line buffer
+ 735 led.c | insert mode/output
  751 regex.c | pikevm
- 1872 ex.c | ex options/commands
  1885 vi.c | normal mode/general
- 7701 total | wc -l *.c\(basort
+ 1932 ex.c | ex options/commands
+ 7767 total | wc -l *.c\(basort
 _
 .TE
 .
