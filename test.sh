@@ -1371,6 +1371,62 @@ out=$(run_vi "$(printf '3G\\:1,2s/bbb/Q/m\nu\022IX\033')")
 check ':s m redo returns the cursor to where the command was issued' \
 	"$(printf 'aaa Q aaa\nccc bbb ccc\nXddd bbb ddd')" "$out"
 
+# :s on a register — a trailing digit run, and only flags before it, redirects
+# the substitution to that register instead of the buffer. The register is one
+# flat string, so m is implied and the range is deferred (and then rejected).
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1,3ya 97:s/bbb/QQ/ 97:%d:0pu 97:%p:q!')
+check ':s on a register substitutes once for the whole register' \
+	"$(printf 'aaa QQ aaa\nccc bbb ccc\nddd bbb ddd')" "$out"
+
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1,3ya 97:s/bbb/QQ/g 97:%d:0pu 97:%p:q!')
+check ':s g on a register substitutes every match' \
+	"$(printf 'aaa QQ aaa\nccc QQ ccc\nddd QQ ddd')" "$out"
+
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1,3ya 97:s/aaa.ccc/X/ 97:%d:0pu 97:%p:q!')
+check ':s on a register matches across a newline' \
+	"$(printf 'aaa bbb X bbb ccc\nddd bbb ddd')" "$out"
+
+# the buffer is left alone; only the register changed
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ':1,3ya 97:s/bbb/QQ/g 97:%p:q!')
+check ':s on a register leaves the buffer untouched' \
+	"$(printf 'aaa bbb aaa\nccc bbb ccc\nddd bbb ddd')" "$out"
+
+# a register substitution is not an undo unit, so u reaches the buffer edit
+printf 'a b\nc d\n' > "$TMPFILE"
+out=$(run_ex ':%ya 97:%s/a/Z/:s/b/Y/ 97:ud:%p:0pu 97:%p:q!')
+check ':s on a register records no undo entry' \
+	"$(printf 'a b\nc d\na Y\nc d\na b\nc d')" "$out"
+
+# deferring the range is what lets a register be edited with no lines at all
+printf 'p q\n' > "$TMPFILE"
+out=$(run_ex ':%ya 97:%d:s/q/Z/ 97:0pu 97:%p:q!')
+check ':s on a register works on an empty buffer' 'p Z' "$out"
+
+# a range cannot apply to a register, so it is rejected rather than ignored
+printf 'a b\n' > "$TMPFILE"
+out=$(run_ex ':1ya 97:1s/a/X/ 97:q!')
+check ':s rejects a range with a register' 'register takes no range' "$out"
+
+printf 'a b\n' > "$TMPFILE"
+out=$(run_ex ':1ya 97:s/a/X/ 98:q!')
+check ':s reports an unset register' 'uninitialized register' "$out"
+
+# no match in the register is an error, so ?? gates on it
+printf 'a b\n' > "$TMPFILE"
+out=$(run_ex ':1ya 97:s/zzz/X/ 97:??!p nomatch:q!')
+check ':s on a register errors when nothing matches' 'nomatch' "$out"
+
+# only flags may precede the digits; anything else means there is no register
+# spec and the tail is the junk it has always been, so the buffer is edited
+printf 'a b\n' > "$TMPFILE"
+out=$(run_ex ':1ya 97:s/a/X/ 97 junk:%p:0pu 97:%p:q!')
+check ':s digit run with trailing junk is not a register spec' \
+	"$(printf 'X b\na b\nX b')" "$out"
+
 # '[ and '] span the whole region, not just the last line lbuf_edit touched
 printf "$S3" > "$TMPFILE"
 out=$(run_ex ":%s/aaa.ccc/X/m:'91p:'93p:q!")
