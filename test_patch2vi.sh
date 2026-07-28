@@ -2509,6 +2509,65 @@ else
 	fail "compat: -o co still names a file, not a -co cluster"
 fi
 
+# -E cannot round-trip a compat block: it is derived against an origin script
+# the update run knows nothing about. Rather than refuse the update, the blocks
+# are discarded - the replay still runs them, so whatever their gates let
+# through on THIS tree survives folded into the emitted host patch, and only
+# the gating is lost. Two trees, two different (correct) folds.
+printf 'E1\nE2\nE3\n' > "$R/e.orig"
+printf -- '--- a/e.c\n+++ b/e.c\n@@ -1,3 +1,4 @@\n E1\n+EPROBE\n E2\n E3\n' \
+	> "$R/e1.diff"
+printf -- '--- a/e.c\n+++ b/e.c\n@@ -1,3 +1,3 @@\n E1\n E2\n-E3\n+E3x\n' \
+	> "$R/e2.diff"
+"$R_P2VI" -r "$R/e1.diff" > "$R/e1.sh"
+"$R_P2VI" -r "$R/e2.diff" > "$R/e2.sh"
+cp "$R/e.orig" "$R/e.c"
+rm -f "$R/new.sh"
+P2VI_EX='%s/^E2$/E2c/:q!' script -qec \
+	"sh -c 'cd $R && $R_P2VI -co e1.sh e2.sh > $R/ec.sh 2>$R/nerr'" \
+	/dev/null > /dev/null 2>&1 || true
+
+# amend_E <tree-setup-file> <out.sh>: replay ec.sh over the tree and re-emit
+amend_E() {
+	cp "$1" "$R/e.c"
+	P2VI_EX='q!' script -qec \
+		"sh -c 'cd $R && $R_P2VI -E ec.sh > $R/$2 2>$R/eerr'" \
+		/dev/null > /dev/null 2>&1 || true
+}
+
+# clean tree: the gate self-skips during the replay, so the compat edit never
+# happens and the update carries the target's hunk alone
+amend_E "$R/e.orig" "eclean.sh"
+if grep -q 'cannot round-trip' "$R/eerr" 2>/dev/null &&
+   [ -s "$R/eclean.sh" ] && ! grep -q '=== COMPAT' "$R/eclean.sh"; then
+	ok "compat: -E discards a compat block instead of refusing the update"
+else
+	fail "compat: -E discards a compat block instead of refusing the update"
+	tr -d '\r' < "$R/eerr" | sed 's/^/    /' | head -3
+fi
+cp "$R/e.orig" "$R/e.c"
+( cd "$R" && VI="$VI" sh eclean.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/e.c")" = "$(printf 'E1\nE2\nE3x')" ]; then
+	ok "compat: -E over a clean tree folds nothing, keeps the host hunk"
+else
+	fail "compat: -E over a clean tree folds nothing, keeps the host hunk"
+	sed 's/^/    /' "$R/e.c"
+fi
+
+# origin tree: EPROBE is present, the gate fires during the replay, so the
+# compat edit lands in the buffer and is re-derived as a plain, ungated hunk
+printf 'E1\nEPROBE\nE2\nE3\n' > "$R/e.probe"
+amend_E "$R/e.probe" "eorig.sh"
+printf 'E1\nEPROBE\nE2\nE3\n' > "$R/e.c"
+( cd "$R" && VI="$VI" sh eorig.sh ) >/dev/null 2>&1
+if [ "$(cat "$R/e.c")" = "$(printf 'E1\nEPROBE\nE2c\nE3x')" ] &&
+   ! grep -q '=== COMPAT' "$R/eorig.sh"; then
+	ok "compat: -E over an origin tree folds the fired block in ungated"
+else
+	fail "compat: -E over an origin tree folds the fired block in ungated"
+	sed 's/^/    /' "$R/e.c"
+fi
+
 fi
 
 echo ""

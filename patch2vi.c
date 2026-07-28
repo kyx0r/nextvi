@@ -7365,6 +7365,20 @@ static int compat_apply_file(file_patch_t *fp)
 	return st;
 }
 
+/* Drop the tail of files[] from `first` on: the entries a scoped parse added
+ * once whatever needed them is done with them. */
+static void drop_files_from(int first)
+{
+	for (int i = first; i < nfiles; i++) {
+		for (int j = 0; j < files[i].nops; j++)
+			free(files[i].ops[j].text);
+		free(files[i].ops);
+		free(files[i].path);
+		free(files[i].orig_path);
+	}
+	nfiles = first;
+}
+
 /* -co third argument, unified-diff form: parsed into its own files[] range and
  * raw sink (so the host === PATCH === stays byte-identical) and spliced into the
  * live buffers. The range is dropped right after - the diff is applied, not
@@ -7385,17 +7399,31 @@ static int compat_apply_diff(const char *path)
 	raw_sink = NULL;
 	for (i = first; i < nfiles && st == 0; i++)
 		st = compat_apply_file(&files[i]);
-	for (i = first; i < nfiles; i++) {
-		for (int j = 0; j < files[i].nops; j++)
-			free(files[i].ops[j].text);
-		free(files[i].ops);
-		free(files[i].path);
-		free(files[i].orig_path);
-	}
-	nfiles = first;
+	drop_files_from(first);
 	free_lines(sink.v, sink.n);
 	free(text);
 	return st;
+}
+
+/* Forget every compat block that was read from a script, along with the
+ * files[] range they own - they are parsed before the host patch is, so the
+ * range is the head of files[] and dropping it leaves the array empty for the
+ * host diff that follows. The blocks' edits are not undone: whatever their
+ * gates let through during the replay stays in the buffers, so it is re-derived
+ * as part of the host patch instead of shipping as its own gated block. */
+static void drop_compat_blocks(void)
+{
+	if (!ncompat)
+		return;
+	drop_files_from(compat_blocks[0].first);
+	for (int c = 0; c < ncompat; c++) {
+		compat_block_t *cb = &compat_blocks[c];
+		free_gates(cb->gates, cb->ngates);
+		free(cb->gates);
+		free_lines(cb->raw.v, cb->raw.n);
+		free(cb->origin);
+	}
+	ncompat = 0;
 }
 
 /* The baseline lines the compat edit rewrites, common head/tail trimmed away (a
@@ -8451,10 +8479,17 @@ int main(int argc, char **argv)
 		if (in)
 			fclose(in);
 		in = NULL;
+		/* Compat blocks cannot round-trip: they are derived against
+		 * an origin script this run knows nothing about. Discarding
+		 * them beats refusing the update - the replay still runs them,
+		 * so their effect survives folded into the host patch, only
+		 * their gating is lost. */
 		if (ncompat) {
-			fprintf(stderr, "%s: script carries compat blocks, "
-				"which -E cannot round-trip\n", input_file);
-			return 1;
+			fprintf(stderr, "%s: script carries %d compat block%s, "
+				"which -E cannot round-trip: discarding them, "
+				"their edits fold into the emitted patch\n",
+				input_file, ncompat, ncompat > 1 ? "s" : "");
+			drop_compat_blocks();
 		}
 		if (amend_to_diff(input_file, dsb) < 0)
 			return 1;
