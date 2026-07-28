@@ -1101,14 +1101,17 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
 
 static void *ec_substitute(char *loc, char *cmd, char *arg)
 {
-	int beg, end, grp;
-	char *pat, *rep = NULL, *_rep;
+	int beg, end, o1 = -1, o2 = -2, flg, grp;
+	char *pat, *rep = NULL, *_rep, *p;
 	char *s = arg;
 	rset *rs = xkwdrs;
-	int i, first = -1, last;
+	int i, first = -1, last = 0;
 	struct lopt *lo;
-	if (ex_vregion(loc, &beg, &end))
+	sbuf text;
+	if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
+	if (o1 >= 0)
+		xoff = MAX(o1, o2);
 	pat = ex_re_read(&s);
 	if (pat && (*pat || !rs))
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
@@ -1124,10 +1127,31 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	}
 	free(pat);
 	int offs[rs->nsubc];
+	char *lnb = "", *ln, *sl, *suf = "";
+	int b1 = 0, pend, rflg = REG_NEWLINE;
+	flg = (strchr(s, 'g') ? 1 : 0) | (strchr(s, 'm') ? 2 : 0);
+	if (flg & 2) { 	/* multiline */
+		lbuf_region(xb, &text, beg, MAX(o1, 0), end - 1, o2);
+		ln = text.s;
+		sl = ln;
+		rflg = 0;
+		pend = end;
+		end = beg+1;
+		i = beg;
+		goto mltest;
+	}
 	for (i = beg; i < end; i++) {
-		char *ln = lbuf_get(xb, i);
+		lnb = lbuf_get(xb, i), ln = lnb, sl = NULL, suf = "";
+		b1 = o1 > 0 && i == beg ? uc_chr(lnb, o1) - lnb : 0;
+		if (o2 >= 0 && i == end - 1)
+			suf = uc_chr(lnb, o2);
+		rflg = *suf ? 0 : REG_NEWLINE;
+		if (b1 || *suf)		/* line bounded by an offset */
+			ln = sl = uc_sub(lnb, i == beg ? MAX(o1, 0) : 0,
+					i == end - 1 ? o2 : -1);
+		mltest:;
 		sbuf *r = NULL;
-		while (rset_find(rs, ln, offs, REG_NEWLINE) >= 0) {
+		while (rset_find(rs, ln, offs, rflg) >= 0) {
 			if (offs[xgrp] < 0) {
 				ln += offs[1] > 0 ? offs[1] : 1;
 				continue;
@@ -1149,25 +1173,41 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 				}
 			}
 			ln += offs[xgrp + 1];
-			if (!offs[xgrp + 1])	/* zero-length match */
+			if (!offs[xgrp + 1] && *ln)	/* zero-length match */
 				sbuf_chr(r, *ln++)
-			if (*ln == '\n' || !*ln || !strchr(s, 'g'))
+			if (!*ln || (flg | (*ln != '\n') * 2) != 3)
 				break;
 		}
 		if (r) {
-			if (first < 0) {
-				first = i;
-				lo = lbuf_opt(xb, xrow, xoff, 0);
-				lbuf_smark(xb, lo, i, 0);
-				lbuf_emark(xb, lo, 0, 0);
-			}
 			sbufn_str(r, ln)
-			lbuf_edit(xb, r->s, i, i + 1, 0, 0);
+			if (flg & 2) {
+				first = beg;
+				p = o1 >= 0 ? lbuf_joinsb(xb, beg, pend - 1, r, &o1, &o2) : NULL;
+				lbuf_edit(xb, p ? p : r->s, beg, pend, p ? o1 : 0, MAX(o2, 0));
+				free(p);
+			} else {
+				if (first < 0) {
+					first = i;
+					lo = lbuf_opt(xb, xrow, xoff, 0);
+					lbuf_smark(xb, lo, i, 0);
+					lbuf_emark(xb, lo, 0, 0);
+				}
+				if (sl) {
+					sbuf_smake(sb, r->s_n + 128)
+					sbuf_mem(sb, lnb, b1)
+					sbuf_mem(sb, r->s, r->s_n)
+					sbufn_str(sb, suf)
+					lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
+					free(sb->s);
+				} else
+					lbuf_edit(xb, r->s, i, i + 1, 0, 0);
+				last = i;
+			}
 			sbuf_free(r)
-			last = i;
 		}
+		free(sl);
 	}
-	if (first >= 0) {
+	if (first >= 0 && !(flg & 2)) {
 		lo = lbuf_opt(xb, xrow, xoff, 0);
 		lbuf_smark(xb, lo, first, 0);
 		lbuf_emark(xb, lo, last, 0);
@@ -1188,20 +1228,18 @@ static void *ec_exec(char *loc, char *cmd, char *arg)
 			return xrerr;
 		beg = 0;
 	}
-	if (o1 < 0)
-		o1 = 0;
 	sbuf text;
-	lbuf_region(xb, &text, beg, o1, end - 1, o2);
+	lbuf_region(xb, &text, beg, MAX(o1, 0), end - 1, o2);
 	sbuf *rep = cmd_pipe(arg, &text, 1, NULL);
 	free(text.s);
 	if (!rep)
 		return "fork failed";
-	if (o1 > 0) {
+	if (o1 >= 0) {
 		char *p = lbuf_joinsb(xb, beg, end - 1, rep, &o1, &o2);
 		lbuf_edit(xb, p, beg, end, o1, o2);
 		free(p);
 	} else
-		lbuf_edit(xb, rep->s, beg, end, o1, o2);
+		lbuf_edit(xb, rep->s, beg, end, 0, 0);
 	sbuf_free(rep)
 	return NULL;
 }
