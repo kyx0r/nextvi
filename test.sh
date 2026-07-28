@@ -1346,6 +1346,37 @@ out=$(run_ex ':%s/aaa.ccc/X/m:ud:rd:%p:q!')
 check ':s m substitution redone in one step' \
 	"$(printf 'aaa bbb X bbb ccc\nddd bbb ddd')" "$out"
 
+# :s records the cursor position it was issued from, so vi-mode u returns there
+# instead of jumping to the first edited line. :ud discards row/off, so this is
+# only visible through vi mode: X marks where the cursor ended up after undo.
+printf "$S3" > "$TMPFILE"
+out=$(run_vi "$(printf '3G\\:1,2s/bbb/Q/\nuIX\033')")
+check ':s undo returns the cursor to where the command was issued' \
+	"$(printf 'aaa bbb aaa\nccc bbb ccc\nXddd bbb ddd')" "$out"
+
+printf "$S3" > "$TMPFILE"
+out=$(run_vi "$(printf '3G\\:1,2s/bbb/Q/m\nuIX\033')")
+check ':s m undo returns the cursor to where the command was issued' \
+	"$(printf 'aaa bbb aaa\nccc bbb ccc\nXddd bbb ddd')" "$out"
+
+# redo reads its position from the last history entry of the sequence, so the
+# closing marker has to be written for a region substitution too
+printf "$S3" > "$TMPFILE"
+out=$(run_vi "$(printf '3G\\:1,2s/bbb/Q/\nu\022IX\033')")
+check ':s redo returns the cursor to where the command was issued' \
+	"$(printf 'aaa Q aaa\nccc Q ccc\nXddd bbb ddd')" "$out"
+
+printf "$S3" > "$TMPFILE"
+out=$(run_vi "$(printf '3G\\:1,2s/bbb/Q/m\nu\022IX\033')")
+check ':s m redo returns the cursor to where the command was issued' \
+	"$(printf 'aaa Q aaa\nccc bbb ccc\nXddd bbb ddd')" "$out"
+
+# '[ and '] span the whole region, not just the last line lbuf_edit touched
+printf "$S3" > "$TMPFILE"
+out=$(run_ex ":%s/aaa.ccc/X/m:'91p:'93p:q!")
+check ":s m sets '[ and '] to the region bounds" \
+	"$(printf 'aaa bbb X bbb ccc\nddd bbb ddd')" "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
