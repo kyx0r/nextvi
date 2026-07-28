@@ -46,8 +46,8 @@ const int conf_hlrev = SYN_BGMK\(8\);
 %f> /\* how to highlight text in the reverse direction \*/
 const int conf_hlrev = SYN_BGMK\(8\);
 
-3??0?
-3??+2m 1220reg p OK conf.c:327:a32sc %? %@2152sc!1q0?
+4??0?
+4??+2m 1220reg p OK conf.c:327:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{msg_ft, "\.\+", A\(AY1 \| SYN_BD\)},
 };
 const int hlslen = LEN\(hls\);.*(struct dircontext dctxs\[] = \{)
@@ -60,7 +60,7 @@ const int hlslen = LEN\(hls\);.*(struct dircontext dctxs\[] = \{)
 	\{"\[" CR2L "]\[" CNEUT CR2L "]\*\[" CR2L "]", \+1, \{-1}},
 	\{"\^\(\[ \\t]\+\)\?\(\[" CNEUT "]\*\[\^" CR2L "]\*\[\^" CR2L CNEUT "]\(\?:\[" CNEUT "]\+\$\)\?\)", -1, \{0, 1, -1}},9??0?
 grp 09??-12m 1220reg p OK conf.c:327:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg conf.c:3272sc %? %@2132sc!0?
+1;4;8;9??!219reg conf.c:3272sc %? %@2132sc!0?
 0?
 '\''1i /* cursor shape escapes (DECSCUSR): set on entering insert, reset on leaving */
 char conf_curins[] = "\x1b[5 q";	/* insert mode: vertical bar */
@@ -78,13 +78,13 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 			if \(ai_max >= 0\)
 				led_redraw\(sb->s, 0, orow, crow, ctop, flg\);2??0?
 2??m 1220reg p OK led.c:517:a22sc %? %@2152sc!1q0?
+%f> 			term_suspend\(\);
+			if \(ai_max >= 0\)3??0?
+3??m 1220reg p OK led.c:517:a32sc %? %@2152sc!1q0?
 %f> 			}
 			goto redo_suggest;
-		case TK_CTL\('\''z'\''\):3??0?
-3??+3m 1220reg p OK led.c:517:a32sc %? %@2152sc!1q0?
-%f> 			term_suspend\(\);
-			if \(ai_max >= 0\)4??0?
-4??m 1220reg p OK led.c:517:a42sc %? %@2152sc!1q0?
+		case TK_CTL\('\''z'\''\):4??0?
+4??+3m 1220reg p OK led.c:517:a42sc %? %@2152sc!1q0?
 ;0fr.,$f> ^				led_redraw\(sb->s, 0, orow, crow, ctop, flg\);$5??0?
 5??-2m 1220reg p OK led.c:517:a52sc %? %@2152sc!fr 981qfr 980?
 %f> ..	}
@@ -118,8 +118,8 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 		case TK_CTL\('\''x'\''\):
 			is->sug_pt = is->sug_pt == len \? -1 : len;1??0?
 1??m 21q0?
-;0fr.,$f+ ^				led_redraw\(sb->s, 0, orow, crow, ctop, flg\);$3??0?
-3??m 2220reg p OK led.c:519:a32sc %? %@2152sc!fr 981qfr 980?
+;0fr.,$f+ ^				led_redraw\(sb->s, 0, orow, crow, ctop, flg\);$4??0?
+4??m 2220reg p OK led.c:519:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 					} else
 						\*is->sug = '\''\\n'\'';
 				}.*(			char buf\[100];)
@@ -132,7 +132,7 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 			if \(!suggestsb\)
 				continue;9??0?
 grp 09??-7m 2220reg p OK led.c:519:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg led.c:5192sc %? %@2132sc!0?
+1;4;8;9??!219reg led.c:5192sc %? %@2132sc!0?
 ?0?
 %f+ 		case TK_CTL\('\''o'\''\): \{
 			if \(!\*postref\)
@@ -143,8 +143,8 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 1??+2m 31q0?
 %f+ 		case TK_CTL\('\''o'\''\): \{
 			if \(!\*postref\)
-				\*postref = \*post = uc_dup\(\*post\);3??0?
-3??+2m 3220reg p OK led.c:628:a32sc %? %@2152sc!1q0?
+				\*postref = \*post = uc_dup\(\*post\);4??0?
+4??+2m 3220reg p OK led.c:628:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		case TK_CTL\('\''o'\''\): \{.*?
 			if \(!\*postref\).*?
 (				\*postref = \*post = uc_dup\(\*post\);)7??0?
@@ -161,7 +161,7 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 				exbuf_load\(ex_buf\)
 			}9??0?
 grp 09??-12m 3220reg p OK led.c:628:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg led.c:6282sc %? %@2132sc!0?
+1;4;7;8;9??!219reg led.c:6282sc %? %@2132sc!0?
 ?0?
 %f+ 			preserve\(int, ftidx,\)
 			led_modeswap\(\);
@@ -172,8 +172,8 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 1??+2m 41q0?
 %f+ 			preserve\(int, ftidx,\)
 			led_modeswap\(\);
-			restore\(ftidx\)3??0?
-3??+2m 4220reg p OK led.c:633:a32sc %? %@2152sc!1q0?
+			restore\(ftidx\)4??0?
+4??+2m 4220reg p OK led.c:633:a42sc %? %@2152sc!1q0?
 grp 1%f+ 			preserve\(int, ftidx,\).*?
 			led_modeswap\(\);.*?
 (			restore\(ftidx\))7??0?
@@ -190,7 +190,7 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 				exbuf_load\(ex_buf\)
 			}9??0?
 grp 09??-7m 4220reg p OK led.c:633:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg led.c:6332sc %? %@2132sc!0?
+1;4;7;8;9??!219reg led.c:6332sc %? %@2132sc!0?
 ?0?
 %f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \*postref = NULL;
@@ -201,8 +201,8 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 1??+2m 51q0?
 %f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \*postref = NULL;
-	ins_state is;3??0?
-3??+2m 5220reg p OK led.c:694:a32sc %? %@2152sc!1q0?
+	ins_state is;4??0?
+4??+2m 5220reg p OK led.c:694:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;.*?
 	char \*postref = NULL;.*?
 (	ins_state is;)7??0?
@@ -219,7 +219,7 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 			xrow = crow;
 			return key;9??0?
 grp 09??-12m 5220reg p OK led.c:694:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg led.c:6942sc %? %@2132sc!0?
+1;4;7;8;9??!219reg led.c:6942sc %? %@2132sc!0?
 ?0?
 %f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);
@@ -230,8 +230,8 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 1??+2m 61q0?
 %f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);
-		if \(key != '\''\\n'\''\) \{3??0?
-3??+2m 6220reg p OK led.c:699:a32sc %? %@2152sc!1q0?
+		if \(key != '\''\\n'\''\) \{4??0?
+4??+2m 6220reg p OK led.c:699:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,.*?
 			ai_max, &xoff, &xkmap, &is, row, crow, ctop, flg\);.*?
 (		if \(key != '\''\\n'\''\) \{)7??0?
@@ -248,7 +248,7 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 			xrow = crow;
 			return key;9??0?
 grp 09??-7m 6220reg p OK led.c:699:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg led.c:6992sc %? %@2132sc!0?
+1;4;7;8;9??!219reg led.c:6992sc %? %@2132sc!0?
 0?
 '\''1,#+1c 			if (ai_max >= 0) {
 				term_write(conf_curnorm, sizeof(conf_curnorm) - 1)
@@ -277,8 +277,8 @@ char \*conf_digraph\(int c1, int c2\);1??0?
 1??+2m 11q0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
-extern const int conf_hlrev;3??0?
-3??+2m 1220reg p OK vi.h:539:a32sc %? %@2152sc!1q0?
+extern const int conf_hlrev;4??0?
+4??+2m 1220reg p OK vi.h:539:a42sc %? %@2152sc!1q0?
 grp 1%f> extern struct placeholder \*ph;.*?
 extern int phlen;.*?
 (extern const int conf_hlrev;)7??0?
@@ -295,7 +295,7 @@ extern int vi_hidch;8??0?
 /\* filesystem \*/
 extern rset \*fsincl;9??0?
 grp 09??-8m 1220reg p OK vi.h:539:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg vi.h:5392sc %? %@2132sc!0?
+1;4;7;8;9??!219reg vi.h:5392sc %? %@2132sc!0?
 0?
 '\''1i extern char conf_curins[];
 extern char conf_curnorm[];

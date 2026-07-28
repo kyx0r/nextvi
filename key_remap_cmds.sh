@@ -49,12 +49,12 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},2??0?
 2??m 1220reg p OK conf.c:298:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\$3??0?
+3??m 1220reg p OK conf.c:298:a32sc %? %@2152sc!fr 981qfr 980?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
-\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\3??0?
-3??+3m 1220reg p OK conf.c:298:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\$4??0?
-4??m 1220reg p OK conf.c:298:a42sc %? %@2152sc!fr 981qfr 980?
+\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\4??0?
+4??+3m 1220reg p OK conf.c:298:a42sc %? %@2152sc!1q0?
 %f> \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},5??0?
@@ -91,9 +91,9 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/1??0?
 1??m 11q0?
-;0fr.,$f> ^int xleft;			/\* the first visible column \*/$3??0?
-3??m 1220reg p OK ex.c:0:a32sc %? %@2152sc!fr 98fr 980?
-1;3??!219reg ex.c:02sc %? %@2132sc!0?
+;0fr.,$f> ^int xleft;			/\* the first visible column \*/$4??0?
+4??m 1220reg p OK ex.c:0:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg ex.c:02sc %? %@2132sc!0?
 ?0?
 %f+ 	return NULL;
 }
@@ -105,8 +105,8 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	return NULL;
 }
 
-3??0?
-3??+2m 2220reg p OK ex.c:619:a32sc %? %@2152sc!1q0?
+4??0?
+4??+2m 2220reg p OK ex.c:619:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		return xuerr;
 	xrow = nbeg;
 	xoff = off;.*(	if \(!arg\[0]\) \{)
@@ -119,7 +119,7 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 			c = ex_pbuf == bufs\+i \? '\''#'\'' : c;
 			snprintf\(ln, LEN\(ln\), "%d %c %s", i,9??0?
 grp 09??-7m 2220reg p OK ex.c:619:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg ex.c:6192sc %? %@2132sc!0?
+1;4;8;9??!219reg ex.c:6192sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(ish\),
 	\{"inc", ec_setincl},
@@ -130,8 +130,8 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 1??+2m 31q0?
 %f+ 	EO\(ish\),
 	\{"inc", ec_setincl},
-	EO\(ic\),3??0?
-3??+2m 3220reg p OK ex.c:1706:a32sc %? %@2152sc!1q0?
+	EO\(ic\),4??0?
+4??+2m 3220reg p OK ex.c:1706:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(ish\),.*?
 	\{"inc", ec_setincl},.*?
 (	EO\(ic\),)7??0?
@@ -148,7 +148,7 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 	\{"q!", ec_quit},
 	\{"q", ec_quit},9??0?
 grp 09??-7m 3220reg p OK ex.c:1706:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:17062sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:17062sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g", ec_glob},
 	EO\(mpt\),
@@ -159,8 +159,8 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 1??+2m 41q0?
 %f+ 	\{"g", ec_glob},
 	EO\(mpt\),
-	\{"m", ec_mark},3??0?
-3??+2m 4220reg p OK ex.c:1713:a32sc %? %@2152sc!1q0?
+	\{"m", ec_mark},4??0?
+4??+2m 4220reg p OK ex.c:1713:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g", ec_glob},.*?
 	EO\(mpt\),.*?
 (	\{"m", ec_mark},)7??0?
@@ -177,7 +177,7 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 	\{"r", ec_read},
 	\{"wq!", ec_write},9??0?
 grp 09??-7m 4220reg p OK ex.c:1713:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:17132sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:17132sc %? %@2132sc!0?
 0?
 '\''1-1i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
@@ -242,12 +242,12 @@ int map_read(int mode, int winch)
 		switch \(c\) \{
 		case TK_CTL\('\''h'\''\):2??0?
 2??m 1220reg p OK led.c:434:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^		c = term_read\(TK_CTL\('\''l'\''\)\);$3??0?
+3??m 1220reg p OK led.c:434:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	do \{
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);
-		len = sb->s_n;3??0?
-3??+3m 1220reg p OK led.c:434:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^		c = term_read\(TK_CTL\('\''l'\''\)\);$4??0?
-4??m 1220reg p OK led.c:434:a42sc %? %@2152sc!fr 981qfr 980?
+		len = sb->s_n;4??0?
+4??+3m 1220reg p OK led.c:434:a42sc %? %@2152sc!1q0?
 %f> 		noredraw:
 		switch \(c\) \{
 		case TK_CTL\('\''h'\''\):5??0?
@@ -295,12 +295,12 @@ static int vi_yankbuf\(int winch\)
 		return term_read\(0\);
 	term_dec\(\)2??0?
 2??m 1220reg p OK vi.c:265:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^	int c = term_read\(winch\);$3??0?
+3??m 1220reg p OK vi.c:265:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 
 static int vi_yankbuf\(int winch\)
-\{3??0?
-3??+3m 1220reg p OK vi.c:265:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^	int c = term_read\(winch\);$4??0?
-4??m 1220reg p OK vi.c:265:a42sc %? %@2152sc!fr 981qfr 980?
+\{4??0?
+4??+3m 1220reg p OK vi.c:265:a42sc %? %@2152sc!1q0?
 %f> 	if \(c == '\''"'\''\)
 		return term_read\(0\);
 	term_dec\(\)5??0?
@@ -345,12 +345,12 @@ static int vi_yankbuf\(int winch\).*?
 		while \(c >= '\''0'\'' && c <= '\''9'\''\) \{
 			n = n \* 10 \+ c - '\''0'\'';2??0?
 2??m 2220reg p OK vi.c:275:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	int c = term_read\(0\);$3??0?
+3??m 2220reg p OK vi.c:275:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ static int vi_prefix\(void\)
 \{
-	int n = 0;3??0?
-3??+3m 2220reg p OK vi.c:275:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	int c = term_read\(0\);$4??0?
-4??m 2220reg p OK vi.c:275:a42sc %? %@2152sc!fr 981qfr 980?
+	int n = 0;4??0?
+4??+3m 2220reg p OK vi.c:275:a42sc %? %@2152sc!1q0?
 %f+ 	if \(c >= '\''1'\'' && c <= '\''9'\''\) \{
 		while \(c >= '\''0'\'' && c <= '\''9'\''\) \{
 			n = n \* 10 \+ c - '\''0'\'';5??0?
@@ -395,12 +395,12 @@ static int vi_yankbuf\(int winch\).*?
 	}
 	return n;2??0?
 2??m 3220reg p OK vi.c:279:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			c = term_read\(0\);$3??0?
+3??m 3220reg p OK vi.c:279:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	if \(c >= '\''1'\'' && c <= '\''9'\''\) \{
 		while \(c >= '\''0'\'' && c <= '\''9'\''\) \{
-			n = n \* 10 \+ c - '\''0'\'';3??0?
-3??+3m 3220reg p OK vi.c:279:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^			c = term_read\(0\);$4??0?
-4??m 3220reg p OK vi.c:279:a42sc %? %@2152sc!fr 981qfr 980?
+			n = n \* 10 \+ c - '\''0'\'';4??0?
+4??+3m 3220reg p OK vi.c:279:a42sc %? %@2152sc!1q0?
 %f+ 		}
 	}
 	return n;5??0?
@@ -445,12 +445,12 @@ static int vi_digit\(void\)
 		return c - '\''0'\'';
 	return -1;2??0?
 2??m 4220reg p OK vi.c:287:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	int c = term_read\(0\);$3??0?
+3??m 4220reg p OK vi.c:287:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 
 static int vi_digit\(void\)
-\{3??0?
-3??+3m 4220reg p OK vi.c:287:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	int c = term_read\(0\);$4??0?
-4??m 4220reg p OK vi.c:287:a42sc %? %@2152sc!fr 981qfr 980?
+\{4??0?
+4??+3m 4220reg p OK vi.c:287:a42sc %? %@2152sc!1q0?
 %f+ 	if \(c >= '\''0'\'' && c <= '\''9'\''\)
 		return c - '\''0'\'';
 	return -1;5??0?
@@ -495,13 +495,13 @@ static int vi_digit\(void\).*?
 	case '\'','\'':
 	case '\'';'\'':2??0?
 2??m 5220reg p OK vi.c:526:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	mv = term_read\(0\);$3??0?
+3??m 5220reg p OK vi.c:526:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	int cnt = vi_arg \? vi_arg : 1;
 	int mv, i, dir, var;
 
-3??0?
-3??+3m 5220reg p OK vi.c:526:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	mv = term_read\(0\);$4??0?
-4??m 5220reg p OK vi.c:526:a42sc %? %@2152sc!fr 981qfr 980?
+4??0?
+4??+3m 5220reg p OK vi.c:526:a42sc %? %@2152sc!1q0?
 %f+ 	switch \(mv\) \{
 	case '\'','\'':
 	case '\'';'\'':5??0?
@@ -546,12 +546,12 @@ static int vi_digit\(void\).*?
 			case TK_CTL\('\''b'\''\):
 				vi_scrollbackward\(MAX\(1, vi_arg\) \* \(xrows - 1\)\);2??0?
 2??m 6220reg p OK vi.c:1222:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			c = term_read\(TK_CTL\('\''l'\''\)\);$3??0?
+3??m 6220reg p OK vi.c:1222:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			char \*cmd;
 			term_dec\(\)
-			re_motion:3??0?
-3??+3m 6220reg p OK vi.c:1222:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^			c = term_read\(TK_CTL\('\''l'\''\)\);$4??0?
-4??m 6220reg p OK vi.c:1222:a42sc %? %@2152sc!fr 981qfr 980?
+			re_motion:4??0?
+4??+3m 6220reg p OK vi.c:1222:a42sc %? %@2152sc!1q0?
 %f+ 			switch \(c\) \{
 			case TK_CTL\('\''b'\''\):
 				vi_scrollbackward\(MAX\(1, vi_arg\) \* \(xrows - 1\)\);5??0?
@@ -596,12 +596,12 @@ static int vi_digit\(void\).*?
 				case '\''\.'\'':
 					while \(vi_arg\) \{2??0?
 2??m 7220reg p OK vi.c:1347:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				k = term_read\(0\);$3??0?
+3??m 7220reg p OK vi.c:1347:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				break;
 			case '\''v'\'':
-				vi_mod \|= 2;3??0?
-3??+3m 7220reg p OK vi.c:1347:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				k = term_read\(0\);$4??0?
-4??m 7220reg p OK vi.c:1347:a42sc %? %@2152sc!fr 981qfr 980?
+				vi_mod \|= 2;4??0?
+4??+3m 7220reg p OK vi.c:1347:a42sc %? %@2152sc!1q0?
 %f+ 				switch \(k\) \{
 				case '\''\.'\'':
 					while \(vi_arg\) \{5??0?
@@ -646,12 +646,12 @@ static int vi_digit\(void\).*?
 					k = term_read\(0\);
 					char pairs\[2];2??0?
 2??m 8220reg p OK vi.c:1469:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				k = term_read\(0\);$3??0?
+3??m 8220reg p OK vi.c:1469:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				break;
 			case '\''c'\'':
-			case '\''d'\'':3??0?
-3??+3m 8220reg p OK vi.c:1469:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				k = term_read\(0\);$4??0?
-4??m 8220reg p OK vi.c:1469:a42sc %? %@2152sc!fr 981qfr 980?
+			case '\''d'\'':4??0?
+4??+3m 8220reg p OK vi.c:1469:a42sc %? %@2152sc!1q0?
 %f+ 				if \(k == '\''i'\''\) \{
 					k = term_read\(0\);
 					char pairs\[2];5??0?
@@ -696,12 +696,12 @@ static int vi_digit\(void\).*?
 				case '\''\\n'\'':
 					xtop = xrow;2??0?
 2??m 9220reg p OK vi.c:1586:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				k = term_read\(0\);$3??0?
+3??m 9220reg p OK vi.c:1586:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				vi_mod \|= vc_put\(c\);
 				break;
-			case '\''z'\'':3??0?
-3??+3m 9220reg p OK vi.c:1586:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				k = term_read\(0\);$4??0?
-4??m 9220reg p OK vi.c:1586:a42sc %? %@2152sc!fr 981qfr 980?
+			case '\''z'\'':4??0?
+4??+3m 9220reg p OK vi.c:1586:a42sc %? %@2152sc!1q0?
 %f+ 				switch \(k\) \{
 				case '\''\\n'\'':
 					xtop = xrow;5??0?
@@ -746,12 +746,12 @@ static int vi_digit\(void\).*?
 					term_push\("1G", 2\);
 				else if \(k == '\''a'\''\) \{2??0?
 2??m 10220reg p OK vi.c:1618:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				k = term_read\(0\);$3??0?
+3??m 10220reg p OK vi.c:1618:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				vi_mod \|= 1;
 				break;
-			case '\''g'\'':3??0?
-3??+3m 10220reg p OK vi.c:1618:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				k = term_read\(0\);$4??0?
-4??m 10220reg p OK vi.c:1618:a42sc %? %@2152sc!fr 981qfr 980?
+			case '\''g'\'':4??0?
+4??+3m 10220reg p OK vi.c:1618:a42sc %? %@2152sc!1q0?
 %f+ 				if \(k == '\''g'\''\)
 					term_push\("1G", 2\);
 				else if \(k == '\''a'\''\) \{5??0?
@@ -796,12 +796,12 @@ static int vi_digit\(void\).*?
 					continue;
 				if \(k == '\''Z'\''\) \{2??0?
 2??m 11220reg p OK vi.c:1690:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				k = term_read\(0\);$3??0?
+3??m 11220reg p OK vi.c:1690:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					continue;
 				break;
-			case '\''Z'\'':3??0?
-3??+3m 11220reg p OK vi.c:1690:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				k = term_read\(0\);$4??0?
-4??m 11220reg p OK vi.c:1690:a42sc %? %@2152sc!fr 981qfr 980?
+			case '\''Z'\'':4??0?
+4??+3m 11220reg p OK vi.c:1690:a42sc %? %@2152sc!1q0?
 %f+ 				if \(TK_INT\(k\)\)
 					continue;
 				if \(k == '\''Z'\''\) \{5??0?
@@ -875,8 +875,8 @@ void temp_switch\(int i, int swap\);1??0?
 %f> #define bufs_switchwft\(idx\) \\
 \{ if \(&bufs\[idx] != ex_buf\) \{ bufs_switch\(idx\); syn_setft\(xb_ft\); } } \\
 
-3??0?
-3??+2m 1220reg p OK vi.h:474:a32sc %? %@2152sc!1q0?
+4??0?
+4??+2m 1220reg p OK vi.h:474:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	buf->off = xoff; \\
 	buf->top = xtop; \\
 	buf->td = xtd; \\.*(void temp_write\(int i, char \*str\);)
@@ -889,7 +889,7 @@ void ex\(void\);8??0?
 #define ex_command\(ln\) \{ ex_exec\(ln\); ex_regput\('\'':'\'', ln, 0\); }
 void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);9??0?
 grp 09??-7m 1220reg p OK vi.h:474:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg vi.h:4742sc %? %@2132sc!0?
+1;4;8;9??!219reg vi.h:4742sc %? %@2132sc!0?
 0?
 '\''1i int map_read(int mode, int winch);
 ??!219reg vi.h:474:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"

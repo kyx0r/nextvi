@@ -45,8 +45,8 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 1??+2m 11q0?
 %f> #define WH1	15	/\* bright white \*/
 
-#define A\(\.\.\.\) \(int\[]\)\{__VA_ARGS__}3??0?
-3??+2m 1220reg p OK conf.c:65:a32sc %? %@2152sc!1q0?
+#define A\(\.\.\.\) \(int\[]\)\{__VA_ARGS__}4??0?
+4??+2m 1220reg p OK conf.c:65:a42sc %? %@2152sc!1q0?
 grp 1%f> #define WH1	15	/\* bright white \*/.*?
 .*?
 (#define A\(\.\.\.\) \(int\[]\)\{__VA_ARGS__})7??0?
@@ -63,7 +63,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	\{FT\(c\), "\(/\\\\\*\(\?:\(\?!\^\\\\\*/\)\.\)\*\)\|\(\(\?:\(\?!\^/\\\\\*\)\.\)\*\\\\\*/\(\?#-1\)\(\?<\\"\.\*\\\\\*/\.\*\(\?:\\"\|\\\\\\\\\\n\$\)\)\)",
 		A\(BL \| SYN_IT, BL \| SYN_BLK, SYN_BSE \| SYN_BEDP, BL \| SYN_BLK, SYN_BSE \| SYN_BSD\)},9??0?
 grp 09??-9m 1220reg p OK conf.c:65:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:652sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:652sc %? %@2132sc!0?
 ?0?
 %f+ 	\{_ft, NULL, A\(CY1 \| SYN_BD\), 1, 2},  /\* <-- optional, used by hll if set \*/
 	\{_ft, NULL, A\(RE1 \| SYN_BGMK\(GR1\)\), 0, 3}, /\* <-- optional, used by hlp if set \*/
@@ -74,8 +74,8 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 1??+2m 21q0?
 %f+ 	\{_ft, NULL, A\(CY1 \| SYN_BD\), 1, 2},  /\* <-- optional, used by hll if set \*/
 	\{_ft, NULL, A\(RE1 \| SYN_BGMK\(GR1\)\), 0, 3}, /\* <-- optional, used by hlp if set \*/
-	\{_ft, NULL, A\(RE1\), 0, 1}, /\* <-- optional, used by hlw if set \*/3??0?
-3??+2m 2220reg p OK conf.c:72:a32sc %? %@2152sc!1q0?
+	\{_ft, NULL, A\(RE1\), 0, 1}, /\* <-- optional, used by hlw if set \*/4??0?
+4??+2m 2220reg p OK conf.c:72:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{_ft, NULL, A\(CY1 \| SYN_BD\), 1, 2},  /\* <-- optional, used by hll if set \*/.*?
 	\{_ft, NULL, A\(RE1 \| SYN_BGMK\(GR1\)\), 0, 3}, /\* <-- optional, used by hlp if set \*/.*?
 (	\{_ft, NULL, A\(RE1\), 0, 1}, /\* <-- optional, used by hlw if set \*/)7??0?
@@ -92,7 +92,7 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 \(return\|for\|while\|if\|else\|do\|sizeof\|goto\|switch\|case\|default\|break\|continue\)\)\\\\>",
 		A\(GR1, BL1 \| SYN_BD, YE1\)},9??0?
 grp 09??-8m 2220reg p OK conf.c:72:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:722sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:722sc %? %@2132sc!0?
 ?0?
 %f+ 		MA \| SYN_OWR \| SYN_EATT \| SYN_BLK, 1, NA, SYN_BSE \| SYN_BSD\), 1},
 	\{FT\(c\), "\^\.\+\\\\\\\\\\n\$", A\(CY1 \| SYN_EATT \| SYN_OATT, 2, NA, BL, 1, NA\), 2},
@@ -103,8 +103,8 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 1??+2m 31q0?
 %f+ 		MA \| SYN_OWR \| SYN_EATT \| SYN_BLK, 1, NA, SYN_BSE \| SYN_BSD\), 1},
 	\{FT\(c\), "\^\.\+\\\\\\\\\\n\$", A\(CY1 \| SYN_EATT \| SYN_OATT, 2, NA, BL, 1, NA\), 2},
-	\{FT\(c\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 3220reg p OK conf.c:94:a32sc %? %@2152sc!1q0?
+	\{FT\(c\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 3220reg p OK conf.c:94:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		MA \| SYN_OWR \| SYN_EATT \| SYN_BLK, 1, NA, SYN_BSE \| SYN_BSD\), 1},.*?
 	\{FT\(c\), "\^\.\+\\\\\\\\\\n\$", A\(CY1 \| SYN_EATT \| SYN_OATT, 2, NA, BL, 1, NA\), 2},.*?
 (	\{FT\(c\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -121,7 +121,7 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 	\{FT\(roff\), "\\\\\\\\\\"\.\*", A\(GR \| SYN_IT\)},
 	\{FT\(roff\), "\\\\\\\\\{1,2}\[\*\$fgkmns]\(\?:\[\^\[\\\\\(]\|\\\\\(\.\.\|\\\\\[\[\^\\\\]]\*\\\\]\)", A\(YE\)},9??0?
 grp 09??-8m 3220reg p OK conf.c:94:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:942sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:942sc %? %@2132sc!0?
 ?0?
 %f+ 	\{FT\(roff\), "\^\[\.'\'']\[ \\t]\*\(\(\[sS]\[hH]\.\*\)\|\(de\) \(\.\*\)\|\(\[\^ \\t\\\\\\\\]\{2,}\)\)\?\.\*",
 		A\(BL, NA, MA \| SYN_BD, BL \| SYN_BD, MA \| SYN_BD, BL \| SYN_BD\), 1},
@@ -132,8 +132,8 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 1??+2m 41q0?
 %f+ 	\{FT\(roff\), "\^\[\.'\'']\[ \\t]\*\(\(\[sS]\[hH]\.\*\)\|\(de\) \(\.\*\)\|\(\[\^ \\t\\\\\\\\]\{2,}\)\)\?\.\*",
 		A\(BL, NA, MA \| SYN_BD, BL \| SYN_BD, MA \| SYN_BD, BL \| SYN_BD\), 1},
-	\{FT\(roff\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 4220reg p OK conf.c:102:a32sc %? %@2152sc!1q0?
+	\{FT\(roff\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 4220reg p OK conf.c:102:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{FT\(roff\), "\^\[\.'\'']\[ \\t]\*\(\(\[sS]\[hH]\.\*\)\|\(de\) \(\.\*\)\|\(\[\^ \\t\\\\\\\\]\{2,}\)\)\?\.\*",.*?
 		A\(BL, NA, MA \| SYN_BD, BL \| SYN_BD, MA \| SYN_BD, BL \| SYN_BD\), 1},.*?
 (	\{FT\(roff\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -150,7 +150,7 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 	\{FT\(tex\), "\\\\\$\[\^\$]\+\\\\\$", A\(YE\)},
 	\{FT\(tex\), "%\.\*", A\(GR \| SYN_IT\)},9??0?
 grp 09??-9m 4220reg p OK conf.c:102:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:1022sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:1022sc %? %@2132sc!0?
 ?0?
 %f+ 
 	\{FT\(tex\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
@@ -161,8 +161,8 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 1??+2m 51q0?
 %f+ 
 	\{FT\(tex\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
-	\{FT\(tex\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 5220reg p OK conf.c:109:a32sc %? %@2152sc!1q0?
+	\{FT\(tex\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 5220reg p OK conf.c:109:a42sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 	\{FT\(tex\), NULL, A\(CY1 \| SYN_BD\), 1, 2},.*?
 (	\{FT\(tex\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -179,7 +179,7 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 	\{FT\(mbox\), "\^From: \(\.\*\)", A\(CY \| SYN_BD, GR \| SYN_BD\)},
 	\{FT\(mbox\), "\^To: \(\.\*\)", A\(CY \| SYN_BD, MA \| SYN_BD\)},9??0?
 grp 09??-9m 5220reg p OK conf.c:109:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:1092sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:1092sc %? %@2132sc!0?
 ?0?
 %f+ 
 	\{FT\(mbox\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
@@ -190,8 +190,8 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 1??+2m 61q0?
 %f+ 
 	\{FT\(mbox\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
-	\{FT\(mbox\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 6220reg p OK conf.c:116:a32sc %? %@2152sc!1q0?
+	\{FT\(mbox\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 6220reg p OK conf.c:116:a42sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 	\{FT\(mbox\), NULL, A\(CY1 \| SYN_BD\), 1, 2},.*?
 (	\{FT\(mbox\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -208,7 +208,7 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 	\{FT\(mk\), NULL, A\(RE1\), 0, 1},
 	\{FT\(mk\), "\(\[A-Za-z0-9_]\*\)\[ \\t]\*:\?=", A\(NA, YE\)},9??0?
 grp 09??-9m 6220reg p OK conf.c:116:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:1162sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:1162sc %? %@2132sc!0?
 ?0?
 %f+ 
 	\{FT\(mk\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
@@ -219,8 +219,8 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 1??+2m 71q0?
 %f+ 
 	\{FT\(mk\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
-	\{FT\(mk\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 7220reg p OK conf.c:126:a32sc %? %@2152sc!1q0?
+	\{FT\(mk\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 7220reg p OK conf.c:126:a42sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 	\{FT\(mk\), NULL, A\(CY1 \| SYN_BD\), 1, 2},.*?
 (	\{FT\(mk\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -237,7 +237,7 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 	\{FT\(sh\), "\[ \\t]\(#\.\*\)\|\^\(#\.\*\)", A\(NA, GR \| SYN_IT, GR \| SYN_IT\)},
 	\{FT\(sh\), "\\"\(\?:\[\^\\"\\\\\\\\]\|\\\\\\\\\.\)\*\\"", A\(BL\)},9??0?
 grp 09??-9m 7220reg p OK conf.c:126:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:1262sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:1262sc %? %@2132sc!0?
 ?0?
 %f+ 
 	\{FT\(sh\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
@@ -248,8 +248,8 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 1??+2m 81q0?
 %f+ 
 	\{FT\(sh\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
-	\{FT\(sh\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 8220reg p OK conf.c:133:a32sc %? %@2152sc!1q0?
+	\{FT\(sh\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 8220reg p OK conf.c:133:a42sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 	\{FT\(sh\), NULL, A\(CY1 \| SYN_BD\), 1, 2},.*?
 (	\{FT\(sh\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -266,7 +266,7 @@ bool\|const\|inline\|restrict\|auto\|\(true\|false\|_\?_\?asm_\?_\?\|mem\(\?:set
 	\{FT\(sh\), "\^\(\[a-zA-Z_0-9]\* \*\\\\\(\\\\\)\) \*\\\\\{", A\(NA, SYN_BD\)},
 	\{FT\(sh\), "\^\\\\\. \.\*", A\(SYN_BD\)},9??0?
 grp 09??-7m 8220reg p OK conf.c:133:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:1332sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:1332sc %? %@2132sc!0?
 ?0?
 %f+ 
 	\{FT\(py\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
@@ -277,8 +277,8 @@ for\|from\|global\|if\|import\|in\|is\|lambda\|not\|or\|pass\|print\|raise\|retu
 1??+2m 91q0?
 %f+ 
 	\{FT\(py\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
-	\{FT\(py\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 9220reg p OK conf.c:145:a32sc %? %@2152sc!1q0?
+	\{FT\(py\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 9220reg p OK conf.c:145:a42sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 	\{FT\(py\), NULL, A\(CY1 \| SYN_BD\), 1, 2},.*?
 (	\{FT\(py\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -295,7 +295,7 @@ for\|from\|global\|if\|import\|in\|is\|lambda\|not\|or\|pass\|print\|raise\|retu
 	\{FT\(py\), "\[\\"]\(\?:\\\\\\\\\\"\|\[\^\\"]\)\*\?\[\\"]", A\(BL\)},
 	\{FT\(py\), "\['\'']\(\?:\\\\\\\\'\''\|\[\^'\'']\)\*\?\['\'']", A\(BL\)},9??0?
 grp 09??-7m 9220reg p OK conf.c:145:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:1452sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:1452sc %? %@2132sc!0?
 ?0?
 %f+ 	\{FT\(js\), "\(/\\\\\*\(\?:\(\?!\^\\\\\*/\)\.\)\*\)\|\(\(\?:\(\?!\^/\\\\\*\)\.\)\*\\\\\*/\(\?!\[\\"'\''`]\)\)",
 		A\(GR1 \| SYN_IT, GR1 \| SYN_BLK, SYN_BSE \| SYN_BEDP, GR1 \| SYN_BLK, SYN_BSE \| SYN_BSD\)},
@@ -306,8 +306,8 @@ final\|finally\|float\|for\|function\|goto\|if\|implements\|import\|in\|instance
 1??+2m 101q0?
 %f+ 	\{FT\(js\), "\(/\\\\\*\(\?:\(\?!\^\\\\\*/\)\.\)\*\)\|\(\(\?:\(\?!\^/\\\\\*\)\.\)\*\\\\\*/\(\?!\[\\"'\''`]\)\)",
 		A\(GR1 \| SYN_IT, GR1 \| SYN_BLK, SYN_BSE \| SYN_BEDP, GR1 \| SYN_BLK, SYN_BSE \| SYN_BSD\)},
-	\{FT\(js\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 10220reg p OK conf.c:159:a32sc %? %@2152sc!1q0?
+	\{FT\(js\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 10220reg p OK conf.c:159:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{FT\(js\), "\(/\\\\\*\(\?:\(\?!\^\\\\\*/\)\.\)\*\)\|\(\(\?:\(\?!\^/\\\\\*\)\.\)\*\\\\\*/\(\?!\[\\"'\''`]\)\)",.*?
 		A\(GR1 \| SYN_IT, GR1 \| SYN_BLK, SYN_BSE \| SYN_BEDP, GR1 \| SYN_BLK, SYN_BSE \| SYN_BSD\)},.*?
 (	\{FT\(js\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -324,7 +324,7 @@ while\|with\|yield\|\(Array\|Date\|hasOwnProperty\|Infinity\|isFinite\|isNaN\|is
 		A\(BL1, CY \| SYN_BD\)},
 	\{FT\(js\), "\[-\+]\?\\\\<\(\?:0\[xX]\[0-9a-fA-F]\+\|\[0-9]\+\)\\\\>", A\(RE1\)},9??0?
 grp 09??-7m 10220reg p OK conf.c:159:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:1592sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:1592sc %? %@2132sc!0?
 ?0?
 %f+ 		A\(NA \| SYN_IGN, YE \| SYN_OWR \| SYN_EATT, 2, AY1 \| SYN_BATT, GR1 \| SYN_BATT, MA1\), 4},
 	\{FT\(html\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
@@ -335,8 +335,8 @@ while\|with\|yield\|\(Array\|Date\|hasOwnProperty\|Infinity\|isFinite\|isNaN\|is
 1??+2m 111q0?
 %f+ 		A\(NA \| SYN_IGN, YE \| SYN_OWR \| SYN_EATT, 2, AY1 \| SYN_BATT, GR1 \| SYN_BATT, MA1\), 4},
 	\{FT\(html\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
-	\{FT\(html\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 11220reg p OK conf.c:225:a32sc %? %@2152sc!1q0?
+	\{FT\(html\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 11220reg p OK conf.c:225:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		A\(NA \| SYN_IGN, YE \| SYN_OWR \| SYN_EATT, 2, AY1 \| SYN_BATT, GR1 \| SYN_BATT, MA1\), 4},.*?
 	\{FT\(html\), NULL, A\(CY1 \| SYN_BD\), 1, 2},.*?
 (	\{FT\(html\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -353,7 +353,7 @@ fr\|deg\|rad\|turn\|grad\|ms\|s\|hz\|khz\|dpi\|dpcm\|dppx\|%\|\)\)\\\\>", A\(RE1
 	\{FT\(go\), NULL, A\(RE1\), 0, 1},
 	\{FT\(go\), "\\\\<\(\?:any\|bool\|byte\|comparable\|complex64\|complex128\|error\|float32\|float64\|\\9??0?
 grp 09??-12m 11220reg p OK conf.c:225:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:2252sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:2252sc %? %@2132sc!0?
 ?0?
 %f+ 	\{FT\(html\), NULL, A\(AY \| SYN_BGMK\(RE1\)\), 0, 3},
 
@@ -364,8 +364,8 @@ fr\|deg\|rad\|turn\|grad\|ms\|s\|hz\|khz\|dpi\|dpcm\|dppx\|%\|\)\)\\\\>", A\(RE1
 1??+2m 121q0?
 %f+ 	\{FT\(html\), NULL, A\(AY \| SYN_BGMK\(RE1\)\), 0, 3},
 
-	\{FT\(diff\), NULL, A\(CY1 \| SYN_BD\), 1, 2},3??0?
-3??+2m 12220reg p OK conf.c:228:a32sc %? %@2152sc!1q0?
+	\{FT\(diff\), NULL, A\(CY1 \| SYN_BD\), 1, 2},4??0?
+4??+2m 12220reg p OK conf.c:228:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{FT\(html\), NULL, A\(AY \| SYN_BGMK\(RE1\)\), 0, 3},.*?
 .*?
 (	\{FT\(diff\), NULL, A\(CY1 \| SYN_BD\), 1, 2},)7??0?
@@ -382,7 +382,7 @@ fr\|deg\|rad\|turn\|grad\|ms\|s\|hz\|khz\|dpi\|dpcm\|dppx\|%\|\)\)\\\\>", A\(RE1
 	\{FT\(go\), NULL, A\(RE1\), 0, 1},
 	\{FT\(go\), "\\\\<\(\?:any\|bool\|byte\|comparable\|complex64\|complex128\|error\|float32\|float64\|\\9??0?
 grp 09??-9m 12220reg p OK conf.c:228:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:2282sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:2282sc %? %@2132sc!0?
 ?0?
 %f+ 		A\(BL \| SYN_IT, BL \| SYN_BLK, SYN_BSE \| SYN_BEDP, BL \| SYN_BLK, SYN_BSE \| SYN_BSD\)},
 	\{FT\(go\), NULL, A\(RE1 \| SYN_BGMK\(BL1\)\), 0, 3},
@@ -393,8 +393,8 @@ chan\|interface\|map\|struct\|\(true\|false\|iota\|nil\|append\|cap\|close\|comp
 1??+2m 131q0?
 %f+ 		A\(BL \| SYN_IT, BL \| SYN_BLK, SYN_BSE \| SYN_BEDP, BL \| SYN_BLK, SYN_BSE \| SYN_BSD\)},
 	\{FT\(go\), NULL, A\(RE1 \| SYN_BGMK\(BL1\)\), 0, 3},
-	\{FT\(go\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 13220reg p OK conf.c:238:a32sc %? %@2152sc!1q0?
+	\{FT\(go\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 13220reg p OK conf.c:238:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		A\(BL \| SYN_IT, BL \| SYN_BLK, SYN_BSE \| SYN_BEDP, BL \| SYN_BLK, SYN_BSE \| SYN_BSD\)},.*?
 	\{FT\(go\), NULL, A\(RE1 \| SYN_BGMK\(BL1\)\), 0, 3},.*?
 (	\{FT\(go\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -411,7 +411,7 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},8??
 	\{FT\(go\), "\\"\(\?:\[\^\\"\\\\\\\\]\|\\\\\\\\\.\)\*\\"", A\(MA\)},
 	\{FT\(go\), "`\[\^`]\*`", A\(MA\)},9??0?
 grp 09??-7m 13220reg p OK conf.c:238:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:2382sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:2382sc %? %@2132sc!0?
 ?0?
 %f+ 
 	\{FT\(md\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
@@ -422,8 +422,8 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},8??
 1??+2m 141q0?
 %f+ 
 	\{FT\(md\), NULL, A\(CY1 \| SYN_BD\), 1, 2},
-	\{FT\(md\), NULL, A\(RE1\), 0, 1},3??0?
-3??+2m 14220reg p OK conf.c:253:a32sc %? %@2152sc!1q0?
+	\{FT\(md\), NULL, A\(RE1\), 0, 1},4??0?
+4??+2m 14220reg p OK conf.c:253:a42sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 	\{FT\(md\), NULL, A\(CY1 \| SYN_BD\), 1, 2},.*?
 (	\{FT\(md\), NULL, A\(RE1\), 0, 1},)7??0?
@@ -440,7 +440,7 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},8??
 	\{FT\(md\), "\[\*]\[\^\*]\+\[\*]\|_\[\^_]\+_", A\(YE \| SYN_IT\)},
 	\{FT\(md\), "~~\[\^~]\+~~", A\(AY \| SYN_IT\)},9??0?
 grp 09??-7m 14220reg p OK conf.c:253:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:2532sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:2532sc %? %@2132sc!0?
 ?0?
 %f+ \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -455,12 +455,12 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},8??
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},2??0?
 2??m 15220reg p OK conf.c:298:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\$3??0?
+3??m 15220reg p OK conf.c:298:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
-\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\3??0?
-3??+3m 15220reg p OK conf.c:298:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\$4??0?
-4??m 15220reg p OK conf.c:298:a42sc %? %@2152sc!fr 981qfr 980?
+\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\4??0?
+4??+3m 15220reg p OK conf.c:298:a42sc %? %@2152sc!1q0?
 %f+ \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},5??0?
@@ -534,8 +534,8 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 %f> 	return NULL;
 }
 
-3??0?
-3??+2m 1220reg p OK ex.c:1301:a32sc %? %@2152sc!1q0?
+4??0?
+4??+2m 1220reg p OK ex.c:1301:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	for \(i = 1; i < 4; i\+\+\)
 		syn_reloadft\(syn_findhl\(i\), 0\);.*(		xkmap_alt = conf_kmapfind\(arg\);)
@@ -548,7 +548,7 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 		xkmap = xkmap_alt;
 	return NULL;9??0?
 grp 09??-7m 1220reg p OK ex.c:1301:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg ex.c:13012sc %? %@2132sc!0?
+1;4;8;9??!219reg ex.c:13012sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(hlp\),
 	EO\(hlr\),
@@ -559,8 +559,8 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 1??+2m 21q0?
 %f+ 	EO\(hlp\),
 	EO\(hlr\),
-	EO\(hl\),3??0?
-3??+2m 2220reg p OK ex.c:1752:a32sc %? %@2152sc!1q0?
+	EO\(hl\),4??0?
+4??+2m 2220reg p OK ex.c:1752:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(hlp\),.*?
 	EO\(hlr\),.*?
 (	EO\(hl\),)7??0?
@@ -577,7 +577,7 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{9??0?
 grp 09??-9m 2220reg p OK ex.c:1752:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:17522sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:17522sc %? %@2132sc!0?
 0?
 '\''1i /* walk att exactly like syn_highlight to bound its variable length entries */
 static int hi_walk(int *att, int grps)

@@ -49,12 +49,12 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},
 	\{ex_ft, "!\(\?:\[\^!\\\\\\\\]\|\\\\\\\\\.\?\)\*!\?\|%\(\?:#\|\[0-9]\+\|@\(\[0-9]\+\)\)\?", A\(WH1 \| SYN_BD, CY1\)},2??0?
 2??m 1220reg p OK conf.c:299:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^\(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",$3??0?
+3??m 1220reg p OK conf.c:299:a32sc %? %@2152sc!fr 981qfr 980?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
 \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
-\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\3??0?
-3??+3m 1220reg p OK conf.c:299:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^\(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",$4??0?
-4??m 1220reg p OK conf.c:299:a42sc %? %@2152sc!fr 981qfr 980?
+\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\4??0?
+4??+3m 1220reg p OK conf.c:299:a42sc %? %@2152sc!1q0?
 %f> 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},
 	\{ex_ft, "!\(\?:\[\^!\\\\\\\\]\|\\\\\\\\\.\?\)\*!\?\|%\(\?:#\|\[0-9]\+\|@\(\[0-9]\+\)\)\?", A\(WH1 \| SYN_BD, CY1\)},5??0?
@@ -99,8 +99,8 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 %f> 	return NULL;
 }
 
-3??0?
-3??+2m 1220reg p OK ex.c:807:a32sc %? %@2152sc!1q0?
+4??0?
+4??+2m 1220reg p OK ex.c:807:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	lbuf_saved\(xb, 0\);
 	ex_buf->mtime = mtime\(path\);
 	xquit = quit;.*(		term_exec\(arg, strlen\(arg\), cmd\[0]\))
@@ -113,7 +113,7 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 \{
 	if \(xpr > 0\) \{9??0?
 grp 09??-8m 1220reg p OK ex.c:807:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg ex.c:8072sc %? %@2132sc!0?
+1;4;8;9??!219reg ex.c:8072sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"rd", ec_undoredo},
 	EO\(rr\),
@@ -123,8 +123,8 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 1??+2m 21q0?
 %f+ 	\{"rd", ec_undoredo},
 	EO\(rr\),
-	\{"r", ec_read},3??0?
-3??+2m 2220reg p OK ex.c:1721:a32sc %? %@2152sc!1q0?
+	\{"r", ec_read},4??0?
+4??+2m 2220reg p OK ex.c:1721:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"rd", ec_undoredo},.*?
 	EO\(rr\),.*?
 (	\{"r", ec_read},)7??0?
@@ -141,7 +141,7 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 	EO\(seq\),
 	\{"sc!", ec_specials},9??0?
 grp 09??-9m 2220reg p OK ex.c:1721:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:17212sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:17212sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"wq!", ec_write},
 	\{"wq", ec_write},
@@ -150,8 +150,8 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 	\{"uc", ec_setenc},1??0?
 1??+1m 31q0?
 %f+ 	\{"wq!", ec_write},
-	\{"wq", ec_write},3??0?
-3??+1m 3220reg p OK ex.c:1723:a32sc %? %@2152sc!1q0?
+	\{"wq", ec_write},4??0?
+4??+1m 3220reg p OK ex.c:1723:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"wq!", ec_write},.*?
 (	\{"wq", ec_write},)7??0?
 grp 07??m 3220reg p OK ex.c:1723:a72sc %? %@2152sc!1q0?
@@ -167,7 +167,7 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 	EO\(seq\),
 	\{"sc!", ec_specials},9??0?
 grp 09??-7m 3220reg p OK ex.c:1723:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:17232sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:17232sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},
@@ -178,8 +178,8 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 1??+2m 41q0?
 %f+ 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},
-	\{"s", ec_substitute},3??0?
-3??+2m 4220reg p OK ex.c:1734:a32sc %? %@2152sc!1q0?
+	\{"s", ec_substitute},4??0?
+4??+2m 4220reg p OK ex.c:1734:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"sc!", ec_specials},.*?
 	\{"sc", ec_specials},.*?
 (	\{"s", ec_substitute},)7??0?
@@ -196,7 +196,7 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 	\{"cd", ec_chdir},
 	\{"c", ec_insert},9??0?
 grp 09??-7m 4220reg p OK ex.c:1734:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:17342sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:17342sc %? %@2132sc!0?
 0?
 '\''1i static void *ec_writeall(char *loc, char *cmd, char *arg)
 {

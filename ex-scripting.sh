@@ -40,9 +40,9 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/1??0?
 1??m 11q0?
-;0fr.,$f> ^int xleft;			/\* the first visible column \*/$3??0?
-3??m 1220reg p OK ex.c:0:a32sc %? %@2152sc!fr 98fr 980?
-1;3??!219reg ex.c:02sc %? %@2132sc!0?
+;0fr.,$f> ^int xleft;			/\* the first visible column \*/$4??0?
+4??m 1220reg p OK ex.c:0:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg ex.c:02sc %? %@2132sc!0?
 ?0?
 %f+ 	return xkwdrs \? NULL : xserr;
 }
@@ -54,8 +54,8 @@ static int eo_val\(char \*arg\)
 %f+ 	return xkwdrs \? NULL : xserr;
 }
 
-3??0?
-3??+2m 2220reg p OK ex.c:1630:a32sc %? %@2152sc!1q0?
+4??0?
+4??+2m 2220reg p OK ex.c:1630:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	if \(!val && !uc_isdigit\(\*arg\)\))
@@ -68,7 +68,7 @@ static int eo_val\(char \*arg\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 grp 09??-15m 2220reg p OK ex.c:1630:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg ex.c:16302sc %? %@2132sc!0?
+1;4;8;9??!219reg ex.c:16302sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
@@ -79,8 +79,8 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 1??+2m 31q0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
-	\{"sc", ec_specials},3??0?
-3??+2m 3220reg p OK ex.c:1733:a32sc %? %@2152sc!1q0?
+	\{"sc", ec_specials},4??0?
+4??+2m 3220reg p OK ex.c:1733:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
@@ -97,7 +97,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
 grp 09??-7m 3220reg p OK ex.c:1733:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:17332sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:17332sc %? %@2132sc!0?
 0?
 '\''1-1i char **xenvp;
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -155,12 +155,12 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 	}
 	if \(ifd\)2??0?
 2??m 1220reg p OK term.c:238:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^		execvp\(argv\[0], argv\);$3??0?
+3??m 1220reg p OK term.c:238:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
-		}3??0?
-3??+3m 1220reg p OK term.c:238:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^		execvp\(argv\[0], argv\);$4??0?
-4??m 1220reg p OK term.c:238:a42sc %? %@2152sc!fr 981qfr 980?
+		}4??0?
+4??+3m 1220reg p OK term.c:238:a42sc %? %@2152sc!1q0?
 %f> 		exit\(1\);
 	}
 	if \(ifd\)5??0?
@@ -202,9 +202,9 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 /\* helper macros \*/
 #define LEN\(a\)		\(int\)\(sizeof\(a\) / sizeof\(\(a\)\[0]\)\)1??0?
 1??m 11q0?
-;0fr.,$f> ^/\* vi\.h: shared definitions across files \*/$3??0?
-3??m 1220reg p OK vi.h:1:a32sc %? %@2152sc!fr 98fr 980?
-1;3??!219reg vi.h:12sc %? %@2132sc!0?
+;0fr.,$f> ^/\* vi\.h: shared definitions across files \*/$4??0?
+4??m 1220reg p OK vi.h:1:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg vi.h:12sc %? %@2132sc!0?
 0?
 '\''1i #ifdef __APPLE__
 #include <crt_externs.h>

@@ -49,12 +49,12 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},2??0?
 2??m 1220reg p OK conf.c:298:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\$3??0?
+3??m 1220reg p OK conf.c:298:a32sc %? %@2152sc!fr 981qfr 980?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
-\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\3??0?
-3??+3m 1220reg p OK conf.c:298:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\$4??0?
-4??m 1220reg p OK conf.c:298:a42sc %? %@2152sc!fr 981qfr 980?
+\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\4??0?
+4??+3m 1220reg p OK conf.c:298:a42sc %? %@2152sc!1q0?
 %f> \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},5??0?
@@ -98,8 +98,8 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 %f> 	return NULL;
 \)
 
-3??0?
-3??+2m 1220reg p OK ex.c:1660:a32sc %? %@2152sc!1q0?
+4??0?
+4??+2m 1220reg p OK ex.c:1660:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
@@ -112,7 +112,7 @@ static struct excmd \{
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
 grp 09??-7m 1220reg p OK ex.c:1660:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg ex.c:16602sc %? %@2132sc!0?
+1;4;8;9??!219reg ex.c:16602sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
@@ -123,8 +123,8 @@ static struct excmd \{
 1??+2m 21q0?
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
-	EO\(mpt\),3??0?
-3??+2m 2220reg p OK ex.c:1712:a32sc %? %@2152sc!1q0?
+	EO\(mpt\),4??0?
+4??+2m 2220reg p OK ex.c:1712:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g!", ec_glob},.*?
 	\{"g", ec_glob},.*?
 (	EO\(mpt\),)7??0?
@@ -141,7 +141,7 @@ static struct excmd \{
 	EO\(rr\),
 	\{"r", ec_read},9??0?
 grp 09??-7m 2220reg p OK ex.c:1712:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:17122sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:17122sc %? %@2132sc!0?
 0?
 '\''1i static void *ec_modal(char *loc, char *cmd, char *arg)
 {
@@ -546,8 +546,8 @@ static char *mem_import(char *src, char *ptr)
 1??+2m 11q0?
 %f> #include <sys/wait\.h>
 #include "vi\.h"
-#include "conf\.c"3??0?
-3??+2m 1220reg p OK vi.c:17:a32sc %? %@2152sc!1q0?
+#include "conf\.c"4??0?
+4??+2m 1220reg p OK vi.c:17:a42sc %? %@2152sc!1q0?
 grp 1%f> #include <sys/wait\.h>.*?
 #include "vi\.h".*?
 (#include "conf\.c")7??0?
@@ -564,7 +564,7 @@ static char *mem_import(char *src, char *ptr)
 int vi_lncol;			/\* line numbers cursor offset \*/
 static int vi_lnnum;		/\* line numbers \*/9??0?
 grp 09??-9m 1220reg p OK vi.c:17:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg vi.c:172sc %? %@2132sc!0?
+1;4;7;8;9??!219reg vi.c:172sc %? %@2132sc!0?
 0?
 '\''1i #include "modal.c"
 ??!219reg vi.c:17:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"

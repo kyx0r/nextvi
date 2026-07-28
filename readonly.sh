@@ -49,12 +49,12 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},
 	\{ex_ft, "!\(\?:\[\^!\\\\\\\\]\|\\\\\\\\\.\?\)\*!\?\|%\(\?:#\|\[0-9]\+\|@\(\[0-9]\+\)\)\?", A\(WH1 \| SYN_BD, CY1\)},2??0?
 2??m 1220reg p OK conf.c:299:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^\(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",$3??0?
+3??m 1220reg p OK conf.c:299:a32sc %? %@2152sc!fr 981qfr 980?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
 \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
-\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\3??0?
-3??+3m 1220reg p OK conf.c:299:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^\(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",$4??0?
-4??m 1220reg p OK conf.c:299:a42sc %? %@2152sc!fr 981qfr 980?
+\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\4??0?
+4??+3m 1220reg p OK conf.c:299:a42sc %? %@2152sc!1q0?
 %f> 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},
 	\{ex_ft, "!\(\?:\[\^!\\\\\\\\]\|\\\\\\\\\.\?\)\*!\?\|%\(\?:#\|\[0-9]\+\|@\(\[0-9]\+\)\)\?", A\(WH1 \| SYN_BD, CY1\)},5??0?
@@ -91,9 +91,9 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/1??0?
 1??m 11q0?
-;0fr.,$f> ^int xleft;			/\* the first visible column \*/$3??0?
-3??m 1220reg p OK ex.c:0:a32sc %? %@2152sc!fr 98fr 980?
-1;3??!219reg ex.c:02sc %? %@2132sc!0?
+;0fr.,$f> ^int xleft;			/\* the first visible column \*/$4??0?
+4??m 1220reg p OK ex.c:0:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg ex.c:02sc %? %@2132sc!0?
 ?0?
 %f+ 	bufs\[i]\.top = 0;
 	bufs\[i]\.td = \+1;
@@ -105,8 +105,8 @@ int xai = 1;			/\* autoindent option \*/1??0?
 1??+2m 21q0?
 %f+ 	bufs\[i]\.top = 0;
 	bufs\[i]\.td = \+1;
-	bufs\[i]\.mtime = -1;3??0?
-3??+2m 2220reg p OK ex.c:169:a32sc %? %@2152sc!1q0?
+	bufs\[i]\.mtime = -1;4??0?
+4??+2m 2220reg p OK ex.c:169:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	bufs\[i]\.top = 0;.*?
 	bufs\[i]\.td = \+1;.*?
 (	bufs\[i]\.mtime = -1;)7??0?
@@ -123,7 +123,7 @@ int xai = 1;			/\* autoindent option \*/1??0?
 	tempbufs\[i]\.row = 0;
 	tempbufs\[i]\.off = 0;9??0?
 grp 09??-7m 2220reg p OK ex.c:169:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:1692sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:1692sc %? %@2132sc!0?
 ?0?
 %f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/
@@ -134,8 +134,8 @@ int xai = 1;			/\* autoindent option \*/1??0?
 1??+2m 31q0?
 %f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/
-	}3??0?
-3??+2m 3220reg p OK ex.c:429:a32sc %? %@2152sc!1q0?
+	}4??0?
+4??+2m 3220reg p OK ex.c:429:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);.*?
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/.*?
 (	})7??0?
@@ -152,7 +152,7 @@ int xai = 1;			/\* autoindent option \*/1??0?
 		ex_print\(msg, bar_ft\)
 	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;9??0?
 grp 09??-9m 3220reg p OK ex.c:429:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:4292sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:4292sc %? %@2132sc!0?
 ?0?
 %f+ 	} else if \(ret\)
 		return "other buffers modified";
@@ -163,8 +163,8 @@ int xai = 1;			/\* autoindent option \*/1??0?
 1??+2m 41q0?
 %f+ 	} else if \(ret\)
 		return "other buffers modified";
-	if \(!strchr\(cmd, '\''!'\''\)\) \{3??0?
-3??+2m 4220reg p OK ex.c:779:a32sc %? %@2152sc!1q0?
+	if \(!strchr\(cmd, '\''!'\''\)\) \{4??0?
+4??+2m 4220reg p OK ex.c:779:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	} else if \(ret\).*?
 		return "other buffers modified";.*?
 (	if \(!strchr\(cmd, '\''!'\''\)\) \{)7??0?
@@ -181,7 +181,7 @@ int xai = 1;			/\* autoindent option \*/1??0?
 		return "write failed: cannot create file";
 	if \(o1 >= 0\) \{9??0?
 grp 09??-7m 4220reg p OK ex.c:779:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:7792sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:7792sc %? %@2132sc!0?
 ?0?
 %f+ 	return xkwdrs \? NULL : xserr;
 }
@@ -193,8 +193,8 @@ static int eo_val\(char \*arg\)
 %f+ 	return xkwdrs \? NULL : xserr;
 }
 
-3??0?
-3??+2m 5220reg p OK ex.c:1630:a32sc %? %@2152sc!1q0?
+4??0?
+4??+2m 5220reg p OK ex.c:1630:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	if \(!val && !uc_isdigit\(\*arg\)\))
@@ -207,7 +207,7 @@ static int eo_val\(char \*arg\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 grp 09??-15m 5220reg p OK ex.c:1630:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg ex.c:16302sc %? %@2132sc!0?
+1;4;8;9??!219reg ex.c:16302sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
@@ -218,8 +218,8 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 1??+2m 61q0?
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
-	\{"rd", ec_undoredo},3??0?
-3??+2m 6220reg p OK ex.c:1719:a32sc %? %@2152sc!1q0?
+	\{"rd", ec_undoredo},4??0?
+4??+2m 6220reg p OK ex.c:1719:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"reg", ec_regprint},.*?
 	\{"re", ec_krsset},.*?
 (	\{"rd", ec_undoredo},)7??0?
@@ -236,7 +236,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},9??0?
 grp 09??-7m 6220reg p OK ex.c:1719:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg ex.c:17192sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:17192sc %? %@2132sc!0?
 0?
 '\''1-1i char readonly = 0;		/* commandline readonly option */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -266,8 +266,8 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 1??+2m 11q0?
 %f> 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\)
-				xvis \|= 8;3??0?
-3??+2m 1220reg p OK vi.c:1861:a32sc %? %@2152sc!1q0?
+				xvis \|= 8;4??0?
+4??+2m 1220reg p OK vi.c:1861:a42sc %? %@2152sc!1q0?
 grp 1%f> 				xvis \|= 4;.*?
 			else if \(argv\[i]\[j] == '\''a'\''\).*?
 (				xvis \|= 8;)7??0?
@@ -284,7 +284,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 	if \(xvis & 8\)
 		term_scrh;9??0?
 grp 09??-12m 1220reg p OK vi.c:1861:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg vi.c:18612sc %? %@2132sc!0?
+1;4;7;8;9??!219reg vi.c:18612sc %? %@2132sc!0?
 ?0?
 %f+ 				xvis = 0;
 			else \{
@@ -299,12 +299,12 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 			}
 		}2??0?
 2??m 2220reg p OK vi.c:1866:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
+3??m 2220reg p OK vi.c:1866:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				xvis = 0;
 			else \{
-				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);3??0?
-3??+3m 2220reg p OK vi.c:1866:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$4??0?
-4??m 2220reg p OK vi.c:1866:a42sc %? %@2152sc!fr 981qfr 980?
+				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);4??0?
+4??+3m 2220reg p OK vi.c:1866:a42sc %? %@2152sc!1q0?
 %f+ 				return EXIT_FAILURE;
 			}
 		}5??0?
@@ -349,8 +349,8 @@ extern int xleft;1??0?
 1??+2m 11q0?
 %f> 	int plen, row, off, top;
 	long mtime;			/\* modification time \*/
-	signed char td;			/\* text direction \*/3??0?
-3??+2m 1220reg p OK vi.h:407:a32sc %? %@2152sc!1q0?
+	signed char td;			/\* text direction \*/4??0?
+4??+2m 1220reg p OK vi.h:407:a42sc %? %@2152sc!1q0?
 grp 1%f> 	int plen, row, off, top;.*?
 	long mtime;			/\* modification time \*/.*?
 (	signed char td;			/\* text direction \*/)7??0?
@@ -367,7 +367,7 @@ void led_done\(void\);.*(extern int xhl;)
 extern int xhll;
 extern int xhlw;9??0?
 grp 09??-7m 1220reg p OK vi.h:407:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg vi.h:4072sc %? %@2132sc!0?
+1;4;7;8;9??!219reg vi.h:4072sc %? %@2132sc!0?
 ?0?
 %f+ /\* filesystem \*/
 extern rset \*fsincl;

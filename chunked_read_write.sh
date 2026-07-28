@@ -47,13 +47,13 @@ if \(fd >= 0\) \{ \\1??0?
 fd = open\(xb_path, O_RDONLY\); \\
 if \(fd >= 0\) \{ \\2??0?
 2??m 1220reg p OK ex.c:390:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^#define readfile\(errchk\) \\$3??0?
+3??m 1220reg p OK ex.c:390:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	return key;
 }
 
-3??0?
-3??+3m 1220reg p OK ex.c:390:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^#define readfile\(errchk\) \\$4??0?
-4??m 1220reg p OK ex.c:390:a42sc %? %@2152sc!fr 981qfr 980?
+4??0?
+4??+3m 1220reg p OK ex.c:390:a42sc %? %@2152sc!1q0?
 %f> fd = open\(xb_path, O_RDONLY\); \\
 if \(fd >= 0\) \{ \\5??0?
 5??-1m 1220reg p OK ex.c:390:a52sc %? %@2152sc!1q0?
@@ -97,11 +97,11 @@ if \(fd >= 0\) \{ \\
 
 2??0?
 2??m 2220reg p OK ex.c:393:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	errchk lbuf_rd\(xb, fd, 0, lbuf_len\(xb\)\); \\$3??0?
+3??m 2220reg p OK ex.c:393:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ fd = open\(xb_path, O_RDONLY\); \\
-if \(fd >= 0\) \{ \\3??0?
-3??+2m 2220reg p OK ex.c:393:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	errchk lbuf_rd\(xb, fd, 0, lbuf_len\(xb\)\); \\$4??0?
-4??m 2220reg p OK ex.c:393:a42sc %? %@2152sc!fr 981qfr 980?
+if \(fd >= 0\) \{ \\4??0?
+4??+2m 2220reg p OK ex.c:393:a42sc %? %@2152sc!1q0?
 %f+ 	close\(fd\); \\
 } \\
 
@@ -148,12 +148,12 @@ if \(fd >= 0\) \{ \\.*?
 
 2??0?
 2??m 3220reg p OK ex.c:409:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	readfile\(\)$3??0?
+3??m 3220reg p OK ex.c:409:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		return 1;
 	}
-	bufs_switch\(bufs_open\(path, len\)\);3??0?
-3??+3m 3220reg p OK ex.c:409:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	readfile\(\)$4??0?
-4??m 3220reg p OK ex.c:409:a42sc %? %@2152sc!fr 981qfr 980?
+	bufs_switch\(bufs_open\(path, len\)\);4??0?
+4??+3m 3220reg p OK ex.c:409:a42sc %? %@2152sc!1q0?
 %f+ 	return 0;
 }
 
@@ -200,12 +200,12 @@ if \(fd >= 0\) \{ \\.*?
 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);2??0?
 2??m 4220reg p OK ex.c:430:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	readfile\(rd =\)$3??0?
+3??m 4220reg p OK ex.c:430:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/
-	}3??0?
-3??+3m 4220reg p OK ex.c:430:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	readfile\(rd =\)$4??0?
-4??m 4220reg p OK ex.c:430:a42sc %? %@2152sc!fr 981qfr 980?
+	}4??0?
+4??+3m 4220reg p OK ex.c:430:a42sc %? %@2152sc!1q0?
 %f+ 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{
 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);5??0?
@@ -277,11 +277,6 @@ int lbuf_rd\(struct lbuf \*lb, int fd, int beg, int end\)
 				break;
 			}2??0?
 2??m 1220reg p OK lbuf.c:224:a22sc %? %@2152sc!1q0?
-%f> 		lo->ins = \(char\*\*\)sb->s;
-}
-
-3??0?
-3??+3m 1220reg p OK lbuf.c:224:a32sc %? %@2152sc!1q0?
 %f> int lbuf_rd\(struct lbuf \*lb, int fd, int beg, int end\)
 \{
 	struct stat st;
@@ -295,8 +290,13 @@ int lbuf_rd\(struct lbuf \*lb, int fd, int beg, int end\)
 		if \(n >= sz \+ step\) \{
 			if \(n > INT_MAX / 2\) \{
 				n -= nr;
-				break;4??0?
-4??m 1220reg p OK lbuf.c:224:a42sc %? %@2152sc!1q0?
+				break;3??0?
+3??m 1220reg p OK lbuf.c:224:a32sc %? %@2152sc!1q0?
+%f> 		lo->ins = \(char\*\*\)sb->s;
+}
+
+4??0?
+4??+3m 1220reg p OK lbuf.c:224:a42sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			}$5??0?
 5??-14m 1220reg p OK lbuf.c:224:a52sc %? %@2152sc!fr 981qfr 980?
 %f> .............c........-...
@@ -356,15 +356,15 @@ int lbuf_rd\(struct lbuf \*lb, int fd, int beg, int end\)
 		}
 	}2??0?
 2??m 2220reg p OK lbuf.c:239:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^			}$3??0?
-3??+1m 2220reg p OK lbuf.c:239:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			sz = n \* 2;
 			s = erealloc\(s, sz--\);
 			step = 1;
 		} else if \(n == sz\) \{
 			sz\+\+;
-			step = 0;4??0?
-4??m 2220reg p OK lbuf.c:239:a42sc %? %@2152sc!1q0?
+			step = 0;3??0?
+3??m 2220reg p OK lbuf.c:239:a32sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			}$4??0?
+4??+1m 2220reg p OK lbuf.c:239:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		}
 	}5??0?
 5??-6m 2220reg p OK lbuf.c:239:a52sc %? %@2152sc!1q0?
@@ -413,13 +413,13 @@ int lbuf_rd\(struct lbuf \*lb, int fd, int beg, int end\)
 
 2??0?
 2??m 3220reg p OK lbuf.c:247:a22sc %? %@2152sc!1q0?
-%f+ 		}
-	}3??0?
-3??+2m 3220reg p OK lbuf.c:247:a32sc %? %@2152sc!1q0?
 %f+ 	s\[n] = '\''\\0'\'';
 	lbuf_edit\(lb, s, beg, end, 0, 0\);
-	free\(s\);4??0?
-4??m 3220reg p OK lbuf.c:247:a42sc %? %@2152sc!1q0?
+	free\(s\);3??0?
+3??m 3220reg p OK lbuf.c:247:a32sc %? %@2152sc!1q0?
+%f+ 		}
+	}4??0?
+4??+2m 3220reg p OK lbuf.c:247:a42sc %? %@2152sc!1q0?
 %f+ 	return nr != 0;
 }
 
@@ -462,8 +462,8 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 %f+ 	return nr != 0;
 }
 
-3??0?
-3??+2m 4220reg p OK lbuf.c:252:a32sc %? %@2152sc!1q0?
+4??0?
+4??+2m 4220reg p OK lbuf.c:252:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(xseq < 0 \|\| !lo->n_ins\)
 		free\(sb->s\);
 	else.*(void lbuf_region\(struct lbuf \*lb, sbuf \*sb, int r1, int o1, int r2, int o2\))
@@ -476,7 +476,7 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 	r2 = MIN\(lb->ln_n, r2\);
 	if \(s1\) \{9??0?
 grp 09??-20m 4220reg p OK lbuf.c:252:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg lbuf.c:2522sc %? %@2132sc!0?
+1;4;8;9??!219reg lbuf.c:2522sc %? %@2132sc!0?
 ?0?
 %f+ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 \{
@@ -484,8 +484,8 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 		char \*ln = lb->ln\[i];1??0?
 1??+1m 51q0?
 %f+ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
-\{3??0?
-3??+1m 5220reg p OK lbuf.c:254:a32sc %? %@2152sc!1q0?
+\{4??0?
+4??+1m 5220reg p OK lbuf.c:254:a42sc %? %@2152sc!1q0?
 grp 1%f+ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\).*?
 (\{)7??0?
 grp 07??m 5220reg p OK lbuf.c:254:a72sc %? %@2152sc!1q0?
@@ -501,7 +501,7 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 	r2 = MIN\(lb->ln_n, r2\);
 	if \(s1\) \{9??0?
 grp 09??-18m 5220reg p OK lbuf.c:254:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg lbuf.c:2542sc %? %@2132sc!0?
+1;4;7;8;9??!219reg lbuf.c:2542sc %? %@2132sc!0?
 ?0?
 %f+ 	for \(int i = beg; i < end; i\+\+\) \{
 		char \*ln = lb->ln\[i];
@@ -511,11 +511,11 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 %f+ 		long nw = 0;
 		long nl = lbuf_s\(ln\)->len \+ 1;2??0?
 2??m 6220reg p OK lbuf.c:257:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		long nw = 0;$3??0?
+3??m 6220reg p OK lbuf.c:257:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	for \(int i = beg; i < end; i\+\+\) \{
-		char \*ln = lb->ln\[i];3??0?
-3??+2m 6220reg p OK lbuf.c:257:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		long nw = 0;$4??0?
-4??m 6220reg p OK lbuf.c:257:a42sc %? %@2152sc!fr 981qfr 980?
+		char \*ln = lb->ln\[i];4??0?
+4??+2m 6220reg p OK lbuf.c:257:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		long nl = lbuf_s\(ln\)->len \+ 1;$5??0?
 5??-1m 6220reg p OK lbuf.c:257:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ...r..i.. .........i ..e.d;.......
@@ -558,14 +558,14 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 		}
 	}2??0?
 2??m 7220reg p OK lbuf.c:259:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		long nl = lbuf_s\(ln\)->len \+ 1;$3??0?
-3??+1m 7220reg p OK lbuf.c:259:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		while \(nw < nl\) \{
 			long nc = write\(fd, ln \+ nw, nl - nw\);
 			if \(nc < 0\)
 				return nc;
-			nw \+= nc;4??0?
-4??m 7220reg p OK lbuf.c:259:a42sc %? %@2152sc!1q0?
+			nw \+= nc;3??0?
+3??m 7220reg p OK lbuf.c:259:a32sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		long nl = lbuf_s\(ln\)->len \+ 1;$4??0?
+4??+1m 7220reg p OK lbuf.c:259:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		}
 	}5??0?
 5??-5m 7220reg p OK lbuf.c:259:a52sc %? %@2152sc!1q0?
@@ -603,8 +603,8 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 1??0?
 1??+1m 81q0?
 %f+ 		}
-	}3??0?
-3??+1m 8220reg p OK lbuf.c:265:a32sc %? %@2152sc!1q0?
+	}4??0?
+4??+1m 8220reg p OK lbuf.c:265:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(xseq < 0 \|\| !lo->n_ins\)
 		free\(sb->s\);
 	else.*(void lbuf_region\(struct lbuf \*lb, sbuf \*sb, int r1, int o1, int r2, int o2\))
@@ -617,7 +617,7 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 	r2 = MIN\(lb->ln_n, r2\);
 	if \(s1\) \{9??0?
 grp 09??-7m 8220reg p OK lbuf.c:265:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg lbuf.c:2652sc %? %@2132sc!0?
+1;4;8;9??!219reg lbuf.c:2652sc %? %@2132sc!0?
 0?
 '\''1,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 {
@@ -739,12 +739,12 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\);
 void lbuf_edit\(struct lbuf \*lb, char \*s, int beg, int end, int o1, int o2\);
 void lbuf_region\(struct lbuf \*lb, sbuf \*sb, int r1, int o1, int r2, int o2\);2??0?
 2??m 1220reg p OK vi.h:159:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^int lbuf_rd\(struct lbuf \*lb, int fd, int beg, int end\);$3??0?
+3??m 1220reg p OK vi.h:159:a32sc %? %@2152sc!fr 981qfr 980?
 %f> #define lbuf_i\(lb, pos\) \(\(struct linfo\*\)\(lb->ln\[pos] - sizeof\(struct linfo\)\)\)
 struct lbuf \*lbuf_make\(void\);
-void lbuf_free\(struct lbuf \*lb\);3??0?
-3??+3m 1220reg p OK vi.h:159:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^int lbuf_rd\(struct lbuf \*lb, int fd, int beg, int end\);$4??0?
-4??m 1220reg p OK vi.h:159:a42sc %? %@2152sc!fr 981qfr 980?
+void lbuf_free\(struct lbuf \*lb\);4??0?
+4??+3m 1220reg p OK vi.h:159:a42sc %? %@2152sc!1q0?
 %f> int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\);
 void lbuf_edit\(struct lbuf \*lb, char \*s, int beg, int end, int o1, int o2\);
 void lbuf_region\(struct lbuf \*lb, sbuf \*sb, int r1, int o1, int r2, int o2\);5??0?

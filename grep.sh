@@ -45,8 +45,8 @@ char bar_ft\[] = "/-";	/\* status bar \(is never '\''\\n'\'' terminated\) \*/1
 1??+2m 11q0?
 %f> char n_ft\[] = "/#";	/\* numbers highlight for \^v \*/
 char nn_ft\[] = "/##";	/\* numbers highlight for # \*/
-char ac_ft\[] = "/ac";	/\* autocomplete dropdown \*/3??0?
-3??+2m 1220reg p OK conf.c:15:a32sc %? %@2152sc!1q0?
+char ac_ft\[] = "/ac";	/\* autocomplete dropdown \*/4??0?
+4??+2m 1220reg p OK conf.c:15:a42sc %? %@2152sc!1q0?
 grp 1%f> char n_ft\[] = "/#";	/\* numbers highlight for \^v \*/.*?
 char nn_ft\[] = "/##";	/\* numbers highlight for # \*/.*?
 (char ac_ft\[] = "/ac";	/\* autocomplete dropdown \*/)7??0?
@@ -63,7 +63,7 @@ FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\).*(struct filetype fts\[] = \
 	\{FT\(mbox\), "letter\$\|mbox\$\|mail\$"},			/\* email \*/
 	\{FT\(mk\), "\[Mm]akefile\$\|\\\\\.mk\$"},			/\* makefile \*/9??0?
 grp 09??-10m 1220reg p OK conf.c:15:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:152sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:152sc %? %@2132sc!0?
 ?0?
 %f+ 	\{n_ft, NULL},
 	\{nn_ft, NULL},
@@ -74,8 +74,8 @@ FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\).*(struct filetype fts\[] = \
 1??+2m 21q0?
 %f+ 	\{n_ft, NULL},
 	\{nn_ft, NULL},
-	\{ac_ft, NULL},3??0?
-3??+2m 2220reg p OK conf.c:39:a32sc %? %@2152sc!1q0?
+	\{ac_ft, NULL},4??0?
+4??+2m 2220reg p OK conf.c:39:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{n_ft, NULL},.*?
 	\{nn_ft, NULL},.*?
 (	\{ac_ft, NULL},)7??0?
@@ -92,7 +92,7 @@ FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\).*(struct filetype fts\[] = \
 #define RE	1	/\* red \*/
 #define GR	2	/\* green \*/9??0?
 grp 09??-9m 2220reg p OK conf.c:39:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg conf.c:392sc %? %@2132sc!0?
+1;4;7;8;9??!219reg conf.c:392sc %? %@2132sc!0?
 ?0?
 %f+ 		A\(NA, SYN_BGMK\(RE1\), SYN_BGMK\(AY1\), SYN_BGMK\(AY\)\)},
 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},
@@ -104,8 +104,8 @@ FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\).*(struct filetype fts\[] = \
 %f+ 		A\(NA, SYN_BGMK\(RE1\), SYN_BGMK\(AY1\), SYN_BGMK\(AY\)\)},
 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},
 
-3??0?
-3??+2m 3220reg p OK conf.c:291:a32sc %? %@2152sc!1q0?
+4??0?
+4??+2m 3220reg p OK conf.c:291:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{n_ft, "1\(\[ \\t]\*\[1-9]\[ \\t]\*\)9", A\(RE1, MA1 \| SYN_BD\)},
 	\{n_ft, "9\[ \\t]\*\(\[1-9]\[ \\t]\*\)1", A\(RE1, MA1 \| SYN_BD\)},
 	\{n_ft, "\[1-9]", A\(RE1\)},.*(\(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\)
@@ -118,7 +118,7 @@ FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\).*(struct filetype fts\[] = \
 \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},9??0?
 grp 09??-7m 3220reg p OK conf.c:291:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg conf.c:2912sc %? %@2132sc!0?
+1;4;8;9??!219reg conf.c:2912sc %? %@2132sc!0?
 0?
 '\''1i char grep_ft[] = "/g";	/* grep buffer */
 ??!219reg conf.c:15:m12sc %? %@2142sc!0?
@@ -141,12 +141,12 @@ struct buf \*ex_buf;		/\* current buffer \*/
 struct buf \*ex_pbuf;		/\* prev buffer \*/
 static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/2??0?
 2??m 1220reg p OK ex.c:45:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^struct buf tempbufs\[3];		/\* temporary buffers, for internal use \*/$3??0?
+3??m 1220reg p OK ex.c:45:a32sc %? %@2152sc!fr 981qfr 980?
 %f> int xregs_n;			/\* allocated register count \*/
 int xdefreg;			/\* ex default register \*/
-struct buf \*bufs;		/\* main buffers \*/3??0?
-3??+3m 1220reg p OK ex.c:45:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^struct buf tempbufs\[3];		/\* temporary buffers, for internal use \*/$4??0?
-4??m 1220reg p OK ex.c:45:a42sc %? %@2152sc!fr 981qfr 980?
+struct buf \*bufs;		/\* main buffers \*/4??0?
+4??+3m 1220reg p OK ex.c:45:a42sc %? %@2152sc!1q0?
 %f> struct buf \*ex_buf;		/\* current buffer \*/
 struct buf \*ex_pbuf;		/\* prev buffer \*/
 static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/5??0?
@@ -192,13 +192,13 @@ len = lbuf_s\(path\)->len; \\
 path\[len] = '\''\\0'\''; \\
 ret = ex_edit\(path, len\); \\2??0?
 2??m 1220reg p OK vi.c:443:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^#define fssearch\(\) \\$3??0?
+3??m 1220reg p OK vi.c:443:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	free\(sb->s\);
 }
 
-3??0?
-3??+3m 1220reg p OK vi.c:443:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^#define fssearch\(\) \\$4??0?
-4??m 1220reg p OK vi.c:443:a42sc %? %@2152sc!fr 981qfr 980?
+4??0?
+4??+3m 1220reg p OK vi.c:443:a42sc %? %@2152sc!1q0?
 %f> len = lbuf_s\(path\)->len; \\
 path\[len] = '\''\\0'\''; \\
 ret = ex_edit\(path, len\); \\5??0?
@@ -243,12 +243,12 @@ if \(ret && xrow\) \{ \\
 	if \(!vi_search\('\''n'\'', cnt, row, off, 0\)\) \\
 		return 1; \\2??0?
 2??m 2220reg p OK vi.c:448:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^if \(ret && xrow\) \{ \\$3??0?
+3??m 2220reg p OK vi.c:448:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ path\[len] = '\''\\0'\''; \\
 ret = ex_edit\(path, len\); \\
-path\[len] = '\''\\n'\''; \\3??0?
-3??+3m 2220reg p OK vi.c:448:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^if \(ret && xrow\) \{ \\$4??0?
-4??m 2220reg p OK vi.c:448:a42sc %? %@2152sc!fr 981qfr 980?
+path\[len] = '\''\\n'\''; \\4??0?
+4??+3m 2220reg p OK vi.c:448:a42sc %? %@2152sc!1q0?
 %f+ 	\*row = xrow; \*off = xoff; /\* short circuit \*/ \\
 	if \(!vi_search\('\''n'\'', cnt, row, off, 0\)\) \\
 		return 1; \\5??0?
@@ -291,13 +291,13 @@ static int fs_search\(int cnt, int \*row, int \*off\)
 \{
 	char \*path;2??0?
 2??m 3220reg p OK vi.c:459:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^static int fs_search\(int cnt, int \*row, int \*off\)$3??0?
+3??m 3220reg p OK vi.c:459:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ if \(!vi_search\(\*row \? '\''N'\'' : '\''n'\'', cnt, row, off, 0\)\) \\
 	return 1; \\
 
-3??0?
-3??+3m 3220reg p OK vi.c:459:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^static int fs_search\(int cnt, int \*row, int \*off\)$4??0?
-4??m 3220reg p OK vi.c:459:a42sc %? %@2152sc!fr 981qfr 980?
+4??0?
+4??+3m 3220reg p OK vi.c:459:a42sc %? %@2152sc!1q0?
 %f+ \{
 	char \*path;5??0?
 5??-1m 3220reg p OK vi.c:459:a52sc %? %@2152sc!1q0?
@@ -339,11 +339,11 @@ static int fs_search\(int cnt, int \*row, int \*off\)
 	while \(fspos < lbuf_len\(tempbufs\[1]\.lb\)\) \{
 		path = tempbufs\[1]\.lb->ln\[fspos\+\+];2??0?
 2??m 4220reg p OK vi.c:462:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	int again = 0, ret, len;$3??0?
+3??m 4220reg p OK vi.c:462:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ \{
-	char \*path;3??0?
-3??+2m 4220reg p OK vi.c:462:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	int again = 0, ret, len;$4??0?
-4??m 4220reg p OK vi.c:462:a42sc %? %@2152sc!fr 981qfr 980?
+	char \*path;4??0?
+4??+2m 4220reg p OK vi.c:462:a42sc %? %@2152sc!1q0?
 %f+ 	wrap:
 	while \(fspos < lbuf_len\(tempbufs\[1]\.lb\)\) \{
 		path = tempbufs\[1]\.lb->ln\[fspos\+\+];5??0?
@@ -386,12 +386,12 @@ static int fs_search\(int cnt, int \*row, int \*off\)
 	if \(fspos == lbuf_len\(tempbufs\[1]\.lb\) && !again\) \{
 		fspos = 0;2??0?
 2??m 5220reg p OK vi.c:466:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		fssearch\(\)$3??0?
+3??m 5220reg p OK vi.c:466:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	wrap:
 	while \(fspos < lbuf_len\(tempbufs\[1]\.lb\)\) \{
-		path = tempbufs\[1]\.lb->ln\[fspos\+\+];3??0?
-3??+3m 5220reg p OK vi.c:466:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		fssearch\(\)$4??0?
-4??m 5220reg p OK vi.c:466:a42sc %? %@2152sc!fr 981qfr 980?
+		path = tempbufs\[1]\.lb->ln\[fspos\+\+];4??0?
+4??+3m 5220reg p OK vi.c:466:a42sc %? %@2152sc!1q0?
 %f+ 	}
 	if \(fspos == lbuf_len\(tempbufs\[1]\.lb\) && !again\) \{
 		fspos = 0;5??0?
@@ -436,12 +436,12 @@ static int fs_search\(int cnt, int \*row, int \*off\)
 	return 0;
 }2??0?
 2??m 6220reg p OK vi.c:482:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		fssearch\(\)$3??0?
+3??m 6220reg p OK vi.c:482:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	int ret, len;
 	while \(--fspos >= 0\) \{
-		path = tempbufs\[1]\.lb->ln\[fspos];3??0?
-3??+3m 6220reg p OK vi.c:482:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		fssearch\(\)$4??0?
-4??m 6220reg p OK vi.c:482:a42sc %? %@2152sc!fr 981qfr 980?
+		path = tempbufs\[1]\.lb->ln\[fspos];4??0?
+4??+3m 6220reg p OK vi.c:482:a42sc %? %@2152sc!1q0?
 %f+ 	}
 	return 0;
 }5??0?
@@ -482,8 +482,8 @@ static int rep_len;
 1??+2m 71q0?
 %f+ 				break;
 		break;
-	case TK_CTL\('\'']'\''\):	/\* this is also \^5 on some systems \*/3??0?
-3??+2m 7220reg p OK vi.c:661:a32sc %? %@2152sc!1q0?
+	case TK_CTL\('\'']'\''\):	/\* this is also \^5 on some systems \*/4??0?
+4??+2m 7220reg p OK vi.c:661:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				break;.*?
 		break;.*?
 (	case TK_CTL\('\'']'\''\):	/\* this is also \^5 on some systems \*/)7??0?
@@ -500,7 +500,7 @@ static int rep_len;
 			ex_krsset\(cs, \+1\);
 			free\(cs\);9??0?
 grp 09??-8m 7220reg p OK vi.c:661:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg vi.c:6612sc %? %@2132sc!0?
+1;4;7;8;9??!219reg vi.c:6612sc %? %@2132sc!0?
 ?0?
 %f+ 			lkwdcnt = xkwdcnt;
 			fspos \+= fsdir < 0 \? 1 : 0;
@@ -511,12 +511,12 @@ static int rep_len;
 %f+ 			fs_search\(1, row, off\);
 			fsdir = 1;2??0?
 2??m 8220reg p OK vi.c:680:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			fs_search\(1, row, off\);$3??0?
+3??m 8220reg p OK vi.c:680:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			lkwdcnt = xkwdcnt;
 			fspos \+= fsdir < 0 \? 1 : 0;
-			fspos = MIN\(fspos, lbuf_len\(tempbufs\[1]\.lb\)\);3??0?
-3??+3m 8220reg p OK vi.c:680:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^			fs_search\(1, row, off\);$4??0?
-4??m 8220reg p OK vi.c:680:a42sc %? %@2152sc!fr 981qfr 980?
+			fspos = MIN\(fspos, lbuf_len\(tempbufs\[1]\.lb\)\);4??0?
+4??+3m 8220reg p OK vi.c:680:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			fsdir = 1;$5??0?
 5??-1m 8220reg p OK vi.c:680:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .	....dc.............
@@ -549,8 +549,8 @@ static int rep_len;
 			fspos -= fsdir > 0 \? 1 : 0;
 			if \(!fs_searchback\(1, row, off\)\) \{1??0?
 1??m 91q0?
-;0fr.,$f+ ^			fsdir = 1;$3??0?
-3??m 9220reg p OK vi.c:681:a32sc %? %@2152sc!fr 981qfr 980?
+;0fr.,$f+ ^			fsdir = 1;$4??0?
+4??m 9220reg p OK vi.c:681:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 		if \(mv == TK_CTL\('\'']'\''\)\) \{
 			if \(vi_arg \|\| lkwdcnt != xkwdcnt\)
 				term_exec\("", 1, '\''&'\''\).*(				open_saved\(0\))
@@ -563,7 +563,7 @@ static int rep_len;
 			fspos = MAX\(fspos, 0\);
 		}9??0?
 grp 09??-7m 9220reg p OK vi.c:681:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg vi.c:6812sc %? %@2132sc!0?
+1;4;8;9??!219reg vi.c:6812sc %? %@2132sc!0?
 ?0?
 %f+ 				n = strlen\(ln\);
 				char buf\[n \+ 4];
@@ -580,13 +580,13 @@ static int rep_len;
 			case TK_CTL\('\''n'\''\):
 				vi_cndir = vi_arg \? -vi_cndir : vi_cndir;2??0?
 2??m 10220reg p OK vi.c:1275:a22sc %? %@2152sc!1q0?
+%f+ 				memcpy\(buf\+3, ln, n\);
+				term_push\(buf, n \+ 3\);3??0?
+3??m 10220reg p OK vi.c:1275:a32sc %? %@2152sc!1q0?
 %f+ 				n = strlen\(ln\);
 				char buf\[n \+ 4];
-				memcpy\(buf, ":e ", 3\);3??0?
-3??+3m 10220reg p OK vi.c:1275:a32sc %? %@2152sc!1q0?
-%f+ 				memcpy\(buf\+3, ln, n\);
-				term_push\(buf, n \+ 3\);4??0?
-4??m 10220reg p OK vi.c:1275:a42sc %? %@2152sc!1q0?
+				memcpy\(buf, ":e ", 3\);4??0?
+4??+3m 10220reg p OK vi.c:1275:a42sc %? %@2152sc!1q0?
 %f+ 				break; }
 			case TK_CTL\('\''n'\''\):
 				vi_cndir = vi_arg \? -vi_cndir : vi_cndir;5??0?
@@ -628,8 +628,8 @@ static int rep_len;
 1??+2m 111q0?
 %f+ 					}
 					ln = vi_enprompt\(":", buf, &k, &n\);
-					goto do_excmd; }3??0?
-3??+2m 11220reg p OK vi.c:1415:a32sc %? %@2152sc!1q0?
+					goto do_excmd; }4??0?
+4??+2m 11220reg p OK vi.c:1415:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 						buf1\[n \+ 2] = '\''/'\'';
 						buf1\[n \+ 3] = '\''\\0'\'';
 						free\(cs\);.*(					char buf\[n \+ 30];)
@@ -642,7 +642,7 @@ static int rep_len;
 						buf\[n \+ 3] = '\''/'\'';
 						buf\[n \+ 4] = '\''\\0'\'';9??0?
 grp 09??-7m 11220reg p OK vi.c:1415:a92sc %? %@2152sc!'\''00?
-1;3;8;9??!219reg vi.c:14152sc %? %@2132sc!0?
+1;4;8;9??!219reg vi.c:14152sc %? %@2132sc!0?
 ?0?
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
@@ -653,8 +653,8 @@ static int rep_len;
 1??+2m 121q0?
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
-	temp_open\(2, "/sc/", _ft\);3??0?
-3??+2m 12220reg p OK vi.c:1847:a32sc %? %@2152sc!1q0?
+	temp_open\(2, "/sc/", _ft\);4??0?
+4??+2m 12220reg p OK vi.c:1847:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	temp_open\(0, "/hist/", _ft\);.*?
 	temp_open\(1, "/fm/", fm_ft\);.*?
 (	temp_open\(2, "/sc/", _ft\);)7??0?
@@ -671,7 +671,7 @@ static int rep_len;
 				xvis \|= 1\|2;
 			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
 grp 09??-7m 12220reg p OK vi.c:1847:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg vi.c:18472sc %? %@2132sc!0?
+1;4;7;8;9??!219reg vi.c:18472sc %? %@2132sc!0?
 0?
 '\''1s/\(\)/(isbuffer)/??!219reg vi.c:443:m12sc %? %@2142sc!0?
 '\''2s/ret && xrow/isbuffer/??!219reg vi.c:448:m22sc %? %@2142sc!0?
@@ -750,12 +750,12 @@ extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)2??0?
 2??m 1220reg p OK vi.h:453:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^extern struct buf tempbufs\[3];$3??0?
+3??m 1220reg p OK vi.h:453:a32sc %? %@2152sc!fr 981qfr 980?
 %f> extern int xregs_n;
 extern int xdefreg;
-extern struct buf \*bufs;3??0?
-3??+3m 1220reg p OK vi.h:453:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^extern struct buf tempbufs\[3];$4??0?
-4??m 1220reg p OK vi.h:453:a42sc %? %@2152sc!fr 981qfr 980?
+extern struct buf \*bufs;4??0?
+4??+3m 1220reg p OK vi.h:453:a42sc %? %@2152sc!1q0?
 %f> extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)5??0?

@@ -49,13 +49,13 @@ void ex_init\(char \*\*files, int n\)
 	xbufsalloc = MAX\(n, xbufsalloc\);
 	ec_setbufsmax\(NULL, NULL, ""\);2??0?
 2??m 1220reg p OK ex.c:1919:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^void ex_init\(char \*\*files, int n\)$3??0?
+3??m 1220reg p OK ex.c:1919:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	xgrec--;
 }
 
-3??0?
-3??+3m 1220reg p OK ex.c:1919:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^void ex_init\(char \*\*files, int n\)$4??0?
-4??m 1220reg p OK ex.c:1919:a42sc %? %@2152sc!fr 981qfr 980?
+4??0?
+4??+3m 1220reg p OK ex.c:1919:a42sc %? %@2152sc!1q0?
 %f> \{
 	xbufsalloc = MAX\(n, xbufsalloc\);
 	ec_setbufsmax\(NULL, NULL, ""\);5??0?
@@ -94,13 +94,13 @@ void ex_init\(char \*\*files, int n\)
 1??+2m 21q0?
 %f+ 	xvis &= ~4;
 	if \(\(s = getenv\("EXINIT"\)\)\)
-		ex_command\(s\)3??0?
-3??+2m 2220reg p OK ex.c:1931:a32sc %? %@2152sc!1q0?
+		ex_command\(s\)4??0?
+4??+2m 2220reg p OK ex.c:1931:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	xvis &= ~4;.*?
 	if \(\(s = getenv\("EXINIT"\)\)\).*?
 (		ex_command\(s\))7??0?
 grp 07??m 2220reg p OK ex.c:1931:a72sc %? %@2152sc!0?
-1;3;7??!219reg ex.c:19312sc %? %@2132sc!0?
+1;4;7??!219reg ex.c:19312sc %? %@2132sc!0?
 0?
 '\''1s/n\)/n, char **cmds, int cmdnum)/??!219reg ex.c:1919:m12sc %? %@2142sc!0?
 '\''2i 	for (int i = 0; i < cmdnum; i++)
@@ -119,12 +119,12 @@ int main\(int argc, char \*argv\[]\)
 	dir_init\(\);
 	syn_init\(\);2??0?
 2??m 1220reg p OK vi.c:1841:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^	int i, j;$3??0?
+3??m 1220reg p OK vi.c:1841:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 
 int main\(int argc, char \*argv\[]\)
-\{3??0?
-3??+3m 1220reg p OK vi.c:1841:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^	int i, j;$4??0?
-4??m 1220reg p OK vi.c:1841:a42sc %? %@2152sc!fr 981qfr 980?
+\{4??0?
+4??+3m 1220reg p OK vi.c:1841:a42sc %? %@2152sc!1q0?
 %f> 	setup_signals\(\);
 	dir_init\(\);
 	syn_init\(\);5??0?
@@ -165,12 +165,12 @@ int main\(int argc, char \*argv\[]\).*?
 %f+ 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);2??0?
 2??m 2220reg p OK vi.c:1864:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			else \{$3??0?
+3??m 2220reg p OK vi.c:1864:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				xvis \|= 8;
 			else if \(argv\[i]\[j] == '\''v'\''\)
-				xvis = 0;3??0?
-3??+3m 2220reg p OK vi.c:1864:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^			else \{$4??0?
-4??m 2220reg p OK vi.c:1864:a42sc %? %@2152sc!fr 981qfr 980?
+				xvis = 0;4??0?
+4??+3m 2220reg p OK vi.c:1864:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);$5??0?
 5??-1m 2220reg p OK vi.c:1864:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .	..x... .. 8.
@@ -209,10 +209,10 @@ int main\(int argc, char \*argv\[]\).*?
 			}
 		}2??0?
 2??m 3220reg p OK vi.c:1866:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);$3??0?
-3??+1m 3220reg p OK vi.c:1866:a32sc %? %@2152sc!fr 981qfr 980?
-;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$4??0?
-4??m 3220reg p OK vi.c:1866:a42sc %? %@2152sc!fr 981qfr 980?
+;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
+3??m 3220reg p OK vi.c:1866:a32sc %? %@2152sc!fr 981qfr 980?
+;0fr.,$f+ ^				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);$4??0?
+4??+1m 3220reg p OK vi.c:1866:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 				return EXIT_FAILURE;
 			}
 		}5??0?
@@ -253,12 +253,12 @@ int main\(int argc, char \*argv\[]\).*?
 		ex\(\);
 	else2??0?
 2??m 4220reg p OK vi.c:1876:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	ex_init\(argv \+ i, argc - i\);$3??0?
+3??m 4220reg p OK vi.c:1876:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		term_init\(\);
 	if \(xvis & 8\)
-		term_scrh;3??0?
-3??+3m 4220reg p OK vi.c:1876:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	ex_init\(argv \+ i, argc - i\);$4??0?
-4??m 4220reg p OK vi.c:1876:a42sc %? %@2152sc!fr 981qfr 980?
+		term_scrh;4??0?
+4??+3m 4220reg p OK vi.c:1876:a42sc %? %@2152sc!1q0?
 %f+ 	if \(xvis & 2\)
 		ex\(\);
 	else5??0?
@@ -321,12 +321,12 @@ void ex_bufpostfix\(struct buf \*p, int clear\);
 int ex_krs\(rset \*\*krs, int \*dir\);
 void ex_krsset\(char \*kwd, int dir\);2??0?
 2??m 1220reg p OK vi.h:486:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^void ex_init\(char \*\*files, int n\);$3??0?
+3??m 1220reg p OK vi.h:486:a32sc %? %@2152sc!fr 981qfr 980?
 %f> void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);
 #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }
-#define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }3??0?
-3??+3m 1220reg p OK vi.h:486:a32sc %? %@2152sc!1q0?
-;0fr.,$f> ^void ex_init\(char \*\*files, int n\);$4??0?
-4??m 1220reg p OK vi.h:486:a42sc %? %@2152sc!fr 981qfr 980?
+#define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }4??0?
+4??+3m 1220reg p OK vi.h:486:a42sc %? %@2152sc!1q0?
 %f> void ex_bufpostfix\(struct buf \*p, int clear\);
 int ex_krs\(rset \*\*krs, int \*dir\);
 void ex_krsset\(char \*kwd, int dir\);5??0?

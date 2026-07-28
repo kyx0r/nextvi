@@ -45,8 +45,8 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 1??+2m 11q0?
 %f> 
 	mv = term_read\(0\);
-	switch \(mv\) \{3??0?
-3??+2m 1220reg p OK vi.c:527:a32sc %? %@2152sc!1q0?
+	switch \(mv\) \{4??0?
+4??+2m 1220reg p OK vi.c:527:a42sc %? %@2152sc!1q0?
 grp 1%f> .*?
 	mv = term_read\(0\);.*?
 (	switch \(mv\) \{)7??0?
@@ -63,7 +63,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		if \(lbuf_findchar\(xb, vi_charlast, mv, cnt, row, off\)\)
 			return -1;9??0?
 grp 09??-9m 1220reg p OK vi.c:527:a92sc %? %@2152sc!'\''00?
-1;3;7;8;9??!219reg vi.c:5272sc %? %@2132sc!0?
+1;4;7;8;9??!219reg vi.c:5272sc %? %@2132sc!0?
 0?
 '\''1i 	case '\''\033'\'':	/* Arrow keys */
 		mv = term_read(0);
