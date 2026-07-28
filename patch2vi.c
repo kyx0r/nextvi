@@ -1594,12 +1594,15 @@ typedef struct {
 /* Default (non-edited) lines for fallback pattern pi, strict to loose:
  *   0 = whole hunk (pre-ctx + deleted + following ctx)
  *   1 = deleted + following ctx: pre-context ambiguous, trailing not
- *   2 = top context only (the historical single pattern)
- *   3 = deleted lines only
+ *   2 = deleted lines only
+ *   3 = top context only (the historical single pattern)
  *   4 = following ctx only: the whole hunk region is volatile but the line
  *       after it is a stable landmark
+ * The deletion-rooted slots (1, 2) outrank the context-rooted ones (3, 4): they
+ * land on the text the patch expects to remove (off = 0), while a context match
+ * trusts that nothing drifted between the anchor and the hunk.
  * 1 and 4 need deleted lines and return 0 for a pure add; redundant slots (no
- * following context makes 1 == 3, 4 empty) are dropped by the caller's dedup.
+ * following context makes 1 == 2, 4 empty) are dropped by the caller's dedup.
  * raw[] takes borrowed pointers; *off = lines from match start to target. */
 static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 {
@@ -1607,7 +1610,7 @@ static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 	int has_del = g->ndel > 0 && !(g->ndel == 1 && !g->del_texts[0][0]);
 	int has_post = g->npost_ctx > 0 || (g->follow_ctx && g->follow_ctx[0]);
 	*off = 0;
-	if (pi == 3) {
+	if (pi == 2) {
 		if (!has_del)
 			return 0;
 		for (int i = 0; i < g->ndel; i++)
@@ -1617,7 +1620,7 @@ static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 	if (pi == 1) {
 		/* deleted lines + following ctx; match starts on the first
 		 * deleted line, which is the target (off = 0). Only distinct
-		 * from strategy 3 when following context exists. */
+		 * from strategy 2 when following context exists. */
 		if (!has_del || !has_post)
 			return 0;
 		for (int i = 0; i < g->ndel; i++)
@@ -1643,7 +1646,7 @@ static int default_pat_lines(group_t *g, int pi, char **raw, int *off)
 		*off = -(g->ndel);
 		return n;
 	}
-	if (pi == 2) {
+	if (pi == 3) {
 		if (g->nanchors >= 2 ||
 		    (g->nanchors == 1 && g->anchors[0] && g->anchors[0][0])) {
 			for (int i = 0; i < g->nanchors; i++)
@@ -2846,11 +2849,11 @@ static void gsect_add(grp_delta_t *gd, int sect, int pat_idx, const char *line)
 }
 
 /* The slot digit after a "=== <tag>" prefix of n bytes, 0-based; a legacy tag
- * with no digit means the top-context slot, SEARCH PATTERN 3. */
+ * with no digit means the top-context slot, SEARCH PATTERN 4. */
 static int pat_slot(const char *line, int n)
 {
 	char c = line[n];
-	return (c >= '1' && c <= '0' + NSEARCH) ? c - '1' : 2;
+	return (c >= '1' && c <= '0' + NSEARCH) ? c - '1' : 3;
 }
 
 /* Parse "=== LEVEL <n>[*] ===" into gd->level / gd->has_star (default 2). */
@@ -2987,11 +2990,11 @@ static void parse_grp_blob(char *blob, file_patch_t **active, int nactive,
 		if (strncmp(line, "=== SEARCH PATTERN", 18) == 0) {
 			/* "=== SEARCH PATTERN <1-NSEARCH> ===", bare legacy form
 			 * maps to the top-context slot (historical single
-			 * pattern), now SEARCH PATTERN 3. */
+			 * pattern), now SEARCH PATTERN 4. */
 			const char *p = line + 18;
 			while (*p == ' ')
 				p++;
-			in_pat = (*p >= '1' && *p <= '0' + NSEARCH) ? *p - '0' : 3;
+			in_pat = (*p >= '1' && *p <= '0' + NSEARCH) ? *p - '0' : 4;
 			continue;
 		}
 		if (strncmp(line, "=== EDIT COMMAND (", 18) == 0) {
@@ -4662,7 +4665,7 @@ static void gen_group_segments(file_patch_t *fp)
 			 * ndel below it, the rest anchor on leading context */
 			ps[nps].offset = g->custom_pat_has_off[pi]
 					 ? g->custom_pat_off[pi]
-					 : (pi == 1 || pi == 3) ? 0
+					 : (pi == 1 || pi == 2) ? 0
 					 : pi == 4 ? -(g->ndel)
 					 : g->custom_offset;
 			ps[nps].off_final = g->custom_pat_has_off[pi];
