@@ -1111,8 +1111,6 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	int e = ex_region(loc, &beg, &end, &o1, &o2);
 	if (e && *loc)
 		return xrerr;
-	if (o1 >= 0)
-		xoff = MAX(o1, o2);
 	pat = ex_re_read(&s);
 	if (pat && (*pat || !rs))
 		rs = rset_smake(pat, xic ? REG_ICASE : 0);
@@ -1127,6 +1125,8 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		rep = ex_re_read(&s);
 	}
 	free(pat);
+	if (o1 >= 0)
+		xoff = MAX(o1, o2);
 	int offs[rs->nsubc];
 	char *lnb = "", *ln, *sl, *suf = "";
 	int b1 = 0, pend, rflg = REG_NEWLINE;
