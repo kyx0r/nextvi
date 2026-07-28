@@ -1180,18 +1180,18 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		}
 		if (r) {
 			sbufn_str(r, ln)
+			if (first < 0) {
+				first = i;
+				lo = lbuf_opt(xb, xrow, xoff, 0);
+				lbuf_smark(xb, lo, i, MAX(o1, 0));
+				lbuf_emark(xb, lo, 0, 0);
+			}
 			if (flg & 2) {
-				first = beg;
 				p = o1 >= 0 ? lbuf_joinsb(xb, beg, pend - 1, r, &o1, &o2) : NULL;
 				lbuf_edit(xb, p ? p : r->s, beg, pend, p ? o1 : 0, MAX(o2, 0));
 				free(p);
+				lbuf_jump(xb, ']', &last, &pend);	/* joined region end */
 			} else {
-				if (first < 0) {
-					first = i;
-					lo = lbuf_opt(xb, xrow, xoff, 0);
-					lbuf_smark(xb, lo, i, 0);
-					lbuf_emark(xb, lo, 0, 0);
-				}
 				if (sl) {
 					sbuf_smake(sb, r->s_n + 128)
 					sbuf_mem(sb, lnb, b1)
@@ -1207,10 +1207,10 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		}
 		free(sl);
 	}
-	if (first >= 0 && !(flg & 2)) {
+	if (first >= 0) {	/* return here on redo */
 		lo = lbuf_opt(xb, xrow, xoff, 0);
-		lbuf_smark(xb, lo, first, 0);
-		lbuf_emark(xb, lo, last, 0);
+		lbuf_smark(xb, lo, first, MAX(o1, 0));
+		lbuf_emark(xb, lo, last, MAX(o2, 0));
 	}
 	if (rs != xkwdrs)
 		rset_free(rs);
