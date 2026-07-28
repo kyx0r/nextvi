@@ -1101,14 +1101,15 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
 
 static void *ec_substitute(char *loc, char *cmd, char *arg)
 {
-	int beg, end, o1 = -1, o2 = -2, flg, grp;
-	char *pat, *rep = NULL, *_rep, *p;
+	int beg, end, o1 = -1, o2 = -2, flg, grp, reg = -1;
+	char *pat, *rep = NULL, *_rep, *p, *err = NULL;
 	char *s = arg;
 	rset *rs = xkwdrs;
 	int i, first = -1, last = 0;
 	struct lopt *lo;
-	sbuf text;
-	if (ex_region(loc, &beg, &end, &o1, &o2))
+	sbuf text, *rb;
+	int e = ex_region(loc, &beg, &end, &o1, &o2);
+	if (e && *loc)
 		return xrerr;
 	if (o1 >= 0)
 		xoff = MAX(o1, o2);
@@ -1129,7 +1130,34 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	int offs[rs->nsubc];
 	char *lnb = "", *ln, *sl, *suf = "";
 	int b1 = 0, pend, rflg = REG_NEWLINE;
-	flg = (strchr(s, 'g') ? 1 : 0) | (strchr(s, 'm') ? 2 : 0);
+	for (i = 0, flg = 0; s[i]; i++) {
+		if (s[i] == 'g')
+			flg |= 1;
+		else if (s[i] == 'm')
+			flg |= 2;
+		else if (uc_isdigit(s[i]))
+			reg = (reg < 0 ? 0 : reg * 10) + s[i] - '0';
+		else		/* only flags may break up the register */
+			reg = -1;
+	}
+	if (reg >= 0) {		/* the register is the whole region */
+		if (*loc)
+			err = "register takes no range";
+		else if (!(rb = ex_regget(reg)))
+			err = "uninitialized register";
+		if (err)
+			goto out;
+		flg |= 2;
+		ln = rb->s;
+		sl = NULL;
+		rflg = 0;
+		end = 1;
+		i = 0;
+		goto mltest;
+	} else if (e) {
+		err = xrerr;
+		goto out;
+	}
 	if (flg & 2) { 	/* multiline */
 		lbuf_region(xb, &text, beg, MAX(o1, 0), end - 1, o2);
 		ln = text.s;
@@ -1182,11 +1210,15 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 			sbufn_str(r, ln)
 			if (first < 0) {
 				first = i;
-				lo = lbuf_opt(xb, xrow, xoff, 0);
-				lbuf_smark(xb, lo, i, MAX(o1, 0));
-				lbuf_emark(xb, lo, 0, 0);
+				if (reg < 0) {	/* undo marks */
+					lo = lbuf_opt(xb, xrow, xoff, 0);
+					lbuf_smark(xb, lo, i, MAX(o1, 0));
+					lbuf_emark(xb, lo, 0, 0);
+				}
 			}
-			if (flg & 2) {
+			if (reg >= 0)
+				ex_regput(reg, r->s, 0);
+			else if (flg & 2) {
 				p = o1 >= 0 ? lbuf_joinsb(xb, beg, pend - 1, r, &o1, &o2) : NULL;
 				lbuf_edit(xb, p ? p : r->s, beg, pend, p ? o1 : 0, MAX(o2, 0));
 				free(p);
@@ -1207,15 +1239,16 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		}
 		free(sl);
 	}
-	if (first >= 0) {	/* return here on redo */
+	if (first >= 0 && reg < 0) {	/* redo marks */
 		lo = lbuf_opt(xb, xrow, xoff, 0);
 		lbuf_smark(xb, lo, first, MAX(o1, 0));
 		lbuf_emark(xb, lo, last, MAX(o2, 0));
 	}
+	out:
 	if (rs != xkwdrs)
 		rset_free(rs);
 	free(rep);
-	return first < 0 ? xuerr : NULL;
+	return err ? err : first < 0 ? xuerr : NULL;
 }
 
 static void *ec_exec(char *loc, char *cmd, char *arg)
