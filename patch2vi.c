@@ -1124,6 +1124,12 @@ static void sq_write(const char *s, int n)
 #define REG_HDLR 217	/* the FAIL report chain both phases share */
 #define REG_LOC  219	/* argument: the FAIL location of the current site */
 #define REG_MSG  220	/* argument: the OK report command of the current site */
+/* The FAIL log: the report chain redirects its print here ("prF") instead of to
+ * the terminal alone, so every failure of a QF2=1 run accumulates in one
+ * register the run can be read back from. An upper-case id is the point - that
+ * is the range ex_cprint newline-terminates each append in, which makes the
+ * register a line per failure and so parseable (see FAILURE PLACEMENT). */
+#define REG_FLOG 'F'
 /* The "vis 2; q!1" body every assert runs through, and the one register QF2=1
  * clears. REG_QF2 only ever points at it ("? %@221"), so the -co blocks that
  * rewrite REG_QF2 at run time - the host override and each block's quit policy -
@@ -4904,14 +4910,14 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
 /* The state registers, defined at the top of every $VI body: the body writes
  * the default state and the shell then contributes whole commands that flip
  * individual switches (any non-empty value counts as set).
- * REG_HDLR captures the FAIL line into register 112, where the INTR chain reads
- * it back, prints it and calls INTR; a phase gate calls REG_HDLR and then the
- * phase's quit chain, so QF only fires where the report does. */
+ * REG_HDLR prints the FAIL line with the print redirected into REG_FLOG, so the
+ * line reaches the terminal and the log both, and then calls INTR; a phase gate
+ * calls REG_HDLR and then the phase's quit chain, so QF only fires where the
+ * report does. The redirect is switched off again right after ("pr" with no
+ * argument toggles), leaving the log the only state the site keeps. */
 static void emit_reg_defaults(sbuf *out)
 {
-	sb_printf(out, "%dreg ya!112", REG_HDLR);
-	EMIT_ESCSEP(out);
-	sb_str(out, "prp");
+	sb_printf(out, "%dreg pr%c", REG_HDLR, REG_FLOG);
 	EMIT_ESCSEP(out);
 	sb_printf(out, "p FAIL %%@%d", REG_LOC);
 	EMIT_ESCSEP(out);
@@ -6431,6 +6437,173 @@ static int hand_vis = -1;	/* xvis for the handover, -1 = plain visual */
 static char **hand_files;
 static int nhand_files;
 
+/*
+ * FAILURE PLACEMENT
+ *
+ * A QF2=1 run reports every failing site and keeps going, so it ends with the
+ * hunks that missed simply not applied - the state is in the buffers, but what
+ * was supposed to happen is only in the terminal scrollback. Placement puts it
+ * back, using the two things the run leaves behind in registers: REG_FLOG, a
+ * line per failure, and the command stream itself (P2VI_REG), which the block
+ * ran and which still holds every edit verbatim.
+ *
+ * The two are joined by the mark. A phase-2 FAIL line reads
+ * "<path>:<line>:m<id>", and in the stream a mark address only ever occurs at
+ * the head of a whole separator-delimited command, so "<sep>'<id>" names the
+ * failed edit and nothing else. What is lost is where it should go: its anchor
+ * did not resolve, so the only placement left is the line number the FAIL line
+ * carries - the site's line in the original file, which is approximate once the
+ * hunks above it have shifted things. So the edit is re-aimed at that line and
+ * run; if it fails there too, it goes into the buffer verbatim between marker
+ * lines, which loses nothing and is a local edit to fix up. Either way the
+ * session is handed over parked on the first such spot.
+ */
+
+/* One line of REG_FLOG, cut up where it lies: "FAIL <path>:<line>:m<id>", read
+ * off the end so a path holding a colon still resolves. Returns the mark, or -1
+ * for a line with none - a phase-1 report, which names an anchor that did not
+ * resolve and so no edit to recover; the phase-2 site it was to steer is logged
+ * right after it and is the actionable half of the same failure. */
+static int fail_parse(char *s, char **path, int *line)
+{
+	char *c;
+	int mark;
+	if (strncmp(s, "FAIL ", 5) || !(c = strrchr(s, ':')) || c[1] != 'm'
+			|| !isdigit((unsigned char)c[2]))
+		return -1;
+	mark = atoi(c + 2);
+	*c = '\0';
+	if (!(c = strrchr(s, ':')) || !isdigit((unsigned char)c[1]))
+		return -1;
+	*c = '\0';
+	*line = atoi(c + 1);
+	*path = s + 5;
+	return mark;
+}
+
+/* The whole command addressing mark <mark>, at whatever depth it sits: a
+ * command always starts right after a separator byte, so a quote there is an
+ * address and never payload (payload lines are newline-delimited). It ends at
+ * the next separator, minus the escapes a nested site carries before it. */
+static char *stream_site(const char *body, int mark)
+{
+	const char *p = body, *e;
+	while ((p = strchr(p, xsep))) {
+		if (*++p != '\'' || atoi(p + 1) != mark)
+			continue;
+		for (e = p + 1; isdigit((unsigned char)*e); e++);
+		if (e == p + 1 || !(e = strchr(e, xsep)))
+			continue;
+		while (e[-1] == xesc)
+			e--;
+		return dup_n(p, e - p);
+	}
+	return NULL;
+}
+
+static int buf_by_path(const char *path)
+{
+	for (int i = 0; i < xbufcur; i++)
+		if (bufs[i].path && !strcmp(bufs[i].path, path))
+			return i;
+	return -1;
+}
+
+/* Put one failure back, in the buffer it belongs to. Returns the row the
+ * session should park on, or -1 if that file is not even open. */
+static int fail_place(const char *body, const char *path, int line, int mark,
+		      int *bi, int *shift)
+{
+	char *site = stream_site(body, mark);
+	const char *addr, *verb;
+	int row, len, ok = 0;
+	sbuf_smake(sb, SB_INIT)
+	if ((*bi = buf_by_path(path)) < 0) {
+		free(site);
+		free(sb->s);
+		return -1;
+	}
+	bufs_switch(*bi);
+	/* every block placed above this one pushed the rest of the file down,
+	 * and the failures come in patch order, so the shift simply adds up */
+	line += shift[*bi];
+	len = lbuf_len(xb);
+	row = MAX(0, MIN(len, line) - 1);
+	xrow = row;
+	xoff = 0;
+	if (site) {
+		for (addr = site + 1; isdigit((unsigned char)*addr); addr++);
+		for (verb = addr; *verb && !isalpha((unsigned char)*verb); verb++);
+		/* The mark is what did not resolve, so the same command aimed
+		 * at the reported line is the best guess left - taken only
+		 * where it cannot lose anything: an insert adds, a substitute
+		 * has to match first. A "c" or "d" one line off would quietly
+		 * eat a line the patch never mentioned. */
+		if (*verb == 'i' || *verb == 's') {
+			sb_printf(sb, "%d%s", line, addr);
+			sbuf_null(sb)
+			ok = ex_exec(sb->s) == NULL;
+			sbuf_cut(sb, 0)
+		}
+	}
+	if (!ok) {
+		sb_printf(sb, ">>> p2v FAIL %s:%d:m%d\n", path, line, mark);
+		if (site)
+			sb_str(sb, site);
+		if (sb->s[sb->s_n - 1] != '\n')
+			sb_chr(sb, '\n');
+		sb_str(sb, "<<< p2v END\n");
+		sbuf_null(sb)
+		lbuf_edit(xb, sb->s, row, row, -1, -1);
+	}
+	shift[*bi] += lbuf_len(xb) - len;
+	free(site);
+	free(sb->s);
+	return row;
+}
+
+/* Every failure the block logged, oldest first. Returns the buffer to park the
+ * handover on and sets *prow to the row in it, or -1 when the run logged
+ * nothing - which is every run that did not fail, so the common path is one
+ * register lookup. */
+static int fail_report(int sepb, int *prow)
+{
+	sbuf *log = ex_regget(REG_FLOG), *body = ex_regget(P2VI_REG);
+	char *s, *nl, *txt, *path;
+	int *shift, bi, row, line, mark, first = -1, n = 0;
+	if (!log || !log->s_n || !body || !xbufcur)
+		return -1;
+	shift = ecalloc(xbufcur, sizeof(int));
+	/* cut up a copy: the register is the run's own record, which the
+	 * handover may well want to read */
+	txt = uc_dup(log->s);
+	/* the stream is read and re-run under the body's own specials: xesc is
+	 * still what its "|sc!" prologue set (the stripped tail never put it
+	 * back) and the separator is restated from the block */
+	preserve(int, xsep, xsep = sepb;)
+	/* every entry is newline-terminated, that being the point of logging
+	 * into an upper-case register */
+	for (s = txt; (nl = strchr(s, '\n')); s = nl) {
+		*nl++ = '\0';
+		if ((mark = fail_parse(s, &path, &line)) < 0)
+			continue;
+		row = fail_place(body->s, path, line, mark, &bi, shift);
+		if (row >= 0 && first < 0) {
+			first = bi;
+			*prow = row;
+		}
+		n += row >= 0;
+	}
+	restore(xsep)
+	free(txt);
+	free(shift);
+	if (n)
+		fprintf(stderr, "replay: %d failed hunk%s put back at the "
+			"reported line; look for \">>> p2v FAIL\"\n",
+			n, n > 1 ? "s" : "");
+	return first;
+}
+
 /* Every block in one session, leaving its buffers alive for the caller to read
  * back. With handover the last block leaves the editor to the user instead of
  * returning at the end of its body. snap_blk names the block the compat
@@ -6443,6 +6616,7 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 {
 	char **paths = NULL, *body, *ln;
 	int npaths = 0, *bmap = NULL, nmap = 0, i, k, st = 0, sep, bad = 0;
+	int fbuf = -1, frow = 0;
 	if (snap_blk < 0 || snap_blk >= nblks)
 		snap_blk = nblks - 1;
 	/* sized for the union of every block's files: an eviction would
@@ -6547,6 +6721,15 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			 * reaches back into the replay's own edits. */
 			for (k = 0; k < xbufcur; k++)
 				lbuf_saved(bufs[k].lb, 1);
+			/* a QF2=1 body reaches here having reported its
+			 * failures instead of quitting at the first: put what
+			 * they were meant to do back into the buffers, after
+			 * the save above so the user can undo any of it. Not
+			 * while deriving a compat patch - there a miss is the
+			 * input to the derivation, not a hunk to fix, and the
+			 * blocks would land in the derived diff. */
+			if (!compat_capturing)
+				fbuf = fail_report(sep, &frow);
 			/* hand over a plain editor: the body's own separator,
 			 * escape and mode came from its "|sc!" prologue and
 			 * the "vis 2" the stripped tail left behind */
@@ -6558,6 +6741,13 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			 * session lands on one of them */
 			for (k = 0; k < nhand_files; k++)
 				ec_edit("", "e", hand_files[k]);
+			/* park on the first placed failure, opened files and
+			 * all: it is the one thing the session is here for */
+			if (fbuf >= 0 && fbuf < xbufcur) {
+				bufs_switch(fbuf);
+				xrow = frow;
+				xoff = 0;
+			}
 			/* the highlighter still carries whatever ft the last
 			 * setft in the body left (a section scaffold buffer has
 			 * none), and vi() only refreshes it on a buffer switch */
@@ -7285,16 +7475,14 @@ static int find_image(char **lines, int nlines, char **img, int nimg,
  * in which case disk is its baseline text, so it is snapshotted too. */
 static struct lbuf *compat_openbuf(char *path)
 {
-	for (int i = 0; i < xbufcur; i++)
-		if (bufs[i].path && !strcmp(bufs[i].path, path))
-			return bufs[i].lb;
-	snap_seed(&compat_base, path);
-	xmpt = 0;
-	ec_edit("", "e", path);
-	for (int i = 0; i < xbufcur; i++)
-		if (bufs[i].path && !strcmp(bufs[i].path, path))
-			return bufs[i].lb;
-	return NULL;
+	int i = buf_by_path(path);
+	if (i < 0) {
+		snap_seed(&compat_base, path);
+		xmpt = 0;
+		ec_edit("", "e", path);
+		i = buf_by_path(path);
+	}
+	return i < 0 ? NULL : bufs[i].lb;
 }
 
 /* One parsed file of the pre-applied diff onto its session buffer: each hunk's
@@ -8216,6 +8404,8 @@ static void usage(const char *prog, int err)
 	      "  -e    Execute a script with the built-in nextvi, no shell involved\n"
 	      "  -E    Update a script: replay it, edit, re-emit it\n"
 	      "        Rest of the line is a nextvi command line; -d[N] keeps deltas\n"
+	      "        With QF2=1 the hunks that missed are put back into the\n"
+	      "        buffers at the line they reported, cursor parked on the first\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\n"
 	      "        run reads. Clustered with another option it takes no FILE\n"
 	      "        and updates that option's own script in place\n"
@@ -8569,6 +8759,9 @@ int main(int argc, char **argv)
 		      "#   resolved a group, QF1=1 also quits on failure\n"
 		      "# Phase 2 (edits) reports and quits by default\n"
 		      "#   DBG2=1 silences it, QF2=1 keeps going after an error\n"
+		      "#   and logs every one; replaying the script through\n"
+		      "#   \"patch2vi -E\" then puts what the missed hunks were\n"
+		      "#   meant to do back at the line they reported\n"
 		      "# INTR=1 enters vi at the failing code line in this\n"
 		      "#   script, for state inspection mid execution\n\n", stdout);
 

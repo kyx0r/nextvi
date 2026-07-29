@@ -2568,6 +2568,79 @@ else
 	sed 's/^/    /' "$R/e.c"
 fi
 
+# FAILURE PLACEMENT. A QF2=1 run reports every miss and keeps going, so what
+# the missed hunks were meant to do is left only in the scrollback. The report
+# chain logs each FAIL line to a register, and the mark it names ("...:m<id>")
+# finds the edit itself in the command stream the block ran, so -E puts it back
+# at the line the FAIL reported: run there when that cannot lose anything (an
+# insert, or a substitute, which has to match first), otherwise dropped in as a
+# ">>> p2v FAIL" block to apply by hand.
+printf 'F1\nF2\nF3\nF4\nF5\nF6\n' > "$R/f.orig"
+printf -- '--- a/f.c\n+++ b/f.c\n@@ -1,6 +1,6 @@\n F1\n-F2\n+F2x\n F3\n F4\n F5\n-F6\n+F6y\n' \
+	> "$R/f.diff"
+"$R_P2VI" -r "$R/f.diff" > "$R/f.sh"
+
+# amend_F <out.sh>: replay f.sh over f.c with QF2=1 and re-emit
+amend_F() {
+	P2VI_EX='q!' script -qec \
+		"sh -c 'cd $R && QF2=1 $R_P2VI -E f.sh > $R/$1 2>$R/ferr'" \
+		/dev/null > /dev/null 2>&1 || true
+}
+
+# nothing missed: the log stays empty and the update is the plain one
+cp "$R/f.orig" "$R/f.c"
+amend_F "fok.sh"
+if [ -s "$R/fok.sh" ] && ! grep -q 'p2v FAIL' "$R/fok.sh" &&
+   ! tr -d '\r' < "$R/ferr" | grep -q 'put back'; then
+	ok "placement: a run that missed nothing places nothing"
+else
+	fail "placement: a run that missed nothing places nothing"
+	tr -d '\r' < "$R/ferr" | sed 's/^/    /' | head -3
+fi
+
+# the anchors of both groups are gone, but the reported line of the second one
+# still holds a "6": that substitute is re-aimed and applies, the first cannot
+# match and is left in place with its command
+printf 'AA\nBB\nCC\nDD\nEE\nq6q\n' > "$R/f.c"
+amend_F "ffail.sh"
+if tr -d '\r' < "$R/ferr" | grep -q '2 failed hunks put back' &&
+   grep -q "^+>>> p2v FAIL f.c:2:m1$" "$R/ffail.sh" &&
+   grep -q "^+'1s/2/2x/$" "$R/ffail.sh" &&
+   grep -q '^+<<< p2v END$' "$R/ffail.sh" &&
+   grep -q '^+q6yq$' "$R/ffail.sh"; then
+	ok "placement: a missed hunk is put back, a re-aimable one applied"
+else
+	fail "placement: a missed hunk is put back, a re-aimable one applied"
+	tr -d '\r' < "$R/ferr" | sed 's/^/    /' | head -3
+	sed -n '/PATCH2VI PATCH/,$p' "$R/ffail.sh" | sed 's/^/    /'
+fi
+
+# a delete is never run at a guessed line - it would eat a line the patch never
+# named - so it always arrives as a block, and the session is parked on the
+# first one (the file the handover writes holds the line the cursor is on)
+printf -- '--- a/g.c\n+++ b/g.c\n@@ -1,4 +1,3 @@\n G1\n G2\n-G3\n G4\n' > "$R/g.diff"
+"$R_P2VI" -r "$R/g.diff" > "$R/g.sh"
+printf 'G1\nZZ\nYY\nXX\n' > "$R/g.c"
+P2VI_EX='q!' script -qec \
+	"sh -c 'cd $R && QF2=1 $R_P2VI -E g.sh > $R/gfail.sh 2>$R/gerr'" \
+	/dev/null > /dev/null 2>&1 || true
+# again, this time writing the line the cursor sits on out of the session (a
+# run of its own: the write would otherwise show up as a buffer to diff)
+printf 'G1\nZZ\nYY\nXX\n' > "$R/g.c"
+rm -f "$R/gcur"
+P2VI_EX=".w! $R/gcur:q!" script -qec \
+	"sh -c 'cd $R && QF2=1 $R_P2VI -E g.sh > /dev/null 2>&1'" \
+	/dev/null > /dev/null 2>&1 || true
+if grep -q "^+>>> p2v FAIL g.c:3:m1$" "$R/gfail.sh" &&
+   grep -q "^+'1d$" "$R/gfail.sh" &&
+   [ "$(cat "$R/gcur" 2>/dev/null)" = '>>> p2v FAIL g.c:3:m1' ]; then
+	ok "placement: a delete is never guessed at, and parks the cursor"
+else
+	fail "placement: a delete is never guessed at, and parks the cursor"
+	tr -d '\r' < "$R/gerr" | sed 's/^/    /' | head -3
+	sed -n '/PATCH2VI PATCH/,$p' "$R/gfail.sh" | sed 's/^/    /'
+fi
+
 fi
 
 echo ""
