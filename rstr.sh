@@ -1396,8 +1396,9 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 		rstr_free(xkwdrs);
 		xkwdrs = rstr_make(kwd, xic ? REG_ICASE : 0);
 ??!219reg ex.c:229:m22sc %? %@2142sc!0?
-'\''3c 		} else if ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2) {
-??!219reg ex.c:276:m32sc %? %@2142sc!0?
+?'\''3s/xkwdrs->nsubc/(xkwdrs->rs ? xkwdrs->rs->nsubc : 2)/1??1??1q'\''3s/(xk.*d)(rs.*c)/(\1rs->rs ? xkwdrs->\2 : 2)/2??2??'\''3220reg p OK ex.c:276:s22sc %? %@2162sc!0?
+1;2??!219reg ex.c:276:m32sc %? %@2142sc!0?
+0?
 '\''4s/et/tr/??!219reg ex.c:445:m42sc %? %@2142sc!0?
 '\''5s/et_s/tr_/??!219reg ex.c:475:m52sc %? %@2142sc!0?
 '\''6s/regex->//??!219reg ex.c:477:m62sc %? %@2142sc!0?
@@ -1405,8 +1406,9 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 '\''8s/et/tr/??!219reg ex.c:522:m82sc %? %@2142sc!0?
 '\''9s/et/tr/??!219reg ex.c:549:m92sc %? %@2142sc!0?
 '\''10s/et/tr/??!219reg ex.c:558:m102sc %? %@2142sc!0?
-'\''11c 	else if ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2)
-??!219reg ex.c:578:m112sc %? %@2142sc!0?
+?'\''11s/xkwdrs->nsubc/(xkwdrs->rs ? xkwdrs->rs->nsubc : 2)/1??1??1q'\''11s/(xk.*d)(rs.*c)(\))/(\1rs->rs ? xkwdrs->\2 : 2\3)/2??2??'\''11220reg p OK ex.c:578:s22sc %? %@2162sc!0?
+1;2??!219reg ex.c:578:m112sc %? %@2142sc!0?
+0?
 ?'\''12s/nsubc/rs ? xkwdrs->rs->nsubc : 2/1??1??1q'\''12s/(ns.*c)/rs ? xkwdrs->rs->\1 : 2/2??2??'\''12220reg p OK ex.c:581:s22sc %? %@2162sc!0?
 1;2??!219reg ex.c:581:m122sc %? %@2142sc!0?
 0?
@@ -1414,7 +1416,7 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 '\''14s/et/tr/??!219reg ex.c:592:m142sc %? %@2142sc!0?
 '\''15s/et/tr/??!219reg ex.c:1107:m152sc %? %@2142sc!0?
 '\''16,#+1c 		rs = rstr_make(pat, xic ? REG_ICASE : 0);
-	if (!rs || ((rs->rs && xgrp >= rs->rs->nsubc) || xgrp >= 2)) {
+	if (!rs || xgrp >= (rs->rs ? rs->rs->nsubc : 2)) {
 ??!219reg ex.c:1116:m162sc %? %@2142sc!0?
 '\''17s/et/tr/??!219reg ex.c:1119:m172sc %? %@2142sc!0?
 ?'\''18s/nsubc/rs ? rs->rs->nsubc : 2/1??1??1q'\''18s/(ns.*c)/rs ? rs->rs->\1 : 2/2??2??'\''18220reg p OK ex.c:1130:s22sc %? %@2162sc!0?
@@ -1612,7 +1614,7 @@ static int rstr_simple(rstr *rs, char *re, int icase)
 	if (rs->wbeg)
 		re += 2;
 	beg = re;
-	while (re[0] && !strchr("\\.*+?[{()$", (unsigned char) re[0]))
+	while (re[0] && !strchr("\\.*+?[{()$|", (unsigned char) re[0]))
 		re++;
 	end = re;
 	rs->wend = re[0] == '\''\\'\'' && re[1] == '\''>'\'';
@@ -1893,7 +1895,7 @@ static int fsdir;
 grp 09??-8m 3220reg p OK vi.c:423:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:4232sc %? %@2132sc!0?
 0?
-?'\''1s/xgrp >= xkwdrs->nsubc/((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2)/1??1??1q'\''1s/(xg.*->)(n.*\) )/((xkwdrs->rs && \1rs->\2|| xgrp >= 2)) /2??2??'\''1220reg p OK vi.c:328:s22sc %? %@2162sc!0?
+?'\''1s/xkwdrs->nsubc/(xkwdrs->rs ? xkwdrs->rs->nsubc : 2)/1??1??1q'\''1s/(xkwd)(rs-.*c)/(\1rs->rs ? xkwdrs->\2 : 2)/2??2??'\''1220reg p OK vi.c:328:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:328:m12sc %? %@2142sc!0?
 0?
 '\''2s/et/tr/??!219reg vi.c:384:m22sc %? %@2142sc!0?
@@ -2175,7 +2177,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 92efe600..96649ad7 100644
+index 92efe600..ef93f6e3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,7 +37,7 @@ int xsep = ':';			/* ex command separator */
@@ -2205,7 +2207,7 @@ index 92efe600..96649ad7 100644
  			xrerr = xserr;
  			return -2;
 -		} else if (xgrp >= xkwdrs->nsubc) {
-+		} else if ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2) {
++		} else if (xgrp >= (xkwdrs->rs ? xkwdrs->rs->nsubc : 2)) {
  			xrerr = xgerr;
  			return -2;
  		}
@@ -2270,7 +2272,7 @@ index 92efe600..96649ad7 100644
  	if (!xkwdrs)
  		return xserr;
 -	else if (xgrp >= xkwdrs->nsubc)
-+	else if ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2)
++	else if (xgrp >= (xkwdrs->rs ? xkwdrs->rs->nsubc : 2))
  		return xgerr;
  	if (xfr) {
 -		int offs[xkwdrs->nsubc];
@@ -2307,7 +2309,7 @@ index 92efe600..96649ad7 100644
 -		rs = rset_smake(pat, xic ? REG_ICASE : 0);
 -	if (!rs || xgrp >= rs->nsubc) {
 +		rs = rstr_make(pat, xic ? REG_ICASE : 0);
-+	if (!rs || ((rs->rs && xgrp >= rs->rs->nsubc) || xgrp >= 2)) {
++	if (!rs || xgrp >= (rs->rs ? rs->rs->nsubc : 2)) {
  		if (rs != xkwdrs)
 -			rset_free(rs);
 +			rstr_free(rs);
@@ -2430,7 +2432,7 @@ index 18170218..532aee15 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 22319b65..1535910c 100644
+index 22319b65..13f60830 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -749,3 +749,142 @@ int rset_match(rset *rs, char *s, int flg)
@@ -2451,7 +2453,7 @@ index 22319b65..1535910c 100644
 +	if (rs->wbeg)
 +		re += 2;
 +	beg = re;
-+	while (re[0] && !strchr("\\.*+?[{()$", (unsigned char) re[0]))
++	while (re[0] && !strchr("\\.*+?[{()$|", (unsigned char) re[0]))
 +		re++;
 +	end = re;
 +	rs->wend = re[0] == '\\' && re[1] == '>';
@@ -2577,7 +2579,7 @@ index 22319b65..1535910c 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index eecf2335..b6b8d984 100644
+index eecf2335..2b943503 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -325,7 +325,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
@@ -2585,7 +2587,7 @@ index eecf2335..b6b8d984 100644
  	if (!lbuf_len(xb) || !xkwddir)
  		return 1;
 -	else if (!xkwdrs || xgrp >= xkwdrs->nsubc) {
-+	else if (!xkwdrs || ((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc) || xgrp >= 2)) {
++	else if (!xkwdrs || xgrp >= (xkwdrs->rs ? xkwdrs->rs->nsubc : 2)) {
  		vi_drawmsg_mpt(xkwdrs ? "invalid grp" : "syntax error")
  		return 1;
  	}
