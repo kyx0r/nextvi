@@ -1091,6 +1091,17 @@ printf 'x z\n' > "$TMPFILE"
 out=$(run_ex ':%s/x/y\:%p:q!')
 check 'X21 trailing \ escapes separator — :%p swallowed; nothing printed' '' "$out"
 
+# A non-digit escape stays literal no matter how many groups the pattern has:
+# the backreference index must come from the digit value, never from the raw
+# distance to '0' (which aliases chars below '0' onto real group numbers).
+printf 'ab\n' > "$TMPFILE"
+out=$(run_ex ':%s/(a)(b)/X\.Y/:%p:q!')
+check 'X22 \. with 2 groups — non-digit escape is literal, not group 2' 'X.Y' "$out"
+
+printf 'abcd\n' > "$TMPFILE"
+out=$(run_ex ':%s/(a)(b)(c)(d)/X\,Y/:%p:q!')
+check 'X23 \, with 4 groups — non-digit escape is literal, not group 4' 'X,Y' "$out"
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Search-range escape parity
 # Each command leads with an inline-search range address ('>pat>' forward,
@@ -1432,6 +1443,40 @@ printf "$S3" > "$TMPFILE"
 out=$(run_ex ":%s/aaa.ccc/X/m:'91p:'93p:q!")
 check ":s m sets '[ and '] to the region bounds" \
 	"$(printf 'aaa bbb X bbb ccc\nddd bbb ddd')" "$out"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# :s with a target group (:grp N)
+# A match whose target group did not participate is not substituted, but the
+# text it covers is ordinary line content and must survive the rewrite — before
+# the first substitution, between two of them, and after the last one.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'aXbYa\n' > "$TMPFILE"
+out=$(run_ex ':grp 1:%s/(a)|b/Z/g:grp:%p:q!')
+check ':s grp keeps a skipped match between two substitutions' 'ZXbYZ' "$out"
+
+printf 'bXa\n' > "$TMPFILE"
+out=$(run_ex ':grp 1:%s/(a)|b/Z/g:grp:%p:q!')
+check ':s grp keeps a skipped match before the first substitution' 'bXZ' "$out"
+
+printf 'aXb\n' > "$TMPFILE"
+out=$(run_ex ':grp 1:%s/(a)|b/Z/g:grp:%p:q!')
+check ':s grp keeps a skipped match after the last substitution' 'ZXb' "$out"
+
+printf 'bXaXb\n' > "$TMPFILE"
+out=$(run_ex ':grp 1:%s/(a)|b/Z/g:grp:%p:q!')
+check ':s grp keeps skipped matches on both sides' 'bXZXb' "$out"
+
+# every match skipped is no substitution at all, so the line is untouched
+printf 'bXb\n' > "$TMPFILE"
+out=$(run_ex ':grp 1:%s/(a)|b/Z/g:??!p nomatch:q!')
+check ':s grp errors when the group never participates' 'nomatch' "$out"
+
+# same rule across a region: skipped matches survive on their own lines
+printf 'a\nb\na\n' > "$TMPFILE"
+out=$(run_ex ':grp 1:%s/(a)|b/Z/gm:grp:%p:q!')
+check ':s gm grp keeps a skipped match inside the region' \
+	"$(printf 'Z\nb\nZ')" "$out"
 
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
