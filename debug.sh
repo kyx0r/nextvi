@@ -47,20 +47,20 @@ void ex_init\(char \*\*files, int n\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1914:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1917:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	syn_setft\(xb_ft\);
 	free\(sb->s\);.*(	ec_setbufsmax\(NULL, NULL, ""\);)
 	char \*s = files\[0] \? files\[0] : "";
 	do \{8??0?
-grp 08??-4m 1220reg p OK ex.c:1914:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1917:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else
 			esc = 0;
 		sbuf_cut\(sb, 0\).*(		xmpt = 0;)
 		ec_edit\("", "e", s\);
 		s = \*\(\+\+files\);9??0?
-grp 09??-7m 1220reg p OK ex.c:1914:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:19142sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1917:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:19172sc %? %@2132sc!0?
 0?
 '\''1i void ex_done(void)
 {
@@ -78,7 +78,7 @@ void ex_init\(char \*\*files, int n\)
 	free(bufs);
 }
 
-??!219reg ex.c:1914:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1917:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;
@@ -295,10 +295,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 66630919..165bfc77 100644
+index b78dca07..9de42780 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1912,6 +1912,22 @@ void ex(void)
+@@ -1915,6 +1915,22 @@ void ex(void)
  	xgrec--;
  }
  
@@ -370,7 +370,7 @@ index 4fd79fba..ba2d48d4 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index eecf2335..1c9f15a4 100644
+index 957e6b8f..2fa73ff4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1879,6 +1879,12 @@ int main(int argc, char *argv[])
