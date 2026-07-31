@@ -316,20 +316,20 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 \)
 
 4??0?
-4??+2m 3220reg p OK ex.c:1660:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1656:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 3220reg p OK ex.c:1660:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1656:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 3220reg p OK ex.c:1660:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16602sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1656:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16562sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(hlp\),
 	EO\(hlr\),
@@ -341,24 +341,24 @@ static struct excmd \{
 %f+ 	EO\(hlp\),
 	EO\(hlr\),
 	EO\(hl\),4??0?
-4??+2m 4220reg p OK ex.c:1752:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:1748:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(hlp\),.*?
 	EO\(hlr\),.*?
 (	EO\(hl\),)7??0?
-grp 07??m 4220reg p OK ex.c:1752:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:1748:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(order\),
 	EO\(hll\),
 	EO\(hlw\),.*(	EO\(vis\),)
 	\{"", ec_print}, /\* do not remove \*/
 	\{"", ec_print}, /\* do not remove \*/8??0?
-grp 08??-4m 4220reg p OK ex.c:1752:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ex.c:1748:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"j", ec_join},
 	EO\(ts\),
 	EO\(td\),.*(/\* parse command argument expanding % and ! \*/)
 static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{9??0?
-grp 09??-9m 4220reg p OK ex.c:1752:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17522sc %? %@2132sc!0?
+grp 09??-9m 4220reg p OK ex.c:1748:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17482sc %? %@2132sc!0?
 0?
 '\''1i 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
@@ -388,9 +388,9 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 	return NULL;
 }
 
-??!219reg ex.c:1660:m32sc %? %@2142sc!0?
+??!219reg ex.c:1656:m32sc %? %@2142sc!0?
 '\''4i 	{"lsp", ec_lsp},
-??!219reg ex.c:1752:m42sc %? %@2142sc!b20?
+??!219reg ex.c:1748:m42sc %? %@2142sc!b20?
 i /*
  * MIT License
  *
@@ -2775,7 +2775,7 @@ index 70157040..ad37ddbc 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/ex.c b/ex.c
-index 92efe600..4960b4a4 100644
+index 66630919..5ba0df4a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -431,6 +431,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -2796,7 +2796,7 @@ index 92efe600..4960b4a4 100644
  	xquit = quit;
  	return NULL;
  }
-@@ -1658,6 +1662,28 @@ _EO(left,
+@@ -1654,6 +1658,28 @@ _EO(left,
  	return NULL;
  )
  
@@ -2825,7 +2825,7 @@ index 92efe600..4960b4a4 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1750,6 +1776,7 @@ static struct excmd {
+@@ -1746,6 +1772,7 @@ static struct excmd {
  	EO(hlp),
  	EO(hlr),
  	EO(hl),

@@ -75,8 +75,20 @@ case "\$OS" in1??0?
 grp 1%f> -Wno-unused-parameter \\.*?
 -Wno-unused-result \\.*?
 (-Wfatal-errors -std=c99 \\)7??0?
-grp 07??m 1220reg p OK cbuild.sh:49:a72sc %? %@2152sc!0?
-1;4;7??!219reg cbuild.sh:492sc %? %@2132sc!0?
+grp 07??m 1220reg p OK cbuild.sh:49:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> -pedantic -Wall -Wextra \\
+-Wno-implicit-fallthrough \\
+-Wno-missing-field-initializers \\.*(\*_NT\*\) CFLAGS="\$CFLAGS -D_POSIX_C_SOURCE=200809L" ;;)
+\*Darwin\*\) CFLAGS="\$CFLAGS -D_POSIX_C_SOURCE=200809L -D_DARWIN_C_SOURCE" ;;
+\*Linux\*\) CFLAGS="\$CFLAGS -D_POSIX_C_SOURCE=200809L" ;;8??0?
+grp 08??-4m 1220reg p OK cbuild.sh:49:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> : "\$\{PREFIX:=/usr/local}"
+: "\$\{OS:=\$\(uname\)}"
+: "\$\{CFLAGS:=-O2}".*(    log "\$G" "Entering step: \\"Build \\"\$\{BASE##\*/}\\" using \\"\$CC\\"\\"")
+    run "\$CC vi\.c -o vi \$CFLAGS" \|\| \{
+        log "\$R" "Failed during step: \\"Build \\"\$\{BASE##\*/}\\" using \\"\$CC\\""9??0?
+grp 09??-12m 1220reg p OK cbuild.sh:49:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg cbuild.sh:492sc %? %@2132sc!0?
 0?
 '\''1i -lpthread \
 ??!219reg cbuild.sh:49:m12sc %? %@2142sc!b1%ya 98?0?
