@@ -1108,6 +1108,33 @@ printf 'abcd\n' > "$TMPFILE"
 out=$(run_ex ':%s/(a)(b)(c)(d)/X\,Y/:%p:q!')
 check 'X23 \, with 4 groups — non-digit escape is literal, not group 4' 'X,Y' "$out"
 
+# Backreference numbers above 9: digits are consumed greedily, but only while
+# the extended number is still an existing group; leftover digits stay literal.
+# A leading zero never extends, so \0 keeps meaning the whole match.
+G11='(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)'
+
+printf 'abcdefghijk\n' > "$TMPFILE"
+out=$(run_ex ":%s/$G11/[\\11][\\10][\\9][\\1]/:%p:q!")
+check 'X24 \11 \10 with 11 groups — two-digit backreferences' '[k][j][i][a]' "$out"
+
+printf 'abc\n' > "$TMPFILE"
+out=$(run_ex ':%s/(a)(b)(c)/[\11][\3]/:%p:q!')
+check 'X25 \11 with 3 groups — stops at group 1; 1 stays literal' '[a1][c]' "$out"
+
+printf 'abcdefghijk\n' > "$TMPFILE"
+out=$(run_ex ":%s/$G11/[\\12][\\110]/:%p:q!")
+check 'X26 \12 \110 with 11 groups — highest existing group wins' '[a2][k0]' "$out"
+
+printf 'abcdefghijk\n' > "$TMPFILE"
+out=$(run_ex ":%s/$G11/[\\011][\\0]/:%p:q!")
+check 'X27 \011 — leading zero never extends; whole match + literal 11' \
+	'[abcdefghijk11][abcdefghijk]' "$out"
+
+printf 'abcdefghijk\n' > "$TMPFILE"
+out=$(run_ex ":%s/$G11/[\\\\11][\\11]/:%p:q!")
+check 'X28 \\\\11 with 11 groups — escaped backslash keeps digits literal' \
+	'[\11][k]' "$out"
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Search-range escape parity
 # Each command leads with a forward inline-search range address, '>pat>'; the
