@@ -1,4 +1,20 @@
 ------------------
+7.1 Basilisk
+------------------
+
+New in core:
+1. Added [#] to ci/di in vi normal for more refined positional control.
+2. Implemented full range, multiline flag and register operation for :s command.
+
+Bug fixes:
+1. Fixed :sc command overread and incorrect :2sc behavior.
+2. Fixed incorrect :s command behavior when combined with grp.
+
+Patch2vi changes:
+
+Patch changes:
+
+------------------
 7.0 Basilisk
 ------------------
 
