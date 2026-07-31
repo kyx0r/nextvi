@@ -283,7 +283,7 @@ extract_compats() (
 				continue
 			fi
 			printf "%s\n" "EXTRACTED: $p"
-			$P2VI -o "${p%.patch}.sh" "$p"
+			$P2VI -r -o "${p%.patch}.sh" "$p"
 			printf "%s\n" "GENERATED: ${p%.patch}.sh"
 		done
 	done

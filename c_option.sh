@@ -21,9 +21,6 @@ fi
 #   resolved a group, QF1=1 also quits on failure
 # Phase 2 (edits) reports and quits by default
 #   DBG2=1 silences it, QF2=1 keeps going after an error
-#   and logs every one; replaying the script through
-#   "patch2vi -E" then puts what the missed hunks were
-#   meant to do back at the line they reported
 # INTR=1 enters vi at the failing code line in this
 #   script, for state inspection mid execution
 
@@ -51,18 +48,18 @@ void ex_init\(char \*\*files, int n\)
 \{
 	xbufsalloc = MAX\(n, xbufsalloc\);
 	ec_setbufsmax\(NULL, NULL, ""\);2??0?
-2??m 1220reg p OK ex.c:1915:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK ex.c:1918:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^void ex_init\(char \*\*files, int n\)$3??0?
-3??m 1220reg p OK ex.c:1915:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK ex.c:1918:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	xgrec--;
 }
 
 4??0?
-4??+3m 1220reg p OK ex.c:1915:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK ex.c:1918:a42sc %? %@2152sc!1q0?
 %f> \{
 	xbufsalloc = MAX\(n, xbufsalloc\);
 	ec_setbufsmax\(NULL, NULL, ""\);5??0?
-5??-1m 1220reg p OK ex.c:1915:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK ex.c:1918:a52sc %? %@2152sc!1q0?
 %f> .x...c...
 }
 
@@ -70,25 +67,25 @@ void ex_init\(char \*\*files, int n\)
 \{
 ....f...........X\(n. .b.fs.lloc\).
 	.c..etb..s....N..L. ......"..;6??0?
-6??+3m 1220reg p OK ex.c:1915:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK ex.c:1918:a62sc %? %@2152sc!1q0?
 grp 1%f> 	xgrec--;.*?
 }.*?
 .*?
 (void ex_init\(char \*\*files, int n\))7??0?
-grp 07??m 1220reg p OK ex.c:1915:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK ex.c:1918:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	syn_setft\(xb_ft\);
 	free\(sb->s\);.*(	char \*s = files\[0] \? files\[0] : "";)
 	do \{
 		xmpt = 0;8??0?
-grp 08??-4m 1220reg p OK ex.c:1915:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1918:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else
 			esc = 0;
 		sbuf_cut\(sb, 0\).*(		ec_edit\("", "e", s\);)
 		s = \*\(\+\+files\);
 	} while \(--n > 0\);9??0?
-grp 09??-7m 1220reg p OK ex.c:1915:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:19152sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1918:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:19182sc %? %@2132sc!0?
 ?0?
 %f+ 	xvis &= ~4;
 	if \(\(s = getenv\("EXINIT"\)\)\)
@@ -98,17 +95,17 @@ void ex_init\(char \*\*files, int n\)
 %f+ 	xvis &= ~4;
 	if \(\(s = getenv\("EXINIT"\)\)\)
 		ex_command\(s\)4??0?
-4??+2m 2220reg p OK ex.c:1927:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1930:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	xvis &= ~4;.*?
 	if \(\(s = getenv\("EXINIT"\)\)\).*?
 (		ex_command\(s\))7??0?
-grp 07??m 2220reg p OK ex.c:1927:a72sc %? %@2152sc!0?
-1;4;7??!219reg ex.c:19272sc %? %@2132sc!0?
+grp 07??m 2220reg p OK ex.c:1930:a72sc %? %@2152sc!0?
+1;4;7??!219reg ex.c:19302sc %? %@2132sc!0?
 0?
-'\''1s/n\)/n, char **cmds, int cmdnum)/??!219reg ex.c:1915:m12sc %? %@2142sc!0?
+'\''1s/n\)/n, char **cmds, int cmdnum)/??!219reg ex.c:1918:m12sc %? %@2142sc!0?
 '\''2i 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
-??!219reg ex.c:1927:m22sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1930:m22sc %? %@2142sc!b1%ya 98?0?
 %f> 
 int main\(int argc, char \*argv\[]\)
 \{
@@ -202,17 +199,17 @@ int main\(int argc, char \*argv\[]\).*?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:18642sc %? %@2132sc!0?
 ?0?
 %f+ 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);
-				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+				fprintf\(stderr, "Nextvi-7\.2 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}1??0?
 1??+1m 31q0?
-%f+ 				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+%f+ 				fprintf\(stderr, "Nextvi-7\.2 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}2??0?
 2??m 3220reg p OK vi.c:1866:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
+;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.2 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
 3??m 3220reg p OK vi.c:1866:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);$4??0?
 4??+1m 3220reg p OK vi.c:1866:a42sc %? %@2152sc!fr 981qfr 980?
@@ -220,14 +217,14 @@ int main\(int argc, char \*argv\[]\).*?
 			}
 		}5??0?
 5??-1m 3220reg p OK vi.c:1866:a52sc %? %@2152sc!1q0?
-%f+ .	....r..........................o.:.-.c.."..a....i]...\).
-.......i.tf\(...e........t...7...U....: ...\[.....v....i.e.............v\[...;
-			...t..n...IT......R..
-...}
+%f+ 	..........\(..d....."U.....n..p.i.n......... a..v\[....]..
+.	.........\(....r.,."N...v........a....%s.....m... ..........\\n.. a..v.0]..
+....r...........FA...RE.
+	...
 	..6??0?
 6??+1m 3220reg p OK vi.c:1866:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);.*?
-(				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
+(				fprintf\(stderr, "Nextvi-7\.2 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
 grp 07??m 3220reg p OK vi.c:1866:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''m'\''\)
 				xvis \|= 4;
@@ -368,10 +365,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 66630919..2e800b42 100644
+index b78dca07..6b2fd528 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1912,7 +1912,7 @@ void ex(void)
+@@ -1915,7 +1915,7 @@ void ex(void)
  	xgrec--;
  }
  
@@ -380,7 +377,7 @@ index 66630919..2e800b42 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
  	ec_setbufsmax(NULL, NULL, "");
-@@ -1925,4 +1925,6 @@ void ex_init(char **files, int n)
+@@ -1928,4 +1928,6 @@ void ex_init(char **files, int n)
  	xvis &= ~4;
  	if ((s = getenv("EXINIT")))
  		ex_command(s)
@@ -388,7 +385,7 @@ index 66630919..2e800b42 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index eecf2335..876eaf27 100644
+index 957e6b8f..9c588632 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1838,7 +1838,8 @@ static void setup_signals(void)
@@ -419,8 +416,8 @@ index eecf2335..876eaf27 100644
 +				}
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-7.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-7.1 Usage: %s [-acemsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-7.2 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-7.2 Usage: %s [-acemsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}

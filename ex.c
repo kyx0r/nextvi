@@ -1189,13 +1189,16 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 			sbuf_mem(r, lnb, ln + offs[xgrp] - lnb)
 			if (rep) {
 				for (_rep = rep; *_rep; _rep++) {
-					if (*_rep != '\\' || !_rep[1]) {
+					if (*_rep != '\\' || !_rep[1] || !uc_isdigit(*++_rep)) {
 						sbuf_chr(r, *_rep)
 						continue;
 					}
-					_rep++;
-					grp = (*_rep - '0') * 2;
-					if (!uc_isdigit(*_rep) || grp + 1 >= rs->nsubc)
+					grp = *_rep - '0';
+					while (grp && uc_isdigit(_rep[1]) &&
+						(grp * 10 + _rep[1] - '0') < (rs->nsubc >> 1))
+						grp = grp * 10 + *++_rep - '0';
+					grp *= 2;
+					if (grp + 1 >= rs->nsubc)
 						sbuf_chr(r, *_rep)
 					else if (offs[grp] >= 0)
 						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])

@@ -21,9 +21,6 @@ fi
 #   resolved a group, QF1=1 also quits on failure
 # Phase 2 (edits) reports and quits by default
 #   DBG2=1 silences it, QF2=1 keeps going after an error
-#   and logs every one; replaying the script through
-#   "patch2vi -E" then puts what the missed hunks were
-#   meant to do back at the line they reported
 # INTR=1 enters vi at the failing code line in this
 #   script, for state inspection mid execution
 
@@ -93,7 +90,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 66630919..8a6b06b6 100644
+index b78dca07..9ab783d4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -437,6 +437,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)

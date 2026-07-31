@@ -21,9 +21,6 @@ fi
 #   resolved a group, QF1=1 also quits on failure
 # Phase 2 (edits) reports and quits by default
 #   DBG2=1 silences it, QF2=1 keeps going after an error
-#   and logs every one; replaying the script through
-#   "patch2vi -E" then puts what the missed hunks were
-#   meant to do back at the line they reported
 # INTR=1 enters vi at the failing code line in this
 #   script, for state inspection mid execution
 
@@ -197,20 +194,20 @@ static int eo_val\(char \*arg\)
 }
 
 4??0?
-4??+2m 5220reg p OK ex.c:1626:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK ex.c:1629:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	if \(!val && !uc_isdigit\(\*arg\)\))
 		return \(unsigned char\)\*arg;
 	return val;8??0?
-grp 08??-4m 5220reg p OK ex.c:1626:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK ex.c:1629:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_null\(sb\).*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
-grp 09??-15m 5220reg p OK ex.c:1626:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16262sc %? %@2132sc!0?
+grp 09??-15m 5220reg p OK ex.c:1629:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16292sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
@@ -222,24 +219,24 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},4??0?
-4??+2m 6220reg p OK ex.c:1715:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK ex.c:1718:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"reg", ec_regprint},.*?
 	\{"re", ec_krsset},.*?
 (	\{"rd", ec_undoredo},)7??0?
-grp 07??m 6220reg p OK ex.c:1715:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1718:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"q!", ec_quit},
 	\{"q", ec_quit},
 	\{"reg\+", ec_regprint},.*(	\{"wq", ec_write},)
 	\{"w!", ec_write},
 	\{"w", ec_write},8??0?
-grp 08??-4m 6220reg p OK ex.c:1715:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK ex.c:1718:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"g", ec_glob},
 	EO\(mpt\),
 	\{"m", ec_mark},.*(	\{"uc", ec_setenc},)
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},9??0?
-grp 09??-7m 6220reg p OK ex.c:1715:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17152sc %? %@2132sc!0?
+grp 09??-7m 6220reg p OK ex.c:1718:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17182sc %? %@2132sc!0?
 0?
 '\''1-1i char readonly = 0;		/* commandline readonly option */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -257,9 +254,9 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 	return NULL;
 }
 
-??!219reg ex.c:1626:m52sc %? %@2142sc!0?
+??!219reg ex.c:1629:m52sc %? %@2142sc!0?
 '\''6i 	{"ro", ec_readonly},
-??!219reg ex.c:1715:m62sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1718:m62sc %? %@2142sc!b2%ya 98?0?
 %f> 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\)
 				xvis \|= 8;
@@ -292,17 +289,17 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 %f+ 				xvis = 0;
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);
-				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+				fprintf\(stderr, "Nextvi-7\.2 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}1??0?
 1??+3m 21q0?
-%f+ 				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+%f+ 				fprintf\(stderr, "Nextvi-7\.2 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}2??0?
 2??m 2220reg p OK vi.c:1866:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
+;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.2 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
 3??m 2220reg p OK vi.c:1866:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				xvis = 0;
 			else \{
@@ -312,18 +309,18 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 			}
 		}5??0?
 5??-1m 2220reg p OK vi.c:1866:a52sc %? %@2152sc!1q0?
-%f+ ..	......=.0.
-		..l...\{
-	.	.......f...d...,."U.....n..p......-.....,...........\).
-...	.p.i...\(..d..........v..7\.. .......%. .-...s...\[f..e...\.........g......
-..	..e..r........A....E.
-.	..
+%f+ .......... ..
+.	.e..e.\{
+.......i..............nk..w....t.... -....". ...v....j.\).
+..	.f.r..........r..........7....s.........-..m.v......e ..\.......a.....]\).
+	.		.......E..T...I....;
+..	}
 	..6??0?
 6??+3m 2220reg p OK vi.c:1866:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				xvis = 0;.*?
 			else \{.*?
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);.*?
-(				fprintf\(stderr, "Nextvi-7\.1 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
+(				fprintf\(stderr, "Nextvi-7\.2 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
 grp 07??m 2220reg p OK vi.c:1866:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;
@@ -405,7 +402,7 @@ index 70157040..45b62f98 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 66630919..228571c9 100644
+index b78dca07..0463148b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -439,7 +436,7 @@ index 66630919..228571c9 100644
  		if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  			return "write failed: file changed";
  		if (arg[0] && mtime(path) >= 0)
-@@ -1624,6 +1630,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1627,6 +1633,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -452,7 +449,7 @@ index 66630919..228571c9 100644
  static int eo_val(char *arg)
  {
  	int val = atoi(arg);
-@@ -1713,6 +1725,7 @@ static struct excmd {
+@@ -1716,6 +1728,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},
@@ -461,7 +458,7 @@ index 66630919..228571c9 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index eecf2335..db1a904d 100644
+index 957e6b8f..e17a0f5f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1859,11 +1859,13 @@ int main(int argc, char *argv[])
@@ -474,8 +471,8 @@ index eecf2335..db1a904d 100644
  				xvis = 0;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-7.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-7.1 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-7.2 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-7.2 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}

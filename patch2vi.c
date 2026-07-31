@@ -8759,9 +8759,6 @@ int main(int argc, char **argv)
 		      "#   resolved a group, QF1=1 also quits on failure\n"
 		      "# Phase 2 (edits) reports and quits by default\n"
 		      "#   DBG2=1 silences it, QF2=1 keeps going after an error\n"
-		      "#   and logs every one; replaying the script through\n"
-		      "#   \"patch2vi -E\" then puts what the missed hunks were\n"
-		      "#   meant to do back at the line they reported\n"
 		      "# INTR=1 enters vi at the failing code line in this\n"
 		      "#   script, for state inspection mid execution\n\n", stdout);
 

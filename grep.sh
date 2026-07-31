@@ -21,9 +21,6 @@ fi
 #   resolved a group, QF1=1 also quits on failure
 # Phase 2 (edits) reports and quits by default
 #   DBG2=1 silences it, QF2=1 keeps going after an error
-#   and logs every one; replaying the script through
-#   "patch2vi -E" then puts what the missed hunks were
-#   meant to do back at the line they reported
 # INTR=1 enters vi at the failing code line in this
 #   script, for state inspection mid execution
 
@@ -827,7 +824,7 @@ index 70157040..39269e68 100644
  	{ex_ft, ":[ \t]*((((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 66630919..2f679f52 100644
+index b78dca07..03c2b813 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -840,7 +837,7 @@ index 66630919..2f679f52 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index eecf2335..c314ce98 100644
+index 957e6b8f..6b896447 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -440,12 +440,12 @@ void dir_calc(char *path)
