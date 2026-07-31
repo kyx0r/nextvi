@@ -1431,6 +1431,12 @@ printf 'a b\n' > "$TMPFILE"
 out=$(run_ex ':1ya 97:s/zzz/X/ 97:??!p nomatch:q!')
 check ':s on a register errors when nothing matches' 'nomatch' "$out"
 
+# and a register substitution that did match must not report one, or ?? cannot
+# tell the two apart
+printf 'a b\n' > "$TMPFILE"
+out=$(run_ex ':1ya 97:s/a/X/ 97:??!p nomatch:p done:q!')
+check ':s on a register reports no error when it matched' 'done' "$out"
+
 # only flags may precede the digits; anything else means there is no register
 # spec and the tail is the junk it has always been, so the buffer is edited
 printf 'a b\n' > "$TMPFILE"
