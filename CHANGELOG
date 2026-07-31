@@ -5,10 +5,13 @@
 New in core:
 1. Added [#] to ci/di in vi normal for more refined positional control.
 2. Implemented full range, multiline flag and register operation for :s command.
+3. Dynamic prompts can now render a prefix.
 
 Bug fixes:
 1. Fixed :sc command overread and incorrect :2sc behavior.
 2. Fixed incorrect :s command behavior when combined with grp.
+3. Fixed :s command backreference mapping non digits to group numbers.
+4. Fixed [range]!cmd to honor an explicit offset 0.
 
 Patch2vi changes:
 1. -e runs a patch2vi script with the built-in nextvi and no shell at all.
