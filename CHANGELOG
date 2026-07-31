@@ -1,4 +1,19 @@
 ------------------
+7.2 Basilisk
+------------------
+
+New in core:
+1. Substitution backreferences accept group numbers above 9.
+
+Patch2vi changes:
+1. The generated script header no longer documents the -E comment.
+2. test_patch2vi.sh ships with the release.
+
+Patch changes:
+1. Faster line position lookup in [linewrap_v2.sh](https://github.com/kyx0r/nextvi/blob/release/linewrap_v2.sh)
+   Bound to terminal rows, not entire buffer.
+
+------------------
 7.1 Basilisk
 ------------------
 
