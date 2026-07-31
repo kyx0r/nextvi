@@ -11,6 +11,40 @@ Bug fixes:
 2. Fixed incorrect :s command behavior when combined with grp.
 
 Patch2vi changes:
+1. -e runs a patch2vi script with the built-in nextvi and no shell at all.
+   The script is parsed internally (printf bodies, variable assignment and
+   expansion, buffer numbers remapped) and replayed as one session with
+   buffers persisting across blocks.
+2. -E replays a script, drops you into nextvi and re-emits the script from
+   what you edited. An internal differ turns buffer state back into ex
+   commands; it splits large spans on unique-line anchors instead of
+   deleting and reinserting whole regions, and emitted scripts now set
+   "ic 0" so matching is case sensitive. -d[N] carries deltas across the
+   round trip. With QF2=1 the hunks that missed are placed back into the
+   buffers at the line they reported, cursor parked on the first one, so a
+   failed patch can be resolved by hand and re-emitted.
+3. -I edits arbitrary files in the built-in nextvi and emits the edits as a
+   script; the rest of the command line, EXINIT included, goes to nextvi.
+4. -o writes the script to a file atomically, so the run may safely read the
+   file it writes. Clustered with another option it takes no argument and
+   updates that option's own script in place.
+5. -co produces a compat patch: it resolves a collision with origin.sh and
+   ships the fix as a block after the target's, gated at run time on the
+   origin block being present. Gates are derived from the post-origin text
+   with shortest unique present/absent windows, probing across files when a
+   single file gives no unique window. One invocation yields exactly one
+   block, and post-only blocks are emitted as a single nextvi call. A third
+   argument pre-applies an already written fix instead of editing one.
+6. Shell variables are gone from the generated scripts. Every bit of state
+   and control flow, the debug and quit switches, the failure log, the
+   error handlers and the compat gates, lives in ex registers and is
+   evaluated inside nextvi, quitting through the guarded xquit encoding.
+   What is left of the shell is a thin control layer: locate the binary,
+   stage the body and hand it to one nextvi call.
+7. Search patterns 3 and 4 swapped priority, and :2sc! is emitted so the
+   staged expansion stays inert.
+8. Fixed-size arrays removed throughout; files, groups, blocks, sections and
+   gates all grow dynamically.
 
 Patch changes:
 
