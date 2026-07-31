@@ -349,7 +349,8 @@ char *lbuf_joinsb(struct lbuf *lb, int r1, int r2, sbuf *i, int *o1, int *o2)
 	} else
 		e = uc_chrn(s, *o1, o1);
 	if (r1 == r2) {
-		se = *o2 > *o1 ? uc_chr(e, *o2 - *o1) : e;
+		se = *o2 > *o1 ? uc_chr(e, *o2 - *o1) :
+			*o2 == -2 ? s + lbuf_s(s)->len + 1 : e;	/* -2 eol, -1 point default */
 		endsz = lbuf_s(s)->len + 5 - (se - e);
 	} else {
 		se = uc_chrn(es, *o2, o2);

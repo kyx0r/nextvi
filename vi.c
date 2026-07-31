@@ -1477,13 +1477,14 @@ void vi(int init)
 					case '>': case '<': pairs[0]='<'; pairs[1]='>'; break;
 					default: pairs[0] = k; pairs[1] = k; break;
 					}
-					if (TK_INT(pairs[0]) || !lbuf_get(xb, xrow))
-						break;
 					int r1 = xrow, o1 = xoff, r2, o2;
+					if (TK_INT(pairs[0]) || !(cs = lbuf_get(xb, r1)))
+						break;
 					int dir = (k == pairs[1] && pairs[0] != pairs[1]) ? -1 : 1;
 					int pair_found = 0;
-					ren_position(lbuf_get(xb, r1));
-					while (*rstate->chrs[o1] != pairs[0])
+					int skip = MAX(1, vi_arg);
+					ren_position(cs);
+					while (*rstate->chrs[o1] != pairs[0] || --skip)
 						if (lbuf_next(xb, dir, &r1, &o1))
 							goto out;
 					r2 = r1;
@@ -1862,7 +1863,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-7.0 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-7.1 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}

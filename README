@@ -167,8 +167,9 @@ VI NORMAL
      D             Delete from cursor to end of line
      [#]x          Delete # characters from cursor forward
      [#]X          Delete # characters from cursor backward
-     di{<arg>}     Delete inside arg pairs
-     ci{<arg>}     Delete inside arg pairs and enter insert mode
+     [#]di{<arg>}  Delete inside arg pairs, skip # matches
+     [#]ci{<arg>}  Delete inside arg pairs and enter insert mode. Skip #
+                   matches
      [#]r{arg}     Replace # characters with arg from cursor forward
      [#]K          Split a line # times
      [#]J          Join # lines
@@ -192,7 +193,8 @@ VI NORMAL
      <^^>
      <^6>
                    Swap to previous buffer
-     [#]<^N>       Swap to next buffer, # changes direction [forward backward]
+     [#]<^N>       Swap to next buffer, # reverses direction between forward
+                   and backward
      \             Swap to /fm/ buffer b-2
      {#}\          Refresh secondary directory listing in b-2
      vb            Recurse into b-1 history buffer. Insert current line into
@@ -207,12 +209,11 @@ VI NORMAL
      zR            Set td ex option to -2
      [#]/          Regex search prompt, move down 1 or # matches
      [#]?          Regex search prompt, move up 1 or # matches
-     [#]n
-     [#]N
-                   Repeat regex search, move [down up] 1 or # matches
+     [#]n          Repeat regex search, move 1 or # matches
+     [#]N          Repeat regex search, inverted move 1 or # matches
      <^A>          Regex search 1 word from cursor, no center, wraparound move
-                   [up down]
-     *             Regex search, no center, wraparound move [up down]
+                   up or down
+     *             Regex search, no center, wraparound move up or down
      {#}*
      {#}<^A>       Regex search, set keyword to # words from cursor
      <^]>          Filesystem regex search forward based on directory listing
@@ -299,13 +300,13 @@ EX
 EX PARSING
      Parsing follows the structure:
      [<sep>][prefix][cmd][<pad>][args]
-     Ex commands are initiated and separated by <sep>. Fields can be
-     padded by <Space> or <Tab>. [prefix] is a field consumed by [cmd],
-     which accepts [range] structure characters. Padding inside [prefix]
-     structure is collapsed, except within nested blocks. There
-     can only be one pad in between [cmd] and [args]. To avoid ambiguity
-     in scripts, it is recommended to always use a pad between [cmd]
-     and [args].
+     Ex commands are initiated and separated by <sep>. Fields can
+     be padded by <Space> or <Tab>. [prefix] is a field consumed by
+     [cmd], which accepts [range] structure characters. Padding inside
+     [prefix] structure is collapsed, except within nested blocks.
+     There can only be one pad in between [cmd] and [args]. To avoid
+     ambiguity in scripts, it is recommended to always use a pad between
+     [cmd] and [args].
 
      Examples:
      :evi.c
@@ -572,21 +573,21 @@ EX COMMANDS
              Example: join all lines with space padding
              :%-1j x
 
-     [vrange]s[<Delim>][regex][<Delim>][str][<Delim>][<g>]
+     [range]s[<Delim>][regex][<Delim>][str][<Delim>][<g>][<m>][#reg]
              Substitute
 
              Find and replace text in a range of lines that matches an
              enclosed regex with an enclosed replacement string.
              Returns error if no substitution is performed.
 
-             Example: global replacement
-             :%s/term1/term2/g
+             Example: range scoping
+             :1,5;5;5s/term1/term2/
 
              Example: replace matching previously set regex
-             :%s//term2/g
+             :%s//term2/
 
-             Substitution backreference inserts the text of matched group
-             specified by \x where x is group number.
+             Substitution backreference in [str] inserts the text of matched
+             group specified by \x where x is group number.
 
              Example: substitution backreference
              this is an example text for subs and has int or void
@@ -594,6 +595,15 @@ EX COMMANDS
              this is an example text for subs and has preintafter or void
              :%s/(int)|(void)/pre\2after/g
              this is an example text for subs and has prepreafterafter or prevoidafter
+
+             Example: global replacement with <g>
+             :%s/term1/term2/g
+
+             Example: multiline mode <m>
+             :.,+1s/term1<^V><^M>term2/term3/m
+
+             Example: edit register <a> inplace
+             :s/term1/term2/97g
 
      ud      Undo
 
@@ -622,7 +632,7 @@ EX COMMANDS
              Print range numbers
 
              Argument 0-3 selects a specific number.
-             Any or any extra argument circumvents buffer range check.
+             Any non-<0-3> or extra argument bypasses the buffer range check.
              No argument prints all range numbers.
 
              Example: print current character offset only
@@ -782,11 +792,11 @@ EX COMMANDS
              Prefix force quits [#lvl] recursion levels.
              No prefix quits all recursion levels.
 
-             Example: set register 0 to "hello" 3 levels deep, force quit
+             Example: set register <#0> to "hello" 3 levels deep, force quit
              this level and 2 above, print the register outside
              :&Q&Q\\\:&Q0reg hello\\\\\\\:2q\\\\\\\!:p %@0
 
-     b[index]
+     b[#index]
              Print buffers or switch to a buffer
 
              Temporary buffers are separate from the main buffers
@@ -813,7 +823,7 @@ EX COMMANDS
 
              Buffers will be deallocated if the number specified is lower
              than the number of buffers currently in use.
-             No argument will reset to the default value of 10.
+             No argument resets to the default value of 10.
 
      cd[path]
              Set a working directory
@@ -931,7 +941,7 @@ EX COMMANDS
 
              A prefix with arguments branches based on the boolean expression
              in DNF over the most recent captures of each referenced id.
-             If any id has no capture, neither branch executes.
+             If id has no capture, the branch is skipped.
 
              Prefix operators:
              Numerical id tag
@@ -1014,7 +1024,7 @@ EX COMMANDS
              Example: disable <exp> and <exe>
              :sc! \\\:
 
-     uc      Toggle multi-byte utf-8 decoding
+     uc      Toggle multi-byte UTF-8 decoding
 
              This command is particularly useful when editing files with
              mixed encodings, binary files, or when the terminal does not
@@ -1138,11 +1148,10 @@ EX OPTIONS
      td[val=1]
              Current text direction context
 
-             This option accepts four meaningful values:
-             2       Exclusively left-to-right
-             1       Follow dctxs[] (in conf.c), defaulting to left-to-right
-             -1      Follow dctxs[], defaulting to right-to-left
-             -2      Exclusively right-to-left
+             val  2: exclusively left-to-right
+             val  1: follow dctxs[] in conf.c, default left-to-right
+             val -1: follow dctxs[] in conf.c, default right-to-left
+             val -2: exclusively right-to-left
 
      pr[val=0]
              Print register
@@ -1273,7 +1282,7 @@ EXINIT ENV VAR
 
              @b macro pipes the current line into X11 clipboard.
 
-     export EXINIT="$(printf 'rr z:vis 2:&Q\n:b-3:pu 122:wq! bugreport.txt')"
+     export EXINIT="$(printf 'rr z:vis 2:&Q:b-3:pu 122:wq! bugreport.txt')"
              Capture session for a bug report
 
              Recording starts into register <z>. Setting vis 2 makes <Q>
@@ -1360,13 +1369,13 @@ CODE MAP
      | 372 conf.c       |  hl/ft/td config     |
      | 460 ren.c        |  positioning/syntax  |
      | 615 uc.c         |  UTF-8 support       |
-     | 665 lbuf.c       |  file/line buffer    |
-     | 730 led.c        |  insert mode/output  |
+     | 666 lbuf.c       |  file/line buffer    |
+     | 735 led.c        |  insert mode/output  |
      | 751 regex.c      |  pikevm              |
-     | 1870 ex.c        |  ex options/commands |
-     | 1884 vi.c        |  normal mode/general |
-     | 5335 patch2vi.c  |  patch converter     |
-     | 13033 total      |  wc -l *.c|sort      |
+     | 1885 vi.c        |  normal mode/general |
+     | 1928 ex.c        |  ex options/commands |
+     | 8826 patch2vi.c  |  patch converter     |
+     | 16589 total      |  wc -l *.c|sort      |
      +------------------+----------------------+
 
 COMPILING
@@ -1447,7 +1456,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.0                       July 14, 2026                      Nextvi 7.0
+Nextvi 7.1                       July 31, 2026                      Nextvi 7.1
 
 NEXTVI PATCHES
 ==============
@@ -1457,6 +1466,10 @@ Apply using patch(1): ./name.sh 1
 
 Nextvi features a robust, context aware and customizable patching system.
 patch2vi support program facilitates script transformations.
+
+patch2vi.sh
+--------------
+Maintainer utils.
 
 64bit.sh
 --------------
@@ -1485,6 +1498,15 @@ threaded_search.sh
 Multithreaded version of lbuf_search(). Adjust the number of threads in use
 and buffer stepping in lbuf.c Ensure that your system supports posix threads,
 aka libpthread.
+
+async.sh
+--------------
+Adds 2 new ex commands "as" and "as!". Ex command executed in command chain after
+"as" is run on a separate thread. "as!" is a join command that waits for all threads
+to finish. Posix thread support is required. Patch is intended for expert users because
+races are possible depending on commands used.
+Example: fun :fd command without blocking the editor
+:as:fd
 
 hl_part.sh
 --------------
@@ -1535,6 +1557,17 @@ running a specialized search code instead of full regex engine. rstr can
 yeild up to 30% faster search on non regex patterns. This is not included in
 base nextvi due to underlying complexity.
 
+incsearch.sh
+--------------
+Search as you go in the / and ? prompts. Every typed key redraws the screen
+with the matches of the keyword highlighted and the cursor moved to the first
+match, scrolling the buffer when the match is off screen. Enter keeps that
+position and searches normally, so counts and messages are unchanged. An
+interrupt, or an erase key on an already empty keyword, restores the view,
+the previous keyword and the search direction. Nothing is previewed while
+the "led" option is off. Requires rstr.sh to be applied first if both are
+wanted.
+
 stdin_pipe.sh
 --------------
 Allows the user to use vi like a pager (less) except you need to specify
@@ -1544,7 +1577,7 @@ $ dmesg | vi -
 
 ec_closebuf.sh
 --------------
-Allows the user to close the buffer using new ex command :cx
+Allows the user to close the buffer using new ex command "cx"
 Specify a number as an arg for what buffer to close.
 Specifying no argument(s) will close the current buffer.
 When the buffer is closed all buffers above will be shifted
@@ -1607,9 +1640,9 @@ without actually doing undo.
 
 undo_branches.sh
 --------------
-Adds a basic multi-level undo implementation. Use the new ex command :up
-to print the divergent changes. Each path has an index, to switch to it
-use :up with a number as an argument. Example: :up1
+Adds a basic multi-level undo implementation. New ex command "up"
+prints divergent changes. Each path has an index, switching to it
+with "up" and a number as an argument. Example: :up1
 The current undo branch is stored as the last index before swapping.
 
 alternate-w-behaviour.sh
@@ -1622,23 +1655,36 @@ Improvements to autocomplete, now the word completion will also use
 text that prefixes the insert when it makes sense. Makes it possible
 to autocomplete in more desired situations.
 
-linewrap.sh
+linewrap_v1.sh
 --------------
-Soft line wrap
-Adds new :lw command which can be used to specify the max column to which
-soft linewrap lines.
+Soft line wrap implementation using buffer only approach.
+Adds new :lw command which can be used to specify the max column
+to which soft linewrap lines. Adds a new ex option "hllw" to
+highlight linewrapped boundaries.
+Trades off flexibility for simplicity. Cannot change linewrapping
+when buffer is modified. Different edit semantics. Visual edits
+are line based.
+
+linewrap_v2.sh
+--------------
+Soft line wrap implementation using render only approach.
+Adds new :lw command which can be used to specify the max column
+to which soft linewrap lines. Adds a new ex option "hllw" to
+highlight linewrapped boundaries.
+No limitation from v1. Default edit semantics. Visual edits are
+geometry based.
 
 ex-scripting.sh
 --------------
-Adds new commands :sr and :sx
+Adds new ex commands "sr" and "sx"
 NEXTVI_FT - current buffer filetype
 NEXTVI_ROW - current line number
 NEXTVI_OFF - current byte offset
 NEXTVI_COFF - current character offset
 NEXTVI_LINE - current line
 NEXTVI_WORD - current word
-:sr runs a command with the environment variables above
-:sx runs a command with the environment variables above and
+"sr" runs a command with the environment variables above
+"sx" runs a command with the environment variables above and
 executes its stdout as ex commands
 
 chunked_read_write.sh
@@ -1672,10 +1718,10 @@ Block mode (gb) also supports:
 
 splits.sh
 --------------
-Implements :sp and :vs commands for vertical and horizontal splits.
-Adds vc and vd normal commands to switch and close views. View
-can also be closed using :q
-New command :eq can be used to balance the vertical and horizontal
+Implements "sp" and "vs" ex commands for vertical and horizontal splits.
+Adds vc and vd normal commands to switch and close views. View can also be closed
+with "q".
+New ex command "eq" can be used to balance the vertical and horizontal
 split space in the nearest dimension.
 
 alt_sections.sh
@@ -1690,7 +1736,7 @@ Implements closer to standard vi(1) sections keybinding:
 
 key_remap_cmds.sh
 --------------
-Adds :im :im! and :nm :nm! commands to dynamically remap keybinds
+Adds "im" "im!" and "nm "nm!" ex commands to dynamically remap keybinds
 in normal and insert modes.
 Remapping a to hello in insert mode
 :im ahello
@@ -1724,7 +1770,7 @@ SIMD optimizations for Nextvi.
 
 mouse_normal.sh
 --------------
-Adds mouse support in normal mode. Adds a new ex option :ms
+Adds mouse support in normal mode. Adds a new ex option "ms"
 to toggle the mouse support. Clicking positions the cursor
 and mouse wheel scrolls using ^Y or ^E. Terminal mouse selections
 can still be made while holding Shift on most terminal emulators.
@@ -1746,7 +1792,7 @@ regular use.
 
 writeall.sh
 --------------
-Adds :wa :wa! :wqa :wqa! :xa :xa! commands to write all buffers
+Adds "wa" "wa!" "wqa" "wqa!" "xa" "xa!" ex commands to write all buffers
 to the filesystem. q commands always write while x commands only
 write modified buffers.
 
@@ -1754,6 +1800,26 @@ ins_cursor.sh
 --------------
 Changes cursor to a thin vertical bar when in insert mode.
 This is a good indicator for insert mode.
+
+cbas.sh
+--------------
+Adds syntax highlighing for Coders Basilisk
+https://codeberg.org/gek/coders_basilisk/src/branch/main
+
+highlight_cmd.sh
+--------------
+Adds a new ex command "hi". This command can be used to create
+additional syntax highlighting rules on demand. It inherits
+full power of attributes so any mask will work. Figuring out
+the right value requires some effort and reading vi.h helps.
+Example: highlight int as keyword (RE color)
+:1hi int
+Example: highlight multiple different keywords
+:0,1,5,3hi \<(int)|(void)|(if)\>
+Example: disable rules
+:hi
+Example: highlight text inside parens
+:5hi \(.*?\)
 
 My current EXINIT setup:
 --------------
@@ -1763,7 +1829,8 @@ How it works:
 :ish - enable interactive shell
 :inc (^(?:(?!^\.git).)+[^/]+$) always exclude .git folder from :fd
 :pac - print autocomplete options
-:|sc|? - default special characters
+:|sc|? - default special characters; ? is a nop cycle required for
+separator reset. Scripts can append more commands to EXINIT.
 
 Macros:
 @q = creates structure like this:

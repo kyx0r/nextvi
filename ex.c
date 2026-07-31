@@ -1101,13 +1101,15 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
 
 static void *ec_substitute(char *loc, char *cmd, char *arg)
 {
-	int beg, end, grp;
-	char *pat, *rep = NULL, *_rep;
+	int beg, end, o1 = -1, o2 = -2, flg, grp, reg = -1;
+	char *pat, *rep = NULL, *_rep, *p, *err = NULL;
 	char *s = arg;
 	rset *rs = xkwdrs;
-	int i, first = -1, last;
+	int i, first = -1, last = 0;
 	struct lopt *lo;
-	if (ex_vregion(loc, &beg, &end))
+	sbuf text, *rb;
+	int e = ex_region(loc, &beg, &end, &o1, &o2);
+	if (e && *loc)
 		return xrerr;
 	pat = ex_re_read(&s);
 	if (pat && (*pat || !rs))
@@ -1124,16 +1126,67 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	}
 	free(pat);
 	int offs[rs->nsubc];
+	char *lnb, *ln, *suf = "", *fr = NULL;
+	int b1 = 0, pend, rflg = REG_NEWLINE;
+	for (i = 0, flg = 0; s[i]; i++) {
+		if (s[i] == 'g')
+			flg |= 1;
+		else if (s[i] == 'm')
+			flg |= 2;
+		else if (uc_isdigit(s[i]))
+			reg = (reg < 0 ? 0 : reg * 10) + s[i] - '0';
+		else		/* only flags may break up the register */
+			reg = -1;
+	}
+	if (reg >= 0) {		/* the register is the whole region */
+		if (*loc)
+			err = "register takes no range";
+		else if (!(rb = ex_regget(reg)))
+			err = "uninitialized register";
+		if (err)
+			goto out;
+		flg |= 2;
+		ln = rb->s;
+		rflg = 0;
+		end = 1;
+		i = 0;
+		goto mltest;
+	} else if (e) {
+		err = xrerr;
+		goto out;
+	} else if (o1 >= 0)
+		xoff = MAX(o1, o2);
+	if (flg & 2) { 	/* multiline */
+		lbuf_region(xb, &text, beg, MAX(o1, 0), end - 1, o2);
+		ln = text.s;
+		fr = ln;
+		rflg = 0;
+		pend = end;
+		end = beg+1;
+		i = beg;
+		goto mltest;
+	}
 	for (i = beg; i < end; i++) {
-		char *ln = lbuf_get(xb, i);
+		lnb = lbuf_get(xb, i), ln = lnb, suf = "";
+		b1 = o1 > 0 && i == beg ? uc_chr(lnb, o1) - lnb : 0;
+		if (o2 >= 0 && i == end - 1)
+			suf = uc_chr(lnb, o2);
+		rflg = *suf ? 0 : REG_NEWLINE;
+		if (*suf) {		/* line ends at an offset */
+			free(fr);	/* o1 past o2 spans to the line end */
+			ln = fr = uc_sub(lnb, 0, b1 && o1 > o2 ? -1 : o2);
+		}
+		ln += b1;
+		mltest:;
 		sbuf *r = NULL;
-		while (rset_find(rs, ln, offs, REG_NEWLINE) >= 0) {
+		lnb = ln - b1;		/* start of text not yet copied */
+		while (rset_find(rs, ln, offs, rflg) >= 0) {
 			if (offs[xgrp] < 0) {
 				ln += offs[1] > 0 ? offs[1] : 1;
 				continue;
 			} else if (!r)
 				sbuf_make(r, 256)
-			sbuf_mem(r, ln, offs[xgrp])
+			sbuf_mem(r, lnb, ln + offs[xgrp] - lnb)
 			if (rep) {
 				for (_rep = rep; *_rep; _rep++) {
 					if (*_rep != '\\' || !_rep[1]) {
@@ -1141,41 +1194,57 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 						continue;
 					}
 					_rep++;
-					grp = abs((*_rep - '0') * 2);
-					if (grp + 1 >= rs->nsubc)
+					grp = (*_rep - '0') * 2;
+					if (!uc_isdigit(*_rep) || grp + 1 >= rs->nsubc)
 						sbuf_chr(r, *_rep)
 					else if (offs[grp] >= 0)
 						sbuf_mem(r, ln + offs[grp], offs[grp + 1] - offs[grp])
 				}
 			}
 			ln += offs[xgrp + 1];
-			if (!offs[xgrp + 1])	/* zero-length match */
+			if (!offs[xgrp + 1] && *ln)	/* zero-length match */
 				sbuf_chr(r, *ln++)
-			if (*ln == '\n' || !*ln || !strchr(s, 'g'))
+			lnb = ln;
+			if (!*ln || (flg | (*ln != '\n') * 2) != 3)
 				break;
 		}
 		if (r) {
-			if (first < 0) {
+			sbuf_str(r, lnb)
+			sbufn_str(r, suf)	/* text after the o2 offset */
+			if (reg >= 0) {
+				ex_regput(reg, r->s, 0);
+				sbuf_free(r)
+				first = 0;
+				goto out;
+			} else if (first < 0) {
 				first = i;
 				lo = lbuf_opt(xb, xrow, xoff, 0);
-				lbuf_smark(xb, lo, i, 0);
+				lbuf_smark(xb, lo, i, MAX(o1, 0));
 				lbuf_emark(xb, lo, 0, 0);
 			}
-			sbufn_str(r, ln)
-			lbuf_edit(xb, r->s, i, i + 1, 0, 0);
+			if (flg & 2) {
+				p = o1 >= 0 ? lbuf_joinsb(xb, beg, pend - 1, r, &o1, &o2) : NULL;
+				lbuf_edit(xb, p ? p : r->s, beg, pend, p ? o1 : 0, MAX(o2, 0));
+				free(p);
+				lbuf_jump(xb, ']', &last, &pend);	/* joined region end */
+			} else {
+				lbuf_edit(xb, r->s, i, i + 1, 0, 0);
+				last = i;
+			}
 			sbuf_free(r)
-			last = i;
 		}
 	}
-	if (first >= 0) {
+	if (first >= 0) {	/* redo marks */
 		lo = lbuf_opt(xb, xrow, xoff, 0);
-		lbuf_smark(xb, lo, first, 0);
-		lbuf_emark(xb, lo, last, 0);
+		lbuf_smark(xb, lo, first, MAX(o1, 0));
+		lbuf_emark(xb, lo, last, MAX(o2, 0));
 	}
+	out:
+	free(fr);
 	if (rs != xkwdrs)
 		rset_free(rs);
 	free(rep);
-	return first < 0 ? xuerr : NULL;
+	return err ? err : first < 0 ? xuerr : NULL;
 }
 
 static void *ec_exec(char *loc, char *cmd, char *arg)
@@ -1188,20 +1257,18 @@ static void *ec_exec(char *loc, char *cmd, char *arg)
 			return xrerr;
 		beg = 0;
 	}
-	if (o1 < 0)
-		o1 = 0;
 	sbuf text;
-	lbuf_region(xb, &text, beg, o1, end - 1, o2);
+	lbuf_region(xb, &text, beg, MAX(o1, 0), end - 1, o2);
 	sbuf *rep = cmd_pipe(arg, &text, 1, NULL);
 	free(text.s);
 	if (!rep)
 		return "fork failed";
-	if (o1 > 0) {
+	if (o1 >= 0) {
 		char *p = lbuf_joinsb(xb, beg, end - 1, rep, &o1, &o2);
 		lbuf_edit(xb, p, beg, end, o1, o2);
 		free(p);
 	} else
-		lbuf_edit(xb, rep->s, beg, end, o1, o2);
+		lbuf_edit(xb, rep->s, beg, end, 0, 0);
 	sbuf_free(rep)
 	return NULL;
 }
@@ -1507,26 +1574,17 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 
 static void *ec_specials(char *loc, char *cmd, char *arg)
 {
+	static int *const sp[] = {&xesc, &xsep, &xexp, &xexe};
 	int i = 0;
 	if (*loc) {
-		i = atoi(loc);
-		goto direct;
-	}
-	xesc = cmd[2] ? 0 : '\\';
-	xsep = cmd[2] ? 0 : ':';
-	xexp = cmd[2] ? 0 : '%';
-	xexe = cmd[2] ? 0 : '!';
-	for (; *arg; arg++, i++) {
-		direct:
-		if (i == 0)
-			xesc = *arg;
-		else if (i == 1)
-			xsep = *arg;
-		else if (i == 2)
-			xexp = *arg;
-		else if (i == 3)
-			xexe = *arg;
-	}
+		i = (unsigned char)*loc ^ '0';
+		if (!*arg && i < LEN(sp))
+			*sp[i] = cmd[2] ? 0 : "\\:%!"[i];
+	} else
+		for (int j = 0; j < LEN(sp); j++)
+			*sp[j] = cmd[2] ? 0 : "\\:%!"[j];
+	for (; *arg && i < LEN(sp); i++)
+		*sp[i] = *arg++;
 	return NULL;
 }
 
