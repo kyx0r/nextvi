@@ -2389,7 +2389,8 @@ printf -- '--- a/g.c\n+++ b/g.c\n@@ -2,3 +2,3 @@\n G2\n-G3\n+G3o\n G4\n' > "$R/g
 "$R_P2VI" -r "$R/gp.diff" > "$R/gp.sh"
 cp "$R/g.orig" "$R/g.c"
 coderive go.sh gt.sh '%s/^G30$/G30c/:q!'
-nprobe="$("$R_P2VI" -d "$R/new.sh" 2>/dev/null | grep -c '^=== GATE .* probe ')"
+dregen new.sh
+nprobe="$(grep -c '^=== GATE .* probe ' "$R/dregen.sh" || true)"
 if [ "$nprobe" -ge 5 ]; then
 	ok "compat: a multi-region origin is ruled by five probes"
 else
@@ -2437,7 +2438,8 @@ printf -- '--- a/c.c\n+++ b/c.c\n@@ -38,3 +38,3 @@\n C38\n C39\n-C40\n+C40t\n' \
 "$R_P2VI" -r "$R/ct.diff" > "$R/ct.sh"
 cp "$R/c.orig" "$R/c.c"
 coderive co.sh ct.sh '%s/^C40t$/C40c/:q!'
-cprobe="$("$R_P2VI" -d "$R/new.sh" 2>/dev/null | grep -c '^=== GATE .* probe ')"
+dregen new.sh
+cprobe="$(grep -c '^=== GATE .* probe ' "$R/dregen.sh" || true)"
 if [ "$cprobe" -ge 10 ] &&
    grep -qE '[0-9]{4},[0-9]{4};[0-9]{4}' "$R/new.sh" 2>/dev/null; then
 	ok "compat: a wide landing is probed past one cluster and ORs them"
