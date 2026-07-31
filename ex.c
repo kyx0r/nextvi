@@ -1125,8 +1125,6 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		rep = ex_re_read(&s);
 	}
 	free(pat);
-	if (o1 >= 0)
-		xoff = MAX(o1, o2);
 	int offs[rs->nsubc];
 	char *lnb, *ln, *suf = "", *fr = NULL;
 	int b1 = 0, pend, rflg = REG_NEWLINE;
@@ -1156,7 +1154,8 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	} else if (e) {
 		err = xrerr;
 		goto out;
-	}
+	} else if (o1 >= 0)
+		xoff = MAX(o1, o2);
 	if (flg & 2) { 	/* multiline */
 		lbuf_region(xb, &text, beg, MAX(o1, 0), end - 1, o2);
 		ln = text.s;
