@@ -160,15 +160,15 @@ out=$(run_ex ':g/int/g/a/g/x/s/x/Z/:%p:q!')
 check 'triple nested global with substitute' \
 	"$(printf 'int a Z;\nint a y;\nint b x;\nvoid a x;')" "$out"
 
-# --- escape handling: all governed by ex_parity (ex.c:61) ---
+# --- escape handling: all governed by the ex_parity macro in ex.c ---
 # A run of k escapes is only touched when it sits immediately before a
 # delimiter; there it emits ceil(k/2) escapes (n -= n/2), and an odd k spends
 # its trailing escape to make the delimiter literal (the keep&1 branch).
-# ex_parity runs once per read pass, at two sites: ex_re_read for the
-# regex/replacement fields (delim '/'), and the command-body reader for the
-# command separators ':' xexp xexe (ex.c:1707). A global re-executes its body,
-# so each nesting level is one more body pass -> escapes before a separator
-# double per level.
+# ex_parity runs once per read pass, at two sites: ex_sread (the reader behind
+# ex_re_read) for the regex/replacement fields, where the delimiter is whatever
+# char opened the field, and ex_arg for the ex specials xsep xexp xexe
+# (': % !'). A global re-executes its body, so each nesting level is one more
+# body pass -> escapes before a separator double per level.
 
 # odd run of 1 before the separator -> ':' kept literal, so :p stays in the
 # global body (it is chained, not run on the whole buffer)
@@ -531,9 +531,10 @@ out=$(run_ex ':1ya 97:ya! 97:err 4:$pu 97:%p:q!')
 check 'G1 ya! frees reg; pu 97 silently skipped (err 4)' \
 	"$(printf 'line1\nline2')" "$out"
 
-# {#id}?? captures the current error status into id; [#id]?? fires its branch on it
-# (??! fires on the inverse). An intervening command that changes the error status
-# does NOT override the captured value.
+# A prefix with no argument captures the current error status into that id;
+# the same prefix with an argument branches on the captured value (??! inverts,
+# both when capturing and when branching). An intervening command that changes
+# the error status does NOT override the captured value.
 printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':f>void:5??:s/hello/world/:5??!p notfound:q!')
 check 'H1 ?? id captures fail; intervening success does not override' 'notfound' "$out"
@@ -604,18 +605,18 @@ check 'N2 ;5;#+10= 3 — second char offset via # rebase is 15' '15' "$out"
 # f( lands on (; \% passes a literal % (not buffer path) to the & macro
 printf 'foo(bar)qux\n' > "$TMPFILE"
 out=$(run_vi 'f(\%x')
-check 'O1 vi f(\%)x — find (, jump to matching ), delete )' 'foo(barqux' "$out"
+check 'O1 vi f(\%x — find (, jump to matching ), delete )' 'foo(barqux' "$out"
 
 rm -f "$OUTFILE"
 printf 'test\n' > "$TMPFILE"
 run_ex ":97reg hello world:pu 97 \!tr a-z A-Z > $OUTFILE:q" >/dev/null 2>/dev/null
-check 'P1 :pu 97 \!cmd — pipe register content to external command' \
+check 'Y1 :pu 97 \!cmd — pipe register content to external command' \
 	'HELLO WORLD' "$(cat $OUTFILE 2>/dev/null)"
 
 rm -f "$OUTFILE"
 printf 'hello world\n' > "$TMPFILE"
 run_ex ":1,1w \!tr a-z A-Z > $OUTFILE:q" >/dev/null 2>/dev/null
-check 'P2 :w \!cmd — write buffer range to external command' \
+check 'Y2 :w \!cmd — write buffer range to external command' \
 	'HELLO WORLD' "$(tr -d '\n' < $OUTFILE 2>/dev/null)"
 
 # 1q inside a nested ??! branch propagates xquit through 2 ex_exec levels but
@@ -700,10 +701,13 @@ printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':2??.=:p reached:q')
 check 'U4 2??.= — unset id; branch does not run; chain continues' 'reached' "$out"
 
-# U5: grp 1:%f+int(.):grp — save char position after "int("
+# U5: grp 1:%f+int(.):grp — the search lands on group 1, not on the whole
+# match, so the cursor stops on the character right after "int" (the "(" at
+# offset 8) instead of on the "i" at offset 5. "(.)" is the capture group here,
+# not a literal paren.
 printf 'void int(x)\n' > "$TMPFILE"
 out=$(run_ex ':grp 1:%f+int(.):grp:;= 2:q')
-check 'U5 grp 1:%f+int(.):grp — char offset after "int(" is 8' '8' "$out"
+check 'U5 grp 1:%f+int(.):grp — char offset after "int" is 8' '8' "$out"
 
 # U6: ;5;#+10= 3 — #+10 is relative to previous offset 5 (not initial)
 printf 'hello world extra padding here\n' > "$TMPFILE"
@@ -736,10 +740,11 @@ out=$(run_ex ':led 0:g/int/ya+ 97:led:1pu 97:%p:q!')
 check 'U10 g/int/ya+ 97 — global appends matching lines to register 97' \
 	"$(printf 'int a;\nint a;\nint c;\nvoid b;\nint c;')" "$out"
 
-# U11: substitution backreference \0 captures first matched group
+# U11: \0 is the whole match, not a group; only the first match is substituted
+# because there is no g flag, so "void" is left alone
 printf 'this has int or void\n' > "$TMPFILE"
 out=$(run_ex ':%s/(int)|(void)/pre\0after:%p:q!')
-check 'U11 :%s/(int)|(void)/pre\0after — backref \0 replaces first match' \
+check 'U11 :%s/(int)|(void)/pre\0after — \0 is the whole match' \
 	'this has preintafter or void' "$out"
 
 # U12: 3,5r \!printf — range selects lines 3-5 from pipe; inserts before current line
@@ -814,22 +819,22 @@ check 'V11 1;99?? — id 99 unset → nop, chain continues' 'reached' "$out"
 # V12: single unset id → nop
 printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':err 1:99??p then:p reached:q')
-check 'V16 99?? — single unset id → nop, chain continues' 'reached' "$out"
+check 'V12 99?? — single unset id → nop, chain continues' 'reached' "$out"
 
 # V13: unset id in AND within complex prefix (1,99;2) → nop
 printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1,99;2??p then:p reached:q')
-check 'V17 1,99;2?? — unset id in AND position → nop' 'reached' "$out"
+check 'V13 1,99;2?? — unset id in AND position → nop' 'reached' "$out"
 
 # V14: unset id in first OR position (99;1) → nop
 printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':err 1:f>hello:1??:99;1??p then:p reached:q')
-check 'V18 99;1?? — unset id in first OR position → nop' 'reached' "$out"
+check 'V14 99;1?? — unset id in first OR position → nop' 'reached' "$out"
 
 # V15: unset id in middle OR position (1;99;2) → nop
 printf 'hello\n' > "$TMPFILE"
 out=$(run_ex ':err 1:f>hello:1??:f>hello:2??:1;99;2??p then:p reached:q')
-check 'V19 1;99;2?? — unset id in middle OR position → nop' 'reached' "$out"
+check 'V15 1;99;2?? — unset id in middle OR position → nop' 'reached' "$out"
 
 # V16-V19: interleaved 1,2;3,4,5;6 = (1 AND 2) OR (3 AND 4 AND 5) OR 6
 # V16: first AND group succeeds → then
@@ -930,8 +935,9 @@ out=$(run_ex ":1m 97:3,4;0;d:ud:'97=1:q")
 check 'mark: undo replacement after → mark unchanged' '1' "$out"
 
 # For :c the replacement lines are embedded directly in the EXINIT string.
-# In -sm mode (xvis & 1) ec_insert uses term_read, which reads from term_push'd
-# data (the arg), terminating on "." alone on a line.
+# In raw ex mode (-sm, xvis & 1) a non-empty argument is injected straight into
+# the insertion buffer and bypasses the interactive reader entirely, so there is
+# no "." terminator line to write.
 # printf converts \n in its format to real newlines; ex_arg stops at ':' (xsep)
 # so newlines inside the arg are part of the text, not command separators.
 # All tests use a 5-line file: aa bb cc dd ee.
@@ -964,11 +970,11 @@ printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
 out=$(EXINIT="$(printf ':3m 97:2,4c xx:'"'"'97=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: :c fully steps over mark (n_ins=1,n_del=3) → mark clamped' '2' "$out"
-out=$(EXINIT="$(printf ':3m 97:2,4c xxn:ud:'"'"'97=1:q')" \
+out=$(EXINIT="$(printf ':3m 97:2,4c xx:ud:'"'"'97=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: undo :c fully stepping over mark → mark restored' '3' "$out"
 
-# MC9/MC10: mark after changed region (n_ins<n_del) → arithmetic −1; undo +1
+# MC7/MC8: mark after changed region (n_ins<n_del) → arithmetic −1; undo +1
 printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
 out=$(EXINIT="$(printf ':5m 97:2,4c xx\nyy:'"'"'97=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
@@ -977,7 +983,7 @@ out=$(EXINIT="$(printf ':5m 97:2,4c xx\nyy:ud:'"'"'97=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: undo :c before mark (n_ins<n_del) → mark restored' '5' "$out"
 
-# MC11/MC12: n_ins=3, n_del=2 — mark at last deleted row (row 2 = pos+n_del-1)
+# MC9/MC10: n_ins=3, n_del=2 — mark at last deleted row (row 2 = pos+n_del-1)
 # row 2 is within new insertion range [pos, pos+n_ins) = [1,4); not in empty lossy
 # zone; not saved → mark stays at row 2 = line 3 forward and after undo
 printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
@@ -988,7 +994,7 @@ out=$(EXINIT="$(printf ':3m 97:2,3c xx\nyy\nzz:ud:'"'"'97=1:q')" \
 	"$VI" -sm "$TMPFILE" </dev/null 2>/dev/null)
 check 'mark: undo :c deleted row within new range → mark unchanged' '3' "$out"
 
-# MC13/MC14: n_ins=3, n_del=2 — :2,3c inserts more than deleted; lossy zone empty
+# MC11/MC12: n_ins=3, n_del=2 — :2,3c inserts more than deleted; lossy zone empty
 # mark after (row 4 = line 5) adjusts +1 → line 6; undo adjusts −1 → line 5
 printf 'aa\nbb\ncc\ndd\nee\n' > "$TMPFILE"
 out=$(EXINIT="$(printf ':5m 97:2,3c xx\nyy\nzz:'"'"'97=1:q')" \
@@ -1104,11 +1110,16 @@ check 'X23 \, with 4 groups — non-digit escape is literal, not group 4' 'X,Y' 
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Search-range escape parity
-# Each command leads with an inline-search range address ('>pat>' forward,
-# '?pat?' / '? ...' backward) whose backslash runs sit right next to the search
-# delimiter — the rarest corner of the escape-halving rule. On a backslash-free
-# buffer the signal is whether the address parses to a real (unmatched) search
-# → "invalid range", parses twice → two errors, or is fully absorbed → nothing.
+# Each command leads with a forward inline-search range address, '>pat>'; the
+# closing delimiter may be dropped, in which case the pattern runs to the end of
+# the command. Its backslash runs sit right next to the search delimiter — the
+# rarest corner of the escape-halving rule. The ':? ' forms wrap the same
+# address in a one-iteration while loop, which re-reads its body and so adds a
+# parse pass; the leading '?' is the while loop, not a search delimiter
+# (backward search is '<pat<'), and the trailing '?' of those patterns is an
+# ordinary regex metachar. On a backslash-free buffer the signal is whether the
+# address parses to a real (unmatched) search → "invalid range", parses twice
+# → two errors, or is fully absorbed → nothing.
 # ──────────────────────────────────────────────────────────────────────────────
 
 INVRANGE='invalid range'
@@ -1137,19 +1148,19 @@ out=$(run_ex ':>\\\\\\>:reg:q!')
 check 'P6 >\\\\\\> — three backslashes; search runs, no match' "$INVRANGE" "$out"
 
 out=$(run_ex ':? >\\\?:reg:q!')
-check 'P7 ? >\\\? — backward delim after \ run; search runs, no match' \
+check 'P7 ? >\\\? — 3 \ then a regex "?" in the while body; no match' \
 	"$INVRANGE" "$out"
 
 out=$(run_ex ':? >\\\\?:reg:q!')
-check 'P8 ? >\\\\? — even run before delim; search runs, no match' \
+check 'P8 ? >\\\\? — 4 \ then a regex "?" in the while body; no match' \
 	"$INVRANGE" "$out"
 
 out=$(run_ex ':? >\\\\\?:reg:q!')
-check 'P9 ? >\\\\\? — odd run keeps ? literal; search runs, no match' \
+check 'P9 ? >\\\\\? — 5 \ then a regex "?" in the while body; no match' \
 	"$INVRANGE" "$out"
 
 out=$(run_ex ':? >\\\\\\?:reg:q!')
-check 'P10 ? >\\\\\\? — even run before delim; search runs, no match' \
+check 'P10 ? >\\\\\\? — 6 \ then a regex "?" in the while body; no match' \
 	"$INVRANGE" "$out"
 
 out=$(run_ex ':? ?? 1?\:p:q!')
@@ -1157,7 +1168,7 @@ check 'P11 ? ?? 1?\:p — ex separator escape' \
 	"irrelevant" "$out"
 
 out=$(run_ex ':? ?? 1?\\:p:q!')
-check 'P11 ? ?? 1?\\:p — ex separator escape' \
+check 'P12 ? ?? 1?\\:p — ex separator escape' \
 	"unknown command
 irrelevant" "$out"
 
@@ -1216,8 +1227,8 @@ out=$(run_ex ':-1!echo HI:%p:q!')
 check ':-1! errors on empty buffer (no referent)' \
 	"$(printf '%s\n%s' "$INVRANGE" "$INVRANGE")" "$out"
 
-# whole-buffer commands (r/w/ef) reject line-0 and out-of-range absolute
-# addresses; a rejected :r must leave the current buffer intact
+# commands that need a real line (r, w, f>) reject line-0 and out-of-range
+# absolute addresses; a rejected :r must leave the current buffer intact
 printf 'a\nb\n' > "$TMPFILE"
 out=$(run_ex ':0r \!printf X:%p:q!')
 check ':0r errors and keeps buffer' "$(printf '%s\na\nb' "$INVRANGE")" "$out"
@@ -1233,7 +1244,7 @@ check ':99w out-of-range errors' "$(printf '%s\na\nb\nc' "$INVRANGE")" "$out"
 
 printf 'a\nb\nc\n' > "$TMPFILE"
 out=$(run_ex ':0f>b:%p:q!')
-check ':0 fuzz-search errors' "$(printf '%s\na\nb\nc' "$INVRANGE")" "$out"
+check ':0f> ranged search errors' "$(printf '%s\na\nb\nc' "$INVRANGE")" "$out"
 
 # a line-0 address is whole-line only: pairing it with a ; column range is
 # rejected (the line above the first line has no columns to operate on)
