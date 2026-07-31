@@ -47,6 +47,32 @@ Patch2vi changes:
    gates all grow dynamically.
 
 Patch changes:
+1. New threaded ex commands
+   [async.sh](https://github.com/kyx0r/nextvi/blob/release/async.sh)
+2. New incremental search
+   [incsearch.sh](https://github.com/kyx0r/nextvi/blob/release/incsearch.sh)
+3. New runtime highlight rules
+   [highlight_cmd.sh](https://github.com/kyx0r/nextvi/blob/release/highlight_cmd.sh)
+4. New Coders Basilisk syntax
+   [cbas.sh](https://github.com/kyx0r/nextvi/blob/release/cbas.sh)
+5. linewrap.sh split into a buffer based
+   [linewrap_v1.sh](https://github.com/kyx0r/nextvi/blob/release/linewrap_v1.sh)
+   and a render based
+   [linewrap_v2.sh](https://github.com/kyx0r/nextvi/blob/release/linewrap_v2.sh),
+   both with the new "hllw" option.
+6. Cursor shape kept across mode swap and suspend
+   [ins_cursor.sh](https://github.com/kyx0r/nextvi/blob/release/ins_cursor.sh)
+7. Fixed ":rr" recording in
+   [lsp.sh](https://github.com/kyx0r/nextvi/blob/release/lsp.sh)
+   and added mouse input to it in
+   [mouse_normal.sh](https://github.com/kyx0r/nextvi/blob/release/mouse_normal.sh)
+8. Fixed grp bound check and literal prefix in
+   [rstr.sh](https://github.com/kyx0r/nextvi/blob/release/rstr.sh)
+9. New compat blocks in visual.sh, threaded_search.sh and linewrap_v2.sh,
+   fixups in remove_vla_cliterals.sh
+10. Maintainer helpers extract_patches, extract_compats, discard_deltas,
+    discard_compats and recompat in
+    [patch2vi.sh](https://github.com/kyx0r/nextvi/blob/release/patch2vi.sh)
 
 ------------------
 7.0 Basilisk
