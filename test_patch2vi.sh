@@ -21,6 +21,16 @@ trap cleanup EXIT
 ok() { PASS=$((PASS + 1)); printf "  PASS: %s\n" "$1"; }
 fail() { FAIL=$((FAIL + 1)); printf "  FAIL: %s\n" "$1"; }
 
+# script(1) flavors disagree: busybox knows only [-afq] [-t[FILE]] [-c PROG]
+# [OUTFILE], util-linux adds -e (exit with the child's status). No test here
+# reads the child's status through script, so keep to the flags both accept
+# and swallow script's own status so set -e cannot trip over it. The
+# environment goes through env(1) rather than a prefix assignment, which
+# would linger in the shell after a function call.
+pty() {	# pty <var=value> <shell-command>: run the command on a pty
+	env "$1" script -q -c "$2" /dev/null || true
+}
+
 check() {
 	# $1=test name $2=orig $3=expected $4=patch2vi flags (default: -r)
 	local name="$1" flags="${4:--r}"
@@ -975,9 +985,8 @@ edex() {
 # run_i <script-out> <excmds> <flags> <input>: patch2vi under a pty with
 # the embedded editor driven by P2VI_EX
 run_i() {
-	P2VI_EX="$2" script -qec \
-		"./patch2vi $3 '$4' > '$1' 2> '$TMPDIR/i_err.txt'" \
-		/dev/null >/dev/null 2>&1
+	pty "P2VI_EX=$2" \
+		"./patch2vi $3 '$4' > '$1' 2> '$TMPDIR/i_err.txt'" >/dev/null 2>&1
 	chmod +x "$1"
 }
 
@@ -1086,8 +1095,8 @@ E_P2VI="$PWD/patch2vi"
 run_I() {
 	local d="$1" ex="$2"
 	shift 2
-	EXINIT="$ex" script -qec \
-		"sh -c 'cd $d && $E_P2VI -I $*'" /dev/null >/dev/null 2>&1
+	pty "EXINIT=$ex" \
+		"sh -c 'cd $d && $E_P2VI -I $*'" >/dev/null 2>&1
 }
 
 mkdir -p "$TMPDIR/E1"
@@ -1247,8 +1256,8 @@ mkdir -p "$A"
 run_A() {
 	local d="$1" ex="$2"
 	shift 2
-	P2VI_EX="$ex" script -qec \
-		"sh -c 'cd $d && $E_P2VI $*'" /dev/null >/dev/null 2>&1
+	pty "P2VI_EX=$ex" \
+		"sh -c 'cd $d && $E_P2VI $*'" >/dev/null 2>&1
 }
 
 printf 'L1\nL2\nL3\n' > "$A/base.txt"
@@ -1479,9 +1488,9 @@ mkdir -p "$R"
 # <script> <P2VI_EX>: replay under a pty, ignoring the exit status (the
 # derivation stage after the handover is not implemented yet)
 run_pr() {
-	P2VI_EX="$2" script -qec \
-		"sh -c 'cd $R && $R_P2VI -co $1 /dev/null'" /dev/null \
-		> "$R/log" 2>&1 || true
+	pty "P2VI_EX=$2" \
+		"sh -c 'cd $R && $R_P2VI -co $1 /dev/null'" \
+		> "$R/log" 2>&1
 }
 
 printf 'a\nb\nc\n' > "$R/f1.txt"
@@ -1558,9 +1567,8 @@ fi
 # applies alone.
 coderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit -co result to $R/new.sh
 	rm -f "$R/new.sh"
-	P2VI_EX="$3" script -qec \
-		"sh -c 'cd $R && $R_P2VI -co $1 $2 > $R/new.sh 2>$R/nerr'" \
-		/dev/null > /dev/null 2>&1 || true
+	pty "P2VI_EX=$3" \
+		"sh -c 'cd $R && $R_P2VI -co $1 $2 > $R/new.sh 2>$R/nerr'" > /dev/null 2>&1
 }
 
 # The compat block and the target's own hunk are independent units that stack:
@@ -1669,9 +1677,9 @@ fi
 # derived block covers the pre-applied edits AND whatever the user adds.
 coderive3() {	# <origin.sh> <target.sh> <compat> <P2VI_EX>: out $R/new.sh
 	rm -f "$R/new.sh"
-	P2VI_EX="$4" script -qec \
+	pty "P2VI_EX=$4" \
 		"sh -c 'cd $R && $R_P2VI -co $1 $2 $3 > $R/new.sh 2>$R/nerr'" \
-		/dev/null > /dev/null 2>&1 || true
+		> /dev/null 2>&1
 }
 
 # origin (b1) inserts PROBE, target (b2) changes A6 -> A6x, and the compat patch
@@ -1897,9 +1905,9 @@ fi
 
 coderiveq() {	# coderive with QF2=1: the target is expected to miss
 	rm -f "$R/new.sh"
-	P2VI_EX="$3" script -qec \
+	pty "P2VI_EX=$3" \
 		"sh -c 'cd $R && QF2=1 $R_P2VI -co $1 $2 > $R/new.sh 2>$R/nerr'" \
-		/dev/null > /dev/null 2>&1 || true
+		> /dev/null 2>&1
 }
 
 # A host group the origin made impossible must not take the rest of the body
@@ -1967,15 +1975,13 @@ fi
 # the origin, driven under a pty and quit with :q.
 dregen() {	# <script>: regenerate to $R/dregen.sh via a no-op -d session
 	rm -f "$R/dregen.sh"
-	P2VI_EX=':q' script -qec \
-		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dregen.sh 2>$R/derr'" \
-		/dev/null > /dev/null 2>&1 || true
+	pty 'P2VI_EX=:q' \
+		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dregen.sh 2>$R/derr'" > /dev/null 2>&1
 }
 dedit() {	# <script> <P2VI_EX>: -d session running <P2VI_EX>, out $R/dedit.sh
 	rm -f "$R/dedit.sh"
-	P2VI_EX="$2" script -qec \
-		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dedit.sh 2>$R/derr'" \
-		/dev/null > /dev/null 2>&1 || true
+	pty "P2VI_EX=$2" \
+		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dedit.sh 2>$R/derr'" > /dev/null 2>&1
 }
 # a cross-file gate survives storage: -d reparses the recorded probe path and
 # emits the same script, so the sensor keeps searching the origin's file
@@ -2480,9 +2486,9 @@ printf -- '--- a/p.c\n+++ b/p.c\n@@ -1,3 +1,3 @@\n P1\n P2\n-P3\n+P3x\n' > "$R/o
 cp "$R/o2.sh" "$R/o2.keep"
 cp "$R/p.orig" "$R/p.c"
 rm -f "$R/ostdout"
-P2VI_EX='%s/^P2$/P2c/:q!' script -qec \
+pty 'P2VI_EX=%s/^P2$/P2c/:q!' \
 	"sh -c 'cd $R && $R_P2VI -oco o1.sh o2.sh > $R/ostdout 2>$R/nerr'" \
-	/dev/null > /dev/null 2>&1 || true
+	> /dev/null 2>&1
 if [ ! -s "$R/ostdout" ] &&
    grep -q '^# Compat (post) from o1.sh' "$R/o2.sh" 2>/dev/null; then
 	ok "compat: -oco updates the target script in place"
@@ -2525,16 +2531,15 @@ printf -- '--- a/e.c\n+++ b/e.c\n@@ -1,3 +1,3 @@\n E1\n E2\n-E3\n+E3x\n' \
 "$R_P2VI" -r "$R/e2.diff" > "$R/e2.sh"
 cp "$R/e.orig" "$R/e.c"
 rm -f "$R/new.sh"
-P2VI_EX='%s/^E2$/E2c/:q!' script -qec \
+pty 'P2VI_EX=%s/^E2$/E2c/:q!' \
 	"sh -c 'cd $R && $R_P2VI -co e1.sh e2.sh > $R/ec.sh 2>$R/nerr'" \
-	/dev/null > /dev/null 2>&1 || true
+	> /dev/null 2>&1
 
 # amend_E <tree-setup-file> <out.sh>: replay ec.sh over the tree and re-emit
 amend_E() {
 	cp "$1" "$R/e.c"
-	P2VI_EX='q!' script -qec \
-		"sh -c 'cd $R && $R_P2VI -E ec.sh > $R/$2 2>$R/eerr'" \
-		/dev/null > /dev/null 2>&1 || true
+	pty 'P2VI_EX=q!' \
+		"sh -c 'cd $R && $R_P2VI -E ec.sh > $R/$2 2>$R/eerr'" > /dev/null 2>&1
 }
 
 # clean tree: the gate self-skips during the replay, so the compat edit never
@@ -2584,9 +2589,8 @@ printf -- '--- a/f.c\n+++ b/f.c\n@@ -1,6 +1,6 @@\n F1\n-F2\n+F2x\n F3\n F4\n F5\
 
 # amend_F <out.sh>: replay f.sh over f.c with QF2=1 and re-emit
 amend_F() {
-	P2VI_EX='q!' script -qec \
-		"sh -c 'cd $R && QF2=1 $R_P2VI -E f.sh > $R/$1 2>$R/ferr'" \
-		/dev/null > /dev/null 2>&1 || true
+	pty 'P2VI_EX=q!' \
+		"sh -c 'cd $R && QF2=1 $R_P2VI -E f.sh > $R/$1 2>$R/ferr'" > /dev/null 2>&1
 }
 
 # nothing missed: the log stays empty and the update is the plain one
@@ -2623,16 +2627,15 @@ fi
 printf -- '--- a/g.c\n+++ b/g.c\n@@ -1,4 +1,3 @@\n G1\n G2\n-G3\n G4\n' > "$R/g.diff"
 "$R_P2VI" -r "$R/g.diff" > "$R/g.sh"
 printf 'G1\nZZ\nYY\nXX\n' > "$R/g.c"
-P2VI_EX='q!' script -qec \
+pty 'P2VI_EX=q!' \
 	"sh -c 'cd $R && QF2=1 $R_P2VI -E g.sh > $R/gfail.sh 2>$R/gerr'" \
-	/dev/null > /dev/null 2>&1 || true
+	> /dev/null 2>&1
 # again, this time writing the line the cursor sits on out of the session (a
 # run of its own: the write would otherwise show up as a buffer to diff)
 printf 'G1\nZZ\nYY\nXX\n' > "$R/g.c"
 rm -f "$R/gcur"
-P2VI_EX=".w! $R/gcur:q!" script -qec \
-	"sh -c 'cd $R && QF2=1 $R_P2VI -E g.sh > /dev/null 2>&1'" \
-	/dev/null > /dev/null 2>&1 || true
+pty "P2VI_EX=.w! $R/gcur:q!" \
+	"sh -c 'cd $R && QF2=1 $R_P2VI -E g.sh > /dev/null 2>&1'" > /dev/null 2>&1
 if grep -q "^+>>> p2v FAIL g.c:3:m1$" "$R/gfail.sh" &&
    grep -q "^+'1d$" "$R/gfail.sh" &&
    [ "$(cat "$R/gcur" 2>/dev/null)" = '>>> p2v FAIL g.c:3:m1' ]; then
