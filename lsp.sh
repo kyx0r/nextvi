@@ -894,6 +894,7 @@ typedef struct {
 	int response_ready, pending_id;
 	char *response_json;
 	int initialized, next_id;
+	int broken;		/* start or initialize failed; don'\''t retry blindly */
 	lsp_doc docs[LSP_DOCS_MAX];
 	int ndocs;
 } lsp_server;
@@ -910,12 +911,22 @@ static int lsp_ndiagfiles = 0;
 
 static void lsp_open_lb(const char *path, const char *ft, struct lbuf *lb);
 
+static void lsp_srv_reset(lsp_server *srv);
+
 void lsp_register(const char *ft, const char *cmd)
 {
 	int i;
 	for (i = 0; i < lsp_nsrvs; i++) {
 		if (!strcmp(lsp_srvs[i].ft, ft)) {
+			if (strcmp(lsp_srvs[i].cmd, cmd))
+				lsp_srv_reset(&lsp_srvs[i]);
 			snprintf(lsp_srvs[i].cmd, sizeof(lsp_srvs[i].cmd), "%s", cmd);
+			lsp_srvs[i].broken = 0;	/* re-registering retries a dead cmd */
+			for (i = 0; i < xbufcur; i++)
+				if (bufs[i].ft && bufs[i].path[0] &&
+						!strcmp(bufs[i].ft, ft))
+					lsp_open_lb(bufs[i].path, bufs[i].ft,
+							bufs[i].lb);
 			return;
 		}
 	}
@@ -940,7 +951,8 @@ void lsp_list(void)
 	for (i = 0; i < lsp_nsrvs; i++) {
 		snprintf(buf, sizeof(buf), "lsp %.31s %.255s [%s]",
 			lsp_srvs[i].ft, lsp_srvs[i].cmd,
-			lsp_srvs[i].pid > 0 ? "running" : "stopped");
+			lsp_srvs[i].pid > 0 ? "running" :
+			lsp_srvs[i].broken ? "broken" : "stopped");
 		ex_print(buf, bar_ft)
 	}
 	if (!lsp_nsrvs)
@@ -997,6 +1009,45 @@ static lsp_server *lsp_find_srv_for_fd(int fd)
 		if (lsp_srvs[i].out_fd == fd)
 			return &lsp_srvs[i];
 	return NULL;
+}
+
+static void lsp_fd_del(int fd)
+{
+	int i;
+	for (i = 0; i < lsp_nfds; i++) {
+		if (lsp_fds[i] == fd) {
+			lsp_nfds--;
+			memmove(lsp_fds + i, lsp_fds + i + 1,
+				(lsp_nfds - i) * sizeof(lsp_fds[0]));
+			return;
+		}
+	}
+}
+
+/* drop every trace of a stopped server; the documents have to go as well,
+ * else a later request would send didChange for a document nobody opened */
+static void lsp_srv_reset(lsp_server *srv)
+{
+	if (srv->out_fd >= 0) {
+		lsp_fd_del(srv->out_fd);
+		close(srv->out_fd);
+	}
+	if (srv->in_fd >= 0)
+		close(srv->in_fd);
+	if (srv->pid > 0) {
+		kill(srv->pid, SIGTERM);
+		waitpid(srv->pid, NULL, WNOHANG);
+	}
+	srv->in_fd = -1;
+	srv->out_fd = -1;
+	srv->pid = -1;
+	srv->initialized = 0;
+	srv->ndocs = 0;
+	srv->rbuf_n = 0;
+	srv->response_ready = 0;
+	srv->pending_id = 0;
+	free(srv->response_json);
+	srv->response_json = NULL;
 }
 
 static void lsp_json_escape(const char *src, sbuf *sb)
@@ -1096,10 +1147,20 @@ static void lsp_print_hover(const char *s)
 static void lsp_send(lsp_server *srv, const char *json, int len)
 {
 	char hdr[64];
+	if (srv->in_fd < 0)
+		return;
 	int hlen = snprintf(hdr, sizeof(hdr),
 		"Content-Length: %d\r\n\r\n", len);
-	write(srv->in_fd, hdr, hlen);
-	write(srv->in_fd, json, len);
+	/* writing to an exited server raises SIGPIPE, which would kill the
+	 * editor, so take the signal here and treat it as a dead server */
+	void (*pipe_old)(int) = signal(SIGPIPE, SIG_IGN);
+	int bad = write(srv->in_fd, hdr, hlen) != hlen ||
+		write(srv->in_fd, json, len) != len;
+	signal(SIGPIPE, pipe_old);
+	if (bad) {
+		lsp_srv_reset(srv);
+		srv->broken = 1;
+	}
 }
 
 static void lsp_send_sb(lsp_server *srv, sbuf *sb)
@@ -1474,6 +1535,14 @@ void lsp_process_fd(int fd)
 	if (r > 0) {
 		srv->rbuf_n += r;
 		lsp_dispatch_messages(srv);
+	} else if (!r || (errno != EAGAIN && errno != EINTR)) {
+		/* the server is gone; forget it, otherwise every later request
+		 * waits for a reply that cannot come and poll() spins on POLLHUP */
+		char buf[64];
+		snprintf(buf, sizeof(buf), "lsp: %.31s server exited", srv->ft);
+		lsp_srv_reset(srv);
+		srv->broken = 1;
+		lsp_show_msg(buf);
 	}
 }
 
@@ -1484,6 +1553,8 @@ static int lsp_wait_response(lsp_server *srv, int id, int ms)
 	srv->response_ready = 0;
 	while (elapsed < ms) {
 		struct pollfd pfd;
+		if (srv->pid <= 0)	/* died while we waited */
+			return 0;
 		pfd.fd = srv->out_fd;
 		pfd.events = POLLIN;
 		int r = poll(&pfd, 1, 10);
@@ -1501,12 +1572,15 @@ static int lsp_srv_ensure(lsp_server *srv)
 {
 	if (srv->pid > 0)
 		return 1;
+	if (srv->broken)	/* don'\''t pay the initialize timeout again */
+		return 0;
 	char cmd_redir[sizeof(srv->cmd) + 16];
 	snprintf(cmd_redir, sizeof(cmd_redir), "%s 2>/dev/null", srv->cmd);
 	char *argv[] = {"/bin/sh", "-c", cmd_redir, NULL};
 	srv->pid = cmd_make(argv, &srv->in_fd, &srv->out_fd);
 	if (srv->pid <= 0) {
 		srv->pid = -1;
+		srv->broken = 1;
 		return 0;
 	}
 	fcntl(srv->out_fd, F_SETFL,
@@ -1528,7 +1602,14 @@ static int lsp_srv_ensure(lsp_server *srv)
 	free(sb->s);
 	/* wait for initialized response */
 	lsp_wait_response(srv, id, 5000);
-	return srv->initialized;
+	if (!srv->initialized) {
+		/* a bogus command forks fine and dies right away; remember it
+		 * so the next request fails instantly instead of stalling 5s */
+		lsp_srv_reset(srv);
+		srv->broken = 1;
+		return 0;
+	}
+	return 1;
 }
 
 static void lsp_open_lb(const char *path, const char *ft, struct lbuf *lb)
@@ -1618,17 +1699,61 @@ static int lsp_byte_offset(struct lbuf *lb, int row, int off)
 	return uc_off(ln, off);
 }
 
+/* find the server that has this file open, starting it and opening the file
+ * on demand; on failure report which of the steps was the one that failed */
+static lsp_server *lsp_srv_resolve(const char *path)
+{
+	char buf[384];
+	char *ft = ex_buf ? ex_buf->ft : NULL;
+	lsp_server *srv = lsp_srv_for_path(path);
+	if (srv)
+		return srv;
+	if (!path || !path[0]) {
+		lsp_show_msg("lsp: buffer has no file name");
+		return NULL;
+	}
+	if (!ft || !*ft) {
+		lsp_show_msg("lsp: buffer has no filetype; set one with :ft");
+		return NULL;
+	}
+	if (!(srv = lsp_srv_for_ft(ft))) {
+		snprintf(buf, sizeof(buf), "lsp: no server registered for ft %.31s", ft);
+		lsp_show_msg(buf);
+		return NULL;
+	}
+	if (srv->broken) {
+		snprintf(buf, sizeof(buf), "lsp: %.31s server not running: %.255s",
+			ft, srv->cmd);
+		lsp_show_msg(buf);
+		return NULL;
+	}
+	/* the file may predate the :lsp registration, or the server may have
+	 * been restarted since, which empties its document list */
+	lsp_open_lb(path, ft, ex_buf->lb);
+	if (lsp_srv_for_path(path))
+		return srv;
+	if (srv->broken)
+		snprintf(buf, sizeof(buf), "lsp: %.31s server failed to start: %.255s",
+			ft, srv->cmd);
+	else if (srv->ndocs >= LSP_DOCS_MAX)
+		snprintf(buf, sizeof(buf), "lsp: %.31s server has too many files open",
+			ft);
+	else
+		snprintf(buf, sizeof(buf), "lsp: cannot open %.255s with %.31s server",
+			path, ft);
+	lsp_show_msg(buf);
+	return NULL;
+}
+
 /* send a position request and parse the reply; report and return -1 on error,
  * else return the "result" token index and fill json/toks/n for the caller */
 static int lsp_request(const char *method, const char *path, int row, int off,
 		char **json_out, jsmntok_t *toks, int ntoks, int *n_out)
 {
 	char buf[64];
-	lsp_server *srv = lsp_srv_for_path(path);
-	if (!srv) {
-		lsp_show_msg("lsp: no server for file");
+	lsp_server *srv = lsp_srv_resolve(path);
+	if (!srv)
 		return -1;
-	}
 	int col = lsp_byte_offset(ex_buf ? ex_buf->lb : NULL, row, off);
 	sbuf_smake(sb, 256)
 	int id = lsp_fmt_pos(srv, sb, method, path, row, col);
@@ -2006,9 +2131,11 @@ char \*term_att\(int att\)
 		}
 		/* read a single input character, servicing lsp fds */
 		if (xquit >= 0 && poll(ufd, 1 + lsp_nfds, -1) > 0) {
+			/* POLLHUP too: a server that died must be reaped here,
+			 * else its fd stays in the set and poll() never blocks */
 			for (i = 0; i < lsp_nfds; i++)
-				if (ufd[i+1].revents & POLLIN)
-					lsp_process_fd(lsp_fds[i]);
+				if (ufd[i+1].revents & (POLLIN | POLLHUP | POLLERR))
+					lsp_process_fd(ufd[i+1].fd);
 			if (!(ufd[0].revents & POLLIN)) {
 				if (term_winch && winch) {
 					*ibuf = winch;
@@ -3218,10 +3345,10 @@ index 18170218..4720e9e5 100644
  	for (i = 0; i < lb->mark_n; i++) {	/* updating marks */
 diff --git a/lsp.c b/lsp.c
 new file mode 100644
-index 00000000..6e0e378b
+index 00000000..9ee6df44
 --- /dev/null
 +++ b/lsp.c
-@@ -0,0 +1,923 @@
+@@ -0,0 +1,1048 @@
 +/* lsp.c - Language Server Protocol client for nextvi */
 +#include "jsmn.h"
 +#include <errno.h>
@@ -3256,6 +3383,7 @@ index 00000000..6e0e378b
 +	int response_ready, pending_id;
 +	char *response_json;
 +	int initialized, next_id;
++	int broken;		/* start or initialize failed; don't retry blindly */
 +	lsp_doc docs[LSP_DOCS_MAX];
 +	int ndocs;
 +} lsp_server;
@@ -3272,12 +3400,22 @@ index 00000000..6e0e378b
 +
 +static void lsp_open_lb(const char *path, const char *ft, struct lbuf *lb);
 +
++static void lsp_srv_reset(lsp_server *srv);
++
 +void lsp_register(const char *ft, const char *cmd)
 +{
 +	int i;
 +	for (i = 0; i < lsp_nsrvs; i++) {
 +		if (!strcmp(lsp_srvs[i].ft, ft)) {
++			if (strcmp(lsp_srvs[i].cmd, cmd))
++				lsp_srv_reset(&lsp_srvs[i]);
 +			snprintf(lsp_srvs[i].cmd, sizeof(lsp_srvs[i].cmd), "%s", cmd);
++			lsp_srvs[i].broken = 0;	/* re-registering retries a dead cmd */
++			for (i = 0; i < xbufcur; i++)
++				if (bufs[i].ft && bufs[i].path[0] &&
++						!strcmp(bufs[i].ft, ft))
++					lsp_open_lb(bufs[i].path, bufs[i].ft,
++							bufs[i].lb);
 +			return;
 +		}
 +	}
@@ -3302,7 +3440,8 @@ index 00000000..6e0e378b
 +	for (i = 0; i < lsp_nsrvs; i++) {
 +		snprintf(buf, sizeof(buf), "lsp %.31s %.255s [%s]",
 +			lsp_srvs[i].ft, lsp_srvs[i].cmd,
-+			lsp_srvs[i].pid > 0 ? "running" : "stopped");
++			lsp_srvs[i].pid > 0 ? "running" :
++			lsp_srvs[i].broken ? "broken" : "stopped");
 +		ex_print(buf, bar_ft)
 +	}
 +	if (!lsp_nsrvs)
@@ -3359,6 +3498,45 @@ index 00000000..6e0e378b
 +		if (lsp_srvs[i].out_fd == fd)
 +			return &lsp_srvs[i];
 +	return NULL;
++}
++
++static void lsp_fd_del(int fd)
++{
++	int i;
++	for (i = 0; i < lsp_nfds; i++) {
++		if (lsp_fds[i] == fd) {
++			lsp_nfds--;
++			memmove(lsp_fds + i, lsp_fds + i + 1,
++				(lsp_nfds - i) * sizeof(lsp_fds[0]));
++			return;
++		}
++	}
++}
++
++/* drop every trace of a stopped server; the documents have to go as well,
++ * else a later request would send didChange for a document nobody opened */
++static void lsp_srv_reset(lsp_server *srv)
++{
++	if (srv->out_fd >= 0) {
++		lsp_fd_del(srv->out_fd);
++		close(srv->out_fd);
++	}
++	if (srv->in_fd >= 0)
++		close(srv->in_fd);
++	if (srv->pid > 0) {
++		kill(srv->pid, SIGTERM);
++		waitpid(srv->pid, NULL, WNOHANG);
++	}
++	srv->in_fd = -1;
++	srv->out_fd = -1;
++	srv->pid = -1;
++	srv->initialized = 0;
++	srv->ndocs = 0;
++	srv->rbuf_n = 0;
++	srv->response_ready = 0;
++	srv->pending_id = 0;
++	free(srv->response_json);
++	srv->response_json = NULL;
 +}
 +
 +static void lsp_json_escape(const char *src, sbuf *sb)
@@ -3458,10 +3636,20 @@ index 00000000..6e0e378b
 +static void lsp_send(lsp_server *srv, const char *json, int len)
 +{
 +	char hdr[64];
++	if (srv->in_fd < 0)
++		return;
 +	int hlen = snprintf(hdr, sizeof(hdr),
 +		"Content-Length: %d\r\n\r\n", len);
-+	write(srv->in_fd, hdr, hlen);
-+	write(srv->in_fd, json, len);
++	/* writing to an exited server raises SIGPIPE, which would kill the
++	 * editor, so take the signal here and treat it as a dead server */
++	void (*pipe_old)(int) = signal(SIGPIPE, SIG_IGN);
++	int bad = write(srv->in_fd, hdr, hlen) != hlen ||
++		write(srv->in_fd, json, len) != len;
++	signal(SIGPIPE, pipe_old);
++	if (bad) {
++		lsp_srv_reset(srv);
++		srv->broken = 1;
++	}
 +}
 +
 +static void lsp_send_sb(lsp_server *srv, sbuf *sb)
@@ -3836,6 +4024,14 @@ index 00000000..6e0e378b
 +	if (r > 0) {
 +		srv->rbuf_n += r;
 +		lsp_dispatch_messages(srv);
++	} else if (!r || (errno != EAGAIN && errno != EINTR)) {
++		/* the server is gone; forget it, otherwise every later request
++		 * waits for a reply that cannot come and poll() spins on POLLHUP */
++		char buf[64];
++		snprintf(buf, sizeof(buf), "lsp: %.31s server exited", srv->ft);
++		lsp_srv_reset(srv);
++		srv->broken = 1;
++		lsp_show_msg(buf);
 +	}
 +}
 +
@@ -3846,6 +4042,8 @@ index 00000000..6e0e378b
 +	srv->response_ready = 0;
 +	while (elapsed < ms) {
 +		struct pollfd pfd;
++		if (srv->pid <= 0)	/* died while we waited */
++			return 0;
 +		pfd.fd = srv->out_fd;
 +		pfd.events = POLLIN;
 +		int r = poll(&pfd, 1, 10);
@@ -3863,12 +4061,15 @@ index 00000000..6e0e378b
 +{
 +	if (srv->pid > 0)
 +		return 1;
++	if (srv->broken)	/* don't pay the initialize timeout again */
++		return 0;
 +	char cmd_redir[sizeof(srv->cmd) + 16];
 +	snprintf(cmd_redir, sizeof(cmd_redir), "%s 2>/dev/null", srv->cmd);
 +	char *argv[] = {"/bin/sh", "-c", cmd_redir, NULL};
 +	srv->pid = cmd_make(argv, &srv->in_fd, &srv->out_fd);
 +	if (srv->pid <= 0) {
 +		srv->pid = -1;
++		srv->broken = 1;
 +		return 0;
 +	}
 +	fcntl(srv->out_fd, F_SETFL,
@@ -3890,7 +4091,14 @@ index 00000000..6e0e378b
 +	free(sb->s);
 +	/* wait for initialized response */
 +	lsp_wait_response(srv, id, 5000);
-+	return srv->initialized;
++	if (!srv->initialized) {
++		/* a bogus command forks fine and dies right away; remember it
++		 * so the next request fails instantly instead of stalling 5s */
++		lsp_srv_reset(srv);
++		srv->broken = 1;
++		return 0;
++	}
++	return 1;
 +}
 +
 +static void lsp_open_lb(const char *path, const char *ft, struct lbuf *lb)
@@ -3980,17 +4188,61 @@ index 00000000..6e0e378b
 +	return uc_off(ln, off);
 +}
 +
++/* find the server that has this file open, starting it and opening the file
++ * on demand; on failure report which of the steps was the one that failed */
++static lsp_server *lsp_srv_resolve(const char *path)
++{
++	char buf[384];
++	char *ft = ex_buf ? ex_buf->ft : NULL;
++	lsp_server *srv = lsp_srv_for_path(path);
++	if (srv)
++		return srv;
++	if (!path || !path[0]) {
++		lsp_show_msg("lsp: buffer has no file name");
++		return NULL;
++	}
++	if (!ft || !*ft) {
++		lsp_show_msg("lsp: buffer has no filetype; set one with :ft");
++		return NULL;
++	}
++	if (!(srv = lsp_srv_for_ft(ft))) {
++		snprintf(buf, sizeof(buf), "lsp: no server registered for ft %.31s", ft);
++		lsp_show_msg(buf);
++		return NULL;
++	}
++	if (srv->broken) {
++		snprintf(buf, sizeof(buf), "lsp: %.31s server not running: %.255s",
++			ft, srv->cmd);
++		lsp_show_msg(buf);
++		return NULL;
++	}
++	/* the file may predate the :lsp registration, or the server may have
++	 * been restarted since, which empties its document list */
++	lsp_open_lb(path, ft, ex_buf->lb);
++	if (lsp_srv_for_path(path))
++		return srv;
++	if (srv->broken)
++		snprintf(buf, sizeof(buf), "lsp: %.31s server failed to start: %.255s",
++			ft, srv->cmd);
++	else if (srv->ndocs >= LSP_DOCS_MAX)
++		snprintf(buf, sizeof(buf), "lsp: %.31s server has too many files open",
++			ft);
++	else
++		snprintf(buf, sizeof(buf), "lsp: cannot open %.255s with %.31s server",
++			path, ft);
++	lsp_show_msg(buf);
++	return NULL;
++}
++
 +/* send a position request and parse the reply; report and return -1 on error,
 + * else return the "result" token index and fill json/toks/n for the caller */
 +static int lsp_request(const char *method, const char *path, int row, int off,
 +		char **json_out, jsmntok_t *toks, int ntoks, int *n_out)
 +{
 +	char buf[64];
-+	lsp_server *srv = lsp_srv_for_path(path);
-+	if (!srv) {
-+		lsp_show_msg("lsp: no server for file");
++	lsp_server *srv = lsp_srv_resolve(path);
++	if (!srv)
 +		return -1;
-+	}
 +	int col = lsp_byte_offset(ex_buf ? ex_buf->lb : NULL, row, off);
 +	sbuf_smake(sb, 256)
 +	int id = lsp_fmt_pos(srv, sb, method, path, row, col);
@@ -4146,7 +4398,7 @@ index 00000000..6e0e378b
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index 75ada7cc..14765286 100644
+index 75ada7cc..1fa6d312 100644
 --- a/term.c
 +++ b/term.c
 @@ -139,8 +139,8 @@ void term_push(char *s, unsigned int n)
@@ -4160,7 +4412,7 @@ index 75ada7cc..14765286 100644
  	if (ibuf_pos >= ibuf_cnt) {
  		if (texec) {
  			xquit = !xquit ? 1 : xquit;
-@@ -153,24 +153,45 @@ int term_read(int winch)
+@@ -153,24 +153,47 @@ int term_read(int winch)
  		}
  		cw = 0;
  		re:
@@ -4181,9 +4433,11 @@ index 75ada7cc..14765286 100644
 +		}
 +		/* read a single input character, servicing lsp fds */
 +		if (xquit >= 0 && poll(ufd, 1 + lsp_nfds, -1) > 0) {
++			/* POLLHUP too: a server that died must be reaped here,
++			 * else its fd stays in the set and poll() never blocks */
 +			for (i = 0; i < lsp_nfds; i++)
-+				if (ufd[i+1].revents & POLLIN)
-+					lsp_process_fd(lsp_fds[i]);
++				if (ufd[i+1].revents & (POLLIN | POLLHUP | POLLERR))
++					lsp_process_fd(ufd[i+1].fd);
 +			if (!(ufd[0].revents & POLLIN)) {
 +				if (term_winch && winch) {
 +					*ibuf = winch;
