@@ -25,17 +25,40 @@ fi
 #   script, for state inspection mid execution
 
 # Body too large for EXINIT/argv: stage it in a file
-( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
-trap 'rm -f "$P2VIF"' EXIT
+( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
+trap 'rm -f "$P2VIF".*' EXIT
 
-# Patch: conf.c ex.c led.c term.c vi.c vi.h
 printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg prFp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
 "${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'b41;0fr 0%f> ^		vi_center\(\*row\);$1000??0?
+b41;0fr 0%f> ^		else if \(cmd < 0 && vi_unseen\(\*row, !vi_status\)\)$1001??0?
+b41;0fr 0%f> ^		if \(xlw && mv != '\''\\n'\''\)$1002??0?
+b41;0fr 0%f> ^		if \(xlw && mv != '\''-'\''\)$1003??0?
+b41;0fr 0%f> ^		\*row = xlw \? MIN\(vi_fullrow\(\) \+ cnt - 1, vi_botrow\(\)\)$1004??0?
+b41;0fr 0%f> ^		\*row = xlw \? MAX\(vi_fullrow\(\), vi_lastrow\(\) - cnt \+ 1\)$1005??0?
+b41;0fr 0%f> ^		if \(!xlw\) \{$1006??0?
+b41;0fr 0%f> ^		if \(cmd < 0 && vi_unseen\(\*row, 0\)\)$1007??0?
+b41;0fr 0%f> ^			vi_drawrow\(xtop \+ i, i\);$1008??0?
+b41;0fr 0%f> ^			vi_drawrow\(xtop \+ xrows - n \+ i, xrows - n \+ i\);$1009??0?
+b4%ya 98fr 98%f> 	if \(xlw\) \{
+		vi_drawagain\(xtop\);1010??0?
+b41;0fr 0%f> ^		for \(; i < xtop \+ xrows; i\+\+\)$1011??0?
+b41;0fr 0%f> ^	int trow;$1012??0?
+b41;0fr 0%f> ^/\* draw a buffer line during insertion; return the rows it occupies \*/$1013??0?
+b41;0fr 0%f> ^		term_pos\(r1 - xtop < 0 \? 0 : r1 - xtop, 0\);$1014??0?
+b41;0fr 0%f> ^	i = vi_rendrow\(s, trow, 0\);$1015??0?
+b41;0fr 0%f> ^		return i;$1016??0?
+b41;0fr 0%f> ^	if \(r1 < xtop\) \{$1017??0?
+b41;0fr 0%f> ^		if \(trow >= 0\)$1018??0?
+b41;0fr 0%f> ^		xtopsub = 0;$1019??0?
+230reg 0231reg 01000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 231reg 11000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
+b6%ya 972sc %? %@972sc!b41211reg ? %@2210?
+b7%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
+printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -737,11 +760,176 @@ void term_mouse_off(void);
 extern int xmouse_col, xmouse_row;
 ??!219reg vi.h:408:m32sc %? %@2142sc!0?
 '\''4i extern int xms;
-??!219reg vi.h:431:m42sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF"
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
+??!219reg vi.h:431:m42sc %? %@2142sc!' > "$P2VIF".0
+# Compat (post) from linewrap_v2.sh
+printf '%s\n' '2sc!fr 98b4%ya 98?0?
+%f> 		int r = term_try_mouse\(\);
+		if \(r == 1\) \{
+			char \*mln;
+			int p;
+			\*row = xtop \+ xmouse_row;
+			if \(\*row >= lbuf_len\(xb\)\)
+				\*row = lbuf_len\(xb\) - 1;
+			if \(\*row < 0\)1??0?
+1??+3m 11q0?
+%f> 			int p;
+			\*row = xtop \+ xmouse_row;
+			if \(\*row >= lbuf_len\(xb\)\)
+				\*row = lbuf_len\(xb\) - 1;
+			if \(\*row < 0\)2??0?
+2??m 1220reg p OK vi.c:730:a22sc %? %@2152sc!1q0?
+%f> 			int p;
+			\*row = xtop \+ xmouse_row;3??0?
+3??m 1220reg p OK vi.c:730:a32sc %? %@2152sc!1q0?
+%f> 		int r = term_try_mouse\(\);
+		if \(r == 1\) \{
+			char \*mln;4??0?
+4??+3m 1220reg p OK vi.c:730:a42sc %? %@2152sc!1q0?
+%f> 			if \(\*row >= lbuf_len\(xb\)\)
+				\*row = lbuf_len\(xb\) - 1;
+			if \(\*row < 0\)5??0?
+5??-2m 1220reg p OK vi.c:730:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:7302sc %? %@2132sc!0?
+?0?
+%f+ 				\*row = 0;
+			mln = lbuf_get\(xb, \*row\);
+			p = mln \? led_col\(mln, MAX\(0, xmouse_col - vi_lncol\)\) : 0;
+			\*off = mln \? vi_col2off\(xb, \*row, MAX\(0, p\)\) : 0;
+			return mv;
+		}1??0?
+1??+2m 21q0?
+%f+ 				\*row = 0;
+			mln = lbuf_get\(xb, \*row\);
+			p = mln \? led_col\(mln, MAX\(0, xmouse_col - vi_lncol\)\) : 0;4??0?
+4??+2m 2220reg p OK vi.c:737:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:7372sc %? %@2132sc!0?
+0?
+'\''1,#+1c 			int p, k = 0, h;
+			if (xlw) {		/* the clicked row may be a wrapped segment */
+				int trow = -xtopsub;
+				*row = xtop;
+				while (*row + 1 < lbuf_len(xb)) {
+					h = vi_lnrows(lbuf_get(xb, *row));
+					if (trow + h > xmouse_row)
+						break;
+					trow += h;
+					(*row)++;
+				}
+				k = MAX(0, xmouse_row - trow);
+			} else
+				*row = xtop + xmouse_row;
+??!219reg vi.c:730:m12sc %? %@2142sc!0?
+'\''2i 			if (mln && xlw) {	/* the segment holds a window of columns */
+				h = vi_lnrows(mln);
+				p += MIN(k, h - 1) * ren_wrapw(vi_lncol);
+			}
+??!219reg vi.c:737:m22sc %? %@2142sc!p compat applied: src=linewrap_v2.sh' > "$P2VIF".1
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
+=== PATCH2VI COMPAT post src=linewrap_v2.sh ===
+=== GATE 1 present tag 1000 probe vi.c ===
+		vi_center(*row);
+=== END ===
+=== GATE 2 present tag 1001 probe vi.c ===
+		else if (cmd < 0 && vi_unseen(*row, !vi_status))
+=== END ===
+=== GATE 3 present tag 1002 probe vi.c ===
+		if (xlw && mv != '\n')
+=== END ===
+=== GATE 4 present tag 1003 probe vi.c ===
+		if (xlw && mv != '-')
+=== END ===
+=== GATE 5 present tag 1004 probe vi.c ===
+		*row = xlw ? MIN(vi_fullrow() + cnt - 1, vi_botrow())
+=== END ===
+=== GATE 6 present tag 1005 probe vi.c ===
+		*row = xlw ? MAX(vi_fullrow(), vi_lastrow() - cnt + 1)
+=== END ===
+=== GATE 7 present tag 1006 probe vi.c ===
+		if (!xlw) {
+=== END ===
+=== GATE 8 present tag 1007 probe vi.c ===
+		if (cmd < 0 && vi_unseen(*row, 0))
+=== END ===
+=== GATE 9 present tag 1008 probe vi.c ===
+			vi_drawrow(xtop + i, i);
+=== END ===
+=== GATE 10 present tag 1009 probe vi.c ===
+			vi_drawrow(xtop + xrows - n + i, xrows - n + i);
+=== END ===
+=== GATE 11 present tag 1010 probe vi.c ===
+	if (xlw) {
+		vi_drawagain(xtop);
+=== END ===
+=== GATE 12 present tag 1011 probe vi.c ===
+		for (; i < xtop + xrows; i++)
+=== END ===
+=== GATE 13 present tag 1012 probe vi.c ===
+	int trow;
+=== END ===
+=== GATE 14 present tag 1013 probe vi.c ===
+/* draw a buffer line during insertion; return the rows it occupies */
+=== END ===
+=== GATE 15 present tag 1014 probe vi.c ===
+		term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
+=== END ===
+=== GATE 16 present tag 1015 probe vi.c ===
+	i = vi_rendrow(s, trow, 0);
+=== END ===
+=== GATE 17 present tag 1016 probe vi.c ===
+		return i;
+=== END ===
+=== GATE 18 present tag 1017 probe vi.c ===
+	if (r1 < xtop) {
+=== END ===
+=== GATE 19 present tag 1018 probe vi.c ===
+		if (trow >= 0)
+=== END ===
+=== GATE 20 present tag 1019 probe vi.c ===
+		xtopsub = 0;
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/vi.c
++++ b/vi.c
+@@ -727,14 +727,30 @@
+ 		int r = term_try_mouse();
+ 		if (r == 1) {
+ 			char *mln;
+-			int p;
+-			*row = xtop + xmouse_row;
++			int p, k = 0, h;
++			if (xlw) {		/* the clicked row may be a wrapped segment */
++				int trow = -xtopsub;
++				*row = xtop;
++				while (*row + 1 < lbuf_len(xb)) {
++					h = vi_lnrows(lbuf_get(xb, *row));
++					if (trow + h > xmouse_row)
++						break;
++					trow += h;
++					(*row)++;
++				}
++				k = MAX(0, xmouse_row - trow);
++			} else
++				*row = xtop + xmouse_row;
+ 			if (*row >= lbuf_len(xb))
+ 				*row = lbuf_len(xb) - 1;
+ 			if (*row < 0)
+ 				*row = 0;
+ 			mln = lbuf_get(xb, *row);
+ 			p = mln ? led_col(mln, MAX(0, xmouse_col - vi_lncol)) : 0;
++			if (mln && xlw) {	/* the segment holds a window of columns */
++				h = vi_lnrows(mln);
++				p += MIN(k, h - 1) * ren_wrapw(vi_lncol);
++			}
+ 			*off = mln ? vi_col2off(xb, *row, MAX(0, p)) : 0;
+ 			return mv;
+ 		}
+=== END ===
+=== END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 70157040..71f2030a 100644
