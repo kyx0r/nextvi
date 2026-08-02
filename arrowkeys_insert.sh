@@ -649,7 +649,7 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 		l1 = rstate->chrs\[off] - ln;
 		postn = rstate->n - off;.*(	int i, off;)
 	char \*ln;
-	sbuf \*buf = ex_regget\(vi_ybuf\);9??0?
+	sbuf \*buf = ex_regget\(vi_ybuf < 0 \? xdefreg : vi_ybuf\);9??0?
 grp 09??-9m 3220reg p OK vi.c:1041:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:10412sc %? %@2132sc!0?
 ?0?
@@ -670,7 +670,7 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 		l1 = rstate->chrs\[off] - ln;
 		postn = rstate->n - off;.*(	int i, off;)
 	char \*ln;
-	sbuf \*buf = ex_regget\(vi_ybuf\);9??0?
+	sbuf \*buf = ex_regget\(vi_ybuf < 0 \? xdefreg : vi_ybuf\);9??0?
 grp 09??-8m 4220reg p OK vi.c:1042:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg vi.c:10422sc %? %@2132sc!0?
 ?0?
@@ -944,7 +944,7 @@ index eb6ec78d..795f31fe 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 957e6b8f..f9dd47fd 100644
+index 79678b9e..8a1fdefa 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -835,6 +835,8 @@ static void vi_indents(char *ln, int *l)
