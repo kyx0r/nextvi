@@ -1,4 +1,17 @@
 ------------------
+7.3 Basilisk
+------------------
+
+New in core:
+1. q in vi normal to start or stop macro recording. Less expressive
+than ex :rr, but more ergonomic. Consistent with vi design.
+
+Patch changes:
+1. Cleanup [splits.sh](https://github.com/kyx0r/nextvi/blob/release/splits.sh).
+2. Bug fixes [lsp.sh](https://github.com/kyx0r/nextvi/blob/release/lsp.sh).
+3. Compat with linewrap_v2.sh for [mouse_normal.sh](https://github.com/kyx0r/nextvi/blob/release/mouse_normal.sh)
+
+------------------
 7.2 Basilisk
 ------------------
 
