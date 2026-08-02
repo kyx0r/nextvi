@@ -36,7 +36,7 @@ static int vi_rshift;			/* row shift for vi_word */
 static int vi_arg;			/* numeric argument */
 static char vi_charlast[5];		/* the last character searched via f, t, F, or T */
 static int vi_charcmd;			/* the character finding command */
-static int vi_ybuf;			/* current yank buffer */
+static int vi_ybuf;			/* current yank buffer, -1 if not given */
 static int vi_col;			/* the column requested by | command */
 static int vi_scrollud;			/* scroll amount for ^u and ^d */
 static int vi_scrolley;			/* scroll amount for ^e and ^y */
@@ -266,7 +266,7 @@ static int vi_yankbuf(int winch)
 	if (c == '"')
 		return term_read(0);
 	term_dec()
-	return xdefreg;
+	return -1;
 }
 
 static int vi_prefix(void)
@@ -801,7 +801,7 @@ static void vi_yank(int r1, int o1, int r2, int o2, int lnmode)
 {
 	sbuf rsb;
 	lbuf_region(xb, &rsb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
-	vi_regput(vi_ybuf, rsb.s, lnmode);
+	vi_regput(vi_ybuf < 0 ? xdefreg : vi_ybuf, rsb.s, lnmode);
 	free(rsb.s);
 	xrow = r1;
 	xoff = lnmode ? xoff : o1;
@@ -811,7 +811,7 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 {
 	sbuf rsb;
 	lbuf_region(xb, &rsb, r1, lnmode ? 0 : o1, r2, lnmode ? -1 : o2);
-	vi_regput(vi_ybuf, rsb.s, lnmode);
+	vi_regput(vi_ybuf < 0 ? xdefreg : vi_ybuf, rsb.s, lnmode);
 	free(rsb.s);
 	if (lnmode)
 		lbuf_edit(xb, NULL, r1, r2 + 1, 0, 0);
@@ -854,7 +854,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
 		tlen = lbuf_s(ln)->len+1;
 		lbuf_region(xb, &rsb, r1, o1, r2, o2);
 	}
-	vi_regput(vi_ybuf, rsb.s, lnmode);
+	vi_regput(vi_ybuf < 0 ? xdefreg : vi_ybuf, rsb.s, lnmode);
 	free(rsb.s);
 	term_pos(r1 - xtop < 0 ? 0 : r1 - xtop, 0);
 	term_room(r1 < xtop ? xtop - xrow : r1 - r2 -
@@ -1049,7 +1049,7 @@ static int vc_put(int cmd)
 	int cnt = MAX(1, vi_arg);
 	int i, off;
 	char *ln;
-	sbuf *buf = ex_regget(vi_ybuf);
+	sbuf *buf = ex_regget(vi_ybuf < 0 ? xdefreg : vi_ybuf);
 	if (!buf || !buf->s_n) {
 		vi_drawmsg_mpt(buf ? "empty register" : "uninitialized register")
 		return 0;
@@ -1200,7 +1200,7 @@ void vi(int init)
 		}
 		if (led_attsb)
 			sbuf_cut(led_attsb, 0)
-		if (!vi_ybuf)
+		if (vi_ybuf < 0)
 			vi_ybuf = vi_yankbuf(0);
 		mv = vi_region(-1, &nrow, &noff);
 		if (mv > 0 && nrow >= 0) {
@@ -1706,6 +1706,20 @@ void vi(int init)
 				for (k = 0; k < MAX(1, vi_arg); k++)
 					term_push(rep_cmd, rep_len);
 				break;
+			case 'q':
+				if (xrr) {
+					sbuf *rsb = ex_regget(xrr);
+					if (rsb && rsb->s_n)
+						sbufn_cut(rsb, rsb->s_n - 1)
+					xrr = 0;
+				} else if (vi_ybuf <= 0) {
+					vi_drawmsg_mpt("no record register")
+				} else {
+					if (!vi_arg)
+						ex_regput(vi_ybuf, "", 0);
+					xrr = vi_ybuf;
+				}
+				break;
 			case '@':
 			case '&':
 				vc_execute(c);
@@ -1863,7 +1877,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-7.2 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-7.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
