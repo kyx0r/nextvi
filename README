@@ -113,6 +113,9 @@ VI NORMAL
      [#]>{arg}     Indent right arg region # times
      [#]"{<arg>}{cmd}
                    Execute normal cmd using register arg. # applies to cmd
+     [#]"{<arg>}q  Start recording and set rr ex option to arg register. #
+                   keeps register contents
+     q             Stop recording and set rr ex option to 0
      R             Print registers and their contents
      [#]&{<arg>}   Execute arg register macro in non-blocking mode # times
      [#]@{<arg>}   Execute arg register macro in blocking mode # times
@@ -1374,9 +1377,9 @@ CODE MAP
      | 666 lbuf.c   |  file/line buffer    |
      | 735 led.c    |  insert mode/output  |
      | 751 regex.c  |  pikevm              |
-     | 1885 vi.c    |  normal mode/general |
+     | 1899 vi.c    |  normal mode/general |
      | 1931 ex.c    |  ex options/commands |
-     | 7766 total   |  wc -l *.c|sort      |
+     | 7780 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1457,4 +1460,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.2                       July 31, 2026                      Nextvi 7.2
+Nextvi 7.3                      August 2, 2026                      Nextvi 7.3
