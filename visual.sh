@@ -131,7 +131,7 @@ static int vi_cndir = 1;		/\* \^n direction \*/.*(	void \*p;)
 		fprintf\(stderr, "\\nmalloc: out of memory\\n"\);8??0?
 grp 08??-4m 1220reg p OK vi.c:46:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static int vi_charcmd;			/\* the character finding command \*/
-static int vi_ybuf;			/\* current yank buffer \*/
+static int vi_ybuf;			/\* current yank buffer, -1 if not given \*/
 static int vi_col;			/\* the column requested by \| command \*/.*(void \*erealloc\(void \*p, size_t size\))
 \{
 	if \(!\(p = realloc\(p, size\)\)\) \{9??0?
@@ -870,20 +870,20 @@ static int vc_motion\(int cmd\)
 %f+ 				vc_status\(0\);
 				vi_mod \|= 1;
 				break;4??0?
-4??+2m 24220reg p OK vi.c:1722:a42sc %? %@2152sc!1q0?
+4??+2m 24220reg p OK vi.c:1736:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					ex_exec\("b-2:%d:fd:b-2"\);
 				else
 					ex_exec\("%d:fd"\);.*(		topfix\(\))
 		ln = lbuf_get\(xb, xrow\);
 		xoff = ren_noeol\(ln, xoff\);8??0?
-grp 08??-5m 24220reg p OK vi.c:1722:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 24220reg p OK vi.c:1736:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(!vi_arg\)
 					ex_exec\("b-2"\);
 				else if \(xb != tempbufs\[1]\.lb\).*(		if \(ln && !rstate->wid\[xoff]\) \{)
 			for \(n = xoff, k = n; k < rstate->n && !rstate->wid\[k];\) \{
 				if \(!k\)9??0?
-grp 09??-8m 24220reg p OK vi.c:1722:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:17222sc %? %@2132sc!0?
+grp 09??-8m 24220reg p OK vi.c:1736:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:17362sc %? %@2132sc!0?
 ?0?
 %f+ 				}
 			}
@@ -895,20 +895,20 @@ static int vc_motion\(int cmd\)
 %f+ 				}
 			}
 		}4??0?
-4??+2m 25220reg p OK vi.c:1782:a42sc %? %@2152sc!1q0?
+4??+2m 25220reg p OK vi.c:1796:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					la\.off = off1;
 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;.*(				\|\| \(\*vi_word && orow != xrow\)\))
 			vi_drawagain\(xtop\);
 		else if \(\*vi_word && \(ooff != xoff \|\| vi_mod & 2\)8??0?
-grp 08??-4m 25220reg p OK vi.c:1782:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 25220reg p OK vi.c:1796:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					la\.att = hls\[k]\.att\[0];
 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					la\.s = lbuf_get\(xb, row1\);.*(				&& xrow\+1 < xtop \+ xrows\))
 			vi_drawrow\(xrow\+1\);
 		else if \(xtop != otop\)9??0?
-grp 09??-7m 25220reg p OK vi.c:1782:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:17822sc %? %@2132sc!0?
+grp 09??-7m 25220reg p OK vi.c:1796:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:17962sc %? %@2132sc!0?
 0?
 '\''1i static int vi_visual;			/* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line */
 static int vi_vrow;			/* selection anchor row */
@@ -1227,10 +1227,10 @@ static int vc_visual_op(int cmd)
 					break;
 				}
 				continue;
-??!219reg vi.c:1722:m242sc %? %@2142sc!0?
+??!219reg vi.c:1736:m242sc %? %@2142sc!0?
 '\''25i 		if (vi_visual)
 			vi_mod |= 1;
-??!219reg vi.c:1782:m252sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.c:1796:m252sc %? %@2142sc!' > "$P2VIF".0
 # Compat (post) from lsp.sh
 printf '%s\n' '2sc!fr 98b1%ya 98?0?
 %f> 					ex_command\(cmd\)
@@ -1389,7 +1389,7 @@ index 70157040..c0d2d3b9 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 957e6b8f..6228e7b0 100644
+index 79678b9e..83683d0c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1809,7 +1809,7 @@ index 957e6b8f..6228e7b0 100644
  				motion:
  				icmd_pos--;
  				goto re_motion;
-@@ -1720,6 +2002,13 @@ void vi(int init)
+@@ -1734,6 +2016,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -1823,7 +1823,7 @@ index 957e6b8f..6228e7b0 100644
  			default:
  				continue;
  			}
-@@ -1780,6 +2069,8 @@ void vi(int init)
+@@ -1794,6 +2083,8 @@ void vi(int init)
  				}
  			}
  		}

@@ -369,7 +369,7 @@ static int vi_yankbuf\(int winch\).*?
 (	int c = term_read\(0\);)7??0?
 grp 07??m 2220reg p OK vi.c:275:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	term_dec\(\)
-	return xdefreg;
+	return -1;
 }.*(static int vi_digit\(void\))
 \{
 	int c = term_read\(0\);8??0?
@@ -419,7 +419,7 @@ static int vi_yankbuf\(int winch\).*?
 (			c = term_read\(0\);)7??0?
 grp 07??m 3220reg p OK vi.c:279:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	term_dec\(\)
-	return xdefreg;
+	return -1;
 }.*(static int vi_digit\(void\))
 \{
 	int c = term_read\(0\);8??0?
@@ -1000,7 +1000,7 @@ index eb6ec78d..c833aa1a 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 957e6b8f..ad014b2a 100644
+index 79678b9e..20e81839 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -262,7 +262,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)

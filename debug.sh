@@ -182,12 +182,12 @@ void syn_done(void)
 %f> 	else
 		vi\(1\);
 	term_done\(\);4??0?
-4??+2m 1220reg p OK vi.c:1881:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1895:a42sc %? %@2152sc!1q0?
 grp 1%f> 	else.*?
 		vi\(1\);.*?
 (	term_done\(\);)7??0?
-grp 07??m 1220reg p OK vi.c:1881:a72sc %? %@2152sc!0?
-1;4;7??!219reg vi.c:18812sc %? %@2132sc!0?
+grp 07??m 1220reg p OK vi.c:1895:a72sc %? %@2152sc!0?
+1;4;7??!219reg vi.c:18952sc %? %@2132sc!0?
 0?
 '\''1i 	ex_done();
 	syn_done();
@@ -195,7 +195,7 @@ void syn_done(void)
 	if (led_attsb)
 		sbuf_free(led_attsb)
 	free(ibuf);
-??!219reg vi.c:1881:m12sc %? %@2142sc!b4%ya 98?0?
+??!219reg vi.c:1895:m12sc %? %@2142sc!b4%ya 98?0?
 %f> int ren_off\(char \*s, int p\);
 char \*ren_translate\(char \*s, char \*ln\);
 /\* text direction \*/
@@ -370,10 +370,10 @@ index 4fd79fba..ba2d48d4 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 957e6b8f..2fa73ff4 100644
+index 79678b9e..8bfef002 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1879,6 +1879,12 @@ int main(int argc, char *argv[])
+@@ -1893,6 +1893,12 @@ int main(int argc, char *argv[])
  	else
  		vi(1);
  	term_done();
