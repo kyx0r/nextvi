@@ -1359,8 +1359,8 @@ CODE MAP
      | 735 led.c    |  insert mode/output  |
      | 751 regex.c  |  pikevm              |
      | 1899 vi.c    |  normal mode/general |
-     | 1929 ex.c    |  ex options/commands |
-     | 7778 total   |  wc -l *.c|sort      |
+     | 1928 ex.c    |  ex options/commands |
+     | 7777 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
