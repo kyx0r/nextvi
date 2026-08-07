@@ -473,7 +473,7 @@ static int mouse_pull(void)
 		ibuf = erealloc(ibuf, ibuf_sz);
 	}
 	ibuf[ibuf_cnt++] = c;
-	if (xrr) {
+	if (xrr > 0) {
 		static char buf[2];
 		buf[0] = c;
 		ex_regput(xrr, buf, 1);
@@ -1026,7 +1026,7 @@ index 9eb8e85b..caba9443 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 05c58da5..ded84ba3 100644
+index 05c58da5..e24ef4b5 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,16 @@
@@ -1080,7 +1080,7 @@ index 05c58da5..ded84ba3 100644
 +		ibuf = erealloc(ibuf, ibuf_sz);
 +	}
 +	ibuf[ibuf_cnt++] = c;
-+	if (xrr) {
++	if (xrr > 0) {
 +		static char buf[2];
 +		buf[0] = c;
 +		ex_regput(xrr, buf, 1);
