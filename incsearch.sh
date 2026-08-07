@@ -343,7 +343,7 @@ rstr *fsincl;
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 79678b9e..33757913 100644
+index 72ecc3d8..6ae274cf 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -307,13 +307,133 @@ static int vi_col2off(struct lbuf *lb, int row, int col)

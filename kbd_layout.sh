@@ -75,7 +75,7 @@ static char \*kmap_fa\[256] = \{1??0?
 (		})7??0?
 grp 07??m 1220reg p OK term.c:173:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			\*ibuf = 0;
-		} else if \(xrr\) \{
+		} else if \(xrr > 0\) \{
 			static char buf\[2];.*(	if \(icmd_pos < sizeof\(icmd\)\))
 		icmd\[icmd_pos\+\+] = ibuf\[ibuf_pos];
 	return ibuf\[ibuf_pos\+\+];8??0?
@@ -115,7 +115,7 @@ index d025f5f1..e549d13b 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index 75ada7cc..2b935513 100644
+index 05c58da5..49f52a16 100644
 --- a/term.c
 +++ b/term.c
 @@ -171,6 +171,8 @@ int term_read(int winch)

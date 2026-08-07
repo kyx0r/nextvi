@@ -49,7 +49,7 @@ int xai = 1;			/\* autoindent option \*/1??0?
 
 static int eo_val\(char \*arg\)
 \{
-	int val = atoi\(arg\);1??0?
+	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?1??0?
 1??+2m 21q0?
 %f+ 	return xkwdrs \? NULL : xserr;
 }
@@ -58,16 +58,16 @@ static int eo_val\(char \*arg\)
 4??+2m 2220reg p OK ex.c:1629:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
-	}.*(	if \(!val && !uc_isdigit\(\*arg\)\))
-		return \(unsigned char\)\*arg;
-	return val;8??0?
-grp 08??-4m 2220reg p OK ex.c:1629:a82sc %? %@2152sc!'\''08??1q0?
+	}.*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
+EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
+EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
+grp 08??-13m 2220reg p OK ex.c:1629:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
-		sbuf_null\(sb\).*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
-EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
-grp 09??-15m 2220reg p OK ex.c:1629:a92sc %? %@2152sc!'\''00?
+		sbuf_null\(sb\).*(_EO\(left,)
+	if \(\*loc\)
+		xleft = \(xcols / 2\) \* atoi\(loc\);9??0?
+grp 09??-20m 2220reg p OK ex.c:1629:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg ex.c:16292sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(seq\),
@@ -80,24 +80,24 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},4??0?
-4??+2m 3220reg p OK ex.c:1732:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1731:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
-grp 07??m 3220reg p OK ex.c:1732:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1731:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},
 	EO\(shape\),.*(	\{"ya!", ec_yank},)
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},8??0?
-grp 08??-4m 3220reg p OK ex.c:1732:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1731:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"w", ec_write},
 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
-grp 09??-7m 3220reg p OK ex.c:1732:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17322sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1731:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17312sc %? %@2132sc!0?
 0?
 '\''1-1i char **xenvp;
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -141,7 +141,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 ??!219reg ex.c:1629:m22sc %? %@2142sc!0?
 '\''3i 	{"sr", ec_script},
 	{"sx", ec_script},
-??!219reg ex.c:1732:m32sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1731:m32sc %? %@2142sc!b1%ya 98?0?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
 		}
@@ -221,7 +221,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index b78dca07..ecf7cd5f 100644
+index 3d5a1721..b8edf5a8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -272,8 +272,8 @@ index b78dca07..ecf7cd5f 100644
 +
  static int eo_val(char *arg)
  {
- 	int val = atoi(arg);
-@@ -1730,6 +1768,8 @@ static struct excmd {
+ 	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
+@@ -1729,6 +1767,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -283,7 +283,7 @@ index b78dca07..ecf7cd5f 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 75ada7cc..2f64396e 100644
+index 05c58da5..15aa2e50 100644
 --- a/term.c
 +++ b/term.c
 @@ -235,7 +235,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)

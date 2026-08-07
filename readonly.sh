@@ -188,7 +188,7 @@ int xai = 1;			/\* autoindent option \*/1??0?
 
 static int eo_val\(char \*arg\)
 \{
-	int val = atoi\(arg\);1??0?
+	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?1??0?
 1??+2m 51q0?
 %f+ 	return xkwdrs \? NULL : xserr;
 }
@@ -197,16 +197,16 @@ static int eo_val\(char \*arg\)
 4??+2m 5220reg p OK ex.c:1629:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
-	}.*(	if \(!val && !uc_isdigit\(\*arg\)\))
-		return \(unsigned char\)\*arg;
-	return val;8??0?
-grp 08??-4m 5220reg p OK ex.c:1629:a82sc %? %@2152sc!'\''08??1q0?
+	}.*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
+EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
+EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
+grp 08??-13m 5220reg p OK ex.c:1629:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
-		sbuf_null\(sb\).*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
-EO\(rr\) EO\(shape\) EO\(seq\) EO\(ts\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
-grp 09??-15m 5220reg p OK ex.c:1629:a92sc %? %@2152sc!'\''00?
+		sbuf_null\(sb\).*(_EO\(left,)
+	if \(\*loc\)
+		xleft = \(xcols / 2\) \* atoi\(loc\);9??0?
+grp 09??-20m 5220reg p OK ex.c:1629:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg ex.c:16292sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"reg", ec_regprint},
@@ -219,24 +219,24 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},4??0?
-4??+2m 6220reg p OK ex.c:1718:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK ex.c:1717:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"reg", ec_regprint},.*?
 	\{"re", ec_krsset},.*?
 (	\{"rd", ec_undoredo},)7??0?
-grp 07??m 6220reg p OK ex.c:1718:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1717:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"q!", ec_quit},
 	\{"q", ec_quit},
 	\{"reg\+", ec_regprint},.*(	\{"wq", ec_write},)
 	\{"w!", ec_write},
 	\{"w", ec_write},8??0?
-grp 08??-4m 6220reg p OK ex.c:1718:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK ex.c:1717:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"g", ec_glob},
 	EO\(mpt\),
 	\{"m", ec_mark},.*(	\{"uc", ec_setenc},)
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},9??0?
-grp 09??-7m 6220reg p OK ex.c:1718:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17182sc %? %@2132sc!0?
+grp 09??-7m 6220reg p OK ex.c:1717:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17172sc %? %@2132sc!0?
 0?
 '\''1-1i char readonly = 0;		/* commandline readonly option */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -256,7 +256,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 
 ??!219reg ex.c:1629:m52sc %? %@2142sc!0?
 '\''6i 	{"ro", ec_readonly},
-??!219reg ex.c:1718:m62sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1717:m62sc %? %@2142sc!b2%ya 98?0?
 %f> 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\)
 				xvis \|= 8;
@@ -267,79 +267,79 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)9??0?
 %f> 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\)
 				xvis \|= 8;4??0?
-4??+2m 1220reg p OK vi.c:1875:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1873:a42sc %? %@2152sc!1q0?
 grp 1%f> 				xvis \|= 4;.*?
 			else if \(argv\[i]\[j] == '\''a'\''\).*?
 (				xvis \|= 8;)7??0?
-grp 07??m 1220reg p OK vi.c:1875:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:1873:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;
 			else if \(argv\[i]\[j] == '\''m'\''\).*(	})
 	ibuf = emalloc\(ibuf_sz\);
 	if \(!\(xvis & 1\)\)8??0?
-grp 08??-9m 1220reg p OK vi.c:1875:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 1220reg p OK vi.c:1873:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
 			if \(argv\[i]\[j] == '\''s'\''\)
 				xvis \|= 1\|2;.*(		term_init\(\);)
 	if \(xvis & 8\)
 		term_scrh;9??0?
-grp 09??-12m 1220reg p OK vi.c:1875:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:18752sc %? %@2132sc!0?
+grp 09??-12m 1220reg p OK vi.c:1873:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18732sc %? %@2132sc!0?
 ?0?
 %f+ 				xvis = 0;
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);
-				fprintf\(stderr, "Nextvi-7\.3 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+				fprintf\(stderr, "Nextvi-7\.4 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}1??0?
 1??+3m 21q0?
-%f+ 				fprintf\(stderr, "Nextvi-7\.3 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+%f+ 				fprintf\(stderr, "Nextvi-7\.4 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}2??0?
-2??m 2220reg p OK vi.c:1880:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.3 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
-3??m 2220reg p OK vi.c:1880:a32sc %? %@2152sc!fr 981qfr 980?
+2??m 2220reg p OK vi.c:1878:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.4 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
+3??m 2220reg p OK vi.c:1878:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				xvis = 0;
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);4??0?
-4??+3m 2220reg p OK vi.c:1880:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:1878:a42sc %? %@2152sc!1q0?
 %f+ 				return EXIT_FAILURE;
 			}
 		}5??0?
-5??-1m 2220reg p OK vi.c:1880:a52sc %? %@2152sc!1q0?
-%f+ ..		.v.. ...;
-...e....\{
-..	.....n....t...r. ".n.n.w. op...n.....\\... ....\[.......
-.			....n..\(....... .....v.-7......g...%..\[..e.s.....i.....\.........g.\[0...
-.	..........X.T...I.....
-...}
-	..6??0?
-6??+3m 2220reg p OK vi.c:1880:a62sc %? %@2152sc!1q0?
+5??-1m 2220reg p OK vi.c:1878:a52sc %? %@2152sc!1q0?
+%f+ .....v.s.....
+	.......\{
+....f..i......d.... ....n.....p.......%..."..a.....]\[..\).
+.......i.t...............v.-.\.....a...... \[......].\[.........\\.",.........;
+...	..........._F.......
+..	.
+		}6??0?
+6??+3m 2220reg p OK vi.c:1878:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				xvis = 0;.*?
 			else \{.*?
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);.*?
-(				fprintf\(stderr, "Nextvi-7\.3 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
-grp 07??m 2220reg p OK vi.c:1880:a72sc %? %@2152sc!1q0?
+(				fprintf\(stderr, "Nextvi-7\.4 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
+grp 07??m 2220reg p OK vi.c:1878:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;
 			else if \(argv\[i]\[j] == '\''m'\''\).*(	})
 	ibuf = emalloc\(ibuf_sz\);
 	if \(!\(xvis & 1\)\)8??0?
-grp 08??-4m 2220reg p OK vi.c:1880:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1878:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
 			if \(argv\[i]\[j] == '\''s'\''\)
 				xvis \|= 1\|2;.*(		term_init\(\);)
 	if \(xvis & 8\)
 		term_scrh;9??0?
-grp 09??-7m 2220reg p OK vi.c:1880:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18802sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.c:1878:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18782sc %? %@2132sc!0?
 0?
 '\''1i 			else if (argv[i][j] == '\''R'\'')
 				readonly = 1;
-??!219reg vi.c:1875:m12sc %? %@2142sc!0?
-'\''2s/ms/mRs/??!219reg vi.c:1880:m22sc %? %@2142sc!b3%ya 98?0?
+??!219reg vi.c:1873:m12sc %? %@2142sc!0?
+'\''2s/ms/mRs/??!219reg vi.c:1878:m22sc %? %@2142sc!b3%ya 98?0?
 %f> 	int plen, row, off, top;
 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
@@ -402,7 +402,7 @@ index 70157040..45b62f98 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index b78dca07..0463148b 100644
+index 3d5a1721..9be715ff 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -448,8 +448,8 @@ index b78dca07..0463148b 100644
 +
  static int eo_val(char *arg)
  {
- 	int val = atoi(arg);
-@@ -1716,6 +1728,7 @@ static struct excmd {
+ 	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
+@@ -1715,6 +1727,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},
@@ -458,10 +458,10 @@ index b78dca07..0463148b 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index 79678b9e..75157646 100644
+index 72ecc3d8..9b9dba7a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1873,11 +1873,13 @@ int main(int argc, char *argv[])
+@@ -1871,11 +1871,13 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'a')
  				xvis |= 8;
@@ -471,8 +471,8 @@ index 79678b9e..75157646 100644
  				xvis = 0;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-7.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-7.3 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-7.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-7.4 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}

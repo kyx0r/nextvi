@@ -1402,9 +1402,11 @@ EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'ren.c' 'vi.c' 'vi.h' "$P
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
+diff --git a/conf.c b/conf.c
+index 70157040..04ae3307 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -294,8 +294,8 @@
+@@ -294,8 +294,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
@@ -1415,6 +1417,8 @@ exit 0
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
+diff --git a/ex.c b/ex.c
+index 3d5a1721..740455a2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -1423,7 +1427,7 @@ exit 0
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -682,6 +684,7 @@
+@@ -682,6 +684,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
  	int beg, end, o1 = 0, o2 = -1;
  	int row = xrow, off = xoff, fd = -1;
  	struct lbuf *lb = lbuf_make(), *pxb = xb;
@@ -1431,7 +1435,7 @@ exit 0
  	path = arg[0] ? arg : xb_path;
  	if (arg[0] == '!') {
  		if ((sb = cmd_pipe(arg + 1, NULL, 1, NULL))) {
-@@ -710,11 +713,13 @@
+@@ -710,11 +713,13 @@ static void *ec_read(char *loc, char *cmd, char *arg)
  		beg = 0;
  	}
  	lbuf_region(lb, &obuf, beg, o1, end - 1, o2);
@@ -1445,7 +1449,7 @@ exit 0
  	lbuf_free(lb);
  	xrow = row;
  	xoff = off;
-@@ -1627,6 +1632,29 @@
+@@ -1627,6 +1632,29 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -1475,7 +1479,7 @@ exit 0
  static int eo_val(char *arg)
  {
  	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
-@@ -1640,7 +1668,7 @@
+@@ -1640,7 +1668,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
@@ -1484,7 +1488,7 @@ exit 0
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
  _EO(ts, xts = *arg ? MAX(0, eo_val(arg)) : !xts; return NULL;)
-@@ -1743,6 +1771,7 @@
+@@ -1743,6 +1771,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),
@@ -1492,7 +1496,7 @@ exit 0
  	EO(hll),
  	EO(hlw),
  	EO(hlp),
-@@ -1751,6 +1780,7 @@
+@@ -1751,6 +1780,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -1500,6 +1504,8 @@ exit 0
  	EO(vis),
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
+diff --git a/lbuf.c b/lbuf.c
+index 18170218..e6053a53 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -1,3 +1,5 @@
@@ -1508,7 +1514,7 @@ exit 0
  struct lbuf *lbuf_make(void)
  {
  	struct lbuf *lb = emalloc(sizeof(*lb));
-@@ -95,23 +97,51 @@
+@@ -95,23 +97,51 @@ static int linelength(char *s)
  	return s[len] == '\n' ? len + 1 : len;
  }
  
@@ -1569,7 +1575,7 @@ exit 0
  		}
  	}
  	if (lb->ln_n + n_ins - n_del >= lb->ln_sz) {
-@@ -194,9 +224,29 @@
+@@ -194,9 +224,29 @@ struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del)
  	lo->n_del = n_del;
  	lo->seq = lb->useq;
  	lo->ref = 2;
@@ -1599,7 +1605,7 @@ exit 0
  /* replace lines beg through end with buf */
  void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
  {
-@@ -209,6 +259,7 @@
+@@ -209,6 +259,7 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
  	struct lopt *lo = lbuf_opt(lb, beg, o1, end - beg);
  	sbuf_smake(sb, sizeof(lo->ins[0])+1)
  	lo->n_ins = lbuf_replace(lb, sb, buf, lo, lo->n_del, 0);
@@ -1607,7 +1613,7 @@ exit 0
  	if (lb->hist_u < 2 || lb->hist[lb->hist_u - 2].seq != lb->useq)
  		lbuf_smark(lb, lo, beg, o1);
  	lbuf_emark(lb, lo, beg + (lo->n_ins ? lo->n_ins - 1 : 0), o2);
-@@ -255,7 +306,8 @@
+@@ -255,7 +306,8 @@ int lbuf_wr(struct lbuf *lb, int fd, int beg, int end)
  	for (int i = beg; i < end; i++) {
  		char *ln = lb->ln[i];
  		long nw = 0;
@@ -1617,7 +1623,7 @@ exit 0
  		while (nw < nl) {
  			long nc = write(fd, ln + nw, nl - nw);
  			if (nc < 0)
-@@ -272,7 +324,7 @@
+@@ -272,7 +324,7 @@ void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2)
  	_sbuf_make(sb, 1024,)
  	r2 = MIN(lb->ln_n, r2);
  	if (s1) {
@@ -1626,7 +1632,7 @@ exit 0
  		if (r1 == r2) {
  			s1 = uc_chr(s1, o1);
  			s2 = o2 >= o1 ? uc_chr(s1, o2 - o1) : send;
-@@ -285,9 +337,9 @@
+@@ -285,9 +337,9 @@ void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2)
  			sbuf_mem(sb, s2, send - s2)
  	}
  	for (int i = r1 + 1; i < r2; i++)
@@ -1638,7 +1644,7 @@ exit 0
  		if (s1 > s2)
  			sbuf_mem(sb, s2, s1 - s2)
  	}
-@@ -312,7 +364,7 @@
+@@ -312,7 +364,7 @@ int lbuf_pos2off(struct lbuf *lb, int r1, int o1, int r2, int o2, int row, int o
  				sub = 0;
  			return boff + (uc_chr(ln, off) - (ln + sub));
  		}
@@ -1647,7 +1653,7 @@ exit 0
  		ln = lbuf_get(lb, ++i);
  	}
  	return -1;
-@@ -326,10 +378,10 @@
+@@ -326,10 +378,10 @@ int lbuf_off2pos(struct lbuf *lb, int r1, int o1, int r2, int o2, int boff, int
  		return 1;
  	int acc = -(uc_chr(ln, o1) - ln);
  	for (int i = r1; ln && i <= r2; ln = lbuf_get(lb, ++i)) {
@@ -1660,7 +1666,7 @@ exit 0
  			return o2 >= 0 && i == r2 && *off > o2;
  		}
  	}
-@@ -410,6 +462,8 @@
+@@ -410,6 +462,8 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
  		lo->ref = 1;
  		sb.s = (char*)lo->del;
  		lbuf_replace(lb, &sb, NULL, lo, lo->n_ins, lo->n_del);
@@ -1669,7 +1675,7 @@ exit 0
  	}
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
-@@ -431,6 +485,8 @@
+@@ -431,6 +485,8 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  		lo->ref = 2;
  		sb.s = (char*)lo->ins;
  		lbuf_replace(lb, &sb, NULL, lo, lo->n_del, lo->n_ins);
@@ -1678,9 +1684,11 @@ exit 0
  	}
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
+diff --git a/ren.c b/ren.c
+index 4fd79fba..56c26d35 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -72,7 +72,7 @@
+@@ -72,7 +72,7 @@ void dir_init(void)
  	dir_rsctx = rset_make(i, ctx, 0);
  }
  
@@ -1689,9 +1697,11 @@ exit 0
  {
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
+diff --git a/vi.c b/vi.c
+index 72ecc3d8..1c67707c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -170,6 +170,24 @@
+@@ -170,6 +170,24 @@ static void vi_drawrow(int row)
  		return;
  	}
  	s = lbuf_get(xb, row);
@@ -1716,7 +1726,7 @@ exit 0
  	skip:
  	rstate += row != xrow;
  	if (!s)
-@@ -1546,6 +1564,8 @@
+@@ -1546,6 +1564,8 @@ void vi(int init)
  				}
  				xoff--;
  				rep_record()
@@ -1725,9 +1735,11 @@ exit 0
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;
  			case 'J':
+diff --git a/vi.h b/vi.h
+index 6466711d..e59009f5 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -129,10 +129,12 @@
+@@ -129,10 +129,12 @@ struct lopt {
  	int n_ins, n_del;	/* modification range */
  	int seq;		/* operation number */
  	int ref;		/* ins/del ref exists on lbuf */
@@ -1740,7 +1752,7 @@ exit 0
  };
  struct lbuf {
  	char **ln;			/* buffer lines */
-@@ -154,6 +156,9 @@
+@@ -154,6 +156,9 @@ struct lbuf {
  #define lbuf_len(lb) lb->ln_n
  #define lbuf_s(ln) ((struct linfo*)(ln - sizeof(struct linfo)))
  #define lbuf_i(lb, pos) ((struct linfo*)(lb->ln[pos] - sizeof(struct linfo)))
@@ -1750,7 +1762,7 @@ exit 0
  struct lbuf *lbuf_make(void);
  void lbuf_free(struct lbuf *lb);
  int lbuf_rd(struct lbuf *lb, int fd, int beg, int end);
-@@ -211,6 +216,7 @@
+@@ -211,6 +216,7 @@ extern ren_state rstates[3];
  extern ren_state *rstate;
  #define RS(n, func) { rstate = rstates+n; rstate->s = NULL; func; rstate -= n; }
  ren_state *ren_position(char *s);
@@ -1758,7 +1770,7 @@ exit 0
  int ren_next(char *s, int p, int dir);
  int ren_eol(char *s, int dir);
  int ren_pos(char *s, int off);
-@@ -429,6 +435,8 @@
+@@ -429,6 +435,8 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;

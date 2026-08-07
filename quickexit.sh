@@ -381,9 +381,11 @@ EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF"
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
+diff --git a/conf.c b/conf.c
+index 70157040..9a22c860 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -294,7 +294,7 @@
+@@ -294,7 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
@@ -392,6 +394,8 @@ exit 0
  |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+diff --git a/ex.c b/ex.c
+index 3d5a1721..c090d223 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -399,7 +403,7 @@ exit 0
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1642,6 +1643,7 @@
+@@ -1642,6 +1643,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -407,7 +411,7 @@ exit 0
  
  _EO(ts, xts = *arg ? MAX(0, eo_val(arg)) : !xts; return NULL;)
  _EO(grp, xgrp = (*arg ? MAX(0, eo_val(arg)) : !xgrp) * 2; return NULL;)
-@@ -1709,6 +1711,7 @@
+@@ -1709,6 +1711,7 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},
@@ -415,6 +419,8 @@ exit 0
  	{"q!", ec_quit},
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
+diff --git a/led.c b/led.c
+index 9eb8e85b..7152a2c9 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -430,7 +436,7 @@ exit 0
  static sbuf *acsb;
  sbuf *led_attsb;
  
-@@ -641,6 +649,17 @@
+@@ -641,6 +649,17 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				exbuf_load(ex_buf)
  			}
  			continue; }
@@ -448,6 +454,8 @@ exit 0
  		default:
  			if (c == '\n' || TK_INT(c))
  				return c;
+diff --git a/vi.c b/vi.c
+index 72ecc3d8..6a7fb2d9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -458,7 +466,7 @@ exit 0
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1546,6 +1547,8 @@
+@@ -1546,6 +1547,8 @@ void vi(int init)
  				}
  				xoff--;
  				rep_record()
@@ -467,9 +475,11 @@ exit 0
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;
  			case 'J':
+diff --git a/vi.h b/vi.h
+index 6466711d..3c84c3b6 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -366,6 +366,7 @@
+@@ -366,6 +366,7 @@ typedef struct {
  	int p_reg;
  	int lsug;
  	int sug_pt;
@@ -477,7 +487,7 @@ exit 0
  	char *sug;
  	char *_sug;
  } ins_state;
-@@ -374,6 +375,7 @@
+@@ -374,6 +375,7 @@ is.t_row = -2; \
  is.p_reg = xdefreg; \
  is.lsug = 0; \
  is.sug_pt = -1; \
@@ -485,7 +495,7 @@ exit 0
  is.sug = NULL; \
  is._sug = NULL; \
  
-@@ -421,6 +423,7 @@
+@@ -421,6 +423,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xts;

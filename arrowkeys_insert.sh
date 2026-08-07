@@ -459,7 +459,7 @@ char \*led_read\(int \*kmap, int c\)
 			free\(postref\);
 			xrow = crow;.*(		n = ps;)
 		ps = sb->s_n;
-		if \(ai_max\) \{	/\* updating autoindent \*/8??0?
+		if \(ai_max > 0\) \{	/\* updating autoindent \*/8??0?
 grp 08??-4m 10220reg p OK led.c:711:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				xoff = uc_slen\(sb->s\+ps\);
 				sbufn_str\(sb, post\)
@@ -555,14 +555,14 @@ char \*led_read\(int \*kmap, int c\)
 	free(postref);
 ??!219reg led.c:680:m92sc %? %@2142sc!0?
 '\''10s/f\)/f, 1)/??!219reg led.c:711:m102sc %? %@2142sc!b1%ya 98?0?
-%f> 	\*l = ln - pln;
+%f> 	return ln - pln;
 }
 
 static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 \{
 	char \*post, \*ln = lbuf_get\(xb, r1\);1??0?
 1??+2m 11q0?
-%f> 	\*l = ln - pln;
+%f> 	return ln - pln;
 }
 
 4??0?
@@ -573,12 +573,12 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 	sbuf_smake\(sb, xcols\)
 	if \(lnmode \|\| !ln\) \{8??0?
 grp 08??-5m 1220reg p OK vi.c:837:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> static void vi_indents\(char \*ln, int \*l\)
+m 01;0grp 1%f> static int vi_indents\(char \*ln\)
 \{
-	if \(!xai \|\| !ln\).*(		o1 = l1;)
+	if \(xai <= 0 \|\| !ln\).*(		o1 = l1 = vi_indents\(ln\);)
 		post = "\\n";
 		tlen = -1;9??0?
-grp 09??-9m 1220reg p OK vi.c:837:a92sc %? %@2152sc!'\''00?
+grp 09??-8m 1220reg p OK vi.c:837:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg vi.c:8372sc %? %@2132sc!0?
 ?0?
 %f+ 	if \(postn \+ l2 != tlen \|\| memcmp\(ln \+ l1, sb->s \+ l1, tlen - l2 - l1\)\)
@@ -592,24 +592,24 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 %f+ 	if \(postn \+ l2 != tlen \|\| memcmp\(ln \+ l1, sb->s \+ l1, tlen - l2 - l1\)\)
 		lbuf_edit\(xb, sb->s, r1, r2 \+ 1, o1, xoff\);
 	free\(sb->s\);4??0?
-4??+2m 2220reg p OK vi.c:869:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.c:868:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	if \(postn \+ l2 != tlen \|\| memcmp\(ln \+ l1, sb->s \+ l1, tlen - l2 - l1\)\).*?
 		lbuf_edit\(xb, sb->s, r1, r2 \+ 1, o1, xoff\);.*?
 (	free\(sb->s\);)7??0?
-grp 07??m 2220reg p OK vi.c:869:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:868:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xtop = r1;
 	sbuf_mem\(sb, ln, l1\)
 	key = led_input\(sb, post, postn, r1 - \(r1 - r2\), 0, &postn\);.*(static void vi_case\(int r1, int o1, int r2, int o2, int lnmode, int cmd\))
 \{
 	sbuf rsb;8??0?
-grp 08??-4m 2220reg p OK vi.c:869:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:868:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			\(\*vi_word && ln && \*ln != '\''\\n'\'' && r1 != r2\)\);
 	xrow = r1;
 	if \(r1 < xtop\).*(	lbuf_region\(xb, &rsb, r1, lnmode \? 0 : o1, r2, lnmode \? -1 : o2\);)
 	char \*s = rsb\.s;
 	while \(uc_len\(s\)\) \{9??0?
-grp 09??-7m 2220reg p OK vi.c:869:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:8692sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.c:868:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:8682sc %? %@2132sc!0?
 ?0?
 %f+ 	term_room\(cmdo\);
 	sbuf_mem\(sb, ln, l1\)
@@ -619,39 +619,39 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 1??+3m 31q0?
 %f+ 	if \(postn != l1 \|\| cmdo \|\| !ln\)
 		lbuf_edit\(xb, sb->s, row, row \+ !cmdo, off, xoff\);2??0?
-2??m 3220reg p OK vi.c:1041:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK vi.c:1039:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(postn != l1 \|\| cmdo \|\| !ln\)$3??0?
-3??m 3220reg p OK vi.c:1041:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK vi.c:1039:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	term_room\(cmdo\);
 	sbuf_mem\(sb, ln, l1\)
 	key = led_input\(sb, post, postn, row, cmdo << 2, &postn\);4??0?
-4??+3m 3220reg p OK vi.c:1041:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK vi.c:1039:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		lbuf_edit\(xb, sb->s, row, row \+ !cmdo, off, xoff\);$5??0?
-5??-1m 3220reg p OK vi.c:1041:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 3220reg p OK vi.c:1039:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ..e.._.....cm.o.;
 .s.u.......b......l..
 .ke....l......u..... po.t.....tn...o............. ....t.\).
 .......... ....1.\|..cmd......ln.
 	....f......x.,..b..., r... ..... .........f....ff\).6??0?
-6??+3m 3220reg p OK vi.c:1041:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK vi.c:1039:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	term_room\(cmdo\);.*?
 	sbuf_mem\(sb, ln, l1\).*?
 	key = led_input\(sb, post, postn, row, cmdo << 2, &postn\);.*?
 (	if \(postn != l1 \|\| cmdo \|\| !ln\))7??0?
-grp 07??m 3220reg p OK vi.c:1041:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.c:1039:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		post = ln \+ l1;
 	}
 	term_pos\(row - xtop, 0\);.*(static int vc_put\(int cmd\))
 \{
 	int cnt = MAX\(1, vi_arg\);8??0?
-grp 08??-6m 3220reg p OK vi.c:1041:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 3220reg p OK vi.c:1039:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		off = xoff;
 		l1 = rstate->chrs\[off] - ln;
 		postn = rstate->n - off;.*(	int i, off;)
 	char \*ln;
 	sbuf \*buf = ex_regget\(vi_ybuf < 0 \? xdefreg : vi_ybuf\);9??0?
-grp 09??-9m 3220reg p OK vi.c:1041:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:10412sc %? %@2132sc!0?
+grp 09??-9m 3220reg p OK vi.c:1039:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:10392sc %? %@2132sc!0?
 ?0?
 %f+ 		lbuf_edit\(xb, sb->s, row, row \+ !cmdo, off, xoff\);
 	free\(sb->s\);
@@ -659,20 +659,20 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 }1??0?
 1??m 41q0?
 ;0fr.,$f+ ^		lbuf_edit\(xb, sb->s, row, row \+ !cmdo, off, xoff\);$4??0?
-4??m 4220reg p OK vi.c:1042:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 4220reg p OK vi.c:1040:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 		post = ln \+ l1;
 	}
 	term_pos\(row - xtop, 0\);.*(static int vc_put\(int cmd\))
 \{
 	int cnt = MAX\(1, vi_arg\);8??0?
-grp 08??-5m 4220reg p OK vi.c:1042:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 4220reg p OK vi.c:1040:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		off = xoff;
 		l1 = rstate->chrs\[off] - ln;
 		postn = rstate->n - off;.*(	int i, off;)
 	char \*ln;
 	sbuf \*buf = ex_regget\(vi_ybuf < 0 \? xdefreg : vi_ybuf\);9??0?
-grp 09??-8m 4220reg p OK vi.c:1042:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:10422sc %? %@2132sc!0?
+grp 09??-8m 4220reg p OK vi.c:1040:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:10402sc %? %@2132sc!0?
 ?0?
 %f+ 				insert:
 				k = vc_insert\(c\);
@@ -684,24 +684,24 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 %f+ 				insert:
 				k = vc_insert\(c\);
 				insert_done:4??0?
-4??+2m 5220reg p OK vi.c:1530:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK vi.c:1528:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				insert:.*?
 				k = vc_insert\(c\);.*?
 (				insert_done:)7??0?
-grp 07??m 5220reg p OK vi.c:1530:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.c:1528:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			case '\''A'\'':
 			case '\''o'\'':
 			case '\''O'\'':.*(						topfix\(\))
 						vc_join\(0, 2\);
 						vi_drawagain\(xtop\);8??0?
-grp 08??-4m 5220reg p OK vi.c:1530:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK vi.c:1528:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			case '\''I'\'':
 			case '\''i'\'':
 			case '\''a'\'':.*(					} else if \(xoff\) \{)
 						if \(k == TK_CTL\('\''w'\''\)\) \{
 							noff = xoff;9??0?
-grp 09??-7m 5220reg p OK vi.c:1530:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15302sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK vi.c:1528:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15282sc %? %@2132sc!0?
 ?0?
 %f+ 				rep_record\(\)
 				vi_mod \|= !xpac && xrow == orow \? 8 : 1;
@@ -713,35 +713,35 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 %f+ 				rep_record\(\)
 				vi_mod \|= !xpac && xrow == orow \? 8 : 1;
 				break;4??0?
-4??+2m 6220reg p OK vi.c:1552:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK vi.c:1550:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				rep_record\(\).*?
 				vi_mod \|= !xpac && xrow == orow \? 8 : 1;.*?
 (				break;)7??0?
-grp 07??m 6220reg p OK vi.c:1552:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK vi.c:1550:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					goto insert;
 				}
 				xoff--;.*(			case '\''K'\'': \{)
 				preserve\(int, xvis, xvis = 1;\)
 				do \{8??0?
-grp 08??-6m 6220reg p OK vi.c:1552:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 6220reg p OK vi.c:1550:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					}
 					c = xoff != lbuf_eol\(xb, xrow, 1\) \? '\''i'\'' : '\''a'\'';
 					xb->useq \+= xseq;.*(					ex_exec\(";\+1c\\n:-1"\);)
 				} while \(vi_arg--\);
 				restore\(xvis\)9??0?
-grp 09??-9m 6220reg p OK vi.c:1552:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15522sc %? %@2132sc!0?
+grp 09??-9m 6220reg p OK vi.c:1550:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15502sc %? %@2132sc!0?
 0?
 '\''1i static int lmodified;
 
 ??!219reg vi.c:837:m12sc %? %@2142sc!0?
 '\''2i 	lmodified = 1;
-??!219reg vi.c:869:m22sc %? %@2142sc!0?
-'\''3s/\)/) {/??!219reg vi.c:1041:m32sc %? %@2142sc!0?
+??!219reg vi.c:868:m22sc %? %@2142sc!0?
+'\''3s/\)/) {/??!219reg vi.c:1039:m32sc %? %@2142sc!0?
 '\''4i 		lmodified = 1;
 	} else
 		lmodified = 0;
-??!219reg vi.c:1042:m42sc %? %@2142sc!0?
+??!219reg vi.c:1040:m42sc %? %@2142sc!0?
 '\''5i 				switch (k) {
 				case '\''A'\'':	/* ↑ */
 					term_push(!lmodified ? (char*)&c : "i", 1);
@@ -773,18 +773,18 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 						vi_col = vi_off2col(xb, xrow, xoff);
 					goto _break;
 				}
-??!219reg vi.c:1530:m52sc %? %@2142sc!0?
+??!219reg vi.c:1528:m52sc %? %@2142sc!0?
 '\''6i 				_break:
 				vi_mod = 0;
 				break;
-??!219reg vi.c:1552:m62sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
+??!219reg vi.c:1550:m62sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' 'vi.c' "$P2VIF"
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index eb6ec78d..795f31fe 100644
+index 9eb8e85b..3b3964f3 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -944,11 +944,11 @@ index eb6ec78d..795f31fe 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 79678b9e..8a1fdefa 100644
+index 72ecc3d8..9c244c64 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -835,6 +835,8 @@ static void vi_indents(char *ln, int *l)
- 	*l = ln - pln;
+@@ -835,6 +835,8 @@ static int vi_indents(char *ln)
+ 	return ln - pln;
  }
  
 +static int lmodified;
@@ -956,7 +956,7 @@ index 79678b9e..8a1fdefa 100644
  static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *post, *ln = lbuf_get(xb, r1);
-@@ -867,6 +869,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
+@@ -866,6 +868,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
  		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
  	free(sb->s);
@@ -964,7 +964,7 @@ index 79678b9e..8a1fdefa 100644
  	return key;
  }
  
-@@ -1038,8 +1041,11 @@ static int vc_insert(int cmd)
+@@ -1036,8 +1039,11 @@ static int vc_insert(int cmd)
  	term_room(cmdo);
  	sbuf_mem(sb, ln, l1)
  	key = led_input(sb, post, postn, row, cmdo << 2, &postn);
@@ -977,7 +977,7 @@ index 79678b9e..8a1fdefa 100644
  	free(sb->s);
  	return key;
  }
-@@ -1528,6 +1534,37 @@ void vi(int init)
+@@ -1526,6 +1532,37 @@ void vi(int init)
  				insert:
  				k = vc_insert(c);
  				insert_done:
@@ -1015,7 +1015,7 @@ index 79678b9e..8a1fdefa 100644
  				if (k == 127 || k == TK_CTL('w')) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1550,6 +1587,9 @@ void vi(int init)
+@@ -1548,6 +1585,9 @@ void vi(int init)
  				rep_record()
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;

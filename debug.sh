@@ -47,20 +47,20 @@ void ex_init\(char \*\*files, int n\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1917:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1916:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	syn_setft\(xb_ft\);
 	free\(sb->s\);.*(	ec_setbufsmax\(NULL, NULL, ""\);)
 	char \*s = files\[0] \? files\[0] : "";
 	do \{8??0?
-grp 08??-4m 1220reg p OK ex.c:1917:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1916:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else
 			esc = 0;
 		sbuf_cut\(sb, 0\).*(		xmpt = 0;)
 		ec_edit\("", "e", s\);
 		s = \*\(\+\+files\);9??0?
-grp 09??-7m 1220reg p OK ex.c:1917:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:19172sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1916:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:19162sc %? %@2132sc!0?
 0?
 '\''1i void ex_done(void)
 {
@@ -78,7 +78,7 @@ void ex_init\(char \*\*files, int n\)
 	free(bufs);
 }
 
-??!219reg ex.c:1917:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1916:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;
@@ -182,12 +182,12 @@ void syn_done(void)
 %f> 	else
 		vi\(1\);
 	term_done\(\);4??0?
-4??+2m 1220reg p OK vi.c:1895:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1893:a42sc %? %@2152sc!1q0?
 grp 1%f> 	else.*?
 		vi\(1\);.*?
 (	term_done\(\);)7??0?
-grp 07??m 1220reg p OK vi.c:1895:a72sc %? %@2152sc!0?
-1;4;7??!219reg vi.c:18952sc %? %@2132sc!0?
+grp 07??m 1220reg p OK vi.c:1893:a72sc %? %@2152sc!0?
+1;4;7??!219reg vi.c:18932sc %? %@2132sc!0?
 0?
 '\''1i 	ex_done();
 	syn_done();
@@ -195,7 +195,7 @@ void syn_done(void)
 	if (led_attsb)
 		sbuf_free(led_attsb)
 	free(ibuf);
-??!219reg vi.c:1895:m12sc %? %@2142sc!b4%ya 98?0?
+??!219reg vi.c:1893:m12sc %? %@2142sc!b4%ya 98?0?
 %f> int ren_off\(char \*s, int p\);
 char \*ren_translate\(char \*s, char \*ln\);
 /\* text direction \*/
@@ -295,10 +295,10 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index b78dca07..9de42780 100644
+index 3d5a1721..663c4e38 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1915,6 +1915,22 @@ void ex(void)
+@@ -1914,6 +1914,22 @@ void ex(void)
  	xgrec--;
  }
  
@@ -370,10 +370,10 @@ index 4fd79fba..ba2d48d4 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 79678b9e..8bfef002 100644
+index 72ecc3d8..9cd8beea 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1893,6 +1893,12 @@ int main(int argc, char *argv[])
+@@ -1891,6 +1891,12 @@ int main(int argc, char *argv[])
  	else
  		vi(1);
  	term_done();

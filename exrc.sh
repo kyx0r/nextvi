@@ -251,6 +251,8 @@ EXINIT='%ya 97:? %@97' $VI -e 'ex.c' "$P2VIF"
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
+diff --git a/ex.c b/ex.c
+index 3d5a1721..953669e5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -258,7 +260,7 @@ exit 0
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1642,6 +1643,7 @@
+@@ -1642,6 +1643,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -266,7 +268,7 @@ exit 0
  
  _EO(ts, xts = *arg ? MAX(0, eo_val(arg)) : !xts; return NULL;)
  _EO(grp, xgrp = (*arg ? MAX(0, eo_val(arg)) : !xgrp) * 2; return NULL;)
-@@ -1685,6 +1687,7 @@
+@@ -1685,6 +1687,7 @@ static struct excmd {
  	{"p", ec_print},
  	EO(ai),
  	{"ac", ec_setacreg},
@@ -274,7 +276,7 @@ exit 0
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1914,6 +1917,55 @@
+@@ -1914,6 +1917,55 @@ void ex(void)
  	xgrec--;
  }
  
@@ -330,7 +332,7 @@ exit 0
  void ex_init(char **files, int n)
  {
  	xbufsalloc = MAX(n, xbufsalloc);
-@@ -1925,6 +1977,29 @@
+@@ -1925,6 +1977,29 @@ void ex_init(char **files, int n)
  		s = *(++files);
  	} while (--n > 0);
  	xvis &= ~4;
