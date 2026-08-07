@@ -1629,10 +1629,8 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
 
 static int eo_val(char *arg)
 {
-	int val = atoi(arg);
-	if (!val && !uc_isdigit(*arg))
-		return (unsigned char)*arg;
-	return val;
+	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
+		atoi(arg) : (unsigned char)*arg;
 }
 
 #define _EO(opt, inner) \
