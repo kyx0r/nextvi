@@ -25,17 +25,39 @@ fi
 #   script, for state inspection mid execution
 
 # Body too large for EXINIT/argv: stage it in a file
-( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
-trap 'rm -f "$P2VIF"' EXIT
+( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
+trap 'rm -f "$P2VIF".*' EXIT
 
-# Patch: conf.c ex.c led.c vi.c vi.h
 printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg prFp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
 "${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'b41;0fr 0%f> ^#define exbuf_load\(b\) \\$1000??0?
+b41;0fr 0%f> ^/\* window management for splits \*/$1001??0?
+b41;0fr 0%f> ^#define led_crender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end, \\$1002??0?
+b41;0fr 0%f> ^void term_killw\(int n\);$1003??0?
+b41;0fr 0%f> ^	xrow = b->row; \\$1004??0?
+b41;0fr 0%f> ^	xoff = b->off; \\$1005??0?
+b41;0fr 0%f> ^	xtop = b->top; \\$1006??0?
+b41;0fr 0%f> ^	xtd = b->td; \\$1007??0?
+b41;0fr 0%f> ^	curwin->buf = b; \\$1008??0?
+b41;0fr 0%f> ^struct win \{$1009??0?
+b41;0fr 0%f> ^	struct buf \*buf;		/\* buffer displayed in this window \*/$1010??0?
+b41;0fr 0%f> ^	int y, x;			/\* top-left screen position \*/$1011??0?
+b41;0fr 0%f> ^	int h, w;			/\* height and width \*/$1012??0?
+b41;0fr 0%f> ^	int row, off, top;		/\* cursor position within window \*/$1013??0?
+b41;0fr 0%f> ^	int left;			/\* horizontal scroll offset \*/$1014??0?
+b41;0fr 0%f> ^	struct win \*next;		/\* next window \(circular list\) \*/$1015??0?
+b41;0fr 0%f> ^extern struct win \*wins;		/\* head of window list \*/$1016??0?
+b41;0fr 0%f> ^extern struct win \*curwin;		/\* current active window, never NULL \*/$1017??0?
+b41;0fr 0%f> ^extern int nwins;			/\* number of windows \*/$1018??0?
+b41;0fr 0%f> ^/\* window geometry along an axis; 0 is the horizontal one, 1 the vertical \*/$1019??0?
+230reg 0231reg 01000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 231reg 11000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b410?
+b5%ya 972sc %? %@972sc!b41211reg ? %@2210?
+b6%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF".d
+printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -828,11 +850,129 @@ extern int xidt;
 '\''4i 	buf->et = xet; \
 	buf->sw = xsw; \
 	buf->ts = xts; \
-??!219reg vi.h:470:m42sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF"
+??!219reg vi.h:470:m42sc %? %@2142sc!' > "$P2VIF".0
+# Compat (post) from splits.sh
+printf '%s\n' '2sc!fr 98b4%ya 98?0?
+%f> 	xtop = b->top; \\
+	xtd = b->td; \\
+	curwin->buf = b; \\
+	xet = buf->et; \\
+	xsw = buf->sw; \\
+	xts = buf->ts; \\
+
+#define exbuf_save\(buf\) \\
+	buf->row = xrow; \\1??0?
+1??+3m 11q0?
+%f> 	xet = buf->et; \\
+	xsw = buf->sw; \\
+	xts = buf->ts; \\
+
+#define exbuf_save\(buf\) \\
+	buf->row = xrow; \\2??0?
+2??m 1220reg p OK vi.h:496:a22sc %? %@2152sc!1q0?
+%f> 	xet = buf->et; \\
+	xsw = buf->sw; \\
+	xts = buf->ts; \\3??0?
+3??m 1220reg p OK vi.h:496:a32sc %? %@2152sc!1q0?
+%f> 	xtop = b->top; \\
+	xtd = b->td; \\
+	curwin->buf = b; \\4??0?
+4??+3m 1220reg p OK vi.h:496:a42sc %? %@2152sc!1q0?
+%f> 
+#define exbuf_save\(buf\) \\
+	buf->row = xrow; \\5??0?
+5??-3m 1220reg p OK vi.h:496:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.h:4962sc %? %@2132sc!0?
+0?
+'\''1,#+2c 	xet = b->et; \
+	xsw = b->sw; \
+	xts = b->ts; \
+??!219reg vi.h:496:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
+=== PATCH2VI COMPAT post src=splits.sh ===
+=== GATE 1 present tag 1000 probe vi.h ===
+#define exbuf_load(b) \
+=== END ===
+=== GATE 2 present tag 1001 probe vi.h ===
+/* window management for splits */
+=== END ===
+=== GATE 3 present tag 1002 probe vi.h ===
+#define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \
+=== END ===
+=== GATE 4 present tag 1003 probe vi.h ===
+void term_killw(int n);
+=== END ===
+=== GATE 5 present tag 1004 probe vi.h ===
+	xrow = b->row; \
+=== END ===
+=== GATE 6 present tag 1005 probe vi.h ===
+	xoff = b->off; \
+=== END ===
+=== GATE 7 present tag 1006 probe vi.h ===
+	xtop = b->top; \
+=== END ===
+=== GATE 8 present tag 1007 probe vi.h ===
+	xtd = b->td; \
+=== END ===
+=== GATE 9 present tag 1008 probe vi.h ===
+	curwin->buf = b; \
+=== END ===
+=== GATE 10 present tag 1009 probe vi.h ===
+struct win {
+=== END ===
+=== GATE 11 present tag 1010 probe vi.h ===
+	struct buf *buf;		/* buffer displayed in this window */
+=== END ===
+=== GATE 12 present tag 1011 probe vi.h ===
+	int y, x;			/* top-left screen position */
+=== END ===
+=== GATE 13 present tag 1012 probe vi.h ===
+	int h, w;			/* height and width */
+=== END ===
+=== GATE 14 present tag 1013 probe vi.h ===
+	int row, off, top;		/* cursor position within window */
+=== END ===
+=== GATE 15 present tag 1014 probe vi.h ===
+	int left;			/* horizontal scroll offset */
+=== END ===
+=== GATE 16 present tag 1015 probe vi.h ===
+	struct win *next;		/* next window (circular list) */
+=== END ===
+=== GATE 17 present tag 1016 probe vi.h ===
+extern struct win *wins;		/* head of window list */
+=== END ===
+=== GATE 18 present tag 1017 probe vi.h ===
+extern struct win *curwin;		/* current active window, never NULL */
+=== END ===
+=== GATE 19 present tag 1018 probe vi.h ===
+extern int nwins;			/* number of windows */
+=== END ===
+=== GATE 20 present tag 1019 probe vi.h ===
+/* window geometry along an axis; 0 is the horizontal one, 1 the vertical */
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/vi.h
++++ b/vi.h
+@@ -493,9 +493,9 @@
+ 	xtop = b->top; \
+ 	xtd = b->td; \
+ 	curwin->buf = b; \
+-	xet = buf->et; \
+-	xsw = buf->sw; \
+-	xts = buf->ts; \
++	xet = b->et; \
++	xsw = b->sw; \
++	xts = b->ts; \
+ 
+ #define exbuf_save(buf) \
+ 	buf->row = xrow; \
+=== END ===
+=== END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 70157040..f26bca89 100644
