@@ -714,7 +714,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
 		crow++;
 		n = ps;
 		ps = sb->s_n;
-		if (ai_max) {	/* updating autoindent */
+		if (ai_max > 0) {	/* updating autoindent */
 			for (; *post == ' ' || *post == '\t'; postn--)
 				++post;
 			int ai_new = n;
