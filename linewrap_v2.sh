@@ -54,9 +54,30 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b11;0fr 0%f> ^	\{"eq", ec_equalize},$1017??0?
 b21;0fr 0%f> ^	for \(int nl = 0; r < winh; r\+\+\) \{$1018??0?
 b41;0fr 0%f> ^		char tmp\[wcols\+3], snum\[32];$1019??0?
-230reg 0231reg 01000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 231reg 11000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
-b6%ya 972sc %? %@972sc!b01b11b21b41b51b31211reg ? %@2210?
-b7%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
+230reg 0231reg 01000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 231reg 11000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 230reg+ 1b01;0fr 0%f> ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|lsp\|\\$1020??0?
+b41;0fr 0%f> ^	if \(diag\)$1021??0?
+b01;0fr 0%f> ^	\{lsp_ft, "\^\.\*error\.\*\$", A\(RE1 \| SYN_IT\)},$1022??0?
+b41;0fr 0%f> ^	int dcol = rstate->cmax - xleft;$1023??0?
+b01;0fr 0%f> ^	\{msg_ft, NULL},$1024??0?
+b41;0fr 0%f> ^		if \(diag\)$1025??0?
+b01;0fr 0%f> ^char lsp_ft\[] = "/lsp";	/\* lsp diagnostic virtual text \*/$1026??0?
+b41;0fr 0%f> ^		int dcol = l1 \+ rstate->cmax - xleft;$1027??0?
+b01;0fr 0%f> ^	\{lsp_ft, "\^\.\*warning\.\*\$", A\(YE1 \| SYN_IT\)},$1028??0?
+b41;0fr 0%f> ^	if \(s && xb_path && xb_path\[0]\)$1029??0?
+b01;0fr 0%f> ^	\{lsp_ft, "\^\.\*\$", A\(BL1 \| SYN_IT\)},$1030??0?
+b41;0fr 0%f> ^	const char \*diag = NULL;$1031??0?
+b01;0fr 0%f> ^	\{lsp_ft, NULL}$1032??0?
+b41;0fr 0%f> ^/\* render an lsp diagnostic as virtual text starting at screen column col \*/$1033??0?
+b41;0fr 0%f> ^void lsp_show_msg\(char \*msg\) \{ vi_drawmsg_mpt\(msg\) }$1034??0?
+b41;0fr 0%f> ^#include "lsp\.c"$1035??0?
+b41;0fr 0%f> ^		lsp_wake = 1;$1036??0?
+b41;0fr 0%f> ^		lsp_wake = 0;$1037??0?
+b41;0fr 0%f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{$1038??0?
+b41;0fr 0%f> ^				} else if \(k == '\''K'\''\) \{$1039??0?
+232reg 01020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? 232reg 11020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
+b6%ya 972sc %? %@972sc!b01b11b21b41b51b31fr 232f> 110??10??211reg10??!211reg ? %@2210?
+b7%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!b01b41211reg ? %@2210?
+b8%ya 512sc %1020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? %@512sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -5398,7 +5419,81 @@ int ren_wrapw\(int lncol\)
 1;2;3;4;5??!219reg ren.c:912sc %? %@2132sc!0?
 0?
 '\''1s/ x/ curwin ? curwin->w : x/??!219reg ren.c:91:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+# Compat (post) from lsp.sh
+printf '%s\n' '2sc!fr 98b0%ya 98?0?
+%f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
+\(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
+\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\(\?:lw\|\[lwpr]\)\?\|left\|lim\|led\|vis\)\\
+\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|lw\|\\
+\(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
+		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
+	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},1??0?
+1??+3m 11q0?
+%f> \|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|lw\|\\
+\(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
+		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
+	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},2??0?
+2??m 1220reg p OK conf.c:300:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|lw\|\\$3??0?
+3??m 1220reg p OK conf.c:300:a32sc %? %@2152sc!fr 981qfr 980?
+%f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
+\(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
+\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\(\?:lw\|\[lwpr]\)\?\|left\|lim\|led\|vis\)\\4??0?
+4??+3m 1220reg p OK conf.c:300:a42sc %? %@2152sc!1q0?
+%f> \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
+		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
+	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},5??0?
+5??-1m 1220reg p OK conf.c:300:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg conf.c:3002sc %? %@2132sc!0?
+0?
+'\''1s/\?\|i/?|lsp|i/??!219reg conf.c:300:m12sc %? %@2142sc!b4%ya 98?0?
+%f> 	i = vi_rendrow\(s, trow, 0\);
+	int dcol = rstate->cmax - xleft;
+	rstate = rstates;
+	return i;
+}
+
+1??0?
+1??+2m 11q0?
+%f> 	i = vi_rendrow\(s, trow, 0\);
+	int dcol = rstate->cmax - xleft;
+	rstate = rstates;4??0?
+4??+2m 1220reg p OK vi.c:427:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:4272sc %? %@2132sc!0?
+?0?
+%f+ int vi_drawline\(int row, int trow\)
+\{
+	return vi_drawrow\(row, trow\);
+	if \(diag\)
+		vi_drawdiag\(diag, dsev, row - xtop, dcol\);
+}
+
+/\* redraw the screen \*/1??0?
+1??+3m 21q0?
+%f+ 	if \(diag\)
+		vi_drawdiag\(diag, dsev, row - xtop, dcol\);
+}
+
+/\* redraw the screen \*/2??0?
+2??m 2220reg p OK vi.c:435:a22sc %? %@2152sc!1q0?
+%f+ 	if \(diag\)
+		vi_drawdiag\(diag, dsev, row - xtop, dcol\);3??0?
+3??m 2220reg p OK vi.c:435:a32sc %? %@2152sc!1q0?
+%f+ int vi_drawline\(int row, int trow\)
+\{
+	return vi_drawrow\(row, trow\);4??0?
+4??+3m 2220reg p OK vi.c:435:a42sc %? %@2152sc!1q0?
+%f+ }
+
+/\* redraw the screen \*/5??0?
+5??-2m 2220reg p OK vi.c:435:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:4352sc %? %@2132sc!0?
+0?
+'\''1i 	if (diag)
+		vi_drawdiag(diag, dsev, row - xtop, dcol);
+??!219reg vi.c:427:m12sc %? %@2142sc!0?
+'\''2,#+1d??!219reg vi.c:435:m22sc %? %@2142sc!p compat applied: src=lsp.sh' > "$P2VIF".2
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
@@ -5911,6 +6006,103 @@ void term_killw(int n);
  	return w > 0 ? w : 1;
  }
  
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT post src=lsp.sh ===
+=== GATE 1 present tag 1020 probe conf.c ===
+|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|lsp|\
+=== END ===
+=== GATE 2 present tag 1021 probe vi.c ===
+	if (diag)
+=== END ===
+=== GATE 3 present tag 1022 probe conf.c ===
+	{lsp_ft, "^.*error.*$", A(RE1 | SYN_IT)},
+=== END ===
+=== GATE 4 present tag 1023 probe vi.c ===
+	int dcol = rstate->cmax - xleft;
+=== END ===
+=== GATE 5 present tag 1024 probe conf.c ===
+	{msg_ft, NULL},
+=== END ===
+=== GATE 6 present tag 1025 probe vi.c ===
+		if (diag)
+=== END ===
+=== GATE 7 present tag 1026 probe conf.c ===
+char lsp_ft[] = "/lsp";	/* lsp diagnostic virtual text */
+=== END ===
+=== GATE 8 present tag 1027 probe vi.c ===
+		int dcol = l1 + rstate->cmax - xleft;
+=== END ===
+=== GATE 9 present tag 1028 probe conf.c ===
+	{lsp_ft, "^.*warning.*$", A(YE1 | SYN_IT)},
+=== END ===
+=== GATE 10 present tag 1029 probe vi.c ===
+	if (s && xb_path && xb_path[0])
+=== END ===
+=== GATE 11 present tag 1030 probe conf.c ===
+	{lsp_ft, "^.*$", A(BL1 | SYN_IT)},
+=== END ===
+=== GATE 12 present tag 1031 probe vi.c ===
+	const char *diag = NULL;
+=== END ===
+=== GATE 13 present tag 1032 probe conf.c ===
+	{lsp_ft, NULL}
+=== END ===
+=== GATE 14 present tag 1033 probe vi.c ===
+/* render an lsp diagnostic as virtual text starting at screen column col */
+=== END ===
+=== GATE 15 present tag 1034 probe vi.c ===
+void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
+=== END ===
+=== GATE 16 present tag 1035 probe vi.c ===
+#include "lsp.c"
+=== END ===
+=== GATE 17 present tag 1036 probe vi.c ===
+		lsp_wake = 1;
+=== END ===
+=== GATE 18 present tag 1037 probe vi.c ===
+		lsp_wake = 0;
+=== END ===
+=== GATE 19 present tag 1038 probe vi.c ===
+				} else if (k == '~' || k == 'u' || k == 'U') {
+=== END ===
+=== GATE 20 present tag 1039 probe vi.c ===
+				} else if (k == 'K') {
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/conf.c
++++ b/conf.c
+@@ -297,7 +297,7 @@
+ (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
+ (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
+ ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl(?:lw|[lwpr])?|left|lim|led|vis)\
+-|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|lw|\
++|[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|lsp|inc|i|sc!?|lw|\
+ (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
+ 		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
+ 	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
+--- a/vi.c
++++ b/vi.c
+@@ -425,6 +425,8 @@
+ 	i = vi_rendrow(s, trow, 0);
+ 	int dcol = rstate->cmax - xleft;
+ 	rstate = rstates;
++	if (diag)
++		vi_drawdiag(diag, dsev, row - xtop, dcol);
+ 	return i;
+ }
+ 
+@@ -432,8 +434,6 @@
+ int vi_drawline(int row, int trow)
+ {
+ 	return vi_drawrow(row, trow);
+-	if (diag)
+-		vi_drawdiag(diag, dsev, row - xtop, dcol);
+ }
+ 
+ /* redraw the screen */
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
