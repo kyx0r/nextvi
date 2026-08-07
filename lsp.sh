@@ -2279,7 +2279,7 @@ char \*term_att\(int att\)
 					goto err;	/* yield so vi redraws diagnostics */
 ??!219reg term.c:156:m22sc %? %@2142sc!0?
 '\''3,#+5c 			if (read(STDIN_FILENO, ibuf, 1) > 0) {
-				if (xrr) {
+				if (xrr > 0) {
 					static char buf[2];
 					buf[0] = *ibuf;
 					ex_regput(xrr, buf, 1);
@@ -4612,7 +4612,7 @@ index 00000000..841cf376
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index 05c58da5..c42d3d66 100644
+index 05c58da5..726c180f 100644
 --- a/term.c
 +++ b/term.c
 @@ -139,8 +139,8 @@ void term_push(char *s, unsigned int n)
@@ -4671,7 +4671,7 @@ index 05c58da5..c42d3d66 100644
 -			buf[0] = *ibuf;
 -			ex_regput(xrr, buf, 1);
 +			if (read(STDIN_FILENO, ibuf, 1) > 0) {
-+				if (xrr) {
++				if (xrr > 0) {
 +					static char buf[2];
 +					buf[0] = *ibuf;
 +					ex_regput(xrr, buf, 1);
