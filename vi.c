@@ -826,13 +826,13 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	xoff = lnmode ? lbuf_indents(xb, xrow) : o1;
 }
 
-static void vi_indents(char *ln, int *l)
+static int vi_indents(char *ln)
 {
-	if (!xai || !ln)
+	if (xai <= 0 || !ln)
 		ln = "";
 	char *pln = ln;
 	for (; *ln == ' ' || *ln == '\t'; ln++);
-	*l = ln - pln;
+	return ln - pln;
 }
 
 static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
@@ -842,8 +842,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	int key, tlen, l1, l2 = 1, postn = 1;
 	sbuf_smake(sb, xcols)
 	if (lnmode || !ln) {
-		vi_indents(ln, &l1);
-		o1 = l1;
+		o1 = l1 = vi_indents(ln);
 		post = "\n";
 		tlen = -1;
 		lbuf_region(xb, &rsb, r1, 0, r2, -1);
@@ -1025,8 +1024,7 @@ static int vc_insert(int cmd)
 	if (cmdo || !ln) {
 		if (cmdo && !lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0, 0, 0);
-		vi_indents(ln, &l1);
-		off = l1;
+		off = l1 = vi_indents(ln);
 		post = "\n";
 	} else {
 		off = xoff;

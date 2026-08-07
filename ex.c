@@ -1218,7 +1218,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 				sbuf_free(r)
 				first = 0;
 				goto out;
-			} else if (first < 0) {
+			} else if (first < 0) {	/* undo marks */
 				first = i;
 				lo = lbuf_opt(xb, xrow, xoff, 0);
 				lbuf_smark(xb, lo, i, MAX(o1, 0));
@@ -1485,9 +1485,10 @@ static void *ec_setacreg(char *loc, char *cmd, char *arg)
 
 static void *ec_setbufsmax(char *loc, char *cmd, char *arg)
 {
-	xbufsmax = *arg ? atoi(arg) : xbufsalloc;
-	if (xbufsmax <= 0)
+	int max = *arg ? atoi(arg) : xbufsalloc;
+	if (max <= 0)
 		return xserr;
+	xbufsmax = max;
 	int bufidx = ex_buf - bufs;
 	int pbufidx = ex_pbuf - bufs;
 	int tpbufidx = ex_tpbuf - bufs;
@@ -1552,7 +1553,7 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 		ph = erealloc(ph, sizeof(struct placeholder) * (phlen + 1));
 		ph[phlen].cp[0] = strtol(arg, &arg, 10);
 		ph[phlen].cp[1] = strtol(arg, &arg, 10);
-		ph[phlen].wid = strtol(arg, &arg, 10);
+		ph[phlen].wid = MAX(0, strtol(arg, &arg, 10));
 		ph[phlen].l = strtol(arg, &arg, 10);
 		if (*arg == ' ')
 			arg++;
@@ -1636,13 +1637,14 @@ static int eo_val(char *arg)
 static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 
 #define EO(opt) \
-	_EO(opt, x##opt = !*arg ? !x##opt : eo_val(arg); return NULL;)
+	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
 
 EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
-EO(rr) EO(shape) EO(seq) EO(ts) EO(td) EO(order) EO(hll) EO(hlw)
+EO(rr) EO(shape) EO(seq) EO(td) EO(order) EO(hll) EO(hlw)
 EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 
-_EO(grp, xgrp = (!*arg ? !xgrp : eo_val(arg)) * 2; return NULL;)
+_EO(ts, xts = *arg ? MAX(0, eo_val(arg)) : !xts; return NULL;)
+_EO(grp, xgrp = (*arg ? MAX(0, eo_val(arg)) : !xgrp) * 2; return NULL;)
 
 _EO(left,
 	if (*loc)
