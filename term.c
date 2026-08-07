@@ -166,7 +166,7 @@ int term_read(int winch)
 			}
 			err:
 			*ibuf = 0;
-		} else if (xrr) {
+		} else if (xrr > 0) {
 			static char buf[2];
 			buf[0] = *ibuf;
 			ex_regput(xrr, buf, 1);
