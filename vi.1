@@ -1,6 +1,6 @@
-.Dd Aug  2, 2026
+.Dd Aug  7, 2026
 .Dt Nextvi 1
-.Os Nextvi 7.3
+.Os Nextvi 7.3.0
 .
 .Sh NAME
 .Nm Nextvi
@@ -225,7 +225,7 @@ Execute <:> register as an ex command # times
 .It Cm [\fI#\fP].
 Repeat last normal command # times. Repeatable commands:
 .Bd -compact
-<x X D C s S Y p P r d c ~ gu gU g~ ! > < ^W i I a A o O ci di J K>
+x X D C s S Y p P r d c ~ gu gU g~ ! > < ^W i I a A o O ci di J K
 .Ed
 .It Cm [\fI#\fP]v.
 Repeat last normal command moving down across # lines
@@ -1279,7 +1279,7 @@ This is a nop command that evaluates a boolean expression
 at prefix and returns the result.
 
 Example: control while loop
-$? \e%f+int\e:1??\e:\e%f+void\e:2??\e:1,2??p\e:1,2???
+:$? \e%f+int\e:1??\e:\e%f+void\e:2??\e:1,2??p\e:1,2???
 .Ed
 
 .It Cm ft[\fIfiletype\fP]
@@ -1376,22 +1376,23 @@ Example: disable default placeholders in conf.c
 .Sh EX OPTIONS
 .Bd -literal -compact
 Ex options are ex commands designed to alter global variables.
-Values hold a signed integer. Values may represent a character.
-Default value is specified in val= as part of an argument notation.
-No argument inverts the current value, unless stated otherwise.
+Variables hold a signed integer. Argument sets the value. A non-numeric
+argument yeilds its first byte. No argument inverts the current
+value, unless stated otherwise.
+Default values are shown in argument notation below.
 .Ed
 
 .Bl -tag -width Ds -compact
-.It Cm ai[\fIval=1\fP]
+.It Cm ai[\fI1\fP]
 Indent new lines
 .Bd -literal
-This is a max indent length multiplier: val * 128
+This is a max indent length multiplier: value * 128
 .Ed
 
-.It Cm ic[\fIval=1\fP]
+.It Cm ic[\fI1\fP]
 Ignore case in regular expressions
 
-.It Cm ish[\fIval=0\fP]
+.It Cm ish[\fI0\fP]
 Interactive shell
 .Bd -literal
 Run every <!> command through an interactive shell.
@@ -1409,7 +1410,7 @@ Precondition 3:
 	file for <!> commands to return expected results.
 .Ed
 
-.It Cm grp[\fIval=0\fP]
+.It Cm grp[\fI0\fP]
 Regex search group
 .Bd -literal
 Defines a target search group for any regex search operation.
@@ -1420,26 +1421,26 @@ Example: position on a character prefixed by "int"
 :grp 1:%f+int(.):grp
 .Ed
 
-.It Cm hl[\fIval=1\fP]
+.It Cm hl[\fI1\fP]
 Highlight text based on rules defined in
 .Pa conf.c
 .
-.It Cm hlr[\fIval=0\fP]
+.It Cm hlr[\fI0\fP]
 Highlight text in reverse direction
 .
-.It Cm hll[\fIval=0\fP]
+.It Cm hll[\fI0\fP]
 Highlight current line based on filetype hl
 .
-.It Cm hlp[\fIval=0\fP]
+.It Cm hlp[\fI0\fP]
 Highlight "[]" "()" "{}" pairs based on filetype hl
 .
-.It Cm hlw[\fIval=0\fP]
+.It Cm hlw[\fI0\fP]
 Highlight current word based on filetype hl
 .
-.It Cm led[\fIval=1\fP]
+.It Cm led[\fI1\fP]
 Enable all terminal output
 
-.It Cm vis[\fIval=0\fP]
+.It Cm vis[\fI0\fP]
 Control startup flags
 .Bd -literal
 bit 1: raw ex mode
@@ -1453,7 +1454,7 @@ Example: disable raw ex mode
 :vis 2
 .Ed
 
-.It Cm mpt[\fIval=0\fP]
+.It Cm mpt[\fI0\fP]
 Control vi prompts
 .Bd -literal
 When set to 0 or 1 after an ex command is called from vi, disables
@@ -1466,20 +1467,20 @@ Example: block the prompt but not the last print
 :p:p:p:mpt 1
 .Ed
 
-.It Cm order[\fIval=1\fP]
+.It Cm order[\fI1\fP]
 Reorder characters based on rules defined in
 .Pa conf.c
 .
-.It Cm shape[\fIval=1\fP]
+.It Cm shape[\fI1\fP]
 Perform Arabic script letter shaping
 .
-.It Cm pac[\fIval=0\fP]
+.It Cm pac[\fI0\fP]
 Print autocomplete suggestions on the fly
 .
-.It Cm ts[\fIval=8\fP]
+.It Cm ts[\fI8\fP]
 Number of spaces used to represent a tab
 .
-.It Cm td[\fIval=1\fP]
+.It Cm td[\fI1\fP]
 Current text direction context
 .Bd -literal
 val  2: exclusively left-to-right
@@ -1488,7 +1489,7 @@ val -1: follow dctxs[] in conf.c, default right-to-left
 val -2: exclusively right-to-left
 .Ed
 
-.It Cm pr[\fIval=0\fP]
+.It Cm pr[\fI0\fP]
 Print register
 .Bd -literal
 Set a special register using a character or a number.
@@ -1507,7 +1508,7 @@ Example: store a line printed with :p
 :pr A:ya! 65:p
 .Ed
 
-.It Cm fr[\fIval=0\fP]
+.It Cm fr[\fI0\fP]
 Find register
 .Bd -literal
 Set a register using a character or a number.
@@ -1522,7 +1523,7 @@ Example: search for "int" followed by "void" on next line
 :%ya97:fr 97:%f>int.void:fr
 .Ed
 
-.It Cm rr[\fIval=0\fP]
+.It Cm rr[\fI0\fP]
 Record register
 .Bd -literal
 Set a register using a character or a number.
@@ -1538,7 +1539,7 @@ Example: replay recording from register <a>
 :& %@97
 .Ed
 
-.It Cm lim[\fIval=-1\fP]
+.It Cm lim[\fI-1\fP]
 Line length render limit
 .Bd -literal
 Set render cutoff length for non cursor lines in vi and all
@@ -1555,7 +1556,7 @@ Example: disable the limit
 :lim -1
 .Ed
 
-.It Cm seq[\fIval=1\fP]
+.It Cm seq[\fI1\fP]
 Control Undo/Redo
 .Bd -literal
 When seq is 0, multiple distinct operations undo/redo in a
@@ -1570,14 +1571,14 @@ Example: completely disable undo/redo
 :seq -1
 .Ed
 
-.It Cm [\fIhscroll\fP]left[\fIval=0\fP]
+.It Cm [\fIhscroll\fP]left[\fI0\fP]
 Control horizontal scroll
 .Bd -literal
 No argument calculates the value using current character offset.
 hscroll computes the value using: xcols / 2 * hscroll
 .Ed
 
-.It Cm err[\fIval=1\fP]
+.It Cm err[\fI1\fP]
 Control ex errors
 .Bd -literal
 bit 1: print errors
@@ -1629,7 +1630,7 @@ Setup @ macro in register <b>
 
 @b macro pipes the current line into X11 clipboard.
 
-.It Cm export EXINIT="$(printf 'rr z:vis 2:&Q:b-3:pu 122:wq! bugreport.txt')"
+.It Cm export EXINIT='rr z:vis 2:&Q:b-3:pu 122:wq! bugreport.txt'
 Capture session for a bug report
 
 Recording starts into register <z>. Setting vis 2 makes <Q> toggle
