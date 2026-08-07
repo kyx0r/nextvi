@@ -1218,7 +1218,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 				sbuf_free(r)
 				first = 0;
 				goto out;
-			} else if (first < 0) {
+			} else if (first < 0) {	/* undo marks */
 				first = i;
 				lo = lbuf_opt(xb, xrow, xoff, 0);
 				lbuf_smark(xb, lo, i, MAX(o1, 0));
