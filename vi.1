@@ -1377,7 +1377,7 @@ Example: disable default placeholders in conf.c
 .Bd -literal -compact
 Ex options are ex commands designed to alter global variables.
 Variables hold a signed integer. Argument sets the value. A non-numeric
-argument yeilds its first byte. No argument inverts the current
+argument yields its first byte. No argument inverts the current
 value, unless stated otherwise.
 Default values are shown in argument notation below.
 .Ed
@@ -1483,10 +1483,10 @@ Number of spaces used to represent a tab
 .It Cm td[\fI1\fP]
 Current text direction context
 .Bd -literal
-val  2: exclusively left-to-right
-val  1: follow dctxs[] in conf.c, default left-to-right
-val -1: follow dctxs[] in conf.c, default right-to-left
-val -2: exclusively right-to-left
+value  2: exclusively left-to-right
+value  1: follow dctxs[] in conf.c, default left-to-right
+value -1: follow dctxs[] in conf.c, default right-to-left
+value -2: exclusively right-to-left
 .Ed
 
 .It Cm pr[\fI0\fP]
