@@ -1072,9 +1072,8 @@ static void *ec_num(char *loc, char *cmd, char *arg)
 static void *ec_undoredo(char *loc, char *cmd, char *arg)
 {
 	int ref;
-	if (cmd[0] == 'u')
-		return lbuf_undo(xb, &ref, &ref) ? xuerr : NULL;
-	return lbuf_redo(xb, &ref, &ref) ? xuerr : NULL;
+	return (cmd[0] == 'u' ? lbuf_undo : lbuf_redo)(xb, &ref, &ref) ?
+		xuerr : NULL;
 }
 
 static void *ec_bufsave(char *loc, char *cmd, char *arg)
