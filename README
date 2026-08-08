@@ -90,6 +90,25 @@ grep -r -n "str" .
 The feature can be substituted with a pipe command in case of a higher performing
 grep implementation or loading of cached results from script.
 
+xref.sh
+--------------
+Adds a special temporary buffer /xref/ and the keybind gx. gx collects the
+definition of the symbol under the cursor and, recursively, the definitions
+of everything it calls, then switches to /xref/. A count limits how deep it
+goes: 1gx is the definition alone, 2gx adds what it calls, no count means
+unlimited. To quickly open /xref/ use new keybind: vf
+Every definition gets a header line in grep -n style, followed by its code
+verbatim, highlighted as the source is. TAB on a header opens that file at
+that line, which is where you edit: /xref/ itself is only for reading.
+Definitions are looked up in every file listed in /fm/, so run :fd first.
+The search pattern is the new option :xd, in which %s stands for the symbol;
+by default it covers C like languages, python, go and shell. A lookup that
+finds nothing leaves the previous results alone.
+With lsp.sh applied a registered language server answers first and the
+pattern is only the fallback. With splits.sh /xref/ opens in a second
+window and the cursor stays in the code. grep.sh is supported as well;
+apply this patch last, after lsp.sh -> splits.sh -> grep.sh.
+
 rstr.sh
 --------------
 Adaptation from upstream Neatvi, where simple operations are optimized by
