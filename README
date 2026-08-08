@@ -1066,8 +1066,8 @@ EX COMMANDS
 EX OPTIONS
      Ex options are ex commands designed to alter global variables.
      Variables hold a signed integer. Argument sets the value. A non-numeric
-     argument yields its first byte. No argument inverts the current
-     value, unless stated otherwise.
+     argument yields its first byte. No argument logically inverts
+     the current value, unless stated otherwise.
 
      Argument notation shows the default value.
 
