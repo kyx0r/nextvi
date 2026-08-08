@@ -1127,9 +1127,9 @@ EX OPTIONS
              the "[any key to continue]" prompt.
              If mpt is negative, the prompt will remain disabled.
 
-             Example: block the prompt and the last print
+             Example: disable the prompt and the last print
              :p:p:p:mpt 0
-             Example: block the prompt but not the last print
+             Example: disable the prompt but not the last print
              :p:p:p:mpt 1
 
      order[1]
@@ -1148,7 +1148,7 @@ EX OPTIONS
      pr[0]   Print register
 
              Set a special register using a character or a number.
-             Once the register is set, all data passed into ex_print will
+             Once the register is set, all ex printed output will
              be stored in the register.
 
              If the register is uppercase, <Newline> characters are added
