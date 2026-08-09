@@ -746,17 +746,17 @@ extern struct buf \*ex_pbuf;
 extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)2??0?
-2??m 1220reg p OK vi.h:453:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.h:454:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^extern struct buf tempbufs\[3];$3??0?
-3??m 1220reg p OK vi.h:453:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.h:454:a32sc %? %@2152sc!fr 981qfr 980?
 %f> extern int xregs_n;
 extern int xdefreg;
 extern struct buf \*bufs;4??0?
-4??+3m 1220reg p OK vi.h:453:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.h:454:a42sc %? %@2152sc!1q0?
 %f> extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)5??0?
-5??-1m 1220reg p OK vi.h:453:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK vi.h:454:a52sc %? %@2152sc!1q0?
 %f> .....n ......e.s_.;
 .x......nt...e..e..
 e.............buf...uf..
@@ -764,26 +764,26 @@ e.............buf...uf..
 e.......t.uc........x.....
 .xt.r.......t.......x.pb...
 ..e..ne .......u..b.f..\(b.. >=..e...... .......<.te...u.. ...EN...........6??0?
-6??+3m 1220reg p OK vi.h:453:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK vi.h:454:a62sc %? %@2152sc!1q0?
 grp 1%f> extern int xregs_n;.*?
 extern int xdefreg;.*?
 extern struct buf \*bufs;.*?
 (extern struct buf tempbufs\[3];)7??0?
-grp 07??m 1220reg p OK vi.h:453:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:454:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern sbuf \*xacreg;
 extern rset \*xkwdrs;
 extern sbuf \*\*xregs;.*(#define xb_path ex_buf->path)
 #define xb_ft ex_buf->ft
 #define xb ex_buf->lb8??0?
-grp 08??-4m 1220reg p OK vi.h:453:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:454:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xsep;
 extern int xesc;
 extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 	xrow = buf->row; \\
 	xoff = buf->off; \\9??0?
-grp 09??-7m 1220reg p OK vi.h:453:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:4532sc %? %@2132sc!0?
-'\''1s/3/4/??!219reg vi.h:453:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+grp 09??-7m 1220reg p OK vi.h:454:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:4542sc %? %@2132sc!0?
+'\''1s/3/4/??!219reg vi.h:454:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -833,7 +833,7 @@ index 3d5a1721..338614ba 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..5e794814 100644
+index 81c4fde3..1d760861 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -440,12 +440,12 @@ void dir_calc(char *path)
@@ -971,10 +971,10 @@ index 72ecc3d8..5e794814 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 6466711d..e8436311 100644
+index 3fcfbe71..d16c4ed7 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -450,7 +450,7 @@ extern sbuf **xregs;
+@@ -451,7 +451,7 @@ extern sbuf **xregs;
  extern int xregs_n;
  extern int xdefreg;
  extern struct buf *bufs;

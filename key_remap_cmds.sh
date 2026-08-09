@@ -863,22 +863,22 @@ void temp_switch\(int i, int swap\);1??0?
 \{ if \(&bufs\[idx] != ex_buf\) \{ bufs_switch\(idx\); syn_setft\(xb_ft\); } } \\
 
 4??0?
-4??+2m 1220reg p OK vi.h:474:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:475:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	buf->off = xoff; \\
 	buf->top = xtop; \\
 	buf->td = xtd; \\.*(void temp_write\(int i, char \*str\);)
 void temp_pos\(int i, int row, int off, int top\);
 void ex\(void\);8??0?
-grp 08??-4m 1220reg p OK vi.h:474:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:475:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	xoff = buf->off; \\
 	xtop = buf->top; \\
 	xtd = buf->td; \\.*(void \*ex_exec\(const char \*ln\);)
 #define ex_command\(ln\) \{ ex_exec\(ln\); ex_regput\('\'':'\'', ln, 0\); }
 void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);9??0?
-grp 09??-7m 1220reg p OK vi.h:474:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.h:4742sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:475:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.h:4752sc %? %@2132sc!0?
 '\''1i int map_read(int mode, int winch);
-??!219reg vi.h:474:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+??!219reg vi.h:475:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -986,7 +986,7 @@ index 9eb8e85b..bf139849 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..283d5da4 100644
+index 81c4fde3..cd2fa107 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -262,7 +262,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -1085,10 +1085,10 @@ index 72ecc3d8..283d5da4 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index 6466711d..e2fed729 100644
+index 3fcfbe71..b40a0dc5 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -472,6 +472,7 @@ extern struct buf *ex_pbuf;
+@@ -473,6 +473,7 @@ extern struct buf *ex_pbuf;
  #define bufs_switchwft(idx) \
  { if (&bufs[idx] != ex_buf) { bufs_switch(idx); syn_setft(xb_ft); } } \
  

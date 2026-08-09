@@ -276,27 +276,27 @@ char \*conf_digraph\(int c1, int c2\);1??0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;4??0?
-4??+2m 1220reg p OK vi.h:539:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:540:a42sc %? %@2152sc!1q0?
 grp 1%f> extern struct placeholder \*ph;.*?
 extern int phlen;.*?
 (extern const int conf_hlrev;)7??0?
-grp 07??m 1220reg p OK vi.h:539:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:540:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int l;		/\* the length of the codepoint \*/
 };
 extern struct placeholder _ph\[];.*(/\* vi\.c: main \*/)
 void vi\(int init\);
 extern int vi_hidch;8??0?
-grp 08??-5m 1220reg p OK vi.h:539:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.h:540:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int cp\[2];	/\* the source character codepoint \*/
 	char d\[8];	/\* the placeholder \*/
 	int wid;	/\* the width of the placeholder \*/.*(extern int vi_lncol;)
 /\* filesystem \*/
 extern rset \*fsincl;9??0?
-grp 09??-8m 1220reg p OK vi.h:539:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:5392sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.h:540:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:5402sc %? %@2132sc!0?
 '\''1i extern char conf_curins[];
 extern char conf_curnorm[];
-??!219reg vi.h:539:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.h:540:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'led.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -368,10 +368,10 @@ index 9eb8e85b..812036a0 100644
  			if (!xled) {
  				xoff = uc_slen(sb->s+ps);
 diff --git a/vi.h b/vi.h
-index 6466711d..5d315610 100644
+index 3fcfbe71..aaf17dd6 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -537,6 +537,8 @@ extern struct placeholder _ph[];
+@@ -538,6 +538,8 @@ extern struct placeholder _ph[];
  extern struct placeholder *ph;
  extern int phlen;
  extern const int conf_hlrev;

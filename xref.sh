@@ -720,24 +720,24 @@ extern int xvis;1??0?
 %f> 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
 };4??0?
-4??+2m 1220reg p OK vi.h:408:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:409:a42sc %? %@2152sc!1q0?
 grp 1%f> 	long mtime;			/\* modification time \*/.*?
 	signed char td;			/\* text direction \*/.*?
 (};)7??0?
-grp 07??m 1220reg p OK vi.h:408:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:409:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	char \*path;			/\* file path \*/
 	struct lbuf \*lb;
 	int plen, row, off, top;.*(extern int xai;)
 extern int xic;
 extern int xhl;8??0?
-grp 08??-4m 1220reg p OK vi.h:408:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:409:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> /\* ex\.c: command mode \*/
 struct buf \{
 	char \*ft;			/\* file type \*/.*(extern int xhll;)
 extern int xhlw;
 extern int xhlp;9??0?
-grp 09??-7m 1220reg p OK vi.h:408:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4082sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:409:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4092sc %? %@2132sc!0?
 ?0?
 %f+ extern int xesc;
 extern int xexec_dep;
@@ -749,24 +749,24 @@ extern int xregs_n;1??0?
 %f+ extern int xesc;
 extern int xexec_dep;
 extern sbuf \*xacreg;4??0?
-4??+2m 2220reg p OK vi.h:447:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.h:448:a42sc %? %@2152sc!1q0?
 grp 1%f+ extern int xesc;.*?
 extern int xexec_dep;.*?
 (extern sbuf \*xacreg;)7??0?
-grp 07??m 2220reg p OK vi.h:447:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.h:448:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xkwdcnt;
 extern int xpln;
 extern int xsep;.*(#define xb_path ex_buf->path)
 #define xb_ft ex_buf->ft
 #define xb ex_buf->lb8??0?
-grp 08??-10m 2220reg p OK vi.h:447:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 2220reg p OK vi.h:448:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xkmap;
 extern int xkmap_alt;
 extern int xkwddir;.*(#define exbuf_load\(buf\) \\)
 	xrow = buf->row; \\
 	xoff = buf->off; \\9??0?
-grp 09??-13m 2220reg p OK vi.h:447:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4472sc %? %@2132sc!0?
+grp 09??-13m 2220reg p OK vi.h:448:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4482sc %? %@2132sc!0?
 ?0?
 %f+ extern int xregs_n;
 extern int xdefreg;
@@ -780,17 +780,17 @@ extern struct buf \*ex_pbuf;
 extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)2??0?
-2??m 3220reg p OK vi.h:453:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK vi.h:454:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^extern struct buf tempbufs\[3];$3??0?
-3??m 3220reg p OK vi.h:453:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK vi.h:454:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ extern int xregs_n;
 extern int xdefreg;
 extern struct buf \*bufs;4??0?
-4??+3m 3220reg p OK vi.h:453:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK vi.h:454:a42sc %? %@2152sc!1q0?
 %f+ extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)5??0?
-5??-1m 3220reg p OK vi.h:453:a52sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK vi.h:454:a52sc %? %@2152sc!1q0?
 %f+ .....n ......e.s_.;
 .x......nt...e..e..
 e.............buf...uf..
@@ -798,32 +798,32 @@ e.............buf...uf..
 e.......t.uc........x.....
 .xt.r.......t.......x.pb...
 ..e..ne .......u..b.f..\(b.. >=..e...... .......<.te...u.. ...EN...........6??0?
-6??+3m 3220reg p OK vi.h:453:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK vi.h:454:a62sc %? %@2152sc!1q0?
 grp 1%f+ extern int xregs_n;.*?
 extern int xdefreg;.*?
 extern struct buf \*bufs;.*?
 (extern struct buf tempbufs\[3];)7??0?
-grp 07??m 3220reg p OK vi.h:453:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.h:454:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xkwdcnt;
 extern int xpln;
 extern int xsep;.*(#define xb_path ex_buf->path)
 #define xb_ft ex_buf->ft
 #define xb ex_buf->lb8??0?
-grp 08??-4m 3220reg p OK vi.h:453:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK vi.h:454:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xkmap;
 extern int xkmap_alt;
 extern int xkwddir;.*(#define exbuf_load\(buf\) \\)
 	xrow = buf->row; \\
 	xoff = buf->off; \\9??0?
-grp 09??-7m 3220reg p OK vi.h:453:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:4532sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK vi.h:454:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:4542sc %? %@2132sc!0?
 '\''1i 
 #define XREF_BUF 3			/* the /xref/ temporary buffer */
 
-??!219reg vi.h:408:m12sc %? %@2142sc!0?
+??!219reg vi.h:409:m12sc %? %@2142sc!0?
 '\''2i extern sbuf *xdefreg_pat;
-??!219reg vi.h:447:m22sc %? %@2142sc!0?
-'\''3s/3/4/??!219reg vi.h:453:m32sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.h:448:m22sc %? %@2142sc!0?
+'\''3s/3/4/??!219reg vi.h:454:m32sc %? %@2142sc!' > "$P2VIF".0
 # Compat (post) from splits.sh
 printf '%s\n' '2sc!fr 98b1%ya 98?0?
 %f> 						vi_drawmsg_mpt\(ln\)
@@ -2066,7 +2066,7 @@ index 3d5a1721..487f8df0 100644
  	{"x", ec_write},
  	{"ya!", ec_yank},
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..2ce89c3f 100644
+index 81c4fde3..4d82c72a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -484,6 +484,260 @@ static int fs_searchback(int cnt, int *row, int *off)
@@ -2395,10 +2395,10 @@ index 72ecc3d8..2ce89c3f 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 6466711d..0315ce89 100644
+index 3fcfbe71..57f5360d 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -406,6 +406,9 @@ struct buf {
+@@ -407,6 +407,9 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
@@ -2408,7 +2408,7 @@ index 6466711d..0315ce89 100644
  /* ex options */
  extern int xleft;
  extern int xvis;
-@@ -445,12 +448,13 @@ extern int xsep;
+@@ -446,12 +449,13 @@ extern int xsep;
  extern int xesc;
  extern int xexec_dep;
  extern sbuf *xacreg;

@@ -725,24 +725,24 @@ extern int xleft;1??0?
 %f> 	int plen, row, off, top;
 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/4??0?
-4??+2m 1220reg p OK vi.h:407:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:408:a42sc %? %@2152sc!1q0?
 grp 1%f> 	int plen, row, off, top;.*?
 	long mtime;			/\* modification time \*/.*?
 (	signed char td;			/\* text direction \*/)7??0?
-grp 07??m 1220reg p OK vi.h:407:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:408:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	char \*ft;			/\* file type \*/
 	char \*path;			/\* file path \*/
 	struct lbuf \*lb;.*(extern int xvis;)
 extern int xai;
 extern int xic;8??0?
-grp 08??-4m 1220reg p OK vi.h:407:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:408:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> char \*led_read\(int \*kmap, int c\);
 int led_pos\(char \*s, int pos\);
 void led_done\(void\);.*(extern int xhl;)
 extern int xhll;
 extern int xhlw;9??0?
-grp 09??-7m 1220reg p OK vi.h:407:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4072sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:408:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4082sc %? %@2132sc!0?
 ?0?
 %f+ extern int xshape;
 extern int xorder;
@@ -754,24 +754,24 @@ extern int xpac;1??0?
 %f+ extern int xshape;
 extern int xorder;
 extern int xts;4??0?
-4??+2m 2220reg p OK vi.h:423:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.h:424:a42sc %? %@2152sc!1q0?
 grp 1%f+ extern int xshape;.*?
 extern int xorder;.*?
 (extern int xts;)7??0?
-grp 07??m 2220reg p OK vi.h:423:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.h:424:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xhlr;
 extern int xled;
 extern int xtd;.*(extern int xmpt;)
 extern int xpr;
 extern int xlim;8??0?
-grp 08??-4m 2220reg p OK vi.h:423:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.h:424:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xhll;
 extern int xhlw;
 extern int xhlp;.*(extern int xseq;)
 extern int xerr;
 extern int xfr;9??0?
-grp 09??-7m 2220reg p OK vi.h:423:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4232sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.h:424:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4242sc %? %@2132sc!0?
 ?0?
 %f+ 	xoff = buf->off; \\
 	xtop = buf->top; \\
@@ -783,24 +783,24 @@ extern int xfr;9??0?
 %f+ 	xoff = buf->off; \\
 	xtop = buf->top; \\
 	xtd = buf->td; \\4??0?
-4??+2m 3220reg p OK vi.h:464:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.h:465:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	xoff = buf->off; \\.*?
 	xtop = buf->top; \\.*?
 (	xtd = buf->td; \\)7??0?
-grp 07??m 3220reg p OK vi.h:464:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.h:465:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> #define xb ex_buf->lb
 #define exbuf_load\(buf\) \\
 	xrow = buf->row; \\.*(void bufs_switch\(int idx\);)
 void temp_open\(int i, char \*name, char \*ft\);
 void temp_switch\(int i, int swap\);8??0?
-grp 08??-11m 3220reg p OK vi.h:464:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 3220reg p OK vi.h:465:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)
 #define xb_path ex_buf->path
 #define xb_ft ex_buf->ft.*(void temp_write\(int i, char \*str\);)
 void temp_pos\(int i, int row, int off, int top\);
 void ex\(void\);9??0?
-grp 09??-14m 3220reg p OK vi.h:464:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4642sc %? %@2132sc!0?
+grp 09??-14m 3220reg p OK vi.h:465:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4652sc %? %@2132sc!0?
 ?0?
 %f+ 	buf->off = xoff; \\
 	buf->top = xtop; \\
@@ -812,40 +812,40 @@ void ex\(void\);9??0?
 %f+ 	buf->off = xoff; \\
 	buf->top = xtop; \\
 	buf->td = xtd; \\4??0?
-4??+2m 4220reg p OK vi.h:470:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK vi.h:471:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	buf->off = xoff; \\.*?
 	buf->top = xtop; \\.*?
 (	buf->td = xtd; \\)7??0?
-grp 07??m 4220reg p OK vi.h:470:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.h:471:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> #define xb ex_buf->lb
 #define exbuf_load\(buf\) \\
 	xrow = buf->row; \\.*(void bufs_switch\(int idx\);)
 void temp_open\(int i, char \*name, char \*ft\);
 void temp_switch\(int i, int swap\);8??0?
-grp 08??-5m 4220reg p OK vi.h:470:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 4220reg p OK vi.h:471:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)
 #define xb_path ex_buf->path
 #define xb_ft ex_buf->ft.*(void temp_write\(int i, char \*str\);)
 void temp_pos\(int i, int row, int off, int top\);
 void ex\(void\);9??0?
-grp 09??-8m 4220reg p OK vi.h:470:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4702sc %? %@2132sc!0?
+grp 09??-8m 4220reg p OK vi.h:471:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4712sc %? %@2132sc!0?
 '\''1i 	int et;				/* expandtab - use spaces for indentation */
 	int sw;				/* shiftwidth - indentation step */
 	int ts;				/* tabspace - number of spaces for tab */
-??!219reg vi.h:407:m12sc %? %@2142sc!0?
+??!219reg vi.h:408:m12sc %? %@2142sc!0?
 '\''2i extern int xet;
 extern int xsw;
 extern int xidt;
-??!219reg vi.h:423:m22sc %? %@2142sc!0?
+??!219reg vi.h:424:m22sc %? %@2142sc!0?
 '\''3i 	xet = buf->et; \
 	xsw = buf->sw; \
 	xts = buf->ts; \
-??!219reg vi.h:464:m32sc %? %@2142sc!0?
+??!219reg vi.h:465:m32sc %? %@2142sc!0?
 '\''4i 	buf->et = xet; \
 	buf->sw = xsw; \
 	buf->ts = xts; \
-??!219reg vi.h:470:m42sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.h:471:m42sc %? %@2142sc!' > "$P2VIF".0
 # Compat (post) from splits.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 	xtop = b->top; \\
@@ -1156,7 +1156,7 @@ index 9eb8e85b..09420a89 100644
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..4eefb8b3 100644
+index 81c4fde3..14d722de 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -934,9 +934,19 @@ static void vi_shift(int r1, int r2, int dir, int count)
@@ -1183,10 +1183,10 @@ index 72ecc3d8..4eefb8b3 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index 6466711d..5342ba71 100644
+index 3fcfbe71..ec6d1dc3 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -405,6 +405,9 @@ struct buf {
+@@ -406,6 +406,9 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -1196,7 +1196,7 @@ index 6466711d..5342ba71 100644
  };
  /* ex options */
  extern int xleft;
-@@ -421,6 +424,9 @@ extern int xtd;
+@@ -422,6 +425,9 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xts;
@@ -1206,7 +1206,7 @@ index 6466711d..5342ba71 100644
  extern int xish;
  extern int xgrp;
  extern int xpac;
-@@ -462,12 +468,18 @@ extern struct buf *ex_pbuf;
+@@ -463,12 +469,18 @@ extern struct buf *ex_pbuf;
  	xoff = buf->off; \
  	xtop = buf->top; \
  	xtd = buf->td; \

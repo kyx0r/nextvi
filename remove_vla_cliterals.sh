@@ -1443,7 +1443,7 @@ void syn_init\(void\).*?
 grp 07??m 1220reg p OK vi.c:143:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		c = lbuf_get\(xb, xrow\);
 		if \(row != xrow\+1 \|\| !c \|\| \*c == '\''\\n'\''\) \{
-			vi_rshift = \(row > xrow\+1 && c && \*c != '\''\\n'\''\);.*(		i1 = isupper\(\(unsigned char\)\*vi_word\);)
+			vi_rshift = \(row > xrow\+1 && c && \*c != '\''\\n'\''\);.*(		i1 = uc_isupper\(\*vi_word\);)
 		if \(\*vi_word == '\''e'\'' \|\| \*vi_word == '\''E'\''\)
 			vi_drawnum\(lbuf_wordend\(xb, i1, 2, &nrow, &noff\)\)8??0?
 grp 08??-4m 1220reg p OK vi.c:143:a82sc %? %@2152sc!'\''08??1q0?
@@ -1825,17 +1825,17 @@ void syn_init\(void\).*?
 	unsigned char set;	/\* subset index \*/
 	unsigned char id;	/\* id of this hl \*/
 };2??0?
-2??m 1220reg p OK vi.h:508:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.h:509:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^	int \*att;		/\* attributes of the matched groups \*/$3??0?
-3??m 1220reg p OK vi.h:508:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.h:509:a32sc %? %@2152sc!fr 981qfr 980?
 %f> struct highlight \{
 	char \*ft;		/\* the filetype of this pattern \*/
 	char \*pat;		/\* regular expression \*/4??0?
-4??+3m 1220reg p OK vi.h:508:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.h:509:a42sc %? %@2152sc!1q0?
 %f> 	unsigned char set;	/\* subset index \*/
 	unsigned char id;	/\* id of this hl \*/
 };5??0?
-5??-1m 1220reg p OK vi.h:508:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK vi.h:509:a52sc %? %@2152sc!1q0?
 %f> .t.....h...l.....\{
 	ch.....t.	..\*.th........p......h.s.....e...\*.
 	c..r..p........r..u.ar....r....o....
@@ -1843,26 +1843,26 @@ void syn_init\(void\).*?
 ..ns..ne.........t........... .nd.....
 ........d..... ...	/. id.o.....s.h....
 }.6??0?
-6??+3m 1220reg p OK vi.h:508:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK vi.h:509:a62sc %? %@2152sc!1q0?
 grp 1%f> struct highlight \{.*?
 	char \*ft;		/\* the filetype of this pattern \*/.*?
 	char \*pat;		/\* regular expression \*/.*?
 (	int \*att;		/\* attributes of the matched groups \*/)7??0?
-grp 07??m 1220reg p OK vi.h:508:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:509:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern struct filetype fts\[];
 extern const int ftslen;
 /\* syntax highlighting patterns \*/.*(extern struct highlight hls\[];)
 extern const int hlslen;
 /\* direction context: specifies the direction of a whole line \*/8??0?
-grp 08??-4m 1220reg p OK vi.h:508:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:509:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char \*ft;		/\* file type \*/
 	char \*pat;		/\* file name pattern \*/
 };.*(struct dircontext \{)
 	char \*pat;
 	int dir;9??0?
-grp 09??-7m 1220reg p OK vi.h:508:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:5082sc %? %@2132sc!0?
-'\''1s/\*att/att[16]/??!219reg vi.h:508:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
+grp 09??-7m 1220reg p OK vi.h:509:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:5092sc %? %@2132sc!0?
+'\''1s/\*att/att[16]/??!219reg vi.h:509:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'led.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -2154,7 +2154,7 @@ index 4fd79fba..333561f9 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..9c4f4782 100644
+index 81c4fde3..4ecdb8d5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -2234,10 +2234,10 @@ index 72ecc3d8..9c4f4782 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 6466711d..b44f2dfe 100644
+index 3fcfbe71..fc903783 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -505,7 +505,7 @@ extern const int ftslen;
+@@ -506,7 +506,7 @@ extern const int ftslen;
  struct highlight {
  	char *ft;		/* the filetype of this pattern */
  	char *pat;		/* regular expression */

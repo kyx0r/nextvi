@@ -860,7 +860,7 @@ index 18170218..f8f72713 100644
  	lo->mark_se[0] = -1;
  	lo->pos = beg;
 diff --git a/vi.h b/vi.h
-index 6466711d..89eaa8b1 100644
+index 3fcfbe71..2a9ac480 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -118,11 +118,15 @@ int rset_match(rset *rs, char *s, int flg);

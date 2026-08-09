@@ -3039,7 +3039,7 @@ e..e.......o......to......o.s. .
 				break;
 			case '\''z'\'':.*(				case '\''L'\'':)
 				case '\''R'\'':
-					xtd = isupper\(k\)\+1;8??0?
+					xtd = uc_isupper\(k\)\+1;8??0?
 grp 08??-10m 49220reg p OK vi.c:1587:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				break;
 			case '\''p'\'':
@@ -3081,7 +3081,7 @@ e..e.......o......to......o.s. .
 				break;
 			case '\''z'\'':.*(				case '\''L'\'':)
 				case '\''R'\'':
-					xtd = isupper\(k\)\+1;8??0?
+					xtd = uc_isupper\(k\)\+1;8??0?
 grp 08??-7m 50220reg p OK vi.c:1590:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				break;
 			case '\''p'\'':
@@ -3127,7 +3127,7 @@ e..e.......o......to......o.s. .
 				break;
 			case '\''z'\'':.*(				case '\''L'\'':)
 				case '\''R'\'':
-					xtd = isupper\(k\)\+1;8??0?
+					xtd = uc_isupper\(k\)\+1;8??0?
 grp 08??-4m 51220reg p OK vi.c:1593:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				break;
 			case '\''p'\'':
@@ -3903,24 +3903,24 @@ void led_done\(void\);
 %f+ #define led_prender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end,\)
 #define led_crender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end, term_kill\(\);\)
 char \*led_read\(int \*kmap, int c\);4??0?
-4??+2m 2220reg p OK vi.h:396:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.h:397:a42sc %? %@2152sc!1q0?
 grp 1%f+ #define led_prender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end,\).*?
 #define led_crender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end, term_kill\(\);\).*?
 (char \*led_read\(int \*kmap, int c\);)7??0?
-grp 07??m 2220reg p OK vi.h:396:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.h:397:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(!record\) \\
 		term_commit\(\); \\
 } \\.*(/\* ex\.c: command mode \*/)
 struct buf \{
 	char \*ft;			/\* file type \*/8??0?
-grp 08??-4m 2220reg p OK vi.h:396:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.h:397:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	term_pos\(row, col\); \\
 	kill \\
 	led_render\(msg, beg, end\); \\.*(	char \*path;			/\* file path \*/)
 	struct lbuf \*lb;
 	int plen, row, off, top;9??0?
-grp 09??-7m 2220reg p OK vi.h:396:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:3962sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.h:397:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:3972sc %? %@2132sc!0?
 ?0?
 %f+ extern int xmpt;
 extern int xpr;
@@ -3932,24 +3932,24 @@ extern int xfr;1??0?
 %f+ extern int xmpt;
 extern int xpr;
 extern int xlim;4??0?
-4??+2m 3220reg p OK vi.h:429:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.h:430:a42sc %? %@2152sc!1q0?
 grp 1%f+ extern int xmpt;.*?
 extern int xpr;.*?
 (extern int xlim;)7??0?
-grp 07??m 3220reg p OK vi.h:429:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.h:430:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xish;
 extern int xgrp;
 extern int xpac;.*(extern int xkmap_alt;)
 extern int xkwddir;
 extern int xkwdcnt;8??0?
-grp 08??-11m 3220reg p OK vi.h:429:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 3220reg p OK vi.h:430:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xshape;
 extern int xorder;
 extern int xts;.*(extern int xpln;)
 extern int xsep;
 extern int xesc;9??0?
-grp 09??-14m 3220reg p OK vi.h:429:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4292sc %? %@2132sc!0?
+grp 09??-14m 3220reg p OK vi.h:430:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4302sc %? %@2132sc!0?
 ?0?
 %f+ extern int xrr;
 /\* global variables \*/
@@ -3963,17 +3963,17 @@ extern int xkmap;1??0?
 extern int xbufcur;
 extern int xgrec;
 extern int xkmap;2??0?
-2??m 4220reg p OK vi.h:436:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.h:437:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^extern int xrow, xoff, xtop;$3??0?
-3??m 4220reg p OK vi.h:436:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK vi.h:437:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ extern int xrr;
 /\* global variables \*/
 extern int xquit;4??0?
-4??+3m 4220reg p OK vi.h:436:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK vi.h:437:a42sc %? %@2152sc!1q0?
 %f+ extern int xbufcur;
 extern int xgrec;
 extern int xkmap;5??0?
-5??-1m 4220reg p OK vi.h:436:a52sc %? %@2152sc!1q0?
+5??-1m 4220reg p OK vi.h:437:a52sc %? %@2152sc!1q0?
 %f+ e...r...n. ...;
 .\* ..o.....a.....e.../
 .xt......t....i..
@@ -3981,25 +3981,25 @@ extern int xkmap;5??0?
 .......i....bu....;
 e...r...........;
 e.t.rn ... ...a.;6??0?
-6??+3m 4220reg p OK vi.h:436:a62sc %? %@2152sc!1q0?
+6??+3m 4220reg p OK vi.h:437:a62sc %? %@2152sc!1q0?
 grp 1%f+ extern int xrr;.*?
 /\* global variables \*/.*?
 extern int xquit;.*?
 (extern int xrow, xoff, xtop;)7??0?
-grp 07??m 4220reg p OK vi.h:436:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.h:437:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xish;
 extern int xgrp;
 extern int xpac;.*(extern int xkmap_alt;)
 extern int xkwddir;
 extern int xkwdcnt;8??0?
-grp 08??-4m 4220reg p OK vi.h:436:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK vi.h:437:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xshape;
 extern int xorder;
 extern int xts;.*(extern int xpln;)
 extern int xsep;
 extern int xesc;9??0?
-grp 09??-7m 4220reg p OK vi.h:436:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:4362sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK vi.h:437:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:4372sc %? %@2132sc!0?
 ?0?
 %f+ 	xrow = buf->row; \\
 	xoff = buf->off; \\
@@ -4011,24 +4011,24 @@ extern int xesc;9??0?
 %f+ 	xrow = buf->row; \\
 	xoff = buf->off; \\
 	xtop = buf->top; \\4??0?
-4??+2m 5220reg p OK vi.h:463:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK vi.h:464:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	xrow = buf->row; \\.*?
 	xoff = buf->off; \\.*?
 (	xtop = buf->top; \\)7??0?
-grp 07??m 5220reg p OK vi.h:463:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.h:464:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> #define xb_ft ex_buf->ft
 #define xb ex_buf->lb
 #define exbuf_load\(buf\) \\.*(	buf->row = xrow; \\)
 	buf->off = xoff; \\
 	buf->top = xtop; \\8??0?
-grp 08??-4m 5220reg p OK vi.h:463:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK vi.h:464:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)
 #define xb_path ex_buf->path.*(void bufs_switch\(int idx\);)
 void temp_open\(int i, char \*name, char \*ft\);
 void temp_switch\(int i, int swap\);9??0?
-grp 09??-12m 5220reg p OK vi.h:463:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4632sc %? %@2132sc!0?
+grp 09??-12m 5220reg p OK vi.h:464:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4642sc %? %@2132sc!0?
 ?0?
 %f+ void vi\(int init\);
 extern int vi_hidch;
@@ -4040,27 +4040,27 @@ void dir_calc\(char \*path\);1??0?
 %f+ void vi\(int init\);
 extern int vi_hidch;
 extern int vi_lncol;4??0?
-4??+2m 6220reg p OK vi.h:547:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK vi.h:548:a42sc %? %@2152sc!1q0?
 grp 1%f+ void vi\(int init\);.*?
 extern int vi_hidch;.*?
 (extern int vi_lncol;)7??0?
-grp 07??m 6220reg p OK vi.h:547:a72sc %? %@2152sc!0?
-1;4;7??!219reg vi.h:5472sc %? %@2132sc!0?
+grp 07??m 6220reg p OK vi.h:548:a72sc %? %@2152sc!0?
+1;4;7??!219reg vi.h:5482sc %? %@2132sc!0?
 '\''1i int ren_wrapw(int lncol);
 ??!219reg vi.h:219:m12sc %? %@2142sc!0?
 '\''2i extern int led_row;
-??!219reg vi.h:396:m22sc %? %@2142sc!0?
+??!219reg vi.h:397:m22sc %? %@2142sc!0?
 '\''3i extern int xlw;
 extern int xhllw;
-??!219reg vi.h:429:m32sc %? %@2142sc!0?
-'\''4s/p;/p, xtopsub;/??!219reg vi.h:436:m42sc %? %@2142sc!0?
+??!219reg vi.h:430:m32sc %? %@2142sc!0?
+'\''4s/p;/p, xtopsub;/??!219reg vi.h:437:m42sc %? %@2142sc!0?
 '\''5i 	xtopsub = 0; \
-??!219reg vi.h:463:m52sc %? %@2142sc!0?
+??!219reg vi.h:464:m52sc %? %@2142sc!0?
 '\''6i /* soft line wrap geometry */
 int vi_lnrows(char *s);
 int vi_srow(int row);
 int vi_drawline(int row, int trow);
-??!219reg vi.h:547:m62sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.h:548:m62sc %? %@2142sc!' > "$P2VIF".0
 # Compat (post) from splits.sh
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -6339,7 +6339,7 @@ index 4fd79fba..f4bf1835 100644
  		for (n = 0; n < max && (l = uc_len(ss)); n++)
  			ss += l;
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..1e8905c2 100644
+index 81c4fde3..21ef6a98 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -111,6 +111,149 @@ static int vi_nextcol(char *ln, int dir, int *off)
@@ -6999,7 +6999,7 @@ index 72ecc3d8..1e8905c2 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 6466711d..ca0823f3 100644
+index 3fcfbe71..0e162688 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -217,6 +217,7 @@ int ren_pos(char *s, int off);
@@ -7010,7 +7010,7 @@ index 6466711d..ca0823f3 100644
  char *ren_translate(char *s, char *ln);
  /* text direction */
  int dir_context(char *s);
-@@ -394,6 +395,7 @@ void led_render(char *s0, int cbeg, int cend);
+@@ -395,6 +396,7 @@ void led_render(char *s0, int cbeg, int cend);
  #define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end,)
  #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
  char *led_read(int *kmap, int c);
@@ -7018,7 +7018,7 @@ index 6466711d..ca0823f3 100644
  int led_pos(char *s, int pos);
  void led_done(void);
  
-@@ -427,13 +429,15 @@ extern int xpac;
+@@ -428,13 +430,15 @@ extern int xpac;
  extern int xmpt;
  extern int xpr;
  extern int xlim;
@@ -7035,7 +7035,7 @@ index 6466711d..ca0823f3 100644
  extern int xbufcur;
  extern int xgrec;
  extern int xkmap;
-@@ -461,6 +465,7 @@ extern struct buf *ex_pbuf;
+@@ -462,6 +466,7 @@ extern struct buf *ex_pbuf;
  	xrow = buf->row; \
  	xoff = buf->off; \
  	xtop = buf->top; \
@@ -7043,7 +7043,7 @@ index 6466711d..ca0823f3 100644
  	xtd = buf->td; \
  
  #define exbuf_save(buf) \
-@@ -545,6 +550,10 @@ char *conf_digraph(int c1, int c2);
+@@ -546,6 +551,10 @@ char *conf_digraph(int c1, int c2);
  void vi(int init);
  extern int vi_hidch;
  extern int vi_lncol;

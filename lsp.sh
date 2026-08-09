@@ -2801,8 +2801,8 @@ void dir_calc\(char \*path\);1??0?
 grp 1%f+ /\* filesystem \*/.*?
 extern rset \*fsincl;.*?
 (void dir_calc\(char \*path\);)7??0?
-grp 07??m 2220reg p OK vi.h:550:a72sc %? %@2152sc!0?
-1;7??!219reg vi.h:5502sc %? %@2132sc!0?
+grp 07??m 2220reg p OK vi.h:551:a72sc %? %@2152sc!0?
+1;7??!219reg vi.h:5512sc %? %@2132sc!0?
 '\''1i 	int edseq;			/* monotonic content mutation counter */
 ??!219reg vi.h:152:m12sc %? %@2142sc!0?
 '\''2i 
@@ -2822,7 +2822,7 @@ void lsp_definition(const char *path, int row, int off);
 const char *lsp_diag_for_line(const char *path, int line, int *sev);
 void lsp_list(void);
 void lsp_show_msg(char *msg);
-??!219reg vi.h:550:m22sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
+??!219reg vi.h:551:m22sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'jsmn.h' 'lbuf.c' 'lsp.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -4687,7 +4687,7 @@ index 05c58da5..726c180f 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..898b1e19 100644
+index 81c4fde3..14e49dcc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -4826,7 +4826,7 @@ index 72ecc3d8..898b1e19 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 diff --git a/vi.h b/vi.h
-index 6466711d..0e3045ba 100644
+index 3fcfbe71..88d968cd 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,7 @@ struct lbuf {
@@ -4837,7 +4837,7 @@ index 6466711d..0e3045ba 100644
  };
  #define lbuf_len(lb) lb->ln_n
  #define lbuf_s(ln) ((struct linfo*)(ln - sizeof(struct linfo)))
-@@ -548,3 +549,20 @@ extern int vi_lncol;
+@@ -549,3 +550,20 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);

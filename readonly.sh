@@ -347,24 +347,24 @@ extern int xleft;1??0?
 %f> 	int plen, row, off, top;
 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/4??0?
-4??+2m 1220reg p OK vi.h:407:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:408:a42sc %? %@2152sc!1q0?
 grp 1%f> 	int plen, row, off, top;.*?
 	long mtime;			/\* modification time \*/.*?
 (	signed char td;			/\* text direction \*/)7??0?
-grp 07??m 1220reg p OK vi.h:407:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:408:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	char \*ft;			/\* file type \*/
 	char \*path;			/\* file path \*/
 	struct lbuf \*lb;.*(extern int xvis;)
 extern int xai;
 extern int xic;8??0?
-grp 08??-4m 1220reg p OK vi.h:407:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:408:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> char \*led_read\(int \*kmap, int c\);
 int led_pos\(char \*s, int pos\);
 void led_done\(void\);.*(extern int xhl;)
 extern int xhll;
 extern int xhlw;9??0?
-grp 09??-7m 1220reg p OK vi.h:407:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4072sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:408:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4082sc %? %@2132sc!0?
 ?0?
 %f+ /\* filesystem \*/
 extern rset \*fsincl;
@@ -373,12 +373,12 @@ void dir_calc\(char \*path\);1??0?
 grp 1%f+ /\* filesystem \*/.*?
 extern rset \*fsincl;.*?
 (void dir_calc\(char \*path\);)7??0?
-grp 07??m 2220reg p OK vi.h:550:a72sc %? %@2152sc!0?
-1;7??!219reg vi.h:5502sc %? %@2132sc!0?
+grp 07??m 2220reg p OK vi.h:551:a72sc %? %@2152sc!0?
+1;7??!219reg vi.h:5512sc %? %@2132sc!0?
 '\''1i 	char readonly;			/* read only */
-??!219reg vi.h:407:m12sc %? %@2142sc!0?
+??!219reg vi.h:408:m12sc %? %@2142sc!0?
 '\''2i extern char readonly;
-??!219reg vi.h:550:m22sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:551:m22sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -454,7 +454,7 @@ index 3d5a1721..9be715ff 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..9b9dba7a 100644
+index 81c4fde3..20c376e6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1871,11 +1871,13 @@ int main(int argc, char *argv[])
@@ -473,10 +473,10 @@ index 72ecc3d8..9b9dba7a 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 6466711d..2b0bcaaa 100644
+index 3fcfbe71..2175835e 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -405,6 +405,7 @@ struct buf {
+@@ -406,6 +406,7 @@ struct buf {
  	int plen, row, off, top;
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
@@ -484,7 +484,7 @@ index 6466711d..2b0bcaaa 100644
  };
  /* ex options */
  extern int xleft;
-@@ -548,3 +549,4 @@ extern int vi_lncol;
+@@ -549,3 +550,4 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);

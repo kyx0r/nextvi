@@ -260,30 +260,30 @@ void ex_krsset\(char \*kwd, int dir\);1??0?
 %f+ #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }
 #define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }
 void ex_init\(char \*\*files, int n\);4??0?
-4??+2m 3220reg p OK vi.h:486:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.h:487:a42sc %? %@2152sc!1q0?
 grp 1%f+ #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }.*?
 #define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }.*?
 (void ex_init\(char \*\*files, int n\);)7??0?
-grp 07??m 3220reg p OK vi.h:486:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.h:487:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> void \*ex_exec\(const char \*ln\);
 #define ex_command\(ln\) \{ ex_exec\(ln\); ex_regput\('\'':'\'', ln, 0\); }
 void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);.*(void ex_regesc\(sbuf \*sb, char \*beg, char \*end, int ex\);)
 int ex_edit\(const char \*path, int len\);
 sbuf \*ex_regget\(int id\);8??0?
-grp 08??-4m 3220reg p OK vi.h:486:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK vi.h:487:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void temp_write\(int i, char \*str\);
 void temp_pos\(int i, int row, int off, int top\);
 void ex\(void\);.*(/\* conf\.c: configuration variables \*/)
 extern const int conf_mode;
 /\* map file names to file types \*/9??0?
-grp 09??-9m 3220reg p OK vi.h:486:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4862sc %? %@2132sc!0?
+grp 09??-9m 3220reg p OK vi.h:487:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4872sc %? %@2132sc!0?
 '\''1i void dir_done(void);
 ??!219reg vi.h:221:m12sc %? %@2142sc!0?
 '\''2i void syn_done(void);
 ??!219reg vi.h:265:m22sc %? %@2142sc!0?
 '\''3i void ex_done(void);
-??!219reg vi.h:486:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+??!219reg vi.h:487:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -365,7 +365,7 @@ index 4fd79fba..ba2d48d4 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..9cd8beea 100644
+index 81c4fde3..15e8eb51 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1891,6 +1891,12 @@ int main(int argc, char *argv[])
@@ -382,7 +382,7 @@ index 72ecc3d8..9cd8beea 100644
  		term_scrl;
  	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index 6466711d..c5b34ef7 100644
+index 3fcfbe71..0fca3f5e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,6 +219,7 @@ int ren_noeol(char *s, int p);
@@ -401,7 +401,7 @@ index 6466711d..c5b34ef7 100644
  
  /* uc.c: utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -484,6 +486,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+@@ -485,6 +487,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
  #define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
  void ex_init(char **files, int n);

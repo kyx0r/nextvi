@@ -1355,24 +1355,24 @@ extern int xrr;
 %f+ extern int xlim;
 extern int xseq;
 extern int xerr;4??0?
-4??+2m 5220reg p OK vi.h:431:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK vi.h:432:a42sc %? %@2152sc!1q0?
 grp 1%f+ extern int xlim;.*?
 extern int xseq;.*?
 (extern int xerr;)7??0?
-grp 07??m 5220reg p OK vi.h:431:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.h:432:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xpac;
 extern int xmpt;
 extern int xpr;.*(extern int xquit;)
 extern int xrow, xoff, xtop;
 extern int xbufcur;8??0?
-grp 08??-4m 5220reg p OK vi.h:431:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK vi.h:432:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xts;
 extern int xish;
 extern int xgrp;.*(extern int xgrec;)
 extern int xkmap;
 extern int xkmap_alt;9??0?
-grp 09??-7m 5220reg p OK vi.h:431:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4312sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK vi.h:432:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4322sc %? %@2132sc!0?
 '\''1i 	int lwrap;		/* pos-1 lwrap bit was cleared */
 ??!219reg vi.h:131:m12sc %? %@2142sc!0?
 '\''2i 	int lwrap;		/* soft linewrap: joined with the next line */
@@ -1385,7 +1385,7 @@ extern int lbuf_lwmod;
 ??!219reg vi.h:213:m42sc %? %@2142sc!0?
 '\''5i extern int xlw;
 extern int xhllw;
-??!219reg vi.h:431:m52sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF"
+??!219reg vi.h:432:m52sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -1687,7 +1687,7 @@ index 4fd79fba..56c26d35 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..1c67707c 100644
+index 81c4fde3..842cef3b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,24 @@ static void vi_drawrow(int row)
@@ -1725,7 +1725,7 @@ index 72ecc3d8..1c67707c 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 6466711d..e59009f5 100644
+index 3fcfbe71..260c3913 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -129,10 +129,12 @@ struct lopt {
@@ -1759,7 +1759,7 @@ index 6466711d..e59009f5 100644
  int ren_next(char *s, int p, int dir);
  int ren_eol(char *s, int dir);
  int ren_pos(char *s, int off);
-@@ -429,6 +435,8 @@ extern int xpr;
+@@ -430,6 +436,8 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;

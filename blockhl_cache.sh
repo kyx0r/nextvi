@@ -431,7 +431,7 @@ static void hl_scan_until(int target_row)
 grp 08??-4m 2220reg p OK vi.c:140:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	static char ch\[5] = "~";
 	if \(xmpt == 1 && !vi_status && row == xtop \+ xrows - 1\)
-		return;.*(		i1 = isupper\(\(unsigned char\)\*vi_word\);)
+		return;.*(		i1 = uc_isupper\(\*vi_word\);)
 		if \(\*vi_word == '\''e'\'' \|\| \*vi_word == '\''E'\''\)
 			vi_drawnum\(lbuf_wordend\(xb, i1, 2, &nrow, &noff\)\)9??0?
 grp 09??-7m 2220reg p OK vi.c:140:a92sc %? %@2152sc!'\''00?
@@ -890,7 +890,7 @@ index 4fd79fba..ac42d54d 100644
  		return;
  	for (j = 0; j < n; j++)
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..2433f7bd 100644
+index 81c4fde3..39aac358 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,7 @@ for (i = 0, ret = 0;; i++) { \
@@ -947,7 +947,7 @@ index 72ecc3d8..2433f7bd 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 6466711d..b1a2adcc 100644
+index 3fcfbe71..19e07c40 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -263,6 +263,8 @@ void syn_reloadft(int hl, int flg);

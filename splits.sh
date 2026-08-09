@@ -1460,7 +1460,7 @@ nrow = xrow; \\.*(	tmp\[l1] = \*snum; \\)
 		memset\(tmp, '\'' '\'', xcols\+1\);
 		tmp\[xcols\+1] = '\''\\n'\'';
 		tmp\[xcols\+2] = '\''\\0'\'';
-		i1 = isupper\(\(unsigned char\)\*vi_word\);
+		i1 = uc_isupper\(\*vi_word\);
 		if \(\*vi_word == '\''e'\'' \|\| \*vi_word == '\''E'\''\)
 			vi_drawnum\(lbuf_wordend\(xb, i1, 2, &nrow, &noff\)\)1??0?
 1??+3m 51q0?
@@ -1468,7 +1468,7 @@ nrow = xrow; \\.*(	tmp\[l1] = \*snum; \\)
 		memset\(tmp, '\'' '\'', xcols\+1\);
 		tmp\[xcols\+1] = '\''\\n'\'';
 		tmp\[xcols\+2] = '\''\\0'\'';
-		i1 = isupper\(\(unsigned char\)\*vi_word\);
+		i1 = uc_isupper\(\*vi_word\);
 		if \(\*vi_word == '\''e'\'' \|\| \*vi_word == '\''E'\''\)
 			vi_drawnum\(lbuf_wordend\(xb, i1, 2, &nrow, &noff\)\)2??0?
 2??m 5220reg p OK vi.c:143:a22sc %? %@2152sc!1q0?
@@ -1481,20 +1481,20 @@ nrow = xrow; \\.*(	tmp\[l1] = \*snum; \\)
 			goto skip;
 		}4??0?
 4??+3m 5220reg p OK vi.c:143:a42sc %? %@2152sc!1q0?
-%f+ 		i1 = isupper\(\(unsigned char\)\*vi_word\);
+%f+ 		i1 = uc_isupper\(\*vi_word\);
 		if \(\*vi_word == '\''e'\'' \|\| \*vi_word == '\''E'\''\)
 			vi_drawnum\(lbuf_wordend\(xb, i1, 2, &nrow, &noff\)\)5??0?
 5??-4m 5220reg p OK vi.c:143:a52sc %? %@2152sc!1q0?
-%f+ ..	s........ge..xb......-..i......t\);
-...g......i..
-..}
-..ch.......x.....3........3..;
-.....s......,..... ...l.\+...
-	.......o.s... .......
-.	tmp\[.c.....].. .\\..;
-	.......su..e.....s....d.c.ar..v._..rd..
-.......v..w....== ....\|..\*.i.w.r...=.....
-..	....r.wn...lb....o.de.......i.. .....r.......ff..6??0?
+%f+ ..	s...l.....e.............i.r.......
+..	.ot.......
+	.}
+....a...m.\[........,..n.......
+..m....t..m.,..... ..o.....;
+.	t.p\[...l............
+.	.........\+........'\''.
+..i1...........e....i.wo....
+..........w.rd =......\|\| .v...o......'\''...
+..	v.......u....u._w.rd........i.,........w. .n.f...6??0?
 6??+3m 5220reg p OK vi.c:143:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			s = lbuf_get\(xb, row - vi_rshift\);.*?
 			goto skip;.*?
@@ -3124,7 +3124,7 @@ else if \(xrow >= xtop \+ xrows\) \\
 				switch \(k\) \{
 				case '\''\\n'\'':.*(				case '\''L'\'':)
 				case '\''R'\'':
-					xtd = isupper\(k\)\+1;8??0?
+					xtd = uc_isupper\(k\)\+1;8??0?
 grp 08??-7m 41220reg p OK vi.c:1590:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				vi_mod \|= vc_put\(c\);
 				break;
@@ -3170,7 +3170,7 @@ else if \(xrow >= xtop \+ xrows\) \\
 				switch \(k\) \{
 				case '\''\\n'\'':.*(				case '\''L'\'':)
 				case '\''R'\'':
-					xtd = isupper\(k\)\+1;8??0?
+					xtd = uc_isupper\(k\)\+1;8??0?
 grp 08??-4m 43220reg p OK vi.c:1593:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				vi_mod \|= vc_put\(c\);
 				break;
@@ -3710,24 +3710,24 @@ void term_commit\(void\);1??0?
 %f> void term_chr\(int ch\);
 void term_pos\(int r, int c\);
 void term_kill\(void\);4??0?
-4??+2m 1220reg p OK vi.h:325:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:326:a42sc %? %@2152sc!1q0?
 grp 1%f> void term_chr\(int ch\);.*?
 void term_pos\(int r, int c\);.*?
 (void term_kill\(void\);)7??0?
-grp 07??m 1220reg p OK vi.h:325:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:326:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> void term_suspend\(void\);
 #define term_scrl	term_write\("\\033\[\?1049l", 8\)
 #define term_scrh	term_write\("\\033\[\?1049h", 8\).*(char \*term_att\(int att\);)
 void term_push\(char \*s, unsigned int n\);
 #define term_dec\(\) ibuf_pos--; icmd_pos--;8??0?
-grp 08??-4m 1220reg p OK vi.h:325:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:326:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void term_init\(void\);
 void term_done\(void\);
 void term_clean\(void\);.*(#define term_exec\(s, n, type\) \\)
 \{ \\
 	preserve\(int, tn, tn = 0;\) \\9??0?
-grp 09??-7m 1220reg p OK vi.h:325:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:3252sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:326:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:3262sc %? %@2132sc!0?
 ?0?
 %f+ } \\
 
@@ -3741,17 +3741,17 @@ void led_done\(void\);1??0?
 char \*led_read\(int \*kmap, int c\);
 int led_pos\(char \*s, int pos\);
 void led_done\(void\);2??0?
-2??m 2220reg p OK vi.h:395:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.h:396:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^#define led_crender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end, term_kill\(\);\)$3??0?
-3??m 2220reg p OK vi.h:395:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.h:396:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ } \\
 
 #define led_prender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end,\)4??0?
-4??+3m 2220reg p OK vi.h:395:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.h:396:a42sc %? %@2152sc!1q0?
 %f+ char \*led_read\(int \*kmap, int c\);
 int led_pos\(char \*s, int pos\);
 void led_done\(void\);5??0?
-5??-1m 2220reg p OK vi.h:395:a52sc %? %@2152sc!1q0?
+5??-1m 2220reg p OK vi.h:396:a52sc %? %@2152sc!1q0?
 %f+ }..
 
 #d.f..e ....p.......m.g...o......, b... e... _..._ren..r\(.....r.....o...b.........
@@ -3759,25 +3759,25 @@ void led_done\(void\);5??0?
 ...r.........d......k..p....t.c\);
 ....l......\(.... .........o.\).
 v.....e._...e.....\).6??0?
-6??+3m 2220reg p OK vi.h:395:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK vi.h:396:a62sc %? %@2152sc!1q0?
 grp 1%f+ } \\.*?
 .*?
 #define led_prender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end,\).*?
 (#define led_crender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end, term_kill\(\);\))7??0?
-grp 07??m 2220reg p OK vi.h:395:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.h:396:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	led_render\(msg, beg, end\); \\
 	if \(!record\) \\
 		term_commit\(\); \\.*(/\* ex\.c: command mode \*/)
 struct buf \{
 	char \*ft;			/\* file type \*/8??0?
-grp 08??-5m 2220reg p OK vi.h:395:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 2220reg p OK vi.h:396:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	term_record = 1; \\
 	term_pos\(row, col\); \\
 	kill \\.*(	char \*path;			/\* file path \*/)
 	struct lbuf \*lb;
 	int plen, row, off, top;9??0?
-grp 09??-8m 2220reg p OK vi.h:395:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:3952sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK vi.h:396:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:3962sc %? %@2132sc!0?
 ?0?
 %f+ 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
@@ -3789,24 +3789,24 @@ extern int xvis;1??0?
 %f+ 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
 };4??0?
-4??+2m 3220reg p OK vi.h:408:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.h:409:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	long mtime;			/\* modification time \*/.*?
 	signed char td;			/\* text direction \*/.*?
 (};)7??0?
-grp 07??m 3220reg p OK vi.h:408:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.h:409:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	char \*path;			/\* file path \*/
 	struct lbuf \*lb;
 	int plen, row, off, top;.*(extern int xai;)
 extern int xic;
 extern int xhl;8??0?
-grp 08??-4m 3220reg p OK vi.h:408:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK vi.h:409:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> /\* ex\.c: command mode \*/
 struct buf \{
 	char \*ft;			/\* file type \*/.*(extern int xhll;)
 extern int xhlw;
 extern int xhlp;9??0?
-grp 09??-7m 3220reg p OK vi.h:408:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4082sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK vi.h:409:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4092sc %? %@2132sc!0?
 ?0?
 %f+ #define xb_path ex_buf->path
 #define xb_ft ex_buf->ft
@@ -3828,21 +3828,21 @@ extern int xhlp;9??0?
 
 #define exbuf_save\(buf\) \\
 	buf->row = xrow; \\2??0?
-2??m 4220reg p OK vi.h:460:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.h:461:a22sc %? %@2152sc!1q0?
 %f+ #define exbuf_load\(buf\) \\
 	xrow = buf->row; \\
 	xoff = buf->off; \\
 	xtop = buf->top; \\
 	xtd = buf->td; \\3??0?
-3??m 4220reg p OK vi.h:460:a32sc %? %@2152sc!1q0?
+3??m 4220reg p OK vi.h:461:a32sc %? %@2152sc!1q0?
 %f+ #define xb_path ex_buf->path
 #define xb_ft ex_buf->ft
 #define xb ex_buf->lb4??0?
-4??+3m 4220reg p OK vi.h:460:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK vi.h:461:a42sc %? %@2152sc!1q0?
 %f+ 
 #define exbuf_save\(buf\) \\
 	buf->row = xrow; \\5??0?
-5??-5m 4220reg p OK vi.h:460:a52sc %? %@2152sc!1q0?
+5??-5m 4220reg p OK vi.h:461:a52sc %? %@2152sc!1q0?
 %f+ .d....e.x..................h
 .d..i.e .._ft.e._.u..>..
 ....in.....ex_b......
@@ -3854,30 +3854,30 @@ extern int xhlp;9??0?
 
 ............f.s.ve.b..\)..
 .....>......x.....\\6??0?
-6??+3m 4220reg p OK vi.h:460:a62sc %? %@2152sc!1q0?
+6??+3m 4220reg p OK vi.h:461:a62sc %? %@2152sc!1q0?
 grp 1%f+ #define xb_path ex_buf->path.*?
 #define xb_ft ex_buf->ft.*?
 #define xb ex_buf->lb.*?
 (#define exbuf_load\(buf\) \\)7??0?
-grp 07??m 4220reg p OK vi.h:460:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.h:461:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\).*(	buf->off = xoff; \\)
 	buf->top = xtop; \\
 	buf->td = xtd; \\8??0?
-grp 08??-8m 4220reg p OK vi.h:460:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 4220reg p OK vi.h:461:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xdefreg;
 extern struct buf \*bufs;
 extern struct buf tempbufs\[3];.*(void bufs_switch\(int idx\);)
 void temp_open\(int i, char \*name, char \*ft\);
 void temp_switch\(int i, int swap\);9??0?
-grp 09??-15m 4220reg p OK vi.h:460:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:4602sc %? %@2132sc!0?
+grp 09??-15m 4220reg p OK vi.h:461:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:4612sc %? %@2132sc!0?
 '\''1i void term_killw(int n);
-??!219reg vi.h:325:m12sc %? %@2142sc!0?
+??!219reg vi.h:326:m12sc %? %@2142sc!0?
 '\''2c #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \
 	term_killw(end - beg);)
-??!219reg vi.h:395:m22sc %? %@2142sc!0?
+??!219reg vi.h:396:m22sc %? %@2142sc!0?
 '\''3i 
 /* window management for splits */
 struct win {
@@ -3900,14 +3900,14 @@ void win_save(void);
 void win_switch(struct win *w);
 void win_close(void);
 void *win_split(int axis, char *arg);
-??!219reg vi.h:408:m32sc %? %@2142sc!0?
+??!219reg vi.h:409:m32sc %? %@2142sc!0?
 '\''4,#+4c #define exbuf_load(b) \
 	xrow = b->row; \
 	xoff = b->off; \
 	xtop = b->top; \
 	xtd = b->td; \
 	curwin->buf = b; \
-??!219reg vi.h:460:m42sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF"
+??!219reg vi.h:461:m42sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -4360,7 +4360,7 @@ index 05c58da5..55d5f86d 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..40427baf 100644
+index 81c4fde3..ddcd65ff 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
@@ -4421,7 +4421,7 @@ index 72ecc3d8..40427baf 100644
 +		memset(tmp, ' ', wcols+1);
 +		tmp[wcols+1] = '\n';
 +		tmp[wcols+2] = '\0';
- 		i1 = isupper((unsigned char)*vi_word);
+ 		i1 = uc_isupper(*vi_word);
  		if (*vi_word == 'e' || *vi_word == 'E')
  			vi_drawnum(lbuf_wordend(xb, i1, 2, &nrow, &noff))
 @@ -162,7 +181,7 @@ static void vi_drawrow(int row)
@@ -4848,10 +4848,10 @@ index 72ecc3d8..40427baf 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 6466711d..659a8aad 100644
+index 3fcfbe71..e85da69a 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -323,6 +323,7 @@ void term_suspend(void);
+@@ -324,6 +324,7 @@ void term_suspend(void);
  void term_chr(int ch);
  void term_pos(int r, int c);
  void term_kill(void);
@@ -4859,7 +4859,7 @@ index 6466711d..659a8aad 100644
  void term_room(int n);
  int term_read(int winch);
  void term_commit(void);
-@@ -392,7 +393,8 @@ void led_render(char *s0, int cbeg, int cend);
+@@ -393,7 +394,8 @@ void led_render(char *s0, int cbeg, int cend);
  } \
  
  #define led_prender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end,)
@@ -4869,7 +4869,7 @@ index 6466711d..659a8aad 100644
  char *led_read(int *kmap, int c);
  int led_pos(char *s, int pos);
  void led_done(void);
-@@ -406,6 +408,28 @@ struct buf {
+@@ -407,6 +409,28 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
@@ -4898,7 +4898,7 @@ index 6466711d..659a8aad 100644
  /* ex options */
  extern int xleft;
  extern int xvis;
-@@ -457,11 +481,12 @@ extern struct buf *ex_pbuf;
+@@ -458,11 +482,12 @@ extern struct buf *ex_pbuf;
  #define xb_path ex_buf->path
  #define xb_ft ex_buf->ft
  #define xb ex_buf->lb

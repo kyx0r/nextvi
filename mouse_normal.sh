@@ -639,24 +639,24 @@ void term_push\(char \*s, unsigned int n\);1??0?
 %f> void term_kill\(void\);
 void term_room\(int n\);
 int term_read\(int winch\);4??0?
-4??+2m 1220reg p OK vi.h:327:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:328:a42sc %? %@2152sc!1q0?
 grp 1%f> void term_kill\(void\);.*?
 void term_room\(int n\);.*?
 (int term_read\(int winch\);)7??0?
-grp 07??m 1220reg p OK vi.h:327:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:328:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> #define term_scrh	term_write\("\\033\[\?1049h", 8\)
 void term_chr\(int ch\);
 void term_pos\(int r, int c\);.*(#define term_dec\(\) ibuf_pos--; icmd_pos--;)
 #define term_exec\(s, n, type\) \\
 \{ \\8??0?
-grp 08??-4m 1220reg p OK vi.h:327:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:328:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void term_clean\(void\);
 void term_suspend\(void\);
 #define term_scrl	term_write\("\\033\[\?1049l", 8\).*(	preserve\(int, tn, tn = 0;\) \\)
 	preserve\(int, ibuf_cnt,\) \\
 	preserve\(int, ibuf_pos, ibuf_pos = ibuf_cnt;\) \\9??0?
-grp 09??-7m 1220reg p OK vi.h:327:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:3272sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:328:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:3282sc %? %@2132sc!0?
 ?0?
 %f+ #define led_crender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end, term_kill\(\);\)
 char \*led_read\(int \*kmap, int c\);
@@ -668,24 +668,24 @@ void led_done\(void\);
 %f+ #define led_crender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end, term_kill\(\);\)
 char \*led_read\(int \*kmap, int c\);
 int led_pos\(char \*s, int pos\);4??0?
-4??+2m 2220reg p OK vi.h:397:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.h:398:a42sc %? %@2152sc!1q0?
 grp 1%f+ #define led_crender\(msg, row, col, beg, end\) _led_render\(msg, row, col, beg, end, term_kill\(\);\).*?
 char \*led_read\(int \*kmap, int c\);.*?
 (int led_pos\(char \*s, int pos\);)7??0?
-grp 07??m 2220reg p OK vi.h:397:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.h:398:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(!record\) \\
 		term_commit\(\); \\
 } \\.*(struct buf \{)
 	char \*ft;			/\* file type \*/
 	char \*path;			/\* file path \*/8??0?
-grp 08??-4m 2220reg p OK vi.h:397:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.h:398:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	term_pos\(row, col\); \\
 	kill \\
 	led_render\(msg, beg, end\); \\.*(	struct lbuf \*lb;)
 	int plen, row, off, top;
 	long mtime;			/\* modification time \*/9??0?
-grp 09??-7m 2220reg p OK vi.h:397:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:3972sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.h:398:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:3982sc %? %@2132sc!0?
 ?0?
 %f+ 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
@@ -697,24 +697,24 @@ extern int xvis;1??0?
 %f+ 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
 };4??0?
-4??+2m 3220reg p OK vi.h:408:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.h:409:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	long mtime;			/\* modification time \*/.*?
 	signed char td;			/\* text direction \*/.*?
 (};)7??0?
-grp 07??m 3220reg p OK vi.h:408:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.h:409:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	char \*path;			/\* file path \*/
 	struct lbuf \*lb;
 	int plen, row, off, top;.*(extern int xai;)
 extern int xic;
 extern int xhl;8??0?
-grp 08??-4m 3220reg p OK vi.h:408:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK vi.h:409:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> /\* ex\.c: command mode \*/
 struct buf \{
 	char \*ft;			/\* file type \*/.*(extern int xhll;)
 extern int xhlw;
 extern int xhlp;9??0?
-grp 09??-7m 3220reg p OK vi.h:408:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4082sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK vi.h:409:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4092sc %? %@2132sc!0?
 ?0?
 %f+ extern int xlim;
 extern int xseq;
@@ -726,35 +726,35 @@ extern int xrr;
 %f+ extern int xlim;
 extern int xseq;
 extern int xerr;4??0?
-4??+2m 4220reg p OK vi.h:431:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK vi.h:432:a42sc %? %@2152sc!1q0?
 grp 1%f+ extern int xlim;.*?
 extern int xseq;.*?
 (extern int xerr;)7??0?
-grp 07??m 4220reg p OK vi.h:431:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.h:432:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xpac;
 extern int xmpt;
 extern int xpr;.*(extern int xquit;)
 extern int xrow, xoff, xtop;
 extern int xbufcur;8??0?
-grp 08??-4m 4220reg p OK vi.h:431:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK vi.h:432:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xts;
 extern int xish;
 extern int xgrp;.*(extern int xgrec;)
 extern int xkmap;
 extern int xkmap_alt;9??0?
-grp 09??-7m 4220reg p OK vi.h:431:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4312sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK vi.h:432:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4322sc %? %@2132sc!0?
 '\''1i int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
-??!219reg vi.h:327:m12sc %? %@2142sc!0?
+??!219reg vi.h:328:m12sc %? %@2142sc!0?
 '\''2i int led_col(char *s, int col);
-??!219reg vi.h:397:m22sc %? %@2142sc!0?
+??!219reg vi.h:398:m22sc %? %@2142sc!0?
 '\''3i /* mouse state */
 extern int xmouse_col, xmouse_row;
-??!219reg vi.h:408:m32sc %? %@2142sc!0?
+??!219reg vi.h:409:m32sc %? %@2142sc!0?
 '\''4i extern int xms;
-??!219reg vi.h:431:m42sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.h:432:m42sc %? %@2142sc!' > "$P2VIF".0
 # Compat (post) from linewrap_v2.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 		int r = term_try_mouse\(\);
@@ -1152,7 +1152,7 @@ index 05c58da5..e24ef4b5 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index 72ecc3d8..d0952e89 100644
+index 81c4fde3..de3eccf7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -513,6 +513,9 @@ static void vc_status(int type)
@@ -1198,10 +1198,10 @@ index 72ecc3d8..d0952e89 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 6466711d..d145ab94 100644
+index 3fcfbe71..de67f18f 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -325,6 +325,9 @@ void term_pos(int r, int c);
+@@ -326,6 +326,9 @@ void term_pos(int r, int c);
  void term_kill(void);
  void term_room(int n);
  int term_read(int winch);
@@ -1211,7 +1211,7 @@ index 6466711d..d145ab94 100644
  void term_commit(void);
  char *term_att(int att);
  void term_push(char *s, unsigned int n);
-@@ -395,6 +398,7 @@ void led_render(char *s0, int cbeg, int cend);
+@@ -396,6 +399,7 @@ void led_render(char *s0, int cbeg, int cend);
  #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, term_kill();)
  char *led_read(int *kmap, int c);
  int led_pos(char *s, int pos);
@@ -1219,7 +1219,7 @@ index 6466711d..d145ab94 100644
  void led_done(void);
  
  /* ex.c: command mode */
-@@ -406,6 +410,8 @@ struct buf {
+@@ -407,6 +411,8 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
@@ -1228,7 +1228,7 @@ index 6466711d..d145ab94 100644
  /* ex options */
  extern int xleft;
  extern int xvis;
-@@ -429,6 +435,7 @@ extern int xpr;
+@@ -430,6 +436,7 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;
