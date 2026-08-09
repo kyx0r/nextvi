@@ -1185,8 +1185,46 @@ static void sb_dq_esc_sep(sbuf *out, int n)
 /* triply-escaped separator inside a ?? then-arg nested in a ? cond:
  * <esc><esc><esc><sep> */
 #define EMIT_ESC3SEP(out) emit_esc_sep(out, 3)
-/* the no-op command that lets a long chain break across source lines */
-#define EMIT_LB(out) sb_str(out, "0?\n")
+/* Whether the buffer already ends in a line break ("0?" and its newline)
+ * followed by nothing but separator/escape decoration. Cuts that decoration
+ * back, so the next thing appended supplies its own separator. */
+static int lb_pending(sbuf *out)
+{
+	int esc = dyn_esc ? dyn_esc : '\\';
+	int n = out->s_n;
+	while (n > 0 && (out->s[n - 1] == sep || out->s[n - 1] == esc))
+		n--;
+	if (n < 3 || out->s[n - 1] != '\n' || out->s[n - 2] != '?' ||
+			out->s[n - 3] != '0')
+		return 0;
+	/* a break is always emitted after a separator or at the start of a
+	 * segment, which is what tells it apart from body text ending in "0?" */
+	if (n > 3 && out->s[n - 4] != sep && out->s[n - 4] != esc &&
+			out->s[n - 4] != '\n')
+		return 0;
+	out->s_n = n;
+	return 1;
+}
+
+/* The no-op command that lets a long chain break across source lines.
+ * Callers emit a separator before and after it, and the clause they meant to
+ * put between two breaks is sometimes empty (an error check that reports
+ * nothing, say), which would leave a bare second break behind. */
+static void emit_lb(sbuf *out)
+{
+	if (!lb_pending(out))
+		sb_str(out, "0?\n");
+}
+#define EMIT_LB(out) emit_lb(out)
+
+/* Append a generated (or overridden) group segment. Segments start with their
+ * own line break, redundant when the segment before ended with one. */
+static void sb_seg(sbuf *out, const char *seg)
+{
+	if (!strncmp(seg, "0?\n", 3) && lb_pending(out))
+		seg += 3;
+	sb_str(out, seg);
+}
 
 /*
  * The ex commands emitted here, and what they do to xrow (every one defaults to
@@ -4895,13 +4933,13 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
 		group_t *g = &groups[gi];
 		const char *seg = g->ph1_ovr ? g->ph1_ovr : g->ph1_gen;
 		if (seg)
-			sb_str(out, seg);
+			sb_seg(out, seg);
 	}
 	for (int gi = 0; gi < ngroups; gi++) {
 		group_t *g = &groups[gi];
 		const char *seg = g->ph2_ovr ? g->ph2_ovr : g->ph2_gen;
 		if (seg)
-			sb_str(out, seg);
+			sb_seg(out, seg);
 	}
 	for (int gi = 0; gi < ngroups; gi++)
 		free_group(&groups[gi]);
