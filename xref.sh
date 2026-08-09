@@ -74,10 +74,31 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b21;0fr 0%f> ^extern int lsp_wake;$1057??0?
 b31;0fr 0%f> ^#define LSP_DOCS_MAX	16$1058??0?
 b11;0fr 0%f> ^	int dcol = rstate->cmax - xleft;$1059??0?
-err 1232reg 01040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? 232reg 11040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b210?
-b4%ya 972sc %? %@972sc!b01b11b21fr 232f> 110??10??211reg10??!211reg ? %@2210?
-b5%ya 502sc %1020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? %@502sc!err 0b31b11b21err 1211reg ? %@2210?
-b6%ya 512sc %1040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? %@512sc!vis 2b0wb1wb2w2q' > "$P2VIF".d
+err 1232reg 01040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? 232reg 11040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? 230reg+ 1b11;0fr 0%f> ^		else if \(\*row < xtop \|\| \*row >= xtop \+ curwin->h - 1\)$1060??0?
+b11;0fr 0%f> ^		\*row = MIN\(xtop \+ curwin->h - 1 - cnt \+ 1, lbuf_len\(xb\) - 1\);$1061??0?
+b11;0fr 0%f> ^		\*row = MIN\(xtop \+ curwin->h / 2, lbuf_len\(xb\) - 1\);$1062??0?
+b11;0fr 0%f> ^		if \(cmd < 0 && \(\*row < xtop \|\| \*row >= xtop \+ curwin->h\)\)$1063??0?
+b11;0fr 0%f> ^	term_pos\(r1 < xtop \? curwin->y : curwin->y \+ r1 - xtop, curwin->x\);$1064??0?
+b11;0fr 0%f> ^		if \(xrow - xtop == curwin->h\)$1065??0?
+b11;0fr 0%f> ^	term_pos\(curwin->y \+ row - xtop, curwin->x\);$1066??0?
+b11;0fr 0%f> ^	xrow = MIN\(xrow, xtop \+ curwin->h - 1\);$1067??0?
+b11;0fr 0%f> ^else if \(xrow >= xtop \+ curwin->h\) \\$1068??0?
+b11;0fr 0%f> ^		vi_redraw\(\);$1069??0?
+b11;0fr 0%f> ^			vi_drawrow\(otop \+ curwin->h - 1\);$1070??0?
+b11;0fr 0%f> ^				vi_scrollbackward\(MAX\(1, vi_arg\) \* \(curwin->h - 1\)\);$1071??0?
+b11;0fr 0%f> ^				vi_scrollforward\(MAX\(1, vi_arg\) \* \(curwin->h - 1\)\);$1072??0?
+b11;0fr 0%f> ^				if \(xtop < lbuf_len\(xb\) - curwin->h\)$1073??0?
+b11;0fr 0%f> ^					n = xrows;$1074??0?
+b11;0fr 0%f> ^					win_size\(n, xcols\);$1075??0?
+b11;0fr 0%f> ^				case '\''c'\'':$1076??0?
+b11;0fr 0%f> ^							xrow >= xtop \+ curwin->h - !vi_status\)\)$1077??0?
+b11;0fr 0%f> ^			case TK_CTL\('\''l'\''\): \{$1078??0?
+b11;0fr 0%f> ^				if \(xrows != orows \+ !!vi_status \|\| xcols != ocols\)$1079??0?
+233reg 01060,1061,1062,1063,1064;1065,1066,1067,1068,1069;1070,1071,1072,1073,1074;1075,1076,1077,1078,1079?? 233reg 11060,1061,1062,1063,1064;1065,1066,1067,1068,1069;1070,1071,1072,1073,1074;1075,1076,1077,1078,1079?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b210?
+b4%ya 972sc %? %@972sc!b01b11b21fr 232f> 110??fr 233f> 111??10;11??211reg10;11??!211reg ? %@2210?
+b5%ya 502sc %1020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? %@502sc!err 0b31b11b21err 1fr 233f> 110??10??211reg10??!211reg ? %@2210?
+b6%ya 512sc %1040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? %@512sc!b11211reg ? %@2210?
+b7%ya 522sc %1060,1061,1062,1063,1064;1065,1066,1067,1068,1069;1070,1071,1072,1073,1074;1075,1076,1077,1078,1079?? %@522sc!vis 2b0wb1wb2w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> int xesc = '\''\\\\'\'';		/\* ex command arg escape character \*/
 int xexec_dep;			/\* ex_exec recursion depth \*/
@@ -1460,7 +1481,69 @@ void lsp_definition\(const char \*path, int row, int off\);4??0?
 int lsp_live(const char *ft);
 extern int lsp_quiet;
 ??!219reg vi.h:569:m12sc %? %@2142sc!vis 2b3wvis 3p compat applied: src=lsp.sh' > "$P2VIF".2
-EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
+# Compat (post) from splits.sh
+printf '%s\n' '2sc!fr 98b1%ya 98?0?
+%f> 	return s;
+}
+
+static char rep_cmd\[sizeof\(icmd\)];	/\* the last command \*/
+static int rep_len;
+#define rep_record\(\) memcpy\(rep_cmd, icmd, icmd_pos\); rep_len = icmd_pos;1??0?
+1??+2m 11q0?
+%f> 	return s;
+}
+
+4??0?
+4??+2m 1220reg p OK vi.c:820:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:8202sc %? %@2132sc!0?
+?0?
+%f+ 						vi_drawmsg_mpt\(ln\)
+						break;
+					}
+					temp_switch\(XREF_BUF, 0\);
+					vi_mod \|= 1;
+				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
+					vc_motion\(k\);1??0?
+1??+3m 21q0?
+%f+ 					temp_switch\(XREF_BUF, 0\);
+					vi_mod \|= 1;
+				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
+					vc_motion\(k\);2??0?
+2??m 2220reg p OK vi.c:2029:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^					temp_switch\(XREF_BUF, 0\);$3??0?
+3??m 2220reg p OK vi.c:2029:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 						vi_drawmsg_mpt\(ln\)
+						break;
+					}4??0?
+4??+3m 2220reg p OK vi.c:2029:a42sc %? %@2152sc!1q0?
+%f+ 					vi_mod \|= 1;
+				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
+					vc_motion\(k\);5??0?
+5??-1m 2220reg p OK vi.c:2029:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:20292sc %? %@2132sc!0?
+'\''1i /* the listing stays in the window it is already open in, rewound to its top:
+ * gx never takes over a window, so splits are the user'\''s to lay out */
+static int xref_refresh(void)
+{
+	struct win *w = wins;
+	do {
+		if (w != curwin && w->buf == &tempbufs[XREF_BUF]) {
+			w->row = 0;
+			w->off = 0;
+			w->top = 0;
+			w->left = 0;
+			return 1;
+		}
+		w = w->next;
+	} while (w != wins);
+	return 0;
+}
+
+??!219reg vi.c:820:m12sc %? %@2142sc!0?
+'\''2c 					if (!xref_refresh())
+						temp_switch(XREF_BUF, 0);
+??!219reg vi.c:2029:m22sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".3
+EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
@@ -1872,6 +1955,109 @@ extern int lsp_wake;
  const char *lsp_diag_for_line(const char *path, int line, int *sev);
  void lsp_list(void);
  void lsp_show_msg(char *msg);
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT post src=splits.sh ===
+=== GATE 1 present tag 1060 probe vi.c ===
+		else if (*row < xtop || *row >= xtop + curwin->h - 1)
+=== END ===
+=== GATE 2 present tag 1061 probe vi.c ===
+		*row = MIN(xtop + curwin->h - 1 - cnt + 1, lbuf_len(xb) - 1);
+=== END ===
+=== GATE 3 present tag 1062 probe vi.c ===
+		*row = MIN(xtop + curwin->h / 2, lbuf_len(xb) - 1);
+=== END ===
+=== GATE 4 present tag 1063 probe vi.c ===
+		if (cmd < 0 && (*row < xtop || *row >= xtop + curwin->h))
+=== END ===
+=== GATE 5 present tag 1064 probe vi.c ===
+	term_pos(r1 < xtop ? curwin->y : curwin->y + r1 - xtop, curwin->x);
+=== END ===
+=== GATE 6 present tag 1065 probe vi.c ===
+		if (xrow - xtop == curwin->h)
+=== END ===
+=== GATE 7 present tag 1066 probe vi.c ===
+	term_pos(curwin->y + row - xtop, curwin->x);
+=== END ===
+=== GATE 8 present tag 1067 probe vi.c ===
+	xrow = MIN(xrow, xtop + curwin->h - 1);
+=== END ===
+=== GATE 9 present tag 1068 probe vi.c ===
+else if (xrow >= xtop + curwin->h) \
+=== END ===
+=== GATE 10 present tag 1069 probe vi.c ===
+		vi_redraw();
+=== END ===
+=== GATE 11 present tag 1070 probe vi.c ===
+			vi_drawrow(otop + curwin->h - 1);
+=== END ===
+=== GATE 12 present tag 1071 probe vi.c ===
+				vi_scrollbackward(MAX(1, vi_arg) * (curwin->h - 1));
+=== END ===
+=== GATE 13 present tag 1072 probe vi.c ===
+				vi_scrollforward(MAX(1, vi_arg) * (curwin->h - 1));
+=== END ===
+=== GATE 14 present tag 1073 probe vi.c ===
+				if (xtop < lbuf_len(xb) - curwin->h)
+=== END ===
+=== GATE 15 present tag 1074 probe vi.c ===
+					n = xrows;
+=== END ===
+=== GATE 16 present tag 1075 probe vi.c ===
+					win_size(n, xcols);
+=== END ===
+=== GATE 17 present tag 1076 probe vi.c ===
+				case 'c':
+=== END ===
+=== GATE 18 present tag 1077 probe vi.c ===
+							xrow >= xtop + curwin->h - !vi_status))
+=== END ===
+=== GATE 19 present tag 1078 probe vi.c ===
+			case TK_CTL('l'): {
+=== END ===
+=== GATE 20 present tag 1079 probe vi.c ===
+				if (xrows != orows + !!vi_status || xcols != ocols)
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/vi.c
++++ b/vi.c
+@@ -818,6 +818,24 @@
+ 	return s;
+ }
+ 
++/* the listing stays in the window it is already open in, rewound to its top:
++ * gx never takes over a window, so splits are the user's to lay out */
++static int xref_refresh(void)
++{
++	struct win *w = wins;
++	do {
++		if (w != curwin && w->buf == &tempbufs[XREF_BUF]) {
++			w->row = 0;
++			w->off = 0;
++			w->top = 0;
++			w->left = 0;
++			return 1;
++		}
++		w = w->next;
++	} while (w != wins);
++	return 0;
++}
++
+ static char rep_cmd[sizeof(icmd)];	/* the last command */
+ static int rep_len;
+ #define rep_record() memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos;
+@@ -2026,7 +2044,8 @@
+ 						vi_drawmsg_mpt(ln)
+ 						break;
+ 					}
+-					temp_switch(XREF_BUF, 0);
++					if (!xref_refresh())
++						temp_switch(XREF_BUF, 0);
+ 					vi_mod |= 1;
+ 				} else if (k == '~' || k == 'u' || k == 'U')
+ 					vc_motion(k);
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
