@@ -254,6 +254,7 @@ void dir_init(void);
 #define SYN_SET(flg, a) (a & SYN_##flg)
 extern int ftidx;
 extern int syn_blockhl;
+extern int syn_scdirl;
 char *syn_setft(char *ft);
 void syn_scdir(int scdir);
 void syn_highlight(int *att, char *s, int n);
