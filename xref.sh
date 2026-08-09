@@ -2108,7 +2108,7 @@ index 3d5a1721..487f8df0 100644
  	{"x", ec_write},
  	{"ya!", ec_yank},
 diff --git a/vi.c b/vi.c
-index 80a26cbd..56c0aae4 100644
+index db848fca..c505db84 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -484,6 +484,260 @@ static int fs_searchback(int cnt, int *row, int *off)

@@ -1687,7 +1687,7 @@ index 25b0a4fa..a0666ffe 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index 80a26cbd..9de252f3 100644
+index db848fca..a29f83a1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,24 @@ static void vi_drawrow(int row)

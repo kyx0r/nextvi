@@ -890,7 +890,7 @@ index 25b0a4fa..0928a19a 100644
  		return;
  	for (j = 0; j < n; j++)
 diff --git a/vi.c b/vi.c
-index 80a26cbd..7a09ec7e 100644
+index db848fca..e976063f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,7 @@ for (i = 0, ret = 0;; i++) { \

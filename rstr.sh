@@ -2612,7 +2612,7 @@ index 22319b65..13f60830 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 80a26cbd..e99c8375 100644
+index db848fca..291c4cba 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -325,7 +325,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)

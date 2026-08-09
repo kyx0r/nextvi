@@ -382,7 +382,7 @@ index 3d5a1721..2f23c1a8 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 80a26cbd..5847199d 100644
+index db848fca..18271121 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1852,7 +1852,8 @@ static void setup_signals(void)

@@ -4362,7 +4362,7 @@ index 05c58da5..55d5f86d 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 80a26cbd..9dab20a3 100644
+index db848fca..20b26afe 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
