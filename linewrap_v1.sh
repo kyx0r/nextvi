@@ -1189,24 +1189,24 @@ s......... ..........ha...s........s\)
 %f+ 				}
 				xoff--;
 				rep_record\(\)4??0?
-4??+2m 2220reg p OK vi.c:1548:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.c:1550:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				}.*?
 				xoff--;.*?
 (				rep_record\(\))7??0?
-grp 07??m 2220reg p OK vi.c:1548:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1550:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					c = xoff != lbuf_eol\(xb, xrow, 1\) \? '\''i'\'' : '\''a'\'';
 					xb->useq \+= xseq;
 					goto insert;.*(				vc_join\(1, vi_arg <= 1 \? 2 : vi_arg\);)
 				rep_record\(\)
 				vi_mod \|= 1;8??0?
-grp 08??-4m 2220reg p OK vi.c:1548:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1550:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 						} else
 							vi_delete\(xrow, xoff - 1, xrow, xoff, 0\);
 					}.*(			case '\''K'\'': \{)
 				preserve\(int, xvis, xvis = 1;\)
 				do \{9??0?
-grp 09??-8m 2220reg p OK vi.c:1548:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15482sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK vi.c:1550:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15502sc %? %@2132sc!0?
 '\''1i 	if (xhllw && s) {
 		led_att la;
 		int lw = lbuf_s(s)->lwrap;
@@ -1228,7 +1228,7 @@ s......... ..........ha...s........s\)
 ??!219reg vi.c:172:m12sc %? %@2142sc!0?
 '\''2i 				vi_mod |= lbuf_lwmod;
 				lbuf_lwmod = 0;
-??!219reg vi.c:1548:m22sc %? %@2142sc!b5%ya 98?0?
+??!219reg vi.c:1550:m22sc %? %@2142sc!b5%ya 98?0?
 %f> 	int n_ins, n_del;	/\* modification range \*/
 	int seq;		/\* operation number \*/
 	int ref;		/\* ins/del ref exists on lbuf \*/
@@ -1355,24 +1355,24 @@ extern int xrr;
 %f+ extern int xlim;
 extern int xseq;
 extern int xerr;4??0?
-4??+2m 5220reg p OK vi.h:432:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK vi.h:433:a42sc %? %@2152sc!1q0?
 grp 1%f+ extern int xlim;.*?
 extern int xseq;.*?
 (extern int xerr;)7??0?
-grp 07??m 5220reg p OK vi.h:432:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.h:433:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xpac;
 extern int xmpt;
 extern int xpr;.*(extern int xquit;)
 extern int xrow, xoff, xtop;
 extern int xbufcur;8??0?
-grp 08??-4m 5220reg p OK vi.h:432:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK vi.h:433:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xts;
 extern int xish;
 extern int xgrp;.*(extern int xgrec;)
 extern int xkmap;
 extern int xkmap_alt;9??0?
-grp 09??-7m 5220reg p OK vi.h:432:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4322sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK vi.h:433:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4332sc %? %@2132sc!0?
 '\''1i 	int lwrap;		/* pos-1 lwrap bit was cleared */
 ??!219reg vi.h:131:m12sc %? %@2142sc!0?
 '\''2i 	int lwrap;		/* soft linewrap: joined with the next line */
@@ -1385,7 +1385,7 @@ extern int lbuf_lwmod;
 ??!219reg vi.h:213:m42sc %? %@2142sc!0?
 '\''5i extern int xlw;
 extern int xhllw;
-??!219reg vi.h:432:m52sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF"
+??!219reg vi.h:433:m52sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -1674,7 +1674,7 @@ index 18170218..e6053a53 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/ren.c b/ren.c
-index 4fd79fba..56c26d35 100644
+index 25b0a4fa..a0666ffe 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -72,7 +72,7 @@ void dir_init(void)
@@ -1687,7 +1687,7 @@ index 4fd79fba..56c26d35 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index 81c4fde3..842cef3b 100644
+index 80a26cbd..9de252f3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,24 @@ static void vi_drawrow(int row)
@@ -1715,7 +1715,7 @@ index 81c4fde3..842cef3b 100644
  	skip:
  	rstate += row != xrow;
  	if (!s)
-@@ -1546,6 +1564,8 @@ void vi(int init)
+@@ -1548,6 +1566,8 @@ void vi(int init)
  				}
  				xoff--;
  				rep_record()
@@ -1725,7 +1725,7 @@ index 81c4fde3..842cef3b 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 3fcfbe71..260c3913 100644
+index 5a7e773a..d34014c3 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -129,10 +129,12 @@ struct lopt {
@@ -1759,7 +1759,7 @@ index 3fcfbe71..260c3913 100644
  int ren_next(char *s, int p, int dir);
  int ren_eol(char *s, int dir);
  int ren_pos(char *s, int off);
-@@ -430,6 +436,8 @@ extern int xpr;
+@@ -431,6 +437,8 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;

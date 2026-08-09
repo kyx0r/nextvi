@@ -313,7 +313,7 @@ index 9eb8e85b..e01d5293 100644
  
  static int search(const char *pattern, int l)
 diff --git a/ren.c b/ren.c
-index 4fd79fba..54f9f22f 100644
+index 25b0a4fa..253d96bb 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -108,9 +108,42 @@ ren_state *ren_position(char *s)
@@ -401,7 +401,7 @@ index b1002c4e..e1637ca5 100644
  		s += l;
  	return n;
 diff --git a/vi.c b/vi.c
-index 81c4fde3..3532c389 100644
+index 80a26cbd..1f1e230a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,3 +1,7 @@

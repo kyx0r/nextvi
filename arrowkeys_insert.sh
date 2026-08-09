@@ -683,24 +683,24 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 %f+ 				insert:
 				k = vc_insert\(c\);
 				insert_done:4??0?
-4??+2m 5220reg p OK vi.c:1528:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK vi.c:1530:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				insert:.*?
 				k = vc_insert\(c\);.*?
 (				insert_done:)7??0?
-grp 07??m 5220reg p OK vi.c:1528:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.c:1530:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			case '\''A'\'':
 			case '\''o'\'':
 			case '\''O'\'':.*(						topfix\(\))
 						vc_join\(0, 2\);
 						vi_drawagain\(xtop\);8??0?
-grp 08??-4m 5220reg p OK vi.c:1528:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK vi.c:1530:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			case '\''I'\'':
 			case '\''i'\'':
 			case '\''a'\'':.*(					} else if \(xoff\) \{)
 						if \(k == TK_CTL\('\''w'\''\)\) \{
 							noff = xoff;9??0?
-grp 09??-7m 5220reg p OK vi.c:1528:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15282sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK vi.c:1530:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15302sc %? %@2132sc!0?
 ?0?
 %f+ 				rep_record\(\)
 				vi_mod \|= !xpac && xrow == orow \? 8 : 1;
@@ -712,24 +712,24 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 %f+ 				rep_record\(\)
 				vi_mod \|= !xpac && xrow == orow \? 8 : 1;
 				break;4??0?
-4??+2m 6220reg p OK vi.c:1550:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK vi.c:1552:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				rep_record\(\).*?
 				vi_mod \|= !xpac && xrow == orow \? 8 : 1;.*?
 (				break;)7??0?
-grp 07??m 6220reg p OK vi.c:1550:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK vi.c:1552:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					goto insert;
 				}
 				xoff--;.*(			case '\''K'\'': \{)
 				preserve\(int, xvis, xvis = 1;\)
 				do \{8??0?
-grp 08??-6m 6220reg p OK vi.c:1550:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 6220reg p OK vi.c:1552:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					}
 					c = xoff != lbuf_eol\(xb, xrow, 1\) \? '\''i'\'' : '\''a'\'';
 					xb->useq \+= xseq;.*(					ex_exec\(";\+1c\\n:-1"\);)
 				} while \(vi_arg--\);
 				restore\(xvis\)9??0?
-grp 09??-9m 6220reg p OK vi.c:1550:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15502sc %? %@2132sc!0?
+grp 09??-9m 6220reg p OK vi.c:1552:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15522sc %? %@2132sc!0?
 '\''1i static int lmodified;
 
 ??!219reg vi.c:837:m12sc %? %@2142sc!0?
@@ -771,11 +771,11 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 						vi_col = vi_off2col(xb, xrow, xoff);
 					goto _break;
 				}
-??!219reg vi.c:1528:m52sc %? %@2142sc!0?
+??!219reg vi.c:1530:m52sc %? %@2142sc!0?
 '\''6i 				_break:
 				vi_mod = 0;
 				break;
-??!219reg vi.c:1550:m62sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
+??!219reg vi.c:1552:m62sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' 'vi.c' "$P2VIF"
 
 exit 0
@@ -942,7 +942,7 @@ index 9eb8e85b..3b3964f3 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 81c4fde3..0aea3083 100644
+index 80a26cbd..0cdf4d28 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -835,6 +835,8 @@ static int vi_indents(char *ln)
@@ -975,7 +975,7 @@ index 81c4fde3..0aea3083 100644
  	free(sb->s);
  	return key;
  }
-@@ -1526,6 +1532,37 @@ void vi(int init)
+@@ -1528,6 +1534,37 @@ void vi(int init)
  				insert:
  				k = vc_insert(c);
  				insert_done:
@@ -1013,7 +1013,7 @@ index 81c4fde3..0aea3083 100644
  				if (k == 127 || k == TK_CTL('w')) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1548,6 +1585,9 @@ void vi(int init)
+@@ -1550,6 +1587,9 @@ void vi(int init)
  				rep_record()
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;

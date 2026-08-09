@@ -255,29 +255,29 @@ _default:
 %f+ 				}
 				xoff--;
 				rep_record\(\)4??0?
-4??+2m 2220reg p OK vi.c:1548:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.c:1550:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				}.*?
 				xoff--;.*?
 (				rep_record\(\))7??0?
-grp 07??m 2220reg p OK vi.c:1548:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1550:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					c = xoff != lbuf_eol\(xb, xrow, 1\) \? '\''i'\'' : '\''a'\'';
 					xb->useq \+= xseq;
 					goto insert;.*(				vc_join\(1, vi_arg <= 1 \? 2 : vi_arg\);)
 				rep_record\(\)
 				vi_mod \|= 1;8??0?
-grp 08??-4m 2220reg p OK vi.c:1548:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1550:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 						} else
 							vi_delete\(xrow, xoff - 1, xrow, xoff, 0\);
 					}.*(			case '\''K'\'': \{)
 				preserve\(int, xvis, xvis = 1;\)
 				do \{9??0?
-grp 09??-8m 2220reg p OK vi.c:1548:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15482sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK vi.c:1550:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15502sc %? %@2132sc!0?
 '\''1i #include <time.h>
 ??!219reg vi.c:9:m12sc %? %@2142sc!0?
 '\''2i 				if (xqe)
 					vi_mod |= 2;
-??!219reg vi.c:1548:m22sc %? %@2142sc!b4%ya 98?0?
+??!219reg vi.c:1550:m22sc %? %@2142sc!b4%ya 98?0?
 %f> 	int p_reg;
 	int lsug;
 	int sug_pt;
@@ -288,24 +288,24 @@ _default:
 %f> 	int p_reg;
 	int lsug;
 	int sug_pt;4??0?
-4??+2m 1220reg p OK vi.h:369:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:370:a42sc %? %@2152sc!1q0?
 grp 1%f> 	int p_reg;.*?
 	int lsug;.*?
 (	int sug_pt;)7??0?
-grp 07??m 1220reg p OK vi.h:369:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:370:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> void led_modeswap\(void\);
 typedef struct \{
 	int t_row;.*(#define ins_init\(is\) \\)
 is\.t_row = -2; \\
 is\.p_reg = xdefreg; \\8??0?
-grp 08??-4m 1220reg p OK vi.h:369:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:370:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int att;
 } led_att;
 extern sbuf \*led_attsb;.*(is\.lsug = 0; \\)
 is\.sug_pt = -1; \\
 is\.sug = NULL; \\9??0?
-grp 09??-7m 1220reg p OK vi.h:369:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:3692sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:370:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:3702sc %? %@2132sc!0?
 ?0?
 %f+ is\.p_reg = xdefreg; \\
 is\.lsug = 0; \\
@@ -318,24 +318,24 @@ is\._sug = NULL; \\
 %f+ is\.p_reg = xdefreg; \\
 is\.lsug = 0; \\
 is\.sug_pt = -1; \\4??0?
-4??+2m 2220reg p OK vi.h:377:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.h:378:a42sc %? %@2152sc!1q0?
 grp 1%f+ is\.p_reg = xdefreg; \\.*?
 is\.lsug = 0; \\.*?
 (is\.sug_pt = -1; \\)7??0?
-grp 07??m 2220reg p OK vi.h:377:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.h:378:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> } ins_state;
 #define ins_init\(is\) \\
 is\.t_row = -2; \\.*(int led_prompt\(sbuf \*sb, char \*insert, int \*kmap, ins_state \*is, int ps, int flg\);)
 int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\);
 void led_render\(char \*s0, int cbeg, int cend\);8??0?
-grp 08??-4m 2220reg p OK vi.h:377:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.h:378:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int sug_pt;
 	char \*sug;
 	char \*_sug;.*(#define _led_render\(msg, row, col, beg, end, kill\) \\)
 \{ \\
 	int record = term_record; \\9??0?
-grp 09??-7m 2220reg p OK vi.h:377:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:3772sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.h:378:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:3782sc %? %@2132sc!0?
 ?0?
 %f+ extern int xshape;
 extern int xorder;
@@ -347,30 +347,30 @@ extern int xpac;1??0?
 %f+ extern int xshape;
 extern int xorder;
 extern int xts;4??0?
-4??+2m 3220reg p OK vi.h:424:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.h:425:a42sc %? %@2152sc!1q0?
 grp 1%f+ extern int xshape;.*?
 extern int xorder;.*?
 (extern int xts;)7??0?
-grp 07??m 3220reg p OK vi.h:424:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.h:425:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xhlr;
 extern int xled;
 extern int xtd;.*(extern int xmpt;)
 extern int xpr;
 extern int xlim;8??0?
-grp 08??-4m 3220reg p OK vi.h:424:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK vi.h:425:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xhll;
 extern int xhlw;
 extern int xhlp;.*(extern int xseq;)
 extern int xerr;
 extern int xfr;9??0?
-grp 09??-7m 3220reg p OK vi.h:424:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4242sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK vi.h:425:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4252sc %? %@2132sc!0?
 '\''1i 	int quickexit;
-??!219reg vi.h:369:m12sc %? %@2142sc!0?
+??!219reg vi.h:370:m12sc %? %@2142sc!0?
 '\''2i is.quickexit = 0; \
-??!219reg vi.h:377:m22sc %? %@2142sc!0?
+??!219reg vi.h:378:m22sc %? %@2142sc!0?
 '\''3i extern int xqe;
-??!219reg vi.h:424:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+??!219reg vi.h:425:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF"
 
 exit 0
@@ -450,7 +450,7 @@ index 9eb8e85b..7152a2c9 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index 81c4fde3..796eec01 100644
+index 80a26cbd..9fec75cf 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -461,7 +461,7 @@ index 81c4fde3..796eec01 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1546,6 +1547,8 @@ void vi(int init)
+@@ -1548,6 +1549,8 @@ void vi(int init)
  				}
  				xoff--;
  				rep_record()
@@ -471,10 +471,10 @@ index 81c4fde3..796eec01 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 3fcfbe71..97911b6d 100644
+index 5a7e773a..b087b37a 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -367,6 +367,7 @@ typedef struct {
+@@ -368,6 +368,7 @@ typedef struct {
  	int p_reg;
  	int lsug;
  	int sug_pt;
@@ -482,7 +482,7 @@ index 3fcfbe71..97911b6d 100644
  	char *sug;
  	char *_sug;
  } ins_state;
-@@ -375,6 +376,7 @@ is.t_row = -2; \
+@@ -376,6 +377,7 @@ is.t_row = -2; \
  is.p_reg = xdefreg; \
  is.lsug = 0; \
  is.sug_pt = -1; \
@@ -490,7 +490,7 @@ index 3fcfbe71..97911b6d 100644
  is.sug = NULL; \
  is._sug = NULL; \
  
-@@ -422,6 +424,7 @@ extern int xtd;
+@@ -423,6 +425,7 @@ extern int xtd;
  extern int xshape;
  extern int xorder;
  extern int xts;
