@@ -437,6 +437,7 @@ void win_save(void)
 	curwin->top = xtop;
 	curwin->left = xleft;
 	curwin->buf = ex_buf;
+	ex_buf->td = xtd;	/* win_load() reads td back from the buffer */
 }
 
 static void win_load(void)
@@ -3927,7 +3928,7 @@ index 70157040..8f1686bf 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 3d5a1721..b2ba6d58 100644
+index 3d5a1721..153d917a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -4048,7 +4049,7 @@ index 3d5a1721..b2ba6d58 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
  };
-@@ -1914,10 +1985,162 @@ void ex(void)
+@@ -1914,10 +1985,163 @@ void ex(void)
  	xgrec--;
  }
  
@@ -4082,6 +4083,7 @@ index 3d5a1721..b2ba6d58 100644
 +	curwin->top = xtop;
 +	curwin->left = xleft;
 +	curwin->buf = ex_buf;
++	ex_buf->td = xtd;	/* win_load() reads td back from the buffer */
 +}
 +
 +static void win_load(void)
