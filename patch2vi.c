@@ -5192,14 +5192,26 @@ static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
 static void emit_section_writes(sbuf *out, file_patch_t **files, int nf,
 				file_patch_t **uf, int nuf, const char *own)
 {
-	for (int k = 0; k < nf; k++) {
-		int gi = uf_index(uf, nuf, files[k]);
+	int k, gi, n = 0;
+	for (k = 0; k < nf; k++) {
+		gi = uf_index(uf, nuf, files[k]);
 		if (gi < 0 || !own[gi])
 			continue;
+		/* Leave raw ex mode for the writes, the way the driver's write
+		 * tail does: the '"file" 100L [w]' message is only syntax
+		 * highlighted outside vis 3. Re-entered right after. */
+		if (!n++) {
+			EMIT_SEP(out);
+			sb_str(out, "vis 2");
+		}
 		EMIT_SEP(out);
 		sb_printf(out, "b%d", gi);
 		EMIT_SEP(out);
 		sb_str(out, "w");
+	}
+	if (n) {
+		EMIT_SEP(out);
+		sb_str(out, "vis 3");
 	}
 }
 
