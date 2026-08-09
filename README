@@ -105,9 +105,8 @@ The search pattern is the new option :xd, in which %s stands for the symbol;
 by default it covers C like languages, python, go and shell. A lookup that
 finds nothing leaves the previous results alone.
 With lsp.sh applied a registered language server answers first and the
-pattern is only the fallback. With splits.sh /xref/ opens in a second
-window and the cursor stays in the code. grep.sh is supported as well;
-apply this patch last, after lsp.sh -> splits.sh -> grep.sh.
+pattern is only the fallback. grep.sh is supported as well.
+apply order: lsp.sh -> grep.sh -> xref.sh.
 
 rstr.sh
 --------------

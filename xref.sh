@@ -34,27 +34,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'b11;0fr 0%f> ^		term_pos\(curwin->y \+ xrow - xtop, curwin->x \+ n \+ vi_lncol\);$1000??0?
-b11;0fr 0%f> ^			if \(xrow != orow && orow >= xtop && orow < xtop \+ curwin->h\)$1001??0?
-b11;0fr 0%f> ^		else if \(xtop != otop\)	/\* term_room\(\) would scroll other windows \*/$1002??0?
-b11;0fr 0%f> ^				&& xrow\+1 < xtop \+ curwin->h\)$1003??0?
-b11;0fr 0%f> ^		if \(vi_mod & 1\)$1004??0?
-b11;0fr 0%f> ^		if \(vi_col >= xleft \+ curwin->w \|\| vi_col < xleft\)$1005??0?
-b11;0fr 0%f> ^				term_pos\(curwin->y \+ xrow - xtop, curwin->x\);$1006??0?
-b11;0fr 0%f> ^					xtop = MAX\(0, xrow - curwin->h \+ 1\);$1007??0?
-b11;0fr 0%f> ^				if \(xrows != orows \+ !!vi_status \|\| xcols != ocols\)$1008??0?
-b11;0fr 0%f> ^			case TK_CTL\('\''l'\''\): \{$1009??0?
-b11;0fr 0%f> ^							xrow >= xtop \+ curwin->h - !vi_status\)\)$1010??0?
-b11;0fr 0%f> ^				case '\''c'\'':$1011??0?
-b11;0fr 0%f> ^					win_size\(n, xcols\);$1012??0?
-b11;0fr 0%f> ^					n = xrows;$1013??0?
-b11;0fr 0%f> ^				if \(xtop < lbuf_len\(xb\) - curwin->h\)$1014??0?
-b11;0fr 0%f> ^				vi_scrollforward\(MAX\(1, vi_arg\) \* \(curwin->h - 1\)\);$1015??0?
-b11;0fr 0%f> ^				vi_scrollbackward\(MAX\(1, vi_arg\) \* \(curwin->h - 1\)\);$1016??0?
-b11;0fr 0%f> ^			vi_drawrow\(otop \+ curwin->h - 1\);$1017??0?
-b11;0fr 0%f> ^		vi_redraw\(\);$1018??0?
-b11;0fr 0%f> ^else if \(xrow >= xtop \+ curwin->h\) \\$1019??0?
-230reg 0231reg 01000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 231reg 11000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 230reg+ 1b01;0fr 0%f> ^struct buf tempbufs\[4];		/\* temporary buffers, for internal use \*/$1020??0?
+'b01;0fr 0%f> ^struct buf tempbufs\[4];		/\* temporary buffers, for internal use \*/$1020??0?
 b11;0fr 0%f> ^	case TK_CTL\('\''x'\''\):$1021??0?
 b21;0fr 0%f> ^extern struct buf tempbufs\[4];$1022??0?
 b11;0fr 0%f> ^			fs_search\(0, 1, row, off\);$1023??0?
@@ -74,7 +54,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b11;0fr 0%f> ^			int colpos = 0;$1037??0?
 b11;0fr 0%f> ^			fspos = 0;$1038??0?
 b11;0fr 0%f> ^			while \(fs_search\(2, 1, row, off\)\) \{$1039??0?
-232reg 01020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? 232reg 11020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? 230reg+ 1err 0b31;0fr 0%f> ^/\* lsp\.c - Language Server Protocol client for nextvi \*/$1040??0?
+230reg 0231reg 01020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? 231reg 11020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? 230reg+ 1err 0b31;0fr 0%f> ^/\* lsp\.c - Language Server Protocol client for nextvi \*/$1040??0?
 b11;0fr 0%f> ^void lsp_show_msg\(char \*msg\) \{ vi_drawmsg_mpt\(msg\) }$1041??0?
 b21;0fr 0%f> ^/\* lsp\.c \*/$1042??0?
 b31;0fr 0%f> ^#include "jsmn\.h"$1043??0?
@@ -94,11 +74,10 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b21;0fr 0%f> ^extern int lsp_wake;$1057??0?
 b31;0fr 0%f> ^#define LSP_DOCS_MAX	16$1058??0?
 b11;0fr 0%f> ^	int dcol = rstate->cmax - xleft;$1059??0?
-err 1233reg 01040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? 233reg 11040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b210?
-b4%ya 972sc %? %@972sc!b11fr 232f> 110??fr 233f> 111??10;11??211reg10;11??!211reg ? %@2210?
-b5%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!b01b11b21fr 233f> 110??10??211reg10??!211reg ? %@2210?
-b6%ya 512sc %1020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? %@512sc!err 0b31b11b21err 1211reg ? %@2210?
-b7%ya 522sc %1040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? %@522sc!vis 2b0wb1wb2w2q' > "$P2VIF".d
+err 1232reg 01040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? 232reg 11040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b210?
+b4%ya 972sc %? %@972sc!b01b11b21fr 232f> 110??10??211reg10??!211reg ? %@2210?
+b5%ya 502sc %1020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? %@502sc!err 0b31b11b21err 1211reg ? %@2210?
+b6%ya 512sc %1040,1041,1042,1043,1044;1045,1046,1047,1048,1049;1050,1051,1052,1053,1054;1055,1056,1057,1058,1059?? %@512sc!vis 2b0wb1wb2w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> int xesc = '\''\\\\'\'';		/\* ex command arg escape character \*/
 int xexec_dep;			/\* ex_exec recursion depth \*/
@@ -824,43 +803,6 @@ extern int xkwddir;.*(#define exbuf_load\(buf\) \\)
 '\''2i extern sbuf *xdefreg_pat;
 ??!219reg vi.h:448:m22sc %? %@2142sc!0?
 '\''3s/3/4/??!219reg vi.h:454:m32sc %? %@2142sc!' > "$P2VIF".0
-# Compat (post) from splits.sh
-printf '%s\n' '2sc!fr 98b1%ya 98?0?
-%f> 						vi_drawmsg_mpt\(ln\)
-						break;
-					}
-					temp_switch\(XREF_BUF, 0\);
-					vi_mod \|= 1;
-				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
-					vc_motion\(k\);1??0?
-1??+3m 11q0?
-%f> 					temp_switch\(XREF_BUF, 0\);
-					vi_mod \|= 1;
-				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
-					vc_motion\(k\);2??0?
-2??m 1220reg p OK vi.c:2029:a22sc %? %@2152sc!1q0?
-;0fr.,$f> ^					temp_switch\(XREF_BUF, 0\);$3??0?
-3??m 1220reg p OK vi.c:2029:a32sc %? %@2152sc!fr 981qfr 980?
-%f> 						vi_drawmsg_mpt\(ln\)
-						break;
-					}4??0?
-4??+3m 1220reg p OK vi.c:2029:a42sc %? %@2152sc!1q0?
-%f> 					vi_mod \|= 1;
-				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
-					vc_motion\(k\);5??0?
-5??-1m 1220reg p OK vi.c:2029:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:20292sc %? %@2132sc!0?
-'\''1c 					if (nwins < 2)
-						win_split(0, "");
-					if (nwins > 1) {	/* focus stays in the code */
-						curwin->next->buf = &tempbufs[XREF_BUF];
-						curwin->next->row = 0;
-						curwin->next->off = 0;
-						curwin->next->top = 0;
-						curwin->next->left = 0;
-					} else
-						temp_switch(XREF_BUF, 0);
-??!219reg vi.c:2029:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
 # Compat (post) from grep.sh
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
@@ -1030,7 +972,7 @@ extern struct buf \*ex_pbuf;
 5??-1m 2220reg p OK vi.h:457:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.h:4572sc %? %@2132sc!0?
 '\''1s/3/4/??!219reg vi.h:410:m12sc %? %@2142sc!0?
-'\''2s/4/5/??!219reg vi.h:457:m22sc %? %@2142sc!p compat applied: src=grep.sh' > "$P2VIF".2
+'\''2s/4/5/??!219reg vi.h:457:m22sc %? %@2142sc!p compat applied: src=grep.sh' > "$P2VIF".1
 # Compat (post) from lsp.sh
 printf '%s\n' '2sc!fr 98b3%ya 98?0?
 %f> 		lsp_show_msg\("lsp: empty hover"\);
@@ -1517,97 +1459,11 @@ void lsp_definition\(const char \*path, int row, int off\);4??0?
 		int *outline);
 int lsp_live(const char *ft);
 extern int lsp_quiet;
-??!219reg vi.h:569:m12sc %? %@2142sc!vis 2b3wvis 3p compat applied: src=lsp.sh' > "$P2VIF".3
-EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".d
+??!219reg vi.h:569:m12sc %? %@2142sc!vis 2b3wvis 3p compat applied: src=lsp.sh' > "$P2VIF".2
+EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=splits.sh ===
-=== GATE 1 present tag 1000 probe vi.c ===
-		term_pos(curwin->y + xrow - xtop, curwin->x + n + vi_lncol);
-=== END ===
-=== GATE 2 present tag 1001 probe vi.c ===
-			if (xrow != orow && orow >= xtop && orow < xtop + curwin->h)
-=== END ===
-=== GATE 3 present tag 1002 probe vi.c ===
-		else if (xtop != otop)	/* term_room() would scroll other windows */
-=== END ===
-=== GATE 4 present tag 1003 probe vi.c ===
-				&& xrow+1 < xtop + curwin->h)
-=== END ===
-=== GATE 5 present tag 1004 probe vi.c ===
-		if (vi_mod & 1)
-=== END ===
-=== GATE 6 present tag 1005 probe vi.c ===
-		if (vi_col >= xleft + curwin->w || vi_col < xleft)
-=== END ===
-=== GATE 7 present tag 1006 probe vi.c ===
-				term_pos(curwin->y + xrow - xtop, curwin->x);
-=== END ===
-=== GATE 8 present tag 1007 probe vi.c ===
-					xtop = MAX(0, xrow - curwin->h + 1);
-=== END ===
-=== GATE 9 present tag 1008 probe vi.c ===
-				if (xrows != orows + !!vi_status || xcols != ocols)
-=== END ===
-=== GATE 10 present tag 1009 probe vi.c ===
-			case TK_CTL('l'): {
-=== END ===
-=== GATE 11 present tag 1010 probe vi.c ===
-							xrow >= xtop + curwin->h - !vi_status))
-=== END ===
-=== GATE 12 present tag 1011 probe vi.c ===
-				case 'c':
-=== END ===
-=== GATE 13 present tag 1012 probe vi.c ===
-					win_size(n, xcols);
-=== END ===
-=== GATE 14 present tag 1013 probe vi.c ===
-					n = xrows;
-=== END ===
-=== GATE 15 present tag 1014 probe vi.c ===
-				if (xtop < lbuf_len(xb) - curwin->h)
-=== END ===
-=== GATE 16 present tag 1015 probe vi.c ===
-				vi_scrollforward(MAX(1, vi_arg) * (curwin->h - 1));
-=== END ===
-=== GATE 17 present tag 1016 probe vi.c ===
-				vi_scrollbackward(MAX(1, vi_arg) * (curwin->h - 1));
-=== END ===
-=== GATE 18 present tag 1017 probe vi.c ===
-			vi_drawrow(otop + curwin->h - 1);
-=== END ===
-=== GATE 19 present tag 1018 probe vi.c ===
-		vi_redraw();
-=== END ===
-=== GATE 20 present tag 1019 probe vi.c ===
-else if (xrow >= xtop + curwin->h) \
-=== END ===
-=== COMPAT DELTA ===
-=== END ===
-=== COMPAT PATCH ===
---- a/vi.c
-+++ b/vi.c
-@@ -2026,7 +2026,16 @@
- 						vi_drawmsg_mpt(ln)
- 						break;
- 					}
--					temp_switch(XREF_BUF, 0);
-+					if (nwins < 2)
-+						win_split(0, "");
-+					if (nwins > 1) {	/* focus stays in the code */
-+						curwin->next->buf = &tempbufs[XREF_BUF];
-+						curwin->next->row = 0;
-+						curwin->next->off = 0;
-+						curwin->next->top = 0;
-+						curwin->next->left = 0;
-+					} else
-+						temp_switch(XREF_BUF, 0);
- 					vi_mod |= 1;
- 				} else if (k == '~' || k == 'u' || k == 'U')
- 					vc_motion(k);
-=== END ===
-=== END COMPAT ===
 === PATCH2VI COMPAT post src=grep.sh ===
 === GATE 1 present tag 1020 probe ex.c ===
 struct buf tempbufs[4];		/* temporary buffers, for internal use */
