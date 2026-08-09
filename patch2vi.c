@@ -4981,12 +4981,16 @@ static void emit_reg_switches(sbuf *out)
 }
 
 /* The tail a $VI body ends with: leave raw ex mode, write each of the nbufs
- * real files (b0..bN-1, the order the call opened them in) and quit. */
-static void emit_write_tail(sbuf *out, int nbufs)
+ * real files (b0..bN-1, the order the call opened them in) and quit. skip, when
+ * given, marks buffers a section body writes itself (a compat-only file, which
+ * must not be created when its gate misses) - the tail passes over them. */
+static void emit_write_tail(sbuf *out, int nbufs, const char *skip)
 {
 	sb_str(out, "vis 2");
 	EMIT_SEP(out);
 	for (int i = 0; i < nbufs; i++) {
+		if (skip && skip[i])
+			continue;
 		sb_printf(out, "b%d", i);
 		EMIT_SEP(out);
 		sb_str(out, "w");
@@ -5069,7 +5073,7 @@ static void emit_vi_block(file_patch_t **active, int nactive)
 		cur_file_path = active[k]->path;
 		emit_file_script(osb, active[k]);
 	}
-	emit_write_tail(osb, nactive);
+	emit_write_tail(osb, nactive, NULL);
 	sq_write(osb->s, osb->s_n);
 	fputs("' > \"$P2VIF\"\n" P2VI_VICALL " $VI -e", stdout);
 	for (int k = 0; k < nactive; k++)
@@ -5158,6 +5162,26 @@ static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
 	 * command when %@ runs the body, which ex reports as unknown. */
 	if (out->s_n > 0 && out->s[out->s_n - 1] == sep)
 		out->s_n--;
+}
+
+/* The writes a compat block owns: the files no other section touches, which the
+ * driver's write tail therefore leaves alone. A gated body only runs when its
+ * gate resolved present, so a file the block's origin creates (lsp.c for
+ * lsp.sh) is written when the origin is applied and never conjured - an empty
+ * one - out of a buffer the block did not edit. Emitted inside the body, ahead
+ * of the announce, so reaching the print still means everything landed. */
+static void emit_section_writes(sbuf *out, file_patch_t **files, int nf,
+				file_patch_t **uf, int nuf, const char *own)
+{
+	for (int k = 0; k < nf; k++) {
+		int gi = uf_index(uf, nuf, files[k]);
+		if (gi < 0 || !own[gi])
+			continue;
+		EMIT_SEP(out);
+		sb_printf(out, "b%d", gi);
+		EMIT_SEP(out);
+		sb_str(out, "w");
+	}
 }
 
 /* A compat block announces itself as the LAST command of its own body: the body
@@ -5402,11 +5426,20 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 	section_t *s = &secs[i];
 	/* Rewind every real file this section touches: the sensors and any
 	 * earlier block leave the cursor deep in the buffer, and the body's
-	 * relative searches key off the current line. */
-	for (int k = 0; k < s->nf; k++) {
-		sb_printf(out, "b%d", uf_index(uf, nuf, s->files[k]));
+	 * relative searches key off the current line. Under "err 0": the rewind
+	 * is unconditional, so it also addresses line 1 of a buffer whose file
+	 * the origin has yet to create - empty, hence "invalid range" from a
+	 * block that is about to be skipped anyway. */
+	if (s->nf) {
+		sb_str(out, "err 0");
 		EMIT_SEP(out);
-		sb_str(out, "1");
+		for (int k = 0; k < s->nf; k++) {
+			sb_printf(out, "b%d", uf_index(uf, nuf, s->files[k]));
+			EMIT_SEP(out);
+			sb_str(out, "1");
+			EMIT_SEP(out);
+		}
+		sb_str(out, "err 1");
 		EMIT_SEP(out);
 	}
 	/* Set this block's quit policy before its body runs: assert if it is the
@@ -5444,6 +5477,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	int nprobe = 0, nwrite, ngate = 0;
 	file_patch_t *probes;
 	file_patch_t **uf;
+	char *own;		/* uf slots a compat body writes itself */
 	int nuf = 0;
 	for (int c = 0; c < ncompat; c++)
 		ngate += compat_blocks[c].ngates;
@@ -5501,6 +5535,24 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			uf[nuf++] = &probes[nprobe++];
 		}
 
+	/* Files no host section edits: their only writer is the compat block
+	 * that names them, and it writes them from inside its own gated body -
+	 * so an origin's new file (its whole point is that it does not exist
+	 * yet) is not created empty by a run the origin is missing from. */
+	own = ecalloc(nuf + 1, 1);
+	for (int i = 0; i < nsec; i++)
+		for (int j = 0; j < secs[i].nf; j++) {
+			int gi = uf_index(uf, nuf, secs[i].files[j]);
+			if (gi >= 0 && secs[i].cb)
+				own[gi] = 1;
+		}
+	for (int i = 0; i < nsec; i++)
+		for (int j = 0; j < secs[i].nf; j++) {
+			int gi = uf_index(uf, nuf, secs[i].files[j]);
+			if (gi >= 0 && !secs[i].cb)
+				own[gi] = 0;
+		}
+
 	fputs("# Body too large for EXINIT/argv: stage it in a file\n"
 	      "( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
 	      "trap 'rm -f \"$P2VIF\".*' EXIT\n\n", stdout);
@@ -5514,20 +5566,35 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	sbuf_smake(osb, SB_INIT)
 	emit_body_head(osb, 1);
 	/* All sensors first, so their tags are recorded, then the bodies in
-	 * run order - which is what lets the host body consult the results. */
+	 * run order - which is what lets the host body consult the results.
+	 * The phase runs under "err 0": a probe of a file the origin creates
+	 * addresses an empty buffer, and "invalid range" out of a gate that is
+	 * doing exactly its job (reporting the origin absent) is noise a reader
+	 * has to learn to ignore. A missed search is silent either way, so
+	 * nothing a sensor reports is lost. "err 1" restores the default before
+	 * the bodies, whose errors are the ones worth printing. */
 	int any_sensor = 0, anyinit = 0;
+	sbuf_smake(ssb, SB_INIT)
 	for (int i = 0; i < nsec; i++) {
-		emit_driver_sensors(osb, &secs[i], uf, nuf, &anyinit);
+		emit_driver_sensors(ssb, &secs[i], uf, nuf, &anyinit);
 		if (secs[i].cb && section_has_gate(&secs[i]))
 			any_sensor = 1;
 	}
+	if (ssb->s_n) {
+		sb_str(osb, "err 0");
+		EMIT_SEP(osb);
+		sb_mem(osb, ssb->s, ssb->s_n);
+		sb_str(osb, "err 1");
+		EMIT_SEP(osb);
+	}
+	free(ssb->s);
 	/* after every sensor (they set the flags), before any body; without
 	 * one, 211 keeps its default and plain scripts stay byte-identical */
 	if (any_sensor)
 		emit_host_override(osb);
 	for (int i = 0; i < nsec; i++)
 		emit_driver_call(osb, secs, nsec, i, uf, nuf);
-	emit_write_tail(osb, nwrite);
+	emit_write_tail(osb, nwrite, own);
 	sq_write(osb->s, osb->s_n);
 	printf("' > \"$P2VIF\".d\n");
 	free(osb->s);
@@ -5545,8 +5612,10 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		}
 		sbuf_smake(bsb, SB_INIT)
 		emit_section_body(bsb, s->files, s->nf, uf, nuf);
-		if (s->cb)
+		if (s->cb) {
+			emit_section_writes(bsb, s->files, s->nf, uf, nuf, own);
 			emit_compat_announce(bsb, s->cb->origin);
+		}
 		sbuf_null(bsb)
 		stage_section(bsb, i);
 		free(bsb->s);
@@ -5568,6 +5637,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			free(secs[i].files);
 	free(secs);
 	free(uf);
+	free(own);
 	free(probes);
 }
 

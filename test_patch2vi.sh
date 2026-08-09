@@ -2377,6 +2377,34 @@ else
 	echo "    none=[$t_none] A=[$t_a] B=[$t_b] A+B=[$t_ab]"
 fi
 
+# A file only a compat block touches is written by that block's own body, not
+# by the driver's write tail. The origin CREATES n.c, so a run on a tree the
+# origin is missing from must leave no n.c at all: the gate misses, nothing
+# edits the buffer, and a tail write would still put an empty file into a tree
+# that never had one. With the origin applied the block writes it as usual.
+printf -- '--- /dev/null\n+++ b/n.c\n@@ -0,0 +1,3 @@\n+N1\n+N2\n+N3\n' > "$R/n.diff"
+"$R_P2VI" -r "$R/n.diff" > "$R/n.sh"
+cp "$R/m.orig" "$R/m.c"; rm -f "$R/n.c"	# pre-origin tree: n.c does not exist
+coderive n.sh mx.sh 'b0:%s/^N2$/N2c/:q!'	# b0 is the origin's new file
+cp "$R/new.sh" "$R/nf.sh"
+cp "$R/m.orig" "$R/m.c"; rm -f "$R/n.c"
+( cd "$R" && VI="$VI" sh nf.sh ) > "$R/nfout" 2>&1
+nf_clean=0
+[ ! -e "$R/n.c" ] && [ "$(tr '\n' '|' < "$R/m.c")" = 'L1|L2|L3x|L4|' ] && nf_clean=1
+# the sensors and the rewinds address that empty buffer: silenced by err 0
+nf_noise="$(tr -d '\r' < "$R/nfout" | grep -c 'invalid range' || true)"
+cp "$R/m.orig" "$R/m.c"; rm -f "$R/n.c"
+( cd "$R" && VI="$VI" sh n.sh && VI="$VI" sh nf.sh ) >/dev/null 2>&1
+nf_orig="$(tr '\n' '|' < "$R/n.c" 2>/dev/null)"
+rm -f "$R/n.c"
+if [ "$nf_clean" = 1 ] && [ "$nf_orig" = 'N1|N2c|N3|' ] && [ "$nf_noise" = 0 ]; then
+	ok "compat: an origin's new file is written only when the origin is"
+else
+	fail "compat: an origin's new file is written only when the origin is"
+	echo "    clean=$nf_clean origin=[$nf_orig] noise=$nf_noise"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+fi
+
 # One string does not rule a gate: an origin that lands in several places is
 # probed in several of them, one probe per region, and the sensors AND. A tree
 # carrying only a slice of that origin (here just the first region) is not the
