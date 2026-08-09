@@ -314,8 +314,8 @@ static void hl_scan_until(int target_row)
 	int saved_row = syn_row;
 	int saved_blockhl = syn_blockhl;
 	int saved_blockatt = blockatt;
-	int saved_last_scdir = last_scdir;
-	last_scdir = 0;
+	int saved_last_scdir = syn_scdirl;
+	syn_scdirl = 0;
 	hl_scan_active = 1;
 	for (int r = from; r <= target_row; r++) {
 		char *ln = lbuf_get(syn_lb, r);
@@ -334,14 +334,14 @@ static void hl_scan_until(int target_row)
 	syn_row = saved_row;
 	syn_blockhl = saved_blockhl;
 	blockatt = saved_blockatt;
-	last_scdir = saved_last_scdir;
+	syn_scdirl = saved_last_scdir;
 }
 
 ??!219reg ren.c:251:m12sc %? %@2142sc!0?
 '\''2i int sign_changed;
 
 ??!219reg ren.c:292:m22sc %? %@2142sc!0?
-'\''3i 		sign_changed = (last_scdir > 0) != (scdir > 0);
+'\''3i 		sign_changed = (syn_scdirl > 0) != (scdir > 0);
 		if (sign_changed)
 			hl_cache_gen++;
 ??!219reg ren.c:295:m32sc %? %@2142sc!0?
@@ -705,7 +705,7 @@ index 18170218..b6eef3f0 100644
  		for (; *s; n_ins++) {
  			int l = linelength(s);
 diff --git a/ren.c b/ren.c
-index 25b0a4fa..748a8d13 100644
+index 25b0a4fa..0928a19a 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -249,6 +249,118 @@ int ftidx;
@@ -801,8 +801,8 @@ index 25b0a4fa..748a8d13 100644
 +	int saved_row = syn_row;
 +	int saved_blockhl = syn_blockhl;
 +	int saved_blockatt = blockatt;
-+	int saved_last_scdir = last_scdir;
-+	last_scdir = 0;
++	int saved_last_scdir = syn_scdirl;
++	syn_scdirl = 0;
 +	hl_scan_active = 1;
 +	for (int r = from; r <= target_row; r++) {
 +		char *ln = lbuf_get(syn_lb, r);
@@ -821,7 +821,7 @@ index 25b0a4fa..748a8d13 100644
 +	syn_row = saved_row;
 +	syn_blockhl = saved_blockhl;
 +	blockatt = saved_blockatt;
-+	last_scdir = saved_last_scdir;
++	syn_scdirl = saved_last_scdir;
 +}
 +
  static int syn_initft(int fti, int n, char *name, int flg)
@@ -836,7 +836,7 @@ index 25b0a4fa..748a8d13 100644
  void syn_scdir(int scdir)
  {
  	if (!scdir || abs(scdir) > xrows || (syn_scdirl > 0) != (scdir > 0)) {
-+		sign_changed = (last_scdir > 0) != (scdir > 0);
++		sign_changed = (syn_scdirl > 0) != (scdir > 0);
 +		if (sign_changed)
 +			hl_cache_gen++;
  		syn_scdirl = scdir;
