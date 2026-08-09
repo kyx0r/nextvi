@@ -1707,7 +1707,7 @@ void vi(int init)
 					term_push(rep_cmd, rep_len);
 				break;
 			case 'q':
-				if (xrr) {
+				if (xrr > 0) {
 					sbuf *rsb = ex_regget(xrr);
 					if (rsb && rsb->s_n)
 						sbufn_cut(rsb, rsb->s_n - 1)
