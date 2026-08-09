@@ -294,34 +294,34 @@ static struct excmd \{
 grp 09??-7m 3220reg p OK ex.c:1658:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg ex.c:16582sc %? %@2132sc!0?
 ?0?
-%f+ 	EO\(hlp\),
-	EO\(hlr\),
-	EO\(hl\),
-	EO\(left\),
+%f+ 	EO\(left\),
 	EO\(lim\),
-	EO\(led\),1??0?
+	EO\(led\),
+	EO\(vis\),
+	\{"", ec_print}, /\* do not remove \*/
+	\{"", ec_print}, /\* do not remove \*/1??0?
 1??+2m 41q0?
-%f+ 	EO\(hlp\),
+%f+ 	EO\(left\),
+	EO\(lim\),
+	EO\(led\),4??0?
+4??+2m 4220reg p OK ex.c:1753:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	EO\(left\),.*?
+	EO\(lim\),.*?
+(	EO\(led\),)7??0?
+grp 07??m 4220reg p OK ex.c:1753:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	EO\(hlp\),
 	EO\(hlr\),
-	EO\(hl\),4??0?
-4??+2m 4220reg p OK ex.c:1750:a42sc %? %@2152sc!1q0?
-grp 1%f+ 	EO\(hlp\),.*?
-	EO\(hlr\),.*?
-(	EO\(hl\),)7??0?
-grp 07??m 4220reg p OK ex.c:1750:a72sc %? %@2152sc!1q0?
+	EO\(hl\),.*(/\* parse command argument expanding % and ! \*/)
+static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
+\{8??0?
+grp 08??-6m 4220reg p OK ex.c:1753:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(order\),
 	EO\(hll\),
-	EO\(hlw\),.*(	EO\(vis\),)
-	\{"", ec_print}, /\* do not remove \*/
-	\{"", ec_print}, /\* do not remove \*/8??0?
-grp 08??-4m 4220reg p OK ex.c:1750:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	\{"j", ec_join},
-	EO\(ts\),
-	EO\(td\),.*(/\* parse command argument expanding % and ! \*/)
-static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
-\{9??0?
-grp 09??-9m 4220reg p OK ex.c:1750:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17502sc %? %@2132sc!0?
+	EO\(hlw\),.*(	\*arg = sb->s_n;)
+	while \(\*src && \*src != xsep\) \{
+		if \(\*src == xexp\) \{9??0?
+grp 09??-9m 4220reg p OK ex.c:1753:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17532sc %? %@2132sc!0?
 '\''1i 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
 ??!219reg ex.c:433:m12sc %? %@2142sc!0?
@@ -358,7 +358,7 @@ static void *ec_lsp(char *loc, char *cmd, char *arg)
 
 ??!219reg ex.c:1658:m32sc %? %@2142sc!0?
 '\''4i 	{"lsp", ec_lsp},
-??!219reg ex.c:1750:m42sc %? %@2142sc!b20?
+??!219reg ex.c:1753:m42sc %? %@2142sc!b20?
 i /*
  * MIT License
  *
@@ -2871,7 +2871,7 @@ index 70157040..2164933c 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index 3d5a1721..6c77947d 100644
+index 3d5a1721..8205d4eb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -431,6 +431,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -2927,14 +2927,14 @@ index 3d5a1721..6c77947d 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1748,6 +1780,7 @@ static struct excmd {
- 	EO(hlp),
- 	EO(hlr),
- 	EO(hl),
-+	{"lsp", ec_lsp},
+@@ -1751,6 +1783,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
++	{"lsp", ec_lsp},
+ 	EO(vis),
+ 	{"", ec_print}, /* do not remove */
+ 	{"", ec_print}, /* do not remove */
 diff --git a/jsmn.h b/jsmn.h
 new file mode 100644
 index 00000000..8ac14c1b
