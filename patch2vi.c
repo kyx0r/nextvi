@@ -5378,19 +5378,35 @@ static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
  * under its own tag (the host has none). Every sensor runs before any body, and
  * the whole driver is one top-level ex_exec, so the tags persist in xanchor and
  * are still readable when the matching call runs after the host body. */
-static void emit_driver_sensors(sbuf *out, section_t *s,
-				file_patch_t **uf, int nuf, int *anyinit)
+static void emit_driver_sensors(sbuf *out, section_t *s, file_patch_t **uf,
+				int nuf, const char *own, int *anyinit)
 {
-	int real = 0;
+	int real = 0, risky = 0;
 	for (int j = 0; j < s->ngates; j++) {
 		gate_t *g = &s->gates[j];
+		int gb;
 		if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
 			continue;
 		/* a cross-file probe names its own file; otherwise the block's */
-		emit_gate_record(out, g, g->path
-				 ? uf_index_path(uf, nuf, g->path)
-				 : uf_index(uf, nuf, s->files[0]));
+		gb = g->path ? uf_index_path(uf, nuf, g->path)
+			     : uf_index(uf, nuf, s->files[0]);
+		/* A probe over a file no host section touches may address an
+		 * empty buffer: the origin is what creates that file, and the
+		 * tree without it is exactly the tree the gate is there to
+		 * report. "invalid range" on the way to the answer is noise, so
+		 * those probes run under "err 0" - and only those, since a file
+		 * the host patches is present and a missed search is silent. */
+		if (!risky && gb >= 0 && own[gb]) {
+			risky = 1;
+			sb_str(out, "err 0");
+			EMIT_SEP(out);
+		}
+		emit_gate_record(out, g, gb);
 		real++;
+	}
+	if (risky) {
+		sb_str(out, "err 1");
+		EMIT_SEP(out);
 	}
 	if (!real)
 		return;
@@ -5421,24 +5437,32 @@ static void emit_driver_sensors(sbuf *out, section_t *s,
  * Bracketed with the "2sc %" / "2sc!" expansion window, since the driver
  * prologue's |sc! leaves xexp inert. */
 static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
-			     file_patch_t **uf, int nuf)
+			     file_patch_t **uf, int nuf, const char *own)
 {
 	section_t *s = &secs[i];
 	/* Rewind every real file this section touches: the sensors and any
 	 * earlier block leave the cursor deep in the buffer, and the body's
-	 * relative searches key off the current line. Under "err 0": the rewind
-	 * is unconditional, so it also addresses line 1 of a buffer whose file
-	 * the origin has yet to create - empty, hence "invalid range" from a
-	 * block that is about to be skipped anyway. */
-	if (s->nf) {
+	 * relative searches key off the current line. The rewind is
+	 * unconditional, so a block whose origin is absent still rewinds the
+	 * buffer of the file that origin creates - empty, so line 1 of it is
+	 * "invalid range". Only a section holding such a file pays for
+	 * "err 0": a rewind over a file the host patches cannot fail. */
+	int risky = 0;
+	for (int k = 0; k < s->nf; k++) {
+		int gi = uf_index(uf, nuf, s->files[k]);
+		risky |= gi >= 0 && own[gi];
+	}
+	if (risky) {
 		sb_str(out, "err 0");
 		EMIT_SEP(out);
-		for (int k = 0; k < s->nf; k++) {
-			sb_printf(out, "b%d", uf_index(uf, nuf, s->files[k]));
-			EMIT_SEP(out);
-			sb_str(out, "1");
-			EMIT_SEP(out);
-		}
+	}
+	for (int k = 0; k < s->nf; k++) {
+		sb_printf(out, "b%d", uf_index(uf, nuf, s->files[k]));
+		EMIT_SEP(out);
+		sb_str(out, "1");
+		EMIT_SEP(out);
+	}
+	if (risky) {
 		sb_str(out, "err 1");
 		EMIT_SEP(out);
 	}
@@ -5566,34 +5590,19 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	sbuf_smake(osb, SB_INIT)
 	emit_body_head(osb, 1);
 	/* All sensors first, so their tags are recorded, then the bodies in
-	 * run order - which is what lets the host body consult the results.
-	 * The phase runs under "err 0": a probe of a file the origin creates
-	 * addresses an empty buffer, and "invalid range" out of a gate that is
-	 * doing exactly its job (reporting the origin absent) is noise a reader
-	 * has to learn to ignore. A missed search is silent either way, so
-	 * nothing a sensor reports is lost. "err 1" restores the default before
-	 * the bodies, whose errors are the ones worth printing. */
+	 * run order - which is what lets the host body consult the results. */
 	int any_sensor = 0, anyinit = 0;
-	sbuf_smake(ssb, SB_INIT)
 	for (int i = 0; i < nsec; i++) {
-		emit_driver_sensors(ssb, &secs[i], uf, nuf, &anyinit);
+		emit_driver_sensors(osb, &secs[i], uf, nuf, own, &anyinit);
 		if (secs[i].cb && section_has_gate(&secs[i]))
 			any_sensor = 1;
 	}
-	if (ssb->s_n) {
-		sb_str(osb, "err 0");
-		EMIT_SEP(osb);
-		sb_mem(osb, ssb->s, ssb->s_n);
-		sb_str(osb, "err 1");
-		EMIT_SEP(osb);
-	}
-	free(ssb->s);
 	/* after every sensor (they set the flags), before any body; without
 	 * one, 211 keeps its default and plain scripts stay byte-identical */
 	if (any_sensor)
 		emit_host_override(osb);
 	for (int i = 0; i < nsec; i++)
-		emit_driver_call(osb, secs, nsec, i, uf, nuf);
+		emit_driver_call(osb, secs, nsec, i, uf, nuf, own);
 	emit_write_tail(osb, nwrite, own);
 	sq_write(osb->s, osb->s_n);
 	printf("' > \"$P2VIF\".d\n");

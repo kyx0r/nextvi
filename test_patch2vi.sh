@@ -2391,17 +2391,20 @@ cp "$R/m.orig" "$R/m.c"; rm -f "$R/n.c"
 ( cd "$R" && VI="$VI" sh nf.sh ) > "$R/nfout" 2>&1
 nf_clean=0
 [ ! -e "$R/n.c" ] && [ "$(tr '\n' '|' < "$R/m.c")" = 'L1|L2|L3x|L4|' ] && nf_clean=1
-# the sensors and the rewinds address that empty buffer: silenced by err 0
+# the sensors and the rewind address that empty buffer: silenced by err 0,
+# and by nothing else - the host's own rewind is over a file that exists
 nf_noise="$(tr -d '\r' < "$R/nfout" | grep -c 'invalid range' || true)"
+nf_wrap="$(grep -o 'err 0' "$R/nf.sh" | wc -l | tr -d ' ')"
 cp "$R/m.orig" "$R/m.c"; rm -f "$R/n.c"
 ( cd "$R" && VI="$VI" sh n.sh && VI="$VI" sh nf.sh ) >/dev/null 2>&1
 nf_orig="$(tr '\n' '|' < "$R/n.c" 2>/dev/null)"
 rm -f "$R/n.c"
-if [ "$nf_clean" = 1 ] && [ "$nf_orig" = 'N1|N2c|N3|' ] && [ "$nf_noise" = 0 ]; then
+if [ "$nf_clean" = 1 ] && [ "$nf_orig" = 'N1|N2c|N3|' ] && [ "$nf_noise" = 0 ] &&
+   [ "$nf_wrap" = 2 ]; then
 	ok "compat: an origin's new file is written only when the origin is"
 else
 	fail "compat: an origin's new file is written only when the origin is"
-	echo "    clean=$nf_clean origin=[$nf_orig] noise=$nf_noise"
+	echo "    clean=$nf_clean origin=[$nf_orig] noise=$nf_noise wrap=$nf_wrap"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
 
