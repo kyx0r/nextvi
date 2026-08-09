@@ -130,8 +130,10 @@ static void vi_drawrow(int row)
 	int l1, i, i1, lnnum = vi_lnnum;
 	char *c, *s;
 	static char ch[5] = "~";
-	if (xmpt == 1 && !vi_status && row == xtop + xrows - 1)
+	if (xmpt == 1 && !vi_status && row == xtop + xrows - 1) {
+		syn_blockhl = -1;
 		return;
+	}
 	if (*vi_word && xled) {
 		int noff, nrow, ret;
 		c = lbuf_get(xb, xrow);
