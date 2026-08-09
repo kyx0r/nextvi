@@ -144,7 +144,7 @@ static void vi_drawrow(int row)
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
 		tmp[xcols+2] = '\0';
-		i1 = isupper((unsigned char)*vi_word);
+		i1 = uc_isupper(*vi_word);
 		if (*vi_word == 'e' || *vi_word == 'E')
 			vi_drawnum(lbuf_wordend(xb, i1, 2, &nrow, &noff))
 		else if (*vi_word == 'w' || *vi_word == 'W')
@@ -378,7 +378,7 @@ static void vi_regput(int c, const char *s, int lnmode)
 		ex_regput('1', s, 0);
 	} else if ((i_s = ex_regget(c)))
 		ex_regput('0', i_s->s, 0);
-	ex_regput(tolower(c), s, isupper(c));
+	ex_regput(tolower(c), s, uc_isupper(c));
 }
 
 rset *fsincl;
@@ -1596,7 +1596,7 @@ void vi(int init)
 				case 'r':
 				case 'L':
 				case 'R':
-					xtd = isupper(k)+1;
+					xtd = uc_isupper(k)+1;
 					xtd = tolower(k) == 'r' ? -xtd : xtd;
 					rstates[0].s = NULL;
 					rstates[1].s = NULL;
