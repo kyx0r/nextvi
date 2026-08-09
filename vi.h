@@ -253,6 +253,7 @@ void dir_init(void);
 #define SYN_BN		0x80		/* grp block highlight nests into itself */
 #define SYN_SET(flg, a) (a & SYN_##flg)
 extern int ftidx;
+extern int syn_scdirl;
 extern int syn_blockhl;
 char *syn_setft(char *ft);
 void syn_scdir(int scdir);
