@@ -1194,6 +1194,8 @@ void vi(int init)
 		}
 		if (xmpt == 1) {
 			xmpt = 0;
+			if (syn_scdirl > 0)
+				syn_scdir(0);
 			vi_drawrow(otop + xrows - 1);
 		}
 		if (led_attsb)
