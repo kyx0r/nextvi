@@ -1,20 +1,32 @@
-# nextvi patch2vi utility functions
-#
-# Source on demand:   . ./patch2vi.sh
-# Then call:          patch2vi_wrapper -d input.patch [output.sh]
-#                     gitdiff2vi [flags] [output.sh]
-#                     edelta file [inplace]
-#                     redelta input.sh
-#                     extract_patches [file.sh]
-#                     extract_compats [file.sh]
-#                     recompat target.sh [origin.sh]
-#                     reindex [file.sh | 1]
-#                     discard_deltas [file.sh]
-#                     discard_compats [file.sh]
-#                     run_patches [1]
-#                     conv [1]
-#
-# Requires the ./patch2vi binary in the current directory.
+#!/bin/sh
+
+p2v_usage() {
+	cat <<'EOF'
+Nextvi patch2vi utility functions
+
+Source on demand:   . ./patch2vi.sh
+Then call:          patch2vi_wrapper -d input.patch [output.sh]
+                    gitdiff2vi [flags] [output.sh]
+                    edelta file [inplace]
+                    redelta input.sh
+                    extract_patches [file.sh]
+                    extract_compats [file.sh]
+                    view_patch file.sh
+                    recompat target.sh [origin.sh]
+                    reindex [file.sh | 1]
+                    discard_deltas [file.sh]
+                    discard_compats [file.sh]
+                    run_patches [1]
+                    conv [1]
+
+Requires the ./patch2vi binary in the current directory.
+EOF
+}
+
+# $0 is the script's own path only when it was run, never when it was sourced.
+case "$0" in
+*patch2vi.sh)	p2v_usage >&2; exit 1 ;;
+esac
 
 P2VI=./patch2vi
 P2VITMP=/tmp/p2vi.tmp.$$
@@ -287,6 +299,60 @@ extract_compats() (
 			printf "%s\n" "GENERATED: ${p%.patch}.sh"
 		done
 	done
+)
+
+# Read-only companion to extract_patches/extract_compats: everything a single
+# generated script carries - its embedded patch first, then every compat block's
+# diff, in storage order - concatenated into one .patch and opened in an editor.
+# Nothing in the tree is touched and no runnable script is produced, so this
+# works on a dirty tree and on scripts that no longer apply.
+#
+# The file lands in /tmp, or in the current directory when /tmp is not writable.
+# Sections are separated by a comment banner, which diff readers and syntax
+# highlighters skip over, so the result still reads as a patch.
+# Usage: view_patch file.sh
+view_patch() (
+	set -e
+	if [ -z "$1" ]; then
+		echo "Usage: view_patch file.sh" >&2
+		return 1
+	fi
+	p2v_ours "$1"
+	base=${1##*/}
+	base=${base%.sh}
+	out="/tmp/$base.patch"
+	if ! { : > "$out"; } 2>/dev/null; then
+		out="$base.patch"
+		: > "$out"
+	fi
+	printf "%s\n" "# === $1: embedded patch ===" >> "$out"
+	sed '1,/^=== PATCH2VI PATCH ===$/d' "$1" >> "$out"
+	awk -v out="$out" '
+	/^=== PATCH2VI COMPAT /	{
+		n++
+		src = ""
+		for (i = 1; i <= NF; i++)
+			if (substr($i, 1, 4) == "src=")
+				src = substr($i, 5)
+		incb = 1
+		inpat = 0
+		next
+	}
+	incb && $0 == "=== COMPAT PATCH ===" {
+		inpat = 1
+		print "# === compat " n (src == "" ? "" : " from " src) " ===" >> out
+		next
+	}
+	incb && inpat && $0 == "=== END ===" { inpat = 0; next }
+	incb && $0 == "=== END COMPAT ===" { incb = 0; next }
+	inpat			{ print >> out }
+	' "$1"
+	printf "%s\n" "VIEWING: $out" >&2
+	if [ -x ./vi ]; then
+		p2v_tty "${EDITOR:-./vi}" "$out"
+	else
+		p2v_tty "${EDITOR:-vi}" "$out"
+	fi
 )
 
 # Collapse the compat blocks a script carries from one origin into a single one.
