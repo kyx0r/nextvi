@@ -298,6 +298,7 @@ char *uc_dup(const char *s);
 #define uc_isprint(c) ((unsigned char)(c) >= 0x20 && (unsigned char)(c) != 0x7f)
 #define uc_isdigit(c) (((unsigned char)(c) ^ '0') < 10)
 #define uc_isalpha(c) ((unsigned char)(c) > 0x7f || (unsigned char)(((unsigned char)(c) | 0x20) - 'a') < 26)
+#define uc_isupper(c) ((unsigned char)((unsigned char)(c) - 'A') < 26)
 int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
