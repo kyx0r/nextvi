@@ -1517,7 +1517,7 @@ void lsp_definition\(const char \*path, int row, int off\);4??0?
 		int *outline);
 int lsp_live(const char *ft);
 extern int lsp_quiet;
-??!219reg vi.h:569:m12sc %? %@2142sc!b3wp compat applied: src=lsp.sh' > "$P2VIF".3
+??!219reg vi.h:569:m12sc %? %@2142sc!vis 2b3wvis 3p compat applied: src=lsp.sh' > "$P2VIF".3
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".d
 
 exit 0
