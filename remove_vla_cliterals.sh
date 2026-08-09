@@ -86,7 +86,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(BL \| SYN_IT, BL \| SYN_BLK, SYN_BSE \| SYN_BEDP, BL \| SYN_BLK, SYN_BSE \| SYN_BSD\)},9??0?
 grp 09??-9m 1220reg p OK conf.c:65:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:652sc %? %@2132sc!0?
-0?
 '\''1s/\(int\[]\)//??!219reg conf.c:65:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 	else if \(xgrp >= xkwdrs->nsubc\)
 		return xgerr;
@@ -343,7 +342,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	if \(\(e = ex_region\(loc, &beg, &end, &o1, &o2\)\)\) \{9??0?
 grp 09??-7m 7220reg p OK ex.c:1248:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:12482sc %? %@2132sc!0?
-0?
 '\''1c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
 ??!219reg ex.c:581:m12sc %? %@2142sc!0?
 '\''2c 			if (rset_find(xkwdrs, sb->s, offs, 0) < 0 || offs[xgrp] < 0) {
@@ -504,7 +502,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	else9??0?
 grp 09??-7m 4220reg p OK lbuf.c:530:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg lbuf.c:5302sc %? %@2132sc!0?
-0?
 '\''1c 	int *offs = emalloc(re->nsubc * sizeof(int)), i = r0;
 ??!219reg lbuf.c:498:m12sc %? %@2142sc!0?
 '\''2c 			if (dir > 0) {
@@ -712,7 +709,6 @@ static int led_lastchar\(char \*s\)1??0?
 	char \*r = \*s \? uc_beg\(s, strchr\(s, '\''\\0'\''\) - 1\) : s;9??0?
 grp 09??-11m 5220reg p OK led.c:257:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg led.c:2572sc %? %@2132sc!0?
-0?
 '\''1c 	int *subs = emalloc(rs->nsubc * sizeof(int));
 ??!219reg led.c:48:m12sc %? %@2142sc!0?
 '\''2i 	free(subs);
@@ -1053,7 +1049,6 @@ int rset_find\(rset \*rs, char \*s, int \*grps, int flg\).*?
 	return re_pikevm\(rs->regex, s, NULL, 0, flg\);8??0?
 grp 08??-4m 8220reg p OK regex.c:744:a82sc %? %@2152sc!'\''00?
 1;4;7;8??!219reg regex.c:7442sc %? %@2132sc!0?
-0?
 '\''1c #define _return(state) { if (eol_ch) utf8_length[eol_ch] = 1; \
 free(pcs); \
 free(subs); \
@@ -1073,7 +1068,6 @@ return state; } \
 ??!219reg regex.c:638:m32sc %? %@2142sc!0?
 ?'\''4s/lb\[prog->laidx\+1]/*lb = emalloc(prog->laidx * sizeof(lb[0]))/1??1??1q'\''4s/lb\[(.*)\+1]/*lb = emalloc(\1 * sizeof(lb[0]))/2??2??'\''4220reg p OK regex.c:640:s22sc %? %@2162sc!0?
 1;2??!219reg regex.c:640:m42sc %? %@2142sc!0?
-0?
 '\''5,#+1c 	char *nsubs = emalloc(prog->sub);
 ??!219reg regex.c:645:m52sc %? %@2142sc!0?
 '\''6c 	const char **subs = emalloc((rs->nsubc+2) * sizeof(subs[0]));
@@ -1390,14 +1384,12 @@ void syn_init\(void\).*?
 (	syn_ftrs = rset_make\(i, pats, 0\);)7??0?
 grp 07??m 9220reg p OK ren.c:459:a72sc %? %@2152sc!0?
 1;4;7??!219reg ren.c:4592sc %? %@2132sc!0?
-0?
 '\''1c 	char **pats = emalloc(hlslen * sizeof(char *));
 ??!219reg ren.c:257:m12sc %? %@2142sc!0?
 '\''2i 	free(pats);
 ??!219reg ren.c:263:m22sc %? %@2142sc!0?
 ?'\''3s/subs\[rs->nsubc]/*subs = emalloc(rs->nsubc * sizeof(int))/1??1??1q'\''3s/(subs)\[(.*)]/*\1 = emalloc(\2 * sizeof(int))/2??2??'\''3220reg p OK ren.c:324:s22sc %? %@2162sc!0?
 1;2??!219reg ren.c:324:m32sc %? %@2142sc!0?
-0?
 '\''4c 	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft) {
 		free(subs);
 ??!219reg ren.c:405:m42sc %? %@2142sc!0?
@@ -1799,7 +1791,6 @@ void syn_init\(void\).*?
 			case TK_CTL\('\''c'\''\):9??0?
 grp 09??-10m 10220reg p OK vi.c:1425:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg vi.c:14252sc %? %@2132sc!0?
-0?
 '\''1c 		char *tmp = emalloc(xcols+3);
 		char *snum = emalloc(32);
 ??!219reg vi.c:143:m12sc %? %@2142sc!0?
@@ -1808,22 +1799,18 @@ void syn_init\(void\).*?
 ??!219reg vi.c:169:m22sc %? %@2142sc!0?
 ?'\''3s/buf\[n \+ 4]/*buf = emalloc(n + 4)/1??1??1q'\''3s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''3220reg p OK vi.c:1271:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1271:m32sc %? %@2142sc!0?
-0?
 '\''4i 				free(buf);
 ??!219reg vi.c:1274:m42sc %? %@2142sc!0?
 ?'\''5s/buf\[n \+ 30]/*buf = emalloc(n + 30)/1??1??1q'\''5s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''5220reg p OK vi.c:1391:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1391:m52sc %? %@2142sc!0?
-0?
 '\''6i 					free(buf);
 ??!219reg vi.c:1396:m62sc %? %@2142sc!0?
 ?'\''7s/buf\[n \+ 30]/*buf = emalloc(n + 30)/1??1??1q'\''7s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''7220reg p OK vi.c:1402:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1402:m72sc %? %@2142sc!0?
-0?
 '\''8i 					free(buf);
 ??!219reg vi.c:1412:m82sc %? %@2142sc!0?
 ?'\''9s/buf\[n \+ 30]/*buf = emalloc(n + 30)/1??1??1q'\''9s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''9220reg p OK vi.c:1417:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1417:m92sc %? %@2142sc!0?
-0?
 '\''10i 					free(buf);
 ??!219reg vi.c:1425:m102sc %? %@2142sc!b7%ya 98?0?
 %f> struct highlight \{
@@ -1875,7 +1862,6 @@ extern const int hlslen;
 	int dir;9??0?
 grp 09??-7m 1220reg p OK vi.h:508:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.h:5082sc %? %@2132sc!0?
-0?
 '\''1s/\*att/att[16]/??!219reg vi.h:508:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'led.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 

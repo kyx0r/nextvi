@@ -85,7 +85,6 @@ case "\$OS" in5??0?
         log "\$R" "Failed during step: \\"Build \\"\$\{BASE##\*/}\\" using \\"\$CC\\""9??0?
 grp 09??-12m 1220reg p OK cbuild.sh:49:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg cbuild.sh:492sc %? %@2132sc!0?
-0?
 '\''1s/ \\\\/ -pthread \\\\/??!219reg cbuild.sh:49:m12sc %? %@2142sc!b1%ya 98?0?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -136,7 +135,6 @@ case "\$OS" in5??0?
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-9m 1220reg p OK conf.c:298:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2982sc %? %@2132sc!0?
-0?
 '\''1s/\|e/|as!?|e/??!219reg conf.c:298:m12sc %? %@2142sc!b2%ya 98?0?
 %f> static char xrnferr\[] = "range not found";
 static char \*xrerr;
@@ -306,7 +304,6 @@ void ex\(void\)
 \{9??0?
 grp 09??-10m 6220reg p OK ex.c:1882:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:18822sc %? %@2132sc!0?
-0?
 '\''1i static int xasync;		/* run the next chain command in a thread */
 static struct exthread {	/* a chain command running in its own thread */
 	pthread_t id;
@@ -516,7 +513,6 @@ int term_winch;1??0?
 ;0fr.,$f+ ^			term_init\(\);$4??0?
 4??m 4220reg p OK term.c:347:a42sc %? %@2152sc!fr 98fr 980?
 1;4??!219reg term.c:3472sc %? %@2132sc!0?
-0?
 '\''1i static int term_susp;		/* nested terminal suspensions of cmd_pipe */
 static pthread_mutex_t term_mtx = PTHREAD_MUTEX_INITIALIZER;
 ??!219reg term.c:1:m12sc %? %@2142sc!0?
@@ -558,7 +554,6 @@ static pthread_mutex_t term_mtx = PTHREAD_MUTEX_INITIALIZER;
 #include "lbuf\.c"9??0?
 grp 09??-7m 1220reg p OK vi.c:10:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:102sc %? %@2132sc!0?
-0?
 '\''1i #include <pthread.h>
 ??!219reg vi.c:10:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'conf.c' 'ex.c' 'term.c' 'vi.c' "$P2VIF"

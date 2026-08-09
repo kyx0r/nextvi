@@ -541,7 +541,6 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 						if \(left >= rstates\[2]\.pos\[rstates\[2]\.n]\)9??0?
 grp 09??-8m 11220reg p OK led.c:560:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg led.c:5602sc %? %@2132sc!0?
-0?
 '\''1c static int search(sbuf *sb, int l, int pre)
 ??!219reg led.c:12:m12sc %? %@2142sc!0?
 '\''2c 	if (!sb->s[l])
@@ -569,7 +568,6 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 ??!219reg led.c:540:m92sc %? %@2142sc!0?
 ?'\''10s/->s \+ is->lsug, len - is->lsug/, is->lsug, pre/1??1??1q'\''10s/->s \+(.*)len - is->lsug/,\1pre/2??2??'\''10220reg p OK led.c:546:s22sc %? %@2162sc!0?
 1;2??!219reg led.c:546:m102sc %? %@2142sc!0?
-0?
 '\''11,#+1c 				is->lsug = is->sug_pt >= 0 ? is->sug_pt : led_lastword(sb->s);
 				if (suggestsb && search(sb, is->lsug, pre)) {
 ??!219reg led.c:560:m112sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"

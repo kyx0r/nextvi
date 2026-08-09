@@ -491,7 +491,6 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},8??
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-9m 15220reg p OK conf.c:298:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2982sc %? %@2132sc!0?
-0?
 '\''1i /* att of the :hi slot, HI_LEN entries of variable length as in any other att */
 #define HI	A(WH1 | SYN_BGMK(MA) | SYN_OWR, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0)
@@ -578,7 +577,6 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{9??0?
 grp 09??-9m 2220reg p OK ex.c:1750:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17502sc %? %@2132sc!0?
-0?
 '\''1i /* walk att exactly like syn_highlight to bound its variable length entries */
 static int hi_walk(int *att, int grps)
 {

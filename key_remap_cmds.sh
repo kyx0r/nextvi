@@ -85,7 +85,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-9m 1220reg p OK conf.c:298:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2982sc %? %@2132sc!0?
-0?
 '\''1s/\|sc/m!?|i|sc!?|nm/??!219reg conf.c:298:m12sc %? %@2142sc!b1%ya 98?0?
 %f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
@@ -178,7 +177,6 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 	\{"wq!", ec_write},9??0?
 grp 09??-7m 4220reg p OK ex.c:1711:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17112sc %? %@2132sc!0?
-0?
 '\''1-1i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -278,7 +276,6 @@ int map_read(int mode, int winch)
 				return c;9??0?
 grp 09??-7m 1220reg p OK led.c:434:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg led.c:4342sc %? %@2132sc!0?
-0?
 ?'\''1s/term_read\(/map_read(1, /1??1??1q'\''1s/term(_r.*d\()/map\11, /2??2??'\''1220reg p OK led.c:434:s22sc %? %@2162sc!0?
 1;2??!219reg led.c:434:m12sc %? %@2142sc!0?
 b3%ya 98?0?
@@ -832,36 +829,26 @@ static int vi_digit\(void\).*?
 					term_push\("\\n", 1\);9??0?
 grp 09??-7m 11220reg p OK vi.c:1688:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:16882sc %? %@2132sc!0?
-0?
 ?'\''1s/term_read\(/map_read(0, /1??1??1q'\''1s/term(_.*\()/map\10, /2??2??'\''1220reg p OK vi.c:265:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:265:m12sc %? %@2142sc!0?
-0?
 ?'\''2s/term_read\(/map_read(0, /1??1??1q'\''2s/term(_.*0)/map\1, 0/2??2??'\''2220reg p OK vi.c:275:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:275:m22sc %? %@2142sc!0?
-0?
 ?'\''3s/term_read\(/map_read(0, /1??1??1q'\''3s/term(_.*0)/map\1, 0/2??2??'\''3220reg p OK vi.c:279:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:279:m32sc %? %@2142sc!0?
-0?
 ?'\''4s/term_read\(/map_read(0, /1??1??1q'\''4s/term(_.*0)/map\1, 0/2??2??'\''4220reg p OK vi.c:287:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:287:m42sc %? %@2142sc!0?
-0?
 '\''5c 	mv = map_read(0, 0);
 ??!219reg vi.c:526:m52sc %? %@2142sc!0?
 ?'\''6s/term_read\(/map_read(0, /1??1??1q'\''6s/term(_r.*d\()/map\10, /2??2??'\''6220reg p OK vi.c:1220:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1220:m62sc %? %@2142sc!0?
-0?
 ?'\''7s/term_read\(/map_read(0, /1??1??1q'\''7s/term(_.*0)/map\1, 0/2??2??'\''7220reg p OK vi.c:1345:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1345:m72sc %? %@2142sc!0?
-0?
 ?'\''8s/term_read\(/map_read(0, /1??1??1q'\''8s/term(_.*0)/map\1, 0/2??2??'\''8220reg p OK vi.c:1467:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1467:m82sc %? %@2142sc!0?
-0?
 ?'\''9s/term_read\(/map_read(0, /1??1??1q'\''9s/term(_.*0)/map\1, 0/2??2??'\''9220reg p OK vi.c:1584:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1584:m92sc %? %@2142sc!0?
-0?
 ?'\''10s/term_read\(/map_read(0, /1??1??1q'\''10s/term(_.*0)/map\1, 0/2??2??'\''10220reg p OK vi.c:1616:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1616:m102sc %? %@2142sc!0?
-0?
 ?'\''11s/term_read\(/map_read(0, /1??1??1q'\''11s/term(_.*0)/map\1, 0/2??2??'\''11220reg p OK vi.c:1688:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1688:m112sc %? %@2142sc!0?
 b4%ya 98?0?
@@ -890,7 +877,6 @@ void ex\(void\);8??0?
 void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);9??0?
 grp 09??-7m 1220reg p OK vi.h:474:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg vi.h:4742sc %? %@2132sc!0?
-0?
 '\''1i int map_read(int mode, int winch);
 ??!219reg vi.h:474:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF"

@@ -107,7 +107,6 @@ const int hlslen = LEN\(hls\);8??0?
 /\* neutral characters \*/9??0?
 grp 09??-16m 1220reg p OK conf.c:312:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3122sc %? %@2132sc!0?
-0?
 '\''1s/\)\$/).*$/??!219reg conf.c:312:m12sc %? %@2142sc!b1%ya 98?0?
 %f> static int vi_status;			/\* permanent status bar \*/
 static int vi_tsm;			/\* type of the status message \*/
@@ -909,7 +908,6 @@ static int vc_motion\(int cmd\)
 		else if \(xtop != otop\)9??0?
 grp 09??-7m 25220reg p OK vi.c:1794:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg vi.c:17942sc %? %@2132sc!0?
-0?
 '\''1i static int vi_visual;			/* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line */
 static int vi_vrow;			/* selection anchor row */
 static int vi_voff;			/* selection anchor column */
@@ -1282,7 +1280,6 @@ printf '%s\n' '2sc!fr 98b1%ya 98?0?
 						lsp_hover\(xb_path, xrow, xoff\);5??0?
 5??-1m 2220reg p OK vi.c:1957:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:19572sc %? %@2132sc!0?
-0?
 '\''1s/\{ \{/{/??!219reg vi.c:1948:m12sc %? %@2142sc!0?
 '\''2d??!219reg vi.c:1957:m22sc %? %@2142sc!p compat applied: src=lsp.sh' > "$P2VIF".1
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d

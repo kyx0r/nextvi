@@ -120,7 +120,6 @@ static int vi_search\(int cmd, int cnt, int \*row, int \*off, int msg\)
 		return 1;9??0?
 grp 09??-10m 2220reg p OK vi.c:315:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:3152sc %? %@2132sc!0?
-0?
 '\''1i /* rewrite the pattern to match case insensitively without REG_ICASE,
    which cannot be enabled per pattern in a highlight set */
 static void vi_icasepat(sbuf *d, char *s)
@@ -296,7 +295,6 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 	free\(okwd\);5??0?
 5??-1m 2220reg p OK vi.c:421:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:4212sc %? %@2132sc!0?
-0?
 '\''1c 			if (xkwdrs && !((xkwdrs->rs && xgrp >= xkwdrs->rs->nsubc)
 						|| xgrp >= 2) && lbuf_len(xb)
 ??!219reg vi.c:388:m12sc %? %@2142sc!0?

@@ -163,7 +163,6 @@ char ac_ft\[] = "/ac";	/\* autocomplete dropdown \*/8??0?
 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},9??0?
 grp 09??-10m 4220reg p OK conf.c:278:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2782sc %? %@2132sc!0?
-0?
 '\''1i FTGEN(cbas)
 ??!219reg conf.c:9:m12sc %? %@2142sc!0?
 '\''2i 	{FT(cbas), "\\.(cbas|hbas)$"},				/* coder'\''s basilisk */

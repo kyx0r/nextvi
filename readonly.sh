@@ -85,7 +85,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-8m 1220reg p OK conf.c:299:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2992sc %? %@2132sc!0?
-0?
 '\''1s/rd/ro|rd/??!219reg conf.c:299:m12sc %? %@2142sc!b1%ya 98?0?
 %f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
@@ -237,7 +236,6 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 	\{"ub", ec_setenc},9??0?
 grp 09??-7m 6220reg p OK ex.c:1717:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17172sc %? %@2132sc!0?
-0?
 '\''1-1i char readonly = 0;		/* commandline readonly option */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i 	bufs[i].readonly = readonly;
@@ -335,7 +333,6 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 		term_scrh;9??0?
 grp 09??-7m 2220reg p OK vi.c:1878:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:18782sc %? %@2132sc!0?
-0?
 '\''1i 			else if (argv[i][j] == '\''R'\'')
 				readonly = 1;
 ??!219reg vi.c:1873:m12sc %? %@2142sc!0?
@@ -378,7 +375,6 @@ extern rset \*fsincl;.*?
 (void dir_calc\(char \*path\);)7??0?
 grp 07??m 2220reg p OK vi.h:550:a72sc %? %@2152sc!0?
 1;7??!219reg vi.h:5502sc %? %@2132sc!0?
-0?
 '\''1i 	char readonly;			/* read only */
 ??!219reg vi.h:407:m12sc %? %@2142sc!0?
 '\''2i extern char readonly;

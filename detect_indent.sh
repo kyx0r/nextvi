@@ -107,7 +107,6 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-10m 1220reg p OK conf.c:297:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2972sc %? %@2132sc!0?
-0?
 '\''1s/\|p/|sw|et|idt|p/??!219reg conf.c:297:m12sc %? %@2142sc!b1%ya 98?0?
 %f> int xshape = 1;			/\* perform letter shaping \*/
 int xorder = 1;			/\* change the order of characters \*/
@@ -387,7 +386,6 @@ _EO\(grp, xgrp = \(\*arg \? MAX\(0, eo_val\(arg\)\) : !xgrp\) \* 2; return NULL;
 	\{"cd", ec_chdir},9??0?
 grp 09??-7m 10220reg p OK ex.c:1731:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17312sc %? %@2132sc!0?
-0?
 '\''1i int xet;			/* expandtab - use spaces for indentation */
 int xsw = 8;			/* shiftwidth - indentation step */
 int xidt = 500;			/* auto-detect indent on file open */
@@ -621,7 +619,6 @@ int xidt = 500;			/* auto-detect indent on file open */
 				is->p_reg = c == TK_CTL\('\''\\\\'\''\) \? 0 : c;9??0?
 grp 09??-7m 4220reg p OK led.c:468:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg led.c:4682sc %? %@2132sc!0?
-0?
 '\''1c 			if (xet)
 				for (int _k = 0; _k < xsw; _k++)
 					sbuf_chr(sb, '\'' '\'')
@@ -704,7 +701,6 @@ int xidt = 500;			/* auto-detect indent on file open */
 	int r1 = xrow, r2 = xrow;	/\* region rows \*/9??0?
 grp 09??-12m 1220reg p OK vi.c:937:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:9372sc %? %@2132sc!0?
-0?
 '\''1,#+2c 				if (xet && *ln == '\'' '\'') {
 					int k;
 					for (k = 0; k < xsw && *ln == '\'' '\''; k++)
@@ -834,7 +830,6 @@ void temp_pos\(int i, int row, int off, int top\);
 void ex\(void\);9??0?
 grp 09??-8m 4220reg p OK vi.h:470:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:4702sc %? %@2132sc!0?
-0?
 '\''1i 	int et;				/* expandtab - use spaces for indentation */
 	int sw;				/* shiftwidth - indentation step */
 	int ts;				/* tabspace - number of spaces for tab */
@@ -883,7 +878,6 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 	buf->row = xrow; \\5??0?
 5??-3m 1220reg p OK vi.h:496:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.h:4962sc %? %@2132sc!0?
-0?
 '\''1,#+2c 	xet = b->et; \
 	xsw = b->sw; \
 	xts = b->ts; \

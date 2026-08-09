@@ -86,7 +86,6 @@ case "\$OS" in1??0?
         log "\$R" "Failed during step: \\"Build \\"\$\{BASE##\*/}\\" using \\"\$CC\\""9??0?
 grp 09??-12m 1220reg p OK cbuild.sh:49:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg cbuild.sh:492sc %? %@2132sc!0?
-0?
 '\''1i -lpthread \
 ??!219reg cbuild.sh:49:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 	return n != 0;
@@ -429,7 +428,6 @@ int lbuf_sectionbeg\(struct lbuf \*lb, int dir, int \*row, int \*off, int ch\)
 	\*row = MAX\(0, MIN\(\*row, lbuf_len\(lb\) - 1\)\);9??0?
 grp 09??-10m 6220reg p OK lbuf.c:531:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5312sc %? %@2132sc!0?
-0?
 '\''1,#+12c struct lsparams
 {
 	struct lbuf *lb;
@@ -637,7 +635,6 @@ if \(freesub\) \{ \\5??0?
 	int n;9??0?
 grp 09??-8m 3220reg p OK regex.c:650:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg regex.c:6502sc %? %@2132sc!0?
-0?
 '\''1s/\(eol_ch/(flg & REG_NEWLINE/??!219reg regex.c:409:m12sc %? %@2142sc!0?
 '\''2s/h\)/h && utf8_length[eol_ch])/??!219reg regex.c:649:m22sc %? %@2142sc!0?
 '\''3i 	else
@@ -691,7 +688,6 @@ char \*uc_beg\(char \*beg, char \*s\)
 \{9??0?
 grp 09??-11m 2220reg p OK uc.c:19:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg uc.c:192sc %? %@2132sc!0?
-0?
 '\''1s/ u/ _u/??!219reg uc.c:1:m12sc %? %@2142sc!0?
 '\''2i unsigned char *utf8_length = _utf8_length;
 ??!219reg uc.c:19:m22sc %? %@2142sc!b4%ya 98?0?
@@ -723,7 +719,6 @@ char \*uc_beg\(char \*beg, char \*s\)
 #include "uc\.c"9??0?
 grp 09??-7m 1220reg p OK vi.c:15:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:152sc %? %@2132sc!0?
-0?
 '\''1i #include <pthread.h>
 ??!219reg vi.c:15:m12sc %? %@2142sc!b5%ya 98?0?
 %f> void syn_init\(void\);
@@ -775,7 +770,6 @@ l = utf8_length\[dst]; \\
 if \(l == 1\); \\9??0?
 grp 09??-7m 1220reg p OK vi.h:268:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.h:2682sc %? %@2132sc!0?
-0?
 '\''1c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 ??!219reg vi.h:268:m12sc %? %@2142sc!' > "$P2VIF".0
@@ -881,11 +875,9 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 	#define NUM_THREADS 45??0?
 5??-1m 4220reg p OK lbuf.c:542:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg lbuf.c:5422sc %? %@2132sc!0?
-0?
 '\''1s/et/tr/??!219reg lbuf.c:497:m12sc %? %@2142sc!0?
 ?'\''2s/nsubc/rs ? a->re->rs->nsubc : 2/1??1??1q'\''2s/(ns.*c)/rs ? a->re->rs->\1 : 2/2??2??'\''2220reg p OK lbuf.c:511:s22sc %? %@2162sc!0?
 1;2??!219reg lbuf.c:511:m22sc %? %@2142sc!0?
-0?
 '\''3s/et/tr/??!219reg lbuf.c:519:m32sc %? %@2142sc!0?
 '\''4s/et/tr/??!219reg lbuf.c:542:m42sc %? %@2142sc!b2%ya 98?0?
 %f> } \\
@@ -923,7 +915,6 @@ break##gen:; \\
 5??0?
 5??-1m 2220reg p OK regex.c:823:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg regex.c:8232sc %? %@2132sc!0?
-0?
 '\''1i /* lbuf_search swaps utf8_length for an all zero table to terminate its search
  * threads with no synchronization; entry 1 is never zero in the real table, so
  * reading it is how a scan that never decodes utf-8 notices the same kill */

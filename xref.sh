@@ -233,7 +233,6 @@ static void \*ec_setbufsmax\(char \*loc, char \*cmd, char \*arg\)
 	\{"c", ec_insert},9??0?
 grp 09??-7m 4220reg p OK ex.c:1732:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17322sc %? %@2132sc!0?
-0?
 '\''1i sbuf *xdefreg_pat;		/* xref definition search pattern */
 ??!219reg ex.c:39:m12sc %? %@2142sc!0?
 '\''2s/3/4/??!219reg ex.c:45:m22sc %? %@2142sc!0?
@@ -418,7 +417,6 @@ static int rep_len;
 			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
 grp 09??-7m 5220reg p OK vi.c:1859:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:18592sc %? %@2132sc!0?
-0?
 '\''1i /* xref: a symbol and its transitive callees, extracted into /xref/ */
 static int xbudget = 200;		/* max extents in one closure */
 static char *xref_seedft;		/* the file type the seed was found in */
@@ -819,7 +817,6 @@ extern int xkwddir;.*(#define exbuf_load\(buf\) \\)
 	xoff = buf->off; \\9??0?
 grp 09??-7m 3220reg p OK vi.h:453:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.h:4532sc %? %@2132sc!0?
-0?
 '\''1i 
 #define XREF_BUF 3			/* the /xref/ temporary buffer */
 
@@ -853,7 +850,6 @@ printf '%s\n' '2sc!fr 98b1%ya 98?0?
 					vc_motion\(k\);5??0?
 5??-1m 1220reg p OK vi.c:2029:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:20292sc %? %@2132sc!0?
-0?
 '\''1c 					if (nwins < 2)
 						win_split(0, "");
 					if (nwins > 1) {	/* focus stays in the code */
@@ -891,7 +887,6 @@ struct buf \*ex_pbuf;		/\* prev buffer \*/
 static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/5??0?
 5??-1m 1220reg p OK ex.c:46:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg ex.c:462sc %? %@2132sc!0?
-0?
 '\''1s/4/5/??!219reg ex.c:46:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 	fspos = 0;
 	/\* a closure is one language: a hit in another one is a coincidence\.
@@ -978,7 +973,6 @@ static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/5??0?
 						buf\[subs\[1]-1] = '\''\\n'\'';5??0?
 5??-13m 2220reg p OK vi.c:1563:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:15632sc %? %@2132sc!0?
-0?
 '\''1s/\(1/(0, 1/??!219reg vi.c:596:m12sc %? %@2142sc!0?
 '\''2,#+12c 				if (!strcmp(xb_path, "/xref/") ||
 						!strcmp(xb_path, "/grep/")) {
@@ -1035,7 +1029,6 @@ extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)5??0?
 5??-1m 2220reg p OK vi.h:457:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.h:4572sc %? %@2132sc!0?
-0?
 '\''1s/3/4/??!219reg vi.h:410:m12sc %? %@2142sc!0?
 '\''2s/4/5/??!219reg vi.h:457:m22sc %? %@2142sc!p compat applied: src=grep.sh' > "$P2VIF".2
 # Compat (post) from lsp.sh
@@ -1200,7 +1193,6 @@ void lsp_definition\(const char \*path, int row, int off\)
 		ex_bufpostfix\(ex_buf, 0\);5??0?
 5??-2m 7220reg p OK lsp.c:1145:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg lsp.c:11452sc %? %@2132sc!0?
-0?
 '\''1c int lsp_quiet;			/* callers that ask in bulk silence the misses */
 
 /* whether a server could answer for ft at all, so callers can skip the cost */
@@ -1438,7 +1430,6 @@ static int xref_seen\(sbuf \*seen, char \*sym, int len\)
 			if \(xref_seen\(done, key, i\) \|\| xref_bound\(xb, start, &end\)\)5??0?
 5??-1m 10220reg p OK vi.c:725:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:7252sc %? %@2132sc!0?
-0?
 '\''1s/ v/ if (!lsp_quiet) v/??!219reg vi.c:106:m12sc %? %@2142sc!0?
 '\''2i /* what the language server answers for the call site at from:row:off, which
  * knows scopes, headers and overloads no pattern does; 0 when it does not */
@@ -1522,7 +1513,6 @@ void lsp_hover\(const char \*path, int row, int off\);
 void lsp_definition\(const char \*path, int row, int off\);4??0?
 4??+2m 1220reg p OK vi.h:569:a42sc %? %@2152sc!0?
 1;4??!219reg vi.h:5692sc %? %@2132sc!0?
-0?
 '\''1i int lsp_locate(const char *path, int row, int off, char *outpath, int sz,
 		int *outline);
 int lsp_live(const char *ft);

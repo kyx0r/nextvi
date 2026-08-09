@@ -61,7 +61,6 @@ const int hlslen = LEN\(hls\);.*(struct dircontext dctxs\[] = \{)
 	\{"\^\(\[ \\t]\+\)\?\(\[" CNEUT "]\*\[\^" CR2L "]\*\[\^" CR2L CNEUT "]\(\?:\[" CNEUT "]\+\$\)\?\)", -1, \{0, 1, -1}},9??0?
 grp 09??-12m 1220reg p OK conf.c:327:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg conf.c:3272sc %? %@2132sc!0?
-0?
 '\''1i /* cursor shape escapes (DECSCUSR): set on entering insert, reset on leaving */
 char conf_curins[] = "\x1b[5 q";	/* insert mode: vertical bar */
 char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
@@ -249,7 +248,6 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 			return key;9??0?
 grp 09??-7m 6220reg p OK led.c:699:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg led.c:6992sc %? %@2132sc!0?
-0?
 '\''1,#+1c 			if (ai_max >= 0) {
 				term_write(conf_curnorm, sizeof(conf_curnorm) - 1)
 				term_suspend();
@@ -296,7 +294,6 @@ extern int vi_hidch;8??0?
 extern rset \*fsincl;9??0?
 grp 09??-8m 1220reg p OK vi.h:539:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:5392sc %? %@2132sc!0?
-0?
 '\''1i extern char conf_curins[];
 extern char conf_curnorm[];
 ??!219reg vi.h:539:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"

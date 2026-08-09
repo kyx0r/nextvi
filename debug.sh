@@ -61,7 +61,6 @@ void ex_init\(char \*\*files, int n\)
 		s = \*\(\+\+files\);9??0?
 grp 09??-7m 1220reg p OK ex.c:1916:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg ex.c:19162sc %? %@2132sc!0?
-0?
 '\''1i void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -107,7 +106,6 @@ void ex_init\(char \*\*files, int n\)
 	match\(1, if \(\(unsigned int\)c < 128\) c = tolower\(c\);\)9??0?
 grp 09??-7m 1220reg p OK regex.c:645:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg regex.c:6452sc %? %@2132sc!0?
-0?
 '\''1i 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 ??!219reg regex.c:645:m12sc %? %@2142sc!b2%ya 98?0?
 %f> }
@@ -148,7 +146,6 @@ ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux render
 (})7??0?
 grp 07??m 2220reg p OK ren.c:460:a72sc %? %@2152sc!0?
 1;7??!219reg ren.c:4602sc %? %@2132sc!0?
-0?
 '\''1i void ren_done(void)
 {
 	rset_free(dir_rslr);
@@ -188,7 +185,6 @@ void syn_done(void)
 (	term_done\(\);)7??0?
 grp 07??m 1220reg p OK vi.c:1893:a72sc %? %@2152sc!0?
 1;4;7??!219reg vi.c:18932sc %? %@2132sc!0?
-0?
 '\''1i 	ex_done();
 	syn_done();
 	ren_done();
@@ -282,7 +278,6 @@ extern const int conf_mode;
 /\* map file names to file types \*/9??0?
 grp 09??-9m 3220reg p OK vi.h:486:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:4862sc %? %@2132sc!0?
-0?
 '\''1i void dir_done(void);
 ??!219reg vi.h:221:m12sc %? %@2142sc!0?
 '\''2i void syn_done(void);

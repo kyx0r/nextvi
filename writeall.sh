@@ -85,7 +85,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-8m 1220reg p OK conf.c:299:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2992sc %? %@2132sc!0?
-0?
 ?'\''1s/\[q!]\)\?\|u\[czbd]\|x/q?a!?|[q!])?|u[czbd]|xa?/1??1??1q'\''1s/(\[q.*x)/q?a!?|\1a?/2??2??'\''1220reg p OK conf.c:299:s22sc %? %@2162sc!0?
 1;2??!219reg conf.c:299:m12sc %? %@2142sc!0?
 b1%ya 98?0?
@@ -197,7 +196,6 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 	\{"c", ec_insert},9??0?
 grp 09??-7m 4220reg p OK ex.c:1732:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17322sc %? %@2132sc!0?
-0?
 '\''1i static void *ec_writeall(char *loc, char *cmd, char *arg)
 {
 	char *ret = NULL;

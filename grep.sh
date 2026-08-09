@@ -119,7 +119,6 @@ FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\).*(struct filetype fts\[] = \
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},9??0?
 grp 09??-7m 3220reg p OK conf.c:291:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg conf.c:2912sc %? %@2132sc!0?
-0?
 '\''1i char grep_ft[] = "/g";	/* grep buffer */
 ??!219reg conf.c:15:m12sc %? %@2142sc!0?
 '\''2i 	{grep_ft, NULL},
@@ -177,7 +176,6 @@ static int xexe = '\''!'\'';		/\* ex command external command expand \*/
 static char xuerr\[] = "unreported error";9??0?
 grp 09??-7m 1220reg p OK ex.c:45:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:452sc %? %@2132sc!0?
-0?
 '\''1s/3/4/??!219reg ex.c:45:m12sc %? %@2142sc!b2%ya 98?0?
 %f> 	free\(sb->s\);
 }
@@ -672,7 +670,6 @@ static int rep_len;
 			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
 grp 09??-7m 12220reg p OK vi.c:1859:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:18592sc %? %@2132sc!0?
-0?
 '\''1s/\(\)/(isbuffer)/??!219reg vi.c:443:m12sc %? %@2142sc!0?
 '\''2s/ret && xrow/isbuffer/??!219reg vi.c:448:m22sc %? %@2142sc!0?
 '\''3s/ c/ again, int c/??!219reg vi.c:459:m32sc %? %@2142sc!0?
@@ -786,7 +783,6 @@ extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 	xoff = buf->off; \\9??0?
 grp 09??-7m 1220reg p OK vi.h:453:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.h:4532sc %? %@2132sc!0?
-0?
 '\''1s/3/4/??!219reg vi.h:453:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
 

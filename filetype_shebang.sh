@@ -65,7 +65,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	int beg, end, max = INT_MAX, dwid1, dwid2;9??0?
 grp 09??-7m 1220reg p OK ex.c:439:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:4392sc %? %@2132sc!0?
-0?
 '\''1i 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\''\n'\'')

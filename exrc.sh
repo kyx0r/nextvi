@@ -164,7 +164,6 @@ void ex_init\(char \*\*files, int n\)
 ;0fr.,$f+ ^		ex_command\(s\)$4??0?
 4??m 6220reg p OK ex.c:1929:a42sc %? %@2152sc!fr 98fr 980?
 1;4??!219reg ex.c:19292sc %? %@2132sc!0?
-0?
 '\''1-1i int xexrc = 0;			/* read .exrc from the current directory */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i EO(exrc)

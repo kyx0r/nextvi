@@ -468,7 +468,6 @@ char \*led_read\(int \*kmap, int c\)
 			int ai_new = n;9??0?
 grp 09??-7m 10220reg p OK led.c:711:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg led.c:7112sc %? %@2132sc!0?
-0?
 '\''1i static int vi_insmov;
 ??!219reg led.c:3:m12sc %? %@2142sc!0?
 '\''2s/f\)/f, int print)/??!219reg led.c:281:m22sc %? %@2142sc!0?
@@ -731,7 +730,6 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 				restore\(xvis\)9??0?
 grp 09??-9m 6220reg p OK vi.c:1550:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:15502sc %? %@2132sc!0?
-0?
 '\''1i static int lmodified;
 
 ??!219reg vi.c:837:m12sc %? %@2142sc!0?

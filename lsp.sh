@@ -198,7 +198,6 @@ const int hlslen = LEN\(hls\);
 	\{"\^\[a-zA-Z_0-9]", \+1},9??0?
 grp 09??-12m 4220reg p OK conf.c:321:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg conf.c:3212sc %? %@2132sc!0?
-0?
 '\''1i char lsp_ft[] = "/lsp";	/* lsp diagnostic virtual text */
 ??!219reg conf.c:20:m12sc %? %@2142sc!0?
 '\''2c 	{msg_ft, NULL},
@@ -323,7 +322,6 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{9??0?
 grp 09??-9m 4220reg p OK ex.c:1750:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17502sc %? %@2132sc!0?
-0?
 '\''1i 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
 ??!219reg ex.c:433:m12sc %? %@2142sc!0?
@@ -861,7 +859,6 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 			m\[1] \+= n_ins - n_del;9??0?
 grp 09??-7m 1220reg p OK lbuf.c:129:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg lbuf.c:1292sc %? %@2132sc!0?
-0?
 '\''1i 	lb->edseq++;
 ??!219reg lbuf.c:129:m12sc %? %@2142sc!b40?
 i /* lsp.c - Language Server Protocol client for nextvi */
@@ -2250,7 +2247,6 @@ char \*term_att\(int att\)
 \{9??0?
 grp 09??-10m 4220reg p OK term.c:173:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg term.c:1732sc %? %@2132sc!0?
-0?
 '\''1,#+1c 	static struct pollfd ufd[1 + LSP_NFDS_MAX];
 	int cw, i, nfds;
 ??!219reg term.c:142:m12sc %? %@2142sc!0?
@@ -2699,7 +2695,6 @@ static void vi_drawrow\(int row\)
 		else if \(xtop != otop\)9??0?
 grp 09??-7m 15220reg p OK vi.c:1794:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg vi.c:17942sc %? %@2132sc!0?
-0?
 '\''1i #include "lsp.c"
 ??!219reg vi.c:24:m12sc %? %@2142sc!0?
 '\''2i void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
@@ -2808,7 +2803,6 @@ extern rset \*fsincl;.*?
 (void dir_calc\(char \*path\);)7??0?
 grp 07??m 2220reg p OK vi.h:550:a72sc %? %@2152sc!0?
 1;7??!219reg vi.h:5502sc %? %@2132sc!0?
-0?
 '\''1i 	int edseq;			/* monotonic content mutation counter */
 ??!219reg vi.h:152:m12sc %? %@2142sc!0?
 '\''2i 

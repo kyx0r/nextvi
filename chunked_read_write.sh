@@ -236,7 +236,6 @@ if \(fd >= 0\) \{ \\.*?
 	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;9??0?
 grp 09??-8m 4220reg p OK ex.c:430:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:4302sc %? %@2132sc!0?
-0?
 '\''1s/k\)/k, init)/??!219reg ex.c:390:m12sc %? %@2142sc!0?
 '\''2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \
 ??!219reg ex.c:393:m22sc %? %@2142sc!0?
@@ -618,7 +617,6 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 	if \(s1\) \{9??0?
 grp 09??-7m 8220reg p OK lbuf.c:265:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg lbuf.c:2652sc %? %@2132sc!0?
-0?
 '\''1,#+13c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init)
 {
 	if (!init) {
@@ -775,7 +773,6 @@ char \*lbuf_get\(struct lbuf \*lb, int pos\);
 void lbuf_smark\(struct lbuf \*lb, struct lopt \*lo, int beg, int o1\);9??0?
 grp 09??-7m 1220reg p OK vi.h:159:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.h:1592sc %? %@2132sc!0?
-0?
 '\''1c int _lbuf_rd(struct lbuf *lb, int fd, int beg, int end, int init);
 #define lbuf_rd(lb, fd, beg, end) _lbuf_rd(lb, fd, beg, end, 0)
 ??!219reg vi.h:159:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"

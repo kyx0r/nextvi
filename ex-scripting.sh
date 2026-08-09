@@ -98,7 +98,6 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 	\{"cd", ec_chdir},9??0?
 grp 09??-7m 3220reg p OK ex.c:1731:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17312sc %? %@2132sc!0?
-0?
 '\''1-1i char **xenvp;
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i static void *ec_script(char *loc, char *cmd, char *arg)
@@ -191,7 +190,6 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 			close\(pipefds0\[1]\);9??0?
 grp 09??-7m 1220reg p OK term.c:238:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg term.c:2382sc %? %@2132sc!0?
-0?
 '\''1c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
@@ -205,7 +203,6 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 ;0fr.,$f> ^/\* vi\.h: shared definitions across files \*/$4??0?
 4??m 1220reg p OK vi.h:1:a42sc %? %@2152sc!fr 98fr 980?
 1;4??!219reg vi.h:12sc %? %@2132sc!0?
-0?
 '\''1i #ifdef __APPLE__
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())

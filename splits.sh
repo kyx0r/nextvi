@@ -85,7 +85,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-9m 1220reg p OK conf.c:298:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2982sc %? %@2132sc!0?
-0?
 ?'\''1s/f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?/qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp/1??1??1q'\''1s/(f!.*c!\?\|)/q\1vs|sp|/2??2??'\''1220reg p OK conf.c:298:s22sc %? %@2162sc!0?
 1;2??!219reg conf.c:298:m12sc %? %@2142sc!0?
 b1%ya 98?0?
@@ -327,7 +326,6 @@ void ex_init\(char \*\*files, int n\)
 		ex_command\(s\)9??0?
 grp 09??-7m 8220reg p OK ex.c:1920:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:19202sc %? %@2132sc!0?
-0?
 '\''1-1i struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
@@ -1229,7 +1227,6 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 			preserve\(int, ftidx,\)9??0?
 grp 09??-7m 15220reg p OK led.c:622:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg led.c:6222sc %? %@2132sc!0?
-0?
 '\''1s/xcols/curwin->w/??!219reg led.c:95:m12sc %? %@2142sc!0?
 '\''2i 	int inwin = poff == &xoff;	/* prompts own the whole terminal row */
 	int winx = inwin ? curwin->x : 0;
@@ -1253,7 +1250,6 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 ??!219reg led.c:381:m82sc %? %@2142sc!0?
 ?'\''9s/r, vi_lncol, xleft, xleft \+ xcols/winy + r, winx + vi_lncol, xleft, xleft + winw/1??1??1q'\''9s/r,(.*)xcols/winy + r, winx +\1winw/2??2??'\''9220reg p OK led.c:390:s22sc %? %@2162sc!0?
 1;2??!219reg led.c:390:m92sc %? %@2142sc!0?
-0?
 '\''10,#+1c 		led_crender(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", winy + r,
 			winx + vi_lncol, xleft, xleft + winw - vi_lncol)
 ??!219reg led.c:396:m102sc %? %@2142sc!0?
@@ -1292,7 +1288,6 @@ void term_room\(int n\)
 	term_out\(cmd\);9??0?
 grp 09??-7m 1220reg p OK term.c:87:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg term.c:872sc %? %@2132sc!0?
-0?
 '\''1i /* erase n columns; the rest of the row belongs to another window */
 void term_killw(int n)
 {
@@ -3518,7 +3513,6 @@ else if \(xrow >= xtop \+ xrows\) \\
 			term_kill\(\);9??0?
 grp 09??-7m 50220reg p OK vi.c:1825:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:18252sc %? %@2132sc!0?
-0?
 '\''1i /* draw horizontal separator line at screen row, from x for w columns */
 static void vi_draw_hsep(int row, int x, int w)
 {
@@ -3549,7 +3543,6 @@ static void vi_draw_vsep(int col, int y, int h)
 ??!219reg vi.c:143:m52sc %? %@2142sc!0?
 ?'\''6s/row - xtop, 0, 0, x/scrrow, wx, 0, w/1??1??1q'\''6s/(row) - xtop(.*)0, x/scr\1, wx\2w/2??2??'\''6220reg p OK vi.c:165:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:165:m62sc %? %@2142sc!0?
-0?
 '\''7c 		led_crender(s, scrrow, wx + l1, xleft, xleft + wcols - l1)
 ??!219reg vi.c:196:m72sc %? %@2142sc!0?
 '\''8s/row - xtop,/scrrow, wx +/??!219reg vi.c:207:m82sc %? %@2142sc!0?
@@ -3691,7 +3684,6 @@ static void vi_redraw(void)
 '\''43s/xrows/curwin->h/??!219reg vi.c:1593:m432sc %? %@2142sc!0?
 ?'\''44s/xrow - xtop, 0/curwin->y + xrow - xtop, curwin->x/1??1??1q'\''44s/(xr.*, )0/curwin->y + \1curwin->x/2??2??'\''44220reg p OK vi.c:1680:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1680:m442sc %? %@2142sc!0?
-0?
 '\''45,#+1c 		if (vi_col >= xleft + curwin->w || vi_col < xleft)
 			xleft = vi_col < curwin->w ? 0 : vi_col - curwin->w / 2;
 ??!219reg vi.c:1753:m452sc %? %@2142sc!0?
@@ -3881,7 +3873,6 @@ void temp_open\(int i, char \*name, char \*ft\);
 void temp_switch\(int i, int swap\);9??0?
 grp 09??-15m 4220reg p OK vi.h:460:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.h:4602sc %? %@2132sc!0?
-0?
 '\''1i void term_killw(int n);
 ??!219reg vi.h:325:m12sc %? %@2142sc!0?
 '\''2c #define led_crender(msg, row, col, beg, end) _led_render(msg, row, col, beg, end, \

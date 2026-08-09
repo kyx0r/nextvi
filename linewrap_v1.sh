@@ -89,7 +89,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-10m 1220reg p OK conf.c:297:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2972sc %? %@2132sc!0?
-0?
 '\''1,#+1c ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl(?:lw|[lwpr])?|left|lim|led|vis)\
 |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|lw|\
 ??!219reg conf.c:297:m12sc %? %@2142sc!b1%ya 98?0?
@@ -321,7 +320,6 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 		if \(\*src == xexp\) \{9??0?
 grp 09??-9m 8220reg p OK ex.c:1753:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17532sc %? %@2132sc!0?
-0?
 '\''1-1i int xlw;			/* soft linewrap col */
 int xhllw = 1;			/* highlight soft linewrap block start/end */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -1012,7 +1010,6 @@ int lbuf_off2pos\(struct lbuf \*lb, int r1, int o1, int r2, int o2, int boff, in
 		lbuf_copymark\(lb->mark_sb, lb->tmp_mark\)9??0?
 grp 09??-7m 18220reg p OK lbuf.c:433:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg lbuf.c:4332sc %? %@2132sc!0?
-0?
 '\''1-1i int lbuf_lwmod;		/* soft linewraps were touched since the last redraw */
 
 ??!219reg lbuf.c:0:m12sc %? %@2142sc!0?
@@ -1087,20 +1084,15 @@ static int lbuf_lwfix(struct lbuf *lb, struct lopt *lo)
 ??!219reg lbuf.c:258:m102sc %? %@2142sc!0?
 ?'\''11s/s\(s1\)->len\+1/nl(s1)/1??1??1q'\''11s/s(\(.*\))->len\+1/nl\1/2??2??'\''11220reg p OK lbuf.c:275:s22sc %? %@2162sc!0?
 1;2??!219reg lbuf.c:275:m112sc %? %@2142sc!0?
-0?
 ?'\''12s/i\(lb, i\)->len \+ 1/nl(lb->ln[i])/1??1??1q'\''12s/i(\(lb), i\)(.*)en \+ 1(\))/nl\1\2n[i]\3)/2??2??'\''12220reg p OK lbuf.c:288:s22sc %? %@2162sc!0?
 1;2??!219reg lbuf.c:288:m122sc %? %@2142sc!0?
-0?
 '\''13s/s\(s2\)->len\+1/nl(s2)/??!219reg lbuf.c:290:m132sc %? %@2142sc!0?
 ?'\''14s/i\(lb, i\)->len \+ 1/nl(lb->ln[i])/1??1??1q'\''14s/i(\(lb), i\)(.*)en \+ 1/nl\1\2n[i])/2??2??'\''14220reg p OK lbuf.c:315:s22sc %? %@2162sc!0?
 1;2??!219reg lbuf.c:315:m142sc %? %@2142sc!0?
-0?
 ?'\''15s/i\(lb, i\)->len \+ 1/nl(lb->ln[i])/1??1??1q'\''15s/i(\(lb), i\)(.*)en \+ 1/nl\1\2n[i])/2??2??'\''15220reg p OK lbuf.c:329:s22sc %? %@2162sc!0?
 1;2??!219reg lbuf.c:329:m152sc %? %@2142sc!0?
-0?
 ?'\''16s/\(lbuf_i\(lb, i\)->len \+ 1/lbuf_nl(lb->ln[i]/1??1??1q'\''16s/\((lbuf_)i(\(lb), i\)(.*)en \+ 1/\1nl\2\3n[i]/2??2??'\''16220reg p OK lbuf.c:332:s22sc %? %@2162sc!0?
 1;2??!219reg lbuf.c:332:m162sc %? %@2142sc!0?
-0?
 '\''17i 		if (lo->lwrap)		/* the continuation is back */
 			lbuf_i(lb, lo->pos - 1)->lwrap = 1;
 ??!219reg lbuf.c:412:m172sc %? %@2142sc!0?
@@ -1157,7 +1149,6 @@ s......... ..........ha...s........s\)
 }9??0?
 grp 09??-9m 1220reg p OK ren.c:75:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ren.c:752sc %? %@2132sc!0?
-0?
 '\''1s/static //??!219reg ren.c:75:m12sc %? %@2142sc!b4%ya 98?0?
 %f> 		return;
 	}
@@ -1216,7 +1207,6 @@ s......... ..........ha...s........s\)
 				do \{9??0?
 grp 09??-8m 2220reg p OK vi.c:1548:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:15482sc %? %@2132sc!0?
-0?
 '\''1i 	if (xhllw && s) {
 		led_att la;
 		int lw = lbuf_s(s)->lwrap;
@@ -1383,7 +1373,6 @@ extern int xkmap;
 extern int xkmap_alt;9??0?
 grp 09??-7m 5220reg p OK vi.h:431:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:4312sc %? %@2132sc!0?
-0?
 '\''1i 	int lwrap;		/* pos-1 lwrap bit was cleared */
 ??!219reg vi.h:131:m12sc %? %@2142sc!0?
 '\''2i 	int lwrap;		/* soft linewrap: joined with the next line */

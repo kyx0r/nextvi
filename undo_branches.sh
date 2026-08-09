@@ -85,7 +85,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-8m 1220reg p OK conf.c:299:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2992sc %? %@2132sc!0?
-0?
 '\''1s/d]/dp]/??!219reg conf.c:299:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 	return xkwdrs \? NULL : xserr;
 }
@@ -141,7 +140,6 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 	\{"ya!", ec_yank},9??0?
 grp 09??-7m 2220reg p OK ex.c:1726:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17262sc %? %@2132sc!0?
-0?
 '\''1i static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
@@ -407,7 +405,6 @@ struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\)
 		return 0;9??0?
 grp 09??-9m 7220reg p OK lbuf.c:456:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg lbuf.c:4562sc %? %@2132sc!0?
-0?
 '\''1i 	sbuf_make(lb->rehist, 128)
 ??!219reg lbuf.c:4:m12sc %? %@2142sc!0?
 '\''2i static void lbuf_freeleafs(struct lbuf *lb)
@@ -565,7 +562,6 @@ int lbuf_sectionbeg\(struct lbuf \*lb, int dir, int \*row, int \*off, int ch\);
 int lbuf_wordbeg\(struct lbuf \*lb, int big, int dir, int \*row, int \*off\);9??0?
 grp 09??-10m 2220reg p OK vi.h:181:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:1812sc %? %@2132sc!0?
-0?
 '\''1i 	sbuf *rehist;		/* alternate redo timelines */
 ??!219reg vi.h:139:m12sc %? %@2142sc!0?
 '\''2i void lbuf_setleaf(struct lbuf *lb, int leaf);

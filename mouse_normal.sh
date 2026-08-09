@@ -108,7 +108,6 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-10m 1220reg p OK conf.c:297:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2972sc %? %@2132sc!0?
-0?
 '\''1s/\|r/|ms|r/??!219reg conf.c:297:m12sc %? %@2142sc!b1%ya 98?0?
 %f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
@@ -173,7 +172,6 @@ static struct excmd \{
 	\{"r", ec_read},9??0?
 grp 09??-7m 3220reg p OK ex.c:1710:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17102sc %? %@2132sc!0?
-0?
 '\''1-1i int xms = 1;			/* mouse in normal mode */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i _EO(ms,
@@ -330,7 +328,6 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\9??0?
 		ps = sb->s_n;9??0?
 grp 09??-7m 5220reg p OK led.c:707:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg led.c:7072sc %? %@2132sc!0?
-0?
 '\''1i /* map terminal column number to cursor horizontal position (inverse of led_pos) */
 int led_col(char *s, int col)
 {
@@ -439,7 +436,6 @@ int term_read\(int winch\)
 				goto err;9??0?
 grp 09??-7m 4220reg p OK term.c:139:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg term.c:1392sc %? %@2132sc!0?
-0?
 '\''1-1i int xmouse_col, xmouse_row;
 void term_mouse_on(void)
 {
@@ -603,7 +599,6 @@ static int vi_region\(int cmd, int \*row, int \*off\)
 		else9??0?
 grp 09??-7m 2220reg p OK vi.c:526:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:5262sc %? %@2132sc!0?
-0?
 '\''1i static void vi_scrollforward(int cnt);
 static void vi_scrollbackward(int cnt);
 
@@ -749,7 +744,6 @@ extern int xkmap;
 extern int xkmap_alt;9??0?
 grp 09??-7m 4220reg p OK vi.h:431:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:4312sc %? %@2132sc!0?
-0?
 '\''1i int term_try_mouse(void);
 void term_mouse_on(void);
 void term_mouse_off(void);
@@ -803,7 +797,6 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 			p = mln \? led_col\(mln, MAX\(0, xmouse_col - vi_lncol\)\) : 0;4??0?
 4??+2m 2220reg p OK vi.c:737:a42sc %? %@2152sc!0?
 1;4??!219reg vi.c:7372sc %? %@2132sc!0?
-0?
 '\''1,#+1c 			int p, k = 0, h;
 			if (xlw) {		/* the clicked row may be a wrapped segment */
 				int trow = -xtopsub;

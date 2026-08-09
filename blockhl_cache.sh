@@ -64,7 +64,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 			memcpy\(ln, s, l_nonl\);9??0?
 grp 09??-7m 1220reg p OK lbuf.c:101:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg lbuf.c:1012sc %? %@2132sc!0?
-0?
 '\''1i 	syn_blockhl_invalidate();
 ??!219reg lbuf.c:101:m12sc %? %@2142sc!b1%ya 98?0?
 %f> int ftidx;
@@ -226,7 +225,6 @@ void syn_highlight\(int \*att, char \*s, int n\).*?
 	int hl = rset_find\(syn_ftrs, path, NULL, 0\);9??0?
 grp 09??-8m 5220reg p OK ren.c:406:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ren.c:4062sc %? %@2132sc!0?
-0?
 '\''1i /* block-highlight pair cache, keyed by lbuf line pointer */
 struct hl_cache_entry {
 	char *ln;
@@ -639,7 +637,6 @@ static void vi_drawagain\(int i\)
 		vi_drawrow\(i\);9??0?
 grp 09??-7m 9220reg p OK vi.c:215:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg vi.c:2152sc %? %@2132sc!0?
-0?
 '\''1i 	int s_row = -1;
 ??!219reg vi.c:130:m12sc %? %@2142sc!0?
 '\''2i 			s_row = row - vi_rshift;
@@ -687,7 +684,6 @@ void syn_highlight\(int \*att, char \*s, int n\);.*(#define uc_len\(s\) utf8_len
 #define uc_code\(dst, s, l\) \\9??0?
 grp 09??-7m 1220reg p OK vi.h:265:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:2652sc %? %@2132sc!0?
-0?
 '\''1i void syn_setrow(struct lbuf *lb, int row);
 void syn_blockhl_invalidate(void);
 ??!219reg vi.h:265:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"

@@ -101,7 +101,6 @@ void ex_init\(char \*\*files, int n\)
 (		ex_command\(s\))7??0?
 grp 07??m 2220reg p OK ex.c:1929:a72sc %? %@2152sc!0?
 1;4;7??!219reg ex.c:19292sc %? %@2132sc!0?
-0?
 '\''1s/n\)/n, char **cmds, int cmdnum)/??!219reg ex.c:1917:m12sc %? %@2142sc!0?
 '\''2i 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
@@ -289,7 +288,6 @@ int main\(int argc, char \*argv\[]\).*?
 }9??0?
 grp 09??-7m 4220reg p OK vi.c:1888:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:18882sc %? %@2132sc!0?
-0?
 '\''1c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
 ??!219reg vi.c:1853:m12sc %? %@2142sc!0?
@@ -357,7 +355,6 @@ extern const int conf_mode;
 /\* map file names to file types \*/9??0?
 grp 09??-9m 1220reg p OK vi.h:486:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.h:4862sc %? %@2132sc!0?
-0?
 '\''1s/n\)/n, char** cmds, int cmdnum)/??!219reg vi.h:486:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
 

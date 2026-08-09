@@ -81,7 +81,6 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 	sbuf_cut\(suggestsb, 0\)8??0?
 grp 08??-5m 2220reg p OK led.c:9:a82sc %? %@2152sc!'\''00?
 1;4;7;8??!219reg led.c:92sc %? %@2132sc!0?
-0?
 '\''1i #ifdef __SSE2__
 	const char *i = s;
 	/* scalar prefix until 16-byte aligned */
@@ -169,7 +168,6 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 			s \+= uc_len\(s\);9??0?
 grp 09??-7m 2220reg p OK ren.c:113:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg ren.c:1132sc %? %@2132sc!0?
-0?
 '\''1,#+1c 	} else {
 		n = 0;
 #ifdef __SSE2__
@@ -235,7 +233,6 @@ char \*uc_beg\(char \*beg, char \*s\)
 	for \(; s > beg && \(\(unsigned char\)\*s & 0xc0\) == 0x80; s--\);9??0?
 grp 09??-9m 1220reg p OK uc.c:24:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg uc.c:242sc %? %@2132sc!0?
-0?
 '\''1i #ifdef __SSE2__
 	if (utf8_length[0xc0] != 1) {
 		__m128i v_mask = _mm_set1_epi8((char)0xc0);
@@ -272,7 +269,6 @@ char \*uc_beg\(char \*beg, char \*s\)
 ;0fr.,$f> ^#include <ctype\.h>$4??0?
 4??m 1220reg p OK vi.c:0:a42sc %? %@2152sc!fr 98fr 980?
 1;4??!219reg vi.c:02sc %? %@2132sc!0?
-0?
 '\''1-1i #ifdef __SSE2__
 #include <stdint.h>
 #include <emmintrin.h>

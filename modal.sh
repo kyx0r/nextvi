@@ -85,7 +85,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-9m 1220reg p OK conf.c:298:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2982sc %? %@2132sc!0?
-0?
 '\''1s/mj]/j]|md?/??!219reg conf.c:298:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 	return NULL;
 \)
@@ -142,7 +141,6 @@ static struct excmd \{
 	\{"r", ec_read},9??0?
 grp 09??-7m 2220reg p OK ex.c:1710:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17102sc %? %@2132sc!0?
-0?
 '\''1i static void *ec_modal(char *loc, char *cmd, char *arg)
 {
 	int beg = 0, end = 0, o1 = 0, o2 = -1;
@@ -565,7 +563,6 @@ int vi_lncol;			/\* line numbers cursor offset \*/
 static int vi_lnnum;		/\* line numbers \*/9??0?
 grp 09??-9m 1220reg p OK vi.c:17:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:172sc %? %@2132sc!0?
-0?
 '\''1i #include "modal.c"
 ??!219reg vi.c:17:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'modal.c' 'test' 'vi.c' "$P2VIF"

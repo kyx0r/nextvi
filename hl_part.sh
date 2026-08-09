@@ -374,7 +374,6 @@ void led_render\(char \*s0, int cbeg, int cend\)
 					} else if \(stt\[i] < p->off\)9??0?
 grp 09??-8m 9220reg p OK led.c:215:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg led.c:2152sc %? %@2132sc!0?
-0?
 '\''1i #define LEDBACK 300
 #define LEDFORW 300
 

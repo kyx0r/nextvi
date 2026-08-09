@@ -212,7 +212,6 @@ void ex_init\(char \*\*files, int n\).*?
 ;0fr.,$f+ ^	xvis &= ~4;$4??0?
 4??m 7220reg p OK ex.c:1927:a42sc %? %@2152sc!fr 98fr 980?
 1;4??!219reg ex.c:19272sc %? %@2132sc!0?
-0?
 '\''1c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
@@ -617,7 +616,6 @@ void term_clean\(void\)5??0?
 	}8??0?
 grp 08??-4m 9220reg p OK term.c:343:a82sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8??!219reg term.c:3432sc %? %@2132sc!0?
-0?
 '\''1i int stdin_fd;
 static int isig;
 ??!219reg term.c:8:m12sc %? %@2142sc!0?
@@ -717,7 +715,6 @@ int main\(int argc, char \*argv\[]\)1??0?
 				xvis \|= 8;9??0?
 grp 09??-7m 2220reg p OK vi.c:1864:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:18642sc %? %@2132sc!0?
-0?
 '\''1i 	sigaction(SIGINT, &sa, NULL);
 ??!219reg vi.c:1848:m12sc %? %@2142sc!0?
 '\''2c 		} else if (!argv[i][1])
@@ -745,7 +742,6 @@ extern rset \*fsincl;
 void dir_calc\(char \*path\);8??0?
 grp 08??-4m 1220reg p OK vi.h:544:a82sc %? %@2152sc!'\''00?
 1;4;7;8??!219reg vi.h:5442sc %? %@2132sc!0?
-0?
 '\''1i extern int stdin_fd;
 ??!219reg vi.h:544:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"

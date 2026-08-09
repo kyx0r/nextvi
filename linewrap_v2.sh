@@ -132,7 +132,6 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-10m 1220reg p OK conf.c:297:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2972sc %? %@2132sc!0?
-0?
 '\''1,#+1c ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl(?:lw|[lwpr])?|left|lim|led|vis)\
 |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|lw|\
 ??!219reg conf.c:297:m12sc %? %@2142sc!b1%ya 98?0?
@@ -327,7 +326,6 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 		if \(\*src == xexp\) \{9??0?
 grp 09??-9m 6220reg p OK ex.c:1753:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17532sc %? %@2132sc!0?
-0?
 '\''1i int xlw;			/* soft line wrap column, 0 = off */
 int xhllw = 1;			/* highlight soft linewrap block start/end */
 ??!219reg ex.c:20:m12sc %? %@2142sc!0?
@@ -763,7 +761,6 @@ char \*led_read\(int \*kmap, int c\)
 				ai_new\+\+;9??0?
 grp 09??-8m 11220reg p OK led.c:712:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg led.c:7122sc %? %@2132sc!0?
-0?
 '\''1i int led_row = -1;		/* terminal row of the edited line, -1 = relative */
 static int led_lw;		/* the edited line is drawn wrapped at absolute rows */
 static int led_rowh = 1;	/* the rows the edited line occupies */
@@ -927,7 +924,6 @@ ren_state \*ren_position\(char \*s\)
 	unsigned int b = n \+ 1, c = 2, i;9??0?
 grp 09??-8m 2220reg p OK ren.c:104:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ren.c:1042sc %? %@2132sc!0?
-0?
 '\''1i /* the number of columns a wrapped segment holds */
 int ren_wrapw(int lncol)
 {
@@ -3504,7 +3500,6 @@ e..e.......o......to......o.s. .
 			term_kill\(\);9??0?
 grp 09??-7m 59220reg p OK vi.c:1825:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:18252sc %? %@2132sc!0?
-0?
 '\''1i /* the last rendered column of the given line, measured out of band;
  * nl keeps the trailing newline, which is drawn as a blank cell */
 static int vi_lncmax(char *s, int nl)
@@ -3863,7 +3858,6 @@ int vi_drawline(int row, int trow)
 ??!219reg vi.c:1802:m542sc %? %@2142sc!0?
 ?'\''55s/ xtop \+ xrows/= vi_botrow()/1??1??1q'\''55s/ xtop \+ x(.*)s(\))/= vi_bot\1(\2)/2??2??'\''55220reg p OK vi.c:1807:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1807:m552sc %? %@2142sc!0?
-0?
 '\''56s/w\)/w, vi_srow(orow))/??!219reg vi.c:1809:m562sc %? %@2142sc!0?
 '\''57s/w\)/w, vi_srow(xrow))/??!219reg vi.c:1812:m572sc %? %@2142sc!0?
 '\''58s/w\)/w, vi_srow(xrow))/??!219reg vi.c:1816:m582sc %? %@2142sc!0?
@@ -4052,7 +4046,6 @@ extern int vi_hidch;.*?
 (extern int vi_lncol;)7??0?
 grp 07??m 6220reg p OK vi.h:547:a72sc %? %@2152sc!0?
 1;4;7??!219reg vi.h:5472sc %? %@2132sc!0?
-0?
 '\''1i int ren_wrapw(int lncol);
 ??!219reg vi.h:219:m12sc %? %@2142sc!0?
 '\''2i extern int led_row;
@@ -4094,7 +4087,6 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},5??0?
 5??-1m 1220reg p OK conf.c:298:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg conf.c:2982sc %? %@2132sc!0?
-0?
 ?'\''1s/f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|lw/qf!]?!?|f[-+><tdp]?|inc|i|sc!?|lw|vs|sp/1??1??1q'\''1s/(f!.*w\|)/q\1vs|sp|/2??2??'\''1220reg p OK conf.c:298:s22sc %? %@2162sc!0?
 1;2??!219reg conf.c:298:m12sc %? %@2142sc!0?
 b1%ya 98?0?
@@ -4149,7 +4141,6 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 	curwin->next = w;5??0?
 5??-1m 3220reg p OK ex.c:2145:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg ex.c:21452sc %? %@2132sc!0?
-0?
 '\''1i 	curwin->topsub = xtopsub;
 ??!219reg ex.c:2029:m12sc %? %@2142sc!0?
 '\''2i 	xtopsub = curwin->topsub;
@@ -4392,7 +4383,6 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 				led_row -= n;5??0?
 5??-2m 12220reg p OK led.c:782:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg led.c:7822sc %? %@2132sc!0?
-0?
 '\''1i 	int winy = inwin ? curwin->y : 0;
 ??!219reg led.c:295:m12sc %? %@2142sc!0?
 '\''2i 	int winh = inwin ? curwin->h : xrows;
@@ -4408,7 +4398,6 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 '\''7s/xrows/winh/??!219reg led.c:339:m72sc %? %@2142sc!0?
 ?'\''8s/led_row \+ pos \/ w,/winy + led_row + pos \/ w, winx +/1??1??1q'\''8s/(le.*, )/winy + \1winx + /2??2??'\''8220reg p OK led.c:344:s22sc %? %@2162sc!0?
 1;2??!219reg led.c:344:m82sc %? %@2142sc!0?
-0?
 '\''9c 						len < (curwin ? curwin->h : xrows)
 						&& i < crow; i++)
 ??!219reg led.c:570:m92sc %? %@2142sc!0?
@@ -5280,7 +5269,6 @@ void vi\(int init\)5??0?
 			syn_blockhl = -1;5??0?
 5??-1m 38220reg p OK vi.c:2167:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:21672sc %? %@2132sc!0?
-0?
 '\''1i /* map a window row to its terminal row */
 static int win_scrrow(int trow)
 {
@@ -5338,7 +5326,6 @@ static int win_height(void)
 '\''21s/xrows/win_height()/??!219reg vi.c:1054:m212sc %? %@2142sc!0?
 ?'\''22s/xrows \/ 2\);	/win_height() \/ 2);/1??1??1q'\''22s/xrows( \/.*;)	/win_height()\1/2??2??'\''22220reg p OK vi.c:1059:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1059:m222sc %? %@2142sc!0?
-0?
 '\''23c 		int wy = curwin ? curwin->y : 0, wx = curwin ? curwin->x : 0;
 		term_pos(r1 - xtop < 0 ? wy : wy + r1 - xtop, wx);
 ??!219reg vi.c:1152:m232sc %? %@2142sc!0?
@@ -5348,7 +5335,6 @@ static int win_height(void)
 '\''25s/xrows/win_height()/??!219reg vi.c:1317:m252sc %? %@2142sc!0?
 ?'\''26s/row - xtop, 0/win_scrrow(row - xtop), win_scrcol()/1??1??1q'\''26s/(ro.*op), 0/win_scrrow(\1), win_scrcol()/2??2??'\''26220reg p OK vi.c:1342:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1342:m262sc %? %@2142sc!0?
-0?
 '\''27,#+1c 	if (xrow >= xtop + win_height()) \
 		xtop = xrow - win_height() + 1; \
 ??!219reg vi.c:1474:m272sc %? %@2142sc!0?
@@ -5357,10 +5343,8 @@ static int win_height(void)
 ??!219reg vi.c:1486:m292sc %? %@2142sc!0?
 ?'\''30s/vi_srow\(xrow\) \+ \(pos\) \/ w,/wy + vi_srow(xrow) + (pos) \/ w, wx +/1??1??1q'\''30s/(v.*, )/wy + \1wx + /2??2??'\''30220reg p OK vi.c:1489:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1489:m302sc %? %@2142sc!0?
-0?
 ?'\''31s/xrow - xtop,/wy + xrow - xtop, wx +/1??1??1q'\''31s/(xr.*,)/wy + \1 wx +/2??2??'\''31220reg p OK vi.c:1491:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1491:m312sc %? %@2142sc!0?
-0?
 '\''32d??!219reg vi.c:1504:m322sc %? %@2142sc!0?
 '\''33s/xrows - 1, xrows/win_height() - 1, win_height()/??!219reg vi.c:1530:m332sc %? %@2142sc!0?
 '\''34s/xrows/win_height()/??!219reg vi.c:1596:m342sc %? %@2142sc!0?
@@ -5387,7 +5371,6 @@ static int win_height(void)
 	int row, off, top;		/\* cursor position within window \*/4??0?
 4??+2m 1220reg p OK vi.h:419:a42sc %? %@2152sc!0?
 1;4??!219reg vi.h:4192sc %? %@2132sc!0?
-0?
 '\''1i 	int topsub;			/* the first visible segment of top */
 ??!219reg vi.h:419:m12sc %? %@2142sc!b3%ya 98?0?
 %f> /\* the number of columns a wrapped segment holds \*/
@@ -5417,7 +5400,6 @@ int ren_wrapw\(int lncol\)
 5??0?
 5??-1m 1220reg p OK ren.c:91:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg ren.c:912sc %? %@2132sc!0?
-0?
 '\''1s/ x/ curwin ? curwin->w : x/??!219reg ren.c:91:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
 # Compat (post) from lsp.sh
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
@@ -5445,7 +5427,6 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},5??0?
 5??-1m 1220reg p OK conf.c:300:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg conf.c:3002sc %? %@2132sc!0?
-0?
 '\''1s/\?\|i/?|lsp|i/??!219reg conf.c:300:m12sc %? %@2142sc!b4%ya 98?0?
 %f> 	i = vi_rendrow\(s, trow, 0\);
 	int dcol = rstate->cmax - xleft;
@@ -5488,7 +5469,6 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 /\* redraw the screen \*/5??0?
 5??-2m 2220reg p OK vi.c:435:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:4352sc %? %@2132sc!0?
-0?
 '\''1i 	if (diag)
 		vi_drawdiag(diag, dsev, row - xtop, dcol);
 ??!219reg vi.c:427:m12sc %? %@2142sc!0?

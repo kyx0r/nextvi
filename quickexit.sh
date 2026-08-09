@@ -85,7 +85,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-10m 1220reg p OK conf.c:297:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2972sc %? %@2132sc!0?
-0?
 '\''1s/\(p/(qe|p/??!219reg conf.c:297:m12sc %? %@2142sc!b1%ya 98?0?
 %f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
@@ -152,7 +151,6 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 	\{"wq!", ec_write},9??0?
 grp 09??-7m 3220reg p OK ex.c:1711:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17112sc %? %@2132sc!0?
-0?
 '\''1-1i int xqe = 1000;			/* exit insert via kj (delay in ms) */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i EO(qe)
@@ -197,7 +195,6 @@ sbuf \*led_attsb;
 		if \(ai_max >= 0 && xpac\)9??0?
 grp 09??-7m 2220reg p OK led.c:643:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg led.c:6432sc %? %@2132sc!0?
-0?
 '\''1i static int gettime_ms(void)
 {
 	struct timespec t;
@@ -276,7 +273,6 @@ _default:
 				do \{9??0?
 grp 09??-8m 2220reg p OK vi.c:1548:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:15482sc %? %@2132sc!0?
-0?
 '\''1i #include <time.h>
 ??!219reg vi.c:9:m12sc %? %@2142sc!0?
 '\''2i 				if (xqe)
@@ -369,7 +365,6 @@ extern int xerr;
 extern int xfr;9??0?
 grp 09??-7m 3220reg p OK vi.h:423:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:4232sc %? %@2132sc!0?
-0?
 '\''1i 	int quickexit;
 ??!219reg vi.h:368:m12sc %? %@2142sc!0?
 '\''2i is.quickexit = 0; \

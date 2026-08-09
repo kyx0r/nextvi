@@ -61,7 +61,6 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 		lbuf_copymark\(\(lb->tmp_mark \+ 2\), lb->mark_se\)9??0?
 grp 09??-8m 1220reg p OK lbuf.c:396:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg lbuf.c:3962sc %? %@2132sc!0?
-0?
 '\''1i int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
 	struct lopt *lo;
@@ -126,7 +125,6 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 				vi_mod \|= 1;9??0?
 grp 09??-8m 1220reg p OK vi.c:1434:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:14342sc %? %@2132sc!0?
-0?
 '\''1i 			case TK_CTL('\''o'\''):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
@@ -167,7 +165,6 @@ int lbuf_next\(struct lbuf \*lb, int dir, int \*r, int \*o\);
 int lbuf_findchar\(struct lbuf \*lb, char \*cs, int cmd, int n, int \*r, int \*o\);9??0?
 grp 09??-7m 1220reg p OK vi.h:170:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:1702sc %? %@2132sc!0?
-0?
 '\''1i int lbuf_undojump(struct lbuf *lb, int *pos, int *off);
 ??!219reg vi.h:170:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'lbuf.c' 'vi.c' 'vi.h' "$P2VIF"

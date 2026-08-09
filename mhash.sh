@@ -541,7 +541,6 @@ i...lb.......\(st.u.. ..u..\*.b..i..............., ..t.\*....6??0?
 	return lo;9??0?
 grp 09??-7m 10220reg p OK lbuf.c:188:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg lbuf.c:1882sc %? %@2132sc!0?
-0?
 '\''1,#+1c /* slot of a mark id or the empty slot to insert it at */
 static int *mark_slot(struct mhash *h, int id)
 ??!219reg lbuf.c:25:m12sc %? %@2142sc!0?
@@ -730,7 +729,6 @@ struct linfo \{.*(	int modified;			/\* modification state \*/)
 	int hist_sz;			/\* size of hist\[] \*/9??0?
 grp 09??-8m 3220reg p OK vi.h:140:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.h:1402sc %? %@2132sc!0?
-0?
 '\''1i struct mhash {
 	int sz;			/* capacity, power of 2 */
 	int n;			/* number of used slots */

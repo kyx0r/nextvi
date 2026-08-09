@@ -1429,7 +1429,6 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 		sbuf_make\(xacreg, 128\)9??0?
 grp 09??-8m 29220reg p OK ex.c:1469:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:14692sc %? %@2132sc!0?
-0?
 '\''1s/rset \*x/rstr *x/??!219reg ex.c:40:m12sc %? %@2142sc!0?
 '\''2,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
@@ -1437,7 +1436,6 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 ??!219reg ex.c:229:m22sc %? %@2142sc!0?
 ?'\''3s/xkwdrs->nsubc/(xkwdrs->rs ? xkwdrs->rs->nsubc : 2)/1??1??1q'\''3s/(xk.*d)(rs.*c)/(\1rs->rs ? xkwdrs->\2 : 2)/2??2??'\''3220reg p OK ex.c:276:s22sc %? %@2162sc!0?
 1;2??!219reg ex.c:276:m32sc %? %@2142sc!0?
-0?
 '\''4s/et/tr/??!219reg ex.c:445:m42sc %? %@2142sc!0?
 '\''5s/et_s/tr_/??!219reg ex.c:475:m52sc %? %@2142sc!0?
 '\''6s/regex->//??!219reg ex.c:477:m62sc %? %@2142sc!0?
@@ -1447,10 +1445,8 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 '\''10s/et/tr/??!219reg ex.c:558:m102sc %? %@2142sc!0?
 ?'\''11s/xkwdrs->nsubc/(xkwdrs->rs ? xkwdrs->rs->nsubc : 2)/1??1??1q'\''11s/(xk.*d)(rs.*c)(\))/(\1rs->rs ? xkwdrs->\2 : 2\3)/2??2??'\''11220reg p OK ex.c:578:s22sc %? %@2162sc!0?
 1;2??!219reg ex.c:578:m112sc %? %@2142sc!0?
-0?
 ?'\''12s/nsubc/rs ? xkwdrs->rs->nsubc : 2/1??1??1q'\''12s/(ns.*c)/rs ? xkwdrs->rs->\1 : 2/2??2??'\''12220reg p OK ex.c:581:s22sc %? %@2162sc!0?
 1;2??!219reg ex.c:581:m122sc %? %@2142sc!0?
-0?
 '\''13s/et/tr/??!219reg ex.c:586:m132sc %? %@2142sc!0?
 '\''14s/et/tr/??!219reg ex.c:592:m142sc %? %@2142sc!0?
 '\''15s/et/tr/??!219reg ex.c:1106:m152sc %? %@2142sc!0?
@@ -1460,14 +1456,11 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 '\''17s/et/tr/??!219reg ex.c:1118:m172sc %? %@2142sc!0?
 ?'\''18s/nsubc/rs ? rs->rs->nsubc : 2/1??1??1q'\''18s/(ns.*c)/rs ? rs->rs->\1 : 2/2??2??'\''18220reg p OK ex.c:1127:s22sc %? %@2162sc!0?
 1;2??!219reg ex.c:1127:m182sc %? %@2142sc!0?
-0?
 '\''19s/et/tr/??!219reg ex.c:1182:m192sc %? %@2142sc!0?
 ?'\''20s/rs->nsubc/(rs->rs ? rs->rs->nsubc : 2)/1??1??1q'\''20s/(rs.*c )/(rs->rs ? rs->\1: 2) /2??2??'\''20220reg p OK ex.c:1197:s22sc %? %@2162sc!0?
 1;2??!219reg ex.c:1197:m202sc %? %@2142sc!0?
-0?
 ?'\''21s/rs->nsubc/(rs->rs ? rs->rs->nsubc : 2)/1??1??1q'\''21s/(rs.*c)(\))/(rs->rs ? rs->\1 : 2\2)/2??2??'\''21220reg p OK ex.c:1200:s22sc %? %@2162sc!0?
 1;2??!219reg ex.c:1200:m212sc %? %@2142sc!0?
-0?
 '\''22s/et/tr/??!219reg ex.c:1247:m222sc %? %@2142sc!0?
 '\''23s/et/tr/??!219reg ex.c:1315:m232sc %? %@2142sc!0?
 '\''24s/et_s/tr_/??!219reg ex.c:1323:m242sc %? %@2142sc!0?
@@ -1626,11 +1619,9 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 				break;9??0?
 grp 09??-7m 3220reg p OK lbuf.c:511:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5112sc %? %@2132sc!0?
-0?
 '\''1s/et/tr/??!219reg lbuf.c:494:m12sc %? %@2142sc!0?
 ?'\''2s/nsubc/rs ? re->rs->nsubc : 2/1??1??1q'\''2s/(ns.*c)/rs ? re->rs->\1 : 2/2??2??'\''2220reg p OK lbuf.c:498:s22sc %? %@2162sc!0?
 1;2??!219reg lbuf.c:498:m22sc %? %@2142sc!0?
-0?
 '\''3s/et/tr/??!219reg lbuf.c:511:m32sc %? %@2142sc!b2%ya 98?0?
 %f> \{
 	return re_pikevm\(rs->regex, s, NULL, 0, flg\);
@@ -1641,7 +1632,6 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 (})7??0?
 grp 07??m 1220reg p OK regex.c:751:a72sc %? %@2152sc!0?
 1;7??!219reg regex.c:7512sc %? %@2132sc!0?
-0?
 '\''1i /* return zero if a simple pattern is given */
 static int rstr_simple(rstr *rs, char *re, int icase)
 {
@@ -1936,10 +1926,8 @@ static int fsdir;
 			cpath = ptrs\[i];9??0?
 grp 09??-8m 3220reg p OK vi.c:423:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:4232sc %? %@2132sc!0?
-0?
 ?'\''1s/xkwdrs->nsubc/(xkwdrs->rs ? xkwdrs->rs->nsubc : 2)/1??1??1q'\''1s/(xkwd)(rs-.*c)/(\1rs->rs ? xkwdrs->\2 : 2)/2??2??'\''1220reg p OK vi.c:328:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:328:m12sc %? %@2142sc!0?
-0?
 '\''2s/et/tr/??!219reg vi.c:384:m22sc %? %@2142sc!0?
 '\''3s/et/tr/??!219reg vi.c:423:m32sc %? %@2142sc!b4%ya 98?0?
 %f> 	int nsubc;		/\* total sub count \*/
@@ -2192,7 +2180,6 @@ extern int vi_lncol;.*?
 (extern rset \*fsincl;)7??0?
 grp 07??m 7220reg p OK vi.h:549:a72sc %? %@2152sc!0?
 1;2;3;4;5;6;7??!219reg vi.h:5492sc %? %@2132sc!0?
-0?
 '\''1i typedef struct {
 	rset *rs;		/* only for regex patterns */
 	char *str;		/* for simple, non-regex patterns  */

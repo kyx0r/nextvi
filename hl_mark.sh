@@ -85,7 +85,6 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-10m 1220reg p OK conf.c:297:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:2972sc %? %@2132sc!0?
-0?
 '\''1s/wp/wmp/??!219reg conf.c:297:m12sc %? %@2142sc!b1%ya 98?0?
 %f> int xhlw;			/\* highlight current word \*/
 int xhlp;			/\* highlight \{}\[]\(\) pair \*/
@@ -173,7 +172,6 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 	EO\(vis\),9??0?
 grp 09??-7m 3220reg p OK ex.c:1745:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17452sc %? %@2132sc!0?
-0?
 '\''1i int xhlm;			/* highlight marks */
 ??!219reg ex.c:9:m12sc %? %@2142sc!0?
 '\''2i EO(hlm)
@@ -208,7 +206,6 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 					la\.s = ln;9??0?
 grp 09??-7m 1220reg p OK vi.c:1775:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:17752sc %? %@2132sc!0?
-0?
 '\''1i 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`*";
