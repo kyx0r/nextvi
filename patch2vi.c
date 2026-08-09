@@ -640,11 +640,6 @@ static int m_substr(const char *ln, const void *win, int j)
 	return !w[0] || strstr(ln, w) != NULL;
 }
 
-static int count_window_substr(char **win, int n, int *first)
-{
-	return count_window_by(win, n, first, m_substr);
-}
-
 /* Orig lines in [from..to] containing s. Proves a pattern-8 bottom anchor
  * unambiguous: greedy ".*(bottom)" takes the last occurrence, so the chosen
  * line must be the only one carrying that text down to EOF. */
@@ -702,16 +697,11 @@ static int match_fuzzy_line(const char *orig, const fline_t *f)
 	return *o == 0;
 }
 
-/* Count consecutive-line matches of a fuzzed window in orig_lines; *first =
- * 0-based start of the first match (-1 if none). */
+/* count_window_by with fuzzed-window semantics: the aligned original line must
+ * match win[j]'s literal runes, its masked ones standing for anything. */
 static int m_fuzzy(const char *ln, const void *win, int j)
 {
 	return match_fuzzy_line(ln, &((fline_t *)win)[j]);
-}
-
-static int count_window_fuzzy(fline_t *win, int n, int *first)
-{
-	return count_window_by(win, n, first, m_fuzzy);
 }
 
 /* Build the pre-escaped regex for a fuzzed line: masked runes emit '.', literal
@@ -1362,38 +1352,21 @@ static void emit_reg_call(sbuf *out, int gate, int deep)
 	sb_str(out, "2sc!");
 }
 
-/* Emit ??! error check after a command that may fail.
- * loc: location text in the FAIL message ("path:line" for phase-1
- * searches, "path:line:m<id>" for phase-2 edits at a mark), handed to the
- * shared report chain in REG_LOC.
+/* Emit the ??! error check after a command that may fail, with the FAIL
+ * location it reports through the shared report chain in REG_LOC: phase 1
+ * (search) reports <path>:<line>, phase 2 (edit at a mark) adds :m<id>, and
+ * mark_id < 0 means no mark (new-file insert, custom abs command).
  * phase selects the gate register, whose definedness is the DBG<n> switch
  * and whose chain ends in the phase's INTR and QF<n> calls.
- * tags (optional, may be NULL) prefixes the conditional with a DNF
- * capture-id expression so it branches on recorded statuses instead
- * of the last command's. */
-static void emit_err_check_loc(sbuf *out, const char *loc, int phase,
-			       const char *tags)
-{
-	if (tags && *tags)
-		sb_str(out, tags);
-	/* "?" "?!" split: "??!" in one literal is the trigraph for '|' */
-	sb_printf(out, "?" "?!%dreg %s", REG_LOC, loc);
-	EMIT_ESCSEP(out);
-	emit_reg_call(out, phase == 1 ? REG_ERR1 : REG_ERR2, 0);
-	EMIT_SEP(out);
-}
-
-/* Build the FAIL location and the optional tag list for the check above.
- * Phase 1 (search) reports <path>:<line>, phase 2 (edit at a mark) adds
- * :m<id>; mark_id < 0 means no mark (new-file insert, custom abs command).
  * ids[0..nids) are the capture tags of a fallback chain - every pattern
  * variant in phase 1, every substitute rung in phase 2 - ORed into one DNF
- * expression so the inverted branch fires only if all of them failed. */
+ * expression prefixing the conditional, so it branches on those recorded
+ * statuses instead of the last command's and the inverted branch fires only
+ * if all of them failed. */
 static void emit_err_check(sbuf *out, int phase, int line, int mark_id,
 			   const int *ids, int nids)
 {
 	sbuf_smake(loc, SB_INIT)
-	sbuf_smake(tags, SB_INIT)
 	sb_printf(loc, "%s:%d", cur_file_path ? cur_file_path :
 		  phase == 1 ? "?" : "", line);
 	if (phase == 2) {
@@ -1401,13 +1374,15 @@ static void emit_err_check(sbuf *out, int phase, int line, int mark_id,
 		if (mark_id >= 0)
 			sb_printf(loc, "%d", mark_id);
 	}
-	for (int t = 0; t < nids; t++)
-		sb_printf(tags, t ? ";%d" : "%d", ids[t]);
 	sbuf_null(loc)
-	sbuf_null(tags)
-	emit_err_check_loc(out, loc->s, phase, tags->s);
+	for (int t = 0; t < nids; t++)
+		sb_printf(out, t ? ";%d" : "%d", ids[t]);
+	/* "?" "?!" split: "??!" in one literal is the trigraph for '|' */
+	sb_printf(out, "?" "?!%dreg %s", REG_LOC, loc->s);
+	EMIT_ESCSEP(out);
+	emit_reg_call(out, phase == 1 ? REG_ERR1 : REG_ERR2, 0);
+	EMIT_SEP(out);
 	free(loc->s);
-	free(tags->s);
 }
 
 
@@ -1794,7 +1769,7 @@ static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 		 * five is too thin to trust, however it validates here */
 		int too_loose = total > 0 && masked * 5 > total * 4;
 		int first, cnt = any && !too_loose
-				 ? count_window_fuzzy(win, bn, &first) : 0;
+				 ? count_window_by(win, bn, &first, m_fuzzy) : 0;
 		if (any && !too_loose && cnt == 1 && first == expected) {
 			char **lines = emalloc(bn * sizeof(char *));
 			for (int j = 0; j < bn; j++)
@@ -1887,7 +1862,7 @@ static int gen_grp_window(group_t *g, fuzzwin_t *out)
 		free(raw);
 		return 0;
 	}
-	cnt = count_window_substr(raw, n, &first);
+	cnt = count_window_by(raw, n, &first, m_substr);
 	if (cnt != 1 || first != last - (n - 1)) {
 		free(raw);
 		return 0;
@@ -2914,6 +2889,32 @@ static void parse_level(grp_delta_t *gd, char *line)
 		gd->level = 2;
 }
 
+/* One line of an open PHASE blob, which is byte-verbatim: only the end tag ends
+ * it, every other line is content. which (1/2) picks the blob it lands in, gd
+ * may be NULL where the header named no group the reader knows. Returns the
+ * capture state to keep: which while it stays open, 0 once the tag closed it
+ * and the accumulated bytes - minus the one newline the display pass appended -
+ * are stored. */
+static int ph_capture(sbuf *ph, const char *line, grp_delta_t *gd, int which)
+{
+	char **dst;
+	if (strcmp(line, end_tag_rd) != 0) {
+		sbuf_str(ph, line)
+		sbuf_chr(ph, '\n')
+		return which;
+	}
+	if (ph->s_n > 0 && ph->s[ph->s_n - 1] == '\n')
+		ph->s_n--;
+	sbuf_null(ph)
+	if (gd) {
+		dst = which == 1 ? &gd->ph1 : &gd->ph2;
+		free(*dst);
+		*dst = uc_dup(ph->s);
+	}
+	sbufn_cut(ph, 0)
+	return 0;
+}
+
 /*
  * Parse a multi-file interactive editor blob, mutated in place (so parse a blob
  * only once). "=== FILE: <path> ===" routes the groups after it to
@@ -2942,27 +2943,11 @@ static void parse_grp_blob(char *blob, file_patch_t **active, int nactive,
 			break;  /* blob ends in a newline: no final line */
 		chomp(line);
 
-		/* PHASE blobs are byte-verbatim: only the end tag ends them,
-		 * every other line is content. Strip the one newline the
-		 * display pass appended. */
 		if (in_ph) {
-			if (strcmp(line, end_tag_rd) == 0) {
-				if (ph->s_n > 0 && ph->s[ph->s_n - 1] == '\n')
-					ph->s_n--;
-				sbuf_null(ph)
-				if (file_idx >= 0 && gi >= 0 &&
-				    gi < active[file_idx]->ngroups) {
-					grp_delta_t *pg = &per_file_results[file_idx][gi];
-					char **dst = in_ph == 1 ? &pg->ph1 : &pg->ph2;
-					free(*dst);
-					*dst = uc_dup(ph->s);
-				}
-				sbufn_cut(ph, 0)
-				in_ph = 0;
-			} else {
-				sbuf_str(ph, line)
-				sbuf_chr(ph, '\n')
-			}
+			grp_delta_t *pg = file_idx >= 0 && gi >= 0 &&
+					  gi < active[file_idx]->ngroups
+					  ? &per_file_results[file_idx][gi] : NULL;
+			in_ph = ph_capture(ph, line, pg, in_ph);
 			continue;
 		}
 		if (strcmp(line, "=== PHASE 1 ===") == 0 ||
@@ -3407,6 +3392,25 @@ static void write_groups_to_file(sbuf *fp, group_t *groups, int ngroups,
 	free_orig_file();
 }
 
+/* The editor-side blob of a whole unit: one "=== FILE: <path> ===" section per
+ * file, each holding that file's groups. Written three times per session - the
+ * injection blob, the no-injection baseline and the displayed text - which
+ * differ only in the store they inject from and whether the PHASE blobs are
+ * shown, so every one of them is spelled here. */
+static void write_files_blob(sbuf *out, file_patch_t **fps, int n,
+			     file_delta_t **fd_per, int with_phase)
+{
+	for (int k = 0; k < n; k++) {
+		sb_printf(out, "=== FILE: %s ===\n", fps[k]->path);
+		write_groups_to_file(out, fps[k]->groups, fps[k]->ngroups,
+				     fd_per ? fd_per[k] : NULL, fps[k]->is_new,
+				     fps[k]->orig_path ? fps[k]->orig_path
+				     : fps[k]->path, with_phase);
+		sb_printf(out, "%s\n\n", end_tag_wr);
+	}
+	sbuf_null(out)
+}
+
 static void gen_group_segments(file_patch_t *fp);
 
 /* Drop every custom_* override so apply_grp_edits starts clean: an emptied
@@ -3844,16 +3848,7 @@ static void inject_deltas(file_patch_t **fps, int n, dstore_t *ds)
 	file_delta_t **fd_per = dstore_per_file(ds, fps, n);
 
 	sbuf_smake(tmp_sb, SB_INIT)
-	for (int k = 0; k < n; k++) {
-		sb_printf(tmp_sb, "=== FILE: %s ===\n", fps[k]->path);
-		write_groups_to_file(tmp_sb,
-				     fps[k]->groups, fps[k]->ngroups,
-				     fd_per[k], fps[k]->is_new,
-				     fps[k]->orig_path ? fps[k]->orig_path
-				     : fps[k]->path, 0);
-		sb_printf(tmp_sb, "%s\n\n", end_tag_wr);
-	}
-	sbuf_null(tmp_sb)
+	write_files_blob(tmp_sb, fps, n, fd_per, 0);
 
 	grp_delta_t **pre_per = emalloc(n * sizeof(grp_delta_t *));
 	for (int k = 0; k < n; k++)
@@ -4113,15 +4108,7 @@ static void build_unit_blobs(unit_t *u)
 	file_delta_t **fd_per = dstore_per_file(u->ins, u->fps, u->n);
 
 	sbuf_smake(orig, SB_INIT)
-	for (int k = 0; k < u->n; k++) {
-		sb_printf(orig, "=== FILE: %s ===\n", u->fps[k]->path);
-		write_groups_to_file(orig, u->fps[k]->groups, u->fps[k]->ngroups,
-				     NULL, u->fps[k]->is_new,
-				     u->fps[k]->orig_path ? u->fps[k]->orig_path
-				     : u->fps[k]->path, 0);
-		sb_printf(orig, "%s\n\n", end_tag_wr);
-	}
-	sbuf_null(orig)
+	write_files_blob(orig, u->fps, u->n, NULL, 0);
 	u->orig = orig->s;
 
 	inject_deltas(u->fps, u->n, u->ins);
@@ -4129,15 +4116,7 @@ static void build_unit_blobs(unit_t *u)
 		gen_group_segments(u->fps[k]);
 
 	sbuf_smake(ph, SB_INIT)
-	for (int k = 0; k < u->n; k++) {
-		sb_printf(ph, "=== FILE: %s ===\n", u->fps[k]->path);
-		write_groups_to_file(ph, u->fps[k]->groups, u->fps[k]->ngroups,
-				     fd_per[k], u->fps[k]->is_new,
-				     u->fps[k]->orig_path ? u->fps[k]->orig_path
-				     : u->fps[k]->path, 1);
-		sb_printf(ph, "%s\n\n", end_tag_wr);
-	}
-	sbuf_null(ph)
+	write_files_blob(ph, u->fps, u->n, fd_per, 1);
 	u->phased = ph->s;
 
 	free(fd_per);
@@ -4953,6 +4932,8 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
  * calls REG_HDLR and then the phase's quit chain, so QF only fires where the
  * report does. The redirect is switched off again right after ("pr" with no
  * argument toggles), leaving the log the only state the site keeps. */
+static void emit_qf2_assert(sbuf *out);
+
 static void emit_reg_defaults(sbuf *out)
 {
 	sb_printf(out, "%dreg pr%c", REG_HDLR, REG_FLOG);
@@ -4974,8 +4955,8 @@ static void emit_reg_defaults(sbuf *out)
 	EMIT_ESCSEP(out);
 	sb_str(out, "q!1");
 	EMIT_SEP(out);
-	sb_printf(out, "%dreg ? %%@%d", REG_QF2, REG_QF2A);
-	EMIT_SEP(out);
+	/* the default assert, the same one a -co block restores */
+	emit_qf2_assert(out);
 }
 
 /* The switches, as whole commands the shell either contributes or not - the
@@ -6994,7 +6975,7 @@ static void dop_add(dops_t *d, char t, char *s)
 typedef struct {
 	const char *s;
 	int co, cn;		/* occurrences in old[] / new[] */
-	int io, in;		/* the last index seen on each side */
+	int in;			/* the last index seen in new[] */
 } lmap_t;
 
 static lmap_t *lmap_slot(lmap_t *t, unsigned mask, const char *s)
@@ -7026,7 +7007,6 @@ static int diff_anchors(char **old, int os, int oe, char **new, int ns, int ne,
 		lmap_t *e = lmap_slot(t, mask, old[k]);
 		e->s = old[k];
 		e->co++;
-		e->io = k;
 	}
 	for (k = ns; k < ne; k++) {
 		lmap_t *e = lmap_slot(t, mask, new[k]);
@@ -8268,28 +8248,16 @@ static int read_delta_sections(FILE *in)
 	sbuf_smake(ph, SB_INIT)
 	while (read_line(in, lb)) {
 		line = chomp_sb(lb);
-		/* Verbatim blobs are raw: only the end tag ends them.
-		 * Their bytes are marked used so a changed patch cannot
-		 * pick a SEP/ESC that collides with them. */
+		/* A stored blob's bytes are marked used as it closes, so a
+		 * changed patch cannot pick a SEP/ESC that collides with them. */
 		if (in_ph) {
-			if (strcmp(line, end_tag_rd) == 0) {
-				if (ph->s_n > 0 && ph->s[ph->s_n - 1] == '\n')
-					ph->s_n--;
-				sbuf_null(ph)
-				if (cur_gd) {
-					char **dst = in_ph == 1
-						     ? &cur_gd->ph1 : &cur_gd->ph2;
-					free(*dst);
-					*dst = uc_dup(ph->s);
-					mark_verbatim_bytes(*dst, cur_gd->ovr_esc,
-							    cur_gd->ovr_sep);
-				}
-				sbufn_cut(ph, 0)
-				in_ph = 0;
-			} else {
-				sbuf_str(ph, line)
-				sbuf_chr(ph, '\n')
-			}
+			int was = in_ph;
+			in_ph = ph_capture(ph, line, cur_gd, in_ph);
+			if (!in_ph && cur_gd)
+				mark_verbatim_bytes(was == 1 ? cur_gd->ph1
+						    : cur_gd->ph2,
+						    cur_gd->ovr_esc,
+						    cur_gd->ovr_sep);
 			continue;
 		}
 		/* === COMPAT PATCH === body: raw diff lines, so a source
