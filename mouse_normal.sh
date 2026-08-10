@@ -1152,7 +1152,7 @@ index 05c58da5..e24ef4b5 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index db848fca..b1ad6c61 100644
+index 016e6304..72660442 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -513,6 +513,9 @@ static void vc_status(int type)

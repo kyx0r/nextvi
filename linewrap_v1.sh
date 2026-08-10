@@ -1189,24 +1189,24 @@ s......... ..........ha...s........s\)
 %f+ 				}
 				xoff--;
 				rep_record\(\)4??0?
-4??+2m 2220reg p OK vi.c:1550:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.c:1554:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				}.*?
 				xoff--;.*?
 (				rep_record\(\))7??0?
-grp 07??m 2220reg p OK vi.c:1550:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1554:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					c = xoff != lbuf_eol\(xb, xrow, 1\) \? '\''i'\'' : '\''a'\'';
 					xb->useq \+= xseq;
 					goto insert;.*(				vc_join\(1, vi_arg <= 1 \? 2 : vi_arg\);)
 				rep_record\(\)
 				vi_mod \|= 1;8??0?
-grp 08??-4m 2220reg p OK vi.c:1550:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1554:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 						} else
 							vi_delete\(xrow, xoff - 1, xrow, xoff, 0\);
 					}.*(			case '\''K'\'': \{)
 				preserve\(int, xvis, xvis = 1;\)
 				do \{9??0?
-grp 09??-8m 2220reg p OK vi.c:1550:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15502sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK vi.c:1554:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15542sc %? %@2132sc!0?
 '\''1i 	if (xhllw && s) {
 		led_att la;
 		int lw = lbuf_s(s)->lwrap;
@@ -1228,7 +1228,7 @@ s......... ..........ha...s........s\)
 ??!219reg vi.c:172:m12sc %? %@2142sc!0?
 '\''2i 				vi_mod |= lbuf_lwmod;
 				lbuf_lwmod = 0;
-??!219reg vi.c:1550:m22sc %? %@2142sc!b5%ya 98?0?
+??!219reg vi.c:1554:m22sc %? %@2142sc!b5%ya 98?0?
 %f> 	int n_ins, n_del;	/\* modification range \*/
 	int seq;		/\* operation number \*/
 	int ref;		/\* ins/del ref exists on lbuf \*/
@@ -1687,7 +1687,7 @@ index 25b0a4fa..a0666ffe 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index db848fca..a29f83a1 100644
+index 016e6304..fa0379c0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,24 @@ static void vi_drawrow(int row)
@@ -1715,7 +1715,7 @@ index db848fca..a29f83a1 100644
  	skip:
  	rstate += row != xrow;
  	if (!s)
-@@ -1548,6 +1566,8 @@ void vi(int init)
+@@ -1552,6 +1570,8 @@ void vi(int init)
  				}
  				xoff--;
  				rep_record()

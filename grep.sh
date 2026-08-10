@@ -652,24 +652,24 @@ static int rep_len;
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);4??0?
-4??+2m 12220reg p OK vi.c:1861:a42sc %? %@2152sc!1q0?
+4??+2m 12220reg p OK vi.c:1865:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	temp_open\(0, "/hist/", _ft\);.*?
 	temp_open\(1, "/fm/", fm_ft\);.*?
 (	temp_open\(2, "/sc/", _ft\);)7??0?
-grp 07??m 12220reg p OK vi.c:1861:a72sc %? %@2152sc!1q0?
+grp 07??m 12220reg p OK vi.c:1865:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	setup_signals\(\);
 	dir_init\(\);
 	syn_init\(\);.*(			break;)
 		}
 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{8??0?
-grp 08??-4m 12220reg p OK vi.c:1861:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 12220reg p OK vi.c:1865:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> int main\(int argc, char \*argv\[]\)
 \{
 	int i, j;.*(			if \(argv\[i]\[j] == '\''s'\''\))
 				xvis \|= 1\|2;
 			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
-grp 09??-7m 12220reg p OK vi.c:1861:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:18612sc %? %@2132sc!0?
+grp 09??-7m 12220reg p OK vi.c:1865:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18652sc %? %@2132sc!0?
 '\''1s/\(\)/(isbuffer)/??!219reg vi.c:443:m12sc %? %@2142sc!0?
 '\''2s/ret && xrow/isbuffer/??!219reg vi.c:448:m22sc %? %@2142sc!0?
 '\''3s/ c/ again, int c/??!219reg vi.c:459:m32sc %? %@2142sc!0?
@@ -733,7 +733,7 @@ static int rep_len;
 					break;
 ??!219reg vi.c:1415:m112sc %? %@2142sc!0?
 '\''12i 	temp_open(3, "/grep/", grep_ft);
-??!219reg vi.c:1861:m122sc %? %@2142sc!b3%ya 98?0?
+??!219reg vi.c:1865:m122sc %? %@2142sc!b3%ya 98?0?
 %f> extern int xregs_n;
 extern int xdefreg;
 extern struct buf \*bufs;
@@ -833,7 +833,7 @@ index 3d5a1721..338614ba 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index db848fca..86b290fb 100644
+index 016e6304..70d7ec2b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -440,12 +440,12 @@ void dir_calc(char *path)
@@ -962,7 +962,7 @@ index db848fca..86b290fb 100644
  				case 'r': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					n = cs ? strlen(cs) : 0;
-@@ -1859,6 +1908,7 @@ int main(int argc, char *argv[])
+@@ -1863,6 +1912,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);

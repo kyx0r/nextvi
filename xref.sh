@@ -370,24 +370,24 @@ static int rep_len;
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;4??0?
-4??+2m 4220reg p OK vi.c:1645:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK vi.c:1649:a42sc %? %@2152sc!1q0?
 grp 1%f+ 					ex_command\(cmd\).*?
 					restore\(xled\).*?
 (					vi_mod \|= 1;)7??0?
-grp 07??m 4220reg p OK vi.c:1645:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.c:1649:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					preserve\(int, xled, xled = 0;\)
 					char cmd\[64] = "g/\./& ";
 					memcpy\(itoa\(vi_arg, cmd\+5\), "gw", sizeof\("gw"\)\);.*(			case '\''x'\'':)
 				term_push\("d ", 2\);
 				goto motion;8??0?
-grp 08??-4m 4220reg p OK vi.c:1645:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK vi.c:1649:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					restore\(xvis\)
 					vi_mod \|= !texec;
 				} else if \(k == '\''q'\''\) \{.*(			case '\''X'\'':)
 				term_push\("d", 2\);
 				goto motion;9??0?
-grp 09??-7m 4220reg p OK vi.c:1645:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:16452sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK vi.c:1649:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:16492sc %? %@2132sc!0?
 ?0?
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
@@ -399,24 +399,24 @@ static int rep_len;
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);4??0?
-4??+2m 5220reg p OK vi.c:1861:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK vi.c:1865:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	temp_open\(0, "/hist/", _ft\);.*?
 	temp_open\(1, "/fm/", fm_ft\);.*?
 (	temp_open\(2, "/sc/", _ft\);)7??0?
-grp 07??m 5220reg p OK vi.c:1861:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.c:1865:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	setup_signals\(\);
 	dir_init\(\);
 	syn_init\(\);.*(			break;)
 		}
 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{8??0?
-grp 08??-4m 5220reg p OK vi.c:1861:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK vi.c:1865:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> int main\(int argc, char \*argv\[]\)
 \{
 	int i, j;.*(			if \(argv\[i]\[j] == '\''s'\''\))
 				xvis \|= 1\|2;
 			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
-grp 09??-7m 5220reg p OK vi.c:1861:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:18612sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK vi.c:1865:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18652sc %? %@2132sc!0?
 '\''1i /* xref: a symbol and its transitive callees, extracted into /xref/ */
 static int xbudget = 200;		/* max extents in one closure */
 static char *xref_seedft;		/* the file type the seed was found in */
@@ -707,9 +707,9 @@ static char *xref_build(char *sym, int maxdepth)
 					}
 					temp_switch(XREF_BUF, 0);
 					vi_mod |= 1;
-??!219reg vi.c:1645:m42sc %? %@2142sc!0?
+??!219reg vi.c:1649:m42sc %? %@2142sc!0?
 '\''5i 	temp_open(XREF_BUF, "/xref/", _ft);
-??!219reg vi.c:1861:m52sc %? %@2142sc!b2%ya 98?0?
+??!219reg vi.c:1865:m52sc %? %@2142sc!b2%ya 98?0?
 %f> 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
 };
@@ -2108,7 +2108,7 @@ index 3d5a1721..487f8df0 100644
  	{"x", ec_write},
  	{"ya!", ec_yank},
 diff --git a/vi.c b/vi.c
-index db848fca..c505db84 100644
+index 016e6304..a170f420 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -484,6 +484,260 @@ static int fs_searchback(int cnt, int *row, int *off)
@@ -2404,7 +2404,7 @@ index db848fca..c505db84 100644
  				case ';':
  					ln = vi_enprompt(":", "!", &k, &n);
  					goto do_excmd;
-@@ -1643,6 +1911,23 @@ void vi(int init)
+@@ -1647,6 +1915,23 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -2428,7 +2428,7 @@ index db848fca..c505db84 100644
  				} else if (k == '~' || k == 'u' || k == 'U')
  					vc_motion(k);
  				break;
-@@ -1859,6 +2144,7 @@ int main(int argc, char *argv[])
+@@ -1863,6 +2148,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);

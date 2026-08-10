@@ -255,29 +255,29 @@ _default:
 %f+ 				}
 				xoff--;
 				rep_record\(\)4??0?
-4??+2m 2220reg p OK vi.c:1550:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.c:1554:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				}.*?
 				xoff--;.*?
 (				rep_record\(\))7??0?
-grp 07??m 2220reg p OK vi.c:1550:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1554:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					c = xoff != lbuf_eol\(xb, xrow, 1\) \? '\''i'\'' : '\''a'\'';
 					xb->useq \+= xseq;
 					goto insert;.*(				vc_join\(1, vi_arg <= 1 \? 2 : vi_arg\);)
 				rep_record\(\)
 				vi_mod \|= 1;8??0?
-grp 08??-4m 2220reg p OK vi.c:1550:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1554:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 						} else
 							vi_delete\(xrow, xoff - 1, xrow, xoff, 0\);
 					}.*(			case '\''K'\'': \{)
 				preserve\(int, xvis, xvis = 1;\)
 				do \{9??0?
-grp 09??-8m 2220reg p OK vi.c:1550:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15502sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK vi.c:1554:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15542sc %? %@2132sc!0?
 '\''1i #include <time.h>
 ??!219reg vi.c:9:m12sc %? %@2142sc!0?
 '\''2i 				if (xqe)
 					vi_mod |= 2;
-??!219reg vi.c:1550:m22sc %? %@2142sc!b4%ya 98?0?
+??!219reg vi.c:1554:m22sc %? %@2142sc!b4%ya 98?0?
 %f> 	int p_reg;
 	int lsug;
 	int sug_pt;
@@ -450,7 +450,7 @@ index 9eb8e85b..7152a2c9 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index db848fca..005008bf 100644
+index 016e6304..36c2c026 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -461,7 +461,7 @@ index db848fca..005008bf 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1548,6 +1549,8 @@ void vi(int init)
+@@ -1552,6 +1553,8 @@ void vi(int init)
  				}
  				xoff--;
  				rep_record()

@@ -1156,7 +1156,7 @@ index 9eb8e85b..09420a89 100644
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
-index db848fca..c31c12b6 100644
+index 016e6304..f13f1f3e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -934,9 +934,19 @@ static void vi_shift(int r1, int r2, int dir, int count)

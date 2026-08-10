@@ -2985,17 +2985,17 @@ else if \(xrow >= xtop \+ xrows\) \\
 				if \(c == TK_CTL\('\''z'\''\)\) \{
 					term_pos\(xrows, 0\);
 					term_suspend\(\);2??0?
-2??m 37220reg p OK vi.c:1568:a22sc %? %@2152sc!1q0?
+2??m 37220reg p OK vi.c:1572:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			case TK_CTL\('\''l'\''\):$3??0?
-3??m 37220reg p OK vi.c:1568:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 37220reg p OK vi.c:1572:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				vi_mod \|= 1;
 				break; }
 			case TK_CTL\('\''z'\''\):4??0?
-4??+3m 37220reg p OK vi.c:1568:a42sc %? %@2152sc!1q0?
+4??+3m 37220reg p OK vi.c:1572:a42sc %? %@2152sc!1q0?
 %f+ 				if \(c == TK_CTL\('\''z'\''\)\) \{
 					term_pos\(xrows, 0\);
 					term_suspend\(\);5??0?
-5??-1m 37220reg p OK vi.c:1568:a52sc %? %@2152sc!1q0?
+5??-1m 37220reg p OK vi.c:1572:a52sc %? %@2152sc!1q0?
 %f+ .	.	...... .....
 ...	.r.ak...
 .........._.......\):
@@ -3003,25 +3003,25 @@ else if \(xrow >= xtop \+ xrows\) \\
 .	...........TK_.T.\(...\)...
 .			...r..........s, ..;
 ....	...._.u....d\(.;6??0?
-6??+3m 37220reg p OK vi.c:1568:a62sc %? %@2152sc!1q0?
+6??+3m 37220reg p OK vi.c:1572:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				vi_mod \|= 1;.*?
 				break; }.*?
 			case TK_CTL\('\''z'\''\):.*?
 (			case TK_CTL\('\''l'\''\):)7??0?
-grp 07??m 37220reg p OK vi.c:1568:a72sc %? %@2152sc!1q0?
+grp 07??m 37220reg p OK vi.c:1572:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				} while \(vi_arg--\);
 				restore\(xvis\)
 				rep_record\(\).*(					term_done\(\);)
 					term_init\(\);
 				}8??0?
-grp 08??-5m 37220reg p OK vi.c:1568:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 37220reg p OK vi.c:1572:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				preserve\(int, xvis, xvis = 1;\)
 				do \{
 					ex_exec\(";\+1c\\n:-1"\);.*(			case '\''m'\'':)
 				lbuf_mark\(xb, term_read\(0\), xrow, xoff\);
 				break;9??0?
-grp 09??-10m 37220reg p OK vi.c:1568:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:15682sc %? %@2132sc!0?
+grp 09??-10m 37220reg p OK vi.c:1572:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:15722sc %? %@2132sc!0?
 ?0?
 %f+ 					term_done\(\);
 					term_init\(\);
@@ -3031,24 +3031,24 @@ else if \(xrow >= xtop \+ xrows\) \\
 %f+ 					term_done\(\);
 					term_init\(\);
 				}4??0?
-4??+2m 38220reg p OK vi.c:1575:a42sc %? %@2152sc!1q0?
+4??+2m 38220reg p OK vi.c:1579:a42sc %? %@2152sc!1q0?
 grp 1%f+ 					term_done\(\);.*?
 					term_init\(\);.*?
 (				})7??0?
-grp 07??m 38220reg p OK vi.c:1575:a72sc %? %@2152sc!1q0?
+grp 07??m 38220reg p OK vi.c:1579:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					term_pos\(xrows, 0\);
 					term_suspend\(\);
 				} else \{.*(			case '\''p'\'':)
 			case '\''P'\'':
 				vi_mod \|= vc_put\(c\);8??0?
-grp 08??-6m 38220reg p OK vi.c:1575:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 38220reg p OK vi.c:1579:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			case TK_CTL\('\''z'\''\):
 			case TK_CTL\('\''l'\''\):
 				if \(c == TK_CTL\('\''z'\''\)\) \{.*(			case '\''z'\'':)
 				k = term_read\(0\);
 				switch \(k\) \{9??0?
-grp 09??-10m 38220reg p OK vi.c:1575:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15752sc %? %@2132sc!0?
+grp 09??-10m 38220reg p OK vi.c:1579:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15792sc %? %@2132sc!0?
 ?0?
 %f+ 				vi_mod \|= 1;
 				break;
@@ -3060,34 +3060,34 @@ else if \(xrow >= xtop \+ xrows\) \\
 			case '\''m'\'':
 				lbuf_mark\(xb, term_read\(0\), xrow, xoff\);
 				break;2??0?
-2??m 40220reg p OK vi.c:1577:a22sc %? %@2152sc!1q0?
+2??m 40220reg p OK vi.c:1581:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				break;$3??0?
-3??m 40220reg p OK vi.c:1577:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 40220reg p OK vi.c:1581:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^				vi_mod \|= 1;$4??0?
-4??+1m 40220reg p OK vi.c:1577:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 40220reg p OK vi.c:1581:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 			case '\''m'\'':
 				lbuf_mark\(xb, term_read\(0\), xrow, xoff\);
 				break;5??0?
-5??-1m 40220reg p OK vi.c:1577:a52sc %? %@2152sc!1q0?
+5??-1m 40220reg p OK vi.c:1581:a52sc %? %@2152sc!1q0?
 %f+ 	..	...m........
 	..	.re...
 .....s..'\''m'\'':
 ........_......b.......r.ad..\)..........f...
 	.........6??0?
-6??+1m 40220reg p OK vi.c:1577:a62sc %? %@2152sc!1q0?
+6??+1m 40220reg p OK vi.c:1581:a62sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					term_pos\(xrows, 0\);
 					term_suspend\(\);
 				} else \{.*(			case '\''p'\'':)
 			case '\''P'\'':
 				vi_mod \|= vc_put\(c\);8??0?
-grp 08??-4m 40220reg p OK vi.c:1577:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 40220reg p OK vi.c:1581:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			case TK_CTL\('\''z'\''\):
 			case TK_CTL\('\''l'\''\):
 				if \(c == TK_CTL\('\''z'\''\)\) \{.*(			case '\''z'\'':)
 				k = term_read\(0\);
 				switch \(k\) \{9??0?
-grp 09??-8m 40220reg p OK vi.c:1577:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;8;9??!219reg vi.c:15772sc %? %@2132sc!0?
+grp 09??-8m 40220reg p OK vi.c:1581:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;8;9??!219reg vi.c:15812sc %? %@2132sc!0?
 ?0?
 %f+ 					xtop = xrow;
 					break;
@@ -3099,41 +3099,41 @@ else if \(xrow >= xtop \+ xrows\) \\
 %f+ 					xtop = MAX\(0, xrow - xrows / 2\);
 					break;
 				case '\''-'\'':2??0?
-2??m 41220reg p OK vi.c:1592:a22sc %? %@2152sc!1q0?
+2??m 41220reg p OK vi.c:1596:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^					xtop = MAX\(0, xrow - xrows / 2\);$3??0?
-3??m 41220reg p OK vi.c:1592:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 41220reg p OK vi.c:1596:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					xtop = xrow;
 					break;
 				case '\''\.'\'':4??0?
-4??+3m 41220reg p OK vi.c:1592:a42sc %? %@2152sc!1q0?
+4??+3m 41220reg p OK vi.c:1596:a42sc %? %@2152sc!1q0?
 %f+ 					break;
 				case '\''-'\'':5??0?
-5??-1m 41220reg p OK vi.c:1592:a52sc %? %@2152sc!1q0?
+5??-1m 41220reg p OK vi.c:1596:a52sc %? %@2152sc!1q0?
 %f+ .	...x..p.. .r...
 	.	......k.
 	.....se...'\''.
 .	....t.p...........r.. ..x...../....
 ...	......;
 .	..c......'\''.6??0?
-6??+3m 41220reg p OK vi.c:1592:a62sc %? %@2152sc!1q0?
+6??+3m 41220reg p OK vi.c:1596:a62sc %? %@2152sc!1q0?
 grp 1%f+ 					xtop = xrow;.*?
 					break;.*?
 				case '\''\.'\'':.*?
 (					xtop = MAX\(0, xrow - xrows / 2\);)7??0?
-grp 07??m 41220reg p OK vi.c:1592:a72sc %? %@2152sc!1q0?
+grp 07??m 41220reg p OK vi.c:1596:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				k = term_read\(0\);
 				switch \(k\) \{
 				case '\''\\n'\'':.*(				case '\''L'\'':)
 				case '\''R'\'':
 					xtd = uc_isupper\(k\)\+1;8??0?
-grp 08??-7m 41220reg p OK vi.c:1592:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 41220reg p OK vi.c:1596:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				vi_mod \|= vc_put\(c\);
 				break;
 			case '\''z'\'':.*(					xtd = tolower\(k\) == '\''r'\'' \? -xtd : xtd;)
 					rstates\[0]\.s = NULL;
 					rstates\[1]\.s = NULL;9??0?
-grp 09??-10m 41220reg p OK vi.c:1592:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:15922sc %? %@2132sc!0?
+grp 09??-10m 41220reg p OK vi.c:1596:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:15962sc %? %@2132sc!0?
 ?0?
 %f+ 					break;
 				case '\''-'\'':
@@ -3146,40 +3146,40 @@ else if \(xrow >= xtop \+ xrows\) \\
 					break;
 				case '\''l'\'':
 				case '\''r'\'':2??0?
-2??m 43220reg p OK vi.c:1595:a22sc %? %@2152sc!1q0?
+2??m 43220reg p OK vi.c:1599:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^					xtop = MAX\(0, xrow - xrows \+ 1\);$3??0?
-3??m 43220reg p OK vi.c:1595:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 43220reg p OK vi.c:1599:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					break;
 				case '\''-'\'':4??0?
-4??+2m 43220reg p OK vi.c:1595:a42sc %? %@2152sc!1q0?
+4??+2m 43220reg p OK vi.c:1599:a42sc %? %@2152sc!1q0?
 %f+ 					break;
 				case '\''l'\'':
 				case '\''r'\'':5??0?
-5??-1m 43220reg p OK vi.c:1595:a52sc %? %@2152sc!1q0?
+5??-1m 43220reg p OK vi.c:1599:a52sc %? %@2152sc!1q0?
 %f+ ....	......
 .	...... ..'\'':
 ..		...o.......... ..ow......w.......
 ...	...eak.
 ...	c.se..l'\'':
 ...	..s......6??0?
-6??+2m 43220reg p OK vi.c:1595:a62sc %? %@2152sc!1q0?
+6??+2m 43220reg p OK vi.c:1599:a62sc %? %@2152sc!1q0?
 grp 1%f+ 					break;.*?
 				case '\''-'\'':.*?
 (					xtop = MAX\(0, xrow - xrows \+ 1\);)7??0?
-grp 07??m 43220reg p OK vi.c:1595:a72sc %? %@2152sc!1q0?
+grp 07??m 43220reg p OK vi.c:1599:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				k = term_read\(0\);
 				switch \(k\) \{
 				case '\''\\n'\'':.*(				case '\''L'\'':)
 				case '\''R'\'':
 					xtd = uc_isupper\(k\)\+1;8??0?
-grp 08??-4m 43220reg p OK vi.c:1595:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 43220reg p OK vi.c:1599:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				vi_mod \|= vc_put\(c\);
 				break;
 			case '\''z'\'':.*(					xtd = tolower\(k\) == '\''r'\'' \? -xtd : xtd;)
 					rstates\[0]\.s = NULL;
 					rstates\[1]\.s = NULL;9??0?
-grp 09??-7m 43220reg p OK vi.c:1595:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:15952sc %? %@2132sc!0?
+grp 09??-7m 43220reg p OK vi.c:1599:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:15992sc %? %@2132sc!0?
 ?0?
 %f+ 				ex_exec\("left0:reg"\);
 				break;
@@ -3193,17 +3193,17 @@ else if \(xrow >= xtop \+ xrows\) \\
 				xleft = vi_arg \? xleft : 0;
 				led_modeswap\(\);
 				vi_mod \|= 1;2??0?
-2??m 44220reg p OK vi.c:1682:a22sc %? %@2152sc!1q0?
+2??m 44220reg p OK vi.c:1686:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				term_pos\(xrow - xtop, 0\);$3??0?
-3??m 44220reg p OK vi.c:1682:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 44220reg p OK vi.c:1686:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				ex_exec\("left0:reg"\);
 				break;
 			case '\''Q'\'':4??0?
-4??+3m 44220reg p OK vi.c:1682:a42sc %? %@2152sc!1q0?
+4??+3m 44220reg p OK vi.c:1686:a42sc %? %@2152sc!1q0?
 %f+ 				xleft = vi_arg \? xleft : 0;
 				led_modeswap\(\);
 				vi_mod \|= 1;5??0?
-5??-1m 44220reg p OK vi.c:1682:a52sc %? %@2152sc!1q0?
+5??-1m 44220reg p OK vi.c:1686:a52sc %? %@2152sc!1q0?
 %f+ ..........c."....0.r.g"..
 ..	.br....
 	.	c... '\''...
@@ -3211,25 +3211,25 @@ else if \(xrow >= xtop \+ xrows\) \\
 ..	.x.e.... vi...... ..... ...;
 ..	................
 .	...i.... ....;6??0?
-6??+3m 44220reg p OK vi.c:1682:a62sc %? %@2152sc!1q0?
+6??+3m 44220reg p OK vi.c:1686:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				ex_exec\("left0:reg"\);.*?
 				break;.*?
 			case '\''Q'\'':.*?
 (				term_pos\(xrow - xtop, 0\);)7??0?
-grp 07??m 44220reg p OK vi.c:1682:a72sc %? %@2152sc!1q0?
+grp 07??m 44220reg p OK vi.c:1686:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				vi_mod \|= vc_replace\(\);
 				break;
 			case '\''R'\'':.*(				if \(xquit\))
 					continue;
 				break;8??0?
-grp 08??-4m 44220reg p OK vi.c:1682:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 44220reg p OK vi.c:1686:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				icmd_pos--;
 				goto re_motion;
 			case '\''r'\'':.*(			case '\''Z'\'':)
 				k = term_read\(0\);
 				if \(TK_INT\(k\)\)9??0?
-grp 09??-7m 44220reg p OK vi.c:1682:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:16822sc %? %@2132sc!0?
+grp 09??-7m 44220reg p OK vi.c:1686:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:16862sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		if \(vi_mod\)
@@ -3245,18 +3245,18 @@ else if \(xrow >= xtop \+ xrows\) \\
 		n = led_pos\(ln, ren_cursor\(ln, vi_col\)\);
 		if \(xmpt > 1\) \{
 			if \(!xpln\)2??0?
-2??m 45220reg p OK vi.c:1755:a22sc %? %@2152sc!1q0?
+2??m 45220reg p OK vi.c:1759:a22sc %? %@2152sc!1q0?
 %f+ 		if \(vi_col >= xleft \+ xcols \|\| vi_col < xleft\)
 			xleft = vi_col < xcols \? 0 : vi_col - xcols / 2;3??0?
-3??m 45220reg p OK vi.c:1755:a32sc %? %@2152sc!1q0?
+3??m 45220reg p OK vi.c:1759:a32sc %? %@2152sc!1q0?
 %f+ 		}
 		if \(vi_mod\)
 			vi_col = vi_off2col\(xb, xrow, xoff\);4??0?
-4??+3m 45220reg p OK vi.c:1755:a42sc %? %@2152sc!1q0?
+4??+3m 45220reg p OK vi.c:1759:a42sc %? %@2152sc!1q0?
 %f+ 		n = led_pos\(ln, ren_cursor\(ln, vi_col\)\);
 		if \(xmpt > 1\) \{
 			if \(!xpln\)5??0?
-5??-2m 45220reg p OK vi.c:1755:a52sc %? %@2152sc!1q0?
+5??-2m 45220reg p OK vi.c:1759:a52sc %? %@2152sc!1q0?
 %f+ 	..
 ...f.......d.
 ....._....=....o.f.c...x.,...... ....\);
@@ -3265,25 +3265,25 @@ else if \(xrow >= xtop \+ xrows\) \\
 		...........\(.n,.........o...n......ol..;
 ...f....pt.>..\) .
 .	.....!x..n.6??0?
-6??+3m 45220reg p OK vi.c:1755:a62sc %? %@2152sc!1q0?
+6??+3m 45220reg p OK vi.c:1759:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		}.*?
 		if \(vi_mod\).*?
 			vi_col = vi_off2col\(xb, xrow, xoff\);.*?
 (		if \(vi_col >= xleft \+ xcols \|\| vi_col < xleft\))7??0?
-grp 07??m 45220reg p OK vi.c:1755:a72sc %? %@2152sc!1q0?
+grp 07??m 45220reg p OK vi.c:1759:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			}
 			if \(k < rstate->n\)
 				xoff = k;.*(				term_chr\('\''\\n'\''\);)
 			vi_drawmsg\("\[any key to continue] "\);
 			term_read\(0\);8??0?
-grp 08??-5m 45220reg p OK vi.c:1755:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 45220reg p OK vi.c:1759:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(!k\)
 					n = ooff\+1;
 				k \+= n > ooff \? 1 : -1;.*(		xpln = 0;)
 		if \(xhlw\) \{
 			static char \*word;9??0?
-grp 09??-11m 45220reg p OK vi.c:1755:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:17552sc %? %@2132sc!0?
+grp 09??-11m 45220reg p OK vi.c:1759:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:17592sc %? %@2132sc!0?
 ?0?
 %f+ 			}
 		}
@@ -3297,17 +3297,17 @@ else if \(xrow >= xtop \+ xrows\) \\
 				\|\| \(vi_lnnum && orow != xrow && !\(vi_lnnum == 2\)\)
 				\|\| \(\*vi_word && orow != xrow\)\)
 			vi_drawagain\(xtop\);2??0?
-2??m 46220reg p OK vi.c:1798:a22sc %? %@2152sc!1q0?
+2??m 46220reg p OK vi.c:1802:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(vi_mod & 1 \|\| xleft != oleft$3??0?
-3??m 46220reg p OK vi.c:1798:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 46220reg p OK vi.c:1802:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			}
 		}
 		term_record = 1;4??0?
-4??+3m 46220reg p OK vi.c:1798:a42sc %? %@2152sc!1q0?
+4??+3m 46220reg p OK vi.c:1802:a42sc %? %@2152sc!1q0?
 %f+ 				\|\| \(vi_lnnum && orow != xrow && !\(vi_lnnum == 2\)\)
 				\|\| \(\*vi_word && orow != xrow\)\)
 			vi_drawagain\(xtop\);5??0?
-5??-1m 46220reg p OK vi.c:1798:a52sc %? %@2152sc!1q0?
+5??-1m 46220reg p OK vi.c:1802:a52sc %? %@2152sc!1q0?
 %f+ 	...
 .	.
 ......_r....... ..
@@ -3315,25 +3315,25 @@ else if \(xrow >= xtop \+ xrows\) \\
 	..	\|................... ........&......_l...m.......
 		.....\(....wo.d.....row..=.......
 ...vi...a..g......op..6??0?
-6??+3m 46220reg p OK vi.c:1798:a62sc %? %@2152sc!1q0?
+6??+3m 46220reg p OK vi.c:1802:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			}.*?
 		}.*?
 		term_record = 1;.*?
 (		if \(vi_mod & 1 \|\| xleft != oleft)7??0?
-grp 07??m 46220reg p OK vi.c:1798:a72sc %? %@2152sc!1q0?
+grp 07??m 46220reg p OK vi.c:1802:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;
 				}.*(			syn_reloadft\(syn_addhl\("\^\.\+", 2\), 0\);)
 			vi_drawrow\(xrow\);
 			syn_reloadft\(syn_addhl\(NULL, 2\), 0\);8??0?
-grp 08??-15m 46220reg p OK vi.c:1798:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-15m 46220reg p OK vi.c:1802:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					la\.s = lbuf_get\(xb, row1\);
 					la\.off = off1;.*(		} else if \(vi_mod & 2 && !\(vi_mod & 1\)\) \{)
 			syn_blockhl = -1;
 			vi_drawrow\(xrow\);9??0?
-grp 09??-18m 46220reg p OK vi.c:1798:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:17982sc %? %@2132sc!0?
+grp 09??-18m 46220reg p OK vi.c:1802:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18022sc %? %@2132sc!0?
 ?0?
 %f+ 				\|\| \(\*vi_word && orow != xrow\)\)
 			vi_drawagain\(xtop\);
@@ -3343,39 +3343,39 @@ else if \(xrow >= xtop \+ xrows\) \\
 1??+3m 471q0?
 %f+ 				&& xrow\+1 < xtop \+ xrows\)
 			vi_drawrow\(xrow\+1\);2??0?
-2??m 47220reg p OK vi.c:1803:a22sc %? %@2152sc!1q0?
+2??m 47220reg p OK vi.c:1807:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				&& xrow\+1 < xtop \+ xrows\)$3??0?
-3??m 47220reg p OK vi.c:1803:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 47220reg p OK vi.c:1807:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				\|\| \(\*vi_word && orow != xrow\)\)
 			vi_drawagain\(xtop\);
 		else if \(\*vi_word && \(ooff != xoff \|\| vi_mod & 2\)4??0?
-4??+3m 47220reg p OK vi.c:1803:a42sc %? %@2152sc!1q0?
+4??+3m 47220reg p OK vi.c:1807:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			vi_drawrow\(xrow\+1\);$5??0?
-5??-1m 47220reg p OK vi.c:1803:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 47220reg p OK vi.c:1807:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ..	..\| \(..._.or.....o.o.... ...w\).
 .........wa.a....t.p.;
 .	.... ......i_..r. &.....f..!=.x... ...v..mo......
 .	...&.x.................o...
 	.	v.................;6??0?
-6??+3m 47220reg p OK vi.c:1803:a62sc %? %@2152sc!1q0?
+6??+3m 47220reg p OK vi.c:1807:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				\|\| \(\*vi_word && orow != xrow\)\).*?
 			vi_drawagain\(xtop\);.*?
 		else if \(\*vi_word && \(ooff != xoff \|\| vi_mod & 2\).*?
 (				&& xrow\+1 < xtop \+ xrows\))7??0?
-grp 07??m 47220reg p OK vi.c:1803:a72sc %? %@2152sc!1q0?
+grp 07??m 47220reg p OK vi.c:1807:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;
 				}.*(			syn_reloadft\(syn_addhl\("\^\.\+", 2\), 0\);)
 			vi_drawrow\(xrow\);
 			syn_reloadft\(syn_addhl\(NULL, 2\), 0\);8??0?
-grp 08??-10m 47220reg p OK vi.c:1803:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 47220reg p OK vi.c:1807:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					la\.s = lbuf_get\(xb, row1\);
 					la\.off = off1;.*(		} else if \(vi_mod & 2 && !\(vi_mod & 1\)\) \{)
 			syn_blockhl = -1;
 			vi_drawrow\(xrow\);9??0?
-grp 09??-13m 47220reg p OK vi.c:1803:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18032sc %? %@2132sc!0?
+grp 09??-13m 47220reg p OK vi.c:1807:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18072sc %? %@2132sc!0?
 ?0?
 %f+ 			vi_drawrow\(xrow\+1\);
 		else if \(xtop != otop\)
@@ -3387,37 +3387,37 @@ else if \(xrow >= xtop \+ xrows\) \\
 			vi_drawupdate\(otop - xtop\);
 		if \(xhll\) \{
 			syn_blockhl = -1;2??0?
-2??m 48220reg p OK vi.c:1805:a22sc %? %@2152sc!1q0?
+2??m 48220reg p OK vi.c:1809:a22sc %? %@2152sc!1q0?
 %f+ 		else if \(xtop != otop\)
 			vi_drawupdate\(otop - xtop\);3??0?
-3??m 48220reg p OK vi.c:1805:a32sc %? %@2152sc!1q0?
+3??m 48220reg p OK vi.c:1809:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			vi_drawrow\(xrow\+1\);$4??0?
-4??+1m 48220reg p OK vi.c:1805:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 48220reg p OK vi.c:1809:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		if \(xhll\) \{
 			syn_blockhl = -1;5??0?
-5??-2m 48220reg p OK vi.c:1805:a52sc %? %@2152sc!1q0?
+5??-2m 48220reg p OK vi.c:1809:a52sc %? %@2152sc!1q0?
 %f+ ............w..r......
 	...s.......... .=..to..
 ..	........p.....o.o....x..p..
 ..i.......\) \{
 ......_b....h.....1.6??0?
-6??+1m 48220reg p OK vi.c:1805:a62sc %? %@2152sc!1q0?
+6??+1m 48220reg p OK vi.c:1809:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			vi_drawrow\(xrow\+1\);.*?
 (		else if \(xtop != otop\))7??0?
-grp 07??m 48220reg p OK vi.c:1805:a72sc %? %@2152sc!1q0?
+grp 07??m 48220reg p OK vi.c:1809:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;
 				}.*(			syn_reloadft\(syn_addhl\("\^\.\+", 2\), 0\);)
 			vi_drawrow\(xrow\);
 			syn_reloadft\(syn_addhl\(NULL, 2\), 0\);8??0?
-grp 08??-8m 48220reg p OK vi.c:1805:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 48220reg p OK vi.c:1809:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					la\.s = lbuf_get\(xb, row1\);
 					la\.off = off1;.*(		} else if \(vi_mod & 2 && !\(vi_mod & 1\)\) \{)
 			syn_blockhl = -1;
 			vi_drawrow\(xrow\);9??0?
-grp 09??-11m 48220reg p OK vi.c:1805:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18052sc %? %@2132sc!0?
+grp 09??-11m 48220reg p OK vi.c:1809:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18092sc %? %@2132sc!0?
 ?0?
 %f+ 		if \(xhll\) \{
 			syn_blockhl = -1;
@@ -3430,40 +3430,40 @@ else if \(xrow >= xtop \+ xrows\) \\
 				if \(!\(vi_mod & 1\)\)
 					vi_drawrow\(orow\);
 			syn_blockhl = -1;2??0?
-2??m 49220reg p OK vi.c:1809:a22sc %? %@2152sc!1q0?
+2??m 49220reg p OK vi.c:1813:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			if \(xrow != orow && orow >= xtop && orow < xtop \+ xrows\)$3??0?
-3??m 49220reg p OK vi.c:1809:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 49220reg p OK vi.c:1813:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		if \(xhll\) \{
 			syn_blockhl = -1;4??0?
-4??+2m 49220reg p OK vi.c:1809:a42sc %? %@2152sc!1q0?
+4??+2m 49220reg p OK vi.c:1813:a42sc %? %@2152sc!1q0?
 %f+ 				if \(!\(vi_mod & 1\)\)
 					vi_drawrow\(orow\);
 			syn_blockhl = -1;5??0?
-5??-1m 49220reg p OK vi.c:1809:a52sc %? %@2152sc!1q0?
+5??-1m 49220reg p OK vi.c:1813:a52sc %? %@2152sc!1q0?
 %f+ 	....\(xh..\)..
 	.	..n..lo...l.=...;
 ..	............or..... ..ow.....to............x..........s.
 ..		.f.......m.......\)
 .........r.w......o..;
 .	.....b.o..h..=..1.6??0?
-6??+2m 49220reg p OK vi.c:1809:a62sc %? %@2152sc!1q0?
+6??+2m 49220reg p OK vi.c:1813:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		if \(xhll\) \{.*?
 			syn_blockhl = -1;.*?
 (			if \(xrow != orow && orow >= xtop && orow < xtop \+ xrows\))7??0?
-grp 07??m 49220reg p OK vi.c:1809:a72sc %? %@2152sc!1q0?
+grp 07??m 49220reg p OK vi.c:1813:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;
 				}.*(			syn_reloadft\(syn_addhl\("\^\.\+", 2\), 0\);)
 			vi_drawrow\(xrow\);
 			syn_reloadft\(syn_addhl\(NULL, 2\), 0\);8??0?
-grp 08??-4m 49220reg p OK vi.c:1809:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 49220reg p OK vi.c:1813:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					la\.s = lbuf_get\(xb, row1\);
 					la\.off = off1;.*(		} else if \(vi_mod & 2 && !\(vi_mod & 1\)\) \{)
 			syn_blockhl = -1;
 			vi_drawrow\(xrow\);9??0?
-grp 09??-7m 49220reg p OK vi.c:1809:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18092sc %? %@2132sc!0?
+grp 09??-7m 49220reg p OK vi.c:1813:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18132sc %? %@2132sc!0?
 ?0?
 %f+ 			if \(xmpt > 0\)
 				xmpt = 0;
@@ -3477,17 +3477,17 @@ else if \(xrow >= xtop \+ xrows\) \\
 		term_commit\(\);
 		xb->useq \+= xseq;
 	}2??0?
-2??m 50220reg p OK vi.c:1827:a22sc %? %@2152sc!1q0?
+2??m 50220reg p OK vi.c:1831:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		term_pos\(xrow - xtop, n \+ vi_lncol\);$3??0?
-3??m 50220reg p OK vi.c:1827:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 50220reg p OK vi.c:1831:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			if \(xmpt > 0\)
 				xmpt = 0;
 		}4??0?
-4??+3m 50220reg p OK vi.c:1827:a42sc %? %@2152sc!1q0?
+4??+3m 50220reg p OK vi.c:1831:a42sc %? %@2152sc!1q0?
 %f+ 		term_commit\(\);
 		xb->useq \+= xseq;
 	}5??0?
-5??-1m 50220reg p OK vi.c:1827:a52sc %? %@2152sc!1q0?
+5??-1m 50220reg p OK vi.c:1831:a52sc %? %@2152sc!1q0?
 %f+ 	.......mpt....\)
 .	..x... . .;
 	..
@@ -3495,25 +3495,25 @@ else if \(xrow >= xtop \+ xrows\) \\
 ..t..m.........;
 ....->.........s..;
 	.6??0?
-6??+3m 50220reg p OK vi.c:1827:a62sc %? %@2152sc!1q0?
+6??+3m 50220reg p OK vi.c:1831:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			if \(xmpt > 0\).*?
 				xmpt = 0;.*?
 		}.*?
 (		term_pos\(xrow - xtop, n \+ vi_lncol\);)7??0?
-grp 07??m 50220reg p OK vi.c:1827:a72sc %? %@2152sc!1q0?
+grp 07??m 50220reg p OK vi.c:1831:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			xrows -= term_resized != vi_status;
 			vi_status = term_resized;
 			vc_status\(vi_tsm\);.*(	if \(--xgrec == 0\) \{)
 		term_pos\(xrows - !vi_status, 0\);
 		if \(xmpt > 0 && !xpln\)8??0?
-grp 08??-4m 50220reg p OK vi.c:1827:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 50220reg p OK vi.c:1831:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			vi_drawrow\(xrow\);
 		}
 		if \(vi_status && xmpt < 1\) \{.*(			term_chr\('\''\\n'\''\);)
 		else
 			term_kill\(\);9??0?
-grp 09??-7m 50220reg p OK vi.c:1827:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18272sc %? %@2132sc!0?
+grp 09??-7m 50220reg p OK vi.c:1831:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18312sc %? %@2132sc!0?
 '\''1i /* draw horizontal separator line at screen row, from x for w columns */
 static void vi_draw_hsep(int row, int x, int w)
 {
@@ -3676,30 +3676,30 @@ static void vi_redraw(void)
 ??!219reg vi.c:1454:m362sc %? %@2142sc!0?
 '\''37c 			case TK_CTL('\''l'\''): {
 				int orows = xrows, ocols = xcols;
-??!219reg vi.c:1568:m372sc %? %@2142sc!0?
+??!219reg vi.c:1572:m372sc %? %@2142sc!0?
 '\''38i 				if (xrows != orows + !!vi_status || xcols != ocols)
 					win_size(orows, ocols);
-??!219reg vi.c:1575:m382sc %? %@2142sc!0?
-'\''40s/;/; }/??!219reg vi.c:1577:m402sc %? %@2142sc!0?
-'\''41s/xrows/curwin->h/??!219reg vi.c:1592:m412sc %? %@2142sc!0?
-'\''43s/xrows/curwin->h/??!219reg vi.c:1595:m432sc %? %@2142sc!0?
-?'\''44s/xrow - xtop, 0/curwin->y + xrow - xtop, curwin->x/1??1??1q'\''44s/(xr.*, )0/curwin->y + \1curwin->x/2??2??'\''44220reg p OK vi.c:1682:s22sc %? %@2162sc!0?
-1;2??!219reg vi.c:1682:m442sc %? %@2142sc!0?
+??!219reg vi.c:1579:m382sc %? %@2142sc!0?
+'\''40s/;/; }/??!219reg vi.c:1581:m402sc %? %@2142sc!0?
+'\''41s/xrows/curwin->h/??!219reg vi.c:1596:m412sc %? %@2142sc!0?
+'\''43s/xrows/curwin->h/??!219reg vi.c:1599:m432sc %? %@2142sc!0?
+?'\''44s/xrow - xtop, 0/curwin->y + xrow - xtop, curwin->x/1??1??1q'\''44s/(xr.*, )0/curwin->y + \1curwin->x/2??2??'\''44220reg p OK vi.c:1686:s22sc %? %@2162sc!0?
+1;2??!219reg vi.c:1686:m442sc %? %@2142sc!0?
 '\''45,#+1c 		if (vi_col >= xleft + curwin->w || vi_col < xleft)
 			xleft = vi_col < curwin->w ? 0 : vi_col - curwin->w / 2;
-??!219reg vi.c:1755:m452sc %? %@2142sc!0?
+??!219reg vi.c:1759:m452sc %? %@2142sc!0?
 '\''46c 		win_save();
 		if (vi_mod & 1)
 			vi_redraw();
 		else if (xleft != oleft
-??!219reg vi.c:1798:m462sc %? %@2142sc!0?
-'\''47s/xrows/curwin->h/??!219reg vi.c:1803:m472sc %? %@2142sc!0?
+??!219reg vi.c:1802:m462sc %? %@2142sc!0?
+'\''47s/xrows/curwin->h/??!219reg vi.c:1807:m472sc %? %@2142sc!0?
 '\''48,#+1c 		else if (xtop != otop)	/* term_room() would scroll other windows */
 			nwins > 1 ? vi_drawagain(xtop) : vi_drawupdate(otop - xtop);
-??!219reg vi.c:1805:m482sc %? %@2142sc!0?
-'\''49s/xrows/curwin->h/??!219reg vi.c:1809:m492sc %? %@2142sc!0?
-?'\''50s/xrow - xtop,/curwin->y + xrow - xtop, curwin->x +/1??1??1q'\''50s/(xr.*,)/curwin->y + \1 curwin->x +/2??2??'\''50220reg p OK vi.c:1827:s22sc %? %@2162sc!0?
-1;2??!219reg vi.c:1827:m502sc %? %@2142sc!0?
+??!219reg vi.c:1809:m482sc %? %@2142sc!0?
+'\''49s/xrows/curwin->h/??!219reg vi.c:1813:m492sc %? %@2142sc!0?
+?'\''50s/xrow - xtop,/curwin->y + xrow - xtop, curwin->x +/1??1??1q'\''50s/(xr.*,)/curwin->y + \1 curwin->x +/2??2??'\''50220reg p OK vi.c:1831:s22sc %? %@2162sc!0?
+1;2??!219reg vi.c:1831:m502sc %? %@2142sc!0?
 b5%ya 98?0?
 %f> void term_chr\(int ch\);
 void term_pos\(int r, int c\);
@@ -4362,7 +4362,7 @@ index 05c58da5..55d5f86d 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index db848fca..20b26afe 100644
+index 016e6304..f38b6cf6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
@@ -4758,7 +4758,7 @@ index db848fca..20b26afe 100644
  				}
  				vi_mod |= 1;
  				if (!xmpt)
-@@ -1565,7 +1664,8 @@ void vi(int init)
+@@ -1569,7 +1668,8 @@ void vi(int init)
  				vi_mod |= 1;
  				break; }
  			case TK_CTL('z'):
@@ -4768,7 +4768,7 @@ index db848fca..20b26afe 100644
  				if (c == TK_CTL('z')) {
  					term_pos(xrows, 0);
  					term_suspend();
-@@ -1573,8 +1673,10 @@ void vi(int init)
+@@ -1577,8 +1677,10 @@ void vi(int init)
  					term_done();
  					term_init();
  				}
@@ -4780,7 +4780,7 @@ index db848fca..20b26afe 100644
  			case 'm':
  				lbuf_mark(xb, term_read(0), xrow, xoff);
  				break;
-@@ -1589,10 +1691,10 @@ void vi(int init)
+@@ -1593,10 +1695,10 @@ void vi(int init)
  					xtop = xrow;
  					break;
  				case '.':
@@ -4793,7 +4793,7 @@ index db848fca..20b26afe 100644
  					break;
  				case 'l':
  				case 'r':
-@@ -1679,7 +1781,7 @@ void vi(int init)
+@@ -1683,7 +1785,7 @@ void vi(int init)
  				ex_exec("left0:reg");
  				break;
  			case 'Q':
@@ -4802,7 +4802,7 @@ index db848fca..20b26afe 100644
  				xleft = vi_arg ? xleft : 0;
  				led_modeswap();
  				vi_mod |= 1;
-@@ -1752,8 +1854,8 @@ void vi(int init)
+@@ -1756,8 +1858,8 @@ void vi(int init)
  		}
  		if (vi_mod)
  			vi_col = vi_off2col(xb, xrow, xoff);
@@ -4813,7 +4813,7 @@ index db848fca..20b26afe 100644
  		n = led_pos(ln, ren_cursor(ln, vi_col));
  		if (xmpt > 1) {
  			if (!xpln)
-@@ -1795,18 +1897,21 @@ void vi(int init)
+@@ -1799,18 +1901,21 @@ void vi(int init)
  			}
  		}
  		term_record = 1;
@@ -4840,7 +4840,7 @@ index db848fca..20b26afe 100644
  				if (!(vi_mod & 1))
  					vi_drawrow(orow);
  			syn_blockhl = -1;
-@@ -1824,7 +1929,7 @@ void vi(int init)
+@@ -1828,7 +1933,7 @@ void vi(int init)
  			if (xmpt > 0)
  				xmpt = 0;
  		}

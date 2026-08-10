@@ -188,24 +188,24 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 %f> 				word = cs;
 			}
 		}4??0?
-4??+2m 1220reg p OK vi.c:1777:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1781:a42sc %? %@2152sc!1q0?
 grp 1%f> 				word = cs;.*?
 			}.*?
 (		})7??0?
-grp 07??m 1220reg p OK vi.c:1777:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:1781:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					vi_mod \|= 1;
 				}
 				free\(word\);.*(			if \(!led_attsb\))
 				sbuf_make\(led_attsb, sizeof\(la\) \* 2\)
 			if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{8??0?
-grp 08??-4m 1220reg p OK vi.c:1777:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.c:1781:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(\(cs = vi_curword\(xb, xrow, xoff, xhlw, 0\)\)\) \{
 				if \(!word \|\| strcmp\(word, cs\)\) \{
 					syn_reloadft\(syn_addhl\(cs, 1\), 0\);.*(				row1 = row; off1 = off;)
 				if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{
 					la\.s = ln;9??0?
-grp 09??-7m 1220reg p OK vi.c:1777:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:17772sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.c:1781:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:17812sc %? %@2132sc!0?
 '\''1i 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`*";
@@ -221,7 +221,7 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 				sbuf_mem(led_attsb, &la, (int)sizeof(la))
 			}
 		}
-??!219reg vi.c:1777:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.c:1781:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' "$P2VIF"
 
 exit 0
@@ -269,10 +269,10 @@ index 3d5a1721..c8d5754a 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index db848fca..591e02e6 100644
+index 016e6304..61bbdc0f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1775,6 +1775,21 @@ void vi(int init)
+@@ -1779,6 +1779,21 @@ void vi(int init)
  				word = cs;
  			}
  		}

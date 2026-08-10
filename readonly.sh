@@ -265,24 +265,24 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 %f> 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\)
 				xvis \|= 8;4??0?
-4??+2m 1220reg p OK vi.c:1875:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1879:a42sc %? %@2152sc!1q0?
 grp 1%f> 				xvis \|= 4;.*?
 			else if \(argv\[i]\[j] == '\''a'\''\).*?
 (				xvis \|= 8;)7??0?
-grp 07??m 1220reg p OK vi.c:1875:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:1879:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;
 			else if \(argv\[i]\[j] == '\''m'\''\).*(	})
 	ibuf = emalloc\(ibuf_sz\);
 	if \(!\(xvis & 1\)\)8??0?
-grp 08??-9m 1220reg p OK vi.c:1875:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 1220reg p OK vi.c:1879:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
 			if \(argv\[i]\[j] == '\''s'\''\)
 				xvis \|= 1\|2;.*(		term_init\(\);)
 	if \(xvis & 8\)
 		term_scrh;9??0?
-grp 09??-12m 1220reg p OK vi.c:1875:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:18752sc %? %@2132sc!0?
+grp 09??-12m 1220reg p OK vi.c:1879:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18792sc %? %@2132sc!0?
 ?0?
 %f+ 				xvis = 0;
 			else \{
@@ -296,17 +296,17 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 				return EXIT_FAILURE;
 			}
 		}2??0?
-2??m 2220reg p OK vi.c:1880:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:1884:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.4 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
-3??m 2220reg p OK vi.c:1880:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:1884:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				xvis = 0;
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);4??0?
-4??+3m 2220reg p OK vi.c:1880:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:1884:a42sc %? %@2152sc!1q0?
 %f+ 				return EXIT_FAILURE;
 			}
 		}5??0?
-5??-1m 2220reg p OK vi.c:1880:a52sc %? %@2152sc!1q0?
+5??-1m 2220reg p OK vi.c:1884:a52sc %? %@2152sc!1q0?
 %f+ .....v.s.....
 	.......\{
 ....f..i......d.... ....n.....p.......%..."..a.....]\[..\).
@@ -314,29 +314,29 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 ...	..........._F.......
 ..	.
 		}6??0?
-6??+3m 2220reg p OK vi.c:1880:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK vi.c:1884:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				xvis = 0;.*?
 			else \{.*?
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);.*?
 (				fprintf\(stderr, "Nextvi-7\.4 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
-grp 07??m 2220reg p OK vi.c:1880:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1884:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;
 			else if \(argv\[i]\[j] == '\''m'\''\).*(	})
 	ibuf = emalloc\(ibuf_sz\);
 	if \(!\(xvis & 1\)\)8??0?
-grp 08??-4m 2220reg p OK vi.c:1880:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1884:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
 			if \(argv\[i]\[j] == '\''s'\''\)
 				xvis \|= 1\|2;.*(		term_init\(\);)
 	if \(xvis & 8\)
 		term_scrh;9??0?
-grp 09??-7m 2220reg p OK vi.c:1880:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18802sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.c:1884:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18842sc %? %@2132sc!0?
 '\''1i 			else if (argv[i][j] == '\''R'\'')
 				readonly = 1;
-??!219reg vi.c:1875:m12sc %? %@2142sc!0?
-'\''2s/ms/mRs/??!219reg vi.c:1880:m22sc %? %@2142sc!b3%ya 98?0?
+??!219reg vi.c:1879:m12sc %? %@2142sc!0?
+'\''2s/ms/mRs/??!219reg vi.c:1884:m22sc %? %@2142sc!b3%ya 98?0?
 %f> 	int plen, row, off, top;
 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
@@ -454,10 +454,10 @@ index 3d5a1721..9be715ff 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index db848fca..363b9244 100644
+index 016e6304..8f033c6f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1873,11 +1873,13 @@ int main(int argc, char *argv[])
+@@ -1877,11 +1877,13 @@ int main(int argc, char *argv[])
  				xvis |= 4;
  			else if (argv[i][j] == 'a')
  				xvis |= 8;
