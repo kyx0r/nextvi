@@ -1531,9 +1531,13 @@ void vi(int init)
 				if (k == 127 || k == TK_CTL('w')) {
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
 						xrow--;
+						if (xtop > otop)
+							xtop = otop;
 						topfix()
 						vc_join(0, 2);
 						vi_drawagain(xtop);
+						if (vi_status)
+							vc_status(vi_tsm);
 					} else if (xoff) {
 						if (k == TK_CTL('w')) {
 							noff = xoff;
