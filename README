@@ -435,6 +435,7 @@ EX COMMANDS
      [vrange]f<[regex]
              Ranged search
 
+             No argument uses previously set regex keyword.
              Returns error if target not found.
 
              Example: no range given, current line only
