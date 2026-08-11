@@ -125,8 +125,8 @@ VI NORMAL
      [#]&:
                    Execute <:> register as an ex command # times
      [#].          Repeat last normal command # times. Repeatable commands:
-                   x X D C s S Y p P r d c ~ gu gU g~ ! > < ^W i I a A o O ci
-                   di J K
+                   x X D C s S Y p P r d c ~ gu gU g~ ! > < <^W> i I a A o O
+                   ci di J K
      [#]v.         Repeat last normal command moving down across # lines
      [#]Q          Enter ex mode recursively. # retains current horizontal
                    scroll
@@ -1442,4 +1442,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.4                      August 10, 2026                     Nextvi 7.4
+Nextvi 7.4                      August 11, 2026                     Nextvi 7.4
