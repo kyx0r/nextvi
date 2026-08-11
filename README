@@ -477,7 +477,7 @@ EX COMMANDS
              Example: remove all empty lines
              :g/^$/d
 
-             Example: print lines matching previously set regex
+             Example: print lines matching previously set regex keyword
              :g//p
 
              Multiple ex commands can be chained in one global command.
@@ -587,7 +587,7 @@ EX COMMANDS
              Example: range scoping
              :1,5;5;5s/term1/term2/
 
-             Example: replace matching previously set regex
+             Example: replace matching previously set regex keyword
              :%s//term2/
 
              Substitution backreference in [str] inserts the text of matched
