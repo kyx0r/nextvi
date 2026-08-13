@@ -328,7 +328,7 @@ static int xref_inlist(char **list, int n, char *sym, int len)
 {
 	int i;
 	for (i = 0; i < n; i++)
-		if ((int)strlen(list[i]) == len && !memcmp(list[i], sym, len))
+		if (!strncmp(list[i], sym, len) && !list[i][len])
 			return 1;
 	return 0;
 }
@@ -343,11 +343,11 @@ static int xref_ctl(char *sym, int len)
 	return xref_inlist(xref_ctls, LEN(xref_ctls), sym, len);
 }
 
-/* the length of s with its newline and trailing blanks cut off */
+/* the length of s, a buffer line, with its trailing blanks cut off */
 static int xref_rtrim(char *s)
 {
-	int i = strlen(s);
-	for (; i > 0 && isspace((unsigned char)s[i-1]); i--);
+	int i = lbuf_s(s)->len;
+	for (; i > 0 && uc_isspace(s[i-1]); i--);
 	return i;
 }
 
@@ -408,18 +408,17 @@ static char *xref_code(char *s, int *state)
 /* the '\''{'\'' or the '\'';'\'' that ends the header at line, whichever comes first */
 static int xref_brace(struct lbuf *lb, int line, int *brow)
 {
-	char *s, *b, *e;
+	char *s;
 	int i, n = lbuf_len(lb);
 	for (i = line; i < n && i < line + XREF_SPAN; i++) {
-		s = lbuf_get(lb, i);
-		b = strchr(s, '\''{'\'');
-		e = strchr(s, '\'';'\'');
-		if (b && (!e || b < e)) {
-			*brow = i;
-			return 1;
+		for (s = lbuf_get(lb, i); *s != '\''\n'\''; s++) {
+			if (*s == '\''{'\'') {
+				*brow = i;
+				return 1;
+			}
+			if (*s == '\'';'\'')
+				return 0;
 		}
-		if (e)
-			break;
 	}
 	return 0;
 }
@@ -481,7 +480,7 @@ static int xref_head(struct lbuf *lb, int line)
 		s = lbuf_get(lb, row - 1);
 		i = xref_rtrim(s);
 		if (i && !xref_indent(s) && !strpbrk(s, "(){};,=#/") &&
-				(isalpha((unsigned char)*s) || *s == '\''_'\''))
+				(uc_isalpha(*s) || *s == '\''_'\''))
 			row--;
 	}
 	while (row > 0) {		/* the comment written above it */
@@ -531,7 +530,7 @@ static int xref_resolve(char *sym, char *from, int *outline)
 	char *pat = xref_pat(sym), *path;
 	struct lbuf *ls = tempbufs[1].lb;
 	rset *rs = rset_smake(pat, 0);
-	int i, n = lbuf_len(ls), len, row, off, grp = xgrp, beg = 0, ret = 0, bs;
+	int i, n = lbuf_len(ls), len, row, off, beg = 0, ret = 0, bs;
 	free(pat);
 	if (!rs)
 		return 0;
@@ -540,12 +539,12 @@ static int xref_resolve(char *sym, char *from, int *outline)
 		len = lbuf_s(path)->len;
 		if (path[0] == '\''.'\'' && path[1] == '\''/'\'')
 			path += 2, len -= 2;
-		if ((int)strlen(from) == len && !strncmp(path, from, len)) {
+		if (!strncmp(path, from, len) && !from[len]) {
 			beg = i;
 			break;
 		}
 	}
-	xgrp = 0;			/* the search is ours, not the user'\''s */
+	preserve(int, xgrp, xgrp = 0;)	/* the search is ours, not the user'\''s */
 	for (i = 0; i < n && !ret; i++) {
 		path = ls->ln[(beg + i) % n];
 		len = lbuf_s(path)->len;
@@ -570,7 +569,7 @@ static int xref_resolve(char *sym, char *from, int *outline)
 		}
 		path[len] = '\''\n'\'';
 	}
-	xgrp = grp;
+	restore(xgrp)
 	rset_free(rs);
 	if (ret)
 		*outline = row;
@@ -718,11 +717,10 @@ static char *xref_build(char *sym, int maxdepth)
 				sbuf_chr(out, '\''\n'\'')
 			sbuf_str(out, xb_path)		/* the header owns its line, */
 			sbuf_chr(out, '\'':'\'')		/* so the body reads verbatim */
-			itoa(start + 1, nbuf);
-			sbuf_str(out, nbuf)
+			sbuf_mem(out, nbuf, (int)(itoa(start + 1, nbuf) - nbuf))
 			sbuf_chr(out, '\''\n'\'')
-			for (i = start; i <= end; i++)
-				sbuf_str(out, lbuf_get(xb, i))
+			for (i = start; i <= end; i++)	/* the line and its newline */
+				sbuf_mem(out, lbuf_get(xb, i), lbuf_i(xb, i)->len + 1)
 			xref_scan(xb, start, end, nxt, seen);
 		}
 		tmp = cur;
@@ -742,11 +740,8 @@ static char *xref_build(char *sym, int maxdepth)
 	}
 	lb = tempbufs[XREF_BUF].lb;
 	s = NULL;
-	if (n) {
-		if (lbuf_len(lb))
-			lbuf_edit(lb, NULL, 0, lbuf_len(lb), 0, 0);
-		temp_pos(XREF_BUF, 0, 0, 0);
-		temp_write(XREF_BUF, out->s);
+	if (n) {			/* the closure replaces the buffer whole */
+		lbuf_edit(lb, out->s, 0, lbuf_len(lb), 0, 0);
 		temp_pos(XREF_BUF, 0, 0, 0);
 	} else				/* nothing found, so nothing is replaced */
 		s = "xref: no definition";
@@ -1331,10 +1326,10 @@ index 3d5a1721..338614ba 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 016e6304..7093cd74 100644
+index 016e6304..f0471a83 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -484,6 +484,469 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -484,6 +484,464 @@ static int fs_searchback(int cnt, int *row, int *off)
  	return 0;
  }
  
@@ -1371,7 +1366,7 @@ index 016e6304..7093cd74 100644
 +{
 +	int i;
 +	for (i = 0; i < n; i++)
-+		if ((int)strlen(list[i]) == len && !memcmp(list[i], sym, len))
++		if (!strncmp(list[i], sym, len) && !list[i][len])
 +			return 1;
 +	return 0;
 +}
@@ -1386,11 +1381,11 @@ index 016e6304..7093cd74 100644
 +	return xref_inlist(xref_ctls, LEN(xref_ctls), sym, len);
 +}
 +
-+/* the length of s with its newline and trailing blanks cut off */
++/* the length of s, a buffer line, with its trailing blanks cut off */
 +static int xref_rtrim(char *s)
 +{
-+	int i = strlen(s);
-+	for (; i > 0 && isspace((unsigned char)s[i-1]); i--);
++	int i = lbuf_s(s)->len;
++	for (; i > 0 && uc_isspace(s[i-1]); i--);
 +	return i;
 +}
 +
@@ -1451,18 +1446,17 @@ index 016e6304..7093cd74 100644
 +/* the '{' or the ';' that ends the header at line, whichever comes first */
 +static int xref_brace(struct lbuf *lb, int line, int *brow)
 +{
-+	char *s, *b, *e;
++	char *s;
 +	int i, n = lbuf_len(lb);
 +	for (i = line; i < n && i < line + XREF_SPAN; i++) {
-+		s = lbuf_get(lb, i);
-+		b = strchr(s, '{');
-+		e = strchr(s, ';');
-+		if (b && (!e || b < e)) {
-+			*brow = i;
-+			return 1;
++		for (s = lbuf_get(lb, i); *s != '\n'; s++) {
++			if (*s == '{') {
++				*brow = i;
++				return 1;
++			}
++			if (*s == ';')
++				return 0;
 +		}
-+		if (e)
-+			break;
 +	}
 +	return 0;
 +}
@@ -1524,7 +1518,7 @@ index 016e6304..7093cd74 100644
 +		s = lbuf_get(lb, row - 1);
 +		i = xref_rtrim(s);
 +		if (i && !xref_indent(s) && !strpbrk(s, "(){};,=#/") &&
-+				(isalpha((unsigned char)*s) || *s == '_'))
++				(uc_isalpha(*s) || *s == '_'))
 +			row--;
 +	}
 +	while (row > 0) {		/* the comment written above it */
@@ -1574,7 +1568,7 @@ index 016e6304..7093cd74 100644
 +	char *pat = xref_pat(sym), *path;
 +	struct lbuf *ls = tempbufs[1].lb;
 +	rset *rs = rset_smake(pat, 0);
-+	int i, n = lbuf_len(ls), len, row, off, grp = xgrp, beg = 0, ret = 0, bs;
++	int i, n = lbuf_len(ls), len, row, off, beg = 0, ret = 0, bs;
 +	free(pat);
 +	if (!rs)
 +		return 0;
@@ -1583,12 +1577,12 @@ index 016e6304..7093cd74 100644
 +		len = lbuf_s(path)->len;
 +		if (path[0] == '.' && path[1] == '/')
 +			path += 2, len -= 2;
-+		if ((int)strlen(from) == len && !strncmp(path, from, len)) {
++		if (!strncmp(path, from, len) && !from[len]) {
 +			beg = i;
 +			break;
 +		}
 +	}
-+	xgrp = 0;			/* the search is ours, not the user's */
++	preserve(int, xgrp, xgrp = 0;)	/* the search is ours, not the user's */
 +	for (i = 0; i < n && !ret; i++) {
 +		path = ls->ln[(beg + i) % n];
 +		len = lbuf_s(path)->len;
@@ -1613,7 +1607,7 @@ index 016e6304..7093cd74 100644
 +		}
 +		path[len] = '\n';
 +	}
-+	xgrp = grp;
++	restore(xgrp)
 +	rset_free(rs);
 +	if (ret)
 +		*outline = row;
@@ -1761,11 +1755,10 @@ index 016e6304..7093cd74 100644
 +				sbuf_chr(out, '\n')
 +			sbuf_str(out, xb_path)		/* the header owns its line, */
 +			sbuf_chr(out, ':')		/* so the body reads verbatim */
-+			itoa(start + 1, nbuf);
-+			sbuf_str(out, nbuf)
++			sbuf_mem(out, nbuf, (int)(itoa(start + 1, nbuf) - nbuf))
 +			sbuf_chr(out, '\n')
-+			for (i = start; i <= end; i++)
-+				sbuf_str(out, lbuf_get(xb, i))
++			for (i = start; i <= end; i++)	/* the line and its newline */
++				sbuf_mem(out, lbuf_get(xb, i), lbuf_i(xb, i)->len + 1)
 +			xref_scan(xb, start, end, nxt, seen);
 +		}
 +		tmp = cur;
@@ -1785,11 +1778,8 @@ index 016e6304..7093cd74 100644
 +	}
 +	lb = tempbufs[XREF_BUF].lb;
 +	s = NULL;
-+	if (n) {
-+		if (lbuf_len(lb))
-+			lbuf_edit(lb, NULL, 0, lbuf_len(lb), 0, 0);
-+		temp_pos(XREF_BUF, 0, 0, 0);
-+		temp_write(XREF_BUF, out->s);
++	if (n) {			/* the closure replaces the buffer whole */
++		lbuf_edit(lb, out->s, 0, lbuf_len(lb), 0, 0);
 +		temp_pos(XREF_BUF, 0, 0, 0);
 +	} else				/* nothing found, so nothing is replaced */
 +		s = "xref: no definition";
@@ -1804,7 +1794,7 @@ index 016e6304..7093cd74 100644
  static char rep_cmd[sizeof(icmd)];	/* the last command */
  static int rep_len;
  #define rep_record() memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos;
-@@ -1272,8 +1735,18 @@ void vi(int init)
+@@ -1272,8 +1730,18 @@ void vi(int init)
  				n = strlen(ln);
  				char buf[n + 4];
  				memcpy(buf, ":e ", 3);
@@ -1825,7 +1815,7 @@ index 016e6304..7093cd74 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1384,6 +1857,10 @@ void vi(int init)
+@@ -1384,6 +1852,10 @@ void vi(int init)
  				case 'v':
  					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
  					break;
@@ -1836,7 +1826,7 @@ index 016e6304..7093cd74 100644
  				case ';':
  					ln = vi_enprompt(":", "!", &k, &n);
  					goto do_excmd;
-@@ -1647,6 +2124,23 @@ void vi(int init)
+@@ -1647,6 +2119,23 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1860,7 +1850,7 @@ index 016e6304..7093cd74 100644
  				} else if (k == '~' || k == 'u' || k == 'U')
  					vc_motion(k);
  				break;
-@@ -1863,6 +2357,7 @@ int main(int argc, char *argv[])
+@@ -1863,6 +2352,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
