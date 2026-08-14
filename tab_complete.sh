@@ -25,17 +25,37 @@ fi
 #   script, for state inspection mid execution
 
 # Body too large for EXINIT/argv: stage it in a file
-( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
-trap 'rm -f "$P2VIF"' EXIT
+( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
+trap 'rm -f "$P2VIF".*' EXIT
 
-# Patch: conf.c ex.c led.c vi.h
 printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg prFp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
 "${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'b21;0fr 0%f> ^		case '\''\\t'\'':$1000??0?
+b21;0fr 0%f> ^			if \(xet\) \{$1001??0?
+b21;0fr 0%f> ^			pre \+= xet \? xsw : 1;$1002??0?
+b21;0fr 0%f> ^				for \(int _k = 0; _k < xsw; _k\+\+\)$1003??0?
+b21;0fr 0%f> ^				for \(int _l = 0; _l < xsw; _l\+\+\)$1004??0?
+b21;0fr 0%f> ^				int _k;$1005??0?
+b21;0fr 0%f> ^				for \(_k = 0; _k < xsw && sb->s\[ps \+ _k] == '\'' '\''; _k\+\+\);$1006??0?
+b21;0fr 0%f> ^				if \(_k\) \{$1007??0?
+b21;0fr 0%f> ^					memmove\(&sb->s\[ps], &sb->s\[ps \+ _k], len - ps - _k\);$1008??0?
+b21;0fr 0%f> ^					sb->s_n -= _k;$1009??0?
+b21;0fr 0%f> ^					pre -= _k;$1010??0?
+b21;0fr 0%f> ^			} else if \(sb->s\[ps] == '\'' '\'' \|\| sb->s\[ps] == '\''\\t'\''\) \{$1011??0?
+b21;0fr 0%f> ^			if \(xet\)$1012??0?
+b21;0fr 0%f> ^			if \(xet\)$1013??0?
+b21;0fr 0%f> ^					sbuf_chr\(sb, '\'' '\''\)$1014??0?
+b21;0fr 0%f> ^				sbuf_chr\(sb, '\''\\t'\''\)$1015??0?
+b21;0fr 0%f> ^					sbuf_chr\(sb, '\'' '\''\)$1016??0?
+b21;0fr 0%f> ^				sbuf_chr\(sb, '\''\\t'\''\)$1017??0?
+230reg 0231reg 01000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? 231reg 11000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
+b4%ya 972sc %? %@972sc!b21211reg ? %@2210?
+b5%ya 502sc %1000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? %@502sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
+printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -385,11 +405,189 @@ extern int xquit;9??0?
 grp 09??-7m 1220reg p OK vi.h:428:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:4282sc %? %@2132sc!0?
 '\''1i extern int xtc;
-??!219reg vi.h:428:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF"
+??!219reg vi.h:428:m12sc %? %@2142sc!' > "$P2VIF".0
+# Compat (post) from detect_indent.sh
+printf '%s\n' '2sc!fr 98b2%ya 98?0?
+%f> 			}
+			break;
+		case '\''\\t'\'':
+			if \(xet\)
+				for \(int _l = 0; _l < xsw; _l\+\+\)
+					sbuf_chr\(sb, '\'' '\''\)1??0?
+1??+2m 11q0?
+%f> 			}
+			break;
+		case '\''\\t'\'':4??0?
+4??+2m 1220reg p OK led.c:537:a42sc %? %@2152sc!0?
+1;4??!219reg led.c:5372sc %? %@2132sc!0?
+?0?
+%f+ 				exbuf_load\(ex_buf\)
+			}
+			continue; }
+		case '\''\\t'\'':
+			if \(xtc && ai_max < 0 && sb->s\[ps] == '\'':'\''\) \{
+				if \(!compsb\)
+					sbuf_make\(compsb, 128\)
+				sbuf_cut\(compsb, 0\)
+				i = led_pathcomp\(sb, pre, compsb\);
+				if \(i > 1 && sb->s_n == len\)
+					led_info\(compsb->s\)
+				if \(i\)
+					break;
+			}
+		default:
+			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
+				return c;1??0?
+1??+3m 21q0?
+%f+ 		case '\''\\t'\'':
+			if \(xtc && ai_max < 0 && sb->s\[ps] == '\'':'\''\) \{
+				if \(!compsb\)
+					sbuf_make\(compsb, 128\)
+				sbuf_cut\(compsb, 0\)
+				i = led_pathcomp\(sb, pre, compsb\);
+				if \(i > 1 && sb->s_n == len\)
+					led_info\(compsb->s\)
+				if \(i\)
+					break;
+			}
+		default:
+			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
+				return c;2??0?
+2??m 2220reg p OK led.c:719:a22sc %? %@2152sc!1q0?
+%f+ 		case '\''\\t'\'':
+			if \(xtc && ai_max < 0 && sb->s\[ps] == '\'':'\''\) \{
+				if \(!compsb\)
+					sbuf_make\(compsb, 128\)
+				sbuf_cut\(compsb, 0\)
+				i = led_pathcomp\(sb, pre, compsb\);
+				if \(i > 1 && sb->s_n == len\)
+					led_info\(compsb->s\)
+				if \(i\)
+					break;
+			}3??0?
+3??m 2220reg p OK led.c:719:a32sc %? %@2152sc!1q0?
+%f+ 				exbuf_load\(ex_buf\)
+			}
+			continue; }4??0?
+4??+3m 2220reg p OK led.c:719:a42sc %? %@2152sc!1q0?
+%f+ 		default:
+			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
+				return c;5??0?
+5??-11m 2220reg p OK led.c:719:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:7192sc %? %@2132sc!0?
+'\''1i 			if (xtc && ai_max < 0 && sb->s[ps] == '\'':'\'') {
+				if (!compsb)
+					sbuf_make(compsb, 128)
+				sbuf_cut(compsb, 0)
+				i = led_pathcomp(sb, pre, compsb);
+				if (i > 1 && sb->s_n == len)
+					led_info(compsb->s)
+				if (i)
+					break;
+			}
+??!219reg led.c:537:m12sc %? %@2142sc!0?
+'\''2,#+10d??!219reg led.c:719:m22sc %? %@2142sc!p compat applied: src=detect_indent.sh' > "$P2VIF".1
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
+=== PATCH2VI COMPAT post src=detect_indent.sh ===
+=== GATE 1 present tag 1000 probe led.c ===
+		case '\t':
+=== END ===
+=== GATE 2 present tag 1001 probe led.c ===
+			if (xet) {
+=== END ===
+=== GATE 3 present tag 1002 probe led.c ===
+			pre += xet ? xsw : 1;
+=== END ===
+=== GATE 4 present tag 1003 probe led.c ===
+				for (int _k = 0; _k < xsw; _k++)
+=== END ===
+=== GATE 5 present tag 1004 probe led.c ===
+				for (int _l = 0; _l < xsw; _l++)
+=== END ===
+=== GATE 6 present tag 1005 probe led.c ===
+				int _k;
+=== END ===
+=== GATE 7 present tag 1006 probe led.c ===
+				for (_k = 0; _k < xsw && sb->s[ps + _k] == ' '; _k++);
+=== END ===
+=== GATE 8 present tag 1007 probe led.c ===
+				if (_k) {
+=== END ===
+=== GATE 9 present tag 1008 probe led.c ===
+					memmove(&sb->s[ps], &sb->s[ps + _k], len - ps - _k);
+=== END ===
+=== GATE 10 present tag 1009 probe led.c ===
+					sb->s_n -= _k;
+=== END ===
+=== GATE 11 present tag 1010 probe led.c ===
+					pre -= _k;
+=== END ===
+=== GATE 12 present tag 1011 probe led.c ===
+			} else if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
+=== END ===
+=== GATE 13 present tag 1012 probe led.c ===
+			if (xet)
+=== END ===
+=== GATE 14 present tag 1013 probe led.c ===
+			if (xet)
+=== END ===
+=== GATE 15 present tag 1014 probe led.c ===
+					sbuf_chr(sb, ' ')
+=== END ===
+=== GATE 16 present tag 1015 probe led.c ===
+				sbuf_chr(sb, '\t')
+=== END ===
+=== GATE 17 present tag 1016 probe led.c ===
+					sbuf_chr(sb, ' ')
+=== END ===
+=== GATE 18 present tag 1017 probe led.c ===
+				sbuf_chr(sb, '\t')
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/led.c
++++ b/led.c
+@@ -535,6 +535,16 @@
+ 			}
+ 			break;
+ 		case '\t':
++			if (xtc && ai_max < 0 && sb->s[ps] == ':') {
++				if (!compsb)
++					sbuf_make(compsb, 128)
++				sbuf_cut(compsb, 0)
++				i = led_pathcomp(sb, pre, compsb);
++				if (i > 1 && sb->s_n == len)
++					led_info(compsb->s)
++				if (i)
++					break;
++			}
+ 			if (xet)
+ 				for (int _l = 0; _l < xsw; _l++)
+ 					sbuf_chr(sb, ' ')
+@@ -716,17 +726,6 @@
+ 				exbuf_load(ex_buf)
+ 			}
+ 			continue; }
+-		case '\t':
+-			if (xtc && ai_max < 0 && sb->s[ps] == ':') {
+-				if (!compsb)
+-					sbuf_make(compsb, 128)
+-				sbuf_cut(compsb, 0)
+-				i = led_pathcomp(sb, pre, compsb);
+-				if (i > 1 && sb->s_n == len)
+-					led_info(compsb->s)
+-				if (i)
+-					break;
+-			}
+ 		default:
+ 			if (c == '\n' || TK_INT(c))
+ 				return c;
+=== END ===
+=== END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
 index 70157040..c0453e42 100644
