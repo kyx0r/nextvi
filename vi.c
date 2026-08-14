@@ -573,7 +573,7 @@ static int vi_region(int cmd, int *row, int *off)
 			}
 		}
 		if (cmd < 0 && dir > 0 && lbuf_get(xb, *row + dir)
-				&& (var < 2 || *off >= var - 1)) {
+				&& (var > 1 && *off >= var - 1)) {
 			*row += dir;
 			*off = 0;
 		}
