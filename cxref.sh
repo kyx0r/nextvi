@@ -1326,7 +1326,7 @@ index 3d5a1721..338614ba 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 016e6304..f0471a83 100644
+index 000c9cdc..3cd0fba3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -484,6 +484,464 @@ static int fs_searchback(int cnt, int *row, int *off)

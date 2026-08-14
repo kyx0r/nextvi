@@ -219,7 +219,7 @@ index 18170218..f1b08d3d 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 016e6304..c91a448c 100644
+index 000c9cdc..25778932 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1434,6 +1434,17 @@ void vi(int init)

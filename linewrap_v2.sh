@@ -6339,7 +6339,7 @@ index 25b0a4fa..76bcb87c 100644
  		for (n = 0; n < max && (l = uc_len(ss)); n++)
  			ss += l;
 diff --git a/vi.c b/vi.c
-index 016e6304..7db144e3 100644
+index 000c9cdc..93908e7a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -111,6 +111,149 @@ static int vi_nextcol(char *ln, int dir, int *off)

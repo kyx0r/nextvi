@@ -775,7 +775,7 @@ index 05c58da5..e267c63a 100644
  	}
  	sbufn_ret(sb, sb)
 diff --git a/vi.c b/vi.c
-index 016e6304..47a4e22f 100644
+index 000c9cdc..1de5f24a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -8,6 +8,7 @@
