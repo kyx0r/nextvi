@@ -208,6 +208,19 @@ Improvements to autocomplete, now the word completion will also use
 text that prefixes the insert when it makes sense. Makes it possible
 to autocomplete in more desired situations.
 
+tab_complete.sh
+--------------
+Adds path completion to the ex prompt, bound to TAB. The word before
+the cursor is completed as a path, relative to the working directory
+or to the directory that the word itself names. A single match is
+filled in, with a trailing </> when it is a directory. Several matches
+fill in their common prefix, and once nothing is left to fill in, they
+are listed next to the prompt. When nothing matches, TAB inserts a
+literal tab.
+Adds a new ex option "tc" to toggle the completion, on by default.
+Example: turn it off, TAB is then always a literal tab
+:tc 0
+
 linewrap_v1.sh
 --------------
 Soft line wrap implementation using buffer only approach.
