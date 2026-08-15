@@ -890,7 +890,7 @@ index 25b0a4fa..0928a19a 100644
  		return;
  	for (j = 0; j < n; j++)
 diff --git a/vi.c b/vi.c
-index 000c9cdc..d6a845e9 100644
+index 76778809..b89dc360 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,7 @@ for (i = 0, ret = 0;; i++) { \
@@ -947,7 +947,7 @@ index 000c9cdc..d6a845e9 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 5a7e773a..c35d5641 100644
+index ca8ee527..b5b3270d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -264,6 +264,8 @@ void syn_reloadft(int hl, int flg);

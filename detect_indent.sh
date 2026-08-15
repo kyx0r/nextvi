@@ -1156,7 +1156,7 @@ index 9eb8e85b..09420a89 100644
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
-index 000c9cdc..75c21a50 100644
+index 76778809..b6d39d41 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -934,9 +934,19 @@ static void vi_shift(int r1, int r2, int dir, int count)
@@ -1183,7 +1183,7 @@ index 000c9cdc..75c21a50 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index 5a7e773a..016a0722 100644
+index ca8ee527..f98f2f82 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -407,6 +407,9 @@ struct buf {

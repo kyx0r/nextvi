@@ -1243,7 +1243,7 @@ index b1002c4e..d80628bb 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 000c9cdc..0a150096 100644
+index 76778809..9e7cade8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -1255,7 +1255,7 @@ index 000c9cdc..0a150096 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 5a7e773a..a9060249 100644
+index ca8ee527..17ab2798 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -266,7 +266,8 @@ int syn_addhl(char *reg, int id);

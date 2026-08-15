@@ -280,7 +280,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 			if \(argv\[i]\[j] == '\''s'\''\)
 				xvis \|= 1\|2;.*(		term_init\(\);)
 	if \(xvis & 8\)
-		term_scrh;9??0?
+		term_scrh\(\)9??0?
 grp 09??-12m 1220reg p OK vi.c:1879:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:18792sc %? %@2132sc!0?
 ?0?
@@ -330,7 +330,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 			if \(argv\[i]\[j] == '\''s'\''\)
 				xvis \|= 1\|2;.*(		term_init\(\);)
 	if \(xvis & 8\)
-		term_scrh;9??0?
+		term_scrh\(\)9??0?
 grp 09??-7m 2220reg p OK vi.c:1884:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:18842sc %? %@2132sc!0?
 '\''1i 			else if (argv[i][j] == '\''R'\'')
@@ -454,7 +454,7 @@ index 3d5a1721..9be715ff 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index 000c9cdc..a9ba9c82 100644
+index 76778809..ad660d3f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1877,11 +1877,13 @@ int main(int argc, char *argv[])
@@ -473,7 +473,7 @@ index 000c9cdc..a9ba9c82 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 5a7e773a..551b5311 100644
+index ca8ee527..4c994a9b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -407,6 +407,7 @@ struct buf {

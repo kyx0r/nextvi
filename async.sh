@@ -740,7 +740,7 @@ index 3d5a1721..b80a346c 100644
  			sbuf_free(xanchor)
  			xanchor = NULL;
 diff --git a/term.c b/term.c
-index 05c58da5..e267c63a 100644
+index c8861702..606ab94c 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,4 +1,6 @@
@@ -775,7 +775,7 @@ index 05c58da5..e267c63a 100644
  	}
  	sbufn_ret(sb, sb)
 diff --git a/vi.c b/vi.c
-index 000c9cdc..1de5f24a 100644
+index 76778809..3f811f72 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -8,6 +8,7 @@

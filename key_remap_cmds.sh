@@ -986,7 +986,7 @@ index 9eb8e85b..bf139849 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 000c9cdc..6179256b 100644
+index 76778809..b741741d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -262,7 +262,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -1085,7 +1085,7 @@ index 000c9cdc..6179256b 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index 5a7e773a..ad7af034 100644
+index ca8ee527..fc3b0100 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -474,6 +474,7 @@ extern struct buf *ex_pbuf;

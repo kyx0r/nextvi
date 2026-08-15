@@ -6339,7 +6339,7 @@ index 25b0a4fa..76bcb87c 100644
  		for (n = 0; n < max && (l = uc_len(ss)); n++)
  			ss += l;
 diff --git a/vi.c b/vi.c
-index 000c9cdc..93908e7a 100644
+index 76778809..1bcc256d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -111,6 +111,149 @@ static int vi_nextcol(char *ln, int dir, int *off)
@@ -6999,7 +6999,7 @@ index 000c9cdc..93908e7a 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 5a7e773a..26b8817b 100644
+index ca8ee527..7011a83a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -217,6 +217,7 @@ int ren_pos(char *s, int off);

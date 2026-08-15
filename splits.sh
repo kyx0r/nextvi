@@ -3717,8 +3717,8 @@ void term_pos\(int r, int c\);.*?
 (void term_kill\(void\);)7??0?
 grp 07??m 1220reg p OK vi.h:327:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> void term_suspend\(void\);
-#define term_scrl	term_write\("\\033\[\?1049l", 8\)
-#define term_scrh	term_write\("\\033\[\?1049h", 8\).*(char \*term_att\(int att\);)
+#define term_scrl\(\)	term_write\("\\033\[\?1049l", 8\)
+#define term_scrh\(\)	term_write\("\\033\[\?1049h", 8\).*(char \*term_att\(int att\);)
 void term_push\(char \*s, unsigned int n\);
 #define term_dec\(\) ibuf_pos--; icmd_pos--;8??0?
 grp 08??-4m 1220reg p OK vi.h:327:a82sc %? %@2152sc!'\''08??1q0?
@@ -4337,7 +4337,7 @@ index 9eb8e85b..27ea50a2 100644
  				term_clean();
  			continue;
 diff --git a/term.c b/term.c
-index 05c58da5..55d5f86d 100644
+index c8861702..edd7ec84 100644
 --- a/term.c
 +++ b/term.c
 @@ -85,6 +85,20 @@ void term_kill(void)
@@ -4362,7 +4362,7 @@ index 05c58da5..55d5f86d 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 000c9cdc..b011a0df 100644
+index 76778809..660fe1fb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
@@ -4850,7 +4850,7 @@ index 000c9cdc..b011a0df 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 5a7e773a..2b6e29e1 100644
+index ca8ee527..2bfcb247 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -325,6 +325,7 @@ void term_suspend(void);

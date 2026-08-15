@@ -644,7 +644,7 @@ int term_read\(int winch\);4??0?
 void term_room\(int n\);.*?
 (int term_read\(int winch\);)7??0?
 grp 07??m 1220reg p OK vi.h:329:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> #define term_scrh	term_write\("\\033\[\?1049h", 8\)
+m 01;0grp 1%f> #define term_scrh\(\)	term_write\("\\033\[\?1049h", 8\)
 void term_chr\(int ch\);
 void term_pos\(int r, int c\);.*(#define term_dec\(\) ibuf_pos--; icmd_pos--;)
 #define term_exec\(s, n, type\) \\
@@ -652,7 +652,7 @@ void term_pos\(int r, int c\);.*(#define term_dec\(\) ibuf_pos--; icmd_pos--;)
 grp 08??-4m 1220reg p OK vi.h:329:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void term_clean\(void\);
 void term_suspend\(void\);
-#define term_scrl	term_write\("\\033\[\?1049l", 8\).*(	preserve\(int, tn, tn = 0;\) \\)
+#define term_scrl\(\)	term_write\("\\033\[\?1049l", 8\).*(	preserve\(int, tn, tn = 0;\) \\)
 	preserve\(int, ibuf_cnt,\) \\
 	preserve\(int, ibuf_pos, ibuf_pos = ibuf_cnt;\) \\9??0?
 grp 09??-7m 1220reg p OK vi.h:329:a92sc %? %@2152sc!'\''00?
@@ -1019,7 +1019,7 @@ index 9eb8e85b..caba9443 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 05c58da5..e24ef4b5 100644
+index c8861702..daa4a2b9 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,16 @@
@@ -1152,7 +1152,7 @@ index 05c58da5..e24ef4b5 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index 000c9cdc..d1bb8f2c 100644
+index 76778809..b83e1fa1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -513,6 +513,9 @@ static void vc_status(int type)
@@ -1198,7 +1198,7 @@ index 000c9cdc..d1bb8f2c 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 5a7e773a..1289f2cd 100644
+index ca8ee527..192172f5 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -327,6 +327,9 @@ void term_pos(int r, int c);

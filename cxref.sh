@@ -1326,7 +1326,7 @@ index 3d5a1721..338614ba 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 000c9cdc..3cd0fba3 100644
+index 76778809..cb697e89 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -484,6 +484,464 @@ static int fs_searchback(int cnt, int *row, int *off)
@@ -1859,7 +1859,7 @@ index 000c9cdc..3cd0fba3 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 5a7e773a..2ef58d05 100644
+index ca8ee527..d6ff4732 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -408,6 +408,9 @@ struct buf {

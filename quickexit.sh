@@ -450,7 +450,7 @@ index 9eb8e85b..7152a2c9 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index 000c9cdc..76d97af8 100644
+index 76778809..c1c68813 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -471,7 +471,7 @@ index 000c9cdc..76d97af8 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 5a7e773a..b087b37a 100644
+index ca8ee527..e913cfd6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -368,6 +368,7 @@ typedef struct {

@@ -874,7 +874,7 @@ index 9eb8e85b..7edbf915 100644
 +	}
  }
 diff --git a/vi.h b/vi.h
-index 5a7e773a..f5b33af3 100644
+index ca8ee527..068f68b2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -426,6 +426,7 @@ extern int xts;

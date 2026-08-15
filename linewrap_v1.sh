@@ -1687,7 +1687,7 @@ index 25b0a4fa..a0666ffe 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index 000c9cdc..a292946d 100644
+index 76778809..c3da412e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,24 @@ static void vi_drawrow(int row)
@@ -1725,7 +1725,7 @@ index 000c9cdc..a292946d 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 5a7e773a..d34014c3 100644
+index ca8ee527..ded18f27 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -129,10 +129,12 @@ struct lopt {

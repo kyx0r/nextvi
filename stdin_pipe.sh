@@ -814,7 +814,7 @@ index 3d5a1721..0b231252 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 05c58da5..ea1a9c47 100644
+index c8861702..8087b9af 100644
 --- a/term.c
 +++ b/term.c
 @@ -6,6 +6,8 @@ int term_resized;
@@ -896,7 +896,7 @@ index 05c58da5..ea1a9c47 100644
  	if (!ibuf) {
  		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index 000c9cdc..99887d32 100644
+index 76778809..5bd0665e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1852,6 +1852,7 @@ static void setup_signals(void)
@@ -918,7 +918,7 @@ index 000c9cdc..99887d32 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index 5a7e773a..c80cb1d4 100644
+index ca8ee527..c5597d2d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -544,6 +544,7 @@ int conf_kmapfind(char *name);

@@ -173,7 +173,7 @@ void syn_done(void)
 		vi\(1\);
 	term_done\(\);
 	if \(xvis & 8\)
-		term_scrl;
+		term_scrl\(\)
 	return xquit < -256 \? \(abs\(xquit\) - 257\) & 255 : abs\(xquit\) - 1;1??0?
 1??+2m 11q0?
 %f> 	else
@@ -365,7 +365,7 @@ index 25b0a4fa..a5cf8aae 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 000c9cdc..31623bcb 100644
+index 76778809..e6e771af 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1897,6 +1897,12 @@ int main(int argc, char *argv[])
@@ -379,10 +379,10 @@ index 000c9cdc..31623bcb 100644
 +		sbuf_free(led_attsb)
 +	free(ibuf);
  	if (xvis & 8)
- 		term_scrl;
+ 		term_scrl()
  	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index 5a7e773a..7cb0d87b 100644
+index ca8ee527..9d3e9bda 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,6 +219,7 @@ int ren_noeol(char *s, int p);

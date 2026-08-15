@@ -193,7 +193,7 @@ int main\(int argc, char \*argv\[]\).*?
 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;.*(		term_init\(\);)
 	if \(xvis & 8\)
-		term_scrh;9??0?
+		term_scrh\(\)9??0?
 grp 09??-9m 2220reg p OK vi.c:1882:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:18822sc %? %@2132sc!0?
 ?0?
@@ -235,13 +235,13 @@ int main\(int argc, char \*argv\[]\).*?
 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;.*(		term_init\(\);)
 	if \(xvis & 8\)
-		term_scrh;9??0?
+		term_scrh\(\)9??0?
 grp 09??-7m 3220reg p OK vi.c:1884:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:18842sc %? %@2132sc!0?
 ?0?
 %f+ 		term_init\(\);
 	if \(xvis & 8\)
-		term_scrh;
+		term_scrh\(\)
 	ex_init\(argv \+ i, argc - i\);
 	if \(xvis & 2\)
 		ex\(\);
@@ -256,23 +256,23 @@ int main\(int argc, char \*argv\[]\).*?
 3??m 4220reg p OK vi.c:1894:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		term_init\(\);
 	if \(xvis & 8\)
-		term_scrh;4??0?
+		term_scrh\(\)4??0?
 4??+3m 4220reg p OK vi.c:1894:a42sc %? %@2152sc!1q0?
 %f+ 	if \(xvis & 2\)
 		ex\(\);
 	else5??0?
 5??-1m 4220reg p OK vi.c:1894:a52sc %? %@2152sc!1q0?
-%f+ ...e.m.i......
-..f...........
-	......s....
-.e...n........\+ .,..r.. . ...
-	i......s.....
-.....\).
-	....6??0?
+%f+ ...e.._in.t...
+.i.....i. ....
+	....._......
+...........gv.. ....r...-...;
+.i. ....... .\)
+	.e.\(..
+...s.6??0?
 6??+3m 4220reg p OK vi.c:1894:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		term_init\(\);.*?
 	if \(xvis & 8\).*?
-		term_scrh;.*?
+		term_scrh\(\).*?
 (	ex_init\(argv \+ i, argc - i\);)7??0?
 grp 07??m 4220reg p OK vi.c:1894:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
@@ -283,7 +283,7 @@ int main\(int argc, char \*argv\[]\).*?
 grp 08??-4m 4220reg p OK vi.c:1894:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				return EXIT_FAILURE;
 			}
-		}.*(		term_scrl;)
+		}.*(		term_scrl\(\))
 	return xquit < -256 \? \(abs\(xquit\) - 257\) & 255 : abs\(xquit\) - 1;
 }9??0?
 grp 09??-7m 4220reg p OK vi.c:1894:a92sc %? %@2152sc!'\''00?
@@ -382,7 +382,7 @@ index 3d5a1721..2f23c1a8 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 000c9cdc..a8712781 100644
+index 76778809..e9d3446c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1856,7 +1856,8 @@ static void setup_signals(void)
@@ -421,14 +421,14 @@ index 000c9cdc..a8712781 100644
 @@ -1891,7 +1903,7 @@ int main(int argc, char *argv[])
  		term_init();
  	if (xvis & 8)
- 		term_scrh;
+ 		term_scrh()
 -	ex_init(argv + i, argc - i);
 +	ex_init(argv + i, argc - i, ex_cmds, cmdnum);
  	if (xvis & 2)
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 5a7e773a..68a566d0 100644
+index ca8ee527..081c5b90 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -485,7 +485,7 @@ void *ex_exec(const char *ln);

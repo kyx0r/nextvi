@@ -280,7 +280,7 @@ index 3d5a1721..b8edf5a8 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 05c58da5..15aa2e50 100644
+index c8861702..9bb2c70a 100644
 --- a/term.c
 +++ b/term.c
 @@ -235,7 +235,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
@@ -296,7 +296,7 @@ index 05c58da5..15aa2e50 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 5a7e773a..4784536c 100644
+index ca8ee527..44d9b82b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@

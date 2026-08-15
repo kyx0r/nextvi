@@ -4606,7 +4606,7 @@ index 00000000..841cf376
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index 05c58da5..726c180f 100644
+index c8861702..52dd97c9 100644
 --- a/term.c
 +++ b/term.c
 @@ -139,8 +139,8 @@ void term_push(char *s, unsigned int n)
@@ -4687,7 +4687,7 @@ index 05c58da5..726c180f 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 000c9cdc..723bc54a 100644
+index 76778809..f49d3e06 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -4826,7 +4826,7 @@ index 000c9cdc..723bc54a 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 diff --git a/vi.h b/vi.h
-index 5a7e773a..83b0aeb6 100644
+index ca8ee527..35d89cdd 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,7 @@ struct lbuf {
