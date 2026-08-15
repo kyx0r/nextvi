@@ -66,8 +66,11 @@ const int hlslen = LEN\(hls\);.*(struct dircontext dctxs\[] = \{)
 	\{"\^\(\[ \\t]\+\)\?\(\[" CNEUT "]\*\[\^" CR2L "]\*\[\^" CR2L CNEUT "]\(\?:\[" CNEUT "]\+\$\)\?\)", -1, \{0, 1, -1}},9??0?
 grp 09??-12m 1220reg p OK conf.c:327:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg conf.c:3272sc %? %@2132sc!0?
-'\''1i /* how to highlight the search match the cursor lands on */
-const int conf_hlmat = SYN_BGMK(8);
+'\''1i /* how to highlight the search matches */
+const int conf_hlmat = RE1;
+
+/* how to highlight the search match the cursor lands on */
+const int conf_hlmatc = RE1 | SYN_BGMK(8);
 
 ??!219reg conf.c:327:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 	return r->col\[col];
@@ -149,9 +152,9 @@ static int vi_search\(int cmd, int cnt, int \*row, int \*off, int msg\)
 		return 1;9??0?
 grp 09??-10m 2220reg p OK vi.c:315:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:3152sc %? %@2132sc!0?
-'\''1i /* mark the keyword matches of the visible rows, the one at
-   the cursor is given the attributes of catt instead of att */
-static void vi_isearchhl(int att, int catt)
+'\''1i /* mark the keyword matches of the visible rows, the one at the
+   cursor is given conf_hlmatc instead of conf_hlmat attributes */
+static void vi_isearchhl(void)
 {
 	int offs[xkwdrs->nsubc];
 	int row, off, beg, end, flg, i, n;
@@ -169,7 +172,8 @@ static void vi_isearchhl(int att, int catt)
 			}
 			n = uc_off(la.s + off + beg, end - beg);
 			la.off = uc_off(la.s, off + beg);
-			la.att = row == xrow && la.off == xoff ? catt : att;
+			la.att = row == xrow && la.off == xoff ?
+					conf_hlmatc : conf_hlmat;
 			for (i = 0; i < n; i++, la.off++)
 				sbuf_mem(led_attsb, &la, sizeof(la))
 			off += end > 0 ? end : 1;
@@ -182,8 +186,7 @@ static char *vi_isearch(int cmd, int *ret, int *mlen)
 {
 	int key, row, off, len, drawn = 0, dir = cmd == '\''/'\'' ? +2 : -2;
 	int orow = xrow, ooff = xoff, otop = xtop, oleft = xleft;
-	int hl = syn_findhl(1), odir = xkwddir;
-	int att = hl >= 0 ? hls[hl].att[0] : 0;
+	int odir = xkwddir;
 	char *okwd = ex_regget('\''/'\'') ? uc_dup(ex_regget('\''/'\'')->s) : NULL;
 	sbuf *oattsb = led_attsb;
 	ins_state is;
@@ -217,7 +220,7 @@ static char *vi_isearch(int cmd, int *ret, int *mlen)
 					if (xrow < xtop || xrow >= xtop + xrows)
 						xtop = MAX(0, xrow - xrows / 2);
 				}
-				vi_isearchhl(att, syn_merge(att, conf_hlmat));
+				vi_isearchhl();
 			}
 		}
 		term_record = 1;
@@ -276,11 +279,12 @@ extern rset \*fsincl;9??0?
 grp 09??-8m 1220reg p OK vi.h:541:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:5412sc %? %@2132sc!0?
 '\''1i extern const int conf_hlmat;
+extern const int conf_hlmatc;
 ??!219reg vi.h:541:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat (post) from rstr.sh
 printf '%s\n' '2sc!fr 98b1%ya 98?0?
-%f>    the cursor is given the attributes of catt instead of att \*/
-static void vi_isearchhl\(int att, int catt\)
+%f>    cursor is given conf_hlmatc instead of conf_hlmat attributes \*/
+static void vi_isearchhl\(void\)
 \{
 	int offs\[xkwdrs->nsubc];
 	int row, off, beg, end, flg, i, n;
@@ -294,8 +298,8 @@ static void vi_isearchhl\(int att, int catt\)
 2??m 1220reg p OK vi.c:314:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^	int offs\[xkwdrs->nsubc];$3??0?
 3??m 1220reg p OK vi.c:314:a32sc %? %@2152sc!fr 981qfr 980?
-%f>    the cursor is given the attributes of catt instead of att \*/
-static void vi_isearchhl\(int att, int catt\)
+%f>    cursor is given conf_hlmatc instead of conf_hlmat attributes \*/
+static void vi_isearchhl\(void\)
 \{4??0?
 4??+3m 1220reg p OK vi.c:314:a42sc %? %@2152sc!1q0?
 %f> 	int row, off, beg, end, flg, i, n;
@@ -405,8 +409,8 @@ rstr *fsincl;
 --- a/vi.c
 +++ b/vi.c
 @@ -311,14 +311,14 @@
-    the cursor is given the attributes of catt instead of att */
- static void vi_isearchhl(int att, int catt)
+    cursor is given conf_hlmatc instead of conf_hlmat attributes */
+ static void vi_isearchhl(void)
  {
 -	int offs[xkwdrs->nsubc];
 +	int offs[xkwdrs->rs ? xkwdrs->rs->nsubc : 2];
@@ -444,30 +448,33 @@ rstr *fsincl;
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 70157040..44d61a15 100644
+index 70157040..58d274b9 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -325,6 +325,9 @@ const int hlslen = LEN(hls);
+@@ -325,6 +325,12 @@ const int hlslen = LEN(hls);
  /* how to highlight text in the reverse direction */
  const int conf_hlrev = SYN_BGMK(8);
  
++/* how to highlight the search matches */
++const int conf_hlmat = RE1;
++
 +/* how to highlight the search match the cursor lands on */
-+const int conf_hlmat = SYN_BGMK(8);
++const int conf_hlmatc = RE1 | SYN_BGMK(8);
 +
  /* right-to-left characters */
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/vi.c b/vi.c
-index 76778809..d69c6cdd 100644
+index 76778809..e3883ab4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -307,13 +307,107 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
  	return r->col[col];
  }
  
-+/* mark the keyword matches of the visible rows, the one at
-+   the cursor is given the attributes of catt instead of att */
-+static void vi_isearchhl(int att, int catt)
++/* mark the keyword matches of the visible rows, the one at the
++   cursor is given conf_hlmatc instead of conf_hlmat attributes */
++static void vi_isearchhl(void)
 +{
 +	int offs[xkwdrs->nsubc];
 +	int row, off, beg, end, flg, i, n;
@@ -485,7 +492,8 @@ index 76778809..d69c6cdd 100644
 +			}
 +			n = uc_off(la.s + off + beg, end - beg);
 +			la.off = uc_off(la.s, off + beg);
-+			la.att = row == xrow && la.off == xoff ? catt : att;
++			la.att = row == xrow && la.off == xoff ?
++					conf_hlmatc : conf_hlmat;
 +			for (i = 0; i < n; i++, la.off++)
 +				sbuf_mem(led_attsb, &la, sizeof(la))
 +			off += end > 0 ? end : 1;
@@ -498,8 +506,7 @@ index 76778809..d69c6cdd 100644
 +{
 +	int key, row, off, len, drawn = 0, dir = cmd == '/' ? +2 : -2;
 +	int orow = xrow, ooff = xoff, otop = xtop, oleft = xleft;
-+	int hl = syn_findhl(1), odir = xkwddir;
-+	int att = hl >= 0 ? hls[hl].att[0] : 0;
++	int odir = xkwddir;
 +	char *okwd = ex_regget('/') ? uc_dup(ex_regget('/')->s) : NULL;
 +	sbuf *oattsb = led_attsb;
 +	ins_state is;
@@ -533,7 +540,7 @@ index 76778809..d69c6cdd 100644
 +					if (xrow < xtop || xrow >= xtop + xrows)
 +						xtop = MAX(0, xrow - xrows / 2);
 +				}
-+				vi_isearchhl(att, syn_merge(att, conf_hlmat));
++				vi_isearchhl();
 +			}
 +		}
 +		term_record = 1;
@@ -572,14 +579,15 @@ index 76778809..d69c6cdd 100644
  		if (!ret) {
  			free(kw);
 diff --git a/vi.h b/vi.h
-index ca8ee527..6b1e2460 100644
+index ca8ee527..8625ff20 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -539,6 +539,7 @@ extern struct placeholder _ph[];
+@@ -539,6 +539,8 @@ extern struct placeholder _ph[];
  extern struct placeholder *ph;
  extern int phlen;
  extern const int conf_hlrev;
 +extern const int conf_hlmat;
++extern const int conf_hlmatc;
  char **conf_kmap(int id);
  int conf_kmapfind(char *name);
  char *conf_digraph(int c1, int c2);
