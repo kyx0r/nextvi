@@ -938,7 +938,7 @@ index 70157040..71f2030a 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 3d5a1721..a7b16b1c 100644
+index 69de2dfb..19dd6784 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@

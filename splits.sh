@@ -283,20 +283,20 @@ void ex_init\(char \*\*files, int n\)
 }
 
 4??0?
-4??+2m 7220reg p OK ex.c:1916:a42sc %? %@2152sc!1q0?
+4??+2m 7220reg p OK ex.c:1915:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	syn_setft\(xb_ft\);
 	free\(sb->s\);.*(		ec_edit\("", "e", s\);)
 		s = \*\(\+\+files\);
 	} while \(--n > 0\);8??0?
-grp 08??-8m 7220reg p OK ex.c:1916:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 7220reg p OK ex.c:1915:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else
 			esc = 0;
 		sbuf_cut\(sb, 0\).*(	xvis &= ~4;)
 	if \(\(s = getenv\("EXINIT"\)\)\)
 		ex_command\(s\)9??0?
-grp 09??-11m 7220reg p OK ex.c:1916:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:19162sc %? %@2132sc!0?
+grp 09??-11m 7220reg p OK ex.c:1915:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:19152sc %? %@2132sc!0?
 ?0?
 %f+ \{
 	xbufsalloc = MAX\(n, xbufsalloc\);
@@ -308,24 +308,24 @@ void ex_init\(char \*\*files, int n\)
 %f+ \{
 	xbufsalloc = MAX\(n, xbufsalloc\);
 	ec_setbufsmax\(NULL, NULL, ""\);4??0?
-4??+2m 8220reg p OK ex.c:1920:a42sc %? %@2152sc!1q0?
+4??+2m 8220reg p OK ex.c:1919:a42sc %? %@2152sc!1q0?
 grp 1%f+ \{.*?
 	xbufsalloc = MAX\(n, xbufsalloc\);.*?
 (	ec_setbufsmax\(NULL, NULL, ""\);)7??0?
-grp 07??m 8220reg p OK ex.c:1920:a72sc %? %@2152sc!1q0?
+grp 07??m 8220reg p OK ex.c:1919:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	syn_setft\(xb_ft\);
 	free\(sb->s\);.*(		ec_edit\("", "e", s\);)
 		s = \*\(\+\+files\);
 	} while \(--n > 0\);8??0?
-grp 08??-4m 8220reg p OK ex.c:1920:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 8220reg p OK ex.c:1919:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else
 			esc = 0;
 		sbuf_cut\(sb, 0\).*(	xvis &= ~4;)
 	if \(\(s = getenv\("EXINIT"\)\)\)
 		ex_command\(s\)9??0?
-grp 09??-7m 8220reg p OK ex.c:1920:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:19202sc %? %@2132sc!0?
+grp 09??-7m 8220reg p OK ex.c:1919:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:19192sc %? %@2132sc!0?
 '\''1-1i struct win *wins;		/* head of window list */
 struct win *curwin;		/* current active window */
 int nwins;			/* number of windows */
@@ -559,9 +559,9 @@ void *win_split(int axis, char *arg)
 	return NULL;
 }
 
-??!219reg ex.c:1916:m72sc %? %@2142sc!0?
+??!219reg ex.c:1915:m72sc %? %@2142sc!0?
 '\''8i 	win_init();
-??!219reg ex.c:1920:m82sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1919:m82sc %? %@2142sc!b2%ya 98?0?
 %f> int led_pos\(char \*s, int pos\)
 \{
 	if \(dir_context\(s\) < 0\)
@@ -3928,7 +3928,7 @@ index 70157040..8f1686bf 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 3d5a1721..153d917a 100644
+index 69de2dfb..2dd2e00c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -4049,7 +4049,7 @@ index 3d5a1721..153d917a 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
  };
-@@ -1914,10 +1985,163 @@ void ex(void)
+@@ -1913,10 +1984,163 @@ void ex(void)
  	xgrec--;
  }
  
