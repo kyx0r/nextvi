@@ -119,7 +119,8 @@ with the matches of the keyword highlighted and the cursor moved to the first
 match, scrolling the buffer when the match is off screen. Enter keeps that
 position and searches normally, so counts and messages are unchanged. An
 interrupt, or an erase key on an already empty keyword, restores the view,
-the previous keyword and the search direction.
+the previous keyword and the search direction. While in the prompt TAB moves
+to the next match and ^_ moves in reverse.
 
 stdin_pipe.sh
 --------------
