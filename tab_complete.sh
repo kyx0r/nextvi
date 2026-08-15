@@ -57,10 +57,31 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b21;0fr 0%f> ^		case TK_CTL\('\''_'\''\):$1020??0?
 b21;0fr 0%f> ^			if \(!\(flg & 2\)\)$1021??0?
 b21;0fr 0%f> ^				goto insert;$1022??0?
-232reg 01018,1019,1020,1021,1022?? 232reg 11018,1019,1020,1021,1022?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
-b4%ya 972sc %? %@972sc!b21fr 232f> 110??10??211reg10??!211reg ? %@2210?
-b5%ya 502sc %1000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? %@502sc!b21211reg ? %@2210?
-b6%ya 512sc %1018,1019,1020,1021,1022?? %@512sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
+232reg 01018,1019,1020,1021,1022?? 232reg 11018,1019,1020,1021,1022?? 230reg+ 1b21;0fr 0%f> ^		led_printparts\(sb, -1, ps, "", 0, &xoff, 1\);$1023??0?
+b21;0fr 0%f> ^	sbufn_str\(sb, post\)$1024??0?
+b21;0fr 0%f> ^	char \*post = "", \*postref = NULL;$1025??0?
+b21;0fr 0%f> ^		case '\''\\033'\'':;	/\* Arrow keys \*/$1026??0?
+b21;0fr 0%f> ^		led_printparts\(sb, pre, ps, \*post, postn, poff, !vi_insmov\);$1027??0?
+b21;0fr 0%f> ^	led_printparts\(sb, pre, ps, \*post, postn, poff, !vi_insmov\); \\$1028??0?
+b21;0fr 0%f> ^	led_printparts\(sb, pre, ps, \*post, postn, poff, 1\); \\$1029??0?
+b21;0fr 0%f> ^	if \(print\) \{$1030??0?
+b21;0fr 0%f> ^	char \*post, int postn, int \*poff, int print\)$1031??0?
+b21;0fr 0%f> ^static int vi_insmov;$1032??0?
+b21;0fr 0%f> ^	free\(postref\);$1033??0?
+b21;0fr 0%f> ^			char cbuf\[1];$1034??0?
+b21;0fr 0%f> ^			cbuf\[0] = '\''\\0'\'';$1035??0?
+b21;0fr 0%f> ^			int fl = fcntl\(STDIN_FILENO, F_GETFL\);$1036??0?
+b21;0fr 0%f> ^			fcntl\(STDIN_FILENO, F_SETFL, fl \| O_NONBLOCK\);$1037??0?
+b21;0fr 0%f> ^			read\(STDIN_FILENO, cbuf, 1\);$1038??0?
+b21;0fr 0%f> ^			if \(\*cbuf == '\''\['\''\) \{$1039??0?
+b21;0fr 0%f> ^				read\(STDIN_FILENO, cbuf, 1\);$1040??0?
+b21;0fr 0%f> ^				c = \*cbuf;$1041??0?
+b21;0fr 0%f> ^				fcntl\(STDIN_FILENO, F_SETFL, fl\);$1042??0?
+233reg 01023,1024,1025,1026,1027;1028,1029,1030,1031,1032;1033,1034,1035,1036,1037;1038,1039,1040,1041,1042?? 233reg 11023,1024,1025,1026,1027;1028,1029,1030,1031,1032;1033,1034,1035,1036,1037;1038,1039,1040,1041,1042?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
+b4%ya 972sc %? %@972sc!b21fr 232f> 110??fr 233f> 111??10;11??211reg10;11??!211reg ? %@2210?
+b5%ya 502sc %1000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? %@502sc!b21fr 233f> 110??10??211reg10??!211reg ? %@2210?
+b6%ya 512sc %1018,1019,1020,1021,1022?? %@512sc!b21211reg ? %@2210?
+b7%ya 522sc %1023,1024,1025,1026,1027;1028,1029,1030,1031,1032;1033,1034,1035,1036,1037;1038,1039,1040,1041,1042?? %@522sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -829,7 +850,34 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 				break;
 ??!219reg led.c:742:m22sc %? %@2142sc!0?
 '\''3d??!219reg led.c:771:m32sc %? %@2142sc!p compat applied: src=incsearch.sh' > "$P2VIF".2
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
+# Compat (post) from arrowkeys_insert.sh
+printf '%s\n' '2sc!fr 98b2%ya 98?0?
+%f> 						page = led_complist\(compsb, page\);
+						term_pos\(0, 0\);
+						led_printparts\(sb, pre, ps,
+							\*post, postn, poff\);
+						c = term_read\(TK_CTL\('\''l'\''\)\);
+					} while \(page && \(c == '\''\\t'\'' \|\| c == TK_CTL\('\''_'\''\)\)\);
+					term_clean\(\);1??0?
+1??+3m 11q0?
+%f> 							\*post, postn, poff\);
+						c = term_read\(TK_CTL\('\''l'\''\)\);
+					} while \(page && \(c == '\''\\t'\'' \|\| c == TK_CTL\('\''_'\''\)\)\);
+					term_clean\(\);2??0?
+2??m 1220reg p OK led.c:823:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^							\*post, postn, poff\);$3??0?
+3??m 1220reg p OK led.c:823:a32sc %? %@2152sc!fr 981qfr 980?
+%f> 						page = led_complist\(compsb, page\);
+						term_pos\(0, 0\);
+						led_printparts\(sb, pre, ps,4??0?
+4??+3m 1220reg p OK led.c:823:a42sc %? %@2152sc!1q0?
+%f> 						c = term_read\(TK_CTL\('\''l'\''\)\);
+					} while \(page && \(c == '\''\\t'\'' \|\| c == TK_CTL\('\''_'\''\)\)\);
+					term_clean\(\);5??0?
+5??-1m 1220reg p OK led.c:823:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:8232sc %? %@2132sc!0?
+'\''1s/f\)/f, 1)/??!219reg led.c:823:m12sc %? %@2142sc!p compat applied: src=arrowkeys_insert.sh' > "$P2VIF".3
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
@@ -1013,6 +1061,83 @@ exit 0
  			if ((cs = led_read(kmap, c)))
  				sbuf_str(sb, cs)
  		}
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT post src=arrowkeys_insert.sh ===
+=== GATE 1 present tag 1023 probe led.c ===
+		led_printparts(sb, -1, ps, "", 0, &xoff, 1);
+=== END ===
+=== GATE 2 present tag 1024 probe led.c ===
+	sbufn_str(sb, post)
+=== END ===
+=== GATE 3 present tag 1025 probe led.c ===
+	char *post = "", *postref = NULL;
+=== END ===
+=== GATE 4 present tag 1026 probe led.c ===
+		case '\033':;	/* Arrow keys */
+=== END ===
+=== GATE 5 present tag 1027 probe led.c ===
+		led_printparts(sb, pre, ps, *post, postn, poff, !vi_insmov);
+=== END ===
+=== GATE 6 present tag 1028 probe led.c ===
+	led_printparts(sb, pre, ps, *post, postn, poff, !vi_insmov); \
+=== END ===
+=== GATE 7 present tag 1029 probe led.c ===
+	led_printparts(sb, pre, ps, *post, postn, poff, 1); \
+=== END ===
+=== GATE 8 present tag 1030 probe led.c ===
+	if (print) {
+=== END ===
+=== GATE 9 present tag 1031 probe led.c ===
+	char *post, int postn, int *poff, int print)
+=== END ===
+=== GATE 10 present tag 1032 probe led.c ===
+static int vi_insmov;
+=== END ===
+=== GATE 11 present tag 1033 probe led.c ===
+	free(postref);
+=== END ===
+=== GATE 12 present tag 1034 probe led.c ===
+			char cbuf[1];
+=== END ===
+=== GATE 13 present tag 1035 probe led.c ===
+			cbuf[0] = '\0';
+=== END ===
+=== GATE 14 present tag 1036 probe led.c ===
+			int fl = fcntl(STDIN_FILENO, F_GETFL);
+=== END ===
+=== GATE 15 present tag 1037 probe led.c ===
+			fcntl(STDIN_FILENO, F_SETFL, fl | O_NONBLOCK);
+=== END ===
+=== GATE 16 present tag 1038 probe led.c ===
+			read(STDIN_FILENO, cbuf, 1);
+=== END ===
+=== GATE 17 present tag 1039 probe led.c ===
+			if (*cbuf == '[') {
+=== END ===
+=== GATE 18 present tag 1040 probe led.c ===
+				read(STDIN_FILENO, cbuf, 1);
+=== END ===
+=== GATE 19 present tag 1041 probe led.c ===
+				c = *cbuf;
+=== END ===
+=== GATE 20 present tag 1042 probe led.c ===
+				fcntl(STDIN_FILENO, F_SETFL, fl);
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/led.c
++++ b/led.c
+@@ -820,7 +820,7 @@
+ 						page = led_complist(compsb, page);
+ 						term_pos(0, 0);
+ 						led_printparts(sb, pre, ps,
+-							*post, postn, poff);
++							*post, postn, poff, 1);
+ 						c = term_read(TK_CTL('l'));
+ 					} while (page && (c == '\t' || c == TK_CTL('_')));
+ 					term_clean();
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
