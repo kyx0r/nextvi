@@ -51,12 +51,12 @@ void term_clean(void)
 void term_suspend(void)
 {
 	if (xvis & 8)
-		term_scrl;
+		term_scrl()
 	term_done();
 	kill(0, SIGSTOP);
 	term_init();
 	if (xvis & 8)
-		term_scrh;
+		term_scrh()
 }
 
 void term_commit(void)
