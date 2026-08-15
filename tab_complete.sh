@@ -213,7 +213,7 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 	EO\(led\),9??0?
 grp 09??-7m 3220reg p OK ex.c:1744:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17442sc %? %@2132sc!0?
-'\''1i int xtc = 1;			/* tab path completion in the ex prompt */
+'\''1i int xtc = 1;			/* tab path completion, 1: inline, 2: full screen */
 ??!219reg ex.c:17:m12sc %? %@2142sc!0?
 '\''2s/s\)/s) EO(tc)/??!219reg ex.c:1644:m22sc %? %@2142sc!0?
 '\''3i 	EO(tc),
@@ -258,53 +258,181 @@ static void led_printparts\(sbuf \*sb, int pre, int ps,
 grp 09??-8m 2220reg p OK led.c:279:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg led.c:2792sc %? %@2132sc!0?
 ?0?
+%f+ 	return NULL;
+}
+
+#define led_info\(buf\) \\
+\{ \\
+	led_att la; \\
+	la\.s = NULL; \\1??0?
+1??+3m 31q0?
+%f+ #define led_info\(buf\) \\
+\{ \\
+	led_att la; \\
+	la\.s = NULL; \\2??0?
+2??m 3220reg p OK led.c:355:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^#define led_info\(buf\) \\$3??0?
+3??m 3220reg p OK led.c:355:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 	return NULL;
+}
+
+4??0?
+4??+3m 3220reg p OK led.c:355:a42sc %? %@2152sc!1q0?
+%f+ \{ \\
+	led_att la; \\
+	la\.s = NULL; \\5??0?
+5??-1m 3220reg p OK led.c:355:a52sc %? %@2152sc!1q0?
+%f+ .r....n......
+}
+
+#.e..n..........\(bu...\\
+\{..
+.....a.. l....
+.la\.. ..NU.....6??0?
+6??+3m 3220reg p OK led.c:355:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	return NULL;.*?
+}.*?
+.*?
+(#define led_info\(buf\) \\)7??0?
+grp 07??m 3220reg p OK led.c:355:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		}
+		c = term_read\(0\);
+	}.*(	la\.att = WH1 \| SYN_BD \| SYN_OWR; \\)
+	sbuf \*prev_attsb = led_attsb; \\
+	sbuf_make\(led_attsb, sizeof\(la\) \* 2\) \\8??0?
+grp 08??-4m 3220reg p OK led.c:355:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				return buf;
+			}
+			return kmap_map\(\*kmap, c\);.*(	for \(i = uc_slen\(buf\) - 1; i >= 0; i--\) \{ \\)
+		la\.off = \*poff \+ i; \\
+		sbuf_mem\(led_attsb, &la, sizeof\(la\)\) \\9??0?
+grp 09??-7m 3220reg p OK led.c:355:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3552sc %? %@2132sc!0?
+?0?
+%f+ 		sbuf_mem\(led_attsb, &la, sizeof\(la\)\) \\
+	} \\
+	sbuf_str\(sb, buf\) \\
+	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
+	sbuf_cut\(sb, len\) \\
+	sbuf_free\(led_attsb\) \\
+	led_attsb = prev_attsb; \\1??0?
+1??+3m 41q0?
+%f+ 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
+	sbuf_cut\(sb, len\) \\
+	sbuf_free\(led_attsb\) \\
+	led_attsb = prev_attsb; \\2??0?
+2??m 4220reg p OK led.c:367:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\$3??0?
+3??m 4220reg p OK led.c:367:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 		sbuf_mem\(led_attsb, &la, sizeof\(la\)\) \\
+	} \\
+	sbuf_str\(sb, buf\) \\4??0?
+4??+3m 4220reg p OK led.c:367:a42sc %? %@2152sc!1q0?
+%f+ 	sbuf_cut\(sb, len\) \\
+	sbuf_free\(led_attsb\) \\
+	led_attsb = prev_attsb; \\5??0?
+5??-1m 4220reg p OK led.c:367:a52sc %? %@2152sc!1q0?
+%f+ ...b.._...\(l.....t.....la...............
+	...
+...uf_st..... b....\\
+	..d.........ts..b. .re,........... ...........\)..\\
+..b.....t.....l.....
+....._..e.\(.e..........
+......tt..........a....;..6??0?
+6??+3m 4220reg p OK led.c:367:a62sc %? %@2152sc!1q0?
+grp 1%f+ 		sbuf_mem\(led_attsb, &la, sizeof\(la\)\) \\.*?
+	} \\.*?
+	sbuf_str\(sb, buf\) \\.*?
+(	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\)7??0?
+grp 07??m 4220reg p OK led.c:367:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	sbuf_make\(led_attsb, sizeof\(la\) \* 2\) \\
+	for \(i = uc_slen\(buf\) - 1; i >= 0; i--\) \{ \\
+		la\.off = \*poff \+ i; \\.*(	c = term_read\(TK_CTL\('\''l'\''\)\); \\)
+	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
+	goto noredraw; \\8??0?
+grp 08??-4m 4220reg p OK led.c:367:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	la\.s = NULL; \\
+	la\.att = WH1 \| SYN_BD \| SYN_OWR; \\
+	sbuf \*prev_attsb = led_attsb; \\.*(static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\))
+\{
+	rstate\+\+;9??0?
+grp 09??-9m 4220reg p OK led.c:367:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3672sc %? %@2132sc!0?
+?0?
+%f+ 	goto noredraw; \\
+} \\
+
+static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\)
+\{
+	rstate\+\+;1??0?
+1??+2m 51q0?
+%f+ 	goto noredraw; \\
+} \\
+
+4??0?
+4??+2m 5220reg p OK led.c:375:a42sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	led_attsb = prev_attsb; \\
+	c = term_read\(TK_CTL\('\''l'\''\)\); \\
+	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\.*(	for \(int nl = 0; r < xrows; r\+\+\) \{)
+		if \(vi_lncol\) \{
+			term_pos\(r, 0\);8??0?
+grp 08??-4m 5220reg p OK led.c:375:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
+	sbuf_cut\(sb, len\) \\
+	sbuf_free\(led_attsb\) \\.*(			term_kill\(\);)
+		}
+		if \(r >= orow-ctop && r < crow-ctop\) \{9??0?
+grp 09??-7m 5220reg p OK led.c:375:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg led.c:3752sc %? %@2132sc!0?
+?0?
 %f+ 				exbuf_load\(ex_buf\)
 			}
 			continue; }
 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;1??0?
-1??+2m 31q0?
+1??+2m 61q0?
 %f+ 				exbuf_load\(ex_buf\)
 			}
 			continue; }4??0?
-4??+2m 3220reg p OK led.c:643:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK led.c:643:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				exbuf_load\(ex_buf\).*?
 			}.*?
 (			continue; })7??0?
-grp 07??m 3220reg p OK led.c:643:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK led.c:643:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			} else if \(bidx != ex_buf - bufs && bidx < xbufcur\) \{
 				ex_buf = bufs \+ bidx;.*(			if \(\(cs = led_read\(kmap, c\)\)\))
 				sbuf_str\(sb, cs\)
 		}8??0?
-grp 08??-4m 3220reg p OK led.c:643:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK led.c:643:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(ex_buf == tmpex_buf\)
 					continue;
 				restore\(ex_buf\).*(		is->sug = NULL;)
 		is->_sug = NULL;
 		if \(ai_max >= 0 && xpac\)9??0?
-grp 09??-7m 3220reg p OK led.c:643:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 6220reg p OK led.c:643:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg led.c:6432sc %? %@2132sc!0?
 ?0?
 %f+ 		sbuf_free\(suggestsb\)
 		sbuf_free\(acsb\)
 	}
 }1??0?
-1??+2m 41q0?
+1??+2m 71q0?
 %f+ 		sbuf_free\(suggestsb\)
 		sbuf_free\(acsb\)
 	}4??0?
-4??+2m 4220reg p OK led.c:734:a42sc %? %@2152sc!1q0?
+4??+2m 7220reg p OK led.c:734:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		sbuf_free\(suggestsb\).*?
 		sbuf_free\(acsb\).*?
 (	})7??0?
-grp 07??m 4220reg p OK led.c:734:a72sc %? %@2152sc!0?
+grp 07??m 7220reg p OK led.c:734:a72sc %? %@2152sc!0?
 1;4;7??!219reg led.c:7342sc %? %@2132sc!0?
 '\''1i static sbuf *compsb;
 ??!219reg led.c:2:m12sc %? %@2142sc!0?
-'\''2i /* complete the path at the end of sb, lst gets the matches; returns their count */
-static int led_pathcomp(sbuf *sb, int pre, sbuf *lst)
+'\''2i /* complete the path at the end of sb, lst gets the matches, typed gets the
+length of the part already there; returns the count of the matches */
+static int led_pathcomp(sbuf *sb, int pre, sbuf *lst, int *typed)
 {
 	DIR *dp;
 	struct dirent *dirp;
@@ -323,7 +451,7 @@ static int led_pathcomp(sbuf *sb, int pre, sbuf *lst)
 	sbuf_mem(path, sb->s + wo, bo - wo)
 	sbufn_null(path)
 	base = sb->s + bo;
-	blen = sb->s_n - bo;
+	*typed = blen = sb->s_n - bo;
 	if (!(dp = opendir(path->s_n ? path->s : "."))) {
 		free(path->s);
 		return 0;
@@ -390,33 +518,47 @@ static int led_complist(sbuf *lst, int beg)
 }
 
 ??!219reg led.c:279:m22sc %? %@2142sc!0?
-'\''3i 		case '\''\t'\'':
+'\''3c #define _led_info(buf, pn) \
+??!219reg led.c:355:m32sc %? %@2142sc!0?
+'\''4s/postn/pn/??!219reg led.c:367:m42sc %? %@2142sc!0?
+'\''5i #define led_info(buf) _led_info(buf, postn)
+/* like led_info(), except the cursor is left where it was, in front of buf */
+#define led_infoc(buf) _led_info(buf, postn + uc_slen(buf))
+
+??!219reg led.c:375:m52sc %? %@2142sc!0?
+'\''6i 		case TK_CTL('\''_'\''):	/* list the matches on their own screen */
+		case '\''\t'\'':
 			if (xtc && ai_max < 0 && sb->s[ps] == '\'':'\'') {
+				int typed, full = c == TK_CTL('\''_'\'') || xtc > 1;
 				if (!compsb)
 					sbuf_make(compsb, 128)
 				sbuf_cut(compsb, 0)
-				i = led_pathcomp(sb, pre, compsb);
+				i = led_pathcomp(sb, pre, compsb, &typed);
 				if (i > 1 && sb->s_n == len) {
 					int page = 0;
+					if (!full)
+						led_infoc(compsb->s + typed)
 					do {
 						page = led_complist(compsb, page);
 						term_pos(0, 0);
 						led_printparts(sb, pre, ps,
 							*post, postn, poff);
 						c = term_read(TK_CTL('\''l'\''));
-					} while (page && c == '\''\t'\'');
+					} while (page && (c == '\''\t'\'' || c == TK_CTL('\''_'\'')));
 					term_clean();
 					goto noredraw;
 				}
 				if (i)
 					break;
 			}
-??!219reg led.c:643:m32sc %? %@2142sc!0?
-'\''4i 	if (compsb) {
+			if (c == TK_CTL('\''_'\''))
+				continue;
+??!219reg led.c:643:m62sc %? %@2142sc!0?
+'\''7i 	if (compsb) {
 		sbuf_free(compsb)
 		compsb = NULL;
 	}
-??!219reg led.c:734:m42sc %? %@2142sc!b3%ya 98?0?
+??!219reg led.c:734:m72sc %? %@2142sc!b3%ya 98?0?
 %f> extern int xish;
 extern int xgrp;
 extern int xpac;
@@ -449,125 +591,157 @@ extern int xquit;9??0?
 ??!219reg vi.h:428:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat (post) from detect_indent.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
-%f> 			}
+%f> 				pre--;
+			}
 			break;
-		case '\''\\t'\'':
+		case '\''\\t'\'':1??0?
+1??+2m 11q0?
+%f> 				pre--;
+			}
+			break;4??0?
+4??+2m 1220reg p OK led.c:572:a42sc %? %@2152sc!0?
+1;4??!219reg led.c:5722sc %? %@2132sc!0?
+?0?
+%f+ 		case '\''\\t'\'':
 			if \(xet\)
 				for \(int _l = 0; _l < xsw; _l\+\+\)
 					sbuf_chr\(sb, '\'' '\''\)1??0?
-1??+2m 11q0?
-%f> 			}
-			break;
-		case '\''\\t'\'':4??0?
-4??+2m 1220reg p OK led.c:568:a42sc %? %@2152sc!0?
-1;4??!219reg led.c:5682sc %? %@2132sc!0?
+1??m 21q0?
+;0fr.,$f+ ^		case '\''\\t'\'':$4??0?
+4??m 2220reg p OK led.c:573:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg led.c:5732sc %? %@2132sc!0?
 ?0?
 %f+ 				exbuf_load\(ex_buf\)
 			}
 			continue; }
+		case TK_CTL\('\''_'\''\):	/\* list the matches on their own screen \*/
 		case '\''\\t'\'':
 			if \(xtc && ai_max < 0 && sb->s\[ps] == '\'':'\''\) \{
+				int typed, full = c == TK_CTL\('\''_'\''\) \|\| xtc > 1;
 				if \(!compsb\)
 					sbuf_make\(compsb, 128\)
 				sbuf_cut\(compsb, 0\)
-				i = led_pathcomp\(sb, pre, compsb\);
+				i = led_pathcomp\(sb, pre, compsb, &typed\);
 				if \(i > 1 && sb->s_n == len\) \{
 					int page = 0;
+					if \(!full\)
+						led_infoc\(compsb->s \+ typed\)
 					do \{
 						page = led_complist\(compsb, page\);
 						term_pos\(0, 0\);
 						led_printparts\(sb, pre, ps,
 							\*post, postn, poff\);
 						c = term_read\(TK_CTL\('\''l'\''\)\);
-					} while \(page && c == '\''\\t'\''\);
+					} while \(page && \(c == '\''\\t'\'' \|\| c == TK_CTL\('\''_'\''\)\)\);
 					term_clean\(\);
 					goto noredraw;
 				}
 				if \(i\)
 					break;
 			}
+			if \(c == TK_CTL\('\''_'\''\)\)
+				continue;
 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;1??0?
-1??+3m 21q0?
-%f+ 		case '\''\\t'\'':
+1??+3m 31q0?
+%f+ 		case TK_CTL\('\''_'\''\):	/\* list the matches on their own screen \*/
+		case '\''\\t'\'':
 			if \(xtc && ai_max < 0 && sb->s\[ps] == '\'':'\''\) \{
+				int typed, full = c == TK_CTL\('\''_'\''\) \|\| xtc > 1;
 				if \(!compsb\)
 					sbuf_make\(compsb, 128\)
 				sbuf_cut\(compsb, 0\)
-				i = led_pathcomp\(sb, pre, compsb\);
+				i = led_pathcomp\(sb, pre, compsb, &typed\);
 				if \(i > 1 && sb->s_n == len\) \{
 					int page = 0;
+					if \(!full\)
+						led_infoc\(compsb->s \+ typed\)
 					do \{
 						page = led_complist\(compsb, page\);
 						term_pos\(0, 0\);
 						led_printparts\(sb, pre, ps,
 							\*post, postn, poff\);
 						c = term_read\(TK_CTL\('\''l'\''\)\);
-					} while \(page && c == '\''\\t'\''\);
+					} while \(page && \(c == '\''\\t'\'' \|\| c == TK_CTL\('\''_'\''\)\)\);
 					term_clean\(\);
 					goto noredraw;
 				}
 				if \(i\)
 					break;
 			}
+			if \(c == TK_CTL\('\''_'\''\)\)
+				continue;
 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;2??0?
-2??m 2220reg p OK led.c:750:a22sc %? %@2152sc!1q0?
-%f+ 		case '\''\\t'\'':
+2??m 3220reg p OK led.c:755:a22sc %? %@2152sc!1q0?
+%f+ 		case TK_CTL\('\''_'\''\):	/\* list the matches on their own screen \*/
+		case '\''\\t'\'':
 			if \(xtc && ai_max < 0 && sb->s\[ps] == '\'':'\''\) \{
+				int typed, full = c == TK_CTL\('\''_'\''\) \|\| xtc > 1;
 				if \(!compsb\)
 					sbuf_make\(compsb, 128\)
 				sbuf_cut\(compsb, 0\)
-				i = led_pathcomp\(sb, pre, compsb\);
+				i = led_pathcomp\(sb, pre, compsb, &typed\);
 				if \(i > 1 && sb->s_n == len\) \{
 					int page = 0;
+					if \(!full\)
+						led_infoc\(compsb->s \+ typed\)
 					do \{
 						page = led_complist\(compsb, page\);
 						term_pos\(0, 0\);
 						led_printparts\(sb, pre, ps,
 							\*post, postn, poff\);
 						c = term_read\(TK_CTL\('\''l'\''\)\);
-					} while \(page && c == '\''\\t'\''\);
+					} while \(page && \(c == '\''\\t'\'' \|\| c == TK_CTL\('\''_'\''\)\)\);
 					term_clean\(\);
 					goto noredraw;
 				}
 				if \(i\)
 					break;
-			}3??0?
-3??m 2220reg p OK led.c:750:a32sc %? %@2152sc!1q0?
+			}
+			if \(c == TK_CTL\('\''_'\''\)\)
+				continue;3??0?
+3??m 3220reg p OK led.c:755:a32sc %? %@2152sc!1q0?
 %f+ 				exbuf_load\(ex_buf\)
 			}
 			continue; }4??0?
-4??+3m 2220reg p OK led.c:750:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK led.c:755:a42sc %? %@2152sc!1q0?
 %f+ 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;5??0?
-5??-21m 2220reg p OK led.c:750:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:7502sc %? %@2132sc!0?
-'\''1i 			if (xtc && ai_max < 0 && sb->s[ps] == '\'':'\'') {
+5??-27m 3220reg p OK led.c:755:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:7552sc %? %@2132sc!0?
+'\''1i 		case TK_CTL('\''_'\''):	/* list the matches on their own screen */
+??!219reg led.c:572:m12sc %? %@2142sc!0?
+'\''2i 			if (xtc && ai_max < 0 && sb->s[ps] == '\'':'\'') {
+				int typed, full = c == TK_CTL('\''_'\'') || xtc > 1;
 				if (!compsb)
 					sbuf_make(compsb, 128)
 				sbuf_cut(compsb, 0)
-				i = led_pathcomp(sb, pre, compsb);
+				i = led_pathcomp(sb, pre, compsb, &typed);
 				if (i > 1 && sb->s_n == len) {
 					int page = 0;
+					if (!full)
+						led_infoc(compsb->s + typed)
 					do {
 						page = led_complist(compsb, page);
 						term_pos(0, 0);
 						led_printparts(sb, pre, ps,
 							*post, postn, poff);
 						c = term_read(TK_CTL('\''l'\''));
-					} while (page && c == '\''\t'\'');
+					} while (page && (c == '\''\t'\'' || c == TK_CTL('\''_'\'')));
 					term_clean();
 					goto noredraw;
 				}
 				if (i)
 					break;
 			}
-??!219reg led.c:568:m12sc %? %@2142sc!0?
-'\''2,#+20d??!219reg led.c:750:m22sc %? %@2142sc!p compat applied: src=detect_indent.sh' > "$P2VIF".1
+			if (c == TK_CTL('\''_'\''))
+				continue;
+??!219reg led.c:573:m22sc %? %@2142sc!0?
+'\''3,#+26d??!219reg led.c:755:m32sc %? %@2142sc!p compat applied: src=detect_indent.sh' > "$P2VIF".1
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
 
 exit 0
@@ -632,58 +806,71 @@ exit 0
 === COMPAT PATCH ===
 --- a/led.c
 +++ b/led.c
-@@ -566,6 +566,26 @@
+@@ -570,7 +570,33 @@
+ 				pre--;
  			}
  			break;
++		case TK_CTL('_'):	/* list the matches on their own screen */
  		case '\t':
 +			if (xtc && ai_max < 0 && sb->s[ps] == ':') {
++				int typed, full = c == TK_CTL('_') || xtc > 1;
 +				if (!compsb)
 +					sbuf_make(compsb, 128)
 +				sbuf_cut(compsb, 0)
-+				i = led_pathcomp(sb, pre, compsb);
++				i = led_pathcomp(sb, pre, compsb, &typed);
 +				if (i > 1 && sb->s_n == len) {
 +					int page = 0;
++					if (!full)
++						led_infoc(compsb->s + typed)
 +					do {
 +						page = led_complist(compsb, page);
 +						term_pos(0, 0);
 +						led_printparts(sb, pre, ps,
 +							*post, postn, poff);
 +						c = term_read(TK_CTL('l'));
-+					} while (page && c == '\t');
++					} while (page && (c == '\t' || c == TK_CTL('_')));
 +					term_clean();
 +					goto noredraw;
 +				}
 +				if (i)
 +					break;
 +			}
++			if (c == TK_CTL('_'))
++				continue;
  			if (xet)
  				for (int _l = 0; _l < xsw; _l++)
  					sbuf_chr(sb, ' ')
-@@ -747,27 +767,6 @@
+@@ -752,33 +778,6 @@
  				exbuf_load(ex_buf)
  			}
  			continue; }
+-		case TK_CTL('_'):	/* list the matches on their own screen */
 -		case '\t':
 -			if (xtc && ai_max < 0 && sb->s[ps] == ':') {
+-				int typed, full = c == TK_CTL('_') || xtc > 1;
 -				if (!compsb)
 -					sbuf_make(compsb, 128)
 -				sbuf_cut(compsb, 0)
--				i = led_pathcomp(sb, pre, compsb);
+-				i = led_pathcomp(sb, pre, compsb, &typed);
 -				if (i > 1 && sb->s_n == len) {
 -					int page = 0;
+-					if (!full)
+-						led_infoc(compsb->s + typed)
 -					do {
 -						page = led_complist(compsb, page);
 -						term_pos(0, 0);
 -						led_printparts(sb, pre, ps,
 -							*post, postn, poff);
 -						c = term_read(TK_CTL('l'));
--					} while (page && c == '\t');
+-					} while (page && (c == '\t' || c == TK_CTL('_')));
 -					term_clean();
 -					goto noredraw;
 -				}
 -				if (i)
 -					break;
 -			}
+-			if (c == TK_CTL('_'))
+-				continue;
  		default:
  			if (c == '\n' || TK_INT(c))
  				return c;
@@ -704,14 +891,14 @@ index 70157040..c0453e42 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 69de2dfb..cc9d86ca 100644
+index 69de2dfb..ca2768c5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -15,6 +15,7 @@ int xts = 8;			/* number of spaces for tab */
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-+int xtc = 1;			/* tab path completion in the ex prompt */
++int xtc = 1;			/* tab path completion, 1: inline, 2: full screen */
  int xmpt;			/* whether to prompt after printing > 1 lines in vi */
  int xpr;			/* ex_cprint register */
  int xlim = -1;			/* rendering cutoff for non cursor lines */
@@ -733,7 +920,7 @@ index 69de2dfb..cc9d86ca 100644
  	EO(hll),
  	EO(hlw),
 diff --git a/led.c b/led.c
-index 9eb8e85b..7edbf915 100644
+index 9eb8e85b..91315d62 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,5 +1,6 @@
@@ -743,12 +930,13 @@ index 9eb8e85b..7edbf915 100644
  sbuf *led_attsb;
  
  int dstrlen(const char *s, char delim)
-@@ -277,6 +278,92 @@ static int led_lastword(char *s)
+@@ -277,6 +278,93 @@ static int led_lastword(char *s)
  	return r - s;
  }
  
-+/* complete the path at the end of sb, lst gets the matches; returns their count */
-+static int led_pathcomp(sbuf *sb, int pre, sbuf *lst)
++/* complete the path at the end of sb, lst gets the matches, typed gets the
++length of the part already there; returns the count of the matches */
++static int led_pathcomp(sbuf *sb, int pre, sbuf *lst, int *typed)
 +{
 +	DIR *dp;
 +	struct dirent *dirp;
@@ -767,7 +955,7 @@ index 9eb8e85b..7edbf915 100644
 +	sbuf_mem(path, sb->s + wo, bo - wo)
 +	sbufn_null(path)
 +	base = sb->s + bo;
-+	blen = sb->s_n - bo;
++	*typed = blen = sb->s_n - bo;
 +	if (!(dp = opendir(path->s_n ? path->s : "."))) {
 +		free(path->s);
 +		return 0;
@@ -836,35 +1024,70 @@ index 9eb8e85b..7edbf915 100644
  static void led_printparts(sbuf *sb, int pre, int ps,
  	char *post, int postn, int *poff)
  {
-@@ -641,6 +728,27 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -352,7 +440,7 @@ char *led_read(int *kmap, int c)
+ 	return NULL;
+ }
+ 
+-#define led_info(buf) \
++#define _led_info(buf, pn) \
+ { \
+ 	led_att la; \
+ 	la.s = NULL; \
+@@ -364,7 +452,7 @@ char *led_read(int *kmap, int c)
+ 		sbuf_mem(led_attsb, &la, sizeof(la)) \
+ 	} \
+ 	sbuf_str(sb, buf) \
+-	led_printparts(sb, pre, ps, *post, postn, poff); \
++	led_printparts(sb, pre, ps, *post, pn, poff); \
+ 	sbuf_cut(sb, len) \
+ 	sbuf_free(led_attsb) \
+ 	led_attsb = prev_attsb; \
+@@ -373,6 +461,10 @@ char *led_read(int *kmap, int c)
+ 	goto noredraw; \
+ } \
+ 
++#define led_info(buf) _led_info(buf, postn)
++/* like led_info(), except the cursor is left where it was, in front of buf */
++#define led_infoc(buf) _led_info(buf, postn + uc_slen(buf))
++
+ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
+ {
+ 	rstate++;
+@@ -641,6 +733,33 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				exbuf_load(ex_buf)
  			}
  			continue; }
++		case TK_CTL('_'):	/* list the matches on their own screen */
 +		case '\t':
 +			if (xtc && ai_max < 0 && sb->s[ps] == ':') {
++				int typed, full = c == TK_CTL('_') || xtc > 1;
 +				if (!compsb)
 +					sbuf_make(compsb, 128)
 +				sbuf_cut(compsb, 0)
-+				i = led_pathcomp(sb, pre, compsb);
++				i = led_pathcomp(sb, pre, compsb, &typed);
 +				if (i > 1 && sb->s_n == len) {
 +					int page = 0;
++					if (!full)
++						led_infoc(compsb->s + typed)
 +					do {
 +						page = led_complist(compsb, page);
 +						term_pos(0, 0);
 +						led_printparts(sb, pre, ps,
 +							*post, postn, poff);
 +						c = term_read(TK_CTL('l'));
-+					} while (page && c == '\t');
++					} while (page && (c == '\t' || c == TK_CTL('_')));
 +					term_clean();
 +					goto noredraw;
 +				}
 +				if (i)
 +					break;
 +			}
++			if (c == TK_CTL('_'))
++				continue;
  		default:
  			if (c == '\n' || TK_INT(c))
  				return c;
-@@ -732,4 +840,8 @@ void led_done(void)
+@@ -732,4 +851,8 @@ void led_done(void)
  		sbuf_free(suggestsb)
  		sbuf_free(acsb)
  	}

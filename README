@@ -216,8 +216,13 @@ the cursor is completed as a path, relative to the working directory
 or to the directory that the word itself names. A single match is
 filled in, with a trailing </> when it is a directory. Several matches
 fill in their common prefix, and once nothing is left to fill in, they
-are listed next to the prompt. When nothing matches, TAB inserts a
-literal tab.
+are listed. With "tc" set to 1 the list is drawn next to the prompt,
+the cursor left where it was, so the prompt never scrolls. With "tc"
+set to 2 the screen is cleared and the list is drawn below the prompt
+instead, wrapped at word boundaries; TAB then pages it and any other
+key leaves it. New keybind ^_ completes like "tc" set to 2 whatever
+"tc" is, so the full listing is always one key away.
+When nothing matches, TAB inserts a literal tab.
 Adds a new ex option "tc" to toggle the completion, on by default.
 Example: turn it off, TAB is then always a literal tab
 :tc 0
