@@ -1890,7 +1890,7 @@ int main(int argc, char *argv[])
 	if (!(xvis & 1))
 		term_init();
 	if (xvis & 8)
-		term_scrh;
+		term_scrh()
 	ex_init(argv + i, argc - i);
 	if (xvis & 2)
 		ex();
@@ -1898,6 +1898,6 @@ int main(int argc, char *argv[])
 		vi(1);
 	term_done();
 	if (xvis & 8)
-		term_scrl;
+		term_scrl()
 	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 }
