@@ -37,9 +37,30 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 'b21;0fr 0%f> ^	else if \(!xkwdrs \|\| xgrp >= \(xkwdrs->rs \? xkwdrs->rs->nsubc : 2\)\) \{$1000??0?
 b21;0fr 0%f> ^rstr \*fsincl;$1001??0?
 b21;0fr 0%f> ^				if \(!fsincl \|\| rstr_match\(fsincl, cpath, 0\)\) \{$1002??0?
-230reg 0231reg 01000,1001,1002?? 231reg 11000,1001,1002?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
-b4%ya 972sc %? %@972sc!b21211reg ? %@2210?
-b5%ya 502sc %1000,1001,1002?? %@502sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
+230reg 0231reg 01000,1001,1002?? 231reg 11000,1001,1002?? 230reg+ 1b21;0fr 0%f> ^/\* draw the separators owned by each window: its right and bottom edge \*/$1003??0?
+b21;0fr 0%f> ^	for \(; i < xtop \+ curwin->h; i\+\+\)$1004??0?
+b21;0fr 0%f> ^	led_crender\(s, scrrow, wx, xleft, xleft \+ wcols\)$1005??0?
+b21;0fr 0%f> ^		RS\(2, led_prender\(tmp, scrrow, wx, 0, l1\)\)$1006??0?
+b21;0fr 0%f> ^				RS\(2, led_prender\(tmp1, scrrow, wx \+ l1\+i1, 0, l1\)\)$1007??0?
+b21;0fr 0%f> ^		led_crender\(s, scrrow, wx \+ l1, xleft, xleft \+ wcols - l1\)$1008??0?
+b21;0fr 0%f> ^		RS\(2, led_crender\(tmp, scrrow, wx, 0, wcols\)\)$1009??0?
+b21;0fr 0%f> ^		char tmp\[wcols\+3], snum\[32];$1010??0?
+b21;0fr 0%f> ^	if \(xmpt == 1 && !vi_status && scrrow == xrows - 1\)$1011??0?
+b21;0fr 0%f> ^	int wcols = curwin->w, wx = curwin->x;$1012??0?
+b21;0fr 0%f> ^	if \(l1 > wcols \|\| l1 < 0 \|\| ret \|\| l1 >= rstate->cmax \+ vi_lncol\) \\$1013??0?
+b21;0fr 0%f> ^/\* draw horizontal separator line at screen row, from x for w columns \*/$1014??0?
+b21;0fr 0%f> ^		xtop = MAX\(0, \*row - curwin->h / 2\);$1015??0?
+b21;0fr 0%f> ^		else if \(\*row < xtop \|\| \*row >= xtop \+ curwin->h - 1\)$1016??0?
+b21;0fr 0%f> ^		\*row = MIN\(xtop \+ curwin->h - 1 - cnt \+ 1, lbuf_len\(xb\) - 1\);$1017??0?
+b21;0fr 0%f> ^		\*row = MIN\(xtop \+ curwin->h / 2, lbuf_len\(xb\) - 1\);$1018??0?
+b21;0fr 0%f> ^		if \(cmd < 0 && \(\*row < xtop \|\| \*row >= xtop \+ curwin->h\)\)$1019??0?
+b21;0fr 0%f> ^	term_pos\(r1 < xtop \? curwin->y : curwin->y \+ r1 - xtop, curwin->x\);$1020??0?
+b21;0fr 0%f> ^		if \(xrow - xtop == curwin->h\)$1021??0?
+b21;0fr 0%f> ^	term_pos\(curwin->y \+ row - xtop, curwin->x\);$1022??0?
+232reg 01003,1004,1005,1006,1007;1008,1009,1010,1011,1012;1013,1014,1015,1016,1017;1018,1019,1020,1021,1022?? 232reg 11003,1004,1005,1006,1007;1008,1009,1010,1011,1012;1013,1014,1015,1016,1017;1018,1019,1020,1021,1022?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
+b4%ya 972sc %? %@972sc!b21fr 232f> 110??10??211reg10??!211reg ? %@2210?
+b5%ya 502sc %1000,1001,1002?? %@502sc!b21211reg ? %@2210?
+b6%ya 512sc %1003,1004,1005,1006,1007;1008,1009,1010,1011,1012;1013,1014,1015,1016,1017;1018,1019,1020,1021,1022?? %@512sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> /\* how to highlight text in the reverse direction \*/
 const int conf_hlrev = SYN_BGMK\(8\);
@@ -553,7 +574,93 @@ static void vi_isearchhl\(void\)
 					&& lbuf_len(xb)) {
 ??!219reg vi.c:379:m32sc %? %@2142sc!0?
 '\''4s/et/tr/??!219reg vi.c:404:m42sc %? %@2142sc!p compat applied: src=rstr.sh' > "$P2VIF".1
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+# Compat (post) from splits.sh
+printf '%s\n' '2sc!fr 98b2%ya 98?0?
+%f> 	int offs\[xkwdrs->nsubc];
+	int row, off, beg, end, flg, i, n;
+	led_att la;
+	for \(row = xtop; row < xtop \+ xrows && row < lbuf_len\(xb\); row\+\+\) \{
+		la\.s = lbuf_get\(xb, row\);
+		off = 0;
+		flg = REG_NEWLINE;1??0?
+1??+3m 11q0?
+%f> 	for \(row = xtop; row < xtop \+ xrows && row < lbuf_len\(xb\); row\+\+\) \{
+		la\.s = lbuf_get\(xb, row\);
+		off = 0;
+		flg = REG_NEWLINE;2??0?
+2??m 1220reg p OK vi.c:397:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^	for \(row = xtop; row < xtop \+ xrows && row < lbuf_len\(xb\); row\+\+\) \{$3??0?
+3??m 1220reg p OK vi.c:397:a32sc %? %@2152sc!fr 981qfr 980?
+%f> 	int offs\[xkwdrs->nsubc];
+	int row, off, beg, end, flg, i, n;
+	led_att la;4??0?
+4??+3m 1220reg p OK vi.c:397:a42sc %? %@2152sc!1q0?
+%f> 		la\.s = lbuf_get\(xb, row\);
+		off = 0;
+		flg = REG_NEWLINE;5??0?
+5??-1m 1220reg p OK vi.c:397:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:3972sc %? %@2132sc!0?
+?0?
+%f+ 						sdir, 1, &row, &off\);
+				if \(found\)
+					srow = xrow = row, soff = xoff = off;
+				if \(xrow < xtop \|\| xrow >= xtop \+ xrows\)
+					xtop = MAX\(0, xrow - xrows / 2\);
+				vi_isearchhl\(\);
+			}
+		}1??0?
+1??+3m 21q0?
+%f+ 				if \(xrow < xtop \|\| xrow >= xtop \+ xrows\)
+					xtop = MAX\(0, xrow - xrows / 2\);
+				vi_isearchhl\(\);
+			}
+		}2??0?
+2??m 2220reg p OK vi.c:464:a22sc %? %@2152sc!1q0?
+%f+ 				if \(xrow < xtop \|\| xrow >= xtop \+ xrows\)
+					xtop = MAX\(0, xrow - xrows / 2\);3??0?
+3??m 2220reg p OK vi.c:464:a32sc %? %@2152sc!1q0?
+%f+ 						sdir, 1, &row, &off\);
+				if \(found\)
+					srow = xrow = row, soff = xoff = off;4??0?
+4??+3m 2220reg p OK vi.c:464:a42sc %? %@2152sc!1q0?
+%f+ 				vi_isearchhl\(\);
+			}
+		}5??0?
+5??-2m 2220reg p OK vi.c:464:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:4642sc %? %@2132sc!0?
+?0?
+%f+ 			}
+		}
+		term_record = 1;
+		vi_drawagain\(xtop\);
+		term_commit\(\);
+		drawn = 1;
+	}1??0?
+1??+3m 31q0?
+%f+ 		vi_drawagain\(xtop\);
+		term_commit\(\);
+		drawn = 1;
+	}2??0?
+2??m 3220reg p OK vi.c:470:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		vi_drawagain\(xtop\);$3??0?
+3??m 3220reg p OK vi.c:470:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 			}
+		}
+		term_record = 1;4??0?
+4??+3m 3220reg p OK vi.c:470:a42sc %? %@2152sc!1q0?
+%f+ 		term_commit\(\);
+		drawn = 1;
+	}5??0?
+5??-1m 3220reg p OK vi.c:470:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:4702sc %? %@2132sc!0?
+'\''1s/xrows/curwin->h/??!219reg vi.c:397:m12sc %? %@2142sc!0?
+'\''2,#+1c 				if (xrow < xtop || xrow >= xtop + curwin->h)
+					xtop = MAX(0, xrow - curwin->h / 2);
+??!219reg vi.c:464:m22sc %? %@2142sc!0?
+'\''3c 		win_save();
+		vi_redraw();
+??!219reg vi.c:470:m32sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".2
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
@@ -608,6 +715,101 @@ rstr *fsincl;
  		xkwdrs = NULL;
  	}
  	free(okwd);
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT post src=splits.sh ===
+=== GATE 1 present tag 1003 probe vi.c ===
+/* draw the separators owned by each window: its right and bottom edge */
+=== END ===
+=== GATE 2 present tag 1004 probe vi.c ===
+	for (; i < xtop + curwin->h; i++)
+=== END ===
+=== GATE 3 present tag 1005 probe vi.c ===
+	led_crender(s, scrrow, wx, xleft, xleft + wcols)
+=== END ===
+=== GATE 4 present tag 1006 probe vi.c ===
+		RS(2, led_prender(tmp, scrrow, wx, 0, l1))
+=== END ===
+=== GATE 5 present tag 1007 probe vi.c ===
+				RS(2, led_prender(tmp1, scrrow, wx + l1+i1, 0, l1))
+=== END ===
+=== GATE 6 present tag 1008 probe vi.c ===
+		led_crender(s, scrrow, wx + l1, xleft, xleft + wcols - l1)
+=== END ===
+=== GATE 7 present tag 1009 probe vi.c ===
+		RS(2, led_crender(tmp, scrrow, wx, 0, wcols))
+=== END ===
+=== GATE 8 present tag 1010 probe vi.c ===
+		char tmp[wcols+3], snum[32];
+=== END ===
+=== GATE 9 present tag 1011 probe vi.c ===
+	if (xmpt == 1 && !vi_status && scrrow == xrows - 1)
+=== END ===
+=== GATE 10 present tag 1012 probe vi.c ===
+	int wcols = curwin->w, wx = curwin->x;
+=== END ===
+=== GATE 11 present tag 1013 probe vi.c ===
+	if (l1 > wcols || l1 < 0 || ret || l1 >= rstate->cmax + vi_lncol) \
+=== END ===
+=== GATE 12 present tag 1014 probe vi.c ===
+/* draw horizontal separator line at screen row, from x for w columns */
+=== END ===
+=== GATE 13 present tag 1015 probe vi.c ===
+		xtop = MAX(0, *row - curwin->h / 2);
+=== END ===
+=== GATE 14 present tag 1016 probe vi.c ===
+		else if (*row < xtop || *row >= xtop + curwin->h - 1)
+=== END ===
+=== GATE 15 present tag 1017 probe vi.c ===
+		*row = MIN(xtop + curwin->h - 1 - cnt + 1, lbuf_len(xb) - 1);
+=== END ===
+=== GATE 16 present tag 1018 probe vi.c ===
+		*row = MIN(xtop + curwin->h / 2, lbuf_len(xb) - 1);
+=== END ===
+=== GATE 17 present tag 1019 probe vi.c ===
+		if (cmd < 0 && (*row < xtop || *row >= xtop + curwin->h))
+=== END ===
+=== GATE 18 present tag 1020 probe vi.c ===
+	term_pos(r1 < xtop ? curwin->y : curwin->y + r1 - xtop, curwin->x);
+=== END ===
+=== GATE 19 present tag 1021 probe vi.c ===
+		if (xrow - xtop == curwin->h)
+=== END ===
+=== GATE 20 present tag 1022 probe vi.c ===
+	term_pos(curwin->y + row - xtop, curwin->x);
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/vi.c
++++ b/vi.c
+@@ -394,7 +394,7 @@
+ 	int offs[xkwdrs->nsubc];
+ 	int row, off, beg, end, flg, i, n;
+ 	led_att la;
+-	for (row = xtop; row < xtop + xrows && row < lbuf_len(xb); row++) {
++	for (row = xtop; row < xtop + curwin->h && row < lbuf_len(xb); row++) {
+ 		la.s = lbuf_get(xb, row);
+ 		off = 0;
+ 		flg = REG_NEWLINE;
+@@ -461,13 +461,14 @@
+ 						sdir, 1, &row, &off);
+ 				if (found)
+ 					srow = xrow = row, soff = xoff = off;
+-				if (xrow < xtop || xrow >= xtop + xrows)
+-					xtop = MAX(0, xrow - xrows / 2);
++				if (xrow < xtop || xrow >= xtop + curwin->h)
++					xtop = MAX(0, xrow - curwin->h / 2);
+ 				vi_isearchhl();
+ 			}
+ 		}
+ 		term_record = 1;
+-		vi_drawagain(xtop);
++		win_save();
++		vi_redraw();
+ 		term_commit();
+ 		drawn = 1;
+ 	}
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
