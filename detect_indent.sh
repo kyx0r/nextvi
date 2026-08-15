@@ -54,9 +54,15 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b41;0fr 0%f> ^extern struct win \*curwin;		/\* current active window, never NULL \*/$1017??0?
 b41;0fr 0%f> ^extern int nwins;			/\* number of windows \*/$1018??0?
 b41;0fr 0%f> ^/\* window geometry along an axis; 0 is the horizontal one, 1 the vertical \*/$1019??0?
-230reg 0231reg 01000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 231reg 11000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b410?
+230reg 0231reg 01000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 231reg 11000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 230reg+ 1b21;0fr 0%f> ^			insert:$1020??0?
+b21;0fr 0%f> ^		case TK_CTL\('\''i'\''\):	/\* the caller steps the search match \*/$1021??0?
+b21;0fr 0%f> ^		case TK_CTL\('\''_'\''\):$1022??0?
+b21;0fr 0%f> ^			if \(!\(flg & 2\)\)$1023??0?
+b21;0fr 0%f> ^				goto insert;$1024??0?
+232reg 01020,1021,1022,1023,1024?? 232reg 11020,1021,1022,1023,1024?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b410?
 b5%ya 972sc %? %@972sc!b41211reg ? %@2210?
-b6%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF".d
+b6%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!b21211reg ? %@2210?
+b7%ya 512sc %1020,1021,1022,1023,1024?? %@512sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -882,7 +888,82 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 	xsw = b->sw; \
 	xts = b->ts; \
 ??!219reg vi.h:496:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+# Compat (post) from incsearch.sh
+printf '%s\n' '2sc!fr 98b2%ya 98?0?
+%f> 				pre--;
+			}
+			break;
+		case '\''\\t'\'':
+			if \(xet\)
+				for \(int _l = 0; _l < xsw; _l\+\+\)
+					sbuf_chr\(sb, '\'' '\''\)
+			else
+				sbuf_chr\(sb, '\''\\t'\''\)
+			break;
+		case TK_CTL\('\'']'\''\):
+		case TK_CTL\('\''\\\\'\''\):
+			if \(c == TK_CTL\('\'']'\''\)\) \{1??0?
+1??+3m 11q0?
+%f> 		case '\''\\t'\'':
+			if \(xet\)
+				for \(int _l = 0; _l < xsw; _l\+\+\)
+					sbuf_chr\(sb, '\'' '\''\)
+			else
+				sbuf_chr\(sb, '\''\\t'\''\)
+			break;
+		case TK_CTL\('\'']'\''\):
+		case TK_CTL\('\''\\\\'\''\):
+			if \(c == TK_CTL\('\'']'\''\)\) \{2??0?
+2??m 1220reg p OK led.c:486:a22sc %? %@2152sc!1q0?
+%f> 		case '\''\\t'\'':
+			if \(xet\)
+				for \(int _l = 0; _l < xsw; _l\+\+\)
+					sbuf_chr\(sb, '\'' '\''\)
+			else
+				sbuf_chr\(sb, '\''\\t'\''\)
+			break;3??0?
+3??m 1220reg p OK led.c:486:a32sc %? %@2152sc!1q0?
+%f> 				pre--;
+			}
+			break;4??0?
+4??+3m 1220reg p OK led.c:486:a42sc %? %@2152sc!1q0?
+%f> 		case TK_CTL\('\'']'\''\):
+		case TK_CTL\('\''\\\\'\''\):
+			if \(c == TK_CTL\('\'']'\''\)\) \{5??0?
+5??-7m 1220reg p OK led.c:486:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:4862sc %? %@2132sc!0?
+?0?
+%f+ 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
+				return c;
+			insert:
+			if \(\(cs = led_read\(kmap, c\)\)\)
+				sbuf_str\(sb, cs\)
+		}
+		is->sug = NULL;1??0?
+1??+3m 21q0?
+%f+ 			if \(\(cs = led_read\(kmap, c\)\)\)
+				sbuf_str\(sb, cs\)
+		}
+		is->sug = NULL;2??0?
+2??m 2220reg p OK led.c:672:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			if \(\(cs = led_read\(kmap, c\)\)\)$3??0?
+3??m 2220reg p OK led.c:672:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
+				return c;
+			insert:4??0?
+4??+3m 2220reg p OK led.c:672:a42sc %? %@2152sc!1q0?
+%f+ 				sbuf_str\(sb, cs\)
+		}
+		is->sug = NULL;5??0?
+5??-1m 2220reg p OK led.c:672:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:6722sc %? %@2132sc!0?
+'\''1,#+6d??!219reg led.c:486:m12sc %? %@2142sc!0?
+'\''2c 			if (c == '\''\t'\'' && xet) {
+				for (int _l = 0; _l < xsw; _l++)
+					sbuf_chr(sb, '\'' '\'')
+			} else if ((cs = led_read(kmap, c)))
+??!219reg led.c:672:m22sc %? %@2142sc!p compat applied: src=incsearch.sh' > "$P2VIF".2
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
@@ -965,6 +1046,55 @@ extern int nwins;			/* number of windows */
  
  #define exbuf_save(buf) \
  	buf->row = xrow; \
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT post src=incsearch.sh ===
+=== GATE 1 present tag 1020 probe led.c ===
+			insert:
+=== END ===
+=== GATE 2 present tag 1021 probe led.c ===
+		case TK_CTL('i'):	/* the caller steps the search match */
+=== END ===
+=== GATE 3 present tag 1022 probe led.c ===
+		case TK_CTL('_'):
+=== END ===
+=== GATE 4 present tag 1023 probe led.c ===
+			if (!(flg & 2))
+=== END ===
+=== GATE 5 present tag 1024 probe led.c ===
+				goto insert;
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/led.c
++++ b/led.c
+@@ -483,13 +483,6 @@
+ 				pre--;
+ 			}
+ 			break;
+-		case '\t':
+-			if (xet)
+-				for (int _l = 0; _l < xsw; _l++)
+-					sbuf_chr(sb, ' ')
+-			else
+-				sbuf_chr(sb, '\t')
+-			break;
+ 		case TK_CTL(']'):
+ 		case TK_CTL('\\'):
+ 			if (c == TK_CTL(']')) {
+@@ -669,7 +662,10 @@
+ 			if (c == '\n' || TK_INT(c))
+ 				return c;
+ 			insert:
+-			if ((cs = led_read(kmap, c)))
++			if (c == '\t' && xet) {
++				for (int _l = 0; _l < xsw; _l++)
++					sbuf_chr(sb, ' ')
++			} else if ((cs = led_read(kmap, c)))
+ 				sbuf_str(sb, cs)
+ 		}
+ 		is->sug = NULL;
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
