@@ -52,9 +52,15 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b21;0fr 0%f> ^				sbuf_chr\(sb, '\''\\t'\''\)$1015??0?
 b21;0fr 0%f> ^					sbuf_chr\(sb, '\'' '\''\)$1016??0?
 b21;0fr 0%f> ^				sbuf_chr\(sb, '\''\\t'\''\)$1017??0?
-230reg 0231reg 01000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? 231reg 11000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
-b4%ya 972sc %? %@972sc!b21211reg ? %@2210?
-b5%ya 502sc %1000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? %@502sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
+230reg 0231reg 01000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? 231reg 11000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? 230reg+ 1b21;0fr 0%f> ^			insert:$1018??0?
+b21;0fr 0%f> ^		case TK_CTL\('\''i'\''\):	/\* the caller steps the search match \*/$1019??0?
+b21;0fr 0%f> ^		case TK_CTL\('\''_'\''\):$1020??0?
+b21;0fr 0%f> ^			if \(!\(flg & 2\)\)$1021??0?
+b21;0fr 0%f> ^				goto insert;$1022??0?
+232reg 01018,1019,1020,1021,1022?? 232reg 11018,1019,1020,1021,1022?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
+b4%ya 972sc %? %@972sc!b21fr 232f> 110??10??211reg10??!211reg ? %@2210?
+b5%ya 502sc %1000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? %@502sc!b21211reg ? %@2210?
+b6%ya 512sc %1018,1019,1020,1021,1022?? %@512sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -742,7 +748,88 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 				continue;
 ??!219reg led.c:573:m22sc %? %@2142sc!0?
 '\''3,#+26d??!219reg led.c:755:m32sc %? %@2142sc!p compat applied: src=detect_indent.sh' > "$P2VIF".1
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+# Compat (post) from incsearch.sh
+printf '%s\n' '2sc!fr 98b2%ya 98?0?
+%f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
+		noredraw:
+		switch \(c\) \{
+		case TK_CTL\('\''i'\''\):	/\* the caller steps the search match \*/
+		case TK_CTL\('\''_'\''\):
+			if \(!\(flg & 2\)\)
+				goto insert;
+			break;
+		case TK_CTL\('\''h'\''\):
+			c = 127;
+		case 127:1??0?
+1??+3m 11q0?
+%f> 		case TK_CTL\('\''i'\''\):	/\* the caller steps the search match \*/
+		case TK_CTL\('\''_'\''\):
+			if \(!\(flg & 2\)\)
+				goto insert;
+			break;
+		case TK_CTL\('\''h'\''\):
+			c = 127;
+		case 127:2??0?
+2??m 1220reg p OK led.c:529:a22sc %? %@2152sc!1q0?
+%f> 		case TK_CTL\('\''i'\''\):	/\* the caller steps the search match \*/
+		case TK_CTL\('\''_'\''\):
+			if \(!\(flg & 2\)\)
+				goto insert;
+			break;3??0?
+3??m 1220reg p OK led.c:529:a32sc %? %@2152sc!1q0?
+%f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
+		noredraw:
+		switch \(c\) \{4??0?
+4??+3m 1220reg p OK led.c:529:a42sc %? %@2152sc!1q0?
+%f> 		case TK_CTL\('\''h'\''\):
+			c = 127;
+		case 127:5??0?
+5??-5m 1220reg p OK led.c:529:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:5292sc %? %@2132sc!0?
+?0?
+%f+ 			continue; }
+		case TK_CTL\('\''_'\''\):	/\* list the matches on their own screen \*/
+		case '\''\\t'\'':
+			if \(xtc && ai_max < 0 && sb->s\[ps] == '\'':'\''\) \{
+				int typed, full = c == TK_CTL\('\''_'\''\) \|\| xtc > 1;
+				if \(!compsb\)1??0?
+1??+2m 21q0?
+%f+ 			continue; }
+		case TK_CTL\('\''_'\''\):	/\* list the matches on their own screen \*/
+		case '\''\\t'\'':4??0?
+4??+2m 2220reg p OK led.c:742:a42sc %? %@2152sc!0?
+1;4??!219reg led.c:7422sc %? %@2132sc!0?
+?0?
+%f+ 		default:
+			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
+				return c;
+			insert:
+			if \(\(cs = led_read\(kmap, c\)\)\)
+				sbuf_str\(sb, cs\)
+		}1??0?
+1??+3m 31q0?
+%f+ 			insert:
+			if \(\(cs = led_read\(kmap, c\)\)\)
+				sbuf_str\(sb, cs\)
+		}2??0?
+2??m 3220reg p OK led.c:771:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			insert:$3??0?
+3??m 3220reg p OK led.c:771:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 		default:
+			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
+				return c;4??0?
+4??+3m 3220reg p OK led.c:771:a42sc %? %@2152sc!1q0?
+%f+ 			if \(\(cs = led_read\(kmap, c\)\)\)
+				sbuf_str\(sb, cs\)
+		}5??0?
+5??-1m 3220reg p OK led.c:771:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:7712sc %? %@2132sc!0?
+'\''1,#+4d??!219reg led.c:529:m12sc %? %@2142sc!0?
+'\''2i 			if (flg & 2)	/* the caller steps the search match */
+				break;
+??!219reg led.c:742:m22sc %? %@2142sc!0?
+'\''3d??!219reg led.c:771:m32sc %? %@2142sc!p compat applied: src=incsearch.sh' > "$P2VIF".2
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
@@ -874,6 +961,58 @@ exit 0
  		default:
  			if (c == '\n' || TK_INT(c))
  				return c;
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT post src=incsearch.sh ===
+=== GATE 1 present tag 1018 probe led.c ===
+			insert:
+=== END ===
+=== GATE 2 present tag 1019 probe led.c ===
+		case TK_CTL('i'):	/* the caller steps the search match */
+=== END ===
+=== GATE 3 present tag 1020 probe led.c ===
+		case TK_CTL('_'):
+=== END ===
+=== GATE 4 present tag 1021 probe led.c ===
+			if (!(flg & 2))
+=== END ===
+=== GATE 5 present tag 1022 probe led.c ===
+				goto insert;
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/led.c
++++ b/led.c
+@@ -526,11 +526,6 @@
+ 		c = term_read(TK_CTL('l'));
+ 		noredraw:
+ 		switch (c) {
+-		case TK_CTL('i'):	/* the caller steps the search match */
+-		case TK_CTL('_'):
+-			if (!(flg & 2))
+-				goto insert;
+-			break;
+ 		case TK_CTL('h'):
+ 			c = 127;
+ 		case 127:
+@@ -740,6 +735,8 @@
+ 			continue; }
+ 		case TK_CTL('_'):	/* list the matches on their own screen */
+ 		case '\t':
++			if (flg & 2)	/* the caller steps the search match */
++				break;
+ 			if (xtc && ai_max < 0 && sb->s[ps] == ':') {
+ 				int typed, full = c == TK_CTL('_') || xtc > 1;
+ 				if (!compsb)
+@@ -768,7 +765,6 @@
+ 		default:
+ 			if (c == '\n' || TK_INT(c))
+ 				return c;
+-			insert:
+ 			if ((cs = led_read(kmap, c)))
+ 				sbuf_str(sb, cs)
+ 		}
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
