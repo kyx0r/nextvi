@@ -1812,27 +1812,26 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
 {
 	int i, j;
-	char *dst = sb->s;
 	if ((*src && *src == xsep) || (*idx == LEN(excmds) - 1))
 		src++;
 	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
 		if (*src == '>' || *src == '<' || *src == '|') {
+			int esc = 0;
 			j = *src;
 			i = j == '|' ? xesc : '\\';
 			do {
-				if (*src == i && src[1])
-					*dst++ = *src++;
-				*dst++ = *src++;
-			} while (*src && *src != j);
-			if (*src)
-				*dst++ = *src++;
-		} else if (*src == ' ' || *src == '\t')
+				esc = *src == i && !esc;
+				sbuf_chr(sb, *src++)
+			} while (*src && (*src != j || esc));
+			if (!*src)
+				break;
+		} else if (*src == ' ' || *src == '\t') {
 			src++;
-		else
-			*dst++ = *src++;
+			continue;
+		}
+		sbuf_chr(sb, *src++)
 	}
-	*dst++ = '\0';
-	sb->s_n = dst - sb->s;
+	sbuf_chr(sb, '\0')
 	if (*src == xsep) {
 		*idx = LEN(excmds) - 1;
 		return src;
@@ -1861,7 +1860,7 @@ void *ex_exec(const char *ln)
 	if (!xexec_dep)
 		lbuf_mark(xb, '*', xrow, xoff);
 	xexec_dep++;
-	sbuf_smake(sb, strlen(ln) + 4)
+	sbuf_smake(sb, 128)
 	do {
 		sbuf_cut(sb, 0)
 		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
