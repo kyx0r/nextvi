@@ -3426,7 +3426,7 @@ index 18170218..4720e9e5 100644
  	for (i = 0; i < lb->mark_n; i++) {	/* updating marks */
 diff --git a/lsp.c b/lsp.c
 new file mode 100644
-index 00000000..841cf376
+index 00000000..da2558e7
 --- /dev/null
 +++ b/lsp.c
 @@ -0,0 +1,1175 @@
