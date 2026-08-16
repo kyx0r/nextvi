@@ -2009,7 +2009,7 @@ void lsp_definition(const char *path, int row, int off)
 	lsp_relpath(fpath);
 	/* the response is dead once another buffer is loaded into ex_buf */
 	if (strcmp(fpath, path) && !ex_edit(fpath, strlen(fpath))) {
-		ex_bufpostfix(ex_buf, 0);
+		ex_bufpostfix(ex_buf, 1);
 		syn_setft(xb_ft);
 		if (xb_path && *xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
@@ -4578,7 +4578,7 @@ index 00000000..841cf376
 +	lsp_relpath(fpath);
 +	/* the response is dead once another buffer is loaded into ex_buf */
 +	if (strcmp(fpath, path) && !ex_edit(fpath, strlen(fpath))) {
-+		ex_bufpostfix(ex_buf, 0);
++		ex_bufpostfix(ex_buf, 1);
 +		syn_setft(xb_ft);
 +		if (xb_path && *xb_path && xb_ft)
 +			lsp_open(xb_path, xb_ft);
