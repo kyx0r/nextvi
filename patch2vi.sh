@@ -213,6 +213,8 @@ p2v_stashed_run() {
 # -o rewrites $2 in place, atomically.
 patch2vi_stashed() {
 	p2v_stashed_run "$2" $P2VI "$1" -o "$2" "$2"
+	# the editor's own open banner is written past led, so start a fresh line
+	echo "" >&2
 	echo "Generated: $2" >&2
 }
 
