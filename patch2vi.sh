@@ -8,7 +8,8 @@ Source on demand:   . ./patch2vi.sh
 Then call:          patch2vi_wrapper -d input.patch [output.sh]
                     gitdiff2vi [flags] [output.sh]
                     edelta file [inplace]
-                    redelta input.sh
+                    regen input.sh
+                    rebuild target.sh
                     extract_patches [file.sh]
                     extract_compats [file.sh]
                     view_patch file.sh
@@ -17,7 +18,7 @@ Then call:          patch2vi_wrapper -d input.patch [output.sh]
                     discard_deltas [file.sh]
                     discard_compats [file.sh]
                     run_patches [1]
-                    conv [1]
+                    regen_all [1]
 
 Requires the ./patch2vi binary in the current directory.
 EOF
@@ -107,19 +108,47 @@ p2v_compatsrc() {
 	sed -n 's/^=== PATCH2VI COMPAT .*src=\([^ ]*\).*/\1/p' "$1"
 }
 
-# $1 without the stored compat blocks whose src= is $2, on stdout. A block is
-# only the record of a resolution: the ex commands that carry it out sit in the
-# emitted body, so a stripped script has to be re-emitted ($P2VI -od) before it
-# runs as one that never had them.
+# $1 without the stored compat blocks whose src= is $2, on stdout; with no $2,
+# without any of them. A block is only the record of a resolution: the ex
+# commands that carry it out sit in the emitted body, so a stripped script has
+# to be re-emitted ($P2VI -od) before it runs as one that never had them.
 p2v_stripcompat() {
 	awk -v src="$2" '
 	/^=== PATCH2VI COMPAT /	{
-		for (i = 1; i <= NF; i++)
+		if (src == "")
+			skip = 1
+		else for (i = 1; i <= NF; i++)
 			if ($i == "src=" src)
 				skip = 1
 	}
 	!skip			{ print }
 	/^=== END COMPAT ===$/	{ skip = 0 }
+	' "$1"
+}
+
+# Split the compat blocks of $1 into directory $2: block N's verbatim
+# === COMPAT PATCH === diff lands in $2/N.patch, and one "N <origin>" line per
+# block goes to stdout, in storage order. A block with an empty diff still gets
+# its (empty) file, so the numbering never drifts from the stored order.
+p2v_splitcompat() {
+	awk -v dir="$2" '
+	/^=== PATCH2VI COMPAT /	{
+		n++
+		src = ""
+		for (i = 1; i <= NF; i++)
+			if (substr($i, 1, 4) == "src=")
+				src = substr($i, 5)
+		out = dir "/" n ".patch"
+		printf "" > out
+		print n " " src
+		incb = 1
+		inpat = 0
+		next
+	}
+	incb && $0 == "=== COMPAT PATCH ===" { inpat = 1; next }
+	incb && inpat && $0 == "=== END ===" { inpat = 0; next }
+	incb && $0 == "=== END COMPAT ===" { incb = 0; next }
+	inpat			{ print > out }
 	' "$1"
 }
 
@@ -154,19 +183,30 @@ patch2vi_wrapper() {
 	echo "Generated: $output"
 }
 
-# Regenerate $2 from the patch it already carries, with only that patch applied:
-# real modifications are stashed first so the fuzzer validates against the
-# original tree. New files (which have no pre-patch original) and $2 itself stay.
-# Intent-to-add (git add -N) entries break both stash push and pop, so they are
-# unstaged around the stash. -o rewrites $2 in place, atomically.
-patch2vi_stashed() {
-	ita=$(git diff --name-only --diff-filter=A -- ":!$2")
+# Run "$@" (from $2 on) with the tree back at HEAD, so patch2vi validates its
+# fuzz against the original sources rather than against an already patched tree.
+# New files (which have no pre-patch original) and $1 itself stay. Intent-to-add
+# (git add -N) entries break both stash push and pop, so they are unstaged
+# around the stash. The tree is restored even when the command fails, whose
+# status is what this returns.
+p2v_stashed_run() {
+	keep="$1"
+	shift
+	ita=$(git diff --name-only --diff-filter=A -- ":!$keep")
 	[ -n "$ita" ] && git reset -q -- $ita
-	stashed=$(git diff --name-only --diff-filter=MD -- ":!$2")
+	stashed=$(git diff --name-only --diff-filter=MD -- ":!$keep")
 	[ -n "$stashed" ] && git stash push -q -- $stashed
-	$P2VI "$1" -o "$2" "$2"
+	"$@"
+	p2v_st=$?
 	[ -n "$stashed" ] && git stash pop -q
 	[ -n "$ita" ] && git add -N -- $ita
+	return $p2v_st
+}
+
+# Regenerate $2 from the patch it already carries, with only that patch applied.
+# -o rewrites $2 in place, atomically.
+patch2vi_stashed() {
+	p2v_stashed_run "$2" $P2VI "$1" -o "$2" "$2"
 	echo "Generated: $2" >&2
 }
 
@@ -204,20 +244,105 @@ edelta() {
 	fi
 }
 
-# Regenerate the embedded delta of a script from the current staged diff.
-# Usage: redelta input.sh
-redelta() {
+# Regenerate a script from the whole working tree, in place. Everything is
+# staged first, so files the tree gained are in the diff too: that is what this
+# has over gitdiff2vi, whose plain git diff cannot see an untracked file.
+# Usage: regen input.sh
+regen() {
 	if [ -z "$1" ]; then
-		echo "Usage: redelta input.sh" >&2
+		echo "Usage: regen input.sh" >&2
 		return 1
 	fi
 	git add .
-	git diff --staged > "$P2VITMP"
-	git reset
+	# the script's own diff is not part of the patch it carries
+	git diff --staged -- ":!$1" > "$P2VITMP"
+	git reset -q
 	p2v_splice "$1" "$P2VITMP"
 	rm -f "$P2VITMP"
 	patch2vi_stashed -d "$1"
 }
+
+# The -co pass of rebuild: every saved block back onto the script, in storage
+# order, one -co call each (a block is one diff, and one call stores one block,
+# so the count comes out as it went in). Run with the tree at HEAD.
+#
+# Deriving a block replays the origin, and a replay writes the sections it edits
+# out, so the tree does not come back clean on its own. The sources go back to
+# HEAD afterwards and the files the pass brought into being are dropped - only
+# those, the ones already there are the caller's and are left alone. This has to
+# happen before the caller's stash comes home, or it lands on top of the
+# replay's leavings.
+# Usage: p2v_reapply workdir target.sh
+p2v_reapply() {
+	p2v_newfiles | sort > "$1/pre"
+	p2v_st2=0
+	while read -r n origin
+	do
+		if [ -z "$origin" ]; then
+			printf "%s\n" "NO ORIGIN: block $n of $2, dropped" >&2
+			continue
+		fi
+		if [ ! -s "$1/$n.patch" ]; then
+			printf "%s\n" "EMPTY: block $n of $2 from $origin, dropped" >&2
+			continue
+		fi
+		printf "%s\n" "COMPAT: $2 <- $origin (block $n)" >&2
+		if ! p2v_tty $P2VI -oco "$origin" "$2" "$1/$n.patch"; then
+			p2v_st2=1
+			break
+		fi
+	done < "$1/blocks"
+	git checkout -- $P2V_SRC >/dev/null 2>&1
+	p2v_newfiles | sort > "$1/post"
+	left=$(comm -13 "$1/pre" "$1/post")
+	[ -n "$left" ] && printf '%s\n' $left | xargs rm -f
+	return $p2v_st2
+}
+
+# Regenerate a script whole: its base patch and its compat blocks both.
+#
+# regen refreshes the base patch and re-emits the body, but the compat blocks
+# come back out of storage exactly as they went in, gates and all, and those
+# gates were derived against the base as it read then. Once the base moves under
+# them they probe for text that is no longer there. So the blocks are taken off
+# first, the base is regenerated without them, and each block's stored
+# === COMPAT PATCH === diff is handed back to -co, which derives fresh gates
+# against the base that now exists. The stored diff being verbatim is what makes
+# this possible: it comes back out as the patch its author handed in.
+#
+# Only the diffs survive, not the blocks' own delta customizations, as with
+# recompat. A stored diff whose pre-image the new base no longer has is a hard
+# error from -co, and then the script is put back the way it was: resolve that
+# collision by hand and hand the result to -co instead.
+# Usage: rebuild target.sh
+rebuild() (
+	if [ -z "$1" ]; then
+		echo "Usage: rebuild target.sh" >&2
+		return 1
+	fi
+	target="$1"
+	p2v_ours "$target" || return 1
+	export P2VI_EX="${P2VI_EX:-q}"	# -d and -co imply the editor
+	work="$P2VITMP.rebuild"
+	rm -rf "$work"
+	mkdir -p "$work"
+	cp "$target" "$work/orig.sh"
+	p2v_splitcompat "$target" "$work" > "$work/blocks"
+	p2v_stripcompat "$target" > "$work/bare.sh"
+	cp "$work/bare.sh" "$target"
+	chmod +x "$target"		# written by awk, not by -o
+	regen "$target"			# base only: the blocks are off
+	p2v_stashed_run "$target" p2v_reapply "$work" "$target"
+	if [ $? -ne 0 ]; then
+		cp "$work/orig.sh" "$target"
+		chmod +x "$target"
+		rm -rf "$work"
+		printf "%s\n" "FAILED: $target left as it was" >&2
+		return 1
+	fi
+	rm -rf "$work"
+	printf "%s\n" "REBUILT: $target"
+)
 
 # --- bulk operations ---------------------------------------------------------
 
@@ -432,21 +557,21 @@ recompat() (
 
 # Re-run patch2vi-generated script(s) and refresh their embedded patch from the
 # resulting diff. With a file arg, only that script; otherwise all of them
-# (pass 1 to also rebuild via ./cbuild.sh after each).
+# (pass 1 to also build via ./cbuild.sh after each).
 # Usage: reindex [file.sh | 1]
 reindex() (
 	set -e
-	rebuild=
+	dobuild=
 	case "$1" in
 	"")	list=$(p2v_scripts) ;;
-	1)	list=$(p2v_scripts); rebuild=1 ;;
+	1)	list=$(p2v_scripts); dobuild=1 ;;
 	*)	p2v_ours "$1" || exit 1; list="$1" ;;
 	esac
 	for s in $list
 	do
 		printf "%s\n" "SCRIPT: $s"
 		"./$s"
-		[ -n "$rebuild" ] && ./cbuild.sh build
+		[ -n "$dobuild" ] && ./cbuild.sh build
 		p2v_snapdiff "$P2VITMP"
 		p2v_splice "$s" "$P2VITMP"
 		rm -f "$P2VITMP"
@@ -524,11 +649,14 @@ run_patches() (
 	done
 )
 
-# Run every patch2vi-generated script and commit each script's refreshed
-# embedded delta. With arg 1, set P2VI_EX='q' and squash all commits back into
-# a single staged change at the end.
-# Usage: conv [1]
-conv() (
+# regen over every generated script, each one committed. A deeper reindex:
+# reindex only splices a fresh diff into the patch section and leaves the body
+# alone, this re-emits the body from that diff as well. Compat blocks ride along
+# as stored, they are not re-derived - that is recompat's job.
+# With arg 1, set P2VI_EX='q' and squash all commits back into a single staged
+# change at the end.
+# Usage: regen_all [1]
+regen_all() (
 	set -e
 	n=0
 	if [ -n "$1" ]; then
@@ -542,7 +670,7 @@ conv() (
 		gitdiff2vi -d "$s"
 		git add "$s"
 		if ! git diff --cached --quiet; then
-			git commit -m "$s: conv"
+			git commit -m "$s: regen"
 			n=$((n+1))
 		fi
 		git reset --hard
