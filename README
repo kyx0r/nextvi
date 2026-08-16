@@ -226,8 +226,8 @@ VI NORMAL
      [#]<^P>       Filesystem regex search backward
      <^Z>          Suspend vi
      <^L>          Force redraw whole screen and update terminal dimensions
-     [#]Z{<Any>}   Exit and clean terminal, force quit # recursion levels
-     [#]Zz         Exit and submit history command, force quit # recursion
+     [#]Z{<Any>}   Force exit and clean terminal, quit # recursion levels
+     [#]Zz         Force exit and submit history command, quit # recursion
                    levels
      ZZ            Exit and write unsaved changes to a file
      <ESC ^C>      Cancel any pending input or command
@@ -1443,4 +1443,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.4                      August 15, 2026                     Nextvi 7.4
+Nextvi 7.4                      August 16, 2026                     Nextvi 7.4
