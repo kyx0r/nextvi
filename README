@@ -281,7 +281,7 @@ Supported operators applied to the selection:
   y  yank          d  delete         c/C/S  change
   >  indent        <  dedent         !  pipe through shell command
   ~  toggle case   u  lowercase      U  uppercase
-  :  enter ex prompt with line-wise range
+  :  enter ex prompt with a scoped range
 Block mode (gb) also supports:
   I  insert at the left edge of the block on every selected line;
      lines shorter than the left edge are skipped
