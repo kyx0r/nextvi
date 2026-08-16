@@ -334,7 +334,7 @@ rebuild() (
 	fi
 	target="$1"
 	p2v_ours "$target" || return 1
-	export P2VI_EX="${P2VI_EX:-led:q}"	# -d and -co imply the editor; led keeps it from drawing
+	export P2VI_EX="${P2VI_EX:-led 0:q}"	# -d and -co imply the editor; led keeps it from drawing
 	work="$P2VITMP.rebuild"
 	rm -rf "$work"
 	mkdir -p "$work"
@@ -526,7 +526,7 @@ recompat() (
 			return 0
 		fi
 	fi
-	export P2VI_EX="${P2VI_EX:-led:q}"	# -d and -co imply the editor; led keeps it from drawing
+	export P2VI_EX="${P2VI_EX:-led 0:q}"	# -d and -co imply the editor; led keeps it from drawing
 	work="$P2VITMP.recompat"
 	for origin in $list
 	do
@@ -605,7 +605,7 @@ discard_deltas() (
 	"")	list=$(p2v_scripts) ;;
 	*)	p2v_ours "$1" || exit 1; list="$1" ;;
 	esac
-	export P2VI_EX="${P2VI_EX:-led:q}"	# -i implies the editor; do not stop in it, or draw it
+	export P2VI_EX="${P2VI_EX:-led 0:q}"	# -i implies the editor; do not stop in it, or draw it
 	for s in $list
 	do
 		edelta "$s" 1
@@ -625,7 +625,7 @@ discard_compats() (
 	"")	list=$(p2v_scripts) ;;
 	*)	p2v_ours "$1" || exit 1; list="$1" ;;
 	esac
-	export P2VI_EX="${P2VI_EX:-led:q}"	# -d implies the editor; do not stop in it, or draw it
+	export P2VI_EX="${P2VI_EX:-led 0:q}"	# -d implies the editor; do not stop in it, or draw it
 	for s in $list
 	do
 		grep -q '^=== PATCH2VI COMPAT ' "$s" || continue
@@ -666,14 +666,14 @@ run_patches() (
 # reindex only splices a fresh diff into the patch section and leaves the body
 # alone, this re-emits the body from that diff as well. Compat blocks ride along
 # as stored, they are not re-derived - that is recompat's job.
-# With arg 1, set P2VI_EX='q' and squash all commits back into a single staged
-# change at the end.
+# With arg 1, do not stop in the editor or let it draw, and squash all commits
+# back into a single staged change at the end.
 # Usage: regen_all [1]
 regen_all() (
 	set -e
 	n=0
 	if [ -n "$1" ]; then
-		export P2VI_EX='q'
+		export P2VI_EX="${P2VI_EX:-led 0:q}"
 	fi
 	for s in $(p2v_scripts)
 	do
