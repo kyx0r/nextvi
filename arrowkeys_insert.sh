@@ -861,13 +861,14 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 ??!219reg vi.c:1527:m62sc %? %@2142sc!0?
 '\''7i 				switch (k) {
 				case '\''A'\'':	/* ↑ */
-				case '\''B'\'':	/* ↓ */
+				case '\''B'\'':	/* ↓ */;
+					char ins[2] = {c, '\''\0'\''};
 					if (lmodified)
 						vi_col = vi_off2col(xb, xrow, xoff);
 					xrow += k == '\''A'\'' ? -1 : 1;
 					xrow = xrow < 0 ? 0 : xrow;
 					xoff = vi_col2off(xb, xrow, vi_col);
-					term_push(!lmodified ? (char*)&c :
+					term_push(!lmodified ? ins :
 						vi_off2col(xb, xrow, xoff) < vi_col ? "A" : "i", 1);
 					goto _break;
 				case '\''D'\'':	/* ← */
@@ -877,10 +878,11 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 					vi_col = vi_off2col(xb, xrow, xoff);
 					goto _break;
 				case '\''C'\'':	/* → */
-					term_push(*uc_chr(lbuf_get(xb, xrow), xoff+2) ? "i" : "A", 1);
-					xoff++;
-					if (*uc_chr(lbuf_get(xb, xrow), xoff))
+					if (++xoff < lbuf_eol(xb, xrow, 1)) {
+						term_push("i", 1);
 						vi_col = vi_off2col(xb, xrow, xoff);
+					} else
+						term_push("A", 1);
 					goto _break;
 				}
 ??!219reg vi.c:1530:m72sc %? %@2142sc!0?
@@ -1058,7 +1060,7 @@ index 9eb8e85b..3b3964f3 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 76778809..5bde60c9 100644
+index 76778809..736561aa 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -835,6 +835,8 @@ static int vi_indents(char *ln)
@@ -1098,7 +1100,7 @@ index 76778809..5bde60c9 100644
  							goto insert;
  						}
  						rep_record()
-@@ -1525,9 +1531,34 @@ void vi(int init)
+@@ -1525,9 +1531,36 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1108,13 +1110,14 @@ index 76778809..5bde60c9 100644
  				insert_done:
 +				switch (k) {
 +				case 'A':	/* ↑ */
-+				case 'B':	/* ↓ */
++				case 'B':	/* ↓ */;
++					char ins[2] = {c, '\0'};
 +					if (lmodified)
 +						vi_col = vi_off2col(xb, xrow, xoff);
 +					xrow += k == 'A' ? -1 : 1;
 +					xrow = xrow < 0 ? 0 : xrow;
 +					xoff = vi_col2off(xb, xrow, vi_col);
-+					term_push(!lmodified ? (char*)&c :
++					term_push(!lmodified ? ins :
 +						vi_off2col(xb, xrow, xoff) < vi_col ? "A" : "i", 1);
 +					goto _break;
 +				case 'D':	/* ← */
@@ -1124,16 +1127,17 @@ index 76778809..5bde60c9 100644
 +					vi_col = vi_off2col(xb, xrow, xoff);
 +					goto _break;
 +				case 'C':	/* → */
-+					term_push(*uc_chr(lbuf_get(xb, xrow), xoff+2) ? "i" : "A", 1);
-+					xoff++;
-+					if (*uc_chr(lbuf_get(xb, xrow), xoff))
++					if (++xoff < lbuf_eol(xb, xrow, 1)) {
++						term_push("i", 1);
 +						vi_col = vi_off2col(xb, xrow, xoff);
++					} else
++						term_push("A", 1);
 +					goto _break;
 +				}
  				if (k == 127 || k == TK_CTL('w')) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1535,6 +1566,7 @@ void vi(int init)
+@@ -1535,6 +1568,7 @@ void vi(int init)
  							xtop = otop;
  						topfix()
  						vc_join(0, 2);
@@ -1141,7 +1145,7 @@ index 76778809..5bde60c9 100644
  						vi_drawagain(xtop);
  						if (vi_status)
  							vc_status(vi_tsm);
-@@ -1545,6 +1577,7 @@ void vi(int init)
+@@ -1545,6 +1579,7 @@ void vi(int init)
  							vi_delete(xrow, noff, xrow, xoff, 0);
  						} else
  							vi_delete(xrow, xoff - 1, xrow, xoff, 0);
@@ -1149,7 +1153,7 @@ index 76778809..5bde60c9 100644
  					}
  					c = xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a';
  					xb->useq += xseq;
-@@ -1554,6 +1587,9 @@ void vi(int init)
+@@ -1554,6 +1589,9 @@ void vi(int init)
  				rep_record()
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;
