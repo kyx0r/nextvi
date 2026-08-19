@@ -66,6 +66,10 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 1;4;7;8;9??!219reg vi.c:5272sc %? %@2132sc!0?
 '\''1i 	case '\''\033'\'':	/* Arrow keys */
 		mv = term_read(0);
+		if (mv == '\''\033'\'') {
+			term_dec()
+			return -1;
+		}
 		if (mv == '\''['\'') {
 			mv = term_read(0);
 			switch (mv) {
@@ -102,15 +106,19 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 76778809..c2051cd3 100644
+index 76778809..fc146fdb 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -525,6 +525,37 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -525,6 +525,41 @@ static int vi_region(int cmd, int *row, int *off)
  
  	mv = term_read(0);
  	switch (mv) {
 +	case '\033':	/* Arrow keys */
 +		mv = term_read(0);
++		if (mv == '\033') {
++			term_dec()
++			return -1;
++		}
 +		if (mv == '[') {
 +			mv = term_read(0);
 +			switch (mv) {
