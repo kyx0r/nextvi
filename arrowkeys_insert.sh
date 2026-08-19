@@ -673,34 +673,150 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 grp 09??-8m 4220reg p OK vi.c:1040:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg vi.c:10402sc %? %@2132sc!0?
 ?0?
+%f+ 						vi_delete\(r1, o1, r2, o2, 0\);
+						if \(c == '\''c'\''\) \{
+							c = '\''i'\'';
+							goto insert;
+						}
+						rep_record\(\)1??0?
+1??+2m 51q0?
+%f+ 						vi_delete\(r1, o1, r2, o2, 0\);
+						if \(c == '\''c'\''\) \{
+							c = '\''i'\'';4??0?
+4??+2m 5220reg p OK vi.c:1503:a42sc %? %@2152sc!1q0?
+grp 1%f+ 						vi_delete\(r1, o1, r2, o2, 0\);.*?
+						if \(c == '\''c'\''\) \{.*?
+(							c = '\''i'\'';)7??0?
+grp 07??m 5220reg p OK vi.c:1503:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 					} else
+						pair_found = !lbuf_pair\(xb, pairs, 2, &r2, &o2\);
+					if \(pair_found && !lbuf_next\(xb, 1, &r1, &o1\)\) \{.*(						vi_mod \|= 1;)
+					}
+					out:8??0?
+grp 08??-4m 5220reg p OK vi.c:1503:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 								pair_found = 1;
+								break;
+							}.*(				term_dec\(\))
+			case '\''y'\'':
+			case '\''!'\'':9??0?
+grp 09??-9m 5220reg p OK vi.c:1503:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15032sc %? %@2132sc!0?
+?0?
+%f+ 			case '\''A'\'':
+			case '\''o'\'':
+			case '\''O'\'':
+				insert:
+				k = vc_insert\(c\);
+				insert_done:1??0?
+1??+2m 61q0?
+%f+ 			case '\''A'\'':
+			case '\''o'\'':
+			case '\''O'\'':4??0?
+4??+2m 6220reg p OK vi.c:1527:a42sc %? %@2152sc!1q0?
+grp 1%f+ 			case '\''A'\'':.*?
+			case '\''o'\'':.*?
+(			case '\''O'\'':)7??0?
+grp 07??m 6220reg p OK vi.c:1527:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			case '\''I'\'':
+			case '\''i'\'':
+			case '\''a'\'':.*(						if \(xtop > otop\))
+							xtop = otop;
+						topfix\(\)8??0?
+grp 08??-7m 6220reg p OK vi.c:1527:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				if \(c == '\''c'\''\)
+					goto insert_done;
+				break;.*(						vc_join\(0, 2\);)
+						vi_drawagain\(xtop\);
+						if \(vi_status\)9??0?
+grp 09??-10m 6220reg p OK vi.c:1527:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15272sc %? %@2132sc!0?
+?0?
 %f+ 				insert:
 				k = vc_insert\(c\);
 				insert_done:
 				if \(k == 127 \|\| k == TK_CTL\('\''w'\''\)\) \{
 					if \(xrow && !\(xoff > 0 && lbuf_eol\(xb, xrow, 1\)\)\) \{
 						xrow--;1??0?
-1??+2m 51q0?
+1??+2m 71q0?
 %f+ 				insert:
 				k = vc_insert\(c\);
 				insert_done:4??0?
-4??+2m 5220reg p OK vi.c:1530:a42sc %? %@2152sc!1q0?
+4??+2m 7220reg p OK vi.c:1530:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				insert:.*?
 				k = vc_insert\(c\);.*?
 (				insert_done:)7??0?
-grp 07??m 5220reg p OK vi.c:1530:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 			case '\''A'\'':
-			case '\''o'\'':
-			case '\''O'\'':.*(						if \(xtop > otop\))
-							xtop = otop;
-						topfix\(\)8??0?
-grp 08??-4m 5220reg p OK vi.c:1530:a82sc %? %@2152sc!'\''08??1q0?
+grp 07??m 7220reg p OK vi.c:1530:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			case '\''I'\'':
 			case '\''i'\'':
-			case '\''a'\'':.*(						vc_join\(0, 2\);)
+			case '\''a'\'':.*(						if \(xtop > otop\))
+							xtop = otop;
+						topfix\(\)8??0?
+grp 08??-4m 7220reg p OK vi.c:1530:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				if \(c == '\''c'\''\)
+					goto insert_done;
+				break;.*(						vc_join\(0, 2\);)
 						vi_drawagain\(xtop\);
 						if \(vi_status\)9??0?
-grp 09??-7m 5220reg p OK vi.c:1530:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 7220reg p OK vi.c:1530:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:15302sc %? %@2132sc!0?
+?0?
+%f+ 							xtop = otop;
+						topfix\(\)
+						vc_join\(0, 2\);
+						vi_drawagain\(xtop\);
+						if \(vi_status\)
+							vc_status\(vi_tsm\);1??0?
+1??+2m 81q0?
+%f+ 							xtop = otop;
+						topfix\(\)
+						vc_join\(0, 2\);4??0?
+4??+2m 8220reg p OK vi.c:1537:a42sc %? %@2152sc!1q0?
+grp 1%f+ 							xtop = otop;.*?
+						topfix\(\).*?
+(						vc_join\(0, 2\);)7??0?
+grp 07??m 8220reg p OK vi.c:1537:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 					if \(xrow && !\(xoff > 0 && lbuf_eol\(xb, xrow, 1\)\)\) \{
+						xrow--;
+						if \(xtop > otop\).*(					} else if \(xoff\) \{)
+						if \(k == TK_CTL\('\''w'\''\)\) \{
+							noff = xoff;8??0?
+grp 08??-4m 8220reg p OK vi.c:1537:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				k = vc_insert\(c\);
+				insert_done:
+				if \(k == 127 \|\| k == TK_CTL\('\''w'\''\)\) \{.*(							lbuf_wordend\(xb, 0, -2, &xrow, &noff\);)
+							vi_delete\(xrow, noff, xrow, xoff, 0\);
+						} else9??0?
+grp 09??-7m 8220reg p OK vi.c:1537:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15372sc %? %@2132sc!0?
+?0?
+%f+ 							vi_delete\(xrow, noff, xrow, xoff, 0\);
+						} else
+							vi_delete\(xrow, xoff - 1, xrow, xoff, 0\);
+					}
+					c = xoff != lbuf_eol\(xb, xrow, 1\) \? '\''i'\'' : '\''a'\'';
+					xb->useq \+= xseq;1??0?
+1??+2m 91q0?
+%f+ 							vi_delete\(xrow, noff, xrow, xoff, 0\);
+						} else
+							vi_delete\(xrow, xoff - 1, xrow, xoff, 0\);4??0?
+4??+2m 9220reg p OK vi.c:1547:a42sc %? %@2152sc!1q0?
+grp 1%f+ 							vi_delete\(xrow, noff, xrow, xoff, 0\);.*?
+						} else.*?
+(							vi_delete\(xrow, xoff - 1, xrow, xoff, 0\);)7??0?
+grp 07??m 9220reg p OK vi.c:1547:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 						if \(k == TK_CTL\('\''w'\''\)\) \{
+							noff = xoff;
+							lbuf_wordend\(xb, 0, -2, &xrow, &noff\);.*(					goto insert;)
+				}
+				xoff--;8??0?
+grp 08??-4m 9220reg p OK vi.c:1547:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 						if \(vi_status\)
+							vc_status\(vi_tsm\);
+					} else if \(xoff\) \{.*(				vi_mod \|= !xpac && xrow == orow \? 8 : 1;)
+				break;
+			case '\''J'\'':9??0?
+grp 09??-8m 9220reg p OK vi.c:1547:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15472sc %? %@2132sc!0?
 ?0?
 %f+ 				rep_record\(\)
 				vi_mod \|= !xpac && xrow == orow \? 8 : 1;
@@ -708,55 +824,51 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 			case '\''J'\'':
 				vc_join\(1, vi_arg <= 1 \? 2 : vi_arg\);
 				rep_record\(\)1??0?
-1??+2m 61q0?
+1??+2m 101q0?
 %f+ 				rep_record\(\)
 				vi_mod \|= !xpac && xrow == orow \? 8 : 1;
 				break;4??0?
-4??+2m 6220reg p OK vi.c:1556:a42sc %? %@2152sc!1q0?
+4??+2m 10220reg p OK vi.c:1556:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				rep_record\(\).*?
 				vi_mod \|= !xpac && xrow == orow \? 8 : 1;.*?
 (				break;)7??0?
-grp 07??m 6220reg p OK vi.c:1556:a72sc %? %@2152sc!1q0?
+grp 07??m 10220reg p OK vi.c:1556:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					goto insert;
 				}
 				xoff--;.*(			case '\''K'\'': \{)
 				preserve\(int, xvis, xvis = 1;\)
 				do \{8??0?
-grp 08??-6m 6220reg p OK vi.c:1556:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 10220reg p OK vi.c:1556:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					}
 					c = xoff != lbuf_eol\(xb, xrow, 1\) \? '\''i'\'' : '\''a'\'';
 					xb->useq \+= xseq;.*(					ex_exec\(";\+1c\\n:-1"\);)
 				} while \(vi_arg--\);
 				restore\(xvis\)9??0?
-grp 09??-9m 6220reg p OK vi.c:1556:a92sc %? %@2152sc!'\''00?
+grp 09??-9m 10220reg p OK vi.c:1556:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:15562sc %? %@2132sc!0?
 '\''1i static int lmodified;
 
 ??!219reg vi.c:837:m12sc %? %@2142sc!0?
-'\''2i 	lmodified = 1;
+'\''2i 	lmodified++;
 ??!219reg vi.c:868:m22sc %? %@2142sc!0?
 '\''3s/\)/) {/??!219reg vi.c:1039:m32sc %? %@2142sc!0?
-'\''4i 		lmodified = 1;
-	} else
-		lmodified = 0;
+'\''4i 		lmodified++;
+	}
 ??!219reg vi.c:1040:m42sc %? %@2142sc!0?
-'\''5i 				switch (k) {
+'\''5i 							lmodified++;
+??!219reg vi.c:1503:m52sc %? %@2142sc!0?
+'\''6i 				lmodified = 0;
+??!219reg vi.c:1527:m62sc %? %@2142sc!0?
+'\''7i 				switch (k) {
 				case '\''A'\'':	/* ↑ */
-					term_push(!lmodified ? (char*)&c : "i", 1);
+				case '\''B'\'':	/* ↓ */
 					if (lmodified)
 						vi_col = vi_off2col(xb, xrow, xoff);
-					xrow--;
+					xrow += k == '\''A'\'' ? -1 : 1;
 					xrow = xrow < 0 ? 0 : xrow;
 					xoff = vi_col2off(xb, xrow, vi_col);
-					lmodified = 0;
-					goto _break;
-				case '\''B'\'':	/* ↓ */
-					term_push(!lmodified ? (char*)&c : "i", 1);
-					if (lmodified)
-						vi_col = vi_off2col(xb, xrow, xoff);
-					xrow++;
-					xoff = vi_col2off(xb, xrow, vi_col);
-					lmodified = 0;
+					term_push(!lmodified ? (char*)&c :
+						vi_off2col(xb, xrow, xoff) < vi_col ? "A" : "i", 1);
 					goto _break;
 				case '\''D'\'':	/* ← */
 					term_push("i", 1);
@@ -771,11 +883,15 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 						vi_col = vi_off2col(xb, xrow, xoff);
 					goto _break;
 				}
-??!219reg vi.c:1530:m52sc %? %@2142sc!0?
-'\''6i 				_break:
+??!219reg vi.c:1530:m72sc %? %@2142sc!0?
+'\''8i 						lmodified++;
+??!219reg vi.c:1537:m82sc %? %@2142sc!0?
+'\''9i 						lmodified++;
+??!219reg vi.c:1547:m92sc %? %@2142sc!0?
+'\''10i 				_break:
 				vi_mod = 0;
 				break;
-??!219reg vi.c:1556:m62sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
+??!219reg vi.c:1556:m102sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' 'vi.c' "$P2VIF"
 
 exit 0
@@ -942,7 +1058,7 @@ index 9eb8e85b..3b3964f3 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 76778809..da3dbad0 100644
+index 76778809..5bde60c9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -835,6 +835,8 @@ static int vi_indents(char *ln)
@@ -958,44 +1074,48 @@ index 76778809..da3dbad0 100644
  	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
  		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
  	free(sb->s);
-+	lmodified = 1;
++	lmodified++;
  	return key;
  }
  
-@@ -1036,8 +1039,11 @@ static int vc_insert(int cmd)
+@@ -1036,8 +1039,10 @@ static int vc_insert(int cmd)
  	term_room(cmdo);
  	sbuf_mem(sb, ln, l1)
  	key = led_input(sb, post, postn, row, cmdo << 2, &postn);
 -	if (postn != l1 || cmdo || !ln)
 +	if (postn != l1 || cmdo || !ln) {
  		lbuf_edit(xb, sb->s, row, row + !cmdo, off, xoff);
-+		lmodified = 1;
-+	} else
-+		lmodified = 0;
++		lmodified++;
++	}
  	free(sb->s);
  	return key;
  }
-@@ -1528,6 +1534,37 @@ void vi(int init)
+@@ -1501,6 +1506,7 @@ void vi(int init)
+ 						vi_delete(r1, o1, r2, o2, 0);
+ 						if (c == 'c') {
+ 							c = 'i';
++							lmodified++;
+ 							goto insert;
+ 						}
+ 						rep_record()
+@@ -1525,9 +1531,34 @@ void vi(int init)
+ 			case 'A':
+ 			case 'o':
+ 			case 'O':
++				lmodified = 0;
  				insert:
  				k = vc_insert(c);
  				insert_done:
 +				switch (k) {
 +				case 'A':	/* ↑ */
-+					term_push(!lmodified ? (char*)&c : "i", 1);
++				case 'B':	/* ↓ */
 +					if (lmodified)
 +						vi_col = vi_off2col(xb, xrow, xoff);
-+					xrow--;
++					xrow += k == 'A' ? -1 : 1;
 +					xrow = xrow < 0 ? 0 : xrow;
 +					xoff = vi_col2off(xb, xrow, vi_col);
-+					lmodified = 0;
-+					goto _break;
-+				case 'B':	/* ↓ */
-+					term_push(!lmodified ? (char*)&c : "i", 1);
-+					if (lmodified)
-+						vi_col = vi_off2col(xb, xrow, xoff);
-+					xrow++;
-+					xoff = vi_col2off(xb, xrow, vi_col);
-+					lmodified = 0;
++					term_push(!lmodified ? (char*)&c :
++						vi_off2col(xb, xrow, xoff) < vi_col ? "A" : "i", 1);
 +					goto _break;
 +				case 'D':	/* ← */
 +					term_push("i", 1);
@@ -1013,7 +1133,23 @@ index 76778809..da3dbad0 100644
  				if (k == 127 || k == TK_CTL('w')) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1554,6 +1591,9 @@ void vi(int init)
+@@ -1535,6 +1566,7 @@ void vi(int init)
+ 							xtop = otop;
+ 						topfix()
+ 						vc_join(0, 2);
++						lmodified++;
+ 						vi_drawagain(xtop);
+ 						if (vi_status)
+ 							vc_status(vi_tsm);
+@@ -1545,6 +1577,7 @@ void vi(int init)
+ 							vi_delete(xrow, noff, xrow, xoff, 0);
+ 						} else
+ 							vi_delete(xrow, xoff - 1, xrow, xoff, 0);
++						lmodified++;
+ 					}
+ 					c = xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a';
+ 					xb->useq += xseq;
+@@ -1554,6 +1587,9 @@ void vi(int init)
  				rep_record()
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;
