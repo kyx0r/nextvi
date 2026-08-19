@@ -76,11 +76,11 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 			case '\''A'\'':	/* ↑ */
 				*row = MAX(*row - cnt, 0);
 				mv = '\''k'\'';
-				break;
+				goto lnregion;
 			case '\''B'\'':	/* ↓ */
 				*row = MIN(*row + cnt, lbuf_len(xb) - 1);
 				mv = '\''j'\'';
-				break;
+				goto lnregion;
 			case '\''D'\'':	/* ← */
 			case '\''C'\'':	/* → */
 				if (!(cs = lbuf_get(xb, *row)))
@@ -106,7 +106,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 76778809..fc146fdb 100644
+index 76778809..a40a75b1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,6 +525,41 @@ static int vi_region(int cmd, int *row, int *off)
@@ -125,11 +125,11 @@ index 76778809..fc146fdb 100644
 +			case 'A':	/* ↑ */
 +				*row = MAX(*row - cnt, 0);
 +				mv = 'k';
-+				break;
++				goto lnregion;
 +			case 'B':	/* ↓ */
 +				*row = MIN(*row + cnt, lbuf_len(xb) - 1);
 +				mv = 'j';
-+				break;
++				goto lnregion;
 +			case 'D':	/* ← */
 +			case 'C':	/* → */
 +				if (!(cs = lbuf_get(xb, *row)))
