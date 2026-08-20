@@ -1165,7 +1165,7 @@ static int vc_visual_op(int cmd)
 						*p++ = '\'';'\'';
 						p = itoa(vi_voff, p);
 						*p++ = '\'';'\'';
-						p = itoa(xoff, p);
+						p = itoa(xoff+1, p);
 					}
 					*p = '\''\0'\'';
 					ln = vi_enprompt(":", range, &k, &n);
@@ -1391,7 +1391,7 @@ index 70157040..c0d2d3b9 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 76778809..29433960 100644
+index 76778809..fe967d61 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1717,7 +1717,7 @@ index 76778809..29433960 100644
 +						*p++ = ';';
 +						p = itoa(vi_voff, p);
 +						*p++ = ';';
-+						p = itoa(xoff, p);
++						p = itoa(xoff+1, p);
 +					}
 +					*p = '\0';
 +					ln = vi_enprompt(":", range, &k, &n);
