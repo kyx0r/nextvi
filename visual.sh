@@ -908,7 +908,7 @@ static int vc_motion\(int cmd\)
 		else if \(xtop != otop\)9??0?
 grp 09??-7m 25220reg p OK vi.c:1800:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg vi.c:18002sc %? %@2132sc!0?
-'\''1i static int vi_visual;			/* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line */
+'\''1i static int vi_visual;			/* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block */
 static int vi_vrow;			/* selection anchor row */
 static int vi_voff;			/* selection anchor column */
 ??!219reg vi.c:46:m12sc %? %@2142sc!0?
@@ -1155,17 +1155,18 @@ static int vc_visual_op(int cmd)
 					vc_visual_op('\''U'\'');
 				break;
 ??!219reg vi.c:1344:m122sc %? %@2142sc!0?
-'\''13i 				if (vi_visual) {
+'\''13i 				if (vi_visual == '\''v'\'' || vi_visual == '\''V'\'') {
 					char range[128];
 					int vr1 = MIN(vi_vrow, xrow), vr2 = MAX(vi_vrow, xrow);
-					int o_beg = MIN(vi_voff, xoff), o_end = MAX(vi_voff, xoff);
 					char *p = itoa(vr1+1, range);
 					*p++ = '\'','\'';
 					p = itoa(vr2+1, p);
-					*p++ = '\'';'\'';
-					p = itoa(o_beg, p);
-					*p++ = '\'';'\'';
-					p = itoa(o_end, p);
+					if (vi_visual == '\''v'\'') {
+						*p++ = '\'';'\'';
+						p = itoa(vi_voff, p);
+						*p++ = '\'';'\'';
+						p = itoa(xoff, p);
+					}
 					*p = '\''\0'\'';
 					ln = vi_enprompt(":", range, &k, &n);
 					goto do_excmd;
@@ -1247,18 +1248,18 @@ printf '%s\n' '2sc!fr 98b1%ya 98?0?
 					vc_motion\(k\);
 				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
 					if \(!vi_visual\) \{		/\* fresh selection \*/2??0?
-2??m 1220reg p OK vi.c:1956:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:1957:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{$3??0?
-3??m 1220reg p OK vi.c:1956:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.c:1957:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;4??0?
-4??+3m 1220reg p OK vi.c:1956:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:1957:a42sc %? %@2152sc!1q0?
 %f> 					vc_motion\(k\);
 				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
 					if \(!vi_visual\) \{		/\* fresh selection \*/5??0?
-5??-1m 1220reg p OK vi.c:1956:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:19562sc %? %@2132sc!0?
+5??-1m 1220reg p OK vi.c:1957:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:19572sc %? %@2132sc!0?
 ?0?
 %f+ 					}
 					vi_visual = vi_visual == k \? 0 : k;
@@ -1272,20 +1273,20 @@ printf '%s\n' '2sc!fr 98b1%ya 98?0?
 				} else if \(k == '\''K'\''\) \{
 					if \(xb_path && xb_path\[0]\)
 						lsp_hover\(xb_path, xrow, xoff\);2??0?
-2??m 2220reg p OK vi.c:1965:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:1966:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				}$3??0?
-3??m 2220reg p OK vi.c:1965:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:1966:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					}
 					vi_visual = vi_visual == k \? 0 : k;
 					vi_mod \|= 1;4??0?
-4??+3m 2220reg p OK vi.c:1965:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:1966:a42sc %? %@2152sc!1q0?
 %f+ 				} else if \(k == '\''K'\''\) \{
 					if \(xb_path && xb_path\[0]\)
 						lsp_hover\(xb_path, xrow, xoff\);5??0?
-5??-1m 2220reg p OK vi.c:1965:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:19652sc %? %@2132sc!0?
-'\''1s/\{ \{/{/??!219reg vi.c:1956:m12sc %? %@2142sc!0?
-'\''2d??!219reg vi.c:1965:m22sc %? %@2142sc!p compat applied: src=lsp.sh' > "$P2VIF".1
+5??-1m 2220reg p OK vi.c:1966:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:19662sc %? %@2132sc!0?
+'\''1s/\{ \{/{/??!219reg vi.c:1957:m12sc %? %@2142sc!0?
+'\''2d??!219reg vi.c:1966:m22sc %? %@2142sc!p compat applied: src=lsp.sh' > "$P2VIF".1
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
 
 exit 0
@@ -1356,7 +1357,7 @@ void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -1953,7 +1953,7 @@
+@@ -1954,7 +1954,7 @@
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1365,7 +1366,7 @@ void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
  					vc_motion(k);
  				} else if (k == 'v' || k == 'V' || k == 'b') {
  					if (!vi_visual) {		/* fresh selection */
-@@ -1962,7 +1962,6 @@
+@@ -1963,7 +1963,6 @@
  					}
  					vi_visual = vi_visual == k ? 0 : k;
  					vi_mod |= 1;
@@ -1390,14 +1391,14 @@ index 70157040..c0d2d3b9 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 76778809..f0c02bf0 100644
+index 76778809..29433960 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
  static int vi_status;			/* permanent status bar */
  static int vi_tsm;			/* type of the status message */
  static int vi_nlmode;			/* new line mode for vi regions */
-+static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line */
++static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line 'b'=block */
 +static int vi_vrow;			/* selection anchor row */
 +static int vi_voff;			/* selection anchor column */
  
@@ -1702,21 +1703,22 @@ index 76778809..f0c02bf0 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1446,6 +1681,21 @@ void vi(int init)
+@@ -1446,6 +1681,22 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case ':':
-+				if (vi_visual) {
++				if (vi_visual == 'v' || vi_visual == 'V') {
 +					char range[128];
 +					int vr1 = MIN(vi_vrow, xrow), vr2 = MAX(vi_vrow, xrow);
-+					int o_beg = MIN(vi_voff, xoff), o_end = MAX(vi_voff, xoff);
 +					char *p = itoa(vr1+1, range);
 +					*p++ = ',';
 +					p = itoa(vr2+1, p);
-+					*p++ = ';';
-+					p = itoa(o_beg, p);
-+					*p++ = ';';
-+					p = itoa(o_end, p);
++					if (vi_visual == 'v') {
++						*p++ = ';';
++						p = itoa(vi_voff, p);
++						*p++ = ';';
++						p = itoa(xoff, p);
++					}
 +					*p = '\0';
 +					ln = vi_enprompt(":", range, &k, &n);
 +					goto do_excmd;
@@ -1724,7 +1726,7 @@ index 76778809..f0c02bf0 100644
  				ln = vi_enprompt(":", NULL, &k, &n);
  				do_excmd:
  				if (k && ln[n]) {
-@@ -1465,7 +1715,15 @@ void vi(int init)
+@@ -1465,7 +1716,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -1740,7 +1742,7 @@ index 76778809..f0c02bf0 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1515,6 +1773,10 @@ void vi(int init)
+@@ -1515,6 +1774,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -1751,7 +1753,7 @@ index 76778809..f0c02bf0 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto insert_done;
-@@ -1525,6 +1787,13 @@ void vi(int init)
+@@ -1525,6 +1788,13 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1765,7 +1767,7 @@ index 76778809..f0c02bf0 100644
  				insert:
  				k = vc_insert(c);
  				insert_done:
-@@ -1647,8 +1916,16 @@ void vi(int init)
+@@ -1647,8 +1917,16 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1783,7 +1785,7 @@ index 76778809..f0c02bf0 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1663,16 +1940,25 @@ void vi(int init)
+@@ -1663,16 +1941,25 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1814,7 +1816,7 @@ index 76778809..f0c02bf0 100644
  				motion:
  				icmd_pos--;
  				goto re_motion;
-@@ -1738,6 +2024,13 @@ void vi(int init)
+@@ -1738,6 +2025,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -1828,7 +1830,7 @@ index 76778809..f0c02bf0 100644
  			default:
  				continue;
  			}
-@@ -1798,6 +2091,8 @@ void vi(int init)
+@@ -1798,6 +2092,8 @@ void vi(int init)
  				}
  			}
  		}
