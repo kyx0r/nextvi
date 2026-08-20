@@ -2206,7 +2206,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 69de2dfb..0d6608db 100644
+index 42451587..eb9000d9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,7 +37,7 @@ int xsep = ':';			/* ex command separator */

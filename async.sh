@@ -588,7 +588,7 @@ index 70157040..34176975 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 69de2dfb..30e5cc4f 100644
+index 42451587..ccc34670 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -58,6 +58,17 @@ static char xirerr[] = "invalid range";

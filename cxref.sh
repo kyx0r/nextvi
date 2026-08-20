@@ -1313,7 +1313,7 @@ else if (xrow >= xtop + curwin->h) \
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 69de2dfb..33b5d467 100644
+index 42451587..379f8b1d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */

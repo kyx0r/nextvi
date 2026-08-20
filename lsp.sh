@@ -2871,7 +2871,7 @@ index 70157040..2164933c 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index 69de2dfb..0979d499 100644
+index 42451587..7889d1b7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -431,6 +431,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
