@@ -924,7 +924,7 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 	if ((i = ex_region(loc, &beg, &end, &o1, &o2)))
 		return i == 2 && !*cmd ? NULL : xrerr;
 	if (o1 >= 0)
-		xoff = MAX(o1, o2);
+		xoff = o2 >= 0 ? o2 : o1;
 	if (!*cmd && *loc) {
 		xrow = MAX(beg, end - 1);
 		return NULL;
