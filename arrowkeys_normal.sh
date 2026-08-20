@@ -34,26 +34,26 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'b01;0fr 0%f> ^static int vc_insert\(int cmd\);$1000??0?
-b01;0fr 0%f> ^					vc_visual_op\('\''u'\''\);$1001??0?
-b01;0fr 0%f> ^			case '\''U'\'':$1002??0?
-b01;0fr 0%f> ^				if \(vi_visual == '\''v'\'' \|\| vi_visual == '\''V'\''\) \{$1003??0?
-b01;0fr 0%f> ^					vc_visual_op\('\''d'\''\);$1004??0?
-b01;0fr 0%f> ^				if \(vi_visual && c != TK_CTL\('\''w'\''\)\) \{$1005??0?
-b01;0fr 0%f> ^				if \(vi_visual == '\''b'\'' && \(c == '\''I'\'' \|\| c == '\''A'\''\)\) \{$1006??0?
-b01;0fr 0%f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{$1007??0?
-b01;0fr 0%f> ^				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{$1008??0?
-b01;0fr 0%f> ^					vc_visual_op\('\''~'\''\);$1009??0?
-b01;0fr 0%f> ^				if \(c == '\''C'\''\)$1010??0?
-b01;0fr 0%f> ^			case TK_ESC:$1011??0?
-b01;0fr 0%f> ^			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs, vs\);$1012??0?
-b01;0fr 0%f> ^			"\\"%s\\"%s%dL %d%% L%d C%d B%td %s",$1013??0?
-b01;0fr 0%f> ^		if \(vi_visual\)$1014??0?
-b01;0fr 0%f> ^			xoff, col, vs\);$1015??0?
-b01;0fr 0%f> ^		snprintf\(vi_msg, sizeof\(vi_msg\), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",$1016??0?
-b01;0fr 0%f> ^	char \*vs = vi_visual == '\''V'\'' \? "-- VISUAL LINE -- " :$1017??0?
-b01;0fr 0%f> ^	vi_visual_attrib\(s, row\);$1018??0?
-b01;0fr 0%f> ^		vi_visual_attrib\(s, row\);$1019??0?
+'b01;0fr 0%f> ^static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/$1000??0?
+b01;0fr 0%f> ^static void vi_visual_attrib\(char \*s, int row\)$1001??0?
+b01;0fr 0%f> ^		vi_visual_attrib\(s, row\);$1002??0?
+b01;0fr 0%f> ^	vi_visual_attrib\(s, row\);$1003??0?
+b01;0fr 0%f> ^	char \*vs = vi_visual == '\''V'\'' \? "-- VISUAL LINE -- " :$1004??0?
+b01;0fr 0%f> ^		snprintf\(vi_msg, sizeof\(vi_msg\), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",$1005??0?
+b01;0fr 0%f> ^			xoff, col, vs\);$1006??0?
+b01;0fr 0%f> ^			"\\"%s\\"%s%dL %d%% L%d C%d B%td %s",$1007??0?
+b01;0fr 0%f> ^			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs, vs\);$1008??0?
+b01;0fr 0%f> ^static int vc_insert\(int cmd\);$1009??0?
+b01;0fr 0%f> ^					vc_visual_op\('\''u'\''\);$1010??0?
+b01;0fr 0%f> ^			case '\''U'\'':$1011??0?
+b01;0fr 0%f> ^				if \(vi_visual == '\''v'\'' \|\| vi_visual == '\''V'\''\) \{$1012??0?
+b01;0fr 0%f> ^					vc_visual_op\('\''d'\''\);$1013??0?
+b01;0fr 0%f> ^				if \(vi_visual && c != TK_CTL\('\''w'\''\)\) \{$1014??0?
+b01;0fr 0%f> ^				if \(vi_visual == '\''b'\'' && \(c == '\''I'\'' \|\| c == '\''A'\''\)\) \{$1015??0?
+b01;0fr 0%f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{$1016??0?
+b01;0fr 0%f> ^				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{$1017??0?
+b01;0fr 0%f> ^					vc_visual_op\('\''~'\''\);$1018??0?
+b01;0fr 0%f> ^				if \(c == '\''C'\''\)$1019??0?
 230reg 0231reg 01000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 231reg 11000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b010?
 b1%ya 972sc %? %@972sc!b01211reg ? %@2210?
 b2%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!vis 2b0w2q' > "$P2VIF".d
@@ -124,18 +124,44 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 ??!219reg vi.c:527:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat (post) from visual.sh
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
-%f> 	case '\''\\033'\'':	/\* Arrow keys \*/
+%f> static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/
+static int vi_vrow;			/\* selection anchor row \*/
+static int vi_voff;			/\* selection anchor column \*/
+
+void \*emalloc\(size_t size\)
+\{1??0?
+1??+2m 11q0?
+%f> static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/
+static int vi_vrow;			/\* selection anchor row \*/
+static int vi_voff;			/\* selection anchor column \*/4??0?
+4??+2m 1220reg p OK vi.c:49:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:492sc %? %@2132sc!0?
+?0?
+%f+ 	mv = term_read\(0\);
+	switch \(mv\) \{
+	case '\''\\033'\'':	/\* Arrow keys \*/
 		mv = term_read\(0\);
 		if \(mv == '\''\\033'\''\) \{
-			term_dec\(\)
-			return -1;
-		}1??0?
-1??+2m 11q0?
-%f> 	case '\''\\033'\'':	/\* Arrow keys \*/
-		mv = term_read\(0\);
-		if \(mv == '\''\\033'\''\) \{4??0?
-4??+2m 1220reg p OK vi.c:585:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:5852sc %? %@2132sc!0?
+			term_dec\(\)1??0?
+1??+2m 21q0?
+%f+ 	mv = term_read\(0\);
+	switch \(mv\) \{
+	case '\''\\033'\'':	/\* Arrow keys \*/4??0?
+4??+2m 2220reg p OK vi.c:583:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:5832sc %? %@2132sc!0?
+?0?
+%f+ 		}
+		if \(mv == '\''\['\''\) \{
+			mv = term_read\(0\);
+			switch \(mv\) \{
+			case '\''A'\'':	/\* ↑ \*/
+				\*row = MAX\(\*row - cnt, 0\);1??0?
+1??+2m 31q0?
+%f+ 		}
+		if \(mv == '\''\['\''\) \{
+			mv = term_read\(0\);4??0?
+4??+2m 3220reg p OK vi.c:590:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:5902sc %? %@2132sc!0?
 ?0?
 %f+ 				vc_status\(0\);
 				vi_mod \|= 1;
@@ -150,7 +176,7 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 			default:
 				continue;
 			}1??0?
-1??+3m 21q0?
+1??+3m 41q0?
 %f+ 			case TK_ESC:
 				if \(vi_visual\) \{
 					vi_visual = 0;
@@ -161,7 +187,7 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 			default:
 				continue;
 			}2??0?
-2??m 2220reg p OK vi.c:2063:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.c:2063:a22sc %? %@2152sc!1q0?
 %f+ 			case TK_ESC:
 				if \(vi_visual\) \{
 					vi_visual = 0;
@@ -169,104 +195,159 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 					break;
 				}
 				continue;3??0?
-3??m 2220reg p OK vi.c:2063:a32sc %? %@2152sc!1q0?
+3??m 4220reg p OK vi.c:2063:a32sc %? %@2152sc!1q0?
 %f+ 				vc_status\(0\);
 				vi_mod \|= 1;
 				break;4??0?
-4??+3m 2220reg p OK vi.c:2063:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK vi.c:2063:a42sc %? %@2152sc!1q0?
 %f+ 			default:
 				continue;
 			}5??0?
-5??-7m 2220reg p OK vi.c:2063:a52sc %? %@2152sc!0?
+5??-7m 4220reg p OK vi.c:2063:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:20632sc %? %@2132sc!0?
-'\''1i 			if (vi_visual) {
-				vi_visual = 0;
-				vi_mod |= 1;
+?0?
+%f+ 				}
 			}
-??!219reg vi.c:585:m12sc %? %@2142sc!0?
-'\''2,#+6d??!219reg vi.c:2063:m22sc %? %@2142sc!p compat applied: src=visual.sh' > "$P2VIF".1
+		}
+		if \(vi_visual\)
+			vi_mod \|= 1;1??0?
+1??+3m 51q0?
+%f+ 		if \(vi_visual\)
+			vi_mod \|= 1;2??0?
+2??m 5220reg p OK vi.c:2130:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		if \(vi_visual\)$3??0?
+3??m 5220reg p OK vi.c:2130:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 				}
+			}
+		}4??0?
+4??+3m 5220reg p OK vi.c:2130:a42sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			vi_mod \|= 1;$5??0?
+5??-1m 5220reg p OK vi.c:2130:a52sc %? %@2152sc!fr 98fr 980?
+1;2;3;4;5??!219reg vi.c:21302sc %? %@2132sc!0?
+?0?
+%f+ 			vi_mod \|= 1;
+		term_record = 1;
+		if \(vi_mod & 1 \|\| xleft != oleft
+				\|\| \(vi_lnnum && orow != xrow && !\(vi_lnnum == 2\)\)1??0?
+1??m 61q0?
+;0fr.,$f+ ^			vi_mod \|= 1;$4??0?
+4??m 6220reg p OK vi.c:2131:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg vi.c:21312sc %? %@2132sc!0?
+'\''1i static int vi_vesc;			/* visual mode hidden by an escape sequence */
+??!219reg vi.c:49:m12sc %? %@2142sc!0?
+'\''2i 		vi_vesc = vi_visual;	/* hide the block until the sequence is known */
+		vi_visual = 0;
+??!219reg vi.c:583:m22sc %? %@2142sc!0?
+'\''3i 			if (mv == '\''A'\'' || mv == '\''B'\'' || mv == '\''C'\'' || mv == '\''D'\'') {
+				vi_visual = vi_vesc;	/* real arrow: keep it */
+				vi_vesc = 0;
+			}
+??!219reg vi.c:590:m32sc %? %@2142sc!0?
+'\''4,#+6d??!219reg vi.c:2063:m42sc %? %@2142sc!0?
+'\''5c 		if (vi_visual || vi_vesc) {
+			vi_vesc = 0;	/* one redraw takes the block off */
+??!219reg vi.c:2130:m52sc %? %@2142sc!0?
+'\''6i 		}
+??!219reg vi.c:2131:m62sc %? %@2142sc!p compat applied: src=visual.sh' > "$P2VIF".1
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI COMPAT post src=visual.sh ===
 === GATE 1 present tag 1000 probe vi.c ===
-static int vc_insert(int cmd);
+static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line 'b'=block */
 === END ===
 === GATE 2 present tag 1001 probe vi.c ===
-					vc_visual_op('u');
+static void vi_visual_attrib(char *s, int row)
 === END ===
 === GATE 3 present tag 1002 probe vi.c ===
-			case 'U':
+		vi_visual_attrib(s, row);
 === END ===
 === GATE 4 present tag 1003 probe vi.c ===
-				if (vi_visual == 'v' || vi_visual == 'V') {
-=== END ===
-=== GATE 5 present tag 1004 probe vi.c ===
-					vc_visual_op('d');
-=== END ===
-=== GATE 6 present tag 1005 probe vi.c ===
-				if (vi_visual && c != TK_CTL('w')) {
-=== END ===
-=== GATE 7 present tag 1006 probe vi.c ===
-				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
-=== END ===
-=== GATE 8 present tag 1007 probe vi.c ===
-				} else if (k == '~' || k == 'u' || k == 'U') {
-=== END ===
-=== GATE 9 present tag 1008 probe vi.c ===
-				} else if (k == 'v' || k == 'V' || k == 'b') {
-=== END ===
-=== GATE 10 present tag 1009 probe vi.c ===
-					vc_visual_op('~');
-=== END ===
-=== GATE 11 present tag 1010 probe vi.c ===
-				if (c == 'C')
-=== END ===
-=== GATE 12 present tag 1011 probe vi.c ===
-			case TK_ESC:
-=== END ===
-=== GATE 13 present tag 1012 probe vi.c ===
-			istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs, vs);
-=== END ===
-=== GATE 14 present tag 1013 probe vi.c ===
-			"\"%s\"%s%dL %d%% L%d C%d B%td %s",
-=== END ===
-=== GATE 15 present tag 1014 probe vi.c ===
-		if (vi_visual)
-=== END ===
-=== GATE 16 present tag 1015 probe vi.c ===
-			xoff, col, vs);
-=== END ===
-=== GATE 17 present tag 1016 probe vi.c ===
-		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",
-=== END ===
-=== GATE 18 present tag 1017 probe vi.c ===
-	char *vs = vi_visual == 'V' ? "-- VISUAL LINE -- " :
-=== END ===
-=== GATE 19 present tag 1018 probe vi.c ===
 	vi_visual_attrib(s, row);
 === END ===
+=== GATE 5 present tag 1004 probe vi.c ===
+	char *vs = vi_visual == 'V' ? "-- VISUAL LINE -- " :
+=== END ===
+=== GATE 6 present tag 1005 probe vi.c ===
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",
+=== END ===
+=== GATE 7 present tag 1006 probe vi.c ===
+			xoff, col, vs);
+=== END ===
+=== GATE 8 present tag 1007 probe vi.c ===
+			"\"%s\"%s%dL %d%% L%d C%d B%td %s",
+=== END ===
+=== GATE 9 present tag 1008 probe vi.c ===
+			istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs, vs);
+=== END ===
+=== GATE 10 present tag 1009 probe vi.c ===
+static int vc_insert(int cmd);
+=== END ===
+=== GATE 11 present tag 1010 probe vi.c ===
+					vc_visual_op('u');
+=== END ===
+=== GATE 12 present tag 1011 probe vi.c ===
+			case 'U':
+=== END ===
+=== GATE 13 present tag 1012 probe vi.c ===
+				if (vi_visual == 'v' || vi_visual == 'V') {
+=== END ===
+=== GATE 14 present tag 1013 probe vi.c ===
+					vc_visual_op('d');
+=== END ===
+=== GATE 15 present tag 1014 probe vi.c ===
+				if (vi_visual && c != TK_CTL('w')) {
+=== END ===
+=== GATE 16 present tag 1015 probe vi.c ===
+				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
+=== END ===
+=== GATE 17 present tag 1016 probe vi.c ===
+				} else if (k == '~' || k == 'u' || k == 'U') {
+=== END ===
+=== GATE 18 present tag 1017 probe vi.c ===
+				} else if (k == 'v' || k == 'V' || k == 'b') {
+=== END ===
+=== GATE 19 present tag 1018 probe vi.c ===
+					vc_visual_op('~');
+=== END ===
 === GATE 20 present tag 1019 probe vi.c ===
-		vi_visual_attrib(s, row);
+				if (c == 'C')
 === END ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -583,6 +583,10 @@
+@@ -47,6 +47,7 @@
+ static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line 'b'=block */
+ static int vi_vrow;			/* selection anchor row */
+ static int vi_voff;			/* selection anchor column */
++static int vi_vesc;			/* visual mode hidden by an escape sequence */
+ 
+ void *emalloc(size_t size)
+ {
+@@ -581,6 +582,8 @@
+ 	mv = term_read(0);
+ 	switch (mv) {
  	case '\033':	/* Arrow keys */
++		vi_vesc = vi_visual;	/* hide the block until the sequence is known */
++		vi_visual = 0;
  		mv = term_read(0);
  		if (mv == '\033') {
-+			if (vi_visual) {
-+				vi_visual = 0;
-+				vi_mod |= 1;
-+			}
  			term_dec()
- 			return -1;
+@@ -588,6 +591,10 @@
  		}
-@@ -2060,13 +2064,6 @@
+ 		if (mv == '[') {
+ 			mv = term_read(0);
++			if (mv == 'A' || mv == 'B' || mv == 'C' || mv == 'D') {
++				vi_visual = vi_vesc;	/* real arrow: keep it */
++				vi_vesc = 0;
++			}
+ 			switch (mv) {
+ 			case 'A':	/* ↑ */
+ 				*row = MAX(*row - cnt, 0);
+@@ -2060,13 +2067,6 @@
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -280,6 +361,18 @@ static int vc_insert(int cmd);
  			default:
  				continue;
  			}
+@@ -2127,8 +2127,10 @@
+ 				}
+ 			}
+ 		}
+-		if (vi_visual)
++		if (vi_visual || vi_vesc) {
++			vi_vesc = 0;	/* one redraw takes the block off */
+ 			vi_mod |= 1;
++		}
+ 		term_record = 1;
+ 		if (vi_mod & 1 || xleft != oleft
+ 				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
