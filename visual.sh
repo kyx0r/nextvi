@@ -1063,7 +1063,7 @@ static int vc_block_op(int cmd, int r1, int r2, int c_left, int c_right)
 			sbuf_chr(yb, '\''\n'\'')
 		}
 		sbuf_null(yb)
-		vi_regput(vi_ybuf, yb->s, 0);
+		vi_regput(vi_ybuf < 0 ? xdefreg : vi_ybuf, yb->s, 0);
 		free(yb->s);
 		if (cmd == '\''d'\'' || cmd == '\''c'\'') {
 			xrow = r1;
@@ -1391,7 +1391,7 @@ index 70157040..c0d2d3b9 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 76778809..fe967d61 100644
+index 76778809..63609a57 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1597,7 +1597,7 @@ index 76778809..fe967d61 100644
 +			sbuf_chr(yb, '\n')
 +		}
 +		sbuf_null(yb)
-+		vi_regput(vi_ybuf, yb->s, 0);
++		vi_regput(vi_ybuf < 0 ? xdefreg : vi_ybuf, yb->s, 0);
 +		free(yb->s);
 +		if (cmd == 'd' || cmd == 'c') {
 +			xrow = r1;
