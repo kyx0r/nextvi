@@ -621,8 +621,11 @@ p2v_deps() { awk -v s="$1" '$1 == s && NF > 1 { print $2 }' "$P2VITMP.edges"; }
 # Apply the list $1 of scripts, in order, and build what comes out: a patch that
 # applies and then will not compile is no more applied than one that missed a
 # hunk, and only a build says which. Output is dropped and the first failure -
-# a script or the build - is the result. -O0 because this builds once per order
-# tried and nothing here runs the binary. Meant to be run on a tree at HEAD,
+# a script or the build - is the result. The build's own output is not dropped:
+# a warning is the whole reason to compile a combination that will otherwise
+# never be looked at. It goes to stderr, since a caller reading the chains off
+# stdout is reading them out of the middle of this. -O0 because this builds once
+# per order tried and nothing here runs the binary. Meant to be run on a tree at HEAD,
 # which the caller restores.
 p2v_runlist() (
 	# a sourced shell may have set IFS to anything, and this splits on it
@@ -632,7 +635,7 @@ p2v_runlist() (
 	do
 		"./$p2v_s" >/dev/null 2>&1 || return 1
 	done
-	CFLAGS=-O0 ./cbuild.sh build >/dev/null 2>&1
+	CFLAGS=-O0 ./cbuild.sh build >&2
 )
 
 # What the caller has of their own and a run here must not carry off: the
