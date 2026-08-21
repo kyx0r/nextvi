@@ -44,6 +44,10 @@
  * runs a whole editing session through it, flags, EXINIT and all */
 int nextvi_main(int argc, char *argv[]);
 
+/* Drops -o's temporary twin, once out_redirect() has made one; a no-op
+ * before that. Called on the failure exits patch2vi itself notices. */
+static void out_cleanup(void);
+
 /* Initial capacity for sbufs holding one line-ish string; they grow. */
 #define SB_INIT 512
 
@@ -401,6 +405,7 @@ static void *ecalloc(size_t n, size_t sz)
 	void *p = calloc(n, sz);
 	if (!p) {
 		fprintf(stderr, "out of memory\n");
+		out_cleanup();
 		exit(1);
 	}
 	return p;
@@ -4307,6 +4312,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			if (strcmp(units[i].name, units[j].name) == 0) {
 				fprintf(stderr, "patch2vi: duplicate editor "
 					"buffer name \"%s\"\n", units[i].name);
+				out_cleanup();
 				exit(1);
 			}
 
@@ -8272,17 +8278,25 @@ static int parse_hand_args(char **args, int n)
 static const char *out_file;
 static char *out_tmp;
 
+/* The temporary twin's name is derived deterministically from the target's,
+ * so nothing has to keep it from piling up: a run that dies without notice
+ * (a signal, the editor's out-of-memory exits under -I) may leave
+ * <path>.p2v.tmp behind, and the next -o path run reopens it with "w" and
+ * truncates it away. What no run ever leaves is a half-built script under
+ * the target's own name - only out_commit() puts one there, atomically. */
 static void out_cleanup(void)
 {
-	if (out_tmp)
+	if (out_tmp) {
 		unlink(out_tmp);
+		free(out_tmp);
+		out_tmp = NULL;
+	}
 }
 
 static int out_redirect(const char *path)
 {
 	struct stat st;
 	out_tmp = str_fmt("%s.p2v.tmp", path);
-	atexit(out_cleanup);
 	fflush(stdout);
 	if (!freopen(out_tmp, "w", stdout)) {
 		perror(out_tmp);
@@ -8305,10 +8319,12 @@ static int out_commit(const char *path)
 {
 	if (fflush(stdout) || ferror(stdout)) {
 		perror(out_tmp);
+		out_cleanup();
 		return -1;
 	}
 	if (rename(out_tmp, path) < 0) {
 		perror(path);
+		out_cleanup();
 		return -1;
 	}
 	free(out_tmp);
