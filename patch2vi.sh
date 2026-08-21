@@ -109,9 +109,67 @@ p2v_snaptree() (
 	rm -f "$GIT_INDEX_FILE"
 )
 
-# The src= of every compat block $1 carries, one per line, in storage order.
+# A block records one src= field per origin, so its label is those fields in
+# storage order, joined by the space that separates them: no origin path may
+# hold one, here or in any parser a block passes through, which is what makes
+# the label safe to take apart again. A single-origin label is just the path.
+#
+# The label is otherwise kept whole - it names the stack a block was derived
+# against, and two blocks belong together only when their whole stacks match.
+
+# The label of every compat block $1 carries, one per line, in storage order.
 p2v_compatsrc() {
-	sed -n 's/^=== PATCH2VI COMPAT .*src=\([^ ]*\).*/\1/p' "$1"
+	awk '/^=== PATCH2VI COMPAT /	{
+		lbl = ""
+		for (i = 1; i <= NF; i++)
+			if (substr($i, 1, 4) == "src=")
+				lbl = lbl (lbl == "" ? "" : " ") substr($i, 5)
+		print lbl
+	}' "$1"
+}
+
+# Run "$2..." once per origin of label $1, the origin appended, in stored
+# order; the first failure is the result. Split by hand rather than by word
+# splitting, which needs a space in IFS and a sourced shell may have any.
+p2v_eachorigin() {
+	p2v_lbl="$1"
+	shift
+	while [ -n "$p2v_lbl" ]
+	do
+		p2v_one=${p2v_lbl%% *}
+		case $p2v_lbl in
+		*\ *)	p2v_lbl=${p2v_lbl#* } ;;
+		*)	p2v_lbl= ;;
+		esac
+		[ -n "$p2v_one" ] || continue
+		"$@" "$p2v_one" || return $?
+	done
+}
+
+# Run one origin script, for p2v_eachorigin.
+p2v_runorigin() { "./$1"; }
+
+# Derive a compat block for label $1 onto target $2 from patch $3: one -co per
+# origin, in stored order, since that is the order its probes were derived in.
+# The first carries the -o, exactly as a single origin always did.
+p2v_co() {
+	p2v_rest="$1"		# saved before set -- clears the positionals
+	p2v_tgt="$2"
+	p2v_pat="$3"
+	set --
+	p2v_flag=-oco
+	while [ -n "$p2v_rest" ]
+	do
+		p2v_one=${p2v_rest%% *}
+		case $p2v_rest in
+		*\ *)	p2v_rest=${p2v_rest#* } ;;
+		*)	p2v_rest= ;;
+		esac
+		[ -n "$p2v_one" ] || continue
+		set -- "$@" "$p2v_flag" "$p2v_one"
+		p2v_flag=-co
+	done
+	p2v_tty $P2VI "$@" "$p2v_tgt" "$p2v_pat"
 }
 
 # $1 without the stored compat blocks whose src= is $2, on stdout; with no $2,
@@ -121,11 +179,12 @@ p2v_compatsrc() {
 p2v_stripcompat() {
 	awk -v src="$2" '
 	/^=== PATCH2VI COMPAT /	{
-		if (src == "")
+		lbl = ""
+		for (i = 1; i <= NF; i++)
+			if (substr($i, 1, 4) == "src=")
+				lbl = lbl (lbl == "" ? "" : " ") substr($i, 5)
+		if (src == "" || lbl == src)
 			skip = 1
-		else for (i = 1; i <= NF; i++)
-			if ($i == "src=" src)
-				skip = 1
 	}
 	!skip			{ print }
 	/^=== END COMPAT ===$/	{ skip = 0 }
@@ -143,7 +202,7 @@ p2v_splitcompat() {
 		src = ""
 		for (i = 1; i <= NF; i++)
 			if (substr($i, 1, 4) == "src=")
-				src = substr($i, 5)
+				src = src (src == "" ? "" : " ") substr($i, 5)
 		out = dir "/" n ".patch"
 		printf "" > out
 		print n " " src
@@ -271,8 +330,9 @@ regen() {
 }
 
 # The -co pass of rebuild: every saved block back onto the script, in storage
-# order, one -co call each (a block is one diff, and one call stores one block,
-# so the count comes out as it went in). Run with the tree at HEAD.
+# order, one call each (a block is one diff, and one call stores one block, so
+# the count comes out as it went in; a block gated on a stack of origins takes
+# one -co per origin within that one call). Run with the tree at HEAD.
 #
 # Deriving a block replays the origin, and a replay writes the sections it edits
 # out, so the tree does not come back clean on its own. The sources go back to
@@ -301,7 +361,7 @@ p2v_reapply() {
 			continue
 		fi
 		printf "%s\n" "COMPAT: $2 <- $origin (block $n)" >&2
-		if ! p2v_tty $P2VI -oco "$origin" "$2" "$1/$n.patch"; then
+		if ! p2v_co "$origin" "$2" "$1/$n.patch"; then
 			p2v_st2=1
 			break
 		fi
@@ -530,10 +590,17 @@ recompat() (
 	fi
 	export P2VI_EX="${P2VI_EX:-led 0:q}"	# -d and -co imply the editor; led keeps it from drawing
 	work="$P2VITMP.recompat"
-	for origin in $list
+	# A label of a block derived against a stack of origins holds spaces, so
+	# the labels are read a line at a time rather than word split - and off
+	# their own descriptor, since the loop body runs whole scripts. IFS is
+	# left alone: the helpers this calls do split on it.
+	printf "%s\n" "$list" > "$P2VITMP.labels"
+	exec 3< "$P2VITMP.labels"
+	while read -r origin <&3
 	do
-		p2v_ours "$origin"
-		n=$(p2v_compatsrc "$target" | grep -c "^$origin$") || n=0
+		[ -n "$origin" ] || continue
+		p2v_eachorigin "$origin" p2v_ours
+		n=$(p2v_compatsrc "$target" | grep -cxF "$origin") || n=0
 		if [ "$n" -eq 0 ]; then
 			printf "%s\n" "NO BLOCKS: $target from $origin" >&2
 			continue
@@ -541,16 +608,18 @@ recompat() (
 		rm -rf "$work"
 		mkdir -p "$work"
 		p2v_restore
-		# A: the collision on its own
+		# A: the collision on its own. Every origin of the label runs,
+		# in stored order: the collision a stacked block resolves is
+		# the one the whole stack makes, and only that tree shows it.
 		p2v_stripcompat "$target" "$origin" > "$work/bare.sh"
 		chmod +x "$work/bare.sh"
 		p2v_tty $P2VI -od "$work/bare.sh"
-		"./$origin"
+		p2v_eachorigin "$origin" p2v_runorigin
 		"$work/bare.sh"
 		a=$(p2v_snaptree)
 		p2v_restore
 		# B: the collision with every block from this origin resolving it
-		"./$origin"
+		p2v_eachorigin "$origin" p2v_runorigin
 		"./$target"
 		b=$(p2v_snaptree)
 		git diff-tree -p "$a" "$b" > "$work/compat.patch"
@@ -563,10 +632,12 @@ recompat() (
 		cp "$work/new.sh" "$target"
 		chmod +x "$target"		# written by awk, not by -o
 		p2v_tty $P2VI -od "$target"	# re-emit without the old blocks
-		p2v_tty $P2VI -oco "$origin" "$target" "$work/compat.patch"
+		p2v_co "$origin" "$target" "$work/compat.patch"
 		p2v_restore
 		printf "%s\n" "COLLAPSED: $target <- $origin, $n blocks into 1"
 	done
+	exec 3<&-
+	rm -f "$P2VITMP.labels"
 	rm -rf "$work"
 )
 
