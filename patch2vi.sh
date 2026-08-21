@@ -102,6 +102,15 @@ p2v_restore() {
 	p2v_dropnew "$new"
 }
 
+# p2v_restore with the scripts in scope as well, sparing $1 alone: a patch may
+# edit a .sh of its own - cbuild.sh, say - and a run that leaves one behind
+# hands the next caller a dirty tree, which rebuild now reads as a body.
+p2v_restore_but() {
+	new=$(p2v_newfiles | grep -v '^compat/' || true)
+	git checkout -- . ":!$1" ':!*.patch' ':!compat' >/dev/null 2>&1
+	p2v_dropnew "$new"
+}
+
 # Write the working tree's sources to a tree object, the index left alone.
 # Snapshots taken this way diff with git diff-tree, so files a run adds or
 # removes come out right, unlike a diff of two copied directories.
@@ -369,13 +378,24 @@ p2v_reapply() {
 			continue
 		fi
 		printf "%s\n" "COMPAT: $2 <- $origin (block $n)" >&2
-		if ! p2v_co "$origin" "$2" "$1/$n.patch"; then
+		# The stored diff goes back as a script, not as a diff: -co
+		# matches a pre-applied diff's image exactly, context and all,
+		# and an origin that drifted under context the block only
+		# borrowed then kills a block that still applies perfectly well.
+		# A generated script's anchors search for their text instead, so
+		# the same drift is absorbed and what -co stores is the diff of
+		# where the block actually landed.
+		$P2VI -r "$1/$n.patch" > "$1/$n.sh"
+		chmod +x "$1/$n.sh"
+		if ! p2v_co "$origin" "$2" "$1/$n.sh"; then
 			p2v_st2=1
 			break
 		fi
 	done
 	exec 3<&-
-	p2v_git_src checkout >/dev/null 2>&1
+	# the scripts are in scope too, a replayed patch may edit one; the
+	# target is not, it is what this pass is rewriting
+	git checkout -- . ":!$2" ':!*.patch' ':!compat' >/dev/null 2>&1
 	p2v_newfiles | sort > "$1/post"
 	left=$(comm -13 "$1/pre" "$1/post")
 	[ -n "$left" ] && printf '%s\n' $left | xargs rm -f
@@ -394,15 +414,18 @@ p2v_reapply() {
 # this possible: it comes back out as the patch its author handed in.
 #
 # Only the diffs survive, not the blocks' own delta customizations, as with
-# recompat. A stored diff whose pre-image the new base no longer has is a hard
-# error from -co, and then the script is put back the way it was: resolve that
-# collision by hand and hand the result to -co instead.
+# recompat. A block that will not replay at all is a hard error, and then the
+# script is put back the way it was: resolve that collision by hand and hand
+# the result to -co instead.
 #
-# The tree must be clean, and this runs the target itself to dirty it: the base
-# regen writes is read out of the working tree, so a clean tree would give an
-# empty base and an unrelated edit would be baked into the patch as one of the
-# script's own - both silently. On a clean tree no gate finds its origin, so
-# what the run leaves is the base and nothing but. The tree goes back afterwards.
+# The working tree is the script's body, the same way it is for regen, and both
+# states it can be in mean something. A clean tree has no body to offer, so the
+# script supplies its own: it is run, read back, and put back afterwards, and
+# what comes out is the same script re-aimed at today's sources. A dirty tree is
+# taken as it stands - the caller's edits become the new body - and is left
+# alone at the end. Only the target's own effect is expected there: an origin
+# applied to the tree, or a block that fired in it, lands in the base patch as
+# if the script had made it.
 # Usage: rebuild target.sh
 rebuild() (
 	if [ -z "$1" ]; then
@@ -411,23 +434,24 @@ rebuild() (
 	fi
 	target="$1"
 	p2v_ours "$target" || return 1
-	# untracked files count: regen stages everything before it diffs
-	if [ -n "$(git status --porcelain)" ]; then
-		printf "%s\n" "DIRTY TREE: commit or stash first, $target kept" >&2
-		return 1
-	fi
 	export P2VI_EX="${P2VI_EX:-led 0:q}"	# -d and -co imply the editor; led keeps it from drawing
 	work="$P2VITMP.rebuild"
 	rm -rf "$work"
 	mkdir -p "$work"
 	cp "$target" "$work/orig.sh"
-	# the tree regen reads the base out of; a target that cannot even apply
-	# to a clean tree would hand it a partial one
-	if ! "./$target"; then
-		p2v_restore
-		rm -rf "$work"
-		printf "%s\n" "FAILED: $target does not apply, kept as it was" >&2
-		return 1
+	# untracked files count: regen stages everything before it diffs
+	own=
+	if [ -z "$(git status --porcelain)" ]; then
+		# the tree regen reads the base out of, made here and dropped
+		# here; a target that cannot even apply to a clean tree would
+		# hand it a partial one
+		own=1
+		if ! "./$target"; then
+			p2v_restore_but "$target"
+			rm -rf "$work"
+			printf "%s\n" "FAILED: $target does not apply, kept as it was" >&2
+			return 1
+		fi
 	fi
 	p2v_splitcompat "$target" "$work" > "$work/blocks"
 	p2v_stripcompat "$target" > "$work/bare.sh"
@@ -436,7 +460,8 @@ rebuild() (
 	regen "$target"			# base only: the blocks are off
 	p2v_stashed_run "$target" p2v_reapply "$work" "$target"
 	st=$?
-	p2v_restore			# the run's own leavings, not the caller's
+	# only a body this run made itself goes back; the caller's is theirs
+	[ -n "$own" ] && p2v_restore_but "$target"
 	if [ "$st" -ne 0 ]; then
 		cp "$work/orig.sh" "$target"
 		chmod +x "$target"
@@ -845,9 +870,8 @@ rebuild_all() (
 		fi
 		# The tree was clean when this started and the target is
 		# committed by now, so anything still modified is the run's own
-		# and goes back whole. rebuild cannot do this itself: it puts
-		# back the sources only, and a script whose patch edits another
-		# .sh - cbuild.sh, say - writes outside that scope.
+		# and goes back whole. rebuild reads a tree it did not dirty as
+		# the next script's body, so nothing may be left lying here.
 		git checkout -- .
 		p2v_dropnew "$(p2v_newfiles)"
 	done
