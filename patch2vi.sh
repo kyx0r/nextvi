@@ -19,6 +19,7 @@ Then call:          patch2vi_wrapper -d input.patch [output.sh]
                     discard_compats [file.sh]
                     run_patches [1]
                     regen_all [1]
+                    rebuild_all [1]
 
 Requires the ./patch2vi binary in the current directory.
 EOF
@@ -793,6 +794,49 @@ regen_all() (
 		fi
 	done
 	if [ -n "$1" ] && [ $n -gt 0 ]; then
+		git reset HEAD~$n
+		git add .
+	fi
+)
+
+# rebuild over every generated script, each one committed. Deeper still than
+# regen_all: that re-emits a body out of the diff a script already carries and
+# rides its compat blocks along as stored, this re-derives every block's gates
+# against the base it has just regenerated.
+#
+# One script at a time with a commit between, because rebuild wants a clean tree
+# and the script it just rewrote has to leave the working tree before the next
+# one is measured. A script rebuild refuses is left as it was and stops the run
+# there, rather than leaving half the set rebuilt and half of it committed.
+# With arg 1, do not stop in the editor or let it draw, and squash all commits
+# back into a single staged change at the end.
+# Usage: rebuild_all [1]
+rebuild_all() (
+	n=0
+	if [ -n "$(git status --porcelain)" ]; then
+		echo "DIRTY TREE: commit or stash first" >&2
+		return 1
+	fi
+	if [ -n "$1" ]; then
+		export P2VI_EX="${P2VI_EX:-led 0:q}"
+	fi
+	for s in $(p2v_scripts)
+	do
+		rebuild "$s" || return 1
+		git add "$s"
+		if ! git diff --cached --quiet; then
+			git commit -m "$s: rebuild" || return 1
+			n=$((n+1))
+		fi
+		# The tree was clean when this started and the target is
+		# committed by now, so anything still modified is the run's own
+		# and goes back whole. rebuild cannot do this itself: it puts
+		# back the sources only, and a script whose patch edits another
+		# .sh - cbuild.sh, say - writes outside that scope.
+		git checkout -- .
+		p2v_dropnew "$(p2v_newfiles)"
+	done
+	if [ -n "$1" ] && [ "$n" -gt 0 ]; then
 		git reset HEAD~$n
 		git add .
 	fi
