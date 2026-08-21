@@ -14,6 +14,7 @@ Then call:          patch2vi_wrapper -d input.patch [output.sh]
                     extract_compats [file.sh]
                     view_patch file.sh
                     compat_order [README]
+                    compat_check
                     recompat target.sh [origin.sh]
                     reindex [file.sh | 1]
                     discard_deltas [file.sh]
@@ -687,41 +688,13 @@ p2v_search() (
 	return 1
 )
 
-# The compat order: for every script that carries compat blocks, the scripts it
-# needs and itself, in an order that applies.
-#
-# A block only applies to a tree its origin has already patched, so every src=
-# is an edge origin -> script, and a script's chain is that script with every
-# origin it depends on, directly or through an origin's own blocks. Scripts no
-# block names are left out: nothing orders them and they apply whenever.
-#
-# The edges are not the whole story. Two scripts with no block between them can
-# still only go one way round - one of them absorbs the other's drift and not
-# the reverse - and no stored block says so. So the order is not derived, it is
-# found: p2v_search walks the orders the edges allow and runs every one it
-# considers, and what comes out really applied, whole, on a tree at HEAD.
-# Applying is not enough on its own either - two orders can both apply and only
-# one of them compile - so that chain, and only that chain, is built, and a
-# chain the build turns down sends the search back for the next order that
-# applies. Nothing the search threw away is built: an order it ruled out has a
-# script in it that would not apply, and the tree that leaves behind teaches
-# nothing. Candidates are tried in edge order, so the order the blocks ask for
-# is the one that comes out wherever it works. The build that settles a chain
-# keeps its output, warnings and all, on stderr, the chains themselves being
-# stdout; a build the next order replaces reports only that it failed, its
-# errors being about an order nobody will run. A chain no order applies in, or
-# none whose orders build, is reported and left out.
-#
-# This runs the scripts, so it wants a tree with nothing of its own in it; the
-# tree is put back at HEAD afterwards. Each chain is printed as the shell
-# command that runs it - the scripts joined by &&, one chain to a line however
-# long it runs - and is meant to be copied out and run as it stands.
-#
-# With no argument the chains go to stdout. With one, that file - the README -
-# is rewritten with them as its "Compat order" section, replacing the one
-# already there, immediately before the EXINIT setup section.
-# Usage: compat_order [README]
-compat_order() (
+# What a run of searches needs standing before the first script is run: the
+# caller's own work put aside, a source tree with nothing else of theirs in it,
+# and the edge list the walks read. $1 is the file a listing is written to,
+# spared along with the rest. Nothing is set up and nonzero comes back when the
+# tree is dirty.
+# Usage: p2v_search_begin [README]
+p2v_search_begin() (
 	IFS=$P2VIFS
 	p2v_keepsh "$1"
 	# The sources alone are the tree this measures: they are what a run
@@ -749,70 +722,136 @@ compat_order() (
 			printf "%s %s\n" "$s" "$d"
 		done
 	done > "$P2VITMP.edges"
+)
+
+# What p2v_search_begin and the searches after it left behind, dropped.
+p2v_search_end() {
+	rm -rf "$P2VITMP.keep"
+	rm -f "$P2VITMP.edges" "$P2VITMP.skip" "$P2VITMP.build"
+}
+
+# The closure of $1's origins with $1 itself, an origin ahead of what names it
+# and $1 last of all: the candidates a search is given, in the order the edges
+# ask for.
+p2v_closure() {
+	awk -v target="$1" '
+	function walk(s, i) {
+		if (s in seen)
+			return
+		seen[s] = 1
+		for (i = 1; i <= ndep[s]; i++)
+			walk(dep[s, i])
+		print s
+	}
+	NF > 1 && !(($1 SUBSEP $2) in edge) {
+		edge[$1 SUBSEP $2] = 1
+		dep[$1, ++ndep[$1]] = $2
+	}
+	END { walk(target) }
+	' "$P2VITMP.edges"
+}
+
+# The order the candidates $1 apply and build in, printed as the shell command
+# that runs them - the scripts joined by &&, one chain to a line however long it
+# runs - and meant to be copied out and run as it stands.
+#
+# p2v_search walks the orders the edges allow and runs every one it considers,
+# so what comes out really applied, whole, on a tree at HEAD. Applying is not
+# enough on its own - two orders can both apply and only one of them compile -
+# so that chain, and only that chain, is built, and a chain the build turns down
+# sends the search back for the next order that applies. Nothing the search
+# threw away is built: an order it ruled out has a script in it that would not
+# apply, and the tree that leaves behind teaches nothing.
+#
+# Nothing is printed and 1 comes back once no order is left, the errors of the
+# last build turned down going to stderr, that build being the one that explains
+# the refusal. The status lines are stderr as well, the chain itself being
+# stdout; so is the output of the build that settled the chain, warnings and
+# all, unless $2 asks for quiet - a caller with a hundred chains to get through
+# hears the same warnings out of every one of them.
+# Usage: p2v_chain candidates [quiet]
+p2v_chain() (
+	IFS=$P2VIFS
+	skip=0
+	while :
+	do
+		printf "%s\n" "$skip" > "$P2VITMP.skip"
+		chain=$(p2v_search "" "$1")
+		searched=$?
+		p2v_restore_sh
+		if [ "$searched" -ne 0 ]; then
+			# nothing was emitted for the last build, and it is the
+			# one that explains why no order is left
+			[ "$skip" -gt 0 ] && cat "$P2VITMP.build" >&2
+			return 1
+		fi
+		line=
+		for c in $chain
+		do
+			line="${line:+$line && }./$c"
+		done
+		# the chain as it will be printed, and only it, built: -O0, since
+		# nothing here runs the binary, and the warnings go by where they
+		# can be read against the chain that raised them
+		printf "%s\n" "BUILDING: $line" >&2
+		p2v_runlist "$chain"
+		CFLAGS=-O0 ./cbuild.sh build > "$P2VITMP.build" 2>&1
+		built=$?
+		p2v_restore_sh
+		if [ "$built" -eq 0 ]; then
+			[ -z "$2" ] && cat "$P2VITMP.build" >&2
+			printf "%s\n" "$line"
+			return 0
+		fi
+		printf "%s\n" "NO BUILD: $line, next order" >&2
+		skip=$((skip + 1))
+	done
+)
+
+# The compat order: for every script that carries compat blocks, the scripts it
+# needs and itself, in an order that applies.
+#
+# A block only applies to a tree its origin has already patched, so every src=
+# is an edge origin -> script, and a script's chain is that script with every
+# origin it depends on, directly or through an origin's own blocks. Scripts no
+# block names are left out: nothing orders them and they apply whenever.
+#
+# The edges are not the whole story. Two scripts with no block between them can
+# still only go one way round - one of them absorbs the other's drift and not
+# the reverse - and no stored block says so. So the order is not derived, it is
+# found: p2v_chain runs and builds the orders the edges allow and hands back the
+# first that holds whole. Candidates are tried in edge order, so the order the
+# blocks ask for is the one that comes out wherever it works. A chain no order
+# applies in, or none whose orders build, is reported and left out.
+#
+# A chain is the whole closure of a target's origins, so what it settles is the
+# one tree that has all of them in; the smaller trees the same blocks have to
+# work in are compat_check's.
+#
+# This runs the scripts, so it wants a tree with nothing of its own in it; the
+# tree is put back at HEAD afterwards.
+#
+# With no argument the chains go to stdout. With one, that file - the README -
+# is rewritten with them as its "Compat order" section, replacing the one
+# already there, immediately before the EXINIT setup section.
+# Usage: compat_order [README]
+compat_order() (
+	IFS=$P2VIFS
+	p2v_search_begin "$1" || return 1
 	: > "$P2VITMP.order"
 	st=0
 	for target in $(awk 'NF > 1 { print $1 }' "$P2VITMP.edges" | sort -u)
 	do
-		# the closure of the target's origins, an origin ahead of what
-		# names it: the candidates, in the order the edges ask for
-		cand=$(awk -v target="$target" '
-		function walk(s, i) {
-			if (s in seen)
-				return
-			seen[s] = 1
-			for (i = 1; i <= ndep[s]; i++)
-				walk(dep[s, i])
-			print s
-		}
-		NF > 1 && !(($1 SUBSEP $2) in edge) {
-			edge[$1 SUBSEP $2] = 1
-			dep[$1, ++ndep[$1]] = $2
-		}
-		END { walk(target) }
-		' "$P2VITMP.edges")
 		printf "%s\n" "CHECKING: $target" >&2
-		skip=0
-		while :
-		do
-			printf "%s\n" "$skip" > "$P2VITMP.skip"
-			chain=$(p2v_search "" "$cand")
-			searched=$?
-			p2v_restore_sh
-			[ "$searched" -eq 0 ] || { chain=; break; }
-			line=
-			for c in $chain
-			do
-				line="${line:+$line && }./$c"
-			done
-			# the chain as it will be printed, and only it, built:
-			# -O0, since nothing here runs the binary, and the
-			# warnings go by where they can be read against the
-			# chain that raised them
-			printf "%s\n" "BUILDING: $line" >&2
-			p2v_runlist "$chain"
-			CFLAGS=-O0 ./cbuild.sh build > "$P2VITMP.build" 2>&1
-			built=$?
-			p2v_restore_sh
-			if [ "$built" -eq 0 ]; then
-				cat "$P2VITMP.build" >&2
-				break
-			fi
-			printf "%s\n" "NO BUILD: $line, next order" >&2
-			skip=$((skip + 1))
-			chain=
-		done
-		if [ -z "$chain" ]; then
-			# nothing was emitted for the last build, and it is the
-			# one that explains why the target has no order at all
-			[ "$skip" -gt 0 ] && cat "$P2VITMP.build" >&2
+		line=$(p2v_chain "$(p2v_closure "$target")")
+		if [ -z "$line" ]; then
 			printf "%s\n" "NO ORDER: $target, left out" >&2
 			st=1
 			continue
 		fi
 		printf "%s\n" "$line" >> "$P2VITMP.order"
 	done
-	rm -rf "$P2VITMP.keep"
-	rm -f "$P2VITMP.edges" "$P2VITMP.skip" "$P2VITMP.build"
+	p2v_search_end
 	if [ -z "$1" ]; then
 		cat "$P2VITMP.order"
 		rm -f "$P2VITMP.order"
@@ -842,6 +881,83 @@ compat_order() (
 	rm -f "$P2VITMP.readme" "$P2VITMP.order"
 	printf "%s\n" "UPDATED: $1" >&2
 	return $st
+)
+
+# Every combination the candidate list $1 stands for, one to a line and in the
+# order of $1: its last name - the target, which the walk prints after the
+# origins it needs - is in all of them, the others are dropped in every mix. A
+# list of n names makes 2^(n-1) lines, the target on its own first and the whole
+# list last, so a search works its way out from the smallest tree.
+p2v_subsets() {
+	printf "%s\n" "$1" | awk '
+	{ a[++n] = $1 }
+	END {
+		for (m = 0; m < 2 ^ (n - 1); m++) {
+			s = ""
+			for (i = 1; i < n; i++)
+				if (int(m / 2 ^ (i - 1)) % 2)
+					s = s a[i] " "
+			print s a[n]
+		}
+	}
+	'
+}
+
+# Every tree a stored compat block can be asked to work in, tried.
+#
+# compat_order settles one chain per target, the closure of its origins all of
+# it in. But a block only fires when the origin it names is present, so a target
+# whose blocks name several origins has as many trees to survive as those
+# origins have combinations, and the closure is one of them: linewrap_v2.sh
+# carries four blocks, one derived against lsp.sh, visual.sh and splits.sh
+# together, and only that one is on the chain compat_order builds. The rest, and
+# every target's smaller trees down to the target on its own, are what this
+# walks - each combination searched and built exactly as a chain is.
+#
+# A combination no order applies in, or none whose orders build, is a real
+# failure: a tree somebody can put together does not take its patches. Those
+# combinations go to stdout as the shell command that runs them, and the count
+# to stderr; a combination that holds says nothing beyond its progress lines.
+# The order one came out in is not printed - compat_order is where orders are
+# read. Combinations reaching outside a target's closure are not tried: no
+# stored block ties those scripts together, so there is nothing there to check.
+#
+# Like compat_order this runs the scripts and wants a tree with nothing of its
+# own in it. It builds once per combination, so it runs as long as the closures
+# are wide.
+# Usage: compat_check
+compat_check() (
+	IFS=$P2VIFS
+	p2v_search_begin || return 1
+	: > "$P2VITMP.bad"
+	n=0
+	for target in $(awk 'NF > 1 { print $1 }' "$P2VITMP.edges" | sort -u)
+	do
+		p2v_subsets "$(p2v_closure "$target")" > "$P2VITMP.subsets"
+		combos=$(wc -l < "$P2VITMP.subsets" | tr -d ' ')
+		printf "%s\n" "CHECKING: $target, $combos combinations" >&2
+		# a combination at a time off fd 3, since the body runs whole
+		# scripts, which own stdin
+		while read -r sub <&3
+		do
+			n=$((n + 1))
+			p2v_chain "$sub" quiet > /dev/null && continue
+			line=
+			for c in $sub
+			do
+				line="${line:+$line && }./$c"
+			done
+			printf "%s\n" "FAILED: $line" >&2
+			printf "%s\n" "$line" >> "$P2VITMP.bad"
+		done 3< "$P2VITMP.subsets"
+	done
+	rm -f "$P2VITMP.subsets"
+	p2v_search_end
+	bad=$(wc -l < "$P2VITMP.bad" | tr -d ' ')
+	printf "%s\n" "CHECKED: $n combinations, $bad failed" >&2
+	cat "$P2VITMP.bad"
+	rm -f "$P2VITMP.bad"
+	[ "$bad" -eq 0 ]
 )
 
 # Collapse the compat blocks a script carries from one origin into a single one.
