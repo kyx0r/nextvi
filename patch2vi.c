@@ -6,7 +6,8 @@
  *        patch2vi -e script.sh
  *        patch2vi [-ari]I [nextvi-opts...]
  *        patch2vi [-ario]E script.sh [nextvi-opts...]
- *        patch2vi [-o]co origin.sh target.sh [compat.diff|compat.sh]
+ *        patch2vi [-o]co origin.sh [-co origin2.sh...] target.sh \
+ *                 [compat.diff|compat.sh]
  *
  * The script applies the patch in raw ex mode (:vis 3). The command
  * separator and the escape byte are picked per patch via :sc! so that
@@ -29,10 +30,11 @@
  *     the input the converter normally reads;
  *   - updates a script (-E): replays it, hands the tree it leaves over to
  *     the user and re-emits it through that same diff pass;
- *   - replays two scripts (-co) to derive a compatibility patch, applied
- *     after the target and gated on the origin's own change; an optional
- *     third argument (diff or script) pre-applies a known compat patch that
- *     the session then continues from.
+ *   - replays two or more scripts (-co) to derive a compatibility patch,
+ *     applied after the target and gated on the origins' own changes - one
+ *     -co per origin, and the block runs only where all of them landed; an
+ *     optional third argument (diff or script) pre-applies a known compat
+ *     patch that the session then continues from.
  * No session ever writes a buffer back; quitting is what emits, to stdout or
  * (-o) atomically onto a named file.
  */
@@ -217,6 +219,19 @@ static void sb_lines(sbuf *fp, char **v, int n)
  * cluster would be a cheap way to fire the whole gate. Below GATE_CLUSTER*2
  * probes there is only one cluster and the gate is the plain AND it always was.
  *
+ * Several origins (-co repeated) make one gate over all of their landings: the
+ * block is the fix for their *combination*, so it must run only where every one
+ * of them is present. Each origin is derived on its own - its own pre/post
+ * snapshot pair, its own per-file round-robin, its own GATE_MAXPROBES budget -
+ * and the probes carry the origin they came from. The cluster cut is then
+ * transposed: a cluster takes a share of every origin's probes, so answering
+ * one cluster in full means every origin landed. That keeps the two axes
+ * independent - AND across origins is the gate's meaning, OR across clusters is
+ * its tolerance for a noisy tree - where a flat cut over the concatenated
+ * probes would let a cluster sit wholly inside one origin and fire the block on
+ * that origin alone. Cluster size grows to hold one probe per origin, and the
+ * cluster count can never exceed the thinnest origin's probe count.
+ *
  * Clusters cost no sensor: they are a shape of the ??-expression over tags the
  * sensors already recorded, so they are derived from probe count and order at
  * emit time and nothing about them is stored.
@@ -226,8 +241,8 @@ static void sb_lines(sbuf *fp, char **v, int n)
  * the origin's removed lines gone" - several independent pieces of evidence,
  * each with cluster-wide redundancy. Same two properties, mirrored. */
 #define GATE_MAXLINES 8   /* longest probe window: locality beats length */
-#define GATE_MAXPROBES 20 /* probes one derivation takes; storage is unbounded */
-#define GATE_CLUSTER 5    /* probes ANDed within one cluster */
+#define GATE_MAXPROBES 20 /* probes one origin gives; storage is unbounded */
+#define GATE_CLUSTER 5    /* probes ANDed within one cluster, per origin */
 #define GATE_MAXCLUST 4   /* clusters ORed across one gate */
 
 /* ?? tags a compat block's gate holds while its groups regenerate (shared
@@ -242,7 +257,12 @@ static int compat_capturing;
  * the wrong text for a block derived on top of it. */
 static int compat_building;
 static int compat_mode;			/* -co: derive a post-only compat patch */
-static const char *compat_origin;	/* the script it is derived against */
+/* The scripts it is derived against, in replay order: -co repeats, one per
+ * origin, and the block gates on all of their landings at once (see the
+ * GATE_CLUSTER comment). One origin is the ordinary case and behaves exactly
+ * as the single -co always did. */
+static const char **compat_origins;
+static int ncompat_origin, compat_origin_cap;
 /* -co third argument: an already written fix (diff or script) applied to the
  * post-origin+target tree before handover. It lands after the baseline
  * snapshot, so it is part of the derived compat patch. */
@@ -259,11 +279,19 @@ typedef struct {
 	int nlines;
 	int polarity;     /* GATE_ALWAYS / GATE_PRESENT / GATE_ABSENT */
 	int tag;          /* allocated ?? capture id */
+	int origin;       /* which -co origin's landing this probe reads, 0-based */
 	/* the file the probe is searched in, owned; NULL = the block's own first.
 	 * "Is the origin on this tree" is a property of the tree, so a block whose
 	 * own files show no trace probes one the origin did change. */
 	char *path;
 } gate_t;
+
+/* A probe that actually searches for something: an ALWAYS or empty gate is a
+ * placeholder the emitters skip. */
+static int gate_real(gate_t *g)
+{
+	return g->polarity != GATE_ALWAYS && g->nlines > 0;
+}
 
 /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
@@ -5125,7 +5153,7 @@ static int uf_index(file_patch_t **uf, int nuf, file_patch_t *fp)
 static void emit_gate_record(sbuf *out, gate_t *g, int gbuf)
 {
 	pat_spec_t ps;
-	if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
+	if (!gate_real(g))
 		return;
 	memset(&ps, 0, sizeof(ps));
 	ps.lines = g->lines;
@@ -5250,13 +5278,33 @@ typedef struct {
 
 /* How many clusters a gate of n real probes splits into: one per GATE_CLUSTER
  * probes, capped at GATE_MAXCLUST, never fewer than one - a derivation too
- * small to fill two clusters stays a single AND. */
-static int gate_nclusters(int n)
+ * small to fill two clusters stays a single AND.
+ *
+ * With nor origins a cluster must hold one probe of each before it holds a
+ * second of any, so the divisor grows to nor and the count can never exceed
+ * minnp, the thinnest origin's probe count: an origin that ran out would leave
+ * a cluster it is not named in, and that cluster would fire without it. For one
+ * origin minnp is n and both terms fall away. */
+static int gate_nclusters(int n, int nor, int minnp)
 {
-	int ncl = n / GATE_CLUSTER;
+	int ncl = n / MAX(GATE_CLUSTER, nor);
 	if (ncl > GATE_MAXCLUST)
 		ncl = GATE_MAXCLUST;
+	if (ncl > minnp)
+		ncl = minnp;
 	return ncl > 0 ? ncl : 1;
+}
+
+/* Index of origin o's next unemitted real probe, -1 when it has none left;
+ * pos[o] walks s->gates forward, so each origin keeps its derivation order. */
+static int gate_next(section_t *s, int o, int *pos)
+{
+	while (pos[o] < s->ngates) {
+		gate_t *g = &s->gates[pos[o]++];
+		if (gate_real(g) && g->origin == o)
+			return pos[o] - 1;
+	}
+	return -1;
 }
 
 /* A section's combined gate expression: "tag1,tag2;tag3,tag4??" (present) or
@@ -5269,31 +5317,45 @@ static int gate_nclusters(int n)
  * decides the "!". */
 static void emit_gate_expr(sbuf *out, section_t *s)
 {
-	int sizes[GATE_MAXCLUST];
-	int present = 1, real = 0, ncl, ci = 0, k = 0;
-	for (int j = 0; j < s->ngates; j++)
-		if (s->gates[j].polarity != GATE_ALWAYS &&
-				s->gates[j].nlines > 0)
+	int present = 1, real = 0, nor = 1, minnp, ncl, ci, k, o, j;
+	int *np, *pos;
+	for (j = 0; j < s->ngates; j++)
+		if (gate_real(&s->gates[j])) {
 			real++;
+			if (s->gates[j].origin + 1 > nor)
+				nor = s->gates[j].origin + 1;
+		}
 	if (!real) {
 		sb_str(out, "? ");
 		return;
 	}
-	ncl = gate_nclusters(real);
-	for (int j = 0; j < ncl; j++)
-		sizes[j] = real / ncl + (j < real % ncl);
-	for (int j = 0; j < s->ngates; j++) {
-		gate_t *g = &s->gates[j];
-		if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
-			continue;
-		if (k == sizes[ci] && ci + 1 < ncl) {
-			ci++;
-			k = 0;
+	/* how many probes each origin has, and where its next one sits */
+	np = ecalloc(2 * nor, sizeof(*np));
+	pos = np + nor;
+	minnp = real;
+	for (j = 0; j < s->ngates; j++)
+		if (gate_real(&s->gates[j]))
+			np[s->gates[j].origin]++;
+	for (o = 0; o < nor; o++)
+		if (np[o] < minnp)
+			minnp = np[o];
+	ncl = gate_nclusters(real, nor, minnp);
+	/* Each cluster takes a balanced share of every origin's probes, so the
+	 * ',' AND inside it spans the origins and the ';' OR between clusters
+	 * only ever trades redundancy, never a term of that AND. */
+	for (ci = 0; ci < ncl; ci++) {
+		k = 0;
+		for (o = 0; o < nor; o++) {
+			int take = np[o] / ncl + (ci < np[o] % ncl);
+			while (take-- > 0 && (j = gate_next(s, o, pos)) >= 0) {
+				sb_printf(out, "%s%d", k ? "," : ci ? ";" : "",
+					  s->gates[j].tag);
+				present = s->gates[j].polarity == GATE_PRESENT;
+				k++;
+			}
 		}
-		sb_printf(out, "%s%d", k ? "," : ci ? ";" : "", g->tag);
-		present = g->polarity == GATE_PRESENT;
-		k++;
 	}
+	free(np);
 	sb_printf(out, "??%s ", present ? "" : "!");
 }
 
@@ -5302,7 +5364,7 @@ static void emit_gate_expr(sbuf *out, section_t *s)
 static int section_has_gate(section_t *s)
 {
 	for (int j = 0; j < s->ngates; j++)
-		if (s->gates[j].polarity != GATE_ALWAYS && s->gates[j].nlines > 0)
+		if (gate_real(&s->gates[j]))
 			return 1;
 	return 0;
 }
@@ -5416,7 +5478,7 @@ static void emit_driver_sensors(sbuf *out, section_t *s, file_patch_t **uf,
 	for (int j = 0; j < s->ngates; j++) {
 		gate_t *g = &s->gates[j];
 		int gb;
-		if (g->polarity == GATE_ALWAYS || g->nlines <= 0)
+		if (!gate_real(g))
 			continue;
 		/* a cross-file probe names its own file; otherwise the block's */
 		gb = g->path ? uf_index_path(uf, nuf, g->path)
@@ -5720,19 +5782,32 @@ static void emit_compat_storage(void)
 {
 	for (int c = 0; c < ncompat; c++) {
 		compat_block_t *cb = &compat_blocks[c];
+		int nor = 1;
 		printf("=== PATCH2VI COMPAT post src=%s ===\n",
 		       cb->origin ? cb->origin : "");
+		for (int j = 0; j < cb->ngates; j++)
+			if (cb->gates[j].origin + 1 > nor)
+				nor = cb->gates[j].origin + 1;
 		for (int j = 0; j < cb->ngates; j++) {
 			gate_t *g = &cb->gates[j];
 			/* a cross-file probe records the file it searches; a
-			 * plain one has none and reads the block's own file */
+			 * plain one has none and reads the block's own file.
+			 * The origin index is written only when there is more
+			 * than one origin to tell apart, so a single-origin
+			 * block stores exactly the bytes it always did. */
+			char ob[32];
+			ob[0] = '\0';
+			if (nor > 1)
+				snprintf(ob, sizeof(ob), " origin %d",
+					 g->origin);
 			if (g->path)
-				printf("=== GATE %d %s tag %d probe %s ===\n",
+				printf("=== GATE %d %s tag %d%s probe %s ===\n",
 				       j + 1, gate_polarity_word(g->polarity),
-				       g->tag, g->path);
+				       g->tag, ob, g->path);
 			else
-				printf("=== GATE %d %s tag %d ===\n", j + 1,
-				       gate_polarity_word(g->polarity), g->tag);
+				printf("=== GATE %d %s tag %d%s ===\n", j + 1,
+				       gate_polarity_word(g->polarity), g->tag,
+				       ob);
 			for (int k = 0; k < g->nlines; k++)
 				printf("%s\n", g->lines[k]);
 			printf("%s\n", end_tag_wr);
@@ -6478,12 +6553,18 @@ typedef struct { char *path, *text; } snap_t;
 typedef struct { snap_t *v; int n, cap; } snaps_t;
 static snaps_t compat_base;
 
-/* Post-origin, pre-target text of each buffer the origin opened. This - not the
- * baseline - is what a gate probe must name: every sensor runs before any body
- * writes, so the text a gate sees at run time is the tree with the origin
+/* Post-origin, pre-target text of each buffer the origins opened, one snapshot
+ * per origin: compat_xs[k] is the tree with origins 0..k replayed. This - not
+ * the baseline - is what a gate probe must name: every sensor runs before any
+ * body writes, so the text a gate sees at run time is the tree with the origins
  * applied and the target not yet, and a probe read off the baseline could name
- * a line the target rewrote, which never exists when the sensor looks. */
-static snaps_t compat_x1;
+ * a line the target rewrote, which never exists when the sensor looks.
+ *
+ * One snapshot per origin, rather than one for all of them, is what makes a
+ * probe attributable: origin k's own landing is compat_xs[k-1] -> compat_xs[k]
+ * (origin 0's is disk -> compat_xs[0]), so each probe is derived from exactly
+ * one origin's change and the cluster cut can span them. */
+static snaps_t *compat_xs;
 
 /* Replace sn with one entry per named buffer in the live session. */
 static void snap_bufs(snaps_t *sn)
@@ -6508,6 +6589,19 @@ static char *snap_find(snaps_t *sn, const char *path)
 	for (int i = 0; i < sn->n; i++)
 		if (!strcmp(sn->v[i].path, path))
 			return sn->v[i].text;
+	return NULL;
+}
+
+/* The text of path after origins 0..k-1 ran, i.e. the "pre" side of origin k's
+ * landing: the previous origin's snapshot, or - for the first origin, and for
+ * any file no earlier origin opened - the file as it is on disk. */
+static char *snap_pre(const char *path, int k)
+{
+	for (int i = k - 1; i >= 0; i--) {
+		char *t = snap_find(&compat_xs[i], path);
+		if (t)
+			return t;
+	}
 	return NULL;
 }
 
@@ -6719,13 +6813,14 @@ static int fail_report(int sepb, int *prow)
  * returning at the end of its body. snap_blk names the block the compat
  * baseline is taken after (-1 = the last): the blocks past it are a pre-applied
  * resolution, which belongs to the derived patch and so must land above the
- * baseline. snap1_blk names the block the origin ends with, snapshotted into
- * compat_x1 for gate derivation. */
+ * baseline. snap1_blk[0..nsnap1) name the block each origin ends with,
+ * snapshotted into compat_xs[] for gate derivation. */
 static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
-			 int snap_blk, int snap1_blk)
+			 int snap_blk, int *snap1_blk, int nsnap1)
 {
 	char **paths = NULL, *body, *ln;
 	int npaths = 0, *bmap = NULL, nmap = 0, i, k, st = 0, sep, bad = 0;
+	int s1;
 	int fbuf = -1, frow = 0;
 	if (snap_blk < 0 || snap_blk >= nblks)
 		snap_blk = nblks - 1;
@@ -6806,9 +6901,12 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			for (k = 0; k < blks[i].nsects; k++)
 				bufs_free(--xbufcur);
 		}
-		/* the origin alone has run: the tree a gate probe will see */
-		if (compat_capturing && !xquit && i == snap1_blk)
-			snap_bufs(&compat_x1);
+		/* origins 0..s1 alone have run: the tree a gate probe of origin
+		 * s1 reads, and the "pre" side of origin s1+1's own landing */
+		if (compat_capturing && !xquit)
+			for (s1 = 0; s1 < nsnap1; s1++)
+				if (i == snap1_blk[s1])
+					snap_bufs(&compat_xs[s1]);
 		if (compat_capturing && !xquit && i == snap_blk) {
 			snap_bufs(&compat_base);
 			for (k = i + 1; k < nblks; k++)
@@ -6924,24 +7022,30 @@ static int parse_script(const char *path, p2vi_block_t **blks, int *nblks)
 /* Replay the scripts over the tree as it is on disk, in one session the caller
  * reads back: -co replays the origin and then the target, so the user is handed
  * the state both applied to. The scripts keep their own phase policy - the
- * shell header is the single source of truth. snap_sc/snap1_sc are the script
- * indices of the two snapshots, translated into the block indices
+ * shell header is the single source of truth. snap_sc is the script index of
+ * the baseline snapshot; the first nsnap1 scripts are the origins, each
+ * snapshotted as it ends. Both are translated into the block indices
  * replay_blocks() wants (a script contributes one block per $VI call). */
 static int replay_scripts(const char **paths, int nscripts, int handover,
-			  int snap_sc, int snap1_sc)
+			  int snap_sc, int nsnap1)
 {
 	p2vi_block_t *blks = NULL;
-	int nblks = 0, st = 0, i, snap_blk = -1, snap1_blk = -1;
+	int nblks = 0, st = 0, i, snap_blk = -1;
+	int *snap1_blk = nsnap1 > 0 ? emalloc(nsnap1 * sizeof(int)) : NULL;
+	for (i = 0; i < nsnap1; i++)
+		snap1_blk[i] = -1;
 	for (i = 0; i < nscripts && st >= 0; i++) {
 		st = parse_script(paths[i], &blks, &nblks);
 		if (i == snap_sc)
 			snap_blk = nblks - 1;
-		if (i == snap1_sc)
-			snap1_blk = nblks - 1;
+		if (i < nsnap1)
+			snap1_blk[i] = nblks - 1;
 	}
 	if (st >= 0)
-		st = replay_blocks(blks, nblks, handover, snap_blk, snap1_blk);
+		st = replay_blocks(blks, nblks, handover, snap_blk,
+				   snap1_blk, nsnap1);
 	free_blocks(blks, nblks);
+	free(snap1_blk);
 	return st;
 }
 
@@ -7747,18 +7851,26 @@ static void diff_span(char **base, int nbase, char **fin, int nfin,
  * buffer. GATE_MAXPROBES caps the total, and one gate expression carries one
  * polarity, so a set that disagrees with the first probe's is dropped whole
  * (derive_gates never mixes polarities within a file). Probes taken move into
- * g[]; the rest are freed. */
-static int merge_gates(gate_t *g, gate_t *fg, int *fgn, int nfg, int stride)
+ * g[]; the rest are freed.
+ *
+ * *pol carries that one polarity in and out, so the merges of a multi-origin
+ * derivation agree: the first origin to yield anything fixes it and the rest
+ * are held to it. The ??-expression negates as a whole and has no per-term '!',
+ * so a mixed gate is not expressible; an origin left with nothing by the rule
+ * falls through to the cross-file probe and then to a hard error, which is the
+ * honest outcome - dropping it silently would ship an AND missing a term. */
+static int merge_gates(gate_t *g, gate_t *fg, int *fgn, int nfg, int stride,
+		       int *pol)
 {
-	int n = 0, pol = GATE_ALWAYS;
-	for (int i = 0; i < nfg && pol == GATE_ALWAYS; i++)
+	int n = 0;
+	for (int i = 0; i < nfg && *pol == GATE_ALWAYS; i++)
 		if (fgn[i] > 0)
-			pol = fg[i * stride].polarity;
+			*pol = fg[i * stride].polarity;
 	for (int pass = 0; pass < stride && n < GATE_MAXPROBES; pass++)
 		for (int i = 0; i < nfg && n < GATE_MAXPROBES; i++) {
 			gate_t *s = &fg[i * stride + pass];
 			if (pass >= fgn[i] || s->nlines <= 0 ||
-					s->polarity != pol)
+					s->polarity != *pol)
 				continue;
 			g[n++] = *s;		/* ownership moves to g[] */
 			s->lines = NULL;
@@ -7777,21 +7889,29 @@ static int merge_gates(gate_t *g, gate_t *fg, int *fgn, int nfg, int stride)
  * order, and the derived gates carry the probe's path so the sensor selects
  * that buffer. As on the main path the sets are merged round-robin, so the
  * question spans the origin's landing rather than one file of it. */
-static int derive_gates_crossfile(gate_t *g)
+static int derive_gates_crossfile(gate_t *g, int k, int *pol)
 {
+	snaps_t *xs = &compat_xs[k];
 	gate_t *fg;
 	int *fgn, nfg = 0, n;
-	if (compat_x1.n <= 0)
+	if (xs->n <= 0)
 		return 0;
-	fg = ecalloc(compat_x1.n * GATE_MAXPROBES, sizeof(*fg));
-	fgn = ecalloc(compat_x1.n, sizeof(*fgn));
-	for (int i = 0; i < compat_x1.n; i++) {
+	fg = ecalloc(xs->n * GATE_MAXPROBES, sizeof(*fg));
+	fgn = ecalloc(xs->n, sizeof(*fgn));
+	for (int i = 0; i < xs->n; i++) {
 		char **pre, **post;
-		char *dup;
+		char *dup, *predup = NULL, *pretext;
 		int npre, npost, is_new;
-		dup = uc_dup(compat_x1.v[i].text);
+		dup = uc_dup(xs->v[i].text);
 		post = split_lines(dup, &npost);
-		pre = read_lines(compat_x1.v[i].path, &npre, &is_new);
+		/* origin k's own landing, so its "pre" is the tree the origins
+		 * before it left, not the disk copy those already changed */
+		if ((pretext = snap_pre(xs->v[i].path, k))) {
+			predup = uc_dup(pretext);
+			pre = split_lines(predup, &npre);
+		} else {
+			pre = read_lines(xs->v[i].path, &npre, &is_new);
+		}
 		/* no anchor to be near: another file's coordinates say nothing
 		 * about where this block edits, so every region ranks alike */
 		fgn[nfg] = derive_gates(&fg[nfg * GATE_MAXPROBES],
@@ -7799,16 +7919,35 @@ static int derive_gates_crossfile(gate_t *g)
 					0, 0);
 		for (int j = 0; j < fgn[nfg]; j++)
 			fg[nfg * GATE_MAXPROBES + j].path =
-				uc_dup(compat_x1.v[i].path);
+				uc_dup(xs->v[i].path);
 		nfg++;
-		free_lines(pre, npre);
+		if (predup) {
+			free(pre);
+			free(predup);
+		} else {
+			free_lines(pre, npre);
+		}
 		free(post);
 		free(dup);
 	}
-	n = merge_gates(g, fg, fgn, nfg, GATE_MAXPROBES);
+	n = merge_gates(g, fg, fgn, nfg, GATE_MAXPROBES, pol);
 	free(fg);
 	free(fgn);
 	return n;
+}
+
+/* The src= label of this derivation: its origins in replay order, comma
+ * joined. Annotation only - the reader keeps it whole and nothing matches on
+ * it - so a single origin still writes exactly its own path. */
+static char *compat_origin_label(void)
+{
+	sbuf_smake(sb, SB_INIT)
+	for (int i = 0; i < ncompat_origin; i++) {
+		if (i)
+			sbuf_chr(sb, ',')
+		sbuf_str(sb, compat_origins[i])
+	}
+	sbufn_ret(sb, sb->s)
 }
 
 /* The one compat block this run produces: replay the origin and the target into
@@ -7822,40 +7961,53 @@ static int derive_gates_crossfile(gate_t *g)
  * writes nothing. */
 static int compat_derive(void)
 {
-	gate_t g[GATE_MAXPROBES];
-	int i, j, k, next_id, n, nsc = 2, nchanged = 0;
-	const char *sc[3] = { compat_origin, input_file, NULL };
+	int i, j, k, next_id, n, nsc = 0, nchanged = 0, pol = GATE_ALWAYS;
+	int nor = ncompat_origin, nbuf, *nfg, *fgn;
+	const char **sc = emalloc((nor + 2) * sizeof(*sc));
+	gate_t *g = ecalloc(nor * GATE_MAXPROBES, sizeof(*g)), *fg;
 	sbuf_smake(diff, SB_INIT)
+	for (i = 0; i < nor; i++)
+		sc[nsc++] = compat_origins[i];
+	sc[nsc++] = input_file;
 	/* A pre-applied resolution in script form is one more replay block, run
 	 * after the baseline is taken; its diff form is spliced into the buffers
 	 * at that same point. Either way the user edits on top of it. */
 	if (compat_pre) {
-		if ((compat_pre_script = compat_pre_isscript(compat_pre)) < 0)
+		if ((compat_pre_script = compat_pre_isscript(compat_pre)) < 0) {
+			free(sc);
+			free(g);
+			free(diff->s);
 			return -1;
+		}
 		if (compat_pre_script)
 			sc[nsc++] = compat_pre;
 	}
+	compat_xs = ecalloc(nor, sizeof(*compat_xs));
 	compat_capturing = 1;
-	/* Replay origin then target into one session so the new block derives on
-	 * top of every block the target already carries; existing compat blocks
-	 * stack in stored order (post-only, one group). */
-	if (replay_scripts(sc, nsc, 1, 1, 0) != 0) {
+	/* Replay the origins in order and then the target into one session so
+	 * the new block derives on top of every block the target already
+	 * carries; existing compat blocks stack in stored order (post-only, one
+	 * group). Each origin is snapshotted as it ends, the target after it. */
+	if (replay_scripts(sc, nsc, 1, nor, nor) != 0) {
 		ed_free();
+		free(sc);
+		free(g);
+		free(diff->s);
 		return -1;
 	}
 	compat_capturing = 0;
-	n = 0;
-	/* Per-changed-file probe sets, merged into the block's one gate below. */
-	gate_t *fg = ecalloc((xbufcur > 0 ? xbufcur : 1) * GATE_MAXPROBES,
-			     sizeof(*fg));
-	int *fgn = ecalloc(xbufcur > 0 ? xbufcur : 1, sizeof(*fgn));
-	int nfg = 0;
+	/* Per-origin, per-changed-file probe sets, merged into the block's one
+	 * gate below: set (k, f) sits at index k * nbuf + f. */
+	nbuf = xbufcur > 0 ? xbufcur : 1;
+	fg = ecalloc((size_t)nor * nbuf * GATE_MAXPROBES, sizeof(*fg));
+	fgn = ecalloc((size_t)nor * nbuf, sizeof(*fgn));
+	nfg = ecalloc(nor, sizeof(*nfg));
 	/* One diff over every buffer the user reshaped, in buffer order: one
 	 * block, one section, one storage region. */
 	for (i = 0; i < xbufcur; i++) {
-		char **pre, **base, **fin, **x1 = NULL;
-		char *basetext = NULL, *fintext, *bdup, *fdup, *x1dup = NULL;
-		int npre, nbase, nfin, nx1 = 0, is_new, alo, ahi, xlo, xhi;
+		char **pre, **base, **fin;
+		char *basetext = NULL, *fintext, *bdup, *fdup;
+		int npre, nbase, nfin, is_new, alo, ahi, xlo, xhi;
 		if (!bufs[i].path || !bufs[i].path[0])
 			continue;
 		basetext = snap_find(&compat_base, bufs[i].path);
@@ -7874,48 +8026,81 @@ static int compat_derive(void)
 		emit_unified_diff(diff, bufs[i].path, is_new, base, nbase,
 				  fin, nfin);
 		nchanged++;
+		diff_span(base, nbase, fin, nfin, &xlo, &xhi);
+		alo = xlo;
+		ahi = xhi > xlo ? xhi : xlo;
 		/* every one of these files whose own landing is visible is
 		 * probed, near where it is edited: the diff spans them all, so
-		 * the gate does too (a file the origin never opened has no
-		 * entry, and merge_gates spreads the budget over the rest) */
-		if ((x1dup = snap_find(&compat_x1, bufs[i].path))) {
-			x1dup = uc_dup(x1dup);
+		 * the gate does too (a file an origin never opened has no
+		 * entry, and merge_gates spreads the budget over the rest).
+		 * One set per origin, off that origin's own snapshot pair, so
+		 * every probe is attributable to the landing it came from. */
+		for (k = 0; k < nor; k++) {
+			char **x1, **op, *x1dup, *opdup = NULL, *t;
+			int nx1, nop, si = k * nbuf + nfg[k];
+			if (!(t = snap_find(&compat_xs[k], bufs[i].path)))
+				continue;
+			x1dup = uc_dup(t);
 			x1 = split_lines(x1dup, &nx1);
-			diff_span(base, nbase, fin, nfin, &xlo, &xhi);
-			alo = xlo;
-			ahi = xhi > xlo ? xhi : xlo;
-			fgn[nfg] = derive_gates(&fg[nfg * GATE_MAXPROBES],
-						GATE_MAXPROBES, pre, npre,
-						x1, nx1, alo, ahi);
-			for (j = 0; j < fgn[nfg]; j++)
-				fg[nfg * GATE_MAXPROBES + j].path =
+			if ((t = snap_pre(bufs[i].path, k))) {
+				opdup = uc_dup(t);
+				op = split_lines(opdup, &nop);
+			} else {	/* the first origin to open it: disk */
+				op = pre;
+				nop = npre;
+			}
+			fgn[si] = derive_gates(&fg[(size_t)si * GATE_MAXPROBES],
+					       GATE_MAXPROBES, op, nop,
+					       x1, nx1, alo, ahi);
+			for (j = 0; j < fgn[si]; j++)
+				fg[(size_t)si * GATE_MAXPROBES + j].path =
 					uc_dup(bufs[i].path);
-			nfg++;
+			nfg[k]++;
+			if (opdup) {
+				free(op);
+				free(opdup);
+			}
+			free(x1);
+			free(x1dup);
 		}
-		free(fintext); free(bdup); free(fdup); free(x1dup);
-		free(base); free(fin); free(x1);
+		free(fintext); free(bdup); free(fdup);
+		free(base); free(fin);
 		free_lines(pre, npre);
 	}
-	n = merge_gates(g, fg, fgn, nfg, GATE_MAXPROBES);
-	free(fg);
-	free(fgn);
 	ed_free();
 	sbuf_null(diff)
 	if (!nchanged) {
 		fprintf(stderr, "no compat patch derived\n");
-		free(diff->s);
-		return -1;
+		goto err;
 	}
-	/* No edited file shows the origin: some other file it changed still does,
-	 * since "did this origin land" is a question about the tree. */
-	if (!n)
-		n = derive_gates_crossfile(g);
-	if (!n) {
-		fprintf(stderr, "gate: %s: no probe validates, supply a gate "
-			"by hand\n", compat_origin ? compat_origin : "");
-		free(diff->s);
-		return -1;
+	/* One gate over every origin's landing: each merged on its own, all of
+	 * them held to one polarity, and every probe stamped with the origin it
+	 * reads so emit_gate_expr can spread the clusters across them. An
+	 * origin that contributes nothing would leave the AND a term short, so
+	 * it is a hard error rather than a quietly narrower gate. */
+	n = 0;
+	for (k = 0; k < nor; k++) {
+		int m = merge_gates(&g[n], &fg[(size_t)k * nbuf * GATE_MAXPROBES],
+				    &fgn[k * nbuf], nfg[k], GATE_MAXPROBES,
+				    &pol);
+		/* No edited file shows this origin: some other file it changed
+		 * still does, since "did this origin land" is a question about
+		 * the tree. */
+		if (!m)
+			m = derive_gates_crossfile(&g[n], k, &pol);
+		if (!m) {
+			fprintf(stderr, "gate: %s: no probe validates, supply "
+				"a gate by hand\n", compat_origins[k]);
+			free_gates(g, n);
+			goto err;
+		}
+		for (j = 0; j < m; j++)
+			g[n + j].origin = k;
+		n += m;
 	}
+	free(fg);
+	free(fgn);
+	free(nfg);
 	/* group capture tags are the pattern slot + 1 and the DNF check ANDs
 	 * every one of them, so the gate takes its tag from its own band above
 	 * that range, continued across blocks */
@@ -7924,7 +8109,7 @@ static int compat_derive(void)
 		g[j].tag = next_mark_id(&next_id);
 	ARR_PUSH(compat_blocks, ncompat, compat_cap)
 	compat_block_t *cb = &compat_blocks[ncompat++];
-	cb->origin = uc_dup(compat_origin ? compat_origin : "");
+	cb->origin = compat_origin_label();
 	cb->gates = emalloc(n * sizeof(gate_t));
 	for (j = 0; j < n; j++)
 		cb->gates[j] = g[j];	/* ownership transferred */
@@ -7942,7 +8127,19 @@ static int compat_derive(void)
 		for (k = 0; k < g[j].nlines; k++)
 			mark_bytes_used(g[j].lines[k]);
 	free(diff->s);
+	free(sc);
+	free(g);
 	return 0;
+err:
+	for (k = 0; k < nor * nbuf; k++)
+		free_gates(&fg[(size_t)k * GATE_MAXPROBES], fgn[k]);
+	free(fg);
+	free(fgn);
+	free(nfg);
+	free(diff->s);
+	free(sc);
+	free(g);
+	return -1;
 }
 
 /* One buffer left behind by the session, against the file it names. */
@@ -8100,7 +8297,7 @@ static int amend_to_diff(const char *path, sbuf *out)
 	sc[0] = path;
 	/* every buffer of the session ends up in the diff */
 	xbufsalloc = MAX(64, xbufsalloc);
-	if (replay_scripts(sc, 1, 1, -1, -1) != 0) {
+	if (replay_scripts(sc, 1, 1, -1, 0) != 0) {
 		fprintf(stderr, "%s: replay failed, script left alone\n", path);
 		ed_free();
 		return -1;
@@ -8325,22 +8522,34 @@ static int read_delta_sections(FILE *in)
 			continue;
 		}
 		if (cur_cb && strncmp(line, "=== GATE ", 9) == 0) {
-			/* "=== GATE <n> <pol> tag <id> [probe <path>] ===" */
+			/* "=== GATE <n> <pol> tag <id> [origin <k>]
+			 *  [probe <path>] ===" */
 			ARR_PUSH(cur_cb->gates, cur_cb->ngates, cur_cb->gcap)
 			cur_gate = &cur_cb->gates[cur_cb->ngates];
 			gate_cap = 0;
-			char *t = strstr(line, " tag ");
+			/* every field is written before the path, which is
+			 * free to spell one of their names itself, so the
+			 * header is cut there before any of them is read */
+			char *p = strstr(line, " probe ");
+			char *t;
+			if (p)
+				*p = '\0';
+			t = strstr(line, " tag ");
 			cur_gate->tag = t ? atoi(t + 5) : 0;
 			cur_gate->polarity =
 				strstr(line, " present ") ? GATE_PRESENT :
 				strstr(line, " absent ") ? GATE_ABSENT :
 				GATE_ALWAYS;
-			if ((t = strstr(line, " probe "))) {
-				char *e = strstr(t + 7, " ===");
-				int len = e ? (int)(e - (t + 7))
-					    : (int)strlen(t + 7);
+			/* absent on a single-origin block, which never wrote
+			 * one: every probe then reads origin 0 */
+			t = strstr(line, " origin ");
+			cur_gate->origin = t ? atoi(t + 8) : 0;
+			if (p) {
+				char *e = strstr(p + 7, " ===");
+				int len = e ? (int)(e - (p + 7))
+					    : (int)strlen(p + 7);
 				cur_gate->path = emalloc(len + 1);
-				memcpy(cur_gate->path, t + 7, len);
+				memcpy(cur_gate->path, p + 7, len);
 				cur_gate->path[len] = '\0';
 			}
 			continue;
@@ -8485,7 +8694,8 @@ static void usage(const char *prog, int err)
 		"       %s -e script.sh\n"
 		"       %s [-ari]I [nextvi-opts...]\n"
 		"       %s [-ario]E script.sh [nextvi-opts...]\n"
-		"       %s [-o]co origin.sh target.sh [compat.patch|compat.sh]\n",
+		"       %s [-o]co origin.sh [-co origin2.sh...] target.sh"
+		" [compat.patch|compat.sh]\n",
 		prog, prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\n"
@@ -8515,6 +8725,7 @@ static void usage(const char *prog, int err)
 	fputs("  -co   Compat patch: resolve a collision with origin.sh, ship the\n"
 	      "        fix as a block after the target's, gated on origin being\n"
 	      "        present; a third argument pre-applies a written fix\n"
+	      "        Repeat -co to gate one block on several origins at once\n"
 	      "  -h    Show this help\n", f);
 	exit(err ? 1 : 0);
 }
@@ -8573,6 +8784,12 @@ int main(int argc, char **argv)
 		 * script, applied AFTER the target (the ordinary positional
 		 * input). Post-only; replaces the old -co split.
 		 *
+		 * Repeatable: every -co adds one origin, and the block gates on
+		 * all of them together, for a fix that only a particular stack
+		 * of patches needs. The origins are their own arguments rather
+		 * than positionals so the target and the optional pre-applied
+		 * fix stay where they are, unambiguously.
+		 *
 		 * "-oco" clusters the top-level -o into it, as "-oE" does: no
 		 * FILE of its own, the result lands back on the target script
 		 * the block extends. A file literally named "co" is still
@@ -8581,8 +8798,10 @@ int main(int argc, char **argv)
 		if (argv[i][1 + j] == 'c' && argv[i][2 + j] == 'o') {
 			compat_mode = 1;
 			read_deltas = 1;
-			amend_inplace = j;
-			compat_origin = opt_arg(argc, argv, &i, 3 + j);
+			amend_inplace |= j;
+			ARR_PUSH(compat_origins, ncompat_origin, compat_origin_cap)
+			compat_origins[ncompat_origin++] =
+				opt_arg(argc, argv, &i, 3 + j);
 			continue;
 		}
 		/* -o FILE (or -oFILE): the script, wherever it comes from,

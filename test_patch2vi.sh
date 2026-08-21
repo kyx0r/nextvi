@@ -2506,6 +2506,92 @@ else
 	echo "    full=[$c_full] worn=[$c_worn] partial=[$c_part] clean=[$c_none]"
 fi
 
+# A fix that only a STACK of patches needs: -co repeats, one per origin, and the
+# block gates on all of their landings at once. The two origins land in disjoint
+# regions of one file, so each derives its own probes off its own snapshot pair;
+# the cluster cut is transposed across them, so every cluster names both and no
+# cluster can fire on one origin alone. A tree carrying only A, or only B, is
+# not the tree the fix was written for.
+coderive2() {	# <o1.sh> <o2.sh> <target.sh> <P2VI_EX>: -co twice into $R/new.sh
+	rm -f "$R/new.sh"
+	pty "P2VI_EX=$4" \
+		"sh -c 'cd $R && $R_P2VI -co $1 -co $2 $3 > $R/new.sh 2>$R/nerr'" \
+		> /dev/null 2>&1
+}
+i=1
+: > "$R/mo.orig"
+while [ $i -le 60 ]; do printf 'M%d\n' "$i" >> "$R/mo.orig"; i=$((i + 1)); done
+sed -e 's/^M3$/M3a/' -e 's/^M8$/M8a/' -e 's/^M13$/M13a/' -e 's/^M18$/M18a/' \
+    -e 's/^M23$/M23a/' "$R/mo.orig" > "$R/mo.a"
+sed -e 's/^M28$/M28b/' -e 's/^M33$/M33b/' -e 's/^M38$/M38b/' \
+    -e 's/^M43$/M43b/' -e 's/^M48$/M48b/' "$R/mo.orig" > "$R/mo.b"
+sed 's/^M55$/M55t/' "$R/mo.orig" > "$R/mo.t"
+for v in a b t; do
+	diff -u "$R/mo.orig" "$R/mo.$v" |
+		sed -e '1s|.*|--- a/mo.c|' -e '2s|.*|+++ b/mo.c|' > "$R/m$v.diff"
+	"$R_P2VI" -r "$R/m$v.diff" > "$R/m$v.sh"
+done
+cp "$R/mo.orig" "$R/mo.c"	# pre-origin tree the replay reads
+coderive2 ma.sh mb.sh mt.sh '%s/^M60$/M60c/:q!'
+dregen new.sh
+m_src="$(sed -n 's/^=== PATCH2VI COMPAT post src=\(.*\) ===$/\1/p' "$R/dregen.sh")"
+m_o0="$(grep -c '^=== GATE .* origin 0' "$R/dregen.sh" || true)"
+m_o1="$(grep -c '^=== GATE .* origin 1' "$R/dregen.sh" || true)"
+if [ "$m_src" = 'ma.sh,mb.sh' ] && [ "$m_o0" -ge 2 ] && [ "$m_o1" -ge 2 ]; then
+	ok "compat: -co repeats, and each probe stores the origin it reads"
+else
+	fail "compat: -co repeats, and each probe stores the origin it reads"
+	echo "    src=[$m_src] origin0=$m_o0 origin1=$m_o1"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+fi
+mrun() {	# <origin scripts> <script> -> last line of mo.c after <script>
+	cp "$R/mo.orig" "$R/mo.c"
+	for s in $1; do ( cd "$R" && VI="$VI" sh "$s" ) >/dev/null 2>&1; done
+	( cd "$R" && VI="$VI" sh "$2" ) >/dev/null 2>&1
+	tail -n 1 "$R/mo.c"
+}
+m_both="$(mrun 'ma.sh mb.sh' new.sh)"
+m_a="$(mrun 'ma.sh' new.sh)"
+m_b="$(mrun 'mb.sh' new.sh)"
+m_none="$(mrun '' new.sh)"
+if [ "$m_both" = 'M60c' ] && [ "$m_a" = 'M60' ] && [ "$m_b" = 'M60' ] &&
+   [ "$m_none" = 'M60' ]; then
+	ok "compat: a two-origin gate fires on both origins, never on one"
+else
+	fail "compat: a two-origin gate fires on both origins, never on one"
+	echo "    both=[$m_both] a=[$m_a] b=[$m_b] clean=[$m_none]"
+fi
+
+# The transpose is what buys that: ten probes cut flat would give a cluster of
+# five consecutive ones, i.e. a whole cluster inside origin A, and A alone would
+# fire the block. Cut across the origins instead, each cluster still spans both,
+# so the OR only ever trades redundancy - a tree that lost one of A's lines to
+# some later change still fires, and the round trip through storage keeps it.
+m_cl="$(grep -c 'p compat applied' "$R/new.sh" || true)"
+m_semi=0
+grep -qE '[0-9]{4},[0-9]{4},[0-9]{4},[0-9]{4},[0-9]{4},[0-9]{4};' "$R/new.sh" &&
+	m_semi=1
+mworn() {	# <script>: both origins, one of A's lines worn away
+	cp "$R/mo.orig" "$R/mo.c"
+	( cd "$R" && VI="$VI" sh ma.sh ) >/dev/null 2>&1
+	( cd "$R" && VI="$VI" sh mb.sh ) >/dev/null 2>&1
+	sed 's/^M3a$/M3z/' "$R/mo.c" > "$R/mo.tmp" && mv "$R/mo.tmp" "$R/mo.c"
+	( cd "$R" && VI="$VI" sh "$1" ) >/dev/null 2>&1
+	tail -n 1 "$R/mo.c"
+}
+m_worn="$(mworn new.sh)"
+cp "$R/dregen.sh" "$R/mregen.sh"
+m_rboth="$(mrun 'ma.sh mb.sh' mregen.sh)"
+m_ra="$(mrun 'ma.sh' mregen.sh)"
+if [ "$m_semi" = 1 ] && [ "$m_worn" = 'M60c' ] && [ "$m_cl" = 1 ] &&
+   [ "$m_rboth" = 'M60c' ] && [ "$m_ra" = 'M60' ]; then
+	ok "compat: clusters cut across origins, absorbing a lost probe"
+else
+	fail "compat: clusters cut across origins, absorbing a lost probe"
+	echo "    ored=$m_semi worn=[$m_worn] blocks=$m_cl"
+	echo "    regen both=[$m_rboth] a=[$m_ra]"
+fi
+
 # -oco clusters the top-level -o into -co: no FILE of its own, the derived
 # block lands back on the target script it extends (the same rule -oE follows),
 # and nothing goes to stdout.
