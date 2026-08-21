@@ -610,82 +610,187 @@ view_patch() (
 	fi
 )
 
-# The apply order the compat blocks impose, one chain per script that carries
-# them: a block records the origin it was derived against in its src= fields, so
-# a script that carries one only applies to a tree that origin has already
-# patched. Every src= is therefore an edge origin -> script.
+# Every distinct origin the compat blocks of $1 name, one per line: a block
+# records the origin it was derived against in its src= fields, and a block
+# derived against a stack of them holds every one, space separated.
+p2v_origins() { p2v_compatsrc "$1" | tr ' ' '\n' | grep -v '^$' | sort -u; }
+
+# The origins script $1 depends on, out of the edge list compat_order builds.
+p2v_deps() { awk -v s="$1" '$1 == s && NF > 1 { print $2 }' "$P2VITMP.edges"; }
+
+# Run each script of the list $1, in order, output dropped; the first failure is
+# the result. Meant to be run on a tree at HEAD, which the caller restores.
+p2v_runlist() {
+	for p2v_s in $1
+	do
+		"./$p2v_s" >/dev/null 2>&1 || return 1
+	done
+	return 0
+}
+
+# What the caller has of their own and a run here must not carry off: the
+# scripts they edited or wrote (untracked ones are in git at all only as far as
+# status sees them), the README, and $1, the file the listing is written to.
+# Copied aside into $P2VITMP.keep, flat, since all of them sit in the top
+# directory. Not compat/, whose scripts are extract_compats' output and are
+# never run here.
+p2v_keepsh() {
+	rm -rf "$P2VITMP.keep"
+	mkdir -p "$P2VITMP.keep"
+	git status --porcelain -- '*.sh' ':!compat' | while read -r p2v_st p2v_f
+	do
+		cp "$p2v_f" "$P2VITMP.keep/"
+	done
+	for p2v_f in README "$1"
+	do
+		[ -n "$p2v_f" ] && [ -e "$p2v_f" ] && cp "$p2v_f" "$P2VITMP.keep/"
+	done
+	return 0
+}
+
+# p2v_restore with the scripts in scope as well: a patch may edit one -
+# cbuild.sh, say - and the run after it in a search would then read that edit as
+# the caller's and carry it. What p2v_keepsh put aside goes back on top, since
+# the checkout and the untracked sweep would both undo it.
+p2v_restore_sh() {
+	p2v_restore
+	git checkout -- '*.sh' ':!compat' >/dev/null 2>&1
+	for p2v_k in "$P2VITMP.keep"/*
+	do
+		[ -e "$p2v_k" ] && cp "$p2v_k" .
+	done
+	return 0
+}
+
+# Depth first over the orders a chain can be applied in: $1 is the chain so far,
+# $2 the candidates left. A candidate is only stepped into once the chain up to
+# and including it has really applied, from a tree at HEAD, and a step that
+# leads nowhere is taken back and the next candidate tried - a script that
+# applies here may still leave one further along with nothing to apply to. The
+# first order that takes every candidate is printed; without one, nothing is,
+# and the status says so. A subshell so its variables are its own: this calls
+# itself, and a plain function shares one set with every level below it.
+p2v_search() (
+	[ -n "$2" ] || { printf "%s\n" "$1"; return 0; }
+	for c in $2
+	do
+		# an origin of c still waiting: its blocks are not in yet
+		miss=
+		for d in $(p2v_deps "$c")
+		do
+			case " $2 " in
+			*" $d "*)	miss=1 ;;
+			esac
+		done
+		[ -n "$miss" ] && continue
+		p2v_restore_sh
+		p2v_runlist "$1 $c" || continue
+		rest=
+		for o in $2
+		do
+			[ "$o" = "$c" ] || rest="$rest $o"
+		done
+		p2v_search "$1 $c" "$rest" && return 0
+	done
+	return 1
+)
+
+# The compat order: for every script that carries compat blocks, the scripts it
+# needs and itself, in an order that applies.
 #
-# A script's chain is that script with every origin it depends on, directly or
-# through another origin's own blocks, ordered so each comes after the ones it
-# needs. Scripts no block names have no order to follow and are left out: they
-# apply whenever. A chain is printed as the shell command that runs it - the
-# scripts joined by &&, one chain to a line however long it runs - and is meant
-# to be copied out and run as it stands.
+# A block only applies to a tree its origin has already patched, so every src=
+# is an edge origin -> script and a script's chain is that script with every
+# origin it depends on, directly or through an origin's own blocks. Scripts no
+# block names are left out: nothing orders them and they apply whenever.
+#
+# The edges are not the whole story. Two scripts with no block between them can
+# still only go one way round - one of them absorbs the other's drift and not
+# the reverse - and no stored block says so. So the order is not derived, it is
+# found: p2v_search walks the orders the edges allow and runs every one it
+# considers, and what comes out is an order that really applied, whole, on a
+# tree at HEAD. Candidates are tried in edge order, so the order the blocks ask
+# for is the one that comes out wherever it works. A chain no order applies in
+# is reported and left out.
+#
+# This runs the scripts, so it wants a tree with nothing of its own in it; the
+# tree is put back at HEAD afterwards. Each chain is printed as the shell
+# command that runs it - the scripts joined by &&, one chain to a line however
+# long it runs - and is meant to be copied out and run as it stands.
 #
 # With no argument the chains go to stdout. With one, that file - the README -
 # is rewritten with them as its "Compat order" section, replacing the one
 # already there, immediately before the EXINIT setup section.
 # Usage: compat_order [README]
 compat_order() (
-	set -e
+	p2v_keepsh "$1"
+	# The sources alone are the tree this measures: they are what a run
+	# dirties and what the restore between runs puts back. What p2v_keepsh
+	# just put aside is exempt - it goes back after every run - so an edited
+	# script or README is no reason to refuse. Anything else of the caller's
+	# would be taken for a script's work and reverted with it.
+	dirty=$(p2v_git_src status --porcelain | while read -r st f
+		do
+			[ -e "$P2VITMP.keep/${f##*/}" ] || printf "%s\n" "$f"
+		done)
+	if [ -n "$dirty" ]; then
+		echo "DIRTY TREE: commit or stash the sources first" >&2
+		rm -rf "$P2VITMP.keep"
+		return 1
+	fi
 	# One "script" line per script, so a script with no blocks is a node
-	# too, plus one "script origin" line per distinct origin it carries. A
-	# label of a block derived against a stack of origins holds every one of
-	# them, space separated, and each is an edge of its own.
+	# too, plus one "script origin" line per origin it carries.
 	for s in $(p2v_scripts)
 	do
 		printf "%s\n" "$s"
-		p2v_compatsrc "$s" | tr ' ' '\n' | sort -u |
+		p2v_origins "$s" |
 		while read -r d
 		do
-			[ -n "$d" ] && printf "%s %s\n" "$s" "$d"
-			continue
+			printf "%s %s\n" "$s" "$d"
 		done
 	done > "$P2VITMP.edges"
-	awk '
-	# Every origin $2 needs, ahead of $2 itself, into rank order. Depth
-	# first over the edges, a node emitted once its own origins are.
-	function walk(s, i,	d) {
-		if (s in seen)
-			return
-		seen[s] = 1
-		for (i = 1; i <= ndep[s]; i++)
-			walk(dep[s, i])
-		chain[++len] = s
-	}
-	{
-		if (!($1 in known)) {
-			known[$1] = 1
-			name[++n] = $1
+	: > "$P2VITMP.order"
+	st=0
+	for target in $(awk 'NF > 1 { print $1 }' "$P2VITMP.edges" | sort -u)
+	do
+		# the closure of the target's origins, an origin ahead of what
+		# names it: the candidates, in the order the edges ask for
+		cand=$(awk -v target="$target" '
+		function walk(s, i) {
+			if (s in seen)
+				return
+			seen[s] = 1
+			for (i = 1; i <= ndep[s]; i++)
+				walk(dep[s, i])
+			print s
 		}
-		if (NF > 1 && !(($1 SUBSEP $2) in edge)) {
+		NF > 1 && !(($1 SUBSEP $2) in edge) {
 			edge[$1 SUBSEP $2] = 1
 			dep[$1, ++ndep[$1]] = $2
 		}
-	}
-	END {
-		# the scripts in their own order, so the chains come out in it
-		for (i = 1; i <= n; i++) {
-			s = name[i]
-			if (!ndep[s])	# nothing to order it against
-				continue
-			split("", seen)
-			len = 0
-			walk(s)
-			# the chain as one command, on one line: a wrap would
-			# only be in the way of the copy this is here for
-			line = ""
-			for (j = 1; j <= len; j++)
-				line = line (j > 1 ? " && " : "") "./" chain[j]
-			print line
-		}
-	}
-	' "$P2VITMP.edges" > "$P2VITMP.order"
+		END { walk(target) }
+		' "$P2VITMP.edges")
+		printf "%s\n" "CHECKING: $target" >&2
+		chain=$(p2v_search "" "$cand")
+		searched=$?
+		p2v_restore_sh
+		if [ "$searched" -ne 0 ]; then
+			printf "%s\n" "NO ORDER: $target, left out" >&2
+			st=1
+			continue
+		fi
+		line=
+		for c in $chain
+		do
+			line="${line:+$line && }./$c"
+		done
+		printf "%s\n" "$line" >> "$P2VITMP.order"
+	done
+	rm -rf "$P2VITMP.keep"
 	rm -f "$P2VITMP.edges"
 	if [ -z "$1" ]; then
 		cat "$P2VITMP.order"
 		rm -f "$P2VITMP.order"
-		return 0
+		return $st
 	fi
 	# The old section, if any, runs from its heading to the EXINIT one; both
 	# are replaced by the new section, so a rerun is idempotent.
@@ -695,10 +800,10 @@ compat_order() (
 		skip = 0
 		print "Compat order"
 		print "--------------"
-		print "Patches carrying a compat block for another patch are applied"
-		print "after it. Every such patch, with the patches it needs, in an"
-		print "order that works. Patches listed nowhere here are unconstrained"
-		print "and apply in any order. Regenerated by compat_order in patch2vi.sh"
+		print "A patch carrying a compat block for another patch is applied after"
+		print "it. Every such patch, with the patches it needs, in an order that"
+		print "applies. Patches listed nowhere here are unconstrained and apply in"
+		print "any order. Regenerated by compat_order in patch2vi.sh"
 		print ""
 		while ((getline line < order) > 0)
 			print line
@@ -710,6 +815,7 @@ compat_order() (
 	cp "$P2VITMP.readme" "$1"
 	rm -f "$P2VITMP.readme" "$P2VITMP.order"
 	printf "%s\n" "UPDATED: $1" >&2
+	return $st
 )
 
 # Collapse the compat blocks a script carries from one origin into a single one.
