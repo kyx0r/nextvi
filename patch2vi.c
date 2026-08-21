@@ -3,7 +3,7 @@
  * engine, and back.
  *
  * Usage: patch2vi [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG] [patch|script]
- *        patch2vi -e script.sh
+ *        patch2vi -e script.sh [script2.sh...]
  *        patch2vi [-ari]I [nextvi-opts...]
  *        patch2vi [-ario]E script.sh [nextvi-opts...]
  *        patch2vi [-o]co origin.sh [-co origin2.sh...] target.sh \
@@ -8726,7 +8726,7 @@ static void usage(const char *prog, int err)
 	FILE *f = err ? stderr : stdout;
 	fprintf(f, "Usage: %s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG]"
 		" [input.patch]\n"
-		"       %s -e script.sh\n"
+		"       %s -e script.sh [script2.sh...]\n"
 		"       %s [-ari]I [nextvi-opts...]\n"
 		"       %s [-ario]E script.sh [nextvi-opts...]\n"
 		"       %s [-o]co origin.sh [-co origin2.sh...] target.sh"
@@ -8744,6 +8744,7 @@ static void usage(const char *prog, int err)
 	      "  -d4   Delta: match by deleted/inserted text or regex\n"
 	      "  -d5   Delta: match by entire hunk\n"
 	      "  -e    Execute a script with the built-in nextvi, no shell involved\n"
+	      "        Several scripts run in order, stopping at the first failure\n"
 	      "  -E    Update a script: replay it, edit, re-emit it\n"
 	      "        Rest of the line is a nextvi command line; -d[N] keeps deltas\n"
 	      "        With QF2=1 the hunks that missed are put back into the\n"
@@ -8974,6 +8975,31 @@ int main(int argc, char **argv)
 		parse_diff_text(dsb->s);
 	}
 
+	/* -e: no conversion, just run the script through the embedded editor
+	 * and report the status the shell would have reported. Every remaining
+	 * positional is a script of its own, run in the order given and each in
+	 * its own editor lifetime, the first failure stopping the run: what
+	 * "./a.sh && ./b.sh" does, without a shell or a process per script. */
+	if (exec_mode) {
+		if (!input_file) {
+			fprintf(stderr, "-e requires a script argument\n");
+			return 1;
+		}
+		for (; i < argc; i++) {
+			FILE *f = fopen(argv[i], "r");
+			if (!f) {
+				perror(argv[i]);
+				return 1;
+			}
+			exec_script = argv[i];
+			j = exec_p2vi_script(f);
+			fclose(f);
+			if (j)
+				return j;
+		}
+		return 0;
+	}
+
 	FILE *in = edit_mode ? NULL : stdin;
 	if (input_file && !edit_mode) {
 		in = fopen(input_file, "r");
@@ -8981,19 +9007,6 @@ int main(int argc, char **argv)
 			perror(input_file);
 			return 1;
 		}
-	}
-
-	/* -e: no conversion, just run the script through the embedded
-	 * editor and report the status the shell would have reported */
-	if (exec_mode) {
-		if (!input_file) {
-			fprintf(stderr, "-e requires a script argument\n");
-			return 1;
-		}
-		exec_script = input_file;
-		i = exec_p2vi_script(in);
-		fclose(in);
-		return i;
 	}
 
 	/* Detect if input is a previously generated patch2vi script */

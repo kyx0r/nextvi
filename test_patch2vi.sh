@@ -1471,6 +1471,51 @@ else
 	diff -r "$TMPDIR/mb/sh" "$TMPDIR/mb/e" | sed 's/^/    /'
 fi
 
+# Several scripts in one -e: run in the order given, each in its own editor
+# lifetime, and the first failure stopping the rest - what "./a.sh && ./b.sh"
+# does, minus the shell and a process per script. The second script edits a
+# file the first never names, so a run that stopped early leaves it alone.
+mkdir -p "$TMPDIR/ms"
+ms_write() {	# ms_write <script> <file> <ex body>
+	cat > "$TMPDIR/ms/$1" <<EOS
+#!/bin/sh -e
+VI=\${VI:-vi}
+( : > /tmp/p2vi.\$\$ ) 2>/dev/null && P2VIF=/tmp/p2vi.\$\$ || P2VIF=./p2vi.\$\$
+trap 'rm -f "\$P2VIF"' EXIT
+printf '%s\n' "$3" > "\$P2VIF"
+EXINIT='%ya 97:? %@97' \$VI -e '$2' "\$P2VIF"
+exit 0
+EOS
+	chmod +x "$TMPDIR/ms/$1"
+}
+ms_fresh() {
+	printf 'alpha\n' > "$TMPDIR/ms/f1.txt"
+	printf 'gamma\n' > "$TMPDIR/ms/f2.txt"
+}
+ms_write one.sh f1.txt "b0:1s/alpha/ALPHA/:w:2q"
+ms_write two.sh f2.txt "b0:1s/gamma/GAMMA/:w:2q"
+ms_write bad.sh f1.txt "b0:2q!1"	# quits with the status a failed hunk does
+ms_p2vi="$PWD/patch2vi"
+
+ms_fresh
+ms_rc=0
+( cd "$TMPDIR/ms" && "$ms_p2vi" -e one.sh two.sh ) >/dev/null 2>&1 || ms_rc=$?
+if [ "$ms_rc" = 0 ] && grep -q ALPHA "$TMPDIR/ms/f1.txt" &&
+   grep -q GAMMA "$TMPDIR/ms/f2.txt"; then
+	ok "-e runs every script it is given, in order"
+else
+	fail "-e runs every script it is given, in order (status $ms_rc)"
+fi
+
+ms_fresh
+ms_rc=0
+( cd "$TMPDIR/ms" && "$ms_p2vi" -e bad.sh two.sh ) >/dev/null 2>&1 || ms_rc=$?
+if [ "$ms_rc" != 0 ] && grep -q gamma "$TMPDIR/ms/f2.txt"; then
+	ok "-e stops at the first script that fails"
+else
+	fail "-e stops at the first script that fails (status $ms_rc)"
+fi
+
 echo ""
 echo "=== replay (-co) tests ==="
 
