@@ -7016,7 +7016,16 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 
 /* Append one script's blocks to *blks. Header assignments are per script and
  * each block carries its own separator, so two scripts' headers never mix. */
-static int parse_script(const char *path, p2vi_block_t **blks, int *nblks)
+/* tol: replay this script with QF2=1, whatever the environment says. A -co
+ * derivation replays a target that is expected to collide with the origin -
+ * that collision is the whole input to the derivation - and a target quitting
+ * at its first missed hunk would leave a tree the fix was never written
+ * against. The shipped script does the same thing on its own: a block's host
+ * override empties the quit chain, so a target that already carries one keeps
+ * going where the same target, stripped back to its base (rebuild), would die.
+ * The misses are still reported. */
+static int parse_script(const char *path, p2vi_block_t **blks, int *nblks,
+			int tol)
 {
 	FILE *f = fopen(path, "r");
 	int st;
@@ -7025,6 +7034,8 @@ static int parse_script(const char *path, p2vi_block_t **blks, int *nblks)
 		return -1;
 	}
 	sh_reset();
+	if (tol)
+		sh_set("QF2", "1");
 	exec_script = path;
 	st = parse_p2vi_script(f, blks, nblks);
 	fclose(f);
@@ -7047,7 +7058,10 @@ static int replay_scripts(const char **paths, int nscripts, int handover,
 	for (i = 0; i < nsnap1; i++)
 		snap1_blk[i] = -1;
 	for (i = 0; i < nscripts && st >= 0; i++) {
-		st = parse_script(paths[i], &blks, &nblks);
+		/* the origins are replayed as they ship; only the target is
+		 * held to the collision it is being measured through */
+		st = parse_script(paths[i], &blks, &nblks,
+				  compat_mode && i == nsnap1);
 		if (i == snap_sc)
 			snap_blk = nblks - 1;
 		if (i < nsnap1)

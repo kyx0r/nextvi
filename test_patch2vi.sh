@@ -1612,6 +1612,43 @@ else
 	sed 's/^/    /' "$R/draw.c"
 fi
 
+# A collision the target cannot survive: the origin deletes the very line the
+# target rewrites, so on the origin tree the target's hunk has nothing to find
+# and misses. That is the case a compat block exists for, and the tree the fix
+# is written against is the one the miss leaves - so the replay reports the miss
+# and carries on (QF2), where a plain run of the same script quits at it.
+# Without that the derivation would measure a tree the target barely touched,
+# and rebuild - which regenerates a base with no block to relax its quit chain -
+# could never re-derive the block it just took off.
+i=1
+: > "$R/kk.orig"
+while [ $i -le 12 ]; do printf 'K%d\n' "$i" >> "$R/kk.orig"; i=$((i + 1)); done
+grep -v '^K3$' "$R/kk.orig" > "$R/kk.a"		# origin: K3 is gone
+sed 's/^K3$/K3b/' "$R/kk.orig" > "$R/kk.b"	# target: K3 -> K3b, the same line
+for v in a b; do
+	diff -u "$R/kk.orig" "$R/kk.$v" |
+		sed -e '1s|.*|--- a/kk.c|' -e '2s|.*|+++ b/kk.c|' > "$R/k$v.diff"
+	"$R_P2VI" -r "$R/k$v.diff" > "$R/k$v.sh"
+done
+cp "$R/kk.orig" "$R/kk.c"
+coderive ka.sh kb.sh '%s/^K4$/K4x/:q!'	# what the author does about the miss
+cp "$R/kk.orig" "$R/kk.c"
+( cd "$R" && VI="$VI" sh ka.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+k_both="$(tr '\n' ' ' < "$R/kk.c")"
+cp "$R/kk.orig" "$R/kk.c"
+( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+k_clean="$(tr '\n' ' ' < "$R/kk.c")"
+case $k_both in *"K2 K4x "*) k1=1 ;; *) k1=0 ;; esac
+case $k_clean in *"K3b K4 "*) k2=1 ;; *) k2=0 ;; esac
+if [ -s "$R/new.sh" ] && [ "$k1" = 1 ] && [ "$k2" = 1 ]; then
+	ok "compat: a target hunk the origin makes miss still derives its block"
+else
+	fail "compat: a target hunk the origin makes miss still derives its block"
+	echo "    origin=[$k_both]"
+	echo "    clean=[$k_clean]"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+fi
+
 # an origin whose inserted line is not unique gives no window that tells the
 # two trees apart: a hard error, empty output, never a weak gate
 printf 'dup\nb\ndup\n' > "$R/u.orig"
