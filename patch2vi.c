@@ -4272,10 +4272,22 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 		cu->compat = 1;
 		cu->gates = cb->gates;
 		cu->ngates = cb->ngates;
-		/* index prefix keeps two blocks over one file from colliding on
-		 * bufs_find (ex.c matches on the name) */
-		cu->name = str_fmt("%d.%s.compat-post.p2v.diff", c,
-				   cb->origin ? cb->origin : "");
+		/* Index prefix keeps two blocks over one file from colliding on
+		 * bufs_find (ex.c matches on the name). The origin label's
+		 * repeated " src=" fields join on '+' here, so the whitespace
+		 * the storage header separates them with stays out of a name
+		 * the user types at :b; one origin is unchanged. */
+		const char *osrc = cb->origin ? cb->origin : "", *oend;
+		sbuf_smake(nb, SB_INIT)
+		while ((oend = strstr(osrc, " src="))) {
+			sbuf_mem(nb, osrc, oend - osrc)
+			sbuf_chr(nb, '+')
+			osrc = oend + 5;
+		}
+		sbuf_str(nb, osrc)
+		sbuf_null(nb)
+		cu->name = str_fmt("%d.%s.compat-post.p2v.diff", c, nb->s);
+		free(nb->s);
 		build_unit_blobs(cu);
 		nu++;
 	}
@@ -7936,15 +7948,20 @@ static int derive_gates_crossfile(gate_t *g, int k, int *pol)
 	return n;
 }
 
-/* The src= label of this derivation: its origins in replay order, comma
- * joined. Annotation only - the reader keeps it whole and nothing matches on
- * it - so a single origin still writes exactly its own path. */
+/* The src= label of this derivation: its origins in replay order, one src=
+ * field each, so the label of a two-origin block reads "a.sh src=b.sh" and the
+ * header carries "src=a.sh src=b.sh". The field is repeated rather than one
+ * field with a separator in it because a separator would be a byte no origin
+ * path may hold, and the only such byte here is the space the header already
+ * parses on: a reader splits on whitespace it could not have kept anyway.
+ * Annotation only - the reader keeps the label whole and nothing matches on it
+ * - so a single origin still writes exactly its own path. */
 static char *compat_origin_label(void)
 {
 	sbuf_smake(sb, SB_INIT)
 	for (int i = 0; i < ncompat_origin; i++) {
 		if (i)
-			sbuf_chr(sb, ',')
+			sbuf_str(sb, " src=")
 		sbuf_str(sb, compat_origins[i])
 	}
 	sbufn_ret(sb, sb->s)
@@ -8505,7 +8522,11 @@ static int read_delta_sections(FILE *in)
 			}
 			ARR_PUSH(compat_blocks, ncompat, compat_cap)
 			cur_cb = &compat_blocks[ncompat++];
-			/* "=== PATCH2VI COMPAT post [src=<origin>] ===" */
+			/* "=== PATCH2VI COMPAT post [src=<origin>...] ==="
+			 * One src= field per origin, so the label of a
+			 * multi-origin block is everything from the first one
+			 * to the terminator, inner "src=" included: it is kept
+			 * whole and only ever printed back. */
 			char *src = strstr(line + 20, " src=");
 			char *e = src ? strstr(src, " ===") : NULL;
 			if (e)

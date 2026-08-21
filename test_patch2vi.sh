@@ -2534,10 +2534,14 @@ done
 cp "$R/mo.orig" "$R/mo.c"	# pre-origin tree the replay reads
 coderive2 ma.sh mb.sh mt.sh '%s/^M60$/M60c/:q!'
 dregen new.sh
-m_src="$(sed -n 's/^=== PATCH2VI COMPAT post src=\(.*\) ===$/\1/p' "$R/dregen.sh")"
+# one src= field per origin, so the label is read the way a reader splits it:
+# every field of the header whose name is src=, in order
+m_src="$(awk '/^=== PATCH2VI COMPAT /{for (i = 1; i <= NF; i++)
+	if (substr($i, 1, 4) == "src=") printf "%s%s", n++ ? " " : "", substr($i, 5)
+	print ""}' "$R/dregen.sh")"
 m_o0="$(grep -c '^=== GATE .* origin 0' "$R/dregen.sh" || true)"
 m_o1="$(grep -c '^=== GATE .* origin 1' "$R/dregen.sh" || true)"
-if [ "$m_src" = 'ma.sh,mb.sh' ] && [ "$m_o0" -ge 2 ] && [ "$m_o1" -ge 2 ]; then
+if [ "$m_src" = 'ma.sh mb.sh' ] && [ "$m_o0" -ge 2 ] && [ "$m_o1" -ge 2 ]; then
 	ok "compat: -co repeats, and each probe stores the origin it reads"
 else
 	fail "compat: -co repeats, and each probe stores the origin it reads"
