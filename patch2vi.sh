@@ -781,8 +781,14 @@ p2v_chain() (
 		p2v_restore_sh
 		if [ "$searched" -ne 0 ]; then
 			# nothing was emitted for the last build, and it is the
-			# one that explains why no order is left
-			[ "$skip" -gt 0 ] && cat "$P2VITMP.build" >&2
+			# one that explains why no order is left, so its output
+			# is let out here - named, since no build ran between
+			# the failure and this and the errors would otherwise
+			# read as a fresh one
+			if [ "$skip" -gt 0 ]; then
+				printf "%s\n" "LAST BUILD: $line" >&2
+				cat "$P2VITMP.build" >&2
+			fi
 			return 1
 		fi
 		line=
@@ -803,7 +809,7 @@ p2v_chain() (
 			printf "%s\n" "$line"
 			return 0
 		fi
-		printf "%s\n" "NO BUILD: $line, next order" >&2
+		printf "%s\n" "BUILD FAILED: $line, trying next order" >&2
 		skip=$((skip + 1))
 	done
 )
