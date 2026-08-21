@@ -620,13 +620,16 @@ p2v_deps() { awk -v s="$1" '$1 == s && NF > 1 { print $2 }' "$P2VITMP.edges"; }
 
 # Run each script of the list $1, in order, output dropped; the first failure is
 # the result. Meant to be run on a tree at HEAD, which the caller restores.
-p2v_runlist() {
+p2v_runlist() (
+	# a sourced shell may have set IFS to anything, and this splits on it
+	IFS=' 	
+'
 	for p2v_s in $1
 	do
 		"./$p2v_s" >/dev/null 2>&1 || return 1
 	done
 	return 0
-}
+)
 
 # What the caller has of their own and a run here must not carry off: the
 # scripts they edited or wrote (untracked ones are in git at all only as far as
@@ -634,7 +637,10 @@ p2v_runlist() {
 # Copied aside into $P2VITMP.keep, flat, since all of them sit in the top
 # directory. Not compat/, whose scripts are extract_compats' output and are
 # never run here.
-p2v_keepsh() {
+p2v_keepsh() (
+	# a sourced shell may have set IFS to anything, and this splits on it
+	IFS=' 	
+'
 	rm -rf "$P2VITMP.keep"
 	mkdir -p "$P2VITMP.keep"
 	git status --porcelain -- '*.sh' ':!compat' | while read -r p2v_st p2v_f
@@ -646,13 +652,16 @@ p2v_keepsh() {
 		[ -n "$p2v_f" ] && [ -e "$p2v_f" ] && cp "$p2v_f" "$P2VITMP.keep/"
 	done
 	return 0
-}
+)
 
 # p2v_restore with the scripts in scope as well: a patch may edit one -
 # cbuild.sh, say - and the run after it in a search would then read that edit as
 # the caller's and carry it. What p2v_keepsh put aside goes back on top, since
 # the checkout and the untracked sweep would both undo it.
-p2v_restore_sh() {
+p2v_restore_sh() (
+	# a sourced shell may have set IFS to anything, and this splits on it
+	IFS=' 	
+'
 	p2v_restore
 	git checkout -- '*.sh' ':!compat' >/dev/null 2>&1
 	for p2v_k in "$P2VITMP.keep"/*
@@ -660,7 +669,7 @@ p2v_restore_sh() {
 		[ -e "$p2v_k" ] && cp "$p2v_k" .
 	done
 	return 0
-}
+)
 
 # Depth first over the orders a chain can be applied in: $1 is the chain so far,
 # $2 the candidates left. A candidate is only stepped into once the chain up to
@@ -671,6 +680,9 @@ p2v_restore_sh() {
 # and the status says so. A subshell so its variables are its own: this calls
 # itself, and a plain function shares one set with every level below it.
 p2v_search() (
+	# a sourced shell may have set IFS to anything, and this splits on it
+	IFS=' 	
+'
 	[ -n "$2" ] || { printf "%s\n" "$1"; return 0; }
 	for c in $2
 	do
@@ -722,6 +734,9 @@ p2v_search() (
 # already there, immediately before the EXINIT setup section.
 # Usage: compat_order [README]
 compat_order() (
+	# a sourced shell may have set IFS to anything, and this splits on it
+	IFS=' 	
+'
 	p2v_keepsh "$1"
 	# The sources alone are the tree this measures: they are what a run
 	# dirties and what the restore between runs puts back. What p2v_keepsh
