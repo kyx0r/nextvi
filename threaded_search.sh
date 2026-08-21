@@ -48,7 +48,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b21;0fr 0%f> ^	rs->wbeg = re\[0] == '\''\\\\'\'' && re\[1] == '\''<'\'';$1011??0?
 b21;0fr 0%f> ^	if \(rs->wbeg\)$1012??0?
 b21;0fr 0%f> ^	beg = re;$1013??0?
-b21;0fr 0%f> ^	while \(re\[0] && !strchr\("\\\\\.\*\+\?\[\{\(\)\$", \(unsigned char\) re\[0]\)\)$1014??0?
+b21;0fr 0%f> ^	while \(re\[0] && !strchr\("\\\\\.\*\+\?\[\{\(\)\$\|", \(unsigned char\) re\[0]\)\)$1014??0?
 b21;0fr 0%f> ^	end = re;$1015??0?
 b21;0fr 0%f> ^	rs->wend = re\[0] == '\''\\\\'\'' && re\[1] == '\''>'\'';$1016??0?
 b21;0fr 0%f> ^	if \(rs->wend\)$1017??0?
@@ -972,7 +972,7 @@ int lbuf_search(struct lbuf *lb, rstr *re, int dir, int beg, int end, int pskip,
 	beg = re;
 === END ===
 === GATE 15 present tag 1014 probe regex.c ===
-	while (re[0] && !strchr("\\.*+?[{()$", (unsigned char) re[0]))
+	while (re[0] && !strchr("\\.*+?[{()$|", (unsigned char) re[0]))
 === END ===
 === GATE 16 present tag 1015 probe regex.c ===
 	end = re;

@@ -870,24 +870,24 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 
 #define exbuf_save\(buf\) \\
 	buf->row = xrow; \\2??0?
-2??m 1220reg p OK vi.h:496:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.h:498:a22sc %? %@2152sc!1q0?
 %f> 	xet = buf->et; \\
 	xsw = buf->sw; \\
 	xts = buf->ts; \\3??0?
-3??m 1220reg p OK vi.h:496:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK vi.h:498:a32sc %? %@2152sc!1q0?
 %f> 	xtop = b->top; \\
 	xtd = b->td; \\
 	curwin->buf = b; \\4??0?
-4??+3m 1220reg p OK vi.h:496:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.h:498:a42sc %? %@2152sc!1q0?
 %f> 
 #define exbuf_save\(buf\) \\
 	buf->row = xrow; \\5??0?
-5??-3m 1220reg p OK vi.h:496:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.h:4962sc %? %@2132sc!0?
+5??-3m 1220reg p OK vi.h:498:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.h:4982sc %? %@2132sc!0?
 '\''1,#+2c 	xet = b->et; \
 	xsw = b->sw; \
 	xts = b->ts; \
-??!219reg vi.h:496:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
+??!219reg vi.h:498:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
 # Compat (post) from incsearch.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 				pre--;
@@ -1033,7 +1033,7 @@ extern int nwins;			/* number of windows */
 === COMPAT PATCH ===
 --- a/vi.h
 +++ b/vi.h
-@@ -493,9 +493,9 @@
+@@ -495,9 +495,9 @@
  	xtop = b->top; \
  	xtd = b->td; \
  	curwin->buf = b; \
