@@ -82,7 +82,10 @@ p2v_git_src() {
 # patch2vi opens /dev/tty for its editor, which a pipeline or a CI job does not
 # have; script(1) then supplies one. Paths with spaces do not survive this.
 p2v_tty() {
-	if { : >/dev/tty; } 2>/dev/null; then
+	# The probe runs in a subshell: a redirection that fails is fatal to a
+	# non-interactive POSIX shell, and a bare "{ : >/dev/tty; }" then takes
+	# the whole script down instead of falling through to the fallback.
+	if ( : >/dev/tty ) 2>/dev/null; then
 		"$@"
 	else	# "$*" joins on the first character of IFS, a space only if the
 		# shell this was sourced into left IFS alone
@@ -344,9 +347,13 @@ regen() {
 p2v_reapply() {
 	p2v_newfiles | sort > "$1/pre"
 	p2v_st2=0
-	# split by hand: read only breaks a line into two names when IFS holds a
-	# space, and a shell this is sourced into may have set it to anything
-	while read -r line
+	# Split by hand: read only breaks a line into two names when IFS holds a
+	# space, and a shell this is sourced into may have set it to anything.
+	# The list is read off its own descriptor, since a -co call inherits
+	# this loop's stdin and the editor it hands over to reads the rest of
+	# the blocks away - they would then never be re-applied, silently.
+	exec 3< "$1/blocks"
+	while read -r line <&3
 	do
 		n=${line%% *}
 		origin=${line#* }
@@ -365,7 +372,8 @@ p2v_reapply() {
 			p2v_st2=1
 			break
 		fi
-	done < "$1/blocks"
+	done
+	exec 3<&-
 	p2v_git_src checkout >/dev/null 2>&1
 	p2v_newfiles | sort > "$1/post"
 	left=$(comm -13 "$1/pre" "$1/post")
@@ -388,6 +396,12 @@ p2v_reapply() {
 # recompat. A stored diff whose pre-image the new base no longer has is a hard
 # error from -co, and then the script is put back the way it was: resolve that
 # collision by hand and hand the result to -co instead.
+#
+# The tree must be clean, and this runs the target itself to dirty it: the base
+# regen writes is read out of the working tree, so a clean tree would give an
+# empty base and an unrelated edit would be baked into the patch as one of the
+# script's own - both silently. On a clean tree no gate finds its origin, so
+# what the run leaves is the base and nothing but. The tree goes back afterwards.
 # Usage: rebuild target.sh
 rebuild() (
 	if [ -z "$1" ]; then
@@ -396,11 +410,24 @@ rebuild() (
 	fi
 	target="$1"
 	p2v_ours "$target" || return 1
+	# untracked files count: regen stages everything before it diffs
+	if [ -n "$(git status --porcelain)" ]; then
+		printf "%s\n" "DIRTY TREE: commit or stash first, $target kept" >&2
+		return 1
+	fi
 	export P2VI_EX="${P2VI_EX:-led 0:q}"	# -d and -co imply the editor; led keeps it from drawing
 	work="$P2VITMP.rebuild"
 	rm -rf "$work"
 	mkdir -p "$work"
 	cp "$target" "$work/orig.sh"
+	# the tree regen reads the base out of; a target that cannot even apply
+	# to a clean tree would hand it a partial one
+	if ! "./$target"; then
+		p2v_restore
+		rm -rf "$work"
+		printf "%s\n" "FAILED: $target does not apply, kept as it was" >&2
+		return 1
+	fi
 	p2v_splitcompat "$target" "$work" > "$work/blocks"
 	p2v_stripcompat "$target" > "$work/bare.sh"
 	cp "$work/bare.sh" "$target"
@@ -408,6 +435,7 @@ rebuild() (
 	regen "$target"			# base only: the blocks are off
 	p2v_stashed_run "$target" p2v_reapply "$work" "$target"
 	st=$?
+	p2v_restore			# the run's own leavings, not the caller's
 	if [ "$st" -ne 0 ]; then
 		cp "$work/orig.sh" "$target"
 		chmod +x "$target"
