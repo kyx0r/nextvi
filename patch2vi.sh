@@ -618,6 +618,12 @@ recompat() (
 		fi
 	fi
 	export P2VI_EX="${P2VI_EX:-led 0:q}"	# -d and -co imply the editor; led keeps it from drawing
+	# A is the collision itself, so the target is meant to miss hunks there:
+	# without this it quits at the first one and A is a half-applied tree,
+	# which the -co replay - it keeps going by the same rule - never
+	# reproduces, so the diff taken against it does not apply. B misses the
+	# same hunks before its blocks repair them and is held to the same rule.
+	export QF2=1
 	work="$P2VITMP.recompat"
 	# A label of a block derived against a stack of origins holds spaces, so
 	# the labels are read a line at a time rather than word split - and off
@@ -636,6 +642,7 @@ recompat() (
 		fi
 		rm -rf "$work"
 		mkdir -p "$work"
+		cp "$target" "$work/orig.sh"
 		p2v_restore
 		# A: the collision on its own. Every origin of the label runs,
 		# in stored order: the collision a stacked block resolves is
@@ -661,7 +668,15 @@ recompat() (
 		cp "$work/new.sh" "$target"
 		chmod +x "$target"		# written by awk, not by -o
 		p2v_tty $P2VI -od "$target"	# re-emit without the old blocks
-		p2v_co "$origin" "$target" "$work/compat.patch"
+		# the blocks came off the target before this call: a derivation
+		# that fails now would leave the script stripped of them
+		if ! p2v_co "$origin" "$target" "$work/compat.patch"; then
+			cp "$work/orig.sh" "$target"
+			chmod +x "$target"
+			p2v_restore
+			printf "%s\n" "FAILED: $target <- $origin, left as it was" >&2
+			return 1
+		fi
 		p2v_restore
 		printf "%s\n" "COLLAPSED: $target <- $origin, $n blocks into 1"
 	done
