@@ -114,11 +114,72 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b41;0fr 0%f> ^	term_pos\(r1 < xtop \? curwin->y : curwin->y \+ r1 - xtop, curwin->x\);$1077??0?
 b41;0fr 0%f> ^		if \(xrow - xtop == curwin->h\)$1078??0?
 b41;0fr 0%f> ^	term_pos\(curwin->y \+ row - xtop, curwin->x\);$1079??0?
-233reg 01040,1041,1042,1043,1044,1060,1061,1062,1063,1064;1045,1046,1047,1048,1049,1065,1066,1067,1068,1069;1050,1051,1052,1053,1054,1070,1071,1072,1073,1074;1055,1056,1057,1058,1059,1075,1076,1077,1078,1079?? 233reg 11040,1041,1042,1043,1044,1060,1061,1062,1063,1064;1045,1046,1047,1048,1049,1065,1066,1067,1068,1069;1050,1051,1052,1053,1054,1070,1071,1072,1073,1074;1055,1056,1057,1058,1059,1075,1076,1077,1078,1079?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
-b6%ya 972sc %? %@972sc!b01b11b21b41b51b31fr 232f> 110??fr 233f> 111??10;11??211reg10;11??!211reg ? %@2210?
-b7%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!b01b41fr 233f> 110??10??211reg10??!211reg ? %@2210?
-b8%ya 512sc %1020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? %@512sc!b41211reg ? %@2210?
-b9%ya 522sc %1040,1041,1042,1043,1044,1060,1061,1062,1063,1064;1045,1046,1047,1048,1049,1065,1066,1067,1068,1069;1050,1051,1052,1053,1054,1070,1071,1072,1073,1074;1055,1056,1057,1058,1059,1075,1076,1077,1078,1079?? %@522sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
+233reg 01040,1041,1042,1043,1044,1060,1061,1062,1063,1064;1045,1046,1047,1048,1049,1065,1066,1067,1068,1069;1050,1051,1052,1053,1054,1070,1071,1072,1073,1074;1055,1056,1057,1058,1059,1075,1076,1077,1078,1079?? 233reg 11040,1041,1042,1043,1044,1060,1061,1062,1063,1064;1045,1046,1047,1048,1049,1065,1066,1067,1068,1069;1050,1051,1052,1053,1054,1070,1071,1072,1073,1074;1055,1056,1057,1058,1059,1075,1076,1077,1078,1079?? 230reg+ 1b41;0fr 0%f> ^		int dcol = l1 \+ rstate->cmax - xleft;$1080??0?
+b41;0fr 0%f> ^		if \(diag\)$1081??0?
+b41;0fr 0%f> ^	int dcol = rstate->cmax - xleft;$1082??0?
+b41;0fr 0%f> ^	if \(diag\)$1083??0?
+b41;0fr 0%f> ^	if \(s && xb_path && xb_path\[0]\)$1084??0?
+b41;0fr 0%f> ^	const char \*diag = NULL;$1085??0?
+b41;0fr 0%f> ^/\* render an lsp diagnostic as virtual text starting at screen column col \*/$1086??0?
+b41;0fr 0%f> ^void lsp_show_msg\(char \*msg\) \{ vi_drawmsg_mpt\(msg\) }$1087??0?
+b41;0fr 0%f> ^#include "lsp\.c"$1088??0?
+b41;0fr 0%f> ^		lsp_wake = 1;$1089??0?
+b41;0fr 0%f> ^		lsp_wake = 0;$1090??0?
+b41;0fr 0%f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{$1091??0?
+b41;0fr 0%f> ^				} else if \(k == '\''K'\''\) \{$1092??0?
+b41;0fr 0%f> ^			case 0:	/\* lsp_wake yield; redraw via lsp_dirty \*/$1093??0?
+b41;0fr 0%f> ^		if \(xb_path && xb_path\[0]\)$1094??0?
+b41;0fr 0%f> ^			vi_drawdiag\(diag, dsev, row - xtop, dcol\);$1095??0?
+b41;0fr 0%f> ^		vi_drawdiag\(diag, dsev, row - xtop, dcol\);$1096??0?
+b41;0fr 0%f> ^		diag = lsp_diag_for_line\(xb_path, row, &dsev\);$1097??0?
+b41;0fr 0%f> ^	int dsev = 1;$1098??0?
+b41;0fr 0%f> ^static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)$1099??0?
+b41;0fr 0%f> ^		vi_visual_attrib\(s, row\);$1100??0?
+b41;0fr 0%f> ^	vi_visual_attrib\(s, row\);$1101??0?
+b41;0fr 0%f> ^static void vi_visual_attrib\(char \*s, int row\)$1102??0?
+b41;0fr 0%f> ^	char \*vs = vi_visual == '\''V'\'' \? "-- VISUAL LINE -- " :$1103??0?
+b41;0fr 0%f> ^		snprintf\(vi_msg, sizeof\(vi_msg\), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",$1104??0?
+b41;0fr 0%f> ^			xoff, col, vs\);$1105??0?
+b41;0fr 0%f> ^			"\\"%s\\"%s%dL %d%% L%d C%d B%td %s",$1106??0?
+b41;0fr 0%f> ^			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs, vs\);$1107??0?
+b41;0fr 0%f> ^static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/$1108??0?
+b41;0fr 0%f> ^static int vc_insert\(int cmd\);$1109??0?
+b41;0fr 0%f> ^					vc_visual_op\('\''u'\''\);$1110??0?
+b41;0fr 0%f> ^			case '\''U'\'':$1111??0?
+b41;0fr 0%f> ^				if \(vi_visual == '\''v'\'' \|\| vi_visual == '\''V'\''\) \{$1112??0?
+b41;0fr 0%f> ^					vc_visual_op\('\''d'\''\);$1113??0?
+b41;0fr 0%f> ^				if \(vi_visual && c != TK_CTL\('\''w'\''\)\) \{$1114??0?
+b41;0fr 0%f> ^				if \(vi_visual == '\''b'\'' && \(c == '\''I'\'' \|\| c == '\''A'\''\)\) \{$1115??0?
+b41;0fr 0%f> ^				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{$1116??0?
+b41;0fr 0%f> ^					vc_visual_op\('\''~'\''\);$1117??0?
+b41;0fr 0%f> ^				if \(c == '\''C'\''\)$1118??0?
+b41;0fr 0%f> ^			case TK_ESC:$1119??0?
+b41;0fr 0%f> ^	int scrrow = curwin->y \+ row - xtop;$1120??0?
+b41;0fr 0%f> ^	if \(xmpt == 1 && !vi_status && scrrow == xrows - 1\)$1121??0?
+b41;0fr 0%f> ^		char tmp\[wcols\+3], snum\[32];$1122??0?
+b41;0fr 0%f> ^		RS\(2, led_crender\(tmp, scrrow, wx, 0, wcols\)\)$1123??0?
+b41;0fr 0%f> ^		led_crender\(s, scrrow, wx \+ l1, xleft, xleft \+ wcols - l1\)$1124??0?
+b41;0fr 0%f> ^				RS\(2, led_prender\(tmp1, scrrow, wx \+ l1\+i1, 0, l1\)\)$1125??0?
+b41;0fr 0%f> ^		RS\(2, led_prender\(tmp, scrrow, wx, 0, l1\)\)$1126??0?
+b41;0fr 0%f> ^			vi_drawdiag\(diag, dsev, scrrow, dcol\);$1127??0?
+b41;0fr 0%f> ^	led_crender\(s, scrrow, wx, xleft, xleft \+ wcols\)$1128??0?
+b41;0fr 0%f> ^		vi_drawdiag\(diag, dsev, scrrow, dcol\);$1129??0?
+b41;0fr 0%f> ^	for \(; i < xtop \+ curwin->h; i\+\+\)$1130??0?
+b41;0fr 0%f> ^/\* draw the separators owned by each window: its right and bottom edge \*/$1131??0?
+b41;0fr 0%f> ^	RS\(2, led_prender\(sb->s, r, wx \+ col, 0, wcols - col\)\)$1132??0?
+b41;0fr 0%f> ^	if \(col < 0 \|\| col >= wcols\)$1133??0?
+b41;0fr 0%f> ^/\* render an lsp diagnostic as virtual text starting at window column col \*/$1134??0?
+b41;0fr 0%f> ^	if \(l1 > wcols \|\| l1 < 0 \|\| ret \|\| l1 >= rstate->cmax \+ vi_lncol\) \\$1135??0?
+b41;0fr 0%f> ^/\* draw horizontal separator line at screen row, from x for w columns \*/$1136??0?
+b41;0fr 0%f> ^		xtop = MAX\(0, \*row - curwin->h / 2\);$1137??0?
+b41;0fr 0%f> ^		else if \(\*row < xtop \|\| \*row >= xtop \+ curwin->h - 1\)$1138??0?
+b41;0fr 0%f> ^		\*row = MIN\(xtop \+ curwin->h - 1 - cnt \+ 1, lbuf_len\(xb\) - 1\);$1139??0?
+234reg 01080,1081,1082,1083,1084,1100,1101,1102,1103,1104,1120,1121,1122,1123,1124;1085,1086,1087,1088,1089,1105,1106,1107,1108,1109,1125,1126,1127,1128,1129;1090,1091,1092,1093,1094,1110,1111,1112,1113,1114,1130,1131,1132,1133,1134;1095,1096,1097,1098,1099,1115,1116,1117,1118,1119,1135,1136,1137,1138,1139?? 234reg 11080,1081,1082,1083,1084,1100,1101,1102,1103,1104,1120,1121,1122,1123,1124;1085,1086,1087,1088,1089,1105,1106,1107,1108,1109,1125,1126,1127,1128,1129;1090,1091,1092,1093,1094,1110,1111,1112,1113,1114,1130,1131,1132,1133,1134;1095,1096,1097,1098,1099,1115,1116,1117,1118,1119,1135,1136,1137,1138,1139?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
+b6%ya 972sc %? %@972sc!b01b11b21b41b51b31fr 232f> 110??fr 233f> 111??fr 234f> 112??10;11;12??211reg10;11;12??!211reg ? %@2210?
+b7%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!b01b41fr 233f> 110??fr 234f> 111??10;11??211reg10;11??!211reg ? %@2210?
+b8%ya 512sc %1020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? %@512sc!b41fr 234f> 110??10??211reg10??!211reg ? %@2210?
+b9%ya 522sc %1040,1041,1042,1043,1044,1060,1061,1062,1063,1064;1045,1046,1047,1048,1049,1065,1066,1067,1068,1069;1050,1051,1052,1053,1054,1070,1071,1072,1073,1074;1055,1056,1057,1058,1059,1075,1076,1077,1078,1079?? %@522sc!b41211reg ? %@2210?
+b10%ya 532sc %1080,1081,1082,1083,1084,1100,1101,1102,1103,1104,1120,1121,1122,1123,1124;1085,1086,1087,1088,1089,1105,1106,1107,1108,1109,1125,1126,1127,1128,1129;1090,1091,1092,1093,1094,1110,1111,1112,1113,1114,1130,1131,1132,1133,1134;1095,1096,1097,1098,1099,1115,1116,1117,1118,1119,1135,1136,1137,1138,1139?? %@532sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -5585,7 +5646,107 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 '\''3i 	vi_visual_attrib(s, row);
 ??!219reg vi.c:488:m32sc %? %@2142sc!0?
 '\''4d??!219reg vi.c:490:m42sc %? %@2142sc!p compat applied: src=visual.sh src=splits.sh' > "$P2VIF".3
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".d
+# Compat (post) from lsp.sh src=visual.sh src=splits.sh
+printf '%s\n' '2sc!fr 98b4%ya 98?0?
+%f> \{
+	int row = vi_botrow\(\);
+	if \(xlw && row > xtop && vi_srow\(row\) \+ vi_lnrows\(lbuf_get\(xb, row\)\) > win_height\(\)\)
+	vi_visual_attrib\(s, row\);
+		row--;
+	return row;
+}1??0?
+1??+3m 11q0?
+%f> 	vi_visual_attrib\(s, row\);
+		row--;
+	return row;
+}2??0?
+2??m 1220reg p OK vi.c:219:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^	vi_visual_attrib\(s, row\);$3??0?
+3??m 1220reg p OK vi.c:219:a32sc %? %@2152sc!fr 981qfr 980?
+%f> \{
+	int row = vi_botrow\(\);
+	if \(xlw && row > xtop && vi_srow\(row\) \+ vi_lnrows\(lbuf_get\(xb, row\)\) > win_height\(\)\)4??0?
+4??+3m 1220reg p OK vi.c:219:a42sc %? %@2152sc!1q0?
+%f> 		row--;
+	return row;
+}5??0?
+5??-1m 1220reg p OK vi.c:219:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:2192sc %? %@2132sc!0?
+?0?
+%f+ 		return i;
+	}
+	i = vi_rendrow\(s, trow, 0\);
+	rstate = rstates;1??0?
+1??+2m 21q0?
+%f+ 		return i;
+	}
+	i = vi_rendrow\(s, trow, 0\);4??0?
+4??+2m 2220reg p OK vi.c:523:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:5232sc %? %@2132sc!0?
+?0?
+%f+ 	rstate = rstates;
+	if \(diag\)1??0?
+1??m 31q0?
+;0fr.,$f+ ^	rstate = rstates;$4??0?
+4??m 3220reg p OK vi.c:524:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg vi.c:5242sc %? %@2132sc!0?
+?0?
+%f+ 	if \(diag\)
+		vi_drawdiag\(diag, dsev, row - xtop, dcol\);
+	return i;
+}
+
+1??0?
+1??+1m 41q0?
+%f+ 		vi_drawdiag\(diag, dsev, row - xtop, dcol\);
+	return i;
+}
+
+2??0?
+2??m 4220reg p OK vi.c:526:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		vi_drawdiag\(diag, dsev, row - xtop, dcol\);$3??0?
+3??m 4220reg p OK vi.c:526:a32sc %? %@2152sc!fr 981qfr 980?
+;0fr.,$f+ ^	if \(diag\)$4??0?
+4??+1m 4220reg p OK vi.c:526:a42sc %? %@2152sc!fr 981qfr 980?
+%f+ 	return i;
+}
+
+5??0?
+5??-1m 4220reg p OK vi.c:526:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:5262sc %? %@2132sc!0?
+?0?
+%f+ int vi_drawline\(int row, int trow\)
+\{
+	return vi_drawrow\(row, trow\);
+		vi_drawdiag\(diag, dsev, scrrow, dcol\);
+}
+
+/\* redraw the screen \*/1??0?
+1??+3m 51q0?
+%f+ 		vi_drawdiag\(diag, dsev, scrrow, dcol\);
+}
+
+/\* redraw the screen \*/2??0?
+2??m 5220reg p OK vi.c:534:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		vi_drawdiag\(diag, dsev, scrrow, dcol\);$3??0?
+3??m 5220reg p OK vi.c:534:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ int vi_drawline\(int row, int trow\)
+\{
+	return vi_drawrow\(row, trow\);4??0?
+4??+3m 5220reg p OK vi.c:534:a42sc %? %@2152sc!1q0?
+%f+ }
+
+/\* redraw the screen \*/5??0?
+5??-1m 5220reg p OK vi.c:534:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:5342sc %? %@2132sc!0?
+'\''1d??!219reg vi.c:219:m12sc %? %@2142sc!0?
+'\''2i 	int dcol = rstate->cmax - xleft;
+??!219reg vi.c:523:m22sc %? %@2142sc!0?
+'\''3i 	vi_visual_attrib(s, row);
+??!219reg vi.c:524:m32sc %? %@2142sc!0?
+'\''4s/row - xtop/scrrow/??!219reg vi.c:526:m42sc %? %@2142sc!0?
+'\''5d??!219reg vi.c:534:m52sc %? %@2142sc!p compat applied: src=lsp.sh src=visual.sh src=splits.sh' > "$P2VIF".4
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".4 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
@@ -6343,6 +6504,223 @@ static int vc_insert(int cmd);
  	rstate = rstates;
  	return i;
  }
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT post src=lsp.sh src=visual.sh src=splits.sh ===
+=== GATE 1 present tag 1080 origin 0 probe vi.c ===
+		int dcol = l1 + rstate->cmax - xleft;
+=== END ===
+=== GATE 2 present tag 1081 origin 0 probe vi.c ===
+		if (diag)
+=== END ===
+=== GATE 3 present tag 1082 origin 0 probe vi.c ===
+	int dcol = rstate->cmax - xleft;
+=== END ===
+=== GATE 4 present tag 1083 origin 0 probe vi.c ===
+	if (diag)
+=== END ===
+=== GATE 5 present tag 1084 origin 0 probe vi.c ===
+	if (s && xb_path && xb_path[0])
+=== END ===
+=== GATE 6 present tag 1085 origin 0 probe vi.c ===
+	const char *diag = NULL;
+=== END ===
+=== GATE 7 present tag 1086 origin 0 probe vi.c ===
+/* render an lsp diagnostic as virtual text starting at screen column col */
+=== END ===
+=== GATE 8 present tag 1087 origin 0 probe vi.c ===
+void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
+=== END ===
+=== GATE 9 present tag 1088 origin 0 probe vi.c ===
+#include "lsp.c"
+=== END ===
+=== GATE 10 present tag 1089 origin 0 probe vi.c ===
+		lsp_wake = 1;
+=== END ===
+=== GATE 11 present tag 1090 origin 0 probe vi.c ===
+		lsp_wake = 0;
+=== END ===
+=== GATE 12 present tag 1091 origin 0 probe vi.c ===
+				} else if (k == '~' || k == 'u' || k == 'U') {
+=== END ===
+=== GATE 13 present tag 1092 origin 0 probe vi.c ===
+				} else if (k == 'K') {
+=== END ===
+=== GATE 14 present tag 1093 origin 0 probe vi.c ===
+			case 0:	/* lsp_wake yield; redraw via lsp_dirty */
+=== END ===
+=== GATE 15 present tag 1094 origin 0 probe vi.c ===
+		if (xb_path && xb_path[0])
+=== END ===
+=== GATE 16 present tag 1095 origin 0 probe vi.c ===
+			vi_drawdiag(diag, dsev, row - xtop, dcol);
+=== END ===
+=== GATE 17 present tag 1096 origin 0 probe vi.c ===
+		vi_drawdiag(diag, dsev, row - xtop, dcol);
+=== END ===
+=== GATE 18 present tag 1097 origin 0 probe vi.c ===
+		diag = lsp_diag_for_line(xb_path, row, &dsev);
+=== END ===
+=== GATE 19 present tag 1098 origin 0 probe vi.c ===
+	int dsev = 1;
+=== END ===
+=== GATE 20 present tag 1099 origin 0 probe vi.c ===
+static void vi_drawdiag(const char *diag, int sev, int r, int col)
+=== END ===
+=== GATE 21 present tag 1100 origin 1 probe vi.c ===
+		vi_visual_attrib(s, row);
+=== END ===
+=== GATE 22 present tag 1101 origin 1 probe vi.c ===
+	vi_visual_attrib(s, row);
+=== END ===
+=== GATE 23 present tag 1102 origin 1 probe vi.c ===
+static void vi_visual_attrib(char *s, int row)
+=== END ===
+=== GATE 24 present tag 1103 origin 1 probe vi.c ===
+	char *vs = vi_visual == 'V' ? "-- VISUAL LINE -- " :
+=== END ===
+=== GATE 25 present tag 1104 origin 1 probe vi.c ===
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",
+=== END ===
+=== GATE 26 present tag 1105 origin 1 probe vi.c ===
+			xoff, col, vs);
+=== END ===
+=== GATE 27 present tag 1106 origin 1 probe vi.c ===
+			"\"%s\"%s%dL %d%% L%d C%d B%td %s",
+=== END ===
+=== GATE 28 present tag 1107 origin 1 probe vi.c ===
+			istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs, vs);
+=== END ===
+=== GATE 29 present tag 1108 origin 1 probe vi.c ===
+static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line 'b'=block */
+=== END ===
+=== GATE 30 present tag 1109 origin 1 probe vi.c ===
+static int vc_insert(int cmd);
+=== END ===
+=== GATE 31 present tag 1110 origin 1 probe vi.c ===
+					vc_visual_op('u');
+=== END ===
+=== GATE 32 present tag 1111 origin 1 probe vi.c ===
+			case 'U':
+=== END ===
+=== GATE 33 present tag 1112 origin 1 probe vi.c ===
+				if (vi_visual == 'v' || vi_visual == 'V') {
+=== END ===
+=== GATE 34 present tag 1113 origin 1 probe vi.c ===
+					vc_visual_op('d');
+=== END ===
+=== GATE 35 present tag 1114 origin 1 probe vi.c ===
+				if (vi_visual && c != TK_CTL('w')) {
+=== END ===
+=== GATE 36 present tag 1115 origin 1 probe vi.c ===
+				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
+=== END ===
+=== GATE 37 present tag 1116 origin 1 probe vi.c ===
+				} else if (k == 'v' || k == 'V' || k == 'b') {
+=== END ===
+=== GATE 38 present tag 1117 origin 1 probe vi.c ===
+					vc_visual_op('~');
+=== END ===
+=== GATE 39 present tag 1118 origin 1 probe vi.c ===
+				if (c == 'C')
+=== END ===
+=== GATE 40 present tag 1119 origin 1 probe vi.c ===
+			case TK_ESC:
+=== END ===
+=== GATE 41 present tag 1120 origin 2 probe vi.c ===
+	int scrrow = curwin->y + row - xtop;
+=== END ===
+=== GATE 42 present tag 1121 origin 2 probe vi.c ===
+	if (xmpt == 1 && !vi_status && scrrow == xrows - 1)
+=== END ===
+=== GATE 43 present tag 1122 origin 2 probe vi.c ===
+		char tmp[wcols+3], snum[32];
+=== END ===
+=== GATE 44 present tag 1123 origin 2 probe vi.c ===
+		RS(2, led_crender(tmp, scrrow, wx, 0, wcols))
+=== END ===
+=== GATE 45 present tag 1124 origin 2 probe vi.c ===
+		led_crender(s, scrrow, wx + l1, xleft, xleft + wcols - l1)
+=== END ===
+=== GATE 46 present tag 1125 origin 2 probe vi.c ===
+				RS(2, led_prender(tmp1, scrrow, wx + l1+i1, 0, l1))
+=== END ===
+=== GATE 47 present tag 1126 origin 2 probe vi.c ===
+		RS(2, led_prender(tmp, scrrow, wx, 0, l1))
+=== END ===
+=== GATE 48 present tag 1127 origin 2 probe vi.c ===
+			vi_drawdiag(diag, dsev, scrrow, dcol);
+=== END ===
+=== GATE 49 present tag 1128 origin 2 probe vi.c ===
+	led_crender(s, scrrow, wx, xleft, xleft + wcols)
+=== END ===
+=== GATE 50 present tag 1129 origin 2 probe vi.c ===
+		vi_drawdiag(diag, dsev, scrrow, dcol);
+=== END ===
+=== GATE 51 present tag 1130 origin 2 probe vi.c ===
+	for (; i < xtop + curwin->h; i++)
+=== END ===
+=== GATE 52 present tag 1131 origin 2 probe vi.c ===
+/* draw the separators owned by each window: its right and bottom edge */
+=== END ===
+=== GATE 53 present tag 1132 origin 2 probe vi.c ===
+	RS(2, led_prender(sb->s, r, wx + col, 0, wcols - col))
+=== END ===
+=== GATE 54 present tag 1133 origin 2 probe vi.c ===
+	if (col < 0 || col >= wcols)
+=== END ===
+=== GATE 55 present tag 1134 origin 2 probe vi.c ===
+/* render an lsp diagnostic as virtual text starting at window column col */
+=== END ===
+=== GATE 56 present tag 1135 origin 2 probe vi.c ===
+	if (l1 > wcols || l1 < 0 || ret || l1 >= rstate->cmax + vi_lncol) \
+=== END ===
+=== GATE 57 present tag 1136 origin 2 probe vi.c ===
+/* draw horizontal separator line at screen row, from x for w columns */
+=== END ===
+=== GATE 58 present tag 1137 origin 2 probe vi.c ===
+		xtop = MAX(0, *row - curwin->h / 2);
+=== END ===
+=== GATE 59 present tag 1138 origin 2 probe vi.c ===
+		else if (*row < xtop || *row >= xtop + curwin->h - 1)
+=== END ===
+=== GATE 60 present tag 1139 origin 2 probe vi.c ===
+		*row = MIN(xtop + curwin->h - 1 - cnt + 1, lbuf_len(xb) - 1);
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/vi.c
++++ b/vi.c
+@@ -216,7 +216,6 @@
+ {
+ 	int row = vi_botrow();
+ 	if (xlw && row > xtop && vi_srow(row) + vi_lnrows(lbuf_get(xb, row)) > win_height())
+-	vi_visual_attrib(s, row);
+ 		row--;
+ 	return row;
+ }
+@@ -521,9 +520,11 @@
+ 		return i;
+ 	}
+ 	i = vi_rendrow(s, trow, 0);
++	int dcol = rstate->cmax - xleft;
+ 	rstate = rstates;
++	vi_visual_attrib(s, row);
+ 	if (diag)
+-		vi_drawdiag(diag, dsev, row - xtop, dcol);
++		vi_drawdiag(diag, dsev, scrrow, dcol);
+ 	return i;
+ }
+ 
+@@ -531,7 +532,6 @@
+ int vi_drawline(int row, int trow)
+ {
+ 	return vi_drawrow(row, trow);
+-		vi_drawdiag(diag, dsev, scrrow, dcol);
+ }
+ 
+ /* redraw the screen */
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
