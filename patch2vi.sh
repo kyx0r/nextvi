@@ -618,8 +618,12 @@ p2v_origins() { p2v_compatsrc "$1" | tr ' ' '\n' | grep -v '^$' | sort -u; }
 # The origins script $1 depends on, out of the edge list compat_order builds.
 p2v_deps() { awk -v s="$1" '$1 == s && NF > 1 { print $2 }' "$P2VITMP.edges"; }
 
-# Run each script of the list $1, in order, output dropped; the first failure is
-# the result. Meant to be run on a tree at HEAD, which the caller restores.
+# Apply the list $1 of scripts, in order, and build what comes out: a patch that
+# applies and then will not compile is no more applied than one that missed a
+# hunk, and only a build says which. Output is dropped and the first failure -
+# a script or the build - is the result. -O0 because this builds once per order
+# tried and nothing here runs the binary. Meant to be run on a tree at HEAD,
+# which the caller restores.
 p2v_runlist() (
 	# a sourced shell may have set IFS to anything, and this splits on it
 	IFS=' 	
@@ -628,7 +632,7 @@ p2v_runlist() (
 	do
 		"./$p2v_s" >/dev/null 2>&1 || return 1
 	done
-	return 0
+	CFLAGS=-O0 ./cbuild.sh build >/dev/null 2>&1
 )
 
 # What the caller has of their own and a run here must not carry off: the
@@ -673,8 +677,8 @@ p2v_restore_sh() (
 
 # Depth first over the orders a chain can be applied in: $1 is the chain so far,
 # $2 the candidates left. A candidate is only stepped into once the chain up to
-# and including it has really applied, from a tree at HEAD, and a step that
-# leads nowhere is taken back and the next candidate tried - a script that
+# and including it has really applied and built, from a tree at HEAD, and a step
+# that leads nowhere is taken back and the next candidate tried - a script that
 # applies here may still leave one further along with nothing to apply to. The
 # first order that takes every candidate is printed; without one, nothing is,
 # and the status says so. A subshell so its variables are its own: this calls
@@ -718,9 +722,9 @@ p2v_search() (
 # The edges are not the whole story. Two scripts with no block between them can
 # still only go one way round - one of them absorbs the other's drift and not
 # the reverse - and no stored block says so. So the order is not derived, it is
-# found: p2v_search walks the orders the edges allow and runs every one it
-# considers, and what comes out is an order that really applied, whole, on a
-# tree at HEAD. Candidates are tried in edge order, so the order the blocks ask
+# found: p2v_search walks the orders the edges allow, and every one it considers
+# is really run and really built, so what comes out is an order whose every step
+# applied and compiled, from a tree at HEAD. Candidates are tried in edge order, so the order the blocks ask
 # for is the one that comes out wherever it works. A chain no order applies in
 # is reported and left out.
 #
