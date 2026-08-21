@@ -683,7 +683,15 @@ p2v_search() (
 	# a sourced shell may have set IFS to anything, and this splits on it
 	IFS=' 	
 '
-	[ -n "$2" ] || { printf "%s\n" "$1"; return 0; }
+	if [ -z "$2" ]; then
+		# an order the build already turned down is stepped over and
+		# the walk goes on, so the next one out is the next order that
+		# applies - never one that did not
+		p2v_n=$(cat "$P2VITMP.skip" 2>/dev/null || echo 0)
+		[ "$p2v_n" -le 0 ] && { printf "%s\n" "$1"; return 0; }
+		printf "%s\n" "$((p2v_n - 1))" > "$P2VITMP.skip"
+		return 1
+	fi
 	for c in $2
 	do
 		# an origin of c still waiting: its blocks are not in yet
@@ -723,14 +731,18 @@ p2v_search() (
 # tree at HEAD. That chain, and only that chain, is then built: a patch set that
 # applies and will not compile is no more applied than one that missed a hunk,
 # and building every order the search passed through instead would bury the one
-# that matters under the ones nobody will ever run. The build's output is left
-# alone for the warnings' sake, on stderr, the chains themselves being stdout.
-# Only the chain is built, and nothing the search threw away: an order it ruled
+# that matters under the ones nobody will ever run. The output of the build that
+# settles a chain is left alone for the warnings' sake, on stderr, the chains
+# themselves being stdout; the builds passed over on the way there say only that
+# they failed, their errors being about an order nobody will run.
+# Only chains are built, and nothing the search threw away: an order it ruled
 # out has a script in it that would not apply, and there is nothing to learn
-# from compiling the tree that leaves behind. Candidates are tried in edge
-# order, so the order the blocks ask for is the one that comes out wherever it
-# works. A chain no order applies in, or none that builds, is reported and left
-# out.
+# from compiling the tree that leaves behind. Applying is not enough on its own
+# either - two orders can both apply and only one of them compile - so a chain
+# the build turns down sends the search back for the next order that applies,
+# and that one is built in its turn. Candidates are tried in edge order, so the
+# order the blocks ask for is the one that comes out wherever it works. A chain
+# no order applies in, or none whose orders build, is reported and left out.
 #
 # This runs the scripts, so it wants a tree with nothing of its own in it; the
 # tree is put back at HEAD afterwards. Each chain is printed as the shell
@@ -793,36 +805,50 @@ compat_order() (
 		END { walk(target) }
 		' "$P2VITMP.edges")
 		printf "%s\n" "CHECKING: $target" >&2
-		chain=$(p2v_search "" "$cand")
-		searched=$?
-		p2v_restore_sh
-		if [ "$searched" -ne 0 ]; then
-			printf "%s\n" "NO ORDER: $target, left out" >&2
-			st=1
-			continue
-		fi
-		line=
-		for c in $chain
+		skip=0
+		while :
 		do
-			line="${line:+$line && }./$c"
+			printf "%s\n" "$skip" > "$P2VITMP.skip"
+			chain=$(p2v_search "" "$cand")
+			searched=$?
+			p2v_restore_sh
+			[ "$searched" -eq 0 ] || { chain=; break; }
+			line=
+			for c in $chain
+			do
+				line="${line:+$line && }./$c"
+			done
+			# the chain as it will be printed, and only it, built:
+			# -O0, since nothing here runs the binary, and the
+			# warnings go by where they can be read against the
+			# chain that raised them
+			printf "%s\n" "BUILDING: $line" >&2
+			p2v_runlist "$chain"
+			CFLAGS=-O0 ./cbuild.sh build > "$P2VITMP.build" 2>&1
+			built=$?
+			p2v_restore_sh
+			# the build of an order that stays is worth reading,
+			# warnings and all; the build of one the next order
+			# replaces is not, and only its verdict is kept - bar
+			# the last of them, which is why nothing was emitted
+			if [ "$built" -eq 0 ]; then
+				cat "$P2VITMP.build" >&2
+				break
+			fi
+			printf "%s\n" "NO BUILD: $line, next order" >&2
+			skip=$((skip + 1))
+			chain=
 		done
-		# the chain as it will be printed, and only it, built once:
-		# -O0, since nothing here runs the binary, and the warnings go
-		# by where they can be read against the chain that raised them
-		printf "%s\n" "BUILDING: $line" >&2
-		p2v_runlist "$chain"
-		CFLAGS=-O0 ./cbuild.sh build >&2
-		built=$?
-		p2v_restore_sh
-		if [ "$built" -ne 0 ]; then
-			printf "%s\n" "NO BUILD: $target, left out" >&2
+		if [ -z "$chain" ]; then
+			[ "$skip" -gt 0 ] && cat "$P2VITMP.build" >&2
+			printf "%s\n" "NO ORDER: $target, left out" >&2
 			st=1
 			continue
 		fi
 		printf "%s\n" "$line" >> "$P2VITMP.order"
 	done
 	rm -rf "$P2VITMP.keep"
-	rm -f "$P2VITMP.edges"
+	rm -f "$P2VITMP.edges" "$P2VITMP.skip" "$P2VITMP.build"
 	if [ -z "$1" ]; then
 		cat "$P2VITMP.order"
 		rm -f "$P2VITMP.order"
