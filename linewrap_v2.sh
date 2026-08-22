@@ -174,12 +174,53 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b41;0fr 0%f> ^		xtop = MAX\(0, \*row - curwin->h / 2\);$1137??0?
 b41;0fr 0%f> ^		else if \(\*row < xtop \|\| \*row >= xtop \+ curwin->h - 1\)$1138??0?
 b41;0fr 0%f> ^		\*row = MIN\(xtop \+ curwin->h - 1 - cnt \+ 1, lbuf_len\(xb\) - 1\);$1139??0?
-234reg 01080,1081,1082,1083,1084,1100,1101,1102,1103,1104,1120,1121,1122,1123,1124;1085,1086,1087,1088,1089,1105,1106,1107,1108,1109,1125,1126,1127,1128,1129;1090,1091,1092,1093,1094,1110,1111,1112,1113,1114,1130,1131,1132,1133,1134;1095,1096,1097,1098,1099,1115,1116,1117,1118,1119,1135,1136,1137,1138,1139?? 234reg 11080,1081,1082,1083,1084,1100,1101,1102,1103,1104,1120,1121,1122,1123,1124;1085,1086,1087,1088,1089,1105,1106,1107,1108,1109,1125,1126,1127,1128,1129;1090,1091,1092,1093,1094,1110,1111,1112,1113,1114,1130,1131,1132,1133,1134;1095,1096,1097,1098,1099,1115,1116,1117,1118,1119,1135,1136,1137,1138,1139?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
-b6%ya 972sc %? %@972sc!b01b11b21b41b51b31fr 232f> 110??fr 233f> 111??fr 234f> 112??10;11;12??211reg10;11;12??!211reg ? %@2210?
-b7%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!b01b41fr 233f> 110??fr 234f> 111??10;11??211reg10;11??!211reg ? %@2210?
-b8%ya 512sc %1020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? %@512sc!b41fr 234f> 110??10??211reg10??!211reg ? %@2210?
-b9%ya 522sc %1040,1041,1042,1043,1044,1060,1061,1062,1063,1064;1045,1046,1047,1048,1049,1065,1066,1067,1068,1069;1050,1051,1052,1053,1054,1070,1071,1072,1073,1074;1055,1056,1057,1058,1059,1075,1076,1077,1078,1079?? %@522sc!b41211reg ? %@2210?
-b10%ya 532sc %1080,1081,1082,1083,1084,1100,1101,1102,1103,1104,1120,1121,1122,1123,1124;1085,1086,1087,1088,1089,1105,1106,1107,1108,1109,1125,1126,1127,1128,1129;1090,1091,1092,1093,1094,1110,1111,1112,1113,1114,1130,1131,1132,1133,1134;1095,1096,1097,1098,1099,1115,1116,1117,1118,1119,1135,1136,1137,1138,1139?? %@532sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
+234reg 01080,1081,1082,1083,1084,1100,1101,1102,1103,1104,1120,1121,1122,1123,1124;1085,1086,1087,1088,1089,1105,1106,1107,1108,1109,1125,1126,1127,1128,1129;1090,1091,1092,1093,1094,1110,1111,1112,1113,1114,1130,1131,1132,1133,1134;1095,1096,1097,1098,1099,1115,1116,1117,1118,1119,1135,1136,1137,1138,1139?? 234reg 11080,1081,1082,1083,1084,1100,1101,1102,1103,1104,1120,1121,1122,1123,1124;1085,1086,1087,1088,1089,1105,1106,1107,1108,1109,1125,1126,1127,1128,1129;1090,1091,1092,1093,1094,1110,1111,1112,1113,1114,1130,1131,1132,1133,1134;1095,1096,1097,1098,1099,1115,1116,1117,1118,1119,1135,1136,1137,1138,1139?? 230reg+ 1b41;0fr 0%f> ^	if \(diag\)$1140??0?
+b41;0fr 0%f> ^	int dcol = rstate->cmax - xleft;$1141??0?
+b41;0fr 0%f> ^		if \(diag\)$1142??0?
+b41;0fr 0%f> ^		int dcol = l1 \+ rstate->cmax - xleft;$1143??0?
+b41;0fr 0%f> ^	if \(s && xb_path && xb_path\[0]\)$1144??0?
+b41;0fr 0%f> ^	const char \*diag = NULL;$1145??0?
+b41;0fr 0%f> ^/\* render an lsp diagnostic as virtual text starting at screen column col \*/$1146??0?
+b41;0fr 0%f> ^void lsp_show_msg\(char \*msg\) \{ vi_drawmsg_mpt\(msg\) }$1147??0?
+b41;0fr 0%f> ^#include "lsp\.c"$1148??0?
+b41;0fr 0%f> ^		lsp_wake = 1;$1149??0?
+b41;0fr 0%f> ^		lsp_wake = 0;$1150??0?
+b41;0fr 0%f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{$1151??0?
+b41;0fr 0%f> ^				} else if \(k == '\''K'\''\) \{$1152??0?
+b41;0fr 0%f> ^			case 0:	/\* lsp_wake yield; redraw via lsp_dirty \*/$1153??0?
+b41;0fr 0%f> ^		if \(xb_path && xb_path\[0]\)$1154??0?
+b41;0fr 0%f> ^		vi_drawdiag\(diag, dsev, row - xtop, dcol\);$1155??0?
+b41;0fr 0%f> ^			vi_drawdiag\(diag, dsev, row - xtop, dcol\);$1156??0?
+b41;0fr 0%f> ^		diag = lsp_diag_for_line\(xb_path, row, &dsev\);$1157??0?
+b41;0fr 0%f> ^	int dsev = 1;$1158??0?
+b41;0fr 0%f> ^static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)$1159??0?
+b41;0fr 0%f> ^	char \*vs = vi_visual == '\''V'\'' \? "-- VISUAL LINE -- " :$1160??0?
+b41;0fr 0%f> ^		snprintf\(vi_msg, sizeof\(vi_msg\), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",$1161??0?
+b41;0fr 0%f> ^			xoff, col, vs\);$1162??0?
+b41;0fr 0%f> ^			"\\"%s\\"%s%dL %d%% L%d C%d B%td %s",$1163??0?
+b41;0fr 0%f> ^			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs, vs\);$1164??0?
+b41;0fr 0%f> ^	vi_visual_attrib\(s, row\);$1165??0?
+b41;0fr 0%f> ^		vi_visual_attrib\(s, row\);$1166??0?
+b41;0fr 0%f> ^static void vi_visual_attrib\(char \*s, int row\)$1167??0?
+b41;0fr 0%f> ^static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/$1168??0?
+b41;0fr 0%f> ^static int vc_insert\(int cmd\);$1169??0?
+b41;0fr 0%f> ^					vc_visual_op\('\''u'\''\);$1170??0?
+b41;0fr 0%f> ^			case '\''U'\'':$1171??0?
+b41;0fr 0%f> ^				if \(vi_visual == '\''v'\'' \|\| vi_visual == '\''V'\''\) \{$1172??0?
+b41;0fr 0%f> ^					vc_visual_op\('\''d'\''\);$1173??0?
+b41;0fr 0%f> ^				if \(vi_visual && c != TK_CTL\('\''w'\''\)\) \{$1174??0?
+b41;0fr 0%f> ^				if \(vi_visual == '\''b'\'' && \(c == '\''I'\'' \|\| c == '\''A'\''\)\) \{$1175??0?
+b41;0fr 0%f> ^				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{$1176??0?
+b41;0fr 0%f> ^					vc_visual_op\('\''~'\''\);$1177??0?
+b41;0fr 0%f> ^				if \(c == '\''C'\''\)$1178??0?
+b41;0fr 0%f> ^			case TK_ESC:$1179??0?
+235reg 01140,1141,1142,1143,1144,1160,1161,1162,1163,1164;1145,1146,1147,1148,1149,1165,1166,1167,1168,1169;1150,1151,1152,1153,1154,1170,1171,1172,1173,1174;1155,1156,1157,1158,1159,1175,1176,1177,1178,1179?? 235reg 11140,1141,1142,1143,1144,1160,1161,1162,1163,1164;1145,1146,1147,1148,1149,1165,1166,1167,1168,1169;1150,1151,1152,1153,1154,1170,1171,1172,1173,1174;1155,1156,1157,1158,1159,1175,1176,1177,1178,1179?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
+b6%ya 972sc %? %@972sc!b01b11b21b41b51b31fr 232f> 110??fr 233f> 111??fr 234f> 112??fr 235f> 113??10;11;12;13??211reg10;11;12;13??!211reg ? %@2210?
+b7%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!b01b41fr 233f> 110??fr 234f> 111??fr 235f> 112??10;11;12??211reg10;11;12??!211reg ? %@2210?
+b8%ya 512sc %1020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? %@512sc!b41fr 234f> 110??fr 235f> 111??10;11??211reg10;11??!211reg ? %@2210?
+b9%ya 522sc %1040,1041,1042,1043,1044,1060,1061,1062,1063,1064;1045,1046,1047,1048,1049,1065,1066,1067,1068,1069;1050,1051,1052,1053,1054,1070,1071,1072,1073,1074;1055,1056,1057,1058,1059,1075,1076,1077,1078,1079?? %@522sc!b41fr 235f> 110??10??211reg10??!211reg ? %@2210?
+b10%ya 532sc %1080,1081,1082,1083,1084,1100,1101,1102,1103,1104,1120,1121,1122,1123,1124;1085,1086,1087,1088,1089,1105,1106,1107,1108,1109,1125,1126,1127,1128,1129;1090,1091,1092,1093,1094,1110,1111,1112,1113,1114,1130,1131,1132,1133,1134;1095,1096,1097,1098,1099,1115,1116,1117,1118,1119,1135,1136,1137,1138,1139?? %@532sc!b41211reg ? %@2210?
+b11%ya 542sc %1140,1141,1142,1143,1144,1160,1161,1162,1163,1164;1145,1146,1147,1148,1149,1165,1166,1167,1168,1169;1150,1151,1152,1153,1154,1170,1171,1172,1173,1174;1155,1156,1157,1158,1159,1175,1176,1177,1178,1179?? %@542sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -5746,7 +5787,49 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 ??!219reg vi.c:524:m32sc %? %@2142sc!0?
 '\''4s/row - xtop/scrrow/??!219reg vi.c:526:m42sc %? %@2142sc!0?
 '\''5d??!219reg vi.c:534:m52sc %? %@2142sc!p compat applied: src=lsp.sh src=visual.sh src=splits.sh' > "$P2VIF".4
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".4 "$P2VIF".d
+# Compat (post) from lsp.sh src=visual.sh
+printf '%s\n' '2sc!fr 98b4%ya 98?0?
+%f> 	i = vi_rendrow\(s, trow, 0\);
+	int dcol = rstate->cmax - xleft;
+	rstate = rstates;
+	if \(diag\)
+		vi_drawdiag\(diag, dsev, row - xtop, dcol\);
+	return i;1??0?
+1??+2m 11q0?
+%f> 	i = vi_rendrow\(s, trow, 0\);
+	int dcol = rstate->cmax - xleft;
+	rstate = rstates;4??0?
+4??+2m 1220reg p OK vi.c:478:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:4782sc %? %@2132sc!0?
+?0?
+%f+ int vi_drawline\(int row, int trow\)
+\{
+	return vi_drawrow\(row, trow\);
+	vi_visual_attrib\(s, row\);
+}
+
+/\* redraw the screen \*/1??0?
+1??+3m 21q0?
+%f+ 	vi_visual_attrib\(s, row\);
+}
+
+/\* redraw the screen \*/2??0?
+2??m 2220reg p OK vi.c:488:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	vi_visual_attrib\(s, row\);$3??0?
+3??m 2220reg p OK vi.c:488:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ int vi_drawline\(int row, int trow\)
+\{
+	return vi_drawrow\(row, trow\);4??0?
+4??+3m 2220reg p OK vi.c:488:a42sc %? %@2152sc!1q0?
+%f+ }
+
+/\* redraw the screen \*/5??0?
+5??-1m 2220reg p OK vi.c:488:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:4882sc %? %@2132sc!0?
+'\''1i 	vi_visual_attrib(s, row);
+??!219reg vi.c:478:m12sc %? %@2142sc!0?
+'\''2d??!219reg vi.c:488:m22sc %? %@2142sc!p compat applied: src=lsp.sh src=visual.sh' > "$P2VIF".5
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".4 "$P2VIF".5 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
@@ -6718,6 +6801,150 @@ static int vc_insert(int cmd);
  {
  	return vi_drawrow(row, trow);
 -		vi_drawdiag(diag, dsev, scrrow, dcol);
+ }
+ 
+ /* redraw the screen */
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT post src=lsp.sh src=visual.sh ===
+=== GATE 1 present tag 1140 origin 0 probe vi.c ===
+	if (diag)
+=== END ===
+=== GATE 2 present tag 1141 origin 0 probe vi.c ===
+	int dcol = rstate->cmax - xleft;
+=== END ===
+=== GATE 3 present tag 1142 origin 0 probe vi.c ===
+		if (diag)
+=== END ===
+=== GATE 4 present tag 1143 origin 0 probe vi.c ===
+		int dcol = l1 + rstate->cmax - xleft;
+=== END ===
+=== GATE 5 present tag 1144 origin 0 probe vi.c ===
+	if (s && xb_path && xb_path[0])
+=== END ===
+=== GATE 6 present tag 1145 origin 0 probe vi.c ===
+	const char *diag = NULL;
+=== END ===
+=== GATE 7 present tag 1146 origin 0 probe vi.c ===
+/* render an lsp diagnostic as virtual text starting at screen column col */
+=== END ===
+=== GATE 8 present tag 1147 origin 0 probe vi.c ===
+void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
+=== END ===
+=== GATE 9 present tag 1148 origin 0 probe vi.c ===
+#include "lsp.c"
+=== END ===
+=== GATE 10 present tag 1149 origin 0 probe vi.c ===
+		lsp_wake = 1;
+=== END ===
+=== GATE 11 present tag 1150 origin 0 probe vi.c ===
+		lsp_wake = 0;
+=== END ===
+=== GATE 12 present tag 1151 origin 0 probe vi.c ===
+				} else if (k == '~' || k == 'u' || k == 'U') {
+=== END ===
+=== GATE 13 present tag 1152 origin 0 probe vi.c ===
+				} else if (k == 'K') {
+=== END ===
+=== GATE 14 present tag 1153 origin 0 probe vi.c ===
+			case 0:	/* lsp_wake yield; redraw via lsp_dirty */
+=== END ===
+=== GATE 15 present tag 1154 origin 0 probe vi.c ===
+		if (xb_path && xb_path[0])
+=== END ===
+=== GATE 16 present tag 1155 origin 0 probe vi.c ===
+		vi_drawdiag(diag, dsev, row - xtop, dcol);
+=== END ===
+=== GATE 17 present tag 1156 origin 0 probe vi.c ===
+			vi_drawdiag(diag, dsev, row - xtop, dcol);
+=== END ===
+=== GATE 18 present tag 1157 origin 0 probe vi.c ===
+		diag = lsp_diag_for_line(xb_path, row, &dsev);
+=== END ===
+=== GATE 19 present tag 1158 origin 0 probe vi.c ===
+	int dsev = 1;
+=== END ===
+=== GATE 20 present tag 1159 origin 0 probe vi.c ===
+static void vi_drawdiag(const char *diag, int sev, int r, int col)
+=== END ===
+=== GATE 21 present tag 1160 origin 1 probe vi.c ===
+	char *vs = vi_visual == 'V' ? "-- VISUAL LINE -- " :
+=== END ===
+=== GATE 22 present tag 1161 origin 1 probe vi.c ===
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",
+=== END ===
+=== GATE 23 present tag 1162 origin 1 probe vi.c ===
+			xoff, col, vs);
+=== END ===
+=== GATE 24 present tag 1163 origin 1 probe vi.c ===
+			"\"%s\"%s%dL %d%% L%d C%d B%td %s",
+=== END ===
+=== GATE 25 present tag 1164 origin 1 probe vi.c ===
+			istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs, vs);
+=== END ===
+=== GATE 26 present tag 1165 origin 1 probe vi.c ===
+	vi_visual_attrib(s, row);
+=== END ===
+=== GATE 27 present tag 1166 origin 1 probe vi.c ===
+		vi_visual_attrib(s, row);
+=== END ===
+=== GATE 28 present tag 1167 origin 1 probe vi.c ===
+static void vi_visual_attrib(char *s, int row)
+=== END ===
+=== GATE 29 present tag 1168 origin 1 probe vi.c ===
+static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line 'b'=block */
+=== END ===
+=== GATE 30 present tag 1169 origin 1 probe vi.c ===
+static int vc_insert(int cmd);
+=== END ===
+=== GATE 31 present tag 1170 origin 1 probe vi.c ===
+					vc_visual_op('u');
+=== END ===
+=== GATE 32 present tag 1171 origin 1 probe vi.c ===
+			case 'U':
+=== END ===
+=== GATE 33 present tag 1172 origin 1 probe vi.c ===
+				if (vi_visual == 'v' || vi_visual == 'V') {
+=== END ===
+=== GATE 34 present tag 1173 origin 1 probe vi.c ===
+					vc_visual_op('d');
+=== END ===
+=== GATE 35 present tag 1174 origin 1 probe vi.c ===
+				if (vi_visual && c != TK_CTL('w')) {
+=== END ===
+=== GATE 36 present tag 1175 origin 1 probe vi.c ===
+				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
+=== END ===
+=== GATE 37 present tag 1176 origin 1 probe vi.c ===
+				} else if (k == 'v' || k == 'V' || k == 'b') {
+=== END ===
+=== GATE 38 present tag 1177 origin 1 probe vi.c ===
+					vc_visual_op('~');
+=== END ===
+=== GATE 39 present tag 1178 origin 1 probe vi.c ===
+				if (c == 'C')
+=== END ===
+=== GATE 40 present tag 1179 origin 1 probe vi.c ===
+			case TK_ESC:
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/vi.c
++++ b/vi.c
+@@ -476,6 +476,7 @@
+ 	i = vi_rendrow(s, trow, 0);
+ 	int dcol = rstate->cmax - xleft;
+ 	rstate = rstates;
++	vi_visual_attrib(s, row);
+ 	if (diag)
+ 		vi_drawdiag(diag, dsev, row - xtop, dcol);
+ 	return i;
+@@ -485,7 +486,6 @@
+ int vi_drawline(int row, int trow)
+ {
+ 	return vi_drawrow(row, trow);
+-	vi_visual_attrib(s, row);
  }
  
  /* redraw the screen */
