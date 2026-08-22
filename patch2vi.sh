@@ -515,6 +515,7 @@ rebuild() (
 # Usage: extract_patches [file.sh]
 extract_patches() (
 	set -e
+	IFS=$P2VIFS
 	list=$(p2v_list "$1") || return 1
 	for s in $list
 	do
@@ -541,6 +542,7 @@ extract_patches() (
 # Usage: extract_compats [file.sh]
 extract_compats() (
 	set -e
+	IFS=$P2VIFS
 	list=$(p2v_list "$1") || return 1
 	p2v_getbin || return 1
 	work="$P2VITMP.extract"
@@ -583,6 +585,7 @@ extract_compats() (
 # Usage: view_patch file.sh
 view_patch() (
 	set -e
+	IFS=$P2VIFS
 	if [ -z "$1" ]; then
 		echo "Usage: view_patch file.sh" >&2
 		return 1
@@ -1096,6 +1099,7 @@ EOF
 # Usage: reindex [file.sh | 1]
 reindex() (
 	set -e
+	IFS=$P2VIFS
 	dobuild=
 	case "$1" in
 	1)	dobuild=1; list=$(p2v_scripts) ;;
@@ -1122,6 +1126,7 @@ reindex() (
 # Usage: discard_deltas [file.sh]
 discard_deltas() (
 	set -e
+	IFS=$P2VIFS
 	list=$(p2v_list "$1") || return 1
 	p2v_batch
 	for s in $list
@@ -1139,6 +1144,7 @@ discard_deltas() (
 # Usage: discard_compats [file.sh]
 discard_compats() (
 	set -e
+	IFS=$P2VIFS
 	list=$(p2v_list "$1") || return 1
 	p2v_getbin || return 1
 	p2v_batch
@@ -1161,6 +1167,7 @@ discard_compats() (
 # Usage: run_patches [1]
 run_patches() (
 	set -e
+	IFS=$P2VIFS
 	for s in $(p2v_scripts)
 	do
 		printf "%s\n" "RUNNING: $s"
@@ -1183,6 +1190,7 @@ run_patches() (
 # Usage: regen_all [1]
 regen_all() (
 	set -e
+	IFS=$P2VIFS
 	n=0
 	[ -n "$1" ] && p2v_batch
 	for s in $(p2v_scripts)
@@ -1218,6 +1226,7 @@ regen_all() (
 # back into a single staged change at the end.
 # Usage: rebuild_all [1]
 rebuild_all() (
+	IFS=$P2VIFS
 	n=0
 	if [ -n "$(git status --porcelain)" ]; then
 		echo "DIRTY TREE: commit or stash first" >&2
