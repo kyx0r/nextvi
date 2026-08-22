@@ -1,7 +1,11 @@
+*.d
 *.o
 *.exe
 tags
 vi
 file
-CLAUDE.md
+*.orig
+*.rej
 patch2vi
+CLAUDE.md
+AGENTS.md
