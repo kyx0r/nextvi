@@ -54,9 +54,30 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b41;0fr 0%f> ^#include "lsp\.c"$1017??0?
 b61;0fr 0%f> ^/\* percent-encoding can triple a path, plus "file://" and the terminator \*/$1018??0?
 b41;0fr 0%f> ^		lsp_wake = 1;$1019??0?
-err 1230reg 0231reg 01000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 231reg 11000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
-b7%ya 972sc %? %@972sc!err 0b61b41err 1211reg ? %@2210?
-b8%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
+err 1230reg 0231reg 01000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 231reg 11000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? 230reg+ 1b41;0fr 0%f> ^static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/$1020??0?
+b41;0fr 0%f> ^static void vi_visual_attrib\(char \*s, int row\)$1021??0?
+b41;0fr 0%f> ^		vi_visual_attrib\(s, row\);$1022??0?
+b41;0fr 0%f> ^	vi_visual_attrib\(s, row\);$1023??0?
+b41;0fr 0%f> ^	char \*vs = vi_visual == '\''V'\'' \? "-- VISUAL LINE -- " :$1024??0?
+b41;0fr 0%f> ^		snprintf\(vi_msg, sizeof\(vi_msg\), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",$1025??0?
+b41;0fr 0%f> ^			xoff, col, vs\);$1026??0?
+b41;0fr 0%f> ^			"\\"%s\\"%s%dL %d%% L%d C%d B%td %s",$1027??0?
+b41;0fr 0%f> ^			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs, vs\);$1028??0?
+b41;0fr 0%f> ^static int vc_insert\(int cmd\);$1029??0?
+b41;0fr 0%f> ^					vc_visual_op\('\''u'\''\);$1030??0?
+b41;0fr 0%f> ^			case '\''U'\'':$1031??0?
+b41;0fr 0%f> ^				if \(vi_visual == '\''v'\'' \|\| vi_visual == '\''V'\''\) \{$1032??0?
+b41;0fr 0%f> ^					vc_visual_op\('\''d'\''\);$1033??0?
+b41;0fr 0%f> ^				if \(vi_visual && c != TK_CTL\('\''w'\''\)\) \{$1034??0?
+b41;0fr 0%f> ^				if \(vi_visual == '\''b'\'' && \(c == '\''I'\'' \|\| c == '\''A'\''\)\) \{$1035??0?
+b41;0fr 0%f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{$1036??0?
+b41;0fr 0%f> ^				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{$1037??0?
+b41;0fr 0%f> ^					vc_visual_op\('\''~'\''\);$1038??0?
+b41;0fr 0%f> ^				if \(c == '\''C'\''\)$1039??0?
+232reg 01020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? 232reg 11020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
+b7%ya 972sc %? %@972sc!err 0b61b41err 1fr 232f> 110??10??211reg10??!211reg ? %@2210?
+b8%ya 502sc %1000,1001,1002,1003,1004;1005,1006,1007,1008,1009;1010,1011,1012,1013,1014;1015,1016,1017,1018,1019?? %@502sc!b41211reg ? %@2210?
+b9%ya 512sc %1020,1021,1022,1023,1024;1025,1026,1027,1028,1029;1030,1031,1032,1033,1034;1035,1036,1037,1038,1039?? %@512sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -4093,7 +4114,81 @@ static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)
 1;2??!219reg vi.c:164:m32sc %? %@2142sc!0?
 '\''4s/row - xtop/scrrow/??!219reg vi.c:263:m42sc %? %@2142sc!0?
 '\''5s/row - xtop/scrrow/??!219reg vi.c:270:m52sc %? %@2142sc!vis 2b6wvis 3p compat applied: src=lsp.sh' > "$P2VIF".1
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+# Compat (post) from visual.sh
+printf '%s\n' '2sc!fr 98b4%ya 98?0?
+%f> static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/
+static int vi_vrow;			/\* selection anchor row \*/
+static int vi_voff;			/\* selection anchor column \*/
+
+void \*emalloc\(size_t size\)
+\{1??0?
+1??+2m 11q0?
+%f> static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/
+static int vi_vrow;			/\* selection anchor row \*/
+static int vi_voff;			/\* selection anchor column \*/4??0?
+4??+2m 1220reg p OK vi.c:49:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:492sc %? %@2132sc!0?
+?0?
+%f+ 
+static void vi_visual_attrib\(char \*s, int row\)
+\{
+	if \(!vi_visual \|\| !s\)
+		return;
+	int ar = vi_vrow, ao = vi_voff;
+	int cr = xrow,   co = xoff;1??0?
+1??+3m 21q0?
+%f+ 	if \(!vi_visual \|\| !s\)
+		return;
+	int ar = vi_vrow, ao = vi_voff;
+	int cr = xrow,   co = xoff;2??0?
+2??m 2220reg p OK vi.c:150:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	if \(!vi_visual \|\| !s\)$3??0?
+3??m 2220reg p OK vi.c:150:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 
+static void vi_visual_attrib\(char \*s, int row\)
+\{4??0?
+4??+3m 2220reg p OK vi.c:150:a42sc %? %@2152sc!1q0?
+%f+ 		return;
+	int ar = vi_vrow, ao = vi_voff;
+	int cr = xrow,   co = xoff;5??0?
+5??-1m 2220reg p OK vi.c:150:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:1502sc %? %@2132sc!0?
+?0?
+%f+ 	preserve\(int, xleft,\)
+	preserve\(int, xtd,\)
+	do \{
+		curwin = w;
+		xrow = w->row;
+		xoff = w->off;1??0?
+1??+2m 31q0?
+%f+ 	preserve\(int, xleft,\)
+	preserve\(int, xtd,\)
+	do \{4??0?
+4??+2m 3220reg p OK vi.c:321:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:3212sc %? %@2132sc!0?
+?0?
+%f+ 	} while \(w != wins\);
+	vi_draw_separators\(\);
+	curwin = cur;
+	restore\(xrow\)
+	restore\(xoff\)
+	restore\(xtop\)1??0?
+1??+2m 41q0?
+%f+ 	} while \(w != wins\);
+	vi_draw_separators\(\);
+	curwin = cur;4??0?
+4??+2m 4220reg p OK vi.c:338:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:3382sc %? %@2132sc!0?
+'\''1i static int vi_vfocused = 1;		/* redrawing the window owning the selection */
+??!219reg vi.c:49:m12sc %? %@2142sc!0?
+'\''2s/s\)/s || !vi_vfocused)/??!219reg vi.c:150:m22sc %? %@2142sc!0?
+'\''3i 		vi_vfocused = w == cur;
+		if (!vi_vfocused && led_attsb)
+			sbuf_cut(led_attsb, 0)
+??!219reg vi.c:321:m32sc %? %@2142sc!0?
+'\''4i 	vi_vfocused = 1;
+??!219reg vi.c:338:m42sc %? %@2142sc!p compat applied: src=visual.sh' > "$P2VIF".2
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
@@ -4215,6 +4310,109 @@ void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
  }
  
  /* redraw the screen */
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT post src=visual.sh ===
+=== GATE 1 present tag 1020 probe vi.c ===
+static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line 'b'=block */
+=== END ===
+=== GATE 2 present tag 1021 probe vi.c ===
+static void vi_visual_attrib(char *s, int row)
+=== END ===
+=== GATE 3 present tag 1022 probe vi.c ===
+		vi_visual_attrib(s, row);
+=== END ===
+=== GATE 4 present tag 1023 probe vi.c ===
+	vi_visual_attrib(s, row);
+=== END ===
+=== GATE 5 present tag 1024 probe vi.c ===
+	char *vs = vi_visual == 'V' ? "-- VISUAL LINE -- " :
+=== END ===
+=== GATE 6 present tag 1025 probe vi.c ===
+		snprintf(vi_msg, sizeof(vi_msg), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d %s",
+=== END ===
+=== GATE 7 present tag 1026 probe vi.c ===
+			xoff, col, vs);
+=== END ===
+=== GATE 8 present tag 1027 probe vi.c ===
+			"\"%s\"%s%dL %d%% L%d C%d B%td %s",
+=== END ===
+=== GATE 9 present tag 1028 probe vi.c ===
+			istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs, vs);
+=== END ===
+=== GATE 10 present tag 1029 probe vi.c ===
+static int vc_insert(int cmd);
+=== END ===
+=== GATE 11 present tag 1030 probe vi.c ===
+					vc_visual_op('u');
+=== END ===
+=== GATE 12 present tag 1031 probe vi.c ===
+			case 'U':
+=== END ===
+=== GATE 13 present tag 1032 probe vi.c ===
+				if (vi_visual == 'v' || vi_visual == 'V') {
+=== END ===
+=== GATE 14 present tag 1033 probe vi.c ===
+					vc_visual_op('d');
+=== END ===
+=== GATE 15 present tag 1034 probe vi.c ===
+				if (vi_visual && c != TK_CTL('w')) {
+=== END ===
+=== GATE 16 present tag 1035 probe vi.c ===
+				if (vi_visual == 'b' && (c == 'I' || c == 'A')) {
+=== END ===
+=== GATE 17 present tag 1036 probe vi.c ===
+				} else if (k == '~' || k == 'u' || k == 'U') {
+=== END ===
+=== GATE 18 present tag 1037 probe vi.c ===
+				} else if (k == 'v' || k == 'V' || k == 'b') {
+=== END ===
+=== GATE 19 present tag 1038 probe vi.c ===
+					vc_visual_op('~');
+=== END ===
+=== GATE 20 present tag 1039 probe vi.c ===
+				if (c == 'C')
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/vi.c
++++ b/vi.c
+@@ -47,6 +47,7 @@
+ static int vi_visual;			/* visual mode: 0=off, 'v'=char, 'V'=line 'b'=block */
+ static int vi_vrow;			/* selection anchor row */
+ static int vi_voff;			/* selection anchor column */
++static int vi_vfocused = 1;		/* redrawing the window owning the selection */
+ 
+ void *emalloc(size_t size)
+ {
+@@ -147,7 +148,7 @@
+ 
+ static void vi_visual_attrib(char *s, int row)
+ {
+-	if (!vi_visual || !s)
++	if (!vi_visual || !s || !vi_vfocused)
+ 		return;
+ 	int ar = vi_vrow, ao = vi_voff;
+ 	int cr = xrow,   co = xoff;
+@@ -319,6 +320,9 @@
+ 	preserve(int, xleft,)
+ 	preserve(int, xtd,)
+ 	do {
++		vi_vfocused = w == cur;
++		if (!vi_vfocused && led_attsb)
++			sbuf_cut(led_attsb, 0)
+ 		curwin = w;
+ 		xrow = w->row;
+ 		xoff = w->off;
+@@ -336,6 +340,7 @@
+ 	} while (w != wins);
+ 	vi_draw_separators();
+ 	curwin = cur;
++	vi_vfocused = 1;
+ 	restore(xrow)
+ 	restore(xoff)
+ 	restore(xtop)
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
