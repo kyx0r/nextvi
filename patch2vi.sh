@@ -14,7 +14,7 @@ Then call:          patch2vi_wrapper -d input.patch [output.sh]
                     extract_compats [file.sh]
                     view_patch file.sh
                     compat_order [README]
-                    compat_check
+                    compat_check [max]
                     recompat target.sh [origin.sh]
                     reindex [file.sh | 1]
                     discard_deltas [file.sh]
@@ -957,10 +957,13 @@ p2v_subsets() {
 #
 # Like compat_order this runs the scripts and wants a tree with nothing of its
 # own in it. It builds once per combination, so it runs as long as the closures
-# are wide.
-# Usage: compat_check
+# are wide. With a number as $1, at most that many combinations are tried for
+# each target - a cap on the walk, not on the whole run, so a wide closure
+# cannot eat the time of every target after it.
+# Usage: compat_check [max]
 compat_check() (
 	IFS=$P2VIFS
+	max=$1
 	p2v_search_begin || return 1
 	: > "$P2VITMP.bad"
 	n=0
@@ -970,9 +973,17 @@ compat_check() (
 		combos=$(wc -l < "$P2VITMP.subsets" | tr -d ' ')
 		printf "%s\n" "CHECKING: $target, $combos combinations" >&2
 		# a combination at a time off fd 3, since the body runs whole
-		# scripts, which own stdin
+		# scripts, which own stdin; c counts this target's combinations,
+		# n all of them, for the summary
+		c=0
+		stop=
 		while read -r sub <&3
 		do
+			if [ -n "$max" ] && [ "$c" -ge "$max" ]; then
+				stop=1
+				break
+			fi
+			c=$((c + 1))
 			n=$((n + 1))
 			p2v_chain "$sub" quiet > /dev/null && continue
 			line=
@@ -983,6 +994,7 @@ compat_check() (
 			printf "%s\n" "FAILED: $line" >&2
 			printf "%s\n" "$line" >> "$P2VITMP.bad"
 		done 3< "$P2VITMP.subsets"
+		[ -z "$stop" ] || continue
 	done
 	rm -f "$P2VITMP.subsets"
 	p2v_search_end
