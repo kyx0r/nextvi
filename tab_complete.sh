@@ -77,11 +77,35 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b21;0fr 0%f> ^				read\(STDIN_FILENO, cbuf, 1\);$1040??0?
 b21;0fr 0%f> ^				c = \*cbuf;$1041??0?
 b21;0fr 0%f> ^				fcntl\(STDIN_FILENO, F_SETFL, fl\);$1042??0?
-233reg 01023,1024,1025,1026,1027;1028,1029,1030,1031,1032;1033,1034,1035,1036,1037;1038,1039,1040,1041,1042?? 233reg 11023,1024,1025,1026,1027;1028,1029,1030,1031,1032;1033,1034,1035,1036,1037;1038,1039,1040,1041,1042?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
-b4%ya 972sc %? %@972sc!b21fr 232f> 110??fr 233f> 111??10;11??211reg10;11??!211reg ? %@2210?
-b5%ya 502sc %1000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? %@502sc!b21fr 233f> 110??10??211reg10??!211reg ? %@2210?
-b6%ya 512sc %1018,1019,1020,1021,1022?? %@512sc!b21211reg ? %@2210?
-b7%ya 522sc %1023,1024,1025,1026,1027;1028,1029,1030,1031,1032;1033,1034,1035,1036,1037;1038,1039,1040,1041,1042?? %@522sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
+233reg 01023,1024,1025,1026,1027;1028,1029,1030,1031,1032;1033,1034,1035,1036,1037;1038,1039,1040,1041,1042?? 233reg 11023,1024,1025,1026,1027;1028,1029,1030,1031,1032;1033,1034,1035,1036,1037;1038,1039,1040,1041,1042?? 230reg+ 1b21;0fr 0%f> ^			insert:$1043??0?
+b21;0fr 0%f> ^		case TK_CTL\('\''i'\''\):	/\* the caller steps the search match \*/$1044??0?
+b21;0fr 0%f> ^		case TK_CTL\('\''_'\''\):$1045??0?
+b21;0fr 0%f> ^			if \(!\(flg & 2\)\)$1046??0?
+b21;0fr 0%f> ^				goto insert;$1047??0?
+b21;0fr 0%f> ^			if \(c == '\''\\t'\'' && xet\) \{$1048??0?
+b21;0fr 0%f> ^			if \(xet\) \{$1049??0?
+b21;0fr 0%f> ^			pre \+= xet \? xsw : 1;$1050??0?
+b21;0fr 0%f> ^			if \(xet\)$1051??0?
+b21;0fr 0%f> ^				for \(int _l = 0; _l < xsw; _l\+\+\)$1052??0?
+b21;0fr 0%f> ^			} else if \(\(cs = led_read\(kmap, c\)\)\)$1053??0?
+b21;0fr 0%f> ^				int _k;$1054??0?
+b21;0fr 0%f> ^				for \(_k = 0; _k < xsw && sb->s\[ps \+ _k] == '\'' '\''; _k\+\+\);$1055??0?
+b21;0fr 0%f> ^				if \(_k\) \{$1056??0?
+b21;0fr 0%f> ^					memmove\(&sb->s\[ps], &sb->s\[ps \+ _k], len - ps - _k\);$1057??0?
+b21;0fr 0%f> ^					sb->s_n -= _k;$1058??0?
+b21;0fr 0%f> ^					pre -= _k;$1059??0?
+b21;0fr 0%f> ^			} else if \(sb->s\[ps] == '\'' '\'' \|\| sb->s\[ps] == '\''\\t'\''\) \{$1060??0?
+b21;0fr 0%f> ^				for \(int _k = 0; _k < xsw; _k\+\+\)$1061??0?
+b21;0fr 0%f> ^				sbuf_chr\(sb, '\''\\t'\''\)$1062??0?
+b2%ya 98fr 98%f> 					sbuf_chr\(sb, '\'' '\''\)
+			else1063??0?
+b21;0fr 0%f> ^					sbuf_chr\(sb, '\'' '\''\)$1064??0?
+234reg 01043,1044,1048,1049,1050,1051,1052;1045,1053,1054,1055,1056;1046,1057,1058,1059,1060;1047,1061,1062,1063,1064?? 234reg 11043,1044,1048,1049,1050,1051,1052;1045,1053,1054,1055,1056;1046,1057,1058,1059,1060;1047,1061,1062,1063,1064?? 230reg+ 1211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
+b4%ya 972sc %? %@972sc!b21fr 232f> 110??fr 233f> 111??fr 234f> 112??10;11;12??211reg10;11;12??!211reg ? %@2210?
+b5%ya 502sc %1000,1001,1002,1003,1004,1005;1006,1007,1008,1009,1010,1011;1012,1013,1014,1015,1016,1017?? %@502sc!b21fr 233f> 110??fr 234f> 111??10;11??211reg10;11??!211reg ? %@2210?
+b6%ya 512sc %1018,1019,1020,1021,1022?? %@512sc!b21fr 234f> 110??10??211reg10??!211reg ? %@2210?
+b7%ya 522sc %1023,1024,1025,1026,1027;1028,1029,1030,1031,1032;1033,1034,1035,1036,1037;1038,1039,1040,1041,1042?? %@522sc!b21211reg ? %@2210?
+b8%ya 532sc %1043,1044,1048,1049,1050,1051,1052;1045,1053,1054,1055,1056;1046,1057,1058,1059,1060;1047,1061,1062,1063,1064?? %@532sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -877,7 +901,52 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 5??-1m 1220reg p OK led.c:823:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg led.c:8232sc %? %@2132sc!0?
 '\''1s/f\)/f, 1)/??!219reg led.c:823:m12sc %? %@2142sc!p compat applied: src=arrowkeys_insert.sh' > "$P2VIF".3
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".d
+# Compat (post) from incsearch.sh src=detect_indent.sh
+printf '%s\n' '2sc!fr 98b2%ya 98?0?
+%f> 				pre--;
+			}
+			break;
+		case TK_CTL\('\''_'\''\):	/\* list the matches on their own screen \*/
+		case TK_CTL\('\'']'\''\):
+		case TK_CTL\('\''\\\\'\''\):
+			if \(c == TK_CTL\('\'']'\''\)\) \{1??0?
+1??+3m 11q0?
+%f> 		case TK_CTL\('\''_'\''\):	/\* list the matches on their own screen \*/
+		case TK_CTL\('\'']'\''\):
+		case TK_CTL\('\''\\\\'\''\):
+			if \(c == TK_CTL\('\'']'\''\)\) \{2??0?
+2??m 1220reg p OK led.c:573:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^		case TK_CTL\('\''_'\''\):	/\* list the matches on their own screen \*/$3??0?
+3??m 1220reg p OK led.c:573:a32sc %? %@2152sc!fr 981qfr 980?
+%f> 				pre--;
+			}
+			break;4??0?
+4??+3m 1220reg p OK led.c:573:a42sc %? %@2152sc!1q0?
+%f> 		case TK_CTL\('\'']'\''\):
+		case TK_CTL\('\''\\\\'\''\):
+			if \(c == TK_CTL\('\'']'\''\)\) \{5??0?
+5??-1m 1220reg p OK led.c:573:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:5732sc %? %@2132sc!0?
+?0?
+%f+ 				exbuf_load\(ex_buf\)
+			}
+			continue; }
+			if \(xtc && ai_max < 0 && sb->s\[ps] == '\'':'\''\) \{
+				int typed, full = c == TK_CTL\('\''_'\''\) \|\| xtc > 1;
+				if \(!compsb\)1??0?
+1??+2m 21q0?
+%f+ 				exbuf_load\(ex_buf\)
+			}
+			continue; }4??0?
+4??+2m 2220reg p OK led.c:748:a42sc %? %@2152sc!0?
+1;4??!219reg led.c:7482sc %? %@2132sc!0?
+'\''1d??!219reg led.c:573:m12sc %? %@2142sc!0?
+'\''2i 		case TK_CTL('\''_'\''):       /* list the matches on their own screen */
+		case '\''\t'\'':
+			if (flg & 2)    /* the caller steps the search match */
+				break;
+??!219reg led.c:748:m22sc %? %@2142sc!p compat applied: src=incsearch.sh src=detect_indent.sh' > "$P2VIF".4
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".4 "$P2VIF".d
 
 exit 0
 === PATCH2VI DELTA ===
@@ -1138,6 +1207,100 @@ static int vi_insmov;
  						c = term_read(TK_CTL('l'));
  					} while (page && (c == '\t' || c == TK_CTL('_')));
  					term_clean();
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT post src=incsearch.sh src=detect_indent.sh ===
+=== GATE 1 present tag 1043 origin 0 probe led.c ===
+			insert:
+=== END ===
+=== GATE 2 present tag 1044 origin 0 probe led.c ===
+		case TK_CTL('i'):	/* the caller steps the search match */
+=== END ===
+=== GATE 3 present tag 1045 origin 0 probe led.c ===
+		case TK_CTL('_'):
+=== END ===
+=== GATE 4 present tag 1046 origin 0 probe led.c ===
+			if (!(flg & 2))
+=== END ===
+=== GATE 5 present tag 1047 origin 0 probe led.c ===
+				goto insert;
+=== END ===
+=== GATE 6 present tag 1048 origin 1 probe led.c ===
+			if (c == '\t' && xet) {
+=== END ===
+=== GATE 7 present tag 1049 origin 1 probe led.c ===
+			if (xet) {
+=== END ===
+=== GATE 8 present tag 1050 origin 1 probe led.c ===
+			pre += xet ? xsw : 1;
+=== END ===
+=== GATE 9 present tag 1051 origin 1 probe led.c ===
+			if (xet)
+=== END ===
+=== GATE 10 present tag 1052 origin 1 probe led.c ===
+				for (int _l = 0; _l < xsw; _l++)
+=== END ===
+=== GATE 11 present tag 1053 origin 1 probe led.c ===
+			} else if ((cs = led_read(kmap, c)))
+=== END ===
+=== GATE 12 present tag 1054 origin 1 probe led.c ===
+				int _k;
+=== END ===
+=== GATE 13 present tag 1055 origin 1 probe led.c ===
+				for (_k = 0; _k < xsw && sb->s[ps + _k] == ' '; _k++);
+=== END ===
+=== GATE 14 present tag 1056 origin 1 probe led.c ===
+				if (_k) {
+=== END ===
+=== GATE 15 present tag 1057 origin 1 probe led.c ===
+					memmove(&sb->s[ps], &sb->s[ps + _k], len - ps - _k);
+=== END ===
+=== GATE 16 present tag 1058 origin 1 probe led.c ===
+					sb->s_n -= _k;
+=== END ===
+=== GATE 17 present tag 1059 origin 1 probe led.c ===
+					pre -= _k;
+=== END ===
+=== GATE 18 present tag 1060 origin 1 probe led.c ===
+			} else if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
+=== END ===
+=== GATE 19 present tag 1061 origin 1 probe led.c ===
+				for (int _k = 0; _k < xsw; _k++)
+=== END ===
+=== GATE 20 present tag 1062 origin 1 probe led.c ===
+				sbuf_chr(sb, '\t')
+=== END ===
+=== GATE 21 present tag 1063 origin 1 probe led.c ===
+					sbuf_chr(sb, ' ')
+			else
+=== END ===
+=== GATE 22 present tag 1064 origin 1 probe led.c ===
+					sbuf_chr(sb, ' ')
+=== END ===
+=== COMPAT DELTA ===
+=== END ===
+=== COMPAT PATCH ===
+--- a/led.c
++++ b/led.c
+@@ -570,7 +570,6 @@
+ 				pre--;
+ 			}
+ 			break;
+-		case TK_CTL('_'):	/* list the matches on their own screen */
+ 		case TK_CTL(']'):
+ 		case TK_CTL('\\'):
+ 			if (c == TK_CTL(']')) {
+@@ -746,6 +745,10 @@
+ 				exbuf_load(ex_buf)
+ 			}
+ 			continue; }
++		case TK_CTL('_'):       /* list the matches on their own screen */
++		case '\t':
++			if (flg & 2)    /* the caller steps the search match */
++				break;
+ 			if (xtc && ai_max < 0 && sb->s[ps] == ':') {
+ 				int typed, full = c == TK_CTL('_') || xtc > 1;
+ 				if (!compsb)
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
