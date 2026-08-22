@@ -142,6 +142,22 @@ p2v_tty() {
 	fi
 }
 
+# The binary lives on its own branch, so a missing one is built from there and
+# the branch this was called on checked out again - which is not always the one
+# the sources came from, so it is read rather than named. One that is already
+# here builds nothing. A subshell: the branch it stands on is its own business.
+p2v_getbin() (
+	[ -x $P2VI ] && return 0
+	br=$(git rev-parse --abbrev-ref HEAD) || return 1
+	[ "$br" = HEAD ] && br=$(git rev-parse HEAD)	# detached: the commit
+	git checkout patch2vi || return 1
+	./build_patch2vi.sh build
+	git checkout "$br" || return 1
+	[ -x $P2VI ] && return 0
+	echo "NO BINARY: the build on the patch2vi branch failed" >&2
+	return 1
+)
+
 # Write the working tree's sources to a tree object, the index left alone.
 # Snapshots taken this way diff with git diff-tree, so files a run adds or
 # removes come out right, unlike a diff of two copied directories.
@@ -271,6 +287,7 @@ patch2vi_wrapper() {
 		echo "Usage: patch2vi_wrapper <flag> input.patch [output.sh]" >&2
 		return 1
 	fi
+	p2v_getbin || return 1
 	if [ -n "$3" ]; then
 		output="$3"
 	else
@@ -317,6 +334,7 @@ patch2vi_stashed() {
 # output file is omitted.
 # Usage: gitdiff2vi [flags] [output.sh]
 gitdiff2vi() {
+	p2v_getbin || return 1
 	if [ -z "$2" ]; then
 		git diff | $P2VI $1
 		return
@@ -332,15 +350,10 @@ gitdiff2vi() {
 	patch2vi_stashed "$1" "$2"
 }
 
-# Edit embedded deltas in a nextvi shell script, in place. The binary lives on
-# its own branch, so a missing one is fetched and built from there.
+# Edit embedded deltas in a nextvi shell script, in place.
 # Usage: edelta file [inplace]
 edelta() {
-	if [ ! -x $P2VI ]; then
-		git checkout patch2vi
-		./build_patch2vi.sh build
-		git checkout patches
-	fi
+	p2v_getbin || return 1
 	if [ "$2" ]; then
 		$P2VI -i -o "$1" "$1"	# discard the stored deltas
 	else
@@ -357,6 +370,7 @@ regen() {
 		echo "Usage: regen input.sh" >&2
 		return 1
 	fi
+	p2v_getbin || return 1
 	git add .
 	# the script's own diff is not part of the patch it carries
 	git diff --staged -- ":!$1" > "$P2VITMP"
@@ -452,6 +466,7 @@ rebuild() (
 	fi
 	target="$1"
 	p2v_ours "$target" || return 1
+	p2v_getbin || return 1
 	p2v_batch
 	work="$P2VITMP.rebuild"
 	rm -rf "$work"
@@ -527,6 +542,7 @@ extract_patches() (
 extract_compats() (
 	set -e
 	list=$(p2v_list "$1") || return 1
+	p2v_getbin || return 1
 	work="$P2VITMP.extract"
 	rm -rf "$work"
 	mkdir -p "$work" compat
@@ -601,13 +617,17 @@ p2v_deps() { awk -v s="$1" '$1 == s && NF > 1 { print $2 }' "$P2VITMP.edges"; }
 
 # Run each script of the list $1, in order, output dropped; the first failure is
 # the result. Meant to be run on a tree at HEAD, which the caller restores.
+#
+# The whole list goes to the binary's own -e, which runs the scripts exactly as
+# the shell would - in order, each in its own editor lifetime, stopping at the
+# first failure, and reporting the status that failure had. One process does
+# what was a shell, a grep and a nextvi per script, and the editor that applies
+# them is the one patch2vi carries rather than whatever the PATH calls vi, so a
+# search measures the scripts and not the machine it runs on.
 p2v_runlist() (
 	IFS=$P2VIFS
-	for p2v_s in $1
-	do
-		"./$p2v_s" >/dev/null 2>&1 || return 1
-	done
-	return 0
+	[ -n "$1" ] || return 0
+	$P2VI -e $1 >/dev/null 2>&1
 )
 
 # What the caller has of their own and a run here must not carry off: the
@@ -711,6 +731,10 @@ p2v_search_begin() (
 		rm -rf "$P2VITMP.keep"
 		return 1
 	fi
+	# Every apply goes through the binary, so a missing one is not a slow
+	# search but no search at all; built here, where the tree is known to be
+	# clean, rather than in the middle of one.
+	p2v_getbin || return 1
 	# One "script" line per script, so a script with no blocks is a node
 	# too, plus one "script origin" line per origin it carries.
 	for s in $(p2v_scripts)
@@ -990,6 +1014,7 @@ recompat() (
 	fi
 	target="$1"
 	p2v_ours "$target"
+	p2v_getbin || return 1
 	if [ -n "$2" ]; then
 		list="$2"
 	else	# an origin with a single block is already collapsed
@@ -1115,6 +1140,7 @@ discard_deltas() (
 discard_compats() (
 	set -e
 	list=$(p2v_list "$1") || return 1
+	p2v_getbin || return 1
 	p2v_batch
 	for s in $list
 	do
