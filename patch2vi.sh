@@ -1150,7 +1150,7 @@ discard_compats() (
 		rm -f "$P2VITMP.compat"
 		chmod +x "$s"	# written by awk, not by patch2vi's own -o
 		$P2VI -od "$s"
-		printf "%s\n" "DISCARDED: $s"
+		printf "\n%s\n" "DISCARDED: $s"
 	done
 )
 
