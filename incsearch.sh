@@ -18,34 +18,21 @@ fi
 # INTR=1 enters vi at the failing code line in this
 #   script, for state inspection mid execution
 
-f231=0
-f232=0
-f230=0
-if [ 1 ]; then
-    me=${0##*/}
-    applied=$P2VI_PATCH
-    applied2=
-    for _p in $applied; do applied2="$applied2 ${_p##*/}"; done
-    p2vt0_0=0
-    case " $applied2 " in *" rstr.sh "*) p2vt0_0=1 ;; esac
-    if [ $p2vt0_0 = 1 ]; then f231=1; fi
-    p2vt1_0=0
-    case " $applied2 " in *" splits.sh "*) p2vt1_0=1 ;; esac
-    if [ $p2vt1_0 = 1 ]; then f232=1; fi
-    if [ $f231 = 1 ] || [ $f232 = 1 ]; then f230=1; fi
-fi
-
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF".*' EXIT
 
 printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg prFp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
-"${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
+"229reg  $P2VI_PATCH \
+${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'230reg '"$f230"'231reg '"$f231"'232reg '"$f232"'211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
+'230reg 0fr 2290?
+231reg 0f> [ /]rstr[.]sh 20??20?? 231reg 1230reg 10?
+232reg 0f> [ /]splits[.]sh 20??20?? 232reg 1230reg 10?
+fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
 b4%ya 972sc %? %@972sc!b21fr 232f> 110??10??211reg10??!211reg ? %@2210?
 b5%ya 502sc %fr 231f> 1?? %@502sc!b21211reg ? %@2210?
 b6%ya 512sc %fr 232f> 1?? %@512sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
@@ -454,8 +441,7 @@ extern rset \*fsincl;9??0?
 '\''1i extern const int conf_hlmat;
 extern const int conf_hlmatc;
 ??!219reg vi.h:541:m12sc %? %@2142sc!' > "$P2VIF".0
-# P2VI_COMPAT 1 f231 src=rstr.sh
-# Compat (post) from rstr.sh
+# Compat f231 src=rstr.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f>    cursor is given conf_hlmatc instead of conf_hlmat attributes \*/
 static void vi_isearchhl\(void\)
@@ -563,8 +549,7 @@ static void vi_isearchhl\(void\)
 					&& lbuf_len(xb)) {
 ??!219reg vi.c:379:m32sc %? %@2142sc!0?
 '\''4s/et/tr/??!219reg vi.c:404:m42sc %? %@2142sc!p compat applied: src=rstr.sh' > "$P2VIF".1
-# P2VI_COMPAT 2 f232 src=splits.sh
-# Compat (post) from splits.sh
+# Compat f232 src=splits.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 	int offs\[xkwdrs->nsubc];
 	int row, off, beg, end, flg, i, n;

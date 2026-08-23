@@ -18,44 +18,23 @@ fi
 # INTR=1 enters vi at the failing code line in this
 #   script, for state inspection mid execution
 
-f231=0
-f232=0
-f233=0
-f234=0
-f230=0
-if [ 1 ]; then
-    me=${0##*/}
-    applied=$P2VI_PATCH
-    applied2=
-    for _p in $applied; do applied2="$applied2 ${_p##*/}"; done
-    p2vt0_0=0
-    case " $applied2 " in *" detect_indent.sh "*) p2vt0_0=1 ;; esac
-    if [ $p2vt0_0 = 1 ]; then f231=1; fi
-    p2vt1_0=0
-    case " $applied2 " in *" incsearch.sh "*) p2vt1_0=1 ;; esac
-    if [ $p2vt1_0 = 1 ]; then f232=1; fi
-    p2vt2_0=0
-    case " $applied2 " in *" arrowkeys_insert.sh "*) p2vt2_0=1 ;; esac
-    if [ $p2vt2_0 = 1 ]; then f233=1; fi
-    p2vt3_0=0
-    p2vt3_1=0
-    case " $applied2 " in *" incsearch.sh "*) p2vt3_0=1 ;; esac
-    case " $applied2 " in *" detect_indent.sh "*) p2vt3_1=1 ;; esac
-    if [ $p2vt3_0 = 1 ] && [ $p2vt3_1 = 1 ]; then f234=1; fi
-    if [ $f231 = 1 ] || [ $f232 = 1 ] || [ $f233 = 1 ] || [ $f234 = 1 ]; then f230=1; fi
-fi
-
 # Body too large for EXINIT/argv: stage it in a file
 ( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF".*' EXIT
 
 printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg prFp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
-"${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
+"229reg  $P2VI_PATCH \
+${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'230reg '"$f230"'231reg '"$f231"'232reg '"$f232"'233reg '"$f233"'234reg '"$f234"'211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
+'230reg 0fr 2290?
+231reg 0f> [ /]detect_indent[.]sh 20??20?? 231reg 1230reg 10?
+232reg 0f> [ /]incsearch[.]sh 20??20?? 232reg 1230reg 10?
+233reg 0f> [ /]arrowkeys_insert[.]sh 20??20?? 233reg 1230reg 10?
+234reg 0f> [ /]incsearch[.]sh 20??f> [ /]detect_indent[.]sh 21??20,21?? 234reg 1230reg 10?
+fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
 b4%ya 972sc %? %@972sc!b21fr 232f> 110??fr 233f> 111??fr 234f> 112??10;11;12??211reg10;11;12??!211reg ? %@2210?
 b5%ya 502sc %fr 231f> 1?? %@502sc!b21fr 233f> 110??fr 234f> 111??10;11??211reg10;11??!211reg ? %@2210?
 b6%ya 512sc %fr 232f> 1?? %@512sc!b21fr 234f> 110??10??211reg10??!211reg ? %@2210?
@@ -595,8 +574,7 @@ extern int xquit;9??0?
 1;4;7;8;9??!219reg vi.h:4282sc %? %@2132sc!0?
 '\''1i extern int xtc;
 ??!219reg vi.h:428:m12sc %? %@2142sc!' > "$P2VIF".0
-# P2VI_COMPAT 1 f231 src=detect_indent.sh
-# Compat (post) from detect_indent.sh
+# Compat f231 src=detect_indent.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 				pre--;
 			}
@@ -749,8 +727,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 				continue;
 ??!219reg led.c:573:m22sc %? %@2142sc!0?
 '\''3,#+26d??!219reg led.c:755:m32sc %? %@2142sc!p compat applied: src=detect_indent.sh' > "$P2VIF".1
-# P2VI_COMPAT 2 f232 src=incsearch.sh
-# Compat (post) from incsearch.sh
+# Compat f232 src=incsearch.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
 		noredraw:
@@ -831,8 +808,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 				break;
 ??!219reg led.c:742:m22sc %? %@2142sc!0?
 '\''3d??!219reg led.c:771:m32sc %? %@2142sc!p compat applied: src=incsearch.sh' > "$P2VIF".2
-# P2VI_COMPAT 3 f233 src=arrowkeys_insert.sh
-# Compat (post) from arrowkeys_insert.sh
+# Compat f233 src=arrowkeys_insert.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 						page = led_complist\(compsb, page\);
 						term_pos\(0, 0\);
@@ -859,8 +835,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 5??-1m 1220reg p OK led.c:823:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg led.c:8232sc %? %@2132sc!0?
 '\''1s/f\)/f, 1)/??!219reg led.c:823:m12sc %? %@2142sc!p compat applied: src=arrowkeys_insert.sh' > "$P2VIF".3
-# P2VI_COMPAT 4 f234 src=incsearch.sh src=detect_indent.sh
-# Compat (post) from incsearch.sh src=detect_indent.sh
+# Compat f234 src=incsearch.sh src=detect_indent.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 				pre--;
 			}
