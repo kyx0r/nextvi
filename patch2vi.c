@@ -1407,7 +1407,7 @@ static void emit_err_check(sbuf *out, int phase, int line, int mark_id,
 		if (mark_id >= 0)
 			sb_printf(loc, "%d", mark_id);
 	}
-	sbuf_null(loc)
+	sbuf_nul(loc)
 	for (int t = 0; t < nids; t++)
 		sb_printf(out, t ? ";%d" : "%d", ids[t]);
 	/* "?" "?!" split: "??!" in one literal is the trigraph for '|' */
@@ -2067,7 +2067,7 @@ static int gen_win_window(group_t *g, fuzzwin_t *out, int skip)
 		}
 		free(e);
 	}
-	sbufn_null(sb)
+	sbuf_nul4(sb)
 	char **lines = emalloc(sizeof(char *));
 	lines[0] = sb->s;
 	out->lines = lines;
@@ -2656,8 +2656,8 @@ static int build_grp_variant(const char *old, const char *new,
 		}
 	}
 	free(tk);
-	sbufn_null(pat)
-	sbufn_null(repl)
+	sbuf_nul4(pat)
+	sbuf_nul4(repl)
 	*pat_out = double_trailing_esc(pat->s);
 	*repl_out = double_trailing_esc(repl->s);
 	return 1;
@@ -2938,7 +2938,7 @@ static int ph_capture(sbuf *ph, const char *line, grp_delta_t *gd, int which)
 	}
 	if (ph->s_n > 0 && ph->s[ph->s_n - 1] == '\n')
 		ph->s_n--;
-	sbuf_null(ph)
+	sbuf_nul(ph)
 	if (gd) {
 		dst = which == 1 ? &gd->ph1 : &gd->ph2;
 		free(*dst);
@@ -3441,7 +3441,7 @@ static void write_files_blob(sbuf *out, file_patch_t **fps, int n,
 				     : fps[k]->path, with_phase);
 		sb_printf(out, "%s\n\n", end_tag_wr);
 	}
-	sbuf_null(out)
+	sbuf_nul(out)
 }
 
 static void gen_group_segments(file_patch_t *fp);
@@ -4243,7 +4243,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			}
 		}
 		if (rej)
-			sbuf_null(rej)
+			sbuf_nul(rej)
 
 		unit_t *hu = &units[nu++];
 		hu->fps = active;
@@ -4290,7 +4290,7 @@ static void interactive_edit_all_files(file_patch_t **active, int nactive)
 			osrc = oend + 5;
 		}
 		sbuf_str(nb, osrc)
-		sbuf_null(nb)
+		sbuf_nul(nb)
 		cu->name = str_fmt("%d.%s.compat-post.p2v.diff", c, nb->s);
 		free(nb->s);
 		build_unit_blobs(cu);
@@ -4821,7 +4821,7 @@ static void gen_group_segments(file_patch_t *fp)
 		free_extra_windows(&ws);
 		free(raw);
 ph1_done:
-		sbuf_null(out)
+		sbuf_nul(out)
 		g->ph1_gen = out->s;
 	}
 
@@ -4908,7 +4908,7 @@ ph1_done:
 			emit_mark_insert(out, tline, g->mark_id, g->insert_i,
 					 g->add_texts, g->nadd);
 		}
-		sbuf_null(out)
+		sbuf_nul(out)
 		g->ph2_gen = out->s;
 	}
 	free_orig_file();
@@ -5105,7 +5105,7 @@ static void emit_body_head(sbuf *osb, int regs)
 	sbuf_cut(osb, 0)
 	if (regs)
 		emit_reg_switches(osb);
-	sbuf_null(osb)
+	sbuf_nul(osb)
 	fputs(osb->s, stdout);
 	fputs("\"\\\n'", stdout);
 	sbuf_cut(osb, 0)
@@ -5736,7 +5736,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			emit_section_writes(bsb, s->files, s->nf, uf, nuf, own);
 			emit_compat_announce(bsb, s->cb->origin);
 		}
-		sbuf_null(bsb)
+		sbuf_nul(bsb)
 		stage_section(bsb, i);
 		free(bsb->s);
 		if (s->cb)
@@ -5774,7 +5774,7 @@ static void emit_dstore(dstore_t *ds)
 		sbuf_cut(sb, 0)
 		for (int j = 0; j < od->ngrps; j++)
 			emit_grp_delta(sb, &od->grps[j]);
-		sbuf_null(sb)
+		sbuf_nul(sb)
 		fputs(sb->s, stdout);
 		printf("%s\n", end_tag_wr);
 	}
@@ -6053,7 +6053,7 @@ static int sh_expand(const char *s, sbuf *out)
 			} else {
 				sbuf_smake(def, SB_INIT)
 				sbuf_mem(def, b, s - b)
-				sbuf_null(def)
+				sbuf_nul(def)
 				j = sh_expand(def->s, out);
 				free(def->s);
 				if (j < 0)
@@ -6093,12 +6093,12 @@ static int sh_assign(const char *s)
 			return sh_err("assignment", s);
 		}
 		sbuf_mem(val, s + 1, n - 2)
-		sbuf_null(val)
+		sbuf_nul(val)
 		s = val->s;
 	}
 	sbuf_smake(out, SB_INIT)
 	if (!(ret = sh_expand(s, out))) {
-		sbuf_null(out)
+		sbuf_nul(out)
 		sh_set(name, out->s);
 	}
 	free(out->s);
@@ -6251,7 +6251,7 @@ static int sh_word(const char **sp, sbuf *out)
 			return sh_err("quoting", s);
 		sbuf_smake(dq, SB_INIT)
 		sbuf_mem(dq, s, e - s)
-		sbuf_null(dq)
+		sbuf_nul(dq)
 		ret = sh_expand(dq->s, out);
 		free(dq->s);
 		if (ret < 0)
@@ -6276,7 +6276,7 @@ static int sh_printf_body(const char *s, sbuf *out)
 	s += 7;
 	if (!(ret = sh_word(&s, fmt))) {
 		const char *p = fmt->s;
-		sbuf_null(fmt)
+		sbuf_nul(fmt)
 		while (p[0] == '%' && p[1] == 's')
 			p += 2;
 		if (p == fmt->s || strcmp(p, "\\n"))
@@ -6299,7 +6299,7 @@ static int expand_body(const char *raw, char **out)
 	int ret;
 	sbuf_smake(exp, SB_INIT)
 	ret = sh_printf_body(raw, exp);
-	sbuf_null(exp)
+	sbuf_nul(exp)
 	if (ret >= 0)
 		*out = uc_dup(exp->s);
 	free(exp->s);
@@ -6411,7 +6411,7 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 				continue;
 			}
 			in_body = 0;
-			sbuf_null(body)
+			sbuf_nul(body)
 			pend_push(&pend, body->s, suf);
 			sbuf_cut(body, 0)
 			continue;
@@ -6639,7 +6639,7 @@ static void snap_seed(snaps_t *sn, const char *path)
 		sbuf_str(sb, v[i])
 		sbuf_chr(sb, '\n')
 	}
-	sbuf_null(sb)
+	sbuf_nul(sb)
 	free_lines(v, n);
 	ARR_PUSH(sn->v, sn->n, sn->cap)
 	sn->v[sn->n].path = uc_dup(path);
@@ -6763,7 +6763,7 @@ static int fail_place(const char *body, const char *path, int line, int mark,
 		 * eat a line the patch never mentioned. */
 		if (*verb == 'i' || *verb == 's') {
 			sb_printf(sb, "%d%s", line, addr);
-			sbuf_null(sb)
+			sbuf_nul(sb)
 			ok = ex_exec(sb->s) == NULL;
 			sbuf_cut(sb, 0)
 		}
@@ -6775,7 +6775,7 @@ static int fail_place(const char *body, const char *path, int line, int mark,
 		if (sb->s[sb->s_n - 1] != '\n')
 			sb_chr(sb, '\n');
 		sb_str(sb, "<<< p2v END\n");
-		sbuf_null(sb)
+		sbuf_nul(sb)
 		lbuf_edit(xb, sb->s, row, row, -1, -1);
 	}
 	shift[*bi] += lbuf_len(xb) - len;
@@ -7786,7 +7786,7 @@ static int compat_apply_file(file_patch_t *fp)
 			sbuf_str(sb, out[k])
 			sbuf_chr(sb, '\n')
 		}
-		sbuf_null(sb)
+		sbuf_nul(sb)
 		lbuf_edit(lb, sb->s, 0, lbuf_len(lb), 0, 0);
 		free(sb->s);
 	}
@@ -8105,7 +8105,7 @@ static int compat_derive(void)
 		free_lines(pre, npre);
 	}
 	ed_free();
-	sbuf_null(diff)
+	sbuf_nul(diff)
 	if (!nchanged) {
 		fprintf(stderr, "no compat patch derived\n");
 		goto err;
@@ -8987,7 +8987,7 @@ int main(int argc, char **argv)
 		}
 		if (edit_to_diff(argv + i, argc - i, dsb) < 0)
 			return 1;
-		sbuf_null(dsb)
+		sbuf_nul(dsb)
 		parse_diff_text(dsb->s);
 	}
 
@@ -9063,7 +9063,7 @@ int main(int argc, char **argv)
 		}
 		if (amend_to_diff(input_file, dsb) < 0)
 			return 1;
-		sbuf_null(dsb)
+		sbuf_nul(dsb)
 		parse_diff_text(dsb->s);
 	}
 	while (in && read_line(in, lb)) {
@@ -9119,7 +9119,7 @@ int main(int argc, char **argv)
 	sbuf_smake(osb, SB_INIT)
 	fputs("#!/bin/sh -e\n# Generated by patch2vi from unified diff\n", stdout);
 	list_unused_bytes(osb);
-	sbuf_null(osb)
+	sbuf_nul(osb)
 	fputs(osb->s, stdout);
 	fputs("\n# Pass any argument to use patch(1) instead of nextvi ex commands\n"
 	      "if [ -n \"$1\" ]; then\n"
