@@ -2832,6 +2832,33 @@ else
 	tr -d '\r' < "$R/derr" | sed 's/^/    /' | head -3
 fi
 
+# The gate is the editor's, not the shell's: the script hands $P2VI_PATCH to
+# one register, in the same double-quoted word the DBG/QF switches live in, and
+# does nothing else with it. No flag defaults, no case matches, no basename
+# loop - so there is no second implementation of membership to drift.
+if ! grep -q '^f2[0-9][0-9]=0$' "$R/cn.sh" &&
+   ! grep -q 'case " \$applied' "$R/cn.sh" &&
+   [ "$(grep -c '^"229reg  \$P2VI_PATCH ' "$R/cn.sh")" = 1 ]; then
+	ok "applied-set: the set reaches ex as one register, not as shell flags"
+else
+	fail "applied-set: the set reaches ex as one register, not as shell flags"
+	sed -n '/^f2/p;/case /p' "$R/cn.sh" | sed 's/^/    /' | head
+fi
+
+# Membership is by whole name: a set entry that merely contains an origin's
+# name, or is contained by it, leaves the block cold. Only the exact basename
+# (in any path spelling) fires it.
+cp "$R/cn.orig" "$R/cn.c"
+stack ca.sh cb.sh
+( cd "$R" && P2VI_PATCH="xca.sh ca.shy cb.sh" VI="$VI" sh cn.sh ) >/dev/null 2>&1
+cn_near="$(tr '\n' '|' < "$R/cn.c")"
+if [ "$cn_near" = 'S1|CA|S2x|S3|CB|S4|' ]; then
+	ok "applied-set: a near-miss name is not a member"
+else
+	fail "applied-set: a near-miss name is not a member"
+	echo "    got=[$cn_near]"
+fi
+
 fi
 
 echo ""

@@ -207,11 +207,11 @@ static void sb_lines(sbuf *fp, char **v, int n)
  * clean (a change applied by hand, absorbed upstream, or arriving pre-patched)
  * and is what -co asserts while deriving a new block.
  *
- * The shell header computes one flag per block from the case matches and the
- * driver reads them through "$fNNN" splices into the staged body's register
- * writes; -e and the replay path reach the same values from their own
- * accumulated set via the # P2VI_COMPAT markers, so the two paths agree
- * without the shell ever hosting the ex text.
+ * The decision itself is the editor's: the set goes into a register whole and
+ * every block searches it for its own origins, so the shell contributes one
+ * variable and no logic. -e and the replay path set that same variable from
+ * their own accumulated set, which is why the two paths cannot drift - there
+ * is only one implementation of the rule, and it is in the ex body.
  *
  * Stored === GATE === probe regions from scripts made by older patch2vi are
  * read past and discarded: nothing emits or consults them any more. */
@@ -1098,21 +1098,29 @@ static void sq_write(const char *s, int n)
  * on a body that reports and falls through. */
 #define REG_QF2A 221
 /*
- * -co flag registers. Registers are global to the process and never cleared
- * between chains, so a value a block's call writes crosses the host body:
- *   REG_FLAG_ANY      the shell header's f230 = "any origin present", read
- *                     once by the host override to relax its quit chain.
+ * -co registers. Registers are global to the process and never cleared between
+ * chains, so a value a block's call writes crosses the host body:
+ *   REG_APPLIED       the applied set: $P2VI_PATCH verbatim, padded with a
+ *                     space at each end, the one thing the shell contributes.
+ *                     The driver reads every gate out of it with
+ *                     "fr <REG_APPLIED>" and a search, so the decision is the
+ *                     editor's and the -e path reaches it by setting the same
+ *                     variable.
+ *   REG_FLAG_ANY      "any origin present", read once by the host override to
+ *                     relax its quit chain.
  *   REG_FLAG_BASE+k   one per compat block k, = "every src= of that block is
  *                     in the applied set", read by the block's gated call and
  *                     its quit policy.
- * Both sit above the 210-220 control band. The subset anchors use ec_while slot
+ * All three sit above the 210-220 control band. The anchor slots use ec_while
  * ids >= 10, above every single-digit group chain tag, so they never fuse; two
  * blocks reusing the same slots is fine, since each records them immediately
  * before reading them and a lookup takes the last record.
  */
+#define REG_APPLIED   229	/* the applied set, i.e. $P2VI_PATCH */
 #define REG_FLAG_ANY  230	/* shared any-origin-fired register */
 #define REG_FLAG_BASE 231	/* per-compat-block flag registers: base+k */
 #define FLAG_SLOT_BASE 10	/* ec_while subset-test anchor slots (>= 10) */
+#define SRC_SLOT_BASE  20	/* ec_while src= membership anchor slots */
 
 static void emit_esc_sep(sbuf *out, int n)
 {
@@ -4870,9 +4878,22 @@ static void emit_reg_defaults(sbuf *out)
 /* The switches, as whole commands the shell either contributes or not - the
  * only part of a body sh writes, and a double-quoted word, so its raw separator
  * bytes are escaped for it. The backslash-newline breaks are continuations
- * inside the quotes, so they only split the word for readability. */
-static void emit_reg_switches(sbuf *out)
+ * inside the quotes, so they only split the word for readability.
+ *
+ * applied adds the applied set to that word: ex can read no environment but
+ * EXINIT, so $P2VI_PATCH has to be written in from outside, and this word is
+ * already the place the shell writes. The value lands in REG_APPLIED with a
+ * space at each end - two spaces after "reg", since ex_cmd eats one - so the
+ * gates emit_compat_flags builds can delimit a name with plain spaces. It goes
+ * out ahead of the body, which is the third printf argument, so the register is
+ * set before anything reads it. */
+static void emit_reg_switches(sbuf *out, int applied)
 {
+	if (applied) {
+		sb_printf(out, "%dreg  $P2VI_PATCH ", REG_APPLIED);
+		sb_dq_esc_sep(out, 0);
+		sb_str(out, "\\\n");
+	}
 	sb_printf(out, "${DBG1:+%dreg ? %%@%d", REG_ERR1, REG_HDLR);
 	sb_dq_esc_sep(out, 1);
 	sb_printf(out, "? %%@%d", REG_QF1);
@@ -4954,8 +4975,9 @@ static void emit_prologue(sbuf *out)
  * every byte goes out verbatim), and the switches the shell contributes (a
  * double-quoted word). The printf is left open on its third argument, the body
  * proper. regs = 0 omits both halves, as a plain absolute script has no state
- * to switch. osb is scratch, left empty. */
-static void emit_body_head(sbuf *osb, int regs)
+ * to switch; applied adds the $P2VI_PATCH register write, which only a driver
+ * with compat blocks reads. osb is scratch, left empty. */
+static void emit_body_head(sbuf *osb, int regs, int applied)
 {
 	sbuf_cut(osb, 0)
 	emit_prologue(osb);
@@ -4966,7 +4988,7 @@ static void emit_body_head(sbuf *osb, int regs)
 	fputs("'\\\n\"", stdout);
 	sbuf_cut(osb, 0)
 	if (regs)
-		emit_reg_switches(osb);
+		emit_reg_switches(osb, applied);
 	sbuf_nul(osb)
 	fputs(osb->s, stdout);
 	fputs("\"\\\n'", stdout);
@@ -4984,7 +5006,7 @@ static void emit_vi_block(file_patch_t **active, int nactive)
 	sbuf_smake(osb, SB_INIT)
 	/* the three printf arguments sit on their own source lines, spliced by
 	 * backslash-newline continuations, so the output is unchanged */
-	emit_body_head(osb, regs);
+	emit_body_head(osb, regs, 0);
 	if (forward) {
 		sb_str(osb, "fr 98");
 		EMIT_SEP(osb);
@@ -5240,20 +5262,110 @@ static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
 	emit_qf2_assert(out);
 }
 
-/* The compat flags the shell decided, as driver register writes read by the
- * host override (f230 = any origin present) and by each block's own call
- * and quit policy (f231+k per block). One register line per flag, the value
- * later spliced from "$fNNN" at emission; the marker byte cannot otherwise
- * appear in the generated driver body, so it is the splice point. */
-static void drv_flag(sbuf *out, char mark, int *soff, int *sreg, int *ns,
-		     int reg)
+/* The basename of a path: the text after the last '/'. */
+static const char *base_name(const char *p)
 {
-	sb_printf(out, "%dreg %c", reg, mark);
-	if (ns) {
-		soff[*ns] = out->s_n - 1;
-		sreg[*ns] = reg;
-		(*ns)++;
+	const char *s = strrchr(p, '/');
+	return s ? s + 1 : p;
+}
+
+/* A compat block's origin label, as its src= fields' basenames: *out[i] is
+ * one field, the count is returned. The label is "a.sh src=b.sh" (no
+ * "src=" on the first), the shape compat_origin_label builds. */
+static int compat_src_fields(compat_block_t *cb, char ***out)
+{
+	const char *s = cb->origin ? cb->origin : "";
+	char **v = NULL;
+	int n = 0, cap = 0;
+	*out = NULL;
+	while (s && *s) {
+		const char *e = strstr(s, " src=");
+		const char *end = e ? e : s + strlen(s);
+		const char *b = s;
+		for (const char *p = s; p < end; p++)
+			if (*p == '/')
+				b = p + 1;
+		ARR_PUSH(v, n, cap)
+		v[n++] = dup_n(b, end - b);
+		s = e ? e + 5 : NULL;
 	}
+	*out = v;
+	return n;
+}
+
+/* One src= member as a pattern for REG_APPLIED: "[ /]<base> ". The register is
+ * space padded at both ends, so the delimiters always exist and a name matches
+ * only whole - never as the tail of a longer one ("p.sh" inside "lsp.sh") -
+ * while the '/' alternative accepts the "./x.sh" and "/abs/x.sh" spellings a
+ * caller may have put in $P2VI_PATCH for the basename the field stores.
+ * Every byte outside [A-Za-z0-9_-] goes in a one-character class, which is
+ * literal to the regex and inert in the ex_arg escape layer both, so a '.' in
+ * a script name needs no escape byte and cannot degrade into "any character".
+ * A ']' or '^' in a script name is not representable this way and not
+ * supported. */
+static void sb_src_pat(sbuf *out, const char *base)
+{
+	sb_str(out, "[ /]");
+	for (const char *p = base; *p; p++) {
+		if (isalnum((unsigned char)*p) || *p == '_' || *p == '-')
+			sb_chr(out, *p);
+		else
+			sb_printf(out, "[%c]", *p);
+	}
+	sb_chr(out, ' ');
+}
+
+/* The compat flags, decided in ex from the applied set alone.
+ *
+ * REG_APPLIED already holds "<space> patch1.sh patch2.sh ... <space>", written
+ * by the body head. Everything here is the editor's: "fr REG_APPLIED" points
+ * searching at that register, each block writes its own flag 0, searches the
+ * register once per src= member recording the outcome in an anchor slot, and
+ * the ANDed slots ("20,21??") rewrite the flag to 1 - and REG_FLAG_ANY with it,
+ * so the any-origin flag needs no second pass. A block with no src= field at
+ * all keeps its 0 and never fires.
+ *
+ * The arm holds two commands, joined by an escaped separator: ex_arg unescapes
+ * it, so the ex_exec the arm runs sees a chain. A missed gate leaves xpret set
+ * and the "??" returns xuerr, which with the default xerr is neither printed
+ * nor fatal - the same way an unfired gate has always read.
+ *
+ * The closing "fr 98" hands searching back to the file cache: every section
+ * body sets it again itself, but nothing should have to rely on that. */
+static void emit_compat_flags(sbuf *out, section_t *secs, int nsec)
+{
+	sb_printf(out, "%dreg 0", REG_FLAG_ANY);
+	EMIT_SEP(out);
+	sb_printf(out, "fr %d", REG_APPLIED);
+	EMIT_SEP(out);
+	for (int i = 0; i < nsec; i++) {
+		char **fields;
+		int nf, reg;
+		if (!secs[i].cb)
+			continue;
+		reg = REG_FLAG_BASE + secs[i].flagk;
+		nf = compat_src_fields(secs[i].cb, &fields);
+		sb_printf(out, "%dreg 0", reg);
+		EMIT_SEP(out);
+		for (int k = 0; k < nf; k++) {
+			sb_str(out, "f> ");
+			sb_src_pat(out, fields[k]);
+			EMIT_SEP(out);
+			sb_printf(out, "%d?" "?", SRC_SLOT_BASE + k);
+			EMIT_SEP(out);
+			free(fields[k]);
+		}
+		free(fields);
+		if (!nf)
+			continue;
+		for (int k = 0; k < nf; k++)
+			sb_printf(out, "%s%d", k ? "," : "", SRC_SLOT_BASE + k);
+		sb_printf(out, "?" "? %dreg 1", reg);
+		EMIT_ESCSEP(out);
+		sb_printf(out, "%dreg 1", REG_FLAG_ANY);
+		EMIT_SEP(out);
+	}
+	sb_str(out, "fr 98");
 	EMIT_SEP(out);
 }
 
@@ -5348,9 +5460,8 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		secs[nsec].files = ca;
 		secs[nsec].nf = nca;
 		secs[nsec].reg = compat_reg++;
-		/* the flag slot is the block's own index, as in the header and
-		 * the # P2VI_COMPAT markers, so a skipped block does not shift
-		 * the registers the rest read */
+		/* the flag slot is the block's own index, so a skipped block
+		 * does not shift the registers the rest read */
 		secs[nsec].flagk = c;
 		secs[nsec].cb = cb;
 		nsec++;
@@ -5397,24 +5508,11 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	/* The driver (".d") is staged first: prologue + register defaults,
 	 * shell switches, then orchestration and the final writes. */
 	sbuf_smake(osb, SB_INIT)
-	emit_body_head(osb, 1);
-	/* The shell decided the compat flags in the header. The driver learns
-	 * them through "$fNNN" spliced into the staged body: one register write
-	 * per flag, f230 (the any-origin flag) first, then each compat section's
-	 * own flag. A flag is "0" on a clean tree and "1" when the block's
-	 * origins are all in the applied set. */
-	int markb;
-	for (markb = 1; markb < 256; markb++)
-		if (!byte_used[markb])
-			break;
-	char mark = (char)(markb == 256 ? 1 : markb);
-	int soff[16], sreg[16], ns = 0;
-	if (nflag > 0) {
-		drv_flag(osb, mark, soff, sreg, &ns, REG_FLAG_ANY);
-		for (int i = 1; i < nsec; i++)
-			drv_flag(osb, mark, soff, sreg, &ns,
-				 REG_FLAG_BASE + secs[i].flagk);
-	}
+	emit_body_head(osb, 1, nflag > 0);
+	/* The driver decides the compat flags itself, out of the applied set the
+	 * head just put in REG_APPLIED. */
+	if (nflag > 0)
+		emit_compat_flags(osb, secs, nsec);
 	/* before any body: with an origin present (the any flag set) the host
 	 * override relaxes its own quit chain, so the compat blocks repair its
 	 * misses; on a clean tree 211 keeps its default assert */
@@ -5423,18 +5521,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	for (int i = 0; i < nsec; i++)
 		emit_driver_call(osb, secs, nsec, i, uf, nuf, own);
 	emit_write_tail(osb, nwrite, own);
-	/* The body is one shell word; each flag is a double-quoted "$fNNN"
-	 * splice between single-quoted pieces, so both the shell and -e's sh_word
-	 * (which folds adjacent quoted runs into one word) resolve it. */
-	int base = 0;
-	for (int i = 0; i < ns; i++) {
-		sq_write(osb->s + base, soff[i] - base);
-		putchar('\'');
-		printf("\"$f%d\"", sreg[i]);
-		putchar('\'');
-		base = soff[i] + 1;
-	}
-	sq_write(osb->s + base, osb->s_n - base);
+	sq_write(osb->s, osb->s_n);
 	putchar('\'');
 	printf(" > \"$P2VIF\".d\n");
 	free(osb->s);
@@ -5444,20 +5531,6 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		section_t *s = &secs[i];
 		int sv_rel = 0;
 		if (s->cb) {
-			/* the -e path has no header to run: this marker tells it
-			 * which flag this section is gated on and against which
-			 * origins, so it can sh_set() the same decision from its
-			 * own accumulated applied set before the body expands */
-			char **fields;
-			int nf = compat_src_fields(s->cb, &fields);
-			printf("# P2VI_COMPAT %d f%d", i,
-			       REG_FLAG_BASE + s->flagk);
-			for (int k = 0; k < nf; k++) {
-				printf(" src=%s", fields[k]);
-				free(fields[k]);
-			}
-			free(fields);
-			printf("\n");
 			printf("# Compat (post) from %s\n",
 			       s->cb->origin ? s->cb->origin : "");
 			compat_win_enter(&sv_rel);
@@ -5523,10 +5596,10 @@ static void emit_dstore(dstore_t *ds)
  * sub-sections close with === END === like the host's, so the reader reaches
  * === END COMPAT === with no section open.
  *
- * A block's gate is the applied set, not a stored probe list: the header and
- * the # P2VI_COMPAT markers derive it from $P2VI_PATCH at run time, so nothing
- * is stored here. (A === GATE === region from an older script still parses,
- * but it is discarded, so regenerating such a script drops it.) */
+ * A block's gate is the applied set, not a stored probe list: it is derived
+ * from $P2VI_PATCH at run time, so nothing is stored here. (A === GATE ===
+ * region from an older script still parses, but it is discarded, so
+ * regenerating such a script drops it.) */
 static void emit_compat_storage(void)
 {
 	for (int c = 0; c < ncompat; c++) {
@@ -6074,7 +6147,7 @@ static int pend_finish(pend_t *p, p2vi_block_t *blk)
 /* The applied set of the script currently being parsed (-e from the earlier
  * scripts on the command line, replay from the earlier scripts in the chain):
  * basenames, so a stored src=a/b.sh field matches the basename a/b.sh puts in
- * $P2VI_PATCH. This is the -e counterpart of the shell header's $P2VI_PATCH. */
+ * $P2VI_PATCH. This is what -e publishes as $P2VI_PATCH for the driver. */
 static char **cur_applied;
 static int ncur_applied, cur_applied_cap;
 
@@ -6111,15 +6184,6 @@ static void cur_applied_set(const char **paths, int n)
 	}
 }
 
-/* Whether basename b is a member of the current applied set. */
-static int cur_applied_has(const char *b)
-{
-	for (int i = 0; i < ncur_applied; i++)
-		if (!strcmp(cur_applied[i], b))
-			return 1;
-	return 0;
-}
-
 /* Free the applied-set paths once, at the end of a run. */
 static void cur_applied_free(void)
 {
@@ -6129,24 +6193,19 @@ static void cur_applied_free(void)
 	cur_applied_cap = 0;
 }
 
-/* One # P2VI_COMPAT marker: the flag variable of a compat section and the
- * src= basenames that gate it, all of them required. */
-typedef struct {
-	char *flag;
-	char **src;
-	int nsrc, cap;
-} marker_t;
-
-/* The markers gathered for one $VI call, released once it is decided. */
-static void markers_free(marker_t *mk, int *nm)
+/* The applied set as the one space separated word $P2VI_PATCH holds in the
+ * shell chain. The staged body head writes that variable into REG_APPLIED and
+ * every compat block is decided from it, so handing -e the same string is the
+ * whole of what -e has to do differently. */
+static char *cur_applied_word(void)
 {
-	for (int m = 0; m < *nm; m++) {
-		free(mk[m].flag);
-		for (int k = 0; k < mk[m].nsrc; k++)
-			free(mk[m].src[k]);
-		free(mk[m].src);
+	sbuf_smake(sb, SB_INIT)
+	for (int i = 0; i < ncur_applied; i++) {
+		if (i)
+			sbuf_chr(sb, ' ')
+		sbuf_str(sb, cur_applied[i])
 	}
-	*nm = 0;
+	sbufn_ret(sb, sb->s)
 }
 
 /* The script's executable region (everything before "exit 0") as one block per
@@ -6160,10 +6219,6 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 	pend_t pend = {0};
 	int skip = 0, in_body = 0, ret = 0, j;
 	char *line;
-	/* markers seen since the last EXINIT line, in emission order */
-	marker_t *mk = NULL;
-	int nm = 0, nmcap = 0;
-	const char *mc_pre = "# P2VI_COMPAT ";
 	sbuf_smake(lb, SB_INIT)
 	sbuf_smake(body, SB_INIT)
 	while (ret >= 0 && (line = read_line(in, lb))) {
@@ -6210,29 +6265,6 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 				skip++;
 			continue;
 		}
-		if (strncmp(line, mc_pre, strlen(mc_pre)) == 0) {
-			/* # P2VI_COMPAT <sec> <flagname> [src=<base>...]: the -e
-			 * counterpart of the header's case logic - the shell sets
-			 * the same flag from $P2VI_PATCH, -e sets it here from the
-			 * accumulated applied set, and the staged body's "$fNN"
-			 * expansions read whichever was run. */
-			char *p = line + strlen(mc_pre);
-			char *tok = strtok_r(p, " ", &p);
-			(void)tok;	/* the section index is unused */
-			if ((tok = strtok_r(NULL, " ", &p))) {
-				ARR_PUSH(mk, nm, nmcap)
-				marker_t *m = &mk[nm++];
-				m->flag = uc_dup(tok);
-				m->src = NULL;
-				m->nsrc = 0;
-				m->cap = 0;
-				while ((tok = strtok_r(NULL, " ", &p)))
-					if (!strncmp(tok, "src=", 4))
-						arr_append(&m->src, &m->nsrc,
-							   &m->cap, tok + 4);
-			}
-			continue;
-		}
 		if (!line[0] || line[0] == '#')
 			continue;
 		if (!strncmp(line, "if ", 3)) {
@@ -6244,25 +6276,13 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 		if (!strncmp(line, "( : > ", 6) || !strncmp(line, "trap ", 5))
 			continue;
 		if (!strncmp(line, "EXINIT=", 7)) {
-			/* decide every marker against the applied set before the
-			 * bodies expand, so "$fNN" in the staged printf resolves
-			 * to the shell's value; f230 (the any flag) is the OR of
-			 * the block flags, exactly as the header computes it */
-			int anyfire = 0;
-			for (int m = 0; m < nm; m++) {
-				int fire = 1;
-				for (int k = 0; k < mk[m].nsrc; k++)
-					if (!cur_applied_has(mk[m].src[k]))
-						fire = 0;
-				sh_set(mk[m].flag, fire ? "1" : "0");
-				anyfire |= fire;
-			}
-			if (nm) {
-				char *any = str_fmt("f%d", REG_FLAG_ANY);
-				sh_set(any, anyfire ? "1" : "0");
-				free(any);
-			}
-			markers_free(mk, &nm);
+			/* the applied set the shell chain would have inherited,
+			 * published before the bodies expand so the head's
+			 * "229reg  $P2VI_PATCH " resolves to it and the gates
+			 * decide this call's blocks as a chained run would */
+			char *ap = cur_applied_word();
+			sh_set("P2VI_PATCH", ap);
+			free(ap);
 			if ((ret = parse_vi_call(line, &blk)) < 0)
 				break;
 			if (!(ret = pend_finish(&pend, &blk))) {
@@ -6287,8 +6307,6 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 	free(body->s);
 	free(lb->s);
 	pend_clear(&pend);
-	markers_free(mk, &nm);	/* markers of a call the loop never reached */
-	free(mk);
 	if (in_body && ret >= 0)
 		ret = sh_err("body", "unterminated printf");
 	return ret;
@@ -6846,7 +6864,7 @@ static int parse_script(const char *path, p2vi_block_t **blks, int *nblks,
 /* Replay the scripts over the tree as it is on disk, in one session the caller
  * reads back: -co replays the origin and then the target, so the user is handed
  * the state both applied to. The scripts keep their own phase policy - the
- * shell header is the single source of truth. snap_sc is the script index of
+ * script itself is the single source of truth. snap_sc is the script index of
  * the baseline snapshot, translated into the block index replay_blocks() wants
  * (a script contributes one block per $VI call). */
 static int replay_scripts(const char **paths, int nscripts, int handover,
@@ -8019,126 +8037,19 @@ static int read_delta_sections(FILE *in)
 }
 
 /*
- * Applied-set shell header and tail.
+ * The applied-set tail.
  *
- * The applied set is the chain of scripts already run, carried in
- * $P2VI_PATCH as basenames. A script inherits it from its caller, tests its
- * own compat blocks against it (a block fires iff every src= field's base
- * name is present), and appends itself before handing the remainder to the
- * next script in the chain. The set and the script queue are disjoint: the
- * environment grows in run order, the arguments shrink.
+ * The applied set is the chain of scripts already run, carried in $P2VI_PATCH
+ * as basenames. A script inherits it from its caller, hands it to the editor
+ * whole (REG_APPLIED, where emit_compat_flags decides every block from it) and
+ * appends itself before invoking the next script with the rest of the queue.
+ * The set and the queue are disjoint: the environment grows in run order, the
+ * arguments shrink. That is the whole shell side of compat - no header, no
+ * flags, nothing to keep in step with the editor's own reading of the set.
  *
- * The header's body is shell only - the -e path never runs it, reaching the
- * same block decisions from its own argument order - so every line that does
- * anything (case, if, assignments inside the guarded block) sits under a
- * single "if [ 1 ]" the parser skips wholesale, and only the flag-leading
- * default assignments (fNNN=0) stay at the top where the parser records
- * them. A block with several src= fields needs to demand ALL of them, so
- * each gets its own temporary and the flag is set only when every one
- * matched. The f230 flag (REG_FLAG_ANY) is the OR of every block's flag,
- * read once by the host override to relax the host body's quit chain when
- * any origin is present.
+ * Only the argument test is a shell conditional; the body lines are ordinary
+ * top-level commands, so the -e parser skips the whole block.
  */
-
-/* The basename of a path: the text after the last '/'. */
-static const char *base_name(const char *p)
-{
-	const char *s = strrchr(p, '/');
-	return s ? s + 1 : p;
-}
-
-/* A compat block's origin label, as its src= fields' basenames: *out[i] is
- * one field, the count is returned. The label is "a.sh src=b.sh" (no
- * "src=" on the first), the shape compat_origin_label builds. */
-static int compat_src_fields(compat_block_t *cb, char ***out)
-{
-	const char *s = cb->origin ? cb->origin : "";
-	char **v = NULL;
-	int n = 0, cap = 0;
-	*out = NULL;
-	while (s && *s) {
-		const char *e = strstr(s, " src=");
-		const char *end = e ? e : s + strlen(s);
-		const char *b = s;
-		for (const char *p = s; p < end; p++)
-			if (*p == '/')
-				b = p + 1;
-		ARR_PUSH(v, n, cap)
-		v[n++] = dup_n(b, end - b);
-		s = e ? e + 5 : NULL;
-	}
-	*out = v;
-	return n;
-}
-
-/* Whether a compat block owns any editable file and so appears as a section
- * (and gets a flag). Agrees with emit_one_call's section build. */
-static int compat_block_used(int c)
-{
-	int n;
-	block_files(&compat_blocks[c], &n);
-	return n > 0;
-}
-
-/* The header's flag defaults and the shell decisions, emitted only when the
- * script carries a compat block. All the arithmetic lines sit inside "if
- * [1 ]" so the -e parser skips them; the fNNN=0 defaults are what it sees. */
-static void emit_compat_header(void)
-{
-	int any = 0;
-	for (int c = 0; c < ncompat; c++)
-		if (compat_block_used(c))
-			any = 1;
-	if (!any)
-		return;
-	for (int c = 0; c < ncompat; c++)
-		if (compat_block_used(c))
-			printf("f%d=0\n", REG_FLAG_BASE + c);
-	printf("f%d=0\n", REG_FLAG_ANY);
-	printf("if [ 1 ]; then\n");
-	printf("    me=${0##*/}\n");
-	printf("    applied=$P2VI_PATCH\n");
-	/* normalize every inherited set entry to its basename, so an absolute path or
-	 * a ./ prefix all match a stored src= field the same way */
-	printf("    applied2=\n");
-	printf("    for _p in $applied; do applied2=\"$applied2 ${_p##*/}\"; done\n");
-	for (int c = 0; c < ncompat; c++) {
-		char **fields;
-		int nf;
-		if (!compat_block_used(c))
-			continue;
-		nf = compat_src_fields(&compat_blocks[c], &fields);
-		for (int k = 0; k < nf; k++)
-			printf("    p2vt%d_%d=0\n", c, k);
-		for (int k = 0; k < nf; k++)
-			printf("    case \" $applied2 \" in *\" %s \"*) "
-			       "p2vt%d_%d=1 ;; esac\n", fields[k], c, k);
-		printf("    if [ $p2vt%d_0 = 1 ]", c);
-		for (int k = 1; k < nf; k++)
-			printf(" && [ $p2vt%d_%d = 1 ]", c, k);
-		printf("; then f%d=1; fi\n", REG_FLAG_BASE + c);
-		for (int k = 0; k < nf; k++)
-			free(fields[k]);
-		free(fields);
-	}
-	int wr = 0;
-	printf("    if ");
-	for (int c = 0; c < ncompat; c++) {
-		if (!compat_block_used(c))
-			continue;
-		if (wr)
-			printf(" || ");
-		printf("[ $f%d = 1 ]", REG_FLAG_BASE + c);
-		wr = 1;
-	}
-	printf("; then f%d=1; fi\n", REG_FLAG_ANY);
-	printf("fi\n\n");
-}
-
-/* The tail: if arguments remain, append this script to the inherited applied
- * set and invoke the next script with the rest. Only the argument test is a
- * shell conditional; the body lines are ordinary top-level commands, so the
- * -e parser skips the whole block. */
 static void emit_compat_tail(void)
 {
 	printf("if [ $# -gt 0 ]; then\n");
@@ -8581,12 +8492,6 @@ int main(int argc, char **argv)
 	/* Interactive editing: one built-in editor session for all files */
 	if (interactive_mode)
 		interactive_edit_all_files(active, nactive);
-
-	/* The applied-set header: which compat blocks of this script fire is
-	 * decided by the names in $P2VI_PATCH, not by probing the tree. Emitted
-	 * now, after the groups are built, so a block "in use" (owns an
-	 * editable file) is decided the same way emit_one_call later does. */
-	emit_compat_header();
 
 	/* With compat blocks present, the whole patch is one $VI call: host and
 	 * every compat block share one process so the flags cross the host body
