@@ -116,6 +116,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 ??!219reg vi.c:608:m12sc %? %@2142sc!0?
 '\''2s/vi_nlmode\+1/dir/??!219reg vi.c:610:m22sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF"
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1

@@ -779,6 +779,7 @@ extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 1;2;3;4;5;6;7;8;9??!219reg vi.h:4552sc %? %@2132sc!0?
 '\''1s/3/4/??!219reg vi.h:455:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1

@@ -881,6 +881,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 				break;
 ??!219reg led.c:748:m22sc %? %@2142sc!p compat applied: src=incsearch.sh src=detect_indent.sh' > "$P2VIF".4
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".4 "$P2VIF".d
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1

@@ -404,6 +404,7 @@ void led_render\(char \*s0, int cbeg, int cend\)
 '\''8s/ c/ fc/??!219reg led.c:205:m82sc %? %@2142sc!0?
 '\''9s/0/atti/??!219reg led.c:215:m92sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' "$P2VIF"
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1

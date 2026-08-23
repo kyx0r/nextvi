@@ -189,6 +189,7 @@ public|codegen|constexpri|constexprf|method|\
 ??!219reg conf.c:274:m32sc %? %@2142sc!0?
 '\''4s/c\)/c|\\\\.cbas|\\\\.hbas)/??!219reg conf.c:278:m42sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' "$P2VIF"
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1

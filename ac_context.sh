@@ -566,6 +566,7 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 				if (suggestsb && search(sb, is->lsug, pre)) {
 ??!219reg led.c:560:m112sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' "$P2VIF"
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1

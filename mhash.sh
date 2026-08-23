@@ -734,6 +734,7 @@ struct linfo \{.*(	int modified;			/\* modification state \*/)
 '\''3,#+1c 	struct mhash *mark;		/* marks keyed by id */
 ??!219reg vi.h:140:m32sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'lbuf.c' 'vi.h' "$P2VIF"
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1

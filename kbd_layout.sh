@@ -84,6 +84,7 @@ char \*term_att\(int att\)
 			*ibuf = *conf_kmap(0)[*ibuf];
 ??!219reg term.c:173:m12sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'kmap.h' 'term.c' "$P2VIF"
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1

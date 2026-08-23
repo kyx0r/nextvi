@@ -227,6 +227,7 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 '\''6i 		}
 ??!219reg vi.c:2131:m62sc %? %@2142sc!p compat applied: src=visual.sh' > "$P2VIF".1
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1

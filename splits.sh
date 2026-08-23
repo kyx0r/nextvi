@@ -4147,6 +4147,7 @@ static void vi_visual_attrib\(char \*s, int row\)
 '\''4i 	vi_vfocused = 1;
 ??!219reg vi.c:338:m42sc %? %@2142sc!p compat applied: src=visual.sh' > "$P2VIF".2
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1

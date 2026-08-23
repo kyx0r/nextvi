@@ -902,6 +902,7 @@ break##gen:; \\
 1;2??!219reg regex.c:823:m22sc %? %@2142sc!0?
 p compat applied: src=rstr.sh' > "$P2VIF".1
 EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1
