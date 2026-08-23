@@ -702,7 +702,7 @@ rset *rset_make(int n, char **re, int flg)
 		rs->grpnsubc[i] = flg & REG_NOCAP ? 2 : (re_groupcount(re[i]) + 1) * 2;
 		nsubc += rs->grpnsubc[i];
 	}
-	sbufn_null(sb)
+	sbuf_nul4(sb)
 	sz = re_sizecode(sb->s, &nsubc, &laidx, flg & REG_NOCAP ? REG_NOCAP : 0);
 	if (sz > 0) {
 		rs->regex = emalloc(sizeof(rcode) + (sz * sizeof(int)));
