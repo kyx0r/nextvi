@@ -5562,7 +5562,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			 * block is post, so nothing says so. */
 			char **fields;
 			int nf = compat_src_fields(s->cb, &fields);
-			printf("# Compat f%d", REG_FLAG_BASE + s->flagk);
+			printf("# Compat %d", REG_FLAG_BASE + s->flagk);
 			for (int k = 0; k < nf; k++) {
 				printf(" src=%s", fields[k]);
 				free(fields[k]);
@@ -5642,8 +5642,8 @@ static void emit_compat_storage(void)
 {
 	for (int c = 0; c < ncompat; c++) {
 		compat_block_t *cb = &compat_blocks[c];
-		printf("=== PATCH2VI COMPAT post src=%s ===\n",
-		       cb->origin ? cb->origin : "");
+		printf("=== PATCH2VI COMPAT %d src=%s ===\n",
+		       REG_FLAG_BASE + c, cb->origin ? cb->origin : "");
 		printf("=== COMPAT DELTA ===\n");
 		emit_dstore(&cb->deltas);
 		printf("%s\n", end_tag_wr);
@@ -7958,7 +7958,7 @@ static int read_delta_sections(FILE *in)
 			}
 			ARR_PUSH(compat_blocks, ncompat, compat_cap)
 			cur_cb = &compat_blocks[ncompat++];
-			/* "=== PATCH2VI COMPAT post [src=<origin>...] ==="
+			/* "=== PATCH2VI COMPAT <reg> [src=<origin>...] ==="
 			 * One src= field per origin, so the label of a
 			 * multi-origin block is everything from the first one
 			 * to the terminator, inner "src=" included: it is kept

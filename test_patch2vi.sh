@@ -1638,7 +1638,7 @@ printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' >
 cp "$R/draw.orig" "$R/draw.c"	# pre-origin tree the replay reads
 coderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
 
-if grep -q '^# Compat f[0-9]* src=x1.sh' "$R/new.sh" 2>/dev/null; then
+if grep -q '^# Compat [0-9]* src=x1.sh' "$R/new.sh" 2>/dev/null; then
 	ok "compat: -co emits a gated post-block from the user's merge"
 else
 	fail "compat: -co emits a gated post-block from the user's merge"
@@ -1722,7 +1722,7 @@ printf -- '--- a/po.c\n+++ b/po.c\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' > "$R
 "$R_P2VI" -r "$R/p2.diff" > "$R/p2.sh"
 cp "$R/po.orig" "$R/po.c"	# pre-origin tree the replay reads
 coderive p1.sh p2.sh '%s/^L2$/L2c/:q!'
-if grep -q '^# Compat f[0-9]* src=p1.sh' "$R/new.sh" 2>/dev/null; then
+if grep -q '^# Compat [0-9]* src=p1.sh' "$R/new.sh" 2>/dev/null; then
 	ok "compat: -co emits a gated post-block from the user's merge"
 else
 	fail "compat: -co emits a gated post-block from the user's merge"
@@ -1773,7 +1773,7 @@ printf -- '--- a/pb.c\n+++ b/pb.c\n@@ -3,3 +3,3 @@\n A2\n-A3\n+A3c\n A4\n' > "$R
 "$R_P2VI" -r "$R/b2.diff" > "$R/b2.sh"
 cp "$R/pb.orig" "$R/pb.c"	# pre-origin tree the replay reads
 coderive3 b1.sh b2.sh bc.diff ':q!'
-if grep -q '^# Compat f[0-9]* src=b1.sh' "$R/new.sh" 2>/dev/null; then
+if grep -q '^# Compat [0-9]* src=b1.sh' "$R/new.sh" 2>/dev/null; then
 	ok "compat: -co derives a block from a pre-applied diff alone"
 else
 	fail "compat: -co derives a block from a pre-applied diff alone"
@@ -1839,7 +1839,7 @@ printf -- '--- a/pc.c\n+++ b/pc.c\n@@ -1,5 +1,5 @@\n X1\n-X2\n-X3\n-X4\n+T2\n+T3
 "$R_P2VI" -r "$R/c2.diff" > "$R/c2.sh"
 cp "$R/pc.orig" "$R/pc.c"
 coderive c1.sh c2.sh '%s/^X6$/X6c/:q!'
-if grep -q '^# Compat f[0-9]* src=c1.sh' "$R/new.sh" 2>/dev/null; then
+if grep -q '^# Compat [0-9]* src=c1.sh' "$R/new.sh" 2>/dev/null; then
 	ok "compat: a gate derives though the target overwrote the origin's line"
 else
 	fail "compat: a gate derives though the target overwrote the origin's line"
@@ -1873,7 +1873,7 @@ printf -- '--- a/pe.c\n+++ b/pe.c\n@@ -1,3 +1,3 @@\n Z1\n-Z2\n+Z2t\n Z3\n' > "$R
 cp "$R/pd.orig" "$R/pd.c"
 cp "$R/pe.orig" "$R/pe.c"
 coderive d1.sh d2.sh '%s/^Z3$/Z3c/:q!'
-if grep -q '^# Compat f[0-9]* src=d1.sh' "$R/new.sh" 2>/dev/null; then
+if grep -q '^# Compat [0-9]* src=d1.sh' "$R/new.sh" 2>/dev/null; then
 	ok "compat: a block over an untouched file fires from the applied set"
 else
 	fail "compat: a block over an untouched file fires from the applied set"
@@ -1909,9 +1909,9 @@ printf -- '--- a/ph.c\n+++ b/ph.c\n@@ -1,3 +1,3 @@\n H1\n-H2\n+H2t\n H3\n--- a/p
 cp "$R/ph.orig" "$R/ph.c"
 cp "$R/pi.orig" "$R/pi.c"
 coderive g1.sh g2.sh ':e ph.c:%s/^H3$/H3c/:e pi.c:%s/^I3$/I3c/:q!'
-nreg="$(grep -c '^=== PATCH2VI COMPAT post src=' "$R/new.sh" 2>/dev/null || true)"
+nreg="$(grep -c '^=== PATCH2VI COMPAT [0-9]* src=' "$R/new.sh" 2>/dev/null || true)"
 ngate="$(grep -c '^=== GATE ' "$R/new.sh" 2>/dev/null || true)"
-nbody="$(grep -c '^# Compat f[0-9]* src=g1.sh' "$R/new.sh" 2>/dev/null || true)"
+nbody="$(grep -c '^# Compat [0-9]* src=g1.sh' "$R/new.sh" 2>/dev/null || true)"
 nfile="$(sed -n '/^=== COMPAT PATCH ===$/,/^=== END /p' "$R/new.sh" |
 	 grep -c '^--- ' || true)"
 if [ "$nreg" = 1 ] && [ "$ngate" = 0 ] && [ "$nbody" = 1 ] && [ "$nfile" = 2 ]; then
@@ -1953,7 +1953,7 @@ printf -- '--- a/pj.c\n+++ b/pj.c\n@@ -1,3 +1,3 @@\n J1\n-J2\n+J2t\n J3\n--- a/p
 cp "$R/pj.orig" "$R/pj.c"
 cp "$R/pk.orig" "$R/pk.c"
 coderive h1.sh h2.sh ':e pj.c:%s/^J3$/J3c/:e pk.c:%s/^K3$/K3c/:q!'
-if grep -q '^# Compat f[0-9]* src=h1.sh' "$R/new.sh" 2>/dev/null; then
+if grep -q '^# Compat [0-9]* src=h1.sh' "$R/new.sh" 2>/dev/null; then
 	ok "compat: a two-file block edits both files, gated as one"
 else
 	fail "compat: a two-file block edits both files, gated as one"
@@ -2175,7 +2175,7 @@ fi
 # stored post block (L2 -> L2c), so the new edit targets the post-replay line L3x.
 cp "$R/draw.orig" "$R/draw.c"
 coderive x1.sh pr.sh '%s/^L3x$/L3z/:q!'
-if [ "$(grep -c '^=== PATCH2VI COMPAT post src=' "$R/new.sh")" = 2 ] &&
+if [ "$(grep -c '^=== PATCH2VI COMPAT [0-9]* src=' "$R/new.sh")" = 2 ] &&
    grep -q '^+L2c$' "$R/new.sh" && grep -q '^+L3z$' "$R/new.sh"; then
 	ok "compat: re-running -co stacks a new block, keeps the existing one"
 else
@@ -2208,7 +2208,7 @@ fi
 cp "$R/draw.orig" "$R/draw.c"
 coderive x1.sh pr.sh '%s/^L2c$/L2cc/:q!'
 if [ -s "$R/new.sh" ] &&
-   [ "$(grep -c '^=== PATCH2VI COMPAT post src=' "$R/new.sh")" = 2 ] &&
+   [ "$(grep -c '^=== PATCH2VI COMPAT [0-9]* src=' "$R/new.sh")" = 2 ] &&
    grep -q '^-L2c$' "$R/new.sh" && grep -q '^+L2cc$' "$R/new.sh"; then
 	ok "compat: -co stacks the new block atop the existing post block"
 else
@@ -2259,11 +2259,11 @@ cp "$R/draw.orig" "$R/draw.c"
 dregen edited.sh
 cp "$R/dregen.sh" "$R/edd.sh"
 if grep -q '3c L2c' "$R/edd.sh" &&
-   ! sed -n '/# Compat f/,/EXINIT/p' "$R/edd.sh" | grep -q 'f> \^L2\$'; then
+   ! sed -n '/# Compat /,/EXINIT/p' "$R/edd.sh" | grep -q 'f> \^L2\$'; then
 	ok "compat: a stored COMPAT DELTA reshapes the emitted body (-d, no UI)"
 else
 	fail "compat: a stored COMPAT DELTA reshapes the emitted body (-d, no UI)"
-	sed -n '/# Compat f/,/EXINIT/p' "$R/edd.sh" | sed 's/^/    /' | head
+	sed -n '/# Compat /,/EXINIT/p' "$R/edd.sh" | sed 's/^/    /' | head
 fi
 
 # the delta-shaped block still applies on an origin tree (abs line numbers
@@ -2294,7 +2294,7 @@ cp "$R/draw.orig" "$R/draw.c"
 dedit pr.sh 'b1:%s/^#abs$/abs/:q!'
 host_pr="$(sed -n '/# Patch:/,/\$P2VIF/p' "$R/pr.sh")"
 host_ed="$(sed -n '/# Patch:/,/\$P2VIF/p' "$R/dedit.sh")"
-if sed -n '/# Compat f/,/EXINIT/p' "$R/dedit.sh" | grep -q '3c L2c' &&
+if sed -n '/# Compat /,/EXINIT/p' "$R/dedit.sh" | grep -q '3c L2c' &&
    sed -n '/=== COMPAT DELTA/,/=== COMPAT PATCH/p' "$R/dedit.sh" |
 	grep -q '^abs$' &&
    [ "$host_pr" = "$host_ed" ]; then
@@ -2325,7 +2325,7 @@ fi
 cp "$R/draw.orig" "$R/draw.c"
 coderive x1.sh pr.sh '%s/^L3x$/L3z/:q!'	# stacks a 2nd pre block
 cp "$R/new.sh" "$R/two.sh"
-if [ "$(grep -c '^=== PATCH2VI COMPAT post' "$R/two.sh")" = 2 ]; then
+if [ "$(grep -c '^=== PATCH2VI COMPAT [0-9]*' "$R/two.sh")" = 2 ]; then
 	cp "$R/draw.orig" "$R/draw.c"
 	dregen two.sh
 	if diff "$R/two.sh" "$R/dregen.sh" >/dev/null 2>&1; then
@@ -2382,9 +2382,9 @@ mixrun() {	# <origin scripts> -> tree of m.c after mix2.sh, '|'-joined
 	fi
 	tr '\n' '|' < "$R/m.c"
 }
-if [ "$(grep -c '^=== PATCH2VI COMPAT post src=' "$R/mix2.sh" 2>/dev/null)" = 2 ] &&
-   grep -q '^# Compat f[0-9]* src=a1.sh' "$R/mix2.sh" &&
-   grep -q '^# Compat f[0-9]* src=b1.sh' "$R/mix2.sh"; then
+if [ "$(grep -c '^=== PATCH2VI COMPAT [0-9]* src=' "$R/mix2.sh" 2>/dev/null)" = 2 ] &&
+   grep -q '^# Compat [0-9]* src=a1.sh' "$R/mix2.sh" &&
+   grep -q '^# Compat [0-9]* src=b1.sh' "$R/mix2.sh"; then
 	ok "compat: two origins stack into one script"
 else
 	fail "compat: two origins stack into one script"
@@ -2512,7 +2512,7 @@ pty 'P2VI_EX=%s/^P2$/P2c/:q!' \
 	"sh -c 'cd $R && $R_P2VI -oco o1.sh o2.sh > $R/ostdout 2>$R/nerr'" \
 	> /dev/null 2>&1
 if [ ! -s "$R/ostdout" ] &&
-   grep -q '^# Compat f[0-9]* src=o1.sh' "$R/o2.sh" 2>/dev/null; then
+   grep -q '^# Compat [0-9]* src=o1.sh' "$R/o2.sh" 2>/dev/null; then
 	ok "compat: -oco updates the target script in place"
 else
 	fail "compat: -oco updates the target script in place"
