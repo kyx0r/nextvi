@@ -3678,6 +3678,10 @@ static int ed_run(void)
 	syn_setft(xb_ft);
 	if ((ln = getenv("P2VI_EX")))	/* test harness hook */
 		ex_command(ln)
+	/* like ex_init(): never enter vi() with xmpt > 1, or it opens with the
+	 * "[any key to continue]" pager (each ed_loadbuf() print bumped xmpt) */
+	if (xmpt > 1)
+		xmpt = 1;
 	vi(1);
 	st = ed_done();
 	if (st != 0)
@@ -6858,6 +6862,8 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			syn_setft(xb_ft);
 			if ((ln = getenv("P2VI_EX")))	/* test harness hook */
 				ex_command(ln)
+			if (xmpt > 1)
+				xmpt = 1;
 			if (!xquit)
 				vi(1);
 		}
