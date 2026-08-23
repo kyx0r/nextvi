@@ -710,7 +710,7 @@ EX COMMANDS
 
              No argument opens "unnamed" buffer.
              Files larger than 2.0GB are truncated on a 32 bit build.
-             Line breaking happens until the first null terminator or EOF.
+             Line breaking happens until the first nul terminator or EOF.
 
      e![path]
              Force open a file at a path
@@ -1443,4 +1443,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.4                      August 16, 2026                     Nextvi 7.4
+Nextvi 7.4                      August 23, 2026                     Nextvi 7.4
