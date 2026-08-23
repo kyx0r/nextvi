@@ -561,18 +561,18 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 grp 09??-7m 1220reg p OK led.c:48:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg led.c:482sc %? %@2132sc!0?
 ?0?
-%f+ 	sbuf_null\(acsb\)
+%f+ 	sbuf_nul\(acsb\)
 	free\(ibuf->s\);
 	rset_free\(rs\);
 }
 
 static char \*kmap_map\(int kmap, int c\)1??0?
 1??+2m 21q0?
-%f+ 	sbuf_null\(acsb\)
+%f+ 	sbuf_nul\(acsb\)
 	free\(ibuf->s\);
 	rset_free\(rs\);4??0?
 4??+2m 2220reg p OK led.c:80:a42sc %? %@2152sc!1q0?
-grp 1%f+ 	sbuf_null\(acsb\).*?
+grp 1%f+ 	sbuf_nul\(acsb\).*?
 	free\(ibuf->s\);.*?
 (	rset_free\(rs\);)7??0?
 grp 07??m 2220reg p OK led.c:80:a72sc %? %@2152sc!1q0?
@@ -1980,7 +1980,7 @@ index 9eb8e85b..e1d9f9a1 100644
  	for (n = 1; n <= acsb->s_n; n++)
  		if (acsb->s[n - 1] == '\n')
 @@ -78,6 +78,7 @@ static void file_index(struct lbuf *buf)
- 	sbuf_null(acsb)
+ 	sbuf_nul(acsb)
  	free(ibuf->s);
  	rset_free(rs);
 +	free(subs);

@@ -297,7 +297,7 @@ static void led_printparts\(sbuf \*sb, int pre, int ps,
 4??+2m 2220reg p OK led.c:279:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	kind = r > s \? uc_kind\(r\) : 0;
 	while \(r > s && uc_kind\(uc_beg\(s, r - 1\)\) == kind\)
-		r = uc_beg\(s, r - 1\);.*(		sbufn_null\(sb\))
+		r = uc_beg\(s, r - 1\);.*(		sbuf_nul4\(sb\))
 		return;
 	}8??0?
 grp 08??-5m 2220reg p OK led.c:279:a82sc %? %@2152sc!'\''08??1q0?
@@ -305,7 +305,7 @@ static void led_printparts\(sbuf \*sb, int pre, int ps,
 	while \(r > s && uc_isspace\(\*r\)\)
 		r = uc_beg\(s, r - 1\);.*(	int dir, off, pos, psn = sb->s_n;)
 	sbuf_str\(sb, post\)
-	sbufn_null\(sb\)9??0?
+	sbuf_nul4\(sb\)9??0?
 grp 09??-8m 2220reg p OK led.c:279:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg led.c:2792sc %? %@2132sc!0?
 ?0?
@@ -500,7 +500,7 @@ static int led_pathcomp(sbuf *sb, int pre, sbuf *lst, int *typed)
 			break;
 		}
 	sbuf_mem(path, sb->s + wo, bo - wo)
-	sbufn_null(path)
+	sbuf_nul4(path)
 	base = sb->s + bo;
 	*typed = blen = sb->s_n - bo;
 	if (!(dp = opendir(path->s_n ? path->s : "."))) {
@@ -531,7 +531,7 @@ static int led_pathcomp(sbuf *sb, int pre, sbuf *lst, int *typed)
 			if (!stat(path->s, &st) && S_ISDIR(st.st_mode))
 				sbuf_chr(sb, '\''/'\'')
 		}
-		sbufn_null(sb)
+		sbuf_nul4(sb)
 	}
 	free(path->s);
 	return n;
@@ -1380,7 +1380,7 @@ index 9eb8e85b..91315d62 100644
 +			break;
 +		}
 +	sbuf_mem(path, sb->s + wo, bo - wo)
-+	sbufn_null(path)
++	sbuf_nul4(path)
 +	base = sb->s + bo;
 +	*typed = blen = sb->s_n - bo;
 +	if (!(dp = opendir(path->s_n ? path->s : "."))) {
@@ -1411,7 +1411,7 @@ index 9eb8e85b..91315d62 100644
 +			if (!stat(path->s, &st) && S_ISDIR(st.st_mode))
 +				sbuf_chr(sb, '/')
 +		}
-+		sbufn_null(sb)
++		sbuf_nul4(sb)
 +	}
 +	free(path->s);
 +	return n;

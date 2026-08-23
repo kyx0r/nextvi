@@ -1062,7 +1062,7 @@ static int vc_block_op(int cmd, int r1, int r2, int c_left, int c_right)
 			}
 			sbuf_chr(yb, '\''\n'\'')
 		}
-		sbuf_null(yb)
+		sbuf_nul(yb)
 		vi_regput(vi_ybuf < 0 ? xdefreg : vi_ybuf, yb->s, 0);
 		free(yb->s);
 		if (cmd == '\''d'\'' || cmd == '\''c'\'') {
@@ -1596,7 +1596,7 @@ index 76778809..63609a57 100644
 +			}
 +			sbuf_chr(yb, '\n')
 +		}
-+		sbuf_null(yb)
++		sbuf_nul(yb)
 +		vi_regput(vi_ybuf < 0 ? xdefreg : vi_ybuf, yb->s, 0);
 +		free(yb->s);
 +		if (cmd == 'd' || cmd == 'c') {

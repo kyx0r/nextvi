@@ -1275,7 +1275,7 @@ static void lsp_send(lsp_server *srv, const char *json, int len)
 
 static void lsp_send_sb(lsp_server *srv, sbuf *sb)
 {
-	sbuf_null(sb)
+	sbuf_nul(sb)
 	lsp_send(srv, sb->s, sb->s_n);
 }
 
@@ -2712,7 +2712,7 @@ static void vi_drawdiag(const char *diag, int sev, int r, int col)
 	sbuf_str(sb, ": ")
 	sbuf_str(sb, diag)
 	sbuf_chr(sb, '\''\n'\'')
-	sbuf_null(sb)
+	sbuf_nul(sb)
 	preserve(int, syn_blockhl, syn_blockhl = -1;)
 	preserve(int, ftidx,)
 	syn_setft(lsp_ft);
@@ -3844,7 +3844,7 @@ index 00000000..da2558e7
 +
 +static void lsp_send_sb(lsp_server *srv, sbuf *sb)
 +{
-+	sbuf_null(sb)
++	sbuf_nul(sb)
 +	lsp_send(srv, sb->s, sb->s_n);
 +}
 +
@@ -4723,7 +4723,7 @@ index 76778809..f49d3e06 100644
 +	sbuf_str(sb, ": ")
 +	sbuf_str(sb, diag)
 +	sbuf_chr(sb, '\n')
-+	sbuf_null(sb)
++	sbuf_nul(sb)
 +	preserve(int, syn_blockhl, syn_blockhl = -1;)
 +	preserve(int, ftidx,)
 +	syn_setft(lsp_ft);

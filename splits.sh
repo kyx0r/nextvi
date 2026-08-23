@@ -663,7 +663,7 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\9??0?
 	}
 	int dir, off, pos, psn = sb->s_n;
 	sbuf_str\(sb, post\)
-	sbufn_null\(sb\)
+	sbuf_nul4\(sb\)
 	/\* XXX: O\(n\) insertion; recursive array data structure cannot be optimized\.1??0?
 1??+2m 21q0?
 %f+ 		return;
@@ -676,7 +676,7 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\9??0?
 grp 07??m 2220reg p OK led.c:287:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	if \(!xled\) \{
-		sbufn_null\(sb\).*(	For correctness, rstate must be recomputed\. \*/)
+		sbuf_nul4\(sb\).*(	For correctness, rstate must be recomputed\. \*/)
 	rstate \+= 2;
 	rstate->s = NULL;8??0?
 grp 08??-4m 2220reg p OK led.c:287:a82sc %? %@2152sc!'\''08??1q0?
@@ -813,7 +813,7 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 	c = term_read\(TK_CTL\('\''l'\''\)\); \\
 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\.*(			nl = dstrlen\(cs, '\''\\n'\''\);)
 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
-			sbufn_null\(cb\)8??0?
+			sbuf_nul4\(cb\)8??0?
 grp 08??-10m 5220reg p OK led.c:376:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
 	sbuf_cut\(sb, len\) \\
@@ -832,7 +832,7 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 	c = term_read\(TK_CTL\('\''l'\''\)\); \\
 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\.*(			nl = dstrlen\(cs, '\''\\n'\''\);)
 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
-			sbufn_null\(cb\)8??0?
+			sbuf_nul4\(cb\)8??0?
 grp 08??-9m 6220reg p OK led.c:377:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
 	sbuf_cut\(sb, len\) \\
@@ -866,7 +866,7 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 	c = term_read\(TK_CTL\('\''l'\''\)\); \\
 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\.*(			nl = dstrlen\(cs, '\''\\n'\''\);)
 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
-			sbufn_null\(cb\)8??0?
+			sbuf_nul4\(cb\)8??0?
 grp 08??-7m 7220reg p OK led.c:379:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
 	sbuf_cut\(sb, len\) \\
@@ -912,7 +912,7 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 	c = term_read\(TK_CTL\('\''l'\''\)\); \\
 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\.*(			nl = dstrlen\(cs, '\''\\n'\''\);)
 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
-			sbufn_null\(cb\)8??0?
+			sbuf_nul4\(cb\)8??0?
 grp 08??-5m 8220reg p OK led.c:381:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
 	sbuf_cut\(sb, len\) \\
@@ -923,7 +923,7 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 1;2;3;4;5;6;7;8;9??!219reg led.c:3812sc %? %@2132sc!0?
 ?0?
 %f+ 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
-			sbufn_null\(cb\)
+			sbuf_nul4\(cb\)
 			rstate->s = NULL;
 			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\)
 			free\(cb->s\);
@@ -938,7 +938,7 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 ;0fr.,$f+ ^			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\)$3??0?
 3??m 9220reg p OK led.c:390:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
-			sbufn_null\(cb\)
+			sbuf_nul4\(cb\)
 			rstate->s = NULL;4??0?
 4??+3m 9220reg p OK led.c:390:a42sc %? %@2152sc!1q0?
 %f+ 			free\(cb->s\);
@@ -954,7 +954,7 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 	..c.......;6??0?
 6??+3m 9220reg p OK led.c:390:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\).*?
-			sbufn_null\(cb\).*?
+			sbuf_nul4\(cb\).*?
 			rstate->s = NULL;.*?
 (			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\))7??0?
 grp 07??m 9220reg p OK led.c:390:a72sc %? %@2152sc!1q0?
@@ -4736,7 +4736,7 @@ index 9eb8e85b..27ea50a2 100644
 +	int winx = inwin ? curwin->x : 0;
 +	int winw = inwin ? curwin->w : xcols;
  	sbuf_str(sb, post)
- 	sbufn_null(sb)
+ 	sbuf_nul4(sb)
  	/* XXX: O(n) insertion; recursive array data structure cannot be optimized.
 @@ -302,11 +305,11 @@ static void led_printparts(sbuf *sb, int pre, int ps,
  			pos = ren_cursor(r->s, r->pos[off-two]);
@@ -4778,7 +4778,7 @@ index 9eb8e85b..27ea50a2 100644
  			sbuf_smake(cb, 128)
 @@ -387,16 +394,16 @@ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
  			sbuf_mem(cb, cs, nl+!!cs[nl])
- 			sbufn_null(cb)
+ 			sbuf_nul4(cb)
  			rstate->s = NULL;
 -			led_crender(cb->s, r, vi_lncol, xleft, xleft + xcols - vi_lncol)
 +			led_crender(cb->s, winy + r, winx + vi_lncol, xleft, xleft + winw - vi_lncol)

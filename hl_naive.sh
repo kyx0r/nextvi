@@ -228,7 +228,7 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\
 			stt\[i] = att\[i];
 			sbuf_mem\(bsb, chrs\[att\[i]], uc_len\(chrs\[att\[i]]\)\)
 		}
-		sbufn_null\(bsb\)
+		sbuf_nul4\(bsb\)
 		bound = bsb->s;
 	}
 	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);
@@ -269,7 +269,7 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\
 			stt\[i] = att\[i];
 			sbuf_mem\(bsb, chrs\[att\[i]], uc_len\(chrs\[att\[i]]\)\)
 		}
-		sbufn_null\(bsb\)
+		sbuf_nul4\(bsb\)
 		bound = bsb->s;
 	}
 	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);
@@ -310,7 +310,7 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\
 			stt\[i] = att\[i];
 			sbuf_mem\(bsb, chrs\[att\[i]], uc_len\(chrs\[att\[i]]\)\)
 		}
-		sbufn_null\(bsb\)
+		sbuf_nul4\(bsb\)
 		bound = bsb->s;
 	}
 	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);3??0?
@@ -687,7 +687,7 @@ index 9eb8e85b..dc2da35d 100644
 -			stt[i] = att[i];
 -			sbuf_mem(bsb, chrs[att[i]], uc_len(chrs[att[i]]))
 -		}
--		sbufn_null(bsb)
+-		sbuf_nul4(bsb)
 -		bound = bsb->s;
 -	}
 -	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));

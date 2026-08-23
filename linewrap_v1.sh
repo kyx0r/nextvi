@@ -207,7 +207,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 grp 08??-13m 5220reg p OK ex.c:1629:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
-		sbuf_null\(sb\).*(_EO\(left,)
+		sbuf_nul\(sb\).*(_EO\(left,)
 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);9??0?
 grp 09??-20m 5220reg p OK ex.c:1629:a92sc %? %@2152sc!'\''00?
@@ -758,7 +758,7 @@ void lbuf_edit\(struct lbuf \*lb, char \*buf, int beg, int end, int o1, int o2\)
 m 01;0grp 1%f> 		}
 		s2 = o1 >= 0 \? uc_chr\(s1, o1\) : send;
 		if \(send > s2\).*(	ret:)
-	sbufn_null\(sb\)
+	sbuf_nul4\(sb\)
 }8??0?
 grp 08??-6m 12220reg p OK lbuf.c:288:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(s2 > s1\)
@@ -800,7 +800,7 @@ int lbuf_pos2off\(struct lbuf \*lb, int r1, int o1, int r2, int o2, int row, int
 m 01;0grp 1%f> 		}
 		s2 = o1 >= 0 \? uc_chr\(s1, o1\) : send;
 		if \(send > s2\).*(	ret:)
-	sbufn_null\(sb\)
+	sbuf_nul4\(sb\)
 }8??0?
 grp 08??-4m 13220reg p OK lbuf.c:290:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(s2 > s1\)

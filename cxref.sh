@@ -728,7 +728,7 @@ static char *xref_build(char *sym, int maxdepth)
 		nxt = tmp;
 		sbuf_cut(nxt, 0)
 	}
-	sbufn_null(out)
+	sbuf_nul4(out)
 	/* resolution opens buffers behind ex_edit'\''s back, which leaves no mtime */
 	for (i = xbufcur - 1; i >= 0 && bufs[i].mtime == -1; i--)
 		ex_bufpostfix(&bufs[i], 1);
@@ -1766,7 +1766,7 @@ index 76778809..cb697e89 100644
 +		nxt = tmp;
 +		sbuf_cut(nxt, 0)
 +	}
-+	sbufn_null(out)
++	sbuf_nul4(out)
 +	/* resolution opens buffers behind ex_edit's back, which leaves no mtime */
 +	for (i = xbufcur - 1; i >= 0 && bufs[i].mtime == -1; i--)
 +		ex_bufpostfix(&bufs[i], 1);

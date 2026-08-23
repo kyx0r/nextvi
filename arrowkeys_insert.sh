@@ -59,12 +59,12 @@ static void led_printparts\(sbuf \*sb, int pre, int ps,
 	char \*post, int postn, int \*poff\)
 \{
 	if \(!xled\) \{
-		sbufn_null\(sb\)1??0?
+		sbuf_nul4\(sb\)1??0?
 1??+3m 21q0?
 %f+ 	char \*post, int postn, int \*poff\)
 \{
 	if \(!xled\) \{
-		sbufn_null\(sb\)2??0?
+		sbuf_nul4\(sb\)2??0?
 2??m 2220reg p OK led.c:281:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	char \*post, int postn, int \*poff\)$3??0?
 3??m 2220reg p OK led.c:281:a32sc %? %@2152sc!fr 981qfr 980?
@@ -74,7 +74,7 @@ static void led_printparts\(sbuf \*sb, int pre, int ps,4??0?
 4??+3m 2220reg p OK led.c:281:a42sc %? %@2152sc!1q0?
 %f+ \{
 	if \(!xled\) \{
-		sbufn_null\(sb\)5??0?
+		sbuf_nul4\(sb\)5??0?
 5??-1m 2220reg p OK led.c:281:a52sc %? %@2152sc!1q0?
 %f+ }
 
@@ -98,7 +98,7 @@ static void led_printparts\(sbuf \*sb, int pre, int ps,.*?
 m 01;0grp 1%f> 	while \(r > s && uc_isspace\(\*r\)\)
 		r = uc_beg\(s, r - 1\);
 	kind = r > s \? uc_kind\(r\) : 0;.*(	sbuf_str\(sb, post\))
-	sbufn_null\(sb\)
+	sbuf_nul4\(sb\)
 	/\* XXX: O\(n\) insertion; recursive array data structure cannot be optimized\.9??0?
 grp 09??-7m 2220reg p OK led.c:281:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg led.c:2812sc %? %@2132sc!0?
@@ -919,7 +919,7 @@ index 9eb8e85b..3b3964f3 100644
 +	char *post, int postn, int *poff, int print)
  {
  	if (!xled) {
- 		sbufn_null(sb)
+ 		sbuf_nul4(sb)
 @@ -304,8 +305,10 @@ static void led_printparts(sbuf *sb, int pre, int ps,
  	}
  	if (pos >= xleft + xcols || pos < xleft)

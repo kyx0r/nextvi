@@ -377,7 +377,7 @@ static char *vi_isearch(int cmd, int *ret, int *mlen, int *frow, int *foff)
 		len = sb->s_n;
 		key = led_prompt(sb, NULL, &xkmap, &is, *mlen, 2);
 		syn_setft(xb_ft);
-		sbuf_null(sb)
+		sbuf_nul(sb)
 		/* an erase key that removed nothing ends an empty prompt */
 		if (key == '\''\n'\'' || TK_INT(key) || xquit
 				|| (key == 127 && sb->s_n == len))
@@ -914,7 +914,7 @@ index 76778809..bf0b5bbd 100644
 +		len = sb->s_n;
 +		key = led_prompt(sb, NULL, &xkmap, &is, *mlen, 2);
 +		syn_setft(xb_ft);
-+		sbuf_null(sb)
++		sbuf_nul(sb)
 +		/* an erase key that removed nothing ends an empty prompt */
 +		if (key == '\n' || TK_INT(key) || xquit
 +				|| (key == 127 && sb->s_n == len))

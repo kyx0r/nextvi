@@ -241,7 +241,7 @@ void led_render\(char \*s0, int cbeg, int cend\)
 grp 09??-8m 6220reg p OK led.c:181:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg led.c:1812sc %? %@2132sc!0?
 ?0?
-%f+ 		sbufn_null\(bsb\)
+%f+ 		sbuf_nul4\(bsb\)
 		bound = bsb->s;
 	}
 	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);
@@ -252,7 +252,7 @@ void led_render\(char \*s0, int cbeg, int cend\)
 2??m 7220reg p OK led.c:203:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);$3??0?
 3??m 7220reg p OK led.c:203:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 		sbufn_null\(bsb\)
+%f+ 		sbuf_nul4\(bsb\)
 		bound = bsb->s;
 	}4??0?
 4??+3m 7220reg p OK led.c:203:a42sc %? %@2152sc!1q0?
@@ -264,7 +264,7 @@ void led_render\(char \*s0, int cbeg, int cend\)
 .me............ ............... ........\(...\[..\)\);
 ........\)6??0?
 6??+3m 7220reg p OK led.c:203:a62sc %? %@2152sc!1q0?
-grp 1%f+ 		sbufn_null\(bsb\).*?
+grp 1%f+ 		sbuf_nul4\(bsb\).*?
 		bound = bsb->s;.*?
 	}.*?
 (	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);)7??0?
@@ -485,7 +485,7 @@ index 9eb8e85b..b8ffb603 100644
  		for (i = 1; i < c; i++) {
  			int key0 = att[i];
 @@ -200,9 +222,9 @@ void led_render(char *s0, int cbeg, int cend)
- 		sbufn_null(bsb)
+ 		sbuf_nul4(bsb)
  		bound = bsb->s;
  	}
 -	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));

@@ -596,7 +596,7 @@ static void led_printparts\(sbuf \*sb, int pre, int ps,
 4??+2m 1220reg p OK led.c:279:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	kind = r > s \? uc_kind\(r\) : 0;
 	while \(r > s && uc_kind\(uc_beg\(s, r - 1\)\) == kind\)
-		r = uc_beg\(s, r - 1\);.*(		sbufn_null\(sb\))
+		r = uc_beg\(s, r - 1\);.*(		sbuf_nul4\(sb\))
 		return;
 	}8??0?
 grp 08??-5m 1220reg p OK led.c:279:a82sc %? %@2152sc!'\''08??1q0?
@@ -604,7 +604,7 @@ static void led_printparts\(sbuf \*sb, int pre, int ps,
 	while \(r > s && uc_isspace\(\*r\)\)
 		r = uc_beg\(s, r - 1\);.*(	int dir, off, pos, psn = sb->s_n;)
 	sbuf_str\(sb, post\)
-	sbufn_null\(sb\)9??0?
+	sbuf_nul4\(sb\)9??0?
 grp 09??-8m 1220reg p OK led.c:279:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg led.c:2792sc %? %@2132sc!0?
 ?0?
@@ -734,7 +734,7 @@ char \*led_read\(int \*kmap, int c\)
 ?0?
 %f+ 			if \(ai_max >= 0\) \{
 				pac:;
-				sbuf_null\(sb\)
+				sbuf_nul\(sb\)
 				int r = crow-ctop\+1;
 				if \(is->sug\)
 					goto pac_;
@@ -749,7 +749,7 @@ char \*led_read\(int \*kmap, int c\)
 3??m 5220reg p OK led.c:557:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			if \(ai_max >= 0\) \{
 				pac:;
-				sbuf_null\(sb\)4??0?
+				sbuf_nul\(sb\)4??0?
 4??+3m 5220reg p OK led.c:557:a42sc %? %@2152sc!1q0?
 %f+ 				if \(is->sug\)
 					goto pac_;
@@ -765,7 +765,7 @@ char \*led_read\(int \*kmap, int c\)
 6??+3m 5220reg p OK led.c:557:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			if \(ai_max >= 0\) \{.*?
 				pac:;.*?
-				sbuf_null\(sb\).*?
+				sbuf_nul\(sb\).*?
 (				int r = crow-ctop\+1;)7??0?
 grp 07??m 5220reg p OK led.c:557:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			}
@@ -4779,7 +4779,7 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 ?0?
 %f+ 	int winw = inwin \? curwin->w : xcols;
 	sbuf_str\(sb, post\)
-	sbufn_null\(sb\)
+	sbuf_nul4\(sb\)
 	/\* XXX: O\(n\) insertion; recursive array data structure cannot be optimized\.1??0?
 1??m 21q0?
 ;0fr.,$f+ ^	int winw = inwin \? curwin->w : xcols;$4??0?
@@ -6677,7 +6677,7 @@ void term_killw(int n);
  	int winw = inwin ? curwin->w : xcols;
 +	int winh = inwin ? curwin->h : xrows;
  	sbuf_str(sb, post)
- 	sbufn_null(sb)
+ 	sbuf_nul4(sb)
  	/* XXX: O(n) insertion; recursive array data structure cannot be optimized.
 @@ -316,7 +318,7 @@
  		int lncol = vi_lncol, w = ren_wrapw(lncol), k, trow, b;
@@ -7947,7 +7947,7 @@ index 9eb8e85b..fc259c36 100644
 @@ -554,7 +602,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			if (ai_max >= 0) {
  				pac:;
- 				sbuf_null(sb)
+ 				sbuf_nul(sb)
 -				int r = crow-ctop+1;
 +				int r = led_lw ? led_row + led_rowh
 +							: crow-ctop+1;

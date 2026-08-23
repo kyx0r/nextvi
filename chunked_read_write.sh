@@ -687,7 +687,7 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 			nins--;
 			sb->s_n -= sizeof(ln);
 ??!219reg lbuf.c:239:m22sc %? %@2142sc!0?
-'\''3,#+2c 	sbuf_null(sb)
+'\''3,#+2c 	sbuf_nul(sb)
 	lbuf_edit(lb, sb->s, beg, end, 0, 0);
 	lb->ln_n = nins;
 	lb->ln = emalloc((nins + 512) * sizeof(lb->ln[0]));
@@ -918,7 +918,7 @@ index 18170218..e5664306 100644
 -	s[n] = '\0';
 -	lbuf_edit(lb, s, beg, end, 0, 0);
 -	free(s);
-+	sbuf_null(sb)
++	sbuf_nul(sb)
 +	lbuf_edit(lb, sb->s, beg, end, 0, 0);
 +	lb->ln_n = nins;
 +	lb->ln = emalloc((nins + 512) * sizeof(lb->ln[0]));

@@ -106,7 +106,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 grp 08??-13m 1220reg p OK ex.c:1629:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
-		sbuf_null\(sb\).*(_EO\(left,)
+		sbuf_nul\(sb\).*(_EO\(left,)
 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);9??0?
 grp 09??-20m 1220reg p OK ex.c:1629:a92sc %? %@2152sc!'\''00?

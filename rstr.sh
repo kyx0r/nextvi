@@ -245,7 +245,7 @@ static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\).*?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:4452sc %? %@2132sc!0?
 ?0?
 %f+ 	while \(1\) \{
-		sbuf_null\(fuzz\)
+		sbuf_nul\(fuzz\)
 		c = 0;
 		rs = rset_smake\(fuzz->s, xic \? flg \| REG_ICASE : flg\);
 		if \(rs\) \{1??0?
@@ -256,7 +256,7 @@ static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\).*?
 ;0fr.,$f+ ^		rs = rset_smake\(fuzz->s, xic \? flg \| REG_ICASE : flg\);$3??0?
 3??m 5220reg p OK ex.c:475:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	while \(1\) \{
-		sbuf_null\(fuzz\)
+		sbuf_nul\(fuzz\)
 		c = 0;4??0?
 4??+3m 5220reg p OK ex.c:475:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(rs\) \{$5??0?
@@ -268,7 +268,7 @@ static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\).*?
 ...f.......6??0?
 6??+3m 5220reg p OK ex.c:475:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	while \(1\) \{.*?
-		sbuf_null\(fuzz\).*?
+		sbuf_nul\(fuzz\).*?
 		c = 0;.*?
 (		rs = rset_smake\(fuzz->s, xic \? flg \| REG_ICASE : flg\);)7??0?
 grp 07??m 5220reg p OK ex.c:475:a72sc %? %@2152sc!1q0?
@@ -2251,7 +2251,7 @@ index 42451587..eb9000d9 100644
  	int beg, end, max = INT_MAX, dwid1, dwid2;
 @@ -472,16 +472,16 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
  	while (1) {
- 		sbuf_null(fuzz)
+ 		sbuf_nul(fuzz)
  		c = 0;
 -		rs = rset_smake(fuzz->s, xic ? flg | REG_ICASE : flg);
 +		rs = rstr_make(fuzz->s, xic ? flg | REG_ICASE : flg);

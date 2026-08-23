@@ -214,7 +214,7 @@ ret = ex_edit\(path, len\); \\5??0?
 .*?
 (#define fssearch\(\) \\)7??0?
 grp 07??m 1220reg p OK vi.c:443:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	sbuf_null\(sb\)
+m 01;0grp 1%f> 	sbuf_nul\(sb\)
 	if \(sb->s_n > 1\)
 		temp_write\(1, sb->s\);.*(	\+\+\*off; \\)
 } else \{ \\
@@ -264,7 +264,7 @@ ret = ex_edit\(path, len\); \\.*?
 path\[len] = '\''\\n'\''; \\.*?
 (if \(ret && xrow\) \{ \\)7??0?
 grp 07??m 2220reg p OK vi.c:448:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	sbuf_null\(sb\)
+m 01;0grp 1%f> 	sbuf_nul\(sb\)
 	if \(sb->s_n > 1\)
 		temp_write\(1, sb->s\);.*(	\+\+\*off; \\)
 } else \{ \\

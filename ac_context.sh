@@ -67,7 +67,7 @@ static int search\(const char \*pattern, int l\)
 grp 07??m 1220reg p OK led.c:12:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
-	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
+	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbuf_nul4\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
 grp 08??-22m 1220reg p OK led.c:12:a82sc %? %@2152sc!'\''08??1q0?
@@ -109,7 +109,7 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 grp 07??m 2220reg p OK led.c:14:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
-	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
+	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbuf_nul4\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
 grp 08??-20m 2220reg p OK led.c:14:a82sc %? %@2152sc!'\''08??1q0?
@@ -159,7 +159,7 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 grp 07??m 3220reg p OK led.c:18:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
-	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
+	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbuf_nul4\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
 grp 08??-16m 3220reg p OK led.c:18:a82sc %? %@2152sc!'\''08??1q0?
@@ -205,7 +205,7 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 grp 07??m 4220reg p OK led.c:24:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
-	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
+	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbuf_nul4\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
 grp 08??-10m 4220reg p OK led.c:24:a82sc %? %@2152sc!'\''08??1q0?
@@ -247,7 +247,7 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 grp 07??m 5220reg p OK led.c:27:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
-	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
+	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbuf_nul4\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
 grp 08??-7m 5220reg p OK led.c:27:a82sc %? %@2152sc!'\''08??1q0?
@@ -293,7 +293,7 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 grp 07??m 6220reg p OK led.c:30:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	register const char \*i;
-	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbufn_null\(suggestsb\))
+	for \(i=s; \*i && \*i != delim; \+\+i\);.*(	sbuf_nul4\(suggestsb\))
 	return suggestsb->s_n;
 }8??0?
 grp 08??-4m 6220reg p OK led.c:30:a82sc %? %@2152sc!'\''08??1q0?
@@ -530,7 +530,7 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 grp 07??m 11220reg p OK led.c:560:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			if \(ai_max >= 0\) \{
 				pac:;
-				sbuf_null\(sb\).*(					preserve\(int, ftidx,\))
+				sbuf_nul\(sb\).*(					preserve\(int, ftidx,\))
 					syn_setft\(ac_ft\);
 					for \(int left = 0; r < xrows; r\+\+\) \{8??0?
 grp 08??-5m 11220reg p OK led.c:560:a82sc %? %@2152sc!'\''08??1q0?
