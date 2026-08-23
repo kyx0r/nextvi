@@ -86,7 +86,7 @@ static void ex_sread(sbuf *sb, char **src, int delim, int esc)
 		sbuf_chr(sb, *s++)
 	}
 	*src = *s ? s + 1 : s;
-	sbuf_null(sb)
+	sbuf_nul(sb)
 }
 
 /* allocate & read a sub expression enclosed in a delimiter */
@@ -377,7 +377,7 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
 			if (flg & 2 || xquit)
 				break;
 		}
-		sbuf_null(sb)
+		sbuf_nul(sb)
 		return key;
 	}
 	sbuf_str(sb, msg)
@@ -470,7 +470,7 @@ static void *ec_fuzz(char *loc, char *cmd, char *arg)
 	sbuf_str(fuzz, arg)
 	syn_setft(fuzz_ft);
 	while (1) {
-		sbuf_null(fuzz)
+		sbuf_nul(fuzz)
 		c = 0;
 		rs = rset_smake(fuzz->s, xic ? flg | REG_ICASE : flg);
 		if (rs) {
@@ -882,7 +882,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
 			goto ret;
 		if (key == 127 && sb->s_n && sb->s[sb->s_n-1] == '\n')
 			sb->s_n--;
-		sbuf_null(sb)
+		sbuf_nul(sb)
 	}
 	if (cmd[0] == 'i')
 		beg = end;
@@ -993,7 +993,7 @@ void ex_regput(int c, const char *s, int append)
 	if (!append)
 		sbuf_cut(sb, 0)
 	sbuf_str(sb, s)
-	sbufn_null(sb)
+	sbuf_nul4(sb)
 }
 
 static void *ec_yank(char *loc, char *cmd, char *arg)
@@ -1620,7 +1620,7 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
 		sbuf_smake(sb, 64)
 		ex_regesc(sb, reg.s, reg.s + reg.s_n, 1);
 		free(reg.s);
-		sbuf_null(sb)
+		sbuf_nul(sb)
 		ex_krsset(sb->s, +1);
 		free(sb->s);
 	}
@@ -1804,7 +1804,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 		} else
 			sbuf_chr(sb, *src++)
 	}
-	sbuf_null(sb)
+	sbuf_nul(sb)
 	return src;
 }
 

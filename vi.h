@@ -74,14 +74,14 @@ mem##func(sb->s + sb->s_n, x, len); \
 #define sbuf_str(sb, s) { sbuf_mem(sb, s, strlen(s)) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that nul-terminate strings */
-#define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
-#define sbufn_null(sb) { sbuf_(sb, '\0', 4, set) }
-#define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_null(sb) }
-#define sbufn_mem(sb, s, len) { sbuf_mem(sb, s, len) sbuf_null(sb) }
-#define sbufn_str(sb, s) { sbuf_str(sb, s) sbuf_null(sb) }
-#define sbufn_cut(sb, len) { sbuf_cut(sb, len) sbuf_null(sb) }
-#define sbufn_chr(sb, c) { sbuf_chr(sb, c) sbuf_null(sb) }
-#define sbufn_ret(sb, str) { sbuf_null(sb) return str; }
+#define sbuf_nul(sb) { sb->s[sb->s_n] = '\0'; }
+#define sbuf_nul4(sb) { sbuf_(sb, '\0', 4, set) }
+#define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_nul(sb) }
+#define sbufn_mem(sb, s, len) { sbuf_mem(sb, s, len) sbuf_nul(sb) }
+#define sbufn_str(sb, s) { sbuf_str(sb, s) sbuf_nul(sb) }
+#define sbufn_cut(sb, len) { sbuf_cut(sb, len) sbuf_nul(sb) }
+#define sbufn_chr(sb, c) { sbuf_chr(sb, c) sbuf_nul(sb) }
+#define sbufn_ret(sb, str) { sbuf_nul(sb) return str; }
 
 /* regex.c: regular expressions */
 #define REG_ICASE	0x01
