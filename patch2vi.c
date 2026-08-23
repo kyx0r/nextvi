@@ -1053,6 +1053,22 @@ static void sq_write(const char *s, int n)
 	}
 }
 
+/* A file path as a whole single-quoted shell word: an argument of the $VI
+ * line, quoted by the same rule sq_write applies inside a printf argument.
+ * A path is data, not a word the shell parses, so nothing else in it needs
+ * escaping - single quotes are only special where this quoting opens. */
+static void sq_path(const char *s)
+{
+	putchar('\'');
+	for (; *s; s++) {
+		if (*s == '\'')
+			fputs("'\\''", stdout);
+		else
+			putchar((unsigned char)*s);
+	}
+	putchar('\'');
+}
+
 /* the body register, and the EXINIT that yanks the body buffer into it
  * and runs it; -e fills the register itself and needs neither */
 #define P2VI_REG 97
@@ -5025,8 +5041,10 @@ static void emit_vi_block(file_patch_t **active, int nactive)
 	emit_write_tail(osb, nactive, NULL);
 	sq_write(osb->s, osb->s_n);
 	fputs("' > \"$P2VIF\"\n" P2VI_VICALL " $VI -e", stdout);
-	for (int k = 0; k < nactive; k++)
-		fprintf(stdout, " '%s'", active[k]->path);
+	for (int k = 0; k < nactive; k++) {
+		fputc(' ', stdout);
+		sq_path(active[k]->path);
+	}
 	fputs(" \"$P2VIF\"\n", stdout);
 	free(osb->s);
 }
@@ -5571,8 +5589,10 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	/* real files, section bodies, driver last - so it is current at EXINIT
 	 * and "%ya 97" yanks it */
 	fputs(P2VI_VICALL " $VI -e", stdout);
-	for (int i = 0; i < nuf; i++)
-		printf(" '%s'", uf[i]->path);
+	for (int i = 0; i < nuf; i++) {
+		fputc(' ', stdout);
+		sq_path(uf[i]->path);
+	}
 	for (int i = 0; i < nsec; i++)
 		printf(" \"$P2VIF\".%d", i);
 	printf(" \"$P2VIF\".d\n");
@@ -5980,12 +6000,17 @@ static int body_sepbyte(const char *body)
  * emitter writes and -e supplies its effect itself, so it is only checked */
 static int parse_vi_call(const char *s, p2vi_block_t *blk)
 {
-	const char *p;
-	if (strncmp(s, P2VI_VICALL, strlen(P2VI_VICALL)))
+	int closed;
+	sbuf_smake(w, SB_INIT)
+	if (strncmp(s, P2VI_VICALL, strlen(P2VI_VICALL))) {
+		free(w->s);
 		return sh_err("vi call", s);
+	}
 	s += strlen(P2VI_VICALL);
-	if (strncmp(s, " $VI -e", 7))
+	if (strncmp(s, " $VI -e", 7)) {
+		free(w->s);
 		return sh_err("vi call", s);
+	}
 	for (s += 7; *s; ) {
 		if (*s == ' ') {
 			s++;
@@ -6001,13 +6026,35 @@ static int parse_vi_call(const char *s, p2vi_block_t *blk)
 					s++;
 			continue;
 		}
-		if (*s != '\'' || !(p = strchr(s + 1, '\'')))
+		/* one quoted word, as sq_path wrote it: a quote closes it and a
+		 * '\'' reopens it around an embedded quote */
+		if (*s != '\'') {
+			free(w->s);
 			return sh_err("vi call", s);
+		}
+		sbuf_cut(w, 0)
+		closed = 0;
+		for (s++; *s && !closed; ) {
+			if (*s == '\'' && s[1] == '\\' && s[2] == '\'' &&
+			    s[3] == '\'') {
+				sbuf_chr(w, '\'')
+				s += 4;
+			} else if (*s == '\'') {
+				s++;
+				closed = 1;
+			} else
+				sbuf_chr(w, *s++)
+		}
+		if (!closed) {
+			free(w->s);
+			return sh_err("vi call", s);
+		}
+		sbuf_nul(w)
 		blk->paths = erealloc(blk->paths,
 				      (blk->npaths + 1) * sizeof(char *));
-		blk->paths[blk->npaths++] = dup_n(s + 1, p - s - 1);
-		s = p + 1;
+		blk->paths[blk->npaths++] = uc_dup(w->s);
 	}
+	free(w->s);
 	return 0;
 }
 
@@ -7834,13 +7881,23 @@ static const struct { const char *tag; int sect; } gsects[] = {
 static int read_delta_sections(FILE *in)
 {
 	char *line;
-	int j;
+	int j, exit_found = 0;
 	sbuf_smake(lb, SB_INIT)
-	/* Skip until "exit 0" line */
+	/* Skip until "exit 0" line; EOF first means the script was cut short
+	 * and nothing past the cut can be trusted - refuse rather than
+	 * regenerate an empty script over it */
 	while ((line = read_line(in, lb))) {
 		chomp(line);
-		if (strcmp(line, "exit 0") == 0)
+		if (strcmp(line, "exit 0") == 0) {
+			exit_found = 1;
 			break;
+		}
+	}
+	if (!exit_found) {
+		free(lb->s);
+		fprintf(stderr, "%s: not a patch2vi script (no exit 0)\n",
+			input_file ? input_file : "<stdin>");
+		return -1;
 	}
 	/* Read structured delta section */
 	file_delta_t *cur_fd = NULL;
@@ -8292,6 +8349,12 @@ int main(int argc, char **argv)
 			return 1;
 		}
 		out_file = input_file;
+	}
+	/* plain -co replays the target by name (compat_derive feeds its path
+	 * to the same parser -E uses), so stdin cannot supply it */
+	if (compat_mode && !amend_inplace && !input_file) {
+		fprintf(stderr, "-co requires a target script\n");
+		return 1;
 	}
 	/* -co takes a third positional: an already written compat fix, applied
 	 * before the editor is handed over */
