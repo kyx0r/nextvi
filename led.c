@@ -31,7 +31,7 @@ static int search(const char *pattern, int l)
 	}
 	sbuf_mem(suggestsb, sylsb->s, sylsb->s_n)
 	free(sylsb->s);
-	sbufn_null(suggestsb)
+	sbuf_nul4(suggestsb)
 	return suggestsb->s_n;
 }
 
@@ -75,7 +75,7 @@ static void file_index(struct lbuf *buf)
 			sidx += subs[grp + 1] > 0 ? subs[grp + 1] : 1;
 		}
 	}
-	sbuf_null(acsb)
+	sbuf_nul(acsb)
 	free(ibuf->s);
 	rset_free(rs);
 }
@@ -197,7 +197,7 @@ void led_render(char *s0, int cbeg, int cend)
 			stt[i] = att[i];
 			sbuf_mem(bsb, chrs[att[i]], uc_len(chrs[att[i]]))
 		}
-		sbufn_null(bsb)
+		sbuf_nul4(bsb)
 		bound = bsb->s;
 	}
 	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));
@@ -281,12 +281,12 @@ static void led_printparts(sbuf *sb, int pre, int ps,
 	char *post, int postn, int *poff)
 {
 	if (!xled) {
-		sbufn_null(sb)
+		sbuf_nul4(sb)
 		return;
 	}
 	int dir, off, pos, psn = sb->s_n;
 	sbuf_str(sb, post)
-	sbufn_null(sb)
+	sbuf_nul4(sb)
 	/* XXX: O(n) insertion; recursive array data structure cannot be optimized.
 	For correctness, rstate must be recomputed. */
 	rstate += 2;
@@ -385,7 +385,7 @@ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
 			sbuf_smake(cb, 128)
 			nl = dstrlen(cs, '\n');
 			sbuf_mem(cb, cs, nl+!!cs[nl])
-			sbufn_null(cb)
+			sbuf_nul4(cb)
 			rstate->s = NULL;
 			led_crender(cb->s, r, vi_lncol, xleft, xleft + xcols - vi_lncol)
 			free(cb->s);
@@ -553,7 +553,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 		case TK_CTL('b'):
 			if (ai_max >= 0) {
 				pac:;
-				sbuf_null(sb)
+				sbuf_nul(sb)
 				int r = crow-ctop+1;
 				if (is->sug)
 					goto pac_;
