@@ -434,7 +434,7 @@ void dir_calc(char *path)
 		} else
 			break;
 	}
-	sbuf_null(sb)
+	sbuf_nul(sb)
 	if (sb->s_n > 1)
 		temp_write(1, sb->s);
 	free(sb->s);

@@ -292,7 +292,7 @@ void lbuf_region(struct lbuf *lb, sbuf *sb, int r1, int o1, int r2, int o2)
 			sbuf_mem(sb, s2, s1 - s2)
 	}
 	ret:
-	sbufn_null(sb)
+	sbuf_nul4(sb)
 }
 
 /* convert (row, off) position to byte offset within region (r1,o1)-(r2,o2) */
