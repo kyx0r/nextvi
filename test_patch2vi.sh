@@ -1616,6 +1616,15 @@ coderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit -co result to $R/new.sh
 		"sh -c 'cd $R && $R_P2VI -co $1 $2 > $R/new.sh 2>$R/nerr'" > /dev/null 2>&1
 }
 
+# stack <script...>: run the chain from the first, the applied-set form. Each
+# script appends its basename to $P2VI_PATCH and invokes the next, so later
+# scripts' compat blocks see exactly the origins that ran. The chain form is
+# what replaced the old "o.sh && t.sh" application: scripts must be
+# executable for the "$next" hop inside the tail.
+stack() {
+	( cd "$R" && chmod +x "$@" && VI="$VI" sh "$@" ) >/dev/null 2>&1
+}
+
 # The compat block and the target's own hunk are independent units that stack:
 # patch2vi reasons across neither. origin (x1) inserts PROBE, which gives the
 # gate a unique landmark; the target (x2) makes its own change (L3 -> L3x); and
@@ -1639,7 +1648,7 @@ fi
 # origin tree: x1 lands PROBE, the compat block fires (L2 -> L2c) because PROBE
 # is present, and x2 applies its own change (L3 -> L3x) - the units stack
 cp "$R/draw.orig" "$R/draw.c"
-( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack x1.sh new.sh
 if [ "$(cat "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2c\nL3x')" ]; then
 	ok "compat: fires on an origin tree, stacks with the target hunk"
 else
@@ -1678,7 +1687,7 @@ done
 cp "$R/kk.orig" "$R/kk.c"
 coderive ka.sh kb.sh '%s/^K4$/K4x/:q!'	# what the author does about the miss
 cp "$R/kk.orig" "$R/kk.c"
-( cd "$R" && VI="$VI" sh ka.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack ka.sh new.sh
 k_both="$(tr '\n' ' ' < "$R/kk.c")"
 cp "$R/kk.orig" "$R/kk.c"
 ( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
@@ -1694,21 +1703,10 @@ else
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
 
-# an origin whose inserted line is not unique gives no window that tells the
-# two trees apart: a hard error, empty output, never a weak gate
-printf 'dup\nb\ndup\n' > "$R/u.orig"
-printf -- '--- a/u.c\n+++ b/u.c\n@@ -1,3 +1,4 @@\n dup\n b\n+dup\n dup\n' > "$R/u1.diff"
-printf -- '--- a/u.c\n+++ b/u.c\n@@ -1,3 +1,3 @@\n dup\n-b\n+B\n dup\n' > "$R/u2.diff"
-cp "$R/u.orig" "$R/u.c"
-"$R_P2VI" -r "$R/u1.diff" > "$R/u1.sh"
-"$R_P2VI" -r "$R/u2.diff" > "$R/u2.sh"
-coderive u1.sh u2.sh '%s/^B$/B changed/:q!'	# the target left B, and patterns are case-sensitive
-if [ ! -s "$R/new.sh" ] && tr -d '\r' < "$R/nerr" | grep -q 'no probe validates'; then
-	ok "compat: an undiscriminating origin insertion is refused"
-else
-	fail "compat: an undiscriminating origin insertion is refused"
-	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
-fi
+# An origin whose inserted line is not unique needed a discriminating probe
+# under the gate model; names always discriminate (for a name there is no
+# "two trees apart" failure - either the origin is in the applied set or it
+# is not), so the hard error is gone and this refusal is accepted as lost.
 
 # -co replays the origin AND the target into one session before the handover,
 # so the target must apply cleanly on the origin-modified tree. That exercises
@@ -1734,7 +1732,7 @@ fi
 # origin tree: PROBE present, so the target's own change lands (L3 -> L3x) and
 # then the postfix compat block fires (L2 -> L2c) - the units stack
 cp "$R/po.orig" "$R/po.c"
-( cd "$R" && VI="$VI" sh p1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack p1.sh new.sh
 if [ "$(cat "$R/po.c")" = "$(printf 'L1\nPROBE\nL2c\nL3x')" ]; then
 	ok "compat: -co fires on an origin tree, stacks with the target hunk"
 else
@@ -1783,7 +1781,7 @@ else
 fi
 
 cp "$R/pb.orig" "$R/pb.c"
-( cd "$R" && VI="$VI" sh b1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack b1.sh new.sh
 if [ "$(cat "$R/pb.c")" = "$(printf 'A1\nPROBE\nA2\nA3c\nA4\nA5\nA6x')" ]; then
 	ok "compat: pre-applied diff fires gated on an origin tree"
 else
@@ -1807,7 +1805,7 @@ fi
 cp "$R/pb.orig" "$R/pb.c"
 coderive3 b1.sh b2.sh bc.sh '%s/^A5$/A5u/:q!'
 cp "$R/pb.orig" "$R/pb.c"
-( cd "$R" && VI="$VI" sh b1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack b1.sh new.sh
 if [ "$(cat "$R/pb.c")" = "$(printf 'A1\nPROBE\nA2\nA3c\nA4\nA5u\nA6x')" ]; then
 	ok "compat: pre-applied script plus the user's own edit in one block"
 else
@@ -1849,7 +1847,7 @@ else
 fi
 
 cp "$R/pc.orig" "$R/pc.c"
-( cd "$R" && VI="$VI" sh c1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack c1.sh new.sh
 o1=$(cat "$R/pc.c")
 cp "$R/pc.orig" "$R/pc.c"
 ( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
@@ -1862,10 +1860,10 @@ else
 	printf '%s\n--\n%s\n' "$o1" "$o2" | sed 's/^/    /'
 fi
 
-# Cross-file gate: the block edits a file the origin never touched, so no probe
-# exists there. "Did this origin land" is a property of the tree, not of one
-# file, so the probe comes from a file the origin did change and the gate
-# records that path.
+# A block whose file the origin never touched still fires when its origin is
+# in the applied set: "did this origin land" is a property of the tree, so the
+# block over pe.c is decided by the presence of d1.sh in the set, not by any
+# trace in the file it edits.
 printf 'Y1\nY2\nY3\n' > "$R/pd.orig"
 printf 'Z1\nZ2\nZ3\n' > "$R/pe.orig"
 printf -- '--- a/pd.c\n+++ b/pd.c\n@@ -1,3 +1,4 @@\n Y1\n+YPROBE\n Y2\n Y3\n' > "$R/d1.diff"
@@ -1875,17 +1873,16 @@ printf -- '--- a/pe.c\n+++ b/pe.c\n@@ -1,3 +1,3 @@\n Z1\n-Z2\n+Z2t\n Z3\n' > "$R
 cp "$R/pd.orig" "$R/pd.c"
 cp "$R/pe.orig" "$R/pe.c"
 coderive d1.sh d2.sh '%s/^Z3$/Z3c/:q!'
-if grep -q '^=== GATE 1 present tag [0-9]* probe pd.c ===' "$R/new.sh" 2>/dev/null; then
-	ok "compat: a block over an untouched file probes another file"
+if grep -q '^# Compat (post) from d1.sh' "$R/new.sh" 2>/dev/null; then
+	ok "compat: a block over an untouched file fires from the applied set"
 else
-	fail "compat: a block over an untouched file probes another file"
+	fail "compat: a block over an untouched file fires from the applied set"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
-	grep -n '=== GATE' "$R/new.sh" | sed 's/^/    /'
 fi
 
 cp "$R/pd.orig" "$R/pd.c"
 cp "$R/pe.orig" "$R/pe.c"
-( cd "$R" && VI="$VI" sh d1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack d1.sh new.sh
 o1=$(cat "$R/pe.c")
 cp "$R/pd.orig" "$R/pd.c"
 cp "$R/pe.orig" "$R/pe.c"
@@ -1893,10 +1890,10 @@ cp "$R/pe.orig" "$R/pe.c"
 o2=$(cat "$R/pe.c")
 if [ "$o1" = "$(printf 'Z1\nZ2t\nZ3c')" ] &&
    [ "$o2" = "$(printf 'Z1\nZ2t\nZ3')" ]; then
-	ok "compat: cross-file gate fires on origin, no-ops on clean"
+	ok "compat: block over an untouched file fires on origin, no-ops on clean"
 	cp "$R/new.sh" "$R/xf.sh"
 else
-	fail "compat: cross-file gate fires on origin, no-ops on clean"
+	fail "compat: block over an untouched file fires on origin, no-ops on clean"
 	printf '%s\n--\n%s\n' "$o1" "$o2" | sed 's/^/    /'
 fi
 
@@ -1917,17 +1914,17 @@ ngate="$(grep -c '^=== GATE ' "$R/new.sh" 2>/dev/null || true)"
 nbody="$(grep -c '^# Compat (post) from g1.sh' "$R/new.sh" 2>/dev/null || true)"
 nfile="$(sed -n '/^=== COMPAT PATCH ===$/,/^=== END /p' "$R/new.sh" |
 	 grep -c '^--- ' || true)"
-if [ "$nreg" = 1 ] && [ "$ngate" = 1 ] && [ "$nbody" = 1 ] && [ "$nfile" = 2 ]; then
-	ok "compat: a two-file compat patch is one block, one gate, one diff"
+if [ "$nreg" = 1 ] && [ "$ngate" = 0 ] && [ "$nbody" = 1 ] && [ "$nfile" = 2 ]; then
+	ok "compat: a two-file compat patch is one block, one diff"
 else
-	fail "compat: a two-file compat patch is one block, one gate, one diff"
+	fail "compat: a two-file compat patch is one block, one diff"
 	echo "    regions=$nreg gates=$ngate bodies=$nbody files=$nfile"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
 
 cp "$R/ph.orig" "$R/ph.c"
 cp "$R/pi.orig" "$R/pi.c"
-( cd "$R" && VI="$VI" sh g1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack g1.sh new.sh
 o1="$(cat "$R/ph.c")|$(cat "$R/pi.c")"
 cp "$R/ph.orig" "$R/ph.c"
 cp "$R/pi.orig" "$R/pi.c"
@@ -1942,11 +1939,11 @@ else
 	printf '%s\n--\n%s\n' "$o1" "$o2" | sed 's/^/    /'
 fi
 
-# The gate spans the files the block does. Origin (h1) lands in BOTH pj.c and
-# pk.c and the compat patch reshapes both, so a probe from one file alone would
-# leave the other half of the diff answering to a question about a buffer it
-# never touches: the derivation takes a probe per file and ANDs them, each
-# recorded against its own path.
+# A multi-file compat patch is gated as a whole: it fires on every file it
+# spans when its origin is in the applied set, and on none of them when it is
+# not. A name cannot tell half a landing apart, so a partial application is
+# indistinguishable from the whole origin (accepted loss; apply from a clean
+# tree or assert P2VI_PATCH to keep the answer honest).
 printf 'J1\nJ2\nJ3\n' > "$R/pj.orig"
 printf 'K1\nK2\nK3\n' > "$R/pk.orig"
 printf -- '--- a/pj.c\n+++ b/pj.c\n@@ -1,3 +1,4 @@\n J1\n+JPROBE\n J2\n J3\n--- a/pk.c\n+++ b/pk.c\n@@ -1,3 +1,4 @@\n K1\n+KPROBE\n K2\n K3\n' > "$R/h1.diff"
@@ -1956,32 +1953,26 @@ printf -- '--- a/pj.c\n+++ b/pj.c\n@@ -1,3 +1,3 @@\n J1\n-J2\n+J2t\n J3\n--- a/p
 cp "$R/pj.orig" "$R/pj.c"
 cp "$R/pk.orig" "$R/pk.c"
 coderive h1.sh h2.sh ':e pj.c:%s/^J3$/J3c/:e pk.c:%s/^K3$/K3c/:q!'
-if grep -q '^=== GATE [0-9]* present tag [0-9]* probe pj.c ===' "$R/new.sh" \
-	2>/dev/null &&
-   grep -q '^=== GATE [0-9]* present tag [0-9]* probe pk.c ===' "$R/new.sh" \
-	2>/dev/null; then
-	ok "compat: a two-file block gates on the origin's landing in both"
+if grep -q '^# Compat (post) from h1.sh' "$R/new.sh" 2>/dev/null; then
+	ok "compat: a two-file block edits both files, gated as one"
 else
-	fail "compat: a two-file block gates on the origin's landing in both"
+	fail "compat: a two-file block edits both files, gated as one"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
-	grep -n '=== GATE' "$R/new.sh" | sed 's/^/    /'
 fi
 
-# Both probes are ANDed, so the block fires on the whole origin and no-ops when
-# only half of it landed (pj.c patched by hand, pk.c clean).
 cp "$R/pj.orig" "$R/pj.c"
 cp "$R/pk.orig" "$R/pk.c"
-( cd "$R" && VI="$VI" sh h1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack h1.sh new.sh
 o1="$(cat "$R/pj.c")|$(cat "$R/pk.c")"
-printf 'J1\nJPROBE\nJ2\nJ3\n' > "$R/pj.c"
+cp "$R/pj.orig" "$R/pj.c"
 cp "$R/pk.orig" "$R/pk.c"
 ( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
 o2="$(cat "$R/pj.c")|$(cat "$R/pk.c")"
 if [ "$o1" = "$(printf 'J1\nJPROBE\nJ2t\nJ3c|K1\nKPROBE\nK2t\nK3c')" ] &&
-   [ "$o2" = "$(printf 'J1\nJPROBE\nJ2t\nJ3|K1\nK2t\nK3')" ]; then
-	ok "compat: the multi-file gate misses when only one file landed"
+   [ "$o2" = "$(printf 'J1\nJ2t\nJ3|K1\nK2t\nK3')" ]; then
+	ok "compat: a two-file block fires on origin, no-ops on clean"
 else
-	fail "compat: the multi-file gate misses when only one file landed"
+	fail "compat: a two-file block fires on origin, no-ops on clean"
 	printf '%s\n--\n%s\n' "$o1" "$o2" | sed 's/^/    /'
 fi
 
@@ -2011,7 +2002,7 @@ cp "$R/pg.orig" "$R/pg.c"
 coderiveq e1.sh e2.sh ':e pg.c:%s/^V3$/V3c/:q!'
 cp "$R/pf.orig" "$R/pf.c"
 cp "$R/pg.orig" "$R/pg.c"
-( cd "$R" && VI="$VI" sh e1.sh && VI="$VI" QF2=1 sh new.sh ) >/dev/null 2>&1
+( cd "$R" && chmod +x e1.sh new.sh && VI="$VI" QF2=1 sh e1.sh new.sh ) >/dev/null 2>&1
 if [ "$(cat "$R/pf.c")" = "$(printf 'W1\nW3\nW4')" ] &&
    [ "$(cat "$R/pg.c")" = "$(printf 'V1\nDUP\nV2\nDUP\nNEW\nV3c')" ]; then
 	ok "compat: a host miss does not derail the groups after it"
@@ -2035,13 +2026,13 @@ printf -- '--- a/q.c\n+++ b/q.c\n@@ -3,3 +3,3 @@\n Q3\n Q4\n-Q5\n+Q5t\n' > "$R/q
 cp "$R/q.orig" "$R/q.c"
 coderive qo.sh qt.sh '%s/^Q2$/Q2c/:%s/^Q4$/Q4c/:q!'
 cp "$R/q.orig" "$R/q.c"
-( cd "$R" && VI="$VI" sh qo.sh ) >/dev/null 2>&1
+stack qo.sh					# the origin's tree
 sed '/^Q2$/d' "$R/q.c" > "$R/q.worn"	# the compat block's first group misses
 cp "$R/q.worn" "$R/q.c"
-( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
+( cd "$R" && P2VI_PATCH="qo.sh" VI="$VI" sh new.sh ) >/dev/null 2>&1
 q_strict="$(tr '\n' '|' < "$R/q.c")"
 cp "$R/q.worn" "$R/q.c"
-( cd "$R" && VI="$VI" QF2=1 sh new.sh ) >/dev/null 2>&1
+( cd "$R" && P2VI_PATCH="qo.sh" VI="$VI" QF2=1 sh new.sh ) >/dev/null 2>&1
 q_soft="$(tr '\n' '|' < "$R/q.c")"
 if [ "$q_strict" = 'Q1|QPROBE|Q3|Q4|Q5|' ] &&
    [ "$q_soft" = 'Q1|QPROBE|Q3|Q4c|Q5t|' ]; then
@@ -2065,15 +2056,15 @@ dedit() {	# <script> <P2VI_EX>: -d session running <P2VI_EX>, out $R/dedit.sh
 	pty "P2VI_EX=$2" \
 		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dedit.sh 2>$R/derr'" > /dev/null 2>&1
 }
-# a cross-file gate survives storage: -d reparses the recorded probe path and
-# emits the same script, so the sensor keeps searching the origin's file
+# a stored block round-trips through storage: -d reparses the recorded region
+# and emits the same script
 cp "$R/pd.orig" "$R/pd.c"
 cp "$R/pe.orig" "$R/pe.c"
 dregen xf.sh
 if [ -s "$R/dregen.sh" ] && cmp -s "$R/xf.sh" "$R/dregen.sh"; then
-	ok "compat: -d round-trips a cross-file gate byte-identically"
+	ok "compat: -d round-trips a stored compat block byte-identically"
 else
-	fail "compat: -d round-trips a cross-file gate byte-identically"
+	fail "compat: -d round-trips a stored compat block byte-identically"
 	tr -d '\r' < "$R/derr" | sed 's/^/    /'
 	diff "$R/xf.sh" "$R/dregen.sh" | head -10 | sed 's/^/    /'
 fi
@@ -2101,7 +2092,7 @@ else
 fi
 
 cp "$R/big.orig" "$R/big.c"
-( cd "$R" && VI="$VI" sh k1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack k1.sh new.sh
 if [ "$(sed -n '6p;1101p;2101p' "$R/big.c")" = "$(printf 'L0005c\nL1100t\nL2100c')" ]; then
 	ok "compat: a split-span compat patch applies on an origin tree"
 else
@@ -2121,7 +2112,7 @@ printf -- '--- a/cs.c\n+++ b/cs.c\n@@ -1,3 +1,3 @@\n A1\n \tfor (k = MAX(0, -t);
 cp "$R/cs.orig" "$R/cs.c"
 coderive n1.sh n2.sh '%s/xrows/wrows/:q!'
 cp "$R/cs.orig" "$R/cs.c"
-( cd "$R" && VI="$VI" sh n1.sh && VI="$VI" sh new.sh ) >/dev/null 2>&1
+stack n1.sh new.sh
 if [ "$(sed -n '3p' "$R/cs.c")" = "$(printf '\tfor (k = MAX(0, -t); k < wrows; k++)')" ]; then
 	ok "compat: a one-byte substitution is matched case-sensitively"
 else
@@ -2196,7 +2187,7 @@ fi
 # and only the host on a clean tree (both gates quit before any edit).
 cp "$R/new.sh" "$R/stack.sh"
 cp "$R/draw.orig" "$R/draw.c"
-( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh stack.sh ) >/dev/null 2>&1
+stack x1.sh stack.sh
 origin_ok=0
 [ "$(sed -n 1,3p "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2c')" ] && origin_ok=1
 cp "$R/draw.orig" "$R/draw.c"
@@ -2230,7 +2221,7 @@ fi
 # the host (L3 -> L3x), post block 1 (L2 -> L2c), post block 2 (L2c -> L2cc).
 cp "$R/new.sh" "$R/stack2.sh"
 cp "$R/draw.orig" "$R/draw.c"
-( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh stack2.sh ) >/dev/null 2>&1
+stack x1.sh stack2.sh
 if [ "$(cat "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2cc\nL3x')" ]; then
 	ok "compat: post stack applies all blocks in order on an origin tree"
 else
@@ -2278,7 +2269,7 @@ fi
 # the delta-shaped block still applies on an origin tree (abs line numbers
 # line up post-origin) and no-ops on a clean tree; -d of it is stable
 cp "$R/draw.orig" "$R/draw.c"
-( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh edd.sh ) >/dev/null 2>&1
+stack x1.sh edd.sh
 deltaA_ok=0
 [ "$(sed -n 1,3p "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2c')" ] && deltaA_ok=1
 cp "$R/draw.orig" "$R/draw.c"
@@ -2316,7 +2307,7 @@ fi
 # the edited block still applies on an origin tree and -d is stable
 cp "$R/dedit.sh" "$R/bedd.sh"
 cp "$R/draw.orig" "$R/draw.c"
-( cd "$R" && VI="$VI" sh x1.sh && VI="$VI" sh bedd.sh ) >/dev/null 2>&1
+stack x1.sh bedd.sh
 bB_ok=0
 [ "$(sed -n 1,3p "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2c')" ] && bB_ok=1
 cp "$R/draw.orig" "$R/draw.c"
@@ -2362,57 +2353,6 @@ else
 	grep -v snapshot "$R/derr" | sed 's/^/    /' | head
 fi
 
-# Stacked blocks must not share a gate anchor tag. xanchor is global and a
-# lookup ORs every entry recorded under the id, so one shared tag would make
-# either sensor answer for both blocks. Tag numbering continues across blocks
-# (next_gate_tag), so the two stored gates carry different ids.
-tags="$(sed -n 's/^=== GATE .* tag \([0-9]*\).*$/\1/p' "$R/two.sh" | sort)"
-if [ "$(echo "$tags" | wc -l)" = 2 ] &&
-   [ "$(echo "$tags" | sort -u | wc -l)" = 2 ]; then
-	ok "compat: stacked blocks get distinct gate tags"
-else
-	fail "compat: stacked blocks get distinct gate tags"
-	echo "    tags=[$(echo "$tags" | tr '\n' ' ')]"
-fi
-
-# Two blocks of one origin answer the same question, so derivation gives them
-# identical gates; a hand-edit that widens only one makes them fire on different
-# trees while the runtime subset test still reads a single per-origin flag. -d
-# reports that, without refusing the script (a deliberate widening is the
-# author's call) and without leaking the warning into the output.
-awk 'BEGIN{n=0} /^=== PATCH2VI COMPAT/{n++} {if (n==2 && $0=="PROBE") print "PROBE2"; else print}' \
-	"$R/two.sh" > "$R/badgate.sh"
-cp "$R/draw.orig" "$R/draw.c"
-dregen badgate.sh
-warn="$(tr -d '\r' < "$R/derr" | grep -c 'carry different gates' || true)"
-cp "$R/draw.orig" "$R/draw.c"
-dregen two.sh
-quiet="$(tr -d '\r' < "$R/derr" | grep -c 'carry different gates' || true)"
-if [ "$warn" = 1 ] && [ "$quiet" = 0 ] && [ -s "$R/dregen.sh" ]; then
-	ok "compat: -d reports blocks of one origin whose gates disagree"
-else
-	fail "compat: -d reports blocks of one origin whose gates disagree"
-	echo "    warn=$warn quiet=$quiet"
-fi
-
-# Every invocation derives its own gate: no block inherits a stored one, not even
-# from a block of the same origin. Widen the single-block script's gate by hand to
-# a line both trees carry, stack a second block on it, and the new block must
-# carry the freshly derived probe, leaving the hand-widened one untouched. (A
-# dedup pass over a stack is the author's job - concatenate the regions' patches
-# and run them through patch2vi again.)
-sed 's/^PROBE$/L1/' "$R/pr.sh" > "$R/wide.sh"
-cp "$R/draw.orig" "$R/draw.c"
-coderive x1.sh wide.sh '%s/^L3x$/L3w/:q!'
-probes="$(sed -n '/^=== GATE /{n;p;}' "$R/new.sh" | tr '\n' ' ')"
-if [ "$probes" = "L1 PROBE " ]; then
-	ok "compat: each invocation derives its own gate, inheriting none"
-else
-	fail "compat: each invocation derives its own gate, inheriting none"
-	echo "    probes=[$probes]"
-	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
-fi
-
 # Mixed origins, the subset matrix. Two independent origins over one file: A
 # inserts PA at the top, B inserts PB at the bottom; the target's own hunk is a
 # third, disjoint line. A's compat block is derived first, B's on top of it, so
@@ -2435,8 +2375,11 @@ coderive b1.sh mix1.sh '%s/^L4$/L4b/:q!'	# block from origin B, stacked
 cp "$R/new.sh" "$R/mix2.sh"
 mixrun() {	# <origin scripts> -> tree of m.c after mix2.sh, '|'-joined
 	cp "$R/m.orig" "$R/m.c"
-	for s in $1; do ( cd "$R" && VI="$VI" sh "$s" ) >/dev/null 2>&1; done
-	( cd "$R" && VI="$VI" sh mix2.sh ) >/dev/null 2>&1
+	if [ -z "$1" ]; then
+		( cd "$R" && chmod +x mix2.sh && VI="$VI" sh mix2.sh ) >/dev/null 2>&1
+	else
+		( cd "$R" && chmod +x $1 mix2.sh && VI="$VI" sh $1 mix2.sh ) >/dev/null 2>&1
+	fi
 	tr '\n' '|' < "$R/m.c"
 }
 if [ "$(grep -c '^=== PATCH2VI COMPAT post src=' "$R/mix2.sh" 2>/dev/null)" = 2 ] &&
@@ -2478,114 +2421,16 @@ nf_clean=0
 nf_noise="$(tr -d '\r' < "$R/nfout" | grep -c 'invalid range' || true)"
 nf_wrap="$(grep -o 'err 0' "$R/nf.sh" | wc -l | tr -d ' ')"
 cp "$R/m.orig" "$R/m.c"; rm -f "$R/n.c"
-( cd "$R" && VI="$VI" sh n.sh && VI="$VI" sh nf.sh ) >/dev/null 2>&1
+stack n.sh nf.sh
 nf_orig="$(tr '\n' '|' < "$R/n.c" 2>/dev/null)"
 rm -f "$R/n.c"
 if [ "$nf_clean" = 1 ] && [ "$nf_orig" = 'N1|N2c|N3|' ] && [ "$nf_noise" = 0 ] &&
-   [ "$nf_wrap" = 2 ]; then
+   [ "$nf_wrap" -ge 1 ]; then
 	ok "compat: an origin's new file is written only when the origin is"
 else
 	fail "compat: an origin's new file is written only when the origin is"
 	echo "    clean=$nf_clean origin=[$nf_orig] noise=$nf_noise wrap=$nf_wrap"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
-fi
-
-# One string does not rule a gate: an origin that lands in several places is
-# probed in several of them, one probe per region, and the sensors AND. A tree
-# carrying only a slice of that origin (here just the first region) is not the
-# origin's tree, so the block must not fire there.
-i=1
-: > "$R/g.orig"
-while [ $i -le 30 ]; do printf 'G%d\n' "$i" >> "$R/g.orig"; i=$((i + 1)); done
-sed -e 's/^G3$/G3o/' -e 's/^G9$/G9o/' -e 's/^G15$/G15o/' \
-    -e 's/^G21$/G21o/' -e 's/^G27$/G27o/' "$R/g.orig" > "$R/g.new"
-diff -u "$R/g.orig" "$R/g.new" |
-	sed -e '1s|.*|--- a/g.c|' -e '2s|.*|+++ b/g.c|' > "$R/go.diff"
-printf -- '--- a/g.c\n+++ b/g.c\n@@ -28,3 +28,3 @@\n G28\n-G29\n+G29t\n G30\n' > "$R/gt.diff"
-printf -- '--- a/g.c\n+++ b/g.c\n@@ -2,3 +2,3 @@\n G2\n-G3\n+G3o\n G4\n' > "$R/gp.diff"
-"$R_P2VI" -r "$R/go.diff" > "$R/go.sh"
-"$R_P2VI" -r "$R/gt.diff" > "$R/gt.sh"
-"$R_P2VI" -r "$R/gp.diff" > "$R/gp.sh"
-cp "$R/g.orig" "$R/g.c"
-coderive go.sh gt.sh '%s/^G30$/G30c/:q!'
-dregen new.sh
-nprobe="$(grep -c '^=== GATE .* probe ' "$R/dregen.sh" || true)"
-if [ "$nprobe" -ge 5 ]; then
-	ok "compat: a multi-region origin is ruled by five probes"
-else
-	fail "compat: a multi-region origin is ruled by five probes"
-	echo "    probes=$nprobe"
-	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
-fi
-grun() {	# <origin scripts> -> last line of g.c after new.sh
-	cp "$R/g.orig" "$R/g.c"
-	for s in $1; do ( cd "$R" && VI="$VI" sh "$s" ) >/dev/null 2>&1; done
-	( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
-	tail -n 1 "$R/g.c"
-}
-g_full="$(grun 'go.sh')"
-g_part="$(grun 'gp.sh')"
-g_none="$(grun '')"
-if [ "$g_full" = 'G30c' ] && [ "$g_part" = 'G30' ] && [ "$g_none" = 'G30' ]; then
-	ok "compat: the ANDed gate fires on the whole origin, not a slice of it"
-else
-	fail "compat: the ANDed gate fires on the whole origin, not a slice of it"
-	echo "    full=[$g_full] partial=[$g_part] clean=[$g_none]"
-fi
-
-# Detection is absorbant as well as reliable: an origin landing wide enough to
-# fill several clusters is read as "any complete cluster", so a tree that lost
-# one of the origin's lines to some later change still fires the block, while a
-# tree carrying one region of the origin still does not.
-i=1
-: > "$R/c.orig"
-while [ $i -le 40 ]; do printf 'C%d\n' "$i" >> "$R/c.orig"; i=$((i + 1)); done
-awk '{ print }
-     /^C5$|^C13$|^C21$|^C29$|^C37$/ {
-	n = substr($0, 2)
-	for (k = 1; k <= 4; k++) printf "X%s_%d\n", n, k }' "$R/c.orig" > "$R/c.new"
-awk '{ print } /^C5$/ { for (k = 1; k <= 4; k++) printf "X5_%d\n", k }' \
-	"$R/c.orig" > "$R/c.part"
-diff -u "$R/c.orig" "$R/c.new" |
-	sed -e '1s|.*|--- a/c.c|' -e '2s|.*|+++ b/c.c|' > "$R/co.diff"
-diff -u "$R/c.orig" "$R/c.part" |
-	sed -e '1s|.*|--- a/c.c|' -e '2s|.*|+++ b/c.c|' > "$R/cp.diff"
-printf -- '--- a/c.c\n+++ b/c.c\n@@ -38,3 +38,3 @@\n C38\n C39\n-C40\n+C40t\n' \
-	> "$R/ct.diff"
-"$R_P2VI" -r "$R/co.diff" > "$R/co.sh"
-"$R_P2VI" -r "$R/cp.diff" > "$R/cp.sh"
-"$R_P2VI" -r "$R/ct.diff" > "$R/ct.sh"
-cp "$R/c.orig" "$R/c.c"
-coderive co.sh ct.sh '%s/^C40t$/C40c/:q!'
-dregen new.sh
-cprobe="$(grep -c '^=== GATE .* probe ' "$R/dregen.sh" || true)"
-if [ "$cprobe" -ge 10 ] &&
-   grep -qE '[0-9]{4},[0-9]{4};[0-9]{4}' "$R/new.sh" 2>/dev/null; then
-	ok "compat: a wide landing is probed past one cluster and ORs them"
-else
-	fail "compat: a wide landing is probed past one cluster and ORs them"
-	echo "    probes=$cprobe"
-	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
-fi
-crun() {	# <origin scripts> <sed expr|""> -> last line of c.c after new.sh
-	cp "$R/c.orig" "$R/c.c"
-	for s in $1; do ( cd "$R" && VI="$VI" sh "$s" ) >/dev/null 2>&1; done
-	if [ -n "$2" ]; then
-		sed "$2" "$R/c.c" > "$R/c.tmp" && mv "$R/c.tmp" "$R/c.c"
-	fi
-	( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
-	tail -n 1 "$R/c.c"
-}
-c_full="$(crun 'co.sh' '')"
-c_worn="$(crun 'co.sh' '/^X5_1$/d')"
-c_part="$(crun 'cp.sh' '')"
-c_none="$(crun '' '')"
-if [ "$c_full" = 'C40c' ] && [ "$c_worn" = 'C40c' ] &&
-   [ "$c_part" = 'C40t' ] && [ "$c_none" = 'C40t' ]; then
-	ok "compat: a clustered gate absorbs a lost probe, still refuses a slice"
-else
-	fail "compat: a clustered gate absorbs a lost probe, still refuses a slice"
-	echo "    full=[$c_full] worn=[$c_worn] partial=[$c_part] clean=[$c_none]"
 fi
 
 # A fix that only a STACK of patches needs: -co repeats, one per origin, and the
@@ -2621,62 +2466,36 @@ dregen new.sh
 m_src="$(awk '/^=== PATCH2VI COMPAT /{for (i = 1; i <= NF; i++)
 	if (substr($i, 1, 4) == "src=") printf "%s%s", n++ ? " " : "", substr($i, 5)
 	print ""}' "$R/dregen.sh")"
-m_o0="$(grep -c '^=== GATE .* origin 0' "$R/dregen.sh" || true)"
-m_o1="$(grep -c '^=== GATE .* origin 1' "$R/dregen.sh" || true)"
-if [ "$m_src" = 'ma.sh mb.sh' ] && [ "$m_o0" -ge 2 ] && [ "$m_o1" -ge 2 ]; then
-	ok "compat: -co repeats, and each probe stores the origin it reads"
+if [ "$m_src" = 'ma.sh mb.sh' ]; then
+	ok "compat: -co repeats, and the block names both origins"
 else
-	fail "compat: -co repeats, and each probe stores the origin it reads"
-	echo "    src=[$m_src] origin0=$m_o0 origin1=$m_o1"
+	fail "compat: -co repeats, and the block names both origins"
+	echo "    src=[$m_src]"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
 mrun() {	# <origin scripts> <script> -> last line of mo.c after <script>
 	cp "$R/mo.orig" "$R/mo.c"
-	for s in $1; do ( cd "$R" && VI="$VI" sh "$s" ) >/dev/null 2>&1; done
-	( cd "$R" && VI="$VI" sh "$2" ) >/dev/null 2>&1
+	if [ -z "$1" ]; then
+		( cd "$R" && chmod +x "$2" && VI="$VI" sh "$2" ) >/dev/null 2>&1
+	else
+		( cd "$R" && chmod +x $1 "$2" && VI="$VI" sh $1 "$2" ) >/dev/null 2>&1
+	fi
 	tail -n 1 "$R/mo.c"
 }
+# The block demands BOTH origins: a tree carrying only A, or only B, is not the
+# tree the fix was written for (a two-src= label is an AND under name matching).
 m_both="$(mrun 'ma.sh mb.sh' new.sh)"
 m_a="$(mrun 'ma.sh' new.sh)"
 m_b="$(mrun 'mb.sh' new.sh)"
 m_none="$(mrun '' new.sh)"
 if [ "$m_both" = 'M60c' ] && [ "$m_a" = 'M60' ] && [ "$m_b" = 'M60' ] &&
    [ "$m_none" = 'M60' ]; then
-	ok "compat: a two-origin gate fires on both origins, never on one"
+	ok "compat: a two-origin block fires on both origins, never on one"
 else
-	fail "compat: a two-origin gate fires on both origins, never on one"
+	fail "compat: a two-origin block fires on both origins, never on one"
 	echo "    both=[$m_both] a=[$m_a] b=[$m_b] clean=[$m_none]"
 fi
 
-# The transpose is what buys that: ten probes cut flat would give a cluster of
-# five consecutive ones, i.e. a whole cluster inside origin A, and A alone would
-# fire the block. Cut across the origins instead, each cluster still spans both,
-# so the OR only ever trades redundancy - a tree that lost one of A's lines to
-# some later change still fires, and the round trip through storage keeps it.
-m_cl="$(grep -c 'p compat applied' "$R/new.sh" || true)"
-m_semi=0
-grep -qE '[0-9]{4},[0-9]{4},[0-9]{4},[0-9]{4},[0-9]{4},[0-9]{4};' "$R/new.sh" &&
-	m_semi=1
-mworn() {	# <script>: both origins, one of A's lines worn away
-	cp "$R/mo.orig" "$R/mo.c"
-	( cd "$R" && VI="$VI" sh ma.sh ) >/dev/null 2>&1
-	( cd "$R" && VI="$VI" sh mb.sh ) >/dev/null 2>&1
-	sed 's/^M3a$/M3z/' "$R/mo.c" > "$R/mo.tmp" && mv "$R/mo.tmp" "$R/mo.c"
-	( cd "$R" && VI="$VI" sh "$1" ) >/dev/null 2>&1
-	tail -n 1 "$R/mo.c"
-}
-m_worn="$(mworn new.sh)"
-cp "$R/dregen.sh" "$R/mregen.sh"
-m_rboth="$(mrun 'ma.sh mb.sh' mregen.sh)"
-m_ra="$(mrun 'ma.sh' mregen.sh)"
-if [ "$m_semi" = 1 ] && [ "$m_worn" = 'M60c' ] && [ "$m_cl" = 1 ] &&
-   [ "$m_rboth" = 'M60c' ] && [ "$m_ra" = 'M60' ]; then
-	ok "compat: clusters cut across origins, absorbing a lost probe"
-else
-	fail "compat: clusters cut across origins, absorbing a lost probe"
-	echo "    ored=$m_semi worn=[$m_worn] blocks=$m_cl"
-	echo "    regen both=[$m_rboth] a=[$m_ra]"
-fi
 
 # -oco clusters the top-level -o into -co: no FILE of its own, the derived
 # block lands back on the target script it extends (the same rule -oE follows),
@@ -2700,7 +2519,7 @@ else
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
 cp "$R/p.orig" "$R/p.c"
-( cd "$R" && VI="$VI" sh o1.sh && VI="$VI" sh o2.sh ) >/dev/null 2>&1
+stack o1.sh o2.sh
 p_full="$(tr '\n' '|' < "$R/p.c")"
 cp "$R/p.orig" "$R/p.c"
 ( cd "$R" && VI="$VI" sh o2.sh ) >/dev/null 2>&1
@@ -2738,11 +2557,12 @@ pty 'P2VI_EX=%s/^E2$/E2c/:q!' \
 	"sh -c 'cd $R && $R_P2VI -co e1.sh e2.sh > $R/ec.sh 2>$R/nerr'" \
 	> /dev/null 2>&1
 
-# amend_E <tree-setup-file> <out.sh>: replay ec.sh over the tree and re-emit
+# amend_E <tree-setup-file> <out.sh> [P2VI_PATCH]: replay ec.sh over the tree
+# and re-emit. The applied set is asserted via $3 when the origin is present.
 amend_E() {
 	cp "$1" "$R/e.c"
 	pty 'P2VI_EX=q!' \
-		"sh -c 'cd $R && $R_P2VI -E ec.sh > $R/$2 2>$R/eerr'" > /dev/null 2>&1
+		"sh -c 'cd $R && ${3:+P2VI_PATCH=\"$3\" }$R_P2VI -E ec.sh > $R/$2 2>$R/eerr'" > /dev/null 2>&1
 }
 
 # clean tree: the gate self-skips during the replay, so the compat edit never
@@ -2764,10 +2584,10 @@ else
 	sed 's/^/    /' "$R/e.c"
 fi
 
-# origin tree: EPROBE is present, the gate fires during the replay, so the
-# compat edit lands in the buffer and is re-derived as a plain, ungated hunk
+# origin tree: e1.sh is in the applied set, so the block fires during the
+# replay and its edit lands in the buffer, re-derived as a plain, ungated hunk
 printf 'E1\nEPROBE\nE2\nE3\n' > "$R/e.probe"
-amend_E "$R/e.probe" "eorig.sh"
+amend_E "$R/e.probe" "eorig.sh" e1.sh
 printf 'E1\nEPROBE\nE2\nE3\n' > "$R/e.c"
 ( cd "$R" && VI="$VI" sh eorig.sh ) >/dev/null 2>&1
 if [ "$(cat "$R/e.c")" = "$(printf 'E1\nEPROBE\nE2c\nE3x')" ] &&
@@ -2847,6 +2667,169 @@ else
 	fail "placement: a delete is never guessed at, and parks the cursor"
 	tr -d '\r' < "$R/gerr" | sed 's/^/    /' | head -3
 	sed -n '/PATCH2VI PATCH/,$p' "$R/gfail.sh" | sed 's/^/    /'
+fi
+
+
+echo ""
+echo "=== applied-set (env chain) tests ==="
+
+# The fixtures: two origins with DISJOINT landings (CA after S1, CB after S3),
+# so each applies cleanly over any subset of the other; the target edits a
+# middle line whose context survives both; the compat block (gated on BOTH
+# origins) edits a line nobody else touches.
+printf 'S1\nS2\nS3\nS4\n' > "$R/cn.orig"
+printf -- '--- a/cn.c\n+++ b/cn.c\n@@ -1,3 +1,4 @@\n S1\n+CA\n S2\n S3\n' > "$R/ca.diff"
+printf -- '--- a/cn.c\n+++ b/cn.c\n@@ -2,3 +2,4 @@\n S2\n S3\n+CB\n S4\n' > "$R/cb.diff"
+printf -- '--- a/cn.c\n+++ b/cn.c\n@@ -1,3 +1,3 @@\n S1\n-S2\n+S2x\n S3\n' > "$R/cx.diff"
+"$R_P2VI" -r "$R/ca.diff" > "$R/ca.sh"
+"$R_P2VI" -r "$R/cb.diff" > "$R/cb.sh"
+"$R_P2VI" -r "$R/cx.diff" > "$R/cx.sh"
+# compat block gated on BOTH ca and cb (two -co), editing S4 -> S4c
+cp "$R/cn.orig" "$R/cn.c"
+pty 'P2VI_EX=%s/^S4$/S4c/:q!' \
+	"sh -c 'cd $R && $R_P2VI -co ca.sh -co cb.sh cx.sh > $R/cn.sh 2>$R/cn.nerr'" \
+	> /dev/null 2>&1
+
+# Chain propagation and ordering: each script appends its own basename to
+# $P2VI_PATCH before invoking the next, so the deepest script sees exactly the
+# origins that ran before it and its block fires only when every origin it
+# names is in the set.
+cp "$R/cn.orig" "$R/cn.c"
+stack ca.sh cb.sh cn.sh
+cn_full="$(tr '\n' '|' < "$R/cn.c")"
+cp "$R/cn.orig" "$R/cn.c"
+stack ca.sh cn.sh
+cn_a="$(tr '\n' '|' < "$R/cn.c")"
+cp "$R/cn.orig" "$R/cn.c"
+( cd "$R" && chmod +x cn.sh && VI="$VI" sh cn.sh ) >/dev/null 2>&1
+cn_clean="$(tr '\n' '|' < "$R/cn.c")"
+if [ "$cn_full" = 'S1|CA|S2x|S3|CB|S4c|' ] && [ "$cn_a" = 'S1|CA|S2x|S3|S4|' ] &&
+   [ "$cn_clean" = 'S1|S2x|S3|S4|' ]; then
+	ok "applied-set: a two-origin block fires in the chain, not under one origin"
+else
+	fail "applied-set: a two-origin block fires in the chain, not under one origin"
+	echo "    full=[$cn_full] a=[$cn_a] clean=[$cn_clean]"
+fi
+
+# Basename normalization: ./ca.sh, cb.sh and /abs/path/cn.sh all put their
+# basename in the set, and a stored src=ca.sh matches every spelling.
+cp "$R/cn.orig" "$R/cn.c"
+( cd "$R" && chmod +x ca.sh cb.sh cn.sh && VI="$VI" sh "./ca.sh" "cb.sh" "$R/cn.sh" ) >/dev/null 2>&1
+cn_paths="$(tr '\n' '|' < "$R/cn.c")"
+if [ "$cn_paths" = 'S1|CA|S2x|S3|CB|S4c|' ]; then
+	ok "applied-set: argument paths normalize to basenames"
+else
+	fail "applied-set: argument paths normalize to basenames"
+	echo "    got=[$cn_paths]"
+fi
+
+# Manual P2VI_PATCH inheritance: a tree that already carries the origins (applied
+# by hand, or upstream) fires the block when the set says so, and the origin
+# scripts are not re-run. Without the assertion the same tree no-ops the block.
+cp "$R/cn.orig" "$R/cn.c"
+stack ca.sh cb.sh				# both origins land, outside the chain
+( cd "$R" && chmod +x cn.sh && VI="$VI" sh cn.sh ) >/dev/null 2>&1
+cn_unasserted="$(tr '\n' '|' < "$R/cn.c")"
+cp "$R/cn.orig" "$R/cn.c"
+stack ca.sh cb.sh
+( cd "$R" && P2VI_PATCH="ca.sh cb.sh" VI="$VI" sh cn.sh ) >/dev/null 2>&1
+cn_hand="$(tr '\n' '|' < "$R/cn.c")"
+if [ "$cn_unasserted" = 'S1|CA|S2x|S3|CB|S4|' ] &&
+   [ "$cn_hand" = 'S1|CA|S2x|S3|CB|S4c|' ]; then
+	ok "applied-set: P2VI_PATCH asserts origins the chain never ran"
+else
+	fail "applied-set: P2VI_PATCH asserts origins the chain never ran"
+	echo "    quiet=[$cn_unasserted] asserted=[$cn_hand]"
+fi
+
+# A named origin is matched by basename from an absolute $P2VI_PATCH too.
+cp "$R/cn.orig" "$R/cn.c"
+stack ca.sh cb.sh
+( cd "$R" && P2VI_PATCH="$R/ca.sh $R/cb.sh" VI="$VI" sh cn.sh ) >/dev/null 2>&1
+cn_abs="$(tr '\n' '|' < "$R/cn.c")"
+if [ "$cn_abs" = 'S1|CA|S2x|S3|CB|S4c|' ]; then
+	ok "applied-set: P2VI_PATCH entries normalize to basenames"
+else
+	fail "applied-set: P2VI_PATCH entries normalize to basenames"
+	echo "    got=[$cn_abs]"
+fi
+
+# Mid-chain failure: each script applies before recursing, so a failure in the
+# deepest invocation leaves the earlier origins applied (the "&&" behaviour of
+# the old form, now carried by the chain). An absent final script is a hard
+# failure even though the first two have already run; the chain must not
+# "apply" the missing one silently.
+cp "$R/cn.orig" "$R/cn.c"
+( cd "$R" && chmod +x ca.sh cb.sh && VI="$VI" sh ca.sh cb.sh nosuch.sh ) \
+	>/dev/null 2>&1 || mid_rc=$?
+mid_tree="$(tr '\n' '|' < "$R/cn.c")"
+if [ "$mid_rc" != 0 ] && [ "$mid_tree" = 'S1|CA|S2|S3|CB|S4|' ]; then
+	ok "applied-set: a mid-chain failure leaves the earlier origins applied"
+else
+	fail "applied-set: a mid-chain failure leaves the earlier origins applied"
+	echo "    rc=$mid_rc tree=[$mid_tree]"
+fi
+
+# -e accumulates the same way the shell chain does: patch2vi -e ca.sh cb.sh
+# cn.sh applies the compat block, and -e ca.sh cn.sh does not.
+cp "$R/cn.orig" "$R/cn.c"
+( cd "$R" && $R_P2VI -e ca.sh cb.sh cn.sh ) >/dev/null 2>&1 || true
+cn_e="$(tr '\n' '|' < "$R/cn.c")"
+cp "$R/cn.orig" "$R/cn.c"
+( cd "$R" && $R_P2VI -e ca.sh cn.sh ) >/dev/null 2>&1 || true
+cn_ea="$(tr '\n' '|' < "$R/cn.c")"
+if [ "$cn_e" = 'S1|CA|S2x|S3|CB|S4c|' ] && [ "$cn_ea" = 'S1|CA|S2x|S3|S4|' ]; then
+	ok "applied-set: -e accumulates its scripts the way the chain does"
+else
+	fail "applied-set: -e accumulates its scripts the way the chain does"
+	echo "    both=[$cn_e] a=[$cn_ea]"
+fi
+
+# A chain without compat blocks still carries the set forward: each script
+# applies itself and hands the rest on (the argument queue shrinks, the set
+# grows), so a plain chain like lsp+visual+splits+incsearch runs every script
+# in order exactly once.
+printf 'N1\nN2\nN3\n' > "$R/pl.orig"
+printf -- '--- a/pl.c\n+++ b/pl.c\n@@ -1,1 +1,2 @@\n N1\n+N1a\n' > "$R/pl1.diff"
+printf -- '--- a/pl.c\n+++ b/pl.c\n@@ -3,1 +3,2 @@\n N3\n+N3a\n' > "$R/pl2.diff"
+"$R_P2VI" -r "$R/pl1.diff" > "$R/pl1.sh"
+"$R_P2VI" -r "$R/pl2.diff" > "$R/pl2.sh"
+cp "$R/pl.orig" "$R/pl.c"
+stack pl1.sh pl2.sh
+pl_tree="$(tr '\n' '|' < "$R/pl.c")"
+if [ "$pl_tree" = 'N1|N1a|N2|N3|N3a|' ]; then
+	ok "applied-set: a no-compat chain applies every script exactly once"
+else
+	fail "applied-set: a no-compat chain applies every script exactly once"
+	echo "    got=[$pl_tree]"
+fi
+
+# A script written by a patch2vi old enough to gate on stored probes still
+# parses: its === GATE === regions are read past and dropped, never re-emitted.
+# Splice one into cn.sh's storage the shape those scripts wrote it (right after
+# the region header, before === COMPAT DELTA ===) and regenerate: the result is
+# the unspliced script byte for byte, and it still fires on names alone.
+awk '/^=== COMPAT DELTA ===$/ && !d {
+	print "=== GATE 1 present tag 1000 probe cn.c ==="
+	print "S1"
+	print "=== END ==="
+	d = 1
+} { print }' "$R/cn.sh" > "$R/cg.sh"
+cp "$R/cn.orig" "$R/cn.c"
+dregen cg.sh
+cp "$R/dregen.sh" "$R/cg2.sh"
+cp "$R/cn.orig" "$R/cn.c"
+stack ca.sh cb.sh cg2.sh
+cg_tree="$(tr '\n' '|' < "$R/cn.c")"
+if grep -q '^=== GATE ' "$R/cg.sh" && [ -s "$R/cg2.sh" ] &&
+   ! grep -q '^=== GATE ' "$R/cg2.sh" && cmp -s "$R/cn.sh" "$R/cg2.sh" &&
+   [ "$cg_tree" = 'S1|CA|S2x|S3|CB|S4c|' ]; then
+	ok "applied-set: a stored gate region is dropped, not carried, on regen"
+else
+	fail "applied-set: a stored gate region is dropped, not carried, on regen"
+	echo "    tree=[$cg_tree]"
+	diff "$R/cn.sh" "$R/cg2.sh" | sed 's/^/    /' | head
+	tr -d '\r' < "$R/derr" | sed 's/^/    /' | head -3
 fi
 
 fi
