@@ -8070,7 +8070,7 @@ static int read_delta_sections(FILE *in)
  */
 static void emit_compat_tail(void)
 {
-	printf("if [ $# -gt 0 ]; then\n");
+	printf("\nif [ $# -gt 0 ]; then\n");
 	printf("    export P2VI_PATCH=\"$P2VI_PATCH ${0##*/}\"\n");
 	printf("    next=$1\n");
 	printf("    shift\n");
