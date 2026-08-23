@@ -8071,12 +8071,14 @@ static int read_delta_sections(FILE *in)
 static void emit_compat_tail(void)
 {
 	printf("if [ $# -gt 0 ]; then\n");
-	printf("    P2VI_PATCH=\"$P2VI_PATCH ${0##*/}\"\n");
-	printf("    export P2VI_PATCH\n");
+	printf("    export P2VI_PATCH=\"$P2VI_PATCH ${0##*/}\"\n");
 	printf("    next=$1\n");
 	printf("    shift\n");
-	/* an absolute argument names a script wherever ./ cannot reach it */
-	printf("    case $next in /*) \"$next\" \"$@\" ;; *) \"./$next\" \"$@\" ;; esac\n");
+	/* an argument that already carries a path is named as it stands,
+	 * wherever ./ cannot reach it; only a bare name, which the shell would
+	 * hunt down $PATH, is the one that has to be pinned to this directory */
+	printf("    case $next in /*|./*|../*) \"$next\" \"$@\" ;;"
+	       " *) \"./$next\" \"$@\" ;; esac\n");
 	printf("fi\n");
 }
 
