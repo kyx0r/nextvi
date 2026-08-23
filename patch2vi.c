@@ -5540,10 +5540,11 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			 * register emit_compat_flags writes, and every src= that
 			 * has to be in the applied set for it to reach 1. Each
 			 * origin carries the "src=" the label leaves off its
-			 * first, so the fields read alike and grep alike. */
+			 * first, so the fields read alike and grep alike. Every
+			 * block is post, so nothing says so. */
 			char **fields;
 			int nf = compat_src_fields(s->cb, &fields);
-			printf("# Compat (post) f%d", REG_FLAG_BASE + s->flagk);
+			printf("# Compat f%d", REG_FLAG_BASE + s->flagk);
 			for (int k = 0; k < nf; k++) {
 				printf(" src=%s", fields[k]);
 				free(fields[k]);
