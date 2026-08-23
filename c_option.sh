@@ -352,11 +352,10 @@ extern const int conf_mode;
 '\''1s/n\)/n, char** cmds, int cmdnum)/??!219reg vi.h:488:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
 if [ $# -gt 0 ]; then
-    P2VI_PATCH="$P2VI_PATCH ${0##*/}"
-    export P2VI_PATCH
+    export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1
     shift
-    case $next in /*) "$next" "$@" ;; *) "./$next" "$@" ;; esac
+    case $next in /*|./*|../*) "$next" "$@" ;; *) "./$next" "$@" ;; esac
 fi
 
 exit 0

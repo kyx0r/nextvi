@@ -890,11 +890,10 @@ static int vi_change\(int r1, int o1, int r2, int o2, int lnmode\)
 ??!219reg vi.c:1556:m102sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' 'vi.c' "$P2VIF"
 if [ $# -gt 0 ]; then
-    P2VI_PATCH="$P2VI_PATCH ${0##*/}"
-    export P2VI_PATCH
+    export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1
     shift
-    case $next in /*) "$next" "$@" ;; *) "./$next" "$@" ;; esac
+    case $next in /*|./*|../*) "$next" "$@" ;; *) "./$next" "$@" ;; esac
 fi
 
 exit 0

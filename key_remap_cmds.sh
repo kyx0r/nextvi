@@ -875,11 +875,10 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);9??
 ??!219reg vi.h:476:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF"
 if [ $# -gt 0 ]; then
-    P2VI_PATCH="$P2VI_PATCH ${0##*/}"
-    export P2VI_PATCH
+    export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1
     shift
-    case $next in /*) "$next" "$@" ;; *) "./$next" "$@" ;; esac
+    case $next in /*|./*|../*) "$next" "$@" ;; *) "./$next" "$@" ;; esac
 fi
 
 exit 0

@@ -6384,11 +6384,10 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 '\''3s/t/scr/??!219reg vi.c:568:m32sc %? %@2142sc!p compat applied: src=lsp.sh src=visual.sh src=splits.sh' > "$P2VIF".5
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".4 "$P2VIF".5 "$P2VIF".d
 if [ $# -gt 0 ]; then
-    P2VI_PATCH="$P2VI_PATCH ${0##*/}"
-    export P2VI_PATCH
+    export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1
     shift
-    case $next in /*) "$next" "$@" ;; *) "./$next" "$@" ;; esac
+    case $next in /*|./*|../*) "$next" "$@" ;; *) "./$next" "$@" ;; esac
 fi
 
 exit 0

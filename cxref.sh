@@ -1041,11 +1041,10 @@ static int xref_refresh(void)
 ??!219reg vi.c:2239:m22sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".2
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
 if [ $# -gt 0 ]; then
-    P2VI_PATCH="$P2VI_PATCH ${0##*/}"
-    export P2VI_PATCH
+    export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
     next=$1
     shift
-    case $next in /*) "$next" "$@" ;; *) "./$next" "$@" ;; esac
+    case $next in /*|./*|../*) "$next" "$@" ;; *) "./$next" "$@" ;; esac
 fi
 
 exit 0
