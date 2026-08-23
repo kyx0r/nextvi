@@ -574,7 +574,7 @@ extern int xquit;9??0?
 1;4;7;8;9??!219reg vi.h:4282sc %? %@2132sc!0?
 '\''1i extern int xtc;
 ??!219reg vi.h:428:m12sc %? %@2142sc!' > "$P2VIF".0
-# Compat f231 src=detect_indent.sh
+# Compat 231 src=detect_indent.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 				pre--;
 			}
@@ -727,7 +727,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 				continue;
 ??!219reg led.c:573:m22sc %? %@2142sc!0?
 '\''3,#+26d??!219reg led.c:755:m32sc %? %@2142sc!p compat applied: src=detect_indent.sh' > "$P2VIF".1
-# Compat f232 src=incsearch.sh
+# Compat 232 src=incsearch.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
 		noredraw:
@@ -808,7 +808,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 				break;
 ??!219reg led.c:742:m22sc %? %@2142sc!0?
 '\''3d??!219reg led.c:771:m32sc %? %@2142sc!p compat applied: src=incsearch.sh' > "$P2VIF".2
-# Compat f233 src=arrowkeys_insert.sh
+# Compat 233 src=arrowkeys_insert.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 						page = led_complist\(compsb, page\);
 						term_pos\(0, 0\);
@@ -835,7 +835,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 5??-1m 1220reg p OK led.c:823:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg led.c:8232sc %? %@2132sc!0?
 '\''1s/f\)/f, 1)/??!219reg led.c:823:m12sc %? %@2142sc!p compat applied: src=arrowkeys_insert.sh' > "$P2VIF".3
-# Compat f234 src=incsearch.sh src=detect_indent.sh
+# Compat 234 src=incsearch.sh src=detect_indent.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 				pre--;
 			}
@@ -891,7 +891,7 @@ fi
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=detect_indent.sh ===
+=== PATCH2VI COMPAT 231 src=detect_indent.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -967,7 +967,7 @@ exit 0
  				return c;
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=incsearch.sh ===
+=== PATCH2VI COMPAT 232 src=incsearch.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -1004,7 +1004,7 @@ exit 0
  		}
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=arrowkeys_insert.sh ===
+=== PATCH2VI COMPAT 233 src=arrowkeys_insert.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -1021,7 +1021,7 @@ exit 0
  					term_clean();
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=incsearch.sh src=detect_indent.sh ===
+=== PATCH2VI COMPAT 234 src=incsearch.sh src=detect_indent.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===

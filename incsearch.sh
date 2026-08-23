@@ -441,7 +441,7 @@ extern rset \*fsincl;9??0?
 '\''1i extern const int conf_hlmat;
 extern const int conf_hlmatc;
 ??!219reg vi.h:541:m12sc %? %@2142sc!' > "$P2VIF".0
-# Compat f231 src=rstr.sh
+# Compat 231 src=rstr.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f>    cursor is given conf_hlmatc instead of conf_hlmat attributes \*/
 static void vi_isearchhl\(void\)
@@ -549,7 +549,7 @@ static void vi_isearchhl\(void\)
 					&& lbuf_len(xb)) {
 ??!219reg vi.c:379:m32sc %? %@2142sc!0?
 '\''4s/et/tr/??!219reg vi.c:404:m42sc %? %@2142sc!p compat applied: src=rstr.sh' > "$P2VIF".1
-# Compat f232 src=splits.sh
+# Compat 232 src=splits.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 	int offs\[xkwdrs->nsubc];
 	int row, off, beg, end, flg, i, n;
@@ -646,7 +646,7 @@ fi
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=rstr.sh ===
+=== PATCH2VI COMPAT 231 src=rstr.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -690,7 +690,7 @@ exit 0
  	free(okwd);
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=splits.sh ===
+=== PATCH2VI COMPAT 232 src=splits.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===

@@ -99,7 +99,7 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 			return 0;
 		break;
 ??!219reg vi.c:527:m12sc %? %@2142sc!' > "$P2VIF".0
-# Compat f231 src=visual.sh
+# Compat 231 src=visual.sh
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/
 static int vi_vrow;			/\* selection anchor row \*/
@@ -237,7 +237,7 @@ fi
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=visual.sh ===
+=== PATCH2VI COMPAT 231 src=visual.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===

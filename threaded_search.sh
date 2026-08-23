@@ -750,7 +750,7 @@ if \(l == 1\); \\9??0?
 '\''1c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
 ??!219reg vi.h:269:m12sc %? %@2142sc!' > "$P2VIF".0
-# Compat f231 src=rstr.sh
+# Compat 231 src=rstr.sh
 printf '%s\n' '2sc!fr 98b1%ya 98?0?
 %f> struct lsparams
 \{
@@ -912,7 +912,7 @@ fi
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=rstr.sh ===
+=== PATCH2VI COMPAT 231 src=rstr.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===

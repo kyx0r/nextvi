@@ -1211,7 +1211,7 @@ static int vc_visual_op(int cmd)
 '\''25i 		if (vi_visual)
 			vi_mod |= 1;
 ??!219reg vi.c:1800:m252sc %? %@2142sc!' > "$P2VIF".0
-# Compat f231 src=lsp.sh
+# Compat 231 src=lsp.sh
 printf '%s\n' '2sc!fr 98b1%ya 98?0?
 %f> 					ex_command\(cmd\)
 					restore\(xled\)
@@ -1275,7 +1275,7 @@ fi
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=lsp.sh ===
+=== PATCH2VI COMPAT 231 src=lsp.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===

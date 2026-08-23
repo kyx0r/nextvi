@@ -825,7 +825,7 @@ extern int xidt;
 	buf->sw = xsw; \
 	buf->ts = xts; \
 ??!219reg vi.h:472:m42sc %? %@2142sc!' > "$P2VIF".0
-# Compat f231 src=splits.sh
+# Compat 231 src=splits.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 	xtop = b->top; \\
 	xtd = b->td; \\
@@ -861,7 +861,7 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 	xsw = b->sw; \
 	xts = b->ts; \
 ??!219reg vi.h:498:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
-# Compat f232 src=incsearch.sh
+# Compat 232 src=incsearch.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 				pre--;
 			}
@@ -947,7 +947,7 @@ fi
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=splits.sh ===
+=== PATCH2VI COMPAT 231 src=splits.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -968,7 +968,7 @@ exit 0
  	buf->row = xrow; \
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=incsearch.sh ===
+=== PATCH2VI COMPAT 232 src=incsearch.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===

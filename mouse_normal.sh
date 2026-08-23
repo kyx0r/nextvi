@@ -731,7 +731,7 @@ extern int xmouse_col, xmouse_row;
 ??!219reg vi.h:410:m32sc %? %@2142sc!0?
 '\''4i extern int xms;
 ??!219reg vi.h:433:m42sc %? %@2142sc!' > "$P2VIF".0
-# Compat f231 src=linewrap_v2.sh
+# Compat 231 src=linewrap_v2.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 		int r = term_try_mouse\(\);
 		if \(r == 1\) \{
@@ -804,7 +804,7 @@ fi
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=linewrap_v2.sh ===
+=== PATCH2VI COMPAT 231 src=linewrap_v2.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===

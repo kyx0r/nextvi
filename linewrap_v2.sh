@@ -4502,7 +4502,7 @@ int vi_lnrows(char *s);
 int vi_srow(int row);
 int vi_drawline(int row, int trow);
 ??!219reg vi.h:549:m82sc %? %@2142sc!' > "$P2VIF".0
-# Compat f231 src=splits.sh
+# Compat 231 src=splits.sh
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -6050,7 +6050,7 @@ int ren_wrapw\(int lncol\)
 5??-1m 1220reg p OK ren.c:91:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg ren.c:912sc %? %@2132sc!0?
 '\''1s/ x/ curwin ? curwin->w : x/??!219reg ren.c:91:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
-# Compat f232 src=lsp.sh
+# Compat 232 src=lsp.sh
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -6200,7 +6200,7 @@ static int vi_drawrow\(int row, int trow\)
 		vi_drawdiag(diag, dsev, trow, dcol);
 ??!219reg vi.c:467:m42sc %? %@2142sc!0?
 '\''5,#+1d??!219reg vi.c:478:m52sc %? %@2142sc!p compat applied: src=lsp.sh' > "$P2VIF".2
-# Compat f233 src=visual.sh src=splits.sh
+# Compat 233 src=visual.sh src=splits.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
 		memset\(c, '\'' '\'', l1 - \(c - tmp\)\);
@@ -6271,7 +6271,7 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 '\''3i 	vi_visual_attrib(s, row);
 ??!219reg vi.c:529:m32sc %? %@2142sc!0?
 '\''4d??!219reg vi.c:531:m42sc %? %@2142sc!p compat applied: src=visual.sh src=splits.sh' > "$P2VIF".3
-# Compat f234 src=lsp.sh src=visual.sh
+# Compat 234 src=lsp.sh src=visual.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 			vi_drawdiag\(diag, dsev, trow, dcol\);
 		goto done;
@@ -6313,7 +6313,7 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 '\''1i 	vi_visual_attrib(s, row);
 ??!219reg vi.c:515:m12sc %? %@2142sc!0?
 '\''2d??!219reg vi.c:531:m22sc %? %@2142sc!p compat applied: src=lsp.sh src=visual.sh' > "$P2VIF".4
-# Compat f235 src=lsp.sh src=visual.sh src=splits.sh
+# Compat 235 src=lsp.sh src=visual.sh src=splits.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 		restore\(syn_blockhl\)
 		restore\(ftidx\)
@@ -6393,7 +6393,7 @@ fi
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=splits.sh ===
+=== PATCH2VI COMPAT 231 src=splits.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -6910,7 +6910,7 @@ exit 0
  
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=lsp.sh ===
+=== PATCH2VI COMPAT 232 src=lsp.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -6974,7 +6974,7 @@ exit 0
  /* redraw the screen */
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=visual.sh src=splits.sh ===
+=== PATCH2VI COMPAT 233 src=visual.sh src=splits.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -7002,7 +7002,7 @@ exit 0
  	if (attn >= 0)			/* the markers only apply to this line */
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=lsp.sh src=visual.sh ===
+=== PATCH2VI COMPAT 234 src=lsp.sh src=visual.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -7026,7 +7026,7 @@ exit 0
  /* redraw the screen */
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=lsp.sh src=visual.sh src=splits.sh ===
+=== PATCH2VI COMPAT 235 src=lsp.sh src=visual.sh src=splits.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===

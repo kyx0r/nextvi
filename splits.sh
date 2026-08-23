@@ -3910,7 +3910,7 @@ void *win_split(int axis, char *arg);
 	xtd = b->td; \
 	curwin->buf = b; \
 ??!219reg vi.h:462:m42sc %? %@2142sc!' > "$P2VIF".0
-# Compat f231 src=lsp.sh
+# Compat 231 src=lsp.sh
 printf '%s\n' '2sc!fr 98b6%ya 98?0?
 %f> 	if \(xrow < 0\)
 		xrow = 0;
@@ -4072,7 +4072,7 @@ static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)
 1;2??!219reg vi.c:164:m32sc %? %@2142sc!0?
 '\''4s/row - xtop/scrrow/??!219reg vi.c:263:m42sc %? %@2142sc!0?
 '\''5s/row - xtop/scrrow/??!219reg vi.c:270:m52sc %? %@2142sc!vis 2b6wvis 3p compat applied: src=lsp.sh' > "$P2VIF".1
-# Compat f232 src=visual.sh
+# Compat 232 src=visual.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/
 static int vi_vrow;			/\* selection anchor row \*/
@@ -4157,7 +4157,7 @@ fi
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=lsp.sh ===
+=== PATCH2VI COMPAT 231 src=lsp.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -4217,7 +4217,7 @@ exit 0
  /* redraw the screen */
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=visual.sh ===
+=== PATCH2VI COMPAT 232 src=visual.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===

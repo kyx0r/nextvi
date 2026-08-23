@@ -833,7 +833,7 @@ extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 
 ??!219reg vi.h:410:m12sc %? %@2142sc!0?
 '\''2s/3/4/??!219reg vi.h:455:m22sc %? %@2142sc!' > "$P2VIF".0
-# Compat f231 src=grep.sh
+# Compat 231 src=grep.sh
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
 int xdefreg;			/\* ex default register \*/
@@ -977,7 +977,7 @@ extern struct buf \*ex_pbuf;
 1;2;3;4;5??!219reg vi.h:4582sc %? %@2132sc!0?
 '\''1s/3/4/??!219reg vi.h:412:m12sc %? %@2142sc!0?
 '\''2s/4/5/??!219reg vi.h:458:m22sc %? %@2142sc!p compat applied: src=grep.sh' > "$P2VIF".1
-# Compat f232 src=splits.sh
+# Compat 232 src=splits.sh
 printf '%s\n' '2sc!fr 98b1%ya 98?0?
 %f> 	return s;
 }
@@ -1050,7 +1050,7 @@ fi
 
 exit 0
 === PATCH2VI DELTA ===
-=== PATCH2VI COMPAT post src=grep.sh ===
+=== PATCH2VI COMPAT 231 src=grep.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
@@ -1113,7 +1113,7 @@ exit 0
  #define istempbuf(buf) (buf >= tempbufs && buf < tempbufs + LEN(tempbufs))
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT post src=splits.sh ===
+=== PATCH2VI COMPAT 232 src=splits.sh ===
 === COMPAT DELTA ===
 === END ===
 === COMPAT PATCH ===
