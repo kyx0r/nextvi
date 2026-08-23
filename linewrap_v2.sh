@@ -6210,8 +6210,8 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
 		memset\(c, '\'' '\'', l1 - \(c - tmp\)\);
 		c\[l1 - \(c - tmp\)] = '\''\\0'\'';4??0?
-4??+2m 1220reg p OK vi.c:505:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:5052sc %? %@2132sc!0?
+4??+2m 1220reg p OK vi.c:506:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:5062sc %? %@2132sc!0?
 ?0?
 %f+ 		i = vi_rendrow\(s, trow, l1\);
 		led_crender\(s, scrrow, wx \+ l1, xleft, xleft \+ wcols - l1\)
@@ -6223,16 +6223,16 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 		preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 		preserve\(int, ftidx,\)
 		syn_setft\(nn_ft\);2??0?
-2??m 2220reg p OK vi.c:507:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:508:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		led_crender\(s, scrrow, wx \+ l1, xleft, xleft \+ wcols - l1\)$3??0?
-3??m 2220reg p OK vi.c:507:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:508:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^		i = vi_rendrow\(s, trow, l1\);$4??0?
-4??+1m 2220reg p OK vi.c:507:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 2220reg p OK vi.c:508:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 		preserve\(int, ftidx,\)
 		syn_setft\(nn_ft\);5??0?
-5??-1m 2220reg p OK vi.c:507:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:5072sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:508:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:5082sc %? %@2132sc!0?
 ?0?
 %f+ 		restore\(ftidx\)
 		goto done;
@@ -6242,8 +6242,8 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f+ 		restore\(ftidx\)
 		goto done;
 	}4??0?
-4??+2m 3220reg p OK vi.c:528:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:5282sc %? %@2132sc!0?
+4??+2m 3220reg p OK vi.c:529:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:5292sc %? %@2132sc!0?
 ?0?
 %f+ 	i = vi_rendrow\(s, trow, 0\);
 	led_crender\(s, scrrow, wx, xleft, xleft \+ wcols\)
@@ -6255,22 +6255,22 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 	rstate = rstates;
 	done:
 	if \(attn >= 0\)			/\* the markers only apply to this line \*/2??0?
-2??m 4220reg p OK vi.c:530:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.c:531:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	led_crender\(s, scrrow, wx, xleft, xleft \+ wcols\)$3??0?
-3??m 4220reg p OK vi.c:530:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK vi.c:531:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	i = vi_rendrow\(s, trow, 0\);$4??0?
-4??+1m 4220reg p OK vi.c:530:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 4220reg p OK vi.c:531:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	rstate = rstates;
 	done:
 	if \(attn >= 0\)			/\* the markers only apply to this line \*/5??0?
-5??-1m 4220reg p OK vi.c:530:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:5302sc %? %@2132sc!0?
+5??-1m 4220reg p OK vi.c:531:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:5312sc %? %@2132sc!0?
 '\''1i 		vi_visual_attrib(s, row);
-??!219reg vi.c:505:m12sc %? %@2142sc!0?
-'\''2d??!219reg vi.c:507:m22sc %? %@2142sc!0?
+??!219reg vi.c:506:m12sc %? %@2142sc!0?
+'\''2d??!219reg vi.c:508:m22sc %? %@2142sc!0?
 '\''3i 	vi_visual_attrib(s, row);
-??!219reg vi.c:528:m32sc %? %@2142sc!0?
-'\''4d??!219reg vi.c:530:m42sc %? %@2142sc!p compat applied: src=visual.sh src=splits.sh' > "$P2VIF".3
+??!219reg vi.c:529:m32sc %? %@2142sc!0?
+'\''4d??!219reg vi.c:531:m42sc %? %@2142sc!p compat applied: src=visual.sh src=splits.sh' > "$P2VIF".3
 # Compat f234 src=lsp.sh src=visual.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 			vi_drawdiag\(diag, dsev, trow, dcol\);
@@ -6329,19 +6329,19 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 		goto done;
 	}
 	vi_visual_attrib\(s, row\);2??0?
-2??m 1220reg p OK vi.c:558:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:560:a22sc %? %@2152sc!1q0?
 %f> 	vi_visual_attrib\(s, row\);
 			vi_drawdiag\(diag, dsev, trow, dcol\);3??0?
-3??m 1220reg p OK vi.c:558:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK vi.c:560:a32sc %? %@2152sc!1q0?
 %f> 		restore\(syn_blockhl\)
 		restore\(ftidx\)
 		if \(diag && trow >= 0\)4??0?
-4??+3m 1220reg p OK vi.c:558:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:560:a42sc %? %@2152sc!1q0?
 %f> 		goto done;
 	}
 	vi_visual_attrib\(s, row\);5??0?
-5??-2m 1220reg p OK vi.c:558:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:5582sc %? %@2132sc!0?
+5??-2m 1220reg p OK vi.c:560:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:5602sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 	vi_visual_attrib\(s, row\);
@@ -6352,8 +6352,8 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f+ 	}
 	vi_visual_attrib\(s, row\);
 	i = vi_rendrow\(s, trow, 0\);4??0?
-4??+2m 2220reg p OK vi.c:563:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:5632sc %? %@2132sc!0?
+4??+2m 2220reg p OK vi.c:565:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:5652sc %? %@2132sc!0?
 ?0?
 %f+ 	rstate = rstates;
 	if \(diag && trow >= 0\)
@@ -6366,22 +6366,22 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 	done:
 	if \(attn >= 0\)			/\* the markers only apply to this line \*/
 		sbuf_cut\(led_attsb, attn\)2??0?
-2??m 3220reg p OK vi.c:566:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK vi.c:568:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		vi_drawdiag\(diag, dsev, trow, dcol\);$3??0?
-3??m 3220reg p OK vi.c:566:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK vi.c:568:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	rstate = rstates;
 	if \(diag && trow >= 0\)4??0?
-4??+2m 3220reg p OK vi.c:566:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.c:568:a42sc %? %@2152sc!1q0?
 %f+ 	done:
 	if \(attn >= 0\)			/\* the markers only apply to this line \*/
 		sbuf_cut\(led_attsb, attn\)5??0?
-5??-1m 3220reg p OK vi.c:566:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:5662sc %? %@2132sc!0?
+5??-1m 3220reg p OK vi.c:568:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:5682sc %? %@2132sc!0?
 '\''1,#+1c 			vi_drawdiag(diag, dsev, scrrow, dcol);
-??!219reg vi.c:558:m12sc %? %@2142sc!0?
+??!219reg vi.c:560:m12sc %? %@2142sc!0?
 '\''2i 	int dcol = rstate->cmax - xleft;
-??!219reg vi.c:563:m22sc %? %@2142sc!0?
-'\''3s/t/scr/??!219reg vi.c:566:m32sc %? %@2142sc!p compat applied: src=lsp.sh src=visual.sh src=splits.sh' > "$P2VIF".5
+??!219reg vi.c:565:m22sc %? %@2142sc!0?
+'\''3s/t/scr/??!219reg vi.c:568:m32sc %? %@2142sc!p compat applied: src=lsp.sh src=visual.sh src=splits.sh' > "$P2VIF".5
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".4 "$P2VIF".5 "$P2VIF".d
 if [ $# -gt 0 ]; then
     P2VI_PATCH="$P2VI_PATCH ${0##*/}"
@@ -6980,7 +6980,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -503,8 +503,8 @@
+@@ -504,8 +504,8 @@
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -6990,7 +6990,7 @@ exit 0
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
  		syn_setft(nn_ft);
-@@ -526,8 +526,8 @@
+@@ -527,8 +527,8 @@
  		restore(ftidx)
  		goto done;
  	}
@@ -7032,7 +7032,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -555,15 +555,15 @@
+@@ -557,15 +557,15 @@
  		restore(syn_blockhl)
  		restore(ftidx)
  		if (diag && trow >= 0)
