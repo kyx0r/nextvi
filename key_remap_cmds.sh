@@ -898,7 +898,7 @@ index 70157040..ac3a2fe2 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 42451587..dd1c27b3 100644
+index 0dd39b6e..f094cb08 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -973,7 +973,7 @@ index 42451587..dd1c27b3 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 9eb8e85b..bf139849 100644
+index e5459d93..2756c922 100644
 --- a/led.c
 +++ b/led.c
 @@ -431,7 +431,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -986,7 +986,7 @@ index 9eb8e85b..bf139849 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 76778809..b741741d 100644
+index 2f4ccc2b..ba517a6e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -262,7 +262,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -1085,7 +1085,7 @@ index 76778809..b741741d 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index ca8ee527..fc3b0100 100644
+index 254db3be..074b7761 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -474,6 +474,7 @@ extern struct buf *ex_pbuf;

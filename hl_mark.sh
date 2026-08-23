@@ -241,7 +241,7 @@ index 70157040..58ee4e39 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 42451587..f8a3fd81 100644
+index 0dd39b6e..d8c6d0a0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -269,7 +269,7 @@ index 42451587..f8a3fd81 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 76778809..5d12d179 100644
+index 2f4ccc2b..4fc1c203 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1779,6 +1779,21 @@ void vi(int init)

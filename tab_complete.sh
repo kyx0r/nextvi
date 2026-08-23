@@ -1318,7 +1318,7 @@ index 70157040..c0453e42 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 42451587..5a8c69b1 100644
+index 0dd39b6e..08084983 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -15,6 +15,7 @@ int xts = 8;			/* number of spaces for tab */
@@ -1347,7 +1347,7 @@ index 42451587..5a8c69b1 100644
  	EO(hll),
  	EO(hlw),
 diff --git a/led.c b/led.c
-index 9eb8e85b..91315d62 100644
+index e5459d93..ddf486cc 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,5 +1,6 @@
@@ -1524,7 +1524,7 @@ index 9eb8e85b..91315d62 100644
 +	}
  }
 diff --git a/vi.h b/vi.h
-index ca8ee527..068f68b2 100644
+index 254db3be..9e504b96 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -426,6 +426,7 @@ extern int xts;

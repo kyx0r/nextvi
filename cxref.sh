@@ -1313,7 +1313,7 @@ else if (xrow >= xtop + curwin->h) \
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 42451587..379f8b1d 100644
+index 0dd39b6e..1ee465d1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -1326,7 +1326,7 @@ index 42451587..379f8b1d 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 76778809..cb697e89 100644
+index 2f4ccc2b..e95f987d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -484,6 +484,464 @@ static int fs_searchback(int cnt, int *row, int *off)
@@ -1859,7 +1859,7 @@ index 76778809..cb697e89 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index ca8ee527..d6ff4732 100644
+index 254db3be..41e3ef9c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -408,6 +408,9 @@ struct buf {

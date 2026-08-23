@@ -755,13 +755,13 @@ char \*led_read\(int \*kmap, int c\)
 					goto pac_;
 				i = is->sug_pt >= 0 \? is->sug_pt : led_lastword\(sb->s \+ pre\) \+ pre;5??0?
 5??-1m 5220reg p OK led.c:557:a52sc %? %@2152sc!1q0?
-%f+ ............x.>. .\)..
-	..	.a..;
-	...sb..........\)
-..	.......= .r.w......1.
-........i.->...\)
-.	....... p....
-...	i.. ......g..t .=.....i...s....t.. ..d_...t....\(.b-...\+....... ....6??0?
+%f+ ....f...._max >= ....
+		..p..:;
+..		..u..n..\(...
+	..	.n... =.cr......p..;
+...	...........\)
+..		..o.o...c..
+		....=.i.-.s..... .. ....is..su...... led_........\(....s .............6??0?
 6??+3m 5220reg p OK led.c:557:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			if \(ai_max >= 0\) \{.*?
 				pac:;.*?
@@ -7782,7 +7782,7 @@ index 70157040..04ae3307 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 42451587..b124d151 100644
+index 0dd39b6e..182baae2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -18,6 +18,8 @@ int xpac;			/* print autocomplete options */
@@ -7866,7 +7866,7 @@ index 42451587..b124d151 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
 diff --git a/led.c b/led.c
-index 9eb8e85b..fc259c36 100644
+index e5459d93..24cb78b4 100644
 --- a/led.c
 +++ b/led.c
 @@ -277,6 +277,12 @@ static int led_lastword(char *s)
@@ -8043,7 +8043,7 @@ index 25b0a4fa..76bcb87c 100644
  		for (n = 0; n < max && (l = uc_len(ss)); n++)
  			ss += l;
 diff --git a/vi.c b/vi.c
-index 76778809..f42a0397 100644
+index 2f4ccc2b..9552fd15 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -111,6 +111,181 @@ static int vi_nextcol(char *ln, int dir, int *off)
@@ -8809,7 +8809,7 @@ index 76778809..f42a0397 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index ca8ee527..fef2f8d8 100644
+index 254db3be..16c2f43d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -217,6 +217,7 @@ int ren_pos(char *s, int off);

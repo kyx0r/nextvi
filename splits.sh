@@ -945,13 +945,13 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 			cs \+= nl\+!!cs\[nl];
 			continue;5??0?
 5??-1m 9220reg p OK led.c:390:a52sc %? %@2152sc!1q0?
-%f+ ..	.....m.m\(c.............s.....
-....buf.....l...\)
-.........-.....N..L.
-.....d.......r\(.b-.s...,....l.......l.f.,..l..t.. ..o......._ln....
-....r........\).
-..	.s... ....!...n...
-	..c.......;6??0?
+%f+ ......f......b............s....\)
+	..s..f....4.c..
+.	...t...-.... ....;
+.	.l......nd.r...->.. r..vi.ln.......e... .l... ..xc.l. -..i.l..o..
+	..f..e\(....s\).
+....s..=......c...l..
+	..c....n..;6??0?
 6??+3m 9220reg p OK led.c:390:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\).*?
 			sbuf_nul4\(cb\).*?
@@ -4430,7 +4430,7 @@ index 70157040..8f1686bf 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 42451587..26e39a8f 100644
+index 0dd39b6e..ac7aae64 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -4716,7 +4716,7 @@ index 42451587..26e39a8f 100644
  	do {
  		xmpt = 0;
 diff --git a/led.c b/led.c
-index 9eb8e85b..27ea50a2 100644
+index e5459d93..100e8406 100644
 --- a/led.c
 +++ b/led.c
 @@ -92,7 +92,7 @@ static char *kmap_map(int kmap, int c)
@@ -4864,7 +4864,7 @@ index c8861702..edd7ec84 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 76778809..660fe1fb 100644
+index 2f4ccc2b..e2319864 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
@@ -5352,7 +5352,7 @@ index 76778809..660fe1fb 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index ca8ee527..2bfcb247 100644
+index 254db3be..6ecf0853 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -325,6 +325,7 @@ void term_suspend(void);

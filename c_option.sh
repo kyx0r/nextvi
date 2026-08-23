@@ -362,7 +362,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 42451587..1abcdf7f 100644
+index 0dd39b6e..8861637b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1913,7 +1913,7 @@ void ex(void)
@@ -382,7 +382,7 @@ index 42451587..1abcdf7f 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 76778809..e9d3446c 100644
+index 2f4ccc2b..0863374f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1856,7 +1856,8 @@ static void setup_signals(void)
@@ -428,7 +428,7 @@ index 76778809..e9d3446c 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index ca8ee527..081c5b90 100644
+index 254db3be..88a3ad8e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -485,7 +485,7 @@ void *ex_exec(const char *ln);

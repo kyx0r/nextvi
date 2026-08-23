@@ -1063,7 +1063,7 @@ index 05822fe7..9f2d8b42 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 18170218..2df725d6 100644
+index f0e754e6..ab9f156b 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -491,24 +491,32 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -1200,7 +1200,7 @@ index 18170218..2df725d6 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index 22319b65..5eff4859 100644
+index 3b2953d7..7a47c2ae 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -406,7 +406,7 @@ static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg)
@@ -1243,7 +1243,7 @@ index b1002c4e..d80628bb 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 76778809..9e7cade8 100644
+index 2f4ccc2b..b86fbafb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,7 @@
@@ -1255,7 +1255,7 @@ index 76778809..9e7cade8 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index ca8ee527..17ab2798 100644
+index 254db3be..b93fb06e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -266,7 +266,8 @@ int syn_addhl(char *reg, int id);

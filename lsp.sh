@@ -2871,7 +2871,7 @@ index 70157040..2164933c 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index 42451587..7889d1b7 100644
+index 0dd39b6e..9285c303 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -431,6 +431,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -3413,7 +3413,7 @@ index 00000000..8ac14c1b
 +
 +#endif /* JSMN_H */
 diff --git a/lbuf.c b/lbuf.c
-index 18170218..4720e9e5 100644
+index f0e754e6..de948ad6 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -127,6 +127,7 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
@@ -3426,7 +3426,7 @@ index 18170218..4720e9e5 100644
  	for (i = 0; i < lb->mark_n; i++) {	/* updating marks */
 diff --git a/lsp.c b/lsp.c
 new file mode 100644
-index 00000000..da2558e7
+index 00000000..106bec2b
 --- /dev/null
 +++ b/lsp.c
 @@ -0,0 +1,1175 @@
@@ -4687,7 +4687,7 @@ index c8861702..52dd97c9 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 76778809..f49d3e06 100644
+index 2f4ccc2b..74874512 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -4826,7 +4826,7 @@ index 76778809..f49d3e06 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 diff --git a/vi.h b/vi.h
-index ca8ee527..35d89cdd 100644
+index 254db3be..33e5ce87 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,7 @@ struct lbuf {

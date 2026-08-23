@@ -377,7 +377,7 @@ static int vc_insert(int cmd);
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 76778809..a40a75b1 100644
+index 2f4ccc2b..bd701726 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,6 +525,41 @@ static int vi_region(int cmd, int *row, int *off)

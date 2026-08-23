@@ -398,7 +398,7 @@ index 70157040..45b62f98 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 42451587..b0908a91 100644
+index 0dd39b6e..bf45f3ce 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -454,7 +454,7 @@ index 42451587..b0908a91 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index 76778809..ad660d3f 100644
+index 2f4ccc2b..55bf9344 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1877,11 +1877,13 @@ int main(int argc, char *argv[])
@@ -473,7 +473,7 @@ index 76778809..ad660d3f 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index ca8ee527..4c994a9b 100644
+index 254db3be..ed6f7eec 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -407,6 +407,7 @@ struct buf {

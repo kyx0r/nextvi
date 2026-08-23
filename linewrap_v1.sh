@@ -1407,7 +1407,7 @@ index 70157040..04ae3307 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 42451587..8e3341c8 100644
+index 0dd39b6e..d8f3068d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -1494,7 +1494,7 @@ index 42451587..8e3341c8 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
 diff --git a/lbuf.c b/lbuf.c
-index 18170218..e6053a53 100644
+index f0e754e6..972da4b3 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -1,3 +1,5 @@
@@ -1687,7 +1687,7 @@ index 25b0a4fa..a0666ffe 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index 76778809..c3da412e 100644
+index 2f4ccc2b..61fc7adb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,24 @@ static void vi_drawrow(int row)
@@ -1725,7 +1725,7 @@ index 76778809..c3da412e 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index ca8ee527..ded18f27 100644
+index 254db3be..9f8a5629 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -129,10 +129,12 @@ struct lopt {

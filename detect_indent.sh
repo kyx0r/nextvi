@@ -1112,7 +1112,7 @@ index 70157040..f26bca89 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 42451587..3e7fee0a 100644
+index 0dd39b6e..2325d957 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -1241,7 +1241,7 @@ index 42451587..3e7fee0a 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/led.c b/led.c
-index 9eb8e85b..09420a89 100644
+index e5459d93..c6306ccd 100644
 --- a/led.c
 +++ b/led.c
 @@ -454,18 +454,37 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -1286,7 +1286,7 @@ index 9eb8e85b..09420a89 100644
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
-index 76778809..b6d39d41 100644
+index 2f4ccc2b..61562dcf 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -934,9 +934,19 @@ static void vi_shift(int r1, int r2, int dir, int count)
@@ -1313,7 +1313,7 @@ index 76778809..b6d39d41 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index ca8ee527..f98f2f82 100644
+index 254db3be..b73ee080 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -407,6 +407,9 @@ struct buf {

@@ -78,11 +78,11 @@ static void led_printparts\(sbuf \*sb, int pre, int ps,4??0?
 5??-1m 2220reg p OK led.c:281:a52sc %? %@2152sc!1q0?
 %f+ }
 
-..a..c..............t.ar.s\(sb.f..s.,..n.....,......s,
-........o..,..nt....... ........f.
+...t......d .........p..t.........b,..n.......int.ps.
+...a..\*p........ ...t.......\*.o...
 \{
-.....!.l... .
-...b..._n...\(...6??0?
+... \(..l.d. .
+....u....l...b.6??0?
 6??+3m 2220reg p OK led.c:281:a62sc %? %@2152sc!1q0?
 grp 1%f+ }.*?
 .*?
@@ -900,7 +900,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 9eb8e85b..3b3964f3 100644
+index e5459d93..dd9a0334 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -1060,7 +1060,7 @@ index 9eb8e85b..3b3964f3 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 76778809..736561aa 100644
+index 2f4ccc2b..dbd6c2cc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -835,6 +835,8 @@ static int vi_indents(char *ln)

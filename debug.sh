@@ -290,7 +290,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 42451587..5fea8db9 100644
+index 0dd39b6e..b7082bbf 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1913,6 +1913,22 @@ void ex(void)
@@ -317,7 +317,7 @@ index 42451587..5fea8db9 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/regex.c b/regex.c
-index 22319b65..2022ab54 100644
+index 3b2953d7..f089c0c2 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -643,6 +643,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
@@ -365,7 +365,7 @@ index 25b0a4fa..a5cf8aae 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 76778809..e6e771af 100644
+index 2f4ccc2b..878848e8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1897,6 +1897,12 @@ int main(int argc, char *argv[])
@@ -382,7 +382,7 @@ index 76778809..e6e771af 100644
  		term_scrl()
  	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index ca8ee527..9d3e9bda 100644
+index 254db3be..54f1ddbf 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,6 +219,7 @@ int ren_noeol(char *s, int p);

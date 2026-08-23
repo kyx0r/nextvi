@@ -750,7 +750,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 42451587..363d3113 100644
+index 0dd39b6e..399c5a27 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -413,7 +413,9 @@ int ex_edit(const char *path, int len)
@@ -896,7 +896,7 @@ index c8861702..8087b9af 100644
  	if (!ibuf) {
  		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index 76778809..5bd0665e 100644
+index 2f4ccc2b..3bb83d24 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1852,6 +1852,7 @@ static void setup_signals(void)
@@ -918,7 +918,7 @@ index 76778809..5bd0665e 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index ca8ee527..c5597d2d 100644
+index 254db3be..06aa3d04 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -544,6 +544,7 @@ int conf_kmapfind(char *name);

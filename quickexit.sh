@@ -390,7 +390,7 @@ index 70157040..9a22c860 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 42451587..977e274e 100644
+index 0dd39b6e..9055b282 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -415,7 +415,7 @@ index 42451587..977e274e 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 9eb8e85b..7152a2c9 100644
+index e5459d93..97404b3c 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -450,7 +450,7 @@ index 9eb8e85b..7152a2c9 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index 76778809..c1c68813 100644
+index 2f4ccc2b..6c4368df 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -471,7 +471,7 @@ index 76778809..c1c68813 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index ca8ee527..e913cfd6 100644
+index 254db3be..3d3a6203 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -368,6 +368,7 @@ typedef struct {

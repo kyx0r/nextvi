@@ -831,7 +831,7 @@ index 70157040..58d274b9 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index 9eb8e85b..fcc29276 100644
+index e5459d93..de1accb4 100644
 --- a/led.c
 +++ b/led.c
 @@ -434,6 +434,11 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -855,7 +855,7 @@ index 9eb8e85b..fcc29276 100644
  				sbuf_str(sb, cs)
  		}
 diff --git a/vi.c b/vi.c
-index 76778809..bf0b5bbd 100644
+index 2f4ccc2b..d1e869a6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -307,13 +307,117 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
@@ -989,7 +989,7 @@ index 76778809..bf0b5bbd 100644
  				msg ? dir : -1, 1, row, off)) {
  			if (msg) {
 diff --git a/vi.h b/vi.h
-index ca8ee527..8625ff20 100644
+index 254db3be..0800bc7c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -539,6 +539,8 @@ extern struct placeholder _ph[];

@@ -261,11 +261,11 @@ static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\).*?
 4??+3m 5220reg p OK ex.c:475:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(rs\) \{$5??0?
 5??-1m 5220reg p OK ex.c:475:a52sc %? %@2152sc!fr 981qfr 980?
-%f+ 	wh....... .
-...bu....l.\(..z..
-		..= 0.
-.	r......e..................i..\?.....\|.R.._..A...:......
-...f.......6??0?
+%f+ ....l.......
+....uf..u.......
+	.... .;
+..r.........s...e..u...>.,..i..\?.f.. . .E.....S.........
+	..........6??0?
 6??+3m 5220reg p OK ex.c:475:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	while \(1\) \{.*?
 		sbuf_nul\(fuzz\).*?
@@ -2206,7 +2206,7 @@ exit 0
 === PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 42451587..eb9000d9 100644
+index 0dd39b6e..7e71e4fa 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,7 +37,7 @@ int xsep = ':';			/* ex command separator */
@@ -2438,7 +2438,7 @@ index 42451587..eb9000d9 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 18170218..532aee15 100644
+index f0e754e6..9350a75b 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -491,11 +491,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -2465,7 +2465,7 @@ index 18170218..532aee15 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 22319b65..13f60830 100644
+index 3b2953d7..6c5d550d 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -749,3 +749,142 @@ int rset_match(rset *rs, char *s, int flg)
@@ -2612,7 +2612,7 @@ index 22319b65..13f60830 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 76778809..3ef0f438 100644
+index 2f4ccc2b..55fc2857 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -325,7 +325,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
@@ -2643,7 +2643,7 @@ index 76778809..3ef0f438 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index ca8ee527..eccd248f 100644
+index 254db3be..d32cced5 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -110,12 +110,24 @@ typedef struct {

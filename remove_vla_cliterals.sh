@@ -1882,7 +1882,7 @@ index 70157040..85855c7f 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 42451587..0fb9d719 100644
+index 0dd39b6e..3a99197a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -578,13 +578,16 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -1935,7 +1935,7 @@ index 42451587..0fb9d719 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 18170218..4ef6f911 100644
+index f0e754e6..8be292d1 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -495,7 +495,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
@@ -1967,7 +1967,7 @@ index 18170218..4ef6f911 100644
  }
  
 diff --git a/led.c b/led.c
-index 9eb8e85b..e1d9f9a1 100644
+index e5459d93..d5785672 100644
 --- a/led.c
 +++ b/led.c
 @@ -45,7 +45,7 @@ static void file_index(struct lbuf *buf)
@@ -2023,7 +2023,7 @@ index 9eb8e85b..e1d9f9a1 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 22319b65..0aa427fb 100644
+index 3b2953d7..e7bafb5c 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -406,7 +406,15 @@ static int reg_comp(rcode *prog, char *re, int nsubc, int laidx, int flg)
@@ -2154,7 +2154,7 @@ index 25b0a4fa..17511749 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 76778809..1adb2a6f 100644
+index 2f4ccc2b..b04b68fa 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -2234,7 +2234,7 @@ index 76778809..1adb2a6f 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index ca8ee527..28a6a26b 100644
+index 254db3be..ff0f1d2c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -507,7 +507,7 @@ extern const int ftslen;
