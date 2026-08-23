@@ -5345,6 +5345,9 @@ static void emit_compat_flags(sbuf *out, section_t *secs, int nsec)
 			continue;
 		reg = REG_FLAG_BASE + secs[i].flagk;
 		nf = compat_src_fields(secs[i].cb, &fields);
+		/* one source line per block: its default, its scans, its arm */
+		EMIT_LB(out);
+		EMIT_SEP(out);
 		sb_printf(out, "%dreg 0", reg);
 		EMIT_SEP(out);
 		for (int k = 0; k < nf; k++) {
@@ -5365,6 +5368,8 @@ static void emit_compat_flags(sbuf *out, section_t *secs, int nsec)
 		sb_printf(out, "%dreg 1", REG_FLAG_ANY);
 		EMIT_SEP(out);
 	}
+	EMIT_LB(out);
+	EMIT_SEP(out);
 	sb_str(out, "fr 98");
 	EMIT_SEP(out);
 }
@@ -5531,8 +5536,20 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		section_t *s = &secs[i];
 		int sv_rel = 0;
 		if (s->cb) {
-			printf("# Compat (post) from %s\n",
-			       s->cb->origin ? s->cb->origin : "");
+			/* the block's gate, spelled out for a reader: the flag
+			 * register emit_compat_flags writes, and every src= that
+			 * has to be in the applied set for it to reach 1. Each
+			 * origin carries the "src=" the label leaves off its
+			 * first, so the fields read alike and grep alike. */
+			char **fields;
+			int nf = compat_src_fields(s->cb, &fields);
+			printf("# Compat (post) f%d", REG_FLAG_BASE + s->flagk);
+			for (int k = 0; k < nf; k++) {
+				printf(" src=%s", fields[k]);
+				free(fields[k]);
+			}
+			free(fields);
+			printf("\n");
 			compat_win_enter(&sv_rel);
 			if (!interactive_mode)
 				inject_deltas(s->files, s->nf, &s->cb->deltas);
