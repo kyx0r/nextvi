@@ -1197,14 +1197,15 @@ run_patches() (
 # reindex only splices a fresh diff into the patch section and leaves the body
 # alone, this re-emits the body from that diff as well. Compat blocks ride along
 # as stored, they are not re-derived - that is recompat's job.
-# With arg 1, do not stop in the editor or let it draw, and squash all commits
-# back into a single staged change at the end.
+# By default, do not stop in the editor or let it draw, and squash all commits
+# back into a single staged change at the end. With arg 1, stop in the editor
+# and keep the per-script commits.
 # Usage: regen_all [1]
 regen_all() (
 	set -e
 	IFS=$P2VIFS
 	n=0
-	[ -n "$1" ] && p2v_batch
+	[ -z "$1" ] && p2v_batch
 	for s in $(p2v_scripts)
 	do
 		"./$s"
@@ -1219,7 +1220,7 @@ regen_all() (
 		git reset --hard
 		p2v_dropnew "$new"
 	done
-	if [ -n "$1" ] && [ "$n" -gt 0 ]; then
+	if [ -z "$1" ] && [ "$n" -gt 0 ]; then
 		git reset HEAD~$n
 		git add .
 	fi
@@ -1234,8 +1235,9 @@ regen_all() (
 # and the script it just rewrote has to leave the working tree before the next
 # one is measured. A script rebuild refuses is left as it was and stops the run
 # there, rather than leaving half the set rebuilt and half of it committed.
-# With arg 1, do not stop in the editor or let it draw, and squash all commits
-# back into a single staged change at the end.
+# By default, do not stop in the editor or let it draw, and squash all commits
+# back into a single staged change at the end. With arg 1, stop in the editor
+# and keep the per-script commits.
 # Usage: rebuild_all [1]
 rebuild_all() (
 	IFS=$P2VIFS
@@ -1244,7 +1246,7 @@ rebuild_all() (
 		echo "DIRTY TREE: commit or stash first" >&2
 		return 1
 	fi
-	[ -n "$1" ] && p2v_batch
+	[ -z "$1" ] && p2v_batch
 	for s in $(p2v_scripts)
 	do
 		rebuild "$s" || return 1
@@ -1260,7 +1262,7 @@ rebuild_all() (
 		git checkout -- .
 		p2v_dropnew "$(p2v_newfiles)"
 	done
-	if [ -n "$1" ] && [ "$n" -gt 0 ]; then
+	if [ -z "$1" ] && [ "$n" -gt 0 ]; then
 		git reset HEAD~$n
 		git add .
 	fi
