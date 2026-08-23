@@ -220,8 +220,25 @@ p2v_eachorigin() {
 	done
 }
 
-# Run one origin script, for p2v_eachorigin.
-p2v_runorigin() { "./$1"; }
+# Run the origins of label $1 and then script $2, as one chain: the first is
+# invoked and the rest are its arguments, so each hands the next its own name in
+# $P2VI_PATCH and $2 sees exactly the origins that ran before it.
+#
+# One script at a time would not do. The set would stay empty at $2, so not only
+# would its compat blocks stay cold - the host body's quit chain is relaxed only
+# when an origin is present, so $2 would assert at its first collision and write
+# nothing at all. An argument naming a script outside the tree has to be
+# absolute, which is where $P2VITMP puts one.
+p2v_runchain() (
+	IFS=$P2VIFS
+	set -- $1 "$2"
+	next=$1
+	shift
+	case $next in
+	/*)	"$next" "$@" ;;
+	*)	"./$next" "$@" ;;
+	esac
+)
 
 # Derive a compat block for label $1 onto target $2 from patch $3: one -co per
 # origin, in stored order, since that is the order its probes were derived in.
@@ -876,8 +893,7 @@ p2v_chain() (
 # tree is put back at HEAD afterwards.
 #
 # With no argument the chains go to stdout. With one, that file - the README -
-# is rewritten with them as its "Compat order" section, replacing the one
-# already there, immediately before the EXINIT setup section.
+# has its list of chains rewritten in place, replacing the one already there.
 # Usage: compat_order [README]
 compat_order() (
 	IFS=$P2VIFS
@@ -1070,19 +1086,18 @@ recompat() (
 		mkdir -p "$work"
 		cp "$target" "$work/orig.sh"
 		p2v_restore
-		# A: the collision on its own. Every origin of the label runs,
-		# in stored order: the collision a stacked block resolves is
-		# the one the whole stack makes, and only that tree shows it.
+		# A: the collision on its own. Every origin of the label runs
+		# ahead of it, in stored order and in one chain: the collision a
+		# stacked block resolves is the one the whole stack makes, and
+		# only that tree shows it.
 		p2v_stripcompat "$target" "$origin" > "$work/bare.sh"
 		chmod +x "$work/bare.sh"
 		p2v_tty $P2VI -od "$work/bare.sh"
-		p2v_eachorigin "$origin" p2v_runorigin
-		"$work/bare.sh"
+		p2v_runchain "$origin" "$work/bare.sh"
 		a=$(p2v_snaptree)
 		p2v_restore
 		# B: the collision with every block from this origin resolving it
-		p2v_eachorigin "$origin" p2v_runorigin
-		"./$target"
+		p2v_runchain "$origin" "$target"
 		b=$(p2v_snaptree)
 		git diff-tree -p "$a" "$b" > "$work/compat.patch"
 		p2v_restore
