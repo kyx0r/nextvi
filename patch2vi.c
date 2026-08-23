@@ -31,10 +31,10 @@
  *   - updates a script (-E): replays it, hands the tree it leaves over to
  *     the user and re-emits it through that same diff pass;
  *   - replays two or more scripts (-co) to derive a compatibility patch,
- *     applied after the target and gated on the applied set ($P2VI_PATCH) -
- *     one -co per origin, and the block runs only where every origin named
- *     in its label is present; an optional third argument (diff or script)
- *     pre-applies a known compat patch that the session then continues from.
+ *     applied after the target behind an identity gate on the applied set
+ *     ($P2VI_PATCH) - one -co per origin, and the block runs only where every
+ *     origin named in its label is present; an optional third argument (diff
+ *     or script) pre-applies a known compat patch the session continues from.
  * No session ever writes a buffer back; quitting is what emits, to stdout or
  * (-o) atomically onto a named file.
  */
@@ -198,23 +198,21 @@ static void sb_lines(sbuf *fp, char **v, int n)
  *      top and restored after (patterns 8 and 9's straddle windows).
  */
 
-/* Compatibility-block gating: a compat block (the fix for a collision with
- * its src= origins) fires iff every origin named in its label is in the
- * applied set, the basenames carried in $P2VI_PATCH. No text probing: a script
- * inherits the set from its caller, appends itself, and hands the remaining
- * arguments to the next script, so a chain's every level sees exactly what
- * preceded it. $P2VI_PATCH is the escape hatch for trees that did not start
- * clean (a change applied by hand, absorbed upstream, or arriving pre-patched)
- * and is what -co asserts while deriving a new block.
+/* THE IDENTITY GATE. A compat block (the fix for a collision with its src=
+ * origins) fires iff every origin named in its label is in the applied set,
+ * the basenames carried in $P2VI_PATCH: the block is gated on the identity of
+ * what already ran, never on the text it left behind. A script inherits the
+ * set from its caller, appends itself, and hands the remaining arguments to
+ * the next script, so every level of a chain sees exactly what preceded it.
+ * $P2VI_PATCH is the escape hatch for trees that did not start clean (a change
+ * applied by hand, absorbed upstream, or arriving pre-patched) and is what -co
+ * asserts while deriving a new block.
  *
  * The decision itself is the editor's: the set goes into a register whole and
- * every block searches it for its own origins, so the shell contributes one
+ * every gate searches it for its own origins, so the shell contributes one
  * variable and no logic. -e and the replay path set that same variable from
  * their own accumulated set, which is why the two paths cannot drift - there
- * is only one implementation of the rule, and it is in the ex body.
- *
- * Stored === GATE === probe regions from scripts made by older patch2vi are
- * read past and discarded: nothing emits or consults them any more. */
+ * is only one implementation of the rule, and it is in the ex body. */
 
 /* Set while the replay session is the compat one, so replay_blocks() snapshots
  * the post-origin baseline right before handing over to the user. */
@@ -225,7 +223,7 @@ static int compat_capturing;
 static int compat_building;
 static int compat_mode;			/* -co: derive a post-only compat patch */
 /* The scripts it is derived against, in replay order: -co repeats, one per
- * origin, and the block gates on all of them at once. One origin is the
+ * origin, and one identity gate tests all of them at once. One origin is the
  * ordinary case and behaves exactly as the single -co always did. */
 static const char **compat_origins;
 static int ncompat_origin, compat_origin_cap;
@@ -1093,10 +1091,10 @@ static void sq_path(const char *s)
 #define REG_QF1  210	/* phase-1 quit chain, set by QF1=1 */
 #define REG_QF2  211	/* phase-2 quit chain, emptied through REG_QF2A by QF2=1 */
 #define REG_INTR 212	/* interrupt chain, set by INTR=1 */
-#define REG_ERR1 213	/* phase-1 FAIL gate, set by DBG1=1 */
-#define REG_ERR2 214	/* phase-2 FAIL gate, cleared by DBG2=1 */
-#define REG_OK1  215	/* phase-1 OK gate, set by DBG1=1 */
-#define REG_OK2  216	/* phase-2 OK gate, cleared by DBG2=1 */
+#define REG_ERR1 213	/* phase-1 FAIL chain, set by DBG1=1 */
+#define REG_ERR2 214	/* phase-2 FAIL chain, cleared by DBG2=1 */
+#define REG_OK1  215	/* phase-1 OK chain, set by DBG1=1 */
+#define REG_OK2  216	/* phase-2 OK chain, cleared by DBG2=1 */
 #define REG_HDLR 217	/* the FAIL report chain both phases share */
 #define REG_LOC  219	/* argument: the FAIL location of the current site */
 #define REG_MSG  220	/* argument: the OK report command of the current site */
@@ -1118,7 +1116,7 @@ static void sq_path(const char *s)
  * chains, so a value a block's call writes crosses the host body:
  *   REG_APPLIED       the applied set: $P2VI_PATCH verbatim, padded with a
  *                     space at each end, the one thing the shell contributes.
- *                     The driver reads every gate out of it with
+ *                     The driver decides every identity gate out of it with
  *                     "fr <REG_APPLIED>" and a search, so the decision is the
  *                     editor's and the -e path reaches it by setting the same
  *                     variable.
@@ -1326,13 +1324,13 @@ static void emit_sep_lvl(sbuf *out, int deep)
 		EMIT_ESCSEP(out);
 }
 
-/* The expansion window calling gate register <gate>: % on, run the chain, %
+/* The expansion window calling chain register <reg>: % on, run the chain, %
  * off. Its argument register must already be written, while % was inert. */
-static void emit_reg_call(sbuf *out, int gate, int deep)
+static void emit_reg_call(sbuf *out, int reg, int deep)
 {
 	sb_str(out, "2sc %");
 	emit_sep_lvl(out, deep);
-	sb_printf(out, "? %%@%d", gate);
+	sb_printf(out, "? %%@%d", reg);
 	emit_sep_lvl(out, deep);
 	sb_str(out, "2sc!");
 }
@@ -1341,7 +1339,7 @@ static void emit_reg_call(sbuf *out, int gate, int deep)
  * location it reports through the shared report chain in REG_LOC: phase 1
  * (search) reports <path>:<line>, phase 2 (edit at a mark) adds :m<id>, and
  * mark_id < 0 means no mark (new-file insert, custom abs command).
- * phase selects the gate register, whose definedness is the DBG<n> switch
+ * phase selects the report register, whose definedness is the DBG<n> switch
  * and whose chain ends in the phase's INTR and QF<n> calls.
  * ids[0..nids) are the capture tags of a fallback chain - every pattern
  * variant in phase 1, every substitute rung in phase 2 - ORed into one DNF
@@ -2094,7 +2092,7 @@ static void emit_chain_pattern(sbuf *out, pat_spec_t *p)
  * all tags reports the failure.
  * Each attempt carries its mode's setup and the teardown it implies: mode 1
  * restores the register cache ("fr 98") on both paths, modes 2 and 3 reset the
- * search group, mode 3 restores the saved cursor before the gated 1q. */
+ * search group, mode 3 restores the saved cursor before the conditional 1q. */
 static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 				int mark_id, int target_line, int first)
 {
@@ -2136,7 +2134,7 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		if (ps[n].offset)
 			sb_printf(out, "%+d", ps[n].offset);
 		sb_printf(out, "m %d", mark_id);
-		/* fallback (non-primary) match: with DBG1=1 the OK gate is
+		/* fallback (non-primary) match: with DBG1=1 the OK chain is
 		 * defined and reports which anchor resolved the group */
 		if (n) {
 			EMIT_ESC3SEP(out);
@@ -2161,8 +2159,8 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		}
 		if (n < nps - 1) {
 			if (g3) {
-				/* the unconditional restore split the then-arg, so
-				 * re-test the tag to keep 1q success-gated */
+				/* the unconditional restore split the then-arg,
+				 * so re-test the tag to keep 1q on success */
 				EMIT_ESCSEP(out);
 				sb_printf(out, "%d??", ps[n].pid);
 				EMIT_ESC3SEP(out);
@@ -3707,7 +3705,7 @@ static char *lbuf_text(struct lbuf *lb)
  * authored and shipped as the single diff it is. Always emitted after the host;
  * origin is per-block, since the global only describes the current run. */
 typedef struct {
-	char *origin;		/* src= label; every field's basename gates the block */
+	char *origin;		/* src= label; its basenames are the identity gate */
 	int first, count;	/* files[] range this block owns */
 	strv_t raw;		/* the block's own === PATCH === lines */
 	/* per-block delta customizations, filled either from the editor
@@ -4864,8 +4862,8 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
  * the default state and the shell then contributes whole commands that flip
  * individual switches (any non-empty value counts as set).
  * REG_HDLR prints the FAIL line with the print redirected into REG_FLOG, so the
- * line reaches the terminal and the log both, and then calls INTR; a phase gate
- * calls REG_HDLR and then the phase's quit chain, so QF only fires where the
+ * line reaches the terminal and the log both, and then calls INTR; a phase's
+ * FAIL chain calls REG_HDLR and then its quit chain, so QF only fires where the
  * report does. The redirect is switched off again right after ("pr" with no
  * argument toggles), leaving the log the only state the site keeps. */
 static void emit_qf2_assert(sbuf *out);
@@ -4904,9 +4902,9 @@ static void emit_reg_defaults(sbuf *out)
  * EXINIT, so $P2VI_PATCH has to be written in from outside, and this word is
  * already the place the shell writes. The value lands in REG_APPLIED with a
  * space at each end - two spaces after "reg", since ex_cmd eats one - so the
- * gates emit_compat_flags builds can delimit a name with plain spaces. It goes
- * out ahead of the body, which is the third printf argument, so the register is
- * set before anything reads it. */
+ * identity gates emit_compat_flags builds delimit a name with plain spaces. It
+ * goes out ahead of the body, which is the third printf argument, so the
+ * register is set before anything reads it. */
 static void emit_reg_switches(sbuf *out, int applied)
 {
 	if (applied) {
@@ -4951,7 +4949,7 @@ static void emit_reg_switches(sbuf *out, int applied)
 /* The tail a $VI body ends with: leave raw ex mode, write each of the nbufs
  * real files (b0..bN-1, the order the call opened them in) and quit. skip, when
  * given, marks buffers a section body writes itself (a compat-only file, which
- * must not be created when its gate misses) - the tail passes over them. */
+ * must not be created when its identity gate misses) - the tail skips them. */
 static void emit_write_tail(sbuf *out, int nbufs, const char *skip)
 {
 	sb_str(out, "vis 2");
@@ -5064,12 +5062,12 @@ static int uf_index(file_patch_t **uf, int nuf, file_patch_t *fp)
 	return -1;
 }
 
-/* One section's edit body - no prologue, no register defaults, no gate, no
- * vis 2/w/2q tail: the per-file buffer select, its register cache and its
- * groups. Buffer indices are global (uf_index), since one $VI call opens every
- * file. The body is staged as its own buffer and run verbatim through %@, which
- * inserts the yanked bytes without rescanning them, so its top-level separators
- * stay raw however deep the call sits. */
+/* One section's edit body - no prologue, no register defaults, no identity
+ * gate, no vis 2/w/2q tail: the per-file buffer select, its register cache and
+ * its groups. Buffer indices are global (uf_index), since one $VI call opens
+ * every file. The body is staged as its own buffer and run verbatim through %@,
+ * which inserts the yanked bytes without rescanning them, so its top-level
+ * separators stay raw however deep the call sits. */
 static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
 			      file_patch_t **uf, int nuf)
 {
@@ -5100,8 +5098,8 @@ static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
 }
 
 /* The writes a compat block owns: the files no other section touches, which the
- * driver's write tail therefore leaves alone. A gated body only runs when its
- * gate resolved present, so a file the block's origin creates (lsp.c for
+ * driver's write tail therefore leaves alone. A block's body only runs when
+ * its identity gate fired, so a file the block's origin creates (lsp.c for
  * lsp.sh) is written when the origin is applied and never conjured - an empty
  * one - out of a buffer the block did not edit. Emitted inside the body, ahead
  * of the announce, so reaching the print still means everything landed. */
@@ -5132,7 +5130,7 @@ static void emit_section_writes(sbuf *out, file_patch_t **files, int nf,
 }
 
 /* A compat block announces itself as the LAST command of its own body: the body
- * only runs when the gate resolved present, and reaching its end means every
+ * only runs when its identity gate fired, and reaching its end means every
  * edit applied - so the print is proof of application, not of intent. Silent on
  * a clean tree. No DBG switch hides it: it is the only outside evidence that a
  * compat block ran. */
@@ -5162,17 +5160,17 @@ typedef struct {
 	compat_block_t *cb;	/* NULL for the host section */
 } section_t;
 
-/* A compat section's gate, asked of the flag the driver set (one per block,
- * the block's register REG_FLAG_BASE+flagk, "1" when every src= of that
+/* A compat section's identity gate, asked of the flag the driver set (one per
+ * block, the block's register REG_FLAG_BASE+flagk, "1" when every src= of that
  * block's label is in the applied set and "0" otherwise): "fr <reg>; f> 1"
  * reads the flag and the trailing "??" fires the %@ call that follows only
- * when it is set. The host is unconditional ("? "); the -e path reaches the
- * same decision by sh_set()ting the flag before the driver runs.
+ * when it is set. The host section is unconditional ("? "). The -e path runs
+ * this very code, over the set it publishes as $P2VI_PATCH itself.
  *
  * The read leaves xfr pointing at the flag register, but the section body
  * the call runs begins with its own "fr 98" (see emit_section_body), which
  * restores the file cache before anything else searches. */
-static void emit_gate_expr(sbuf *out, section_t *s)
+static void emit_identity_gate(sbuf *out, section_t *s)
 {
 	if (!s->cb) {
 		sb_str(out, "? ");
@@ -5246,40 +5244,45 @@ static void emit_host_override(sbuf *out)
 	EMIT_SEP(out);
 }
 
+/* The anchor slots base..base+n-1 as one expression, joined by op (';' is OR,
+ * ',' is AND): the DNF prefix a "??" branches on instead of the last command's
+ * status. */
+static void sb_slots(sbuf *out, int base, int n, int op)
+{
+	for (int k = 0; k < n; k++) {
+		if (k)
+			sb_chr(out, op);
+		sb_printf(out, "%d", base + k);
+	}
+}
+
 /* Block-head quit policy: a block asserts iff no later block over the same file
  * has a fired origin. Each later same-file origin's presence is recorded as an
  * anchor slot and the slots ORed to redefine 211 - any present suppresses, none
- * asserts. A statically-last block skips the test and asserts unconditionally,
- * since the host override left 211 relaxed and it must be restored. */
+ * asserts. A statically-last block emits no test at all and so asserts
+ * unconditionally, restoring the assert the host override relaxed. */
 static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
 {
-	int nlater = 0, slot;
-	for (int j = i + 1; j < nsec; j++)
-		if (secs[j].cb && secs[j].flagk >= 0 &&
-		    sections_share_file(&secs[i], &secs[j]))
-			nlater++;
-	if (!nlater) {
-		emit_qf2_assert(out);
-		return;
-	}
-	slot = FLAG_SLOT_BASE;
+	int nlater = 0;
 	for (int j = i + 1; j < nsec; j++) {
-		if (!(secs[j].cb && secs[j].flagk >= 0 &&
-		      sections_share_file(&secs[i], &secs[j])))
+		if (!secs[j].cb || secs[j].flagk < 0 ||
+		    !sections_share_file(&secs[i], &secs[j]))
 			continue;
 		sb_printf(out, "fr %d", REG_FLAG_BASE + secs[j].flagk);
 		EMIT_SEP(out);
 		sb_str(out, "f> 1");
 		EMIT_SEP(out);
-		sb_printf(out, "%d?" "?", slot++);
+		sb_printf(out, "%d?" "?", FLAG_SLOT_BASE + nlater++);
 		EMIT_SEP(out);
 	}
-	for (int k = 0; k < nlater; k++)
-		sb_printf(out, "%s%d", k ? ";" : "", FLAG_SLOT_BASE + k);
+	if (!nlater) {
+		emit_qf2_assert(out);
+		return;
+	}
+	sb_slots(out, FLAG_SLOT_BASE, nlater, ';');
 	sb_str(out, "?" "?");
 	emit_qf2_clear(out);
-	for (int k = 0; k < nlater; k++)
-		sb_printf(out, "%s%d", k ? ";" : "", FLAG_SLOT_BASE + k);
+	sb_slots(out, FLAG_SLOT_BASE, nlater, ';');
 	sb_str(out, "?" "?!");
 	emit_qf2_assert(out);
 }
@@ -5348,9 +5351,9 @@ static void sb_src_pat(sbuf *out, const char *base)
  * all keeps its 0 and never fires.
  *
  * The arm holds two commands, joined by an escaped separator: ex_arg unescapes
- * it, so the ex_exec the arm runs sees a chain. A missed gate leaves xpret set
- * and the "??" returns xuerr, which with the default xerr is neither printed
- * nor fatal - the same way an unfired gate has always read.
+ * it, so the ex_exec the arm runs sees a chain. A gate that misses leaves xpret
+ * set and the "??" returns xuerr, which with the default xerr is neither
+ * printed nor fatal - the way any unfired arm reads.
  *
  * The closing "fr 98" hands searching back to the file cache: every section
  * body sets it again itself, but nothing should have to rely on that. */
@@ -5383,8 +5386,7 @@ static void emit_compat_flags(sbuf *out, section_t *secs, int nsec)
 		free(fields);
 		if (!nf)
 			continue;
-		for (int k = 0; k < nf; k++)
-			sb_printf(out, "%s%d", k ? "," : "", SRC_SLOT_BASE + k);
+		sb_slots(out, SRC_SLOT_BASE, nf, ',');
 		sb_printf(out, "?" "? %dreg 1", reg);
 		EMIT_ESCSEP(out);
 		sb_printf(out, "%dreg 1", REG_FLAG_ANY);
@@ -5397,9 +5399,9 @@ static void emit_compat_flags(sbuf *out, section_t *secs, int nsec)
 }
 
 /* Call half: yank the section body into its register and %@-call it -
- * unconditionally for the host, gated on the section's flag register for a
- * compat block. Bracketed with the "2sc %" / "2sc!" expansion window, since
- * the driver prologue's |sc! leaves xexp inert. */
+ * unconditionally for the host, behind the identity gate on the section's flag
+ * register for a compat block. Bracketed with the "2sc %" / "2sc!" expansion
+ * window, since the driver prologue's |sc! leaves xexp inert. */
 static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 			     file_patch_t **uf, int nuf, const char *own)
 {
@@ -5445,7 +5447,7 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 	EMIT_SEP(out);
 	sb_str(out, "2sc %");
 	EMIT_SEP(out);
-	emit_gate_expr(out, s);
+	emit_identity_gate(out, s);
 	sb_printf(out, "%%@%d", s->reg);
 	EMIT_SEP(out);
 	sb_str(out, "2sc!");
@@ -5456,8 +5458,8 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
  * buffer per section (host, then each compat block), and a driver buffer EXINIT
  * yanks into register 97 and runs. The driver defines the state registers once,
  * %@-calls each section in application order, then writes every real file and
- * quits. A gate that misses only skips its block's call - nothing quits the
- * shared process, so later sections still run. */
+ * quits. An identity gate that misses only skips its block's call - nothing
+ * quits the shared process, so later sections still run. */
 static void emit_one_call(file_patch_t **active, int nactive)
 {
 	section_t *secs = emalloc((ncompat + 1) * sizeof(*secs));
@@ -5509,20 +5511,18 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	/* Files no host section edits: their only writer is the compat block
 	 * that names them, and it writes them from inside its own gated body -
 	 * so an origin's new file (its whole point is that it does not exist
-	 * yet) is not created empty by a run the origin is missing from. */
+	 * yet) is not created empty by a run the origin is missing from. One
+	 * pass collects each slot's writers (1 = a block, 2 = the host section),
+	 * and a slot no host wrote is the one its block owns. */
 	own = ecalloc(nuf + 1, 1);
 	for (int i = 0; i < nsec; i++)
 		for (int j = 0; j < secs[i].nf; j++) {
 			int gi = uf_index(uf, nuf, secs[i].files[j]);
-			if (gi >= 0 && secs[i].cb)
-				own[gi] = 1;
+			if (gi >= 0)
+				own[gi] |= secs[i].cb ? 1 : 2;
 		}
-	for (int i = 0; i < nsec; i++)
-		for (int j = 0; j < secs[i].nf; j++) {
-			int gi = uf_index(uf, nuf, secs[i].files[j]);
-			if (gi >= 0 && !secs[i].cb)
-				own[gi] = 0;
-		}
+	for (int i = 0; i < nuf; i++)
+		own[i] = own[i] == 1;
 
 	fputs("# Body too large for EXINIT/argv: stage it in a file\n"
 	      "( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$\n"
@@ -5536,15 +5536,16 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	 * shell switches, then orchestration and the final writes. */
 	sbuf_smake(osb, SB_INIT)
 	emit_body_head(osb, 1, nflag > 0);
-	/* The driver decides the compat flags itself, out of the applied set the
-	 * head just put in REG_APPLIED. */
-	if (nflag > 0)
+	if (nflag > 0) {
+		/* the driver decides every identity gate itself, out of the
+		 * applied set the head just put in REG_APPLIED */
 		emit_compat_flags(osb, secs, nsec);
-	/* before any body: with an origin present (the any flag set) the host
-	 * override relaxes its own quit chain, so the compat blocks repair its
-	 * misses; on a clean tree 211 keeps its default assert */
-	if (nflag > 0)
+		/* then, before any body: with an origin present (the any flag
+		 * set) the host override relaxes its own quit chain, so the
+		 * compat blocks can repair its misses; on a clean tree 211
+		 * keeps its default assert */
 		emit_host_override(osb);
+	}
 	for (int i = 0; i < nsec; i++)
 		emit_driver_call(osb, secs, nsec, i, uf, nuf, own);
 	emit_write_tail(osb, nwrite, own);
@@ -5558,12 +5559,12 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		section_t *s = &secs[i];
 		int sv_rel = 0;
 		if (s->cb) {
-			/* the block's gate, spelled out for a reader: the flag
-			 * register emit_compat_flags writes, and every src= that
-			 * has to be in the applied set for it to reach 1. Each
-			 * origin carries the "src=" the label leaves off its
-			 * first, so the fields read alike and grep alike. Every
-			 * block is post, so nothing says so. */
+			/* the block's identity gate, spelled out for a reader:
+			 * the flag register emit_compat_flags writes, and every
+			 * src= that has to be in the applied set for it to reach
+			 * 1. Each origin carries the "src=" the label leaves off
+			 * its first, so the fields read alike and grep alike.
+			 * Every block is post, so nothing says so. */
 			char **fields;
 			int nf = compat_src_fields(s->cb, &fields);
 			printf("# Compat %d", REG_FLAG_BASE + s->flagk);
@@ -5638,10 +5639,8 @@ static void emit_dstore(dstore_t *ds)
  * sub-sections close with === END === like the host's, so the reader reaches
  * === END COMPAT === with no section open.
  *
- * A block's gate is the applied set, not a stored probe list: it is derived
- * from $P2VI_PATCH at run time, so nothing is stored here. (A === GATE ===
- * region from an older script still parses, but it is discarded, so
- * regenerating such a script drops it.) */
+ * A block's identity gate is the applied set, so nothing of it is stored here:
+ * it is derived from $P2VI_PATCH at run time. */
 static void emit_compat_storage(void)
 {
 	for (int c = 0; c < ncompat; c++) {
@@ -6347,8 +6346,8 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 		if (!strncmp(line, "EXINIT=", 7)) {
 			/* the applied set the shell chain would have inherited,
 			 * published before the bodies expand so the head's
-			 * "229reg  $P2VI_PATCH " resolves to it and the gates
-			 * decide this call's blocks as a chained run would */
+			 * "229reg  $P2VI_PATCH " resolves to it and the identity
+			 * gates decide this call's blocks as a chain would */
 			char *ap = cur_applied_word();
 			sh_set("P2VI_PATCH", ap);
 			free(ap);
@@ -7458,8 +7457,8 @@ static int compat_apply_diff(const char *path)
  * files[] range they own - they are parsed before the host patch is, so the
  * range is the head of files[] and dropping it leaves the array empty for the
  * host diff that follows. The blocks' edits are not undone: whatever their
- * gates let through during the replay stays in the buffers, so it is re-derived
- * as part of the host patch instead of shipping as its own gated block. */
+ * identity gates let through during the replay stays in the buffers, so it is
+ * re-derived as part of the host patch instead of as its own gated block. */
 static void drop_compat_blocks(void)
 {
 	if (!ncompat)
@@ -7867,11 +7866,10 @@ static void parse_diff_text(const char *text)
 /*
  * A generated script's tail metadata in one left-to-right pass: the host
  * === DELTA === sections and every === PATCH2VI COMPAT === region (its own
- * DELTA sub-sections and its === COMPAT PATCH === diff; a stored === GATE ===
- * probe from an older script is read past and dropped). Regions
- * nest one deep and are fenced by === END COMPAT ===, never by a line count, so
- * a hand-edit that adds or drops a line still parses. Stops at
- * === PATCH2VI PATCH ===, leaving the host diff to the caller.
+ * DELTA sub-sections and its === COMPAT PATCH === diff). Regions nest one deep
+ * and are fenced by === END COMPAT ===, never by a line count, so a hand-edit
+ * that adds or drops a line still parses. Stops at === PATCH2VI PATCH ===,
+ * leaving the host diff to the caller.
  */
 /* The DELTA sub-sections that only select where the following body lines go. */
 static const struct { const char *tag; int sect; } gsects[] = {
@@ -7912,12 +7910,11 @@ static int read_delta_sections(FILE *in)
 	int pat_idx = 1; /* pattern[] slot for GS_PAT */
 	int in_ph = 0;   /* 1/2 = inside a verbatim phase blob */
 	/* Compat tail-region state, depth 1: cur_cb redirects DELTA
-	 * sub-sections into the block's own array, in_gate swallows a stored
-	 * === GATE === probe from an older script, in_compat_patch routes the
+	 * sub-sections into the block's own array, in_compat_patch routes the
 	 * block's diff into its own files[] range and raw sink. All closed by
 	 * === END ===, the region by === END COMPAT ===. */
 	compat_block_t *cur_cb = NULL;
-	int in_compat_patch = 0, in_gate = 0;
+	int in_compat_patch = 0;
 	sbuf_smake(ph, SB_INIT)
 	while (read_line(in, lb)) {
 		line = chomp_sb(lb);
@@ -7949,14 +7946,6 @@ static int read_delta_sections(FILE *in)
 			}
 			continue;
 		}
-		/* A stored probe from a script older than applied-set gating:
-		 * read to the closing === END === and thrown away. Its bytes
-		 * are not marked used - nothing re-emits them. */
-		if (in_gate) {
-			if (strcmp(line, end_tag_rd) == 0)
-				in_gate = 0;
-			continue;
-		}
 		if (strncmp(line, "=== PATCH2VI COMPAT ", 20) == 0) {
 			if (cur_cb) {
 				fprintf(stderr, "nested COMPAT region\n");
@@ -7982,10 +7971,6 @@ static int read_delta_sections(FILE *in)
 			cur_cb = NULL;
 			cur_fd = NULL;
 			cur_gd = NULL;
-			continue;
-		}
-		if (cur_cb && strncmp(line, "=== GATE ", 9) == 0) {
-			in_gate = 1;
 			continue;
 		}
 		if (cur_cb && strcmp(line, "=== COMPAT DELTA ===") == 0) {
@@ -8122,7 +8107,7 @@ static int read_delta_sections(FILE *in)
  *
  * The applied set is the chain of scripts already run, carried in $P2VI_PATCH
  * as basenames. A script inherits it from its caller, hands it to the editor
- * whole (REG_APPLIED, where emit_compat_flags decides every block from it) and
+ * whole (REG_APPLIED, where emit_compat_flags decides every gate from it) and
  * appends itself before invoking the next script with the rest of the queue.
  * The set and the queue are disjoint: the environment grows in run order, the
  * arguments shrink. That is the whole shell side of compat - no header, no
@@ -8186,8 +8171,9 @@ static void usage(const char *prog, int err)
 		"  -ew   Write section end tag (default: \"%s\")\n",
 		end_tag_rd, end_tag_wr);
 	fputs("  -co   Compat patch: resolve a collision with origin.sh, ship the\n"
-	      "        fix as a block after the target's, gated on origin being\n"
-	      "        present; a third argument pre-applies a written fix\n"
+	      "        fix as a block after the target's, behind an identity gate\n"
+	      "        on origin being in $P2VI_PATCH; a third argument\n"
+	      "        pre-applies a written fix to start from\n"
 	      "        Repeat -co to gate one block on several origins at once\n"
 	      "  -h    Show this help\n", f);
 	exit(err ? 1 : 0);
@@ -8247,11 +8233,11 @@ int main(int argc, char **argv)
 		 * script, applied AFTER the target (the ordinary positional
 		 * input). Post-only; replaces the old -co split.
 		 *
-		 * Repeatable: every -co adds one origin, and the block gates on
-		 * all of them together, for a fix that only a particular stack
-		 * of patches needs. The origins are their own arguments rather
-		 * than positionals so the target and the optional pre-applied
-		 * fix stay where they are, unambiguously.
+		 * Repeatable: every -co adds one origin, and the block's
+		 * identity gate tests all of them together, for a fix that only
+		 * a particular stack of patches needs. The origins are their
+		 * own arguments rather than positionals so the target and the
+		 * optional pre-applied fix stay where they are, unambiguously.
 		 *
 		 * "-oco" clusters the top-level -o into it, as "-oE" does: no
 		 * FILE of its own, the result lands back on the target script
