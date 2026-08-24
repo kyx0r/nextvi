@@ -3667,7 +3667,9 @@ static void ed_loadbuf(const char *name, char *text)
 	lbuf_edit(xb, text, 0, 0, 0, 0);
 	ex_bufpostfix(ex_buf, 1);
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [f]", xb_path, lbuf_len(xb));
-	ex_print(msg, bar_ft)
+	/* "-m" silences the load line, as ec_edit's own is */
+	if (!(xvis & 4))
+		ex_print(msg, bar_ft)
 }
 
 /* Hand the loaded buffers to the user and end the session; they outlive it so
@@ -8403,6 +8405,13 @@ int main(int argc, char **argv)
 		if (parse_hand_args(argv + i + 1, argc - i - 1) < 0)
 			usage(argv[0], 1);
 	}
+	/* the tail's mode flags govern the loads too, not just the session:
+	 * "-m" must already silence the line every ed_loadbuf prints, so they
+	 * cannot wait for ed_serve to apply them at entry. The replay's own
+	 * per-block "xvis |= 2" stays on top of whatever lands here; ed_serve
+	 * resets to the flags verbatim once the bodies are done. */
+	if (hand_vis >= 0)
+		xvis = hand_vis;
 
 	/* Mark chars that cannot be ex separators. */
 	static const char *forbidden =

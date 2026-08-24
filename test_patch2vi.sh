@@ -1036,6 +1036,25 @@ grep -q "Unknown editor option: -Z" "$TMPDIR/i_err.txt" &&
 	ok "-i rejects an unknown editor option" ||
 	{ fail "-i rejects an unknown editor option"; cat "$TMPDIR/i_err.txt"; }
 
+# "-m" reaches the loads, not just the session: ed_loadbuf prints one line
+# per injected buffer, and bit 4 must silence it as ec_edit's own line
+# the transcript carries ANSI codes up to the flag, so grep the bare marker
+p2v_out=$(pty "P2VI_EX=$ED_TRUE" \
+	"./patch2vi -ri '$TMPDIR/i.patch' > /dev/null 2>&1")
+if printf '%s' "$p2v_out" | grep -q '\[f\]'; then
+	ok "-i announces its loaded buffers"
+else
+	fail "-i announces its loaded buffers"
+fi
+p2v_out=$(pty "P2VI_EX=$ED_TRUE" \
+	"./patch2vi -ri '$TMPDIR/i.patch' -m > /dev/null 2>&1")
+if printf '%s' "$p2v_out" | grep -q '\[f\]'; then
+	fail "-m silences the loaded-buffer lines"
+	printf '%s\n' "$p2v_out" | sed 's/^/    /'
+else
+	ok "-m silences the loaded-buffer lines"
+fi
+
 # Editing a PHASE 2 blob overrides the generated segment and is recorded
 # as a verbatim delta
 run_i "$TMPDIR/i2.sh" "$(edex "$TMPDIR/ed1.awk" "PHASE 2" bar baz)" \
