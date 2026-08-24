@@ -30,7 +30,9 @@
  *     buffer it leaves behind is diffed against its disk copy to produce
  *     the input the converter normally reads;
  *   - updates a script (-E): replays it, hands the tree it leaves over to
- *     the user and re-emits it through that same diff pass;
+ *     the user and re-emits it through that same diff pass; naming a stored
+ *     compat block's flag register rebuilds that one block instead, its own
+ *     src= origins replayed ahead of the target;
  *   - replays two or more scripts (-C) to derive a compatibility patch,
  *     applied after the target behind an identity gate on the applied set
  *     ($P2VI_PATCH) - one -C per origin, and the block runs only where every
@@ -225,6 +227,10 @@ static int compat_capturing;
  * the wrong text for a block derived on top of it. */
 static int compat_building;
 static int compat_mode;			/* -C: derive a post-only compat patch */
+/* -E's optional block selector: the flag register naming the one stored compat
+ * block this run rebuilds. Without it -E is what it always was and the blocks
+ * are discarded. */
+static int amend_sel = -1;
 /* The scripts it is derived against, in replay order: -C repeats, one per
  * origin, and one identity gate tests all of them at once. One origin is the
  * ordinary case and behaves exactly as the single -C always did. */
@@ -6719,18 +6725,23 @@ static int fail_place(const char *body, const char *path, int line, int mark,
 /* Every failure the block logged, oldest first. Returns the buffer to park the
  * handover on and sets *prow to the row in it, or -1 when the run logged
  * nothing - which is every run that did not fail, so the common path is one
- * register lookup. */
-static int fail_report(int sepb, int *prow)
+ * register lookup.
+ *
+ * bodyreg holds the body the logged marks belong to: the driver's own, or the
+ * staged section a -E selector run singles out. skip is how many bytes the log
+ * already held before that body ran, so a run that reports one section's
+ * misses does not place the whole call's. */
+static int fail_report(int sepb, int *prow, int bodyreg, int skip)
 {
-	sbuf *log = ex_regget(REG_FLOG), *body = ex_regget(P2VI_REG);
+	sbuf *log = ex_regget(REG_FLOG), *body = ex_regget(bodyreg);
 	char *s, *nl, *txt, *path;
 	int *shift, bi, row, line, mark, first = -1, n = 0;
-	if (!log || !log->s_n || !body || !xbufcur)
+	if (!log || log->s_n <= skip || !body || !xbufcur)
 		return -1;
 	shift = ecalloc(xbufcur, sizeof(int));
 	/* cut up a copy: the register is the run's own record, which the
 	 * handover may well want to read */
-	txt = uc_dup(log->s);
+	txt = uc_dup(log->s + skip);
 	/* the stream is read and re-run under the body's own specials: xesc is
 	 * still what its "|sc!" prologue set (the stripped tail never put it
 	 * back) and the separator is restated from the block */
@@ -6758,18 +6769,99 @@ static int fail_report(int sepb, int *prow)
 	return first;
 }
 
+static int cmd_is(const char *body, int b, int e, const char *s)
+{
+	int n = strlen(s);
+	return e - b == n && !strncmp(body + b, s, n);
+}
+
+/* -E <reg>: lift one section's dispatch out of the driver body, so the caller
+ * can run the rest of the body, take the compat baseline, and only then run
+ * this one block.
+ *
+ * emit_driver_call writes a gated section as seven commands - "b<sec>",
+ * "%ya <reg>", "2sc %", the identity gate's "fr <flag>", "f> 1" and
+ * "?? %@<reg>", then "2sc!" - so the flag register names the whole span
+ * unambiguously, and the shape is checked rather than trusted. What the lift
+ * costs is only the order: every other block still runs where it was stored,
+ * above the baseline, so its edits cancel out of the derived diff, and the
+ * commands the emitter puts before this dispatch (buffer rewinds, quit policy)
+ * are state and not text. Returns the register the span yanks the section body
+ * into (fail_report reads the marks out of it), or -1. */
+static int body_cut_dispatch(char *body, int sep, int flagreg, char **span)
+{
+	struct { int b, e; } *c = NULL;
+	int n = strlen(body), nc = 0, cap = 0, i, t = -1, reg, p = 0, b, e;
+	char pat[32];
+	for (;;) {
+		b = p;
+		while (p < n && !BODY_DELIM(body[p]))
+			p++;
+		ARR_PUSH(c, nc, cap)
+		c[nc].b = b;
+		c[nc++].e = p;
+		if (p >= n)
+			break;
+		p++;
+	}
+	/* "fr <flag>" and "f> 1" alone are not enough: emit_block_qf2 tests a
+	 * later block's flag the same way, ahead of the dispatch, and only
+	 * records the answer in an anchor slot. The call is the one that runs
+	 * the section from its register. */
+	snprintf(pat, sizeof(pat), "fr %d", flagreg);
+	for (i = 3; i + 3 < nc; i++)
+		if (cmd_is(body, c[i].b, c[i].e, pat)
+		    && cmd_is(body, c[i + 1].b, c[i + 1].e, "f> 1")
+		    && !strncmp(body + c[i + 2].b, "?? %@", 5)) {
+			t = i;
+			break;
+		}
+	if (t < 0) {
+		free(c);
+		fprintf(stderr, "replay: no gated call on register %d\n",
+			flagreg);
+		return -1;
+	}
+	if (body[c[t - 3].b] != 'b' || c[t - 3].e - c[t - 3].b < 2
+	    || strncmp(body + c[t - 2].b, "%ya ", 4)
+	    || !cmd_is(body, c[t - 1].b, c[t - 1].e, "2sc %")
+	    || !cmd_is(body, c[t + 3].b, c[t + 3].e, "2sc!")) {
+		free(c);
+		fprintf(stderr, "replay: register %d is not a section call\n",
+			flagreg);
+		return -1;
+	}
+	reg = atoi(body + c[t - 2].b + 4);
+	b = c[t - 3].b;
+	e = c[t + 3].e;
+	if (e < n)		/* the delimiter goes with the span */
+		e++;
+	/* The span is lifted past the body's write tail, whose "vis 2" has
+	 * left the editor a session by then; the sections are ex scripts and
+	 * every one of them was emitted under the prologue's "vis 3". */
+	*span = emalloc(e - b + 7);
+	i = sprintf(*span, "vis 3%c", sep);
+	memcpy(*span + i, body + b, e - b);
+	(*span)[i + e - b] = '\0';
+	memmove(body + b, body + e, n - e + 1);
+	free(c);
+	return reg;
+}
+
 /* Every block in one session, leaving its buffers alive for the caller to read
  * back. With handover the last block leaves the editor to the user instead of
  * returning at the end of its body. snap_blk names the block the compat
  * baseline is taken after (-1 = the last): the blocks past it are a pre-applied
  * resolution, which belongs to the derived patch and so must land above the
- * baseline. */
+ * baseline. split_reg is -E's block selector: that block's dispatch is lifted
+ * out of snap_blk's driver body and run after the baseline instead of in
+ * place, so the baseline is the tree as it stands before the block runs. */
 static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
-			 int snap_blk)
+			 int snap_blk, int split_reg)
 {
 	char **paths = NULL, *body, *ln;
 	int npaths = 0, *bmap = NULL, nmap = 0, i, k, st = 0, sep, bad = 0;
-	int fbuf = -1, frow = 0;
+	int fbuf = -1, frow = 0, failreg = P2VI_REG, logskip = 0;
 	if (snap_blk < 0 || snap_blk >= nblks)
 		snap_blk = nblks - 1;
 	/* sized for the union of every block's files: an eviction would
@@ -6841,7 +6933,28 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 		free(body);
 		body = ln;
 		ex_regput(P2VI_REG, body, 0);
-		ex_exec(body);
+		if (split_reg >= 0 && i == snap_blk) {
+			char *span = NULL;
+			int breg = body_cut_dispatch(body, sep, split_reg,
+						     &span);
+			if (breg < 0) {
+				free(body);
+				ed_done();
+				st = -1;
+				break;
+			}
+			ex_exec(body);
+			if (!xquit) {
+				sbuf *lg;
+				snap_bufs(&compat_base);
+				lg = ex_regget(REG_FLOG);
+				logskip = lg ? lg->s_n : 0;
+				failreg = breg;
+				ex_exec(span);
+			}
+			free(span);
+		} else
+			ex_exec(body);
 		free(body);
 		/* Drop the section scaffolding: its %@ calls have run and applied
 		 * their edits, so the handover and the read-back must see only the
@@ -6883,7 +6996,8 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			 * input to the derivation, not a hunk to fix, and the
 			 * blocks would land in the derived diff. */
 			if (!compat_capturing)
-				fbuf = fail_report(sep, &frow);
+				fbuf = fail_report(sep, &frow, failreg,
+						   logskip);
 			ed_serve(fbuf, frow);
 		}
 		if (!xquit)	/* no counted quit: the block simply ended */
@@ -6956,9 +7070,10 @@ static int parse_script(const char *path, p2vi_block_t **blks, int *nblks,
  * the state both applied to. The scripts keep their own phase policy - the
  * script itself is the single source of truth. snap_sc is the script index of
  * the baseline snapshot, translated into the block index replay_blocks() wants
- * (a script contributes one block per $VI call). */
+ * (a script contributes one block per $VI call). split_reg is passed straight
+ * through to replay_blocks. */
 static int replay_scripts(const char **paths, int nscripts, int handover,
-			  int snap_sc)
+			  int snap_sc, int split_reg)
 {
 	p2vi_block_t *blks = NULL;
 	int nblks = 0, st = 0, i, snap_blk = -1;
@@ -6969,13 +7084,14 @@ static int replay_scripts(const char **paths, int nscripts, int handover,
 		/* the origins are replayed as they ship; only the target is
 		 * held to the collision it is being measured through */
 		st = parse_script(paths[i], &blks, &nblks,
-				  compat_mode && i == snap_sc);
+				  (compat_mode || split_reg >= 0)
+				  && i == snap_sc);
 		if (i == snap_sc)
 			snap_blk = nblks - 1;
 	}
 	cur_applied_free();
 	if (st >= 0)
-		st = replay_blocks(blks, nblks, handover, snap_blk);
+		st = replay_blocks(blks, nblks, handover, snap_blk, split_reg);
 	free_blocks(blks, nblks);
 	return st;
 }
@@ -7447,6 +7563,20 @@ static void drop_files_from(int first)
 	nfiles = first;
 }
 
+/* Keep the slots, drop what they patch. A range in the middle of files[] cannot
+ * be removed - every later block's range is indexed by position - and a file
+ * with no ops builds no groups, which is what every reader downstream tests. */
+static void blank_files_range(int first, int count)
+{
+	for (int i = first; i < first + count && i < nfiles; i++) {
+		for (int j = 0; j < files[i].nops; j++)
+			free(files[i].ops[j].text);
+		free(files[i].ops);
+		files[i].ops = NULL;
+		files[i].nops = files[i].ops_cap = 0;
+	}
+}
+
 /* -C second positional, unified-diff form: parsed into its own files[] range and
  * raw sink (so the host === PATCH === stays byte-identical) and spliced into the
  * live buffers. The range is dropped right after - the diff is applied, not
@@ -7511,6 +7641,42 @@ static char *compat_origin_label(void)
 	sbufn_ret(sb, sb->s)
 }
 
+/* One diff over every buffer the session reshaped, in buffer order: one block,
+ * one section, one storage region. A buffer with no baseline was opened after
+ * the snapshot (the handover's own command line) and is not part of what is
+ * being measured. Returns how many buffers moved. */
+static int derive_diff(sbuf *diff)
+{
+	int nchanged = 0;
+	for (int i = 0; i < xbufcur; i++) {
+		char **pre, **base, **fin;
+		char *basetext = NULL, *fintext, *bdup, *fdup;
+		int npre, nbase, nfin, is_new;
+		if (!bufs[i].path || !bufs[i].path[0])
+			continue;
+		basetext = snap_find(&compat_base, bufs[i].path);
+		if (!basetext)		/* opened after the baseline: not ours */
+			continue;
+		fintext = lbuf_text(bufs[i].lb);
+		if (!strcmp(basetext, fintext)) {	/* user left it as it was */
+			free(fintext);
+			continue;
+		}
+		bdup = uc_dup(basetext);
+		fdup = uc_dup(fintext);
+		base = split_lines(bdup, &nbase);
+		fin = split_lines(fdup, &nfin);
+		pre = read_lines(bufs[i].path, &npre, &is_new);
+		emit_unified_diff(diff, bufs[i].path, is_new, base, nbase,
+				  fin, nfin);
+		nchanged++;
+		free(fintext); free(bdup); free(fdup);
+		free(base); free(fin);
+		free_lines(pre, npre);
+	}
+	return nchanged;
+}
+
 /* The one compat block this run produces: replay the origin and the target into
  * one session, hand it to the user, then measure every changed buffer from its
  * post-origin baseline to its final state and concatenate the results into a
@@ -7545,41 +7711,14 @@ static int compat_derive(void)
 	 * the new block derives on top of every block the target already
 	 * carries; existing compat blocks stack in stored order (post-only, one
 	 * group). The baseline is snapshotted after the target. */
-	if (replay_scripts(sc, nsc, 1, nor) != 0) {
+	if (replay_scripts(sc, nsc, 1, nor, -1) != 0) {
 		ed_free();
 		free(sc);
 		free(diff->s);
 		return -1;
 	}
 	compat_capturing = 0;
-	/* One diff over every buffer the user reshaped, in buffer order: one
-	 * block, one section, one storage region. */
-	for (i = 0; i < xbufcur; i++) {
-		char **pre, **base, **fin;
-		char *basetext = NULL, *fintext, *bdup, *fdup;
-		int npre, nbase, nfin, is_new;
-		if (!bufs[i].path || !bufs[i].path[0])
-			continue;
-		basetext = snap_find(&compat_base, bufs[i].path);
-		if (!basetext)		/* opened after the baseline: not ours */
-			continue;
-		fintext = lbuf_text(bufs[i].lb);
-		if (!strcmp(basetext, fintext)) {	/* user left it as it was */
-			free(fintext);
-			continue;
-		}
-		bdup = uc_dup(basetext);
-		fdup = uc_dup(fintext);
-		base = split_lines(bdup, &nbase);
-		fin = split_lines(fdup, &nfin);
-		pre = read_lines(bufs[i].path, &npre, &is_new);
-		emit_unified_diff(diff, bufs[i].path, is_new, base, nbase,
-				  fin, nfin);
-		nchanged++;
-		free(fintext); free(bdup); free(fdup);
-		free(base); free(fin);
-		free_lines(pre, npre);
-	}
+	nchanged = derive_diff(diff);
 	ed_free();
 	sbuf_nul(diff)
 	if (!nchanged) {
@@ -7603,6 +7742,101 @@ static int compat_derive(void)
 	free(diff->s);
 	free(sc);
 	return 0;
+}
+
+/* -E <reg>: rebuild one stored compat block, in place.
+ *
+ * The block's own src= label names the stack it was derived in, so the origins
+ * are looked for beside the target and replayed ahead of it: the identity
+ * gates then fire exactly as the shell chain would make them, and the tree the
+ * user is handed is the one the block is meant to repair. The target replays
+ * with QF2=1 forced - a block being amended is a block expected to miss - and
+ * with its own dispatch for this block lifted to the end, the baseline taken
+ * in between. So the block's own edits, its misses as fail_report puts them
+ * back, and whatever the user does on top are together the new diff.
+ *
+ * Nothing else in the script moves: the host patch, the sibling blocks and
+ * this block's label and register are all stored, and re-emitted from storage.
+ */
+static int amend_derive(void)
+{
+	compat_block_t *cb;
+	char **src = NULL, **own = NULL;
+	const char **sc = NULL;
+	int nsrc = 0, nsc = 0, dlen, i, blk, st = -1;
+	sbuf_smake(diff, SB_INIT)
+	blk = amend_sel - REG_FLAG_BASE;
+	if (blk < 0 || blk >= ncompat) {
+		fprintf(stderr, "%s: no compat block on register %d\n",
+			input_file, amend_sel);
+		free(diff->s);
+		return -1;
+	}
+	cb = &compat_blocks[blk];
+	nsrc = compat_src_fields(cb, &src);
+	sc = emalloc((nsrc + 1) * sizeof(*sc));
+	own = emalloc((nsrc + 1) * sizeof(*own));
+	/* the label stores basenames, and a chain is one directory of scripts */
+	dlen = base_name(input_file) - input_file;
+	for (i = 0; i < nsrc; i++) {
+		char *q = emalloc(dlen + strlen(src[i]) + 1);
+		memcpy(q, input_file, dlen);
+		strcpy(q + dlen, src[i]);
+		own[nsc] = q;
+		sc[nsc++] = q;
+		if (access(q, R_OK) < 0) {
+			fprintf(stderr, "%s: origin %s of block %d is not "
+				"beside the script\n", input_file, q, amend_sel);
+			goto out;
+		}
+	}
+	sc[nsc++] = input_file;
+	fprintf(stderr, "amend: replaying");
+	for (i = 0; i < nsc; i++)
+		fprintf(stderr, " %s", sc[i]);
+	fprintf(stderr, "\n");
+	if (replay_scripts(sc, nsc, 1, nsc - 1, amend_sel) != 0) {
+		ed_free();
+		goto out;
+	}
+	if (!derive_diff(diff)) {
+		ed_free();
+		fprintf(stderr, "no compat patch derived\n");
+		goto out;
+	}
+	ed_free();
+	sbuf_nul(diff)
+	/* The rebuilt block takes the old one's place: same register, same
+	 * label, same position in the run order. Its old files[] range stays
+	 * where it is, emptied - the new one parses in at the end of the array,
+	 * as a freshly derived block's does. */
+	blank_files_range(cb->first, cb->count);
+	free_lines(cb->raw.v, cb->raw.n);
+	memset(&cb->raw, 0, sizeof(cb->raw));
+	if (cb->deltas.n) {
+		fprintf(stderr, "amend: block %d had stored customizations, "
+			"which its new diff cannot be matched to: dropping "
+			"them\n", amend_sel);
+		memset(&cb->deltas, 0, sizeof(cb->deltas));
+	}
+	raw_sink = &cb->raw;
+	parse_diff_reset();
+	cb->first = nfiles;
+	parse_diff_text(diff->s);
+	cb->count = nfiles - cb->first;
+	raw_sink = NULL;
+	mark_bytes_used(diff->s);
+	st = 0;
+out:
+	for (i = 0; i < nsrc; i++)
+		free(src[i]);
+	for (i = 0; i < nsc && i < nsrc; i++)
+		free(own[i]);
+	free(src);
+	free(own);
+	free(sc);
+	free(diff->s);
+	return st;
 }
 
 /* One buffer left behind by the session, against the file it names. */
@@ -7770,7 +8004,7 @@ static int amend_to_diff(const char *path, sbuf *out)
 	sc[0] = path;
 	/* every buffer of the session ends up in the diff */
 	xbufsalloc = MAX(64, xbufsalloc);
-	if (replay_scripts(sc, 1, 1, -1) != 0) {
+	if (replay_scripts(sc, 1, 1, -1, -1) != 0) {
 		fprintf(stderr, "%s: replay failed, script left alone\n", path);
 		ed_free();
 		return -1;
@@ -8160,7 +8394,7 @@ static void usage(const char *prog, int err)
 		" [input.patch] [nextvi-opts...]\n"
 		"       %s -e script.sh [script2.sh...]\n"
 		"       %s [-ari]I [nextvi-opts...]\n"
-		"       %s [-ario]E script.sh [nextvi-opts...]\n"
+		"       %s [-ario]E script.sh [<reg>|''] [nextvi-opts...]\n"
 		"       %s [-o]C origin.sh [-C origin2.sh...] target.sh"
 		" [fix.[patch|sh]|''] [nextvi-opts...]\n",
 		prog, prog, prog, prog, prog);
@@ -8187,7 +8421,10 @@ static void usage(const char *prog, int err)
 		"  -ew   Write section end tag (default: \"%s\")\n",
 		end_tag_rd, end_tag_wr);
 	fputs("  -E    Update a script: replay it, edit, re-emit it\n"
-	      "        Rest of the line is a nextvi command line; -d[N] keeps deltas\n"
+	      "        A compat block's flag register after the script rebuilds\n"
+	      "        that one block instead, replaying its src= origins ahead of\n"
+	      "        the target; '' skips the slot. Rest of the line is a nextvi\n"
+	      "        command line; -d[N] keeps deltas\n"
 	      "        With QF2=1 the hunks that missed are put back into the\n"
 	      "        buffers at the line they reported, cursor parked on the first\n"
 	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\n"
@@ -8398,15 +8635,38 @@ int main(int argc, char **argv)
 			usage(argv[0], 1);
 	}
 	/* -E: the first word after the cluster is the script to update, read
-	 * like any other input; the rest is the editor's command line */
+	 * like any other input; then an optional block selector, then the
+	 * editor's command line.
+	 *
+	 * The selector is a stored block's flag register, the number the
+	 * "=== PATCH2VI COMPAT <reg>" header and the "# Compat <reg>" comment
+	 * both carry. With it, that one block is what the run rebuilds and
+	 * everything else in the script stands; without it -E updates the base
+	 * patch as it always did. An empty word skips the slot, which is how
+	 * the handover's nextvi command line stays reachable, exactly as -C's
+	 * fix slot does. */
 	if (amend_mode) {
+		char **ha = argv + i + 1;
+		int nh = argc - i - 1;
 		if (i >= argc) {
 			fprintf(stderr, "-E requires a script argument\n");
 			return 1;
 		}
 		if (amend_inplace)
 			out_file = argv[i];
-		if (parse_hand_args(argv + i + 1, argc - i - 1) < 0)
+		if (nh > 0 && !ha[0][strspn(ha[0], "0123456789")]) {
+			if (ha[0][0]) {
+				amend_sel = atoi(ha[0]);
+				/* a script carrying blocks is search anchored
+				 * throughout: an absolute edit next to a gated
+				 * section would clobber a line by number in a
+				 * tree the gate just reshaped */
+				relative_mode = 1;
+			}
+			ha++;
+			nh--;
+		}
+		if (parse_hand_args(ha, nh) < 0)
 			usage(argv[0], 1);
 	}
 	/* the tail's mode flags govern the loads too, not just the session:
@@ -8504,7 +8764,7 @@ int main(int argc, char **argv)
 	/* -E: the delta sections are read as under -d, but the old patch
 	 * section is not - the new one is what the session produces, over the
 	 * files as they are on disk. Close before the loop below reads it. */
-	if (amend_mode) {
+	if (amend_mode && amend_sel < 0) {
 		if (in)
 			fclose(in);
 		in = NULL;
@@ -8512,7 +8772,9 @@ int main(int argc, char **argv)
 		 * an origin script this run knows nothing about. Discarding
 		 * them beats refusing the update - the replay still runs them,
 		 * so their effect survives folded into the host patch, only
-		 * their gating is lost. */
+		 * their gating is lost. Naming one (-E script.sh <reg>) is the
+		 * other way round: that block is rebuilt and the base patch is
+		 * the part that stands, read below like any stored region. */
 		if (ncompat) {
 			fprintf(stderr, "%s: script carries %d compat block%s, "
 				"which -E cannot round-trip: discarding them, "
@@ -8534,6 +8796,15 @@ int main(int argc, char **argv)
 
 	if (in && in != stdin)
 		fclose(in);
+
+	/* -E <reg>: the host patch has just been read out of the script and
+	 * every other stored region is in hand, so all this replaces is the
+	 * named block's own diff. Same window as -C below, one block down. */
+	if (amend_mode && amend_sel >= 0) {
+		if (amend_derive() < 0)
+			return 1;
+		relative_mode = 1;
+	}
 
 	/* -C: replay the origin script in one session and hand the
 	 * tree it leaves behind to the user, who reshapes it so the target

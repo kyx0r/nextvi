@@ -2694,6 +2694,62 @@ else
 	sed 's/^/    /' "$R/e.c"
 fi
 
+# Naming a block's flag register is the other half of -E: that one block is
+# rebuilt and everything else in the script stands. The origins come from the
+# block's own src= label, are looked for beside the target and replayed ahead
+# of it, so the gate fires exactly as the chain would make it; the baseline is
+# taken just before the block runs, which is why a session that changes nothing
+# re-derives the diff already stored.
+cp "$R/e.orig" "$R/e.c"
+rm -f "$R/ert.sh"
+pty 'P2VI_EX=q!' \
+	"sh -c 'cd $R && $R_P2VI -E ec.sh 231 > $R/ert.sh 2>$R/eerr'" >/dev/null 2>&1
+if cmp -s "$R/ec.sh" "$R/ert.sh"; then
+	ok "compat: -E <reg> round-trips the named block byte for byte"
+else
+	fail "compat: -E <reg> round-trips the named block byte for byte"
+	tr -d '\r' < "$R/eerr" | sed 's/^/    /' | head -3
+fi
+
+# an edit in the handover joins the block, not the host patch: EPROBE is the
+# origin's line, so it only exists in the tree the block is derived against
+cp "$R/e.orig" "$R/e.c"
+rm -f "$R/eup.sh"
+pty 'P2VI_EX=%s/^EPROBE$/EDITED/:q!' \
+	"sh -c 'cd $R && $R_P2VI -E ec.sh 231 > $R/eup.sh 2>$R/eerr'" >/dev/null 2>&1
+if sed -n '/=== COMPAT PATCH ===/,/=== END ===/p' "$R/eup.sh" | grep -q '^+EDITED$' &&
+   [ "$(sed -n '/=== PATCH2VI PATCH ===/,$p' "$R/eup.sh")" = \
+     "$(sed -n '/=== PATCH2VI PATCH ===/,$p' "$R/ec.sh")" ]; then
+	ok "compat: -E <reg> rebuilds one block and leaves the host patch alone"
+else
+	fail "compat: -E <reg> rebuilds one block and leaves the host patch alone"
+	tr -d '\r' < "$R/eerr" | sed 's/^/    /' | head -3
+fi
+cp "$R/e.orig" "$R/e.c"
+stack e1.sh eup.sh
+e_full="$(tr '\n' '|' < "$R/e.c")"
+cp "$R/e.orig" "$R/e.c"
+( cd "$R" && VI="$VI" sh eup.sh ) >/dev/null 2>&1
+e_clean="$(tr '\n' '|' < "$R/e.c")"
+if [ "$e_full" = 'E1|EDITED|E2c|E3x|' ] && [ "$e_clean" = 'E1|E2|E3x|' ]; then
+	ok "compat: the rebuilt block still fires only under its own origin"
+else
+	fail "compat: the rebuilt block still fires only under its own origin"
+	echo "    origin=[$e_full] clean=[$e_clean]"
+fi
+
+# a register no block carries is refused, and nothing is written
+cp "$R/e.orig" "$R/e.c"
+rm -f "$R/ebad.sh"
+pty 'P2VI_EX=q!' \
+	"sh -c 'cd $R && $R_P2VI -E ec.sh 999 > $R/ebad.sh 2>$R/eerr'" >/dev/null 2>&1
+if [ ! -s "$R/ebad.sh" ] && grep -q 'no compat block on register 999' "$R/eerr"; then
+	ok "compat: -E <reg> refuses a register no block carries"
+else
+	fail "compat: -E <reg> refuses a register no block carries"
+	tr -d '\r' < "$R/eerr" | sed 's/^/    /' | head -3
+fi
+
 # FAILURE PLACEMENT. A QF2=1 run reports every miss and keeps going, so what
 # the missed hunks were meant to do is left only in the scrollback. The report
 # chain logs each FAIL line to a register, and the mark it names ("...:m<id>")
