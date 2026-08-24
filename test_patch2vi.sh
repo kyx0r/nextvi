@@ -944,188 +944,15 @@ third line
 	"-r"
 
 echo ""
-echo "=== Verbatim PHASE override tests ==="
-
-# -i/-d open the built-in nextvi on /dev/tty, so these run patch2vi under
-# script(1)'s pty. The editor session is driven entirely by P2VI_EX
-# (patch2vi's test hook, run like EXINIT after the in-RAM buffers load):
-# edits pipe the buffer through an awk filter with ":%!" and quit with
-# "q!" - the buffer is read back as-is, there is no file and no saving.
-# No keystrokes are sent, so the run is non-interactive and exits as fast
-# as it starts. Each group's PHASE 1/PHASE 2 sections hold its verbatim
-# ex-body segment bytes; editing them supersedes the structured sections
-# (latest-edited wins, tie goes to verbatim).
-if command -v script >/dev/null 2>&1; then
-
-# Quit an untouched session: parses back to what was written = unedited
-ED_TRUE="q"
-
-# mkfilter <file> [<section> <old> <new>]...: awk filter that replaces OLD
-# with NEW on every line inside sections whose header starts with SECTION
-# ("PHASE 2", "EDIT COMMAND (rel)", ...)
-mkfilter() {
-	local f="$1"; shift
-	printf '/^=== .* ===$/ { sect = substr($0, 5, length($0) - 8); print; next }\n' > "$f"
-	while [ $# -gt 0 ]; do
-		printf 'index(sect, "%s") == 1 { gsub(/%s/, "%s") }\n' \
-			"$1" "$2" "$3" >> "$f"
-		shift 3
-	done
-	printf '{ print }\n' >> "$f"
-}
-
-# edex <file> [<section> <old> <new>]...: P2VI_EX commands that pipe the
-# buffer through a mkfilter awk program, then quit (discard flag: the
-# edited buffer is read from RAM, never written)
-edex() {
-	mkfilter "$@"
-	printf '%%!awk -f %s:q!' "$1"
-}
-
-# run_i <script-out> <excmds> <flags> <input>: patch2vi under a pty with
-# the embedded editor driven by P2VI_EX
-run_i() {
-	pty "P2VI_EX=$2" \
-		"./patch2vi $3 '$4' > '$1' 2> '$TMPDIR/i_err.txt'" >/dev/null 2>&1
-	chmod +x "$1"
-}
-
-# apply_i <script> <input-copy> <expected>: run the script on a fresh copy
-apply_i() {
-	cp "$TMPDIR/i_orig.txt" "$TMPDIR/result.txt"
-	sed -i "s|\$VI -e '[^']*'|\$VI -e '$TMPDIR/result.txt'|" "$1"
-	VI="$VI" "$1" >/dev/null 2>&1 &&
-		diff -q "$TMPDIR/result.txt" "$2" >/dev/null 2>&1
-}
-
-printf 'ctx1\nprintf("foo");\nend\n' > "$TMPDIR/i_orig.txt"
-printf 'ctx1\nprintf("bar");\nend\n' > "$TMPDIR/i_bar.txt"
-printf 'ctx1\nprintf("baz");\nend\n' > "$TMPDIR/i_baz.txt"
-printf 'ctx1\nprintf("qux");\nend\n' > "$TMPDIR/i_qux.txt"
-printf 'ctx1\nprintf("BBB");\nend\n' > "$TMPDIR/i_bbb.txt"
-diff -u "$TMPDIR/i_orig.txt" "$TMPDIR/i_bar.txt" > "$TMPDIR/i.patch" || true
-
-# Unedited -i applies like -r
-run_i "$TMPDIR/i1.sh" "$ED_TRUE" -ri "$TMPDIR/i.patch"
-if apply_i "$TMPDIR/i1.sh" "$TMPDIR/i_bar.txt"; then
-	ok "unedited -i applies"
-else
-	fail "unedited -i applies"
-fi
-
-# -i takes a nextvi command line after the input patch: flags reach the
-# session (-v resets whatever preceded) and files open on top; neither
-# disturbs the conversion
-printf 'ref\n' > "$TMPDIR/ref.txt"
-pty "P2VI_EX=$ED_TRUE" \
-	"./patch2vi -ri '$TMPDIR/i.patch' -v '$TMPDIR/ref.txt' > '$TMPDIR/i8.sh' 2> '$TMPDIR/i_err.txt'" \
-	> /dev/null 2>&1
-chmod +x "$TMPDIR/i8.sh"
-if apply_i "$TMPDIR/i8.sh" "$TMPDIR/i_bar.txt"; then
-	ok "-i honors a trailing nextvi command line"
-else
-	fail "-i honors a trailing nextvi command line"
-	cat "$TMPDIR/i_err.txt"
-fi
-
-# an unknown editor option in that tail is refused, not eaten silently
-pty "P2VI_EX=$ED_TRUE" \
-	"./patch2vi -ri '$TMPDIR/i.patch' -Z > /dev/null 2> '$TMPDIR/i_err.txt'" \
-	> /dev/null 2>&1
-grep -q "Unknown editor option: -Z" "$TMPDIR/i_err.txt" &&
-	ok "-i rejects an unknown editor option" ||
-	{ fail "-i rejects an unknown editor option"; cat "$TMPDIR/i_err.txt"; }
-
-# "-m" reaches the loads, not just the session: ed_loadbuf prints one line
-# per injected buffer, and bit 4 must silence it as ec_edit's own line
-# the transcript carries ANSI codes up to the flag, so grep the bare marker
-p2v_out=$(pty "P2VI_EX=$ED_TRUE" \
-	"./patch2vi -ri '$TMPDIR/i.patch' > /dev/null 2>&1")
-if printf '%s' "$p2v_out" | grep -q '\[f\]'; then
-	ok "-i announces its loaded buffers"
-else
-	fail "-i announces its loaded buffers"
-fi
-p2v_out=$(pty "P2VI_EX=$ED_TRUE" \
-	"./patch2vi -ri '$TMPDIR/i.patch' -m > /dev/null 2>&1")
-if printf '%s' "$p2v_out" | grep -q '\[f\]'; then
-	fail "-m silences the loaded-buffer lines"
-	printf '%s\n' "$p2v_out" | sed 's/^/    /'
-else
-	ok "-m silences the loaded-buffer lines"
-fi
-
-# Editing a PHASE 2 blob overrides the generated segment and is recorded
-# as a verbatim delta
-run_i "$TMPDIR/i2.sh" "$(edex "$TMPDIR/ed1.awk" "PHASE 2" bar baz)" \
-	-ri "$TMPDIR/i.patch"
-if grep -q "verbatim mark" "$TMPDIR/i2.sh" &&
-   apply_i "$TMPDIR/i2.sh" "$TMPDIR/i_baz.txt"; then
-	ok "verbatim PHASE edit applies and is recorded"
-else
-	fail "verbatim PHASE edit applies and is recorded"
-fi
-
-# -d re-applies the stored verbatim override and reaches a fixed point
-run_i "$TMPDIR/i3.sh" "$ED_TRUE" -rd "$TMPDIR/i2.sh"
-run_i "$TMPDIR/i4.sh" "$ED_TRUE" -rd "$TMPDIR/i3.sh"
-if diff -q "$TMPDIR/i3.sh" "$TMPDIR/i4.sh" >/dev/null 2>&1 &&
-   apply_i "$TMPDIR/i3.sh" "$TMPDIR/i_baz.txt"; then
-	ok "-d verbatim fixed point"
-else
-	fail "-d verbatim fixed point"
-fi
-
-# A structured edit on a group holding a stored override discards the
-# override (preserved in .rej) and takes effect itself
-run_i "$TMPDIR/i5.sh" "$(edex "$TMPDIR/ed2.awk" "EDIT COMMAND (rel)" bar qux)" \
-	-rd "$TMPDIR/i3.sh"
-if grep -q "discards verbatim override" "$TMPDIR/i_err.txt" &&
-   ! grep -q "verbatim mark" "$TMPDIR/i5.sh" &&
-   apply_i "$TMPDIR/i5.sh" "$TMPDIR/i_qux.txt"; then
-	ok "structured edit discards stored override"
-else
-	fail "structured edit discards stored override"
-fi
-rm -f "$TMPDIR"/*.p2v.rej
-
-# Both edited in one session: verbatim wins, structured edit is shadowed
-run_i "$TMPDIR/i6.sh" \
-	"$(edex "$TMPDIR/ed3.awk" "EDIT COMMAND (rel)" bar AAA "PHASE 2" bar BBB)" \
-	-ri "$TMPDIR/i.patch"
-if grep -q "shadowed by verbatim" "$TMPDIR/i_err.txt" &&
-   apply_i "$TMPDIR/i6.sh" "$TMPDIR/i_bbb.txt"; then
-	ok "verbatim edit shadows structured edit"
-else
-	fail "verbatim edit shadows structured edit"
-fi
-
-# A custom_text (group body) edit is kept in the delta even when a verbatim
-# PHASE edit wins the session: custom_text doubles as the group-locator
-# regex for starred LEVEL 2/4 matching, so it must survive the override.
-run_i "$TMPDIR/i7.sh" \
-	"$(edex "$TMPDIR/ed4.awk" "GROUP" foo XYZ "PHASE 2" bar BBB)" \
-	-ri "$TMPDIR/i.patch"
-if grep -q "verbatim mark" "$TMPDIR/i7.sh" &&
-   grep -q "=== custom_text ===" "$TMPDIR/i7.sh" &&
-   apply_i "$TMPDIR/i7.sh" "$TMPDIR/i_bbb.txt"; then
-	ok "custom_text kept alongside verbatim override"
-else
-	fail "custom_text kept alongside verbatim override"
-fi
-
-# ... and it survives an unedited -d replay together with the override
-run_i "$TMPDIR/i8.sh" "$ED_TRUE" -rd "$TMPDIR/i7.sh"
-if grep -q "verbatim mark" "$TMPDIR/i8.sh" &&
-   grep -q "=== custom_text ===" "$TMPDIR/i8.sh" &&
-   apply_i "$TMPDIR/i8.sh" "$TMPDIR/i_bbb.txt"; then
-	ok "custom_text + override -d fixed point"
-else
-	fail "custom_text + override -d fixed point"
-fi
-
-echo ""
 echo "=== -I edit-to-script tests ==="
+
+# -I and -E open the built-in nextvi on /dev/tty, so these run patch2vi under
+# script(1)'s pty. The session is driven entirely by EXINIT (nextvi's own
+# startup) or P2VI_EX (patch2vi's test hook, run once the buffers are loaded):
+# edits pipe a buffer through an awk filter with ":%!" and quit with "q!".
+# No keystrokes are sent, so the run is non-interactive and exits as fast
+# as it starts.
+if command -v script >/dev/null 2>&1; then
 
 # -I edits a file in the built-in editor and turns the buffer it leaves
 # behind into the script; the file itself is never written, so the diff
@@ -1410,44 +1237,6 @@ else
 	fail "-oE updates the script it names in place"
 	tr -d '\r' < "$A/nerr5" | sed 's/^/    /'
 fi
-
-# -od[N] clusters the same way: a delta run reads a script and emits one, so
-# the script it names is also what it writes back. Nothing reaches stdout, and
-# the result is what "-d -o SCRIPT SCRIPT" writes.
-cp "$A/base.txt" "$A/f.txt"
-cp "$A/old.sh" "$A/self3.sh"
-cp "$A/old.sh" "$A/self4.sh"
-run_A "$A" 'q!' '-od self3.sh > od.out 2> nerr6'
-run_A "$A" 'q!' '-d -o self4.sh self4.sh 2> nerr7'
-if [ -s "$A/self3.sh" ] && [ ! -s "$A/od.out" ] && [ ! -e "$A/d" ] &&
-   cmp -s "$A/self3.sh" "$A/self4.sh"; then
-	ok "-od updates the delta script it names in place"
-else
-	fail "-od updates the delta script it names in place"
-	tr -d '\r' < "$A/nerr6" | sed 's/^/    /'
-fi
-
-cp "$A/base.txt" "$A/f.txt"
-( cd "$A" && VI="$VI" sh self3.sh ) >/dev/null 2>&1
-if diff -q "$A/f.txt" "$A/want2.txt" >/dev/null 2>&1; then
-	ok "-od leaves a working script behind"
-else
-	fail "-od leaves a working script behind"
-	sed 's/^/    /' "$A/f.txt"
-fi
-
-# a name that merely starts with d is still a file name, and the cluster
-# without a script to update is an error, not a run that writes stdout
-( cd "$A" && "$E_P2VI" -r -odelta.sh x.diff ) > "$A/o5.out" 2>&1
-"$E_P2VI" -od > "$A/o6.out" 2> "$A/o6.err" || true
-if [ -s "$A/delta.sh" ] && [ ! -s "$A/o5.out" ] && [ ! -s "$A/o6.out" ] &&
-   grep -q 'requires a script argument' "$A/o6.err"; then
-	ok "-odFILE names a file, bare -od needs a script"
-else
-	fail "-odFILE names a file, bare -od needs a script"
-	sed 's/^/    /' "$A/o5.out" "$A/o6.err"
-fi
-rm -f "$A/delta.sh"
 
 # -o keeps naming a file whenever what follows is not an -E cluster
 ( cd "$A" && "$E_P2VI" -r -oE2.sh x.diff ) > "$A/o4.out" 2>&1
@@ -2139,28 +1928,22 @@ else
 fi
 
 # Stage B3: storage, round-trip and stacking. The -C script above (new.sh from
-# draw.c) carries a pre COMPAT region after exit 0. -d must reproduce the whole
-# script - host block and compat region - byte-identically, without re-running
-# the origin, driven under a pty and quit with :q.
-dregen() {	# <script>: regenerate to $R/dregen.sh via a no-op -d session
+# draw.c) carries a pre COMPAT region after exit 0. A plain regen must
+# reproduce the whole script - host block and compat region - byte-identically,
+# without re-running the origin and without an editor.
+dregen() {	# <script>: regenerate it to $R/dregen.sh, reading its own storage
 	rm -f "$R/dregen.sh"
-	pty 'P2VI_EX=:q' \
-		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dregen.sh 2>$R/derr'" > /dev/null 2>&1
+	( cd "$R" && "$R_P2VI" -r "$1" > "$R/dregen.sh" 2> "$R/derr" ) || true
 }
-dedit() {	# <script> <P2VI_EX>: -d session running <P2VI_EX>, out $R/dedit.sh
-	rm -f "$R/dedit.sh"
-	pty "P2VI_EX=$2" \
-		"sh -c 'cd $R && $R_P2VI -d $1 > $R/dedit.sh 2>$R/derr'" > /dev/null 2>&1
-}
-# a stored block round-trips through storage: -d reparses the recorded region
-# and emits the same script
+# a stored block round-trips through storage: a regen reparses the recorded
+# region and emits the same script
 cp "$R/pd.orig" "$R/pd.c"
 cp "$R/pe.orig" "$R/pe.c"
 dregen xf.sh
 if [ -s "$R/dregen.sh" ] && cmp -s "$R/xf.sh" "$R/dregen.sh"; then
-	ok "compat: -d round-trips a stored compat block byte-identically"
+	ok "compat: a regen round-trips a stored compat block byte-identically"
 else
-	fail "compat: -d round-trips a stored compat block byte-identically"
+	fail "compat: a regen round-trips a stored compat block byte-identically"
 	tr -d '\r' < "$R/derr" | sed 's/^/    /'
 	diff "$R/xf.sh" "$R/dregen.sh" | head -10 | sed 's/^/    /'
 fi
@@ -2216,20 +1999,20 @@ else
 	sed 's/^/    /' "$R/cs.c"
 fi
 
-# -d must round-trip a multi-file block: one region back out, byte-identically.
+# A regen must round-trip a multi-file block: one region back out, byte-identically.
 cp "$R/ph.orig" "$R/ph.c"
 cp "$R/pi.orig" "$R/pi.c"
 dregen mf.sh
 if cmp -s "$R/mf.sh" "$R/dregen.sh"; then
-	ok "compat: -d round-trips a two-file compat block byte-identically"
+	ok "compat: a regen round-trips a two-file compat block byte-identically"
 else
-	fail "compat: -d round-trips a two-file compat block byte-identically"
+	fail "compat: a regen round-trips a two-file compat block byte-identically"
 	diff "$R/mf.sh" "$R/dregen.sh" 2>&1 | sed 's/^/    /' | head
 fi
 
 # Buffer numbering survives a regeneration even when the block's file set is
 # not the host's. Storage puts the compat regions before === PATCH2VI PATCH ===,
-# so -d parses the block's files first and a files[]-ordered b<N> would open
+# so a regen parses the block's files first and a files[]-ordered b<N> would open
 # them in the other order: here the host edits ph.c and pi.c while the block
 # edits pi.c alone, so every b<N> in the emitted driver would shift by one.
 cp "$R/ph.orig" "$R/ph.c"
@@ -2240,9 +2023,9 @@ cp "$R/ph.orig" "$R/ph.c"
 cp "$R/pi.orig" "$R/pi.c"
 dregen sf.sh
 if [ -s "$R/sf.sh" ] && cmp -s "$R/sf.sh" "$R/dregen.sh"; then
-	ok "compat: -d keeps the buffer order of a block over one host file"
+	ok "compat: a regen keeps the buffer order of a block over one host file"
 else
-	fail "compat: -d keeps the buffer order of a block over one host file"
+	fail "compat: a regen keeps the buffer order of a block over one host file"
 	diff "$R/sf.sh" "$R/dregen.sh" 2>&1 | sed 's/^/    /' | head
 fi
 
@@ -2259,9 +2042,9 @@ cp "$R/new.sh" "$R/pr.sh"
 cp "$R/draw.orig" "$R/draw.c"
 dregen pr.sh
 if diff "$R/pr.sh" "$R/dregen.sh" >/dev/null 2>&1; then
-	ok "compat: -d round-trips a stored compat block byte-identically"
+	ok "compat: a regen round-trips a stored two-block script byte-identically"
 else
-	fail "compat: -d round-trips a stored compat block byte-identically"
+	fail "compat: a regen round-trips a stored two-block script byte-identically"
 	diff "$R/pr.sh" "$R/dregen.sh" | sed 's/^/    /' | head -20
 fi
 
@@ -2325,99 +2108,12 @@ else
 	sed 's/^/    /' "$R/draw.c"
 fi
 
-# Part A: a stored === COMPAT DELTA === shapes the emitted compat body and
-# survives -d regen (no editor UI needed). Rebuild a single-block pr.sh, then
-# hand-edit its empty COMPAT DELTA to flip group 1's strategy to abs. -d must
-# re-emit the compat body from that delta - an absolute "3c L2c" replacing the
-# relative "f> ^L2$" search anchor - and re-deriving it stays byte-identical.
+# A regen reproduces a multi-block script byte-identically: every stored region
+# is read back and re-emitted, host block and both compat blocks alike. Build a
+# two-block script first, then round-trip it.
 cp "$R/draw.orig" "$R/draw.c"
 coderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
 cp "$R/new.sh" "$R/pr.sh"
-awk '
-/^=== COMPAT DELTA ===$/ {
-	print; getline;			# drop the empty "=== END ==="
-	print "=== DELTA draw.c ===";
-	print "=== GROUP 1 ===";
-	print "-L2"; print "+L2c";
-	print "=== END ===";
-	print "=== LEVEL 2 ===";
-	print "=== strategy ===";
-	print "abs";
-	print "=== END ===";
-	print "=== END ===";
-	print "=== END ===";
-	next
-}
-{ print }
-' "$R/pr.sh" > "$R/edited.sh"
-
-cp "$R/draw.orig" "$R/draw.c"
-dregen edited.sh
-cp "$R/dregen.sh" "$R/edd.sh"
-if grep -q '3c L2c' "$R/edd.sh" &&
-   ! sed -n '/# Compat /,/EXINIT/p' "$R/edd.sh" | grep -q 'f> \^L2\$'; then
-	ok "compat: a stored COMPAT DELTA reshapes the emitted body (-d, no UI)"
-else
-	fail "compat: a stored COMPAT DELTA reshapes the emitted body (-d, no UI)"
-	sed -n '/# Compat /,/EXINIT/p' "$R/edd.sh" | sed 's/^/    /' | head
-fi
-
-# the delta-shaped block still applies on an origin tree (abs line numbers
-# line up post-origin) and no-ops on a clean tree; -d of it is stable
-cp "$R/draw.orig" "$R/draw.c"
-stack x1.sh edd.sh
-deltaA_ok=0
-[ "$(sed -n 1,3p "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2c')" ] && deltaA_ok=1
-cp "$R/draw.orig" "$R/draw.c"
-dregen edd.sh
-if [ "$deltaA_ok" = 1 ] && diff "$R/edd.sh" "$R/dregen.sh" >/dev/null 2>&1; then
-	ok "compat: delta-shaped block applies on origin and -d is stable"
-else
-	fail "compat: delta-shaped block applies on origin and -d is stable"
-	[ "$deltaA_ok" = 1 ] || { echo "    apply:"; sed 's/^/    /' "$R/draw.c"; }
-	diff "$R/edd.sh" "$R/dregen.sh" | sed 's/^/    /' | head
-fi
-
-# Part B: the in-editor surface. Under -d each compat block opens as its own
-# editable buffer (host = b0, compat block c = b<c+1>); edits read back into
-# that block's === COMPAT DELTA === and, via Part A, into its emitted body,
-# with the host buffer untouched. Edit compat buffer b1's COMMAND STRATEGY to
-# select abs (uncomment #abs); the effect must match Test A's hand-edit.
-cp "$R/draw.orig" "$R/draw.c"
-coderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
-cp "$R/new.sh" "$R/pr.sh"
-cp "$R/draw.orig" "$R/draw.c"
-dedit pr.sh 'b1:%s/^#abs$/abs/:q!'
-host_pr="$(sed -n '/# Patch:/,/\$P2VIF/p' "$R/pr.sh")"
-host_ed="$(sed -n '/# Patch:/,/\$P2VIF/p' "$R/dedit.sh")"
-if sed -n '/# Compat /,/EXINIT/p' "$R/dedit.sh" | grep -q '3c L2c' &&
-   sed -n '/=== COMPAT DELTA/,/=== COMPAT PATCH/p' "$R/dedit.sh" |
-	grep -q '^abs$' &&
-   [ "$host_pr" = "$host_ed" ]; then
-	ok "compat: editing a block's buffer under -d shapes its body + storage"
-else
-	fail "compat: editing a block's buffer under -d shapes its body + storage"
-	grep -v snapshot "$R/derr" | sed 's/^/    /' | head
-fi
-
-# the edited block still applies on an origin tree and -d is stable
-cp "$R/dedit.sh" "$R/bedd.sh"
-cp "$R/draw.orig" "$R/draw.c"
-stack x1.sh bedd.sh
-bB_ok=0
-[ "$(sed -n 1,3p "$R/draw.c")" = "$(printf 'L1\nPROBE\nL2c')" ] && bB_ok=1
-cp "$R/draw.orig" "$R/draw.c"
-dregen bedd.sh
-if [ "$bB_ok" = 1 ] && diff "$R/bedd.sh" "$R/dregen.sh" >/dev/null 2>&1; then
-	ok "compat: buffer-edited block applies on origin and -d is stable"
-else
-	fail "compat: buffer-edited block applies on origin and -d is stable"
-	[ "$bB_ok" = 1 ] || { echo "    apply:"; sed 's/^/    /' "$R/draw.c"; }
-fi
-
-# A session touching no buffer reproduces a multi-block script byte-identically
-# (per-buffer read-back across host + N compat buffers). Build a two-block
-# script first, then a no-op -d must round-trip it.
 cp "$R/draw.orig" "$R/draw.c"
 coderive x1.sh pr.sh '%s/^L3x$/L3z/:q!'	# stacks a 2nd pre block
 cp "$R/new.sh" "$R/two.sh"
@@ -2425,28 +2121,14 @@ if [ "$(grep -c '^=== PATCH2VI COMPAT [0-9]*' "$R/two.sh")" = 2 ]; then
 	cp "$R/draw.orig" "$R/draw.c"
 	dregen two.sh
 	if diff "$R/two.sh" "$R/dregen.sh" >/dev/null 2>&1; then
-		ok "compat: -d untouched reproduces a two-block script byte-identically"
+		ok "compat: a regen reproduces a two-block script byte-identically"
 	else
-		fail "compat: -d untouched reproduces a two-block script byte-identically"
+		fail "compat: a regen reproduces a two-block script byte-identically"
 		diff "$R/two.sh" "$R/dregen.sh" | sed 's/^/    /' | head
 	fi
 else
-	fail "compat: -d untouched reproduces a two-block script byte-identically"
+	fail "compat: a regen reproduces a two-block script byte-identically"
 	echo "    could not build a two-block script"
-fi
-
-# Two blocks over one file open two DISTINCT buffers (indexed names): editing
-# only b1 routes to the first block; the second block is left untouched.
-cp "$R/draw.orig" "$R/draw.c"
-dedit two.sh 'b1:%s/^#abs$/abs/:q!'
-blk1="$(awk '/=== PATCH2VI COMPAT/{n++} n==1 && /^abs$/{print "hit"}' "$R/dedit.sh")"
-blk2="$(awk '/=== PATCH2VI COMPAT/{n++} n==2 && /^abs$/{print "hit"}' "$R/dedit.sh")"
-if [ "$blk1" = "hit" ] && [ -z "$blk2" ]; then
-	ok "compat: editing b1 routes to block 1 only, block 2 untouched"
-else
-	fail "compat: editing b1 routes to block 1 only, block 2 untouched"
-	echo "    blk1=[$blk1] blk2=[$blk2]"
-	grep -v snapshot "$R/derr" | sed 's/^/    /' | head
 fi
 
 # Mixed origins, the subset matrix. Two independent origins over one file: A
@@ -2959,9 +2641,9 @@ fi
 # A script written by a patch2vi old enough to gate on stored probes still
 # parses: its === GATE === regions are read past and dropped, never re-emitted.
 # Splice one into cn.sh's storage the shape those scripts wrote it (right after
-# the region header, before === COMPAT DELTA ===) and regenerate: the result is
+# the region header, before === COMPAT PATCH ===) and regenerate: the result is
 # the unspliced script byte for byte, and it still fires on names alone.
-awk '/^=== COMPAT DELTA ===$/ && !d {
+awk '/^=== COMPAT PATCH ===$/ && !d {
 	print "=== GATE 1 present tag 1000 probe cn.c ==="
 	print "S1"
 	print "=== END ==="
