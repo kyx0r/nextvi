@@ -860,7 +860,7 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 '\''1,#+2c 	xet = b->et; \
 	xsw = b->sw; \
 	xts = b->ts; \
-??!219reg vi.h:498:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
+??!219reg vi.h:498:m12sc %? %@2142sc!p compat 231 applied: src=splits.sh' > "$P2VIF".231
 # Compat 232 src=incsearch.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 				pre--;
@@ -935,8 +935,8 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 				for (int _l = 0; _l < xsw; _l++)
 					sbuf_chr(sb, '\'' '\'')
 			} else if ((cs = led_read(kmap, c)))
-??!219reg led.c:672:m22sc %? %@2142sc!p compat applied: src=incsearch.sh' > "$P2VIF".2
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
+??!219reg led.c:672:m22sc %? %@2142sc!p compat 232 applied: src=incsearch.sh' > "$P2VIF".232
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"

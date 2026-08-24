@@ -900,8 +900,8 @@ break##gen:; \\
 ??!219reg regex.c:821:m12sc %? %@2142sc!0?
 ?'\''2s/stopcond/(stopcond) && rstr_live/1??1??1q'\''2s/(s.*d)/(\1) && rstr_live/2??2??'\''2220reg p OK regex.c:823:s22sc %? %@2162sc!0?
 1;2??!219reg regex.c:823:m22sc %? %@2142sc!0?
-p compat applied: src=rstr.sh' > "$P2VIF".1
-EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+p compat 231 applied: src=rstr.sh' > "$P2VIF".231
+EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"

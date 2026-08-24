@@ -4071,7 +4071,7 @@ static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)
 ?'\''3s/col, 0, x/wx + col, 0, w/1??1??1q'\''3s/(col,.*0, )x/wx + \1w/2??2??'\''3220reg p OK vi.c:164:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:164:m32sc %? %@2142sc!0?
 '\''4s/row - xtop/scrrow/??!219reg vi.c:263:m42sc %? %@2142sc!0?
-'\''5s/row - xtop/scrrow/??!219reg vi.c:270:m52sc %? %@2142sc!vis 2b6wvis 3p compat applied: src=lsp.sh' > "$P2VIF".1
+'\''5s/row - xtop/scrrow/??!219reg vi.c:270:m52sc %? %@2142sc!vis 2b6wvis 3p compat 231 applied: src=lsp.sh' > "$P2VIF".231
 # Compat 232 src=visual.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/
@@ -4145,8 +4145,8 @@ static void vi_visual_attrib\(char \*s, int row\)
 			sbuf_cut(led_attsb, 0)
 ??!219reg vi.c:321:m32sc %? %@2142sc!0?
 '\''4i 	vi_vfocused = 1;
-??!219reg vi.c:338:m42sc %? %@2142sc!p compat applied: src=visual.sh' > "$P2VIF".2
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
+??!219reg vi.c:338:m42sc %? %@2142sc!p compat 232 applied: src=visual.sh' > "$P2VIF".232
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"

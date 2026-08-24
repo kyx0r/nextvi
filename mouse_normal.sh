@@ -792,8 +792,8 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 				h = vi_lnrows(mln);
 				p += MIN(k, h - 1) * ren_wrapw(vi_lncol);
 			}
-??!219reg vi.c:782:m22sc %? %@2142sc!p compat applied: src=linewrap_v2.sh' > "$P2VIF".1
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+??!219reg vi.c:782:m22sc %? %@2142sc!p compat 231 applied: src=linewrap_v2.sh' > "$P2VIF".231
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"

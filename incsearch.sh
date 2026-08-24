@@ -548,7 +548,7 @@ static void vi_isearchhl\(void\)
 '\''3c 			if (xkwdrs && xgrp < (xkwdrs->rs ? xkwdrs->rs->nsubc : 2)
 					&& lbuf_len(xb)) {
 ??!219reg vi.c:379:m32sc %? %@2142sc!0?
-'\''4s/et/tr/??!219reg vi.c:404:m42sc %? %@2142sc!p compat applied: src=rstr.sh' > "$P2VIF".1
+'\''4s/et/tr/??!219reg vi.c:404:m42sc %? %@2142sc!p compat 231 applied: src=rstr.sh' > "$P2VIF".231
 # Compat 232 src=splits.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 	int offs\[xkwdrs->nsubc];
@@ -634,8 +634,8 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 ??!219reg vi.c:464:m22sc %? %@2142sc!0?
 '\''3c 		win_save();
 		vi_redraw();
-??!219reg vi.c:470:m32sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".2
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
+??!219reg vi.c:470:m32sc %? %@2142sc!p compat 232 applied: src=splits.sh' > "$P2VIF".232
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"

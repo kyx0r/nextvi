@@ -1263,8 +1263,8 @@ printf '%s\n' '2sc!fr 98b1%ya 98?0?
 5??-1m 2220reg p OK vi.c:1966:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:19662sc %? %@2132sc!0?
 '\''1s/\{ \{/{/??!219reg vi.c:1957:m12sc %? %@2142sc!0?
-'\''2d??!219reg vi.c:1966:m22sc %? %@2142sc!p compat applied: src=lsp.sh' > "$P2VIF".1
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF".0 "$P2VIF".1 "$P2VIF".d
+'\''2d??!219reg vi.c:1966:m22sc %? %@2142sc!p compat 231 applied: src=lsp.sh' > "$P2VIF".231
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"

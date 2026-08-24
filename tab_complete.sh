@@ -726,7 +726,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 			if (c == TK_CTL('\''_'\''))
 				continue;
 ??!219reg led.c:573:m22sc %? %@2142sc!0?
-'\''3,#+26d??!219reg led.c:755:m32sc %? %@2142sc!p compat applied: src=detect_indent.sh' > "$P2VIF".1
+'\''3,#+26d??!219reg led.c:755:m32sc %? %@2142sc!p compat 231 applied: src=detect_indent.sh' > "$P2VIF".231
 # Compat 232 src=incsearch.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
@@ -807,7 +807,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 '\''2i 			if (flg & 2)	/* the caller steps the search match */
 				break;
 ??!219reg led.c:742:m22sc %? %@2142sc!0?
-'\''3d??!219reg led.c:771:m32sc %? %@2142sc!p compat applied: src=incsearch.sh' > "$P2VIF".2
+'\''3d??!219reg led.c:771:m32sc %? %@2142sc!p compat 232 applied: src=incsearch.sh' > "$P2VIF".232
 # Compat 233 src=arrowkeys_insert.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 						page = led_complist\(compsb, page\);
@@ -834,7 +834,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 					term_clean\(\);5??0?
 5??-1m 1220reg p OK led.c:823:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg led.c:8232sc %? %@2132sc!0?
-'\''1s/f\)/f, 1)/??!219reg led.c:823:m12sc %? %@2142sc!p compat applied: src=arrowkeys_insert.sh' > "$P2VIF".3
+'\''1s/f\)/f, 1)/??!219reg led.c:823:m12sc %? %@2142sc!p compat 233 applied: src=arrowkeys_insert.sh' > "$P2VIF".233
 # Compat 234 src=incsearch.sh src=detect_indent.sh
 printf '%s\n' '2sc!fr 98b2%ya 98?0?
 %f> 				pre--;
@@ -879,8 +879,8 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 		case '\''\t'\'':
 			if (flg & 2)    /* the caller steps the search match */
 				break;
-??!219reg led.c:748:m22sc %? %@2142sc!p compat applied: src=incsearch.sh src=detect_indent.sh' > "$P2VIF".4
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".4 "$P2VIF".d
+??!219reg led.c:748:m22sc %? %@2142sc!p compat 234 applied: src=incsearch.sh src=detect_indent.sh' > "$P2VIF".234
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".233 "$P2VIF".234 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"

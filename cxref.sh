@@ -976,7 +976,7 @@ extern struct buf \*ex_pbuf;
 5??-1m 2220reg p OK vi.h:458:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.h:4582sc %? %@2132sc!0?
 '\''1s/3/4/??!219reg vi.h:412:m12sc %? %@2142sc!0?
-'\''2s/4/5/??!219reg vi.h:458:m22sc %? %@2142sc!p compat applied: src=grep.sh' > "$P2VIF".1
+'\''2s/4/5/??!219reg vi.h:458:m22sc %? %@2142sc!p compat 231 applied: src=grep.sh' > "$P2VIF".231
 # Compat 232 src=splits.sh
 printf '%s\n' '2sc!fr 98b1%ya 98?0?
 %f> 	return s;
@@ -1038,8 +1038,8 @@ static int xref_refresh(void)
 ??!219reg vi.c:1024:m12sc %? %@2142sc!0?
 '\''2c 					if (!xref_refresh())
 						temp_switch(XREF_BUF, 0);
-??!219reg vi.c:2239:m22sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".2
-EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".d
+??!219reg vi.c:2239:m22sc %? %@2142sc!p compat 232 applied: src=splits.sh' > "$P2VIF".232
+EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"

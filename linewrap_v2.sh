@@ -6049,7 +6049,7 @@ int ren_wrapw\(int lncol\)
 5??0?
 5??-1m 1220reg p OK ren.c:91:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg ren.c:912sc %? %@2132sc!0?
-'\''1s/ x/ curwin ? curwin->w : x/??!219reg ren.c:91:m12sc %? %@2142sc!p compat applied: src=splits.sh' > "$P2VIF".1
+'\''1s/ x/ curwin ? curwin->w : x/??!219reg ren.c:91:m12sc %? %@2142sc!p compat 231 applied: src=splits.sh' > "$P2VIF".231
 # Compat 232 src=lsp.sh
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -6199,7 +6199,7 @@ static int vi_drawrow\(int row, int trow\)
 '\''4i 	if (diag && trow >= 0)
 		vi_drawdiag(diag, dsev, trow, dcol);
 ??!219reg vi.c:467:m42sc %? %@2142sc!0?
-'\''5,#+1d??!219reg vi.c:478:m52sc %? %@2142sc!p compat applied: src=lsp.sh' > "$P2VIF".2
+'\''5,#+1d??!219reg vi.c:478:m52sc %? %@2142sc!p compat 232 applied: src=lsp.sh' > "$P2VIF".232
 # Compat 233 src=visual.sh src=splits.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
@@ -6270,7 +6270,7 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 '\''2d??!219reg vi.c:508:m22sc %? %@2142sc!0?
 '\''3i 	vi_visual_attrib(s, row);
 ??!219reg vi.c:529:m32sc %? %@2142sc!0?
-'\''4d??!219reg vi.c:531:m42sc %? %@2142sc!p compat applied: src=visual.sh src=splits.sh' > "$P2VIF".3
+'\''4d??!219reg vi.c:531:m42sc %? %@2142sc!p compat 233 applied: src=visual.sh src=splits.sh' > "$P2VIF".233
 # Compat 234 src=lsp.sh src=visual.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 			vi_drawdiag\(diag, dsev, trow, dcol\);
@@ -6312,7 +6312,7 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 1;2;3;4;5??!219reg vi.c:5312sc %? %@2132sc!0?
 '\''1i 	vi_visual_attrib(s, row);
 ??!219reg vi.c:515:m12sc %? %@2142sc!0?
-'\''2d??!219reg vi.c:531:m22sc %? %@2142sc!p compat applied: src=lsp.sh src=visual.sh' > "$P2VIF".4
+'\''2d??!219reg vi.c:531:m22sc %? %@2142sc!p compat 234 applied: src=lsp.sh src=visual.sh' > "$P2VIF".234
 # Compat 235 src=lsp.sh src=visual.sh src=splits.sh
 printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f> 		restore\(syn_blockhl\)
@@ -6381,8 +6381,8 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 ??!219reg vi.c:560:m12sc %? %@2142sc!0?
 '\''2i 	int dcol = rstate->cmax - xleft;
 ??!219reg vi.c:565:m22sc %? %@2142sc!0?
-'\''3s/t/scr/??!219reg vi.c:568:m32sc %? %@2142sc!p compat applied: src=lsp.sh src=visual.sh src=splits.sh' > "$P2VIF".5
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".1 "$P2VIF".2 "$P2VIF".3 "$P2VIF".4 "$P2VIF".5 "$P2VIF".d
+'\''3s/t/scr/??!219reg vi.c:568:m32sc %? %@2142sc!p compat 235 applied: src=lsp.sh src=visual.sh src=splits.sh' > "$P2VIF".235
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".233 "$P2VIF".234 "$P2VIF".235 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
