@@ -5,9 +5,8 @@ p2v_usage() {
 Nextvi patch2vi utility functions
 
 Source on demand:   . ./patch2vi.sh
-Then call:          patch2vi_wrapper -d input.patch [output.sh]
+Then call:          patch2vi_wrapper -r input.patch [output.sh]
                     gitdiff2vi [flags] [output.sh]
-                    edelta file [inplace]
                     regen input.sh
                     rebuild target.sh
                     extract_patches [file.sh]
@@ -17,7 +16,6 @@ Then call:          patch2vi_wrapper -d input.patch [output.sh]
                     compat_check [max]
                     recompat target.sh [origin.sh]
                     reindex [file.sh | 1]
-                    discard_deltas [file.sh]
                     discard_compats [file.sh]
                     run_patches [1]
                     regen_all [1]
@@ -70,7 +68,7 @@ p2v_list() {
 	esac
 }
 
-# -i, -d and -C all imply the editor: led keeps it from drawing, :q from
+# -C, -E and -I all open the editor: led keeps it from drawing, :q from
 # stopping in it. A caller's own P2VI_EX wins.
 p2v_batch() { export P2VI_EX="${P2VI_EX:-led 0:q}"; }
 
@@ -262,7 +260,7 @@ p2v_co() {
 # $1 without the stored compat blocks whose label is $2, on stdout; with no $2,
 # without any of them. A block is only the record of a resolution: the ex
 # commands that carry it out sit in the emitted body, so a stripped script has
-# to be re-emitted ($P2VI -od) before it runs as one that never had them.
+# to be re-emitted (p2v_reemit) before it runs as one that never had them.
 p2v_stripcompat() {
 	awk -v src="$2" "$P2VLBL"'
 	/^=== PATCH2VI COMPAT /	{ if (src == "" || lbl() == src) skip = 1 }
@@ -296,6 +294,13 @@ p2v_splitcompat() {
 }
 
 # --- conversion --------------------------------------------------------------
+
+# Re-emit $1 in place from what it already carries: its embedded patch and its
+# stored compat blocks both, no editor and no tree state involved. The write is
+# atomic, so patch2vi reading the file it is about to replace is safe. This is
+# what a script stripped of blocks (p2v_stripcompat) needs before it runs as
+# one that never had them.
+p2v_reemit() { $P2VI -r -o "$1" "$1"; }
 
 # Convert a .patch file to a nextvi shell script.
 # Usage: patch2vi_wrapper <flag> input.patch [output.sh]
@@ -342,13 +347,16 @@ p2v_stashed_run() (
 # -o rewrites $2 in place, atomically.
 patch2vi_stashed() {
 	p2v_stashed_run "$2" $P2VI "$1" -o "$2" "$2"
-	# the editor's own open banner is written past led, so start a fresh line
-	echo "" >&2
 	echo "Generated: $2" >&2
 }
 
 # Convert the current git diff to a nextvi shell script, to stdout when the
 # output file is omitted.
+#
+# An output that is already one of our scripts keeps everything it stores - its
+# compat blocks above all - and only its embedded patch is replaced; anything
+# else is written from the bare diff and converted from that. Dropping the
+# blocks is discard_compats' job, never a side effect of a regeneration.
 # Usage: gitdiff2vi [flags] [output.sh]
 gitdiff2vi() {
 	p2v_getbin || return 1
@@ -357,25 +365,15 @@ gitdiff2vi() {
 		return
 	fi
 	git diff -- ":!$2" > "$P2VITMP"
-	case "$1" in
-	-d*)	p2v_splice "$2" "$P2VITMP" ;;	# keep the stored deltas
-	# start from the bare diff; -o keeps the mode of a file that already
-	# exists, so the executable bit has to be set here
-	*)	cp "$P2VITMP" "$2"; chmod +x "$2" ;;
-	esac
+	if [ -f "$2" ] && p2v_ours "$2"; then
+		p2v_splice "$2" "$P2VITMP"
+	else	# -o keeps the mode of a file that already exists, so the
+		# executable bit has to be set here
+		cp "$P2VITMP" "$2"
+		chmod +x "$2"
+	fi
 	rm -f "$P2VITMP"
 	patch2vi_stashed "$1" "$2"
-}
-
-# Edit embedded deltas in a nextvi shell script, in place.
-# Usage: edelta file [inplace]
-edelta() {
-	p2v_getbin || return 1
-	if [ "$2" ]; then
-		$P2VI -i -o "$1" "$1"	# discard the stored deltas
-	else
-		$P2VI -od "$1"		# re-apply them, in place
-	fi
 }
 
 # Regenerate a script from the whole working tree, in place. Everything is
@@ -394,7 +392,7 @@ regen() {
 	git reset -q
 	p2v_splice "$1" "$P2VITMP"
 	rm -f "$P2VITMP"
-	patch2vi_stashed -d "$1"
+	patch2vi_stashed -r "$1"
 }
 
 # The -C pass of rebuild: every saved block back onto the script, in storage
@@ -463,10 +461,9 @@ p2v_reapply() {
 # The stored diff is verbatim, which is what lets it come back out as the patch
 # its author handed in.
 #
-# Only the diffs survive, not the blocks' own delta customizations, as with
-# recompat. A block that will not replay at all is a hard error, and then the
-# script is put back the way it was: resolve that collision by hand and hand
-# the result to -C instead.
+# A block that will not replay at all is a hard error, and then the script is
+# put back the way it was: resolve that collision by hand and hand the result
+# to -C instead.
 #
 # The working tree is the script's body, as it is for regen, and both states it
 # can be in mean something. A clean tree has none to offer, so the script
@@ -1092,7 +1089,7 @@ recompat() (
 		# only that tree shows it.
 		p2v_stripcompat "$target" "$origin" > "$work/bare.sh"
 		chmod +x "$work/bare.sh"
-		p2v_tty $P2VI -od "$work/bare.sh"
+		p2v_reemit "$work/bare.sh"
 		p2v_runchain "$origin" "$work/bare.sh"
 		a=$(p2v_snaptree)
 		p2v_restore
@@ -1108,7 +1105,7 @@ recompat() (
 		p2v_stripcompat "$target" "$origin" > "$work/new.sh"
 		cp "$work/new.sh" "$target"
 		chmod +x "$target"		# written by awk, not by -o
-		p2v_tty $P2VI -od "$target"	# re-emit without the old blocks
+		p2v_reemit "$target"		# re-emit without the old blocks
 		# the blocks came off the target before this call: a derivation
 		# that fails now would leave the script stripped of them
 		if ! p2v_co "$origin" "$target" "$work/compat.patch"; then
@@ -1152,35 +1149,18 @@ reindex() (
 	rm -f tmp *.orig *.rej
 )
 
-# DESTRUCTIVE. Discards the stored delta and regenerates the script from scratch
-# in the new format. With a file arg, only that script; otherwise all of them.
-# Only for migrating to a format whose breaking changes cannot be reconciled
-# otherwise. Rare.
-# Usage: discard_deltas [file.sh]
-discard_deltas() (
-	set -e
-	IFS=$P2VIFS
-	list=$(p2v_list "$1") || return 1
-	p2v_batch
-	for s in $list
-	do
-		edelta "$s" 1
-	done
-)
-
 # DESTRUCTIVE. Drops every compat block a generated script carries: the stored
-# === PATCH2VI COMPAT === regions go, then the script is regenerated from what
-# is left, which is what takes the blocks' bodies out of it. Stored
-# deltas are kept, so only the compat side is lost - extract_compats first if
-# the diffs are worth keeping. With a file arg, only that script; otherwise all
-# of them.
+# === PATCH2VI COMPAT === regions go, then the script is re-emitted from what
+# is left, which is what takes the blocks' bodies out of it. The embedded patch
+# is untouched, so only the compat side is lost - extract_compats first if the
+# diffs are worth keeping. With a file arg, only that script; otherwise all of
+# them.
 # Usage: discard_compats [file.sh]
 discard_compats() (
 	set -e
 	IFS=$P2VIFS
 	list=$(p2v_list "$1") || return 1
 	p2v_getbin || return 1
-	p2v_batch
 	for s in $list
 	do
 		grep -q '^=== PATCH2VI COMPAT ' "$s" || continue
@@ -1188,8 +1168,8 @@ discard_compats() (
 		cp "$P2VITMP.compat" "$s"
 		rm -f "$P2VITMP.compat"
 		chmod +x "$s"	# written by awk, not by patch2vi's own -o
-		$P2VI -od "$s"
-		printf "\n%s\n" "DISCARDED: $s"
+		p2v_reemit "$s"
+		printf "%s\n" "DISCARDED: $s"
 	done
 )
 
@@ -1217,22 +1197,21 @@ run_patches() (
 # regen over every generated script, each one committed. A deeper reindex:
 # reindex only splices a fresh diff into the patch section and leaves the body
 # alone, this re-emits the body from that diff as well. Compat blocks ride along
-# as stored, they are not re-derived - that is recompat's job.
-# By default, do not stop in the editor or let it draw, and squash all commits
-# back into a single staged change at the end. With arg 1, stop in the editor
-# and keep the per-script commits.
+# as stored, they are not re-derived - that is recompat's job. No editor is
+# involved: a regeneration is a pure re-emission.
+# By default the commits are squashed back into a single staged change at the
+# end; with arg 1 the per-script commits are kept.
 # Usage: regen_all [1]
 regen_all() (
 	set -e
 	IFS=$P2VIFS
 	n=0
-	[ -z "$1" ] && p2v_batch
 	for s in $(p2v_scripts)
 	do
 		"./$s"
 		new=$(p2v_newfiles)
 		p2v_addnew "$new"
-		gitdiff2vi -d "$s"
+		gitdiff2vi -r "$s"
 		git add "$s"
 		if ! git diff --cached --quiet; then
 			git commit -m "$s: regen"
