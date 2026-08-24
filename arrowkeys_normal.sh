@@ -30,10 +30,10 @@ ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 '230reg 0fr 2290?
-231reg 0f> [ /]visual[.]sh 20??20?? 231reg 1230reg 10?
+f> [ /]visual[.]sh 20??b220?? %ya 231230reg 1231??0?
 fr 98211reg fr 230f> 1??!? %@221fr 98b010?
 b1%ya 972sc %? %@972sc!b01211reg ? %@2210?
-b2%ya 502sc %fr 231f> 1?? %@502sc!vis 2b0w2q' > "$P2VIF".d
+2sc %? %@2312sc!vis 2b0w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> 
 	mv = term_read\(0\);

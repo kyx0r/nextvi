@@ -30,12 +30,12 @@ ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 '230reg 0fr 2290?
-231reg 0f> [ /]grep[.]sh 20??20?? 231reg 1230reg 10?
-232reg 0f> [ /]splits[.]sh 20??20?? 232reg 1230reg 10?
+f> [ /]grep[.]sh 20??b420?? %ya 231230reg 1231??0?
+f> [ /]splits[.]sh 20??b520?? %ya 232230reg 1232??0?
 fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b210?
-b3%ya 972sc %? %@972sc!b01b11b21fr 232f> 110??10??211reg10??!211reg ? %@2210?
-b4%ya 502sc %fr 231f> 1?? %@502sc!b11211reg ? %@2210?
-b5%ya 512sc %fr 232f> 1?? %@512sc!vis 2b0wb1wb2w2q' > "$P2VIF".d
+b3%ya 972sc %? %@972sc!b01b11b21232??211reg232??!211reg ? %@2210?
+2sc %? %@2312sc!b11211reg ? %@2210?
+2sc %? %@2322sc!vis 2b0wb1wb2w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
 int xdefreg;			/\* ex default register \*/
