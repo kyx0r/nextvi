@@ -2694,7 +2694,7 @@ else
 	sed 's/^/    /' "$R/e.c"
 fi
 
-# Naming a block's flag register is the other half of -E: that one block is
+# Naming a block's section register is the other half of -E: that one block is
 # rebuilt and everything else in the script stands. The origins come from the
 # block's own src= label, are looked for beside the target and replayed ahead
 # of it, so the gate fires exactly as the chain would make it; the baseline is

@@ -31,7 +31,7 @@
  *     the input the converter normally reads;
  *   - updates a script (-E): replays it, hands the tree it leaves over to
  *     the user and re-emits it through that same diff pass; naming a stored
- *     compat block's flag register rebuilds that one block instead, its own
+ *     compat block's section register rebuilds that one block instead, its own
  *     src= origins replayed ahead of the target;
  *   - replays two or more scripts (-C) to derive a compatibility patch,
  *     applied after the target behind an identity gate on the applied set
@@ -227,9 +227,9 @@ static int compat_capturing;
  * the wrong text for a block derived on top of it. */
 static int compat_building;
 static int compat_mode;			/* -C: derive a post-only compat patch */
-/* -E's optional block selector: the flag register naming the one stored compat
- * block this run rebuilds. Without it -E is what it always was and the blocks
- * are discarded. */
+/* -E's optional block selector: the section register naming the one stored
+ * compat block this run rebuilds. Without it -E is what it always was and the
+ * blocks are discarded. */
 static int amend_sel = -1;
 /* The scripts it is derived against, in replay order: -C repeats, one per
  * origin, and one identity gate tests all of them at once. One origin is the
@@ -1131,18 +1131,24 @@ static void sq_path(const char *s)
  *                     variable.
  *   REG_FLAG_ANY      "any origin present", read once by the host override to
  *                     relax its quit chain.
- *   REG_FLAG_BASE+k   one per compat block k, = "every src= of that block is
- *                     in the applied set", read by the block's gated call and
- *                     its quit policy.
- * All three sit above the 210-220 control band. The anchor slots use ec_while
- * ids >= 10, above every single-digit group chain tag, so they never fuse; two
- * blocks reusing the same slots is fine, since each records them immediately
- * before reading them and a lookup takes the last record.
+ *   REG_SEC_BASE+k    one per compat block k: the block's own section body,
+ *                     yanked there only when every src= of that block is in
+ *                     the applied set. Definedness is the switch here too, so
+ *                     a block needs neither a flag nor a gate of its own - its
+ *                     call is a plain "? %@<reg>", and on a block that does not
+ *                     apply that expands to nothing and runs nothing. The same
+ *                     number is the ec_while anchor slot the gate records its
+ *                     answer in, for an earlier block's quit policy to read.
+ * All three sit above the 210-220 control band, and nothing typeable is used
+ * at all. The per-src= anchor slots use ec_while ids >= 20, above every
+ * single-digit group chain tag, so they never fuse; blocks reusing them is
+ * fine, since each records them immediately before reading them and a lookup
+ * takes the last record. A gate's answer, which has to outlive the next
+ * block's scans, is recorded under the block's own register number instead.
  */
 #define REG_APPLIED   229	/* the applied set, i.e. $P2VI_PATCH */
 #define REG_FLAG_ANY  230	/* shared any-origin-fired register */
-#define REG_FLAG_BASE 231	/* per-compat-block flag registers: base+k */
-#define FLAG_SLOT_BASE 10	/* ec_while subset-test anchor slots (>= 10) */
+#define REG_SEC_BASE  231	/* per-compat-block section registers: base+k */
 #define SRC_SLOT_BASE  20	/* ec_while src= membership anchor slots */
 
 static void emit_esc_sep(sbuf *out, int n)
@@ -4959,7 +4965,7 @@ static void emit_reg_defaults(sbuf *out)
  * EXINIT, so $P2VI_PATCH has to be written in from outside, and this word is
  * already the place the shell writes. The value lands in REG_APPLIED with a
  * space at each end - two spaces after "reg", since ex_cmd eats one - so the
- * identity gates emit_compat_flags builds delimit a name with plain spaces. It
+ * identity gates emit_compat_gates builds delimit a name with plain spaces. It
  * goes out ahead of the body, which is the third printf argument, so the
  * register is set before anything reads it. */
 static void emit_reg_switches(sbuf *out, int applied)
@@ -5199,11 +5205,12 @@ static void emit_compat_announce(sbuf *out, int reg, char *origin)
 }
 
 /* Stage one section body as a shell here-string into "$P2VIF".<suf>, the file
- * the single $VI call opens as a buffer. The suffix is the block's own flag
+ * the single $VI call opens as a buffer. The suffix is the block's own section
  * register - what "# Compat <reg>" above it says and what -E takes as its
- * selector - so the staged files name themselves; the host section, which has
- * no flag, keeps 0. It is a label, not an index: the sections are staged, and
- * opened, in run order, and that order is what the driver's b<N> counts. */
+ * selector - so the staged files name themselves; the host section, whose
+ * register is the shared 97, keeps 0. It is a label, not an index: the
+ * sections are staged, and opened, in run order, and that order is what the
+ * driver's b<N> counts. */
 static void stage_section(sbuf *body, int suf)
 {
 	printf("printf '%%s\\n' '");
@@ -5212,39 +5219,17 @@ static void stage_section(sbuf *body, int suf)
 }
 
 /* A section to run in the single call: its files, its register, and (for a
- * compat block) its flag and the block it customizes from. */
+ * compat block) its index and the block it customizes from. */
 typedef struct {
 	file_patch_t **files;
 	int nf;
-	int reg;		/* register the driver yanks/executes the body from */
+	int reg;		/* register the driver %@-calls the body from */
 	int secbuf;		/* global buffer index of the staged body */
-	int suf;		/* "$P2VIF".<suf>: the flag register, 0 = host */
-	int flagk;		/* per-compat-block flag slot (base+flagk); -1 host */
+	int suf;		/* "$P2VIF".<suf>: the section register, 0 = host */
+	int blk;		/* compat block index (reg is base+blk); -1 host */
+	int nsrc;		/* the block's src= count; 0 can never fire */
 	compat_block_t *cb;	/* NULL for the host section */
 } section_t;
-
-/* A compat section's identity gate, asked of the flag the driver set (one per
- * block, the block's register REG_FLAG_BASE+flagk, "1" when every src= of that
- * block's label is in the applied set and "0" otherwise): "fr <reg>; f> 1"
- * reads the flag and the trailing "??" fires the %@ call that follows only
- * when it is set. The host section is unconditional ("? "). The -e path runs
- * this very code, over the set it publishes as $P2VI_PATCH itself.
- *
- * The read leaves xfr pointing at the flag register, but the section body
- * the call runs begins with its own "fr 98" (see emit_section_body), which
- * restores the file cache before anything else searches. */
-static void emit_identity_gate(sbuf *out, section_t *s)
-{
-	if (!s->cb) {
-		sb_str(out, "? ");
-		return;
-	}
-	sb_printf(out, "fr %d", REG_FLAG_BASE + s->flagk);
-	EMIT_SEP(out);
-	sb_str(out, "f> 1");
-	EMIT_SEP(out);
-	sb_str(out, "?? ");
-}
 
 /* Do two sections edit any file in common (by path)? Blocks only stack over a
  * shared file, so the per-block subset test only considers later blocks that
@@ -5319,35 +5304,48 @@ static void sb_slots(sbuf *out, int base, int n, int op)
 	}
 }
 
-/* Block-head quit policy: a block asserts iff no later block over the same file
- * has a fired origin. Each later same-file origin's presence is recorded as an
- * anchor slot and the slots ORed to redefine 211 - any present suppresses, none
- * asserts. A statically-last block emits no test at all and so asserts
- * unconditionally, restoring the assert the host override relaxed. */
-static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
+/* The gate slots of every later block over the same file, ORed: the expression
+ * a "??" branches on. Returns how many there were, 0 for none - a block with no
+ * src= at all is left out, since it can never fire and so can never suppress.
+ * A slot no gate ever recorded would abandon the whole lookup, not just its own
+ * term, so an id only goes in when emit_compat_gates is sure to have written
+ * it. */
+static int sb_later_slots(sbuf *out, section_t *secs, int nsec, int i)
 {
-	int nlater = 0;
+	int n = 0;
 	for (int j = i + 1; j < nsec; j++) {
-		if (!secs[j].cb || secs[j].flagk < 0 ||
+		if (!secs[j].cb || secs[j].blk < 0 || !secs[j].nsrc ||
 		    !sections_share_file(&secs[i], &secs[j]))
 			continue;
-		sb_printf(out, "fr %d", REG_FLAG_BASE + secs[j].flagk);
-		EMIT_SEP(out);
-		sb_str(out, "f> 1");
-		EMIT_SEP(out);
-		sb_printf(out, "%d?" "?", FLAG_SLOT_BASE + nlater++);
-		EMIT_SEP(out);
+		if (n++)
+			sb_chr(out, ';');
+		sb_printf(out, "%d", secs[j].reg);
 	}
-	if (!nlater) {
+	return n;
+}
+
+/* Block-head quit policy: a block asserts iff no later block over the same file
+ * has a fired origin. Every gate's answer is already an anchor slot, recorded
+ * once by emit_compat_gates under the block's own register number, so the test
+ * is the ORed slots and nothing else - any present suppresses, none asserts. A
+ * statically-last block emits no test at all and so asserts unconditionally,
+ * restoring the assert the host override relaxed. */
+static void emit_block_qf2(sbuf *out, section_t *secs, int nsec, int i)
+{
+	sbuf_smake(ids, 32)
+	if (!sb_later_slots(ids, secs, nsec, i)) {
+		free(ids->s);
 		emit_qf2_assert(out);
 		return;
 	}
-	sb_slots(out, FLAG_SLOT_BASE, nlater, ';');
+	sbuf_nul(ids)
+	sb_str(out, ids->s);
 	sb_str(out, "?" "?");
 	emit_qf2_clear(out);
-	sb_slots(out, FLAG_SLOT_BASE, nlater, ';');
+	sb_str(out, ids->s);
 	sb_str(out, "?" "?!");
 	emit_qf2_assert(out);
+	free(ids->s);
 }
 
 /* The basename of a path: the text after the last '/'. */
@@ -5403,24 +5401,42 @@ static void sb_src_pat(sbuf *out, const char *base)
 	sb_chr(out, ' ');
 }
 
-/* The compat flags, decided in ex from the applied set alone.
+/* The identity gates, decided in ex from the applied set alone - and, where one
+ * fires, the section register it arms.
  *
  * REG_APPLIED already holds "<space> patch1.sh patch2.sh ... <space>", written
  * by the body head. Everything here is the editor's: "fr REG_APPLIED" points
- * searching at that register, each block writes its own flag 0, searches the
- * register once per src= member recording the outcome in an anchor slot, and
- * the ANDed slots ("20,21??") rewrite the flag to 1 - and REG_FLAG_ANY with it,
- * so the any-origin flag needs no second pass. A block with no src= field at
- * all keeps its 0 and never fires.
+ * searching at that register, each block searches it once per src= member
+ * recording the outcome in an anchor slot, and the ANDed slots ("20,21??") run
+ * the arm. The arm is what makes the block real: it yanks the block's staged
+ * body into the block's own register, so a gate that misses simply leaves that
+ * register undefined and the block's call later finds nothing to run. No flag
+ * is written and none is read - the body is the flag. REG_FLAG_ANY rides along
+ * in the same arm, so the any-origin answer the host override reads needs no
+ * second pass. A block with no src= field at all has no arm, so it can never
+ * fire.
+ *
+ * The buffer select the yank needs stays outside the arm, unconditional. That
+ * is not a style choice: remap_bufnums only rewrites a command that is exactly
+ * "b<N>", and the replay path needs every buffer number rewritten, so a "b<N>"
+ * buried in an argument would silently keep the emitting run's numbering. The
+ * cost is a buffer switch a missing block does not use.
+ *
+ * The trailing "<reg>??" records whether the arm fired, under the block's own
+ * register number, for the quit policy of any earlier block over the same file
+ * to read. It must sit here, against the arm, and not at the call: by then the
+ * last command's status is something else entirely.
  *
  * The arm holds two commands, joined by an escaped separator: ex_arg unescapes
- * it, so the ex_exec the arm runs sees a chain. A gate that misses leaves xpret
- * set and the "??" returns xuerr, which with the default xerr is neither
- * printed nor fatal - the way any unfired arm reads.
+ * it, so the ex_exec the arm runs sees a chain. Its "%ya" is safe unexpanded
+ * only because the driver prologue's "|sc!" left xexp inert - inside an arm the
+ * text is an argument, and with xexp live that % would expand to a buffer path.
+ * A gate that misses leaves xpret set and the "??" returns xuerr, which with
+ * the default xerr is neither printed nor fatal - the way any unfired arm reads.
  *
  * The closing "fr 98" hands searching back to the file cache: every section
  * body sets it again itself, but nothing should have to rely on that. */
-static void emit_compat_flags(sbuf *out, section_t *secs, int nsec)
+static void emit_compat_gates(sbuf *out, section_t *secs, int nsec)
 {
 	sb_printf(out, "%dreg 0", REG_FLAG_ANY);
 	EMIT_SEP(out);
@@ -5428,15 +5444,12 @@ static void emit_compat_flags(sbuf *out, section_t *secs, int nsec)
 	EMIT_SEP(out);
 	for (int i = 0; i < nsec; i++) {
 		char **fields;
-		int nf, reg;
+		int nf;
 		if (!secs[i].cb)
 			continue;
-		reg = REG_FLAG_BASE + secs[i].flagk;
 		nf = compat_src_fields(secs[i].cb, &fields);
-		/* one source line per block: its default, its scans, its arm */
+		/* one source line per block: its scans, its arm, its answer */
 		EMIT_LB(out);
-		EMIT_SEP(out);
-		sb_printf(out, "%dreg 0", reg);
 		EMIT_SEP(out);
 		for (int k = 0; k < nf; k++) {
 			sb_str(out, "f> ");
@@ -5449,10 +5462,14 @@ static void emit_compat_flags(sbuf *out, section_t *secs, int nsec)
 		free(fields);
 		if (!nf)
 			continue;
+		sb_printf(out, "b%d", secs[i].secbuf);
+		EMIT_SEP(out);
 		sb_slots(out, SRC_SLOT_BASE, nf, ',');
-		sb_printf(out, "?" "? %dreg 1", reg);
+		sb_printf(out, "?" "? %%ya %d", secs[i].reg);
 		EMIT_ESCSEP(out);
 		sb_printf(out, "%dreg 1", REG_FLAG_ANY);
+		EMIT_SEP(out);
+		sb_printf(out, "%d?" "?", secs[i].reg);
 		EMIT_SEP(out);
 	}
 	EMIT_LB(out);
@@ -5461,10 +5478,12 @@ static void emit_compat_flags(sbuf *out, section_t *secs, int nsec)
 	EMIT_SEP(out);
 }
 
-/* Call half: yank the section body into its register and %@-call it -
- * unconditionally for the host, behind the identity gate on the section's flag
- * register for a compat block. Bracketed with the "2sc %" / "2sc!" expansion
- * window, since the driver prologue's |sc! leaves xexp inert. */
+/* Call half: "%@" the section out of its register. The host section is yanked
+ * into 97 right here, since without a compat block there is no gate pass to do
+ * it in; a compat block was armed by its gate, if its gate fired, and the call
+ * is unconditional either way - an undefined register expands to nothing and
+ * "?" with an empty argument runs nothing. Bracketed with the "2sc %" / "2sc!"
+ * expansion window, since the driver prologue's |sc! leaves xexp inert. */
 static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 			     file_patch_t **uf, int nuf, const char *own)
 {
@@ -5501,17 +5520,18 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 		emit_block_qf2(out, secs, nsec, i);
 	/* Readability line break where the setup ends and the dispatch begins:
 	 * everything above is this section's rewinds and quit policy, everything
-	 * below its staged buffer, register and gated call. */
+	 * below its call. */
 	EMIT_LB(out);
 	EMIT_SEP(out);
-	sb_printf(out, "b%d", s->secbuf);
-	EMIT_SEP(out);
-	sb_printf(out, "%%ya %d", s->reg);
-	EMIT_SEP(out);
+	if (!s->cb) {
+		sb_printf(out, "b%d", s->secbuf);
+		EMIT_SEP(out);
+		sb_printf(out, "%%ya %d", s->reg);
+		EMIT_SEP(out);
+	}
 	sb_str(out, "2sc %");
 	EMIT_SEP(out);
-	emit_identity_gate(out, s);
-	sb_printf(out, "%%@%d", s->reg);
+	sb_printf(out, "? %%@%d", s->reg);
 	EMIT_SEP(out);
 	sb_str(out, "2sc!");
 	EMIT_SEP(out);
@@ -5526,7 +5546,7 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 static void emit_one_call(file_patch_t **active, int nactive)
 {
 	section_t *secs = emalloc((ncompat + 1) * sizeof(*secs));
-	int nsec = 0, compat_reg = 50, nwrite;
+	int nsec = 0, nwrite;
 	file_patch_t **uf;
 	char *own;		/* uf slots a compat body writes itself */
 	int nuf = 0;
@@ -5536,11 +5556,12 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		secs[nsec].files = active;
 		secs[nsec].nf = nactive;
 		secs[nsec].reg = P2VI_REG;
-		secs[nsec].flagk = -1;
+		secs[nsec].blk = -1;
+		secs[nsec].nsrc = 0;
 		secs[nsec].cb = NULL;
 		nsec++;
 	}
-	int nflag = 0;
+	int ncsec = 0;
 	for (int c = 0; c < ncompat; c++) {
 		compat_block_t *cb = &compat_blocks[c];
 		int nca;
@@ -5549,15 +5570,20 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			free(ca);
 			continue;
 		}
+		char **fields;
 		secs[nsec].files = ca;
 		secs[nsec].nf = nca;
-		secs[nsec].reg = compat_reg++;
-		/* the flag slot is the block's own index, so a skipped block
+		/* the register is the block's own index, so a skipped block
 		 * does not shift the registers the rest read */
-		secs[nsec].flagk = c;
+		secs[nsec].blk = c;
+		secs[nsec].reg = REG_SEC_BASE + c;
+		secs[nsec].nsrc = compat_src_fields(cb, &fields);
+		for (int k = 0; k < secs[nsec].nsrc; k++)
+			free(fields[k]);
+		free(fields);
 		secs[nsec].cb = cb;
 		nsec++;
-		nflag++;
+		ncsec++;
 	}
 
 	/* Buffer order follows the sections, not files[]: a script's stored
@@ -5594,17 +5620,17 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	/* the driver references these before the bodies are staged */
 	for (int i = 0; i < nsec; i++) {
 		secs[i].secbuf = nuf + i;
-		secs[i].suf = secs[i].cb ? REG_FLAG_BASE + secs[i].flagk : 0;
+		secs[i].suf = secs[i].cb ? secs[i].reg : 0;
 	}
 
 	/* The driver (".d") is staged first: prologue + register defaults,
 	 * shell switches, then orchestration and the final writes. */
 	sbuf_smake(osb, SB_INIT)
-	emit_body_head(osb, 1, nflag > 0);
-	if (nflag > 0) {
+	emit_body_head(osb, 1, ncsec > 0);
+	if (ncsec > 0) {
 		/* the driver decides every identity gate itself, out of the
 		 * applied set the head just put in REG_APPLIED */
-		emit_compat_flags(osb, secs, nsec);
+		emit_compat_gates(osb, secs, nsec);
 		/* then, before any body: with an origin present (the any flag
 		 * set) the host override relaxes its own quit chain, so the
 		 * compat blocks can repair its misses; on a clean tree 211
@@ -5625,14 +5651,15 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		int sv_rel = 0;
 		if (s->cb) {
 			/* the block's identity gate, spelled out for a reader:
-			 * the flag register emit_compat_flags writes, and every
-			 * src= that has to be in the applied set for it to reach
-			 * 1. Each origin carries the "src=" the label leaves off
-			 * its first, so the fields read alike and grep alike.
-			 * Every block is post, so nothing says so. */
+			 * the register emit_compat_gates arms with this body,
+			 * and every src= that has to be in the applied set for
+			 * it to be armed at all. Each origin carries the "src="
+			 * the label leaves off its first, so the fields read
+			 * alike and grep alike. Every block is post, so nothing
+			 * says so. */
 			char **fields;
 			int nf = compat_src_fields(s->cb, &fields);
-			printf("# Compat %d", REG_FLAG_BASE + s->flagk);
+			printf("# Compat %d", s->reg);
 			for (int k = 0; k < nf; k++) {
 				printf(" src=%s", fields[k]);
 				free(fields[k]);
@@ -5711,7 +5738,7 @@ static void emit_compat_storage(void)
 	for (int c = 0; c < ncompat; c++) {
 		compat_block_t *cb = &compat_blocks[c];
 		printf("=== PATCH2VI COMPAT %d src=%s ===\n",
-		       REG_FLAG_BASE + c, cb->origin ? cb->origin : "");
+		       REG_SEC_BASE + c, cb->origin ? cb->origin : "");
 		printf("=== COMPAT DELTA ===\n");
 		emit_dstore(&cb->deltas);
 		printf("%s\n", end_tag_wr);
@@ -6248,7 +6275,7 @@ static void pend_clear(pend_t *p)
 /* The gathered bodies as one block: either the single "" body, or the "d"
  * driver plus the section bodies. The sections keep the order they were staged
  * in, which is the order the $VI call opens them in and so the order the
- * driver's b<N> counts; their "$P2VIF" suffix is a label (the block's flag
+ * driver's b<N> counts; their "$P2VIF" suffix is a label (the block's section
  * register, or 0 for the host) and is not read as an index. Scripts emitted
  * when it was one - ".0", ".1", ".2" - parse the same, being in that order. */
 static int pend_finish(pend_t *p, p2vi_block_t *blk)
@@ -6788,23 +6815,24 @@ static int cmd_is(const char *body, int b, int e, const char *s)
 	return e - b == n && !strncmp(body + b, s, n);
 }
 
-/* -E <reg>: lift one section's dispatch out of the driver body, so the caller
- * can run the rest of the body, take the compat baseline, and only then run
- * this one block.
+/* -E <reg>: lift one section's call out of the driver body, so the caller can
+ * run the rest of the body, take the compat baseline, and only then run this
+ * one block.
  *
- * emit_driver_call writes a gated section as seven commands - "b<sec>",
- * "%ya <reg>", "2sc %", the identity gate's "fr <flag>", "f> 1" and
- * "?? %@<reg>", then "2sc!" - so the flag register names the whole span
- * unambiguously, and the shape is checked rather than trusted. What the lift
- * costs is only the order: every other block still runs where it was stored,
- * above the baseline, so its edits cancel out of the derived diff, and the
- * commands the emitter puts before this dispatch (buffer rewinds, quit policy)
- * are state and not text. Returns the register the span yanks the section body
- * into (fail_report reads the marks out of it), or -1. */
-static int body_cut_dispatch(char *body, int sep, int flagreg, char **span)
+ * emit_driver_call writes a compat section's call as three commands - "2sc %",
+ * "? %@<reg>" and "2sc!" - and the register is the block's own, so the middle
+ * one names the span unambiguously; the shape around it is checked rather than
+ * trusted. Only the call moves: the gate that armed <reg> stays at the head of
+ * the body and is a register write, not an edit. What the lift costs is only
+ * the order - every other block still runs where it was stored, above the
+ * baseline, so its edits cancel out of the derived diff, and the commands the
+ * emitter puts before this call (buffer rewinds, quit policy) are state and not
+ * text. Returns the register the section body was armed in (fail_report reads
+ * the marks out of it), or -1. */
+static int body_cut_dispatch(char *body, int sep, int secreg, char **span)
 {
 	struct { int b, e; } *c = NULL;
-	int n = strlen(body), nc = 0, cap = 0, i, t = -1, reg, p = 0, b, e;
+	int n = strlen(body), nc = 0, cap = 0, i, t = -1, p = 0, b, e;
 	char pat[32];
 	for (;;) {
 		b = p;
@@ -6817,36 +6845,27 @@ static int body_cut_dispatch(char *body, int sep, int flagreg, char **span)
 			break;
 		p++;
 	}
-	/* "fr <flag>" and "f> 1" alone are not enough: emit_block_qf2 tests a
-	 * later block's flag the same way, ahead of the dispatch, and only
-	 * records the answer in an anchor slot. The call is the one that runs
-	 * the section from its register. */
-	snprintf(pat, sizeof(pat), "fr %d", flagreg);
-	for (i = 3; i + 3 < nc; i++)
-		if (cmd_is(body, c[i].b, c[i].e, pat)
-		    && cmd_is(body, c[i + 1].b, c[i + 1].e, "f> 1")
-		    && !strncmp(body + c[i + 2].b, "?? %@", 5)) {
+	snprintf(pat, sizeof(pat), "? %%@%d", secreg);
+	for (i = 1; i + 1 < nc; i++)
+		if (cmd_is(body, c[i].b, c[i].e, pat)) {
 			t = i;
 			break;
 		}
 	if (t < 0) {
 		free(c);
-		fprintf(stderr, "replay: no gated call on register %d\n",
-			flagreg);
+		fprintf(stderr, "replay: no section call on register %d\n",
+			secreg);
 		return -1;
 	}
-	if (body[c[t - 3].b] != 'b' || c[t - 3].e - c[t - 3].b < 2
-	    || strncmp(body + c[t - 2].b, "%ya ", 4)
-	    || !cmd_is(body, c[t - 1].b, c[t - 1].e, "2sc %")
-	    || !cmd_is(body, c[t + 3].b, c[t + 3].e, "2sc!")) {
+	if (!cmd_is(body, c[t - 1].b, c[t - 1].e, "2sc %")
+	    || !cmd_is(body, c[t + 1].b, c[t + 1].e, "2sc!")) {
 		free(c);
 		fprintf(stderr, "replay: register %d is not a section call\n",
-			flagreg);
+			secreg);
 		return -1;
 	}
-	reg = atoi(body + c[t - 2].b + 4);
-	b = c[t - 3].b;
-	e = c[t + 3].e;
+	b = c[t - 1].b;
+	e = c[t + 1].e;
 	if (e < n)		/* the delimiter goes with the span */
 		e++;
 	/* The span is lifted past the body's write tail, whose "vis 2" has
@@ -6858,7 +6877,7 @@ static int body_cut_dispatch(char *body, int sep, int flagreg, char **span)
 	(*span)[i + e - b] = '\0';
 	memmove(body + b, body + e, n - e + 1);
 	free(c);
-	return reg;
+	return secreg;
 }
 
 /* Every block in one session, leaving its buffers alive for the caller to read
@@ -7778,7 +7797,7 @@ static int amend_derive(void)
 	const char **sc = NULL;
 	int nsrc = 0, nsc = 0, dlen, i, blk, st = -1;
 	sbuf_smake(diff, SB_INIT)
-	blk = amend_sel - REG_FLAG_BASE;
+	blk = amend_sel - REG_SEC_BASE;
 	if (blk < 0 || blk >= ncompat) {
 		fprintf(stderr, "%s: no compat block on register %d\n",
 			input_file, amend_sel);
@@ -8374,7 +8393,7 @@ static int read_delta_sections(FILE *in)
  *
  * The applied set is the chain of scripts already run, carried in $P2VI_PATCH
  * as basenames. A script inherits it from its caller, hands it to the editor
- * whole (REG_APPLIED, where emit_compat_flags decides every gate from it) and
+ * whole (REG_APPLIED, where emit_compat_gates decides every gate from it) and
  * appends itself before invoking the next script with the rest of the queue.
  * The set and the queue are disjoint: the environment grows in run order, the
  * arguments shrink. That is the whole shell side of compat - no header, no
@@ -8434,7 +8453,7 @@ static void usage(const char *prog, int err)
 		"  -ew   Write section end tag (default: \"%s\")\n",
 		end_tag_rd, end_tag_wr);
 	fputs("  -E    Update a script: replay it, edit, re-emit it\n"
-	      "        A compat block's flag register after the script rebuilds\n"
+	      "        A compat block's section register after the script rebuilds\n"
 	      "        that one block instead, replaying its src= origins ahead of\n"
 	      "        the target; '' skips the slot. Rest of the line is a nextvi\n"
 	      "        command line; -d[N] keeps deltas\n"
@@ -8651,7 +8670,7 @@ int main(int argc, char **argv)
 	 * like any other input; then an optional block selector, then the
 	 * editor's command line.
 	 *
-	 * The selector is a stored block's flag register, the number the
+	 * The selector is a stored block's section register, the number the
 	 * "=== PATCH2VI COMPAT <reg>" header and the "# Compat <reg>" comment
 	 * both carry. With it, that one block is what the run rebuilds and
 	 * everything else in the script stands; without it -E updates the base
