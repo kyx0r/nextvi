@@ -1013,6 +1013,29 @@ else
 	fail "unedited -i applies"
 fi
 
+# -i takes a nextvi command line after the input patch: flags reach the
+# session (-v resets whatever preceded) and files open on top; neither
+# disturbs the conversion
+printf 'ref\n' > "$TMPDIR/ref.txt"
+pty "P2VI_EX=$ED_TRUE" \
+	"./patch2vi -ri '$TMPDIR/i.patch' -v '$TMPDIR/ref.txt' > '$TMPDIR/i8.sh' 2> '$TMPDIR/i_err.txt'" \
+	> /dev/null 2>&1
+chmod +x "$TMPDIR/i8.sh"
+if apply_i "$TMPDIR/i8.sh" "$TMPDIR/i_bar.txt"; then
+	ok "-i honors a trailing nextvi command line"
+else
+	fail "-i honors a trailing nextvi command line"
+	cat "$TMPDIR/i_err.txt"
+fi
+
+# an unknown editor option in that tail is refused, not eaten silently
+pty "P2VI_EX=$ED_TRUE" \
+	"./patch2vi -ri '$TMPDIR/i.patch' -Z > /dev/null 2> '$TMPDIR/i_err.txt'" \
+	> /dev/null 2>&1
+grep -q "Unknown editor option: -Z" "$TMPDIR/i_err.txt" &&
+	ok "-i rejects an unknown editor option" ||
+	{ fail "-i rejects an unknown editor option"; cat "$TMPDIR/i_err.txt"; }
+
 # Editing a PHASE 2 blob overrides the generated segment and is recorded
 # as a verbatim delta
 run_i "$TMPDIR/i2.sh" "$(edex "$TMPDIR/ed1.awk" "PHASE 2" bar baz)" \

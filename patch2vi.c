@@ -2,7 +2,8 @@
  * patch2vi - turn a unified diff into a /bin/sh script driving nextvi's ex
  * engine, and back.
  *
- * Usage: patch2vi [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG] [patch|script]
+ * Usage: patch2vi [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG]
+ *                 [input.patch] [nextvi-opts...]
  *        patch2vi -e script.sh [script2.sh...]
  *        patch2vi [-ari]I [nextvi-opts...]
  *        patch2vi [-ario]E script.sh [nextvi-opts...]
@@ -3671,18 +3672,64 @@ static void ed_loadbuf(const char *name, char *text)
 
 /* Hand the loaded buffers to the user and end the session; they outlive it so
  * the caller can read them back, and ed_free() drops them. */
-static int ed_run(void)
+/* The nextvi command line that follows a mode's own arguments: -E's after
+ * its script, -C's after its fix slot, -i/-d's after the input patch. Its
+ * option letters are vi(1)'s own, applied to the interactive session, and
+ * its files are opened on top of the ones the run itself named - so a
+ * session can visit a file the script never touched and still have it end
+ * up in the emitted diff. */
+static int hand_vis = -1;	/* xvis for the session, -1 = plain visual */
+static char **hand_files;
+static int nhand_files;
+
+/* The one interactive session every editing path ends in. Undo what the
+ * replay or the loader left behind (the body's "|sc!" separator, escape
+ * and error mode), open the command line's files, park on the first placed
+ * failure (fbuf < 0 when there is none), fire the P2VI_EX harness hook and
+ * enter the loop nextvi_main() would have - the parsed flags decide, not a
+ * hardcoded vi(): "-e" and "-s" mean ex(), "-a" wraps the session in the
+ * scroll history. Startup cannot be redone here (term_init already ran
+ * without bit 1, and the buffers are loaded, so ex_init gets no argv),
+ * which is why this mirrors main()'s tail instead of calling any of its. */
+static void ed_serve(int fbuf, int frow)
 {
 	char *ln;
-	int st;
+	int k;
+
+	xvis = hand_vis >= 0 ? hand_vis : 0;
+	xsep = ':';
+	xesc = '\\';
+	xerr = 1;
+	for (k = 0; k < nhand_files; k++)
+		ec_edit("", "e", hand_files[k]);
+	if (fbuf >= 0 && fbuf < xbufcur) {
+		bufs_switch(fbuf);
+		xrow = frow;
+		xoff = 0;
+	}
 	syn_setft(xb_ft);
 	if ((ln = getenv("P2VI_EX")))	/* test harness hook */
 		ex_command(ln)
-	/* like ex_init(): never enter vi() with xmpt > 1, or it opens with the
-	 * "[any key to continue]" pager (each ed_loadbuf() print bumped xmpt) */
+	/* like ex_init(): never enter vi() with xmpt > 1, or it opens with
+	 * the "[any key to continue]" pager (each load print bumps xmpt) */
 	if (xmpt > 1)
 		xmpt = 1;
-	vi(1);
+	if (!xquit) {
+		if (xvis & 8)
+			term_scrh()
+		if (xvis & 2)
+			ex();
+		else
+			vi(1);
+		if (xvis & 8)
+			term_scrl()
+	}
+}
+
+static int ed_run(void)
+{
+	int st;
+	ed_serve(-1, -1);
 	st = ed_done();
 	if (st != 0)
 		fprintf(stderr, "editor exited with error %d\n", st);
@@ -6542,14 +6589,6 @@ static void snap_seed(snaps_t *sn, const char *path)
 static int compat_apply_diff(const char *path);
 static int compat_pre_script;	/* the second positional is a generated script */
 
-/* -E: the nextvi command line that follows the script name. Its option letters
- * are vi(1)'s own, applied to the handed-over session, and its files are opened
- * on top of the ones the replay itself named - so a session can visit a file
- * the script never touched and still have it end up in the emitted diff. */
-static int hand_vis = -1;	/* xvis for the handover, -1 = plain visual */
-static char **hand_files;
-static int nhand_files;
-
 /*
  * FAILURE PLACEMENT
  *
@@ -6839,45 +6878,7 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			 * blocks would land in the derived diff. */
 			if (!compat_capturing)
 				fbuf = fail_report(sep, &frow);
-			/* hand over a plain editor: the body's own separator,
-			 * escape and mode came from its "|sc!" prologue and
-			 * the "vis 2" the stripped tail left behind */
-			xvis = hand_vis >= 0 ? hand_vis : 0;
-			xsep = ':';
-			xesc = '\\';
-			xerr = 1;
-			/* the -E/-C command line's own files, opened last so
-			 * the session lands on one of them */
-			for (k = 0; k < nhand_files; k++)
-				ec_edit("", "e", hand_files[k]);
-			/* park on the first placed failure, opened files and
-			 * all: it is the one thing the session is here for */
-			if (fbuf >= 0 && fbuf < xbufcur) {
-				bufs_switch(fbuf);
-				xrow = frow;
-				xoff = 0;
-			}
-			/* the highlighter still carries whatever ft the last
-			 * setft in the body left (a section scaffold buffer has
-			 * none), and vi() only refreshes it on a buffer switch */
-			syn_setft(xb_ft);
-			if ((ln = getenv("P2VI_EX")))	/* test harness hook */
-				ex_command(ln)
-			if (xmpt > 1)
-				xmpt = 1;
-			/* enter the loop main() would have - the tail's mode
-			 * flags decide, not a hardcoded vi(): "-e" and "-s" mean
-			 * ex(), "-a" wraps the session in the scroll history */
-			if (!xquit) {
-				if (xvis & 8)
-					term_scrh()
-				if (xvis & 2)
-					ex();
-				else
-					vi(1);
-				if (xvis & 8)
-					term_scrl()
-			}
+			ed_serve(fbuf, frow);
 		}
 		if (!xquit)	/* no counted quit: the block simply ended */
 			xquit = -1;
@@ -8150,7 +8151,7 @@ static void usage(const char *prog, int err)
 {
 	FILE *f = err ? stderr : stdout;
 	fprintf(f, "Usage: %s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG]"
-		" [input.patch]\n"
+		" [input.patch] [nextvi-opts...]\n"
 		"       %s -e script.sh [script2.sh...]\n"
 		"       %s [-ari]I [nextvi-opts...]\n"
 		"       %s [-ario]E script.sh [nextvi-opts...]\n"
@@ -8167,6 +8168,8 @@ static void usage(const char *prog, int err)
 	      "  -e    Execute a script with the built-in nextvi, no shell involved\n"
 	      "        Several scripts run in order, stopping at the first failure\n"
 	      "  -i    Interactive: edit patterns and ex bodies in the built-in nextvi\n"
+	      "        Rest of the line after the input patch is a nextvi command\n"
+	      "        line for the session (none follows a stdin input)\n"
 	      "  -h    Show this help\n"
 	      "  -d    Delta: re-apply previous customizations (implies -i)\n"
 	      "  -d1   Delta: match by group index\n"
@@ -8337,6 +8340,14 @@ int main(int argc, char **argv)
 	}
 	if (i < argc && !edit_mode)
 		input_file = argv[i];
+	/* -i/-d take the editor's command line after the input positional,
+	 * exactly as -E does after its script and -C after its fix slot: the
+	 * positional anchors where patch2vi's own options end, so a stdin
+	 * input has no anchor and no tail */
+	if (interactive_mode && !exec_mode && !edit_mode && !amend_mode &&
+			!compat_mode && i < argc &&
+			parse_hand_args(argv + i + 1, argc - i - 1) < 0)
+		usage(argv[0], 1);
 	/* -od[N]: the delta run regenerates the script it read, so that is what
 	 * it writes back (atomically, so reading it first is safe) */
 	if (delta_mode && amend_inplace && !amend_mode && !compat_mode) {
