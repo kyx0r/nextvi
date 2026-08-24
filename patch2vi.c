@@ -8160,6 +8160,7 @@ static void usage(const char *prog, int err)
 		prog, prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\n"
+	      "  -h    Show this help\n"
 	      "  -a    Absolute line numbers\n"
 	      "  -r    Relative regex patterns instead of line numbers\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\n"
@@ -8170,7 +8171,6 @@ static void usage(const char *prog, int err)
 	      "  -i    Interactive: edit patterns and ex bodies in the built-in nextvi\n"
 	      "        Rest of the line after the input patch is a nextvi command\n"
 	      "        line for the session (none follows a stdin input)\n"
-	      "  -h    Show this help\n"
 	      "  -d    Delta: re-apply previous customizations (implies -i)\n"
 	      "  -d1   Delta: match by group index\n"
 	      "  -d2   Delta: match by group index + deleted/inserted text or regex\n"
