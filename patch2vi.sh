@@ -70,7 +70,7 @@ p2v_list() {
 	esac
 }
 
-# -i, -d and -co all imply the editor: led keeps it from drawing, :q from
+# -i, -d and -C all imply the editor: led keeps it from drawing, :q from
 # stopping in it. A caller's own P2VI_EX wins.
 p2v_batch() { export P2VI_EX="${P2VI_EX:-led 0:q}"; }
 
@@ -240,7 +240,7 @@ p2v_runchain() (
 	esac
 )
 
-# Derive a compat block for label $1 onto target $2 from patch $3: one -co per
+# Derive a compat block for label $1 onto target $2 from patch $3: one -C per
 # origin, in stored order, since that is the order its probes were derived in.
 # The first carries the -o, exactly as a single origin always did.
 p2v_co() {
@@ -248,13 +248,13 @@ p2v_co() {
 	p2v_tgt="$2"
 	p2v_pat="$3"
 	set --
-	p2v_flag=-oco
+	p2v_flag=-oC
 	while [ -n "$p2v_rest" ]
 	do
 		p2v_shift "$p2v_rest"
 		[ -n "$p2v_one" ] || continue
 		set -- "$@" "$p2v_flag" "$p2v_one"
-		p2v_flag=-co
+		p2v_flag=-C
 	done
 	p2v_tty $P2VI "$@" "$p2v_tgt" "$p2v_pat"
 }
@@ -397,10 +397,10 @@ regen() {
 	patch2vi_stashed -d "$1"
 }
 
-# The -co pass of rebuild: every saved block back onto the script, in storage
+# The -C pass of rebuild: every saved block back onto the script, in storage
 # order, one call each (a block is one diff, and one call stores one block, so
 # the count comes out as it went in; a block gated on a stack of origins takes
-# one -co per origin within that one call). Run with the tree at HEAD.
+# one -C per origin within that one call). Run with the tree at HEAD.
 #
 # Deriving a block replays the origin, and a replay writes the sections it edits
 # out, so the tree does not come back clean on its own. The sources go back to
@@ -411,7 +411,7 @@ regen() {
 p2v_reapply() {
 	p2v_newfiles | sort > "$1/pre"
 	p2v_st=0
-	# The listing is read off its own descriptor, since a -co call inherits
+	# The listing is read off its own descriptor, since a -C call inherits
 	# this loop's stdin and the editor it hands over to reads the rest of
 	# the blocks away - they would then never be re-applied, silently.
 	while read -r line <&3
@@ -429,12 +429,12 @@ p2v_reapply() {
 			continue
 		fi
 		printf "%s\n" "COMPAT: $2 <- $origin (block $n)" >&2
-		# The stored diff goes back as a script, not as a diff: -co
+		# The stored diff goes back as a script, not as a diff: -C
 		# matches a pre-applied diff's image exactly, context and all,
 		# and an origin that drifted under context the block only
 		# borrowed then kills a block that still applies perfectly well.
 		# A generated script's anchors search for their text instead, so
-		# the same drift is absorbed and what -co stores is the diff of
+		# the same drift is absorbed and what -C stores is the diff of
 		# where the block actually landed.
 		$P2VI -r "$1/$n.patch" > "$1/$n.sh"
 		chmod +x "$1/$n.sh"
@@ -459,14 +459,14 @@ p2v_reapply() {
 # the base as it read then: its context, and the anchors emitted from it, name
 # text the base may since have moved or rewritten. So the blocks come off, the
 # base is regenerated without them, and each block's stored === COMPAT PATCH ===
-# diff goes back to -co, which re-derives it against the base that now exists.
+# diff goes back to -C, which re-derives it against the base that now exists.
 # The stored diff is verbatim, which is what lets it come back out as the patch
 # its author handed in.
 #
 # Only the diffs survive, not the blocks' own delta customizations, as with
 # recompat. A block that will not replay at all is a hard error, and then the
 # script is put back the way it was: resolve that collision by hand and hand
-# the result to -co instead.
+# the result to -C instead.
 #
 # The working tree is the script's body, as it is for regen, and both states it
 # can be in mean something. A clean tree has none to offer, so the script
@@ -549,7 +549,7 @@ extract_patches() (
 
 # Write every compat block a generated script carries out as a standalone
 # .patch (its === COMPAT PATCH === diff, verbatim, exactly what its author
-# handed to -co) and convert each one into its own runnable script. Both land
+# handed to -C) and convert each one into its own runnable script. Both land
 # in ./compat/ so the results stay out of p2v_scripts: they are generated
 # scripts too, and reindex/run_patches must not pick them up as patches of
 # their own. A block whose diff no longer applies to the tree still converts,
@@ -1030,14 +1030,14 @@ compat_check() (
 # Collapse the compat blocks a script carries from one origin into a single one.
 #
 # A compat fix grows by addition: run origin.sh and target.sh, edit the sources
-# until the collision is resolved again, and hand that edit to -co, which stacks
+# until the collision is resolved again, and hand that edit to -C, which stacks
 # another block on the target. Blocks stay stacked, so the stack is the history
 # of the fix, and this turns it back into the one block it is meant to be.
 #
 # Nothing is read out of the old blocks, only the two trees the scripts really
 # produce: A, the collision with every block from origin.sh stripped out, and B,
 # the same run with all of them in. Their diff is the whole resolution as it
-# stands today, and -co re-derives the block from that, which is what makes a
+# stands today, and -C re-derives the block from that, which is what makes a
 # collapse survive a patch2vi whose patterns now collide differently.
 #
 # The tree is restored, target.sh is rewritten in place: commit it afterwards.
@@ -1064,7 +1064,7 @@ recompat() (
 	p2v_batch
 	# A is the collision itself, so the target is meant to miss hunks there:
 	# without this it quits at the first one and A is a half-applied tree,
-	# which the -co replay - it keeps going by the same rule - never
+	# which the -C replay - it keeps going by the same rule - never
 	# reproduces, so the diff taken against it does not apply. B misses the
 	# same hunks before its blocks repair them and is held to the same rule.
 	export QF2=1
