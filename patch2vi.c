@@ -8144,41 +8144,40 @@ static void usage(const char *prog, int err)
 		"       %s [-ari]I [nextvi-opts...]\n"
 		"       %s [-ario]E script.sh [nextvi-opts...]\n"
 		"       %s [-o]C origin.sh [-C origin2.sh...] target.sh"
-		" [fix.patch|fix.sh|''] [nextvi-opts...]\n",
+		" [fix.[patch|sh]|''] [nextvi-opts...]\n",
 		prog, prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\n"
 	      "  -a    Absolute line numbers\n"
 	      "  -r    Relative regex patterns instead of line numbers\n"
+	      "  -o    Write the script to FILE, atomically; may be a file this\n"
+	      "        run reads. Clustered with another option it takes no FILE\n"
+	      "        and updates that option's own script in place\n"
+	      "  -e    Execute a script with the built-in nextvi, no shell involved\n"
+	      "        Several scripts run in order, stopping at the first failure\n"
 	      "  -i    Interactive: edit patterns and ex bodies in the built-in nextvi\n"
+	      "  -h    Show this help\n"
 	      "  -d    Delta: re-apply previous customizations (implies -i)\n"
 	      "  -d1   Delta: match by group index\n"
 	      "  -d2   Delta: match by group index + deleted/inserted text or regex\n"
 	      "  -d3   Delta: match by group index + entire hunk\n"
 	      "  -d4   Delta: match by deleted/inserted text or regex\n"
-	      "  -d5   Delta: match by entire hunk\n"
-	      "  -e    Execute a script with the built-in nextvi, no shell involved\n"
-	      "        Several scripts run in order, stopping at the first failure\n"
-	      "  -E    Update a script: replay it, edit, re-emit it\n"
-	      "        Rest of the line is a nextvi command line; -d[N] keeps deltas\n"
-	      "        With QF2=1 the hunks that missed are put back into the\n"
-	      "        buffers at the line they reported, cursor parked on the first\n"
-	      "  -o    Write the script to FILE, atomically; may be a file this\n"
-	      "        run reads. Clustered with another option it takes no FILE\n"
-	      "        and updates that option's own script in place\n"
-	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\n"
-	      "        Rest of the line is a nextvi command line, EXINIT included\n",
-	      f);
+	      "  -d5   Delta: match by entire hunk\n", f);
 	fprintf(f, "  -er   Read section end tag (default: \"%s\")\n"
 		"  -ew   Write section end tag (default: \"%s\")\n",
 		end_tag_rd, end_tag_wr);
-	fputs("  -C    Compat patch: resolve a collision with origin.sh, ship the\n"
+	fputs("  -E    Update a script: replay it, edit, re-emit it\n"
+	      "        Rest of the line is a nextvi command line; -d[N] keeps deltas\n"
+	      "        With QF2=1 the hunks that missed are put back into the\n"
+	      "        buffers at the line they reported, cursor parked on the first\n"
+	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\n"
+	      "        Rest of the line is a nextvi command line, EXINIT included\n"
+	      "  -C    Compat patch: resolve a collision with origin.sh, ship the\n"
 	      "        fix as a block after the target's, behind an identity gate\n"
 	      "        on origin being in $P2VI_PATCH; a second positional\n"
 	      "        pre-applies a written fix to start from, '' skips it; the\n"
 	      "        rest of the line is a nextvi command line for the handover\n"
-	      "        Repeat -C to gate one block on several origins at once\n"
-	      "  -h    Show this help\n", f);
+	      "        Repeat -C to gate one block on several origins at once\n", f);
 	exit(err ? 1 : 0);
 }
 
