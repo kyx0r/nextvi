@@ -1517,7 +1517,7 @@ else
 fi
 
 echo ""
-echo "=== replay (-co) tests ==="
+echo "=== replay (-C) tests ==="
 
 # The compat session replays a generated script in ONE editor: buffers
 # persist across blocks, nothing is written, and the last block hands the
@@ -1534,7 +1534,7 @@ mkdir -p "$R"
 # derivation stage after the handover is not implemented yet)
 run_pr() {
 	pty "P2VI_EX=$2" \
-		"sh -c 'cd $R && $R_P2VI -co $1 /dev/null'" \
+		"sh -c 'cd $R && $R_P2VI -C $1 /dev/null'" \
 		> "$R/log" 2>&1
 }
 
@@ -1604,16 +1604,16 @@ else
 	tail -3 "$R/log" | sed 's/^/    /'
 fi
 
-# Compat derivation (stage B2). -co replays the origin and target, hands the tree to the
+# Compat derivation (stage B2). -C replays the origin and target, hands the tree to the
 # user, and turns the user's merge into a gated compat block emitted after the
 # target's own hunk. The gate's probe comes from where the origin actually
 # landed (its inserted line), so on an origin tree the block fires and merges,
 # while on a clean tree the gate self-skips before any edit and the target
 # applies alone.
-coderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit -co result to $R/new.sh
+coderive() {	# <origin.sh> <target.sh> <P2VI_EX>: emit -C result to $R/new.sh
 	rm -f "$R/new.sh"
 	pty "P2VI_EX=$3" \
-		"sh -c 'cd $R && $R_P2VI -co $1 $2 > $R/new.sh 2>$R/nerr'" > /dev/null 2>&1
+		"sh -c 'cd $R && $R_P2VI -C $1 $2 > $R/new.sh 2>$R/nerr'" > /dev/null 2>&1
 }
 
 # stack <script...>: run the chain from the first, the applied-set form. Each
@@ -1639,9 +1639,9 @@ cp "$R/draw.orig" "$R/draw.c"	# pre-origin tree the replay reads
 coderive x1.sh x2.sh '%s/^L2$/L2c/:q!'
 
 if grep -q '^# Compat [0-9]* src=x1.sh' "$R/new.sh" 2>/dev/null; then
-	ok "compat: -co emits a gated post-block from the user's merge"
+	ok "compat: -C emits a gated post-block from the user's merge"
 else
-	fail "compat: -co emits a gated post-block from the user's merge"
+	fail "compat: -C emits a gated post-block from the user's merge"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
@@ -1708,7 +1708,7 @@ fi
 # "two trees apart" failure - either the origin is in the applied set or it
 # is not), so the hard error is gone and this refusal is accepted as lost.
 
-# -co replays the origin AND the target into one session before the handover,
+# -C replays the origin AND the target into one session before the handover,
 # so the target must apply cleanly on the origin-modified tree. That exercises
 # the block boundary: the origin leaves its cursor deep in the buffer, and a
 # leftover row would steer the target's searches - so every buffer is rewound to
@@ -1723,9 +1723,9 @@ printf -- '--- a/po.c\n+++ b/po.c\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' > "$R
 cp "$R/po.orig" "$R/po.c"	# pre-origin tree the replay reads
 coderive p1.sh p2.sh '%s/^L2$/L2c/:q!'
 if grep -q '^# Compat [0-9]* src=p1.sh' "$R/new.sh" 2>/dev/null; then
-	ok "compat: -co emits a gated post-block from the user's merge"
+	ok "compat: -C emits a gated post-block from the user's merge"
 else
-	fail "compat: -co emits a gated post-block from the user's merge"
+	fail "compat: -C emits a gated post-block from the user's merge"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
@@ -1734,9 +1734,9 @@ fi
 cp "$R/po.orig" "$R/po.c"
 stack p1.sh new.sh
 if [ "$(cat "$R/po.c")" = "$(printf 'L1\nPROBE\nL2c\nL3x')" ]; then
-	ok "compat: -co fires on an origin tree, stacks with the target hunk"
+	ok "compat: -C fires on an origin tree, stacks with the target hunk"
 else
-	fail "compat: -co fires on an origin tree, stacks with the target hunk"
+	fail "compat: -C fires on an origin tree, stacks with the target hunk"
 	sed 's/^/    /' "$R/po.c"
 fi
 
@@ -1745,20 +1745,20 @@ fi
 cp "$R/po.orig" "$R/po.c"
 ( cd "$R" && VI="$VI" sh new.sh ) >/dev/null 2>&1
 if [ "$(cat "$R/po.c")" = "$(printf 'L1\nL2\nL3x')" ]; then
-	ok "compat: -co postfix gate no-ops on a clean tree"
+	ok "compat: -C postfix gate no-ops on a clean tree"
 else
-	fail "compat: -co postfix gate no-ops on a clean tree"
+	fail "compat: -C postfix gate no-ops on a clean tree"
 	sed 's/^/    /' "$R/po.c"
 fi
 
-# A third -co argument is an already written compat patch, applied to the
+# A second positional is an already written compat patch, applied to the
 # post-origin+target tree before the handover: the author does not retype a
 # resolution they already have, and the editor still opens on top of it, so the
 # derived block covers the pre-applied edits AND whatever the user adds.
 coderive3() {	# <origin.sh> <target.sh> <compat> <P2VI_EX>: out $R/new.sh
 	rm -f "$R/new.sh"
 	pty "P2VI_EX=$4" \
-		"sh -c 'cd $R && $R_P2VI -co $1 $2 $3 > $R/new.sh 2>$R/nerr'" \
+		"sh -c 'cd $R && $R_P2VI -C $1 $2 $3 > $R/new.sh 2>$R/nerr'" \
 		> /dev/null 2>&1
 }
 
@@ -1774,9 +1774,9 @@ printf -- '--- a/pb.c\n+++ b/pb.c\n@@ -3,3 +3,3 @@\n A2\n-A3\n+A3c\n A4\n' > "$R
 cp "$R/pb.orig" "$R/pb.c"	# pre-origin tree the replay reads
 coderive3 b1.sh b2.sh bc.diff ':q!'
 if grep -q '^# Compat [0-9]* src=b1.sh' "$R/new.sh" 2>/dev/null; then
-	ok "compat: -co derives a block from a pre-applied diff alone"
+	ok "compat: -C derives a block from a pre-applied diff alone"
 else
-	fail "compat: -co derives a block from a pre-applied diff alone"
+	fail "compat: -C derives a block from a pre-applied diff alone"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 fi
 
@@ -1796,6 +1796,40 @@ if [ "$(cat "$R/pb.c")" = "$(printf 'A1\nA2\nA3\nA4\nA5\nA6x')" ]; then
 else
 	fail "compat: pre-applied diff still self-skips on a clean tree"
 	sed 's/^/    /' "$R/pb.c"
+fi
+
+# '' skips the fix slot without giving up the positionals behind it: the
+# trailing nextvi command line reaches the handover as with -E. Its files open
+# only after the baseline snapshot, so they are visible in the session but
+# never part of the derived diff.
+coderive2h() {	# <origin.sh> <target.sh> <P2VI_EX>: out $R/new.sh
+	rm -f "$R/new.sh"
+	pty "P2VI_EX=$3" \
+		"sh -c 'cd $R && $R_P2VI -C $1 $2 '' extra.c > $R/new.sh 2>$R/nerr'" \
+		> /dev/null 2>&1
+}
+printf 'X1\n' > "$R/extra.c"
+cp "$R/pb.orig" "$R/pb.c"
+# buffer 0 is the replayed file; the handover opened extra.c last, so land on
+# b0 before editing it - and leave extra.c untouched
+coderive2h b1.sh b2.sh ':b0:%s/^A3$/A3z/:q!'
+if grep -q '^# Compat [0-9]* src=b1.sh' "$R/new.sh" 2>/dev/null &&
+	! grep -q 'extra\.c' "$R/new.sh"; then
+	ok "compat: '' skips the fix slot; hand files stay out of the diff"
+else
+	fail "compat: '' skips the fix slot; hand files stay out of the diff"
+	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
+fi
+
+cp "$R/pb.orig" "$R/pb.c"
+printf 'X1\n' > "$R/extra.c"
+# an edit made only in a hand file derives nothing: it is not ours to ship
+coderive2h b1.sh b2.sh '%s/^X1$/X1e/:q!'
+if [ ! -s "$R/new.sh" ] && grep -q 'no compat patch derived' "$R/nerr"; then
+	ok "compat: edits to hand files alone derive nothing"
+else
+	fail "compat: edits to hand files alone derive nothing"
+	head -3 "$R/new.sh" 2>/dev/null | sed 's/^/    /'
 fi
 
 # the same fix in script form is replayed as one more block of the session, and
@@ -1979,7 +2013,7 @@ fi
 coderiveq() {	# coderive with QF2=1: the target is expected to miss
 	rm -f "$R/new.sh"
 	pty "P2VI_EX=$3" \
-		"sh -c 'cd $R && QF2=1 $R_P2VI -co $1 $2 > $R/new.sh 2>$R/nerr'" \
+		"sh -c 'cd $R && QF2=1 $R_P2VI -C $1 $2 > $R/new.sh 2>$R/nerr'" \
 		> /dev/null 2>&1
 }
 
@@ -2042,7 +2076,7 @@ else
 	echo "    strict=[$q_strict] qf2=[$q_soft]"
 fi
 
-# Stage B3: storage, round-trip and stacking. The -co script above (new.sh from
+# Stage B3: storage, round-trip and stacking. The -C script above (new.sh from
 # draw.c) carries a pre COMPAT region after exit 0. -d must reproduce the whole
 # script - host block and compat region - byte-identically, without re-running
 # the origin, driven under a pty and quit with :q.
@@ -2150,7 +2184,7 @@ else
 	diff "$R/sf.sh" "$R/dregen.sh" 2>&1 | sed 's/^/    /' | head
 fi
 
-# rebuild the -co script (the earlier -co run clobbered new.sh)
+# rebuild the -C script (the earlier -C run clobbered new.sh)
 printf 'L1\nL2\nL3\n' > "$R/draw.orig"
 printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,4 @@\n L1\n+PROBE\n L2\n L3\n' > "$R/x1.diff"
 printf -- '--- a/draw.c\n+++ b/draw.c\n@@ -1,3 +1,3 @@\n L1\n L2\n-L3\n+L3x\n' > "$R/x2.diff"
@@ -2169,7 +2203,7 @@ else
 	diff "$R/pr.sh" "$R/dregen.sh" | sed 's/^/    /' | head -20
 fi
 
-# Re-running -co on a script that already carries a post block appends a NEW
+# Re-running -C on a script that already carries a post block appends a NEW
 # block at the group tail (existing block untouched); the user reshapes a
 # different line. The origin+target replay applies the host (L3 -> L3x) and the
 # stored post block (L2 -> L2c), so the new edit targets the post-replay line L3x.
@@ -2177,9 +2211,9 @@ cp "$R/draw.orig" "$R/draw.c"
 coderive x1.sh pr.sh '%s/^L3x$/L3z/:q!'
 if [ "$(grep -c '^=== PATCH2VI COMPAT [0-9]* src=' "$R/new.sh")" = 2 ] &&
    grep -q '^+L2c$' "$R/new.sh" && grep -q '^+L3z$' "$R/new.sh"; then
-	ok "compat: re-running -co stacks a new block, keeps the existing one"
+	ok "compat: re-running -C stacks a new block, keeps the existing one"
 else
-	fail "compat: re-running -co stacks a new block, keeps the existing one"
+	fail "compat: re-running -C stacks a new block, keeps the existing one"
 	grep -n 'PATCH2VI COMPAT' "$R/new.sh" | sed 's/^/    /'
 fi
 
@@ -2199,20 +2233,20 @@ else
 	sed 's/^/    /' "$R/draw.c"
 fi
 
-# Post stacking: re-running -co on a target that already carries a post block
+# Post stacking: re-running -C on a target that already carries a post block
 # derives the NEW block on top of that block's output. The origin+target replay
 # applies the stored post block (L2 -> L2c), so L2c exists before handover; the
 # new session edits L2c -> L2cc. Without replaying the target's own blocks the
-# buffer would still read L2, the edit would match nothing, and -co would fail
+# buffer would still read L2, the edit would match nothing, and -C would fail
 # with "no compat derived" / empty output.
 cp "$R/draw.orig" "$R/draw.c"
 coderive x1.sh pr.sh '%s/^L2c$/L2cc/:q!'
 if [ -s "$R/new.sh" ] &&
    [ "$(grep -c '^=== PATCH2VI COMPAT [0-9]* src=' "$R/new.sh")" = 2 ] &&
    grep -q '^-L2c$' "$R/new.sh" && grep -q '^+L2cc$' "$R/new.sh"; then
-	ok "compat: -co stacks the new block atop the existing post block"
+	ok "compat: -C stacks the new block atop the existing post block"
 else
-	fail "compat: -co stacks the new block atop the existing post block"
+	fail "compat: -C stacks the new block atop the existing post block"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /'
 	grep -n 'PATCH2VI COMPAT\|^[-+]L2' "$R/new.sh" 2>/dev/null | sed 's/^/    /'
 fi
@@ -2433,16 +2467,16 @@ else
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
 
-# A fix that only a STACK of patches needs: -co repeats, one per origin, and the
+# A fix that only a STACK of patches needs: -C repeats, one per origin, and the
 # block gates on all of their landings at once. The two origins land in disjoint
 # regions of one file, so each derives its own probes off its own snapshot pair;
 # the cluster cut is transposed across them, so every cluster names both and no
 # cluster can fire on one origin alone. A tree carrying only A, or only B, is
 # not the tree the fix was written for.
-coderive2() {	# <o1.sh> <o2.sh> <target.sh> <P2VI_EX>: -co twice into $R/new.sh
+coderive2() {	# <o1.sh> <o2.sh> <target.sh> <P2VI_EX>: -C twice into $R/new.sh
 	rm -f "$R/new.sh"
 	pty "P2VI_EX=$4" \
-		"sh -c 'cd $R && $R_P2VI -co $1 -co $2 $3 > $R/new.sh 2>$R/nerr'" \
+		"sh -c 'cd $R && $R_P2VI -C $1 -C $2 $3 > $R/new.sh 2>$R/nerr'" \
 		> /dev/null 2>&1
 }
 i=1
@@ -2467,9 +2501,9 @@ m_src="$(awk '/^=== PATCH2VI COMPAT /{for (i = 1; i <= NF; i++)
 	if (substr($i, 1, 4) == "src=") printf "%s%s", n++ ? " " : "", substr($i, 5)
 	print ""}' "$R/dregen.sh")"
 if [ "$m_src" = 'ma.sh mb.sh' ]; then
-	ok "compat: -co repeats, and the block names both origins"
+	ok "compat: -C repeats, and the block names both origins"
 else
-	fail "compat: -co repeats, and the block names both origins"
+	fail "compat: -C repeats, and the block names both origins"
 	echo "    src=[$m_src]"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
@@ -2497,7 +2531,7 @@ else
 fi
 
 
-# -oco clusters the top-level -o into -co: no FILE of its own, the derived
+# -oC clusters the top-level -o into -C: no FILE of its own, the derived
 # block lands back on the target script it extends (the same rule -oE follows),
 # and nothing goes to stdout.
 printf 'P1\nP2\nP3\n' > "$R/p.orig"
@@ -2509,13 +2543,13 @@ cp "$R/o2.sh" "$R/o2.keep"
 cp "$R/p.orig" "$R/p.c"
 rm -f "$R/ostdout"
 pty 'P2VI_EX=%s/^P2$/P2c/:q!' \
-	"sh -c 'cd $R && $R_P2VI -oco o1.sh o2.sh > $R/ostdout 2>$R/nerr'" \
+	"sh -c 'cd $R && $R_P2VI -oC o1.sh o2.sh > $R/ostdout 2>$R/nerr'" \
 	> /dev/null 2>&1
 if [ ! -s "$R/ostdout" ] &&
    grep -q '^# Compat [0-9]* src=o1.sh' "$R/o2.sh" 2>/dev/null; then
-	ok "compat: -oco updates the target script in place"
+	ok "compat: -oC updates the target script in place"
 else
-	fail "compat: -oco updates the target script in place"
+	fail "compat: -oC updates the target script in place"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
 cp "$R/p.orig" "$R/p.c"
@@ -2534,9 +2568,9 @@ fi
 rm -f "$R/co"
 "$R_P2VI" -r -o "$R/co" "$R/o2.diff" >/dev/null 2>&1
 if [ -s "$R/co" ] && cmp -s "$R/co" "$R/o2.keep"; then
-	ok "compat: -o co still names a file, not a -co cluster"
+	ok "compat: -o co still names a file, not a -C cluster"
 else
-	fail "compat: -o co still names a file, not a -co cluster"
+	fail "compat: -o co still names a file, not a -C cluster"
 fi
 
 # -E cannot round-trip a compat block: it is derived against an origin script
@@ -2554,7 +2588,7 @@ printf -- '--- a/e.c\n+++ b/e.c\n@@ -1,3 +1,3 @@\n E1\n E2\n-E3\n+E3x\n' \
 cp "$R/e.orig" "$R/e.c"
 rm -f "$R/new.sh"
 pty 'P2VI_EX=%s/^E2$/E2c/:q!' \
-	"sh -c 'cd $R && $R_P2VI -co e1.sh e2.sh > $R/ec.sh 2>$R/nerr'" \
+	"sh -c 'cd $R && $R_P2VI -C e1.sh e2.sh > $R/ec.sh 2>$R/nerr'" \
 	> /dev/null 2>&1
 
 # amend_E <tree-setup-file> <out.sh> [P2VI_PATCH]: replay ec.sh over the tree
@@ -2684,10 +2718,10 @@ printf -- '--- a/cn.c\n+++ b/cn.c\n@@ -1,3 +1,3 @@\n S1\n-S2\n+S2x\n S3\n' > "$R
 "$R_P2VI" -r "$R/ca.diff" > "$R/ca.sh"
 "$R_P2VI" -r "$R/cb.diff" > "$R/cb.sh"
 "$R_P2VI" -r "$R/cx.diff" > "$R/cx.sh"
-# compat block gated on BOTH ca and cb (two -co), editing S4 -> S4c
+# compat block gated on BOTH ca and cb (two -C), editing S4 -> S4c
 cp "$R/cn.orig" "$R/cn.c"
 pty 'P2VI_EX=%s/^S4$/S4c/:q!' \
-	"sh -c 'cd $R && $R_P2VI -co ca.sh -co cb.sh cx.sh > $R/cn.sh 2>$R/cn.nerr'" \
+	"sh -c 'cd $R && $R_P2VI -C ca.sh -C cb.sh cx.sh > $R/cn.sh 2>$R/cn.nerr'" \
 	> /dev/null 2>&1
 
 # Chain propagation and ordering: each script appends its own basename to

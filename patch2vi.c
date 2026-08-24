@@ -6,8 +6,8 @@
  *        patch2vi -e script.sh [script2.sh...]
  *        patch2vi [-ari]I [nextvi-opts...]
  *        patch2vi [-ario]E script.sh [nextvi-opts...]
- *        patch2vi [-o]co origin.sh [-co origin2.sh...] target.sh \
- *                 [compat.diff|compat.sh]
+ *        patch2vi [-o]C origin.sh [-C origin2.sh...] target.sh \
+ *                 [fix.diff|fix.sh|''] [nextvi-opts...]
  *
  * The script applies the patch in raw ex mode (:vis 3). The command
  * separator and the escape byte are picked per patch via :sc! so that
@@ -30,11 +30,13 @@
  *     the input the converter normally reads;
  *   - updates a script (-E): replays it, hands the tree it leaves over to
  *     the user and re-emits it through that same diff pass;
- *   - replays two or more scripts (-co) to derive a compatibility patch,
+ *   - replays two or more scripts (-C) to derive a compatibility patch,
  *     applied after the target behind an identity gate on the applied set
- *     ($P2VI_PATCH) - one -co per origin, and the block runs only where every
- *     origin named in its label is present; an optional third argument (diff
- *     or script) pre-applies a known compat patch the session continues from.
+ *     ($P2VI_PATCH) - one -C per origin, and the block runs only where every
+ *     origin named in its label is present; an optional second positional
+ *     (diff or script, '' to skip it) pre-applies a known compat patch the
+ *     session continues from, and whatever follows is a nextvi command line
+ *     for the handover.
  * No session ever writes a buffer back; quitting is what emits, to stdout or
  * (-o) atomically onto a named file.
  */
@@ -90,7 +92,7 @@ static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
 static int interactive_mode; /* 1=interactive editing of search patterns (-i) */
 /* 1 = re-read and re-apply stored deltas/compat regions from a generated
  * script, distinct from opening the group-editing session. -i/-d set both;
- * -co set only this so regen keeps host customizations without a UI. */
+ * -C set only this so regen keeps host customizations without a UI. */
 static int read_deltas;
 /* -1=per-group stored levels, 0=off, 1-5=forced level */
 static int delta_mode;
@@ -205,7 +207,7 @@ static void sb_lines(sbuf *fp, char **v, int n)
  * set from its caller, appends itself, and hands the remaining arguments to
  * the next script, so every level of a chain sees exactly what preceded it.
  * $P2VI_PATCH is the escape hatch for trees that did not start clean (a change
- * applied by hand, absorbed upstream, or arriving pre-patched) and is what -co
+ * applied by hand, absorbed upstream, or arriving pre-patched) and is what -C
  * asserts while deriving a new block.
  *
  * The decision itself is the editor's: the set goes into a register whole and
@@ -221,13 +223,13 @@ static int compat_capturing;
  * only, since the file-validated generators would read the pre-origin file -
  * the wrong text for a block derived on top of it. */
 static int compat_building;
-static int compat_mode;			/* -co: derive a post-only compat patch */
-/* The scripts it is derived against, in replay order: -co repeats, one per
+static int compat_mode;			/* -C: derive a post-only compat patch */
+/* The scripts it is derived against, in replay order: -C repeats, one per
  * origin, and one identity gate tests all of them at once. One origin is the
- * ordinary case and behaves exactly as the single -co always did. */
+ * ordinary case and behaves exactly as the single -C always did. */
 static const char **compat_origins;
 static int ncompat_origin, compat_origin_cap;
-/* -co third argument: an already written fix (diff or script) applied to the
+/* -C second positional: an already written fix (diff or script) applied to the
  * post-origin+target tree before handover. It lands after the baseline
  * snapshot, so it is part of the derived compat patch. */
 static const char *compat_pre;
@@ -1105,14 +1107,14 @@ static void sq_path(const char *s)
  * register a line per failure and so parseable (see FAILURE PLACEMENT). */
 #define REG_FLOG 'F'
 /* The "vis 2; q!1" body every assert runs through, and the one register QF2=1
- * clears. REG_QF2 only ever points at it ("? %@221"), so the -co blocks that
+ * clears. REG_QF2 only ever points at it ("? %@221"), so the -C blocks that
  * rewrite REG_QF2 at run time - the host override and each block's quit policy -
  * rewrite which assert applies, never whether asserting is enabled at all: with
  * QF2=1 in the environment 221 is empty and every one of those rewrites lands
  * on a body that reports and falls through. */
 #define REG_QF2A 221
 /*
- * -co registers. Registers are global to the process and never cleared between
+ * -C registers. Registers are global to the process and never cleared between
  * chains, so a value a block's call writes crosses the host body:
  *   REG_APPLIED       the applied set: $P2VI_PATCH verbatim, padded with a
  *                     space at each end, the one thing the shell contributes.
@@ -4889,7 +4891,7 @@ static void emit_reg_defaults(sbuf *out)
 	EMIT_ESCSEP(out);
 	sb_str(out, "q!1");
 	EMIT_SEP(out);
-	/* the default assert, the same one a -co block restores */
+	/* the default assert, the same one a -C block restores */
 	emit_qf2_assert(out);
 }
 
@@ -5634,8 +5636,8 @@ static void emit_dstore(dstore_t *ds)
  * the host === PATCH2VI PATCH === (which stays last, to EOF). One region per
  * compat patch, self-contained - its delta customizations and its whole unified
  * diff - so -d regenerates it and -i edits it without re-running the origin.
- * === COMPAT PATCH === is that diff and nothing else, stored verbatim, so a -co
- * third argument comes back out as the patch its author handed in. The inner
+ * === COMPAT PATCH === is that diff and nothing else, stored verbatim, so a -C
+ * second positional comes back out as the patch its author handed in. The inner
  * sub-sections close with === END === like the host's, so the reader reaches
  * === END COMPAT === with no section open.
  *
@@ -5728,7 +5730,7 @@ static const char *sh_get(const char *name)
 	return getenv(name);
 }
 
-/* Header assignments belong to one script: replaying two (-co) must not let the
+/* Header assignments belong to one script: replaying two (-C) must not let the
  * first's shadow the environment while the second's conditionals are read. */
 static void sh_reset(void)
 {
@@ -6228,7 +6230,7 @@ static void cur_applied_clear(void)
 
 /* Replace the applied set with the basenames of paths[0..n-1], on top of
  * whatever $P2VI_PATCH the environment carries (the shell chain's own channel
- * - so -E and -co replays over a tree that already carries origins can assert
+ * - so -E and -C replays over a tree that already carries origins can assert
  * them the way the shell would have inherited them). Both are basenames. */
 static void cur_applied_set(const char **paths, int n)
 {
@@ -6480,7 +6482,7 @@ static int sess_buf(char ***paths, int *npaths, const char *path)
 }
 
 /* Post-origin baseline: each named buffer's text at the moment the origin
- * (and, for -co, the target) has been replayed but before the user edits it.
+ * (and, for -C, the target) has been replayed but before the user edits it.
  * The compat diff is measured from here to the buffer's final state. */
 typedef struct { char *path, *text; } snap_t;
 typedef struct { snap_t *v; int n, cap; } snaps_t;
@@ -6535,10 +6537,10 @@ static void snap_seed(snaps_t *sn, const char *path)
 	sn->v[sn->n++].text = sb->s;
 }
 
-/* -co third argument in its unified-diff form, applied to the live buffers
+/* -C second positional, unified-diff form, applied to the live buffers
  * of the handover session (its script form replays as another block). */
 static int compat_apply_diff(const char *path);
-static int compat_pre_script;	/* the third argument is a generated script */
+static int compat_pre_script;	/* the second positional is a generated script */
 
 /* -E: the nextvi command line that follows the script name. Its option letters
  * are vi(1)'s own, applied to the handed-over session, and its files are opened
@@ -6905,7 +6907,7 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 
 /* Append one script's blocks to *blks. Header assignments are per script and
  * each block carries its own separator, so two scripts' headers never mix. */
-/* tol: replay this script with QF2=1, whatever the environment says. A -co
+/* tol: replay this script with QF2=1, whatever the environment says. A -C
  * derivation replays a target that is expected to collide with the origin -
  * that collision is the whole input to the derivation - and a target quitting
  * at its first missed hunk would leave a tree the fix was never written
@@ -6932,7 +6934,7 @@ static int parse_script(const char *path, p2vi_block_t **blks, int *nblks,
 }
 
 /* Replay the scripts over the tree as it is on disk, in one session the caller
- * reads back: -co replays the origin and then the target, so the user is handed
+ * reads back: -C replays the origin and then the target, so the user is handed
  * the state both applied to. The scripts keep their own phase policy - the
  * script itself is the single source of truth. snap_sc is the script index of
  * the baseline snapshot, translated into the block index replay_blocks() wants
@@ -6971,7 +6973,7 @@ static int replay_scripts(const char **paths, int nscripts, int handover,
  * files, it replays a generated script and hands over the tree that replay
  * leaves behind. The diff base is still the file on disk, so the new script
  * carries the old one's effect plus the user's changes - it replaces the input
- * script rather than extending it (extending is -co).
+ * script rather than extending it (extending is -C).
  */
 static int edit_mode;		/* -I: edit, then emit the diff as a script */
 static int amend_mode;		/* -E: replay a script, edit, re-emit it */
@@ -7291,7 +7293,7 @@ static char **split_lines(char *text, int *n)
 static void parse_diff_text(const char *text);
 static void parse_diff_reset(void);
 
-/* The -co third argument's form, sniffed from its first line as the ordinary
+/* The -C second positional's form, sniffed from its first line as the ordinary
  * input is: 1 = a generated script (replayed as another block), 0 = a unified
  * diff (spliced into the live buffers), -1 = unreadable. */
 static int compat_pre_isscript(const char *path)
@@ -7427,7 +7429,7 @@ static void drop_files_from(int first)
 	nfiles = first;
 }
 
-/* -co third argument, unified-diff form: parsed into its own files[] range and
+/* -C second positional, unified-diff form: parsed into its own files[] range and
  * raw sink (so the host === PATCH === stays byte-identical) and spliced into the
  * live buffers. The range is dropped right after - the diff is applied, not
  * shipped, and what the user is left holding is re-diffed from the baseline. */
@@ -7740,7 +7742,7 @@ static int out_commit(const char *path)
 
 /* -E: replay one generated script into a single session, hand it to the user,
  * and diff every buffer it leaves behind against disk. The replay is the same
- * one -co drives, so the blocks keep their own phase policy and nothing is
+ * one -C drives, so the blocks keep their own phase policy and nothing is
  * written; a block that fails aborts the whole thing, since a partial replay
  * would silently drop the hunks it never reached from the emitted script. */
 static int amend_to_diff(const char *path, sbuf *out)
@@ -8141,8 +8143,8 @@ static void usage(const char *prog, int err)
 		"       %s -e script.sh [script2.sh...]\n"
 		"       %s [-ari]I [nextvi-opts...]\n"
 		"       %s [-ario]E script.sh [nextvi-opts...]\n"
-		"       %s [-o]co origin.sh [-co origin2.sh...] target.sh"
-		" [compat.patch|compat.sh]\n",
+		"       %s [-o]C origin.sh [-C origin2.sh...] target.sh"
+		" [fix.patch|fix.sh|''] [nextvi-opts...]\n",
 		prog, prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\n"
@@ -8170,18 +8172,19 @@ static void usage(const char *prog, int err)
 	fprintf(f, "  -er   Read section end tag (default: \"%s\")\n"
 		"  -ew   Write section end tag (default: \"%s\")\n",
 		end_tag_rd, end_tag_wr);
-	fputs("  -co   Compat patch: resolve a collision with origin.sh, ship the\n"
+	fputs("  -C    Compat patch: resolve a collision with origin.sh, ship the\n"
 	      "        fix as a block after the target's, behind an identity gate\n"
-	      "        on origin being in $P2VI_PATCH; a third argument\n"
-	      "        pre-applies a written fix to start from\n"
-	      "        Repeat -co to gate one block on several origins at once\n"
+	      "        on origin being in $P2VI_PATCH; a second positional\n"
+	      "        pre-applies a written fix to start from, '' skips it; the\n"
+	      "        rest of the line is a nextvi command line for the handover\n"
+	      "        Repeat -C to gate one block on several origins at once\n"
 	      "  -h    Show this help\n", f);
 	exit(err ? 1 : 0);
 }
 
 /* A multi-letter option's argument, attached (-erTAG) or separate (-er TAG);
  * n is where the attached form starts, i.e. one past the option's last
- * letter (3 for -er/-ew/-co, 4 for the clustered -oco). */
+ * letter (3 for -er/-ew, 2 for -C and 3 for the clustered -oC). */
 static const char *opt_arg(int argc, char **argv, int *i, int n)
 {
 	if (argv[*i][n])
@@ -8229,32 +8232,32 @@ int main(int argc, char **argv)
 			end_tag_wr = opt_arg(argc, argv, &i, 3);
 			continue;
 		}
-		/* -co origin.sh: derive a compatibility patch against that
+		/* -C origin.sh: derive a compatibility patch against that
 		 * script, applied AFTER the target (the ordinary positional
-		 * input). Post-only; replaces the old -co split.
+		 * input). Post-only.
 		 *
-		 * Repeatable: every -co adds one origin, and the block's
+		 * Repeatable: every -C adds one origin, and the block's
 		 * identity gate tests all of them together, for a fix that only
 		 * a particular stack of patches needs. The origins are their
 		 * own arguments rather than positionals so the target and the
 		 * optional pre-applied fix stay where they are, unambiguously.
 		 *
-		 * "-oco" clusters the top-level -o into it, as "-oE" does: no
+		 * "-oC" clusters the top-level -o into it, as "-oE" does: no
 		 * FILE of its own, the result lands back on the target script
-		 * the block extends. A file literally named "co" is still
-		 * reachable as "-o co". */
-		j = argv[i][1] == 'o' && argv[i][2] == 'c' && argv[i][3] == 'o';
-		if (argv[i][1 + j] == 'c' && argv[i][2 + j] == 'o') {
+		 * the block extends. A file literally named "C" is still
+		 * reachable as "-o C". */
+		j = argv[i][1] == 'o' && argv[i][2] == 'C';
+		if (argv[i][1 + j] == 'C') {
 			compat_mode = 1;
 			read_deltas = 1;
 			amend_inplace |= j;
 			ARR_PUSH(compat_origins, ncompat_origin, compat_origin_cap)
 			compat_origins[ncompat_origin++] =
-				opt_arg(argc, argv, &i, 3 + j);
+				opt_arg(argc, argv, &i, 2 + j);
 			continue;
 		}
 		/* -o FILE (or -oFILE): the script, wherever it comes from,
-		 * lands in that file rather than on stdout; tested after -co
+		 * lands in that file rather than on stdout; tested after -C
 		 * so it cannot shadow it */
 		if (argv[i][1] == 'o' && !amend_cluster(argv[i] + 2)) {
 			if (argv[i][2])
@@ -8319,7 +8322,7 @@ int main(int argc, char **argv)
 		}
 	}
 	if (amend_inplace && !amend_mode && !compat_mode && !delta_mode) {
-		fprintf(stderr, "Clustered -o is only for -E, -d and -co\n");
+		fprintf(stderr, "Clustered -o is only for -E, -d and -C\n");
 		usage(argv[0], 1);
 	}
 	if (i < argc && !edit_mode)
@@ -8333,25 +8336,40 @@ int main(int argc, char **argv)
 		}
 		out_file = input_file;
 	}
-	/* -oco: the block extends the target script, so that is what the run
+	/* -oC: the block extends the target script, so that is what the run
 	 * writes back; the write is atomic, so reading it first is safe */
 	if (compat_mode && amend_inplace) {
 		if (!input_file) {
-			fprintf(stderr, "-oco requires a target script\n");
+			fprintf(stderr, "-oC requires a target script\n");
 			return 1;
 		}
 		out_file = input_file;
 	}
-	/* plain -co replays the target by name (compat_derive feeds its path
+	/* plain -C replays the target by name (compat_derive feeds its path
 	 * to the same parser -E uses), so stdin cannot supply it */
 	if (compat_mode && !amend_inplace && !input_file) {
-		fprintf(stderr, "-co requires a target script\n");
+		fprintf(stderr, "-C requires a target script\n");
 		return 1;
 	}
-	/* -co takes a third positional: an already written compat fix, applied
-	 * before the editor is handed over */
-	if (compat_mode && i + 1 < argc && !edit_mode && !amend_mode)
-		compat_pre = argv[i + 1];
+	/* -C takes a second positional: an already written compat fix, applied
+	 * before the editor is handed over. An empty string skips the slot,
+	 * which is how the handover's nextvi command line stays reachable
+	 * without naming a fix. The rest parses as -E's does; its files are
+	 * opened only at handover, after the baseline snapshot, so they never
+	 * leak into the derived diff (the differ skips buffers it has no
+	 * baseline for). */
+	if (compat_mode && !edit_mode && !amend_mode) {
+		char **ha = argv + i + 1;
+		int nh = argc - i - 1;
+		if (nh > 0) {
+			if (ha[0][0])
+				compat_pre = ha[0];
+			ha++;
+			nh--;
+		}
+		if (parse_hand_args(ha, nh) < 0)
+			usage(argv[0], 1);
+	}
 	/* -E: the first word after the cluster is the script to update, read
 	 * like any other input; the rest is the editor's command line */
 	if (amend_mode) {
@@ -8483,7 +8501,7 @@ int main(int argc, char **argv)
 	if (in && in != stdin)
 		fclose(in);
 
-	/* -co: replay the origin script in one session and hand the
+	/* -C: replay the origin script in one session and hand the
 	 * tree it leaves behind to the user, who reshapes it so the target
 	 * applies. Runs before the separator is picked, so the bytes of
 	 * whatever the session produces are seen by find_unused_byte(). */
