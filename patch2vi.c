@@ -6846,8 +6846,8 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			xsep = ':';
 			xesc = '\\';
 			xerr = 1;
-			/* the -E command line's own files, opened last so the
-			 * session lands on one of them */
+			/* the -E/-C command line's own files, opened last so
+			 * the session lands on one of them */
 			for (k = 0; k < nhand_files; k++)
 				ec_edit("", "e", hand_files[k]);
 			/* park on the first placed failure, opened files and
@@ -6865,8 +6865,19 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 				ex_command(ln)
 			if (xmpt > 1)
 				xmpt = 1;
-			if (!xquit)
-				vi(1);
+			/* enter the loop main() would have - the tail's mode
+			 * flags decide, not a hardcoded vi(): "-e" and "-s" mean
+			 * ex(), "-a" wraps the session in the scroll history */
+			if (!xquit) {
+				if (xvis & 8)
+					term_scrh()
+				if (xvis & 2)
+					ex();
+				else
+					vi(1);
+				if (xvis & 8)
+					term_scrl()
+			}
 		}
 		if (!xquit)	/* no counted quit: the block simply ended */
 			xquit = -1;
