@@ -122,24 +122,7 @@ static void sb_printf(sbuf *sb, const char *fmt, ...)
 	sb->s_n += n;
 }
 
-/* printf into a fresh string, so a label built from user paths has no
- * length limit. */
-static char *str_fmt(const char *fmt, ...)
-{
-	va_list ap;
-	int n;
-	char *s;
-	va_start(ap, fmt);
-	n = vsnprintf(NULL, 0, fmt, ap);
-	va_end(ap);
-	s = emalloc(n + 1);
-	va_start(ap, fmt);
-	vsnprintf(s, n + 1, fmt, ap);
-	va_end(ap);
-	return s;
-}
-
-/* f> anchor search strategies (SEARCH PATTERN slots), tried strict-to-loose,
+/* f> anchor search strategies, one per pattern slot, tried strict-to-loose,
  * first match wins: NPAT exact ones (default_pat_lines), then the
  * file-validated relaxed windows - fuzz (gen_fuzz_windows), the :grp-capture
  * window 7 (gen_grp_window) and the straddle windows 8 and 9 (gen_win_window,
@@ -160,9 +143,8 @@ static char *str_fmt(const char *fmt, ...)
 
 /*
  * SEARCH MODES. Every phase-1 search carries one; it follows from the pattern's
- * shape (1 for a single line, 0 otherwise, the window generators picking their
- * own) and a SEARCH PATTERN's MODE marker overrides it. emit_search_setup
- * writes the form each implies:
+ * shape alone: 1 for a single line, 0 otherwise, and the window generators
+ * pick their own. emit_search_setup writes the form each implies:
  *   0  "%f>" over the find register cache - the buffer yanked once after open,
  *      where the whole file is one string, so a multi-line window's newlines
  *      are visible to the regex; f+ resumes one char past the previous match.
@@ -957,8 +939,8 @@ static void emit_lb(sbuf *out)
 }
 #define EMIT_LB(out) emit_lb(out)
 
-/* Append a generated (or overridden) group segment. Segments start with their
- * own line break, redundant when the segment before ended with one. */
+/* Append one group segment. Segments start with their own line break,
+ * redundant when the segment before ended with one. */
 static void sb_seg(sbuf *out, const char *seg)
 {
 	if (!strncmp(seg, "0?\n", 3) && lb_pending(out))
@@ -1163,9 +1145,44 @@ static void emit_search_setup(sbuf *out, int mode, int first, int lvl)
 		sb_str(out, (g3 || first) ? "%f> " : "%f+ ");
 }
 
-/* The lone-pattern phase-1 search: setup and f>, the anchors, the error check,
- * then "+<offset>m <mark_id>" to mark the target without moving the cursor.
- * pre_escaped 0 = raw text (regex+exarg escape), 1 = regex (exarg only). */
+/* The f> argument of a phase-1 search: the pattern's lines joined by newlines.
+ * A window generator hands them over pre-escaped and self-anchoring, so they go
+ * out as they are; raw text is regex-escaped first, and a lone raw line is
+ * wrapped ^...$ so repeated text cannot match at an offset.
+ *
+ * lvl is how many ex_arg layers the argument sits under - one for a top-level
+ * search, two inside a ? conditional - and each of them doubles every
+ * backslash. With a dynamic escape byte backslash is not special to ex_arg at
+ * all, so no layer needs anything (escape_exarg is the identity there). */
+static void sb_pat_lines(sbuf *out, char **lines, int nlines, int pre_escaped,
+			 int lvl)
+{
+	int wrap = nlines == 1 && !pre_escaped;
+	if (wrap)
+		sb_chr(out, '^');
+	for (int i = 0; i < nlines; i++) {
+		char *s = pre_escaped ? uc_dup(lines[i])
+				      : escape_regex(lines[i]);
+		for (int k = dyn_esc ? 0 : lvl; k-- > 0; ) {
+			char *e = escape_chars(s, "\\");
+			free(s);
+			s = e;
+		}
+		sb_str(out, s);
+		free(s);
+		if (i < nlines - 1)
+			sb_chr(out, '\n');
+	}
+	if (wrap)
+		sb_chr(out, '$');
+	/* Ensure trailing newline when the last line is empty */
+	if (nlines > 0 && !lines[nlines - 1][0])
+		sb_chr(out, '\n');
+}
+
+/* The lone-pattern phase-1 search: setup and f>, the pattern (sb_pat_lines,
+ * at the top level's one escape layer), the error check, then "+<offset>m
+ * <mark_id>" to mark the target without moving the cursor. */
 static void emit_search(sbuf *out, char **anchors, int nanchors,
 			int offset, int mark_id,
 			int target_line, int pre_escaped, int first, int mode)
@@ -1174,29 +1191,7 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
 	int g3 = mode == 3;
 	int grp = mode == 2 || g3;
 	emit_search_setup(out, mode, first, 0);
-	/* pre-escaped (window) patterns carry their own anchoring */
-	if (single && !pre_escaped)
-		sb_chr(out, '^');
-	for (int i = 0; i < nanchors; i++) {
-		if (pre_escaped) {
-			char *e = escape_exarg(anchors[i]);
-			sb_str(out, e);
-			free(e);
-		} else {
-			char *r = escape_regex(anchors[i]);
-			char *e = escape_exarg(r);
-			sb_str(out, e);
-			free(e);
-			free(r);
-		}
-		if (i < nanchors - 1)
-			sb_chr(out, '\n');
-	}
-	if (single && !pre_escaped)
-		sb_chr(out, '$');
-	/* Ensure trailing newline when last anchor is empty */
-	if (nanchors > 0 && !anchors[nanchors - 1][0])
-		sb_chr(out, '\n');
+	sb_pat_lines(out, anchors, nanchors, pre_escaped, 1);
 	EMIT_SEP(out);
 	emit_err_check(out, 1, target_line, -1, NULL, 0);
 	if (grp) {
@@ -1280,9 +1275,10 @@ static int group_has_anchors(group_t *g)
 typedef struct {
 	char **lines;
 	int nlines;
-	int pre_escaped;  /* 1 = user regex (exarg only), 0 = raw text */
+	int pre_escaped;  /* 1 = a window generator's regex, 0 = raw text */
 	int offset;       /* lines from match start to the target line */
-	int off_final;    /* 1 = offset from OFFSET marker, no adjustment */
+	int off_final;    /* 1 = the window generator's own offset, which the
+			   * pure-add shift must leave alone */
 	int mode;         /* search mode, see SEARCH MODES */
 	int pid;          /* fixed pattern id (source slot + 1, 1-9): emitted as
 			   * the capture tag and OK1 anchor id so a failure maps
@@ -1480,11 +1476,8 @@ static int gen_fuzz_windows(group_t *g, fuzzwin_t *out, int max)
 	/* Keep the last `max` (loosest); free the stricter ones we drop. */
 	int keep = nc < max ? nc : max;
 	int drop = nc - keep;
-	for (int i = 0; i < drop; i++) {
-		for (int j = 0; j < cand[i].nlines; j++)
-			free(cand[i].lines[j]);
-		free(cand[i].lines);
-	}
+	for (int i = 0; i < drop; i++)
+		free_lines(cand[i].lines, cand[i].nlines);
 	for (int i = 0; i < keep; i++)
 		out[i] = cand[drop + i];
 	return keep;
@@ -1747,38 +1740,6 @@ static void free_extra_windows(winset_t *ws)
 			free_fuzz_windows(&ws->w[i], 1);
 }
 
-/* One fallback pattern as the f> argument inside a ? conditional, which
- * consumes one more ex_arg escape layer than a top-level search - so with the
- * default backslash escape every backslash is doubled again, and with a dynamic
- * one nothing extra is needed. */
-static void emit_chain_pattern(sbuf *out, pat_spec_t *p)
-{
-	int wrap = p->nlines == 1 && !p->pre_escaped;
-	if (wrap)
-		sb_chr(out, '^');
-	for (int i = 0; i < p->nlines; i++) {
-		char *r = p->pre_escaped ? NULL : escape_regex(p->lines[i]);
-		char *x;
-		if (dyn_esc) {
-			x = uc_dup(r ? r : p->lines[i]);
-		} else {
-			char *e = escape_exarg(r ? r : p->lines[i]);
-			x = escape_chars(e, "\\");
-			free(e);
-		}
-		sb_str(out, x);
-		free(x);
-		free(r);
-		if (i < p->nlines - 1)
-			sb_chr(out, '\n');
-	}
-	if (wrap)
-		sb_chr(out, '$');
-	/* Ensure trailing newline when last line is empty */
-	if (p->nlines > 0 && !p->lines[p->nlines - 1][0])
-		sb_chr(out, '\n');
-}
-
 /* Phase 1 fallback chain: every pattern nested into one ? conditional, chained
  * with escaped separators, first match wins. Per pattern n (capture tag n):
  *   %f> <pat>\:<n>??\:<n>??[+off]m <id>\\\:${OK1}p OK <loc>:a<n>\\\:1q\:
@@ -1808,7 +1769,10 @@ static void emit_fallback_chain(sbuf *out, pat_spec_t *ps, int nps,
 		 * top-level search; a mode-1 attempt's "fr 98" below puts the
 		 * register cache back for the attempts after it */
 		emit_search_setup(out, ps[n].mode, first, 1);
-		emit_chain_pattern(out, &ps[n]);
+		/* one ex_arg layer deeper than a top-level search: the whole
+		 * f> sits inside the ? conditional's argument */
+		sb_pat_lines(out, ps[n].lines, ps[n].nlines,
+			     ps[n].pre_escaped, 2);
 		EMIT_ESCSEP(out);
 		sb_printf(out, "%d??", ps[n].pid);
 		/* The same once the result is captured into tag <n>, splitting
@@ -3061,6 +3025,22 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
 		free_group(&groups[gi]);
 }
 
+/* One file inside a body: select its buffer, yank it into the find register so
+ * every relative search of this file runs against a cache that stays
+ * byte-identical to the pristine buffer (a file the patch creates has nothing
+ * to cache), then its groups. */
+static void emit_file_body(sbuf *out, file_patch_t *fp, int buf, int cache)
+{
+	sb_printf(out, "b%d", buf);
+	EMIT_SEP(out);
+	if (cache) {
+		sb_str(out, "%ya 98");
+		EMIT_SEP(out);
+	}
+	cur_file_path = fp->path;
+	emit_file_script(out, fp);
+}
+
 /* The state registers, defined at the top of every $VI body: the body writes
  * the default state and the shell then contributes whole commands that flip
  * individual switches (any non-empty value counts as set).
@@ -3231,17 +3211,9 @@ static void emit_vi_block(file_patch_t **active, int nactive)
 		sb_str(osb, "fr 98");
 		EMIT_SEP(osb);
 	}
-	for (int k = 0; k < nactive; k++) {
-		int cache = relative_mode && !active[k]->is_new;
-		sb_printf(osb, "b%d", k);
-		EMIT_SEP(osb);
-		if (cache) {
-			sb_str(osb, "%ya 98");
-			EMIT_SEP(osb);
-		}
-		cur_file_path = active[k]->path;
-		emit_file_script(osb, active[k]);
-	}
+	for (int k = 0; k < nactive; k++)
+		emit_file_body(osb, active[k], k,
+			       relative_mode && !active[k]->is_new);
 	emit_write_tail(osb, nactive, NULL);
 	sq_write(osb->s, osb->s_n);
 	fputs("' > \"$P2VIF\"\n" P2VI_VICALL " $VI -e", stdout);
@@ -3281,18 +3253,9 @@ static void emit_section_body(sbuf *out, file_patch_t **files, int nf,
 	EMIT_SEP(out);
 	sb_str(out, "fr 98");
 	EMIT_SEP(out);
-	for (int k = 0; k < nf; k++) {
-		int gi = uf_index(uf, nuf, files[k]);
-		int cache = !files[k]->is_new;
-		sb_printf(out, "b%d", gi);
-		EMIT_SEP(out);
-		if (cache) {
-			sb_str(out, "%ya 98");
-			EMIT_SEP(out);
-		}
-		cur_file_path = files[k]->path;
-		emit_file_script(out, files[k]);
-	}
+	for (int k = 0; k < nf; k++)
+		emit_file_body(out, files[k], uf_index(uf, nuf, files[k]),
+			       !files[k]->is_new);
 	/* A dangling separator from the last error check would be an empty
 	 * command when %@ runs the body, which ex reports as unknown. */
 	if (out->s_n > 0 && out->s[out->s_n - 1] == sep)
@@ -3366,7 +3329,8 @@ typedef struct {
 	int secbuf;		/* global buffer index of the staged body */
 	int suf;		/* "$P2VIF".<suf>: the section register, 0 = host */
 	int blk;		/* compat block index (reg is base+blk); -1 host */
-	int nsrc;		/* the block's src= count; 0 can never fire */
+	char **src;		/* the block's src= basenames, parsed once (owned) */
+	int nsrc;		/* how many; 0 can never fire */
 	compat_block_t *cb;	/* NULL for the host section */
 } section_t;
 
@@ -3429,18 +3393,6 @@ static void emit_host_override(sbuf *out)
 	EMIT_ESCSEP(out);
 	sb_str(out, "fr 98");
 	EMIT_SEP(out);
-}
-
-/* The anchor slots base..base+n-1 as one expression, joined by op (';' is OR,
- * ',' is AND): the DNF prefix a "??" branches on instead of the last command's
- * status. */
-static void sb_slots(sbuf *out, int base, int n, int op)
-{
-	for (int k = 0; k < n; k++) {
-		if (k)
-			sb_chr(out, op);
-		sb_printf(out, "%d", base + k);
-	}
 }
 
 /* The gate slots of every later block over the same file, ORed: the expression
@@ -3582,28 +3534,27 @@ static void emit_compat_gates(sbuf *out, section_t *secs, int nsec)
 	sb_printf(out, "fr %d", REG_APPLIED);
 	EMIT_SEP(out);
 	for (int i = 0; i < nsec; i++) {
-		char **fields;
 		int nf;
 		if (!secs[i].cb)
 			continue;
-		nf = compat_src_fields(secs[i].cb, &fields);
+		nf = secs[i].nsrc;
 		/* one source line per block: its scans, its arm, its answer */
 		EMIT_LB(out);
 		EMIT_SEP(out);
 		for (int k = 0; k < nf; k++) {
 			sb_str(out, "f> ");
-			sb_src_pat(out, fields[k]);
+			sb_src_pat(out, secs[i].src[k]);
 			EMIT_SEP(out);
 			sb_printf(out, "%d?" "?", SRC_SLOT_BASE + k);
 			EMIT_SEP(out);
-			free(fields[k]);
 		}
-		free(fields);
 		if (!nf)
 			continue;
 		sb_printf(out, "b%d", secs[i].secbuf);
 		EMIT_SEP(out);
-		sb_slots(out, SRC_SLOT_BASE, nf, ',');
+		/* the scans ANDed: the block arms only if every origin is in */
+		for (int k = 0; k < nf; k++)
+			sb_printf(out, k ? ",%d" : "%d", SRC_SLOT_BASE + k);
 		sb_printf(out, "?" "? %%ya %d", secs[i].reg);
 		EMIT_ESCSEP(out);
 		sb_printf(out, "%dreg 1", REG_FLAG_ANY);
@@ -3696,6 +3647,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		secs[nsec].nf = nactive;
 		secs[nsec].reg = P2VI_REG;
 		secs[nsec].blk = -1;
+		secs[nsec].src = NULL;
 		secs[nsec].nsrc = 0;
 		secs[nsec].cb = NULL;
 		nsec++;
@@ -3709,17 +3661,15 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			free(ca);
 			continue;
 		}
-		char **fields;
 		secs[nsec].files = ca;
 		secs[nsec].nf = nca;
 		/* the register is the block's own index, so a skipped block
 		 * does not shift the registers the rest read */
 		secs[nsec].blk = c;
 		secs[nsec].reg = REG_SEC_BASE + c;
-		secs[nsec].nsrc = compat_src_fields(cb, &fields);
-		for (int k = 0; k < secs[nsec].nsrc; k++)
-			free(fields[k]);
-		free(fields);
+		/* the label is parsed here and nowhere else: the gate block,
+		 * the "# Compat" comment and the quit policy all read it */
+		secs[nsec].nsrc = compat_src_fields(cb, &secs[nsec].src);
 		secs[nsec].cb = cb;
 		nsec++;
 		ncsec++;
@@ -3796,14 +3746,9 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			 * the label leaves off its first, so the fields read
 			 * alike and grep alike. Every block is post, so nothing
 			 * says so. */
-			char **fields;
-			int nf = compat_src_fields(s->cb, &fields);
 			printf("# Compat %d", s->reg);
-			for (int k = 0; k < nf; k++) {
-				printf(" src=%s", fields[k]);
-				free(fields[k]);
-			}
-			free(fields);
+			for (int k = 0; k < s->nsrc; k++)
+				printf(" src=%s", s->src[k]);
 			printf("\n");
 			compat_win_enter(&sv_rel);
 		}
@@ -3831,9 +3776,11 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		printf(" \"$P2VIF\".%d", secs[i].suf);
 	printf(" \"$P2VIF\".d\n");
 
-	for (int i = 0; i < nsec; i++)
+	for (int i = 0; i < nsec; i++) {
+		free_lines(secs[i].src, secs[i].nsrc);
 		if (secs[i].cb)
 			free(secs[i].files);
+	}
 	free(secs);
 	free(uf);
 	free(own);
@@ -5906,7 +5853,7 @@ static int compat_derive(void)
 static int amend_derive(void)
 {
 	compat_block_t *cb;
-	char **src = NULL, **own = NULL;
+	char **src = NULL;
 	const char **sc = NULL;
 	int nsrc = 0, nsc = 0, dlen, i, blk, st = -1;
 	sbuf_smake(diff, SB_INIT)
@@ -5920,14 +5867,16 @@ static int amend_derive(void)
 	cb = &compat_blocks[blk];
 	nsrc = compat_src_fields(cb, &src);
 	sc = emalloc((nsrc + 1) * sizeof(*sc));
-	own = emalloc((nsrc + 1) * sizeof(*own));
-	/* the label stores basenames, and a chain is one directory of scripts */
+	/* the label stores basenames, and a chain is one directory of scripts:
+	 * each field grows the target's own directory in place, so src[] stays
+	 * the one owner of the strings and sc[] only borrows them */
 	dlen = base_name(input_file) - input_file;
 	for (i = 0; i < nsrc; i++) {
 		char *q = emalloc(dlen + strlen(src[i]) + 1);
 		memcpy(q, input_file, dlen);
 		strcpy(q + dlen, src[i]);
-		own[nsc] = q;
+		free(src[i]);
+		src[i] = q;
 		sc[nsc++] = q;
 		if (access(q, R_OK) < 0) {
 			fprintf(stderr, "%s: origin %s of block %d is not "
@@ -5967,12 +5916,7 @@ static int amend_derive(void)
 	mark_bytes_used(diff->s);
 	st = 0;
 out:
-	for (i = 0; i < nsrc; i++)
-		free(src[i]);
-	for (i = 0; i < nsc && i < nsrc; i++)
-		free(own[i]);
-	free(src);
-	free(own);
+	free_lines(src, nsrc);
 	free(sc);
 	free(diff->s);
 	return st;
@@ -6095,7 +6039,9 @@ static void out_cleanup(void)
 static int out_redirect(const char *path)
 {
 	struct stat st;
-	out_tmp = str_fmt("%s.p2v.tmp", path);
+	out_tmp = emalloc(strlen(path) + sizeof(".p2v.tmp"));
+	strcpy(out_tmp, path);
+	strcat(out_tmp, ".p2v.tmp");
 	fflush(stdout);
 	if (!freopen(out_tmp, "w", stdout)) {
 		perror(out_tmp);
