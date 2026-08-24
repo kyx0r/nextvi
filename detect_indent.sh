@@ -946,10 +946,7 @@ if [ $# -gt 0 ]; then
 fi
 
 exit 0
-=== PATCH2VI DELTA ===
 === PATCH2VI COMPAT 231 src=splits.sh ===
-=== COMPAT DELTA ===
-=== END ===
 === COMPAT PATCH ===
 --- a/vi.h
 +++ b/vi.h
@@ -969,8 +966,6 @@ exit 0
 === END ===
 === END COMPAT ===
 === PATCH2VI COMPAT 232 src=incsearch.sh ===
-=== COMPAT DELTA ===
-=== END ===
 === COMPAT PATCH ===
 --- a/led.c
 +++ b/led.c

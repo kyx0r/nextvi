@@ -1049,10 +1049,7 @@ if [ $# -gt 0 ]; then
 fi
 
 exit 0
-=== PATCH2VI DELTA ===
 === PATCH2VI COMPAT 231 src=grep.sh ===
-=== COMPAT DELTA ===
-=== END ===
 === COMPAT PATCH ===
 --- a/ex.c
 +++ b/ex.c
@@ -1114,8 +1111,6 @@ exit 0
 === END ===
 === END COMPAT ===
 === PATCH2VI COMPAT 232 src=splits.sh ===
-=== COMPAT DELTA ===
-=== END ===
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c

@@ -236,10 +236,7 @@ if [ $# -gt 0 ]; then
 fi
 
 exit 0
-=== PATCH2VI DELTA ===
 === PATCH2VI COMPAT 231 src=visual.sh ===
-=== COMPAT DELTA ===
-=== END ===
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c

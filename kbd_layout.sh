@@ -93,7 +93,6 @@ if [ $# -gt 0 ]; then
 fi
 
 exit 0
-=== PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/kmap.h b/kmap.h
 index d025f5f1..e549d13b 100644

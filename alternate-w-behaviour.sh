@@ -125,7 +125,6 @@ if [ $# -gt 0 ]; then
 fi
 
 exit 0
-=== PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
 index 2f4ccc2b..b53fe36e 100644

@@ -560,7 +560,6 @@ if [ $# -gt 0 ]; then
 fi
 
 exit 0
-=== PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
 index 05822fe7..7a7f1513 100755

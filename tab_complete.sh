@@ -890,10 +890,7 @@ if [ $# -gt 0 ]; then
 fi
 
 exit 0
-=== PATCH2VI DELTA ===
 === PATCH2VI COMPAT 231 src=detect_indent.sh ===
-=== COMPAT DELTA ===
-=== END ===
 === COMPAT PATCH ===
 --- a/led.c
 +++ b/led.c
@@ -968,8 +965,6 @@ exit 0
 === END ===
 === END COMPAT ===
 === PATCH2VI COMPAT 232 src=incsearch.sh ===
-=== COMPAT DELTA ===
-=== END ===
 === COMPAT PATCH ===
 --- a/led.c
 +++ b/led.c
@@ -1005,8 +1000,6 @@ exit 0
 === END ===
 === END COMPAT ===
 === PATCH2VI COMPAT 233 src=arrowkeys_insert.sh ===
-=== COMPAT DELTA ===
-=== END ===
 === COMPAT PATCH ===
 --- a/led.c
 +++ b/led.c
@@ -1022,8 +1015,6 @@ exit 0
 === END ===
 === END COMPAT ===
 === PATCH2VI COMPAT 234 src=incsearch.sh src=detect_indent.sh ===
-=== COMPAT DELTA ===
-=== END ===
 === COMPAT PATCH ===
 --- a/led.c
 +++ b/led.c

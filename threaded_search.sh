@@ -911,10 +911,7 @@ if [ $# -gt 0 ]; then
 fi
 
 exit 0
-=== PATCH2VI DELTA ===
 === PATCH2VI COMPAT 231 src=rstr.sh ===
-=== COMPAT DELTA ===
-=== END ===
 === COMPAT PATCH ===
 --- a/lbuf.c
 +++ b/lbuf.c
