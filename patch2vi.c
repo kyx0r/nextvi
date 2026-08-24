@@ -5191,19 +5191,24 @@ static void emit_section_writes(sbuf *out, file_patch_t **files, int nf,
  * edit applied - so the print is proof of application, not of intent. Silent on
  * a clean tree. No DBG switch hides it: it is the only outside evidence that a
  * compat block ran. */
-static void emit_compat_announce(sbuf *out, char *origin)
+static void emit_compat_announce(sbuf *out, int reg, char *origin)
 {
 	EMIT_SEP(out);
-	sb_printf(out, "p compat applied: src=%s", origin ? origin : "");
+	sb_printf(out, "p compat %d applied: src=%s", reg,
+		  origin ? origin : "");
 }
 
-/* Stage one section body as a shell here-string into "$P2VIF".<idx>, the file
- * the single $VI call opens as a buffer. */
-static void stage_section(sbuf *body, int idx)
+/* Stage one section body as a shell here-string into "$P2VIF".<suf>, the file
+ * the single $VI call opens as a buffer. The suffix is the block's own flag
+ * register - what "# Compat <reg>" above it says and what -E takes as its
+ * selector - so the staged files name themselves; the host section, which has
+ * no flag, keeps 0. It is a label, not an index: the sections are staged, and
+ * opened, in run order, and that order is what the driver's b<N> counts. */
+static void stage_section(sbuf *body, int suf)
 {
 	printf("printf '%%s\\n' '");
 	sq_write(body->s, body->s_n);
-	printf("' > \"$P2VIF\".%d\n", idx);
+	printf("' > \"$P2VIF\".%d\n", suf);
 }
 
 /* A section to run in the single call: its files, its register, and (for a
@@ -5213,6 +5218,7 @@ typedef struct {
 	int nf;
 	int reg;		/* register the driver yanks/executes the body from */
 	int secbuf;		/* global buffer index of the staged body */
+	int suf;		/* "$P2VIF".<suf>: the flag register, 0 = host */
 	int flagk;		/* per-compat-block flag slot (base+flagk); -1 host */
 	compat_block_t *cb;	/* NULL for the host section */
 } section_t;
@@ -5586,8 +5592,10 @@ static void emit_one_call(file_patch_t **active, int nactive)
 	      "trap 'rm -f \"$P2VIF\".*' EXIT\n\n", stdout);
 
 	/* the driver references these before the bodies are staged */
-	for (int i = 0; i < nsec; i++)
+	for (int i = 0; i < nsec; i++) {
 		secs[i].secbuf = nuf + i;
+		secs[i].suf = secs[i].cb ? REG_FLAG_BASE + secs[i].flagk : 0;
+	}
 
 	/* The driver (".d") is staged first: prologue + register defaults,
 	 * shell switches, then orchestration and the final writes. */
@@ -5639,10 +5647,10 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		emit_section_body(bsb, s->files, s->nf, uf, nuf);
 		if (s->cb) {
 			emit_section_writes(bsb, s->files, s->nf, uf, nuf, own);
-			emit_compat_announce(bsb, s->cb->origin);
+			emit_compat_announce(bsb, s->suf, s->cb->origin);
 		}
 		sbuf_nul(bsb)
-		stage_section(bsb, i);
+		stage_section(bsb, s->suf);
 		free(bsb->s);
 		if (s->cb)
 			compat_win_leave(sv_rel);
@@ -5656,7 +5664,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		sq_path(uf[i]->path);
 	}
 	for (int i = 0; i < nsec; i++)
-		printf(" \"$P2VIF\".%d", i);
+		printf(" \"$P2VIF\".%d", secs[i].suf);
 	printf(" \"$P2VIF\".d\n");
 
 	for (int i = 0; i < nsec; i++)
@@ -6238,7 +6246,11 @@ static void pend_clear(pend_t *p)
 }
 
 /* The gathered bodies as one block: either the single "" body, or the "d"
- * driver plus the numeric section bodies in index order. */
+ * driver plus the section bodies. The sections keep the order they were staged
+ * in, which is the order the $VI call opens them in and so the order the
+ * driver's b<N> counts; their "$P2VIF" suffix is a label (the block's flag
+ * register, or 0 for the host) and is not read as an index. Scripts emitted
+ * when it was one - ".0", ".1", ".2" - parse the same, being in that order. */
 static int pend_finish(pend_t *p, p2vi_block_t *blk)
 {
 	int drv = -1, old = -1, nsec = 0, ret = 0;
@@ -6247,18 +6259,19 @@ static int pend_finish(pend_t *p, p2vi_block_t *blk)
 			old = i;
 		else if (!strcmp(p->suf[i], "d"))
 			drv = i;
-		else if (atoi(p->suf[i]) + 1 > nsec)
-			nsec = atoi(p->suf[i]) + 1;
+		else
+			nsec++;
 	}
 	if (old >= 0) {
 		ret = expand_body(p->raw[old], &blk->body);
 	} else if (drv >= 0) {
-		blk->sects = ecalloc(nsec, sizeof(char *));
+		blk->sects = ecalloc(nsec + 1, sizeof(char *));
 		blk->nsects = nsec;
+		nsec = 0;
 		for (int i = 0; ret >= 0 && i < p->n; i++) {
-			if (p->suf[i][0] == 'd' || !p->suf[i][0])
+			if (!p->suf[i][0] || !strcmp(p->suf[i], "d"))
 				continue;
-			ret = expand_body(p->raw[i], &blk->sects[atoi(p->suf[i])]);
+			ret = expand_body(p->raw[i], &blk->sects[nsec++]);
 		}
 		if (ret >= 0)
 			ret = expand_body(p->raw[drv], &blk->body);
