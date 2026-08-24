@@ -1840,6 +1840,26 @@ else
 	sed 's/^/    /' "$R/pb.c"
 fi
 
+# -m must hold across replay blocks: the body run clears bit 4 (the body's
+# own chatter is not the session's to silence), and it used to stay cleared,
+# so deriving on top of a target that carries compat blocks printed its
+# *p2vi-sec-N* scaffold loads from every block after the first
+cp "$R/pb.orig" "$R/pb.c"
+p2v_out=$(pty "P2VI_EX=q" \
+	"sh -c 'cd $R && $R_P2VI -C b1.sh new.sh "" > /dev/null 2>&1'")
+printf '%s' "$p2v_out" | grep -q 'p2vi-sec' &&
+	ok "compat: a target's scaffold loads announce themselves" ||
+	fail "compat: a target's scaffold loads announce themselves"
+cp "$R/pb.orig" "$R/pb.c"
+p2v_out=$(pty "P2VI_EX=q" \
+	"sh -c 'cd $R && $R_P2VI -C b1.sh new.sh "" -em > /dev/null 2>&1'")
+if printf '%s' "$p2v_out" | grep -q 'p2vi-sec'; then
+	fail "compat: -m holds across replay blocks"
+	printf '%s\n' "$p2v_out" | sed 's/^/    /'
+else
+	ok "compat: -m holds across replay blocks"
+fi
+
 # '' skips the fix slot without giving up the positionals behind it: the
 # trailing nextvi command line reaches the handover as with -E. Its files open
 # only after the baseline snapshot, so they are visible in the session but

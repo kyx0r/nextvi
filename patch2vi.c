@@ -6788,7 +6788,11 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			st = -1;
 			break;
 		}
-		xvis |= 2;
+		/* the tail's flags govern every block's loads, not just the
+		 * first: the body run clears bit 4 below (its own chatter is
+		 * not the session's to silence) and it must be back before
+		 * the next block loads its files and scaffolds */
+		xvis = (hand_vis >= 0 ? hand_vis : xvis) | 2;
 		/* the staged section bodies load as scaffolding buffers above
 		 * the real files and the driver references both by index, so
 		 * the map must cover the whole span */
