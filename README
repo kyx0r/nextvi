@@ -412,12 +412,12 @@ Example: highlight text inside parens
 My current EXINIT setup:
 --------------
 How it works:
-:|sc!||1sc | - disable special characters
-:97reg - put macro into a register
-:ish - enable interactive shell
-:inc (^(?:(?!^\.git).)+[^/]+$) always exclude .git folder from :fd
-:pac - print autocomplete options
-:|sc|? - default special characters; ? is a nop cycle required for
+|sc!||1sc | - disable special characters
+97reg - put macro into a register
+ish - enable interactive shell
+inc (^(?:(?!^\.git).)+[^/]+$) always exclude .git folder from :fd
+pac - print autocomplete options
+|sc|? - default special characters; ? is a nop cycle required for
 separator reset. Scripts can append more commands to EXINIT.
 
 Macros:
