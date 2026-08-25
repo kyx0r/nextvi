@@ -119,29 +119,29 @@ void ex_init\(char \*\*files, int n\)
 %f+ 	xbufsalloc = MAX\(n, xbufsalloc\);
 	ec_setbufsmax\(NULL, NULL, ""\);
 	char \*s = files\[0] \? files\[0] : "";2??0?
-2??m 3220reg p OK ex.c:1918:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK ex.c:1920:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	xbufsalloc = MAX\(n, xbufsalloc\);$3??0?
-3??m 3220reg p OK ex.c:1918:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK ex.c:1920:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 
 void ex_init\(char \*\*files, int n\)
 \{4??0?
-4??+3m 3220reg p OK ex.c:1918:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK ex.c:1920:a42sc %? %@2152sc!1q0?
 %f+ 	ec_setbufsmax\(NULL, NULL, ""\);
 	char \*s = files\[0] \? files\[0] : "";5??0?
-5??-1m 3220reg p OK ex.c:1918:a52sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK ex.c:1920:a52sc %? %@2152sc!1q0?
 %f+ 
 .o...e...n..\(.......fi.... .nt.n.
 \{
 .xb.....l.c.. .....,...u...llo...
 .......b.f....\(..L.. ...L......
 ..... ...=...l....].\?...l..........;6??0?
-6??+3m 3220reg p OK ex.c:1918:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK ex.c:1920:a62sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 void ex_init\(char \*\*files, int n\).*?
 \{.*?
 (	xbufsalloc = MAX\(n, xbufsalloc\);)7??0?
-grp 07??m 3220reg p OK ex.c:1918:a72sc %? %@2152sc!0?
-1;2;3;4;5;6;7??!219reg ex.c:19182sc %? %@2132sc!0?
+grp 07??m 3220reg p OK ex.c:1920:a72sc %? %@2152sc!0?
+1;2;3;4;5;6;7??!219reg ex.c:19202sc %? %@2132sc!0?
 ?0?
 %f+ 	ec_setbufsmax\(NULL, NULL, ""\);
 	char \*s = files\[0] \? files\[0] : "";
@@ -150,11 +150,11 @@ void ex_init\(char \*\*files, int n\).*?
 1??+1m 41q0?
 %f+ 	ec_setbufsmax\(NULL, NULL, ""\);
 	char \*s = files\[0] \? files\[0] : "";4??0?
-4??+1m 4220reg p OK ex.c:1920:a42sc %? %@2152sc!1q0?
+4??+1m 4220reg p OK ex.c:1922:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	ec_setbufsmax\(NULL, NULL, ""\);.*?
 (	char \*s = files\[0] \? files\[0] : "";)7??0?
-grp 07??m 4220reg p OK ex.c:1920:a72sc %? %@2152sc!0?
-1;4;7??!219reg ex.c:19202sc %? %@2132sc!0?
+grp 07??m 4220reg p OK ex.c:1922:a72sc %? %@2152sc!0?
+1;4;7??!219reg ex.c:19222sc %? %@2132sc!0?
 ?0?
 %f+ 	do \{
 		xmpt = 0;
@@ -165,26 +165,26 @@ void ex_init\(char \*\*files, int n\).*?
 %f+ 		ec_edit\("", "e", s\);
 		s = \*\(\+\+files\);
 	} while \(--n > 0\);2??0?
-2??m 5220reg p OK ex.c:1923:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK ex.c:1925:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		ec_edit\("", "e", s\);$3??0?
-3??m 5220reg p OK ex.c:1923:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK ex.c:1925:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	do \{
 		xmpt = 0;4??0?
-4??+2m 5220reg p OK ex.c:1923:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK ex.c:1925:a42sc %? %@2152sc!1q0?
 %f+ 		s = \*\(\+\+files\);
 	} while \(--n > 0\);5??0?
-5??-1m 5220reg p OK ex.c:1923:a52sc %? %@2152sc!1q0?
+5??-1m 5220reg p OK ex.c:1925:a52sc %? %@2152sc!1q0?
 %f+ ... \{
 ...m.......
 ......di....,..... ...
 ..s =...\+........
 	....i....... . ..;6??0?
-6??+2m 5220reg p OK ex.c:1923:a62sc %? %@2152sc!1q0?
+6??+2m 5220reg p OK ex.c:1925:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	do \{.*?
 		xmpt = 0;.*?
 (		ec_edit\("", "e", s\);)7??0?
-grp 07??m 5220reg p OK ex.c:1923:a72sc %? %@2152sc!0?
-1;2;3;4;5;6;7??!219reg ex.c:19232sc %? %@2132sc!0?
+grp 07??m 5220reg p OK ex.c:1925:a72sc %? %@2152sc!0?
+1;2;3;4;5;6;7??!219reg ex.c:19252sc %? %@2132sc!0?
 ?0?
 %f+ 		s = \*\(\+\+files\);
 	} while \(--n > 0\);
@@ -192,11 +192,11 @@ void ex_init\(char \*\*files, int n\).*?
 1??+1m 61q0?
 %f+ 		s = \*\(\+\+files\);
 	} while \(--n > 0\);4??0?
-4??+1m 6220reg p OK ex.c:1925:a42sc %? %@2152sc!1q0?
+4??+1m 6220reg p OK ex.c:1927:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		s = \*\(\+\+files\);.*?
 (	} while \(--n > 0\);)7??0?
-grp 07??m 6220reg p OK ex.c:1925:a72sc %? %@2152sc!0?
-1;4;7??!219reg ex.c:19252sc %? %@2132sc!0?
+grp 07??m 6220reg p OK ex.c:1927:a72sc %? %@2152sc!0?
+1;4;7??!219reg ex.c:19272sc %? %@2132sc!0?
 ?0?
 %f+ 	xvis &= ~4;
 	if \(\(s = getenv\("EXINIT"\)\)\)
@@ -204,8 +204,8 @@ void ex_init\(char \*\*files, int n\).*?
 }1??0?
 1??m 71q0?
 ;0fr.,$f+ ^	xvis &= ~4;$4??0?
-4??m 7220reg p OK ex.c:1926:a42sc %? %@2152sc!fr 98fr 980?
-1;4??!219reg ex.c:19262sc %? %@2132sc!0?
+4??m 7220reg p OK ex.c:1928:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg ex.c:19282sc %? %@2132sc!0?
 '\''1c 	int fd = 0, len, rd = 0, cd = 0;
 	if (!cmd)
 		goto ret;
@@ -214,10 +214,10 @@ void ex_init\(char \*\*files, int n\).*?
 		return fd < 0 || rd ? xuerr : NULL;
 	ret:
 ??!219reg ex.c:434:m22sc %? %@2142sc!0?
-'\''3s/n,/n + !!stdin_fd,/??!219reg ex.c:1918:m32sc %? %@2142sc!0?
+'\''3s/n,/n + !!stdin_fd,/??!219reg ex.c:1920:m32sc %? %@2142sc!0?
 '\''4i 	int i = n;
-??!219reg ex.c:1920:m42sc %? %@2142sc!0?
-'\''5s/\("/(!n && stdin_fd ? NULL : "/??!219reg ex.c:1923:m52sc %? %@2142sc!0?
+??!219reg ex.c:1922:m42sc %? %@2142sc!0?
+'\''5s/\("/(!n && stdin_fd ? NULL : "/??!219reg ex.c:1925:m52sc %? %@2142sc!0?
 '\''6i 	if (stdin_fd) {
 		if (i)
 			ec_edit(NULL, "", "");
@@ -237,9 +237,9 @@ void ex_init\(char \*\*files, int n\).*?
 		}
 		xmpt = MIN(xmpt, 1);
 	}
-??!219reg ex.c:1925:m62sc %? %@2142sc!0?
+??!219reg ex.c:1927:m62sc %? %@2142sc!0?
 '\''7i 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
-??!219reg ex.c:1926:m72sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1928:m72sc %? %@2142sc!b1%ya 98?0?
 %f> int xrows, xcols;
 unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char \*ibuf, icmd\[4096];
@@ -750,7 +750,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 0dd39b6e..399c5a27 100644
+index 1d080daa..83fddaba 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -413,7 +413,9 @@ int ex_edit(const char *path, int len)
@@ -774,7 +774,7 @@ index 0dd39b6e..399c5a27 100644
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
  			fd < 0 || rd ? 'f' : 'r');
-@@ -1915,15 +1920,36 @@ void ex(void)
+@@ -1917,15 +1922,36 @@ void ex(void)
  
  void ex_init(char **files, int n)
  {
