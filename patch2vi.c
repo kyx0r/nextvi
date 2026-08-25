@@ -5,13 +5,14 @@
  * Usage: patch2vi [-arh] [-o FILE] [-er TAG] [-ew TAG] [input.patch]
  *        patch2vi -e script.sh [script2.sh...]
  *        patch2vi [-ar]I [nextvi-opts...]
- *        patch2vi [-aro]E script.sh [nextvi-opts...]
+ *        patch2vi [-aro]E script.sh [<reg>|''] [nextvi-opts...]
  *        patch2vi [-o]C origin.sh [-C origin2.sh...] target.sh \
  *                 [fix.diff|fix.sh|''] [nextvi-opts...]
  *
  * The script applies the patch in raw ex mode (:vis 3). The command
- * separator and the escape byte are picked per patch via :sc! so that
- * : % ! \ in the content need no escaping, and are exported as $SEP/$ESC.
+ * separator and the escape byte are picked from the bytes the patch does
+ * not use and declared per body via |sc!|, so that
+ * : % ! \ in the content need no escaping.
  * Edits are anchored by line number (-a) or by search pattern (-r); the
  * original diff is stored after the script's "exit 0", so a generated
  * script regenerates without the diff at hand.
@@ -182,8 +183,8 @@ static int compat_capturing;
 static int compat_building;
 static int compat_mode;			/* -C: derive a post-only compat patch */
 /* -E's optional block selector: the section register naming the one stored
- * compat block this run rebuilds. Without it -E is what it always was and the
- * blocks are discarded. */
+ * compat block this run rebuilds instead of the base patch; without it the
+ * base patch is what -E updates and the blocks stand as stored. */
 static int amend_sel = -1;
 /* The scripts it is derived against, in replay order: -C repeats, one per
  * origin, and one identity gate tests all of them at once. One origin is the
@@ -1595,7 +1596,7 @@ static int anchor_block_at(int s)
  * reset / "'0" restore, so the search runs from the file top.
  *
  * skip=1 is pattern 9: skip the first qualifying block on each side, advancing a
- * WHOLE block so the two windows stay disjoint - a wider, looser straddle last
+ * WHOLE block so the two windows stay disjoint - a farther, looser straddle last
  * in the chain.
  *
  * File-validated: top block unique; bottom block unique AND its captured first
@@ -1742,8 +1743,8 @@ static void free_extra_windows(winset_t *ws)
 
 /* Phase 1 fallback chain: every pattern nested into one ? conditional, chained
  * with escaped separators, first match wins. Per pattern n (capture tag n):
- *   %f> <pat>\:<n>??\:<n>??[+off]m <id>\\\:${OK1}p OK <loc>:a<n>\\\:1q\:
- * (the ${OK1} report only on fallback blocks, n >= 1). The search's status is
+ *   %f> <pat>\:<n>??\:<n>??[+off]m <id>\\\:<220>reg p OK <loc>:a<n>\\\:%@215:1q\:
+ * (the OK report only on fallback blocks, n >= 1). The search's status is
  * captured into tag <n>; on success that branch marks the target and 1q
  * short-circuits out. After the last block a single <0;1;..>??! DNF check over
  * all tags reports the failure.
@@ -2604,8 +2605,8 @@ static char *lbuf_text(struct lbuf *lb)
 /* One derived (or re-read) compatibility block: one whole compat patch, i.e.
  * one unified diff over however many files it touches. One block = one section
  * = one staged body = one storage region, so a compat patch is authored and
- * shipped as the single diff it is. Always emitted after the host; origin is
- * per-block, since the global only describes the current run. */
+ * shipped as the single diff it is. Its body always runs after the host's;
+ * origin is per-block, since the global only describes the current run. */
 typedef struct {
 	char *origin;		/* src= label; its basenames are the identity gate */
 	int first, count;	/* files[] range this block owns */
@@ -3371,7 +3372,7 @@ static void emit_qf2_clear(sbuf *out)
 }
 
 /* Host quit override, emitted once before the host body when any origin is
- * present: "211reg fr <ANY>:f> 1:??!? %@221:fr 98". A miss on the shared
+ * present: "211reg fr <ANY>:f> 1:?!? %@221:fr 98". A miss on the shared
  * any-origin flag (a clean tree, no origin in the applied set) is an error ??!
  * catches and asserts on,
  * exactly as a non-compat script does; a hit leaves it silent, so the host is
@@ -5321,10 +5322,10 @@ static int diff_anchors(char **old, int os, int oe, char **new, int ns, int ne,
 }
 
 /* Ops turning old[os..oe) into new[ns..ne): common head and tail lines first,
- * so the table only sees what is left, then either the classic LCS table or -
- * where that table would be too large - a patience split into sub-spans around
- * unique common lines, each diffed by the same routine. Only a span both too
- * large and anchorless degrades to delete-all/insert-all. */
+ * so the search only sees what is left, then either the O(NP) search or -
+ * where its route recording would outgrow its budget - a patience split into
+ * sub-spans around unique common lines, each diffed by the same routine. Only
+ * a span both too large and anchorless degrades to delete-all/insert-all. */
 /*
  * The minimal edit script by the O(NP) algorithm of Wu, Manber, Myers and
  * Miller, over lines rather than characters.
@@ -5505,8 +5506,8 @@ tail:
  * Where a run of changed lines sits when it could sit elsewhere.
  *
  * A run bounded by a line equal to the run's own far end can be slid across it:
- * which of two equal lines counts as the changed one is free, and the LCS
- * backtrack picks one arbitrarily. The choice is not free to the anchor
+ * which of two equal lines counts as the changed one is free, and one
+ * arbitrary choice does. The choice is not free to the anchor
  * generators, though - it decides what text a hunk carries as context - so a
  * diff derived here has to land where the hand-written one did, or a
  * regenerated script anchors on lines the shipped one never mentioned.
@@ -5713,7 +5714,7 @@ static void emit_unified_diff(sbuf *out, const char *path, int is_new,
 	char *co, *cn;
 	int pre = 0, suf = 0, i;
 	memset(&d, 0, sizeof(d));
-	/* the LCS table only ever sees what head and tail trimming leaves */
+	/* the O(NP) search only ever sees what head and tail trimming leaves */
 	while (pre < nold && pre < nnew && !strcmp(old[pre], new[pre]))
 		pre++;
 	while (suf < nold - pre && suf < nnew - pre &&
