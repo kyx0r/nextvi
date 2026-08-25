@@ -1553,7 +1553,8 @@ static void *ec_setenc(char *loc, char *cmd, char *arg)
 		ph = erealloc(ph, sizeof(struct placeholder) * (phlen + 1));
 		ph[phlen].cp[0] = strtol(arg, &arg, 10);
 		ph[phlen].cp[1] = strtol(arg, &arg, 10);
-		ph[phlen].wid = MAX(0, strtol(arg, &arg, 10));
+		ph[phlen].wid = strtol(arg, &arg, 10);
+		ph[phlen].wid = MAX(0, ph[phlen].wid);
 		ph[phlen].l = strtol(arg, &arg, 10);
 		if (*arg == ' ')
 			arg++;
@@ -1643,8 +1644,8 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
 EO(rr) EO(shape) EO(seq) EO(td) EO(order) EO(hll) EO(hlw)
 EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
 
-_EO(ts, xts = *arg ? MAX(0, eo_val(arg)) : !xts; return NULL;)
-_EO(grp, xgrp = (*arg ? MAX(0, eo_val(arg)) : !xgrp) * 2; return NULL;)
+_EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); return NULL;)
+_EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
 
 _EO(left,
 	if (*loc)
