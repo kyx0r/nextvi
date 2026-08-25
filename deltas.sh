@@ -62,19 +62,19 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 ?0?
 %f+  \*        patch2vi -e script\.sh \[script2\.sh\.\.\.]
  \*        patch2vi \[-ar]I \[nextvi-opts\.\.\.]
- \*        patch2vi \[-aro]E script\.sh \[<reg>\|'\'''\''] \[nextvi-opts\.\.\.]
+ \*        patch2vi \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]
  \*        patch2vi \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh \\
  \*                 \[fix\.diff\|fix\.sh\|'\'''\''] \[nextvi-opts\.\.\.]
  \*1??0?
 1??+1m 21q0?
 %f+  \*        patch2vi \[-ar]I \[nextvi-opts\.\.\.]
- \*        patch2vi \[-aro]E script\.sh \[<reg>\|'\'''\''] \[nextvi-opts\.\.\.]
+ \*        patch2vi \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]
  \*        patch2vi \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh \\
  \*                 \[fix\.diff\|fix\.sh\|'\'''\''] \[nextvi-opts\.\.\.]
  \*2??0?
 2??m 2220reg p OK patch2vi.c:7:a22sc %? %@2152sc!1q0?
 %f+  \*        patch2vi \[-ar]I \[nextvi-opts\.\.\.]
- \*        patch2vi \[-aro]E script\.sh \[<reg>\|'\'''\''] \[nextvi-opts\.\.\.]3??0?
+ \*        patch2vi \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]3??0?
 3??m 2220reg p OK patch2vi.c:7:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^ \*        patch2vi -e script\.sh \[script2\.sh\.\.\.]$4??0?
 4??+1m 2220reg p OK patch2vi.c:7:a42sc %? %@2152sc!fr 981qfr 980?
@@ -82,12 +82,12 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
  \*                 \[fix\.diff\|fix\.sh\|'\'''\''] \[nextvi-opts\.\.\.]
  \*5??0?
 5??-2m 2220reg p OK patch2vi.c:7:a52sc %? %@2152sc!1q0?
-%f+  \*..  .....at..2v. ....cr.p...h...c...t.\....\...
- .....  .......2.i.\[....I....x....o..s\...]
-.\*........p..ch.vi .-...]..s.r.....h.\[<.e..\|....\[ne.............
-.\*....... ...ch....\[...C o...in......C....g.n2..h\..........t..h..
-.\*. .... .... ..........d....f..........\[...............
- .6??0?
+%f+ ..... ..  .a.....i .. .....t\.s...s..i.....h.\...
+......  ..p..c.2.. ..ar]I....x...........]
+..... ... ...ch2v.......]...c...t..h...e........ex.v.........]
+ .. .. ...p.t..... ......o.i....sh...C .r..i..\..............\..h..
+.... . .......  .. \[....d.f.....\....... \[....v....t.....
+.\*6??0?
 6??+1m 2220reg p OK patch2vi.c:7:a62sc %? %@2152sc!1q0?
 grp 1%f+  \*        patch2vi -e script\.sh \[script2\.sh\.\.\.].*?
 ( \*        patch2vi \[-ar]I \[nextvi-opts\.\.\.])7??0?
@@ -140,7 +140,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
  \*     buffer it leaves behind is diffed against its disk copy to produce
  \*     the input the converter normally reads;8??0?
 grp 08??-9m 3220reg p OK patch2vi.c:17:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f>  \*        patch2vi \[-aro]E script\.sh \[<reg>\|'\'''\''] \[nextvi-opts\.\.\.]
+m 01;0grp 1%f>  \*        patch2vi \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]
  \*        patch2vi \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh \\
  \*                 \[fix\.diff\|fix\.sh\|'\'''\''] \[nextvi-opts\.\.\.].*( \*   - updates a script \(-E\): replays it, hands the tree it leaves over to)
  \*     the user and re-emits it through that same diff pass; naming a stored
@@ -169,7 +169,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
  \*     buffer it leaves behind is diffed against its disk copy to produce
  \*     the input the converter normally reads;8??0?
 grp 08??-4m 4220reg p OK patch2vi.c:22:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f>  \*        patch2vi \[-aro]E script\.sh \[<reg>\|'\'''\''] \[nextvi-opts\.\.\.]
+m 01;0grp 1%f>  \*        patch2vi \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]
  \*        patch2vi \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh \\
  \*                 \[fix\.diff\|fix\.sh\|'\'''\''] \[nextvi-opts\.\.\.].*( \*   - updates a script \(-E\): replays it, hands the tree it leaves over to)
  \*     the user and re-emits it through that same diff pass; naming a stored
@@ -3371,19 +3371,19 @@ static int read_stored_sections\(FILE \*in\)
 ?0?
 %f+ 		"       %s -e script\.sh \[script2\.sh\.\.\.]\\n"
 		"       %s \[-ar]I \[nextvi-opts\.\.\.]\\n"
-		"       %s \[-aro]E script\.sh \[<reg>\|'\'''\''] \[nextvi-opts\.\.\.]\\n"
+		"       %s \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]\\n"
 		"       %s \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh"
 		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n",
 		prog, prog, prog, prog, prog\);1??0?
 1??+1m 901q0?
 %f+ 		"       %s \[-ar]I \[nextvi-opts\.\.\.]\\n"
-		"       %s \[-aro]E script\.sh \[<reg>\|'\'''\''] \[nextvi-opts\.\.\.]\\n"
+		"       %s \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]\\n"
 		"       %s \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh"
 		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n",
 		prog, prog, prog, prog, prog\);2??0?
 2??m 90220reg p OK patch2vi.c:6564:a22sc %? %@2152sc!1q0?
 %f+ 		"       %s \[-ar]I \[nextvi-opts\.\.\.]\\n"
-		"       %s \[-aro]E script\.sh \[<reg>\|'\'''\''] \[nextvi-opts\.\.\.]\\n"3??0?
+		"       %s \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]\\n"3??0?
 3??m 90220reg p OK patch2vi.c:6564:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		"       %s -e script\.sh \[script2\.sh\.\.\.]\\n"$4??0?
 4??+1m 90220reg p OK patch2vi.c:6564:a42sc %? %@2152sc!fr 981qfr 980?
@@ -3391,12 +3391,12 @@ static int read_stored_sections\(FILE \*in\)
 		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n",
 		prog, prog, prog, prog, prog\);5??0?
 5??-2m 90220reg p OK patch2vi.c:6564:a52sc %? %@2152sc!1q0?
-%f+ ..". ...  %..-..s...p..s..\[s.r.p..\..h.\..].."
-	... ....... \[....I.\[.ex..i.....\...]...
-... .... .%.....r......r.....h........... .ne.t..........]...
-.... .....%........o...i...........i.in..s..\.....ar.....h.
-	........\[..t...sh]...] ..e..v..o.t.....\\...
-..p.og..............p...,...o..;6??0?
+%f+ 	..    ...........ri.t.....s.....2.s.\...]...
+..".....  .s...ar....n.......p.........
+	."... . .%s.............p......r..\|......e..v...p...\.\...."
+.... . . ... .........g....h..-C......n.\..................
+.	....i.............'\'''\''] \[...tvi....s\.......,
+...r.g....og...r..,....g..p.....6??0?
 6??+1m 90220reg p OK patch2vi.c:6564:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		"       %s -e script\.sh \[script2\.sh\.\.\.]\\n".*?
 (		"       %s \[-ar]I \[nextvi-opts\.\.\.]\\n")7??0?
@@ -3455,7 +3455,7 @@ static int read_stored_sections\(FILE \*in\)
 	      "  -r    Relative regex patterns instead of line numbers\\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\\n".*(	fputs\("  -E    Update a script: replay it, edit, re-emit its base patch\\n")
 	      "        Stored compat blocks are carried over from their stored\\n"
-	      "        patches, unverified: replay each src= stack afterwards\\n"8??0?
+	      "        patches, unverified\\n"8??0?
 grp 08??-4m 92220reg p OK patch2vi.c:6578:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	fputs\("Converts unified diff to shell script using nextvi ex commands\\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\\n"
@@ -3503,7 +3503,7 @@ static int read_stored_sections\(FILE \*in\)
 grp 07??m 94220reg p OK patch2vi.c:6588:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	fputs\("  -E    Update a script: replay it, edit, re-emit its base patch\\n"
 	      "        Stored compat blocks are carried over from their stored\\n"
-	      "        patches, unverified: replay each src= stack afterwards\\n".*(	      "        Rest of the line is a nextvi command line, EXINIT included\\n")
+	      "        patches, unverified\\n".*(	      "        Rest of the line is a nextvi command line, EXINIT included\\n")
 	      "  -C    Compat patch: resolve a collision with origin\.sh, ship the\\n"
 	      "        fix as a block after the target'\''s, behind an identity gate\\n"8??0?
 grp 08??-4m 94220reg p OK patch2vi.c:6588:a82sc %? %@2152sc!'\''08??1q0?
@@ -4267,7 +4267,7 @@ static int amend_cluster\(const char \*s\)
  *                 [input.patch] [nextvi-opts...]
 ??!219reg patch2vi.c:5:m12sc %? %@2142sc!0?
 '\''2,#+1c  *        patch2vi [-ari]I [nextvi-opts...]
- *        patch2vi [-ario]E script.sh [nextvi-opts...]
+ *        patch2vi [-ario]E script.sh [reg|'\'''\''] [nextvi-opts...]
 ??!219reg patch2vi.c:7:m22sc %? %@2142sc!0?
 '\''3,#+1c  * per-group delta and the original diff are stored after the script'\''s
  * "exit 0", so a generated script regenerates (-d) and is edited (-i)
@@ -6498,7 +6498,7 @@ static int read_delta_sections(FILE *in)
 		" [input.patch] [nextvi-opts...]\n"
 ??!219reg patch2vi.c:6561:m892sc %? %@2142sc!0?
 '\''90,#+1c 		"       %s [-ari]I [nextvi-opts...]\n"
-		"       %s [-ario]E script.sh [<reg>|'\'''\''] [nextvi-opts...]\n"
+		"       %s [-ario]E script.sh [reg|'\'''\''] [nextvi-opts...]\n"
 ??!219reg patch2vi.c:6564:m902sc %? %@2142sc!0?
 '\''92c 	      "        Several scripts run in order, stopping at the first failure\n"
 	      "  -i    Interactive: edit patterns and ex bodies in the built-in nextvi\n"
@@ -8052,7 +8052,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/patch2vi.c b/patch2vi.c
-index 4d56abf8..9b65379d 100644
+index 9a4c2207..127870de 100644
 --- a/patch2vi.c
 +++ b/patch2vi.c
 @@ -2,10 +2,11 @@
@@ -8064,9 +8064,9 @@ index 4d56abf8..9b65379d 100644
 + *                 [input.patch] [nextvi-opts...]
   *        patch2vi -e script.sh [script2.sh...]
 - *        patch2vi [-ar]I [nextvi-opts...]
-- *        patch2vi [-aro]E script.sh [<reg>|''] [nextvi-opts...]
+- *        patch2vi [-aro]E script.sh [reg|''] [nextvi-opts...]
 + *        patch2vi [-ari]I [nextvi-opts...]
-+ *        patch2vi [-ario]E script.sh [nextvi-opts...]
++ *        patch2vi [-ario]E script.sh [reg|''] [nextvi-opts...]
   *        patch2vi [-o]C origin.sh [-C origin2.sh...] target.sh \
   *                 [fix.diff|fix.sh|''] [nextvi-opts...]
   *
@@ -10738,9 +10738,9 @@ index 4d56abf8..9b65379d 100644
 +		" [input.patch] [nextvi-opts...]\n"
  		"       %s -e script.sh [script2.sh...]\n"
 -		"       %s [-ar]I [nextvi-opts...]\n"
--		"       %s [-aro]E script.sh [<reg>|''] [nextvi-opts...]\n"
+-		"       %s [-aro]E script.sh [reg|''] [nextvi-opts...]\n"
 +		"       %s [-ari]I [nextvi-opts...]\n"
-+		"       %s [-ario]E script.sh [<reg>|''] [nextvi-opts...]\n"
++		"       %s [-ario]E script.sh [reg|''] [nextvi-opts...]\n"
  		"       %s [-o]C origin.sh [-C origin2.sh...] target.sh"
  		" [fix.[patch|sh]|''] [nextvi-opts...]\n",
  		prog, prog, prog, prog, prog);
@@ -10949,7 +10949,7 @@ index 4d56abf8..9b65379d 100644
  	printf("=== PATCH2VI PATCH ===\n");
  	for (int i = 0; i < nraw; i++)
 diff --git a/test_patch2vi.sh b/test_patch2vi.sh
-index 5b362efa..1ae18e67 100755
+index 1b4ac1f3..3f3f6282 100755
 --- a/test_patch2vi.sh
 +++ b/test_patch2vi.sh
 @@ -948,16 +948,189 @@ third line
