@@ -2317,11 +2317,11 @@ else
 	fail "compat: -o co still names a file, not a -C cluster"
 fi
 
-# -E cannot round-trip a compat block: it is derived against an origin script
-# the update run knows nothing about. Rather than refuse the update, the blocks
-# are discarded - the replay still runs them, so whatever their gates let
-# through on THIS tree survives folded into the emitted host patch, and only
-# the gating is lost. Two trees, two different (correct) folds.
+# -E updates the base patch and carries the stored compat blocks over untouched:
+# a base edit is the one thing that must not cost the blocks stacked on it. The
+# replay runs with an empty applied set, so no gate fires into the host patch,
+# and what the blocks are worth on the new base is left to a replay of each
+# src= stack - hence the "unverified" the run says so with.
 printf 'E1\nE2\nE3\n' > "$R/e.orig"
 printf -- '--- a/e.c\n+++ b/e.c\n@@ -1,3 +1,4 @@\n E1\n+EPROBE\n E2\n E3\n' \
 	> "$R/e1.diff"
@@ -2343,14 +2343,22 @@ amend_E() {
 		"sh -c 'cd $R && ${3:+P2VI_PATCH=\"$3\" }$R_P2VI -E ec.sh > $R/$2 2>$R/eerr'" > /dev/null 2>&1
 }
 
+# blocks <script>: its stored compat regions, host patch excluded
+blocks() {
+	awk '/^=== PATCH2VI COMPAT /{p=1} /^=== PATCH2VI PATCH ===/{p=0} p' "$1"
+}
+
 # clean tree: the gate self-skips during the replay, so the compat edit never
-# happens and the update carries the target's hunk alone
+# happens and the update carries the target's hunk alone - with the block still
+# stored, byte for byte as the script shipped it
 amend_E "$R/e.orig" "eclean.sh"
-if grep -q 'cannot round-trip' "$R/eerr" 2>/dev/null &&
-   [ -s "$R/eclean.sh" ] && ! grep -q '=== COMPAT' "$R/eclean.sh"; then
-	ok "compat: -E discards a compat block instead of refusing the update"
+blocks "$R/ec.sh" > "$R/eb.old"
+blocks "$R/eclean.sh" > "$R/eb.new"
+if grep -q 'unverified' "$R/eerr" 2>/dev/null &&
+   [ -s "$R/eb.new" ] && cmp -s "$R/eb.old" "$R/eb.new"; then
+	ok "compat: -E carries a stored compat block over untouched"
 else
-	fail "compat: -E discards a compat block instead of refusing the update"
+	fail "compat: -E carries a stored compat block over untouched"
 	tr -d '\r' < "$R/eerr" | sed 's/^/    /' | head -3
 fi
 cp "$R/e.orig" "$R/e.c"
@@ -2362,17 +2370,25 @@ else
 	sed 's/^/    /' "$R/e.c"
 fi
 
-# origin tree: e1.sh is in the applied set, so the block fires during the
-# replay and its edit lands in the buffer, re-derived as a plain, ungated hunk
+# origin tree: $P2VI_PATCH names e1.sh, but -E empties the applied set for its
+# own replay - a block that fired would land in the buffers and be re-derived
+# into the host patch while the block itself stays stored and gated, applying
+# twice on the next run. So the update is the base over this tree and nothing
+# else, and the block still needs its origin to do anything.
 printf 'E1\nEPROBE\nE2\nE3\n' > "$R/e.probe"
 amend_E "$R/e.probe" "eorig.sh" e1.sh
-printf 'E1\nEPROBE\nE2\nE3\n' > "$R/e.c"
+blocks "$R/eorig.sh" > "$R/eb.env"
+cp "$R/e.probe" "$R/e.c"
 ( cd "$R" && VI="$VI" sh eorig.sh ) >/dev/null 2>&1
-if [ "$(cat "$R/e.c")" = "$(printf 'E1\nEPROBE\nE2c\nE3x')" ] &&
-   ! grep -q '=== COMPAT' "$R/eorig.sh"; then
-	ok "compat: -E over an origin tree folds the fired block in ungated"
+ungated=$(cat "$R/e.c")
+cp "$R/e.probe" "$R/e.c"
+( cd "$R" && VI="$VI" P2VI_PATCH="e1.sh" sh eorig.sh ) >/dev/null 2>&1
+if cmp -s "$R/eb.old" "$R/eb.env" &&
+   [ "$ungated" = "$(printf 'E1\nEPROBE\nE2\nE3x')" ] &&
+   [ "$(cat "$R/e.c")" = "$(printf 'E1\nEPROBE\nE2c\nE3x')" ]; then
+	ok "compat: -E folds no fired block in, whatever \$P2VI_PATCH says"
 else
-	fail "compat: -E over an origin tree folds the fired block in ungated"
+	fail "compat: -E folds no fired block in, whatever \$P2VI_PATCH says"
 	sed 's/^/    /' "$R/e.c"
 fi
 

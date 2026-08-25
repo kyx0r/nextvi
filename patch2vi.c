@@ -5199,7 +5199,9 @@ static int replay_scripts(const char **paths, int nscripts, int handover,
  * files, it replays a generated script and hands over the tree that replay
  * leaves behind. The diff base is still the file on disk, so the new script
  * carries the old one's effect plus the user's changes - it replaces the input
- * script rather than extending it (extending is -C).
+ * script rather than extending it (extending is -C). What it replaces is the
+ * base patch only: the stored compat blocks are carried over untouched, since
+ * a base edit is the one thing that must not cost the blocks that stack on it.
  */
 static int edit_mode;		/* -I: edit, then emit the diff as a script */
 static int amend_mode;		/* -E: replay a script, edit, re-emit it */
@@ -5402,6 +5404,134 @@ tail:
 		dop_add(d, ' ', old[oe + k]);
 }
 
+/*
+ * Where a run of changed lines sits when it could sit elsewhere.
+ *
+ * A run bounded by a line equal to the run's own far end can be slid across it:
+ * which of two equal lines counts as the changed one is free, and the LCS
+ * backtrack picks one arbitrarily. The choice is not free to the anchor
+ * generators, though - it decides what text a hunk carries as context - so a
+ * diff derived here has to land where the hand-written one did, or a
+ * regenerated script anchors on lines the shipped one never mentioned.
+ *
+ * git's rule (xdl_change_compact), and the one followed here: slide a run to
+ * join a neighbouring run if it can, preferring the run before it, and
+ * otherwise slide it as far down as it goes. Joining is what turns "insert a
+ * function" into one hunk instead of two split around the brace and blank line
+ * that both functions end with.
+ *
+ * Sliding is per file, as it is in git: a delete run in the old file and an
+ * insert run in the new one move independently, so the op list is turned into
+ * one changed-line flag per side, slid there, and rebuilt. A slide only ever
+ * trades a line for an equal one on the same side, so the unchanged lines of
+ * the two files stay the same sequence and still pair up in order.
+ */
+
+/* The changed-line flags of an op list: co over the old side, cn over the new. */
+static void dops_flags(dops_t *d, char *co, char *cn)
+{
+	int i, o = 0, n = 0;
+	for (i = 0; i < d->n; i++) {
+		if (d->v[i].t == ' ') {
+			o++;
+			n++;
+		} else if (d->v[i].t == '-')
+			co[o++] = 1;
+		else
+			cn[n++] = 1;
+	}
+}
+
+/* How many single-line slides the run [s,e) has in it, dir -1 up or 1 down;
+ * *merge is set when what stops the slide is the neighbouring run, i.e. when
+ * sliding that far makes the two adjacent. Nothing is written: a slide only
+ * moves the flag off one line and onto an equal one, so every step's test is
+ * over lines that stay where they are. */
+static int chg_slide(char **ln, char *chg, int n, int s, int e, int dir,
+		     int *merge)
+{
+	int k;
+	*merge = 0;
+	for (k = 1;; k++) {
+		int c = dir < 0 ? s - k : e + k - 1;	/* the line crossed */
+		int f = dir < 0 ? e - k : s + k - 1;	/* the end it trades with */
+		if (c < 0 || c >= n)
+			break;
+		if (chg[c]) {
+			*merge = 1;
+			break;
+		}
+		if (strcmp(ln[c], ln[f]))
+			break;
+	}
+	return k - 1;
+}
+
+/* Do the slide chg_slide() counted. */
+static void chg_shift(char *chg, int s, int e, int dir, int n)
+{
+	for (int k = 1; k <= n; k++) {
+		if (dir < 0) {
+			chg[s - k] = 1;
+			chg[e - k] = 0;
+		} else {
+			chg[e + k - 1] = 1;
+			chg[s + k - 1] = 0;
+		}
+	}
+}
+
+/* Slide every run of one side into the position above, left to right. A run
+ * that joined its neighbour is left alone afterwards: the scan resumes past
+ * the whole merged region, so no part of a run is ever slid on its own. */
+static void chg_compact(char **ln, char *chg, int n)
+{
+	int i = 0;
+	while (i < n) {
+		int s, e, up, down, upm, downm;
+		if (!chg[i]) {
+			i++;
+			continue;
+		}
+		s = i;
+		while (i < n && chg[i])
+			i++;
+		e = i;
+		up = chg_slide(ln, chg, n, s, e, -1, &upm);
+		down = chg_slide(ln, chg, n, s, e, 1, &downm);
+		if (upm)
+			chg_shift(chg, s, e, -1, up);
+		else if (down)
+			chg_shift(chg, s, e, 1, down);
+		while (i < n && chg[i])
+			i++;
+	}
+}
+
+/* The op list the flags describe, deletes before inserts inside each change
+ * region, the unchanged lines pairing off in order. Rebuilt over the list it
+ * came from - the lines belong to the caller's arrays either way. */
+static void dops_rebuild(dops_t *d, char **old, char *co, int nold,
+			 char **new, char *cn, int nnew)
+{
+	int i = 0, j = 0;
+	d->n = 0;
+	while (i < nold || j < nnew) {
+		if (i < nold && co[i]) {
+			while (i < nold && co[i])
+				dop_add(d, '-', old[i++]);
+		} else if (j < nnew && cn[j]) {
+			while (j < nnew && cn[j])
+				dop_add(d, '+', new[j++]);
+		} else if (i < nold && j < nnew) {
+			dop_add(d, ' ', old[i++]);
+			j++;
+		} else		/* unreachable: both sides keep the same
+				 * unchanged lines, so they run out together */
+			break;
+	}
+}
+
 /* An op list as unified diff text for path: header, then one hunk per run of
  * changes with DIFF_CTX context lines around it. Nothing is written when the
  * list holds no change; the op list is the only input, so every way of deriving
@@ -5483,6 +5613,7 @@ static void emit_unified_diff(sbuf *out, const char *path, int is_new,
 			      char **old, int nold, char **new, int nnew)
 {
 	dops_t d;
+	char *co, *cn;
 	int pre = 0, suf = 0, i;
 	memset(&d, 0, sizeof(d));
 	/* the LCS table only ever sees what head and tail trimming leaves */
@@ -5496,6 +5627,14 @@ static void emit_unified_diff(sbuf *out, const char *path, int is_new,
 	diff_region(&d, old, pre, nold - suf, new, pre, nnew - suf);
 	for (i = nold - suf; i < nold; i++)
 		dop_add(&d, ' ', old[i]);
+	co = ecalloc(nold + 1, 1);
+	cn = ecalloc(nnew + 1, 1);
+	dops_flags(&d, co, cn);
+	chg_compact(old, co, nold);
+	chg_compact(new, cn, nnew);
+	dops_rebuild(&d, old, co, nold, new, cn, nnew);
+	free(co);
+	free(cn);
 	emit_dops(out, path, is_new, &d);
 	free(d.v);
 }
@@ -5693,25 +5832,6 @@ static int compat_apply_diff(const char *path)
 	free_lines(sink.v, sink.n);
 	free(text);
 	return st;
-}
-
-/* Forget every compat block that was read from a script, along with the
- * files[] range they own - they are parsed before the host patch is, so the
- * range is the head of files[] and dropping it leaves the array empty for the
- * host diff that follows. The blocks' edits are not undone: whatever their
- * identity gates let through during the replay stays in the buffers, so it is
- * re-derived as part of the host patch instead of as its own gated block. */
-static void drop_compat_blocks(void)
-{
-	if (!ncompat)
-		return;
-	drop_files_from(compat_blocks[0].first);
-	for (int c = 0; c < ncompat; c++) {
-		compat_block_t *cb = &compat_blocks[c];
-		free_lines(cb->raw.v, cb->raw.n);
-		free(cb->origin);
-	}
-	ncompat = 0;
 }
 
 /* The src= label of this derivation: its origins in replay order, one src=
@@ -6089,6 +6209,12 @@ static int amend_to_diff(const char *path, sbuf *out)
 	sc[0] = path;
 	/* every buffer of the session ends up in the diff */
 	xbufsalloc = MAX(64, xbufsalloc);
+	/* The base is what this replay measures, so no identity gate may fire:
+	 * a block that fired would put its edits in the buffers, and they would
+	 * be re-derived into the host patch while the block itself stays stored
+	 * and gated - applied twice on the next run. The applied set is built on
+	 * top of $P2VI_PATCH, so emptying the variable is what empties the set. */
+	unsetenv("P2VI_PATCH");
 	if (replay_scripts(sc, 1, 1, -1, -1) != 0) {
 		fprintf(stderr, "%s: replay failed, script left alone\n", path);
 		ed_free();
@@ -6351,7 +6477,9 @@ static void usage(const char *prog, int err)
 	fprintf(f, "  -er   Read section end tag (default: \"%s\")\n"
 		"  -ew   Write section end tag (default: \"%s\")\n",
 		end_tag_rd, end_tag_wr);
-	fputs("  -E    Update a script: replay it, edit, re-emit it\n"
+	fputs("  -E    Update a script: replay it, edit, re-emit its base patch\n"
+	      "        Stored compat blocks are carried over from their stored\n"
+	      "        patches, unverified: replay each src= stack afterwards\n"
 	      "        A compat block's section register after the script rebuilds\n"
 	      "        that one block instead, replaying its src= origins ahead of\n"
 	      "        the target; '' skips the slot. Rest of the line is a nextvi\n"
@@ -6667,19 +6795,32 @@ int main(int argc, char **argv)
 		if (in)
 			fclose(in);
 		in = NULL;
-		/* Compat blocks cannot round-trip: they are derived against
-		 * an origin script this run knows nothing about. Discarding
-		 * them beats refusing the update - the replay still runs them,
-		 * so their effect survives folded into the host patch, only
-		 * their gating is lost. Naming one (-E script.sh <reg>) is the
-		 * other way round: that block is rebuilt and the base patch is
-		 * the part that stands, read below like any stored region. */
+		/* The stored compat blocks stand: each is re-emitted from its
+		 * own === COMPAT PATCH === with its register, label and
+		 * position, exactly as a plain regen re-emits them, while the
+		 * base patch is the part this run replaces. That is the layout
+		 * a regen already produces - blocks at the head of files[], the
+		 * host diff parsed in after them - and emit_one_call numbers
+		 * buffers by section, not by files[], so the order costs
+		 * nothing. What it cannot do is re-derive them: a block's
+		 * anchors were cut against the base as it was, so a base edit
+		 * under one of them leaves it missing at run time. Say so, and
+		 * leave the verifying to a replay of each src= stack. */
 		if (ncompat) {
-			fprintf(stderr, "%s: script carries %d compat block%s, "
-				"which -E cannot round-trip: discarding them, "
-				"their edits fold into the emitted patch\n",
+			fprintf(stderr, "%s: %d compat block%s re-emitted from "
+				"stored patches, unverified: a base edit under "
+				"one leaves it missing - replay each src= stack "
+				"before shipping\n",
 				input_file, ncompat, ncompat > 1 ? "s" : "");
-			drop_compat_blocks();
+			/* a script carrying blocks is search anchored
+			 * throughout, as under -C and -E <reg>: with an origin
+			 * applied ahead of it the host body's own lines have
+			 * moved, and an absolute edit would clobber one by
+			 * number. Only ncompat says so, and only here - past
+			 * the argument loop's own marking of the FAIL bytes,
+			 * which relative mode is about to emit. */
+			relative_mode = 1;
+			mark_bytes_used("FAIL OK");
 		}
 		if (amend_to_diff(input_file, dsb) < 0)
 			return 1;
