@@ -5,7 +5,7 @@
  * Usage: patch2vi [-arh] [-o FILE] [-er TAG] [-ew TAG] [input.patch]
  *        patch2vi -e script.sh [script2.sh...]
  *        patch2vi [-ar]I [nextvi-opts...]
- *        patch2vi [-aro]E script.sh [<reg>|''] [nextvi-opts...]
+ *        patch2vi [-aro]E script.sh [reg|''] [nextvi-opts...]
  *        patch2vi [-o]C origin.sh [-C origin2.sh...] target.sh \
  *                 [fix.diff|fix.sh|''] [nextvi-opts...]
  *
@@ -4876,7 +4876,7 @@ static int cmd_is(const char *body, int b, int e, const char *s)
 	return e - b == n && !strncmp(body + b, s, n);
 }
 
-/* -E <reg>: lift one section's call out of the driver body, so the caller can
+/* -E reg: lift one section's call out of the driver body, so the caller can
  * run the rest of the body, take the compat baseline, and only then run this
  * one block.
  *
@@ -6054,7 +6054,7 @@ static int compat_derive(void)
 	return 0;
 }
 
-/* -E <reg>: rebuild one stored compat block, in place.
+/* -E reg: rebuild one stored compat block, in place.
  *
  * The block's own src= label names the stack it was derived in, so the origins
  * are looked for beside the target and replayed ahead of it: the identity
@@ -6562,7 +6562,7 @@ static void usage(const char *prog, int err)
 		" [input.patch]\n"
 		"       %s -e script.sh [script2.sh...]\n"
 		"       %s [-ar]I [nextvi-opts...]\n"
-		"       %s [-aro]E script.sh [<reg>|''] [nextvi-opts...]\n"
+		"       %s [-aro]E script.sh [reg|''] [nextvi-opts...]\n"
 		"       %s [-o]C origin.sh [-C origin2.sh...] target.sh"
 		" [fix.[patch|sh]|''] [nextvi-opts...]\n",
 		prog, prog, prog, prog, prog);
@@ -6581,7 +6581,7 @@ static void usage(const char *prog, int err)
 		end_tag_rd, end_tag_wr);
 	fputs("  -E    Update a script: replay it, edit, re-emit its base patch\n"
 	      "        Stored compat blocks are carried over from their stored\n"
-	      "        patches, unverified: replay each src= stack afterwards\n"
+	      "        patches, unverified\n"
 	      "        A compat block's section register after the script rebuilds\n"
 	      "        that one block instead, replaying its src= origins ahead of\n"
 	      "        the target; '' skips the slot. Rest of the line is a nextvi\n"
@@ -6915,7 +6915,7 @@ int main(int argc, char **argv)
 				"before shipping\n",
 				input_file, ncompat, ncompat > 1 ? "s" : "");
 			/* a script carrying blocks is search anchored
-			 * throughout, as under -C and -E <reg>: with an origin
+			 * throughout, as under -C and -E reg: with an origin
 			 * applied ahead of it the host body's own lines have
 			 * moved, and an absolute edit would clobber one by
 			 * number. Only ncompat says so, and only here - past
@@ -6939,7 +6939,7 @@ int main(int argc, char **argv)
 	if (in && in != stdin)
 		fclose(in);
 
-	/* -E <reg>: the host patch has just been read out of the script and
+	/* -E reg: the host patch has just been read out of the script and
 	 * every other stored region is in hand, so all this replaces is the
 	 * named block's own diff. Same window as -C below, one block down. */
 	if (amend_mode && amend_sel >= 0) {

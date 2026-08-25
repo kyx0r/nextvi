@@ -2407,9 +2407,9 @@ rm -f "$R/ert.sh"
 pty 'P2VI_EX=q!' \
 	"sh -c 'cd $R && $R_P2VI -E ec.sh 231 > $R/ert.sh 2>$R/eerr'" >/dev/null 2>&1
 if cmp -s "$R/ec.sh" "$R/ert.sh"; then
-	ok "compat: -E <reg> round-trips the named block byte for byte"
+	ok "compat: -E reg round-trips the named block byte for byte"
 else
-	fail "compat: -E <reg> round-trips the named block byte for byte"
+	fail "compat: -E reg round-trips the named block byte for byte"
 	tr -d '\r' < "$R/eerr" | sed 's/^/    /' | head -3
 fi
 
@@ -2422,9 +2422,9 @@ pty 'P2VI_EX=%s/^EPROBE$/EDITED/:q!' \
 if sed -n '/=== COMPAT PATCH ===/,/=== END ===/p' "$R/eup.sh" | grep -q '^+EDITED$' &&
    [ "$(sed -n '/=== PATCH2VI PATCH ===/,$p' "$R/eup.sh")" = \
      "$(sed -n '/=== PATCH2VI PATCH ===/,$p' "$R/ec.sh")" ]; then
-	ok "compat: -E <reg> rebuilds one block and leaves the host patch alone"
+	ok "compat: -E reg rebuilds one block and leaves the host patch alone"
 else
-	fail "compat: -E <reg> rebuilds one block and leaves the host patch alone"
+	fail "compat: -E reg rebuilds one block and leaves the host patch alone"
 	tr -d '\r' < "$R/eerr" | sed 's/^/    /' | head -3
 fi
 cp "$R/e.orig" "$R/e.c"
@@ -2446,9 +2446,9 @@ rm -f "$R/ebad.sh"
 pty 'P2VI_EX=q!' \
 	"sh -c 'cd $R && $R_P2VI -E ec.sh 999 > $R/ebad.sh 2>$R/eerr'" >/dev/null 2>&1
 if [ ! -s "$R/ebad.sh" ] && grep -q 'no compat block on register 999' "$R/eerr"; then
-	ok "compat: -E <reg> refuses a register no block carries"
+	ok "compat: -E reg refuses a register no block carries"
 else
-	fail "compat: -E <reg> refuses a register no block carries"
+	fail "compat: -E reg refuses a register no block carries"
 	tr -d '\r' < "$R/eerr" | sed 's/^/    /' | head -3
 fi
 
