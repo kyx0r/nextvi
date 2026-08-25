@@ -5208,7 +5208,6 @@ static int amend_mode;		/* -E: replay a script, edit, re-emit it */
 static int amend_inplace;	/* -oE: -o's file is -E's own script */
 
 #define DIFF_CTX 3		/* context lines around a hunk */
-#define DIFF_MAX_CELLS 4000000	/* largest LCS table worth building */
 
 typedef struct {
 	char t;		/* ' ' keep, '-' delete, '+' insert */
@@ -5243,10 +5242,10 @@ static lmap_t *lmap_slot(lmap_t *t, unsigned mask, const char *s)
 	return &t[i];
 }
 
-/* Patience anchors for a span too large to diff outright: lines occurring
- * exactly once on each side pair up unambiguously, and the longest increasing
- * subsequence of those pairs is a set of matches no sane diff would cross.
- * Splitting there leaves sub-spans small enough for the exact LCS below, so a
+/* Patience anchors for a span the O(NP) search below could not afford: lines
+ * occurring exactly once on each side pair up unambiguously, and the longest
+ * increasing subsequence of those pairs is a set of matches no sane diff would
+ * cross. Splitting there leaves sub-spans the search can afford, so a
  * 2000-line function whose body moved by two lines diffs as the handful of
  * lines that really changed, not as 4000 lines of delete-all/insert-all. */
 static int diff_anchors(char **old, int os, int oe, char **new, int ns, int ne,
@@ -5326,11 +5325,140 @@ static int diff_anchors(char **old, int os, int oe, char **new, int ns, int ne,
  * where that table would be too large - a patience split into sub-spans around
  * unique common lines, each diffed by the same routine. Only a span both too
  * large and anchorless degrades to delete-all/insert-all. */
+/*
+ * The minimal edit script by the O(NP) algorithm of Wu, Manber, Myers and
+ * Miller, over lines rather than characters.
+ *
+ * Myers' O(ND) search iterates on D, the whole edit distance, growing the band
+ * of diagonals k in [-d,d] around 0. With M <= N, though, N-M insertions are
+ * forced by the length difference alone, so D = 2P + delta with P the number of
+ * deletions: iterating on P and growing the band around the delta diagonal
+ * instead never spends a round rediscovering an insertion the lengths already
+ * imply. Our patches are lopsided that way - linewrap_v2 is +513/-88, so P=88
+ * where D=601 - and the LCS table this replaces was quadratic in both time and
+ * memory, which is what its cell cap and the anchor split existed to contain.
+ *
+ * The furthest-reaching point on each diagonal is fp[]; what the frontier alone
+ * cannot give back is the script, so each step also records the snake it ended
+ * at and the point it grew from (pts[], route[]), and the chain from the delta
+ * diagonal is walked forward into ops at the end.
+ */
+/* Recorded snakes worth their ~12 MB. A round records one per diagonal it
+ * touches, so a search costs about P*(P+delta) of them: the shipped patches sit
+ * in the tens of thousands (linewrap_v2 is P=88, delta=425, ~45k), and a span
+ * that would outgrow this is one the anchor split below breaks up anyway. */
+#define ONP_MAX_PTS 1000000
+
+typedef struct {
+	int x, y;	/* the snake's end */
+	int prev;	/* the pts[] entry it grew from, -1 at the root */
+} onp_pt;
+
+typedef struct {
+	char **a, **b;		/* a is the shorter side, b the longer */
+	int m, n, offset;
+	int *fp, *route;	/* per diagonal: furthest y, and its pts[] entry */
+	onp_pt *pts;
+	int npts, cap;
+} onp_t;
+
+/* One diagonal's step: come from whichever neighbour reaches further, run the
+ * snake of equal lines out, and record where it ended. */
+static int onp_snake(onp_t *o, int k)
+{
+	int kk = k + o->offset;
+	int yd = o->fp[kk - 1] + 1, yr = o->fp[kk + 1];
+	int down = yd > yr;
+	int y = down ? yd : yr;
+	int x = y - k;
+	int prev = down ? o->route[kk - 1] : o->route[kk + 1];
+	while (x < o->m && y < o->n && !strcmp(o->a[x], o->b[y])) {
+		x++;
+		y++;
+	}
+	ARR_PUSH(o->pts, o->npts, o->cap)
+	o->pts[o->npts].x = x;
+	o->pts[o->npts].y = y;
+	o->pts[o->npts].prev = prev;
+	o->route[kk] = o->npts++;
+	return y;
+}
+
+/* The script itself: the chain of snakes, oldest first, walked forward. Between
+ * two of them the path is one step off the diagonal - right for a line of a,
+ * down for a line of b - and then equal lines until the next snake's end. With
+ * the sides swapped a is the new file, so which step is a delete swaps with it. */
+static void onp_script(onp_t *o, dops_t *d, int swap)
+{
+	char ins = swap ? '-' : '+', del = swap ? '+' : '-';
+	int *chain = emalloc((o->npts + 1) * sizeof(int));
+	int nc = 0, px = 0, py = 0, i, r;
+	for (r = o->route[o->n - o->m + o->offset]; r >= 0; r = o->pts[r].prev)
+		chain[nc++] = r;
+	for (i = nc - 1; i >= 0; i--) {
+		onp_pt *e = &o->pts[chain[i]];
+		while (px < e->x || py < e->y) {
+			if (e->y - e->x > py - px)
+				dop_add(d, ins, o->b[py++]);
+			else if (e->y - e->x < py - px)
+				dop_add(d, del, o->a[px++]);
+			else {
+				dop_add(d, ' ', o->a[px++]);
+				py++;
+			}
+		}
+	}
+	free(chain);
+}
+
+/* 0 and the ops of old[os,oe) -> new[ns,ne), or -1 with nothing added when the
+ * route recording would outgrow its budget - the one case left for the anchor
+ * split below. Neither side may be empty; the caller has trimmed both ends. */
+static int diff_onp(dops_t *d, char **old, int os, int oe,
+		    char **new, int ns, int ne)
+{
+	onp_t o;
+	int m = oe - os, n = ne - ns, swap = m > n, delta, size, p = -1, k, st;
+	memset(&o, 0, sizeof(o));
+	o.a = swap ? new + ns : old + os;
+	o.b = swap ? old + os : new + ns;
+	o.m = swap ? n : m;
+	o.n = swap ? m : n;
+	delta = o.n - o.m;
+	o.offset = o.m + 1;
+	size = o.m + o.n + 3;
+	o.fp = emalloc(size * sizeof(int));
+	o.route = emalloc(size * sizeof(int));
+	for (k = 0; k < size; k++) {
+		o.fp[k] = -1;
+		o.route[k] = -1;
+	}
+	do {
+		p++;
+		/* the round about to run touches delta + 2p + 1 diagonals and
+		 * records one snake on each */
+		if (o.npts + delta + 2 * p + 1 > ONP_MAX_PTS)
+			break;
+		for (k = -p; k <= delta - 1; k++)
+			o.fp[k + o.offset] = onp_snake(&o, k);
+		for (k = delta + p; k >= delta + 1; k--)
+			o.fp[k + o.offset] = onp_snake(&o, k);
+		o.fp[delta + o.offset] = onp_snake(&o, delta);
+	} while (o.fp[delta + o.offset] != o.n);
+	st = o.fp[delta + o.offset] == o.n ? 0 : -1;
+	if (!st)
+		onp_script(&o, d, swap);
+	free(o.fp);
+	free(o.route);
+	free(o.pts);
+	return st;
+}
+
 static void diff_region(dops_t *d, char **old, int os, int oe,
 			char **new, int ns, int ne)
 {
 	int n, m, nsuf = 0, na = 0, i, j, k;
-	int *c, *ao = NULL, *an = NULL;
+	int *ao = NULL, *an = NULL;
 	while (os < oe && ns < ne && !strcmp(old[os], new[ns])) {
 		dop_add(d, ' ', old[os]);
 		os++;
@@ -5343,8 +5471,12 @@ static void diff_region(dops_t *d, char **old, int os, int oe,
 	}
 	n = oe - os;
 	m = ne - ns;
-	if (n > 0 && m > 0 && (double)(n + 1) * (m + 1) > DIFF_MAX_CELLS)
+	if (n > 0 && m > 0) {
+		if (!diff_onp(d, old, os, oe, new, ns, ne))
+			goto tail;
+		/* only a span whose search outgrew its budget gets here */
 		na = diff_anchors(old, os, oe, new, ns, ne, &ao, &an);
+	}
 	if (na > 0) {
 		int po = os, pn = ns;
 		for (k = 0; k < na; k++) {
@@ -5358,46 +5490,11 @@ static void diff_region(dops_t *d, char **old, int os, int oe,
 		free(an);
 		goto tail;
 	}
-	if (n == 0 || m == 0 || (double)(n + 1) * (m + 1) > DIFF_MAX_CELLS) {
-		for (i = os; i < oe; i++)
-			dop_add(d, '-', old[i]);
-		for (j = ns; j < ne; j++)
-			dop_add(d, '+', new[j]);
-		goto tail;
-	}
-	c = emalloc((size_t)(n + 1) * (m + 1) * sizeof(int));
-#define LCS(i, j) c[(i) * (m + 1) + (j)]
-	for (i = n; i >= 0; i--) {
-		for (j = m; j >= 0; j--) {
-			if (i == n || j == m)
-				LCS(i, j) = 0;
-			else if (!strcmp(old[os + i], new[ns + j]))
-				LCS(i, j) = LCS(i + 1, j + 1) + 1;
-			else
-				LCS(i, j) = MAX(LCS(i + 1, j), LCS(i, j + 1));
-		}
-	}
-	i = j = 0;
-	while (i < n && j < m) {
-		if (!strcmp(old[os + i], new[ns + j])) {
-			dop_add(d, ' ', old[os + i]);
-			i++;
-			j++;
-		} else if (LCS(i + 1, j) >= LCS(i, j + 1)) {
-			/* deletions first, so a change reads -... then +... */
-			dop_add(d, '-', old[os + i]);
-			i++;
-		} else {
-			dop_add(d, '+', new[ns + j]);
-			j++;
-		}
-	}
-	for (; i < n; i++)
-		dop_add(d, '-', old[os + i]);
-	for (; j < m; j++)
-		dop_add(d, '+', new[ns + j]);
-#undef LCS
-	free(c);
+	/* one side empty, or too big and anchorless: the span goes out whole */
+	for (i = os; i < oe; i++)
+		dop_add(d, '-', old[i]);
+	for (j = ns; j < ne; j++)
+		dop_add(d, '+', new[j]);
 tail:
 	/* the tail trimmed above closes the span, after whatever filled it */
 	for (k = 0; k < nsuf; k++)
@@ -6077,10 +6174,14 @@ static int edit_to_diff(char **args, int nargs, sbuf *out)
 	xbufsalloc = MAX(64, xbufsalloc);
 	if (ed_grabtty() < 0)
 		return -1;
-	argv = emalloc((nargs + 1) * sizeof(argv[0]));
+	/* one slot past argc, NULL: ex_init() steps to the next file before it
+	 * tests the count, so it reads argv[argc] the way a real argv is read,
+	 * and a real argv is NULL terminated by the C runtime */
+	argv = emalloc((nargs + 2) * sizeof(argv[0]));
 	argv[0] = "vi";
 	for (i = 0; i < nargs; i++)
 		argv[i + 1] = args[i];
+	argv[nargs + 1] = NULL;
 	st = nextvi_main(nargs + 1, argv);
 	free(argv);
 	ed_once = 1;

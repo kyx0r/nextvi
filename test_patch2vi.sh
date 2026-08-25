@@ -78,8 +78,12 @@ check_script() {
 	diff -u "$TMPDIR/orig.txt" "$TMPDIR/expected.txt" > "$TMPDIR/test.patch" || true
 	./patch2vi -r "$TMPDIR/test.patch" > "$TMPDIR/apply.sh" 2>&1
 	local found=1 rejected=0
-	if [ -n "$4" ] && ! grep -q "$4" "$TMPDIR/apply.sh"; then found=0; fi
-	if [ -n "$5" ] && grep -q "$5" "$TMPDIR/apply.sh"; then rejected=1; fi
+	# the patterns are about the emitted body, and the $VI line carries a
+	# mktemp path: one ending in "s" put an "s/" in the script and failed a
+	# rejection test at random
+	grep -v '\$VI -e' "$TMPDIR/apply.sh" > "$TMPDIR/apply.body"
+	if [ -n "$4" ] && ! grep -q "$4" "$TMPDIR/apply.body"; then found=0; fi
+	if [ -n "$5" ] && grep -q "$5" "$TMPDIR/apply.body"; then rejected=1; fi
 	if [ $found -eq 1 ] && [ $rejected -eq 0 ]; then
 		ok "$name"
 	else
