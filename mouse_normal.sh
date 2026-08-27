@@ -105,20 +105,20 @@ int xai = 1;			/\* autoindent option \*/1??0?
 \)
 
 4??0?
-4??+2m 2220reg p OK ex.c:1660:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1661:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 2220reg p OK ex.c:1660:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1661:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 2220reg p OK ex.c:1660:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16602sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1661:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16612sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
@@ -130,24 +130,24 @@ static struct excmd \{
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
 	EO\(mpt\),4??0?
-4??+2m 3220reg p OK ex.c:1712:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1713:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g!", ec_glob},.*?
 	\{"g", ec_glob},.*?
 (	EO\(mpt\),)7??0?
-grp 07??m 3220reg p OK ex.c:1712:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1713:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"i", ec_insert},
 	\{"d", ec_delete},
 	EO\(grp\),.*(	\{"reg\+", ec_regprint},)
 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},8??0?
-grp 08??-4m 3220reg p OK ex.c:1712:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1713:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(ish\),
 	\{"inc", ec_setincl},
 	EO\(ic\),.*(	\{"rd", ec_undoredo},)
 	EO\(rr\),
 	\{"r", ec_read},9??0?
-grp 09??-7m 3220reg p OK ex.c:1712:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17122sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1713:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17132sc %? %@2132sc!0?
 '\''1-1i int xms = 1;			/* mouse in normal mode */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i _EO(ms,
@@ -159,9 +159,9 @@ static struct excmd \{
 	return NULL;
 )
 
-??!219reg ex.c:1660:m22sc %? %@2142sc!0?
+??!219reg ex.c:1661:m22sc %? %@2142sc!0?
 '\''3i 	EO(ms),
-??!219reg ex.c:1712:m32sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1713:m32sc %? %@2142sc!b2%ya 98?0?
 %f> 	return pos - xleft;
 }
 
@@ -844,7 +844,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 70157040..71f2030a 100644
+index 701570408..71f2030a7 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -294,7 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -857,7 +857,7 @@ index 70157040..71f2030a 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 1d080daa..d632b863 100644
+index 117014228..3e2bfb872 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -865,7 +865,7 @@ index 1d080daa..d632b863 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1658,6 +1659,15 @@ _EO(left,
+@@ -1659,6 +1660,15 @@ _EO(left,
  	return NULL;
  )
  
@@ -881,7 +881,7 @@ index 1d080daa..d632b863 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1710,6 +1720,7 @@ static struct excmd {
+@@ -1711,6 +1721,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -890,7 +890,7 @@ index 1d080daa..d632b863 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index e5459d93..b6923f51 100644
+index e5459d934..b6923f511 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
@@ -938,7 +938,7 @@ index e5459d93..b6923f51 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index c8861702..daa4a2b9 100644
+index c88617027..daa4a2b97 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,16 @@
@@ -1071,7 +1071,7 @@ index c8861702..daa4a2b9 100644
  {
  	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..a53ff813 100644
+index 2f4ccc2bf..a53ff8130 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -513,6 +513,9 @@ static void vc_status(int type)
@@ -1117,7 +1117,7 @@ index 2f4ccc2b..a53ff813 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 254db3be..de818614 100644
+index 254db3be2..de8186142 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -327,6 +327,9 @@ void term_pos(int r, int c);

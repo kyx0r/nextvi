@@ -528,20 +528,20 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1300:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1301:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	for \(i = 1; i < 4; i\+\+\)
 		syn_reloadft\(syn_findhl\(i\), 0\);.*(		xkmap_alt = conf_kmapfind\(arg\);)
 	else
 		ex_print\(conf_kmap\(xkmap\)\[0], msg_ft\)8??0?
-grp 08??-4m 1220reg p OK ex.c:1300:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1301:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(led_attsb\) \{
 		sbuf_free\(led_attsb\)
 		led_attsb = NULL;.*(	if \(arg\[0] && !strchr\(cmd, '\''!'\''\)\))
 		xkmap = xkmap_alt;
 	return NULL;9??0?
-grp 09??-7m 1220reg p OK ex.c:1300:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:13002sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1301:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:13012sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(hlp\),
 	EO\(hlr\),
@@ -553,24 +553,24 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	EO\(hlp\),
 	EO\(hlr\),
 	EO\(hl\),4??0?
-4??+2m 2220reg p OK ex.c:1752:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1753:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(hlp\),.*?
 	EO\(hlr\),.*?
 (	EO\(hl\),)7??0?
-grp 07??m 2220reg p OK ex.c:1752:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1753:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(order\),
 	EO\(hll\),
 	EO\(hlw\),.*(	EO\(vis\),)
 	\{"", ec_print}, /\* do not remove \*/
 	\{"", ec_print}, /\* do not remove \*/8??0?
-grp 08??-4m 2220reg p OK ex.c:1752:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1753:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"j", ec_join},
 	EO\(ts\),
 	EO\(td\),.*(/\* parse command argument expanding % and ! \*/)
 static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{9??0?
-grp 09??-9m 2220reg p OK ex.c:1752:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17522sc %? %@2132sc!0?
+grp 09??-9m 2220reg p OK ex.c:1753:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17532sc %? %@2132sc!0?
 '\''1i /* walk att exactly like syn_highlight to bound its variable length entries */
 static int hi_walk(int *att, int grps)
 {
@@ -635,9 +635,9 @@ static void *ec_hi(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-??!219reg ex.c:1300:m12sc %? %@2142sc!0?
+??!219reg ex.c:1301:m12sc %? %@2142sc!0?
 '\''2i 	{"hi", ec_hi},
-??!219reg ex.c:1752:m22sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
+??!219reg ex.c:1753:m22sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -774,10 +774,10 @@ index 70157040..840e16f0 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 1d080daa..7e078d88 100644
+index 11701422..0e18046e 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1298,6 +1298,70 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
+@@ -1299,6 +1299,70 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -848,7 +848,7 @@ index 1d080daa..7e078d88 100644
  static void *ec_cmap(char *loc, char *cmd, char *arg)
  {
  	if (arg[0])
-@@ -1750,6 +1814,7 @@ static struct excmd {
+@@ -1751,6 +1815,7 @@ static struct excmd {
  	EO(hlp),
  	EO(hlr),
  	EO(hl),
