@@ -1181,6 +1181,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		sbuf *r = NULL;
 		lnb = ln - b1;		/* start of text not yet copied */
 		while (rset_find(rs, ln, offs, rflg) >= 0) {
+			rflg |= REG_NOTBOL;	/* only the first search is at bol */
 			if (offs[xgrp] < 0) {
 				ln += offs[1] > 0 ? offs[1] : 1;
 				continue;
@@ -1208,7 +1209,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 			if (!offs[xgrp + 1] && *ln)	/* zero-length match */
 				sbuf_chr(r, *ln++)
 			lnb = ln;
-			if (!*ln || (flg | (*ln != '\n') * 2) != 3)
+			if (!*ln || !(flg & 1))
 				break;
 		}
 		if (r) {
