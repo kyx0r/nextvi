@@ -385,7 +385,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 701570408..45b62f989 100644
+index 70157040..45b62f98 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -296,7 +296,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -398,7 +398,7 @@ index 701570408..45b62f989 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 117014228..481fcf5e9 100644
+index 6e49f602..7190d0bb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -454,7 +454,7 @@ index 117014228..481fcf5e9 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index 2f4ccc2bf..55bf9344b 100644
+index 2f4ccc2b..55bf9344 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1877,11 +1877,13 @@ int main(int argc, char *argv[])
@@ -473,7 +473,7 @@ index 2f4ccc2bf..55bf9344b 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 254db3be2..ed6f7eecd 100644
+index 254db3be..ed6f7eec 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -407,6 +407,7 @@ struct buf {
