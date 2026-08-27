@@ -1522,6 +1522,83 @@ out=$(run_ex ':grp 1:%s/(a)|b/Z/gm:grp:%p:q!')
 check ':s gm grp keeps a skipped match inside the region' \
 	"$(printf 'Z\nb\nZ')" "$out"
 
+# ──────────────────────────────────────────────────────────────────────────────
+# :s g and the ^ anchor
+# Every search after the first resumes mid-string, so ^ must not match there.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'aaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a/X/g:%p:q!')
+check ':s g does not re-anchor ^ after a match' 'Xaa' "$out"
+
+printf 'ab\n' > "$TMPFILE"
+out=$(run_ex ':%s/^/S/g:%p:q!')
+check ':s g matches a bare ^ once per line' 'Sab' "$out"
+
+# only one branch of the alternation is anchored; b stays matchable anywhere
+printf 'aba\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a|b/X/g:%p:q!')
+check ':s g keeps an unanchored branch after ^ stops matching' 'XXa' "$out"
+
+# a plain g region re-anchors on every line, since each line is its own string
+printf 'aaa\naaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a/X/g:%p:q!')
+check ':s g anchors ^ at the start of each line' \
+	"$(printf 'Xaa\nXaa')" "$out"
+
+# under m the region is one string, so ^ only matches at the region start
+printf 'aaa\naaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a/X/gm:%p:q!')
+check ':s gm anchors ^ at the region start only' \
+	"$(printf 'Xaa\naaa')" "$out"
+
+# REG_NEWLINE must survive the switch to REG_NOTBOL, or $ stops matching
+printf 'aaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/a$/X/g:%p:q!')
+check ':s g still matches $ after the first search' 'aaX' "$out"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# :s g and zero-length matches at the line end
+# The trailing newline is a match position like any other: REG_NEWLINE makes it
+# a terminator, so only a zero-width match can land there and nothing can run
+# past it. g and gm must agree about it.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'ab\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/g:%p:q!')
+check ':s g substitutes a zero-length match at the line end' '-a-b-' "$out"
+
+printf 'ab\ncd\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/g:%p:q!')
+check ':s g reaches the line end on every line' \
+	"$(printf -- '-a-b-\n-c-d-')" "$out"
+
+printf 'ab\ncd\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/gm:%p:q!')
+check ':s gm agrees with g on the line end' \
+	"$(printf -- '-a-b-\n-c-d-')" "$out"
+
+# a zero-length match after a non-empty one is still a match of its own
+printf 'axb\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/g:%p:q!')
+check ':s g takes a zero-length match adjoining a non-empty one' '-a--b-' "$out"
+
+printf '\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/g:%p:q!')
+check ':s g substitutes a zero-length match on an empty line' '-' "$out"
+
+# the window ends at a NUL, and the engine reports no match on an empty string,
+# so a bounded region has no match position at its end
+printf 'axbxc\n' > "$TMPFILE"
+out=$(run_ex ':1;1;4s/x*/-/g:%p:q!')
+check ':s g bounded by o2 has no match at the window end' 'a--b-c' "$out"
+
+# dropping the newline test from the loop must not let m repeat
+printf 'xx\nxx\n' > "$TMPFILE"
+out=$(run_ex ':%s/x/Y/m:%p:q!')
+check ':s m still substitutes once across the region' \
+	"$(printf 'Yx\nxx')" "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
