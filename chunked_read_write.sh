@@ -644,7 +644,7 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 	struct linfo *n, *cn = NULL;
 	const int rchunk = 4096;
 	char sm[rchunk+1], *s, *ln;
-	sbuf_smake(sb, 0)
+	sbuf_smake(sb, 1)
 	while ((nr = read(fd, sm, rchunk)) > 0) {
 		s = sm;
 		s[nr] = '\''\0'\'';
@@ -668,27 +668,38 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 				cn = NULL;
 				memset(&ln[n->len + 1], 0, 4);	/* fault tolerance pad */
 				ln[n->len] = '\''\n'\'';
-??!219reg lbuf.c:224:m12sc %? %@2142sc!0?
-'\''2,#+5c 			sbuf_mem(sb, &ln, (int)sizeof(ln))
+			}
+			sbuf_mem(sb, &ln, (int)sizeof(ln))
 			s += l;
 		}
-		if (s - sm != rchunk) {
-			nr = 0;
+		if (s - sm < nr) {	/* hit a NUL byte: truncate like the whole-file path */
+			if (cn) {	/* keep the pending partial line */
+				sb->s_n += sizeof(ln);
+				nins++;
+??!219reg lbuf.c:224:m12sc %? %@2142sc!0?
+'\''2,#+5c 			nr = 0;
 			break;
 		}
+		if (nins > INT_MAX - 512)
+			break;
 		if (!nl) {
 			cn = n;
 			nins--;
 			sb->s_n -= sizeof(ln);
 ??!219reg lbuf.c:239:m22sc %? %@2142sc!0?
 '\''3,#+2c 	sbuf_nul(sb)
-	lbuf_edit(lb, sb->s, beg, end, 0, 0);
-	lb->ln_n = nins;
-	lb->ln = emalloc((nins + 512) * sizeof(lb->ln[0]));
-	lb->ln_sz = nins + 512;
-	for (int i = 0; i < nins; i++)
-		lb->ln[i] = *((char**)sb->s + i);
-	free(sb->s);
+	struct lopt *lo = lbuf_opt(lb, beg, 0, end - beg);
+	lo->n_ins = lbuf_replace(lb, sb, NULL, lo, lo->n_del, nins);
+	if (lb->hist_u < 2 || lb->hist[lb->hist_u - 2].seq != lb->useq)
+		lbuf_smark(lb, lo, beg, 0);
+	lbuf_emark(lb, lo, beg + (lo->n_ins ? lo->n_ins - 1 : 0), 0);
+	lb->modified = 1;
+	if (lb->saved > lb->hist_u)
+		lb->saved = -1;
+	if (xseq < 0 || !lo->n_ins)
+		free(sb->s);
+	else
+		lo->ins = (char**)sb->s;
 ??!219reg lbuf.c:247:m32sc %? %@2142sc!0?
 '\''4i static long write_fully(int fd, char *buf, long sz)
 {
@@ -817,10 +828,10 @@ index 6e49f602..d7e46464 100644
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
 diff --git a/lbuf.c b/lbuf.c
-index f0e754e6..cc8244b2 100644
+index f0e754e6..9aef578d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -221,48 +221,118 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
+@@ -221,48 +221,129 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
  		lo->ins = (char**)sb->s;
  }
  
@@ -871,7 +882,7 @@ index f0e754e6..cc8244b2 100644
 +	struct linfo *n, *cn = NULL;
 +	const int rchunk = 4096;
 +	char sm[rchunk+1], *s, *ln;
-+	sbuf_smake(sb, 0)
++	sbuf_smake(sb, 1)
 +	while ((nr = read(fd, sm, rchunk)) > 0) {
 +		s = sm;
 +		s[nr] = '\0';
@@ -895,6 +906,14 @@ index f0e754e6..cc8244b2 100644
 +				cn = NULL;
 +				memset(&ln[n->len + 1], 0, 4);	/* fault tolerance pad */
 +				ln[n->len] = '\n';
++			}
++			sbuf_mem(sb, &ln, (int)sizeof(ln))
++			s += l;
++		}
++		if (s - sm < nr) {	/* hit a NUL byte: truncate like the whole-file path */
++			if (cn) {	/* keep the pending partial line */
++				sb->s_n += sizeof(ln);
++				nins++;
  			}
 -			sz = n * 2;
 -			s = erealloc(s, sz--);
@@ -902,13 +921,11 @@ index f0e754e6..cc8244b2 100644
 -		} else if (n == sz) {
 -			sz++;
 -			step = 0;
-+			sbuf_mem(sb, &ln, (int)sizeof(ln))
-+			s += l;
-+		}
-+		if (s - sm != rchunk) {
 +			nr = 0;
 +			break;
 +		}
++		if (nins > INT_MAX - 512)
++			break;
 +		if (!nl) {
 +			cn = n;
 +			nins--;
@@ -919,13 +936,18 @@ index f0e754e6..cc8244b2 100644
 -	lbuf_edit(lb, s, beg, end, 0, 0);
 -	free(s);
 +	sbuf_nul(sb)
-+	lbuf_edit(lb, sb->s, beg, end, 0, 0);
-+	lb->ln_n = nins;
-+	lb->ln = emalloc((nins + 512) * sizeof(lb->ln[0]));
-+	lb->ln_sz = nins + 512;
-+	for (int i = 0; i < nins; i++)
-+		lb->ln[i] = *((char**)sb->s + i);
-+	free(sb->s);
++	struct lopt *lo = lbuf_opt(lb, beg, 0, end - beg);
++	lo->n_ins = lbuf_replace(lb, sb, NULL, lo, lo->n_del, nins);
++	if (lb->hist_u < 2 || lb->hist[lb->hist_u - 2].seq != lb->useq)
++		lbuf_smark(lb, lo, beg, 0);
++	lbuf_emark(lb, lo, beg + (lo->n_ins ? lo->n_ins - 1 : 0), 0);
++	lb->modified = 1;
++	if (lb->saved > lb->hist_u)
++		lb->saved = -1;
++	if (xseq < 0 || !lo->n_ins)
++		free(sb->s);
++	else
++		lo->ins = (char**)sb->s;
  	return nr != 0;
  }
  
