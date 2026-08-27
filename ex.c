@@ -1312,7 +1312,8 @@ static void *ec_cmap(char *loc, char *cmd, char *arg)
 
 static void *ec_glob(char *loc, char *cmd, char *arg)
 {
-	int i, beg, end, not, matched = 0;
+	int i, beg, end, not;
+	void *ret = xuerr;
 	char *pat, *s = arg;
 	rset *rs;
 	if (!loc[0] && !xgdep)
@@ -1335,9 +1336,8 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 		char *ln = lbuf_get(xb, i);
 		lbuf_s(ln)->grec &= ~xgdep;
 		if (rset_match(rs, ln, REG_NEWLINE) != not) {
-			matched = 1;
 			xrow = i;
-			if (ex_exec(s))
+			if ((ret = ex_exec(s)))
 				break;
 			i = MIN(i, xrow);
 		}
@@ -1346,7 +1346,7 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	}
 	rset_free(rs);
 	xgdep /= 2;
-	return matched ? NULL : xuerr;
+	return ret;
 }
 
 static void *ec_while(char *loc, char *cmd, char *arg)
