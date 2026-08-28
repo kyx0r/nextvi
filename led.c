@@ -252,7 +252,7 @@ void led_render(char *s0, int cbeg, int cend)
 		led_out(term_sbuf, 1)
 	sbufn_mem(term_sbuf, "\x1b[m", 3)
 	if (r->holelen) {
-		memcpy(chrs[n], r->nullhole, r->holelen);
+		memcpy(chrs[n], r->nulhole, r->holelen);
 		r->holelen = 0;
 	}
 }
