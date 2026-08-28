@@ -140,21 +140,19 @@ p2v_tty() {
 	fi
 }
 
-# The binary lives on its own branch, so a missing one is built from there and
-# the branch this was called on checked out again - which is not always the one
-# the sources came from, so it is read rather than named. One that is already
-# here builds nothing. A subshell: the branch it stands on is its own business.
-p2v_getbin() (
+# The binary: one already here wins, one installed in $PATH is the fallback -
+# command -v does the looking, which is what makes this script usable from a
+# tree with no patch2vi of its own. No subshell: the $P2VI resolved here has to
+# reach the caller, export only runs downhill.
+p2v_getbin() {
 	[ -x $P2VI ] && return 0
-	br=$(git rev-parse --abbrev-ref HEAD) || return 1
-	[ "$br" = HEAD ] && br=$(git rev-parse HEAD)	# detached: the commit
-	git checkout patch2vi || return 1
-	./build_patch2vi.sh build
-	git checkout "$br" || return 1
-	[ -x $P2VI ] && return 0
-	echo "NO BINARY: the build on the patch2vi branch failed" >&2
+	if p2v_bin=$(command -v "${P2VI##*/}") && [ -x "$p2v_bin" ]
+	then	P2VI=$p2v_bin
+		return 0
+	fi
+	echo "NO BINARY: no $P2VI and no ${P2VI##*/} on \$PATH" >&2
 	return 1
-)
+}
 
 # Write the working tree's sources to a tree object, the index left alone.
 # Snapshots taken this way diff with git diff-tree, so files a run adds or
