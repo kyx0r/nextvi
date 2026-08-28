@@ -6050,7 +6050,7 @@ static void emit_custom_edit_lines(sbuf *out, char **lines, int nlines)
 		 * on them. Without them relative mode would fall back to the
 		 * single follow_ctx line and drift from the interactive
 		 * output. */
-		if ((relative_mode || interactive_mode) && (g->del_start || g->nadd)) {
+		if ((rel || interactive_mode) && (g->del_start || g->nadd)) {
 ??!219reg patch2vi.c:2739:m442sc %? %@2142sc!0?
 '\''45i 		/* interactive mode also shows all leading context */
 		if (interactive_mode && (g->del_start || g->nadd)) {
@@ -8052,7 +8052,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/patch2vi.c b/patch2vi.c
-index fd771e12..df57ba1e 100644
+index fd771e12..151b316b 100644
 --- a/patch2vi.c
 +++ b/patch2vi.c
 @@ -4,15 +4,16 @@
@@ -10056,7 +10056,7 @@ index fd771e12..df57ba1e 100644
 +		 * on them. Without them relative mode would fall back to the
 +		 * single follow_ctx line and drift from the interactive
 +		 * output. */
-+		if ((relative_mode || interactive_mode) && (g->del_start || g->nadd)) {
++		if ((rel || interactive_mode) && (g->del_start || g->nadd)) {
  			int post_cap = 3;
  			int post_avail = 0;
  			int pi = i;
