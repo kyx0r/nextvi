@@ -1599,6 +1599,38 @@ out=$(run_ex ':%s/x/Y/m:%p:q!')
 check ':s m still substitutes once across the region' \
 	"$(printf 'Yx\nxx')" "$out"
 
+# ──────────────────────────────────────────────────────────────────────────────
+# :fr register search and the range cursor
+# The range maps a register offset back onto the buffer, so the search has to
+# start from a position that is inside the range. A cursor outside of it is
+# pinned to the range start; only an offset that walks past the range end is
+# a failure.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'aaa\nbbb\nccc\nddd\neee\n' > "$TMPFILE"
+out=$(run_ex ':3,5ya97:fr 97:4:3,5f>eee:.p:q')
+check ':fr cursor inside the range searches from the cursor' 'eee' "$out"
+
+printf 'aaa\nbbb\nccc\nddd\neee\n' > "$TMPFILE"
+out=$(run_ex ':3,5ya97:fr 97:1:3,5f>ddd:.p:q')
+check ':fr cursor before the range starts at the range start' 'ddd' "$out"
+
+printf 'aaa\nbbb\nccc\nddd\neee\n' > "$TMPFILE"
+out=$(run_ex ':1,3ya97:fr 97:5:1,3f>bbb:.p:q')
+check ':fr cursor after the range starts at the range start' 'bbb' "$out"
+
+# o1 bounds the first row, so a cursor left of it is outside the range as well
+printf 'int a\nint b\nint c\n' > "$TMPFILE"
+out=$(run_ex ':1;2,3;4ya97:fr 97:1:1;2,3;4f>int b:.p:q')
+check ':fr cursor left of o1 starts at the range start' 'int b' "$out"
+
+# o2 is the last position in the range, so the :f+ increment past it exhausts
+# the search; it does not wrap back to the range start
+printf 'int a\nint b\nint c\n' > "$TMPFILE"
+out=$(run_ex ':%f>t c:1;0,3;2ya97:fr 97:1;0,3;2f+int:??!p exhausted:.p:q')
+check ':fr f+ past the range end fails instead of wrapping' \
+	"$(printf 'exhausted\nint c')" "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
