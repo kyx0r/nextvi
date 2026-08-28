@@ -3325,87 +3325,83 @@ static int read_stored_sections\(FILE \*in\)
 grp 09??-9m 87220reg p OK patch2vi.c:6495:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg patch2vi.c:64952sc %? %@2132sc!0?
 ?0?
-%f+ static void usage\(const char \*prog, int err\)
-\{
+%f+ \{
 	FILE \*f = err \? stderr : stdout;
-	fprintf\(f, "Usage: %s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG]"
-		" \[input\.patch]\\n"
-		"       %s -e script\.sh \[script2\.sh\.\.\.]\\n"1??0?
+	fprintf\(f, "Patch2vi-1\.0 Usage:\\n\\n"
+		"%s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG] \[input\.patch]\\n"
+		"%s -e script\.sh \[script2\.sh\.\.\.]\\n"1??0?
 1??+3m 881q0?
-%f+ 	fprintf\(f, "Usage: %s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG]"
-		" \[input\.patch]\\n"
-		"       %s -e script\.sh \[script2\.sh\.\.\.]\\n"2??0?
-2??m 88220reg p OK patch2vi.c:6534:a22sc %? %@2152sc!1q0?
-%f+ 	fprintf\(f, "Usage: %s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG]"
-		" \[input\.patch]\\n"3??0?
-3??m 88220reg p OK patch2vi.c:6534:a32sc %? %@2152sc!1q0?
-%f+ static void usage\(const char \*prog, int err\)
-\{
-	FILE \*f = err \? stderr : stdout;4??0?
-4??+3m 88220reg p OK patch2vi.c:6534:a42sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		"       %s -e script\.sh \[script2\.sh\.\.\.]\\n"$5??0?
-5??-2m 88220reg p OK patch2vi.c:6534:a52sc %? %@2152sc!fr 981qfr 980?
-%f+ ........oi. ..a.e.c................ ... e.r.
-\{
-..I.. .. ..........d..r.......ut;
-...r......,...s.....%........ .-.....E.....r...G.....w...G..
-	."...n.ut\.p.tch....
-......  ..............\..h..s.........\.....n"6??0?
-6??+3m 88220reg p OK patch2vi.c:6534:a62sc %? %@2152sc!1q0?
-grp 1%f+ static void usage\(const char \*prog, int err\).*?
-\{.*?
+%f+ 		"%s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG] \[input\.patch]\\n"
+		"%s -e script\.sh \[script2\.sh\.\.\.]\\n"2??0?
+2??m 88220reg p OK patch2vi.c:6535:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		"%s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG] \[input\.patch]\\n"$3??0?
+3??m 88220reg p OK patch2vi.c:6535:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ \{
+	FILE \*f = err \? stderr : stdout;
+	fprintf\(f, "Patch2vi-1\.0 Usage:\\n\\n"4??0?
+4??+3m 88220reg p OK patch2vi.c:6535:a42sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		"%s -e script\.sh \[script2\.sh\.\.\.]\\n"$5??0?
+5??-1m 88220reg p OK patch2vi.c:6535:a52sc %? %@2152sc!fr 981qfr 980?
+%f+ \{
+...........er..\?....e.. .....o...
+.....n.......Pa.....i..\...Us..e......
+.	... ...rh......F.....\[-...T...........G].....ut...tc...."
+......-e ..........\[.c...t2\..h\....\\n.6??0?
+6??+3m 88220reg p OK patch2vi.c:6535:a62sc %? %@2152sc!1q0?
+grp 1%f+ \{.*?
 	FILE \*f = err \? stderr : stdout;.*?
-(	fprintf\(f, "Usage: %s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG]")7??0?
-grp 07??m 88220reg p OK patch2vi.c:6534:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> /\* The whole help, on stdout for -h \(a request, answered with success\) and on
- \* stderr for a misused option \(a diagnostic\); err picks both the stream and
- \* the exit status\. \*/.*(	fputs\("Converts unified diff to shell script using nextvi ex commands\\n")
+	fprintf\(f, "Patch2vi-1\.0 Usage:\\n\\n".*?
+(		"%s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG] \[input\.patch]\\n")7??0?
+grp 07??m 88220reg p OK patch2vi.c:6535:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f>  \* stderr for a misused option \(a diagnostic\); err picks both the stream and
+ \* the exit status\. \*/
+static void usage\(const char \*prog, int err\).*(	fputs\("Converts unified diff to shell script using nextvi ex commands\\n")
 	      "Input can be a unified diff or a previously generated patch2vi script\\n"
 	      "  -h    Show this help\\n"8??0?
-grp 08??-8m 88220reg p OK patch2vi.c:6534:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 88220reg p OK patch2vi.c:6535:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	       " \*\) \\"\./\$next\\" \\"\$@\\" ;; esac\\n"\);
 	printf\("fi\\n"\);
 }.*(	      "  -a    Absolute line numbers\\n")
 	      "  -r    Relative regex patterns instead of line numbers\\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\\n"9??0?
-grp 09??-11m 88220reg p OK patch2vi.c:6534:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:65342sc %? %@2132sc!0?
+grp 09??-10m 88220reg p OK patch2vi.c:6535:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:65352sc %? %@2132sc!0?
 ?0?
-%f+ 		"       %s -e script\.sh \[script2\.sh\.\.\.]\\n"
-		"       %s \[-ar]I \[nextvi-opts\.\.\.]\\n"
-		"       %s \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]\\n"
-		"       %s \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh"
-		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n",
+%f+ 		"%s -e script\.sh \[script2\.sh\.\.\.]\\n"
+		"%s \[-ar]I \[nextvi-opts\.\.\.]\\n"
+		"%s \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]\\n"
+		"%s \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh"
+		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n\\n",
 		prog, prog, prog, prog, prog\);1??0?
 1??+1m 891q0?
-%f+ 		"       %s \[-ar]I \[nextvi-opts\.\.\.]\\n"
-		"       %s \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]\\n"
-		"       %s \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh"
-		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n",
+%f+ 		"%s \[-ar]I \[nextvi-opts\.\.\.]\\n"
+		"%s \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]\\n"
+		"%s \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh"
+		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n\\n",
 		prog, prog, prog, prog, prog\);2??0?
 2??m 89220reg p OK patch2vi.c:6537:a22sc %? %@2152sc!1q0?
-%f+ 		"       %s \[-ar]I \[nextvi-opts\.\.\.]\\n"
-		"       %s \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]\\n"3??0?
+%f+ 		"%s \[-ar]I \[nextvi-opts\.\.\.]\\n"
+		"%s \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]\\n"3??0?
 3??m 89220reg p OK patch2vi.c:6537:a32sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		"       %s -e script\.sh \[script2\.sh\.\.\.]\\n"$4??0?
+;0fr.,$f+ ^		"%s -e script\.sh \[script2\.sh\.\.\.]\\n"$4??0?
 4??+1m 89220reg p OK patch2vi.c:6537:a42sc %? %@2152sc!fr 981qfr 980?
-%f+ 		"       %s \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh"
-		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n",
+%f+ 		"%s \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh"
+		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n\\n",
 		prog, prog, prog, prog, prog\);5??0?
 5??-2m 89220reg p OK patch2vi.c:6537:a52sc %? %@2152sc!1q0?
-%f+ 	..    ...........ri.t.....s.....2.s.\...]...
-..".....  .s...ar....n.......p.........
-	."... . .%s.............p......r..\|......e..v...p...\.\...."
-.... . . ... .........g....h..-C......n.\..................
-.	....i.............'\'''\''] \[...tvi....s\.......,
-...r.g....og...r..,....g..p.....6??0?
+%f+ .......e ..r..t\..........t.....\......
+....s \[-...............t.\....\\..
+...................t\... ..e....].\[nex.....p.s..\...."
+.."..........r..i...h.......igi..........t...et....
+	.................]...] .n........t..\.........
+	..r..,....g............,..r....6??0?
 6??+1m 89220reg p OK patch2vi.c:6537:a62sc %? %@2152sc!1q0?
-grp 1%f+ 		"       %s -e script\.sh \[script2\.sh\.\.\.]\\n".*?
-(		"       %s \[-ar]I \[nextvi-opts\.\.\.]\\n")7??0?
+grp 1%f+ 		"%s -e script\.sh \[script2\.sh\.\.\.]\\n".*?
+(		"%s \[-ar]I \[nextvi-opts\.\.\.]\\n")7??0?
 grp 07??m 89220reg p OK patch2vi.c:6537:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> /\* The whole help, on stdout for -h \(a request, answered with success\) and on
- \* stderr for a misused option \(a diagnostic\); err picks both the stream and
- \* the exit status\. \*/.*(	fputs\("Converts unified diff to shell script using nextvi ex commands\\n")
+m 01;0grp 1%f>  \* stderr for a misused option \(a diagnostic\); err picks both the stream and
+ \* the exit status\. \*/
+static void usage\(const char \*prog, int err\).*(	fputs\("Converts unified diff to shell script using nextvi ex commands\\n")
 	      "Input can be a unified diff or a previously generated patch2vi script\\n"
 	      "  -h    Show this help\\n"8??0?
 grp 08??-5m 89220reg p OK patch2vi.c:6537:a82sc %? %@2152sc!'\''08??1q0?
@@ -6499,11 +6495,10 @@ static int read_delta_sections(FILE *in)
 ??!219reg patch2vi.c:6494:m862sc %? %@2142sc!0?
 '\''87i 	free(ph->s);
 ??!219reg patch2vi.c:6495:m872sc %? %@2142sc!0?
-'\''88,#+1c 	fprintf(f, "Usage: %s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG]"
-		" [input.patch] [nextvi-opts...]\n"
-??!219reg patch2vi.c:6534:m882sc %? %@2142sc!0?
-'\''89,#+1c 		"       %s [-ari]I [nextvi-opts...]\n"
-		"       %s [-ario]E script.sh [reg|'\'''\''] [nextvi-opts...]\n"
+'\''88c 		"%s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG] [input.patch] [nextvi-opts...]\n"
+??!219reg patch2vi.c:6535:m882sc %? %@2142sc!0?
+'\''89,#+1c 		"%s [-ari]I [nextvi-opts...]\n"
+		"%s [-ario]E script.sh [reg|'\'''\''] [nextvi-opts...]\n"
 ??!219reg patch2vi.c:6537:m892sc %? %@2142sc!0?
 '\''90c 	      "        Several scripts run in order, stopping at the first failure\n"
 	      "  -i    Interactive: edit patterns and ex bodies in the built-in nextvi\n"
@@ -8055,9 +8050,10 @@ if [ $# -gt 0 ]; then
 fi
 
 exit 0
+=== PATCH2VI DELTA ===
 === PATCH2VI PATCH ===
 diff --git a/patch2vi.c b/patch2vi.c
-index 77593c31..ff63cdab 100644
+index 0c59d1de..ae36ee9b 100644
 --- a/patch2vi.c
 +++ b/patch2vi.c
 @@ -4,15 +4,16 @@
@@ -10733,21 +10729,19 @@ index 77593c31..ff63cdab 100644
  	free(lb->s);
  	return 0;
  }
-@@ -6531,11 +8586,11 @@ static void emit_compat_tail(void)
- static void usage(const char *prog, int err)
+@@ -6532,10 +8587,10 @@ static void usage(const char *prog, int err)
  {
  	FILE *f = err ? stderr : stdout;
--	fprintf(f, "Usage: %s [-arh] [-o FILE] [-er TAG] [-ew TAG]"
--		" [input.patch]\n"
-+	fprintf(f, "Usage: %s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG]"
-+		" [input.patch] [nextvi-opts...]\n"
- 		"       %s -e script.sh [script2.sh...]\n"
--		"       %s [-ar]I [nextvi-opts...]\n"
--		"       %s [-aro]E script.sh [reg|''] [nextvi-opts...]\n"
-+		"       %s [-ari]I [nextvi-opts...]\n"
-+		"       %s [-ario]E script.sh [reg|''] [nextvi-opts...]\n"
- 		"       %s [-o]C origin.sh [-C origin2.sh...] target.sh"
- 		" [fix.[patch|sh]|''] [nextvi-opts...]\n",
+ 	fprintf(f, "Patch2vi-1.0 Usage:\n\n"
+-		"%s [-arh] [-o FILE] [-er TAG] [-ew TAG] [input.patch]\n"
++		"%s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG] [input.patch] [nextvi-opts...]\n"
+ 		"%s -e script.sh [script2.sh...]\n"
+-		"%s [-ar]I [nextvi-opts...]\n"
+-		"%s [-aro]E script.sh [reg|''] [nextvi-opts...]\n"
++		"%s [-ari]I [nextvi-opts...]\n"
++		"%s [-ario]E script.sh [reg|''] [nextvi-opts...]\n"
+ 		"%s [-o]C origin.sh [-C origin2.sh...] target.sh"
+ 		" [fix.[patch|sh]|''] [nextvi-opts...]\n\n",
  		prog, prog, prog, prog, prog);
 @@ -6548,7 +8603,16 @@ static void usage(const char *prog, int err)
  	      "        run reads. Clustered with another option it takes no FILE\n"
