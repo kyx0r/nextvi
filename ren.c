@@ -106,7 +106,7 @@ ren_state *ren_position(char *s)
 		for (n = 0; n < max && (l = uc_len(ss)); n++)
 			ss += l;
 		rstate->holelen = uc_len(ss);
-		memcpy(rstate->nullhole, ss, rstate->holelen);
+		memcpy(rstate->nulhole, ss, rstate->holelen);
 		memset(ss, 0, rstate->holelen);
 	} else
 		for (n = 0; (l = uc_len(ss)); n++)
