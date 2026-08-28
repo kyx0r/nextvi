@@ -93,20 +93,20 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:808:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:810:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	lbuf_saved\(xb, 0\);
 	ex_buf->mtime = mtime\(path\);
 	xquit = quit;.*(		term_exec\(arg, strlen\(arg\), cmd\[0]\))
 	return term_sbuf \? NULL : "unsupported command";
 }8??0?
-grp 08??-4m 1220reg p OK ex.c:808:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:810:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	ex_print\(msg, bar_ft\)
 	if \(strcmp\(xb_path, path\)\)
 		ec_setpath\(NULL, NULL, path\);.*(void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\))
 \{
 	if \(xpr > 0\) \{9??0?
-grp 09??-8m 1220reg p OK ex.c:808:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:8082sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK ex.c:810:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:8102sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"rd", ec_undoredo},
 	EO\(rr\),
@@ -117,24 +117,24 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	\{"rd", ec_undoredo},
 	EO\(rr\),
 	\{"r", ec_read},4??0?
-4??+2m 2220reg p OK ex.c:1722:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1724:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"rd", ec_undoredo},.*?
 	EO\(rr\),.*?
 (	\{"r", ec_read},)7??0?
-grp 07??m 2220reg p OK ex.c:1722:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1724:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"reg\+", ec_regprint},
 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},.*(	\{"uz", ec_setenc},)
 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},8??0?
-grp 08??-6m 2220reg p OK ex.c:1722:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 2220reg p OK ex.c:1724:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"m", ec_mark},
 	\{"q!", ec_quit},
 	\{"q", ec_quit},.*(	EO\(shape\),)
 	EO\(seq\),
 	\{"sc!", ec_specials},9??0?
-grp 09??-9m 2220reg p OK ex.c:1722:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17222sc %? %@2132sc!0?
+grp 09??-9m 2220reg p OK ex.c:1724:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17242sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"wq!", ec_write},
 	\{"wq", ec_write},
@@ -144,23 +144,23 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 1??+1m 31q0?
 %f+ 	\{"wq!", ec_write},
 	\{"wq", ec_write},4??0?
-4??+1m 3220reg p OK ex.c:1724:a42sc %? %@2152sc!1q0?
+4??+1m 3220reg p OK ex.c:1726:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"wq!", ec_write},.*?
 (	\{"wq", ec_write},)7??0?
-grp 07??m 3220reg p OK ex.c:1724:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1726:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"reg\+", ec_regprint},
 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},.*(	\{"uz", ec_setenc},)
 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},8??0?
-grp 08??-4m 3220reg p OK ex.c:1724:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1726:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"m", ec_mark},
 	\{"q!", ec_quit},
 	\{"q", ec_quit},.*(	EO\(shape\),)
 	EO\(seq\),
 	\{"sc!", ec_specials},9??0?
-grp 09??-7m 3220reg p OK ex.c:1724:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17242sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1726:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17262sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},
@@ -172,24 +172,24 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},
 	\{"s", ec_substitute},4??0?
-4??+2m 4220reg p OK ex.c:1735:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:1737:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"sc!", ec_specials},.*?
 	\{"sc", ec_specials},.*?
 (	\{"s", ec_substitute},)7??0?
-grp 07??m 4220reg p OK ex.c:1735:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:1737:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ud", ec_undoredo},
 	EO\(shape\),
 	EO\(seq\),.*(	\{"ya\+", ec_yank},)
 	\{"ya", ec_yank},
 	\{"cm!", ec_cmap},8??0?
-grp 08??-4m 4220reg p OK ex.c:1735:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ex.c:1737:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},.*(	\{"cm", ec_cmap},)
 	\{"cd", ec_chdir},
 	\{"c", ec_insert},9??0?
-grp 09??-7m 4220reg p OK ex.c:1735:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17352sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK ex.c:1737:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17372sc %? %@2132sc!0?
 '\''1i static void *ec_writeall(char *loc, char *cmd, char *arg)
 {
 	char *ret = NULL;
@@ -213,16 +213,16 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 	return noquit ? NULL : ec_quit("", force ? "q!" : "q", "");
 }
 
-??!219reg ex.c:808:m12sc %? %@2142sc!0?
+??!219reg ex.c:810:m12sc %? %@2142sc!0?
 '\''2i 	{"wqa!", ec_writeall},
 	{"wqa", ec_writeall},
-??!219reg ex.c:1722:m22sc %? %@2142sc!0?
+??!219reg ex.c:1724:m22sc %? %@2142sc!0?
 '\''3i 	{"wa!", ec_writeall},
 	{"wa", ec_writeall},
-??!219reg ex.c:1724:m32sc %? %@2142sc!0?
+??!219reg ex.c:1726:m32sc %? %@2142sc!0?
 '\''4i 	{"xa!", ec_writeall},
 	{"xa", ec_writeall},
-??!219reg ex.c:1735:m42sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
+??!219reg ex.c:1737:m42sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -248,10 +248,10 @@ index 70157040..c6aed90a 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 6e49f602..82442601 100644
+index f8505153..c7a682f7 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -806,6 +806,29 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -808,6 +808,29 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -281,7 +281,7 @@ index 6e49f602..82442601 100644
  static void *ec_termexec(char *loc, char *cmd, char *arg)
  {
  	if (*arg && term_sbuf)
-@@ -1720,8 +1743,12 @@ static struct excmd {
+@@ -1722,8 +1745,12 @@ static struct excmd {
  	{"rd", ec_undoredo},
  	EO(rr),
  	{"r", ec_read},
@@ -294,7 +294,7 @@ index 6e49f602..82442601 100644
  	{"w!", ec_write},
  	{"w", ec_write},
  	{"uc", ec_setenc},
-@@ -1733,6 +1760,8 @@ static struct excmd {
+@@ -1735,6 +1762,8 @@ static struct excmd {
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
  	{"s", ec_substitute},

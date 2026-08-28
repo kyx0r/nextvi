@@ -92,20 +92,20 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 \)
 
 4??0?
-4??+2m 1220reg p OK ex.c:1661:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1663:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 1220reg p OK ex.c:1661:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1663:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 1220reg p OK ex.c:1661:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16612sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1663:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16632sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
@@ -117,24 +117,24 @@ static struct excmd \{
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
 	EO\(mpt\),4??0?
-4??+2m 2220reg p OK ex.c:1713:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1715:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g!", ec_glob},.*?
 	\{"g", ec_glob},.*?
 (	EO\(mpt\),)7??0?
-grp 07??m 2220reg p OK ex.c:1713:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1715:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"i", ec_insert},
 	\{"d", ec_delete},
 	EO\(grp\),.*(	\{"reg\+", ec_regprint},)
 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},8??0?
-grp 08??-4m 2220reg p OK ex.c:1713:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1715:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(ish\),
 	\{"inc", ec_setincl},
 	EO\(ic\),.*(	\{"rd", ec_undoredo},)
 	EO\(rr\),
 	\{"r", ec_read},9??0?
-grp 09??-7m 2220reg p OK ex.c:1713:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17132sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1715:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17152sc %? %@2132sc!0?
 '\''1i static void *ec_modal(char *loc, char *cmd, char *arg)
 {
 	int beg = 0, end = 0, o1 = 0, o2 = -1;
@@ -183,9 +183,9 @@ static struct excmd \{
 	return ret;
 }
 
-??!219reg ex.c:1661:m12sc %? %@2142sc!0?
+??!219reg ex.c:1663:m12sc %? %@2142sc!0?
 '\''2i 	{"md", ec_modal},
-??!219reg ex.c:1713:m22sc %? %@2142sc!b20?
+??!219reg ex.c:1715:m22sc %? %@2142sc!b20?
 i #include <stdio.h>
 
 typedef struct {
@@ -584,10 +584,10 @@ index 70157040..d22f220d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 6e49f602..7aac90c3 100644
+index f8505153..c36a2515 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1659,6 +1659,54 @@ _EO(left,
+@@ -1661,6 +1661,54 @@ _EO(left,
  	return NULL;
  )
  
@@ -642,7 +642,7 @@ index 6e49f602..7aac90c3 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1711,6 +1759,7 @@ static struct excmd {
+@@ -1713,6 +1761,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
