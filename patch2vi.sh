@@ -5,7 +5,7 @@ p2v_usage() {
 Nextvi patch2vi utility functions
 
 Source on demand:   . ./patch2vi.sh
-Then call:          patch2vi_wrapper -r input.patch [output.sh]
+Then call:          patch2vi_wrapper [flag] input.patch [output.sh]
                     gitdiff2vi [flags] [output.sh]
                     regen input.sh
                     rebuild target.sh
@@ -298,25 +298,33 @@ p2v_splitcompat() {
 # atomic, so patch2vi reading the file it is about to replace is safe. This is
 # what a script stripped of blocks (p2v_stripcompat) needs before it runs as
 # one that never had them.
-p2v_reemit() { $P2VI -r -o "$1" "$1"; }
+p2v_reemit() { $P2VI -o "$1" "$1"; }
 
-# Convert a .patch file to a nextvi shell script.
-# Usage: patch2vi_wrapper <flag> input.patch [output.sh]
+# Convert a .patch file to a nextvi shell script. The leading flag is
+# optional (relative anchors are patch2vi's default; -a buys absolute line
+# numbers) and is forwarded untouched.
+# Usage: patch2vi_wrapper [flag] input.patch [output.sh]
 patch2vi_wrapper() {
+	p2v_fl=
+	case $1 in
+	-*)	p2v_fl=$1
+		shift
+		;;
+	esac
 	if [ -z "$1" ]; then
-		echo "Usage: patch2vi_wrapper <flag> input.patch [output.sh]" >&2
+		echo "Usage: patch2vi_wrapper [flag] input.patch [output.sh]" >&2
 		return 1
 	fi
 	p2v_getbin || return 1
-	if [ -n "$3" ]; then
-		output="$3"
+	if [ -n "$2" ]; then
+		output="$2"
 	else
-		case "$2" in
-		*.patch)	output="${2%.patch}.sh" ;;
-		*)		output="$2.sh" ;;
+		case "$1" in
+		*.patch)	output="${1%.patch}.sh" ;;
+		*)		output="$1.sh" ;;
 		esac
 	fi
-	$P2VI "$1" -o "$output" "$2"	# -o already makes it executable
+	$P2VI $p2v_fl -o "$output" "$1"	# -o already makes it executable
 	echo "Generated: $output"
 }
 
@@ -341,11 +349,18 @@ p2v_stashed_run() (
 	return $st
 )
 
-# Regenerate $2 from the patch it already carries, with only that patch applied.
-# -o rewrites $2 in place, atomically.
+# Regenerate a script from the patch it already carries, with only that patch
+# applied. -o rewrites it in place, atomically. The leading flag is optional
+# and forwarded untouched (relative anchors are patch2vi's default).
 patch2vi_stashed() {
-	p2v_stashed_run "$2" $P2VI "$1" -o "$2" "$2"
-	echo "Generated: $2" >&2
+	p2v_fl=
+	case $1 in
+	-*)	p2v_fl=$1
+		shift
+		;;
+	esac
+	p2v_stashed_run "$1" $P2VI $p2v_fl -o "$1" "$1"
+	echo "Generated: $1" >&2
 }
 
 # Convert the current git diff to a nextvi shell script, to stdout when the
@@ -358,20 +373,26 @@ patch2vi_stashed() {
 # Usage: gitdiff2vi [flags] [output.sh]
 gitdiff2vi() {
 	p2v_getbin || return 1
-	if [ -z "$2" ]; then
-		git diff | $P2VI $1
+	p2v_fl=
+	case $1 in
+	-*)	p2v_fl=$1
+		shift
+		;;
+	esac
+	if [ -z "$1" ]; then
+		git diff | $P2VI $p2v_fl
 		return
 	fi
-	git diff -- ":!$2" > "$P2VITMP"
-	if [ -f "$2" ] && p2v_ours "$2"; then
-		p2v_splice "$2" "$P2VITMP"
+	git diff -- ":!$1" > "$P2VITMP"
+	if [ -f "$1" ] && p2v_ours "$1"; then
+		p2v_splice "$1" "$P2VITMP"
 	else	# -o keeps the mode of a file that already exists, so the
 		# executable bit has to be set here
-		cp "$P2VITMP" "$2"
-		chmod +x "$2"
+		cp "$P2VITMP" "$1"
+		chmod +x "$1"
 	fi
 	rm -f "$P2VITMP"
-	patch2vi_stashed "$1" "$2"
+	patch2vi_stashed $p2v_fl "$1"
 }
 
 # Regenerate a script from the whole working tree, in place. Everything is
@@ -390,7 +411,7 @@ regen() {
 	git reset -q
 	p2v_splice "$1" "$P2VITMP"
 	rm -f "$P2VITMP"
-	patch2vi_stashed -r "$1"
+	patch2vi_stashed "$1"
 }
 
 # The -C pass of rebuild: every saved block back onto the script, in storage
@@ -432,7 +453,7 @@ p2v_reapply() {
 		# A generated script's anchors search for their text instead, so
 		# the same drift is absorbed and what -C stores is the diff of
 		# where the block actually landed.
-		$P2VI -r "$1/$n.patch" > "$1/$n.sh"
+		$P2VI "$1/$n.patch" > "$1/$n.sh"
 		chmod +x "$1/$n.sh"
 		if ! p2v_co "$origin" "$2" "$1/$n.sh"; then
 			p2v_st=1
@@ -578,7 +599,7 @@ extract_compats() (
 			esac
 			mv "$work/$n.patch" "$p.patch"
 			printf "%s\n" "EXTRACTED: $p.patch"
-			$P2VI -r -o "$p.sh" "$p.patch"
+			$P2VI -o "$p.sh" "$p.patch"
 			printf "%s\n" "GENERATED: $p.sh"
 		done 3< "$work/blocks"
 	done
@@ -1209,7 +1230,7 @@ regen_all() (
 		"./$s"
 		new=$(p2v_newfiles)
 		p2v_addnew "$new"
-		gitdiff2vi -r "$s"
+		gitdiff2vi "$s"
 		git add "$s"
 		if ! git diff --cached --quiet; then
 			git commit -m "$s: regen"
