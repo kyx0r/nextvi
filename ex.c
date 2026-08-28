@@ -587,10 +587,12 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 				return xuerr;
 			return NULL;
 		}
-		off = lbuf_pos2off(xb, beg, o1, end - 1, o2,
+		int pin = xrow < beg || xrow >= end || (xrow == beg && xoff < o1)
+			|| (o2 >= 0 && xrow == end - 1 && xoff > o2);
+		off = pin ? 0 : lbuf_pos2off(xb, beg, o1, end - 1, o2,
 				xrow, xoff + (cmd[1] == '+'));
-		off = MAX(0, off);
-		if (off >= sb->s_n || rset_find(xkwdrs, sb->s + off, offs, 0) < 0
+		if (off < 0 || off >= sb->s_n
+				|| rset_find(xkwdrs, sb->s + off, offs, 0) < 0
 				|| offs[xgrp] < 0
 				|| lbuf_off2pos(xb, beg, o1, end - 1, o2,
 						off + offs[xgrp], &xrow, &xoff))
