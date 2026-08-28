@@ -1083,7 +1083,7 @@ index 6e49f602..aaa2f33a 100644
  	EO(hll),
  	EO(hlw),
 diff --git a/led.c b/led.c
-index e5459d93..ddf486cc 100644
+index a38f7a06..254ef1c6 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,5 +1,6 @@
@@ -1260,7 +1260,7 @@ index e5459d93..ddf486cc 100644
 +	}
  }
 diff --git a/vi.h b/vi.h
-index 254db3be..9e504b96 100644
+index 0bb77c0b..127e1643 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -426,6 +426,7 @@ extern int xts;

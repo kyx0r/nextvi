@@ -318,7 +318,7 @@ index 70157040..aa7c5648 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index e5459d93..33d541b6 100644
+index a38f7a06..2ec29db6 100644
 --- a/led.c
 +++ b/led.c
 @@ -514,9 +514,13 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -368,7 +368,7 @@ index e5459d93..33d541b6 100644
  			if (!xled) {
  				xoff = uc_slen(sb->s+ps);
 diff --git a/vi.h b/vi.h
-index 254db3be..393b2ec4 100644
+index 0bb77c0b..52dca5e6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -539,6 +539,8 @@ extern struct placeholder _ph[];

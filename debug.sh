@@ -329,7 +329,7 @@ index 3b2953d7..f089c0c2 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index 25b0a4fa..a5cf8aae 100644
+index 603d4842..edb8c985 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -86,6 +86,19 @@ static int ren_cwid(char *s, int pos)
@@ -382,7 +382,7 @@ index 2f4ccc2b..878848e8 100644
  		term_scrl()
  	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index 254db3be..54f1ddbf 100644
+index 0bb77c0b..e08801b3 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,6 +219,7 @@ int ren_noeol(char *s, int p);

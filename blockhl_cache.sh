@@ -705,7 +705,7 @@ index f0e754e6..203893fd 100644
  		for (; *s; n_ins++) {
  			int l = linelength(s);
 diff --git a/ren.c b/ren.c
-index 25b0a4fa..0928a19a 100644
+index 603d4842..17459ed7 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -249,6 +249,118 @@ int ftidx;
@@ -947,7 +947,7 @@ index 2f4ccc2b..4d430f87 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 254db3be..6d370179 100644
+index 0bb77c0b..d44741b9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -264,6 +264,8 @@ void syn_reloadft(int hl, int flg);

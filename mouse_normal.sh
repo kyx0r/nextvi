@@ -890,7 +890,7 @@ index 6e49f602..a0b81caf 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index e5459d93..b6923f51 100644
+index a38f7a06..9cc0d5d2 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
@@ -1117,7 +1117,7 @@ index 2f4ccc2b..a53ff813 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 254db3be..de818614 100644
+index 0bb77c0b..1aff294a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -327,6 +327,9 @@ void term_pos(int r, int c);

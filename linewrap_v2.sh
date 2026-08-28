@@ -971,7 +971,7 @@ ren_state \*ren_position\(char \*s\)
 m 01;0grp 1%f> 		free\(rstate->pos\);
 	}
 	rstate->s = s;.*(		rstate->holelen = uc_len\(ss\);)
-		memcpy\(rstate->nullhole, ss, rstate->holelen\);
+		memcpy\(rstate->nulhole, ss, rstate->holelen\);
 		memset\(ss, 0, rstate->holelen\);8??0?
 grp 08??-4m 2220reg p OK ren.c:104:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		return rstate;
@@ -7143,7 +7143,7 @@ index 6e49f602..129b5352 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
 diff --git a/led.c b/led.c
-index e5459d93..24cb78b4 100644
+index a38f7a06..96ca149a 100644
 --- a/led.c
 +++ b/led.c
 @@ -277,6 +277,12 @@ static int led_lastword(char *s)
@@ -7293,7 +7293,7 @@ index e5459d93..24cb78b4 100644
  		n = ps;
  		ps = sb->s_n;
 diff --git a/ren.c b/ren.c
-index 25b0a4fa..76bcb87c 100644
+index 603d4842..604e7ae2 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -85,6 +85,13 @@ static int ren_cwid(char *s, int pos)
@@ -8086,7 +8086,7 @@ index 2f4ccc2b..9552fd15 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 254db3be..16c2f43d 100644
+index 0bb77c0b..5bb7fec6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -217,6 +217,7 @@ int ren_pos(char *s, int off);

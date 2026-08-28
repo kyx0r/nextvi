@@ -1176,7 +1176,7 @@ index 2f4ccc2b..b86fbafb 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 254db3be..b93fb06e 100644
+index 0bb77c0b..560e650b 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -266,7 +266,8 @@ int syn_addhl(char *reg, int id);

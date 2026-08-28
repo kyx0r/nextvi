@@ -415,7 +415,7 @@ index 6e49f602..5b45f5f8 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index e5459d93..97404b3c 100644
+index a38f7a06..50787614 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -471,7 +471,7 @@ index 2f4ccc2b..6c4368df 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 254db3be..3d3a6203 100644
+index 0bb77c0b..c3f71714 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -368,6 +368,7 @@ typedef struct {

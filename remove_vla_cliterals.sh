@@ -675,18 +675,18 @@ int led_pos\(char \*s, int pos\)
 grp 09??-7m 4220reg p OK led.c:175:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg led.c:1752sc %? %@2132sc!0?
 ?0?
-%f+ 		memcpy\(chrs\[n], r->nullhole, r->holelen\);
+%f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);
 		r->holelen = 0;
 	}
 }
 
 static int led_lastchar\(char \*s\)1??0?
 1??+2m 51q0?
-%f+ 		memcpy\(chrs\[n], r->nullhole, r->holelen\);
+%f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);
 		r->holelen = 0;
 	}4??0?
 4??+2m 5220reg p OK led.c:257:a42sc %? %@2152sc!1q0?
-grp 1%f+ 		memcpy\(chrs\[n], r->nullhole, r->holelen\);.*?
+grp 1%f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);.*?
 		r->holelen = 0;.*?
 (	})7??0?
 grp 07??m 5220reg p OK led.c:257:a72sc %? %@2152sc!1q0?
@@ -1967,7 +1967,7 @@ index f0e754e6..8be292d1 100644
  }
  
 diff --git a/led.c b/led.c
-index e5459d93..d5785672 100644
+index a38f7a06..0a8457f0 100644
 --- a/led.c
 +++ b/led.c
 @@ -45,7 +45,7 @@ static void file_index(struct lbuf *buf)
@@ -2012,7 +2012,7 @@ index e5459d93..d5785672 100644
  			if ((o = off[i++]) >= 0) {
  				att[c++] = o;
 @@ -255,6 +258,10 @@ void led_render(char *s0, int cbeg, int cend)
- 		memcpy(chrs[n], r->nullhole, r->holelen);
+ 		memcpy(chrs[n], r->nulhole, r->holelen);
  		r->holelen = 0;
  	}
 +	free(off);
@@ -2092,7 +2092,7 @@ index 3b2953d7..e7bafb5c 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 25b0a4fa..17511749 100644
+index 603d4842..6b239235 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -254,13 +254,14 @@ static int syn_initft(int fti, int n, char *name, int flg)
@@ -2234,7 +2234,7 @@ index 2f4ccc2b..b04b68fa 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 254db3be..ff0f1d2c 100644
+index 0bb77c0b..d0bcfa94 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -507,7 +507,7 @@ extern const int ftslen;

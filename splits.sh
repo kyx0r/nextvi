@@ -4556,7 +4556,7 @@ index 6e49f602..d121dde9 100644
  	do {
  		xmpt = 0;
 diff --git a/led.c b/led.c
-index e5459d93..100e8406 100644
+index a38f7a06..81ded95c 100644
 --- a/led.c
 +++ b/led.c
 @@ -92,7 +92,7 @@ static char *kmap_map(int kmap, int c)
@@ -5192,7 +5192,7 @@ index 2f4ccc2b..e2319864 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 254db3be..6ecf0853 100644
+index 0bb77c0b..60bb9d06 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -325,6 +325,7 @@ void term_suspend(void);

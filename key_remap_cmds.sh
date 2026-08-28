@@ -973,7 +973,7 @@ index 6e49f602..2e8ed422 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index e5459d93..2756c922 100644
+index a38f7a06..a097fb1d 100644
 --- a/led.c
 +++ b/led.c
 @@ -431,7 +431,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -1085,7 +1085,7 @@ index 2f4ccc2b..ba517a6e 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index 254db3be..074b7761 100644
+index 0bb77c0b..a0b9a549 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -474,6 +474,7 @@ extern struct buf *ex_pbuf;

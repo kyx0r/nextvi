@@ -1699,7 +1699,7 @@ index 2f4ccc2b..e95f987d 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 254db3be..41e3ef9c 100644
+index 0bb77c0b..2028f60f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -408,6 +408,9 @@ struct buf {

@@ -1325,7 +1325,7 @@ ren_state \*ren_position\(char \*s\);4??0?
 #define RS\(n, func\) \{ rstate = rstates\+n; rstate->s = NULL; func; rstate -= n; }.*?
 (ren_state \*ren_position\(char \*s\);)7??0?
 grp 07??m 4220reg p OK vi.h:213:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	char nullhole\[4];
+m 01;0grp 1%f> 	char nulhole\[4];
 } ren_state;
 extern ren_state rstates\[3];.*(int ren_cursor\(char \*s, int pos\);)
 int ren_noeol\(char \*s, int p\);
@@ -1674,7 +1674,7 @@ index f0e754e6..972da4b3 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/ren.c b/ren.c
-index 25b0a4fa..a0666ffe 100644
+index 603d4842..37fdb84a 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -72,7 +72,7 @@ void dir_init(void)
@@ -1725,7 +1725,7 @@ index 2f4ccc2b..61fc7adb 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 254db3be..9f8a5629 100644
+index 0bb77c0b..0173b7b1 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -129,10 +129,12 @@ struct lopt {

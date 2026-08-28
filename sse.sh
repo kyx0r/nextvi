@@ -97,7 +97,7 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 '\''2i #endif
 ??!219reg led.c:9:m22sc %? %@2142sc!b1%ya 98?0?
 %f> 		rstate->holelen = uc_len\(ss\);
-		memcpy\(rstate->nullhole, ss, rstate->holelen\);
+		memcpy\(rstate->nulhole, ss, rstate->holelen\);
 		memset\(ss, 0, rstate->holelen\);
 	} else
 		for \(n = 0; \(l = uc_len\(ss\)\); n\+\+\)
@@ -111,20 +111,20 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 		for \(n = 0; \(l = uc_len\(ss\)\); n\+\+\)3??0?
 3??m 1220reg p OK ren.c:111:a32sc %? %@2152sc!1q0?
 %f> 		rstate->holelen = uc_len\(ss\);
-		memcpy\(rstate->nullhole, ss, rstate->holelen\);
+		memcpy\(rstate->nulhole, ss, rstate->holelen\);
 		memset\(ss, 0, rstate->holelen\);4??0?
 4??+3m 1220reg p OK ren.c:111:a42sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			ss \+= l;$5??0?
 5??-2m 1220reg p OK ren.c:111:a52sc %? %@2152sc!fr 981qfr 980?
-%f> ...s.a....h.....n = .._.e..ss\).
-..m..c......a.e.>n..l..l..........at.-.h....en..
-	....s...... ................e...
-.}....e
-	.... \(......... ...c.l.n....\)..n.\+\)
-.	.s......;6??0?
+%f> .	....t........en.. .c...n\(s...
+...e.......t.te.>.u....., s.,...t....>.........
+	.m.m.....s.....r......>h...l....
+...e...
+.	....\(. . .;.......c.l..\(......n\+.\)
+	.	s. \+= l.6??0?
 6??+3m 1220reg p OK ren.c:111:a62sc %? %@2152sc!1q0?
 grp 1%f> 		rstate->holelen = uc_len\(ss\);.*?
-		memcpy\(rstate->nullhole, ss, rstate->holelen\);.*?
+		memcpy\(rstate->nulhole, ss, rstate->holelen\);.*?
 		memset\(ss, 0, rstate->holelen\);.*?
 (	} else)7??0?
 grp 07??m 1220reg p OK ren.c:111:a72sc %? %@2152sc!1q0?
@@ -280,7 +280,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index e5459d93..2105d0aa 100644
+index a38f7a06..cd7b5936 100644
 --- a/led.c
 +++ b/led.c
 @@ -4,9 +4,28 @@ sbuf *led_attsb;
@@ -313,12 +313,12 @@ index e5459d93..2105d0aa 100644
  
  static int search(const char *pattern, int l)
 diff --git a/ren.c b/ren.c
-index 25b0a4fa..253d96bb 100644
+index 603d4842..e6e2d628 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -108,9 +108,42 @@ ren_state *ren_position(char *s)
  		rstate->holelen = uc_len(ss);
- 		memcpy(rstate->nullhole, ss, rstate->holelen);
+ 		memcpy(rstate->nulhole, ss, rstate->holelen);
  		memset(ss, 0, rstate->holelen);
 -	} else
 -		for (n = 0; (l = uc_len(ss)); n++)

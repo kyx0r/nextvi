@@ -1141,7 +1141,7 @@ index 6e49f602..04c68a96 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/led.c b/led.c
-index e5459d93..c6306ccd 100644
+index a38f7a06..329c9b24 100644
 --- a/led.c
 +++ b/led.c
 @@ -454,18 +454,37 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -1213,7 +1213,7 @@ index 2f4ccc2b..61562dcf 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index 254db3be..b73ee080 100644
+index 0bb77c0b..ca2a6780 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -407,6 +407,9 @@ struct buf {

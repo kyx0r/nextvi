@@ -739,7 +739,7 @@ index 70157040..58d274b9 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index e5459d93..de1accb4 100644
+index a38f7a06..0af3d717 100644
 --- a/led.c
 +++ b/led.c
 @@ -434,6 +434,11 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -897,7 +897,7 @@ index 2f4ccc2b..d1e869a6 100644
  				msg ? dir : -1, 1, row, off)) {
  			if (msg) {
 diff --git a/vi.h b/vi.h
-index 254db3be..0800bc7c 100644
+index 0bb77c0b..c5b99c52 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -539,6 +539,8 @@ extern struct placeholder _ph[];
