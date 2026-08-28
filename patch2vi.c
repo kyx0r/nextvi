@@ -62,7 +62,9 @@ typedef struct {
 static file_patch_t *files;
 static int nfiles, files_cap;
 static const char *cur_file_path;  /* set per-file for error messages */
-static int relative_mode;  /* 0=absolute, 1=relative search (-r) */
+static int relative_mode = 1;  /* 1=relative search (the default, -r),
+				* 0=absolute line numbers (-a); last of the
+				* two on the command line wins */
 /* patch (or previously generated script) path, NULL = stdin */
 static const char *input_file;
 static const char *end_tag_rd = "=== END ===";
@@ -6543,7 +6545,7 @@ static void usage(const char *prog, int err)
 	      "Input can be a unified diff or a previously generated patch2vi script\n"
 	      "  -h    Show this help\n"
 	      "  -a    Absolute line numbers\n"
-	      "  -r    Relative regex patterns instead of line numbers\n"
+	      "  -r    Relative regex patterns (default)\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\n"
 	      "        run reads. Clustered with another option it takes no FILE\n"
 	      "        and updates that option's own script in place\n"
