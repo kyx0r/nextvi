@@ -72,8 +72,10 @@ struct highlight hls[] = {
 	{_ft, NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
 
 	{FT(c), NULL, A(CY1 | SYN_BD), 1, 2},
-	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?#-1)(?<\".*\\*/.*(?:\"|\\\\\n$)))",
-		A(BL | SYN_IT, BL | SYN_BLK, SYN_BSE | SYN_BEDP, BL | SYN_BLK, SYN_BSE | SYN_BSD)},
+	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*)(?!^//).)*\\*/\
+(?#-1)(?<\".*\\*/.*(?:\"|\\\\\n$)))|(//.*\\*/)",
+		A(BL | SYN_IT, BL | SYN_BLK, SYN_BSE | SYN_BEDP, BL | SYN_BLK, SYN_BSE | SYN_BSD,
+		BL | SYN_BLK, SYN_BE | SYN_BEDP)},
 	{FT(c), "\\<(?:signed|unsigned|char|short|int|[a-z0-9_]+_t|FILE|DIR|long|f(?:loat|64|32)|\
 double|void|enum|union|typedef|static|extern|register|struct|s(?:64|32|16|8)|u(?:64|32|16|8)|b32|\
 bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|(?:posix_)?memalign|\
