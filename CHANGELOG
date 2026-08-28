@@ -27,6 +27,33 @@ block highlights do not leak stale direction state.
 7. Print with a trailing offset now places the cursor on the last
 given offset instead of the max of the last two.
 
+Patch2vi 1.0 changes:
+1. Interactive deltas (-i, -d[N], -od) are removed from the tool and kept
+   as the optional deltas.sh on the patch2vi branch, regenerated alongside
+   it. Emission is otherwise unchanged and older scripts still load.
+2. Shell gate machinery is dropped. Compat selection lives in ex: a block
+   gates on its identity register being armed by the applied set, carried
+   through script chaining and the P2VI_PATCH environment variable. No
+   flag registers and no text probes.
+3. -co is renamed to -C, joining -I/-E as the mode family (-oco becomes
+   -oC). -C repeats to gate one block on several origins at once, each
+   origin getting its own src= line.
+4. -E preserves stored compat blocks and re-emits them unverified. Passing
+   a block's section register instead rebuilds just that block, replaying
+   its origins ahead of the target. Amend blocks are gone with this.
+5. New O(NP) differ drives re-emission, parity aligned with git's change
+   compaction.
+6. One session entry for replay and interactive handover: the -E/-C tail's
+   -a/-e/-s mode flags are honored at handover, and -m holds across replay
+   blocks and silences the loader line.
+7. -e accepts several scripts in one run, stopping at the first failure.
+8. QF2 is set on a compat target so it falls through on a failed block.
+9. Staged sections name themselves by their flag register.
+10. Script fixes: writes wrapped in vis blocks, files that exist only
+    under compat are no longer written, single quotes escaped in emitted
+    patterns, path prefixes resolved, redundant line breaks and error
+    placement fixed, xmpt clamped, atexit dropped.
+
 ------------------
 7.3 Basilisk
 ------------------
