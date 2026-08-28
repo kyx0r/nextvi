@@ -6531,13 +6531,13 @@ static void emit_compat_tail(void)
 static void usage(const char *prog, int err)
 {
 	FILE *f = err ? stderr : stdout;
-	fprintf(f, "Usage: %s [-arh] [-o FILE] [-er TAG] [-ew TAG]"
-		" [input.patch]\n"
-		"       %s -e script.sh [script2.sh...]\n"
-		"       %s [-ar]I [nextvi-opts...]\n"
-		"       %s [-aro]E script.sh [reg|''] [nextvi-opts...]\n"
-		"       %s [-o]C origin.sh [-C origin2.sh...] target.sh"
-		" [fix.[patch|sh]|''] [nextvi-opts...]\n",
+	fprintf(f, "Patch2vi-1.0 Usage:\n\n"
+		"%s [-arh] [-o FILE] [-er TAG] [-ew TAG] [input.patch]\n"
+		"%s -e script.sh [script2.sh...]\n"
+		"%s [-ar]I [nextvi-opts...]\n"
+		"%s [-aro]E script.sh [reg|''] [nextvi-opts...]\n"
+		"%s [-o]C origin.sh [-C origin2.sh...] target.sh"
+		" [fix.[patch|sh]|''] [nextvi-opts...]\n\n",
 		prog, prog, prog, prog, prog);
 	fputs("Converts unified diff to shell script using nextvi ex commands\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\n"
