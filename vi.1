@@ -1,4 +1,4 @@
-.Dd Aug 27, 2026
+.Dd Aug 28, 2026
 .Dt Nextvi 1
 .Os Nextvi 7.4
 .
@@ -1518,6 +1518,8 @@ Once the register is set, the :f> and :f+ commands perform a
 multi-line search forward on the contents of the register instead
 of the current buffer. Range maps the match to a position in
 the current buffer. No range tests for a match inplace.
+If the cursor is outside of the range, the search starts at
+the beginning of the range.
 
 Example: search register <a> for "int"
 :fr a:f>int:??p yes:??!p no:fr
@@ -1768,8 +1770,8 @@ _
  735 led.c | insert mode/output
  751 regex.c | pikevm
  1903 vi.c | normal mode/general
- 1932 ex.c | ex options/commands
- 7785 total | wc -l *.c\(basort
+ 1934 ex.c | ex options/commands
+ 7787 total | wc -l *.c\(basort
 _
 .TE
 .
