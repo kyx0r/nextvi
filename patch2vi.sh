@@ -2,7 +2,7 @@
 
 p2v_usage() {
 	cat <<'EOF'
-Nextvi patch2vi utility functions
+Patch2vi utility functions
 
 Source on demand:   . ./patch2vi.sh
 Then call:          patch2vi_wrapper [flag] input.patch [output.sh]
@@ -21,7 +21,8 @@ Then call:          patch2vi_wrapper [flag] input.patch [output.sh]
                     regen_all [1]
                     rebuild_all [1]
 
-Requires the ./patch2vi binary in the current directory.
+Set $P2VI to point to patch2vi binary.
+Functions look for the binary as ./patch2vi, then as patch2vi on $PATH.
 EOF
 }
 
@@ -30,7 +31,7 @@ case "$0" in
 *patch2vi.sh)	p2v_usage >&2; exit 1 ;;
 esac
 
-P2VI=./patch2vi
+P2VI=${P2VI:-./patch2vi}
 P2VITMP=/tmp/p2vi.tmp.$$
 # Whitespace IFS: a sourced shell may have set IFS to anything, so every
 # subshell below that splits a list restores this first.
