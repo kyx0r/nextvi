@@ -2,43 +2,17 @@
  * patch2vi - turn a unified diff into a /bin/sh script driving nextvi's ex
  * engine, and back.
  *
- * Usage: patch2vi [-arh] [-o FILE] [-er TAG] [-ew TAG] [input.patch]
- *        patch2vi -e script.sh [script2.sh...]
- *        patch2vi [-ar]I [nextvi-opts...]
- *        patch2vi [-aro]E script.sh [reg|''] [nextvi-opts...]
- *        patch2vi [-o]C origin.sh [-C origin2.sh...] target.sh \
- *                 [fix.diff|fix.sh|''] [nextvi-opts...]
- *
- * The script applies the patch in raw ex mode (:vis 3). The command
- * separator and the escape byte are picked from the bytes the patch does
- * not use and declared per body via |sc!|, so that
- * : % ! \ in the content need no escaping.
- * Edits are anchored by line number (-a) or by search pattern (-r); the
- * original diff is stored after the script's "exit 0", so a generated
- * script regenerates without the diff at hand.
+ * The script applies the patch in raw ex mode, anchored by line number (-a)
+ * or search pattern (-r); the command separator and the escape byte are
+ * picked from the bytes the patch does not use, and the original diff is
+ * stored after the script's "exit 0", so a generated script regenerates
+ * without the diff at hand.
  *
  * Nextvi is embedded whole: vi.c (and through it every editor module) is
  * compiled into this translation unit, build_patch2vi.sh renaming nextvi's
- * main() to nextvi_main() for the build. That editor also
- *   - executes a generated script with no shell (-e), one editor lifetime
- *     per script block;
- *   - turns a plain editing session into a script (-I): everything past -I
- *     is a nextvi command line - its flags, its files, EXINIT - and every
- *     buffer it leaves behind is diffed against its disk copy to produce
- *     the input the converter normally reads;
- *   - updates a script (-E): replays it, hands the tree it leaves over to
- *     the user and re-emits it through that same diff pass; naming a stored
- *     compat block's section register rebuilds that one block instead, its own
- *     src= origins replayed ahead of the target;
- *   - replays two or more scripts (-C) to derive a compatibility patch,
- *     applied after the target behind an identity gate on the applied set
- *     ($P2VI_PATCH) - one -C per origin, and the block runs only where every
- *     origin named in its label is present; an optional second positional
- *     (diff or script, '' to skip it) pre-applies a known compat patch the
- *     session continues from, and whatever follows is a nextvi command line
- *     for the handover.
- * No session ever writes a buffer back; quitting is what emits, to stdout or
- * (-o) atomically onto a named file.
+ * main() to nextvi_main() for the build. No session ever writes a buffer
+ * back; quitting is what emits, to stdout or (-o) atomically onto a named
+ * file.
  */
 #include "vi.c"
 
@@ -846,7 +820,7 @@ static void sq_path(const char *s)
  * the terminal alone, so every failure of a QF2=1 run accumulates in one
  * register the run can be read back from. An upper-case id is the point - that
  * is the range ex_cprint newline-terminates each append in, which makes the
- * register a line per failure and so parseable (see FAILURE PLACEMENT). */
+ * register a line per failure and so parseable. */
 #define REG_FLOG 'F'
 /* The "vis 2; q!1" body every assert runs through, and the one register QF2=1
  * clears. REG_QF2 only ever points at it ("? %@221"), so the -C blocks that
@@ -1119,9 +1093,9 @@ static void emit_err_check(sbuf *out, int phase, int line, int mark_id,
 }
 
 
-/* Everything a search of the given mode needs before its f> argument, plus the
- * verb itself (see SEARCH MODES). lvl is the caller's separator nesting depth,
- * first selects f> over f+; a global mode-3 window always forces f>, since it
+/* Everything a search of the given mode needs before its f> argument, plus
+ * the verb itself. lvl is the caller's separator nesting depth, first
+ * selects f> over f+; a global mode-3 window always forces f>, since it
  * restarts from the reset top. */
 static void emit_search_setup(sbuf *out, int mode, int first, int lvl)
 {
@@ -1280,7 +1254,7 @@ typedef struct {
 	int offset;       /* lines from match start to the target line */
 	int off_final;    /* 1 = the window generator's own offset, which the
 			   * pure-add shift must leave alone */
-	int mode;         /* search mode, see SEARCH MODES */
+	int mode;         /* search mode: 1 single line, 0 multi-line; windows add 2 and 3 */
 	int pid;          /* fixed pattern id (source slot + 1, 1-9): emitted as
 			   * the capture tag and OK1 anchor id so a failure maps
 			   * to its real pattern regardless of which slots survived */
@@ -1380,7 +1354,7 @@ typedef struct {
 	char **lines;   /* owned: nlines malloc'd regex strings */
 	int nlines;
 	int offset;     /* lines from match start to the target line */
-	int mode;       /* search mode, see SEARCH MODES */
+	int mode;       /* search mode: 1 single line, 0 multi-line; windows add 2 and 3 */
 } fuzzwin_t;
 
 /* Append file-validated window w to ps[nps] with pid; off_final preserves its
@@ -2499,8 +2473,8 @@ static void ed_free_session(void)
 	xseq = 1;
 	xvis = 0;
 	/* ignorecase defaults on in nextvi and every pattern here is literal
-	 * source text (see emit_prologue), so a replay session must turn it
-	 * off too, whether or not a replayed prologue already did. */
+	 * source text, so a replay session must turn it off too, whether or
+	 * not a replayed prologue already did. */
 	xic = 0;
 }
 
@@ -2615,7 +2589,7 @@ typedef struct {
 static compat_block_t *compat_blocks;
 static int ncompat, compat_cap;
 
-/* basename of a path (see below); forward-declared for the -e applied set */
+/* Forward declaration: the -e applied set needs basenames first. */
 static const char *base_name(const char *p);
 /* the src= fields of a compat block's origin label, as basenames */
 static int compat_src_fields(compat_block_t *cb, char ***out);
@@ -2665,14 +2639,15 @@ static void build_file_groups(file_patch_t *fp)
 		group_t *g = &groups[ngroups];
 		memset(g, 0, sizeof(group_t));
 
-		/* Skip context lines, collecting up to 3 consecutive for relative mode */
+		/* Consume the context run before the change: its last line
+		 * measures the distance to the first change, and its last
+		 * three lines become the search pattern's leading lines. */
 		int last_ctx_line = 0;
 		char *ctx_ring[3] = {NULL, NULL, NULL};
 		int ctx_line_ring[3] = {0, 0, 0};
 		int ctx_count = 0;
 		while (i < fp->nops && fp->ops[i].type == 'c') {
 			last_ctx_line = fp->ops[i].oline;
-			/* Shift ring buffer */
 			ctx_ring[0] = ctx_ring[1];
 			ctx_line_ring[0] = ctx_line_ring[1];
 			ctx_ring[1] = ctx_ring[2];
@@ -2685,12 +2660,10 @@ static void build_file_groups(file_patch_t *fp)
 		if (i >= fp->nops)
 			break;
 
-		/* Store anchor info for relative mode */
 		if (last_ctx_line) {
 			int first_change_line = fp->ops[i].oline;
 			g->anchor_offset = first_change_line - last_ctx_line;
 		}
-		/* Store multi-line anchors (up to 3 consecutive context lines before change) */
 		if (ctx_count >= 3) {
 			g->anchors[0] = ctx_ring[0];
 			g->anchors[1] = ctx_ring[1];
@@ -2705,11 +2678,11 @@ static void build_file_groups(file_patch_t *fp)
 			g->nanchors = 1;
 		}
 
-		/* Record the enclosing @@ hunk span (for gen_win_window) */
+		/* The original-line span of the enclosing @@ hunk: the
+		 * search windows that absorb it must anchor outside it. */
 		g->hunk_lo = fp->ops[i].hunk_lo;
 		g->hunk_hi = fp->ops[i].hunk_hi;
 
-		/* Collect consecutive deletes */
 		int del_start_idx = i;
 		if (fp->ops[i].type == 'd') {
 			g->del_start = fp->ops[i].oline;
@@ -2726,7 +2699,6 @@ static void build_file_groups(file_patch_t *fp)
 		for (int j = 0; j < g->ndel; j++)
 			g->del_texts[j] = fp->ops[del_start_idx + j].text;
 
-		/* Collect consecutive adds */
 		int add_start = i;
 		while (i < fp->nops && fp->ops[i].type == 'a')
 			i++;
@@ -2736,25 +2708,22 @@ static void build_file_groups(file_patch_t *fp)
 			for (int j = 0; j < g->nadd; j++)
 				g->add_texts[j] = fp->ops[add_start + j].text;
 			if (g->del_start == 0) {
-				/* Pure add - need to know where */
 				g->add_after = fp->ops[add_start].oline - 1;
 			}
 		}
 
-		/* Peek at following context for fallback */
+		/* The first following context line, and its distance to the
+		 * first change: the pattern's trailing anchor. */
 		if (i < fp->nops && fp->ops[i].type == 'c') {
 			g->follow_ctx = fp->ops[i].text;
-			/* Distance from first change to following context */
 			int first_change_line = g->del_start ? g->del_start : g->add_after + 1;
 			g->follow_offset = fp->ops[i].oline - first_change_line;
 		}
 
-		/* Up to 3 following context lines, for the patterns that
-		 * key on them (default_pat_lines 0/1/4). Without them
-		 * relative mode would fall back to the single follow_ctx
-		 * line. */
+		/* Relative mode keeps up to three following context lines on
+		 * top of follow_ctx: absolute line numbers need no context,
+		 * search patterns do. */
 		if (relative_mode && (g->del_start || g->nadd)) {
-			/* Peek at up to 3 following context lines */
 			int post_cap = 3;
 			int post_avail = 0;
 			int pi = i;
@@ -2769,19 +2738,23 @@ static void build_file_groups(file_patch_t *fp)
 					g->post_ctx[j] = fp->ops[i + j].text;
 			}
 		}
-		/* Precompute find_line_diff() for the s/// and ;c shapes */
+		/* A single-line change precomputes its character-level diff:
+		 * both the substitute and the character-level edit shape are
+		 * cut from it. */
 		if (g->ndel == 1 && g->nadd == 1 &&
 		    g->del_texts[0] && g->add_texts[0]) {
 			g->has_line_diff = find_line_diff(
 						   g->del_texts[0], g->add_texts[0],
 						   &g->ld_old_text, &g->ld_new_text);
 			if (g->has_line_diff) {
-				/* Minimal diff positions for ;c (no uniqueness expansion) */
+				/* The character-level shape keeps the minimal
+				 * span - no uniqueness expansion, it addresses
+				 * the line directly - and its positions are
+				 * rune indexes, which a split rune would shift
+				 * and splice into invalid UTF-8. */
 				const char *old = g->del_texts[0];
 				const char *new = g->add_texts[0];
 				int olen = strlen(old), nlen = strlen(new);
-				/* ;c positions are rune indexes, and a split rune
-				 * would shift them and splice invalid UTF-8 */
 				int prefix, suffix;
 				common_affix(old, new, &prefix, &suffix);
 				g->ldc_start = rune_count_n(old, prefix);
@@ -3845,7 +3818,7 @@ static void add_op(int type, int oline, const char *text)
 	fp->ops[fp->nops].hunk_hi = cur_hunk_hi;
 	fp->nops++;
 
-	/* Track bytes used in patch content */
+	/* the text itself is patch content: its bytes join the census */
 	if (text)
 		mark_bytes_used(text);
 }
@@ -5131,8 +5104,9 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 }
 
 /* Append one script's blocks to *blks. Header assignments are per script and
- * each block carries its own separator, so two scripts' headers never mix. */
-/* tol: replay this script with QF2=1, whatever the environment says. A -C
+ * each block carries its own separator, so two scripts' headers never mix.
+ *
+ * tol replays the script with QF2=1, whatever the environment says. A -C
  * derivation replays a target that is expected to collide with the origin -
  * that collision is the whole input to the derivation - and a target quitting
  * at its first missed hunk would leave a tree the fix was never written
@@ -6309,7 +6283,6 @@ static int amend_to_diff(const char *path, sbuf *out)
 	const char *sc[1];
 	int i;
 	sc[0] = path;
-	/* every buffer of the session ends up in the diff */
 	xbufsalloc = MAX(64, xbufsalloc);
 	/* The base is what this replay measures, so no identity gate may fire:
 	 * a block that fired would put its edits in the buffers, and they would
@@ -6634,7 +6607,6 @@ int main(int argc, char **argv)
 {
 	int i, j;
 
-	/* Parse arguments */
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
 		if (argv[i][1] == '-' && !argv[i][2]) {
 			i++;
@@ -6874,7 +6846,9 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* Detect if input is a previously generated patch2vi script */
+	/* The first line tells a generated script from a plain patch: the
+	 * script's stored regions are read whole, the patch is parsed from
+	 * this line on. */
 	sbuf_smake(lb, SB_INIT)
 	if (in && read_line(in, lb)) {
 		if (!strncmp(lb->s, "#!/bin/sh", 9)) {
@@ -6884,7 +6858,7 @@ int main(int argc, char **argv)
 			fprintf(stderr, "%s: not a patch2vi script\n", input_file);
 			return 1;
 		} else {
-			/* Not a script; store and process this first line */
+			/* a patch's first line: keep it and parse it like any other */
 			add_raw(lb->s);
 			chomp(lb->s);
 			parse_diff_line(lb->s);
@@ -6962,7 +6936,6 @@ int main(int argc, char **argv)
 		relative_mode = 1;
 	}
 
-	/* Find separator character */
 	sep = find_unused_byte();
 	if (sep < 0) {
 		fprintf(stderr,
@@ -7009,7 +6982,6 @@ int main(int argc, char **argv)
 		      "# INTR=1 enters vi at the failing code line in this\n"
 		      "#   script, for state inspection mid execution\n\n", stdout);
 
-	/* Build groups for every file (host and compat) */
 	for (int i = 0; i < nfiles; i++)
 		build_file_groups(&files[i]);
 
