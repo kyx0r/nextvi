@@ -65,6 +65,9 @@ static const char *cur_file_path;  /* set per-file for error messages */
 static int relative_mode = 1;  /* 1=relative search (the default, -r),
 				* 0=absolute line numbers (-a); last of the
 				* two on the command line wins */
+static int absolute_opt;	/* -a seen: -E leaves the re-emitted host
+				* patch absolute instead of re-anchoring
+				* it; stored blocks stay search anchored */
 /* patch (or previously generated script) path, NULL = stdin */
 static const char *input_file;
 static const char *end_tag_rd = "=== END ===";
@@ -2629,8 +2632,19 @@ static void compat_win_leave(int sv)
  */
 static void build_file_groups(file_patch_t *fp)
 {
+	int rel = relative_mode;
+
 	if (fp->nops == 0)
 		return;
+	/* A compat block's own files collect their context search-anchored
+	 * whatever the host's mode is: anchors are what make a block
+	 * survive the chains it is gated for. */
+	for (int c = 0; c < ncompat; c++)
+		if (fp - files >= compat_blocks[c].first &&
+		    fp - files < compat_blocks[c].first + compat_blocks[c].count) {
+			rel = 1;
+			break;
+		}
 
 	fp->groups = ecalloc(fp->nops + 1, sizeof(group_t));
 	group_t *groups = fp->groups;
@@ -2725,7 +2739,7 @@ static void build_file_groups(file_patch_t *fp)
 		/* Relative mode keeps up to three following context lines on
 		 * top of follow_ctx: absolute line numbers need no context,
 		 * search patterns do. */
-		if (relative_mode && (g->del_start || g->nadd)) {
+		if (rel && (g->del_start || g->nadd)) {
 			int post_cap = 3;
 			int post_avail = 0;
 			int pi = i;
@@ -3288,11 +3302,19 @@ static void emit_compat_announce(sbuf *out, int reg, char *origin)
  * selector - so the staged files name themselves; the host section, whose
  * register is the shared 97, keeps 0. It is a label, not an index: the
  * sections are staged, and opened, in run order, and that order is what the
- * driver's b<N> counts. */
+ * driver's b<N> counts. It is a byte image of the body: the printf's own
+ * newline stands in for a trailing one the body already has, the way the
+ * dangling separator above is cut. Left in, that newline is an empty last
+ * line of the staged buffer, which the yank hands the body's last command as
+ * one more line of its argument - a body ending in an insert would append a
+ * blank line to the file it edits. */
 static void stage_section(sbuf *body, int suf)
 {
+	int n = body->s_n;
+	if (n > 0 && body->s[n - 1] == '\n')
+		n--;
 	printf("printf '%%s\\n' '");
-	sq_write(body->s, body->s_n);
+	sq_write(body->s, n);
 	printf("' > \"$P2VIF\".%d\n", suf);
 }
 
@@ -6667,10 +6689,13 @@ int main(int argc, char **argv)
 			continue;
 		}
 		for (j = 1; argv[i][j]; j++) {
-			if (argv[i][j] == 'a')
+			if (argv[i][j] == 'a') {
 				relative_mode = 0;
-			else if (argv[i][j] == 'r')
+				absolute_opt = 1;
+			} else if (argv[i][j] == 'r') {
 				relative_mode = 1;
+				absolute_opt = 0;
+			}
 			/* -I and -E both end patch2vi's own option parsing:
 			 * whatever follows the cluster is a nextvi command
 			 * line, options and files alike - for -E all but its
@@ -6890,14 +6915,21 @@ int main(int argc, char **argv)
 				"one leaves it missing - replay each src= stack "
 				"before shipping\n",
 				input_file, ncompat, ncompat > 1 ? "s" : "");
-			/* a script carrying blocks is search anchored
-			 * throughout, as under -C and -E reg: with an origin
-			 * applied ahead of it the host body's own lines have
-			 * moved, and an absolute edit would clobber one by
-			 * number. Only ncompat says so, and only here - past
-			 * the argument loop's own marking of the FAIL bytes,
-			 * which relative mode is about to emit. */
-			relative_mode = 1;
+			/* the stored blocks re-emit search anchored whatever
+			 * the host's mode is, and their fallbacks use the FAIL
+			 * OK bytes, so those stay marked even under -a. The
+			 * re-derived host patch goes relative too unless -a
+			 * asked out: with an origin applied ahead of it the
+			 * host body's own lines have moved, and an absolute
+			 * edit would clobber one by number. */
+			if (!absolute_opt)
+				relative_mode = 1;
+			else
+				fprintf(stderr, "%s: -a keeps the host body "
+					"absolute - ship it for the pristine "
+					"base only, an origin chained ahead "
+					"moves the lines it edits by number\n",
+					input_file);
 			mark_bytes_used("FAIL OK");
 		}
 		if (amend_to_diff(input_file, dsb) < 0)
@@ -6917,11 +6949,15 @@ int main(int argc, char **argv)
 
 	/* -E reg: the host patch has just been read out of the script and
 	 * every other stored region is in hand, so all this replaces is the
-	 * named block's own diff. Same window as -C below, one block down. */
+	 * named block's own diff. Same window as -C below, one block down.
+	 * Every section here emits through the compat window, which is
+	 * search anchored on its own; the flag below only decides whether
+	 * the env-switch comment block is due. */
 	if (amend_mode && amend_sel >= 0) {
 		if (amend_derive() < 0)
 			return 1;
-		relative_mode = 1;
+		if (!absolute_opt)
+			relative_mode = 1;
 	}
 
 	/* -C: replay the origin script in one session and hand the
@@ -6974,7 +7010,7 @@ int main(int argc, char **argv)
 	      "    echo \"Set VI environment variable to point to nextvi binary\" >&2\n"
 	      "    exit 1\n"
 	      "fi\n\n", stdout);
-	if (relative_mode || compat_mode)
+	if (relative_mode || compat_mode || ncompat)
 		fputs("# Env switches:\n"
 		      "# Phase 1 (search/mark) reports nothing by default\n"
 		      "#   DBG1=1 reports failures and which fallback anchor\n"
