@@ -1,4 +1,33 @@
 ------------------
+7.4 Basilisk
+------------------
+
+New in core:
+1. :g now returns the result of its inner command. It errors if no line
+matches the pattern or if the inner command fails, and stops at the
+first failing command.
+2. Substitution with the g flag only anchors ^ at the start of the line
+on the first search. Zero match substitutions at the newline boundary
+are now allowed.
+
+Bug fixes:
+1. Defused more bad inputs. Numeric option parsing handles negative
+values, :ts and :grp clamp negative values, :ph placeholder width is
+clamped and :bx rejects a non-positive value without clobbering
+buffer state.
+2. Fixed autoindent and the :pr key recorder misfiring on negative
+option values.
+3. Fixed [#]<Space> end-of-line wrap: advancing to the next line no
+longer triggers on empty lines.
+4. Fixed screen state after a backspace or <C-w> line join in insert
+mode: the view no longer scrolls away and the status line is redrawn.
+5. Scroll direction is reset before a deferred prompt row redraw, so
+block highlights do not leak stale direction state.
+6. Fixed the libc isupper landmine with an own uc_isupper.
+7. Print with a trailing offset now places the cursor on the last
+given offset instead of the max of the last two.
+
+------------------
 7.3 Basilisk
 ------------------
 
