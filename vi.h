@@ -205,7 +205,7 @@ typedef struct {
 	int cmax;
 	int ctx;
 	int holelen;
-	char nullhole[4];
+	char nulhole[4];
 } ren_state;
 extern ren_state rstates[3];
 extern ren_state *rstate;
