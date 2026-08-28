@@ -2713,6 +2713,116 @@ else
 	echo "    got=[$cn_near]"
 fi
 
+echo ""
+echo "=== -aE absolute host tests ==="
+
+# -a says absolute line numbers and -E must not quietly say otherwise. A base
+# that never moves ships its host body as bare line numbers - a fraction of the
+# size of the search rungs - while the stored compat blocks stay search
+# anchored: a block only ever runs in a chain, where an origin has moved the
+# lines by definition.
+#
+# sec_body <script> <suffix>: the staged body of section "$P2VIF".<suffix>,
+# newlines and all - one shell "line" holds the whole body.
+sec_body() {
+	awk -v suf="$2" '
+		/^printf .%s/ { buf = ""; inb = 1 }
+		inb { buf = buf $0 "\n" }
+		inb && $0 ~ ("> \"\\$P2VIF\"\\." suf "$") { printf "%s", buf; inb = 0 }
+	' "$1"
+}
+
+# The fixture: an origin inserting a probe (the gate's landmark), a target
+# whose TOPMOST edit is an insertion, and a block edit on a line nobody else
+# touches. The insertion matters: absolute mode emits a file bottom-to-top, so
+# it is the LAST command of the host body - the one position where a staged
+# body's trailing newline reaches a file, as one more line of that command's
+# argument.
+printf 'A1\nA2\nA3\nA4\n' > "$R/ab.orig"
+printf -- '--- a/ab.c\n+++ b/ab.c\n@@ -2,3 +2,4 @@\n A2\n A3\n A4\n+PROBE\n' > "$R/ao.diff"
+printf -- '--- a/ab.c\n+++ b/ab.c\n@@ -1,4 +1,5 @@\n A1\n+NEW\n A2\n A3\n-A4\n+A4x\n' > "$R/at.diff"
+"$R_P2VI" -r "$R/ao.diff" > "$R/ao.sh"
+"$R_P2VI" -r "$R/at.diff" > "$R/at.sh"
+cp "$R/ab.orig" "$R/ab.c"
+pty 'P2VI_EX=%s/^A3$/A3c/:q!' \
+	"sh -c 'cd $R && $R_P2VI -C ao.sh at.sh > $R/ab_blk.sh 2>$R/ab.nerr'" \
+	> /dev/null 2>&1
+
+# Both regens read the pre-image off disk, so each starts from the base tree
+for ab_f in '-aE:ab_abs.sh' '-E:ab_rel.sh' '-arE:ab_ar.sh' '-raE:ab_ra.sh'; do
+	cp "$R/ab.orig" "$R/ab.c"
+	pty 'P2VI_EX=q!' "sh -c 'cd $R && $R_P2VI ${ab_f%%:*} ab_blk.sh > $R/${ab_f#*:} 2>$R/ab.nerr2'" \
+		> /dev/null 2>&1
+done
+
+if ! sec_body "$R/ab_abs.sh" 0 | grep -q 'f> ' &&
+   sec_body "$R/ab_abs.sh" 0 | grep -q '1i NEW' &&
+   sec_body "$R/ab_rel.sh" 0 | grep -q 'f> '; then
+	ok "-aE emits an absolute host body, -E alone stays relative"
+else
+	fail "-aE emits an absolute host body, -E alone stays relative"
+	tr -d '\r' < "$R/ab.nerr2" | sed 's/^/    /'
+fi
+
+# The point of the mode: the host body is what the size goes into
+if [ "$(wc -c < "$R/ab_abs.sh")" -lt "$(wc -c < "$R/ab_rel.sh")" ]; then
+	ok "-aE ships a smaller script than -E"
+else
+	fail "-aE ships a smaller script than -E"
+fi
+
+# The blocks are not the host's to renumber: they come out of -aE exactly as
+# -E emits them, searches and all, gate comment included
+if [ "$(sec_body "$R/ab_abs.sh" 231)" = "$(sec_body "$R/ab_rel.sh" 231)" ] &&
+   sec_body "$R/ab_abs.sh" 231 | grep -q 'f> ' &&
+   grep -q '^# Compat 231 src=ao.sh' "$R/ab_abs.sh"; then
+	ok "-aE keeps the stored blocks search anchored and gated"
+else
+	fail "-aE keeps the stored blocks search anchored and gated"
+fi
+
+# Last of -a/-r on the command line wins, and the -E that ends the cluster
+# does not vote
+if sec_body "$R/ab_ar.sh" 0 | grep -q 'f> ' &&
+   ! sec_body "$R/ab_ra.sh" 0 | grep -q 'f> '; then
+	ok "-arE is relative, -raE is absolute: last of -a/-r wins"
+else
+	fail "-arE is relative, -raE is absolute: last of -a/-r wins"
+fi
+
+# End to end on the base tree, where an absolute body is what it claims to be:
+# the -aE script does what the -E one does, byte for byte. A staged body that
+# ended in a newline would leave a stray blank line after NEW here, since the
+# insert is the body's last command.
+cp "$R/ab.orig" "$R/ab.c"
+( cd "$R" && chmod +x ab_abs.sh && VI="$VI" sh ab_abs.sh ) >/dev/null 2>&1
+ab_abs_tree="$(tr '\n' '|' < "$R/ab.c")"
+cp "$R/ab.orig" "$R/ab.c"
+( cd "$R" && chmod +x ab_rel.sh && VI="$VI" sh ab_rel.sh ) >/dev/null 2>&1
+ab_rel_tree="$(tr '\n' '|' < "$R/ab.c")"
+if [ "$ab_abs_tree" = 'A1|NEW|A2|A3|A4x|' ] &&
+   [ "$ab_abs_tree" = "$ab_rel_tree" ]; then
+	ok "-aE applies on the base tree exactly as -E does"
+else
+	fail "-aE applies on the base tree exactly as -E does"
+	echo "    abs=[$ab_abs_tree] rel=[$ab_rel_tree]"
+fi
+
+# The mode's contract in the chain: an absolute host body is right as long as
+# nothing ahead of it moves the lines it edits, which is what "-a" claims and
+# all it claims. The origin here lands PROBE below every host edit, so the
+# chain applies whole - the gate fires, the block edits A3 by search, and the
+# host's own line numbers still point where they did.
+cp "$R/ab.orig" "$R/ab.c"
+stack ao.sh ab_abs.sh
+ab_chain="$(tr '\n' '|' < "$R/ab.c")"
+if [ "$ab_chain" = 'A1|NEW|A2|A3c|A4x|PROBE|' ]; then
+	ok "-aE stacks with an origin that lands below its edits"
+else
+	fail "-aE stacks with an origin that lands below its edits"
+	echo "    got=[$ab_chain]"
+fi
+
 fi
 
 echo ""
