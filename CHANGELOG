@@ -1,4 +1,14 @@
 ------------------
+7.5 Basilisk
+------------------
+
+Bug fixes:
+1. Substitution with the g flag no longer substitutes a zero-width match
+   twice when the engine reports it ahead of the scan start, as with
+   positional lookarounds like (?=^a). A :grp target group that ends at the
+   scan start still advances past the match instead of re-matching it.
+
+------------------
 7.4 Basilisk
 ------------------
 
