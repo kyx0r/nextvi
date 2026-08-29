@@ -270,7 +270,7 @@ extern unsigned char utf8_length[256];
 extern int zwlen, def_zwlen;
 extern int bclen, def_bclen;
 /* the length of a given utf-8 character */
-#define uc_len(s) utf8_length[(unsigned char)s[0]]
+#define uc_len(s) utf8_length[(unsigned char)(s)[0]]
 /* the unicode codepoint of a given utf-8 character */
 #define uc_code(dst, s, l) \
 dst = (unsigned char)s[0]; \

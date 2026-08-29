@@ -56,7 +56,7 @@ static void file_index(struct lbuf *buf)
 			/* if target group not found, continue with group 1
 			which will always be valid, otherwise there be no match */
 			if (subs[grp] < 0) {
-				sidx += subs[1] > 0 ? subs[1] : 1;
+				sidx += subs[1] > 0 ? subs[1] : uc_len(ss[i] + sidx);
 				continue;
 			}
 			len = subs[grp + 1] - subs[grp];
@@ -72,7 +72,7 @@ static void file_index(struct lbuf *buf)
 				sbuf_mem(ibuf, &acsb->s_n, sizeof(n))
 			}
 			skip:
-			sidx += subs[grp + 1] > 0 ? subs[grp + 1] : 1;
+			sidx += subs[grp + 1] > 0 ? subs[grp + 1] : uc_len(ss[i] + sidx);
 		}
 	}
 	sbuf_nul(acsb)
