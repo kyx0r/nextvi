@@ -1208,8 +1208,8 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 				}
 			}
 			ln += offs[xgrp + 1];
-			if ((offs[1] == offs[0] || !offs[xgrp + 1]) && *ln)	/* zero-length match */
-				sbuf_chr(r, *ln++)
+			if ((offs[1] == offs[0] || !offs[xgrp + 1]) && *ln)
+				sbuf_chr(r, *ln++)	/* zero-length match */
 			lnb = ln;
 			if (!*ln || !(flg & 1))
 				break;
