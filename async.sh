@@ -588,7 +588,7 @@ index ad9395c9..ee0794be 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f8505153..63edc4f4 100644
+index 37761cdf..e9beeb26 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -58,6 +58,17 @@ static char xirerr[] = "invalid range";
@@ -775,7 +775,7 @@ index c8861702..606ab94c 100644
  	}
  	sbufn_ret(sb, sb)
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..bf739e80 100644
+index c4d07045..69a6540d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -8,6 +8,7 @@

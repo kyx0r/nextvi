@@ -750,7 +750,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index f8505153..c4fe0892 100644
+index 37761cdf..396b2888 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -413,7 +413,9 @@ int ex_edit(const char *path, int len)
@@ -896,7 +896,7 @@ index c8861702..8087b9af 100644
  	if (!ibuf) {
  		if (term_sbuf)
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..3bb83d24 100644
+index c4d07045..503308b9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1852,6 +1852,7 @@ static void setup_signals(void)

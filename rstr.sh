@@ -991,8 +991,8 @@ static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\).*?
 m 01;0grp 1%f> 					if \(\*_rep != '\''\\\\'\'' \|\| !_rep\[1] \|\| !uc_isdigit\(\*\+\+_rep\)\) \{
 						sbuf_chr\(r, \*_rep\)
 						continue;.*(			ln \+= offs\[xgrp \+ 1];)
-			if \(!offs\[xgrp \+ 1] && \*ln\)	/\* zero-length match \*/
-				sbuf_chr\(r, \*ln\+\+\)8??0?
+			if \(\(offs\[1] == offs\[0] \|\| !offs\[xgrp \+ 1]\) && \*ln\)
+				sbuf_chr\(r, \*ln\+\+\)	/\* zero-length match \*/8??0?
 grp 08??-9m 20220reg p OK ex.c:1201:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			sbuf_mem\(r, lnb, ln \+ offs\[xgrp] - lnb\)
 			if \(rep\) \{
@@ -1037,8 +1037,8 @@ static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\).*?
 m 01;0grp 1%f> 					if \(\*_rep != '\''\\\\'\'' \|\| !_rep\[1] \|\| !uc_isdigit\(\*\+\+_rep\)\) \{
 						sbuf_chr\(r, \*_rep\)
 						continue;.*(			ln \+= offs\[xgrp \+ 1];)
-			if \(!offs\[xgrp \+ 1] && \*ln\)	/\* zero-length match \*/
-				sbuf_chr\(r, \*ln\+\+\)8??0?
+			if \(\(offs\[1] == offs\[0] \|\| !offs\[xgrp \+ 1]\) && \*ln\)
+				sbuf_chr\(r, \*ln\+\+\)	/\* zero-length match \*/8??0?
 grp 08??-6m 21220reg p OK ex.c:1204:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			sbuf_mem\(r, lnb, ln \+ offs\[xgrp] - lnb\)
 			if \(rep\) \{
@@ -2206,7 +2206,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index f8505153..e54c6485 100644
+index 37761cdf..c92d0b05 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,7 +37,7 @@ int xsep = ':';			/* ex command separator */
@@ -2614,7 +2614,7 @@ index 3b2953d7..6c5d550d 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..55fc2857 100644
+index c4d07045..f24b1f98 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -325,7 +325,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)

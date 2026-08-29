@@ -1012,7 +1012,7 @@ index ad9395c9..3719bcf9 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index f8505153..687da3ef 100644
+index 37761cdf..d7e2ef8f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -1186,7 +1186,7 @@ index a38f7a06..329c9b24 100644
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..61562dcf 100644
+index c4d07045..a555a475 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -934,9 +934,19 @@ static void vi_shift(int r1, int r2, int dir, int count)

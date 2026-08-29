@@ -290,7 +290,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index f8505153..744c02b2 100644
+index 37761cdf..89e0a797 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1918,6 +1918,22 @@ void ex(void)
@@ -365,7 +365,7 @@ index 603d4842..edb8c985 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..878848e8 100644
+index c4d07045..906b86dd 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1897,6 +1897,12 @@ int main(int argc, char *argv[])

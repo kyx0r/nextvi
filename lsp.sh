@@ -2871,7 +2871,7 @@ index ad9395c9..3acbe4f1 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index f8505153..55c27014 100644
+index 37761cdf..146f78f3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -431,6 +431,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -4687,7 +4687,7 @@ index c8861702..52dd97c9 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..74874512 100644
+index c4d07045..863e4bce 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@

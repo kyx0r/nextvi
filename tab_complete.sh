@@ -1054,7 +1054,7 @@ index ad9395c9..92bb1487 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index f8505153..268413c3 100644
+index 37761cdf..555f5b67 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -15,6 +15,7 @@ int xts = 8;			/* number of spaces for tab */

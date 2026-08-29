@@ -1407,7 +1407,7 @@ index ad9395c9..86604545 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f8505153..7967370d 100644
+index 37761cdf..53de81f3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -1687,7 +1687,7 @@ index 603d4842..37fdb84a 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..61fc7adb 100644
+index c4d07045..f2a79a05 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,24 @@ static void vi_drawrow(int row)
