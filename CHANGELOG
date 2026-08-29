@@ -70,7 +70,7 @@ Patch changes:
 1. New [tab_complete.sh](https://github.com/kyx0r/nextvi/blob/release/tab_complete.sh):
    tab completion with a dual mode, line-only mode 1 is the default.
    Completion wraps and anchors from the top row.
-2. New [incsearch.sh](https://github.com/kyx0r/nextvi/blob/release/incsearch.sh):
+2. Reworked [incsearch.sh](https://github.com/kyx0r/nextvi/blob/release/incsearch.sh):
    incremental search highlighting implemented via led_attsb, color
    configuration in conf_hlmatc, TAB and ^_ cycle searches without
    leaving the prompt.
