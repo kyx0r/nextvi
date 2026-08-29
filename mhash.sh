@@ -745,7 +745,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index f0e754e6..bc44c301 100644
+index bce1f5e0..f2ce65c8 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -22,26 +22,45 @@ static void lopt_done(struct lopt *lo)
@@ -860,7 +860,7 @@ index f0e754e6..bc44c301 100644
  	lo->mark_se[0] = -1;
  	lo->pos = beg;
 diff --git a/vi.h b/vi.h
-index 0bb77c0b..46e5f36c 100644
+index e5018fa9..92dfca4d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -118,11 +118,15 @@ int rset_match(rset *rs, char *s, int flg);

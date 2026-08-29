@@ -41,20 +41,20 @@ void ex_init\(char \*\*files, int n\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1920:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1923:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	syn_setft\(xb_ft\);
 	free\(sb->s\);.*(	ec_setbufsmax\(NULL, NULL, ""\);)
 	char \*s = files\[0] \? files\[0] : "";
 	do \{8??0?
-grp 08??-4m 1220reg p OK ex.c:1920:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1923:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else
 			esc = 0;
 		sbuf_cut\(sb, 0\).*(		xmpt = 0;)
 		ec_edit\("", "e", s\);
 		s = \*\(\+\+files\);9??0?
-grp 09??-7m 1220reg p OK ex.c:1920:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:19202sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1923:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:19232sc %? %@2132sc!0?
 '\''1i void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -71,7 +71,7 @@ void ex_init\(char \*\*files, int n\)
 	free(bufs);
 }
 
-??!219reg ex.c:1920:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1923:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;
@@ -238,7 +238,7 @@ extern int bclen, def_bclen;
 grp 08??-4m 2220reg p OK vi.h:266:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> char \*syn_setft\(char \*ft\);
 void syn_scdir\(int scdir\);
-void syn_highlight\(int \*att, char \*s, int n\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)s\[0]])
+void syn_highlight\(int \*att, char \*s, int n\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)\(s\)\[0]])
 /\* the unicode codepoint of a given utf-8 character \*/
 #define uc_code\(dst, s, l\) \\9??0?
 grp 09??-7m 2220reg p OK vi.h:266:a92sc %? %@2152sc!'\''00?
@@ -290,10 +290,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 37761cdf..89e0a797 100644
+index 8fabb849..03f20263 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1918,6 +1918,22 @@ void ex(void)
+@@ -1921,6 +1921,22 @@ void ex(void)
  	xgrec--;
  }
  
@@ -329,7 +329,7 @@ index 3b2953d7..f089c0c2 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index 603d4842..edb8c985 100644
+index facf14cd..2077d354 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -86,6 +86,19 @@ static int ren_cwid(char *s, int pos)
@@ -382,7 +382,7 @@ index c4d07045..906b86dd 100644
  		term_scrl()
  	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index 0bb77c0b..e08801b3 100644
+index e5018fa9..3a5ac4a8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -219,6 +219,7 @@ int ren_noeol(char *s, int p);

@@ -105,20 +105,20 @@ int xai = 1;			/\* autoindent option \*/1??0?
 \)
 
 4??0?
-4??+2m 2220reg p OK ex.c:1663:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1666:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 2220reg p OK ex.c:1663:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1666:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 2220reg p OK ex.c:1663:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16632sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1666:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16662sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
@@ -130,24 +130,24 @@ static struct excmd \{
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
 	EO\(mpt\),4??0?
-4??+2m 3220reg p OK ex.c:1715:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1718:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g!", ec_glob},.*?
 	\{"g", ec_glob},.*?
 (	EO\(mpt\),)7??0?
-grp 07??m 3220reg p OK ex.c:1715:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1718:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"i", ec_insert},
 	\{"d", ec_delete},
 	EO\(grp\),.*(	\{"reg\+", ec_regprint},)
 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},8??0?
-grp 08??-4m 3220reg p OK ex.c:1715:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1718:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(ish\),
 	\{"inc", ec_setincl},
 	EO\(ic\),.*(	\{"rd", ec_undoredo},)
 	EO\(rr\),
 	\{"r", ec_read},9??0?
-grp 09??-7m 3220reg p OK ex.c:1715:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17152sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1718:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17182sc %? %@2132sc!0?
 '\''1-1i int xms = 1;			/* mouse in normal mode */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i _EO(ms,
@@ -159,9 +159,9 @@ static struct excmd \{
 	return NULL;
 )
 
-??!219reg ex.c:1663:m22sc %? %@2142sc!0?
+??!219reg ex.c:1666:m22sc %? %@2142sc!0?
 '\''3i 	EO(ms),
-??!219reg ex.c:1715:m32sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1718:m32sc %? %@2142sc!b2%ya 98?0?
 %f> 	return pos - xleft;
 }
 
@@ -857,7 +857,7 @@ index ad9395c9..f9b59152 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 37761cdf..fca6406d 100644
+index 8fabb849..c1a71200 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -865,7 +865,7 @@ index 37761cdf..fca6406d 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1661,6 +1662,15 @@ _EO(left,
+@@ -1664,6 +1665,15 @@ _EO(left,
  	return NULL;
  )
  
@@ -881,7 +881,7 @@ index 37761cdf..fca6406d 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1713,6 +1723,7 @@ static struct excmd {
+@@ -1716,6 +1726,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -890,7 +890,7 @@ index 37761cdf..fca6406d 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
 diff --git a/led.c b/led.c
-index a38f7a06..9cc0d5d2 100644
+index 43bfe944..cc759723 100644
 --- a/led.c
 +++ b/led.c
 @@ -96,6 +96,14 @@ int led_pos(char *s, int pos)
@@ -1117,7 +1117,7 @@ index c4d07045..9e9d2046 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 0bb77c0b..1aff294a 100644
+index e5018fa9..51da65c6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -327,6 +327,9 @@ void term_pos(int r, int c);

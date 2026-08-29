@@ -1153,7 +1153,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 37761cdf..8450c4e2 100644
+index 8fabb849..1371a3bf 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -1699,7 +1699,7 @@ index c4d07045..04feef0c 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 0bb77c0b..2028f60f 100644
+index e5018fa9..a421b603 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -408,6 +408,9 @@ struct buf {

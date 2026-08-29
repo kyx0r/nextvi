@@ -152,7 +152,7 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 grp 07??m 1220reg p OK lbuf.c:494:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
-		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(				off \+= offs\[1] > 0 \? offs\[1] : 1;)
+		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);)
 				continue;
 			}8??0?
 grp 08??-21m 1220reg p OK lbuf.c:494:a82sc %? %@2152sc!'\''08??1q0?
@@ -206,7 +206,7 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 grp 07??m 2220reg p OK lbuf.c:510:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
-		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(				off \+= offs\[1] > 0 \? offs\[1] : 1;)
+		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);)
 				continue;
 			}8??0?
 grp 08??-5m 2220reg p OK lbuf.c:510:a82sc %? %@2152sc!'\''08??1q0?
@@ -248,7 +248,7 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 grp 07??m 3220reg p OK lbuf.c:519:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
 			if \(g1 < 0\) \{
-				off \+= offs\[1] > 0 \? offs\[1] : 1;.*(	if \(ch == '\''\\n'\''\))
+				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);.*(	if \(ch == '\''\\n'\''\))
 		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
 			\*row \+= dir;8??0?
 grp 08??-17m 3220reg p OK lbuf.c:519:a82sc %? %@2152sc!'\''08??1q0?
@@ -266,14 +266,14 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 			if \(dir > 0\)
 				return 0;
 			step = off \+ g1;
-			off \+= g2 > 0 \? g2 : 1;1??0?
+			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);1??0?
 1??+1m 41q0?
 %f+ 			\*o = _o;
 			\*r = i;
 			if \(dir > 0\)
 				return 0;
 			step = off \+ g1;
-			off \+= g2 > 0 \? g2 : 1;2??0?
+			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);2??0?
 2??m 4220reg p OK lbuf.c:521:a22sc %? %@2152sc!1q0?
 %f+ 			\*o = _o;
 			\*r = i;
@@ -283,22 +283,22 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 ;0fr.,$f+ ^				break;$4??0?
 4??+1m 4220reg p OK lbuf.c:521:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 			step = off \+ g1;
-			off \+= g2 > 0 \? g2 : 1;5??0?
+			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);5??0?
 5??-4m 4220reg p OK lbuf.c:521:a52sc %? %@2152sc!1q0?
-%f+ .....r.ak;
-....o =....
-..	\*......
-...i..\(d.......
-....r..u...0.
-	..s........f...g..
-	..of....... . . \?..2.....6??0?
+%f+ ..	...e...
+......=....
+....r.= ..
+.......d.... .\)
+...	...u.....
+......p....f. . .1.
+.....f... .... .........uc...n\(. . of..;6??0?
 6??+1m 4220reg p OK lbuf.c:521:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				break;.*?
 (			\*o = _o;)7??0?
 grp 07??m 4220reg p OK lbuf.c:521:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
 			if \(g1 < 0\) \{
-				off \+= offs\[1] > 0 \? offs\[1] : 1;.*(	if \(ch == '\''\\n'\''\))
+				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);.*(	if \(ch == '\''\\n'\''\))
 		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
 			\*row \+= dir;8??0?
 grp 08??-15m 4220reg p OK lbuf.c:521:a82sc %? %@2152sc!'\''08??1q0?
@@ -311,7 +311,7 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5212sc %? %@2132sc!0?
 ?0?
 %f+ 			step = off \+ g1;
-			off \+= g2 > 0 \? g2 : 1;
+			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);
 			end = -1; /\* break outer loop efficiently \*/
 		}
 		off = 0;
@@ -325,26 +325,26 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 ;0fr.,$f+ ^			end = -1; /\* break outer loop efficiently \*/$3??0?
 3??m 5220reg p OK lbuf.c:527:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			step = off \+ g1;
-			off \+= g2 > 0 \? g2 : 1;4??0?
+			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);4??0?
 4??+2m 5220reg p OK lbuf.c:527:a42sc %? %@2152sc!1q0?
 %f+ 		}
 		off = 0;
 	}5??0?
 5??-1m 5220reg p OK lbuf.c:527:a52sc %? %@2152sc!1q0?
-%f+ ..	..e. ..... ..g1.
-	...f. ..... ..0 .....:...
-............... ..e.. .ut......p..f...i..t..../
+%f+ 	..................
+..	...... .2.>....... . uc..e..s.\+.o.f..
+...... =.-1../...r.a......r ......f.i........./
 	..
-..... = ..
+	.of. ....
 .}6??0?
 6??+2m 5220reg p OK lbuf.c:527:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			step = off \+ g1;.*?
-			off \+= g2 > 0 \? g2 : 1;.*?
+			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);.*?
 (			end = -1; /\* break outer loop efficiently \*/)7??0?
 grp 07??m 5220reg p OK lbuf.c:527:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
 			if \(g1 < 0\) \{
-				off \+= offs\[1] > 0 \? offs\[1] : 1;.*(	if \(ch == '\''\\n'\''\))
+				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);.*(	if \(ch == '\''\\n'\''\))
 		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
 			\*row \+= dir;8??0?
 grp 08??-9m 5220reg p OK lbuf.c:527:a82sc %? %@2152sc!'\''08??1q0?
@@ -394,7 +394,7 @@ int lbuf_sectionbeg\(struct lbuf \*lb, int dir, int \*row, int \*off, int ch\)
 grp 07??m 6220reg p OK lbuf.c:531:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
 			if \(g1 < 0\) \{
-				off \+= offs\[1] > 0 \? offs\[1] : 1;.*(	if \(ch == '\''\\n'\''\))
+				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);.*(	if \(ch == '\''\\n'\''\))
 		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
 			\*row \+= dir;8??0?
 grp 08??-5m 6220reg p OK lbuf.c:531:a82sc %? %@2152sc!'\''08??1q0?
@@ -736,7 +736,7 @@ e..... .........,..e._..le..
 grp 07??m 1220reg p OK vi.h:269:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> void syn_reloadft\(int hl, int flg\);
 int syn_findhl\(int id\);
-int syn_addhl\(char \*reg, int id\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)s\[0]])
+int syn_addhl\(char \*reg, int id\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)\(s\)\[0]])
 /\* the unicode codepoint of a given utf-8 character \*/
 #define uc_code\(dst, s, l\) \\8??0?
 grp 08??-4m 1220reg p OK vi.h:269:a82sc %? %@2152sc!'\''08??1q0?
@@ -984,7 +984,7 @@ index 05822fe7..9f2d8b42 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index f0e754e6..ab9f156b 100644
+index bce1f5e0..df647325 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -491,24 +491,32 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -1049,7 +1049,7 @@ index f0e754e6..ab9f156b 100644
 +			*a->o = _o;
 +			*a->r = i;
  			step = off + g1;
- 			off += g2 > 0 ? g2 : 1;
+ 			off += g2 > 0 ? g2 : uc_len(s + off);
 -			end = -1; /* break outer loop efficiently */
 +			a->end = -1; /* break outer loop efficiently */
 +			if (a->dir > 0)
@@ -1176,7 +1176,7 @@ index c4d07045..c50c8230 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 0bb77c0b..560e650b 100644
+index e5018fa9..b020244c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -266,7 +266,8 @@ int syn_addhl(char *reg, int id);

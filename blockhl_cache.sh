@@ -181,7 +181,7 @@ void syn_highlight\(int \*att, char \*s, int n\).*?
 	return \(\*att & 0xffff\) == \(a & 0xffff\);
 }.*(	int cend, sidx = 0, flg = 0, hl, j, i, ii;)
 	while \(\(sl = rset_find\(rs, s \+ sidx, subs, flg\)\) >= 0\) \{
-		cend = 1;8??0?
+		cend = uc_len\(s \+ sidx\);8??0?
 grp 08??-4m 4220reg p OK ren.c:321:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static int syn_tatt\(int \*att, int a, int pb\)
 \{
@@ -673,7 +673,7 @@ extern int bclen, def_bclen;
 grp 08??-4m 1220reg p OK vi.h:266:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> char \*syn_setft\(char \*ft\);
 void syn_scdir\(int scdir\);
-void syn_highlight\(int \*att, char \*s, int n\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)s\[0]])
+void syn_highlight\(int \*att, char \*s, int n\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)\(s\)\[0]])
 /\* the unicode codepoint of a given utf-8 character \*/
 #define uc_code\(dst, s, l\) \\9??0?
 grp 09??-7m 1220reg p OK vi.h:266:a92sc %? %@2152sc!'\''00?
@@ -693,7 +693,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index f0e754e6..203893fd 100644
+index bce1f5e0..6b5b03f5 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -99,6 +99,7 @@ static int linelength(char *s)
@@ -705,7 +705,7 @@ index f0e754e6..203893fd 100644
  		for (; *s; n_ins++) {
  			int l = linelength(s);
 diff --git a/ren.c b/ren.c
-index 603d4842..17459ed7 100644
+index facf14cd..486bbcf8 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -249,6 +249,118 @@ int ftidx;
@@ -947,7 +947,7 @@ index c4d07045..5d53d947 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 0bb77c0b..d44741b9 100644
+index e5018fa9..1823c621 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -264,6 +264,8 @@ void syn_reloadft(int hl, int flg);

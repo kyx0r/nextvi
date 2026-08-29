@@ -173,7 +173,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index f0e754e6..b3e2320b 100644
+index bce1f5e0..13c977d9 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -394,6 +394,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
@@ -241,7 +241,7 @@ index c4d07045..9eb396a2 100644
  				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index 0bb77c0b..f9ab2b5d 100644
+index e5018fa9..99472b75 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -168,6 +168,7 @@ char *lbuf_get(struct lbuf *lb, int pos);
