@@ -1600,6 +1600,49 @@ check ':s m still substitutes once across the region' \
 	"$(printf 'Yx\nxx')" "$out"
 
 # ──────────────────────────────────────────────────────────────────────────────
+# :s g and zero-length matches found ahead of the scan start
+# The search is unanchored, so a zero-width match need not sit at the scan
+# start: a pattern that matches empty only somewhere else (a positional
+# lookahead) is reported ahead, the advance lands on the match position, and
+# the loop must not substitute the same spot twice. Perl parity is the
+# reference: s/(?=a)/X/g inserts one X before every match.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'ababab\n' > "$TMPFILE"
+out=$(run_ex ':%s/(?=^a)/X/g:%p:q!')
+check ':s g does not re-fire a zero-width match found ahead' 'XabXabXab' "$out"
+
+# ic 0 compiles (?=^a) through the static literal path instead of the engine;
+# both paths must agree about where the match is
+printf 'ababab\n' > "$TMPFILE"
+out=$(run_ex ':ic:%s/(?=^a)/X/g:ic:%p:q!')
+check ':s g zero-width ahead agrees on the static path' 'XabXabXab' "$out"
+
+# a forward lookahead without ^ matches at every position with the lookahead
+# satisfied, one substitution each — none of them found ahead
+printf 'abab\n' > "$TMPFILE"
+out=$(run_ex ':%s/(?=a)/X/g:%p:q!')
+check ':s g forward lookahead substitutes once per position' 'XaXbXab' "$out"
+
+# a target group that ends at the scan start leaves the advance at zero
+# progress; the loop must copy a char and move on, not re-match the line
+printf 'xx\n' > "$TMPFILE"
+out=$(run_ex ':grp 1:%s/(y*)(x+)/X/g:grp:%p:q!')
+check ':s grp stuck advance on an empty target group moves on' 'XxXx' "$out"
+
+# a zero-width target group inside a nonzero overall match is ordinary
+# content: the next match starts where the advance landed, so chained matches
+# must all substitute
+printf 'aab\n' > "$TMPFILE"
+out=$(run_ex ':grp 2:%s/(a)(b*)/[\2]/g:grp:%p:q!')
+check ':s grp chains across a zero-width target group' 'a[]a[b]' "$out"
+
+printf 'ab a ab\n' > "$TMPFILE"
+out=$(run_ex ':grp 2:%s/(a)(b*)/[\2]/g:grp:%p:q!')
+check ':s grp zero-width target group between real matches' \
+	'a[b] a[] a[b]' "$out"
+
+# ──────────────────────────────────────────────────────────────────────────────
 # :fr register search and the range cursor
 # The range maps a register offset back onto the buffer, so the search has to
 # start from a position that is inside the range. A cursor outside of it is
