@@ -26,6 +26,9 @@ block highlights do not leak stale direction state.
 6. Fixed the libc isupper landmine with an own uc_isupper.
 7. Print with a trailing offset now places the cursor on the last
 given offset instead of the max of the last two.
+8. :f> register ranges pin an out-of-register cursor to an inbounds line
+   instead of clamping a possibly out-of-range offset. Written in the spec.
+9. Fixed C comment highlighting priority around // and " multiline blocks.
 
 Patch2vi 1.0 changes:
 1. Interactive deltas (-i, -d[N], -od) are removed from the tool and kept
@@ -53,6 +56,10 @@ Patch2vi 1.0 changes:
     under compat are no longer written, single quotes escaped in emitted
     patterns, path prefixes resolved, redundant line breaks and error
     placement fixed, xmpt clamped, atexit dropped.
+11. Relative mode is the default instead of absolute line numbers.
+12. -aE is obeyed instead of silently falling back to relative mode: the
+    re-emitted host patch stays absolute while stored compat blocks stay
+    search anchored.
 
 ------------------
 7.3 Basilisk
