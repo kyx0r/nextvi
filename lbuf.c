@@ -512,7 +512,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 			flg |= REG_NOTBOL;
 			g1 = offs[xgrp], g2 = offs[xgrp + 1];
 			if (g1 < 0) {
-				off += offs[1] > 0 ? offs[1] : 1;
+				off += offs[1] > 0 ? offs[1] : uc_len(s + off);
 				continue;
 			}
 			_o += uc_off(s + step, off + g1 - step);
@@ -523,7 +523,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 			if (dir > 0)
 				return 0;
 			step = off + g1;
-			off += g2 > 0 ? g2 : 1;
+			off += g2 > 0 ? g2 : uc_len(s + off);
 			end = -1; /* break outer loop efficiently */
 		}
 		off = 0;
