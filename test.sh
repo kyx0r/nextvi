@@ -1583,6 +1583,12 @@ printf 'axb\n' > "$TMPFILE"
 out=$(run_ex ':%s/x*/-/g:%p:q!')
 check ':s g takes a zero-length match adjoining a non-empty one' '-a--b-' "$out"
 
+# the same holds when the match is a run: the empty match closing "xx" is a
+# match of its own, so the run yields two substitutions; POSIX sed drops it
+printf 'axxb\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/g:%p:q!')
+check ':s g zero-length match closing a run is its own match' '-a--b-' "$out"
+
 printf '\n' > "$TMPFILE"
 out=$(run_ex ':%s/x*/-/g:%p:q!')
 check ':s g substitutes a zero-length match on an empty line' '-' "$out"
@@ -1598,6 +1604,53 @@ printf 'xx\nxx\n' > "$TMPFILE"
 out=$(run_ex ':%s/x/Y/m:%p:q!')
 check ':s m still substitutes once across the region' \
 	"$(printf 'Yx\nxx')" "$out"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# :s advances by a character over a zero-length match
+# The engine matches codepoints, so a match that makes no progress has to copy
+# and skip a whole utf-8 character. A byte sized step lands inside the
+# character and splits it. :uc drops the character lengths to one byte and the
+# step follows.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'h\303\251llo\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/g:%p:q!')
+check ':s g zero-length advance keeps a 2 byte character whole' \
+	"$(printf -- '-h-\303\251-l-l-o-')" "$out"
+
+printf 'a\360\237\231\202b\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/g:%p:q!')
+check ':s g zero-length advance keeps a 4 byte character whole' \
+	"$(printf -- '-a-\360\237\231\202-b-')" "$out"
+
+printf 'h\303\251\nlo\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/gm:%p:q!')
+check ':s gm zero-length advance keeps a character whole' \
+	"$(printf -- '-h-\303\251-\n-l-o-')" "$out"
+
+# :uc turns the character lengths off, and the advance is a byte again
+printf 'h\303\251\n' > "$TMPFILE"
+out=$(run_ex ':uc:%s/x*/-/g:uc:%p:q!')
+check ':s g zero-length advance is a byte with :uc' \
+	"$(printf -- '-h-\303-\251-')" "$out"
+
+# the target group skip advances by a character too, or the scan lands on a
+# continuation byte and a pattern that matches it splits the character
+printf '\303\251\n' > "$TMPFILE"
+out=$(run_ex ":grp 1:%s/($(printf '\251'))|x*/-/g:grp:%p:q!")
+check ':s grp skip advance does not land inside a character' \
+	"$(printf -- '\303\251')" "$out"
+
+# the search advances over a zero-width match the same way: a byte sized step
+# lands inside the character and every later offset on the line drifts. The
+# ascii twin "aa bb cc" reports the same numbers.
+printf 'a\303\251 bb cc\n' > "$TMPFILE"
+out=$(run_ex ':%f>cc:%f<\<:1;.=:q')
+check ':f< zero-width advance keeps the offset on a character' '0 1 6 -1' "$out"
+
+printf 'a\303\251 bb cc\n' > "$TMPFILE"
+out=$(run_ex ':%f>cc:%f<(?=b):1;.=:q')
+check ':f< lookahead advance keeps the offset on a character' '0 1 4 -1' "$out"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # :s g and zero-length matches found ahead of the scan start
