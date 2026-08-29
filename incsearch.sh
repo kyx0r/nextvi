@@ -48,27 +48,27 @@ const int conf_hlrev = SYN_BGMK\(8\);
 const int conf_hlrev = SYN_BGMK\(8\);
 
 4??0?
-4??+2m 1220reg p OK conf.c:327:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK conf.c:330:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{msg_ft, "\.\+", A\(AY1 \| SYN_BD\)},
 };
 const int hlslen = LEN\(hls\);.*(struct dircontext dctxs\[] = \{)
 	\{"\^\[" CR2L "]", -1},
 	\{"\^\[a-zA-Z_0-9]", \+1},8??0?
-grp 08??-6m 1220reg p OK conf.c:327:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 1220reg p OK conf.c:330:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\* \(\[0-9]\{1,3}%\) \(L\[0-9]\+\) \(C\[0-9]\+\) \(B-\?\[0-9]\+\)\?\.\*\$",
 		A\(AY1 \| SYN_BD, BL, RE1, BL, YE1, GR\)},
 	\{bar_ft, "\^\.\*\$", A\(AY1 \| SYN_BD\)},.*(struct dirmark dmarks\[] = \{)
 	\{"\[" CR2L "]\[" CNEUT CR2L "]\*\[" CR2L "]", \+1, \{-1}},
 	\{"\^\(\[ \\t]\+\)\?\(\[" CNEUT "]\*\[\^" CR2L "]\*\[\^" CR2L CNEUT "]\(\?:\[" CNEUT "]\+\$\)\?\)", -1, \{0, 1, -1}},9??0?
-grp 09??-12m 1220reg p OK conf.c:327:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg conf.c:3272sc %? %@2132sc!0?
+grp 09??-12m 1220reg p OK conf.c:330:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg conf.c:3302sc %? %@2132sc!0?
 '\''1i /* how to highlight the search matches */
 const int conf_hlmat = RE1;
 
 /* how to highlight the search match the cursor lands on */
 const int conf_hlmatc = RE1 | SYN_BGMK(8);
 
-??!219reg conf.c:327:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg conf.c:330:m12sc %? %@2142sc!b1%ya 98?0?
 %f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
 		noredraw:
 		switch \(c\) \{
@@ -722,10 +722,10 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 70157040..58d274b9 100644
+index ad9395c9..45327327 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -325,6 +325,12 @@ const int hlslen = LEN(hls);
+@@ -328,6 +328,12 @@ const int hlslen = LEN(hls);
  /* how to highlight text in the reverse direction */
  const int conf_hlrev = SYN_BGMK(8);
  

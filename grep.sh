@@ -99,20 +99,20 @@ FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\).*(struct filetype fts\[] = \
 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},
 
 4??0?
-4??+2m 3220reg p OK conf.c:291:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK conf.c:294:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{n_ft, "1\(\[ \\t]\*\[1-9]\[ \\t]\*\)9", A\(RE1, MA1 \| SYN_BD\)},
 	\{n_ft, "9\[ \\t]\*\(\[1-9]\[ \\t]\*\)1", A\(RE1, MA1 \| SYN_BD\)},
 	\{n_ft, "\[1-9]", A\(RE1\)},.*(\(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\)
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
 \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\8??0?
-grp 08??-4m 3220reg p OK conf.c:291:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK conf.c:294:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{fm_ft, "\[\^/]\*\\\\\.sh\\n\$", A\(GR\)},
 	\{fm_ft, "\[\^/]\*\(\?:\\\\\.c\|\\\\\.h\|\\\\\.cpp\|\\\\\.cc\)\\n\$", A\(MA\)},
 	\{fm_ft, "\[\^/]\*\\\\\.go\\n\$", A\(CY\)},.*(\|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\)
 \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},9??0?
-grp 09??-7m 3220reg p OK conf.c:291:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg conf.c:2912sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK conf.c:294:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg conf.c:2942sc %? %@2132sc!0?
 '\''1i char grep_ft[] = "/g";	/* grep buffer */
 ??!219reg conf.c:15:m12sc %? %@2142sc!0?
 '\''2i 	{grep_ft, NULL},
@@ -120,7 +120,7 @@ FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\).*(struct filetype fts\[] = \
 '\''3i 	{grep_ft, "^(.+?):([0-9]+):(.+)", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
-??!219reg conf.c:291:m32sc %? %@2142sc!b1%ya 98?0?
+??!219reg conf.c:294:m32sc %? %@2142sc!b1%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
 int xdefreg;			/\* ex default register \*/
 struct buf \*bufs;		/\* main buffers \*/
@@ -790,7 +790,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 70157040..39269e68 100644
+index ad9395c9..87381a58 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -809,7 +809,7 @@ index 70157040..39269e68 100644
  	{ex_ft, NULL},
  	{vs_ft, NULL},
  	{bar_ft, NULL},
-@@ -289,6 +291,9 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -292,6 +294,9 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  		A(NA, SYN_BGMK(RE1), SYN_BGMK(AY1), SYN_BGMK(AY))},
  	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(NA, SYN_BGMK(AY1))},
  
