@@ -1185,7 +1185,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		while (rset_find(rs, ln, offs, rflg) >= 0) {
 			rflg |= REG_NOTBOL;	/* only the first search is at bol */
 			if (offs[xgrp] < 0) {
-				ln += offs[1] > 0 ? offs[1] : 1;
+				ln += offs[1] > 0 ? offs[1] : uc_len(ln);
 				continue;
 			} else if (!r)
 				sbuf_make(r, 256)
@@ -1208,8 +1208,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 				}
 			}
 			ln += offs[xgrp + 1];
-			if ((offs[1] == offs[0] || !offs[xgrp + 1]) && *ln)
-				sbuf_chr(r, *ln++)	/* zero-length match */
+			if ((offs[1] == offs[0] || !offs[xgrp + 1]) && *ln) {
+				int l = uc_len(ln);	/* zero-length match */
+				sbuf_mem(r, ln, l)
+				ln += l;
+			}
 			lnb = ln;
 			if (!*ln || !(flg & 1))
 				break;

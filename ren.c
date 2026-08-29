@@ -36,7 +36,7 @@ static int dir_reorder(char *s, char *se, int *ord, int end, int dir)
 			dir_reverse(ord, beg+c_beg, beg+c_end);
 		}
 		beg += c_end ? c_end : 1;
-		s += c_end ? off : 1;
+		s += c_end ? off : uc_len(s);
 	}
 	return end < 0;
 }
@@ -324,7 +324,7 @@ void syn_highlight(int *att, char *s, int n)
 	int subs[rs->nsubc], *catt, *iatt, sl, c;
 	int cend, sidx = 0, flg = 0, hl, j, i, ii;
 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
-		cend = 1;
+		cend = uc_len(s + sidx);
 		hl = sl + ftmap[fti].setbidx;
 		sl = rs->grpnsubc[sl];
 		catt = hls[hl].att;
