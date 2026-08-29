@@ -74,7 +74,8 @@ struct highlight hls[] = {
 	{FT(c), NULL, A(CY1 | SYN_BD), 1, 2},
 	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*)(?!^//).)*\\*/\
 (?#-1)(?<\".*\\*/.*(?:\"|\\\\\n$)))|(//.*\\*/)",
-		A(BL | SYN_IT, BL | SYN_BLK, SYN_BSE | SYN_BEDP, BL | SYN_BLK, SYN_BSE | SYN_BSD,
+		A(BL | SYN_IT | SYN_SATT, 2, NA | SYN_BATT, BL | SYN_BATT,
+		BL | SYN_BLK, SYN_BSE | SYN_BEDP, BL | SYN_BLK, SYN_BSE | SYN_BSD,
 		BL | SYN_BLK, SYN_BE | SYN_BEDP)},
 	{FT(c), "\\<(?:signed|unsigned|char|short|int|[a-z0-9_]+_t|FILE|DIR|long|f(?:loat|64|32)|\
 double|void|enum|union|typedef|static|extern|register|struct|s(?:64|32|16|8)|u(?:64|32|16|8)|b32|\
@@ -82,16 +83,16 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
 (?:m|c|v|aligned_)alloc|realloc(?:f|array)?|NULL|std(?:in|out|err)|errno)|\
 (return|for|while|if|else|do|sizeof|goto|switch|case|default|break|continue))\\>",
 		A(GR1, BL1 | SYN_BD, YE1)},
-	{FT(c), "//.*", A(BL | SYN_IT)},
+	{FT(c), "//.*", A(BL | SYN_IT | SYN_SATT, 2, NA | SYN_BATT, BL | SYN_BATT)},
 	{FT(c), "\"(?#2)(?<^\\\\)(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
 	{FT(c), "#[ \t]*(?:[a-zA-Z0-9_]+([ \t]*<.*>)?)", A(CY, MA)},
 	{FT(c), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
 	{FT(c), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", A(MA)},
 	{FT(c), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+\\.?[0-9]*(?:[eE][-+]?[0-9]+)?)([fFlLuU]{0,3})\\>",
 		A(RE1, RE)},
-	{FT(c), "(\"[^\"]*\\\\\n$)|^(.*\"(?!\\\\\n$))",
+	{FT(c), "(\"[^\"]*\\\\\n$)|^(.*\"(?!\\\\\n$))(?:.*?(/[/*].*))?",
 		A(MA | SYN_IGN, MA | SYN_SATT | SYN_OWR | SYN_BLK, 1, NA, SYN_BSE | SYN_BED,
-		MA | SYN_OWR | SYN_EATT | SYN_BLK, 1, NA, SYN_BSE | SYN_BSD), 1},
+		MA | SYN_OWR | SYN_EATT | SYN_BLK, 1, NA, SYN_BSE | SYN_BSD, BL | SYN_IT), 1},
 	{FT(c), "^.+\\\\\n$", A(CY1 | SYN_EATT | SYN_OATT, 2, NA, BL, 1, NA), 2},
 	{FT(c), NULL, A(RE1), 0, 1},
 	{FT(c), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
