@@ -144,7 +144,7 @@ static void vi_drawrow(int row)
 		memset(tmp, ' ', xcols+1);
 		tmp[xcols+1] = '\n';
 		tmp[xcols+2] = '\0';
-		i1 = isupper((unsigned char)*vi_word);
+		i1 = uc_isupper(*vi_word);
 		if (*vi_word == 'e' || *vi_word == 'E')
 			vi_drawnum(lbuf_wordend(xb, i1, 2, &nrow, &noff))
 		else if (*vi_word == 'w' || *vi_word == 'W')
@@ -378,7 +378,7 @@ static void vi_regput(int c, const char *s, int lnmode)
 		ex_regput('1', s, 0);
 	} else if ((i_s = ex_regget(c)))
 		ex_regput('0', i_s->s, 0);
-	ex_regput(tolower(c), s, isupper(c));
+	ex_regput(tolower(c), s, uc_isupper(c));
 }
 
 rset *fsincl;
@@ -434,7 +434,7 @@ void dir_calc(char *path)
 		} else
 			break;
 	}
-	sbuf_null(sb)
+	sbuf_nul(sb)
 	if (sb->s_n > 1)
 		temp_write(1, sb->s);
 	free(sb->s);
@@ -573,7 +573,7 @@ static int vi_region(int cmd, int *row, int *off)
 			}
 		}
 		if (cmd < 0 && dir > 0 && lbuf_get(xb, *row + dir)
-				&& (var < 2 || *off >= var - 1)) {
+				&& (var > 1 && *off >= var - 1)) {
 			*row += dir;
 			*off = 0;
 		}
@@ -826,13 +826,13 @@ static void vi_delete(int r1, int o1, int r2, int o2, int lnmode)
 	xoff = lnmode ? lbuf_indents(xb, xrow) : o1;
 }
 
-static void vi_indents(char *ln, int *l)
+static int vi_indents(char *ln)
 {
-	if (!xai || !ln)
+	if (xai <= 0 || !ln)
 		ln = "";
 	char *pln = ln;
 	for (; *ln == ' ' || *ln == '\t'; ln++);
-	*l = ln - pln;
+	return ln - pln;
 }
 
 static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
@@ -842,8 +842,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
 	int key, tlen, l1, l2 = 1, postn = 1;
 	sbuf_smake(sb, xcols)
 	if (lnmode || !ln) {
-		vi_indents(ln, &l1);
-		o1 = l1;
+		o1 = l1 = vi_indents(ln);
 		post = "\n";
 		tlen = -1;
 		lbuf_region(xb, &rsb, r1, 0, r2, -1);
@@ -1025,8 +1024,7 @@ static int vc_insert(int cmd)
 	if (cmdo || !ln) {
 		if (cmdo && !lbuf_len(xb))
 			lbuf_edit(xb, "\n", 0, 0, 0, 0);
-		vi_indents(ln, &l1);
-		off = l1;
+		off = l1 = vi_indents(ln);
 		post = "\n";
 	} else {
 		off = xoff;
@@ -1196,6 +1194,8 @@ void vi(int init)
 		}
 		if (xmpt == 1) {
 			xmpt = 0;
+			if (syn_scdirl > 0)
+				syn_scdir(0);
 			vi_drawrow(otop + xrows - 1);
 		}
 		if (led_attsb)
@@ -1531,9 +1531,13 @@ void vi(int init)
 				if (k == 127 || k == TK_CTL('w')) {
 					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
 						xrow--;
+						if (xtop > otop)
+							xtop = otop;
 						topfix()
 						vc_join(0, 2);
 						vi_drawagain(xtop);
+						if (vi_status)
+							vc_status(vi_tsm);
 					} else if (xoff) {
 						if (k == TK_CTL('w')) {
 							noff = xoff;
@@ -1598,7 +1602,7 @@ void vi(int init)
 				case 'r':
 				case 'L':
 				case 'R':
-					xtd = isupper(k)+1;
+					xtd = uc_isupper(k)+1;
 					xtd = tolower(k) == 'r' ? -xtd : xtd;
 					rstates[0].s = NULL;
 					rstates[1].s = NULL;
@@ -1707,7 +1711,7 @@ void vi(int init)
 					term_push(rep_cmd, rep_len);
 				break;
 			case 'q':
-				if (xrr) {
+				if (xrr > 0) {
 					sbuf *rsb = ex_regget(xrr);
 					if (rsb && rsb->s_n)
 						sbufn_cut(rsb, rsb->s_n - 1)
@@ -1877,7 +1881,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-7.3 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-7.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
@@ -1886,7 +1890,7 @@ int main(int argc, char *argv[])
 	if (!(xvis & 1))
 		term_init();
 	if (xvis & 8)
-		term_scrh;
+		term_scrh()
 	ex_init(argv + i, argc - i);
 	if (xvis & 2)
 		ex();
@@ -1894,6 +1898,6 @@ int main(int argc, char *argv[])
 		vi(1);
 	term_done();
 	if (xvis & 8)
-		term_scrl;
+		term_scrl()
 	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 }

@@ -74,14 +74,14 @@ mem##func(sb->s + sb->s_n, x, len); \
 #define sbuf_str(sb, s) { sbuf_mem(sb, s, strlen(s)) }
 #define sbuf_cut(sb, len) { sb->s_n = len; }
 /* sbuf functions that nul-terminate strings */
-#define sbuf_null(sb) { sb->s[sb->s_n] = '\0'; }
-#define sbufn_null(sb) { sbuf_(sb, '\0', 4, set) }
-#define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_null(sb) }
-#define sbufn_mem(sb, s, len) { sbuf_mem(sb, s, len) sbuf_null(sb) }
-#define sbufn_str(sb, s) { sbuf_str(sb, s) sbuf_null(sb) }
-#define sbufn_cut(sb, len) { sbuf_cut(sb, len) sbuf_null(sb) }
-#define sbufn_chr(sb, c) { sbuf_chr(sb, c) sbuf_null(sb) }
-#define sbufn_ret(sb, str) { sbuf_null(sb) return str; }
+#define sbuf_nul(sb) { sb->s[sb->s_n] = '\0'; }
+#define sbuf_nul4(sb) { sbuf_(sb, '\0', 4, set) }
+#define sbufn_set(sb, ch, len) { sbuf_set(sb, ch, len) sbuf_nul(sb) }
+#define sbufn_mem(sb, s, len) { sbuf_mem(sb, s, len) sbuf_nul(sb) }
+#define sbufn_str(sb, s) { sbuf_str(sb, s) sbuf_nul(sb) }
+#define sbufn_cut(sb, len) { sbuf_cut(sb, len) sbuf_nul(sb) }
+#define sbufn_chr(sb, c) { sbuf_chr(sb, c) sbuf_nul(sb) }
+#define sbufn_ret(sb, str) { sbuf_nul(sb) return str; }
 
 /* regex.c: regular expressions */
 #define REG_ICASE	0x01
@@ -205,7 +205,7 @@ typedef struct {
 	int cmax;
 	int ctx;
 	int holelen;
-	char nullhole[4];
+	char nulhole[4];
 } ren_state;
 extern ren_state rstates[3];
 extern ren_state *rstate;
@@ -253,6 +253,7 @@ void dir_init(void);
 #define SYN_BN		0x80		/* grp block highlight nests into itself */
 #define SYN_SET(flg, a) (a & SYN_##flg)
 extern int ftidx;
+extern int syn_scdirl;
 extern int syn_blockhl;
 char *syn_setft(char *ft);
 void syn_scdir(int scdir);
@@ -298,6 +299,7 @@ char *uc_dup(const char *s);
 #define uc_isprint(c) ((unsigned char)(c) >= 0x20 && (unsigned char)(c) != 0x7f)
 #define uc_isdigit(c) (((unsigned char)(c) ^ '0') < 10)
 #define uc_isalpha(c) ((unsigned char)(c) > 0x7f || (unsigned char)(((unsigned char)(c) | 0x20) - 'a') < 26)
+#define uc_isupper(c) ((unsigned char)((unsigned char)(c) - 'A') < 26)
 int uc_kind(char *c);
 int uc_isbell(int c);
 int uc_acomb(int c);
@@ -318,8 +320,8 @@ void term_init(void);
 void term_done(void);
 void term_clean(void);
 void term_suspend(void);
-#define term_scrl	term_write("\033[?1049l", 8)
-#define term_scrh	term_write("\033[?1049h", 8)
+#define term_scrl()	term_write("\033[?1049l", 8)
+#define term_scrh()	term_write("\033[?1049h", 8)
 void term_chr(int ch);
 void term_pos(int r, int c);
 void term_kill(void);
