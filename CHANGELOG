@@ -61,6 +61,48 @@ Patch2vi 1.0 changes:
     re-emitted host patch stays absolute while stored compat blocks stay
     search anchored.
 
+Patch changes:
+0. ATTENTION USERS/MAINTAINERS: the patches format changed. An argument
+   given to a shell script now chains the next patch script, and the
+   patch(1) fallback is gone. If you relied on passing an argument to
+   run patch(1), update your scripts and apply the patch manually:
+   sed '1,/^=== PATCH2VI PATCH ===$/d' script.sh | patch -p1 --merge=diff3
+1. New [tab_complete.sh](https://github.com/kyx0r/nextvi/blob/release/tab_complete.sh):
+   tab completion with a dual mode, line-only mode 1 is the default.
+   Completion wraps and anchors from the top row.
+2. New [incsearch.sh](https://github.com/kyx0r/nextvi/blob/release/incsearch.sh):
+   incremental search highlighting implemented via led_attsb, color
+   configuration in conf_hlmatc, TAB and ^_ cycle searches without
+   leaving the prompt.
+3. New [cxref.sh](https://github.com/kyx0r/nextvi/blob/release/cxref.sh)
+   (formerly xref.sh): code cross reference, works with split windows.
+4. Fixed teleport bugs in
+   [linewrap_v2.sh](https://github.com/kyx0r/nextvi/blob/release/linewrap_v2.sh)
+   when lines are taller than the screen: scroll commands and H/L/M now
+   move within a wrapped line instead of clamping to it, the gutter
+   width is computed once per frame, xtopsub no longer overflows or is
+   lost on a buffer switch, and the + and - moves are symmetric again.
+5. Fixed [visual.sh](https://github.com/kyx0r/nextvi/blob/release/visual.sh):
+   a segfault, an off by 1, ex prompt range selection, and horizontal
+   ranges in the ex prompt.
+6. Fixed
+   [arrowkeys_insert.sh](https://github.com/kyx0r/nextvi/blob/release/arrowkeys_insert.sh):
+   I and A backspace no longer garble the modified flag, quality and
+   portability improvements.
+7. Fixed
+   [arrowkeys_normal.sh](https://github.com/kyx0r/nextvi/blob/release/arrowkeys_normal.sh):
+   double escape, k and j move within line regions, visual mode is
+   restored on real arrow keys.
+8. Fixed [splits.sh](https://github.com/kyx0r/nextvi/blob/release/splits.sh):
+   :td load for window splits, compat with lsp.sh and visual.sh, block
+   highlights are populated only for the focused window.
+9. [lsp.sh](https://github.com/kyx0r/nextvi/blob/release/lsp.sh) and
+   [mouse_normal.sh](https://github.com/kyx0r/nextvi/blob/release/mouse_normal.sh)
+   handle :rr recording, lsp.sh also fixes the buffer postfix on a dead
+   response edit.
+10. Fixed a read bug in
+    [chunked_read_write.sh](https://github.com/kyx0r/nextvi/blob/release/chunked_read_write.sh).
+
 ------------------
 7.3 Basilisk
 ------------------
