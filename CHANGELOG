@@ -7,6 +7,9 @@ Bug fixes:
    twice when the engine reports it ahead of the scan start, as with
    positional lookarounds like (?=^a). A :grp target group that ends at the
    scan start still advances past the match instead of re-matching it.
+2. Zero-length match advances are UTF-8 aware: when a regex match is
+   empty, the scan skips one whole character instead of one byte, in
+   substitution, search, file index and directory reorder.
 
 ------------------
 7.4 Basilisk
