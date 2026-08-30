@@ -17,8 +17,8 @@ by compat_order in patch2vi.sh.
 ./grep.sh lsp.sh visual.sh splits.sh cxref.sh
 ./lsp.sh rstr.sh visual.sh splits.sh incsearch.sh detect_indent.sh
 ./lsp.sh rstr.sh visual.sh splits.sh incsearch.sh
-./lsp.sh visual.sh splits.sh linewrap_v2.sh
-./lsp.sh visual.sh splits.sh linewrap_v2.sh mouse_normal.sh
+./lsp.sh visual.sh splits.sh threaded_redraw.sh linewrap_v2.sh
+./lsp.sh visual.sh splits.sh threaded_redraw.sh linewrap_v2.sh mouse_normal.sh
 ./lsp.sh visual.sh splits.sh
 ./lsp.sh rstr.sh visual.sh splits.sh arrowkeys_insert.sh incsearch.sh detect_indent.sh tab_complete.sh
 ./rstr.sh threaded_search.sh
@@ -64,6 +64,12 @@ to finish. Posix thread support is required. Patch is intended for expert users 
 races are possible depending on commands used.
 Example: fun :fd command without blocking the editor
 :as:fd
+
+threaded_redraw.sh
+--------------
+Moves the main redraw onto a separate thread. This frees up the input thread
+and reduces the input latency. No editor state is ever shared because the
+frame is joined before the next command runs. Posix thread support is required.
 
 hl_part.sh
 --------------
