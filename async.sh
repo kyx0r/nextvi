@@ -562,7 +562,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
-index 05822fe7..7a7f1513 100755
+index 62d18e99..cb0ea9ef 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -46,7 +46,7 @@ CFLAGS="\

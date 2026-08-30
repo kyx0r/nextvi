@@ -972,7 +972,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
-index 05822fe7..9f2d8b42 100755
+index 62d18e99..1f0efaa3 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -47,6 +47,7 @@ CFLAGS="\
