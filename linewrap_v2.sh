@@ -377,7 +377,7 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 		if \(\*src == xexp\) \{9??0?
 grp 09??-9m 9220reg p OK ex.c:1761:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17612sc %? %@2132sc!0?
-'\''1i int xlw;			/* soft line wrap column, 0 = off */
+'\''1i int xlw;			/* soft line wrap column, 0 = off, capped by the screen */
 int xhllw = 1;			/* highlight soft linewrap block start/end */
 ??!219reg ex.c:20:m12sc %? %@2142sc!0?
 '\''2i int xtopsub;			/* the first visible segment of xtop */
@@ -389,8 +389,10 @@ int xhllw = 1;			/* highlight soft linewrap block start/end */
 '\''5i 	tempbufs[i].topsub = 0;
 ??!219reg ex.c:191:m52sc %? %@2142sc!0?
 '\''6s/l\)/lw) EO(hll)/??!219reg ex.c:1651:m62sc %? %@2142sc!0?
-'\''7i _EO(lw,
-	xlw = !*arg ? (xlw ? 0 : xcols) : eo_val(arg);
+'\''7i /* no argument turns the wrap on at INT_MAX, which ren_wrapw caps by the
+ * screen: the column then follows every resize on its own */
+_EO(lw,
+	xlw = !*arg ? (xlw ? 0 : INT_MAX) : eo_val(arg);
 	xleft = 0;
 	xtopsub = 0;
 	rstates[0].s = NULL;
@@ -7059,14 +7061,14 @@ index ad9395c9..86604545 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8fabb849..59151e84 100644
+index 8fabb849..ef01e9b4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -18,6 +18,8 @@ int xpac;			/* print autocomplete options */
  int xmpt;			/* whether to prompt after printing > 1 lines in vi */
  int xpr;			/* ex_cprint register */
  int xlim = -1;			/* rendering cutoff for non cursor lines */
-+int xlw;			/* soft line wrap column, 0 = off */
++int xlw;			/* soft line wrap column, 0 = off, capped by the screen */
 +int xhllw = 1;			/* highlight soft linewrap block start/end */
  int xseq = 1;			/* undo/redo sequence */
  int xerr = 1;			/* error handling -
@@ -7103,7 +7105,7 @@ index 8fabb849..59151e84 100644
  }
  
  void temp_switch(int i, int swap)
-@@ -1648,12 +1654,21 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1648,12 +1654,23 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
@@ -7114,8 +7116,10 @@ index 8fabb849..59151e84 100644
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); return NULL;)
  _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
  
++/* no argument turns the wrap on at INT_MAX, which ren_wrapw caps by the
++ * screen: the column then follows every resize on its own */
 +_EO(lw,
-+	xlw = !*arg ? (xlw ? 0 : xcols) : eo_val(arg);
++	xlw = !*arg ? (xlw ? 0 : INT_MAX) : eo_val(arg);
 +	xleft = 0;
 +	xtopsub = 0;
 +	rstates[0].s = NULL;
@@ -7126,7 +7130,7 @@ index 8fabb849..59151e84 100644
  _EO(left,
  	if (*loc)
  		xleft = (xcols / 2) * atoi(loc);
-@@ -1751,6 +1766,7 @@ static struct excmd {
+@@ -1751,6 +1768,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),
@@ -7134,7 +7138,7 @@ index 8fabb849..59151e84 100644
  	EO(hll),
  	EO(hlw),
  	EO(hlp),
-@@ -1759,6 +1775,7 @@ static struct excmd {
+@@ -1759,6 +1777,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),

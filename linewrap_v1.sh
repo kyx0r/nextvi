@@ -315,6 +315,7 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 grp 09??-9m 8220reg p OK ex.c:1761:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17612sc %? %@2132sc!0?
 '\''1-1i int xlw;			/* soft linewrap col */
+int xlwauto;			/* xlw follows the terminal width */
 int xhllw = 1;			/* highlight soft linewrap block start/end */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i 	preserve(int, xlw, xlw = 0;)	/* a scratch buffer of whole lines */
@@ -323,9 +324,15 @@ int xhllw = 1;			/* highlight soft linewrap block start/end */
 ??!219reg ex.c:715:m32sc %? %@2142sc!0?
 '\''4i 	restore(xlw)
 ??!219reg ex.c:720:m42sc %? %@2142sc!0?
-'\''5i static void *ec_linewrap(char *loc, char *cmd, char *arg)
+'\''5i /* the column an elastic soft linewrap follows */
+static int ec_lwcols(void)
 {
-	int fd, lw = *arg ? atoi(arg) : (xcols ? xcols : 80);
+	return xcols ? xcols : 80;
+}
+
+static void *ec_linewrap(char *loc, char *cmd, char *arg)
+{
+	int fd, lw = *arg ? atoi(arg) : ec_lwcols();
 	if (lw < 0)
 		return "lw must not be negative";
 	if (xb->modified)
@@ -335,6 +342,7 @@ int xhllw = 1;			/* highlight soft linewrap block start/end */
 	if ((fd = open(xb_path, O_RDONLY)) < 0)
 		return xuerr;
 	close(fd);
+	xlwauto = !*arg;
 	xlw = lw;
 	lbuf_free(xb);
 	xb = lbuf_make();
@@ -344,6 +352,13 @@ int xhllw = 1;			/* highlight soft linewrap block start/end */
 	xrow = MIN(xrow, MAX(0, lbuf_len(xb) - 1));
 	xoff = 0;
 	return NULL;
+}
+
+/* re-wrap when an elastic soft linewrap fell out of step with the
+ * terminal; returns 1 if the buffer was rebuilt */
+int ex_lwsync(void)
+{
+	return xlwauto && xlw != ec_lwcols() && !ec_linewrap("", "lw", "");
 }
 
 ??!219reg ex.c:1637:m52sc %? %@2142sc!0?
@@ -1201,6 +1216,35 @@ s......... ..........ha...s........s\)
 				do \{9??0?
 grp 09??-8m 2220reg p OK vi.c:1554:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:15542sc %? %@2132sc!0?
+?0?
+%f+ 				continue;
+			}
+		}
+		topfix\(\)
+		ln = lbuf_get\(xb, xrow\);
+		xoff = ren_noeol\(ln, xoff\);1??0?
+1??+2m 31q0?
+%f+ 				continue;
+			}
+		}4??0?
+4??+2m 3220reg p OK vi.c:1744:a42sc %? %@2152sc!1q0?
+grp 1%f+ 				continue;.*?
+			}.*?
+(		})7??0?
+grp 07??m 3220reg p OK vi.c:1744:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 				vi_mod \|= 1;
+				break;
+			default:.*(		if \(ln && !rstate->wid\[xoff]\) \{)
+			for \(n = xoff, k = n; k < rstate->n && !rstate->wid\[k];\) \{
+				if \(!k\)8??0?
+grp 08??-4m 3220reg p OK vi.c:1744:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				else
+					ex_exec\("%d:fd"\);
+				vc_status\(0\);.*(					n = ooff\+1;)
+				k \+= n > ooff \? 1 : -1;
+			}9??0?
+grp 09??-7m 3220reg p OK vi.c:1744:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:17442sc %? %@2132sc!0?
 '\''1i 	if (xhllw && s) {
 		led_att la;
 		int lw = lbuf_s(s)->lwrap;
@@ -1222,7 +1266,10 @@ s......... ..........ha...s........s\)
 ??!219reg vi.c:172:m12sc %? %@2142sc!0?
 '\''2i 				vi_mod |= lbuf_lwmod;
 				lbuf_lwmod = 0;
-??!219reg vi.c:1554:m22sc %? %@2142sc!b5%ya 98?0?
+??!219reg vi.c:1554:m22sc %? %@2142sc!0?
+'\''3i 		/* an elastic soft linewrap follows the terminal width */
+		vi_mod |= ex_lwsync();
+??!219reg vi.c:1744:m32sc %? %@2142sc!b5%ya 98?0?
 %f> 	int n_ins, n_del;	/\* modification range \*/
 	int seq;		/\* operation number \*/
 	int ref;		/\* ins/del ref exists on lbuf \*/
@@ -1367,6 +1414,36 @@ extern int xkmap;
 extern int xkmap_alt;9??0?
 grp 09??-7m 5220reg p OK vi.h:433:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:4332sc %? %@2132sc!0?
+?0?
+%f+ void ex_krsset\(char \*kwd, int dir\);
+void ex_regesc\(sbuf \*sb, char \*beg, char \*end, int ex\);
+int ex_edit\(const char \*path, int len\);
+sbuf \*ex_regget\(int id\);
+void ex_regput\(int c, const char \*s, int append\);
+
+1??0?
+1??+2m 61q0?
+%f+ void ex_krsset\(char \*kwd, int dir\);
+void ex_regesc\(sbuf \*sb, char \*beg, char \*end, int ex\);
+int ex_edit\(const char \*path, int len\);4??0?
+4??+2m 6220reg p OK vi.h:493:a42sc %? %@2152sc!1q0?
+grp 1%f+ void ex_krsset\(char \*kwd, int dir\);.*?
+void ex_regesc\(sbuf \*sb, char \*beg, char \*end, int ex\);.*?
+(int ex_edit\(const char \*path, int len\);)7??0?
+grp 07??m 6220reg p OK vi.h:493:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> void ex_init\(char \*\*files, int n\);
+void ex_bufpostfix\(struct buf \*p, int clear\);
+int ex_krs\(rset \*\*krs, int \*dir\);.*(/\* conf\.c: configuration variables \*/)
+extern const int conf_mode;
+/\* map file names to file types \*/8??0?
+grp 08??-4m 6220reg p OK vi.h:493:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);
+#define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }
+#define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }.*(struct filetype \{)
+	char \*ft;		/\* file type \*/
+	char \*pat;		/\* file name pattern \*/9??0?
+grp 09??-7m 6220reg p OK vi.h:493:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4932sc %? %@2132sc!0?
 '\''1i 	int lwrap;		/* pos-1 lwrap bit was cleared */
 ??!219reg vi.h:131:m12sc %? %@2142sc!0?
 '\''2i 	int lwrap;		/* soft linewrap: joined with the next line */
@@ -1378,8 +1455,11 @@ extern int lbuf_lwmod;
 '\''4i int ren_cwid(char *s, int pos);
 ??!219reg vi.h:213:m42sc %? %@2142sc!0?
 '\''5i extern int xlw;
+extern int xlwauto;
 extern int xhllw;
-??!219reg vi.h:433:m52sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF"
+??!219reg vi.h:433:m52sc %? %@2142sc!0?
+'\''6i int ex_lwsync(void);
+??!219reg vi.h:493:m62sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -1407,16 +1487,17 @@ index ad9395c9..86604545 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8fabb849..a86eb832 100644
+index 8fabb849..871a26f1 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1,3 +1,5 @@
+@@ -1,3 +1,6 @@
 +int xlw;			/* soft linewrap col */
++int xlwauto;			/* xlw follows the terminal width */
 +int xhllw = 1;			/* highlight soft linewrap block start/end */
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -685,6 +687,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
+@@ -685,6 +688,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
  	int beg, end, o1 = 0, o2 = -1;
  	int row = xrow, off = xoff, fd = -1;
  	struct lbuf *lb = lbuf_make(), *pxb = xb;
@@ -1424,7 +1505,7 @@ index 8fabb849..a86eb832 100644
  	path = arg[0] ? arg : xb_path;
  	if (arg[0] == '!') {
  		if ((sb = cmd_pipe(arg + 1, NULL, 1, NULL))) {
-@@ -713,11 +716,13 @@ static void *ec_read(char *loc, char *cmd, char *arg)
+@@ -713,11 +717,13 @@ static void *ec_read(char *loc, char *cmd, char *arg)
  		beg = 0;
  	}
  	lbuf_region(lb, &obuf, beg, o1, end - 1, o2);
@@ -1438,13 +1519,19 @@ index 8fabb849..a86eb832 100644
  	lbuf_free(lb);
  	xrow = row;
  	xoff = off;
-@@ -1635,6 +1640,29 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1635,6 +1641,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
++/* the column an elastic soft linewrap follows */
++static int ec_lwcols(void)
++{
++	return xcols ? xcols : 80;
++}
++
 +static void *ec_linewrap(char *loc, char *cmd, char *arg)
 +{
-+	int fd, lw = *arg ? atoi(arg) : (xcols ? xcols : 80);
++	int fd, lw = *arg ? atoi(arg) : ec_lwcols();
 +	if (lw < 0)
 +		return "lw must not be negative";
 +	if (xb->modified)
@@ -1454,6 +1541,7 @@ index 8fabb849..a86eb832 100644
 +	if ((fd = open(xb_path, O_RDONLY)) < 0)
 +		return xuerr;
 +	close(fd);
++	xlwauto = !*arg;
 +	xlw = lw;
 +	lbuf_free(xb);
 +	xb = lbuf_make();
@@ -1465,10 +1553,17 @@ index 8fabb849..a86eb832 100644
 +	return NULL;
 +}
 +
++/* re-wrap when an elastic soft linewrap fell out of step with the
++ * terminal; returns 1 if the buffer was rebuilt */
++int ex_lwsync(void)
++{
++	return xlwauto && xlw != ec_lwcols() && !ec_linewrap("", "lw", "");
++}
++
  static int eo_val(char *arg)
  {
  	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
-@@ -1648,7 +1676,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1648,7 +1691,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
@@ -1477,7 +1572,7 @@ index 8fabb849..a86eb832 100644
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); return NULL;)
-@@ -1751,6 +1779,7 @@ static struct excmd {
+@@ -1751,6 +1794,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),
@@ -1485,7 +1580,7 @@ index 8fabb849..a86eb832 100644
  	EO(hll),
  	EO(hlw),
  	EO(hlp),
-@@ -1759,6 +1788,7 @@ static struct excmd {
+@@ -1759,6 +1803,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -1687,7 +1782,7 @@ index facf14cd..81c17b3d 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index c4d07045..f2a79a05 100644
+index c4d07045..1564f4f0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -170,6 +170,24 @@ static void vi_drawrow(int row)
@@ -1724,8 +1819,17 @@ index c4d07045..f2a79a05 100644
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;
  			case 'J':
+@@ -1742,6 +1762,8 @@ void vi(int init)
+ 				continue;
+ 			}
+ 		}
++		/* an elastic soft linewrap follows the terminal width */
++		vi_mod |= ex_lwsync();
+ 		topfix()
+ 		ln = lbuf_get(xb, xrow);
+ 		xoff = ren_noeol(ln, xoff);
 diff --git a/vi.h b/vi.h
-index e5018fa9..3a4daca3 100644
+index e5018fa9..9c293c41 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -129,10 +129,12 @@ struct lopt {
@@ -1759,12 +1863,21 @@ index e5018fa9..3a4daca3 100644
  int ren_next(char *s, int p, int dir);
  int ren_eol(char *s, int dir);
  int ren_pos(char *s, int off);
-@@ -431,6 +437,8 @@ extern int xpr;
+@@ -431,6 +437,9 @@ extern int xpr;
  extern int xlim;
  extern int xseq;
  extern int xerr;
 +extern int xlw;
++extern int xlwauto;
 +extern int xhllw;
  extern int xfr;
  extern int xrr;
  /* global variables */
+@@ -491,6 +500,7 @@ int ex_krs(rset **krs, int *dir);
+ void ex_krsset(char *kwd, int dir);
+ void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
+ int ex_edit(const char *path, int len);
++int ex_lwsync(void);
+ sbuf *ex_regget(int id);
+ void ex_regput(int c, const char *s, int append);
+ 
