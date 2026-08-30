@@ -90,7 +90,7 @@ install() {
 }
 
 print_usage() {
-    echo "Usage: $0 {install|build|debug|clean}"
+    echo "Usage: $0 {install|pgobuild|build|debug|clean}"
     exit "$1"
 }
 
@@ -126,9 +126,66 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         # Start build process
         build && exit 0 || exit 1
         ;;
+    "pgobuild")
+        shift
+        # deltas.sh applies itself onto patch2vi.c and test_patch2vi.sh, so the
+        # training run rewrites them in place; keep copies and put them back.
+        pgorestore() {
+            [ -f patch2vi.c.pgo ] && mv -f patch2vi.c.pgo patch2vi.c
+            [ -f test_patch2vi.sh.pgo ] && mv -f test_patch2vi.sh.pgo test_patch2vi.sh
+            return 0
+        }
+        pgotrain() {
+            cp -f patch2vi.c patch2vi.c.pgo &&
+            cp -f test_patch2vi.sh test_patch2vi.sh.pgo || return 1
+            trap 'pgorestore; rename_main nextvi_main main; cd "$cbuild_OPWD"' EXIT
+            # -e drives the script with the embedded editor, no shell involved
+            log "$B" "./patch2vi -e deltas.sh"
+            ./patch2vi -e deltas.sh >/dev/null 2>&1 ||
+                log "$R" "Training run failed; the profile may be incomplete"
+            pgorestore
+            trap 'rename_main nextvi_main main; cd "$cbuild_OPWD"' EXIT
+        }
+        pgobuild() {
+            ccversion="$($CC --version)"
+            case "$ccversion" in *clang*) clang=1 ;; esac
+            if [ "$clang" = 1 ] && [ -z "$PROFDATA" ]; then
+                if command -v llvm-profdata >/dev/null 2>&1; then
+                    PROFDATA=llvm-profdata
+                elif xcrun -f llvm-profdata >/dev/null 2>&1; then
+                    PROFDATA="xcrun llvm-profdata"
+                fi
+                [ -z "$PROFDATA" ] && log "$R" "pgobuild with clang requires llvm-profdata" && exit 1
+            fi
+            rename_main main nextvi_main || {
+                log "$R" "Failed to rename main() in vi.c"
+                exit 1
+            }
+            trap 'rename_main nextvi_main main; cd "$cbuild_OPWD"' EXIT
+            run "$CC patch2vi.c -fprofile-generate=. -o patch2vi -O2 $CFLAGS" || return 1
+            pgotrain || return 1
+            [ "$clang" = 1 ] && run "$PROFDATA" merge ./*.profraw -o default.profdata
+            run "$CC patch2vi.c -fprofile-use=. -o patch2vi -O2 $CFLAGS" || return 1
+            rm -f ./*.gcda ./*.profraw ./default.profdata
+            rename_main nextvi_main main
+            trap 'cd "$cbuild_OPWD"' EXIT
+        }
+        require "${CC}"
+        require sed
+        [ -f ./deltas.sh ] || {
+            log "$R" "pgobuild needs deltas.sh for the training run"
+            exit 1
+        }
+        log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\" and PGO\""
+        pgobuild || {
+            log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\" and PGO\""
+            exit 1
+        } && exit 0 || exit 1
+        ;;
     "clean")
         shift
-        run rm -f patch2vi 2>/dev/null
+        run rm -f patch2vi patch2vi.c.pgo test_patch2vi.sh.pgo \
+            ./*.gcda ./*.profraw default.profdata 2>/dev/null
         exit 0
         ;;
     *)
