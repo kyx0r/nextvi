@@ -668,7 +668,9 @@ p2v_cmdline() (
 )
 
 # Run each script of the list $1, in order, output dropped; the first failure is
-# the result. Meant to be run on a tree at HEAD, which the caller restores.
+# the result. Meant to be run on a tree that already holds the applied set
+# the list names: HEAD for a whole chain, a snapshot for the search's next
+# script, $P2VI_PATCH naming what the tree carries.
 #
 # The whole list goes to the binary's own -e, which runs the scripts exactly as
 # the shell would - in order, each in its own editor lifetime, stopping at the
@@ -718,14 +720,70 @@ p2v_restore_sh() (
 	return 0
 )
 
-# Depth first over the orders a chain can be applied in: $1 is the chain so far,
-# $2 the candidates left. A candidate is only stepped into once the chain up to
-# and including it has really applied, from a tree at HEAD, and a step that
-# leads nowhere is taken back and the next candidate tried - a script that
-# applies here may still leave one further along with nothing to apply to. The
-# first order that takes every candidate is printed; without one, nothing is,
-# and the status says so. A subshell so its variables are its own: this calls
+# The tree a search node hands its children, saved as a snapshot: every
+# tracked file but compat/, plus everything untracked but compat/ - runs
+# create sources of their own (lsp.sh stages lsp.c, say) that later scripts
+# in the chain read and edit, so what a run leaves behind is as much state
+# as what it edits. Each candidate of a node loads the snapshot its parent
+# saved and applies just itself on top, so a step that failed or stepped
+# back never leaks its tree into the next try.
+# Usage: p2v_state_save DIR
+p2v_state_save() {
+	rm -rf "$1"
+	mkdir -p "$1"
+	# -c and -o in the one call, -z and -0: one git, one cp, paths kept
+	git ls-files -z -c -o --exclude-standard -- ':!compat' |
+		xargs -0 cp --parents --target-directory="$1"
+}
+
+# A snapshot back over the tree. Files a run added are not in the snapshot
+# and go first; edits and deletions a run made are undone by the copy that
+# follows. One cp: the snapshot is small, the sources are kilobytes.
+# Usage: p2v_state_load DIR
+p2v_state_load() {
+	git ls-files -z --others --exclude-standard -- ':!compat' |
+		xargs -0 rm -f
+	cp -a "$1/." .
+}
+
+# The candidates of $1 whose origins the chain does not still wait for, in
+# the order $1 holds them. One awk over the edge list for the whole level,
+# where p2v_deps spent one per candidate.
+# Usage: p2v_ready CANDIDATES
+p2v_ready() {
+	awk -v rest=" $1 " '
+	NF > 1 && index(rest, " " $2 " ")	{ dep[$1] = dep[$1] " " $2 }
+	END {
+		n = split(substr(rest, 2, length(rest) - 2), a, " ")
+		for (i = 1; i <= n; i++) {
+			ok = 1
+			m = split(dep[a[i]], ds, " ")
+			for (j = 1; j <= m; j++)
+				if (index(rest, " " ds[j] " "))
+					ok = 0
+			if (ok)
+				print a[i]
+		}
+	}' "$P2VITMP.edges" 2>/dev/null
+}
+
+# Depth first over the orders a chain can be applied in: $1 is the chain so
+# far, $2 the candidates left. A candidate is only stepped into once the
+# chain up to and including it has really applied, and a step that leads
+# nowhere is taken back and the next candidate tried - a script that applies
+# here may still leave one further along with nothing to apply to. The first
+# order that takes every candidate is printed; without one, nothing is, and
+# the status says so. A subshell so its variables are its own: this calls
 # itself, and a plain function shares one set with every level below it.
+#
+# The tree is carried in snapshots, not in git: the caller of a node saved
+# $P2VITMP.state.<depth> for the chain this level holds, every candidate
+# loads it and applies just itself on top, and a step that took saves the
+# snapshot the level below loads. $P2VI_PATCH is what tells the script which
+# origins the snapshot already carries - the same word the shell chain would
+# have handed it, read by -e and written into REG_APPLIED - so the prefix
+# never runs twice and a depth-d node costs one script, not d. What a failed
+# step left behind is dropped by the next load.
 p2v_search() (
 	IFS=$P2VIFS
 	if [ -z "$2" ]; then
@@ -737,24 +795,33 @@ p2v_search() (
 		printf "%s\n" "$((p2v_n - 1))" > "$P2VITMP.skip"
 		return 1
 	fi
-	for c in $2
+	# the applied set this level's candidates apply on top of: what the
+	# shell chain would have carried into the script
+	P2VI_PATCH=$1
+	export P2VI_PATCH
+	# the depth is the chain's length: this level loads state.<d>, a
+	# candidate that took saves state.<d+1> for the level below
+	p2v_d=0
+	for p2v_w in $1
 	do
-		# an origin of c still waiting: its blocks are not in yet
-		miss=
-		for d in $(p2v_deps "$c")
-		do
-			case " $2 " in
-			*" $d "*)	miss=1 ;;
-			esac
-		done
-		[ -n "$miss" ] && continue
-		p2v_restore_sh
-		p2v_runlist "$1 $c" || continue
+		p2v_d=$((p2v_d + 1))
+	done
+	# the first candidate needs no load: the tree is as the caller left
+	# it, which is just the snapshot this level loads - only a candidate
+	# after a failed or stepped-back one has debris to sweep
+	p2v_fresh=1
+	for c in $(p2v_ready "$2")
+	do
+		[ -n "$p2v_fresh" ] || p2v_state_load "$P2VITMP.state.$p2v_d" || continue
+		p2v_fresh=
+		p2v_runlist "$c" || continue
 		rest=
 		for o in $2
 		do
 			[ "$o" = "$c" ] || rest="$rest $o"
 		done
+		# a leaf has nobody to hand its tree to
+		[ -n "$rest" ] && p2v_state_save "$P2VITMP.state.$((p2v_d + 1))"
 		p2v_search "$1 $c" "$rest" && return 0
 	done
 	return 1
@@ -804,6 +871,7 @@ p2v_search_begin() (
 p2v_search_end() {
 	rm -rf "$P2VITMP.keep"
 	rm -f "$P2VITMP.edges" "$P2VITMP.skip" "$P2VITMP.build"
+	rm -rf "$P2VITMP".state.*
 }
 
 # The closure of $1's origins with $1 itself, an origin ahead of what names it
@@ -852,6 +920,9 @@ p2v_chain() (
 	while :
 	do
 		printf "%s\n" "$skip" > "$P2VITMP.skip"
+		# the root snapshot the walk loads at depth 0: the tree as this
+		# loop holds it - HEAD, the caller's own scripts on top
+		p2v_state_save "$P2VITMP.state.0"
 		chain=$(p2v_search "" "$1")
 		searched=$?
 		p2v_restore_sh
