@@ -74,18 +74,19 @@ install() {
 }
 
 print_usage() {
-    echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean|bench}"
+    echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean|retrieve|bench}"
+    echo "Options may be shortened to a prefix"
     exit "$1"
 }
 
 # Argument processing
 while [ $# -gt 0 ] || [ "$1" = "" ]; do
     case "$1" in
-    "install")
+    i*)
         shift
         [ -x ./vi ] && install && exit 0 || build && install && exit 0
         ;;
-    "debug")
+    d*)
         shift
         if command -v scan-build >/dev/null 2>&1; then
                 CC="scan-build $CC"
@@ -94,13 +95,9 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         log "$G" "Entering step: \"Append \"\$CFLAGS\" with debugging flags\""
         set -- build "$@"
         ;;
-    "" | "build")
+    "" | b | bu*)
         # If the user doesn't use "build" explicitly, do not run the build step again.
-        if [ "$1" = "build" ]; then
-            explicit="1"
-        else
-            [ -n "$1" ] && shift
-        fi
+        [ -n "$1" ] && explicit="1"
         if [ "$explicit" != "1" ]; then
             if [ -f ./vi ] || [ -f ./nextvi ]; then
                 log "$R" "Nothing to do; \"${BASE##*/}\" was already compiled"
@@ -110,7 +107,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         # Start build process
         build && exit 0 || exit 1
         ;;
-    "pgobuild")
+    p*)
         shift
         pgobuild() {
             ccversion="$($CC --version)"
@@ -137,12 +134,12 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
             exit 1
         } && exit 0 || exit 1
         ;;
-    "clean")
+    c*)
         shift
         run rm -f vi nextvi callgrind.out.* cachegrind.out.* 2>/dev/null
         exit 0
         ;;
-    "retrieve")
+    r*)
         shift
         if [ -x ./vi ]; then
             [ ! -e ./nextvi ] && mv ./vi ./nextvi
@@ -151,7 +148,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         fi
         readlink -f ./nextvi && exit 0
         ;;
-    "fetch")
+    f*)
         shift
         ! git diff --quiet HEAD && {
           log "$R" "Please stash changes before fetching."
@@ -164,7 +161,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         git branch -D upstream-temp
         log "$G" "Successfully fetched from upstream."
         ;;
-    "bench")
+    be*)
         shift
         export EXINIT="${EXINIT}:&dw1999.1Zx"
         valgrind --tool=callgrind ./vi vi.c
