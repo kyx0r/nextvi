@@ -4543,8 +4543,8 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f> 	curwin->row = xrow;
 	curwin->off = xoff;
 	curwin->top = xtop;4??0?
-4??+2m 1220reg p OK ex.c:2039:a42sc %? %@2152sc!0?
-1;4??!219reg ex.c:20392sc %? %@2132sc!0?
+4??+2m 1220reg p OK ex.c:2041:a42sc %? %@2152sc!0?
+1;4??!219reg ex.c:20412sc %? %@2132sc!0?
 ?0?
 %f+ 	xrow = curwin->row;
 	xoff = curwin->off;
@@ -4557,8 +4557,8 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 %f+ 	xrow = curwin->row;
 	xoff = curwin->off;
 	xtop = curwin->top;4??0?
-4??+2m 2220reg p OK ex.c:2055:a42sc %? %@2152sc!0?
-1;4??!219reg ex.c:20552sc %? %@2132sc!0?
+4??+2m 2220reg p OK ex.c:2057:a42sc %? %@2152sc!0?
+1;4??!219reg ex.c:20572sc %? %@2132sc!0?
 ?0?
 %f+ 			exbuf_load\(ex_buf\)
 			syn_setft\(xb_ft\);
@@ -4572,23 +4572,23 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 	}
 	w->next = curwin->next;
 	curwin->next = w;2??0?
-2??m 3220reg p OK ex.c:2156:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK ex.c:2158:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		w->row = w->off = w->top = w->left = 0;$3??0?
-3??m 3220reg p OK ex.c:2156:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK ex.c:2158:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			exbuf_load\(ex_buf\)
 			syn_setft\(xb_ft\);
 		}4??0?
-4??+3m 3220reg p OK ex.c:2156:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK ex.c:2158:a42sc %? %@2152sc!1q0?
 %f+ 	}
 	w->next = curwin->next;
 	curwin->next = w;5??0?
-5??-1m 3220reg p OK ex.c:2156:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg ex.c:21562sc %? %@2132sc!0?
+5??-1m 3220reg p OK ex.c:2158:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg ex.c:21582sc %? %@2132sc!0?
 '\''1i 	curwin->topsub = xtopsub;
-??!219reg ex.c:2039:m12sc %? %@2142sc!0?
+??!219reg ex.c:2041:m12sc %? %@2142sc!0?
 '\''2i 	xtopsub = curwin->topsub;
-??!219reg ex.c:2055:m22sc %? %@2142sc!0?
-'\''3s/>l/>topsub = w->l/??!219reg ex.c:2156:m32sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:2057:m22sc %? %@2142sc!0?
+'\''3s/>l/>topsub = w->l/??!219reg ex.c:2158:m32sc %? %@2142sc!b2%ya 98?0?
 %f> 	int dir, off, pos, psn = sb->s_n;
 	int inwin = poff == &xoff;	/\* prompts own the whole terminal row \*/
 	int winx = inwin \? curwin->x : 0;
@@ -6409,7 +6409,7 @@ exit 0
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 --- a/ex.c
 +++ b/ex.c
-@@ -2037,6 +2037,7 @@
+@@ -2039,6 +2039,7 @@
  	curwin->row = xrow;
  	curwin->off = xoff;
  	curwin->top = xtop;
@@ -6417,7 +6417,7 @@ exit 0
  	curwin->left = xleft;
  	curwin->buf = ex_buf;
  	ex_buf->td = xtd;	/* win_load() reads td back from the buffer */
-@@ -2053,6 +2054,7 @@
+@@ -2055,6 +2056,7 @@
  	xrow = curwin->row;
  	xoff = curwin->off;
  	xtop = curwin->top;
@@ -6425,7 +6425,7 @@ exit 0
  	xleft = curwin->left;
  }
  
-@@ -2153,7 +2155,7 @@
+@@ -2155,7 +2157,7 @@
  			exbuf_load(ex_buf)
  			syn_setft(xb_ft);
  		}
