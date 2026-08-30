@@ -91,17 +91,18 @@ install() {
 
 print_usage() {
     echo "Usage: $0 {install|pgobuild|build|debug|clean}"
+    echo "Options may be shortened to a prefix"
     exit "$1"
 }
 
 # Argument processing
 while [ $# -gt 0 ] || [ "$1" = "" ]; do
     case "$1" in
-    "install")
+    i*)
         shift
         [ -x ./patch2vi ] && install && exit 0 || build && install && exit 0
         ;;
-    "debug")
+    d*)
         shift
         if command -v scan-build >/dev/null 2>&1; then
                 CC="scan-build $CC"
@@ -110,13 +111,9 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         log "$G" "Entering step: \"Append \"\$CFLAGS\" with debugging flags\""
         set -- build "$@"
         ;;
-    "" | "build")
+    "" | b | bu*)
         # If the user doesn't use "build" explicitly, do not run the build step again.
-        if [ "$1" = "build" ]; then
-            explicit="1"
-        else
-            [ -n "$1" ] && shift
-        fi
+        [ -n "$1" ] && explicit="1"
         if [ "$explicit" != "1" ]; then
             if [ -f ./patch2vi ]; then
                 log "$R" "Nothing to do; \"${BASE##*/}\" was already compiled"
@@ -126,7 +123,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
         # Start build process
         build && exit 0 || exit 1
         ;;
-    "pgobuild")
+    p*)
         shift
         # deltas.sh applies itself onto patch2vi.c and test_patch2vi.sh, so the
         # training run rewrites them in place; keep copies and put them back.
@@ -182,7 +179,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
             exit 1
         } && exit 0 || exit 1
         ;;
-    "clean")
+    c*)
         shift
         run rm -f patch2vi patch2vi.c.pgo test_patch2vi.sh.pgo \
             ./*.gcda ./*.profraw default.profdata 2>/dev/null
