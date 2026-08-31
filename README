@@ -664,6 +664,11 @@ EX COMMANDS
              Example: store ranges in <a> and <s> for later reuse in :f>
              :>top>,#>bottom>m 97 115:'97,'115f>middle
 
+     m![#marks]
+             Unset line mark(s)
+
+             No argument unsets all marks.
+
      [range]ya[#reg]
              Yank into a register
 
@@ -1363,8 +1368,8 @@ CODE MAP
      | 735 led.c    |  insert mode/output  |
      | 751 regex.c  |  pikevm              |
      | 1903 vi.c    |  normal mode/general |
-     | 1938 ex.c    |  ex options/commands |
-     | 7794 total   |  wc -l *.c|sort      |
+     | 1948 ex.c    |  ex options/commands |
+     | 7804 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
