@@ -667,7 +667,7 @@ EX COMMANDS
      m![#marks]
              Unset line mark(s)
 
-             No argument unsets all marks.
+             No argument unsets all marks in the current buffer.
 
      [range]ya[#reg]
              Yank into a register
