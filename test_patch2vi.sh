@@ -144,6 +144,16 @@ check_script "single pattern uses .,\$f>" \
 " \
 	'\.,$f>' '>[^$]*>'
 
+# Every file a body selects has its marks unset first ("b<N>" then "m!"): the
+# ids restart at 1 for each file of each section, and the sections of a run
+# share the buffers.
+check_script "file body unsets the file's marks" \
+	"old
+" \
+	"new
+" \
+	'b0.m!' ''
+
 # A single anchored change emits a fallback chain. The whole-hunk
 # pattern is multi-line (%f>, mode 0); the single-line fallbacks
 # (top context, deleted line) default to mode 1 and search the live
@@ -1536,6 +1546,47 @@ else
 	echo "    origin=[$k_both]"
 	echo "    clean=[$k_clean]"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
+fi
+
+# A missed group in a block must not edit at the host section's mark. Both
+# sections number their marks from 1 and one run shares the buffers, so the
+# ids collide by construction; an insert rung lands at whatever mark it finds,
+# so a block whose search missed used to insert at the host's line instead of
+# reporting. The bodies unset the marks of every file they select, which
+# leaves the missed group addressing a mark nobody set.
+#
+# The host needs two groups far enough apart not to merge into one (M3, M30),
+# so its second mark is set by the time the block's second group misses. The
+# block edits M8 (a substitute) and inserts after M18 - the insert is what
+# lands blindly. Then the anchors of that insert are taken out of the tree.
+i=1
+: > "$R/mm.orig"
+while [ $i -le 40 ]; do printf 'M%d\n' "$i" >> "$R/mm.orig"; i=$((i + 1)); done
+awk 'NR == 1 { print; print "PROBE"; next } { print }' "$R/mm.orig" > "$R/mm.a"
+sed -e 's/^M3$/M3x/' -e 's/^M30$/M30x/' "$R/mm.orig" > "$R/mm.b"
+for v in a b; do
+	diff -u "$R/mm.orig" "$R/mm.$v" |
+		sed -e '1s|.*|--- a/mm.c|' -e '2s|.*|+++ b/mm.c|' > "$R/mm$v.diff"
+	"$R_P2VI" -r "$R/mm$v.diff" > "$R/mm$v.sh"
+done
+cp "$R/mm.orig" "$R/mm.c"
+# the merge, as ex: an "i" would wait on the interactive reader, so the added
+# line is a yanked copy renamed in place
+coderive mma.sh mmb.sh '%s/^M8$/M8c/:19ya 97:19pu 97:20s/^M18$/NEW18/:w:q!'
+sed -e 's/^M17$/Q17/' -e 's/^M18$/Q18/' -e 's/^M19$/Q19/' "$R/mm.orig" > "$R/mm.c"
+# QF2 so the run reports the miss and still writes: without it the session
+# quits at the error and the buffer never reaches disk, which hides the edit
+mm_log=$( ( cd "$R" && chmod +x mma.sh new.sh &&
+	VI="$VI" QF2=1 sh mma.sh new.sh ) 2>&1 | tr -d '\r' )
+mm_res="$(tr '\n' ' ' < "$R/mm.c")"
+if printf '%s\n' "$mm_log" | grep -q '^FAIL mm\.c:' &&
+   ! grep -q '^NEW18$' "$R/mm.c" &&
+   grep -q '^M8c$' "$R/mm.c" && grep -q '^M30x$' "$R/mm.c"; then
+	ok "compat: a block's missed group reports, it does not edit at the host's mark"
+else
+	fail "compat: a block's missed group reports, it does not edit at the host's mark"
+	printf '%s\n' "$mm_log" | grep -E '^(FAIL|OK|compat)' | sed 's/^/    /'
+	echo "    result=[$mm_res]"
 fi
 
 # An origin whose inserted line is not unique needed a discriminating probe

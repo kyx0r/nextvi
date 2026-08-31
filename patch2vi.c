@@ -938,6 +938,7 @@ static void sb_seg(sbuf *out, const char *seg)
  *   s / p          leave xrow and xoff alone
  *   m              sets a line mark ("+2m 0" marks cursor+2 as <0>); the mark
  *                  auto-adjusts in lbuf_replace() as edits above it shift lines
+ *   m!             unsets marks; bare, every mark of the current buffer
  *   'N             addresses that mark ("'0c" edits the marked line)
  *   vis, w, q!, sc!, ??!   setup, writes, quits, specials, conditionals
  */
@@ -2816,7 +2817,9 @@ static void gen_group_segments(file_patch_t *fp)
 
 	/* Phase 1 (resolve): every group's search against the register cache,
 	 * recording its target line in a mark. Edit marks start at 1, mark 0
-	 * being the global searches' cursor scratch. */
+	 * being the global searches' cursor scratch. The ids restart here for
+	 * every file of every section, which the body's leading "m!" makes
+	 * safe (emit_file_body). */
 	int next_id = WIN_SAVE_MARK + 1;
 	int first_search = 1;
 	for (int gi = 0; gi < ngroups; gi++) {
@@ -3015,14 +3018,24 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
 		free_group(&groups[gi]);
 }
 
-/* One file inside a body: select its buffer, yank it into the find register so
- * every relative search of this file runs against a cache that stays
- * byte-identical to the pristine buffer (a file the patch creates has nothing
- * to cache), then its groups. */
+/* One file inside a body: select its buffer, unset the marks left on it, yank
+ * it into the find register so every relative search of this file runs against
+ * a cache that stays byte-identical to the pristine buffer (a file the patch
+ * creates has nothing to cache), then its groups.
+ *
+ * The mark ids restart at 1 for every file of every section, and the sections
+ * of a run share the editor and so the buffers: without the "m!" a section
+ * running after another over the same file inherits its marks, and a group
+ * whose phase-1 search missed would edit at the previous section's mark
+ * instead of failing. */
 static void emit_file_body(sbuf *out, file_patch_t *fp, int buf, int cache)
 {
 	sb_printf(out, "b%d", buf);
 	EMIT_SEP(out);
+	if (relative_mode) {
+		sb_str(out, "m!");
+		EMIT_SEP(out);
+	}
 	if (cache) {
 		sb_str(out, "%ya 98");
 		EMIT_SEP(out);
@@ -5101,18 +5114,14 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			if (xbufcur)
 				bufs_switch(0);
 			for (k = 0; k < xbufcur; k++) {
-				struct lbuf *lb = bufs[k].lb;
-				lbuf_saved(lb, 1);
-				/* exbuf_save() persists the cursor and the marks
-				 * live on the lbuf, so the next block would :e
-				 * each file with the previous one's position and
-				 * marks - and a non-fatal phase-1 miss would fall
-				 * through to a phase-2 edit steered by them.
-				 * Rewind and drop the marks, as a freshly opened
-				 * file has none. */
+				/* exbuf_save() persists the cursor, so the next
+				 * block would :e each file with the previous
+				 * one's position. Rewind it, as a freshly opened
+				 * file has none. The marks live on the lbuf and
+				 * outlive the session too; each body unsets its
+				 * own (emit_file_body). */
+				lbuf_saved(bufs[k].lb, 1);
 				bufs[k].row = bufs[k].off = bufs[k].top = 0;
-				lb->mark_n = 0;
-				lb->mark_sb[0] = lb->mark_se[0] = -1;
 			}
 			ed_free_session();
 		}
