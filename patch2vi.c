@@ -62,6 +62,7 @@ typedef struct {
 static file_patch_t *files;
 static int nfiles, files_cap;
 static const char *cur_file_path;  /* set per-file for error messages */
+static int cur_sec_reg;            /* section register, 0 = host body */
 static int relative_mode = 1;  /* 1=relative search (the default, -r),
 				* 0=absolute line numbers (-a); last of the
 				* two on the command line wins */
@@ -1068,7 +1069,9 @@ static void emit_reg_call(sbuf *out, int reg, int deep)
 /* Emit the ??! error check after a command that may fail, with the FAIL
  * location it reports through the shared report chain in REG_LOC: phase 1
  * (search) reports <path>:<line>, phase 2 (edit at a mark) adds :m<id>, and
- * mark_id < 0 means no mark (new-file insert, custom abs command).
+ * mark_id < 0 means no mark (new-file insert, custom abs command). A compat
+ * section adds :r<reg>, its own section register: ids restart per section, so
+ * a mark alone names no stream.
  * phase selects the report register, whose definedness is the DBG<n> switch
  * and whose chain ends in the phase's INTR and QF<n> calls.
  * ids[0..nids) are the capture tags of a fallback chain - every pattern
@@ -1082,6 +1085,8 @@ static void emit_err_check(sbuf *out, int phase, int line, int mark_id,
 	sbuf_smake(loc, SB_INIT)
 	sb_printf(loc, "%s:%d", cur_file_path ? cur_file_path :
 		  phase == 1 ? "?" : "", line);
+	if (cur_sec_reg > 0)
+		sb_printf(loc, ":r%d", cur_sec_reg);
 	if (phase == 2) {
 		sb_str(loc, ":m");
 		if (mark_id >= 0)
@@ -2817,9 +2822,8 @@ static void gen_group_segments(file_patch_t *fp)
 
 	/* Phase 1 (resolve): every group's search against the register cache,
 	 * recording its target line in a mark. Edit marks start at 1, mark 0
-	 * being the global searches' cursor scratch. The ids restart here for
-	 * every file of every section, which the body's leading "m!" makes
-	 * safe (emit_file_body). */
+	 * being the global searches' cursor scratch. Ids restart per file per
+	 * section; emit_file_body unsets the buffer's marks first. */
 	int next_id = WIN_SAVE_MARK + 1;
 	int first_search = 1;
 	for (int gi = 0; gi < ngroups; gi++) {
@@ -3023,11 +3027,8 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
  * a cache that stays byte-identical to the pristine buffer (a file the patch
  * creates has nothing to cache), then its groups.
  *
- * The mark ids restart at 1 for every file of every section, and the sections
- * of a run share the editor and so the buffers: without the "m!" a section
- * running after another over the same file inherits its marks, and a group
- * whose phase-1 search missed would edit at the previous section's mark
- * instead of failing. */
+ * Mark ids restart per file per section, and one run's sections share the
+ * buffers. "m!" leaves a missed group addressing an unset mark. */
 static void emit_file_body(sbuf *out, file_patch_t *fp, int buf, int cache)
 {
 	sb_printf(out, "b%d", buf);
@@ -3764,6 +3765,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 			compat_win_enter(&sv_rel);
 		}
 		sbuf_smake(bsb, SB_INIT)
+		cur_sec_reg = s->suf;
 		emit_section_body(bsb, s->files, s->nf, uf, nuf);
 		if (s->cb) {
 			emit_section_writes(bsb, s->files, s->nf, uf, nuf, own);
@@ -3771,6 +3773,7 @@ static void emit_one_call(file_patch_t **active, int nactive)
 		}
 		sbuf_nul(bsb)
 		stage_section(bsb, s->suf);
+		cur_sec_reg = 0;
 		free(bsb->s);
 		if (s->cb)
 			compat_win_leave(sv_rel);
@@ -4094,6 +4097,9 @@ typedef struct {
 	char **sects;	/* new shape: one staged section body per buffer, in index
 			 * order; NULL/0 for the old single-body shape */
 	int nsects;
+	int *secregs;	/* the staged sections' registers, in the same order:
+			 * 0 = host body, REG_SEC_BASE+k = a compat block */
+	int nsecregs;
 } p2vi_block_t;
 
 /* One editor lifetime: the real files as b0..bN-1, then one in-RAM buffer per
@@ -4140,6 +4146,7 @@ static void free_block(p2vi_block_t *blk)
 	for (int i = 0; i < blk->nsects; i++)
 		free(blk->sects[i]);
 	free(blk->sects);
+	free(blk->secregs);
 	free(blk->body);
 	memset(blk, 0, sizeof(*blk));
 }
@@ -4185,11 +4192,20 @@ static int parse_vi_call(const char *s, p2vi_block_t *blk)
 		if (!strncmp(s, "\"$P2VIF\"", 8)) {
 			s += 8;
 			/* new shape names section/driver buffers as "$P2VIF".<sfx>;
-			 * the section bodies are loaded from the staged printfs, so
-			 * here the suffix is only skipped, not turned into a path */
-			if (*s == '.')
+			 * the section bodies are loaded from the staged printfs,
+			 * so the suffix is not a path. A numeric one is the
+			 * section's register, kept for the failure reports; the
+			 * driver's ".d" is not one */
+			if (*s == '.') {
+				const char *d = ++s;
 				while (*s && *s != ' ')
 					s++;
+				if (isdigit((unsigned char)*d)) {
+					blk->secregs = erealloc(blk->secregs,
+						(blk->nsecregs + 1) * sizeof(int));
+					blk->secregs[blk->nsecregs++] = atoi(d);
+				}
+			}
 			continue;
 		}
 		/* one quoted word, as sq_path wrote it: a quote closes it and a
@@ -4719,9 +4735,12 @@ static int compat_pre_script;	/* the second positional is a generated script */
  * ran and which still holds every edit verbatim.
  *
  * The two are joined by the mark. A phase-2 FAIL line reads
- * "<path>:<line>:m<id>", and in the stream a mark address only ever occurs at
- * the head of a whole separator-delimited command, so "<sep>'<id>" names the
- * failed edit and nothing else. What is lost is where it should go: its anchor
+ * "<path>:<line>:m<id>", a compat section's "<path>:<line>:r<reg>:m<id>", and
+ * in the stream a mark address only ever occurs at the head of a whole
+ * separator-delimited command, so "<sep>'<id>" names the failed edit and
+ * nothing else - within one stream. Ids restart per section, so the stream is
+ * the one <reg> names: the block's body, yanked there by its gate. P2VI_REG
+ * holds the host's. What is lost is where it should go: its anchor
  * did not resolve, so the only placement left is the line number the FAIL line
  * carries - the site's line in the original file, which is approximate once the
  * hunks above it have shifted things. So the edit is re-aimed at that line and
@@ -4730,26 +4749,59 @@ static int compat_pre_script;	/* the second positional is a generated script */
  * session is handed over parked on the first such spot.
  */
 
-/* One line of REG_FLOG, cut up where it lies: "FAIL <path>:<line>:m<id>", read
- * off the end so a path holding a colon still resolves. Returns the mark, or -1
- * for a line with none - a phase-1 report, which names an anchor that did not
- * resolve and so no edit to recover; the phase-2 site it was to steer is logged
- * right after it and is the actionable half of the same failure. */
-static int fail_parse(char *s, char **path, int *line)
+/* One line of REG_FLOG, cut up where it lies: "FAIL <path>:<line>:m<id>" or
+ * "FAIL <path>:<line>:r<reg>:m<id>", read off the end so a path holding a colon
+ * still resolves. *reg is the section register, 0 for a host body. Returns the
+ * mark, or -1 for a line with none - a phase-1 report, which names an anchor
+ * that did not resolve and so no edit to recover; the phase-2 site it was to
+ * steer is logged right after it and is the actionable half of the same
+ * failure. */
+static int fail_parse(char *s, char **path, int *line, int *reg)
 {
 	char *c;
 	int mark;
+	*reg = 0;
 	if (strncmp(s, "FAIL ", 5) || !(c = strrchr(s, ':')) || c[1] != 'm'
 			|| !isdigit((unsigned char)c[2]))
 		return -1;
 	mark = atoi(c + 2);
 	*c = '\0';
-	if (!(c = strrchr(s, ':')) || !isdigit((unsigned char)c[1]))
+	if (!(c = strrchr(s, ':')))
+		return -1;
+	if (c[1] == 'r' && isdigit((unsigned char)c[2])) {
+		*reg = atoi(c + 2);
+		*c = '\0';
+		if (!(c = strrchr(s, ':')))
+			return -1;
+	}
+	if (!isdigit((unsigned char)c[1]))
 		return -1;
 	*c = '\0';
 	*line = atoi(c + 1);
 	*path = s + 5;
 	return mark;
+}
+
+/* Section register of the last FAIL line past skip bytes of REG_FLOG: 0 = a
+ * host body, -1 = no FAIL line there. Read only, the log is the run's own
+ * record. */
+static int flog_last_reg(int skip)
+{
+	sbuf *log = ex_regget(REG_FLOG);
+	char *s, *nl, *p;
+	int reg = -1;
+	if (!log || log->s_n <= skip)
+		return -1;
+	for (s = log->s + skip; (nl = strchr(s, '\n')); s = nl + 1) {
+		if (strncmp(s, "FAIL ", 5))
+			continue;
+		reg = 0;
+		for (p = s + 5; p < nl; p++)
+			if (p[0] == ':' && p[1] == 'r' &&
+					isdigit((unsigned char)p[2]))
+				reg = atoi(p + 2);
+	}
+	return reg;
 }
 
 /* The whole command addressing mark <mark>, at whatever depth it sits: a
@@ -4783,7 +4835,7 @@ static int buf_by_path(const char *path)
 /* Put one failure back, in the buffer it belongs to. Returns the row the
  * session should park on, or -1 if that file is not even open. */
 static int fail_place(const char *body, const char *path, int line, int mark,
-		      int *bi, int *shift)
+		      int reg, int *bi, int *shift)
 {
 	char *site = stream_site(body, mark);
 	const char *addr, *verb;
@@ -4818,7 +4870,10 @@ static int fail_place(const char *body, const char *path, int line, int mark,
 		}
 	}
 	if (!ok) {
-		sb_printf(sb, ">>> p2v FAIL %s:%d:m%d\n", path, line, mark);
+		sb_printf(sb, ">>> p2v FAIL %s:%d", path, line);
+		if (reg > 0)
+			sb_printf(sb, ":r%d", reg);
+		sb_printf(sb, ":m%d\n", mark);
 		if (site)
 			sb_str(sb, site);
 		if (sb->s[sb->s_n - 1] != '\n')
@@ -4838,15 +4893,15 @@ static int fail_place(const char *body, const char *path, int line, int mark,
  * nothing - which is every run that did not fail, so the common path is one
  * register lookup.
  *
- * bodyreg holds the body the logged marks belong to: the driver's own, or the
- * staged section a -E selector run singles out. skip is how many bytes the log
- * already held before that body ran, so a run that reports one section's
- * misses does not place the whole call's. */
+ * bodyreg is the fallback stream, for lines that name no register: the
+ * driver's own, or the staged section a -E selector run singles out. skip is
+ * how many bytes the log already held before that body ran, so a run that
+ * reports one section's misses does not place the whole call's. */
 static int fail_report(int sepb, int *prow, int bodyreg, int skip)
 {
-	sbuf *log = ex_regget(REG_FLOG), *body = ex_regget(bodyreg);
+	sbuf *log = ex_regget(REG_FLOG), *body = ex_regget(bodyreg), *str;
 	char *s, *nl, *txt, *path;
-	int *shift, bi, row, line, mark, first = -1, n = 0;
+	int *shift, bi, row, line, mark, reg, first = -1, n = 0;
 	if (!log || log->s_n <= skip || !body || !xbufcur)
 		return -1;
 	shift = ecalloc(xbufcur, sizeof(int));
@@ -4861,9 +4916,13 @@ static int fail_report(int sepb, int *prow, int bodyreg, int skip)
 	 * into an upper-case register */
 	for (s = txt; (nl = strchr(s, '\n')); s = nl) {
 		*nl++ = '\0';
-		if ((mark = fail_parse(s, &path, &line)) < 0)
+		if ((mark = fail_parse(s, &path, &line, &reg)) < 0)
 			continue;
-		row = fail_place(body->s, path, line, mark, &bi, shift);
+		/* the block's body sits in its own register, and a mark id
+		 * says nothing across sections */
+		if (!(str = reg > 0 ? ex_regget(reg) : body))
+			str = body;
+		row = fail_place(str->s, path, line, mark, reg, &bi, shift);
 		if (row >= 0 && first < 0) {
 			first = bi;
 			*prow = row;
@@ -4965,6 +5024,7 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 	char **paths = NULL, *body, *ln;
 	int npaths = 0, *bmap = NULL, nmap = 0, i, k, st = 0, sep, bad = 0;
 	int fbuf = -1, frow = 0, failreg = P2VI_REG, logskip = 0;
+	int lastreg = -1, logpre = 0;
 	if (snap_blk < 0 || snap_blk >= nblks)
 		snap_blk = nblks - 1;
 	/* sized for the union of every block's files: an eviction would
@@ -5025,6 +5085,8 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			break;
 		xmpt = 0;
 		xvis &= ~4;
+		sbuf *lg0 = ex_regget(REG_FLOG);	/* what this block adds */
+		logpre = lg0 ? lg0->s_n : 0;
 		body = uc_dup(blks[i].body);
 		if (strip_body_tail(body, sep) < 0
 		    || !(ln = remap_bufnums(body, sep, bmap, nb))) {
@@ -5059,6 +5121,7 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 		} else
 			ex_exec(body);
 		free(body);
+		lastreg = flog_last_reg(logpre);
 		/* Drop the section scaffolding: its %@ calls have run and applied
 		 * their edits, so the handover and the read-back must see only the
 		 * real files. The section buffers are the topmost slots; switch to
@@ -5114,12 +5177,10 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			if (xbufcur)
 				bufs_switch(0);
 			for (k = 0; k < xbufcur; k++) {
-				/* exbuf_save() persists the cursor, so the next
-				 * block would :e each file with the previous
-				 * one's position. Rewind it, as a freshly opened
-				 * file has none. The marks live on the lbuf and
-				 * outlive the session too; each body unsets its
-				 * own (emit_file_body). */
+				/* exbuf_save() persists the cursor: rewind it,
+				 * a freshly opened file has none. Marks live on
+				 * the lbuf and outlive the session too - each
+				 * body unsets its own (emit_file_body). */
 				lbuf_saved(bufs[k].lb, 1);
 				bufs[k].row = bufs[k].off = bufs[k].top = 0;
 			}
@@ -5130,9 +5191,25 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 		free(paths[i]);
 	free(paths);
 	free(bmap);
-	if (st > 0)
-		fprintf(stderr, "replay: block %d failed with status %d\n",
+	if (st > 0) {
+		/* the block is the script, the register the section inside it:
+		 * what -E takes as its selector */
+		fprintf(stderr, "replay: block %d failed with status %d",
 			bad, st);
+		if (lastreg > 0)
+			fprintf(stderr, ", last FAIL in reg %d", lastreg);
+		else if (bad > 0) {
+			const char *pfx = ", compat regs";
+			p2vi_block_t *b = &blks[bad - 1];
+			for (i = 0; i < b->nsecregs; i++) {
+				if (b->secregs[i] < REG_SEC_BASE)
+					continue;
+				fprintf(stderr, "%s %d", pfx, b->secregs[i]);
+				pfx = "";
+			}
+		}
+		fputc('\n', stderr);
+	}
 	return st;
 }
 
