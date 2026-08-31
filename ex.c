@@ -601,7 +601,7 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 	}
 	off = xoff;
 	if (xrow < beg || xrow >= end) {
-		off = dir < 0 ? lbuf_eol(xb, end - 1, 1) : 0;
+		off = dir < 0 ? lbuf_eol(xb, end - 1, 2) : 0;
 		end--;
 		nbeg = dir > 0 ? beg : end;
 		end++;
@@ -1129,7 +1129,8 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	free(pat);
 	int offs[rs->nsubc];
 	char *lnb, *ln, *suf = "", *fr = NULL;
-	int b1 = 0, pend, rflg = REG_NEWLINE;
+	int b1 = 0, pend, rflg = REG_NEWLINE, hit = 0;
+	sbuf_smake(r, 256)
 	for (i = 0, flg = 0; s[i]; i++) {
 		if (s[i] == 'g')
 			flg |= 1;
@@ -1180,15 +1181,16 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		}
 		ln += b1;
 		mltest:;
-		sbuf *r = NULL;
+		hit = 0;
+		sbuf_cut(r, 0)
 		lnb = ln - b1;		/* start of text not yet copied */
 		while (rset_find(rs, ln, offs, rflg) >= 0) {
 			rflg |= REG_NOTBOL;	/* only the first search is at bol */
 			if (offs[xgrp] < 0) {
 				ln += offs[1] > 0 ? offs[1] : uc_len(ln);
 				continue;
-			} else if (!r)
-				sbuf_make(r, 256)
+			}
+			hit = 1;
 			sbuf_mem(r, lnb, ln + offs[xgrp] - lnb)
 			if (rep) {
 				for (_rep = rep; *_rep; _rep++) {
@@ -1217,12 +1219,11 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 			if (!*ln || !(flg & 1))
 				break;
 		}
-		if (r) {
+		if (hit) {
 			sbuf_str(r, lnb)
 			sbufn_str(r, suf)	/* text after the o2 offset */
 			if (reg >= 0) {
 				ex_regput(reg, r->s, 0);
-				sbuf_free(r)
 				first = 0;
 				goto out;
 			} else if (first < 0) {	/* undo marks */
@@ -1240,7 +1241,6 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 				lbuf_edit(xb, r->s, i, i + 1, 0, 0);
 				last = i;
 			}
-			sbuf_free(r)
 		}
 	}
 	if (first >= 0) {	/* redo marks */
@@ -1250,6 +1250,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	}
 	out:
 	free(fr);
+	free(r->s);
 	if (rs != xkwdrs)
 		rset_free(rs);
 	free(rep);
