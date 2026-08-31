@@ -601,10 +601,10 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 	}
 	off = xoff;
 	if (xrow < beg || xrow >= end) {
-		off = 0;
+		off = dir < 0 ? lbuf_eol(xb, end - 1, 1) : 0;
 		end--;
 		nbeg = dir > 0 ? beg : end;
-		end += dir < 0;
+		end++;
 		pskip = -1;
 		nskip = 0;
 	} else {
