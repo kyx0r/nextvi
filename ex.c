@@ -1088,7 +1088,16 @@ static void *ec_bufsave(char *loc, char *cmd, char *arg)
 static void *ec_mark(char *loc, char *cmd, char *arg)
 {
 	int beg, end, o1 = xoff, o2 = xoff;
-	if (ex_region(loc, &beg, &end, &o1, &o2))
+	if (cmd[1] == '!') {
+		if (!*arg) {
+			xb->mark_n = 0;
+			xb->mark_sb[0] = -1;
+			xb->mark_se[0] = -1;
+			return NULL;
+		}
+		beg = -1;
+		end = 0;
+	} else if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	for (int i = 0; uc_isdigit(*arg); i++) {
 		int mk;
@@ -1717,6 +1726,7 @@ static struct excmd {
 	{"g!", ec_glob},
 	{"g", ec_glob},
 	EO(mpt),
+	{"m!", ec_mark},
 	{"m", ec_mark},
 	{"q!", ec_quit},
 	{"q", ec_quit},
