@@ -570,9 +570,11 @@ fi
 
 exit 0
 === PATCH2VI PATCH ===
+diff --git a/conf.c b/conf.c
+index bf37a9ce..7cb8e40e 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -298,7 +298,7 @@
+@@ -298,7 +298,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
  ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
@@ -581,9 +583,11 @@ exit 0
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
+diff --git a/ex.c b/ex.c
+index 4efc8c2e..289b4785 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1674,6 +1674,54 @@
+@@ -1674,6 +1674,54 @@ _EO(left,
  	return NULL;
  )
  
@@ -638,7 +642,7 @@ exit 0
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1726,6 +1774,7 @@
+@@ -1726,6 +1774,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -646,6 +650,9 @@ exit 0
  	{"m!", ec_mark},
  	{"m", ec_mark},
  	{"q!", ec_quit},
+diff --git a/modal.c b/modal.c
+new file mode 100644
+index 00000000..dbaed0bf
 --- /dev/null
 +++ b/modal.c
 @@ -0,0 +1,336 @@
@@ -985,6 +992,9 @@ exit 0
 +	}
 +	return ptr;
 +}
+diff --git a/test b/test
+new file mode 100644
+index 00000000..683c8fe6
 --- /dev/null
 +++ b/test
 @@ -0,0 +1,5 @@
@@ -993,6 +1003,8 @@ exit 0
 +
 +(out (3 + 9 - 5 + 23 / 10))
 +(out (asd3+9))
+diff --git a/vi.c b/vi.c
+index c4d07045..ca7f2945 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -15,6 +15,7 @@
