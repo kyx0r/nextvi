@@ -79,7 +79,8 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		for \(mk = 0; uc_isdigit\(\*arg\); arg\+\+\)9??0?
 grp 09??-9m 1220reg p OK ex.c:1093:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:10932sc %? %@2132sc!0?
-'\''1s/_/->/??!219reg ex.c:1093:m12sc %? %@2142sc!b1m!%ya 98?0?
+'\''1c 			lbuf_markclear(xb);
+??!219reg ex.c:1093:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 
 #define lbuf_copymark\(dst, src\) \{ dst\[0] = src\[0]; dst\[1] = src\[1]; }
 
@@ -626,6 +627,15 @@ static void mark_set(struct mhash **ph, int id, int pos, int off)
 ??!219reg lbuf.c:43:m42sc %? %@2142sc!0?
 '\''5,#+1c 	} else if (mk >= 0)
 		mark_set(&lb->mark, mk, pos, off);
+}
+
+/* drop every hash-stored mark */
+void lbuf_markclear(struct lbuf *lb)
+{
+	if (lb->mark) {
+		memset(lb->mark->slot, -1, lb->mark->sz * 3 * sizeof(int));
+		lb->mark->n = 0;
+	}
 ??!219reg lbuf.c:57:m52sc %? %@2142sc!0?
 '\''6c 		m = mk >= 0 ? mark_find(lb->mark, mk) : NULL;
 ??!219reg lbuf.c:71:m62sc %? %@2142sc!0?
@@ -773,6 +783,35 @@ struct linfo \{.*(	int modified;			/\* modification state \*/)
 	int hist_sz;			/\* size of hist\[] \*/9??0?
 grp 09??-8m 3220reg p OK vi.h:140:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.h:1402sc %? %@2132sc!0?
+?0?
+%f+ void lbuf_emark\(struct lbuf \*lb, struct lopt \*lo, int end, int o2\);
+struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\);
+void lbuf_mark\(struct lbuf \*lb, int mk, int pos, int off\);
+int lbuf_jump\(struct lbuf \*lb, int mk, int \*pos, int \*off\);
+int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\);
+int lbuf_redo\(struct lbuf \*lb, int \*row, int \*off\);1??0?
+1??+2m 41q0?
+%f+ void lbuf_emark\(struct lbuf \*lb, struct lopt \*lo, int end, int o2\);
+struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\);
+void lbuf_mark\(struct lbuf \*lb, int mk, int pos, int off\);4??0?
+4??+2m 4220reg p OK vi.h:171:a42sc %? %@2152sc!1q0?
+grp 1%f+ void lbuf_emark\(struct lbuf \*lb, struct lopt \*lo, int end, int o2\);.*?
+struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\);.*?
+(void lbuf_mark\(struct lbuf \*lb, int mk, int pos, int off\);)7??0?
+grp 07??m 4220reg p OK vi.h:171:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> int lbuf_join\(struct lbuf \*lb, int beg, int end, int o1, int \*o2, int flg\);
+char \*lbuf_get\(struct lbuf \*lb, int pos\);
+void lbuf_smark\(struct lbuf \*lb, struct lopt \*lo, int beg, int o1\);.*(void lbuf_saved\(struct lbuf \*lb, int clear\);)
+int lbuf_indents\(struct lbuf \*lb, int r\);
+int lbuf_eol\(struct lbuf \*lb, int r, int state\);8??0?
+grp 08??-4m 4220reg p OK vi.h:171:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> int lbuf_pos2off\(struct lbuf \*lb, int r1, int o1, int r2, int o2, int row, int off\);
+int lbuf_off2pos\(struct lbuf \*lb, int r1, int o1, int r2, int o2, int boff, int \*row, int \*off\);
+char \*lbuf_joinsb\(struct lbuf \*lb, int r1, int r2, sbuf \*i, int \*o1, int \*o2\);.*(int lbuf_next\(struct lbuf \*lb, int dir, int \*r, int \*o\);)
+int lbuf_findchar\(struct lbuf \*lb, char \*cs, int cmd, int n, int \*r, int \*o\);
+int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,9??0?
+grp 09??-7m 4220reg p OK vi.h:171:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:1712sc %? %@2132sc!0?
 '\''1i struct mhash {
 	int sz;			/* capacity, power of 2 */
 	int n;			/* number of used slots */
@@ -782,7 +821,9 @@ struct linfo \{.*(	int modified;			/\* modification state \*/)
 '\''2,#+1c 	struct mhash *mark;	/* saved marks */
 ??!219reg vi.h:124:m22sc %? %@2142sc!0?
 '\''3,#+1c 	struct mhash *mark;		/* marks keyed by id */
-??!219reg vi.h:140:m32sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.h:140:m32sc %? %@2142sc!0?
+'\''4i void lbuf_markclear(struct lbuf *lb);
+??!219reg vi.h:171:m42sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'lbuf.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -795,7 +836,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 4efc8c2e..819f179c 100644
+index 4efc8c2e..6d1d3f59 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1090,7 +1090,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
@@ -803,12 +844,12 @@ index 4efc8c2e..819f179c 100644
  	if (cmd[1] == '!') {
  		if (!*arg) {
 -			xb->mark_n = 0;
-+			xb->mark->n = 0;
++			lbuf_markclear(xb);
  			xb->mark_sb[0] = -1;
  			xb->mark_se[0] = -1;
  			return NULL;
 diff --git a/lbuf.c b/lbuf.c
-index bce1f5e0..f2ce65c8 100644
+index bce1f5e0..be1bb409 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -22,26 +22,45 @@ static void lopt_done(struct lopt *lo)
@@ -873,7 +914,7 @@ index bce1f5e0..f2ce65c8 100644
  }
  
  void lbuf_mark(struct lbuf *lb, int mk, int pos, int off)
-@@ -54,8 +73,8 @@ void lbuf_mark(struct lbuf *lb, int mk, int pos, int off)
+@@ -54,8 +73,17 @@ void lbuf_mark(struct lbuf *lb, int mk, int pos, int off)
  	} else if (mk == ']') {
  		lb->mark_se[0] = pos;
  		lb->mark_se[1] = off;
@@ -881,10 +922,19 @@ index bce1f5e0..f2ce65c8 100644
 -		mark_set(&lb->mark, &lb->mark_n, mk, pos, off);
 +	} else if (mk >= 0)
 +		mark_set(&lb->mark, mk, pos, off);
++}
++
++/* drop every hash-stored mark */
++void lbuf_markclear(struct lbuf *lb)
++{
++	if (lb->mark) {
++		memset(lb->mark->slot, -1, lb->mark->sz * 3 * sizeof(int));
++		lb->mark->n = 0;
++	}
  }
  
  int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off)
-@@ -68,7 +87,7 @@ int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off)
+@@ -68,7 +96,7 @@ int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off)
  	else if (mk == ']')
  		m = lb->mark_se;
  	else
@@ -893,7 +943,7 @@ index bce1f5e0..f2ce65c8 100644
  	if (!m || m[0] < 0)
  		return 1;
  	*pos = m[0];
-@@ -129,14 +148,16 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
+@@ -129,14 +157,16 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
  	lb->ln_n += n_ins - n_del;
  	for (i = 0; i < n_ins; i++)
  		lb->ln[pos + i] = *((char**)sb->s + i);
@@ -914,7 +964,7 @@ index bce1f5e0..f2ce65c8 100644
  			lbuf_copymark((m + 1), lm)
  	}
  	return n_ins;
-@@ -185,7 +206,6 @@ struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del)
+@@ -185,7 +215,6 @@ struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del)
  	for (int i = 0; i < n_del; i++)
  		lo->del[i] = lb->ln[beg + i];
  	lo->mark = NULL;
@@ -923,7 +973,7 @@ index bce1f5e0..f2ce65c8 100644
  	lo->mark_se[0] = -1;
  	lo->pos = beg;
 diff --git a/vi.h b/vi.h
-index e5018fa9..92dfca4d 100644
+index e5018fa9..39e98771 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -118,11 +118,15 @@ int rset_match(rset *rs, char *s, int flg);
@@ -954,3 +1004,11 @@ index e5018fa9..92dfca4d 100644
  	int mark_sb[2];			/* [ mark row & off */
  	int mark_se[2];			/* ] mark row & off */
  	int tmp_mark[4];		/* aux mark state */
+@@ -169,6 +172,7 @@ void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
+ void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2);
+ struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del);
+ void lbuf_mark(struct lbuf *lb, int mk, int pos, int off);
++void lbuf_markclear(struct lbuf *lb);
+ int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off);
+ int lbuf_undo(struct lbuf *lb, int *row, int *off);
+ int lbuf_redo(struct lbuf *lb, int *row, int *off);
