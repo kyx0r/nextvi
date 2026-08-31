@@ -269,18 +269,20 @@ p2v_stripcompat() {
 }
 
 # Split the compat blocks of $1 into directory $2: block N's verbatim
-# === COMPAT PATCH === diff lands in $2/N.patch, and one "N <label>" line per
-# block goes to stdout, in storage order. A block with an empty diff still gets
-# its (empty) file, so the numbering never drifts from the stored order. Read
-# the listing whole before opening a file: a block is announced before it is
-# filled.
+# === COMPAT PATCH === diff lands in $2/N.patch, and one "N <reg> <label>" line
+# per block goes to stdout, in storage order. The register is the section the
+# block owns in the emitted script, the name the script's own messages call it
+# by, so a caller can report a block as the reader will meet it again. A block
+# with an empty diff still gets its (empty) file, so the numbering never drifts
+# from the stored order. Read the listing whole before opening a file: a block
+# is announced before it is filled.
 p2v_splitcompat() {
 	awk -v dir="$2" "$P2VLBL"'
 	/^=== PATCH2VI COMPAT /	{
 		n++
 		out = dir "/" n ".patch"
 		printf "" > out
-		print n " " lbl()
+		print n " " $4 " " lbl()
 		incb = 1
 		inpat = 0
 		next
@@ -425,6 +427,14 @@ regen() {
 # HEAD afterwards and the files the pass brought into being are dropped - only
 # those, the ones already there are the caller's. This has to happen before the
 # caller's stash comes home, or it lands on the replay's leavings.
+#
+# The derivation runs with DBG1=1. A block that will not go back on misses in
+# phase 1, on anchor text the base has since rewritten, and the phase-2 error
+# that follows is only the aftermath; the origins and the target also name the
+# fallback anchor that resolved each of their groups, which is the trail back
+# to whatever moved. The binary numbers the blocks of its own replay - origins,
+# then target, then fix - so its "replay: block N failed" is not the block
+# number this pass is on: the message here is.
 # Usage: p2v_reapply workdir target.sh
 p2v_reapply() {
 	p2v_newfiles | sort > "$1/pre"
@@ -435,18 +445,21 @@ p2v_reapply() {
 	while read -r line <&3
 	do
 		n=${line%% *}
-		origin=${line#* }	# the label, spaces and all
-		[ "$origin" = "$line" ] && origin=
+		rest=${line#* }
+		reg=${rest%% *}		# the block's section register
+		origin=${rest#* }	# the label, spaces and all
+		[ "$origin" = "$rest" ] && origin=
+		blk="block $n (reg $reg) of $2"
 		if [ -z "$origin" ]; then
-			printf "%s\n" "NO ORIGIN: block $n of $2, cannot re-derive" >&2
+			printf "%s\n" "NO ORIGIN: $blk, cannot re-derive" >&2
 			p2v_st=1
 			break
 		fi
 		if [ ! -s "$1/$n.patch" ]; then
-			printf "%s\n" "EMPTY: block $n of $2 from $origin, dropped" >&2
+			printf "%s\n" "EMPTY: $blk from $origin, dropped" >&2
 			continue
 		fi
-		printf "%s\n" "COMPAT: $2 <- $origin (block $n)" >&2
+		printf "%s\n" "COMPAT: $2 <- $origin (block $n, reg $reg)" >&2
 		# The stored diff goes back as a script, not as a diff: -C
 		# matches a pre-applied diff's image exactly, context and all,
 		# and an origin that drifted under context the block only
@@ -456,7 +469,10 @@ p2v_reapply() {
 		# where the block actually landed.
 		$P2VI "$1/$n.patch" > "$1/$n.sh"
 		chmod +x "$1/$n.sh"
-		if ! p2v_co "$origin" "$2" "$1/$n.sh"; then
+		# DBG1 in a subshell of its own: it is this call's, and
+		# p2v_co exports nothing back to a caller that did not ask
+		if ! ( export DBG1=1; p2v_co "$origin" "$2" "$1/$n.sh" ); then
+			printf "%s\n" "COMPAT FAILED: $blk from $origin" >&2
 			p2v_st=1
 			break
 		fi
@@ -585,7 +601,7 @@ extract_compats() (
 	for s in $list
 	do
 		p2v_splitcompat "$s" "$work" > "$work/blocks"
-		while read -r n src <&3
+		while read -r n reg src <&3
 		do
 			if [ ! -s "$work/$n.patch" ]; then
 				printf "%s\n" "EMPTY: $s block $n" >&2
@@ -638,9 +654,9 @@ view_patch() (
 	p2v_splitcompat "$1" "$work" > "$work/blocks"
 	printf "%s\n" "# === $1: embedded patch ===" >> "$out"
 	sed '1,/^=== PATCH2VI PATCH ===$/d' "$1" >> "$out"
-	while read -r n src <&3
+	while read -r n reg src <&3
 	do
-		printf "%s\n" "# === compat $n${src:+ from $src} ===" >> "$out"
+		printf "%s\n" "# === compat $n (reg $reg)${src:+ from $src} ===" >> "$out"
 		cat "$work/$n.patch" >> "$out"
 	done 3< "$work/blocks"
 	rm -rf "$work"
@@ -1326,6 +1342,8 @@ regen_all() (
 # and the script it just rewrote has to leave the working tree before the next
 # one is measured. A script rebuild refuses is left as it was and stops the run
 # there, rather than leaving half the set rebuilt and half of it committed.
+# The script it stops on is named along with the count already committed, so a
+# run can be taken up again from there.
 # By default, do not stop in the editor or let it draw, and squash all commits
 # back into a single staged change at the end. With arg 1, stop in the editor
 # and keep the per-script commits.
@@ -1340,7 +1358,10 @@ rebuild_all() (
 	[ -z "$1" ] && p2v_batch
 	for s in $(p2v_scripts)
 	do
-		rebuild "$s" || return 1
+		if ! rebuild "$s"; then
+			printf "%s\n" "STOPPED: $s, $n rebuilt before it" >&2
+			return 1
+		fi
 		git add "$s"
 		if ! git diff --cached --quiet; then
 			git commit -m "$s: rebuild" || return 1
