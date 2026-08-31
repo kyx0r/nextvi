@@ -1,4 +1,4 @@
-.Dd Aug 29, 2026
+.Dd Aug 31, 2026
 .Dt Nextvi 1
 .Os Nextvi 7.5
 .
@@ -1517,9 +1517,8 @@ Set a register using a character or a number.
 Once the register is set, the :f> and :f+ commands perform a
 multi-line search forward on the contents of the register instead
 of the current buffer. Range maps the match to a position in
-the current buffer. No range tests for a match inplace.
-If the cursor is outside of the range, the search starts at
-the beginning of the range.
+the current buffer. No range tests the match inplace.
+The cursor is pinned to range start when out of bounds.
 
 Example: search register <a> for "int"
 :fr a:f>int:??p yes:??!p no:fr
@@ -1533,7 +1532,7 @@ Record register
 Set a register using a character or a number.
 Once the register is set, every byte read from the terminal is
 appended to the register. Input replayed from registers is not
-recorded, so replaying a recorded register cannot record itself.
+recorded.
 
 Example: record keystrokes into register <a>
 :rr a
