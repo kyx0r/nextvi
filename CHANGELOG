@@ -19,6 +19,10 @@ Bug fixes:
 2. Zero-length match advances are UTF-8 aware: when a regex match is
    empty, the scan skips one whole character instead of one byte, in
    substitution, search, file index and directory reorder.
+3. Out-of-range :f>/:f+ search the full range again; single-line
+   ranges searched nothing at all.
+4. Out-of-range :f< matches the whole pin line, bound at its end
+   like the in-range cursor offset.
 
 Patch changes:
 1. New [threaded_redraw.sh](https://github.com/kyx0r/nextvi/blob/release/threaded_redraw.sh):
