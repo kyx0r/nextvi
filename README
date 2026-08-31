@@ -437,6 +437,8 @@ EX COMMANDS
 
              No argument uses previously set regex keyword.
              Returns error if target not found.
+             If cursor is out of bounds, forward search pins to range start,
+             backward search to range end.
 
              Example: no range given, current line only
              :f>int
@@ -1170,7 +1172,6 @@ EX OPTIONS
              multi-line search forward on the contents of the register instead
              of the current buffer. Range maps the match to a position in
              the current buffer. No range tests the match inplace.
-             The cursor is pinned to range start when out of bounds.
 
              Example: search register <a> for "int"
              :fr a:f>int:??p yes:??!p no:fr
