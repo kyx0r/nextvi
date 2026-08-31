@@ -6641,7 +6641,7 @@ static void emit_compat_tail(void)
 static void usage(const char *prog, int err)
 {
 	FILE *f = err ? stderr : stdout;
-	fprintf(f, "Patch2vi-1.0 Usage:\n\n"
+	fprintf(f, "Patch2vi-1.1 Usage:\n\n"
 		"%s [-arh] [-o FILE] [-er TAG] [-ew TAG] [input.patch]\n"
 		"%s -e script.sh [script2.sh...]\n"
 		"%s [-ar]I [nextvi-opts...]\n"
