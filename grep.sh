@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> char n_ft\[] = "/#";	/\* numbers highlight for \^v \*/
 char nn_ft\[] = "/##";	/\* numbers highlight for # \*/
 char ac_ft\[] = "/ac";	/\* autocomplete dropdown \*/
@@ -120,7 +120,7 @@ FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\).*(struct filetype fts\[] = \
 '\''3i 	{grep_ft, "^(.+?):([0-9]+):(.+)", A(MA, GR1, CY, AY1)},
 	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
 
-??!219reg conf.c:294:m32sc %? %@2142sc!b1%ya 98?0?
+??!219reg conf.c:294:m32sc %? %@2142sc!b1m!%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
 int xdefreg;			/\* ex default register \*/
 struct buf \*bufs;		/\* main buffers \*/
@@ -170,7 +170,7 @@ static int xexe = '\''!'\'';		/\* ex command external command expand \*/
 static char xuerr\[] = "unreported error";9??0?
 grp 09??-7m 1220reg p OK ex.c:45:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:452sc %? %@2132sc!0?
-'\''1s/3/4/??!219reg ex.c:45:m12sc %? %@2142sc!b2%ya 98?0?
+'\''1s/3/4/??!219reg ex.c:45:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	free\(sb->s\);
 }
 
@@ -727,7 +727,7 @@ static int rep_len;
 					break;
 ??!219reg vi.c:1415:m112sc %? %@2142sc!0?
 '\''12i 	temp_open(3, "/grep/", grep_ft);
-??!219reg vi.c:1865:m122sc %? %@2142sc!b3%ya 98?0?
+??!219reg vi.c:1865:m122sc %? %@2142sc!b3m!%ya 98?0?
 %f> extern int xregs_n;
 extern int xdefreg;
 extern struct buf \*bufs;

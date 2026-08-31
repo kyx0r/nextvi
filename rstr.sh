@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> int xesc = '\''\\\\'\'';		/\* ex command arg escape character \*/
 int xexec_dep;			/\* ex_exec recursion depth \*/
 sbuf \*xacreg;			/\* autocomplete db filter regex \*/
@@ -1462,7 +1462,7 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 '\''26s/et/tr/??!219reg ex.c:1344:m262sc %? %@2142sc!0?
 '\''27s/et/tr/??!219reg ex.c:1353:m272sc %? %@2142sc!0?
 '\''28s/et/tr/??!219reg ex.c:1474:m282sc %? %@2142sc!0?
-'\''29s/et_s/tr_/??!219reg ex.c:1477:m292sc %? %@2142sc!b1%ya 98?0?
+'\''29s/et_s/tr_/??!219reg ex.c:1477:m292sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	return n != 0;
 }
 
@@ -1616,7 +1616,7 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 '\''1s/et/tr/??!219reg lbuf.c:494:m12sc %? %@2142sc!0?
 ?'\''2s/nsubc/rs ? re->rs->nsubc : 2/1??1??1q'\''2s/(ns.*c)/rs ? re->rs->\1 : 2/2??2??'\''2220reg p OK lbuf.c:498:s22sc %? %@2162sc!0?
 1;2??!219reg lbuf.c:498:m22sc %? %@2142sc!0?
-'\''3s/et/tr/??!219reg lbuf.c:511:m32sc %? %@2142sc!b2%ya 98?0?
+'\''3s/et/tr/??!219reg lbuf.c:511:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> \{
 	return re_pikevm\(rs->regex, s, NULL, 0, flg\);
 }1??0?
@@ -1765,7 +1765,7 @@ void rstr_free(rstr *rs)
 	free(rs->str);
 	free(rs);
 }
-??!219reg regex.c:751:m12sc %? %@2142sc!b3%ya 98?0?
+??!219reg regex.c:751:m12sc %? %@2142sc!b3m!%ya 98?0?
 %f> 		ex_krsset\(ex_regget\('\''/'\''\) \? ex_regget\('\''/'\''\)->s : NULL, xkwddir\);
 	if \(!lbuf_len\(xb\) \|\| !xkwddir\)
 		return 1;
@@ -1923,7 +1923,7 @@ static int fsdir;
 ?'\''1s/xkwdrs->nsubc/(xkwdrs->rs ? xkwdrs->rs->nsubc : 2)/1??1??1q'\''1s/(xkwd)(rs-.*c)/(\1rs->rs ? xkwdrs->\2 : 2)/2??2??'\''1220reg p OK vi.c:328:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:328:m12sc %? %@2142sc!0?
 '\''2s/et/tr/??!219reg vi.c:384:m22sc %? %@2142sc!0?
-'\''3s/et/tr/??!219reg vi.c:423:m32sc %? %@2142sc!b4%ya 98?0?
+'\''3s/et/tr/??!219reg vi.c:423:m32sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	int nsubc;		/\* total sub count \*/
 	int n;			/\* number of regular expressions in this set \*/
 } rset;

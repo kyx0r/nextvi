@@ -36,7 +36,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b3%ya 972sc %? %@972sc!b01b11b21232??211reg232??!211reg ? %@2210?
 2sc %? %@2312sc!b11211reg ? %@2210?
 2sc %? %@2322sc!vis 2b0wb1wb2w2q' > "$P2VIF".d
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
 int xdefreg;			/\* ex default register \*/
 struct buf \*bufs;		/\* main buffers \*/
@@ -86,7 +86,7 @@ static int xexe = '\''!'\'';		/\* ex command external command expand \*/
 static char xuerr\[] = "unreported error";9??0?
 grp 09??-7m 1220reg p OK ex.c:45:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:452sc %? %@2132sc!0?
-'\''1s/3/4/??!219reg ex.c:45:m12sc %? %@2142sc!b1%ya 98?0?
+'\''1s/3/4/??!219reg ex.c:45:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	return 0;
 }
 
@@ -749,7 +749,7 @@ static char *xref_build(char *sym, int maxdepth)
 					vi_mod |= 1;
 ??!219reg vi.c:1649:m42sc %? %@2142sc!0?
 '\''5i 	temp_open(XREF_BUF, "/xref/", FT(c));
-??!219reg vi.c:1865:m52sc %? %@2142sc!b2%ya 98?0?
+??!219reg vi.c:1865:m52sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
 };
@@ -834,7 +834,7 @@ extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 ??!219reg vi.h:410:m12sc %? %@2142sc!0?
 '\''2s/3/4/??!219reg vi.h:455:m22sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=grep.sh
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
 int xdefreg;			/\* ex default register \*/
 struct buf \*bufs;		/\* main buffers \*/
@@ -858,8 +858,8 @@ struct buf \*bufs;		/\* main buffers \*/4??0?
 struct buf \*ex_pbuf;		/\* prev buffer \*/
 static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/5??0?
 5??-1m 1220reg p OK ex.c:45:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg ex.c:452sc %? %@2132sc!0?
-'\''1s/4/5/??!219reg ex.c:45:m12sc %? %@2142sc!b1%ya 98?0?
+1;2;3;4;5??!219reg ex.c:45:r2312sc %? %@2132sc!0?
+'\''1s/4/5/??!219reg ex.c:45:r231:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 				char buf\[n \+ 4];
 				memcpy\(buf, ":e ", 3\);
 				memcpy\(buf\+3, ln, n \+ 1\);
@@ -919,12 +919,12 @@ static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/5??0?
 						buf\[subs\[0]] = xsep;
 						buf\[subs\[1]-1] = '\''\\n'\'';5??0?
 5??-13m 1220reg p OK vi.c:1769:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:17692sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:1769:r2312sc %? %@2132sc!0?
 '\''1,#+12c 				if (!strcmp(xb_path, "/xref/") ||
 						!strcmp(xb_path, "/grep/")) {
 					int subs[2];	/* a header opens at its line */
 					rset *rs = rset_smake(":[0-9]+(?::|\n)", 0);
-??!219reg vi.c:1769:m12sc %? %@2142sc!b2%ya 98?0?
+??!219reg vi.c:1769:r231:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	signed char td;			/\* text direction \*/
 };
 
@@ -949,7 +949,7 @@ extern int xleft;2??0?
 /\* ex options \*/
 extern int xleft;5??0?
 5??-1m 1220reg p OK vi.h:412:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.h:4122sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.h:412:r2312sc %? %@2132sc!0?
 ?0?
 %f+ extern int xregs_n;
 extern int xdefreg;
@@ -974,11 +974,11 @@ extern struct buf \*bufs;4??0?
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)5??0?
 5??-1m 2220reg p OK vi.h:458:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.h:4582sc %? %@2132sc!0?
-'\''1s/3/4/??!219reg vi.h:412:m12sc %? %@2142sc!0?
-'\''2s/4/5/??!219reg vi.h:458:m22sc %? %@2142sc!p compat 231 applied: src=grep.sh' > "$P2VIF".231
+1;2;3;4;5??!219reg vi.h:458:r2312sc %? %@2132sc!0?
+'\''1s/3/4/??!219reg vi.h:412:r231:m12sc %? %@2142sc!0?
+'\''2s/4/5/??!219reg vi.h:458:r231:m22sc %? %@2142sc!p compat 231 applied: src=grep.sh' > "$P2VIF".231
 # Compat 232 src=splits.sh
-printf '%s\n' '2sc!fr 98b1%ya 98?0?
+printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 %f> 	return s;
 }
 
@@ -991,7 +991,7 @@ static int rep_len;
 
 4??0?
 4??+2m 1220reg p OK vi.c:1024:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:10242sc %? %@2132sc!0?
+1;4??!219reg vi.c:1024:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 						vi_drawmsg_mpt\(ln\)
 						break;
@@ -1016,7 +1016,7 @@ static int rep_len;
 				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
 					vc_motion\(k\);5??0?
 5??-1m 2220reg p OK vi.c:2239:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:22392sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:2239:r2322sc %? %@2132sc!0?
 '\''1i /* the listing stays in the window it is already open in, rewound to its top:
  * gx never takes over a window, so splits are the user'\''s to lay out */
 static int xref_refresh(void)
@@ -1035,10 +1035,10 @@ static int xref_refresh(void)
 	return 0;
 }
 
-??!219reg vi.c:1024:m12sc %? %@2142sc!0?
+??!219reg vi.c:1024:r232:m12sc %? %@2142sc!0?
 '\''2c 					if (!xref_refresh())
 						temp_switch(XREF_BUF, 0);
-??!219reg vi.c:2239:m22sc %? %@2142sc!p compat 232 applied: src=splits.sh' > "$P2VIF".232
+??!219reg vi.c:2239:r232:m22sc %? %@2142sc!p compat 232 applied: src=splits.sh' > "$P2VIF".232
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then

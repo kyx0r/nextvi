@@ -36,7 +36,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b5%ya 972sc %? %@972sc!b41211reg ? %@2210?
 2sc %? %@2312sc!b21211reg ? %@2210?
 2sc %? %@2322sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF".d
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -86,7 +86,7 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-10m 1220reg p OK conf.c:300:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3002sc %? %@2132sc!0?
-'\''1s/\|p/|sw|et|idt|p/??!219reg conf.c:300:m12sc %? %@2142sc!b1%ya 98?0?
+'\''1s/\|p/|sw|et|idt|p/??!219reg conf.c:300:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> int xshape = 1;			/\* perform letter shaping \*/
 int xorder = 1;			/\* change the order of characters \*/
 int xts = 8;			/\* number of spaces for tab \*/
@@ -435,7 +435,7 @@ int xidt = 500;			/* auto-detect indent on file open */
 '\''9i 	EO(idt),
 ??!219reg ex.c:1710:m92sc %? %@2142sc!0?
 '\''10i 	EO(sw),
-??!219reg ex.c:1740:m102sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1740:m102sc %? %@2142sc!b2m!%ya 98?0?
 %f> 		case TK_CTL\('\''t'\''\):
 			cs = uc_dup\(sb->s \+ ps\);
 			sbuf_cut\(sb, ps\)
@@ -622,7 +622,7 @@ int xidt = 500;			/* auto-detect indent on file open */
 			else
 				sbuf_chr(sb, '\''\t'\'')
 			break;
-??!219reg led.c:468:m42sc %? %@2142sc!b3%ya 98?0?
+??!219reg led.c:468:m42sc %? %@2142sc!b3m!%ya 98?0?
 %f> 			if \(dir < 0\) \{
 				if \(\*ln != '\'' '\'' && \*ln != '\''\\t'\''\)
 					break;
@@ -693,7 +693,7 @@ int xidt = 500;			/* auto-detect indent on file open */
 				} else
 					sbuf_chr(sb, '\''\t'\'')
 			}
-??!219reg vi.c:937:m12sc %? %@2142sc!b4%ya 98?0?
+??!219reg vi.c:937:m12sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	int plen, row, off, top;
 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
@@ -826,7 +826,7 @@ extern int xidt;
 	buf->ts = xts; \
 ??!219reg vi.h:472:m42sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=splits.sh
-printf '%s\n' '2sc!fr 98b4%ya 98?0?
+printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 %f> 	xtop = b->top; \\
 	xtd = b->td; \\
 	curwin->buf = b; \\
@@ -856,13 +856,13 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 #define exbuf_save\(buf\) \\
 	buf->row = xrow; \\5??0?
 5??-3m 1220reg p OK vi.h:498:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.h:4982sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.h:498:r2312sc %? %@2132sc!0?
 '\''1,#+2c 	xet = b->et; \
 	xsw = b->sw; \
 	xts = b->ts; \
-??!219reg vi.h:498:m12sc %? %@2142sc!p compat 231 applied: src=splits.sh' > "$P2VIF".231
+??!219reg vi.h:498:r231:m12sc %? %@2142sc!p compat 231 applied: src=splits.sh' > "$P2VIF".231
 # Compat 232 src=incsearch.sh
-printf '%s\n' '2sc!fr 98b2%ya 98?0?
+printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 %f> 				pre--;
 			}
 			break;
@@ -904,7 +904,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 		case TK_CTL\('\''\\\\'\''\):
 			if \(c == TK_CTL\('\'']'\''\)\) \{5??0?
 5??-7m 1220reg p OK led.c:486:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:4862sc %? %@2132sc!0?
+1;2;3;4;5??!219reg led.c:486:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;
@@ -929,13 +929,13 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 		}
 		is->sug = NULL;5??0?
 5??-1m 2220reg p OK led.c:672:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:6722sc %? %@2132sc!0?
-'\''1,#+6d??!219reg led.c:486:m12sc %? %@2142sc!0?
+1;2;3;4;5??!219reg led.c:672:r2322sc %? %@2132sc!0?
+'\''1,#+6d??!219reg led.c:486:r232:m12sc %? %@2142sc!0?
 '\''2c 			if (c == '\''\t'\'' && xet) {
 				for (int _l = 0; _l < xsw; _l++)
 					sbuf_chr(sb, '\'' '\'')
 			} else if ((cs = led_read(kmap, c)))
-??!219reg led.c:672:m22sc %? %@2142sc!p compat 232 applied: src=incsearch.sh' > "$P2VIF".232
+??!219reg led.c:672:r232:m22sc %? %@2142sc!p compat 232 applied: src=incsearch.sh' > "$P2VIF".232
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then

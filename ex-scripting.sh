@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/1??0?
@@ -134,7 +134,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 ??!219reg ex.c:1638:m22sc %? %@2142sc!0?
 '\''3i 	{"sr", ec_script},
 	{"sx", ec_script},
-??!219reg ex.c:1740:m32sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1740:m32sc %? %@2142sc!b1m!%ya 98?0?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
 		}
@@ -188,7 +188,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);
-??!219reg term.c:238:m12sc %? %@2142sc!b2%ya 98?0?
+??!219reg term.c:238:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> /\* vi\.h: shared definitions across files \*/
 
 /\* helper macros \*/

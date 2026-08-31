@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
 \{
 	char msg\[512];
@@ -239,7 +239,7 @@ void ex_init\(char \*\*files, int n\).*?
 	}
 ??!219reg ex.c:1934:m62sc %? %@2142sc!0?
 '\''7i 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
-??!219reg ex.c:1935:m72sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1935:m72sc %? %@2142sc!b1m!%ya 98?0?
 %f> int xrows, xcols;
 unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
 unsigned char \*ibuf, icmd\[4096];
@@ -630,7 +630,7 @@ static int isig;
 			xquit = !isatty(stdin_fd) ? -1 : xquit;
 ??!219reg term.c:158:m72sc %? %@2142sc!0?
 '\''8s/0/stdin_fd/??!219reg term.c:300:m82sc %? %@2142sc!0?
-'\''9s/STDIN_FILENO/stdin_fd/??!219reg term.c:343:m92sc %? %@2142sc!b2%ya 98?0?
+'\''9s/STDIN_FILENO/stdin_fd/??!219reg term.c:343:m92sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	memset\(&sa, 0, sizeof\(sa\)\);
 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);
@@ -713,7 +713,7 @@ int main\(int argc, char \*argv\[]\)1??0?
 ??!219reg vi.c:1854:m12sc %? %@2142sc!0?
 '\''2c 		} else if (!argv[i][1])
 			stdin_fd = MAX(0, open(ctermid(NULL), O_RDONLY));
-??!219reg vi.c:1870:m22sc %? %@2142sc!b3%ya 98?0?
+??!219reg vi.c:1870:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> char \*conf_digraph\(int c1, int c2\);
 
 /\* vi\.c: main \*/

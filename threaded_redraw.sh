@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f>        -Wno-missing-field-initializers \\
        -Wno-unused-parameter \\
        -Wfatal-errors \\
@@ -53,7 +53,7 @@ CFLAGS \+= -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE1??0?
 grp 08??-11m 1220reg p OK Makefile:9:a82sc %? %@2152sc!'\''00?
 1;4;7;8??!219reg Makefile:92sc %? %@2132sc!0?
 '\''1i        -pthread \
-??!219reg Makefile:9:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg Makefile:9:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> CFLAGS="\\
 -pedantic -Wall -Wextra \\
 -Wno-implicit-fallthrough \\
@@ -83,7 +83,7 @@ esac9??0?
 grp 09??-10m 1220reg p OK cbuild.sh:45:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg cbuild.sh:452sc %? %@2132sc!0?
 '\''1i -pthread \
-??!219reg cbuild.sh:45:m12sc %? %@2142sc!b2%ya 98?0?
+??!219reg cbuild.sh:45:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> 		ibuf_cnt = 1;
 		ibuf_pos = 0;
 	}
@@ -113,7 +113,7 @@ char \*term_att\(int att\)
 grp 09??-9m 1220reg p OK term.c:177:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg term.c:1772sc %? %@2132sc!0?
 '\''1i 	vi_rendwait();		/* the queued frame overlaps the read above */
-??!219reg term.c:177:m12sc %? %@2142sc!b3%ya 98?0?
+??!219reg term.c:177:m12sc %? %@2142sc!b3m!%ya 98?0?
 %f> #include <sys/stat\.h>
 #include <sys/ioctl\.h>
 #include <sys/wait\.h>
@@ -444,7 +444,7 @@ static void vi_rendpost(int mod, int otop, int oleft, int orow, int ooff, int po
 	pthread_mutex_unlock(&r->mtx);
 	if (r->on < 0)
 		vi_rendloop(r);
-??!219reg vi.c:1841:m62sc %? %@2142sc!b4%ya 98?0?
+??!219reg vi.c:1841:m62sc %? %@2142sc!b4m!%ya 98?0?
 %f> 
 /\* vi\.c: main \*/
 void vi\(int init\);

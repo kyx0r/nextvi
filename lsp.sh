@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> char bar_ft\[] = "/-";	/\* status bar \(is never '\''\\n'\'' terminated\) \*/
 char fuzz_ft\[] = "/f";	/\* fuzzy search prompt \(is never '\''\\n'\'' terminated\) \*/
 char msg_ft\[] = "/>";	/\* ex message \(is never '\''\\n'\'' terminated\) \*/
@@ -202,7 +202,7 @@ const int hlslen = LEN\(hls\);
 	{lsp_ft, "^.*error.*$", A(RE1 | SYN_IT)},
 	{lsp_ft, "^.*warning.*$", A(YE1 | SYN_IT)},
 	{lsp_ft, "^.*$", A(BL1 | SYN_IT)},
-??!219reg conf.c:324:m42sc %? %@2142sc!b1%ya 98?0?
+??!219reg conf.c:324:m42sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{
 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);
@@ -352,7 +352,7 @@ static void *ec_lsp(char *loc, char *cmd, char *arg)
 
 ??!219reg ex.c:1667:m32sc %? %@2142sc!0?
 '\''4i 	{"lsp", ec_lsp},
-??!219reg ex.c:1762:m42sc %? %@2142sc!b20?
+??!219reg ex.c:1762:m42sc %? %@2142sc!b2m!0?
 i /*
  * MIT License
  *
@@ -824,7 +824,7 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 #endif
 
 #endif /* JSMN_H */
-??!219reg jsmn.h:-1:m2sc %? %@2142sc!b3%ya 98?0?
+??!219reg jsmn.h:-1:m2sc %? %@2142sc!b3m!%ya 98?0?
 %f> 			\(lb->ln_n - pos - n_del\) \* sizeof\(lb->ln\[0]\)\);
 	}
 	lb->ln_n \+= n_ins - n_del;
@@ -854,7 +854,7 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 grp 09??-7m 1220reg p OK lbuf.c:129:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg lbuf.c:1292sc %? %@2132sc!0?
 '\''1i 	lb->edseq++;
-??!219reg lbuf.c:129:m12sc %? %@2142sc!b40?
+??!219reg lbuf.c:129:m12sc %? %@2142sc!b4m!0?
 i /* lsp.c - Language Server Protocol client for nextvi */
 #include "jsmn.h"
 #include <errno.h>
@@ -2030,7 +2030,7 @@ const char *lsp_diag_for_line(const char *path, int line, int *sev)
 	}
 	return NULL;
 }
-??!219reg lsp.c:-1:m2sc %? %@2142sc!b5%ya 98?0?
+??!219reg lsp.c:-1:m2sc %? %@2142sc!b5m!%ya 98?0?
 %f> 
 int term_read\(int winch\)
 \{
@@ -2287,7 +2287,7 @@ char \*term_att\(int att\)
 ??!219reg term.c:167:m32sc %? %@2142sc!0?
 '\''4i 		err:
 		*ibuf = 0;
-??!219reg term.c:173:m42sc %? %@2142sc!b6%ya 98?0?
+??!219reg term.c:173:m42sc %? %@2142sc!b6m!%ya 98?0?
 %f> #include "ren\.c"
 #include "term\.c"
 #include "uc\.c"
@@ -2758,7 +2758,7 @@ static void vi_drawdiag(const char *diag, int sev, int r, int col)
 			lsp_dirty = 0;
 			vi_mod |= 1;
 		}
-??!219reg vi.c:1800:m152sc %? %@2142sc!b7%ya 98?0?
+??!219reg vi.c:1800:m152sc %? %@2142sc!b7m!%ya 98?0?
 %f> 	int hist_sz;			/\* size of hist\[] \*/
 	int hist_n;			/\* current history head in hist\[] \*/
 	int hist_u;			/\* current undo head in hist\[] \*/

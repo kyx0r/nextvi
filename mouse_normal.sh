@@ -34,7 +34,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
 b6%ya 972sc %? %@972sc!b41211reg ? %@2210?
 2sc %? %@2312sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -84,7 +84,7 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-10m 1220reg p OK conf.c:300:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3002sc %? %@2132sc!0?
-'\''1s/\|r/|ms|r/??!219reg conf.c:300:m12sc %? %@2142sc!b1%ya 98?0?
+'\''1s/\|r/|ms|r/??!219reg conf.c:300:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/1??0?
@@ -161,7 +161,7 @@ static struct excmd \{
 
 ??!219reg ex.c:1667:m22sc %? %@2142sc!0?
 '\''3i 	EO(ms),
-??!219reg ex.c:1719:m32sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1719:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return pos - xleft;
 }
 
@@ -320,7 +320,7 @@ int led_col(char *s, int col)
 '\''4i 	term_mouse_off();
 ??!219reg led.c:694:m42sc %? %@2142sc!0?
 '\''5i 			term_mouse_on();
-??!219reg led.c:707:m52sc %? %@2142sc!b3%ya 98?0?
+??!219reg led.c:707:m52sc %? %@2142sc!b3m!%ya 98?0?
 %f> static struct termios termios;
 sbuf \*term_sbuf;
 int term_record;1??0?
@@ -520,7 +520,7 @@ int term_try_mouse(void)
 	return 0;
 }
 
-??!219reg term.c:139:m42sc %? %@2142sc!b4%ya 98?0?
+??!219reg term.c:139:m42sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	vi_drawmsg_mpt\(vi_msg\)
 }
 
@@ -604,7 +604,7 @@ static void vi_scrollbackward(int cnt);
 		} else if (r == 2)	/* stray release from a prior click; restart */
 			return -1;
 	}
-??!219reg vi.c:526:m22sc %? %@2142sc!b5%ya 98?0?
+??!219reg vi.c:526:m22sc %? %@2142sc!b5m!%ya 98?0?
 %f> void term_kill\(void\);
 void term_room\(int n\);
 int term_read\(int winch\);
@@ -732,7 +732,7 @@ extern int xmouse_col, xmouse_row;
 '\''4i extern int xms;
 ??!219reg vi.h:433:m42sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=linewrap_v2.sh
-printf '%s\n' '2sc!fr 98b4%ya 98?0?
+printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 %f> 		int r = term_try_mouse\(\);
 		if \(r == 1\) \{
 			char \*mln;
@@ -759,7 +759,7 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 				\*row = lbuf_len\(xb\) - 1;
 			if \(\*row < 0\)5??0?
 5??-2m 1220reg p OK vi.c:829:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:8292sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:829:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 				\*row = 0;
 			mln = lbuf_get\(xb, \*row\);
@@ -772,7 +772,7 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 			mln = lbuf_get\(xb, \*row\);
 			p = mln \? led_col\(mln, MAX\(0, xmouse_col - vi_lncol\)\) : 0;4??0?
 4??+2m 2220reg p OK vi.c:836:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:8362sc %? %@2132sc!0?
+1;4??!219reg vi.c:836:r2312sc %? %@2132sc!0?
 '\''1,#+1c 			int p, k = 0, h;
 			if (xlw) {		/* the clicked row may be a wrapped segment */
 				int trow = -xtopsub;
@@ -787,12 +787,12 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 				k = MAX(0, xmouse_row - trow);
 			} else
 				*row = xtop + xmouse_row;
-??!219reg vi.c:829:m12sc %? %@2142sc!0?
+??!219reg vi.c:829:r231:m12sc %? %@2142sc!0?
 '\''2i 			if (mln && xlw) {	/* the segment holds a window of columns */
 				h = vi_lnrows(mln);
 				p += MIN(k, h - 1) * ren_wrapw(vi_lncol);
 			}
-??!219reg vi.c:836:m22sc %? %@2142sc!p compat 231 applied: src=linewrap_v2.sh' > "$P2VIF".231
+??!219reg vi.c:836:r231:m22sc %? %@2142sc!p compat 231 applied: src=linewrap_v2.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then

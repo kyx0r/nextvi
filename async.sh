@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> -Wno-missing-field-initializers \\
 -Wno-unused-parameter \\
 -Wno-unused-result \\
@@ -79,7 +79,7 @@ case "\$OS" in5??0?
         log "\$R" "Failed during step: \\"Build \\"\$\{BASE##\*/}\\" using \\"\$CC\\""9??0?
 grp 09??-12m 1220reg p OK cbuild.sh:49:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg cbuild.sh:492sc %? %@2132sc!0?
-'\''1s/ \\\\/ -pthread \\\\/??!219reg cbuild.sh:49:m12sc %? %@2142sc!b1%ya 98?0?
+'\''1s/ \\\\/ -pthread \\\\/??!219reg cbuild.sh:49:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
 \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
@@ -129,7 +129,7 @@ case "\$OS" in5??0?
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-9m 1220reg p OK conf.c:301:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3012sc %? %@2132sc!0?
-'\''1s/\|e/|as!?|e/??!219reg conf.c:301:m12sc %? %@2142sc!b2%ya 98?0?
+'\''1s/\|e/|as!?|e/??!219reg conf.c:301:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> static char xrnferr\[] = "range not found";
 static char \*xrerr;
 static void \*xpret;		/\* previous ex command return value \*/
@@ -409,7 +409,7 @@ static void ex_asyncwait(void)
 ??!219reg ex.c:1875:m52sc %? %@2142sc!0?
 '\''6i 		xasync = 0;
 		ex_asyncwait();
-??!219reg ex.c:1890:m62sc %? %@2142sc!b3%ya 98?0?
+??!219reg ex.c:1890:m62sc %? %@2142sc!b3m!%ya 98?0?
 %f> static struct termios termios;
 sbuf \*term_sbuf;
 int term_record;
@@ -519,7 +519,7 @@ static pthread_mutex_t term_mtx = PTHREAD_MUTEX_INITIALIZER;
 		if (!--term_susp && term_sbuf)
 ??!219reg term.c:346:m32sc %? %@2142sc!0?
 '\''4i 		pthread_mutex_unlock(&term_mtx);
-??!219reg term.c:347:m42sc %? %@2142sc!b4%ya 98?0?
+??!219reg term.c:347:m42sc %? %@2142sc!b4m!%ya 98?0?
 %f> #include <signal\.h>
 #include <unistd\.h>
 #include <poll\.h>

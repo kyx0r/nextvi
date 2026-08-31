@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> /\* how to highlight text in the reverse direction \*/
 const int conf_hlrev = SYN_BGMK\(8\);
 
@@ -59,7 +59,7 @@ const int hlslen = LEN\(hls\);.*(struct dircontext dctxs\[] = \{)
 char conf_curins[] = "\x1b[5 q";	/* insert mode: vertical bar */
 char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 
-??!219reg conf.c:330:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg conf.c:330:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 			}
 			goto redo_suggest;
 		case TK_CTL\('\''z'\''\):
@@ -259,7 +259,7 @@ char conf_curnorm[] = "\x1b[2 q";	/* normal mode: block */
 '\''5i 	term_write(conf_curins, sizeof(conf_curins) - 1)
 ??!219reg led.c:694:m52sc %? %@2142sc!0?
 '\''6i 			term_write(conf_curnorm, sizeof(conf_curnorm) - 1)
-??!219reg led.c:699:m62sc %? %@2142sc!b2%ya 98?0?
+??!219reg led.c:699:m62sc %? %@2142sc!b2m!%ya 98?0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;

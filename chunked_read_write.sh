@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> 	return key;
 }
 
@@ -234,7 +234,7 @@ if \(fd >= 0\) \{ \\.*?
 '\''2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \
 ??!219reg ex.c:393:m22sc %? %@2142sc!0?
 '\''3s/\(\)/(, 1)/??!219reg ex.c:409:m32sc %? %@2142sc!0?
-'\''4s/=\)/=, cd == 3)/??!219reg ex.c:430:m42sc %? %@2142sc!b1%ya 98?0?
+'\''4s/=\)/=, cd == 3)/??!219reg ex.c:430:m42sc %? %@2142sc!b1m!%ya 98?0?
 %f> 		lo->ins = \(char\*\*\)sb->s;
 }
 
@@ -728,7 +728,7 @@ int lbuf_wr\(struct lbuf \*lb, int fd, int beg, int end\)
 ??!219reg lbuf.c:259:m72sc %? %@2142sc!0?
 '\''8i 	if (buf_len > 0 && write_fully(fd, buf, buf_len) < 0)
 		return -1;
-??!219reg lbuf.c:265:m82sc %? %@2142sc!b2%ya 98?0?
+??!219reg lbuf.c:265:m82sc %? %@2142sc!b2m!%ya 98?0?
 %f> #define lbuf_i\(lb, pos\) \(\(struct linfo\*\)\(lb->ln\[pos] - sizeof\(struct linfo\)\)\)
 struct lbuf \*lbuf_make\(void\);
 void lbuf_free\(struct lbuf \*lb\);

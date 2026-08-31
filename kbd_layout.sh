@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> static char \*kmap_en\[256] = \{
 	\[0] = "en",
 };
@@ -51,7 +51,7 @@ static char \*kmap_fa\[256] = \{1??0?
 	['\''j'\''] = "n",
 	['\''k'\''] = "e",
 	['\''l'\''] = "o",
-??!219reg kmap.h:2:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg kmap.h:2:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 			buf\[0] = \*ibuf;
 			ex_regput\(xrr, buf, 1\);
 		}

@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> 	xgrec--;
 }
 
@@ -98,7 +98,7 @@ void ex_init\(char \*\*files, int n\)
 '\''1s/n\)/n, char **cmds, int cmdnum)/??!219reg ex.c:1925:m12sc %? %@2142sc!0?
 '\''2i 	for (int i = 0; i < cmdnum; i++)
 		ex_command(cmds[i])
-??!219reg ex.c:1937:m22sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1937:m22sc %? %@2142sc!b1m!%ya 98?0?
 %f> 
 int main\(int argc, char \*argv\[]\)
 \{
@@ -299,7 +299,7 @@ int main\(int argc, char \*argv\[]\).*?
 			} else {
 ??!219reg vi.c:1882:m22sc %? %@2142sc!0?
 '\''3s/ae/ace/??!219reg vi.c:1884:m32sc %? %@2142sc!0?
-'\''4s/i\)/i, ex_cmds, cmdnum)/??!219reg vi.c:1894:m42sc %? %@2142sc!b2%ya 98?0?
+'\''4s/i\)/i, ex_cmds, cmdnum)/??!219reg vi.c:1894:m42sc %? %@2142sc!b2m!%ya 98?0?
 %f> void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);
 #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RS\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }
 #define ex_print\(line, ft\) \{ RS\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }

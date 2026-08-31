@@ -36,7 +36,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b4%ya 972sc %? %@972sc!b21232??211reg232??!211reg ? %@2210?
 2sc %? %@2312sc!b21211reg ? %@2210?
 2sc %? %@2322sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> /\* how to highlight text in the reverse direction \*/
 const int conf_hlrev = SYN_BGMK\(8\);
 
@@ -68,7 +68,7 @@ const int conf_hlmat = RE1;
 /* how to highlight the search match the cursor lands on */
 const int conf_hlmatc = RE1 | SYN_BGMK(8);
 
-??!219reg conf.c:330:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg conf.c:330:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
 		noredraw:
 		switch \(c\) \{
@@ -133,7 +133,7 @@ const int conf_hlmatc = RE1 | SYN_BGMK(8);
 			break;
 ??!219reg led.c:436:m12sc %? %@2142sc!0?
 '\''2i 			insert:
-??!219reg led.c:646:m22sc %? %@2142sc!b2%ya 98?0?
+??!219reg led.c:646:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return r->col\[col];
 }
 
@@ -409,7 +409,7 @@ static char *vi_isearch(int cmd, int *ret, int *mlen, int *frow, int *foff)
 '\''2s/t;/t = 0;/??!219reg vi.c:312:m22sc %? %@2142sc!0?
 '\''3,#+1c 		char *kw = vi_isearch(cmd, &ret, &i, row, off);
 ??!219reg vi.c:315:m32sc %? %@2142sc!0?
-'\''4s/0/ret > 1/??!219reg vi.c:333:m42sc %? %@2142sc!b3%ya 98?0?
+'\''4s/0/ret > 1/??!219reg vi.c:333:m42sc %? %@2142sc!b3m!%ya 98?0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;
@@ -442,7 +442,7 @@ extern rset \*fsincl;9??0?
 extern const int conf_hlmatc;
 ??!219reg vi.h:541:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=rstr.sh
-printf '%s\n' '2sc!fr 98b2%ya 98?0?
+printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 %f>    cursor is given conf_hlmatc instead of conf_hlmat attributes \*/
 static void vi_isearchhl\(void\)
 \{
@@ -466,7 +466,7 @@ static void vi_isearchhl\(void\)
 	led_att la;
 	for \(row = xtop; row < xtop \+ xrows && row < lbuf_len\(xb\); row\+\+\) \{5??0?
 5??-1m 1220reg p OK vi.c:314:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:3142sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:314:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 		la\.s = lbuf_get\(xb, row\);
 		off = 0;
@@ -491,7 +491,7 @@ static void vi_isearchhl\(void\)
 			beg = offs\[xgrp], end = offs\[xgrp \+ 1];
 			if \(beg < 0\) \{5??0?
 5??-1m 2220reg p OK vi.c:321:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:3212sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:321:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 		if \(sb->s_n > \*mlen\) \{
 			row = srow, off = soff;
@@ -516,7 +516,7 @@ static void vi_isearchhl\(void\)
 						sdir, 1, &row, &off\);
 				if \(found\)5??0?
 5??-1m 3220reg p OK vi.c:379:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:3792sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:379:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 	} else if \(okwd\)	/\* the preview must not alter the last keyword \*/
 		ex_krsset\(okwd, \*ret \? dir : odir \* 2\);
@@ -541,16 +541,16 @@ static void vi_isearchhl\(void\)
 	}
 	free\(okwd\);5??0?
 5??-1m 4220reg p OK vi.c:404:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:4042sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:404:r2312sc %? %@2132sc!0?
 ?'\''1s/nsubc/rs ? xkwdrs->rs->nsubc : 2/1??1??1q'\''1s/(ns.*c)/rs ? xkwdrs->rs->\1 : 2/2??2??'\''1220reg p OK vi.c:314:s22sc %? %@2162sc!0?
-1;2??!219reg vi.c:314:m12sc %? %@2142sc!0?
-'\''2s/et/tr/??!219reg vi.c:321:m22sc %? %@2142sc!0?
+1;2??!219reg vi.c:314:r231:m12sc %? %@2142sc!0?
+'\''2s/et/tr/??!219reg vi.c:321:r231:m22sc %? %@2142sc!0?
 '\''3c 			if (xkwdrs && xgrp < (xkwdrs->rs ? xkwdrs->rs->nsubc : 2)
 					&& lbuf_len(xb)) {
-??!219reg vi.c:379:m32sc %? %@2142sc!0?
-'\''4s/et/tr/??!219reg vi.c:404:m42sc %? %@2142sc!p compat 231 applied: src=rstr.sh' > "$P2VIF".231
+??!219reg vi.c:379:r231:m32sc %? %@2142sc!0?
+'\''4s/et/tr/??!219reg vi.c:404:r231:m42sc %? %@2142sc!p compat 231 applied: src=rstr.sh' > "$P2VIF".231
 # Compat 232 src=splits.sh
-printf '%s\n' '2sc!fr 98b2%ya 98?0?
+printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 %f> 	int offs\[xkwdrs->nsubc];
 	int row, off, beg, end, flg, i, n;
 	led_att la;
@@ -574,7 +574,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 		off = 0;
 		flg = REG_NEWLINE;5??0?
 5??-1m 1220reg p OK vi.c:397:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:3972sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:397:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 						sdir, 1, &row, &off\);
 				if \(found\)
@@ -602,7 +602,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 			}
 		}5??0?
 5??-2m 2220reg p OK vi.c:464:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:4642sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:464:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 			}
 		}
@@ -627,14 +627,14 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 		drawn = 1;
 	}5??0?
 5??-1m 3220reg p OK vi.c:470:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:4702sc %? %@2132sc!0?
-'\''1s/xrows/curwin->h/??!219reg vi.c:397:m12sc %? %@2142sc!0?
+1;2;3;4;5??!219reg vi.c:470:r2322sc %? %@2132sc!0?
+'\''1s/xrows/curwin->h/??!219reg vi.c:397:r232:m12sc %? %@2142sc!0?
 '\''2,#+1c 				if (xrow < xtop || xrow >= xtop + curwin->h)
 					xtop = MAX(0, xrow - curwin->h / 2);
-??!219reg vi.c:464:m22sc %? %@2142sc!0?
+??!219reg vi.c:464:r232:m22sc %? %@2142sc!0?
 '\''3c 		win_save();
 		vi_redraw();
-??!219reg vi.c:470:m32sc %? %@2142sc!p compat 232 applied: src=splits.sh' > "$P2VIF".232
+??!219reg vi.c:470:r232:m32sc %? %@2142sc!p compat 232 applied: src=splits.sh' > "$P2VIF".232
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then

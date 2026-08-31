@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> 	return pos >= 0 && pos < lb->ln_n \? lb->ln\[pos] : NULL;
 }
 
@@ -90,7 +90,7 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 	return ret;
 }
 
-??!219reg lbuf.c:396:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg lbuf.c:396:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 				vi_hidch = !vi_hidch;
 				vi_mod \|= 1;
 				break;
@@ -130,7 +130,7 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
-??!219reg vi.c:1436:m12sc %? %@2142sc!b2%ya 98?0?
+??!219reg vi.c:1436:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> void lbuf_smark\(struct lbuf \*lb, struct lopt \*lo, int beg, int o1\);
 void lbuf_emark\(struct lbuf \*lb, struct lopt \*lo, int end, int o2\);
 struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\);

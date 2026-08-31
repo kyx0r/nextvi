@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> 
 #define lbuf_copymark\(dst, src\) \{ dst\[0] = src\[0]; dst\[1] = src\[1]; }
 
@@ -586,7 +586,7 @@ static void mark_set(struct mhash **ph, int id, int pos, int off)
 ??!219reg lbuf.c:132:m72sc %? %@2142sc!0?
 '\''8s/&lo->mark_n, //??!219reg lbuf.c:135:m82sc %? %@2142sc!0?
 '\''9s/lo->mark_n, //??!219reg lbuf.c:139:m92sc %? %@2142sc!0?
-'\''10d??!219reg lbuf.c:188:m102sc %? %@2142sc!b1%ya 98?0?
+'\''10d??!219reg lbuf.c:188:m102sc %? %@2142sc!b1m!%ya 98?0?
 %f> void rset_free\(rset \*re\);
 
 /\* lbuf\.c: line buffer \*/

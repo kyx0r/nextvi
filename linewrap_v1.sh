@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -85,7 +85,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3002sc %? %@2132sc!0?
 '\''1,#+1c ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl(?:lw|[lwpr])?|left|lim|led|vis)\
 |[@&!dmj]|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|lw|\
-??!219reg conf.c:300:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg conf.c:300:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/1??0?
@@ -366,7 +366,7 @@ int ex_lwsync(void)
 '\''7i 	EO(hllw),
 ??!219reg ex.c:1754:m72sc %? %@2142sc!0?
 '\''8i 	{"lw", ec_linewrap},
-??!219reg ex.c:1762:m82sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1762:m82sc %? %@2142sc!b2m!%ya 98?0?
 %f> struct lbuf \*lbuf_make\(void\)
 \{
 	struct lbuf \*lb = emalloc\(sizeof\(\*lb\)\);1??0?
@@ -1107,7 +1107,7 @@ static int lbuf_lwfix(struct lbuf *lb, struct lopt *lo)
 ??!219reg lbuf.c:412:m172sc %? %@2142sc!0?
 '\''18i 		if (lo->lwrap)		/* the continuation is gone again */
 			lbuf_i(lb, lo->pos - 1)->lwrap = 0;
-??!219reg lbuf.c:433:m182sc %? %@2142sc!b3%ya 98?0?
+??!219reg lbuf.c:433:m182sc %? %@2142sc!b3m!%ya 98?0?
 %f> 	dir_rsctx = rset_make\(i, ctx, 0\);
 }
 
@@ -1158,7 +1158,7 @@ s......... ..........ha...s........s\)
 }9??0?
 grp 09??-9m 1220reg p OK ren.c:75:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ren.c:752sc %? %@2132sc!0?
-'\''1s/static //??!219reg ren.c:75:m12sc %? %@2142sc!b4%ya 98?0?
+'\''1s/static //??!219reg ren.c:75:m12sc %? %@2142sc!b4m!%ya 98?0?
 %f> 		return;
 	}
 	s = lbuf_get\(xb, row\);
@@ -1269,7 +1269,7 @@ s......... ..........ha...s........s\)
 ??!219reg vi.c:1554:m22sc %? %@2142sc!0?
 '\''3i 		/* an elastic soft linewrap follows the terminal width */
 		vi_mod |= ex_lwsync();
-??!219reg vi.c:1744:m32sc %? %@2142sc!b5%ya 98?0?
+??!219reg vi.c:1744:m32sc %? %@2142sc!b5m!%ya 98?0?
 %f> 	int n_ins, n_del;	/\* modification range \*/
 	int seq;		/\* operation number \*/
 	int ref;		/\* ins/del ref exists on lbuf \*/

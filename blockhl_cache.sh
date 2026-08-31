@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> static int lbuf_replace\(struct lbuf \*lb, sbuf \*sb, char \*s, struct lopt \*lo, int n_del, int n_ins\)
 \{
 	int i, pos = lo->pos;
@@ -59,7 +59,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 grp 09??-7m 1220reg p OK lbuf.c:101:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg lbuf.c:1012sc %? %@2132sc!0?
 '\''1i 	syn_blockhl_invalidate();
-??!219reg lbuf.c:101:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg lbuf.c:101:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> int syn_scdirl;
 int syn_blockhl;
 
@@ -372,7 +372,7 @@ static void hl_scan_until(int target_row)
 ??!219reg ren.c:321:m42sc %? %@2142sc!0?
 '\''5i 	if (trusted && cur_ln)
 		hl_cache_set(cur_ln, syn_blockhl, blockatt, ftidx);
-??!219reg ren.c:406:m52sc %? %@2142sc!b2%ya 98?0?
+??!219reg ren.c:406:m52sc %? %@2142sc!b2m!%ya 98?0?
 %f> static void vi_drawrow\(int row\)
 \{
 	int l1, i, i1, lnnum = vi_lnnum;
@@ -649,7 +649,7 @@ static void vi_drawagain\(int i\)
 		syn_setrow(xb, s_row);
 ??!219reg vi.c:214:m82sc %? %@2142sc!0?
 '\''9i 	syn_setrow(NULL, 0);
-??!219reg vi.c:215:m92sc %? %@2142sc!b3%ya 98?0?
+??!219reg vi.c:215:m92sc %? %@2142sc!b3m!%ya 98?0?
 %f> int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);
 void syn_init\(void\);

@@ -34,7 +34,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 fr 98211reg fr 230f> 1??!? %@221fr 98b01b110?
 b2%ya 972sc %? %@972sc!b11211reg ? %@2210?
 2sc %? %@2312sc!vis 2b0wb1w2q' > "$P2VIF".d
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},
 
 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
@@ -84,7 +84,7 @@ const int hlslen = LEN\(hls\);8??0?
 /\* neutral characters \*/9??0?
 grp 09??-16m 1220reg p OK conf.c:315:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3152sc %? %@2132sc!0?
-'\''1s/\)\$/).*$/??!219reg conf.c:315:m12sc %? %@2142sc!b1%ya 98?0?
+'\''1s/\)\$/).*$/??!219reg conf.c:315:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> static int vi_status;			/\* permanent status bar \*/
 static int vi_tsm;			/\* type of the status message \*/
 static int vi_nlmode;			/\* new line mode for vi regions \*/
@@ -1212,7 +1212,7 @@ static int vc_visual_op(int cmd)
 			vi_mod |= 1;
 ??!219reg vi.c:1800:m252sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=lsp.sh
-printf '%s\n' '2sc!fr 98b1%ya 98?0?
+printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 %f> 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;
@@ -1236,7 +1236,7 @@ printf '%s\n' '2sc!fr 98b1%ya 98?0?
 				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
 					if \(!vi_visual\) \{		/\* fresh selection \*/5??0?
 5??-1m 1220reg p OK vi.c:1957:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:19572sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:1957:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 					}
 					vi_visual = vi_visual == k \? 0 : k;
@@ -1261,9 +1261,9 @@ printf '%s\n' '2sc!fr 98b1%ya 98?0?
 					if \(xb_path && xb_path\[0]\)
 						lsp_hover\(xb_path, xrow, xoff\);5??0?
 5??-1m 2220reg p OK vi.c:1966:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:19662sc %? %@2132sc!0?
-'\''1s/\{ \{/{/??!219reg vi.c:1957:m12sc %? %@2142sc!0?
-'\''2d??!219reg vi.c:1966:m22sc %? %@2142sc!p compat 231 applied: src=lsp.sh' > "$P2VIF".231
+1;2;3;4;5??!219reg vi.c:1966:r2312sc %? %@2132sc!0?
+'\''1s/\{ \{/{/??!219reg vi.c:1957:r231:m12sc %? %@2142sc!0?
+'\''2d??!219reg vi.c:1966:r231:m22sc %? %@2142sc!p compat 231 applied: src=lsp.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then

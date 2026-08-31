@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> 
 int dstrlen\(const char \*s, char delim\)
 \{
@@ -95,7 +95,7 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 #else
 ??!219reg led.c:6:m12sc %? %@2142sc!0?
 '\''2i #endif
-??!219reg led.c:9:m22sc %? %@2142sc!b1%ya 98?0?
+??!219reg led.c:9:m22sc %? %@2142sc!b1m!%ya 98?0?
 %f> 		rstate->holelen = uc_len\(ss\);
 		memcpy\(rstate->nulhole, ss, rstate->holelen\);
 		memset\(ss, 0, rstate->holelen\);
@@ -198,7 +198,7 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 ??!219reg ren.c:111:m12sc %? %@2142sc!0?
 '\''2i count_done:;
 	}
-??!219reg ren.c:113:m22sc %? %@2142sc!b2%ya 98?0?
+??!219reg ren.c:113:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> int uc_slen\(char \*s\)
 \{
 	int n = 0, l;
@@ -255,7 +255,7 @@ char \*uc_beg\(char \*beg, char \*s\)
 		return n;
 	}
 #endif
-??!219reg uc.c:24:m12sc %? %@2142sc!b3%ya 98?0?
+??!219reg uc.c:24:m12sc %? %@2142sc!b3m!%ya 98?0?
 %f> #include <ctype\.h>
 #include <fcntl\.h>
 #include <stdio\.h>1??0?

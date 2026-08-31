@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
 \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
@@ -79,7 +79,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-9m 1220reg p OK conf.c:301:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3012sc %? %@2132sc!0?
-'\''1s/\|sc/m!?|i|sc!?|nm/??!219reg conf.c:301:m12sc %? %@2142sc!b1%ya 98?0?
+'\''1s/\|sc/m!?|i|sc!?|nm/??!219reg conf.c:301:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/1??0?
@@ -220,7 +220,7 @@ int map_read(int mode, int winch)
 ??!219reg ex.c:1713:m32sc %? %@2142sc!0?
 '\''4i 	{"nm!", ec_map},
 	{"nm", ec_map},
-??!219reg ex.c:1720:m42sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1720:m42sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	do \{
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);
 		len = sb->s_n;
@@ -272,7 +272,7 @@ int map_read(int mode, int winch)
 1;2;3;4;5;6;7;8;9??!219reg led.c:4342sc %? %@2132sc!0?
 ?'\''1s/term_read\(/map_read(1, /1??1??1q'\''1s/term(_r.*d\()/map\11, /2??2??'\''1220reg p OK led.c:434:s22sc %? %@2162sc!0?
 1;2??!219reg led.c:434:m12sc %? %@2142sc!0?
-b3%ya 98?0?
+b3m!%ya 98?0?
 %f> 
 static int vi_yankbuf\(int winch\)
 \{
@@ -845,7 +845,7 @@ static int vi_digit\(void\).*?
 1;2??!219reg vi.c:1622:m102sc %? %@2142sc!0?
 ?'\''11s/term_read\(/map_read(0, /1??1??1q'\''11s/term(_.*0)/map\1, 0/2??2??'\''11220reg p OK vi.c:1694:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1694:m112sc %? %@2142sc!0?
-b4%ya 98?0?
+b4m!%ya 98?0?
 %f> #define bufs_switchwft\(idx\) \\
 \{ if \(&bufs\[idx] != ex_buf\) \{ bufs_switch\(idx\); syn_setft\(xb_ft\); } } \\
 

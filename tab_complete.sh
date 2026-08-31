@@ -40,7 +40,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 2sc %? %@2322sc!b21234??211reg234??!211reg ? %@2210?
 2sc %? %@2332sc!b21211reg ? %@2210?
 2sc %? %@2342sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -90,7 +90,7 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-10m 1220reg p OK conf.c:300:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3002sc %? %@2132sc!0?
-'\''1s/\|o/|tc|o/??!219reg conf.c:300:m12sc %? %@2142sc!b1%ya 98?0?
+'\''1s/\|o/|tc|o/??!219reg conf.c:300:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> int xish;			/\* interactive shell \*/
 int xgrp;			/\* regex search group \*/
 int xpac;			/\* print autocomplete options \*/
@@ -202,7 +202,7 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 ??!219reg ex.c:17:m12sc %? %@2142sc!0?
 '\''2s/s\)/s) EO(tc)/??!219reg ex.c:1653:m22sc %? %@2142sc!0?
 '\''3i 	EO(tc),
-??!219reg ex.c:1753:m32sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1753:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 sbuf \*led_attsb;
@@ -543,7 +543,7 @@ static int led_complist(sbuf *lst, int beg)
 		sbuf_free(compsb)
 		compsb = NULL;
 	}
-??!219reg led.c:734:m72sc %? %@2142sc!b3%ya 98?0?
+??!219reg led.c:734:m72sc %? %@2142sc!b3m!%ya 98?0?
 %f> extern int xish;
 extern int xgrp;
 extern int xpac;
@@ -575,7 +575,7 @@ extern int xquit;9??0?
 '\''1i extern int xtc;
 ??!219reg vi.h:428:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=detect_indent.sh
-printf '%s\n' '2sc!fr 98b2%ya 98?0?
+printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 %f> 				pre--;
 			}
 			break;
@@ -585,7 +585,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 			}
 			break;4??0?
 4??+2m 1220reg p OK led.c:572:a42sc %? %@2152sc!0?
-1;4??!219reg led.c:5722sc %? %@2132sc!0?
+1;4??!219reg led.c:572:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 		case '\''\\t'\'':
 			if \(xet\)
@@ -594,7 +594,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 1??m 21q0?
 ;0fr.,$f+ ^		case '\''\\t'\'':$4??0?
 4??m 2220reg p OK led.c:573:a42sc %? %@2152sc!fr 98fr 980?
-1;4??!219reg led.c:5732sc %? %@2132sc!0?
+1;4??!219reg led.c:573:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 				exbuf_load\(ex_buf\)
 			}
@@ -697,9 +697,9 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;5??0?
 5??-27m 3220reg p OK led.c:755:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:7552sc %? %@2132sc!0?
+1;2;3;4;5??!219reg led.c:755:r2312sc %? %@2132sc!0?
 '\''1i 		case TK_CTL('\''_'\''):	/* list the matches on their own screen */
-??!219reg led.c:572:m12sc %? %@2142sc!0?
+??!219reg led.c:572:r231:m12sc %? %@2142sc!0?
 '\''2i 			if (xtc && ai_max < 0 && sb->s[ps] == '\'':'\'') {
 				int typed, full = c == TK_CTL('\''_'\'') || xtc > 1;
 				if (!compsb)
@@ -725,10 +725,10 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 			}
 			if (c == TK_CTL('\''_'\''))
 				continue;
-??!219reg led.c:573:m22sc %? %@2142sc!0?
-'\''3,#+26d??!219reg led.c:755:m32sc %? %@2142sc!p compat 231 applied: src=detect_indent.sh' > "$P2VIF".231
+??!219reg led.c:573:r231:m22sc %? %@2142sc!0?
+'\''3,#+26d??!219reg led.c:755:r231:m32sc %? %@2142sc!p compat 231 applied: src=detect_indent.sh' > "$P2VIF".231
 # Compat 232 src=incsearch.sh
-printf '%s\n' '2sc!fr 98b2%ya 98?0?
+printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 %f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
 		noredraw:
 		switch \(c\) \{
@@ -764,7 +764,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 			c = 127;
 		case 127:5??0?
 5??-5m 1220reg p OK led.c:529:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:5292sc %? %@2132sc!0?
+1;2;3;4;5??!219reg led.c:529:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 			continue; }
 		case TK_CTL\('\''_'\''\):	/\* list the matches on their own screen \*/
@@ -777,7 +777,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 		case TK_CTL\('\''_'\''\):	/\* list the matches on their own screen \*/
 		case '\''\\t'\'':4??0?
 4??+2m 2220reg p OK led.c:742:a42sc %? %@2152sc!0?
-1;4??!219reg led.c:7422sc %? %@2132sc!0?
+1;4??!219reg led.c:742:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
@@ -802,14 +802,14 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 				sbuf_str\(sb, cs\)
 		}5??0?
 5??-1m 3220reg p OK led.c:771:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:7712sc %? %@2132sc!0?
-'\''1,#+4d??!219reg led.c:529:m12sc %? %@2142sc!0?
+1;2;3;4;5??!219reg led.c:771:r2322sc %? %@2132sc!0?
+'\''1,#+4d??!219reg led.c:529:r232:m12sc %? %@2142sc!0?
 '\''2i 			if (flg & 2)	/* the caller steps the search match */
 				break;
-??!219reg led.c:742:m22sc %? %@2142sc!0?
-'\''3d??!219reg led.c:771:m32sc %? %@2142sc!p compat 232 applied: src=incsearch.sh' > "$P2VIF".232
+??!219reg led.c:742:r232:m22sc %? %@2142sc!0?
+'\''3d??!219reg led.c:771:r232:m32sc %? %@2142sc!p compat 232 applied: src=incsearch.sh' > "$P2VIF".232
 # Compat 233 src=arrowkeys_insert.sh
-printf '%s\n' '2sc!fr 98b2%ya 98?0?
+printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 %f> 						page = led_complist\(compsb, page\);
 						term_pos\(0, 0\);
 						led_printparts\(sb, pre, ps,
@@ -833,10 +833,10 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 					} while \(page && \(c == '\''\\t'\'' \|\| c == TK_CTL\('\''_'\''\)\)\);
 					term_clean\(\);5??0?
 5??-1m 1220reg p OK led.c:823:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:8232sc %? %@2132sc!0?
-'\''1s/f\)/f, 1)/??!219reg led.c:823:m12sc %? %@2142sc!p compat 233 applied: src=arrowkeys_insert.sh' > "$P2VIF".233
+1;2;3;4;5??!219reg led.c:823:r2332sc %? %@2132sc!0?
+'\''1s/f\)/f, 1)/??!219reg led.c:823:r233:m12sc %? %@2142sc!p compat 233 applied: src=arrowkeys_insert.sh' > "$P2VIF".233
 # Compat 234 src=incsearch.sh src=detect_indent.sh
-printf '%s\n' '2sc!fr 98b2%ya 98?0?
+printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 %f> 				pre--;
 			}
 			break;
@@ -860,7 +860,7 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 		case TK_CTL\('\''\\\\'\''\):
 			if \(c == TK_CTL\('\'']'\''\)\) \{5??0?
 5??-1m 1220reg p OK led.c:573:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:5732sc %? %@2132sc!0?
+1;2;3;4;5??!219reg led.c:573:r2342sc %? %@2132sc!0?
 ?0?
 %f+ 				exbuf_load\(ex_buf\)
 			}
@@ -873,13 +873,13 @@ printf '%s\n' '2sc!fr 98b2%ya 98?0?
 			}
 			continue; }4??0?
 4??+2m 2220reg p OK led.c:748:a42sc %? %@2152sc!0?
-1;4??!219reg led.c:7482sc %? %@2132sc!0?
-'\''1d??!219reg led.c:573:m12sc %? %@2142sc!0?
+1;4??!219reg led.c:748:r2342sc %? %@2132sc!0?
+'\''1d??!219reg led.c:573:r234:m12sc %? %@2142sc!0?
 '\''2i 		case TK_CTL('\''_'\''):       /* list the matches on their own screen */
 		case '\''\t'\'':
 			if (flg & 2)    /* the caller steps the search match */
 				break;
-??!219reg led.c:748:m22sc %? %@2142sc!p compat 234 applied: src=incsearch.sh src=detect_indent.sh' > "$P2VIF".234
+??!219reg led.c:748:r234:m22sc %? %@2142sc!p compat 234 applied: src=incsearch.sh src=detect_indent.sh' > "$P2VIF".234
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".233 "$P2VIF".234 "$P2VIF".d
 
 if [ $# -gt 0 ]; then

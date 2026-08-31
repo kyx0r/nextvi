@@ -34,7 +34,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 fr 98211reg fr 230f> 1??!? %@221fr 98b010?
 b1%ya 972sc %? %@972sc!b01211reg ? %@2210?
 2sc %? %@2312sc!vis 2b0w2q' > "$P2VIF".d
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> 			xoff, col\);
 	} else \{
 		snprintf\(vi_msg, sizeof\(vi_msg\),
@@ -129,7 +129,7 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 			xrow * 100 / MAX(1, lbuf_len(xb)-1), col,
 ??!219reg vi.c:509:m22sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=visual.sh
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> 			xoff, col, vs\);
 	} else \{
 		snprintf\(vi_msg, sizeof\(vi_msg\),
@@ -153,8 +153,8 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 			xb->modified \? "modified" : "unmodified",
 			xrow\+1, lbuf_len\(xb\),5??0?
 5??-1m 1220reg p OK vi.c:562:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:5622sc %? %@2132sc!0?
-'\''1s/]"/] %s"/??!219reg vi.c:562:m12sc %? %@2142sc!p compat 231 applied: src=visual.sh' > "$P2VIF".231
+1;2;3;4;5??!219reg vi.c:562:r2312sc %? %@2132sc!0?
+'\''1s/]"/] %s"/??!219reg vi.c:562:r231:m12sc %? %@2142sc!p compat 231 applied: src=visual.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then

@@ -34,7 +34,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
 b6%ya 972sc %? %@972sc!b11b21211reg ? %@2210?
 2sc %? %@2312sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> -Wno-unused-parameter \\
 -Wno-unused-result \\
 -Wfatal-errors -std=c99 \\
@@ -64,7 +64,7 @@ case "\$OS" in1??0?
 grp 09??-12m 1220reg p OK cbuild.sh:49:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg cbuild.sh:492sc %? %@2132sc!0?
 '\''1i -lpthread \
-??!219reg cbuild.sh:49:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg cbuild.sh:49:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	return n != 0;
 }
 
@@ -498,7 +498,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 	}
 	utf8_length['\''\n'\''] = 1;
 	return 1;
-??!219reg lbuf.c:531:m62sc %? %@2142sc!b2%ya 98?0?
+??!219reg lbuf.c:531:m62sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return 0;
 }
 
@@ -616,7 +616,7 @@ if \(freesub\) \{ \\5??0?
 '\''2s/h\)/h && utf8_length[eol_ch])/??!219reg regex.c:649:m22sc %? %@2142sc!0?
 '\''3i 	else
 		flg &= ~REG_NEWLINE;
-??!219reg regex.c:650:m32sc %? %@2142sc!b3%ya 98?0?
+??!219reg regex.c:650:m32sc %? %@2142sc!b3m!%ya 98?0?
 %f> unsigned char utf8_length\[256] = \{
 	/\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \*/
 	/\* 0 \*/ 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -667,7 +667,7 @@ char \*uc_beg\(char \*beg, char \*s\)
 1;4;7;8;9??!219reg uc.c:192sc %? %@2132sc!0?
 '\''1s/ u/ _u/??!219reg uc.c:1:m12sc %? %@2142sc!0?
 '\''2i unsigned char *utf8_length = _utf8_length;
-??!219reg uc.c:19:m22sc %? %@2142sc!b4%ya 98?0?
+??!219reg uc.c:19:m22sc %? %@2142sc!b4m!%ya 98?0?
 %f> #include <sys/stat\.h>
 #include <sys/ioctl\.h>
 #include <sys/wait\.h>
@@ -697,7 +697,7 @@ char \*uc_beg\(char \*beg, char \*s\)
 grp 09??-7m 1220reg p OK vi.c:15:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:152sc %? %@2132sc!0?
 '\''1i #include <pthread.h>
-??!219reg vi.c:15:m12sc %? %@2142sc!b5%ya 98?0?
+??!219reg vi.c:15:m12sc %? %@2142sc!b5m!%ya 98?0?
 %f> void syn_init\(void\);
 
 /\* uc\.c: utf-8 helper functions \*/
@@ -751,7 +751,7 @@ if \(l == 1\); \\9??0?
 extern unsigned char *utf8_length;
 ??!219reg vi.h:269:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=rstr.sh
-printf '%s\n' '2sc!fr 98b1%ya 98?0?
+printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 %f> struct lsparams
 \{
 	struct lbuf \*lb;
@@ -775,7 +775,7 @@ printf '%s\n' '2sc!fr 98b1%ya 98?0?
 	int beg;
 	int end;5??0?
 5??-1m 1220reg p OK lbuf.c:497:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg lbuf.c:4972sc %? %@2132sc!0?
+1;2;3;4;5??!219reg lbuf.c:497:r2312sc %? %@2132sc!0?
 ?0?
 %f+ \{
 	struct lsparams \*a = arg;
@@ -800,7 +800,7 @@ printf '%s\n' '2sc!fr 98b1%ya 98?0?
 	int off = a->off, g1, g2, _o, step, flg;
 	for \(; i >= a->beg && i < a->end; i \+= a->dir\) \{5??0?
 5??-1m 2220reg p OK lbuf.c:511:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg lbuf.c:5112sc %? %@2132sc!0?
+1;2;3;4;5??!219reg lbuf.c:511:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 		step = 0;
 		flg = REG_NEWLINE;
@@ -825,7 +825,7 @@ printf '%s\n' '2sc!fr 98b1%ya 98?0?
 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
 			if \(g1 < 0\) \{5??0?
 5??-1m 3220reg p OK lbuf.c:519:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg lbuf.c:5192sc %? %@2132sc!0?
+1;2;3;4;5??!219reg lbuf.c:519:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 	return NULL;
 }
@@ -851,12 +851,12 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 \{
 	#define NUM_THREADS 45??0?
 5??-1m 4220reg p OK lbuf.c:542:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg lbuf.c:5422sc %? %@2132sc!0?
-'\''1s/et/tr/??!219reg lbuf.c:497:m12sc %? %@2142sc!0?
+1;2;3;4;5??!219reg lbuf.c:542:r2312sc %? %@2132sc!0?
+'\''1s/et/tr/??!219reg lbuf.c:497:r231:m12sc %? %@2142sc!0?
 ?'\''2s/nsubc/rs ? a->re->rs->nsubc : 2/1??1??1q'\''2s/(ns.*c)/rs ? a->re->rs->\1 : 2/2??2??'\''2220reg p OK lbuf.c:511:s22sc %? %@2162sc!0?
-1;2??!219reg lbuf.c:511:m22sc %? %@2142sc!0?
-'\''3s/et/tr/??!219reg lbuf.c:519:m32sc %? %@2142sc!0?
-'\''4s/et/tr/??!219reg lbuf.c:542:m42sc %? %@2142sc!b2%ya 98?0?
+1;2??!219reg lbuf.c:511:r231:m22sc %? %@2142sc!0?
+'\''3s/et/tr/??!219reg lbuf.c:519:r231:m32sc %? %@2142sc!0?
+'\''4s/et/tr/??!219reg lbuf.c:542:r231:m42sc %? %@2142sc!b2m!%ya 98?0?
 %f> } \\
 break##gen:; \\
 
@@ -867,7 +867,7 @@ break##gen:; \\
 
 4??0?
 4??+2m 1220reg p OK regex.c:821:a42sc %? %@2152sc!0?
-1;4??!219reg regex.c:8212sc %? %@2132sc!0?
+1;4??!219reg regex.c:821:r2312sc %? %@2132sc!0?
 ?0?
 %f+ #define rstr_match1\(gen, wbeg, wend, cmpcase, stopcond\) \\
 \{ for \(r = beg; stopcond; r\+\+\) \{ \\
@@ -891,15 +891,15 @@ break##gen:; \\
 
 5??0?
 5??-1m 2220reg p OK regex.c:823:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg regex.c:8232sc %? %@2132sc!0?
+1;2;3;4;5??!219reg regex.c:823:r2312sc %? %@2132sc!0?
 '\''1i /* lbuf_search swaps utf8_length for an all zero table to terminate its search
  * threads with no synchronization; entry 1 is never zero in the real table, so
  * reading it is how a scan that never decodes utf-8 notices the same kill */
 #define rstr_live utf8_length[1]
 
-??!219reg regex.c:821:m12sc %? %@2142sc!0?
+??!219reg regex.c:821:r231:m12sc %? %@2142sc!0?
 ?'\''2s/stopcond/(stopcond) && rstr_live/1??1??1q'\''2s/(s.*d)/(\1) && rstr_live/2??2??'\''2220reg p OK regex.c:823:s22sc %? %@2162sc!0?
-1;2??!219reg regex.c:823:m22sc %? %@2142sc!0?
+1;2??!219reg regex.c:823:r231:m22sc %? %@2142sc!0?
 p compat 231 applied: src=rstr.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 

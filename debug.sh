@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> 	xgrec--;
 }
 
@@ -71,7 +71,7 @@ void ex_init\(char \*\*files, int n\)
 	free(bufs);
 }
 
-??!219reg ex.c:1924:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1924:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;
@@ -101,7 +101,7 @@ void ex_init\(char \*\*files, int n\)
 grp 09??-7m 1220reg p OK regex.c:645:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg regex.c:6452sc %? %@2132sc!0?
 '\''1i 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
-??!219reg regex.c:645:m12sc %? %@2142sc!b2%ya 98?0?
+??!219reg regex.c:645:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> }
 
 ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux rendering \*/
@@ -162,7 +162,7 @@ void syn_done(void)
 	free(ftmap);
 	rset_free(syn_ftrs);
 }
-??!219reg ren.c:460:m22sc %? %@2142sc!b3%ya 98?0?
+??!219reg ren.c:460:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> 	else
 		vi\(1\);
 	term_done\(\);
@@ -185,7 +185,7 @@ void syn_done(void)
 	if (led_attsb)
 		sbuf_free(led_attsb)
 	free(ibuf);
-??!219reg vi.c:1899:m12sc %? %@2142sc!b4%ya 98?0?
+??!219reg vi.c:1899:m12sc %? %@2142sc!b4m!%ya 98?0?
 %f> int ren_off\(char \*s, int p\);
 char \*ren_translate\(char \*s, char \*ln\);
 /\* text direction \*/

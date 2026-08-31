@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
 \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
 \|\[@&!dmj]\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
@@ -79,7 +79,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-8m 1220reg p OK conf.c:302:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3022sc %? %@2132sc!0?
-'\''1s/d]/dp]/??!219reg conf.c:302:m12sc %? %@2142sc!b1%ya 98?0?
+'\''1s/d]/dp]/??!219reg conf.c:302:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	return xkwdrs \? NULL : xserr;
 }
 
@@ -146,7 +146,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 
 ??!219reg ex.c:1638:m12sc %? %@2142sc!0?
 '\''2i 	{"up", ec_undoleafs},
-??!219reg ex.c:1735:m22sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1735:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> \{
 	struct lbuf \*lb = emalloc\(sizeof\(\*lb\)\);
 	memset\(lb, 0, sizeof\(\*lb\)\);
@@ -498,7 +498,7 @@ char *lbuf_getleafs(struct lbuf *lb)
 '\''6,#+1c 		lbuf_freeleafs(lb);
 ??!219reg lbuf.c:453:m62sc %? %@2142sc!0?
 '\''7i 		sbuf_make(lb->rehist, 128)
-??!219reg lbuf.c:456:m72sc %? %@2142sc!b3%ya 98?0?
+??!219reg lbuf.c:456:m72sc %? %@2142sc!b3m!%ya 98?0?
 %f> struct lbuf \{
 	char \*\*ln;			/\* buffer lines \*/
 	struct lopt \*hist;		/\* buffer history \*/

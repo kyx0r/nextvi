@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> #define WH1	15	/\* bright white \*/
 
 #define A\(\.\.\.\) \(int\[]\)\{__VA_ARGS__}
@@ -516,7 +516,7 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},8??
 ??!219reg conf.c:241:m132sc %? %@2142sc!0?
 '\''14i 	{FT(md), NULL, HI, 0, 4},
 ??!219reg conf.c:256:m142sc %? %@2142sc!0?
-'\''15s/\?\|i/?|hi|i/??!219reg conf.c:301:m152sc %? %@2142sc!b1%ya 98?0?
+'\''15s/\?\|i/?|hi|i/??!219reg conf.c:301:m152sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	return NULL;
 }
 

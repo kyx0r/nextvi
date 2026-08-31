@@ -34,7 +34,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 fr 98211reg fr 230f> 1??!? %@221fr 98b010?
 b1%ya 972sc %? %@972sc!b01211reg ? %@2210?
 2sc %? %@2312sc!vis 2b0w2q' > "$P2VIF".d
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> 
 	mv = term_read\(0\);
 	switch \(mv\) \{
@@ -100,7 +100,7 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 		break;
 ??!219reg vi.c:527:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=visual.sh
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/
 static int vi_vrow;			/\* selection anchor row \*/
 static int vi_voff;			/\* selection anchor column \*/
@@ -112,7 +112,7 @@ void \*emalloc\(size_t size\)
 static int vi_vrow;			/\* selection anchor row \*/
 static int vi_voff;			/\* selection anchor column \*/4??0?
 4??+2m 1220reg p OK vi.c:49:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:492sc %? %@2132sc!0?
+1;4??!219reg vi.c:49:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 	mv = term_read\(0\);
 	switch \(mv\) \{
@@ -125,7 +125,7 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 	switch \(mv\) \{
 	case '\''\\033'\'':	/\* Arrow keys \*/4??0?
 4??+2m 2220reg p OK vi.c:583:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:5832sc %? %@2132sc!0?
+1;4??!219reg vi.c:583:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		if \(mv == '\''\['\''\) \{
@@ -138,7 +138,7 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 		if \(mv == '\''\['\''\) \{
 			mv = term_read\(0\);4??0?
 4??+2m 3220reg p OK vi.c:590:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:5902sc %? %@2132sc!0?
+1;4??!219reg vi.c:590:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 				vc_status\(0\);
 				vi_mod \|= 1;
@@ -181,7 +181,7 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 				continue;
 			}5??0?
 5??-7m 4220reg p OK vi.c:2063:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:20632sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:2063:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 				}
 			}
@@ -200,7 +200,7 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 4??+3m 5220reg p OK vi.c:2130:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			vi_mod \|= 1;$5??0?
 5??-1m 5220reg p OK vi.c:2130:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg vi.c:21302sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:2130:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 			vi_mod \|= 1;
 		term_record = 1;
@@ -209,23 +209,23 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 1??m 61q0?
 ;0fr.,$f+ ^			vi_mod \|= 1;$4??0?
 4??m 6220reg p OK vi.c:2131:a42sc %? %@2152sc!fr 98fr 980?
-1;4??!219reg vi.c:21312sc %? %@2132sc!0?
+1;4??!219reg vi.c:2131:r2312sc %? %@2132sc!0?
 '\''1i static int vi_vesc;			/* visual mode hidden by an escape sequence */
-??!219reg vi.c:49:m12sc %? %@2142sc!0?
+??!219reg vi.c:49:r231:m12sc %? %@2142sc!0?
 '\''2i 		vi_vesc = vi_visual;	/* hide the block until the sequence is known */
 		vi_visual = 0;
-??!219reg vi.c:583:m22sc %? %@2142sc!0?
+??!219reg vi.c:583:r231:m22sc %? %@2142sc!0?
 '\''3i 			if (mv == '\''A'\'' || mv == '\''B'\'' || mv == '\''C'\'' || mv == '\''D'\'') {
 				vi_visual = vi_vesc;	/* real arrow: keep it */
 				vi_vesc = 0;
 			}
-??!219reg vi.c:590:m32sc %? %@2142sc!0?
-'\''4,#+6d??!219reg vi.c:2063:m42sc %? %@2142sc!0?
+??!219reg vi.c:590:r231:m32sc %? %@2142sc!0?
+'\''4,#+6d??!219reg vi.c:2063:r231:m42sc %? %@2142sc!0?
 '\''5c 		if (vi_visual || vi_vesc) {
 			vi_vesc = 0;	/* one redraw takes the block off */
-??!219reg vi.c:2130:m52sc %? %@2142sc!0?
+??!219reg vi.c:2130:r231:m52sc %? %@2142sc!0?
 '\''6i 		}
-??!219reg vi.c:2131:m62sc %? %@2142sc!p compat 231 applied: src=visual.sh' > "$P2VIF".231
+??!219reg vi.c:2131:r231:m62sc %? %@2142sc!p compat 231 applied: src=visual.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then

@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> #define CY1	14	/\* bright cyan \*/
 #define WH1	15	/\* bright white \*/
 
@@ -80,7 +80,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 \(\?#-1\)\(\?<\\"\.\*\\\\\*/\.\*\(\?:\\"\|\\\\\\\\\\n\$\)\)\)\|\(//\.\*\\\\\*/\)",9??0?
 grp 09??-9m 1220reg p OK conf.c:65:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:652sc %? %@2132sc!0?
-'\''1s/\(int\[]\)//??!219reg conf.c:65:m12sc %? %@2142sc!b1%ya 98?0?
+'\''1s/\(int\[]\)//??!219reg conf.c:65:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	else if \(xgrp >= xkwdrs->nsubc\)
 		return xgerr;
 	if \(xfr\) \{
@@ -353,7 +353,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 '\''6c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 ??!219reg ex.c:1130:m62sc %? %@2142sc!0?
 '\''7i 	free(offs);
-??!219reg ex.c:1256:m72sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1256:m72sc %? %@2142sc!b2m!%ya 98?0?
 %f> 		int nskip, int \*r, int \*o\)
 \{
 	int r0 = \*r, o0 = \*o;
@@ -504,7 +504,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 '\''3i 			}
 ??!219reg lbuf.c:524:m32sc %? %@2142sc!0?
 '\''4i 	free(offs);
-??!219reg lbuf.c:530:m42sc %? %@2142sc!b3%ya 98?0?
+??!219reg lbuf.c:530:m42sc %? %@2142sc!b3m!%ya 98?0?
 %f> 		xic \? REG_ICASE \| REG_NEWLINE : REG_NEWLINE\);
 	if \(!rs \|\| grp >= rs->nsubc\)
 		return;
@@ -719,7 +719,7 @@ static int led_lastchar\(char \*s\)1??0?
 	free(att);
 	free(stt);
 	free(ctt);
-??!219reg led.c:257:m52sc %? %@2142sc!b4%ya 98?0?
+??!219reg led.c:257:m52sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	return 0;
 }
 
@@ -1069,7 +1069,7 @@ return state; } \
 '\''7i 				free(subs);
 ??!219reg regex.c:740:m72sc %? %@2142sc!0?
 '\''8i 	free(subs);
-??!219reg regex.c:744:m82sc %? %@2142sc!b5%ya 98?0?
+??!219reg regex.c:744:m82sc %? %@2142sc!b5m!%ya 98?0?
 %f> 	if \(fti >= ftmidx\)
 		ftmap = erealloc\(ftmap, \(fti \+ 1\) \* sizeof\(\*ftmap\)\);
 	int i = n, set = hls\[i]\.set;
@@ -1398,7 +1398,7 @@ void syn_init\(void\).*?
 '\''8c 	char **pats = emalloc(ftslen * sizeof(char *));
 ??!219reg ren.c:455:m82sc %? %@2142sc!0?
 '\''9i 	free(pats);
-??!219reg ren.c:459:m92sc %? %@2142sc!b6%ya 98?0?
+??!219reg ren.c:459:m92sc %? %@2142sc!b6m!%ya 98?0?
 %f> 			s = lbuf_get\(xb, row - vi_rshift\);
 			goto skip;
 		}
@@ -1806,7 +1806,7 @@ void syn_init\(void\).*?
 ?'\''9s/buf\[n \+ 30]/*buf = emalloc(n + 30)/1??1??1q'\''9s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''9220reg p OK vi.c:1419:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1419:m92sc %? %@2142sc!0?
 '\''10i 					free(buf);
-??!219reg vi.c:1427:m102sc %? %@2142sc!b7%ya 98?0?
+??!219reg vi.c:1427:m102sc %? %@2142sc!b7m!%ya 98?0?
 %f> struct highlight \{
 	char \*ft;		/\* the filetype of this pattern \*/
 	char \*pat;		/\* regular expression \*/

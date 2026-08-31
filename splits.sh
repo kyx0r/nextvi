@@ -36,7 +36,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 b7%ya 972sc %? %@972sc!err 0b61b41err 1232??211reg232??!211reg ? %@2210?
 2sc %? %@2312sc!b41211reg ? %@2210?
 2sc %? %@2322sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
-printf '%s\n' '2sc!fr 98b0%ya 98?0?
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
 \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
@@ -88,7 +88,7 @@ printf '%s\n' '2sc!fr 98b0%ya 98?0?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3012sc %? %@2132sc!0?
 ?'\''1s/f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?/qf!]?!?|f[-+><tdp]?|inc|i|sc!?|vs|sp/1??1??1q'\''1s/(f!.*c!\?\|)/q\1vs|sp|/2??2??'\''1220reg p OK conf.c:301:s22sc %? %@2162sc!0?
 1;2??!219reg conf.c:301:m12sc %? %@2142sc!0?
-b1%ya 98?0?
+b1m!%ya 98?0?
 %f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/1??0?
@@ -562,7 +562,7 @@ void *win_split(int axis, char *arg)
 
 ??!219reg ex.c:1924:m72sc %? %@2142sc!0?
 '\''8i 	win_init();
-??!219reg ex.c:1928:m82sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1928:m82sc %? %@2142sc!b2m!%ya 98?0?
 %f> int led_pos\(char \*s, int pos\)
 \{
 	if \(dir_context\(s\) < 0\)
@@ -1264,7 +1264,7 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 						left += curwin->w;
 ??!219reg led.c:567:m132sc %? %@2142sc!0?
 '\''14s/g\)/g, ai_max >= 0)/??!219reg led.c:577:m142sc %? %@2142sc!0?
-'\''15s/g\)/g, 1)/??!219reg led.c:622:m152sc %? %@2142sc!b3%ya 98?0?
+'\''15s/g\)/g, 1)/??!219reg led.c:622:m152sc %? %@2142sc!b3m!%ya 98?0?
 %f> 	term_out\("\\33\[K"\);
 }
 
@@ -1304,7 +1304,7 @@ void term_killw(int n)
 	term_out(cmd);
 }
 
-??!219reg term.c:87:m12sc %? %@2142sc!b4%ya 98?0?
+??!219reg term.c:87:m12sc %? %@2142sc!b4m!%ya 98?0?
 %f> }
 #define vi_drawmsg_mpt\(msg\) \{ vi_drawmsg\(msg\); if \(!xmpt\) xmpt = 1; }
 
@@ -3701,7 +3701,7 @@ static void vi_redraw(void)
 '\''49s/xrows/curwin->h/??!219reg vi.c:1813:m492sc %? %@2142sc!0?
 ?'\''50s/xrow - xtop,/curwin->y + xrow - xtop, curwin->x +/1??1??1q'\''50s/(xr.*,)/curwin->y + \1 curwin->x +/2??2??'\''50220reg p OK vi.c:1831:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:1831:m502sc %? %@2142sc!0?
-b5%ya 98?0?
+b5m!%ya 98?0?
 %f> void term_chr\(int ch\);
 void term_pos\(int r, int c\);
 void term_kill\(void\);
@@ -3911,7 +3911,7 @@ void *win_split(int axis, char *arg);
 	curwin->buf = b; \
 ??!219reg vi.h:462:m42sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=lsp.sh
-printf '%s\n' '2sc!fr 98b6%ya 98?0?
+printf '%s\n' '2sc!fr 98b6m!%ya 98?0?
 %f> 	if \(xrow < 0\)
 		xrow = 0;
 	xoff = 0;
@@ -3935,10 +3935,10 @@ const char \*lsp_diag_for_line\(const char \*path, int line, int \*sev\)2??0
 
 const char \*lsp_diag_for_line\(const char \*path, int line, int \*sev\)5??0?
 5??-1m 1220reg p OK lsp.c:1158:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg lsp.c:11582sc %? %@2132sc!0?
+1;2;3;4;5??!219reg lsp.c:1158:r2312sc %? %@2132sc!0?
 ?'\''1s/xrows \/ 2 \? xrow - xrows/curwin->h \/ 2 ? xrow - curwin->h/1??1??1q'\''1s/xrows( \/ 2 \?.*- )xrows/curwin->h\1curwin->h/2??2??'\''1220reg p OK lsp.c:1158:s22sc %? %@2162sc!0?
-1;2??!219reg lsp.c:1158:m12sc %? %@2142sc!0?
-b4%ya 98?0?
+1;2??!219reg lsp.c:1158:r231:m12sc %? %@2142sc!0?
+b4m!%ya 98?0?
 %f> 	ret = func; \\
 } } \\
 
@@ -3963,7 +3963,7 @@ static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)
 \{
 	static const char \*sevname\[] = \{"info", "error", "warning", "info", "hint"};5??0?
 5??-1m 1220reg p OK vi.c:148:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1482sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:148:r2312sc %? %@2132sc!0?
 ?0?
 %f+ static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)
 \{
@@ -3988,7 +3988,7 @@ static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)
 	sbuf_smake\(sb, 256\)
 	sbuf_str\(sb, "  "\)5??0?
 5??-1m 2220reg p OK vi.c:152:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1522sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:152:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 	preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 	preserve\(int, ftidx,\)
@@ -4013,7 +4013,7 @@ static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)
 	restore\(ftidx\)
 	free\(sb->s\);5??0?
 5??-1m 3220reg p OK vi.c:164:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1642sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:164:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 		restore\(syn_blockhl\)
 		restore\(ftidx\)
@@ -4038,7 +4038,7 @@ static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)
 	}
 	led_crender\(s, scrrow, wx, xleft, xleft \+ wcols\)5??0?
 5??-1m 4220reg p OK vi.c:263:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2632sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:263:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 	int dcol = rstate->cmax - xleft;
 	rstate = rstates;
@@ -4063,17 +4063,17 @@ static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)
 
 /\* redraw the screen \*/5??0?
 5??-1m 5220reg p OK vi.c:270:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2702sc %? %@2132sc!0?
-'\''1s/screen/window/??!219reg vi.c:148:m12sc %? %@2142sc!0?
+1;2;3;4;5??!219reg vi.c:270:r2312sc %? %@2132sc!0?
+'\''1s/screen/window/??!219reg vi.c:148:r231:m12sc %? %@2142sc!0?
 '\''2c 	int wcols = curwin->w, wx = curwin->x;
 	if (col < 0 || col >= wcols)
-??!219reg vi.c:152:m22sc %? %@2142sc!0?
+??!219reg vi.c:152:r231:m22sc %? %@2142sc!0?
 ?'\''3s/col, 0, x/wx + col, 0, w/1??1??1q'\''3s/(col,.*0, )x/wx + \1w/2??2??'\''3220reg p OK vi.c:164:s22sc %? %@2162sc!0?
-1;2??!219reg vi.c:164:m32sc %? %@2142sc!0?
-'\''4s/row - xtop/scrrow/??!219reg vi.c:263:m42sc %? %@2142sc!0?
-'\''5s/row - xtop/scrrow/??!219reg vi.c:270:m52sc %? %@2142sc!vis 2b6wvis 3p compat 231 applied: src=lsp.sh' > "$P2VIF".231
+1;2??!219reg vi.c:164:r231:m32sc %? %@2142sc!0?
+'\''4s/row - xtop/scrrow/??!219reg vi.c:263:r231:m42sc %? %@2142sc!0?
+'\''5s/row - xtop/scrrow/??!219reg vi.c:270:r231:m52sc %? %@2142sc!vis 2b6wvis 3p compat 231 applied: src=lsp.sh' > "$P2VIF".231
 # Compat 232 src=visual.sh
-printf '%s\n' '2sc!fr 98b4%ya 98?0?
+printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 %f> static int vi_visual;			/\* visual mode: 0=off, '\''v'\''=char, '\''V'\''=line '\''b'\''=block \*/
 static int vi_vrow;			/\* selection anchor row \*/
 static int vi_voff;			/\* selection anchor column \*/
@@ -4085,7 +4085,7 @@ void \*emalloc\(size_t size\)
 static int vi_vrow;			/\* selection anchor row \*/
 static int vi_voff;			/\* selection anchor column \*/4??0?
 4??+2m 1220reg p OK vi.c:49:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:492sc %? %@2132sc!0?
+1;4??!219reg vi.c:49:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 
 static void vi_visual_attrib\(char \*s, int row\)
@@ -4110,7 +4110,7 @@ static void vi_visual_attrib\(char \*s, int row\)
 	int ar = vi_vrow, ao = vi_voff;
 	int cr = xrow,   co = xoff;5??0?
 5??-1m 2220reg p OK vi.c:150:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1502sc %? %@2132sc!0?
+1;2;3;4;5??!219reg vi.c:150:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 	preserve\(int, xleft,\)
 	preserve\(int, xtd,\)
@@ -4123,7 +4123,7 @@ static void vi_visual_attrib\(char \*s, int row\)
 	preserve\(int, xtd,\)
 	do \{4??0?
 4??+2m 3220reg p OK vi.c:321:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:3212sc %? %@2132sc!0?
+1;4??!219reg vi.c:321:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 	} while \(w != wins\);
 	vi_draw_separators\(\);
@@ -4136,16 +4136,16 @@ static void vi_visual_attrib\(char \*s, int row\)
 	vi_draw_separators\(\);
 	curwin = cur;4??0?
 4??+2m 4220reg p OK vi.c:338:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:3382sc %? %@2132sc!0?
+1;4??!219reg vi.c:338:r2322sc %? %@2132sc!0?
 '\''1i static int vi_vfocused = 1;		/* redrawing the window owning the selection */
-??!219reg vi.c:49:m12sc %? %@2142sc!0?
-'\''2s/s\)/s || !vi_vfocused)/??!219reg vi.c:150:m22sc %? %@2142sc!0?
+??!219reg vi.c:49:r232:m12sc %? %@2142sc!0?
+'\''2s/s\)/s || !vi_vfocused)/??!219reg vi.c:150:r232:m22sc %? %@2142sc!0?
 '\''3i 		vi_vfocused = w == cur;
 		if (!vi_vfocused && led_attsb)
 			sbuf_cut(led_attsb, 0)
-??!219reg vi.c:321:m32sc %? %@2142sc!0?
+??!219reg vi.c:321:r232:m32sc %? %@2142sc!0?
 '\''4i 	vi_vfocused = 1;
-??!219reg vi.c:338:m42sc %? %@2142sc!p compat 232 applied: src=visual.sh' > "$P2VIF".232
+??!219reg vi.c:338:r232:m42sc %? %@2142sc!p compat 232 applied: src=visual.sh' > "$P2VIF".232
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
