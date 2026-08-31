@@ -20,6 +20,7 @@ by compat_order in patch2vi.sh.
 ./lsp.sh rstr.sh visual.sh splits.sh incsearch.sh
 ./lsp.sh visual.sh splits.sh threaded_redraw.sh linewrap_v2.sh
 ./lsp.sh visual.sh splits.sh threaded_redraw.sh linewrap_v2.sh mouse_normal.sh
+./lsp.sh visual.sh nvi_status.sh
 ./lsp.sh visual.sh splits.sh
 ./lsp.sh rstr.sh visual.sh splits.sh arrowkeys_insert.sh incsearch.sh detect_indent.sh tab_complete.sh
 ./rstr.sh threaded_search.sh
@@ -232,6 +233,11 @@ Improvements to autocomplete: the word completion now also uses
 text that prefixes the insert when it makes sense. This makes it
 possible to autocomplete in more situations.
 
+ac_lines.sh
+--------------
+Adds <^K> in insert mode: it indexes whole lines for autocomplete.
+This takes <^K> from the digraph key.
+
 tab_complete.sh
 --------------
 Adds path completion to the ex prompt, bound to TAB. The word before
@@ -285,6 +291,12 @@ NEXTVI_WORD - current word
 "sr" runs a command with the environment variables above
 "sx" runs a command with the environment variables above and
 executes its stdout as ex commands
+
+ex_marks.sh
+--------------
+Lets an ex command range address a letter mark.
+Example:
+:'a,'bs/foo/bar
 
 chunked_read_write.sh
 --------------
@@ -422,6 +434,11 @@ Example: disable rules
 :hi
 Example: highlight text inside parens
 :5hi \(.*?\)
+
+nvi_status.sh
+--------------
+Rewords the <^G> status line the way nvi puts it:
+"file: modified: line 3 of 10 (22%) col 1 [b0]"
 
 My current EXINIT setup:
 --------------
