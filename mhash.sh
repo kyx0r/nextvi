@@ -22,7 +22,7 @@ fi
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 
-# Patch: lbuf.c vi.h
+# Patch: ex.c lbuf.c vi.h
 printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg prFp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
 "${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
@@ -30,6 +30,56 @@ ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 'fr 98b0m!%ya 98?0?
+%f> 	int beg, end, o1 = xoff, o2 = xoff;
+	if \(cmd\[1] == '\''!'\''\) \{
+		if \(!\*arg\) \{
+			xb->mark_n = 0;
+			xb->mark_sb\[0] = -1;
+			xb->mark_se\[0] = -1;
+			return NULL;1??0?
+1??+3m 11q0?
+%f> 			xb->mark_n = 0;
+			xb->mark_sb\[0] = -1;
+			xb->mark_se\[0] = -1;
+			return NULL;2??0?
+2??m 1220reg p OK ex.c:1093:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^			xb->mark_n = 0;$3??0?
+3??m 1220reg p OK ex.c:1093:a32sc %? %@2152sc!fr 981qfr 980?
+%f> 	int beg, end, o1 = xoff, o2 = xoff;
+	if \(cmd\[1] == '\''!'\''\) \{
+		if \(!\*arg\) \{4??0?
+4??+3m 1220reg p OK ex.c:1093:a42sc %? %@2152sc!1q0?
+%f> 			xb->mark_sb\[0] = -1;
+			xb->mark_se\[0] = -1;
+			return NULL;5??0?
+5??-1m 1220reg p OK ex.c:1093:a52sc %? %@2152sc!1q0?
+%f> .... .e...e....o1.. ....,...........
+....\(........=....\)..
+.	.....\*......
+.	........k.. =...
+.	......ar....\[......1.
+...x.........e..] . ..;
+......... N...;6??0?
+6??+3m 1220reg p OK ex.c:1093:a62sc %? %@2152sc!1q0?
+grp 1%f> 	int beg, end, o1 = xoff, o2 = xoff;.*?
+	if \(cmd\[1] == '\''!'\''\) \{.*?
+		if \(!\*arg\) \{.*?
+(			xb->mark_n = 0;)7??0?
+grp 07??m 1220reg p OK ex.c:1093:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	lbuf_saved\(xb, \*arg\);
+	return NULL;
+}.*(		beg = -1;)
+		end = 0;
+	} else if \(ex_region\(loc, &beg, &end, &o1, &o2\)\)8??0?
+grp 08??-5m 1220reg p OK ex.c:1093:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	return \(cmd\[0] == '\''u'\'' \? lbuf_undo : lbuf_redo\)\(xb, &ref, &ref\) \?
+		xuerr : NULL;
+}.*(	for \(int i = 0; uc_isdigit\(\*arg\); i\+\+\) \{)
+		int mk;
+		for \(mk = 0; uc_isdigit\(\*arg\); arg\+\+\)9??0?
+grp 09??-9m 1220reg p OK ex.c:1093:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:10932sc %? %@2132sc!0?
+'\''1s/_/->/??!219reg ex.c:1093:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 
 #define lbuf_copymark\(dst, src\) \{ dst\[0] = src\[0]; dst\[1] = src\[1]; }
 
@@ -586,7 +636,7 @@ static void mark_set(struct mhash **ph, int id, int pos, int off)
 ??!219reg lbuf.c:132:m72sc %? %@2142sc!0?
 '\''8s/&lo->mark_n, //??!219reg lbuf.c:135:m82sc %? %@2142sc!0?
 '\''9s/lo->mark_n, //??!219reg lbuf.c:139:m92sc %? %@2142sc!0?
-'\''10d??!219reg lbuf.c:188:m102sc %? %@2142sc!b1m!%ya 98?0?
+'\''10d??!219reg lbuf.c:188:m102sc %? %@2142sc!b2m!%ya 98?0?
 %f> void rset_free\(rset \*re\);
 
 /\* lbuf\.c: line buffer \*/
@@ -732,8 +782,8 @@ struct linfo \{.*(	int modified;			/\* modification state \*/)
 '\''2,#+1c 	struct mhash *mark;	/* saved marks */
 ??!219reg vi.h:124:m22sc %? %@2142sc!0?
 '\''3,#+1c 	struct mhash *mark;		/* marks keyed by id */
-??!219reg vi.h:140:m32sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
-EXINIT='%ya 97:? %@97' $VI -e 'lbuf.c' 'vi.h' "$P2VIF"
+??!219reg vi.h:140:m32sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
+EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'lbuf.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
@@ -744,6 +794,19 @@ fi
 
 exit 0
 === PATCH2VI PATCH ===
+diff --git a/ex.c b/ex.c
+index 4efc8c2e..819f179c 100644
+--- a/ex.c
++++ b/ex.c
+@@ -1090,7 +1090,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
+ 	int beg, end, o1 = xoff, o2 = xoff;
+ 	if (cmd[1] == '!') {
+ 		if (!*arg) {
+-			xb->mark_n = 0;
++			xb->mark->n = 0;
+ 			xb->mark_sb[0] = -1;
+ 			xb->mark_se[0] = -1;
+ 			return NULL;
 diff --git a/lbuf.c b/lbuf.c
 index bce1f5e0..f2ce65c8 100644
 --- a/lbuf.c
