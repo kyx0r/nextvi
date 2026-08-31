@@ -20,6 +20,23 @@ Bug fixes:
    empty, the scan skips one whole character instead of one byte, in
    substitution, search, file index and directory reorder.
 
+Patch changes:
+1. New [threaded_redraw.sh](https://github.com/kyx0r/nextvi/blob/release/threaded_redraw.sh):
+   redraw on thread. Frame joined before next command. Needs pthreads.
+   linewrap_v2.sh gained compat block for it.
+2. [linewrap_v1.sh](https://github.com/kyx0r/nextvi/blob/release/linewrap_v1.sh)
+   and [linewrap_v2.sh](https://github.com/kyx0r/nextvi/blob/release/linewrap_v2.sh):
+   elastic column. :lw no arg tracks terminal width, v1 rewraps buffer
+   on resize, v2 rescale render.
+3. [linewrap_v2.sh](https://github.com/kyx0r/nextvi/blob/release/linewrap_v2.sh):
+   faster scroll redraw, vi_drawscroll redraws only entering/leaving rows.
+4. New user patches: [ac_lines.sh](https://github.com/kyx0r/nextvi/blob/release/ac_lines.sh)
+   <^K> line autocomplete in insert; [ex_marks.sh](https://github.com/kyx0r/nextvi/blob/release/ex_marks.sh)
+   letter mark ranges, :'a,'bs/foo/bar; [nvi_status.sh](https://github.com/kyx0r/nextvi/blob/release/nvi_status.sh)
+   nvi style <^G> line.
+5. patch2vi.sh: faster compat_order search, tree snapshot per step,
+   one awk pass per level.
+
 ------------------
 7.4 Basilisk
 ------------------
