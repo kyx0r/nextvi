@@ -1727,6 +1727,61 @@ out=$(run_ex ':%f>t c:1;0,3;2ya97:fr 97:1;0,3;2f+int:??!p exhausted:.p:q')
 check ':fr f+ past the range end fails instead of wrapping' \
 	"$(printf 'exhausted\nint c')" "$out"
 
+# ── :f>/:f< out-of-range pinning ──────────────────────────────────────────────
+# Out of range, :f< pins to the last line of the range at column 0, and the
+# cursor side (above or below the range) makes no difference.
+printf 'alpha\nfoo\nbar\nbaz\nint qux\ntail\n' > "$TMPFILE"
+out=$(run_ex ':1:3,5f<int:.p:q')
+check ':f< cursor below the range pins at the range end' 'int qux' "$out"
+
+out=$(run_ex ':6:3,5f<int:.p:q')
+check ':f< cursor above the range pins at the range end' 'int qux' "$out"
+
+# The pinned line is subject to the in-place rule at column 0: a match further
+# right on it is skipped, then the sweep continues on earlier lines
+printf 'alpha\nfoo\nbar\nbaz int\nqux\ntail\n' > "$TMPFILE"
+out=$(run_ex ':1:2,5f<int:.p:q')
+check ':f< no column-0 match on the pin line falls through to earlier lines' \
+	'baz int' "$out"
+
+# the pin bound is the end of the last range line, so the whole pinned line
+# is eligible, including a match past column 0
+printf 'alpha\nfoo\nbar\nbaz\nqux int\ntail\n' > "$TMPFILE"
+out=$(run_ex ':1:5,5f<int:.p:q')
+check ':f< match past column 0 on the pin line is found' 'qux int' "$out"
+
+# same when the range ends at the last buffer line and no row follows it
+printf 'alpha\nfoo\nbar\nbaz\nqux int\n' > "$TMPFILE"
+out=$(run_ex ':1:5,5f<int:.p:q')
+check ':f< pin line is the last buffer line' 'qux int' "$out"
+
+# Out of range, :f> pins at the range start, and the cursor side makes no
+# difference here either; the full range is searched in both directions
+printf 'alpha\nfoo\nbar int\nbaz\nqux\ntail\n' > "$TMPFILE"
+out=$(run_ex ':1:3,5f>int:.p:q')
+check ':f> cursor below the range pins at the range start' 'bar int' "$out"
+
+out=$(run_ex ':6:3,5f>int:.p:q')
+check ':f> cursor above the range pins at the range start' 'bar int' "$out"
+
+printf 'alpha\nfoo\nbar\nbaz\nqux int\ntail\n' > "$TMPFILE"
+out=$(run_ex ':1:5,5f>int:.p:q')
+check ':f> out of range searches the last line of the range' 'qux int' "$out"
+
+# single-line range out of range: the one line is searched in both directions
+printf 'alpha\nfoo\nint qux\n' > "$TMPFILE"
+out=$(run_ex ':2:3,3f>int:.p:q')
+check ':f> single-line range out of range still searches the line' 'int qux' "$out"
+
+out=$(run_ex ':2:3,3f<int:.p:q')
+check ':f< single-line range out of range still searches the line' 'int qux' "$out"
+
+# a search register is forward only: :f< with one armed errors out
+printf 'alpha\nfoo\nbar int\nbaz\nqux\ntail\n' > "$TMPFILE"
+out=$(run_ex ':3,5ya97:fr 97:1:3,5f<int:??!p rejected:q')
+check ':f< with a search register armed is rejected' \
+	"$(printf 'register search is forward only\nrejected')" "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
