@@ -124,24 +124,24 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	EO\(ish\),
 	\{"inc", ec_setincl},
 	EO\(ic\),4??0?
-4??+2m 3220reg p OK ex.c:1712:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1713:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(ish\),.*?
 	\{"inc", ec_setincl},.*?
 (	EO\(ic\),)7??0?
-grp 07??m 3220reg p OK ex.c:1712:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1713:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"f>", ec_find},
 	\{"f<", ec_find},
 	\{"f", ec_fuzz},.*(	\{"g!", ec_glob},)
 	\{"g", ec_glob},
 	EO\(mpt\),8??0?
-grp 08??-4m 3220reg p OK ex.c:1712:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1713:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(fr\),
 	\{"f\+", ec_find},
 	\{"f-", ec_find},.*(	\{"m", ec_mark},)
 	\{"q!", ec_quit},
 	\{"q", ec_quit},9??0?
-grp 09??-7m 3220reg p OK ex.c:1712:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17122sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1713:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17132sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g", ec_glob},
 	EO\(mpt\),
@@ -153,24 +153,24 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	\{"g", ec_glob},
 	EO\(mpt\),
 	\{"m", ec_mark},4??0?
-4??+2m 4220reg p OK ex.c:1719:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:1720:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g", ec_glob},.*?
 	EO\(mpt\),.*?
 (	\{"m", ec_mark},)7??0?
-grp 07??m 4220reg p OK ex.c:1719:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:1720:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"d", ec_delete},
 	EO\(grp\),
 	\{"g!", ec_glob},.*(	\{"reg", ec_regprint},)
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},8??0?
-grp 08??-4m 4220reg p OK ex.c:1719:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ex.c:1720:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"inc", ec_setincl},
 	EO\(ic\),
 	\{"i", ec_insert},.*(	EO\(rr\),)
 	\{"r", ec_read},
 	\{"wq!", ec_write},9??0?
-grp 09??-7m 4220reg p OK ex.c:1719:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17192sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK ex.c:1720:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17202sc %? %@2132sc!0?
 '\''1-1i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -217,10 +217,10 @@ int map_read(int mode, int winch)
 ??!219reg ex.c:622:m22sc %? %@2142sc!0?
 '\''3i 	{"im!", ec_map},
 	{"im", ec_map},
-??!219reg ex.c:1712:m32sc %? %@2142sc!0?
+??!219reg ex.c:1713:m32sc %? %@2142sc!0?
 '\''4i 	{"nm!", ec_map},
 	{"nm", ec_map},
-??!219reg ex.c:1719:m42sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1720:m42sc %? %@2142sc!b2%ya 98?0?
 %f> 	do \{
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);
 		len = sb->s_n;
@@ -898,7 +898,7 @@ index ad9395c9..3324eff9 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8fabb849..bb718a7e 100644
+index c10d3ad5..65fa9de6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -954,7 +954,7 @@ index 8fabb849..bb718a7e 100644
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	int n = atoi(arg);
-@@ -1710,6 +1752,8 @@ static struct excmd {
+@@ -1711,6 +1753,8 @@ static struct excmd {
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
@@ -963,7 +963,7 @@ index 8fabb849..bb718a7e 100644
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
-@@ -1717,6 +1761,8 @@ static struct excmd {
+@@ -1718,6 +1762,8 @@ static struct excmd {
  	{"g", ec_glob},
  	EO(mpt),
  	{"m", ec_mark},

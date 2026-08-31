@@ -273,20 +273,20 @@ const int hlslen = LEN\(hls\);
 \)
 
 4??0?
-4??+2m 3220reg p OK ex.c:1666:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1667:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 3220reg p OK ex.c:1666:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1667:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 3220reg p OK ex.c:1666:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16662sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1667:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16672sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(left\),
 	EO\(lim\),
@@ -298,24 +298,24 @@ static struct excmd \{
 %f+ 	EO\(left\),
 	EO\(lim\),
 	EO\(led\),4??0?
-4??+2m 4220reg p OK ex.c:1761:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:1762:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(left\),.*?
 	EO\(lim\),.*?
 (	EO\(led\),)7??0?
-grp 07??m 4220reg p OK ex.c:1761:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:1762:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(hlp\),
 	EO\(hlr\),
 	EO\(hl\),.*(/\* parse command argument expanding % and ! \*/)
 static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{8??0?
-grp 08??-6m 4220reg p OK ex.c:1761:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 4220reg p OK ex.c:1762:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(order\),
 	EO\(hll\),
 	EO\(hlw\),.*(	\*arg = sb->s_n;)
 	while \(\*src && \*src != xsep\) \{
 		if \(\*src == xexp\) \{9??0?
-grp 09??-9m 4220reg p OK ex.c:1761:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17612sc %? %@2132sc!0?
+grp 09??-9m 4220reg p OK ex.c:1762:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17622sc %? %@2132sc!0?
 '\''1i 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
 ??!219reg ex.c:433:m12sc %? %@2142sc!0?
@@ -350,9 +350,9 @@ static void *ec_lsp(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-??!219reg ex.c:1666:m32sc %? %@2142sc!0?
+??!219reg ex.c:1667:m32sc %? %@2142sc!0?
 '\''4i 	{"lsp", ec_lsp},
-??!219reg ex.c:1761:m42sc %? %@2142sc!b20?
+??!219reg ex.c:1762:m42sc %? %@2142sc!b20?
 i /*
  * MIT License
  *
@@ -2871,7 +2871,7 @@ index ad9395c9..3acbe4f1 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index 8fabb849..7045e048 100644
+index c10d3ad5..1fc69696 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -431,6 +431,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -2892,7 +2892,7 @@ index 8fabb849..7045e048 100644
  	xquit = quit;
  	return NULL;
  }
-@@ -1664,6 +1668,34 @@ _EO(left,
+@@ -1665,6 +1669,34 @@ _EO(left,
  	return NULL;
  )
  
@@ -2927,7 +2927,7 @@ index 8fabb849..7045e048 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1759,6 +1791,7 @@ static struct excmd {
+@@ -1760,6 +1792,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),

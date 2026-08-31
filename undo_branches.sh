@@ -91,20 +91,20 @@ static int eo_val\(char \*arg\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1637:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1638:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
-grp 08??-13m 1220reg p OK ex.c:1637:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-13m 1220reg p OK ex.c:1638:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_nul\(sb\).*(_EO\(left,)
 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);9??0?
-grp 09??-20m 1220reg p OK ex.c:1637:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16372sc %? %@2132sc!0?
+grp 09??-20m 1220reg p OK ex.c:1638:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16382sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},
@@ -116,24 +116,24 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 %f+ 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},4??0?
-4??+2m 2220reg p OK ex.c:1734:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1735:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"uc", ec_setenc},.*?
 	\{"uz", ec_setenc},.*?
 (	\{"ub", ec_setenc},)7??0?
-grp 07??m 2220reg p OK ex.c:1734:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1735:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"wq", ec_write},
 	\{"w!", ec_write},
 	\{"w", ec_write},.*(	\{"sc!", ec_specials},)
 	\{"sc", ec_specials},
 	\{"s", ec_substitute},8??0?
-grp 08??-4m 2220reg p OK ex.c:1734:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1735:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(rr\),
 	\{"r", ec_read},
 	\{"wq!", ec_write},.*(	\{"x!", ec_write},)
 	\{"x", ec_write},
 	\{"ya!", ec_yank},9??0?
-grp 09??-7m 2220reg p OK ex.c:1734:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17342sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1735:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17352sc %? %@2132sc!0?
 '\''1i static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	char *s = lbuf_getleafs(xb);
@@ -144,9 +144,9 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 	return NULL;
 }
 
-??!219reg ex.c:1637:m12sc %? %@2142sc!0?
+??!219reg ex.c:1638:m12sc %? %@2142sc!0?
 '\''2i 	{"up", ec_undoleafs},
-??!219reg ex.c:1734:m22sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1735:m22sc %? %@2142sc!b2%ya 98?0?
 %f> \{
 	struct lbuf \*lb = emalloc\(sizeof\(\*lb\)\);
 	memset\(lb, 0, sizeof\(\*lb\)\);
@@ -586,10 +586,10 @@ index ad9395c9..5442c9e1 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 8fabb849..4c78a61f 100644
+index c10d3ad5..07faf515 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1635,6 +1635,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1636,6 +1636,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -606,7 +606,7 @@ index 8fabb849..4c78a61f 100644
  static int eo_val(char *arg)
  {
  	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
-@@ -1732,6 +1742,7 @@ static struct excmd {
+@@ -1733,6 +1743,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},

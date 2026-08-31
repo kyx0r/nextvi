@@ -105,20 +105,20 @@ int xai = 1;			/\* autoindent option \*/1??0?
 \)
 
 4??0?
-4??+2m 2220reg p OK ex.c:1666:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1667:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 2220reg p OK ex.c:1666:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1667:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 2220reg p OK ex.c:1666:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16662sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1667:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16672sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
@@ -130,24 +130,24 @@ static struct excmd \{
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
 	EO\(mpt\),4??0?
-4??+2m 3220reg p OK ex.c:1718:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1719:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g!", ec_glob},.*?
 	\{"g", ec_glob},.*?
 (	EO\(mpt\),)7??0?
-grp 07??m 3220reg p OK ex.c:1718:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1719:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"i", ec_insert},
 	\{"d", ec_delete},
 	EO\(grp\),.*(	\{"reg\+", ec_regprint},)
 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},8??0?
-grp 08??-4m 3220reg p OK ex.c:1718:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1719:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(ish\),
 	\{"inc", ec_setincl},
 	EO\(ic\),.*(	\{"rd", ec_undoredo},)
 	EO\(rr\),
 	\{"r", ec_read},9??0?
-grp 09??-7m 3220reg p OK ex.c:1718:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17182sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1719:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17192sc %? %@2132sc!0?
 '\''1-1i int xms = 1;			/* mouse in normal mode */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i _EO(ms,
@@ -159,9 +159,9 @@ static struct excmd \{
 	return NULL;
 )
 
-??!219reg ex.c:1666:m22sc %? %@2142sc!0?
+??!219reg ex.c:1667:m22sc %? %@2142sc!0?
 '\''3i 	EO(ms),
-??!219reg ex.c:1718:m32sc %? %@2142sc!b2%ya 98?0?
+??!219reg ex.c:1719:m32sc %? %@2142sc!b2%ya 98?0?
 %f> 	return pos - xleft;
 }
 
@@ -747,19 +747,19 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 			if \(\*row >= lbuf_len\(xb\)\)
 				\*row = lbuf_len\(xb\) - 1;
 			if \(\*row < 0\)2??0?
-2??m 1220reg p OK vi.c:775:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:829:a22sc %? %@2152sc!1q0?
 %f> 			int p;
 			\*row = xtop \+ xmouse_row;3??0?
-3??m 1220reg p OK vi.c:775:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK vi.c:829:a32sc %? %@2152sc!1q0?
 %f> 		int r = term_try_mouse\(\);
 		if \(r == 1\) \{
 			char \*mln;4??0?
-4??+3m 1220reg p OK vi.c:775:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:829:a42sc %? %@2152sc!1q0?
 %f> 			if \(\*row >= lbuf_len\(xb\)\)
 				\*row = lbuf_len\(xb\) - 1;
 			if \(\*row < 0\)5??0?
-5??-2m 1220reg p OK vi.c:775:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:7752sc %? %@2132sc!0?
+5??-2m 1220reg p OK vi.c:829:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:8292sc %? %@2132sc!0?
 ?0?
 %f+ 				\*row = 0;
 			mln = lbuf_get\(xb, \*row\);
@@ -771,8 +771,8 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 %f+ 				\*row = 0;
 			mln = lbuf_get\(xb, \*row\);
 			p = mln \? led_col\(mln, MAX\(0, xmouse_col - vi_lncol\)\) : 0;4??0?
-4??+2m 2220reg p OK vi.c:782:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:7822sc %? %@2132sc!0?
+4??+2m 2220reg p OK vi.c:836:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:8362sc %? %@2132sc!0?
 '\''1,#+1c 			int p, k = 0, h;
 			if (xlw) {		/* the clicked row may be a wrapped segment */
 				int trow = -xtopsub;
@@ -787,12 +787,12 @@ printf '%s\n' '2sc!fr 98b4%ya 98?0?
 				k = MAX(0, xmouse_row - trow);
 			} else
 				*row = xtop + xmouse_row;
-??!219reg vi.c:775:m12sc %? %@2142sc!0?
+??!219reg vi.c:829:m12sc %? %@2142sc!0?
 '\''2i 			if (mln && xlw) {	/* the segment holds a window of columns */
 				h = vi_lnrows(mln);
 				p += MIN(k, h - 1) * ren_wrapw(vi_lncol);
 			}
-??!219reg vi.c:782:m22sc %? %@2142sc!p compat 231 applied: src=linewrap_v2.sh' > "$P2VIF".231
+??!219reg vi.c:836:m22sc %? %@2142sc!p compat 231 applied: src=linewrap_v2.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -807,7 +807,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -772,14 +772,30 @@
+@@ -826,14 +826,30 @@
  		int r = term_try_mouse();
  		if (r == 1) {
  			char *mln;
@@ -857,7 +857,7 @@ index ad9395c9..f9b59152 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 8fabb849..c1a71200 100644
+index c10d3ad5..8c0fd017 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -865,7 +865,7 @@ index 8fabb849..c1a71200 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1664,6 +1665,15 @@ _EO(left,
+@@ -1665,6 +1666,15 @@ _EO(left,
  	return NULL;
  )
  
@@ -881,7 +881,7 @@ index 8fabb849..c1a71200 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1716,6 +1726,7 @@ static struct excmd {
+@@ -1717,6 +1727,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
