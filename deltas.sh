@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f>  \*
  \* The script applies the patch in raw ex mode, anchored by line number \(-a\)
  \* or search pattern \(-r\); the command separator and the escape byte are
@@ -148,24 +148,24 @@ static int absolute_opt;	/\* -a seen: -E leaves the re-emitted host
 %f+ static int relative_mode = 1;  /\* 1=relative search \(the default, -r\),
 				\* 0=absolute line numbers \(-a\); last of the
 				\* two on the command line wins \*/4??0?
-4??+2m 3220reg p OK patch2vi.c:67:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK patch2vi.c:68:a42sc %? %@2152sc!1q0?
 grp 1%f+ static int relative_mode = 1;  /\* 1=relative search \(the default, -r\),.*?
 				\* 0=absolute line numbers \(-a\); last of the.*?
 (				\* two on the command line wins \*/)7??0?
-grp 07??m 3220reg p OK patch2vi.c:67:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> static file_patch_t \*files;
-static int nfiles, files_cap;
-static const char \*cur_file_path;  /\* set per-file for error messages \*/.*(/\* patch \(or previously generated script\) path, NULL = stdin \*/)
+grp 07??m 3220reg p OK patch2vi.c:68:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> static int nfiles, files_cap;
+static const char \*cur_file_path;  /\* set per-file for error messages \*/
+static int cur_sec_reg;            /\* section register, 0 = host body \*/.*(/\* patch \(or previously generated script\) path, NULL = stdin \*/)
 static const char \*input_file;
 static const char \*end_tag_rd = "=== END ===";8??0?
-grp 08??-4m 3220reg p OK patch2vi.c:67:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK patch2vi.c:68:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int is_new;              /\* patch creates this file \(--- /dev/null\) \*/
 	char \*orig_path;         /\* "---" path, holds pre-patch content \(file-aware\) \*/
 } file_patch_t;.*(/\* The emit layer builds everything in memory\. Function \(not macro\) wrappers)
  \* around the sbuf appenders let call sites sit in unbraced if/else bodies\. \*/
 static void sb_str\(sbuf \*sb, const char \*s\)9??0?
-grp 09??-9m 3220reg p OK patch2vi.c:67:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:672sc %? %@2132sc!0?
+grp 09??-9m 3220reg p OK patch2vi.c:68:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:682sc %? %@2132sc!0?
 ?0?
 %f+ 	sbuf_chr\(sb, c\)
 }
@@ -178,20 +178,20 @@ static void sb_printf\(sbuf \*sb, const char \*fmt, \.\.\.\)
 }
 
 4??0?
-4??+2m 4220reg p OK patch2vi.c:87:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK patch2vi.c:88:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	sbuf_str\(sb, s\)
 }.*(	int n;)
 	va_start\(ap, fmt\);
 	n = vsnprintf\(NULL, 0, fmt, ap\);8??0?
-grp 08??-4m 4220reg p OK patch2vi.c:87:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK patch2vi.c:88:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> /\* The emit layer builds everything in memory\. Function \(not macro\) wrappers
  \* around the sbuf appenders let call sites sit in unbraced if/else bodies\. \*/
 static void sb_str\(sbuf \*sb, const char \*s\).*(	if \(sb->s_n \+ n \+ 1 >= sb->s_sz\) \{)
 		sb->s_sz = NEXTSZ\(sb->s_n, n \+ 1\) \+ 1;
 		sb->s = erealloc\(sb->s, sb->s_sz\);9??0?
-grp 09??-8m 4220reg p OK patch2vi.c:87:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:872sc %? %@2132sc!0?
+grp 09??-8m 4220reg p OK patch2vi.c:88:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:882sc %? %@2132sc!0?
 ?0?
 %f+ 	sb->s_n \+= n;
 }
@@ -204,20 +204,20 @@ static void sb_str\(sbuf \*sb, const char \*s\).*(	if \(sb->s_n \+ n \+ 1 >= sb-
 }
 
 4??0?
-4??+2m 5220reg p OK patch2vi.c:104:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK patch2vi.c:105:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	va_start\(ap, fmt\);
 	vsnprintf\(sb->s \+ sb->s_n, n \+ 1, fmt, ap\);
 	va_end\(ap\);.*( \* window 7 \(gen_grp_window\) and the straddle windows 8 and 9 \(gen_win_window,)
  \* skip 0 and 1\)\. \*/
 #define NPAT 58??0?
-grp 08??-4m 5220reg p OK patch2vi.c:104:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK patch2vi.c:105:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		sb->s_sz = NEXTSZ\(sb->s_n, n \+ 1\) \+ 1;
 		sb->s = erealloc\(sb->s, sb->s_sz\);
 	}.*(#define NFUZZ 1   /\* max file-validated fuzzed candidates per group \(loosest kept\) \*/)
 #define NGRP 1    /\* file-validated :grp-capture window \(TEXT\.\*\? \+ last captured\) \*/
 #define NWIN 1    /\* file-validated "top\.\*\(bottom\)" straddle window \(pattern 8\) \*/9??0?
-grp 09??-7m 5220reg p OK patch2vi.c:104:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:1042sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK patch2vi.c:105:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:1052sc %? %@2132sc!0?
 ?0?
 %f+  \* snapshot, so it is part of the derived compat patch\. \*/
 static const char \*compat_pre;
@@ -228,40 +228,40 @@ enum strategy \{1??0?
 static const char \*compat_pre;
 
 4??0?
-4??+2m 6220reg p OK patch2vi.c:177:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK patch2vi.c:178:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static int ncompat_origin, compat_origin_cap;
 /\* -C second positional: an already written fix \(diff or script\) applied to the
  \* post-origin\+target tree before handover\. It lands after the baseline.*(/\* String vector; a compat block owns its === PATCH === lines this way\. \*/)
 typedef struct \{ char \*\*v; int n, cap; } strv_t;
 static void arr_append\(char \*\*\*arr, int \*n, int \*cap, const char \*s\);8??0?
-grp 08??-10m 6220reg p OK patch2vi.c:177:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 6220reg p OK patch2vi.c:178:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* origin, and one identity gate tests all of them at once\. One origin is the
  \* ordinary case and behaves exactly as the single -C always did\. \*/
 static const char \*\*compat_origins;.*(/\* When set, add_raw\(\) appends here instead of raw_lines\[], so a compat diff)
  \* lands in its block'\''s storage and the host === PATCH === stays byte-identical\. \*/
 static strv_t \*raw_sink;9??0?
-grp 09??-14m 6220reg p OK patch2vi.c:177:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:1772sc %? %@2132sc!0?
+grp 09??-14m 6220reg p OK patch2vi.c:178:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:1782sc %? %@2132sc!0?
 ?0?
 %f+ enum strategy \{
 	STRAT_ABS,          /\* absolute line numbers \(;c for single-line diffs\) \*/
 	STRAT_REL,          /\* f> regex search \(s// for single-line diffs\) \*/1??0?
 1??m 71q0?
 ;0fr.,$f+ ^enum strategy \{$4??0?
-4??m 7220reg p OK patch2vi.c:178:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 7220reg p OK patch2vi.c:179:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> static int ncompat_origin, compat_origin_cap;
 /\* -C second positional: an already written fix \(diff or script\) applied to the
  \* post-origin\+target tree before handover\. It lands after the baseline.*(/\* String vector; a compat block owns its === PATCH === lines this way\. \*/)
 typedef struct \{ char \*\*v; int n, cap; } strv_t;
 static void arr_append\(char \*\*\*arr, int \*n, int \*cap, const char \*s\);8??0?
-grp 08??-9m 7220reg p OK patch2vi.c:178:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 7220reg p OK patch2vi.c:179:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* origin, and one identity gate tests all of them at once\. One origin is the
  \* ordinary case and behaves exactly as the single -C always did\. \*/
 static const char \*\*compat_origins;.*(/\* When set, add_raw\(\) appends here instead of raw_lines\[], so a compat diff)
  \* lands in its block'\''s storage and the host === PATCH === stays byte-identical\. \*/
 static strv_t \*raw_sink;9??0?
-grp 09??-13m 7220reg p OK patch2vi.c:178:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:1782sc %? %@2132sc!0?
+grp 09??-13m 7220reg p OK patch2vi.c:179:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:1792sc %? %@2132sc!0?
 ?0?
 %f+ 	STRAT_ABS,          /\* absolute line numbers \(;c for single-line diffs\) \*/
 	STRAT_REL,          /\* f> regex search \(s// for single-line diffs\) \*/
@@ -271,23 +271,23 @@ static strv_t \*raw_sink;9??0?
 1??+1m 81q0?
 %f+ 	STRAT_ABS,          /\* absolute line numbers \(;c for single-line diffs\) \*/
 	STRAT_REL,          /\* f> regex search \(s// for single-line diffs\) \*/4??0?
-4??+1m 8220reg p OK patch2vi.c:180:a42sc %? %@2152sc!1q0?
+4??+1m 8220reg p OK patch2vi.c:181:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	STRAT_ABS,          /\* absolute line numbers \(;c for single-line diffs\) \*/.*?
 (	STRAT_REL,          /\* f> regex search \(s// for single-line diffs\) \*/)7??0?
-grp 07??m 8220reg p OK patch2vi.c:180:a72sc %? %@2152sc!1q0?
+grp 07??m 8220reg p OK patch2vi.c:181:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static int ncompat_origin, compat_origin_cap;
 /\* -C second positional: an already written fix \(diff or script\) applied to the
  \* post-origin\+target tree before handover\. It lands after the baseline.*(/\* String vector; a compat block owns its === PATCH === lines this way\. \*/)
 typedef struct \{ char \*\*v; int n, cap; } strv_t;
 static void arr_append\(char \*\*\*arr, int \*n, int \*cap, const char \*s\);8??0?
-grp 08??-7m 8220reg p OK patch2vi.c:180:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 8220reg p OK patch2vi.c:181:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* origin, and one identity gate tests all of them at once\. One origin is the
  \* ordinary case and behaves exactly as the single -C always did\. \*/
 static const char \*\*compat_origins;.*(/\* When set, add_raw\(\) appends here instead of raw_lines\[], so a compat diff)
  \* lands in its block'\''s storage and the host === PATCH === stays byte-identical\. \*/
 static strv_t \*raw_sink;9??0?
-grp 09??-11m 8220reg p OK patch2vi.c:180:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:1802sc %? %@2132sc!0?
+grp 09??-11m 8220reg p OK patch2vi.c:181:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:1812sc %? %@2132sc!0?
 ?0?
 %f+ };
 
@@ -298,20 +298,20 @@ static int nraw, raw_cap;1??0?
 %f+ };
 
 4??0?
-4??+1m 9220reg p OK patch2vi.c:182:a42sc %? %@2152sc!1q0?
+4??+1m 9220reg p OK patch2vi.c:183:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static int ncompat_origin, compat_origin_cap;
 /\* -C second positional: an already written fix \(diff or script\) applied to the
  \* post-origin\+target tree before handover\. It lands after the baseline.*(/\* String vector; a compat block owns its === PATCH === lines this way\. \*/)
 typedef struct \{ char \*\*v; int n, cap; } strv_t;
 static void arr_append\(char \*\*\*arr, int \*n, int \*cap, const char \*s\);8??0?
-grp 08??-5m 9220reg p OK patch2vi.c:182:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 9220reg p OK patch2vi.c:183:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* origin, and one identity gate tests all of them at once\. One origin is the
  \* ordinary case and behaves exactly as the single -C always did\. \*/
 static const char \*\*compat_origins;.*(/\* When set, add_raw\(\) appends here instead of raw_lines\[], so a compat diff)
  \* lands in its block'\''s storage and the host === PATCH === stays byte-identical\. \*/
 static strv_t \*raw_sink;9??0?
-grp 09??-9m 9220reg p OK patch2vi.c:182:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:1822sc %? %@2132sc!0?
+grp 09??-9m 9220reg p OK patch2vi.c:183:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:1832sc %? %@2132sc!0?
 ?0?
 %f+ 	return p;
 }
@@ -324,20 +324,20 @@ static void add_raw\(const char \*line\)
 }
 
 4??0?
-4??+2m 10220reg p OK patch2vi.c:217:a42sc %? %@2152sc!1q0?
+4??+2m 10220reg p OK patch2vi.c:218:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		out_cleanup\(\);
 		exit\(1\);
 	}.*(		arr_append\(&raw_sink->v, &raw_sink->n, &raw_sink->cap, line\);)
 	else
 		arr_append\(&raw_lines, &nraw, &raw_cap, line\);8??0?
-grp 08??-4m 10220reg p OK patch2vi.c:217:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 10220reg p OK patch2vi.c:218:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	void \*p = calloc\(n, sz\);
 	if \(!p\) \{
 		fprintf\(stderr, "out of memory\\n"\);.*(/\* Remove trailing newline, keeping the sbuf length in step so the caller)
  \* can append to \(and cut back\) the chomped line\. \*/
 static char \*chomp_sb\(sbuf \*sb\)9??0?
-grp 09??-9m 10220reg p OK patch2vi.c:217:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:2172sc %? %@2132sc!0?
+grp 09??-9m 10220reg p OK patch2vi.c:218:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:2182sc %? %@2132sc!0?
 ?0?
 %f+ 		mask\[0] = 0;  /\* never wildcard an entire line away \*/
 }
@@ -350,20 +350,20 @@ static int str_count_occ\(const char \*hay, int hl, const char \*ndl, int nl\)
 }
 
 4??0?
-4??+2m 11220reg p OK patch2vi.c:574:a42sc %? %@2152sc!1q0?
+4??+2m 11220reg p OK patch2vi.c:575:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			kept\+\+;
 	}
 	if \(!kept && nrune > 0\).*(	int c = 0;)
 	if \(nl <= 0 \|\| nl > hl\)
 		return 0;8??0?
-grp 08??-4m 11220reg p OK patch2vi.c:574:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 11220reg p OK patch2vi.c:575:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		int drop = \(int\)\(hash_pos\(seed, g\) % 1000\) < thr;
 		mask\[i] = drop \? 1 : 0;
 		if \(!drop\).*(	for \(int i = 0; i \+ nl <= hl; i\+\+\))
 		if \(memcmp\(hay \+ i, ndl, nl\) == 0\)
 			c\+\+;9??0?
-grp 09??-7m 11220reg p OK patch2vi.c:574:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:5742sc %? %@2132sc!0?
+grp 09??-7m 11220reg p OK patch2vi.c:575:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:5752sc %? %@2132sc!0?
 ?0?
 %f+ 		byte_used\[\(unsigned char\)\*s] = 1;
 }
@@ -376,20 +376,20 @@ static int find_unused_byte\(void\)1??0?
 }
 
 4??0?
-4??+2m 12220reg p OK patch2vi.c:699:a42sc %? %@2152sc!1q0?
+4??+2m 12220reg p OK patch2vi.c:700:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static void mark_bytes_used\(const char \*s\)
 \{
 	for \(; \*s; s\+\+\).*(	for \(int c = 1; c < 256; c\+\+\))
 		if \(!byte_used\[c]\)
 			return c;8??0?
-grp 08??-5m 12220reg p OK patch2vi.c:699:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 12220reg p OK patch2vi.c:700:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\*new_text = dup_n\(new \+ new_diff_start, new_diff_end - new_diff_start\);
 	return 1;
 }.*(/\* List all unused bytes suitable as separators \*/)
 static void list_unused_bytes\(sbuf \*out\)
 \{9??0?
-grp 09??-11m 12220reg p OK patch2vi.c:699:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:6992sc %? %@2132sc!0?
+grp 09??-11m 12220reg p OK patch2vi.c:700:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:7002sc %? %@2132sc!0?
 ?0?
 %f+ }
 #define EMIT_LB\(out\) emit_lb\(out\)
@@ -405,19 +405,19 @@ static void sb_seg\(sbuf \*out, const char \*seg\)
 static void sb_seg\(sbuf \*out, const char \*seg\)
 \{
 	if \(!strncmp\(seg, "0\?\\n", 3\) && lb_pending\(out\)\)2??0?
-2??m 13220reg p OK patch2vi.c:922:a22sc %? %@2152sc!1q0?
+2??m 13220reg p OK patch2vi.c:923:a22sc %? %@2152sc!1q0?
 %f+ /\* Append one group segment\. Segments start with their own line break,
  \* redundant when the segment before ended with one\. \*/3??0?
-3??m 13220reg p OK patch2vi.c:922:a32sc %? %@2152sc!1q0?
+3??m 13220reg p OK patch2vi.c:923:a32sc %? %@2152sc!1q0?
 %f+ }
 #define EMIT_LB\(out\) emit_lb\(out\)
 
 4??0?
-4??+3m 13220reg p OK patch2vi.c:922:a42sc %? %@2152sc!1q0?
+4??+3m 13220reg p OK patch2vi.c:923:a42sc %? %@2152sc!1q0?
 %f+ static void sb_seg\(sbuf \*out, const char \*seg\)
 \{
 	if \(!strncmp\(seg, "0\?\\n", 3\) && lb_pending\(out\)\)5??0?
-5??-2m 13220reg p OK patch2vi.c:922:a52sc %? %@2152sc!1q0?
+5??-2m 13220reg p OK patch2vi.c:923:a52sc %? %@2152sc!1q0?
 %f+ }
 ..e.i.e.E..T........ ......b.....
 
@@ -426,25 +426,25 @@ static void sb_seg\(sbuf \*out, const char \*seg\)
 ..at....oi..............\*.u.,..o..t....r .s..\)
 \{
 ... .!s.....p.......0......3\) .. ...p.n....\(out..6??0?
-6??+3m 13220reg p OK patch2vi.c:922:a62sc %? %@2152sc!1q0?
+6??+3m 13220reg p OK patch2vi.c:923:a62sc %? %@2152sc!1q0?
 grp 1%f+ }.*?
 #define EMIT_LB\(out\) emit_lb\(out\).*?
 .*?
 (/\* Append one group segment\. Segments start with their own line break,)7??0?
-grp 07??m 13220reg p OK patch2vi.c:922:a72sc %? %@2152sc!1q0?
+grp 07??m 13220reg p OK patch2vi.c:923:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	if \(!lb_pending\(out\)\)
 		sb_str\(out, "0\?\\n"\);.*(		seg \+= 3;)
 	sb_str\(out, seg\);
 }8??0?
-grp 08??-5m 13220reg p OK patch2vi.c:922:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 13220reg p OK patch2vi.c:923:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* put between two breaks is sometimes empty \(an error check that reports
  \* nothing, say\), which would leave a bare second break behind\. \*/
 static void emit_lb\(sbuf \*out\).*( \* The ex commands emitted here, and what they do to xrow \(every one defaults to)
  \* the current line when given no range, per ex_region\(\)\):
  \*   i / c / d      advance xrow past what they inserted or deleted; "0i"9??0?
-grp 09??-10m 13220reg p OK patch2vi.c:922:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:9222sc %? %@2132sc!0?
+grp 09??-10m 13220reg p OK patch2vi.c:923:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:9232sc %? %@2132sc!0?
 ?0?
 %f+ }
 
@@ -462,19 +462,19 @@ static void emit_lb\(sbuf \*out\).*( \* The ex commands emitted here, and what t
  \*
  \* lvl is how many ex_arg layers the argument sits under - one for a top-level
  \* search, two inside a \? conditional - and each of them doubles every2??0?
-2??m 14220reg p OK patch2vi.c:1129:a22sc %? %@2152sc!1q0?
+2??m 14220reg p OK patch2vi.c:1135:a22sc %? %@2152sc!1q0?
 %f+  \* A window generator hands them over pre-escaped and self-anchoring, so they go
  \* out as they are; raw text is regex-escaped first, and a lone raw line is
  \* wrapped \^\.\.\.\$ so repeated text cannot match at an offset\.3??0?
-3??m 14220reg p OK patch2vi.c:1129:a32sc %? %@2152sc!1q0?
+3??m 14220reg p OK patch2vi.c:1135:a32sc %? %@2152sc!1q0?
 %f+ }
 
 /\* The f> argument of a phase-1 search: the pattern'\''s lines joined by newlines\.4??0?
-4??+3m 14220reg p OK patch2vi.c:1129:a42sc %? %@2152sc!1q0?
+4??+3m 14220reg p OK patch2vi.c:1135:a42sc %? %@2152sc!1q0?
 %f+  \*
  \* lvl is how many ex_arg layers the argument sits under - one for a top-level
  \* search, two inside a \? conditional - and each of them doubles every5??0?
-5??-3m 14220reg p OK patch2vi.c:1129:a52sc %? %@2152sc!1q0?
+5??-3m 14220reg p OK patch2vi.c:1135:a52sc %? %@2152sc!1q0?
 %f+ }
 
 /. ..e.f> .....e.. .............s....h: ....p..t..n'\''......s .o..ed.b. .......s\.
@@ -484,25 +484,25 @@ static void emit_lb\(sbuf \*out\).*( \* The ex commands emitted here, and what t
  .
 .\* .......... ...y ...a.......rs.t.e .........s.....n............r.a....-.....
  \*......h......insi.e.... .o.d..i..al -.and.e.........e.....bl...e.e..6??0?
-6??+3m 14220reg p OK patch2vi.c:1129:a62sc %? %@2152sc!1q0?
+6??+3m 14220reg p OK patch2vi.c:1135:a62sc %? %@2152sc!1q0?
 grp 1%f+ }.*?
 .*?
 /\* The f> argument of a phase-1 search: the pattern'\''s lines joined by newlines\..*?
 ( \* A window generator hands them over pre-escaped and self-anchoring, so they go)7??0?
-grp 07??m 14220reg p OK patch2vi.c:1129:a72sc %? %@2152sc!1q0?
+grp 07??m 14220reg p OK patch2vi.c:1135:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		sb_str\(out, first \? "\.,\$f> " : "\.,\$f\+ "\);
 	} else
 		sb_str\(out, \(g3 \|\| first\) \? "%f> " : "%f\+ "\);.*( \* backslash\. With a dynamic escape byte backslash is not special to ex_arg at)
  \* all, so no layer needs anything \(escape_exarg is the identity there\)\. \*/
 static void sb_pat_lines\(sbuf \*out, char \*\*lines, int nlines, int pre_escaped,8??0?
-grp 08??-6m 14220reg p OK patch2vi.c:1129:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 14220reg p OK patch2vi.c:1135:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		emit_esc_sep\(out, lvl\);
 		sb_str\(out, "fr"\);
 		emit_esc_sep\(out, lvl\);.*(			 int lvl\))
 \{
 	int wrap = nlines == 1 && !pre_escaped;9??0?
-grp 09??-9m 14220reg p OK patch2vi.c:1129:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:11292sc %? %@2132sc!0?
+grp 09??-9m 14220reg p OK patch2vi.c:1135:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:11352sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 }
@@ -516,18 +516,18 @@ static int next_mark_id\(int \*n\)
  \* <'\''> <\*> <\[> <]> <`>\. \*/
 static int next_mark_id\(int \*n\)
 \{2??0?
-2??m 15220reg p OK patch2vi.c:1202:a22sc %? %@2152sc!1q0?
+2??m 15220reg p OK patch2vi.c:1208:a22sc %? %@2152sc!1q0?
 %f+ /\* The next free line mark id, skipping the ids the editor rewrites itself:
  \* <'\''> <\*> <\[> <]> <`>\. \*/3??0?
-3??m 15220reg p OK patch2vi.c:1202:a32sc %? %@2152sc!1q0?
+3??m 15220reg p OK patch2vi.c:1208:a32sc %? %@2152sc!1q0?
 %f+ 	}
 }
 
 4??0?
-4??+3m 15220reg p OK patch2vi.c:1202:a42sc %? %@2152sc!1q0?
+4??+3m 15220reg p OK patch2vi.c:1208:a42sc %? %@2152sc!1q0?
 %f+ static int next_mark_id\(int \*n\)
 \{5??0?
-5??-2m 15220reg p OK patch2vi.c:1202:a52sc %? %@2152sc!1q0?
+5??-2m 15220reg p OK patch2vi.c:1208:a52sc %? %@2152sc!1q0?
 %f+ 	.
 }
 
@@ -535,25 +535,25 @@ static int next_mark_id\(int \*n\)
 ...... .....\[. ...........
 ...... .nt..e.....r..i.\(.n. ...
 \{6??0?
-6??+3m 15220reg p OK patch2vi.c:1202:a62sc %? %@2152sc!1q0?
+6??+3m 15220reg p OK patch2vi.c:1208:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	}.*?
 }.*?
 .*?
 (/\* The next free line mark id, skipping the ids the editor rewrites itself:)7??0?
-grp 07??m 15220reg p OK patch2vi.c:1202:a72sc %? %@2152sc!1q0?
+grp 07??m 15220reg p OK patch2vi.c:1208:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		 \* group'\''s incremental search continues from the same position \*/
 		sb_printf\(out, "'\''%d", WIN_SAVE_MARK\);
 		EMIT_SEP\(out\);.*(typedef struct group_s \{)
 	int del_start, del_end;  /\* 0 if no deletes \*/
 	char \*\*add_texts;8??0?
-grp 08??-9m 15220reg p OK patch2vi.c:1202:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 15220reg p OK patch2vi.c:1208:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EMIT_SEP\(out\);
 	if \(g3\) \{
 		/\* restore the cursor saved before the global search so the next.*(	char \*\*del_texts;        /\* deleted line contents \*/)
 	int ndel;
 	int nadd;9??0?
-grp 09??-12m 15220reg p OK patch2vi.c:1202:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:12022sc %? %@2132sc!0?
+grp 09??-12m 15220reg p OK patch2vi.c:1208:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:12082sc %? %@2132sc!0?
 ?0?
 %f+ static int next_mark_id\(int \*n\)
 \{
@@ -566,40 +566,40 @@ static int next_mark_id\(int \*n\)
 		\(\*n\)\+\+;
 	return \(\*n\)\+\+;
 }2??0?
-2??m 16220reg p OK patch2vi.c:1206:a22sc %? %@2152sc!1q0?
+2??m 16220reg p OK patch2vi.c:1212:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	while \(\*n == '\''\\'\'''\'' \|\| \*n == '\''\*'\'' \|\| \*n == '\''\['\'' \|\| \*n == '\'']'\'' \|\| \*n == '\''`'\''\)$3??0?
-3??m 16220reg p OK patch2vi.c:1206:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 16220reg p OK patch2vi.c:1212:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ static int next_mark_id\(int \*n\)
 \{4??0?
-4??+2m 16220reg p OK patch2vi.c:1206:a42sc %? %@2152sc!1q0?
+4??+2m 16220reg p OK patch2vi.c:1212:a42sc %? %@2152sc!1q0?
 %f+ 		\(\*n\)\+\+;
 	return \(\*n\)\+\+;
 }5??0?
-5??-1m 16220reg p OK patch2vi.c:1206:a52sc %? %@2152sc!1q0?
+5??-1m 16220reg p OK patch2vi.c:1212:a52sc %? %@2152sc!1q0?
 %f+ ..a..c.int.ne....a.._i..i.t..n.
 \{
 	........n.=....'\''........=...\*'\'' .......=......\|....=..... \|......=.....
 ...\*.....
 	r......\(....\+.
 }6??0?
-6??+2m 16220reg p OK patch2vi.c:1206:a62sc %? %@2152sc!1q0?
+6??+2m 16220reg p OK patch2vi.c:1212:a62sc %? %@2152sc!1q0?
 grp 1%f+ static int next_mark_id\(int \*n\).*?
 \{.*?
 (	while \(\*n == '\''\\'\'''\'' \|\| \*n == '\''\*'\'' \|\| \*n == '\''\['\'' \|\| \*n == '\'']'\'' \|\| \*n == '\''`'\''\))7??0?
-grp 07??m 16220reg p OK patch2vi.c:1206:a72sc %? %@2152sc!1q0?
+grp 07??m 16220reg p OK patch2vi.c:1212:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		 \* group'\''s incremental search continues from the same position \*/
 		sb_printf\(out, "'\''%d", WIN_SAVE_MARK\);
 		EMIT_SEP\(out\);.*(typedef struct group_s \{)
 	int del_start, del_end;  /\* 0 if no deletes \*/
 	char \*\*add_texts;8??0?
-grp 08??-5m 16220reg p OK patch2vi.c:1206:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 16220reg p OK patch2vi.c:1212:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EMIT_SEP\(out\);
 	if \(g3\) \{
 		/\* restore the cursor saved before the global search so the next.*(	char \*\*del_texts;        /\* deleted line contents \*/)
 	int ndel;
 	int nadd;9??0?
-grp 09??-8m 16220reg p OK patch2vi.c:1206:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:12062sc %? %@2132sc!0?
+grp 09??-8m 16220reg p OK patch2vi.c:1212:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:12122sc %? %@2132sc!0?
 ?0?
 %f+ 	int nanchors;            /\* count of anchor lines \*/
 	char \*follow_ctx;        /\* first following context line \*/
@@ -610,24 +610,24 @@ static int next_mark_id\(int \*n\)
 %f+ 	int nanchors;            /\* count of anchor lines \*/
 	char \*follow_ctx;        /\* first following context line \*/
 	int follow_offset;       /\* lines from first change to follow_ctx \*/4??0?
-4??+2m 17220reg p OK patch2vi.c:1223:a42sc %? %@2152sc!1q0?
+4??+2m 17220reg p OK patch2vi.c:1229:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	int nanchors;            /\* count of anchor lines \*/.*?
 	char \*follow_ctx;        /\* first following context line \*/.*?
 (	int follow_offset;       /\* lines from first change to follow_ctx \*/)7??0?
-grp 07??m 17220reg p OK patch2vi.c:1223:a72sc %? %@2152sc!1q0?
+grp 07??m 17220reg p OK patch2vi.c:1229:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	/\* For relative mode: \*/
 	int anchor_offset;       /\* lines from anchor to first change \*/
 	char \*anchors\[3];        /\* up to 3 consecutive preceding context lines \*/.*(	/\* Two-phase emission state, set in phase 1, read in phase 2 \*/)
 	int res_strat;           /\* resolved strategy \*/
 	int mark_id;             /\* line mark id, -1 = no mark \*/8??0?
-grp 08??-11m 17220reg p OK patch2vi.c:1223:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 17220reg p OK patch2vi.c:1229:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int ndel;
 	int nadd;
 	int add_after;  /\* line to add after \(for pure adds\) \*/.*(	int insert_i;            /\* pure add: insert before mark \('\''N-1i\) vs after \('\''Ni\) \*/)
 	/\* The generated phase-1/phase-2 segment bytes \(gen_group_segments\),
 	 \* written out at emit time; no trailing newline\. \*/9??0?
-grp 09??-14m 17220reg p OK patch2vi.c:1223:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:12232sc %? %@2132sc!0?
+grp 09??-14m 17220reg p OK patch2vi.c:1229:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:12292sc %? %@2132sc!0?
 ?0?
 %f+ 	char \*\*post_ctx;         /\* post-change context lines \(up to 3\) \*/
 	int npost_ctx;
@@ -637,23 +637,23 @@ static int next_mark_id\(int \*n\)
 1??+1m 181q0?
 %f+ 	char \*\*post_ctx;         /\* post-change context lines \(up to 3\) \*/
 	int npost_ctx;4??0?
-4??+1m 18220reg p OK patch2vi.c:1225:a42sc %? %@2152sc!1q0?
+4??+1m 18220reg p OK patch2vi.c:1231:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	char \*\*post_ctx;         /\* post-change context lines \(up to 3\) \*/.*?
 (	int npost_ctx;)7??0?
-grp 07??m 18220reg p OK patch2vi.c:1225:a72sc %? %@2152sc!1q0?
+grp 07??m 18220reg p OK patch2vi.c:1231:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	/\* For relative mode: \*/
 	int anchor_offset;       /\* lines from anchor to first change \*/
 	char \*anchors\[3];        /\* up to 3 consecutive preceding context lines \*/.*(	/\* Two-phase emission state, set in phase 1, read in phase 2 \*/)
 	int res_strat;           /\* resolved strategy \*/
 	int mark_id;             /\* line mark id, -1 = no mark \*/8??0?
-grp 08??-9m 18220reg p OK patch2vi.c:1225:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 18220reg p OK patch2vi.c:1231:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int ndel;
 	int nadd;
 	int add_after;  /\* line to add after \(for pure adds\) \*/.*(	int insert_i;            /\* pure add: insert before mark \('\''N-1i\) vs after \('\''Ni\) \*/)
 	/\* The generated phase-1/phase-2 segment bytes \(gen_group_segments\),
 	 \* written out at emit time; no trailing newline\. \*/9??0?
-grp 09??-12m 18220reg p OK patch2vi.c:1225:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:12252sc %? %@2132sc!0?
+grp 09??-12m 18220reg p OK patch2vi.c:1231:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:12312sc %? %@2132sc!0?
 ?0?
 %f+ 	char \*ld_new_text;       /\* expanded replacement text for s// \*/
 	int ldc_start, ldc_end; /\* minimal char positions for ;c \*/
@@ -665,24 +665,24 @@ static int next_mark_id\(int \*n\)
 %f+ 	char \*ld_new_text;       /\* expanded replacement text for s// \*/
 	int ldc_start, ldc_end; /\* minimal char positions for ;c \*/
 	char \*ldc_new_text;      /\* minimal replacement text for ;c \*/4??0?
-4??+2m 19220reg p OK patch2vi.c:1230:a42sc %? %@2152sc!1q0?
+4??+2m 19220reg p OK patch2vi.c:1236:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	char \*ld_new_text;       /\* expanded replacement text for s// \*/.*?
 	int ldc_start, ldc_end; /\* minimal char positions for ;c \*/.*?
 (	char \*ldc_new_text;      /\* minimal replacement text for ;c \*/)7??0?
-grp 07??m 19220reg p OK patch2vi.c:1230:a72sc %? %@2152sc!1q0?
+grp 07??m 19220reg p OK patch2vi.c:1236:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	/\* For relative mode: \*/
 	int anchor_offset;       /\* lines from anchor to first change \*/
 	char \*anchors\[3];        /\* up to 3 consecutive preceding context lines \*/.*(	/\* Two-phase emission state, set in phase 1, read in phase 2 \*/)
 	int res_strat;           /\* resolved strategy \*/
 	int mark_id;             /\* line mark id, -1 = no mark \*/8??0?
-grp 08??-4m 19220reg p OK patch2vi.c:1230:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 19220reg p OK patch2vi.c:1236:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int ndel;
 	int nadd;
 	int add_after;  /\* line to add after \(for pure adds\) \*/.*(	int insert_i;            /\* pure add: insert before mark \('\''N-1i\) vs after \('\''Ni\) \*/)
 	/\* The generated phase-1/phase-2 segment bytes \(gen_group_segments\),
 	 \* written out at emit time; no trailing newline\. \*/9??0?
-grp 09??-7m 19220reg p OK patch2vi.c:1230:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:12302sc %? %@2132sc!0?
+grp 09??-7m 19220reg p OK patch2vi.c:1236:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:12362sc %? %@2132sc!0?
 ?0?
 %f+ 	int res_strat;           /\* resolved strategy \*/
 	int mark_id;             /\* line mark id, -1 = no mark \*/
@@ -694,41 +694,41 @@ static int next_mark_id\(int \*n\)
 %f+ 	/\* The generated phase-1/phase-2 segment bytes \(gen_group_segments\),
 	 \* written out at emit time; no trailing newline\. \*/
 	char \*ph1_gen, \*ph2_gen;2??0?
-2??m 20220reg p OK patch2vi.c:1238:a22sc %? %@2152sc!1q0?
+2??m 20220reg p OK patch2vi.c:1244:a22sc %? %@2152sc!1q0?
 %f+ 	/\* The generated phase-1/phase-2 segment bytes \(gen_group_segments\),
 	 \* written out at emit time; no trailing newline\. \*/3??0?
-3??m 20220reg p OK patch2vi.c:1238:a32sc %? %@2152sc!1q0?
+3??m 20220reg p OK patch2vi.c:1244:a32sc %? %@2152sc!1q0?
 %f+ 	int res_strat;           /\* resolved strategy \*/
 	int mark_id;             /\* line mark id, -1 = no mark \*/
 	int insert_i;            /\* pure add: insert before mark \('\''N-1i\) vs after \('\''Ni\) \*/4??0?
-4??+3m 20220reg p OK patch2vi.c:1238:a42sc %? %@2152sc!1q0?
+4??+3m 20220reg p OK patch2vi.c:1244:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	char \*ph1_gen, \*ph2_gen;$5??0?
-5??-2m 20220reg p OK patch2vi.c:1238:a52sc %? %@2152sc!fr 981qfr 980?
+5??-2m 20220reg p OK patch2vi.c:1244:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .....r..............  ... .........e.....ateg....
 ............; .. . .... . .....n. .... id.... = ......k ./
 	..t.....rt.i... .. . ..../...... .dd:.in.... ....r.........N..............\(.......
 ./\*...e.ge.er.t.d .........h.se.2.s...e.. ..t.. ...n_....._..gm......
 	.....i..e..ou.......it.ti..;....t..ili.g..e..i... ..
 ..... \*..1_.e.. ..h......6??0?
-6??+3m 20220reg p OK patch2vi.c:1238:a62sc %? %@2152sc!1q0?
+6??+3m 20220reg p OK patch2vi.c:1244:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	int res_strat;           /\* resolved strategy \*/.*?
 	int mark_id;             /\* line mark id, -1 = no mark \*/.*?
 	int insert_i;            /\* pure add: insert before mark \('\''N-1i\) vs after \('\''Ni\) \*/.*?
 (	/\* The generated phase-1/phase-2 segment bytes \(gen_group_segments\),)7??0?
-grp 07??m 20220reg p OK patch2vi.c:1238:a72sc %? %@2152sc!1q0?
+grp 07??m 20220reg p OK patch2vi.c:1244:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	 \* gen_win_window to anchor strictly outside the diff'\''s shown region\. \*/
 	int hunk_lo, hunk_hi;
 	/\* Two-phase emission state, set in phase 1, read in phase 2 \*/.*(	return g->nanchors >= 2)
 	       \|\| \(g->nanchors == 1 && g->anchors\[0] && g->anchors\[0]\[0]\)
 	       \|\| \(g->follow_ctx && g->follow_ctx\[0]\)8??0?
-grp 08??-9m 20220reg p OK patch2vi.c:1238:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 20220reg p OK patch2vi.c:1244:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int ldc_start, ldc_end; /\* minimal char positions for ;c \*/
 	char \*ldc_new_text;      /\* minimal replacement text for ;c \*/
 	/\* Enclosing @@ hunk'\''s original-line span \(1-based, 0 if unknown\); used by.*(/\* One fallback search pattern \(phase 1\) \*/)
 typedef struct \{
 	char \*\*lines;9??0?
-grp 09??-16m 20220reg p OK patch2vi.c:1238:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:12382sc %? %@2132sc!0?
+grp 09??-16m 20220reg p OK patch2vi.c:1244:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:12442sc %? %@2132sc!0?
 ?0?
 %f+ 	char \*ph1_gen, \*ph2_gen;
 } group_t;
@@ -736,20 +736,20 @@ typedef struct \{
 1??0?
 1??m 211q0?
 ;0fr.,$f+ ^	char \*ph1_gen, \*ph2_gen;$4??0?
-4??m 21220reg p OK patch2vi.c:1240:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 21220reg p OK patch2vi.c:1246:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 	 \* gen_win_window to anchor strictly outside the diff'\''s shown region\. \*/
 	int hunk_lo, hunk_hi;
 	/\* Two-phase emission state, set in phase 1, read in phase 2 \*/.*(	return g->nanchors >= 2)
 	       \|\| \(g->nanchors == 1 && g->anchors\[0] && g->anchors\[0]\[0]\)
 	       \|\| \(g->follow_ctx && g->follow_ctx\[0]\)8??0?
-grp 08??-7m 21220reg p OK patch2vi.c:1240:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 21220reg p OK patch2vi.c:1246:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int ldc_start, ldc_end; /\* minimal char positions for ;c \*/
 	char \*ldc_new_text;      /\* minimal replacement text for ;c \*/
 	/\* Enclosing @@ hunk'\''s original-line span \(1-based, 0 if unknown\); used by.*(/\* One fallback search pattern \(phase 1\) \*/)
 typedef struct \{
 	char \*\*lines;9??0?
-grp 09??-14m 21220reg p OK patch2vi.c:1240:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:12402sc %? %@2132sc!0?
+grp 09??-14m 21220reg p OK patch2vi.c:1246:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:12462sc %? %@2132sc!0?
 ?0?
 %f+ } group_t;
 
@@ -760,20 +760,20 @@ static int group_has_anchors\(group_t \*g\)1??0?
 %f+ } group_t;
 
 4??0?
-4??+1m 22220reg p OK patch2vi.c:1242:a42sc %? %@2152sc!1q0?
+4??+1m 22220reg p OK patch2vi.c:1248:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	 \* gen_win_window to anchor strictly outside the diff'\''s shown region\. \*/
 	int hunk_lo, hunk_hi;
 	/\* Two-phase emission state, set in phase 1, read in phase 2 \*/.*(	return g->nanchors >= 2)
 	       \|\| \(g->nanchors == 1 && g->anchors\[0] && g->anchors\[0]\[0]\)
 	       \|\| \(g->follow_ctx && g->follow_ctx\[0]\)8??0?
-grp 08??-5m 22220reg p OK patch2vi.c:1242:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 22220reg p OK patch2vi.c:1248:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int ldc_start, ldc_end; /\* minimal char positions for ;c \*/
 	char \*ldc_new_text;      /\* minimal replacement text for ;c \*/
 	/\* Enclosing @@ hunk'\''s original-line span \(1-based, 0 if unknown\); used by.*(/\* One fallback search pattern \(phase 1\) \*/)
 typedef struct \{
 	char \*\*lines;9??0?
-grp 09??-12m 22220reg p OK patch2vi.c:1242:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:12422sc %? %@2132sc!0?
+grp 09??-12m 22220reg p OK patch2vi.c:1248:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:12482sc %? %@2132sc!0?
 ?0?
 %f+ typedef struct \{
 	char \*\*lines;
@@ -787,17 +787,17 @@ typedef struct \{
 	int offset;       /\* lines from match start to the target line \*/
 	int off_final;    /\* 1 = the window generator'\''s own offset, which the
 			   \* pure-add shift must leave alone \*/2??0?
-2??m 23220reg p OK patch2vi.c:1258:a22sc %? %@2152sc!1q0?
+2??m 23220reg p OK patch2vi.c:1264:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	int pre_escaped;  /\* 1 = a window generator'\''s regex, 0 = raw text \*/$3??0?
-3??m 23220reg p OK patch2vi.c:1258:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 23220reg p OK patch2vi.c:1264:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ typedef struct \{
 	char \*\*lines;
 	int nlines;4??0?
-4??+3m 23220reg p OK patch2vi.c:1258:a42sc %? %@2152sc!1q0?
+4??+3m 23220reg p OK patch2vi.c:1264:a42sc %? %@2152sc!1q0?
 %f+ 	int offset;       /\* lines from match start to the target line \*/
 	int off_final;    /\* 1 = the window generator'\''s own offset, which the
 			   \* pure-add shift must leave alone \*/5??0?
-5??-1m 23220reg p OK patch2vi.c:1258:a52sc %? %@2152sc!1q0?
+5??-1m 23220reg p OK patch2vi.c:1264:a52sc %? %@2152sc!1q0?
 %f+ ...e............
 .c.ar..\*...es;
 	... .l.....
@@ -805,25 +805,25 @@ typedef struct \{
 .i.. .......   ..../....n........m...h .ta.t t. t.....rg....i...\*.
 .....o...f.nal... ./..1 . ..e.w..d.....ne....r...o....f......wh.c.....
 ....  .....e-ad...hi........l.......o...\*/6??0?
-6??+3m 23220reg p OK patch2vi.c:1258:a62sc %? %@2152sc!1q0?
+6??+3m 23220reg p OK patch2vi.c:1264:a62sc %? %@2152sc!1q0?
 grp 1%f+ typedef struct \{.*?
 	char \*\*lines;.*?
 	int nlines;.*?
 (	int pre_escaped;  /\* 1 = a window generator'\''s regex, 0 = raw text \*/)7??0?
-grp 07??m 23220reg p OK patch2vi.c:1258:a72sc %? %@2152sc!1q0?
+grp 07??m 23220reg p OK patch2vi.c:1264:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	       \|\| \(g->follow_ctx && g->follow_ctx\[0]\)
 	       \|\| \(g->ndel > 0 && g->del_texts\[0] && g->del_texts\[0]\[0]\);
 }.*(	int mode;         /\* search mode: 1 single line, 0 multi-line; windows add 2 and 3 \*/)
 	int pid;          /\* fixed pattern id \(source slot \+ 1, 1-9\): emitted as
 			   \* the capture tag and OK1 anchor id so a failure maps8??0?
-grp 08??-4m 23220reg p OK patch2vi.c:1258:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 23220reg p OK patch2vi.c:1264:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	return g->nanchors >= 2
 	       \|\| \(g->nanchors == 1 && g->anchors\[0] && g->anchors\[0]\[0]\).*(/\* Default \(non-edited\) lines for fallback pattern pi, strict to loose:)
  \*   0 = whole hunk \(pre-ctx \+ deleted \+ following ctx\)
  \*   1 = deleted \+ following ctx: pre-context ambiguous, trailing not9??0?
-grp 09??-10m 23220reg p OK patch2vi.c:1258:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:12582sc %? %@2132sc!0?
+grp 09??-10m 23220reg p OK patch2vi.c:1264:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:12642sc %? %@2132sc!0?
 ?0?
 %f+ 	int sid;
 } subvar_t;
@@ -836,20 +836,20 @@ typedef struct \{
 } subvar_t;
 
 4??0?
-4??+2m 24220reg p OK patch2vi.c:2273:a42sc %? %@2152sc!1q0?
+4??+2m 24220reg p OK patch2vi.c:2279:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> typedef struct \{
 	char \*pat;
 	char \*repl;.*( \* test and action - a failed match leaves the line untouched, so the next,)
  \* looser variant is safe to try, and the first success short-circuits with 1q
  \* so no later one re-edits the now changed line\. A non-primary success reports8??0?
-grp 08??-4m 24220reg p OK patch2vi.c:2273:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 24220reg p OK patch2vi.c:2279:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	sb_exarg\(out, repl\);
 	sb_chr\(out, '\''/'\''\);
 }.*( \* via \$\{OK2}; if every variant fails the trailing DNF check reports FAIL\. A)
  \* single-variant chain degrades to a plain addressed s/// \+ check\.
  \*/9??0?
-grp 09??-7m 24220reg p OK patch2vi.c:2273:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:22732sc %? %@2132sc!0?
+grp 09??-7m 24220reg p OK patch2vi.c:2279:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:22792sc %? %@2132sc!0?
 ?0?
 %f+ 
 /\* The substitute progression for a single-line change: rung 0 the minimal-span
@@ -865,18 +865,18 @@ static int build_sub_variants\(group_t \*g, subvar_t \*v\)
 static int build_sub_variants\(group_t \*g, subvar_t \*v\)
 \{
 	int nv = 0;2??0?
-2??m 25220reg p OK patch2vi.c:2335:a22sc %? %@2152sc!1q0?
+2??m 25220reg p OK patch2vi.c:2341:a22sc %? %@2152sc!1q0?
 %f+  \* \(skipped when it would absorb nothing\)\. Fields are fully escaped; caller
  \* frees\. \*/3??0?
-3??m 25220reg p OK patch2vi.c:2335:a32sc %? %@2152sc!1q0?
+3??m 25220reg p OK patch2vi.c:2341:a32sc %? %@2152sc!1q0?
 %f+ 
 /\* The substitute progression for a single-line change: rung 0 the minimal-span
  \* exact s/old/new/, rung 1 the grp-absorbing variant over that same span4??0?
-4??+3m 25220reg p OK patch2vi.c:2335:a42sc %? %@2152sc!1q0?
+4??+3m 25220reg p OK patch2vi.c:2341:a42sc %? %@2152sc!1q0?
 %f+ static int build_sub_variants\(group_t \*g, subvar_t \*v\)
 \{
 	int nv = 0;5??0?
-5??-2m 25220reg p OK patch2vi.c:2335:a52sc %? %@2152sc!1q0?
+5??-2m 25220reg p OK patch2vi.c:2341:a52sc %? %@2152sc!1q0?
 %f+ 
 /..T.......t...t.........s.on.fo..a...ng...l.n.................... ..n...l.s...
 .......t.............r..g.....e.....a.....i.............e. ..at..... .p.n
@@ -885,25 +885,25 @@ static int build_sub_variants\(group_t \*g, subvar_t \*v\)
 ....i..i.t .u..d...b_v.....t.\(....... ..,..u.........\)
 \{
 	...... ....6??0?
-6??+3m 25220reg p OK patch2vi.c:2335:a62sc %? %@2152sc!1q0?
+6??+3m 25220reg p OK patch2vi.c:2341:a62sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 /\* The substitute progression for a single-line change: rung 0 the minimal-span.*?
  \* exact s/old/new/, rung 1 the grp-absorbing variant over that same span.*?
 ( \* \(skipped when it would absorb nothing\)\. Fields are fully escaped; caller)7??0?
-grp 07??m 25220reg p OK patch2vi.c:2335:a72sc %? %@2152sc!1q0?
+grp 07??m 25220reg p OK patch2vi.c:2341:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	emit_err_check\(out, 2, line, mark_id, sids, nv\);
 	EMIT_LB\(out\);
 	EMIT_SEP\(out\);.*(	/\* rung 0: the minimal-span exact substitute, fully escaped \*/)
 	v\[nv]\.pat = double_trailing_esc\(escape_sub_pat_raw\(g->ld_old_text, '\''/'\''\)\);
 	v\[nv]\.repl = double_trailing_esc\(escape_sub_repl_raw\(g->ld_new_text, '\''/'\''\)\);8??0?
-grp 08??-5m 25220reg p OK patch2vi.c:2335:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 25220reg p OK patch2vi.c:2341:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EMIT_SEP\(out\);
 	for \(int n = 0; n < nv; n\+\+\)
 		sids\[n] = v\[n]\.sid;.*(	v\[nv]\.sid = 1;)
 	nv\+\+;
 	if \(build_grp_variant\(g->del_texts\[0], g->add_texts\[0],9??0?
-grp 09??-8m 25220reg p OK patch2vi.c:2335:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:23352sc %? %@2132sc!0?
+grp 09??-8m 25220reg p OK patch2vi.c:2341:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:23412sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 }
@@ -916,20 +916,20 @@ static int build_sub_variants\(group_t \*g, subvar_t \*v\)
 }
 
 4??0?
-4??+2m 26220reg p OK patch2vi.c:2365:a42sc %? %@2152sc!1q0?
+4??+2m 26220reg p OK patch2vi.c:2371:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	for \(int i = 0; i < nv; i\+\+\) \{
 		free\(v\[i]\.pat\);
 		free\(v\[i]\.repl\);.*(/\* Put the controlling terminal on fds 0/1 for the session; ed_ungrabtty\(\))
  \* puts the caller'\''s own stdin/stdout back\. \*/
 static int ed_grabtty\(void\)8??0?
-grp 08??-12m 26220reg p OK patch2vi.c:2365:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-12m 26220reg p OK patch2vi.c:2371:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	subvar_t v\[2];
 	int nv = build_sub_variants\(g, v\);
 	emit_substitute_chain\(out, line, mark_id, v, nv\);.*(	int tty = open\("/dev/tty", O_RDWR\);)
 	if \(tty < 0\) \{
 		perror\("/dev/tty"\);9??0?
-grp 09??-16m 26220reg p OK patch2vi.c:2365:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:23652sc %? %@2132sc!0?
+grp 09??-16m 26220reg p OK patch2vi.c:2371:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:23712sc %? %@2132sc!0?
 ?0?
 %f+ /\* Editor bring-up, hoisted from nextvi'\''s main\(\)/ex_init\(\): no argv, no EXINIT,
  \* for the sessions that edit buffers patch2vi built rather than files \(-E goes
@@ -945,18 +945,18 @@ static int ed_grabtty\(void\)8??0?
  \* process-wide and built once; the rest is per session, freed by ed_free\(\)\.
  \* With use_tty the editor takes the controlling terminal on fds 0/1, since
  \* patch2vi'\''s own stdin/stdout may be the patch and the generated script\. \*/2??0?
-2??m 27220reg p OK patch2vi.c:2369:a22sc %? %@2152sc!1q0?
+2??m 27220reg p OK patch2vi.c:2375:a22sc %? %@2152sc!1q0?
 %f+  \* run several independent editor lifetimes - one per script block, the -e
  \* runner\. The config tables and the input buffer are3??0?
-3??m 27220reg p OK patch2vi.c:2369:a32sc %? %@2152sc!1q0?
+3??m 27220reg p OK patch2vi.c:2375:a32sc %? %@2152sc!1q0?
 %f+ /\* Editor bring-up, hoisted from nextvi'\''s main\(\)/ex_init\(\): no argv, no EXINIT,
  \* for the sessions that edit buffers patch2vi built rather than files \(-E goes
  \* through nextvi_main\(\) instead\)\. Split into init/teardown so one process can4??0?
-4??+3m 27220reg p OK patch2vi.c:2369:a42sc %? %@2152sc!1q0?
+4??+3m 27220reg p OK patch2vi.c:2375:a42sc %? %@2152sc!1q0?
 %f+  \* process-wide and built once; the rest is per session, freed by ed_free\(\)\.
  \* With use_tty the editor takes the controlling terminal on fds 0/1, since
  \* patch2vi'\''s own stdin/stdout may be the patch and the generated script\. \*/5??0?
-5??-2m 27220reg p OK patch2vi.c:2369:a52sc %? %@2152sc!1q0?
+5??-2m 27220reg p OK patch2vi.c:2375:a52sc %? %@2152sc!1q0?
 %f+ .....i......i.......ho.st....... ......'\''..m.in...e.....t\(\):..o............IN...
 .. f.......s....o.s...a....i. ........p........b.... ..t... .......l.s..-......
 .\* .h.ou................ .....a..\......t in....n.t..e.r.... ...o.. ...ces. ...
@@ -965,25 +965,25 @@ static int ed_grabtty\(void\)8??0?
  \*.......s..i...a.d.b.i.. ...e. ..............r..ess...,.......b..ed_.re...\.
 .\*..........t.. ..e........t...s .he.....rol.in........al .. .ds...1.......
 ....a..h2v... ... .td.n..t..u......b...h..patch .n. t....e..r.ted .cr....../6??0?
-6??+3m 27220reg p OK patch2vi.c:2369:a62sc %? %@2152sc!1q0?
+6??+3m 27220reg p OK patch2vi.c:2375:a62sc %? %@2152sc!1q0?
 grp 1%f+ /\* Editor bring-up, hoisted from nextvi'\''s main\(\)/ex_init\(\): no argv, no EXINIT,.*?
  \* for the sessions that edit buffers patch2vi built rather than files \(-E goes.*?
  \* through nextvi_main\(\) instead\)\. Split into init/teardown so one process can.*?
 ( \* run several independent editor lifetimes - one per script block, the -e)7??0?
-grp 07??m 27220reg p OK patch2vi.c:2369:a72sc %? %@2152sc!1q0?
+grp 07??m 27220reg p OK patch2vi.c:2375:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	for \(int i = 0; i < nv; i\+\+\) \{
 		free\(v\[i]\.pat\);
 		free\(v\[i]\.repl\);.*(/\* Put the controlling terminal on fds 0/1 for the session; ed_ungrabtty\(\))
  \* puts the caller'\''s own stdin/stdout back\. \*/
 static int ed_grabtty\(void\)8??0?
-grp 08??-8m 27220reg p OK patch2vi.c:2369:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 27220reg p OK patch2vi.c:2375:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	subvar_t v\[2];
 	int nv = build_sub_variants\(g, v\);
 	emit_substitute_chain\(out, line, mark_id, v, nv\);.*(	int tty = open\("/dev/tty", O_RDWR\);)
 	if \(tty < 0\) \{
 		perror\("/dev/tty"\);9??0?
-grp 09??-12m 27220reg p OK patch2vi.c:2369:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:23692sc %? %@2132sc!0?
+grp 09??-12m 27220reg p OK patch2vi.c:2375:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:23752sc %? %@2132sc!0?
 ?0?
 %f+ 	xseq = 1;
 	xvis = 0;
@@ -1001,19 +1001,19 @@ static int ed_grabtty\(void\)8??0?
 }
 
 2??0?
-2??m 28220reg p OK patch2vi.c:2481:a22sc %? %@2152sc!1q0?
+2??m 28220reg p OK patch2vi.c:2487:a22sc %? %@2152sc!1q0?
 %f+ 	 \* source text, so a replay session must turn it off too, whether or
 	 \* not a replayed prologue already did\. \*/3??0?
-3??m 28220reg p OK patch2vi.c:2481:a32sc %? %@2152sc!1q0?
+3??m 28220reg p OK patch2vi.c:2487:a32sc %? %@2152sc!1q0?
 %f+ 	xseq = 1;
 	xvis = 0;
 	/\* ignorecase defaults on in nextvi and every pattern here is literal4??0?
-4??+3m 28220reg p OK patch2vi.c:2481:a42sc %? %@2152sc!1q0?
+4??+3m 28220reg p OK patch2vi.c:2487:a42sc %? %@2152sc!1q0?
 %f+ 	xic = 0;
 }
 
 5??0?
-5??-2m 28220reg p OK patch2vi.c:2481:a52sc %? %@2152sc!1q0?
+5??-2m 28220reg p OK patch2vi.c:2487:a52sc %? %@2152sc!1q0?
 %f+ ..se....1.
 ...i......
 .........e......e.a.... .......e.tvi .nd.......p........e....s.l...r..
@@ -1023,25 +1023,25 @@ static int ed_grabtty\(void\)8??0?
 }
 
 6??0?
-6??+3m 28220reg p OK patch2vi.c:2481:a62sc %? %@2152sc!1q0?
+6??+3m 28220reg p OK patch2vi.c:2487:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	xseq = 1;.*?
 	xvis = 0;.*?
 	/\* ignorecase defaults on in nextvi and every pattern here is literal.*?
 (	 \* source text, so a replay session must turn it off too, whether or)7??0?
-grp 07??m 28220reg p OK patch2vi.c:2481:a72sc %? %@2152sc!1q0?
+grp 07??m 28220reg p OK patch2vi.c:2487:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	xpret = NULL;
 	xsep = '\'':'\'';
 	xesc = '\''\\\\'\'';.*(/\* The state above plus the buffers, their marks and their undo history: a block)
  \* started after this sees exactly what a freshly spawned editor sees\. \*/
 static void ed_free_bufs\(void\)8??0?
-grp 08??-5m 28220reg p OK patch2vi.c:2481:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 28220reg p OK patch2vi.c:2487:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	xquit = xgrec = xgdep = xexec_dep = 0;
 	xkwddir = xkwdcnt = 0;
 	xfr = xrr = xpr = xgrp = xdefreg = 0;.*(		bufs_free\(i\);)
 	xbufcur = 0;
 	free\(bufs\);9??0?
-grp 09??-10m 28220reg p OK patch2vi.c:2481:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:24812sc %? %@2132sc!0?
+grp 09??-10m 28220reg p OK patch2vi.c:2487:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:24872sc %? %@2132sc!0?
 ?0?
 %f+ 		ex_print\(msg, bar_ft\)
 }
@@ -1052,20 +1052,20 @@ static void ed_free_bufs\(void\)8??0?
 }
 
 4??0?
-4??+2m 29220reg p OK patch2vi.c:2518:a42sc %? %@2152sc!1q0?
+4??+2m 29220reg p OK patch2vi.c:2524:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[f]", xb_path, lbuf_len\(xb\)\);
 	/\* "-m" silences the load line, as ec_edit'\''s own is \*/
 	if \(!\(xvis & 4\)\).*( \* enter the loop nextvi_main\(\) would have - the parsed flags decide, not a)
  \* hardcoded vi\(\): "-e" and "-s" mean ex\(\), "-a" wraps the session in the
  \* scroll history\. Startup cannot be redone here \(term_init already ran8??0?
-grp 08??-14m 29220reg p OK patch2vi.c:2518:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-14m 29220reg p OK patch2vi.c:2524:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	bufs_switch\(bufs_open\(name, strlen\(name\)\)\);
 	lbuf_edit\(xb, text, 0, 0, 0, 0\);
 	ex_bufpostfix\(ex_buf, 1\);.*( \* without bit 1, and the buffers are loaded, so ex_init gets no argv\),)
  \* which is why this mirrors main\(\)'\''s tail instead of calling any of its\. \*/
 static void ed_serve\(int fbuf, int frow\)9??0?
-grp 09??-17m 29220reg p OK patch2vi.c:2518:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:25182sc %? %@2132sc!0?
+grp 09??-17m 29220reg p OK patch2vi.c:2524:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:25242sc %? %@2132sc!0?
 ?0?
 %f+ /\* The nextvi command line that follows a mode'\''s own arguments: -E'\''s after
  \* its script, -C'\''s after its fix slot\. Its option letters are vi\(1\)'\''s own,
@@ -1083,18 +1083,18 @@ static int nhand_files;1??0?
 static int hand_vis = -1;	/\* xvis for the session, -1 = plain visual \*/
 static char \*\*hand_files;
 static int nhand_files;2??0?
-2??m 30220reg p OK patch2vi.c:2520:a22sc %? %@2152sc!1q0?
+2??m 30220reg p OK patch2vi.c:2526:a22sc %? %@2152sc!1q0?
 %f+  \* its script, -C'\''s after its fix slot\. Its option letters are vi\(1\)'\''s own,
  \* applied to the handover session, and its files are opened on top of the
  \* ones the run itself named - so a session can visit a file the script never
  \* touched and still have it end up in the emitted diff\. \*/3??0?
-3??m 30220reg p OK patch2vi.c:2520:a32sc %? %@2152sc!1q0?
+3??m 30220reg p OK patch2vi.c:2526:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^/\* The nextvi command line that follows a mode'\''s own arguments: -E'\''s after$4??0?
-4??+1m 30220reg p OK patch2vi.c:2520:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 30220reg p OK patch2vi.c:2526:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ static int hand_vis = -1;	/\* xvis for the session, -1 = plain visual \*/
 static char \*\*hand_files;
 static int nhand_files;5??0?
-5??-4m 30220reg p OK patch2vi.c:2520:a52sc %? %@2152sc!1q0?
+5??-4m 30220reg p OK patch2vi.c:2526:a52sc %? %@2152sc!1q0?
 %f+ .\* ......x......m.a......e.t.a.......ws ....d.'\''s...........n......'\''s.....r
 ......................... ...........t.........i......t.........i.1..s ...,
 .\*.......d... .....an......s....o.........s.f..e. ..e .p....... ... .. t..
@@ -1103,23 +1103,23 @@ static int nhand_files;5??0?
 s..........h........=....... ..is..o..t........o........pl.....is... ..
 ...t...c......h........s.
 ....i...n...ha.._.....;6??0?
-6??+1m 30220reg p OK patch2vi.c:2520:a62sc %? %@2152sc!1q0?
+6??+1m 30220reg p OK patch2vi.c:2526:a62sc %? %@2152sc!1q0?
 grp 1%f+ /\* The nextvi command line that follows a mode'\''s own arguments: -E'\''s after.*?
 ( \* its script, -C'\''s after its fix slot\. Its option letters are vi\(1\)'\''s own,)7??0?
-grp 07??m 30220reg p OK patch2vi.c:2520:a72sc %? %@2152sc!1q0?
+grp 07??m 30220reg p OK patch2vi.c:2526:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[f]", xb_path, lbuf_len\(xb\)\);
 	/\* "-m" silences the load line, as ec_edit'\''s own is \*/
 	if \(!\(xvis & 4\)\).*( \* enter the loop nextvi_main\(\) would have - the parsed flags decide, not a)
  \* hardcoded vi\(\): "-e" and "-s" mean ex\(\), "-a" wraps the session in the
  \* scroll history\. Startup cannot be redone here \(term_init already ran8??0?
-grp 08??-12m 30220reg p OK patch2vi.c:2520:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-12m 30220reg p OK patch2vi.c:2526:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	bufs_switch\(bufs_open\(name, strlen\(name\)\)\);
 	lbuf_edit\(xb, text, 0, 0, 0, 0\);
 	ex_bufpostfix\(ex_buf, 1\);.*( \* without bit 1, and the buffers are loaded, so ex_init gets no argv\),)
  \* which is why this mirrors main\(\)'\''s tail instead of calling any of its\. \*/
 static void ed_serve\(int fbuf, int frow\)9??0?
-grp 09??-15m 30220reg p OK patch2vi.c:2520:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:25202sc %? %@2132sc!0?
+grp 09??-15m 30220reg p OK patch2vi.c:2526:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:25262sc %? %@2132sc!0?
 ?0?
 %f+ static char \*\*hand_files;
 static int nhand_files;
@@ -1133,18 +1133,18 @@ static int nhand_files;
  \* replay or the loader left behind \(the body'\''s "\|sc!" separator, escape
  \* and error mode\), open the command line'\''s files, park on the first placed
  \* failure \(fbuf < 0 when there is none\), fire the P2VI_EX harness hook and2??0?
-2??m 31220reg p OK patch2vi.c:2528:a22sc %? %@2152sc!1q0?
+2??m 31220reg p OK patch2vi.c:2534:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^/\* The one editor session every handover path ends in\. Undo what the$3??0?
-3??m 31220reg p OK patch2vi.c:2528:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 31220reg p OK patch2vi.c:2534:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ static char \*\*hand_files;
 static int nhand_files;
 
 4??0?
-4??+3m 31220reg p OK patch2vi.c:2528:a42sc %? %@2152sc!1q0?
+4??+3m 31220reg p OK patch2vi.c:2534:a42sc %? %@2152sc!1q0?
 %f+  \* replay or the loader left behind \(the body'\''s "\|sc!" separator, escape
  \* and error mode\), open the command line'\''s files, park on the first placed
  \* failure \(fbuf < 0 when there is none\), fire the P2VI_EX harness hook and5??0?
-5??-1m 31220reg p OK patch2vi.c:2528:a52sc %? %@2152sc!1q0?
+5??-1m 31220reg p OK patch2vi.c:2534:a52sc %? %@2152sc!1q0?
 %f+ ....i.....r...ha.d_.i...;
 ..at...in.............;
 
@@ -1152,25 +1152,25 @@ static int nhand_files;
 .......a.....t.e lo...r..e...b.h.......e.bo.y'\''...\|..." se......r. ..c.pe
 ....n. e.......d.\)...p...t.. co..................,...r.... ..e ..... p.ace.
 .........e...b.f.... .h....h...................t...P2V.........e...h.o.....6??0?
-6??+3m 31220reg p OK patch2vi.c:2528:a62sc %? %@2152sc!1q0?
+6??+3m 31220reg p OK patch2vi.c:2534:a62sc %? %@2152sc!1q0?
 grp 1%f+ static char \*\*hand_files;.*?
 static int nhand_files;.*?
 .*?
 (/\* The one editor session every handover path ends in\. Undo what the)7??0?
-grp 07??m 31220reg p OK patch2vi.c:2528:a72sc %? %@2152sc!1q0?
+grp 07??m 31220reg p OK patch2vi.c:2534:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[f]", xb_path, lbuf_len\(xb\)\);
 	/\* "-m" silences the load line, as ec_edit'\''s own is \*/
 	if \(!\(xvis & 4\)\).*( \* enter the loop nextvi_main\(\) would have - the parsed flags decide, not a)
  \* hardcoded vi\(\): "-e" and "-s" mean ex\(\), "-a" wraps the session in the
  \* scroll history\. Startup cannot be redone here \(term_init already ran8??0?
-grp 08??-4m 31220reg p OK patch2vi.c:2528:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 31220reg p OK patch2vi.c:2534:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	bufs_switch\(bufs_open\(name, strlen\(name\)\)\);
 	lbuf_edit\(xb, text, 0, 0, 0, 0\);
 	ex_bufpostfix\(ex_buf, 1\);.*( \* without bit 1, and the buffers are loaded, so ex_init gets no argv\),)
  \* which is why this mirrors main\(\)'\''s tail instead of calling any of its\. \*/
 static void ed_serve\(int fbuf, int frow\)9??0?
-grp 09??-7m 31220reg p OK patch2vi.c:2528:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:25282sc %? %@2132sc!0?
+grp 09??-7m 31220reg p OK patch2vi.c:2534:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:25342sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 }
@@ -1183,20 +1183,20 @@ static char \*lbuf_text\(struct lbuf \*lb\)
 }
 
 4??0?
-4??+2m 32220reg p OK patch2vi.c:2571:a42sc %? %@2152sc!1q0?
+4??+2m 32220reg p OK patch2vi.c:2577:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			vi\(1\);
 		if \(xvis & 8\)
 			term_scrl\(\).*(	char \*ln;)
 	sbuf_smake\(sb, SB_INIT\)
 	for \(int i = 0; i < lbuf_len\(lb\); i\+\+\) \{8??0?
-grp 08??-4m 32220reg p OK patch2vi.c:2571:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 32220reg p OK patch2vi.c:2577:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(xvis & 2\)
 			ex\(\);
 		else.*(		ln = lbuf_get\(lb, i\);)
 		sbuf_mem\(sb, ln, lbuf_s\(ln\)->len \+ 1\)
 	}9??0?
-grp 09??-7m 32220reg p OK patch2vi.c:2571:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:25712sc %? %@2132sc!0?
+grp 09??-7m 32220reg p OK patch2vi.c:2577:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:25772sc %? %@2132sc!0?
 ?0?
 %f+ 
 /\* One derived \(or re-read\) compatibility block: one whole compat patch, i\.e\.
@@ -1212,18 +1212,18 @@ typedef struct \{
  \* origin is per-block, since the global only describes the current run\. \*/
 typedef struct \{
 	char \*origin;		/\* src= label; its basenames are the identity gate \*/2??0?
-2??m 33220reg p OK patch2vi.c:2586:a22sc %? %@2152sc!1q0?
+2??m 33220reg p OK patch2vi.c:2592:a22sc %? %@2152sc!1q0?
 %f+  \* = one staged body = one storage region, so a compat patch is authored and
  \* shipped as the single diff it is\. Its body always runs after the host'\''s;3??0?
-3??m 33220reg p OK patch2vi.c:2586:a32sc %? %@2152sc!1q0?
+3??m 33220reg p OK patch2vi.c:2592:a32sc %? %@2152sc!1q0?
 %f+ 
 /\* One derived \(or re-read\) compatibility block: one whole compat patch, i\.e\.
  \* one unified diff over however many files it touches\. One block = one section4??0?
-4??+3m 33220reg p OK patch2vi.c:2586:a42sc %? %@2152sc!1q0?
+4??+3m 33220reg p OK patch2vi.c:2592:a42sc %? %@2152sc!1q0?
 %f+  \* origin is per-block, since the global only describes the current run\. \*/
 typedef struct \{
 	char \*origin;		/\* src= label; its basenames are the identity gate \*/5??0?
-5??-2m 33220reg p OK patch2vi.c:2586:a52sc %? %@2152sc!1q0?
+5??-2m 33220reg p OK patch2vi.c:2592:a52sc %? %@2152sc!1q0?
 %f+ 
 .\*.O.............r.re-.e..\)....pati..l......o..:........l......a.....ch,..\..\.
 .. ..e u.i..e..di.f o... .....er ma.. ....s .....u.he.\....e..l... ..o...se.....
@@ -1232,25 +1232,25 @@ typedef struct \{
 .\*....g...i. pe.-...c....i..e.t.e....ba.......................r.en....n....
 ......f....u.. \{
 ...a...or.....		.....c.......;...s........e. a.e .h..i.e...ty .ate...6??0?
-6??+3m 33220reg p OK patch2vi.c:2586:a62sc %? %@2152sc!1q0?
+6??+3m 33220reg p OK patch2vi.c:2592:a62sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 /\* One derived \(or re-read\) compatibility block: one whole compat patch, i\.e\..*?
  \* one unified diff over however many files it touches\. One block = one section.*?
 ( \* = one staged body = one storage region, so a compat patch is authored and)7??0?
-grp 07??m 33220reg p OK patch2vi.c:2586:a72sc %? %@2152sc!1q0?
+grp 07??m 33220reg p OK patch2vi.c:2592:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		sbuf_mem\(sb, ln, lbuf_s\(ln\)->len \+ 1\)
 	}
 	sbufn_ret\(sb, sb->s\).*(/\* Forward declaration: the -e applied set needs basenames first\. \*/)
 static const char \*base_name\(const char \*p\);
 /\* the src= fields of a compat block'\''s origin label, as basenames \*/8??0?
-grp 08??-11m 33220reg p OK patch2vi.c:2586:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 33220reg p OK patch2vi.c:2592:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	sbuf_smake\(sb, SB_INIT\)
 	for \(int i = 0; i < lbuf_len\(lb\); i\+\+\) \{
 		ln = lbuf_get\(lb, i\);.*(/\* The block'\''s own files that have groups to emit; \*n = how many\. \*/)
 static file_patch_t \*\*block_files\(compat_block_t \*cb, int \*n\)
 \{9??0?
-grp 09??-16m 33220reg p OK patch2vi.c:2586:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:25862sc %? %@2132sc!0?
+grp 09??-16m 33220reg p OK patch2vi.c:2592:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:25922sc %? %@2132sc!0?
 ?0?
 %f+ 	char \*origin;		/\* src= label; its basenames are the identity gate \*/
 	int first, count;	/\* files\[] range this block owns \*/
@@ -1262,24 +1262,24 @@ static int ncompat, compat_cap;1??0?
 %f+ 	char \*origin;		/\* src= label; its basenames are the identity gate \*/
 	int first, count;	/\* files\[] range this block owns \*/
 	strv_t raw;		/\* the block'\''s own === PATCH === lines \*/4??0?
-4??+2m 34220reg p OK patch2vi.c:2592:a42sc %? %@2152sc!1q0?
+4??+2m 34220reg p OK patch2vi.c:2598:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	char \*origin;		/\* src= label; its basenames are the identity gate \*/.*?
 	int first, count;	/\* files\[] range this block owns \*/.*?
 (	strv_t raw;		/\* the block'\''s own === PATCH === lines \*/)7??0?
-grp 07??m 34220reg p OK patch2vi.c:2592:a72sc %? %@2152sc!1q0?
+grp 07??m 34220reg p OK patch2vi.c:2598:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		sbuf_mem\(sb, ln, lbuf_s\(ln\)->len \+ 1\)
 	}
 	sbufn_ret\(sb, sb->s\).*(/\* Forward declaration: the -e applied set needs basenames first\. \*/)
 static const char \*base_name\(const char \*p\);
 /\* the src= fields of a compat block'\''s origin label, as basenames \*/8??0?
-grp 08??-5m 34220reg p OK patch2vi.c:2592:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 34220reg p OK patch2vi.c:2598:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	sbuf_smake\(sb, SB_INIT\)
 	for \(int i = 0; i < lbuf_len\(lb\); i\+\+\) \{
 		ln = lbuf_get\(lb, i\);.*(/\* The block'\''s own files that have groups to emit; \*n = how many\. \*/)
 static file_patch_t \*\*block_files\(compat_block_t \*cb, int \*n\)
 \{9??0?
-grp 09??-10m 34220reg p OK patch2vi.c:2592:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:25922sc %? %@2132sc!0?
+grp 09??-10m 34220reg p OK patch2vi.c:2598:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:25982sc %? %@2132sc!0?
 ?0?
 %f+ 	return v;
 }
@@ -1291,20 +1291,20 @@ static file_patch_t \*\*block_files\(compat_block_t \*cb, int \*n\)
 }
 
 4??0?
-4??+2m 35220reg p OK patch2vi.c:2612:a42sc %? %@2152sc!1q0?
+4??+2m 35220reg p OK patch2vi.c:2618:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	for \(int i = cb->first; i < cb->first \+ cb->count; i\+\+\)
 		if \(files\[i]\.ngroups > 0\)
 			v\[\(\*n\)\+\+] = &files\[i];.*(static void compat_win_leave\(int sv\))
 \{
 	compat_building = 0;8??0?
-grp 08??-11m 35220reg p OK patch2vi.c:2612:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 35220reg p OK patch2vi.c:2618:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	file_patch_t \*\*v = emalloc\(\(cb->count \+ 1\) \* sizeof\(\*v\)\);
 	\*n = 0;.*( \* groups\[] for a file, from its ops\[]: a group is a contiguous run of)
  \* deletes/adds with optional context anchors\.
  \*/9??0?
-grp 09??-18m 35220reg p OK patch2vi.c:2612:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:26122sc %? %@2132sc!0?
+grp 09??-18m 35220reg p OK patch2vi.c:2618:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:26182sc %? %@2132sc!0?
 ?0?
 %f+ /\* Enter/leave the compat emission window: relative anchoring and the
  \* file-validated generators off \(they would read the pre-origin file\)\. Held
@@ -1317,40 +1317,40 @@ static void compat_win_enter\(int \*sv\)
 static void compat_win_enter\(int \*sv\)
 \{
 	\*sv = relative_mode;2??0?
-2??m 36220reg p OK patch2vi.c:2615:a22sc %? %@2152sc!1q0?
+2??m 36220reg p OK patch2vi.c:2621:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^ \* around a block'\''s body emission\. \*/$3??0?
-3??m 36220reg p OK patch2vi.c:2615:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 36220reg p OK patch2vi.c:2621:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ /\* Enter/leave the compat emission window: relative anchoring and the
  \* file-validated generators off \(they would read the pre-origin file\)\. Held4??0?
-4??+2m 36220reg p OK patch2vi.c:2615:a42sc %? %@2152sc!1q0?
+4??+2m 36220reg p OK patch2vi.c:2621:a42sc %? %@2152sc!1q0?
 %f+ static void compat_win_enter\(int \*sv\)
 \{
 	\*sv = relative_mode;5??0?
-5??-1m 36220reg p OK patch2vi.c:2615:a52sc %? %@2152sc!1q0?
+5??-1m 36220reg p OK patch2vi.c:2621:a52sc %? %@2152sc!1q0?
 %f+ .\*.E..../le... .....om... .m...............r.lat........o.i...a......
 ..........l..a.......e.a.........\(..ey....l.....d..h.........g.n ..l.......d
  ...roun. . ..o.....b.d..e....ion....
 sta.i. .... c....t.w.....te......\*...
 \{
 .\*...= .....ive....e.6??0?
-6??+2m 36220reg p OK patch2vi.c:2615:a62sc %? %@2152sc!1q0?
+6??+2m 36220reg p OK patch2vi.c:2621:a62sc %? %@2152sc!1q0?
 grp 1%f+ /\* Enter/leave the compat emission window: relative anchoring and the.*?
  \* file-validated generators off \(they would read the pre-origin file\)\. Held.*?
 ( \* around a block'\''s body emission\. \*/)7??0?
-grp 07??m 36220reg p OK patch2vi.c:2615:a72sc %? %@2152sc!1q0?
+grp 07??m 36220reg p OK patch2vi.c:2621:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	for \(int i = cb->first; i < cb->first \+ cb->count; i\+\+\)
 		if \(files\[i]\.ngroups > 0\)
 			v\[\(\*n\)\+\+] = &files\[i];.*(static void compat_win_leave\(int sv\))
 \{
 	compat_building = 0;8??0?
-grp 08??-8m 36220reg p OK patch2vi.c:2615:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 36220reg p OK patch2vi.c:2621:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	file_patch_t \*\*v = emalloc\(\(cb->count \+ 1\) \* sizeof\(\*v\)\);
 	\*n = 0;.*( \* groups\[] for a file, from its ops\[]: a group is a contiguous run of)
  \* deletes/adds with optional context anchors\.
  \*/9??0?
-grp 09??-15m 36220reg p OK patch2vi.c:2615:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:26152sc %? %@2132sc!0?
+grp 09??-15m 36220reg p OK patch2vi.c:2621:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:26212sc %? %@2132sc!0?
 ?0?
 %f+ 	relative_mode = sv;
 }
@@ -1363,20 +1363,20 @@ sta.i. .... c....t.w.....te......\*...
 }
 
 4??0?
-4??+2m 37220reg p OK patch2vi.c:2628:a42sc %? %@2152sc!1q0?
+4??+2m 37220reg p OK patch2vi.c:2634:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static void compat_win_leave\(int sv\)
 \{
 	compat_building = 0;.*(static void build_file_groups\(file_patch_t \*fp\))
 \{
 	int rel = relative_mode;8??0?
-grp 08??-5m 37220reg p OK patch2vi.c:2628:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 37220reg p OK patch2vi.c:2634:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	relative_mode = 1;
 	compat_building = 1;
 }.*(	if \(fp->nops == 0\))
 		return;
 	/\* A compat block'\''s own files collect their context search-anchored9??0?
-grp 09??-9m 37220reg p OK patch2vi.c:2628:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:26282sc %? %@2132sc!0?
+grp 09??-9m 37220reg p OK patch2vi.c:2634:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:26342sc %? %@2132sc!0?
 ?0?
 %f+ 		char \*ctx_ring\[3] = \{NULL, NULL, NULL};
 		int ctx_line_ring\[3] = \{0, 0, 0};
@@ -1388,24 +1388,24 @@ sta.i. .... c....t.w.....te......\*...
 %f+ 		char \*ctx_ring\[3] = \{NULL, NULL, NULL};
 		int ctx_line_ring\[3] = \{0, 0, 0};
 		int ctx_count = 0;4??0?
-4??+2m 38220reg p OK patch2vi.c:2664:a42sc %? %@2152sc!1q0?
+4??+2m 38220reg p OK patch2vi.c:2670:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		char \*ctx_ring\[3] = \{NULL, NULL, NULL};.*?
 		int ctx_line_ring\[3] = \{0, 0, 0};.*?
 (		int ctx_count = 0;)7??0?
-grp 07??m 38220reg p OK patch2vi.c:2664:a72sc %? %@2152sc!1q0?
+grp 07??m 38220reg p OK patch2vi.c:2670:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		 \* measures the distance to the first change, and its last
 		 \* three lines become the search pattern'\''s leading lines\. \*/
 		int last_ctx_line = 0;.*(			ctx_line_ring\[0] = ctx_line_ring\[1];)
 			ctx_ring\[1] = ctx_ring\[2];
 			ctx_line_ring\[1] = ctx_line_ring\[2];8??0?
-grp 08??-4m 38220reg p OK patch2vi.c:2664:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 38220reg p OK patch2vi.c:2670:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	while \(i < fp->nops\) \{
 		group_t \*g = &groups\[ngroups];
 		memset\(g, 0, sizeof\(group_t\)\);.*(			ctx_ring\[2] = fp->ops\[i]\.text;)
 			ctx_line_ring\[2] = fp->ops\[i]\.oline;
 			ctx_count\+\+;9??0?
-grp 09??-7m 38220reg p OK patch2vi.c:2664:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:26642sc %? %@2132sc!0?
+grp 09??-7m 38220reg p OK patch2vi.c:2670:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:26702sc %? %@2132sc!0?
 ?0?
 %f+ 			ctx_ring\[2] = fp->ops\[i]\.text;
 			ctx_line_ring\[2] = fp->ops\[i]\.oline;
@@ -1416,24 +1416,24 @@ sta.i. .... c....t.w.....te......\*...
 %f+ 			ctx_ring\[2] = fp->ops\[i]\.text;
 			ctx_line_ring\[2] = fp->ops\[i]\.oline;
 			ctx_count\+\+;4??0?
-4??+2m 40220reg p OK patch2vi.c:2673:a42sc %? %@2152sc!1q0?
+4??+2m 40220reg p OK patch2vi.c:2679:a42sc %? %@2152sc!1q0?
 grp 1%f+ 			ctx_ring\[2] = fp->ops\[i]\.text;.*?
 			ctx_line_ring\[2] = fp->ops\[i]\.oline;.*?
 (			ctx_count\+\+;)7??0?
-grp 07??m 40220reg p OK patch2vi.c:2673:a72sc %? %@2152sc!1q0?
+grp 07??m 40220reg p OK patch2vi.c:2679:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			ctx_line_ring\[0] = ctx_line_ring\[1];
 			ctx_ring\[1] = ctx_ring\[2];
 			ctx_line_ring\[1] = ctx_line_ring\[2];.*(			g->anchor_offset = first_change_line - last_ctx_line;)
 		}
 		if \(ctx_count >= 3\) \{8??0?
-grp 08??-8m 40220reg p OK patch2vi.c:2673:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 40220reg p OK patch2vi.c:2679:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		while \(i < fp->nops && fp->ops\[i]\.type == '\''c'\''\) \{
 			last_ctx_line = fp->ops\[i]\.oline;
 			ctx_ring\[0] = ctx_ring\[1];.*(			g->anchors\[0] = ctx_ring\[0];)
 			g->anchors\[1] = ctx_ring\[1];
 			g->anchors\[2] = ctx_ring\[2];9??0?
-grp 09??-11m 40220reg p OK patch2vi.c:2673:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:26732sc %? %@2132sc!0?
+grp 09??-11m 40220reg p OK patch2vi.c:2679:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:26792sc %? %@2132sc!0?
 ?0?
 %f+ 			i\+\+;
 		}
@@ -1442,36 +1442,36 @@ sta.i. .... c....t.w.....te......\*...
 1??+2m 411q0?
 %f+ 		if \(i >= fp->nops\)
 			break;2??0?
-2??m 41220reg p OK patch2vi.c:2676:a22sc %? %@2152sc!1q0?
+2??m 41220reg p OK patch2vi.c:2682:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(i >= fp->nops\)$3??0?
-3??m 41220reg p OK patch2vi.c:2676:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 41220reg p OK patch2vi.c:2682:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			i\+\+;
 		}4??0?
-4??+2m 41220reg p OK patch2vi.c:2676:a42sc %? %@2152sc!1q0?
+4??+2m 41220reg p OK patch2vi.c:2682:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			break;$5??0?
-5??-1m 41220reg p OK patch2vi.c:2676:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 41220reg p OK patch2vi.c:2682:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ 	...\+..
 	..
 	... ..... .......s.
 ..	....k.6??0?
-6??+2m 41220reg p OK patch2vi.c:2676:a62sc %? %@2152sc!1q0?
+6??+2m 41220reg p OK patch2vi.c:2682:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			i\+\+;.*?
 		}.*?
 (		if \(i >= fp->nops\))7??0?
-grp 07??m 41220reg p OK patch2vi.c:2676:a72sc %? %@2152sc!1q0?
+grp 07??m 41220reg p OK patch2vi.c:2682:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			ctx_line_ring\[0] = ctx_line_ring\[1];
 			ctx_ring\[1] = ctx_ring\[2];
 			ctx_line_ring\[1] = ctx_line_ring\[2];.*(			g->anchor_offset = first_change_line - last_ctx_line;)
 		}
 		if \(ctx_count >= 3\) \{8??0?
-grp 08??-5m 41220reg p OK patch2vi.c:2676:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 41220reg p OK patch2vi.c:2682:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		while \(i < fp->nops && fp->ops\[i]\.type == '\''c'\''\) \{
 			last_ctx_line = fp->ops\[i]\.oline;
 			ctx_ring\[0] = ctx_ring\[1];.*(			g->anchors\[0] = ctx_ring\[0];)
 			g->anchors\[1] = ctx_ring\[1];
 			g->anchors\[2] = ctx_ring\[2];9??0?
-grp 09??-8m 41220reg p OK patch2vi.c:2676:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:26762sc %? %@2132sc!0?
+grp 09??-8m 41220reg p OK patch2vi.c:2682:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:26822sc %? %@2132sc!0?
 ?0?
 %f+ 			break;
 
@@ -1479,20 +1479,20 @@ sta.i. .... c....t.w.....te......\*...
 			int first_change_line = fp->ops\[i]\.oline;1??0?
 1??m 431q0?
 ;0fr.,$f+ ^			break;$4??0?
-4??m 43220reg p OK patch2vi.c:2677:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 43220reg p OK patch2vi.c:2683:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 			ctx_line_ring\[0] = ctx_line_ring\[1];
 			ctx_ring\[1] = ctx_ring\[2];
 			ctx_line_ring\[1] = ctx_line_ring\[2];.*(			g->anchor_offset = first_change_line - last_ctx_line;)
 		}
 		if \(ctx_count >= 3\) \{8??0?
-grp 08??-4m 43220reg p OK patch2vi.c:2677:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 43220reg p OK patch2vi.c:2683:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		while \(i < fp->nops && fp->ops\[i]\.type == '\''c'\''\) \{
 			last_ctx_line = fp->ops\[i]\.oline;
 			ctx_ring\[0] = ctx_ring\[1];.*(			g->anchors\[0] = ctx_ring\[0];)
 			g->anchors\[1] = ctx_ring\[1];
 			g->anchors\[2] = ctx_ring\[2];9??0?
-grp 09??-7m 43220reg p OK patch2vi.c:2677:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:26772sc %? %@2132sc!0?
+grp 09??-7m 43220reg p OK patch2vi.c:2683:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:26832sc %? %@2132sc!0?
 ?0?
 %f+ 			g->follow_offset = fp->ops\[i]\.oline - first_change_line;
 		}
@@ -1512,21 +1512,21 @@ sta.i. .... c....t.w.....te......\*...
 			int post_cap = 3;
 			int post_avail = 0;
 			int pi = i;2??0?
-2??m 44220reg p OK patch2vi.c:2739:a22sc %? %@2152sc!1q0?
+2??m 44220reg p OK patch2vi.c:2745:a22sc %? %@2152sc!1q0?
 %f+ 		/\* Relative mode keeps up to three following context lines on
 		 \* top of follow_ctx: absolute line numbers need no context,
 		 \* search patterns do\. \*/
 		if \(rel && \(g->del_start \|\| g->nadd\)\) \{3??0?
-3??m 44220reg p OK patch2vi.c:2739:a32sc %? %@2152sc!1q0?
+3??m 44220reg p OK patch2vi.c:2745:a32sc %? %@2152sc!1q0?
 %f+ 			g->follow_offset = fp->ops\[i]\.oline - first_change_line;
 		}
 
 4??0?
-4??+3m 44220reg p OK patch2vi.c:2739:a42sc %? %@2152sc!1q0?
+4??+3m 44220reg p OK patch2vi.c:2745:a42sc %? %@2152sc!1q0?
 %f+ 			int post_cap = 3;
 			int post_avail = 0;
 			int pi = i;5??0?
-5??-4m 44220reg p OK patch2vi.c:2739:a52sc %? %@2152sc!1q0?
+5??-4m 44220reg p OK patch2vi.c:2745:a52sc %? %@2152sc!1q0?
 %f+ ..............f..e. ..........i..o.... -.f.......ang._..ne;
 ..}
 
@@ -1537,25 +1537,25 @@ sta.i. .... c....t.w.....te......\*...
 	.	.......t_........
 ..	.....os..........0.
 		......i.. ..6??0?
-6??+3m 44220reg p OK patch2vi.c:2739:a62sc %? %@2152sc!1q0?
+6??+3m 44220reg p OK patch2vi.c:2745:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			g->follow_offset = fp->ops\[i]\.oline - first_change_line;.*?
 		}.*?
 .*?
 (		/\* Relative mode keeps up to three following context lines on)7??0?
-grp 07??m 44220reg p OK patch2vi.c:2739:a72sc %? %@2152sc!1q0?
+grp 07??m 44220reg p OK patch2vi.c:2745:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		if \(i < fp->nops && fp->ops\[i]\.type == '\''c'\''\) \{
 			g->follow_ctx = fp->ops\[i]\.text;
 			int first_change_line = g->del_start \? g->del_start : g->add_after \+ 1;.*(			while \(pi < fp->nops && fp->ops\[pi]\.type == '\''c'\'' && post_avail < post_cap\) \{)
 				post_avail\+\+;
 				pi\+\+;8??0?
-grp 08??-7m 44220reg p OK patch2vi.c:2739:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 44220reg p OK patch2vi.c:2745:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				g->add_after = fp->ops\[add_start]\.oline - 1;
 			}
 		}.*(			if \(post_avail > 0\) \{)
 				g->post_ctx = emalloc\(post_avail \* sizeof\(char\*\)\);
 				g->npost_ctx = post_avail;9??0?
-grp 09??-11m 44220reg p OK patch2vi.c:2739:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:27392sc %? %@2132sc!0?
+grp 09??-11m 44220reg p OK patch2vi.c:2745:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:27452sc %? %@2132sc!0?
 ?0?
 %f+ 					g->post_ctx\[j] = fp->ops\[i \+ j]\.text;
 			}
@@ -1566,24 +1566,24 @@ sta.i. .... c....t.w.....te......\*...
 %f+ 					g->post_ctx\[j] = fp->ops\[i \+ j]\.text;
 			}
 		}4??0?
-4??+2m 45220reg p OK patch2vi.c:2756:a42sc %? %@2152sc!1q0?
+4??+2m 45220reg p OK patch2vi.c:2762:a42sc %? %@2152sc!1q0?
 grp 1%f+ 					g->post_ctx\[j] = fp->ops\[i \+ j]\.text;.*?
 			}.*?
 (		})7??0?
-grp 07??m 45220reg p OK patch2vi.c:2756:a72sc %? %@2152sc!1q0?
+grp 07??m 45220reg p OK patch2vi.c:2762:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				g->post_ctx = emalloc\(post_avail \* sizeof\(char\*\)\);
 				g->npost_ctx = post_avail;
 				for \(int j = 0; j < post_avail; j\+\+\).*(						   g->del_texts\[0], g->add_texts\[0],)
 						   &g->ld_old_text, &g->ld_new_text\);
 			if \(g->has_line_diff\) \{8??0?
-grp 08??-7m 45220reg p OK patch2vi.c:2756:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 45220reg p OK patch2vi.c:2762:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				pi\+\+;
 			}
 			if \(post_avail > 0\) \{.*(				/\* The character-level shape keeps the minimal)
 				 \* span - no uniqueness expansion, it addresses
 				 \* the line directly - and its positions are9??0?
-grp 09??-10m 45220reg p OK patch2vi.c:2756:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:27562sc %? %@2132sc!0?
+grp 09??-10m 45220reg p OK patch2vi.c:2762:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:27622sc %? %@2132sc!0?
 ?0?
 %f+ 		/\* A single-line change precomputes its character-level diff:
 		 \* both the substitute and the character-level edit shape are
@@ -1596,40 +1596,40 @@ sta.i. .... c....t.w.....te......\*...
 		if \(g->ndel == 1 && g->nadd == 1 &&
 		    g->del_texts\[0] && g->add_texts\[0]\) \{
 			g->has_line_diff = find_line_diff\(2??0?
-2??m 46220reg p OK patch2vi.c:2759:a22sc %? %@2152sc!1q0?
+2??m 46220reg p OK patch2vi.c:2765:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		 \* cut from it\. \*/$3??0?
-3??m 46220reg p OK patch2vi.c:2759:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 46220reg p OK patch2vi.c:2765:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		/\* A single-line change precomputes its character-level diff:
 		 \* both the substitute and the character-level edit shape are4??0?
-4??+2m 46220reg p OK patch2vi.c:2759:a42sc %? %@2152sc!1q0?
+4??+2m 46220reg p OK patch2vi.c:2765:a42sc %? %@2152sc!1q0?
 %f+ 		if \(g->ndel == 1 && g->nadd == 1 &&
 		    g->del_texts\[0] && g->add_texts\[0]\) \{
 			g->has_line_diff = find_line_diff\(5??0?
-5??-1m 46220reg p OK patch2vi.c:2759:a52sc %? %@2152sc!1q0?
+5??-1m 46220reg p OK patch2vi.c:2765:a52sc %? %@2152sc!1q0?
 %f+ 	./. . ...g....i.. .h.n...p............t...h...c...-..v.......:
 	..\* bo.. .he .u.s.i.... ......e .h.......-...e...d.t.sh.p..a..
 	..\*.c...f........\*.
 	... \(g...de. .. 1..&...>na......1...
 	.....g...e........0.....g-.....t..t...]\).\{
 .	...>....li.e.di.....fin........i.f.6??0?
-6??+2m 46220reg p OK patch2vi.c:2759:a62sc %? %@2152sc!1q0?
+6??+2m 46220reg p OK patch2vi.c:2765:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		/\* A single-line change precomputes its character-level diff:.*?
 		 \* both the substitute and the character-level edit shape are.*?
 (		 \* cut from it\. \*/)7??0?
-grp 07??m 46220reg p OK patch2vi.c:2759:a72sc %? %@2152sc!1q0?
+grp 07??m 46220reg p OK patch2vi.c:2765:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				g->post_ctx = emalloc\(post_avail \* sizeof\(char\*\)\);
 				g->npost_ctx = post_avail;
 				for \(int j = 0; j < post_avail; j\+\+\).*(						   g->del_texts\[0], g->add_texts\[0],)
 						   &g->ld_old_text, &g->ld_new_text\);
 			if \(g->has_line_diff\) \{8??0?
-grp 08??-4m 46220reg p OK patch2vi.c:2759:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 46220reg p OK patch2vi.c:2765:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				pi\+\+;
 			}
 			if \(post_avail > 0\) \{.*(				/\* The character-level shape keeps the minimal)
 				 \* span - no uniqueness expansion, it addresses
 				 \* the line directly - and its positions are9??0?
-grp 09??-7m 46220reg p OK patch2vi.c:2759:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:27592sc %? %@2132sc!0?
+grp 09??-7m 46220reg p OK patch2vi.c:2765:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:27652sc %? %@2132sc!0?
 ?0?
 %f+ \{
 	free\(g->del_texts\);
@@ -1639,24 +1639,24 @@ sta.i. .... c....t.w.....te......\*...
 %f+ \{
 	free\(g->del_texts\);
 	free\(g->add_texts\);4??0?
-4??+2m 47220reg p OK patch2vi.c:2793:a42sc %? %@2152sc!1q0?
+4??+2m 47220reg p OK patch2vi.c:2799:a42sc %? %@2152sc!1q0?
 grp 1%f+ \{.*?
 	free\(g->del_texts\);.*?
 (	free\(g->add_texts\);)7??0?
-grp 07??m 47220reg p OK patch2vi.c:2793:a72sc %? %@2152sc!1q0?
+grp 07??m 47220reg p OK patch2vi.c:2799:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	fp->ngroups = ngroups;
 }.*(	/\* the pre-patch original, for anchor validation: the "---" path)
 	 \* names it, and the edit target holds the same content until the
 	 \* script runs \*/8??0?
-grp 08??-18m 47220reg p OK patch2vi.c:2793:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-18m 47220reg p OK patch2vi.c:2799:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 							nlen - suffix - prefix\);
 			}
 		}.*(	/\* Phase 1 \(resolve\): every group'\''s search against the register cache,)
 	 \* recording its target line in a mark\. Edit marks start at 1, mark 0
-	 \* being the global searches'\'' cursor scratch\. \*/9??0?
-grp 09??-24m 47220reg p OK patch2vi.c:2793:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:27932sc %? %@2132sc!0?
+	 \* being the global searches'\'' cursor scratch\. Ids restart per file per9??0?
+grp 09??-24m 47220reg p OK patch2vi.c:2799:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:27992sc %? %@2132sc!0?
 ?0?
 %f+ 	free\(g->post_ctx\);
 	free\(g->ld_old_text\);
@@ -1664,20 +1664,20 @@ sta.i. .... c....t.w.....te......\*...
 	free\(g->ldc_new_text\);1??0?
 1??m 481q0?
 ;0fr.,$f+ ^	free\(g->post_ctx\);$4??0?
-4??m 48220reg p OK patch2vi.c:2794:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 48220reg p OK patch2vi.c:2800:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 	}
 	fp->ngroups = ngroups;
 }.*(	/\* the pre-patch original, for anchor validation: the "---" path)
 	 \* names it, and the edit target holds the same content until the
 	 \* script runs \*/8??0?
-grp 08??-17m 48220reg p OK patch2vi.c:2794:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-17m 48220reg p OK patch2vi.c:2800:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 							nlen - suffix - prefix\);
 			}
 		}.*(	/\* Phase 1 \(resolve\): every group'\''s search against the register cache,)
 	 \* recording its target line in a mark\. Edit marks start at 1, mark 0
-	 \* being the global searches'\'' cursor scratch\. \*/9??0?
-grp 09??-23m 48220reg p OK patch2vi.c:2794:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:27942sc %? %@2132sc!0?
+	 \* being the global searches'\'' cursor scratch\. Ids restart per file per9??0?
+grp 09??-23m 48220reg p OK patch2vi.c:2800:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:28002sc %? %@2132sc!0?
 ?0?
 %f+ 	free\(g->ldc_new_text\);
 	free\(g->ph1_gen\);
@@ -1689,24 +1689,24 @@ sta.i. .... c....t.w.....te......\*...
 %f+ 	free\(g->ldc_new_text\);
 	free\(g->ph1_gen\);
 	free\(g->ph2_gen\);4??0?
-4??+2m 49220reg p OK patch2vi.c:2799:a42sc %? %@2152sc!1q0?
+4??+2m 49220reg p OK patch2vi.c:2805:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	free\(g->ldc_new_text\);.*?
 	free\(g->ph1_gen\);.*?
 (	free\(g->ph2_gen\);)7??0?
-grp 07??m 49220reg p OK patch2vi.c:2799:a72sc %? %@2152sc!1q0?
+grp 07??m 49220reg p OK patch2vi.c:2805:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	fp->ngroups = ngroups;
 }.*(	/\* the pre-patch original, for anchor validation: the "---" path)
 	 \* names it, and the edit target holds the same content until the
 	 \* script runs \*/8??0?
-grp 08??-12m 49220reg p OK patch2vi.c:2799:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-12m 49220reg p OK patch2vi.c:2805:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 							nlen - suffix - prefix\);
 			}
 		}.*(	/\* Phase 1 \(resolve\): every group'\''s search against the register cache,)
 	 \* recording its target line in a mark\. Edit marks start at 1, mark 0
-	 \* being the global searches'\'' cursor scratch\. \*/9??0?
-grp 09??-18m 49220reg p OK patch2vi.c:2799:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:27992sc %? %@2132sc!0?
+	 \* being the global searches'\'' cursor scratch\. Ids restart per file per9??0?
+grp 09??-18m 49220reg p OK patch2vi.c:2805:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:28052sc %? %@2132sc!0?
 ?0?
 %f+ }
 
@@ -1720,17 +1720,17 @@ static void gen_group_segments\(file_patch_t \*fp\)
 static void gen_group_segments\(file_patch_t \*fp\)
 \{
 	group_t \*groups = fp->groups;2??0?
-2??m 50220reg p OK patch2vi.c:2803:a22sc %? %@2152sc!1q0?
+2??m 50220reg p OK patch2vi.c:2809:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^ \* \(forward layout only\)\. \*/$3??0?
-3??m 50220reg p OK patch2vi.c:2803:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 50220reg p OK patch2vi.c:2809:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ }
 
 /\* Every group'\''s verbatim phase-1/phase-2 segment bytes into ph1_gen/ph2_gen4??0?
-4??+3m 50220reg p OK patch2vi.c:2803:a42sc %? %@2152sc!1q0?
+4??+3m 50220reg p OK patch2vi.c:2809:a42sc %? %@2152sc!1q0?
 %f+ static void gen_group_segments\(file_patch_t \*fp\)
 \{
 	group_t \*groups = fp->groups;5??0?
-5??-1m 50220reg p OK patch2vi.c:2803:a52sc %? %@2152sc!1q0?
+5??-1m 50220reg p OK patch2vi.c:2809:a52sc %? %@2152sc!1q0?
 %f+ }
 
 ....ve...........v.r...i. ......1...a.......gm....b...............en...2....
@@ -1738,51 +1738,51 @@ static void gen_group_segments\(file_patch_t \*fp\)
 ............ge......._.eg..n...f......t.... ...\)
 \{
 	....p....gr.......f...g......6??0?
-6??+3m 50220reg p OK patch2vi.c:2803:a62sc %? %@2152sc!1q0?
+6??+3m 50220reg p OK patch2vi.c:2809:a62sc %? %@2152sc!1q0?
 grp 1%f+ }.*?
 .*?
 /\* Every group'\''s verbatim phase-1/phase-2 segment bytes into ph1_gen/ph2_gen.*?
 ( \* \(forward layout only\)\. \*/)7??0?
-grp 07??m 50220reg p OK patch2vi.c:2803:a72sc %? %@2152sc!1q0?
+grp 07??m 50220reg p OK patch2vi.c:2809:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	fp->ngroups = ngroups;
 }.*(	/\* the pre-patch original, for anchor validation: the "---" path)
 	 \* names it, and the edit target holds the same content until the
 	 \* script runs \*/8??0?
-grp 08??-8m 50220reg p OK patch2vi.c:2803:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 50220reg p OK patch2vi.c:2809:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 							nlen - suffix - prefix\);
 			}
 		}.*(	/\* Phase 1 \(resolve\): every group'\''s search against the register cache,)
 	 \* recording its target line in a mark\. Edit marks start at 1, mark 0
-	 \* being the global searches'\'' cursor scratch\. \*/9??0?
-grp 09??-14m 50220reg p OK patch2vi.c:2803:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28032sc %? %@2132sc!0?
+	 \* being the global searches'\'' cursor scratch\. Ids restart per file per9??0?
+grp 09??-14m 50220reg p OK patch2vi.c:2809:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28092sc %? %@2132sc!0?
 ?0?
 %f+ 	if \(!fp->is_new && !compat_building\)
 		load_orig_file\(fp->orig_path \? fp->orig_path : fp->path\);
 
 	/\* Phase 1 \(resolve\): every group'\''s search against the register cache,
 	 \* recording its target line in a mark\. Edit marks start at 1, mark 0
-	 \* being the global searches'\'' cursor scratch\. \*/1??0?
+	 \* being the global searches'\'' cursor scratch\. Ids restart per file per1??0?
 1??+2m 511q0?
 %f+ 	if \(!fp->is_new && !compat_building\)
 		load_orig_file\(fp->orig_path \? fp->orig_path : fp->path\);
 
 4??0?
-4??+2m 51220reg p OK patch2vi.c:2816:a42sc %? %@2152sc!1q0?
+4??+2m 51220reg p OK patch2vi.c:2822:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	/\* the pre-patch original, for anchor validation: the "---" path
 	 \* names it, and the edit target holds the same content until the
-	 \* script runs \*/.*(	int next_id = WIN_SAVE_MARK \+ 1;)
-	int first_search = 1;
-	for \(int gi = 0; gi < ngroups; gi\+\+\) \{8??0?
-grp 08??-4m 51220reg p OK patch2vi.c:2816:a82sc %? %@2152sc!'\''08??1q0?
+	 \* script runs \*/.*(	 \* section; emit_file_body unsets the buffer'\''s marks first\. \*/)
+	int next_id = WIN_SAVE_MARK \+ 1;
+	int first_search = 1;8??0?
+grp 08??-4m 51220reg p OK patch2vi.c:2822:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	group_t \*groups = fp->groups;
 	int ngroups = fp->ngroups;.*(		g->mark_id = -1;)
 		g->insert_i = 0;
 		if \(!g->del_start && !g->nadd\)9??0?
-grp 09??-8m 51220reg p OK patch2vi.c:2816:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:28162sc %? %@2132sc!0?
+grp 09??-9m 51220reg p OK patch2vi.c:2822:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:28222sc %? %@2132sc!0?
 ?0?
 %f+ 		sbuf_smake\(out, SB_INIT\)
 		int target_line = g->del_start \? g->del_start : g->add_after;
@@ -1793,20 +1793,20 @@ static void gen_group_segments\(file_patch_t \*fp\)
 		int target_line = g->del_start \? g->del_start : g->add_after;
 
 4??0?
-4??+2m 52220reg p OK patch2vi.c:2830:a42sc %? %@2152sc!1q0?
+4??+2m 52220reg p OK patch2vi.c:2837:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		g->insert_i = 0;
 		if \(!g->del_start && !g->nadd\)
 			continue;.*(				goto ph1_done;)
 			}
 			int t = target_line;8??0?
-grp 08??-10m 52220reg p OK patch2vi.c:2830:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 52220reg p OK patch2vi.c:2837:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	for \(int gi = 0; gi < ngroups; gi\+\+\) \{
 		group_t \*g = &groups\[gi];
 		g->mark_id = -1;.*(			if \(!g->del_start && t <= 0\) \{)
 				t = 1;
 				g->insert_i = 1;9??0?
-grp 09??-13m 52220reg p OK patch2vi.c:2830:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:28302sc %? %@2132sc!0?
+grp 09??-13m 52220reg p OK patch2vi.c:2837:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:28372sc %? %@2132sc!0?
 ?0?
 %f+ 		int has_anchors = group_has_anchors\(g\);
 		int strat = \(relative_mode && has_anchors\) \? STRAT_REL : STRAT_ABS;
@@ -1818,37 +1818,37 @@ static void gen_group_segments\(file_patch_t \*fp\)
 		g->res_strat = strat;
 
 		if \(strat == STRAT_ABS\) \{2??0?
-2??m 53220reg p OK patch2vi.c:2832:a22sc %? %@2152sc!1q0?
+2??m 53220reg p OK patch2vi.c:2839:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		int strat = \(relative_mode && has_anchors\) \? STRAT_REL : STRAT_ABS;$3??0?
-3??m 53220reg p OK patch2vi.c:2832:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 53220reg p OK patch2vi.c:2839:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^		int has_anchors = group_has_anchors\(g\);$4??0?
-4??+1m 53220reg p OK patch2vi.c:2832:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 53220reg p OK patch2vi.c:2839:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		g->res_strat = strat;
 
 		if \(strat == STRAT_ABS\) \{5??0?
-5??-1m 53220reg p OK patch2vi.c:2832:a52sc %? %@2152sc!1q0?
+5??-1m 53220reg p OK patch2vi.c:2839:a52sc %? %@2152sc!1q0?
 %f+ ........s...c.....=..r.u....._.n....s....
 ......s.....=..r..............&................ST.A..R...:...RAT.....
 ......e._...a........t.
 
 .	if...tr.t.....T....A....\{6??0?
-6??+1m 53220reg p OK patch2vi.c:2832:a62sc %? %@2152sc!1q0?
+6??+1m 53220reg p OK patch2vi.c:2839:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		int has_anchors = group_has_anchors\(g\);.*?
 (		int strat = \(relative_mode && has_anchors\) \? STRAT_REL : STRAT_ABS;)7??0?
-grp 07??m 53220reg p OK patch2vi.c:2832:a72sc %? %@2152sc!1q0?
+grp 07??m 53220reg p OK patch2vi.c:2839:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		g->insert_i = 0;
 		if \(!g->del_start && !g->nadd\)
 			continue;.*(				goto ph1_done;)
 			}
 			int t = target_line;8??0?
-grp 08??-8m 53220reg p OK patch2vi.c:2832:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 53220reg p OK patch2vi.c:2839:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	for \(int gi = 0; gi < ngroups; gi\+\+\) \{
 		group_t \*g = &groups\[gi];
 		g->mark_id = -1;.*(			if \(!g->del_start && t <= 0\) \{)
 				t = 1;
 				g->insert_i = 1;9??0?
-grp 09??-11m 53220reg p OK patch2vi.c:2832:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28322sc %? %@2132sc!0?
+grp 09??-11m 53220reg p OK patch2vi.c:2839:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28392sc %? %@2132sc!0?
 ?0?
 %f+ 		g->res_strat = strat;
 
@@ -1860,24 +1860,24 @@ static void gen_group_segments\(file_patch_t \*fp\)
 %f+ 		g->res_strat = strat;
 
 		if \(strat == STRAT_ABS\) \{4??0?
-4??+2m 54220reg p OK patch2vi.c:2835:a42sc %? %@2152sc!1q0?
+4??+2m 54220reg p OK patch2vi.c:2842:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		g->res_strat = strat;.*?
 .*?
 (		if \(strat == STRAT_ABS\) \{)7??0?
-grp 07??m 54220reg p OK patch2vi.c:2835:a72sc %? %@2152sc!1q0?
+grp 07??m 54220reg p OK patch2vi.c:2842:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		g->insert_i = 0;
 		if \(!g->del_start && !g->nadd\)
 			continue;.*(				goto ph1_done;)
 			}
 			int t = target_line;8??0?
-grp 08??-5m 54220reg p OK patch2vi.c:2835:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 54220reg p OK patch2vi.c:2842:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	for \(int gi = 0; gi < ngroups; gi\+\+\) \{
 		group_t \*g = &groups\[gi];
 		g->mark_id = -1;.*(			if \(!g->del_start && t <= 0\) \{)
 				t = 1;
 				g->insert_i = 1;9??0?
-grp 09??-8m 54220reg p OK patch2vi.c:2835:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:28352sc %? %@2132sc!0?
+grp 09??-8m 54220reg p OK patch2vi.c:2842:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:28422sc %? %@2132sc!0?
 ?0?
 %f+ 				t = 1;
 				g->insert_i = 1;
@@ -1891,17 +1891,17 @@ static void gen_group_segments\(file_patch_t \*fp\)
 			sb_printf\(out, "%dm %d", t, g->mark_id\);
 			EMIT_SEP\(out\);
 			goto ph1_done;2??0?
-2??m 55220reg p OK patch2vi.c:2847:a22sc %? %@2152sc!1q0?
+2??m 55220reg p OK patch2vi.c:2854:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			g->mark_id = next_mark_id\(&next_id\);$3??0?
-3??m 55220reg p OK patch2vi.c:2847:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 55220reg p OK patch2vi.c:2854:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				t = 1;
 				g->insert_i = 1;
 			}4??0?
-4??+3m 55220reg p OK patch2vi.c:2847:a42sc %? %@2152sc!1q0?
+4??+3m 55220reg p OK patch2vi.c:2854:a42sc %? %@2152sc!1q0?
 %f+ 			sb_printf\(out, "%dm %d", t, g->mark_id\);
 			EMIT_SEP\(out\);
 			goto ph1_done;5??0?
-5??-1m 55220reg p OK patch2vi.c:2847:a52sc %? %@2152sc!1q0?
+5??-1m 55220reg p OK patch2vi.c:2854:a52sc %? %@2152sc!1q0?
 %f+ ..	.t...1.
 ........n.....i.....
 .	..
@@ -1909,25 +1909,25 @@ static void gen_group_segments\(file_patch_t \*fp\)
 ...s..p.i....o.......m...., t....>..r....\).
 ....M....EP.o..\).
 .	.g.........o.e.6??0?
-6??+3m 55220reg p OK patch2vi.c:2847:a62sc %? %@2152sc!1q0?
+6??+3m 55220reg p OK patch2vi.c:2854:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				t = 1;.*?
 				g->insert_i = 1;.*?
 			}.*?
 (			g->mark_id = next_mark_id\(&next_id\);)7??0?
-grp 07??m 55220reg p OK patch2vi.c:2847:a72sc %? %@2152sc!1q0?
+grp 07??m 55220reg p OK patch2vi.c:2854:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			}
 			int t = target_line;
 			if \(!g->del_start && t <= 0\) \{.*(			for \(int pj = 0; pj < w; pj\+\+\))
 				if \(ps\[pi]\.pre_escaped == ps\[pj]\.pre_escaped &&
 				    lines_equal\(ps\[pi]\.lines, ps\[pi]\.nlines,8??0?
-grp 08??-40m 55220reg p OK patch2vi.c:2847:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-40m 55220reg p OK patch2vi.c:2854:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(fp->is_new && !g->del_start\) \{
 				g->insert_i = 1;
 				goto ph1_done;.*(						ps\[pj]\.lines, ps\[pj]\.nlines\)\))
 					dup = 1;
 			if \(!dup\)9??0?
-grp 09??-43m 55220reg p OK patch2vi.c:2847:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28472sc %? %@2132sc!0?
+grp 09??-43m 55220reg p OK patch2vi.c:2854:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28542sc %? %@2132sc!0?
 ?0?
 %f+ 			goto ph1_done;
 		}
@@ -1941,18 +1941,18 @@ static void gen_group_segments\(file_patch_t \*fp\)
 		 \* file-validated relaxed windows\. Duplicates dropped\. \*/
 		pat_spec_t ps\[NSEARCH];
 		int nps = 0;2??0?
-2??m 56220reg p OK patch2vi.c:2853:a22sc %? %@2152sc!1q0?
+2??m 56220reg p OK patch2vi.c:2860:a22sc %? %@2152sc!1q0?
 %f+ 		/\* The fallback list: the default patterns, then the
 		 \* file-validated relaxed windows\. Duplicates dropped\. \*/3??0?
-3??m 56220reg p OK patch2vi.c:2853:a32sc %? %@2152sc!1q0?
+3??m 56220reg p OK patch2vi.c:2860:a32sc %? %@2152sc!1q0?
 %f+ 			goto ph1_done;
 		}
 
 4??0?
-4??+3m 56220reg p OK patch2vi.c:2853:a42sc %? %@2152sc!1q0?
+4??+3m 56220reg p OK patch2vi.c:2860:a42sc %? %@2152sc!1q0?
 %f+ 		pat_spec_t ps\[NSEARCH];
 		int nps = 0;5??0?
-5??-2m 56220reg p OK patch2vi.c:2853:a52sc %? %@2152sc!1q0?
+5??-2m 56220reg p OK patch2vi.c:2860:a52sc %? %@2152sc!1q0?
 %f+ .	.g.t..p.._.o...
 	..
 
@@ -1960,25 +1960,25 @@ static void gen_group_segments\(file_patch_t \*fp\)
 .	 \*.f.le-........d ....x.d......w.. .....c.........p...../
 		..t.s..._t.p...SE..C.].
 		i.. ... . 0;6??0?
-6??+3m 56220reg p OK patch2vi.c:2853:a62sc %? %@2152sc!1q0?
+6??+3m 56220reg p OK patch2vi.c:2860:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			goto ph1_done;.*?
 		}.*?
 .*?
 (		/\* The fallback list: the default patterns, then the)7??0?
-grp 07??m 56220reg p OK patch2vi.c:2853:a72sc %? %@2152sc!1q0?
+grp 07??m 56220reg p OK patch2vi.c:2860:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			}
 			int t = target_line;
 			if \(!g->del_start && t <= 0\) \{.*(			for \(int pj = 0; pj < w; pj\+\+\))
 				if \(ps\[pi]\.pre_escaped == ps\[pj]\.pre_escaped &&
 				    lines_equal\(ps\[pi]\.lines, ps\[pi]\.nlines,8??0?
-grp 08??-34m 56220reg p OK patch2vi.c:2853:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-34m 56220reg p OK patch2vi.c:2860:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(fp->is_new && !g->del_start\) \{
 				g->insert_i = 1;
 				goto ph1_done;.*(						ps\[pj]\.lines, ps\[pj]\.nlines\)\))
 					dup = 1;
 			if \(!dup\)9??0?
-grp 09??-37m 56220reg p OK patch2vi.c:2853:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28532sc %? %@2132sc!0?
+grp 09??-37m 56220reg p OK patch2vi.c:2860:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28602sc %? %@2132sc!0?
 ?0?
 %f+ 		pat_spec_t ps\[NSEARCH];
 		int nps = 0;
@@ -1991,40 +1991,40 @@ static void gen_group_segments\(file_patch_t \*fp\)
 		char \*\*raw = emalloc\(NPAT \* slot_sz \* sizeof\(char \*\)\);
 		winset_t ws;           /\* owned relaxed windows \*/
 		memset\(&ws, 0, sizeof\(ws\)\);2??0?
-2??m 57220reg p OK patch2vi.c:2857:a22sc %? %@2152sc!1q0?
+2??m 57220reg p OK patch2vi.c:2864:a22sc %? %@2152sc!1q0?
 %f+ 		int slot_sz = g->ndel \+ 7;
 		char \*\*raw = emalloc\(NPAT \* slot_sz \* sizeof\(char \*\)\);
 		winset_t ws;           /\* owned relaxed windows \*/3??0?
-3??m 57220reg p OK patch2vi.c:2857:a32sc %? %@2152sc!1q0?
+3??m 57220reg p OK patch2vi.c:2864:a32sc %? %@2152sc!1q0?
 %f+ 		pat_spec_t ps\[NSEARCH];
 		int nps = 0;4??0?
-4??+2m 57220reg p OK patch2vi.c:2857:a42sc %? %@2152sc!1q0?
+4??+2m 57220reg p OK patch2vi.c:2864:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		memset\(&ws, 0, sizeof\(ws\)\);$5??0?
-5??-3m 57220reg p OK patch2vi.c:2857:a52sc %? %@2152sc!fr 981qfr 980?
+5??-3m 57220reg p OK patch2vi.c:2864:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ...a..s.e..t ..\[.........
 .	i...... ....
 ..............=..-.n....\+ 7.
 		.......r.w.....all...NP.. . ..o._.. ......o.\(........;
 .......... .s;  ... . ..... o.... ..l.x.d...n...s...
 	...m...................w.\).;6??0?
-6??+2m 57220reg p OK patch2vi.c:2857:a62sc %? %@2152sc!1q0?
+6??+2m 57220reg p OK patch2vi.c:2864:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		pat_spec_t ps\[NSEARCH];.*?
 		int nps = 0;.*?
 (		int slot_sz = g->ndel \+ 7;)7??0?
-grp 07??m 57220reg p OK patch2vi.c:2857:a72sc %? %@2152sc!1q0?
+grp 07??m 57220reg p OK patch2vi.c:2864:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			}
 			int t = target_line;
 			if \(!g->del_start && t <= 0\) \{.*(			for \(int pj = 0; pj < w; pj\+\+\))
 				if \(ps\[pi]\.pre_escaped == ps\[pj]\.pre_escaped &&
 				    lines_equal\(ps\[pi]\.lines, ps\[pi]\.nlines,8??0?
-grp 08??-30m 57220reg p OK patch2vi.c:2857:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-30m 57220reg p OK patch2vi.c:2864:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(fp->is_new && !g->del_start\) \{
 				g->insert_i = 1;
 				goto ph1_done;.*(						ps\[pj]\.lines, ps\[pj]\.nlines\)\))
 					dup = 1;
 			if \(!dup\)9??0?
-grp 09??-33m 57220reg p OK patch2vi.c:2857:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28572sc %? %@2132sc!0?
+grp 09??-33m 57220reg p OK patch2vi.c:2864:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28642sc %? %@2132sc!0?
 ?0?
 %f+ 		memset\(&ws, 0, sizeof\(ws\)\);
 		for \(int pi = 0; pi < NPAT; pi\+\+\) \{
@@ -2040,17 +2040,17 @@ static void gen_group_segments\(file_patch_t \*fp\)
 			int n = default_pat_lines\(g, pi, slot, &doff\);
 			if \(!n\)
 				continue;2??0?
-2??m 58220reg p OK patch2vi.c:2861:a22sc %? %@2152sc!1q0?
+2??m 58220reg p OK patch2vi.c:2868:a22sc %? %@2152sc!1q0?
 %f+ 		for \(int pi = 0; pi < NPAT; pi\+\+\) \{
 			char \*\*slot = raw \+ pi \* slot_sz;
 			int doff;
 			int n = default_pat_lines\(g, pi, slot, &doff\);
 			if \(!n\)3??0?
-3??m 58220reg p OK patch2vi.c:2861:a32sc %? %@2152sc!1q0?
+3??m 58220reg p OK patch2vi.c:2868:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		memset\(&ws, 0, sizeof\(ws\)\);$4??0?
-4??+1m 58220reg p OK patch2vi.c:2861:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 58220reg p OK patch2vi.c:2868:a42sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^				continue;$5??0?
-5??-5m 58220reg p OK patch2vi.c:2861:a52sc %? %@2152sc!fr 981qfr 980?
+5??-5m 58220reg p OK patch2vi.c:2868:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .	.em.e.\(...........e....s...
 ........n..p... .;.p...........i\+.. .
 ..	..a..\*\*.l...................t.s..
@@ -2058,23 +2058,23 @@ static void gen_group_segments\(file_patch_t \*fp\)
 .	.... ... .......................,.s.o...&d...\);
 	.....\(!n.
 ......nt..u..6??0?
-6??+1m 58220reg p OK patch2vi.c:2861:a62sc %? %@2152sc!1q0?
+6??+1m 58220reg p OK patch2vi.c:2868:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		memset\(&ws, 0, sizeof\(ws\)\);.*?
 (		for \(int pi = 0; pi < NPAT; pi\+\+\) \{)7??0?
-grp 07??m 58220reg p OK patch2vi.c:2861:a72sc %? %@2152sc!1q0?
+grp 07??m 58220reg p OK patch2vi.c:2868:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			}
 			int t = target_line;
 			if \(!g->del_start && t <= 0\) \{.*(			for \(int pj = 0; pj < w; pj\+\+\))
 				if \(ps\[pi]\.pre_escaped == ps\[pj]\.pre_escaped &&
 				    lines_equal\(ps\[pi]\.lines, ps\[pi]\.nlines,8??0?
-grp 08??-26m 58220reg p OK patch2vi.c:2861:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-26m 58220reg p OK patch2vi.c:2868:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(fp->is_new && !g->del_start\) \{
 				g->insert_i = 1;
 				goto ph1_done;.*(						ps\[pj]\.lines, ps\[pj]\.nlines\)\))
 					dup = 1;
 			if \(!dup\)9??0?
-grp 09??-29m 58220reg p OK patch2vi.c:2861:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28612sc %? %@2132sc!0?
+grp 09??-29m 58220reg p OK patch2vi.c:2868:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28682sc %? %@2132sc!0?
 ?0?
 %f+ 				continue;
 			ps\[nps]\.lines = slot;
@@ -2096,20 +2096,20 @@ static void gen_group_segments\(file_patch_t \*fp\)
 			ps\[nps]\.pid = pi \+ 1;
 			nps\+\+;
 		}2??0?
-2??m 59220reg p OK patch2vi.c:2867:a22sc %? %@2152sc!1q0?
+2??m 59220reg p OK patch2vi.c:2874:a22sc %? %@2152sc!1q0?
 %f+ 			ps\[nps]\.lines = slot;
 			ps\[nps]\.nlines = n;
 			ps\[nps]\.pre_escaped = 0;
 			ps\[nps]\.offset = doff;
 			ps\[nps]\.off_final = 0;
 			ps\[nps]\.mode = n == 1 \? 1 : 0;3??0?
-3??m 59220reg p OK patch2vi.c:2867:a32sc %? %@2152sc!1q0?
+3??m 59220reg p OK patch2vi.c:2874:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				continue;$4??0?
-4??+1m 59220reg p OK patch2vi.c:2867:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 59220reg p OK patch2vi.c:2874:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 			ps\[nps]\.pid = pi \+ 1;
 			nps\+\+;
 		}5??0?
-5??-6m 59220reg p OK patch2vi.c:2867:a52sc %? %@2152sc!1q0?
+5??-6m 59220reg p OK patch2vi.c:2874:a52sc %? %@2152sc!1q0?
 %f+ ....c.n......
 .............n.... ...t.
 ......n.....lin.......
@@ -2120,23 +2120,23 @@ static void gen_group_segments\(file_patch_t \*fp\)
 .....\[........ = ......;
 	.	....\+.
 	..6??0?
-6??+1m 59220reg p OK patch2vi.c:2867:a62sc %? %@2152sc!1q0?
+6??+1m 59220reg p OK patch2vi.c:2874:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				continue;.*?
 (			ps\[nps]\.lines = slot;)7??0?
-grp 07??m 59220reg p OK patch2vi.c:2867:a72sc %? %@2152sc!1q0?
+grp 07??m 59220reg p OK patch2vi.c:2874:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			}
 			int t = target_line;
 			if \(!g->del_start && t <= 0\) \{.*(			for \(int pj = 0; pj < w; pj\+\+\))
 				if \(ps\[pi]\.pre_escaped == ps\[pj]\.pre_escaped &&
 				    lines_equal\(ps\[pi]\.lines, ps\[pi]\.nlines,8??0?
-grp 08??-20m 59220reg p OK patch2vi.c:2867:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-20m 59220reg p OK patch2vi.c:2874:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(fp->is_new && !g->del_start\) \{
 				g->insert_i = 1;
 				goto ph1_done;.*(						ps\[pj]\.lines, ps\[pj]\.nlines\)\))
 					dup = 1;
 			if \(!dup\)9??0?
-grp 09??-23m 59220reg p OK patch2vi.c:2867:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28672sc %? %@2132sc!0?
+grp 09??-23m 59220reg p OK patch2vi.c:2874:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28742sc %? %@2132sc!0?
 ?0?
 %f+ 			ps\[nps]\.pid = pi \+ 1;
 			nps\+\+;
@@ -2164,7 +2164,7 @@ static void gen_group_segments\(file_patch_t \*fp\)
 		int w = 0;
 		for \(int pi = 0; pi < nps; pi\+\+\) \{
 			int dup = 0;2??0?
-2??m 60220reg p OK patch2vi.c:2876:a22sc %? %@2152sc!1q0?
+2??m 60220reg p OK patch2vi.c:2883:a22sc %? %@2152sc!1q0?
 %f+ 		/\* the relaxed windows, loosest last; off_final on the
 		 \* last three keeps their offsets through the pure-add shift \*/
 		gen_extra_windows\(g, &ws\);
@@ -2173,15 +2173,15 @@ static void gen_group_segments\(file_patch_t \*fp\)
 				nps = push_win_pat\(ps, nps, &ws\.w\[pi - NPAT],
 						   pi \+ 1, pi >= GRP_SLOT\);
 		/\* No re-sort: the slots are already strict to loose\. \*/3??0?
-3??m 60220reg p OK patch2vi.c:2876:a32sc %? %@2152sc!1q0?
+3??m 60220reg p OK patch2vi.c:2883:a32sc %? %@2152sc!1q0?
 %f+ 			ps\[nps]\.pid = pi \+ 1;
 			nps\+\+;
 		}4??0?
-4??+3m 60220reg p OK patch2vi.c:2876:a42sc %? %@2152sc!1q0?
+4??+3m 60220reg p OK patch2vi.c:2883:a42sc %? %@2152sc!1q0?
 %f+ 		int w = 0;
 		for \(int pi = 0; pi < nps; pi\+\+\) \{
 			int dup = 0;5??0?
-5??-8m 60220reg p OK patch2vi.c:2876:a52sc %? %@2152sc!1q0?
+5??-8m 60220reg p OK patch2vi.c:2883:a52sc %? %@2152sc!1q0?
 %f+ 	.................. ...;
 .		......
 .	.
@@ -2196,25 +2196,25 @@ static void gen_group_segments\(file_patch_t \*fp\)
 	.... ..=...
 	.f.....n..pi....; .. <......p...\) \{
 .........p....;6??0?
-6??+3m 60220reg p OK patch2vi.c:2876:a62sc %? %@2152sc!1q0?
+6??+3m 60220reg p OK patch2vi.c:2883:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			ps\[nps]\.pid = pi \+ 1;.*?
 			nps\+\+;.*?
 		}.*?
 (		/\* the relaxed windows, loosest last; off_final on the)7??0?
-grp 07??m 60220reg p OK patch2vi.c:2876:a72sc %? %@2152sc!1q0?
+grp 07??m 60220reg p OK patch2vi.c:2883:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			}
 			int t = target_line;
 			if \(!g->del_start && t <= 0\) \{.*(			for \(int pj = 0; pj < w; pj\+\+\))
 				if \(ps\[pi]\.pre_escaped == ps\[pj]\.pre_escaped &&
 				    lines_equal\(ps\[pi]\.lines, ps\[pi]\.nlines,8??0?
-grp 08??-11m 60220reg p OK patch2vi.c:2876:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 60220reg p OK patch2vi.c:2883:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(fp->is_new && !g->del_start\) \{
 				g->insert_i = 1;
 				goto ph1_done;.*(						ps\[pj]\.lines, ps\[pj]\.nlines\)\))
 					dup = 1;
 			if \(!dup\)9??0?
-grp 09??-14m 60220reg p OK patch2vi.c:2876:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28762sc %? %@2132sc!0?
+grp 09??-14m 60220reg p OK patch2vi.c:2883:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28832sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		nps = w;
@@ -2230,19 +2230,19 @@ static void gen_group_segments\(file_patch_t \*fp\)
 			if \(g->add_after <= 0\)
 				g->insert_i = 1;
 			else2??0?
-2??m 61220reg p OK patch2vi.c:2897:a22sc %? %@2152sc!1q0?
+2??m 61220reg p OK patch2vi.c:2904:a22sc %? %@2152sc!1q0?
 %f+ 		/\* Pure insert: the mark lands on the line to append after\. \*/
 		if \(!g->del_start && g->nadd\) \{3??0?
-3??m 61220reg p OK patch2vi.c:2897:a32sc %? %@2152sc!1q0?
+3??m 61220reg p OK patch2vi.c:2904:a32sc %? %@2152sc!1q0?
 %f+ 		}
 		nps = w;
 
 4??0?
-4??+3m 61220reg p OK patch2vi.c:2897:a42sc %? %@2152sc!1q0?
+4??+3m 61220reg p OK patch2vi.c:2904:a42sc %? %@2152sc!1q0?
 %f+ 			if \(g->add_after <= 0\)
 				g->insert_i = 1;
 			else5??0?
-5??-2m 61220reg p OK patch2vi.c:2897:a52sc %? %@2152sc!1q0?
+5??-2m 61220reg p OK patch2vi.c:2904:a52sc %? %@2152sc!1q0?
 %f+ 	..
 ....s.. ..
 
@@ -2251,25 +2251,25 @@ static void gen_group_segments\(file_patch_t \*fp\)
 ...i. ..-...d.a........0.
 				....n........ ..
 	...lse6??0?
-6??+3m 61220reg p OK patch2vi.c:2897:a62sc %? %@2152sc!1q0?
+6??+3m 61220reg p OK patch2vi.c:2904:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		}.*?
 		nps = w;.*?
 .*?
 (		/\* Pure insert: the mark lands on the line to append after\. \*/)7??0?
-grp 07??m 61220reg p OK patch2vi.c:2897:a72sc %? %@2152sc!1q0?
+grp 07??m 61220reg p OK patch2vi.c:2904:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					dup = 1;
 			if \(!dup\)
 				ps\[w\+\+] = ps\[pi];.*(				for \(int pi = 0; pi < nps; pi\+\+\))
 					if \(!ps\[pi]\.off_final\)
 						ps\[pi]\.offset -= 1;8??0?
-grp 08??-5m 61220reg p OK patch2vi.c:2897:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 61220reg p OK patch2vi.c:2904:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(ps\[pi]\.pre_escaped == ps\[pj]\.pre_escaped &&
 				    lines_equal\(ps\[pi]\.lines, ps\[pi]\.nlines,
 						ps\[pj]\.lines, ps\[pj]\.nlines\)\).*(		g->mark_id = next_mark_id\(&next_id\);)
 		if \(nps == 0\) \{
 			/\* No usable anchor: mark the absolute line \*/9??0?
-grp 09??-10m 61220reg p OK patch2vi.c:2897:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:28972sc %? %@2132sc!0?
+grp 09??-10m 61220reg p OK patch2vi.c:2904:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:29042sc %? %@2132sc!0?
 ?0?
 %f+ 						ps\[pi]\.offset -= 1;
 		}
@@ -2283,18 +2283,18 @@ static void gen_group_segments\(file_patch_t \*fp\)
 		if \(nps == 0\) \{
 			/\* No usable anchor: mark the absolute line \*/
 			sb_printf\(out, "%dm %d",2??0?
-2??m 62220reg p OK patch2vi.c:2907:a22sc %? %@2152sc!1q0?
+2??m 62220reg p OK patch2vi.c:2914:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		g->mark_id = next_mark_id\(&next_id\);$3??0?
-3??m 62220reg p OK patch2vi.c:2907:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 62220reg p OK patch2vi.c:2914:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 						ps\[pi]\.offset -= 1;
 		}
 
 4??0?
-4??+3m 62220reg p OK patch2vi.c:2907:a42sc %? %@2152sc!1q0?
+4??+3m 62220reg p OK patch2vi.c:2914:a42sc %? %@2152sc!1q0?
 %f+ 		if \(nps == 0\) \{
 			/\* No usable anchor: mark the absolute line \*/
 			sb_printf\(out, "%dm %d",5??0?
-5??-1m 62220reg p OK patch2vi.c:2907:a52sc %? %@2152sc!1q0?
+5??-1m 62220reg p OK patch2vi.c:2914:a52sc %? %@2152sc!1q0?
 %f+ ............\..f..et..=..;
 	..
 
@@ -2302,25 +2302,25 @@ static void gen_group_segments\(file_patch_t \*fp\)
 ..if..np...= ....
 ........ .s.b......h.r...a....h..ab.ol..e.l...../
 .	..b........o.......m .d..6??0?
-6??+3m 62220reg p OK patch2vi.c:2907:a62sc %? %@2152sc!1q0?
+6??+3m 62220reg p OK patch2vi.c:2914:a62sc %? %@2152sc!1q0?
 grp 1%f+ 						ps\[pi]\.offset -= 1;.*?
 		}.*?
 .*?
 (		g->mark_id = next_mark_id\(&next_id\);)7??0?
-grp 07??m 62220reg p OK patch2vi.c:2907:a72sc %? %@2152sc!1q0?
+grp 07??m 62220reg p OK patch2vi.c:2914:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else
 				for \(int pi = 0; pi < nps; pi\+\+\)
 					if \(!ps\[pi]\.off_final\).*(				  target_line > 0 \? target_line : 1, g->mark_id\);)
 			EMIT_SEP\(out\);
 			free_extra_windows\(&ws\);8??0?
-grp 08??-4m 62220reg p OK patch2vi.c:2907:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 62220reg p OK patch2vi.c:2914:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(!g->del_start && g->nadd\) \{
 			if \(g->add_after <= 0\)
 				g->insert_i = 1;.*(			free\(raw\);)
 			goto ph1_done;
 		}9??0?
-grp 09??-7m 62220reg p OK patch2vi.c:2907:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:29072sc %? %@2132sc!0?
+grp 09??-7m 62220reg p OK patch2vi.c:2914:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:29142sc %? %@2132sc!0?
 ?0?
 %f+ 		EMIT_LB\(out\);
 		EMIT_SEP\(out\);
@@ -2338,20 +2338,20 @@ static void gen_group_segments\(file_patch_t \*fp\)
 				emit_mark_substitute\(out, tline, g->mark_id, g\);
 			} else if \(strat == STRAT_ABS && g->ndel == 1 && g->nadd == 1
 				   && g->has_line_diff\) \{2??0?
-2??m 63220reg p OK patch2vi.c:2945:a22sc %? %@2152sc!1q0?
+2??m 63220reg p OK patch2vi.c:2952:a22sc %? %@2152sc!1q0?
 %f+ 		if \(g->del_start && g->nadd\) \{
 			if \(strat == STRAT_REL && g->ndel == 1 && g->nadd == 1
 			    && g->has_line_diff\) \{3??0?
-3??m 63220reg p OK patch2vi.c:2945:a32sc %? %@2152sc!1q0?
+3??m 63220reg p OK patch2vi.c:2952:a32sc %? %@2152sc!1q0?
 %f+ 		EMIT_LB\(out\);
 		EMIT_SEP\(out\);
 
 4??0?
-4??+3m 63220reg p OK patch2vi.c:2945:a42sc %? %@2152sc!1q0?
+4??+3m 63220reg p OK patch2vi.c:2952:a42sc %? %@2152sc!1q0?
 %f+ 				emit_mark_substitute\(out, tline, g->mark_id, g\);
 			} else if \(strat == STRAT_ABS && g->ndel == 1 && g->nadd == 1
 				   && g->has_line_diff\) \{5??0?
-5??-3m 63220reg p OK patch2vi.c:2945:a52sc %? %@2152sc!1q0?
+5??-3m 63220reg p OK patch2vi.c:2952:a52sc %? %@2152sc!1q0?
 %f+ 		...T.LB....\).
 		..I......o....
 
@@ -2361,25 +2361,25 @@ static void gen_group_segments\(file_patch_t \*fp\)
 ..	..m.t_..r...u........\(o.......n.....>.......,....
 	.	. e.s. ...\(s............._...........d.. .. 1........a.d... .
 ..		 ..&.....h...l.n._d......6??0?
-6??+3m 63220reg p OK patch2vi.c:2945:a62sc %? %@2152sc!1q0?
+6??+3m 63220reg p OK patch2vi.c:2952:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		EMIT_LB\(out\);.*?
 		EMIT_SEP\(out\);.*?
 .*?
 (		if \(g->del_start && g->nadd\) \{)7??0?
-grp 07??m 63220reg p OK patch2vi.c:2945:a72sc %? %@2152sc!1q0?
+grp 07??m 63220reg p OK patch2vi.c:2952:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		sbuf_smake\(out, SB_INIT\)
 		int strat = g->res_strat;
 		int tline = g->del_start \? g->del_start : g->add_after;.*(				sb_printf\(out, "'\''%d", g->mark_id\);)
 				emit_horiz_span\(out, g->ldc_start, g->ldc_end,
 						g->ldc_new_text\);8??0?
-grp 08??-6m 63220reg p OK patch2vi.c:2945:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 63220reg p OK patch2vi.c:2952:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		group_t \*g = &groups\[gi];
 		if \(!g->del_start && !g->nadd\)
 			continue;.*(				emit_err_check\(out, 2, tline, g->mark_id, NULL, 0\);)
 			} else \{
 				emit_mark_change\(out, tline, g->mark_id,9??0?
-grp 09??-9m 63220reg p OK patch2vi.c:2945:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:29452sc %? %@2132sc!0?
+grp 09??-9m 63220reg p OK patch2vi.c:2952:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:29522sc %? %@2132sc!0?
 ?0?
 %f+ }
 
@@ -2393,17 +2393,17 @@ static void emit_file_script\(sbuf \*out, file_patch_t \*fp\)
  \* and then every phase-2 one\. The groups are freed here\. \*/
 static void emit_file_script\(sbuf \*out, file_patch_t \*fp\)
 \{2??0?
-2??m 64220reg p OK patch2vi.c:2972:a22sc %? %@2152sc!1q0?
+2??m 64220reg p OK patch2vi.c:2979:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^ \* stay valid, no searches, no marks\), relative mode every phase-1 segment$3??0?
-3??m 64220reg p OK patch2vi.c:2972:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 64220reg p OK patch2vi.c:2979:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ }
 
 /\* One file'\''s groups as ex commands: absolute mode bottom-to-top \(line numbers4??0?
-4??+3m 64220reg p OK patch2vi.c:2972:a42sc %? %@2152sc!1q0?
+4??+3m 64220reg p OK patch2vi.c:2979:a42sc %? %@2152sc!1q0?
 %f+  \* and then every phase-2 one\. The groups are freed here\. \*/
 static void emit_file_script\(sbuf \*out, file_patch_t \*fp\)
 \{5??0?
-5??-1m 64220reg p OK patch2vi.c:2972:a52sc %? %@2152sc!1q0?
+5??-1m 64220reg p OK patch2vi.c:2979:a52sc %? %@2152sc!1q0?
 %f+ }
 
 .. .n....l......o.....s e....m.a.ds.....ol... ..d......o.-..-... ..i.....m.e..
@@ -2411,25 +2411,25 @@ static void emit_file_script\(sbuf \*out, file_patch_t \*fp\)
  ..a.....e........p...... o.e..The..roup..a.....e......e.../
 .t.t.c.v..d..m......._....pt....f....t. .i......ch.t.\*...
 \{6??0?
-6??+3m 64220reg p OK patch2vi.c:2972:a62sc %? %@2152sc!1q0?
+6??+3m 64220reg p OK patch2vi.c:2979:a62sc %? %@2152sc!1q0?
 grp 1%f+ }.*?
 .*?
 /\* One file'\''s groups as ex commands: absolute mode bottom-to-top \(line numbers.*?
 ( \* stay valid, no searches, no marks\), relative mode every phase-1 segment)7??0?
-grp 07??m 64220reg p OK patch2vi.c:2972:a72sc %? %@2152sc!1q0?
+grp 07??m 64220reg p OK patch2vi.c:2979:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		g->ph2_gen = out->s;
 	}
 	free_orig_file\(\);.*(	if \(!relative_mode\) \{)
 		/\* Absolute mode: reverse order \(bottom-to-top\) preserves
 		 \* line numbers; no searches, no marks\. \*/8??0?
-grp 08??-10m 64220reg p OK patch2vi.c:2972:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 64220reg p OK patch2vi.c:2979:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					 g->add_texts, g->nadd\);
 		}
 		sbuf_nul\(out\).*(		for \(int gi = ngroups - 1; gi >= 0; gi--\) \{)
 			group_t \*g = &groups\[gi];
 			if \(g->del_start && g->nadd\) \{9??0?
-grp 09??-13m 64220reg p OK patch2vi.c:2972:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:29722sc %? %@2132sc!0?
+grp 09??-13m 64220reg p OK patch2vi.c:2979:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:29792sc %? %@2132sc!0?
 ?0?
 %f+ 
 	group_t \*groups = fp->groups;
@@ -2440,20 +2440,20 @@ static void emit_file_script\(sbuf \*out, file_patch_t \*fp\)
 %f+ 
 	group_t \*groups = fp->groups;
 	int ngroups = fp->ngroups;4??0?
-4??+2m 65220reg p OK patch2vi.c:2980:a42sc %? %@2152sc!1q0?
+4??+2m 65220reg p OK patch2vi.c:2987:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	if \(fp->ngroups == 0\)
 		return;.*(			group_t \*g = &groups\[gi];)
 			if \(g->del_start && g->nadd\) \{
 				if \(g->ndel == 1 && g->nadd == 1 && g->has_line_diff\)8??0?
-grp 08??-6m 65220reg p OK patch2vi.c:2980:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 65220reg p OK patch2vi.c:2987:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* stay valid, no searches, no marks\), relative mode every phase-1 segment
  \* and then every phase-2 one\. The groups are freed here\. \*/
 static void emit_file_script\(sbuf \*out, file_patch_t \*fp\).*(					emit_horizontal_change\(out, g->del_start,)
 							       g->ldc_start, g->ldc_end,
 							       g->ldc_new_text\);9??0?
-grp 09??-9m 65220reg p OK patch2vi.c:2980:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:29802sc %? %@2132sc!0?
+grp 09??-9m 65220reg p OK patch2vi.c:2987:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:29872sc %? %@2132sc!0?
 ?0?
 %f+ 
 	if \(!relative_mode\) \{
@@ -2465,37 +2465,37 @@ static void emit_file_script\(sbuf \*out, file_patch_t \*fp\).*(					emit_horizo
 		/\* Absolute mode: reverse order \(bottom-to-top\) preserves
 		 \* line numbers; no searches, no marks\. \*/
 		for \(int gi = ngroups - 1; gi >= 0; gi--\) \{2??0?
-2??m 66220reg p OK patch2vi.c:2982:a22sc %? %@2152sc!1q0?
+2??m 66220reg p OK patch2vi.c:2989:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(!relative_mode\) \{$3??0?
-3??m 66220reg p OK patch2vi.c:2982:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 66220reg p OK patch2vi.c:2989:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^		/\* Absolute mode: reverse order \(bottom-to-top\) preserves$4??0?
-4??-1m 66220reg p OK patch2vi.c:2982:a42sc %? %@2152sc!fr 981qfr 980?
+4??-1m 66220reg p OK patch2vi.c:2989:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		/\* Absolute mode: reverse order \(bottom-to-top\) preserves
 		 \* line numbers; no searches, no marks\. \*/
 		for \(int gi = ngroups - 1; gi >= 0; gi--\) \{5??0?
-5??-1m 66220reg p OK patch2vi.c:2982:a52sc %? %@2152sc!1q0?
+5??-1m 66220reg p OK patch2vi.c:2989:a52sc %? %@2152sc!1q0?
 %f+ 
 ....\(!........_m.....\{
 	....A.........o..........e.o..e.........-t...op. .r..e....
 .. \*.li.. ...be..;.....e.....s. no..ar...../
 .......i.. .... n........ .;.gi..............6??0?
-6??+1m 66220reg p OK patch2vi.c:2982:a62sc %? %@2152sc!1q0?
+6??+1m 66220reg p OK patch2vi.c:2989:a62sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 (	if \(!relative_mode\) \{)7??0?
-grp 07??m 66220reg p OK patch2vi.c:2982:a72sc %? %@2152sc!1q0?
+grp 07??m 66220reg p OK patch2vi.c:2989:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	if \(fp->ngroups == 0\)
 		return;.*(			group_t \*g = &groups\[gi];)
 			if \(g->del_start && g->nadd\) \{
 				if \(g->ndel == 1 && g->nadd == 1 && g->has_line_diff\)8??0?
-grp 08??-4m 66220reg p OK patch2vi.c:2982:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 66220reg p OK patch2vi.c:2989:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* stay valid, no searches, no marks\), relative mode every phase-1 segment
  \* and then every phase-2 one\. The groups are freed here\. \*/
 static void emit_file_script\(sbuf \*out, file_patch_t \*fp\).*(					emit_horizontal_change\(out, g->del_start,)
 							       g->ldc_start, g->ldc_end,
 							       g->ldc_new_text\);9??0?
-grp 09??-7m 66220reg p OK patch2vi.c:2982:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:29822sc %? %@2132sc!0?
+grp 09??-7m 66220reg p OK patch2vi.c:2989:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:29892sc %? %@2132sc!0?
 ?0?
 %f+ 		return;
 	}
@@ -2506,20 +2506,20 @@ static void emit_file_script\(sbuf \*out, file_patch_t \*fp\).*(					emit_horizo
 	}
 
 4??0?
-4??+2m 67220reg p OK patch2vi.c:3006:a42sc %? %@2152sc!1q0?
+4??+2m 67220reg p OK patch2vi.c:3013:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			}
 			free_group\(g\);
-		}.*(/\* One file inside a body: select its buffer, yank it into the find register so)
- \* every relative search of this file runs against a cache that stays
- \* byte-identical to the pristine buffer \(a file the patch creates has nothing8??0?
-grp 08??-12m 67220reg p OK patch2vi.c:3006:a82sc %? %@2152sc!'\''08??1q0?
+		}.*(/\* One file inside a body: select its buffer, unset the marks left on it, yank)
+ \* it into the find register so every relative search of this file runs against
+ \* a cache that stays byte-identical to the pristine buffer \(a file the patch8??0?
+grp 08??-12m 67220reg p OK patch2vi.c:3013:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				emit_insert_after\(out, g->add_after,
 						  g->add_texts, g->nadd,
-						  fp->is_new\);.*( \* to cache\), then its groups\. \*/)
-static void emit_file_body\(sbuf \*out, file_patch_t \*fp, int buf, int cache\)
-\{9??0?
-grp 09??-15m 67220reg p OK patch2vi.c:3006:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:30062sc %? %@2132sc!0?
+						  fp->is_new\);.*( \* creates has nothing to cache\), then its groups\.)
+ \*
+ \* Mark ids restart per file per section, and one run'\''s sections share the9??0?
+grp 09??-15m 67220reg p OK patch2vi.c:3013:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:30132sc %? %@2132sc!0?
 ?0?
 %f+ 	gen_group_segments\(fp\);
 	for \(int gi = 0; gi < ngroups; gi\+\+\)
@@ -2541,20 +2541,20 @@ static void emit_file_body\(sbuf \*out, file_patch_t \*fp, int buf, int cache\)
 	for \(int gi = 0; gi < ngroups; gi\+\+\)
 		free_group\(&groups\[gi]\);
 }2??0?
-2??m 68220reg p OK patch2vi.c:3008:a22sc %? %@2152sc!1q0?
+2??m 68220reg p OK patch2vi.c:3015:a22sc %? %@2152sc!1q0?
 %f+ 	for \(int gi = 0; gi < ngroups; gi\+\+\)
 		if \(groups\[gi]\.ph1_gen\)
 			sb_seg\(out, groups\[gi]\.ph1_gen\);
 	for \(int gi = 0; gi < ngroups; gi\+\+\)
 		if \(groups\[gi]\.ph2_gen\)
 			sb_seg\(out, groups\[gi]\.ph2_gen\);3??0?
-3??m 68220reg p OK patch2vi.c:3008:a32sc %? %@2152sc!1q0?
+3??m 68220reg p OK patch2vi.c:3015:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	gen_group_segments\(fp\);$4??0?
-4??+1m 68220reg p OK patch2vi.c:3008:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 68220reg p OK patch2vi.c:3015:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	for \(int gi = 0; gi < ngroups; gi\+\+\)
 		free_group\(&groups\[gi]\);
 }5??0?
-5??-6m 68220reg p OK patch2vi.c:3008:a52sc %? %@2152sc!1q0?
+5??-6m 68220reg p OK patch2vi.c:3015:a52sc %? %@2152sc!1q0?
 %f+ .....g.o.._.e...n.s.....
 .....\(.nt.g..=..;...........ps;....\+\)
 .	.f...r.....gi....._..n.
@@ -2565,23 +2565,23 @@ static void emit_file_body\(sbuf \*out, file_patch_t \*fp, int buf, int cache\)
 ...............0........g..up....i...
 ...r......up.&...........;
 }6??0?
-6??+1m 68220reg p OK patch2vi.c:3008:a62sc %? %@2152sc!1q0?
+6??+1m 68220reg p OK patch2vi.c:3015:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	gen_group_segments\(fp\);.*?
 (	for \(int gi = 0; gi < ngroups; gi\+\+\))7??0?
-grp 07??m 68220reg p OK patch2vi.c:3008:a72sc %? %@2152sc!1q0?
+grp 07??m 68220reg p OK patch2vi.c:3015:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			}
 			free_group\(g\);
-		}.*(/\* One file inside a body: select its buffer, yank it into the find register so)
- \* every relative search of this file runs against a cache that stays
- \* byte-identical to the pristine buffer \(a file the patch creates has nothing8??0?
-grp 08??-10m 68220reg p OK patch2vi.c:3008:a82sc %? %@2152sc!'\''08??1q0?
+		}.*(/\* One file inside a body: select its buffer, unset the marks left on it, yank)
+ \* it into the find register so every relative search of this file runs against
+ \* a cache that stays byte-identical to the pristine buffer \(a file the patch8??0?
+grp 08??-10m 68220reg p OK patch2vi.c:3015:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				emit_insert_after\(out, g->add_after,
 						  g->add_texts, g->nadd,
-						  fp->is_new\);.*( \* to cache\), then its groups\. \*/)
-static void emit_file_body\(sbuf \*out, file_patch_t \*fp, int buf, int cache\)
-\{9??0?
-grp 09??-13m 68220reg p OK patch2vi.c:3008:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:30082sc %? %@2132sc!0?
+						  fp->is_new\);.*( \* creates has nothing to cache\), then its groups\.)
+ \*
+ \* Mark ids restart per file per section, and one run'\''s sections share the9??0?
+grp 09??-13m 68220reg p OK patch2vi.c:3015:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:30152sc %? %@2132sc!0?
 ?0?
 %f+  \* position in active\[], which is what vi opens\. \*/
 static void emit_vi_block\(file_patch_t \*\*active, int nactive\)
@@ -2595,17 +2595,17 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\)
 	sbuf_smake\(osb, SB_INIT\)
 	/\* the three printf arguments sit on their own source lines, spliced by
 	 \* backslash-newline continuations, so the output is unchanged \*/2??0?
-2??m 69220reg p OK patch2vi.c:3195:a22sc %? %@2152sc!1q0?
+2??m 69220reg p OK patch2vi.c:3209:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	int regs = relative_mode \|\| compat_mode;$3??0?
-3??m 69220reg p OK patch2vi.c:3195:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 69220reg p OK patch2vi.c:3209:a32sc %? %@2152sc!fr 981qfr 980?
 %f+  \* position in active\[], which is what vi opens\. \*/
 static void emit_vi_block\(file_patch_t \*\*active, int nactive\)
 \{4??0?
-4??+3m 69220reg p OK patch2vi.c:3195:a42sc %? %@2152sc!1q0?
+4??+3m 69220reg p OK patch2vi.c:3209:a42sc %? %@2152sc!1q0?
 %f+ 	sbuf_smake\(osb, SB_INIT\)
 	/\* the three printf arguments sit on their own source lines, spliced by
 	 \* backslash-newline continuations, so the output is unchanged \*/5??0?
-5??-1m 69220reg p OK patch2vi.c:3195:a52sc %? %@2152sc!1q0?
+5??-1m 69220reg p OK patch2vi.c:3209:a52sc %? %@2152sc!1q0?
 %f+ ....os..i.. ...ac....\[.,..h....i. ........open...\*.
 ...... voi...............\(fi......ch.t.\*..ct.... .n..na......
 \{
@@ -2613,25 +2613,25 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\)
 	.b.f......\(......._....\)
 ./. ..e...r....r...f ar..m.... ..t .n.t......wn ....ce l...s...pli... .y
 . ..b...................n..n..ti.n.,.s..t....u...t...........ed ..6??0?
-6??+3m 69220reg p OK patch2vi.c:3195:a62sc %? %@2152sc!1q0?
+6??+3m 69220reg p OK patch2vi.c:3209:a62sc %? %@2152sc!1q0?
 grp 1%f+  \* position in active\[], which is what vi opens\. \*/.*?
 static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
 \{.*?
 (	int regs = relative_mode \|\| compat_mode;)7??0?
-grp 07??m 69220reg p OK patch2vi.c:3195:a72sc %? %@2152sc!1q0?
+grp 07??m 69220reg p OK patch2vi.c:3209:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> /\* One "\$VI -e" invocation: the printf body \(\|sc! prologue, per-file
  \* b<k>/%ya 98/groups, vis 2, the writes, the 2q\) staged into \$P2VIF, then the
  \* EXINIT \$VI line naming the files in b<k> order\. Buffer indices are the.*(	for \(int k = 0; k < nactive; k\+\+\) \{)
 		fputc\('\'' '\'', stdout\);
 		sq_path\(active\[k]->path\);8??0?
-grp 08??-15m 69220reg p OK patch2vi.c:3195:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-15m 69220reg p OK patch2vi.c:3209:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	fputs\("\\"\\\\\\n'\''", stdout\);
 	sbuf_cut\(osb, 0\)
 }.*(	fputs\(" \\"\$P2VIF\\"\\n", stdout\);)
 	free\(osb->s\);
 }9??0?
-grp 09??-19m 69220reg p OK patch2vi.c:3195:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:31952sc %? %@2132sc!0?
+grp 09??-19m 69220reg p OK patch2vi.c:3209:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:32092sc %? %@2132sc!0?
 ?0?
 %f+ 	/\* the three printf arguments sit on their own source lines, spliced by
 	 \* backslash-newline continuations, so the output is unchanged \*/
@@ -2645,17 +2645,17 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
 		sb_str\(osb, "fr 98"\);
 		EMIT_SEP\(osb\);
 	}2??0?
-2??m 70220reg p OK patch2vi.c:3200:a22sc %? %@2152sc!1q0?
+2??m 70220reg p OK patch2vi.c:3214:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(relative_mode\) \{$3??0?
-3??m 70220reg p OK patch2vi.c:3200:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 70220reg p OK patch2vi.c:3214:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	/\* the three printf arguments sit on their own source lines, spliced by
 	 \* backslash-newline continuations, so the output is unchanged \*/
 	emit_body_head\(osb, regs, 0\);4??0?
-4??+3m 70220reg p OK patch2vi.c:3200:a42sc %? %@2152sc!1q0?
+4??+3m 70220reg p OK patch2vi.c:3214:a42sc %? %@2152sc!1q0?
 %f+ 		sb_str\(osb, "fr 98"\);
 		EMIT_SEP\(osb\);
 	}5??0?
-5??-1m 70220reg p OK patch2vi.c:3200:a52sc %? %@2152sc!1q0?
+5??-1m 70220reg p OK patch2vi.c:3214:a52sc %? %@2152sc!1q0?
 %f+ ... t.e ..r.. ..i.t....gu......... .....ei................... s....e...y
 .........l.........n.......nu.........o..h......u..is.un....ge..\*/
 .......o.._............g.. 0\).
@@ -2663,25 +2663,25 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
 .	............"....."..
 ...............;
 	.6??0?
-6??+3m 70220reg p OK patch2vi.c:3200:a62sc %? %@2152sc!1q0?
+6??+3m 70220reg p OK patch2vi.c:3214:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	/\* the three printf arguments sit on their own source lines, spliced by.*?
 	 \* backslash-newline continuations, so the output is unchanged \*/.*?
 	emit_body_head\(osb, regs, 0\);.*?
 (	if \(relative_mode\) \{)7??0?
-grp 07??m 70220reg p OK patch2vi.c:3200:a72sc %? %@2152sc!1q0?
+grp 07??m 70220reg p OK patch2vi.c:3214:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> /\* One "\$VI -e" invocation: the printf body \(\|sc! prologue, per-file
  \* b<k>/%ya 98/groups, vis 2, the writes, the 2q\) staged into \$P2VIF, then the
  \* EXINIT \$VI line naming the files in b<k> order\. Buffer indices are the.*(	for \(int k = 0; k < nactive; k\+\+\) \{)
 		fputc\('\'' '\'', stdout\);
 		sq_path\(active\[k]->path\);8??0?
-grp 08??-10m 70220reg p OK patch2vi.c:3200:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 70220reg p OK patch2vi.c:3214:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	fputs\("\\"\\\\\\n'\''", stdout\);
 	sbuf_cut\(osb, 0\)
 }.*(	fputs\(" \\"\$P2VIF\\"\\n", stdout\);)
 	free\(osb->s\);
 }9??0?
-grp 09??-14m 70220reg p OK patch2vi.c:3200:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:32002sc %? %@2132sc!0?
+grp 09??-14m 70220reg p OK patch2vi.c:3214:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:32142sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 	for \(int k = 0; k < nactive; k\+\+\)
@@ -2695,17 +2695,17 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
 	emit_write_tail\(osb, nactive, NULL\);
 	sq_write\(osb->s, osb->s_n\);
 	fputs\("'\'' > \\"\$P2VIF\\"\\n" P2VI_VICALL " \$VI -e", stdout\);2??0?
-2??m 71220reg p OK patch2vi.c:3206:a22sc %? %@2152sc!1q0?
+2??m 71220reg p OK patch2vi.c:3220:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			       relative_mode && !active\[k]->is_new\);$3??0?
-3??m 71220reg p OK patch2vi.c:3206:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 71220reg p OK patch2vi.c:3220:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	}
 	for \(int k = 0; k < nactive; k\+\+\)
 		emit_file_body\(osb, active\[k], k,4??0?
-4??+3m 71220reg p OK patch2vi.c:3206:a42sc %? %@2152sc!1q0?
+4??+3m 71220reg p OK patch2vi.c:3220:a42sc %? %@2152sc!1q0?
 %f+ 	emit_write_tail\(osb, nactive, NULL\);
 	sq_write\(osb->s, osb->s_n\);
 	fputs\("'\'' > \\"\$P2VIF\\"\\n" P2VI_VICALL " \$VI -e", stdout\);5??0?
-5??-1m 71220reg p OK patch2vi.c:3206:a52sc %? %@2152sc!1q0?
+5??-1m 71220reg p OK patch2vi.c:3220:a52sc %? %@2152sc!1q0?
 %f+ 	.
 	.....i.. . . ..............;..\+\+.
 	...i._f.le_...y..s.,.....v..k.....
@@ -2713,25 +2713,25 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
 ...i._.......a.l...b.............L...
 .....................->.....
 ..p.....'\'' ..\\......F...." P2....I..L.....V...............6??0?
-6??+3m 71220reg p OK patch2vi.c:3206:a62sc %? %@2152sc!1q0?
+6??+3m 71220reg p OK patch2vi.c:3220:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	}.*?
 	for \(int k = 0; k < nactive; k\+\+\).*?
 		emit_file_body\(osb, active\[k], k,.*?
 (			       relative_mode && !active\[k]->is_new\);)7??0?
-grp 07??m 71220reg p OK patch2vi.c:3206:a72sc %? %@2152sc!1q0?
+grp 07??m 71220reg p OK patch2vi.c:3220:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> /\* One "\$VI -e" invocation: the printf body \(\|sc! prologue, per-file
  \* b<k>/%ya 98/groups, vis 2, the writes, the 2q\) staged into \$P2VIF, then the
  \* EXINIT \$VI line naming the files in b<k> order\. Buffer indices are the.*(	for \(int k = 0; k < nactive; k\+\+\) \{)
 		fputc\('\'' '\'', stdout\);
 		sq_path\(active\[k]->path\);8??0?
-grp 08??-4m 71220reg p OK patch2vi.c:3206:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 71220reg p OK patch2vi.c:3220:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	fputs\("\\"\\\\\\n'\''", stdout\);
 	sbuf_cut\(osb, 0\)
 }.*(	fputs\(" \\"\$P2VIF\\"\\n", stdout\);)
 	free\(osb->s\);
 }9??0?
-grp 09??-8m 71220reg p OK patch2vi.c:3206:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:32062sc %? %@2132sc!0?
+grp 09??-8m 71220reg p OK patch2vi.c:3220:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:32202sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 
@@ -2749,19 +2749,19 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
 	uf = emalloc\(\(nfiles \+ ncompat \+ 1\) \* sizeof\(\*uf\)\);
 	for \(int i = 0; i < nsec; i\+\+\)
 		for \(int j = 0; j < secs\[i]\.nf; j\+\+\)2??0?
-2??m 72220reg p OK patch2vi.c:3677:a22sc %? %@2152sc!1q0?
+2??m 72220reg p OK patch2vi.c:3691:a22sc %? %@2152sc!1q0?
 %f+ 	 \* compat regions sit before its host patch, so a regen parses them in
 	 \* the other order than the run that derived them did, and a
 	 \* files\[]-ordered b<N> would renumber every buffer across it\. \*/3??0?
-3??m 72220reg p OK patch2vi.c:3677:a32sc %? %@2152sc!1q0?
+3??m 72220reg p OK patch2vi.c:3691:a32sc %? %@2152sc!1q0?
 %f+ 	}
 
 	/\* Buffer order follows the sections, not files\[]: a script'\''s stored4??0?
-4??+3m 72220reg p OK patch2vi.c:3677:a42sc %? %@2152sc!1q0?
+4??+3m 72220reg p OK patch2vi.c:3691:a42sc %? %@2152sc!1q0?
 %f+ 	uf = emalloc\(\(nfiles \+ ncompat \+ 1\) \* sizeof\(\*uf\)\);
 	for \(int i = 0; i < nsec; i\+\+\)
 		for \(int j = 0; j < secs\[i]\.nf; j\+\+\)5??0?
-5??-3m 72220reg p OK patch2vi.c:3677:a52sc %? %@2152sc!1q0?
+5??-3m 72220reg p OK patch2vi.c:3691:a52sc %? %@2152sc!1q0?
 %f+ 	.
 
 	/\*...ffe...r....f..l.....h......i.... n...f..........s..i..'\''..s.....
@@ -2771,54 +2771,54 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
 ....=.................\+..c.m.a. \+........z.o..\*.f..;
 ..o................. n......\+..
 .	.o.......j.=........se......n.;...\+.6??0?
-6??+3m 72220reg p OK patch2vi.c:3677:a62sc %? %@2152sc!1q0?
+6??+3m 72220reg p OK patch2vi.c:3691:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	}.*?
 .*?
 	/\* Buffer order follows the sections, not files\[]: a script'\''s stored.*?
 (	 \* compat regions sit before its host patch, so a regen parses them in)7??0?
-grp 07??m 72220reg p OK patch2vi.c:3677:a72sc %? %@2152sc!1q0?
+grp 07??m 72220reg p OK patch2vi.c:3691:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		secs\[nsec]\.cb = cb;
 		nsec\+\+;
 		ncsec\+\+;.*(			if \(uf_index\(uf, nuf, secs\[i]\.files\[j]\) < 0\))
 				uf\[nuf\+\+] = secs\[i]\.files\[j];
 	nwrite = nuf;8??0?
-grp 08??-6m 72220reg p OK patch2vi.c:3677:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 72220reg p OK patch2vi.c:3691:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		/\* the label is parsed here and nowhere else: the gate block,
 		 \* the "# Compat" comment and the quit policy all read it \*/
 		secs\[nsec]\.nsrc = compat_src_fields\(cb, &secs\[nsec]\.src\);.*(	/\* Files no host section edits: their only writer is the compat block)
 	 \* that names them, and it writes them from inside its own gated body -
 	 \* so an origin'\''s new file \(its whole point is that it does not exist9??0?
-grp 09??-10m 72220reg p OK patch2vi.c:3677:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:36772sc %? %@2132sc!0?
+grp 09??-10m 72220reg p OK patch2vi.c:3691:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:36912sc %? %@2132sc!0?
 ?0?
 %f+ 				printf\(" src=%s", s->src\[k]\);
 			printf\("\\n"\);
 			compat_win_enter\(&sv_rel\);
 		}
 		sbuf_smake\(bsb, SB_INIT\)
-		emit_section_body\(bsb, s->files, s->nf, uf, nuf\);1??0?
+		cur_sec_reg = s->suf;1??0?
 1??+2m 731q0?
 %f+ 				printf\(" src=%s", s->src\[k]\);
 			printf\("\\n"\);
 			compat_win_enter\(&sv_rel\);4??0?
-4??+2m 73220reg p OK patch2vi.c:3751:a42sc %? %@2152sc!1q0?
+4??+2m 73220reg p OK patch2vi.c:3765:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				printf\(" src=%s", s->src\[k]\);.*?
 			printf\("\\n"\);.*?
 (			compat_win_enter\(&sv_rel\);)7??0?
-grp 07??m 73220reg p OK patch2vi.c:3751:a72sc %? %@2152sc!1q0?
+grp 07??m 73220reg p OK patch2vi.c:3765:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			 \* says so\. \*/
 			printf\("# Compat %d", s->reg\);
-			for \(int k = 0; k < s->nsrc; k\+\+\).*(		if \(s->cb\) \{)
-			emit_section_writes\(bsb, s->files, s->nf, uf, nuf, own\);
-			emit_compat_announce\(bsb, s->suf, s->cb->origin\);8??0?
-grp 08??-4m 73220reg p OK patch2vi.c:3751:a82sc %? %@2152sc!'\''08??1q0?
+			for \(int k = 0; k < s->nsrc; k\+\+\).*(		emit_section_body\(bsb, s->files, s->nf, uf, nuf\);)
+		if \(s->cb\) \{
+			emit_section_writes\(bsb, s->files, s->nf, uf, nuf, own\);8??0?
+grp 08??-4m 73220reg p OK patch2vi.c:3765:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			 \* it to be armed at all\. Each origin carries the "src="
 			 \* the label leaves off its first, so the fields read
-			 \* alike and grep alike\. Every block is post, so nothing.*(		sbuf_nul\(bsb\))
-		stage_section\(bsb, s->suf\);
-		free\(bsb->s\);9??0?
-grp 09??-8m 73220reg p OK patch2vi.c:3751:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:37512sc %? %@2132sc!0?
+			 \* alike and grep alike\. Every block is post, so nothing.*(			emit_compat_announce\(bsb, s->suf, s->cb->origin\);)
+		}
+		sbuf_nul\(bsb\)9??0?
+grp 09??-7m 73220reg p OK patch2vi.c:3765:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:37652sc %? %@2132sc!0?
 ?0?
 %f+ 	free\(own\);
 }
@@ -2830,20 +2830,20 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
 }
 
 4??0?
-4??+2m 74220reg p OK patch2vi.c:3786:a42sc %? %@2152sc!1q0?
+4??+2m 74220reg p OK patch2vi.c:3802:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	free\(secs\);
 	free\(uf\);.*(static void emit_compat_storage\(void\))
 \{
 	for \(int c = 0; c < ncompat; c\+\+\) \{8??0?
-grp 08??-11m 74220reg p OK patch2vi.c:3786:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 74220reg p OK patch2vi.c:3802:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		free_lines\(secs\[i]\.src, secs\[i]\.nsrc\);
 		if \(secs\[i]\.cb\)
 			free\(secs\[i]\.files\);.*(		compat_block_t \*cb = &compat_blocks\[c];)
 		printf\("=== PATCH2VI COMPAT %d src=%s ===\\n",
 		       REG_SEC_BASE \+ c, cb->origin \? cb->origin : ""\);9??0?
-grp 09??-14m 74220reg p OK patch2vi.c:3786:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:37862sc %? %@2132sc!0?
+grp 09??-14m 74220reg p OK patch2vi.c:3802:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:38022sc %? %@2132sc!0?
 ?0?
 %f+ /\* Every compat block as a terminator-fenced tail region after exit 0 and before
  \* the host === PATCH2VI PATCH === \(which stays last, to EOF\)\. One region per
@@ -2864,20 +2864,20 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
  \*
  \* A block'\''s identity gate is the applied set, so nothing of it is stored here:
  \* it is derived from \$P2VI_PATCH at run time\. \*/2??0?
-2??m 75220reg p OK patch2vi.c:3789:a22sc %? %@2152sc!1q0?
+2??m 75220reg p OK patch2vi.c:3805:a22sc %? %@2152sc!1q0?
 %f+  \* compat patch, self-contained - its whole unified diff - so a regen carries it
  \* over without re-running the origin\. === COMPAT PATCH === is that diff and
  \* nothing else, stored verbatim, so a -C second positional comes back out as
  \* the patch its author handed in\. The sub-section closes with === END === like
  \* the host'\''s, so the reader reaches === END COMPAT === with no section open\.3??0?
-3??m 75220reg p OK patch2vi.c:3789:a32sc %? %@2152sc!1q0?
+3??m 75220reg p OK patch2vi.c:3805:a32sc %? %@2152sc!1q0?
 %f+ /\* Every compat block as a terminator-fenced tail region after exit 0 and before
  \* the host === PATCH2VI PATCH === \(which stays last, to EOF\)\. One region per4??0?
-4??+2m 75220reg p OK patch2vi.c:3789:a42sc %? %@2152sc!1q0?
+4??+2m 75220reg p OK patch2vi.c:3805:a42sc %? %@2152sc!1q0?
 %f+  \*
  \* A block'\''s identity gate is the applied set, so nothing of it is stored here:
  \* it is derived from \$P2VI_PATCH at run time\. \*/5??0?
-5??-5m 75220reg p OK patch2vi.c:3789:a52sc %? %@2152sc!1q0?
+5??-5m 75220reg p OK patch2vi.c:3805:a52sc %? %@2152sc!1q0?
 %f+ /..Ev..y..o.p........ ...a.te...n.....fe.c...t.......ion.....r...i. . .n.....o..
 .\*......o...=.. ..T.H.V...A.C..=......i.h .........t...o...F............n....
  \*........p......s..f....t...e........w.............di.....s........n....r..s...
@@ -2888,24 +2888,24 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
  .
 .... ......s.i....i.y..a....s..h..ap.......et.......t.........t.i....or........
 ..........e..ve...... ..2...P.............i...../6??0?
-6??+2m 75220reg p OK patch2vi.c:3789:a62sc %? %@2152sc!1q0?
+6??+2m 75220reg p OK patch2vi.c:3805:a62sc %? %@2152sc!1q0?
 grp 1%f+ /\* Every compat block as a terminator-fenced tail region after exit 0 and before.*?
  \* the host === PATCH2VI PATCH === \(which stays last, to EOF\)\. One region per.*?
 ( \* compat patch, self-contained - its whole unified diff - so a regen carries it)7??0?
-grp 07??m 75220reg p OK patch2vi.c:3789:a72sc %? %@2152sc!1q0?
+grp 07??m 75220reg p OK patch2vi.c:3805:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	free\(secs\);
 	free\(uf\);.*(static void emit_compat_storage\(void\))
 \{
 	for \(int c = 0; c < ncompat; c\+\+\) \{8??0?
-grp 08??-8m 75220reg p OK patch2vi.c:3789:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 75220reg p OK patch2vi.c:3805:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		free_lines\(secs\[i]\.src, secs\[i]\.nsrc\);
 		if \(secs\[i]\.cb\)
 			free\(secs\[i]\.files\);.*(		compat_block_t \*cb = &compat_blocks\[c];)
 		printf\("=== PATCH2VI COMPAT %d src=%s ===\\n",
 		       REG_SEC_BASE \+ c, cb->origin \? cb->origin : ""\);9??0?
-grp 09??-11m 75220reg p OK patch2vi.c:3789:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:37892sc %? %@2132sc!0?
+grp 09??-11m 75220reg p OK patch2vi.c:3805:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:38052sc %? %@2132sc!0?
 ?0?
 %f+ 		compat_block_t \*cb = &compat_blocks\[c];
 		printf\("=== PATCH2VI COMPAT %d src=%s ===\\n",
@@ -2917,24 +2917,24 @@ static void emit_vi_block\(file_patch_t \*\*active, int nactive\).*?
 %f+ 		compat_block_t \*cb = &compat_blocks\[c];
 		printf\("=== PATCH2VI COMPAT %d src=%s ===\\n",
 		       REG_SEC_BASE \+ c, cb->origin \? cb->origin : ""\);4??0?
-4??+2m 76220reg p OK patch2vi.c:3802:a42sc %? %@2152sc!1q0?
+4??+2m 76220reg p OK patch2vi.c:3818:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		compat_block_t \*cb = &compat_blocks\[c];.*?
 		printf\("=== PATCH2VI COMPAT %d src=%s ===\\n",.*?
 (		       REG_SEC_BASE \+ c, cb->origin \? cb->origin : ""\);)7??0?
-grp 07??m 76220reg p OK patch2vi.c:3802:a72sc %? %@2152sc!1q0?
+grp 07??m 76220reg p OK patch2vi.c:3818:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static void emit_compat_storage\(void\)
 \{
 	for \(int c = 0; c < ncompat; c\+\+\) \{.*(		printf\("%s\\n", end_tag_wr\);)
 		printf\("=== END COMPAT ===\\n"\);
 	}8??0?
-grp 08??-4m 76220reg p OK patch2vi.c:3802:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 76220reg p OK patch2vi.c:3818:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \*
  \* A block'\''s identity gate is the applied set, so nothing of it is stored here:
  \* it is derived from \$P2VI_PATCH at run time\. \*/.*(/\* set by "--- /dev/null", consumed by the next "\+\+\+" \*/)
 static int pending_is_new;
 /\* "---" path \(pre-patch original\), consumed by the next "\+\+\+" \*/9??0?
-grp 09??-9m 76220reg p OK patch2vi.c:3802:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:38022sc %? %@2132sc!0?
+grp 09??-9m 76220reg p OK patch2vi.c:3818:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:38182sc %? %@2132sc!0?
 ?0?
 %f+ 	blank_files_range\(cb->first, cb->count\);
 	free_lines\(cb->raw\.v, cb->raw\.n\);
@@ -2946,24 +2946,24 @@ static int pending_is_new;
 %f+ 	blank_files_range\(cb->first, cb->count\);
 	free_lines\(cb->raw\.v, cb->raw\.n\);
 	memset\(&cb->raw, 0, sizeof\(cb->raw\)\);4??0?
-4??+2m 77220reg p OK patch2vi.c:6125:a42sc %? %@2152sc!1q0?
+4??+2m 77220reg p OK patch2vi.c:6211:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	blank_files_range\(cb->first, cb->count\);.*?
 	free_lines\(cb->raw\.v, cb->raw\.n\);.*?
 (	memset\(&cb->raw, 0, sizeof\(cb->raw\)\);)7??0?
-grp 07??m 77220reg p OK patch2vi.c:6125:a72sc %? %@2152sc!1q0?
+grp 07??m 77220reg p OK patch2vi.c:6211:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	 \* label, same position in the run order\. Its old files\[] range stays
 	 \* where it is, emptied - the new one parses in at the end of the array,
 	 \* as a freshly derived block'\''s does\. \*/.*(	mark_bytes_used\(diff->s\);)
 	st = 0;
 out:8??0?
-grp 08??-7m 77220reg p OK patch2vi.c:6125:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 77220reg p OK patch2vi.c:6211:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	ed_free\(\);
 	sbuf_nul\(diff\)
 	/\* The rebuilt block takes the old one'\''s place: same register, same.*(	free_lines\(src, nsrc\);)
 	free\(sc\);
 	free\(diff->s\);9??0?
-grp 09??-10m 77220reg p OK patch2vi.c:6125:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:61252sc %? %@2132sc!0?
+grp 09??-10m 77220reg p OK patch2vi.c:6211:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:62112sc %? %@2132sc!0?
 ?0?
 %f+ }
 
@@ -2983,20 +2983,20 @@ out:8??0?
  \* === PATCH2VI PATCH ===, leaving the host diff to the caller\. Anything else
  \* stored back there is skipped, so a script an older patch2vi wrote reads too\.
  \*/2??0?
-2??m 78220reg p OK patch2vi.c:6431:a22sc %? %@2152sc!1q0?
+2??m 78220reg p OK patch2vi.c:6517:a22sc %? %@2152sc!1q0?
 %f+  \* A generated script'\''s tail metadata in one left-to-right pass: every
  \* === PATCH2VI COMPAT === region and the === COMPAT PATCH === diff it carries\.
  \* Regions nest one deep and are fenced by === END COMPAT ===, never by a line
  \* count, so a hand-edit that adds or drops a line still parses\. Stops at
  \* === PATCH2VI PATCH ===, leaving the host diff to the caller\. Anything else
  \* stored back there is skipped, so a script an older patch2vi wrote reads too\.3??0?
-3??m 78220reg p OK patch2vi.c:6431:a32sc %? %@2152sc!1q0?
+3??m 78220reg p OK patch2vi.c:6517:a32sc %? %@2152sc!1q0?
 %f+ }
 
 /\*4??0?
-4??+3m 78220reg p OK patch2vi.c:6431:a42sc %? %@2152sc!1q0?
+4??+3m 78220reg p OK patch2vi.c:6517:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^ \*/$5??0?
-5??-6m 78220reg p OK patch2vi.c:6431:a52sc %? %@2152sc!fr 981qfr 980?
+5??-6m 78220reg p OK patch2vi.c:6517:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ }
 
 /.
@@ -3007,25 +3007,25 @@ out:8??0?
 .\*..=..PA...... PATC. .... leav... .....o...d... .o.t...cal.e...A........e...
 .. s....d ...k t.... ........... ...a........a...l.....a..h2.i.w......e... ..o.
  ..6??0?
-6??+3m 78220reg p OK patch2vi.c:6431:a62sc %? %@2152sc!1q0?
+6??+3m 78220reg p OK patch2vi.c:6517:a62sc %? %@2152sc!1q0?
 grp 1%f+ }.*?
 .*?
 /\*.*?
 ( \* A generated script'\''s tail metadata in one left-to-right pass: every)7??0?
-grp 07??m 78220reg p OK patch2vi.c:6431:a72sc %? %@2152sc!1q0?
+grp 07??m 78220reg p OK patch2vi.c:6517:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			break;
 	}
 	free\(lb->s\);.*(	 \* regenerate an empty script over it \*/)
 	while \(\(line = read_line\(in, lb\)\)\) \{
 		chomp\(line\);8??0?
-grp 08??-14m 78220reg p OK patch2vi.c:6431:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-14m 78220reg p OK patch2vi.c:6517:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		sbufn_cut\(lb, len\)
 		parse_diff_line\(lb->s\);
 		if \(!nl\).*(		if \(strcmp\(line, "exit 0"\) == 0\) \{)
 			exit_found = 1;
 			break;9??0?
-grp 09??-17m 78220reg p OK patch2vi.c:6431:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:64312sc %? %@2132sc!0?
+grp 09??-17m 78220reg p OK patch2vi.c:6517:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:65172sc %? %@2132sc!0?
 ?0?
 %f+  \*/
 static int read_stored_sections\(FILE \*in\)
@@ -3035,35 +3035,35 @@ static int read_stored_sections\(FILE \*in\)
 %f+ static int read_stored_sections\(FILE \*in\)
 \{
 	char \*line;2??0?
-2??m 79220reg p OK patch2vi.c:6438:a22sc %? %@2152sc!1q0?
+2??m 79220reg p OK patch2vi.c:6524:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^static int read_stored_sections\(FILE \*in\)$3??0?
-3??m 79220reg p OK patch2vi.c:6438:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 79220reg p OK patch2vi.c:6524:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^ \*/$4??0?
-4??+1m 79220reg p OK patch2vi.c:6438:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 79220reg p OK patch2vi.c:6524:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ \{
 	char \*line;5??0?
-5??-1m 79220reg p OK patch2vi.c:6438:a52sc %? %@2152sc!1q0?
+5??-1m 79220reg p OK patch2vi.c:6524:a52sc %? %@2152sc!1q0?
 %f+  ..
 ...ti..i......d..t.r.....c..o....I...\*...
 \{
 ....r.......6??0?
-6??+1m 79220reg p OK patch2vi.c:6438:a62sc %? %@2152sc!1q0?
+6??+1m 79220reg p OK patch2vi.c:6524:a62sc %? %@2152sc!1q0?
 grp 1%f+  \*/.*?
 (static int read_stored_sections\(FILE \*in\))7??0?
-grp 07??m 79220reg p OK patch2vi.c:6438:a72sc %? %@2152sc!1q0?
+grp 07??m 79220reg p OK patch2vi.c:6524:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			break;
 	}
 	free\(lb->s\);.*(	 \* regenerate an empty script over it \*/)
 	while \(\(line = read_line\(in, lb\)\)\) \{
 		chomp\(line\);8??0?
-grp 08??-7m 79220reg p OK patch2vi.c:6438:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 79220reg p OK patch2vi.c:6524:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		sbufn_cut\(lb, len\)
 		parse_diff_line\(lb->s\);
 		if \(!nl\).*(		if \(strcmp\(line, "exit 0"\) == 0\) \{)
 			exit_found = 1;
 			break;9??0?
-grp 09??-10m 79220reg p OK patch2vi.c:6438:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:64382sc %? %@2132sc!0?
+grp 09??-10m 79220reg p OK patch2vi.c:6524:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:65242sc %? %@2132sc!0?
 ?0?
 %f+ \{
 	char \*line;
@@ -3076,40 +3076,40 @@ static int read_stored_sections\(FILE \*in\)
 	sbuf_smake\(lb, SB_INIT\)
 	/\* Skip until "exit 0" line; EOF first means the script was cut short
 	 \* and nothing past the cut can be trusted - refuse rather than2??0?
-2??m 80220reg p OK patch2vi.c:6441:a22sc %? %@2152sc!1q0?
+2??m 80220reg p OK patch2vi.c:6527:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	int exit_found = 0;$3??0?
-3??m 80220reg p OK patch2vi.c:6441:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 80220reg p OK patch2vi.c:6527:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ \{
 	char \*line;4??0?
-4??+2m 80220reg p OK patch2vi.c:6441:a42sc %? %@2152sc!1q0?
+4??+2m 80220reg p OK patch2vi.c:6527:a42sc %? %@2152sc!1q0?
 %f+ 	sbuf_smake\(lb, SB_INIT\)
 	/\* Skip until "exit 0" line; EOF first means the script was cut short
 	 \* and nothing past the cut can be trusted - refuse rather than5??0?
-5??-1m 80220reg p OK patch2vi.c:6441:a52sc %? %@2152sc!1q0?
+5??-1m 80220reg p OK patch2vi.c:6527:a52sc %? %@2152sc!1q0?
 %f+ \{
 .......l....
 .... .x.......d.. .;
 ..bu....ak.\(l....B.I.I..
 ....Ski. .n......x.. .. ...e..E....ir....ea...... ....p..w....ut..h..t
 ... ... ..th.n...... th...u..c.n........... -....u.. r.t....tha.6??0?
-6??+2m 80220reg p OK patch2vi.c:6441:a62sc %? %@2152sc!1q0?
+6??+2m 80220reg p OK patch2vi.c:6527:a62sc %? %@2152sc!1q0?
 grp 1%f+ \{.*?
 	char \*line;.*?
 (	int exit_found = 0;)7??0?
-grp 07??m 80220reg p OK patch2vi.c:6441:a72sc %? %@2152sc!1q0?
+grp 07??m 80220reg p OK patch2vi.c:6527:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			break;
 	}
 	free\(lb->s\);.*(	 \* regenerate an empty script over it \*/)
 	while \(\(line = read_line\(in, lb\)\)\) \{
 		chomp\(line\);8??0?
-grp 08??-4m 80220reg p OK patch2vi.c:6441:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 80220reg p OK patch2vi.c:6527:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		sbufn_cut\(lb, len\)
 		parse_diff_line\(lb->s\);
 		if \(!nl\).*(		if \(strcmp\(line, "exit 0"\) == 0\) \{)
 			exit_found = 1;
 			break;9??0?
-grp 09??-7m 80220reg p OK patch2vi.c:6441:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:64412sc %? %@2132sc!0?
+grp 09??-7m 80220reg p OK patch2vi.c:6527:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:65272sc %? %@2132sc!0?
 ?0?
 %f+ 			input_file \? input_file : "<stdin>"\);
 		return -1;
@@ -3125,18 +3125,18 @@ static int read_stored_sections\(FILE \*in\)
 	 \* === END ===, the region by === END COMPAT ===\. \*/
 	compat_block_t \*cur_cb = NULL;
 	int in_compat_patch = 0;2??0?
-2??m 81220reg p OK patch2vi.c:6459:a22sc %? %@2152sc!1q0?
+2??m 81220reg p OK patch2vi.c:6545:a22sc %? %@2152sc!1q0?
 %f+ 	/\* Compat tail-region state, depth 1: in_compat_patch routes the
 	 \* block'\''s diff into its own files\[] range and raw sink\. It is closed by3??0?
-3??m 81220reg p OK patch2vi.c:6459:a32sc %? %@2152sc!1q0?
+3??m 81220reg p OK patch2vi.c:6545:a32sc %? %@2152sc!1q0?
 %f+ 			input_file \? input_file : "<stdin>"\);
 		return -1;
 	}4??0?
-4??+3m 81220reg p OK patch2vi.c:6459:a42sc %? %@2152sc!1q0?
+4??+3m 81220reg p OK patch2vi.c:6545:a42sc %? %@2152sc!1q0?
 %f+ 	 \* === END ===, the region by === END COMPAT ===\. \*/
 	compat_block_t \*cur_cb = NULL;
 	int in_compat_patch = 0;5??0?
-5??-2m 81220reg p OK patch2vi.c:6459:a52sc %? %@2152sc!1q0?
+5??-2m 81220reg p OK patch2vi.c:6545:a52sc %? %@2152sc!1q0?
 %f+ ...in..._..l......p............s.d.n....
 	.....r.....
 	.
@@ -3145,25 +3145,25 @@ static int read_stored_sections\(FILE \*in\)
 .................t.e.........y.......D.C...AT..==....
 	.........oc._........... .....
 .........o..a......... ..6??0?
-6??+3m 81220reg p OK patch2vi.c:6459:a62sc %? %@2152sc!1q0?
+6??+3m 81220reg p OK patch2vi.c:6545:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			input_file \? input_file : "<stdin>"\);.*?
 		return -1;.*?
 	}.*?
 (	/\* Compat tail-region state, depth 1: in_compat_patch routes the)7??0?
-grp 07??m 81220reg p OK patch2vi.c:6459:a72sc %? %@2152sc!1q0?
+grp 07??m 81220reg p OK patch2vi.c:6545:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(!exit_found\) \{
 		free\(lb->s\);
 		fprintf\(stderr, "%s: not a patch2vi script \(no exit 0\)\\n",.*(		if \(in_compat_patch\) \{)
 			if \(strcmp\(line, end_tag_rd\) == 0\) \{
 				cur_cb->count = nfiles - cur_cb->first;8??0?
-grp 08??-10m 81220reg p OK patch2vi.c:6459:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 81220reg p OK patch2vi.c:6545:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			exit_found = 1;
 			break;
 		}.*(				raw_sink = NULL;)
 				in_compat_patch = 0;
 			} else \{9??0?
-grp 09??-13m 81220reg p OK patch2vi.c:6459:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:64592sc %? %@2132sc!0?
+grp 09??-13m 81220reg p OK patch2vi.c:6545:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:65452sc %? %@2132sc!0?
 ?0?
 %f+ 	 \* === END ===, the region by === END COMPAT ===\. \*/
 	compat_block_t \*cur_cb = NULL;
@@ -3174,24 +3174,24 @@ static int read_stored_sections\(FILE \*in\)
 %f+ 	 \* === END ===, the region by === END COMPAT ===\. \*/
 	compat_block_t \*cur_cb = NULL;
 	int in_compat_patch = 0;4??0?
-4??+2m 82220reg p OK patch2vi.c:6463:a42sc %? %@2152sc!1q0?
+4??+2m 82220reg p OK patch2vi.c:6549:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	 \* === END ===, the region by === END COMPAT ===\. \*/.*?
 	compat_block_t \*cur_cb = NULL;.*?
 (	int in_compat_patch = 0;)7??0?
-grp 07??m 82220reg p OK patch2vi.c:6463:a72sc %? %@2152sc!1q0?
+grp 07??m 82220reg p OK patch2vi.c:6549:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(!exit_found\) \{
 		free\(lb->s\);
 		fprintf\(stderr, "%s: not a patch2vi script \(no exit 0\)\\n",.*(		if \(in_compat_patch\) \{)
 			if \(strcmp\(line, end_tag_rd\) == 0\) \{
 				cur_cb->count = nfiles - cur_cb->first;8??0?
-grp 08??-6m 82220reg p OK patch2vi.c:6463:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 82220reg p OK patch2vi.c:6549:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			exit_found = 1;
 			break;
 		}.*(				raw_sink = NULL;)
 				in_compat_patch = 0;
 			} else \{9??0?
-grp 09??-9m 82220reg p OK patch2vi.c:6463:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:64632sc %? %@2132sc!0?
+grp 09??-9m 82220reg p OK patch2vi.c:6549:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:65492sc %? %@2132sc!0?
 ?0?
 %f+ 	while \(read_line\(in, lb\)\) \{
 		line = chomp_sb\(lb\);
@@ -3201,23 +3201,23 @@ static int read_stored_sections\(FILE \*in\)
 1??+1m 831q0?
 %f+ 	while \(read_line\(in, lb\)\) \{
 		line = chomp_sb\(lb\);4??0?
-4??+1m 83220reg p OK patch2vi.c:6465:a42sc %? %@2152sc!1q0?
+4??+1m 83220reg p OK patch2vi.c:6551:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	while \(read_line\(in, lb\)\) \{.*?
 (		line = chomp_sb\(lb\);)7??0?
-grp 07??m 83220reg p OK patch2vi.c:6465:a72sc %? %@2152sc!1q0?
+grp 07??m 83220reg p OK patch2vi.c:6551:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(!exit_found\) \{
 		free\(lb->s\);
 		fprintf\(stderr, "%s: not a patch2vi script \(no exit 0\)\\n",.*(		if \(in_compat_patch\) \{)
 			if \(strcmp\(line, end_tag_rd\) == 0\) \{
 				cur_cb->count = nfiles - cur_cb->first;8??0?
-grp 08??-4m 83220reg p OK patch2vi.c:6465:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 83220reg p OK patch2vi.c:6551:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			exit_found = 1;
 			break;
 		}.*(				raw_sink = NULL;)
 				in_compat_patch = 0;
 			} else \{9??0?
-grp 09??-7m 83220reg p OK patch2vi.c:6465:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:64652sc %? %@2132sc!0?
+grp 09??-7m 83220reg p OK patch2vi.c:6551:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:65512sc %? %@2132sc!0?
 ?0?
 %f+ 			if \(e\)
 				\*e = '\''\\0'\'';
@@ -3229,24 +3229,24 @@ static int read_stored_sections\(FILE \*in\)
 %f+ 			if \(e\)
 				\*e = '\''\\0'\'';
 			cur_cb->origin = uc_dup\(src \? src \+ 5 : ""\);4??0?
-4??+2m 84220reg p OK patch2vi.c:6498:a42sc %? %@2152sc!1q0?
+4??+2m 84220reg p OK patch2vi.c:6584:a42sc %? %@2152sc!1q0?
 grp 1%f+ 			if \(e\).*?
 				\*e = '\''\\0'\'';.*?
 (			cur_cb->origin = uc_dup\(src \? src \+ 5 : ""\);)7??0?
-grp 07??m 84220reg p OK patch2vi.c:6498:a72sc %? %@2152sc!1q0?
+grp 07??m 84220reg p OK patch2vi.c:6584:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			 \* whole and only ever printed back\. \*/
 			char \*src = strstr\(line \+ 20, " src="\);
 			char \*e = src \? strstr\(src, " ==="\) : NULL;.*(			in_compat_patch = 1;)
 			raw_sink = &cur_cb->raw;
 			parse_diff_reset\(\);8??0?
-grp 08??-8m 84220reg p OK patch2vi.c:6498:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 84220reg p OK patch2vi.c:6584:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			 \* One src= field per origin, so the label of a
 			 \* multi-origin block is everything from the first one
 			 \* to the terminator, inner "src=" included: it is kept.*(			cur_cb->first = nfiles;)
 			continue;
 		}9??0?
-grp 09??-11m 84220reg p OK patch2vi.c:6498:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:64982sc %? %@2132sc!0?
+grp 09??-11m 84220reg p OK patch2vi.c:6584:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:65842sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		if \(cur_cb && strcmp\(line, "=== END COMPAT ==="\) == 0\) \{
@@ -3258,24 +3258,24 @@ static int read_stored_sections\(FILE \*in\)
 %f+ 		}
 		if \(cur_cb && strcmp\(line, "=== END COMPAT ==="\) == 0\) \{
 			cur_cb = NULL;4??0?
-4??+2m 85220reg p OK patch2vi.c:6502:a42sc %? %@2152sc!1q0?
+4??+2m 85220reg p OK patch2vi.c:6588:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		}.*?
 		if \(cur_cb && strcmp\(line, "=== END COMPAT ==="\) == 0\) \{.*?
 (			cur_cb = NULL;)7??0?
-grp 07??m 85220reg p OK patch2vi.c:6502:a72sc %? %@2152sc!1q0?
+grp 07??m 85220reg p OK patch2vi.c:6588:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			 \* whole and only ever printed back\. \*/
 			char \*src = strstr\(line \+ 20, " src="\);
 			char \*e = src \? strstr\(src, " ==="\) : NULL;.*(			in_compat_patch = 1;)
 			raw_sink = &cur_cb->raw;
 			parse_diff_reset\(\);8??0?
-grp 08??-4m 85220reg p OK patch2vi.c:6502:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 85220reg p OK patch2vi.c:6588:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			 \* One src= field per origin, so the label of a
 			 \* multi-origin block is everything from the first one
 			 \* to the terminator, inner "src=" included: it is kept.*(			cur_cb->first = nfiles;)
 			continue;
 		}9??0?
-grp 09??-7m 85220reg p OK patch2vi.c:6502:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:65022sc %? %@2132sc!0?
+grp 09??-7m 85220reg p OK patch2vi.c:6588:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:65882sc %? %@2132sc!0?
 ?0?
 %f+ 			}
 			break;
@@ -3285,24 +3285,24 @@ static int read_stored_sections\(FILE \*in\)
 %f+ 			}
 			break;
 		}4??0?
-4??+2m 86220reg p OK patch2vi.c:6518:a42sc %? %@2152sc!1q0?
+4??+2m 86220reg p OK patch2vi.c:6604:a42sc %? %@2152sc!1q0?
 grp 1%f+ 			}.*?
 			break;.*?
 (		})7??0?
-grp 07??m 86220reg p OK patch2vi.c:6518:a72sc %? %@2152sc!1q0?
+grp 07??m 86220reg p OK patch2vi.c:6604:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			if \(cur_cb\) \{
 				fprintf\(stderr, "unterminated COMPAT region\\n"\);
 				return -1;.*( \* The applied-set tail\.)
  \*
  \* The applied set is the chain of scripts already run, carried in \$P2VI_PATCH8??0?
-grp 08??-7m 86220reg p OK patch2vi.c:6518:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 86220reg p OK patch2vi.c:6604:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			continue;
 		}
 		if \(strncmp\(line, "=== PATCH2VI PATCH ===", 22\) == 0\) \{.*( \* as basenames\. A script inherits it from its caller, hands it to the editor)
  \* whole \(REG_APPLIED, where emit_compat_gates decides every gate from it\) and
  \* appends itself before invoking the next script with the rest of the queue\.9??0?
-grp 09??-10m 86220reg p OK patch2vi.c:6518:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:65182sc %? %@2132sc!0?
+grp 09??-10m 86220reg p OK patch2vi.c:6604:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:66042sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 	free\(lb->s\);
@@ -3310,62 +3310,62 @@ static int read_stored_sections\(FILE \*in\)
 }1??0?
 1??m 871q0?
 ;0fr.,$f+ ^	}$4??0?
-4??m 87220reg p OK patch2vi.c:6519:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 87220reg p OK patch2vi.c:6605:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 			if \(cur_cb\) \{
 				fprintf\(stderr, "unterminated COMPAT region\\n"\);
 				return -1;.*( \* The applied-set tail\.)
  \*
  \* The applied set is the chain of scripts already run, carried in \$P2VI_PATCH8??0?
-grp 08??-6m 87220reg p OK patch2vi.c:6519:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 87220reg p OK patch2vi.c:6605:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			continue;
 		}
 		if \(strncmp\(line, "=== PATCH2VI PATCH ===", 22\) == 0\) \{.*( \* as basenames\. A script inherits it from its caller, hands it to the editor)
  \* whole \(REG_APPLIED, where emit_compat_gates decides every gate from it\) and
  \* appends itself before invoking the next script with the rest of the queue\.9??0?
-grp 09??-9m 87220reg p OK patch2vi.c:6519:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:65192sc %? %@2132sc!0?
+grp 09??-9m 87220reg p OK patch2vi.c:6605:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:66052sc %? %@2132sc!0?
 ?0?
 %f+ \{
 	FILE \*f = err \? stderr : stdout;
-	fprintf\(f, "Patch2vi-1\.0 Usage:\\n\\n"
+	fprintf\(f, "Patch2vi-1\.1 Usage:\\n\\n"
 		"%s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG] \[input\.patch]\\n"
 		"%s -e script\.sh \[script2\.sh\.\.\.]\\n"1??0?
 1??+3m 881q0?
 %f+ 		"%s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG] \[input\.patch]\\n"
 		"%s -e script\.sh \[script2\.sh\.\.\.]\\n"2??0?
-2??m 88220reg p OK patch2vi.c:6559:a22sc %? %@2152sc!1q0?
+2??m 88220reg p OK patch2vi.c:6645:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		"%s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG] \[input\.patch]\\n"$3??0?
-3??m 88220reg p OK patch2vi.c:6559:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 88220reg p OK patch2vi.c:6645:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ \{
 	FILE \*f = err \? stderr : stdout;
-	fprintf\(f, "Patch2vi-1\.0 Usage:\\n\\n"4??0?
-4??+3m 88220reg p OK patch2vi.c:6559:a42sc %? %@2152sc!1q0?
+	fprintf\(f, "Patch2vi-1\.1 Usage:\\n\\n"4??0?
+4??+3m 88220reg p OK patch2vi.c:6645:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		"%s -e script\.sh \[script2\.sh\.\.\.]\\n"$5??0?
-5??-1m 88220reg p OK patch2vi.c:6559:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 88220reg p OK patch2vi.c:6645:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ \{
-...........er..\?....e.. .....o...
-.....n.......Pa.....i..\...Us..e......
-.	... ...rh......F.....\[-...T...........G].....ut...tc...."
-......-e ..........\[.c...t2\..h\....\\n.6??0?
-6??+3m 88220reg p OK patch2vi.c:6559:a62sc %? %@2152sc!1q0?
+	...E..f....r... s..e......t..u.;
+......t..f.."...c...i..\...Us..e.\\n...
+	...s..-a.h......F...]........G. .-.........i.p.....t...\\."
+..........c...........r..t....\.......6??0?
+6??+3m 88220reg p OK patch2vi.c:6645:a62sc %? %@2152sc!1q0?
 grp 1%f+ \{.*?
 	FILE \*f = err \? stderr : stdout;.*?
-	fprintf\(f, "Patch2vi-1\.0 Usage:\\n\\n".*?
+	fprintf\(f, "Patch2vi-1\.1 Usage:\\n\\n".*?
 (		"%s \[-arh] \[-o FILE] \[-er TAG] \[-ew TAG] \[input\.patch]\\n")7??0?
-grp 07??m 88220reg p OK patch2vi.c:6559:a72sc %? %@2152sc!1q0?
+grp 07??m 88220reg p OK patch2vi.c:6645:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f>  \* stderr for a misused option \(a diagnostic\); err picks both the stream and
  \* the exit status\. \*/
 static void usage\(const char \*prog, int err\).*(	fputs\("Converts unified diff to shell script using nextvi ex commands\\n")
 	      "Input can be a unified diff or a previously generated patch2vi script\\n"
 	      "  -h    Show this help\\n"8??0?
-grp 08??-7m 88220reg p OK patch2vi.c:6559:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 88220reg p OK patch2vi.c:6645:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	       " \*\) \\"\./\$next\\" \\"\$@\\" ;; esac\\n"\);
 	printf\("fi\\n"\);
 }.*(	      "  -a    Absolute line numbers\\n")
 	      "  -r    Relative regex patterns \(default\)\\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\\n"9??0?
-grp 09??-10m 88220reg p OK patch2vi.c:6559:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:65592sc %? %@2132sc!0?
+grp 09??-10m 88220reg p OK patch2vi.c:6645:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:66452sc %? %@2132sc!0?
 ?0?
 %f+ 		"%s -e script\.sh \[script2\.sh\.\.\.]\\n"
 		"%s \[-ar]I \[nextvi-opts\.\.\.]\\n"
@@ -3379,39 +3379,39 @@ static void usage\(const char \*prog, int err\).*(	fputs\("Converts unified diff
 		"%s \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh"
 		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n\\n",
 		prog, prog, prog, prog, prog\);2??0?
-2??m 89220reg p OK patch2vi.c:6561:a22sc %? %@2152sc!1q0?
+2??m 89220reg p OK patch2vi.c:6647:a22sc %? %@2152sc!1q0?
 %f+ 		"%s \[-ar]I \[nextvi-opts\.\.\.]\\n"
 		"%s \[-aro]E script\.sh \[reg\|'\'''\''] \[nextvi-opts\.\.\.]\\n"3??0?
-3??m 89220reg p OK patch2vi.c:6561:a32sc %? %@2152sc!1q0?
+3??m 89220reg p OK patch2vi.c:6647:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		"%s -e script\.sh \[script2\.sh\.\.\.]\\n"$4??0?
-4??+1m 89220reg p OK patch2vi.c:6561:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 89220reg p OK patch2vi.c:6647:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		"%s \[-o]C origin\.sh \[-C origin2\.sh\.\.\.] target\.sh"
 		" \[fix\.\[patch\|sh]\|'\'''\''] \[nextvi-opts\.\.\.]\\n\\n",
 		prog, prog, prog, prog, prog\);5??0?
-5??-2m 89220reg p OK patch2vi.c:6561:a52sc %? %@2152sc!1q0?
+5??-2m 89220reg p OK patch2vi.c:6647:a52sc %? %@2152sc!1q0?
 %f+ .......e ..r..t\..........t.....\......
 ....s \[-...............t.\....\\..
 ...................t\... ..e....].\[nex.....p.s..\...."
 .."..........r..i...h.......igi..........t...et....
 	.................]...] .n........t..\.........
 	..r..,....g............,..r....6??0?
-6??+1m 89220reg p OK patch2vi.c:6561:a62sc %? %@2152sc!1q0?
+6??+1m 89220reg p OK patch2vi.c:6647:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		"%s -e script\.sh \[script2\.sh\.\.\.]\\n".*?
 (		"%s \[-ar]I \[nextvi-opts\.\.\.]\\n")7??0?
-grp 07??m 89220reg p OK patch2vi.c:6561:a72sc %? %@2152sc!1q0?
+grp 07??m 89220reg p OK patch2vi.c:6647:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f>  \* stderr for a misused option \(a diagnostic\); err picks both the stream and
  \* the exit status\. \*/
 static void usage\(const char \*prog, int err\).*(	fputs\("Converts unified diff to shell script using nextvi ex commands\\n")
 	      "Input can be a unified diff or a previously generated patch2vi script\\n"
 	      "  -h    Show this help\\n"8??0?
-grp 08??-5m 89220reg p OK patch2vi.c:6561:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 89220reg p OK patch2vi.c:6647:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	       " \*\) \\"\./\$next\\" \\"\$@\\" ;; esac\\n"\);
 	printf\("fi\\n"\);
 }.*(	      "  -a    Absolute line numbers\\n")
 	      "  -r    Relative regex patterns \(default\)\\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\\n"9??0?
-grp 09??-8m 89220reg p OK patch2vi.c:6561:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:65612sc %? %@2132sc!0?
+grp 09??-8m 89220reg p OK patch2vi.c:6647:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:66472sc %? %@2132sc!0?
 ?0?
 %f+ 	      "        run reads\. Clustered with another option it takes no FILE\\n"
 	      "        and updates that option'\''s own script in place\\n"
@@ -3425,17 +3425,17 @@ static void usage\(const char \*prog, int err\).*(	fputs\("Converts unified diff
 	fprintf\(f, "  -er   Read section end tag \(default: \\"%s\\"\)\\n"
 		"  -ew   Write section end tag \(default: \\"%s\\"\)\\n",
 		end_tag_rd, end_tag_wr\);2??0?
-2??m 90220reg p OK patch2vi.c:6575:a22sc %? %@2152sc!1q0?
+2??m 90220reg p OK patch2vi.c:6661:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	      "        Several scripts run in order, stopping at the first failure\\n", f\);$3??0?
-3??m 90220reg p OK patch2vi.c:6575:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 90220reg p OK patch2vi.c:6661:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	      "        run reads\. Clustered with another option it takes no FILE\\n"
 	      "        and updates that option'\''s own script in place\\n"
 	      "  -e    Execute a script with the built-in nextvi, no shell involved\\n"4??0?
-4??+3m 90220reg p OK patch2vi.c:6575:a42sc %? %@2152sc!1q0?
+4??+3m 90220reg p OK patch2vi.c:6661:a42sc %? %@2152sc!1q0?
 %f+ 	fprintf\(f, "  -er   Read section end tag \(default: \\"%s\\"\)\\n"
 		"  -ew   Write section end tag \(default: \\"%s\\"\)\\n",
 		end_tag_rd, end_tag_wr\);5??0?
-5??-1m 90220reg p OK patch2vi.c:6575:a52sc %? %@2152sc!1q0?
+5??-1m 90220reg p OK patch2vi.c:6661:a52sc %? %@2152sc!1q0?
 %f+ .  .  .. . ... ......e.ds. C.us.......i...a..th.. ...io.....t.... .. ....\\..
 . . . .... .......d......es.........i...s...n.s..... .. .lace\\n.
 ..  ..."...e....Ex...t... .c..p. ..........u...-.n n..t.........e.. i...l....n.
@@ -3443,25 +3443,25 @@ static void usage\(const char \*prog, int err\).*(	fputs\("Converts unified diff
 	.p......f.....-.. ...e.....cti.. ..d ... .....u..:.....\\.....
 		....e.. ...... s.c..........a...d.f......\\...\\"...".
 ...n._..._.d..........w...6??0?
-6??+3m 90220reg p OK patch2vi.c:6575:a62sc %? %@2152sc!1q0?
+6??+3m 90220reg p OK patch2vi.c:6661:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	      "        run reads\. Clustered with another option it takes no FILE\\n".*?
 	      "        and updates that option'\''s own script in place\\n".*?
 	      "  -e    Execute a script with the built-in nextvi, no shell involved\\n".*?
 (	      "        Several scripts run in order, stopping at the first failure\\n", f\);)7??0?
-grp 07??m 90220reg p OK patch2vi.c:6575:a72sc %? %@2152sc!1q0?
+grp 07??m 90220reg p OK patch2vi.c:6661:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	      "  -a    Absolute line numbers\\n"
 	      "  -r    Relative regex patterns \(default\)\\n"
 	      "  -o    Write the script to FILE, atomically; may be a file this\\n".*(	fputs\("  -E    Update a script: replay it, edit, re-emit its base patch\\n")
 	      "        Stored compat blocks are carried over from their stored\\n"
 	      "        patches, unverified\\n"8??0?
-grp 08??-4m 90220reg p OK patch2vi.c:6575:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 90220reg p OK patch2vi.c:6661:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	fputs\("Converts unified diff to shell script using nextvi ex commands\\n"
 	      "Input can be a unified diff or a previously generated patch2vi script\\n"
 	      "  -h    Show this help\\n".*(	      "        A compat block'\''s section register after the script rebuilds\\n")
 	      "        that one block instead, replaying its src= origins ahead of\\n"
 	      "        the target; '\'''\'' skips the slot\. Rest of the line is a nextvi\\n"9??0?
-grp 09??-7m 90220reg p OK patch2vi.c:6575:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:65752sc %? %@2132sc!0?
+grp 09??-7m 90220reg p OK patch2vi.c:6661:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:66612sc %? %@2132sc!0?
 ?0?
 %f+ 	      "        A compat block'\''s section register after the script rebuilds\\n"
 	      "        that one block instead, replaying its src= origins ahead of\\n"
@@ -3475,17 +3475,17 @@ static void usage\(const char \*prog, int err\).*(	fputs\("Converts unified diff
 	      "        With QF2=1 the hunks that missed are put back into the\\n"
 	      "        buffers at the line they reported, cursor parked on the first\\n"
 	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\\n"2??0?
-2??m 92220reg p OK patch2vi.c:6585:a22sc %? %@2152sc!1q0?
+2??m 92220reg p OK patch2vi.c:6671:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	      "        command line\\n"$3??0?
-3??m 92220reg p OK patch2vi.c:6585:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 92220reg p OK patch2vi.c:6671:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	      "        A compat block'\''s section register after the script rebuilds\\n"
 	      "        that one block instead, replaying its src= origins ahead of\\n"
 	      "        the target; '\'''\'' skips the slot\. Rest of the line is a nextvi\\n"4??0?
-4??+3m 92220reg p OK patch2vi.c:6585:a42sc %? %@2152sc!1q0?
+4??+3m 92220reg p OK patch2vi.c:6671:a42sc %? %@2152sc!1q0?
 %f+ 	      "        With QF2=1 the hunks that missed are put back into the\\n"
 	      "        buffers at the line they reported, cursor parked on the first\\n"
 	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\\n"5??0?
-5??-1m 92220reg p OK patch2vi.c:6585:a52sc %? %@2152sc!1q0?
+5??-1m 92220reg p OK patch2vi.c:6671:a52sc %? %@2152sc!1q0?
 %f+ . .  ... ...... ........ ..o.... ....i.. ..gi.....a.....t......i......u....\\..
 	..  ........ .......o...b......n.t..d,......yi....t....c.......ns .h..d .....
 .. ... ..  . . ..he.tar.et; .'\''.s.... .h.........e......t.. l.n...........v....
@@ -3493,25 +3493,25 @@ static void usage\(const char \*prog, int err\).*(	fputs\("Converts unified diff
 . ...... .... ...i.. Q...........n.....a.....s.d .r.............to..h..n.
 	.  . .". . .............t...e l....t....re....e.....r... .a.....o. ..........n.
 . .  . ..... ..........l..... t....ui.......ex.v....... t....di.. ........i..\\n"6??0?
-6??+3m 92220reg p OK patch2vi.c:6585:a62sc %? %@2152sc!1q0?
+6??+3m 92220reg p OK patch2vi.c:6671:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	      "        A compat block'\''s section register after the script rebuilds\\n".*?
 	      "        that one block instead, replaying its src= origins ahead of\\n".*?
 	      "        the target; '\'''\'' skips the slot\. Rest of the line is a nextvi\\n".*?
 (	      "        command line\\n")7??0?
-grp 07??m 92220reg p OK patch2vi.c:6585:a72sc %? %@2152sc!1q0?
+grp 07??m 92220reg p OK patch2vi.c:6671:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	fputs\("  -E    Update a script: replay it, edit, re-emit its base patch\\n"
 	      "        Stored compat blocks are carried over from their stored\\n"
 	      "        patches, unverified\\n".*(	      "        Rest of the line is a nextvi command line, EXINIT included\\n")
 	      "  -C    Compat patch: resolve a collision with origin\.sh, ship the\\n"
 	      "        fix as a block after the target'\''s, behind an identity gate\\n"8??0?
-grp 08??-4m 92220reg p OK patch2vi.c:6585:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 92220reg p OK patch2vi.c:6671:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	fprintf\(f, "  -er   Read section end tag \(default: \\"%s\\"\)\\n"
 		"  -ew   Write section end tag \(default: \\"%s\\"\)\\n",
 		end_tag_rd, end_tag_wr\);.*(	      "        on origin being in \$P2VI_PATCH; a second positional\\n")
 	      "        pre-applies a written fix to start from, '\'''\'' skips it; the\\n"
 	      "        rest of the line is a nextvi command line for the handover\\n"9??0?
-grp 09??-7m 92220reg p OK patch2vi.c:6585:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:65852sc %? %@2132sc!0?
+grp 09??-7m 92220reg p OK patch2vi.c:6671:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:66712sc %? %@2132sc!0?
 ?0?
 %f+ 	return NULL;
 }
@@ -3533,22 +3533,22 @@ static int amend_cluster\(const char \*s\)
 static int amend_cluster\(const char \*s\)
 \{
 	int k;2??0?
-2??m 94220reg p OK patch2vi.c:6614:a22sc %? %@2152sc!1q0?
+2??m 94220reg p OK patch2vi.c:6700:a22sc %? %@2152sc!1q0?
 %f+ /\* Is what follows a leading "-o" an option cluster naming -E rather than a
  \* file name\? Only when it holds that letter and nothing but cluster letters,
  \* so that "-oE" \(and "-oaE"\) means "update the script in place" while any
  \* ordinary -oFILE, even -oEDITED, still names a file\. -E reads a script and
  \* emits one, so in place is what an author means\. \*/3??0?
-3??m 94220reg p OK patch2vi.c:6614:a32sc %? %@2152sc!1q0?
+3??m 94220reg p OK patch2vi.c:6700:a32sc %? %@2152sc!1q0?
 %f+ 	return NULL;
 }
 
 4??0?
-4??+3m 94220reg p OK patch2vi.c:6614:a42sc %? %@2152sc!1q0?
+4??+3m 94220reg p OK patch2vi.c:6700:a42sc %? %@2152sc!1q0?
 %f+ static int amend_cluster\(const char \*s\)
 \{
 	int k;5??0?
-5??-5m 94220reg p OK patch2vi.c:6614:a52sc %? %@2152sc!1q0?
+5??-5m 94220reg p OK patch2vi.c:6700:a52sc %? %@2152sc!1q0?
 %f+ ..etu...N.L..
 }
 
@@ -3560,25 +3560,25 @@ static int amend_cluster\(const char \*s\)
 ..a......t....n....u.t..........h.. \*s.
 \{
 	......6??0?
-6??+3m 94220reg p OK patch2vi.c:6614:a62sc %? %@2152sc!1q0?
+6??+3m 94220reg p OK patch2vi.c:6700:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	return NULL;.*?
 }.*?
 .*?
 (/\* Is what follows a leading "-o" an option cluster naming -E rather than a)7??0?
-grp 07??m 94220reg p OK patch2vi.c:6614:a72sc %? %@2152sc!1q0?
+grp 07??m 94220reg p OK patch2vi.c:6700:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	fprintf\(stderr, "Option -%\.\*s requires an argument\\n",
 		n - 1, argv\[\*i] \+ 1\);
 	usage\(argv\[0], 1\);.*(int main\(int argc, char \*\*argv\))
 \{
 	int i, j;8??0?
-grp 08??-16m 94220reg p OK patch2vi.c:6614:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-16m 94220reg p OK patch2vi.c:6700:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		return argv\[\*i] \+ n;
 	if \(\*i \+ 1 < argc\)
 		return argv\[\+\+\*i];.*(	for \(i = 1; i < argc && argv\[i]\[0] == '\''-'\''; i\+\+\) \{)
 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{
 			i\+\+;9??0?
-grp 09??-20m 94220reg p OK patch2vi.c:6614:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:66142sc %? %@2132sc!0?
+grp 09??-20m 94220reg p OK patch2vi.c:6700:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:67002sc %? %@2132sc!0?
 ?0?
 %f+ static int amend_cluster\(const char \*s\)
 \{
@@ -3590,41 +3590,41 @@ static int amend_cluster\(const char \*s\)
 %f+ 	if \(!strchr\(s, '\''E'\''\)\)
 		return 0;
 	for \(k = 0; s\[k]; k\+\+\)2??0?
-2??m 95220reg p OK patch2vi.c:6622:a22sc %? %@2152sc!1q0?
+2??m 95220reg p OK patch2vi.c:6708:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(!strchr\(s, '\''E'\''\)\)$3??0?
-3??m 95220reg p OK patch2vi.c:6622:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 95220reg p OK patch2vi.c:6708:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ static int amend_cluster\(const char \*s\)
 \{
 	int k;4??0?
-4??+3m 95220reg p OK patch2vi.c:6622:a42sc %? %@2152sc!1q0?
+4??+3m 95220reg p OK patch2vi.c:6708:a42sc %? %@2152sc!1q0?
 %f+ 		return 0;
 	for \(k = 0; s\[k]; k\+\+\)5??0?
-5??-1m 95220reg p OK patch2vi.c:6622:a52sc %? %@2152sc!1q0?
+5??-1m 95220reg p OK patch2vi.c:6708:a52sc %? %@2152sc!1q0?
 %f+ s.a..c .....m.n...l.s...\(..............
 \{
 	..t...
 .....!....h.\(........
 ..r....n.0.
 .... .... ...s.....k.\+.6??0?
-6??+3m 95220reg p OK patch2vi.c:6622:a62sc %? %@2152sc!1q0?
+6??+3m 95220reg p OK patch2vi.c:6708:a62sc %? %@2152sc!1q0?
 grp 1%f+ static int amend_cluster\(const char \*s\).*?
 \{.*?
 	int k;.*?
 (	if \(!strchr\(s, '\''E'\''\)\))7??0?
-grp 07??m 95220reg p OK patch2vi.c:6622:a72sc %? %@2152sc!1q0?
+grp 07??m 95220reg p OK patch2vi.c:6708:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	fprintf\(stderr, "Option -%\.\*s requires an argument\\n",
 		n - 1, argv\[\*i] \+ 1\);
 	usage\(argv\[0], 1\);.*(int main\(int argc, char \*\*argv\))
 \{
 	int i, j;8??0?
-grp 08??-8m 95220reg p OK patch2vi.c:6622:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 95220reg p OK patch2vi.c:6708:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		return argv\[\*i] \+ n;
 	if \(\*i \+ 1 < argc\)
 		return argv\[\+\+\*i];.*(	for \(i = 1; i < argc && argv\[i]\[0] == '\''-'\''; i\+\+\) \{)
 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{
 			i\+\+;9??0?
-grp 09??-12m 95220reg p OK patch2vi.c:6622:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:66222sc %? %@2132sc!0?
+grp 09??-12m 95220reg p OK patch2vi.c:6708:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:67082sc %? %@2132sc!0?
 ?0?
 %f+ 		return 0;
 	for \(k = 0; s\[k]; k\+\+\)
@@ -3637,40 +3637,40 @@ static int amend_cluster\(const char \*s\)
 			return 0;
 	return 1;
 }2??0?
-2??m 97220reg p OK patch2vi.c:6625:a22sc %? %@2152sc!1q0?
+2??m 97220reg p OK patch2vi.c:6711:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(!strchr\("arIEo", s\[k]\)\)$3??0?
-3??m 97220reg p OK patch2vi.c:6625:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 97220reg p OK patch2vi.c:6711:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		return 0;
 	for \(k = 0; s\[k]; k\+\+\)4??0?
-4??+2m 97220reg p OK patch2vi.c:6625:a42sc %? %@2152sc!1q0?
+4??+2m 97220reg p OK patch2vi.c:6711:a42sc %? %@2152sc!1q0?
 %f+ 			return 0;
 	return 1;
 }5??0?
-5??-1m 97220reg p OK patch2vi.c:6625:a52sc %? %@2152sc!1q0?
+5??-1m 97220reg p OK patch2vi.c:6711:a52sc %? %@2152sc!1q0?
 %f+ 	......n ..
 .... \(k...0; .\[.]. ....
 ......!..................k...
 	....t... ..
 ....... ..
 }6??0?
-6??+2m 97220reg p OK patch2vi.c:6625:a62sc %? %@2152sc!1q0?
+6??+2m 97220reg p OK patch2vi.c:6711:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		return 0;.*?
 	for \(k = 0; s\[k]; k\+\+\).*?
 (		if \(!strchr\("arIEo", s\[k]\)\))7??0?
-grp 07??m 97220reg p OK patch2vi.c:6625:a72sc %? %@2152sc!1q0?
+grp 07??m 97220reg p OK patch2vi.c:6711:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	fprintf\(stderr, "Option -%\.\*s requires an argument\\n",
 		n - 1, argv\[\*i] \+ 1\);
 	usage\(argv\[0], 1\);.*(int main\(int argc, char \*\*argv\))
 \{
 	int i, j;8??0?
-grp 08??-5m 97220reg p OK patch2vi.c:6625:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 97220reg p OK patch2vi.c:6711:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		return argv\[\*i] \+ n;
 	if \(\*i \+ 1 < argc\)
 		return argv\[\+\+\*i];.*(	for \(i = 1; i < argc && argv\[i]\[0] == '\''-'\''; i\+\+\) \{)
 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{
 			i\+\+;9??0?
-grp 09??-9m 97220reg p OK patch2vi.c:6625:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:66252sc %? %@2132sc!0?
+grp 09??-9m 97220reg p OK patch2vi.c:6711:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:67112sc %? %@2132sc!0?
 ?0?
 %f+ 		j = argv\[i]\[1] == '\''o'\'' && argv\[i]\[2] == '\''C'\'';
 		if \(argv\[i]\[1 \+ j] == '\''C'\''\) \{
@@ -3682,24 +3682,24 @@ static int amend_cluster\(const char \*s\)
 %f+ 		j = argv\[i]\[1] == '\''o'\'' && argv\[i]\[2] == '\''C'\'';
 		if \(argv\[i]\[1 \+ j] == '\''C'\''\) \{
 			compat_mode = 1;4??0?
-4??+2m 98220reg p OK patch2vi.c:6663:a42sc %? %@2152sc!1q0?
+4??+2m 98220reg p OK patch2vi.c:6749:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		j = argv\[i]\[1] == '\''o'\'' && argv\[i]\[2] == '\''C'\'';.*?
 		if \(argv\[i]\[1 \+ j] == '\''C'\''\) \{.*?
 (			compat_mode = 1;)7??0?
-grp 07??m 98220reg p OK patch2vi.c:6663:a72sc %? %@2152sc!1q0?
+grp 07??m 98220reg p OK patch2vi.c:6749:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		 \* FILE of its own, the result lands back on the target script
 		 \* the block extends\. A file literally named "C" is still
 		 \* reachable as "-o C"\. \*/.*(				opt_arg\(argc, argv, &i, 2 \+ j\);)
 			continue;
 		}8??0?
-grp 08??-4m 98220reg p OK patch2vi.c:6663:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 98220reg p OK patch2vi.c:6749:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		 \* optional pre-applied fix stay where they are, unambiguously\.
 		 \*
 		 \* "-oC" clusters the top-level -o into it, as "-oE" does: no.*(		/\* -o FILE \(or -oFILE\): the script, wherever it comes from,)
 		 \* lands in that file rather than on stdout; tested after -C
 		 \* so it cannot shadow it \*/9??0?
-grp 09??-7m 98220reg p OK patch2vi.c:6663:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:66632sc %? %@2132sc!0?
+grp 09??-7m 98220reg p OK patch2vi.c:6749:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:67492sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		/\* bare -e: execute the script; tested after -er/-ew so it
@@ -3713,17 +3713,17 @@ static int amend_cluster\(const char \*s\)
 		if \(argv\[i]\[1] == '\''e'\'' && !argv\[i]\[2]\) \{
 			exec_mode = 1;
 			continue;2??0?
-2??m 99220reg p OK patch2vi.c:6686:a22sc %? %@2152sc!1q0?
+2??m 99220reg p OK patch2vi.c:6772:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		 \* whose letters are a r h E I \*/$3??0?
-3??m 99220reg p OK patch2vi.c:6686:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 99220reg p OK patch2vi.c:6772:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		}
 		/\* bare -e: execute the script; tested after -er/-ew so it
 		 \* cannot shadow them, and kept out of the cluster loop4??0?
-4??+3m 99220reg p OK patch2vi.c:6686:a42sc %? %@2152sc!1q0?
+4??+3m 99220reg p OK patch2vi.c:6772:a42sc %? %@2152sc!1q0?
 %f+ 		if \(argv\[i]\[1] == '\''e'\'' && !argv\[i]\[2]\) \{
 			exec_mode = 1;
 			continue;5??0?
-5??-1m 99220reg p OK patch2vi.c:6686:a52sc %? %@2152sc!1q0?
+5??-1m 99220reg p OK patch2vi.c:6772:a52sc %? %@2152sc!1q0?
 %f+ 	..
 ......a.e..e.....c... .....c...t....s.e................so.i.
 .... .a.....s.ad.. ..... .n............f..h....u.....lo..
@@ -3731,25 +3731,25 @@ static int amend_cluster\(const char \*s\)
 	.....ar.....\[1. .....'\''.&&.........\[.....
 ..	.x.._m..e ..1.
 ..	c...i....6??0?
-6??+3m 99220reg p OK patch2vi.c:6686:a62sc %? %@2152sc!1q0?
+6??+3m 99220reg p OK patch2vi.c:6772:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		}.*?
 		/\* bare -e: execute the script; tested after -er/-ew so it.*?
 		 \* cannot shadow them, and kept out of the cluster loop.*?
 (		 \* whose letters are a r h E I \*/)7??0?
-grp 07??m 99220reg p OK patch2vi.c:6686:a72sc %? %@2152sc!1q0?
+grp 07??m 99220reg p OK patch2vi.c:6772:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				usage\(argv\[0], 1\);
 			}
 			continue;.*(		for \(j = 1; argv\[i]\[j]; j\+\+\) \{)
 			if \(argv\[i]\[j] == '\''a'\''\) \{
 				relative_mode = 0;8??0?
-grp 08??-5m 99220reg p OK patch2vi.c:6686:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 99220reg p OK patch2vi.c:6772:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				out_file = argv\[\+\+i];
 			else \{
 				fprintf\(stderr, "Option -o requires an argument\\n"\);.*(				absolute_opt = 1;)
 			} else if \(argv\[i]\[j] == '\''r'\''\) \{
 				relative_mode = 1;9??0?
-grp 09??-8m 99220reg p OK patch2vi.c:6686:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:66862sc %? %@2132sc!0?
+grp 09??-8m 99220reg p OK patch2vi.c:6772:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:67722sc %? %@2132sc!0?
 ?0?
 %f+ 				relative_mode = 1;
 				absolute_opt = 0;
@@ -3761,24 +3761,24 @@ static int amend_cluster\(const char \*s\)
 %f+ 				relative_mode = 1;
 				absolute_opt = 0;
 			}4??0?
-4??+2m 100220reg p OK patch2vi.c:6698:a42sc %? %@2152sc!1q0?
+4??+2m 100220reg p OK patch2vi.c:6784:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				relative_mode = 1;.*?
 				absolute_opt = 0;.*?
 (			})7??0?
-grp 07??m 100220reg p OK patch2vi.c:6698:a72sc %? %@2152sc!1q0?
+grp 07??m 100220reg p OK patch2vi.c:6784:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				relative_mode = 0;
 				absolute_opt = 1;
 			} else if \(argv\[i]\[j] == '\''r'\''\) \{.*(			 \* first word, which names the script to update\. Either)
 			 \* way the script goes to stdout, as in every mode \*/
 			else if \(argv\[i]\[j] == '\''I'\''\)8??0?
-grp 08??-4m 100220reg p OK patch2vi.c:6698:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 100220reg p OK patch2vi.c:6784:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		}
 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
 			if \(argv\[i]\[j] == '\''a'\''\) \{.*(				edit_mode = 1;)
 			else if \(argv\[i]\[j] == '\''E'\''\)
 				amend_mode = 1;9??0?
-grp 09??-7m 100220reg p OK patch2vi.c:6698:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:66982sc %? %@2132sc!0?
+grp 09??-7m 100220reg p OK patch2vi.c:6784:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:67842sc %? %@2132sc!0?
 ?0?
 %f+ 			 \* -oE updates it in place \*/
 			else if \(argv\[i]\[j] == '\''o'\''\)
@@ -3792,17 +3792,17 @@ static int amend_cluster\(const char \*s\)
 				usage\(argv\[0], 0\);	/\* asked for: stdout, ok \*/
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);2??0?
-2??m 101220reg p OK patch2vi.c:6713:a22sc %? %@2152sc!1q0?
+2??m 101220reg p OK patch2vi.c:6799:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			else if \(argv\[i]\[j] == '\''h'\''\)$3??0?
-3??m 101220reg p OK patch2vi.c:6713:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 101220reg p OK patch2vi.c:6799:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			 \* -oE updates it in place \*/
 			else if \(argv\[i]\[j] == '\''o'\''\)
 				amend_inplace = 1;4??0?
-4??+3m 101220reg p OK patch2vi.c:6713:a42sc %? %@2152sc!1q0?
+4??+3m 101220reg p OK patch2vi.c:6799:a42sc %? %@2152sc!1q0?
 %f+ 				usage\(argv\[0], 0\);	/\* asked for: stdout, ok \*/
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);5??0?
-5??-1m 101220reg p OK patch2vi.c:6713:a52sc %? %@2152sc!1q0?
+5??-1m 101220reg p OK patch2vi.c:6799:a52sc %? %@2152sc!1q0?
 %f+ ..	.. ........te.....i......e ..
 	.	..se.i. .a..v.....] ==.....
 	....m.n........e.. ..
@@ -3810,25 +3810,25 @@ static int amend_cluster\(const char \*s\)
 	.....age...........\).	.\*..........: ....u.,..k ./
 ..	e... .
 	.......n.f......r....n....n ..t.o....%...",.a..v...\[j...6??0?
-6??+3m 101220reg p OK patch2vi.c:6713:a62sc %? %@2152sc!1q0?
+6??+3m 101220reg p OK patch2vi.c:6799:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			 \* -oE updates it in place \*/.*?
 			else if \(argv\[i]\[j] == '\''o'\''\).*?
 				amend_inplace = 1;.*?
 (			else if \(argv\[i]\[j] == '\''h'\''\))7??0?
-grp 07??m 101220reg p OK patch2vi.c:6713:a72sc %? %@2152sc!1q0?
+grp 07??m 101220reg p OK patch2vi.c:6799:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				amend_mode = 1;
 			/\* -o inside an -E cluster takes no argument of its
 			 \* own: the script -E names is also the output, so.*(				usage\(argv\[0], 1\);)
 			}
 		}8??0?
-grp 08??-4m 101220reg p OK patch2vi.c:6713:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 101220reg p OK patch2vi.c:6799:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''I'\''\)
 				edit_mode = 1;
 			else if \(argv\[i]\[j] == '\''E'\''\).*(		if \(edit_mode \|\| amend_mode\) \{	/\* the rest belongs to nextvi \*/)
 			i\+\+;
 			break;9??0?
-grp 09??-7m 101220reg p OK patch2vi.c:6713:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:67132sc %? %@2132sc!0?
+grp 09??-7m 101220reg p OK patch2vi.c:6799:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:67992sc %? %@2132sc!0?
 ?0?
 %f+ 			break;
 		}
@@ -3844,18 +3844,18 @@ static int amend_cluster\(const char \*s\)
 		usage\(argv\[0], 1\);
 	}
 	if \(i < argc && !edit_mode\)2??0?
-2??m 102220reg p OK patch2vi.c:6725:a22sc %? %@2152sc!1q0?
+2??m 102220reg p OK patch2vi.c:6811:a22sc %? %@2152sc!1q0?
 %f+ 	if \(amend_inplace && !amend_mode && !compat_mode\) \{
 		fprintf\(stderr, "Clustered -o is only for -E and -C\\n"\);3??0?
-3??m 102220reg p OK patch2vi.c:6725:a32sc %? %@2152sc!1q0?
+3??m 102220reg p OK patch2vi.c:6811:a32sc %? %@2152sc!1q0?
 %f+ 			break;
 		}
 	}4??0?
-4??+3m 102220reg p OK patch2vi.c:6725:a42sc %? %@2152sc!1q0?
+4??+3m 102220reg p OK patch2vi.c:6811:a42sc %? %@2152sc!1q0?
 %f+ 		usage\(argv\[0], 1\);
 	}
 	if \(i < argc && !edit_mode\)5??0?
-5??-2m 102220reg p OK patch2vi.c:6725:a52sc %? %@2152sc!1q0?
+5??-2m 102220reg p OK patch2vi.c:6811:a52sc %? %@2152sc!1q0?
 %f+ 	........
 	..
 	.
@@ -3864,25 +3864,25 @@ static int amend_cluster\(const char \*s\)
 ...s.g.......0]....;
 	.
 	........a.....& !......o...6??0?
-6??+3m 102220reg p OK patch2vi.c:6725:a62sc %? %@2152sc!1q0?
+6??+3m 102220reg p OK patch2vi.c:6811:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			break;.*?
 		}.*?
 	}.*?
 (	if \(amend_inplace && !amend_mode && !compat_mode\) \{)7??0?
-grp 07??m 102220reg p OK patch2vi.c:6725:a72sc %? %@2152sc!1q0?
+grp 07??m 102220reg p OK patch2vi.c:6811:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		}
 		if \(edit_mode \|\| amend_mode\) \{	/\* the rest belongs to nextvi \*/
 			i\+\+;.*(			fprintf\(stderr, "-oC requires a target script\\n"\);)
 			return 1;
 		}8??0?
-grp 08??-10m 102220reg p OK patch2vi.c:6725:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 102220reg p OK patch2vi.c:6811:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);
 				usage\(argv\[0], 1\);
 			}.*(		out_file = input_file;)
 	}
 	/\* plain -C replays the target by name \(compat_derive feeds its path9??0?
-grp 09??-13m 102220reg p OK patch2vi.c:6725:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:67252sc %? %@2132sc!0?
+grp 09??-13m 102220reg p OK patch2vi.c:6811:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:68112sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 	if \(i < argc && !edit_mode\)
@@ -3894,24 +3894,24 @@ static int amend_cluster\(const char \*s\)
 %f+ 	}
 	if \(i < argc && !edit_mode\)
 		input_file = argv\[i];4??0?
-4??+2m 103220reg p OK patch2vi.c:6730:a42sc %? %@2152sc!1q0?
+4??+2m 103220reg p OK patch2vi.c:6816:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	}.*?
 	if \(i < argc && !edit_mode\).*?
 (		input_file = argv\[i];)7??0?
-grp 07??m 103220reg p OK patch2vi.c:6730:a72sc %? %@2152sc!1q0?
+grp 07??m 103220reg p OK patch2vi.c:6816:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		}
 		if \(edit_mode \|\| amend_mode\) \{	/\* the rest belongs to nextvi \*/
 			i\+\+;.*(			fprintf\(stderr, "-oC requires a target script\\n"\);)
 			return 1;
 		}8??0?
-grp 08??-5m 103220reg p OK patch2vi.c:6730:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 103220reg p OK patch2vi.c:6816:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);
 				usage\(argv\[0], 1\);
 			}.*(		out_file = input_file;)
 	}
 	/\* plain -C replays the target by name \(compat_derive feeds its path9??0?
-grp 09??-8m 103220reg p OK patch2vi.c:6730:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg patch2vi.c:67302sc %? %@2132sc!0?
+grp 09??-8m 103220reg p OK patch2vi.c:6816:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg patch2vi.c:68162sc %? %@2132sc!0?
 ?0?
 %f+ 	for \(const char \*p = forbidden; \*p; p\+\+\)
 		byte_used\[\(unsigned char\)\*p] = 1;
@@ -3925,18 +3925,18 @@ static int amend_cluster\(const char \*s\)
 		mark_bytes_used\("FAIL OK"\);
 
 	/\* -I: the diff is not read, it is made\. Everything patch2vi'\''s own2??0?
-2??m 104220reg p OK patch2vi.c:6816:a22sc %? %@2152sc!1q0?
+2??m 104220reg p OK patch2vi.c:6902:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(relative_mode \|\| compat_mode\)$3??0?
-3??m 104220reg p OK patch2vi.c:6816:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 104220reg p OK patch2vi.c:6902:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	for \(const char \*p = forbidden; \*p; p\+\+\)
 		byte_used\[\(unsigned char\)\*p] = 1;
 
 4??0?
-4??+3m 104220reg p OK patch2vi.c:6816:a42sc %? %@2152sc!1q0?
+4??+3m 104220reg p OK patch2vi.c:6902:a42sc %? %@2152sc!1q0?
 %f+ 		mark_bytes_used\("FAIL OK"\);
 
 	/\* -I: the diff is not read, it is made\. Everything patch2vi'\''s own5??0?
-5??-1m 104220reg p OK patch2vi.c:6816:a52sc %? %@2152sc!1q0?
+5??-1m 104220reg p OK patch2vi.c:6902:a52sc %? %@2152sc!1q0?
 %f+ ...r.\(...s..c............b.......... ....
 ...y.._........s.........r.......1.
 
@@ -3944,25 +3944,25 @@ static int amend_cluster\(const char \*s\)
 ..m.....y..._....."F.IL .."..
 
 .....I..... .....i...o......,....is ma... E.e..t......a...2...s...n6??0?
-6??+3m 104220reg p OK patch2vi.c:6816:a62sc %? %@2152sc!1q0?
+6??+3m 104220reg p OK patch2vi.c:6902:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	for \(const char \*p = forbidden; \*p; p\+\+\).*?
 		byte_used\[\(unsigned char\)\*p] = 1;.*?
 .*?
 (	if \(relative_mode \|\| compat_mode\))7??0?
-grp 07??m 104220reg p OK patch2vi.c:6816:a72sc %? %@2152sc!1q0?
+grp 07??m 104220reg p OK patch2vi.c:6902:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		" \\t0123456789\+-\.,<>/\$'\'';%\*#\|" /\* ex range syntax \*/
 		"@&!\?bpaefidgmqrwusxycjtohlv=" /\* ex commands \*/
 		":\\"\\\\`\\n\\r";                  /\* default sep, shell quote/escape/backtick, newline \*/.*(	 \* option loop did not consume is a nextvi command line - flags after)
 	 \* "--", then files \(a missing one counts as a creation\) - and the
 	 \* buffers that session leaves behind are diffed against their disk8??0?
-grp 08??-4m 104220reg p OK patch2vi.c:6816:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 104220reg p OK patch2vi.c:6902:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	 \* resets to the flags verbatim once the bodies are done\. \*/
 	if \(hand_vis >= 0\)
 		xvis = hand_vis;.*(	 \* copies, that diff going through the parser in place of an input)
 	 \* stream\. The script itself goes to stdout, like every other mode\. \*/
 	sbuf_smake\(dsb, SB_INIT\)9??0?
-grp 09??-7m 104220reg p OK patch2vi.c:6816:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:68162sc %? %@2132sc!0?
+grp 09??-7m 104220reg p OK patch2vi.c:6902:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:69022sc %? %@2132sc!0?
 ?0?
 %f+ 	sbuf_smake\(lb, SB_INIT\)
 	if \(in && read_line\(in, lb\)\) \{
@@ -3976,17 +3976,17 @@ static int amend_cluster\(const char \*s\)
 				return 1;
 		} else if \(amend_mode\) \{
 			fprintf\(stderr, "%s: not a patch2vi script\\n", input_file\);2??0?
-2??m 105220reg p OK patch2vi.c:6882:a22sc %? %@2152sc!1q0?
+2??m 105220reg p OK patch2vi.c:6968:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			if \(read_stored_sections\(in\) < 0\)$3??0?
-3??m 105220reg p OK patch2vi.c:6882:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 105220reg p OK patch2vi.c:6968:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	sbuf_smake\(lb, SB_INIT\)
 	if \(in && read_line\(in, lb\)\) \{
 		if \(!strncmp\(lb->s, "#!/bin/sh", 9\)\) \{4??0?
-4??+3m 105220reg p OK patch2vi.c:6882:a42sc %? %@2152sc!1q0?
+4??+3m 105220reg p OK patch2vi.c:6968:a42sc %? %@2152sc!1q0?
 %f+ 				return 1;
 		} else if \(amend_mode\) \{
 			fprintf\(stderr, "%s: not a patch2vi script\\n", input_file\);5??0?
-5??-1m 105220reg p OK patch2vi.c:6882:a52sc %? %@2152sc!1q0?
+5??-1m 105220reg p OK patch2vi.c:6968:a52sc %? %@2152sc!1q0?
 %f+ ....._...k.............\)
 ... ....&....a..l.n...n,....\)..
 		...\(.......p\(..-..,...!.....s.........
@@ -3994,25 +3994,25 @@ static int amend_cluster\(const char \*s\)
 	............
 	....... .f.\(.............
 	......n.f\(.td.... .....n..........2......i.......in....f.l...6??0?
-6??+3m 105220reg p OK patch2vi.c:6882:a62sc %? %@2152sc!1q0?
+6??+3m 105220reg p OK patch2vi.c:6968:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	sbuf_smake\(lb, SB_INIT\).*?
 	if \(in && read_line\(in, lb\)\) \{.*?
 		if \(!strncmp\(lb->s, "#!/bin/sh", 9\)\) \{.*?
 (			if \(read_stored_sections\(in\) < 0\))7??0?
-grp 07??m 105220reg p OK patch2vi.c:6882:a72sc %? %@2152sc!1q0?
+grp 07??m 105220reg p OK patch2vi.c:6968:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	/\* The first line tells a generated script from a plain patch: the
 	 \* script'\''s stored regions are read whole, the patch is parsed from
 	 \* this line on\. \*/.*(		} else \{)
 			/\* a patch'\''s first line: keep it and parse it like any other \*/
 			add_raw\(lb->s\);8??0?
-grp 08??-5m 105220reg p OK patch2vi.c:6882:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 105220reg p OK patch2vi.c:6968:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			return 1;
 		}
 	}.*(			chomp\(lb->s\);)
 			parse_diff_line\(lb->s\);
 		}9??0?
-grp 09??-8m 105220reg p OK patch2vi.c:6882:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:68822sc %? %@2132sc!0?
+grp 09??-8m 105220reg p OK patch2vi.c:6968:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:69682sc %? %@2132sc!0?
 ?0?
 %f+ 			parse_diff_line\(lb->s\);
 		}
@@ -4030,19 +4030,19 @@ static int amend_cluster\(const char \*s\)
 	if \(amend_mode && amend_sel < 0\) \{
 		if \(in\)
 			fclose\(in\);2??0?
-2??m 106220reg p OK patch2vi.c:6894:a22sc %? %@2152sc!1q0?
+2??m 106220reg p OK patch2vi.c:6980:a22sc %? %@2152sc!1q0?
 %f+ 	/\* -E: the stored regions are read, but the old patch section is not -
 	 \* the new one is what the session produces, over the files as they are
 	 \* on disk\. Close before the loop below reads it\. \*/3??0?
-3??m 106220reg p OK patch2vi.c:6894:a32sc %? %@2152sc!1q0?
+3??m 106220reg p OK patch2vi.c:6980:a32sc %? %@2152sc!1q0?
 %f+ 			parse_diff_line\(lb->s\);
 		}
 	}4??0?
-4??+3m 106220reg p OK patch2vi.c:6894:a42sc %? %@2152sc!1q0?
+4??+3m 106220reg p OK patch2vi.c:6980:a42sc %? %@2152sc!1q0?
 %f+ 	if \(amend_mode && amend_sel < 0\) \{
 		if \(in\)
 			fclose\(in\);5??0?
-5??-3m 106220reg p OK patch2vi.c:6894:a52sc %? %@2152sc!1q0?
+5??-3m 106220reg p OK patch2vi.c:6980:a52sc %? %@2152sc!1q0?
 %f+ 	.	p...e..i.............\).
 .	}
 	.
@@ -4052,25 +4052,25 @@ static int amend_cluster\(const char \*s\)
 ..f.\(....._.... .. ....._..... 0...
 .....\(..\)
 	...clo..\(.n..6??0?
-6??+3m 106220reg p OK patch2vi.c:6894:a62sc %? %@2152sc!1q0?
+6??+3m 106220reg p OK patch2vi.c:6980:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			parse_diff_line\(lb->s\);.*?
 		}.*?
 	}.*?
 (	/\* -E: the stored regions are read, but the old patch section is not -)7??0?
-grp 07??m 106220reg p OK patch2vi.c:6894:a72sc %? %@2152sc!1q0?
+grp 07??m 106220reg p OK patch2vi.c:6980:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			/\* a patch'\''s first line: keep it and parse it like any other \*/
 			add_raw\(lb->s\);
 			chomp\(lb->s\);.*(		in = NULL;)
 		/\* The stored compat blocks stand: each is re-emitted from its
 		 \* own === COMPAT PATCH === with its register, label and8??0?
-grp 08??-6m 106220reg p OK patch2vi.c:6894:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 106220reg p OK patch2vi.c:6980:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			fprintf\(stderr, "%s: not a patch2vi script\\n", input_file\);
 			return 1;
 		} else \{.*(		 \* position, exactly as a plain regen re-emits them, while the)
 		 \* base patch is the part this run replaces\. That is the layout
 		 \* a regen already produces - blocks at the head of files\[], the9??0?
-grp 09??-9m 106220reg p OK patch2vi.c:6894:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:68942sc %? %@2132sc!0?
+grp 09??-9m 106220reg p OK patch2vi.c:6980:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:69802sc %? %@2132sc!0?
 ?0?
 %f+ 
 	/\* -o: from here on stdout is the output file'\''s temp twin\. Every mode
@@ -4084,17 +4084,17 @@ static int amend_cluster\(const char \*s\)
 	 \* replay or an -I session opened - has been read by now, so -o may name
 	 \* a file the same run consumed \(-E updating its own script\)\. \*/
 	if \(out_file && out_redirect\(out_file\) < 0\)2??0?
-2??m 107220reg p OK patch2vi.c:6994:a22sc %? %@2152sc!1q0?
+2??m 107220reg p OK patch2vi.c:7080:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	 \* them reads - the patch, the script'\''s stored regions, the files a$3??0?
-3??m 107220reg p OK patch2vi.c:6994:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 107220reg p OK patch2vi.c:7080:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 
 	/\* -o: from here on stdout is the output file'\''s temp twin\. Every mode
 	 \* that emits a script passes through this point, and everything any of4??0?
-4??+3m 107220reg p OK patch2vi.c:6994:a42sc %? %@2152sc!1q0?
+4??+3m 107220reg p OK patch2vi.c:7080:a42sc %? %@2152sc!1q0?
 %f+ 	 \* replay or an -I session opened - has been read by now, so -o may name
 	 \* a file the same run consumed \(-E updating its own script\)\. \*/
 	if \(out_file && out_redirect\(out_file\) < 0\)5??0?
-5??-1m 107220reg p OK patch2vi.c:6994:a52sc %? %@2152sc!1q0?
+5??-1m 107220reg p OK patch2vi.c:7080:a52sc %? %@2152sc!1q0?
 %f+ 
 ..\* -.. .......re..n.s.d... ...........u...il.'\''...... t...\. ..... .o.e
 ... .h.....i.......r........e..t..ou.. ..i..p..... .....v.ry.h..g...y...
@@ -4102,25 +4102,25 @@ static int amend_cluster\(const char \*s\)
 ... .e............. .es...n ..en.. . ... b..n..e.......... ..... m......e
 ... .....e.......m. .un.......e.......p..t..g.i................\*/
 	......._fi.......u....dir..t...._......<...6??0?
-6??+3m 107220reg p OK patch2vi.c:6994:a62sc %? %@2152sc!1q0?
+6??+3m 107220reg p OK patch2vi.c:7080:a62sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 	/\* -o: from here on stdout is the output file'\''s temp twin\. Every mode.*?
 	 \* that emits a script passes through this point, and everything any of.*?
 (	 \* them reads - the patch, the script'\''s stored regions, the files a)7??0?
-grp 07??m 107220reg p OK patch2vi.c:6994:a72sc %? %@2152sc!1q0?
+grp 07??m 107220reg p OK patch2vi.c:7080:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		dyn_esc = 0;
 	else
 		byte_used\[dyn_esc] = 1;.*(	/\* Emit shell script header; the emit layer targets sbufs, so build)
 	 \* stdout pieces in one scratch sbuf and flush it after each use \*/
 	sbuf_smake\(osb, SB_INIT\)8??0?
-grp 08??-6m 107220reg p OK patch2vi.c:6994:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 107220reg p OK patch2vi.c:7080:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	byte_used\[sep] = 1;
 	dyn_esc = find_unused_byte\(\);
 	if \(dyn_esc < 0\).*(	fputs\("#!/bin/sh -e\\n# Generated by patch2vi from unified diff\\n", stdout\);)
 	list_unused_bytes\(osb\);
 	sbuf_nul\(osb\)9??0?
-grp 09??-9m 107220reg p OK patch2vi.c:6994:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:69942sc %? %@2132sc!0?
+grp 09??-9m 107220reg p OK patch2vi.c:7080:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:70802sc %? %@2132sc!0?
 ?0?
 %f+ 	      "    echo \\"Set VI environment variable to point to nextvi binary\\" >&2\\n"
 	      "    exit 1\\n"
@@ -4134,17 +4134,17 @@ static int amend_cluster\(const char \*s\)
 		fputs\("# Env switches:\\n"
 		      "# Phase 1 \(search/mark\) reports nothing by default\\n"
 		      "#   DBG1=1 reports failures and which fallback anchor\\n"2??0?
-2??m 108220reg p OK patch2vi.c:7013:a22sc %? %@2152sc!1q0?
+2??m 108220reg p OK patch2vi.c:7099:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(relative_mode \|\| compat_mode \|\| ncompat\)$3??0?
-3??m 108220reg p OK patch2vi.c:7013:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 108220reg p OK patch2vi.c:7099:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	      "    echo \\"Set VI environment variable to point to nextvi binary\\" >&2\\n"
 	      "    exit 1\\n"
 	      "fi\\n\\n", stdout\);4??0?
-4??+3m 108220reg p OK patch2vi.c:7013:a42sc %? %@2152sc!1q0?
+4??+3m 108220reg p OK patch2vi.c:7099:a42sc %? %@2152sc!1q0?
 %f+ 		fputs\("# Env switches:\\n"
 		      "# Phase 1 \(search/mark\) reports nothing by default\\n"
 		      "#   DBG1=1 reports failures and which fallback anchor\\n"5??0?
-5??-1m 108220reg p OK patch2vi.c:7013:a52sc %? %@2152sc!1q0?
+5??-1m 108220reg p OK patch2vi.c:7099:a52sc %? %@2152sc!1q0?
 %f+ . ........ .e... \\.... ........on.... ....a.l. to .o... ...n...v....n...."....\\..
 .. .. ..... ...t ..n.
 .. .....f......, ....u..;
@@ -4152,25 +4152,25 @@ static int amend_cluster\(const char \*s\)
 		..ut.."..En...........\\..
 .. .  . ...P.....1...e..c....r.\).....r...n.t.in...y..ef...t\\..
 		... ........B..........t.......... ... ...c...a..ba.k .........6??0?
-6??+3m 108220reg p OK patch2vi.c:7013:a62sc %? %@2152sc!1q0?
+6??+3m 108220reg p OK patch2vi.c:7099:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	      "    echo \\"Set VI environment variable to point to nextvi binary\\" >&2\\n".*?
 	      "    exit 1\\n".*?
 	      "fi\\n\\n", stdout\);.*?
 (	if \(relative_mode \|\| compat_mode \|\| ncompat\))7??0?
-grp 07??m 108220reg p OK patch2vi.c:7013:a72sc %? %@2152sc!1q0?
+grp 07??m 108220reg p OK patch2vi.c:7099:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	fputs\("\\nVI=\$\{VI:-vi}\\n"
 	      "if ! \$VI -\? 2>&1 \| grep -q '\''Nextvi'\''; then\\n"
 	      "    echo \\"Error: \$VI is not nextvi\\" >&2\\n".*(		      "#   resolved a group, QF1=1 also quits on failure\\n")
 		      "# Phase 2 \(edits\) reports and quits by default\\n"
 		      "#   DBG2=1 silences it, QF2=1 keeps going after an error\\n"8??0?
-grp 08??-4m 108220reg p OK patch2vi.c:7013:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 108220reg p OK patch2vi.c:7099:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	list_unused_bytes\(osb\);
 	sbuf_nul\(osb\)
 	fputs\(osb->s, stdout\);.*(	/\* Host active = files with groups outside every compat block'\''s range;)
 	 \* each compat block'\''s own files are emitted as its own \$VI invocation\. \*/
 	file_patch_t \*\*active = emalloc\(\(nfiles \+ 1\) \* sizeof\(\*active\)\);9??0?
-grp 09??-13m 108220reg p OK patch2vi.c:7013:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:70132sc %? %@2132sc!0?
+grp 09??-13m 108220reg p OK patch2vi.c:7099:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:70992sc %? %@2132sc!0?
 ?0?
 %f+ 			active\[nactive\+\+] = &files\[i];
 	}
@@ -4183,20 +4183,20 @@ static int amend_cluster\(const char \*s\)
 	}
 
 4??0?
-4??+2m 109220reg p OK patch2vi.c:7041:a42sc %? %@2152sc!1q0?
+4??+2m 109220reg p OK patch2vi.c:7127:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			    i < compat_blocks\[c]\.first \+ compat_blocks\[c]\.count\)
 				owned = 1;
 		if \(!owned\).*(	 \* single host block, emitted byte-identically as before\. \*/)
 	if \(ncompat\) \{
 		emit_one_call\(active, nactive\);8??0?
-grp 08??-4m 109220reg p OK patch2vi.c:7041:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 109220reg p OK patch2vi.c:7127:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			continue;
 		for \(int c = 0; c < ncompat; c\+\+\)
 			if \(i >= compat_blocks\[c]\.first &&.*(	} else if \(nactive > 0\) \{)
 		/\* A large body overflows EXINIT/argv, so the \$VI invocation stages
 		 \* its ex command body in a temp file the shell expands\. \*/9??0?
-grp 09??-7m 109220reg p OK patch2vi.c:7041:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:70412sc %? %@2132sc!0?
+grp 09??-7m 109220reg p OK patch2vi.c:7127:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:71272sc %? %@2132sc!0?
 ?0?
 %f+ 	 \* inherited applied set and invoke the next script with the rest\. \*/
 	emit_compat_tail\(\);
@@ -4206,40 +4206,40 @@ static int amend_cluster\(const char \*s\)
 1??+3m 1101q0?
 %f+ 	/\* Embed the compat blocks and the original patch after exit 0 \*/
 	printf\("\\nexit 0\\n"\);2??0?
-2??m 110220reg p OK patch2vi.c:7065:a22sc %? %@2152sc!1q0?
+2??m 110220reg p OK patch2vi.c:7151:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	/\* Embed the compat blocks and the original patch after exit 0 \*/$3??0?
-3??m 110220reg p OK patch2vi.c:7065:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 110220reg p OK patch2vi.c:7151:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	 \* inherited applied set and invoke the next script with the rest\. \*/
 	emit_compat_tail\(\);
 
 4??0?
-4??+3m 110220reg p OK patch2vi.c:7065:a42sc %? %@2152sc!1q0?
+4??+3m 110220reg p OK patch2vi.c:7151:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	printf\("\\nexit 0\\n"\);$5??0?
-5??-1m 110220reg p OK patch2vi.c:7065:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 110220reg p OK patch2vi.c:7151:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ 	......e..ted...p.ied.... ... ...... t.. .ex. s....t ...h..h....... \*/
 	e..t..ompa....i.\(..
 
 	.....be................... ....t.e o...in..........f.er .x.t.. ..
 .p.i........x.. .\\....6??0?
-6??+3m 110220reg p OK patch2vi.c:7065:a62sc %? %@2152sc!1q0?
+6??+3m 110220reg p OK patch2vi.c:7151:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	 \* inherited applied set and invoke the next script with the rest\. \*/.*?
 	emit_compat_tail\(\);.*?
 .*?
 (	/\* Embed the compat blocks and the original patch after exit 0 \*/)7??0?
-grp 07??m 110220reg p OK patch2vi.c:7065:a72sc %? %@2152sc!1q0?
+grp 07??m 110220reg p OK patch2vi.c:7151:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		fputc\('\''\\n'\'', stdout\);
 		emit_vi_block\(active, nactive\);
 	}.*(	free\(osb->s\);)
 	free\(dsb->s\);
 	/\* the script is whole: put it under the name -o asked for \*/8??0?
-grp 08??-7m 110220reg p OK patch2vi.c:7065:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 110220reg p OK patch2vi.c:7151:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		fputs\("# Patch:", stdout\);
 		for \(int k = 0; k < nactive; k\+\+\)
 			fprintf\(stdout, " %s", active\[k]->path\);.*(	if \(out_tmp && out_commit\(out_file\) < 0\))
 		return 1;
 	return 0;9??0?
-grp 09??-10m 110220reg p OK patch2vi.c:7065:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:70652sc %? %@2132sc!0?
+grp 09??-10m 110220reg p OK patch2vi.c:7151:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg patch2vi.c:71512sc %? %@2132sc!0?
 ?0?
 %f+ 	printf\("\\nexit 0\\n"\);
 	emit_compat_storage\(\);
@@ -4247,20 +4247,20 @@ static int amend_cluster\(const char \*s\)
 	for \(int i = 0; i < nraw; i\+\+\)1??0?
 1??m 1111q0?
 ;0fr.,$f+ ^	printf\("\\nexit 0\\n"\);$4??0?
-4??m 111220reg p OK patch2vi.c:7066:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 111220reg p OK patch2vi.c:7152:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 		fputc\('\''\\n'\'', stdout\);
 		emit_vi_block\(active, nactive\);
 	}.*(	free\(osb->s\);)
 	free\(dsb->s\);
 	/\* the script is whole: put it under the name -o asked for \*/8??0?
-grp 08??-6m 111220reg p OK patch2vi.c:7066:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 111220reg p OK patch2vi.c:7152:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		fputs\("# Patch:", stdout\);
 		for \(int k = 0; k < nactive; k\+\+\)
 			fprintf\(stdout, " %s", active\[k]->path\);.*(	if \(out_tmp && out_commit\(out_file\) < 0\))
 		return 1;
 	return 0;9??0?
-grp 09??-9m 111220reg p OK patch2vi.c:7066:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg patch2vi.c:70662sc %? %@2132sc!0?
+grp 09??-9m 111220reg p OK patch2vi.c:7152:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg patch2vi.c:71522sc %? %@2132sc!0?
 '\''1,#+2c  * picked from the bytes the patch does not use, and the per-group delta and
  * the original diff are stored after the script'\''s "exit 0", so a generated
  * script regenerates (-d) and is edited (-i) without the diff at hand.
@@ -4277,13 +4277,13 @@ static int amend_cluster\(const char \*s\)
 static int read_deltas;
 /* -1=per-group stored levels, 0=off, 1-5=forced level */
 static int delta_mode;
-??!219reg patch2vi.c:67:m32sc %? %@2142sc!0?
+??!219reg patch2vi.c:68:m32sc %? %@2142sc!0?
 '\''4i static void sb_mem(sbuf *sb, const char *s, int len)
 {
 	sbuf_mem(sb, s, len)
 }
 
-??!219reg patch2vi.c:87:m42sc %? %@2142sc!0?
+??!219reg patch2vi.c:88:m42sc %? %@2142sc!0?
 '\''5i /* printf into a fresh string, so a label built from user paths has no
  * length limit. */
 static char *str_fmt(const char *fmt, ...)
@@ -4313,7 +4313,7 @@ static void sb_lines(sbuf *fp, char **v, int n)
 		sb_printf(fp, "%s\n", v[i]);
 }
 
-??!219reg patch2vi.c:104:m52sc %? %@2142sc!0?
+??!219reg patch2vi.c:105:m52sc %? %@2142sc!0?
 '\''6i /* Per-group delta: structured customizations from interactive editing */
 typedef struct {
 	int group_idx;      /* 1-based */
@@ -4364,11 +4364,11 @@ typedef struct { file_delta_t *v; int n, cap; } dstore_t;
 
 static dstore_t out_deltas, in_deltas;
 
-??!219reg patch2vi.c:177:m62sc %? %@2142sc!0?
+??!219reg patch2vi.c:178:m62sc %? %@2142sc!0?
 '\''7i 	STRAT_DEFAULT = 0,  /* use global mode default */
-??!219reg patch2vi.c:178:m72sc %? %@2142sc!0?
+??!219reg patch2vi.c:179:m72sc %? %@2142sc!0?
 '\''8i 	STRAT_RELC,         /* f> regex search + ;c horizontal edit */
-??!219reg patch2vi.c:180:m82sc %? %@2142sc!0?
+??!219reg patch2vi.c:181:m82sc %? %@2142sc!0?
 '\''9i /* Map "abs"/"rel"/"relc" → strategy (n=length to compare). */
 static int strat_from_name(const char *s, int n)
 {
@@ -4391,7 +4391,7 @@ static int is_substitute(const char *s)
 		 (c >= '\''0'\'' && c <= '\''9'\''));
 }
 
-??!219reg patch2vi.c:182:m92sc %? %@2142sc!0?
+??!219reg patch2vi.c:183:m92sc %? %@2142sc!0?
 '\''10i /* The store'\''s entry for path, appended if absent. */
 static file_delta_t *dstore_get(dstore_t *ds, const char *path)
 {
@@ -4425,7 +4425,7 @@ static file_delta_t **dstore_per_file(dstore_t *ds, file_patch_t **fps, int n)
 	return v;
 }
 
-??!219reg patch2vi.c:217:m102sc %? %@2142sc!0?
+??!219reg patch2vi.c:218:m102sc %? %@2142sc!0?
 '\''11i /* arr_append a slice of src[0..sn) into dst. */
 static void arr_clone(char ***dst, int *dn, int *dc, char **src, int sn)
 {
@@ -4529,7 +4529,7 @@ static int delta_matches(grp_delta_t *st, char **del, int ndel,
 				     post, npost);
 }
 
-??!219reg patch2vi.c:574:m112sc %? %@2142sc!0?
+??!219reg patch2vi.c:575:m112sc %? %@2142sc!0?
 '\''12i /* A stored verbatim blob'\''s bytes, minus the two its script reserved: those are
  * structure, and counting them would move the next generation onto different
  * bytes and strand every blob captured under the old pair. */
@@ -4540,15 +4540,15 @@ static void mark_verbatim_bytes(const char *s, int esc, int sp)
 			byte_used[(unsigned char)*s] = 1;
 }
 
-??!219reg patch2vi.c:699:m122sc %? %@2142sc!0?
+??!219reg patch2vi.c:700:m122sc %? %@2142sc!0?
 '\''13,#+1c /* Append one group segment, generated or overridden. Segments start with their
  * own line break, redundant when the segment before ended with one. */
-??!219reg patch2vi.c:922:m132sc %? %@2142sc!0?
+??!219reg patch2vi.c:923:m132sc %? %@2142sc!0?
 '\''14,#+2c  * A window generator - or the user, editing a SEARCH PATTERN - hands them over
  * pre-escaped and carrying their own anchoring, so they go out as they are;
  * raw text is regex-escaped first, and a lone raw line is wrapped ^...$ so
  * repeated text cannot match at an offset.
-??!219reg patch2vi.c:1129:m142sc %? %@2142sc!0?
+??!219reg patch2vi.c:1135:m142sc %? %@2142sc!0?
 '\''15,#+1c /* Mark ids reserved per file by verbatim overrides (their blobs reference a
  * fixed id), so regenerated groups cannot collide with them. next_mark_id also
  * skips the ids the editor rewrites itself: <'\''> <*> <[> <]> <`>. */
@@ -4569,14 +4569,14 @@ static int mark_is_reserved(int id)
 	return 0;
 }
 
-??!219reg patch2vi.c:1202:m152sc %? %@2142sc!0?
+??!219reg patch2vi.c:1208:m152sc %? %@2142sc!0?
 '\''16c 	while (*n == '\''\'\'''\'' || *n == '\''*'\'' || *n == '\''['\'' || *n == '\'']'\'' || *n == '\''`'\''
 	       || mark_is_reserved(*n))
-??!219reg patch2vi.c:1206:m162sc %? %@2142sc!0?
+??!219reg patch2vi.c:1212:m162sc %? %@2142sc!0?
 '\''17i 	/* For interactive mode (-i): */
 	char **all_pre_ctx;      /* all context lines before change */
 	int nall_pre_ctx;
-??!219reg patch2vi.c:1223:m172sc %? %@2142sc!0?
+??!219reg patch2vi.c:1229:m172sc %? %@2142sc!0?
 '\''18i 	int block_change_idx;    /* index of first del/change line in block */
 	/* Edited SEARCH PATTERN 1-NSEARCH sections (pre-escaped regex) */
 	char **custom_pat[NSEARCH];
@@ -4588,7 +4588,7 @@ static int mark_is_reserved(int id)
 	int custom_offset;       /* offset from EDIT COMMAND +N (patterns 1-2) */
 	/* Per-group strategy selection (interactive mode) */
 	int strategy;            /* enum strategy */
-??!219reg patch2vi.c:1225:m182sc %? %@2142sc!0?
+??!219reg patch2vi.c:1231:m182sc %? %@2142sc!0?
 '\''19i 	/* Per-group custom edit commands from EDIT COMMAND sections.
 	 * lines[0] = "cmd [inline-content]", lines[1..] = extra content lines.
 	 * Content is raw text (NOT pre-escaped); escaping applied at emit time.
@@ -4599,15 +4599,15 @@ static int mark_is_reserved(int id)
 	int custom_abs_nlines;
 	int custom_relc_nlines;
 	int custom_rel_nlines;
-??!219reg patch2vi.c:1230:m192sc %? %@2142sc!0?
+??!219reg patch2vi.c:1236:m192sc %? %@2142sc!0?
 '\''20,#+1c 	/* Verbatim segments: generated bytes (gen_group_segments) and user
 	 * overrides substituted for them at emit time; no trailing newline. */
-??!219reg patch2vi.c:1238:m202sc %? %@2142sc!0?
+??!219reg patch2vi.c:1244:m202sc %? %@2142sc!0?
 '\''21i 	char *ph1_ovr, *ph2_ovr;
 	int ovr_mark;            /* forced mark id for override blobs */
 	int ovr_esc;             /* escape regime the override was captured under */
 	int ovr_sep;             /* separator the override was captured under */
-??!219reg patch2vi.c:1240:m212sc %? %@2142sc!0?
+??!219reg patch2vi.c:1246:m212sc %? %@2142sc!0?
 '\''22i static int delta_matches_group(grp_delta_t *st, group_t *g, int lvl)
 {
 	return delta_matches(st, g->del_texts, g->ndel, g->add_texts, g->nadd,
@@ -4631,10 +4631,10 @@ static grp_delta_t *find_grp_delta(file_delta_t *fd, int idx, group_t *g)
 	return NULL;
 }
 
-??!219reg patch2vi.c:1242:m222sc %? %@2142sc!0?
+??!219reg patch2vi.c:1248:m222sc %? %@2142sc!0?
 '\''23c 	int pre_escaped;  /* 1 = a window generator'\''s or the user'\''s regex,
 			   * 0 = raw text */
-??!219reg patch2vi.c:1258:m232sc %? %@2142sc!0?
+??!219reg patch2vi.c:1264:m232sc %? %@2142sc!0?
 '\''24i /* Parse "s/<pat>/<repl>/[flags]" into its (still-escaped) pat/repl substrings,
  * respecting "\/" escaped delimiters. Only the '\''/'\'' delimiter is recognized
  * (the chain emit hardcodes it). Returns 1 and allocates pat/repl on success,
@@ -4661,10 +4661,10 @@ static int parse_sub_line(const char *line, char **pat, char **repl)
 	return 1;
 }
 
-??!219reg patch2vi.c:2273:m242sc %? %@2142sc!0?
+??!219reg patch2vi.c:2279:m242sc %? %@2142sc!0?
 '\''25,#+1c  * (skipped when it would absorb nothing). Fields are fully escaped, as
  * interactive mode displays them; caller frees. */
-??!219reg patch2vi.c:2335:m252sc %? %@2142sc!0?
+??!219reg patch2vi.c:2341:m252sc %? %@2142sc!0?
 '\''26i /* Strip a +N/-N prefix off a custom rel/relc command and return it: a bare
  * "+N" line is removed outright, a "+3a text" one loses just the prefix. */
 static int parse_ecmd_offset(char **lines, int *nlines)
@@ -5432,24 +5432,24 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 	g->ovr_sep = 0;
 }
 
-??!219reg patch2vi.c:2365:m262sc %? %@2142sc!0?
+??!219reg patch2vi.c:2371:m262sc %? %@2142sc!0?
 '\''27,#+1c  * run several independent editor lifetimes - the interactive session and, one
  * per script block, the -e runner. The config tables and the input buffer are
-??!219reg patch2vi.c:2369:m272sc %? %@2142sc!0?
+??!219reg patch2vi.c:2375:m272sc %? %@2142sc!0?
 '\''28,#+1c 	 * source text, so a replay/-i session must turn it off too, whether
 	 * or not a replayed prologue already did. */
-??!219reg patch2vi.c:2481:m282sc %? %@2142sc!0?
+??!219reg patch2vi.c:2487:m282sc %? %@2142sc!0?
 '\''29i /* Hand the loaded buffers to the user and end the session; they outlive it so
  * the caller can read them back, and ed_free() drops them. */
-??!219reg patch2vi.c:2518:m292sc %? %@2142sc!0?
+??!219reg patch2vi.c:2524:m292sc %? %@2142sc!0?
 '\''30,#+3c  * its script, -C'\''s after its fix slot, -i/-d'\''s after the input patch. Its
  * option letters are vi(1)'\''s own, applied to the interactive session, and
  * its files are opened on top of the ones the run itself named - so a
  * session can visit a file the script never touched and still have it end
  * up in the emitted diff. */
-??!219reg patch2vi.c:2520:m302sc %? %@2142sc!0?
-?'\''31s/editor session every handover/interactive session every editing/1??1??1q'\''31s/editor(.*)handover/interactive\1editing/2??2??'\''31220reg p OK patch2vi.c:2528:s22sc %? %@2162sc!0?
-1;2??!219reg patch2vi.c:2528:m312sc %? %@2142sc!0?
+??!219reg patch2vi.c:2526:m302sc %? %@2142sc!0?
+?'\''31s/editor session every handover/interactive session every editing/1??1??1q'\''31s/editor(.*)handover/interactive\1editing/2??2??'\''31220reg p OK patch2vi.c:2534:s22sc %? %@2162sc!0?
+1;2??!219reg patch2vi.c:2534:m312sc %? %@2142sc!0?
 '\''32i static int ed_run(void)
 {
 	int st;
@@ -5460,14 +5460,14 @@ static void discard_verbatim_ovr(const char *path, int idx, group_t *g,
 	return st;
 }
 
-??!219reg patch2vi.c:2571:m322sc %? %@2142sc!0?
+??!219reg patch2vi.c:2577:m322sc %? %@2142sc!0?
 '\''33,#+1c  * = one staged body = one storage region = one -i buffer, so a compat patch is
  * authored and shipped as the single diff it is. Always emitted after the host;
-??!219reg patch2vi.c:2586:m332sc %? %@2142sc!0?
+??!219reg patch2vi.c:2592:m332sc %? %@2142sc!0?
 '\''34i 	/* per-block delta customizations, filled either from the editor
 	 * (out) or re-read from a stored block (in) */
 	dstore_t deltas;
-??!219reg patch2vi.c:2592:m342sc %? %@2142sc!0?
+??!219reg patch2vi.c:2598:m342sc %? %@2142sc!0?
 '\''35i /* One editable unit: a named buffer and its initial text. */
 struct edit_ub { const char *name; char *text; };
 
@@ -5745,9 +5745,9 @@ typedef struct {
 	char *phased;		/* editor text: injected + MARK/PHASE (owned) */
 } unit_t;
 
-??!219reg patch2vi.c:2612:m352sc %? %@2142sc!0?
-?'\''36s/ody emission/lob build, its derivation and its body emission alike/1??1??1q'\''36s/(od.*on)/lob build, its derivation and its b\1 alike/2??2??'\''36220reg p OK patch2vi.c:2615:s22sc %? %@2162sc!0?
-1;2??!219reg patch2vi.c:2615:m362sc %? %@2142sc!0?
+??!219reg patch2vi.c:2618:m352sc %? %@2142sc!0?
+?'\''36s/ody emission/lob build, its derivation and its body emission alike/1??1??1q'\''36s/(od.*on)/lob build, its derivation and its b\1 alike/2??2??'\''36220reg p OK patch2vi.c:2621:s22sc %? %@2162sc!0?
+1;2??!219reg patch2vi.c:2621:m362sc %? %@2142sc!0?
 '\''37i /* A unit'\''s two blobs: the no-injection baseline (for the later diff) and the
  * injected + MARK/PHASE text shown in the editor. */
 static void build_unit_blobs(unit_t *u)
@@ -6023,12 +6023,12 @@ static void emit_custom_edit_lines(sbuf *out, char **lines, int nlines)
 	}
 }
 
-??!219reg patch2vi.c:2628:m372sc %? %@2142sc!0?
+??!219reg patch2vi.c:2634:m372sc %? %@2142sc!0?
 '\''38i 		/* For interactive mode: collect ALL context lines */
 		char **all_ctx = NULL;
 		int nall_ctx = 0;
 		int all_ctx_cap = 0;
-??!219reg patch2vi.c:2664:m382sc %? %@2142sc!0?
+??!219reg patch2vi.c:2670:m382sc %? %@2142sc!0?
 '\''40i 			if (interactive_mode) {
 				/* Reset on hunk boundary (gap in line numbers) */
 				if (nall_ctx > 0 && fp->ops[i].oline !=
@@ -6040,18 +6040,18 @@ static void emit_custom_edit_lines(sbuf *out, char **lines, int nlines)
 				}
 				all_ctx[nall_ctx++] = fp->ops[i].text;
 			}
-??!219reg patch2vi.c:2673:m402sc %? %@2142sc!0?
+??!219reg patch2vi.c:2679:m402sc %? %@2142sc!0?
 '\''41c 		if (i >= fp->nops) {
 			free(all_ctx);
-??!219reg patch2vi.c:2676:m412sc %? %@2142sc!0?
+??!219reg patch2vi.c:2682:m412sc %? %@2142sc!0?
 '\''43i 		}
-??!219reg patch2vi.c:2677:m432sc %? %@2142sc!0?
+??!219reg patch2vi.c:2683:m432sc %? %@2142sc!0?
 '\''44,#+3c 		/* Up to 3 following context lines, for the patterns that key
 		 * on them. Without them relative mode would fall back to the
 		 * single follow_ctx line and drift from the interactive
 		 * output. */
 		if ((rel || interactive_mode) && (g->del_start || g->nadd)) {
-??!219reg patch2vi.c:2739:m442sc %? %@2142sc!0?
+??!219reg patch2vi.c:2745:m442sc %? %@2142sc!0?
 '\''45i 		/* interactive mode also shows all leading context */
 		if (interactive_mode && (g->del_start || g->nadd)) {
 			g->all_pre_ctx = all_ctx;
@@ -6061,15 +6061,15 @@ static void emit_custom_edit_lines(sbuf *out, char **lines, int nlines)
 			free(all_ctx);
 		}
 
-??!219reg patch2vi.c:2756:m452sc %? %@2142sc!0?
+??!219reg patch2vi.c:2762:m452sc %? %@2142sc!0?
 '\''46c 		 * cut from it, and the interactive display shows the same
 		 * minimal ";c" span. */
-??!219reg patch2vi.c:2759:m462sc %? %@2142sc!0?
+??!219reg patch2vi.c:2765:m462sc %? %@2142sc!0?
 '\''47i 	free(g->all_pre_ctx);
-??!219reg patch2vi.c:2793:m472sc %? %@2142sc!0?
+??!219reg patch2vi.c:2799:m472sc %? %@2142sc!0?
 '\''48i 	for (int pi = 0; pi < NSEARCH; pi++)
 		free_lines(g->custom_pat[pi], g->ncustom_pat[pi]);
-??!219reg patch2vi.c:2794:m482sc %? %@2142sc!0?
+??!219reg patch2vi.c:2800:m482sc %? %@2142sc!0?
 '\''49i 	free(g->ph1_ovr);
 	free(g->ph2_ovr);
 }
@@ -6097,12 +6097,12 @@ static void emit_mark_edit(sbuf *out, group_t *g, int tline,
 	emit_custom_edit_lines(out, lines, nlines);
 	EMIT_SEP(out);
 	emit_err_check(out, 2, tline, g->mark_id, NULL, 0);
-??!219reg patch2vi.c:2799:m492sc %? %@2142sc!0?
+??!219reg patch2vi.c:2805:m492sc %? %@2142sc!0?
 '\''50c  * (forward layout only), regenerated from the current structured state on every
  * call. A group carrying an override still generates normally and its bytes are
  * discarded, so the cross-group state - mark allocation, first-search flag -
  * evolves exactly as it did when the override was captured. */
-??!219reg patch2vi.c:2803:m502sc %? %@2142sc!0?
+??!219reg patch2vi.c:2809:m502sc %? %@2142sc!0?
 '\''51i 	/* drop stale segments and reserve the override marks first */
 	nreserved_marks = 0;
 	for (int gi = 0; gi < ngroups; gi++) {
@@ -6115,11 +6115,11 @@ static void emit_mark_edit(sbuf *out, group_t *g, int tline,
 			reserve_mark(g->ovr_mark);
 	}
 
-??!219reg patch2vi.c:2816:m512sc %? %@2142sc!0?
+??!219reg patch2vi.c:2822:m512sc %? %@2142sc!0?
 '\''52i 		/* non-interactively the flags decide, interactively the user */
 		int strat = g->strategy;
 
-??!219reg patch2vi.c:2830:m522sc %? %@2142sc!0?
+??!219reg patch2vi.c:2837:m522sc %? %@2142sc!0?
 '\''53c 
 		if (!interactive_mode)
 			strat = (relative_mode && has_anchors) ? STRAT_REL : STRAT_ABS;
@@ -6135,22 +6135,22 @@ static void emit_mark_edit(sbuf *out, group_t *g, int tline,
 			else if (!(g->ndel == 1 && g->nadd == 1 && g->has_line_diff))
 				strat = STRAT_REL;  /* fall back to s// if no ;c data */
 		}
-??!219reg patch2vi.c:2832:m532sc %? %@2142sc!0?
+??!219reg patch2vi.c:2839:m532sc %? %@2142sc!0?
 '\''54i 			/* Custom abs commands carry their own addresses */
 			if (g->custom_abs_lines && g->custom_abs_nlines > 0)
 				goto ph1_done;
-??!219reg patch2vi.c:2835:m542sc %? %@2142sc!0?
-?'\''55s/next_mark_id\(/group_mark_id(g, /1??1??1q'\''55s/next(_m.*\()/group\1g, /2??2??'\''55220reg p OK patch2vi.c:2847:s22sc %? %@2162sc!0?
-1;2??!219reg patch2vi.c:2847:m552sc %? %@2142sc!0?
+??!219reg patch2vi.c:2842:m542sc %? %@2142sc!0?
+?'\''55s/next_mark_id\(/group_mark_id(g, /1??1??1q'\''55s/next(_m.*\()/group\1g, /2??2??'\''55220reg p OK patch2vi.c:2854:s22sc %? %@2162sc!0?
+1;2??!219reg patch2vi.c:2854:m552sc %? %@2142sc!0?
 '\''56,#+1c 		/* The fallback list: edited SEARCH PATTERN sections if any,
 		 * else the defaults. Duplicates dropped. */
-??!219reg patch2vi.c:2853:m562sc %? %@2142sc!0?
+??!219reg patch2vi.c:2860:m562sc %? %@2142sc!0?
 '\''57,#+2c 		char **raw = NULL;
 		winset_t ws;           /* owned relaxed windows (plain -r path) */
-??!219reg patch2vi.c:2857:m572sc %? %@2142sc!0?
+??!219reg patch2vi.c:2864:m572sc %? %@2142sc!0?
 '\''58,#+4c 		for (int pi = 0; pi < NSEARCH; pi++) {
 			if (g->ncustom_pat[pi] == 0)
-??!219reg patch2vi.c:2861:m582sc %? %@2142sc!0?
+??!219reg patch2vi.c:2868:m582sc %? %@2142sc!0?
 '\''59,#+5c 			ps[nps].lines = g->custom_pat[pi];
 			ps[nps].nlines = g->ncustom_pat[pi];
 			ps[nps].pre_escaped = 1;
@@ -6166,7 +6166,7 @@ static void emit_mark_edit(sbuf *out, group_t *g, int tline,
 			ps[nps].mode = g->custom_pat_has_mode[pi]
 				       ? g->custom_pat_mode[pi]
 				       : g->ncustom_pat[pi] == 1 ? 1 : 0;
-??!219reg patch2vi.c:2867:m592sc %? %@2142sc!0?
+??!219reg patch2vi.c:2874:m592sc %? %@2142sc!0?
 '\''60,#+7c 		if (nps == 0) {
 			int slot_sz = g->ndel + 7;
 			raw = emalloc(NPAT * slot_sz * sizeof(char *));
@@ -6197,15 +6197,15 @@ static void emit_mark_edit(sbuf *out, group_t *g, int tline,
 			 * -i emits in this same order, so sorting only -r would
 			 * diverge the two modes. */
 		}
-??!219reg patch2vi.c:2876:m602sc %? %@2142sc!0?
+??!219reg patch2vi.c:2883:m602sc %? %@2142sc!0?
 '\''61,#+1c 		/* Pure insert: the mark lands on the line to append after.
 		 * Custom edit lines carry their own verb-relative offset, so
 		 * they take no adjustment. */
 		if (!g->del_start && g->nadd
 		    && !(g->custom_rel_lines && g->custom_rel_nlines > 0)) {
-??!219reg patch2vi.c:2897:m612sc %? %@2142sc!0?
-?'\''62s/next_mark_id\(/group_mark_id(g, /1??1??1q'\''62s/next(_m.*\()/group\1g, /2??2??'\''62220reg p OK patch2vi.c:2907:s22sc %? %@2162sc!0?
-1;2??!219reg patch2vi.c:2907:m622sc %? %@2142sc!0?
+??!219reg patch2vi.c:2904:m612sc %? %@2142sc!0?
+?'\''62s/next_mark_id\(/group_mark_id(g, /1??1??1q'\''62s/next(_m.*\()/group\1g, /2??2??'\''62220reg p OK patch2vi.c:2914:s22sc %? %@2162sc!0?
+1;2??!219reg patch2vi.c:2914:m622sc %? %@2142sc!0?
 '\''63,#+2c 		/* Custom abs/rel edit commands apply regardless of del/add shape */
 		if (strat == STRAT_ABS && g->custom_abs_lines) {
 			emit_custom_edit_lines(out, g->custom_abs_lines,
@@ -6259,14 +6259,14 @@ static void emit_mark_edit(sbuf *out, group_t *g, int tline,
 				emit_err_check(out, 2, tline, g->mark_id, NULL, 0);
 			} else if (strat == STRAT_REL && g->ndel == 1 && g->nadd == 1
 				   && g->has_line_diff) {
-??!219reg patch2vi.c:2945:m632sc %? %@2142sc!0?
-'\''64s/relative mode/the forward modes/??!219reg patch2vi.c:2972:m642sc %? %@2142sc!0?
+??!219reg patch2vi.c:2952:m632sc %? %@2142sc!0?
+'\''64s/relative mode/the forward modes/??!219reg patch2vi.c:2979:m642sc %? %@2142sc!0?
 '\''65i 	int forward = relative_mode || interactive_mode;
-??!219reg patch2vi.c:2980:m652sc %? %@2142sc!0?
-'\''66s/relative_mode/forward/??!219reg patch2vi.c:2982:m662sc %? %@2142sc!0?
+??!219reg patch2vi.c:2987:m652sc %? %@2142sc!0?
+'\''66s/relative_mode/forward/??!219reg patch2vi.c:2989:m662sc %? %@2142sc!0?
 '\''67i 	/* Segments regenerate from the current structured state; a verbatim
 	 * override replaces its group'\''s generated bytes at write time. */
-??!219reg patch2vi.c:3006:m672sc %? %@2142sc!0?
+??!219reg patch2vi.c:3013:m672sc %? %@2142sc!0?
 '\''68,#+5c 	for (int gi = 0; gi < ngroups; gi++) {
 		group_t *g = &groups[gi];
 		const char *seg = g->ph1_ovr ? g->ph1_ovr : g->ph1_gen;
@@ -6279,19 +6279,19 @@ static void emit_mark_edit(sbuf *out, group_t *g, int tline,
 		if (seg)
 			sb_seg(out, seg);
 	}
-??!219reg patch2vi.c:3008:m682sc %? %@2142sc!0?
+??!219reg patch2vi.c:3015:m682sc %? %@2142sc!0?
 '\''69c 	int forward = relative_mode || interactive_mode;
 	int regs = relative_mode || interactive_mode || compat_mode;
-??!219reg patch2vi.c:3195:m692sc %? %@2142sc!0?
-'\''70s/relative_mode/forward/??!219reg patch2vi.c:3200:m702sc %? %@2142sc!0?
-'\''71s/relative_mode/forward/??!219reg patch2vi.c:3206:m712sc %? %@2142sc!0?
+??!219reg patch2vi.c:3209:m692sc %? %@2142sc!0?
+'\''70s/relative_mode/forward/??!219reg patch2vi.c:3214:m702sc %? %@2142sc!0?
+'\''71s/relative_mode/forward/??!219reg patch2vi.c:3220:m712sc %? %@2142sc!0?
 '\''72,#+2c 	 * compat regions sit before its host patch, so -d parses them in the
 	 * other order than the run that derived them did, and a files[]-ordered
 	 * b<N> would renumber every buffer across a regeneration. */
-??!219reg patch2vi.c:3677:m722sc %? %@2142sc!0?
+??!219reg patch2vi.c:3691:m722sc %? %@2142sc!0?
 '\''73i 			if (!interactive_mode)
 				inject_deltas(s->files, s->nf, &s->cb->deltas);
-??!219reg patch2vi.c:3751:m732sc %? %@2142sc!0?
+??!219reg patch2vi.c:3765:m732sc %? %@2142sc!0?
 '\''74i /* A delta store as === DELTA <path> === sections; a file whose groups were all
  * left alone contributes nothing. */
 static void emit_dstore(dstore_t *ds)
@@ -6312,32 +6312,32 @@ static void emit_dstore(dstore_t *ds)
 	free(sb->s);
 }
 
-??!219reg patch2vi.c:3786:m742sc %? %@2142sc!0?
+??!219reg patch2vi.c:3802:m742sc %? %@2142sc!0?
 '\''75,#+4c  * compat patch, self-contained - its delta customizations and its whole unified
  * diff - so -d regenerates it and -i edits it without re-running the origin.
  * === COMPAT PATCH === is that diff and nothing else, stored verbatim, so a -C
  * second positional comes back out as the patch its author handed in. The inner
  * sub-sections close with === END === like the host'\''s, so the reader reaches
  * === END COMPAT === with no section open.
-??!219reg patch2vi.c:3789:m752sc %? %@2142sc!0?
+??!219reg patch2vi.c:3805:m752sc %? %@2142sc!0?
 '\''76i 		printf("=== COMPAT DELTA ===\n");
 		emit_dstore(&cb->deltas);
 		printf("%s\n", end_tag_wr);
-??!219reg patch2vi.c:3802:m762sc %? %@2142sc!0?
+??!219reg patch2vi.c:3818:m762sc %? %@2142sc!0?
 '\''77i 	if (cb->deltas.n) {
 		fprintf(stderr, "amend: block %d had stored customizations, "
 			"which its new diff cannot be matched to: dropping "
 			"them\n", amend_sel);
 		memset(&cb->deltas, 0, sizeof(cb->deltas));
 	}
-??!219reg patch2vi.c:6125:m772sc %? %@2142sc!0?
+??!219reg patch2vi.c:6211:m772sc %? %@2142sc!0?
 '\''78,#+5c  * A generated script'\''s tail metadata in one left-to-right pass: the host
  * === DELTA === sections and every === PATCH2VI COMPAT === region (its own
  * DELTA sub-sections and its === COMPAT PATCH === diff). Regions nest one deep
  * and are fenced by === END COMPAT ===, never by a line count, so a hand-edit
  * that adds or drops a line still parses. Stops at === PATCH2VI PATCH ===,
  * leaving the host diff to the caller.
-??!219reg patch2vi.c:6431:m782sc %? %@2142sc!0?
+??!219reg patch2vi.c:6517:m782sc %? %@2142sc!0?
 '\''79c /* The DELTA sub-sections that only select where the following body lines go. */
 static const struct { const char *tag; int sect; } gsects[] = {
 	{ "=== custom_text ===", GS_CUSTOM },
@@ -6350,8 +6350,8 @@ static const struct { const char *tag; int sect; } gsects[] = {
 };
 
 static int read_delta_sections(FILE *in)
-??!219reg patch2vi.c:6438:m792sc %? %@2142sc!0?
-'\''80s/ e/ j, e/??!219reg patch2vi.c:6441:m802sc %? %@2142sc!0?
+??!219reg patch2vi.c:6524:m792sc %? %@2142sc!0?
+'\''80s/ e/ j, e/??!219reg patch2vi.c:6527:m802sc %? %@2142sc!0?
 '\''81,#+1c 	/* Read structured delta section */
 	file_delta_t *cur_fd = NULL;
 	grp_delta_t *cur_gd = NULL;
@@ -6361,9 +6361,9 @@ static int read_delta_sections(FILE *in)
 	/* Compat tail-region state, depth 1: cur_cb redirects DELTA
 	 * sub-sections into the block'\''s own array, in_compat_patch routes the
 	 * block'\''s diff into its own files[] range and raw sink. All closed by
-??!219reg patch2vi.c:6459:m812sc %? %@2142sc!0?
+??!219reg patch2vi.c:6545:m812sc %? %@2142sc!0?
 '\''82i 	sbuf_smake(ph, SB_INIT)
-??!219reg patch2vi.c:6463:m822sc %? %@2142sc!0?
+??!219reg patch2vi.c:6549:m822sc %? %@2142sc!0?
 '\''83i 		/* A stored blob'\''s bytes are marked used as it closes, so a
 		 * changed patch cannot pick a SEP/ESC that collides with them. */
 		if (in_ph) {
@@ -6376,10 +6376,10 @@ static int read_delta_sections(FILE *in)
 						    cur_gd->ovr_sep);
 			continue;
 		}
-??!219reg patch2vi.c:6465:m832sc %? %@2142sc!0?
+??!219reg patch2vi.c:6551:m832sc %? %@2142sc!0?
 '\''84i 			cur_fd = NULL;
 			cur_gd = NULL;
-??!219reg patch2vi.c:6498:m842sc %? %@2142sc!0?
+??!219reg patch2vi.c:6584:m842sc %? %@2142sc!0?
 '\''85i 			cur_fd = NULL;
 			cur_gd = NULL;
 			continue;
@@ -6387,7 +6387,7 @@ static int read_delta_sections(FILE *in)
 		if (cur_cb && strcmp(line, "=== COMPAT DELTA ===") == 0) {
 			cur_fd = NULL;
 			cur_gd = NULL;
-??!219reg patch2vi.c:6502:m852sc %? %@2142sc!0?
+??!219reg patch2vi.c:6588:m852sc %? %@2142sc!0?
 '\''86i 		if (strncmp(line, "=== PATCH2VI DELTA ===", 22) == 0)
 			continue;
 		if (strcmp(line, end_tag_rd) == 0) {
@@ -6492,14 +6492,14 @@ static int read_delta_sections(FILE *in)
 			continue;
 		}
 		gsect_add(cur_gd, in_sect, pat_idx, line);
-??!219reg patch2vi.c:6518:m862sc %? %@2142sc!0?
+??!219reg patch2vi.c:6604:m862sc %? %@2142sc!0?
 '\''87i 	free(ph->s);
-??!219reg patch2vi.c:6519:m872sc %? %@2142sc!0?
+??!219reg patch2vi.c:6605:m872sc %? %@2142sc!0?
 '\''88c 		"%s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG] [input.patch] [nextvi-opts...]\n"
-??!219reg patch2vi.c:6559:m882sc %? %@2142sc!0?
+??!219reg patch2vi.c:6645:m882sc %? %@2142sc!0?
 '\''89,#+1c 		"%s [-ari]I [nextvi-opts...]\n"
 		"%s [-ario]E script.sh [reg|'\'''\''] [nextvi-opts...]\n"
-??!219reg patch2vi.c:6561:m892sc %? %@2142sc!0?
+??!219reg patch2vi.c:6647:m892sc %? %@2142sc!0?
 '\''90c 	      "        Several scripts run in order, stopping at the first failure\n"
 	      "  -i    Interactive: edit patterns and ex bodies in the built-in nextvi\n"
 	      "        Rest of the line after the input patch is a nextvi command\n"
@@ -6510,26 +6510,26 @@ static int read_delta_sections(FILE *in)
 	      "  -d3   Delta: match by group index + entire hunk\n"
 	      "  -d4   Delta: match by deleted/inserted text or regex\n"
 	      "  -d5   Delta: match by entire hunk\n", f);
-??!219reg patch2vi.c:6575:m902sc %? %@2142sc!0?
-'\''92s/e\\\\/e; -d[N] keeps deltas\\\\/??!219reg patch2vi.c:6585:m922sc %? %@2142sc!0?
+??!219reg patch2vi.c:6661:m902sc %? %@2142sc!0?
+'\''92s/e\\\\/e; -d[N] keeps deltas\\\\/??!219reg patch2vi.c:6671:m922sc %? %@2142sc!0?
 '\''94,#+4c /* Is what follows a leading "-o" an option cluster naming -E or -d rather than
  * a file name? Only when it holds one of those and nothing but cluster letters,
  * so that "-oE" and "-od2" (and "-oEd2", "-od3E") mean "update the script in
  * place" while any ordinary -oFILE, even -oEDITED or -odelta.sh, still names a
  * file. Both modes read a script and emit one, so in place is what an author
  * means; the file literally named "d" is still reachable as "-o d". */
-??!219reg patch2vi.c:6614:m942sc %? %@2142sc!0?
-'\''95s/\)\)/) && !strchr(s, '\''d'\''))/??!219reg patch2vi.c:6622:m952sc %? %@2142sc!0?
-?'\''97s/IEo/iIEod12345/1??1??1q'\''97s/(I.*o)/i\1d12345/2??2??'\''97220reg p OK patch2vi.c:6625:s22sc %? %@2162sc!0?
-1;2??!219reg patch2vi.c:6625:m972sc %? %@2142sc!0?
+??!219reg patch2vi.c:6700:m942sc %? %@2142sc!0?
+'\''95s/\)\)/) && !strchr(s, '\''d'\''))/??!219reg patch2vi.c:6708:m952sc %? %@2142sc!0?
+?'\''97s/IEo/iIEod12345/1??1??1q'\''97s/(I.*o)/i\1d12345/2??2??'\''97220reg p OK patch2vi.c:6711:s22sc %? %@2162sc!0?
+1;2??!219reg patch2vi.c:6711:m972sc %? %@2142sc!0?
 '\''98i 			read_deltas = 1;
-??!219reg patch2vi.c:6663:m982sc %? %@2142sc!0?
-'\''99s/ h/ i h d/??!219reg patch2vi.c:6686:m992sc %? %@2142sc!0?
+??!219reg patch2vi.c:6749:m982sc %? %@2142sc!0?
+'\''99s/ h/ i h d/??!219reg patch2vi.c:6772:m992sc %? %@2142sc!0?
 '\''100i 			else if (argv[i][j] == '\''i'\'') {
 				interactive_mode = 1;
 				read_deltas = 1;
 			}
-??!219reg patch2vi.c:6698:m1002sc %? %@2142sc!0?
+??!219reg patch2vi.c:6784:m1002sc %? %@2142sc!0?
 '\''101c 			else if (argv[i][j] == '\''d'\'') {
 				if (argv[i][j+1] >= '\''1'\'' && argv[i][j+1] <= '\''5'\'') {
 					j++;
@@ -6540,10 +6540,10 @@ static int read_delta_sections(FILE *in)
 				interactive_mode = 1;
 				read_deltas = 1;
 			} else if (argv[i][j] == '\''h'\'')
-??!219reg patch2vi.c:6713:m1012sc %? %@2142sc!0?
+??!219reg patch2vi.c:6799:m1012sc %? %@2142sc!0?
 '\''102,#+1c 	if (amend_inplace && !amend_mode && !compat_mode && !delta_mode) {
 		fprintf(stderr, "Clustered -o is only for -E, -d and -C\n");
-??!219reg patch2vi.c:6725:m1022sc %? %@2142sc!0?
+??!219reg patch2vi.c:6811:m1022sc %? %@2142sc!0?
 '\''103i 	/* -i/-d take the editor'\''s command line after the input positional,
 	 * exactly as -E does after its script and -C after its fix slot: the
 	 * positional anchors where patch2vi'\''s own options end, so a stdin
@@ -6561,24 +6561,24 @@ static int read_delta_sections(FILE *in)
 		}
 		out_file = input_file;
 	}
-??!219reg patch2vi.c:6730:m1032sc %? %@2142sc!0?
-'\''104s/ c/ interactive_mode || c/??!219reg patch2vi.c:6816:m1042sc %? %@2142sc!0?
-'\''105s/stored/delta/??!219reg patch2vi.c:6882:m1052sc %? %@2142sc!0?
+??!219reg patch2vi.c:6816:m1032sc %? %@2142sc!0?
+'\''104s/ c/ interactive_mode || c/??!219reg patch2vi.c:6902:m1042sc %? %@2142sc!0?
+'\''105s/stored/delta/??!219reg patch2vi.c:6968:m1052sc %? %@2142sc!0?
 '\''106,#+2c 	/* -E: the delta sections are read as under -d, but the old patch
 	 * section is not - the new one is what the session produces, over the
 	 * files as they are on disk. Close before the loop below reads it. */
-??!219reg patch2vi.c:6894:m1062sc %? %@2142sc!0?
-'\''107s/stored reg/delta sect/??!219reg patch2vi.c:6994:m1072sc %? %@2142sc!0?
-'\''108s/ c/ interactive_mode || c/??!219reg patch2vi.c:7013:m1082sc %? %@2142sc!0?
+??!219reg patch2vi.c:6980:m1062sc %? %@2142sc!0?
+'\''107s/stored reg/delta sect/??!219reg patch2vi.c:7080:m1072sc %? %@2142sc!0?
+'\''108s/ c/ interactive_mode || c/??!219reg patch2vi.c:7099:m1082sc %? %@2142sc!0?
 '\''109i 	/* Interactive editing: one built-in editor session for all files */
 	if (interactive_mode)
 		interactive_edit_all_files(active, nactive);
 
-??!219reg patch2vi.c:7041:m1092sc %? %@2142sc!0?
-'\''110s/the compat blocks and the/delta and/??!219reg patch2vi.c:7065:m1102sc %? %@2142sc!0?
+??!219reg patch2vi.c:7127:m1092sc %? %@2142sc!0?
+'\''110s/the compat blocks and the/delta and/??!219reg patch2vi.c:7151:m1102sc %? %@2142sc!0?
 '\''111i 	printf("=== PATCH2VI DELTA ===\n");
 	emit_dstore(&out_deltas);
-??!219reg patch2vi.c:7066:m1112sc %? %@2142sc!b1%ya 98?0?
+??!219reg patch2vi.c:7152:m1112sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	"-r"
 
 echo ""
@@ -6589,41 +6589,41 @@ echo "=== -I edit-to-script tests ==="
 %f> echo "=== -I edit-to-script tests ==="
 
 2??0?
-2??m 1220reg p OK test_patch2vi.sh:951:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK test_patch2vi.sh:961:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^echo "=== -I edit-to-script tests ==="$3??0?
-3??m 1220reg p OK test_patch2vi.sh:951:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK test_patch2vi.sh:961:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	"-r"
 
 echo ""4??0?
-4??+3m 1220reg p OK test_patch2vi.sh:951:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK test_patch2vi.sh:961:a42sc %? %@2152sc!1q0?
 ;0fr.,$f> ^$
 5??0?
-5??-1m 1220reg p OK test_patch2vi.sh:951:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 1220reg p OK test_patch2vi.sh:961:a52sc %? %@2152sc!fr 981qfr 980?
 %f> ."-..
 
 ......"
 ...o...........it-......ip...e....=...
 
 6??0?
-6??+3m 1220reg p OK test_patch2vi.sh:951:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK test_patch2vi.sh:961:a62sc %? %@2152sc!1q0?
 grp 1%f> 	"-r".*?
 .*?
 echo "".*?
 (echo "=== -I edit-to-script tests ===")7??0?
-grp 07??m 1220reg p OK test_patch2vi.sh:951:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK test_patch2vi.sh:961:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> first line
 second line
 third line.*(# run_I <workdir> <excmds> <patch2vi args\.\.\.>; the session is nextvi'\''s own)
 # main\(\), so the ex commands are driven through EXINIT like in vi\(1\)
 run_I\(\) \{8??0?
-grp 08??-15m 1220reg p OK test_patch2vi.sh:951:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-15m 1220reg p OK test_patch2vi.sh:961:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> third line
 " \\
 	"new header.*(	pty "EXINIT=\$ex" \\)
 		"sh -c '\''cd \$d && \$E_P2VI -I \$\*'\''" >/dev/null 2>&1
 }9??0?
-grp 09??-20m 1220reg p OK test_patch2vi.sh:951:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:9512sc %? %@2132sc!0?
+grp 09??-20m 1220reg p OK test_patch2vi.sh:961:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:9612sc %? %@2132sc!0?
 ?0?
 %f+ 
 # -I and -E open the built-in nextvi on /dev/tty, so these run patch2vi under
@@ -6637,37 +6637,37 @@ run_I\(\) \{8??0?
 # startup\) or P2VI_EX \(patch2vi'\''s test hook, run once the buffers are loaded\):
 # edits pipe a buffer through an awk filter with ":%!" and quit with "q!"\.
 # No keystrokes are sent, so the run is non-interactive and exits as fast2??0?
-2??m 2220reg p OK test_patch2vi.sh:953:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK test_patch2vi.sh:963:a22sc %? %@2152sc!1q0?
 %f+ # -I and -E open the built-in nextvi on /dev/tty, so these run patch2vi under
 # script\(1\)'\''s pty\. The session is driven entirely by EXINIT \(nextvi'\''s own
 # startup\) or P2VI_EX \(patch2vi'\''s test hook, run once the buffers are loaded\):
 # edits pipe a buffer through an awk filter with ":%!" and quit with "q!"\.3??0?
-3??m 2220reg p OK test_patch2vi.sh:953:a32sc %? %@2152sc!1q0?
+3??m 2220reg p OK test_patch2vi.sh:963:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^# No keystrokes are sent, so the run is non-interactive and exits as fast$4??0?
-4??-4m 2220reg p OK test_patch2vi.sh:953:a42sc %? %@2152sc!fr 981qfr 980?
+4??-4m 2220reg p OK test_patch2vi.sh:963:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 
 .....a....E ......he ...lt.in ...t...on /........... ...s........tc.... .nd.r
 . ....p.\(1.........T...s.s.... ......v...en..........E..... .n....... ...
 . ..a..... ....2.I........c...... t... ....,.r....nce.t......f....ar. ...d....
 ...d..s..i.e.a.b...e.......g...n.....fil......t. ".%!. .....u...w.........
 . ...key..r.ke. ....se.t, ...t......... .o....t.r.c..ve.... ...t.....f...6??0?
-6??+1m 2220reg p OK test_patch2vi.sh:953:a62sc %? %@2152sc!1q0?
+6??+1m 2220reg p OK test_patch2vi.sh:963:a62sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 (# -I and -E open the built-in nextvi on /dev/tty, so these run patch2vi under)7??0?
-grp 07??m 2220reg p OK test_patch2vi.sh:953:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK test_patch2vi.sh:963:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> first line
 second line
 third line.*(# run_I <workdir> <excmds> <patch2vi args\.\.\.>; the session is nextvi'\''s own)
 # main\(\), so the ex commands are driven through EXINIT like in vi\(1\)
 run_I\(\) \{8??0?
-grp 08??-13m 2220reg p OK test_patch2vi.sh:953:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-13m 2220reg p OK test_patch2vi.sh:963:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> third line
 " \\
 	"new header.*(	pty "EXINIT=\$ex" \\)
 		"sh -c '\''cd \$d && \$E_P2VI -I \$\*'\''" >/dev/null 2>&1
 }9??0?
-grp 09??-18m 2220reg p OK test_patch2vi.sh:953:a92sc %? %@2152sc!'\''00?
-1;2;3;4;6;7;8;9??!219reg test_patch2vi.sh:9532sc %? %@2132sc!0?
+grp 09??-18m 2220reg p OK test_patch2vi.sh:963:a92sc %? %@2152sc!'\''00?
+1;2;3;4;6;7;8;9??!219reg test_patch2vi.sh:9632sc %? %@2132sc!0?
 ?0?
 %f+ # No keystrokes are sent, so the run is non-interactive and exits as fast
 # as it starts\.
@@ -6679,37 +6679,37 @@ if command -v script >/dev/null 2>&1; then
 if command -v script >/dev/null 2>&1; then
 
 2??0?
-2??m 3220reg p OK test_patch2vi.sh:958:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK test_patch2vi.sh:968:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^# as it starts\.$3??0?
-3??m 3220reg p OK test_patch2vi.sh:958:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK test_patch2vi.sh:968:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^# No keystrokes are sent, so the run is non-interactive and exits as fast$4??0?
-4??+1m 3220reg p OK test_patch2vi.sh:958:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 3220reg p OK test_patch2vi.sh:968:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ if command -v script >/dev/null 2>&1; then
 
 5??0?
-5??-1m 3220reg p OK test_patch2vi.sh:958:a52sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK test_patch2vi.sh:968:a52sc %? %@2152sc!1q0?
 %f+ ......e.s..o.....re....t.......e...........-..te........an....... ......t
 . .s... st.....
 i.....m.nd....s.r...../.....u.....&.;.t...
 
 6??0?
-6??+1m 3220reg p OK test_patch2vi.sh:958:a62sc %? %@2152sc!1q0?
+6??+1m 3220reg p OK test_patch2vi.sh:968:a62sc %? %@2152sc!1q0?
 grp 1%f+ # No keystrokes are sent, so the run is non-interactive and exits as fast.*?
 (# as it starts\.)7??0?
-grp 07??m 3220reg p OK test_patch2vi.sh:958:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK test_patch2vi.sh:968:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> first line
 second line
 third line.*(# run_I <workdir> <excmds> <patch2vi args\.\.\.>; the session is nextvi'\''s own)
 # main\(\), so the ex commands are driven through EXINIT like in vi\(1\)
 run_I\(\) \{8??0?
-grp 08??-8m 3220reg p OK test_patch2vi.sh:958:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 3220reg p OK test_patch2vi.sh:968:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> third line
 " \\
 	"new header.*(	pty "EXINIT=\$ex" \\)
 		"sh -c '\''cd \$d && \$E_P2VI -I \$\*'\''" >/dev/null 2>&1
 }9??0?
-grp 09??-13m 3220reg p OK test_patch2vi.sh:958:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:9582sc %? %@2132sc!0?
+grp 09??-13m 3220reg p OK test_patch2vi.sh:968:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:9682sc %? %@2132sc!0?
 ?0?
 %f+ if command -v script >/dev/null 2>&1; then
 
@@ -6720,20 +6720,20 @@ run_I\(\) \{8??0?
 %f+ if command -v script >/dev/null 2>&1; then
 
 4??0?
-4??+1m 4220reg p OK test_patch2vi.sh:960:a42sc %? %@2152sc!1q0?
+4??+1m 4220reg p OK test_patch2vi.sh:970:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> first line
 second line
 third line.*(# run_I <workdir> <excmds> <patch2vi args\.\.\.>; the session is nextvi'\''s own)
 # main\(\), so the ex commands are driven through EXINIT like in vi\(1\)
 run_I\(\) \{8??0?
-grp 08??-6m 4220reg p OK test_patch2vi.sh:960:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 4220reg p OK test_patch2vi.sh:970:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> third line
 " \\
 	"new header.*(	pty "EXINIT=\$ex" \\)
 		"sh -c '\''cd \$d && \$E_P2VI -I \$\*'\''" >/dev/null 2>&1
 }9??0?
-grp 09??-11m 4220reg p OK test_patch2vi.sh:960:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg test_patch2vi.sh:9602sc %? %@2132sc!0?
+grp 09??-11m 4220reg p OK test_patch2vi.sh:970:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg test_patch2vi.sh:9702sc %? %@2132sc!0?
 ?0?
 %f+ 	tr -d '\''\\r'\'' < "\$A/nerr5" \| sed '\''s/\^/    /'\''
 fi
@@ -6746,20 +6746,20 @@ if \[ -s "\$A/E2\.sh" ] && \[ ! -s "\$A/o4\.out" ]; then1??0?
 fi
 
 4??0?
-4??+2m 5220reg p OK test_patch2vi.sh:1244:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK test_patch2vi.sh:1254:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "-oE updates the script it names in place"
 else
 	fail "-oE updates the script it names in place".*(	ok "-oFILE still names a file when FILE looks like a cluster")
 else
 	fail "-oFILE still names a file when FILE looks like a cluster"8??0?
-grp 08??-4m 5220reg p OK test_patch2vi.sh:1244:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK test_patch2vi.sh:1254:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> run_A "\$A" '\''%s/\^L2\$/L2c/:q!'\'' '\''-oE self2\.sh 2> nerr5'\''
 \( cd "\$A" && VI="\$VI" sh self2\.sh \) >/dev/null 2>&1
 if diff -q "\$A/f\.txt" "\$A/want\.txt" >/dev/null 2>&1; then.*(# a run that fails leaves the -o file alone and drops its temp)
 cp "\$A/old\.sh" "\$A/keep\.sh"
 cp "\$A/keep\.sh" "\$A/keep\.want"9??0?
-grp 09??-10m 5220reg p OK test_patch2vi.sh:1244:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg test_patch2vi.sh:12442sc %? %@2132sc!0?
+grp 09??-10m 5220reg p OK test_patch2vi.sh:1254:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg test_patch2vi.sh:12542sc %? %@2132sc!0?
 ?0?
 %f+ fi
 
@@ -6775,18 +6775,18 @@ dregen\(\) \{	# <script>: regenerate it to \$R/dregen\.sh, reading its own stora
 # without re-running the origin and without an editor\.
 dregen\(\) \{	# <script>: regenerate it to \$R/dregen\.sh, reading its own storage
 	rm -f "\$R/dregen\.sh"2??0?
-2??m 6220reg p OK test_patch2vi.sh:1935:a22sc %? %@2152sc!1q0?
+2??m 6220reg p OK test_patch2vi.sh:2037:a22sc %? %@2152sc!1q0?
 %f+ # draw\.c\) carries a pre COMPAT region after exit 0\. A plain regen must
 # reproduce the whole script - host block and compat region - byte-identically,
 # without re-running the origin and without an editor\.
 dregen\(\) \{	# <script>: regenerate it to \$R/dregen\.sh, reading its own storage3??0?
-3??m 6220reg p OK test_patch2vi.sh:1935:a32sc %? %@2152sc!1q0?
+3??m 6220reg p OK test_patch2vi.sh:2037:a32sc %? %@2152sc!1q0?
 %f+ fi
 
 # Stage B3: storage, round-trip and stacking\. The -C script above \(new\.sh from4??0?
-4??+3m 6220reg p OK test_patch2vi.sh:1935:a42sc %? %@2152sc!1q0?
+4??+3m 6220reg p OK test_patch2vi.sh:2037:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	rm -f "\$R/dregen\.sh"$5??0?
-5??-4m 6220reg p OK test_patch2vi.sh:1935:a52sc %? %@2152sc!fr 981qfr 980?
+5??-4m 6220reg p OK test_patch2vi.sh:2037:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ f.
 
 ....a...... .to.......o..d........d.s.ac.i..\. ... .C............e.....\.s...r.m
@@ -6795,25 +6795,25 @@ dregen\(\) \{	# <script>: regenerate it to \$R/dregen\.sh, reading its own stora
 ......ou. .....n................... .....ut.a.......r.
 dr.......... ...r....:........... ......\$R/d.e..n\...,..............w. s.....e
 	....f "......g...s..6??0?
-6??+3m 6220reg p OK test_patch2vi.sh:1935:a62sc %? %@2152sc!1q0?
+6??+3m 6220reg p OK test_patch2vi.sh:2037:a62sc %? %@2152sc!1q0?
 grp 1%f+ fi.*?
 .*?
 # Stage B3: storage, round-trip and stacking\. The -C script above \(new\.sh from.*?
 (# draw\.c\) carries a pre COMPAT region after exit 0\. A plain regen must)7??0?
-grp 07??m 6220reg p OK test_patch2vi.sh:1935:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK test_patch2vi.sh:2037:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> else
 	fail "compat: QF2=1 survives a block'\''s own quit policy"
 	echo "    strict=\[\$q_strict] qf2=\[\$q_soft]".*(# The built-in differ must not overextend\. A span wider than the LCS table budget)
 # \(DIFF_MAX_CELLS\) used to degrade to delete-all/insert-all, so two edits far
 # apart in a big file came out as a diff rewriting everything between them\.8??0?
-grp 08??-20m 6220reg p OK test_patch2vi.sh:1935:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-20m 6220reg p OK test_patch2vi.sh:2037:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> if \[ "\$q_strict" = '\''Q1\|QPROBE\|Q3\|Q4\|Q5\|'\'' ] &&
    \[ "\$q_soft" = '\''Q1\|QPROBE\|Q3\|Q4c\|Q5t\|'\'' ]; then
 	ok "compat: QF2=1 survives a block'\''s own quit policy".*(# Patience anchoring splits such a span on its unique common lines instead, so)
 # the compat patch stays the handful of lines that really changed\.
 awk '\''BEGIN\{for \(i = 1; i <= 2200; i\+\+\) printf "L%04d\\n", i}'\'' > "\$R/big\.orig"9??0?
-grp 09??-23m 6220reg p OK test_patch2vi.sh:1935:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:19352sc %? %@2132sc!0?
+grp 09??-23m 6220reg p OK test_patch2vi.sh:2037:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20372sc %? %@2132sc!0?
 ?0?
 %f+ 	rm -f "\$R/dregen\.sh"
 	\( cd "\$R" && "\$R_P2VI" -r "\$1" > "\$R/dregen\.sh" 2> "\$R/derr" \) \|\| true
@@ -6821,33 +6821,33 @@ awk '\''BEGIN\{for \(i = 1; i <= 2200; i\+\+\) printf "L%04d\\n", i}'\'' > "\$R/
 1??+1m 71q0?
 %f+ 	\( cd "\$R" && "\$R_P2VI" -r "\$1" > "\$R/dregen\.sh" 2> "\$R/derr" \) \|\| true
 }2??0?
-2??m 7220reg p OK test_patch2vi.sh:1940:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK test_patch2vi.sh:2042:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	\( cd "\$R" && "\$R_P2VI" -r "\$1" > "\$R/dregen\.sh" 2> "\$R/derr" \) \|\| true$3??0?
-3??m 7220reg p OK test_patch2vi.sh:1940:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 7220reg p OK test_patch2vi.sh:2042:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	rm -f "\$R/dregen\.sh"$4??0?
-4??+1m 7220reg p OK test_patch2vi.sh:1940:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 7220reg p OK test_patch2vi.sh:2042:a42sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^}$5??0?
-5??-1m 7220reg p OK test_patch2vi.sh:1940:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 7220reg p OK test_patch2vi.sh:2042:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .r...........e....s..
 ...c.......&. ......VI...r.........\$./..e.e...."..>...........\) .\| t...
 }6??0?
-6??+1m 7220reg p OK test_patch2vi.sh:1940:a62sc %? %@2152sc!1q0?
+6??+1m 7220reg p OK test_patch2vi.sh:2042:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	rm -f "\$R/dregen\.sh".*?
 (	\( cd "\$R" && "\$R_P2VI" -r "\$1" > "\$R/dregen\.sh" 2> "\$R/derr" \) \|\| true)7??0?
-grp 07??m 7220reg p OK test_patch2vi.sh:1940:a72sc %? %@2152sc!1q0?
+grp 07??m 7220reg p OK test_patch2vi.sh:2042:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> else
 	fail "compat: QF2=1 survives a block'\''s own quit policy"
 	echo "    strict=\[\$q_strict] qf2=\[\$q_soft]".*(# The built-in differ must not overextend\. A span wider than the LCS table budget)
 # \(DIFF_MAX_CELLS\) used to degrade to delete-all/insert-all, so two edits far
 # apart in a big file came out as a diff rewriting everything between them\.8??0?
-grp 08??-15m 7220reg p OK test_patch2vi.sh:1940:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-15m 7220reg p OK test_patch2vi.sh:2042:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> if \[ "\$q_strict" = '\''Q1\|QPROBE\|Q3\|Q4\|Q5\|'\'' ] &&
    \[ "\$q_soft" = '\''Q1\|QPROBE\|Q3\|Q4c\|Q5t\|'\'' ]; then
 	ok "compat: QF2=1 survives a block'\''s own quit policy".*(# Patience anchoring splits such a span on its unique common lines instead, so)
 # the compat patch stays the handful of lines that really changed\.
 awk '\''BEGIN\{for \(i = 1; i <= 2200; i\+\+\) printf "L%04d\\n", i}'\'' > "\$R/big\.orig"9??0?
-grp 09??-18m 7220reg p OK test_patch2vi.sh:1940:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:19402sc %? %@2132sc!0?
+grp 09??-18m 7220reg p OK test_patch2vi.sh:2042:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20422sc %? %@2132sc!0?
 ?0?
 %f+ }
 # a stored block round-trips through storage: a regen reparses the recorded
@@ -6861,39 +6861,39 @@ dregen xf\.sh1??0?
 cp "\$R/pd\.orig" "\$R/pd\.c"
 cp "\$R/pe\.orig" "\$R/pe\.c"
 dregen xf\.sh2??0?
-2??m 8220reg p OK test_patch2vi.sh:1942:a22sc %? %@2152sc!1q0?
+2??m 8220reg p OK test_patch2vi.sh:2044:a22sc %? %@2152sc!1q0?
 %f+ # a stored block round-trips through storage: a regen reparses the recorded
 # region and emits the same script3??0?
-3??m 8220reg p OK test_patch2vi.sh:1942:a32sc %? %@2152sc!1q0?
+3??m 8220reg p OK test_patch2vi.sh:2044:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^}$4??0?
-4??+1m 8220reg p OK test_patch2vi.sh:1942:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 8220reg p OK test_patch2vi.sh:2044:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ cp "\$R/pd\.orig" "\$R/pd\.c"
 cp "\$R/pe\.orig" "\$R/pe\.c"
 dregen xf\.sh5??0?
-5??-2m 8220reg p OK test_patch2vi.sh:1942:a52sc %? %@2152sc!1q0?
+5??-2m 8220reg p OK test_patch2vi.sh:2044:a52sc %? %@2152sc!1q0?
 %f+ }
 . .......d..l.c. ....d-....s..h........o....... ..........r... .h. ...o....
 #.....o..........s.... s... ......
 .p..\$....\....."...R....c.
 c. .../pe.o.... .../p..."
 ....e..x....6??0?
-6??+1m 8220reg p OK test_patch2vi.sh:1942:a62sc %? %@2152sc!1q0?
+6??+1m 8220reg p OK test_patch2vi.sh:2044:a62sc %? %@2152sc!1q0?
 grp 1%f+ }.*?
 (# a stored block round-trips through storage: a regen reparses the recorded)7??0?
-grp 07??m 8220reg p OK test_patch2vi.sh:1942:a72sc %? %@2152sc!1q0?
+grp 07??m 8220reg p OK test_patch2vi.sh:2044:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> else
 	fail "compat: QF2=1 survives a block'\''s own quit policy"
 	echo "    strict=\[\$q_strict] qf2=\[\$q_soft]".*(# The built-in differ must not overextend\. A span wider than the LCS table budget)
 # \(DIFF_MAX_CELLS\) used to degrade to delete-all/insert-all, so two edits far
 # apart in a big file came out as a diff rewriting everything between them\.8??0?
-grp 08??-13m 8220reg p OK test_patch2vi.sh:1942:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-13m 8220reg p OK test_patch2vi.sh:2044:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> if \[ "\$q_strict" = '\''Q1\|QPROBE\|Q3\|Q4\|Q5\|'\'' ] &&
    \[ "\$q_soft" = '\''Q1\|QPROBE\|Q3\|Q4c\|Q5t\|'\'' ]; then
 	ok "compat: QF2=1 survives a block'\''s own quit policy".*(# Patience anchoring splits such a span on its unique common lines instead, so)
 # the compat patch stays the handful of lines that really changed\.
 awk '\''BEGIN\{for \(i = 1; i <= 2200; i\+\+\) printf "L%04d\\n", i}'\'' > "\$R/big\.orig"9??0?
-grp 09??-16m 8220reg p OK test_patch2vi.sh:1942:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:19422sc %? %@2132sc!0?
+grp 09??-16m 8220reg p OK test_patch2vi.sh:2044:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20442sc %? %@2132sc!0?
 ?0?
 %f+ cp "\$R/pe\.orig" "\$R/pe\.c"
 dregen xf\.sh
@@ -6903,39 +6903,39 @@ else1??0?
 1??+3m 91q0?
 %f+ 	ok "compat: a regen round-trips a stored compat block byte-identically"
 else2??0?
-2??m 9220reg p OK test_patch2vi.sh:1948:a22sc %? %@2152sc!1q0?
+2??m 9220reg p OK test_patch2vi.sh:2050:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	ok "compat: a regen round-trips a stored compat block byte-identically"$3??0?
-3??m 9220reg p OK test_patch2vi.sh:1948:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 9220reg p OK test_patch2vi.sh:2050:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ cp "\$R/pe\.orig" "\$R/pe\.c"
 dregen xf\.sh
 if \[ -s "\$R/dregen\.sh" ] && cmp -s "\$R/xf\.sh" "\$R/dregen\.sh"; then4??0?
-4??+3m 9220reg p OK test_patch2vi.sh:1948:a42sc %? %@2152sc!1q0?
+4??+3m 9220reg p OK test_patch2vi.sh:2050:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^else$5??0?
-5??-1m 9220reg p OK test_patch2vi.sh:1948:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 9220reg p OK test_patch2vi.sh:2050:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ c.."...p.............e...
 ..eg.n.xf...
 .f .....".....e....... . .. ........\$..x..... ..R/d....n..h.;.....
 ............ . ...e...........p. . ...... ............ .yte..de.ti....y.
 el.e6??0?
-6??+3m 9220reg p OK test_patch2vi.sh:1948:a62sc %? %@2152sc!1q0?
+6??+3m 9220reg p OK test_patch2vi.sh:2050:a62sc %? %@2152sc!1q0?
 grp 1%f+ cp "\$R/pe\.orig" "\$R/pe\.c".*?
 dregen xf\.sh.*?
 if \[ -s "\$R/dregen\.sh" ] && cmp -s "\$R/xf\.sh" "\$R/dregen\.sh"; then.*?
 (	ok "compat: a regen round-trips a stored compat block byte-identically")7??0?
-grp 07??m 9220reg p OK test_patch2vi.sh:1948:a72sc %? %@2152sc!1q0?
+grp 07??m 9220reg p OK test_patch2vi.sh:2050:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> else
 	fail "compat: QF2=1 survives a block'\''s own quit policy"
 	echo "    strict=\[\$q_strict] qf2=\[\$q_soft]".*(# The built-in differ must not overextend\. A span wider than the LCS table budget)
 # \(DIFF_MAX_CELLS\) used to degrade to delete-all/insert-all, so two edits far
 # apart in a big file came out as a diff rewriting everything between them\.8??0?
-grp 08??-7m 9220reg p OK test_patch2vi.sh:1948:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 9220reg p OK test_patch2vi.sh:2050:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> if \[ "\$q_strict" = '\''Q1\|QPROBE\|Q3\|Q4\|Q5\|'\'' ] &&
    \[ "\$q_soft" = '\''Q1\|QPROBE\|Q3\|Q4c\|Q5t\|'\'' ]; then
 	ok "compat: QF2=1 survives a block'\''s own quit policy".*(# Patience anchoring splits such a span on its unique common lines instead, so)
 # the compat patch stays the handful of lines that really changed\.
 awk '\''BEGIN\{for \(i = 1; i <= 2200; i\+\+\) printf "L%04d\\n", i}'\'' > "\$R/big\.orig"9??0?
-grp 09??-10m 9220reg p OK test_patch2vi.sh:1948:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:19482sc %? %@2132sc!0?
+grp 09??-10m 9220reg p OK test_patch2vi.sh:2050:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20502sc %? %@2132sc!0?
 ?0?
 %f+ else
 	fail "compat: a regen round-trips a stored compat block byte-identically"
@@ -6947,37 +6947,37 @@ fi1??0?
 	tr -d '\''\\r'\'' < "\$R/derr" \| sed '\''s/\^/    /'\''
 	diff "\$R/xf\.sh" "\$R/dregen\.sh" \| head -10 \| sed '\''s/\^/    /'\''
 fi2??0?
-2??m 10220reg p OK test_patch2vi.sh:1950:a22sc %? %@2152sc!1q0?
+2??m 10220reg p OK test_patch2vi.sh:2052:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	fail "compat: a regen round-trips a stored compat block byte-identically"$3??0?
-3??m 10220reg p OK test_patch2vi.sh:1950:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 10220reg p OK test_patch2vi.sh:2052:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^else$4??0?
-4??+1m 10220reg p OK test_patch2vi.sh:1950:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 10220reg p OK test_patch2vi.sh:2052:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	tr -d '\''\\r'\'' < "\$R/derr" \| sed '\''s/\^/    /'\''
 	diff "\$R/xf\.sh" "\$R/dregen\.sh" \| head -10 \| sed '\''s/\^/    /'\''
 fi5??0?
-5??-1m 10220reg p OK test_patch2vi.sh:1950:a52sc %? %@2152sc!1q0?
+5??-1m 10220reg p OK test_patch2vi.sh:2052:a52sc %? %@2152sc!1q0?
 %f+ ...e
 ..........pa...a.....n.....d..r..s.....o... ............ ...e.ide.t...l...
 	t...d...r'\''.......d..r....se..../........
 ....f........... .\$....e...\..h... ...d........ed..s...... /.
 .i6??0?
-6??+1m 10220reg p OK test_patch2vi.sh:1950:a62sc %? %@2152sc!1q0?
+6??+1m 10220reg p OK test_patch2vi.sh:2052:a62sc %? %@2152sc!1q0?
 grp 1%f+ else.*?
 (	fail "compat: a regen round-trips a stored compat block byte-identically")7??0?
-grp 07??m 10220reg p OK test_patch2vi.sh:1950:a72sc %? %@2152sc!1q0?
+grp 07??m 10220reg p OK test_patch2vi.sh:2052:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> else
 	fail "compat: QF2=1 survives a block'\''s own quit policy"
 	echo "    strict=\[\$q_strict] qf2=\[\$q_soft]".*(# The built-in differ must not overextend\. A span wider than the LCS table budget)
 # \(DIFF_MAX_CELLS\) used to degrade to delete-all/insert-all, so two edits far
 # apart in a big file came out as a diff rewriting everything between them\.8??0?
-grp 08??-5m 10220reg p OK test_patch2vi.sh:1950:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 10220reg p OK test_patch2vi.sh:2052:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> if \[ "\$q_strict" = '\''Q1\|QPROBE\|Q3\|Q4\|Q5\|'\'' ] &&
    \[ "\$q_soft" = '\''Q1\|QPROBE\|Q3\|Q4c\|Q5t\|'\'' ]; then
 	ok "compat: QF2=1 survives a block'\''s own quit policy".*(# Patience anchoring splits such a span on its unique common lines instead, so)
 # the compat patch stays the handful of lines that really changed\.
 awk '\''BEGIN\{for \(i = 1; i <= 2200; i\+\+\) printf "L%04d\\n", i}'\'' > "\$R/big\.orig"9??0?
-grp 09??-8m 10220reg p OK test_patch2vi.sh:1950:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:19502sc %? %@2132sc!0?
+grp 09??-8m 10220reg p OK test_patch2vi.sh:2052:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20522sc %? %@2132sc!0?
 ?0?
 %f+ 	sed '\''s/\^/    /'\'' "\$R/cs\.c"
 fi
@@ -6991,18 +6991,18 @@ dregen mf\.sh1??0?
 cp "\$R/ph\.orig" "\$R/ph\.c"
 cp "\$R/pi\.orig" "\$R/pi\.c"
 dregen mf\.sh2??0?
-2??m 11220reg p OK test_patch2vi.sh:2006:a22sc %? %@2152sc!1q0?
+2??m 11220reg p OK test_patch2vi.sh:2108:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^# A regen must round-trip a multi-file block: one region back out, byte-identically\.$3??0?
-3??m 11220reg p OK test_patch2vi.sh:2006:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 11220reg p OK test_patch2vi.sh:2108:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	sed '\''s/\^/    /'\'' "\$R/cs\.c"
 fi
 
 4??0?
-4??+3m 11220reg p OK test_patch2vi.sh:2006:a42sc %? %@2152sc!1q0?
+4??+3m 11220reg p OK test_patch2vi.sh:2108:a42sc %? %@2152sc!1q0?
 %f+ cp "\$R/ph\.orig" "\$R/ph\.c"
 cp "\$R/pi\.orig" "\$R/pi\.c"
 dregen mf\.sh5??0?
-5??-1m 11220reg p OK test_patch2vi.sh:2006:a52sc %? %@2152sc!1q0?
+5??-1m 11220reg p OK test_patch2vi.sh:2108:a52sc %? %@2152sc!1q0?
 %f+ ..e..'\''.... ....'\''...R......
 f.
 
@@ -7010,25 +7010,25 @@ f.
 c........\........../..\...
 .p...R..i...... .../.i.."
 d.e.e. ....h6??0?
-6??+3m 11220reg p OK test_patch2vi.sh:2006:a62sc %? %@2152sc!1q0?
+6??+3m 11220reg p OK test_patch2vi.sh:2108:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	sed '\''s/\^/    /'\'' "\$R/cs\.c".*?
 fi.*?
 .*?
 (# A regen must round-trip a multi-file block: one region back out, byte-identically\.)7??0?
-grp 07??m 11220reg p OK test_patch2vi.sh:2006:a72sc %? %@2152sc!1q0?
+grp 07??m 11220reg p OK test_patch2vi.sh:2108:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "compat: a one-byte substitution is matched case-sensitively"
 else
 	fail "compat: a one-byte substitution is matched case-sensitively".*(coderive g1\.sh g2\.sh '\'':e pi\.c:%s/\^I3\$/I3d/:q!'\'')
 cp "\$R/new\.sh" "\$R/sf\.sh"
 cp "\$R/ph\.orig" "\$R/ph\.c"8??0?
-grp 08??-18m 11220reg p OK test_patch2vi.sh:2006:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-18m 11220reg p OK test_patch2vi.sh:2108:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> cp "\$R/cs\.orig" "\$R/cs\.c"
 stack n1\.sh new\.sh
 if \[ "\$\(sed -n '\''3p'\'' "\$R/cs\.c"\)" = "\$\(printf '\''\\tfor \(k = MAX\(0, -t\); k < wrows; k\+\+\)'\''\)" ]; then.*(cp "\$R/pi\.orig" "\$R/pi\.c")
 dregen sf\.sh
 if \[ -s "\$R/sf\.sh" ] && cmp -s "\$R/sf\.sh" "\$R/dregen\.sh"; then9??0?
-grp 09??-21m 11220reg p OK test_patch2vi.sh:2006:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20062sc %? %@2132sc!0?
+grp 09??-21m 11220reg p OK test_patch2vi.sh:2108:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21082sc %? %@2132sc!0?
 ?0?
 %f+ cp "\$R/pi\.orig" "\$R/pi\.c"
 dregen mf\.sh
@@ -7038,39 +7038,39 @@ else1??0?
 1??+3m 121q0?
 %f+ 	ok "compat: a regen round-trips a two-file compat block byte-identically"
 else2??0?
-2??m 12220reg p OK test_patch2vi.sh:2011:a22sc %? %@2152sc!1q0?
+2??m 12220reg p OK test_patch2vi.sh:2113:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	ok "compat: a regen round-trips a two-file compat block byte-identically"$3??0?
-3??m 12220reg p OK test_patch2vi.sh:2011:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 12220reg p OK test_patch2vi.sh:2113:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ cp "\$R/pi\.orig" "\$R/pi\.c"
 dregen mf\.sh
 if cmp -s "\$R/mf\.sh" "\$R/dregen\.sh"; then4??0?
-4??+3m 12220reg p OK test_patch2vi.sh:2011:a42sc %? %@2152sc!1q0?
+4??+3m 12220reg p OK test_patch2vi.sh:2113:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^else$5??0?
-5??-1m 12220reg p OK test_patch2vi.sh:2011:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 12220reg p OK test_patch2vi.sh:2113:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .p.".......r......./.....
 ..e........h
 .f .........R...\..h. ..R/...g...s......e.
 ... ..o...t......g...r..nd....p. .......i.e...m.....l.c.....e.....t..a....
 ..s.6??0?
-6??+3m 12220reg p OK test_patch2vi.sh:2011:a62sc %? %@2152sc!1q0?
+6??+3m 12220reg p OK test_patch2vi.sh:2113:a62sc %? %@2152sc!1q0?
 grp 1%f+ cp "\$R/pi\.orig" "\$R/pi\.c".*?
 dregen mf\.sh.*?
 if cmp -s "\$R/mf\.sh" "\$R/dregen\.sh"; then.*?
 (	ok "compat: a regen round-trips a two-file compat block byte-identically")7??0?
-grp 07??m 12220reg p OK test_patch2vi.sh:2011:a72sc %? %@2152sc!1q0?
+grp 07??m 12220reg p OK test_patch2vi.sh:2113:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "compat: a one-byte substitution is matched case-sensitively"
 else
 	fail "compat: a one-byte substitution is matched case-sensitively".*(coderive g1\.sh g2\.sh '\'':e pi\.c:%s/\^I3\$/I3d/:q!'\'')
 cp "\$R/new\.sh" "\$R/sf\.sh"
 cp "\$R/ph\.orig" "\$R/ph\.c"8??0?
-grp 08??-13m 12220reg p OK test_patch2vi.sh:2011:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-13m 12220reg p OK test_patch2vi.sh:2113:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> cp "\$R/cs\.orig" "\$R/cs\.c"
 stack n1\.sh new\.sh
 if \[ "\$\(sed -n '\''3p'\'' "\$R/cs\.c"\)" = "\$\(printf '\''\\tfor \(k = MAX\(0, -t\); k < wrows; k\+\+\)'\''\)" ]; then.*(cp "\$R/pi\.orig" "\$R/pi\.c")
 dregen sf\.sh
 if \[ -s "\$R/sf\.sh" ] && cmp -s "\$R/sf\.sh" "\$R/dregen\.sh"; then9??0?
-grp 09??-16m 12220reg p OK test_patch2vi.sh:2011:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20112sc %? %@2132sc!0?
+grp 09??-16m 12220reg p OK test_patch2vi.sh:2113:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21132sc %? %@2132sc!0?
 ?0?
 %f+ else
 	fail "compat: a regen round-trips a two-file compat block byte-identically"
@@ -7084,39 +7084,39 @@ fi
 fi
 
 2??0?
-2??m 13220reg p OK test_patch2vi.sh:2013:a22sc %? %@2152sc!1q0?
+2??m 13220reg p OK test_patch2vi.sh:2115:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	fail "compat: a regen round-trips a two-file compat block byte-identically"$3??0?
-3??m 13220reg p OK test_patch2vi.sh:2013:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 13220reg p OK test_patch2vi.sh:2115:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^else$4??0?
-4??+1m 13220reg p OK test_patch2vi.sh:2013:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 13220reg p OK test_patch2vi.sh:2115:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	diff "\$R/mf\.sh" "\$R/dregen\.sh" 2>&1 \| sed '\''s/\^/    /'\'' \| head
 fi
 
 5??0?
-5??-1m 13220reg p OK test_patch2vi.sh:2013:a52sc %? %@2152sc!1q0?
+5??-1m 13220reg p OK test_patch2vi.sh:2115:a52sc %? %@2152sc!1q0?
 %f+ ..s.
 	........m...........n...u.......... ...-.i....o.......o.k........e.....l.y.
 	...f...R..f.... .../...g...s." 2....\|.....'\''...... ..'\'' . he..
 f.
 
 6??0?
-6??+1m 13220reg p OK test_patch2vi.sh:2013:a62sc %? %@2152sc!1q0?
+6??+1m 13220reg p OK test_patch2vi.sh:2115:a62sc %? %@2152sc!1q0?
 grp 1%f+ else.*?
 (	fail "compat: a regen round-trips a two-file compat block byte-identically")7??0?
-grp 07??m 13220reg p OK test_patch2vi.sh:2013:a72sc %? %@2152sc!1q0?
+grp 07??m 13220reg p OK test_patch2vi.sh:2115:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "compat: a one-byte substitution is matched case-sensitively"
 else
 	fail "compat: a one-byte substitution is matched case-sensitively".*(coderive g1\.sh g2\.sh '\'':e pi\.c:%s/\^I3\$/I3d/:q!'\'')
 cp "\$R/new\.sh" "\$R/sf\.sh"
 cp "\$R/ph\.orig" "\$R/ph\.c"8??0?
-grp 08??-11m 13220reg p OK test_patch2vi.sh:2013:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 13220reg p OK test_patch2vi.sh:2115:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> cp "\$R/cs\.orig" "\$R/cs\.c"
 stack n1\.sh new\.sh
 if \[ "\$\(sed -n '\''3p'\'' "\$R/cs\.c"\)" = "\$\(printf '\''\\tfor \(k = MAX\(0, -t\); k < wrows; k\+\+\)'\''\)" ]; then.*(cp "\$R/pi\.orig" "\$R/pi\.c")
 dregen sf\.sh
 if \[ -s "\$R/sf\.sh" ] && cmp -s "\$R/sf\.sh" "\$R/dregen\.sh"; then9??0?
-grp 09??-14m 13220reg p OK test_patch2vi.sh:2013:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20132sc %? %@2132sc!0?
+grp 09??-14m 13220reg p OK test_patch2vi.sh:2115:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21152sc %? %@2132sc!0?
 ?0?
 %f+ 
 # Buffer numbering survives a regeneration even when the block'\''s file set is
@@ -7130,17 +7130,17 @@ cp "\$R/ph\.orig" "\$R/ph\.c"1??0?
 # them in the other order: here the host edits ph\.c and pi\.c while the block
 # edits pi\.c alone, so every b<N> in the emitted driver would shift by one\.
 cp "\$R/ph\.orig" "\$R/ph\.c"2??0?
-2??m 14220reg p OK test_patch2vi.sh:2019:a22sc %? %@2152sc!1q0?
+2??m 14220reg p OK test_patch2vi.sh:2121:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^# so a regen parses the block'\''s files first and a files\[]-ordered b<N> would open$3??0?
-3??m 14220reg p OK test_patch2vi.sh:2019:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 14220reg p OK test_patch2vi.sh:2121:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 
 # Buffer numbering survives a regeneration even when the block'\''s file set is
 # not the host'\''s\. Storage puts the compat regions before === PATCH2VI PATCH ===,4??0?
-4??+3m 14220reg p OK test_patch2vi.sh:2019:a42sc %? %@2152sc!1q0?
+4??+3m 14220reg p OK test_patch2vi.sh:2121:a42sc %? %@2152sc!1q0?
 %f+ # them in the other order: here the host edits ph\.c and pi\.c while the block
 # edits pi\.c alone, so every b<N> in the emitted driver would shift by one\.
 cp "\$R/ph\.orig" "\$R/ph\.c"5??0?
-5??-1m 14220reg p OK test_patch2vi.sh:2019:a52sc %? %@2152sc!1q0?
+5??-1m 14220reg p OK test_patch2vi.sh:2121:a52sc %? %@2152sc!1q0?
 %f+ 
 .....f.r...m.e...g........... r.g.n.....o....e..when.......o......... ....i.
 ..not..h....st..\. ....... ........ ..m.....e....s ....r..=.=..A...... ..........
@@ -7148,25 +7148,25 @@ cp "\$R/ph\.orig" "\$R/ph\.c"5??0?
 ...... .n...e...he........ .e...... ......d... ........ .i\..................
 .........i.c......,... ...r..b<..... ... ...t.ed.d.i..r.....d.s.i........e\.
 ...........ri."..../..\...6??0?
-6??+3m 14220reg p OK test_patch2vi.sh:2019:a62sc %? %@2152sc!1q0?
+6??+3m 14220reg p OK test_patch2vi.sh:2121:a62sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 # Buffer numbering survives a regeneration even when the block'\''s file set is.*?
 # not the host'\''s\. Storage puts the compat regions before === PATCH2VI PATCH ===,.*?
 (# so a regen parses the block'\''s files first and a files\[]-ordered b<N> would open)7??0?
-grp 07??m 14220reg p OK test_patch2vi.sh:2019:a72sc %? %@2152sc!1q0?
+grp 07??m 14220reg p OK test_patch2vi.sh:2121:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "compat: a one-byte substitution is matched case-sensitively"
 else
 	fail "compat: a one-byte substitution is matched case-sensitively".*(coderive g1\.sh g2\.sh '\'':e pi\.c:%s/\^I3\$/I3d/:q!'\'')
 cp "\$R/new\.sh" "\$R/sf\.sh"
 cp "\$R/ph\.orig" "\$R/ph\.c"8??0?
-grp 08??-5m 14220reg p OK test_patch2vi.sh:2019:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 14220reg p OK test_patch2vi.sh:2121:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> cp "\$R/cs\.orig" "\$R/cs\.c"
 stack n1\.sh new\.sh
 if \[ "\$\(sed -n '\''3p'\'' "\$R/cs\.c"\)" = "\$\(printf '\''\\tfor \(k = MAX\(0, -t\); k < wrows; k\+\+\)'\''\)" ]; then.*(cp "\$R/pi\.orig" "\$R/pi\.c")
 dregen sf\.sh
 if \[ -s "\$R/sf\.sh" ] && cmp -s "\$R/sf\.sh" "\$R/dregen\.sh"; then9??0?
-grp 09??-8m 14220reg p OK test_patch2vi.sh:2019:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20192sc %? %@2132sc!0?
+grp 09??-8m 14220reg p OK test_patch2vi.sh:2121:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21212sc %? %@2132sc!0?
 ?0?
 %f+ cp "\$R/pi\.orig" "\$R/pi\.c"
 dregen sf\.sh
@@ -7176,39 +7176,39 @@ else1??0?
 1??+3m 151q0?
 %f+ 	ok "compat: a regen keeps the buffer order of a block over one host file"
 else2??0?
-2??m 15220reg p OK test_patch2vi.sh:2030:a22sc %? %@2152sc!1q0?
+2??m 15220reg p OK test_patch2vi.sh:2132:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	ok "compat: a regen keeps the buffer order of a block over one host file"$3??0?
-3??m 15220reg p OK test_patch2vi.sh:2030:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 15220reg p OK test_patch2vi.sh:2132:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ cp "\$R/pi\.orig" "\$R/pi\.c"
 dregen sf\.sh
 if \[ -s "\$R/sf\.sh" ] && cmp -s "\$R/sf\.sh" "\$R/dregen\.sh"; then4??0?
-4??+3m 15220reg p OK test_patch2vi.sh:2030:a42sc %? %@2152sc!1q0?
+4??+3m 15220reg p OK test_patch2vi.sh:2132:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^else$5??0?
-5??-1m 15220reg p OK test_patch2vi.sh:2030:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 15220reg p OK test_patch2vi.sh:2132:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .p.......\....g" .\$.......
 ...... s....
 i. ......\$R.....h"...&..... -.......f..."..\$R...........;.th..
 ..k.".o..at:................he .u.......d....... .......ve....e...s.......
 ..s.6??0?
-6??+3m 15220reg p OK test_patch2vi.sh:2030:a62sc %? %@2152sc!1q0?
+6??+3m 15220reg p OK test_patch2vi.sh:2132:a62sc %? %@2152sc!1q0?
 grp 1%f+ cp "\$R/pi\.orig" "\$R/pi\.c".*?
 dregen sf\.sh.*?
 if \[ -s "\$R/sf\.sh" ] && cmp -s "\$R/sf\.sh" "\$R/dregen\.sh"; then.*?
 (	ok "compat: a regen keeps the buffer order of a block over one host file")7??0?
-grp 07??m 15220reg p OK test_patch2vi.sh:2030:a72sc %? %@2152sc!1q0?
+grp 07??m 15220reg p OK test_patch2vi.sh:2132:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> coderive g1\.sh g2\.sh '\'':e pi\.c:%s/\^I3\$/I3d/:q!'\''
 cp "\$R/new\.sh" "\$R/sf\.sh"
 cp "\$R/ph\.orig" "\$R/ph\.c".*(# rebuild the -C script \(the earlier -C run clobbered new\.sh\))
 printf '\''L1\\nL2\\nL3\\n'\'' > "\$R/draw\.orig"
 printf -- '\''--- a/draw\.c\\n\+\+\+ b/draw\.c\\n@@ -1,3 \+1,4 @@\\n L1\\n\+PROBE\\n L2\\n L3\\n'\'' > "\$R/x1\.diff"8??0?
-grp 08??-6m 15220reg p OK test_patch2vi.sh:2030:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 15220reg p OK test_patch2vi.sh:2132:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> # edits pi\.c alone, so every b<N> in the emitted driver would shift by one\.
 cp "\$R/ph\.orig" "\$R/ph\.c"
 cp "\$R/pi\.orig" "\$R/pi\.c".*("\$R_P2VI" -r "\$R/x1\.diff" > "\$R/x1\.sh")
 "\$R_P2VI" -r "\$R/x2\.diff" > "\$R/x2\.sh"
 cp "\$R/draw\.orig" "\$R/draw\.c"9??0?
-grp 09??-10m 15220reg p OK test_patch2vi.sh:2030:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20302sc %? %@2132sc!0?
+grp 09??-10m 15220reg p OK test_patch2vi.sh:2132:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21322sc %? %@2132sc!0?
 ?0?
 %f+ else
 	fail "compat: a regen keeps the buffer order of a block over one host file"
@@ -7222,39 +7222,39 @@ fi
 fi
 
 2??0?
-2??m 16220reg p OK test_patch2vi.sh:2032:a22sc %? %@2152sc!1q0?
+2??m 16220reg p OK test_patch2vi.sh:2134:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	fail "compat: a regen keeps the buffer order of a block over one host file"$3??0?
-3??m 16220reg p OK test_patch2vi.sh:2032:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 16220reg p OK test_patch2vi.sh:2134:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^else$4??0?
-4??+1m 16220reg p OK test_patch2vi.sh:2032:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 16220reg p OK test_patch2vi.sh:2134:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	diff "\$R/sf\.sh" "\$R/dregen\.sh" 2>&1 \| sed '\''s/\^/    /'\'' \| head
 fi
 
 5??0?
-5??-1m 16220reg p OK test_patch2vi.sh:2032:a52sc %? %@2152sc!1q0?
+5??-1m 16220reg p OK test_patch2vi.sh:2134:a52sc %? %@2152sc!1q0?
 %f+ el.e
 ........o..a......e..n..ee...t.e..u...........o. . .............. .... fi...
 	....."................e..n......>.1...s.. ...\^...../........
 f.
 
 6??0?
-6??+1m 16220reg p OK test_patch2vi.sh:2032:a62sc %? %@2152sc!1q0?
+6??+1m 16220reg p OK test_patch2vi.sh:2134:a62sc %? %@2152sc!1q0?
 grp 1%f+ else.*?
 (	fail "compat: a regen keeps the buffer order of a block over one host file")7??0?
-grp 07??m 16220reg p OK test_patch2vi.sh:2032:a72sc %? %@2152sc!1q0?
+grp 07??m 16220reg p OK test_patch2vi.sh:2134:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> coderive g1\.sh g2\.sh '\'':e pi\.c:%s/\^I3\$/I3d/:q!'\''
 cp "\$R/new\.sh" "\$R/sf\.sh"
 cp "\$R/ph\.orig" "\$R/ph\.c".*(# rebuild the -C script \(the earlier -C run clobbered new\.sh\))
 printf '\''L1\\nL2\\nL3\\n'\'' > "\$R/draw\.orig"
 printf -- '\''--- a/draw\.c\\n\+\+\+ b/draw\.c\\n@@ -1,3 \+1,4 @@\\n L1\\n\+PROBE\\n L2\\n L3\\n'\'' > "\$R/x1\.diff"8??0?
-grp 08??-4m 16220reg p OK test_patch2vi.sh:2032:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 16220reg p OK test_patch2vi.sh:2134:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> # edits pi\.c alone, so every b<N> in the emitted driver would shift by one\.
 cp "\$R/ph\.orig" "\$R/ph\.c"
 cp "\$R/pi\.orig" "\$R/pi\.c".*("\$R_P2VI" -r "\$R/x1\.diff" > "\$R/x1\.sh")
 "\$R_P2VI" -r "\$R/x2\.diff" > "\$R/x2\.sh"
 cp "\$R/draw\.orig" "\$R/draw\.c"9??0?
-grp 09??-8m 16220reg p OK test_patch2vi.sh:2032:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20322sc %? %@2132sc!0?
+grp 09??-8m 16220reg p OK test_patch2vi.sh:2134:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21342sc %? %@2132sc!0?
 ?0?
 %f+ cp "\$R/draw\.orig" "\$R/draw\.c"
 dregen pr\.sh
@@ -7264,39 +7264,39 @@ else1??0?
 1??+3m 171q0?
 %f+ 	ok "compat: a regen round-trips a stored two-block script byte-identically"
 else2??0?
-2??m 17220reg p OK test_patch2vi.sh:2049:a22sc %? %@2152sc!1q0?
+2??m 17220reg p OK test_patch2vi.sh:2151:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	ok "compat: a regen round-trips a stored two-block script byte-identically"$3??0?
-3??m 17220reg p OK test_patch2vi.sh:2049:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 17220reg p OK test_patch2vi.sh:2151:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ cp "\$R/draw\.orig" "\$R/draw\.c"
 dregen pr\.sh
 if diff "\$R/pr\.sh" "\$R/dregen\.sh" >/dev/null 2>&1; then4??0?
-4??+3m 17220reg p OK test_patch2vi.sh:2049:a42sc %? %@2152sc!1q0?
+4??+3m 17220reg p OK test_patch2vi.sh:2151:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^else$5??0?
-5??-1m 17220reg p OK test_patch2vi.sh:2049:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 17220reg p OK test_patch2vi.sh:2151:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ c..........\.......".R........
 d.e.e...r...
 if...........r.s.".".........\.s."../......l. 2>... .h.n
 .o. .....a...a....en.....d-t...s......re. ..o..l.......i.........d...i....y.
 e...6??0?
-6??+3m 17220reg p OK test_patch2vi.sh:2049:a62sc %? %@2152sc!1q0?
+6??+3m 17220reg p OK test_patch2vi.sh:2151:a62sc %? %@2152sc!1q0?
 grp 1%f+ cp "\$R/draw\.orig" "\$R/draw\.c".*?
 dregen pr\.sh.*?
 if diff "\$R/pr\.sh" "\$R/dregen\.sh" >/dev/null 2>&1; then.*?
 (	ok "compat: a regen round-trips a stored two-block script byte-identically")7??0?
-grp 07??m 17220reg p OK test_patch2vi.sh:2049:a72sc %? %@2152sc!1q0?
+grp 07??m 17220reg p OK test_patch2vi.sh:2151:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> "\$R_P2VI" -r "\$R/x2\.diff" > "\$R/x2\.sh"
 cp "\$R/draw\.orig" "\$R/draw\.c"
 coderive x1\.sh x2\.sh '\''%s/\^L2\$/L2c/:q!'\''.*(# Re-running -C on a script that already carries a post block appends a NEW)
 # block at the group tail \(existing block untouched\); the user reshapes a
 # different line\. The origin\+target replay applies the host \(L3 -> L3x\) and the8??0?
-grp 08??-6m 17220reg p OK test_patch2vi.sh:2049:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 17220reg p OK test_patch2vi.sh:2151:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> # rebuild the -C script \(the earlier -C run clobbered new\.sh\)
 printf '\''L1\\nL2\\nL3\\n'\'' > "\$R/draw\.orig"
 printf -- '\''--- a/draw\.c\\n\+\+\+ b/draw\.c\\n@@ -1,3 \+1,4 @@\\n L1\\n\+PROBE\\n L2\\n L3\\n'\'' > "\$R/x1\.diff".*(# stored post block \(L2 -> L2c\), so the new edit targets the post-replay line L3x\.)
 cp "\$R/draw\.orig" "\$R/draw\.c"
 coderive x1\.sh pr\.sh '\''%s/\^L3x\$/L3z/:q!'\''9??0?
-grp 09??-9m 17220reg p OK test_patch2vi.sh:2049:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20492sc %? %@2132sc!0?
+grp 09??-9m 17220reg p OK test_patch2vi.sh:2151:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21512sc %? %@2132sc!0?
 ?0?
 %f+ else
 	fail "compat: a regen round-trips a stored two-block script byte-identically"
@@ -7310,39 +7310,39 @@ fi
 fi
 
 2??0?
-2??m 18220reg p OK test_patch2vi.sh:2051:a22sc %? %@2152sc!1q0?
+2??m 18220reg p OK test_patch2vi.sh:2153:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	fail "compat: a regen round-trips a stored two-block script byte-identically"$3??0?
-3??m 18220reg p OK test_patch2vi.sh:2051:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 18220reg p OK test_patch2vi.sh:2153:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^else$4??0?
-4??+1m 18220reg p OK test_patch2vi.sh:2051:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 18220reg p OK test_patch2vi.sh:2153:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	diff "\$R/pr\.sh" "\$R/dregen\.sh" \| sed '\''s/\^/    /'\'' \| head -20
 fi
 
 5??0?
-5??-1m 18220reg p OK test_patch2vi.sh:2051:a52sc %? %@2152sc!1q0?
+5??-1m 18220reg p OK test_patch2vi.sh:2153:a52sc %? %@2152sc!1q0?
 %f+ e..e
 ..a.l "...p....a.r.g.n ....d-tri.......or....................by...i...t..a....
 ..... .\$R/...sh.."../..egen.s............./.. .........d....
 f.
 
 6??0?
-6??+1m 18220reg p OK test_patch2vi.sh:2051:a62sc %? %@2152sc!1q0?
+6??+1m 18220reg p OK test_patch2vi.sh:2153:a62sc %? %@2152sc!1q0?
 grp 1%f+ else.*?
 (	fail "compat: a regen round-trips a stored two-block script byte-identically")7??0?
-grp 07??m 18220reg p OK test_patch2vi.sh:2051:a72sc %? %@2152sc!1q0?
+grp 07??m 18220reg p OK test_patch2vi.sh:2153:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> "\$R_P2VI" -r "\$R/x2\.diff" > "\$R/x2\.sh"
 cp "\$R/draw\.orig" "\$R/draw\.c"
 coderive x1\.sh x2\.sh '\''%s/\^L2\$/L2c/:q!'\''.*(# Re-running -C on a script that already carries a post block appends a NEW)
 # block at the group tail \(existing block untouched\); the user reshapes a
 # different line\. The origin\+target replay applies the host \(L3 -> L3x\) and the8??0?
-grp 08??-4m 18220reg p OK test_patch2vi.sh:2051:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 18220reg p OK test_patch2vi.sh:2153:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> # rebuild the -C script \(the earlier -C run clobbered new\.sh\)
 printf '\''L1\\nL2\\nL3\\n'\'' > "\$R/draw\.orig"
 printf -- '\''--- a/draw\.c\\n\+\+\+ b/draw\.c\\n@@ -1,3 \+1,4 @@\\n L1\\n\+PROBE\\n L2\\n L3\\n'\'' > "\$R/x1\.diff".*(# stored post block \(L2 -> L2c\), so the new edit targets the post-replay line L3x\.)
 cp "\$R/draw\.orig" "\$R/draw\.c"
 coderive x1\.sh pr\.sh '\''%s/\^L3x\$/L3z/:q!'\''9??0?
-grp 09??-7m 18220reg p OK test_patch2vi.sh:2051:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:20512sc %? %@2132sc!0?
+grp 09??-7m 18220reg p OK test_patch2vi.sh:2153:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21532sc %? %@2132sc!0?
 ?0?
 %f+ 	sed '\''s/\^/    /'\'' "\$R/draw\.c"
 fi
@@ -7360,20 +7360,20 @@ cp "\$R/new\.sh" "\$R/pr\.sh"1??0?
 cp "\$R/draw\.orig" "\$R/draw\.c"
 coderive x1\.sh x2\.sh '\''%s/\^L2\$/L2c/:q!'\''
 cp "\$R/new\.sh" "\$R/pr\.sh"2??0?
-2??m 19220reg p OK test_patch2vi.sh:2115:a22sc %? %@2152sc!1q0?
+2??m 19220reg p OK test_patch2vi.sh:2217:a22sc %? %@2152sc!1q0?
 %f+ # A regen reproduces a multi-block script byte-identically: every stored region
 # is read back and re-emitted, host block and both compat blocks alike\. Build a
 # two-block script first, then round-trip it\.3??0?
-3??m 19220reg p OK test_patch2vi.sh:2115:a32sc %? %@2152sc!1q0?
+3??m 19220reg p OK test_patch2vi.sh:2217:a32sc %? %@2152sc!1q0?
 %f+ 	sed '\''s/\^/    /'\'' "\$R/draw\.c"
 fi
 
 4??0?
-4??+3m 19220reg p OK test_patch2vi.sh:2115:a42sc %? %@2152sc!1q0?
+4??+3m 19220reg p OK test_patch2vi.sh:2217:a42sc %? %@2152sc!1q0?
 %f+ cp "\$R/draw\.orig" "\$R/draw\.c"
 coderive x1\.sh x2\.sh '\''%s/\^L2\$/L2c/:q!'\''
 cp "\$R/new\.sh" "\$R/pr\.sh"5??0?
-5??-3m 19220reg p OK test_patch2vi.sh:2115:a52sc %? %@2152sc!1q0?
+5??-3m 19220reg p OK test_patch2vi.sh:2217:a52sc %? %@2152sc!1q0?
 %f+ .... .s... ....'\''.....d......
 f.
 
@@ -7383,25 +7383,25 @@ f.
 cp..\$R..r........."......w\...
 c....i.....\....x2....'\''.s/...\$.L...:...
 .............. ..R....s..6??0?
-6??+3m 19220reg p OK test_patch2vi.sh:2115:a62sc %? %@2152sc!1q0?
+6??+3m 19220reg p OK test_patch2vi.sh:2217:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	sed '\''s/\^/    /'\'' "\$R/draw\.c".*?
 fi.*?
 .*?
 (# A regen reproduces a multi-block script byte-identically: every stored region)7??0?
-grp 07??m 19220reg p OK test_patch2vi.sh:2115:a72sc %? %@2152sc!1q0?
+grp 07??m 19220reg p OK test_patch2vi.sh:2217:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "compat: post stack applies all blocks in order on an origin tree"
 else
 	fail "compat: post stack applies all blocks in order on an origin tree".*(# a single script carries two blocks with two different origins\. Each of the)
 # four trees \(none / A / B / A\+B\) must run exactly the blocks whose origin is
 # present - the case a shared gate tag gets wrong, since an absent origin'\''s8??0?
-grp 08??-26m 19220reg p OK test_patch2vi.sh:2115:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-26m 19220reg p OK test_patch2vi.sh:2217:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> cp "\$R/draw\.orig" "\$R/draw\.c"
 stack x1\.sh stack2\.sh
 if \[ "\$\(cat "\$R/draw\.c"\)" = "\$\(printf '\''L1\\nPROBE\\nL2cc\\nL3x'\''\)" ]; then.*(# block then fires off the other'\''s sensor\.)
 printf '\''L1\\nL2\\nL3\\nL4\\n'\'' > "\$R/m\.orig"
 printf -- '\''--- a/m\.c\\n\+\+\+ b/m\.c\\n@@ -1,4 \+1,5 @@\\n L1\\n\+PA\\n L2\\n L3\\n L4\\n'\'' > "\$R/a1\.diff"9??0?
-grp 09??-29m 19220reg p OK test_patch2vi.sh:2115:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21152sc %? %@2132sc!0?
+grp 09??-29m 19220reg p OK test_patch2vi.sh:2217:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:22172sc %? %@2132sc!0?
 ?0?
 %f+ coderive x1\.sh x2\.sh '\''%s/\^L2\$/L2c/:q!'\''
 cp "\$R/new\.sh" "\$R/pr\.sh"
@@ -7413,24 +7413,24 @@ if \[ "\$\(grep -c '\''\^=== PATCH2VI COMPAT \[0-9]\*'\'' "\$R/two\.sh"\)" = 2 ]
 %f+ coderive x1\.sh x2\.sh '\''%s/\^L2\$/L2c/:q!'\''
 cp "\$R/new\.sh" "\$R/pr\.sh"
 cp "\$R/draw\.orig" "\$R/draw\.c"4??0?
-4??+2m 20220reg p OK test_patch2vi.sh:2121:a42sc %? %@2152sc!1q0?
+4??+2m 20220reg p OK test_patch2vi.sh:2223:a42sc %? %@2152sc!1q0?
 grp 1%f+ coderive x1\.sh x2\.sh '\''%s/\^L2\$/L2c/:q!'\''.*?
 cp "\$R/new\.sh" "\$R/pr\.sh".*?
 (cp "\$R/draw\.orig" "\$R/draw\.c")7??0?
-grp 07??m 20220reg p OK test_patch2vi.sh:2121:a72sc %? %@2152sc!1q0?
+grp 07??m 20220reg p OK test_patch2vi.sh:2223:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "compat: post stack applies all blocks in order on an origin tree"
 else
 	fail "compat: post stack applies all blocks in order on an origin tree".*(# a single script carries two blocks with two different origins\. Each of the)
 # four trees \(none / A / B / A\+B\) must run exactly the blocks whose origin is
 # present - the case a shared gate tag gets wrong, since an absent origin'\''s8??0?
-grp 08??-20m 20220reg p OK test_patch2vi.sh:2121:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-20m 20220reg p OK test_patch2vi.sh:2223:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> cp "\$R/draw\.orig" "\$R/draw\.c"
 stack x1\.sh stack2\.sh
 if \[ "\$\(cat "\$R/draw\.c"\)" = "\$\(printf '\''L1\\nPROBE\\nL2cc\\nL3x'\''\)" ]; then.*(# block then fires off the other'\''s sensor\.)
 printf '\''L1\\nL2\\nL3\\nL4\\n'\'' > "\$R/m\.orig"
 printf -- '\''--- a/m\.c\\n\+\+\+ b/m\.c\\n@@ -1,4 \+1,5 @@\\n L1\\n\+PA\\n L2\\n L3\\n L4\\n'\'' > "\$R/a1\.diff"9??0?
-grp 09??-23m 20220reg p OK test_patch2vi.sh:2121:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg test_patch2vi.sh:21212sc %? %@2132sc!0?
+grp 09??-23m 20220reg p OK test_patch2vi.sh:2223:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg test_patch2vi.sh:22232sc %? %@2132sc!0?
 ?0?
 %f+ 	cp "\$R/draw\.orig" "\$R/draw\.c"
 	dregen two\.sh
@@ -7440,39 +7440,39 @@ printf -- '\''--- a/m\.c\\n\+\+\+ b/m\.c\\n@@ -1,4 \+1,5 @@\\n L1\\n\+PA\\n L2\\
 1??+3m 211q0?
 %f+ 		ok "compat: a regen reproduces a two-block script byte-identically"
 	else2??0?
-2??m 21220reg p OK test_patch2vi.sh:2128:a22sc %? %@2152sc!1q0?
+2??m 21220reg p OK test_patch2vi.sh:2230:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		ok "compat: a regen reproduces a two-block script byte-identically"$3??0?
-3??m 21220reg p OK test_patch2vi.sh:2128:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 21220reg p OK test_patch2vi.sh:2230:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	cp "\$R/draw\.orig" "\$R/draw\.c"
 	dregen two\.sh
 	if diff "\$R/two\.sh" "\$R/dregen\.sh" >/dev/null 2>&1; then4??0?
-4??+3m 21220reg p OK test_patch2vi.sh:2128:a42sc %? %@2152sc!1q0?
+4??+3m 21220reg p OK test_patch2vi.sh:2230:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	else$5??0?
-5??-1m 21220reg p OK test_patch2vi.sh:2128:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 21220reg p OK test_patch2vi.sh:2230:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .c........a..or.............."
 	............h
 ........ .../.w..s..."\$...r..e..s......../..ll..>.1;...e.
 .	......m..t: a ..g.n...p..d...........b.... ..ri.t......i..n..ca..."
 	....6??0?
-6??+3m 21220reg p OK test_patch2vi.sh:2128:a62sc %? %@2152sc!1q0?
+6??+3m 21220reg p OK test_patch2vi.sh:2230:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	cp "\$R/draw\.orig" "\$R/draw\.c".*?
 	dregen two\.sh.*?
 	if diff "\$R/two\.sh" "\$R/dregen\.sh" >/dev/null 2>&1; then.*?
 (		ok "compat: a regen reproduces a two-block script byte-identically")7??0?
-grp 07??m 21220reg p OK test_patch2vi.sh:2128:a72sc %? %@2152sc!1q0?
+grp 07??m 21220reg p OK test_patch2vi.sh:2230:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "compat: post stack applies all blocks in order on an origin tree"
 else
 	fail "compat: post stack applies all blocks in order on an origin tree".*(# a single script carries two blocks with two different origins\. Each of the)
 # four trees \(none / A / B / A\+B\) must run exactly the blocks whose origin is
 # present - the case a shared gate tag gets wrong, since an absent origin'\''s8??0?
-grp 08??-13m 21220reg p OK test_patch2vi.sh:2128:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-13m 21220reg p OK test_patch2vi.sh:2230:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> cp "\$R/draw\.orig" "\$R/draw\.c"
 stack x1\.sh stack2\.sh
 if \[ "\$\(cat "\$R/draw\.c"\)" = "\$\(printf '\''L1\\nPROBE\\nL2cc\\nL3x'\''\)" ]; then.*(# block then fires off the other'\''s sensor\.)
 printf '\''L1\\nL2\\nL3\\nL4\\n'\'' > "\$R/m\.orig"
 printf -- '\''--- a/m\.c\\n\+\+\+ b/m\.c\\n@@ -1,4 \+1,5 @@\\n L1\\n\+PA\\n L2\\n L3\\n L4\\n'\'' > "\$R/a1\.diff"9??0?
-grp 09??-16m 21220reg p OK test_patch2vi.sh:2128:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21282sc %? %@2132sc!0?
+grp 09??-16m 21220reg p OK test_patch2vi.sh:2230:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:22302sc %? %@2132sc!0?
 ?0?
 %f+ 	else
 		fail "compat: a regen reproduces a two-block script byte-identically"
@@ -7484,37 +7484,37 @@ else1??0?
 		diff "\$R/two\.sh" "\$R/dregen\.sh" \| sed '\''s/\^/    /'\'' \| head
 	fi
 else2??0?
-2??m 22220reg p OK test_patch2vi.sh:2130:a22sc %? %@2152sc!1q0?
+2??m 22220reg p OK test_patch2vi.sh:2232:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		fail "compat: a regen reproduces a two-block script byte-identically"$3??0?
-3??m 22220reg p OK test_patch2vi.sh:2130:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 22220reg p OK test_patch2vi.sh:2232:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	else$4??0?
-4??+1m 22220reg p OK test_patch2vi.sh:2130:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 22220reg p OK test_patch2vi.sh:2232:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		diff "\$R/two\.sh" "\$R/dregen\.sh" \| sed '\''s/\^/    /'\'' \| head
 	fi
 else5??0?
-5??-1m 22220reg p OK test_patch2vi.sh:2130:a52sc %? %@2152sc!1q0?
+5??-1m 22220reg p OK test_patch2vi.sh:2232:a52sc %? %@2152sc!1q0?
 %f+ 	.l.e
 ..f........p..... .e.....e..od.... a...o.b...............e.......ca..y.
 	..........tw...h...\$./...g.n..............\^.... .. ......
 	..
 .l.e6??0?
-6??+1m 22220reg p OK test_patch2vi.sh:2130:a62sc %? %@2152sc!1q0?
+6??+1m 22220reg p OK test_patch2vi.sh:2232:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	else.*?
 (		fail "compat: a regen reproduces a two-block script byte-identically")7??0?
-grp 07??m 22220reg p OK test_patch2vi.sh:2130:a72sc %? %@2152sc!1q0?
+grp 07??m 22220reg p OK test_patch2vi.sh:2232:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "compat: post stack applies all blocks in order on an origin tree"
 else
 	fail "compat: post stack applies all blocks in order on an origin tree".*(# a single script carries two blocks with two different origins\. Each of the)
 # four trees \(none / A / B / A\+B\) must run exactly the blocks whose origin is
 # present - the case a shared gate tag gets wrong, since an absent origin'\''s8??0?
-grp 08??-11m 22220reg p OK test_patch2vi.sh:2130:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 22220reg p OK test_patch2vi.sh:2232:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> cp "\$R/draw\.orig" "\$R/draw\.c"
 stack x1\.sh stack2\.sh
 if \[ "\$\(cat "\$R/draw\.c"\)" = "\$\(printf '\''L1\\nPROBE\\nL2cc\\nL3x'\''\)" ]; then.*(# block then fires off the other'\''s sensor\.)
 printf '\''L1\\nL2\\nL3\\nL4\\n'\'' > "\$R/m\.orig"
 printf -- '\''--- a/m\.c\\n\+\+\+ b/m\.c\\n@@ -1,4 \+1,5 @@\\n L1\\n\+PA\\n L2\\n L3\\n L4\\n'\'' > "\$R/a1\.diff"9??0?
-grp 09??-14m 22220reg p OK test_patch2vi.sh:2130:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21302sc %? %@2132sc!0?
+grp 09??-14m 22220reg p OK test_patch2vi.sh:2232:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:22322sc %? %@2132sc!0?
 ?0?
 %f+ 		diff "\$R/two\.sh" "\$R/dregen\.sh" \| sed '\''s/\^/    /'\'' \| head
 	fi
@@ -7530,18 +7530,18 @@ fi
 fi
 
 2??0?
-2??m 23220reg p OK test_patch2vi.sh:2134:a22sc %? %@2152sc!1q0?
+2??m 23220reg p OK test_patch2vi.sh:2236:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	fail "compat: a regen reproduces a two-block script byte-identically"$3??0?
-3??m 23220reg p OK test_patch2vi.sh:2134:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 23220reg p OK test_patch2vi.sh:2236:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		diff "\$R/two\.sh" "\$R/dregen\.sh" \| sed '\''s/\^/    /'\'' \| head
 	fi
 else4??0?
-4??+3m 23220reg p OK test_patch2vi.sh:2134:a42sc %? %@2152sc!1q0?
+4??+3m 23220reg p OK test_patch2vi.sh:2236:a42sc %? %@2152sc!1q0?
 %f+ 	echo "    could not build a two-block script"
 fi
 
 5??0?
-5??-1m 23220reg p OK test_patch2vi.sh:2134:a52sc %? %@2152sc!1q0?
+5??-1m 23220reg p OK test_patch2vi.sh:2236:a52sc %? %@2152sc!1q0?
 %f+ .	.i....../.....h".....d.......h"...s.d...... .../.....e.d
 .f.
 e...
@@ -7550,25 +7550,25 @@ e...
 f.
 
 6??0?
-6??+3m 23220reg p OK test_patch2vi.sh:2134:a62sc %? %@2152sc!1q0?
+6??+3m 23220reg p OK test_patch2vi.sh:2236:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		diff "\$R/two\.sh" "\$R/dregen\.sh" \| sed '\''s/\^/    /'\'' \| head.*?
 	fi.*?
 else.*?
 (	fail "compat: a regen reproduces a two-block script byte-identically")7??0?
-grp 07??m 23220reg p OK test_patch2vi.sh:2134:a72sc %? %@2152sc!1q0?
+grp 07??m 23220reg p OK test_patch2vi.sh:2236:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "compat: post stack applies all blocks in order on an origin tree"
 else
 	fail "compat: post stack applies all blocks in order on an origin tree".*(# a single script carries two blocks with two different origins\. Each of the)
 # four trees \(none / A / B / A\+B\) must run exactly the blocks whose origin is
 # present - the case a shared gate tag gets wrong, since an absent origin'\''s8??0?
-grp 08??-7m 23220reg p OK test_patch2vi.sh:2134:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 23220reg p OK test_patch2vi.sh:2236:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> cp "\$R/draw\.orig" "\$R/draw\.c"
 stack x1\.sh stack2\.sh
 if \[ "\$\(cat "\$R/draw\.c"\)" = "\$\(printf '\''L1\\nPROBE\\nL2cc\\nL3x'\''\)" ]; then.*(# block then fires off the other'\''s sensor\.)
 printf '\''L1\\nL2\\nL3\\nL4\\n'\'' > "\$R/m\.orig"
 printf -- '\''--- a/m\.c\\n\+\+\+ b/m\.c\\n@@ -1,4 \+1,5 @@\\n L1\\n\+PA\\n L2\\n L3\\n L4\\n'\'' > "\$R/a1\.diff"9??0?
-grp 09??-10m 23220reg p OK test_patch2vi.sh:2134:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:21342sc %? %@2132sc!0?
+grp 09??-10m 23220reg p OK test_patch2vi.sh:2236:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:22362sc %? %@2132sc!0?
 ?0?
 %f+ 	echo "    could not build a two-block script"
 fi
@@ -7581,20 +7581,20 @@ fi
 fi
 
 4??0?
-4??+2m 24220reg p OK test_patch2vi.sh:2137:a42sc %? %@2152sc!1q0?
+4??+2m 24220reg p OK test_patch2vi.sh:2239:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	ok "compat: post stack applies all blocks in order on an origin tree"
 else
 	fail "compat: post stack applies all blocks in order on an origin tree".*(# a single script carries two blocks with two different origins\. Each of the)
 # four trees \(none / A / B / A\+B\) must run exactly the blocks whose origin is
 # present - the case a shared gate tag gets wrong, since an absent origin'\''s8??0?
-grp 08??-4m 24220reg p OK test_patch2vi.sh:2137:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 24220reg p OK test_patch2vi.sh:2239:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> cp "\$R/draw\.orig" "\$R/draw\.c"
 stack x1\.sh stack2\.sh
 if \[ "\$\(cat "\$R/draw\.c"\)" = "\$\(printf '\''L1\\nPROBE\\nL2cc\\nL3x'\''\)" ]; then.*(# block then fires off the other'\''s sensor\.)
 printf '\''L1\\nL2\\nL3\\nL4\\n'\'' > "\$R/m\.orig"
 printf -- '\''--- a/m\.c\\n\+\+\+ b/m\.c\\n@@ -1,4 \+1,5 @@\\n L1\\n\+PA\\n L2\\n L3\\n L4\\n'\'' > "\$R/a1\.diff"9??0?
-grp 09??-7m 24220reg p OK test_patch2vi.sh:2137:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg test_patch2vi.sh:21372sc %? %@2132sc!0?
+grp 09??-7m 24220reg p OK test_patch2vi.sh:2239:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg test_patch2vi.sh:22392sc %? %@2132sc!0?
 ?0?
 %f+ # A script written by a patch2vi old enough to gate on stored probes still
 # parses: its === GATE === regions are read past and dropped, never re-emitted\.
@@ -7604,39 +7604,39 @@ printf -- '\''--- a/m\.c\\n\+\+\+ b/m\.c\\n@@ -1,4 \+1,5 @@\\n L1\\n\+PA\\n L2\\
 1??+3m 251q0?
 %f+ # the region header, before === COMPAT PATCH ===\) and regenerate: the result is
 # the unspliced script byte for byte, and it still fires on names alone\.2??0?
-2??m 25220reg p OK test_patch2vi.sh:2664:a22sc %? %@2152sc!1q0?
+2??m 25220reg p OK test_patch2vi.sh:2766:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^# the region header, before === COMPAT PATCH ===\) and regenerate: the result is$3??0?
-3??m 25220reg p OK test_patch2vi.sh:2664:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 25220reg p OK test_patch2vi.sh:2766:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ # A script written by a patch2vi old enough to gate on stored probes still
 # parses: its === GATE === regions are read past and dropped, never re-emitted\.
 # Splice one into cn\.sh'\''s storage the shape those scripts wrote it \(right after4??0?
-4??+3m 25220reg p OK test_patch2vi.sh:2664:a42sc %? %@2152sc!1q0?
+4??+3m 25220reg p OK test_patch2vi.sh:2766:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^# the unspliced script byte for byte, and it still fires on names alone\.$5??0?
-5??-1m 25220reg p OK test_patch2vi.sh:2664:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 25220reg p OK test_patch2vi.sh:2766:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ #...s............n.by.. ...c.2vi...d..no... t....t........r...p........i.l
 . ......: .ts..==.G....=.......... .re.r......s......dr.....,...v....e-........
 . ....c.........o .........t....e..he.....e...... ....... .r... .t.............
 ......r..........e....e.... ........A...........\) ........ner...:.....re.......
 #...............s...pt...t..f.. ..... ..........ll.f..e.... ...e...l..e\.6??0?
-6??+3m 25220reg p OK test_patch2vi.sh:2664:a62sc %? %@2152sc!1q0?
+6??+3m 25220reg p OK test_patch2vi.sh:2766:a62sc %? %@2152sc!1q0?
 grp 1%f+ # A script written by a patch2vi old enough to gate on stored probes still.*?
 # parses: its === GATE === regions are read past and dropped, never re-emitted\..*?
 # Splice one into cn\.sh'\''s storage the shape those scripts wrote it \(right after.*?
 (# the region header, before === COMPAT PATCH ===\) and regenerate: the result is)7??0?
-grp 07??m 25220reg p OK test_patch2vi.sh:2664:a72sc %? %@2152sc!1q0?
+grp 07??m 25220reg p OK test_patch2vi.sh:2766:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	fail "applied-set: a no-compat chain applies every script exactly once"
 	echo "    got=\[\$pl_tree]"
 fi.*(	d = 1)
 } \{ print }'\'' "\$R/cn\.sh" > "\$R/cg\.sh"
 cp "\$R/cn\.orig" "\$R/cn\.c"8??0?
-grp 08??-6m 25220reg p OK test_patch2vi.sh:2664:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 25220reg p OK test_patch2vi.sh:2766:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> if \[ "\$pl_tree" = '\''N1\|N1a\|N2\|N3\|N3a\|'\'' ]; then
 	ok "applied-set: a no-compat chain applies every script exactly once"
 else.*(dregen cg\.sh)
 cp "\$R/dregen\.sh" "\$R/cg2\.sh"
 cp "\$R/cn\.orig" "\$R/cn\.c"9??0?
-grp 09??-9m 25220reg p OK test_patch2vi.sh:2664:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:26642sc %? %@2132sc!0?
+grp 09??-9m 25220reg p OK test_patch2vi.sh:2766:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:27662sc %? %@2132sc!0?
 ?0?
 %f+ # the unspliced script byte for byte, and it still fires on names alone\.
 awk '\''/\^=== COMPAT PATCH ===\$/ && !d \{
@@ -7648,48 +7648,48 @@ awk '\''/\^=== COMPAT PATCH ===\$/ && !d \{
 	print "=== GATE 1 present tag 1000 probe cn\.c ==="
 	print "S1"
 	print "=== END ==="2??0?
-2??m 26220reg p OK test_patch2vi.sh:2666:a22sc %? %@2152sc!1q0?
+2??m 26220reg p OK test_patch2vi.sh:2768:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^awk '\''/\^=== COMPAT PATCH ===\$/ && !d \{$3??0?
-3??m 26220reg p OK test_patch2vi.sh:2666:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 26220reg p OK test_patch2vi.sh:2768:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^# the unspliced script byte for byte, and it still fires on names alone\.$4??0?
-4??+1m 26220reg p OK test_patch2vi.sh:2666:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 26220reg p OK test_patch2vi.sh:2768:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	print "=== GATE 1 present tag 1000 probe cn\.c ==="
 	print "S1"
 	print "=== END ==="5??0?
-5??-1m 26220reg p OK test_patch2vi.sh:2666:a52sc %? %@2152sc!1q0?
+5??-1m 26220reg p OK test_patch2vi.sh:2768:a52sc %? %@2152sc!1q0?
 %f+ . ..e.............r.........f.. ....,........s.....f.r.s......m.s ....e.
 .w. '\''.\^................ ..=\$...& ....
 .p.i.. ".....A...............g ............... =.."
 ....nt "S..
 ...i..............."6??0?
-6??+1m 26220reg p OK test_patch2vi.sh:2666:a62sc %? %@2152sc!1q0?
+6??+1m 26220reg p OK test_patch2vi.sh:2768:a62sc %? %@2152sc!1q0?
 grp 1%f+ # the unspliced script byte for byte, and it still fires on names alone\..*?
 (awk '\''/\^=== COMPAT PATCH ===\$/ && !d \{)7??0?
-grp 07??m 26220reg p OK test_patch2vi.sh:2666:a72sc %? %@2152sc!1q0?
+grp 07??m 26220reg p OK test_patch2vi.sh:2768:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	fail "applied-set: a no-compat chain applies every script exactly once"
 	echo "    got=\[\$pl_tree]"
 fi.*(	d = 1)
 } \{ print }'\'' "\$R/cn\.sh" > "\$R/cg\.sh"
 cp "\$R/cn\.orig" "\$R/cn\.c"8??0?
-grp 08??-4m 26220reg p OK test_patch2vi.sh:2666:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 26220reg p OK test_patch2vi.sh:2768:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> if \[ "\$pl_tree" = '\''N1\|N1a\|N2\|N3\|N3a\|'\'' ]; then
 	ok "applied-set: a no-compat chain applies every script exactly once"
 else.*(dregen cg\.sh)
 cp "\$R/dregen\.sh" "\$R/cg2\.sh"
 cp "\$R/cn\.orig" "\$R/cn\.c"9??0?
-grp 09??-7m 26220reg p OK test_patch2vi.sh:2666:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:26662sc %? %@2132sc!0?
-'\''1s/-I edit-to-script/Verbatim PHASE override/??!219reg test_patch2vi.sh:951:m12sc %? %@2142sc!0?
+grp 09??-7m 26220reg p OK test_patch2vi.sh:2768:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg test_patch2vi.sh:27682sc %? %@2132sc!0?
+'\''1s/-I edit-to-script/Verbatim PHASE override/??!219reg test_patch2vi.sh:961:m12sc %? %@2142sc!0?
 '\''2,#+3c # -i/-d open the built-in nextvi on /dev/tty, so these run patch2vi under
 # script(1)'\''s pty. The editor session is driven entirely by P2VI_EX
 # (patch2vi'\''s test hook, run like EXINIT after the in-RAM buffers load):
 # edits pipe the buffer through an awk filter with ":%!" and quit with
 # "q!" - the buffer is read back as-is, there is no file and no saving.
-??!219reg test_patch2vi.sh:953:m22sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:963:m22sc %? %@2142sc!0?
 '\''3c # as it starts. Each group'\''s PHASE 1/PHASE 2 sections hold its verbatim
 # ex-body segment bytes; editing them supersedes the structured sections
 # (latest-edited wins, tie goes to verbatim).
-??!219reg test_patch2vi.sh:958:m32sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:968:m32sc %? %@2142sc!0?
 '\''4i # Quit an untouched session: parses back to what was written = unedited
 ED_TRUE="q"
 
@@ -7860,7 +7860,7 @@ fi
 echo ""
 echo "=== -I edit-to-script tests ==="
 
-??!219reg test_patch2vi.sh:960:m42sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:970:m42sc %? %@2142sc!0?
 '\''5i # -od[N] clusters the same way: a delta run reads a script and emits one, so
 # the script it names is also what it writes back. Nothing reaches stdout, and
 # the result is what "-d -o SCRIPT SCRIPT" writes.
@@ -7899,15 +7899,15 @@ else
 fi
 rm -f "$A/delta.sh"
 
-??!219reg test_patch2vi.sh:1244:m52sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:1254:m52sc %? %@2142sc!0?
 '\''6,#+3c # draw.c) carries a pre COMPAT region after exit 0. -d must reproduce the whole
 # script - host block and compat region - byte-identically, without re-running
 # the origin, driven under a pty and quit with :q.
 dregen() {	# <script>: regenerate to $R/dregen.sh via a no-op -d session
-??!219reg test_patch2vi.sh:1935:m62sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:2037:m62sc %? %@2142sc!0?
 '\''7c 	pty '\''P2VI_EX=:q'\'' \
 		"sh -c '\''cd $R && $R_P2VI -d $1 > $R/dregen.sh 2>$R/derr'\''" > /dev/null 2>&1
-??!219reg test_patch2vi.sh:1940:m72sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:2042:m72sc %? %@2142sc!0?
 '\''8,#+1c dedit() {	# <script> <P2VI_EX>: -d session running <P2VI_EX>, out $R/dedit.sh
 	rm -f "$R/dedit.sh"
 	pty "P2VI_EX=$2" \
@@ -7915,19 +7915,19 @@ dregen() {	# <script>: regenerate to $R/dregen.sh via a no-op -d session
 }
 # a stored block round-trips through storage: -d reparses the recorded region
 # and emits the same script
-??!219reg test_patch2vi.sh:1942:m82sc %? %@2142sc!0?
-'\''9s/a regen/-d/??!219reg test_patch2vi.sh:1948:m92sc %? %@2142sc!0?
-'\''10s/a regen/-d/??!219reg test_patch2vi.sh:1950:m102sc %? %@2142sc!0?
-'\''11s/A regen/-d/??!219reg test_patch2vi.sh:2006:m112sc %? %@2142sc!0?
-'\''12s/a regen/-d/??!219reg test_patch2vi.sh:2011:m122sc %? %@2142sc!0?
-'\''13s/a regen/-d/??!219reg test_patch2vi.sh:2013:m132sc %? %@2142sc!0?
-'\''14s/a regen/-d/??!219reg test_patch2vi.sh:2019:m142sc %? %@2142sc!0?
-'\''15s/a regen/-d/??!219reg test_patch2vi.sh:2030:m152sc %? %@2142sc!0?
-'\''16s/a regen/-d/??!219reg test_patch2vi.sh:2032:m162sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:2044:m82sc %? %@2142sc!0?
+'\''9s/a regen/-d/??!219reg test_patch2vi.sh:2050:m92sc %? %@2142sc!0?
+'\''10s/a regen/-d/??!219reg test_patch2vi.sh:2052:m102sc %? %@2142sc!0?
+'\''11s/A regen/-d/??!219reg test_patch2vi.sh:2108:m112sc %? %@2142sc!0?
+'\''12s/a regen/-d/??!219reg test_patch2vi.sh:2113:m122sc %? %@2142sc!0?
+'\''13s/a regen/-d/??!219reg test_patch2vi.sh:2115:m132sc %? %@2142sc!0?
+'\''14s/a regen/-d/??!219reg test_patch2vi.sh:2121:m142sc %? %@2142sc!0?
+'\''15s/a regen/-d/??!219reg test_patch2vi.sh:2132:m152sc %? %@2142sc!0?
+'\''16s/a regen/-d/??!219reg test_patch2vi.sh:2134:m162sc %? %@2142sc!0?
 '\''17c 	ok "compat: -d round-trips a stored compat block byte-identically"
-??!219reg test_patch2vi.sh:2049:m172sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:2151:m172sc %? %@2142sc!0?
 '\''18c 	fail "compat: -d round-trips a stored compat block byte-identically"
-??!219reg test_patch2vi.sh:2051:m182sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:2153:m182sc %? %@2142sc!0?
 '\''19,#+2c # Part A: a stored === COMPAT DELTA === shapes the emitted compat body and
 # survives -d regen (no editor UI needed). Rebuild a single-block pr.sh, then
 # hand-edit its empty COMPAT DELTA to flip group 1'\''s strategy to abs. -d must
@@ -7986,7 +7986,7 @@ fi
 # that block'\''s === COMPAT DELTA === and, via Part A, into its emitted body,
 # with the host buffer untouched. Edit compat buffer b1'\''s COMMAND STRATEGY to
 # select abs (uncomment #abs); the effect must match Test A'\''s hand-edit.
-??!219reg test_patch2vi.sh:2115:m192sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:2217:m192sc %? %@2142sc!0?
 '\''20i dedit pr.sh '\''b1:%s/^#abs$/abs/:q!'\''
 host_pr="$(sed -n '\''/# Patch:/,/\$P2VIF/p'\'' "$R/pr.sh")"
 host_ed="$(sed -n '\''/# Patch:/,/\$P2VIF/p'\'' "$R/dedit.sh")"
@@ -8019,10 +8019,10 @@ fi
 # (per-buffer read-back across host + N compat buffers). Build a two-block
 # script first, then a no-op -d must round-trip it.
 cp "$R/draw.orig" "$R/draw.c"
-??!219reg test_patch2vi.sh:2121:m202sc %? %@2142sc!0?
-'\''21s/a regen/-d untouched/??!219reg test_patch2vi.sh:2128:m212sc %? %@2142sc!0?
-'\''22s/a regen/-d untouched/??!219reg test_patch2vi.sh:2130:m222sc %? %@2142sc!0?
-'\''23s/a regen/-d untouched/??!219reg test_patch2vi.sh:2134:m232sc %? %@2142sc!0?
+??!219reg test_patch2vi.sh:2223:m202sc %? %@2142sc!0?
+'\''21s/a regen/-d untouched/??!219reg test_patch2vi.sh:2230:m212sc %? %@2142sc!0?
+'\''22s/a regen/-d untouched/??!219reg test_patch2vi.sh:2232:m222sc %? %@2142sc!0?
+'\''23s/a regen/-d untouched/??!219reg test_patch2vi.sh:2236:m232sc %? %@2142sc!0?
 '\''24i # Two blocks over one file open two DISTINCT buffers (indexed names): editing
 # only b1 routes to the first block; the second block is left untouched.
 cp "$R/draw.orig" "$R/draw.c"
@@ -8037,9 +8037,9 @@ else
 	grep -v snapshot "$R/derr" | sed '\''s/^/    /'\'' | head
 fi
 
-??!219reg test_patch2vi.sh:2137:m242sc %? %@2142sc!0?
-'\''25s/PATCH/DELTA/??!219reg test_patch2vi.sh:2664:m252sc %? %@2142sc!0?
-'\''26s/PATCH/DELTA/??!219reg test_patch2vi.sh:2666:m262sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
+??!219reg test_patch2vi.sh:2239:m242sc %? %@2142sc!0?
+'\''25s/PATCH/DELTA/??!219reg test_patch2vi.sh:2766:m252sc %? %@2142sc!0?
+'\''26s/PATCH/DELTA/??!219reg test_patch2vi.sh:2768:m262sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'patch2vi.c' 'test_patch2vi.sh' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -8052,7 +8052,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/patch2vi.c b/patch2vi.c
-index fd771e12..151b316b 100644
+index d3b14e86..9a29db71 100644
 --- a/patch2vi.c
 +++ b/patch2vi.c
 @@ -4,15 +4,16 @@
@@ -8078,7 +8078,7 @@ index fd771e12..151b316b 100644
   */
  #include "vi.c"
  
-@@ -65,6 +66,13 @@ static const char *cur_file_path;  /* set per-file for error messages */
+@@ -66,6 +67,13 @@ static int cur_sec_reg;            /* section register, 0 = host body */
  static int relative_mode = 1;  /* 1=relative search (the default, -r),
  				* 0=absolute line numbers (-a); last of the
  				* two on the command line wins */
@@ -8092,7 +8092,7 @@ index fd771e12..151b316b 100644
  static int absolute_opt;	/* -a seen: -E leaves the re-emitted host
  				* patch absolute instead of re-anchoring
  				* it; stored blocks stay search anchored */
-@@ -85,6 +93,11 @@ static void sb_chr(sbuf *sb, int c)
+@@ -86,6 +94,11 @@ static void sb_chr(sbuf *sb, int c)
  	sbuf_chr(sb, c)
  }
  
@@ -8104,7 +8104,7 @@ index fd771e12..151b316b 100644
  static void sb_printf(sbuf *sb, const char *fmt, ...)
  {
  	va_list ap;
-@@ -102,6 +115,35 @@ static void sb_printf(sbuf *sb, const char *fmt, ...)
+@@ -103,6 +116,35 @@ static void sb_printf(sbuf *sb, const char *fmt, ...)
  	sb->s_n += n;
  }
  
@@ -8140,7 +8140,7 @@ index fd771e12..151b316b 100644
  /* f> anchor search strategies, one per pattern slot, tried strict-to-loose,
   * first match wins: NPAT exact ones (default_pat_lines), then the
   * file-validated relaxed windows - fuzz (gen_fuzz_windows), the :grp-capture
-@@ -175,11 +217,85 @@ static int ncompat_origin, compat_origin_cap;
+@@ -176,11 +218,85 @@ static int ncompat_origin, compat_origin_cap;
   * snapshot, so it is part of the derived compat patch. */
  static const char *compat_pre;
  
@@ -8226,7 +8226,7 @@ index fd771e12..151b316b 100644
  /* Raw input lines, re-emitted as the === PATCH === tail */
  static char **raw_lines;
  static int nraw, raw_cap;
-@@ -215,6 +331,39 @@ static void *ecalloc(size_t n, size_t sz)
+@@ -216,6 +332,39 @@ static void *ecalloc(size_t n, size_t sz)
  	return p;
  }
  
@@ -8266,7 +8266,7 @@ index fd771e12..151b316b 100644
  static void add_raw(const char *line)
  {
  	if (raw_sink)
-@@ -572,6 +721,109 @@ static void fuzz_mask(unsigned char *mask, int nrune, int lvl, unsigned seed,
+@@ -573,6 +722,109 @@ static void fuzz_mask(unsigned char *mask, int nrune, int lvl, unsigned seed,
  		mask[0] = 0;  /* never wildcard an entire line away */
  }
  
@@ -8376,7 +8376,7 @@ index fd771e12..151b316b 100644
  /* Number of (overlapping) occurrences of needle in haystack, both counted. */
  static int str_count_occ(const char *hay, int hl, const char *ndl, int nl)
  {
-@@ -697,6 +949,16 @@ static void mark_bytes_used(const char *s)
+@@ -698,6 +950,16 @@ static void mark_bytes_used(const char *s)
  		byte_used[(unsigned char)*s] = 1;
  }
  
@@ -8393,7 +8393,7 @@ index fd771e12..151b316b 100644
  /* The lowest unused byte; the low (non-printable) ones come first so printable
   * chars stay available for ex commands and patterns. */
  static int find_unused_byte(void)
-@@ -919,8 +1181,8 @@ static void emit_lb(sbuf *out)
+@@ -920,8 +1182,8 @@ static void emit_lb(sbuf *out)
  }
  #define EMIT_LB(out) emit_lb(out)
  
@@ -8404,7 +8404,7 @@ index fd771e12..151b316b 100644
  static void sb_seg(sbuf *out, const char *seg)
  {
  	if (!strncmp(seg, "0?\n", 3) && lb_pending(out))
-@@ -1126,9 +1388,10 @@ static void emit_search_setup(sbuf *out, int mode, int first, int lvl)
+@@ -1132,9 +1394,10 @@ static void emit_search_setup(sbuf *out, int mode, int first, int lvl)
  }
  
  /* The f> argument of a phase-1 search: the pattern's lines joined by newlines.
@@ -8418,7 +8418,7 @@ index fd771e12..151b316b 100644
   *
   * lvl is how many ex_arg layers the argument sits under - one for a top-level
   * search, two inside a ? conditional - and each of them doubles every
-@@ -1199,11 +1462,30 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
+@@ -1205,11 +1468,30 @@ static void emit_search(sbuf *out, char **anchors, int nanchors,
  	}
  }
  
@@ -8452,7 +8452,7 @@ index fd771e12..151b316b 100644
  		(*n)++;
  	return (*n)++;
  }
-@@ -1221,13 +1503,37 @@ typedef struct group_s {
+@@ -1227,13 +1509,37 @@ typedef struct group_s {
  	int nanchors;            /* count of anchor lines */
  	char *follow_ctx;        /* first following context line */
  	int follow_offset;       /* lines from first change to follow_ctx */
@@ -8490,7 +8490,7 @@ index fd771e12..151b316b 100644
  	/* Enclosing @@ hunk's original-line span (1-based, 0 if unknown); used by
  	 * gen_win_window to anchor strictly outside the diff's shown region. */
  	int hunk_lo, hunk_hi;
-@@ -1235,11 +1541,38 @@ typedef struct group_s {
+@@ -1241,11 +1547,38 @@ typedef struct group_s {
  	int res_strat;           /* resolved strategy */
  	int mark_id;             /* line mark id, -1 = no mark */
  	int insert_i;            /* pure add: insert before mark ('N-1i) vs after ('Ni) */
@@ -8531,7 +8531,7 @@ index fd771e12..151b316b 100644
  /* Any text a search could anchor on - leading context, a following context
   * line, a non-empty deleted line? Decides REL vs ABS. */
  static int group_has_anchors(group_t *g)
-@@ -1255,7 +1588,8 @@ static int group_has_anchors(group_t *g)
+@@ -1261,7 +1594,8 @@ static int group_has_anchors(group_t *g)
  typedef struct {
  	char **lines;
  	int nlines;
@@ -8541,7 +8541,7 @@ index fd771e12..151b316b 100644
  	int offset;       /* lines from match start to the target line */
  	int off_final;    /* 1 = the window generator's own offset, which the
  			   * pure-add shift must leave alone */
-@@ -2271,6 +2605,32 @@ typedef struct {
+@@ -2277,6 +2611,32 @@ typedef struct {
  	int sid;
  } subvar_t;
  
@@ -8574,7 +8574,7 @@ index fd771e12..151b316b 100644
  /*
   * Phase 2 substitute progression, mirroring emit_fallback_chain: each variant
   * (exact -> grp-absorbing) at the mark, first success wins. The s/// is both
-@@ -2332,8 +2692,8 @@ static void emit_substitute_chain(sbuf *out, int line, int mark_id,
+@@ -2338,8 +2698,8 @@ static void emit_substitute_chain(sbuf *out, int line, int mark_id,
  
  /* The substitute progression for a single-line change: rung 0 the minimal-span
   * exact s/old/new/, rung 1 the grp-absorbing variant over that same span
@@ -8585,7 +8585,7 @@ index fd771e12..151b316b 100644
  static int build_sub_variants(group_t *g, subvar_t *v)
  {
  	int nv = 0;
-@@ -2363,11 +2723,778 @@ static void emit_mark_substitute(sbuf *out, int line, int mark_id,
+@@ -2369,11 +2729,778 @@ static void emit_mark_substitute(sbuf *out, int line, int mark_id,
  	}
  }
  
@@ -9366,7 +9366,7 @@ index fd771e12..151b316b 100644
   * process-wide and built once; the rest is per session, freed by ed_free().
   * With use_tty the editor takes the controlling terminal on fds 0/1, since
   * patch2vi's own stdin/stdout may be the patch and the generated script. */
-@@ -2478,8 +3605,8 @@ static void ed_free_session(void)
+@@ -2484,8 +3611,8 @@ static void ed_free_session(void)
  	xseq = 1;
  	xvis = 0;
  	/* ignorecase defaults on in nextvi and every pattern here is literal
@@ -9377,7 +9377,7 @@ index fd771e12..151b316b 100644
  	xic = 0;
  }
  
-@@ -2516,16 +3643,19 @@ static void ed_loadbuf(const char *name, char *text)
+@@ -2522,16 +3649,19 @@ static void ed_loadbuf(const char *name, char *text)
  		ex_print(msg, bar_ft)
  }
  
@@ -9402,7 +9402,7 @@ index fd771e12..151b316b 100644
   * replay or the loader left behind (the body's "|sc!" separator, escape
   * and error mode), open the command line's files, park on the first placed
   * failure (fbuf < 0 when there is none), fire the P2VI_EX harness hook and
-@@ -2569,6 +3699,16 @@ static void ed_serve(int fbuf, int frow)
+@@ -2575,6 +3705,16 @@ static void ed_serve(int fbuf, int frow)
  	}
  }
  
@@ -9419,7 +9419,7 @@ index fd771e12..151b316b 100644
  /* A buffer's content as one heap-allocated string */
  static char *lbuf_text(struct lbuf *lb)
  {
-@@ -2583,13 +3723,16 @@ static char *lbuf_text(struct lbuf *lb)
+@@ -2589,13 +3729,16 @@ static char *lbuf_text(struct lbuf *lb)
  
  /* One derived (or re-read) compatibility block: one whole compat patch, i.e.
   * one unified diff over however many files it touches. One block = one section
@@ -9438,7 +9438,7 @@ index fd771e12..151b316b 100644
  } compat_block_t;
  static compat_block_t *compat_blocks;
  static int ncompat, compat_cap;
-@@ -2610,9 +3753,286 @@ static file_patch_t **block_files(compat_block_t *cb, int *n)
+@@ -2616,9 +3759,286 @@ static file_patch_t **block_files(compat_block_t *cb, int *n)
  	return v;
  }
  
@@ -9726,7 +9726,7 @@ index fd771e12..151b316b 100644
  static void compat_win_enter(int *sv)
  {
  	*sv = relative_mode;
-@@ -2626,6 +4046,281 @@ static void compat_win_leave(int sv)
+@@ -2632,6 +4052,281 @@ static void compat_win_leave(int sv)
  	relative_mode = sv;
  }
  
@@ -10008,7 +10008,7 @@ index fd771e12..151b316b 100644
  /*
   * groups[] for a file, from its ops[]: a group is a contiguous run of
   * deletes/adds with optional context anchors.
-@@ -2662,6 +4357,10 @@ static void build_file_groups(file_patch_t *fp)
+@@ -2668,6 +4363,10 @@ static void build_file_groups(file_patch_t *fp)
  		char *ctx_ring[3] = {NULL, NULL, NULL};
  		int ctx_line_ring[3] = {0, 0, 0};
  		int ctx_count = 0;
@@ -10019,7 +10019,7 @@ index fd771e12..151b316b 100644
  		while (i < fp->nops && fp->ops[i].type == 'c') {
  			last_ctx_line = fp->ops[i].oline;
  			ctx_ring[0] = ctx_ring[1];
-@@ -2671,10 +4370,23 @@ static void build_file_groups(file_patch_t *fp)
+@@ -2677,10 +4376,23 @@ static void build_file_groups(file_patch_t *fp)
  			ctx_ring[2] = fp->ops[i].text;
  			ctx_line_ring[2] = fp->ops[i].oline;
  			ctx_count++;
@@ -10044,7 +10044,7 @@ index fd771e12..151b316b 100644
  
  		if (last_ctx_line) {
  			int first_change_line = fp->ops[i].oline;
-@@ -2736,10 +4448,11 @@ static void build_file_groups(file_patch_t *fp)
+@@ -2742,10 +4454,11 @@ static void build_file_groups(file_patch_t *fp)
  			g->follow_offset = fp->ops[i].oline - first_change_line;
  		}
  
@@ -10060,7 +10060,7 @@ index fd771e12..151b316b 100644
  			int post_cap = 3;
  			int post_avail = 0;
  			int pi = i;
-@@ -2754,9 +4467,19 @@ static void build_file_groups(file_patch_t *fp)
+@@ -2760,9 +4473,19 @@ static void build_file_groups(file_patch_t *fp)
  					g->post_ctx[j] = fp->ops[i + j].text;
  			}
  		}
@@ -10081,7 +10081,7 @@ index fd771e12..151b316b 100644
  		if (g->ndel == 1 && g->nadd == 1 &&
  		    g->del_texts[0] && g->add_texts[0]) {
  			g->has_line_diff = find_line_diff(
-@@ -2791,16 +4514,49 @@ static void free_group(group_t *g)
+@@ -2797,16 +4520,49 @@ static void free_group(group_t *g)
  {
  	free(g->del_texts);
  	free(g->add_texts);
@@ -10132,7 +10132,7 @@ index fd771e12..151b316b 100644
  static void gen_group_segments(file_patch_t *fp)
  {
  	group_t *groups = fp->groups;
-@@ -2814,6 +4570,18 @@ static void gen_group_segments(file_patch_t *fp)
+@@ -2820,6 +4576,18 @@ static void gen_group_segments(file_patch_t *fp)
  	if (!fp->is_new && !compat_building)
  		load_orig_file(fp->orig_path ? fp->orig_path : fp->path);
  
@@ -10150,8 +10150,8 @@ index fd771e12..151b316b 100644
 +
  	/* Phase 1 (resolve): every group's search against the register cache,
  	 * recording its target line in a mark. Edit marks start at 1, mark 0
- 	 * being the global searches' cursor scratch. */
-@@ -2828,11 +4596,31 @@ static void gen_group_segments(file_patch_t *fp)
+ 	 * being the global searches' cursor scratch. Ids restart per file per
+@@ -2835,11 +4603,31 @@ static void gen_group_segments(file_patch_t *fp)
  		sbuf_smake(out, SB_INIT)
  		int target_line = g->del_start ? g->del_start : g->add_after;
  
@@ -10184,7 +10184,7 @@ index fd771e12..151b316b 100644
  			/* New file: empty buffer, nothing to mark; phase 2
  			 * emits a bare i (mark_id stays -1) */
  			if (fp->is_new && !g->del_start) {
-@@ -2844,43 +4632,70 @@ static void gen_group_segments(file_patch_t *fp)
+@@ -2851,43 +4639,70 @@ static void gen_group_segments(file_patch_t *fp)
  				t = 1;
  				g->insert_i = 1;
  			}
@@ -10280,7 +10280,7 @@ index fd771e12..151b316b 100644
  		int w = 0;
  		for (int pi = 0; pi < nps; pi++) {
  			int dup = 0;
-@@ -2894,8 +4709,11 @@ static void gen_group_segments(file_patch_t *fp)
+@@ -2901,8 +4716,11 @@ static void gen_group_segments(file_patch_t *fp)
  		}
  		nps = w;
  
@@ -10294,7 +10294,7 @@ index fd771e12..151b316b 100644
  			if (g->add_after <= 0)
  				g->insert_i = 1;
  			else
-@@ -2904,7 +4722,7 @@ static void gen_group_segments(file_patch_t *fp)
+@@ -2911,7 +4729,7 @@ static void gen_group_segments(file_patch_t *fp)
  						ps[pi].offset -= 1;
  		}
  
@@ -10303,7 +10303,7 @@ index fd771e12..151b316b 100644
  		if (nps == 0) {
  			/* No usable anchor: mark the absolute line */
  			sb_printf(out, "%dm %d",
-@@ -2942,9 +4760,59 @@ ph1_done:
+@@ -2949,9 +4767,59 @@ ph1_done:
  		EMIT_LB(out);
  		EMIT_SEP(out);
  
@@ -10366,7 +10366,7 @@ index fd771e12..151b316b 100644
  				emit_mark_substitute(out, tline, g->mark_id, g);
  			} else if (strat == STRAT_ABS && g->ndel == 1 && g->nadd == 1
  				   && g->has_line_diff) {
-@@ -2969,7 +4837,7 @@ ph1_done:
+@@ -2976,7 +4844,7 @@ ph1_done:
  }
  
  /* One file's groups as ex commands: absolute mode bottom-to-top (line numbers
@@ -10375,7 +10375,7 @@ index fd771e12..151b316b 100644
   * and then every phase-2 one. The groups are freed here. */
  static void emit_file_script(sbuf *out, file_patch_t *fp)
  {
-@@ -2978,8 +4846,9 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
+@@ -2985,8 +4853,9 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
  
  	group_t *groups = fp->groups;
  	int ngroups = fp->ngroups;
@@ -10386,7 +10386,7 @@ index fd771e12..151b316b 100644
  		/* Absolute mode: reverse order (bottom-to-top) preserves
  		 * line numbers; no searches, no marks. */
  		for (int gi = ngroups - 1; gi >= 0; gi--) {
-@@ -3004,13 +4873,21 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
+@@ -3011,13 +4880,21 @@ static void emit_file_script(sbuf *out, file_patch_t *fp)
  		return;
  	}
  
@@ -10414,7 +10414,7 @@ index fd771e12..151b316b 100644
  	for (int gi = 0; gi < ngroups; gi++)
  		free_group(&groups[gi]);
  }
-@@ -3192,18 +5069,19 @@ static void emit_body_head(sbuf *osb, int regs, int applied)
+@@ -3206,18 +5083,19 @@ static void emit_body_head(sbuf *osb, int regs, int applied)
   * position in active[], which is what vi opens. */
  static void emit_vi_block(file_patch_t **active, int nactive)
  {
@@ -10437,7 +10437,7 @@ index fd771e12..151b316b 100644
  	emit_write_tail(osb, nactive, NULL);
  	sq_write(osb->s, osb->s_n);
  	fputs("' > \"$P2VIF\"\n" P2VI_VICALL " $VI -e", stdout);
-@@ -3674,9 +5552,9 @@ static void emit_one_call(file_patch_t **active, int nactive)
+@@ -3688,9 +5566,9 @@ static void emit_one_call(file_patch_t **active, int nactive)
  	}
  
  	/* Buffer order follows the sections, not files[]: a script's stored
@@ -10450,7 +10450,7 @@ index fd771e12..151b316b 100644
  	uf = emalloc((nfiles + ncompat + 1) * sizeof(*uf));
  	for (int i = 0; i < nsec; i++)
  		for (int j = 0; j < secs[i].nf; j++)
-@@ -3749,6 +5627,8 @@ static void emit_one_call(file_patch_t **active, int nactive)
+@@ -3763,6 +5641,8 @@ static void emit_one_call(file_patch_t **active, int nactive)
  				printf(" src=%s", s->src[k]);
  			printf("\n");
  			compat_win_enter(&sv_rel);
@@ -10458,8 +10458,8 @@ index fd771e12..151b316b 100644
 +				inject_deltas(s->files, s->nf, &s->cb->deltas);
  		}
  		sbuf_smake(bsb, SB_INIT)
- 		emit_section_body(bsb, s->files, s->nf, uf, nuf);
-@@ -3784,13 +5664,34 @@ static void emit_one_call(file_patch_t **active, int nactive)
+ 		cur_sec_reg = s->suf;
+@@ -3800,13 +5680,34 @@ static void emit_one_call(file_patch_t **active, int nactive)
  	free(own);
  }
  
@@ -10499,7 +10499,7 @@ index fd771e12..151b316b 100644
   *
   * A block's identity gate is the applied set, so nothing of it is stored here:
   * it is derived from $P2VI_PATCH at run time. */
-@@ -3800,6 +5701,9 @@ static void emit_compat_storage(void)
+@@ -3816,6 +5717,9 @@ static void emit_compat_storage(void)
  		compat_block_t *cb = &compat_blocks[c];
  		printf("=== PATCH2VI COMPAT %d src=%s ===\n",
  		       REG_SEC_BASE + c, cb->origin ? cb->origin : "");
@@ -10509,7 +10509,7 @@ index fd771e12..151b316b 100644
  		printf("=== COMPAT PATCH ===\n");
  		for (int i = 0; i < cb->raw.n; i++)
  			fputs(cb->raw.v[i], stdout);
-@@ -6123,6 +8027,12 @@ static int amend_derive(void)
+@@ -6209,6 +8113,12 @@ static int amend_derive(void)
  	blank_files_range(cb->first, cb->count);
  	free_lines(cb->raw.v, cb->raw.n);
  	memset(&cb->raw, 0, sizeof(cb->raw));
@@ -10522,7 +10522,7 @@ index fd771e12..151b316b 100644
  	raw_sink = &cb->raw;
  	parse_diff_reset();
  	cb->first = nfiles;
-@@ -6428,17 +8338,28 @@ static void parse_diff_text(const char *text)
+@@ -6514,17 +8424,28 @@ static void parse_diff_text(const char *text)
  }
  
  /*
@@ -10559,7 +10559,7 @@ index fd771e12..151b316b 100644
  	sbuf_smake(lb, SB_INIT)
  	/* Skip until "exit 0" line; EOF first means the script was cut short
  	 * and nothing past the cut can be trusted - refuse rather than
-@@ -6456,13 +8377,33 @@ static int read_stored_sections(FILE *in)
+@@ -6542,13 +8463,33 @@ static int read_stored_sections(FILE *in)
  			input_file ? input_file : "<stdin>");
  		return -1;
  	}
@@ -10595,7 +10595,7 @@ index fd771e12..151b316b 100644
  		/* === COMPAT PATCH === body: raw diff lines, so a source
  		 * line that looks like a section tag is harmless and only
  		 * a column-0 === END === closes it. */
-@@ -6496,10 +8437,19 @@ static int read_stored_sections(FILE *in)
+@@ -6582,10 +8523,19 @@ static int read_stored_sections(FILE *in)
  			if (e)
  				*e = '\0';
  			cur_cb->origin = uc_dup(src ? src + 5 : "");
@@ -10615,7 +10615,7 @@ index fd771e12..151b316b 100644
  			continue;
  		}
  		if (cur_cb && strcmp(line, "=== COMPAT PATCH ===") == 0) {
-@@ -6516,7 +8466,112 @@ static int read_stored_sections(FILE *in)
+@@ -6602,7 +8552,112 @@ static int read_stored_sections(FILE *in)
  			}
  			break;
  		}
@@ -10728,10 +10728,10 @@ index fd771e12..151b316b 100644
  	free(lb->s);
  	return 0;
  }
-@@ -6556,10 +8611,10 @@ static void usage(const char *prog, int err)
+@@ -6642,10 +8697,10 @@ static void usage(const char *prog, int err)
  {
  	FILE *f = err ? stderr : stdout;
- 	fprintf(f, "Patch2vi-1.0 Usage:\n\n"
+ 	fprintf(f, "Patch2vi-1.1 Usage:\n\n"
 -		"%s [-arh] [-o FILE] [-er TAG] [-ew TAG] [input.patch]\n"
 +		"%s [-arih] [-d[N]] [-o FILE] [-er TAG] [-ew TAG] [input.patch] [nextvi-opts...]\n"
  		"%s -e script.sh [script2.sh...]\n"
@@ -10742,7 +10742,7 @@ index fd771e12..151b316b 100644
  		"%s [-o]C origin.sh [-C origin2.sh...] target.sh"
  		" [fix.[patch|sh]|''] [nextvi-opts...]\n\n",
  		prog, prog, prog, prog, prog);
-@@ -6572,7 +8627,16 @@ static void usage(const char *prog, int err)
+@@ -6658,7 +8713,16 @@ static void usage(const char *prog, int err)
  	      "        run reads. Clustered with another option it takes no FILE\n"
  	      "        and updates that option's own script in place\n"
  	      "  -e    Execute a script with the built-in nextvi, no shell involved\n"
@@ -10760,7 +10760,7 @@ index fd771e12..151b316b 100644
  	fprintf(f, "  -er   Read section end tag (default: \"%s\")\n"
  		"  -ew   Write section end tag (default: \"%s\")\n",
  		end_tag_rd, end_tag_wr);
-@@ -6582,7 +8646,7 @@ static void usage(const char *prog, int err)
+@@ -6668,7 +8732,7 @@ static void usage(const char *prog, int err)
  	      "        A compat block's section register after the script rebuilds\n"
  	      "        that one block instead, replaying its src= origins ahead of\n"
  	      "        the target; '' skips the slot. Rest of the line is a nextvi\n"
@@ -10769,7 +10769,7 @@ index fd771e12..151b316b 100644
  	      "        With QF2=1 the hunks that missed are put back into the\n"
  	      "        buffers at the line they reported, cursor parked on the first\n"
  	      "  -I    Edit files in the built-in nextvi, emit the edits as a script\n"
-@@ -6611,18 +8675,19 @@ static const char *opt_arg(int argc, char **argv, int *i, int n)
+@@ -6697,18 +8761,19 @@ static const char *opt_arg(int argc, char **argv, int *i, int n)
  	return NULL;
  }
  
@@ -10796,7 +10796,7 @@ index fd771e12..151b316b 100644
  			return 0;
  	return 1;
  }
-@@ -6661,6 +8726,7 @@ int main(int argc, char **argv)
+@@ -6747,6 +8812,7 @@ int main(int argc, char **argv)
  		j = argv[i][1] == 'o' && argv[i][2] == 'C';
  		if (argv[i][1 + j] == 'C') {
  			compat_mode = 1;
@@ -10804,7 +10804,7 @@ index fd771e12..151b316b 100644
  			amend_inplace |= j;
  			ARR_PUSH(compat_origins, ncompat_origin, compat_origin_cap)
  			compat_origins[ncompat_origin++] =
-@@ -6683,7 +8749,7 @@ int main(int argc, char **argv)
+@@ -6769,7 +8835,7 @@ int main(int argc, char **argv)
  		}
  		/* bare -e: execute the script; tested after -er/-ew so it
  		 * cannot shadow them, and kept out of the cluster loop
@@ -10813,7 +10813,7 @@ index fd771e12..151b316b 100644
  		if (argv[i][1] == 'e' && !argv[i][2]) {
  			exec_mode = 1;
  			continue;
-@@ -6696,6 +8762,10 @@ int main(int argc, char **argv)
+@@ -6782,6 +8848,10 @@ int main(int argc, char **argv)
  				relative_mode = 1;
  				absolute_opt = 0;
  			}
@@ -10824,7 +10824,7 @@ index fd771e12..151b316b 100644
  			/* -I and -E both end patch2vi's own option parsing:
  			 * whatever follows the cluster is a nextvi command
  			 * line, options and files alike - for -E all but its
-@@ -6710,7 +8780,16 @@ int main(int argc, char **argv)
+@@ -6796,7 +8866,16 @@ int main(int argc, char **argv)
  			 * -oE updates it in place */
  			else if (argv[i][j] == 'o')
  				amend_inplace = 1;
@@ -10842,7 +10842,7 @@ index fd771e12..151b316b 100644
  				usage(argv[0], 0);	/* asked for: stdout, ok */
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-@@ -6722,12 +8801,29 @@ int main(int argc, char **argv)
+@@ -6808,12 +8887,29 @@ int main(int argc, char **argv)
  			break;
  		}
  	}
@@ -10874,7 +10874,7 @@ index fd771e12..151b316b 100644
  	/* -oC: the block extends the target script, so that is what the run
  	 * writes back; the write is atomic, so reading it first is safe */
  	if (compat_mode && amend_inplace) {
-@@ -6813,7 +8909,7 @@ int main(int argc, char **argv)
+@@ -6899,7 +8995,7 @@ int main(int argc, char **argv)
  	for (const char *p = forbidden; *p; p++)
  		byte_used[(unsigned char)*p] = 1;
  
@@ -10883,7 +10883,7 @@ index fd771e12..151b316b 100644
  		mark_bytes_used("FAIL OK");
  
  	/* -I: the diff is not read, it is made. Everything patch2vi's own
-@@ -6879,7 +8975,7 @@ int main(int argc, char **argv)
+@@ -6965,7 +9061,7 @@ int main(int argc, char **argv)
  	sbuf_smake(lb, SB_INIT)
  	if (in && read_line(in, lb)) {
  		if (!strncmp(lb->s, "#!/bin/sh", 9)) {
@@ -10892,7 +10892,7 @@ index fd771e12..151b316b 100644
  				return 1;
  		} else if (amend_mode) {
  			fprintf(stderr, "%s: not a patch2vi script\n", input_file);
-@@ -6891,9 +8987,9 @@ int main(int argc, char **argv)
+@@ -6977,9 +9073,9 @@ int main(int argc, char **argv)
  			parse_diff_line(lb->s);
  		}
  	}
@@ -10905,7 +10905,7 @@ index fd771e12..151b316b 100644
  	if (amend_mode && amend_sel < 0) {
  		if (in)
  			fclose(in);
-@@ -6991,7 +9087,7 @@ int main(int argc, char **argv)
+@@ -7077,7 +9173,7 @@ int main(int argc, char **argv)
  
  	/* -o: from here on stdout is the output file's temp twin. Every mode
  	 * that emits a script passes through this point, and everything any of
@@ -10914,7 +10914,7 @@ index fd771e12..151b316b 100644
  	 * replay or an -I session opened - has been read by now, so -o may name
  	 * a file the same run consumed (-E updating its own script). */
  	if (out_file && out_redirect(out_file) < 0)
-@@ -7010,7 +9106,7 @@ int main(int argc, char **argv)
+@@ -7096,7 +9192,7 @@ int main(int argc, char **argv)
  	      "    echo \"Set VI environment variable to point to nextvi binary\" >&2\n"
  	      "    exit 1\n"
  	      "fi\n\n", stdout);
@@ -10923,7 +10923,7 @@ index fd771e12..151b316b 100644
  		fputs("# Env switches:\n"
  		      "# Phase 1 (search/mark) reports nothing by default\n"
  		      "#   DBG1=1 reports failures and which fallback anchor\n"
-@@ -7039,6 +9135,10 @@ int main(int argc, char **argv)
+@@ -7125,6 +9221,10 @@ int main(int argc, char **argv)
  			active[nactive++] = &files[i];
  	}
  
@@ -10934,7 +10934,7 @@ index fd771e12..151b316b 100644
  	/* With compat blocks present, the whole patch is one $VI call: host and
  	 * every compat block share one process so the flags cross the host body
  	 * through registers. Without them the common case stays a
-@@ -7062,8 +9162,10 @@ int main(int argc, char **argv)
+@@ -7148,8 +9248,10 @@ int main(int argc, char **argv)
  	 * inherited applied set and invoke the next script with the rest. */
  	emit_compat_tail();
  
@@ -10947,10 +10947,10 @@ index fd771e12..151b316b 100644
  	printf("=== PATCH2VI PATCH ===\n");
  	for (int i = 0; i < nraw; i++)
 diff --git a/test_patch2vi.sh b/test_patch2vi.sh
-index 3a8574ce..ba3d9827 100755
+index d3b9f8d8..799c6d62 100755
 --- a/test_patch2vi.sh
 +++ b/test_patch2vi.sh
-@@ -948,16 +948,189 @@ third line
+@@ -958,16 +958,189 @@ third line
  	"-r"
  
  echo ""
@@ -11146,7 +11146,7 @@ index 3a8574ce..ba3d9827 100755
  # -I edits a file in the built-in editor and turns the buffer it leaves
  # behind into the script; the file itself is never written, so the diff
  # comes from patch2vi's own differ, not from disk.
-@@ -1242,6 +1415,44 @@ else
+@@ -1252,6 +1425,44 @@ else
  	tr -d '\r' < "$A/nerr5" | sed 's/^/    /'
  fi
  
@@ -11191,7 +11191,7 @@ index 3a8574ce..ba3d9827 100755
  # -o keeps naming a file whenever what follows is not an -E cluster
  ( cd "$A" && "$E_P2VI" -r -oE2.sh x.diff ) > "$A/o4.out" 2>&1
  if [ -s "$A/E2.sh" ] && [ ! -s "$A/o4.out" ]; then
-@@ -1932,22 +2143,28 @@ else
+@@ -2034,22 +2245,28 @@ else
  fi
  
  # Stage B3: storage, round-trip and stacking. The -C script above (new.sh from
@@ -11229,7 +11229,7 @@ index 3a8574ce..ba3d9827 100755
  	tr -d '\r' < "$R/derr" | sed 's/^/    /'
  	diff "$R/xf.sh" "$R/dregen.sh" | head -10 | sed 's/^/    /'
  fi
-@@ -2003,20 +2220,20 @@ else
+@@ -2105,20 +2322,20 @@ else
  	sed 's/^/    /' "$R/cs.c"
  fi
  
@@ -11254,7 +11254,7 @@ index 3a8574ce..ba3d9827 100755
  # them in the other order: here the host edits ph.c and pi.c while the block
  # edits pi.c alone, so every b<N> in the emitted driver would shift by one.
  cp "$R/ph.orig" "$R/ph.c"
-@@ -2027,9 +2244,9 @@ cp "$R/ph.orig" "$R/ph.c"
+@@ -2129,9 +2346,9 @@ cp "$R/ph.orig" "$R/ph.c"
  cp "$R/pi.orig" "$R/pi.c"
  dregen sf.sh
  if [ -s "$R/sf.sh" ] && cmp -s "$R/sf.sh" "$R/dregen.sh"; then
@@ -11266,7 +11266,7 @@ index 3a8574ce..ba3d9827 100755
  	diff "$R/sf.sh" "$R/dregen.sh" 2>&1 | sed 's/^/    /' | head
  fi
  
-@@ -2046,9 +2263,9 @@ cp "$R/new.sh" "$R/pr.sh"
+@@ -2148,9 +2365,9 @@ cp "$R/new.sh" "$R/pr.sh"
  cp "$R/draw.orig" "$R/draw.c"
  dregen pr.sh
  if diff "$R/pr.sh" "$R/dregen.sh" >/dev/null 2>&1; then
@@ -11278,7 +11278,7 @@ index 3a8574ce..ba3d9827 100755
  	diff "$R/pr.sh" "$R/dregen.sh" | sed 's/^/    /' | head -20
  fi
  
-@@ -2112,29 +2329,130 @@ else
+@@ -2214,29 +2431,130 @@ else
  	sed 's/^/    /' "$R/draw.c"
  fi
  
@@ -11415,7 +11415,7 @@ index 3a8574ce..ba3d9827 100755
  # Mixed origins, the subset matrix. Two independent origins over one file: A
  # inserts PA at the top, B inserts PB at the bottom; the target's own hunk is a
  # third, disjoint line. A's compat block is derived first, B's on top of it, so
-@@ -2661,9 +2979,9 @@ fi
+@@ -2763,9 +3081,9 @@ fi
  # A script written by a patch2vi old enough to gate on stored probes still
  # parses: its === GATE === regions are read past and dropped, never re-emitted.
  # Splice one into cn.sh's storage the shape those scripts wrote it (right after
