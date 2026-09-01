@@ -1913,8 +1913,10 @@ void *ex_exec(const char *ln)
 			|| tmpxquit < -256)
 		restore(xquit)
 	if (!xexec_dep) {
-		if (!xmemo_keep)
-			ec_memo(NULL, NULL, "");
+		if (xmemo && !xmemo_keep) {
+			sbuf_free(xmemo)
+			xmemo = NULL;
+		}
 		xqprop = 0;
 	}
 	return xerr & 4 ? NULL : ret;
