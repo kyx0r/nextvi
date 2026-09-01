@@ -1,4 +1,4 @@
-.Dd Aug 31, 2026
+.Dd Sep  1, 2026
 .Dt Nextvi 1
 .Os Nextvi 7.5
 .
@@ -1282,13 +1282,25 @@ Example: inverted capture
 .Ed
 
 .It Cm {\fIprefix\fP}???
-Evaluate prefix tags
+Evaluate capture tags
 .Bd -literal
 This is a nop command that evaluates a boolean expression
 at prefix and returns the result.
 
 Example: control while loop
 :$? \e%f+int\e:1??\e:\e%f+void\e:2??\e:1,2??p\e:1,2???
+.Ed
+
+.It Cm ^[\fIany\fP]
+Control capture tags
+.Bd -literal
+No argument drops all captured error statuses.
+Argument toggles capture status preservation across
+separate ex command chains.
+
+Example: use a capture at the next <:> prompt
+:^x:![ -f ./vi.c ]:1??
+:1??p vi.c exists
 .Ed
 
 .It Cm ft[\fIfiletype\fP]
@@ -1776,8 +1788,8 @@ _
  735 led.c | insert mode/output
  751 regex.c | pikevm
  1903 vi.c | normal mode/general
- 1948 ex.c | ex options/commands
- 7804 total | wc -l *.c\(basort
+ 1963 ex.c | ex options/commands
+ 7819 total | wc -l *.c\(basort
 _
 .TE
 .
