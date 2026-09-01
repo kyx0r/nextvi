@@ -58,7 +58,8 @@ static char xirerr[] = "invalid range";
 static char xrnferr[] = "range not found";
 static char *xrerr;
 static void *xpret;		/* previous ex command return value */
-static sbuf *xanchor;		/* anchored error status buffer */
+static sbuf *xmemo;		/* memo buffer: saved ?? capture statuses */
+static int xmemo_keep;		/* keep memos across ex_exec calls */
 static int xqprop;		/* number of ex_exec levels :q propagates */
 
 /* parity rule: delim halves escapes, odd keeps delim literal */
@@ -1364,6 +1365,19 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	return ret;
 }
 
+static void *ec_memo(char *loc, char *cmd, char *arg)
+{
+	if (*arg) {
+		xmemo_keep = !xmemo_keep;
+		return NULL;
+	}
+	if (xmemo) {
+		sbuf_free(xmemo)
+		xmemo = NULL;
+	}
+	return NULL;
+}
+
 static void *ec_while(char *loc, char *cmd, char *arg)
 {
 	int isdq = cmd[1] == '?';
@@ -1373,14 +1387,14 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 		int id = atoi(loc);
 		if (!*arg && cmd[2] != '?') {
 			int err = (xpret != NULL) ^ inv;
-			if (!xanchor)
-				sbuf_make(xanchor, 4 * sizeof(int))
-			sbuf_mem(xanchor, &id, sizeof(id))
-			sbuf_mem(xanchor, &err, sizeof(err))
+			if (!xmemo)
+				sbuf_make(xmemo, 4 * sizeof(int))
+			sbuf_mem(xmemo, &id, sizeof(id))
+			sbuf_mem(xmemo, &err, sizeof(err))
 			return ret;
-		} else if (!xanchor)
+		} else if (!xmemo)
 			return ret;
-		int *ap = (int*)xanchor->s, n = xanchor->s_n / sizeof(int);
+		int *ap = (int*)xmemo->s, n = xmemo->s_n / sizeof(int);
 		int and_res = 0, or_res = 1;
 		for (int i = n; i >= 2;) {
 			i -= 2;
@@ -1692,6 +1706,7 @@ static struct excmd {
 	{"??", ec_while},
 	{"?!", ec_while},
 	{"?", ec_while},
+	{"^", ec_memo},
 	{"bp", ec_setpath},
 	{"bs", ec_bufsave},
 	{"bx", ec_setbufsmax},
@@ -1898,9 +1913,9 @@ void *ex_exec(const char *ln)
 			|| tmpxquit < -256)
 		restore(xquit)
 	if (!xexec_dep) {
-		if (xanchor) {
-			sbuf_free(xanchor)
-			xanchor = NULL;
+		if (xmemo && !xmemo_keep) {
+			sbuf_free(xmemo)
+			xmemo = NULL;
 		}
 		xqprop = 0;
 	}
