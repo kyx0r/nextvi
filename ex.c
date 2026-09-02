@@ -58,7 +58,8 @@ static char xirerr[] = "invalid range";
 static char xrnferr[] = "range not found";
 static char *xrerr;
 static void *xpret;		/* previous ex command return value */
-static sbuf *xmemo;		/* memo buffer: saved ?? capture statuses */
+static signed char *xmemo;	/* memo buffer: id -> ?? capture status, -1 if unset */
+static int xmemo_n;		/* number of allocated memo slots */
 static int xmemo_keep;		/* keep memos across ex_exec calls */
 static int xqprop;		/* number of ex_exec levels :q propagates */
 
@@ -1365,16 +1366,19 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	return ret;
 }
 
+static void memo_free(void)
+{
+	free(xmemo);
+	xmemo = NULL;
+	xmemo_n = 0;
+}
+
 static void *ec_memo(char *loc, char *cmd, char *arg)
 {
-	if (*arg) {
+	if (*arg)
 		xmemo_keep = !xmemo_keep;
-		return NULL;
-	}
-	if (xmemo) {
-		sbuf_free(xmemo)
-		xmemo = NULL;
-	}
+	else
+		memo_free();
 	return NULL;
 }
 
@@ -1387,20 +1391,23 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 		int id = atoi(loc);
 		if (!*arg && cmd[2] != '?') {
 			int err = (xpret != NULL) ^ inv;
-			if (!xmemo)
-				sbuf_make(xmemo, 4 * sizeof(int))
-			sbuf_mem(xmemo, &id, sizeof(id))
-			sbuf_mem(xmemo, &err, sizeof(err))
+			if ((unsigned int)id >= INT_MAX / 2)
+				return xserr;
+			if (id >= xmemo_n) {
+				int n = MAX(64, NEXTSZ(xmemo_n, id + 1 - xmemo_n));
+				xmemo = erealloc(xmemo, n);
+				memset(xmemo + xmemo_n, -1, n - xmemo_n);
+				xmemo_n = n;
+			}
+			xmemo[id] = err;
 			return ret;
-		} else if (!xmemo)
-			return ret;
-		int *ap = (int*)xmemo->s, n = xmemo->s_n / sizeof(int);
+		}
 		int and_res = 0, or_res = 1;
-		for (int i = n; i >= 2;) {
-			i -= 2;
-			if (ap[i] != id)
-				continue;
-			and_res |= ap[i + 1];
+		for (;;) {
+			if ((unsigned int)id >= (unsigned int)xmemo_n
+					|| xmemo[id] < 0)
+				return ret;
+			and_res |= xmemo[id];
 			for (; *loc && *loc != ',' && *loc != ';'; loc++);
 			if (!*loc || *loc == ';') {
 				 or_res &= and_res;
@@ -1412,9 +1419,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 				return (or_res ^ inv) ? xuerr : ex_exec(arg);
 			}
 			id = atoi(++loc);
-			i = n;
 		}
-		return ret;
 	} else if (isdq) {
 		ret = (xpret != NULL) ^ inv ? xuerr : NULL;
 		return !ret && *arg ? ex_exec(arg) : ret;
@@ -1913,10 +1918,8 @@ void *ex_exec(const char *ln)
 			|| tmpxquit < -256)
 		restore(xquit)
 	if (!xexec_dep) {
-		if (xmemo && !xmemo_keep) {
-			sbuf_free(xmemo)
-			xmemo = NULL;
-		}
+		if (xmemo && !xmemo_keep)
+			memo_free();
 		xqprop = 0;
 	}
 	return xerr & 4 ? NULL : ret;
