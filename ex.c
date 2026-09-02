@@ -1373,7 +1373,7 @@ static void xcid_free(void)
 	xcid_n = 0;
 }
 
-static void *ec_captures(char *loc, char *cmd, char *arg)
+static void *ec_xcid(char *loc, char *cmd, char *arg)
 {
 	if (*arg)
 		xcid_keep = !xcid_keep;
@@ -1711,7 +1711,7 @@ static struct excmd {
 	{"??", ec_while},
 	{"?!", ec_while},
 	{"?", ec_while},
-	{"^", ec_captures},
+	{"^", ec_xcid},
 	{"bp", ec_setpath},
 	{"bs", ec_bufsave},
 	{"bx", ec_setbufsmax},
