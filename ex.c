@@ -58,9 +58,9 @@ static char xirerr[] = "invalid range";
 static char xrnferr[] = "range not found";
 static char *xrerr;
 static void *xpret;		/* previous ex command return value */
-static signed char *xmemo;	/* memo buffer: id -> ?? capture status, -1 if unset */
-static int xmemo_n;		/* number of allocated memo slots */
-static int xmemo_keep;		/* keep memos across ex_exec calls */
+static signed char *xcid;	/* capture status by id, -1 if unset */
+static int xcid_n;		/* number of allocated capture ids */
+static int xcid_keep;		/* keep capture statuses across ex_exec calls */
 static int xqprop;		/* number of ex_exec levels :q propagates */
 
 /* parity rule: delim halves escapes, odd keeps delim literal */
@@ -1366,19 +1366,19 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	return ret;
 }
 
-static void memo_free(void)
+static void xcid_free(void)
 {
-	free(xmemo);
-	xmemo = NULL;
-	xmemo_n = 0;
+	free(xcid);
+	xcid = NULL;
+	xcid_n = 0;
 }
 
-static void *ec_memo(char *loc, char *cmd, char *arg)
+static void *ec_xcid(char *loc, char *cmd, char *arg)
 {
 	if (*arg)
-		xmemo_keep = !xmemo_keep;
+		xcid_keep = !xcid_keep;
 	else
-		memo_free();
+		xcid_free();
 	return NULL;
 }
 
@@ -1393,21 +1393,21 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 			int err = (xpret != NULL) ^ inv;
 			if ((unsigned int)id >= INT_MAX / 2)
 				return xserr;
-			if (id >= xmemo_n) {
-				int n = MAX(64, NEXTSZ(xmemo_n, id + 1 - xmemo_n));
-				xmemo = erealloc(xmemo, n);
-				memset(xmemo + xmemo_n, -1, n - xmemo_n);
-				xmemo_n = n;
+			if (id >= xcid_n) {
+				int n = MAX(64, NEXTSZ(xcid_n, id + 1 - xcid_n));
+				xcid = erealloc(xcid, n);
+				memset(xcid + xcid_n, -1, n - xcid_n);
+				xcid_n = n;
 			}
-			xmemo[id] = err;
+			xcid[id] = err;
 			return ret;
 		}
 		int and_res = 0, or_res = 1;
 		for (;;) {
-			if ((unsigned int)id >= (unsigned int)xmemo_n
-					|| xmemo[id] < 0)
+			if ((unsigned int)id >= (unsigned int)xcid_n
+					|| xcid[id] < 0)
 				return ret;
-			and_res |= xmemo[id];
+			and_res |= xcid[id];
 			for (; *loc && *loc != ',' && *loc != ';'; loc++);
 			if (!*loc || *loc == ';') {
 				 or_res &= and_res;
@@ -1711,7 +1711,7 @@ static struct excmd {
 	{"??", ec_while},
 	{"?!", ec_while},
 	{"?", ec_while},
-	{"^", ec_memo},
+	{"^", ec_xcid},
 	{"bp", ec_setpath},
 	{"bs", ec_bufsave},
 	{"bx", ec_setbufsmax},
@@ -1918,8 +1918,8 @@ void *ex_exec(const char *ln)
 			|| tmpxquit < -256)
 		restore(xquit)
 	if (!xexec_dep) {
-		if (xmemo && !xmemo_keep)
-			memo_free();
+		if (xcid && !xcid_keep)
+			xcid_free();
 		xqprop = 0;
 	}
 	return xerr & 4 ? NULL : ret;
