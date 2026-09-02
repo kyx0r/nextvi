@@ -7,6 +7,8 @@ New in core:
    them across commands instead of clearing after each one. Closes the
    remaining ?? control gaps.
 2. :m![#marks] unsets line marks; no argument unsets all marks.
+3. Optimized capture ids: O(1) lookup, kept ~O(1) amortized append,
+   reduced memory usage with flat char array.
 
 New in builds:
 1. Build shell scripts (cbuild.sh, build_patch2vi.sh) accept options
