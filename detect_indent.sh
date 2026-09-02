@@ -126,24 +126,24 @@ int xerr = 1;			/\* error handling -
 %f+ 	bufs\[i]\.off = 0;
 	bufs\[i]\.top = 0;
 	bufs\[i]\.td = \+1;4??0?
-4??+2m 2220reg p OK ex.c:169:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:170:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	bufs\[i]\.off = 0;.*?
 	bufs\[i]\.top = 0;.*?
 (	bufs\[i]\.td = \+1;)7??0?
-grp 07??m 2220reg p OK ex.c:169:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:170:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	bufs\[i]\.lb = lbuf_make\(\);
 	bufs\[i]\.plen = len;
 	bufs\[i]\.row = 0;.*(void temp_open\(int i, char \*name, char \*ft\))
 \{
 	tempbufs\[i]\.path = uc_dup\(name\);8??0?
-grp 08??-5m 2220reg p OK ex.c:169:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 2220reg p OK ex.c:170:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	else
 		bufs_free\(--i\);
 	bufs\[i]\.path = uc_dup\(path\);.*(	tempbufs\[i]\.lb = lbuf_make\(\);)
 	tempbufs\[i]\.row = 0;
 	tempbufs\[i]\.off = 0;9??0?
-grp 09??-8m 2220reg p OK ex.c:169:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:1692sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK ex.c:170:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:1702sc %? %@2132sc!0?
 ?0?
 %f+ 	tempbufs\[i]\.off = 0;
 	tempbufs\[i]\.top = 0;
@@ -155,24 +155,24 @@ int xerr = 1;			/\* error handling -
 %f+ 	tempbufs\[i]\.off = 0;
 	tempbufs\[i]\.top = 0;
 	tempbufs\[i]\.td = \+1;4??0?
-4??+2m 3220reg p OK ex.c:181:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:182:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	tempbufs\[i]\.off = 0;.*?
 	tempbufs\[i]\.top = 0;.*?
 (	tempbufs\[i]\.td = \+1;)7??0?
-grp 07??m 3220reg p OK ex.c:181:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:182:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	tempbufs\[i]\.path = uc_dup\(name\);
 	tempbufs\[i]\.lb = lbuf_make\(\);
 	tempbufs\[i]\.row = 0;.*(void temp_pos\(int i, int row, int off, int top\))
 \{
 	if \(row < 0\)8??0?
-grp 08??-5m 3220reg p OK ex.c:181:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 3220reg p OK ex.c:182:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	bufs\[i]\.mtime = -1;
 	return i;
 }.*(		row = lbuf_len\(tempbufs\[i]\.lb\)-1;)
 	tempbufs\[i]\.row = row < 0 \? 0 : row;
 	tempbufs\[i]\.off = off;9??0?
-grp 09??-8m 3220reg p OK ex.c:181:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:1812sc %? %@2132sc!0?
+grp 09??-8m 3220reg p OK ex.c:182:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:1822sc %? %@2132sc!0?
 ?0?
 %f+ 	return 0;
 }
@@ -185,20 +185,20 @@ static void \*ec_edit\(char \*loc, char \*cmd, char \*arg\)
 }
 
 4??0?
-4??+2m 4220reg p OK ex.c:413:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:414:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	bufs_switch\(bufs_open\(path, len\)\);
 	readfile\(\).*(	int fd, len, rd = 0, cd = 0;)
 	if \(arg\[0] == '\''\.'\'' && arg\[1] == '\''/'\''\)
 		cd = 2;8??0?
-grp 08??-4m 4220reg p OK ex.c:413:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ex.c:414:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(path\[0] && \(\(fd = bufs_find\(path, len\)\) >= 0\)\) \{
 		bufs_switch\(fd\);
 		return 1;.*(	len = strlen\(arg\+cd\);)
 	if \(len && \(\(fd = bufs_find\(arg\+cd, len\)\) >= 0\)\) \{
 		bufs_switchwft\(fd\)9??0?
-grp 09??-7m 4220reg p OK ex.c:413:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:4132sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK ex.c:414:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:4142sc %? %@2132sc!0?
 ?0?
 %f+ 	p->mtime = mtime\(p->path\);
 	p->ft = syn_filetype\(p->path\);
@@ -210,24 +210,24 @@ static void \*ec_setpath\(char \*loc, char \*cmd, char \*arg\)1??0?
 %f+ 	p->mtime = mtime\(p->path\);
 	p->ft = syn_filetype\(p->path\);
 	lbuf_saved\(p->lb, clear\);4??0?
-4??+2m 5220reg p OK ex.c:670:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK ex.c:671:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	p->mtime = mtime\(p->path\);.*?
 	p->ft = syn_filetype\(p->path\);.*?
 (	lbuf_saved\(p->lb, clear\);)7??0?
-grp 07??m 5220reg p OK ex.c:670:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK ex.c:671:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xquit = \*loc \? -xqprop \* 256 - 257 - \(abs\(xquit\) - 1\) : -xquit;
 	return NULL;
 }.*(	free\(xb_path\);)
 	xb_path = uc_dup\(arg\);
 	ex_buf->plen = strlen\(arg\);8??0?
-grp 08??-5m 5220reg p OK ex.c:670:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 5220reg p OK ex.c:671:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*arg\)
 		xquit = \(abs\(atoi\(arg\)\) & 255\) \+ 1;
 	if \(strchr\(cmd, '\''!'\''\)\).*(static void \*ec_read\(char \*loc, char \*cmd, char \*arg\))
 \{
 	sbuf obuf, \*sb;9??0?
-grp 09??-11m 5220reg p OK ex.c:670:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:6702sc %? %@2132sc!0?
+grp 09??-11m 5220reg p OK ex.c:671:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:6712sc %? %@2132sc!0?
 ?0?
 %f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
@@ -238,24 +238,24 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 %f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)4??0?
-4??+2m 6220reg p OK ex.c:1676:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK ex.c:1681:a42sc %? %@2152sc!1q0?
 grp 1%f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\).*?
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 (EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\))7??0?
-grp 07??m 6220reg p OK ex.c:1676:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1681:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
 }.*(_EO\(left,)
 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);8??0?
-grp 08??-5m 6220reg p OK ex.c:1676:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 6220reg p OK ex.c:1681:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return xkwdrs \? NULL : xserr;
 }.*(	else if \(\*arg\))
 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)9??0?
-grp 09??-8m 6220reg p OK ex.c:1676:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:16762sc %? %@2132sc!0?
+grp 09??-8m 6220reg p OK ex.c:1681:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:16812sc %? %@2132sc!0?
 ?0?
 %f+ 
 _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); return NULL;\)
@@ -264,20 +264,20 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 1??0?
 1??m 71q0?
 ;0fr.,$f+ ^_EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); return NULL;\)$4??0?
-4??-1m 7220reg p OK ex.c:1677:a42sc %? %@2152sc!fr 981qfr 980?
+4??-1m 7220reg p OK ex.c:1682:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
 }.*(_EO\(left,)
 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);8??0?
-grp 08??-4m 7220reg p OK ex.c:1677:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 7220reg p OK ex.c:1682:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return xkwdrs \? NULL : xserr;
 }.*(	else if \(\*arg\))
 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)9??0?
-grp 09??-7m 7220reg p OK ex.c:1677:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16772sc %? %@2132sc!0?
+grp 09??-7m 7220reg p OK ex.c:1682:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16822sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(err\),
 	\{"ef!", ec_fuzz},
@@ -289,24 +289,24 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 %f+ 	EO\(err\),
 	\{"ef!", ec_fuzz},
 	\{"ef", ec_fuzz},4??0?
-4??+2m 8220reg p OK ex.c:1723:a42sc %? %@2152sc!1q0?
+4??+2m 8220reg p OK ex.c:1728:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(err\),.*?
 	\{"ef!", ec_fuzz},.*?
 (	\{"ef", ec_fuzz},)7??0?
-grp 07??m 8220reg p OK ex.c:1723:a72sc %? %@2152sc!1q0?
+grp 07??m 8220reg p OK ex.c:1728:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"p", ec_print},
 	EO\(ai\),
 	\{"ac", ec_setacreg},.*(	\{"fd", ec_setdir},)
 	\{"fp", ec_setdir},
 	EO\(fr\),8??0?
-grp 08??-4m 8220reg p OK ex.c:1723:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 8220reg p OK ex.c:1728:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(pr\),
 	\{"pu", ec_put},
 	\{"ph", ec_setenc},.*(	\{"f\+", ec_find},)
 	\{"f-", ec_find},
 	\{"f>", ec_find},9??0?
-grp 09??-7m 8220reg p OK ex.c:1723:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17232sc %? %@2132sc!0?
+grp 09??-7m 8220reg p OK ex.c:1728:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17282sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"f>", ec_find},
 	\{"f<", ec_find},
@@ -318,24 +318,24 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 %f+ 	\{"f>", ec_find},
 	\{"f<", ec_find},
 	\{"f", ec_fuzz},4??0?
-4??+2m 9220reg p OK ex.c:1734:a42sc %? %@2152sc!1q0?
+4??+2m 9220reg p OK ex.c:1739:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"f>", ec_find},.*?
 	\{"f<", ec_find},.*?
 (	\{"f", ec_fuzz},)7??0?
-grp 07??m 9220reg p OK ex.c:1734:a72sc %? %@2152sc!1q0?
+grp 07??m 9220reg p OK ex.c:1739:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(fr\),
 	\{"f\+", ec_find},
 	\{"f-", ec_find},.*(	\{"i", ec_insert},)
 	\{"d", ec_delete},
 	EO\(grp\),8??0?
-grp 08??-4m 9220reg p OK ex.c:1734:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 9220reg p OK ex.c:1739:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"ft", ec_ft},
 	\{"fd", ec_setdir},
 	\{"fp", ec_setdir},.*(	\{"g!", ec_glob},)
 	\{"g", ec_glob},
 	EO\(mpt\),9??0?
-grp 09??-7m 9220reg p OK ex.c:1734:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17342sc %? %@2132sc!0?
+grp 09??-7m 9220reg p OK ex.c:1739:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17392sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
@@ -347,24 +347,24 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},4??0?
-4??+2m 10220reg p OK ex.c:1765:a42sc %? %@2152sc!1q0?
+4??+2m 10220reg p OK ex.c:1770:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
-grp 07??m 10220reg p OK ex.c:1765:a72sc %? %@2152sc!1q0?
+grp 07??m 10220reg p OK ex.c:1770:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},
 	EO\(shape\),.*(	\{"ya!", ec_yank},)
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},8??0?
-grp 08??-4m 10220reg p OK ex.c:1765:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 10220reg p OK ex.c:1770:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"w", ec_write},
 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
-grp 09??-7m 10220reg p OK ex.c:1765:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17652sc %? %@2132sc!0?
+grp 09??-7m 10220reg p OK ex.c:1770:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17702sc %? %@2132sc!0?
 '\''1i int xet;			/* expandtab - use spaces for indentation */
 int xsw = 8;			/* shiftwidth - indentation step */
 int xidt = 500;			/* auto-detect indent on file open */
@@ -372,11 +372,11 @@ int xidt = 500;			/* auto-detect indent on file open */
 '\''2i 	bufs[i].et = 0;
 	bufs[i].sw = 8;
 	bufs[i].ts = 8;
-??!219reg ex.c:169:m22sc %? %@2142sc!0?
+??!219reg ex.c:170:m22sc %? %@2142sc!0?
 '\''3i 	tempbufs[i].et = 0;
 	tempbufs[i].sw = 8;
 	tempbufs[i].ts = 8;
-??!219reg ex.c:181:m32sc %? %@2142sc!0?
+??!219reg ex.c:182:m32sc %? %@2142sc!0?
 '\''4i static void ex_detect_indent(struct buf *p)
 {
 	int n = lbuf_len(p->lb);
@@ -422,20 +422,20 @@ int xidt = 500;			/* auto-detect indent on file open */
 	}
 }
 
-??!219reg ex.c:413:m42sc %? %@2142sc!0?
+??!219reg ex.c:414:m42sc %? %@2142sc!0?
 '\''5i 	if (xidt)
 		ex_detect_indent(p);
-??!219reg ex.c:670:m52sc %? %@2142sc!0?
+??!219reg ex.c:671:m52sc %? %@2142sc!0?
 '\''6i EO(et) EO(idt)
-??!219reg ex.c:1676:m62sc %? %@2142sc!0?
+??!219reg ex.c:1681:m62sc %? %@2142sc!0?
 '\''7i _EO(sw, if (*arg) xsw = eo_val(arg); return NULL;)
-??!219reg ex.c:1677:m72sc %? %@2142sc!0?
+??!219reg ex.c:1682:m72sc %? %@2142sc!0?
 '\''8i 	EO(et),
-??!219reg ex.c:1723:m82sc %? %@2142sc!0?
+??!219reg ex.c:1728:m82sc %? %@2142sc!0?
 '\''9i 	EO(idt),
-??!219reg ex.c:1734:m92sc %? %@2142sc!0?
+??!219reg ex.c:1739:m92sc %? %@2142sc!0?
 '\''10i 	EO(sw),
-??!219reg ex.c:1765:m102sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1770:m102sc %? %@2142sc!b2m!%ya 98?0?
 %f> 		case TK_CTL\('\''t'\''\):
 			cs = uc_dup\(sb->s \+ ps\);
 			sbuf_cut\(sb, ps\)
@@ -1012,7 +1012,7 @@ index a2bf8821..b1184514 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index f049069e..b0607afb 100644
+index f86fb389..be1b912a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -1025,7 +1025,7 @@ index f049069e..b0607afb 100644
  int xish;			/* interactive shell */
  int xgrp;			/* regex search group */
  int xpac;			/* print autocomplete options */
-@@ -167,6 +170,9 @@ static int bufs_open(const char *path, int len)
+@@ -168,6 +171,9 @@ static int bufs_open(const char *path, int len)
  	bufs[i].off = 0;
  	bufs[i].top = 0;
  	bufs[i].td = +1;
@@ -1035,7 +1035,7 @@ index f049069e..b0607afb 100644
  	bufs[i].mtime = -1;
  	return i;
  }
-@@ -179,6 +185,9 @@ void temp_open(int i, char *name, char *ft)
+@@ -180,6 +186,9 @@ void temp_open(int i, char *name, char *ft)
  	tempbufs[i].off = 0;
  	tempbufs[i].top = 0;
  	tempbufs[i].td = +1;
@@ -1045,7 +1045,7 @@ index f049069e..b0607afb 100644
  	tempbufs[i].mtime = -1;
  	tempbufs[i].ft = ft;
  }
-@@ -411,6 +420,51 @@ int ex_edit(const char *path, int len)
+@@ -412,6 +421,51 @@ int ex_edit(const char *path, int len)
  	return 0;
  }
  
@@ -1097,7 +1097,7 @@ index f049069e..b0607afb 100644
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
-@@ -668,6 +722,8 @@ void ex_bufpostfix(struct buf *p, int clear)
+@@ -669,6 +723,8 @@ void ex_bufpostfix(struct buf *p, int clear)
  	p->mtime = mtime(p->path);
  	p->ft = syn_filetype(p->path);
  	lbuf_saved(p->lb, clear);
@@ -1106,7 +1106,7 @@ index f049069e..b0607afb 100644
  }
  
  static void *ec_setpath(char *loc, char *cmd, char *arg)
-@@ -1674,7 +1730,9 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1679,7 +1735,9 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(td) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
@@ -1116,7 +1116,7 @@ index f049069e..b0607afb 100644
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); return NULL;)
  _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
  
-@@ -1721,6 +1779,7 @@ static struct excmd {
+@@ -1726,6 +1784,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -1124,7 +1124,7 @@ index f049069e..b0607afb 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1732,6 +1791,7 @@ static struct excmd {
+@@ -1737,6 +1796,7 @@ static struct excmd {
  	{"f>", ec_find},
  	{"f<", ec_find},
  	{"f", ec_fuzz},
@@ -1132,7 +1132,7 @@ index f049069e..b0607afb 100644
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
-@@ -1763,6 +1823,7 @@ static struct excmd {
+@@ -1768,6 +1828,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
