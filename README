@@ -1000,6 +1000,9 @@ EX COMMANDS
              Argument toggles capture status preservation across
              separate ex command chains.
 
+             Example: limit tag buffer memory usage in a loop
+             :$? ^\:\%f+int\:1??\:\%f+void\:2??\:1,2??p\:1,2???
+
              Example: use a capture at the next <:> prompt
              :^x:![ -f ./vi.c ]:1??
              :1??p vi.c exists
@@ -1460,4 +1463,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.5                     September 1, 2026                    Nextvi 7.5
+Nextvi 7.5                     September 2, 2026                    Nextvi 7.5
