@@ -986,7 +986,7 @@ EX COMMANDS
              :f>int:1??!:1??p int was absent
 
      {prefix}???
-             Evaluate capture tags
+             Evaluate capture ids
 
              This is a nop command that evaluates a boolean expression
              at prefix and returns the result.
@@ -994,13 +994,13 @@ EX COMMANDS
              Example: control while loop
              :$? \%f+int\:1??\:\%f+void\:2??\:1,2??p\:1,2???
 
-     ^[any]  Control capture tags
+     ^[any]  Control capture ids
 
              No argument drops all captured error statuses.
              Argument toggles capture status preservation across
              separate ex command chains.
 
-             Example: foreign tag 2 fires a branch whose capture never ran
+             Example: foreign id 2 fires a branch whose capture never ran
              :f>int:2??:f>zzz:1??:1??f>int\:2??:2??p LEAKED
              Example: bare ^ drops it so the branch skips as intended
              :f>int:2??:^:f>zzz:1??:1??f>int\:2??:2??p LEAKED
