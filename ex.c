@@ -58,7 +58,9 @@ static char xirerr[] = "invalid range";
 static char xrnferr[] = "range not found";
 static char *xrerr;
 static void *xpret;		/* previous ex command return value */
-static sbuf *xmemo;		/* memo buffer: saved ?? capture statuses */
+static sbuf *xmemo;		/* memo buffer: ?? capture statuses */
+static int *xmemo_ibuf;		/* memo index buffer: id -> memo slot, -1 if uncaptured */
+static int xmemo_ibn;		/* number of allocated index slots */
 static int xmemo_keep;		/* keep memos across ex_exec calls */
 static int xqprop;		/* number of ex_exec levels :q propagates */
 
@@ -1365,16 +1367,21 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	return ret;
 }
 
+static void memo_clear(void)
+{
+	sbuf_free(xmemo)
+	xmemo = NULL;
+	free(xmemo_ibuf);
+	xmemo_ibuf = NULL;
+	xmemo_ibn = 0;
+}
+
 static void *ec_memo(char *loc, char *cmd, char *arg)
 {
-	if (*arg) {
+	if (*arg)
 		xmemo_keep = !xmemo_keep;
-		return NULL;
-	}
-	if (xmemo) {
-		sbuf_free(xmemo)
-		xmemo = NULL;
-	}
+	else if (xmemo)
+		memo_clear();
 	return NULL;
 }
 
@@ -1387,20 +1394,31 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 		int id = atoi(loc);
 		if (!*arg && cmd[2] != '?') {
 			int err = (xpret != NULL) ^ inv;
+			if ((unsigned int)id >= INT_MAX / sizeof(*xmemo_ibuf))
+				return xserr;
+			if (id >= xmemo_ibn) {
+				int n = MAX(64, id + 1);
+				xmemo_ibuf = erealloc(xmemo_ibuf, n * sizeof(*xmemo_ibuf));
+				memset(xmemo_ibuf + xmemo_ibn, -1,
+					(n - xmemo_ibn) * sizeof(*xmemo_ibuf));
+				xmemo_ibn = n;
+			}
 			if (!xmemo)
-				sbuf_make(xmemo, 4 * sizeof(int))
-			sbuf_mem(xmemo, &id, sizeof(id))
+				sbuf_make(xmemo, 8 * sizeof(int))
+			if (xmemo_ibuf[id] >= 0) {
+				((int*)xmemo->s)[xmemo_ibuf[id]] = err;
+				return ret;
+			}
+			xmemo_ibuf[id] = xmemo->s_n / sizeof(int);
 			sbuf_mem(xmemo, &err, sizeof(err))
 			return ret;
-		} else if (!xmemo)
-			return ret;
-		int *ap = (int*)xmemo->s, n = xmemo->s_n / sizeof(int);
+		}
 		int and_res = 0, or_res = 1;
-		for (int i = n; i >= 2;) {
-			i -= 2;
-			if (ap[i] != id)
-				continue;
-			and_res |= ap[i + 1];
+		for (;;) {
+			if ((unsigned int)id >= (unsigned int)xmemo_ibn
+					|| xmemo_ibuf[id] < 0)
+				return ret;
+			and_res |= ((int*)xmemo->s)[xmemo_ibuf[id]];
 			for (; *loc && *loc != ',' && *loc != ';'; loc++);
 			if (!*loc || *loc == ';') {
 				 or_res &= and_res;
@@ -1412,9 +1430,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 				return (or_res ^ inv) ? xuerr : ex_exec(arg);
 			}
 			id = atoi(++loc);
-			i = n;
 		}
-		return ret;
 	} else if (isdq) {
 		ret = (xpret != NULL) ^ inv ? xuerr : NULL;
 		return !ret && *arg ? ex_exec(arg) : ret;
@@ -1913,10 +1929,8 @@ void *ex_exec(const char *ln)
 			|| tmpxquit < -256)
 		restore(xquit)
 	if (!xexec_dep) {
-		if (xmemo && !xmemo_keep) {
-			sbuf_free(xmemo)
-			xmemo = NULL;
-		}
+		if (xmemo && !xmemo_keep)
+			memo_clear();
 		xqprop = 0;
 	}
 	return xerr & 4 ? NULL : ret;
