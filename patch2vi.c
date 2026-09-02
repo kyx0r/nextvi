@@ -2462,10 +2462,8 @@ static void ed_free_session(void)
 	free(xregs);
 	xregs = NULL;
 	xregs_n = 0;
-	if (xmemo) {
-		sbuf_free(xmemo)
-		xmemo = NULL;
-	}
+	if (xmemo)
+		memo_free();
 	if (xacreg) {
 		sbuf_free(xacreg)
 		xacreg = NULL;
