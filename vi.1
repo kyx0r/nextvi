@@ -1282,7 +1282,7 @@ Example: inverted capture
 .Ed
 
 .It Cm {\fIprefix\fP}???
-Evaluate capture tags
+Evaluate capture ids
 .Bd -literal
 This is a nop command that evaluates a boolean expression
 at prefix and returns the result.
@@ -1292,13 +1292,13 @@ Example: control while loop
 .Ed
 
 .It Cm ^[\fIany\fP]
-Control capture tags
+Control capture ids
 .Bd -literal
 No argument drops all captured error statuses.
 Argument toggles capture status preservation across
 separate ex command chains.
 
-Example: foreign tag 2 fires a branch whose capture never ran
+Example: foreign id 2 fires a branch whose capture never ran
 :f>int:2??:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
 Example: bare ^ drops it so the branch skips as intended
 :f>int:2??:^:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
