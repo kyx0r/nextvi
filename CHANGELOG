@@ -2,6 +2,12 @@
 7.5 Basilisk
 ------------------
 
+New in core:
+1. :^ clears the saved ?? capture statuses; with an argument it keeps
+   them across commands instead of clearing after each one. Closes the
+   remaining ?? control gaps.
+2. :m![#marks] unsets line marks; no argument unsets all marks.
+
 New in builds:
 1. Build shell scripts (cbuild.sh, build_patch2vi.sh) accept options
    shortened to a minimal prefix: b, bu, c, d, i, p all work.
