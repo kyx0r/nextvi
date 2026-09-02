@@ -949,15 +949,15 @@ EX COMMANDS
              No prefix and no argument forwards the last error status.
 
              A prefix without arguments captures the current error status
-             at that point in a command chain into id tag specified.
-             Id tags are global across all nested command contexts.
+             at that point in a command chain into capture id specified.
+             Capture ids are global across all nested command contexts.
 
              A prefix with arguments branches based on the boolean expression
              in DNF over the most recent captures of each referenced id.
              If id has no capture, the branch is skipped.
 
              Prefix operators:
-             Numerical id tag
+             Numerical capture id
              , AND (higher precedence)
              ; OR (lower precedence)
 
@@ -969,7 +969,7 @@ EX COMMANDS
              :![ -f ./vi.c ]:??e ./vi.c:mpt1
              Example: capture error status at id 5, branch later
              :>int>:5??:;=:5??p
-             Example: skip if tag was never set
+             Example: skip if id was never set
              :2??.=
              Example: AND -- branch only if both ids captured success
              :f>int:1??:f>void:2??:1,2??p found both
