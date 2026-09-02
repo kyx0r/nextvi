@@ -42,17 +42,17 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 			xb->mark_sb\[0] = -1;
 			xb->mark_se\[0] = -1;
 			return NULL;2??0?
-2??m 1220reg p OK ex.c:1093:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK ex.c:1094:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			xb->mark_n = 0;$3??0?
-3??m 1220reg p OK ex.c:1093:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK ex.c:1094:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	int beg, end, o1 = xoff, o2 = xoff;
 	if \(cmd\[1] == '\''!'\''\) \{
 		if \(!\*arg\) \{4??0?
-4??+3m 1220reg p OK ex.c:1093:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK ex.c:1094:a42sc %? %@2152sc!1q0?
 %f> 			xb->mark_sb\[0] = -1;
 			xb->mark_se\[0] = -1;
 			return NULL;5??0?
-5??-1m 1220reg p OK ex.c:1093:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK ex.c:1094:a52sc %? %@2152sc!1q0?
 %f> .... .e...e....o1.. ....,...........
 ....\(........=....\)..
 .	.....\*......
@@ -60,27 +60,27 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 .	......ar....\[......1.
 ...x.........e..] . ..;
 ......... N...;6??0?
-6??+3m 1220reg p OK ex.c:1093:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK ex.c:1094:a62sc %? %@2152sc!1q0?
 grp 1%f> 	int beg, end, o1 = xoff, o2 = xoff;.*?
 	if \(cmd\[1] == '\''!'\''\) \{.*?
 		if \(!\*arg\) \{.*?
 (			xb->mark_n = 0;)7??0?
-grp 07??m 1220reg p OK ex.c:1093:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK ex.c:1094:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	lbuf_saved\(xb, \*arg\);
 	return NULL;
 }.*(		beg = -1;)
 		end = 0;
 	} else if \(ex_region\(loc, &beg, &end, &o1, &o2\)\)8??0?
-grp 08??-5m 1220reg p OK ex.c:1093:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK ex.c:1094:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	return \(cmd\[0] == '\''u'\'' \? lbuf_undo : lbuf_redo\)\(xb, &ref, &ref\) \?
 		xuerr : NULL;
 }.*(	for \(int i = 0; uc_isdigit\(\*arg\); i\+\+\) \{)
 		int mk;
 		for \(mk = 0; uc_isdigit\(\*arg\); arg\+\+\)9??0?
-grp 09??-9m 1220reg p OK ex.c:1093:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:10932sc %? %@2132sc!0?
+grp 09??-9m 1220reg p OK ex.c:1094:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:10942sc %? %@2132sc!0?
 '\''1c 			lbuf_markclear(xb);
-??!219reg ex.c:1093:m12sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg ex.c:1094:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 
 #define lbuf_copymark\(dst, src\) \{ dst\[0] = src\[0]; dst\[1] = src\[1]; }
 
@@ -836,10 +836,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 4efc8c2e..6d1d3f59 100644
+index f049069e..e3de2f6b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1090,7 +1090,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
+@@ -1091,7 +1091,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
  	int beg, end, o1 = xoff, o2 = xoff;
  	if (cmd[1] == '!') {
  		if (!*arg) {

@@ -83,17 +83,17 @@ case "\$OS" in5??0?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
 \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
-\|\[@&!dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
+\|\[@&!\^dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
 \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},1??0?
 1??+3m 11q0?
-%f> \|\[@&!dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
+%f> \|\[@&!\^dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
 \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},2??0?
 2??m 1220reg p OK conf.c:301:a22sc %? %@2152sc!1q0?
-;0fr.,$f> ^\|\[@&!dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\$3??0?
+;0fr.,$f> ^\|\[@&!\^dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\$3??0?
 3??m 1220reg p OK conf.c:301:a32sc %? %@2152sc!fr 981qfr 980?
 %f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
@@ -103,18 +103,18 @@ case "\$OS" in5??0?
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},5??0?
 5??-1m 1220reg p OK conf.c:301:a52sc %? %@2152sc!1q0?
-%f> ..........\). ..].............\|......\\...\.\?.\*....\[ .t........\?.<\(.....\\....\|\\.....\).....\(.:...\\...]...\\.....>\?\).\\
-........]...\(....\|.0..............\(......%....\\....\[0.......\\....\*\(......]........\^..\\............\\..\?..\[.\\..\*....
-....c\|p....\|.s..e..........r....t.....h....s.....\|.d\|.r................f.......ed....\).
-..@&.....................\?.1...........p...\?..\[..........f.....\|.\[.....d.]\?..n.......\?..
-\(\?.....s.. ..]....\?..!...e....\+\?.......\?...\|..!...\|........x..\|..\[......m!.........
-.	.\(...........D,......E,.R.,.............,...,.......1....,..R.. ..1....1.},
-..e...t. ..\\\\..\...,.....1........D...E.}.6??0?
+%f> .\?....;].... .t.\*...:....\?:......\\.\|.\\..\.\?\)\*..........\)..............\\..................\?.\[...\\....\\\\\\\\.....\?.\|.
+..:.\[.........\.\$..\[.......\*....\(.....\*-\+...\)..\\.]\*......\+...\\...\)........]......:.\^..\\....\\..\\..................\).
+..p.c......\|......r...\|............r\|...p....q\|......o.d.r.............f.\|..m.......s..
+.\[@...........=\\..\{........\{...}.......\[....\?......\?..c.....]........>.....\?\|.n.\|..s...\|.
+...g....\).......\.\)\?.....r...\\.............!\|...].....c....\|....y............cd\?.\?..
+....BL........B........E,..E...E.....,........,.R.............R...CY.,.M....,
+	..._........\\\(.\).......... .Y._.D,...\)..6??0?
 6??+3m 1220reg p OK conf.c:301:a62sc %? %@2152sc!1q0?
 grp 1%f> \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\.*?
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\.*?
 \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\.*?
-(\|\[@&!dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\)7??0?
+(\|\[@&!\^dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\)7??0?
 grp 07??m 1220reg p OK conf.c:301:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{ex_ft, "\.\+", A\(AY1 \| SYN_BD\), 1},
 	\{ex_ft, ":\[ \\t]\*\(\(\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -133,10 +133,9 @@ case "\$OS" in5??0?
 %f> static char xrnferr\[] = "range not found";
 static char \*xrerr;
 static void \*xpret;		/\* previous ex command return value \*/
-static sbuf \*xanchor;		/\* anchored error status buffer \*/
-static int xqprop;		/\* number of ex_exec levels :q propagates \*/
-
-1??0?
+static sbuf \*xmemo;		/\* memo buffer: saved \?\? capture statuses \*/
+static int xmemo_keep;		/\* keep memos across ex_exec calls \*/
+static int xqprop;		/\* number of ex_exec levels :q propagates \*/1??0?
 1??+2m 11q0?
 %f> static char xrnferr\[] = "range not found";
 static char \*xrerr;
@@ -151,13 +150,13 @@ static char xgerr\[] = "invalid grp";
 static char xirerr\[] = "invalid range";.*(/\* parity rule: delim halves escapes, odd keeps delim literal \*/)
 #define ex_parity\(p, sb, esc, dtest\) \\
 int n = 0, keep, d; \\8??0?
-grp 08??-4m 1220reg p OK ex.c:60:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK ex.c:60:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static int xexp = '\''%'\'';		/\* ex command internal state expand  \*/
 static int xexe = '\''!'\'';		/\* ex command external command expand \*/
 static char xuerr\[] = "unreported error";.*(for \(; p\[n] == esc; n\+\+\); \\)
 keep = n; \\
 d = dtest; \\9??0?
-grp 09??-7m 1220reg p OK ex.c:60:a92sc %? %@2152sc!'\''00?
+grp 09??-8m 1220reg p OK ex.c:60:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:602sc %? %@2132sc!0?
 ?0?
 %f+ #undef EO
@@ -171,20 +170,20 @@ static struct excmd \{
 #define EO\(opt\) \{#opt, eo_##opt}
 
 4??0?
-4??+2m 2220reg p OK ex.c:1679:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1693:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];
 	return NULL;
 \).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},8??0?
-grp 08??-4m 2220reg p OK ex.c:1679:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1693:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	else if \(\*arg\)
 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\).*(	\{"&", ec_termexec},)
 	\{"!", ec_exec},
 	\{"=\?", ec_num},9??0?
-grp 09??-7m 2220reg p OK ex.c:1679:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16792sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1693:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16932sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"pu", ec_put},
 	\{"ph", ec_setenc},
@@ -196,24 +195,24 @@ static struct excmd \{
 %f+ 	\{"pu", ec_put},
 	\{"ph", ec_setenc},
 	\{"p", ec_print},4??0?
-4??+2m 3220reg p OK ex.c:1703:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1718:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"pu", ec_put},.*?
 	\{"ph", ec_setenc},.*?
 (	\{"p", ec_print},)7??0?
-grp 07??m 3220reg p OK ex.c:1703:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1718:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"b", ec_buffer},
 	EO\(pac\),
 	EO\(pr\),.*(	\{"ef!", ec_fuzz},)
 	\{"ef", ec_fuzz},
 	\{"e!", ec_edit},8??0?
-grp 08??-4m 3220reg p OK ex.c:1703:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1718:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"bp", ec_setpath},
 	\{"bs", ec_bufsave},
 	\{"bx", ec_setbufsmax},.*(	\{"e", ec_edit},)
 	\{"ft", ec_ft},
 	\{"fd", ec_setdir},9??0?
-grp 09??-7m 3220reg p OK ex.c:1703:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17032sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1718:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17182sc %? %@2132sc!0?
 ?0?
 %f+ 	return src;
 }
@@ -226,20 +225,20 @@ void \*ex_exec\(const char \*ln\)
 }
 
 4??0?
-4??+2m 4220reg p OK ex.c:1872:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:1887:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	if \(\*src == '\'' '\'' \|\| \*src == '\''\\t'\''\)
 		src\+\+;.*(	int arg, idx = 0;)
 	char \*ret = NULL;
 	preserve\(int, xquit, xquit = 0;\)8??0?
-grp 08??-4m 4220reg p OK ex.c:1872:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ex.c:1887:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			src \+= j;
 			break;
 		}.*(		lbuf_mark\(xb, '\''\*'\'', xrow, xoff\);)
 	xexec_dep\+\+;
 	sbuf_smake\(sb, 128\)9??0?
-grp 09??-8m 4220reg p OK ex.c:1872:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:18722sc %? %@2132sc!0?
+grp 09??-8m 4220reg p OK ex.c:1887:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:18872sc %? %@2132sc!0?
 ?0?
 %f+ 	do \{
 		sbuf_cut\(sb, 0\)
@@ -251,53 +250,53 @@ void \*ex_exec\(const char \*ln\)
 %f+ 	do \{
 		sbuf_cut\(sb, 0\)
 		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);4??0?
-4??+2m 5220reg p OK ex.c:1885:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK ex.c:1900:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	do \{.*?
 		sbuf_cut\(sb, 0\).*?
 (		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);)7??0?
-grp 07??m 5220reg p OK ex.c:1885:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK ex.c:1900:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		lbuf_mark\(xb, '\''\*'\'', xrow, xoff\);
 	xexec_dep\+\+;
 	sbuf_smake\(sb, 128\).*(			ex_print\(ret, msg_ft\))
 			ret = xuerr;
 		}8??0?
-grp 08??-4m 5220reg p OK ex.c:1885:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK ex.c:1900:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char \*ret = NULL;
 	preserve\(int, xquit, xquit = 0;\)
 	if \(!xexec_dep\).*(		if \(ret && xerr & 2\))
 			break;
 	} while \(\*ln && !xquit\);9??0?
-grp 09??-7m 5220reg p OK ex.c:1885:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:18852sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK ex.c:1900:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:19002sc %? %@2132sc!0?
 ?0?
 %f+ 			\|\| tmpxquit < -256\)
 		restore\(xquit\)
 	if \(!xexec_dep\) \{
-		if \(xanchor\) \{
-			sbuf_free\(xanchor\)
-			xanchor = NULL;1??0?
+		if \(xmemo && !xmemo_keep\) \{
+			sbuf_free\(xmemo\)
+			xmemo = NULL;1??0?
 1??+2m 61q0?
 %f+ 			\|\| tmpxquit < -256\)
 		restore\(xquit\)
 	if \(!xexec_dep\) \{4??0?
-4??+2m 6220reg p OK ex.c:1900:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK ex.c:1915:a42sc %? %@2152sc!1q0?
 grp 1%f+ 			\|\| tmpxquit < -256\).*?
 		restore\(xquit\).*?
 (	if \(!xexec_dep\) \{)7??0?
-grp 07??m 6220reg p OK ex.c:1900:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1915:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	free\(sb->s\);
 	xexec_dep--;
 	if \(\(xquit > 0 && \(xexec_dep \|\| xqprop >= 0\) && --xqprop < 0\).*(		xqprop = 0;)
 	}
 	return xerr & 4 \? NULL : ret;8??0?
-grp 08??-5m 6220reg p OK ex.c:1900:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 6220reg p OK ex.c:1915:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(ret && xerr & 2\)
 			break;
 	} while \(\*ln && !xquit\);.*(/\* ex main loop \*/)
 void ex\(void\)
 \{9??0?
-grp 09??-10m 6220reg p OK ex.c:1900:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:19002sc %? %@2132sc!0?
+grp 09??-10m 6220reg p OK ex.c:1915:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:19152sc %? %@2132sc!0?
 '\''1i static int xasync;		/* run the next chain command in a thread */
 static struct exthread {	/* a chain command running in its own thread */
 	pthread_t id;
@@ -322,10 +321,10 @@ static void *ec_async(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-??!219reg ex.c:1679:m22sc %? %@2142sc!0?
+??!219reg ex.c:1693:m22sc %? %@2142sc!0?
 '\''3i 	{"as!", ec_async},
 	{"as", ec_async},
-??!219reg ex.c:1703:m32sc %? %@2142sc!0?
+??!219reg ex.c:1718:m32sc %? %@2142sc!0?
 '\''4i static void ex_asynckey(void)
 {
 	pthread_key_create(&xthreads_key, NULL);
@@ -400,16 +399,16 @@ static void ex_asyncwait(void)
 	}
 }
 
-??!219reg ex.c:1872:m42sc %? %@2142sc!0?
+??!219reg ex.c:1887:m42sc %? %@2142sc!0?
 '\''5i 		if (xasync) {
 			xasync = 0;
 			ex_async(idx, sb, arg);
 			continue;
 		}
-??!219reg ex.c:1885:m52sc %? %@2142sc!0?
+??!219reg ex.c:1900:m52sc %? %@2142sc!0?
 '\''6i 		xasync = 0;
 		ex_asyncwait();
-??!219reg ex.c:1900:m62sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg ex.c:1915:m62sc %? %@2142sc!b3m!%ya 98?0?
 %f> static struct termios termios;
 sbuf \*term_sbuf;
 int term_record;
@@ -575,20 +574,20 @@ index 62d18e99..cb0ea9ef 100755
  
  case "$OS" in
 diff --git a/conf.c b/conf.c
-index bf37a9ce..089dc938 100644
+index a2bf8821..7624cb8a 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -298,7 +298,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
  ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
--|[@&!dj]|m!?|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|as!?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+-|[@&!^dj]|m!?|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!^dj]|m!?|=\\?{0,1}|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|as!?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 4efc8c2e..bfc7da28 100644
+index f049069e..d7e41300 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -58,6 +58,17 @@ static char xirerr[] = "invalid range";
@@ -606,10 +605,10 @@ index 4efc8c2e..bfc7da28 100644
 +static pthread_mutex_t xthreads_mtx = PTHREAD_MUTEX_INITIALIZER;
 +static pthread_once_t xthreads_once = PTHREAD_ONCE_INIT;
 +static pthread_key_t xthreads_key;	/* set in async command threads */
- static sbuf *xanchor;		/* anchored error status buffer */
+ static sbuf *xmemo;		/* memo buffer: saved ?? capture statuses */
+ static int xmemo_keep;		/* keep memos across ex_exec calls */
  static int xqprop;		/* number of ex_exec levels :q propagates */
- 
-@@ -1677,6 +1688,18 @@ _EO(left,
+@@ -1691,6 +1702,18 @@ _EO(left,
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
@@ -628,7 +627,7 @@ index 4efc8c2e..bfc7da28 100644
  /* commands & opts must be sorted longest of its kind topmost */
  static struct excmd {
  	char *name;
-@@ -1701,6 +1724,8 @@ static struct excmd {
+@@ -1716,6 +1739,8 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -637,7 +636,7 @@ index 4efc8c2e..bfc7da28 100644
  	EO(ai),
  	{"ac", ec_setacreg},
  	EO(err),
-@@ -1870,6 +1895,80 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
+@@ -1885,6 +1910,80 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  	return src;
  }
  
@@ -718,7 +717,7 @@ index 4efc8c2e..bfc7da28 100644
  /* execute a single ex command chain */
  void *ex_exec(const char *ln)
  {
-@@ -1883,6 +1982,11 @@ void *ex_exec(const char *ln)
+@@ -1898,6 +1997,11 @@ void *ex_exec(const char *ln)
  	do {
  		sbuf_cut(sb, 0)
  		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
@@ -730,15 +729,15 @@ index 4efc8c2e..bfc7da28 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1898,6 +2002,8 @@ void *ex_exec(const char *ln)
+@@ -1913,6 +2017,8 @@ void *ex_exec(const char *ln)
  			|| tmpxquit < -256)
  		restore(xquit)
  	if (!xexec_dep) {
 +		xasync = 0;
 +		ex_asyncwait();
- 		if (xanchor) {
- 			sbuf_free(xanchor)
- 			xanchor = NULL;
+ 		if (xmemo && !xmemo_keep) {
+ 			sbuf_free(xmemo)
+ 			xmemo = NULL;
 diff --git a/term.c b/term.c
 index c8861702..606ab94c 100644
 --- a/term.c
