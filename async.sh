@@ -133,9 +133,9 @@ case "\$OS" in5??0?
 %f> static char xrnferr\[] = "range not found";
 static char \*xrerr;
 static void \*xpret;		/\* previous ex command return value \*/
-static signed char \*xmemo;	/\* memo buffer: id -> \?\? capture status, -1 if unset \*/
-static int xmemo_n;		/\* number of allocated memo slots \*/
-static int xmemo_keep;		/\* keep memos across ex_exec calls \*/1??0?
+static signed char \*xcid;	/\* capture status by id, -1 if unset \*/
+static int xcid_n;		/\* number of allocated capture ids \*/
+static int xcid_keep;		/\* keep capture statuses across ex_exec calls \*/1??0?
 1??+2m 11q0?
 %f> static char xrnferr\[] = "range not found";
 static char \*xrerr;
@@ -272,8 +272,8 @@ void \*ex_exec\(const char \*ln\)
 %f+ 			\|\| tmpxquit < -256\)
 		restore\(xquit\)
 	if \(!xexec_dep\) \{
-		if \(xmemo && !xmemo_keep\)
-			memo_free\(\);
+		if \(xcid && !xcid_keep\)
+			xcid_free\(\);
 		xqprop = 0;1??0?
 1??+2m 61q0?
 %f+ 			\|\| tmpxquit < -256\)
@@ -587,7 +587,7 @@ index a2bf8821..7624cb8a 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f86fb389..d768925f 100644
+index 4169d06f..ff915700 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -58,6 +58,17 @@ static char xirerr[] = "invalid range";
@@ -605,9 +605,9 @@ index f86fb389..d768925f 100644
 +static pthread_mutex_t xthreads_mtx = PTHREAD_MUTEX_INITIALIZER;
 +static pthread_once_t xthreads_once = PTHREAD_ONCE_INIT;
 +static pthread_key_t xthreads_key;	/* set in async command threads */
- static signed char *xmemo;	/* memo buffer: id -> ?? capture status, -1 if unset */
- static int xmemo_n;		/* number of allocated memo slots */
- static int xmemo_keep;		/* keep memos across ex_exec calls */
+ static signed char *xcid;	/* capture status by id, -1 if unset */
+ static int xcid_n;		/* number of allocated capture ids */
+ static int xcid_keep;		/* keep capture statuses across ex_exec calls */
 @@ -1696,6 +1707,18 @@ _EO(left,
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
@@ -735,8 +735,8 @@ index f86fb389..d768925f 100644
  	if (!xexec_dep) {
 +		xasync = 0;
 +		ex_asyncwait();
- 		if (xmemo && !xmemo_keep)
- 			memo_free();
+ 		if (xcid && !xcid_keep)
+ 			xcid_free();
  		xqprop = 0;
 diff --git a/term.c b/term.c
 index c8861702..606ab94c 100644

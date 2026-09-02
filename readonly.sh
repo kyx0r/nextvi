@@ -398,7 +398,7 @@ index a2bf8821..0beb5d7a 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index f86fb389..bf53b880 100644
+index 4169d06f..6de76234 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@

@@ -205,7 +205,7 @@ index a2bf8821..87152d7a 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index f86fb389..83349787 100644
+index 4169d06f..8bd3e321 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1664,6 +1664,49 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)

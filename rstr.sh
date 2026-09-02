@@ -1320,14 +1320,14 @@ static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\).*?
 grp 07??m 27220reg p OK ex.c:1364:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				break;
 			i = MIN\(i, xrow\);
-		}.*(static void memo_free\(void\))
+		}.*(static void xcid_free\(void\))
 \{
-	free\(xmemo\);8??0?
+	free\(xcid\);8??0?
 grp 08??-5m 27220reg p OK ex.c:1364:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(rset_match\(rs, ln, REG_NEWLINE\) != not\) \{
 			xrow = i;
-			if \(\(ret = ex_exec\(s\)\)\).*(	xmemo = NULL;)
-	xmemo_n = 0;
+			if \(\(ret = ex_exec\(s\)\)\).*(	xcid = NULL;)
+	xcid_n = 0;
 }9??0?
 grp 09??-8m 27220reg p OK ex.c:1364:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:13642sc %? %@2132sc!0?
@@ -2206,7 +2206,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index f86fb389..ab7577d4 100644
+index 4169d06f..6f54f8f7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,7 +37,7 @@ int xsep = ':';			/* ex command separator */
