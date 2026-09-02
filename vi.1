@@ -1298,8 +1298,10 @@ No argument drops all captured error statuses.
 Argument toggles capture status preservation across
 separate ex command chains.
 
-Example: limit tag buffer memory usage in a loop
-:$? ^\e:\e%f+int\e:1??\e:\e%f+void\e:2??\e:1,2??p\e:1,2???
+Example: foreign tag 2 fires a branch whose capture never ran
+:f>int:2??:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
+Example: bare ^ drops it so the branch skips as intended
+:f>int:2??:^:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
 
 Example: use a capture at the next <:> prompt
 :^x:![ -f ./vi.c ]:1??
@@ -1791,8 +1793,8 @@ _
  735 led.c | insert mode/output
  751 regex.c | pikevm
  1903 vi.c | normal mode/general
- 1963 ex.c | ex options/commands
- 7819 total | wc -l *.c\(basort
+ 1966 ex.c | ex options/commands
+ 7822 total | wc -l *.c\(basort
 _
 .TE
 .
