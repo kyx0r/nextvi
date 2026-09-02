@@ -1,4 +1,4 @@
-.Dd Sep  1, 2026
+.Dd Sep  2, 2026
 .Dt Nextvi 1
 .Os Nextvi 7.5
 .
@@ -1297,6 +1297,9 @@ Control capture tags
 No argument drops all captured error statuses.
 Argument toggles capture status preservation across
 separate ex command chains.
+
+Example: limit tag buffer memory usage in a loop
+:$? ^\e:\e%f+int\e:1??\e:\e%f+void\e:2??\e:1,2??p\e:1,2???
 
 Example: use a capture at the next <:> prompt
 :^x:![ -f ./vi.c ]:1??
