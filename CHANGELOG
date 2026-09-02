@@ -30,6 +30,14 @@ Bug fixes:
 4. Out-of-range :f< matches the whole pin line, bound at its end
    like the in-range cursor offset.
 
+Patch2vi 1.1 changes:
+1. Compat block bodies start with :m!. Mark ids restart per file per
+   section and one run's sections share the buffers; a missed phase-1
+   search fails instead of editing at a previous section's mark.
+2. Failure reports name the section: FAIL lines and the >>> p2v FAIL
+   banner carry the block's register (path:line:rN:mN), and QF2 repair
+   placement reads the block's body from its own register.
+
 Patch changes:
 1. New [threaded_redraw.sh](https://github.com/kyx0r/nextvi/blob/release/threaded_redraw.sh):
    redraw on thread. Frame joined before next command. Needs pthreads.
