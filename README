@@ -994,19 +994,20 @@ EX COMMANDS
              Example: control while loop
              :$? \%f+int\:1??\:\%f+void\:2??\:1,2??p\:1,2???
 
-     ^[any]  Control capture ids
+     ?~[any]
+             Control capture ids lifetime
 
-             No argument drops all captured error statuses.
+             No argument frees all captured error statuses.
              Argument toggles capture status preservation across
              separate ex command chains.
 
-             Example: foreign id 2 fires a branch whose capture never ran
+             Example: id 2 capture leaks into unrelated code
              :f>int:2??:f>zzz:1??:1??f>int\:2??:2??p LEAKED
-             Example: bare ^ drops it so the branch skips as intended
-             :f>int:2??:^:f>zzz:1??:1??f>int\:2??:2??p LEAKED
+             Example: prevent id 2 leak
+             :f>int:2??:?~:f>zzz:1??:1??f>int\:2??:2??p LEAKED
 
              Example: use a capture at the next <:> prompt
-             :^x:![ -f ./vi.c ]:1??
+             :?~x:![ -f ./vi.c ]:1??
              :1??p vi.c exists
 
      ft[filetype]
@@ -1465,4 +1466,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.5                     September 2, 2026                    Nextvi 7.5
+Nextvi 7.5                     September 3, 2026                    Nextvi 7.5
