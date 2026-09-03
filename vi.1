@@ -1291,17 +1291,18 @@ Example: control while loop
 :$? \e%f+int\e:1??\e:\e%f+void\e:2??\e:1,2??p\e:1,2???
 .Ed
 
-.It Cm ?~[\fIany\fP]
+.It Cm [\fIid\fP]?~[\fIany\fP]
 Control capture ids lifetime
 .Bd -literal
-No argument frees all captured error statuses.
+Prefix selects a specific id to free.
+No argument and no prefix frees all captured error statuses.
 Argument toggles capture status preservation across
 separate ex command chains.
 
 Example: id 2 capture leaks into unrelated code
 :f>int:2??:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
 Example: prevent id 2 leak
-:f>int:2??:?~:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
+:f>int:2??:2?~:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
 
 Example: use a capture at the next <:> prompt
 :?~x:![ -f ./vi.c ]:1??
