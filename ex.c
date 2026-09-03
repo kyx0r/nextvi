@@ -59,7 +59,7 @@ static char xrnferr[] = "range not found";
 static char *xrerr;
 static void *xpret;		/* previous ex command return value */
 static signed char *xcid;	/* capture status by id, -1 if unset */
-static int xcid_n;		/* number of allocated capture ids */
+static unsigned int xcid_n;	/* number of allocated capture ids */
 static int xcid_keep;		/* keep capture statuses across ex_exec calls */
 static int xqprop;		/* number of ex_exec levels :q propagates */
 
@@ -1375,10 +1375,17 @@ static void xcid_free(void)
 
 static void *ec_xcid(char *loc, char *cmd, char *arg)
 {
-	if (*arg)
+	if (*arg) {
 		xcid_keep = !xcid_keep;
-	else
-		xcid_free();
+		return NULL;
+	}
+	if (*loc) {
+		unsigned int id = atoi(loc);
+		if (id < xcid_n)
+			xcid[id] = -1;
+		return NULL;
+	}
+	xcid_free();
 	return NULL;
 }
 
@@ -1388,13 +1395,13 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 	int inv = cmd[1 + isdq] == '!';
 	char *ret = NULL;
 	if (isdq && *loc) {
-		int id = atoi(loc);
+		unsigned int id = atoi(loc);
 		if (!*arg && cmd[2] != '?') {
 			int err = (xpret != NULL) ^ inv;
-			if ((unsigned int)id >= INT_MAX / 2)
+			if (id >= INT_MAX / 2)
 				return xserr;
 			if (id >= xcid_n) {
-				int n = MAX(64, NEXTSZ(xcid_n, id + 1 - xcid_n));
+				unsigned int n = MAX(64, NEXTSZ(xcid_n, id + 1 - xcid_n));
 				xcid = erealloc(xcid, n);
 				memset(xcid + xcid_n, -1, n - xcid_n);
 				xcid_n = n;
@@ -1404,8 +1411,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 		}
 		int and_res = 0, or_res = 1;
 		for (;;) {
-			if ((unsigned int)id >= (unsigned int)xcid_n
-					|| xcid[id] < 0)
+			if (id >= xcid_n || xcid[id] < 0)
 				return ret;
 			and_res |= xcid[id];
 			for (; *loc && *loc != ',' && *loc != ';'; loc++);
