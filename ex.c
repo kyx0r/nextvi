@@ -1375,17 +1375,14 @@ static void xcid_free(void)
 
 static void *ec_xcid(char *loc, char *cmd, char *arg)
 {
-	if (*arg) {
+	if (*arg)
 		xcid_keep = !xcid_keep;
-		return NULL;
-	}
 	if (*loc) {
 		unsigned int id = atoi(loc);
 		if (id < xcid_n)
 			xcid[id] = -1;
-		return NULL;
-	}
-	xcid_free();
+	} else if (!*arg)
+		xcid_free();
 	return NULL;
 }
 
