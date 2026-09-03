@@ -1005,7 +1005,7 @@ EX COMMANDS
              Example: id 2 capture leaks into unrelated code
              :f>int:2??:f>zzz:1??:1??f>int\:2??:2??p LEAKED
              Example: prevent id 2 leak
-             :f>int:2??:?~:f>zzz:1??:1??f>int\:2??:2??p LEAKED
+             :f>int:2??:2?~:f>zzz:1??:1??f>int\:2??:2??p LEAKED
 
              Example: use a capture at the next <:> prompt
              :?~x:![ -f ./vi.c ]:1??
@@ -1385,8 +1385,8 @@ CODE MAP
      | 735 led.c    |  insert mode/output  |
      | 751 regex.c  |  pikevm              |
      | 1903 vi.c    |  normal mode/general |
-     | 1972 ex.c    |  ex options/commands |
-     | 7828 total   |  wc -l *.c|sort      |
+     | 1969 ex.c    |  ex options/commands |
+     | 7825 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
