@@ -1826,6 +1826,123 @@ check ':m! on a mark that was never set is a no-op' 'ok' "$out"
 out=$(run_ex ':m!:p ok:q')
 check ':m! with no marks set at all is a no-op' 'ok' "$out"
 
+# ── derived arithmetic, variables and comparison ──────────────────────────────
+# ex has no arithmetic operator, no variable and no comparison operator, and
+# needs none: an address is an integer expression, a mark is a slot that holds
+# one, and an address that cannot name a line is an error the ?? layer reads as
+# a boolean. These pin the composed idioms, not the primitives they rest on.
+
+printf 'l1\nl2\nl3\nl4\nl5\nl6\nl7\nl8\nl9\nl10\nl11\nl12\nl13\nl14\nl15\nl16\nl17\nl18\nl19\nl20\n' > "$TMPFILE"
+
+# an address expression evaluates strictly left to right, with no precedence:
+# both of these are 1+2 then *3, and 2*3 then +1
+out=$(run_ex ':1+2*3=1:q')
+check 'AA1 address arithmetic runs left to right (1+2*3 = 9)' '9' "$out"
+
+out=$(run_ex ':2*3+1=1:q')
+check 'AA2 address arithmetic has no precedence (2*3+1 = 7)' '7' "$out"
+
+out=$(run_ex ':20/3=1:q')
+check 'AA3 address division truncates (20/3 = 6)' '6' "$out"
+
+out=$(run_ex ':20%3=1:q')
+check 'AA4 address modulo (20%3 = 2)' '2' "$out"
+
+out=$(run_ex ":\$-5=1:q")
+check 'AA5 $ is a term in the expression ($-5 = 15)' '15' "$out"
+
+# a zero divisor leaves the running value alone instead of trapping
+out=$(run_ex ':6/0=1:q')
+check 'AA6 division by zero is skipped, not fatal' '6' "$out"
+out=$(run_ex ':6%0=1:q')
+check 'AA7 modulo by zero is skipped, not fatal' '6' "$out"
+
+# ── marks as integer variables ────────────────────────────────────────────────
+# :<expr>m <id> is assignment, '<id> is the read. That gives a bank of named
+# integers with no variable syntax anywhere in the language.
+out=$(run_ex ":7m 3:'3=1:q")
+check 'BB1 mark as variable: assign a computed row, read it back' '7' "$out"
+
+out=$(run_ex ":7m 3:'3+5m 6:'6=1:q")
+check 'BB2 computed assignment: v6 := v3 + 5' '12' "$out"
+
+out=$(run_ex ":7m 3:'3m 5:'5=1:q")
+check 'BB3 copy one variable into another' '7' "$out"
+
+out=$(run_ex ":7m 3:'3+1m 3:'3=1:q")
+check 'BB4 increment in place: v3 := v3 + 1' '8' "$out"
+
+# ── comparison out of range validity ──────────────────────────────────────────
+# An address below the first line, or a range whose end precedes its start, is
+# an error, so subtraction and range order are the comparison operators. :err 0
+# keeps the probe silent while leaving the status intact for ??.
+out=$(run_ex ":err 0:2m 3:'3-7=1:??!p less:q")
+check 'CC1 v < literal detected by a negative address' 'less' "$out"
+
+out=$(run_ex ":2m 3:'3-1=1:q")
+check 'CC2 v >= literal leaves the address valid' '1' "$out"
+
+# :ya is the silent probe: it validates the range and prints nothing
+out=$(run_ex ":3m 1:5m 2:'1,'2ya 96:??p a<=b:q")
+check 'CC3 v1 <= v2 via range validity' 'a<=b' "$out"
+
+out=$(run_ex ":err 0:3m 1:5m 2:'2,'1ya 96:??!p b>a:q")
+check 'CC4 v2 > v1 detected by the reversed range' 'b>a' "$out"
+
+# equality needs no operator either: both orders valid means neither is greater
+out=$(run_ex ":3m 1:3m 2:'1,'2ya 96:1??:'2,'1ya 96:2??:1,2??p EQUAL:q")
+check 'CC5 equality = both range orders valid (AND over two ids)' 'EQUAL' "$out"
+
+out=$(run_ex ":err 0:3m 1:5m 2:'1,'2ya 96:1??:'2,'1ya 96:2??:1,2??!p DIFFER:q")
+check 'CC6 inequality falls out of the same id pair' 'DIFFER' "$out"
+
+# ── numbers through registers ─────────────────────────────────────────────────
+# :pr redirects :p (and :=) into a register and :led 0 stops the echo, so a
+# computed number becomes text; %@N pastes that text back into any argument.
+out=$(run_ex ":led 0:pr 97:\$*3/10=1:pr 0:led:p [%@97]:q")
+check 'DD1 a computed number captured into a register and expanded back' '[6]' "$out"
+
+# expansion composes: a register can be built out of other registers, giving
+# command text assembled at run time
+out=$(run_ex ':led 0:pr 97:3=1:pr 0:led:98reg %@97-7p:p [%@98]:q')
+check 'DD2 expansion assembles new command text from a register' '[3-7p]' "$out"
+
+# comparing two registers: paste one into the buffer, expand the other as the
+# pattern that has to match it whole
+out=$(run_ex ":1reg foo:2reg foo:\$pu 1:\$s/^%@2\$/EQ/:\$p:q")
+check 'DD3 two registers compared by pasting one and matching the other' 'EQ' "$out"
+
+out=$(run_ex ":err 0:1reg foo:2reg bar:\$pu 1:\$s/^%@2\$/EQ/:??!p differ:q")
+check 'DD4 unequal registers leave the substitute with no match' 'differ' "$out"
+
+# ── loops with a computed exit ────────────────────────────────────────────────
+# $? repeats until its body errors, and the body's last command is a comparison,
+# so the loop count is data rather than a literal
+out=$(run_ex ":err 0:2m 1:7m 2:\$? '1+1m 1\\:'1,'2ya 96:'1=1:q")
+check 'EE1 raise v1 until it passes v2: stops one past v2' '8' "$out"
+
+# min(v1,v2) into v9: one comparison, captured once, read by both arms
+out=$(run_ex ":err 0:3m 1:8m 2:'1,'2ya 96:5??:5??'1m 9:5??!'2m 9:'9=1:q")
+check 'EE2 min into v9 when v1 is smaller' '3' "$out"
+out=$(run_ex ":err 0:8m 1:3m 2:'1,'2ya 96:5??:5??'1m 9:5??!'2m 9:'9=1:q")
+check 'EE3 min into v9 when v2 is smaller' '3' "$out"
+
+# ── subcommands inside an address ─────────────────────────────────────────────
+# |cmd| runs a whole chain while the address is being parsed; what it leaves
+# behind (here the cursor) is what the rest of the address reads
+out=$(run_ex ':|%f>l7|=1:q')
+check 'FF1 an address subcommand moves the cursor the address then reads' '7' "$out"
+
+out=$(run_ex ':|%f>l7|+2=1:q')
+check 'FF2 arithmetic applies on top of the subcommand result' '9' "$out"
+
+# and a failing subcommand takes the whole address down with it
+out=$(run_ex ':err 1:|%f>zzz|=1:q')
+check 'FF3 a failing address subcommand reports subcommand error' 'subcommand error' "$out"
+
+out=$(run_ex ':err 0:|%f>zzz|=1:??!p gated:q')
+check 'FF4 the failed address is an ordinary status the ?? layer reads' 'gated' "$out"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
