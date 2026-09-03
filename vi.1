@@ -1,4 +1,4 @@
-.Dd Sep  2, 2026
+.Dd Sep  3, 2026
 .Dt Nextvi 1
 .Os Nextvi 7.5
 .
@@ -1291,20 +1291,20 @@ Example: control while loop
 :$? \e%f+int\e:1??\e:\e%f+void\e:2??\e:1,2??p\e:1,2???
 .Ed
 
-.It Cm ^[\fIany\fP]
-Control capture ids
+.It Cm ?~[\fIany\fP]
+Control capture ids lifetime
 .Bd -literal
-No argument drops all captured error statuses.
+No argument frees all captured error statuses.
 Argument toggles capture status preservation across
 separate ex command chains.
 
-Example: foreign id 2 fires a branch whose capture never ran
+Example: id 2 capture leaks into unrelated code
 :f>int:2??:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
-Example: bare ^ drops it so the branch skips as intended
-:f>int:2??:^:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
+Example: prevent id 2 leak
+:f>int:2??:?~:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
 
 Example: use a capture at the next <:> prompt
-:^x:![ -f ./vi.c ]:1??
+:?~x:![ -f ./vi.c ]:1??
 :1??p vi.c exists
 .Ed
 
