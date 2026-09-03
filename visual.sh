@@ -1299,7 +1299,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index a2bf8821..df85ecea 100644
+index c92ec213..81071577 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -312,7 +312,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},

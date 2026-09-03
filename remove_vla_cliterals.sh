@@ -1869,7 +1869,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index a2bf8821..b9f9ed8a 100644
+index c92ec213..6b52895b 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -62,7 +62,7 @@ const int ftslen = LEN(fts);
@@ -1882,7 +1882,7 @@ index a2bf8821..b9f9ed8a 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 4169d06f..a34c736c 100644
+index 6b209b9f..3c4e3979 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -580,13 +580,16 @@ static void *ec_find(char *loc, char *cmd, char *arg)

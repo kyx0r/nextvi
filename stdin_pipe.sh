@@ -750,7 +750,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 4169d06f..6deb7106 100644
+index 6b209b9f..74a955e5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -415,7 +415,9 @@ int ex_edit(const char *path, int len)
