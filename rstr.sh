@@ -1342,41 +1342,41 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	rset_free\(fsincl\);
 	if \(!\*arg\)
 		fsincl = NULL;2??0?
-2??m 28220reg p OK ex.c:1502:a22sc %? %@2152sc!1q0?
+2??m 28220reg p OK ex.c:1505:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	rset_free\(fsincl\);$3??0?
-3??m 28220reg p OK ex.c:1502:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 28220reg p OK ex.c:1505:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 
 static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\)
 \{4??0?
-4??+3m 28220reg p OK ex.c:1502:a42sc %? %@2152sc!1q0?
+4??+3m 28220reg p OK ex.c:1505:a42sc %? %@2152sc!1q0?
 %f+ 	if \(!\*arg\)
 		fsincl = NULL;5??0?
-5??-1m 28220reg p OK ex.c:1502:a52sc %? %@2152sc!1q0?
+5??-1m 28220reg p OK ex.c:1505:a52sc %? %@2152sc!1q0?
 %f+ 
 s.......oi.........i.c.\(ch........ .... ......c... ...g\)
 \{
 .rs.......\(fsi.....
 ..f..!\*.r.\)
 	.....c. . .U..;6??0?
-6??+3m 28220reg p OK ex.c:1502:a62sc %? %@2152sc!1q0?
+6??+3m 28220reg p OK ex.c:1505:a62sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 \{.*?
 (	rset_free\(fsincl\);)7??0?
-grp 07??m 28220reg p OK ex.c:1502:a72sc %? %@2152sc!1q0?
+grp 07??m 28220reg p OK ex.c:1505:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		bufs\[i]\.plen = strlen\(opath\);
 	}
 	return NULL;.*(static void \*ec_setacreg\(char \*loc, char \*cmd, char \*arg\))
 \{
 	if \(xacreg\)8??0?
-grp 08??-8m 28220reg p OK ex.c:1502:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 28220reg p OK ex.c:1505:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		opath = uc_dup\(opath\+c\);
 		free\(bufs\[i]\.path\);
 		bufs\[i]\.path = opath;.*(		sbuf_free\(xacreg\))
 	if \(\*arg\) \{
 		sbuf_make\(xacreg, 128\)9??0?
-grp 09??-11m 28220reg p OK ex.c:1502:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:15022sc %? %@2132sc!0?
+grp 09??-11m 28220reg p OK ex.c:1505:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:15052sc %? %@2132sc!0?
 ?0?
 %f+ 	if \(!\*arg\)
 		fsincl = NULL;
@@ -1389,40 +1389,40 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 		return xserr;
 	return NULL;
 }2??0?
-2??m 29220reg p OK ex.c:1505:a22sc %? %@2152sc!1q0?
+2??m 29220reg p OK ex.c:1508:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	else if \(!\(fsincl = rset_smake\(arg, xic \? REG_ICASE : 0\)\)\)$3??0?
-3??m 29220reg p OK ex.c:1505:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 29220reg p OK ex.c:1508:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	if \(!\*arg\)
 		fsincl = NULL;4??0?
-4??+2m 29220reg p OK ex.c:1505:a42sc %? %@2152sc!1q0?
+4??+2m 29220reg p OK ex.c:1508:a42sc %? %@2152sc!1q0?
 %f+ 		return xserr;
 	return NULL;
 }5??0?
-5??-1m 29220reg p OK ex.c:1505:a52sc %? %@2152sc!1q0?
+5??-1m 29220reg p OK ex.c:1508:a52sc %? %@2152sc!1q0?
 %f+ .......a.g.
 ....i.c... .....
 .e.se..f.\(....i.c..=..s.t...ak.\(.......c ......I.A.........
 .	r.t.....se...
 .r..... .ULL.
 }6??0?
-6??+2m 29220reg p OK ex.c:1505:a62sc %? %@2152sc!1q0?
+6??+2m 29220reg p OK ex.c:1508:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	if \(!\*arg\).*?
 		fsincl = NULL;.*?
 (	else if \(!\(fsincl = rset_smake\(arg, xic \? REG_ICASE : 0\)\)\))7??0?
-grp 07??m 29220reg p OK ex.c:1505:a72sc %? %@2152sc!1q0?
+grp 07??m 29220reg p OK ex.c:1508:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		bufs\[i]\.plen = strlen\(opath\);
 	}
 	return NULL;.*(static void \*ec_setacreg\(char \*loc, char \*cmd, char \*arg\))
 \{
 	if \(xacreg\)8??0?
-grp 08??-5m 29220reg p OK ex.c:1505:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 29220reg p OK ex.c:1508:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		opath = uc_dup\(opath\+c\);
 		free\(bufs\[i]\.path\);
 		bufs\[i]\.path = opath;.*(		sbuf_free\(xacreg\))
 	if \(\*arg\) \{
 		sbuf_make\(xacreg, 128\)9??0?
-grp 09??-8m 29220reg p OK ex.c:1505:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:15052sc %? %@2132sc!0?
+grp 09??-8m 29220reg p OK ex.c:1508:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:15082sc %? %@2132sc!0?
 '\''1s/rset \*x/rstr *x/??!219reg ex.c:40:m12sc %? %@2142sc!0?
 '\''2,#+2c 			|| ((xkwdrs->flg & REG_ICASE) != xic))) {
 		rstr_free(xkwdrs);
@@ -1461,8 +1461,8 @@ static void \*ec_setincl\(char \*loc, char \*cmd, char \*arg\).*?
 '\''25s/et_s/tr_/??!219reg ex.c:1345:m252sc %? %@2142sc!0?
 '\''26s/et/tr/??!219reg ex.c:1355:m262sc %? %@2142sc!0?
 '\''27s/et/tr/??!219reg ex.c:1364:m272sc %? %@2142sc!0?
-'\''28s/et/tr/??!219reg ex.c:1502:m282sc %? %@2142sc!0?
-'\''29s/et_s/tr_/??!219reg ex.c:1505:m292sc %? %@2142sc!b1m!%ya 98?0?
+'\''28s/et/tr/??!219reg ex.c:1505:m282sc %? %@2142sc!0?
+'\''29s/et_s/tr_/??!219reg ex.c:1508:m292sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	return n != 0;
 }
 
@@ -2206,7 +2206,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 6b209b9f..924a7791 100644
+index 561030c5..33870651 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,7 +37,7 @@ int xsep = ':';			/* ex command separator */
@@ -2426,7 +2426,7 @@ index 6b209b9f..924a7791 100644
  	xgdep /= 2;
  	return ret;
  }
-@@ -1499,10 +1499,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
+@@ -1502,10 +1502,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
  
  static void *ec_setincl(char *loc, char *cmd, char *arg)
  {

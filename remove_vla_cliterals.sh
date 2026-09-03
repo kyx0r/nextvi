@@ -1882,7 +1882,7 @@ index c92ec213..6b52895b 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 6b209b9f..3c4e3979 100644
+index 561030c5..fe1bcc88 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -580,13 +580,16 @@ static void *ec_find(char *loc, char *cmd, char *arg)
