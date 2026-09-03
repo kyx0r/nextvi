@@ -435,6 +435,22 @@ Example: disable rules
 Example: highlight text inside parens
 :5hi \(.*?\)
 
+spell.sh
+--------------
+Spell checking with an external speller that speaks the ispell pipe
+protocol. Adds a new ex commands "sl", "sl!" and the keybind gs.
+"sl" runs the speller over the buffer, highlights the misspelled words
+and keeps their suggestions, "sl!" clears both. Argument sets the
+speller, which defaults to "aspell -a" as defined in conf.c.
+gs replaces the word under the cursor with its first suggestion, a
+count selects another one. The suggestions of the word under the
+cursor are printed as an ex message.
+Results are invalidated only once "sl" runs again.
+Example: check with a German dictionary
+:sl aspell -a --lang=de
+Example: check with hunspell
+:sl hunspell -a
+
 nvi_status.sh
 --------------
 Rewords the <^G> status line the way nvi puts it:
