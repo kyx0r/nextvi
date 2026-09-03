@@ -42,6 +42,12 @@ run_ex() {
 	EXINIT="$1" "$VI" -sm "$TMPFILE" </dev/null 2>/dev/null
 }
 
+# run_ex2: EXINIT is the first chain, $2 a second one typed after it, so state
+# that only outlives ex_exec at depth 0 can be told apart from state that does
+run_ex2() {
+	printf '%s\n:q!\n' "$2" | EXINIT="$1" "$VI" -sm "$TMPFILE" 2>/dev/null
+}
+
 # run_vi: pass vi key sequence; write result to OUTFILE, read it back
 run_vi() {
 	rm -f "$OUTFILE"
@@ -1942,6 +1948,62 @@ check 'FF3 a failing address subcommand reports subcommand error' 'subcommand er
 
 out=$(run_ex ':err 0:|%f>zzz|=1:??!p gated:q')
 check 'FF4 the failed address is an ordinary status the ?? layer reads' 'gated' "$out"
+
+# ── ?~ capture id lifetime ────────────────────────────────────────────────────
+# A capture id has three states, and ?~ is what makes the third one reachable
+# on purpose: set, set-to-the-other-value, and unset. Since an unset id skips
+# the whole expression that names it, unsetting is how a branch is disarmed
+# without knowing anything about the other ids in its prefix.
+# :s/hello/hello/ is the success status here, :s/zzz/y/ the failure.
+printf 'hello\n' > "$TMPFILE"
+
+out=$(run_ex ':s/hello/hello/:1??:1?~:1??p fired:p reached:q')
+check 'Z1 [id]?~ unsets that id; its branch no longer runs' 'reached' "$out"
+
+out=$(run_ex ':s/hello/hello/:1??:s/hello/hello/:2??:1?~:2??p two alive:q')
+check 'Z2 [id]?~ leaves every other id captured' 'two alive' "$out"
+
+out=$(run_ex ':s/hello/hello/:1??:s/hello/hello/:2??:?~:1??p a:2??p b:p reached:q')
+check 'Z3 bare ?~ frees every capture' 'reached' "$out"
+
+# unset is not a terminal state: the id is free to be captured again
+out=$(run_ex ':s/hello/hello/:1??:1?~:s/hello/hello/:1??:1??p recaptured:q')
+check 'Z4 an id unset by ?~ can be captured again' 'recaptured' "$out"
+
+out=$(run_ex ':7?~:p reached:q')
+check 'Z5 ?~ on an id that was never captured is a no-op' 'reached' "$out"
+
+out=$(run_ex ':99999?~:p reached:q')
+check 'Z6 ?~ past the allocated ids is a no-op, not an error' 'reached' "$out"
+
+# ?~ with an argument toggles whether captures outlive the chain they were
+# made in; run_ex2 types a second chain to look
+out=$(run_ex2 ':?~x:s/hello/hello/:1??' ':1??p survived')
+check 'Z7 ?~<arg> keeps captures across separate chains' 'survived' "$out"
+
+out=$(run_ex2 ':s/hello/hello/:1??' ':1??p survived:p reached')
+check 'Z8 without it captures die with the chain' 'reached' "$out"
+
+# the argument form is a toggle, not a set: twice is back to the default
+out=$(run_ex2 ':?~x:?~x:s/hello/hello/:1??' ':1??p survived:p reached')
+check 'Z9 ?~<arg> twice restores the default wipe' 'reached' "$out"
+
+# prefix and argument are independent: this unsets id 1 and toggles keeping,
+# so id 2 is the only capture that reaches the next chain
+out=$(run_ex2 ':s/hello/hello/:1??:s/hello/hello/:2??:1?~x' ':1??p one:2??p two')
+check 'Z10 [id]?~<arg> unsets the id and toggles keeping' 'two' "$out"
+
+# the bare form still wipes while keeping is on
+out=$(run_ex2 ':?~x:s/hello/hello/:1??:?~' ':1??p alive:p reached')
+check 'Z11 bare ?~ frees captures even with keeping on' 'reached' "$out"
+
+# ids are global to every nesting level, and so is freeing them
+out=$(run_ex ':s/hello/hello/:1??:g/hello/?~:1??p one alive:p reached:q')
+check 'Z12 ?~ inside a :g body frees the outer captures too' 'reached' "$out"
+
+# ?~ reports success, so it clears a live error status off the chain
+out=$(run_ex ':s/zzz/y/:?~:??p status reset:q')
+check 'Z13 ?~ returns success and resets the running status' 'status reset' "$out"
 
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
