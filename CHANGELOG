@@ -3,7 +3,7 @@
 ------------------
 
 New in core:
-1. :^ clears the saved ?? capture statuses; with an argument it keeps
+1. :?~ clears the saved ?? capture statuses; with an argument it keeps
    them across commands instead of clearing after each one. Closes the
    remaining ?? control gaps.
 2. :m![#marks] unsets line marks; no argument unsets all marks.
