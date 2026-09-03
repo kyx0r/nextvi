@@ -994,7 +994,7 @@ EX COMMANDS
              Example: control while loop
              :$? \%f+int\:1??\:\%f+void\:2??\:1,2??p\:1,2???
 
-     [id]?~[any]
+     [#id]?~[any]
              Control capture ids lifetime
 
              Prefix selects a specific id to free.
