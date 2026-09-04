@@ -649,7 +649,6 @@ static int spcnt;		/* entries in spidx */
 static char *sppat;		/* the armed misspelled words pattern */
 static char *spcmd;		/* the speller in use */
 static char spmsg[128];		/* the speller'\''s own complaint, forwarded */
-#define SPHL	4000		/* pattern alternations, regex.c fits 4096 */
 
 /* speller lines by word, "& word cnt off: sug, sug" and "# word off" */
 static int spell_cmp(const void *v1, const void *v2)
@@ -710,7 +709,7 @@ static void spell_clear(void)
 static void *ec_spell(char *loc, char *cmd, char *arg)
 {
 	char msg[128], *s, *e, *w, *sug, *last = NULL, **miss;
-	int i, n, len, off, cnt = 0, nhl = 0, ret = 0;
+	int i, n, len, off, cnt = 0, ret = 0;
 	if (strchr(cmd, '\''!'\'')) {
 		spell_clear();
 		return NULL;
@@ -774,11 +773,9 @@ static void *ec_spell(char *loc, char *cmd, char *arg)
 		sbuf_str(spsb, sug)
 		sbufn_chr(spsb, '\''\0'\'')
 		cnt++;
-		if (nhl < SPHL) {
-			if (nhl++)
-				sbuf_chr(pat, '\''|'\'')
-			ex_regesc(pat, w, w + len, 0);
-		}
+		if (cnt > 1)
+			sbuf_chr(pat, '\''|'\'')
+		ex_regesc(pat, w, w + len, 0);
 	}
 	sbufn_str(pat, ")\\>")
 	spcnt = cnt;
@@ -804,10 +801,7 @@ static void *ec_spell(char *loc, char *cmd, char *arg)
 		syn_blockhl = -1;
 		syn_reloadft(syn_addhl(sppat, 5), 0);
 	}
-	if (cnt > nhl)
-		snprintf(msg, sizeof(msg), "%d misspelled, %d highlighted", cnt, nhl);
-	else
-		snprintf(msg, sizeof(msg), "%d misspelled", cnt);
+	snprintf(msg, sizeof(msg), "%d misspelled", cnt);
 	ex_print(msg, msg_ft)
 	return NULL;
 }
@@ -1184,10 +1178,10 @@ index c92ec213..13d3ee5a 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 561030c5..19a13a97 100644
+index 561030c5..ef067b9b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1316,6 +1316,176 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
+@@ -1316,6 +1316,170 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -1198,7 +1192,6 @@ index 561030c5..19a13a97 100644
 +static char *sppat;		/* the armed misspelled words pattern */
 +static char *spcmd;		/* the speller in use */
 +static char spmsg[128];		/* the speller's own complaint, forwarded */
-+#define SPHL	4000		/* pattern alternations, regex.c fits 4096 */
 +
 +/* speller lines by word, "& word cnt off: sug, sug" and "# word off" */
 +static int spell_cmp(const void *v1, const void *v2)
@@ -1259,7 +1252,7 @@ index 561030c5..19a13a97 100644
 +static void *ec_spell(char *loc, char *cmd, char *arg)
 +{
 +	char msg[128], *s, *e, *w, *sug, *last = NULL, **miss;
-+	int i, n, len, off, cnt = 0, nhl = 0, ret = 0;
++	int i, n, len, off, cnt = 0, ret = 0;
 +	if (strchr(cmd, '!')) {
 +		spell_clear();
 +		return NULL;
@@ -1323,11 +1316,9 @@ index 561030c5..19a13a97 100644
 +		sbuf_str(spsb, sug)
 +		sbufn_chr(spsb, '\0')
 +		cnt++;
-+		if (nhl < SPHL) {
-+			if (nhl++)
-+				sbuf_chr(pat, '|')
-+			ex_regesc(pat, w, w + len, 0);
-+		}
++		if (cnt > 1)
++			sbuf_chr(pat, '|')
++		ex_regesc(pat, w, w + len, 0);
 +	}
 +	sbufn_str(pat, ")\\>")
 +	spcnt = cnt;
@@ -1353,10 +1344,7 @@ index 561030c5..19a13a97 100644
 +		syn_blockhl = -1;
 +		syn_reloadft(syn_addhl(sppat, 5), 0);
 +	}
-+	if (cnt > nhl)
-+		snprintf(msg, sizeof(msg), "%d misspelled, %d highlighted", cnt, nhl);
-+	else
-+		snprintf(msg, sizeof(msg), "%d misspelled", cnt);
++	snprintf(msg, sizeof(msg), "%d misspelled", cnt);
 +	ex_print(msg, msg_ft)
 +	return NULL;
 +}
@@ -1364,7 +1352,7 @@ index 561030c5..19a13a97 100644
  static void *ec_cmap(char *loc, char *cmd, char *arg)
  {
  	if (arg[0])
-@@ -1771,6 +1941,8 @@ static struct excmd {
+@@ -1771,6 +1935,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
