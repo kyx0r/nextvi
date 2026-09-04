@@ -4687,7 +4687,7 @@ index c8861702..52dd97c9 100644
  		ibuf_cnt = 1;
  		ibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 49b5682c..a4353bc9 100644
+index 49b5682c..20cad004 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@

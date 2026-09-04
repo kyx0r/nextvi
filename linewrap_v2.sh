@@ -4743,9 +4743,9 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 4??+2m 1220reg p OK vi.c:534:a42sc %? %@2152sc!0?
 1;4??!219reg vi.c:534:r2332sc %? %@2132sc!0?
 ?0?
-%f+ int vi_drawline\(int row, int trow\)
-\{
+%f+ \{
 	return vi_drawrow\(row, trow\);
+	vi_visual_attrib\(s, row\);
 }
 
 /\* redraw the screen \*/
@@ -4755,21 +4755,21 @@ static void vi_drawagain\(int i\)1??0?
 
 /\* redraw the screen \*/
 static void vi_drawagain\(int i\)2??0?
-2??m 2220reg p OK vi.c:550:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:551:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^}$3??0?
-3??m 2220reg p OK vi.c:550:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ int vi_drawline\(int row, int trow\)
-\{
-	return vi_drawrow\(row, trow\);4??0?
-4??+3m 2220reg p OK vi.c:550:a42sc %? %@2152sc!1q0?
+3??m 2220reg p OK vi.c:551:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ \{
+	return vi_drawrow\(row, trow\);
+	vi_visual_attrib\(s, row\);4??0?
+4??+3m 2220reg p OK vi.c:551:a42sc %? %@2152sc!1q0?
 %f+ 
 /\* redraw the screen \*/
 static void vi_drawagain\(int i\)5??0?
-5??-1m 2220reg p OK vi.c:550:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:550:r2332sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:551:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:551:r2332sc %? %@2132sc!0?
 '\''1i 	vi_visual_attrib(s, row);
 ??!219reg vi.c:534:r233:m12sc %? %@2142sc!0?
-'\''2d??!219reg vi.c:550:r233:m22sc %? %@2142sc!p compat 233 applied: src=lsp.sh src=visual.sh' > "$P2VIF".233
+'\''2d??!219reg vi.c:551:r233:m22sc %? %@2142sc!p compat 233 applied: src=lsp.sh src=visual.sh' > "$P2VIF".233
 # Compat 234 src=lsp.sh src=visual.sh src=splits.sh
 printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 %f> 		restore\(syn_blockhl\)
@@ -4874,8 +4874,8 @@ printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> 	curwin->row = xrow;
 	curwin->off = xoff;
 	curwin->top = xtop;4??0?
-4??+2m 1220reg p OK ex.c:2074:a42sc %? %@2152sc!0?
-1;4??!219reg ex.c:2074:r2352sc %? %@2132sc!0?
+4??+2m 1220reg p OK ex.c:2073:a42sc %? %@2152sc!0?
+1;4??!219reg ex.c:2073:r2352sc %? %@2132sc!0?
 ?0?
 %f+ 	xrow = curwin->row;
 	xoff = curwin->off;
@@ -4888,8 +4888,8 @@ printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f+ 	xrow = curwin->row;
 	xoff = curwin->off;
 	xtop = curwin->top;4??0?
-4??+2m 2220reg p OK ex.c:2090:a42sc %? %@2152sc!0?
-1;4??!219reg ex.c:2090:r2352sc %? %@2132sc!0?
+4??+2m 2220reg p OK ex.c:2089:a42sc %? %@2152sc!0?
+1;4??!219reg ex.c:2089:r2352sc %? %@2132sc!0?
 ?0?
 %f+ 			exbuf_load\(ex_buf\)
 			syn_setft\(xb_ft\);
@@ -4903,23 +4903,23 @@ printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 	}
 	w->next = curwin->next;
 	curwin->next = w;2??0?
-2??m 3220reg p OK ex.c:2191:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK ex.c:2190:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		w->row = w->off = w->top = w->left = 0;$3??0?
-3??m 3220reg p OK ex.c:2191:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK ex.c:2190:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			exbuf_load\(ex_buf\)
 			syn_setft\(xb_ft\);
 		}4??0?
-4??+3m 3220reg p OK ex.c:2191:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK ex.c:2190:a42sc %? %@2152sc!1q0?
 %f+ 	}
 	w->next = curwin->next;
 	curwin->next = w;5??0?
-5??-1m 3220reg p OK ex.c:2191:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg ex.c:2191:r2352sc %? %@2132sc!0?
+5??-1m 3220reg p OK ex.c:2190:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg ex.c:2190:r2352sc %? %@2132sc!0?
 '\''1i 	curwin->topsub = xtopsub;
-??!219reg ex.c:2074:r235:m12sc %? %@2142sc!0?
+??!219reg ex.c:2073:r235:m12sc %? %@2142sc!0?
 '\''2i 	xtopsub = curwin->topsub;
-??!219reg ex.c:2090:r235:m22sc %? %@2142sc!0?
-'\''3s/>l/>topsub = w->l/??!219reg ex.c:2191:r235:m32sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:2089:r235:m22sc %? %@2142sc!0?
+'\''3s/>l/>topsub = w->l/??!219reg ex.c:2190:r235:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	int dir, off, pos, psn = sb->s_n;
 	int inwin = poff == &xoff;	/\* prompts own the whole terminal row \*/
 	int winx = inwin \? curwin->x : 0;
@@ -6675,10 +6675,10 @@ exit 0
  	i = vi_rendrow(s, trow, 0);
  	int dcol = rstate->cmax - xleft;
  	rstate = rstates;
-@@ -547,7 +548,6 @@
- int vi_drawline(int row, int trow)
+@@ -548,7 +549,6 @@
  {
  	return vi_drawrow(row, trow);
+ 	vi_visual_attrib(s, row);
 -}
  
  /* redraw the screen */
@@ -6724,7 +6724,7 @@ exit 0
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 --- a/ex.c
 +++ b/ex.c
-@@ -2072,6 +2072,7 @@
+@@ -2071,6 +2071,7 @@
  	curwin->row = xrow;
  	curwin->off = xoff;
  	curwin->top = xtop;
@@ -6732,7 +6732,7 @@ exit 0
  	curwin->left = xleft;
  	curwin->buf = ex_buf;
  	ex_buf->td = xtd;	/* win_load() reads td back from the buffer */
-@@ -2088,6 +2089,7 @@
+@@ -2087,6 +2088,7 @@
  	xrow = curwin->row;
  	xoff = curwin->off;
  	xtop = curwin->top;
@@ -6740,7 +6740,7 @@ exit 0
  	xleft = curwin->left;
  }
  
-@@ -2188,7 +2190,7 @@
+@@ -2187,7 +2189,7 @@
  			exbuf_load(ex_buf)
  			syn_setft(xb_ft);
  		}
@@ -7317,7 +7317,7 @@ index c92ec213..86604545 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 14fe45dc..3537dbc1 100644
+index 14fe45dc..1efa0b32 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -18,6 +18,8 @@ int xpac;			/* print autocomplete options */
@@ -7361,7 +7361,7 @@ index 14fe45dc..3537dbc1 100644
  }
  
  void temp_switch(int i, int swap)
-@@ -1680,13 +1686,24 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1680,13 +1686,23 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
@@ -7386,7 +7386,7 @@ index 14fe45dc..3537dbc1 100644
  _EO(left,
  	if (*loc)
  		xleft = (xcols / 2) * atoi(loc);
-@@ -1786,6 +1803,7 @@ static struct excmd {
+@@ -1786,6 +1802,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),
@@ -7394,7 +7394,7 @@ index 14fe45dc..3537dbc1 100644
  	EO(hll),
  	EO(hlw),
  	EO(hlp),
-@@ -1794,6 +1812,7 @@ static struct excmd {
+@@ -1794,6 +1811,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -7580,7 +7580,7 @@ index facf14cd..60e19e78 100644
  		for (n = 0; n < max && (l = uc_len(ss)); n++)
  			ss += l;
 diff --git a/vi.c b/vi.c
-index 49b5682c..60d7d0e9 100644
+index 49b5682c..d4c351d3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -111,6 +111,193 @@ static int vi_nextcol(char *ln, int dir, int *off)
