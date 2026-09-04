@@ -565,7 +565,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 					preserve(int, ftidx,)
 					syn_setft(ac_ft);
 					for (int left = 0; r < xrows; r++) {
-						RS(2, led_crender(is->sug, r, 0, left, left+xcols))
+						RST(2, led_crender(is->sug, r, 0, left, left+xcols))
 						left += xcols;
 						if (left >= rstates[2].pos[rstates[2].n])
 							break;
