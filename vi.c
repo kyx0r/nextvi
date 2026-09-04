@@ -96,7 +96,7 @@ static void vi_drawmsg(char *msg)
 	preserve(int, xtd, xtd = 2;)
 	preserve(int, ftidx,)
 	syn_setft(bar_ft);
-	RS(2, led_crender(msg, xrows, 0, 0, xcols))
+	RST(2, led_crender(msg, xrows, 0, 0, xcols))
 	restore(xtd)
 	restore(ftidx)
 }
@@ -162,7 +162,7 @@ static void vi_drawrow(int row)
 		preserve(int, xtd, xtd = dir_context(c) * 2;)
 		preserve(int, ftidx,)
 		syn_setft(n_ft);
-		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
+		RST(2, led_crender(tmp, row - xtop, 0, 0, xcols))
 		restore(xorder)
 		restore(syn_blockhl)
 		restore(xtd)
@@ -204,10 +204,10 @@ static void vi_drawrow(int row)
 			i1 -= (itoa(abs(xrow-row+vi_rshift), tmp1) - tmp1)+1;
 			if (i1 >= 0) {
 				memset(p, ' ', strlen(p));
-				RS(2, led_prender(tmp1, row - xtop, l1+i1, 0, l1))
+				RST(2, led_prender(tmp1, row - xtop, l1+i1, 0, l1))
 			}
 		}
-		RS(2, led_prender(tmp, row - xtop, 0, 0, l1))
+		RST(2, led_prender(tmp, row - xtop, 0, 0, l1))
 		restore(syn_blockhl)
 		restore(ftidx)
 		return;
@@ -1604,8 +1604,7 @@ void vi(int init)
 				case 'R':
 					xtd = uc_isupper(k)+1;
 					xtd = tolower(k) == 'r' ? -xtd : xtd;
-					rstates[0].s = NULL;
-					rstates[1].s = NULL;
+					RST_NULL(0, 1)
 					break;
 				case 'e':
 				case 'f':
