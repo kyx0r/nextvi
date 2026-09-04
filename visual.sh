@@ -929,8 +929,7 @@ static int vi_voff;			/* selection anchor column */
 	o_beg = MAX(0, MIN(o_beg, rn1));
 	o_end = MAX(0, MIN(o_end, rn1));
 	for (int o = o_beg; o <= o_end; o++) {
-		if (row == xrow && o == xoff)
-			continue;
+		la.att = row == xrow && o == xoff ? WH1 : SYN_RV;
 		la.off = o;
 		sbuf_mem(led_attsb, &la, (int)sizeof(la))
 	}
@@ -1312,7 +1311,7 @@ index c92ec213..81071577 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index c4d07045..5ba80bb5 100644
+index c4d07045..24da58f3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1325,7 +1324,7 @@ index c4d07045..5ba80bb5 100644
  
  void *emalloc(size_t size)
  {
-@@ -125,6 +128,53 @@ for (i = 0, ret = 0;; i++) { \
+@@ -125,6 +128,52 @@ for (i = 0, ret = 0;; i++) { \
  	ret = func; \
  } } \
  
@@ -1369,8 +1368,7 @@ index c4d07045..5ba80bb5 100644
 +	o_beg = MAX(0, MIN(o_beg, rn1));
 +	o_end = MAX(0, MIN(o_end, rn1));
 +	for (int o = o_beg; o <= o_end; o++) {
-+		if (row == xrow && o == xoff)
-+			continue;
++		la.att = row == xrow && o == xoff ? WH1 : SYN_RV;
 +		la.off = o;
 +		sbuf_mem(led_attsb, &la, (int)sizeof(la))
 +	}
@@ -1379,7 +1377,7 @@ index c4d07045..5ba80bb5 100644
  static void vi_drawrow(int row)
  {
  	int l1, i, i1, lnnum = vi_lnnum;
-@@ -193,6 +243,7 @@ static void vi_drawrow(int row)
+@@ -193,6 +242,7 @@ static void vi_drawrow(int row)
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -1387,7 +1385,7 @@ index c4d07045..5ba80bb5 100644
  		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
-@@ -212,6 +263,7 @@ static void vi_drawrow(int row)
+@@ -212,6 +262,7 @@ static void vi_drawrow(int row)
  		restore(ftidx)
  		return;
  	}
@@ -1395,7 +1393,7 @@ index c4d07045..5ba80bb5 100644
  	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
  	rstate = rstates;
  }
-@@ -495,20 +547,23 @@ static void vc_status(int type)
+@@ -495,20 +546,23 @@ static void vc_status(int type)
  	char cbuf[8] = "", vi_msg[512], *c;
  	col = vi_off2col(xb, xrow, xoff);
  	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
@@ -1423,7 +1421,7 @@ index c4d07045..5ba80bb5 100644
  	}
  	vi_drawmsg_mpt(vi_msg)
  }
-@@ -946,6 +1001,178 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -946,6 +1000,178 @@ static void vi_shift(int r1, int r2, int dir, int count)
  	free(sb->s);
  }
  
@@ -1602,7 +1600,7 @@ index c4d07045..5ba80bb5 100644
  static int vc_motion(int cmd)
  {
  	int r1 = xrow, r2 = xrow;	/* region rows */
-@@ -1292,6 +1519,10 @@ void vi(int init)
+@@ -1292,6 +1518,10 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'u':
@@ -1613,7 +1611,7 @@ index c4d07045..5ba80bb5 100644
  				undo:
  				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
  					vi_mod |= 1;
-@@ -1342,6 +1573,10 @@ void vi(int init)
+@@ -1342,6 +1572,10 @@ void vi(int init)
  				vi_lncol = 0;
  				vi_mod |= 1;
  				break;
@@ -1624,7 +1622,7 @@ index c4d07045..5ba80bb5 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1446,6 +1681,22 @@ void vi(int init)
+@@ -1446,6 +1680,22 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case ':':
@@ -1647,7 +1645,7 @@ index c4d07045..5ba80bb5 100644
  				ln = vi_enprompt(":", NULL, &k, &n);
  				do_excmd:
  				if (k && ln[n]) {
-@@ -1465,7 +1716,15 @@ void vi(int init)
+@@ -1465,7 +1715,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -1663,7 +1661,7 @@ index c4d07045..5ba80bb5 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1515,6 +1774,10 @@ void vi(int init)
+@@ -1515,6 +1773,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -1674,7 +1672,7 @@ index c4d07045..5ba80bb5 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto insert_done;
-@@ -1525,6 +1788,13 @@ void vi(int init)
+@@ -1525,6 +1787,13 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1688,7 +1686,7 @@ index c4d07045..5ba80bb5 100644
  				insert:
  				k = vc_insert(c);
  				insert_done:
-@@ -1647,8 +1917,16 @@ void vi(int init)
+@@ -1647,8 +1916,16 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1706,7 +1704,7 @@ index c4d07045..5ba80bb5 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1663,16 +1941,25 @@ void vi(int init)
+@@ -1663,16 +1940,25 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1737,7 +1735,7 @@ index c4d07045..5ba80bb5 100644
  				motion:
  				icmd_pos--;
  				goto re_motion;
-@@ -1738,6 +2025,13 @@ void vi(int init)
+@@ -1738,6 +2024,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -1751,7 +1749,7 @@ index c4d07045..5ba80bb5 100644
  			default:
  				continue;
  			}
-@@ -1798,6 +2092,8 @@ void vi(int init)
+@@ -1798,6 +2091,8 @@ void vi(int init)
  				}
  			}
  		}
