@@ -187,20 +187,20 @@ static int eo_val\(char \*arg\)
 }
 
 4??0?
-4??+2m 5220reg p OK ex.c:1669:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK ex.c:1668:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
-grp 08??-13m 5220reg p OK ex.c:1669:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-13m 5220reg p OK ex.c:1668:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_nul\(sb\).*(_EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\))
 _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)
 _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\); return NULL;\)9??0?
-grp 09??-17m 5220reg p OK ex.c:1669:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16692sc %? %@2132sc!0?
+grp 09??-17m 5220reg p OK ex.c:1668:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16682sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
@@ -212,24 +212,24 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},4??0?
-4??+2m 6220reg p OK ex.c:1760:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK ex.c:1759:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"reg", ec_regprint},.*?
 	\{"re", ec_krsset},.*?
 (	\{"rd", ec_undoredo},)7??0?
-grp 07??m 6220reg p OK ex.c:1760:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1759:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"q!", ec_quit},
 	\{"q", ec_quit},
 	\{"reg\+", ec_regprint},.*(	\{"wq", ec_write},)
 	\{"w!", ec_write},
 	\{"w", ec_write},8??0?
-grp 08??-4m 6220reg p OK ex.c:1760:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK ex.c:1759:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(mpt\),
 	\{"m!", ec_mark},
 	\{"m", ec_mark},.*(	\{"uc", ec_setenc},)
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},9??0?
-grp 09??-7m 6220reg p OK ex.c:1760:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17602sc %? %@2132sc!0?
+grp 09??-7m 6220reg p OK ex.c:1759:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17592sc %? %@2132sc!0?
 '\''1-1i char readonly = 0;		/* commandline readonly option */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i 	bufs[i].readonly = readonly;
@@ -246,9 +246,9 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 	return NULL;
 }
 
-??!219reg ex.c:1669:m52sc %? %@2142sc!0?
+??!219reg ex.c:1668:m52sc %? %@2142sc!0?
 '\''6i 	{"ro", ec_readonly},
-??!219reg ex.c:1760:m62sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1759:m62sc %? %@2142sc!b2m!%ya 98?0?
 %f> 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\)
 				xvis \|= 8;
@@ -398,7 +398,7 @@ index c92ec213..c79a8b1e 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 58bd7253..f11d931a 100644
+index 08306960..c9d9b565 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -432,7 +432,7 @@ index 58bd7253..f11d931a 100644
  		if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  			return "write failed: file changed";
  		if (arg[0] && mtime(path) >= 0)
-@@ -1667,6 +1673,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1666,6 +1672,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -445,7 +445,7 @@ index 58bd7253..f11d931a 100644
  static int eo_val(char *arg)
  {
  	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
-@@ -1758,6 +1770,7 @@ static struct excmd {
+@@ -1757,6 +1769,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},
