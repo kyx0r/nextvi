@@ -9,6 +9,8 @@ New in core:
 2. :m![#marks] unsets line marks; no argument unsets all marks.
 3. Optimized capture ids: O(1) lookup, kept ~O(1) amortized append,
    reduced memory usage with flat char array.
+4. Unlimited alternations and captures in the regex engine: the
+   compiler no longer uses fixed static arrays.
 
 New in builds:
 1. Build shell scripts (cbuild.sh, build_patch2vi.sh) accept options
@@ -57,6 +59,9 @@ Patch changes:
 5. patch2vi.sh: faster compat_order search, tree snapshot per step,
    one awk pass per level.
 6. Division truncation fix: [threaded_search.sh](https://github.com/kyx0r/nextvi/blob/release/threaded_search.sh)
+7. New [spell.sh](https://github.com/kyx0r/nextvi/blob/release/spell.sh):
+   spell checking with an external speller that speaks the ispell pipe
+   protocol.
 
 ------------------
 7.4 Basilisk
