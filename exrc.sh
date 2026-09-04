@@ -42,7 +42,7 @@ int xai = 1;			/\* autoindent option \*/1??0?
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 
 _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
-_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1, 2\) return NULL;\)
+_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)
 _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\); return NULL;\)1??0?
 1??+2m 21q0?
 %f+ EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
@@ -248,7 +248,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 14fe45dc..c0930cec 100644
+index 58bd7253..5eb59fb6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -262,7 +262,7 @@ index 14fe45dc..c0930cec 100644
  
 +EO(exrc)
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
- _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1, 2) return NULL;)
+ _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
  _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
 @@ -1727,6 +1729,7 @@ static struct excmd {
  	{"p", ec_print},

@@ -248,7 +248,7 @@ index c92ec213..899a838c 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 14fe45dc..1d062750 100644
+index 58bd7253..46889ad1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -810,6 +810,29 @@ static void *ec_write(char *loc, char *cmd, char *arg)

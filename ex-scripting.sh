@@ -59,7 +59,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_nul\(sb\).*(_EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\))
-_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1, 2\) return NULL;\)
+_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)
 _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\); return NULL;\)9??0?
 grp 09??-17m 2220reg p OK ex.c:1669:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg ex.c:16692sc %? %@2132sc!0?
@@ -218,7 +218,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 14fe45dc..5004584b 100644
+index 58bd7253..501ca189 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@

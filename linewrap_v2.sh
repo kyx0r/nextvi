@@ -298,14 +298,14 @@ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\).*?
 grp 09??-13m 6220reg p OK ex.c:1683:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:16832sc %? %@2132sc!0?
 ?0?
-%f+ _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1, 2\) return NULL;\)
+%f+ _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)
 _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\); return NULL;\)
 
 _EO\(left,
 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);1??0?
 1??+2m 71q0?
-%f+ _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1, 2\) return NULL;\)
+%f+ _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)
 _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\); return NULL;\)
 
 4??0?
@@ -7367,7 +7367,7 @@ index c92ec213..86604545 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 14fe45dc..1efa0b32 100644
+index 58bd7253..01036d4a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -18,6 +18,8 @@ int xpac;			/* print autocomplete options */
@@ -7420,7 +7420,7 @@ index 14fe45dc..1efa0b32 100644
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
- _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1, 2) return NULL;)
+ _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
  _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
  
 +/* no argument turns the wrap on at INT_MAX, which ren_wrapw caps by the

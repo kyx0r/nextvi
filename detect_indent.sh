@@ -254,7 +254,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 1;4;8;9??!219reg ex.c:16852sc %? %@2132sc!0?
 ?0?
 %f+ _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
-_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1, 2\) return NULL;\)
+_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)
 _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\); return NULL;\)
 
 1??0?
@@ -1008,7 +1008,7 @@ index c92ec213..51705d06 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 14fe45dc..f2c80e17 100644
+index 58bd7253..be7867a1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -1109,7 +1109,7 @@ index 14fe45dc..f2c80e17 100644
 +EO(et) EO(idt)
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
 +_EO(sw, if (*arg) xsw = eo_val(arg); return NULL;)
- _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1, 2) return NULL;)
+ _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
  _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
  
 @@ -1730,6 +1788,7 @@ static struct excmd {

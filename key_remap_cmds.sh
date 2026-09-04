@@ -898,7 +898,7 @@ index c92ec213..5b75fca5 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 14fe45dc..0542a66d 100644
+index 58bd7253..abc3b098 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@

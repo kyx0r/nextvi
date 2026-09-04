@@ -774,7 +774,7 @@ index c92ec213..07375fc6 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 14fe45dc..04b02d55 100644
+index 58bd7253..a7805a26 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1316,6 +1316,70 @@ static void *ec_ft(char *loc, char *cmd, char *arg)

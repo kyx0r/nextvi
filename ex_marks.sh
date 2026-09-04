@@ -184,7 +184,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 14fe45dc..10f1bd4a 100644
+index 58bd7253..86350929 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -254,9 +254,12 @@ static int ex_range(char *ploc, char **num, int n, int *row)
