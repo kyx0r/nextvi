@@ -197,8 +197,7 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
 			non_capture:
 			if (!code && capc + 5 > capsz) {
 				capsz = MAX(64, NEXTSZ(capc, 5));
-				ctx->mem = cap_stack = erealloc(ctx->mem,
-							capsz * sizeof(int));
+				ctx->mem = cap_stack = erealloc(ctx->mem, capsz * sizeof(int));
 			}
 			if (flg & REG_NOCAP || *re == ':')
 				cap_stack[capc++] = 0;
@@ -350,12 +349,10 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
 			int at = alt_stack[alts-altc]+altc*2;
 			EMIT(at, REL(at, PC) + 1);
 		}
-	}
-	if (!code) {
+	} else if (!code) {
 		ctx->capsz = maxcapc;
 		if (maxcapc + altc > capsz)
-			ctx->mem = erealloc(ctx->mem,
-					(maxcapc + altc) * sizeof(int));
+			ctx->mem = erealloc(ctx->mem, (maxcapc + altc) * sizeof(int));
 	}
 	return capc ? -1 : 0;
 }
