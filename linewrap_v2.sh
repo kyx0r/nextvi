@@ -36,14 +36,16 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 f> [ /]lsp[.]sh 20??f> [ /]visual[.]sh 21??f> [ /]splits[.]sh 22??b1020,21,22?? %ya 234230reg 1234??0?
 f> [ /]splits[.]sh 20??b1120?? %ya 235230reg 1235??0?
 f> [ /]threaded_redraw[.]sh 20??b1220?? %ya 236230reg 1236??0?
+f> [ /]lsp[.]sh 20??f> [ /]visual[.]sh 21??b1320,21?? %ya 237230reg 1237??0?
 fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
-b6%ya 972sc %? %@972sc!b01b41232;233;234;235;236??211reg232;233;234;235;236??!211reg ? %@2210?
-2sc %? %@2312sc!b41233;234;235;236??211reg233;234;235;236??!211reg ? %@2210?
-2sc %? %@2322sc!b41234;235;236??211reg234;235;236??!211reg ? %@2210?
-2sc %? %@2332sc!b41235;236??211reg235;236??!211reg ? %@2210?
-2sc %? %@2342sc!b01b11b21b41b51b31236??211reg236??!211reg ? %@2210?
-2sc %? %@2352sc!b41211reg ? %@2210?
-2sc %? %@2362sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
+b6%ya 972sc %? %@972sc!b01b41232;233;234;235;236;237??211reg232;233;234;235;236;237??!211reg ? %@2210?
+2sc %? %@2312sc!b41233;234;235;236;237??211reg233;234;235;236;237??!211reg ? %@2210?
+2sc %? %@2322sc!b41234;235;236;237??211reg234;235;236;237??!211reg ? %@2210?
+2sc %? %@2332sc!b41235;236;237??211reg235;236;237??!211reg ? %@2210?
+2sc %? %@2342sc!b01b11b21b41b51b31236;237??211reg236;237??!211reg ? %@2210?
+2sc %? %@2352sc!b41237??211reg237??!211reg ? %@2210?
+2sc %? %@2362sc!b41211reg ? %@2210?
+2sc %? %@2372sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
 \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
@@ -6583,7 +6585,39 @@ static void vi_rendpost\(int mod, int otop, int oleft, int orow, int ooff, int p
 ??!219reg vi.c:2289:r236:m62sc %? %@2142sc!0?
 '\''7i 	r->otopsub = otopsub;
 ??!219reg vi.c:2312:r236:m72sc %? %@2142sc!p compat 236 applied: src=threaded_redraw.sh' > "$P2VIF".236
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".233 "$P2VIF".234 "$P2VIF".235 "$P2VIF".236 "$P2VIF".d
+# Compat 237 src=lsp.sh src=visual.sh
+printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
+%f> int vi_drawline\(int row, int trow\)
+\{
+	return vi_drawrow\(row, trow\);
+	vi_visual_attrib\(s, row\);
+
+/\* redraw the screen \*/
+static void vi_drawagain\(int i\)
+\{1??0?
+1??+3m 11q0?
+%f> 	vi_visual_attrib\(s, row\);
+
+/\* redraw the screen \*/
+static void vi_drawagain\(int i\)
+\{2??0?
+2??m 1220reg p OK vi.c:551:a22sc %? %@2152sc!1q0?
+%f> 	vi_visual_attrib\(s, row\);
+
+3??0?
+3??m 1220reg p OK vi.c:551:a32sc %? %@2152sc!1q0?
+%f> int vi_drawline\(int row, int trow\)
+\{
+	return vi_drawrow\(row, trow\);4??0?
+4??+3m 1220reg p OK vi.c:551:a42sc %? %@2152sc!1q0?
+%f> /\* redraw the screen \*/
+static void vi_drawagain\(int i\)
+\{5??0?
+5??-2m 1220reg p OK vi.c:551:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:551:r2372sc %? %@2132sc!0?
+'\''1,#+1c }
+??!219reg vi.c:551:r237:m12sc %? %@2142sc!p compat 237 applied: src=lsp.sh src=visual.sh' > "$P2VIF".237
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".233 "$P2VIF".234 "$P2VIF".235 "$P2VIF".236 "$P2VIF".237 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
@@ -7298,6 +7332,22 @@ exit 0
  	r->oleft = oleft;
  	r->orow = orow;
  	r->ooff = ooff;
+=== END ===
+=== END COMPAT ===
+=== PATCH2VI COMPAT 237 src=lsp.sh src=visual.sh ===
+=== COMPAT PATCH ===
+--- a/vi.c
++++ b/vi.c
+@@ -548,8 +548,7 @@
+ int vi_drawline(int row, int trow)
+ {
+ 	return vi_drawrow(row, trow);
+-	vi_visual_attrib(s, row);
+-
++}
+ /* redraw the screen */
+ static void vi_drawagain(int i)
+ {
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
