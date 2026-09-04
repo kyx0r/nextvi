@@ -446,7 +446,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 		int nskip, int *r, int *o)
 {
 	static pthread_attr_t lsattr;	/* musl caps threads at 128k; main()'\''s stack */
-	static int lsattr_ok = -1;	/* -1: attr not computed yet */
+	static pthread_attr_t *lsattr_ok;	/* &lsattr after the one-time sizing */
 	#define NUM_THREADS 4
 	pthread_t threads[NUM_THREADS];
 	static unsigned char fake_ulen[256]; /* novelty: for fast thread termination */
@@ -462,12 +462,12 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 	else
 		off = 0;
 	utf8_length['\''\n'\''] = 0;
-	if (lsattr_ok < 0) {
+	if (!lsattr_ok) {
 		struct rlimit rl;
-		lsattr_ok = !pthread_attr_init(&lsattr)
-				&& !getrlimit(RLIMIT_STACK, &rl)
-				&& rl.rlim_cur != RLIM_INFINITY
-				&& !pthread_attr_setstacksize(&lsattr, rl.rlim_cur);
+		pthread_attr_init(&lsattr);
+		if (!getrlimit(RLIMIT_STACK, &rl) && rl.rlim_cur != RLIM_INFINITY)
+			pthread_attr_setstacksize(&lsattr, rl.rlim_cur);
+		lsattr_ok = &lsattr;
 	}
 	for (i = 0; i < NUM_THREADS; i++) {
 		if (*r + step > end || *r + step * dir < 0)
@@ -487,8 +487,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 			data[i].end = MIN(rs[i] + thread_step, end);
 		os[i] = i ? -1 : *o;
 		data[i].o = &os[i];
-		pthread_create(&threads[i], lsattr_ok ? &lsattr : NULL,
-				lsearch, (void*) &data[i]);
+		pthread_create(&threads[i], lsattr_ok, lsearch, (void*) &data[i]);
 	}
 	for (step = i, i = 0; i < step; i++) {
 		pthread_join(threads[i], NULL);
@@ -1046,7 +1045,7 @@ index bce1f5e0..a2e507b2 100644
  			flg |= REG_NOTBOL;
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
-@@ -516,19 +524,87 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+@@ -516,19 +524,86 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
  				continue;
  			}
  			_o += uc_off(s + step, off + g1 - step);
@@ -1076,7 +1075,7 @@ index bce1f5e0..a2e507b2 100644
 +		int nskip, int *r, int *o)
 +{
 +	static pthread_attr_t lsattr;	/* musl caps threads at 128k; main()'s stack */
-+	static int lsattr_ok = -1;	/* -1: attr not computed yet */
++	static pthread_attr_t *lsattr_ok;	/* &lsattr after the one-time sizing */
 +	#define NUM_THREADS 4
 +	pthread_t threads[NUM_THREADS];
 +	static unsigned char fake_ulen[256]; /* novelty: for fast thread termination */
@@ -1092,12 +1091,12 @@ index bce1f5e0..a2e507b2 100644
 +	else
 +		off = 0;
 +	utf8_length['\n'] = 0;
-+	if (lsattr_ok < 0) {
++	if (!lsattr_ok) {
 +		struct rlimit rl;
-+		lsattr_ok = !pthread_attr_init(&lsattr)
-+				&& !getrlimit(RLIMIT_STACK, &rl)
-+				&& rl.rlim_cur != RLIM_INFINITY
-+				&& !pthread_attr_setstacksize(&lsattr, rl.rlim_cur);
++		pthread_attr_init(&lsattr);
++		if (!getrlimit(RLIMIT_STACK, &rl) && rl.rlim_cur != RLIM_INFINITY)
++			pthread_attr_setstacksize(&lsattr, rl.rlim_cur);
++		lsattr_ok = &lsattr;
 +	}
 +	for (i = 0; i < NUM_THREADS; i++) {
 +		if (*r + step > end || *r + step * dir < 0)
@@ -1117,8 +1116,7 @@ index bce1f5e0..a2e507b2 100644
 +			data[i].end = MIN(rs[i] + thread_step, end);
 +		os[i] = i ? -1 : *o;
 +		data[i].o = &os[i];
-+		pthread_create(&threads[i], lsattr_ok ? &lsattr : NULL,
-+				lsearch, (void*) &data[i]);
++		pthread_create(&threads[i], lsattr_ok, lsearch, (void*) &data[i]);
 +	}
 +	for (step = i, i = 0; i < step; i++) {
 +		pthread_join(threads[i], NULL);
