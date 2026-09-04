@@ -1624,8 +1624,8 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 grp 1%f> \{.*?
 	return re_pikevm\(rs->regex, s, NULL, 0, flg\);.*?
 (})7??0?
-grp 07??m 1220reg p OK regex.c:751:a72sc %? %@2152sc!0?
-1;7??!219reg regex.c:7512sc %? %@2132sc!0?
+grp 07??m 1220reg p OK regex.c:770:a72sc %? %@2152sc!0?
+1;7??!219reg regex.c:7702sc %? %@2132sc!0?
 '\''1i /* return zero if a simple pattern is given */
 static int rstr_simple(rstr *rs, char *re, int icase)
 {
@@ -1765,7 +1765,7 @@ void rstr_free(rstr *rs)
 	free(rs->str);
 	free(rs);
 }
-??!219reg regex.c:751:m12sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg regex.c:770:m12sc %? %@2142sc!b3m!%ya 98?0?
 %f> 		ex_krsset\(ex_regget\('\''/'\''\) \? ex_regget\('\''/'\''\)->s : NULL, xkwddir\);
 	if \(!lbuf_len\(xb\) \|\| !xkwddir\)
 		return 1;
@@ -2467,10 +2467,10 @@ index bce1f5e0..02e0c15f 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index 3b2953d7..6c5d550d 100644
+index 1bb65165..0fc4f908 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -749,3 +749,142 @@ int rset_match(rset *rs, char *s, int flg)
+@@ -768,3 +768,142 @@ int rset_match(rset *rs, char *s, int flg)
  {
  	return re_pikevm(rs->regex, s, NULL, 0, flg);
  }
