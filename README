@@ -444,8 +444,11 @@ and keeps their suggestions, "sl!" clears both. Argument sets the
 speller, which defaults to "aspell -a" as defined in conf.c.
 gs replaces the word under the cursor with its first suggestion, a
 count selects another one. The suggestions of the word under the
-cursor are printed as an ex message.
+cursor are printed as an ex message, numbered by the count that
+picks them: "1:weird 2:wired 3:weirdo".
 Results are invalidated only once "sl" runs again.
+At most 4000 distinct words are highlighted, the regex engine holds
+no more alternations; the rest keep their suggestions.
 Example: check with a German dictionary
 :sl aspell -a --lang=de
 Example: check with hunspell

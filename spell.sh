@@ -533,15 +533,14 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},.*(	\
 char spell_cmd[] = "aspell -a";
 
 ??!219reg conf.c:4:m12sc %? %@2142sc!0?
-'\''2i /* aspell'\''s context filter, set to check only what lies between the delimiters:
- * SPHASH is a # comment up to the end of the line. The stock comment mode does
- * the opposite, it hides comments and checks the code. */
+'\''2i /* aspell'\''s context filter, checking only "#" comments; the stock comment
+ * mode is the inverse, it hides comments and checks the code */
 #define SPHASH	"--mode=none --add-filter=context --clear-context-delimiters "\
 		"--dont-context-visible-first --add-context-delimiters='\''# \\0'\''"
 
-/* extra speller arguments per filetype, so that sl checks the prose of a
- * source file and not its identifiers; these are aspell filter modes, change
- * them along with spell_cmd if the speller is not aspell */
+/* per filetype speller arguments, aspell filter modes: sl reads the prose of
+ * a source file, not its identifiers. Change along with spell_cmd for a
+ * speller other than aspell */
 struct spellft spell_fts[] = {
 	{FT(c), "--mode=ccpp"},
 	{FT(js), "--mode=ccpp"},
@@ -558,9 +557,8 @@ struct spellft spell_fts[] = {
 const int spell_ftslen = LEN(spell_fts);
 
 ??!219reg conf.c:47:m22sc %? %@2142sc!0?
-'\''3i /* att of the misspelled words, used by the sl command; the rules sit in a set
- * of their own (9) so that a filetype rule matching earlier on the line, a
- * comment or a heading, cannot swallow the word */
+'\''3i /* att of the misspelled words, used by sl; set 9 is theirs alone, an earlier
+ * filetype rule on the line, a comment or a heading, never swallows them */
 #define SP	A(SYN_BGMK(RE1) | SYN_OWR)
 ??!219reg conf.c:65:m32sc %? %@2142sc!0?
 '\''4i 	{_ft, NULL, SP, 9, 5}, /* <-- optional, used by sl if set */
@@ -644,21 +642,55 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 	\{"cd", ec_chdir},9??0?
 grp 09??-7m 2220reg p OK ex.c:1773:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17732sc %? %@2132sc!0?
-'\''1i /* misspelled words and their suggestions, one "word\tsug, sug\n" per word */
+'\''1i /* misspelled words and their suggestions, "word\0sug, sug\0" per entry */
 static sbuf *spsb;
+static char **spidx;		/* spsb entries, sorted by word */
+static int spcnt;		/* entries in spidx */
 static char *sppat;		/* the armed misspelled words pattern */
 static char *spcmd;		/* the speller in use */
 static char spmsg[128];		/* the speller'\''s own complaint, forwarded */
+#define SPHL	4000		/* pattern alternations, regex.c fits 4096 */
+
+/* speller lines by word, "& word cnt off: sug, sug" and "# word off" */
+static int spell_cmp(const void *v1, const void *v2)
+{
+	char *s1 = *(char *const *)v1 + 2, *s2 = *(char *const *)v2 + 2;
+	for (; *s1 == *s2 && *s1 && *s1 != '\'' '\''; s1++, s2++);
+	return (unsigned char)*s1 - (unsigned char)*s2;
+}
 
 /* the suggestions of a misspelled word, NULL when it is spelled correctly */
 static char *spell_get(char *word, int len)
 {
-	if (!spsb)
-		return NULL;
-	for (char *s = spsb->s; *s; s = strchr(s, '\''\n'\'') + 1)
-		if (!strncmp(s, word, len) && s[len] == '\''\t'\'')
-			return s + len + 1;
+	int lo = 0, hi = spcnt - 1, mid, ret;
+	while (lo <= hi) {
+		mid = (lo + hi) / 2;
+		ret = strncmp(spidx[mid], word, len);
+		ret = ret ? ret : (unsigned char)spidx[mid][len];
+		if (!ret)
+			return spidx[mid] + len + 1;
+		else if (ret < 0)
+			lo = mid + 1;
+		else
+			hi = mid - 1;
+	}
 	return NULL;
+}
+
+/* the nth suggestion of sugs, NULL past the last one */
+static char *spell_sug(char *sugs, int n, int *len)
+{
+	char *end;
+	for (; n > 1; n--) {
+		if (!(sugs = strchr(sugs, '\'','\'')))
+			return NULL;
+		sugs += sugs[1] == '\'' '\'' ? 2 : 1;
+	}
+	if (!*sugs)
+		return NULL;
+	end = strchr(sugs, '\'','\'');
+	*len = end ? end - sugs : (int)strlen(sugs);
+	return sugs;
 }
 
 static void spell_clear(void)
@@ -666,16 +698,19 @@ static void spell_clear(void)
 	if (spsb)
 		sbuf_free(spsb)
 	spsb = NULL;
+	free(spidx);
+	spidx = NULL;
 	free(sppat);
 	sppat = NULL;
+	spcnt = 0;
 	syn_blockhl = -1;
 	syn_reloadft(syn_addhl(NULL, 5), 0);
 }
 
 static void *ec_spell(char *loc, char *cmd, char *arg)
 {
-	char msg[128], *s, *e, *w, *sug;
-	int ret = 0, cnt = 0, len;
+	char msg[128], *s, *e, *w, *sug, *last = NULL, **miss;
+	int i, n, len, off, cnt = 0, nhl = 0, ret = 0;
 	if (strchr(cmd, '\''!'\'')) {
 		spell_clear();
 		return NULL;
@@ -689,14 +724,14 @@ static void *ec_spell(char *loc, char *cmd, char *arg)
 		return "filetype has no sl slot";
 	sbuf_smake(in, 1024)
 	sbuf_str(in, "!\n")		/* terse mode, only misses are reported */
-	for (int i = 0; i < lbuf_len(xb); i++) {
+	for (i = 0; i < lbuf_len(xb); i++) {
 		sbuf_chr(in, '\''^'\'')	/* the line is text, never a command */
 		sbuf_str(in, lbuf_get(xb, i))
 	}
 	sbuf_nul(in)
 	sbuf_smake(scmd, 128)
 	sbuf_str(scmd, spcmd ? spcmd : spell_cmd)
-	for (int i = 0; i < spell_ftslen; i++)
+	for (i = 0; i < spell_ftslen; i++)
 		if (spell_fts[i].ft == xb_ft) {
 			sbuf_chr(scmd, '\'' '\'')
 			sbuf_str(scmd, spell_fts[i].arg)
@@ -709,52 +744,56 @@ static void *ec_spell(char *loc, char *cmd, char *arg)
 	if (!out)
 		return "fork failed";
 	spell_clear();
+	sbuf_smake(lns, 512)
+	for (s = out->s; (e = strchr(s, '\''\n'\'')); s = e + 1) {
+		*e = '\''\0'\'';
+		last = e > s ? s : last;
+		if ((s[0] == '\''&'\'' || s[0] == '\''#'\'') && s[1] == '\'' '\'' && s[2])
+			sbuf_mem(lns, &s, sizeof(s))
+	}
+	miss = (char **)lns->s;
+	n = lns->s_n / sizeof(*miss);
+	qsort(miss, n, sizeof(*miss), spell_cmp);
 	sbuf_make(spsb, 512)
-	sbuf_nul(spsb)
+	sbuf_smake(offs, 256)
 	sbuf_smake(pat, 256)
 	sbuf_str(pat, "\\<(?:")
-	for (s = out->s; *s; s = *e ? e + 1 : e) {
-		e = strchr(s, '\''\n'\'');
-		e = e ? e : s + strlen(s);
-		/* "& word cnt off: sug, sug" and "# word off" of the pipe protocol */
-		if ((s[0] != '\''&'\'' && s[0] != '\''#'\'') || s[1] != '\'' '\'')
-			continue;
-		w = s + 2;
-		if (!(sug = memchr(w, '\'' '\'', e - w)))
+	for (i = 0; i < n; i++) {
+		if (i && !spell_cmp(&miss[i - 1], &miss[i]))
+			continue;	/* the speller repeats a word per hit */
+		w = miss[i] + 2;
+		if (!(sug = strchr(w, '\'' '\'')))
 			continue;
 		len = sug - w;
-		sug = s[0] == '\''&'\'' ? memchr(w, '\'':'\'', e - w) : NULL;
-		sug = sug && sug + 2 <= e ? sug + 2 : e;
-		if (spell_get(w, len))
-			continue;
+		sug = miss[i][0] == '\''&'\'' ? strchr(sug, '\'':'\'') : NULL;
+		sug = sug && sug[1] ? sug + 2 : "";
+		off = spsb->s_n;
+		sbuf_mem(offs, &off, sizeof(off))
 		sbuf_mem(spsb, w, len)
-		sbuf_chr(spsb, '\''\t'\'')
-		sbuf_mem(spsb, sug, e - sug)
-		sbufn_chr(spsb, '\''\n'\'')
-		if (cnt++)
-			sbuf_chr(pat, '\''|'\'')
-		ex_regesc(pat, w, w + len, 0);
-	}
-	if (ret && !cnt) {
-		/* the last thing the speller said, which tells a missing
-		 * dictionary from a missing speller */
-		for (s = out->s, w = sug = s; *s; s = *e ? e + 1 : e) {
-			e = strchr(s, '\''\n'\'');
-			e = e ? e : s + strlen(s);
-			if (e > s) {
-				w = s;
-				sug = e;
-			}
+		sbuf_chr(spsb, '\''\0'\'')
+		sbuf_str(spsb, sug)
+		sbufn_chr(spsb, '\''\0'\'')
+		cnt++;
+		if (nhl < SPHL) {
+			if (nhl++)
+				sbuf_chr(pat, '\''|'\'')
+			ex_regesc(pat, w, w + len, 0);
 		}
-		if (sug == w) {
-			w = "no output";
-			sug = w + 9;
-		}
-		snprintf(spmsg, sizeof(spmsg), "speller failed: %.*s",
-				(int)(sug - w), w);
 	}
-	sbuf_free(out)
 	sbufn_str(pat, ")\\>")
+	spcnt = cnt;
+	if (spcnt) {
+		spidx = emalloc(spcnt * sizeof(*spidx));
+		for (i = 0; i < spcnt; i++)
+			spidx[i] = spsb->s + ((int *)offs->s)[i];
+	}
+	if (ret && !cnt)	/* the last line tells a missing dictionary
+				 * from a missing speller */
+		snprintf(spmsg, sizeof(spmsg), "speller failed: %s",
+				last ? last : "no output");
+	free(offs->s);
+	free(lns->s);
+	sbuf_free(out)
 	if (!cnt) {
 		free(pat->s);
 		spell_clear();
@@ -765,7 +804,10 @@ static void *ec_spell(char *loc, char *cmd, char *arg)
 		syn_blockhl = -1;
 		syn_reloadft(syn_addhl(sppat, 5), 0);
 	}
-	snprintf(msg, sizeof(msg), "%d misspelled", cnt);
+	if (cnt > nhl)
+		snprintf(msg, sizeof(msg), "%d misspelled, %d highlighted", cnt, nhl);
+	else
+		snprintf(msg, sizeof(msg), "%d misspelled", cnt);
 	ex_print(msg, msg_ft)
 	return NULL;
 }
@@ -829,75 +871,94 @@ static void vc_execute\(int cmd\)
 grp 09??-7m 2220reg p OK vi.c:1649:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:16492sc %? %@2132sc!0?
 ?0?
-%f+ 				word = cs;
-			}
+%f+ 			if \(xmpt > 0\)
+				xmpt = 0;
 		}
-		if \(xhlp && \(k = syn_findhl\(3\)\) >= 0\) \{
-			int row = xrow, off = xoff, row1, off1;
-			led_att la;1??0?
+		term_pos\(xrow - xtop, n \+ vi_lncol\);
+		term_commit\(\);
+		xb->useq \+= xseq;1??0?
 1??+2m 31q0?
-%f+ 				word = cs;
-			}
+%f+ 			if \(xmpt > 0\)
+				xmpt = 0;
 		}4??0?
-4??+2m 3220reg p OK vi.c:1781:a42sc %? %@2152sc!1q0?
-grp 1%f+ 				word = cs;.*?
-			}.*?
+4??+2m 3220reg p OK vi.c:1830:a42sc %? %@2152sc!1q0?
+grp 1%f+ 			if \(xmpt > 0\).*?
+				xmpt = 0;.*?
 (		})7??0?
-grp 07??m 3220reg p OK vi.c:1781:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 					vi_mod \|= 1;
-				}
-				free\(word\);.*(			if \(!led_attsb\))
-				sbuf_make\(led_attsb, sizeof\(la\) \* 2\)
-			if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{8??0?
-grp 08??-4m 3220reg p OK vi.c:1781:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 			if \(\(cs = vi_curword\(xb, xrow, xoff, xhlw, 0\)\)\) \{
-				if \(!word \|\| strcmp\(word, cs\)\) \{
-					syn_reloadft\(syn_addhl\(cs, 1\), 0\);.*(				row1 = row; off1 = off;)
-				if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{
-					la\.s = ln;9??0?
-grp 09??-7m 3220reg p OK vi.c:1781:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:17812sc %? %@2132sc!0?
-'\''1i /* replace the misspelled word under the cursor with its vi_arg suggestion */
+grp 07??m 3220reg p OK vi.c:1830:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			xrows -= term_resized != vi_status;
+			vi_status = term_resized;
+			vc_status\(vi_tsm\);.*(	if \(--xgrec == 0\) \{)
+		term_pos\(xrows - !vi_status, 0\);
+		if \(xmpt > 0 && !xpln\)8??0?
+grp 08??-5m 3220reg p OK vi.c:1830:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			vi_drawrow\(xrow\);
+		}
+		if \(vi_status && xmpt < 1\) \{.*(			term_chr\('\''\\n'\''\);)
+		else
+			term_kill\(\);9??0?
+grp 09??-8m 3220reg p OK vi.c:1830:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18302sc %? %@2132sc!0?
+'\''1i /* the word under the cursor in ln, its bytes in len, its offset in beg */
+static char *vi_spellword(char *ln, int *len, int *beg)
+{
+	int i, off = ren_noeol(ln, xoff);
+	char **chrs = rstate->chrs;
+	for (i = off; i < rstate->n && uc_kind(chrs[i]) == 1; i++);
+	for (; off > 0 && uc_kind(chrs[off - 1]) == 1; off--);
+	if (beg)
+		*beg = off;
+	*len = chrs[i] - chrs[off];
+	return *len ? chrs[off] : NULL;
+}
+
+/* replace the misspelled word under the cursor with its vi_arg suggestion */
 static void vc_spell(void)
 {
-	char *ln = lbuf_get(xb, xrow), *sug, *nl, *e;
-	int off, end, n = MAX(1, vi_arg);
-	char **chrs;
-	if (!ln || !spsb)
+	char *ln = lbuf_get(xb, xrow), *w, *sug;
+	int beg, len, slen;
+	if (!ln || !spcnt)
 		return;
-	off = ren_noeol(ln, xoff);
-	chrs = rstate->chrs;
-	end = off;
-	while (end < rstate->n && uc_kind(chrs[end]) == 1)
-		end++;
-	while (off > 0 && uc_kind(chrs[off - 1]) == 1)
-		off--;
-	if (end == off || !(sug = spell_get(chrs[off], chrs[end] - chrs[off]))) {
+	w = vi_spellword(ln, &len, &beg);
+	if (!w || !(sug = spell_get(w, len))) {
 		vi_drawmsg_mpt("not misspelled")
 		return;
 	}
-	nl = strchr(sug, '\''\n'\'');
-	for (; n > 1; n--) {
-		if (!(e = memchr(sug, '\'','\'', nl - sug))) {
-			vi_drawmsg_mpt("no such suggestion")
-			return;
-		}
-		sug = e + 1 + (e[1] == '\'' '\'');
-	}
-	e = memchr(sug, '\'','\'', nl - sug);
-	e = e ? e : nl;
-	if (e == sug) {
-		vi_drawmsg_mpt("no suggestions")
+	if (!(sug = spell_sug(sug, MAX(1, vi_arg), &slen))) {
+		vi_drawmsg_mpt("no such suggestion")
 		return;
 	}
-	sbuf_smake(sb, lbuf_s(ln)->len + (e - sug))
-	sbuf_mem(sb, ln, chrs[off] - ln)
-	sbuf_mem(sb, sug, e - sug)
-	sbufn_str(sb, chrs[end])
-	xoff = off;
-	lbuf_edit(xb, sb->s, xrow, xrow + 1, off, off);
+	sbuf_smake(sb, lbuf_s(ln)->len + slen)
+	sbuf_mem(sb, ln, w - ln)
+	sbuf_mem(sb, sug, slen)
+	sbufn_str(sb, w + len)
+	xoff = beg;
+	lbuf_edit(xb, sb->s, xrow, xrow + 1, beg, beg);
 	free(sb->s);
 	rep_record()
+}
+
+/* the numbered suggestions of the misspelled word under the cursor */
+static void vi_spellmsg(void)
+{
+	char *ln = lbuf_get(xb, xrow), *w, *sug, num[32];
+	int len, slen, n;
+	if (!ln || !(w = vi_spellword(ln, &len, NULL)) || !(sug = spell_get(w, len)))
+		return;
+	sbuf_smake(sb, 128)
+	for (n = 1; (w = spell_sug(sug, n, &slen)); n++) {
+		if (sb->s_n + slen + 6 > xcols)	/* one row, " nn:" included */
+			break;
+		if (n > 1)
+			sbuf_chr(sb, '\'' '\'')
+		sbuf_mem(sb, num, itoa(n, num) - num)
+		sbuf_chr(sb, '\'':'\'')
+		sbuf_mem(sb, w, slen)
+	}
+	sbuf_nul(sb)
+	if (sb->s_n)
+		vi_drawmsg_mpt(sb->s)
+	free(sb->s);
 }
 
 ??!219reg vi.c:1125:m12sc %? %@2142sc!0?
@@ -905,33 +966,9 @@ static void vc_spell(void)
 					vc_spell();
 					vi_mod |= 2;
 ??!219reg vi.c:1649:m22sc %? %@2142sc!0?
-'\''3i 		if (spsb) {		/* the suggestions of the word under the cursor */
-			static char *spword;
-			static int spshown;
-			char *spw = vi_curword(xb, xrow, xoff, 1, 0);
-			if (!spw != !spword || (spw && strcmp(spw, spword))) {
-				char *sug = spw ? spell_get(spw + 2, strlen(spw) - 4) : NULL;
-				free(spword);
-				spword = spw;
-				spw = NULL;
-				if (sug) {
-					sbuf_smake(sb, 128)
-					sbuf_mem(sb, spword + 2, strlen(spword) - 4)
-					sbuf_str(sb, ": ")
-					sbuf_mem(sb, sug, strchr(sug, '\''\n'\'') - sug)
-					sbuf_nul(sb)
-					vi_drawmsg_mpt(sb->s)
-					free(sb->s);
-					spshown = 1;
-				} else if (spshown) {
-					vi_drawmsg("");
-					xmpt = 0;
-					spshown = 0;
-				}
-			}
-			free(spw);
-		}
-??!219reg vi.c:1781:m32sc %? %@2142sc!b3m!%ya 98?0?
+'\''3i 		if (spcnt && !xmpt)		/* drawn last, a scroll carries it along */
+			vi_spellmsg();
+??!219reg vi.c:1830:m32sc %? %@2142sc!b3m!%ya 98?0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;
@@ -980,7 +1017,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..7f8909f1 100644
+index c92ec213..13d3ee5a 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -2,6 +2,10 @@
@@ -994,19 +1031,18 @@ index c92ec213..7f8909f1 100644
  #define FTGEN(ft) static char ft##_ft[] = #ft;
  #define FT(ft) ft##_ft
  FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(mbox)
-@@ -45,6 +49,30 @@ struct filetype fts[] = {
+@@ -45,6 +49,29 @@ struct filetype fts[] = {
  };
  const int ftslen = LEN(fts);
  
-+/* aspell's context filter, set to check only what lies between the delimiters:
-+ * SPHASH is a # comment up to the end of the line. The stock comment mode does
-+ * the opposite, it hides comments and checks the code. */
++/* aspell's context filter, checking only "#" comments; the stock comment
++ * mode is the inverse, it hides comments and checks the code */
 +#define SPHASH	"--mode=none --add-filter=context --clear-context-delimiters "\
 +		"--dont-context-visible-first --add-context-delimiters='# \\0'"
 +
-+/* extra speller arguments per filetype, so that sl checks the prose of a
-+ * source file and not its identifiers; these are aspell filter modes, change
-+ * them along with spell_cmd if the speller is not aspell */
++/* per filetype speller arguments, aspell filter modes: sl reads the prose of
++ * a source file, not its identifiers. Change along with spell_cmd for a
++ * speller other than aspell */
 +struct spellft spell_fts[] = {
 +	{FT(c), "--mode=ccpp"},
 +	{FT(js), "--mode=ccpp"},
@@ -1025,18 +1061,17 @@ index c92ec213..7f8909f1 100644
  #define NA	0	/* no attribute */
  #define RE	1	/* red */
  #define GR	2	/* green */
-@@ -63,6 +91,10 @@ const int ftslen = LEN(fts);
+@@ -63,6 +90,9 @@ const int ftslen = LEN(fts);
  #define WH1	15	/* bright white */
  
  #define A(...) (int[]){__VA_ARGS__}
-+/* att of the misspelled words, used by the sl command; the rules sit in a set
-+ * of their own (9) so that a filetype rule matching earlier on the line, a
-+ * comment or a heading, cannot swallow the word */
++/* att of the misspelled words, used by sl; set 9 is theirs alone, an earlier
++ * filetype rule on the line, a comment or a heading, never swallows them */
 +#define SP	A(SYN_BGMK(RE1) | SYN_OWR)
  
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
-@@ -70,6 +102,7 @@ struct highlight hls[] = {
+@@ -70,6 +100,7 @@ struct highlight hls[] = {
  	{_ft, NULL, A(CY1 | SYN_BD), 1, 2},  /* <-- optional, used by hll if set */
  	{_ft, NULL, A(RE1 | SYN_BGMK(GR1)), 0, 3}, /* <-- optional, used by hlp if set */
  	{_ft, NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
@@ -1044,7 +1079,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(c), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*)(?!^//).)*\\*/\
-@@ -98,6 +131,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -98,6 +129,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  	{FT(c), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
  	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE | SYN_SATT, 2, NA, CY1,
  				YE | SYN_SATT, 2, NA, CY1), 5},
@@ -1052,7 +1087,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(roff), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(roff), "^[.'][ \t]*(([sS][hH].*)|(de) (.*)|([^ \t\\\\]{2,}))?.*",
-@@ -107,6 +141,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -107,6 +139,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  	{FT(roff), "\\\\{1,2}[*$fgkmns](?:[^[\\(]|\\(..|\\[[^\\]]*\\])", A(YE)},
  	{FT(roff), "\\\\(?:[^[\\(*$fgkmns]|\\(..|\\[[^\\]]*\\])", A(YE)},
  	{FT(roff), "\\$[^$]+\\$", A(YE)},
@@ -1060,7 +1095,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(tex), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(tex), NULL, A(RE1), 0, 1},
-@@ -114,6 +149,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -114,6 +147,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  		A(BL | SYN_BD, NA, YE, NA, MA)},
  	{FT(tex), "\\$[^$]+\\$", A(YE)},
  	{FT(tex), "%.*", A(GR | SYN_IT)},
@@ -1068,7 +1103,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(mbox), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(mbox), NULL, A(RE1), 0, 1},
-@@ -124,6 +160,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -124,6 +158,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  	{FT(mbox), "^Cc: (.*)", A(CY | SYN_BD, MA | SYN_BD)},
  	{FT(mbox), "^[-A-Za-z]+: .+", A(CY | SYN_BD)},
  	{FT(mbox), "^> .*", A(GR | SYN_IT)},
@@ -1076,7 +1111,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(mk), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(mk), NULL, A(RE1), 0, 1},
-@@ -131,6 +168,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -131,6 +166,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  	{FT(mk), "\\$[\\({][a-zA-Z0-9_]+[\\)}]|\\$\\$", A(YE)},
  	{FT(mk), "#.*", A(GR | SYN_IT)},
  	{FT(mk), "([A-Za-z_%.\\-]+):", A(NA, SYN_BD)},
@@ -1084,7 +1119,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(sh), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(sh), NULL, A(RE1), 0, 1},
-@@ -143,6 +181,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -143,6 +179,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  	{FT(sh), "\\$(?:\\{[^}]+}|[a-zA-Z_0-9]+|[!#$?*@-])", A(RE)},
  	{FT(sh), "^([a-zA-Z_0-9]* *\\(\\)) *\\{", A(NA, SYN_BD)},
  	{FT(sh), "^\\. .*", A(SYN_BD)},
@@ -1092,7 +1127,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(py), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(py), NULL, A(RE1), 0, 1},
-@@ -155,6 +194,7 @@ for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)
+@@ -155,6 +192,7 @@ for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)
  		A(CY | SYN_BLK, SYN_BSE | SYN_BSDP | SYN_BEDP)},
  	{FT(py), "[\"](?:\\\\\"|[^\"])*?[\"]", A(BL)},
  	{FT(py), "['](?:\\\\'|[^'])*?[']", A(BL)},
@@ -1100,7 +1135,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(js), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(js), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?![\"'`]))",
-@@ -173,6 +213,7 @@ length|Math|NaN|name|Number|Object|prototype|String|toString|undefined|valueOf))
+@@ -173,6 +211,7 @@ length|Math|NaN|name|Number|Object|prototype|String|toString|undefined|valueOf))
  	{FT(js), "'(?:[^'\\\\]|\\\\.)*'", A(MA)},
  	{FT(js), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
  	{FT(js), "`(?:[^`\\\\]|\\\\.)*`", A(MA)},
@@ -1108,7 +1143,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(html), "<(/)?(?:[^>](?:\".*?\")*(?:'.*?')*(?:<.*?>)*)+>", A(YE, MA1), 1},
  	{FT(html), "^(?:[ \t.,#*:a-zA-Z0-9_-]+(?:\\(.*\\))*(?:\\[.*\\])*[ \t+~>]?)*(?=^\\{)", A(WH1), 2},
-@@ -227,12 +268,14 @@ fr|deg|rad|turn|grad|ms|s|hz|khz|dpi|dpcm|dppx|%|))\\>", A(RE1 | SYN_ATT, 4, 69,
+@@ -227,12 +266,14 @@ fr|deg|rad|turn|grad|ms|s|hz|khz|dpi|dpcm|dppx|%|))\\>", A(RE1 | SYN_ATT, 4, 69,
  	{FT(html), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(html), NULL, A(RE1), 0, 1},
  	{FT(html), NULL, A(AY | SYN_BGMK(RE1)), 0, 3},
@@ -1123,7 +1158,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(go), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(go), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?#-1)(?<\".*\\*/.*\"))",
-@@ -251,6 +294,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -251,6 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  	{FT(go), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
  	{FT(go), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{2}|\\\\u[0-9a-fA-F]{4}|\\\\U[0-9a-fA-F]{8}|\\\\[0-7]{3})'", A(MA)},
  	{FT(go), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|0[oO][0-7]+|0[bB][01]+|[0-9]+\\.?[0-9eEi]*|[0-9]+)\\>", A(RE1)},
@@ -1131,7 +1166,7 @@ index c92ec213..7f8909f1 100644
  
  	{FT(md), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(md), NULL, A(RE1), 0, 1},
-@@ -274,6 +318,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -274,6 +316,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  	{FT(md), "^[ \t]*[0-9]+[.] ", A(YE)},
  	{FT(md), "[[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(CY)},
  	{FT(md), "![[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(MA)},
@@ -1139,7 +1174,7 @@ index c92ec213..7f8909f1 100644
  
  	{fm_ft, "^.+\n$", A(AY1), 1},
  	{fm_ft, "(^\\.?\\.?)/|(\\.\\.(/))|(?:[^/]+/)+", A(CY, BL, BL, CY), 2},
-@@ -298,7 +343,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -298,7 +341,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
  ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
@@ -1149,28 +1184,62 @@ index c92ec213..7f8909f1 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 561030c5..38828598 100644
+index 561030c5..19a13a97 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1316,6 +1316,132 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
+@@ -1316,6 +1316,176 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
-+/* misspelled words and their suggestions, one "word\tsug, sug\n" per word */
++/* misspelled words and their suggestions, "word\0sug, sug\0" per entry */
 +static sbuf *spsb;
++static char **spidx;		/* spsb entries, sorted by word */
++static int spcnt;		/* entries in spidx */
 +static char *sppat;		/* the armed misspelled words pattern */
 +static char *spcmd;		/* the speller in use */
 +static char spmsg[128];		/* the speller's own complaint, forwarded */
++#define SPHL	4000		/* pattern alternations, regex.c fits 4096 */
++
++/* speller lines by word, "& word cnt off: sug, sug" and "# word off" */
++static int spell_cmp(const void *v1, const void *v2)
++{
++	char *s1 = *(char *const *)v1 + 2, *s2 = *(char *const *)v2 + 2;
++	for (; *s1 == *s2 && *s1 && *s1 != ' '; s1++, s2++);
++	return (unsigned char)*s1 - (unsigned char)*s2;
++}
 +
 +/* the suggestions of a misspelled word, NULL when it is spelled correctly */
 +static char *spell_get(char *word, int len)
 +{
-+	if (!spsb)
-+		return NULL;
-+	for (char *s = spsb->s; *s; s = strchr(s, '\n') + 1)
-+		if (!strncmp(s, word, len) && s[len] == '\t')
-+			return s + len + 1;
++	int lo = 0, hi = spcnt - 1, mid, ret;
++	while (lo <= hi) {
++		mid = (lo + hi) / 2;
++		ret = strncmp(spidx[mid], word, len);
++		ret = ret ? ret : (unsigned char)spidx[mid][len];
++		if (!ret)
++			return spidx[mid] + len + 1;
++		else if (ret < 0)
++			lo = mid + 1;
++		else
++			hi = mid - 1;
++	}
 +	return NULL;
++}
++
++/* the nth suggestion of sugs, NULL past the last one */
++static char *spell_sug(char *sugs, int n, int *len)
++{
++	char *end;
++	for (; n > 1; n--) {
++		if (!(sugs = strchr(sugs, ',')))
++			return NULL;
++		sugs += sugs[1] == ' ' ? 2 : 1;
++	}
++	if (!*sugs)
++		return NULL;
++	end = strchr(sugs, ',');
++	*len = end ? end - sugs : (int)strlen(sugs);
++	return sugs;
 +}
 +
 +static void spell_clear(void)
@@ -1178,16 +1247,19 @@ index 561030c5..38828598 100644
 +	if (spsb)
 +		sbuf_free(spsb)
 +	spsb = NULL;
++	free(spidx);
++	spidx = NULL;
 +	free(sppat);
 +	sppat = NULL;
++	spcnt = 0;
 +	syn_blockhl = -1;
 +	syn_reloadft(syn_addhl(NULL, 5), 0);
 +}
 +
 +static void *ec_spell(char *loc, char *cmd, char *arg)
 +{
-+	char msg[128], *s, *e, *w, *sug;
-+	int ret = 0, cnt = 0, len;
++	char msg[128], *s, *e, *w, *sug, *last = NULL, **miss;
++	int i, n, len, off, cnt = 0, nhl = 0, ret = 0;
 +	if (strchr(cmd, '!')) {
 +		spell_clear();
 +		return NULL;
@@ -1201,14 +1273,14 @@ index 561030c5..38828598 100644
 +		return "filetype has no sl slot";
 +	sbuf_smake(in, 1024)
 +	sbuf_str(in, "!\n")		/* terse mode, only misses are reported */
-+	for (int i = 0; i < lbuf_len(xb); i++) {
++	for (i = 0; i < lbuf_len(xb); i++) {
 +		sbuf_chr(in, '^')	/* the line is text, never a command */
 +		sbuf_str(in, lbuf_get(xb, i))
 +	}
 +	sbuf_nul(in)
 +	sbuf_smake(scmd, 128)
 +	sbuf_str(scmd, spcmd ? spcmd : spell_cmd)
-+	for (int i = 0; i < spell_ftslen; i++)
++	for (i = 0; i < spell_ftslen; i++)
 +		if (spell_fts[i].ft == xb_ft) {
 +			sbuf_chr(scmd, ' ')
 +			sbuf_str(scmd, spell_fts[i].arg)
@@ -1221,52 +1293,56 @@ index 561030c5..38828598 100644
 +	if (!out)
 +		return "fork failed";
 +	spell_clear();
++	sbuf_smake(lns, 512)
++	for (s = out->s; (e = strchr(s, '\n')); s = e + 1) {
++		*e = '\0';
++		last = e > s ? s : last;
++		if ((s[0] == '&' || s[0] == '#') && s[1] == ' ' && s[2])
++			sbuf_mem(lns, &s, sizeof(s))
++	}
++	miss = (char **)lns->s;
++	n = lns->s_n / sizeof(*miss);
++	qsort(miss, n, sizeof(*miss), spell_cmp);
 +	sbuf_make(spsb, 512)
-+	sbuf_nul(spsb)
++	sbuf_smake(offs, 256)
 +	sbuf_smake(pat, 256)
 +	sbuf_str(pat, "\\<(?:")
-+	for (s = out->s; *s; s = *e ? e + 1 : e) {
-+		e = strchr(s, '\n');
-+		e = e ? e : s + strlen(s);
-+		/* "& word cnt off: sug, sug" and "# word off" of the pipe protocol */
-+		if ((s[0] != '&' && s[0] != '#') || s[1] != ' ')
-+			continue;
-+		w = s + 2;
-+		if (!(sug = memchr(w, ' ', e - w)))
++	for (i = 0; i < n; i++) {
++		if (i && !spell_cmp(&miss[i - 1], &miss[i]))
++			continue;	/* the speller repeats a word per hit */
++		w = miss[i] + 2;
++		if (!(sug = strchr(w, ' ')))
 +			continue;
 +		len = sug - w;
-+		sug = s[0] == '&' ? memchr(w, ':', e - w) : NULL;
-+		sug = sug && sug + 2 <= e ? sug + 2 : e;
-+		if (spell_get(w, len))
-+			continue;
++		sug = miss[i][0] == '&' ? strchr(sug, ':') : NULL;
++		sug = sug && sug[1] ? sug + 2 : "";
++		off = spsb->s_n;
++		sbuf_mem(offs, &off, sizeof(off))
 +		sbuf_mem(spsb, w, len)
-+		sbuf_chr(spsb, '\t')
-+		sbuf_mem(spsb, sug, e - sug)
-+		sbufn_chr(spsb, '\n')
-+		if (cnt++)
-+			sbuf_chr(pat, '|')
-+		ex_regesc(pat, w, w + len, 0);
-+	}
-+	if (ret && !cnt) {
-+		/* the last thing the speller said, which tells a missing
-+		 * dictionary from a missing speller */
-+		for (s = out->s, w = sug = s; *s; s = *e ? e + 1 : e) {
-+			e = strchr(s, '\n');
-+			e = e ? e : s + strlen(s);
-+			if (e > s) {
-+				w = s;
-+				sug = e;
-+			}
++		sbuf_chr(spsb, '\0')
++		sbuf_str(spsb, sug)
++		sbufn_chr(spsb, '\0')
++		cnt++;
++		if (nhl < SPHL) {
++			if (nhl++)
++				sbuf_chr(pat, '|')
++			ex_regesc(pat, w, w + len, 0);
 +		}
-+		if (sug == w) {
-+			w = "no output";
-+			sug = w + 9;
-+		}
-+		snprintf(spmsg, sizeof(spmsg), "speller failed: %.*s",
-+				(int)(sug - w), w);
 +	}
-+	sbuf_free(out)
 +	sbufn_str(pat, ")\\>")
++	spcnt = cnt;
++	if (spcnt) {
++		spidx = emalloc(spcnt * sizeof(*spidx));
++		for (i = 0; i < spcnt; i++)
++			spidx[i] = spsb->s + ((int *)offs->s)[i];
++	}
++	if (ret && !cnt)	/* the last line tells a missing dictionary
++				 * from a missing speller */
++		snprintf(spmsg, sizeof(spmsg), "speller failed: %s",
++				last ? last : "no output");
++	free(offs->s);
++	free(lns->s);
++	sbuf_free(out)
 +	if (!cnt) {
 +		free(pat->s);
 +		spell_clear();
@@ -1277,7 +1353,10 @@ index 561030c5..38828598 100644
 +		syn_blockhl = -1;
 +		syn_reloadft(syn_addhl(sppat, 5), 0);
 +	}
-+	snprintf(msg, sizeof(msg), "%d misspelled", cnt);
++	if (cnt > nhl)
++		snprintf(msg, sizeof(msg), "%d misspelled, %d highlighted", cnt, nhl);
++	else
++		snprintf(msg, sizeof(msg), "%d misspelled", cnt);
 +	ex_print(msg, msg_ft)
 +	return NULL;
 +}
@@ -1285,7 +1364,7 @@ index 561030c5..38828598 100644
  static void *ec_cmap(char *loc, char *cmd, char *arg)
  {
  	if (arg[0])
-@@ -1771,6 +1897,8 @@ static struct excmd {
+@@ -1771,6 +1941,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -1295,60 +1374,79 @@ index 561030c5..38828598 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/vi.c b/vi.c
-index c4d07045..6af8885d 100644
+index c4d07045..cba4efef 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1123,6 +1123,49 @@ static int vc_replace(void)
+@@ -1123,6 +1123,68 @@ static int vc_replace(void)
  	return cs[0] == '\n' ? 1 : 2;
  }
  
++/* the word under the cursor in ln, its bytes in len, its offset in beg */
++static char *vi_spellword(char *ln, int *len, int *beg)
++{
++	int i, off = ren_noeol(ln, xoff);
++	char **chrs = rstate->chrs;
++	for (i = off; i < rstate->n && uc_kind(chrs[i]) == 1; i++);
++	for (; off > 0 && uc_kind(chrs[off - 1]) == 1; off--);
++	if (beg)
++		*beg = off;
++	*len = chrs[i] - chrs[off];
++	return *len ? chrs[off] : NULL;
++}
++
 +/* replace the misspelled word under the cursor with its vi_arg suggestion */
 +static void vc_spell(void)
 +{
-+	char *ln = lbuf_get(xb, xrow), *sug, *nl, *e;
-+	int off, end, n = MAX(1, vi_arg);
-+	char **chrs;
-+	if (!ln || !spsb)
++	char *ln = lbuf_get(xb, xrow), *w, *sug;
++	int beg, len, slen;
++	if (!ln || !spcnt)
 +		return;
-+	off = ren_noeol(ln, xoff);
-+	chrs = rstate->chrs;
-+	end = off;
-+	while (end < rstate->n && uc_kind(chrs[end]) == 1)
-+		end++;
-+	while (off > 0 && uc_kind(chrs[off - 1]) == 1)
-+		off--;
-+	if (end == off || !(sug = spell_get(chrs[off], chrs[end] - chrs[off]))) {
++	w = vi_spellword(ln, &len, &beg);
++	if (!w || !(sug = spell_get(w, len))) {
 +		vi_drawmsg_mpt("not misspelled")
 +		return;
 +	}
-+	nl = strchr(sug, '\n');
-+	for (; n > 1; n--) {
-+		if (!(e = memchr(sug, ',', nl - sug))) {
-+			vi_drawmsg_mpt("no such suggestion")
-+			return;
-+		}
-+		sug = e + 1 + (e[1] == ' ');
-+	}
-+	e = memchr(sug, ',', nl - sug);
-+	e = e ? e : nl;
-+	if (e == sug) {
-+		vi_drawmsg_mpt("no suggestions")
++	if (!(sug = spell_sug(sug, MAX(1, vi_arg), &slen))) {
++		vi_drawmsg_mpt("no such suggestion")
 +		return;
 +	}
-+	sbuf_smake(sb, lbuf_s(ln)->len + (e - sug))
-+	sbuf_mem(sb, ln, chrs[off] - ln)
-+	sbuf_mem(sb, sug, e - sug)
-+	sbufn_str(sb, chrs[end])
-+	xoff = off;
-+	lbuf_edit(xb, sb->s, xrow, xrow + 1, off, off);
++	sbuf_smake(sb, lbuf_s(ln)->len + slen)
++	sbuf_mem(sb, ln, w - ln)
++	sbuf_mem(sb, sug, slen)
++	sbufn_str(sb, w + len)
++	xoff = beg;
++	lbuf_edit(xb, sb->s, xrow, xrow + 1, beg, beg);
 +	free(sb->s);
 +	rep_record()
++}
++
++/* the numbered suggestions of the misspelled word under the cursor */
++static void vi_spellmsg(void)
++{
++	char *ln = lbuf_get(xb, xrow), *w, *sug, num[32];
++	int len, slen, n;
++	if (!ln || !(w = vi_spellword(ln, &len, NULL)) || !(sug = spell_get(w, len)))
++		return;
++	sbuf_smake(sb, 128)
++	for (n = 1; (w = spell_sug(sug, n, &slen)); n++) {
++		if (sb->s_n + slen + 6 > xcols)	/* one row, " nn:" included */
++			break;
++		if (n > 1)
++			sbuf_chr(sb, ' ')
++		sbuf_mem(sb, num, itoa(n, num) - num)
++		sbuf_chr(sb, ':')
++		sbuf_mem(sb, w, slen)
++	}
++	sbuf_nul(sb)
++	if (sb->s_n)
++		vi_drawmsg_mpt(sb->s)
++	free(sb->s);
 +}
 +
  static void vc_execute(int cmd)
  {
  	static int exec_buf = -1;
-@@ -1647,6 +1690,9 @@ void vi(int init)
+@@ -1647,6 +1709,9 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1358,39 +1456,15 @@ index c4d07045..6af8885d 100644
  				} else if (k == '~' || k == 'u' || k == 'U')
  					vc_motion(k);
  				break;
-@@ -1779,6 +1825,32 @@ void vi(int init)
- 				word = cs;
- 			}
+@@ -1828,6 +1893,8 @@ void vi(int init)
+ 			if (xmpt > 0)
+ 				xmpt = 0;
  		}
-+		if (spsb) {		/* the suggestions of the word under the cursor */
-+			static char *spword;
-+			static int spshown;
-+			char *spw = vi_curword(xb, xrow, xoff, 1, 0);
-+			if (!spw != !spword || (spw && strcmp(spw, spword))) {
-+				char *sug = spw ? spell_get(spw + 2, strlen(spw) - 4) : NULL;
-+				free(spword);
-+				spword = spw;
-+				spw = NULL;
-+				if (sug) {
-+					sbuf_smake(sb, 128)
-+					sbuf_mem(sb, spword + 2, strlen(spword) - 4)
-+					sbuf_str(sb, ": ")
-+					sbuf_mem(sb, sug, strchr(sug, '\n') - sug)
-+					sbuf_nul(sb)
-+					vi_drawmsg_mpt(sb->s)
-+					free(sb->s);
-+					spshown = 1;
-+				} else if (spshown) {
-+					vi_drawmsg("");
-+					xmpt = 0;
-+					spshown = 0;
-+				}
-+			}
-+			free(spw);
-+		}
- 		if (xhlp && (k = syn_findhl(3)) >= 0) {
- 			int row = xrow, off = xoff, row1, off1;
- 			led_att la;
++		if (spcnt && !xmpt)		/* drawn last, a scroll carries it along */
++			vi_spellmsg();
+ 		term_pos(xrow - xtop, n + vi_lncol);
+ 		term_commit();
+ 		xb->useq += xseq;
 diff --git a/vi.h b/vi.h
 index e5018fa9..c67582ad 100644
 --- a/vi.h
