@@ -397,8 +397,7 @@ _EO(lw,
 	xlw = !*arg ? (xlw ? 0 : INT_MAX) : eo_val(arg);
 	xleft = 0;
 	xtopsub = 0;
-	rstates[0].s = NULL;
-	rstates[1].s = NULL;
+	RST_NULL(0, 1)
 	return NULL;
 )
 
@@ -4031,7 +4030,7 @@ static int vi_drawrow(int row, int trow)
 '\''10s/0\)/0 && trow >= vi_rowbeg)/??!219reg vi.c:205:m102sc %? %@2142sc!0?
 '\''11s/row - xtop/trow/??!219reg vi.c:207:m112sc %? %@2142sc!0?
 '\''12c 		if (trow >= vi_rowbeg)
-			RS(2, led_prender(tmp, trow, 0, 0, l1))
+			RST(2, led_prender(tmp, trow, 0, 0, l1))
 		else
 			rstate = rstates;
 ??!219reg vi.c:210:m122sc %? %@2142sc!0?
@@ -5553,17 +5552,17 @@ static int vi_rowbeg, vi_rowend;
 %f+ 			}
 		}
 		if \(trow >= vi_rowbeg\)
-			RS\(2, led_prender\(tmp, trow, 0, 0, l1\)\)
+			RST\(2, led_prender\(tmp, trow, 0, 0, l1\)\)
 		else
 			rstate = rstates;
 		restore\(syn_blockhl\)1??0?
 1??+3m 171q0?
-%f+ 			RS\(2, led_prender\(tmp, trow, 0, 0, l1\)\)
+%f+ 			RST\(2, led_prender\(tmp, trow, 0, 0, l1\)\)
 		else
 			rstate = rstates;
 		restore\(syn_blockhl\)2??0?
 2??m 17220reg p OK vi.c:465:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^			RS\(2, led_prender\(tmp, trow, 0, 0, l1\)\)$3??0?
+;0fr.,$f+ ^			RST\(2, led_prender\(tmp, trow, 0, 0, l1\)\)$3??0?
 3??m 17220reg p OK vi.c:465:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			}
 		}
@@ -6980,8 +6979,8 @@ exit 0
  			}
  		}
  		if (trow >= vi_rowbeg)
--			RS(2, led_prender(tmp, trow, 0, 0, l1))
-+			RS(2, led_prender(tmp, scrrow, win_scrcol(), 0, l1))
+-			RST(2, led_prender(tmp, trow, 0, 0, l1))
++			RST(2, led_prender(tmp, scrrow, win_scrcol(), 0, l1))
  		else
  			rstate = rstates;
  		restore(syn_blockhl)
@@ -7380,8 +7379,7 @@ index 14fe45dc..3537dbc1 100644
 +	xlw = !*arg ? (xlw ? 0 : INT_MAX) : eo_val(arg);
 +	xleft = 0;
 +	xtopsub = 0;
-+	rstates[0].s = NULL;
-+	rstates[1].s = NULL;
++	RST_NULL(0, 1)
 +	return NULL;
 +)
 +
@@ -7895,7 +7893,7 @@ index 49b5682c..60d7d0e9 100644
  		}
 -		RST(2, led_prender(tmp, row - xtop, 0, 0, l1))
 +		if (trow >= vi_rowbeg)
-+			RS(2, led_prender(tmp, trow, 0, 0, l1))
++			RST(2, led_prender(tmp, trow, 0, 0, l1))
 +		else
 +			rstate = rstates;
  		restore(syn_blockhl)

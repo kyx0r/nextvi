@@ -2710,7 +2710,7 @@ static void vi_drawdiag(const char *diag, int sev, int r, int col)
 	preserve(int, syn_blockhl, syn_blockhl = -1;)
 	preserve(int, ftidx,)
 	syn_setft(lsp_ft);
-	RS(2, led_prender(sb->s, r, col, 0, xcols - col))
+	RST(2, led_prender(sb->s, r, col, 0, xcols - col))
 	restore(syn_blockhl)
 	restore(ftidx)
 	free(sb->s);
@@ -4727,7 +4727,7 @@ index 49b5682c..a4353bc9 100644
 +	preserve(int, syn_blockhl, syn_blockhl = -1;)
 +	preserve(int, ftidx,)
 +	syn_setft(lsp_ft);
-+	RS(2, led_prender(sb->s, r, col, 0, xcols - col))
++	RST(2, led_prender(sb->s, r, col, 0, xcols - col))
 +	restore(syn_blockhl)
 +	restore(ftidx)
 +	free(sb->s);

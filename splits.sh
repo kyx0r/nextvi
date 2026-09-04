@@ -1259,7 +1259,7 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 ??!219reg led.c:399:m112sc %? %@2142sc!0?
 '\''12s/g\)/g, 1)/??!219reg led.c:519:m122sc %? %@2142sc!0?
 '\''13,#+2c 					for (int left = 0; r < curwin->h; r++) {
-						RS(2, led_crender(is->sug, curwin->y + r,
+						RST(2, led_crender(is->sug, curwin->y + r,
 							curwin->x, left, left+curwin->w))
 						left += curwin->w;
 ??!219reg led.c:567:m132sc %? %@2142sc!0?
@@ -3993,17 +3993,17 @@ static void vi_drawdiag\(const char \*diag, int sev, int r, int col\)
 %f+ 	preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 	preserve\(int, ftidx,\)
 	syn_setft\(lsp_ft\);
-	RS\(2, led_prender\(sb->s, r, col, 0, xcols - col\)\)
+	RST\(2, led_prender\(sb->s, r, col, 0, xcols - col\)\)
 	restore\(syn_blockhl\)
 	restore\(ftidx\)
 	free\(sb->s\);1??0?
 1??+3m 31q0?
-%f+ 	RS\(2, led_prender\(sb->s, r, col, 0, xcols - col\)\)
+%f+ 	RST\(2, led_prender\(sb->s, r, col, 0, xcols - col\)\)
 	restore\(syn_blockhl\)
 	restore\(ftidx\)
 	free\(sb->s\);2??0?
 2??m 3220reg p OK vi.c:164:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	RS\(2, led_prender\(sb->s, r, col, 0, xcols - col\)\)$3??0?
+;0fr.,$f+ ^	RST\(2, led_prender\(sb->s, r, col, 0, xcols - col\)\)$3??0?
 3??m 3220reg p OK vi.c:164:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 	preserve\(int, ftidx,\)
@@ -4190,8 +4190,8 @@ exit 0
  	preserve(int, syn_blockhl, syn_blockhl = -1;)
  	preserve(int, ftidx,)
  	syn_setft(lsp_ft);
--	RS(2, led_prender(sb->s, r, col, 0, xcols - col))
-+	RS(2, led_prender(sb->s, r, wx + col, 0, wcols - col))
+-	RST(2, led_prender(sb->s, r, col, 0, xcols - col))
++	RST(2, led_prender(sb->s, r, wx + col, 0, wcols - col))
  	restore(syn_blockhl)
  	restore(ftidx)
  	free(sb->s);
@@ -4654,7 +4654,7 @@ index ac9ccc64..3fd97b00 100644
 -						RST(2, led_crender(is->sug, r, 0, left, left+xcols))
 -						left += xcols;
 +					for (int left = 0; r < curwin->h; r++) {
-+						RS(2, led_crender(is->sug, curwin->y + r,
++						RST(2, led_crender(is->sug, curwin->y + r,
 +							curwin->x, left, left+curwin->w))
 +						left += curwin->w;
  						if (left >= rstates[2].pos[rstates[2].n])
