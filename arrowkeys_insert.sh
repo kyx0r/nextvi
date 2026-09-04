@@ -900,7 +900,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 43bfe944..ca6bf095 100644
+index ac9ccc64..4f255eb9 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -1060,7 +1060,7 @@ index 43bfe944..ca6bf095 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index c4d07045..b8eeae43 100644
+index 49b5682c..eca84583 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -835,6 +835,8 @@ static int vi_indents(char *ln)

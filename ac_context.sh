@@ -530,7 +530,7 @@ sbuf \*led_attsb;.*(static void file_index\(struct lbuf \*buf\))
 grp 08??-5m 11220reg p OK led.c:560:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			}
 			continue;
-		case TK_CTL\('\''b'\''\):.*(						RS\(2, led_crender\(is->sug, r, 0, left, left\+xcols\)\))
+		case TK_CTL\('\''b'\''\):.*(						RST\(2, led_crender\(is->sug, r, 0, left, left\+xcols\)\))
 						left \+= xcols;
 						if \(left >= rstates\[2]\.pos\[rstates\[2]\.n]\)9??0?
 grp 09??-8m 11220reg p OK led.c:560:a92sc %? %@2152sc!'\''00?
@@ -577,7 +577,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 43bfe944..932ce07d 100644
+index ac9ccc64..315cd7d2 100644
 --- a/led.c
 +++ b/led.c
 @@ -9,25 +9,30 @@ int dstrlen(const char *s, char delim)

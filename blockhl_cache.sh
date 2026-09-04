@@ -452,7 +452,7 @@ static void hl_scan_until(int target_row)
 			i = itoalen\(xtop\+xrows\);8??0?
 grp 08??-9m 3220reg p OK vi.c:172:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		syn_setft\(n_ft\);
-		RS\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
+		RST\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
 		restore\(xorder\).*(		p = c;)
 		if \(lnnum == 1 \|\| lnnum & 4 \|\| lnnum & 8\) \{
 			c = itoa\(abs\(xrow-row\+vi_rshift\), c\);9??0?
@@ -490,7 +490,7 @@ static void hl_scan_until(int target_row)
 			i = itoalen\(xtop\+xrows\);8??0?
 grp 08??-6m 4220reg p OK vi.c:175:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		syn_setft\(n_ft\);
-		RS\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
+		RST\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
 		restore\(xorder\).*(		p = c;)
 		if \(lnnum == 1 \|\| lnnum & 4 \|\| lnnum & 8\) \{
 			c = itoa\(abs\(xrow-row\+vi_rshift\), c\);9??0?
@@ -532,7 +532,7 @@ static void hl_scan_until(int target_row)
 			i = itoalen\(xtop\+xrows\);8??0?
 grp 08??-4m 5220reg p OK vi.c:177:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		syn_setft\(n_ft\);
-		RS\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
+		RST\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
 		restore\(xorder\).*(		p = c;)
 		if \(lnnum == 1 \|\| lnnum & 4 \|\| lnnum & 8\) \{
 			c = itoa\(abs\(xrow-row\+vi_rshift\), c\);9??0?
@@ -597,13 +597,13 @@ static void hl_scan_until(int target_row)
 	}4??0?
 4??+2m 8220reg p OK vi.c:214:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		}
-		RS\(2, led_prender\(tmp, row - xtop, 0, 0, l1\)\)
+		RST\(2, led_prender\(tmp, row - xtop, 0, 0, l1\)\)
 		restore\(syn_blockhl\).*(/\* redraw the screen \*/)
 static void vi_drawagain\(int i\)
 \{8??0?
 grp 08??-5m 8220reg p OK vi.c:214:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				memset\(p, '\'' '\'', strlen\(p\)\);
-				RS\(2, led_prender\(tmp1, row - xtop, l1\+i1, 0, l1\)\)
+				RST\(2, led_prender\(tmp1, row - xtop, l1\+i1, 0, l1\)\)
 			}.*(	for \(; i < xtop \+ xrows; i\+\+\))
 		vi_drawrow\(i\);
 }9??0?
@@ -619,13 +619,13 @@ static void vi_drawagain\(int i\)
 ;0fr.,$f+ ^	led_crender\(s, row - xtop, 0, xleft, xleft \+ xcols\)$4??0?
 4??m 9220reg p OK vi.c:215:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 		}
-		RS\(2, led_prender\(tmp, row - xtop, 0, 0, l1\)\)
+		RST\(2, led_prender\(tmp, row - xtop, 0, 0, l1\)\)
 		restore\(syn_blockhl\).*(/\* redraw the screen \*/)
 static void vi_drawagain\(int i\)
 \{8??0?
 grp 08??-4m 9220reg p OK vi.c:215:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				memset\(p, '\'' '\'', strlen\(p\)\);
-				RS\(2, led_prender\(tmp1, row - xtop, l1\+i1, 0, l1\)\)
+				RST\(2, led_prender\(tmp1, row - xtop, l1\+i1, 0, l1\)\)
 			}.*(	for \(; i < xtop \+ xrows; i\+\+\))
 		vi_drawrow\(i\);
 }9??0?
@@ -660,27 +660,27 @@ extern unsigned char utf8_length\[256];1??0?
 %f> int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);
 void syn_init\(void\);4??0?
-4??+2m 1220reg p OK vi.h:266:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:272:a42sc %? %@2152sc!1q0?
 grp 1%f> int syn_findhl\(int id\);.*?
 int syn_addhl\(char \*reg, int id\);.*?
 (void syn_init\(void\);)7??0?
-grp 07??m 1220reg p OK vi.h:266:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:272:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> char \*syn_filetype\(char \*path\);
 int syn_merge\(int old, int new\);
 void syn_reloadft\(int hl, int flg\);.*(extern int zwlen, def_zwlen;)
 extern int bclen, def_bclen;
 /\* the length of a given utf-8 character \*/8??0?
-grp 08??-4m 1220reg p OK vi.h:266:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:272:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> char \*syn_setft\(char \*ft\);
 void syn_scdir\(int scdir\);
 void syn_highlight\(int \*att, char \*s, int n\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)\(s\)\[0]])
 /\* the unicode codepoint of a given utf-8 character \*/
 #define uc_code\(dst, s, l\) \\9??0?
-grp 09??-7m 1220reg p OK vi.h:266:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:2662sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:272:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:2722sc %? %@2132sc!0?
 '\''1i void syn_setrow(struct lbuf *lb, int row);
 void syn_blockhl_invalidate(void);
-??!219reg vi.h:266:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:272:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'lbuf.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -890,7 +890,7 @@ index facf14cd..486bbcf8 100644
  		return;
  	for (j = 0; j < n; j++)
 diff --git a/vi.c b/vi.c
-index c4d07045..5d53d947 100644
+index 49b5682c..fa75a4a3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,7 @@ for (i = 0, ret = 0;; i++) { \
@@ -947,10 +947,10 @@ index c4d07045..5d53d947 100644
  }
  
 diff --git a/vi.h b/vi.h
-index e5018fa9..1823c621 100644
+index 8f6f3e14..53d116f8 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -264,6 +264,8 @@ void syn_reloadft(int hl, int flg);
+@@ -270,6 +270,8 @@ void syn_reloadft(int hl, int flg);
  int syn_findhl(int id);
  int syn_addhl(char *reg, int id);
  void syn_init(void);

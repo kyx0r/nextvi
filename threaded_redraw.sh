@@ -157,17 +157,17 @@ static int vi_wsel = 1;9??0?
 		if \(vi_mod & 1 \|\| xleft != oleft
 				\|\| \(vi_lnnum && orow != xrow && !\(vi_lnnum == 2\)\)
 				\|\| \(\*vi_word && orow != xrow\)\)2??0?
-2??m 3220reg p OK vi.c:1801:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK vi.c:1800:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		term_record = 1;$3??0?
-3??m 3220reg p OK vi.c:1801:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK vi.c:1800:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				}
 			}
 		}4??0?
-4??+3m 3220reg p OK vi.c:1801:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK vi.c:1800:a42sc %? %@2152sc!1q0?
 %f+ 		if \(vi_mod & 1 \|\| xleft != oleft
 				\|\| \(vi_lnnum && orow != xrow && !\(vi_lnnum == 2\)\)
 				\|\| \(\*vi_word && orow != xrow\)\)5??0?
-5??-1m 3220reg p OK vi.c:1801:a52sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK vi.c:1800:a52sc %? %@2152sc!1q0?
 %f+ .	...
 	...
 	..
@@ -175,25 +175,25 @@ static int vi_wsel = 1;9??0?
 		i..................l.ft .....e..
 ............n....&...... ...x... &. !.v......m... ...
 ..	.\|. .\*.._......&...ow.....r...\)6??0?
-6??+3m 3220reg p OK vi.c:1801:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK vi.c:1800:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				}.*?
 			}.*?
 		}.*?
 (		term_record = 1;)7??0?
-grp 07??m 3220reg p OK vi.c:1801:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.c:1800:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					la\.off = off1;
 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;.*(			vi_drawagain\(xtop\);)
 		else if \(\*vi_word && \(ooff != xoff \|\| vi_mod & 2\)
 				&& xrow\+1 < xtop \+ xrows\)8??0?
-grp 08??-4m 3220reg p OK vi.c:1801:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK vi.c:1800:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					la\.att = hls\[k]\.att\[0];
 					sbuf_mem\(led_attsb, &la, sizeof\(la\)\)
 					la\.s = lbuf_get\(xb, row1\);.*(			vi_drawrow\(xrow\+1\);)
 		else if \(xtop != otop\)
 			vi_drawupdate\(otop - xtop\);9??0?
-grp 09??-7m 3220reg p OK vi.c:1801:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18012sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK vi.c:1800:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18002sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		term_pos\(xrow - xtop, n \+ vi_lncol\);
@@ -203,39 +203,39 @@ static int vi_wsel = 1;9??0?
 1??+3m 41q0?
 %f+ 		xb->useq \+= xseq;
 	}2??0?
-2??m 4220reg p OK vi.c:1833:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.c:1832:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		xb->useq \+= xseq;$3??0?
-3??m 4220reg p OK vi.c:1833:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK vi.c:1832:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		}
 		term_pos\(xrow - xtop, n \+ vi_lncol\);
 		term_commit\(\);4??0?
-4??+3m 4220reg p OK vi.c:1833:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK vi.c:1832:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	}$5??0?
-5??-1m 4220reg p OK vi.c:1833:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 4220reg p OK vi.c:1832:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ 	..
 .......po.....w ..x...... .....l....\).
 ............t..;
 	..b.....q... .....
 .}6??0?
-6??+3m 4220reg p OK vi.c:1833:a62sc %? %@2152sc!1q0?
+6??+3m 4220reg p OK vi.c:1832:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		}.*?
 		term_pos\(xrow - xtop, n \+ vi_lncol\);.*?
 		term_commit\(\);.*?
 (		xb->useq \+= xseq;)7??0?
-grp 07??m 4220reg p OK vi.c:1833:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.c:1832:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			vc_status\(vi_tsm\);
 			if \(xmpt > 0\)
 				xmpt = 0;.*(static void setup_signals\(void\))
 \{
 	struct sigaction sa;8??0?
-grp 08??-16m 4220reg p OK vi.c:1833:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-16m 4220reg p OK vi.c:1832:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(vi_status && xmpt < 1\) \{
 			xrows -= term_resized != vi_status;
 			vi_status = term_resized;.*(	memset\(&sa, 0, sizeof\(sa\)\);)
 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);9??0?
-grp 09??-19m 4220reg p OK vi.c:1833:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18332sc %? %@2132sc!0?
+grp 09??-19m 4220reg p OK vi.c:1832:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18322sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 	if \(--xgrec == 0\) \{
@@ -253,16 +253,16 @@ static int vi_wsel = 1;9??0?
 		else
 			term_kill\(\);
 	}2??0?
-2??m 5220reg p OK vi.c:1835:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK vi.c:1834:a22sc %? %@2152sc!1q0?
 %f+ 	if \(--xgrec == 0\) \{
 		term_pos\(xrows - !vi_status, 0\);
 		if \(xmpt > 0 && !xpln\)
 			term_chr\('\''\\n'\''\);
 		else
 			term_kill\(\);3??0?
-3??m 5220reg p OK vi.c:1835:a32sc %? %@2152sc!1q0?
+3??m 5220reg p OK vi.c:1834:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	}$4??0?
-4??+1m 5220reg p OK vi.c:1835:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 5220reg p OK vi.c:1834:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	.
 ... ...x...c .......
 .	t..m.p........ ......s...u......
@@ -271,23 +271,23 @@ static int vi_wsel = 1;9??0?
 ..e.se
 ......m_...l..;
 .}6??0?
-6??+1m 5220reg p OK vi.c:1835:a62sc %? %@2152sc!1q0?
+6??+1m 5220reg p OK vi.c:1834:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	}.*?
 (	if \(--xgrec == 0\) \{)7??0?
-grp 07??m 5220reg p OK vi.c:1835:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.c:1834:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			vc_status\(vi_tsm\);
 			if \(xmpt > 0\)
 				xmpt = 0;.*(static void setup_signals\(void\))
 \{
 	struct sigaction sa;8??0?
-grp 08??-14m 5220reg p OK vi.c:1835:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-14m 5220reg p OK vi.c:1834:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(vi_status && xmpt < 1\) \{
 			xrows -= term_resized != vi_status;
 			vi_status = term_resized;.*(	memset\(&sa, 0, sizeof\(sa\)\);)
 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);9??0?
-grp 09??-17m 5220reg p OK vi.c:1835:a92sc %? %@2152sc!'\''00?
-1;2;3;4;6;7;8;9??!219reg vi.c:18352sc %? %@2132sc!0?
+grp 09??-17m 5220reg p OK vi.c:1834:a92sc %? %@2152sc!'\''00?
+1;2;3;4;6;7;8;9??!219reg vi.c:18342sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 }
@@ -295,20 +295,20 @@ static int vi_wsel = 1;9??0?
 static void sighandler\(int signo\)1??0?
 1??m 61q0?
 ;0fr.,$f+ ^	}$4??0?
-4??m 6220reg p OK vi.c:1841:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 6220reg p OK vi.c:1840:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 			vc_status\(vi_tsm\);
 			if \(xmpt > 0\)
 				xmpt = 0;.*(static void setup_signals\(void\))
 \{
 	struct sigaction sa;8??0?
-grp 08??-8m 6220reg p OK vi.c:1841:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 6220reg p OK vi.c:1840:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(vi_status && xmpt < 1\) \{
 			xrows -= term_resized != vi_status;
 			vi_status = term_resized;.*(	memset\(&sa, 0, sizeof\(sa\)\);)
 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);9??0?
-grp 09??-11m 6220reg p OK vi.c:1841:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:18412sc %? %@2132sc!0?
+grp 09??-11m 6220reg p OK vi.c:1840:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:18402sc %? %@2132sc!0?
 '\''1i #include <pthread.h>
 #include <sys/resource.h>
 ??!219reg vi.c:15:m12sc %? %@2142sc!0?
@@ -366,7 +366,7 @@ static void *vi_rendloop(void *arg)
 		n = r->pos;
 		pthread_mutex_unlock(&r->mtx);
 		term_record = 1;	/* one frame, one write */
-??!219reg vi.c:1801:m32sc %? %@2142sc!0?
+??!219reg vi.c:1800:m32sc %? %@2142sc!0?
 '\''4c 		pthread_mutex_lock(&r->mtx);
 		r->busy = 0;
 		pthread_cond_signal(&r->done);
@@ -402,7 +402,7 @@ static void vi_rendpost(int mod, int otop, int oleft, int orow, int ooff, int po
 	if (!xquit && vi_rendpend()) {
 		r->skip = mod | 1;
 		return;
-??!219reg vi.c:1833:m42sc %? %@2142sc!0?
+??!219reg vi.c:1832:m42sc %? %@2142sc!0?
 '\''5,#+5c 	r->skip = 0;
 	if (!r->on) {
 		/* musl caps new threads at 128k; give the thread main()'\''s stack */
@@ -415,7 +415,7 @@ static void vi_rendpost(int mod, int otop, int oleft, int orow, int ooff, int po
 			ap = &attr;
 		if (pthread_create(&r->tid, ap, vi_rendloop, r))
 			r->on = -1;
-??!219reg vi.c:1835:m52sc %? %@2142sc!0?
+??!219reg vi.c:1834:m52sc %? %@2142sc!0?
 '\''6i 	pthread_mutex_lock(&r->mtx);
 	r->mod = mod;
 	r->otop = otop;
@@ -428,7 +428,7 @@ static void vi_rendpost(int mod, int otop, int oleft, int orow, int ooff, int po
 	pthread_mutex_unlock(&r->mtx);
 	if (r->on < 0)
 		vi_rendloop(r);
-??!219reg vi.c:1841:m62sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg vi.c:1840:m62sc %? %@2142sc!b3m!%ya 98?0?
 %f> 
 /\* vi\.c: main \*/
 void vi\(int init\);
@@ -439,14 +439,14 @@ extern int vi_lncol;
 %f> 
 /\* vi\.c: main \*/
 void vi\(int init\);4??0?
-4??+2m 1220reg p OK vi.h:547:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:553:a42sc %? %@2152sc!1q0?
 grp 1%f> .*?
 /\* vi\.c: main \*/.*?
 (void vi\(int init\);)7??0?
-grp 07??m 1220reg p OK vi.h:547:a72sc %? %@2152sc!0?
-1;4;7??!219reg vi.h:5472sc %? %@2132sc!0?
+grp 07??m 1220reg p OK vi.h:553:a72sc %? %@2152sc!0?
+1;4;7??!219reg vi.h:5532sc %? %@2132sc!0?
 '\''1i void vi_rendwait(void);
-??!219reg vi.h:547:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:553:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -483,7 +483,7 @@ index c8861702..05951cb2 100644
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
  	return ibuf[ibuf_pos++];
 diff --git a/vi.c b/vi.c
-index c4d07045..81981c9e 100644
+index 49b5682c..99f326b4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@
@@ -495,7 +495,7 @@ index c4d07045..81981c9e 100644
  #include "vi.h"
  #include "conf.c"
  #include "ex.c"
-@@ -23,6 +24,22 @@
+@@ -23,6 +25,22 @@
  #include "term.c"
  #include "uc.c"
  
@@ -518,7 +518,7 @@ index c4d07045..81981c9e 100644
  int vi_hidch;			/* show hidden chars */
  int vi_lncol;			/* line numbers cursor offset */
  static int vi_lnnum;		/* line numbers */
-@@ -1798,7 +1815,43 @@ void vi(int init)
+@@ -1797,7 +1815,43 @@ void vi(int init)
  				}
  			}
  		}
@@ -563,7 +563,7 @@ index c4d07045..81981c9e 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
  				|| (*vi_word && orow != xrow))
-@@ -1830,15 +1883,67 @@ void vi(int init)
+@@ -1829,15 +1883,67 @@ void vi(int init)
  		}
  		term_pos(xrow - xtop, n + vi_lncol);
  		term_commit();
@@ -639,10 +639,10 @@ index c4d07045..81981c9e 100644
  
  static void sighandler(int signo)
 diff --git a/vi.h b/vi.h
-index e5018fa9..07ec1337 100644
+index 8f6f3e14..92f48636 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -545,6 +545,7 @@ char *conf_digraph(int c1, int c2);
+@@ -551,6 +551,7 @@ char *conf_digraph(int c1, int c2);
  
  /* vi.c: main */
  void vi(int init);

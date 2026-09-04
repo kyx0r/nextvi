@@ -720,17 +720,17 @@ extern int bclen, def_bclen;
 extern int zwlen, def_zwlen;
 extern int bclen, def_bclen;
 /\* the length of a given utf-8 character \*/2??0?
-2??m 1220reg p OK vi.h:269:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.h:275:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^extern unsigned char utf8_length\[256];$3??0?
-3??m 1220reg p OK vi.h:269:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.h:275:a32sc %? %@2152sc!fr 981qfr 980?
 %f> void syn_init\(void\);
 
 /\* uc\.c: utf-8 helper functions \*/4??0?
-4??+3m 1220reg p OK vi.h:269:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.h:275:a42sc %? %@2152sc!1q0?
 %f> extern int zwlen, def_zwlen;
 extern int bclen, def_bclen;
 /\* the length of a given utf-8 character \*/5??0?
-5??-1m 1220reg p OK vi.h:269:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK vi.h:275:a52sc %? %@2152sc!1q0?
 %f> ...d..y..i.i.\(..i...
 
 ..........t..8........f.n...o.....
@@ -738,28 +738,28 @@ ex.er. un...... c.a...t.8_l.........].
 ..te...i.. z...., def.....n.
 e..... .........,..e._..le..
 .......l..g.h..f.....v.. ....8...ar.cte....6??0?
-6??+3m 1220reg p OK vi.h:269:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK vi.h:275:a62sc %? %@2152sc!1q0?
 grp 1%f> void syn_init\(void\);.*?
 .*?
 /\* uc\.c: utf-8 helper functions \*/.*?
 (extern unsigned char utf8_length\[256];)7??0?
-grp 07??m 1220reg p OK vi.h:269:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:275:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> void syn_reloadft\(int hl, int flg\);
 int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)\(s\)\[0]])
 /\* the unicode codepoint of a given utf-8 character \*/
 #define uc_code\(dst, s, l\) \\8??0?
-grp 08??-4m 1220reg p OK vi.h:269:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:275:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void syn_highlight\(int \*att, char \*s, int n\);
 char \*syn_filetype\(char \*path\);
 int syn_merge\(int old, int new\);.*(dst = \(unsigned char\)s\[0]; \\)
 l = utf8_length\[dst]; \\
 if \(l == 1\); \\9??0?
-grp 09??-7m 1220reg p OK vi.h:269:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:2692sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:275:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:2752sc %? %@2132sc!0?
 '\''1c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
-??!219reg vi.h:269:m12sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.h:275:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=rstr.sh
 printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 %f> struct lsparams
@@ -843,12 +843,12 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,
 		int nskip, int \*r, int \*o\)
 \{
-	#define NUM_THREADS 41??0?
+	static pthread_attr_t lsattr;	/\* musl caps threads at 128k; main\(\)'\''s stack \*/1??0?
 1??+3m 41q0?
 %f+ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,
 		int nskip, int \*r, int \*o\)
 \{
-	#define NUM_THREADS 42??0?
+	static pthread_attr_t lsattr;	/\* musl caps threads at 128k; main\(\)'\''s stack \*/2??0?
 2??m 4220reg p OK lbuf.c:542:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,$3??0?
 3??m 4220reg p OK lbuf.c:542:a32sc %? %@2152sc!fr 981qfr 980?
@@ -859,7 +859,7 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 4??+3m 4220reg p OK lbuf.c:542:a42sc %? %@2152sc!1q0?
 %f+ 		int nskip, int \*r, int \*o\)
 \{
-	#define NUM_THREADS 45??0?
+	static pthread_attr_t lsattr;	/\* musl caps threads at 128k; main\(\)'\''s stack \*/5??0?
 5??-1m 4220reg p OK lbuf.c:542:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg lbuf.c:542:r2312sc %? %@2132sc!0?
 '\''1s/et/tr/??!219reg lbuf.c:497:r231:m12sc %? %@2142sc!0?
@@ -960,7 +960,7 @@ exit 0
 +int lbuf_search(struct lbuf *lb, rstr *re, int dir, int beg, int end, int pskip,
  		int nskip, int *r, int *o)
  {
- 	#define NUM_THREADS 4
+ 	static pthread_attr_t lsattr;	/* musl caps threads at 128k; main()'s stack */
 --- a/regex.c
 +++ b/regex.c
 @@ -838,8 +838,13 @@
@@ -994,7 +994,7 @@ index 62d18e99..1f0efaa3 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index bce1f5e0..a2e507b2 100644
+index bce1f5e0..202b76bc 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -491,24 +491,32 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -1183,7 +1183,7 @@ index b1002c4e..d80628bb 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index c4d07045..c50c8230 100644
+index 49b5682c..76da5269 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@
@@ -1196,10 +1196,10 @@ index c4d07045..c50c8230 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index e5018fa9..b020244c 100644
+index 8f6f3e14..9da33b63 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -266,7 +266,8 @@ int syn_addhl(char *reg, int id);
+@@ -272,7 +272,8 @@ int syn_addhl(char *reg, int id);
  void syn_init(void);
  
  /* uc.c: utf-8 helper functions */

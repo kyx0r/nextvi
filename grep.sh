@@ -646,24 +646,24 @@ static int rep_len;
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);4??0?
-4??+2m 12220reg p OK vi.c:1865:a42sc %? %@2152sc!1q0?
+4??+2m 12220reg p OK vi.c:1864:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	temp_open\(0, "/hist/", _ft\);.*?
 	temp_open\(1, "/fm/", fm_ft\);.*?
 (	temp_open\(2, "/sc/", _ft\);)7??0?
-grp 07??m 12220reg p OK vi.c:1865:a72sc %? %@2152sc!1q0?
+grp 07??m 12220reg p OK vi.c:1864:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	setup_signals\(\);
 	dir_init\(\);
 	syn_init\(\);.*(			break;)
 		}
 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{8??0?
-grp 08??-4m 12220reg p OK vi.c:1865:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 12220reg p OK vi.c:1864:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> int main\(int argc, char \*argv\[]\)
 \{
 	int i, j;.*(			if \(argv\[i]\[j] == '\''s'\''\))
 				xvis \|= 1\|2;
 			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
-grp 09??-7m 12220reg p OK vi.c:1865:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:18652sc %? %@2132sc!0?
+grp 09??-7m 12220reg p OK vi.c:1864:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18642sc %? %@2132sc!0?
 '\''1s/\(\)/(isbuffer)/??!219reg vi.c:443:m12sc %? %@2142sc!0?
 '\''2s/ret && xrow/isbuffer/??!219reg vi.c:448:m22sc %? %@2142sc!0?
 '\''3s/ c/ again, int c/??!219reg vi.c:459:m32sc %? %@2142sc!0?
@@ -727,7 +727,7 @@ static int rep_len;
 					break;
 ??!219reg vi.c:1415:m112sc %? %@2142sc!0?
 '\''12i 	temp_open(3, "/grep/", grep_ft);
-??!219reg vi.c:1865:m122sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg vi.c:1864:m122sc %? %@2142sc!b3m!%ya 98?0?
 %f> extern int xregs_n;
 extern int xdefreg;
 extern struct buf \*bufs;
@@ -740,17 +740,17 @@ extern struct buf \*ex_pbuf;
 extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)2??0?
-2??m 1220reg p OK vi.h:455:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.h:461:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^extern struct buf tempbufs\[3];$3??0?
-3??m 1220reg p OK vi.h:455:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.h:461:a32sc %? %@2152sc!fr 981qfr 980?
 %f> extern int xregs_n;
 extern int xdefreg;
 extern struct buf \*bufs;4??0?
-4??+3m 1220reg p OK vi.h:455:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.h:461:a42sc %? %@2152sc!1q0?
 %f> extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)5??0?
-5??-1m 1220reg p OK vi.h:455:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK vi.h:461:a52sc %? %@2152sc!1q0?
 %f> .....n ......e.s_.;
 .x......nt...e..e..
 e.............buf...uf..
@@ -758,26 +758,26 @@ e.............buf...uf..
 e.......t.uc........x.....
 .xt.r.......t.......x.pb...
 ..e..ne .......u..b.f..\(b.. >=..e...... .......<.te...u.. ...EN...........6??0?
-6??+3m 1220reg p OK vi.h:455:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK vi.h:461:a62sc %? %@2152sc!1q0?
 grp 1%f> extern int xregs_n;.*?
 extern int xdefreg;.*?
 extern struct buf \*bufs;.*?
 (extern struct buf tempbufs\[3];)7??0?
-grp 07??m 1220reg p OK vi.h:455:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:461:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern sbuf \*xacreg;
 extern rset \*xkwdrs;
 extern sbuf \*\*xregs;.*(#define xb_path ex_buf->path)
 #define xb_ft ex_buf->ft
 #define xb ex_buf->lb8??0?
-grp 08??-4m 1220reg p OK vi.h:455:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:461:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xsep;
 extern int xesc;
 extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 	xrow = buf->row; \\
 	xoff = buf->off; \\9??0?
-grp 09??-7m 1220reg p OK vi.h:455:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:4552sc %? %@2132sc!0?
-'\''1s/3/4/??!219reg vi.h:455:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+grp 09??-7m 1220reg p OK vi.h:461:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:4612sc %? %@2132sc!0?
+'\''1s/3/4/??!219reg vi.h:461:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -820,7 +820,7 @@ index c92ec213..5c4c77de 100644
  	{ex_ft, ":[ \t]*((((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 561030c5..b342d44b 100644
+index 14fe45dc..3092b5af 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -833,7 +833,7 @@ index 561030c5..b342d44b 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index c4d07045..3a6056a7 100644
+index 49b5682c..cde07b9f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -440,12 +440,12 @@ void dir_calc(char *path)
@@ -962,7 +962,7 @@ index c4d07045..3a6056a7 100644
  				case 'r': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					n = cs ? strlen(cs) : 0;
-@@ -1863,6 +1912,7 @@ int main(int argc, char *argv[])
+@@ -1862,6 +1911,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
@@ -971,10 +971,10 @@ index c4d07045..3a6056a7 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index e5018fa9..5e82fb43 100644
+index 8f6f3e14..d71b6b75 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -452,7 +452,7 @@ extern sbuf **xregs;
+@@ -458,7 +458,7 @@ extern sbuf **xregs;
  extern int xregs_n;
  extern int xdefreg;
  extern struct buf *bufs;

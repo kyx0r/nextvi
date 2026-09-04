@@ -553,24 +553,24 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	EO\(hlp\),
 	EO\(hlr\),
 	EO\(hl\),4??0?
-4??+2m 2220reg p OK ex.c:1792:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1793:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(hlp\),.*?
 	EO\(hlr\),.*?
 (	EO\(hl\),)7??0?
-grp 07??m 2220reg p OK ex.c:1792:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1793:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(order\),
 	EO\(hll\),
 	EO\(hlw\),.*(	EO\(vis\),)
 	\{"", ec_print}, /\* do not remove \*/
 	\{"", ec_print}, /\* do not remove \*/8??0?
-grp 08??-4m 2220reg p OK ex.c:1792:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1793:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"j", ec_join},
 	EO\(ts\),
 	EO\(td\),.*(/\* parse command argument expanding % and ! \*/)
 static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{9??0?
-grp 09??-9m 2220reg p OK ex.c:1792:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17922sc %? %@2132sc!0?
+grp 09??-9m 2220reg p OK ex.c:1793:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17932sc %? %@2132sc!0?
 '\''1i /* walk att exactly like syn_highlight to bound its variable length entries */
 static int hi_walk(int *att, int grps)
 {
@@ -637,7 +637,7 @@ static void *ec_hi(char *loc, char *cmd, char *arg)
 
 ??!219reg ex.c:1318:m12sc %? %@2142sc!0?
 '\''2i 	{"hi", ec_hi},
-??!219reg ex.c:1792:m22sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
+??!219reg ex.c:1793:m22sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -774,7 +774,7 @@ index c92ec213..07375fc6 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 561030c5..6fbb04d0 100644
+index 14fe45dc..04b02d55 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1316,6 +1316,70 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
@@ -848,7 +848,7 @@ index 561030c5..6fbb04d0 100644
  static void *ec_cmap(char *loc, char *cmd, char *arg)
  {
  	if (arg[0])
-@@ -1790,6 +1854,7 @@ static struct excmd {
+@@ -1791,6 +1855,7 @@ static struct excmd {
  	EO(hlp),
  	EO(hlr),
  	EO(hl),

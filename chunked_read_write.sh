@@ -793,7 +793,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 561030c5..73a5102c 100644
+index 14fe45dc..0407467f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -389,10 +389,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
@@ -991,7 +991,7 @@ index bce1f5e0..8f173b3d 100644
  }
  
 diff --git a/vi.h b/vi.h
-index e5018fa9..98b736dc 100644
+index 8f6f3e14..4e8862e4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -156,7 +156,8 @@ struct lbuf {

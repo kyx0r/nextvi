@@ -420,27 +420,27 @@ char \*conf_digraph\(int c1, int c2\);1??0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;4??0?
-4??+2m 1220reg p OK vi.h:541:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:547:a42sc %? %@2152sc!1q0?
 grp 1%f> extern struct placeholder \*ph;.*?
 extern int phlen;.*?
 (extern const int conf_hlrev;)7??0?
-grp 07??m 1220reg p OK vi.h:541:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:547:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int l;		/\* the length of the codepoint \*/
 };
 extern struct placeholder _ph\[];.*(/\* vi\.c: main \*/)
 void vi\(int init\);
 extern int vi_hidch;8??0?
-grp 08??-5m 1220reg p OK vi.h:541:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.h:547:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int cp\[2];	/\* the source character codepoint \*/
 	char d\[8];	/\* the placeholder \*/
 	int wid;	/\* the width of the placeholder \*/.*(extern int vi_lncol;)
 /\* filesystem \*/
 extern rset \*fsincl;9??0?
-grp 09??-8m 1220reg p OK vi.h:541:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:5412sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.h:547:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:5472sc %? %@2132sc!0?
 '\''1i extern const int conf_hlmat;
 extern const int conf_hlmatc;
-??!219reg vi.h:541:m12sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.h:547:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=rstr.sh
 printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 %f>    cursor is given conf_hlmatc instead of conf_hlmat attributes \*/
@@ -739,7 +739,7 @@ index c92ec213..b773f1fe 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index 43bfe944..d0ff32f1 100644
+index ac9ccc64..6666991a 100644
 --- a/led.c
 +++ b/led.c
 @@ -434,6 +434,11 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -763,7 +763,7 @@ index 43bfe944..d0ff32f1 100644
  				sbuf_str(sb, cs)
  		}
 diff --git a/vi.c b/vi.c
-index c4d07045..d5f805b7 100644
+index 49b5682c..983b6858 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -307,13 +307,117 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
@@ -897,10 +897,10 @@ index c4d07045..d5f805b7 100644
  				msg ? dir : -1, 1, row, off)) {
  			if (msg) {
 diff --git a/vi.h b/vi.h
-index e5018fa9..9cf1e7f4 100644
+index 8f6f3e14..8f0baa9c 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -539,6 +539,8 @@ extern struct placeholder _ph[];
+@@ -545,6 +545,8 @@ extern struct placeholder _ph[];
  extern struct placeholder *ph;
  extern int phlen;
  extern const int conf_hlrev;

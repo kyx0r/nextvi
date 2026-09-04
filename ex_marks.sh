@@ -126,17 +126,17 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		sbuf_chr\(sb, \*src\+\+\)
 	}
 	sbuf_chr\(sb, '\''\\0'\''\)2??0?
-2??m 3220reg p OK ex.c:1873:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK ex.c:1874:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		}$3??0?
-3??m 3220reg p OK ex.c:1873:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK ex.c:1874:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		} else if \(\*src == '\'' '\'' \|\| \*src == '\''\\t'\''\) \{
 			src\+\+;
 			continue;4??0?
-4??+3m 3220reg p OK ex.c:1873:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK ex.c:1874:a42sc %? %@2152sc!1q0?
 %f+ 		sbuf_chr\(sb, \*src\+\+\)
 	}
 	sbuf_chr\(sb, '\''\\0'\''\)5??0?
-5??-1m 3220reg p OK ex.c:1873:a52sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK ex.c:1874:a52sc %? %@2152sc!1q0?
 %f+ ..}....e......... =. '\''.. .\|........ .\\.....
 .....c...
 ..	..nt...e;
@@ -144,25 +144,25 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 ...b...c..\(.., ......\)
 .}
 ..b............\\..\)6??0?
-6??+3m 3220reg p OK ex.c:1873:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK ex.c:1874:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		} else if \(\*src == '\'' '\'' \|\| \*src == '\''\\t'\''\) \{.*?
 			src\+\+;.*?
 			continue;.*?
 (		})7??0?
-grp 07??m 3220reg p OK ex.c:1873:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1874:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			} while \(\*src && \(\*src != j \|\| esc\)\);
 			if \(!\*src\)
 				break;.*(	if \(\*src == xsep\) \{)
 		\*idx = LEN\(excmds\) - 1;
 		return src;8??0?
-grp 08??-4m 3220reg p OK ex.c:1873:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1874:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			do \{
 				esc = \*src == i && !esc;
 				sbuf_chr\(sb, \*src\+\+\).*(	for \(i = 0; i < LEN\(excmds\); i\+\+\) \{)
 		for \(j = 0; excmds\[i]\.name\[j]; j\+\+\)
 			if \(!src\[j] \|\| src\[j] != excmds\[i]\.name\[j]\)9??0?
-grp 09??-8m 3220reg p OK ex.c:1873:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:18732sc %? %@2132sc!0?
+grp 09??-8m 3220reg p OK ex.c:1874:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:18742sc %? %@2132sc!0?
 '\''1c 		off = *++(*num);
 		if (uc_isalpha(off))
 			++*num;
@@ -171,7 +171,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 '\''2s/	f/	else f/??!219reg ex.c:259:m22sc %? %@2142sc!0?
 '\''3c 		} else if (*src == '\''\'\'''\'' && uc_isalpha(src[1]))
 			sbuf_chr(sb, *src++)
-??!219reg ex.c:1873:m32sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
+??!219reg ex.c:1874:m32sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -184,7 +184,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 561030c5..51d54881 100644
+index 14fe45dc..10f1bd4a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -254,9 +254,12 @@ static int ex_range(char *ploc, char **num, int n, int *row)
@@ -202,7 +202,7 @@ index 561030c5..51d54881 100644
  			off = off * 10 + (**num - '0');
  		if (lbuf_jump(xb, off, &n, row ? &n : &dir))
  			return -2;
-@@ -1870,7 +1873,8 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
+@@ -1871,7 +1874,8 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  		} else if (*src == ' ' || *src == '\t') {
  			src++;
  			continue;
