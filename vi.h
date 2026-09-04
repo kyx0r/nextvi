@@ -209,7 +209,13 @@ typedef struct {
 } ren_state;
 extern ren_state rstates[3];
 extern ren_state *rstate;
-#define RS(n, func) { rstate = rstates+n; rstate->s = NULL; func; rstate -= n; }
+#define RST(n, func) { rstate = rstates+n; rstate->s = NULL; func; rstate -= n; }
+#define RST_NULL(...) { \
+	int i_[] = {__VA_ARGS__}; \
+	for (int j_ = 0; j_ < LEN(i_); j_++) \
+		rstates[i_[j_]].s = NULL; \
+} \
+
 ren_state *ren_position(char *s);
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
@@ -483,8 +489,8 @@ void ex(void);
 void *ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); ex_regput(':', ln, 0); }
 void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
-#define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
-#define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
+#define ex_cprint2(line, ft, r, c, left, flg) { RST(2, ex_cprint(line, ft, r, c, left, flg)); }
+#define ex_print(line, ft) { RST(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
