@@ -1242,8 +1242,8 @@ static int lsp_write(int fd, const char *s, int len)
 		w = write(fd, s + n, len - n);
 		if (w > 0)
 			n += w;
-		else if (w < 0 && errno != EINTR)
-			return -1;
+		else if (!w || errno != EINTR)
+			return -1;	/* a 0 return would spin here */
 	}
 	return 0;
 }
@@ -3426,7 +3426,7 @@ index 56cb42c6..c749f693 100644
  	for (i = 0; i < lb->mark_n; i++) {	/* updating marks */
 diff --git a/lsp.c b/lsp.c
 new file mode 100644
-index 00000000..106bec2b
+index 00000000..1ea9bc99
 --- /dev/null
 +++ b/lsp.c
 @@ -0,0 +1,1175 @@
@@ -3817,8 +3817,8 @@ index 00000000..106bec2b
 +		w = write(fd, s + n, len - n);
 +		if (w > 0)
 +			n += w;
-+		else if (w < 0 && errno != EINTR)
-+			return -1;
++		else if (!w || errno != EINTR)
++			return -1;	/* a 0 return would spin here */
 +	}
 +	return 0;
 +}
