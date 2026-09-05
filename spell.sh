@@ -532,17 +532,17 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},.*(	\
 %f+ const int hlslen = LEN\(hls\);
 
 /\* ids of optional hls, reset and reloaded on filetype change \*/
-const int hlopts\[] = \{1, 2, 3};
+const int hlopts\[] = \{1, 2};
 const int hloptslen = LEN\(hlopts\);
 
 /\* how to highlight text in the reverse direction \*/1??0?
 1??+3m 181q0?
-%f+ const int hlopts\[] = \{1, 2, 3};
+%f+ const int hlopts\[] = \{1, 2};
 const int hloptslen = LEN\(hlopts\);
 
 /\* how to highlight text in the reverse direction \*/2??0?
 2??m 18220reg p OK conf.c:329:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^const int hlopts\[] = \{1, 2, 3};$3??0?
+;0fr.,$f+ ^const int hlopts\[] = \{1, 2};$3??0?
 3??m 18220reg p OK conf.c:329:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ const int hlslen = LEN\(hls\);
 
@@ -552,18 +552,18 @@ const int hloptslen = LEN\(hlopts\);
 
 /\* how to highlight text in the reverse direction \*/5??0?
 5??-1m 18220reg p OK conf.c:329:a52sc %? %@2152sc!1q0?
-%f+ .o... i....l.l.n....EN\(.....
+%f+ ....t...t.h........L........
 
-....d. o.........l........se. .....el..d.........e......h.......
-...................= .......3}.
-...s....t..lo.t........E..........
+.......o..o...o....h....r.... ..d...lo.....o. ...e........n.....
+.o.s. ..t.......\[..=.......;
+const ....h.......... ............
 
-.\*..o. t.........h. te......t.e...v......ir.c.......6??0?
+.. ....to h.g.....t..e....................r......../6??0?
 6??+3m 18220reg p OK conf.c:329:a62sc %? %@2152sc!1q0?
 grp 1%f+ const int hlslen = LEN\(hls\);.*?
 .*?
 /\* ids of optional hls, reset and reloaded on filetype change \*/.*?
-(const int hlopts\[] = \{1, 2, 3};)7??0?
+(const int hlopts\[] = \{1, 2};)7??0?
 grp 07??m 18220reg p OK conf.c:329:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\* \(\[0-9]\{1,3}%\) \(L\[0-9]\+\) \(C\[0-9]\+\) \(B-\?\[0-9]\+\)\?\.\*\$",
 		A\(AY1 \| SYN_BD, BL, RE1, BL, YE1, GR\)},
@@ -638,7 +638,7 @@ const int spell_ftslen = LEN(spell_fts);
 '\''16i 	{FT(md), NULL, SP, 9, 5},
 ??!219reg conf.c:276:m162sc %? %@2142sc!0?
 '\''17s/sc/sl!?|sc/??!219reg conf.c:301:m172sc %? %@2142sc!0?
-'\''18s/3}/3, 5}/??!219reg conf.c:329:m182sc %? %@2142sc!b1m!%ya 98?0?
+'\''18s/2}/2, 5}/??!219reg conf.c:329:m182sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	return NULL;
 }
 
@@ -1061,8 +1061,6 @@ fi
 
 exit 0
 === PATCH2VI PATCH ===
-diff --git a/conf.c b/conf.c
-index 02147e45..f794645f 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -2,6 +2,10 @@
@@ -1076,7 +1074,7 @@ index 02147e45..f794645f 100644
  #define FTGEN(ft) static char ft##_ft[] = #ft;
  #define FT(ft) ft##_ft
  FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(mbox)
-@@ -45,6 +49,29 @@ struct filetype fts[] = {
+@@ -45,6 +49,29 @@
  };
  const int ftslen = LEN(fts);
  
@@ -1106,7 +1104,7 @@ index 02147e45..f794645f 100644
  #define NA	0	/* no attribute */
  #define RE	1	/* red */
  #define GR	2	/* green */
-@@ -63,6 +90,9 @@ const int ftslen = LEN(fts);
+@@ -63,6 +90,9 @@
  #define WH1	15	/* bright white */
  
  #define A(...) (int[]){__VA_ARGS__}
@@ -1116,7 +1114,7 @@ index 02147e45..f794645f 100644
  
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
-@@ -70,6 +100,7 @@ struct highlight hls[] = {
+@@ -70,6 +100,7 @@
  	{_ft, NULL, A(CY1 | SYN_BD), 1, 2},  /* <-- optional, used by hll if set */
  	{_ft, NULL, A(RE1 | SYN_BGMK(GR1)), 0, 3}, /* <-- optional, used by hlp if set */
  	{_ft, NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
@@ -1124,7 +1122,7 @@ index 02147e45..f794645f 100644
  
  	{FT(c), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*)(?!^//).)*\\*/\
-@@ -98,6 +129,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -98,6 +129,7 @@
  	{FT(c), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
  	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE | SYN_SATT, 2, NA, CY1,
  				YE | SYN_SATT, 2, NA, CY1), 5},
@@ -1132,7 +1130,7 @@ index 02147e45..f794645f 100644
  
  	{FT(roff), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(roff), "^[.'][ \t]*(([sS][hH].*)|(de) (.*)|([^ \t\\\\]{2,}))?.*",
-@@ -107,6 +139,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -107,6 +139,7 @@
  	{FT(roff), "\\\\{1,2}[*$fgkmns](?:[^[\\(]|\\(..|\\[[^\\]]*\\])", A(YE)},
  	{FT(roff), "\\\\(?:[^[\\(*$fgkmns]|\\(..|\\[[^\\]]*\\])", A(YE)},
  	{FT(roff), "\\$[^$]+\\$", A(YE)},
@@ -1140,7 +1138,7 @@ index 02147e45..f794645f 100644
  
  	{FT(tex), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(tex), NULL, A(RE1), 0, 1},
-@@ -114,6 +147,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -114,6 +147,7 @@
  		A(BL | SYN_BD, NA, YE, NA, MA)},
  	{FT(tex), "\\$[^$]+\\$", A(YE)},
  	{FT(tex), "%.*", A(GR | SYN_IT)},
@@ -1148,7 +1146,7 @@ index 02147e45..f794645f 100644
  
  	{FT(mbox), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(mbox), NULL, A(RE1), 0, 1},
-@@ -124,6 +158,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -124,6 +158,7 @@
  	{FT(mbox), "^Cc: (.*)", A(CY | SYN_BD, MA | SYN_BD)},
  	{FT(mbox), "^[-A-Za-z]+: .+", A(CY | SYN_BD)},
  	{FT(mbox), "^> .*", A(GR | SYN_IT)},
@@ -1156,7 +1154,7 @@ index 02147e45..f794645f 100644
  
  	{FT(mk), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(mk), NULL, A(RE1), 0, 1},
-@@ -131,6 +166,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -131,6 +166,7 @@
  	{FT(mk), "\\$[\\({][a-zA-Z0-9_]+[\\)}]|\\$\\$", A(YE)},
  	{FT(mk), "#.*", A(GR | SYN_IT)},
  	{FT(mk), "([A-Za-z_%.\\-]+):", A(NA, SYN_BD)},
@@ -1164,7 +1162,7 @@ index 02147e45..f794645f 100644
  
  	{FT(sh), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(sh), NULL, A(RE1), 0, 1},
-@@ -143,6 +179,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
+@@ -143,6 +179,7 @@
  	{FT(sh), "\\$(?:\\{[^}]+}|[a-zA-Z_0-9]+|[!#$?*@-])", A(RE)},
  	{FT(sh), "^([a-zA-Z_0-9]* *\\(\\)) *\\{", A(NA, SYN_BD)},
  	{FT(sh), "^\\. .*", A(SYN_BD)},
@@ -1172,7 +1170,7 @@ index 02147e45..f794645f 100644
  
  	{FT(py), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(py), NULL, A(RE1), 0, 1},
-@@ -155,6 +192,7 @@ for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)
+@@ -155,6 +192,7 @@
  		A(CY | SYN_BLK, SYN_BSE | SYN_BSDP | SYN_BEDP)},
  	{FT(py), "[\"](?:\\\\\"|[^\"])*?[\"]", A(BL)},
  	{FT(py), "['](?:\\\\'|[^'])*?[']", A(BL)},
@@ -1180,7 +1178,7 @@ index 02147e45..f794645f 100644
  
  	{FT(js), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(js), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?![\"'`]))",
-@@ -173,6 +211,7 @@ length|Math|NaN|name|Number|Object|prototype|String|toString|undefined|valueOf))
+@@ -173,6 +211,7 @@
  	{FT(js), "'(?:[^'\\\\]|\\\\.)*'", A(MA)},
  	{FT(js), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
  	{FT(js), "`(?:[^`\\\\]|\\\\.)*`", A(MA)},
@@ -1188,7 +1186,7 @@ index 02147e45..f794645f 100644
  
  	{FT(html), "<(/)?(?:[^>](?:\".*?\")*(?:'.*?')*(?:<.*?>)*)+>", A(YE, MA1), 1},
  	{FT(html), "^(?:[ \t.,#*:a-zA-Z0-9_-]+(?:\\(.*\\))*(?:\\[.*\\])*[ \t+~>]?)*(?=^\\{)", A(WH1), 2},
-@@ -227,12 +266,14 @@ fr|deg|rad|turn|grad|ms|s|hz|khz|dpi|dpcm|dppx|%|))\\>", A(RE1 | SYN_ATT, 4, 69,
+@@ -227,12 +266,14 @@
  	{FT(html), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(html), NULL, A(RE1), 0, 1},
  	{FT(html), NULL, A(AY | SYN_BGMK(RE1)), 0, 3},
@@ -1203,7 +1201,7 @@ index 02147e45..f794645f 100644
  
  	{FT(go), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(go), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?#-1)(?<\".*\\*/.*\"))",
-@@ -251,6 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -251,6 +292,7 @@
  	{FT(go), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
  	{FT(go), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{2}|\\\\u[0-9a-fA-F]{4}|\\\\U[0-9a-fA-F]{8}|\\\\[0-7]{3})'", A(MA)},
  	{FT(go), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|0[oO][0-7]+|0[bB][01]+|[0-9]+\\.?[0-9eEi]*|[0-9]+)\\>", A(RE1)},
@@ -1211,7 +1209,7 @@ index 02147e45..f794645f 100644
  
  	{FT(md), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(md), NULL, A(RE1), 0, 1},
-@@ -274,6 +316,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -274,6 +316,7 @@
  	{FT(md), "^[ \t]*[0-9]+[.] ", A(YE)},
  	{FT(md), "[[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(CY)},
  	{FT(md), "![[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(MA)},
@@ -1219,7 +1217,7 @@ index 02147e45..f794645f 100644
  
  	{fm_ft, "^.+\n$", A(AY1), 1},
  	{fm_ft, "(^\\.?\\.?)/|(\\.\\.(/))|(?:[^/]+/)+", A(CY, BL, BL, CY), 2},
-@@ -298,7 +341,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -298,7 +341,7 @@
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
  ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
@@ -1228,20 +1226,18 @@ index 02147e45..f794645f 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
-@@ -326,7 +369,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -326,7 +369,7 @@
  const int hlslen = LEN(hls);
  
  /* ids of optional hls, reset and reloaded on filetype change */
--const int hlopts[] = {1, 2, 3};
-+const int hlopts[] = {1, 2, 3, 5};
+-const int hlopts[] = {1, 2};
++const int hlopts[] = {1, 2, 5};
  const int hloptslen = LEN(hlopts);
  
  /* how to highlight text in the reverse direction */
-diff --git a/ex.c b/ex.c
-index b2e59855..afd205b5 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1318,6 +1318,170 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
+@@ -1318,6 +1318,170 @@
  	return NULL;
  }
  
@@ -1412,7 +1408,7 @@ index b2e59855..afd205b5 100644
  static void *ec_cmap(char *loc, char *cmd, char *arg)
  {
  	if (arg[0])
-@@ -1774,6 +1938,8 @@ static struct excmd {
+@@ -1774,6 +1938,8 @@
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -1421,11 +1417,9 @@ index b2e59855..afd205b5 100644
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
-diff --git a/vi.c b/vi.c
-index b5e0f21b..9b08cd2f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1123,6 +1123,68 @@ static int vc_replace(void)
+@@ -1123,6 +1123,68 @@
  	return cs[0] == '\n' ? 1 : 2;
  }
  
@@ -1494,7 +1488,7 @@ index b5e0f21b..9b08cd2f 100644
  static void vc_execute(int cmd)
  {
  	static int exec_buf = -1;
-@@ -1646,6 +1708,9 @@ void vi(int init)
+@@ -1646,6 +1708,9 @@
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1504,7 +1498,7 @@ index b5e0f21b..9b08cd2f 100644
  				} else if (k == '~' || k == 'u' || k == 'U')
  					vc_motion(k);
  				break;
-@@ -1827,6 +1892,8 @@ void vi(int init)
+@@ -1827,6 +1892,8 @@
  			if (xmpt > 0)
  				xmpt = 0;
  		}
@@ -1513,11 +1507,9 @@ index b5e0f21b..9b08cd2f 100644
  		term_pos(xrow - xtop, n + vi_lncol);
  		term_commit();
  		xb->useq += xseq;
-diff --git a/vi.h b/vi.h
-index c5c79dc5..8e244be5 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -547,6 +547,13 @@ extern struct placeholder _ph[];
+@@ -547,6 +547,13 @@
  extern struct placeholder *ph;
  extern int phlen;
  extern const int conf_hlrev;
