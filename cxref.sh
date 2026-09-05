@@ -664,7 +664,8 @@ static char *xref_build(char *sym, int maxdepth)
 			*from++ = '\''\0'\'';
 			if (!xref_resolve(s, from, &start))
 				continue;	/* the resolver is the filter */
-			i = snprintf(key, sizeof(key), "%s:%d", xb_path, start);
+			snprintf(key, sizeof(key), "%s:%d", xb_path, start);
+			i = strlen(key);	/* snprintf returns the untruncated length */
 			if (xref_seen(done, key, i) || xref_bound(xb, start, &end))
 				continue;	/* the bounds are the definition'\''s,
 						 * the head only reaches above it */
@@ -1166,10 +1167,10 @@ index b2e59855..f42c937a 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index b5e0f21b..e02a77a7 100644
+index b5e0f21b..cedd61e4 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -484,6 +484,464 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -484,6 +484,465 @@ static int fs_searchback(int cnt, int *row, int *off)
  	return 0;
  }
  
@@ -1584,7 +1585,8 @@ index b5e0f21b..e02a77a7 100644
 +			*from++ = '\0';
 +			if (!xref_resolve(s, from, &start))
 +				continue;	/* the resolver is the filter */
-+			i = snprintf(key, sizeof(key), "%s:%d", xb_path, start);
++			snprintf(key, sizeof(key), "%s:%d", xb_path, start);
++			i = strlen(key);	/* snprintf returns the untruncated length */
 +			if (xref_seen(done, key, i) || xref_bound(xb, start, &end))
 +				continue;	/* the bounds are the definition's,
 +						 * the head only reaches above it */
@@ -1634,7 +1636,7 @@ index b5e0f21b..e02a77a7 100644
  static char rep_cmd[sizeof(icmd)];	/* the last command */
  static int rep_len;
  #define rep_record() memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos;
-@@ -1272,8 +1730,18 @@ void vi(int init)
+@@ -1272,8 +1731,18 @@ void vi(int init)
  				n = strlen(ln);
  				char buf[n + 4];
  				memcpy(buf, ":e ", 3);
@@ -1655,7 +1657,7 @@ index b5e0f21b..e02a77a7 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1384,6 +1852,10 @@ void vi(int init)
+@@ -1384,6 +1853,10 @@ void vi(int init)
  				case 'v':
  					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
  					break;
@@ -1666,7 +1668,7 @@ index b5e0f21b..e02a77a7 100644
  				case ';':
  					ln = vi_enprompt(":", "!", &k, &n);
  					goto do_excmd;
-@@ -1646,6 +2118,23 @@ void vi(int init)
+@@ -1646,6 +2119,23 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1690,7 +1692,7 @@ index b5e0f21b..e02a77a7 100644
  				} else if (k == '~' || k == 'u' || k == 'U')
  					vc_motion(k);
  				break;
-@@ -1862,6 +2351,7 @@ int main(int argc, char *argv[])
+@@ -1862,6 +2352,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
