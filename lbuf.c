@@ -7,16 +7,24 @@ struct lbuf *lbuf_make(void)
 	return lb;
 }
 
+static void lbuf_rfree(char *ln)
+{
+	for (int i = 0; i < 2; i++)
+		if (rstates[i].s == ln)
+			rstates[i].s = NULL;
+	free(lbuf_s(ln));
+}
+
 static void lopt_done(struct lopt *lo)
 {
 	free(lo->mark);
 	if (!(lo->ref & 2))
 		for (int i = 0; i < lo->n_ins; i++)
-			free(lbuf_s(lo->ins[i]));
+			lbuf_rfree(lo->ins[i]);
 	free(lo->ins);
 	if (!(lo->ref & 1))
 		for (int i = 0; i < lo->n_del; i++)
-			free(lbuf_s(lo->del[i]));
+			lbuf_rfree(lo->del[i]);
 	free(lo->del);
 }
 
@@ -80,7 +88,7 @@ void lbuf_free(struct lbuf *lb)
 {
 	int i;
 	for (i = 0; i < lb->ln_n; i++)
-		free(lbuf_i(lb, i));
+		lbuf_rfree(lb->ln[i]);
 	for (i = 0; i < lb->hist_n; i++)
 		lopt_done(&lb->hist[i]);
 	free(lb->hist);
@@ -226,7 +234,7 @@ int lbuf_rd(struct lbuf *lb, int fd, int beg, int end)
 	struct stat st;
 	long nr;	/* 1048575 caps at 2147481600 on 32 bit */
 	int sz = 1048575, step = 1, n = 0;
-	if (fstat(fd, &st) >= 0 && S_ISREG(st.st_mode))
+	if (fstat(fd, &st) >= 0 && S_ISREG(st.st_mode) && st.st_size)
 		sz = st.st_size >= INT_MAX ? INT_MAX : st.st_size + step;
 	char *s = emalloc(sz--);
 	while ((nr = read(fd, s + n, sz - n)) > 0) {

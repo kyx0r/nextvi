@@ -85,7 +85,9 @@ static int ren_cwid(char *s, int pos)
 	return uc_wid(c);
 }
 
-ren_state rstates[3]; /* 0 = current line, 1 = all other lines, 2 = aux rendering */
+/* 0 = current line, 1 = all other lines,
+2 = aux rendering (never lbuf backed by construction) */
+ren_state rstates[3];
 ren_state *rstate = rstates;
 
 /* specify the screen position of the characters in s */
@@ -268,8 +270,8 @@ char *syn_setft(char *ft)
 {
 	int i;
 	if (ftmidx)
-		for (i = 1; i < 4; i++)
-			syn_addhl(NULL, i);
+		for (i = 0; i < hloptslen; i++)
+			syn_addhl(NULL, hlopts[i]);
 	for (i = 0; i < ftmidx; i++)
 		if (ft == ftmap[i].ft) {
 			ftidx = i;

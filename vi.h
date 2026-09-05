@@ -519,6 +519,8 @@ struct highlight {
 };
 extern struct highlight hls[];
 extern const int hlslen;
+extern const int hlopts[];
+extern const int hloptslen;
 /* direction context: specifies the direction of a whole line */
 struct dircontext {
 	char *pat;
