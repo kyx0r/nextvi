@@ -203,7 +203,7 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 			led_att la;
 			if (!led_attsb)
 				sbuf_make(led_attsb, sizeof(la))
-			for (int i = 0; i < LEN(marks); i++) {
+			for (int i = 0; i < LEN(marks) - 1; i++) {
 				if (lbuf_jump(xb, marks[i], &mrow, &moff))
 					continue;
 				la.s = lbuf_get(xb, mrow);
@@ -266,7 +266,7 @@ index b2e59855..8703b816 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index b5e0f21b..d3eb7185 100644
+index b5e0f21b..6ea99754 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1778,6 +1778,21 @@ void vi(int init)
@@ -279,7 +279,7 @@ index b5e0f21b..d3eb7185 100644
 +			led_att la;
 +			if (!led_attsb)
 +				sbuf_make(led_attsb, sizeof(la))
-+			for (int i = 0; i < LEN(marks); i++) {
++			for (int i = 0; i < LEN(marks) - 1; i++) {
 +				if (lbuf_jump(xb, marks[i], &mrow, &moff))
 +					continue;
 +				la.s = lbuf_get(xb, mrow);
