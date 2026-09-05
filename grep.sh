@@ -118,7 +118,7 @@ FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\).*(struct filetype fts\[] = \
 '\''2i 	{grep_ft, NULL},
 ??!219reg conf.c:39:m22sc %? %@2142sc!0?
 '\''3i 	{grep_ft, "^(.+?):([0-9]+):(.+)", A(MA, GR1, CY, AY1)},
-	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
+	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 6},
 
 ??!219reg conf.c:294:m32sc %? %@2142sc!b1m!%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
@@ -706,7 +706,7 @@ static int rep_len;
 			temp_switch(3, 0);
 			lbuf_jump(xb, '\''['\'', row, off);
 			*off = 0;
-			syn_reloadft(syn_addhl(xregs['\''/'\''] ? xregs['\''/'\'']->s : NULL, 3), xic ? REG_ICASE : 0);
+			syn_reloadft(syn_addhl(xregs['\''/'\''] ? xregs['\''/'\'']->s : NULL, 6), xic ? REG_ICASE : 0);
 ??!219reg vi.c:681:m92sc %? %@2142sc!0?
 '\''10,#+1c 				memcpy(buf+3, ln, n + 1);
 				if (!strcmp(xb_path, "/grep/")) {
@@ -790,7 +790,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 02147e45..02a7230c 100644
+index a51117ca..962d2f12 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -814,7 +814,7 @@ index 02147e45..02a7230c 100644
  	{ac_ft, "[^ \t-/:-@[-^{-~]+$|(.+$)", A(NA, SYN_BGMK(AY1))},
  
 +	{grep_ft, "^(.+?):([0-9]+):(.+)", A(MA, GR1, CY, AY1)},
-+	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 3},
++	{grep_ft, NULL, A(AY | SYN_BGMK(RE1)), 1, 6},
 +
  	{ex_ft, ".+", A(AY1 | SYN_BD), 1},
  	{ex_ft, ":[ \t]*((((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
@@ -833,7 +833,7 @@ index b2e59855..f42c937a 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index b5e0f21b..78ea9bdb 100644
+index b5e0f21b..6df25c3e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -440,12 +440,12 @@ void dir_calc(char *path)
@@ -926,7 +926,7 @@ index b5e0f21b..78ea9bdb 100644
 +			temp_switch(3, 0);
 +			lbuf_jump(xb, '[', row, off);
 +			*off = 0;
-+			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 3), xic ? REG_ICASE : 0);
++			syn_reloadft(syn_addhl(xregs['/'] ? xregs['/']->s : NULL, 6), xic ? REG_ICASE : 0);
  		} else {
  			fspos -= fsdir > 0 ? 1 : 0;
  			if (!fs_searchback(1, row, off)) {
