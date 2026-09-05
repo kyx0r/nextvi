@@ -43,8 +43,10 @@ static void file_index(struct lbuf *buf)
 	int ln_n = lbuf_len(buf), n;
 	rset *rs = rset_smake(xacreg ? xacreg->s : reg,
 		xic ? REG_ICASE | REG_NEWLINE : REG_NEWLINE);
-	if (!rs || grp >= rs->nsubc)
+	if (!rs || grp >= rs->nsubc) {
+		rset_free(rs);
 		return;
+	}
 	int subs[rs->nsubc];
 	sbuf_smake(ibuf, 1024)
 	for (n = 1; n <= acsb->s_n; n++)
@@ -162,7 +164,7 @@ void led_render(char *s0, int cbeg, int cend)
 		for (c = cbeg; c < cend; c++)
 			off[c - cbeg] = c <= r->cmax ? r->col[c] : -1;
 	}
-	if (r->cmax > cterm || cbeg) {
+	if (r->cmax > cterm || cbeg || n > cterm) {
 		i = ctx < 0 ? cterm-1 : 0;
 		o = off[i];
 		if (o >= 0 && cbeg && r->pos[o] < cbeg)
@@ -389,6 +391,7 @@ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
 			rstate->s = NULL;
 			led_crender(cb->s, r, vi_lncol, xleft, xleft + xcols - vi_lncol)
 			free(cb->s);
+			rstate->s = NULL;
 			cs += nl+!!cs[nl];
 			continue;
 		}
@@ -463,7 +466,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
 			if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
 				memmove(&sb->s[ps], &sb->s[ps+1], len - ps - 1);
 				sb->s_n--;
-				pre--;
+				pre -= pre > ps;
 			}
 			break;
 		case TK_CTL(']'):
