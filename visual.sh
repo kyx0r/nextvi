@@ -1176,10 +1176,14 @@ static int vc_visual_op(int cmd)
 					*p++ = '\'','\'';
 					p = itoa(vr2+1, p);
 					if (vi_visual == '\''v'\'') {
+						int o1 = vi_voff, o2 = xoff;
+						if (vi_vrow > xrow ||
+								(vi_vrow == xrow && vi_voff > xoff))
+							swap(&o1, &o2);
 						*p++ = '\'';'\'';
-						p = itoa(vi_voff, p);
+						p = itoa(o1, p);
 						*p++ = '\'';'\'';
-						p = itoa(xoff+1, p);
+						p = itoa(o2 + 1, p);
 					}
 					*p = '\''\0'\'';
 					ln = vi_enprompt(":", range, &k, &n);
@@ -1350,7 +1354,7 @@ index 02147e45..9de39b85 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index b5e0f21b..4fede6d4 100644
+index b5e0f21b..e1cd9d45 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1699,7 +1703,7 @@ index b5e0f21b..4fede6d4 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1446,6 +1718,22 @@ void vi(int init)
+@@ -1446,6 +1718,26 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case ':':
@@ -1710,10 +1714,14 @@ index b5e0f21b..4fede6d4 100644
 +					*p++ = ',';
 +					p = itoa(vr2+1, p);
 +					if (vi_visual == 'v') {
++						int o1 = vi_voff, o2 = xoff;
++						if (vi_vrow > xrow ||
++								(vi_vrow == xrow && vi_voff > xoff))
++							swap(&o1, &o2);
 +						*p++ = ';';
-+						p = itoa(vi_voff, p);
++						p = itoa(o1, p);
 +						*p++ = ';';
-+						p = itoa(xoff+1, p);
++						p = itoa(o2 + 1, p);
 +					}
 +					*p = '\0';
 +					ln = vi_enprompt(":", range, &k, &n);
@@ -1722,7 +1730,7 @@ index b5e0f21b..4fede6d4 100644
  				ln = vi_enprompt(":", NULL, &k, &n);
  				do_excmd:
  				if (k && ln[n]) {
-@@ -1465,7 +1753,15 @@ void vi(int init)
+@@ -1465,7 +1757,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -1738,7 +1746,7 @@ index b5e0f21b..4fede6d4 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1515,6 +1811,10 @@ void vi(int init)
+@@ -1515,6 +1815,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -1749,7 +1757,7 @@ index b5e0f21b..4fede6d4 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto insert_done;
-@@ -1525,6 +1825,14 @@ void vi(int init)
+@@ -1525,6 +1829,14 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1764,7 +1772,7 @@ index b5e0f21b..4fede6d4 100644
  				insert:
  				k = vc_insert(c);
  				insert_done:
-@@ -1646,8 +1954,16 @@ void vi(int init)
+@@ -1646,8 +1958,16 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1782,7 +1790,7 @@ index b5e0f21b..4fede6d4 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1662,16 +1978,25 @@ void vi(int init)
+@@ -1662,16 +1982,25 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1813,7 +1821,7 @@ index b5e0f21b..4fede6d4 100644
  				motion:
  				icmd_pos--;
  				goto re_motion;
-@@ -1737,6 +2062,13 @@ void vi(int init)
+@@ -1737,6 +2066,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -1827,7 +1835,7 @@ index b5e0f21b..4fede6d4 100644
  			default:
  				continue;
  			}
-@@ -1797,6 +2129,8 @@ void vi(int init)
+@@ -1797,6 +2133,8 @@ void vi(int init)
  				}
  			}
  		}
