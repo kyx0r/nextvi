@@ -1060,7 +1060,7 @@ return state; } \
 ??!219reg regex.c:655:m22sc %? %@2142sc!0?
 '\''3c 	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
 ??!219reg regex.c:658:m32sc %? %@2142sc!0?
-?'\''4s/lb\[prog->laidx\+1]/*lb = emalloc(prog->laidx * sizeof(lb[0]))/1??1??1q'\''4s/lb\[(.*)\+1]/*lb = emalloc(\1 * sizeof(lb[0]))/2??2??'\''4220reg p OK regex.c:660:s22sc %? %@2162sc!0?
+?'\''4s/lb\[prog->laidx\+1]/*lb = emalloc((prog->laidx + 1) * sizeof(lb[0]))/1??1??1q'\''4s/lb\[(.*)\+1]/*lb = emalloc((\1 + 1) * sizeof(lb[0]))/2??2??'\''4220reg p OK regex.c:660:s22sc %? %@2162sc!0?
 1;2??!219reg regex.c:660:m42sc %? %@2142sc!0?
 '\''5,#+1c 	char *nsubs = emalloc(prog->sub);
 ??!219reg regex.c:665:m52sc %? %@2142sc!0?
@@ -2023,7 +2023,7 @@ index 530eaf88..f36a47e4 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index 4f841ff4..3fc13a0a 100644
+index 4f841ff4..32ba0012 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -426,7 +426,15 @@ static rcode *re_make(char *re, int *nsubc, int flg)
@@ -2058,7 +2058,7 @@ index 4f841ff4..3fc13a0a 100644
 +	rthread *_clist = emalloc(prog->len * sizeof(rthread)), *_nlist = emalloc(prog->len * sizeof(rthread));
  	rthread *clist = _clist, *nlist = _nlist, *tmp;
 -	const char *_subp[2], *lb[prog->laidx+1];
-+	const char *_subp[2], **lb = emalloc(prog->laidx * sizeof(lb[0]));
++	const char *_subp[2], **lb = emalloc((prog->laidx + 1) * sizeof(lb[0]));
  	int rsubsize = prog->presub, suboff = 0;
  	int cnt, spc, i, c, j, osubp = nsubc * sizeof(char*);
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
