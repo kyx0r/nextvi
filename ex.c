@@ -1147,6 +1147,8 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 			flg |= 1;
 		else if (s[i] == 'm')
 			flg |= 2;
+		else if (s[i] == '^')
+			flg |= 5;	/* ^ anchors every search, implies g */
 		else if (uc_isdigit(s[i]))
 			reg = (reg < 0 ? 0 : reg * 10) + s[i] - '0';
 		else		/* only flags may break up the register */
@@ -1195,7 +1197,8 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		sbuf_cut(r, 0)
 		lnb = ln - b1;		/* start of text not yet copied */
 		while (rset_find(rs, ln, offs, rflg) >= 0) {
-			rflg |= REG_NOTBOL;	/* only the first search is at bol */
+			if (!(flg & 4))	/* only the first search is at bol */
+				rflg |= REG_NOTBOL;
 			if (offs[xgrp] < 0) {
 				ln += offs[1] > 0 ? offs[1] : uc_len(ln);
 				continue;

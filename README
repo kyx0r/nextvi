@@ -579,7 +579,7 @@ EX COMMANDS
              Example: join all lines with space padding
              :%-1j x
 
-     [range]s[<Delim>][regex][<Delim>][str][<Delim>][<g>][<m>][#reg]
+     [range]s[<Delim>][regex][<Delim>][str][<Delim>][<g>][<m>][<^>][#reg]
              Substitute
 
              Find and replace text in a range of lines that matches an
@@ -606,6 +606,11 @@ EX COMMANDS
 
              Example: global replacement with <g>
              :%s/term1/term2/g
+
+             Example: anchor ^ at every search with <^>, implies <g>
+             aaa
+             :%s/^a/X/^
+             XXX
 
              Example: multiline mode <m>
              :.,+1s/term1<^V><^M>term2/term3/m
@@ -1385,8 +1390,8 @@ CODE MAP
      | 735 led.c    |  insert mode/output  |
      | 770 regex.c  |  pikevm              |
      | 1902 vi.c    |  normal mode/general |
-     | 1969 ex.c    |  ex options/commands |
-     | 7843 total   |  wc -l *.c|sort      |
+     | 1972 ex.c    |  ex options/commands |
+     | 7846 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1467,4 +1472,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.5                     September 4, 2026                    Nextvi 7.5
+Nextvi 7.5                     September 5, 2026                    Nextvi 7.5

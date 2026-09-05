@@ -1373,10 +1373,10 @@ void vi(int init)
 						cmd = restr+6;
 						while (vi_arg--)
 							*cmd++ = ' ';
-						memcpy(cmd, "/g", sizeof("/g"));
+						memcpy(cmd, "/^", sizeof("/^"));
 					} else {
 						memcpy(restr, "%s/^ {", sizeof("%s/^ {"));
-						memcpy(itoa(vi_arg, restr+6), "}/\t/g", sizeof("}/\t/g"));
+						memcpy(itoa(vi_arg, restr+6), "}/\t/^", sizeof("}/\t/^"));
 					}
 					ln = vi_enprompt(":", restr, &k, &n);
 					goto do_excmd;
