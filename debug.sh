@@ -82,26 +82,26 @@ void ex_init\(char \*\*files, int n\)
 %f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;4??0?
-4??+2m 1220reg p OK regex.c:669:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK regex.c:665:a42sc %? %@2152sc!1q0?
 grp 1%f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;.*?
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;.*?
 (	unsigned int sdense\[prog->sparsesz], sparsesz = 0;)7??0?
-grp 07??m 1220reg p OK regex.c:669:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK regex.c:665:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	const char \*_subp\[2], \*lb\[prog->laidx\+1];
 	int rsubsize = prog->presub, suboff = 0;
 	int cnt, spc, i, c, j, osubp = nsubc \* sizeof\(char\*\);.*(	if \(eol_ch\))
 		utf8_length\[eol_ch] = 0;
 	if \(flg & REG_ICASE\)8??0?
-grp 08??-4m 1220reg p OK regex.c:669:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK regex.c:665:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	rsub \*nsub, \*sub, \*matched = NULL, \*freesub = NULL;
 	rthread _clist\[prog->len], _nlist\[prog->len];
 	rthread \*clist = _clist, \*nlist = _nlist, \*tmp;.*(		goto jmp_start1;)
 	goto jmp_start2;
 	match\(1, if \(\(unsigned int\)c < 128\) c = tolower\(c\);\)9??0?
-grp 09??-7m 1220reg p OK regex.c:669:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg regex.c:6692sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK regex.c:665:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg regex.c:6652sc %? %@2132sc!0?
 '\''1i 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
-??!219reg regex.c:669:m12sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg regex.c:665:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> }
 
 ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux rendering \*/
@@ -317,10 +317,10 @@ index 9edd2405..3eed3c5a 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/regex.c b/regex.c
-index 1bb65165..50d89218 100644
+index 4f841ff4..7f013a12 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -667,6 +667,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
+@@ -663,6 +663,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
  	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;
