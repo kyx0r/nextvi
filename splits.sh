@@ -4099,18 +4099,18 @@ static void vi_visual_attrib\(char \*s, int row\)
 		return;
 	int ar = vi_vrow, ao = vi_voff;
 	int cr = xrow,   co = xoff;2??0?
-2??m 2220reg p OK vi.c:178:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:177:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(!vi_visual \|\| !s\)$3??0?
-3??m 2220reg p OK vi.c:178:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:177:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 
 static void vi_visual_attrib\(char \*s, int row\)
 \{4??0?
-4??+3m 2220reg p OK vi.c:178:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:177:a42sc %? %@2152sc!1q0?
 %f+ 		return;
 	int ar = vi_vrow, ao = vi_voff;
 	int cr = xrow,   co = xoff;5??0?
-5??-1m 2220reg p OK vi.c:178:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:178:r2322sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:177:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:177:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 	preserve\(int, xleft,\)
 	preserve\(int, xtd,\)
@@ -4122,8 +4122,8 @@ static void vi_visual_attrib\(char \*s, int row\)
 %f+ 	preserve\(int, xleft,\)
 	preserve\(int, xtd,\)
 	do \{4??0?
-4??+2m 3220reg p OK vi.c:353:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:353:r2322sc %? %@2132sc!0?
+4??+2m 3220reg p OK vi.c:352:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:352:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 	} while \(w != wins\);
 	vi_draw_separators\(\);
@@ -4135,17 +4135,17 @@ static void vi_visual_attrib\(char \*s, int row\)
 %f+ 	} while \(w != wins\);
 	vi_draw_separators\(\);
 	curwin = cur;4??0?
-4??+2m 4220reg p OK vi.c:370:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:370:r2322sc %? %@2132sc!0?
+4??+2m 4220reg p OK vi.c:369:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:369:r2322sc %? %@2132sc!0?
 '\''1i static int vi_vfocused = 1;		/* redrawing the window owning the selection */
 ??!219reg vi.c:49:r232:m12sc %? %@2142sc!0?
-'\''2s/s\)/s || !vi_vfocused)/??!219reg vi.c:178:r232:m22sc %? %@2142sc!0?
+'\''2s/s\)/s || !vi_vfocused)/??!219reg vi.c:177:r232:m22sc %? %@2142sc!0?
 '\''3i 		vi_vfocused = w == cur;
 		if (!vi_vfocused && led_attsb)
 			sbuf_cut(led_attsb, 0)
-??!219reg vi.c:353:r232:m32sc %? %@2142sc!0?
+??!219reg vi.c:352:r232:m32sc %? %@2142sc!0?
 '\''4i 	vi_vfocused = 1;
-??!219reg vi.c:370:r232:m42sc %? %@2142sc!p compat 232 applied: src=visual.sh' > "$P2VIF".232
+??!219reg vi.c:369:r232:m42sc %? %@2142sc!p compat 232 applied: src=visual.sh' > "$P2VIF".232
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -4226,7 +4226,7 @@ exit 0
  
  void *emalloc(size_t size)
  {
-@@ -175,7 +176,7 @@
+@@ -174,7 +175,7 @@
  
  static void vi_visual_attrib(char *s, int row)
  {
@@ -4235,7 +4235,7 @@ exit 0
  		return;
  	int ar = vi_vrow, ao = vi_voff;
  	int cr = xrow,   co = xoff;
-@@ -351,6 +352,9 @@
+@@ -350,6 +351,9 @@
  	preserve(int, xleft,)
  	preserve(int, xtd,)
  	do {
@@ -4245,7 +4245,7 @@ exit 0
  		curwin = w;
  		xrow = w->row;
  		xoff = w->off;
-@@ -368,6 +372,7 @@
+@@ -367,6 +371,7 @@
  	} while (w != wins);
  	vi_draw_separators();
  	curwin = cur;
