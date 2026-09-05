@@ -124,8 +124,8 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 %f+ 	mv = term_read\(0\);
 	switch \(mv\) \{
 	case '\''\\033'\'':	/\* Arrow keys \*/4??0?
-4??+2m 2220reg p OK vi.c:582:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:582:r2312sc %? %@2132sc!0?
+4??+2m 2220reg p OK vi.c:615:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:615:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		if \(mv == '\''\['\''\) \{
@@ -137,8 +137,8 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 %f+ 		}
 		if \(mv == '\''\['\''\) \{
 			mv = term_read\(0\);4??0?
-4??+2m 3220reg p OK vi.c:589:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:589:r2312sc %? %@2132sc!0?
+4??+2m 3220reg p OK vi.c:622:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:622:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 				vc_status\(0\);
 				vi_mod \|= 1;
@@ -164,7 +164,7 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 			default:
 				continue;
 			}2??0?
-2??m 4220reg p OK vi.c:2061:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.c:2101:a22sc %? %@2152sc!1q0?
 %f+ 			case TK_ESC:
 				if \(vi_visual\) \{
 					vi_visual = 0;
@@ -172,16 +172,16 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 					break;
 				}
 				continue;3??0?
-3??m 4220reg p OK vi.c:2061:a32sc %? %@2152sc!1q0?
+3??m 4220reg p OK vi.c:2101:a32sc %? %@2152sc!1q0?
 %f+ 				vc_status\(0\);
 				vi_mod \|= 1;
 				break;4??0?
-4??+3m 4220reg p OK vi.c:2061:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK vi.c:2101:a42sc %? %@2152sc!1q0?
 %f+ 			default:
 				continue;
 			}5??0?
-5??-7m 4220reg p OK vi.c:2061:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2061:r2312sc %? %@2132sc!0?
+5??-7m 4220reg p OK vi.c:2101:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:2101:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 				}
 			}
@@ -191,16 +191,16 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 1??+3m 51q0?
 %f+ 		if \(vi_visual\)
 			vi_mod \|= 1;2??0?
-2??m 5220reg p OK vi.c:2128:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK vi.c:2168:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(vi_visual\)$3??0?
-3??m 5220reg p OK vi.c:2128:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK vi.c:2168:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				}
 			}
 		}4??0?
-4??+3m 5220reg p OK vi.c:2128:a42sc %? %@2152sc!1q0?
+4??+3m 5220reg p OK vi.c:2168:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			vi_mod \|= 1;$5??0?
-5??-1m 5220reg p OK vi.c:2128:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg vi.c:2128:r2312sc %? %@2132sc!0?
+5??-1m 5220reg p OK vi.c:2168:a52sc %? %@2152sc!fr 98fr 980?
+1;2;3;4;5??!219reg vi.c:2168:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 			vi_mod \|= 1;
 		term_record = 1;
@@ -208,24 +208,24 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 				\|\| \(vi_lnnum && orow != xrow && !\(vi_lnnum == 2\)\)1??0?
 1??m 61q0?
 ;0fr.,$f+ ^			vi_mod \|= 1;$4??0?
-4??m 6220reg p OK vi.c:2129:a42sc %? %@2152sc!fr 98fr 980?
-1;4??!219reg vi.c:2129:r2312sc %? %@2132sc!0?
+4??m 6220reg p OK vi.c:2169:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg vi.c:2169:r2312sc %? %@2132sc!0?
 '\''1i static int vi_vesc;			/* visual mode hidden by an escape sequence */
 ??!219reg vi.c:49:r231:m12sc %? %@2142sc!0?
 '\''2i 		vi_vesc = vi_visual;	/* hide the block until the sequence is known */
 		vi_visual = 0;
-??!219reg vi.c:582:r231:m22sc %? %@2142sc!0?
+??!219reg vi.c:615:r231:m22sc %? %@2142sc!0?
 '\''3i 			if (mv == '\''A'\'' || mv == '\''B'\'' || mv == '\''C'\'' || mv == '\''D'\'') {
 				vi_visual = vi_vesc;	/* real arrow: keep it */
 				vi_vesc = 0;
 			}
-??!219reg vi.c:589:r231:m32sc %? %@2142sc!0?
-'\''4,#+6d??!219reg vi.c:2061:r231:m42sc %? %@2142sc!0?
+??!219reg vi.c:622:r231:m32sc %? %@2142sc!0?
+'\''4,#+6d??!219reg vi.c:2101:r231:m42sc %? %@2142sc!0?
 '\''5c 		if (vi_visual || vi_vesc) {
 			vi_vesc = 0;	/* one redraw takes the block off */
-??!219reg vi.c:2128:r231:m52sc %? %@2142sc!0?
+??!219reg vi.c:2168:r231:m52sc %? %@2142sc!0?
 '\''6i 		}
-??!219reg vi.c:2129:r231:m62sc %? %@2142sc!p compat 231 applied: src=visual.sh' > "$P2VIF".231
+??!219reg vi.c:2169:r231:m62sc %? %@2142sc!p compat 231 applied: src=visual.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -248,7 +248,7 @@ exit 0
  
  void *emalloc(size_t size)
  {
-@@ -580,6 +581,8 @@
+@@ -613,6 +614,8 @@
  	mv = term_read(0);
  	switch (mv) {
  	case '\033':	/* Arrow keys */
@@ -257,7 +257,7 @@ exit 0
  		mv = term_read(0);
  		if (mv == '\033') {
  			term_dec()
-@@ -587,6 +590,10 @@
+@@ -620,6 +623,10 @@
  		}
  		if (mv == '[') {
  			mv = term_read(0);
@@ -268,7 +268,7 @@ exit 0
  			switch (mv) {
  			case 'A':	/* ↑ */
  				*row = MAX(*row - cnt, 0);
-@@ -2058,13 +2065,6 @@
+@@ -2098,13 +2105,6 @@
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -282,7 +282,7 @@ exit 0
  			default:
  				continue;
  			}
-@@ -2125,8 +2125,10 @@
+@@ -2165,8 +2165,10 @@
  				}
  			}
  		}
@@ -298,7 +298,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 49b5682c..bf33f0e9 100644
+index b5e0f21b..d2ac8405 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,6 +525,41 @@ static int vi_region(int cmd, int *row, int *off)

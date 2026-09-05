@@ -1264,18 +1264,18 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 					vc_motion\(k\);
 				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
 					if \(!vi_visual\) \{		/\* fresh selection \*/2??0?
-2??m 1220reg p OK vi.c:1955:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:1995:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{$3??0?
-3??m 1220reg p OK vi.c:1955:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.c:1995:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;4??0?
-4??+3m 1220reg p OK vi.c:1955:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:1995:a42sc %? %@2152sc!1q0?
 %f> 					vc_motion\(k\);
 				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
 					if \(!vi_visual\) \{		/\* fresh selection \*/5??0?
-5??-1m 1220reg p OK vi.c:1955:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1955:r2312sc %? %@2132sc!0?
+5??-1m 1220reg p OK vi.c:1995:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:1995:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 					}
 					vi_visual = vi_visual == k \? 0 : k;
@@ -1289,20 +1289,20 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 				} else if \(k == '\''K'\''\) \{
 					if \(xb_path && xb_path\[0]\)
 						lsp_hover\(xb_path, xrow, xoff\);2??0?
-2??m 2220reg p OK vi.c:1964:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:2004:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				}$3??0?
-3??m 2220reg p OK vi.c:1964:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:2004:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					}
 					vi_visual = vi_visual == k \? 0 : k;
 					vi_mod \|= 1;4??0?
-4??+3m 2220reg p OK vi.c:1964:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:2004:a42sc %? %@2152sc!1q0?
 %f+ 				} else if \(k == '\''K'\''\) \{
 					if \(xb_path && xb_path\[0]\)
 						lsp_hover\(xb_path, xrow, xoff\);5??0?
-5??-1m 2220reg p OK vi.c:1964:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1964:r2312sc %? %@2132sc!0?
-'\''1s/\{ \{/{/??!219reg vi.c:1955:r231:m12sc %? %@2142sc!0?
-'\''2d??!219reg vi.c:1964:r231:m22sc %? %@2142sc!p compat 231 applied: src=lsp.sh' > "$P2VIF".231
+5??-1m 2220reg p OK vi.c:2004:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:2004:r2312sc %? %@2132sc!0?
+'\''1s/\{ \{/{/??!219reg vi.c:1995:r231:m12sc %? %@2142sc!0?
+'\''2d??!219reg vi.c:2004:r231:m22sc %? %@2142sc!p compat 231 applied: src=lsp.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -1317,7 +1317,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -1952,7 +1952,7 @@
+@@ -1992,7 +1992,7 @@
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1326,7 +1326,7 @@ exit 0
  					vc_motion(k);
  				} else if (k == 'v' || k == 'V' || k == 'b') {
  					if (!vi_visual) {		/* fresh selection */
-@@ -1961,7 +1961,6 @@
+@@ -2001,7 +2001,6 @@
  					}
  					vi_visual = vi_visual == k ? 0 : k;
  					vi_mod |= 1;
@@ -1351,7 +1351,7 @@ index c92ec213..81071577 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 49b5682c..6e45e4c8 100644
+index b5e0f21b..6aa00f20 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */

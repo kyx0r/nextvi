@@ -303,7 +303,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		free\(pat\);
 		return rs \? xgerr : xserr;.*(		else if \(s\[i] == '\''m'\''\))
 			flg \|= 2;
-		else if \(uc_isdigit\(s\[i]\)\)9??0?
+		else if \(s\[i] == '\''\^'\''\)9??0?
 grp 09??-7m 6220reg p OK ex.c:1141:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:11412sc %? %@2132sc!0?
 ?0?
@@ -318,24 +318,24 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 %f+ 	if \(rs != xkwdrs\)
 		rset_free\(rs\);
 	free\(rep\);4??0?
-4??+2m 7220reg p OK ex.c:1266:a42sc %? %@2152sc!1q0?
+4??+2m 7220reg p OK ex.c:1269:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	if \(rs != xkwdrs\).*?
 		rset_free\(rs\);.*?
 (	free\(rep\);)7??0?
-grp 07??m 7220reg p OK ex.c:1266:a72sc %? %@2152sc!1q0?
+grp 07??m 7220reg p OK ex.c:1269:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	out:
 	free\(fr\);
 	free\(r->s\);.*(static void \*ec_exec\(char \*loc, char \*cmd, char \*arg\))
 \{
 	if \(!\*loc\)8??0?
-grp 08??-4m 7220reg p OK ex.c:1266:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 7220reg p OK ex.c:1269:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		lbuf_smark\(xb, lo, first, MAX\(o1, 0\)\);
 		lbuf_emark\(xb, lo, last, MAX\(o2, 0\)\);
 	}.*(		return ex_pipeout\(arg, NULL\);)
 	int beg, end, o1 = -1, o2 = -1, e;
 	if \(\(e = ex_region\(loc, &beg, &end, &o1, &o2\)\)\) \{9??0?
-grp 09??-7m 7220reg p OK ex.c:1266:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:12662sc %? %@2132sc!0?
+grp 09??-7m 7220reg p OK ex.c:1269:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:12692sc %? %@2132sc!0?
 '\''1c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
 ??!219reg ex.c:583:m12sc %? %@2142sc!0?
 '\''2c 			if (rset_find(xkwdrs, sb->s, offs, 0) < 0 || offs[xgrp] < 0) {
@@ -353,7 +353,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 '\''6c 	int *offs = emalloc(rs->nsubc * sizeof(int));
 ??!219reg ex.c:1141:m62sc %? %@2142sc!0?
 '\''7i 	free(offs);
-??!219reg ex.c:1266:m72sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1269:m72sc %? %@2142sc!b2m!%ya 98?0?
 %f> 		int nskip, int \*r, int \*o\)
 \{
 	int r0 = \*r, o0 = \*o;
@@ -1882,7 +1882,7 @@ index c92ec213..6b52895b 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 08306960..16c943d0 100644
+index 9edd2405..0fcedd64 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -580,13 +580,16 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -1926,7 +1926,7 @@ index 08306960..16c943d0 100644
  	char *lnb, *ln, *suf = "", *fr = NULL;
  	int b1 = 0, pend, rflg = REG_NEWLINE, hit = 0;
  	sbuf_smake(r, 256)
-@@ -1264,6 +1270,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1267,6 +1273,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -2154,7 +2154,7 @@ index facf14cd..b97937a0 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 49b5682c..e66f449f 100644
+index b5e0f21b..37b73e87 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)

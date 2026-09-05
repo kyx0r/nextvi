@@ -189,7 +189,7 @@ static int rep_len;
 					n = cs \? strlen\(cs\) : 0;8??0?
 grp 08??-4m 3220reg p OK vi.c:1386:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 						memcpy\(restr, "%s/\^ \{", sizeof\("%s/\^ \{"\)\);
-						memcpy\(itoa\(vi_arg, restr\+6\), "}/\\t/g", sizeof\("}/\\t/g"\)\);
+						memcpy\(itoa\(vi_arg, restr\+6\), "}/\\t/\^", sizeof\("}/\\t/\^"\)\);
 					}.*(					memcpy\(buf, "re ", sizeof\("re "\)\);)
 					if \(cs\)
 						memcpy\(buf\+3, cs, n \+ 1\);9??0?
@@ -1153,7 +1153,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 08306960..a3749b40 100644
+index 9edd2405..df237eed 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -1166,7 +1166,7 @@ index 08306960..a3749b40 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 49b5682c..98eb1d56 100644
+index b5e0f21b..e02a77a7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -484,6 +484,464 @@ static int fs_searchback(int cnt, int *row, int *off)

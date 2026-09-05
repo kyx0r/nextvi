@@ -483,7 +483,7 @@ index c8861702..05951cb2 100644
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
  	return ibuf[ibuf_pos++];
 diff --git a/vi.c b/vi.c
-index 49b5682c..99f326b4 100644
+index b5e0f21b..df556ddf 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@

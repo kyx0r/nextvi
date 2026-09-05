@@ -120,20 +120,20 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 
 4??0?
-4??+2m 2220reg p OK ex.c:1684:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1687:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
 }.*(_EO\(left,)
 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);8??0?
-grp 08??-5m 2220reg p OK ex.c:1684:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 2220reg p OK ex.c:1687:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return xkwdrs \? NULL : xserr;
 }.*(	else if \(\*arg\))
 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)9??0?
-grp 09??-8m 2220reg p OK ex.c:1684:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16842sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK ex.c:1687:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16872sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(ts\),
 	EO\(td\),
@@ -145,30 +145,30 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 %f+ 	EO\(ts\),
 	EO\(td\),
 	EO\(order\),4??0?
-4??+2m 3220reg p OK ex.c:1787:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1790:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(ts\),.*?
 	EO\(td\),.*?
 (	EO\(order\),)7??0?
-grp 07??m 3220reg p OK ex.c:1787:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1790:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"cd", ec_chdir},
 	\{"c", ec_insert},
 	\{"j", ec_join},.*(	EO\(hlr\),)
 	EO\(hl\),
 	EO\(left\),8??0?
-grp 08??-4m 3220reg p OK ex.c:1787:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1790:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"ya", ec_yank},
 	\{"cm!", ec_cmap},
 	\{"cm", ec_cmap},.*(	EO\(lim\),)
 	EO\(led\),
 	EO\(vis\),9??0?
-grp 09??-7m 3220reg p OK ex.c:1787:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17872sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1790:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17902sc %? %@2132sc!0?
 '\''1i int xhlm;			/* highlight marks */
 ??!219reg ex.c:9:m12sc %? %@2142sc!0?
 '\''2i EO(hlm)
-??!219reg ex.c:1684:m22sc %? %@2142sc!0?
+??!219reg ex.c:1687:m22sc %? %@2142sc!0?
 '\''3i 	EO(hlm),
-??!219reg ex.c:1787:m32sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1790:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> 				word = cs;
 			}
 		}
@@ -238,7 +238,7 @@ index c92ec213..55bba88b 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 08306960..3e95ade0 100644
+index 9edd2405..f8cc8165 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -249,7 +249,7 @@ index 08306960..3e95ade0 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1682,6 +1683,7 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
+@@ -1685,6 +1686,7 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
  
@@ -257,7 +257,7 @@ index 08306960..3e95ade0 100644
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
  _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
-@@ -1785,6 +1787,7 @@ static struct excmd {
+@@ -1788,6 +1790,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),
@@ -266,7 +266,7 @@ index 08306960..3e95ade0 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 49b5682c..f568fc39 100644
+index b5e0f21b..d3eb7185 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1778,6 +1778,21 @@ void vi(int init)
