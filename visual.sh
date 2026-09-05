@@ -1068,7 +1068,7 @@ static int vc_block_op(int cmd, int r1, int r2, int c_left, int c_right)
 				memcpy(new_ln, ln, beg_bytes);
 				memcpy(new_ln + beg_bytes, ep, rest_bytes);
 				new_ln[beg_bytes + rest_bytes] = '\''\0'\'';
-				lbuf_edit(xb, new_ln, r, r + 1, 0, 0);
+				lbuf_edit(xb, new_ln, r, r + 1, left, left);
 				free(new_ln);
 			}
 			sbuf_chr(yb, '\''\n'\'')
@@ -1106,7 +1106,7 @@ static int vc_block_op(int cmd, int r1, int r2, int c_left, int c_right)
 				}
 				p += uc_len(p);
 			}
-			lbuf_edit(xb, new_ln, r, r + 1, 0, 0);
+			lbuf_edit(xb, new_ln, r, r + 1, left, right + 1);
 			free(new_ln);
 		}
 	} else if (cmd == '\''>'\'' || cmd == '\''<'\'')
@@ -1351,7 +1351,7 @@ index c92ec213..81071577 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index b5e0f21b..6aa00f20 100644
+index b5e0f21b..f401303c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1585,7 +1585,7 @@ index b5e0f21b..6aa00f20 100644
 +				memcpy(new_ln, ln, beg_bytes);
 +				memcpy(new_ln + beg_bytes, ep, rest_bytes);
 +				new_ln[beg_bytes + rest_bytes] = '\0';
-+				lbuf_edit(xb, new_ln, r, r + 1, 0, 0);
++				lbuf_edit(xb, new_ln, r, r + 1, left, left);
 +				free(new_ln);
 +			}
 +			sbuf_chr(yb, '\n')
@@ -1623,7 +1623,7 @@ index b5e0f21b..6aa00f20 100644
 +				}
 +				p += uc_len(p);
 +			}
-+			lbuf_edit(xb, new_ln, r, r + 1, 0, 0);
++			lbuf_edit(xb, new_ln, r, r + 1, left, right + 1);
 +			free(new_ln);
 +		}
 +	} else if (cmd == '>' || cmd == '<')
