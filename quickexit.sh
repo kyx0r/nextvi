@@ -186,12 +186,12 @@ sbuf \*led_attsb;
 		if \(ai_max >= 0 && xpac\)9??0?
 grp 09??-7m 2220reg p OK led.c:646:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg led.c:6462sc %? %@2132sc!0?
-'\''1i static int gettime_ms(void)
+'\''1i static long long gettime_ms(void)
 {
 	struct timespec t;
 	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
 		return 0;
-	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
+	return (long long)t.tv_sec * 1000 + t.tv_nsec / 1000000;
 }
 
 ??!219reg led.c:1:m12sc %? %@2142sc!0?
@@ -356,7 +356,7 @@ extern int xerr;
 extern int xfr;9??0?
 grp 09??-7m 3220reg p OK vi.h:431:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:4312sc %? %@2132sc!0?
-'\''1i 	int quickexit;
+'\''1i 	long long quickexit;
 ??!219reg vi.h:376:m12sc %? %@2142sc!0?
 '\''2i is.quickexit = 0; \
 ??!219reg vi.h:384:m22sc %? %@2142sc!0?
@@ -412,17 +412,17 @@ index b2e59855..a0e8873d 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 530eaf88..c271aa7c 100644
+index 530eaf88..6505d131 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
  static sbuf *suggestsb;
-+static int gettime_ms(void)
++static long long gettime_ms(void)
 +{
 +	struct timespec t;
 +	if (clock_gettime(CLOCK_MONOTONIC, &t) < 0)
 +		return 0;
-+	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
++	return (long long)t.tv_sec * 1000 + t.tv_nsec / 1000000;
 +}
 +
  static sbuf *acsb;
@@ -468,14 +468,14 @@ index b5e0f21b..0cf31d08 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index c5c79dc5..4882a96a 100644
+index c5c79dc5..ef3746fc 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -374,6 +374,7 @@ typedef struct {
  	int p_reg;
  	int lsug;
  	int sug_pt;
-+	int quickexit;
++	long long quickexit;
  	char *sug;
  	char *_sug;
  } ins_state;
