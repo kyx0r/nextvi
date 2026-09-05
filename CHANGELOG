@@ -36,6 +36,21 @@ Bug fixes:
    ranges searched nothing at all.
 4. Out-of-range :f< matches the whole pin line, bound at its end
    like the in-range cursor offset.
+5. Fixed a memory-corrupting bug when un-indenting with ^d in insert mode
+   and then deleting — could corrupt memory or crash.
+6. Fixed display corruption and crashes on long lines when characters can
+   render zero-width (tab width set to 0, zero-width placeholders).
+7. Fixed a small memory leak when the autocomplete pattern asks for a capture
+   group that doesn't exist.
+8. Hardened redraw during multi-line insert so it can't reuse discarded
+   line data.
+9. Hardened :p-style range printing with character offsets so it can't
+   leave discarded text referenced.
+10. Hardened line freeing (undo history, closing buffers) so discarded lines
+    are dropped from the render cache — protects against rare stale-text glitches
+    or crashes.
+11. Files that report a size of zero but do have content (e.g. /proc, /sys)
+    now open with their contents instead of appearing empt
 
 Patch2vi 1.1 changes:
 1. Compat block bodies start with :m!. Mark ids restart per file per
