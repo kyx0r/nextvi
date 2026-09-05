@@ -11,6 +11,9 @@ New in core:
    reduced memory usage with flat char array.
 4. Unlimited alternations and captures in the regex engine: the
    compiler no longer uses fixed static arrays.
+5. Substitution with the ^ flag anchors ^ at the start of every search
+   instead of only the first; it implies g. The vi and vI keybinds use
+   it to convert a whole indentation run.
 
 New in builds:
 1. Build shell scripts (cbuild.sh, build_patch2vi.sh) accept options
