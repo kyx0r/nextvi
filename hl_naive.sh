@@ -595,6 +595,35 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\
 	if \(r->holelen\) \{9??0?
 grp 09??-9m 7220reg p OK led.c:245:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg led.c:2452sc %? %@2132sc!0?
+?0?
+%f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);
+		r->holelen = 0;
+	}
+}
+
+static int led_lastchar\(char \*s\)1??0?
+1??+2m 81q0?
+%f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);
+		r->holelen = 0;
+	}4??0?
+4??+2m 8220reg p OK led.c:259:a42sc %? %@2152sc!1q0?
+grp 1%f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);.*?
+		r->holelen = 0;.*?
+(	})7??0?
+grp 07??m 8220reg p OK led.c:259:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		led_out\(term_sbuf, 1\)
+	sbufn_mem\(term_sbuf, "\\x1b\[m", 3\)
+	if \(r->holelen\) \{.*(	char \*r = \*s \? strchr\(s, '\''\\0'\''\) : s;)
+	if \(r != s\)
+		r = uc_beg\(s, r - 1\);8??0?
+grp 08??-5m 8220reg p OK led.c:259:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	if \(vi_hidch\)
+		led_out\(term_sbuf, 2\)
+	else.*(static int led_lastword\(char \*s\))
+\{
+	char \*r = \*s \? uc_beg\(s, strchr\(s, '\''\\0'\''\) - 1\) : s;9??0?
+grp 09??-11m 8220reg p OK led.c:259:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:2592sc %? %@2132sc!0?
 '\''1s/bound \? ctt\[atti\+\+] : //??!219reg led.c:119:m12sc %? %@2142sc!0?
 '\''2,#+1c 	int att_old = 0, cterm = cend - cbeg;
 ??!219reg led.c:150:m22sc %? %@2142sc!0?
@@ -606,7 +635,9 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\
 ??!219reg led.c:207:m52sc %? %@2142sc!0?
 '\''6,#+18c 			att[p->off] = syn_merge(att[p->off], p->att);
 ??!219reg led.c:214:m62sc %? %@2142sc!0?
-'\''7s/bound \? ctt\[l-1] : //??!219reg led.c:245:m72sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
+'\''7s/bound \? ctt\[l-1] : //??!219reg led.c:245:m72sc %? %@2142sc!0?
+'\''8i 	free(att);
+??!219reg led.c:259:m82sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -619,7 +650,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 530eaf88..be7a59c4 100644
+index 530eaf88..913596a1 100644
 --- a/led.c
 +++ b/led.c
 @@ -116,7 +116,7 @@ for (i = 0; i < cterm;) { \
@@ -732,3 +763,11 @@ index 530eaf88..be7a59c4 100644
  			att[j] = syn_merge(att[j], conf_hlrev);
  			att[j+1] = syn_merge(att[j+1], conf_hlrev);
  		}
+@@ -257,6 +197,7 @@ void led_render(char *s0, int cbeg, int cend)
+ 		memcpy(chrs[n], r->nulhole, r->holelen);
+ 		r->holelen = 0;
+ 	}
++	free(att);
+ }
+ 
+ static int led_lastchar(char *s)
