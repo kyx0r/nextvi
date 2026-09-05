@@ -935,9 +935,8 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		return NULL;
 	}
 	rstate = rstates+1;
+	rstate->s = NULL;
 	for (i = beg; i < end; i++) {
-		o = NULL;
-		rstate->s = o;
 		ln = lbuf_get(xb, i);
 		if (o1 >= 0 && o2 >= 0 && beg == end - 1)
 			o = uc_sub(ln, o1, o2);
@@ -951,6 +950,7 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		}
 		ex_cprint(o, msg_ft, -1, 0, 0, 1);
 		free(o);
+		rstate->s = NULL;
 	}
 	rstate--;
 	xrow = MAX(beg, end - (cmd[0] || loc[0]));
