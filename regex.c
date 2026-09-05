@@ -25,8 +25,7 @@ enum
 };
 
 typedef struct rsub rsub;
-struct rsub
-{
+struct rsub {
 	int ref;
 	rsub *freesub;
 	const char *sub[];
@@ -37,12 +36,10 @@ typedef struct {
 	int capsz;	/* cap_stack ints in it, also alt_stack's offset */
 } rctx;
 
-typedef struct rthread rthread;
-struct rthread
-{
+typedef struct rthread {
 	int *pc;
 	rsub *sub;
-};
+} rthread;
 
 #define INSERT_CODE(at, num, pc) \
 if (code) \
@@ -405,8 +402,7 @@ static int reg_comp(rcode *prog, char *re, rcode *hdr, rctx *ctx, int flg)
 	return 0;
 }
 
-/* compile re in two passes: the first counts, the second emits the code
- * into the buffer it sized; both work on the one stack in ctx */
+/* compile re in two passes: the first counts, the second emits the code */
 static rcode *re_make(char *re, int *nsubc, int flg)
 {
 	rcode hdr, *prog;
