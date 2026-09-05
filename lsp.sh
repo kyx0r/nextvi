@@ -182,7 +182,7 @@ const int hlslen = LEN\(hls\);
 m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\* \(\[0-9]\{1,3}%\) \(L\[0-9]\+\) \(C\[0-9]\+\) \(B-\?\[0-9]\+\)\?\.\*\$",
 		A\(AY1 \| SYN_BD, BL, RE1, BL, YE1, GR\)},
 	\{bar_ft, "\^\.\*\$", A\(AY1 \| SYN_BD\)},.*(/\* ids of optional hls, reset and reloaded on filetype change \*/)
-const int hlopts\[] = \{1, 2, 3};
+const int hlopts\[] = \{1, 2};
 const int hloptslen = LEN\(hlopts\);8??0?
 grp 08??-4m 4220reg p OK conf.c:324:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
@@ -2829,7 +2829,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 02147e45..fbe1ebc1 100644
+index a51117ca..3baa5851 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -18,6 +18,7 @@ char vs_ft[] = "/vs";	/* vi search prompt (is never '\n' terminated) */

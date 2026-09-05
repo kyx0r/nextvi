@@ -80,7 +80,7 @@ const int hlslen = LEN\(hls\);8??0?
 m 01;0grp 1%f> 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},
 	\{ex_ft, "!\(\?:\[\^!\\\\\\\\]\|\\\\\\\\\.\?\)\*!\?\|%\(\?:#\|\[0-9]\+\|@\(\[0-9]\+\)\)\?", A\(WH1 \| SYN_BD, CY1\)},.*(/\* ids of optional hls, reset and reloaded on filetype change \*/)
-const int hlopts\[] = \{1, 2, 3};
+const int hlopts\[] = \{1, 2};
 const int hloptslen = LEN\(hlopts\);9??0?
 grp 09??-13m 1220reg p OK conf.c:315:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3152sc %? %@2132sc!0?
@@ -1341,7 +1341,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 02147e45..9de39b85 100644
+index a51117ca..321d4b59 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -312,7 +312,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},

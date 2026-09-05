@@ -574,7 +574,7 @@ index 62d18e99..cb0ea9ef 100755
  
  case "$OS" in
 diff --git a/conf.c b/conf.c
-index 02147e45..e70e0618 100644
+index a51117ca..010700d7 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -298,7 +298,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},

@@ -50,7 +50,7 @@ const int conf_hlrev = SYN_BGMK\(8\);
 4??0?
 4??+2m 1220reg p OK conf.c:334:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> /\* ids of optional hls, reset and reloaded on filetype change \*/
-const int hlopts\[] = \{1, 2, 3};
+const int hlopts\[] = \{1, 2};
 const int hloptslen = LEN\(hlopts\);.*(struct dircontext dctxs\[] = \{)
 	\{"\^\[" CR2L "]", -1},
 	\{"\^\[a-zA-Z_0-9]", \+1},8??0?
@@ -722,7 +722,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 02147e45..9c27f5d8 100644
+index a51117ca..f0389275 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -332,6 +332,12 @@ const int hloptslen = LEN(hlopts);

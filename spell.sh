@@ -1061,6 +1061,8 @@ fi
 
 exit 0
 === PATCH2VI PATCH ===
+diff --git a/conf.c b/conf.c
+index a51117ca..eee09f19 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -2,6 +2,10 @@
@@ -1074,7 +1076,7 @@ exit 0
  #define FTGEN(ft) static char ft##_ft[] = #ft;
  #define FT(ft) ft##_ft
  FTGEN(c) FTGEN(roff) FTGEN(tex) FTGEN(mbox)
-@@ -45,6 +49,29 @@
+@@ -45,6 +49,29 @@ struct filetype fts[] = {
  };
  const int ftslen = LEN(fts);
  
@@ -1104,7 +1106,7 @@ exit 0
  #define NA	0	/* no attribute */
  #define RE	1	/* red */
  #define GR	2	/* green */
-@@ -63,6 +90,9 @@
+@@ -63,6 +90,9 @@ const int ftslen = LEN(fts);
  #define WH1	15	/* bright white */
  
  #define A(...) (int[]){__VA_ARGS__}
@@ -1114,7 +1116,7 @@ exit 0
  
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
-@@ -70,6 +100,7 @@
+@@ -70,6 +100,7 @@ struct highlight hls[] = {
  	{_ft, NULL, A(CY1 | SYN_BD), 1, 2},  /* <-- optional, used by hll if set */
  	{_ft, NULL, A(RE1 | SYN_BGMK(GR1)), 0, 3}, /* <-- optional, used by hlp if set */
  	{_ft, NULL, A(RE1), 0, 1}, /* <-- optional, used by hlw if set */
@@ -1122,7 +1124,7 @@ exit 0
  
  	{FT(c), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(c), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*)(?!^//).)*\\*/\
-@@ -98,6 +129,7 @@
+@@ -98,6 +129,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  	{FT(c), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
  	{FT(c), "(\\?).+?(:)", A(SYN_IGN, YE | SYN_SATT, 2, NA, CY1,
  				YE | SYN_SATT, 2, NA, CY1), 5},
@@ -1130,7 +1132,7 @@ exit 0
  
  	{FT(roff), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(roff), "^[.'][ \t]*(([sS][hH].*)|(de) (.*)|([^ \t\\\\]{2,}))?.*",
-@@ -107,6 +139,7 @@
+@@ -107,6 +139,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  	{FT(roff), "\\\\{1,2}[*$fgkmns](?:[^[\\(]|\\(..|\\[[^\\]]*\\])", A(YE)},
  	{FT(roff), "\\\\(?:[^[\\(*$fgkmns]|\\(..|\\[[^\\]]*\\])", A(YE)},
  	{FT(roff), "\\$[^$]+\\$", A(YE)},
@@ -1138,7 +1140,7 @@ exit 0
  
  	{FT(tex), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(tex), NULL, A(RE1), 0, 1},
-@@ -114,6 +147,7 @@
+@@ -114,6 +147,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  		A(BL | SYN_BD, NA, YE, NA, MA)},
  	{FT(tex), "\\$[^$]+\\$", A(YE)},
  	{FT(tex), "%.*", A(GR | SYN_IT)},
@@ -1146,7 +1148,7 @@ exit 0
  
  	{FT(mbox), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(mbox), NULL, A(RE1), 0, 1},
-@@ -124,6 +158,7 @@
+@@ -124,6 +158,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  	{FT(mbox), "^Cc: (.*)", A(CY | SYN_BD, MA | SYN_BD)},
  	{FT(mbox), "^[-A-Za-z]+: .+", A(CY | SYN_BD)},
  	{FT(mbox), "^> .*", A(GR | SYN_IT)},
@@ -1154,7 +1156,7 @@ exit 0
  
  	{FT(mk), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(mk), NULL, A(RE1), 0, 1},
-@@ -131,6 +166,7 @@
+@@ -131,6 +166,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  	{FT(mk), "\\$[\\({][a-zA-Z0-9_]+[\\)}]|\\$\\$", A(YE)},
  	{FT(mk), "#.*", A(GR | SYN_IT)},
  	{FT(mk), "([A-Za-z_%.\\-]+):", A(NA, SYN_BD)},
@@ -1162,7 +1164,7 @@ exit 0
  
  	{FT(sh), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(sh), NULL, A(RE1), 0, 1},
-@@ -143,6 +179,7 @@
+@@ -143,6 +179,7 @@ bool|const|inline|restrict|auto|(true|false|_?_?asm_?_?|mem(?:set|cpy|cmp)|free|
  	{FT(sh), "\\$(?:\\{[^}]+}|[a-zA-Z_0-9]+|[!#$?*@-])", A(RE)},
  	{FT(sh), "^([a-zA-Z_0-9]* *\\(\\)) *\\{", A(NA, SYN_BD)},
  	{FT(sh), "^\\. .*", A(SYN_BD)},
@@ -1170,7 +1172,7 @@ exit 0
  
  	{FT(py), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(py), NULL, A(RE1), 0, 1},
-@@ -155,6 +192,7 @@
+@@ -155,6 +192,7 @@ for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)
  		A(CY | SYN_BLK, SYN_BSE | SYN_BSDP | SYN_BEDP)},
  	{FT(py), "[\"](?:\\\\\"|[^\"])*?[\"]", A(BL)},
  	{FT(py), "['](?:\\\\'|[^'])*?[']", A(BL)},
@@ -1178,7 +1180,7 @@ exit 0
  
  	{FT(js), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(js), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?![\"'`]))",
-@@ -173,6 +211,7 @@
+@@ -173,6 +211,7 @@ length|Math|NaN|name|Number|Object|prototype|String|toString|undefined|valueOf))
  	{FT(js), "'(?:[^'\\\\]|\\\\.)*'", A(MA)},
  	{FT(js), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
  	{FT(js), "`(?:[^`\\\\]|\\\\.)*`", A(MA)},
@@ -1186,7 +1188,7 @@ exit 0
  
  	{FT(html), "<(/)?(?:[^>](?:\".*?\")*(?:'.*?')*(?:<.*?>)*)+>", A(YE, MA1), 1},
  	{FT(html), "^(?:[ \t.,#*:a-zA-Z0-9_-]+(?:\\(.*\\))*(?:\\[.*\\])*[ \t+~>]?)*(?=^\\{)", A(WH1), 2},
-@@ -227,12 +266,14 @@
+@@ -227,12 +266,14 @@ fr|deg|rad|turn|grad|ms|s|hz|khz|dpi|dpcm|dppx|%|))\\>", A(RE1 | SYN_ATT, 4, 69,
  	{FT(html), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(html), NULL, A(RE1), 0, 1},
  	{FT(html), NULL, A(AY | SYN_BGMK(RE1)), 0, 3},
@@ -1201,7 +1203,7 @@ exit 0
  
  	{FT(go), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(go), "(/\\*(?:(?!^\\*/).)*)|((?:(?!^/\\*).)*\\*/(?#-1)(?<\".*\\*/.*\"))",
-@@ -251,6 +292,7 @@
+@@ -251,6 +292,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  	{FT(go), "[a-zA-Z0-9_]+(?=^\\()", A(SYN_BD)},
  	{FT(go), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{2}|\\\\u[0-9a-fA-F]{4}|\\\\U[0-9a-fA-F]{8}|\\\\[0-7]{3})'", A(MA)},
  	{FT(go), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|0[oO][0-7]+|0[bB][01]+|[0-9]+\\.?[0-9eEi]*|[0-9]+)\\>", A(RE1)},
@@ -1209,7 +1211,7 @@ exit 0
  
  	{FT(md), NULL, A(CY1 | SYN_BD), 1, 2},
  	{FT(md), NULL, A(RE1), 0, 1},
-@@ -274,6 +316,7 @@
+@@ -274,6 +316,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  	{FT(md), "^[ \t]*[0-9]+[.] ", A(YE)},
  	{FT(md), "[[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(CY)},
  	{FT(md), "![[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(MA)},
@@ -1217,7 +1219,7 @@ exit 0
  
  	{fm_ft, "^.+\n$", A(AY1), 1},
  	{fm_ft, "(^\\.?\\.?)/|(\\.\\.(/))|(?:[^/]+/)+", A(CY, BL, BL, CY), 2},
-@@ -298,7 +341,7 @@
+@@ -298,7 +341,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
  ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
@@ -1226,7 +1228,7 @@ exit 0
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
-@@ -326,7 +369,7 @@
+@@ -326,7 +369,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  const int hlslen = LEN(hls);
  
  /* ids of optional hls, reset and reloaded on filetype change */
@@ -1235,9 +1237,11 @@ exit 0
  const int hloptslen = LEN(hlopts);
  
  /* how to highlight text in the reverse direction */
+diff --git a/ex.c b/ex.c
+index b2e59855..afd205b5 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1318,6 +1318,170 @@
+@@ -1318,6 +1318,170 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -1408,7 +1412,7 @@ exit 0
  static void *ec_cmap(char *loc, char *cmd, char *arg)
  {
  	if (arg[0])
-@@ -1774,6 +1938,8 @@
+@@ -1774,6 +1938,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -1417,9 +1421,11 @@ exit 0
  	{"s", ec_substitute},
  	{"x!", ec_write},
  	{"x", ec_write},
+diff --git a/vi.c b/vi.c
+index b5e0f21b..9b08cd2f 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1123,6 +1123,68 @@
+@@ -1123,6 +1123,68 @@ static int vc_replace(void)
  	return cs[0] == '\n' ? 1 : 2;
  }
  
@@ -1488,7 +1494,7 @@ exit 0
  static void vc_execute(int cmd)
  {
  	static int exec_buf = -1;
-@@ -1646,6 +1708,9 @@
+@@ -1646,6 +1708,9 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1498,7 +1504,7 @@ exit 0
  				} else if (k == '~' || k == 'u' || k == 'U')
  					vc_motion(k);
  				break;
-@@ -1827,6 +1892,8 @@
+@@ -1827,6 +1892,8 @@ void vi(int init)
  			if (xmpt > 0)
  				xmpt = 0;
  		}
@@ -1507,9 +1513,11 @@ exit 0
  		term_pos(xrow - xtop, n + vi_lncol);
  		term_commit();
  		xb->useq += xseq;
+diff --git a/vi.h b/vi.h
+index c5c79dc5..8e244be5 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -547,6 +547,13 @@
+@@ -547,6 +547,13 @@ extern struct placeholder _ph[];
  extern struct placeholder *ph;
  extern int phlen;
  extern const int conf_hlrev;

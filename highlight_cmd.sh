@@ -650,7 +650,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 02147e45..0e98ca82 100644
+index a51117ca..f9b3db10 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -63,6 +63,10 @@ const int ftslen = LEN(fts);
