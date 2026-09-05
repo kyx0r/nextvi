@@ -407,7 +407,6 @@ static void ex_asyncwait(void)
 		}
 ??!219reg ex.c:1911:m52sc %? %@2142sc!0?
 '\''6i 		xasync = 0;
-		ex_asyncwait();
 ??!219reg ex.c:1926:m62sc %? %@2142sc!b3m!%ya 98?0?
 %f> static struct termios termios;
 sbuf \*term_sbuf;
@@ -729,12 +728,11 @@ index b2e59855..04f07ff5 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1924,6 +2028,8 @@ void *ex_exec(const char *ln)
+@@ -1924,6 +2028,7 @@ void *ex_exec(const char *ln)
  			|| tmpxquit < -256)
  		restore(xquit)
  	if (!xexec_dep) {
 +		xasync = 0;
-+		ex_asyncwait();
  		if (xcid && !xcid_keep)
  			xcid_free();
  		xqprop = 0;
