@@ -889,7 +889,7 @@ static int vc_motion\(int cmd\)
 static int vi_vrow;			/* selection anchor row */
 static int vi_voff;			/* selection anchor column */
 ??!219reg vi.c:46:m12sc %? %@2142sc!0?
-'\''2i /* the first and the last screen column of the character at (row, off) */
+'\''2i /* first and last screen column of the character at (row, off) */
 static void vi_offspan(int row, int off, int *c1, int *c2)
 {
 	char *ln = lbuf_get(xb, row);
@@ -906,8 +906,7 @@ static void vi_offspan(int row, int off, int *c1, int *c2)
 	rstate = rs;
 }
 
-/* the screen columns the block selection spans; anchor and cursor offsets
- * live on different lines, so only their columns can be compared */
+/* screen columns the block selection spans */
 static void vi_blockcols(int *c1, int *c2)
 {
 	int a1, a2, b1, b2;
@@ -944,7 +943,7 @@ static void vi_visual_attrib(char *s, int row)
 		o_beg = 0;
 		o_end = rn1;
 	} else if (vi_visual == '\''b'\'') {
-		if (cb >= r->cmax)	/* the line ends left of the block */
+		if (cb >= r->cmax)	/* line ends left of the block */
 			return;
 		o_beg = r->col[cb];
 		o_end = ce < r->cmax ? r->col[ce] : rn1 - 1;
@@ -983,7 +982,7 @@ static void vi_visual_attrib(char *s, int row)
 '\''9s/s\)/s, vs)/??!219reg vi.c:511:m92sc %? %@2142sc!0?
 '\''10i static int vc_insert(int cmd);
 
-/* ci is a screen column: every line maps it to an offset of its own */
+/* ci is a screen column; each line maps it to its own offset */
 static int vc_block_insert(int vcmd, int r1, int r2, int ci)
 {
 	char *old_ln = lbuf_get(xb, r1);
@@ -1037,8 +1036,7 @@ static int vc_block_insert(int vcmd, int r1, int r2, int ci)
 	return key;
 }
 
-/* c_left and c_right are screen columns: map them per line, since equal
- * columns land on different offsets once the indentation differs */
+/* c_left and c_right are screen columns; map them per line */
 #define VCB_BOUNDS \
 	char *ln = lbuf_get(xb, r); \
 	if (!ln) continue; \
@@ -1351,7 +1349,7 @@ index c92ec213..81071577 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index b5e0f21b..f401303c 100644
+index b5e0f21b..ffb7da17 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1364,11 +1362,11 @@ index b5e0f21b..f401303c 100644
  
  void *emalloc(size_t size)
  {
-@@ -125,6 +128,85 @@ for (i = 0, ret = 0;; i++) { \
+@@ -125,6 +128,84 @@ for (i = 0, ret = 0;; i++) { \
  	ret = func; \
  } } \
  
-+/* the first and the last screen column of the character at (row, off) */
++/* first and last screen column of the character at (row, off) */
 +static void vi_offspan(int row, int off, int *c1, int *c2)
 +{
 +	char *ln = lbuf_get(xb, row);
@@ -1385,8 +1383,7 @@ index b5e0f21b..f401303c 100644
 +	rstate = rs;
 +}
 +
-+/* the screen columns the block selection spans; anchor and cursor offsets
-+ * live on different lines, so only their columns can be compared */
++/* screen columns the block selection spans */
 +static void vi_blockcols(int *c1, int *c2)
 +{
 +	int a1, a2, b1, b2;
@@ -1423,7 +1420,7 @@ index b5e0f21b..f401303c 100644
 +		o_beg = 0;
 +		o_end = rn1;
 +	} else if (vi_visual == 'b') {
-+		if (cb >= r->cmax)	/* the line ends left of the block */
++		if (cb >= r->cmax)	/* line ends left of the block */
 +			return;
 +		o_beg = r->col[cb];
 +		o_end = ce < r->cmax ? r->col[ce] : rn1 - 1;
@@ -1450,7 +1447,7 @@ index b5e0f21b..f401303c 100644
  static void vi_drawrow(int row)
  {
  	int l1, i, i1, lnnum = vi_lnnum;
-@@ -193,6 +275,7 @@ static void vi_drawrow(int row)
+@@ -193,6 +274,7 @@ static void vi_drawrow(int row)
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -1458,7 +1455,7 @@ index b5e0f21b..f401303c 100644
  		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
-@@ -212,6 +295,7 @@ static void vi_drawrow(int row)
+@@ -212,6 +294,7 @@ static void vi_drawrow(int row)
  		restore(ftidx)
  		return;
  	}
@@ -1466,7 +1463,7 @@ index b5e0f21b..f401303c 100644
  	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
  	rstate = rstates;
  }
-@@ -495,20 +579,23 @@ static void vc_status(int type)
+@@ -495,20 +578,23 @@ static void vc_status(int type)
  	char cbuf[8] = "", vi_msg[512], *c;
  	col = vi_off2col(xb, xrow, xoff);
  	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
@@ -1494,13 +1491,13 @@ index b5e0f21b..f401303c 100644
  	}
  	vi_drawmsg_mpt(vi_msg)
  }
-@@ -946,6 +1033,184 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -946,6 +1032,183 @@ static void vi_shift(int r1, int r2, int dir, int count)
  	free(sb->s);
  }
  
 +static int vc_insert(int cmd);
 +
-+/* ci is a screen column: every line maps it to an offset of its own */
++/* ci is a screen column; each line maps it to its own offset */
 +static int vc_block_insert(int vcmd, int r1, int r2, int ci)
 +{
 +	char *old_ln = lbuf_get(xb, r1);
@@ -1554,8 +1551,7 @@ index b5e0f21b..f401303c 100644
 +	return key;
 +}
 +
-+/* c_left and c_right are screen columns: map them per line, since equal
-+ * columns land on different offsets once the indentation differs */
++/* c_left and c_right are screen columns; map them per line */
 +#define VCB_BOUNDS \
 +	char *ln = lbuf_get(xb, r); \
 +	if (!ln) continue; \
@@ -1679,7 +1675,7 @@ index b5e0f21b..f401303c 100644
  static int vc_motion(int cmd)
  {
  	int r1 = xrow, r2 = xrow;	/* region rows */
-@@ -1292,6 +1557,10 @@ void vi(int init)
+@@ -1292,6 +1555,10 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'u':
@@ -1690,7 +1686,7 @@ index b5e0f21b..f401303c 100644
  				undo:
  				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
  					vi_mod |= 1;
-@@ -1342,6 +1611,10 @@ void vi(int init)
+@@ -1342,6 +1609,10 @@ void vi(int init)
  				vi_lncol = 0;
  				vi_mod |= 1;
  				break;
@@ -1701,7 +1697,7 @@ index b5e0f21b..f401303c 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1446,6 +1719,22 @@ void vi(int init)
+@@ -1446,6 +1717,22 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case ':':
@@ -1724,7 +1720,7 @@ index b5e0f21b..f401303c 100644
  				ln = vi_enprompt(":", NULL, &k, &n);
  				do_excmd:
  				if (k && ln[n]) {
-@@ -1465,7 +1754,15 @@ void vi(int init)
+@@ -1465,7 +1752,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -1740,7 +1736,7 @@ index b5e0f21b..f401303c 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1515,6 +1812,10 @@ void vi(int init)
+@@ -1515,6 +1810,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -1751,7 +1747,7 @@ index b5e0f21b..f401303c 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto insert_done;
-@@ -1525,6 +1826,14 @@ void vi(int init)
+@@ -1525,6 +1824,14 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1766,7 +1762,7 @@ index b5e0f21b..f401303c 100644
  				insert:
  				k = vc_insert(c);
  				insert_done:
-@@ -1646,8 +1955,16 @@ void vi(int init)
+@@ -1646,8 +1953,16 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1784,7 +1780,7 @@ index b5e0f21b..f401303c 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1662,16 +1979,25 @@ void vi(int init)
+@@ -1662,16 +1977,25 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1815,7 +1811,7 @@ index b5e0f21b..f401303c 100644
  				motion:
  				icmd_pos--;
  				goto re_motion;
-@@ -1737,6 +2063,13 @@ void vi(int init)
+@@ -1737,6 +2061,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -1829,7 +1825,7 @@ index b5e0f21b..f401303c 100644
  			default:
  				continue;
  			}
-@@ -1797,6 +2130,8 @@ void vi(int init)
+@@ -1797,6 +2128,8 @@ void vi(int init)
  				}
  			}
  		}
