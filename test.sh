@@ -1564,6 +1564,52 @@ out=$(run_ex ':%s/a$/X/g:%p:q!')
 check ':s g still matches $ after the first search' 'aaX' "$out"
 
 # ──────────────────────────────────────────────────────────────────────────────
+# :s ^ flag
+# The flag never sets REG_NOTBOL, so ^ matches at each scan start instead of
+# only at the line start. It implies g; without g the loop stops at one match.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'aaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a/X/^:%p:q!')
+check ':s ^ re-anchors ^ after a match' 'XXX' "$out"
+
+printf 'aaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a/X/g^:%p:q!')
+check ':s ^ takes a spelled out g as well' 'XXX' "$out"
+
+printf 'ab\n' > "$TMPFILE"
+out=$(run_ex ':%s/^/S/^:%p:q!')
+check ':s ^ matches a bare ^ at every position' 'SaSbS' "$out"
+
+# every ^ in the pattern re-anchors, alternation branches included
+printf 'aba\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a|b/X/^:%p:q!')
+check ':s ^ re-anchors an alternation branch too' 'XXX' "$out"
+
+# REG_NEWLINE must survive, or $ stops matching
+printf 'aaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/a$/X/^:%p:q!')
+check ':s ^ still matches $ at the line end' 'aaX' "$out"
+
+# under m the region is one string, so the run stops at the first newline
+printf 'aaa\naaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a/X/m^:%p:q!')
+check ':s m^ re-anchors inside the region only' \
+	"$(printf 'XXX\naaa')" "$out"
+
+# what vi and vI are built on: a leading run replaced by text of another width
+TAB=$(printf '\t')
+printf '%s\n' "$TAB$TAB${TAB}x" "${TAB}y${TAB}z" > "$TMPFILE"
+out=$(run_ex ":%s/^$TAB/  /^:%p:q!")
+check ':s ^ expands a leading tab run, leaving the interior tab' \
+	"$(printf '      x\n  y%sz' "$TAB")" "$out"
+
+printf '      x\n   y\n' > "$TMPFILE"
+out=$(run_ex ":%s/^ {2}/$TAB/^:%p:q!")
+check ':s ^ folds a leading space run into tabs' \
+	"$(printf '%s%s%sx\n%s y' "$TAB" "$TAB" "$TAB" "$TAB")" "$out"
+
+# ──────────────────────────────────────────────────────────────────────────────
 # :s g and zero-length matches at the line end
 # The trailing newline is a match position like any other: REG_NEWLINE makes it
 # a terminator, so only a zero-width match can land there and nothing can run
