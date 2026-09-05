@@ -325,6 +325,10 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
 };
 const int hlslen = LEN(hls);
 
+/* ids of optional hls, reset and reloaded on filetype change */
+const int hlopts[] = {1, 2, 3};
+const int hloptslen = LEN(hlopts);
+
 /* how to highlight text in the reverse direction */
 const int conf_hlrev = SYN_BGMK(8);
 
