@@ -19,17 +19,22 @@ fi
 #   script, for state inspection mid execution
 
 # Body too large for EXINIT/argv: stage it in a file
-( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
-trap 'rm -f "$P2VIF"' EXIT
+( : > /tmp/p2vi.$$.d ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
+trap 'rm -f "$P2VIF".*' EXIT
 
-# Patch: conf.c ex.c vi.c vi.h
 printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg prFp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
-"${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
+"229reg  $P2VI_PATCH \
+${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0m!%ya 98?0?
+'230reg 0fr 2290?
+f> [ /]highlight_cmd[.]sh 20??b520?? %ya 231230reg 1231??0?
+fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b21b310?
+b4%ya 972sc %? %@972sc!b01211reg ? %@2210?
+2sc %? %@2312sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF".d
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> 
 /\* access mode of new files \*/
 const int conf_mode = 0600;
@@ -528,6 +533,56 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},.*(	\
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-9m 17220reg p OK conf.c:301:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3012sc %? %@2132sc!0?
+?0?
+%f+ const int hlslen = LEN\(hls\);
+
+/\* ids of optional hls, reset and reloaded on filetype change \*/
+const int hlopts\[] = \{1, 2, 3};
+const int hloptslen = LEN\(hlopts\);
+
+/\* how to highlight text in the reverse direction \*/1??0?
+1??+3m 181q0?
+%f+ const int hlopts\[] = \{1, 2, 3};
+const int hloptslen = LEN\(hlopts\);
+
+/\* how to highlight text in the reverse direction \*/2??0?
+2??m 18220reg p OK conf.c:329:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^const int hlopts\[] = \{1, 2, 3};$3??0?
+3??m 18220reg p OK conf.c:329:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ const int hlslen = LEN\(hls\);
+
+/\* ids of optional hls, reset and reloaded on filetype change \*/4??0?
+4??+3m 18220reg p OK conf.c:329:a42sc %? %@2152sc!1q0?
+%f+ const int hloptslen = LEN\(hlopts\);
+
+/\* how to highlight text in the reverse direction \*/5??0?
+5??-1m 18220reg p OK conf.c:329:a52sc %? %@2152sc!1q0?
+%f+ .o... i....l.l.n....EN\(.....
+
+....d. o.........l........se. .....el..d.........e......h.......
+...................= .......3}.
+...s....t..lo.t........E..........
+
+.\*..o. t.........h. te......t.e...v......ir.c.......6??0?
+6??+3m 18220reg p OK conf.c:329:a62sc %? %@2152sc!1q0?
+grp 1%f+ const int hlslen = LEN\(hls\);.*?
+.*?
+/\* ids of optional hls, reset and reloaded on filetype change \*/.*?
+(const int hlopts\[] = \{1, 2, 3};)7??0?
+grp 07??m 18220reg p OK conf.c:329:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\* \(\[0-9]\{1,3}%\) \(L\[0-9]\+\) \(C\[0-9]\+\) \(B-\?\[0-9]\+\)\?\.\*\$",
+		A\(AY1 \| SYN_BD, BL, RE1, BL, YE1, GR\)},
+	\{bar_ft, "\^\.\*\$", A\(AY1 \| SYN_BD\)},.*(/\* right-to-left characters \*/)
+#define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
+/\* neutral characters \*/8??0?
+grp 08??-6m 18220reg p OK conf.c:329:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
+	\{bar_ft, "\^<\(\.\+\)> \(\?:\[\^ ]\+ \)\*\(\[0-9]\+L\) \(\[0-9]\+W\) \(S\[0-9]\+\) \(O\[0-9]\+\) \(C\[0-9]\+\)\$",
+		A\(AY1 \| SYN_BD, RE1, BL, YE, MA, CY1, YE1\)},.*(struct dircontext dctxs\[] = \{)
+	\{"\^\[" CR2L "]", -1},
+	\{"\^\[a-zA-Z_0-9]", \+1},9??0?
+grp 09??-11m 18220reg p OK conf.c:329:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg conf.c:3292sc %? %@2132sc!0?
 '\''1i 
 /* the speller of the sl command, must speak the ispell pipe protocol */
 char spell_cmd[] = "aspell -a";
@@ -587,7 +642,8 @@ const int spell_ftslen = LEN(spell_fts);
 ??!219reg conf.c:253:m152sc %? %@2142sc!0?
 '\''16i 	{FT(md), NULL, SP, 9, 5},
 ??!219reg conf.c:276:m162sc %? %@2142sc!0?
-'\''17s/sc/sl!?|sc/??!219reg conf.c:301:m172sc %? %@2142sc!b1m!%ya 98?0?
+'\''17s/sc/sl!?|sc/??!219reg conf.c:301:m172sc %? %@2142sc!0?
+'\''18s/3}/3, 5}/??!219reg conf.c:329:m182sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	return NULL;
 }
 
@@ -998,8 +1054,35 @@ struct spellft {
 };
 extern struct spellft spell_fts[];
 extern const int spell_ftslen;
-??!219reg vi.h:549:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
-EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
+??!219reg vi.h:549:m12sc %? %@2142sc!' > "$P2VIF".0
+# Compat 231 src=highlight_cmd.sh
+printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
+%f> const int hlslen = LEN\(hls\);
+
+/\* ids of optional hls, reset and reloaded on filetype change \*/
+const int hlopts\[] = \{1, 2, 3, 4};
+const int hloptslen = LEN\(hlopts\);
+
+/\* how to highlight text in the reverse direction \*/1??0?
+1??+3m 11q0?
+%f> const int hlopts\[] = \{1, 2, 3, 4};
+const int hloptslen = LEN\(hlopts\);
+
+/\* how to highlight text in the reverse direction \*/2??0?
+2??m 1220reg p OK conf.c:389:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^const int hlopts\[] = \{1, 2, 3, 4};$3??0?
+3??m 1220reg p OK conf.c:389:a32sc %? %@2152sc!fr 981qfr 980?
+%f> const int hlslen = LEN\(hls\);
+
+/\* ids of optional hls, reset and reloaded on filetype change \*/4??0?
+4??+3m 1220reg p OK conf.c:389:a42sc %? %@2152sc!1q0?
+%f> const int hloptslen = LEN\(hlopts\);
+
+/\* how to highlight text in the reverse direction \*/5??0?
+5??-1m 1220reg p OK conf.c:389:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg conf.c:389:r2312sc %? %@2132sc!0?
+'\''1s/4}/4, 5}/??!219reg conf.c:389:r231:m12sc %? %@2142sc!p compat 231 applied: src=highlight_cmd.sh' > "$P2VIF".231
+EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
@@ -1009,9 +1092,24 @@ if [ $# -gt 0 ]; then
 fi
 
 exit 0
+=== PATCH2VI COMPAT 231 src=highlight_cmd.sh ===
+=== COMPAT PATCH ===
+--- a/conf.c
++++ b/conf.c
+@@ -386,7 +386,7 @@
+ const int hlslen = LEN(hls);
+ 
+ /* ids of optional hls, reset and reloaded on filetype change */
+-const int hlopts[] = {1, 2, 3, 4};
++const int hlopts[] = {1, 2, 3, 4, 5};
+ const int hloptslen = LEN(hlopts);
+ 
+ /* how to highlight text in the reverse direction */
+=== END ===
+=== END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 02147e45..0b4307b1 100644
+index 02147e45..f794645f 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -2,6 +2,10 @@
@@ -1177,6 +1275,15 @@ index 02147e45..0b4307b1 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
+@@ -326,7 +369,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+ const int hlslen = LEN(hls);
+ 
+ /* ids of optional hls, reset and reloaded on filetype change */
+-const int hlopts[] = {1, 2, 3};
++const int hlopts[] = {1, 2, 3, 5};
+ const int hloptslen = LEN(hlopts);
+ 
+ /* how to highlight text in the reverse direction */
 diff --git a/ex.c b/ex.c
 index b2e59855..afd205b5 100644
 --- a/ex.c
