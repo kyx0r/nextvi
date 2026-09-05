@@ -841,7 +841,7 @@ Example: join all lines with space padding
 :%-1j x
 .Ed
 
-.It Cm [\fIrange\fP]s[<\fIDelim\fP>][\fIregex\fP][<\fIDelim\fP>][\fIstr\fP][<\fIDelim\fP>][<\fIg\fP>][<\fIm\fP>][\fI#reg\fP]
+.It Cm [\fIrange\fP]s[<\fIDelim\fP>][\fIregex\fP][<\fIDelim\fP>][\fIstr\fP][<\fIDelim\fP>][<\fIg\fP>][<\fIm\fP>][<\fI^\fP>][\fI#reg\fP]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
@@ -868,6 +868,11 @@ this is an example text for subs and has prepreafterafter or prevoidafter
 
 Example: global replacement with <g>
 :%s/term1/term2/g
+
+Example: anchor ^ at every search with <^>, implies <g>
+aaa
+:%s/^a/X/^
+XXX
 
 Example: multiline mode <m>
 :.,+1s/term1<^V><^M>term2/term3/m
