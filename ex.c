@@ -1313,8 +1313,8 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
 		sbuf_free(led_attsb)
 		led_attsb = NULL;
 	}
-	for (i = 1; i < 4; i++)
-		syn_reloadft(syn_findhl(i), 0);
+	for (i = 0; i < hloptslen; i++)
+		syn_reloadft(syn_findhl(hlopts[i]), 0);
 	return NULL;
 }
 

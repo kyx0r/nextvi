@@ -270,8 +270,8 @@ char *syn_setft(char *ft)
 {
 	int i;
 	if (ftmidx)
-		for (i = 1; i < 4; i++)
-			syn_addhl(NULL, i);
+		for (i = 0; i < hloptslen; i++)
+			syn_addhl(NULL, hlopts[i]);
 	for (i = 0; i < ftmidx; i++)
 		if (ft == ftmap[i].ft) {
 			ftidx = i;
