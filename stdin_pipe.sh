@@ -724,20 +724,20 @@ extern int vi_lncol;1??0?
 %f> char \*conf_digraph\(int c1, int c2\);
 
 /\* vi\.c: main \*/4??0?
-4??+2m 1220reg p OK vi.h:552:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:554:a42sc %? %@2152sc!1q0?
 grp 1%f> char \*conf_digraph\(int c1, int c2\);.*?
 .*?
 (/\* vi\.c: main \*/)7??0?
-grp 07??m 1220reg p OK vi.h:552:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:554:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern const int conf_hlrev;
 char \*\*conf_kmap\(int id\);
 int conf_kmapfind\(char \*name\);.*(/\* filesystem \*/)
 extern rset \*fsincl;
 void dir_calc\(char \*path\);8??0?
-grp 08??-4m 1220reg p OK vi.h:552:a82sc %? %@2152sc!'\''00?
-1;4;7;8??!219reg vi.h:5522sc %? %@2132sc!0?
+grp 08??-4m 1220reg p OK vi.h:554:a82sc %? %@2152sc!'\''00?
+1;4;7;8??!219reg vi.h:5542sc %? %@2132sc!0?
 '\''1i extern int stdin_fd;
-??!219reg vi.h:552:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:554:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -750,7 +750,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 9edd2405..dd7405ef 100644
+index b2e59855..74d8d109 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -415,7 +415,9 @@ int ex_edit(const char *path, int len)
@@ -918,10 +918,10 @@ index b5e0f21b..736f82e4 100644
  			if (argv[i][j] == 's')
  				xvis |= 1|2;
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..a6485447 100644
+index c5c79dc5..d0a42b01 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -550,6 +550,7 @@ int conf_kmapfind(char *name);
+@@ -552,6 +552,7 @@ int conf_kmapfind(char *name);
  char *conf_digraph(int c1, int c2);
  
  /* vi.c: main */

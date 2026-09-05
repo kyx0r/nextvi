@@ -200,7 +200,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..ba8bf9b8 100644
+index 02147e45..8bdab6ca 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -7,6 +7,7 @@ const int conf_mode = 0600;

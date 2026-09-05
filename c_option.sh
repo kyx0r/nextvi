@@ -362,7 +362,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 9edd2405..a2de65ed 100644
+index b2e59855..9e35e2e0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1956,7 +1956,7 @@ void ex(void)
@@ -428,7 +428,7 @@ index b5e0f21b..3a5967e9 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..3cb28537 100644
+index c5c79dc5..806586ea 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -491,7 +491,7 @@ void *ex_exec(const char *ln);

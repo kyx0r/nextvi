@@ -248,7 +248,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 9edd2405..e5745c2f 100644
+index b2e59855..25e29480 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@

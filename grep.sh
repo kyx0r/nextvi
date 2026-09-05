@@ -790,7 +790,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..5c4c77de 100644
+index 02147e45..02a7230c 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -820,7 +820,7 @@ index c92ec213..5c4c77de 100644
  	{ex_ft, ":[ \t]*((((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 9edd2405..df237eed 100644
+index b2e59855..f42c937a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -971,7 +971,7 @@ index b5e0f21b..78ea9bdb 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..d71b6b75 100644
+index c5c79dc5..ea9cc570 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -458,7 +458,7 @@ extern sbuf **xregs;

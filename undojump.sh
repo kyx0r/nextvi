@@ -41,20 +41,20 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 }
 
 4??0?
-4??+2m 1220reg p OK lbuf.c:396:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK lbuf.c:404:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	free\(sb->s\);
 	return 0;
 }.*(	struct lopt \*lo = &lb->hist\[lb->hist_u - 1];)
 	const int useq = lo->seq;
 	sbuf sb;8??0?
-grp 08??-5m 1220reg p OK lbuf.c:396:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK lbuf.c:404:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	sbufn_chr\(sb, '\''\\n'\''\)
 	lbuf_edit\(lb, sb->s, beg, end, o1, \*o2\);.*(	if \(lb->hist_u == lb->hist_n\) \{)
 		lbuf_copymark\(lb->tmp_mark, lb->mark_sb\)
 		lbuf_copymark\(\(lb->tmp_mark \+ 2\), lb->mark_se\)9??0?
-grp 09??-8m 1220reg p OK lbuf.c:396:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg lbuf.c:3962sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK lbuf.c:404:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg lbuf.c:4042sc %? %@2132sc!0?
 '\''1i int lbuf_undojump(struct lbuf *lb, int *pos, int *off)
 {
 	struct lopt *lo;
@@ -90,7 +90,7 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 	return ret;
 }
 
-??!219reg lbuf.c:396:m12sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg lbuf.c:404:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 				vi_hidch = !vi_hidch;
 				vi_mod \|= 1;
 				break;
@@ -173,10 +173,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index bce1f5e0..13c977d9 100644
+index 56cb42c6..22b31e9a 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -394,6 +394,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
+@@ -402,6 +402,41 @@ char *lbuf_get(struct lbuf *lb, int pos)
  	return pos >= 0 && pos < lb->ln_n ? lb->ln[pos] : NULL;
  }
  
@@ -241,7 +241,7 @@ index b5e0f21b..77963517 100644
  				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..a283f66b 100644
+index c5c79dc5..4e4b51da 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -168,6 +168,7 @@ char *lbuf_get(struct lbuf *lb, int pos);

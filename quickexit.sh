@@ -168,24 +168,24 @@ sbuf \*led_attsb;
 %f+ 				exbuf_load\(ex_buf\)
 			}
 			continue; }4??0?
-4??+2m 2220reg p OK led.c:643:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK led.c:646:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				exbuf_load\(ex_buf\).*?
 			}.*?
 (			continue; })7??0?
-grp 07??m 2220reg p OK led.c:643:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:646:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			} else if \(bidx != ex_buf - bufs && bidx < xbufcur\) \{
 				ex_buf = bufs \+ bidx;.*(			if \(\(cs = led_read\(kmap, c\)\)\))
 				sbuf_str\(sb, cs\)
 		}8??0?
-grp 08??-4m 2220reg p OK led.c:643:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:646:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(ex_buf == tmpex_buf\)
 					continue;
 				restore\(ex_buf\).*(		is->sug = NULL;)
 		is->_sug = NULL;
 		if \(ai_max >= 0 && xpac\)9??0?
-grp 09??-7m 2220reg p OK led.c:643:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:6432sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK led.c:646:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:6462sc %? %@2132sc!0?
 '\''1i static int gettime_ms(void)
 {
 	struct timespec t;
@@ -206,7 +206,7 @@ sbuf \*led_attsb;
 		case '\''k'\'':
 			is->quickexit = gettime_ms();
 _default:
-??!219reg led.c:643:m22sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg led.c:646:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> #include <dirent\.h>
 #include <signal\.h>
 #include <unistd\.h>
@@ -374,7 +374,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..b6d7857f 100644
+index 02147e45..63a17160 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -297,7 +297,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -387,7 +387,7 @@ index c92ec213..b6d7857f 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 9edd2405..71826847 100644
+index b2e59855..a0e8873d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -412,7 +412,7 @@ index 9edd2405..71826847 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index ac9ccc64..474e70f4 100644
+index 530eaf88..c271aa7c 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -428,7 +428,7 @@ index ac9ccc64..474e70f4 100644
  static sbuf *acsb;
  sbuf *led_attsb;
  
-@@ -641,6 +649,17 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -644,6 +652,17 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				exbuf_load(ex_buf)
  			}
  			continue; }
@@ -468,7 +468,7 @@ index b5e0f21b..0cf31d08 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..02850007 100644
+index c5c79dc5..4882a96a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -374,6 +374,7 @@ typedef struct {

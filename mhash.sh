@@ -91,42 +91,42 @@ static int \*mark_find\(int \*mark, int n, int id\)
 %f> /\* find a mark id, returning its row & off pair \*/
 static int \*mark_find\(int \*mark, int n, int id\)
 \{2??0?
-2??m 1220reg p OK lbuf.c:25:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK lbuf.c:33:a22sc %? %@2152sc!1q0?
 %f> /\* find a mark id, returning its row & off pair \*/
 static int \*mark_find\(int \*mark, int n, int id\)3??0?
-3??m 1220reg p OK lbuf.c:25:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK lbuf.c:33:a32sc %? %@2152sc!1q0?
 %f> 
 #define lbuf_copymark\(dst, src\) \{ dst\[0] = src\[0]; dst\[1] = src\[1]; }
 
 4??0?
-4??+3m 1220reg p OK lbuf.c:25:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK lbuf.c:33:a42sc %? %@2152sc!1q0?
 ;0fr.,$f> ^\{$5??0?
-5??-2m 1220reg p OK lbuf.c:25:a52sc %? %@2152sc!fr 981qfr 980?
+5??-2m 1220reg p OK lbuf.c:33:a52sc %? %@2152sc!fr 981qfr 980?
 %f> 
 .de.... ..u..co.....k\(.... .... ....t\[......r..... .s.\[.. ........;..
 
 .\*.........a.k .....etu..... ..s.....&.......i.../
 ......................... .m.r...........n..id.
 \{6??0?
-6??+3m 1220reg p OK lbuf.c:25:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK lbuf.c:33:a62sc %? %@2152sc!1q0?
 grp 1%f> .*?
 #define lbuf_copymark\(dst, src\) \{ dst\[0] = src\[0]; dst\[1] = src\[1]; }.*?
 .*?
 (/\* find a mark id, returning its row & off pair \*/)7??0?
-grp 07??m 1220reg p OK lbuf.c:25:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 			free\(lbuf_s\(lo->del\[i]\)\);
+grp 07??m 1220reg p OK lbuf.c:33:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			lbuf_rfree\(lo->del\[i]\);
 	free\(lo->del\);
 }.*(	if \(mk == '\''\['\''\) \{)
 		lb->mark_sb\[0] = pos;
 		lb->mark_sb\[1] = off;8??0?
-grp 08??-26m 1220reg p OK lbuf.c:25:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-26m 1220reg p OK lbuf.c:33:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	free\(lo->ins\);
 	if \(!\(lo->ref & 1\)\)
 		for \(int i = 0; i < lo->n_del; i\+\+\).*(	} else if \(mk == '\'']'\''\) \{)
 		lb->mark_se\[0] = pos;
 		lb->mark_se\[1] = off;9??0?
-grp 09??-29m 1220reg p OK lbuf.c:25:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:252sc %? %@2132sc!0?
+grp 09??-29m 1220reg p OK lbuf.c:33:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:332sc %? %@2132sc!0?
 ?0?
 %f+ \{
 	for \(int i = 0; i < n \* 3; i \+= 3\)
@@ -144,18 +144,18 @@ static int \*mark_find\(int \*mark, int n, int id\)3??0?
 }
 
 2??0?
-2??m 2220reg p OK lbuf.c:28:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK lbuf.c:36:a22sc %? %@2152sc!1q0?
 %f+ 	for \(int i = 0; i < n \* 3; i \+= 3\)
 		if \(mark\[i] == id\)
 			return mark \+ i \+ 1;
 	return NULL;3??0?
-3??m 2220reg p OK lbuf.c:28:a32sc %? %@2152sc!1q0?
+3??m 2220reg p OK lbuf.c:36:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^\{$4??0?
-4??+1m 2220reg p OK lbuf.c:28:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 2220reg p OK lbuf.c:36:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ }
 
 5??0?
-5??-4m 2220reg p OK lbuf.c:28:a52sc %? %@2152sc!1q0?
+5??-4m 2220reg p OK lbuf.c:36:a52sc %? %@2152sc!1q0?
 %f+ \{
 .f..........= .........\*..... .= ..
 ........r..........\)
@@ -164,23 +164,23 @@ static int \*mark_find\(int \*mark, int n, int id\)3??0?
 }
 
 6??0?
-6??+1m 2220reg p OK lbuf.c:28:a62sc %? %@2152sc!1q0?
+6??+1m 2220reg p OK lbuf.c:36:a62sc %? %@2152sc!1q0?
 grp 1%f+ \{.*?
 (	for \(int i = 0; i < n \* 3; i \+= 3\))7??0?
-grp 07??m 2220reg p OK lbuf.c:28:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 			free\(lbuf_s\(lo->del\[i]\)\);
+grp 07??m 2220reg p OK lbuf.c:36:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			lbuf_rfree\(lo->del\[i]\);
 	free\(lo->del\);
 }.*(	if \(mk == '\''\['\''\) \{)
 		lb->mark_sb\[0] = pos;
 		lb->mark_sb\[1] = off;8??0?
-grp 08??-23m 2220reg p OK lbuf.c:28:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-23m 2220reg p OK lbuf.c:36:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	free\(lo->ins\);
 	if \(!\(lo->ref & 1\)\)
 		for \(int i = 0; i < lo->n_del; i\+\+\).*(	} else if \(mk == '\'']'\''\) \{)
 		lb->mark_se\[0] = pos;
 		lb->mark_se\[1] = off;9??0?
-grp 09??-26m 2220reg p OK lbuf.c:28:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:282sc %? %@2132sc!0?
+grp 09??-26m 2220reg p OK lbuf.c:36:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:362sc %? %@2132sc!0?
 ?0?
 %f+ }
 
@@ -203,7 +203,7 @@ static void mark_set\(int \*\*mark, int \*n, int id, int pos, int off\)
 		\*m\+\+ = id;
 		\(\*n\)\+\+;
 	}2??0?
-2??m 3220reg p OK lbuf.c:34:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK lbuf.c:42:a22sc %? %@2152sc!1q0?
 %f+ static void mark_set\(int \*\*mark, int \*n, int id, int pos, int off\)
 \{
 	int \*m = mark_find\(\*mark, \*n, id\);
@@ -212,13 +212,13 @@ static void mark_set\(int \*\*mark, int \*n, int id, int pos, int off\)
 		m = \*mark \+ \*n \* 3;
 		\*m\+\+ = id;
 		\(\*n\)\+\+;3??0?
-3??m 3220reg p OK lbuf.c:34:a32sc %? %@2152sc!1q0?
+3??m 3220reg p OK lbuf.c:42:a32sc %? %@2152sc!1q0?
 %f+ }
 
 4??0?
-4??+2m 3220reg p OK lbuf.c:34:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK lbuf.c:42:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	}$5??0?
-5??-8m 3220reg p OK lbuf.c:34:a52sc %? %@2152sc!fr 981qfr 980?
+5??-8m 3220reg p OK lbuf.c:42:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ }
 
 .......void.m..._s..\(.n...\*.a.k,.............i...i.....s, i.......
@@ -230,24 +230,24 @@ static void mark_set\(int \*\*mark, int \*n, int id, int pos, int off\)
 .	\*... . i..
 ....n\)\+..
 .}6??0?
-6??+2m 3220reg p OK lbuf.c:34:a62sc %? %@2152sc!1q0?
+6??+2m 3220reg p OK lbuf.c:42:a62sc %? %@2152sc!1q0?
 grp 1%f+ }.*?
 .*?
 (static void mark_set\(int \*\*mark, int \*n, int id, int pos, int off\))7??0?
-grp 07??m 3220reg p OK lbuf.c:34:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 			free\(lbuf_s\(lo->del\[i]\)\);
+grp 07??m 3220reg p OK lbuf.c:42:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			lbuf_rfree\(lo->del\[i]\);
 	free\(lo->del\);
 }.*(	if \(mk == '\''\['\''\) \{)
 		lb->mark_sb\[0] = pos;
 		lb->mark_sb\[1] = off;8??0?
-grp 08??-17m 3220reg p OK lbuf.c:34:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-17m 3220reg p OK lbuf.c:42:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	free\(lo->ins\);
 	if \(!\(lo->ref & 1\)\)
 		for \(int i = 0; i < lo->n_del; i\+\+\).*(	} else if \(mk == '\'']'\''\) \{)
 		lb->mark_se\[0] = pos;
 		lb->mark_se\[1] = off;9??0?
-grp 09??-20m 3220reg p OK lbuf.c:34:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:342sc %? %@2132sc!0?
+grp 09??-20m 3220reg p OK lbuf.c:42:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:422sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 	m\[0] = pos;
@@ -261,39 +261,39 @@ void lbuf_mark\(struct lbuf \*lb, int mk, int pos, int off\)1??0?
 }
 
 void lbuf_mark\(struct lbuf \*lb, int mk, int pos, int off\)2??0?
-2??m 4220reg p OK lbuf.c:43:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK lbuf.c:51:a22sc %? %@2152sc!1q0?
 %f+ 	m\[0] = pos;
 	m\[1] = off;3??0?
-3??m 4220reg p OK lbuf.c:43:a32sc %? %@2152sc!1q0?
+3??m 4220reg p OK lbuf.c:51:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	}$4??0?
-4??+1m 4220reg p OK lbuf.c:43:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 4220reg p OK lbuf.c:51:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ }
 
 void lbuf_mark\(struct lbuf \*lb, int mk, int pos, int off\)5??0?
-5??-2m 4220reg p OK lbuf.c:43:a52sc %? %@2152sc!1q0?
+5??-2m 4220reg p OK lbuf.c:51:a52sc %? %@2152sc!1q0?
 %f+ .}
 ....]...p...
 	.......o...
 }
 
 v........_....\(s...ct..bu...... i.. .k......p........o..\)6??0?
-6??+1m 4220reg p OK lbuf.c:43:a62sc %? %@2152sc!1q0?
+6??+1m 4220reg p OK lbuf.c:51:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	}.*?
 (	m\[0] = pos;)7??0?
-grp 07??m 4220reg p OK lbuf.c:43:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 			free\(lbuf_s\(lo->del\[i]\)\);
+grp 07??m 4220reg p OK lbuf.c:51:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			lbuf_rfree\(lo->del\[i]\);
 	free\(lo->del\);
 }.*(	if \(mk == '\''\['\''\) \{)
 		lb->mark_sb\[0] = pos;
 		lb->mark_sb\[1] = off;8??0?
-grp 08??-8m 4220reg p OK lbuf.c:43:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 4220reg p OK lbuf.c:51:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	free\(lo->ins\);
 	if \(!\(lo->ref & 1\)\)
 		for \(int i = 0; i < lo->n_del; i\+\+\).*(	} else if \(mk == '\'']'\''\) \{)
 		lb->mark_se\[0] = pos;
 		lb->mark_se\[1] = off;9??0?
-grp 09??-11m 4220reg p OK lbuf.c:43:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:432sc %? %@2132sc!0?
+grp 09??-11m 4220reg p OK lbuf.c:51:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:512sc %? %@2132sc!0?
 ?0?
 %f+ 	} else if \(mk == '\'']'\''\) \{
 		lb->mark_se\[0] = pos;
@@ -309,18 +309,18 @@ int lbuf_jump\(struct lbuf \*lb, int mk, int \*pos, int \*off\)1??0?
 }
 
 int lbuf_jump\(struct lbuf \*lb, int mk, int \*pos, int \*off\)2??0?
-2??m 5220reg p OK lbuf.c:57:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK lbuf.c:65:a22sc %? %@2152sc!1q0?
 %f+ 	} else
 		mark_set\(&lb->mark, &lb->mark_n, mk, pos, off\);3??0?
-3??m 5220reg p OK lbuf.c:57:a32sc %? %@2152sc!1q0?
+3??m 5220reg p OK lbuf.c:65:a32sc %? %@2152sc!1q0?
 %f+ 	} else if \(mk == '\'']'\''\) \{
 		lb->mark_se\[0] = pos;
 		lb->mark_se\[1] = off;4??0?
-4??+3m 5220reg p OK lbuf.c:57:a42sc %? %@2152sc!1q0?
+4??+3m 5220reg p OK lbuf.c:65:a42sc %? %@2152sc!1q0?
 %f+ }
 
 int lbuf_jump\(struct lbuf \*lb, int mk, int \*pos, int \*off\)5??0?
-5??-2m 5220reg p OK lbuf.c:57:a52sc %? %@2152sc!1q0?
+5??-2m 5220reg p OK lbuf.c:65:a52sc %? %@2152sc!1q0?
 %f+ ......e.......... ......
 	.....m..._..\[0] . ..s.
 	...-........\[.....o...
@@ -329,25 +329,25 @@ int lbuf_jump\(struct lbuf \*lb, int mk, int \*pos, int \*off\)5??0?
 }
 
 i...lb.......\(st.u.. ..u..\*.b..i..............., ..t.\*....6??0?
-6??+3m 5220reg p OK lbuf.c:57:a62sc %? %@2152sc!1q0?
+6??+3m 5220reg p OK lbuf.c:65:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	} else if \(mk == '\'']'\''\) \{.*?
 		lb->mark_se\[0] = pos;.*?
 		lb->mark_se\[1] = off;.*?
 (	} else)7??0?
-grp 07??m 5220reg p OK lbuf.c:57:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK lbuf.c:65:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(mk == '\''\['\''\) \{
 		lb->mark_sb\[0] = pos;
 		lb->mark_sb\[1] = off;.*(	int \*m;)
 	if \(mk == '\''\\'\'''\''\)
 		mk = '\''`'\'';8??0?
-grp 08??-6m 5220reg p OK lbuf.c:57:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 5220reg p OK lbuf.c:65:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	if \(mk == '\''\\'\'''\''\)
 		mk = '\''`'\'';.*(	if \(mk == '\''\['\''\))
 		m = lb->mark_sb;
 	else if \(mk == '\'']'\''\)9??0?
-grp 09??-9m 5220reg p OK lbuf.c:57:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:572sc %? %@2132sc!0?
+grp 09??-9m 5220reg p OK lbuf.c:65:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:652sc %? %@2132sc!0?
 ?0?
 %f+ 	else if \(mk == '\'']'\''\)
 		m = lb->mark_se;
@@ -361,17 +361,17 @@ i...lb.......\(st.u.. ..u..\*.b..i..............., ..t.\*....6??0?
 	if \(!m \|\| m\[0] < 0\)
 		return 1;
 	\*pos = m\[0];2??0?
-2??m 6220reg p OK lbuf.c:71:a22sc %? %@2152sc!1q0?
+2??m 6220reg p OK lbuf.c:79:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		m = mark_find\(lb->mark, lb->mark_n, mk\);$3??0?
-3??m 6220reg p OK lbuf.c:71:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 6220reg p OK lbuf.c:79:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	else if \(mk == '\'']'\''\)
 		m = lb->mark_se;
 	else4??0?
-4??+3m 6220reg p OK lbuf.c:71:a42sc %? %@2152sc!1q0?
+4??+3m 6220reg p OK lbuf.c:79:a42sc %? %@2152sc!1q0?
 %f+ 	if \(!m \|\| m\[0] < 0\)
 		return 1;
 	\*pos = m\[0];5??0?
-5??-1m 6220reg p OK lbuf.c:71:a52sc %? %@2152sc!1q0?
+5??-1m 6220reg p OK lbuf.c:79:a52sc %? %@2152sc!1q0?
 %f+ 	e...... \(.k....'\''...
 ........-....k...;
 .e...
@@ -379,25 +379,25 @@ i...lb.......\(st.u.. ..u..\*.b..i..............., ..t.\*....6??0?
 .if.........\[0.....\)
 ...e.u.. 1.
 ...o......0..6??0?
-6??+3m 6220reg p OK lbuf.c:71:a62sc %? %@2152sc!1q0?
+6??+3m 6220reg p OK lbuf.c:79:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	else if \(mk == '\'']'\''\).*?
 		m = lb->mark_se;.*?
 	else.*?
 (		m = mark_find\(lb->mark, lb->mark_n, mk\);)7??0?
-grp 07??m 6220reg p OK lbuf.c:71:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK lbuf.c:79:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		mk = '\''`'\'';
 	if \(mk == '\''\['\''\)
 		m = lb->mark_sb;.*(	\*off = MAX\(0, m\[1]\);)
 	return 0;
 }8??0?
-grp 08??-4m 6220reg p OK lbuf.c:71:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK lbuf.c:79:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	int \*m;
 	if \(mk == '\''\\'\'''\''\).*(void lbuf_free\(struct lbuf \*lb\))
 \{
 	int i;9??0?
-grp 09??-8m 6220reg p OK lbuf.c:71:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:712sc %? %@2132sc!0?
+grp 09??-8m 6220reg p OK lbuf.c:79:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:792sc %? %@2132sc!0?
 ?0?
 %f+ 	lb->ln_n \+= n_ins - n_del;
 	for \(i = 0; i < n_ins; i\+\+\)
@@ -409,41 +409,41 @@ i...lb.......\(st.u.. ..u..\*.b..i..............., ..t.\*....6??0?
 %f+ 	for \(i = 0; i < lb->mark_n; i\+\+\) \{	/\* updating marks \*/
 		int \*m = lb->mark \+ i \* 3, \*lm;
 		if \(m\[1] >= pos \+ n_ins && m\[1] < pos \+ n_del\) \{2??0?
-2??m 7220reg p OK lbuf.c:132:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK lbuf.c:140:a22sc %? %@2152sc!1q0?
 %f+ 	for \(i = 0; i < lb->mark_n; i\+\+\) \{	/\* updating marks \*/
 		int \*m = lb->mark \+ i \* 3, \*lm;3??0?
-3??m 7220reg p OK lbuf.c:132:a32sc %? %@2152sc!1q0?
+3??m 7220reg p OK lbuf.c:140:a32sc %? %@2152sc!1q0?
 %f+ 	lb->ln_n \+= n_ins - n_del;
 	for \(i = 0; i < n_ins; i\+\+\)
 		lb->ln\[pos \+ i] = \*\(\(char\*\*\)sb->s \+ i\);4??0?
-4??+3m 7220reg p OK lbuf.c:132:a42sc %? %@2152sc!1q0?
+4??+3m 7220reg p OK lbuf.c:140:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(m\[1] >= pos \+ n_ins && m\[1] < pos \+ n_del\) \{$5??0?
-5??-2m 7220reg p OK lbuf.c:132:a52sc %? %@2152sc!fr 981qfr 980?
+5??-2m 7220reg p OK lbuf.c:140:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .l......n ...n.i.. ....de..
 ....... =... ....._i.s....\+\)
 ....-.......................\*...-.s.\+....
 ......i....; i.. .....ar.... ......	................. ./
 ..... .m.......m... . i \*..,.\*...
 .	.. .................in...&.m.1....... .....el...6??0?
-6??+3m 7220reg p OK lbuf.c:132:a62sc %? %@2152sc!1q0?
+6??+3m 7220reg p OK lbuf.c:140:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	lb->ln_n \+= n_ins - n_del;.*?
 	for \(i = 0; i < n_ins; i\+\+\).*?
 		lb->ln\[pos \+ i] = \*\(\(char\*\*\)sb->s \+ i\);.*?
 (	for \(i = 0; i < lb->mark_n; i\+\+\) \{	/\* updating marks \*/)7??0?
-grp 07??m 7220reg p OK lbuf.c:132:a72sc %? %@2152sc!1q0?
+grp 07??m 7220reg p OK lbuf.c:140:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		memmove\(lb->ln \+ pos \+ n_ins, lb->ln \+ pos \+ n_del,
 			\(lb->ln_n - pos - n_del\) \* sizeof\(lb->ln\[0]\)\);
 	}.*(void lbuf_smark\(struct lbuf \*lb, struct lopt \*lo, int beg, int o1\))
 \{
 	lbuf_copymark\(lo->mark_sb, lb->mark_sb\)8??0?
-grp 08??-13m 7220reg p OK lbuf.c:132:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-13m 7220reg p OK lbuf.c:140:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		lb->ln_sz = nsz;
 	}
 	if \(n_ins != n_del\) \{.*(	lb->mark_sb\[0] = beg;)
 	lb->mark_sb\[1] = o1;
 }9??0?
-grp 09??-16m 7220reg p OK lbuf.c:132:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:1322sc %? %@2132sc!0?
+grp 09??-16m 7220reg p OK lbuf.c:140:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:1402sc %? %@2132sc!0?
 ?0?
 %f+ 		if \(m\[1] >= pos \+ n_ins && m\[1] < pos \+ n_del\) \{
 			mark_set\(&lo->mark, &lo->mark_n, m\[0], m\[1], m\[2]\);
@@ -455,37 +455,37 @@ i...lb.......\(st.u.. ..u..\*.b..i..............., ..t.\*....6??0?
 			m\[1] = n_ins \? pos \+ n_ins - 1 : -1;
 		} else if \(m\[1] >= pos \+ n_del\) \{
 			m\[1] \+= n_ins - n_del;2??0?
-2??m 8220reg p OK lbuf.c:135:a22sc %? %@2152sc!1q0?
+2??m 8220reg p OK lbuf.c:143:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			mark_set\(&lo->mark, &lo->mark_n, m\[0], m\[1], m\[2]\);$3??0?
-3??m 8220reg p OK lbuf.c:135:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 8220reg p OK lbuf.c:143:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^		if \(m\[1] >= pos \+ n_ins && m\[1] < pos \+ n_del\) \{$4??0?
-4??+1m 8220reg p OK lbuf.c:135:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 8220reg p OK lbuf.c:143:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 			m\[1] = n_ins \? pos \+ n_ins - 1 : -1;
 		} else if \(m\[1] >= pos \+ n_del\) \{
 			m\[1] \+= n_ins - n_del;5??0?
-5??-1m 8220reg p OK lbuf.c:135:a52sc %? %@2152sc!1q0?
+5??-1m 8220reg p OK lbuf.c:143:a52sc %? %@2152sc!1q0?
 %f+ 	.i..\(m\[.. ...p.s ..n...s..&...1............d..\).\{
 ..	...._.e...l..>.....................0.,.....,.....\).
 ...m.1. ....i.. . ......n..n. ..1....1.
 .	. ...........1. >....s.. ._......
 ........\+..._..........l.6??0?
-6??+1m 8220reg p OK lbuf.c:135:a62sc %? %@2152sc!1q0?
+6??+1m 8220reg p OK lbuf.c:143:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		if \(m\[1] >= pos \+ n_ins && m\[1] < pos \+ n_del\) \{.*?
 (			mark_set\(&lo->mark, &lo->mark_n, m\[0], m\[1], m\[2]\);)7??0?
-grp 07??m 8220reg p OK lbuf.c:135:a72sc %? %@2152sc!1q0?
+grp 07??m 8220reg p OK lbuf.c:143:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		memmove\(lb->ln \+ pos \+ n_ins, lb->ln \+ pos \+ n_del,
 			\(lb->ln_n - pos - n_del\) \* sizeof\(lb->ln\[0]\)\);
 	}.*(void lbuf_smark\(struct lbuf \*lb, struct lopt \*lo, int beg, int o1\))
 \{
 	lbuf_copymark\(lo->mark_sb, lb->mark_sb\)8??0?
-grp 08??-10m 8220reg p OK lbuf.c:135:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 8220reg p OK lbuf.c:143:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		lb->ln_sz = nsz;
 	}
 	if \(n_ins != n_del\) \{.*(	lb->mark_sb\[0] = beg;)
 	lb->mark_sb\[1] = o1;
 }9??0?
-grp 09??-13m 8220reg p OK lbuf.c:135:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:1352sc %? %@2132sc!0?
+grp 09??-13m 8220reg p OK lbuf.c:143:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:1432sc %? %@2132sc!0?
 ?0?
 %f+ 			m\[1] = n_ins \? pos \+ n_ins - 1 : -1;
 		} else if \(m\[1] >= pos \+ n_del\) \{
@@ -499,17 +499,17 @@ i...lb.......\(st.u.. ..u..\*.b..i..............., ..t.\*....6??0?
 			lbuf_copymark\(\(m \+ 1\), lm\)
 	}
 	return n_ins;2??0?
-2??m 9220reg p OK lbuf.c:139:a22sc %? %@2152sc!1q0?
+2??m 9220reg p OK lbuf.c:147:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		} else if \(\(lm = mark_find\(lo->mark, lo->mark_n, m\[0]\)\)\)$3??0?
-3??m 9220reg p OK lbuf.c:139:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 9220reg p OK lbuf.c:147:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			m\[1] = n_ins \? pos \+ n_ins - 1 : -1;
 		} else if \(m\[1] >= pos \+ n_del\) \{
 			m\[1] \+= n_ins - n_del;4??0?
-4??+3m 9220reg p OK lbuf.c:139:a42sc %? %@2152sc!1q0?
+4??+3m 9220reg p OK lbuf.c:147:a42sc %? %@2152sc!1q0?
 %f+ 			lbuf_copymark\(\(m \+ 1\), lm\)
 	}
 	return n_ins;5??0?
-5??-1m 9220reg p OK lbuf.c:139:a52sc %? %@2152sc!1q0?
+5??-1m 9220reg p OK lbuf.c:147:a52sc %? %@2152sc!1q0?
 %f+ .....1......i.... p.... ..in....1 :...;
 	.. ............] .=.p.. ..n_.... \{
 ....\[.]....n..n... ._...;
@@ -517,25 +517,25 @@ i...lb.......\(st.u.. ..u..\*.b..i..............., ..t.\*....6??0?
 .....u......m.....m...1., ...
 	.
 ......n....n..6??0?
-6??+3m 9220reg p OK lbuf.c:139:a62sc %? %@2152sc!1q0?
+6??+3m 9220reg p OK lbuf.c:147:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			m\[1] = n_ins \? pos \+ n_ins - 1 : -1;.*?
 		} else if \(m\[1] >= pos \+ n_del\) \{.*?
 			m\[1] \+= n_ins - n_del;.*?
 (		} else if \(\(lm = mark_find\(lo->mark, lo->mark_n, m\[0]\)\)\))7??0?
-grp 07??m 9220reg p OK lbuf.c:139:a72sc %? %@2152sc!1q0?
+grp 07??m 9220reg p OK lbuf.c:147:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		memmove\(lb->ln \+ pos \+ n_ins, lb->ln \+ pos \+ n_del,
 			\(lb->ln_n - pos - n_del\) \* sizeof\(lb->ln\[0]\)\);
 	}.*(void lbuf_smark\(struct lbuf \*lb, struct lopt \*lo, int beg, int o1\))
 \{
 	lbuf_copymark\(lo->mark_sb, lb->mark_sb\)8??0?
-grp 08??-6m 9220reg p OK lbuf.c:139:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 9220reg p OK lbuf.c:147:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		lb->ln_sz = nsz;
 	}
 	if \(n_ins != n_del\) \{.*(	lb->mark_sb\[0] = beg;)
 	lb->mark_sb\[1] = o1;
 }9??0?
-grp 09??-9m 9220reg p OK lbuf.c:139:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:1392sc %? %@2132sc!0?
+grp 09??-9m 9220reg p OK lbuf.c:147:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:1472sc %? %@2132sc!0?
 ?0?
 %f+ 	for \(int i = 0; i < n_del; i\+\+\)
 		lo->del\[i] = lb->ln\[beg \+ i];
@@ -549,17 +549,17 @@ i...lb.......\(st.u.. ..u..\*.b..i..............., ..t.\*....6??0?
 	lo->mark_sb\[0] = -1;
 	lo->mark_se\[0] = -1;
 	lo->pos = beg;2??0?
-2??m 10220reg p OK lbuf.c:188:a22sc %? %@2152sc!1q0?
+2??m 10220reg p OK lbuf.c:196:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	lo->mark_n = 0;$3??0?
-3??m 10220reg p OK lbuf.c:188:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 10220reg p OK lbuf.c:196:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	for \(int i = 0; i < n_del; i\+\+\)
 		lo->del\[i] = lb->ln\[beg \+ i];
 	lo->mark = NULL;4??0?
-4??+3m 10220reg p OK lbuf.c:188:a42sc %? %@2152sc!1q0?
+4??+3m 10220reg p OK lbuf.c:196:a42sc %? %@2152sc!1q0?
 %f+ 	lo->mark_sb\[0] = -1;
 	lo->mark_se\[0] = -1;
 	lo->pos = beg;5??0?
-5??-1m 10220reg p OK lbuf.c:188:a52sc %? %@2152sc!1q0?
+5??-1m 10220reg p OK lbuf.c:196:a52sc %? %@2152sc!1q0?
 %f+ .f.. ..n. ........ .......;.....
 .....>..l..... .b............];
 	.o.>.....=..U.L.
@@ -567,33 +567,33 @@ i...lb.......\(st.u.. ..u..\*.b..i..............., ..t.\*....6??0?
 .......r._.b..]...-.;
 	.o......_..\[........
 .lo...o........6??0?
-6??+3m 10220reg p OK lbuf.c:188:a62sc %? %@2152sc!1q0?
+6??+3m 10220reg p OK lbuf.c:196:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	for \(int i = 0; i < n_del; i\+\+\).*?
 		lo->del\[i] = lb->ln\[beg \+ i];.*?
 	lo->mark = NULL;.*?
 (	lo->mark_n = 0;)7??0?
-grp 07??m 10220reg p OK lbuf.c:188:a72sc %? %@2152sc!1q0?
+grp 07??m 10220reg p OK lbuf.c:196:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	lo->ins = NULL;
 	lo->del = n_del \? emalloc\(n_del \* sizeof\(lo->del\[0]\)\) : NULL;.*(	lo->pos_off = o1;)
 	lo->n_ins = 0;
 	lo->n_del = n_del;8??0?
-grp 08??-4m 10220reg p OK lbuf.c:188:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 10220reg p OK lbuf.c:196:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		}
 		lo = &lb->hist\[lb->hist_n\+\+];
 		lb->hist_u = lb->hist_n;.*(	lo->seq = lb->useq;)
 	lo->ref = 2;
 	return lo;9??0?
-grp 09??-7m 10220reg p OK lbuf.c:188:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:1882sc %? %@2132sc!0?
+grp 09??-7m 10220reg p OK lbuf.c:196:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:1962sc %? %@2132sc!0?
 '\''1,#+1c /* slot of a mark id or the empty slot to insert it at */
 static int *mark_slot(struct mhash *h, int id)
-??!219reg lbuf.c:25:m12sc %? %@2142sc!0?
+??!219reg lbuf.c:33:m12sc %? %@2142sc!0?
 '\''2,#+3c 	int i = id & (h->sz - 1);
 	while (h->slot[i * 3] >= 0 && h->slot[i * 3] != id)
 		i = (i + 1) & (h->sz - 1);
 	return h->slot + i * 3;
-??!219reg lbuf.c:28:m22sc %? %@2142sc!0?
+??!219reg lbuf.c:36:m22sc %? %@2142sc!0?
 '\''3,#+7c /* find a mark id, returning its row & off pair */
 static int *mark_find(struct mhash *h, int id)
 {
@@ -616,7 +616,7 @@ static void mark_set(struct mhash **ph, int id, int pos, int off)
 					h->slot + i, 3 * sizeof(int));
 		free(h);
 		*ph = h = nh;
-??!219reg lbuf.c:34:m32sc %? %@2142sc!0?
+??!219reg lbuf.c:42:m32sc %? %@2142sc!0?
 '\''4,#+1c 	int *m = mark_slot(h, id);
 	if (m[0] < 0) {
 		m[0] = id;
@@ -624,7 +624,7 @@ static void mark_set(struct mhash **ph, int id, int pos, int off)
 	}
 	m[1] = pos;
 	m[2] = off;
-??!219reg lbuf.c:43:m42sc %? %@2142sc!0?
+??!219reg lbuf.c:51:m42sc %? %@2142sc!0?
 '\''5,#+1c 	} else if (mk >= 0)
 		mark_set(&lb->mark, mk, pos, off);
 }
@@ -636,17 +636,17 @@ void lbuf_markclear(struct lbuf *lb)
 		memset(lb->mark->slot, -1, lb->mark->sz * 3 * sizeof(int));
 		lb->mark->n = 0;
 	}
-??!219reg lbuf.c:57:m52sc %? %@2142sc!0?
+??!219reg lbuf.c:65:m52sc %? %@2142sc!0?
 '\''6c 		m = mk >= 0 ? mark_find(lb->mark, mk) : NULL;
-??!219reg lbuf.c:71:m62sc %? %@2142sc!0?
+??!219reg lbuf.c:79:m62sc %? %@2142sc!0?
 '\''7,#+1c 	for (i = 0; lb->mark && i < lb->mark->sz * 3; i += 3) {	/* updating marks */
 		int *m = lb->mark->slot + i, *lm;
 		if (m[0] < 0)
 			continue;
-??!219reg lbuf.c:132:m72sc %? %@2142sc!0?
-'\''8s/&lo->mark_n, //??!219reg lbuf.c:135:m82sc %? %@2142sc!0?
-'\''9s/lo->mark_n, //??!219reg lbuf.c:139:m92sc %? %@2142sc!0?
-'\''10d??!219reg lbuf.c:188:m102sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg lbuf.c:140:m72sc %? %@2142sc!0?
+'\''8s/&lo->mark_n, //??!219reg lbuf.c:143:m82sc %? %@2142sc!0?
+'\''9s/lo->mark_n, //??!219reg lbuf.c:147:m92sc %? %@2142sc!0?
+'\''10d??!219reg lbuf.c:196:m102sc %? %@2142sc!b2m!%ya 98?0?
 %f> void rset_free\(rset \*re\);
 
 /\* lbuf\.c: line buffer \*/
@@ -836,7 +836,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 9edd2405..6f2c11cf 100644
+index b2e59855..8616264d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1092,7 +1092,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
@@ -849,10 +849,10 @@ index 9edd2405..6f2c11cf 100644
  			xb->mark_se[0] = -1;
  			return NULL;
 diff --git a/lbuf.c b/lbuf.c
-index bce1f5e0..be1bb409 100644
+index 56cb42c6..30a27915 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -22,26 +22,45 @@ static void lopt_done(struct lopt *lo)
+@@ -30,26 +30,45 @@ static void lopt_done(struct lopt *lo)
  
  #define lbuf_copymark(dst, src) { dst[0] = src[0]; dst[1] = src[1]; }
  
@@ -914,7 +914,7 @@ index bce1f5e0..be1bb409 100644
  }
  
  void lbuf_mark(struct lbuf *lb, int mk, int pos, int off)
-@@ -54,8 +73,17 @@ void lbuf_mark(struct lbuf *lb, int mk, int pos, int off)
+@@ -62,8 +81,17 @@ void lbuf_mark(struct lbuf *lb, int mk, int pos, int off)
  	} else if (mk == ']') {
  		lb->mark_se[0] = pos;
  		lb->mark_se[1] = off;
@@ -934,7 +934,7 @@ index bce1f5e0..be1bb409 100644
  }
  
  int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off)
-@@ -68,7 +96,7 @@ int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off)
+@@ -76,7 +104,7 @@ int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off)
  	else if (mk == ']')
  		m = lb->mark_se;
  	else
@@ -943,7 +943,7 @@ index bce1f5e0..be1bb409 100644
  	if (!m || m[0] < 0)
  		return 1;
  	*pos = m[0];
-@@ -129,14 +157,16 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
+@@ -137,14 +165,16 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
  	lb->ln_n += n_ins - n_del;
  	for (i = 0; i < n_ins; i++)
  		lb->ln[pos + i] = *((char**)sb->s + i);
@@ -964,7 +964,7 @@ index bce1f5e0..be1bb409 100644
  			lbuf_copymark((m + 1), lm)
  	}
  	return n_ins;
-@@ -185,7 +215,6 @@ struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del)
+@@ -193,7 +223,6 @@ struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del)
  	for (int i = 0; i < n_del; i++)
  		lo->del[i] = lb->ln[beg + i];
  	lo->mark = NULL;
@@ -973,7 +973,7 @@ index bce1f5e0..be1bb409 100644
  	lo->mark_se[0] = -1;
  	lo->pos = beg;
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..f1c8a1f6 100644
+index c5c79dc5..d9943dee 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -118,11 +118,15 @@ int rset_match(rset *rs, char *s, int flg);

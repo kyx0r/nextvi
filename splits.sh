@@ -577,18 +577,18 @@ void *win_split(int axis, char *arg)
 }
 
 2??0?
-2??m 1220reg p OK led.c:95:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK led.c:97:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^		return xleft \+ xcols - pos - 1;$3??0?
-3??m 1220reg p OK led.c:95:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK led.c:97:a32sc %? %@2152sc!fr 981qfr 980?
 %f> int led_pos\(char \*s, int pos\)
 \{
 	if \(dir_context\(s\) < 0\)4??0?
-4??+3m 1220reg p OK led.c:95:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK led.c:97:a42sc %? %@2152sc!1q0?
 %f> 	return pos - xleft;
 }
 
 5??0?
-5??-1m 1220reg p OK led.c:95:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK led.c:97:a52sc %? %@2152sc!1q0?
 %f> .nt........\(.... ........p...
 \{
 ....\(di.............<.0.
@@ -597,25 +597,25 @@ void *win_split(int axis, char *arg)
 }
 
 6??0?
-6??+3m 1220reg p OK led.c:95:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK led.c:97:a62sc %? %@2152sc!1q0?
 grp 1%f> int led_pos\(char \*s, int pos\).*?
 \{.*?
 	if \(dir_context\(s\) < 0\).*?
 (		return xleft \+ xcols - pos - 1;)7??0?
-grp 07??m 1220reg p OK led.c:95:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK led.c:97:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	cs\[0] = c;
 	return keymap\[c] \? keymap\[c] : cs;
 }.*(#define hid_ch1\(out\) sbuf_set\(out, '\'' '\'', i - l\))
 #define hid_ch2\(out\) \\
 sbuf_set\(out, \*chrs\[o] == '\''\\n'\'' \? '\''\\\\'\'' : '\''-'\'', i - l\) \\8??0?
-grp 08??-7m 1220reg p OK led.c:95:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 1220reg p OK led.c:97:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	static char cs\[4];
 	char \*\*keymap = conf_kmap\(kmap\);.*(if \(ctx > 0 && \*chrs\[o] == '\''\\t'\''\) \\)
 	out->s\[out->s_n-1] = '\''>'\''; \\
 else if \(\*chrs\[o] == '\''\\t'\''\) \\9??0?
-grp 09??-10m 1220reg p OK led.c:95:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:952sc %? %@2132sc!0?
+grp 09??-10m 1220reg p OK led.c:97:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:972sc %? %@2132sc!0?
 ?0?
 %f+ 		return;
 	}
@@ -627,24 +627,24 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\9??0?
 %f+ 		return;
 	}
 	int dir, off, pos, psn = sb->s_n;4??0?
-4??+2m 2220reg p OK led.c:287:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK led.c:289:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		return;.*?
 	}.*?
 (	int dir, off, pos, psn = sb->s_n;)7??0?
-grp 07??m 2220reg p OK led.c:287:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:289:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	if \(!xled\) \{
 		sbuf_nul4\(sb\).*(	For correctness, rstate must be recomputed\. \*/)
 	rstate \+= 2;
 	rstate->s = NULL;8??0?
-grp 08??-4m 2220reg p OK led.c:287:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:289:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	while \(r > s && uc_kind\(uc_beg\(s, r - 1\)\) == kind\)
 		r = uc_beg\(s, r - 1\);
 	return r - s;.*(	ren_state \*r = ren_position\(sb->s \+ ps\);)
 	off = r->n - postn;
 	\*poff = off;9??0?
-grp 09??-7m 2220reg p OK led.c:287:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:2872sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK led.c:289:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:2892sc %? %@2132sc!0?
 ?0?
 %f+ 			pos = ren_cursor\(r->s, r->pos\[off-two]\);
 		pos \+= dir < 0 \? -1 : 1;
@@ -656,41 +656,41 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\9??0?
 %f+ 	if \(pos >= xleft \+ xcols \|\| pos < xleft\)
 		xleft = pos < xcols \? 0 : pos - xcols / 2;
 	syn_scdir\(0\);2??0?
-2??m 3220reg p OK led.c:305:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK led.c:307:a22sc %? %@2152sc!1q0?
 %f+ 	if \(pos >= xleft \+ xcols \|\| pos < xleft\)
 		xleft = pos < xcols \? 0 : pos - xcols / 2;3??0?
-3??m 3220reg p OK led.c:305:a32sc %? %@2152sc!1q0?
+3??m 3220reg p OK led.c:307:a32sc %? %@2152sc!1q0?
 %f+ 			pos = ren_cursor\(r->s, r->pos\[off-two]\);
 		pos \+= dir < 0 \? -1 : 1;
 	}4??0?
-4??+3m 3220reg p OK led.c:305:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK led.c:307:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	syn_scdir\(0\);$5??0?
-5??-2m 3220reg p OK led.c:305:a52sc %? %@2152sc!fr 981qfr 980?
+5??-2m 3220reg p OK led.c:307:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ 	..p......en_...........,.....o.\[o..-......
 	..os..........0..... ..1.
 	.
 ..f....s..= x.......x.........o. .......\)
 		xlef....p...<.x........ ..... ......../.2.
 ...._.........6??0?
-6??+3m 3220reg p OK led.c:305:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK led.c:307:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			pos = ren_cursor\(r->s, r->pos\[off-two]\);.*?
 		pos \+= dir < 0 \? -1 : 1;.*?
 	}.*?
 (	if \(pos >= xleft \+ xcols \|\| pos < xleft\))7??0?
-grp 07??m 3220reg p OK led.c:305:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK led.c:307:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		int two = off > 1 && psn != pre;
 		dir = r->pos\[off-two] - r->pos\[off-\(two\+1\)];
 		if \(abs\(dir\) > r->wid\[off-\(two\+1\)]\).*(/\* read a character from the terminal \*/)
 char \*led_read\(int \*kmap, int c\)
 \{8??0?
-grp 08??-9m 3220reg p OK led.c:305:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 3220reg p OK led.c:307:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\*poff = off;
 	pos = ren_cursor\(r->s, r->pos\[MAX\(0, off-1\)]\);
 	if \(off > 0\) \{.*(	static char buf\[5];)
 	int c1, c2, i, n;
 	while \(!TK_INT\(c\)\) \{9??0?
-grp 09??-12m 3220reg p OK led.c:305:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3052sc %? %@2132sc!0?
+grp 09??-12m 3220reg p OK led.c:307:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3072sc %? %@2132sc!0?
 ?0?
 %f+ 	syn_scdir\(0\);
 	led_crender\(r->s, -1, vi_lncol, xleft, xleft \+ xcols - vi_lncol\);
@@ -704,39 +704,39 @@ char \*led_read\(int \*kmap, int c\)
 	sbufn_cut\(sb, psn\)
 	rstate -= 2;
 }2??0?
-2??m 4220reg p OK led.c:308:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK led.c:310:a22sc %? %@2152sc!1q0?
 %f+ 	led_crender\(r->s, -1, vi_lncol, xleft, xleft \+ xcols - vi_lncol\);
 	term_pos\(-1, led_pos\(r->s, pos\) \+ vi_lncol\);3??0?
-3??m 4220reg p OK led.c:308:a32sc %? %@2152sc!1q0?
+3??m 4220reg p OK led.c:310:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	syn_scdir\(0\);$4??0?
-4??+1m 4220reg p OK led.c:308:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 4220reg p OK led.c:310:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	sbufn_cut\(sb, psn\)
 	rstate -= 2;
 }5??0?
-5??-2m 4220reg p OK led.c:308:a52sc %? %@2152sc!1q0?
+5??-2m 4220reg p OK led.c:310:a52sc %? %@2152sc!1q0?
 %f+ 	.......i..0.;
 .led..re........s...1,..i.................ef.......ls .....l.c....
 ...rm.p.s......e...o......, .......v.........
 	s...n_....... ....
 	............
 }6??0?
-6??+1m 4220reg p OK led.c:308:a62sc %? %@2152sc!1q0?
+6??+1m 4220reg p OK led.c:310:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	syn_scdir\(0\);.*?
 (	led_crender\(r->s, -1, vi_lncol, xleft, xleft \+ xcols - vi_lncol\);)7??0?
-grp 07??m 4220reg p OK led.c:308:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK led.c:310:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		int two = off > 1 && psn != pre;
 		dir = r->pos\[off-two] - r->pos\[off-\(two\+1\)];
 		if \(abs\(dir\) > r->wid\[off-\(two\+1\)]\).*(/\* read a character from the terminal \*/)
 char \*led_read\(int \*kmap, int c\)
 \{8??0?
-grp 08??-6m 4220reg p OK led.c:308:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 4220reg p OK led.c:310:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\*poff = off;
 	pos = ren_cursor\(r->s, r->pos\[MAX\(0, off-1\)]\);
 	if \(off > 0\) \{.*(	static char buf\[5];)
 	int c1, c2, i, n;
 	while \(!TK_INT\(c\)\) \{9??0?
-grp 09??-9m 4220reg p OK led.c:308:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3082sc %? %@2132sc!0?
+grp 09??-9m 4220reg p OK led.c:310:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3102sc %? %@2132sc!0?
 ?0?
 %f+ 	goto noredraw; \\
 } \\
@@ -746,59 +746,59 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 1??+3m 51q0?
 %f+ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\)
 \{2??0?
-2??m 5220reg p OK led.c:376:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK led.c:378:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\)$3??0?
-3??m 5220reg p OK led.c:376:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK led.c:378:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	goto noredraw; \\
 } \\
 
 4??0?
-4??+3m 5220reg p OK led.c:376:a42sc %? %@2152sc!1q0?
+4??+3m 5220reg p OK led.c:378:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^\{$5??0?
-5??-1m 5220reg p OK led.c:376:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 5220reg p OK led.c:378:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ...t. n...dr.w...
 } .
 
 .......v....l.....dr.w......\*c.,..n.... .......w..i.. .............p,.i....l..
 \{6??0?
-6??+3m 5220reg p OK led.c:376:a62sc %? %@2152sc!1q0?
+6??+3m 5220reg p OK led.c:378:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	goto noredraw; \\.*?
 } \\.*?
 .*?
 (static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\))7??0?
-grp 07??m 5220reg p OK led.c:376:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK led.c:378:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	led_attsb = prev_attsb; \\
 	c = term_read\(TK_CTL\('\''l'\''\)\); \\
 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\.*(			nl = dstrlen\(cs, '\''\\n'\''\);)
 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
 			sbuf_nul4\(cb\)8??0?
-grp 08??-10m 5220reg p OK led.c:376:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 5220reg p OK led.c:378:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
 	sbuf_cut\(sb, len\) \\
-	sbuf_free\(led_attsb\) \\.*(			rstate->s = NULL;)
-			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\)
-			free\(cb->s\);9??0?
-grp 09??-13m 5220reg p OK led.c:376:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3762sc %? %@2132sc!0?
+	sbuf_free\(led_attsb\) \\.*(			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\))
+			free\(cb->s\);
+			rstate->s = NULL;9??0?
+grp 09??-14m 5220reg p OK led.c:378:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3782sc %? %@2132sc!0?
 ?0?
 %f+ \{
 	rstate\+\+;1??0?
 1??m 61q0?
 ;0fr.,$f+ ^\{$4??0?
-4??m 6220reg p OK led.c:377:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 6220reg p OK led.c:379:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 	led_attsb = prev_attsb; \\
 	c = term_read\(TK_CTL\('\''l'\''\)\); \\
 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\.*(			nl = dstrlen\(cs, '\''\\n'\''\);)
 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
 			sbuf_nul4\(cb\)8??0?
-grp 08??-9m 6220reg p OK led.c:377:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 6220reg p OK led.c:379:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
 	sbuf_cut\(sb, len\) \\
-	sbuf_free\(led_attsb\) \\.*(			rstate->s = NULL;)
-			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\)
-			free\(cb->s\);9??0?
-grp 09??-12m 6220reg p OK led.c:377:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg led.c:3772sc %? %@2132sc!0?
+	sbuf_free\(led_attsb\) \\.*(			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\))
+			free\(cb->s\);
+			rstate->s = NULL;9??0?
+grp 09??-13m 6220reg p OK led.c:379:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg led.c:3792sc %? %@2132sc!0?
 ?0?
 %f+ 	rstate\+\+;
 	for \(int nl = 0; r < xrows; r\+\+\) \{
@@ -806,33 +806,33 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 1??+1m 71q0?
 %f+ 	for \(int nl = 0; r < xrows; r\+\+\) \{
 		if \(vi_lncol\) \{2??0?
-2??m 7220reg p OK led.c:379:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK led.c:381:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	for \(int nl = 0; r < xrows; r\+\+\) \{$3??0?
-3??m 7220reg p OK led.c:379:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 7220reg p OK led.c:381:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	rstate\+\+;$4??0?
-4??+1m 7220reg p OK led.c:379:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 7220reg p OK led.c:381:a42sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^		if \(vi_lncol\) \{$5??0?
-5??-1m 7220reg p OK led.c:379:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 7220reg p OK led.c:381:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .r....e..;
 ......i..... =... ..<......;.r.....
 ...f...._lnc.l\)..6??0?
-6??+1m 7220reg p OK led.c:379:a62sc %? %@2152sc!1q0?
+6??+1m 7220reg p OK led.c:381:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	rstate\+\+;.*?
 (	for \(int nl = 0; r < xrows; r\+\+\) \{)7??0?
-grp 07??m 7220reg p OK led.c:379:a72sc %? %@2152sc!1q0?
+grp 07??m 7220reg p OK led.c:381:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	led_attsb = prev_attsb; \\
 	c = term_read\(TK_CTL\('\''l'\''\)\); \\
 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\.*(			nl = dstrlen\(cs, '\''\\n'\''\);)
 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
 			sbuf_nul4\(cb\)8??0?
-grp 08??-7m 7220reg p OK led.c:379:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 7220reg p OK led.c:381:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
 	sbuf_cut\(sb, len\) \\
-	sbuf_free\(led_attsb\) \\.*(			rstate->s = NULL;)
-			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\)
-			free\(cb->s\);9??0?
-grp 09??-10m 7220reg p OK led.c:379:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3792sc %? %@2132sc!0?
+	sbuf_free\(led_attsb\) \\.*(			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\))
+			free\(cb->s\);
+			rstate->s = NULL;9??0?
+grp 09??-11m 7220reg p OK led.c:381:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3812sc %? %@2132sc!0?
 ?0?
 %f+ 		if \(vi_lncol\) \{
 			term_pos\(r, 0\);
@@ -846,89 +846,89 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 		}
 		if \(r >= orow-ctop && r < crow-ctop\) \{
 			sbuf_smake\(cb, 128\)2??0?
-2??m 8220reg p OK led.c:381:a22sc %? %@2152sc!1q0?
+2??m 8220reg p OK led.c:383:a22sc %? %@2152sc!1q0?
 %f+ 			term_pos\(r, 0\);
 			term_kill\(\);3??0?
-3??m 8220reg p OK led.c:381:a32sc %? %@2152sc!1q0?
+3??m 8220reg p OK led.c:383:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(vi_lncol\) \{$4??0?
-4??+1m 8220reg p OK led.c:381:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 8220reg p OK led.c:383:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		}
 		if \(r >= orow-ctop && r < crow-ctop\) \{
 			sbuf_smake\(cb, 128\)5??0?
-5??-2m 8220reg p OK led.c:381:a52sc %? %@2152sc!1q0?
+5??-2m 8220reg p OK led.c:383:a52sc %? %@2152sc!1q0?
 %f+ ..if.....l....\) .
 ....erm.pos\(.,....
 	.....m_..l....
 	..
 	.i.... >= .ro....o............w.....\)..
 ...s.uf...a.e.cb,..28\)6??0?
-6??+1m 8220reg p OK led.c:381:a62sc %? %@2152sc!1q0?
+6??+1m 8220reg p OK led.c:383:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		if \(vi_lncol\) \{.*?
 (			term_pos\(r, 0\);)7??0?
-grp 07??m 8220reg p OK led.c:381:a72sc %? %@2152sc!1q0?
+grp 07??m 8220reg p OK led.c:383:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	led_attsb = prev_attsb; \\
 	c = term_read\(TK_CTL\('\''l'\''\)\); \\
 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\.*(			nl = dstrlen\(cs, '\''\\n'\''\);)
 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
 			sbuf_nul4\(cb\)8??0?
-grp 08??-5m 8220reg p OK led.c:381:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 8220reg p OK led.c:383:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	led_printparts\(sb, pre, ps, \*post, postn, poff\); \\
 	sbuf_cut\(sb, len\) \\
-	sbuf_free\(led_attsb\) \\.*(			rstate->s = NULL;)
-			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\)
-			free\(cb->s\);9??0?
-grp 09??-8m 8220reg p OK led.c:381:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3812sc %? %@2132sc!0?
+	sbuf_free\(led_attsb\) \\.*(			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\))
+			free\(cb->s\);
+			rstate->s = NULL;9??0?
+grp 09??-9m 8220reg p OK led.c:383:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3832sc %? %@2132sc!0?
 ?0?
 %f+ 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
 			sbuf_nul4\(cb\)
 			rstate->s = NULL;
 			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\)
 			free\(cb->s\);
-			cs \+= nl\+!!cs\[nl];
-			continue;1??0?
+			rstate->s = NULL;
+			cs \+= nl\+!!cs\[nl];1??0?
 1??+3m 91q0?
 %f+ 			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\)
 			free\(cb->s\);
-			cs \+= nl\+!!cs\[nl];
-			continue;2??0?
-2??m 9220reg p OK led.c:390:a22sc %? %@2152sc!1q0?
+			rstate->s = NULL;
+			cs \+= nl\+!!cs\[nl];2??0?
+2??m 9220reg p OK led.c:392:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\)$3??0?
-3??m 9220reg p OK led.c:390:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 9220reg p OK led.c:392:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\)
 			sbuf_nul4\(cb\)
 			rstate->s = NULL;4??0?
-4??+3m 9220reg p OK led.c:390:a42sc %? %@2152sc!1q0?
+4??+3m 9220reg p OK led.c:392:a42sc %? %@2152sc!1q0?
 %f+ 			free\(cb->s\);
-			cs \+= nl\+!!cs\[nl];
-			continue;5??0?
-5??-1m 9220reg p OK led.c:390:a52sc %? %@2152sc!1q0?
-%f+ ......f......b............s....\)
-	..s..f....4.c..
-.	...t...-.... ....;
-.	.l......nd.r...->.. r..vi.ln.......e... .l... ..xc.l. -..i.l..o..
-	..f..e\(....s\).
-....s..=......c...l..
-	..c....n..;6??0?
-6??+3m 9220reg p OK led.c:390:a62sc %? %@2152sc!1q0?
+			rstate->s = NULL;
+			cs \+= nl\+!!cs\[nl];5??0?
+5??-1m 9220reg p OK led.c:392:a52sc %? %@2152sc!1q0?
+%f+ .		.bu......... ....n....c......
+.		.bu..nu..\(...
+....s.a..... =......
+	...........e....-..,.r. ....n.ol..x..........t.. ........v...n....
+.	........-....
+.....ta..... ....L..
+.		.s .....\+.....n...6??0?
+6??+3m 9220reg p OK led.c:392:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			sbuf_mem\(cb, cs, nl\+!!cs\[nl]\).*?
 			sbuf_nul4\(cb\).*?
 			rstate->s = NULL;.*?
 (			led_crender\(cb->s, r, vi_lncol, xleft, xleft \+ xcols - vi_lncol\))7??0?
-grp 07??m 9220reg p OK led.c:390:a72sc %? %@2152sc!1q0?
+grp 07??m 9220reg p OK led.c:392:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		if \(r >= orow-ctop && r < crow-ctop\) \{
 			sbuf_smake\(cb, 128\)
 			nl = dstrlen\(cs, '\''\\n'\''\);.*(void led_modeswap\(void\))
 \{
 	preserve\(int, xquit, xquit = 0;\)8??0?
-grp 08??-13m 9220reg p OK led.c:390:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-14m 9220reg p OK led.c:392:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			term_pos\(r, 0\);
 			term_kill\(\);
 		}.*(	preserve\(int, xvis, xvis \^= 2;\))
 	preserve\(int, xexec_dep, xexec_dep = 0;\)
 	if \(xvis & 2\)9??0?
-grp 09??-17m 9220reg p OK led.c:390:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3902sc %? %@2132sc!0?
+grp 09??-18m 9220reg p OK led.c:392:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3922sc %? %@2132sc!0?
 ?0?
 %f+ 			continue;
 		}
@@ -940,41 +940,41 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 %f+ 		led_crender\(lbuf_get\(xb, nl\) \? lbuf_get\(xb, nl\) : "~", r,
 			vi_lncol, xleft, xleft \+ xcols - vi_lncol\)
 	}2??0?
-2??m 10220reg p OK led.c:396:a22sc %? %@2152sc!1q0?
+2??m 10220reg p OK led.c:399:a22sc %? %@2152sc!1q0?
 %f+ 		led_crender\(lbuf_get\(xb, nl\) \? lbuf_get\(xb, nl\) : "~", r,
 			vi_lncol, xleft, xleft \+ xcols - vi_lncol\)3??0?
-3??m 10220reg p OK led.c:396:a32sc %? %@2152sc!1q0?
+3??m 10220reg p OK led.c:399:a32sc %? %@2152sc!1q0?
 %f+ 			continue;
 		}
 		nl = r < crow-ctop \? r\+ctop : \(r-\(crow-orow\+!!\(flg & 4\)\)\)\+ctop;4??0?
-4??+3m 10220reg p OK led.c:396:a42sc %? %@2152sc!1q0?
+4??+3m 10220reg p OK led.c:399:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	}$5??0?
-5??-2m 10220reg p OK led.c:396:a52sc %? %@2152sc!fr 981qfr 980?
+5??-2m 10220reg p OK led.c:399:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .	.c.......;
 	..
 ..n. =.......ow....... ...... : \(.......-.ro..............\)....p;
 ..l...........l.......\(.., .l... lb.._g..\(....n.. :...", r,
 ..	v...nc.l....e..,....f. \+....l..- .._...o..
 	.6??0?
-6??+3m 10220reg p OK led.c:396:a62sc %? %@2152sc!1q0?
+6??+3m 10220reg p OK led.c:399:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			continue;.*?
 		}.*?
 		nl = r < crow-ctop \? r\+ctop : \(r-\(crow-orow\+!!\(flg & 4\)\)\)\+ctop;.*?
 (		led_crender\(lbuf_get\(xb, nl\) \? lbuf_get\(xb, nl\) : "~", r,)7??0?
-grp 07??m 10220reg p OK led.c:396:a72sc %? %@2152sc!1q0?
+grp 07??m 10220reg p OK led.c:399:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		if \(r >= orow-ctop && r < crow-ctop\) \{
 			sbuf_smake\(cb, 128\)
 			nl = dstrlen\(cs, '\''\\n'\''\);.*(void led_modeswap\(void\))
 \{
 	preserve\(int, xquit, xquit = 0;\)8??0?
-grp 08??-7m 10220reg p OK led.c:396:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 10220reg p OK led.c:399:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			term_pos\(r, 0\);
 			term_kill\(\);
 		}.*(	preserve\(int, xvis, xvis \^= 2;\))
 	preserve\(int, xexec_dep, xexec_dep = 0;\)
 	if \(xvis & 2\)9??0?
-grp 09??-11m 10220reg p OK led.c:396:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3962sc %? %@2132sc!0?
+grp 09??-11m 10220reg p OK led.c:399:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3992sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 	term_pos\(crow - ctop, 0\);
@@ -988,39 +988,39 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 }
 
 2??0?
-2??m 11220reg p OK led.c:399:a22sc %? %@2152sc!1q0?
+2??m 11220reg p OK led.c:402:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	term_pos\(crow - ctop, 0\);$3??0?
-3??m 11220reg p OK led.c:399:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 11220reg p OK led.c:402:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	}$4??0?
-4??+1m 11220reg p OK led.c:399:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 11220reg p OK led.c:402:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	rstate--;
 }
 
 5??0?
-5??-1m 11220reg p OK led.c:399:a52sc %? %@2152sc!1q0?
+5??-1m 11220reg p OK led.c:402:a52sc %? %@2152sc!1q0?
 %f+ 	.
 	...._............to......
 ..s..t.-..
 }
 
 6??0?
-6??+1m 11220reg p OK led.c:399:a62sc %? %@2152sc!1q0?
+6??+1m 11220reg p OK led.c:402:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	}.*?
 (	term_pos\(crow - ctop, 0\);)7??0?
-grp 07??m 11220reg p OK led.c:399:a72sc %? %@2152sc!1q0?
+grp 07??m 11220reg p OK led.c:402:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		if \(r >= orow-ctop && r < crow-ctop\) \{
 			sbuf_smake\(cb, 128\)
 			nl = dstrlen\(cs, '\''\\n'\''\);.*(void led_modeswap\(void\))
 \{
 	preserve\(int, xquit, xquit = 0;\)8??0?
-grp 08??-4m 11220reg p OK led.c:399:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 11220reg p OK led.c:402:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			term_pos\(r, 0\);
 			term_kill\(\);
 		}.*(	preserve\(int, xvis, xvis \^= 2;\))
 	preserve\(int, xexec_dep, xexec_dep = 0;\)
 	if \(xvis & 2\)9??0?
-grp 09??-8m 11220reg p OK led.c:399:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3992sc %? %@2132sc!0?
+grp 09??-8m 11220reg p OK led.c:402:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:4022sc %? %@2132sc!0?
 ?0?
 %f+ 		case TK_CTL\('\''z'\''\):
 			term_suspend\(\);
@@ -1034,17 +1034,17 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 			continue;
 		case TK_CTL\('\''x'\''\):
 			is->sug_pt = is->sug_pt == len \? -1 : len;2??0?
-2??m 12220reg p OK led.c:519:a22sc %? %@2152sc!1q0?
+2??m 12220reg p OK led.c:522:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				led_redraw\(sb->s, 0, orow, crow, ctop, flg\);$3??0?
-3??m 12220reg p OK led.c:519:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 12220reg p OK led.c:522:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		case TK_CTL\('\''z'\''\):
 			term_suspend\(\);
 			if \(ai_max >= 0\)4??0?
-4??+3m 12220reg p OK led.c:519:a42sc %? %@2152sc!1q0?
+4??+3m 12220reg p OK led.c:522:a42sc %? %@2152sc!1q0?
 %f+ 			continue;
 		case TK_CTL\('\''x'\''\):
 			is->sug_pt = is->sug_pt == len \? -1 : len;5??0?
-5??-1m 12220reg p OK led.c:519:a52sc %? %@2152sc!1q0?
+5??-1m 12220reg p OK led.c:522:a52sc %? %@2152sc!1q0?
 %f+ ..c.....K..........
 ...t....su......\).
 .	..f...i.m.x..=.0.
@@ -1052,25 +1052,25 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 .	..on......
 .....e.T._C...'\''....
 .........g.p......->.ug.pt... .e..\?.........;6??0?
-6??+3m 12220reg p OK led.c:519:a62sc %? %@2152sc!1q0?
+6??+3m 12220reg p OK led.c:522:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		case TK_CTL\('\''z'\''\):.*?
 			term_suspend\(\);.*?
 			if \(ai_max >= 0\).*?
 (				led_redraw\(sb->s, 0, orow, crow, ctop, flg\);)7??0?
-grp 07??m 12220reg p OK led.c:519:a72sc %? %@2152sc!1q0?
+grp 07??m 12220reg p OK led.c:522:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				}
 			}
 			goto redo_suggest;.*(			char buf\[100];)
 			itoa\(is->sug_pt, buf\);
 			led_info\(buf\)8??0?
-grp 08??-4m 12220reg p OK led.c:519:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 12220reg p OK led.c:522:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 						goto redo_suggest;
 					} else
 						\*is->sug = '\''\\n'\'';.*(		case TK_CTL\('\''n'\''\):)
 			if \(!suggestsb\)
 				continue;9??0?
-grp 09??-7m 12220reg p OK led.c:519:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:5192sc %? %@2132sc!0?
+grp 09??-7m 12220reg p OK led.c:522:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:5222sc %? %@2132sc!0?
 ?0?
 %f+ 					preserve\(int, xtd, xtd = 2;\)
 					preserve\(int, ftidx,\)
@@ -1088,19 +1088,19 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 						if \(left >= rstates\[2]\.pos\[rstates\[2]\.n]\)
 							break;
 					}2??0?
-2??m 13220reg p OK led.c:567:a22sc %? %@2152sc!1q0?
+2??m 13220reg p OK led.c:570:a22sc %? %@2152sc!1q0?
 %f+ 					for \(int left = 0; r < xrows; r\+\+\) \{
 						RST\(2, led_crender\(is->sug, r, 0, left, left\+xcols\)\)
 						left \+= xcols;3??0?
-3??m 13220reg p OK led.c:567:a32sc %? %@2152sc!1q0?
+3??m 13220reg p OK led.c:570:a32sc %? %@2152sc!1q0?
 %f+ 					preserve\(int, xtd, xtd = 2;\)
 					preserve\(int, ftidx,\)
 					syn_setft\(ac_ft\);4??0?
-4??+3m 13220reg p OK led.c:567:a42sc %? %@2152sc!1q0?
+4??+3m 13220reg p OK led.c:570:a42sc %? %@2152sc!1q0?
 %f+ 						if \(left >= rstates\[2]\.pos\[rstates\[2]\.n]\)
 							break;
 					}5??0?
-5??-3m 13220reg p OK led.c:567:a52sc %? %@2152sc!1q0?
+5??-3m 13220reg p OK led.c:570:a52sc %? %@2152sc!1q0?
 %f+ ..	.	.re........t...t....t..=....
 ...	..re...v...........x..
 .....s.._..tf........;
@@ -1110,25 +1110,25 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 .....	.f .l.f.... .....e..2...o....t.t....]....
 ........re...
 	.....6??0?
-6??+3m 13220reg p OK led.c:567:a62sc %? %@2152sc!1q0?
+6??+3m 13220reg p OK led.c:570:a62sc %? %@2152sc!1q0?
 grp 1%f+ 					preserve\(int, xtd, xtd = 2;\).*?
 					preserve\(int, ftidx,\).*?
 					syn_setft\(ac_ft\);.*?
 (					for \(int left = 0; r < xrows; r\+\+\) \{)7??0?
-grp 07??m 13220reg p OK led.c:567:a72sc %? %@2152sc!1q0?
+grp 07??m 13220reg p OK led.c:570:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				if \(suggestsb && search\(sb->s \+ i, sb->s_n - i\)\) \{
 					is->sug = suggestsb->s;
 					pac_:;.*(					restore\(xtd\))
 					restore\(ftidx\)
 					r\+\+;8??0?
-grp 08??-6m 13220reg p OK led.c:567:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 13220reg p OK led.c:570:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(is->sug\)
 					goto pac_;
 				i = is->sug_pt >= 0 \? is->sug_pt : led_lastword\(sb->s \+ pre\) \+ pre;.*(				})
 				led_redraw\(sb->s, r, orow, crow, ctop, flg\);
 				continue;9??0?
-grp 09??-9m 13220reg p OK led.c:567:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:5672sc %? %@2132sc!0?
+grp 09??-9m 13220reg p OK led.c:570:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:5702sc %? %@2132sc!0?
 ?0?
 %f+ 					restore\(ftidx\)
 					r\+\+;
@@ -1142,17 +1142,17 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 				continue;
 			}
 			temp_pos\(0, -1, 0, 0\);2??0?
-2??m 14220reg p OK led.c:577:a22sc %? %@2152sc!1q0?
+2??m 14220reg p OK led.c:580:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				led_redraw\(sb->s, r, orow, crow, ctop, flg\);$3??0?
-3??m 14220reg p OK led.c:577:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 14220reg p OK led.c:580:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					restore\(ftidx\)
 					r\+\+;
 				}4??0?
-4??+3m 14220reg p OK led.c:577:a42sc %? %@2152sc!1q0?
+4??+3m 14220reg p OK led.c:580:a42sc %? %@2152sc!1q0?
 %f+ 				continue;
 			}
 			temp_pos\(0, -1, 0, 0\);5??0?
-5??-1m 14220reg p OK led.c:577:a52sc %? %@2152sc!1q0?
+5??-1m 14220reg p OK led.c:580:a52sc %? %@2152sc!1q0?
 %f+ 	.		...s.o.......x.
 	........
 ..	..
@@ -1160,25 +1160,25 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 .	......i..e.
 .	.}
 		.........\(...-.........6??0?
-6??+3m 14220reg p OK led.c:577:a62sc %? %@2152sc!1q0?
+6??+3m 14220reg p OK led.c:580:a62sc %? %@2152sc!1q0?
 grp 1%f+ 					restore\(ftidx\).*?
 					r\+\+;.*?
 				}.*?
 (				led_redraw\(sb->s, r, orow, crow, ctop, flg\);)7??0?
-grp 07??m 14220reg p OK led.c:577:a72sc %? %@2152sc!1q0?
+grp 07??m 14220reg p OK led.c:580:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 							break;
 					}
 					restore\(xtd\).*(			temp_write\(0, sb->s \+ pre\);)
 			preserve\(struct buf\*, ex_buf,\)
 			int bidx = istempbuf\(ex_buf\) \? -1 : ex_buf - bufs;8??0?
-grp 08??-4m 14220reg p OK led.c:577:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 14220reg p OK led.c:580:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 						RST\(2, led_crender\(is->sug, r, 0, left, left\+xcols\)\)
 						left \+= xcols;
 						if \(left >= rstates\[2]\.pos\[rstates\[2]\.n]\).*(			int pidx = ex_pbuf - bufs;)
 			preserve\(int, texec, texec = 0;\)
 			preserve\(int, xquit, xquit = 0;\)9??0?
-grp 09??-7m 14220reg p OK led.c:577:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:5772sc %? %@2132sc!0?
+grp 09??-7m 14220reg p OK led.c:580:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:5802sc %? %@2132sc!0?
 ?0?
 %f+ 			term_done\(\);
 			term_init\(\);
@@ -1192,17 +1192,17 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 			else if \(!i\)
 				term_clean\(\);
 			continue;2??0?
-2??m 15220reg p OK led.c:622:a22sc %? %@2152sc!1q0?
+2??m 15220reg p OK led.c:625:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				led_redraw\(sb->s, 0, orow, crow, ctop, flg\);$3??0?
-3??m 15220reg p OK led.c:622:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 15220reg p OK led.c:625:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			term_done\(\);
 			term_init\(\);
 			if \(ai_max >= 0\)4??0?
-4??+3m 15220reg p OK led.c:622:a42sc %? %@2152sc!1q0?
+4??+3m 15220reg p OK led.c:625:a42sc %? %@2152sc!1q0?
 %f+ 			else if \(!i\)
 				term_clean\(\);
 			continue;5??0?
-5??-1m 15220reg p OK led.c:622:a52sc %? %@2152sc!1q0?
+5??-1m 15220reg p OK led.c:625:a52sc %? %@2152sc!1q0?
 %f+ .	....._.......
 ...te..........
 .	......._m.x >....
@@ -1210,61 +1210,61 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 	...l...i. \(...
 ........_........
 .	...n..nue.6??0?
-6??+3m 15220reg p OK led.c:622:a62sc %? %@2152sc!1q0?
+6??+3m 15220reg p OK led.c:625:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			term_done\(\);.*?
 			term_init\(\);.*?
 			if \(ai_max >= 0\).*?
 (				led_redraw\(sb->s, 0, orow, crow, ctop, flg\);)7??0?
-grp 07??m 15220reg p OK led.c:622:a72sc %? %@2152sc!1q0?
+grp 07??m 15220reg p OK led.c:625:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			break;
 		case TK_CTL\('\''l'\''\):
 			i = term_winch;.*(		case TK_CTL\('\''o'\''\): \{)
 			if \(!\*postref\)
 				\*postref = \*post = uc_dup\(\*post\);8??0?
-grp 08??-4m 15220reg p OK led.c:622:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 15220reg p OK led.c:625:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				sbuf_str\(sb, cs\)
 				sb->s_n--;
 			}.*(			preserve\(struct buf\*, ex_buf,\))
 			int bidx = istempbuf\(ex_buf\) \? -1 : ex_buf - bufs;
 			preserve\(int, ftidx,\)9??0?
-grp 09??-7m 15220reg p OK led.c:622:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:6222sc %? %@2132sc!0?
-'\''1s/xcols/curwin->w/??!219reg led.c:95:m12sc %? %@2142sc!0?
+grp 09??-7m 15220reg p OK led.c:625:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:6252sc %? %@2132sc!0?
+'\''1s/xcols/curwin->w/??!219reg led.c:97:m12sc %? %@2142sc!0?
 '\''2i 	int inwin = poff == &xoff;	/* prompts own the whole terminal row */
 	int winx = inwin ? curwin->x : 0;
 	int winw = inwin ? curwin->w : xcols;
-??!219reg led.c:287:m22sc %? %@2142sc!0?
+??!219reg led.c:289:m22sc %? %@2142sc!0?
 '\''3,#+1c 	if (pos >= xleft + winw || pos < xleft)
 		xleft = pos < winw ? 0 : pos - winw / 2;
-??!219reg led.c:305:m32sc %? %@2142sc!0?
+??!219reg led.c:307:m32sc %? %@2142sc!0?
 '\''4,#+1c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
 	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
-??!219reg led.c:308:m42sc %? %@2142sc!0?
-'\''5s/g\)/g, int inwin)/??!219reg led.c:376:m52sc %? %@2142sc!0?
+??!219reg led.c:310:m42sc %? %@2142sc!0?
+'\''5s/g\)/g, int inwin)/??!219reg led.c:378:m52sc %? %@2142sc!0?
 '\''6i 	int winx = inwin ? curwin->x : 0;	/* prompts own the terminal */
 	int winy = inwin ? curwin->y : 0;
 	int winw = inwin ? curwin->w : xcols;
 	int winh = inwin ? curwin->h : xrows;
-??!219reg led.c:377:m62sc %? %@2142sc!0?
-'\''7s/xrows/winh/??!219reg led.c:379:m72sc %? %@2142sc!0?
+??!219reg led.c:379:m62sc %? %@2142sc!0?
+'\''7s/xrows/winh/??!219reg led.c:381:m72sc %? %@2142sc!0?
 '\''8,#+1c 			term_pos(winy + r, winx);
 			term_killw(winw);
-??!219reg led.c:381:m82sc %? %@2142sc!0?
-?'\''9s/r, vi_lncol, xleft, xleft \+ xcols/winy + r, winx + vi_lncol, xleft, xleft + winw/1??1??1q'\''9s/r,(.*)xcols/winy + r, winx +\1winw/2??2??'\''9220reg p OK led.c:390:s22sc %? %@2162sc!0?
-1;2??!219reg led.c:390:m92sc %? %@2142sc!0?
+??!219reg led.c:383:m82sc %? %@2142sc!0?
+?'\''9s/r, vi_lncol, xleft, xleft \+ xcols/winy + r, winx + vi_lncol, xleft, xleft + winw/1??1??1q'\''9s/r,(.*)xcols/winy + r, winx +\1winw/2??2??'\''9220reg p OK led.c:392:s22sc %? %@2162sc!0?
+1;2??!219reg led.c:392:m92sc %? %@2142sc!0?
 '\''10,#+1c 		led_crender(lbuf_get(xb, nl) ? lbuf_get(xb, nl) : "~", winy + r,
 			winx + vi_lncol, xleft, xleft + winw - vi_lncol)
-??!219reg led.c:396:m102sc %? %@2142sc!0?
+??!219reg led.c:399:m102sc %? %@2142sc!0?
 '\''11c 	term_pos(winy + crow - ctop, winx);
-??!219reg led.c:399:m112sc %? %@2142sc!0?
-'\''12s/g\)/g, 1)/??!219reg led.c:519:m122sc %? %@2142sc!0?
+??!219reg led.c:402:m112sc %? %@2142sc!0?
+'\''12s/g\)/g, 1)/??!219reg led.c:522:m122sc %? %@2142sc!0?
 '\''13,#+2c 					for (int left = 0; r < curwin->h; r++) {
 						RST(2, led_crender(is->sug, curwin->y + r,
 							curwin->x, left, left+curwin->w))
 						left += curwin->w;
-??!219reg led.c:567:m132sc %? %@2142sc!0?
-'\''14s/g\)/g, ai_max >= 0)/??!219reg led.c:577:m142sc %? %@2142sc!0?
-'\''15s/g\)/g, 1)/??!219reg led.c:622:m152sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg led.c:570:m132sc %? %@2142sc!0?
+'\''14s/g\)/g, ai_max >= 0)/??!219reg led.c:580:m142sc %? %@2142sc!0?
+'\''15s/g\)/g, 1)/??!219reg led.c:625:m152sc %? %@2142sc!b3m!%ya 98?0?
 %f> 	term_out\("\\33\[K"\);
 }
 
@@ -4257,7 +4257,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..a51fc3e3 100644
+index 02147e45..db660070 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -298,7 +298,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -4270,7 +4270,7 @@ index c92ec213..a51fc3e3 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 9edd2405..8e1ee1fe 100644
+index b2e59855..2882b9e0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -4556,10 +4556,10 @@ index 9edd2405..8e1ee1fe 100644
  	do {
  		xmpt = 0;
 diff --git a/led.c b/led.c
-index ac9ccc64..a2e0b0db 100644
+index 530eaf88..fa14ed4e 100644
 --- a/led.c
 +++ b/led.c
-@@ -92,7 +92,7 @@ static char *kmap_map(int kmap, int c)
+@@ -94,7 +94,7 @@ static char *kmap_map(int kmap, int c)
  int led_pos(char *s, int pos)
  {
  	if (dir_context(s) < 0)
@@ -4568,7 +4568,7 @@ index ac9ccc64..a2e0b0db 100644
  	return pos - xleft;
  }
  
-@@ -285,6 +285,9 @@ static void led_printparts(sbuf *sb, int pre, int ps,
+@@ -287,6 +287,9 @@ static void led_printparts(sbuf *sb, int pre, int ps,
  		return;
  	}
  	int dir, off, pos, psn = sb->s_n;
@@ -4578,7 +4578,7 @@ index ac9ccc64..a2e0b0db 100644
  	sbuf_str(sb, post)
  	sbuf_nul4(sb)
  	/* XXX: O(n) insertion; recursive array data structure cannot be optimized.
-@@ -302,11 +305,11 @@ static void led_printparts(sbuf *sb, int pre, int ps,
+@@ -304,11 +307,11 @@ static void led_printparts(sbuf *sb, int pre, int ps,
  			pos = ren_cursor(r->s, r->pos[off-two]);
  		pos += dir < 0 ? -1 : 1;
  	}
@@ -4594,7 +4594,7 @@ index ac9ccc64..a2e0b0db 100644
  	sbufn_cut(sb, psn)
  	rstate -= 2;
  }
-@@ -373,13 +376,17 @@ char *led_read(int *kmap, int c)
+@@ -375,13 +378,17 @@ char *led_read(int *kmap, int c)
  	goto noredraw; \
  } \
  
@@ -4616,13 +4616,14 @@ index ac9ccc64..a2e0b0db 100644
  		}
  		if (r >= orow-ctop && r < crow-ctop) {
  			sbuf_smake(cb, 128)
-@@ -387,16 +394,16 @@ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
+@@ -389,17 +396,17 @@ static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg)
  			sbuf_mem(cb, cs, nl+!!cs[nl])
  			sbuf_nul4(cb)
  			rstate->s = NULL;
 -			led_crender(cb->s, r, vi_lncol, xleft, xleft + xcols - vi_lncol)
 +			led_crender(cb->s, winy + r, winx + vi_lncol, xleft, xleft + winw - vi_lncol)
  			free(cb->s);
+ 			rstate->s = NULL;
  			cs += nl+!!cs[nl];
  			continue;
  		}
@@ -4637,7 +4638,7 @@ index ac9ccc64..a2e0b0db 100644
  	rstate--;
  }
  
-@@ -516,7 +523,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -519,7 +526,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		case TK_CTL('z'):
  			term_suspend();
  			if (ai_max >= 0)
@@ -4646,7 +4647,7 @@ index ac9ccc64..a2e0b0db 100644
  			continue;
  		case TK_CTL('x'):
  			is->sug_pt = is->sug_pt == len ? -1 : len;
-@@ -564,9 +571,10 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -567,9 +574,10 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  					preserve(int, xtd, xtd = 2;)
  					preserve(int, ftidx,)
  					syn_setft(ac_ft);
@@ -4660,7 +4661,7 @@ index ac9ccc64..a2e0b0db 100644
  						if (left >= rstates[2].pos[rstates[2].n])
  							break;
  					}
-@@ -574,7 +582,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -577,7 +585,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  					restore(ftidx)
  					r++;
  				}
@@ -4669,7 +4670,7 @@ index ac9ccc64..a2e0b0db 100644
  				continue;
  			}
  			temp_pos(0, -1, 0, 0);
-@@ -619,7 +627,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -622,7 +630,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			term_done();
  			term_init();
  			if (ai_max >= 0)
@@ -5192,7 +5193,7 @@ index b5e0f21b..77185361 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..1363b75e 100644
+index c5c79dc5..61d3c5c0 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -331,6 +331,7 @@ void term_suspend(void);

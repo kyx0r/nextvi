@@ -48,27 +48,27 @@ const int conf_hlrev = SYN_BGMK\(8\);
 const int conf_hlrev = SYN_BGMK\(8\);
 
 4??0?
-4??+2m 1220reg p OK conf.c:330:a42sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	\{msg_ft, "\.\+", A\(AY1 \| SYN_BD\)},
-};
-const int hlslen = LEN\(hls\);.*(struct dircontext dctxs\[] = \{)
+4??+2m 1220reg p OK conf.c:334:a42sc %? %@2152sc!1q0?
+m 01;0grp 1%f> /\* ids of optional hls, reset and reloaded on filetype change \*/
+const int hlopts\[] = \{1, 2, 3};
+const int hloptslen = LEN\(hlopts\);.*(struct dircontext dctxs\[] = \{)
 	\{"\^\[" CR2L "]", -1},
 	\{"\^\[a-zA-Z_0-9]", \+1},8??0?
-grp 08??-6m 1220reg p OK conf.c:330:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\* \(\[0-9]\{1,3}%\) \(L\[0-9]\+\) \(C\[0-9]\+\) \(B-\?\[0-9]\+\)\?\.\*\$",
-		A\(AY1 \| SYN_BD, BL, RE1, BL, YE1, GR\)},
-	\{bar_ft, "\^\.\*\$", A\(AY1 \| SYN_BD\)},.*(struct dirmark dmarks\[] = \{)
+grp 08??-6m 1220reg p OK conf.c:334:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	\{msg_ft, "\.\+", A\(AY1 \| SYN_BD\)},
+};
+const int hlslen = LEN\(hls\);.*(struct dirmark dmarks\[] = \{)
 	\{"\[" CR2L "]\[" CNEUT CR2L "]\*\[" CR2L "]", \+1, \{-1}},
 	\{"\^\(\[ \\t]\+\)\?\(\[" CNEUT "]\*\[\^" CR2L "]\*\[\^" CR2L CNEUT "]\(\?:\[" CNEUT "]\+\$\)\?\)", -1, \{0, 1, -1}},9??0?
-grp 09??-12m 1220reg p OK conf.c:330:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg conf.c:3302sc %? %@2132sc!0?
+grp 09??-12m 1220reg p OK conf.c:334:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg conf.c:3342sc %? %@2132sc!0?
 '\''1i /* how to highlight the search matches */
 const int conf_hlmat = RE1;
 
 /* how to highlight the search match the cursor lands on */
 const int conf_hlmatc = RE1 | SYN_BGMK(8);
 
-??!219reg conf.c:330:m12sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg conf.c:334:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
 		noredraw:
 		switch \(c\) \{
@@ -79,24 +79,24 @@ const int conf_hlmatc = RE1 | SYN_BGMK(8);
 %f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
 		noredraw:
 		switch \(c\) \{4??0?
-4??+2m 1220reg p OK led.c:436:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK led.c:439:a42sc %? %@2152sc!1q0?
 grp 1%f> 		c = term_read\(TK_CTL\('\''l'\''\)\);.*?
 		noredraw:.*?
 (		switch \(c\) \{)7??0?
-grp 07??m 1220reg p OK led.c:436:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK led.c:439:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	do \{
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);
 		len = sb->s_n;.*(				sbuf_cut\(sb, led_lastchar\(sb->s \+ pre\) \+ pre\))
 			else
 				return c;8??0?
-grp 08??-5m 1220reg p OK led.c:436:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK led.c:439:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char \*cs;
 	int len, c, i;
 	sbuf \*reg;.*(		case TK_CTL\('\''u'\''\):)
 			sbuf_cut\(sb, is->sug_pt > pre && len > is->sug_pt \? is->sug_pt : pre\)
 			break;9??0?
-grp 09??-9m 1220reg p OK led.c:436:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:4362sc %? %@2132sc!0?
+grp 09??-9m 1220reg p OK led.c:439:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:4392sc %? %@2132sc!0?
 ?0?
 %f+ 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
@@ -108,32 +108,32 @@ const int conf_hlmatc = RE1 | SYN_BGMK(8);
 %f+ 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;4??0?
-4??+2m 2220reg p OK led.c:646:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK led.c:649:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		default:.*?
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\).*?
 (				return c;)7??0?
-grp 07??m 2220reg p OK led.c:646:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:649:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			}
 			continue; }.*(		is->sug = NULL;)
 		is->_sug = NULL;
 		if \(ai_max >= 0 && xpac\)8??0?
-grp 08??-4m 2220reg p OK led.c:646:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:649:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			} else if \(bidx != ex_buf - bufs && bidx < xbufcur\) \{
 				ex_buf = bufs \+ bidx;.*(			goto pac;)
 	} while \(!\(flg & 2\)\);
 	return c;9??0?
-grp 09??-7m 2220reg p OK led.c:646:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:6462sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK led.c:649:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:6492sc %? %@2132sc!0?
 '\''1i 		case TK_CTL('\''i'\''):	/* the caller steps the search match */
 		case TK_CTL('\''_'\''):
 			if (!(flg & 2))
 				goto insert;
 			break;
-??!219reg led.c:436:m12sc %? %@2142sc!0?
+??!219reg led.c:439:m12sc %? %@2142sc!0?
 '\''2i 			insert:
-??!219reg led.c:646:m22sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg led.c:649:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return r->col\[col];
 }
 
@@ -420,27 +420,27 @@ char \*conf_digraph\(int c1, int c2\);1??0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;4??0?
-4??+2m 1220reg p OK vi.h:547:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:549:a42sc %? %@2152sc!1q0?
 grp 1%f> extern struct placeholder \*ph;.*?
 extern int phlen;.*?
 (extern const int conf_hlrev;)7??0?
-grp 07??m 1220reg p OK vi.h:547:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:549:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int l;		/\* the length of the codepoint \*/
 };
 extern struct placeholder _ph\[];.*(/\* vi\.c: main \*/)
 void vi\(int init\);
 extern int vi_hidch;8??0?
-grp 08??-5m 1220reg p OK vi.h:547:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.h:549:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int cp\[2];	/\* the source character codepoint \*/
 	char d\[8];	/\* the placeholder \*/
 	int wid;	/\* the width of the placeholder \*/.*(extern int vi_lncol;)
 /\* filesystem \*/
 extern rset \*fsincl;9??0?
-grp 09??-8m 1220reg p OK vi.h:547:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:5472sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.h:549:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:5492sc %? %@2132sc!0?
 '\''1i extern const int conf_hlmat;
 extern const int conf_hlmatc;
-??!219reg vi.h:547:m12sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.h:549:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=rstr.sh
 printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 %f>    cursor is given conf_hlmatc instead of conf_hlmat attributes \*/
@@ -722,10 +722,10 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..b773f1fe 100644
+index 02147e45..9c27f5d8 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -328,6 +328,12 @@ const int hlslen = LEN(hls);
+@@ -332,6 +332,12 @@ const int hloptslen = LEN(hlopts);
  /* how to highlight text in the reverse direction */
  const int conf_hlrev = SYN_BGMK(8);
  
@@ -739,10 +739,10 @@ index c92ec213..b773f1fe 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index ac9ccc64..6666991a 100644
+index 530eaf88..62f217de 100644
 --- a/led.c
 +++ b/led.c
-@@ -434,6 +434,11 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -437,6 +437,11 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		c = term_read(TK_CTL('l'));
  		noredraw:
  		switch (c) {
@@ -754,7 +754,7 @@ index ac9ccc64..6666991a 100644
  		case TK_CTL('h'):
  			c = 127;
  		case 127:
-@@ -644,6 +649,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -647,6 +652,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		default:
  			if (c == '\n' || TK_INT(c))
  				return c;
@@ -897,10 +897,10 @@ index b5e0f21b..9580701b 100644
  				msg ? dir : -1, 1, row, off)) {
  			if (msg) {
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..8f0baa9c 100644
+index c5c79dc5..8c34c96f 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -545,6 +545,8 @@ extern struct placeholder _ph[];
+@@ -547,6 +547,8 @@ extern struct placeholder _ph[];
  extern struct placeholder *ph;
  extern int phlen;
  extern const int conf_hlrev;

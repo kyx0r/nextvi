@@ -1475,18 +1475,18 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 		int nskip, int \*r, int \*o\)
 \{
 	int r0 = \*r, o0 = \*o;2??0?
-2??m 1220reg p OK lbuf.c:494:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK lbuf.c:502:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,$3??0?
-3??m 1220reg p OK lbuf.c:494:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK lbuf.c:502:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	return n != 0;
 }
 
 4??0?
-4??+3m 1220reg p OK lbuf.c:494:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK lbuf.c:502:a42sc %? %@2152sc!1q0?
 %f> 		int nskip, int \*r, int \*o\)
 \{
 	int r0 = \*r, o0 = \*o;5??0?
-5??-1m 1220reg p OK lbuf.c:494:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK lbuf.c:502:a52sc %? %@2152sc!1q0?
 %f> ..e..r.........
 }
 
@@ -1494,25 +1494,25 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 .	int ...........\*., ... .o\)
 \{
 .i....0...\*...........6??0?
-6??+3m 1220reg p OK lbuf.c:494:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK lbuf.c:502:a62sc %? %@2152sc!1q0?
 grp 1%f> 	return n != 0;.*?
 }.*?
 .*?
 (int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,)7??0?
-grp 07??m 1220reg p OK lbuf.c:494:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK lbuf.c:502:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
 		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(		off = rstate->s == s \? rstate->chrs\[MIN\(o0 \+ pskip, rstate->n\)] - s)
 					: uc_chr\(s, o0 \+ pskip\) - s;
 	else8??0?
-grp 08??-8m 1220reg p OK lbuf.c:494:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 1220reg p OK lbuf.c:502:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			n--;
 		if \(n > 0\)
 			\*off \+= dir;.*(	for \(; i >= beg && i < end; i \+= dir\) \{)
 		_o = 0;
 		step = 0;9??0?
-grp 09??-12m 1220reg p OK lbuf.c:494:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:4942sc %? %@2132sc!0?
+grp 09??-12m 1220reg p OK lbuf.c:502:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5022sc %? %@2132sc!0?
 ?0?
 %f+ 		int nskip, int \*r, int \*o\)
 \{
@@ -1526,17 +1526,17 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 	char \*s = lbuf_get\(lb, i\);
 	int off, g1, g2, _o, step, flg;
 	if \(pskip >= 0 && s\)2??0?
-2??m 2220reg p OK lbuf.c:498:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK lbuf.c:506:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	int offs\[re->nsubc], i = r0;$3??0?
-3??m 2220reg p OK lbuf.c:498:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK lbuf.c:506:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		int nskip, int \*r, int \*o\)
 \{
 	int r0 = \*r, o0 = \*o;4??0?
-4??+3m 2220reg p OK lbuf.c:498:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK lbuf.c:506:a42sc %? %@2152sc!1q0?
 %f+ 	char \*s = lbuf_get\(lb, i\);
 	int off, g1, g2, _o, step, flg;
 	if \(pskip >= 0 && s\)5??0?
-5??-1m 2220reg p OK lbuf.c:498:a52sc %? %@2152sc!1q0?
+5??-1m 2220reg p OK lbuf.c:506:a52sc %? %@2152sc!1q0?
 %f+ 	.....n...p....t.\*.. i......
 \{
 ....... . \*.. o0 . \*..
@@ -1544,25 +1544,25 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 ..h.. .... ...._....lb. ...
 ...........1....,.............g.
 .i..\(......>=........6??0?
-6??+3m 2220reg p OK lbuf.c:498:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK lbuf.c:506:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		int nskip, int \*r, int \*o\).*?
 \{.*?
 	int r0 = \*r, o0 = \*o;.*?
 (	int offs\[re->nsubc], i = r0;)7??0?
-grp 07??m 2220reg p OK lbuf.c:498:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK lbuf.c:506:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
 		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(		off = rstate->s == s \? rstate->chrs\[MIN\(o0 \+ pskip, rstate->n\)] - s)
 					: uc_chr\(s, o0 \+ pskip\) - s;
 	else8??0?
-grp 08??-4m 2220reg p OK lbuf.c:498:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK lbuf.c:506:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			n--;
 		if \(n > 0\)
 			\*off \+= dir;.*(	for \(; i >= beg && i < end; i \+= dir\) \{)
 		_o = 0;
 		step = 0;9??0?
-grp 09??-8m 2220reg p OK lbuf.c:498:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:4982sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK lbuf.c:506:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5062sc %? %@2132sc!0?
 ?0?
 %f+ 		step = 0;
 		flg = REG_NEWLINE;
@@ -1576,17 +1576,17 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 			flg \|= REG_NOTBOL;
 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
 			if \(g1 < 0\) \{2??0?
-2??m 3220reg p OK lbuf.c:511:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK lbuf.c:519:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		while \(rset_find\(re, s \+ off, offs, flg\) >= 0\) \{$3??0?
-3??m 3220reg p OK lbuf.c:511:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK lbuf.c:519:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		step = 0;
 		flg = REG_NEWLINE;
 		s = lb->ln\[i];4??0?
-4??+3m 3220reg p OK lbuf.c:511:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK lbuf.c:519:a42sc %? %@2152sc!1q0?
 %f+ 			flg \|= REG_NOTBOL;
 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
 			if \(g1 < 0\) \{5??0?
-5??-1m 3220reg p OK lbuf.c:511:a52sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK lbuf.c:519:a52sc %? %@2152sc!1q0?
 %f+ ...te..= .;
 .	.......E....WL..E.
 ... ..lb..l..i..
@@ -1594,29 +1594,29 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 	...l.......G_...B...
 .........ff.....p.,... ......\[.gr.....].
 ..........< ....6??0?
-6??+3m 3220reg p OK lbuf.c:511:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK lbuf.c:519:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		step = 0;.*?
 		flg = REG_NEWLINE;.*?
 		s = lb->ln\[i];.*?
 (		while \(rset_find\(re, s \+ off, offs, flg\) >= 0\) \{)7??0?
-grp 07??m 3220reg p OK lbuf.c:511:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK lbuf.c:519:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		off = 0;
 	for \(; i >= beg && i < end; i \+= dir\) \{
 		_o = 0;.*(				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);)
 				continue;
 			}8??0?
-grp 08??-4m 3220reg p OK lbuf.c:511:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK lbuf.c:519:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		off = rstate->s == s \? rstate->chrs\[MIN\(o0 \+ pskip, rstate->n\)] - s
 					: uc_chr\(s, o0 \+ pskip\) - s;
 	else.*(			_o \+= uc_off\(s \+ step, off \+ g1 - step\);)
 			if \(dir < 0 && r0 == i && _o > o0 - nskip\)
 				break;9??0?
-grp 09??-7m 3220reg p OK lbuf.c:511:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5112sc %? %@2132sc!0?
-'\''1s/et/tr/??!219reg lbuf.c:494:m12sc %? %@2142sc!0?
-?'\''2s/nsubc/rs ? re->rs->nsubc : 2/1??1??1q'\''2s/(ns.*c)/rs ? re->rs->\1 : 2/2??2??'\''2220reg p OK lbuf.c:498:s22sc %? %@2162sc!0?
-1;2??!219reg lbuf.c:498:m22sc %? %@2142sc!0?
-'\''3s/et/tr/??!219reg lbuf.c:511:m32sc %? %@2142sc!b2m!%ya 98?0?
+grp 09??-7m 3220reg p OK lbuf.c:519:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5192sc %? %@2132sc!0?
+'\''1s/et/tr/??!219reg lbuf.c:502:m12sc %? %@2142sc!0?
+?'\''2s/nsubc/rs ? re->rs->nsubc : 2/1??1??1q'\''2s/(ns.*c)/rs ? re->rs->\1 : 2/2??2??'\''2220reg p OK lbuf.c:506:s22sc %? %@2162sc!0?
+1;2??!219reg lbuf.c:506:m22sc %? %@2142sc!0?
+'\''3s/et/tr/??!219reg lbuf.c:519:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> \{
 	return re_pikevm\(rs->regex, s, NULL, 0, flg\);
 }1??0?
@@ -2153,27 +2153,27 @@ void dir_calc\(char \*path\);1??0?
 1??+3m 71q0?
 %f+ extern rset \*fsincl;
 void dir_calc\(char \*path\);2??0?
-2??m 7220reg p OK vi.h:557:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK vi.h:559:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^extern rset \*fsincl;$3??0?
-3??m 7220reg p OK vi.h:557:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 7220reg p OK vi.h:559:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ extern int vi_hidch;
 extern int vi_lncol;
 /\* filesystem \*/4??0?
-4??+3m 7220reg p OK vi.h:557:a42sc %? %@2152sc!1q0?
+4??+3m 7220reg p OK vi.h:559:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^void dir_calc\(char \*path\);$5??0?
-5??-1m 7220reg p OK vi.h:557:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 7220reg p OK vi.h:559:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ...e.....t....h....;
 e...r. ........nc...
 ....i.....te. \*.
 .............f.in.l;
 ..i..d......c\(c... ..a....6??0?
-6??+3m 7220reg p OK vi.h:557:a62sc %? %@2152sc!1q0?
+6??+3m 7220reg p OK vi.h:559:a62sc %? %@2152sc!1q0?
 grp 1%f+ extern int vi_hidch;.*?
 extern int vi_lncol;.*?
 /\* filesystem \*/.*?
 (extern rset \*fsincl;)7??0?
-grp 07??m 7220reg p OK vi.h:557:a72sc %? %@2152sc!0?
-1;2;3;4;5;6;7??!219reg vi.h:5572sc %? %@2132sc!0?
+grp 07??m 7220reg p OK vi.h:559:a72sc %? %@2152sc!0?
+1;2;3;4;5;6;7??!219reg vi.h:5592sc %? %@2132sc!0?
 '\''1i typedef struct {
 	rset *rs;		/* only for regex patterns */
 	char *str;		/* for simple, non-regex patterns  */
@@ -2193,7 +2193,7 @@ void rstr_free(rstr *rs);
 ??!219reg vi.h:181:m42sc %? %@2142sc!0?
 '\''5s/et/tr/??!219reg vi.h:456:m52sc %? %@2142sc!0?
 '\''6s/et/tr/??!219reg vi.h:496:m62sc %? %@2142sc!0?
-'\''7s/et/tr/??!219reg vi.h:557:m72sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+'\''7s/et/tr/??!219reg vi.h:559:m72sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'lbuf.c' 'regex.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -2206,7 +2206,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 9edd2405..b2e8c67e 100644
+index b2e59855..b734676b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,7 +37,7 @@ int xsep = ':';			/* ex command separator */
@@ -2440,10 +2440,10 @@ index 9edd2405..b2e8c67e 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index bce1f5e0..02e0c15f 100644
+index 56cb42c6..853b0e3d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -491,11 +491,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -499,11 +499,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -2457,7 +2457,7 @@ index bce1f5e0..02e0c15f 100644
  	char *s = lbuf_get(lb, i);
  	int off, g1, g2, _o, step, flg;
  	if (pskip >= 0 && s)
-@@ -508,7 +508,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+@@ -516,7 +516,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
  		step = 0;
  		flg = REG_NEWLINE;
  		s = lb->ln[i];
@@ -2645,7 +2645,7 @@ index b5e0f21b..1b52091e 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..4c17beba 100644
+index c5c79dc5..5cc04be9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -110,12 +110,24 @@ typedef struct {
@@ -2702,7 +2702,7 @@ index 8f6f3e14..4c17beba 100644
  void ex_krsset(char *kwd, int dir);
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
  int ex_edit(const char *path, int len);
-@@ -554,5 +567,5 @@ void vi(int init);
+@@ -556,5 +569,5 @@ void vi(int init);
  extern int vi_hidch;
  extern int vi_lncol;
  /* filesystem */

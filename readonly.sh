@@ -367,12 +367,12 @@ void dir_calc\(char \*path\);1??0?
 grp 1%f+ /\* filesystem \*/.*?
 extern rset \*fsincl;.*?
 (void dir_calc\(char \*path\);)7??0?
-grp 07??m 2220reg p OK vi.h:558:a72sc %? %@2152sc!0?
-1;7??!219reg vi.h:5582sc %? %@2132sc!0?
+grp 07??m 2220reg p OK vi.h:560:a72sc %? %@2152sc!0?
+1;7??!219reg vi.h:5602sc %? %@2132sc!0?
 '\''1i 	char readonly;			/* read only */
 ??!219reg vi.h:415:m12sc %? %@2142sc!0?
 '\''2i extern char readonly;
-??!219reg vi.h:558:m22sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:560:m22sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -385,7 +385,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..c79a8b1e 100644
+index 02147e45..5d80b454 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -299,7 +299,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -398,7 +398,7 @@ index c92ec213..c79a8b1e 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 9edd2405..acc88b7f 100644
+index b2e59855..528677e4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -473,7 +473,7 @@ index b5e0f21b..6030f679 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..14d6511b 100644
+index c5c79dc5..a1bd9b34 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -413,6 +413,7 @@ struct buf {
@@ -484,7 +484,7 @@ index 8f6f3e14..14d6511b 100644
  };
  /* ex options */
  extern int xleft;
-@@ -556,3 +557,4 @@ extern int vi_lncol;
+@@ -558,3 +559,4 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);

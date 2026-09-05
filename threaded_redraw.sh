@@ -439,14 +439,14 @@ extern int vi_lncol;
 %f> 
 /\* vi\.c: main \*/
 void vi\(int init\);4??0?
-4??+2m 1220reg p OK vi.h:553:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:555:a42sc %? %@2152sc!1q0?
 grp 1%f> .*?
 /\* vi\.c: main \*/.*?
 (void vi\(int init\);)7??0?
-grp 07??m 1220reg p OK vi.h:553:a72sc %? %@2152sc!0?
-1;4;7??!219reg vi.h:5532sc %? %@2132sc!0?
+grp 07??m 1220reg p OK vi.h:555:a72sc %? %@2152sc!0?
+1;4;7??!219reg vi.h:5552sc %? %@2132sc!0?
 '\''1i void vi_rendwait(void);
-??!219reg vi.h:553:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:555:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -639,10 +639,10 @@ index b5e0f21b..df556ddf 100644
  
  static void sighandler(int signo)
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..92f48636 100644
+index c5c79dc5..afa85274 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -551,6 +551,7 @@ char *conf_digraph(int c1, int c2);
+@@ -553,6 +553,7 @@ char *conf_digraph(int c1, int c2);
  
  /* vi.c: main */
  void vi(int init);

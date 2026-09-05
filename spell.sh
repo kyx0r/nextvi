@@ -601,8 +601,8 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 4??0?
 4??+2m 1220reg p OK ex.c:1320:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
-	for \(i = 1; i < 4; i\+\+\)
-		syn_reloadft\(syn_findhl\(i\), 0\);.*(		xkmap_alt = conf_kmapfind\(arg\);)
+	for \(i = 0; i < hloptslen; i\+\+\)
+		syn_reloadft\(syn_findhl\(hlopts\[i]\), 0\);.*(		xkmap_alt = conf_kmapfind\(arg\);)
 	else
 		ex_print\(conf_kmap\(xkmap\)\[0], msg_ft\)8??0?
 grp 08??-4m 1220reg p OK ex.c:1320:a82sc %? %@2152sc!'\''08??1q0?
@@ -973,24 +973,24 @@ char \*conf_digraph\(int c1, int c2\);1??0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;4??0?
-4??+2m 1220reg p OK vi.h:547:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:549:a42sc %? %@2152sc!1q0?
 grp 1%f> extern struct placeholder \*ph;.*?
 extern int phlen;.*?
 (extern const int conf_hlrev;)7??0?
-grp 07??m 1220reg p OK vi.h:547:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:549:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int l;		/\* the length of the codepoint \*/
 };
 extern struct placeholder _ph\[];.*(/\* vi\.c: main \*/)
 void vi\(int init\);
 extern int vi_hidch;8??0?
-grp 08??-5m 1220reg p OK vi.h:547:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.h:549:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int cp\[2];	/\* the source character codepoint \*/
 	char d\[8];	/\* the placeholder \*/
 	int wid;	/\* the width of the placeholder \*/.*(extern int vi_lncol;)
 /\* filesystem \*/
 extern rset \*fsincl;9??0?
-grp 09??-8m 1220reg p OK vi.h:547:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:5472sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.h:549:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:5492sc %? %@2132sc!0?
 '\''1i extern char spell_cmd[];
 struct spellft {
 	char *ft;		/* the filetype */
@@ -998,7 +998,7 @@ struct spellft {
 };
 extern struct spellft spell_fts[];
 extern const int spell_ftslen;
-??!219reg vi.h:547:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:549:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -1011,7 +1011,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..13d3ee5a 100644
+index 02147e45..0b4307b1 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -2,6 +2,10 @@
@@ -1178,7 +1178,7 @@ index c92ec213..13d3ee5a 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 9edd2405..c49f4d76 100644
+index b2e59855..afd205b5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1318,6 +1318,170 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
@@ -1454,10 +1454,10 @@ index b5e0f21b..9b08cd2f 100644
  		term_commit();
  		xb->useq += xseq;
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..f3301c30 100644
+index c5c79dc5..8e244be5 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -545,6 +545,13 @@ extern struct placeholder _ph[];
+@@ -547,6 +547,13 @@ extern struct placeholder _ph[];
  extern struct placeholder *ph;
  extern int phlen;
  extern const int conf_hlrev;

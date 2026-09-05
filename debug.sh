@@ -102,34 +102,34 @@ void ex_init\(char \*\*files, int n\)
 1;4;7;8;9??!219reg regex.c:6652sc %? %@2132sc!0?
 '\''1i 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
 ??!219reg regex.c:665:m12sc %? %@2142sc!b2m!%ya 98?0?
-%f> }
-
-ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux rendering \*/
+%f> /\* 0 = current line, 1 = all other lines,
+2 = aux rendering \(never lbuf backed by construction\) \*/
+ren_state rstates\[3];
 ren_state \*rstate = rstates;
 
 /\* specify the screen position of the characters in s \*/1??0?
 1??+2m 11q0?
-%f> }
-
-ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux rendering \*/4??0?
-4??+2m 1220reg p OK ren.c:88:a42sc %? %@2152sc!1q0?
-grp 1%f> }.*?
-.*?
-(ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux rendering \*/)7??0?
-grp 07??m 1220reg p OK ren.c:88:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 		if \(c >= ph\[i]\.cp\[0] && c <= ph\[i]\.cp\[1] && l == ph\[i]\.l\)
-			return ph\[i]\.wid;
-	return uc_wid\(c\);.*(ren_state \*ren_position\(char \*s\))
+%f> /\* 0 = current line, 1 = all other lines,
+2 = aux rendering \(never lbuf backed by construction\) \*/
+ren_state rstates\[3];4??0?
+4??+2m 1220reg p OK ren.c:90:a42sc %? %@2152sc!1q0?
+grp 1%f> /\* 0 = current line, 1 = all other lines,.*?
+2 = aux rendering \(never lbuf backed by construction\) \*/.*?
+(ren_state rstates\[3];)7??0?
+grp 07??m 1220reg p OK ren.c:90:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			return ph\[i]\.wid;
+	return uc_wid\(c\);
+}.*(ren_state \*ren_position\(char \*s\))
 \{
 	if \(rstate->s == s\)8??0?
-grp 08??-4m 1220reg p OK ren.c:88:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ren.c:90:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		return 1;
 	int c, l; uc_code\(c, s, l\)
 	for \(int i = 0; i < phlen; i\+\+\).*(		return rstate;)
 	else if \(rstate->col\) \{
 		free\(rstate->col - 2\);9??0?
-grp 09??-7m 1220reg p OK ren.c:88:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ren.c:882sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ren.c:90:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ren.c:902sc %? %@2132sc!0?
 ?0?
 %f+ 		pats\[i] = fts\[i]\.pat;
 	syn_ftrs = rset_make\(i, pats, 0\);
@@ -138,8 +138,8 @@ ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux render
 grp 1%f+ 		pats\[i] = fts\[i]\.pat;.*?
 	syn_ftrs = rset_make\(i, pats, 0\);.*?
 (})7??0?
-grp 07??m 2220reg p OK ren.c:460:a72sc %? %@2152sc!0?
-1;7??!219reg ren.c:4602sc %? %@2132sc!0?
+grp 07??m 2220reg p OK ren.c:462:a72sc %? %@2152sc!0?
+1;7??!219reg ren.c:4622sc %? %@2132sc!0?
 '\''1i void ren_done(void)
 {
 	rset_free(dir_rslr);
@@ -153,7 +153,7 @@ ren_state rstates\[3]; /\* 0 = current line, 1 = all other lines, 2 = aux render
 	}
 }
 
-??!219reg ren.c:88:m12sc %? %@2142sc!0?
+??!219reg ren.c:90:m12sc %? %@2142sc!0?
 '\''2i 
 void syn_done(void)
 {
@@ -162,7 +162,7 @@ void syn_done(void)
 	free(ftmap);
 	rset_free(syn_ftrs);
 }
-??!219reg ren.c:460:m22sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg ren.c:462:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> 	else
 		vi\(1\);
 	term_done\(\);
@@ -290,7 +290,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 9edd2405..3eed3c5a 100644
+index b2e59855..eaa2956a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1956,6 +1956,22 @@ void ex(void)
@@ -329,13 +329,13 @@ index 4f841ff4..7f013a12 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index facf14cd..2077d354 100644
+index 4116d9c1..78993c61 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -86,6 +86,19 @@ static int ren_cwid(char *s, int pos)
- }
- 
- ren_state rstates[3]; /* 0 = current line, 1 = all other lines, 2 = aux rendering */
+@@ -88,6 +88,19 @@ static int ren_cwid(char *s, int pos)
+ /* 0 = current line, 1 = all other lines,
+ 2 = aux rendering (never lbuf backed by construction) */
+ ren_state rstates[3];
 +void ren_done(void)
 +{
 +	rset_free(dir_rslr);
@@ -352,7 +352,7 @@ index facf14cd..2077d354 100644
  ren_state *rstate = rstates;
  
  /* specify the screen position of the characters in s */
-@@ -458,3 +471,11 @@ void syn_init(void)
+@@ -460,3 +473,11 @@ void syn_init(void)
  		pats[i] = fts[i].pat;
  	syn_ftrs = rset_make(i, pats, 0);
  }
@@ -382,7 +382,7 @@ index b5e0f21b..445981eb 100644
  		term_scrl()
  	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..f698bd3c 100644
+index c5c79dc5..03656b28 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -225,6 +225,7 @@ int ren_noeol(char *s, int p);

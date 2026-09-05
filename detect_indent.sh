@@ -442,41 +442,41 @@ int xidt = 500;			/* auto-detect indent on file open */
 %f> 			sbuf_chr\(sb, '\''\\t'\''\)
 			sbuf_str\(sb, cs\)
 			free\(cs\);2??0?
-2??m 1220reg p OK led.c:457:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK led.c:460:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			sbuf_chr\(sb, '\''\\t'\''\)$3??0?
-3??m 1220reg p OK led.c:457:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK led.c:460:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 		case TK_CTL\('\''t'\''\):
 			cs = uc_dup\(sb->s \+ ps\);
 			sbuf_cut\(sb, ps\)4??0?
-4??+3m 1220reg p OK led.c:457:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK led.c:460:a42sc %? %@2152sc!1q0?
 %f> 			sbuf_str\(sb, cs\)
 			free\(cs\);5??0?
-5??-1m 1220reg p OK led.c:457:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK led.c:460:a52sc %? %@2152sc!1q0?
 %f> 		.....T._C...'\''t'\''\).
 	.	.....uc.....sb-.. \+ ....
 ....b...c.t........
 .....uf.c............
 	.........r.s.....\)
 ...f........6??0?
-6??+3m 1220reg p OK led.c:457:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK led.c:460:a62sc %? %@2152sc!1q0?
 grp 1%f> 		case TK_CTL\('\''t'\''\):.*?
 			cs = uc_dup\(sb->s \+ ps\);.*?
 			sbuf_cut\(sb, ps\).*?
 (			sbuf_chr\(sb, '\''\\t'\''\))7??0?
-grp 07??m 1220reg p OK led.c:457:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK led.c:460:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(ai_max >= 0\)
 				return c;
 			break;.*(				if \(is->p_reg < '\''/'\'' \|\| is->p_reg >= '\''9'\''\))
 					is->p_reg = '\''/'\'';
 				while \(is->p_reg < '\''9'\'' && !ex_regget\(\+\+is->p_reg\)\);8??0?
-grp 08??-15m 1220reg p OK led.c:457:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-15m 1220reg p OK led.c:460:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		case TK_CTL\('\''w'\''\):
 			if \(len - pre > 0\)
 				sbuf_cut\(sb, led_lastword\(sb->s \+ pre\) \+ pre\).*(			} else \{)
 				c = term_read\(0\);
 				is->p_reg = c == TK_CTL\('\''\\\\'\''\) \? 0 : c;9??0?
-grp 09??-18m 1220reg p OK led.c:457:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:4572sc %? %@2132sc!0?
+grp 09??-18m 1220reg p OK led.c:460:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:4602sc %? %@2132sc!0?
 ?0?
 %f+ 			sbuf_str\(sb, cs\)
 			free\(cs\);
@@ -487,120 +487,120 @@ int xidt = 500;			/* auto-detect indent on file open */
 %f+ 			pre\+\+;
 			break;
 		case TK_CTL\('\''d'\''\):2??0?
-2??m 2220reg p OK led.c:460:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK led.c:463:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			pre\+\+;$3??0?
-3??m 2220reg p OK led.c:460:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK led.c:463:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			sbuf_str\(sb, cs\)
 			free\(cs\);4??0?
-4??+2m 2220reg p OK led.c:460:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK led.c:463:a42sc %? %@2152sc!1q0?
 %f+ 			break;
 		case TK_CTL\('\''d'\''\):5??0?
-5??-1m 2220reg p OK led.c:460:a52sc %? %@2152sc!1q0?
+5??-1m 2220reg p OK led.c:463:a52sc %? %@2152sc!1q0?
 %f+ 	..s..._s..\(s......
 ..	....\(c...
 .	.....\+.
 .	...e...
 	....e.T...TL.....:6??0?
-6??+2m 2220reg p OK led.c:460:a62sc %? %@2152sc!1q0?
+6??+2m 2220reg p OK led.c:463:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			sbuf_str\(sb, cs\).*?
 			free\(cs\);.*?
 (			pre\+\+;)7??0?
-grp 07??m 2220reg p OK led.c:460:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:463:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(ai_max >= 0\)
 				return c;
 			break;.*(				if \(is->p_reg < '\''/'\'' \|\| is->p_reg >= '\''9'\''\))
 					is->p_reg = '\''/'\'';
 				while \(is->p_reg < '\''9'\'' && !ex_regget\(\+\+is->p_reg\)\);8??0?
-grp 08??-12m 2220reg p OK led.c:460:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-12m 2220reg p OK led.c:463:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		case TK_CTL\('\''w'\''\):
 			if \(len - pre > 0\)
 				sbuf_cut\(sb, led_lastword\(sb->s \+ pre\) \+ pre\).*(			} else \{)
 				c = term_read\(0\);
 				is->p_reg = c == TK_CTL\('\''\\\\'\''\) \? 0 : c;9??0?
-grp 09??-15m 2220reg p OK led.c:460:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:4602sc %? %@2132sc!0?
+grp 09??-15m 2220reg p OK led.c:463:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:4632sc %? %@2132sc!0?
 ?0?
 %f+ 			break;
 		case TK_CTL\('\''d'\''\):
 			if \(sb->s\[ps] == '\'' '\'' \|\| sb->s\[ps] == '\''\\t'\''\) \{
 				memmove\(&sb->s\[ps], &sb->s\[ps\+1], len - ps - 1\);
 				sb->s_n--;
-				pre--;1??0?
+				pre -= pre > ps;1??0?
 1??+2m 31q0?
 %f+ 			if \(sb->s\[ps] == '\'' '\'' \|\| sb->s\[ps] == '\''\\t'\''\) \{
 				memmove\(&sb->s\[ps], &sb->s\[ps\+1], len - ps - 1\);
 				sb->s_n--;
-				pre--;2??0?
-2??m 3220reg p OK led.c:463:a22sc %? %@2152sc!1q0?
+				pre -= pre > ps;2??0?
+2??m 3220reg p OK led.c:466:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			if \(sb->s\[ps] == '\'' '\'' \|\| sb->s\[ps] == '\''\\t'\''\) \{$3??0?
-3??m 3220reg p OK led.c:463:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK led.c:466:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			break;
 		case TK_CTL\('\''d'\''\):4??0?
-4??+2m 3220reg p OK led.c:463:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK led.c:466:a42sc %? %@2152sc!1q0?
 %f+ 				memmove\(&sb->s\[ps], &sb->s\[ps\+1], len - ps - 1\);
 				sb->s_n--;
-				pre--;5??0?
-5??-1m 3220reg p OK led.c:463:a52sc %? %@2152sc!1q0?
-%f+ ..	.r....
-.	c.........L\(.d'\''.:
-............\[....=. ..'\''..\|..b.>s.....=....t...\{
-..		.....ve\(.......p.]. ....>..p.\+.]..le.........1.;
-...	.b-.s.....
-.	......-.6??0?
-6??+2m 3220reg p OK led.c:463:a62sc %? %@2152sc!1q0?
+				pre -= pre > ps;5??0?
+5??-1m 3220reg p OK led.c:466:a52sc %? %@2152sc!1q0?
+%f+ .		......
+.	.as. ............
+..	...\(..-...p......'\''....\|............. ..t...\{
+...	.....v.........p.]......>s\[..\+.]. ....- p. .....
+.......>......
+..	.p.e....p........6??0?
+6??+2m 3220reg p OK led.c:466:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			break;.*?
 		case TK_CTL\('\''d'\''\):.*?
 (			if \(sb->s\[ps] == '\'' '\'' \|\| sb->s\[ps] == '\''\\t'\''\) \{)7??0?
-grp 07??m 3220reg p OK led.c:463:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK led.c:466:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(ai_max >= 0\)
 				return c;
 			break;.*(				if \(is->p_reg < '\''/'\'' \|\| is->p_reg >= '\''9'\''\))
 					is->p_reg = '\''/'\'';
 				while \(is->p_reg < '\''9'\'' && !ex_regget\(\+\+is->p_reg\)\);8??0?
-grp 08??-9m 3220reg p OK led.c:463:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 3220reg p OK led.c:466:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		case TK_CTL\('\''w'\''\):
 			if \(len - pre > 0\)
 				sbuf_cut\(sb, led_lastword\(sb->s \+ pre\) \+ pre\).*(			} else \{)
 				c = term_read\(0\);
 				is->p_reg = c == TK_CTL\('\''\\\\'\''\) \? 0 : c;9??0?
-grp 09??-12m 3220reg p OK led.c:463:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:4632sc %? %@2132sc!0?
+grp 09??-12m 3220reg p OK led.c:466:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:4662sc %? %@2132sc!0?
 ?0?
-%f+ 				pre--;
+%f+ 				pre -= pre > ps;
 			}
 			break;
 		case TK_CTL\('\'']'\''\):
 		case TK_CTL\('\''\\\\'\''\):
 			if \(c == TK_CTL\('\'']'\''\)\) \{1??0?
 1??+2m 41q0?
-%f+ 				pre--;
+%f+ 				pre -= pre > ps;
 			}
 			break;4??0?
-4??+2m 4220reg p OK led.c:468:a42sc %? %@2152sc!1q0?
-grp 1%f+ 				pre--;.*?
+4??+2m 4220reg p OK led.c:471:a42sc %? %@2152sc!1q0?
+grp 1%f+ 				pre -= pre > ps;.*?
 			}.*?
 (			break;)7??0?
-grp 07??m 4220reg p OK led.c:468:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK led.c:471:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(ai_max >= 0\)
 				return c;
 			break;.*(				if \(is->p_reg < '\''/'\'' \|\| is->p_reg >= '\''9'\''\))
 					is->p_reg = '\''/'\'';
 				while \(is->p_reg < '\''9'\'' && !ex_regget\(\+\+is->p_reg\)\);8??0?
-grp 08??-4m 4220reg p OK led.c:468:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK led.c:471:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		case TK_CTL\('\''w'\''\):
 			if \(len - pre > 0\)
 				sbuf_cut\(sb, led_lastword\(sb->s \+ pre\) \+ pre\).*(			} else \{)
 				c = term_read\(0\);
 				is->p_reg = c == TK_CTL\('\''\\\\'\''\) \? 0 : c;9??0?
-grp 09??-7m 4220reg p OK led.c:468:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:4682sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK led.c:471:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:4712sc %? %@2132sc!0?
 '\''1c 			if (xet)
 				for (int _k = 0; _k < xsw; _k++)
 					sbuf_chr(sb, '\'' '\'')
 			else
 				sbuf_chr(sb, '\''\t'\'')
-??!219reg led.c:457:m12sc %? %@2142sc!0?
-'\''2s/\+\+/ += xet ? xsw : 1/??!219reg led.c:460:m22sc %? %@2142sc!0?
+??!219reg led.c:460:m12sc %? %@2142sc!0?
+'\''2s/\+\+/ += xet ? xsw : 1/??!219reg led.c:463:m22sc %? %@2142sc!0?
 '\''3c 			if (xet) {
 				int _k;
 				for (_k = 0; _k < xsw && sb->s[ps + _k] == '\'' '\''; _k++);
@@ -610,7 +610,7 @@ int xidt = 500;			/* auto-detect indent on file open */
 					pre -= _k;
 				}
 			} else if (sb->s[ps] == '\'' '\'' || sb->s[ps] == '\''\t'\'') {
-??!219reg led.c:463:m32sc %? %@2142sc!0?
+??!219reg led.c:466:m32sc %? %@2142sc!0?
 '\''4i 		case '\''\t'\'':
 			if (xet)
 				for (int _l = 0; _l < xsw; _l++)
@@ -618,7 +618,7 @@ int xidt = 500;			/* auto-detect indent on file open */
 			else
 				sbuf_chr(sb, '\''\t'\'')
 			break;
-??!219reg led.c:468:m42sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg led.c:471:m42sc %? %@2142sc!b3m!%ya 98?0?
 %f> 			if \(dir < 0\) \{
 				if \(\*ln != '\'' '\'' && \*ln != '\''\\t'\''\)
 					break;
@@ -859,7 +859,7 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 ??!219reg vi.h:504:r231:m12sc %? %@2142sc!p compat 231 applied: src=splits.sh' > "$P2VIF".231
 # Compat 232 src=incsearch.sh
 printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
-%f> 				pre--;
+%f> 				pre -= pre > ps;
 			}
 			break;
 		case '\''\\t'\'':
@@ -883,7 +883,7 @@ printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 		case TK_CTL\('\'']'\''\):
 		case TK_CTL\('\''\\\\'\''\):
 			if \(c == TK_CTL\('\'']'\''\)\) \{2??0?
-2??m 1220reg p OK led.c:486:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK led.c:489:a22sc %? %@2152sc!1q0?
 %f> 		case '\''\\t'\'':
 			if \(xet\)
 				for \(int _l = 0; _l < xsw; _l\+\+\)
@@ -891,16 +891,16 @@ printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 			else
 				sbuf_chr\(sb, '\''\\t'\''\)
 			break;3??0?
-3??m 1220reg p OK led.c:486:a32sc %? %@2152sc!1q0?
-%f> 				pre--;
+3??m 1220reg p OK led.c:489:a32sc %? %@2152sc!1q0?
+%f> 				pre -= pre > ps;
 			}
 			break;4??0?
-4??+3m 1220reg p OK led.c:486:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK led.c:489:a42sc %? %@2152sc!1q0?
 %f> 		case TK_CTL\('\'']'\''\):
 		case TK_CTL\('\''\\\\'\''\):
 			if \(c == TK_CTL\('\'']'\''\)\) \{5??0?
-5??-7m 1220reg p OK led.c:486:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:486:r2322sc %? %@2132sc!0?
+5??-7m 1220reg p OK led.c:489:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:489:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;
@@ -914,24 +914,24 @@ printf '%s\n' '2sc!fr 98b2m!%ya 98?0?
 				sbuf_str\(sb, cs\)
 		}
 		is->sug = NULL;2??0?
-2??m 2220reg p OK led.c:672:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK led.c:675:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			if \(\(cs = led_read\(kmap, c\)\)\)$3??0?
-3??m 2220reg p OK led.c:672:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK led.c:675:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;
 			insert:4??0?
-4??+3m 2220reg p OK led.c:672:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK led.c:675:a42sc %? %@2152sc!1q0?
 %f+ 				sbuf_str\(sb, cs\)
 		}
 		is->sug = NULL;5??0?
-5??-1m 2220reg p OK led.c:672:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:672:r2322sc %? %@2132sc!0?
-'\''1,#+6d??!219reg led.c:486:r232:m12sc %? %@2142sc!0?
+5??-1m 2220reg p OK led.c:675:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:675:r2322sc %? %@2132sc!0?
+'\''1,#+6d??!219reg led.c:489:r232:m12sc %? %@2142sc!0?
 '\''2c 			if (c == '\''\t'\'' && xet) {
 				for (int _l = 0; _l < xsw; _l++)
 					sbuf_chr(sb, '\'' '\'')
 			} else if ((cs = led_read(kmap, c)))
-??!219reg led.c:672:r232:m22sc %? %@2142sc!p compat 232 applied: src=incsearch.sh' > "$P2VIF".232
+??!219reg led.c:675:r232:m22sc %? %@2142sc!p compat 232 applied: src=incsearch.sh' > "$P2VIF".232
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -965,8 +965,8 @@ exit 0
 === COMPAT PATCH ===
 --- a/led.c
 +++ b/led.c
-@@ -483,13 +483,6 @@
- 				pre--;
+@@ -486,13 +486,6 @@
+ 				pre -= pre > ps;
  			}
  			break;
 -		case '\t':
@@ -979,7 +979,7 @@ exit 0
  		case TK_CTL(']'):
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
-@@ -669,7 +662,10 @@
+@@ -672,7 +665,10 @@
  			if (c == '\n' || TK_INT(c))
  				return c;
  			insert:
@@ -995,7 +995,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..51705d06 100644
+index 02147e45..68993957 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -297,7 +297,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -1008,7 +1008,7 @@ index c92ec213..51705d06 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 9edd2405..45ccbaf9 100644
+index b2e59855..67ef1df6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -1137,10 +1137,10 @@ index 9edd2405..45ccbaf9 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/led.c b/led.c
-index ac9ccc64..67d65872 100644
+index 530eaf88..81c962ba 100644
 --- a/led.c
 +++ b/led.c
-@@ -454,18 +454,37 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -457,18 +457,37 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		case TK_CTL('t'):
  			cs = uc_dup(sb->s + ps);
  			sbuf_cut(sb, ps)
@@ -1168,7 +1168,7 @@ index ac9ccc64..67d65872 100644
 +			} else if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
  				memmove(&sb->s[ps], &sb->s[ps+1], len - ps - 1);
  				sb->s_n--;
- 				pre--;
+ 				pre -= pre > ps;
  			}
  			break;
 +		case '\t':
@@ -1209,7 +1209,7 @@ index b5e0f21b..c1ad7509 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..81109840 100644
+index c5c79dc5..614605c2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -413,6 +413,9 @@ struct buf {

@@ -530,8 +530,8 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 4??0?
 4??+2m 1220reg p OK ex.c:1320:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
-	for \(i = 1; i < 4; i\+\+\)
-		syn_reloadft\(syn_findhl\(i\), 0\);.*(		xkmap_alt = conf_kmapfind\(arg\);)
+	for \(i = 0; i < hloptslen; i\+\+\)
+		syn_reloadft\(syn_findhl\(hlopts\[i]\), 0\);.*(		xkmap_alt = conf_kmapfind\(arg\);)
 	else
 		ex_print\(conf_kmap\(xkmap\)\[0], msg_ft\)8??0?
 grp 08??-4m 1220reg p OK ex.c:1320:a82sc %? %@2152sc!'\''08??1q0?
@@ -650,7 +650,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..07375fc6 100644
+index 02147e45..0e98ca82 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -63,6 +63,10 @@ const int ftslen = LEN(fts);
@@ -774,7 +774,7 @@ index c92ec213..07375fc6 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 9edd2405..ae83f3dd 100644
+index b2e59855..ab6e2682 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1318,6 +1318,70 @@ static void *ec_ft(char *loc, char *cmd, char *arg)

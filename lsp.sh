@@ -181,16 +181,16 @@ const int hlslen = LEN\(hls\);
 grp 07??m 4220reg p OK conf.c:324:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\* \(\[0-9]\{1,3}%\) \(L\[0-9]\+\) \(C\[0-9]\+\) \(B-\?\[0-9]\+\)\?\.\*\$",
 		A\(AY1 \| SYN_BD, BL, RE1, BL, YE1, GR\)},
-	\{bar_ft, "\^\.\*\$", A\(AY1 \| SYN_BD\)},.*(/\* right-to-left characters \*/)
-#define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
-/\* neutral characters \*/8??0?
-grp 08??-7m 4220reg p OK conf.c:324:a82sc %? %@2152sc!'\''08??1q0?
+	\{bar_ft, "\^\.\*\$", A\(AY1 \| SYN_BD\)},.*(/\* ids of optional hls, reset and reloaded on filetype change \*/)
+const int hlopts\[] = \{1, 2, 3};
+const int hloptslen = LEN\(hlopts\);8??0?
+grp 08??-4m 4220reg p OK conf.c:324:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
 	\{bar_ft, "\^<\(\.\+\)> \(\?:\[\^ ]\+ \)\*\(\[0-9]\+L\) \(\[0-9]\+W\) \(S\[0-9]\+\) \(O\[0-9]\+\) \(C\[0-9]\+\)\$",
-		A\(AY1 \| SYN_BD, RE1, BL, YE, MA, CY1, YE1\)},.*(struct dircontext dctxs\[] = \{)
-	\{"\^\[" CR2L "]", -1},
-	\{"\^\[a-zA-Z_0-9]", \+1},9??0?
-grp 09??-12m 4220reg p OK conf.c:324:a92sc %? %@2152sc!'\''00?
+		A\(AY1 \| SYN_BD, RE1, BL, YE, MA, CY1, YE1\)},.*(/\* right-to-left characters \*/)
+#define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
+/\* neutral characters \*/9??0?
+grp 09??-11m 4220reg p OK conf.c:324:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg conf.c:3242sc %? %@2132sc!0?
 '\''1i char lsp_ft[] = "/lsp";	/* lsp diagnostic virtual text */
 ??!219reg conf.c:20:m12sc %? %@2142sc!0?
@@ -835,26 +835,26 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 %f> 			\(lb->ln_n - pos - n_del\) \* sizeof\(lb->ln\[0]\)\);
 	}
 	lb->ln_n \+= n_ins - n_del;4??0?
-4??+2m 1220reg p OK lbuf.c:129:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK lbuf.c:137:a42sc %? %@2152sc!1q0?
 grp 1%f> 			\(lb->ln_n - pos - n_del\) \* sizeof\(lb->ln\[0]\)\);.*?
 	}.*?
 (	lb->ln_n \+= n_ins - n_del;)7??0?
-grp 07??m 1220reg p OK lbuf.c:129:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK lbuf.c:137:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	if \(n_ins != n_del\) \{
 		memmove\(lb->ln \+ pos \+ n_ins, lb->ln \+ pos \+ n_del,.*(		int \*m = lb->mark \+ i \* 3, \*lm;)
 		if \(m\[1] >= pos \+ n_ins && m\[1] < pos \+ n_del\) \{
 			mark_set\(&lo->mark, &lo->mark_n, m\[0], m\[1], m\[2]\);8??0?
-grp 08??-4m 1220reg p OK lbuf.c:129:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK lbuf.c:137:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		free\(lb->ln\);
 		lb->ln = nln;
 		lb->ln_sz = nsz;.*(			m\[1] = n_ins \? pos \+ n_ins - 1 : -1;)
 		} else if \(m\[1] >= pos \+ n_del\) \{
 			m\[1] \+= n_ins - n_del;9??0?
-grp 09??-7m 1220reg p OK lbuf.c:129:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg lbuf.c:1292sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK lbuf.c:137:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg lbuf.c:1372sc %? %@2132sc!0?
 '\''1i 	lb->edseq++;
-??!219reg lbuf.c:129:m12sc %? %@2142sc!b4m!0?
+??!219reg lbuf.c:137:m12sc %? %@2142sc!b4m!0?
 i /* lsp.c - Language Server Protocol client for nextvi */
 #include "jsmn.h"
 #include <errno.h>
@@ -2795,8 +2795,8 @@ void dir_calc\(char \*path\);1??0?
 grp 1%f+ /\* filesystem \*/.*?
 extern rset \*fsincl;.*?
 (void dir_calc\(char \*path\);)7??0?
-grp 07??m 2220reg p OK vi.h:558:a72sc %? %@2152sc!0?
-1;7??!219reg vi.h:5582sc %? %@2132sc!0?
+grp 07??m 2220reg p OK vi.h:560:a72sc %? %@2152sc!0?
+1;7??!219reg vi.h:5602sc %? %@2132sc!0?
 '\''1i 	int edseq;			/* monotonic content mutation counter */
 ??!219reg vi.h:152:m12sc %? %@2142sc!0?
 '\''2i 
@@ -2816,7 +2816,7 @@ void lsp_definition(const char *path, int row, int off);
 const char *lsp_diag_for_line(const char *path, int line, int *sev);
 void lsp_list(void);
 void lsp_show_msg(char *msg);
-??!219reg vi.h:558:m22sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
+??!219reg vi.h:560:m22sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'jsmn.h' 'lbuf.c' 'lsp.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -2829,7 +2829,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index c92ec213..45a75910 100644
+index 02147e45..fbe1ebc1 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -18,6 +18,7 @@ char vs_ft[] = "/vs";	/* vi search prompt (is never '\n' terminated) */
@@ -2871,7 +2871,7 @@ index c92ec213..45a75910 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index 9edd2405..427fbc0d 100644
+index b2e59855..ee89885a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -433,6 +433,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -3413,10 +3413,10 @@ index 00000000..8ac14c1b
 +
 +#endif /* JSMN_H */
 diff --git a/lbuf.c b/lbuf.c
-index bce1f5e0..9e6cf166 100644
+index 56cb42c6..c749f693 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -127,6 +127,7 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
+@@ -135,6 +135,7 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
  			(lb->ln_n - pos - n_del) * sizeof(lb->ln[0]));
  	}
  	lb->ln_n += n_ins - n_del;
@@ -4826,7 +4826,7 @@ index b5e0f21b..46b7ce53 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 diff --git a/vi.h b/vi.h
-index 8f6f3e14..5ef6f4f6 100644
+index c5c79dc5..15c5f3b8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,7 @@ struct lbuf {
@@ -4837,7 +4837,7 @@ index 8f6f3e14..5ef6f4f6 100644
  };
  #define lbuf_len(lb) lb->ln_n
  #define lbuf_s(ln) ((struct linfo*)(ln - sizeof(struct linfo)))
-@@ -556,3 +557,20 @@ extern int vi_lncol;
+@@ -558,3 +559,20 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);
