@@ -158,7 +158,7 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 		if (idx < 0 || (!idx && xbufcur < 2) || idx >= xbufcur)
 			return "invalid buffer index";
 		bufs_free(idx);
-		for (int i = idx; i < xbufcur; i++)
+		for (int i = idx; i < xbufcur - 1; i++)
 			bufs[i] = bufs[i+1];
 		xbufcur--;
 		if (!istmp) {
@@ -205,7 +205,7 @@ index a51117ca..a20ed911 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index b2e59855..e70f0752 100644
+index b2e59855..10206676 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1669,6 +1669,49 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
@@ -236,7 +236,7 @@ index b2e59855..e70f0752 100644
 +		if (idx < 0 || (!idx && xbufcur < 2) || idx >= xbufcur)
 +			return "invalid buffer index";
 +		bufs_free(idx);
-+		for (int i = idx; i < xbufcur; i++)
++		for (int i = idx; i < xbufcur - 1; i++)
 +			bufs[i] = bufs[i+1];
 +		xbufcur--;
 +		if (!istmp) {
