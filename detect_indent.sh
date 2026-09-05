@@ -607,7 +607,7 @@ int xidt = 500;			/* auto-detect indent on file open */
 				if (_k) {
 					memmove(&sb->s[ps], &sb->s[ps + _k], len - ps - _k);
 					sb->s_n -= _k;
-					pre -= _k;
+					pre = MAX(ps, pre - _k);
 				}
 			} else if (sb->s[ps] == '\'' '\'' || sb->s[ps] == '\''\t'\'') {
 ??!219reg led.c:466:m32sc %? %@2142sc!0?
@@ -1137,7 +1137,7 @@ index b2e59855..67ef1df6 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/led.c b/led.c
-index 530eaf88..81c962ba 100644
+index 530eaf88..b93d5b05 100644
 --- a/led.c
 +++ b/led.c
 @@ -457,18 +457,37 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
@@ -1163,7 +1163,7 @@ index 530eaf88..81c962ba 100644
 +				if (_k) {
 +					memmove(&sb->s[ps], &sb->s[ps + _k], len - ps - _k);
 +					sb->s_n -= _k;
-+					pre -= _k;
++					pre = MAX(ps, pre - _k);
 +				}
 +			} else if (sb->s[ps] == ' ' || sb->s[ps] == '\t') {
  				memmove(&sb->s[ps], &sb->s[ps+1], len - ps - 1);
