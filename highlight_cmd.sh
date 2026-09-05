@@ -485,56 +485,6 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},8??
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-9m 15220reg p OK conf.c:301:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3012sc %? %@2132sc!0?
-?0?
-%f+ const int hlslen = LEN\(hls\);
-
-/\* ids of optional hls, reset and reloaded on filetype change \*/
-const int hlopts\[] = \{1, 2, 3};
-const int hloptslen = LEN\(hlopts\);
-
-/\* how to highlight text in the reverse direction \*/1??0?
-1??+3m 161q0?
-%f+ const int hlopts\[] = \{1, 2, 3};
-const int hloptslen = LEN\(hlopts\);
-
-/\* how to highlight text in the reverse direction \*/2??0?
-2??m 16220reg p OK conf.c:329:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^const int hlopts\[] = \{1, 2, 3};$3??0?
-3??m 16220reg p OK conf.c:329:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ const int hlslen = LEN\(hls\);
-
-/\* ids of optional hls, reset and reloaded on filetype change \*/4??0?
-4??+3m 16220reg p OK conf.c:329:a42sc %? %@2152sc!1q0?
-%f+ const int hloptslen = LEN\(hlopts\);
-
-/\* how to highlight text in the reverse direction \*/5??0?
-5??-1m 16220reg p OK conf.c:329:a52sc %? %@2152sc!1q0?
-%f+ .o... i....l.l.n....EN\(.....
-
-....d. o.........l........se. .....el..d.........e......h.......
-...................= .......3}.
-...s....t..lo.t........E..........
-
-.\*..o. t.........h. te......t.e...v......ir.c.......6??0?
-6??+3m 16220reg p OK conf.c:329:a62sc %? %@2152sc!1q0?
-grp 1%f+ const int hlslen = LEN\(hls\);.*?
-.*?
-/\* ids of optional hls, reset and reloaded on filetype change \*/.*?
-(const int hlopts\[] = \{1, 2, 3};)7??0?
-grp 07??m 16220reg p OK conf.c:329:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\* \(\[0-9]\{1,3}%\) \(L\[0-9]\+\) \(C\[0-9]\+\) \(B-\?\[0-9]\+\)\?\.\*\$",
-		A\(AY1 \| SYN_BD, BL, RE1, BL, YE1, GR\)},
-	\{bar_ft, "\^\.\*\$", A\(AY1 \| SYN_BD\)},.*(/\* right-to-left characters \*/)
-#define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
-/\* neutral characters \*/8??0?
-grp 08??-6m 16220reg p OK conf.c:329:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
-	\{bar_ft, "\^<\(\.\+\)> \(\?:\[\^ ]\+ \)\*\(\[0-9]\+L\) \(\[0-9]\+W\) \(S\[0-9]\+\) \(O\[0-9]\+\) \(C\[0-9]\+\)\$",
-		A\(AY1 \| SYN_BD, RE1, BL, YE, MA, CY1, YE1\)},.*(struct dircontext dctxs\[] = \{)
-	\{"\^\[" CR2L "]", -1},
-	\{"\^\[a-zA-Z_0-9]", \+1},9??0?
-grp 09??-11m 16220reg p OK conf.c:329:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg conf.c:3292sc %? %@2132sc!0?
 '\''1i /* att of the :hi slot, HI_LEN entries of variable length as in any other att */
 #define HI	A(WH1 | SYN_BGMK(MA) | SYN_OWR, 0, 0, 0, 0, 0, 0, 0, \
 		0, 0, 0, 0, 0, 0, 0, 0)
@@ -566,8 +516,7 @@ const int hloptslen = LEN\(hlopts\);
 ??!219reg conf.c:241:m132sc %? %@2142sc!0?
 '\''14i 	{FT(md), NULL, HI, 0, 4},
 ??!219reg conf.c:256:m142sc %? %@2142sc!0?
-'\''15s/\?\|i/?|hi|i/??!219reg conf.c:301:m152sc %? %@2142sc!0?
-'\''16s/3}/3, 4}/??!219reg conf.c:329:m162sc %? %@2142sc!b1m!%ya 98?0?
+'\''15s/\?\|i/?|hi|i/??!219reg conf.c:301:m152sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	return NULL;
 }
 
@@ -622,10 +571,7 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{9??0?
 grp 09??-9m 2220reg p OK ex.c:1795:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17952sc %? %@2132sc!0?
-'\''1i /* the hi pattern, owned here: hlopts resets the slot without freeing it */
-static char *hipat;
-
-/* walk att exactly like syn_highlight to bound its variable length entries */
+'\''1i /* walk att exactly like syn_highlight to bound its variable length entries */
 static int hi_walk(int *att, int grps)
 {
 	int inc, i = 0;
@@ -678,13 +624,12 @@ static void *ec_hi(char *loc, char *cmd, char *arg)
 	if (hi_walk(att, grps))
 		return "att too short";
 	memcpy(hls[hl].att, att, sizeof(att));
-	free(hipat);
-	hipat = NULL;
+	free(hls[hl].pat);
+	hls[hl].pat = NULL;
 	if (*arg) {
-		hipat = emalloc(strlen(arg) + 1);
-		strcpy(hipat, arg);
+		hls[hl].pat = emalloc(strlen(arg) + 1);
+		strcpy(hls[hl].pat, arg);
 	}
-	hls[hl].pat = hipat;
 	syn_blockhl = -1;
 	syn_reloadft(hl, 0);
 	return NULL;
@@ -705,7 +650,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 02147e45..4e5e0503 100644
+index 02147e45..0e98ca82 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -63,6 +63,10 @@ const int ftslen = LEN(fts);
@@ -828,26 +773,14 @@ index 02147e45..4e5e0503 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
-@@ -326,7 +343,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
- const int hlslen = LEN(hls);
- 
- /* ids of optional hls, reset and reloaded on filetype change */
--const int hlopts[] = {1, 2, 3};
-+const int hlopts[] = {1, 2, 3, 4};
- const int hloptslen = LEN(hlopts);
- 
- /* how to highlight text in the reverse direction */
 diff --git a/ex.c b/ex.c
-index b2e59855..80f2a8e2 100644
+index b2e59855..ab6e2682 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1318,6 +1318,74 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
+@@ -1318,6 +1318,70 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
-+/* the hi pattern, owned here: hlopts resets the slot without freeing it */
-+static char *hipat;
-+
 +/* walk att exactly like syn_highlight to bound its variable length entries */
 +static int hi_walk(int *att, int grps)
 +{
@@ -901,13 +834,12 @@ index b2e59855..80f2a8e2 100644
 +	if (hi_walk(att, grps))
 +		return "att too short";
 +	memcpy(hls[hl].att, att, sizeof(att));
-+	free(hipat);
-+	hipat = NULL;
++	free(hls[hl].pat);
++	hls[hl].pat = NULL;
 +	if (*arg) {
-+		hipat = emalloc(strlen(arg) + 1);
-+		strcpy(hipat, arg);
++		hls[hl].pat = emalloc(strlen(arg) + 1);
++		strcpy(hls[hl].pat, arg);
 +	}
-+	hls[hl].pat = hipat;
 +	syn_blockhl = -1;
 +	syn_reloadft(hl, 0);
 +	return NULL;
@@ -916,7 +848,7 @@ index b2e59855..80f2a8e2 100644
  static void *ec_cmap(char *loc, char *cmd, char *arg)
  {
  	if (arg[0])
-@@ -1793,6 +1861,7 @@ static struct excmd {
+@@ -1793,6 +1857,7 @@ static struct excmd {
  	EO(hlp),
  	EO(hlr),
  	EO(hl),
