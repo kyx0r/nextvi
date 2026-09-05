@@ -190,26 +190,35 @@ static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 	\{"c", ec_insert},9??0?
 grp 09??-7m 4220reg p OK ex.c:1777:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:17772sc %? %@2132sc!0?
-'\''1i static void *ec_writeall(char *loc, char *cmd, char *arg)
+'\''1i /* back to the buffer the write-all started in, temp or not */
+static void bufs_restore(struct buf *obuf, int oidx)
+{
+	if (obuf == ex_buf)
+		return;
+	if (istempbuf(obuf))
+		temp_switch(oidx, 0);
+	else
+		bufs_switch(oidx);
+}
+
+static void *ec_writeall(char *loc, char *cmd, char *arg)
 {
 	char *ret = NULL;
 	int force = strchr(cmd, '\''!'\'') != NULL;
 	int onlymod = cmd[0] == '\''x'\'';
 	int noquit = cmd[0] == '\''w'\'' && cmd[1] == '\''a'\'';
 	struct buf *obuf = ex_buf;
-	int oidx = istempbuf(obuf) ? -1 : obuf - bufs;
+	int oidx = obuf - (istempbuf(obuf) ? tempbufs : bufs);
 	for (int i = 0; i < xbufcur; i++) {
 		bufs_switch(i);
 		if (onlymod && !xb->modified)
 			continue;
 		if ((ret = ec_write("", force ? "w!" : "w", ""))) {
-			if (oidx >= 0)
-				bufs_switch(oidx);
+			bufs_restore(obuf, oidx);
 			return ret;
 		}
 	}
-	if (oidx >= 0 && obuf != ex_buf)
-		bufs_switch(oidx);
+	bufs_restore(obuf, oidx);
 	return noquit ? NULL : ec_quit("", force ? "q!" : "q", "");
 }
 
@@ -248,13 +257,24 @@ index a51117ca..2cc98f21 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index b2e59855..b9ce99fe 100644
+index b2e59855..83ebf5f1 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -810,6 +810,29 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -810,6 +810,38 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
++/* back to the buffer the write-all started in, temp or not */
++static void bufs_restore(struct buf *obuf, int oidx)
++{
++	if (obuf == ex_buf)
++		return;
++	if (istempbuf(obuf))
++		temp_switch(oidx, 0);
++	else
++		bufs_switch(oidx);
++}
++
 +static void *ec_writeall(char *loc, char *cmd, char *arg)
 +{
 +	char *ret = NULL;
@@ -262,26 +282,24 @@ index b2e59855..b9ce99fe 100644
 +	int onlymod = cmd[0] == 'x';
 +	int noquit = cmd[0] == 'w' && cmd[1] == 'a';
 +	struct buf *obuf = ex_buf;
-+	int oidx = istempbuf(obuf) ? -1 : obuf - bufs;
++	int oidx = obuf - (istempbuf(obuf) ? tempbufs : bufs);
 +	for (int i = 0; i < xbufcur; i++) {
 +		bufs_switch(i);
 +		if (onlymod && !xb->modified)
 +			continue;
 +		if ((ret = ec_write("", force ? "w!" : "w", ""))) {
-+			if (oidx >= 0)
-+				bufs_switch(oidx);
++			bufs_restore(obuf, oidx);
 +			return ret;
 +		}
 +	}
-+	if (oidx >= 0 && obuf != ex_buf)
-+		bufs_switch(oidx);
++	bufs_restore(obuf, oidx);
 +	return noquit ? NULL : ec_quit("", force ? "q!" : "q", "");
 +}
 +
  static void *ec_termexec(char *loc, char *cmd, char *arg)
  {
  	if (*arg && term_sbuf)
-@@ -1762,8 +1785,12 @@ static struct excmd {
+@@ -1762,8 +1794,12 @@ static struct excmd {
  	{"rd", ec_undoredo},
  	EO(rr),
  	{"r", ec_read},
@@ -294,7 +312,7 @@ index b2e59855..b9ce99fe 100644
  	{"w!", ec_write},
  	{"w", ec_write},
  	{"uc", ec_setenc},
-@@ -1775,6 +1802,8 @@ static struct excmd {
+@@ -1775,6 +1811,8 @@ static struct excmd {
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
  	{"s", ec_substitute},
