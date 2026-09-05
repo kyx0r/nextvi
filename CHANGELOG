@@ -67,7 +67,8 @@ Patch changes:
    protocol.
 8. [visual.sh](https://github.com/kyx0r/nextvi/blob/release/visual.sh)
    Implemented visual column conversion for block select (vb) fixing
-   misalignment with multi width characters.
+   misalignment with multi width characters. Fixed [ ] mark offsets
+   for visual block mode edits.
 
 ------------------
 7.4 Basilisk
