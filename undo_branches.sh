@@ -136,11 +136,13 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 1;4;7;8;9??!219reg ex.c:17712sc %? %@2132sc!0?
 '\''1i static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
-	char *s = lbuf_getleafs(xb);
-	if (*arg)
+	if (*arg) {
 		lbuf_setleaf(xb, atoi(arg));
-	else
-		ex_print(s, msg_ft)
+		return NULL;
+	}
+	char *s = lbuf_getleafs(xb);
+	ex_print(s, msg_ft)
+	free(s);
 	return NULL;
 }
 
@@ -586,27 +588,29 @@ index a51117ca..38c7bec3 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index b2e59855..1c23d1be 100644
+index b2e59855..83c51ab4 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1669,6 +1669,16 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1669,6 +1669,18 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
 +static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 +{
-+	char *s = lbuf_getleafs(xb);
-+	if (*arg)
++	if (*arg) {
 +		lbuf_setleaf(xb, atoi(arg));
-+	else
-+		ex_print(s, msg_ft)
++		return NULL;
++	}
++	char *s = lbuf_getleafs(xb);
++	ex_print(s, msg_ft)
++	free(s);
 +	return NULL;
 +}
 +
  static int eo_val(char *arg)
  {
  	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
-@@ -1769,6 +1779,7 @@ static struct excmd {
+@@ -1769,6 +1781,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
