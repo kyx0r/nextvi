@@ -378,15 +378,17 @@ typedef struct led_ext led_ext;
 struct led_ext {					/* a syntax highlighting extension */
 	char *ln;					/* line key; NULL matches any line */
 	int *ola;					/* off, len, att triples */
-	void (*syn_ext)(led_ext *p, led_ctx *x);	/* extension body defaults to ext_attmerge() */
+	void (*ext_func)(led_ext *p, led_ctx *x);	/* extension body defaults to ext_attmerge() */
 	int cnt;					/* number of triples */
 };
 led_ext *led_extnew(void);
 led_ext *led_extreg(void);
-led_ext *led_extfind(void (*syn_ext)(led_ext *p, led_ctx *x));
+led_ext *led_extfind(void (*ext_func)(led_ext *p, led_ctx *x));
 void led_extdel(led_ext *p);
 void led_extcut(void);
-void led_exthlr(led_ext *p, led_ctx *x);
+int led_attidx(led_ctx *x, int off);
+/* for extensions that key themselves */
+#define led_extkey(p, x) (!(p)->ln || (p)->ln == (x)->s0)
 void led_modeswap(void);
 typedef struct {
 	int t_row;
