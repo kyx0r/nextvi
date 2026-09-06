@@ -1198,8 +1198,7 @@ void vi(int init)
 				syn_scdir(0);
 			vi_drawrow(otop + xrows - 1);
 		}
-		if (led_attsb)
-			sbuf_cut(led_attsb, 0)
+		led_extcut();
 		if (vi_ybuf < 0)
 			vi_ybuf = vi_yankbuf(0);
 		mv = vi_region(-1, &nrow, &noff);
@@ -1780,19 +1779,25 @@ void vi(int init)
 		}
 		if (xhlp && (k = syn_findhl(3)) >= 0) {
 			int row = xrow, off = xoff, row1, off1;
-			led_att la;
-			if (!led_attsb)
-				sbuf_make(led_attsb, sizeof(la) * 2)
+			static int ola[2][3];
+			led_ext *p;
 			if (!lbuf_pair(xb, "()[]{}", 6, &row, &off)) {
 				row1 = row; off1 = off;
 				if (!lbuf_pair(xb, "()[]{}", 6, &row, &off)) {
-					la.s = ln;
-					la.off = off;
-					la.att = hls[k].att[0];
-					sbuf_mem(led_attsb, &la, sizeof(la))
-					la.s = lbuf_get(xb, row1);
-					la.off = off1;
-					sbuf_mem(led_attsb, &la, sizeof(la))
+					ola[0][0] = off;
+					ola[0][1] = 1;
+					ola[0][2] = hls[k].att[0];
+					p = led_extnew();
+					p->ln = ln;
+					p->ola = ola[0];
+					p->cnt = 1;
+					ola[1][0] = off1;
+					ola[1][1] = 1;
+					ola[1][2] = hls[k].att[0];
+					p = led_extnew();
+					p->ln = lbuf_get(xb, row1);
+					p->ola = ola[1];
+					p->cnt = 1;
 					vi_mod |= row1 == row && orow == xrow ? 2 : 1;
 				}
 			}

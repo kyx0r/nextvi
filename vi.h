@@ -362,12 +362,31 @@ char *xgetenv(char* q[]);
 #define TK_INT(c)	(!c || c == TK_ESC || c == TK_CTL('c'))
 
 /* led.c: line-oriented input and output */
-typedef struct {
-	char *s;
-	int off;
-	int att;
-} led_att;
-extern sbuf *led_attsb;
+typedef struct {	/* led_render() state, passed to every extension */
+	int *att;
+	int *off;
+	int *stt;
+	int *ctt;
+	char *s0;
+	char *bound;
+	ren_state *r;
+	int alen;	/* number of valid att[] entries */
+	int cterm;
+	int n;
+} led_ctx;
+typedef struct led_ext led_ext;
+struct led_ext {					/* a syntax highlighting extension */
+	char *ln;					/* line key; NULL matches any line */
+	int *ola;					/* off, len, att triples */
+	void (*syn_ext)(led_ext *p, led_ctx *x);	/* extension body defaults to ext_attmerge() */
+	int cnt;					/* number of triples */
+};
+led_ext *led_extnew(void);
+led_ext *led_extreg(void);
+led_ext *led_extfind(void (*syn_ext)(led_ext *p, led_ctx *x));
+void led_extdel(led_ext *p);
+void led_extcut(void);
+void led_exthlr(led_ext *p, led_ctx *x);
 void led_modeswap(void);
 typedef struct {
 	int t_row;
