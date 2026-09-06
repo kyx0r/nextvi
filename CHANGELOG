@@ -14,6 +14,10 @@ New in core:
 5. Substitution with the ^ flag anchors ^ at the start of every search
    instead of only the first; it implies g. The vi and vI keybinds use
    it to convert a whole indentation run.
+6. Evolved syntax highlight extension system (former led_attsb). Now
+   extensions are exposed to rendering and its' precomputed state. Extensions
+   can reflect and build logic on top of existing highlights.
+   Features efficient tripple system with length encoding.
 
 New in builds:
 1. Build shell scripts (cbuild.sh, build_patch2vi.sh) accept options
@@ -83,7 +87,8 @@ Patch changes:
 8. [visual.sh](https://github.com/kyx0r/nextvi/blob/release/visual.sh)
    Implemented visual column conversion for block select (vb) fixing
    misalignment with multi width characters. Fixed [ ] mark offsets
-   for visual block mode edits.
+   for visual block mode edits. Implemented adaptive chameleon cursor color.
+9. Trivial bug fixing in other patches not worth mentioning.
 
 ------------------
 7.4 Basilisk
