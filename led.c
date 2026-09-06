@@ -209,22 +209,24 @@ void led_render(char *s0, int cbeg, int cend)
 	if (led_attsb && xhl) {
 		led_att *p = (led_att*)led_attsb->s;
 		for (; (char*)p < &led_attsb->s[led_attsb->s_n]; p++) {
-			if (p->s != s0 && p->s)
+			int po = p->off;
+			if ((p->s != s0 && p->s)
+					|| (unsigned int)po >= (unsigned int)n)
 				continue;
 			if (!bound)
-				att[p->off] = syn_merge(att[p->off], p->att);
-			else if (c && stt[0] <= p->off && stt[c-1] >= p->off) {
-				i = p->off - stt[0];
-				if (i < c && stt[i] == p->off) {
+				att[po] = syn_merge(att[po], p->att);
+			else if (c && stt[0] <= po && stt[c-1] >= po) {
+				i = po - stt[0];
+				if (i < c && stt[i] == po) {
 					att[i] = syn_merge(att[i], p->att);
 					continue; /* text not reordered */
 				}
 				for (l = 0, j = c - 1; l <= j;) {
 					i = l + (j - l) / 2;
-					if (stt[i] == p->off) {
+					if (stt[i] == po) {
 						att[i] = syn_merge(att[i], p->att);
 						break;
-					} else if (stt[i] < p->off)
+					} else if (stt[i] < po)
 						l = i + 1;
 					else
 						j = i - 1;
