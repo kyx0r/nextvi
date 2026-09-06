@@ -233,17 +233,17 @@ int map_read(int mode, int winch)
 		noredraw:
 		switch \(c\) \{
 		case TK_CTL\('\''h'\''\):2??0?
-2??m 1220reg p OK led.c:437:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK led.c:439:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^		c = term_read\(TK_CTL\('\''l'\''\)\);$3??0?
-3??m 1220reg p OK led.c:437:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK led.c:439:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	do \{
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);
 		len = sb->s_n;4??0?
-4??+3m 1220reg p OK led.c:437:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK led.c:439:a42sc %? %@2152sc!1q0?
 %f> 		noredraw:
 		switch \(c\) \{
 		case TK_CTL\('\''h'\''\):5??0?
-5??-1m 1220reg p OK led.c:437:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK led.c:439:a52sc %? %@2152sc!1q0?
 %f> 	....
 	.l.........a....s.,.pre,..s..\*p.....p..... ...f\);
 		..... .b..._..
@@ -251,27 +251,27 @@ int map_read(int mode, int winch)
 .	..r..r...
 .	sw......c\)..
 .	.a...TK.C.....'\''\):6??0?
-6??+3m 1220reg p OK led.c:437:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK led.c:439:a62sc %? %@2152sc!1q0?
 grp 1%f> 	do \{.*?
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);.*?
 		len = sb->s_n;.*?
 (		c = term_read\(TK_CTL\('\''l'\''\)\);)7??0?
-grp 07??m 1220reg p OK led.c:437:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK led.c:439:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	char \*cs;
 	int len, c, i;
 	sbuf \*reg;.*(			c = 127;)
 		case 127:
 			if \(len - pre > 0\)8??0?
-grp 08??-4m 1220reg p OK led.c:437:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK led.c:439:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static int led_line\(sbuf \*sb, int ps, int pre, char \*\*post, int postn, char \*\*postref,
 	int ai_max, int \*poff, int \*kmap, ins_state \*is, int orow, int crow, int ctop, int flg\)
 \{.*(				sbuf_cut\(sb, led_lastchar\(sb->s \+ pre\) \+ pre\))
 			else
 				return c;9??0?
-grp 09??-7m 1220reg p OK led.c:437:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:4372sc %? %@2132sc!0?
-?'\''1s/term_read\(/map_read(1, /1??1??1q'\''1s/term(_r.*d\()/map\11, /2??2??'\''1220reg p OK led.c:437:s22sc %? %@2162sc!0?
-1;2??!219reg led.c:437:m12sc %? %@2142sc!0?
+grp 09??-7m 1220reg p OK led.c:439:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:4392sc %? %@2132sc!0?
+?'\''1s/term_read\(/map_read(1, /1??1??1q'\''1s/term(_r.*d\()/map\11, /2??2??'\''1220reg p OK led.c:439:s22sc %? %@2162sc!0?
+1;2??!219reg led.c:439:m12sc %? %@2142sc!0?
 b3m!%ya 98?0?
 %f> 
 static int vi_yankbuf\(int winch\)
@@ -973,10 +973,10 @@ index b2e59855..2d94cceb 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 530eaf88..96dd9b0a 100644
+index 3c1fde38..d945d480 100644
 --- a/led.c
 +++ b/led.c
-@@ -434,7 +434,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -436,7 +436,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  	do {
  		led_printparts(sb, pre, ps, *post, postn, poff);
  		len = sb->s_n;

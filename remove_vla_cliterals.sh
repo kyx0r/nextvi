@@ -685,24 +685,24 @@ static int led_lastchar\(char \*s\)1??0?
 %f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);
 		r->holelen = 0;
 	}4??0?
-4??+2m 5220reg p OK led.c:259:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK led.c:261:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);.*?
 		r->holelen = 0;.*?
 (	})7??0?
-grp 07??m 5220reg p OK led.c:259:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK led.c:261:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		led_out\(term_sbuf, 1\)
 	sbufn_mem\(term_sbuf, "\\x1b\[m", 3\)
 	if \(r->holelen\) \{.*(	char \*r = \*s \? strchr\(s, '\''\\0'\''\) : s;)
 	if \(r != s\)
 		r = uc_beg\(s, r - 1\);8??0?
-grp 08??-5m 5220reg p OK led.c:259:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 5220reg p OK led.c:261:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(vi_hidch\)
 		led_out\(term_sbuf, 2\)
 	else.*(static int led_lastword\(char \*s\))
 \{
 	char \*r = \*s \? uc_beg\(s, strchr\(s, '\''\\0'\''\) - 1\) : s;9??0?
-grp 09??-11m 5220reg p OK led.c:259:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:2592sc %? %@2132sc!0?
+grp 09??-11m 5220reg p OK led.c:261:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:2612sc %? %@2132sc!0?
 '\''1c 	int *subs = emalloc(rs->nsubc * sizeof(int));
 ??!219reg led.c:50:m12sc %? %@2142sc!0?
 '\''2i 	free(subs);
@@ -719,7 +719,7 @@ static int led_lastchar\(char \*s\)1??0?
 	free(att);
 	free(stt);
 	free(ctt);
-??!219reg led.c:259:m52sc %? %@2142sc!b4m!%ya 98?0?
+??!219reg led.c:261:m52sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	return prog;
 }
 
@@ -1967,7 +1967,7 @@ index 56cb42c6..3774ec03 100644
  }
  
 diff --git a/led.c b/led.c
-index 530eaf88..f36a47e4 100644
+index 3c1fde38..029628a2 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -2011,7 +2011,7 @@ index 530eaf88..f36a47e4 100644
  		for (i = 0, c = 0; i < cterm;) {
  			if ((o = off[i++]) >= 0) {
  				att[c++] = o;
-@@ -257,6 +260,10 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -259,6 +262,10 @@ void led_render(char *s0, int cbeg, int cend)
  		memcpy(chrs[n], r->nulhole, r->holelen);
  		r->holelen = 0;
  	}

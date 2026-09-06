@@ -79,24 +79,24 @@ const int conf_hlmatc = RE1 | SYN_BGMK(8);
 %f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
 		noredraw:
 		switch \(c\) \{4??0?
-4??+2m 1220reg p OK led.c:439:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK led.c:441:a42sc %? %@2152sc!1q0?
 grp 1%f> 		c = term_read\(TK_CTL\('\''l'\''\)\);.*?
 		noredraw:.*?
 (		switch \(c\) \{)7??0?
-grp 07??m 1220reg p OK led.c:439:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK led.c:441:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	do \{
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);
 		len = sb->s_n;.*(				sbuf_cut\(sb, led_lastchar\(sb->s \+ pre\) \+ pre\))
 			else
 				return c;8??0?
-grp 08??-5m 1220reg p OK led.c:439:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK led.c:441:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char \*cs;
 	int len, c, i;
 	sbuf \*reg;.*(		case TK_CTL\('\''u'\''\):)
 			sbuf_cut\(sb, is->sug_pt > pre && len > is->sug_pt \? is->sug_pt : pre\)
 			break;9??0?
-grp 09??-9m 1220reg p OK led.c:439:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:4392sc %? %@2132sc!0?
+grp 09??-9m 1220reg p OK led.c:441:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:4412sc %? %@2132sc!0?
 ?0?
 %f+ 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
@@ -108,32 +108,32 @@ const int conf_hlmatc = RE1 | SYN_BGMK(8);
 %f+ 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;4??0?
-4??+2m 2220reg p OK led.c:649:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK led.c:651:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		default:.*?
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\).*?
 (				return c;)7??0?
-grp 07??m 2220reg p OK led.c:649:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:651:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			}
 			continue; }.*(		is->sug = NULL;)
 		is->_sug = NULL;
 		if \(ai_max >= 0 && xpac\)8??0?
-grp 08??-4m 2220reg p OK led.c:649:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:651:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			} else if \(bidx != ex_buf - bufs && bidx < xbufcur\) \{
 				ex_buf = bufs \+ bidx;.*(			goto pac;)
 	} while \(!\(flg & 2\)\);
 	return c;9??0?
-grp 09??-7m 2220reg p OK led.c:649:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:6492sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK led.c:651:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:6512sc %? %@2132sc!0?
 '\''1i 		case TK_CTL('\''i'\''):	/* the caller steps the search match */
 		case TK_CTL('\''_'\''):
 			if (!(flg & 2))
 				goto insert;
 			break;
-??!219reg led.c:439:m12sc %? %@2142sc!0?
+??!219reg led.c:441:m12sc %? %@2142sc!0?
 '\''2i 			insert:
-??!219reg led.c:649:m22sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg led.c:651:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return r->col\[col];
 }
 
@@ -739,10 +739,10 @@ index a51117ca..f0389275 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index 530eaf88..62f217de 100644
+index 3c1fde38..752912b4 100644
 --- a/led.c
 +++ b/led.c
-@@ -437,6 +437,11 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -439,6 +439,11 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		c = term_read(TK_CTL('l'));
  		noredraw:
  		switch (c) {
@@ -754,7 +754,7 @@ index 530eaf88..62f217de 100644
  		case TK_CTL('h'):
  			c = 127;
  		case 127:
-@@ -647,6 +652,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -649,6 +654,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  		default:
  			if (c == '\n' || TK_INT(c))
  				return c;

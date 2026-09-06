@@ -897,7 +897,7 @@ static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/5??0?
 					if \(rset_find\(rs, buf, subs, 0\) >= 0\) \{
 						buf\[subs\[0]] = xsep;
 						buf\[subs\[1]-1] = '\''\\n'\'';2??0?
-2??m 1220reg p OK vi.c:1769:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:1770:a22sc %? %@2152sc!1q0?
 %f> 				if \(!strcmp\(xb_path, "/xref/"\)\) \{
 					int subs\[2];	/\* an xref header opens at its line \*/
 					rset \*rs = rset_smake\(":\[0-9]\+\\n", 0\);
@@ -911,21 +911,21 @@ static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/5??0?
 				term_push\(buf, strlen\(buf\)\);
 					int subs\[2];
 					rset \*rs = rset_make\(1, \(char\*\[]\)\{":\[0-9]\+:"}, 0\);3??0?
-3??m 1220reg p OK vi.c:1769:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK vi.c:1770:a32sc %? %@2152sc!1q0?
 %f> 				char buf\[n \+ 4];
 				memcpy\(buf, ":e ", 3\);
 				memcpy\(buf\+3, ln, n \+ 1\);4??0?
-4??+3m 1220reg p OK vi.c:1769:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:1770:a42sc %? %@2152sc!1q0?
 %f> 					if \(rset_find\(rs, buf, subs, 0\) >= 0\) \{
 						buf\[subs\[0]] = xsep;
 						buf\[subs\[1]-1] = '\''\\n'\'';5??0?
-5??-13m 1220reg p OK vi.c:1769:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1769:r2312sc %? %@2132sc!0?
+5??-13m 1220reg p OK vi.c:1770:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:1770:r2312sc %? %@2132sc!0?
 '\''1,#+12c 				if (!strcmp(xb_path, "/xref/") ||
 						!strcmp(xb_path, "/grep/")) {
 					int subs[2];	/* a header opens at its line */
 					rset *rs = rset_smake(":[0-9]+(?::|\n)", 0);
-??!219reg vi.c:1769:r231:m12sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg vi.c:1770:r231:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	signed char td;			/\* text direction \*/
 };
 
@@ -991,8 +991,8 @@ static int rep_len;
 }
 
 4??0?
-4??+2m 1220reg p OK vi.c:1024:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:1024:r2322sc %? %@2132sc!0?
+4??+2m 1220reg p OK vi.c:1025:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:1025:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 						vi_drawmsg_mpt\(ln\)
 						break;
@@ -1006,18 +1006,18 @@ static int rep_len;
 					vi_mod \|= 1;
 				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
 					vc_motion\(k\);2??0?
-2??m 2220reg p OK vi.c:2238:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:2239:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^					temp_switch\(XREF_BUF, 0\);$3??0?
-3??m 2220reg p OK vi.c:2238:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:2239:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 						vi_drawmsg_mpt\(ln\)
 						break;
 					}4??0?
-4??+3m 2220reg p OK vi.c:2238:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:2239:a42sc %? %@2152sc!1q0?
 %f+ 					vi_mod \|= 1;
 				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
 					vc_motion\(k\);5??0?
-5??-1m 2220reg p OK vi.c:2238:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2238:r2322sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:2239:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:2239:r2322sc %? %@2132sc!0?
 '\''1i /* the listing stays in the window it is already open in, rewound to its top:
  * gx never takes over a window, so splits are the user'\''s to lay out */
 static int xref_refresh(void)
@@ -1036,10 +1036,10 @@ static int xref_refresh(void)
 	return 0;
 }
 
-??!219reg vi.c:1024:r232:m12sc %? %@2142sc!0?
+??!219reg vi.c:1025:r232:m12sc %? %@2142sc!0?
 '\''2c 					if (!xref_refresh())
 						temp_switch(XREF_BUF, 0);
-??!219reg vi.c:2238:r232:m22sc %? %@2142sc!p compat 232 applied: src=splits.sh' > "$P2VIF".232
+??!219reg vi.c:2239:r232:m22sc %? %@2142sc!p compat 232 applied: src=splits.sh' > "$P2VIF".232
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -1065,7 +1065,7 @@ exit 0
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 --- a/vi.c
 +++ b/vi.c
-@@ -1766,19 +1766,10 @@
+@@ -1767,19 +1767,10 @@
  				char buf[n + 4];
  				memcpy(buf, ":e ", 3);
  				memcpy(buf+3, ln, n + 1);
@@ -1115,7 +1115,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -1022,6 +1022,24 @@
+@@ -1023,6 +1023,24 @@
  	return s;
  }
  
@@ -1140,7 +1140,7 @@ exit 0
  static char rep_cmd[sizeof(icmd)];	/* the last command */
  static int rep_len;
  #define rep_record() memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos;
-@@ -2235,7 +2253,8 @@
+@@ -2236,7 +2254,8 @@
  						vi_drawmsg_mpt(ln)
  						break;
  					}

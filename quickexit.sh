@@ -168,24 +168,24 @@ sbuf \*led_attsb;
 %f+ 				exbuf_load\(ex_buf\)
 			}
 			continue; }4??0?
-4??+2m 2220reg p OK led.c:646:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK led.c:648:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				exbuf_load\(ex_buf\).*?
 			}.*?
 (			continue; })7??0?
-grp 07??m 2220reg p OK led.c:646:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:648:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			} else if \(bidx != ex_buf - bufs && bidx < xbufcur\) \{
 				ex_buf = bufs \+ bidx;.*(			if \(\(cs = led_read\(kmap, c\)\)\))
 				sbuf_str\(sb, cs\)
 		}8??0?
-grp 08??-4m 2220reg p OK led.c:646:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:648:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(ex_buf == tmpex_buf\)
 					continue;
 				restore\(ex_buf\).*(		is->sug = NULL;)
 		is->_sug = NULL;
 		if \(ai_max >= 0 && xpac\)9??0?
-grp 09??-7m 2220reg p OK led.c:646:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:6462sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK led.c:648:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:6482sc %? %@2132sc!0?
 '\''1i static long long gettime_ms(void)
 {
 	struct timespec t;
@@ -206,7 +206,7 @@ sbuf \*led_attsb;
 		case '\''k'\'':
 			is->quickexit = gettime_ms();
 _default:
-??!219reg led.c:646:m22sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg led.c:648:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> #include <dirent\.h>
 #include <signal\.h>
 #include <unistd\.h>
@@ -412,7 +412,7 @@ index b2e59855..a0e8873d 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 530eaf88..6505d131 100644
+index 3c1fde38..398961d1 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -428,7 +428,7 @@ index 530eaf88..6505d131 100644
  static sbuf *acsb;
  sbuf *led_attsb;
  
-@@ -644,6 +652,17 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -646,6 +654,17 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				exbuf_load(ex_buf)
  			}
  			continue; }
