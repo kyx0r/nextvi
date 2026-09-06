@@ -324,24 +324,23 @@ void led_render(char *s0, int cbeg, int cend)
 		bound = bsb->s;
 	}
 	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));
-	if (xhl) {
+	if (xhl == 1)
 		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
-		if (led_extsb) {
-			led_ctx x;
-			x.att = att;
-			x.alen = bound ? c : MIN(n, cterm);
-			x.off = off;
-			x.stt = stt;
-			x.ctt = ctt;
-			x.cterm = cterm;
-			x.n = n;
-			x.s0 = s0;
-			x.bound = bound;
-			x.r = r;
-			for (i = 0; i < led_extsb->s_n; i += sizeof(led_ext)) {
-				led_ext *p = (led_ext*)&led_extsb->s[i];
-				p->syn_ext(p, &x);
-			}
+	if (led_extsb && xhl > 0) {
+		led_ctx x;
+		x.att = att;
+		x.alen = bound ? c : MIN(n, cterm);
+		x.off = off;
+		x.stt = stt;
+		x.ctt = ctt;
+		x.cterm = cterm;
+		x.n = n;
+		x.s0 = s0;
+		x.bound = bound;
+		x.r = r;
+		for (i = 0; i < led_extsb->s_n; i += sizeof(led_ext)) {
+			led_ext *p = (led_ext*)&led_extsb->s[i];
+			p->syn_ext(p, &x);
 		}
 	}
 	free(bound);
