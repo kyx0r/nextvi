@@ -1309,10 +1309,7 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
 	xb_ft = loc;
 	if (!*arg)
 		ex_print(xb_ft, msg_ft)
-	if (led_attsb) {
-		sbuf_free(led_attsb)
-		led_attsb = NULL;
-	}
+	led_extcut();
 	for (i = 0; i < hloptslen; i++)
 		syn_reloadft(syn_findhl(hlopts[i]), 0);
 	return NULL;
@@ -1683,11 +1680,21 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 
 EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
 EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
-EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
+EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
 
 _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
 _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
 _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
+
+_EO(hlr,
+	xhlr = *arg ? eo_val(arg) : !xhlr;
+	led_ext *p = led_extfind(led_exthlr);
+	if (xhlr && !p)
+		led_extreg()->syn_ext = led_exthlr;
+	else if (!xhlr && p)
+		led_extdel(p);
+	return NULL;
+)
 
 _EO(left,
 	if (*loc)
