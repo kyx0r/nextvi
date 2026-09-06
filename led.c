@@ -1,6 +1,6 @@
 static sbuf *suggestsb;
 static sbuf *acsb;
-sbuf *led_attsb;
+static sbuf *led_extsb;
 
 int dstrlen(const char *s, char delim)
 {
@@ -96,6 +96,127 @@ int led_pos(char *s, int pos)
 	if (dir_context(s) < 0)
 		return xleft + xcols - pos - 1;
 	return pos - xleft;
+}
+
+/* map a character offset in x->s0 to its x->att index; -1 if not visible */
+static int ext_attidx(led_ctx *x, int off)
+{
+	int i, l, j;
+	if (!x->bound)
+		return (unsigned int)off < (unsigned int)x->alen ? off : -1;
+	if (!x->alen || x->stt[0] > off || x->stt[x->alen-1] < off)
+		return -1;
+	i = off - x->stt[0];
+	if (i < x->alen && x->stt[i] == off)
+		return i;		/* text not reordered */
+	for (l = 0, j = x->alen - 1; l <= j;) {
+		i = l + (j - l) / 2;
+		if (x->stt[i] == off)
+			return i;
+		else if (x->stt[i] < off)
+			l = i + 1;
+		else
+			j = i - 1;
+	}
+	return -1;
+}
+
+/* for extensions that key themselves */
+#define led_extkey(p, x) (!(p)->ln || (p)->ln == (x)->s0)
+
+static void ext_attmerge(led_ext *p, led_ctx *x)
+{
+	if (!led_extkey(p, x))
+		return;
+	for (int t = 0; t < p->cnt * 3; t += 3) {
+		int o = p->ola[t], end = o + p->ola[t+1];
+		for (; o < end; o++) {
+			int i = ext_attidx(x, o);
+			if (i >= 0)
+				x->att[i] = syn_merge(x->att[i], p->ola[t+2]);
+		}
+	}
+}
+
+void led_exthlr(led_ext *p, led_ctx *x)
+{
+	ren_state *r = x->r;
+	int i, j, l, o;
+	for (l = 0, i = 0; i < x->cterm;) {
+		o = x->off[i++];
+		if (o < 0)
+			continue;
+		for (l++; x->off[i] == o; i++);
+		if (o+1 >= x->n || r->pos[o] + r->wid[o] == r->pos[o + 1])
+			continue;
+		if (r->pos[o + 1] + r->wid[o + 1] != r->pos[o])
+			continue;
+		j = x->bound ? x->ctt[l-1] : o;
+		x->att[j] = syn_merge(x->att[j], conf_hlrev);
+		x->att[j+1] = syn_merge(x->att[j+1], conf_hlrev);
+	}
+}
+
+static int extregn;	/* registered extension tracker */
+
+static led_ext *led_extpush(void)
+{
+	led_ext la;
+	memset(&la, 0, sizeof(la));
+	la.syn_ext = ext_attmerge;
+	if (!led_extsb)
+		sbuf_make(led_extsb, sizeof(la) * 2)
+	sbuf_mem(led_extsb, &la, sizeof(la))
+	return (led_ext*)&led_extsb->s[led_extsb->s_n - sizeof(la)];
+}
+
+led_ext *led_extnew(void)
+{
+	led_ext la, *p = led_extpush();
+	if (extregn) {	/* registered extensions stay last */
+		char *reg = (char*)p - extregn;
+		la = *p;
+		memmove(reg + sizeof(la), reg, extregn);
+		memcpy(reg, &la, sizeof(la));
+		p = (led_ext*)reg;
+	}
+	return p;
+}
+
+led_ext *led_extreg(void)
+{
+	extregn += sizeof(led_ext);
+	return led_extpush();
+}
+
+led_ext *led_extfind(void (*syn_ext)(led_ext *p, led_ctx *x))
+{
+	if (!led_extsb)
+		return NULL;
+	for (int i = 0; i < led_extsb->s_n; i += sizeof(led_ext)) {
+		led_ext *p = (led_ext*)&led_extsb->s[i];
+		if (p->syn_ext == syn_ext)
+			return p;
+	}
+	return NULL;
+}
+
+void led_extdel(led_ext *p)
+{
+	char *nxt = (char*)p + sizeof(*p);
+	if ((char*)p >= &led_extsb->s[led_extsb->s_n] - extregn)
+		extregn -= sizeof(*p);
+	memmove(p, nxt, &led_extsb->s[led_extsb->s_n] - nxt);
+	sbuf_cut(led_extsb, led_extsb->s_n - sizeof(*p))
+}
+
+/* drop unregistered extensions only */
+void led_extcut(void)
+{
+	if (!led_extsb)
+		return;
+	memmove(led_extsb->s, &led_extsb->s[led_extsb->s_n] - extregn, extregn);
+	sbuf_cut(led_extsb, extregn)
 }
 
 #define print_ch1(out) sbuf_mem(out, chrs[o], l)
@@ -203,52 +324,27 @@ void led_render(char *s0, int cbeg, int cend)
 		bound = bsb->s;
 	}
 	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));
-	if (xhl)
+	if (xhl) {
 		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
-	free(bound);
-	if (led_attsb && xhl) {
-		led_att *p = (led_att*)led_attsb->s;
-		for (; (char*)p < &led_attsb->s[led_attsb->s_n]; p++) {
-			int po = p->off;
-			if ((p->s != s0 && p->s)
-					|| (unsigned int)po >= (unsigned int)n)
-				continue;
-			if (!bound)
-				att[po] = syn_merge(att[po], p->att);
-			else if (c && stt[0] <= po && stt[c-1] >= po) {
-				i = po - stt[0];
-				if (i < c && stt[i] == po) {
-					att[i] = syn_merge(att[i], p->att);
-					continue; /* text not reordered */
-				}
-				for (l = 0, j = c - 1; l <= j;) {
-					i = l + (j - l) / 2;
-					if (stt[i] == po) {
-						att[i] = syn_merge(att[i], p->att);
-						break;
-					} else if (stt[i] < po)
-						l = i + 1;
-					else
-						j = i - 1;
-				}
+		if (led_extsb) {
+			led_ctx x;
+			x.att = att;
+			x.alen = bound ? c : MIN(n, cterm);
+			x.off = off;
+			x.stt = stt;
+			x.ctt = ctt;
+			x.cterm = cterm;
+			x.n = n;
+			x.s0 = s0;
+			x.bound = bound;
+			x.r = r;
+			for (i = 0; i < led_extsb->s_n; i += sizeof(led_ext)) {
+				led_ext *p = (led_ext*)&led_extsb->s[i];
+				p->syn_ext(p, &x);
 			}
 		}
 	}
-	if (xhlr && xhl) {
-		for (l = 0, i = 0; i < cterm;) {
-			o = off[i++];
-			if (o < 0)
-				continue;
-			for (l++; off[i] == o; i++);
-			if (o+1 >= n || r->pos[o] + r->wid[o] == r->pos[o + 1])
-				continue;
-			if (r->pos[o + 1] + r->wid[o + 1] != r->pos[o])
-				continue;
-			j = bound ? ctt[l-1] : o;
-			att[j] = syn_merge(att[j], conf_hlrev);
-			att[j+1] = syn_merge(att[j+1], conf_hlrev);
-		}
-	}
+	free(bound);
 	/* generate term output */
 	if (vi_hidch)
 		led_out(term_sbuf, 2)
@@ -358,20 +454,18 @@ char *led_read(int *kmap, int c)
 
 #define led_info(buf) \
 { \
-	led_att la; \
-	la.s = NULL; \
-	la.att = WH1 | SYN_BD | SYN_OWR; \
-	sbuf *prev_attsb = led_attsb; \
-	sbuf_make(led_attsb, sizeof(la) * 2) \
-	for (i = uc_slen(buf) - 1; i >= 0; i--) { \
-		la.off = *poff + i; \
-		sbuf_mem(led_attsb, &la, sizeof(la)) \
-	} \
+	int ola[3]; \
+	led_ext *la; \
+	ola[0] = *poff; \
+	ola[1] = uc_slen(buf); \
+	ola[2] = WH1 | SYN_BD | SYN_OWR; \
+	la = led_extnew(); \
+	la->ola = ola; \
+	la->cnt = 1; \
 	sbuf_str(sb, buf) \
 	led_printparts(sb, pre, ps, *post, postn, poff); \
 	sbuf_cut(sb, len) \
-	sbuf_free(led_attsb) \
-	led_attsb = prev_attsb; \
+	led_extdel(la); \
 	c = term_read(TK_CTL('l')); \
 	led_printparts(sb, pre, ps, *post, postn, poff); \
 	goto noredraw; \
