@@ -146,9 +146,9 @@ ren_state rstates\[3];4??0?
 	rset_free(dir_rsrl);
 	rset_free(dir_rsctx);
 	for (int i = 0; i < LEN(rstates); i++) {
-		if (rstate[i].col) {
-			free(rstate[i].col - 2);
-			free(rstate[i].pos);
+		if (rstates[i].col) {
+			free(rstates[i].col - 2);
+			free(rstates[i].pos);
 		}
 	}
 }
@@ -186,62 +186,33 @@ void syn_done(void)
 		sbuf_free(led_attsb)
 	free(ibuf);
 ??!219reg vi.c:1898:m12sc %? %@2142sc!b4m!%ya 98?0?
-%f> int ren_off\(char \*s, int p\);
-char \*ren_translate\(char \*s, char \*ln\);
-/\* text direction \*/
-int dir_context\(char \*s\);
-void dir_init\(void\);
-/\* syntax highlighting \*/1??0?
-1??+2m 11q0?
-%f> int ren_off\(char \*s, int p\);
-char \*ren_translate\(char \*s, char \*ln\);
-/\* text direction \*/4??0?
-4??+2m 1220reg p OK vi.h:227:a42sc %? %@2152sc!1q0?
-grp 1%f> int ren_off\(char \*s, int p\);.*?
-char \*ren_translate\(char \*s, char \*ln\);.*?
-(/\* text direction \*/)7??0?
-grp 07??m 1220reg p OK vi.h:227:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> int ren_pos\(char \*s, int off\);
-int ren_cursor\(char \*s, int pos\);
-int ren_noeol\(char \*s, int p\);.*(#define SYN_BD		0x10000)
-#define SYN_IT		0x20000
-#define SYN_RV		0x400008??0?
-grp 08??-4m 1220reg p OK vi.h:227:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> ren_state \*ren_position\(char \*s\);
-int ren_next\(char \*s, int p, int dir\);
-int ren_eol\(char \*s, int dir\);.*(#define SYN_FGMK\(f\)	\(0x80000 \| \(f\)\))
-#define SYN_BGMK\(b\)	\(0x100000 \| \(b << 8\)\)
-#define SYN_FLG		0x1f00009??0?
-grp 09??-7m 1220reg p OK vi.h:227:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:2272sc %? %@2132sc!0?
-?0?
-%f+ int syn_findhl\(int id\);
+%f> int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);
 void syn_init\(void\);
 
 /\* uc\.c: utf-8 helper functions \*/
 extern unsigned char utf8_length\[256];1??0?
-1??+2m 21q0?
-%f+ int syn_findhl\(int id\);
+1??+2m 11q0?
+%f> int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);
 void syn_init\(void\);4??0?
-4??+2m 2220reg p OK vi.h:272:a42sc %? %@2152sc!1q0?
-grp 1%f+ int syn_findhl\(int id\);.*?
+4??+2m 1220reg p OK vi.h:272:a42sc %? %@2152sc!1q0?
+grp 1%f> int syn_findhl\(int id\);.*?
 int syn_addhl\(char \*reg, int id\);.*?
 (void syn_init\(void\);)7??0?
-grp 07??m 2220reg p OK vi.h:272:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:272:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> char \*syn_filetype\(char \*path\);
 int syn_merge\(int old, int new\);
 void syn_reloadft\(int hl, int flg\);.*(extern int zwlen, def_zwlen;)
 extern int bclen, def_bclen;
 /\* the length of a given utf-8 character \*/8??0?
-grp 08??-4m 2220reg p OK vi.h:272:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:272:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> char \*syn_setft\(char \*ft\);
 void syn_scdir\(int scdir\);
 void syn_highlight\(int \*att, char \*s, int n\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)\(s\)\[0]])
 /\* the unicode codepoint of a given utf-8 character \*/
 #define uc_code\(dst, s, l\) \\9??0?
-grp 09??-7m 2220reg p OK vi.h:272:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 1220reg p OK vi.h:272:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:2722sc %? %@2132sc!0?
 ?0?
 %f+ #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RST\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }
@@ -250,34 +221,32 @@ void ex_init\(char \*\*files, int n\);
 void ex_bufpostfix\(struct buf \*p, int clear\);
 int ex_krs\(rset \*\*krs, int \*dir\);
 void ex_krsset\(char \*kwd, int dir\);1??0?
-1??+2m 31q0?
+1??+2m 21q0?
 %f+ #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RST\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }
 #define ex_print\(line, ft\) \{ RST\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }
 void ex_init\(char \*\*files, int n\);4??0?
-4??+2m 3220reg p OK vi.h:494:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.h:494:a42sc %? %@2152sc!1q0?
 grp 1%f+ #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RST\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }.*?
 #define ex_print\(line, ft\) \{ RST\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }.*?
 (void ex_init\(char \*\*files, int n\);)7??0?
-grp 07??m 3220reg p OK vi.h:494:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.h:494:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> void \*ex_exec\(const char \*ln\);
 #define ex_command\(ln\) \{ ex_exec\(ln\); ex_regput\('\'':'\'', ln, 0\); }
 void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);.*(void ex_regesc\(sbuf \*sb, char \*beg, char \*end, int ex\);)
 int ex_edit\(const char \*path, int len\);
 sbuf \*ex_regget\(int id\);8??0?
-grp 08??-4m 3220reg p OK vi.h:494:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.h:494:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void temp_write\(int i, char \*str\);
 void temp_pos\(int i, int row, int off, int top\);
 void ex\(void\);.*(/\* conf\.c: configuration variables \*/)
 extern const int conf_mode;
 /\* map file names to file types \*/9??0?
-grp 09??-9m 3220reg p OK vi.h:494:a92sc %? %@2152sc!'\''00?
+grp 09??-9m 2220reg p OK vi.h:494:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:4942sc %? %@2132sc!0?
-'\''1i void dir_done(void);
-??!219reg vi.h:227:m12sc %? %@2142sc!0?
-'\''2i void syn_done(void);
-??!219reg vi.h:272:m22sc %? %@2142sc!0?
-'\''3i void ex_done(void);
-??!219reg vi.h:494:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+'\''1i void syn_done(void);
+??!219reg vi.h:272:m12sc %? %@2142sc!0?
+'\''2i void ex_done(void);
+??!219reg vi.h:494:m22sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -329,7 +298,7 @@ index 4f841ff4..7f013a12 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index 4116d9c1..78993c61 100644
+index 4116d9c1..0abb7884 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -88,6 +88,19 @@ static int ren_cwid(char *s, int pos)
@@ -342,9 +311,9 @@ index 4116d9c1..78993c61 100644
 +	rset_free(dir_rsrl);
 +	rset_free(dir_rsctx);
 +	for (int i = 0; i < LEN(rstates); i++) {
-+		if (rstate[i].col) {
-+			free(rstate[i].col - 2);
-+			free(rstate[i].pos);
++		if (rstates[i].col) {
++			free(rstates[i].col - 2);
++			free(rstates[i].pos);
 +		}
 +	}
 +}
@@ -382,18 +351,10 @@ index b5e0f21b..445981eb 100644
  		term_scrl()
  	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index c5c79dc5..03656b28 100644
+index c5c79dc5..4afcc505 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -225,6 +225,7 @@ int ren_noeol(char *s, int p);
- int ren_off(char *s, int p);
- char *ren_translate(char *s, char *ln);
- /* text direction */
-+void dir_done(void);
- int dir_context(char *s);
- void dir_init(void);
- /* syntax highlighting */
-@@ -270,6 +271,7 @@ void syn_reloadft(int hl, int flg);
+@@ -270,6 +270,7 @@ void syn_reloadft(int hl, int flg);
  int syn_findhl(int id);
  int syn_addhl(char *reg, int id);
  void syn_init(void);
@@ -401,7 +362,7 @@ index c5c79dc5..03656b28 100644
  
  /* uc.c: utf-8 helper functions */
  extern unsigned char utf8_length[256];
-@@ -492,6 +494,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+@@ -492,6 +493,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_cprint2(line, ft, r, c, left, flg) { RST(2, ex_cprint(line, ft, r, c, left, flg)); }
  #define ex_print(line, ft) { RST(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
  void ex_init(char **files, int n);
