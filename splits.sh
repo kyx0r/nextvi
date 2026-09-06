@@ -4087,9 +4087,9 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 4??+2m 1220reg p OK vi.c:49:a42sc %? %@2152sc!0?
 1;4??!219reg vi.c:49:r2322sc %? %@2132sc!0?
 ?0?
-%f+ \{
-	static int sel\[3], cur\[3];
+%f+ 	static int sel\[6], cur\[3];
 	led_ext \*p;
+	int cnt = 1;
 	if \(!vi_visual \|\| !s\)
 		return;
 	int ar = vi_vrow, ao = vi_voff;
@@ -4099,18 +4099,18 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 		return;
 	int ar = vi_vrow, ao = vi_voff;
 	int cr = xrow,   co = xoff;2??0?
-2??m 2220reg p OK vi.c:222:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:224:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(!vi_visual \|\| !s\)$3??0?
-3??m 2220reg p OK vi.c:222:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ \{
-	static int sel\[3], cur\[3];
-	led_ext \*p;4??0?
-4??+3m 2220reg p OK vi.c:222:a42sc %? %@2152sc!1q0?
+3??m 2220reg p OK vi.c:224:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 	static int sel\[6], cur\[3];
+	led_ext \*p;
+	int cnt = 1;4??0?
+4??+3m 2220reg p OK vi.c:224:a42sc %? %@2152sc!1q0?
 %f+ 		return;
 	int ar = vi_vrow, ao = vi_voff;
 	int cr = xrow,   co = xoff;5??0?
-5??-1m 2220reg p OK vi.c:222:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:222:r2322sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:224:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:224:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 	preserve\(int, xleft,\)
 	preserve\(int, xtd,\)
@@ -4122,8 +4122,8 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 %f+ 	preserve\(int, xleft,\)
 	preserve\(int, xtd,\)
 	do \{4??0?
-4??+2m 3220reg p OK vi.c:403:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:403:r2322sc %? %@2132sc!0?
+4??+2m 3220reg p OK vi.c:412:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:412:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 	} while \(w != wins\);
 	vi_draw_separators\(\);
@@ -4135,17 +4135,17 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 %f+ 	} while \(w != wins\);
 	vi_draw_separators\(\);
 	curwin = cur;4??0?
-4??+2m 4220reg p OK vi.c:420:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:420:r2322sc %? %@2132sc!0?
+4??+2m 4220reg p OK vi.c:429:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:429:r2322sc %? %@2132sc!0?
 '\''1i static int vi_vfocused = 1;		/* redrawing the window owning the selection */
 ??!219reg vi.c:49:r232:m12sc %? %@2142sc!0?
-'\''2s/s\)/s || !vi_vfocused)/??!219reg vi.c:222:r232:m22sc %? %@2142sc!0?
+'\''2s/s\)/s || !vi_vfocused)/??!219reg vi.c:224:r232:m22sc %? %@2142sc!0?
 '\''3i 		vi_vfocused = w == cur;
 		if (!vi_vfocused)
 			led_extcut();
-??!219reg vi.c:403:r232:m32sc %? %@2142sc!0?
+??!219reg vi.c:412:r232:m32sc %? %@2142sc!0?
 '\''4i 	vi_vfocused = 1;
-??!219reg vi.c:420:r232:m42sc %? %@2142sc!p compat 232 applied: src=visual.sh' > "$P2VIF".232
+??!219reg vi.c:429:r232:m42sc %? %@2142sc!p compat 232 applied: src=visual.sh' > "$P2VIF".232
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -4226,16 +4226,16 @@ exit 0
  
  void *emalloc(size_t size)
  {
-@@ -219,7 +220,7 @@
- {
- 	static int sel[3], cur[3];
+@@ -221,7 +222,7 @@
+ 	static int sel[6], cur[3];
  	led_ext *p;
+ 	int cnt = 1;
 -	if (!vi_visual || !s)
 +	if (!vi_visual || !s || !vi_vfocused)
  		return;
  	int ar = vi_vrow, ao = vi_voff;
  	int cr = xrow,   co = xoff;
-@@ -401,6 +402,9 @@
+@@ -410,6 +411,9 @@
  	preserve(int, xleft,)
  	preserve(int, xtd,)
  	do {
@@ -4245,7 +4245,7 @@ exit 0
  		curwin = w;
  		xrow = w->row;
  		xoff = w->off;
-@@ -418,6 +422,7 @@
+@@ -427,6 +431,7 @@
  	} while (w != wins);
  	vi_draw_separators();
  	curwin = cur;

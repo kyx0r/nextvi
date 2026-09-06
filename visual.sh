@@ -923,19 +923,18 @@ static void vi_blockcols(int *c1, int *c2)
 static int vi_curhue(int att)
 {
 	static const int hue[] = {GR, RE, BL};	/* preference, most wanted first */
-	int i, fg = SYN_FG(att), bg = SYN_BG(att);
-	if (SYN_SET(RV, att))
-		swap(&fg, &bg);		/* reverse video fills the cell with fg */
-	int under = bg ? bg : fg;	/* the fill, or the text when there is none */
+	int i, bg = SYN_BG(att);
+	int under = bg ? bg : SYN_FG(att);	/* the fill, or the text colour */
 	for (i = 0; i < LEN(hue); i++)
 		if (!(under & hue[i]))
 			return hue[i];
 	return BL;			/* white: every primary is spoken for */
 }
 
-/* the cursor cell of the selection: it runs after vi_extsel and reads the
-   attributes already merged into the cell, so the block is green until it
-   sits on something green, red until that is taken too, then blue */
+/* the cursor cell of the selection: vi_extsel leaves it out of the reversed
+   run, so this reads the plain highlight under the cursor and fills the cell
+   with the one primary that highlight does not already carry - green until
+   the cursor sits on something green, red until that is taken too, then blue */
 static void vi_extcursor(led_ext *p, led_ctx *x)
 {
 	if (!led_extkey(p, x))
@@ -944,8 +943,10 @@ static void vi_extcursor(led_ext *p, led_ctx *x)
 	if (i < 0)
 		return;
 	int hue = vi_curhue(x->att[i]) + 8;	/* the bright variant of it */
-	/* an overwrite: the selection'\''s SYN_RV must not survive under it */
-	x->att[i] = SYN_BGMK(hue) | p->ola[2];
+	/* the hue is a background and only a background: every flag goes, or
+	   SYN_RV would paint it as the text colour instead. the cell keeps its
+	   own foreground, which vi_curhue already picked the hue against */
+	x->att[i] = SYN_FGSET(x->att[i]) | SYN_BGMK(hue) | p->ola[2];
 }
 
 /* the selected span of the row being drawn: a plain attribute merge, but
@@ -961,8 +962,9 @@ static void vi_extsel(led_ext *p, led_ctx *x)
    transient, hence dropped by the led_extcut() of the input loop */
 static void vi_visual_attrib(char *s, int row)
 {
-	static int sel[3], cur[3];
+	static int sel[6], cur[3];
 	led_ext *p;
+	int cnt = 1;
 	if (!vi_visual || !s)
 		return;
 	int ar = vi_vrow, ao = vi_voff;
@@ -1001,16 +1003,23 @@ static void vi_visual_attrib(char *s, int row)
 	sel[0] = o_beg;
 	sel[1] = o_end - o_beg + 1;
 	sel[2] = SYN_RV;
+	if (row == xrow && xoff >= o_beg && xoff <= o_end) {
+		sel[1] = xoff - o_beg;	/* the cursor cell is a hole in the run: */
+		sel[3] = xoff + 1;	/* it is filled with a background instead, */
+		sel[4] = o_end - xoff;	/* which reverse video would undo */
+		sel[5] = SYN_RV;
+		cnt = 2;
+	}
 	if (!(p = led_extfind(vi_extsel)))
 		(p = led_extnew())->syn_ext = vi_extsel;
 	p->ln = s;
 	p->ola = sel;
-	p->cnt = 1;
+	p->cnt = cnt;
 	if (row != xrow)
 		return;
 	cur[0] = xoff;
 	cur[1] = 1;
-	cur[2] = SYN_FGMK(0);	/* black text on whichever hue is picked */
+	cur[2] = 0;		/* nothing rides on top of the hue */
 	if (!(p = led_extfind(vi_extcursor)))	/* pushed last, so it runs last */
 		(p = led_extnew())->syn_ext = vi_extcursor;
 	p->ln = s;
@@ -1404,7 +1413,7 @@ index a51117ca..321d4b59 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 5fb56ceb..f0df23ef 100644
+index 5fb56ceb..430dbeb9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1417,7 +1426,7 @@ index 5fb56ceb..f0df23ef 100644
  
  void *emalloc(size_t size)
  {
-@@ -125,6 +128,135 @@ for (i = 0, ret = 0;; i++) { \
+@@ -125,6 +128,144 @@ for (i = 0, ret = 0;; i++) { \
  	ret = func; \
  } } \
  
@@ -1455,19 +1464,18 @@ index 5fb56ceb..f0df23ef 100644
 +static int vi_curhue(int att)
 +{
 +	static const int hue[] = {GR, RE, BL};	/* preference, most wanted first */
-+	int i, fg = SYN_FG(att), bg = SYN_BG(att);
-+	if (SYN_SET(RV, att))
-+		swap(&fg, &bg);		/* reverse video fills the cell with fg */
-+	int under = bg ? bg : fg;	/* the fill, or the text when there is none */
++	int i, bg = SYN_BG(att);
++	int under = bg ? bg : SYN_FG(att);	/* the fill, or the text colour */
 +	for (i = 0; i < LEN(hue); i++)
 +		if (!(under & hue[i]))
 +			return hue[i];
 +	return BL;			/* white: every primary is spoken for */
 +}
 +
-+/* the cursor cell of the selection: it runs after vi_extsel and reads the
-+   attributes already merged into the cell, so the block is green until it
-+   sits on something green, red until that is taken too, then blue */
++/* the cursor cell of the selection: vi_extsel leaves it out of the reversed
++   run, so this reads the plain highlight under the cursor and fills the cell
++   with the one primary that highlight does not already carry - green until
++   the cursor sits on something green, red until that is taken too, then blue */
 +static void vi_extcursor(led_ext *p, led_ctx *x)
 +{
 +	if (!led_extkey(p, x))
@@ -1476,8 +1484,10 @@ index 5fb56ceb..f0df23ef 100644
 +	if (i < 0)
 +		return;
 +	int hue = vi_curhue(x->att[i]) + 8;	/* the bright variant of it */
-+	/* an overwrite: the selection's SYN_RV must not survive under it */
-+	x->att[i] = SYN_BGMK(hue) | p->ola[2];
++	/* the hue is a background and only a background: every flag goes, or
++	   SYN_RV would paint it as the text colour instead. the cell keeps its
++	   own foreground, which vi_curhue already picked the hue against */
++	x->att[i] = SYN_FGSET(x->att[i]) | SYN_BGMK(hue) | p->ola[2];
 +}
 +
 +/* the selected span of the row being drawn: a plain attribute merge, but
@@ -1493,8 +1503,9 @@ index 5fb56ceb..f0df23ef 100644
 +   transient, hence dropped by the led_extcut() of the input loop */
 +static void vi_visual_attrib(char *s, int row)
 +{
-+	static int sel[3], cur[3];
++	static int sel[6], cur[3];
 +	led_ext *p;
++	int cnt = 1;
 +	if (!vi_visual || !s)
 +		return;
 +	int ar = vi_vrow, ao = vi_voff;
@@ -1533,16 +1544,23 @@ index 5fb56ceb..f0df23ef 100644
 +	sel[0] = o_beg;
 +	sel[1] = o_end - o_beg + 1;
 +	sel[2] = SYN_RV;
++	if (row == xrow && xoff >= o_beg && xoff <= o_end) {
++		sel[1] = xoff - o_beg;	/* the cursor cell is a hole in the run: */
++		sel[3] = xoff + 1;	/* it is filled with a background instead, */
++		sel[4] = o_end - xoff;	/* which reverse video would undo */
++		sel[5] = SYN_RV;
++		cnt = 2;
++	}
 +	if (!(p = led_extfind(vi_extsel)))
 +		(p = led_extnew())->syn_ext = vi_extsel;
 +	p->ln = s;
 +	p->ola = sel;
-+	p->cnt = 1;
++	p->cnt = cnt;
 +	if (row != xrow)
 +		return;
 +	cur[0] = xoff;
 +	cur[1] = 1;
-+	cur[2] = SYN_FGMK(0);	/* black text on whichever hue is picked */
++	cur[2] = 0;		/* nothing rides on top of the hue */
 +	if (!(p = led_extfind(vi_extcursor)))	/* pushed last, so it runs last */
 +		(p = led_extnew())->syn_ext = vi_extcursor;
 +	p->ln = s;
@@ -1553,7 +1571,7 @@ index 5fb56ceb..f0df23ef 100644
  static void vi_drawrow(int row)
  {
  	int l1, i, i1, lnnum = vi_lnnum;
-@@ -193,6 +325,7 @@ static void vi_drawrow(int row)
+@@ -193,6 +334,7 @@ static void vi_drawrow(int row)
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -1561,7 +1579,7 @@ index 5fb56ceb..f0df23ef 100644
  		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
-@@ -212,6 +345,7 @@ static void vi_drawrow(int row)
+@@ -212,6 +354,7 @@ static void vi_drawrow(int row)
  		restore(ftidx)
  		return;
  	}
@@ -1569,7 +1587,7 @@ index 5fb56ceb..f0df23ef 100644
  	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
  	rstate = rstates;
  }
-@@ -495,20 +629,23 @@ static void vc_status(int type)
+@@ -495,20 +638,23 @@ static void vc_status(int type)
  	char cbuf[8] = "", vi_msg[512], *c;
  	col = vi_off2col(xb, xrow, xoff);
  	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
@@ -1597,7 +1615,7 @@ index 5fb56ceb..f0df23ef 100644
  	}
  	vi_drawmsg_mpt(vi_msg)
  }
-@@ -946,6 +1083,183 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -946,6 +1092,183 @@ static void vi_shift(int r1, int r2, int dir, int count)
  	free(sb->s);
  }
  
@@ -1781,7 +1799,7 @@ index 5fb56ceb..f0df23ef 100644
  static int vc_motion(int cmd)
  {
  	int r1 = xrow, r2 = xrow;	/* region rows */
-@@ -1291,6 +1605,10 @@ void vi(int init)
+@@ -1291,6 +1614,10 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'u':
@@ -1792,7 +1810,7 @@ index 5fb56ceb..f0df23ef 100644
  				undo:
  				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
  					vi_mod |= 1;
-@@ -1341,6 +1659,10 @@ void vi(int init)
+@@ -1341,6 +1668,10 @@ void vi(int init)
  				vi_lncol = 0;
  				vi_mod |= 1;
  				break;
@@ -1803,7 +1821,7 @@ index 5fb56ceb..f0df23ef 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1445,6 +1767,26 @@ void vi(int init)
+@@ -1445,6 +1776,26 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case ':':
@@ -1830,7 +1848,7 @@ index 5fb56ceb..f0df23ef 100644
  				ln = vi_enprompt(":", NULL, &k, &n);
  				do_excmd:
  				if (k && ln[n]) {
-@@ -1464,7 +1806,15 @@ void vi(int init)
+@@ -1464,7 +1815,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -1846,7 +1864,7 @@ index 5fb56ceb..f0df23ef 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1514,6 +1864,10 @@ void vi(int init)
+@@ -1514,6 +1873,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -1857,7 +1875,7 @@ index 5fb56ceb..f0df23ef 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto insert_done;
-@@ -1524,6 +1878,14 @@ void vi(int init)
+@@ -1524,6 +1887,14 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1872,7 +1890,7 @@ index 5fb56ceb..f0df23ef 100644
  				insert:
  				k = vc_insert(c);
  				insert_done:
-@@ -1645,8 +2007,16 @@ void vi(int init)
+@@ -1645,8 +2016,16 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1890,7 +1908,7 @@ index 5fb56ceb..f0df23ef 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1661,16 +2031,25 @@ void vi(int init)
+@@ -1661,16 +2040,25 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1921,7 +1939,7 @@ index 5fb56ceb..f0df23ef 100644
  				motion:
  				icmd_pos--;
  				goto re_motion;
-@@ -1736,6 +2115,13 @@ void vi(int init)
+@@ -1736,6 +2124,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -1935,7 +1953,7 @@ index 5fb56ceb..f0df23ef 100644
  			default:
  				continue;
  			}
-@@ -1802,6 +2188,8 @@ void vi(int init)
+@@ -1802,6 +2197,8 @@ void vi(int init)
  				}
  			}
  		}
