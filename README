@@ -142,10 +142,9 @@ Search as you go in the / and ? prompts. Every typed key redraws the screen
 with the matches of the keyword highlighted and the cursor moved to the first
 match, scrolling the buffer when the match is off screen. Enter keeps
 that position and searches normally, leaving counts and messages
-unchanged. An
-interrupt, or an erase key on an already empty keyword, restores the view,
-the previous keyword and the search direction. While in the prompt TAB moves
-to the next match and ^_ moves in reverse.
+unchanged. An interrupt, or an erase key on an already empty keyword, restores
+the view, the previous keyword and the search direction. While in the prompt
+TAB moves to the next match and ^_ moves in reverse.
 
 stdin_pipe.sh
 --------------
@@ -447,8 +446,6 @@ count selects another one. The suggestions of the word under the
 cursor are printed as an ex message, numbered by the count that
 picks them: "1:weird 2:wired 3:weirdo".
 Results are invalidated only once "sl" runs again.
-At most 4000 distinct words are highlighted, the regex engine holds
-no more alternations; the rest keep their suggestions.
 Example: check with a German dictionary
 :sl aspell -a --lang=de
 Example: check with hunspell
