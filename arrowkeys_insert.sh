@@ -899,6 +899,8 @@ fi
 
 exit 0
 === PATCH2VI PATCH ===
+diff --git a/led.c b/led.c
+index 95b7893b..d562cafd 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -909,7 +911,7 @@ exit 0
  
  int dstrlen(const char *s, char delim)
  {
-@@ -355,7 +356,7 @@
+@@ -355,7 +356,7 @@ static int led_lastword(char *s)
  }
  
  static void led_printparts(sbuf *sb, int pre, int ps,
@@ -918,7 +920,7 @@ exit 0
  {
  	if (!xled) {
  		sbuf_nul4(sb)
-@@ -381,8 +382,10 @@
+@@ -381,8 +382,10 @@ static void led_printparts(sbuf *sb, int pre, int ps,
  	}
  	if (pos >= xleft + xcols || pos < xleft)
  		xleft = pos < xcols ? 0 : pos - xcols / 2;
@@ -931,7 +933,7 @@ exit 0
  	term_pos(-1, led_pos(r->s, pos) + vi_lncol);
  	sbufn_cut(sb, psn)
  	rstate -= 2;
-@@ -440,11 +443,11 @@
+@@ -440,11 +443,11 @@ char *led_read(int *kmap, int c)
  	la->ola = ola; \
  	la->cnt = 1; \
  	sbuf_str(sb, buf) \
@@ -945,7 +947,7 @@ exit 0
  	goto noredraw; \
  } \
  
-@@ -505,7 +508,8 @@
+@@ -505,7 +508,8 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  	int len, c, i;
  	sbuf *reg;
  	do {
@@ -955,7 +957,7 @@ exit 0
  		len = sb->s_n;
  		c = term_read(TK_CTL('l'));
  		noredraw:
-@@ -699,6 +703,73 @@
+@@ -699,6 +703,73 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			else if (!i)
  				term_clean();
  			continue;
@@ -1029,7 +1031,7 @@ exit 0
  		case TK_CTL('o'): {
  			if (!*postref)
  				*postref = *post = uc_dup(*post);
-@@ -734,7 +805,7 @@
+@@ -734,7 +805,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg)
  {
  	int n, key, off;
@@ -1038,7 +1040,7 @@ exit 0
  	ins_state _is;
  	vi_lncol = 0;
  	if (flg & 2) {
-@@ -754,6 +825,8 @@
+@@ -754,6 +825,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
  			&off, kmap, is, 0, xrow, xtop, flg);
  	restore(xtd)
  	restore(xleft)
@@ -1047,7 +1049,7 @@ exit 0
  	if (key == '\n' && flg & 1) {
  		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
  		temp_pos(0, -1, 0, 0);
-@@ -784,7 +857,7 @@
+@@ -784,7 +857,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  			return key;
  		}
  		sbuf_chr(sb, key)
@@ -1056,9 +1058,11 @@ exit 0
  		term_chr('\n');
  		term_room(1);
  		crow++;
+diff --git a/vi.c b/vi.c
+index 5fb56ceb..b1a2d179 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -835,6 +835,8 @@
+@@ -835,6 +835,8 @@ static int vi_indents(char *ln)
  	return ln - pln;
  }
  
@@ -1067,7 +1071,7 @@ exit 0
  static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  {
  	char *post, *ln = lbuf_get(xb, r1);
-@@ -866,6 +868,7 @@
+@@ -866,6 +868,7 @@ static int vi_change(int r1, int o1, int r2, int o2, int lnmode)
  	if (postn + l2 != tlen || memcmp(ln + l1, sb->s + l1, tlen - l2 - l1))
  		lbuf_edit(xb, sb->s, r1, r2 + 1, o1, xoff);
  	free(sb->s);
@@ -1075,7 +1079,7 @@ exit 0
  	return key;
  }
  
-@@ -1036,8 +1039,10 @@
+@@ -1036,8 +1039,10 @@ static int vc_insert(int cmd)
  	term_room(cmdo);
  	sbuf_mem(sb, ln, l1)
  	key = led_input(sb, post, postn, row, cmdo << 2, &postn);
@@ -1087,7 +1091,7 @@ exit 0
  	free(sb->s);
  	return key;
  }
-@@ -1500,6 +1505,7 @@
+@@ -1500,6 +1505,7 @@ void vi(int init)
  						vi_delete(r1, o1, r2, o2, 0);
  						if (c == 'c') {
  							c = 'i';
@@ -1095,7 +1099,7 @@ exit 0
  							goto insert;
  						}
  						rep_record()
-@@ -1524,9 +1530,36 @@
+@@ -1524,9 +1530,36 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1132,7 +1136,7 @@ exit 0
  				if (k == 127 || k == TK_CTL('w')) {
  					if (xrow && !(xoff > 0 && lbuf_eol(xb, xrow, 1))) {
  						xrow--;
-@@ -1534,6 +1567,7 @@
+@@ -1534,6 +1567,7 @@ void vi(int init)
  							xtop = otop;
  						topfix()
  						vc_join(0, 2);
@@ -1140,7 +1144,7 @@ exit 0
  						vi_drawagain(xtop);
  						if (vi_status)
  							vc_status(vi_tsm);
-@@ -1544,6 +1578,7 @@
+@@ -1544,6 +1578,7 @@ void vi(int init)
  							vi_delete(xrow, noff, xrow, xoff, 0);
  						} else
  							vi_delete(xrow, xoff - 1, xrow, xoff, 0);
@@ -1148,7 +1152,7 @@ exit 0
  					}
  					c = xoff != lbuf_eol(xb, xrow, 1) ? 'i' : 'a';
  					xb->useq += xseq;
-@@ -1553,6 +1588,9 @@
+@@ -1553,6 +1588,9 @@ void vi(int init)
  				rep_record()
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;

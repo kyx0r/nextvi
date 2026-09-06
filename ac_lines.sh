@@ -125,24 +125,24 @@ s....c vo.d..i.....de..st.u.. ...f......
 %f+ 				sbuf_mem\(sb, reg->s, reg->s_n\)
 			break;
 		case TK_CTL\('\''g'\''\):4??0?
-4??+2m 3220reg p OK led.c:491:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK led.c:562:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				sbuf_mem\(sb, reg->s, reg->s_n\).*?
 			break;.*?
 (		case TK_CTL\('\''g'\''\):)7??0?
-grp 07??m 3220reg p OK led.c:491:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK led.c:562:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			continue;
 		case TK_CTL\('\''p'\''\):
 			if \(\(reg = ex_regget\(is->p_reg\)\)\).*(			suggestsb = NULL;)
 			break;
 		case TK_CTL\('\''r'\''\):8??0?
-grp 08??-10m 3220reg p OK led.c:491:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 3220reg p OK led.c:562:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			}
 			if \(ex_regget\(is->p_reg\)\)
 				led_info\(ex_regget\(is->p_reg\)->s\).*(			if \(!suggestsb \|\| !suggestsb->s_n\))
 				continue;
 			if \(!is->sug\)9??0?
-grp 09??-13m 3220reg p OK led.c:491:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:4912sc %? %@2132sc!0?
+grp 09??-13m 3220reg p OK led.c:562:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:5622sc %? %@2132sc!0?
 ?0?
 %f+ 				sbuf_make\(acsb, 1024\)
 				sbufn_chr\(acsb, '\''\\n'\''\)
@@ -156,17 +156,17 @@ s....c vo.d..i.....de..st.u.. ...f......
 			break;
 		case TK_CTL\('\''y'\''\):
 			led_done\(\);2??0?
-2??m 4220reg p OK led.c:497:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK led.c:568:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			file_index\(xb\);$3??0?
-3??m 4220reg p OK led.c:497:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK led.c:568:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				sbuf_make\(acsb, 1024\)
 				sbufn_chr\(acsb, '\''\\n'\''\)
 			}4??0?
-4??+3m 4220reg p OK led.c:497:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK led.c:568:a42sc %? %@2152sc!1q0?
 %f+ 			break;
 		case TK_CTL\('\''y'\''\):
 			led_done\(\);5??0?
-5??-1m 4220reg p OK led.c:497:a52sc %? %@2152sc!1q0?
+5??-1m 4220reg p OK led.c:568:a52sc %? %@2152sc!1q0?
 %f+ .	..s.u..............0...
 .		...u.n.....a........'\''\)
 	...
@@ -174,32 +174,32 @@ s....c vo.d..i.....de..st.u.. ...f......
 ...b.e...
 		........C.L..y.\).
 ....e.......\).6??0?
-6??+3m 4220reg p OK led.c:497:a62sc %? %@2152sc!1q0?
+6??+3m 4220reg p OK led.c:568:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				sbuf_make\(acsb, 1024\).*?
 				sbufn_chr\(acsb, '\''\\n'\''\).*?
 			}.*?
 (			file_index\(xb\);)7??0?
-grp 07??m 4220reg p OK led.c:497:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK led.c:568:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			continue;
 		case TK_CTL\('\''p'\''\):
 			if \(\(reg = ex_regget\(is->p_reg\)\)\).*(			suggestsb = NULL;)
 			break;
 		case TK_CTL\('\''r'\''\):8??0?
-grp 08??-4m 4220reg p OK led.c:497:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK led.c:568:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			}
 			if \(ex_regget\(is->p_reg\)\)
 				led_info\(ex_regget\(is->p_reg\)->s\).*(			if \(!suggestsb \|\| !suggestsb->s_n\))
 				continue;
 			if \(!is->sug\)9??0?
-grp 09??-7m 4220reg p OK led.c:497:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:4972sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK led.c:568:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:5682sc %? %@2132sc!0?
 '\''1s/f\)/f, char *reg)/??!219reg led.c:38:m12sc %? %@2142sc!0?
 '\''2d??!219reg led.c:40:m22sc %? %@2142sc!0?
 '\''3i 		case TK_CTL('\''k'\''):
-??!219reg led.c:491:m32sc %? %@2142sc!0?
+??!219reg led.c:562:m32sc %? %@2142sc!0?
 '\''4c 			file_index(xb, c == TK_CTL('\''g'\'') ?
 				"[^\t !-/:-@[-\\]^`{-\x7f]+" : ".*");
-??!219reg led.c:497:m42sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
+??!219reg led.c:568:m42sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -212,7 +212,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 3c1fde38..4443da69 100644
+index 95b7893b..b9431656 100644
 --- a/led.c
 +++ b/led.c
 @@ -35,9 +35,8 @@ static int search(const char *pattern, int l)
@@ -226,7 +226,7 @@ index 3c1fde38..4443da69 100644
  	int len, sidx, grp = xgrp;
  	char **ss = buf->ln;
  	int ln_n = lbuf_len(buf), n;
-@@ -489,12 +488,14 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -560,12 +559,14 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  				sbuf_mem(sb, reg->s, reg->s_n)
  			break;
  		case TK_CTL('g'):

@@ -47,7 +47,7 @@ int dstrlen\(const char \*s, char delim\).*?
 grp 07??m 1220reg p OK led.c:6:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
-sbuf \*led_attsb;.*(	if \(!\*pattern\))
+static sbuf \*extsb;.*(	if \(!\*pattern\))
 		return 0;
 	sbuf_cut\(suggestsb, 0\)8??0?
 grp 08??-8m 1220reg p OK led.c:6:a82sc %? %@2152sc!'\''00?
@@ -70,7 +70,7 @@ static int search\(const char \*pattern, int l\)1??0?
 grp 07??m 2220reg p OK led.c:9:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
-sbuf \*led_attsb;.*(	if \(!\*pattern\))
+static sbuf \*extsb;.*(	if \(!\*pattern\))
 		return 0;
 	sbuf_cut\(suggestsb, 0\)8??0?
 grp 08??-5m 2220reg p OK led.c:9:a82sc %? %@2152sc!'\''00?
@@ -280,10 +280,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 3c1fde38..0cc08041 100644
+index 95b7893b..ef323de8 100644
 --- a/led.c
 +++ b/led.c
-@@ -4,9 +4,28 @@ sbuf *led_attsb;
+@@ -4,9 +4,28 @@ static sbuf *extsb;
  
  int dstrlen(const char *s, char delim)
  {
@@ -401,7 +401,7 @@ index b1002c4e..e1637ca5 100644
  		s += l;
  	return n;
 diff --git a/vi.c b/vi.c
-index b5e0f21b..a64c63b1 100644
+index 5fb56ceb..1385c04c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,3 +1,7 @@

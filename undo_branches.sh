@@ -83,28 +83,28 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 %f> 	return xkwdrs \? NULL : xserr;
 }
 
-static int eo_val\(char \*arg\)
+static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 \{
-	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?1??0?
+	ren_state \*r = x->r;1??0?
 1??+2m 11q0?
 %f> 	return xkwdrs \? NULL : xserr;
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1671:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1668:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
-	}.*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
-EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
-grp 08??-13m 1220reg p OK ex.c:1671:a82sc %? %@2152sc!'\''08??1q0?
+	}.*(	int i, j, l, o;)
+	for \(l = 0, i = 0; i < x->cterm;\) \{
+		o = x->off\[i\+\+];8??0?
+grp 08??-4m 1220reg p OK ex.c:1668:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
-		sbuf_nul\(sb\).*(_EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\))
-_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)
-_EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\); return NULL;\)9??0?
-grp 09??-17m 1220reg p OK ex.c:1671:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16712sc %? %@2132sc!0?
+		sbuf_nul\(sb\).*(		if \(o < 0\))
+			continue;
+		for \(l\+\+; x->off\[i] == o; i\+\+\);9??0?
+grp 09??-7m 1220reg p OK ex.c:1668:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16682sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},
@@ -116,24 +116,24 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 %f+ 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},4??0?
-4??+2m 2220reg p OK ex.c:1771:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1797:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"uc", ec_setenc},.*?
 	\{"uz", ec_setenc},.*?
 (	\{"ub", ec_setenc},)7??0?
-grp 07??m 2220reg p OK ex.c:1771:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1797:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"wq", ec_write},
 	\{"w!", ec_write},
 	\{"w", ec_write},.*(	\{"sc!", ec_specials},)
 	\{"sc", ec_specials},
 	\{"s", ec_substitute},8??0?
-grp 08??-4m 2220reg p OK ex.c:1771:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1797:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(rr\),
 	\{"r", ec_read},
 	\{"wq!", ec_write},.*(	\{"x!", ec_write},)
 	\{"x", ec_write},
 	\{"ya!", ec_yank},9??0?
-grp 09??-7m 2220reg p OK ex.c:1771:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17712sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1797:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17972sc %? %@2132sc!0?
 '\''1i static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	if (*arg) {
@@ -146,9 +146,9 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 	return NULL;
 }
 
-??!219reg ex.c:1671:m12sc %? %@2142sc!0?
+??!219reg ex.c:1668:m12sc %? %@2142sc!0?
 '\''2i 	{"up", ec_undoleafs},
-??!219reg ex.c:1771:m22sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1797:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> \{
 	struct lbuf \*lb = emalloc\(sizeof\(\*lb\)\);
 	memset\(lb, 0, sizeof\(\*lb\)\);
@@ -588,10 +588,10 @@ index a51117ca..38c7bec3 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index b2e59855..83c51ab4 100644
+index 0ce81414..eae2eca6 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1669,6 +1669,18 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1666,6 +1666,18 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -607,10 +607,10 @@ index b2e59855..83c51ab4 100644
 +	return NULL;
 +}
 +
- static int eo_val(char *arg)
+ static void ext_hlr(led_ext *p, led_ctx *x)
  {
- 	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
-@@ -1769,6 +1781,7 @@ static struct excmd {
+ 	ren_state *r = x->r;
+@@ -1795,6 +1807,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
@@ -764,7 +764,7 @@ index 56cb42c6..827578da 100644
  	lb->modified = 0;
  	lb->saved = lb->hist_u;
 diff --git a/vi.h b/vi.h
-index c5c79dc5..73bd5b99 100644
+index edfba9ab..c4c40ae9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -137,6 +137,7 @@ struct linfo {

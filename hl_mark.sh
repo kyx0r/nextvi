@@ -120,20 +120,20 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 
 4??0?
-4??+2m 2220reg p OK ex.c:1684:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1703:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
 }.*(_EO\(hlr,)
 	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
-	led_ext \*p = led_extfind\(led_exthlr\);8??0?
-grp 08??-5m 2220reg p OK ex.c:1684:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	}
-	return xkwdrs \? NULL : xserr;
+	led_ext \*p = led_extfind\(ext_hlr\);8??0?
+grp 08??-5m 2220reg p OK ex.c:1703:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		x->att\[j\+1] = syn_merge\(x->att\[j\+1], conf_hlrev\);
+	}
 }.*(	if \(xhlr && !p\))
-		led_extreg\(\)->syn_ext = led_exthlr;
+		led_extreg\(\)->ext_func = ext_hlr;
 	else if \(!xhlr && p\)9??0?
-grp 09??-8m 2220reg p OK ex.c:1684:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16842sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK ex.c:1703:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17032sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(ts\),
 	EO\(td\),
@@ -145,30 +145,30 @@ EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 %f+ 	EO\(ts\),
 	EO\(td\),
 	EO\(order\),4??0?
-4??+2m 3220reg p OK ex.c:1797:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1816:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(ts\),.*?
 	EO\(td\),.*?
 (	EO\(order\),)7??0?
-grp 07??m 3220reg p OK ex.c:1797:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1816:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"cd", ec_chdir},
 	\{"c", ec_insert},
 	\{"j", ec_join},.*(	EO\(hlr\),)
 	EO\(hl\),
 	EO\(left\),8??0?
-grp 08??-4m 3220reg p OK ex.c:1797:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1816:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"ya", ec_yank},
 	\{"cm!", ec_cmap},
 	\{"cm", ec_cmap},.*(	EO\(lim\),)
 	EO\(led\),
 	EO\(vis\),9??0?
-grp 09??-7m 3220reg p OK ex.c:1797:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17972sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1816:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18162sc %? %@2132sc!0?
 '\''1i int xhlm;			/* highlight marks */
 ??!219reg ex.c:9:m12sc %? %@2142sc!0?
 '\''2i EO(hlm)
-??!219reg ex.c:1684:m22sc %? %@2142sc!0?
+??!219reg ex.c:1703:m22sc %? %@2142sc!0?
 '\''3i 	EO(hlm),
-??!219reg ex.c:1797:m32sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1816:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> 				word = cs;
 			}
 		}
@@ -239,7 +239,7 @@ index a51117ca..48011543 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 9aba9baa..f12e7026 100644
+index 0ce81414..452f8553 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -250,7 +250,7 @@ index 9aba9baa..f12e7026 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1682,6 +1683,7 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
+@@ -1701,6 +1702,7 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
  
@@ -258,7 +258,7 @@ index 9aba9baa..f12e7026 100644
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
  _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
-@@ -1795,6 +1797,7 @@ static struct excmd {
+@@ -1814,6 +1816,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),

@@ -142,19 +142,19 @@ printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 			xb_path\[0] \? xb_path : "unnamed",
 			xb->modified \? "modified" : "unmodified",
 			xrow\+1, lbuf_len\(xb\),2??0?
-2??m 1220reg p OK vi.c:592:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:649:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			"%s: %s: line %d of %d \(%d%%\) col %d \[b%td]",$3??0?
-3??m 1220reg p OK vi.c:592:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.c:649:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 			xoff, col, vs\);
 	} else \{
 		snprintf\(vi_msg, sizeof\(vi_msg\),4??0?
-4??+3m 1220reg p OK vi.c:592:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:649:a42sc %? %@2152sc!1q0?
 %f> 			xb_path\[0] \? xb_path : "unnamed",
 			xb->modified \? "modified" : "unmodified",
 			xrow\+1, lbuf_len\(xb\),5??0?
-5??-1m 1220reg p OK vi.c:592:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:592:r2312sc %? %@2132sc!0?
-'\''1s/]"/] %s"/??!219reg vi.c:592:r231:m12sc %? %@2142sc!p compat 231 applied: src=visual.sh' > "$P2VIF".231
+5??-1m 1220reg p OK vi.c:649:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:649:r2312sc %? %@2132sc!0?
+'\''1s/]"/] %s"/??!219reg vi.c:649:r231:m12sc %? %@2142sc!p compat 231 applied: src=visual.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -169,7 +169,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -589,7 +589,7 @@
+@@ -646,7 +646,7 @@
  			xoff, col, vs);
  	} else {
  		snprintf(vi_msg, sizeof(vi_msg),
@@ -182,7 +182,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index b5e0f21b..6213f533 100644
+index 5fb56ceb..af6e3dc1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -504,10 +504,11 @@ static void vc_status(int type)

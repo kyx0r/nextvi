@@ -100,24 +100,24 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 %f> 				vi_hidch = !vi_hidch;
 				vi_mod \|= 1;
 				break;4??0?
-4??+2m 1220reg p OK vi.c:1436:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1435:a42sc %? %@2152sc!1q0?
 grp 1%f> 				vi_hidch = !vi_hidch;.*?
 				vi_mod \|= 1;.*?
 (				break;)7??0?
-grp 07??m 1220reg p OK vi.c:1436:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:1435:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				}
 				break;
 			case '\''V'\'':.*(				if \(vi_arg && vi_arg <= 5\) \{)
 					vi_wsel = vi_arg;
 					vi_word = _vi_word \+ vi_arg;8??0?
-grp 08??-4m 1220reg p OK vi.c:1436:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.c:1435:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					goto do_excmd; }
 				default:
 					term_dec\(\).*(					vi_word = _vi_word \+ \(!\*vi_word \* vi_wsel\);)
 				vi_rshift = 0;
 				vi_mod \|= 1;9??0?
-grp 09??-8m 1220reg p OK vi.c:1436:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:14362sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.c:1435:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:14352sc %? %@2132sc!0?
 '\''1i 			case TK_CTL('\''o'\''):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
@@ -129,7 +129,7 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
-??!219reg vi.c:1436:m12sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg vi.c:1435:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	int hist_sz;			/\* size of hist\[] \*/
 	int hist_n;			/\* current history head in hist\[] \*/
 	int hist_u;			/\* current undo head in hist\[] \*/
@@ -248,10 +248,10 @@ index 56cb42c6..de6a9e93 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index b5e0f21b..77963517 100644
+index 5fb56ceb..8775757d 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1434,6 +1434,17 @@ void vi(int init)
+@@ -1433,6 +1433,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;
@@ -270,7 +270,7 @@ index b5e0f21b..77963517 100644
  				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index c5c79dc5..adc491f1 100644
+index edfba9ab..8b4a7ec6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,7 @@ struct lbuf {

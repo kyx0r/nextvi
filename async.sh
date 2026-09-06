@@ -170,20 +170,20 @@ static struct excmd \{
 #define EO\(opt\) \{#opt, eo_##opt}
 
 4??0?
-4??+2m 2220reg p OK ex.c:1704:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1730:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];
 	return NULL;
 \).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},8??0?
-grp 08??-4m 2220reg p OK ex.c:1704:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1730:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	else if \(\*arg\)
 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\).*(	\{"&", ec_termexec},)
 	\{"!", ec_exec},
 	\{"=\?", ec_num},9??0?
-grp 09??-7m 2220reg p OK ex.c:1704:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:17042sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1730:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17302sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"pu", ec_put},
 	\{"ph", ec_setenc},
@@ -195,24 +195,24 @@ static struct excmd \{
 %f+ 	\{"pu", ec_put},
 	\{"ph", ec_setenc},
 	\{"p", ec_print},4??0?
-4??+2m 3220reg p OK ex.c:1729:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1755:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"pu", ec_put},.*?
 	\{"ph", ec_setenc},.*?
 (	\{"p", ec_print},)7??0?
-grp 07??m 3220reg p OK ex.c:1729:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1755:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"b", ec_buffer},
 	EO\(pac\),
 	EO\(pr\),.*(	\{"ef!", ec_fuzz},)
 	\{"ef", ec_fuzz},
 	\{"e!", ec_edit},8??0?
-grp 08??-4m 3220reg p OK ex.c:1729:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1755:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"bp", ec_setpath},
 	\{"bs", ec_bufsave},
 	\{"bx", ec_setbufsmax},.*(	\{"e", ec_edit},)
 	\{"ft", ec_ft},
 	\{"fd", ec_setdir},9??0?
-grp 09??-7m 3220reg p OK ex.c:1729:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17292sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1755:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17552sc %? %@2132sc!0?
 ?0?
 %f+ 	return src;
 }
@@ -225,20 +225,20 @@ void \*ex_exec\(const char \*ln\)
 }
 
 4??0?
-4??+2m 4220reg p OK ex.c:1898:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:1924:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	if \(\*src == '\'' '\'' \|\| \*src == '\''\\t'\''\)
 		src\+\+;.*(	int arg, idx = 0;)
 	char \*ret = NULL;
 	preserve\(int, xquit, xquit = 0;\)8??0?
-grp 08??-4m 4220reg p OK ex.c:1898:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ex.c:1924:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			src \+= j;
 			break;
 		}.*(		lbuf_mark\(xb, '\''\*'\'', xrow, xoff\);)
 	xexec_dep\+\+;
 	sbuf_smake\(sb, 128\)9??0?
-grp 09??-8m 4220reg p OK ex.c:1898:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:18982sc %? %@2132sc!0?
+grp 09??-8m 4220reg p OK ex.c:1924:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:19242sc %? %@2132sc!0?
 ?0?
 %f+ 	do \{
 		sbuf_cut\(sb, 0\)
@@ -250,24 +250,24 @@ void \*ex_exec\(const char \*ln\)
 %f+ 	do \{
 		sbuf_cut\(sb, 0\)
 		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);4??0?
-4??+2m 5220reg p OK ex.c:1911:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK ex.c:1937:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	do \{.*?
 		sbuf_cut\(sb, 0\).*?
 (		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);)7??0?
-grp 07??m 5220reg p OK ex.c:1911:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK ex.c:1937:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		lbuf_mark\(xb, '\''\*'\'', xrow, xoff\);
 	xexec_dep\+\+;
 	sbuf_smake\(sb, 128\).*(			ex_print\(ret, msg_ft\))
 			ret = xuerr;
 		}8??0?
-grp 08??-4m 5220reg p OK ex.c:1911:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK ex.c:1937:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char \*ret = NULL;
 	preserve\(int, xquit, xquit = 0;\)
 	if \(!xexec_dep\).*(		if \(ret && xerr & 2\))
 			break;
 	} while \(\*ln && !xquit\);9??0?
-grp 09??-7m 5220reg p OK ex.c:1911:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:19112sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK ex.c:1937:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:19372sc %? %@2132sc!0?
 ?0?
 %f+ 			\|\| tmpxquit < -256\)
 		restore\(xquit\)
@@ -279,24 +279,24 @@ void \*ex_exec\(const char \*ln\)
 %f+ 			\|\| tmpxquit < -256\)
 		restore\(xquit\)
 	if \(!xexec_dep\) \{4??0?
-4??+2m 6220reg p OK ex.c:1926:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK ex.c:1952:a42sc %? %@2152sc!1q0?
 grp 1%f+ 			\|\| tmpxquit < -256\).*?
 		restore\(xquit\).*?
 (	if \(!xexec_dep\) \{)7??0?
-grp 07??m 6220reg p OK ex.c:1926:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1952:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	free\(sb->s\);
 	xexec_dep--;
 	if \(\(xquit > 0 && \(xexec_dep \|\| xqprop >= 0\) && --xqprop < 0\).*(/\* ex main loop \*/)
 void ex\(void\)
 \{8??0?
-grp 08??-8m 6220reg p OK ex.c:1926:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 6220reg p OK ex.c:1952:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(ret && xerr & 2\)
 			break;
 	} while \(\*ln && !xquit\);.*(	xgrec\+\+;)
 	int esc = 0;
 	sbuf_smake\(sb, xcols\)9??0?
-grp 09??-11m 6220reg p OK ex.c:1926:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:19262sc %? %@2132sc!0?
+grp 09??-11m 6220reg p OK ex.c:1952:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:19522sc %? %@2132sc!0?
 '\''1i static int xasync;		/* run the next chain command in a thread */
 static struct exthread {	/* a chain command running in its own thread */
 	pthread_t id;
@@ -321,10 +321,10 @@ static void *ec_async(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-??!219reg ex.c:1704:m22sc %? %@2142sc!0?
+??!219reg ex.c:1730:m22sc %? %@2142sc!0?
 '\''3i 	{"as!", ec_async},
 	{"as", ec_async},
-??!219reg ex.c:1729:m32sc %? %@2142sc!0?
+??!219reg ex.c:1755:m32sc %? %@2142sc!0?
 '\''4i static void ex_asynckey(void)
 {
 	pthread_key_create(&xthreads_key, NULL);
@@ -399,15 +399,15 @@ static void ex_asyncwait(void)
 	}
 }
 
-??!219reg ex.c:1898:m42sc %? %@2142sc!0?
+??!219reg ex.c:1924:m42sc %? %@2142sc!0?
 '\''5i 		if (xasync) {
 			xasync = 0;
 			ex_async(idx, sb, arg);
 			continue;
 		}
-??!219reg ex.c:1911:m52sc %? %@2142sc!0?
+??!219reg ex.c:1937:m52sc %? %@2142sc!0?
 '\''6i 		xasync = 0;
-??!219reg ex.c:1926:m62sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg ex.c:1952:m62sc %? %@2142sc!b3m!%ya 98?0?
 %f> static struct termios termios;
 sbuf \*term_sbuf;
 int term_record;
@@ -586,7 +586,7 @@ index a51117ca..010700d7 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index b2e59855..70beef65 100644
+index 0ce81414..5f0b73c3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -58,6 +58,17 @@ static char xirerr[] = "invalid range";
@@ -607,7 +607,7 @@ index b2e59855..70beef65 100644
  static signed char *xcid;	/* capture status by id, -1 if unset */
  static unsigned int xcid_n;	/* number of allocated capture ids */
  static int xcid_keep;		/* keep capture statuses across ex_exec calls */
-@@ -1702,6 +1713,18 @@ _EO(left,
+@@ -1728,6 +1739,18 @@ _EO(left,
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
@@ -626,7 +626,7 @@ index b2e59855..70beef65 100644
  /* commands & opts must be sorted longest of its kind topmost */
  static struct excmd {
  	char *name;
-@@ -1727,6 +1750,8 @@ static struct excmd {
+@@ -1753,6 +1776,8 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -635,7 +635,7 @@ index b2e59855..70beef65 100644
  	EO(ai),
  	{"ac", ec_setacreg},
  	EO(err),
-@@ -1896,6 +1921,80 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
+@@ -1922,6 +1947,80 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  	return src;
  }
  
@@ -716,7 +716,7 @@ index b2e59855..70beef65 100644
  /* execute a single ex command chain */
  void *ex_exec(const char *ln)
  {
-@@ -1909,6 +2008,11 @@ void *ex_exec(const char *ln)
+@@ -1935,6 +2034,11 @@ void *ex_exec(const char *ln)
  	do {
  		sbuf_cut(sb, 0)
  		ln = ex_arg(ex_cmd(ln, sb, &idx), sb, &arg);
@@ -728,7 +728,7 @@ index b2e59855..70beef65 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1924,6 +2028,7 @@ void *ex_exec(const char *ln)
+@@ -1950,6 +2054,7 @@ void *ex_exec(const char *ln)
  			|| tmpxquit < -256)
  		restore(xquit)
  	if (!xexec_dep) {
@@ -772,7 +772,7 @@ index c8861702..606ab94c 100644
  	}
  	sbufn_ret(sb, sb)
 diff --git a/vi.c b/vi.c
-index b5e0f21b..c840660f 100644
+index 5fb56ceb..f8631ffc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -8,6 +8,7 @@

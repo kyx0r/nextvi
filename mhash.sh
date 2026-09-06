@@ -836,7 +836,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index b2e59855..8616264d 100644
+index 0ce81414..917c0e1b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1092,7 +1092,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
@@ -973,7 +973,7 @@ index 56cb42c6..30a27915 100644
  	lo->mark_se[0] = -1;
  	lo->pos = beg;
 diff --git a/vi.h b/vi.h
-index c5c79dc5..d9943dee 100644
+index edfba9ab..edb22179 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -118,11 +118,15 @@ int rset_match(rset *rs, char *s, int flg);
