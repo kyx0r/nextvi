@@ -88,31 +88,34 @@ int xai = 1;			/\* autoindent option \*/1??0?
 4??m 1220reg p OK ex.c:0:a42sc %? %@2152sc!fr 98fr 980?
 1;4??!219reg ex.c:02sc %? %@2132sc!0?
 ?0?
-%f+ EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
+%f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
+EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
+EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 
 _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
-_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)
-_EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\); return NULL;\)1??0?
+_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)1??0?
 1??+2m 21q0?
-%f+ EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
-
-4??0?
-4??+2m 2220reg p OK ex.c:1687:a42sc %? %@2152sc!1q0?
+%f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
+EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
+EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)4??0?
+4??+2m 2220reg p OK ex.c:1683:a42sc %? %@2152sc!1q0?
+grp 1%f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\).*?
+EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\).*?
+(EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\))7??0?
+grp 07??m 2220reg p OK ex.c:1683:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
-}.*(_EO\(left,)
-	if \(\*loc\)
-		xleft = \(xcols / 2\) \* atoi\(loc\);8??0?
-grp 08??-5m 2220reg p OK ex.c:1687:a82sc %? %@2152sc!'\''08??1q0?
+}.*(_EO\(hlr,)
+	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
+	led_ext \*p = led_extfind\(led_exthlr\);8??0?
+grp 08??-6m 2220reg p OK ex.c:1683:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return xkwdrs \? NULL : xserr;
-}.*(	else if \(\*arg\))
-		xleft = atoi\(arg\);
-	else if \(lbuf_get\(xb, xrow\)\)9??0?
-grp 09??-8m 2220reg p OK ex.c:1687:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16872sc %? %@2132sc!0?
+}.*(	if \(xhlr && !p\))
+		led_extreg\(\)->syn_ext = led_exthlr;
+	else if \(!xhlr && p\)9??0?
+grp 09??-9m 2220reg p OK ex.c:1683:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:16832sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(mpt\),
 	\{"m!", ec_mark},
@@ -124,33 +127,33 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 %f+ 	EO\(mpt\),
 	\{"m!", ec_mark},
 	\{"m", ec_mark},4??0?
-4??+2m 3220reg p OK ex.c:1756:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1763:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(mpt\),.*?
 	\{"m!", ec_mark},.*?
 (	\{"m", ec_mark},)7??0?
-grp 07??m 3220reg p OK ex.c:1756:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1763:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(grp\),
 	\{"g!", ec_glob},
 	\{"g", ec_glob},.*(	\{"reg", ec_regprint},)
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},8??0?
-grp 08??-4m 3220reg p OK ex.c:1756:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1763:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(ic\),
 	\{"i", ec_insert},
 	\{"d", ec_delete},.*(	EO\(rr\),)
 	\{"r", ec_read},
 	\{"wq!", ec_write},9??0?
-grp 09??-7m 3220reg p OK ex.c:1756:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17562sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1763:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17632sc %? %@2132sc!0?
 '\''1-1i int xqe = 1000;			/* exit insert via kj (delay in ms) */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i EO(qe)
-??!219reg ex.c:1687:m22sc %? %@2142sc!0?
+??!219reg ex.c:1683:m22sc %? %@2142sc!0?
 '\''3i 	EO(qe),
-??!219reg ex.c:1756:m32sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1763:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> static sbuf \*suggestsb;
 static sbuf \*acsb;
-sbuf \*led_attsb;
+static sbuf \*led_extsb;
 
 1??0?
 1??m 11q0?
@@ -168,24 +171,24 @@ sbuf \*led_attsb;
 %f+ 				exbuf_load\(ex_buf\)
 			}
 			continue; }4??0?
-4??+2m 2220reg p OK led.c:648:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK led.c:741:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				exbuf_load\(ex_buf\).*?
 			}.*?
 (			continue; })7??0?
-grp 07??m 2220reg p OK led.c:648:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:741:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			} else if \(bidx != ex_buf - bufs && bidx < xbufcur\) \{
 				ex_buf = bufs \+ bidx;.*(			if \(\(cs = led_read\(kmap, c\)\)\))
 				sbuf_str\(sb, cs\)
 		}8??0?
-grp 08??-4m 2220reg p OK led.c:648:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:741:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(ex_buf == tmpex_buf\)
 					continue;
 				restore\(ex_buf\).*(		is->sug = NULL;)
 		is->_sug = NULL;
 		if \(ai_max >= 0 && xpac\)9??0?
-grp 09??-7m 2220reg p OK led.c:648:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:6482sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK led.c:741:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:7412sc %? %@2132sc!0?
 '\''1i static long long gettime_ms(void)
 {
 	struct timespec t;
@@ -206,7 +209,7 @@ sbuf \*led_attsb;
 		case '\''k'\'':
 			is->quickexit = gettime_ms();
 _default:
-??!219reg led.c:648:m22sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg led.c:741:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> #include <dirent\.h>
 #include <signal\.h>
 #include <unistd\.h>
@@ -246,29 +249,29 @@ _default:
 %f+ 				}
 				xoff--;
 				rep_record\(\)4??0?
-4??+2m 2220reg p OK vi.c:1554:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.c:1553:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				}.*?
 				xoff--;.*?
 (				rep_record\(\))7??0?
-grp 07??m 2220reg p OK vi.c:1554:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1553:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					c = xoff != lbuf_eol\(xb, xrow, 1\) \? '\''i'\'' : '\''a'\'';
 					xb->useq \+= xseq;
 					goto insert;.*(				vc_join\(1, vi_arg <= 1 \? 2 : vi_arg\);)
 				rep_record\(\)
 				vi_mod \|= 1;8??0?
-grp 08??-4m 2220reg p OK vi.c:1554:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1553:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 						} else
 							vi_delete\(xrow, xoff - 1, xrow, xoff, 0\);
 					}.*(			case '\''K'\'': \{)
 				preserve\(int, xvis, xvis = 1;\)
 				do \{9??0?
-grp 09??-8m 2220reg p OK vi.c:1554:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15542sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK vi.c:1553:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15532sc %? %@2132sc!0?
 '\''1i #include <time.h>
 ??!219reg vi.c:9:m12sc %? %@2142sc!0?
 '\''2i 				if (xqe)
 					vi_mod |= 2;
-??!219reg vi.c:1554:m22sc %? %@2142sc!b4m!%ya 98?0?
+??!219reg vi.c:1553:m22sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	int p_reg;
 	int lsug;
 	int sug_pt;
@@ -279,24 +282,24 @@ _default:
 %f> 	int p_reg;
 	int lsug;
 	int sug_pt;4??0?
-4??+2m 1220reg p OK vi.h:376:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:395:a42sc %? %@2152sc!1q0?
 grp 1%f> 	int p_reg;.*?
 	int lsug;.*?
 (	int sug_pt;)7??0?
-grp 07??m 1220reg p OK vi.h:376:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:395:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> void led_modeswap\(void\);
 typedef struct \{
 	int t_row;.*(#define ins_init\(is\) \\)
 is\.t_row = -2; \\
 is\.p_reg = xdefreg; \\8??0?
-grp 08??-4m 1220reg p OK vi.h:376:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	int att;
-} led_att;
-extern sbuf \*led_attsb;.*(is\.lsug = 0; \\)
+grp 08??-4m 1220reg p OK vi.h:395:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> void led_extdel\(led_ext \*p\);
+void led_extcut\(void\);
+void led_exthlr\(led_ext \*p, led_ctx \*x\);.*(is\.lsug = 0; \\)
 is\.sug_pt = -1; \\
 is\.sug = NULL; \\9??0?
-grp 09??-7m 1220reg p OK vi.h:376:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:3762sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:395:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:3952sc %? %@2132sc!0?
 ?0?
 %f+ is\.p_reg = xdefreg; \\
 is\.lsug = 0; \\
@@ -309,24 +312,24 @@ is\._sug = NULL; \\
 %f+ is\.p_reg = xdefreg; \\
 is\.lsug = 0; \\
 is\.sug_pt = -1; \\4??0?
-4??+2m 2220reg p OK vi.h:384:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.h:403:a42sc %? %@2152sc!1q0?
 grp 1%f+ is\.p_reg = xdefreg; \\.*?
 is\.lsug = 0; \\.*?
 (is\.sug_pt = -1; \\)7??0?
-grp 07??m 2220reg p OK vi.h:384:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.h:403:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> } ins_state;
 #define ins_init\(is\) \\
 is\.t_row = -2; \\.*(int led_prompt\(sbuf \*sb, char \*insert, int \*kmap, ins_state \*is, int ps, int flg\);)
 int led_input\(sbuf \*sb, char \*post, int postn, int row, int flg, int \*pren\);
 void led_render\(char \*s0, int cbeg, int cend\);8??0?
-grp 08??-4m 2220reg p OK vi.h:384:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.h:403:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int sug_pt;
 	char \*sug;
 	char \*_sug;.*(#define _led_render\(msg, row, col, beg, end, kill\) \\)
 \{ \\
 	int record = term_record; \\9??0?
-grp 09??-7m 2220reg p OK vi.h:384:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:3842sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.h:403:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4032sc %? %@2132sc!0?
 ?0?
 %f+ extern int xshape;
 extern int xorder;
@@ -338,30 +341,30 @@ extern int xpac;1??0?
 %f+ extern int xshape;
 extern int xorder;
 extern int xts;4??0?
-4??+2m 3220reg p OK vi.h:431:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.h:450:a42sc %? %@2152sc!1q0?
 grp 1%f+ extern int xshape;.*?
 extern int xorder;.*?
 (extern int xts;)7??0?
-grp 07??m 3220reg p OK vi.h:431:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.h:450:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xhlr;
 extern int xled;
 extern int xtd;.*(extern int xmpt;)
 extern int xpr;
 extern int xlim;8??0?
-grp 08??-4m 3220reg p OK vi.h:431:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK vi.h:450:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xhll;
 extern int xhlw;
 extern int xhlp;.*(extern int xseq;)
 extern int xerr;
 extern int xfr;9??0?
-grp 09??-7m 3220reg p OK vi.h:431:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4312sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK vi.h:450:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4502sc %? %@2132sc!0?
 '\''1i 	long long quickexit;
-??!219reg vi.h:376:m12sc %? %@2142sc!0?
+??!219reg vi.h:395:m12sc %? %@2142sc!0?
 '\''2i is.quickexit = 0; \
-??!219reg vi.h:384:m22sc %? %@2142sc!0?
+??!219reg vi.h:403:m22sc %? %@2142sc!0?
 '\''3i extern int xqe;
-??!219reg vi.h:431:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+??!219reg vi.h:450:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -373,11 +376,9 @@ fi
 
 exit 0
 === PATCH2VI PATCH ===
-diff --git a/conf.c b/conf.c
-index a51117ca..3ae88ef2 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -297,7 +297,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,7 +297,7 @@
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
@@ -386,8 +387,6 @@ index a51117ca..3ae88ef2 100644
  |[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
-diff --git a/ex.c b/ex.c
-index b2e59855..a0e8873d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -395,15 +394,15 @@ index b2e59855..a0e8873d 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1685,6 +1686,7 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
+@@ -1681,6 +1682,7 @@
+ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
- EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
- 
+ EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(qe)
+ 
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
- _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
-@@ -1754,6 +1756,7 @@ static struct excmd {
+@@ -1761,6 +1763,7 @@
  	EO(mpt),
  	{"m!", ec_mark},
  	{"m", ec_mark},
@@ -411,8 +410,6 @@ index b2e59855..a0e8873d 100644
  	{"q!", ec_quit},
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
-diff --git a/led.c b/led.c
-index 3c1fde38..398961d1 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -426,9 +423,9 @@ index 3c1fde38..398961d1 100644
 +}
 +
  static sbuf *acsb;
- sbuf *led_attsb;
+ static sbuf *led_extsb;
  
-@@ -646,6 +654,17 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -739,6 +747,17 @@
  				exbuf_load(ex_buf)
  			}
  			continue; }
@@ -446,8 +443,6 @@ index 3c1fde38..398961d1 100644
  		default:
  			if (c == '\n' || TK_INT(c))
  				return c;
-diff --git a/vi.c b/vi.c
-index b5e0f21b..0cf31d08 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -458,7 +453,7 @@ index b5e0f21b..0cf31d08 100644
  #include <poll.h>
  #include <termios.h>
  #include <limits.h>
-@@ -1552,6 +1553,8 @@ void vi(int init)
+@@ -1551,6 +1552,8 @@
  				}
  				xoff--;
  				rep_record()
@@ -467,11 +462,9 @@ index b5e0f21b..0cf31d08 100644
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;
  			case 'J':
-diff --git a/vi.h b/vi.h
-index c5c79dc5..ef3746fc 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -374,6 +374,7 @@ typedef struct {
+@@ -393,6 +393,7 @@
  	int p_reg;
  	int lsug;
  	int sug_pt;
@@ -479,7 +472,7 @@ index c5c79dc5..ef3746fc 100644
  	char *sug;
  	char *_sug;
  } ins_state;
-@@ -382,6 +383,7 @@ is.t_row = -2; \
+@@ -401,6 +402,7 @@
  is.p_reg = xdefreg; \
  is.lsug = 0; \
  is.sug_pt = -1; \
@@ -487,7 +480,7 @@ index c5c79dc5..ef3746fc 100644
  is.sug = NULL; \
  is._sug = NULL; \
  
-@@ -429,6 +431,7 @@ extern int xtd;
+@@ -448,6 +450,7 @@
  extern int xshape;
  extern int xorder;
  extern int xts;
