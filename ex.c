@@ -1666,6 +1666,25 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
 	return xkwdrs ? NULL : xserr;
 }
 
+static void ext_hlr(led_ext *p, led_ctx *x)
+{
+	ren_state *r = x->r;
+	int i, j, l, o;
+	for (l = 0, i = 0; i < x->cterm;) {
+		o = x->off[i++];
+		if (o < 0)
+			continue;
+		for (l++; x->off[i] == o; i++);
+		if (o+1 >= x->n || r->pos[o] + r->wid[o] == r->pos[o + 1])
+			continue;
+		if (r->pos[o + 1] + r->wid[o + 1] != r->pos[o])
+			continue;
+		j = x->bound ? x->ctt[l-1] : o;
+		x->att[j] = syn_merge(x->att[j], conf_hlrev);
+		x->att[j+1] = syn_merge(x->att[j+1], conf_hlrev);
+	}
+}
+
 static int eo_val(char *arg)
 {
 	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
@@ -1688,9 +1707,9 @@ _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NU
 
 _EO(hlr,
 	xhlr = *arg ? eo_val(arg) : !xhlr;
-	led_ext *p = led_extfind(led_exthlr);
+	led_ext *p = led_extfind(ext_hlr);
 	if (xhlr && !p)
-		led_extreg()->syn_ext = led_exthlr;
+		led_extreg()->ext_func = ext_hlr;
 	else if (!xhlr && p)
 		led_extdel(p);
 	return NULL;
