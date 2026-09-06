@@ -931,15 +931,15 @@ static int vi_curhue(int att)
 	return BL;			/* white: every primary is spoken for */
 }
 
-/* the cursor cell of the selection: vi_extsel leaves it out of the reversed
+/* the cursor cell of the selection: ext_sel leaves it out of the reversed
    run, so this reads the plain highlight under the cursor and fills the cell
    with the one primary that highlight does not already carry - green until
    the cursor sits on something green, red until that is taken too, then blue */
-static void vi_extcursor(led_ext *p, led_ctx *x)
+static void ext_cursor(led_ext *p, led_ctx *x)
 {
 	if (!led_extkey(p, x))
 		return;
-	int i = ext_attidx(x, p->ola[0]);
+	int i = led_attidx(x, p->ola[0]);
 	if (i < 0)
 		return;
 	int hue = vi_curhue(x->att[i]) + 8;	/* the bright variant of it */
@@ -952,7 +952,7 @@ static void vi_extcursor(led_ext *p, led_ctx *x)
 /* the selected span of the row being drawn: a plain attribute merge, but
    under its own name so led_extfind() tells it from every other entry that
    was left on the default body */
-static void vi_extsel(led_ext *p, led_ctx *x)
+static void ext_sel(led_ext *p, led_ctx *x)
 {
 	ext_attmerge(p, x);
 }
@@ -1010,8 +1010,8 @@ static void vi_visual_attrib(char *s, int row)
 		sel[5] = SYN_RV;
 		cnt = 2;
 	}
-	if (!(p = led_extfind(vi_extsel)))
-		(p = led_extnew())->syn_ext = vi_extsel;
+	if (!(p = led_extfind(ext_sel)))
+		(p = led_extnew())->ext_func = ext_sel;
 	p->ln = s;
 	p->ola = sel;
 	p->cnt = cnt;
@@ -1020,8 +1020,8 @@ static void vi_visual_attrib(char *s, int row)
 	cur[0] = xoff;
 	cur[1] = 1;
 	cur[2] = 0;		/* nothing rides on top of the hue */
-	if (!(p = led_extfind(vi_extcursor)))	/* pushed last, so it runs last */
-		(p = led_extnew())->syn_ext = vi_extcursor;
+	if (!(p = led_extfind(ext_cursor)))	/* pushed last, so it runs last */
+		(p = led_extnew())->ext_func = ext_cursor;
 	p->ln = s;
 	p->ola = cur;
 	p->cnt = 1;
@@ -1413,7 +1413,7 @@ index a51117ca..321d4b59 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 5fb56ceb..430dbeb9 100644
+index 5fb56ceb..100885f0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1472,15 +1472,15 @@ index 5fb56ceb..430dbeb9 100644
 +	return BL;			/* white: every primary is spoken for */
 +}
 +
-+/* the cursor cell of the selection: vi_extsel leaves it out of the reversed
++/* the cursor cell of the selection: ext_sel leaves it out of the reversed
 +   run, so this reads the plain highlight under the cursor and fills the cell
 +   with the one primary that highlight does not already carry - green until
 +   the cursor sits on something green, red until that is taken too, then blue */
-+static void vi_extcursor(led_ext *p, led_ctx *x)
++static void ext_cursor(led_ext *p, led_ctx *x)
 +{
 +	if (!led_extkey(p, x))
 +		return;
-+	int i = ext_attidx(x, p->ola[0]);
++	int i = led_attidx(x, p->ola[0]);
 +	if (i < 0)
 +		return;
 +	int hue = vi_curhue(x->att[i]) + 8;	/* the bright variant of it */
@@ -1493,7 +1493,7 @@ index 5fb56ceb..430dbeb9 100644
 +/* the selected span of the row being drawn: a plain attribute merge, but
 +   under its own name so led_extfind() tells it from every other entry that
 +   was left on the default body */
-+static void vi_extsel(led_ext *p, led_ctx *x)
++static void ext_sel(led_ext *p, led_ctx *x)
 +{
 +	ext_attmerge(p, x);
 +}
@@ -1551,8 +1551,8 @@ index 5fb56ceb..430dbeb9 100644
 +		sel[5] = SYN_RV;
 +		cnt = 2;
 +	}
-+	if (!(p = led_extfind(vi_extsel)))
-+		(p = led_extnew())->syn_ext = vi_extsel;
++	if (!(p = led_extfind(ext_sel)))
++		(p = led_extnew())->ext_func = ext_sel;
 +	p->ln = s;
 +	p->ola = sel;
 +	p->cnt = cnt;
@@ -1561,8 +1561,8 @@ index 5fb56ceb..430dbeb9 100644
 +	cur[0] = xoff;
 +	cur[1] = 1;
 +	cur[2] = 0;		/* nothing rides on top of the hue */
-+	if (!(p = led_extfind(vi_extcursor)))	/* pushed last, so it runs last */
-+		(p = led_extnew())->syn_ext = vi_extcursor;
++	if (!(p = led_extfind(ext_cursor)))	/* pushed last, so it runs last */
++		(p = led_extnew())->ext_func = ext_cursor;
 +	p->ln = s;
 +	p->ola = cur;
 +	p->cnt = 1;
