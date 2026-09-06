@@ -110,30 +110,30 @@ int xmpt;			/\* whether to prompt after printing > 1 lines in vi \*/9??0?
 1;4;7;8;9??!219reg ex.c:92sc %? %@2132sc!0?
 ?0?
 %f+ EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
+EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 
 _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
 _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)
 _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\); return NULL;\)1??0?
 1??+2m 21q0?
 %f+ EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
+EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 
 4??0?
-4??+2m 2220reg p OK ex.c:1687:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1684:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
-}.*(_EO\(left,)
-	if \(\*loc\)
-		xleft = \(xcols / 2\) \* atoi\(loc\);8??0?
-grp 08??-5m 2220reg p OK ex.c:1687:a82sc %? %@2152sc!'\''08??1q0?
+}.*(_EO\(hlr,)
+	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
+	led_ext \*p = led_extfind\(led_exthlr\);8??0?
+grp 08??-5m 2220reg p OK ex.c:1684:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	return xkwdrs \? NULL : xserr;
-}.*(	else if \(\*arg\))
-		xleft = atoi\(arg\);
-	else if \(lbuf_get\(xb, xrow\)\)9??0?
-grp 09??-8m 2220reg p OK ex.c:1687:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16872sc %? %@2132sc!0?
+}.*(	if \(xhlr && !p\))
+		led_extreg\(\)->syn_ext = led_exthlr;
+	else if \(!xhlr && p\)9??0?
+grp 09??-8m 2220reg p OK ex.c:1684:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16842sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(ts\),
 	EO\(td\),
@@ -145,74 +145,75 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 %f+ 	EO\(ts\),
 	EO\(td\),
 	EO\(order\),4??0?
-4??+2m 3220reg p OK ex.c:1790:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1797:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(ts\),.*?
 	EO\(td\),.*?
 (	EO\(order\),)7??0?
-grp 07??m 3220reg p OK ex.c:1790:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1797:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"cd", ec_chdir},
 	\{"c", ec_insert},
 	\{"j", ec_join},.*(	EO\(hlr\),)
 	EO\(hl\),
 	EO\(left\),8??0?
-grp 08??-4m 3220reg p OK ex.c:1790:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1797:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"ya", ec_yank},
 	\{"cm!", ec_cmap},
 	\{"cm", ec_cmap},.*(	EO\(lim\),)
 	EO\(led\),
 	EO\(vis\),9??0?
-grp 09??-7m 3220reg p OK ex.c:1790:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17902sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1797:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17972sc %? %@2132sc!0?
 '\''1i int xhlm;			/* highlight marks */
 ??!219reg ex.c:9:m12sc %? %@2142sc!0?
 '\''2i EO(hlm)
-??!219reg ex.c:1687:m22sc %? %@2142sc!0?
+??!219reg ex.c:1684:m22sc %? %@2142sc!0?
 '\''3i 	EO(hlm),
-??!219reg ex.c:1790:m32sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1797:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> 				word = cs;
 			}
 		}
 		if \(xhlp && \(k = syn_findhl\(3\)\) >= 0\) \{
 			int row = xrow, off = xoff, row1, off1;
-			led_att la;1??0?
+			static int ola\[2]\[3];1??0?
 1??+2m 11q0?
 %f> 				word = cs;
 			}
 		}4??0?
-4??+2m 1220reg p OK vi.c:1780:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1779:a42sc %? %@2152sc!1q0?
 grp 1%f> 				word = cs;.*?
 			}.*?
 (		})7??0?
-grp 07??m 1220reg p OK vi.c:1780:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:1779:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					vi_mod \|= 1;
 				}
-				free\(word\);.*(			if \(!led_attsb\))
-				sbuf_make\(led_attsb, sizeof\(la\) \* 2\)
-			if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{8??0?
-grp 08??-4m 1220reg p OK vi.c:1780:a82sc %? %@2152sc!'\''08??1q0?
+				free\(word\);.*(			led_ext \*p;)
+			if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{
+				row1 = row; off1 = off;8??0?
+grp 08??-4m 1220reg p OK vi.c:1779:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(\(cs = vi_curword\(xb, xrow, xoff, xhlw, 0\)\)\) \{
 				if \(!word \|\| strcmp\(word, cs\)\) \{
-					syn_reloadft\(syn_addhl\(cs, 1\), 0\);.*(				row1 = row; off1 = off;)
-				if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{
-					la\.s = ln;9??0?
-grp 09??-7m 1220reg p OK vi.c:1780:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:17802sc %? %@2132sc!0?
+					syn_reloadft\(syn_addhl\(cs, 1\), 0\);.*(				if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{)
+					ola\[0]\[0] = off;
+					ola\[0]\[1] = 1;9??0?
+grp 09??-7m 1220reg p OK vi.c:1779:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:17792sc %? %@2132sc!0?
 '\''1i 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`*";
-			led_att la;
-			if (!led_attsb)
-				sbuf_make(led_attsb, sizeof(la))
+			static int ola[LEN(marks)-1][3];
 			for (int i = 0; i < LEN(marks) - 1; i++) {
 				if (lbuf_jump(xb, marks[i], &mrow, &moff))
 					continue;
-				la.s = lbuf_get(xb, mrow);
-				la.off = moff;
-				la.att = SYN_BGMK(((i % 15) + 1));
-				sbuf_mem(led_attsb, &la, (int)sizeof(la))
+				led_ext *p = led_extnew();
+				p->ln = lbuf_get(xb, mrow);
+				ola[i][0] = moff;
+				ola[i][1] = 1;
+				ola[i][2] = SYN_BGMK(((i % 15) + 1));
+				p->ola = ola[i];
+				p->cnt = 1;
 			}
 		}
-??!219reg vi.c:1780:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.c:1779:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -238,7 +239,7 @@ index a51117ca..48011543 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index b2e59855..8703b816 100644
+index 9aba9baa..f12e7026 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -249,15 +250,15 @@ index b2e59855..8703b816 100644
  int xled = 1;			/* use the line editor */
  int xtd = +1;			/* current text direction */
  int xshape = 1;			/* perform letter shaping */
-@@ -1685,6 +1686,7 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
+@@ -1682,6 +1683,7 @@ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
- EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
+ EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
  
 +EO(hlm)
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
  _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
-@@ -1788,6 +1790,7 @@ static struct excmd {
+@@ -1795,6 +1797,7 @@ static struct excmd {
  	EO(ts),
  	EO(td),
  	EO(order),
@@ -266,28 +267,29 @@ index b2e59855..8703b816 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index b5e0f21b..6ea99754 100644
+index 5fb56ceb..e2887a7d 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1778,6 +1778,21 @@ void vi(int init)
+@@ -1777,6 +1777,22 @@ void vi(int init)
  				word = cs;
  			}
  		}
 +		if (xhlm) {
 +			int mrow, moff;
 +			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`*";
-+			led_att la;
-+			if (!led_attsb)
-+				sbuf_make(led_attsb, sizeof(la))
++			static int ola[LEN(marks)-1][3];
 +			for (int i = 0; i < LEN(marks) - 1; i++) {
 +				if (lbuf_jump(xb, marks[i], &mrow, &moff))
 +					continue;
-+				la.s = lbuf_get(xb, mrow);
-+				la.off = moff;
-+				la.att = SYN_BGMK(((i % 15) + 1));
-+				sbuf_mem(led_attsb, &la, (int)sizeof(la))
++				led_ext *p = led_extnew();
++				p->ln = lbuf_get(xb, mrow);
++				ola[i][0] = moff;
++				ola[i][1] = 1;
++				ola[i][2] = SYN_BGMK(((i % 15) + 1));
++				p->ola = ola[i];
++				p->cnt = 1;
 +			}
 +		}
  		if (xhlp && (k = syn_findhl(3)) >= 0) {
  			int row = xrow, off = xoff, row1, off1;
- 			led_att la;
+ 			static int ola[2][3];
