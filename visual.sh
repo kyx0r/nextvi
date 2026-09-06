@@ -1311,29 +1311,67 @@ static int vc_visual_op(int cmd)
 ??!219reg vi.c:1804:m252sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=lsp.sh
 printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
-%f> 					ex_command\(cmd\)
+%f> 			vi_drawdiag\(diag, dsev, row - xtop, dcol\);
+		return;
+	}
+	led_crender\(s, row - xtop, 0, xleft, xleft \+ xcols\)
+	int dcol = rstate->cmax - xleft;
+	rstate = rstates;1??0?
+1??+2m 11q0?
+%f> 			vi_drawdiag\(diag, dsev, row - xtop, dcol\);
+		return;
+	}4??0?
+4??+2m 1220reg p OK vi.c:384:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:384:r2312sc %? %@2132sc!0?
+?0?
+%f+ 	led_crender\(s, row - xtop, 0, xleft, xleft \+ xcols\)
+	int dcol = rstate->cmax - xleft;
+	rstate = rstates;
+	vi_visual_attrib\(s, row\);
+	if \(diag\)
+		vi_drawdiag\(diag, dsev, row - xtop, dcol\);
+}1??0?
+1??+3m 21q0?
+%f+ 	vi_visual_attrib\(s, row\);
+	if \(diag\)
+		vi_drawdiag\(diag, dsev, row - xtop, dcol\);
+}2??0?
+2??m 2220reg p OK vi.c:388:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	vi_visual_attrib\(s, row\);$3??0?
+3??m 2220reg p OK vi.c:388:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 	led_crender\(s, row - xtop, 0, xleft, xleft \+ xcols\)
+	int dcol = rstate->cmax - xleft;
+	rstate = rstates;4??0?
+4??+3m 2220reg p OK vi.c:388:a42sc %? %@2152sc!1q0?
+%f+ 	if \(diag\)
+		vi_drawdiag\(diag, dsev, row - xtop, dcol\);
+}5??0?
+5??-1m 2220reg p OK vi.c:388:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:388:r2312sc %? %@2132sc!0?
+?0?
+%f+ 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;
 				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{
 					vc_motion\(k\);
 				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
 					if \(!vi_visual\) \{		/\* fresh selection \*/1??0?
-1??+3m 11q0?
-%f> 				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{
+1??+3m 31q0?
+%f+ 				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{
 					vc_motion\(k\);
 				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
 					if \(!vi_visual\) \{		/\* fresh selection \*/2??0?
-2??m 1220reg p OK vi.c:2053:a22sc %? %@2152sc!1q0?
-;0fr.,$f> ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{$3??0?
-3??m 1220reg p OK vi.c:2053:a32sc %? %@2152sc!fr 981qfr 980?
-%f> 					ex_command\(cmd\)
+2??m 3220reg p OK vi.c:2053:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{$3??0?
+3??m 3220reg p OK vi.c:2053:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;4??0?
-4??+3m 1220reg p OK vi.c:2053:a42sc %? %@2152sc!1q0?
-%f> 					vc_motion\(k\);
+4??+3m 3220reg p OK vi.c:2053:a42sc %? %@2152sc!1q0?
+%f+ 					vc_motion\(k\);
 				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
 					if \(!vi_visual\) \{		/\* fresh selection \*/5??0?
-5??-1m 1220reg p OK vi.c:2053:a52sc %? %@2152sc!0?
+5??-1m 3220reg p OK vi.c:2053:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:2053:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 					}
@@ -1343,25 +1381,28 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 				} else if \(k == '\''K'\''\) \{
 					if \(xb_path && xb_path\[0]\)
 						lsp_hover\(xb_path, xrow, xoff\);1??0?
-1??+3m 21q0?
+1??+3m 41q0?
 %f+ 				}
 				} else if \(k == '\''K'\''\) \{
 					if \(xb_path && xb_path\[0]\)
 						lsp_hover\(xb_path, xrow, xoff\);2??0?
-2??m 2220reg p OK vi.c:2062:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.c:2062:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				}$3??0?
-3??m 2220reg p OK vi.c:2062:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK vi.c:2062:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					}
 					vi_visual = vi_visual == k \? 0 : k;
 					vi_mod \|= 1;4??0?
-4??+3m 2220reg p OK vi.c:2062:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK vi.c:2062:a42sc %? %@2152sc!1q0?
 %f+ 				} else if \(k == '\''K'\''\) \{
 					if \(xb_path && xb_path\[0]\)
 						lsp_hover\(xb_path, xrow, xoff\);5??0?
-5??-1m 2220reg p OK vi.c:2062:a52sc %? %@2152sc!0?
+5??-1m 4220reg p OK vi.c:2062:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.c:2062:r2312sc %? %@2132sc!0?
-'\''1s/\{ \{/{/??!219reg vi.c:2053:r231:m12sc %? %@2142sc!0?
-'\''2d??!219reg vi.c:2062:r231:m22sc %? %@2142sc!p compat 231 applied: src=lsp.sh' > "$P2VIF".231
+'\''1i 	vi_visual_attrib(s, row);
+??!219reg vi.c:384:r231:m12sc %? %@2142sc!0?
+'\''2d??!219reg vi.c:388:r231:m22sc %? %@2142sc!0?
+'\''3s/\{ \{/{/??!219reg vi.c:2053:r231:m32sc %? %@2142sc!0?
+'\''4d??!219reg vi.c:2062:r231:m42sc %? %@2142sc!p compat 231 applied: src=lsp.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -1376,6 +1417,18 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
+@@ -382,10 +382,10 @@
+ 			vi_drawdiag(diag, dsev, row - xtop, dcol);
+ 		return;
+ 	}
++	vi_visual_attrib(s, row);
+ 	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
+ 	int dcol = rstate->cmax - xleft;
+ 	rstate = rstates;
+-	vi_visual_attrib(s, row);
+ 	if (diag)
+ 		vi_drawdiag(diag, dsev, row - xtop, dcol);
+ }
 @@ -2050,7 +2050,7 @@
  					ex_command(cmd)
  					restore(xled)
