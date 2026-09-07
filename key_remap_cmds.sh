@@ -204,7 +204,7 @@ static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 int map_read(int mode, int winch)
 {
 	int c = term_read(winch);
-	if (ibuf_cnt != 1)
+	if (tibuf_cnt != 1)
 		return c;
 	char **map = mode ? imaps[xkmap] : nmaps[xkmap];
 	if (c > 0 && c < 256 && map[c]) {
@@ -898,7 +898,7 @@ index a51117ca..3ec85a31 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..1369072d 100644
+index 0ce81414..5b73c9a9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -941,7 +941,7 @@ index 0ce81414..1369072d 100644
 +int map_read(int mode, int winch)
 +{
 +	int c = term_read(winch);
-+	if (ibuf_cnt != 1)
++	if (tibuf_cnt != 1)
 +		return c;
 +	char **map = mode ? imaps[xkmap] : nmaps[xkmap];
 +	if (c > 0 && c < 256 && map[c]) {
@@ -986,7 +986,7 @@ index 26a5f232..5735f113 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..1791d5d2 100644
+index 03ed7b03..b54227f4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -262,7 +262,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -1085,7 +1085,7 @@ index 9ca49dbb..1791d5d2 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index 0710983a..9cbdc1e9 100644
+index 7c7d9e2c..ab643e19 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -502,6 +502,7 @@ extern struct buf *ex_pbuf;
