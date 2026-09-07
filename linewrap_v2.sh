@@ -2694,7 +2694,7 @@ void vi\(int init\)
 \{
 	char \*ln, \*cs;.*(		int otop = xtop;)
 		int oleft = xleft;
-		icmd_pos = 0;9??0?
+		ticmd_pos = 0;9??0?
 grp 09??-7m 41220reg p OK vi.c:1176:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:11762sc %? %@2132sc!0?
 ?0?
@@ -2702,7 +2702,7 @@ void vi\(int init\)
 		int ooff = noff;
 		int otop = xtop;
 		int oleft = xleft;
-		icmd_pos = 0;
+		ticmd_pos = 0;
 		vi_mod = 0;1??0?
 1??+2m 431q0?
 %f+ 		int orow = nrow;
@@ -7407,7 +7407,7 @@ index 4116d9c1..3ee3a07f 100644
  		for (n = 0; n < max && (l = uc_len(ss)); n++)
  			ss += l;
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..3c4e5ee2 100644
+index 03ed7b03..352497b2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -111,6 +111,195 @@ static int vi_nextcol(char *ln, int dir, int *off)
@@ -8022,7 +8022,7 @@ index 9ca49dbb..3c4e5ee2 100644
  		int otop = xtop;
 +		int otopsub = xtopsub;
  		int oleft = xleft;
- 		icmd_pos = 0;
+ 		ticmd_pos = 0;
  		vi_mod = 0;
 @@ -1196,7 +1547,10 @@ void vi(int init)
  			xmpt = 0;
@@ -8231,7 +8231,7 @@ index 9ca49dbb..3c4e5ee2 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 0710983a..3d52142a 100644
+index 7c7d9e2c..0164ac64 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -223,6 +223,7 @@ int ren_pos(char *s, int off);
