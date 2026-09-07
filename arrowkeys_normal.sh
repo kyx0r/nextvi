@@ -62,7 +62,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		/* Nothing queued behind it: a bare ESC, not a sequence. Give it
 		 * back to the caller instead of blocking for a byte that is not
 		 * coming; term_dec() there hands ESC to the command switch. */
-		if (ibuf_pos >= ibuf_cnt && poll(&term_ufd, 1, 0) <= 0)
+		if (tibuf_pos >= tibuf_cnt && poll(&term_ufd, 1, 0) <= 0)
 			return 0;
 		mv = term_read(0);
 		if (mv == '\''\033'\'') {
@@ -111,7 +111,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..be99424f 100644
+index 03ed7b03..f44c4919 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,6 +525,46 @@ static int vi_region(int cmd, int *row, int *off)
@@ -122,7 +122,7 @@ index 9ca49dbb..be99424f 100644
 +		/* Nothing queued behind it: a bare ESC, not a sequence. Give it
 +		 * back to the caller instead of blocking for a byte that is not
 +		 * coming; term_dec() there hands ESC to the command switch. */
-+		if (ibuf_pos >= ibuf_cnt && poll(&term_ufd, 1, 0) <= 0)
++		if (tibuf_pos >= tibuf_cnt && poll(&term_ufd, 1, 0) <= 0)
 +			return 0;
 +		mv = term_read(0);
 +		if (mv == '\033') {
