@@ -384,31 +384,31 @@ void term_done\(void\)1??0?
 grp 09??-12m 3220reg p OK term.c:40:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg term.c:402sc %? %@2132sc!0?
 ?0?
-%f+ 	ibuf_cnt \+= n;
+%f+ 	tibuf_cnt \+= n;
 }
 
 int term_read\(int winch\)
 \{
 	int cw;1??0?
 1??+2m 41q0?
-%f+ 	ibuf_cnt \+= n;
+%f+ 	tibuf_cnt \+= n;
 }
 
 4??0?
-4??+2m 4220reg p OK term.c:140:a42sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 		tibuf_pos = ibuf_pos;
+4??+2m 4220reg p OK term.c:141:a42sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		tibuf_prev = tibuf_pos;
 	} else
-		memcpy\(ibuf \+ ibuf_cnt, s, n\);.*(	if \(ibuf_pos >= ibuf_cnt\) \{)
+		memcpy\(tibuf \+ tibuf_cnt, s, n\);.*(	if \(tibuf_pos >= tibuf_cnt\) \{)
 		if \(texec\) \{
 			xquit = !xquit \? 1 : xquit;8??0?
-grp 08??-4m 4220reg p OK term.c:140:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 			ibuf \+ ibuf_pos \+ tn, ibuf_cnt - ibuf_pos - tn\);
-		memcpy\(ibuf \+ ibuf_pos \+ tn, s, n\);
-		tn \+= n;.*(			if \(texec == '\''&'\''\))
+grp 08??-4m 4220reg p OK term.c:141:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			tibuf_cnt - tibuf_pos - texec_n\);
+		memcpy\(tibuf \+ tibuf_pos \+ texec_n, s, n\);
+		texec_n \+= n;.*(			if \(texec == '\''&'\''\))
 				goto err;
 		}9??0?
-grp 09??-7m 4220reg p OK term.c:140:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg term.c:1402sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK term.c:141:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg term.c:1412sc %? %@2132sc!0?
 '\''1-1i int xmouse_col, xmouse_row;
 /* mouse tracking is a normal mode feature and its escapes are written
  * straight to stdout, so ex mode, whose stdout is often a pipe, is out */
@@ -429,22 +429,22 @@ void term_mouse_off(void)
 ??!219reg term.c:34:m22sc %? %@2142sc!0?
 '\''3i 	term_mouse_off();
 ??!219reg term.c:40:m32sc %? %@2142sc!0?
-'\''4i /* Fill ibuf up to index i, pulling from the terminal without ever blocking.
- * The loop guard is term_pending() for that byte: it is already in ibuf
+'\''4i /* Fill tibuf up to index i, pulling from the terminal without ever blocking.
+ * The loop guard is term_pending() for that byte: it is already in tibuf
  * (pushback included) or the fd has one ready now. Returns 0 otherwise. */
 static int mouse_pull(unsigned int i)
 {
 	unsigned char c;
-	while (i >= ibuf_cnt) {
+	while (i >= tibuf_cnt) {
 		if (poll(&term_ufd, 1, 0) <= 0)
 			return 0;
 		if (read(term_ufd.fd, &c, 1) <= 0)
 			return 0;
-		if (ibuf_cnt + 1 >= ibuf_sz) {
-			ibuf_sz = ibuf_cnt + 128;
-			ibuf = erealloc(ibuf, ibuf_sz);
+		if (tibuf_cnt + 1 >= tibuf_sz) {
+			tibuf_sz = tibuf_cnt + 128;
+			tibuf = erealloc(tibuf, tibuf_sz);
 		}
-		ibuf[ibuf_cnt++] = c;
+		tibuf[tibuf_cnt++] = c;
 		if (xrr > 0) {
 			static char buf[2];
 			buf[0] = c;
@@ -454,54 +454,54 @@ static int mouse_pull(unsigned int i)
 	return 1;
 }
 
-/* Parse a mouse event from ibuf at ibuf_pos, pulling the bytes the caller
+/* Parse a mouse event from tibuf at tibuf_pos, pulling the bytes the caller
  * has not queued as pushback from the terminal, none of them blocking.
- * A complete event advances ibuf_pos past the sequence; anything else,
- * a bare ESC included, leaves ibuf for term_read() to consume.
+ * A complete event advances tibuf_pos past the sequence; anything else,
+ * a bare ESC included, leaves tibuf for term_read() to consume.
  * Returns: 1 = press, 2 = release, 3 = scroll up, 4 = scroll down, 0 = no match. */
 int term_try_mouse(void)
 {
 	unsigned int i, j;
 	int btn = 0, x = 0, y = 0, release;
-	if (!mouse_pull(ibuf_pos) || ibuf[ibuf_pos] != '\''['\'')
+	if (!mouse_pull(tibuf_pos) || tibuf[tibuf_pos] != '\''['\'')
 		return 0;
-	if (!mouse_pull(ibuf_pos + 1))
+	if (!mouse_pull(tibuf_pos + 1))
 		return 0;
 	/* X10 basic: ESC [ M b x y */
-	if (ibuf[ibuf_pos + 1] == '\''M'\'') {
-		if (!mouse_pull(ibuf_pos + 4))
+	if (tibuf[tibuf_pos + 1] == '\''M'\'') {
+		if (!mouse_pull(tibuf_pos + 4))
 			return 0;
-		btn = ibuf[ibuf_pos + 2] - 32;
-		xmouse_col = ibuf[ibuf_pos + 3] - 32 - 1;
-		xmouse_row = ibuf[ibuf_pos + 4] - 32 - 1;
-		ibuf_pos += 5;
+		btn = tibuf[tibuf_pos + 2] - 32;
+		xmouse_col = tibuf[tibuf_pos + 3] - 32 - 1;
+		xmouse_row = tibuf[tibuf_pos + 4] - 32 - 1;
+		tibuf_pos += 5;
 		return (btn & 3) == 3 ? 2 : 1;	/* 3 = button release */
 	}
 	/* SGR 1006: ESC [ < btn ; col ; row M/m */
-	if (ibuf[ibuf_pos + 1] == '\''<'\'') {
-		for (i = ibuf_pos + 2; ; i++) {
+	if (tibuf[tibuf_pos + 1] == '\''<'\'') {
+		for (i = tibuf_pos + 2; ; i++) {
 			if (!mouse_pull(i))
 				return 0;
-			if (ibuf[i] == '\''M'\'' || ibuf[i] == '\''m'\'')
+			if (tibuf[i] == '\''M'\'' || tibuf[i] == '\''m'\'')
 				break;
-			if (!((ibuf[i] >= '\''0'\'' && ibuf[i] <= '\''9'\'') || ibuf[i] == '\'';'\''))
+			if (!((tibuf[i] >= '\''0'\'' && tibuf[i] <= '\''9'\'') || tibuf[i] == '\'';'\''))
 				return 0;	/* bad byte, term_read takes it */
 		}
-		j = ibuf_pos + 2;
-		while (j < i && ibuf[j] >= '\''0'\'' && ibuf[j] <= '\''9'\'')
-			btn = btn * 10 + (ibuf[j++] - '\''0'\'');
-		if (j < i && ibuf[j] == '\'';'\'') {
+		j = tibuf_pos + 2;
+		while (j < i && tibuf[j] >= '\''0'\'' && tibuf[j] <= '\''9'\'')
+			btn = btn * 10 + (tibuf[j++] - '\''0'\'');
+		if (j < i && tibuf[j] == '\'';'\'') {
 			j++;
-			while (j < i && ibuf[j] >= '\''0'\'' && ibuf[j] <= '\''9'\'')
-				x = x * 10 + (ibuf[j++] - '\''0'\'');
+			while (j < i && tibuf[j] >= '\''0'\'' && tibuf[j] <= '\''9'\'')
+				x = x * 10 + (tibuf[j++] - '\''0'\'');
 		}
-		if (j < i && ibuf[j] == '\'';'\'') {
+		if (j < i && tibuf[j] == '\'';'\'') {
 			j++;
-			while (j < i && ibuf[j] >= '\''0'\'' && ibuf[j] <= '\''9'\'')
-				y = y * 10 + (ibuf[j++] - '\''0'\'');
+			while (j < i && tibuf[j] >= '\''0'\'' && tibuf[j] <= '\''9'\'')
+				y = y * 10 + (tibuf[j++] - '\''0'\'');
 		}
-		release = ibuf[i] == '\''m'\'';
-		ibuf_pos = i + 1;
+		release = tibuf[i] == '\''m'\'';
+		tibuf_pos = i + 1;
 		if (btn == 64 || btn == 65)
 			return btn == 64 ? 3 : 4;	/* scroll up / down */
 		xmouse_col = x - 1;
@@ -511,7 +511,7 @@ int term_try_mouse(void)
 	return 0;
 }
 
-??!219reg term.c:140:m42sc %? %@2142sc!b4m!%ya 98?0?
+??!219reg term.c:141:m42sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	vi_drawmsg_mpt\(vi_msg\)
 }
 
@@ -613,15 +613,15 @@ void term_room\(int n\);.*?
 grp 07??m 1220reg p OK vi.h:336:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> #define term_scrh\(\)	term_write\("\\033\[\?1049h", 8\)
 void term_chr\(int ch\);
-void term_pos\(int r, int c\);.*(#define term_dec\(\) ibuf_pos--; icmd_pos--;)
+void term_pos\(int r, int c\);.*(#define term_dec\(\) tibuf_pos--; ticmd_pos--;)
 #define term_exec\(s, n, type\) \\
 \{ \\8??0?
 grp 08??-4m 1220reg p OK vi.h:336:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void term_clean\(void\);
 void term_suspend\(void\);
-#define term_scrl\(\)	term_write\("\\033\[\?1049l", 8\).*(	preserve\(int, tn, tn = 0;\) \\)
-	preserve\(int, ibuf_cnt,\) \\
-	preserve\(int, ibuf_pos, ibuf_pos = ibuf_cnt;\) \\9??0?
+#define term_scrl\(\)	term_write\("\\033\[\?1049l", 8\).*(	preserve\(int, texec_n, texec_n = 0;\) \\)
+	preserve\(int, tibuf_cnt,\) \\
+	preserve\(int, tibuf_pos, tibuf_pos = tibuf_cnt;\) \\9??0?
 grp 09??-7m 1220reg p OK vi.h:336:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:3362sc %? %@2132sc!0?
 ?0?
@@ -927,7 +927,7 @@ index 26a5f232..fe0ffbbe 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 351202b0..9108ddb2 100644
+index 03aa736f..f1a967dc 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,18 @@
@@ -964,26 +964,26 @@ index 351202b0..9108ddb2 100644
  	term_commit();
  	sbuf_free(term_sbuf)
  	tcsetattr(term_ufd.fd, 0, &termios);
-@@ -138,6 +155,88 @@ void term_push(char *s, unsigned int n)
- 	ibuf_cnt += n;
+@@ -139,6 +156,88 @@ void term_push(char *s, unsigned int n)
+ 	tibuf_cnt += n;
  }
  
-+/* Fill ibuf up to index i, pulling from the terminal without ever blocking.
-+ * The loop guard is term_pending() for that byte: it is already in ibuf
++/* Fill tibuf up to index i, pulling from the terminal without ever blocking.
++ * The loop guard is term_pending() for that byte: it is already in tibuf
 + * (pushback included) or the fd has one ready now. Returns 0 otherwise. */
 +static int mouse_pull(unsigned int i)
 +{
 +	unsigned char c;
-+	while (i >= ibuf_cnt) {
++	while (i >= tibuf_cnt) {
 +		if (poll(&term_ufd, 1, 0) <= 0)
 +			return 0;
 +		if (read(term_ufd.fd, &c, 1) <= 0)
 +			return 0;
-+		if (ibuf_cnt + 1 >= ibuf_sz) {
-+			ibuf_sz = ibuf_cnt + 128;
-+			ibuf = erealloc(ibuf, ibuf_sz);
++		if (tibuf_cnt + 1 >= tibuf_sz) {
++			tibuf_sz = tibuf_cnt + 128;
++			tibuf = erealloc(tibuf, tibuf_sz);
 +		}
-+		ibuf[ibuf_cnt++] = c;
++		tibuf[tibuf_cnt++] = c;
 +		if (xrr > 0) {
 +			static char buf[2];
 +			buf[0] = c;
@@ -993,54 +993,54 @@ index 351202b0..9108ddb2 100644
 +	return 1;
 +}
 +
-+/* Parse a mouse event from ibuf at ibuf_pos, pulling the bytes the caller
++/* Parse a mouse event from tibuf at tibuf_pos, pulling the bytes the caller
 + * has not queued as pushback from the terminal, none of them blocking.
-+ * A complete event advances ibuf_pos past the sequence; anything else,
-+ * a bare ESC included, leaves ibuf for term_read() to consume.
++ * A complete event advances tibuf_pos past the sequence; anything else,
++ * a bare ESC included, leaves tibuf for term_read() to consume.
 + * Returns: 1 = press, 2 = release, 3 = scroll up, 4 = scroll down, 0 = no match. */
 +int term_try_mouse(void)
 +{
 +	unsigned int i, j;
 +	int btn = 0, x = 0, y = 0, release;
-+	if (!mouse_pull(ibuf_pos) || ibuf[ibuf_pos] != '[')
++	if (!mouse_pull(tibuf_pos) || tibuf[tibuf_pos] != '[')
 +		return 0;
-+	if (!mouse_pull(ibuf_pos + 1))
++	if (!mouse_pull(tibuf_pos + 1))
 +		return 0;
 +	/* X10 basic: ESC [ M b x y */
-+	if (ibuf[ibuf_pos + 1] == 'M') {
-+		if (!mouse_pull(ibuf_pos + 4))
++	if (tibuf[tibuf_pos + 1] == 'M') {
++		if (!mouse_pull(tibuf_pos + 4))
 +			return 0;
-+		btn = ibuf[ibuf_pos + 2] - 32;
-+		xmouse_col = ibuf[ibuf_pos + 3] - 32 - 1;
-+		xmouse_row = ibuf[ibuf_pos + 4] - 32 - 1;
-+		ibuf_pos += 5;
++		btn = tibuf[tibuf_pos + 2] - 32;
++		xmouse_col = tibuf[tibuf_pos + 3] - 32 - 1;
++		xmouse_row = tibuf[tibuf_pos + 4] - 32 - 1;
++		tibuf_pos += 5;
 +		return (btn & 3) == 3 ? 2 : 1;	/* 3 = button release */
 +	}
 +	/* SGR 1006: ESC [ < btn ; col ; row M/m */
-+	if (ibuf[ibuf_pos + 1] == '<') {
-+		for (i = ibuf_pos + 2; ; i++) {
++	if (tibuf[tibuf_pos + 1] == '<') {
++		for (i = tibuf_pos + 2; ; i++) {
 +			if (!mouse_pull(i))
 +				return 0;
-+			if (ibuf[i] == 'M' || ibuf[i] == 'm')
++			if (tibuf[i] == 'M' || tibuf[i] == 'm')
 +				break;
-+			if (!((ibuf[i] >= '0' && ibuf[i] <= '9') || ibuf[i] == ';'))
++			if (!((tibuf[i] >= '0' && tibuf[i] <= '9') || tibuf[i] == ';'))
 +				return 0;	/* bad byte, term_read takes it */
 +		}
-+		j = ibuf_pos + 2;
-+		while (j < i && ibuf[j] >= '0' && ibuf[j] <= '9')
-+			btn = btn * 10 + (ibuf[j++] - '0');
-+		if (j < i && ibuf[j] == ';') {
++		j = tibuf_pos + 2;
++		while (j < i && tibuf[j] >= '0' && tibuf[j] <= '9')
++			btn = btn * 10 + (tibuf[j++] - '0');
++		if (j < i && tibuf[j] == ';') {
 +			j++;
-+			while (j < i && ibuf[j] >= '0' && ibuf[j] <= '9')
-+				x = x * 10 + (ibuf[j++] - '0');
++			while (j < i && tibuf[j] >= '0' && tibuf[j] <= '9')
++				x = x * 10 + (tibuf[j++] - '0');
 +		}
-+		if (j < i && ibuf[j] == ';') {
++		if (j < i && tibuf[j] == ';') {
 +			j++;
-+			while (j < i && ibuf[j] >= '0' && ibuf[j] <= '9')
-+				y = y * 10 + (ibuf[j++] - '0');
++			while (j < i && tibuf[j] >= '0' && tibuf[j] <= '9')
++				y = y * 10 + (tibuf[j++] - '0');
 +		}
-+		release = ibuf[i] == 'm';
-+		ibuf_pos = i + 1;
++		release = tibuf[i] == 'm';
++		tibuf_pos = i + 1;
 +		if (btn == 64 || btn == 65)
 +			return btn == 64 ? 3 : 4;	/* scroll up / down */
 +		xmouse_col = x - 1;
@@ -1054,7 +1054,7 @@ index 351202b0..9108ddb2 100644
  {
  	int cw;
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..0b4c94a0 100644
+index 03ed7b03..2cb34f86 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -513,6 +513,9 @@ static void vc_status(int type)
@@ -1100,7 +1100,7 @@ index 9ca49dbb..0b4c94a0 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index 0710983a..c131d228 100644
+index 7c7d9e2c..5dd92965 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -334,6 +334,9 @@ void term_pos(int r, int c);
