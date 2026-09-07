@@ -180,7 +180,7 @@ int main\(int argc, char \*argv\[]\).*?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''m'\''\)
 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\).*(	})
-	ibuf = emalloc\(ibuf_sz\);
+	tibuf = emalloc\(tibuf_sz\);
 	if \(!\(xvis & 1\)\)8??0?
 grp 08??-6m 2220reg p OK vi.c:1886:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				xvis \|= 1\|2;
@@ -222,7 +222,7 @@ int main\(int argc, char \*argv\[]\).*?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''m'\''\)
 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\).*(	})
-	ibuf = emalloc\(ibuf_sz\);
+	tibuf = emalloc\(tibuf_sz\);
 	if \(!\(xvis & 1\)\)8??0?
 grp 08??-4m 3220reg p OK vi.c:1888:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				xvis \|= 1\|2;
@@ -270,7 +270,7 @@ int main\(int argc, char \*argv\[]\).*?
 (	ex_init\(argv \+ i, argc - i\);)7??0?
 grp 07??m 4220reg p OK vi.c:1898:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
-	ibuf = emalloc\(ibuf_sz\);
+	tibuf = emalloc\(tibuf_sz\);
 	if \(!\(xvis & 1\)\).*(		vi\(1\);)
 	term_done\(\);
 	if \(xvis & 8\)8??0?
@@ -382,7 +382,7 @@ index 0ce81414..0317b9f2 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..3504a0ae 100644
+index 03ed7b03..cea779bf 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1860,7 +1860,8 @@ static void setup_signals(void)
@@ -428,7 +428,7 @@ index 9ca49dbb..3504a0ae 100644
  		ex();
  	else
 diff --git a/vi.h b/vi.h
-index 0710983a..cd7b1c4e 100644
+index 7c7d9e2c..5775a655 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -513,7 +513,7 @@ void *ex_exec(const char *ln);
