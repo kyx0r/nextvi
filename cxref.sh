@@ -90,9 +90,9 @@ static char xuerr\[] = "unreported error";9??0?
 %f> 	return 0;
 }
 
-static char rep_cmd\[sizeof\(icmd\)];	/\* the last command \*/
+static char rep_cmd\[sizeof\(ticmd\)];	/\* the last command \*/
 static int rep_len;
-#define rep_record\(\) memcpy\(rep_cmd, icmd, icmd_pos\); rep_len = icmd_pos;1??0?
+#define rep_record\(\) memcpy\(rep_cmd, ticmd, ticmd_pos\); rep_len = ticmd_pos;1??0?
 1??+2m 11q0?
 %f> 	return 0;
 }
@@ -1167,7 +1167,7 @@ index 0ce81414..adda6e60 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..133196ca 100644
+index 03ed7b03..fcd68211 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -484,6 +484,465 @@ static int fs_searchback(int cnt, int *row, int *off)
@@ -1633,9 +1633,9 @@ index 9ca49dbb..133196ca 100644
 +	return s;
 +}
 +
- static char rep_cmd[sizeof(icmd)];	/* the last command */
+ static char rep_cmd[sizeof(ticmd)];	/* the last command */
  static int rep_len;
- #define rep_record() memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos;
+ #define rep_record() memcpy(rep_cmd, ticmd, ticmd_pos); rep_len = ticmd_pos;
 @@ -1271,8 +1730,18 @@ void vi(int init)
  				n = strlen(ln);
  				char buf[n + 4];
@@ -1701,7 +1701,7 @@ index 9ca49dbb..133196ca 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 0710983a..53a2fe93 100644
+index 7c7d9e2c..2585fb2e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -436,6 +436,9 @@ struct buf {
