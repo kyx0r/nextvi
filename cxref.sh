@@ -983,9 +983,9 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 %f> 	return s;
 }
 
-static char rep_cmd\[sizeof\(icmd\)];	/\* the last command \*/
+static char rep_cmd\[sizeof\(ticmd\)];	/\* the last command \*/
 static int rep_len;
-#define rep_record\(\) memcpy\(rep_cmd, icmd, icmd_pos\); rep_len = icmd_pos;1??0?
+#define rep_record\(\) memcpy\(rep_cmd, ticmd, ticmd_pos\); rep_len = ticmd_pos;1??0?
 1??+2m 11q0?
 %f> 	return s;
 }
@@ -1137,9 +1137,9 @@ exit 0
 +	return 0;
 +}
 +
- static char rep_cmd[sizeof(icmd)];	/* the last command */
+ static char rep_cmd[sizeof(ticmd)];	/* the last command */
  static int rep_len;
- #define rep_record() memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos;
+ #define rep_record() memcpy(rep_cmd, ticmd, ticmd_pos); rep_len = ticmd_pos;
 @@ -2235,7 +2253,8 @@
  						vi_drawmsg_mpt(ln)
  						break;
