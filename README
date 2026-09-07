@@ -14,7 +14,6 @@ Every line below is one full chain, in an order that applies.
 Patches not listed are unconstrained. Combinations are generated
 by compat_order in patch2vi.sh.
 
-./lsp.sh visual.sh arrowkeys_normal.sh
 ./grep.sh lsp.sh visual.sh splits.sh cxref.sh
 ./lsp.sh rstr.sh visual.sh splits.sh incsearch.sh detect_indent.sh
 ./lsp.sh rstr.sh visual.sh splits.sh incsearch.sh
