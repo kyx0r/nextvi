@@ -60,36 +60,36 @@ esac9??0?
 1;4;7;8;9??!219reg cbuild.sh:452sc %? %@2132sc!0?
 '\''1i -pthread \
 ??!219reg cbuild.sh:45:m12sc %? %@2142sc!b1m!%ya 98?0?
-%f> 		ibuf_cnt = 1;
-		ibuf_pos = 0;
+%f> 		tibuf_cnt = 1;
+		tibuf_pos = 0;
 	}
-	if \(icmd_pos < sizeof\(icmd\)\)
-		icmd\[icmd_pos\+\+] = ibuf\[ibuf_pos];
-	return ibuf\[ibuf_pos\+\+];1??0?
+	if \(ticmd_pos < sizeof\(ticmd\)\)
+		ticmd\[ticmd_pos\+\+] = tibuf\[tibuf_pos];
+	return tibuf\[tibuf_pos\+\+];1??0?
 1??+2m 11q0?
-%f> 		ibuf_cnt = 1;
-		ibuf_pos = 0;
+%f> 		tibuf_cnt = 1;
+		tibuf_pos = 0;
 	}4??0?
-4??+2m 1220reg p OK term.c:177:a42sc %? %@2152sc!1q0?
-grp 1%f> 		ibuf_cnt = 1;.*?
-		ibuf_pos = 0;.*?
+4??+2m 1220reg p OK term.c:178:a42sc %? %@2152sc!1q0?
+grp 1%f> 		tibuf_cnt = 1;.*?
+		tibuf_pos = 0;.*?
 (	})7??0?
-grp 07??m 1220reg p OK term.c:177:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK term.c:178:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			ex_regput\(xrr, buf, 1\);
 		}
 		ret:.*(/\* return a static string that changes text attributes to att \*/)
 char \*term_att\(int att\)
 \{8??0?
-grp 08??-6m 1220reg p OK term.c:177:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 1220reg p OK term.c:178:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else if \(xrr > 0\) \{
 			static char buf\[2];
-			buf\[0] = \*ibuf;.*(	if \(att & SYN_MK\))
+			buf\[0] = \*tibuf;.*(	if \(att & SYN_MK\))
 		return "\\x1b\[m";
 	static char buf\[128] = "\\x1b\[";9??0?
-grp 09??-9m 1220reg p OK term.c:177:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg term.c:1772sc %? %@2132sc!0?
+grp 09??-9m 1220reg p OK term.c:178:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg term.c:1782sc %? %@2132sc!0?
 '\''1i 	vi_rendwait();		/* the queued frame overlaps the read above */
-??!219reg term.c:177:m12sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg term.c:178:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> #include <sys/stat\.h>
 #include <sys/ioctl\.h>
 #include <sys/wait\.h>
@@ -390,7 +390,7 @@ void vi_rendwait(void)
 /* whether input is waiting; a frame drawn now is stale before it lands */
 static int vi_rendpend(void)
 {
-	return ibuf_pos < ibuf_cnt || poll(&term_ufd, 1, 0) > 0;
+	return tibuf_pos < tibuf_cnt || poll(&term_ufd, 1, 0) > 0;
 }
 
 /* queue a frame and hand the input loop its thread back */
@@ -470,19 +470,19 @@ index 62d18e99..73510208 100755
  -Wno-unused-parameter \
  -Wno-unused-result \
 diff --git a/term.c b/term.c
-index 351202b0..5f74185e 100644
+index 03aa736f..4402a63b 100644
 --- a/term.c
 +++ b/term.c
-@@ -175,6 +175,7 @@ int term_read(int winch)
- 		ibuf_cnt = 1;
- 		ibuf_pos = 0;
+@@ -176,6 +176,7 @@ int term_read(int winch)
+ 		tibuf_cnt = 1;
+ 		tibuf_pos = 0;
  	}
 +	vi_rendwait();		/* the queued frame overlaps the read above */
- 	if (icmd_pos < sizeof(icmd))
- 		icmd[icmd_pos++] = ibuf[ibuf_pos];
- 	return ibuf[ibuf_pos++];
+ 	if (ticmd_pos < sizeof(ticmd))
+ 		ticmd[ticmd_pos++] = tibuf[tibuf_pos];
+ 	return tibuf[tibuf_pos++];
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..c07a86cd 100644
+index 03ed7b03..34e4761f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@
@@ -590,7 +590,7 @@ index 9ca49dbb..c07a86cd 100644
 +/* whether input is waiting; a frame drawn now is stale before it lands */
 +static int vi_rendpend(void)
 +{
-+	return ibuf_pos < ibuf_cnt || poll(&term_ufd, 1, 0) > 0;
++	return tibuf_pos < tibuf_cnt || poll(&term_ufd, 1, 0) > 0;
 +}
 +
 +/* queue a frame and hand the input loop its thread back */
@@ -637,7 +637,7 @@ index 9ca49dbb..c07a86cd 100644
  
  static void sighandler(int signo)
 diff --git a/vi.h b/vi.h
-index 0710983a..669f7e07 100644
+index 7c7d9e2c..55e68dee 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -575,6 +575,7 @@ char *conf_digraph(int c1, int c2);
