@@ -1173,7 +1173,8 @@ void vi(int init)
 		topfix()
 		vi_col = vi_off2col(xb, xrow, xoff);
 		vi_drawagain(xtop);
-		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), vi_col));
+		term_pos(xrow - xtop,
+			led_pos(lbuf_get(xb, xrow), vi_col) + vi_lncol);
 	}
 	while (!xquit) {
 		int nrow = xrow;
