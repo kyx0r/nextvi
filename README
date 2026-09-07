@@ -1385,7 +1385,7 @@ CODE MAP
      | 537 kmap.h   |  keymap translation  |
      | 582 vi.h     |  definitions/aux     |
      +--------------+----------------------+
-     | 351 term.c   |  low level IO        |
+     | 352 term.c   |  low level IO        |
      | 379 conf.c   |  hl/ft/td config     |
      | 462 ren.c    |  positioning/syntax  |
      | 615 uc.c     |  UTF-8 support       |
@@ -1394,7 +1394,7 @@ CODE MAP
      | 811 led.c    |  insert mode/output  |
      | 1907 vi.c    |  normal mode/general |
      | 1998 ex.c    |  ex options/commands |
-     | 7963 total   |  wc -l *.c|sort      |
+     | 7964 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
