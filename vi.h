@@ -319,9 +319,9 @@ extern int term_record;
 extern int term_winch;
 extern int term_resized;
 extern int xrows, xcols;
-extern unsigned int ibuf_pos, ibuf_cnt, ibuf_sz, icmd_pos;
-extern unsigned char *ibuf, icmd[4096];
-extern unsigned int texec, tn;
+extern unsigned int tibuf_pos, tibuf_cnt, tibuf_sz, ticmd_pos;
+extern unsigned char *tibuf, ticmd[4096];
+extern unsigned int texec, texec_n;
 #define term_write(s, n) if (xled) write(1, s, n);
 void term_init(void);
 void term_done(void);
@@ -337,21 +337,21 @@ int term_read(int winch);
 void term_commit(void);
 char *term_att(int att);
 void term_push(char *s, unsigned int n);
-#define term_dec() ibuf_pos--; icmd_pos--;
+#define term_dec() tibuf_pos--; ticmd_pos--;
 #define term_exec(s, n, type) \
 { \
-	preserve(int, tn, tn = 0;) \
-	preserve(int, ibuf_cnt,) \
-	preserve(int, ibuf_pos, ibuf_pos = ibuf_cnt;) \
+	preserve(int, texec_n, texec_n = 0;) \
+	preserve(int, tibuf_cnt,) \
+	preserve(int, tibuf_pos, tibuf_pos = tibuf_cnt;) \
 	term_push(s, n); \
 	preserve(int, texec, texec = type;) \
 	vi(0); \
 	restore(texec) \
 	if (xquit > 0) \
 		xquit = 0; \
-	restore(ibuf_pos) \
-	restore(ibuf_cnt) \
-	restore(tn) \
+	restore(tibuf_pos) \
+	restore(tibuf_cnt) \
+	restore(texec_n) \
 } \
 
 /* process management */
