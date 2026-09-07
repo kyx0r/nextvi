@@ -736,7 +736,7 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
 	int n, key, off;
 	char *post = "", *postref = post;
 	ins_state _is;
-	vi_lncol = 0;
+	preserve(int, vi_lncol, vi_lncol = 0;)
 	if (flg & 2) {
 		n = ps;
 		ps = 0;
@@ -754,6 +754,7 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
 			&off, kmap, is, 0, xrow, xtop, flg);
 	restore(xtd)
 	restore(xleft)
+	restore(vi_lncol)
 	if (key == '\n' && flg & 1) {
 		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
 		temp_pos(0, -1, 0, 0);
