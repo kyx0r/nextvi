@@ -2035,61 +2035,61 @@ const char *lsp_diag_for_line(const char *path, int line, int *sev)
 int term_read\(int winch\)
 \{
 	int cw;
-	if \(ibuf_pos >= ibuf_cnt\) \{
+	if \(tibuf_pos >= tibuf_cnt\) \{
 		if \(texec\) \{
 			xquit = !xquit \? 1 : xquit;1??0?
 1??+3m 11q0?
 %f> 	int cw;
-	if \(ibuf_pos >= ibuf_cnt\) \{
+	if \(tibuf_pos >= tibuf_cnt\) \{
 		if \(texec\) \{
 			xquit = !xquit \? 1 : xquit;2??0?
-2??m 1220reg p OK term.c:143:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK term.c:144:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^	int cw;$3??0?
-3??m 1220reg p OK term.c:143:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK term.c:144:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 
 int term_read\(int winch\)
 \{4??0?
-4??+3m 1220reg p OK term.c:143:a42sc %? %@2152sc!1q0?
-%f> 	if \(ibuf_pos >= ibuf_cnt\) \{
+4??+3m 1220reg p OK term.c:144:a42sc %? %@2152sc!1q0?
+%f> 	if \(tibuf_pos >= tibuf_cnt\) \{
 		if \(texec\) \{
 			xquit = !xquit \? 1 : xquit;5??0?
-5??-1m 1220reg p OK term.c:143:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK term.c:144:a52sc %? %@2152sc!1q0?
 %f> 
-.........re..\(..........
+i.. ter..r..........n...
 \{
-......w.
-......bu...o.....i..........
-	........... .
-.	.xqui. =.!..u........ ...i..6??0?
-6??+3m 1220reg p OK term.c:143:a62sc %? %@2152sc!1q0?
+.... ..;
+..f.\(...uf.....>= ti..._......
+..i.......c. .
+	......t.. ..q..... . ..x..i..6??0?
+6??+3m 1220reg p OK term.c:144:a62sc %? %@2152sc!1q0?
 grp 1%f> .*?
 int term_read\(int winch\).*?
 \{.*?
 (	int cw;)7??0?
-grp 07??m 1220reg p OK term.c:143:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 		memcpy\(ibuf \+ ibuf_cnt, s, n\);
-	ibuf_cnt \+= n;
+grp 07??m 1220reg p OK term.c:144:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		memcpy\(tibuf \+ tibuf_cnt, s, n\);
+	tibuf_cnt \+= n;
 }.*(			if \(texec == '\''&'\''\))
 				goto err;
 		}8??0?
-grp 08??-4m 1220reg p OK term.c:143:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		tn \+= n;
-		tibuf_pos = ibuf_pos;
+grp 08??-4m 1220reg p OK term.c:144:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		texec_n \+= n;
+		tibuf_prev = tibuf_pos;
 	} else.*(		if \(term_winch && winch\) \{)
-			\*ibuf = winch;	/\* yield until term_winch is cleared \*/
+			\*tibuf = winch;	/\* yield until term_winch is cleared \*/
 			goto ret;9??0?
-grp 09??-7m 1220reg p OK term.c:143:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:1432sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK term.c:144:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:1442sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		cw = 0;
 		re:
 		/\* read a single input character \*/
 		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|
-				read\(term_ufd\.fd, ibuf, 1\) <= 0\) \{
+				read\(term_ufd\.fd, tibuf, 1\) <= 0\) \{
 			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;
 			if \(term_winch && winch && xquit >= 0\) \{
-				\*ibuf = winch;
+				\*tibuf = winch;
 				goto ret;
 			} else if \(term_winch != cw && !winch && xquit >= 0\) \{
 				cw = term_winch;
@@ -2098,148 +2098,148 @@ int term_read\(int winch\).*?
 1??+3m 21q0?
 %f+ 		/\* read a single input character \*/
 		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|
-				read\(term_ufd\.fd, ibuf, 1\) <= 0\) \{
+				read\(term_ufd\.fd, tibuf, 1\) <= 0\) \{
 			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;
 			if \(term_winch && winch && xquit >= 0\) \{
-				\*ibuf = winch;
+				\*tibuf = winch;
 				goto ret;
 			} else if \(term_winch != cw && !winch && xquit >= 0\) \{
 				cw = term_winch;
 				goto re;
 			}2??0?
-2??m 2220reg p OK term.c:156:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK term.c:157:a22sc %? %@2152sc!1q0?
 %f+ 		/\* read a single input character \*/
 		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|
-				read\(term_ufd\.fd, ibuf, 1\) <= 0\) \{
+				read\(term_ufd\.fd, tibuf, 1\) <= 0\) \{
 			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;
 			if \(term_winch && winch && xquit >= 0\) \{
-				\*ibuf = winch;
+				\*tibuf = winch;
 				goto ret;
 			} else if \(term_winch != cw && !winch && xquit >= 0\) \{
 				cw = term_winch;3??0?
-3??m 2220reg p OK term.c:156:a32sc %? %@2152sc!1q0?
+3??m 2220reg p OK term.c:157:a32sc %? %@2152sc!1q0?
 %f+ 		}
 		cw = 0;
 		re:4??0?
-4??+3m 2220reg p OK term.c:156:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK term.c:157:a42sc %? %@2152sc!1q0?
 %f+ 				goto re;
 			}5??0?
-5??-9m 2220reg p OK term.c:156:a52sc %? %@2152sc!1q0?
-%f+ 	..
-...w.=.0.
-.	...
-.... .....a.....le........h.....e....
-.... \(...i... ......o...&.e......................
-......a.......u.d...,..bu......<=.....
-.		x.u.....!...t..\(...._......... ...:..q....
-.	..f...e.......h.&....n.. ......i..>=..\)..
-..	....u..= win...
-..	...to....;
-.....e.s............in....=...... .................= ....
-.	..cw.= ...._.i....
-.	..g.....e.
+5??-9m 2220reg p OK term.c:157:a52sc %? %@2152sc!1q0?
+%f+ .	}
+		.....0.
+.	.e:
+	..\*....... .i.g.e....u..........r...
+	........it...0 \|\|..o...............,......=.....
+..	............................... .\) \{
+.......t ..!.....y\(...........\) .......x.....
+	...f...e.._........ ............i...=.0. \{
+..	............n..;
+.		..o...re..
+.... e.......\(.......n...!...w..&.....ch.....q..t........
+.		.......e.m....c.;
+....go......
 	...6??0?
-6??+3m 2220reg p OK term.c:156:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK term.c:157:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		}.*?
 		cw = 0;.*?
 		re:.*?
 (		/\* read a single input character \*/)7??0?
-grp 07??m 2220reg p OK term.c:156:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK term.c:157:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		if \(term_winch && winch\) \{
-			\*ibuf = winch;	/\* yield until term_winch is cleared \*/
-			goto ret;.*(	if \(icmd_pos < sizeof\(icmd\)\))
-		icmd\[icmd_pos\+\+] = ibuf\[ibuf_pos];
-	return ibuf\[ibuf_pos\+\+];8??0?
-grp 08??-22m 2220reg p OK term.c:156:a82sc %? %@2152sc!'\''08??1q0?
+			\*tibuf = winch;	/\* yield until term_winch is cleared \*/
+			goto ret;.*(	if \(ticmd_pos < sizeof\(ticmd\)\))
+		ticmd\[ticmd_pos\+\+] = tibuf\[tibuf_pos];
+	return tibuf\[tibuf_pos\+\+];8??0?
+grp 08??-22m 2220reg p OK term.c:157:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(texec == '\''&'\''\)
 				goto err;
 		}.*(/\* return a static string that changes text attributes to att \*/)
 char \*term_att\(int att\)
 \{9??0?
-grp 09??-27m 2220reg p OK term.c:156:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:1562sc %? %@2132sc!0?
+grp 09??-27m 2220reg p OK term.c:157:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:1572sc %? %@2132sc!0?
 ?0?
 %f+ 				goto re;
 			}
 			err:
-			\*ibuf = 0;
+			\*tibuf = 0;
 		} else if \(xrr > 0\) \{
 			static char buf\[2];
-			buf\[0] = \*ibuf;
+			buf\[0] = \*tibuf;
 			ex_regput\(xrr, buf, 1\);
 		}1??0?
 1??+2m 31q0?
 %f+ 			err:
-			\*ibuf = 0;
+			\*tibuf = 0;
 		} else if \(xrr > 0\) \{
 			static char buf\[2];
-			buf\[0] = \*ibuf;
+			buf\[0] = \*tibuf;
 			ex_regput\(xrr, buf, 1\);
 		}2??0?
-2??m 3220reg p OK term.c:167:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK term.c:168:a22sc %? %@2152sc!1q0?
 %f+ 			err:
-			\*ibuf = 0;
+			\*tibuf = 0;
 		} else if \(xrr > 0\) \{
 			static char buf\[2];
-			buf\[0] = \*ibuf;
+			buf\[0] = \*tibuf;
 			ex_regput\(xrr, buf, 1\);3??0?
-3??m 3220reg p OK term.c:167:a32sc %? %@2152sc!1q0?
+3??m 3220reg p OK term.c:168:a32sc %? %@2152sc!1q0?
 %f+ 				goto re;
 			}4??0?
-4??+2m 3220reg p OK term.c:167:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK term.c:168:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		}$5??0?
-5??-6m 3220reg p OK term.c:167:a52sc %? %@2152sc!fr 981qfr 980?
-%f+ .	.....o....
-..	.
-	......
-.....b.....0.
-.	....s.... .... .....\{
-.......i.......b....].
-	..b...0].. ..b...
-....._........r.....f, ...
+5??-6m 3220reg p OK term.c:168:a52sc %? %@2152sc!fr 981qfr 980?
+%f+ ..	.g.t.....
+.		.
+.	.e...
+	.......f ...;
+	....... ...........\)..
+	..s..t.c..... .....].
+	.....\[......t..uf;
+.	....r.......rr........\).
 	..6??0?
-6??+2m 3220reg p OK term.c:167:a62sc %? %@2152sc!1q0?
+6??+2m 3220reg p OK term.c:168:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				goto re;.*?
 			}.*?
 (			err:)7??0?
-grp 07??m 3220reg p OK term.c:167:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK term.c:168:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		if \(term_winch && winch\) \{
-			\*ibuf = winch;	/\* yield until term_winch is cleared \*/
-			goto ret;.*(	if \(icmd_pos < sizeof\(icmd\)\))
-		icmd\[icmd_pos\+\+] = ibuf\[ibuf_pos];
-	return ibuf\[ibuf_pos\+\+];8??0?
-grp 08??-11m 3220reg p OK term.c:167:a82sc %? %@2152sc!'\''08??1q0?
+			\*tibuf = winch;	/\* yield until term_winch is cleared \*/
+			goto ret;.*(	if \(ticmd_pos < sizeof\(ticmd\)\))
+		ticmd\[ticmd_pos\+\+] = tibuf\[tibuf_pos];
+	return tibuf\[tibuf_pos\+\+];8??0?
+grp 08??-11m 3220reg p OK term.c:168:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(texec == '\''&'\''\)
 				goto err;
 		}.*(/\* return a static string that changes text attributes to att \*/)
 char \*term_att\(int att\)
 \{9??0?
-grp 09??-16m 3220reg p OK term.c:167:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:1672sc %? %@2132sc!0?
+grp 09??-16m 3220reg p OK term.c:168:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:1682sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		ret:
-		ibuf_cnt = 1;
-		ibuf_pos = 0;1??0?
+		tibuf_cnt = 1;
+		tibuf_pos = 0;1??0?
 1??m 41q0?
 ;0fr.,$f+ ^		}$4??0?
-4??m 4220reg p OK term.c:173:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 4220reg p OK term.c:174:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 		if \(term_winch && winch\) \{
-			\*ibuf = winch;	/\* yield until term_winch is cleared \*/
-			goto ret;.*(	if \(icmd_pos < sizeof\(icmd\)\))
-		icmd\[icmd_pos\+\+] = ibuf\[ibuf_pos];
-	return ibuf\[ibuf_pos\+\+];8??0?
-grp 08??-5m 4220reg p OK term.c:173:a82sc %? %@2152sc!'\''08??1q0?
+			\*tibuf = winch;	/\* yield until term_winch is cleared \*/
+			goto ret;.*(	if \(ticmd_pos < sizeof\(ticmd\)\))
+		ticmd\[ticmd_pos\+\+] = tibuf\[tibuf_pos];
+	return tibuf\[tibuf_pos\+\+];8??0?
+grp 08??-5m 4220reg p OK term.c:174:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(texec == '\''&'\''\)
 				goto err;
 		}.*(/\* return a static string that changes text attributes to att \*/)
 char \*term_att\(int att\)
 \{9??0?
-grp 09??-10m 4220reg p OK term.c:173:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg term.c:1732sc %? %@2132sc!0?
+grp 09??-10m 4220reg p OK term.c:174:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg term.c:1742sc %? %@2132sc!0?
 '\''1c 	static struct pollfd ufd[1 + LSP_NFDS_MAX];
 	int cw, i, nfds;
-??!219reg term.c:143:m12sc %? %@2142sc!0?
+??!219reg term.c:144:m12sc %? %@2142sc!0?
 '\''2,#+8c 		ufd[0].fd = term_ufd.fd;
 		ufd[0].events = POLLIN;
 		/* the count is kept: servicing an fd below may unregister it */
@@ -2258,16 +2258,16 @@ char \*term_att\(int att\)
 			 * fails and the usual end of input handling takes over */
 			if (!(ufd[0].revents & (POLLIN | POLLHUP | POLLERR))) {
 				if (term_winch && winch) {
-					*ibuf = winch;
+					*tibuf = winch;
 					goto ret;
 				}
 				if (lsp_dirty && lsp_wake)
 					goto err;	/* yield so vi redraws diagnostics */
-??!219reg term.c:156:m22sc %? %@2142sc!0?
-'\''3,#+5c 			if (read(term_ufd.fd, ibuf, 1) > 0) {
+??!219reg term.c:157:m22sc %? %@2142sc!0?
+'\''3,#+5c 			if (read(term_ufd.fd, tibuf, 1) > 0) {
 				if (xrr > 0) {
 					static char buf[2];
-					buf[0] = *ibuf;
+					buf[0] = *tibuf;
 					ex_regput(xrr, buf, 1);
 				}
 				goto ret;
@@ -2275,15 +2275,15 @@ char \*term_att\(int att\)
 		}
 		xquit = !isatty(term_ufd.fd) ? -1 : xquit;
 		if (term_winch && winch && xquit >= 0) {
-			*ibuf = winch;
+			*tibuf = winch;
 			goto ret;
 		} else if (term_winch != cw && !winch && xquit >= 0) {
 			cw = term_winch;
 			goto re;
-??!219reg term.c:167:m32sc %? %@2142sc!0?
+??!219reg term.c:168:m32sc %? %@2142sc!0?
 '\''4i 		err:
-		*ibuf = 0;
-??!219reg term.c:173:m42sc %? %@2142sc!b6m!%ya 98?0?
+		*tibuf = 0;
+??!219reg term.c:174:m42sc %? %@2142sc!b6m!%ya 98?0?
 %f> #include "ren\.c"
 #include "term\.c"
 #include "uc\.c"
@@ -2526,16 +2526,16 @@ static void vi_drawrow\(int row\)
 1;4;8;9??!219reg vi.c:2162sc %? %@2132sc!0?
 ?0?
 %f+ 		int oleft = xleft;
-		icmd_pos = 0;
+		ticmd_pos = 0;
 		vi_mod = 0;
 		vi_ybuf = vi_yankbuf\(TK_CTL\('\''l'\''\)\);1??0?
 1??+2m 101q0?
 %f+ 		int oleft = xleft;
-		icmd_pos = 0;
+		ticmd_pos = 0;
 		vi_mod = 0;4??0?
 4??+2m 10220reg p OK vi.c:1186:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		int oleft = xleft;.*?
-		icmd_pos = 0;.*?
+		ticmd_pos = 0;.*?
 (		vi_mod = 0;)7??0?
 grp 07??m 10220reg p OK vi.c:1186:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		int orow = nrow;
@@ -4602,29 +4602,29 @@ index 00000000..1ea9bc99
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index 351202b0..65a17928 100644
+index 03aa736f..adccd79a 100644
 --- a/term.c
 +++ b/term.c
-@@ -140,7 +140,8 @@ void term_push(char *s, unsigned int n)
+@@ -141,7 +141,8 @@ void term_push(char *s, unsigned int n)
  
  int term_read(int winch)
  {
 -	int cw;
 +	static struct pollfd ufd[1 + LSP_NFDS_MAX];
 +	int cw, i, nfds;
- 	if (ibuf_pos >= ibuf_cnt) {
+ 	if (tibuf_pos >= tibuf_cnt) {
  		if (texec) {
  			xquit = !xquit ? 1 : xquit;
-@@ -153,24 +154,50 @@ int term_read(int winch)
+@@ -154,24 +155,50 @@ int term_read(int winch)
  		}
  		cw = 0;
  		re:
 -		/* read a single input character */
 -		if (xquit < 0 || poll(&term_ufd, 1, -1) <= 0 ||
--				read(term_ufd.fd, ibuf, 1) <= 0) {
+-				read(term_ufd.fd, tibuf, 1) <= 0) {
 -			xquit = !isatty(term_ufd.fd) ? -1 : xquit;
 -			if (term_winch && winch && xquit >= 0) {
--				*ibuf = winch;
+-				*tibuf = winch;
 -				goto ret;
 -			} else if (term_winch != cw && !winch && xquit >= 0) {
 -				cw = term_winch;
@@ -4646,7 +4646,7 @@ index 351202b0..65a17928 100644
 +			 * fails and the usual end of input handling takes over */
 +			if (!(ufd[0].revents & (POLLIN | POLLHUP | POLLERR))) {
 +				if (term_winch && winch) {
-+					*ibuf = winch;
++					*tibuf = winch;
 +					goto ret;
 +				}
 +				if (lsp_dirty && lsp_wake)
@@ -4654,15 +4654,15 @@ index 351202b0..65a17928 100644
  				goto re;
  			}
 -			err:
--			*ibuf = 0;
+-			*tibuf = 0;
 -		} else if (xrr > 0) {
 -			static char buf[2];
--			buf[0] = *ibuf;
+-			buf[0] = *tibuf;
 -			ex_regput(xrr, buf, 1);
-+			if (read(term_ufd.fd, ibuf, 1) > 0) {
++			if (read(term_ufd.fd, tibuf, 1) > 0) {
 +				if (xrr > 0) {
 +					static char buf[2];
-+					buf[0] = *ibuf;
++					buf[0] = *tibuf;
 +					ex_regput(xrr, buf, 1);
 +				}
 +				goto ret;
@@ -4670,19 +4670,19 @@ index 351202b0..65a17928 100644
 +		}
 +		xquit = !isatty(term_ufd.fd) ? -1 : xquit;
 +		if (term_winch && winch && xquit >= 0) {
-+			*ibuf = winch;
++			*tibuf = winch;
 +			goto ret;
 +		} else if (term_winch != cw && !winch && xquit >= 0) {
 +			cw = term_winch;
 +			goto re;
  		}
 +		err:
-+		*ibuf = 0;
++		*tibuf = 0;
  		ret:
- 		ibuf_cnt = 1;
- 		ibuf_pos = 0;
+ 		tibuf_cnt = 1;
+ 		tibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..61fd75c3 100644
+index 03ed7b03..f0de18a5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -4770,7 +4770,7 @@ index 9ca49dbb..61fd75c3 100644
  /* redraw the screen */
 @@ -1184,7 +1219,9 @@ void vi(int init)
  		int oleft = xleft;
- 		icmd_pos = 0;
+ 		ticmd_pos = 0;
  		vi_mod = 0;
 +		lsp_wake = 1;
  		vi_ybuf = vi_yankbuf(TK_CTL('l'));
@@ -4821,7 +4821,7 @@ index 9ca49dbb..61fd75c3 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 diff --git a/vi.h b/vi.h
-index 0710983a..fd5cda27 100644
+index 7c7d9e2c..46c1aa5a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,7 @@ struct lbuf {
