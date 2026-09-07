@@ -1366,7 +1366,7 @@ REGEX
              value. Negative offset begins at the start of the string.
 
 SPECIAL MARKS
-     *       Position of previous ex command
+     *       Position of previous ex command chain
      [       First position of previous change
      ]       Last position of previous change
      '       Position of previous line region
