@@ -390,8 +390,7 @@ void vi_rendwait(void)
 /* whether input is waiting; a frame drawn now is stale before it lands */
 static int vi_rendpend(void)
 {
-	struct pollfd ufd = {STDIN_FILENO, POLLIN};
-	return ibuf_pos < ibuf_cnt || poll(&ufd, 1, 0) > 0;
+	return ibuf_pos < ibuf_cnt || poll(&term_ufd, 1, 0) > 0;
 }
 
 /* queue a frame and hand the input loop its thread back */
@@ -439,14 +438,14 @@ extern int vi_lncol;
 %f> 
 /\* vi\.c: main \*/
 void vi\(int init\);4??0?
-4??+2m 1220reg p OK vi.h:576:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:577:a42sc %? %@2152sc!1q0?
 grp 1%f> .*?
 /\* vi\.c: main \*/.*?
 (void vi\(int init\);)7??0?
-grp 07??m 1220reg p OK vi.h:576:a72sc %? %@2152sc!0?
-1;4;7??!219reg vi.h:5762sc %? %@2132sc!0?
+grp 07??m 1220reg p OK vi.h:577:a72sc %? %@2152sc!0?
+1;4;7??!219reg vi.h:5772sc %? %@2132sc!0?
 '\''1i void vi_rendwait(void);
-??!219reg vi.h:576:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:577:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -471,7 +470,7 @@ index 62d18e99..73510208 100755
  -Wno-unused-parameter \
  -Wno-unused-result \
 diff --git a/term.c b/term.c
-index c8861702..05951cb2 100644
+index 351202b0..5f74185e 100644
 --- a/term.c
 +++ b/term.c
 @@ -175,6 +175,7 @@ int term_read(int winch)
@@ -483,7 +482,7 @@ index c8861702..05951cb2 100644
  		icmd[icmd_pos++] = ibuf[ibuf_pos];
  	return ibuf[ibuf_pos++];
 diff --git a/vi.c b/vi.c
-index 5fb56ceb..a578813c 100644
+index 5fb56ceb..f7f69660 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@
@@ -563,7 +562,7 @@ index 5fb56ceb..a578813c 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
  				|| (*vi_word && orow != xrow))
-@@ -1834,15 +1888,67 @@ void vi(int init)
+@@ -1834,15 +1888,66 @@ void vi(int init)
  		}
  		term_pos(xrow - xtop, n + vi_lncol);
  		term_commit();
@@ -591,8 +590,7 @@ index 5fb56ceb..a578813c 100644
 +/* whether input is waiting; a frame drawn now is stale before it lands */
 +static int vi_rendpend(void)
 +{
-+	struct pollfd ufd = {STDIN_FILENO, POLLIN};
-+	return ibuf_pos < ibuf_cnt || poll(&ufd, 1, 0) > 0;
++	return ibuf_pos < ibuf_cnt || poll(&term_ufd, 1, 0) > 0;
 +}
 +
 +/* queue a frame and hand the input loop its thread back */
@@ -639,10 +637,10 @@ index 5fb56ceb..a578813c 100644
  
  static void sighandler(int signo)
 diff --git a/vi.h b/vi.h
-index edfba9ab..7005e69c 100644
+index 0710983a..669f7e07 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -574,6 +574,7 @@ char *conf_digraph(int c1, int c2);
+@@ -575,6 +575,7 @@ char *conf_digraph(int c1, int c2);
  
  /* vi.c: main */
  void vi(int init);
