@@ -241,19 +241,19 @@ void ex_init\(char \*\*files, int n\).*?
 '\''7i 	signal(SIGINT, SIG_DFL); /* got past init? ok remove ^c */
 ??!219reg ex.c:1995:m72sc %? %@2142sc!b1m!%ya 98?0?
 %f> int xrows, xcols;
-unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
-unsigned char \*ibuf, icmd\[4096];
-unsigned int texec, tn;
+unsigned int tibuf_pos, tibuf_cnt, tibuf_sz = 128, ticmd_pos;
+unsigned char \*tibuf, ticmd\[4096];
+unsigned int texec, texec_n;
 
 void term_init\(void\)1??0?
 1??+2m 11q0?
 %f> int xrows, xcols;
-unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
-unsigned char \*ibuf, icmd\[4096];4??0?
+unsigned int tibuf_pos, tibuf_cnt, tibuf_sz = 128, ticmd_pos;
+unsigned char \*tibuf, ticmd\[4096];4??0?
 4??+2m 1220reg p OK term.c:9:a42sc %? %@2152sc!1q0?
 grp 1%f> int xrows, xcols;.*?
-unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;.*?
-(unsigned char \*ibuf, icmd\[4096];)7??0?
+unsigned int tibuf_pos, tibuf_cnt, tibuf_sz = 128, ticmd_pos;.*?
+(unsigned char \*tibuf, ticmd\[4096];)7??0?
 grp 07??m 1220reg p OK term.c:9:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> int term_record;
 int term_winch;
@@ -515,15 +515,15 @@ index 0ce81414..db9d4dbf 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 351202b0..6af4e138 100644
+index 03aa736f..e05c8844 100644
 --- a/term.c
 +++ b/term.c
 @@ -7,6 +7,7 @@ int term_resized;
  int xrows, xcols;
- unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
- unsigned char *ibuf, icmd[4096];
+ unsigned int tibuf_pos, tibuf_cnt, tibuf_sz = 128, ticmd_pos;
+ unsigned char *tibuf, ticmd[4096];
 +static int isig;
- unsigned int texec, tn;
+ unsigned int texec, texec_n;
  
  void term_init(void)
 @@ -19,7 +20,10 @@ void term_init(void)
@@ -547,7 +547,7 @@ index 351202b0..6af4e138 100644
  
  void term_done(void)
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..37376f7e 100644
+index 03ed7b03..e242b910 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1856,6 +1856,7 @@ static void setup_signals(void)
