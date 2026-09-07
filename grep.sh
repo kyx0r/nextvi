@@ -453,9 +453,9 @@ static int fs_search\(int cnt, int \*row, int \*off\)
 grp 07??m 6220reg p OK vi.c:482:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static int fs_searchback\(int cnt, int \*row, int \*off\)
 \{
-	char \*path;.*(static char rep_cmd\[sizeof\(icmd\)];	/\* the last command \*/)
+	char \*path;.*(static char rep_cmd\[sizeof\(ticmd\)];	/\* the last command \*/)
 static int rep_len;
-#define rep_record\(\) memcpy\(rep_cmd, icmd, icmd_pos\); rep_len = icmd_pos;8??0?
+#define rep_record\(\) memcpy\(rep_cmd, ticmd, ticmd_pos\); rep_len = ticmd_pos;8??0?
 grp 08??-5m 6220reg p OK vi.c:482:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		goto wrap;
 	}
@@ -833,7 +833,7 @@ index 0ce81414..adda6e60 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..6f1c7b7d 100644
+index 03ed7b03..6300eccc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -440,12 +440,12 @@ void dir_calc(char *path)
@@ -971,7 +971,7 @@ index 9ca49dbb..6f1c7b7d 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 0710983a..69d18b58 100644
+index 7c7d9e2c..f26b4f7d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -480,7 +480,7 @@ extern sbuf **xregs;
