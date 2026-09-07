@@ -200,7 +200,7 @@ void syn_done(void)
 	syn_done();
 	ren_done();
 	led_done();
-	free(ibuf);
+	free(tibuf);
 ??!219reg vi.c:1903:m12sc %? %@2142sc!b5m!%ya 98?0?
 %f> int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);
@@ -361,7 +361,7 @@ index 4116d9c1..0abb7884 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..5d0d3c48 100644
+index 03ed7b03..46f7fd04 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1901,6 +1901,11 @@ int main(int argc, char *argv[])
@@ -372,12 +372,12 @@ index 9ca49dbb..5d0d3c48 100644
 +	syn_done();
 +	ren_done();
 +	led_done();
-+	free(ibuf);
++	free(tibuf);
  	if (xvis & 8)
  		term_scrl()
  	return xquit < -256 ? (abs(xquit) - 257) & 255 : abs(xquit) - 1;
 diff --git a/vi.h b/vi.h
-index 0710983a..3e9c0518 100644
+index 7c7d9e2c..a21820bc 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -270,6 +270,7 @@ void syn_reloadft(int hl, int flg);
