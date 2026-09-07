@@ -304,7 +304,7 @@ void led_render(char *s0, int cbeg, int cend)
 	memset(att, 0, MIN(n, cterm+1) * sizeof(att[0]));
 	if (xhl == 1)
 		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
-	if (extsb && xhl > 0) {
+	if (extsb && extsb->s_n && xhl > 0) {
 		led_ctx x;
 		x.att = att;
 		x.alen = bound ? c : MIN(n, cterm);
