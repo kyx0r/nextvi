@@ -409,9 +409,9 @@ static void ex_asyncwait(void)
 '\''6i 		xasync = 0;
 ??!219reg ex.c:1952:m62sc %? %@2142sc!b3m!%ya 98?0?
 %f> static struct termios termios;
+struct pollfd term_ufd = \{STDIN_FILENO, POLLIN};
 sbuf \*term_sbuf;
-int term_record;
-int term_winch;1??0?
+int term_record;1??0?
 1??m 11q0?
 ;0fr.,$f> ^static struct termios termios;$4??0?
 4??m 1220reg p OK term.c:1:a42sc %? %@2152sc!fr 98fr 980?
@@ -461,13 +461,13 @@ int term_winch;1??0?
 grp 08??-4m 2220reg p OK term.c:293:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	argv\[3] = cmd;
 	argv\[4] = NULL;
-	int pid = cmd_make\(argv\+!xish, ibuf \? &ifd : NULL, oproc \? &ofd : NULL\);.*(	fds\[2]\.fd = ibuf \? 0 : -1;)
+	int pid = cmd_make\(argv\+!xish, ibuf \? &ifd : NULL, oproc \? &ofd : NULL\);.*(	fds\[2]\.fd = ibuf \? term_ufd\.fd : -1;)
 	fds\[2]\.events = POLLIN;
 	while \(\(fds\[0]\.fd >= 0 \|\| fds\[1]\.fd >= 0\) && poll\(fds, 3, 200\) >= 0\) \{9??0?
 grp 09??-7m 2220reg p OK term.c:293:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg term.c:2932sc %? %@2132sc!0?
 ?0?
-%f+ 	tcsetpgrp\(STDIN_FILENO, getpgrp\(\)\);
+%f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);
 	signal\(SIGTTOU, SIG_DFL\);
 	if \(!ibuf\) \{
 		if \(term_sbuf\)
@@ -478,19 +478,19 @@ int term_winch;1??0?
 2??m 3220reg p OK term.c:346:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(term_sbuf\)$3??0?
 3??m 3220reg p OK term.c:346:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 	tcsetpgrp\(STDIN_FILENO, getpgrp\(\)\);
+%f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);
 	signal\(SIGTTOU, SIG_DFL\);
 	if \(!ibuf\) \{4??0?
 4??+3m 3220reg p OK term.c:346:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			term_init\(\);$5??0?
 5??-1m 3220reg p OK term.c:346:a52sc %? %@2152sc!fr 981qfr 980?
-%f+ .t..e....p.S...N...L......et....\(...
-	.i............,..I..D....
-	.f..!i.u.\)..
-.	i. \(..r.......
-.	..e..........6??0?
+%f+ ..c.e...r.\(t..m..f.\.....g........\).
+.s....l.S......, S.G......
+	.f........ .
+	......e.._.....
+...t..m.i......6??0?
 6??+3m 3220reg p OK term.c:346:a62sc %? %@2152sc!1q0?
-grp 1%f+ 	tcsetpgrp\(STDIN_FILENO, getpgrp\(\)\);.*?
+grp 1%f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);.*?
 	signal\(SIGTTOU, SIG_DFL\);.*?
 	if \(!ibuf\) \{.*?
 (		if \(term_sbuf\))7??0?
@@ -737,16 +737,16 @@ index 0ce81414..5f0b73c3 100644
  			xcid_free();
  		xqprop = 0;
 diff --git a/term.c b/term.c
-index c8861702..606ab94c 100644
+index 351202b0..ca15ce43 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,4 +1,6 @@
  static struct termios termios;
 +static int term_susp;		/* nested terminal suspensions of cmd_pipe */
 +static pthread_mutex_t term_mtx = PTHREAD_MUTEX_INITIALIZER;
+ struct pollfd term_ufd = {STDIN_FILENO, POLLIN};
  sbuf *term_sbuf;
  int term_record;
- int term_winch;
 @@ -290,7 +292,10 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	sbuf_make(sb, sizeof(buf)+1)
  	if (!ibuf) {
@@ -760,7 +760,7 @@ index c8861702..606ab94c 100644
  		fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) | O_NONBLOCK);
  	fds[0].fd = ofd;
 @@ -343,8 +348,10 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
- 	tcsetpgrp(STDIN_FILENO, getpgrp());
+ 	tcsetpgrp(term_ufd.fd, getpgrp());
  	signal(SIGTTOU, SIG_DFL);
  	if (!ibuf) {
 -		if (term_sbuf)
