@@ -429,17 +429,17 @@ int term_record;1??0?
 	} else if \(ifd >= 0\)
 		fcntl\(ifd, F_SETFL, fcntl\(ifd, F_GETFL, 0\) \| O_NONBLOCK\);
 	fds\[0]\.fd = ofd;2??0?
-2??m 2220reg p OK term.c:293:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK term.c:294:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		term_done\(\);$3??0?
-3??m 2220reg p OK term.c:293:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK term.c:294:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	sbuf_make\(sb, sizeof\(buf\)\+1\)
 	if \(!ibuf\) \{
 		signal\(SIGINT, SIG_IGN\);4??0?
-4??+3m 2220reg p OK term.c:293:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK term.c:294:a42sc %? %@2152sc!1q0?
 %f+ 	} else if \(ifd >= 0\)
 		fcntl\(ifd, F_SETFL, fcntl\(ifd, F_GETFL, 0\) \| O_NONBLOCK\);
 	fds\[0]\.fd = ofd;5??0?
-5??-1m 2220reg p OK term.c:293:a52sc %? %@2152sc!1q0?
+5??-1m 2220reg p OK term.c:294:a52sc %? %@2152sc!1q0?
 %f+ 	..u........b..si..o.\(bu.....
 ......ibu...\{
 .....n......I.............
@@ -447,25 +447,25 @@ int term_record;1??0?
 ............... .. ..
 ..........d. ....................F..E...,..\).\| .........K.;
 ........fd ..o...6??0?
-6??+3m 2220reg p OK term.c:293:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK term.c:294:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	sbuf_make\(sb, sizeof\(buf\)\+1\).*?
 	if \(!ibuf\) \{.*?
 		signal\(SIGINT, SIG_IGN\);.*?
 (		term_done\(\);)7??0?
-grp 07??m 2220reg p OK term.c:293:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK term.c:294:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(pid <= 0\)
 		return NULL;
 	sbuf \*sb;.*(	fds\[0]\.events = POLLIN;)
 	fds\[1]\.fd = ifd;
 	fds\[1]\.events = POLLOUT;8??0?
-grp 08??-4m 2220reg p OK term.c:293:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK term.c:294:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	argv\[3] = cmd;
 	argv\[4] = NULL;
 	int pid = cmd_make\(argv\+!xish, ibuf \? &ifd : NULL, oproc \? &ofd : NULL\);.*(	fds\[2]\.fd = ibuf \? term_ufd\.fd : -1;)
 	fds\[2]\.events = POLLIN;
 	while \(\(fds\[0]\.fd >= 0 \|\| fds\[1]\.fd >= 0\) && poll\(fds, 3, 200\) >= 0\) \{9??0?
-grp 09??-7m 2220reg p OK term.c:293:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:2932sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK term.c:294:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:2942sc %? %@2132sc!0?
 ?0?
 %f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);
 	signal\(SIGTTOU, SIG_DFL\);
@@ -475,27 +475,27 @@ int term_record;1??0?
 1??+3m 31q0?
 %f+ 		if \(term_sbuf\)
 			term_init\(\);2??0?
-2??m 3220reg p OK term.c:346:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK term.c:347:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(term_sbuf\)$3??0?
-3??m 3220reg p OK term.c:346:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK term.c:347:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);
 	signal\(SIGTTOU, SIG_DFL\);
 	if \(!ibuf\) \{4??0?
-4??+3m 3220reg p OK term.c:346:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK term.c:347:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			term_init\(\);$5??0?
-5??-1m 3220reg p OK term.c:346:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 3220reg p OK term.c:347:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ..c.e...r.\(t..m..f.\.....g........\).
 .s....l.S......, S.G......
 	.f........ .
 	......e.._.....
 ...t..m.i......6??0?
-6??+3m 3220reg p OK term.c:346:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK term.c:347:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);.*?
 	signal\(SIGTTOU, SIG_DFL\);.*?
 	if \(!ibuf\) \{.*?
 (		if \(term_sbuf\))7??0?
-grp 07??m 3220reg p OK term.c:346:a72sc %? %@2152sc!0?
-1;2;3;4;5;6;7??!219reg term.c:3462sc %? %@2132sc!0?
+grp 07??m 3220reg p OK term.c:347:a72sc %? %@2152sc!0?
+1;2;3;4;5;6;7??!219reg term.c:3472sc %? %@2132sc!0?
 ?0?
 %f+ 			term_init\(\);
 		signal\(SIGINT, SIG_DFL\);
@@ -503,8 +503,8 @@ int term_record;1??0?
 	sbufn_ret\(sb, sb\)1??0?
 1??m 41q0?
 ;0fr.,$f+ ^			term_init\(\);$4??0?
-4??m 4220reg p OK term.c:347:a42sc %? %@2152sc!fr 98fr 980?
-1;4??!219reg term.c:3472sc %? %@2132sc!0?
+4??m 4220reg p OK term.c:348:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg term.c:3482sc %? %@2132sc!0?
 '\''1i static int term_susp;		/* nested terminal suspensions of cmd_pipe */
 static pthread_mutex_t term_mtx = PTHREAD_MUTEX_INITIALIZER;
 ??!219reg term.c:1:m12sc %? %@2142sc!0?
@@ -512,12 +512,12 @@ static pthread_mutex_t term_mtx = PTHREAD_MUTEX_INITIALIZER;
 		if (!term_susp++)
 			term_done();
 		pthread_mutex_unlock(&term_mtx);
-??!219reg term.c:293:m22sc %? %@2142sc!0?
+??!219reg term.c:294:m22sc %? %@2142sc!0?
 '\''3c 		pthread_mutex_lock(&term_mtx);
 		if (!--term_susp && term_sbuf)
-??!219reg term.c:346:m32sc %? %@2142sc!0?
+??!219reg term.c:347:m32sc %? %@2142sc!0?
 '\''4i 		pthread_mutex_unlock(&term_mtx);
-??!219reg term.c:347:m42sc %? %@2142sc!b4m!%ya 98?0?
+??!219reg term.c:348:m42sc %? %@2142sc!b4m!%ya 98?0?
 %f> #include <signal\.h>
 #include <unistd\.h>
 #include <poll\.h>
@@ -737,7 +737,7 @@ index 0ce81414..5f0b73c3 100644
  			xcid_free();
  		xqprop = 0;
 diff --git a/term.c b/term.c
-index 351202b0..ca15ce43 100644
+index 03aa736f..bc444225 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,4 +1,6 @@
@@ -747,7 +747,7 @@ index 351202b0..ca15ce43 100644
  struct pollfd term_ufd = {STDIN_FILENO, POLLIN};
  sbuf *term_sbuf;
  int term_record;
-@@ -290,7 +292,10 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -291,7 +293,10 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	sbuf_make(sb, sizeof(buf)+1)
  	if (!ibuf) {
  		signal(SIGINT, SIG_IGN);
@@ -759,7 +759,7 @@ index 351202b0..ca15ce43 100644
  	} else if (ifd >= 0)
  		fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) | O_NONBLOCK);
  	fds[0].fd = ofd;
-@@ -343,8 +348,10 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -344,8 +349,10 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	tcsetpgrp(term_ufd.fd, getpgrp());
  	signal(SIGTTOU, SIG_DFL);
  	if (!ibuf) {
@@ -772,7 +772,7 @@ index 351202b0..ca15ce43 100644
  	}
  	sbufn_ret(sb, sb)
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..7fd2e2fe 100644
+index 03ed7b03..4d33c42d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -8,6 +8,7 @@
