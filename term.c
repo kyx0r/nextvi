@@ -5,9 +5,9 @@ int term_record;
 int term_winch;
 int term_resized;
 int xrows, xcols;
-unsigned int ibuf_pos, ibuf_cnt, ibuf_sz = 128, icmd_pos;
-unsigned char *ibuf, icmd[4096];
-unsigned int texec, tn;
+unsigned int tibuf_pos, tibuf_cnt, tibuf_sz = 128, ticmd_pos;
+unsigned char *tibuf, ticmd[4096];
+unsigned int texec, texec_n;
 
 void term_init(void)
 {
@@ -117,67 +117,68 @@ void term_pos(int r, int c)
 /* read s before reading from the terminal */
 void term_push(char *s, unsigned int n)
 {
-	static unsigned int tibuf_pos;
-	if (ibuf_cnt + n >= ibuf_sz || ibuf_sz - (ibuf_cnt + n) > 128) {
-		ibuf_sz = ibuf_cnt + n + 128;
-		ibuf = erealloc(ibuf, ibuf_sz);
+	static unsigned int tibuf_prev;
+	if (tibuf_cnt + n >= tibuf_sz || tibuf_sz - (tibuf_cnt + n) > 128) {
+		tibuf_sz = tibuf_cnt + n + 128;
+		tibuf = erealloc(tibuf, tibuf_sz);
 	}
 	if (texec) {
 		if (texec == '@' && xquit > 0) {
 			xquit = 0;
-			tn = 0;
-		} else if (tibuf_pos != ibuf_pos)
-			tn = 0;
-		memmove(ibuf + ibuf_pos + n + tn,
-			ibuf + ibuf_pos + tn, ibuf_cnt - ibuf_pos - tn);
-		memcpy(ibuf + ibuf_pos + tn, s, n);
-		tn += n;
-		tibuf_pos = ibuf_pos;
+			texec_n = 0;
+		} else if (tibuf_prev != tibuf_pos)
+			texec_n = 0;
+		memmove(tibuf + tibuf_pos + n + texec_n,
+			tibuf + tibuf_pos + texec_n,
+			tibuf_cnt - tibuf_pos - texec_n);
+		memcpy(tibuf + tibuf_pos + texec_n, s, n);
+		texec_n += n;
+		tibuf_prev = tibuf_pos;
 	} else
-		memcpy(ibuf + ibuf_cnt, s, n);
-	ibuf_cnt += n;
+		memcpy(tibuf + tibuf_cnt, s, n);
+	tibuf_cnt += n;
 }
 
 int term_read(int winch)
 {
 	int cw;
-	if (ibuf_pos >= ibuf_cnt) {
+	if (tibuf_pos >= tibuf_cnt) {
 		if (texec) {
 			xquit = !xquit ? 1 : xquit;
 			if (texec == '&')
 				goto err;
 		}
 		if (term_winch && winch) {
-			*ibuf = winch;	/* yield until term_winch is cleared */
+			*tibuf = winch;	/* yield until term_winch is cleared */
 			goto ret;
 		}
 		cw = 0;
 		re:
 		/* read a single input character */
 		if (xquit < 0 || poll(&term_ufd, 1, -1) <= 0 ||
-				read(term_ufd.fd, ibuf, 1) <= 0) {
+				read(term_ufd.fd, tibuf, 1) <= 0) {
 			xquit = !isatty(term_ufd.fd) ? -1 : xquit;
 			if (term_winch && winch && xquit >= 0) {
-				*ibuf = winch;
+				*tibuf = winch;
 				goto ret;
 			} else if (term_winch != cw && !winch && xquit >= 0) {
 				cw = term_winch;
 				goto re;
 			}
 			err:
-			*ibuf = 0;
+			*tibuf = 0;
 		} else if (xrr > 0) {
 			static char buf[2];
-			buf[0] = *ibuf;
+			buf[0] = *tibuf;
 			ex_regput(xrr, buf, 1);
 		}
 		ret:
-		ibuf_cnt = 1;
-		ibuf_pos = 0;
+		tibuf_cnt = 1;
+		tibuf_pos = 0;
 	}
-	if (icmd_pos < sizeof(icmd))
-		icmd[icmd_pos++] = ibuf[ibuf_pos];
-	return ibuf[ibuf_pos++];
+	if (ticmd_pos < sizeof(ticmd))
+		ticmd[ticmd_pos++] = tibuf[tibuf_pos];
+	return tibuf[tibuf_pos++];
 }
 
 /* return a static string that changes text attributes to att */

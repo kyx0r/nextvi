@@ -484,9 +484,9 @@ static int fs_searchback(int cnt, int *row, int *off)
 	return 0;
 }
 
-static char rep_cmd[sizeof(icmd)];	/* the last command */
+static char rep_cmd[sizeof(ticmd)];	/* the last command */
 static int rep_len;
-#define rep_record() memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos;
+#define rep_record() memcpy(rep_cmd, ticmd, ticmd_pos); rep_len = ticmd_pos;
 
 static void vc_status(int type)
 {
@@ -1182,7 +1182,7 @@ void vi(int init)
 		int ooff = noff;
 		int otop = xtop;
 		int oleft = xleft;
-		icmd_pos = 0;
+		ticmd_pos = 0;
 		vi_mod = 0;
 		vi_ybuf = vi_yankbuf(TK_CTL('l'));
 		vi_arg = vi_prefix();
@@ -1672,7 +1672,7 @@ void vi(int init)
 			case 'S':
 				term_push("cc", 2);
 				motion:
-				icmd_pos--;
+				ticmd_pos--;
 				goto re_motion;
 			case 'r':
 				vi_mod |= vc_replace();
@@ -1890,7 +1890,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	ibuf = emalloc(ibuf_sz);
+	tibuf = emalloc(tibuf_sz);
 	if (!(xvis & 1))
 		term_init();
 	if (xvis & 8)
