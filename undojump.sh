@@ -248,7 +248,7 @@ index 56cb42c6..de6a9e93 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 5fb56ceb..8775757d 100644
+index 9ca49dbb..dd3e5ab1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1433,6 +1433,17 @@ void vi(int init)
@@ -270,7 +270,7 @@ index 5fb56ceb..8775757d 100644
  				vi_arg = (vi_wsel % 5) + !!*vi_word;
  			case TK_CTL('c'):
 diff --git a/vi.h b/vi.h
-index edfba9ab..8b4a7ec6 100644
+index 0710983a..4e8c59a4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,7 @@ struct lbuf {

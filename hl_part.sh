@@ -278,7 +278,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 24ea2874..192292d1 100644
+index 26a5f232..d53cdeff 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,7 @@

@@ -111,7 +111,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 5fb56ceb..3e2bcb20 100644
+index 9ca49dbb..be99424f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -525,6 +525,46 @@ static int vi_region(int cmd, int *row, int *off)

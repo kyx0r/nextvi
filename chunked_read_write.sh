@@ -1003,7 +1003,7 @@ index 56cb42c6..dba0a56c 100644
  }
  
 diff --git a/vi.h b/vi.h
-index edfba9ab..c0a986b9 100644
+index 0710983a..3c715f0d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -156,7 +156,8 @@ struct lbuf {

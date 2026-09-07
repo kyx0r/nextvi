@@ -189,7 +189,7 @@ int led_attidx\(led_ctx \*x, int off\)
 %f+ 	}
 	preserve\(int, xleft, xleft = 0;\)
 	preserve\(int, xtd, xtd = 2;\)
-	key = led_line\(sb, ps, n, &post, 0, &postref, -1,
+	key = led_line\(sb, n, ps, &post, 0, &postref, -1,
 			&off, kmap, is, 0, xrow, xtop, flg\);
 	restore\(xtd\)1??0?
 1??+2m 21q0?
@@ -249,7 +249,7 @@ int led_attidx\(led_ctx \*x, int off\)
 	ins_state is;
 	while \(1\) \{
 		ins_init\(is\)
-		key = led_line\(sb, ps, sb->s_n, &post, postn, &postref,1??0?
+		key = led_line\(sb, sb->s_n, ps, &post, postn, &postref,1??0?
 1??+2m 41q0?
 %f+ 	int n, key, ps = 0, crow = xrow, ctop = xtop;
 	char \*postref = NULL;
@@ -879,7 +879,7 @@ index 0ce81414..0077cee1 100644
  	{"m", ec_mark},
  	{"q!", ec_quit},
 diff --git a/led.c b/led.c
-index 24ea2874..6256862b 100644
+index 26a5f232..fe0ffbbe 100644
 --- a/led.c
 +++ b/led.c
 @@ -98,6 +98,14 @@ int led_pos(char *s, int pos)
@@ -902,7 +902,7 @@ index 24ea2874..6256862b 100644
  	preserve(int, xleft, xleft = 0;)
  	preserve(int, xtd, xtd = 2;)
 +	term_mouse_off();
- 	key = led_line(sb, ps, n, &post, 0, &postref, -1,
+ 	key = led_line(sb, n, ps, &post, 0, &postref, -1,
  			&off, kmap, is, 0, xrow, xtop, flg);
  	restore(xtd)
  	restore(xleft)
@@ -917,7 +917,7 @@ index 24ea2874..6256862b 100644
 +	term_mouse_off();
  	while (1) {
  		ins_init(is)
- 		key = led_line(sb, ps, sb->s_n, &post, postn, &postref,
+ 		key = led_line(sb, sb->s_n, ps, &post, postn, &postref,
 @@ -781,6 +792,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  				sb->s[*pren] = *post;
  			free(postref);
@@ -1054,7 +1054,7 @@ index 351202b0..9108ddb2 100644
  {
  	int cw;
 diff --git a/vi.c b/vi.c
-index 5fb56ceb..9d792e9b 100644
+index 9ca49dbb..0b4c94a0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -513,6 +513,9 @@ static void vc_status(int type)

@@ -2057,17 +2057,17 @@ extern int xdefreg;1??0?
 extern sbuf \*\*xregs;
 extern int xregs_n;
 extern int xdefreg;2??0?
-2??m 5220reg p OK vi.h:477:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK vi.h:478:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^extern rset \*xkwdrs;$3??0?
-3??m 5220reg p OK vi.h:477:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK vi.h:478:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ extern int xesc;
 extern int xexec_dep;
 extern sbuf \*xacreg;4??0?
-4??+3m 5220reg p OK vi.h:477:a42sc %? %@2152sc!1q0?
+4??+3m 5220reg p OK vi.h:478:a42sc %? %@2152sc!1q0?
 %f+ extern sbuf \*\*xregs;
 extern int xregs_n;
 extern int xdefreg;5??0?
-5??-1m 5220reg p OK vi.h:477:a52sc %? %@2152sc!1q0?
+5??-1m 5220reg p OK vi.h:478:a52sc %? %@2152sc!1q0?
 %f+ .....n..n..xe...
 .......i.....x.c.d...
 ....r....u.........;
@@ -2075,25 +2075,25 @@ extern int xdefreg;5??0?
 ex.... .b....\*x..g..
 .xte...............
 .........t.x..f.e..6??0?
-6??+3m 5220reg p OK vi.h:477:a62sc %? %@2152sc!1q0?
+6??+3m 5220reg p OK vi.h:478:a62sc %? %@2152sc!1q0?
 grp 1%f+ extern int xesc;.*?
 extern int xexec_dep;.*?
 extern sbuf \*xacreg;.*?
 (extern rset \*xkwdrs;)7??0?
-grp 07??m 5220reg p OK vi.h:477:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.h:478:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern int xkwdcnt;
 extern int xpln;
 extern int xsep;.*(extern struct buf \*bufs;)
 extern struct buf tempbufs\[3];
 extern struct buf \*ex_buf;8??0?
-grp 08??-4m 5220reg p OK vi.h:477:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK vi.h:478:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xkmap;
 extern int xkmap_alt;
 extern int xkwddir;.*(extern struct buf \*ex_pbuf;)
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)
 #define xb_path ex_buf->path9??0?
-grp 09??-7m 5220reg p OK vi.h:477:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:4772sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK vi.h:478:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:4782sc %? %@2132sc!0?
 ?0?
 %f+ #define ex_print\(line, ft\) \{ RST\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }
 void ex_init\(char \*\*files, int n\);
@@ -2107,17 +2107,17 @@ int ex_edit\(const char \*path, int len\);1??0?
 void ex_krsset\(char \*kwd, int dir\);
 void ex_regesc\(sbuf \*sb, char \*beg, char \*end, int ex\);
 int ex_edit\(const char \*path, int len\);2??0?
-2??m 6220reg p OK vi.h:517:a22sc %? %@2152sc!1q0?
+2??m 6220reg p OK vi.h:518:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^int ex_krs\(rset \*\*krs, int \*dir\);$3??0?
-3??m 6220reg p OK vi.h:517:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 6220reg p OK vi.h:518:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ #define ex_print\(line, ft\) \{ RST\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }
 void ex_init\(char \*\*files, int n\);
 void ex_bufpostfix\(struct buf \*p, int clear\);4??0?
-4??+3m 6220reg p OK vi.h:517:a42sc %? %@2152sc!1q0?
+4??+3m 6220reg p OK vi.h:518:a42sc %? %@2152sc!1q0?
 %f+ void ex_krsset\(char \*kwd, int dir\);
 void ex_regesc\(sbuf \*sb, char \*beg, char \*end, int ex\);
 int ex_edit\(const char \*path, int len\);5??0?
-5??-1m 6220reg p OK vi.h:517:a52sc %? %@2152sc!1q0?
+5??-1m 6220reg p OK vi.h:518:a52sc %? %@2152sc!1q0?
 %f+ ........e.........i..........R.......x_........i....ft..-1. .,.........}
 .o.. .....i..c....\*\*f.l.....n....;
 .... ..........f...st.......f.... i.....ea...
@@ -2125,25 +2125,25 @@ int ex_edit\(const char \*path, int len\);5??0?
 .....ex_....e.\(.h....k... i.t......
 ..i......e.es..s.u.......c..r..b....c..........i....x\).
 ..t...........n...c.....p........ .....6??0?
-6??+3m 6220reg p OK vi.h:517:a62sc %? %@2152sc!1q0?
+6??+3m 6220reg p OK vi.h:518:a62sc %? %@2152sc!1q0?
 grp 1%f+ #define ex_print\(line, ft\) \{ RST\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }.*?
 void ex_init\(char \*\*files, int n\);.*?
 void ex_bufpostfix\(struct buf \*p, int clear\);.*?
 (int ex_krs\(rset \*\*krs, int \*dir\);)7??0?
-grp 07??m 6220reg p OK vi.h:517:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK vi.h:518:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> #define ex_command\(ln\) \{ ex_exec\(ln\); ex_regput\('\'':'\'', ln, 0\); }
 void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);
 #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RST\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }.*(/\* conf\.c: configuration variables \*/)
 extern const int conf_mode;
 /\* map file names to file types \*/8??0?
-grp 08??-7m 6220reg p OK vi.h:517:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 6220reg p OK vi.h:518:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void temp_pos\(int i, int row, int off, int top\);
 void ex\(void\);
 void \*ex_exec\(const char \*ln\);.*(struct filetype \{)
 	char \*ft;		/\* file type \*/
 	char \*pat;		/\* file name pattern \*/9??0?
-grp 09??-10m 6220reg p OK vi.h:517:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:5172sc %? %@2132sc!0?
+grp 09??-10m 6220reg p OK vi.h:518:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:5182sc %? %@2132sc!0?
 ?0?
 %f+ extern int vi_hidch;
 extern int vi_lncol;
@@ -2153,27 +2153,27 @@ void dir_calc\(char \*path\);1??0?
 1??+3m 71q0?
 %f+ extern rset \*fsincl;
 void dir_calc\(char \*path\);2??0?
-2??m 7220reg p OK vi.h:580:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK vi.h:581:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^extern rset \*fsincl;$3??0?
-3??m 7220reg p OK vi.h:580:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 7220reg p OK vi.h:581:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ extern int vi_hidch;
 extern int vi_lncol;
 /\* filesystem \*/4??0?
-4??+3m 7220reg p OK vi.h:580:a42sc %? %@2152sc!1q0?
+4??+3m 7220reg p OK vi.h:581:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^void dir_calc\(char \*path\);$5??0?
-5??-1m 7220reg p OK vi.h:580:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 7220reg p OK vi.h:581:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ...e.....t....h....;
 e...r. ........nc...
 ....i.....te. \*.
 .............f.in.l;
 ..i..d......c\(c... ..a....6??0?
-6??+3m 7220reg p OK vi.h:580:a62sc %? %@2152sc!1q0?
+6??+3m 7220reg p OK vi.h:581:a62sc %? %@2152sc!1q0?
 grp 1%f+ extern int vi_hidch;.*?
 extern int vi_lncol;.*?
 /\* filesystem \*/.*?
 (extern rset \*fsincl;)7??0?
-grp 07??m 7220reg p OK vi.h:580:a72sc %? %@2152sc!0?
-1;2;3;4;5;6;7??!219reg vi.h:5802sc %? %@2132sc!0?
+grp 07??m 7220reg p OK vi.h:581:a72sc %? %@2152sc!0?
+1;2;3;4;5;6;7??!219reg vi.h:5812sc %? %@2132sc!0?
 '\''1i typedef struct {
 	rset *rs;		/* only for regex patterns */
 	char *str;		/* for simple, non-regex patterns  */
@@ -2191,9 +2191,9 @@ void rstr_free(rstr *rs);
 '\''3s/et/tr/??!219reg vi.h:180:m32sc %? %@2142sc!0?
 '\''4i 
 ??!219reg vi.h:181:m42sc %? %@2142sc!0?
-'\''5s/et/tr/??!219reg vi.h:477:m52sc %? %@2142sc!0?
-'\''6s/et/tr/??!219reg vi.h:517:m62sc %? %@2142sc!0?
-'\''7s/et/tr/??!219reg vi.h:580:m72sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+'\''5s/et/tr/??!219reg vi.h:478:m52sc %? %@2142sc!0?
+'\''6s/et/tr/??!219reg vi.h:518:m62sc %? %@2142sc!0?
+'\''7s/et/tr/??!219reg vi.h:581:m72sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'lbuf.c' 'regex.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -2614,7 +2614,7 @@ index 4f841ff4..9dc7cfb0 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 5fb56ceb..effd0545 100644
+index 9ca49dbb..2b8e39d9 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -325,7 +325,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
@@ -2645,7 +2645,7 @@ index 5fb56ceb..effd0545 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index edfba9ab..9c273317 100644
+index 0710983a..0220e26c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -110,12 +110,24 @@ typedef struct {
@@ -2684,7 +2684,7 @@ index edfba9ab..9c273317 100644
  #define lbuf_dedup(lb, str, n) \
  { for (int i = 0; i < lbuf_len(lb);) { \
  	char *s = lbuf_get(lb, i); \
-@@ -474,7 +487,7 @@ extern int xsep;
+@@ -475,7 +488,7 @@ extern int xsep;
  extern int xesc;
  extern int xexec_dep;
  extern sbuf *xacreg;
@@ -2693,7 +2693,7 @@ index edfba9ab..9c273317 100644
  extern sbuf **xregs;
  extern int xregs_n;
  extern int xdefreg;
-@@ -514,7 +527,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
+@@ -515,7 +528,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
  #define ex_print(line, ft) { RST(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
  void ex_init(char **files, int n);
  void ex_bufpostfix(struct buf *p, int clear);
@@ -2702,7 +2702,7 @@ index edfba9ab..9c273317 100644
  void ex_krsset(char *kwd, int dir);
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex);
  int ex_edit(const char *path, int len);
-@@ -577,5 +590,5 @@ void vi(int init);
+@@ -578,5 +591,5 @@ void vi(int init);
  extern int vi_hidch;
  extern int vi_lncol;
  /* filesystem */

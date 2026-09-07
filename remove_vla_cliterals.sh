@@ -1819,17 +1819,17 @@ void syn_init\(void\).*?
 	unsigned char set;	/\* subset index \*/
 	unsigned char id;	/\* id of this hl \*/
 };2??0?
-2??m 1220reg p OK vi.h:537:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.h:538:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^	int \*att;		/\* attributes of the matched groups \*/$3??0?
-3??m 1220reg p OK vi.h:537:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.h:538:a32sc %? %@2152sc!fr 981qfr 980?
 %f> struct highlight \{
 	char \*ft;		/\* the filetype of this pattern \*/
 	char \*pat;		/\* regular expression \*/4??0?
-4??+3m 1220reg p OK vi.h:537:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.h:538:a42sc %? %@2152sc!1q0?
 %f> 	unsigned char set;	/\* subset index \*/
 	unsigned char id;	/\* id of this hl \*/
 };5??0?
-5??-1m 1220reg p OK vi.h:537:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK vi.h:538:a52sc %? %@2152sc!1q0?
 %f> .t.....h...l.....\{
 	ch.....t.	..\*.th........p......h.s.....e...\*.
 	c..r..p........r..u.ar....r....o....
@@ -1837,26 +1837,26 @@ void syn_init\(void\).*?
 ..ns..ne.........t........... .nd.....
 ........d..... ...	/. id.o.....s.h....
 }.6??0?
-6??+3m 1220reg p OK vi.h:537:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK vi.h:538:a62sc %? %@2152sc!1q0?
 grp 1%f> struct highlight \{.*?
 	char \*ft;		/\* the filetype of this pattern \*/.*?
 	char \*pat;		/\* regular expression \*/.*?
 (	int \*att;		/\* attributes of the matched groups \*/)7??0?
-grp 07??m 1220reg p OK vi.h:537:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:538:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern struct filetype fts\[];
 extern const int ftslen;
 /\* syntax highlighting patterns \*/.*(extern struct highlight hls\[];)
 extern const int hlslen;
 extern const int hlopts\[];8??0?
-grp 08??-4m 1220reg p OK vi.h:537:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:538:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char \*ft;		/\* file type \*/
 	char \*pat;		/\* file name pattern \*/
 };.*(extern const int hloptslen;)
 /\* direction context: specifies the direction of a whole line \*/
 struct dircontext \{9??0?
-grp 09??-7m 1220reg p OK vi.h:537:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:5372sc %? %@2132sc!0?
-'\''1s/\*att/att[16]/??!219reg vi.h:537:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
+grp 09??-7m 1220reg p OK vi.h:538:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:5382sc %? %@2132sc!0?
+'\''1s/\*att/att[16]/??!219reg vi.h:538:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'led.c' 'regex.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -1967,7 +1967,7 @@ index 56cb42c6..3774ec03 100644
  }
  
 diff --git a/led.c b/led.c
-index 24ea2874..b805db49 100644
+index 26a5f232..e29eb4a9 100644
 --- a/led.c
 +++ b/led.c
 @@ -47,7 +47,7 @@ static void file_index(struct lbuf *buf)
@@ -2154,7 +2154,7 @@ index 4116d9c1..b89a893c 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 5fb56ceb..2e5f98e7 100644
+index 9ca49dbb..efc9c85b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -2234,10 +2234,10 @@ index 5fb56ceb..2e5f98e7 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index edfba9ab..0b114d93 100644
+index 0710983a..0fac536c 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -534,7 +534,7 @@ extern const int ftslen;
+@@ -535,7 +535,7 @@ extern const int ftslen;
  struct highlight {
  	char *ft;		/* the filetype of this pattern */
  	char *pat;		/* regular expression */

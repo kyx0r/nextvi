@@ -547,7 +547,7 @@ index 351202b0..6af4e138 100644
  
  void term_done(void)
 diff --git a/vi.c b/vi.c
-index 5fb56ceb..f8926365 100644
+index 9ca49dbb..37376f7e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1856,6 +1856,7 @@ static void setup_signals(void)
