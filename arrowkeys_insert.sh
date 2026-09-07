@@ -476,14 +476,16 @@ char \*led_read\(int \*kmap, int c\)
 		vi_insmov = 0;
 ??!219reg led.c:508:m62sc %? %@2142sc!0?
 '\''7i 		case '\''\033'\'':;	/* Arrow keys */
-			char cbuf[1];
-			cbuf[0] = '\''\0'\'';
-			int fl = fcntl(STDIN_FILENO, F_GETFL);
+			int mv, fl = fcntl(STDIN_FILENO, F_GETFL);
 			fcntl(STDIN_FILENO, F_SETFL, fl | O_NONBLOCK);
-			read(STDIN_FILENO, cbuf, 1);
-			if (*cbuf == '\''['\'') {
-				read(STDIN_FILENO, cbuf, 1);
-				c = *cbuf;
+			term_ufd.events = POLLOUT;	/* poll is always ready, read decides */
+			if (!(mv = term_read(0)))
+				icmd_pos--;		/* nothing was read, drop the nul */
+			if (mv == '\''['\'') {
+				if (!(mv = term_read(0)))
+					icmd_pos--;
+				c = mv;
+				term_ufd.events = POLLIN;
 				fcntl(STDIN_FILENO, F_SETFL, fl);
 				if (ai_max < 0) {
 					/* Prompt mode: handle arrows internally */
@@ -539,7 +541,10 @@ char \*led_read\(int \*kmap, int c\)
 				}
 				vi_insmov = c;
 				return c;
+			} else if (mv) {
+				term_dec()		/* not a sequence, put it back */
 			}
+			term_ufd.events = POLLIN;
 			fcntl(STDIN_FILENO, F_SETFL, fl);
 			return c;
 ??!219reg led.c:701:m72sc %? %@2142sc!0?
@@ -900,7 +905,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 24ea2874..f430befd 100644
+index 24ea2874..ddaeb84f 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -957,19 +962,21 @@ index 24ea2874..f430befd 100644
  		len = sb->s_n;
  		c = term_read(TK_CTL('l'));
  		noredraw:
-@@ -699,6 +703,73 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -699,6 +703,78 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  			else if (!i)
  				term_clean();
  			continue;
 +		case '\033':;	/* Arrow keys */
-+			char cbuf[1];
-+			cbuf[0] = '\0';
-+			int fl = fcntl(STDIN_FILENO, F_GETFL);
++			int mv, fl = fcntl(STDIN_FILENO, F_GETFL);
 +			fcntl(STDIN_FILENO, F_SETFL, fl | O_NONBLOCK);
-+			read(STDIN_FILENO, cbuf, 1);
-+			if (*cbuf == '[') {
-+				read(STDIN_FILENO, cbuf, 1);
-+				c = *cbuf;
++			term_ufd.events = POLLOUT;	/* poll is always ready, read decides */
++			if (!(mv = term_read(0)))
++				icmd_pos--;		/* nothing was read, drop the nul */
++			if (mv == '[') {
++				if (!(mv = term_read(0)))
++					icmd_pos--;
++				c = mv;
++				term_ufd.events = POLLIN;
 +				fcntl(STDIN_FILENO, F_SETFL, fl);
 +				if (ai_max < 0) {
 +					/* Prompt mode: handle arrows internally */
@@ -1025,13 +1032,16 @@ index 24ea2874..f430befd 100644
 +				}
 +				vi_insmov = c;
 +				return c;
++			} else if (mv) {
++				term_dec()		/* not a sequence, put it back */
 +			}
++			term_ufd.events = POLLIN;
 +			fcntl(STDIN_FILENO, F_SETFL, fl);
 +			return c;
  		case TK_CTL('o'): {
  			if (!*postref)
  				*postref = *post = uc_dup(*post);
-@@ -734,7 +805,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
+@@ -734,7 +810,7 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po
  int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg)
  {
  	int n, key, off;
@@ -1040,7 +1050,7 @@ index 24ea2874..f430befd 100644
  	ins_state _is;
  	vi_lncol = 0;
  	if (flg & 2) {
-@@ -754,6 +825,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
+@@ -754,6 +830,8 @@ int led_prompt(sbuf *sb, char *insert, int *kmap, ins_state *is, int ps, int flg
  			&off, kmap, is, 0, xrow, xtop, flg);
  	restore(xtd)
  	restore(xleft)
@@ -1049,7 +1059,7 @@ index 24ea2874..f430befd 100644
  	if (key == '\n' && flg & 1) {
  		lbuf_dedup(tempbufs[0].lb, sb->s + n, sb->s_n - n)
  		temp_pos(0, -1, 0, 0);
-@@ -784,7 +857,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
+@@ -784,7 +862,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
  			return key;
  		}
  		sbuf_chr(sb, key)
