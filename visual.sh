@@ -215,9 +215,9 @@ static void vi_drawagain\(int i\)
 \{
 	static sbuf \*savepath\[5];8??0?
 grp 08??-19m 5220reg p OK vi.c:497:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> static char rep_cmd\[sizeof\(icmd\)];	/\* the last command \*/
+m 01;0grp 1%f> static char rep_cmd\[sizeof\(ticmd\)];	/\* the last command \*/
 static int rep_len;
-#define rep_record\(\) memcpy\(rep_cmd, icmd, icmd_pos\); rep_len = icmd_pos;.*(	static rset \*bre;)
+#define rep_record\(\) memcpy\(rep_cmd, ticmd, ticmd_pos\); rep_len = ticmd_pos;.*(	static rset \*bre;)
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;9??0?
 grp 09??-22m 5220reg p OK vi.c:497:a92sc %? %@2152sc!'\''00?
@@ -257,9 +257,9 @@ static int rep_len;
 \{
 	static sbuf \*savepath\[5];8??0?
 grp 08??-14m 6220reg p OK vi.c:502:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> static char rep_cmd\[sizeof\(icmd\)];	/\* the last command \*/
+m 01;0grp 1%f> static char rep_cmd\[sizeof\(ticmd\)];	/\* the last command \*/
 static int rep_len;
-#define rep_record\(\) memcpy\(rep_cmd, icmd, icmd_pos\); rep_len = icmd_pos;.*(	static rset \*bre;)
+#define rep_record\(\) memcpy\(rep_cmd, ticmd, ticmd_pos\); rep_len = ticmd_pos;.*(	static rset \*bre;)
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;9??0?
 grp 09??-17m 6220reg p OK vi.c:502:a92sc %? %@2152sc!'\''00?
@@ -295,9 +295,9 @@ static int rep_len;
 \{
 	static sbuf \*savepath\[5];8??0?
 grp 08??-12m 7220reg p OK vi.c:504:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> static char rep_cmd\[sizeof\(icmd\)];	/\* the last command \*/
+m 01;0grp 1%f> static char rep_cmd\[sizeof\(ticmd\)];	/\* the last command \*/
 static int rep_len;
-#define rep_record\(\) memcpy\(rep_cmd, icmd, icmd_pos\); rep_len = icmd_pos;.*(	static rset \*bre;)
+#define rep_record\(\) memcpy\(rep_cmd, ticmd, ticmd_pos\); rep_len = ticmd_pos;.*(	static rset \*bre;)
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;9??0?
 grp 09??-15m 7220reg p OK vi.c:504:a92sc %? %@2152sc!'\''00?
@@ -341,9 +341,9 @@ static int rep_len;
 \{
 	static sbuf \*savepath\[5];8??0?
 grp 08??-9m 8220reg p OK vi.c:507:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> static char rep_cmd\[sizeof\(icmd\)];	/\* the last command \*/
+m 01;0grp 1%f> static char rep_cmd\[sizeof\(ticmd\)];	/\* the last command \*/
 static int rep_len;
-#define rep_record\(\) memcpy\(rep_cmd, icmd, icmd_pos\); rep_len = icmd_pos;.*(	static rset \*bre;)
+#define rep_record\(\) memcpy\(rep_cmd, ticmd, ticmd_pos\); rep_len = ticmd_pos;.*(	static rset \*bre;)
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;9??0?
 grp 09??-12m 8220reg p OK vi.c:507:a92sc %? %@2152sc!'\''00?
@@ -391,9 +391,9 @@ static int rep_len;
 \{
 	static sbuf \*savepath\[5];8??0?
 grp 08??-5m 9220reg p OK vi.c:511:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> static char rep_cmd\[sizeof\(icmd\)];	/\* the last command \*/
+m 01;0grp 1%f> static char rep_cmd\[sizeof\(ticmd\)];	/\* the last command \*/
 static int rep_len;
-#define rep_record\(\) memcpy\(rep_cmd, icmd, icmd_pos\); rep_len = icmd_pos;.*(	static rset \*bre;)
+#define rep_record\(\) memcpy\(rep_cmd, ticmd, ticmd_pos\); rep_len = ticmd_pos;.*(	static rset \*bre;)
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;9??0?
 grp 09??-8m 9220reg p OK vi.c:511:a92sc %? %@2152sc!'\''00?
@@ -797,12 +797,12 @@ static int vc_motion\(int cmd\)
 %f+ 			case '\''S'\'':
 				term_push\("cc", 2\);
 				motion:
-				icmd_pos--;
+				ticmd_pos--;
 				goto re_motion;1??0?
 1??+1m 231q0?
 %f+ 				term_push\("cc", 2\);
 				motion:
-				icmd_pos--;
+				ticmd_pos--;
 				goto re_motion;2??0?
 2??m 23220reg p OK vi.c:1673:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				term_push\("cc", 2\);$3??0?
@@ -810,14 +810,14 @@ static int vc_motion\(int cmd\)
 ;0fr.,$f+ ^			case '\''S'\'':$4??0?
 4??+1m 23220reg p OK vi.c:1673:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 				motion:
-				icmd_pos--;
+				ticmd_pos--;
 				goto re_motion;5??0?
 5??-1m 23220reg p OK vi.c:1673:a52sc %? %@2152sc!1q0?
-%f+ 	...........
-..	.t.r......."..".....
-....m.....:
-	.........os-..
-.		....o..e_....o.;6??0?
+%f+ .	.c..e .S'\''.
+	............."........
+..		....o..
+.......md_.o....
+.	...ot.......ti..;6??0?
 6??+1m 23220reg p OK vi.c:1673:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			case '\''S'\'':.*?
 (				term_push\("cc", 2\);)7??0?
@@ -1463,7 +1463,7 @@ index a51117ca..321d4b59 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..8db2a8bd 100644
+index 03ed7b03..5dda1f19 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1984,7 +1984,7 @@ index 9ca49dbb..8db2a8bd 100644
 +				else
 +					term_push("cc", 2);
  				motion:
- 				icmd_pos--;
+ 				ticmd_pos--;
  				goto re_motion;
 @@ -1736,6 +2121,13 @@ void vi(int init)
  				vc_status(0);
