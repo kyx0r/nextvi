@@ -467,7 +467,7 @@ char \*led_read\(int \*kmap, int c\)
 '\''2s/f\)/f, int print)/??!219reg led.c:358:m22sc %? %@2142sc!0?
 '\''3,#+1c 	if (print) {
 		syn_scdir(0);
-		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
+		led_crender(r->s, -1, lncol, xleft, xleft + xcols - lncol);
 	}
 ??!219reg led.c:385:m32sc %? %@2142sc!0?
 '\''4s/f\)/f, 1)/??!219reg led.c:444:m42sc %? %@2142sc!0?
@@ -905,7 +905,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 26a5f232..ef1c721c 100644
+index 26a5f232..bb563604 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -933,7 +933,7 @@ index 26a5f232..ef1c721c 100644
 -	led_crender(r->s, -1, lncol, xleft, xleft + xcols - lncol);
 +	if (print) {
 +		syn_scdir(0);
-+		led_crender(r->s, -1, vi_lncol, xleft, xleft + xcols - vi_lncol);
++		led_crender(r->s, -1, lncol, xleft, xleft + xcols - lncol);
 +	}
  	term_pos(-1, led_pos(r->s, pos) + lncol);
  	sbufn_cut(sb, psn)

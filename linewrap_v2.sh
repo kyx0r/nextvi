@@ -4194,7 +4194,7 @@ static void vi_drawscroll(int n)
 		term_pos(xrow - xtop, (pos) + (lncol)); \
 } \
 ??!219reg vi.c:1165:m402sc %? %@2142sc!0?
-'\''41c 		vi_curpos(led_pos(lbuf_get(xb, xrow), vi_col), 0)
+'\''41c 		vi_curpos(led_pos(lbuf_get(xb, xrow), vi_col), vi_lncol)
 ??!219reg vi.c:1176:m412sc %? %@2142sc!0?
 '\''43i 		int otopsub = xtopsub;
 ??!219reg vi.c:1183:m432sc %? %@2142sc!0?
@@ -5997,12 +5997,12 @@ void vi\(int init\)5??0?
 		win_save\(\);
 		vi_redraw\(\);
 		term_pos\(curwin->y \+ xrow - xtop,
-		vi_curpos\(led_pos\(lbuf_get\(xb, xrow\), vi_col\), 0\)
+		vi_curpos\(led_pos\(lbuf_get\(xb, xrow\), vi_col\), vi_lncol\)
 	}
 	while \(!xquit\) \{1??0?
 1??+3m 381q0?
 %f+ 		term_pos\(curwin->y \+ xrow - xtop,
-		vi_curpos\(led_pos\(lbuf_get\(xb, xrow\), vi_col\), 0\)
+		vi_curpos\(led_pos\(lbuf_get\(xb, xrow\), vi_col\), vi_lncol\)
 	}
 	while \(!xquit\) \{2??0?
 2??m 38220reg p OK vi.c:1607:a22sc %? %@2152sc!1q0?
@@ -6012,7 +6012,7 @@ void vi\(int init\)5??0?
 		win_save\(\);
 		vi_redraw\(\);4??0?
 4??+3m 38220reg p OK vi.c:1607:a42sc %? %@2152sc!1q0?
-%f+ 		vi_curpos\(led_pos\(lbuf_get\(xb, xrow\), vi_col\), 0\)
+%f+ 		vi_curpos\(led_pos\(lbuf_get\(xb, xrow\), vi_col\), vi_lncol\)
 	}
 	while \(!xquit\) \{5??0?
 5??-1m 38220reg p OK vi.c:1607:a52sc %? %@2152sc!0?
@@ -6991,7 +6991,7 @@ exit 0
  		win_save();
  		vi_redraw();
 -		term_pos(curwin->y + xrow - xtop,
- 		vi_curpos(led_pos(lbuf_get(xb, xrow), vi_col), 0)
+ 		vi_curpos(led_pos(lbuf_get(xb, xrow), vi_col), vi_lncol)
  	}
  	while (!xquit) {
 @@ -1632,7 +1660,7 @@
@@ -7407,7 +7407,7 @@ index 4116d9c1..3ee3a07f 100644
  		for (n = 0; n < max && (l = uc_len(ss)); n++)
  			ss += l;
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..003997d1 100644
+index 9ca49dbb..3c4e5ee2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -111,6 +111,195 @@ static int vi_nextcol(char *ln, int dir, int *off)
@@ -8012,7 +8012,7 @@ index 9ca49dbb..003997d1 100644
  		vi_col = vi_off2col(xb, xrow, xoff);
  		vi_drawagain(xtop);
 -		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), vi_col) + vi_lncol);
-+		vi_curpos(led_pos(lbuf_get(xb, xrow), vi_col), 0)
++		vi_curpos(led_pos(lbuf_get(xb, xrow), vi_col), vi_lncol)
  	}
  	while (!xquit) {
  		int nrow = xrow;

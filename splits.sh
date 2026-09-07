@@ -1237,8 +1237,8 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg\
 '\''3,#+1c 	if (pos >= xleft + winw || pos < xleft)
 		xleft = pos < winw ? 0 : pos - winw / 2;
 ??!219reg led.c:383:m32sc %? %@2142sc!0?
-'\''4,#+1c 	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
-	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
+'\''4,#+1c 	led_crender(r->s, -1, winx + lncol, xleft, xleft + winw - lncol);
+	term_pos(-1, winx + led_pos(r->s, pos) + lncol);
 ??!219reg led.c:386:m42sc %? %@2142sc!0?
 '\''5s/g\)/g, int inwin)/??!219reg led.c:452:m52sc %? %@2142sc!0?
 '\''6i 	int winx = inwin ? curwin->x : 0;	/* prompts own the terminal */
@@ -3636,7 +3636,7 @@ static void vi_redraw(void)
 '\''24,#+1c 		win_save();
 		vi_redraw();
 		term_pos(curwin->y + xrow - xtop,
-			curwin->x + led_pos(lbuf_get(xb, xrow), vi_col));
+			curwin->x + led_pos(lbuf_get(xb, xrow), vi_col) + vi_lncol);
 ??!219reg vi.c:1175:m242sc %? %@2142sc!0?
 '\''25s/xrows/curwin->h/??!219reg vi.c:1199:m252sc %? %@2142sc!0?
 '\''26s/xrows/curwin->h/??!219reg vi.c:1224:m262sc %? %@2142sc!0?
@@ -4556,7 +4556,7 @@ index 0ce81414..d06d4804 100644
  	do {
  		xmpt = 0;
 diff --git a/led.c b/led.c
-index 26a5f232..878ebd0e 100644
+index 26a5f232..4289a56f 100644
 --- a/led.c
 +++ b/led.c
 @@ -94,7 +94,7 @@ static char *kmap_map(int kmap, int c)
@@ -4589,8 +4589,8 @@ index 26a5f232..878ebd0e 100644
  	syn_scdir(0);
 -	led_crender(r->s, -1, lncol, xleft, xleft + xcols - lncol);
 -	term_pos(-1, led_pos(r->s, pos) + lncol);
-+	led_crender(r->s, -1, winx + vi_lncol, xleft, xleft + winw - vi_lncol);
-+	term_pos(-1, winx + led_pos(r->s, pos) + vi_lncol);
++	led_crender(r->s, -1, winx + lncol, xleft, xleft + winw - lncol);
++	term_pos(-1, winx + led_pos(r->s, pos) + lncol);
  	sbufn_cut(sb, psn)
  	rstate -= 2;
  }
@@ -4705,7 +4705,7 @@ index 351202b0..79563c52 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..41e4b12a 100644
+index 9ca49dbb..7eb4c40b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
@@ -4986,7 +4986,7 @@ index 9ca49dbb..41e4b12a 100644
 +		win_save();
 +		vi_redraw();
 +		term_pos(curwin->y + xrow - xtop,
-+			curwin->x + led_pos(lbuf_get(xb, xrow), vi_col));
++			curwin->x + led_pos(lbuf_get(xb, xrow), vi_col) + vi_lncol);
  	}
  	while (!xquit) {
  		int nrow = xrow;
