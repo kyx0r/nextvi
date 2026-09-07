@@ -231,11 +231,6 @@ Improvements to autocomplete: the word completion now also uses
 text that prefixes the insert when it makes sense. This makes it
 possible to autocomplete in more situations.
 
-ac_lines.sh
---------------
-Adds <^K> in insert mode: it indexes whole lines for autocomplete.
-This takes <^K> from the digraph key.
-
 tab_complete.sh
 --------------
 Adds path completion to the ex prompt, bound to TAB. The word before
