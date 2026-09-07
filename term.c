@@ -1,4 +1,5 @@
 static struct termios termios;
+struct pollfd term_ufd = {STDIN_FILENO, POLLIN};
 sbuf *term_sbuf;
 int term_record;
 int term_winch;
@@ -139,7 +140,6 @@ void term_push(char *s, unsigned int n)
 
 int term_read(int winch)
 {
-	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 	int cw;
 	if (ibuf_pos >= ibuf_cnt) {
 		if (texec) {
@@ -154,7 +154,7 @@ int term_read(int winch)
 		cw = 0;
 		re:
 		/* read a single input character */
-		if (xquit < 0 || poll(&ufd, 1, -1) <= 0 ||
+		if (xquit < 0 || poll(&term_ufd, 1, -1) <= 0 ||
 				read(STDIN_FILENO, ibuf, 1) <= 0) {
 			xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
 			if (term_winch && winch && xquit >= 0) {
