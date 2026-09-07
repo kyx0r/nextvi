@@ -17,7 +17,7 @@ New in core:
 6. Evolved syntax highlight extension system (former led_attsb). Now
    extensions are exposed to rendering and its' precomputed state. Extensions
    can reflect and build logic on top of existing highlights.
-   Features efficient tripple system with length encoding.
+   Features efficient triple system with length encoding.
 
 New in builds:
 1. Build shell scripts (cbuild.sh, build_patch2vi.sh) accept options
@@ -54,7 +54,7 @@ Bug fixes:
     are dropped from the render cache — protects against rare stale-text glitches
     or crashes.
 11. Files that report a size of zero but do have content (e.g. /proc, /sys)
-    now open with their contents instead of appearing empt
+    now open with their contents instead of appearing empty
 
 Patch2vi 1.1 changes:
 1. Compat block bodies start with :m!. Mark ids restart per file per
