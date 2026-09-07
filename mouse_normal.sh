@@ -151,11 +151,9 @@ static struct excmd \{
 '\''1-1i int xms = 1;			/* mouse in normal mode */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i _EO(ms,
+	term_mouse_off();		/* writes only if it was on */
 	xms = !*arg ? !xms : eo_val(arg);
-	if (xms)
-		write(1, "\x1b[?1000h\x1b[?1006h", 16); /* mouse on */
-	else
-		write(1, "\x1b[?1000l\x1b[?1006l", 16); /* mouse off */
+	term_mouse_on();
 	return NULL;
 )
 
@@ -412,15 +410,17 @@ int term_read\(int winch\)
 grp 09??-7m 4220reg p OK term.c:140:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg term.c:1402sc %? %@2132sc!0?
 '\''1-1i int xmouse_col, xmouse_row;
+/* mouse tracking is a normal mode feature and its escapes are written
+ * straight to stdout, so ex mode, whose stdout is often a pipe, is out */
 void term_mouse_on(void)
 {
-	if (xms)
+	if (xms && !(xvis & 2))
 		write(1, "\x1b[?1000h\x1b[?1006h", 16);
 }
 
 void term_mouse_off(void)
 {
-	if (xms)
+	if (xms && !(xvis & 2))
 		write(1, "\x1b[?1000l\x1b[?1006l", 16);
 }
 
@@ -848,7 +848,7 @@ index a51117ca..5c60bbb7 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..32c5de1a 100644
+index 0ce81414..0077cee1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -856,23 +856,21 @@ index 0ce81414..32c5de1a 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1725,6 +1726,15 @@ _EO(left,
+@@ -1725,6 +1726,13 @@ _EO(left,
  	return NULL;
  )
  
 +_EO(ms,
++	term_mouse_off();		/* writes only if it was on */
 +	xms = !*arg ? !xms : eo_val(arg);
-+	if (xms)
-+		write(1, "\x1b[?1000h\x1b[?1006h", 16); /* mouse on */
-+	else
-+		write(1, "\x1b[?1000l\x1b[?1006l", 16); /* mouse off */
++	term_mouse_on();
 +	return NULL;
 +)
 +
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1778,6 +1788,7 @@ static struct excmd {
+@@ -1778,6 +1786,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -929,27 +927,29 @@ index 24ea2874..6256862b 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 351202b0..12f80c6d 100644
+index 351202b0..9108ddb2 100644
 --- a/term.c
 +++ b/term.c
-@@ -1,3 +1,16 @@
+@@ -1,3 +1,18 @@
 +int xmouse_col, xmouse_row;
++/* mouse tracking is a normal mode feature and its escapes are written
++ * straight to stdout, so ex mode, whose stdout is often a pipe, is out */
 +void term_mouse_on(void)
 +{
-+	if (xms)
++	if (xms && !(xvis & 2))
 +		write(1, "\x1b[?1000h\x1b[?1006h", 16);
 +}
 +
 +void term_mouse_off(void)
 +{
-+	if (xms)
++	if (xms && !(xvis & 2))
 +		write(1, "\x1b[?1000l\x1b[?1006l", 16);
 +}
 +
  static struct termios termios;
  struct pollfd term_ufd = {STDIN_FILENO, POLLIN};
  sbuf *term_sbuf;
-@@ -32,12 +45,14 @@ void term_init(void)
+@@ -32,12 +47,14 @@ void term_init(void)
  	}
  	xcols = xcols ? xcols : 80;
  	xrows = xrows ? xrows : 25;
@@ -964,7 +964,7 @@ index 351202b0..12f80c6d 100644
  	term_commit();
  	sbuf_free(term_sbuf)
  	tcsetattr(term_ufd.fd, 0, &termios);
-@@ -138,6 +153,88 @@ void term_push(char *s, unsigned int n)
+@@ -138,6 +155,88 @@ void term_push(char *s, unsigned int n)
  	ibuf_cnt += n;
  }
  
