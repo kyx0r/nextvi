@@ -2447,7 +2447,7 @@ if \(xrow < xtop\) \\.*?
 else if \(xrow >= xtop \+ xrows\) \\
 	xtop = xrow - xrows \+ 1; \\.*(		int otop = xtop;)
 		int oleft = xleft;
-		icmd_pos = 0;9??0?
+		ticmd_pos = 0;9??0?
 grp 09??-8m 24220reg p OK vi.c:1175:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:11752sc %? %@2132sc!0?
 ?0?
@@ -3224,7 +3224,7 @@ else if \(xrow >= xtop \+ xrows\) \\
 					continue;
 				break;8??0?
 grp 08??-4m 44220reg p OK vi.c:1684:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 				icmd_pos--;
+m 01;0grp 1%f> 				ticmd_pos--;
 				goto re_motion;
 			case '\''r'\'':.*(			case '\''Z'\'':)
 				k = term_read\(0\);
@@ -3721,13 +3721,13 @@ void term_pos\(int r, int c\);.*?
 #define term_scrl\(\)	term_write\("\\033\[\?1049l", 8\)
 #define term_scrh\(\)	term_write\("\\033\[\?1049h", 8\).*(char \*term_att\(int att\);)
 void term_push\(char \*s, unsigned int n\);
-#define term_dec\(\) ibuf_pos--; icmd_pos--;8??0?
+#define term_dec\(\) tibuf_pos--; ticmd_pos--;8??0?
 grp 08??-4m 1220reg p OK vi.h:334:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void term_init\(void\);
 void term_done\(void\);
 void term_clean\(void\);.*(#define term_exec\(s, n, type\) \\)
 \{ \\
-	preserve\(int, tn, tn = 0;\) \\9??0?
+	preserve\(int, texec_n, texec_n = 0;\) \\9??0?
 grp 09??-7m 1220reg p OK vi.h:334:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.h:3342sc %? %@2132sc!0?
 ?0?
@@ -4680,7 +4680,7 @@ index 26a5f232..4289a56f 100644
  				term_clean();
  			continue;
 diff --git a/term.c b/term.c
-index 351202b0..79563c52 100644
+index 03aa736f..df9a62fb 100644
 --- a/term.c
 +++ b/term.c
 @@ -86,6 +86,20 @@ void term_kill(void)
@@ -4705,7 +4705,7 @@ index 351202b0..79563c52 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..7eb4c40b 100644
+index 03ed7b03..31d05f41 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -102,6 +102,23 @@ static void vi_drawmsg(char *msg)
@@ -5193,7 +5193,7 @@ index 9ca49dbb..7eb4c40b 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index 0710983a..768f576e 100644
+index 7c7d9e2c..36f39ef0 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -332,6 +332,7 @@ void term_suspend(void);
