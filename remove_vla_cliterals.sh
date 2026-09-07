@@ -2154,7 +2154,7 @@ index 4116d9c1..b89a893c 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..efc9c85b 100644
+index 03ed7b03..9c78881f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)
@@ -2234,7 +2234,7 @@ index 9ca49dbb..efc9c85b 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index 0710983a..0fac536c 100644
+index 7c7d9e2c..fa9d8e71 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -535,7 +535,7 @@ extern const int ftslen;
