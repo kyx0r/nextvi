@@ -200,12 +200,12 @@ void led_render\(char \*s0, int cbeg, int cend\)
 ?0?
 %f+ 	if \(xhl == 1\)
 		syn_highlight\(att, bound \? bound : s0, MIN\(n, cterm\)\);
-	if \(extsb && xhl > 0\) \{
+	if \(extsb && extsb->s_n && xhl > 0\) \{
 		led_ctx x;
 		x\.att = att;1??0?
 1??+1m 61q0?
 %f+ 		syn_highlight\(att, bound \? bound : s0, MIN\(n, cterm\)\);
-	if \(extsb && xhl > 0\) \{
+	if \(extsb && extsb->s_n && xhl > 0\) \{
 		led_ctx x;
 		x\.att = att;2??0?
 2??m 6220reg p OK led.c:306:a22sc %? %@2152sc!1q0?
@@ -213,15 +213,15 @@ void led_render\(char \*s0, int cbeg, int cend\)
 3??m 6220reg p OK led.c:306:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	if \(xhl == 1\)$4??0?
 4??+1m 6220reg p OK led.c:306:a42sc %? %@2152sc!fr 981qfr 980?
-%f+ 	if \(extsb && xhl > 0\) \{
+%f+ 	if \(extsb && extsb->s_n && xhl > 0\) \{
 		led_ctx x;
 		x\.att = att;5??0?
 5??-1m 6220reg p OK led.c:306:a52sc %? %@2152sc!1q0?
-%f+ ..f .....==.1\)
-.	..._..........a..,....nd.\? ..u.. ...0,......, ........
-..f .....b... xh..> .. .
-.	........x.
-........=...t;6??0?
+%f+ ... ...l.....\)
+	...n_.i....g......................:.s......\(........\)..
+	...\(...sb... .x.s...... .& ..... ....
+...e._... ..
+..x.......a...6??0?
 6??+1m 6220reg p OK led.c:306:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	if \(xhl == 1\).*?
 (		syn_highlight\(att, bound \? bound : s0, MIN\(n, cterm\)\);)7??0?
@@ -278,7 +278,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 95b7893b..24863d69 100644
+index 24ea2874..192292d1 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,7 @@
@@ -338,6 +338,6 @@ index 95b7893b..24863d69 100644
  	if (xhl == 1)
 -		syn_highlight(att, bound ? bound : s0, MIN(n, cterm));
 +		syn_highlight(att, bound ? bound : s0, MIN(n, fcterm));
- 	if (extsb && xhl > 0) {
+ 	if (extsb && extsb->s_n && xhl > 0) {
  		led_ctx x;
  		x.att = att;

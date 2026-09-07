@@ -302,7 +302,7 @@ index 0ce81414..8fd32ac9 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 95b7893b..a3209888 100644
+index 24ea2874..168b2ac7 100644
 --- a/led.c
 +++ b/led.c
 @@ -808,4 +808,6 @@ void led_done(void)

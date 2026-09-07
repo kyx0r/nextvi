@@ -753,7 +753,7 @@ index a51117ca..f0389275 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index 95b7893b..818fa065 100644
+index 24ea2874..6d15b545 100644
 --- a/led.c
 +++ b/led.c
 @@ -510,6 +510,11 @@ static int led_line(sbuf *sb, int ps, int pre, char **post, int postn, char **po

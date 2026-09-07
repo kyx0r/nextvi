@@ -280,7 +280,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 95b7893b..ef323de8 100644
+index 24ea2874..b435ebe0 100644
 --- a/led.c
 +++ b/led.c
 @@ -4,9 +4,28 @@ static sbuf *extsb;

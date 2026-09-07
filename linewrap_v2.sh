@@ -7223,7 +7223,7 @@ index 0ce81414..3cc2b65b 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
 diff --git a/led.c b/led.c
-index 95b7893b..b71d21a3 100644
+index 24ea2874..573ea05a 100644
 --- a/led.c
 +++ b/led.c
 @@ -354,6 +354,11 @@ static int led_lastword(char *s)

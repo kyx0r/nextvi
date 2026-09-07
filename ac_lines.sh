@@ -212,7 +212,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 95b7893b..b9431656 100644
+index 24ea2874..ee1d4789 100644
 --- a/led.c
 +++ b/led.c
 @@ -35,9 +35,8 @@ static int search(const char *pattern, int l)

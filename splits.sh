@@ -4556,7 +4556,7 @@ index 0ce81414..d06d4804 100644
  	do {
  		xmpt = 0;
 diff --git a/led.c b/led.c
-index 95b7893b..148bd05a 100644
+index 24ea2874..9d307cd8 100644
 --- a/led.c
 +++ b/led.c
 @@ -94,7 +94,7 @@ static char *kmap_map(int kmap, int c)

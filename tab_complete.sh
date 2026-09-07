@@ -1083,7 +1083,7 @@ index 0ce81414..0836f1d5 100644
  	EO(hll),
  	EO(hlw),
 diff --git a/led.c b/led.c
-index 95b7893b..ca149494 100644
+index 24ea2874..29ff0897 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,5 +1,6 @@
