@@ -267,7 +267,7 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;
 			else if \(argv\[i]\[j] == '\''m'\''\).*(	})
-	ibuf = emalloc\(ibuf_sz\);
+	tibuf = emalloc\(tibuf_sz\);
 	if \(!\(xvis & 1\)\)8??0?
 grp 08??-9m 1220reg p OK vi.c:1883:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
@@ -317,7 +317,7 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;
 			else if \(argv\[i]\[j] == '\''m'\''\).*(	})
-	ibuf = emalloc\(ibuf_sz\);
+	tibuf = emalloc\(tibuf_sz\);
 	if \(!\(xvis & 1\)\)8??0?
 grp 08??-4m 2220reg p OK vi.c:1888:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
@@ -454,7 +454,7 @@ index 0ce81414..57cae985 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..0642a532 100644
+index 03ed7b03..b2049603 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1881,11 +1881,13 @@ int main(int argc, char *argv[])
@@ -473,7 +473,7 @@ index 9ca49dbb..0642a532 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 0710983a..c7392d84 100644
+index 7c7d9e2c..8eca1422 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -435,6 +435,7 @@ struct buf {
