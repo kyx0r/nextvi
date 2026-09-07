@@ -354,7 +354,7 @@ static int led_lastword(char *s)
 	return r - s;
 }
 
-static void led_printparts(sbuf *sb, int ai_max, int pre, int ps,
+static void led_printparts(sbuf *sb, int pre, int ps,
 	char *post, int postn, int *poff)
 {
 	if (!xled) {
@@ -362,7 +362,7 @@ static void led_printparts(sbuf *sb, int ai_max, int pre, int ps,
 		return;
 	}
 	int dir, off, pos, psn = sb->s_n;
-	int lncol = ai_max >= 0 ? vi_lncol : 0;
+	int lncol = poff == &xoff ? vi_lncol : 0;
 	sbuf_str(sb, post)
 	sbuf_nul4(sb)
 	/* XXX: O(n) insertion; recursive array data structure cannot be optimized.
@@ -441,11 +441,11 @@ char *led_read(int *kmap, int c)
 	la->ola = ola; \
 	la->cnt = 1; \
 	sbuf_str(sb, buf) \
-	led_printparts(sb, ai_max, pre, ps, *post, postn, poff); \
+	led_printparts(sb, pre, ps, *post, postn, poff); \
 	sbuf_cut(sb, len) \
 	led_extdel(la); \
 	c = term_read(TK_CTL('l')); \
-	led_printparts(sb, ai_max, pre, ps, *post, postn, poff); \
+	led_printparts(sb, pre, ps, *post, postn, poff); \
 	goto noredraw; \
 } \
 
@@ -506,7 +506,7 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
 	int len, c, i;
 	sbuf *reg;
 	do {
-		led_printparts(sb, ai_max, pre, ps, *post, postn, poff);
+		led_printparts(sb, pre, ps, *post, postn, poff);
 		len = sb->s_n;
 		c = term_read(TK_CTL('l'));
 		noredraw:
@@ -784,7 +784,7 @@ int led_input(sbuf *sb, char *post, int postn, int row, int flg, int *pren)
 			return key;
 		}
 		sbuf_chr(sb, key)
-		led_printparts(sb, ai_max, -1, ps, "", 0, &xoff);
+		led_printparts(sb, -1, ps, "", 0, &xoff);
 		term_chr('\n');
 		term_room(1);
 		crow++;
