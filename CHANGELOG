@@ -88,7 +88,10 @@ Patch changes:
    Implemented visual column conversion for block select (vb) fixing
    misalignment with multi width characters. Fixed [ ] mark offsets
    for visual block mode edits. Implemented adaptive chameleon cursor color.
-9. Trivial bug fixing in other patches not worth mentioning.
+9. [stdin_pipe.sh](https://github.com/kyx0r/nextvi/blob/release/stdin_pipe.sh)
+   Implicit compatibility with patches that use rely on reading stdin, e.g
+   arrowkeys_insert.sh
+10. Trivial bug fixing in other patches not worth mentioning.
 
 ------------------
 7.4 Basilisk
