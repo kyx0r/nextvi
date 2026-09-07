@@ -1133,6 +1133,9 @@ EX OPTIONS
              :grp 1:%f+int(.):grp
 
      hl[1]   Highlight text based on rules defined in conf.c
+
+             Value greater than 1 highlights using C extensions only.
+
      hlr[0]  Highlight text in reverse direction
      hll[0]  Highlight current line based on filetype hl
      hlp[0]  Highlight "[]" "()" "{}" pairs based on filetype hl
@@ -1177,7 +1180,7 @@ EX OPTIONS
 
      pr[0]   Print register
 
-             Set a special register using a character or a number.
+             Set a special register with a character or a number.
              Once the register is set, all ex printed output will
              be stored in the register.
 
@@ -1194,7 +1197,7 @@ EX OPTIONS
 
      fr[0]   Find register
 
-             Set a register using a character or a number.
+             Set a register with a character or a number.
              Once the register is set, the :f> and :f+ commands perform a
              multi-line search forward on the contents of the register instead
              of the current buffer. Range maps the match to a position in
@@ -1207,7 +1210,7 @@ EX OPTIONS
 
      rr[0]   Record register
 
-             Set a register using a character or a number.
+             Set a register with a character or a number.
              Once the register is set, every byte read from the terminal is
              appended to the register. Input replayed from registers is not
              recorded.
@@ -1472,4 +1475,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.5                     September 6, 2026                    Nextvi 7.5
+Nextvi 7.5                     September 7, 2026                    Nextvi 7.5
