@@ -1899,7 +1899,7 @@ index 4116d9c1..dde17c64 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..ac0706ac 100644
+index 03ed7b03..14fc271e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,8 @@ for (i = 0, ret = 0;; i++) { \
@@ -1970,7 +1970,7 @@ index 9ca49dbb..ac0706ac 100644
  		ln = lbuf_get(xb, xrow);
  		xoff = ren_noeol(ln, xoff);
 diff --git a/vi.h b/vi.h
-index 0710983a..007c29c3 100644
+index 7c7d9e2c..2d4841e7 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -129,10 +129,12 @@ struct lopt {

@@ -2614,7 +2614,7 @@ index 4f841ff4..9dc7cfb0 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..2b8e39d9 100644
+index 03ed7b03..4630c5a8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -325,7 +325,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
@@ -2645,7 +2645,7 @@ index 9ca49dbb..2b8e39d9 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index 0710983a..0220e26c 100644
+index 7c7d9e2c..19ffc2a2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -110,12 +110,24 @@ typedef struct {

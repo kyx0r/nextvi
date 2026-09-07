@@ -147,17 +147,17 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 		exit\(1\);
 	}
 	if \(ifd\)2??0?
-2??m 1220reg p OK term.c:238:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK term.c:239:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^		execvp\(argv\[0], argv\);$3??0?
-3??m 1220reg p OK term.c:238:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK term.c:239:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
 		}4??0?
-4??+3m 1220reg p OK term.c:238:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK term.c:239:a42sc %? %@2152sc!1q0?
 %f> 		exit\(1\);
 	}
 	if \(ifd\)5??0?
-5??-1m 1220reg p OK term.c:238:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK term.c:239:a52sc %? %@2152sc!1q0?
 %f> 	......e.pi....s.\[0]..
 ........\(....fd......;
 	..
@@ -165,30 +165,30 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 .........;
 .}
 .i...if..6??0?
-6??+3m 1220reg p OK term.c:238:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK term.c:239:a62sc %? %@2152sc!1q0?
 grp 1%f> 			close\(pipefds1\[0]\);.*?
 			close\(pipefds1\[1]\);.*?
 		}.*?
 (		execvp\(argv\[0], argv\);)7??0?
-grp 07??m 1220reg p OK term.c:238:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK term.c:239:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		if \(ofd\) \{		/\* setting up stdout and stderr \*/
 			dup2\(pipefds1\[1], 1\);
 			dup2\(pipefds1\[1], 2\);.*(		close\(pipefds0\[0]\);)
 	if \(ofd\)
 		close\(pipefds1\[1]\);8??0?
-grp 08??-4m 1220reg p OK term.c:238:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK term.c:239:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			close\(pipefds0\[1]\);
 			close\(pipefds0\[0]\);
 		}.*(	if \(pid < 0\) \{)
 		if \(ifd\)
 			close\(pipefds0\[1]\);9??0?
-grp 09??-7m 1220reg p OK term.c:238:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:2382sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK term.c:239:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:2392sc %? %@2132sc!0?
 '\''1c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);
-??!219reg term.c:238:m12sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg term.c:239:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> /\* vi\.h: shared definitions across files \*/
 
 /\* helper macros \*/
@@ -280,10 +280,10 @@ index 0ce81414..b835e112 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 351202b0..5223c929 100644
+index 03aa736f..0706305d 100644
 --- a/term.c
 +++ b/term.c
-@@ -235,7 +235,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -236,7 +236,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}
@@ -296,7 +296,7 @@ index 351202b0..5223c929 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 0710983a..5a5f002b 100644
+index 7c7d9e2c..dddacac9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@
