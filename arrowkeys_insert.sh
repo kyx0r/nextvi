@@ -480,10 +480,10 @@ char \*led_read\(int \*kmap, int c\)
 			fcntl(term_ufd.fd, F_SETFL, fl | O_NONBLOCK);
 			term_ufd.events = POLLOUT;	/* poll is always ready, read decides */
 			if (!(mv = term_read(0)))
-				icmd_pos--;		/* nothing was read, drop the nul */
+				ticmd_pos--;		/* nothing was read, drop the nul */
 			if (mv == '\''['\'') {
 				if (!(mv = term_read(0)))
-					icmd_pos--;
+					ticmd_pos--;
 				c = mv;
 				term_ufd.events = POLLIN;
 				fcntl(term_ufd.fd, F_SETFL, fl);
@@ -905,7 +905,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 26a5f232..bb563604 100644
+index 26a5f232..83be1243 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,6 +1,7 @@
@@ -971,10 +971,10 @@ index 26a5f232..bb563604 100644
 +			fcntl(term_ufd.fd, F_SETFL, fl | O_NONBLOCK);
 +			term_ufd.events = POLLOUT;	/* poll is always ready, read decides */
 +			if (!(mv = term_read(0)))
-+				icmd_pos--;		/* nothing was read, drop the nul */
++				ticmd_pos--;		/* nothing was read, drop the nul */
 +			if (mv == '[') {
 +				if (!(mv = term_read(0)))
-+					icmd_pos--;
++					ticmd_pos--;
 +				c = mv;
 +				term_ufd.events = POLLIN;
 +				fcntl(term_ufd.fd, F_SETFL, fl);
@@ -1069,7 +1069,7 @@ index 26a5f232..bb563604 100644
  		term_room(1);
  		crow++;
 diff --git a/vi.c b/vi.c
-index 9ca49dbb..4e520df1 100644
+index 03ed7b03..1546bdf2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -835,6 +835,8 @@ static int vi_indents(char *ln)
