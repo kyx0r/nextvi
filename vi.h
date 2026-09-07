@@ -313,6 +313,7 @@ char *uc_beg(char *beg, char *s);
 char *uc_shape(char *beg, char *s, int c);
 
 /* term.c: managing the terminal */
+extern struct pollfd term_ufd;
 extern sbuf *term_sbuf;
 extern int term_record;
 extern int term_winch;
