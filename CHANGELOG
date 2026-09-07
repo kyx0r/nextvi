@@ -74,24 +74,24 @@ Patch changes:
    on resize, v2 rescale render.
 3. [linewrap_v2.sh](https://github.com/kyx0r/nextvi/blob/release/linewrap_v2.sh):
    faster scroll redraw, vi_drawscroll redraws only entering/leaving rows.
-4. New user patches: [ac_lines.sh](https://github.com/kyx0r/nextvi/blob/release/ac_lines.sh)
-   <^K> line autocomplete in insert; [ex_marks.sh](https://github.com/kyx0r/nextvi/blob/release/ex_marks.sh)
-   letter mark ranges, :'a,'bs/foo/bar; [nvi_status.sh](https://github.com/kyx0r/nextvi/blob/release/nvi_status.sh)
+4. New [ex_marks.sh](https://github.com/kyx0r/nextvi/blob/release/ex_marks.sh):
+   letter mark ranges, :'a,'bs/foo/bar; 
+5. New [nvi_status.sh](https://github.com/kyx0r/nextvi/blob/release/nvi_status.sh):
    nvi style <^G> line.
-5. patch2vi.sh: faster compat_order search, tree snapshot per step,
+6. patch2vi.sh: faster compat_order search, tree snapshot per step,
    one awk pass per level.
-6. Division truncation fix: [threaded_search.sh](https://github.com/kyx0r/nextvi/blob/release/threaded_search.sh)
-7. New [spell.sh](https://github.com/kyx0r/nextvi/blob/release/spell.sh):
+7. Division truncation fix: [threaded_search.sh](https://github.com/kyx0r/nextvi/blob/release/threaded_search.sh)
+8. New [spell.sh](https://github.com/kyx0r/nextvi/blob/release/spell.sh):
    spell checking with an external speller that speaks the ispell pipe
    protocol.
-8. [visual.sh](https://github.com/kyx0r/nextvi/blob/release/visual.sh)
+9. [visual.sh](https://github.com/kyx0r/nextvi/blob/release/visual.sh)
    Implemented visual column conversion for block select (vb) fixing
    misalignment with multi width characters. Fixed [ ] mark offsets
    for visual block mode edits. Implemented adaptive chameleon cursor color.
-9. [stdin_pipe.sh](https://github.com/kyx0r/nextvi/blob/release/stdin_pipe.sh)
+10. [stdin_pipe.sh](https://github.com/kyx0r/nextvi/blob/release/stdin_pipe.sh)
    Implicit compatibility with patches that use rely on reading stdin, e.g
    arrowkeys_insert.sh
-10. Trivial bug fixing in other patches not worth mentioning.
+11. Trivial bug fixing in other patches not worth mentioning.
 
 ------------------
 7.4 Basilisk
