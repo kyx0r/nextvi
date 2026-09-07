@@ -832,7 +832,7 @@ static int led_nextb;		/* the buffer line drawn below the edited line */
 ??!219reg led.c:356:m12sc %? %@2142sc!0?
 '\''2i 	syn_scdir(0);
 	if (led_lw) {
-		int lncol = vi_lncol, w = ren_wrapw(lncol), k, trow, b;
+		int w = ren_wrapw(lncol), k, trow, b;
 		xleft = 0;
 		led_rowh = MAX(MAX(0, r->cmax), pos) / w + 1;
 		k = led_row + pos / w - xrows + 1;
@@ -4997,7 +4997,7 @@ printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 4??m 2220reg p OK led.c:372:a42sc %? %@2152sc!fr 98fr 980?
 1;4??!219reg led.c:372:r2342sc %? %@2132sc!0?
 ?0?
-%f+ 		int lncol = vi_lncol, w = ren_wrapw\(lncol\), k, trow, b;
+%f+ 		int w = ren_wrapw\(lncol\), k, trow, b;
 		xleft = 0;
 		led_rowh = MAX\(MAX\(0, r->cmax\), pos\) / w \+ 1;
 		k = led_row \+ pos / w - xrows \+ 1;
@@ -5012,7 +5012,7 @@ printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 2??m 3220reg p OK led.c:396:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		k = led_row \+ pos / w - xrows \+ 1;$3??0?
 3??m 3220reg p OK led.c:396:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 		int lncol = vi_lncol, w = ren_wrapw\(lncol\), k, trow, b;
+%f+ 		int w = ren_wrapw\(lncol\), k, trow, b;
 		xleft = 0;
 		led_rowh = MAX\(MAX\(0, r->cmax\), pos\) / w \+ 1;4??0?
 4??+3m 3220reg p OK led.c:396:a42sc %? %@2152sc!1q0?
@@ -6644,7 +6644,7 @@ exit 0
  	sbuf_str(sb, post)
  	sbuf_nul4(sb)
 @@ -393,7 +395,7 @@
- 		int lncol = vi_lncol, w = ren_wrapw(lncol), k, trow, b;
+ 		int w = ren_wrapw(lncol), k, trow, b;
  		xleft = 0;
  		led_rowh = MAX(MAX(0, r->cmax), pos) / w + 1;
 -		k = led_row + pos / w - xrows + 1;
@@ -7223,7 +7223,7 @@ index 0ce81414..3cc2b65b 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
 diff --git a/led.c b/led.c
-index 26a5f232..74c476ab 100644
+index 26a5f232..78e049e4 100644
 --- a/led.c
 +++ b/led.c
 @@ -354,6 +354,11 @@ static int led_lastword(char *s)
@@ -7244,7 +7244,7 @@ index 26a5f232..74c476ab 100644
  	}
 +	syn_scdir(0);
 +	if (led_lw) {
-+		int lncol = vi_lncol, w = ren_wrapw(lncol), k, trow, b;
++		int w = ren_wrapw(lncol), k, trow, b;
 +		xleft = 0;
 +		led_rowh = MAX(MAX(0, r->cmax), pos) / w + 1;
 +		k = led_row + pos / w - xrows + 1;
