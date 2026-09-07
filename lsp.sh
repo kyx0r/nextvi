@@ -2034,64 +2034,60 @@ const char *lsp_diag_for_line(const char *path, int line, int *sev)
 %f> 
 int term_read\(int winch\)
 \{
-	static struct pollfd ufd = \{STDIN_FILENO, POLLIN};
 	int cw;
 	if \(ibuf_pos >= ibuf_cnt\) \{
 		if \(texec\) \{
 			xquit = !xquit \? 1 : xquit;1??0?
 1??+3m 11q0?
-%f> 	static struct pollfd ufd = \{STDIN_FILENO, POLLIN};
-	int cw;
+%f> 	int cw;
 	if \(ibuf_pos >= ibuf_cnt\) \{
 		if \(texec\) \{
 			xquit = !xquit \? 1 : xquit;2??0?
-2??m 1220reg p OK term.c:142:a22sc %? %@2152sc!1q0?
-%f> 	static struct pollfd ufd = \{STDIN_FILENO, POLLIN};
-	int cw;3??0?
-3??m 1220reg p OK term.c:142:a32sc %? %@2152sc!1q0?
+2??m 1220reg p OK term.c:143:a22sc %? %@2152sc!1q0?
+;0fr.,$f> ^	int cw;$3??0?
+3??m 1220reg p OK term.c:143:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 
 int term_read\(int winch\)
 \{4??0?
-4??+3m 1220reg p OK term.c:142:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK term.c:143:a42sc %? %@2152sc!1q0?
 %f> 	if \(ibuf_pos >= ibuf_cnt\) \{
 		if \(texec\) \{
 			xquit = !xquit \? 1 : xquit;5??0?
-5??-2m 1220reg p OK term.c:142:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK term.c:143:a52sc %? %@2152sc!1q0?
 %f> 
-..t....m...a..... w.....
+.........re..\(..........
 \{
-....ti. s....t.....f. ....=...T..N.......,...LLI...
-	.......
-	i.....u..po...= ..u.......\{
-	.............
-	....ui. ...................t.6??0?
-6??+3m 1220reg p OK term.c:142:a62sc %? %@2152sc!1q0?
+......w.
+......bu...o.....i..........
+	........... .
+.	.xqui. =.!..u........ ...i..6??0?
+6??+3m 1220reg p OK term.c:143:a62sc %? %@2152sc!1q0?
 grp 1%f> .*?
 int term_read\(int winch\).*?
 \{.*?
-(	static struct pollfd ufd = \{STDIN_FILENO, POLLIN};)7??0?
-grp 07??m 1220reg p OK term.c:142:a72sc %? %@2152sc!1q0?
+(	int cw;)7??0?
+grp 07??m 1220reg p OK term.c:143:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		memcpy\(ibuf \+ ibuf_cnt, s, n\);
 	ibuf_cnt \+= n;
 }.*(			if \(texec == '\''&'\''\))
 				goto err;
 		}8??0?
-grp 08??-5m 1220reg p OK term.c:142:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK term.c:143:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		tn \+= n;
 		tibuf_pos = ibuf_pos;
 	} else.*(		if \(term_winch && winch\) \{)
 			\*ibuf = winch;	/\* yield until term_winch is cleared \*/
 			goto ret;9??0?
-grp 09??-8m 1220reg p OK term.c:142:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:1422sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK term.c:143:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:1432sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		cw = 0;
 		re:
 		/\* read a single input character \*/
-		if \(xquit < 0 \|\| poll\(&ufd, 1, -1\) <= 0 \|\|
-				read\(STDIN_FILENO, ibuf, 1\) <= 0\) \{
-			xquit = !isatty\(STDIN_FILENO\) \? -1 : xquit;
+		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|
+				read\(term_ufd\.fd, ibuf, 1\) <= 0\) \{
+			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;
 			if \(term_winch && winch && xquit >= 0\) \{
 				\*ibuf = winch;
 				goto ret;
@@ -2101,9 +2097,9 @@ int term_read\(int winch\).*?
 			}1??0?
 1??+3m 21q0?
 %f+ 		/\* read a single input character \*/
-		if \(xquit < 0 \|\| poll\(&ufd, 1, -1\) <= 0 \|\|
-				read\(STDIN_FILENO, ibuf, 1\) <= 0\) \{
-			xquit = !isatty\(STDIN_FILENO\) \? -1 : xquit;
+		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|
+				read\(term_ufd\.fd, ibuf, 1\) <= 0\) \{
+			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;
 			if \(term_winch && winch && xquit >= 0\) \{
 				\*ibuf = winch;
 				goto ret;
@@ -2113,9 +2109,9 @@ int term_read\(int winch\).*?
 			}2??0?
 2??m 2220reg p OK term.c:156:a22sc %? %@2152sc!1q0?
 %f+ 		/\* read a single input character \*/
-		if \(xquit < 0 \|\| poll\(&ufd, 1, -1\) <= 0 \|\|
-				read\(STDIN_FILENO, ibuf, 1\) <= 0\) \{
-			xquit = !isatty\(STDIN_FILENO\) \? -1 : xquit;
+		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|
+				read\(term_ufd\.fd, ibuf, 1\) <= 0\) \{
+			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;
 			if \(term_winch && winch && xquit >= 0\) \{
 				\*ibuf = winch;
 				goto ret;
@@ -2130,19 +2126,19 @@ int term_read\(int winch\).*?
 			}5??0?
 5??-9m 2220reg p OK term.c:156:a52sc %? %@2152sc!1q0?
 %f+ 	..
-.	.w.. .;
-		...
-.... r... a...ng.. ..... c........ ..
-..i.......... . .\|.....\(.u.......-..........
-.................LE..,...........=.0...
-........ =.!......\(..D.N_......\)....1.:..q..t.
-............w..ch.&..w.........q..t.>......
-.	.	.i.u....wi....
-..	....o.....
-......ls. .........w.n.h ............n..... ...it... ...\{
-..	... .....m_......
-....g.......
-	.	.6??0?
+...w.=.0.
+.	...
+.... .....a.....le........h.....e....
+.... \(...i... ......o...&.e......................
+......a.......u.d...,..bu......<=.....
+.		x.u.....!...t..\(...._......... ...:..q....
+.	..f...e.......h.&....n.. ......i..>=..\)..
+..	....u..= win...
+..	...to....;
+.....e.s............in....=...... .................= ....
+.	..cw.= ...._.i....
+.	..g.....e.
+	...6??0?
 6??+3m 2220reg p OK term.c:156:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		}.*?
 		cw = 0;.*?
@@ -2241,10 +2237,10 @@ char \*term_att\(int att\)
 \{9??0?
 grp 09??-10m 4220reg p OK term.c:173:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg term.c:1732sc %? %@2132sc!0?
-'\''1,#+1c 	static struct pollfd ufd[1 + LSP_NFDS_MAX];
+'\''1c 	static struct pollfd ufd[1 + LSP_NFDS_MAX];
 	int cw, i, nfds;
-??!219reg term.c:142:m12sc %? %@2142sc!0?
-'\''2,#+8c 		ufd[0].fd = STDIN_FILENO;
+??!219reg term.c:143:m12sc %? %@2142sc!0?
+'\''2,#+8c 		ufd[0].fd = term_ufd.fd;
 		ufd[0].events = POLLIN;
 		/* the count is kept: servicing an fd below may unregister it */
 		for (i = 0, nfds = lsp_nfds; i < nfds; i++) {
@@ -2268,7 +2264,7 @@ char \*term_att\(int att\)
 				if (lsp_dirty && lsp_wake)
 					goto err;	/* yield so vi redraws diagnostics */
 ??!219reg term.c:156:m22sc %? %@2142sc!0?
-'\''3,#+5c 			if (read(STDIN_FILENO, ibuf, 1) > 0) {
+'\''3,#+5c 			if (read(term_ufd.fd, ibuf, 1) > 0) {
 				if (xrr > 0) {
 					static char buf[2];
 					buf[0] = *ibuf;
@@ -2277,7 +2273,7 @@ char \*term_att\(int att\)
 				goto ret;
 			}
 		}
-		xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
+		xquit = !isatty(term_ufd.fd) ? -1 : xquit;
 		if (term_winch && winch && xquit >= 0) {
 			*ibuf = winch;
 			goto ret;
@@ -2795,8 +2791,8 @@ void dir_calc\(char \*path\);1??0?
 grp 1%f+ /\* filesystem \*/.*?
 extern rset \*fsincl;.*?
 (void dir_calc\(char \*path\);)7??0?
-grp 07??m 2220reg p OK vi.h:581:a72sc %? %@2152sc!0?
-1;7??!219reg vi.h:5812sc %? %@2132sc!0?
+grp 07??m 2220reg p OK vi.h:582:a72sc %? %@2152sc!0?
+1;7??!219reg vi.h:5822sc %? %@2132sc!0?
 '\''1i 	int edseq;			/* monotonic content mutation counter */
 ??!219reg vi.h:152:m12sc %? %@2142sc!0?
 '\''2i 
@@ -2816,7 +2812,7 @@ void lsp_definition(const char *path, int row, int off);
 const char *lsp_diag_for_line(const char *path, int line, int *sev);
 void lsp_list(void);
 void lsp_show_msg(char *msg);
-??!219reg vi.h:581:m22sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
+??!219reg vi.h:582:m22sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'jsmn.h' 'lbuf.c' 'lsp.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -4606,34 +4602,33 @@ index 00000000..1ea9bc99
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index c8861702..52dd97c9 100644
+index 351202b0..65a17928 100644
 --- a/term.c
 +++ b/term.c
-@@ -139,8 +139,8 @@ void term_push(char *s, unsigned int n)
+@@ -140,7 +140,8 @@ void term_push(char *s, unsigned int n)
  
  int term_read(int winch)
  {
--	static struct pollfd ufd = {STDIN_FILENO, POLLIN};
 -	int cw;
 +	static struct pollfd ufd[1 + LSP_NFDS_MAX];
 +	int cw, i, nfds;
  	if (ibuf_pos >= ibuf_cnt) {
  		if (texec) {
  			xquit = !xquit ? 1 : xquit;
-@@ -153,24 +153,50 @@ int term_read(int winch)
+@@ -153,24 +154,50 @@ int term_read(int winch)
  		}
  		cw = 0;
  		re:
 -		/* read a single input character */
--		if (xquit < 0 || poll(&ufd, 1, -1) <= 0 ||
--				read(STDIN_FILENO, ibuf, 1) <= 0) {
--			xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
+-		if (xquit < 0 || poll(&term_ufd, 1, -1) <= 0 ||
+-				read(term_ufd.fd, ibuf, 1) <= 0) {
+-			xquit = !isatty(term_ufd.fd) ? -1 : xquit;
 -			if (term_winch && winch && xquit >= 0) {
 -				*ibuf = winch;
 -				goto ret;
 -			} else if (term_winch != cw && !winch && xquit >= 0) {
 -				cw = term_winch;
-+		ufd[0].fd = STDIN_FILENO;
++		ufd[0].fd = term_ufd.fd;
 +		ufd[0].events = POLLIN;
 +		/* the count is kept: servicing an fd below may unregister it */
 +		for (i = 0, nfds = lsp_nfds; i < nfds; i++) {
@@ -4664,7 +4659,7 @@ index c8861702..52dd97c9 100644
 -			static char buf[2];
 -			buf[0] = *ibuf;
 -			ex_regput(xrr, buf, 1);
-+			if (read(STDIN_FILENO, ibuf, 1) > 0) {
++			if (read(term_ufd.fd, ibuf, 1) > 0) {
 +				if (xrr > 0) {
 +					static char buf[2];
 +					buf[0] = *ibuf;
@@ -4673,7 +4668,7 @@ index c8861702..52dd97c9 100644
 +				goto ret;
 +			}
 +		}
-+		xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
++		xquit = !isatty(term_ufd.fd) ? -1 : xquit;
 +		if (term_winch && winch && xquit >= 0) {
 +			*ibuf = winch;
 +			goto ret;
@@ -4826,7 +4821,7 @@ index 5fb56ceb..d65a82fc 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 diff --git a/vi.h b/vi.h
-index edfba9ab..ae10bb1a 100644
+index 0710983a..fd5cda27 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,7 @@ struct lbuf {
@@ -4837,7 +4832,7 @@ index edfba9ab..ae10bb1a 100644
  };
  #define lbuf_len(lb) lb->ln_n
  #define lbuf_s(ln) ((struct linfo*)(ln - sizeof(struct linfo)))
-@@ -579,3 +580,20 @@ extern int vi_lncol;
+@@ -580,3 +581,20 @@ extern int vi_lncol;
  /* filesystem */
  extern rset *fsincl;
  void dir_calc(char *path);
