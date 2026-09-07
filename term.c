@@ -17,11 +17,11 @@ void term_init(void)
 	term_winch = 0;
 	term_resized++;
 	sbuf_make(term_sbuf, 2048)
-	tcgetattr(0, &termios);
+	tcgetattr(term_ufd.fd, &termios);
 	newtermios = termios;
 	newtermios.c_lflag &= ~(ICANON | ISIG | ECHO);
-	tcsetattr(0, TCSAFLUSH, &newtermios);
-	if (!ioctl(0, TIOCGWINSZ, &win)) {
+	tcsetattr(term_ufd.fd, TCSAFLUSH, &newtermios);
+	if (!ioctl(term_ufd.fd, TIOCGWINSZ, &win)) {
 		xcols = win.ws_col;
 		xrows = win.ws_row;
 	} else {
@@ -40,7 +40,7 @@ void term_done(void)
 		return;
 	term_commit();
 	sbuf_free(term_sbuf)
-	tcsetattr(0, 0, &termios);
+	tcsetattr(term_ufd.fd, 0, &termios);
 }
 
 void term_clean(void)
@@ -155,8 +155,8 @@ int term_read(int winch)
 		re:
 		/* read a single input character */
 		if (xquit < 0 || poll(&term_ufd, 1, -1) <= 0 ||
-				read(STDIN_FILENO, ibuf, 1) <= 0) {
-			xquit = !isatty(STDIN_FILENO) ? -1 : xquit;
+				read(term_ufd.fd, ibuf, 1) <= 0) {
+			xquit = !isatty(term_ufd.fd) ? -1 : xquit;
 			if (term_winch && winch && xquit >= 0) {
 				*ibuf = winch;
 				goto ret;
@@ -297,7 +297,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	fds[0].events = POLLIN;
 	fds[1].fd = ifd;
 	fds[1].events = POLLOUT;
-	fds[2].fd = ibuf ? 0 : -1;
+	fds[2].fd = ibuf ? term_ufd.fd : -1;
 	fds[2].events = POLLIN;
 	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
 		if (fds[0].revents & POLLIN) {
@@ -340,7 +340,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 		close(ifd);
 	waitpid(pid, status, 0);
 	signal(SIGTTOU, SIG_IGN);
-	tcsetpgrp(STDIN_FILENO, getpgrp());
+	tcsetpgrp(term_ufd.fd, getpgrp());
 	signal(SIGTTOU, SIG_DFL);
 	if (!ibuf) {
 		if (term_sbuf)
