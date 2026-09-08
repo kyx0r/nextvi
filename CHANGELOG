@@ -54,7 +54,9 @@ Bug fixes:
     are dropped from the render cache — protects against rare stale-text glitches
     or crashes.
 11. Files that report a size of zero but do have content (e.g. /proc, /sys)
-    now open with their contents instead of appearing empty
+    now open with their contents instead of appearing empty.
+12. Fixed stale permanent vi linenumber column used in redraw when switching
+    to vi/ex prompt modes.
 
 Patch2vi 1.1 changes:
 1. Compat block bodies start with :m!. Mark ids restart per file per
