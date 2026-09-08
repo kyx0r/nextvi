@@ -118,7 +118,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
                 elif xcrun -f llvm-profdata >/dev/null 2>&1; then
                     PROFDATA="xcrun llvm-profdata"
                 fi
-                [ -z "$PROFDATA" ] && log "R" "pgobuild with clang requires llvm-profdata" && exit 1
+                [ -z "$PROFDATA" ] && log "$R" "pgobuild with clang requires llvm-profdata" && exit 1
             fi
             run "$CC vi.c -fprofile-generate=. -o vi -O2 $CFLAGS"
             EXINIT="$(printf '%b' '&dw100.1\\\\:/not matching:&:b0:&100J0300liinsert:&ewbgw:q!')"
