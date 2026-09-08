@@ -458,7 +458,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
-index 62d18e99..73510208 100755
+index c836c94c..a6ec99a2 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -43,6 +43,7 @@ run() {
