@@ -2418,7 +2418,7 @@ static int ed_init(int use_tty)
 		setup_signals();
 		dir_init();
 		syn_init();
-		ibuf = emalloc(ibuf_sz);
+		tibuf = emalloc(tibuf_sz);
 		ed_once = 1;
 	}
 	temp_open(0, "/hist/", _ft);
