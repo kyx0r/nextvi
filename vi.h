@@ -209,7 +209,13 @@ typedef struct {
 } ren_state;
 extern ren_state rstates[3];
 extern ren_state *rstate;
-#define RS(n, func) { rstate = rstates+n; rstate->s = NULL; func; rstate -= n; }
+#define RST(n, func) { rstate = rstates+n; rstate->s = NULL; func; rstate -= n; }
+#define RST_NULL(...) { \
+	int i_[] = {__VA_ARGS__}; \
+	for (int j_ = 0; j_ < LEN(i_); j_++) \
+		rstates[i_[j_]].s = NULL; \
+} \
+
 ren_state *ren_position(char *s);
 int ren_next(char *s, int p, int dir);
 int ren_eol(char *s, int dir);
@@ -270,7 +276,7 @@ extern unsigned char utf8_length[256];
 extern int zwlen, def_zwlen;
 extern int bclen, def_bclen;
 /* the length of a given utf-8 character */
-#define uc_len(s) utf8_length[(unsigned char)s[0]]
+#define uc_len(s) utf8_length[(unsigned char)(s)[0]]
 /* the unicode codepoint of a given utf-8 character */
 #define uc_code(dst, s, l) \
 dst = (unsigned char)s[0]; \
@@ -307,14 +313,15 @@ char *uc_beg(char *beg, char *s);
 char *uc_shape(char *beg, char *s, int c);
 
 /* term.c: managing the terminal */
+extern struct pollfd term_ufd;
 extern sbuf *term_sbuf;
 extern int term_record;
 extern int term_winch;
 extern int term_resized;
 extern int xrows, xcols;
-extern unsigned int ibuf_pos, ibuf_cnt, ibuf_sz, icmd_pos;
-extern unsigned char *ibuf, icmd[4096];
-extern unsigned int texec, tn;
+extern unsigned int tibuf_pos, tibuf_cnt, tibuf_sz, ticmd_pos;
+extern unsigned char *tibuf, ticmd[4096];
+extern unsigned int texec, texec_n;
 #define term_write(s, n) if (xled) write(1, s, n);
 void term_init(void);
 void term_done(void);
@@ -330,21 +337,21 @@ int term_read(int winch);
 void term_commit(void);
 char *term_att(int att);
 void term_push(char *s, unsigned int n);
-#define term_dec() ibuf_pos--; icmd_pos--;
+#define term_dec() tibuf_pos--; ticmd_pos--;
 #define term_exec(s, n, type) \
 { \
-	preserve(int, tn, tn = 0;) \
-	preserve(int, ibuf_cnt,) \
-	preserve(int, ibuf_pos, ibuf_pos = ibuf_cnt;) \
+	preserve(int, texec_n, texec_n = 0;) \
+	preserve(int, tibuf_cnt,) \
+	preserve(int, tibuf_pos, tibuf_pos = tibuf_cnt;) \
 	term_push(s, n); \
 	preserve(int, texec, texec = type;) \
 	vi(0); \
 	restore(texec) \
 	if (xquit > 0) \
 		xquit = 0; \
-	restore(ibuf_pos) \
-	restore(ibuf_cnt) \
-	restore(tn) \
+	restore(tibuf_pos) \
+	restore(tibuf_cnt) \
+	restore(texec_n) \
 } \
 
 /* process management */
@@ -356,12 +363,33 @@ char *xgetenv(char* q[]);
 #define TK_INT(c)	(!c || c == TK_ESC || c == TK_CTL('c'))
 
 /* led.c: line-oriented input and output */
-typedef struct {
-	char *s;
-	int off;
-	int att;
-} led_att;
-extern sbuf *led_attsb;
+typedef struct {	/* led_render() state, passed to every extension */
+	int *att;
+	int *off;
+	int *stt;
+	int *ctt;
+	char *s0;
+	char *bound;
+	ren_state *r;
+	int alen;	/* number of valid att[] entries */
+	int cterm;
+	int n;
+} led_ctx;
+typedef struct led_ext led_ext;
+struct led_ext {					/* a syntax highlighting extension */
+	char *ln;					/* line key; NULL matches any line */
+	int *ola;					/* off, len, att triples */
+	void (*ext_func)(led_ext *p, led_ctx *x);	/* extension body defaults to ext_attmerge() */
+	int cnt;					/* number of triples */
+};
+led_ext *led_extnew(void);
+led_ext *led_extreg(void);
+led_ext *led_extfind(void (*ext_func)(led_ext *p, led_ctx *x));
+void led_extdel(led_ext *p);
+void led_extcut(void);
+int led_attidx(led_ctx *x, int off);
+/* for extensions that key themselves */
+#define led_extkey(p, x) (!(p)->ln || (p)->ln == (x)->s0)
 void led_modeswap(void);
 typedef struct {
 	int t_row;
@@ -483,8 +511,8 @@ void ex(void);
 void *ex_exec(const char *ln);
 #define ex_command(ln) { ex_exec(ln); ex_regput(':', ln, 0); }
 void ex_cprint(char *line, char *ft, int r, int c, int left, int flg);
-#define ex_cprint2(line, ft, r, c, left, flg) { RS(2, ex_cprint(line, ft, r, c, left, flg)); }
-#define ex_print(line, ft) { RS(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
+#define ex_cprint2(line, ft, r, c, left, flg) { RST(2, ex_cprint(line, ft, r, c, left, flg)); }
+#define ex_print(line, ft) { RST(2, ex_cprint(line, ft, -1, 0, 0, 1)); }
 void ex_init(char **files, int n);
 void ex_bufpostfix(struct buf *p, int clear);
 int ex_krs(rset **krs, int *dir);
@@ -513,6 +541,8 @@ struct highlight {
 };
 extern struct highlight hls[];
 extern const int hlslen;
+extern const int hlopts[];
+extern const int hloptslen;
 /* direction context: specifies the direction of a whole line */
 struct dircontext {
 	char *pat;

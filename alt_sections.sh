@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> 		break;
 	case '\''\('\'':
 	case '\''\)'\'':
@@ -149,7 +149,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..0693064d 100644
+index 03ed7b03..5412c672 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -612,7 +612,7 @@ static int vi_region(int cmd, int *row, int *off)

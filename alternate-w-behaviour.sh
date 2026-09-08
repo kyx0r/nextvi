@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> 	case '\''w'\'':
 	case '\''W'\'':
 		var = mv == '\''W'\'';
@@ -127,7 +127,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..b53fe36e 100644
+index 03ed7b03..ddf703d2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -606,8 +606,23 @@ static int vi_region(int cmd, int *row, int *off)

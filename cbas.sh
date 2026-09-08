@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> FTGEN\(c\) FTGEN\(roff\) FTGEN\(tex\) FTGEN\(mbox\)
 FTGEN\(mk\) FTGEN\(sh\) FTGEN\(py\) FTGEN\(js\)
 FTGEN\(html\) FTGEN\(diff\) FTGEN\(go\) FTGEN\(md\)
@@ -181,7 +181,6 @@ public|codegen|constexpri|constexprf|method|\
 	{FT(cbas), "'\''(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'\''", A(MA)},
 	{FT(cbas), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+\\.?[0-9]*(?:[eE][-+]?[0-9]+)?)([fFlLuU]{0,3})\\>",
 		A(RE1, RE)},
-	{FT(html), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
 	{FT(cbas), "^.+\\\\\n$", A(CY1 | SYN_EATT | SYN_OATT, 2, NA, BL, 1, NA), 2},
 	{FT(cbas), NULL, A(RE1), 0, 1},
 	{FT(cbas), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},
@@ -200,7 +199,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index ad9395c9..0a2f8937 100644
+index a51117ca..b17c7d68 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -7,6 +7,7 @@ const int conf_mode = 0600;
@@ -219,7 +218,7 @@ index ad9395c9..0a2f8937 100644
  	{_ft, NULL},
  	{fm_ft, NULL},
  	{n_ft, NULL},
-@@ -275,10 +277,35 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -275,10 +277,34 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  	{FT(md), "[[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(CY)},
  	{FT(md), "![[][^[\\]]+[\\]]\\([^\\(\\)]+\\)", A(MA)},
  
@@ -243,7 +242,6 @@ index ad9395c9..0a2f8937 100644
 +	{FT(cbas), "'(?:[^\\\\]|\\\\.|\\\\x[0-9a-fA-F]{1,2}|\\\\[0-9]+?)'", A(MA)},
 +	{FT(cbas), "[-+.]?\\<(?:0[xX][0-9a-fA-F]+|[0-9]+\\.?[0-9]*(?:[eE][-+]?[0-9]+)?)([fFlLuU]{0,3})\\>",
 +		A(RE1, RE)},
-+	{FT(html), "\"(?:[^\"\\\\]|\\\\.)*\"", A(MA)},
 +	{FT(cbas), "^.+\\\\\n$", A(CY1 | SYN_EATT | SYN_OATT, 2, NA, BL, 1, NA), 2},
 +	{FT(cbas), NULL, A(RE1), 0, 1},
 +	{FT(cbas), NULL, A(RE1 | SYN_BGMK(BL1)), 0, 3},

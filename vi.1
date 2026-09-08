@@ -1,6 +1,6 @@
-.Dd Aug 29, 2026
+.Dd Sep  7, 2026
 .Dt Nextvi 1
-.Os Nextvi 7.4
+.Os Nextvi 7.5
 .
 .Sh NAME
 .Nm Nextvi
@@ -690,6 +690,8 @@ Ranged search
 .Bd -literal
 No argument uses previously set regex keyword.
 Returns error if target not found.
+If cursor is out of bounds, forward search pins to range start,
+backward search to range end.
 
 Example: no range given, current line only
 :f>int
@@ -839,7 +841,7 @@ Example: join all lines with space padding
 :%-1j x
 .Ed
 
-.It Cm [\fIrange\fP]s[<\fIDelim\fP>][\fIregex\fP][<\fIDelim\fP>][\fIstr\fP][<\fIDelim\fP>][<\fIg\fP>][<\fIm\fP>][\fI#reg\fP]
+.It Cm [\fIrange\fP]s[<\fIDelim\fP>][\fIregex\fP][<\fIDelim\fP>][\fIstr\fP][<\fIDelim\fP>][<\fIg\fP>][<\fIm\fP>][<\fI^\fP>][\fI#reg\fP]
 Substitute
 .Bd -literal
 Find and replace text in a range of lines that matches an
@@ -866,6 +868,11 @@ this is an example text for subs and has prepreafterafter or prevoidafter
 
 Example: global replacement with <g>
 :%s/term1/term2/g
+
+Example: anchor ^ at every search with <^>, implies <g>
+aaa
+:%s/^a/X/^
+XXX
 
 Example: multiline mode <m>
 :.,+1s/term1<^V><^M>term2/term3/m
@@ -931,6 +938,12 @@ and end of the range.
 
 Example: store ranges in <a> and <s> for later reuse in :f>
 :>top>,#>bottom>m 97 115:'97,'115f>middle
+.Ed
+
+.It Cm m![\fI#marks\fP]
+Unset line mark(s)
+.Bd -literal
+No argument unsets all marks in the current buffer.
 .Ed
 
 .It Cm [\fIrange\fP]ya[\fI#reg\fP]
@@ -1235,15 +1248,15 @@ Error status of [then] is forwarded.
 No prefix and no argument forwards the last error status.
 
 A prefix without arguments captures the current error status
-at that point in a command chain into id tag specified.
-Id tags are global across all nested command contexts.
+at that point in a command chain into capture id specified.
+Capture ids are global across all nested command contexts.
 
 A prefix with arguments branches based on the boolean expression
 in DNF over the most recent captures of each referenced id.
 If id has no capture, the branch is skipped.
 
 Prefix operators:
-Numerical id tag
+Numerical capture id
 , AND (higher precedence)
 ; OR (lower precedence)
 
@@ -1255,7 +1268,7 @@ Example: edit vi.c only if it exists
 :![ -f ./vi.c ]:??e ./vi.c:mpt1
 Example: capture error status at id 5, branch later
 :>int>:5??:;=:5??p
-Example: skip if tag was never set
+Example: skip if id was never set
 :2??.=
 Example: AND -- branch only if both ids captured success
 :f>int:1??:f>void:2??:1,2??p found both
@@ -1274,13 +1287,31 @@ Example: inverted capture
 .Ed
 
 .It Cm {\fIprefix\fP}???
-Evaluate prefix tags
+Evaluate capture ids
 .Bd -literal
 This is a nop command that evaluates a boolean expression
 at prefix and returns the result.
 
 Example: control while loop
 :$? \e%f+int\e:1??\e:\e%f+void\e:2??\e:1,2??p\e:1,2???
+.Ed
+
+.It Cm [\fI#id\fP]?~[\fIany\fP]
+Control capture ids lifetime
+.Bd -literal
+Prefix selects a specific id to free.
+No argument and no prefix frees all captured error statuses.
+Argument toggles capture status preservation across
+separate ex command chains.
+
+Example: id 2 capture leaks into unrelated code
+:f>int:2??:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
+Example: prevent id 2 leak
+:f>int:2??:2?~:f>zzz:1??:1??f>int\e:2??:2??p LEAKED
+
+Example: use a capture at the next <:> prompt
+:?~x:![ -f ./vi.c ]:1??
+:1??p vi.c exists
 .Ed
 
 .It Cm ft[\fIfiletype\fP]
@@ -1424,9 +1455,11 @@ Example: position on a character prefixed by "int"
 .Ed
 
 .It Cm hl[\fI1\fP]
-Highlight text based on rules defined in
-.Pa conf.c
-.
+Highlight text based on rules defined in conf.c
+.Bd -literal
+Value greater than 1 highlights using C extensions only.
+.Ed
+
 .It Cm hlr[\fI0\fP]
 Highlight text in reverse direction
 .
@@ -1494,7 +1527,7 @@ value -2: exclusively right-to-left
 .It Cm pr[\fI0\fP]
 Print register
 .Bd -literal
-Set a special register using a character or a number.
+Set a special register with a character or a number.
 Once the register is set, all ex printed output will
 be stored in the register.
 
@@ -1513,13 +1546,11 @@ Example: store a line printed with :p
 .It Cm fr[\fI0\fP]
 Find register
 .Bd -literal
-Set a register using a character or a number.
+Set a register with a character or a number.
 Once the register is set, the :f> and :f+ commands perform a
 multi-line search forward on the contents of the register instead
 of the current buffer. Range maps the match to a position in
-the current buffer. No range tests for a match inplace.
-If the cursor is outside of the range, the search starts at
-the beginning of the range.
+the current buffer. No range tests the match inplace.
 
 Example: search register <a> for "int"
 :fr a:f>int:??p yes:??!p no:fr
@@ -1530,10 +1561,10 @@ Example: search for "int" followed by "void" on next line
 .It Cm rr[\fI0\fP]
 Record register
 .Bd -literal
-Set a register using a character or a number.
+Set a register with a character or a number.
 Once the register is set, every byte read from the terminal is
 appended to the register. Input replayed from registers is not
-recorded, so replaying a recorded register cannot record itself.
+recorded.
 
 Example: record keystrokes into register <a>
 :rr a
@@ -1726,7 +1757,7 @@ Aspect 5:
 .Sh SPECIAL MARKS
 .Bl -tag -width Ds -compact
 .It Cm *
-Position of previous ex command
+Position of previous ex command chain
 .It Cm \&[
 First position of previous change
 .It Cm \&]
@@ -1760,19 +1791,19 @@ tab(|);
 | l | l |.
 _
  537 kmap.h | keymap translation
- 552 vi.h | definitions/aux
+ 582 vi.h | definitions/aux
 _
- 351 term.c | low level IO
- 375 conf.c | hl/ft/td config
- 460 ren.c | positioning/syntax
+ 352 term.c | low level IO
+ 379 conf.c | hl/ft/td config
+ 462 ren.c | positioning/syntax
  615 uc.c | UTF-8 support
- 666 lbuf.c | file/line buffer
- 735 led.c | insert mode/output
- 751 regex.c | pikevm
- 1903 vi.c | normal mode/general
- 1934 ex.c | ex options/commands
- 7078 patch2vi.c | patch converter
- 14868 total | wc -l *.c\(basort
+ 674 lbuf.c | file/line buffer
+ 766 regex.c | pikevm
+ 811 led.c | insert mode/output
+ 1907 vi.c | normal mode/general
+ 1998 ex.c | ex options/commands
+ 7162 patch2vi.c | patch converter
+ 15126 total | wc -l *.c\(basort
 _
 .TE
 .

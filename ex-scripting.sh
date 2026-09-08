@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> int xleft;			/\* the first visible column \*/
 int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/1??0?
@@ -41,28 +41,28 @@ int xai = 1;			/\* autoindent option \*/1??0?
 %f+ 	return xkwdrs \? NULL : xserr;
 }
 
-static int eo_val\(char \*arg\)
+static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 \{
-	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?1??0?
+	ren_state \*r = x->r;1??0?
 1??+2m 21q0?
 %f+ 	return xkwdrs \? NULL : xserr;
 }
 
 4??0?
-4??+2m 2220reg p OK ex.c:1634:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1668:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
-	}.*(EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))
-EO\(rr\) EO\(shape\) EO\(seq\) EO\(td\) EO\(order\) EO\(hll\) EO\(hlw\)
-EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
-grp 08??-13m 2220reg p OK ex.c:1634:a82sc %? %@2152sc!'\''08??1q0?
+	}.*(	int i, j, l, o;)
+	for \(l = 0, i = 0; i < x->cterm;\) \{
+		o = x->off\[i\+\+];8??0?
+grp 08??-4m 2220reg p OK ex.c:1668:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
-		sbuf_nul\(sb\).*(_EO\(left,)
-	if \(\*loc\)
-		xleft = \(xcols / 2\) \* atoi\(loc\);9??0?
-grp 09??-20m 2220reg p OK ex.c:1634:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16342sc %? %@2132sc!0?
+		sbuf_nul\(sb\).*(		if \(o < 0\))
+			continue;
+		for \(l\+\+; x->off\[i] == o; i\+\+\);9??0?
+grp 09??-7m 2220reg p OK ex.c:1668:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16682sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
@@ -74,24 +74,24 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},4??0?
-4??+2m 3220reg p OK ex.c:1736:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1802:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
-grp 07??m 3220reg p OK ex.c:1736:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1802:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},
 	EO\(shape\),.*(	\{"ya!", ec_yank},)
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},8??0?
-grp 08??-4m 3220reg p OK ex.c:1736:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1802:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"w", ec_write},
 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
-grp 09??-7m 3220reg p OK ex.c:1736:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17362sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1802:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18022sc %? %@2132sc!0?
 '\''1-1i char **xenvp;
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i static void *ec_script(char *loc, char *cmd, char *arg)
@@ -131,10 +131,10 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 	return ret ? xuerr : NULL;
 }
 
-??!219reg ex.c:1634:m22sc %? %@2142sc!0?
+??!219reg ex.c:1668:m22sc %? %@2142sc!0?
 '\''3i 	{"sr", ec_script},
 	{"sx", ec_script},
-??!219reg ex.c:1736:m32sc %? %@2142sc!b1%ya 98?0?
+??!219reg ex.c:1802:m32sc %? %@2142sc!b1m!%ya 98?0?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
 		}
@@ -147,17 +147,17 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 		exit\(1\);
 	}
 	if \(ifd\)2??0?
-2??m 1220reg p OK term.c:238:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK term.c:239:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^		execvp\(argv\[0], argv\);$3??0?
-3??m 1220reg p OK term.c:238:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK term.c:239:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
 		}4??0?
-4??+3m 1220reg p OK term.c:238:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK term.c:239:a42sc %? %@2152sc!1q0?
 %f> 		exit\(1\);
 	}
 	if \(ifd\)5??0?
-5??-1m 1220reg p OK term.c:238:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK term.c:239:a52sc %? %@2152sc!1q0?
 %f> 	......e.pi....s.\[0]..
 ........\(....fd......;
 	..
@@ -165,30 +165,30 @@ EO\(hlp\) EO\(hlr\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)8??0?
 .........;
 .}
 .i...if..6??0?
-6??+3m 1220reg p OK term.c:238:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK term.c:239:a62sc %? %@2152sc!1q0?
 grp 1%f> 			close\(pipefds1\[0]\);.*?
 			close\(pipefds1\[1]\);.*?
 		}.*?
 (		execvp\(argv\[0], argv\);)7??0?
-grp 07??m 1220reg p OK term.c:238:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK term.c:239:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		if \(ofd\) \{		/\* setting up stdout and stderr \*/
 			dup2\(pipefds1\[1], 1\);
 			dup2\(pipefds1\[1], 2\);.*(		close\(pipefds0\[0]\);)
 	if \(ofd\)
 		close\(pipefds1\[1]\);8??0?
-grp 08??-4m 1220reg p OK term.c:238:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK term.c:239:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			close\(pipefds0\[1]\);
 			close\(pipefds0\[0]\);
 		}.*(	if \(pid < 0\) \{)
 		if \(ifd\)
 			close\(pipefds0\[1]\);9??0?
-grp 09??-7m 1220reg p OK term.c:238:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:2382sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK term.c:239:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:2392sc %? %@2132sc!0?
 '\''1c 		if (xenvp)
 			execve(argv[0], argv, xenvp);
 		else
 			execvp(argv[0], argv);
-??!219reg term.c:238:m12sc %? %@2142sc!b2%ya 98?0?
+??!219reg term.c:239:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> /\* vi\.h: shared definitions across files \*/
 
 /\* helper macros \*/
@@ -218,7 +218,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index f8505153..b21f1b90 100644
+index 0ce81414..b835e112 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -226,7 +226,7 @@ index f8505153..b21f1b90 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1632,6 +1633,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1666,6 +1667,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -267,10 +267,10 @@ index f8505153..b21f1b90 100644
 +	return ret ? xuerr : NULL;
 +}
 +
- static int eo_val(char *arg)
+ static void ext_hlr(led_ext *p, led_ctx *x)
  {
- 	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
-@@ -1734,6 +1772,8 @@ static struct excmd {
+ 	ren_state *r = x->r;
+@@ -1800,6 +1838,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -280,10 +280,10 @@ index f8505153..b21f1b90 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index c8861702..9bb2c70a 100644
+index 03aa736f..0706305d 100644
 --- a/term.c
 +++ b/term.c
-@@ -235,7 +235,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
+@@ -236,7 +236,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
  			close(pipefds1[0]);
  			close(pipefds1[1]);
  		}
@@ -296,7 +296,7 @@ index c8861702..9bb2c70a 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 0bb77c0b..c57e26f1 100644
+index 7c7d9e2c..dddacac9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@

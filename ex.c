@@ -58,7 +58,9 @@ static char xirerr[] = "invalid range";
 static char xrnferr[] = "range not found";
 static char *xrerr;
 static void *xpret;		/* previous ex command return value */
-static sbuf *xanchor;		/* anchored error status buffer */
+static signed char *xcid;	/* capture status by id, -1 if unset */
+static unsigned int xcid_n;	/* number of allocated capture ids */
+static int xcid_keep;		/* keep capture statuses across ex_exec calls */
 static int xqprop;		/* number of ex_exec levels :q propagates */
 
 /* parity rule: delim halves escapes, odd keeps delim literal */
@@ -601,10 +603,10 @@ static void *ec_find(char *loc, char *cmd, char *arg)
 	}
 	off = xoff;
 	if (xrow < beg || xrow >= end) {
-		off = 0;
+		off = dir < 0 ? lbuf_eol(xb, end - 1, 2) : 0;
 		end--;
 		nbeg = dir > 0 ? beg : end;
-		end += dir < 0;
+		end++;
 		pskip = -1;
 		nskip = 0;
 	} else {
@@ -933,9 +935,8 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		return NULL;
 	}
 	rstate = rstates+1;
+	rstate->s = NULL;
 	for (i = beg; i < end; i++) {
-		o = NULL;
-		rstate->s = o;
 		ln = lbuf_get(xb, i);
 		if (o1 >= 0 && o2 >= 0 && beg == end - 1)
 			o = uc_sub(ln, o1, o2);
@@ -949,6 +950,7 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 		}
 		ex_cprint(o, msg_ft, -1, 0, 0, 1);
 		free(o);
+		rstate->s = NULL;
 	}
 	rstate--;
 	xrow = MAX(beg, end - (cmd[0] || loc[0]));
@@ -1088,7 +1090,16 @@ static void *ec_bufsave(char *loc, char *cmd, char *arg)
 static void *ec_mark(char *loc, char *cmd, char *arg)
 {
 	int beg, end, o1 = xoff, o2 = xoff;
-	if (ex_region(loc, &beg, &end, &o1, &o2))
+	if (cmd[1] == '!') {
+		if (!*arg) {
+			xb->mark_n = 0;
+			xb->mark_sb[0] = -1;
+			xb->mark_se[0] = -1;
+			return NULL;
+		}
+		beg = -1;
+		end = 0;
+	} else if (ex_region(loc, &beg, &end, &o1, &o2))
 		return xrerr;
 	for (int i = 0; uc_isdigit(*arg); i++) {
 		int mk;
@@ -1129,12 +1140,15 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	free(pat);
 	int offs[rs->nsubc];
 	char *lnb, *ln, *suf = "", *fr = NULL;
-	int b1 = 0, pend, rflg = REG_NEWLINE;
+	int b1 = 0, pend, rflg = REG_NEWLINE, hit = 0;
+	sbuf_smake(r, 256)
 	for (i = 0, flg = 0; s[i]; i++) {
 		if (s[i] == 'g')
 			flg |= 1;
 		else if (s[i] == 'm')
 			flg |= 2;
+		else if (s[i] == '^')
+			flg |= 5;	/* ^ anchors every search, implies g */
 		else if (uc_isdigit(s[i]))
 			reg = (reg < 0 ? 0 : reg * 10) + s[i] - '0';
 		else		/* only flags may break up the register */
@@ -1156,8 +1170,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	} else if (e) {
 		err = xrerr;
 		goto out;
-	} else if (o1 >= 0)
-		xoff = MAX(o1, o2);
+	}
 	if (flg & 2) { 	/* multiline */
 		lbuf_region(xb, &text, beg, MAX(o1, 0), end - 1, o2);
 		ln = text.s;
@@ -1180,15 +1193,17 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 		}
 		ln += b1;
 		mltest:;
-		sbuf *r = NULL;
+		hit = 0;
+		sbuf_cut(r, 0)
 		lnb = ln - b1;		/* start of text not yet copied */
 		while (rset_find(rs, ln, offs, rflg) >= 0) {
-			rflg |= REG_NOTBOL;	/* only the first search is at bol */
+			if (!(flg & 4))	/* only the first search is at bol */
+				rflg |= REG_NOTBOL;
 			if (offs[xgrp] < 0) {
-				ln += offs[1] > 0 ? offs[1] : 1;
+				ln += offs[1] > 0 ? offs[1] : uc_len(ln);
 				continue;
-			} else if (!r)
-				sbuf_make(r, 256)
+			}
+			hit = 1;
 			sbuf_mem(r, lnb, ln + offs[xgrp] - lnb)
 			if (rep) {
 				for (_rep = rep; *_rep; _rep++) {
@@ -1208,18 +1223,20 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 				}
 			}
 			ln += offs[xgrp + 1];
-			if (!offs[xgrp + 1] && *ln)	/* zero-length match */
-				sbuf_chr(r, *ln++)
+			if ((offs[1] == offs[0] || !offs[xgrp + 1]) && *ln) {
+				int l = uc_len(ln);	/* zero-length match */
+				sbuf_mem(r, ln, l)
+				ln += l;
+			}
 			lnb = ln;
 			if (!*ln || !(flg & 1))
 				break;
 		}
-		if (r) {
+		if (hit) {
 			sbuf_str(r, lnb)
 			sbufn_str(r, suf)	/* text after the o2 offset */
 			if (reg >= 0) {
 				ex_regput(reg, r->s, 0);
-				sbuf_free(r)
 				first = 0;
 				goto out;
 			} else if (first < 0) {	/* undo marks */
@@ -1237,7 +1254,6 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 				lbuf_edit(xb, r->s, i, i + 1, 0, 0);
 				last = i;
 			}
-			sbuf_free(r)
 		}
 	}
 	if (first >= 0) {	/* redo marks */
@@ -1247,6 +1263,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
 	}
 	out:
 	free(fr);
+	free(r->s);
 	if (rs != xkwdrs)
 		rset_free(rs);
 	free(rep);
@@ -1292,12 +1309,9 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
 	xb_ft = loc;
 	if (!*arg)
 		ex_print(xb_ft, msg_ft)
-	if (led_attsb) {
-		sbuf_free(led_attsb)
-		led_attsb = NULL;
-	}
-	for (i = 1; i < 4; i++)
-		syn_reloadft(syn_findhl(i), 0);
+	led_extcut();
+	for (i = 0; i < hloptslen; i++)
+		syn_reloadft(syn_findhl(hlopts[i]), 0);
 	return NULL;
 }
 
@@ -1351,29 +1365,51 @@ static void *ec_glob(char *loc, char *cmd, char *arg)
 	return ret;
 }
 
+static void xcid_free(void)
+{
+	free(xcid);
+	xcid = NULL;
+	xcid_n = 0;
+}
+
+static void *ec_xcid(char *loc, char *cmd, char *arg)
+{
+	if (*arg)
+		xcid_keep = !xcid_keep;
+	if (*loc) {
+		unsigned int id = atoi(loc);
+		if (id < xcid_n)
+			xcid[id] = -1;
+	} else if (!*arg)
+		xcid_free();
+	return NULL;
+}
+
 static void *ec_while(char *loc, char *cmd, char *arg)
 {
 	int isdq = cmd[1] == '?';
 	int inv = cmd[1 + isdq] == '!';
 	char *ret = NULL;
 	if (isdq && *loc) {
-		int id = atoi(loc);
+		unsigned int id = atoi(loc);
 		if (!*arg && cmd[2] != '?') {
 			int err = (xpret != NULL) ^ inv;
-			if (!xanchor)
-				sbuf_make(xanchor, 4 * sizeof(int))
-			sbuf_mem(xanchor, &id, sizeof(id))
-			sbuf_mem(xanchor, &err, sizeof(err))
+			if (id >= INT_MAX / 2)
+				return xserr;
+			if (id >= xcid_n) {
+				unsigned int n = MAX(64, NEXTSZ(xcid_n, id + 1 - xcid_n));
+				xcid = erealloc(xcid, n);
+				memset(xcid + xcid_n, -1, n - xcid_n);
+				xcid_n = n;
+			}
+			xcid[id] = err;
 			return ret;
-		} else if (!xanchor)
-			return ret;
-		int *ap = (int*)xanchor->s, n = xanchor->s_n / sizeof(int);
+		}
 		int and_res = 0, or_res = 1;
-		for (int i = n; i >= 2;) {
-			i -= 2;
-			if (ap[i] != id)
-				continue;
-			and_res |= ap[i + 1];
+		for (;;) {
+			if (id >= xcid_n || xcid[id] < 0)
+				return ret;
+			and_res |= xcid[id];
 			for (; *loc && *loc != ',' && *loc != ';'; loc++);
 			if (!*loc || *loc == ';') {
 				 or_res &= and_res;
@@ -1385,9 +1421,7 @@ static void *ec_while(char *loc, char *cmd, char *arg)
 				return (or_res ^ inv) ? xuerr : ex_exec(arg);
 			}
 			id = atoi(++loc);
-			i = n;
 		}
-		return ret;
 	} else if (isdq) {
 		ret = (xpret != NULL) ^ inv ? xuerr : NULL;
 		return !ret && *arg ? ex_exec(arg) : ret;
@@ -1632,6 +1666,25 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
 	return xkwdrs ? NULL : xserr;
 }
 
+static void ext_hlr(led_ext *p, led_ctx *x)
+{
+	ren_state *r = x->r;
+	int i, j, l, o;
+	for (l = 0, i = 0; i < x->cterm;) {
+		o = x->off[i++];
+		if (o < 0)
+			continue;
+		for (l++; x->off[i] == o; i++);
+		if (o+1 >= x->n || r->pos[o] + r->wid[o] == r->pos[o + 1])
+			continue;
+		if (r->pos[o + 1] + r->wid[o + 1] != r->pos[o])
+			continue;
+		j = x->bound ? x->ctt[l-1] : o;
+		x->att[j] = syn_merge(x->att[j], conf_hlrev);
+		x->att[j+1] = syn_merge(x->att[j+1], conf_hlrev);
+	}
+}
+
 static int eo_val(char *arg)
 {
 	return uc_isdigit(*arg) || (*arg == '-' && uc_isdigit(arg[1])) ?
@@ -1645,11 +1698,22 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
 	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
 
 EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
-EO(rr) EO(shape) EO(seq) EO(td) EO(order) EO(hll) EO(hlw)
-EO(hlp) EO(hlr) EO(hl) EO(lim) EO(led) EO(vis)
+EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
+EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
 
-_EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); return NULL;)
+_EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
+_EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
 _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
+
+_EO(hlr,
+	xhlr = *arg ? eo_val(arg) : !xhlr;
+	led_ext *p = led_extfind(ext_hlr);
+	if (xhlr && !p)
+		led_extreg()->ext_func = ext_hlr;
+	else if (!xhlr && p)
+		led_extdel(p);
+	return NULL;
+)
 
 _EO(left,
 	if (*loc)
@@ -1678,6 +1742,7 @@ static struct excmd {
 	{"?""?!", ec_while},
 	{"??", ec_while},
 	{"?!", ec_while},
+	{"?~", ec_xcid},
 	{"?", ec_while},
 	{"bp", ec_setpath},
 	{"bs", ec_bufsave},
@@ -1713,6 +1778,7 @@ static struct excmd {
 	{"g!", ec_glob},
 	{"g", ec_glob},
 	EO(mpt),
+	{"m!", ec_mark},
 	{"m", ec_mark},
 	{"q!", ec_quit},
 	{"q", ec_quit},
@@ -1884,10 +1950,8 @@ void *ex_exec(const char *ln)
 			|| tmpxquit < -256)
 		restore(xquit)
 	if (!xexec_dep) {
-		if (xanchor) {
-			sbuf_free(xanchor)
-			xanchor = NULL;
-		}
+		if (xcid && !xcid_keep)
+			xcid_free();
 		xqprop = 0;
 	}
 	return xerr & 4 ? NULL : ret;

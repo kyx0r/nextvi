@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> 
 int dstrlen\(const char \*s, char delim\)
 \{
@@ -47,7 +47,7 @@ int dstrlen\(const char \*s, char delim\).*?
 grp 07??m 1220reg p OK led.c:6:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
-sbuf \*led_attsb;.*(	if \(!\*pattern\))
+static sbuf \*extsb;.*(	if \(!\*pattern\))
 		return 0;
 	sbuf_cut\(suggestsb, 0\)8??0?
 grp 08??-8m 1220reg p OK led.c:6:a82sc %? %@2152sc!'\''00?
@@ -70,7 +70,7 @@ static int search\(const char \*pattern, int l\)1??0?
 grp 07??m 2220reg p OK led.c:9:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static sbuf \*suggestsb;
 static sbuf \*acsb;
-sbuf \*led_attsb;.*(	if \(!\*pattern\))
+static sbuf \*extsb;.*(	if \(!\*pattern\))
 		return 0;
 	sbuf_cut\(suggestsb, 0\)8??0?
 grp 08??-5m 2220reg p OK led.c:9:a82sc %? %@2152sc!'\''00?
@@ -95,7 +95,7 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 #else
 ??!219reg led.c:6:m12sc %? %@2142sc!0?
 '\''2i #endif
-??!219reg led.c:9:m22sc %? %@2142sc!b1%ya 98?0?
+??!219reg led.c:9:m22sc %? %@2142sc!b1m!%ya 98?0?
 %f> 		rstate->holelen = uc_len\(ss\);
 		memcpy\(rstate->nulhole, ss, rstate->holelen\);
 		memset\(ss, 0, rstate->holelen\);
@@ -106,41 +106,41 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 %f> 	} else
 		for \(n = 0; \(l = uc_len\(ss\)\); n\+\+\)
 			ss \+= l;2??0?
-2??m 1220reg p OK ren.c:111:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK ren.c:113:a22sc %? %@2152sc!1q0?
 %f> 	} else
 		for \(n = 0; \(l = uc_len\(ss\)\); n\+\+\)3??0?
-3??m 1220reg p OK ren.c:111:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK ren.c:113:a32sc %? %@2152sc!1q0?
 %f> 		rstate->holelen = uc_len\(ss\);
 		memcpy\(rstate->nulhole, ss, rstate->holelen\);
 		memset\(ss, 0, rstate->holelen\);4??0?
-4??+3m 1220reg p OK ren.c:111:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK ren.c:113:a42sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			ss \+= l;$5??0?
-5??-2m 1220reg p OK ren.c:111:a52sc %? %@2152sc!fr 981qfr 980?
+5??-2m 1220reg p OK ren.c:113:a52sc %? %@2152sc!fr 981qfr 980?
 %f> .	....t........en.. .c...n\(s...
 ...e.......t.te.>.u....., s.,...t....>.........
 	.m.m.....s.....r......>h...l....
 ...e...
 .	....\(. . .;.......c.l..\(......n\+.\)
 	.	s. \+= l.6??0?
-6??+3m 1220reg p OK ren.c:111:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK ren.c:113:a62sc %? %@2152sc!1q0?
 grp 1%f> 		rstate->holelen = uc_len\(ss\);.*?
 		memcpy\(rstate->nulhole, ss, rstate->holelen\);.*?
 		memset\(ss, 0, rstate->holelen\);.*?
 (	} else)7??0?
-grp 07??m 1220reg p OK ren.c:111:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK ren.c:113:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		max = \(unsigned int\)xlim;
 		for \(n = 0; n < max && \(l = uc_len\(ss\)\); n\+\+\)
 			ss \+= l;.*(	int \*off = &pos\[b];)
 	char \*\*chrs = \(char\*\*\)&off\[b];
 	if \(xorder && dir_reorder\(s, ss, off, n, rstate->ctx\)\) \{8??0?
-grp 08??-6m 1220reg p OK ren.c:111:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 1220reg p OK ren.c:113:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	unsigned int n, max, l;
 	char \*ss = s;
 	if \(xlim >= 0 && rstate == rstates\+1\) \{.*(		for \(i = 0; i < b; i\+\+\) \{)
 			chrs\[i] = s;
 			s \+= uc_len\(s\);9??0?
-grp 09??-9m 1220reg p OK ren.c:111:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ren.c:1112sc %? %@2132sc!0?
+grp 09??-9m 1220reg p OK ren.c:113:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ren.c:1132sc %? %@2132sc!0?
 ?0?
 %f+ 			ss \+= l;
 	unsigned int b = n \+ 1, c = 2, i;
@@ -148,20 +148,20 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 	int \*pos = emalloc\(\(b \* 2 \* sizeof\(pos\[0]\)\) \+ b \* sizeof\(char\*\)\);1??0?
 1??m 21q0?
 ;0fr.,$f+ ^			ss \+= l;$4??0?
-4??m 2220reg p OK ren.c:113:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 2220reg p OK ren.c:115:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 		max = \(unsigned int\)xlim;
 		for \(n = 0; n < max && \(l = uc_len\(ss\)\); n\+\+\)
 			ss \+= l;.*(	int \*off = &pos\[b];)
 	char \*\*chrs = \(char\*\*\)&off\[b];
 	if \(xorder && dir_reorder\(s, ss, off, n, rstate->ctx\)\) \{8??0?
-grp 08??-4m 2220reg p OK ren.c:113:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ren.c:115:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	unsigned int n, max, l;
 	char \*ss = s;
 	if \(xlim >= 0 && rstate == rstates\+1\) \{.*(		for \(i = 0; i < b; i\+\+\) \{)
 			chrs\[i] = s;
 			s \+= uc_len\(s\);9??0?
-grp 09??-7m 2220reg p OK ren.c:113:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ren.c:1132sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ren.c:115:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ren.c:1152sc %? %@2132sc!0?
 '\''1,#+1c 	} else {
 		n = 0;
 #ifdef __SSE2__
@@ -195,10 +195,10 @@ sbuf \*led_attsb;.*(	if \(!\*pattern\))
 		} else
 #endif
 		for (; (l = uc_len(ss)); n++)
-??!219reg ren.c:111:m12sc %? %@2142sc!0?
+??!219reg ren.c:113:m12sc %? %@2142sc!0?
 '\''2i count_done:;
 	}
-??!219reg ren.c:113:m22sc %? %@2142sc!b2%ya 98?0?
+??!219reg ren.c:115:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> int uc_slen\(char \*s\)
 \{
 	int n = 0, l;
@@ -255,7 +255,7 @@ char \*uc_beg\(char \*beg, char \*s\)
 		return n;
 	}
 #endif
-??!219reg uc.c:24:m12sc %? %@2142sc!b3%ya 98?0?
+??!219reg uc.c:24:m12sc %? %@2142sc!b3m!%ya 98?0?
 %f> #include <ctype\.h>
 #include <fcntl\.h>
 #include <stdio\.h>1??0?
@@ -280,10 +280,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index a38f7a06..cd7b5936 100644
+index 26a5f232..7d82ddeb 100644
 --- a/led.c
 +++ b/led.c
-@@ -4,9 +4,28 @@ sbuf *led_attsb;
+@@ -4,9 +4,28 @@ static sbuf *extsb;
  
  int dstrlen(const char *s, char delim)
  {
@@ -313,10 +313,10 @@ index a38f7a06..cd7b5936 100644
  
  static int search(const char *pattern, int l)
 diff --git a/ren.c b/ren.c
-index 603d4842..e6e2d628 100644
+index 4116d9c1..b558db09 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -108,9 +108,42 @@ ren_state *ren_position(char *s)
+@@ -110,9 +110,42 @@ ren_state *ren_position(char *s)
  		rstate->holelen = uc_len(ss);
  		memcpy(rstate->nulhole, ss, rstate->holelen);
  		memset(ss, 0, rstate->holelen);
@@ -401,7 +401,7 @@ index b1002c4e..e1637ca5 100644
  		s += l;
  	return n;
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..3f58fae0 100644
+index 03ed7b03..1ee3a477 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,3 +1,7 @@

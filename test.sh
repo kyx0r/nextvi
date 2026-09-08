@@ -42,6 +42,12 @@ run_ex() {
 	EXINIT="$1" "$VI" -sm "$TMPFILE" </dev/null 2>/dev/null
 }
 
+# run_ex2: EXINIT is the first chain, $2 a second one typed after it, so state
+# that only outlives ex_exec at depth 0 can be told apart from state that does
+run_ex2() {
+	printf '%s\n:q!\n' "$2" | EXINIT="$1" "$VI" -sm "$TMPFILE" 2>/dev/null
+}
+
 # run_vi: pass vi key sequence; write result to OUTFILE, read it back
 run_vi() {
 	rm -f "$OUTFILE"
@@ -1558,6 +1564,52 @@ out=$(run_ex ':%s/a$/X/g:%p:q!')
 check ':s g still matches $ after the first search' 'aaX' "$out"
 
 # ──────────────────────────────────────────────────────────────────────────────
+# :s ^ flag
+# The flag never sets REG_NOTBOL, so ^ matches at each scan start instead of
+# only at the line start. It implies g; without g the loop stops at one match.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'aaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a/X/^:%p:q!')
+check ':s ^ re-anchors ^ after a match' 'XXX' "$out"
+
+printf 'aaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a/X/g^:%p:q!')
+check ':s ^ takes a spelled out g as well' 'XXX' "$out"
+
+printf 'ab\n' > "$TMPFILE"
+out=$(run_ex ':%s/^/S/^:%p:q!')
+check ':s ^ matches a bare ^ at every position' 'SaSbS' "$out"
+
+# every ^ in the pattern re-anchors, alternation branches included
+printf 'aba\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a|b/X/^:%p:q!')
+check ':s ^ re-anchors an alternation branch too' 'XXX' "$out"
+
+# REG_NEWLINE must survive, or $ stops matching
+printf 'aaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/a$/X/^:%p:q!')
+check ':s ^ still matches $ at the line end' 'aaX' "$out"
+
+# under m the region is one string, so the run stops at the first newline
+printf 'aaa\naaa\n' > "$TMPFILE"
+out=$(run_ex ':%s/^a/X/m^:%p:q!')
+check ':s m^ re-anchors inside the region only' \
+	"$(printf 'XXX\naaa')" "$out"
+
+# what vi and vI are built on: a leading run replaced by text of another width
+TAB=$(printf '\t')
+printf '%s\n' "$TAB$TAB${TAB}x" "${TAB}y${TAB}z" > "$TMPFILE"
+out=$(run_ex ":%s/^$TAB/  /^:%p:q!")
+check ':s ^ expands a leading tab run, leaving the interior tab' \
+	"$(printf '      x\n  y%sz' "$TAB")" "$out"
+
+printf '      x\n   y\n' > "$TMPFILE"
+out=$(run_ex ":%s/^ {2}/$TAB/^:%p:q!")
+check ':s ^ folds a leading space run into tabs' \
+	"$(printf '%s%s%sx\n%s y' "$TAB" "$TAB" "$TAB" "$TAB")" "$out"
+
+# ──────────────────────────────────────────────────────────────────────────────
 # :s g and zero-length matches at the line end
 # The trailing newline is a match position like any other: REG_NEWLINE makes it
 # a terminator, so only a zero-width match can land there and nothing can run
@@ -1583,6 +1635,12 @@ printf 'axb\n' > "$TMPFILE"
 out=$(run_ex ':%s/x*/-/g:%p:q!')
 check ':s g takes a zero-length match adjoining a non-empty one' '-a--b-' "$out"
 
+# the same holds when the match is a run: the empty match closing "xx" is a
+# match of its own, so the run yields two substitutions; POSIX sed drops it
+printf 'axxb\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/g:%p:q!')
+check ':s g zero-length match closing a run is its own match' '-a--b-' "$out"
+
 printf '\n' > "$TMPFILE"
 out=$(run_ex ':%s/x*/-/g:%p:q!')
 check ':s g substitutes a zero-length match on an empty line' '-' "$out"
@@ -1598,6 +1656,96 @@ printf 'xx\nxx\n' > "$TMPFILE"
 out=$(run_ex ':%s/x/Y/m:%p:q!')
 check ':s m still substitutes once across the region' \
 	"$(printf 'Yx\nxx')" "$out"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# :s advances by a character over a zero-length match
+# The engine matches codepoints, so a match that makes no progress has to copy
+# and skip a whole utf-8 character. A byte sized step lands inside the
+# character and splits it. :uc drops the character lengths to one byte and the
+# step follows.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'h\303\251llo\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/g:%p:q!')
+check ':s g zero-length advance keeps a 2 byte character whole' \
+	"$(printf -- '-h-\303\251-l-l-o-')" "$out"
+
+printf 'a\360\237\231\202b\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/g:%p:q!')
+check ':s g zero-length advance keeps a 4 byte character whole' \
+	"$(printf -- '-a-\360\237\231\202-b-')" "$out"
+
+printf 'h\303\251\nlo\n' > "$TMPFILE"
+out=$(run_ex ':%s/x*/-/gm:%p:q!')
+check ':s gm zero-length advance keeps a character whole' \
+	"$(printf -- '-h-\303\251-\n-l-o-')" "$out"
+
+# :uc turns the character lengths off, and the advance is a byte again
+printf 'h\303\251\n' > "$TMPFILE"
+out=$(run_ex ':uc:%s/x*/-/g:uc:%p:q!')
+check ':s g zero-length advance is a byte with :uc' \
+	"$(printf -- '-h-\303-\251-')" "$out"
+
+# the target group skip advances by a character too, or the scan lands on a
+# continuation byte and a pattern that matches it splits the character
+printf '\303\251\n' > "$TMPFILE"
+out=$(run_ex ":grp 1:%s/($(printf '\251'))|x*/-/g:grp:%p:q!")
+check ':s grp skip advance does not land inside a character' \
+	"$(printf -- '\303\251')" "$out"
+
+# the search advances over a zero-width match the same way: a byte sized step
+# lands inside the character and every later offset on the line drifts. The
+# ascii twin "aa bb cc" reports the same numbers.
+printf 'a\303\251 bb cc\n' > "$TMPFILE"
+out=$(run_ex ':%f>cc:%f<\<:1;.=:q')
+check ':f< zero-width advance keeps the offset on a character' '0 1 6 -1' "$out"
+
+printf 'a\303\251 bb cc\n' > "$TMPFILE"
+out=$(run_ex ':%f>cc:%f<(?=b):1;.=:q')
+check ':f< lookahead advance keeps the offset on a character' '0 1 4 -1' "$out"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# :s g and zero-length matches found ahead of the scan start
+# The search is unanchored, so a zero-width match need not sit at the scan
+# start: a pattern that matches empty only somewhere else (a positional
+# lookahead) is reported ahead, the advance lands on the match position, and
+# the loop must not substitute the same spot twice. Perl parity is the
+# reference: s/(?=a)/X/g inserts one X before every match.
+# ──────────────────────────────────────────────────────────────────────────────
+
+printf 'ababab\n' > "$TMPFILE"
+out=$(run_ex ':%s/(?=^a)/X/g:%p:q!')
+check ':s g does not re-fire a zero-width match found ahead' 'XabXabXab' "$out"
+
+# ic 0 compiles (?=^a) through the static literal path instead of the engine;
+# both paths must agree about where the match is
+printf 'ababab\n' > "$TMPFILE"
+out=$(run_ex ':ic:%s/(?=^a)/X/g:ic:%p:q!')
+check ':s g zero-width ahead agrees on the static path' 'XabXabXab' "$out"
+
+# a forward lookahead without ^ matches at every position with the lookahead
+# satisfied, one substitution each — none of them found ahead
+printf 'abab\n' > "$TMPFILE"
+out=$(run_ex ':%s/(?=a)/X/g:%p:q!')
+check ':s g forward lookahead substitutes once per position' 'XaXbXab' "$out"
+
+# a target group that ends at the scan start leaves the advance at zero
+# progress; the loop must copy a char and move on, not re-match the line
+printf 'xx\n' > "$TMPFILE"
+out=$(run_ex ':grp 1:%s/(y*)(x+)/X/g:grp:%p:q!')
+check ':s grp stuck advance on an empty target group moves on' 'XxXx' "$out"
+
+# a zero-width target group inside a nonzero overall match is ordinary
+# content: the next match starts where the advance landed, so chained matches
+# must all substitute
+printf 'aab\n' > "$TMPFILE"
+out=$(run_ex ':grp 2:%s/(a)(b*)/[\2]/g:grp:%p:q!')
+check ':s grp chains across a zero-width target group' 'a[]a[b]' "$out"
+
+printf 'ab a ab\n' > "$TMPFILE"
+out=$(run_ex ':grp 2:%s/(a)(b*)/[\2]/g:grp:%p:q!')
+check ':s grp zero-width target group between real matches' \
+	'a[b] a[] a[b]' "$out"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # :fr register search and the range cursor
@@ -1630,6 +1778,278 @@ printf 'int a\nint b\nint c\n' > "$TMPFILE"
 out=$(run_ex ':%f>t c:1;0,3;2ya97:fr 97:1;0,3;2f+int:??!p exhausted:.p:q')
 check ':fr f+ past the range end fails instead of wrapping' \
 	"$(printf 'exhausted\nint c')" "$out"
+
+# ── :f>/:f< out-of-range pinning ──────────────────────────────────────────────
+# Out of range, :f< pins to the last line of the range at column 0, and the
+# cursor side (above or below the range) makes no difference.
+printf 'alpha\nfoo\nbar\nbaz\nint qux\ntail\n' > "$TMPFILE"
+out=$(run_ex ':1:3,5f<int:.p:q')
+check ':f< cursor below the range pins at the range end' 'int qux' "$out"
+
+out=$(run_ex ':6:3,5f<int:.p:q')
+check ':f< cursor above the range pins at the range end' 'int qux' "$out"
+
+# The pinned line is subject to the in-place rule at column 0: a match further
+# right on it is skipped, then the sweep continues on earlier lines
+printf 'alpha\nfoo\nbar\nbaz int\nqux\ntail\n' > "$TMPFILE"
+out=$(run_ex ':1:2,5f<int:.p:q')
+check ':f< no column-0 match on the pin line falls through to earlier lines' \
+	'baz int' "$out"
+
+# the pin bound is the end of the last range line, so the whole pinned line
+# is eligible, including a match past column 0
+printf 'alpha\nfoo\nbar\nbaz\nqux int\ntail\n' > "$TMPFILE"
+out=$(run_ex ':1:5,5f<int:.p:q')
+check ':f< match past column 0 on the pin line is found' 'qux int' "$out"
+
+# same when the range ends at the last buffer line and no row follows it
+printf 'alpha\nfoo\nbar\nbaz\nqux int\n' > "$TMPFILE"
+out=$(run_ex ':1:5,5f<int:.p:q')
+check ':f< pin line is the last buffer line' 'qux int' "$out"
+
+# Out of range, :f> pins at the range start, and the cursor side makes no
+# difference here either; the full range is searched in both directions
+printf 'alpha\nfoo\nbar int\nbaz\nqux\ntail\n' > "$TMPFILE"
+out=$(run_ex ':1:3,5f>int:.p:q')
+check ':f> cursor below the range pins at the range start' 'bar int' "$out"
+
+out=$(run_ex ':6:3,5f>int:.p:q')
+check ':f> cursor above the range pins at the range start' 'bar int' "$out"
+
+printf 'alpha\nfoo\nbar\nbaz\nqux int\ntail\n' > "$TMPFILE"
+out=$(run_ex ':1:5,5f>int:.p:q')
+check ':f> out of range searches the last line of the range' 'qux int' "$out"
+
+# single-line range out of range: the one line is searched in both directions
+printf 'alpha\nfoo\nint qux\n' > "$TMPFILE"
+out=$(run_ex ':2:3,3f>int:.p:q')
+check ':f> single-line range out of range still searches the line' 'int qux' "$out"
+
+out=$(run_ex ':2:3,3f<int:.p:q')
+check ':f< single-line range out of range still searches the line' 'int qux' "$out"
+
+# a search register is forward only: :f< with one armed errors out
+printf 'alpha\nfoo\nbar int\nbaz\nqux\ntail\n' > "$TMPFILE"
+out=$(run_ex ':3,5ya97:fr 97:1:3,5f<int:??!p rejected:q')
+check ':f< with a search register armed is rejected' \
+	"$(printf 'register search is forward only\nrejected')" "$out"
+
+# ── :m! mark unset ────────────────────────────────────────────────────────────
+# An unset mark takes the row of one whose line was deleted (-1), so addressing
+# it is an invalid range; :err 1 prints the error and the chain carries on.
+printf 'aaa\nbbb\nccc\nddd\neee\n' > "$TMPFILE"
+out=$(run_ex ":err 1:2m 97:m! 97:'97p:??!p gone:q")
+check ':m! unsets the given mark' "$(printf 'invalid range\ngone')" "$out"
+
+# marks that were not listed keep their rows
+out=$(run_ex ":2m 97:3m 115:m! 97:'115p:q")
+check ':m! leaves the marks it was not given' 'ccc' "$out"
+
+# the argument is a list of ids, like :m
+out=$(run_ex ":err 1:2m 97:3m 115:m! 97 115:'115p:??!p gone:q")
+check ':m! unsets every mark in the list' "$(printf 'invalid range\ngone')" "$out"
+
+# no argument at all: every mark in the buffer goes
+out=$(run_ex ":err 1:2m 97:3m 115:m!:'97p:??!p gone:q")
+check ':m! with no argument unsets the first mark' \
+	"$(printf 'invalid range\ngone')" "$out"
+out=$(run_ex ":err 1:2m 97:3m 115:m!:'115p:??!p gone:q")
+check ':m! with no argument unsets the later marks too' \
+	"$(printf 'invalid range\ngone')" "$out"
+
+# id 91 is '[', which lives outside the mark array; the bare form clears it too
+out=$(run_ex ":1,3m 91:'91p:q")
+check "'[ is reachable as mark 91" 'aaa' "$out"
+out=$(run_ex ":err 1:1,3m 91:m!:'91p:??!p gone:q")
+check ":m! with no argument unsets '[ and '] as well" \
+	"$(printf 'invalid range\ngone')" "$out"
+
+# an unset id is free again, and setting it later in the same chain is enough
+out=$(run_ex ":2m 97:m! 97:4m 97:'97=1:q")
+check ':m! an unset mark id can be set again' '4' "$out"
+
+# :m! parses no range, so an address in front of it is ignored, never an error
+out=$(run_ex ":err 1:2m 97:1,2m! 97:'97p:??!p gone:q")
+check ':m! ignores a range' "$(printf 'invalid range\ngone')" "$out"
+
+# unsetting marks that were never set is a no-op, in both forms
+out=$(run_ex ':m! 97:p ok:q')
+check ':m! on a mark that was never set is a no-op' 'ok' "$out"
+out=$(run_ex ':m!:p ok:q')
+check ':m! with no marks set at all is a no-op' 'ok' "$out"
+
+# ── derived arithmetic, variables and comparison ──────────────────────────────
+# ex has no arithmetic operator, no variable and no comparison operator, and
+# needs none: an address is an integer expression, a mark is a slot that holds
+# one, and an address that cannot name a line is an error the ?? layer reads as
+# a boolean. These pin the composed idioms, not the primitives they rest on.
+
+printf 'l1\nl2\nl3\nl4\nl5\nl6\nl7\nl8\nl9\nl10\nl11\nl12\nl13\nl14\nl15\nl16\nl17\nl18\nl19\nl20\n' > "$TMPFILE"
+
+# an address expression evaluates strictly left to right, with no precedence:
+# both of these are 1+2 then *3, and 2*3 then +1
+out=$(run_ex ':1+2*3=1:q')
+check 'AA1 address arithmetic runs left to right (1+2*3 = 9)' '9' "$out"
+
+out=$(run_ex ':2*3+1=1:q')
+check 'AA2 address arithmetic has no precedence (2*3+1 = 7)' '7' "$out"
+
+out=$(run_ex ':20/3=1:q')
+check 'AA3 address division truncates (20/3 = 6)' '6' "$out"
+
+out=$(run_ex ':20%3=1:q')
+check 'AA4 address modulo (20%3 = 2)' '2' "$out"
+
+out=$(run_ex ":\$-5=1:q")
+check 'AA5 $ is a term in the expression ($-5 = 15)' '15' "$out"
+
+# a zero divisor leaves the running value alone instead of trapping
+out=$(run_ex ':6/0=1:q')
+check 'AA6 division by zero is skipped, not fatal' '6' "$out"
+out=$(run_ex ':6%0=1:q')
+check 'AA7 modulo by zero is skipped, not fatal' '6' "$out"
+
+# ── marks as integer variables ────────────────────────────────────────────────
+# :<expr>m <id> is assignment, '<id> is the read. That gives a bank of named
+# integers with no variable syntax anywhere in the language.
+out=$(run_ex ":7m 3:'3=1:q")
+check 'BB1 mark as variable: assign a computed row, read it back' '7' "$out"
+
+out=$(run_ex ":7m 3:'3+5m 6:'6=1:q")
+check 'BB2 computed assignment: v6 := v3 + 5' '12' "$out"
+
+out=$(run_ex ":7m 3:'3m 5:'5=1:q")
+check 'BB3 copy one variable into another' '7' "$out"
+
+out=$(run_ex ":7m 3:'3+1m 3:'3=1:q")
+check 'BB4 increment in place: v3 := v3 + 1' '8' "$out"
+
+# ── comparison out of range validity ──────────────────────────────────────────
+# An address below the first line, or a range whose end precedes its start, is
+# an error, so subtraction and range order are the comparison operators. :err 0
+# keeps the probe silent while leaving the status intact for ??.
+out=$(run_ex ":err 0:2m 3:'3-7=1:??!p less:q")
+check 'CC1 v < literal detected by a negative address' 'less' "$out"
+
+out=$(run_ex ":2m 3:'3-1=1:q")
+check 'CC2 v >= literal leaves the address valid' '1' "$out"
+
+# :ya is the silent probe: it validates the range and prints nothing
+out=$(run_ex ":3m 1:5m 2:'1,'2ya 96:??p a<=b:q")
+check 'CC3 v1 <= v2 via range validity' 'a<=b' "$out"
+
+out=$(run_ex ":err 0:3m 1:5m 2:'2,'1ya 96:??!p b>a:q")
+check 'CC4 v2 > v1 detected by the reversed range' 'b>a' "$out"
+
+# equality needs no operator either: both orders valid means neither is greater
+out=$(run_ex ":3m 1:3m 2:'1,'2ya 96:1??:'2,'1ya 96:2??:1,2??p EQUAL:q")
+check 'CC5 equality = both range orders valid (AND over two ids)' 'EQUAL' "$out"
+
+out=$(run_ex ":err 0:3m 1:5m 2:'1,'2ya 96:1??:'2,'1ya 96:2??:1,2??!p DIFFER:q")
+check 'CC6 inequality falls out of the same id pair' 'DIFFER' "$out"
+
+# ── numbers through registers ─────────────────────────────────────────────────
+# :pr redirects :p (and :=) into a register and :led 0 stops the echo, so a
+# computed number becomes text; %@N pastes that text back into any argument.
+out=$(run_ex ":led 0:pr 97:\$*3/10=1:pr 0:led:p [%@97]:q")
+check 'DD1 a computed number captured into a register and expanded back' '[6]' "$out"
+
+# expansion composes: a register can be built out of other registers, giving
+# command text assembled at run time
+out=$(run_ex ':led 0:pr 97:3=1:pr 0:led:98reg %@97-7p:p [%@98]:q')
+check 'DD2 expansion assembles new command text from a register' '[3-7p]' "$out"
+
+# comparing two registers: paste one into the buffer, expand the other as the
+# pattern that has to match it whole
+out=$(run_ex ":1reg foo:2reg foo:\$pu 1:\$s/^%@2\$/EQ/:\$p:q")
+check 'DD3 two registers compared by pasting one and matching the other' 'EQ' "$out"
+
+out=$(run_ex ":err 0:1reg foo:2reg bar:\$pu 1:\$s/^%@2\$/EQ/:??!p differ:q")
+check 'DD4 unequal registers leave the substitute with no match' 'differ' "$out"
+
+# ── loops with a computed exit ────────────────────────────────────────────────
+# $? repeats until its body errors, and the body's last command is a comparison,
+# so the loop count is data rather than a literal
+out=$(run_ex ":err 0:2m 1:7m 2:\$? '1+1m 1\\:'1,'2ya 96:'1=1:q")
+check 'EE1 raise v1 until it passes v2: stops one past v2' '8' "$out"
+
+# min(v1,v2) into v9: one comparison, captured once, read by both arms
+out=$(run_ex ":err 0:3m 1:8m 2:'1,'2ya 96:5??:5??'1m 9:5??!'2m 9:'9=1:q")
+check 'EE2 min into v9 when v1 is smaller' '3' "$out"
+out=$(run_ex ":err 0:8m 1:3m 2:'1,'2ya 96:5??:5??'1m 9:5??!'2m 9:'9=1:q")
+check 'EE3 min into v9 when v2 is smaller' '3' "$out"
+
+# ── subcommands inside an address ─────────────────────────────────────────────
+# |cmd| runs a whole chain while the address is being parsed; what it leaves
+# behind (here the cursor) is what the rest of the address reads
+out=$(run_ex ':|%f>l7|=1:q')
+check 'FF1 an address subcommand moves the cursor the address then reads' '7' "$out"
+
+out=$(run_ex ':|%f>l7|+2=1:q')
+check 'FF2 arithmetic applies on top of the subcommand result' '9' "$out"
+
+# and a failing subcommand takes the whole address down with it
+out=$(run_ex ':err 1:|%f>zzz|=1:q')
+check 'FF3 a failing address subcommand reports subcommand error' 'subcommand error' "$out"
+
+out=$(run_ex ':err 0:|%f>zzz|=1:??!p gated:q')
+check 'FF4 the failed address is an ordinary status the ?? layer reads' 'gated' "$out"
+
+# ── ?~ capture id lifetime ────────────────────────────────────────────────────
+# A capture id has three states, and ?~ is what makes the third one reachable
+# on purpose: set, set-to-the-other-value, and unset. Since an unset id skips
+# the whole expression that names it, unsetting is how a branch is disarmed
+# without knowing anything about the other ids in its prefix.
+# :s/hello/hello/ is the success status here, :s/zzz/y/ the failure.
+printf 'hello\n' > "$TMPFILE"
+
+out=$(run_ex ':s/hello/hello/:1??:1?~:1??p fired:p reached:q')
+check 'Z1 [id]?~ unsets that id; its branch no longer runs' 'reached' "$out"
+
+out=$(run_ex ':s/hello/hello/:1??:s/hello/hello/:2??:1?~:2??p two alive:q')
+check 'Z2 [id]?~ leaves every other id captured' 'two alive' "$out"
+
+out=$(run_ex ':s/hello/hello/:1??:s/hello/hello/:2??:?~:1??p a:2??p b:p reached:q')
+check 'Z3 bare ?~ frees every capture' 'reached' "$out"
+
+# unset is not a terminal state: the id is free to be captured again
+out=$(run_ex ':s/hello/hello/:1??:1?~:s/hello/hello/:1??:1??p recaptured:q')
+check 'Z4 an id unset by ?~ can be captured again' 'recaptured' "$out"
+
+out=$(run_ex ':7?~:p reached:q')
+check 'Z5 ?~ on an id that was never captured is a no-op' 'reached' "$out"
+
+out=$(run_ex ':99999?~:p reached:q')
+check 'Z6 ?~ past the allocated ids is a no-op, not an error' 'reached' "$out"
+
+# ?~ with an argument toggles whether captures outlive the chain they were
+# made in; run_ex2 types a second chain to look
+out=$(run_ex2 ':?~x:s/hello/hello/:1??' ':1??p survived')
+check 'Z7 ?~<arg> keeps captures across separate chains' 'survived' "$out"
+
+out=$(run_ex2 ':s/hello/hello/:1??' ':1??p survived:p reached')
+check 'Z8 without it captures die with the chain' 'reached' "$out"
+
+# the argument form is a toggle, not a set: twice is back to the default
+out=$(run_ex2 ':?~x:?~x:s/hello/hello/:1??' ':1??p survived:p reached')
+check 'Z9 ?~<arg> twice restores the default wipe' 'reached' "$out"
+
+# prefix and argument are independent: this unsets id 1 and toggles keeping,
+# so id 2 is the only capture that reaches the next chain
+out=$(run_ex2 ':s/hello/hello/:1??:s/hello/hello/:2??:1?~x' ':1??p one:2??p two')
+check 'Z10 [id]?~<arg> unsets the id and toggles keeping' 'two' "$out"
+
+# the bare form still wipes while keeping is on
+out=$(run_ex2 ':?~x:s/hello/hello/:1??:?~' ':1??p alive:p reached')
+check 'Z11 bare ?~ frees captures even with keeping on' 'reached' "$out"
+
+# ids are global to every nesting level, and so is freeing them
+out=$(run_ex ':s/hello/hello/:1??:g/hello/?~:1??p one alive:p reached:q')
+check 'Z12 ?~ inside a :g body frees the outer captures too' 'reached' "$out"
+
+# ?~ reports success, so it clears a live error status off the chain
+out=$(run_ex ':s/zzz/y/:?~:??p status reset:q')
+check 'Z13 ?~ returns success and resets the running status' 'status reset' "$out"
 
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 

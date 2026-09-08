@@ -437,6 +437,8 @@ EX COMMANDS
 
              No argument uses previously set regex keyword.
              Returns error if target not found.
+             If cursor is out of bounds, forward search pins to range start,
+             backward search to range end.
 
              Example: no range given, current line only
              :f>int
@@ -577,7 +579,7 @@ EX COMMANDS
              Example: join all lines with space padding
              :%-1j x
 
-     [range]s[<Delim>][regex][<Delim>][str][<Delim>][<g>][<m>][#reg]
+     [range]s[<Delim>][regex][<Delim>][str][<Delim>][<g>][<m>][<^>][#reg]
              Substitute
 
              Find and replace text in a range of lines that matches an
@@ -604,6 +606,11 @@ EX COMMANDS
 
              Example: global replacement with <g>
              :%s/term1/term2/g
+
+             Example: anchor ^ at every search with <^>, implies <g>
+             aaa
+             :%s/^a/X/^
+             XXX
 
              Example: multiline mode <m>
              :.,+1s/term1<^V><^M>term2/term3/m
@@ -661,6 +668,11 @@ EX COMMANDS
 
              Example: store ranges in <a> and <s> for later reuse in :f>
              :>top>,#>bottom>m 97 115:'97,'115f>middle
+
+     m![#marks]
+             Unset line mark(s)
+
+             No argument unsets all marks in the current buffer.
 
      [range]ya[#reg]
              Yank into a register
@@ -942,15 +954,15 @@ EX COMMANDS
              No prefix and no argument forwards the last error status.
 
              A prefix without arguments captures the current error status
-             at that point in a command chain into id tag specified.
-             Id tags are global across all nested command contexts.
+             at that point in a command chain into capture id specified.
+             Capture ids are global across all nested command contexts.
 
              A prefix with arguments branches based on the boolean expression
              in DNF over the most recent captures of each referenced id.
              If id has no capture, the branch is skipped.
 
              Prefix operators:
-             Numerical id tag
+             Numerical capture id
              , AND (higher precedence)
              ; OR (lower precedence)
 
@@ -962,7 +974,7 @@ EX COMMANDS
              :![ -f ./vi.c ]:??e ./vi.c:mpt1
              Example: capture error status at id 5, branch later
              :>int>:5??:;=:5??p
-             Example: skip if tag was never set
+             Example: skip if id was never set
              :2??.=
              Example: AND -- branch only if both ids captured success
              :f>int:1??:f>void:2??:1,2??p found both
@@ -979,13 +991,30 @@ EX COMMANDS
              :f>int:1??!:1??p int was absent
 
      {prefix}???
-             Evaluate prefix tags
+             Evaluate capture ids
 
              This is a nop command that evaluates a boolean expression
              at prefix and returns the result.
 
              Example: control while loop
              :$? \%f+int\:1??\:\%f+void\:2??\:1,2??p\:1,2???
+
+     [#id]?~[any]
+             Control capture ids lifetime
+
+             Prefix selects a specific id to free.
+             No argument and no prefix frees all captured error statuses.
+             Argument toggles capture status preservation across
+             separate ex command chains.
+
+             Example: id 2 capture leaks into unrelated code
+             :f>int:2??:f>zzz:1??:1??f>int\:2??:2??p LEAKED
+             Example: prevent id 2 leak
+             :f>int:2??:2?~:f>zzz:1??:1??f>int\:2??:2??p LEAKED
+
+             Example: use a capture at the next <:> prompt
+             :?~x:![ -f ./vi.c ]:1??
+             :1??p vi.c exists
 
      ft[filetype]
              Set a filetype
@@ -1104,6 +1133,9 @@ EX OPTIONS
              :grp 1:%f+int(.):grp
 
      hl[1]   Highlight text based on rules defined in conf.c
+
+             Value greater than 1 highlights using C extensions only.
+
      hlr[0]  Highlight text in reverse direction
      hll[0]  Highlight current line based on filetype hl
      hlp[0]  Highlight "[]" "()" "{}" pairs based on filetype hl
@@ -1148,7 +1180,7 @@ EX OPTIONS
 
      pr[0]   Print register
 
-             Set a special register using a character or a number.
+             Set a special register with a character or a number.
              Once the register is set, all ex printed output will
              be stored in the register.
 
@@ -1165,13 +1197,11 @@ EX OPTIONS
 
      fr[0]   Find register
 
-             Set a register using a character or a number.
+             Set a register with a character or a number.
              Once the register is set, the :f> and :f+ commands perform a
              multi-line search forward on the contents of the register instead
              of the current buffer. Range maps the match to a position in
-             the current buffer. No range tests for a match inplace.
-             If the cursor is outside of the range, the search starts at
-             the beginning of the range.
+             the current buffer. No range tests the match inplace.
 
              Example: search register <a> for "int"
              :fr a:f>int:??p yes:??!p no:fr
@@ -1180,10 +1210,10 @@ EX OPTIONS
 
      rr[0]   Record register
 
-             Set a register using a character or a number.
+             Set a register with a character or a number.
              Once the register is set, every byte read from the terminal is
              appended to the register. Input replayed from registers is not
-             recorded, so replaying a recorded register cannot record itself.
+             recorded.
 
              Example: record keystrokes into register <a>
              :rr a
@@ -1336,7 +1366,7 @@ REGEX
              value. Negative offset begins at the start of the string.
 
 SPECIAL MARKS
-     *       Position of previous ex command
+     *       Position of previous ex command chain
      [       First position of previous change
      ]       Last position of previous change
      '       Position of previous line region
@@ -1353,19 +1383,19 @@ SPECIAL REGISTERS
 CODE MAP
      +------------------+----------------------+
      | 537 kmap.h       |  keymap translation  |
-     | 552 vi.h         |  definitions/aux     |
+     | 582 vi.h         |  definitions/aux     |
      +------------------+----------------------+
-     | 351 term.c       |  low level IO        |
-     | 375 conf.c       |  hl/ft/td config     |
-     | 460 ren.c        |  positioning/syntax  |
+     | 352 term.c       |  low level IO        |
+     | 379 conf.c       |  hl/ft/td config     |
+     | 462 ren.c        |  positioning/syntax  |
      | 615 uc.c         |  UTF-8 support       |
-     | 666 lbuf.c       |  file/line buffer    |
-     | 735 led.c        |  insert mode/output  |
-     | 751 regex.c      |  pikevm              |
-     | 1903 vi.c        |  normal mode/general |
-     | 1934 ex.c        |  ex options/commands |
-     | 7078 patch2vi.c  |  patch converter     |
-     | 14868 total      |  wc -l *.c|sort      |
+     | 674 lbuf.c       |  file/line buffer    |
+     | 766 regex.c      |  pikevm              |
+     | 811 led.c        |  insert mode/output  |
+     | 1907 vi.c        |  normal mode/general |
+     | 1998 ex.c        |  ex options/commands |
+     | 7162 patch2vi.c  |  patch converter     |
+     | 15126 total      |  wc -l *.c|sort      |
      +------------------+----------------------+
 
 COMPILING
@@ -1446,29 +1476,30 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.4                      August 29, 2026                     Nextvi 7.4
+Nextvi 7.5                     September 7, 2026                    Nextvi 7.5
 
 NEXTVI PATCHES
 ==============
-Nextvi features a robust, context aware and customizable patching system.
-patch2vi support program facilitates script transformations.
+Nextvi features a robust, context-aware and customizable patching system.
+The patch2vi support program facilitates script transformations.
 
 Apply one: ./name.sh
 Apply a stack: ./lsp.sh visual.sh splits.sh
 Each script applies itself, adds its name to $P2VI_PATCH and hands the
-rest on, so a patch carrying a compat block for another sees it.
-Assert what the chain did not run itself:
+rest of the chain on, which lets a patch carrying a compat block for
+another see it.
+If the scripts did not run as a chain, assert the applied set:
 P2VI_PATCH="lsp.sh visual.sh" ./splits.sh
 Every line below is one full chain, in an order that applies.
 Patches not listed are unconstrained. Combinations are generated
 by compat_order in patch2vi.sh.
 
-./lsp.sh visual.sh arrowkeys_normal.sh
 ./grep.sh lsp.sh visual.sh splits.sh cxref.sh
 ./lsp.sh rstr.sh visual.sh splits.sh incsearch.sh detect_indent.sh
 ./lsp.sh rstr.sh visual.sh splits.sh incsearch.sh
-./lsp.sh visual.sh splits.sh linewrap_v2.sh
-./lsp.sh visual.sh splits.sh linewrap_v2.sh mouse_normal.sh
+./lsp.sh visual.sh splits.sh threaded_redraw.sh linewrap_v2.sh
+./lsp.sh visual.sh splits.sh threaded_redraw.sh linewrap_v2.sh mouse_normal.sh
+./lsp.sh visual.sh nvi_status.sh
 ./lsp.sh visual.sh splits.sh
 ./lsp.sh rstr.sh visual.sh splits.sh arrowkeys_insert.sh incsearch.sh detect_indent.sh tab_complete.sh
 ./rstr.sh threaded_search.sh
@@ -1480,8 +1511,8 @@ Maintainer utils.
 
 64bit.sh
 --------------
-Convert entire codebase to 64 bit integers instead of 32 bit.
-This will enable Nextvi to read files & buffers up to 9,223,372 Terabytes.
+Converts the entire codebase to 64 bit integers instead of 32 bit.
+This enables Nextvi to read files and buffers up to 9,223,372 terabytes.
 In addition, this may improve performance on 64 bit CPUs due to
 matching pointer <---> integer alignment and possibly more compiler
 optimizations.
@@ -1493,36 +1524,43 @@ A script I use to update zwchars and dwchars in uc.c
 
 arrowkeys_normal.sh
 --------------
-Adds arrows keys support in normal mode.
+Adds arrow key support in normal mode.
 
 arrowkeys_insert.sh
 --------------
-Adds arrows keys support in insert and command modes. In command
-modes, Up/Down arrow selects lines from history buffer.
+Adds arrow key support in insert and command modes. In command
+mode, Up/Down arrows select lines from the history buffer.
 
 threaded_search.sh
 --------------
 Multithreaded version of lbuf_search(). Adjust the number of threads in use
-and buffer stepping in lbuf.c Ensure that your system supports posix threads,
+and buffer stepping in lbuf.c. Ensure that your system supports POSIX threads,
 aka libpthread.
 
 async.sh
 --------------
-Adds 2 new ex commands "as" and "as!". Ex command executed in command chain after
-"as" is run on a separate thread. "as!" is a join command that waits for all threads
-to finish. Posix thread support is required. Patch is intended for expert users because
-races are possible depending on commands used.
-Example: fun :fd command without blocking the editor
+Adds 2 new ex commands "as" and "as!". An ex command in the command chain
+after "as" runs on a separate thread. "as!" is a join command that waits
+for all threads to finish. POSIX thread support is required. The patch is
+intended for expert users because races are possible depending on the
+commands used.
+Example: run the :fd command without blocking the editor
 :as:fd
+
+threaded_redraw.sh
+--------------
+Moves the main redraw onto a separate thread. This frees up the input thread
+and reduces the input latency. No editor state is ever shared because the
+frame is joined before the next command runs. POSIX thread support is required.
 
 hl_part.sh
 --------------
-Allow syntax highlight to continue past the terminal dimensions up to a
-certain limit. To customize the depth, adjust LEDFORW and LEDBACK definitions
-in led.c
-Patch will alter the meaning of <^> <$> assertions in syntax highlight
-regex, as the line would be considered to start/end beyond the visible columns.
-Patch works in reverse direction and with reordered text.
+Allows syntax highlighting to continue past the terminal dimensions up to
+a certain limit. To customize the depth, adjust the LEDFORW and LEDBACK
+definitions in led.c.
+Alters the meaning of the <^> and <$> assertions in syntax highlighting
+regex, as the line is considered to start/end beyond the visible columns.
+Works in the reverse direction and with reordered text.
 
 hl_naive.sh
 --------------
@@ -1531,31 +1569,31 @@ Performance will degrade on very long lines.
 
 blockhl_cache.sh
 --------------
-Cache multiline syntax highlighting blocks. Falls outside of the scope
+Cache multiline syntax highlighting blocks. Falls outside the scope
 of core Nextvi as it violates the immediate mode rendering principle and
 is more complex.
 
 debug.sh
 --------------
-Cleanup reachable memory upon termination.
+Frees reachable memory upon termination.
 Use for debugging.
 Note: in some features leaks won't be freed - for example hlw (which is not
-enabled by default) Also initializes sdense in regex.c so that valgrind stops
-freaking out.
+enabled by default). Also initializes sdense in regex.c so that valgrind
+stops freaking out.
 
 grep.sh
 --------------
 Adds a special temporary buffer /grep/ much like the default /hist/ or /fm/.
-When new keybind ^x is executed vi performs fs_search on every file and
-stores the results in /grep/ buffer. At last, user will be switched to /grep/.
-Line information is stored and displayed with special new syntax highlight
-rules. Searched keyword is also highlighted.  Use the familiar keybind ^i or
-TAB on the wanted line to immediately open the file and goto the line
-specified. To quickly open /grep/ use new keybind: vx
-The format of the lines stored is specifically designed to mirror the output of
-grep -r -n "str" .
-The feature can be substituted with a pipe command in case of a higher performing
-grep implementation or loading of cached results from script.
+When the new ^x keybind is executed, vi performs fs_search on every file and
+stores the results in the /grep/ buffer. Finally, the user is switched to
+/grep/. Line information is stored and displayed with new syntax highlighting
+rules. The searched keyword is also highlighted. Use the familiar keybind
+^i or TAB on the wanted line to immediately open the file and go to the
+line specified. To quickly open /grep/ use the new keybind: vx
+The format of the stored lines is specifically designed to mirror the output
+of grep -r -n "str" .
+The feature can be substituted with a pipe command in case of a higher
+performing grep implementation or loading of cached results from a script.
 
 cxref.sh
 --------------
@@ -1563,50 +1601,48 @@ Adds a special temporary buffer /xref/ and the keybind gx, for C only.
 gx collects the definition of the symbol under the cursor and, recursively,
 the definitions of everything it calls, then switches to /xref/. A count
 limits how deep it goes: 1gx is the definition alone, 2gx adds what it
-calls, no count means unlimited. To quickly open /xref/ use new keybind:
-vf Every definition gets a header line in grep -n style, followed by its
+calls, no count means unlimited. To quickly open /xref/ use the new keybind:
+vf
+Every definition gets a header line in grep -n style, followed by its
 code verbatim, highlighted as C. TAB on a header opens that file at that
-line, which is where you edit: /xref/ itself is only for reading. Definitions
-are looked up in the C files listed in /fm/, so run :fd first, and the
-file the call was read in is searched first, so a static definition beats
-a global one elsewhere.
+line, which is where you edit: /xref/ itself is only for reading.
+Definitions are looked up in the C files :fd lists.
 
 rstr.sh
 --------------
 Adaptation from upstream Neatvi, where simple operations are optimized by
-running a specialized search code instead of full regex engine. rstr can
-yeild up to 30% faster search on non regex patterns. This is not included in
-base nextvi due to underlying complexity.
+running a specialized search routine instead of the full regex engine. rstr
+can yield up to 30% faster search on non-regex patterns. Not included in
+base Nextvi due to the underlying complexity.
 
 incsearch.sh
 --------------
 Search as you go in the / and ? prompts. Every typed key redraws the screen
 with the matches of the keyword highlighted and the cursor moved to the first
-match, scrolling the buffer when the match is off screen. Enter keeps that
-position and searches normally, so counts and messages are unchanged. An
-interrupt, or an erase key on an already empty keyword, restores the view,
-the previous keyword and the search direction. While in the prompt TAB moves
-to the next match and ^_ moves in reverse.
+match, scrolling the buffer when the match is off screen. Enter keeps
+that position and searches normally, leaving counts and messages
+unchanged. An interrupt, or an erase key on an already empty keyword, restores
+the view, the previous keyword and the search direction. While in the prompt
+TAB moves to the next match and ^_ moves in reverse.
 
 stdin_pipe.sh
 --------------
-Allows the user to use vi like a pager (less) except you need to specify
-- as command line arg (just like in vim).
+Lets you use vi like a pager (less), except you need to specify - as a
+command line argument (just like in vim).
 Example:
 $ dmesg | vi -
 
 ec_closebuf.sh
 --------------
-Allows the user to close the buffer using new ex command "cx"
-Specify a number as an arg for what buffer to close.
-Specifying no argument(s) will close the current buffer.
-When the buffer is closed all buffers above will be shifted
-and renumbered.
-Range can be supplied like so :cx0-5
-This will close buffers 0 to 5 inclusive
-Omiting the parameter of the range assumes current buffer
-index for that parameter (not inclusive and either begin or end
-of the range). Example :cx-5 or :cx5-
+Allows the user to close a buffer using the new ex command "cx".
+Specify a number as an argument to select which buffer to close; with no
+argument, the current buffer is closed.
+When a buffer is closed, all buffers above it are shifted and renumbered.
+A range can be supplied like so: :cx0-5
+This closes buffers 0 to 5 inclusive.
+Omitting a parameter of the range assumes the current buffer index for
+that parameter (the range is then not inclusive on that side).
+Example: :cx-5 or :cx5-
 
 filetype_shebang.sh
 --------------
@@ -1623,31 +1659,31 @@ Note: this patch can be used as a base for remapping any base keybinds.
 quickexit.sh
 --------------
 Added kj sequence to quickly exit insert mode.
-It's important to understand that this has a caveat, if input comes too fast,
-for example a paste from terminal and the sequence has "kj" in it, insert
-mode will be cancelled mid way and paste will be wrong. Luckily this almost
-never happens because such letter combination is extremely rare.
-Delay time (in ms) can be set via :qe N or disabled by setting N to 0.
+There is one caveat: if input comes too fast, for example a paste from the
+terminal, and the sequence has "kj" in it, insert mode is cancelled
+mid-way and the paste is wrong. Luckily this almost never happens, as such
+letter combinations are extremely rare.
+The delay time (in ms) can be set via :qe N or disabled by setting N to 0.
 
 hl_mark.sh
 -------------
-Adds new ex option "hlm" which will highlight lbuf marks. Each mark has
-different color up to 16. Higher marks may duplicate the colors.
+Adds a new ex option "hlm" which highlights lbuf marks. Each mark has its
+own color, up to 16; higher marks may duplicate the colors.
 Lazy redraw, use <^L> if needed.
 
 c_option.sh
 -------------
-Adds -c commandline option. This can be used to pass in ex commands instead
+Adds the -c command line option. This can be used to pass in ex commands instead
 of EXINIT.
 
 exrc.sh
 -------------
-Adds support for reading .exrc file from XDG, .config or home directories.
+Adds support for reading the .exrc file from the XDG, .config or home directories.
 This can be used to pass in ex commands instead of EXINIT.
 
 readonly.sh
 -------------
-Adds new ex option "ro" and commandline readonly option -R
+Adds a new ex option "ro" and the read-only -R command line option
 
 remove_vla_cliterals.sh
 --------------
@@ -1655,25 +1691,25 @@ Removes variable length arrays and compound literals for portability reasons.
 
 undojump.sh
 --------------
-Adds a new keybind ^o which allows to jump through the undo marks
-without actually doing undo.
+Adds a new keybind ^o which allows jumping through the undo marks
+without actually undoing.
 
 undo_branches.sh
 --------------
 Adds a basic multi-level undo implementation. New ex command "up"
-prints divergent changes. Each path has an index, switching to it
+prints divergent changes. Each path has an index; switch to it
 with "up" and a number as an argument. Example: :up1
 The current undo branch is stored as the last index before swapping.
 
 alternate-w-behaviour.sh
 --------------
-Implements more vim/like d/c/yw
+Implements more vim-like d/c/yw
 
 ac_context.sh
 --------------
-Improvements to autocomplete, now the word completion will also use
-text that prefixes the insert when it makes sense. Makes it possible
-to autocomplete in more desired situations.
+Improvements to autocomplete: the word completion now also uses
+text that prefixes the insert when it makes sense. This makes it
+possible to autocomplete in more situations.
 
 tab_complete.sh
 --------------
@@ -1682,39 +1718,43 @@ the cursor is completed as a path, relative to the working directory
 or to the directory that the word itself names. A single match is
 filled in, with a trailing </> when it is a directory. Several matches
 fill in their common prefix, and once nothing is left to fill in, they
-are listed. With "tc" set to 1 the list is drawn next to the prompt,
-the cursor left where it was, so the prompt never scrolls. With "tc"
+are listed. With "tc" set to 1 the prompt never scrolls: the list is
+drawn next to the prompt and the cursor stays where it was. With "tc"
 set to 2 the screen is cleared and the list is drawn below the prompt
 instead, wrapped at word boundaries; TAB then pages it and any other
 key leaves it. New keybind ^_ completes like "tc" set to 2 whatever
-"tc" is, so the full listing is always one key away.
+"tc" is, keeping the full listing always one key away.
 When nothing matches, TAB inserts a literal tab.
-Adds a new ex option "tc" to toggle the completion, on by default.
+Adds a new ex option "tc" to control the completion, on by default.
 Example: turn it off, TAB is then always a literal tab
 :tc 0
 
 linewrap_v1.sh
 --------------
-Soft line wrap implementation using buffer only approach.
-Adds new :lw command which can be used to specify the max column
-to which soft linewrap lines. Adds a new ex option "hllw" to
-highlight linewrapped boundaries.
+Soft line wrap implementation using a buffer only approach.
+Adds a new :lw command which can be used to specify the maximum column
+at which soft linewrap lines break. Given no argument the column is
+elastic: it tracks the terminal width and the buffer is re-wrapped
+on every resize, as soon as it holds no unsaved changes.
+Adds a new ex option "hllw" to highlight linewrapped boundaries.
 Trades off flexibility for simplicity. Cannot change linewrapping
-when buffer is modified. Different edit semantics. Visual edits
+while the buffer is modified. Different edit semantics: visual edits
 are line based.
 
 linewrap_v2.sh
 --------------
-Soft line wrap implementation using render only approach.
-Adds new :lw command which can be used to specify the max column
-to which soft linewrap lines. Adds a new ex option "hllw" to
-highlight linewrapped boundaries.
+Soft line wrap implementation using a render only approach.
+Adds a new :lw command which can be used to specify the maximum column
+at which soft linewrap lines break. Given no argument it toggles an
+elastic column, which follows the terminal across resizes, or the
+window it is drawn in with splits.sh.
+Adds a new ex option "hllw" to highlight linewrapped boundaries.
 No limitation from v1. Default edit semantics. Visual edits are
 geometry based.
 
 ex-scripting.sh
 --------------
-Adds new ex commands "sr" and "sx"
+Adds new ex commands "sr" and "sx".
 NEXTVI_FT - current buffer filetype
 NEXTVI_ROW - current line number
 NEXTVI_OFF - current byte offset
@@ -1725,13 +1765,21 @@ NEXTVI_WORD - current word
 "sx" runs a command with the environment variables above and
 executes its stdout as ex commands
 
+ex_marks.sh
+--------------
+Lets an ex command range address a letter mark.
+Example:
+:'a,'bs/foo/bar
+
 chunked_read_write.sh
 --------------
-Allows nextvi to read files in chunks instead of reading the whole
-file into the memory right away. This patch optimizes the reading of
-binary files, since it would be truncated earlier before loading
-the whole file into memory.
-In addition, optimizes the number of write syscalls using chunks
+Reduces the upper memory requirement for reading files. By default vi
+reads the whole file into the buffer and then splits it into lines; with
+this patch the file is read in 4k chunks and split into lines as it
+loads. This helps a lot when reading binary files: the whole file no
+longer has to be loaded into memory just to find out that it should
+be truncated.
+In addition, it reduces the number of write syscalls by using chunks
 when writing a file.
 
 visual.sh
@@ -1756,15 +1804,15 @@ Block mode (gb) also supports:
 
 splits.sh
 --------------
-Implements "sp" and "vs" ex commands for vertical and horizontal splits.
-Adds vc and vd normal commands to switch and close views. View can also be closed
-with "q".
-New ex command "eq" can be used to balance the vertical and horizontal
+Implements "sp" and "vs" ex commands for horizontal and vertical splits.
+Adds the vc and vd normal commands to switch and close views. A view can
+also be closed with "q".
+The new ex command "eq" can be used to balance the vertical and horizontal
 split space in the nearest dimension.
 
 alt_sections.sh
 --------------
-Implements closer to standard vi(1) sections keybinding:
+Implements section keybindings closer to standard vi(1):
 [#])          Move to next sentence boundary down # times
 [#](          Move to next sentence boundary up # times
 [#]]          Move to next <{> section down # times
@@ -1774,7 +1822,7 @@ Implements closer to standard vi(1) sections keybinding:
 
 key_remap_cmds.sh
 --------------
-Adds "im" "im!" and "nm "nm!" ex commands to dynamically remap keybinds
+Adds "im", "im!", "nm" and "nm!" ex commands to dynamically remap keybinds
 in normal and insert modes.
 Remapping a to hello in insert mode
 :im ahello
@@ -1785,22 +1833,22 @@ modal.sh
 --------------
 Integrates modal programming language interpreter.
 https://wiki.xxiivv.com/site/modal.html
-New ex command [vrange]md[script] evaluates the contents of the
-current buffer and argument as a modal script.
-Implements a new phase - ($ ...) to execute ex command
-chains from within the modal script.
+The new ex command [vrange]md[script] evaluates the contents of the
+current buffer and the argument as a modal script.
+Adds a new phase, ($ ...), to execute ex command chains
+from within the modal script.
 
 lsp.sh
 --------------
-LSP support for Nextvi
-Adds new ex command "lsp" to start the LSP server, for example:
+LSP support for Nextvi.
+Adds a new ex command "lsp" to start the LSP server, for example:
 :lsp c clangd
 Check that it is running:
 :lsp
 Once the server is up, new normal keybinds can be used:
-gK - show hover documentation for the symbol at cursor
-gd - goto definition of symbol at cursor
-Also supports on the fly hinting.
+gK - show hover documentation for the symbol at the cursor
+gd - goto definition of the symbol at the cursor
+Also supports on-the-fly hinting.
 
 sse.sh
 --------------
@@ -1808,17 +1856,17 @@ SIMD optimizations for Nextvi.
 
 mouse_normal.sh
 --------------
-Adds mouse support in normal mode. Adds a new ex option "ms"
-to toggle the mouse support. Clicking positions the cursor
-and mouse wheel scrolls using ^Y or ^E. Terminal mouse selections
-can still be made while holding Shift on most terminal emulators.
+Adds mouse support in normal mode, with a new ex option "ms" to toggle it.
+Clicking positions the cursor and the mouse wheel scrolls using ^Y or ^E.
+Terminal mouse selections can still be made while holding Shift on most
+terminal emulators.
 
 detect_indent.sh
 --------------
 Scans lines to guess the indentation format.
 Adds 3 new ex options:
-"et" - expandtab. Tabs are replaced with spaces
-"sw" - space width. How many literal spaces are injected for tab
+"et" - expandtab. Tabs are replaced with spaces.
+"sw" - space width. How many literal spaces are injected for a tab.
 "idt" - indent detect. Enables indent guessing and sets the line
 limit (default 500).
 
@@ -1830,9 +1878,9 @@ regular use.
 
 writeall.sh
 --------------
-Adds "wa" "wa!" "wqa" "wqa!" "xa" "xa!" ex commands to write all buffers
-to the filesystem. q commands always write while x commands only
-write modified buffers.
+Adds the "wa", "wa!", "wqa", "wqa!", "xa" and "xa!" ex commands to write
+all buffers to the filesystem. q commands always write, while x commands
+only write modified buffers.
 
 ins_cursor.sh
 --------------
@@ -1841,15 +1889,16 @@ This is a good indicator for insert mode.
 
 cbas.sh
 --------------
-Adds syntax highlighing for Coders Basilisk
+Adds syntax highlighting for Coders Basilisk
 https://codeberg.org/gek/coders_basilisk/src/branch/main
 
 highlight_cmd.sh
 --------------
 Adds a new ex command "hi". This command can be used to create
-additional syntax highlighting rules on demand. It inherits
-full power of attributes so any mask will work. Figuring out
-the right value requires some effort and reading vi.h helps.
+additional syntax highlighting rules on demand. The command prefix
+specifies comma separated attributes, one per regex group, each a
+bitmask conf.c can express. Figuring out the right value requires
+some effort and reading vi.h helps.
 Example: highlight int as keyword (RE color)
 :1hi int
 Example: highlight multiple different keywords
@@ -1859,43 +1908,65 @@ Example: disable rules
 Example: highlight text inside parens
 :5hi \(.*?\)
 
+spell.sh
+--------------
+Spell checking with an external speller that speaks the ispell pipe
+protocol. Adds a new ex commands "sl", "sl!" and the keybind gs.
+"sl" runs the speller over the buffer, highlights the misspelled words
+and keeps their suggestions, "sl!" clears both. Argument sets the
+speller, which defaults to "aspell -a" as defined in conf.c.
+gs replaces the word under the cursor with its first suggestion, a
+count selects another one. The suggestions of the word under the
+cursor are printed as an ex message, numbered by the count that
+picks them: "1:weird 2:wired 3:weirdo".
+Results are invalidated only once "sl" runs again.
+Example: check with a German dictionary
+:sl aspell -a --lang=de
+Example: check with hunspell
+:sl hunspell -a
+
+nvi_status.sh
+--------------
+Rewords the <^G> status line the way nvi puts it:
+"file: modified: line 3 of 10 (22%) col 1 [b0]"
+
 My current EXINIT setup:
 --------------
 How it works:
 |sc!||1sc | - disable special characters
 97reg - put macro into a register
 ish - enable interactive shell
-inc (^(?:(?!^\.git).)+[^/]+$) always exclude .git folder from :fd
+inc (^(?:(?!^\.git).)+[^/]+$) always excludes the .git folder from :fd
 pac - print autocomplete options
 |sc|? - default special characters; ? is a nop cycle required for
 separator reset. Scripts can append more commands to EXINIT.
 
 Macros:
-@q = creates structure like this:
+@q = creates a structure like this:
 {
 
 }
-@w = creates structure like this:
+@w = creates a structure like this:
 whatever {
 	whatever
 	a
 }
-@e = brings :e !p $c into ex prompt
-Note: p is alias to printf. $c[0-9] is env var containing some path
+@e = brings :e !p $c into the ex prompt
+Note: p is an alias for printf. $c[0-9] is an env var containing some path.
 @a = creates a comment like this:
 /* whatever */
 @s = from the cursor creates a comment like this:
 /* whatever */
 @d = uncomment /* */ comment
 @x = indent % region left
-@f = brings :cd !p $c into ex prompt
-Note: p is alias to printf. $c[0-9] is env var containing some path
-@l = bring !cp % %_|w|!git diff --no-index %_ % macro into ex prompt.
-Use to create patch and diff files fast. It relies on
+@f = brings :cd !p $c into the ex prompt
+Note: p is an alias for printf. $c[0-9] is an env var containing some path.
+@l = brings the !cp % %_|w|!git diff --no-index %_ % macro into the ex prompt.
+Use it to create patch and diff files fast. It relies on
 you not saving the file prior to running the macro.
 @z = control character mapping placeholders
-@t = working with ./tags generated by ctags
-and goto definition based on the current regex keyword
-@r = goto definition in while being in ./tags file
+@t = works with the ./tags file generated by ctags
+and goes to the definition matching the current regex keyword
+@r = goto definition while in the ./tags file
 
 export EXINIT="$(printf '%b' '|sc!||1sc |:108reg :!cp % %_:w:!git diff --no-index %_ %113reg o{\n}kA\n	115reg i/*A*/119reg A {jo}koa120reg >%<<$%<<122reg :ph1 1 2 1^A:ph2 2 2 1^B:ph3 3 2 1^C:ph4 4 2 1^D:ph5 5 2 1^E:ph6 6 2 1^F:ph7 7 2 1^G:ph8 8 2 1^H:ph9 9 2 1^I:ph10 10 2 1^J:ph11 11 2 1^K:ph12 12 2 1^L:ph13 13 2 1^M:ph14 14 2 1^N:ph15 15 2 1^O:ph16 16 2 1^P:ph17 17 2 1^Q:ph18 18 2 1^R:ph19 19 2 1^S:ph20 20 2 1^T:ph21 21 2 1^U:ph22 22 2 1^V:ph23 23 2 1^W:ph24 24 2 1^X:ph25 25 2 1^Y:ph26 26 2 1^Z:ph27 27 2 1^[:ph28 28 2 1^\\\\:ph29 29 2 1^]:ph30 30 2 1^^:ph31 31 2 1^_102reg :cd !p $c101reg :e !p $c97reg I/*A*/100reg /\/\*\n2x/\*\/\n2x116reg :51reg %@47:e ./tags:1;0:;>unescaped>:??!\%s/[\\\\](.)/\\1/g\:1i unescaped:ic:%f>^%@51	:??!p "%@51" not found in tags\:ic\:e %#\:re %@51\:1q:;>	>+1;#>	>ya49:;>	/\^>+3;#>\$/;">re:??!;>	[0-9]+>+1;#>;>ya50\:??\!p bad format\\\\\:ic\\\\\:e %#\\\\\:re %@51\\\\\:2q\:e %@49\:?\%@50\:re %@51\:ic\:1q:e %@49:1:%f>:re %@51:ic114reg :51reg %@47:;>	>+1;#>	>ya49:;>	/\^>+3;#>\$/;">re:??!;>	[0-9]+>+1;#>;>ya50\:??\!p bad format\\\\\:re %@51\\\\\:2q\:e %@49\:?\%@50\:re %@51\:1q:e %@49:1:ic:%f>:re %@51:icinc (^(?:(?!^\.git).)+[^/]+$)pacish|sc|?')"

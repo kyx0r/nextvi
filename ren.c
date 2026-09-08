@@ -36,7 +36,7 @@ static int dir_reorder(char *s, char *se, int *ord, int end, int dir)
 			dir_reverse(ord, beg+c_beg, beg+c_end);
 		}
 		beg += c_end ? c_end : 1;
-		s += c_end ? off : 1;
+		s += c_end ? off : uc_len(s);
 	}
 	return end < 0;
 }
@@ -85,7 +85,9 @@ static int ren_cwid(char *s, int pos)
 	return uc_wid(c);
 }
 
-ren_state rstates[3]; /* 0 = current line, 1 = all other lines, 2 = aux rendering */
+/* 0 = current line, 1 = all other lines,
+2 = aux rendering (never lbuf backed by construction) */
+ren_state rstates[3];
 ren_state *rstate = rstates;
 
 /* specify the screen position of the characters in s */
@@ -268,8 +270,8 @@ char *syn_setft(char *ft)
 {
 	int i;
 	if (ftmidx)
-		for (i = 1; i < 4; i++)
-			syn_addhl(NULL, i);
+		for (i = 0; i < hloptslen; i++)
+			syn_addhl(NULL, hlopts[i]);
 	for (i = 0; i < ftmidx; i++)
 		if (ft == ftmap[i].ft) {
 			ftidx = i;
@@ -324,7 +326,7 @@ void syn_highlight(int *att, char *s, int n)
 	int subs[rs->nsubc], *catt, *iatt, sl, c;
 	int cend, sidx = 0, flg = 0, hl, j, i, ii;
 	while ((sl = rset_find(rs, s + sidx, subs, flg)) >= 0) {
-		cend = 1;
+		cend = uc_len(s + sidx);
 		hl = sl + ftmap[fti].setbidx;
 		sl = rs->grpnsubc[sl];
 		catt = hls[hl].att;

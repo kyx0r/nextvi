@@ -96,7 +96,7 @@ static void vi_drawmsg(char *msg)
 	preserve(int, xtd, xtd = 2;)
 	preserve(int, ftidx,)
 	syn_setft(bar_ft);
-	RS(2, led_crender(msg, xrows, 0, 0, xcols))
+	RST(2, led_crender(msg, xrows, 0, 0, xcols))
 	restore(xtd)
 	restore(ftidx)
 }
@@ -162,7 +162,7 @@ static void vi_drawrow(int row)
 		preserve(int, xtd, xtd = dir_context(c) * 2;)
 		preserve(int, ftidx,)
 		syn_setft(n_ft);
-		RS(2, led_crender(tmp, row - xtop, 0, 0, xcols))
+		RST(2, led_crender(tmp, row - xtop, 0, 0, xcols))
 		restore(xorder)
 		restore(syn_blockhl)
 		restore(xtd)
@@ -204,10 +204,10 @@ static void vi_drawrow(int row)
 			i1 -= (itoa(abs(xrow-row+vi_rshift), tmp1) - tmp1)+1;
 			if (i1 >= 0) {
 				memset(p, ' ', strlen(p));
-				RS(2, led_prender(tmp1, row - xtop, l1+i1, 0, l1))
+				RST(2, led_prender(tmp1, row - xtop, l1+i1, 0, l1))
 			}
 		}
-		RS(2, led_prender(tmp, row - xtop, 0, 0, l1))
+		RST(2, led_prender(tmp, row - xtop, 0, 0, l1))
 		restore(syn_blockhl)
 		restore(ftidx)
 		return;
@@ -484,9 +484,9 @@ static int fs_searchback(int cnt, int *row, int *off)
 	return 0;
 }
 
-static char rep_cmd[sizeof(icmd)];	/* the last command */
+static char rep_cmd[sizeof(ticmd)];	/* the last command */
 static int rep_len;
-#define rep_record() memcpy(rep_cmd, icmd, icmd_pos); rep_len = icmd_pos;
+#define rep_record() memcpy(rep_cmd, ticmd, ticmd_pos); rep_len = ticmd_pos;
 
 static void vc_status(int type)
 {
@@ -1173,7 +1173,7 @@ void vi(int init)
 		topfix()
 		vi_col = vi_off2col(xb, xrow, xoff);
 		vi_drawagain(xtop);
-		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), vi_col));
+		term_pos(xrow - xtop, led_pos(lbuf_get(xb, xrow), vi_col) + vi_lncol);
 	}
 	while (!xquit) {
 		int nrow = xrow;
@@ -1182,7 +1182,7 @@ void vi(int init)
 		int ooff = noff;
 		int otop = xtop;
 		int oleft = xleft;
-		icmd_pos = 0;
+		ticmd_pos = 0;
 		vi_mod = 0;
 		vi_ybuf = vi_yankbuf(TK_CTL('l'));
 		vi_arg = vi_prefix();
@@ -1198,8 +1198,7 @@ void vi(int init)
 				syn_scdir(0);
 			vi_drawrow(otop + xrows - 1);
 		}
-		if (led_attsb)
-			sbuf_cut(led_attsb, 0)
+		led_extcut();
 		if (vi_ybuf < 0)
 			vi_ybuf = vi_yankbuf(0);
 		mv = vi_region(-1, &nrow, &noff);
@@ -1373,10 +1372,10 @@ void vi(int init)
 						cmd = restr+6;
 						while (vi_arg--)
 							*cmd++ = ' ';
-						memcpy(cmd, "/g", sizeof("/g"));
+						memcpy(cmd, "/^", sizeof("/^"));
 					} else {
 						memcpy(restr, "%s/^ {", sizeof("%s/^ {"));
-						memcpy(itoa(vi_arg, restr+6), "}/\t/g", sizeof("}/\t/g"));
+						memcpy(itoa(vi_arg, restr+6), "}/\t/^", sizeof("}/\t/^"));
 					}
 					ln = vi_enprompt(":", restr, &k, &n);
 					goto do_excmd;
@@ -1604,8 +1603,7 @@ void vi(int init)
 				case 'R':
 					xtd = uc_isupper(k)+1;
 					xtd = tolower(k) == 'r' ? -xtd : xtd;
-					rstates[0].s = NULL;
-					rstates[1].s = NULL;
+					RST_NULL(0, 1)
 					break;
 				case 'e':
 				case 'f':
@@ -1674,7 +1672,7 @@ void vi(int init)
 			case 'S':
 				term_push("cc", 2);
 				motion:
-				icmd_pos--;
+				ticmd_pos--;
 				goto re_motion;
 			case 'r':
 				vi_mod |= vc_replace();
@@ -1781,19 +1779,25 @@ void vi(int init)
 		}
 		if (xhlp && (k = syn_findhl(3)) >= 0) {
 			int row = xrow, off = xoff, row1, off1;
-			led_att la;
-			if (!led_attsb)
-				sbuf_make(led_attsb, sizeof(la) * 2)
+			static int ola[2][3];
+			led_ext *p;
 			if (!lbuf_pair(xb, "()[]{}", 6, &row, &off)) {
 				row1 = row; off1 = off;
 				if (!lbuf_pair(xb, "()[]{}", 6, &row, &off)) {
-					la.s = ln;
-					la.off = off;
-					la.att = hls[k].att[0];
-					sbuf_mem(led_attsb, &la, sizeof(la))
-					la.s = lbuf_get(xb, row1);
-					la.off = off1;
-					sbuf_mem(led_attsb, &la, sizeof(la))
+					ola[0][0] = off;
+					ola[0][1] = 1;
+					ola[0][2] = hls[k].att[0];
+					p = led_extnew();
+					p->ln = ln;
+					p->ola = ola[0];
+					p->cnt = 1;
+					ola[1][0] = off1;
+					ola[1][1] = 1;
+					ola[1][2] = hls[k].att[0];
+					p = led_extnew();
+					p->ln = lbuf_get(xb, row1);
+					p->ola = ola[1];
+					p->cnt = 1;
 					vi_mod |= row1 == row && orow == xrow ? 2 : 1;
 				}
 			}
@@ -1881,12 +1885,12 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-7.4 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-7.5 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
 	}
-	ibuf = emalloc(ibuf_sz);
+	tibuf = emalloc(tibuf_sz);
 	if (!(xvis & 1))
 		term_init();
 	if (xvis & 8)

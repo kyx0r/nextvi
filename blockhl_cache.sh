@@ -29,7 +29,7 @@ ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> static int lbuf_replace\(struct lbuf \*lb, sbuf \*sb, char \*s, struct lopt \*lo, int n_del, int n_ins\)
 \{
 	int i, pos = lo->pos;
@@ -40,26 +40,26 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 %f> static int lbuf_replace\(struct lbuf \*lb, sbuf \*sb, char \*s, struct lopt \*lo, int n_del, int n_ins\)
 \{
 	int i, pos = lo->pos;4??0?
-4??+2m 1220reg p OK lbuf.c:101:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK lbuf.c:109:a42sc %? %@2152sc!1q0?
 grp 1%f> static int lbuf_replace\(struct lbuf \*lb, sbuf \*sb, char \*s, struct lopt \*lo, int n_del, int n_ins\).*?
 \{.*?
 (	int i, pos = lo->pos;)7??0?
-grp 07??m 1220reg p OK lbuf.c:101:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK lbuf.c:109:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int len = dstrlen\(s, '\''\\n'\''\);
 	return s\[len] == '\''\\n'\'' \? len \+ 1 : len;
 }.*(			int l_nonl = l - \(s\[l - !!l] == '\''\\n'\''\);)
 			struct linfo \*n = emalloc\(l_nonl \+ 5 \+ sizeof\(struct linfo\)\);
 			n->len = l_nonl;8??0?
-grp 08??-4m 1220reg p OK lbuf.c:101:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK lbuf.c:109:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	free\(lb->ln\);
 	free\(lb\);
 }.*(			n->grec = 0;)
 			char \*ln = \(char\*\)\(n \+ 1\);
 			memcpy\(ln, s, l_nonl\);9??0?
-grp 09??-7m 1220reg p OK lbuf.c:101:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg lbuf.c:1012sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK lbuf.c:109:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg lbuf.c:1092sc %? %@2132sc!0?
 '\''1i 	syn_blockhl_invalidate();
-??!219reg lbuf.c:101:m12sc %? %@2142sc!b1%ya 98?0?
+??!219reg lbuf.c:109:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> int syn_scdirl;
 int syn_blockhl;
 
@@ -71,75 +71,70 @@ static int syn_initft\(int fti, int n, char \*name, int flg\)
 int syn_blockhl;
 
 4??0?
-4??+2m 1220reg p OK ren.c:251:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ren.c:253:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static rset \*syn_ftrs;
 static int blockatt, blockflg, blockdep;
 int ftidx;.*(		ftmap = erealloc\(ftmap, \(fti \+ 1\) \* sizeof\(\*ftmap\)\);)
 	int i = n, set = hls\[i]\.set;
 	char \*pats\[hlslen];8??0?
-grp 08??-4m 1220reg p OK ren.c:251:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ren.c:253:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> };
 static struct ftmap \*ftmap;
 static int ftmidx;.*(	for \(; i < hlslen && hls\[i]\.ft == name && hls\[i]\.set == set; i\+\+\))
 		pats\[i - n] = hls\[i]\.pat;
 	ftmap\[fti]\.setbidx = n;9??0?
-grp 09??-7m 1220reg p OK ren.c:251:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ren.c:2512sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ren.c:253:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ren.c:2532sc %? %@2132sc!0?
 ?0?
-%f+ 	goto default_hl;
-}
-
+%f+ 
 void syn_scdir\(int scdir\)
-\{
-	if \(!scdir \|\| abs\(scdir\) > xrows \|\| \(syn_scdirl > 0\) != \(scdir > 0\)\) \{1??0?
-1??+2m 21q0?
-%f+ 	goto default_hl;
-}
-
-4??0?
-4??+2m 2220reg p OK ren.c:292:a42sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	if \(ftmidx\)
-		return NULL;
-	i = 0;.*(int syn_merge\(int old, int new\))
-\{
-	if \(new & SYN_OWR\)8??0?
-grp 08??-10m 2220reg p OK ren.c:292:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 			ftmidx\+\+;
-			return ftmap\[ftidx]\.ft;
-		}.*(		return new & ~SYN_OWR;)
-	int fg = SYN_FGSET\(new\) \? SYN_FG\(new\) : SYN_FG\(old\);
-	int bg = SYN_BGSET\(new\) \? SYN_BG\(new\) : SYN_BG\(old\);9??0?
-grp 09??-13m 2220reg p OK ren.c:292:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ren.c:2922sc %? %@2132sc!0?
-?0?
-%f+ void syn_scdir\(int scdir\)
 \{
 	if \(!scdir \|\| abs\(scdir\) > xrows \|\| \(syn_scdirl > 0\) != \(scdir > 0\)\) \{
 		syn_scdirl = scdir;
 		syn_blockhl = -1;
 		blockdep = 0;1??0?
-1??+2m 31q0?
-%f+ void syn_scdir\(int scdir\)
+1??+3m 21q0?
+%f+ 	if \(!scdir \|\| abs\(scdir\) > xrows \|\| \(syn_scdirl > 0\) != \(scdir > 0\)\) \{
+		syn_scdirl = scdir;
+		syn_blockhl = -1;
+		blockdep = 0;2??0?
+2??m 2220reg p OK ren.c:297:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	if \(!scdir \|\| abs\(scdir\) > xrows \|\| \(syn_scdirl > 0\) != \(scdir > 0\)\) \{$3??0?
+3??m 2220reg p OK ren.c:297:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 
+void syn_scdir\(int scdir\)
+\{4??0?
+4??+3m 2220reg p OK ren.c:297:a42sc %? %@2152sc!1q0?
+%f+ 		syn_scdirl = scdir;
+		syn_blockhl = -1;
+		blockdep = 0;5??0?
+5??-1m 2220reg p OK ren.c:297:a52sc %? %@2152sc!1q0?
+%f+ 
+.........sc...\(..........
 \{
-	if \(!scdir \|\| abs\(scdir\) > xrows \|\| \(syn_scdirl > 0\) != \(scdir > 0\)\) \{4??0?
-4??+2m 3220reg p OK ren.c:295:a42sc %? %@2152sc!1q0?
-grp 1%f+ void syn_scdir\(int scdir\).*?
+	i. \(!s....... .......i.. >...... .........cdi...>............r....\)..\{
+..s.n.scd.r..........
+	...._b............
+	..lo........0.6??0?
+6??+3m 2220reg p OK ren.c:297:a62sc %? %@2152sc!1q0?
+grp 1%f+ .*?
+void syn_scdir\(int scdir\).*?
 \{.*?
 (	if \(!scdir \|\| abs\(scdir\) > xrows \|\| \(syn_scdirl > 0\) != \(scdir > 0\)\) \{)7??0?
-grp 07??m 3220reg p OK ren.c:295:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	if \(ftmidx\)
-		return NULL;
-	i = 0;.*(int syn_merge\(int old, int new\))
+grp 07??m 2220reg p OK ren.c:297:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	i = 0;
+	goto default_hl;
+}.*(int syn_merge\(int old, int new\))
 \{
 	if \(new & SYN_OWR\)8??0?
-grp 08??-7m 3220reg p OK ren.c:295:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 			ftmidx\+\+;
-			return ftmap\[ftidx]\.ft;
-		}.*(		return new & ~SYN_OWR;)
+grp 08??-7m 2220reg p OK ren.c:297:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		}
+	if \(ftmidx\)
+		return NULL;.*(		return new & ~SYN_OWR;)
 	int fg = SYN_FGSET\(new\) \? SYN_FG\(new\) : SYN_FG\(old\);
 	int bg = SYN_BGSET\(new\) \? SYN_BG\(new\) : SYN_BG\(old\);9??0?
-grp 09??-10m 3220reg p OK ren.c:295:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ren.c:2952sc %? %@2132sc!0?
+grp 09??-10m 2220reg p OK ren.c:297:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ren.c:2972sc %? %@2132sc!0?
 ?0?
 %f+ 
 void syn_highlight\(int \*att, char \*s, int n\)
@@ -148,22 +143,22 @@ void syn_highlight\(int \*att, char \*s, int n\)
 	re:;
 	rset \*rs = ftmap\[fti]\.rs;
 	int subs\[rs->nsubc], \*catt, \*iatt, sl, c;1??0?
-1??+3m 41q0?
+1??+3m 31q0?
 %f+ 	int fti = ftidx, blockhl = syn_blockhl, blockcont = -1;
 	re:;
 	rset \*rs = ftmap\[fti]\.rs;
 	int subs\[rs->nsubc], \*catt, \*iatt, sl, c;2??0?
-2??m 4220reg p OK ren.c:321:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK ren.c:323:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	int fti = ftidx, blockhl = syn_blockhl, blockcont = -1;$3??0?
-3??m 4220reg p OK ren.c:321:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK ren.c:323:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 
 void syn_highlight\(int \*att, char \*s, int n\)
 \{4??0?
-4??+3m 4220reg p OK ren.c:321:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK ren.c:323:a42sc %? %@2152sc!1q0?
 %f+ 	re:;
 	rset \*rs = ftmap\[fti]\.rs;
 	int subs\[rs->nsubc], \*catt, \*iatt, sl, c;5??0?
-5??-1m 4220reg p OK ren.c:321:a52sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK ren.c:323:a52sc %? %@2152sc!1q0?
 %f+ 
 .......n.........t..nt .a..,..... .s,.......
 \{
@@ -171,25 +166,25 @@ void syn_highlight\(int \*att, char \*s, int n\)
 ..e.;
 .r...........tm.....i..r..
 .i.........s...........c.t....i..t. s...c.6??0?
-6??+3m 4220reg p OK ren.c:321:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK ren.c:323:a62sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 void syn_highlight\(int \*att, char \*s, int n\).*?
 \{.*?
 (	int fti = ftidx, blockhl = syn_blockhl, blockcont = -1;)7??0?
-grp 07??m 4220reg p OK ren.c:321:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ren.c:323:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		att = &blockatt;
 	return \(\*att & 0xffff\) == \(a & 0xffff\);
 }.*(	int cend, sidx = 0, flg = 0, hl, j, i, ii;)
 	while \(\(sl = rset_find\(rs, s \+ sidx, subs, flg\)\) >= 0\) \{
-		cend = 1;8??0?
-grp 08??-4m 4220reg p OK ren.c:321:a82sc %? %@2152sc!'\''08??1q0?
+		cend = uc_len\(s \+ sidx\);8??0?
+grp 08??-4m 3220reg p OK ren.c:323:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static int syn_tatt\(int \*att, int a, int pb\)
 \{
 	if \(SYN_SET\(BATT, a\) && pb && \(!\*att \|\| !SYN_SET\(BP, blockflg\)\)\).*(		hl = sl \+ ftmap\[fti]\.setbidx;)
 		sl = rs->grpnsubc\[sl];
 		catt = hls\[hl]\.att;9??0?
-grp 09??-7m 4220reg p OK ren.c:321:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ren.c:3212sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ren.c:323:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ren.c:3232sc %? %@2132sc!0?
 ?0?
 %f+ 	fti\+\+;
 	if \(ftmidx > fti && ftmap\[fti-1]\.ft == ftmap\[fti]\.ft\)
@@ -197,28 +192,28 @@ void syn_highlight\(int \*att, char \*s, int n\).*?
 	if \(syn_blockhl < 0 \|\| blockhl < 0\)
 		return;
 	for \(j = 0; j < n; j\+\+\)1??0?
-1??+2m 51q0?
+1??+2m 41q0?
 %f+ 	fti\+\+;
 	if \(ftmidx > fti && ftmap\[fti-1]\.ft == ftmap\[fti]\.ft\)
 		goto re;4??0?
-4??+2m 5220reg p OK ren.c:406:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ren.c:408:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	fti\+\+;.*?
 	if \(ftmidx > fti && ftmap\[fti-1]\.ft == ftmap\[fti]\.ft\).*?
 (		goto re;)7??0?
-grp 07??m 5220reg p OK ren.c:406:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ren.c:408:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		sidx \+= cend;
 		flg = REG_NOTBOL;
 	}.*(		if \(!att\[j] \|\| !SYN_SET\(BP, blockflg\)\))
 			att\[j] = blockatt;
 }8??0?
-grp 08??-4m 5220reg p OK ren.c:406:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ren.c:408:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			}
 			i \+= inc;
 		}.*(char \*syn_filetype\(char \*path\))
 \{
 	int hl = rset_find\(syn_ftrs, path, NULL, 0\);9??0?
-grp 09??-8m 5220reg p OK ren.c:406:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ren.c:4062sc %? %@2132sc!0?
+grp 09??-8m 4220reg p OK ren.c:408:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ren.c:4082sc %? %@2132sc!0?
 '\''1i /* block-highlight pair cache, keyed by lbuf line pointer */
 struct hl_cache_entry {
 	char *ln;
@@ -329,17 +324,18 @@ static void hl_scan_until(int target_row)
 	syn_blockhl = saved_blockhl;
 	blockatt = saved_blockatt;
 	syn_scdirl = saved_last_scdir;
+	free(hl_scan_att);
+	hl_scan_att = NULL;
+	hl_scan_att_sz = 0;
 }
 
-??!219reg ren.c:251:m12sc %? %@2142sc!0?
-'\''2i int sign_changed;
-
-??!219reg ren.c:292:m22sc %? %@2142sc!0?
-'\''3i 		sign_changed = (syn_scdirl > 0) != (scdir > 0);
+??!219reg ren.c:253:m12sc %? %@2142sc!0?
+'\''2c 	int sign_changed = (syn_scdirl > 0) != (scdir > 0);
+	if (!scdir || abs(scdir) > xrows || sign_changed) {
 		if (sign_changed)
 			hl_cache_gen++;
-??!219reg ren.c:295:m32sc %? %@2142sc!0?
-'\''4c 	int fti = ftidx, blockhl, blockcont = -1, trusted = 0;
+??!219reg ren.c:297:m22sc %? %@2142sc!0?
+'\''3c 	int fti = ftidx, blockhl, blockcont = -1, trusted = 0;
 	char *cur_ln = NULL;
 	blockhl = syn_blockhl;
 	if (syn_lb && syn_row >= 0 && syn_row < lbuf_len(syn_lb)) {
@@ -369,10 +365,10 @@ static void hl_scan_until(int target_row)
 			}
 		}
 	}
-??!219reg ren.c:321:m42sc %? %@2142sc!0?
-'\''5i 	if (trusted && cur_ln)
+??!219reg ren.c:323:m32sc %? %@2142sc!0?
+'\''4i 	if (trusted && cur_ln)
 		hl_cache_set(cur_ln, syn_blockhl, blockatt, ftidx);
-??!219reg ren.c:406:m52sc %? %@2142sc!b2%ya 98?0?
+??!219reg ren.c:408:m42sc %? %@2142sc!b2m!%ya 98?0?
 %f> static void vi_drawrow\(int row\)
 \{
 	int l1, i, i1, lnnum = vi_lnnum;
@@ -452,7 +448,7 @@ static void hl_scan_until(int target_row)
 			i = itoalen\(xtop\+xrows\);8??0?
 grp 08??-9m 3220reg p OK vi.c:172:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		syn_setft\(n_ft\);
-		RS\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
+		RST\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
 		restore\(xorder\).*(		p = c;)
 		if \(lnnum == 1 \|\| lnnum & 4 \|\| lnnum & 8\) \{
 			c = itoa\(abs\(xrow-row\+vi_rshift\), c\);9??0?
@@ -490,7 +486,7 @@ static void hl_scan_until(int target_row)
 			i = itoalen\(xtop\+xrows\);8??0?
 grp 08??-6m 4220reg p OK vi.c:175:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		syn_setft\(n_ft\);
-		RS\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
+		RST\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
 		restore\(xorder\).*(		p = c;)
 		if \(lnnum == 1 \|\| lnnum & 4 \|\| lnnum & 8\) \{
 			c = itoa\(abs\(xrow-row\+vi_rshift\), c\);9??0?
@@ -532,7 +528,7 @@ static void hl_scan_until(int target_row)
 			i = itoalen\(xtop\+xrows\);8??0?
 grp 08??-4m 5220reg p OK vi.c:177:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		syn_setft\(n_ft\);
-		RS\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
+		RST\(2, led_crender\(tmp, row - xtop, 0, 0, xcols\)\)
 		restore\(xorder\).*(		p = c;)
 		if \(lnnum == 1 \|\| lnnum & 4 \|\| lnnum & 8\) \{
 			c = itoa\(abs\(xrow-row\+vi_rshift\), c\);9??0?
@@ -597,13 +593,13 @@ static void hl_scan_until(int target_row)
 	}4??0?
 4??+2m 8220reg p OK vi.c:214:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		}
-		RS\(2, led_prender\(tmp, row - xtop, 0, 0, l1\)\)
+		RST\(2, led_prender\(tmp, row - xtop, 0, 0, l1\)\)
 		restore\(syn_blockhl\).*(/\* redraw the screen \*/)
 static void vi_drawagain\(int i\)
 \{8??0?
 grp 08??-5m 8220reg p OK vi.c:214:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				memset\(p, '\'' '\'', strlen\(p\)\);
-				RS\(2, led_prender\(tmp1, row - xtop, l1\+i1, 0, l1\)\)
+				RST\(2, led_prender\(tmp1, row - xtop, l1\+i1, 0, l1\)\)
 			}.*(	for \(; i < xtop \+ xrows; i\+\+\))
 		vi_drawrow\(i\);
 }9??0?
@@ -619,13 +615,13 @@ static void vi_drawagain\(int i\)
 ;0fr.,$f+ ^	led_crender\(s, row - xtop, 0, xleft, xleft \+ xcols\)$4??0?
 4??m 9220reg p OK vi.c:215:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 		}
-		RS\(2, led_prender\(tmp, row - xtop, 0, 0, l1\)\)
+		RST\(2, led_prender\(tmp, row - xtop, 0, 0, l1\)\)
 		restore\(syn_blockhl\).*(/\* redraw the screen \*/)
 static void vi_drawagain\(int i\)
 \{8??0?
 grp 08??-4m 9220reg p OK vi.c:215:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				memset\(p, '\'' '\'', strlen\(p\)\);
-				RS\(2, led_prender\(tmp1, row - xtop, l1\+i1, 0, l1\)\)
+				RST\(2, led_prender\(tmp1, row - xtop, l1\+i1, 0, l1\)\)
 			}.*(	for \(; i < xtop \+ xrows; i\+\+\))
 		vi_drawrow\(i\);
 }9??0?
@@ -649,7 +645,7 @@ static void vi_drawagain\(int i\)
 		syn_setrow(xb, s_row);
 ??!219reg vi.c:214:m82sc %? %@2142sc!0?
 '\''9i 	syn_setrow(NULL, 0);
-??!219reg vi.c:215:m92sc %? %@2142sc!b3%ya 98?0?
+??!219reg vi.c:215:m92sc %? %@2142sc!b3m!%ya 98?0?
 %f> int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);
 void syn_init\(void\);
@@ -660,27 +656,27 @@ extern unsigned char utf8_length\[256];1??0?
 %f> int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);
 void syn_init\(void\);4??0?
-4??+2m 1220reg p OK vi.h:266:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:272:a42sc %? %@2152sc!1q0?
 grp 1%f> int syn_findhl\(int id\);.*?
 int syn_addhl\(char \*reg, int id\);.*?
 (void syn_init\(void\);)7??0?
-grp 07??m 1220reg p OK vi.h:266:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:272:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> char \*syn_filetype\(char \*path\);
 int syn_merge\(int old, int new\);
 void syn_reloadft\(int hl, int flg\);.*(extern int zwlen, def_zwlen;)
 extern int bclen, def_bclen;
 /\* the length of a given utf-8 character \*/8??0?
-grp 08??-4m 1220reg p OK vi.h:266:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:272:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> char \*syn_setft\(char \*ft\);
 void syn_scdir\(int scdir\);
-void syn_highlight\(int \*att, char \*s, int n\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)s\[0]])
+void syn_highlight\(int \*att, char \*s, int n\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)\(s\)\[0]])
 /\* the unicode codepoint of a given utf-8 character \*/
 #define uc_code\(dst, s, l\) \\9??0?
-grp 09??-7m 1220reg p OK vi.h:266:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:2662sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:272:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:2722sc %? %@2132sc!0?
 '\''1i void syn_setrow(struct lbuf *lb, int row);
 void syn_blockhl_invalidate(void);
-??!219reg vi.h:266:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:272:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'lbuf.c' 'ren.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -693,10 +689,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/lbuf.c b/lbuf.c
-index f0e754e6..203893fd 100644
+index 56cb42c6..140dc23e 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -99,6 +99,7 @@ static int linelength(char *s)
+@@ -107,6 +107,7 @@ static int linelength(char *s)
  static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int n_del, int n_ins)
  {
  	int i, pos = lo->pos;
@@ -705,10 +701,10 @@ index f0e754e6..203893fd 100644
  		for (; *s; n_ins++) {
  			int l = linelength(s);
 diff --git a/ren.c b/ren.c
-index 603d4842..17459ed7 100644
+index 4116d9c1..0364892a 100644
 --- a/ren.c
 +++ b/ren.c
-@@ -249,6 +249,118 @@ int ftidx;
+@@ -251,6 +251,121 @@ int ftidx;
  int syn_scdirl;
  int syn_blockhl;
  
@@ -822,27 +818,27 @@ index 603d4842..17459ed7 100644
 +	syn_blockhl = saved_blockhl;
 +	blockatt = saved_blockatt;
 +	syn_scdirl = saved_last_scdir;
++	free(hl_scan_att);
++	hl_scan_att = NULL;
++	hl_scan_att_sz = 0;
 +}
 +
  static int syn_initft(int fti, int n, char *name, int flg)
  {
  	if (fti >= ftmidx)
-@@ -290,9 +402,14 @@ char *syn_setft(char *ft)
- 	goto default_hl;
- }
+@@ -294,7 +409,10 @@ char *syn_setft(char *ft)
  
-+int sign_changed;
-+
  void syn_scdir(int scdir)
  {
- 	if (!scdir || abs(scdir) > xrows || (syn_scdirl > 0) != (scdir > 0)) {
-+		sign_changed = (syn_scdirl > 0) != (scdir > 0);
+-	if (!scdir || abs(scdir) > xrows || (syn_scdirl > 0) != (scdir > 0)) {
++	int sign_changed = (syn_scdirl > 0) != (scdir > 0);
++	if (!scdir || abs(scdir) > xrows || sign_changed) {
 +		if (sign_changed)
 +			hl_cache_gen++;
  		syn_scdirl = scdir;
  		syn_blockhl = -1;
  		blockdep = 0;
-@@ -318,7 +435,36 @@ static int syn_tatt(int *att, int a, int pb)
+@@ -320,7 +438,36 @@ static int syn_tatt(int *att, int a, int pb)
  
  void syn_highlight(int *att, char *s, int n)
  {
@@ -880,7 +876,7 @@ index 603d4842..17459ed7 100644
  	re:;
  	rset *rs = ftmap[fti].rs;
  	int subs[rs->nsubc], *catt, *iatt, sl, c;
-@@ -404,6 +550,8 @@ void syn_highlight(int *att, char *s, int n)
+@@ -406,6 +553,8 @@ void syn_highlight(int *att, char *s, int n)
  	fti++;
  	if (ftmidx > fti && ftmap[fti-1].ft == ftmap[fti].ft)
  		goto re;
@@ -890,7 +886,7 @@ index 603d4842..17459ed7 100644
  		return;
  	for (j = 0; j < n; j++)
 diff --git a/vi.c b/vi.c
-index 2f4ccc2b..4d430f87 100644
+index 03ed7b03..cfcb37cc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,7 @@ for (i = 0, ret = 0;; i++) { \
@@ -947,10 +943,10 @@ index 2f4ccc2b..4d430f87 100644
  }
  
 diff --git a/vi.h b/vi.h
-index 0bb77c0b..d44741b9 100644
+index 7c7d9e2c..e09b7438 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -264,6 +264,8 @@ void syn_reloadft(int hl, int flg);
+@@ -270,6 +270,8 @@ void syn_reloadft(int hl, int flg);
  int syn_findhl(int id);
  int syn_addhl(char *reg, int id);
  void syn_init(void);

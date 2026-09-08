@@ -269,18 +269,20 @@ p2v_stripcompat() {
 }
 
 # Split the compat blocks of $1 into directory $2: block N's verbatim
-# === COMPAT PATCH === diff lands in $2/N.patch, and one "N <label>" line per
-# block goes to stdout, in storage order. A block with an empty diff still gets
-# its (empty) file, so the numbering never drifts from the stored order. Read
-# the listing whole before opening a file: a block is announced before it is
-# filled.
+# === COMPAT PATCH === diff lands in $2/N.patch, and one "N <reg> <label>" line
+# per block goes to stdout, in storage order. The register is the section the
+# block owns in the emitted script, the name the script's own messages call it
+# by, so a caller can report a block as the reader will meet it again. A block
+# with an empty diff still gets its (empty) file, so the numbering never drifts
+# from the stored order. Read the listing whole before opening a file: a block
+# is announced before it is filled.
 p2v_splitcompat() {
 	awk -v dir="$2" "$P2VLBL"'
 	/^=== PATCH2VI COMPAT /	{
 		n++
 		out = dir "/" n ".patch"
 		printf "" > out
-		print n " " lbl()
+		print n " " $4 " " lbl()
 		incb = 1
 		inpat = 0
 		next
@@ -425,6 +427,14 @@ regen() {
 # HEAD afterwards and the files the pass brought into being are dropped - only
 # those, the ones already there are the caller's. This has to happen before the
 # caller's stash comes home, or it lands on the replay's leavings.
+#
+# The derivation runs with DBG1=1. A block that will not go back on misses in
+# phase 1, on anchor text the base has since rewritten, and the phase-2 error
+# that follows is only the aftermath; the origins and the target also name the
+# fallback anchor that resolved each of their groups, which is the trail back
+# to whatever moved. The binary numbers the blocks of its own replay - origins,
+# then target, then fix - so its "replay: block N failed" is not the block
+# number this pass is on: the message here is.
 # Usage: p2v_reapply workdir target.sh
 p2v_reapply() {
 	p2v_newfiles | sort > "$1/pre"
@@ -435,18 +445,21 @@ p2v_reapply() {
 	while read -r line <&3
 	do
 		n=${line%% *}
-		origin=${line#* }	# the label, spaces and all
-		[ "$origin" = "$line" ] && origin=
+		rest=${line#* }
+		reg=${rest%% *}		# the block's section register
+		origin=${rest#* }	# the label, spaces and all
+		[ "$origin" = "$rest" ] && origin=
+		blk="block $n (reg $reg) of $2"
 		if [ -z "$origin" ]; then
-			printf "%s\n" "NO ORIGIN: block $n of $2, cannot re-derive" >&2
+			printf "%s\n" "NO ORIGIN: $blk, cannot re-derive" >&2
 			p2v_st=1
 			break
 		fi
 		if [ ! -s "$1/$n.patch" ]; then
-			printf "%s\n" "EMPTY: block $n of $2 from $origin, dropped" >&2
+			printf "%s\n" "EMPTY: $blk from $origin, dropped" >&2
 			continue
 		fi
-		printf "%s\n" "COMPAT: $2 <- $origin (block $n)" >&2
+		printf "%s\n" "COMPAT: $2 <- $origin (block $n, reg $reg)" >&2
 		# The stored diff goes back as a script, not as a diff: -C
 		# matches a pre-applied diff's image exactly, context and all,
 		# and an origin that drifted under context the block only
@@ -456,7 +469,10 @@ p2v_reapply() {
 		# where the block actually landed.
 		$P2VI "$1/$n.patch" > "$1/$n.sh"
 		chmod +x "$1/$n.sh"
-		if ! p2v_co "$origin" "$2" "$1/$n.sh"; then
+		# DBG1 in a subshell of its own: it is this call's, and
+		# p2v_co exports nothing back to a caller that did not ask
+		if ! ( export DBG1=1; p2v_co "$origin" "$2" "$1/$n.sh" ); then
+			printf "%s\n" "COMPAT FAILED: $blk from $origin" >&2
 			p2v_st=1
 			break
 		fi
@@ -585,7 +601,7 @@ extract_compats() (
 	for s in $list
 	do
 		p2v_splitcompat "$s" "$work" > "$work/blocks"
-		while read -r n src <&3
+		while read -r n reg src <&3
 		do
 			if [ ! -s "$work/$n.patch" ]; then
 				printf "%s\n" "EMPTY: $s block $n" >&2
@@ -638,9 +654,9 @@ view_patch() (
 	p2v_splitcompat "$1" "$work" > "$work/blocks"
 	printf "%s\n" "# === $1: embedded patch ===" >> "$out"
 	sed '1,/^=== PATCH2VI PATCH ===$/d' "$1" >> "$out"
-	while read -r n src <&3
+	while read -r n reg src <&3
 	do
-		printf "%s\n" "# === compat $n${src:+ from $src} ===" >> "$out"
+		printf "%s\n" "# === compat $n (reg $reg)${src:+ from $src} ===" >> "$out"
 		cat "$work/$n.patch" >> "$out"
 	done 3< "$work/blocks"
 	rm -rf "$work"
@@ -668,7 +684,9 @@ p2v_cmdline() (
 )
 
 # Run each script of the list $1, in order, output dropped; the first failure is
-# the result. Meant to be run on a tree at HEAD, which the caller restores.
+# the result. Meant to be run on a tree that already holds the applied set
+# the list names: HEAD for a whole chain, a snapshot for the search's next
+# script, $P2VI_PATCH naming what the tree carries.
 #
 # The whole list goes to the binary's own -e, which runs the scripts exactly as
 # the shell would - in order, each in its own editor lifetime, stopping at the
@@ -718,14 +736,70 @@ p2v_restore_sh() (
 	return 0
 )
 
-# Depth first over the orders a chain can be applied in: $1 is the chain so far,
-# $2 the candidates left. A candidate is only stepped into once the chain up to
-# and including it has really applied, from a tree at HEAD, and a step that
-# leads nowhere is taken back and the next candidate tried - a script that
-# applies here may still leave one further along with nothing to apply to. The
-# first order that takes every candidate is printed; without one, nothing is,
-# and the status says so. A subshell so its variables are its own: this calls
+# The tree a search node hands its children, saved as a snapshot: every
+# tracked file but compat/, plus everything untracked but compat/ - runs
+# create sources of their own (lsp.sh stages lsp.c, say) that later scripts
+# in the chain read and edit, so what a run leaves behind is as much state
+# as what it edits. Each candidate of a node loads the snapshot its parent
+# saved and applies just itself on top, so a step that failed or stepped
+# back never leaks its tree into the next try.
+# Usage: p2v_state_save DIR
+p2v_state_save() {
+	rm -rf "$1"
+	mkdir -p "$1"
+	# -c and -o in the one call, -z and -0: one git, one cp, paths kept
+	git ls-files -z -c -o --exclude-standard -- ':!compat' |
+		xargs -0 cp --parents --target-directory="$1"
+}
+
+# A snapshot back over the tree. Files a run added are not in the snapshot
+# and go first; edits and deletions a run made are undone by the copy that
+# follows. One cp: the snapshot is small, the sources are kilobytes.
+# Usage: p2v_state_load DIR
+p2v_state_load() {
+	git ls-files -z --others --exclude-standard -- ':!compat' |
+		xargs -0 rm -f
+	cp -a "$1/." .
+}
+
+# The candidates of $1 whose origins the chain does not still wait for, in
+# the order $1 holds them. One awk over the edge list for the whole level,
+# where p2v_deps spent one per candidate.
+# Usage: p2v_ready CANDIDATES
+p2v_ready() {
+	awk -v rest=" $1 " '
+	NF > 1 && index(rest, " " $2 " ")	{ dep[$1] = dep[$1] " " $2 }
+	END {
+		n = split(substr(rest, 2, length(rest) - 2), a, " ")
+		for (i = 1; i <= n; i++) {
+			ok = 1
+			m = split(dep[a[i]], ds, " ")
+			for (j = 1; j <= m; j++)
+				if (index(rest, " " ds[j] " "))
+					ok = 0
+			if (ok)
+				print a[i]
+		}
+	}' "$P2VITMP.edges" 2>/dev/null
+}
+
+# Depth first over the orders a chain can be applied in: $1 is the chain so
+# far, $2 the candidates left. A candidate is only stepped into once the
+# chain up to and including it has really applied, and a step that leads
+# nowhere is taken back and the next candidate tried - a script that applies
+# here may still leave one further along with nothing to apply to. The first
+# order that takes every candidate is printed; without one, nothing is, and
+# the status says so. A subshell so its variables are its own: this calls
 # itself, and a plain function shares one set with every level below it.
+#
+# The tree is carried in snapshots, not in git: the caller of a node saved
+# $P2VITMP.state.<depth> for the chain this level holds, every candidate
+# loads it and applies just itself on top, and a step that took saves the
+# snapshot the level below loads. $P2VI_PATCH is what tells the script which
+# origins the snapshot already carries - the same word the shell chain would
+# have handed it, read by -e and written into REG_APPLIED - so the prefix
+# never runs twice and a depth-d node costs one script, not d. What a failed
+# step left behind is dropped by the next load.
 p2v_search() (
 	IFS=$P2VIFS
 	if [ -z "$2" ]; then
@@ -737,24 +811,33 @@ p2v_search() (
 		printf "%s\n" "$((p2v_n - 1))" > "$P2VITMP.skip"
 		return 1
 	fi
-	for c in $2
+	# the applied set this level's candidates apply on top of: what the
+	# shell chain would have carried into the script
+	P2VI_PATCH=$1
+	export P2VI_PATCH
+	# the depth is the chain's length: this level loads state.<d>, a
+	# candidate that took saves state.<d+1> for the level below
+	p2v_d=0
+	for p2v_w in $1
 	do
-		# an origin of c still waiting: its blocks are not in yet
-		miss=
-		for d in $(p2v_deps "$c")
-		do
-			case " $2 " in
-			*" $d "*)	miss=1 ;;
-			esac
-		done
-		[ -n "$miss" ] && continue
-		p2v_restore_sh
-		p2v_runlist "$1 $c" || continue
+		p2v_d=$((p2v_d + 1))
+	done
+	# the first candidate needs no load: the tree is as the caller left
+	# it, which is just the snapshot this level loads - only a candidate
+	# after a failed or stepped-back one has debris to sweep
+	p2v_fresh=1
+	for c in $(p2v_ready "$2")
+	do
+		[ -n "$p2v_fresh" ] || p2v_state_load "$P2VITMP.state.$p2v_d" || continue
+		p2v_fresh=
+		p2v_runlist "$c" || continue
 		rest=
 		for o in $2
 		do
 			[ "$o" = "$c" ] || rest="$rest $o"
 		done
+		# a leaf has nobody to hand its tree to
+		[ -n "$rest" ] && p2v_state_save "$P2VITMP.state.$((p2v_d + 1))"
 		p2v_search "$1 $c" "$rest" && return 0
 	done
 	return 1
@@ -804,6 +887,7 @@ p2v_search_begin() (
 p2v_search_end() {
 	rm -rf "$P2VITMP.keep"
 	rm -f "$P2VITMP.edges" "$P2VITMP.skip" "$P2VITMP.build"
+	rm -rf "$P2VITMP".state.*
 }
 
 # The closure of $1's origins with $1 itself, an origin ahead of what names it
@@ -852,6 +936,9 @@ p2v_chain() (
 	while :
 	do
 		printf "%s\n" "$skip" > "$P2VITMP.skip"
+		# the root snapshot the walk loads at depth 0: the tree as this
+		# loop holds it - HEAD, the caller's own scripts on top
+		p2v_state_save "$P2VITMP.state.0"
 		chain=$(p2v_search "" "$1")
 		searched=$?
 		p2v_restore_sh
@@ -1255,6 +1342,8 @@ regen_all() (
 # and the script it just rewrote has to leave the working tree before the next
 # one is measured. A script rebuild refuses is left as it was and stops the run
 # there, rather than leaving half the set rebuilt and half of it committed.
+# The script it stops on is named along with the count already committed, so a
+# run can be taken up again from there.
 # By default, do not stop in the editor or let it draw, and squash all commits
 # back into a single staged change at the end. With arg 1, stop in the editor
 # and keep the per-script commits.
@@ -1269,7 +1358,10 @@ rebuild_all() (
 	[ -z "$1" ] && p2v_batch
 	for s in $(p2v_scripts)
 	do
-		rebuild "$s" || return 1
+		if ! rebuild "$s"; then
+			printf "%s\n" "STOPPED: $s, $n rebuilt before it" >&2
+			return 1
+		fi
 		git add "$s"
 		if ! git diff --cached --quiet; then
 			git commit -m "$s: rebuild" || return 1

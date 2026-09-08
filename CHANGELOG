@@ -95,6 +95,13 @@ Patch changes:
    arrowkeys_insert.sh
 11. Trivial bug fixing in other patches not worth mentioning.
 
+Source commits:
+master    ef5aa79b
+manual    144c3db9
+patches   92dca3db
+patch2vi  1a5a7a74
+test      3dbcb118
+
 ------------------
 7.4 Basilisk
 ------------------
