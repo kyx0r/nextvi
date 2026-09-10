@@ -180,7 +180,7 @@ quickexit.sh
 --------------
 Added kj sequence to quickly exit insert mode.
 There is one caveat: if input comes too fast, for example a paste from the
-terminal, and the sequence has "kj" in it, insert mode is cancelled
+terminal, and the sequence has "kj" in it, insert mode is canceled
 mid-way and the paste is wrong. Luckily this almost never happens, as such
 letter combinations are extremely rare.
 The delay time (in ms) can be set via :qe N or disabled by setting N to 0.
