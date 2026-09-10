@@ -7,6 +7,13 @@ Bug fixes:
    sync after a lookahead sub-match. Each lookahead evaluation now restores
    the entry, preventing incorrect behavior in subsequent matches.
 
+Patch changes:
+1. [spell.sh](https://github.com/kyx0r/nextvi/blob/release/spell.sh):
+   :sl runs in ex mode as well, no longer refusing with "filetype has no
+   sl slot"; the numbered suggestion list truncates by byte allowance, up
+   to four per column, instead of a column count, so multibyte
+   suggestions are no longer cut short.
+
 ------------------
 7.5 Basilisk
 ------------------
