@@ -567,39 +567,39 @@ if \(.r...... ...6??0?
 1??+3m 21q0?
 %f+ 	if \(eol_ch\)
 		utf8_length\[eol_ch] = 0;2??0?
-2??m 2220reg p OK regex.c:669:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK regex.c:671:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(eol_ch\)$3??0?
-3??m 2220reg p OK regex.c:669:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK regex.c:671:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	char nsubs\[prog->sub];
 	for \(i = 0; i < prog->laidx; i\+\+\)
 		lb\[i] = NULL;4??0?
-4??+3m 2220reg p OK regex.c:669:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK regex.c:671:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		utf8_length\[eol_ch] = 0;$5??0?
-5??-1m 2220reg p OK regex.c:669:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 2220reg p OK regex.c:671:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .......s.bs............
 ..........0......prog-.l..........
 	...\[i... .U...
 .i.........\)
 	...f8.l.....\[e.......=...6??0?
-6??+3m 2220reg p OK regex.c:669:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK regex.c:671:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	char nsubs\[prog->sub];.*?
 	for \(i = 0; i < prog->laidx; i\+\+\).*?
 		lb\[i] = NULL;.*?
 (	if \(eol_ch\))7??0?
-grp 07??m 2220reg p OK regex.c:669:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK regex.c:671:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;.*(	match\(1, if \(\(unsigned int\)c < 128\) c = tolower\(c\);\))
 	match\(2,\)
 }8??0?
-grp 08??-5m 2220reg p OK regex.c:669:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 2220reg p OK regex.c:671:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	const char \*_subp\[2], \*lb\[prog->laidx\+1];
 	int rsubsize = prog->presub, suboff = 0;
 	int cnt, spc, i, c, j, osubp = nsubc \* sizeof\(char\*\);.*(static int re_groupcount\(char \*s\))
 \{
 	int n;9??0?
-grp 09??-9m 2220reg p OK regex.c:669:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg regex.c:6692sc %? %@2132sc!0?
+grp 09??-9m 2220reg p OK regex.c:671:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:6712sc %? %@2132sc!0?
 ?0?
 %f+ 		utf8_length\[eol_ch] = 0;
 	if \(flg & REG_ICASE\)
@@ -607,25 +607,25 @@ if \(.r...... ...6??0?
 	goto jmp_start2;1??0?
 1??m 31q0?
 ;0fr.,$f+ ^		utf8_length\[eol_ch] = 0;$4??0?
-4??m 3220reg p OK regex.c:670:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 3220reg p OK regex.c:672:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;.*(	match\(1, if \(\(unsigned int\)c < 128\) c = tolower\(c\);\))
 	match\(2,\)
 }8??0?
-grp 08??-4m 3220reg p OK regex.c:670:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK regex.c:672:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	const char \*_subp\[2], \*lb\[prog->laidx\+1];
 	int rsubsize = prog->presub, suboff = 0;
 	int cnt, spc, i, c, j, osubp = nsubc \* sizeof\(char\*\);.*(static int re_groupcount\(char \*s\))
 \{
 	int n;9??0?
-grp 09??-8m 3220reg p OK regex.c:670:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg regex.c:6702sc %? %@2132sc!0?
+grp 09??-8m 3220reg p OK regex.c:672:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg regex.c:6722sc %? %@2132sc!0?
 '\''1s/\(eol_ch/(flg & REG_NEWLINE/??!219reg regex.c:429:m12sc %? %@2142sc!0?
-'\''2s/h\)/h && utf8_length[eol_ch])/??!219reg regex.c:669:m22sc %? %@2142sc!0?
+'\''2s/h\)/h && utf8_length[eol_ch])/??!219reg regex.c:671:m22sc %? %@2142sc!0?
 '\''3i 	else
 		flg &= ~REG_NEWLINE;
-??!219reg regex.c:670:m32sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg regex.c:672:m32sc %? %@2142sc!b3m!%ya 98?0?
 %f> unsigned char utf8_length\[256] = \{
 	/\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \*/
 	/\* 0 \*/ 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -876,8 +876,8 @@ break##gen:; \\
 break##gen:; \\
 
 4??0?
-4??+2m 1220reg p OK regex.c:836:a42sc %? %@2152sc!0?
-1;4??!219reg regex.c:836:r2312sc %? %@2132sc!0?
+4??+2m 1220reg p OK regex.c:838:a42sc %? %@2152sc!0?
+1;4??!219reg regex.c:838:r2312sc %? %@2132sc!0?
 ?0?
 %f+ #define rstr_match1\(gen, wbeg, wend, cmpcase, stopcond\) \\
 \{ for \(r = beg; stopcond; r\+\+\) \{ \\
@@ -891,25 +891,25 @@ break##gen:; \\
 } } \\
 
 2??0?
-2??m 2220reg p OK regex.c:838:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK regex.c:840:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^\{ for \(r = beg; stopcond; r\+\+\) \{ \\$3??0?
-3??m 2220reg p OK regex.c:838:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK regex.c:840:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^#define rstr_match1\(gen, wbeg, wend, cmpcase, stopcond\) \\$4??0?
-4??+1m 2220reg p OK regex.c:838:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 2220reg p OK regex.c:840:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	rstr_cmp\(2##gen, wbeg, wend, cmpcase\) \\
 } } \\
 
 5??0?
-5??-1m 2220reg p OK regex.c:838:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg regex.c:838:r2312sc %? %@2132sc!0?
+5??-1m 2220reg p OK regex.c:840:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg regex.c:840:r2312sc %? %@2132sc!0?
 '\''1i /* lbuf_search swaps utf8_length for an all zero table to terminate its search
  * threads with no synchronization; entry 1 is never zero in the real table, so
  * reading it is how a scan that never decodes utf-8 notices the same kill */
 #define rstr_live utf8_length[1]
 
-??!219reg regex.c:836:r231:m12sc %? %@2142sc!0?
-?'\''2s/stopcond/(stopcond) && rstr_live/1??1??1q'\''2s/(s.*d)/(\1) && rstr_live/2??2??'\''2220reg p OK regex.c:838:s22sc %? %@2162sc!0?
-1;2??!219reg regex.c:838:r231:m22sc %? %@2142sc!0?
+??!219reg regex.c:838:r231:m12sc %? %@2142sc!0?
+?'\''2s/stopcond/(stopcond) && rstr_live/1??1??1q'\''2s/(s.*d)/(\1) && rstr_live/2??2??'\''2220reg p OK regex.c:840:s22sc %? %@2162sc!0?
+1;2??!219reg regex.c:840:r231:m22sc %? %@2142sc!0?
 p compat 231 applied: src=rstr.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
@@ -963,7 +963,7 @@ exit 0
  	static pthread_attr_t lsattr;	/* musl caps threads at 128k; main()'s stack */
 --- a/regex.c
 +++ b/regex.c
-@@ -834,8 +834,13 @@
+@@ -836,8 +836,13 @@
  } \
  break##gen:; \
  
@@ -1140,7 +1140,7 @@ index 56cb42c6..c5f8bb9e 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index 4f841ff4..8e52b277 100644
+index e5aab266..e153076a 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -426,7 +426,7 @@ static rcode *re_make(char *re, int *nsubc, int flg)
@@ -1152,7 +1152,7 @@ index 4f841ff4..8e52b277 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -666,8 +666,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
+@@ -668,8 +668,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
  	char nsubs[prog->sub];
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
@@ -1183,7 +1183,7 @@ index b1002c4e..d80628bb 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 03ed7b03..478e4a0f 100644
+index 1d068d93..4cca7867 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@

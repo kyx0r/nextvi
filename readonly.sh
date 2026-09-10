@@ -281,17 +281,17 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 %f+ 				xvis = 0;
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);
-				fprintf\(stderr, "Nextvi-7\.5 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}1??0?
 1??+3m 21q0?
-%f+ 				fprintf\(stderr, "Nextvi-7\.5 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+%f+ 				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}2??0?
 2??m 2220reg p OK vi.c:1888:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.5 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
+;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
 3??m 2220reg p OK vi.c:1888:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				xvis = 0;
 			else \{
@@ -301,18 +301,18 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 			}
 		}5??0?
 5??-1m 2220reg p OK vi.c:1888:a52sc %? %@2152sc!1q0?
-%f+ .........=..;
-.....se.\{
-	......in.....d.......nk...........:..............i......
-..	......tf.....r.......................s.\[.a..... .fi.e..\...........v\[.]..
-.		.re......X.....I.U...
-.	.}
+%f+ ....x..s ....
+	..e.....
+		.	..................n....n ....... .%.......r....]\[....
+..		..r..t....d....."......-... ....e. %..\[.....v] ..i...\..\...."...........
+...	.......E.I..........
+.	..
 	..6??0?
 6??+3m 2220reg p OK vi.c:1888:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				xvis = 0;.*?
 			else \{.*?
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);.*?
-(				fprintf\(stderr, "Nextvi-7\.5 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
+(				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
 grp 07??m 2220reg p OK vi.c:1888:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;
@@ -454,7 +454,7 @@ index 0ce81414..57cae985 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index 03ed7b03..b2049603 100644
+index 1d068d93..f29dda54 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1881,11 +1881,13 @@ int main(int argc, char *argv[])
@@ -467,8 +467,8 @@ index 03ed7b03..b2049603 100644
  				xvis = 0;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-7.5 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-7.5 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-7.6 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-7.6 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
