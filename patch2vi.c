@@ -472,9 +472,8 @@ static int count_substr_range(const char *s, int from, int to)
 static int rune_count_n(const char *s, int len)
 {
 	int n = 0;
-	for (int i = 0; i < len; i++)
-		if ((s[i] & 0xC0) != 0x80)
-			n++;
+	for (int i = 0; i < len; i += uc_len(s + i))
+		n++;
 	return n;
 }
 
@@ -604,16 +603,16 @@ static int diff_expand_left(const char *old, int *os, int *ns)
 	return 1;
 }
 
-/* Step oe forward 1 byte and over UTF-8 continuation bytes, mirroring on ne. */
+/* Step oe forward by one UTF-8 character, mirroring on ne. */
 static int diff_expand_right(const char *old, int olen, int *oe, int *ne)
 {
 	if (*oe >= olen)
 		return 0;
-	int prev = *oe;
-	(*oe)++;
-	while (*oe < olen && (old[*oe] & 0xC0) == 0x80)
-		(*oe)++;
-	*ne += (*oe - prev);
+	int prev = *oe, len = uc_len(old + *oe);
+	if (len <= 0)
+		len = 1;
+	*oe = MIN(*oe + len, olen);
+	*ne += *oe - prev;
 	return 1;
 }
 
@@ -3494,7 +3493,7 @@ static void sb_src_pat(sbuf *out, const char *base)
 {
 	sb_str(out, "[ /]");
 	for (const char *p = base; *p; p++) {
-		if (isalnum((unsigned char)*p) || *p == '_' || *p == '-')
+		if ((uc_isalpha(*p) || uc_isdigit(*p)) || *p == '_' || *p == '-')
 			sb_chr(out, *p);
 		else
 			sb_printf(out, "[%c]", *p);
@@ -3927,7 +3926,7 @@ static int sh_err(const char *what, const char *s)
 static char *sh_name(const char **s)
 {
 	sbuf_smake(sb, 32)
-	while (isalnum((unsigned char)**s) || **s == '_')
+	while ((uc_isalpha(**s) || uc_isdigit(**s)) || **s == '_')
 		sbuf_chr(sb, *(*s)++)
 	sbufn_ret(sb, sb->s)
 }
@@ -4043,7 +4042,7 @@ static int sh_expand(const char *s, sbuf *out)
 			s++;	/* the closing brace */
 			continue;
 		}
-		if (isalpha((unsigned char)*s) || *s == '_') {
+		if (uc_isalpha(*s) || *s == '_') {
 			const char *val;
 			name = sh_name(&s);
 			if ((val = sh_get(name)))
@@ -4198,7 +4197,7 @@ static int parse_vi_call(const char *s, p2vi_block_t *blk)
 				const char *d = ++s;
 				while (*s && *s != ' ')
 					s++;
-				if (isdigit((unsigned char)*d)) {
+				if (uc_isdigit(*d)) {
 					blk->secregs = erealloc(blk->secregs,
 						(blk->nsecregs + 1) * sizeof(int));
 					blk->secregs[blk->nsecregs++] = atoi(d);
@@ -4547,7 +4546,7 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 		}
 		/* the name of a leading NAME=value assignment */
 		j = 0;
-		while (isalnum((unsigned char)line[j]) || line[j] == '_')
+		while ((uc_isalpha(line[j]) || uc_isdigit(line[j])) || line[j] == '_')
 			j++;
 		if (j && line[j] == '=')
 			ret = sh_assign(line);
@@ -4631,7 +4630,7 @@ static char *remap_bufnums(const char *body, int sep, int *bmap, int nmap)
 	sbuf_smake(out, SB_INIT)
 	while (*s) {
 		for (e = s; *e && !BODY_DELIM(*e); e++);
-		for (d = s + 1; d < e && isdigit((unsigned char)*d); d++);
+		for (d = s + 1; d < e && uc_isdigit(*d); d++);
 		if (*s == 'b' && d > s + 1 && d == e) {
 			int n = atoi(s + 1);
 			if (n >= nmap) {
@@ -4760,19 +4759,19 @@ static int fail_parse(char *s, char **path, int *line, int *reg)
 	int mark;
 	*reg = 0;
 	if (strncmp(s, "FAIL ", 5) || !(c = strrchr(s, ':')) || c[1] != 'm'
-			|| !isdigit((unsigned char)c[2]))
+			|| !uc_isdigit(c[2]))
 		return -1;
 	mark = atoi(c + 2);
 	*c = '\0';
 	if (!(c = strrchr(s, ':')))
 		return -1;
-	if (c[1] == 'r' && isdigit((unsigned char)c[2])) {
+	if (c[1] == 'r' && uc_isdigit(c[2])) {
 		*reg = atoi(c + 2);
 		*c = '\0';
 		if (!(c = strrchr(s, ':')))
 			return -1;
 	}
-	if (!isdigit((unsigned char)c[1]))
+	if (!uc_isdigit(c[1]))
 		return -1;
 	*c = '\0';
 	*line = atoi(c + 1);
@@ -4796,7 +4795,7 @@ static int flog_last_reg(int skip)
 		reg = 0;
 		for (p = s + 5; p < nl; p++)
 			if (p[0] == ':' && p[1] == 'r' &&
-					isdigit((unsigned char)p[2]))
+					uc_isdigit(p[2]))
 				reg = atoi(p + 2);
 	}
 	return reg;
@@ -4812,7 +4811,7 @@ static char *stream_site(const char *body, int mark)
 	while ((p = strchr(p, xsep))) {
 		if (*++p != '\'' || atoi(p + 1) != mark)
 			continue;
-		for (e = p + 1; isdigit((unsigned char)*e); e++);
+		for (e = p + 1; uc_isdigit(*e); e++);
 		if (e == p + 1 || !(e = strchr(e, xsep)))
 			continue;
 		while (e[-1] == xesc)
@@ -4853,8 +4852,8 @@ static int fail_place(const char *body, const char *path, int line, int mark,
 	xrow = row;
 	xoff = 0;
 	if (site) {
-		for (addr = site + 1; isdigit((unsigned char)*addr); addr++);
-		for (verb = addr; *verb && !isalpha((unsigned char)*verb); verb++);
+		for (addr = site + 1; uc_isdigit(*addr); addr++);
+		for (verb = addr; *verb && !uc_isalpha(*verb); verb++);
 		/* The mark is what did not resolve, so the same command aimed
 		 * at the reported line is the best guess left - taken only
 		 * where it cannot lose anything: an insert adds, a substitute
