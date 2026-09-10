@@ -1,4 +1,13 @@
 ------------------
+7.6 Basilisk
+------------------
+
+Bug fixes:
+1. Fixed a rare case of regex engine leaving the utf8_length global out of
+   sync after a lookahead sub-match. Each lookahead evaluation now restores
+   the entry, preventing incorrect behavior in subsequent matches.
+
+------------------
 7.5 Basilisk
 ------------------
 
