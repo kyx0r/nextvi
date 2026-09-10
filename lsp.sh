@@ -4682,7 +4682,7 @@ index 03aa736f..adccd79a 100644
  		tibuf_cnt = 1;
  		tibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 1d068d93..6afec926 100644
+index 76150e3a..4fa7bd2f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@

@@ -1458,7 +1458,7 @@ index 0ce81414..61e353d8 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/vi.c b/vi.c
-index 1d068d93..a12453be 100644
+index 76150e3a..da86a550 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1123,6 +1123,68 @@ static int vc_replace(void)

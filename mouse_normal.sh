@@ -1054,7 +1054,7 @@ index 03aa736f..f1a967dc 100644
  {
  	int cw;
 diff --git a/vi.c b/vi.c
-index 1d068d93..6684449c 100644
+index 76150e3a..b057bbe1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -513,6 +513,9 @@ static void vc_status(int type)

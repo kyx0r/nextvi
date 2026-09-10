@@ -482,7 +482,7 @@ index 03aa736f..4402a63b 100644
  		ticmd[ticmd_pos++] = tibuf[tibuf_pos];
  	return tibuf[tibuf_pos++];
 diff --git a/vi.c b/vi.c
-index 1d068d93..4efe1099 100644
+index 76150e3a..2966a197 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@

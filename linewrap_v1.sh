@@ -1899,7 +1899,7 @@ index 4116d9c1..dde17c64 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index 1d068d93..87914bea 100644
+index 76150e3a..716be700 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,8 @@ for (i = 0, ret = 0;; i++) { \
