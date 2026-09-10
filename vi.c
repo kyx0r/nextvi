@@ -716,7 +716,7 @@ static int vi_region(int cmd, int *row, int *off)
 		*off = 0;
 		break;
 	case '^':
-		*off = lbuf_indents(xb, *row);
+		*off = MAX(0, lbuf_indents(xb, *row));
 		break;
 	case '$':
 		*off = lbuf_eol(xb, *row, 1);
