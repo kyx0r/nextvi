@@ -6,6 +6,7 @@ Bug fixes:
 1. Fixed a rare case of regex engine leaving the utf8_length global out of
    sync after a lookahead sub-match. Each lookahead evaluation now restores
    the entry, preventing incorrect behavior in subsequent matches.
+2. The ^ motion on an empty line no longer flags d^ as a line delete.
 
 Patch changes:
 1. [spell.sh](https://github.com/kyx0r/nextvi/blob/release/spell.sh):
