@@ -125,12 +125,13 @@ static void ext_attmerge(led_ext *p, led_ctx *x)
 {
 	if (!led_extkey(p, x))
 		return;
-	for (int t = 0; t < p->cnt * 3; t += 3) {
-		int o = p->ola[t], end = o + p->ola[t+1];
+	int *ola = p->usr;
+	for (int t = 0; t < p->blen; t += 3 * sizeof(int)) {
+		int o = ola[t], end = o + ola[t+1];
 		for (; o < end; o++) {
 			int i = led_attidx(x, o);
 			if (i >= 0)
-				x->att[i] = syn_merge(x->att[i], p->ola[t+2]);
+				x->att[i] = syn_merge(x->att[i], ola[t+2]);
 		}
 	}
 }
@@ -438,8 +439,8 @@ char *led_read(int *kmap, int c)
 	ola[1] = uc_slen(buf); \
 	ola[2] = WH1 | SYN_BD | SYN_OWR; \
 	la = led_extnew(); \
-	la->ola = ola; \
-	la->cnt = 1; \
+	la->usr = ola; \
+	la->blen = sizeof(ola); \
 	sbuf_str(sb, buf) \
 	led_printparts(sb, pre, ps, *post, postn, poff); \
 	sbuf_cut(sb, len) \
