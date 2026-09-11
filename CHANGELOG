@@ -4,16 +4,31 @@
 
 Bug fixes:
 1. Fixed a rare case of regex engine leaving the utf8_length global out of
-   sync after a lookahead sub-match. Each lookahead evaluation now restores
-   the entry, preventing incorrect behavior in subsequent matches.
+   sync after a lookahead sub-match.
 2. The ^ motion on an empty line no longer flags d^ as a line delete.
+
+Patch2vi 1.2 changes:
+1. Switched to nextvi's own uc_isalpha/uc_isdigit/uc_len APIs instead of
+   libc isalnum/isdigit/isalpha and continuation-byte scanning.
+2. Fixed premature buffer position resets before a script's first section.
 
 Patch changes:
 1. [spell.sh](https://github.com/kyx0r/nextvi/blob/release/spell.sh):
-   :sl runs in ex mode as well, no longer refusing with "filetype has no
-   sl slot"; the numbered suggestion list truncates by byte allowance, up
-   to four per column, instead of a column count, so multibyte
-   suggestions are no longer cut short.
+   :sl works in ex mode; multibyte suggestions no longer truncated.
+2. [ec_closebuf.sh](https://github.com/kyx0r/nextvi/blob/release/ec_closebuf.sh):
+   :cx closes buffer ranges; :cx! discards modified buffers.
+3. New [treesitter.sh](https://github.com/kyx0r/nextvi/blob/release/treesitter.sh):
+   incremental Tree-sitter syntax highlighting, C at compile time.
+4. [threaded_redraw.sh](https://github.com/kyx0r/nextvi/blob/release/threaded_redraw.sh):
+   paint thread always renders on ren_state slot 1; rstate thread-local.
+5. [threaded_search.sh](https://github.com/kyx0r/nextvi/blob/release/threaded_search.sh):
+   fixed infinite loop on zero-length match.
+6. [rstr.sh](https://github.com/kyx0r/nextvi/blob/release/rstr.sh):
+   fixed r[len-1] overread on a pattern longer than the target.
+7. [cxref.sh](https://github.com/kyx0r/nextvi/blob/release/cxref.sh):
+   compat block for the rstr.sh rename.
+8. patch2vi.sh: added dump_patch/view_patch and dump_head/view_head
+   helpers.
 
 ------------------
 7.5 Basilisk
