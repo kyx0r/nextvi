@@ -1789,15 +1789,15 @@ void vi(int init)
 					ola[0][2] = hls[k].att[0];
 					p = led_extnew();
 					p->ln = ln;
-					p->ola = ola[0];
-					p->cnt = 1;
+					p->usr = ola[0];
+					p->blen = sizeof(ola[0]);
 					ola[1][0] = off1;
 					ola[1][1] = 1;
 					ola[1][2] = hls[k].att[0];
 					p = led_extnew();
 					p->ln = lbuf_get(xb, row1);
-					p->ola = ola[1];
-					p->cnt = 1;
+					p->usr = ola[1];
+					p->blen = sizeof(ola[1]);
 					vi_mod |= row1 == row && orow == xrow ? 2 : 1;
 				}
 			}
