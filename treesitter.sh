@@ -30,30 +30,19 @@ ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 '230reg 0fr 2290?
-f> [ /]splits[.]sh 20??b1120?? %ya 231230reg 1231??0?
-f> [ /]linewrap_v2[.]sh 20??b1220?? %ya 232230reg 1232??0?
-f> [ /]linewrap_v1[.]sh 20??b1320?? %ya 233230reg 1233??0?
-f> [ /]splits[.]sh 20??f> [ /]linewrap_v2[.]sh 21??b1420,21?? %ya 234230reg 1234??0?
-f> [ /]visual[.]sh 20??f> [ /]splits[.]sh 21??f> [ /]linewrap_v2[.]sh 22??b1520,21,22?? %ya 235230reg 1235??0?
+f> [ /]splits[.]sh 20??b1020?? %ya 231230reg 1231??0?
+f> [ /]linewrap_v2[.]sh 20??b1120?? %ya 232230reg 1232??0?
+f> [ /]linewrap_v1[.]sh 20??b1220?? %ya 233230reg 1233??0?
+f> [ /]splits[.]sh 20??f> [ /]linewrap_v2[.]sh 21??b1320,21?? %ya 234230reg 1234??0?
+f> [ /]visual[.]sh 20??f> [ /]splits[.]sh 21??f> [ /]linewrap_v2[.]sh 22??b1420,21,22?? %ya 235230reg 1235??0?
 fr 98211reg fr 230f> 1??!? %@221fr 980?
-b10%ya 972sc %? %@972sc!b51b81b91b71232;233;234;235??211reg232;233;234;235??!211reg ? %@2210?
-2sc %? %@2312sc!b51b81b91b71233;234;235??211reg233;234;235??!211reg ? %@2210?
-2sc %? %@2322sc!b41b91b71234??211reg234??!211reg ? %@2210?
-2sc %? %@2332sc!b51b81b91235??211reg235??!211reg ? %@2210?
-2sc %? %@2342sc!b81211reg ? %@2210?
-2sc %? %@2352sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7wb8wb9w2q' > "$P2VIF".d
+b9%ya 972sc %? %@972sc!b41b71b81b61232;233;234;235??211reg232;233;234;235??!211reg ? %@2210?
+2sc %? %@2312sc!b41b71b81b61233;234;235??211reg233;234;235??!211reg ? %@2210?
+2sc %? %@2322sc!b31b81b61234??211reg234??!211reg ? %@2210?
+2sc %? %@2332sc!b41b71b81235??211reg235??!211reg ? %@2210?
+2sc %? %@2342sc!b71211reg ? %@2210?
+2sc %? %@2352sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7wb8w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
-%f> patch2vi
-CLAUDE\.md
-AGENTS\.md1??0?
-1??+2m 11q0?
-grp 1%f> patch2vi.*?
-CLAUDE\.md.*?
-(AGENTS\.md)7??0?
-grp 07??m 1220reg p OK .gitignore:11:a72sc %? %@2152sc!0?
-1;7??!219reg .gitignore:112sc %? %@2132sc!0?
-'\''1i .treesitter/
-??!219reg .gitignore:11:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> \*\) CFLAGS="\$CFLAGS -D_DEFAULT_SOURCE" ;;
 esac
 
@@ -308,7 +297,7 @@ ts_setup() {
 '\''5c             run "$CC vi.c $TS_SOURCES $TS_CFLAGS -fprofile-use=. -o vi -O2 $CFLAGS" || return 1
 ??!219reg cbuild.sh:127:m52sc %? %@2142sc!0?
 '\''6i         ts_setup
-??!219reg cbuild.sh:130:m62sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg cbuild.sh:130:m62sc %? %@2142sc!b1m!%ya 98?0?
 %f> 			return digraphs\[i]\[1];
 	return NULL;
 }1??0?
@@ -356,7 +345,7 @@ static const struct {
 	{"string", MA}, {"character", MA}, {"escape", CY1},
 	{"comment", BL | SYN_IT},
 };
-??!219reg conf.c:379:m12sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg conf.c:379:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> int xvis;			/\* startup flags \*/
 int xai = 1;			/\* autoindent option \*/
 int xic = 1;			/\* ignorecase option \*/
@@ -426,7 +415,7 @@ int xic = 1;			/\* ignorecase option \*/.*?
 '\''1s/1/2/??!219reg ex.c:5:m12sc %? %@2142sc!0?
 '\''2i 	if (xhl > 1)
 		ts_init();
-??!219reg ex.c:1312:m22sc %? %@2142sc!b4m!%ya 98?0?
+??!219reg ex.c:1312:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> 
 void lbuf_free\(struct lbuf \*lb\)
 \{
@@ -487,7 +476,7 @@ void lbuf_free\(struct lbuf \*lb\).*?
 '\''1i 	ts_forget(lb);
 ??!219reg lbuf.c:88:m12sc %? %@2142sc!0?
 '\''2i 	ts_edit(lb, pos, n_del, (char**)sb->s, n_ins);
-??!219reg lbuf.c:124:m22sc %? %@2142sc!b5m!%ya 98?0?
+??!219reg lbuf.c:124:m22sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	return r - s;
 }
 
@@ -866,7 +855,7 @@ static void led_preview_draw(int ps);
 ??!219reg led.c:767:m102sc %? %@2142sc!0?
 '\''11i 			ts_free(ts_preview);
 			restore(ts_preview)
-??!219reg led.c:784:m112sc %? %@2142sc!b6m!%ya 98?0?
+??!219reg led.c:784:m112sc %? %@2142sc!b5m!%ya 98?0?
 %f> };
 static struct ftmap \*ftmap;
 static int ftmidx;
@@ -1336,7 +1325,7 @@ void syn_options(int *att, char *s, int n)
 				syn_evaluate(att, s, n, i);
 }
 
-??!219reg ren.c:415:m122sc %? %@2142sc!b7m!0?
+??!219reg ren.c:415:m122sc %? %@2142sc!b6m!0?
 i /* Document bytes and render character offsets are separate coordinate spaces. */
 struct ts_capture {
 	uint32_t beg, end, pattern, order;
@@ -1803,7 +1792,7 @@ void ts_done(void)
 		memset(ts_config + i, 0, sizeof(ts_config[i]));
 	}
 }
-??!219reg treesitter.c:-1:m2sc %? %@2142sc!b8m!%ya 98?0?
+??!219reg treesitter.c:-1:m2sc %? %@2142sc!b7m!%ya 98?0?
 %f> #include "ren\.c"
 #include "term\.c"
 #include "uc\.c"
@@ -2226,7 +2215,7 @@ static void vi_drawagain\(int i\)
 		ts_init();
 ??!219reg vi.c:1866:m102sc %? %@2142sc!0?
 '\''11i 	ts_done();
-??!219reg vi.c:1902:m112sc %? %@2142sc!b9m!%ya 98?0?
+??!219reg vi.c:1902:m112sc %? %@2142sc!b8m!%ya 98?0?
 %f> 	int len;
 	int grec;
 };
@@ -2404,7 +2393,7 @@ static void led_preview_current(char *text, int ps, int lncol);
 
 ??!219reg vi.h:412:m52sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=splits.sh
-printf '%s\n' '2sc!fr 98b5m!%ya 98?0?
+printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 %f> 	if \(ts_preview && poff == &xoff\)
 		led_preview_current\(r->s, ps, lncol\);
 	else
@@ -2431,7 +2420,7 @@ printf '%s\n' '2sc!fr 98b5m!%ya 98?0?
 1;2;3;4;5??!219reg led.c:401:r2312sc %? %@2132sc!0?
 ?'\''1s/lncol, xleft, xleft \+ xcols/winx + lncol, xleft, xleft + winw/1??1??1q'\''1s/(lncol,.*\+ )xcols/winx + \1winw/2??2??'\''1220reg p OK led.c:401:s22sc %? %@2162sc!0?
 1;2??!219reg led.c:401:r231:m12sc %? %@2142sc!0?
-b8m!%ya 98?0?
+b7m!%ya 98?0?
 %f> 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
 		memset\(c, '\'' '\'', l1 - \(c - tmp\)\);
 		c\[l1 - \(c - tmp\)] = '\''\\0'\'';
@@ -2484,7 +2473,7 @@ printf '%s\n' '2sc!fr 98b5m!%ya 98?0?
 '\''1c 		led_srender(s, scrrow, wx + l1, xleft, xleft + wcols - l1,
 ??!219reg vi.c:218:r231:m12sc %? %@2142sc!0?
 '\''2c 	led_srender(s, scrrow, wx, xleft, xleft + wcols,
-??!219reg vi.c:238:r231:m22sc %? %@2142sc!b9m!%ya 98?0?
+??!219reg vi.c:238:r231:m22sc %? %@2142sc!b8m!%ya 98?0?
 %f> 	int record = term_record; \\
 	term_record = 1; \\
 	term_pos\(sr, sc\); \\
@@ -2509,7 +2498,7 @@ printf '%s\n' '2sc!fr 98b5m!%ya 98?0?
 		term_commit\(\); \\5??0?
 5??-1m 1220reg p OK vi.h:439:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.h:439:r2312sc %? %@2132sc!0?
-'\''1s/\(/w(end - beg/??!219reg vi.h:439:r231:m12sc %? %@2142sc!b7m!%ya 98?0?
+'\''1s/\(/w(end - beg/??!219reg vi.h:439:r231:m12sc %? %@2142sc!b6m!%ya 98?0?
 %f> 
 static void led_preview_current\(char \*text, int ps, int lncol\)
 \{
@@ -2645,7 +2634,7 @@ static void led_preview_current\(char \*text, int ps, int lncol\)
 1;2??!219reg treesitter.c:423:r231:m52sc %? %@2142sc!0?
 p compat 231 applied: src=splits.sh' > "$P2VIF".231
 # Compat 232 src=linewrap_v2.sh
-printf '%s\n' '2sc!fr 98b5m!%ya 98?0?
+printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 %f> 	sbuf_nul4\(sb\)
 	if \(ts_preview && poff == &xoff\) \{
 		led_preview_ps = ps;
@@ -2761,7 +2750,7 @@ static void led_redrawlw\(int ctop, int crow\)
 		led_preview_draw(led_preview_ps);
 		return;
 	}
-??!219reg led.c:503:r232:m52sc %? %@2142sc!b8m!%ya 98?0?
+??!219reg led.c:503:r232:m52sc %? %@2142sc!b7m!%ya 98?0?
 %f> static int vi_rowbeg, vi_rowend;
 
 /\* render a line at terminal row trow; return the rows it occupies \*/
@@ -2898,7 +2887,7 @@ static int vi_rendrow\(char \*s, int trow, int lncol\)
 ??!219reg vi.c:348:r232:m32sc %? %@2142sc!0?
 '\''4,#+1c 		i = vi_rendrow(s, trow, l1, row - vi_rshift);
 ??!219reg vi.c:438:r232:m42sc %? %@2142sc!0?
-'\''5s/0\)/0, row - vi_rshift)/??!219reg vi.c:461:r232:m52sc %? %@2142sc!b9m!%ya 98?0?
+'\''5s/0\)/0, row - vi_rshift)/??!219reg vi.c:461:r232:m52sc %? %@2142sc!b8m!%ya 98?0?
 %f> extern struct ts_state \*ts_preview;
 extern int ts_redraw;
 static void led_preview_current\(char \*text, int ps, int lncol\);
@@ -2916,7 +2905,7 @@ static void led_preview_current\(char \*text, int ps, int lncol\);4??0?
 #define ts_winx 0
 #define ts_winh xrows
 #define ts_winw xcols
-??!219reg vi.h:433:r232:m12sc %? %@2142sc!b7m!%ya 98?0?
+??!219reg vi.h:433:r232:m12sc %? %@2142sc!b6m!%ya 98?0?
 %f> 		ts_preview, ts_preview_row\(ps\), 0\)
 }
 
@@ -2982,7 +2971,7 @@ static void led_preview_wrapped(int current)
 	}
 ??!219reg treesitter.c:403:r232:m22sc %? %@2142sc!p compat 232 applied: src=linewrap_v2.sh' > "$P2VIF".232
 # Compat 233 src=linewrap_v1.sh
-printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
+printf '%s\n' '2sc!fr 98b3m!%ya 98?0?
 %f> 	if \(lbuf_s\(lo->del\[lo->n_del - 1]\)->lwrap\) \{
 		/\* the replaced range continued into the next line \*/
 		if \(lo->n_ins\)
@@ -3089,7 +3078,7 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 '\''3c 			ts_soft(lb, lo->pos - 1, 1);
 ??!219reg lbuf.c:476:r233:m32sc %? %@2142sc!0?
 '\''4c 			ts_soft(lb, lo->pos - 1, 0);
-??!219reg lbuf.c:499:r233:m42sc %? %@2142sc!b9m!%ya 98?0?
+??!219reg lbuf.c:499:r233:m42sc %? %@2142sc!b8m!%ya 98?0?
 %f> void ts_done\(void\);
 void ts_free\(struct ts_state \*s\);
 void ts_forget\(struct lbuf \*lb\);
@@ -3103,7 +3092,7 @@ void ts_forget\(struct lbuf \*lb\);4??0?
 4??+2m 1220reg p OK vi.h:430:a42sc %? %@2152sc!0?
 1;4??!219reg vi.h:430:r2332sc %? %@2132sc!0?
 '\''1i void ts_soft(struct lbuf *lb, int row, int wrap);
-??!219reg vi.h:430:r233:m12sc %? %@2142sc!b7m!%ya 98?0?
+??!219reg vi.h:430:r233:m12sc %? %@2142sc!b6m!%ya 98?0?
 %f> 	TSParser \*parser;
 	TSTree \*tree;
 	uint32_t \*offset;
@@ -3590,7 +3579,7 @@ void ts_soft(struct lbuf *lb, int row, int wrap)
 		s->cache_end++;
 ??!219reg treesitter.c:329:r233:m192sc %? %@2142sc!p compat 233 applied: src=linewrap_v1.sh' > "$P2VIF".233
 # Compat 234 src=splits.sh src=linewrap_v2.sh
-printf '%s\n' '2sc!fr 98b5m!%ya 98?0?
+printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 %f> 	return r - s;
 }
 
@@ -3799,7 +3788,7 @@ static void led_preview_draw(int ps);
 '\''8,#+1d??!219reg led.c:888:r234:m82sc %? %@2142sc!0?
 '\''9i 			ts_free(ts_preview);
 			restore(ts_preview)
-??!219reg led.c:891:r234:m92sc %? %@2142sc!b8m!%ya 98?0?
+??!219reg led.c:891:r234:m92sc %? %@2142sc!b7m!%ya 98?0?
 %f> \{
 	int h, w, k, i, beg, lim, wcols = curwin->w, wrows = curwin->h;
 	if \(!xlw\) \{
@@ -3866,7 +3855,7 @@ static void led_preview_draw(int ps);
 ??!219reg vi.c:375:r234:m12sc %? %@2142sc!0?
 '\''2,#+2c 		led_srender(s, curwin->y + trow + k, curwin->x + lncol,
 			k * w, k * w + w, ts_document(xb), source_row, 0)
-??!219reg vi.c:391:r234:m22sc %? %@2142sc!b9m!%ya 98?0?
+??!219reg vi.c:391:r234:m22sc %? %@2142sc!b8m!%ya 98?0?
 %f> extern int ts_redraw;
 static void led_preview_current\(char \*text, int ps, int lncol\);
 static int ts_preview_row\(int ps\);
@@ -3906,7 +3895,7 @@ static int ts_preview_row\(int ps\);4??0?
 #define ts_winw curwin->w
 ??!219reg vi.h:436:r234:m12sc %? %@2142sc!p compat 234 applied: src=splits.sh src=linewrap_v2.sh' > "$P2VIF".234
 # Compat 235 src=visual.sh src=splits.sh src=linewrap_v2.sh
-printf '%s\n' '2sc!fr 98b8m!%ya 98?0?
+printf '%s\n' '2sc!fr 98b7m!%ya 98?0?
 %f> 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
 		memset\(c, '\'' '\'', l1 - \(c - tmp\)\);
 		c\[l1 - \(c - tmp\)] = '\''\\0'\'';
@@ -3941,7 +3930,7 @@ printf '%s\n' '2sc!fr 98b8m!%ya 98?0?
 '\''1i 		vi_visual_attrib(s, row);
 ??!219reg vi.c:621:r235:m12sc %? %@2142sc!0?
 '\''2d??!219reg vi.c:623:r235:m22sc %? %@2142sc!p compat 235 applied: src=visual.sh src=splits.sh src=linewrap_v2.sh' > "$P2VIF".235
-EXINIT='%ya 97:? %@97' $VI -e '.gitignore' 'cbuild.sh' 'conf.c' 'ex.c' 'lbuf.c' 'led.c' 'ren.c' 'treesitter.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".233 "$P2VIF".234 "$P2VIF".235 "$P2VIF".d
+EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'conf.c' 'ex.c' 'lbuf.c' 'led.c' 'ren.c' 'treesitter.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".233 "$P2VIF".234 "$P2VIF".235 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
@@ -4587,15 +4576,6 @@ exit 0
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
-diff --git a/.gitignore b/.gitignore
-index cd7e8a3e..4e3cda3f 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -9,3 +9,4 @@ file
- patch2vi
- CLAUDE.md
- AGENTS.md
-+.treesitter/
 diff --git a/cbuild.sh b/cbuild.sh
 index c836c94c..76851789 100755
 --- a/cbuild.sh
