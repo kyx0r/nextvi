@@ -11,7 +11,9 @@ Then call:          patch2vi_wrapper [flag] input.patch [output.sh]
                     rebuild target.sh
                     extract_patches [file.sh]
                     extract_compats [file.sh]
+                    dump_patch file.sh
                     view_patch file.sh
+                    diff_head [N] [file.sh ...]
                     compat_order [README]
                     compat_check [max]
                     recompat target.sh [origin.sh]
@@ -623,20 +625,36 @@ extract_compats() (
 	rm -rf "$work"
 )
 
-# Read-only companion to extract_patches/extract_compats: everything a single
-# generated script carries - its embedded patch first, then every compat block's
-# diff, in storage order - concatenated into one .patch and opened in an editor.
-# Nothing in the tree is touched and no runnable script is produced, so this
-# works on a dirty tree and on scripts that no longer apply.
-#
-# The file lands in /tmp, or in the current directory when /tmp is not writable.
-# Sections are separated by a comment banner, which diff readers and syntax
-# highlighters skip over, so the result still reads as a patch.
+# Print the embedded patch, then compat diffs in storage order, to stdout.
+# Comment banners separate sections. Works on dirty trees and unappliable scripts.
+# Usage: dump_patch file.sh
+dump_patch() (
+	set -e
+	IFS=$P2VIFS
+	if [ "$#" -ne 1 ] || [ -z "$1" ]; then
+		echo "Usage: dump_patch file.sh" >&2
+		return 1
+	fi
+	p2v_ours "$1"
+	work=$(mktemp -d "${TMPDIR:-/tmp}/p2vi.dump.XXXXXX")
+	trap 'rm -rf "$work"' EXIT
+	trap 'exit 1' HUP INT TERM
+	p2v_splitcompat "$1" "$work" > "$work/blocks"
+	printf "%s\n" "# === $1: embedded patch ==="
+	sed '1,/^=== PATCH2VI PATCH ===$/d' "$1"
+	while read -r n reg src <&3
+	do
+		printf "%s\n" "# === compat $n (reg $reg)${src:+ from $src} ==="
+		cat "$work/$n.patch"
+	done 3< "$work/blocks"
+)
+
+# Open dump_patch's output in an editor. The file lands in /tmp, falling back
+# to the current directory when /tmp is not writable.
 # Usage: view_patch file.sh
 view_patch() (
 	set -e
-	IFS=$P2VIFS
-	if [ -z "$1" ]; then
+	if [ "$#" -ne 1 ] || [ -z "$1" ]; then
 		echo "Usage: view_patch file.sh" >&2
 		return 1
 	fi
@@ -648,21 +666,52 @@ view_patch() (
 		out="$base.patch"
 		: > "$out"
 	fi
-	work="$P2VITMP.view"
-	rm -rf "$work"
-	mkdir -p "$work"
-	p2v_splitcompat "$1" "$work" > "$work/blocks"
-	printf "%s\n" "# === $1: embedded patch ===" >> "$out"
-	sed '1,/^=== PATCH2VI PATCH ===$/d' "$1" >> "$out"
-	while read -r n reg src <&3
-	do
-		printf "%s\n" "# === compat $n (reg $reg)${src:+ from $src} ===" >> "$out"
-		cat "$work/$n.patch" >> "$out"
-	done 3< "$work/blocks"
-	rm -rf "$work"
+	dump_patch "$1" > "$out"
 	printf "%s\n" "VIEWING: $out" >&2
 	[ -x ./vi ] && editor=./vi || editor=vi
 	p2v_tty "${EDITOR:-$editor}" "$out"
+)
+
+# Like git diff HEAD~N, restricted to stored patches and compat diffs.
+# Usage: diff_head [N] [file.sh ...] (N defaults to 1)
+diff_head() (
+	set -e
+	rev=$(git rev-parse --verify "HEAD~${1:-1}^{commit}")
+	[ "$#" -eq 0 ] || shift
+	[ "$#" -gt 0 ] || set -- '*.sh'
+	work=$(mktemp -d "${TMPDIR:-/tmp}/p2vi.diff.XXXXXX")
+	trap 'rm -rf "$work"' EXIT
+	trap 'exit 1' HUP INT TERM
+	git diff --name-only --no-renames --no-relative "$rev" -- "$@" > "$work/files"
+	cat > "$work/extract.awk" <<'EOF'
+/^=== PATCH2VI PATCH ===$/ { patch = 1 }
+patch { print; next }
+/^=== PATCH2VI COMPAT / { compat = 1; print; next }
+compat && /^=== COMPAT PATCH ===$/ { diff = 1; next }
+compat && /^=== END ===$/ { diff = 0; next }
+compat && /^=== END COMPAT ===$/ { compat = 0; next }
+compat && diff { print }
+EOF
+	root=$(git rev-parse --show-toplevel)
+	cd "$root"
+	mkdir "$work/a" "$work/b"
+	while IFS= read -r s
+	do
+		mkdir -p "$work/a/$(dirname "$s")" "$work/b/$(dirname "$s")"
+		: > "$work/old"
+		if git cat-file -e "$rev:$s" 2>/dev/null; then
+			git show "$rev:$s" > "$work/old"
+		fi
+		awk -f "$work/extract.awk" "$work/old" > "$work/a/$s"
+		: > "$work/b/$s"
+		if [ -f "$s" ]; then
+			awk -f "$work/extract.awk" "$s" > "$work/b/$s"
+		fi
+	done < "$work/files"
+	cd "$work"
+	status=0
+	git diff --no-index --no-prefix -- a b || status=$?
+	[ "$status" -le 1 ]
 )
 
 # The origins script $1 depends on, out of the edge list compat_order builds.
