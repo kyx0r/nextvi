@@ -372,6 +372,59 @@ gK - show hover documentation for the symbol at the cursor
 gd - goto definition of the symbol at the cursor
 Also supports on-the-fly hinting.
 
+treesitter.sh
+--------------
+Incremental Tree-sitter syntax highlighting, with C configured at compile
+time. Apply to the pristine patches-branch sources with ./treesitter.sh.
+The default hl is 2. hl 0 disables highlighting, hl 1 selects the existing
+regex highlighter, and other positive values select Tree-sitter with regex
+fallback. C is selected for .c and .h files, and for unnamed buffers assigned
+ft c. C++/C# filename aliases, other languages, /ex, prompts, messages, status
+bars, and other internal filetypes retain regex highlighting.
+
+Install the Tree-sitter runtime library and development headers externally.
+Tested with tree-sitter v0.25.10 (da6fe9beb4f7f67beb75914ca8e0d48ae48d6406)
+and tree-sitter-c v0.24.1 (7fa1be1b694b6e763686793d97da01f36a0e5c12).
+The runtime can be installed through a system package or built from its
+source release with make and make PREFIX=/usr/local install. Obtain the C
+grammar's generated src/parser.c and src/tree_sitter headers from its source
+release; no grammar generation, Rust build, or Tree-sitter CLI is needed.
+
+Build, for example:
+    TS_CFLAGS="$(pkg-config --cflags tree-sitter)" \
+    TS_SOURCES=/path/to/tree-sitter-c/src/parser.c \
+    TS_LIBS="$(pkg-config --libs tree-sitter)" ./cbuild.sh build
+
+TS_LIBS defaults to -ltree-sitter; TS_CFLAGS and TS_SOURCES default to empty.
+For a private installation, set TS_CFLAGS to its include flags and TS_LIBS
+to its library flags or static archive. Supply the same variables to debug,
+pgobuild, and make. Grammar sources compile as separate translation units.
+The editor performs no downloads and uses no dynamic grammar loader.
+
+Configure ts_languages and ts_attributes in conf.c, then rebuild. The supplied
+predicate-free C query covers comments, strings, characters, escapes, numbers,
+types, keywords, preprocessor tokens, operators, and functions. Later query
+patterns take precedence, merging attributes with syn_merge(); unknown
+capture names contribute nothing. Unsupported predicates/directives, invalid
+queries, or a grammar/runtime ABI mismatch produce one diagnostic and select
+regex fallback. Syntax errors in the document still use Tree-sitter's tree.
+Injections, local-variable tracking, additional languages, and arbitrary
+third-party query compatibility are not included.
+
+The registered syntax extension runs before transient and registered overlays.
+hll and hlw use their existing patterns and colors after Tree-sitter syntax;
+hlp, hlr, visual selection, and other extension overlays remain composable.
+Buffer edits update the existing tree immediately and defer parsing to the
+next draw. Insert/change commands use a separate incremental preview, including
+surrounding lines; nested editor entry suspends it. Queries read document
+bytes, including off-screen text, and painting maps captures to visible
+character attributes. Capture caches are invalidated on every document edit.
+
+Tree-sitter API contracts:
+https://tree-sitter.github.io/tree-sitter/using-parsers/2-basic-parsing.html
+https://tree-sitter.github.io/tree-sitter/using-parsers/3-advanced-parsing.html
+https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html
+
 sse.sh
 --------------
 SIMD optimizations for Nextvi.
