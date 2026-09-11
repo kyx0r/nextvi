@@ -378,9 +378,9 @@ typedef struct {	/* led_render() state, passed to every extension */
 typedef struct led_ext led_ext;
 struct led_ext {					/* a syntax highlighting extension */
 	char *ln;					/* line key; NULL matches any line */
-	int *ola;					/* off, len, att triples */
+	void *usr;					/* data interpreted by the extension */
 	void (*ext_func)(led_ext *p, led_ctx *x);	/* extension body defaults to ext_attmerge() */
-	int cnt;					/* number of triples */
+	int blen;					/* byte length of usr */
 };
 led_ext *led_extnew(void);
 led_ext *led_extreg(void);
