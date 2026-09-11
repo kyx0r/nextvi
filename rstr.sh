@@ -1727,9 +1727,10 @@ int rstr_find(rstr *rs, char *s, int *grps, int flg)
 	len = rs->len;
 	beg = s;
 	if (rs->lbeg || rs->lend || !len) {
-		end = s + strlen(s) - len - (flg & REG_NEWLINE ? 1 : 0);
-		if (end < beg)
+		end = s + strlen(s) - (flg & REG_NEWLINE ? 1 : 0);
+		if (end - s < len)
 			return -1;
+		end -= len;
 		if (rs->lend)
 			beg = end;
 		if (rs->lbeg)
@@ -1740,6 +1741,9 @@ int rstr_find(rstr *rs, char *s, int *grps, int flg)
 			template(3, *t != *m, r <= end)
 		}
 	} else {
+		for (t = s; t - s < len - 1; t++)
+			if (!*t)
+				return -1;
 		if (flg & REG_ICASE) {
 			template(2, tolower((unsigned char) *t) != *m, r[len - 1])
 		} else {
@@ -2467,10 +2471,10 @@ index 56cb42c6..853b0e3d 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index e5aab266..5856a635 100644
+index e5aab266..cbc5f096 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -766,3 +766,142 @@ int rset_match(rset *rs, char *s, int flg)
+@@ -766,3 +766,146 @@ int rset_match(rset *rs, char *s, int flg)
  {
  	return re_pikevm(rs->regex, s, NULL, 0, flg);
  }
@@ -2575,9 +2579,10 @@ index e5aab266..5856a635 100644
 +	len = rs->len;
 +	beg = s;
 +	if (rs->lbeg || rs->lend || !len) {
-+		end = s + strlen(s) - len - (flg & REG_NEWLINE ? 1 : 0);
-+		if (end < beg)
++		end = s + strlen(s) - (flg & REG_NEWLINE ? 1 : 0);
++		if (end - s < len)
 +			return -1;
++		end -= len;
 +		if (rs->lend)
 +			beg = end;
 +		if (rs->lbeg)
@@ -2588,6 +2593,9 @@ index e5aab266..5856a635 100644
 +			template(3, *t != *m, r <= end)
 +		}
 +	} else {
++		for (t = s; t - s < len - 1; t++)
++			if (!*t)
++				return -1;
 +		if (flg & REG_ICASE) {
 +			template(2, tolower((unsigned char) *t) != *m, r[len - 1])
 +		} else {
