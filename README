@@ -382,24 +382,16 @@ fallback. C is selected for .c and .h files, and for unnamed buffers assigned
 ft c. C++/C# filename aliases, other languages, /ex, prompts, messages, status
 bars, and other internal filetypes retain regex highlighting.
 
-Install the Tree-sitter runtime library and development headers externally.
-Tested with tree-sitter v0.25.10 (da6fe9beb4f7f67beb75914ca8e0d48ae48d6406)
-and tree-sitter-c v0.24.1 (7fa1be1b694b6e763686793d97da01f36a0e5c12).
-The runtime can be installed through a system package or built from its
-source release with make and make PREFIX=/usr/local install. Obtain the C
-grammar's generated src/parser.c and src/tree_sitter headers from its source
-release; no grammar generation, Rust build, or Tree-sitter CLI is needed.
+Build with ./cbuild.sh build (or ./cbuild.sh for the first build).
+The build fetches tree-sitter v0.25.10 and tree-sitter-c v0.24.1 from GitHub,
+checks their pinned commits, and compiles the runtime and generated C parser
+directly into vi. Git and network access are needed only for the first fetch;
+no system Tree-sitter library, pkg-config, Rust, or Tree-sitter CLI is needed.
 
-Build, for example:
-    TS_CFLAGS="$(pkg-config --cflags tree-sitter)" \
-    TS_SOURCES=/path/to/tree-sitter-c/src/parser.c \
-    TS_LIBS="$(pkg-config --libs tree-sitter)" ./cbuild.sh build
-
-TS_LIBS defaults to -ltree-sitter; TS_CFLAGS and TS_SOURCES default to empty.
-For a private installation, set TS_CFLAGS to its include flags and TS_LIBS
-to its library flags or static archive. Supply the same variables to debug,
-pgobuild, and make. Grammar sources compile as separate translation units.
-The editor performs no downloads and uses no dynamic grammar loader.
+Sources are cached in .treesitter/ and reused by build, debug, and pgobuild.
+The cache is ignored by Git and retained by clean, allowing offline rebuilds.
+Remove .treesitter/ to fetch fresh copies on the next build. The editor itself
+performs no downloads and needs no Tree-sitter files installed at runtime.
 
 Configure ts_languages and ts_attributes in conf.c, then rebuild. The supplied
 predicate-free C query covers comments, strings, characters, escapes, numbers,
