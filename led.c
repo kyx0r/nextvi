@@ -126,7 +126,7 @@ static void ext_attmerge(led_ext *p, led_ctx *x)
 	if (!led_extkey(p, x))
 		return;
 	int *ola = p->usr;
-	for (int t = 0; t < p->blen; t += 3 * sizeof(int)) {
+	for (int t = 0; t < p->blen / (int)sizeof(int); t += 3) {
 		int o = ola[t], end = o + ola[t+1];
 		for (; o < end; o++) {
 			int i = led_attidx(x, o);
