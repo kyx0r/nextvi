@@ -79,24 +79,24 @@ const int conf_hlmatc = RE1 | SYN_BGMK(8);
 %f> 		c = term_read\(TK_CTL\('\''l'\''\)\);
 		noredraw:
 		switch \(c\) \{4??0?
-4??+2m 1220reg p OK led.c:513:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK led.c:514:a42sc %? %@2152sc!1q0?
 grp 1%f> 		c = term_read\(TK_CTL\('\''l'\''\)\);.*?
 		noredraw:.*?
 (		switch \(c\) \{)7??0?
-grp 07??m 1220reg p OK led.c:513:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK led.c:514:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	do \{
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);
 		len = sb->s_n;.*(				sbuf_cut\(sb, led_lastchar\(sb->s \+ pre\) \+ pre\))
 			else
 				return c;8??0?
-grp 08??-5m 1220reg p OK led.c:513:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK led.c:514:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char \*cs;
 	int len, c, i;
 	sbuf \*reg;.*(		case TK_CTL\('\''u'\''\):)
 			sbuf_cut\(sb, is->sug_pt > pre && len > is->sug_pt \? is->sug_pt : pre\)
 			break;9??0?
-grp 09??-9m 1220reg p OK led.c:513:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:5132sc %? %@2132sc!0?
+grp 09??-9m 1220reg p OK led.c:514:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:5142sc %? %@2132sc!0?
 ?0?
 %f+ 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
@@ -108,32 +108,32 @@ const int conf_hlmatc = RE1 | SYN_BGMK(8);
 %f+ 		default:
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\)
 				return c;4??0?
-4??+2m 2220reg p OK led.c:723:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK led.c:724:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		default:.*?
 			if \(c == '\''\\n'\'' \|\| TK_INT\(c\)\).*?
 (				return c;)7??0?
-grp 07??m 2220reg p OK led.c:723:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:724:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			}
 			continue; }.*(		is->sug = NULL;)
 		is->_sug = NULL;
 		if \(ai_max >= 0 && xpac\)8??0?
-grp 08??-4m 2220reg p OK led.c:723:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:724:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			} else if \(bidx != ex_buf - bufs && bidx < xbufcur\) \{
 				ex_buf = bufs \+ bidx;.*(			goto pac;)
 	} while \(!\(flg & 2\)\);
 	return c;9??0?
-grp 09??-7m 2220reg p OK led.c:723:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:7232sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK led.c:724:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:7242sc %? %@2132sc!0?
 '\''1i 		case TK_CTL('\''i'\''):	/* the caller steps the search match */
 		case TK_CTL('\''_'\''):
 			if (!(flg & 2))
 				goto insert;
 			break;
-??!219reg led.c:513:m12sc %? %@2142sc!0?
+??!219reg led.c:514:m12sc %? %@2142sc!0?
 '\''2i 			insert:
-??!219reg led.c:723:m22sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg led.c:724:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return r->col\[col];
 }
 
@@ -336,8 +336,8 @@ static void vi_isearchhl(sbuf *sb)
 			continue;
 		led_ext *p = led_extnew();
 		p->ln = lbuf_get(xb, xtop + i);
-		p->ola = (int*)sb->s + n;
-		p->cnt = cnt[i];
+		p->usr = (int*)sb->s + n;
+		p->blen = cnt[i] * 3 * sizeof(int);
 		n += cnt[i] * 3;
 	}
 }
@@ -753,10 +753,10 @@ index a51117ca..f0389275 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index 26a5f232..8795391f 100644
+index 375abb35..c2200cd8 100644
 --- a/led.c
 +++ b/led.c
-@@ -511,6 +511,11 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
+@@ -512,6 +512,11 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
  		c = term_read(TK_CTL('l'));
  		noredraw:
  		switch (c) {
@@ -768,7 +768,7 @@ index 26a5f232..8795391f 100644
  		case TK_CTL('h'):
  			c = 127;
  		case 127:
-@@ -721,6 +726,7 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
+@@ -722,6 +727,7 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
  		default:
  			if (c == '\n' || TK_INT(c))
  				return c;
@@ -777,7 +777,7 @@ index 26a5f232..8795391f 100644
  				sbuf_str(sb, cs)
  		}
 diff --git a/vi.c b/vi.c
-index 76150e3a..decb930b 100644
+index cc9b1492..c21de7a3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -307,13 +307,130 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
@@ -820,8 +820,8 @@ index 76150e3a..decb930b 100644
 +			continue;
 +		led_ext *p = led_extnew();
 +		p->ln = lbuf_get(xb, xtop + i);
-+		p->ola = (int*)sb->s + n;
-+		p->cnt = cnt[i];
++		p->usr = (int*)sb->s + n;
++		p->blen = cnt[i] * 3 * sizeof(int);
 +		n += cnt[i] * 3;
 +	}
 +}
@@ -924,7 +924,7 @@ index 76150e3a..decb930b 100644
  				msg ? dir : -1, 1, row, off)) {
  			if (msg) {
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..779a4b98 100644
+index 514c675e..8ac3e5ff 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -569,6 +569,8 @@ extern struct placeholder _ph[];

@@ -1370,8 +1370,8 @@ s......... ..........ha...s........s\)
 			ola[1] = 1;
 			lwx = led_extnew();
 			lwx->ln = s;
-			lwx->ola = ola;
-			lwx->cnt = 1;
+			lwx->usr = ola;
+			lwx->blen = sizeof(ola);
 		}
 	}
 ??!219reg vi.c:172:m22sc %? %@2142sc!0?
@@ -1899,7 +1899,7 @@ index 4116d9c1..dde17c64 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index 76150e3a..716be700 100644
+index cc9b1492..bdf6cfff 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -128,6 +128,8 @@ for (i = 0, ret = 0;; i++) { \
@@ -1929,8 +1929,8 @@ index 76150e3a..716be700 100644
 +			ola[1] = 1;
 +			lwx = led_extnew();
 +			lwx->ln = s;
-+			lwx->ola = ola;
-+			lwx->cnt = 1;
++			lwx->usr = ola;
++			lwx->blen = sizeof(ola);
 +		}
 +	}
  	skip:
@@ -1970,7 +1970,7 @@ index 76150e3a..716be700 100644
  		ln = lbuf_get(xb, xrow);
  		xoff = ren_noeol(ln, xoff);
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..2d4841e7 100644
+index 514c675e..9e01dbbe 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -129,10 +129,12 @@ struct lopt {

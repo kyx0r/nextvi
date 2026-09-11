@@ -2672,8 +2672,8 @@ static void vi_drawrow\(int row\)
 			}
 		}4??0?
 4??+2m 15220reg p OK vi.c:1804:a42sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 					p->ola = ola\[1];
-					p->cnt = 1;
+m 01;0grp 1%f> 					p->usr = ola\[1];
+					p->blen = sizeof\(ola\[1]\);
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;.*(				\|\| \(\*vi_word && orow != xrow\)\))
 			vi_drawagain\(xtop\);
 		else if \(\*vi_word && \(ooff != xoff \|\| vi_mod & 2\)8??0?
@@ -4682,7 +4682,7 @@ index 03aa736f..adccd79a 100644
  		tibuf_cnt = 1;
  		tibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 76150e3a..4fa7bd2f 100644
+index cc9b1492..e50aa4c6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -4821,7 +4821,7 @@ index 76150e3a..4fa7bd2f 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..46c1aa5a 100644
+index 514c675e..1159215d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -150,6 +150,7 @@ struct lbuf {

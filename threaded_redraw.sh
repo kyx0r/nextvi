@@ -411,8 +411,8 @@ static int rep_len;.*?
 		}.*?
 (		term_record = 1;)7??0?
 grp 07??m 7220reg p OK vi.c:1805:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 					p->ola = ola\[1];
-					p->cnt = 1;
+m 01;0grp 1%f> 					p->usr = ola\[1];
+					p->blen = sizeof\(ola\[1]\);
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;.*(			vi_drawagain\(xtop\);)
 		else if \(\*vi_word && \(ooff != xoff \|\| vi_mod & 2\)
 				&& xrow\+1 < xtop \+ xrows\)8??0?
@@ -792,7 +792,7 @@ index 03aa736f..4402a63b 100644
  		ticmd[ticmd_pos++] = tibuf[tibuf_pos];
  	return tibuf[tibuf_pos++];
 diff --git a/vi.c b/vi.c
-index 76150e3a..d9120cec 100644
+index cc9b1492..5606463a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@
@@ -982,7 +982,7 @@ index 76150e3a..d9120cec 100644
  
  static void sighandler(int signo)
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..bd06b05b 100644
+index 514c675e..7ed1390f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -208,7 +208,7 @@ typedef struct {

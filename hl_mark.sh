@@ -209,8 +209,8 @@ EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 				ola[i][0] = moff;
 				ola[i][1] = 1;
 				ola[i][2] = SYN_BGMK(((i % 15) + 1));
-				p->ola = ola[i];
-				p->cnt = 1;
+				p->usr = ola[i];
+				p->blen = sizeof(ola[i]);
 			}
 		}
 ??!219reg vi.c:1779:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
@@ -267,7 +267,7 @@ index 0ce81414..452f8553 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 76150e3a..84bccd11 100644
+index cc9b1492..92779dd3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1777,6 +1777,22 @@ void vi(int init)
@@ -286,8 +286,8 @@ index 76150e3a..84bccd11 100644
 +				ola[i][0] = moff;
 +				ola[i][1] = 1;
 +				ola[i][2] = SYN_BGMK(((i % 15) + 1));
-+				p->ola = ola[i];
-+				p->cnt = 1;
++				p->usr = ola[i];
++				p->blen = sizeof(ola[i]);
 +			}
 +		}
  		if (xhlp && (k = syn_findhl(3)) >= 0) {

@@ -872,8 +872,8 @@ static int vc_motion\(int cmd\)
 			}
 		}4??0?
 4??+2m 25220reg p OK vi.c:1804:a42sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 					p->ola = ola\[1];
-					p->cnt = 1;
+m 01;0grp 1%f> 					p->usr = ola\[1];
+					p->blen = sizeof\(ola\[1]\);
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;.*(				\|\| \(\*vi_word && orow != xrow\)\))
 			vi_drawagain\(xtop\);
 		else if \(\*vi_word && \(ooff != xoff \|\| vi_mod & 2\)8??0?
@@ -936,13 +936,14 @@ static void ext_cursor(led_ext *p, led_ctx *x)
 {
 	if (!led_extkey(p, x))
 		return;
-	int i = led_attidx(x, p->ola[0]);
+	int *ola = p->usr;
+	int i = led_attidx(x, ola[0]);
 	if (i < 0)
 		return;
 	int hue = vi_curhue(x->att[i]) + 8;	/* the bright variant */
 	/* a background and only a background: with any flag left on, SYN_RV
 	   would paint the hue as the text colour instead */
-	x->att[i] = SYN_FGSET(x->att[i]) | SYN_BGMK(hue) | p->ola[2];
+	x->att[i] = SYN_FGSET(x->att[i]) | SYN_BGMK(hue) | ola[2];
 }
 
 /* the selected span of the row: a plain merge under its own name, so that
@@ -1009,8 +1010,8 @@ static void vi_visual_attrib(char *s, int row)
 	if (!(p = led_extfind(ext_sel)))
 		(p = led_extnew())->ext_func = ext_sel;
 	p->ln = s;
-	p->ola = sel;
-	p->cnt = cnt;
+	p->usr = sel;
+	p->blen = cnt * 3 * sizeof(int);
 	if (row != xrow)
 		return;
 	cur[0] = xoff;
@@ -1019,8 +1020,8 @@ static void vi_visual_attrib(char *s, int row)
 	if (!(p = led_extfind(ext_cursor)))	/* pushed last, runs last */
 		(p = led_extnew())->ext_func = ext_cursor;
 	p->ln = s;
-	p->ola = cur;
-	p->cnt = 1;
+	p->usr = cur;
+	p->blen = sizeof(cur);
 }
 
 ??!219reg vi.c:127:m22sc %? %@2142sc!0?
@@ -1321,8 +1322,8 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 %f> 			vi_drawdiag\(diag, dsev, row - xtop, dcol\);
 		return;
 	}4??0?
-4??+2m 1220reg p OK vi.c:384:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:384:r2312sc %? %@2132sc!0?
+4??+2m 1220reg p OK vi.c:385:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:385:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 	led_crender\(s, row - xtop, 0, xleft, xleft \+ xcols\)
 	int dcol = rstate->cmax - xleft;
@@ -1336,18 +1337,18 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 	if \(diag\)
 		vi_drawdiag\(diag, dsev, row - xtop, dcol\);
 }2??0?
-2??m 2220reg p OK vi.c:388:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:389:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	vi_visual_attrib\(s, row\);$3??0?
-3??m 2220reg p OK vi.c:388:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:389:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	led_crender\(s, row - xtop, 0, xleft, xleft \+ xcols\)
 	int dcol = rstate->cmax - xleft;
 	rstate = rstates;4??0?
-4??+3m 2220reg p OK vi.c:388:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:389:a42sc %? %@2152sc!1q0?
 %f+ 	if \(diag\)
 		vi_drawdiag\(diag, dsev, row - xtop, dcol\);
 }5??0?
-5??-1m 2220reg p OK vi.c:388:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:388:r2312sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:389:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:389:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
@@ -1361,18 +1362,18 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 					vc_motion\(k\);
 				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
 					if \(!vi_visual\) \{		/\* fresh selection \*/2??0?
-2??m 3220reg p OK vi.c:2053:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK vi.c:2054:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\) \{ \{$3??0?
-3??m 3220reg p OK vi.c:2053:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK vi.c:2054:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;4??0?
-4??+3m 3220reg p OK vi.c:2053:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK vi.c:2054:a42sc %? %@2152sc!1q0?
 %f+ 					vc_motion\(k\);
 				} else if \(k == '\''v'\'' \|\| k == '\''V'\'' \|\| k == '\''b'\''\) \{
 					if \(!vi_visual\) \{		/\* fresh selection \*/5??0?
-5??-1m 3220reg p OK vi.c:2053:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2053:r2312sc %? %@2132sc!0?
+5??-1m 3220reg p OK vi.c:2054:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:2054:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 					}
 					vi_visual = vi_visual == k \? 0 : k;
@@ -1386,23 +1387,23 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 				} else if \(k == '\''K'\''\) \{
 					if \(xb_path && xb_path\[0]\)
 						lsp_hover\(xb_path, xrow, xoff\);2??0?
-2??m 4220reg p OK vi.c:2062:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.c:2063:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				}$3??0?
-3??m 4220reg p OK vi.c:2062:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK vi.c:2063:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					}
 					vi_visual = vi_visual == k \? 0 : k;
 					vi_mod \|= 1;4??0?
-4??+3m 4220reg p OK vi.c:2062:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK vi.c:2063:a42sc %? %@2152sc!1q0?
 %f+ 				} else if \(k == '\''K'\''\) \{
 					if \(xb_path && xb_path\[0]\)
 						lsp_hover\(xb_path, xrow, xoff\);5??0?
-5??-1m 4220reg p OK vi.c:2062:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2062:r2312sc %? %@2132sc!0?
+5??-1m 4220reg p OK vi.c:2063:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:2063:r2312sc %? %@2132sc!0?
 '\''1i 	vi_visual_attrib(s, row);
-??!219reg vi.c:384:r231:m12sc %? %@2142sc!0?
-'\''2d??!219reg vi.c:388:r231:m22sc %? %@2142sc!0?
-'\''3s/\{ \{/{/??!219reg vi.c:2053:r231:m32sc %? %@2142sc!0?
-'\''4d??!219reg vi.c:2062:r231:m42sc %? %@2142sc!p compat 231 applied: src=lsp.sh' > "$P2VIF".231
+??!219reg vi.c:385:r231:m12sc %? %@2142sc!0?
+'\''2d??!219reg vi.c:389:r231:m22sc %? %@2142sc!0?
+'\''3s/\{ \{/{/??!219reg vi.c:2054:r231:m32sc %? %@2142sc!0?
+'\''4d??!219reg vi.c:2063:r231:m42sc %? %@2142sc!p compat 231 applied: src=lsp.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'vi.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -1417,7 +1418,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -382,10 +382,10 @@
+@@ -383,10 +383,10 @@
  			vi_drawdiag(diag, dsev, row - xtop, dcol);
  		return;
  	}
@@ -1429,7 +1430,7 @@ exit 0
  	if (diag)
  		vi_drawdiag(diag, dsev, row - xtop, dcol);
  }
-@@ -2050,7 +2050,7 @@
+@@ -2051,7 +2051,7 @@
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1438,7 +1439,7 @@ exit 0
  					vc_motion(k);
  				} else if (k == 'v' || k == 'V' || k == 'b') {
  					if (!vi_visual) {		/* fresh selection */
-@@ -2059,7 +2059,6 @@
+@@ -2060,7 +2060,6 @@
  					}
  					vi_visual = vi_visual == k ? 0 : k;
  					vi_mod |= 1;
@@ -1463,7 +1464,7 @@ index a51117ca..321d4b59 100644
  	{bar_ft, "^(\".*\").* ([0-9]{1,3}%) (L[0-9]+) (C[0-9]+) (B-?[0-9]+)?.*$",
  		A(AY1 | SYN_BD, BL, RE1, BL, YE1, GR)},
 diff --git a/vi.c b/vi.c
-index 76150e3a..2ccb00fb 100644
+index cc9b1492..62bea302 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -44,6 +44,9 @@ static int vi_cndir = 1;		/* ^n direction */
@@ -1476,7 +1477,7 @@ index 76150e3a..2ccb00fb 100644
  
  void *emalloc(size_t size)
  {
-@@ -125,6 +128,140 @@ for (i = 0, ret = 0;; i++) { \
+@@ -125,6 +128,141 @@ for (i = 0, ret = 0;; i++) { \
  	ret = func; \
  } } \
  
@@ -1527,13 +1528,14 @@ index 76150e3a..2ccb00fb 100644
 +{
 +	if (!led_extkey(p, x))
 +		return;
-+	int i = led_attidx(x, p->ola[0]);
++	int *ola = p->usr;
++	int i = led_attidx(x, ola[0]);
 +	if (i < 0)
 +		return;
 +	int hue = vi_curhue(x->att[i]) + 8;	/* the bright variant */
 +	/* a background and only a background: with any flag left on, SYN_RV
 +	   would paint the hue as the text colour instead */
-+	x->att[i] = SYN_FGSET(x->att[i]) | SYN_BGMK(hue) | p->ola[2];
++	x->att[i] = SYN_FGSET(x->att[i]) | SYN_BGMK(hue) | ola[2];
 +}
 +
 +/* the selected span of the row: a plain merge under its own name, so that
@@ -1600,8 +1602,8 @@ index 76150e3a..2ccb00fb 100644
 +	if (!(p = led_extfind(ext_sel)))
 +		(p = led_extnew())->ext_func = ext_sel;
 +	p->ln = s;
-+	p->ola = sel;
-+	p->cnt = cnt;
++	p->usr = sel;
++	p->blen = cnt * 3 * sizeof(int);
 +	if (row != xrow)
 +		return;
 +	cur[0] = xoff;
@@ -1610,14 +1612,14 @@ index 76150e3a..2ccb00fb 100644
 +	if (!(p = led_extfind(ext_cursor)))	/* pushed last, runs last */
 +		(p = led_extnew())->ext_func = ext_cursor;
 +	p->ln = s;
-+	p->ola = cur;
-+	p->cnt = 1;
++	p->usr = cur;
++	p->blen = sizeof(cur);
 +}
 +
  static void vi_drawrow(int row)
  {
  	int l1, i, i1, lnnum = vi_lnnum;
-@@ -193,6 +330,7 @@ static void vi_drawrow(int row)
+@@ -193,6 +331,7 @@ static void vi_drawrow(int row)
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -1625,7 +1627,7 @@ index 76150e3a..2ccb00fb 100644
  		led_crender(s, row - xtop, l1, xleft, xleft + xcols - l1)
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
-@@ -212,6 +350,7 @@ static void vi_drawrow(int row)
+@@ -212,6 +351,7 @@ static void vi_drawrow(int row)
  		restore(ftidx)
  		return;
  	}
@@ -1633,7 +1635,7 @@ index 76150e3a..2ccb00fb 100644
  	led_crender(s, row - xtop, 0, xleft, xleft + xcols)
  	rstate = rstates;
  }
-@@ -495,20 +634,23 @@ static void vc_status(int type)
+@@ -495,20 +635,23 @@ static void vc_status(int type)
  	char cbuf[8] = "", vi_msg[512], *c;
  	col = vi_off2col(xb, xrow, xoff);
  	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
@@ -1661,7 +1663,7 @@ index 76150e3a..2ccb00fb 100644
  	}
  	vi_drawmsg_mpt(vi_msg)
  }
-@@ -946,6 +1088,184 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -946,6 +1089,184 @@ static void vi_shift(int r1, int r2, int dir, int count)
  	free(sb->s);
  }
  
@@ -1846,7 +1848,7 @@ index 76150e3a..2ccb00fb 100644
  static int vc_motion(int cmd)
  {
  	int r1 = xrow, r2 = xrow;	/* region rows */
-@@ -1291,6 +1611,10 @@ void vi(int init)
+@@ -1291,6 +1612,10 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case 'u':
@@ -1857,7 +1859,7 @@ index 76150e3a..2ccb00fb 100644
  				undo:
  				if (vi_arg >= 0 && !lbuf_undo(xb, &xrow, &xoff)) {
  					vi_mod |= 1;
-@@ -1341,6 +1665,10 @@ void vi(int init)
+@@ -1341,6 +1666,10 @@ void vi(int init)
  				vi_lncol = 0;
  				vi_mod |= 1;
  				break;
@@ -1868,7 +1870,7 @@ index 76150e3a..2ccb00fb 100644
  			case 'v':
  				vi_mod |= 2;
  				k = term_read(0);
-@@ -1445,6 +1773,26 @@ void vi(int init)
+@@ -1445,6 +1774,26 @@ void vi(int init)
  				vi_mod |= 1;
  				break;
  			case ':':
@@ -1895,7 +1897,7 @@ index 76150e3a..2ccb00fb 100644
  				ln = vi_enprompt(":", NULL, &k, &n);
  				do_excmd:
  				if (k && ln[n]) {
-@@ -1464,7 +1812,15 @@ void vi(int init)
+@@ -1464,7 +1813,15 @@ void vi(int init)
  					xmpt = 1;
  				break;
  			case 'c':
@@ -1911,7 +1913,7 @@ index 76150e3a..2ccb00fb 100644
  				k = term_read(0);
  				if (k == 'i') {
  					k = term_read(0);
-@@ -1514,6 +1870,10 @@ void vi(int init)
+@@ -1514,6 +1871,10 @@ void vi(int init)
  			case '>':
  			case '<':
  			case TK_CTL('w'):
@@ -1922,7 +1924,7 @@ index 76150e3a..2ccb00fb 100644
  				k = vc_motion(c);
  				if (c == 'c')
  					goto insert_done;
-@@ -1524,6 +1884,14 @@ void vi(int init)
+@@ -1524,6 +1885,14 @@ void vi(int init)
  			case 'A':
  			case 'o':
  			case 'O':
@@ -1937,7 +1939,7 @@ index 76150e3a..2ccb00fb 100644
  				insert:
  				k = vc_insert(c);
  				insert_done:
-@@ -1645,8 +2013,16 @@ void vi(int init)
+@@ -1645,8 +2014,16 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1955,7 +1957,7 @@ index 76150e3a..2ccb00fb 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1661,16 +2037,25 @@ void vi(int init)
+@@ -1661,16 +2038,25 @@ void vi(int init)
  				term_push("yy", 2);
  				goto motion;
  			case '~':
@@ -1986,7 +1988,7 @@ index 76150e3a..2ccb00fb 100644
  				motion:
  				ticmd_pos--;
  				goto re_motion;
-@@ -1736,6 +2121,13 @@ void vi(int init)
+@@ -1736,6 +2122,13 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -2000,7 +2002,7 @@ index 76150e3a..2ccb00fb 100644
  			default:
  				continue;
  			}
-@@ -1802,6 +2194,8 @@ void vi(int init)
+@@ -1802,6 +2195,8 @@ void vi(int init)
  				}
  			}
  		}
