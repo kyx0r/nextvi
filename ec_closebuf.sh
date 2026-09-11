@@ -79,7 +79,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
 grp 09??-8m 1220reg p OK conf.c:302:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3022sc %? %@2132sc!0?
-'\''1s/cd/c[dx]/??!219reg conf.c:302:m12sc %? %@2142sc!b1m!%ya 98?0?
+'\''1s/cd/c(?:d|x!?)/??!219reg conf.c:302:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 	return xkwdrs \? NULL : xserr;
 }
 
@@ -136,27 +136,45 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 1;4;7;8;9??!219reg ex.c:18112sc %? %@2132sc!0?
 '\''1i static void *ec_closebuf(char *loc, char *cmd, char *arg)
 {
-	int idx, ridx = 0;
 	int istmp = istempbuf(ex_buf);
+	long idx = istmp ? -1 : ex_buf - bufs, end;
 	char *s;
-	if (!*arg) {
-		idx = istmp ? -1 : ex_buf - bufs;
-	} else {
+	while (*arg == '\'' '\'' || *arg == '\''\t'\'')
+		arg++;
+	if (*arg == '\''-'\'') {
+		if (istmp)
+			return "invalid buffer index";
+		idx++;
+	} else if (*arg) {
+		idx = strtol(arg, &s, 10);
+		if (s == arg)
+			return "invalid buffer index";
+		arg = s;
+	}
+	end = idx;
+	if (*arg == '\''-'\'') {
+		arg++;
 		while (*arg == '\'' '\'' || *arg == '\''\t'\'')
 			arg++;
-		idx = atoi(arg);
-		if (idx < 0 && !istmp)
-			idx = ex_buf - bufs + 1;
-		s = strchr(arg, '\''-'\'');
-		if (s) {
-			ridx = atoi(s+1) - idx;
-			if (ridx <= 0 && !istmp)
-				ridx = (ex_buf - bufs) - idx - 1;
+		if (*arg) {
+			end = strtol(arg, &s, 10);
+			if (s == arg)
+				return "invalid buffer index";
+			arg = s;
+		} else {
+			end = istmp ? -1 : ex_buf - bufs - 1;
 		}
 	}
-	for (int b = 0; b <= ridx; b++) {
-		if (idx < 0 || (!idx && xbufcur < 2) || idx >= xbufcur)
-			return "invalid buffer index";
+	while (*arg == '\'' '\'' || *arg == '\''\t'\'')
+		arg++;
+	if (*arg || idx < 0 || end < idx || end >= xbufcur ||
+			end - idx + 1 == xbufcur)
+		return "invalid buffer index";
+	if (!strchr(cmd, '\''!'\''))
+		for (int i = idx; i <= end; i++)
+			if (bufs[i].lb->modified)
+				return "buffers modified";
+	for (int b = end; b >= idx; b--) {
 		bufs_free(idx);
 		for (int i = idx; i < xbufcur - 1; i++)
 			bufs[i] = bufs[i+1];
@@ -178,7 +196,8 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 }
 
 ??!219reg ex.c:1668:m12sc %? %@2142sc!0?
-'\''2i 	{"cx", ec_closebuf},
+'\''2i 	{"cx!", ec_closebuf},
+	{"cx", ec_closebuf},
 ??!219reg ex.c:1811:m22sc %? %@2142sc!vis 2b0wb1w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' "$P2VIF"
 
@@ -192,7 +211,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index a51117ca..a20ed911 100644
+index a51117ca..2cf1d5e8 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -299,7 +299,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -200,41 +219,59 @@ index a51117ca..a20ed911 100644
  ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
  |[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 -(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
-+(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|c[dx]?)?",
++(?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|c(?:d|x!?)?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..469aa6b0 100644
+index 0ce81414..9ab2ce73 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1666,6 +1666,49 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1666,6 +1666,67 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
 +static void *ec_closebuf(char *loc, char *cmd, char *arg)
 +{
-+	int idx, ridx = 0;
 +	int istmp = istempbuf(ex_buf);
++	long idx = istmp ? -1 : ex_buf - bufs, end;
 +	char *s;
-+	if (!*arg) {
-+		idx = istmp ? -1 : ex_buf - bufs;
-+	} else {
++	while (*arg == ' ' || *arg == '\t')
++		arg++;
++	if (*arg == '-') {
++		if (istmp)
++			return "invalid buffer index";
++		idx++;
++	} else if (*arg) {
++		idx = strtol(arg, &s, 10);
++		if (s == arg)
++			return "invalid buffer index";
++		arg = s;
++	}
++	end = idx;
++	if (*arg == '-') {
++		arg++;
 +		while (*arg == ' ' || *arg == '\t')
 +			arg++;
-+		idx = atoi(arg);
-+		if (idx < 0 && !istmp)
-+			idx = ex_buf - bufs + 1;
-+		s = strchr(arg, '-');
-+		if (s) {
-+			ridx = atoi(s+1) - idx;
-+			if (ridx <= 0 && !istmp)
-+				ridx = (ex_buf - bufs) - idx - 1;
++		if (*arg) {
++			end = strtol(arg, &s, 10);
++			if (s == arg)
++				return "invalid buffer index";
++			arg = s;
++		} else {
++			end = istmp ? -1 : ex_buf - bufs - 1;
 +		}
 +	}
-+	for (int b = 0; b <= ridx; b++) {
-+		if (idx < 0 || (!idx && xbufcur < 2) || idx >= xbufcur)
-+			return "invalid buffer index";
++	while (*arg == ' ' || *arg == '\t')
++		arg++;
++	if (*arg || idx < 0 || end < idx || end >= xbufcur ||
++			end - idx + 1 == xbufcur)
++		return "invalid buffer index";
++	if (!strchr(cmd, '!'))
++		for (int i = idx; i <= end; i++)
++			if (bufs[i].lb->modified)
++				return "buffers modified";
++	for (int b = end; b >= idx; b--) {
 +		bufs_free(idx);
 +		for (int i = idx; i < xbufcur - 1; i++)
 +			bufs[i] = bufs[i+1];
@@ -258,10 +295,11 @@ index 0ce81414..469aa6b0 100644
  static void ext_hlr(led_ext *p, led_ctx *x)
  {
  	ren_state *r = x->r;
-@@ -1809,6 +1852,7 @@ static struct excmd {
+@@ -1809,6 +1870,8 @@ static struct excmd {
  	{"cm!", ec_cmap},
  	{"cm", ec_cmap},
  	{"cd", ec_chdir},
++	{"cx!", ec_closebuf},
 +	{"cx", ec_closebuf},
  	{"c", ec_insert},
  	{"j", ec_join},

@@ -157,6 +157,8 @@ ec_closebuf.sh
 Allows the user to close a buffer using the new ex command "cx".
 Specify a number as an argument to select which buffer to close; with no
 argument, the current buffer is closed.
+Modified buffers require "cx!" to discard their edits and undo history.
+The whole range is checked before any buffer is closed; at least one must remain.
 When a buffer is closed, all buffers above it are shifted and renumbered.
 A range can be supplied like so: :cx0-5
 This closes buffers 0 to 5 inclusive.
