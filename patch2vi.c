@@ -3587,31 +3587,29 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 			     file_patch_t **uf, int nuf, const char *own)
 {
 	section_t *s = &secs[i];
-	/* Rewind every real file this section touches: an earlier block
-	 * leaves the cursor deep in the buffer, and the body's
-	 * relative searches key off the current line. The rewind is
-	 * unconditional, so a block whose origin is absent still rewinds the
-	 * buffer of the file that origin creates - empty, so line 1 of it is
-	 * "invalid range". Only a section holding such a file pays for
-	 * "err 0": a rewind over a file the host patches cannot fail. */
 	int risky = 0;
-	for (int k = 0; k < s->nf; k++) {
-		int gi = uf_index(uf, nuf, s->files[k]);
-		risky |= gi >= 0 && own[gi];
-	}
-	if (risky) {
-		sb_str(out, "err 0");
-		EMIT_SEP(out);
-	}
-	for (int k = 0; k < s->nf; k++) {
-		sb_printf(out, "b%d", uf_index(uf, nuf, s->files[k]));
-		EMIT_SEP(out);
-		sb_str(out, "1");
-		EMIT_SEP(out);
-	}
-	if (risky) {
-		sb_str(out, "err 1");
-		EMIT_SEP(out);
+	/* Fresh buffers start at line 1, including -e and replay sessions.
+	 * Only later sections need rewinds after earlier edits. Compat-only
+	 * files may still be absent when their origin's gate misses. */
+	if (i > 0) {
+		for (int k = 0; k < s->nf; k++) {
+			int gi = uf_index(uf, nuf, s->files[k]);
+			risky |= gi >= 0 && own[gi];
+		}
+		if (risky) {
+			sb_str(out, "err 0");
+			EMIT_SEP(out);
+		}
+		for (int k = 0; k < s->nf; k++) {
+			sb_printf(out, "b%d", uf_index(uf, nuf, s->files[k]));
+			EMIT_SEP(out);
+			sb_str(out, "1");
+			EMIT_SEP(out);
+		}
+		if (risky) {
+			sb_str(out, "err 1");
+			EMIT_SEP(out);
+		}
 	}
 	/* Set this block's quit policy before its body runs: assert if it is the
 	 * last firing block over its file, suppress otherwise. */

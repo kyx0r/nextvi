@@ -2300,8 +2300,7 @@ cp "$R/m.orig" "$R/m.c"; rm -f "$R/n.c"
 ( cd "$R" && VI="$VI" sh nf.sh ) > "$R/nfout" 2>&1
 nf_clean=0
 [ ! -e "$R/n.c" ] && [ "$(tr '\n' '|' < "$R/m.c")" = 'L1|L2|L3x|L4|' ] && nf_clean=1
-# the sensors and the rewind address that empty buffer: silenced by err 0,
-# and by nothing else - the host's own rewind is over a file that exists
+# The sensors and the rewind address the empty buffer under err 0.
 nf_noise="$(tr -d '\r' < "$R/nfout" | grep -c 'invalid range' || true)"
 nf_wrap="$(grep -o 'err 0' "$R/nf.sh" | wc -l | tr -d ' ')"
 cp "$R/m.orig" "$R/m.c"; rm -f "$R/n.c"
@@ -2316,6 +2315,33 @@ else
 	echo "    clean=$nf_clean origin=[$nf_orig] noise=$nf_noise wrap=$nf_wrap"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
+
+# New host files must not be rewound before their creation body runs.
+sed '/^=== PATCH2VI PATCH ===/q' "$R/nf.sh" > "$R/nh.sh"
+cat "$R/n.diff" >> "$R/nh.sh"
+"$R_P2VI" -o "$R/nh.sh" "$R/nh.sh"
+if awk '/\? %@97/ { sub(/\? %@97.*/, ""); print; exit } { print }' \
+   "$R/nh.sh" | grep -q 'b0.1'; then
+	fail "compat: no rewind before the first section"
+else
+	ok "compat: no rewind before the first section"
+fi
+for runner in shell embedded; do
+	rm -f "$R/n.c"
+	nh_rc=0
+	if [ "$runner" = shell ]; then
+		( cd "$R" && VI="$VI" sh nh.sh ) > "$R/nhout" 2>&1 || nh_rc=$?
+	else
+		( cd "$R" && "$R_P2VI" -e nh.sh ) > "$R/nhout" 2>&1 || nh_rc=$?
+	fi
+	if [ "$nh_rc" = 0 ] && ! grep -q 'invalid range' "$R/nhout" &&
+	   [ "$(tr '\n' '|' < "$R/n.c")" = 'N1|N2|N3|' ]; then
+		ok "compat: new host file rewind is silent ($runner)"
+	else
+		fail "compat: new host file rewind is silent ($runner)"
+	fi
+done
+rm -f "$R/n.c"
 
 # A fix that only a STACK of patches needs: -C repeats, one per origin, and the
 # block gates on all of their landings at once. The two origins land in disjoint
