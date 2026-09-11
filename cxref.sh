@@ -33,7 +33,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 f> [ /]grep[.]sh 20??b420?? %ya 231230reg 1231??0?
 f> [ /]splits[.]sh 20??b520?? %ya 232230reg 1232??0?
 f> [ /]grep[.]sh 20??f> [ /]lsp[.]sh 21??f> [ /]rstr[.]sh 22??f> [ /]visual[.]sh 23??f> [ /]splits[.]sh 24??b620,21,22,23,24?? %ya 233230reg 1233??0?
-fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b210?
+fr 98211reg fr 230f> 1??!? %@221fr 980?
 b3%ya 972sc %? %@972sc!b01b11b21232;233??211reg232;233??!211reg ? %@2210?
 2sc %? %@2312sc!b11233??211reg233??!211reg ? %@2210?
 2sc %? %@2322sc!b11211reg ? %@2210?
@@ -1056,18 +1056,18 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 	int i, n = lbuf_len\(ls\), len, row, off, beg = 0, ret = 0, bs;
 	free\(pat\);
 	if \(!rs\)2??0?
-2??m 1220reg p OK vi.c:981:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:982:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^	rset \*rs = rset_smake\(pat, 0\);$3??0?
-3??m 1220reg p OK vi.c:981:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.c:982:a32sc %? %@2152sc!fr 981qfr 980?
 %f> \{
 	char \*pat = xref_pat\(sym\), \*path;
 	struct lbuf \*ls = tempbufs\[1]\.lb;4??0?
-4??+3m 1220reg p OK vi.c:981:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:982:a42sc %? %@2152sc!1q0?
 %f> 	int i, n = lbuf_len\(ls\), len, row, off, beg = 0, ret = 0, bs;
 	free\(pat\);
 	if \(!rs\)5??0?
-5??-1m 1220reg p OK vi.c:981:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:981:r2332sc %? %@2132sc!0?
+5??-1m 1220reg p OK vi.c:982:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:982:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 		path\[len] = '\''\\n'\'';
 	}
@@ -1081,18 +1081,18 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 	if \(ret\)
 		\*outline = row;
 	return ret;2??0?
-2??m 2220reg p OK vi.c:1022:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:1023:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	rset_free\(rs\);$3??0?
-3??m 2220reg p OK vi.c:1022:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:1023:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		path\[len] = '\''\\n'\'';
 	}
 	restore\(xgrp\)4??0?
-4??+3m 2220reg p OK vi.c:1022:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:1023:a42sc %? %@2152sc!1q0?
 %f+ 	if \(ret\)
 		\*outline = row;
 	return ret;5??0?
-5??-1m 2220reg p OK vi.c:1022:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1022:r2332sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:1023:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:1023:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	sbuf_chr\(queue, '\''\\n'\''\)
 }
@@ -1102,17 +1102,17 @@ static rset \*xref_nrs\(void\)
 1??+3m 31q0?
 %f+ static rset \*xref_nrs\(void\)
 \{2??0?
-2??m 3220reg p OK vi.c:1050:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK vi.c:1051:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^static rset \*xref_nrs\(void\)$3??0?
-3??m 3220reg p OK vi.c:1050:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK vi.c:1051:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	sbuf_chr\(queue, '\''\\n'\''\)
 }
 
 4??0?
-4??+3m 3220reg p OK vi.c:1050:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK vi.c:1051:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^\{$5??0?
-5??-1m 3220reg p OK vi.c:1050:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg vi.c:1050:r2332sc %? %@2132sc!0?
+5??-1m 3220reg p OK vi.c:1051:a52sc %? %@2152sc!fr 98fr 980?
+1;2;3;4;5??!219reg vi.c:1051:r2332sc %? %@2132sc!0?
 ?0?
 %f+ \{
 	static rset \*rs;
@@ -1120,14 +1120,14 @@ static rset \*xref_nrs\(void\)
 1??+1m 41q0?
 %f+ 	static rset \*rs;
 	if \(!rs\)2??0?
-2??m 4220reg p OK vi.c:1052:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.c:1053:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	static rset \*rs;$3??0?
-3??m 4220reg p OK vi.c:1052:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK vi.c:1053:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^\{$4??0?
-4??+1m 4220reg p OK vi.c:1052:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 4220reg p OK vi.c:1053:a42sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	if \(!rs\)$5??0?
-5??-1m 4220reg p OK vi.c:1052:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg vi.c:1052:r2332sc %? %@2132sc!0?
+5??-1m 4220reg p OK vi.c:1053:a52sc %? %@2152sc!fr 98fr 980?
+1;2;3;4;5??!219reg vi.c:1053:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	if \(!rs\)
 		rs = rset_smake\(xref_namepat, 0\);
@@ -1141,17 +1141,17 @@ static rset \*xref_nrs\(void\)
 }
 
 2??0?
-2??m 5220reg p OK vi.c:1054:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK vi.c:1055:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		rs = rset_smake\(xref_namepat, 0\);$3??0?
-3??m 5220reg p OK vi.c:1054:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK vi.c:1055:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	if \(!rs\)$4??0?
-4??+1m 5220reg p OK vi.c:1054:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 5220reg p OK vi.c:1055:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	return rs;
 }
 
 5??0?
-5??-1m 5220reg p OK vi.c:1054:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1054:r2332sc %? %@2132sc!0?
+5??-1m 5220reg p OK vi.c:1055:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:1055:r2332sc %? %@2132sc!0?
 ?0?
 %f+  \* says the body means, not whatever else the tree happens to call that \*/
 static void xref_locals\(struct lbuf \*lb, int b, int e, sbuf \*loc\)
@@ -1165,18 +1165,18 @@ static void xref_locals\(struct lbuf \*lb, int b, int e, sbuf \*loc\)
 	char \*s, \*p;
 	int grps\[4], off, len, i, j, prev, run, state = 0;
 	if \(!rs\)2??0?
-2??m 6220reg p OK vi.c:1063:a22sc %? %@2152sc!1q0?
+2??m 6220reg p OK vi.c:1064:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	rset \*rs = xref_nrs\(\);$3??0?
-3??m 6220reg p OK vi.c:1063:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 6220reg p OK vi.c:1064:a32sc %? %@2152sc!fr 981qfr 980?
 %f+  \* says the body means, not whatever else the tree happens to call that \*/
 static void xref_locals\(struct lbuf \*lb, int b, int e, sbuf \*loc\)
 \{4??0?
-4??+3m 6220reg p OK vi.c:1063:a42sc %? %@2152sc!1q0?
+4??+3m 6220reg p OK vi.c:1064:a42sc %? %@2152sc!1q0?
 %f+ 	char \*s, \*p;
 	int grps\[4], off, len, i, j, prev, run, state = 0;
 	if \(!rs\)5??0?
-5??-1m 6220reg p OK vi.c:1063:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1063:r2332sc %? %@2132sc!0?
+5??-1m 6220reg p OK vi.c:1064:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:1064:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 			break;
 		s = xref_code\(lbuf_get\(lb, i\), &state\);
@@ -1190,18 +1190,18 @@ static void xref_locals\(struct lbuf \*lb, int b, int e, sbuf \*loc\)
 			p = s \+ off \+ grps\[0];
 			len = grps\[1] - grps\[0];
 			run = prev >= 0;	/\* only blanks and stars between \*/2??0?
-2??m 7220reg p OK vi.c:1073:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK vi.c:1074:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		for \(off = 0; rset_find\(rs, s \+ off, grps, off \? REG_NOTBOL : 0\) >= 0;\) \{$3??0?
-3??m 7220reg p OK vi.c:1073:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 7220reg p OK vi.c:1074:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			break;
 		s = xref_code\(lbuf_get\(lb, i\), &state\);
 		prev = -1;4??0?
-4??+3m 7220reg p OK vi.c:1073:a42sc %? %@2152sc!1q0?
+4??+3m 7220reg p OK vi.c:1074:a42sc %? %@2152sc!1q0?
 %f+ 			p = s \+ off \+ grps\[0];
 			len = grps\[1] - grps\[0];
 			run = prev >= 0;	/\* only blanks and stars between \*/5??0?
-5??-1m 7220reg p OK vi.c:1073:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1073:r2332sc %? %@2132sc!0?
+5??-1m 7220reg p OK vi.c:1074:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:1074:r2332sc %? %@2132sc!0?
 ?0?
 %f+ /\* queue every name an extent calls or declares, once each \*/
 static void xref_scan\(struct lbuf \*lb, int b, int e, sbuf \*queue, sbuf \*seen\)
@@ -1215,18 +1215,18 @@ static void xref_scan\(struct lbuf \*lb, int b, int e, sbuf \*queue, sbuf \*seen
 	char \*s, \*p;
 	int grps\[4], off, len, i, j, state = 0;
 	sbuf_smake\(loc, 256\)2??0?
-2??m 8220reg p OK vi.c:1096:a22sc %? %@2152sc!1q0?
+2??m 8220reg p OK vi.c:1097:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	rset \*rs = xref_nrs\(\);$3??0?
-3??m 8220reg p OK vi.c:1096:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 8220reg p OK vi.c:1097:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ /\* queue every name an extent calls or declares, once each \*/
 static void xref_scan\(struct lbuf \*lb, int b, int e, sbuf \*queue, sbuf \*seen\)
 \{4??0?
-4??+3m 8220reg p OK vi.c:1096:a42sc %? %@2152sc!1q0?
+4??+3m 8220reg p OK vi.c:1097:a42sc %? %@2152sc!1q0?
 %f+ 	char \*s, \*p;
 	int grps\[4], off, len, i, j, state = 0;
 	sbuf_smake\(loc, 256\)5??0?
-5??-1m 8220reg p OK vi.c:1096:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1096:r2332sc %? %@2132sc!0?
+5??-1m 8220reg p OK vi.c:1097:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:1097:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 		if \(!lbuf_get\(lb, i\)\)
 			break;
@@ -1240,18 +1240,18 @@ static void xref_scan\(struct lbuf \*lb, int b, int e, sbuf \*queue, sbuf \*seen
 			p = s \+ off \+ grps\[0];
 			len = grps\[1] - grps\[0];
 			for \(j = p - s - 1; j >= 0 && \(s\[j] == '\'' '\'' \|\| s\[j] == '\''\\t'\''\); j--\);2??0?
-2??m 9220reg p OK vi.c:1109:a22sc %? %@2152sc!1q0?
+2??m 9220reg p OK vi.c:1110:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		for \(off = 0; rset_find\(rs, s \+ off, grps, off \? REG_NOTBOL : 0\) >= 0;\) \{$3??0?
-3??m 9220reg p OK vi.c:1109:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 9220reg p OK vi.c:1110:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		if \(!lbuf_get\(lb, i\)\)
 			break;
 		s = xref_code\(lbuf_get\(lb, i\), &state\);4??0?
-4??+3m 9220reg p OK vi.c:1109:a42sc %? %@2152sc!1q0?
+4??+3m 9220reg p OK vi.c:1110:a42sc %? %@2152sc!1q0?
 %f+ 			p = s \+ off \+ grps\[0];
 			len = grps\[1] - grps\[0];
 			for \(j = p - s - 1; j >= 0 && \(s\[j] == '\'' '\'' \|\| s\[j] == '\''\\t'\''\); j--\);5??0?
-5??-1m 9220reg p OK vi.c:1109:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1109:r2332sc %? %@2132sc!0?
+5??-1m 9220reg p OK vi.c:1110:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:1110:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 				if \(!strcmp\(xb_path, "/xref/"\) \|\|
 						!strcmp\(xb_path, "/grep/"\)\) \{
@@ -1267,19 +1267,19 @@ static void xref_scan\(struct lbuf \*lb, int b, int e, sbuf \*queue, sbuf \*seen
 						buf\[subs\[0]] = xsep;
 						buf\[subs\[1]-1] = '\''\\n'\'';
 						buf\[subs\[1]] = '\''\\0'\'';2??0?
-2??m 10220reg p OK vi.c:2235:a22sc %? %@2152sc!1q0?
+2??m 10220reg p OK vi.c:2236:a22sc %? %@2152sc!1q0?
 %f+ 					rset \*rs = rset_smake\(":\[0-9]\+\(\?::\|\\n\)", 0\);
 					if \(rset_find\(rs, buf, subs, 0\) >= 0\) \{3??0?
-3??m 10220reg p OK vi.c:2235:a32sc %? %@2152sc!1q0?
+3??m 10220reg p OK vi.c:2236:a32sc %? %@2152sc!1q0?
 %f+ 				if \(!strcmp\(xb_path, "/xref/"\) \|\|
 						!strcmp\(xb_path, "/grep/"\)\) \{
 					int subs\[2];	/\* a header opens at its line \*/4??0?
-4??+3m 10220reg p OK vi.c:2235:a42sc %? %@2152sc!1q0?
+4??+3m 10220reg p OK vi.c:2236:a42sc %? %@2152sc!1q0?
 %f+ 						buf\[subs\[0]] = xsep;
 						buf\[subs\[1]-1] = '\''\\n'\'';
 						buf\[subs\[1]] = '\''\\0'\'';5??0?
-5??-2m 10220reg p OK vi.c:2235:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2235:r2332sc %? %@2132sc!0?
+5??-2m 10220reg p OK vi.c:2236:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:2236:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 						buf\[subs\[1]-1] = '\''\\n'\'';
 						buf\[subs\[1]] = '\''\\0'\'';
@@ -1293,32 +1293,32 @@ static void xref_scan\(struct lbuf \*lb, int b, int e, sbuf \*queue, sbuf \*seen
 				}
 				term_push\(buf, strlen\(buf\)\);
 				break; }2??0?
-2??m 11220reg p OK vi.c:2241:a22sc %? %@2152sc!1q0?
+2??m 11220reg p OK vi.c:2242:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^					rset_free\(rs\);$3??0?
-3??m 11220reg p OK vi.c:2241:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 11220reg p OK vi.c:2242:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 						buf\[subs\[1]-1] = '\''\\n'\'';
 						buf\[subs\[1]] = '\''\\0'\'';
 					}4??0?
-4??+3m 11220reg p OK vi.c:2241:a42sc %? %@2152sc!1q0?
+4??+3m 11220reg p OK vi.c:2242:a42sc %? %@2152sc!1q0?
 %f+ 				}
 				term_push\(buf, strlen\(buf\)\);
 				break; }5??0?
-5??-1m 11220reg p OK vi.c:2241:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2241:r2332sc %? %@2132sc!0?
-?'\''1s/et \*rs = rset_s/tr *rs = rstr_/1??1??1q'\''1s/et( \*.* rs)et_s/tr\1tr_/2??2??'\''1220reg p OK vi.c:981:s22sc %? %@2162sc!0?
-1;2??!219reg vi.c:981:r233:m12sc %? %@2142sc!0?
-'\''2s/et/tr/??!219reg vi.c:1022:r233:m22sc %? %@2142sc!0?
-'\''3s/et/tr/??!219reg vi.c:1050:r233:m32sc %? %@2142sc!0?
-'\''4s/et/tr/??!219reg vi.c:1052:r233:m42sc %? %@2142sc!0?
-'\''5s/et_s/tr_/??!219reg vi.c:1054:r233:m52sc %? %@2142sc!0?
-'\''6s/et/tr/??!219reg vi.c:1063:r233:m62sc %? %@2142sc!0?
-'\''7s/et/tr/??!219reg vi.c:1073:r233:m72sc %? %@2142sc!0?
-'\''8s/et/tr/??!219reg vi.c:1096:r233:m82sc %? %@2142sc!0?
-'\''9s/et/tr/??!219reg vi.c:1109:r233:m92sc %? %@2142sc!0?
+5??-1m 11220reg p OK vi.c:2242:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:2242:r2332sc %? %@2132sc!0?
+?'\''1s/et \*rs = rset_s/tr *rs = rstr_/1??1??1q'\''1s/et( \*.* rs)et_s/tr\1tr_/2??2??'\''1220reg p OK vi.c:982:s22sc %? %@2162sc!0?
+1;2??!219reg vi.c:982:r233:m12sc %? %@2142sc!0?
+'\''2s/et/tr/??!219reg vi.c:1023:r233:m22sc %? %@2142sc!0?
+'\''3s/et/tr/??!219reg vi.c:1051:r233:m32sc %? %@2142sc!0?
+'\''4s/et/tr/??!219reg vi.c:1053:r233:m42sc %? %@2142sc!0?
+'\''5s/et_s/tr_/??!219reg vi.c:1055:r233:m52sc %? %@2142sc!0?
+'\''6s/et/tr/??!219reg vi.c:1064:r233:m62sc %? %@2142sc!0?
+'\''7s/et/tr/??!219reg vi.c:1074:r233:m72sc %? %@2142sc!0?
+'\''8s/et/tr/??!219reg vi.c:1097:r233:m82sc %? %@2142sc!0?
+'\''9s/et/tr/??!219reg vi.c:1110:r233:m92sc %? %@2142sc!0?
 '\''10,#+1c 					rstr *rs = rstr_make(":[0-9]+(?::|\n)", 0);
 					if (rstr_find(rs, buf, subs, 0) >= 0) {
-??!219reg vi.c:2235:r233:m102sc %? %@2142sc!0?
-'\''11s/et/tr/??!219reg vi.c:2241:r233:m112sc %? %@2142sc!p compat 233 applied: src=grep.sh src=lsp.sh src=rstr.sh src=visual.sh src=splits.sh' > "$P2VIF".233
+??!219reg vi.c:2236:r233:m102sc %? %@2142sc!0?
+'\''11s/et/tr/??!219reg vi.c:2242:r233:m112sc %? %@2142sc!p compat 233 applied: src=grep.sh src=lsp.sh src=rstr.sh src=visual.sh src=splits.sh' > "$P2VIF".233
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".233 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -1435,7 +1435,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -978,7 +978,7 @@
+@@ -979,7 +979,7 @@
  {
  	char *pat = xref_pat(sym), *path;
  	struct lbuf *ls = tempbufs[1].lb;
@@ -1444,7 +1444,7 @@ exit 0
  	int i, n = lbuf_len(ls), len, row, off, beg = 0, ret = 0, bs;
  	free(pat);
  	if (!rs)
-@@ -1019,7 +1019,7 @@
+@@ -1020,7 +1020,7 @@
  		path[len] = '\n';
  	}
  	restore(xgrp)
@@ -1453,7 +1453,7 @@ exit 0
  	if (ret)
  		*outline = row;
  	return ret;
-@@ -1047,11 +1047,11 @@
+@@ -1048,11 +1048,11 @@
  	sbuf_chr(queue, '\n')
  }
  
@@ -1468,7 +1468,7 @@ exit 0
  	return rs;
  }
  
-@@ -1060,7 +1060,7 @@
+@@ -1061,7 +1061,7 @@
   * says the body means, not whatever else the tree happens to call that */
  static void xref_locals(struct lbuf *lb, int b, int e, sbuf *loc)
  {
@@ -1477,7 +1477,7 @@ exit 0
  	char *s, *p;
  	int grps[4], off, len, i, j, prev, run, state = 0;
  	if (!rs)
-@@ -1070,7 +1070,7 @@
+@@ -1071,7 +1071,7 @@
  			break;
  		s = xref_code(lbuf_get(lb, i), &state);
  		prev = -1;
@@ -1486,7 +1486,7 @@ exit 0
  			p = s + off + grps[0];
  			len = grps[1] - grps[0];
  			run = prev >= 0;	/* only blanks and stars between */
-@@ -1093,7 +1093,7 @@
+@@ -1094,7 +1094,7 @@
  /* queue every name an extent calls or declares, once each */
  static void xref_scan(struct lbuf *lb, int b, int e, sbuf *queue, sbuf *seen)
  {
@@ -1495,7 +1495,7 @@ exit 0
  	char *s, *p;
  	int grps[4], off, len, i, j, state = 0;
  	sbuf_smake(loc, 256)
-@@ -1106,7 +1106,7 @@
+@@ -1107,7 +1107,7 @@
  		if (!lbuf_get(lb, i))
  			break;
  		s = xref_code(lbuf_get(lb, i), &state);
@@ -1504,7 +1504,7 @@ exit 0
  			p = s + off + grps[0];
  			len = grps[1] - grps[0];
  			for (j = p - s - 1; j >= 0 && (s[j] == ' ' || s[j] == '\t'); j--);
-@@ -2232,13 +2232,13 @@
+@@ -2233,13 +2233,13 @@
  				if (!strcmp(xb_path, "/xref/") ||
  						!strcmp(xb_path, "/grep/")) {
  					int subs[2];	/* a header opens at its line */
@@ -1538,7 +1538,7 @@ index 0ce81414..adda6e60 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 76150e3a..d1ad755e 100644
+index cc9b1492..dc5b7402 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -484,6 +484,465 @@ static int fs_searchback(int cnt, int *row, int *off)
@@ -2072,7 +2072,7 @@ index 76150e3a..d1ad755e 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..2585fb2e 100644
+index 514c675e..0cc753c1 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -436,6 +436,9 @@ struct buf {

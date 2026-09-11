@@ -171,24 +171,24 @@ static sbuf \*extsb;
 %f+ 				exbuf_load\(ex_buf\)
 			}
 			continue; }4??0?
-4??+2m 2220reg p OK led.c:720:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK led.c:721:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				exbuf_load\(ex_buf\).*?
 			}.*?
 (			continue; })7??0?
-grp 07??m 2220reg p OK led.c:720:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:721:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			} else if \(bidx != ex_buf - bufs && bidx < xbufcur\) \{
 				ex_buf = bufs \+ bidx;.*(			if \(\(cs = led_read\(kmap, c\)\)\))
 				sbuf_str\(sb, cs\)
 		}8??0?
-grp 08??-4m 2220reg p OK led.c:720:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:721:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(ex_buf == tmpex_buf\)
 					continue;
 				restore\(ex_buf\).*(		is->sug = NULL;)
 		is->_sug = NULL;
 		if \(ai_max >= 0 && xpac\)9??0?
-grp 09??-7m 2220reg p OK led.c:720:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:7202sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK led.c:721:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:7212sc %? %@2132sc!0?
 '\''1i static long long gettime_ms(void)
 {
 	struct timespec t;
@@ -209,7 +209,7 @@ static sbuf \*extsb;
 		case '\''k'\'':
 			is->quickexit = gettime_ms();
 _default:
-??!219reg led.c:720:m22sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg led.c:721:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> #include <dirent\.h>
 #include <signal\.h>
 #include <unistd\.h>
@@ -415,7 +415,7 @@ index 0ce81414..2adff3ec 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 26a5f232..3ee74e32 100644
+index 375abb35..ae69bb13 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -431,7 +431,7 @@ index 26a5f232..3ee74e32 100644
  static sbuf *acsb;
  static sbuf *extsb;
  
-@@ -718,6 +726,17 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
+@@ -719,6 +727,17 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
  				exbuf_load(ex_buf)
  			}
  			continue; }
@@ -450,7 +450,7 @@ index 26a5f232..3ee74e32 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index 76150e3a..40a4a8f7 100644
+index cc9b1492..5f3d2957 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -471,7 +471,7 @@ index 76150e3a..40a4a8f7 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..c6cc07da 100644
+index 514c675e..8126a978 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -396,6 +396,7 @@ typedef struct {

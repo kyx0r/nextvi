@@ -32,7 +32,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 '230reg 0fr 2290?
 f> [ /]lsp[.]sh 20??b820?? %ya 231230reg 1231??0?
 f> [ /]visual[.]sh 20??b920?? %ya 232230reg 1232??0?
-fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
+fr 98211reg fr 230f> 1??!? %@221fr 980?
 b7%ya 972sc %? %@972sc!err 0b61b41err 1232??211reg232??!211reg ? %@2210?
 2sc %? %@2312sc!b41211reg ? %@2210?
 2sc %? %@2322sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
@@ -4099,18 +4099,18 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 		return;
 	int ar = vi_vrow, ao = vi_voff;
 	int cr = xrow,   co = xoff;2??0?
-2??m 2220reg p OK vi.c:218:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:219:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(!vi_visual \|\| !s\)$3??0?
-3??m 2220reg p OK vi.c:218:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:219:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	static int sel\[6], cur\[3];
 	led_ext \*p;
 	int cnt = 1;4??0?
-4??+3m 2220reg p OK vi.c:218:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:219:a42sc %? %@2152sc!1q0?
 %f+ 		return;
 	int ar = vi_vrow, ao = vi_voff;
 	int cr = xrow,   co = xoff;5??0?
-5??-1m 2220reg p OK vi.c:218:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:218:r2322sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:219:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:219:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 	preserve\(int, xleft,\)
 	preserve\(int, xtd,\)
@@ -4122,8 +4122,8 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 %f+ 	preserve\(int, xleft,\)
 	preserve\(int, xtd,\)
 	do \{4??0?
-4??+2m 3220reg p OK vi.c:408:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:408:r2322sc %? %@2132sc!0?
+4??+2m 3220reg p OK vi.c:409:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:409:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 	} while \(w != wins\);
 	vi_draw_separators\(\);
@@ -4135,17 +4135,17 @@ static int vi_voff;			/\* selection anchor column \*/4??0?
 %f+ 	} while \(w != wins\);
 	vi_draw_separators\(\);
 	curwin = cur;4??0?
-4??+2m 4220reg p OK vi.c:425:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:425:r2322sc %? %@2132sc!0?
+4??+2m 4220reg p OK vi.c:426:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:426:r2322sc %? %@2132sc!0?
 '\''1i static int vi_vfocused = 1;		/* redrawing the window owning the selection */
 ??!219reg vi.c:49:r232:m12sc %? %@2142sc!0?
-'\''2s/s\)/s || !vi_vfocused)/??!219reg vi.c:218:r232:m22sc %? %@2142sc!0?
+'\''2s/s\)/s || !vi_vfocused)/??!219reg vi.c:219:r232:m22sc %? %@2142sc!0?
 '\''3i 		vi_vfocused = w == cur;
 		if (!vi_vfocused)
 			led_extcut();
-??!219reg vi.c:408:r232:m32sc %? %@2142sc!0?
+??!219reg vi.c:409:r232:m32sc %? %@2142sc!0?
 '\''4i 	vi_vfocused = 1;
-??!219reg vi.c:425:r232:m42sc %? %@2142sc!p compat 232 applied: src=visual.sh' > "$P2VIF".232
+??!219reg vi.c:426:r232:m42sc %? %@2142sc!p compat 232 applied: src=visual.sh' > "$P2VIF".232
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' 'lsp.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -4226,7 +4226,7 @@ exit 0
  
  void *emalloc(size_t size)
  {
-@@ -215,7 +216,7 @@
+@@ -216,7 +217,7 @@
  	static int sel[6], cur[3];
  	led_ext *p;
  	int cnt = 1;
@@ -4235,7 +4235,7 @@ exit 0
  		return;
  	int ar = vi_vrow, ao = vi_voff;
  	int cr = xrow,   co = xoff;
-@@ -406,6 +407,9 @@
+@@ -407,6 +408,9 @@
  	preserve(int, xleft,)
  	preserve(int, xtd,)
  	do {
@@ -4245,7 +4245,7 @@ exit 0
  		curwin = w;
  		xrow = w->row;
  		xoff = w->off;
-@@ -423,6 +427,7 @@
+@@ -424,6 +428,7 @@
  	} while (w != wins);
  	vi_draw_separators();
  	curwin = cur;

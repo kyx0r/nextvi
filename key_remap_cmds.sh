@@ -233,17 +233,17 @@ int map_read(int mode, int winch)
 		noredraw:
 		switch \(c\) \{
 		case TK_CTL\('\''h'\''\):2??0?
-2??m 1220reg p OK led.c:511:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK led.c:512:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^		c = term_read\(TK_CTL\('\''l'\''\)\);$3??0?
-3??m 1220reg p OK led.c:511:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK led.c:512:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	do \{
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);
 		len = sb->s_n;4??0?
-4??+3m 1220reg p OK led.c:511:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK led.c:512:a42sc %? %@2152sc!1q0?
 %f> 		noredraw:
 		switch \(c\) \{
 		case TK_CTL\('\''h'\''\):5??0?
-5??-1m 1220reg p OK led.c:511:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK led.c:512:a52sc %? %@2152sc!1q0?
 %f> 	....
 	.l.........a....s.,.pre,..s..\*p.....p..... ...f\);
 		..... .b..._..
@@ -251,27 +251,27 @@ int map_read(int mode, int winch)
 .	..r..r...
 .	sw......c\)..
 .	.a...TK.C.....'\''\):6??0?
-6??+3m 1220reg p OK led.c:511:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK led.c:512:a62sc %? %@2152sc!1q0?
 grp 1%f> 	do \{.*?
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);.*?
 		len = sb->s_n;.*?
 (		c = term_read\(TK_CTL\('\''l'\''\)\);)7??0?
-grp 07??m 1220reg p OK led.c:511:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK led.c:512:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	char \*cs;
 	int len, c, i;
 	sbuf \*reg;.*(			c = 127;)
 		case 127:
 			if \(len - pre > 0\)8??0?
-grp 08??-4m 1220reg p OK led.c:511:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK led.c:512:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static int led_line\(sbuf \*sb, int pre, int ps, char \*\*post, int postn, char \*\*postref,
 	int ai_max, int \*poff, int \*kmap, ins_state \*is, int orow, int crow, int ctop, int flg\)
 \{.*(				sbuf_cut\(sb, led_lastchar\(sb->s \+ pre\) \+ pre\))
 			else
 				return c;9??0?
-grp 09??-7m 1220reg p OK led.c:511:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:5112sc %? %@2132sc!0?
-?'\''1s/term_read\(/map_read(1, /1??1??1q'\''1s/term(_r.*d\()/map\11, /2??2??'\''1220reg p OK led.c:511:s22sc %? %@2162sc!0?
-1;2??!219reg led.c:511:m12sc %? %@2142sc!0?
+grp 09??-7m 1220reg p OK led.c:512:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:5122sc %? %@2132sc!0?
+?'\''1s/term_read\(/map_read(1, /1??1??1q'\''1s/term(_r.*d\()/map\11, /2??2??'\''1220reg p OK led.c:512:s22sc %? %@2162sc!0?
+1;2??!219reg led.c:512:m12sc %? %@2142sc!0?
 b3m!%ya 98?0?
 %f> 
 static int vi_yankbuf\(int winch\)
@@ -973,10 +973,10 @@ index 0ce81414..5b73c9a9 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 26a5f232..5735f113 100644
+index 375abb35..a8e308d4 100644
 --- a/led.c
 +++ b/led.c
-@@ -508,7 +508,7 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
+@@ -509,7 +509,7 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
  	do {
  		led_printparts(sb, pre, ps, *post, postn, poff);
  		len = sb->s_n;
@@ -986,7 +986,7 @@ index 26a5f232..5735f113 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index 76150e3a..261c69a0 100644
+index cc9b1492..d8051b00 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -262,7 +262,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -1085,7 +1085,7 @@ index 76150e3a..261c69a0 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..ab643e19 100644
+index 514c675e..183ecb9e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -502,6 +502,7 @@ extern struct buf *ex_pbuf;

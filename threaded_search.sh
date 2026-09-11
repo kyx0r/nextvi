@@ -31,7 +31,7 @@ ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 '230reg 0fr 2290?
 f> [ /]rstr[.]sh 20??b720?? %ya 231230reg 1231??0?
-fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
+fr 98211reg fr 230f> 1??!? %@221fr 980?
 b6%ya 972sc %? %@972sc!b11b21211reg ? %@2210?
 2sc %? %@2312sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
@@ -1234,7 +1234,7 @@ index b1002c4e..d80628bb 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 76150e3a..40bca301 100644
+index cc9b1492..559ddcf2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@
@@ -1247,7 +1247,7 @@ index 76150e3a..40bca301 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..6c0904fa 100644
+index 514c675e..7474e994 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -272,7 +272,8 @@ int syn_addhl(char *reg, int id);

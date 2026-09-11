@@ -1458,7 +1458,7 @@ index 0ce81414..61e353d8 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/vi.c b/vi.c
-index 76150e3a..da86a550 100644
+index cc9b1492..c70978b5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1123,6 +1123,68 @@ static int vc_replace(void)
@@ -1550,7 +1550,7 @@ index 76150e3a..da86a550 100644
  		term_commit();
  		xb->useq += xseq;
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..86fa67c9 100644
+index 514c675e..455d0bd9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -569,6 +569,13 @@ extern struct placeholder _ph[];
