@@ -13,7 +13,8 @@ Then call:          patch2vi_wrapper [flag] input.patch [output.sh]
                     extract_compats [file.sh]
                     dump_patch file.sh
                     view_patch file.sh
-                    diff_head [N] [file.sh ...]
+                    dump_head [N] [file.sh ...]
+                    view_head [N] [file.sh ...]
                     compat_order [README]
                     compat_check [max]
                     recompat target.sh [origin.sh]
@@ -673,9 +674,11 @@ view_patch() (
 )
 
 # Like git diff HEAD~N, restricted to stored patches and compat diffs.
-# Usage: diff_head [N] [file.sh ...] (N defaults to 1)
-diff_head() (
+# Usage: p2v_head pager-option [N] [file.sh ...] (N defaults to 1)
+p2v_head() (
 	set -e
+	pager=$1
+	shift
 	rev=$(git rev-parse --verify "HEAD~${1:-1}^{commit}")
 	[ "$#" -eq 0 ] || shift
 	[ "$#" -gt 0 ] || set -- '*.sh'
@@ -710,9 +713,17 @@ EOF
 	done < "$work/files"
 	cd "$work"
 	status=0
-	git diff --no-index --no-prefix -- a b || status=$?
+	git "$pager" diff --no-index --no-prefix -- a b || status=$?
 	[ "$status" -le 1 ]
 )
+
+# Print stored-patch changes without a pager.
+# Usage: dump_head [N] [file.sh ...] (N defaults to 1)
+dump_head() { p2v_head --no-pager "$@"; }
+
+# Review stored-patch changes with Git's pager.
+# Usage: view_head [N] [file.sh ...] (N defaults to 1)
+view_head() { p2v_head --paginate "$@"; }
 
 # The origins script $1 depends on, out of the edge list compat_order builds.
 p2v_deps() { awk -v s="$1" '$1 == s && NF > 1 { print $2 }' "$P2VITMP.edges"; }
