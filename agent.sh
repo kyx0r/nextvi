@@ -4334,10 +4334,20 @@ const int conf_mode = 0600;
 grp 09??-9m 2220reg p OK conf.c:301:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3012sc %? %@2132sc!0?
 '\''1i /* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
+static char *log_dir;
+#define LOCAL 1
+#define OPENROUTER 1
+
+#if LOCAL == 1
 static char *api_key = "local";
 static char *endpoint = "http://127.0.0.1:8080/v1/chat/completions";
-static char *log_dir;
 static char *request_extra = "{}";
+#elif OPENROUTER == 1
+static char *api_key = "YOUR_OPENROUTER_API_KEY";
+static char *endpoint = "https://openrouter.ai/api/v1/chat/completions";
+static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
+#endif
+
 static int request_timeout = 120;
 static int max_tool_rounds = 200;
 
@@ -9440,24 +9450,34 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/conf.c b/conf.c
-index a51117ca..4c787171 100644
+index a51117ca..8eca19af 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,13 @@
+@@ -1,5 +1,23 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
++static char *log_dir;
++#define LOCAL 1
++#define OPENROUTER 1
++
++#if LOCAL == 1
 +static char *api_key = "local";
 +static char *endpoint = "http://127.0.0.1:8080/v1/chat/completions";
-+static char *log_dir;
 +static char *request_extra = "{}";
++#elif OPENROUTER == 1
++static char *api_key = "YOUR_OPENROUTER_API_KEY";
++static char *endpoint = "https://openrouter.ai/api/v1/chat/completions";
++static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
++#endif
++
 +static int request_timeout = 120;
 +static int max_tool_rounds = 200;
 +
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -298,7 +306,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -298,7 +316,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
  ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
