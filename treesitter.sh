@@ -34,7 +34,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 f> [ /]linewrap_v2[.]sh 20??b1120?? %ya 232230reg 1232??0?
 f> [ /]linewrap_v1[.]sh 20??b1220?? %ya 233230reg 1233??0?
 f> [ /]splits[.]sh 20??f> [ /]linewrap_v2[.]sh 21??b1320,21?? %ya 234230reg 1234??0?
-f> [ /]visual[.]sh 20??f> [ /]splits[.]sh 21??f> [ /]linewrap_v2[.]sh 22??b1420,21,22?? %ya 235230reg 1235??0?
+f> [ /]visual[.]sh 20??f> [ /]linewrap_v2[.]sh 21??b1420,21?? %ya 235230reg 1235??0?
 fr 98211reg fr 230f> 1??!? %@221fr 980?
 b9%ya 972sc %? %@972sc!b41b71b81b61232;233;234;235??211reg232;233;234;235??!211reg ? %@2210?
 2sc %? %@2312sc!b41b71b81b61233;234;235??211reg233;234;235??!211reg ? %@2210?
@@ -3599,7 +3599,7 @@ static int ts_preview_row\(int ps\);4??0?
 #define ts_winh curwin->h
 #define ts_winw curwin->w
 ??!219reg vi.h:436:r234:m12sc %? %@2142sc!p compat 234 applied: src=splits.sh src=linewrap_v2.sh' > "$P2VIF".234
-# Compat 235 src=visual.sh src=splits.sh src=linewrap_v2.sh
+# Compat 235 src=visual.sh src=linewrap_v2.sh
 printf '%s\n' '2sc!fr 98b7m!%ya 98?0?
 %f> 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
 		memset\(c, '\'' '\'', l1 - \(c - tmp\)\);
@@ -3609,8 +3609,8 @@ printf '%s\n' '2sc!fr 98b7m!%ya 98?0?
 %f> 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
 		memset\(c, '\'' '\'', l1 - \(c - tmp\)\);
 		c\[l1 - \(c - tmp\)] = '\''\\0'\'';4??0?
-4??+2m 1220reg p OK vi.c:621:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:621:r2352sc %? %@2132sc!0?
+4??+2m 1220reg p OK vi.c:575:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:575:r2352sc %? %@2132sc!0?
 ?0?
 %f+ 		i = vi_rendrow\(s, trow, l1, row - vi_rshift\);
 		i = vi_rendrow\(s, trow, l1\);
@@ -3622,19 +3622,19 @@ printf '%s\n' '2sc!fr 98b7m!%ya 98?0?
 		preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 		preserve\(int, ftidx,\)
 		syn_setft\(nn_ft\);2??0?
-2??m 2220reg p OK vi.c:623:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:577:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		i = vi_rendrow\(s, trow, l1\);$3??0?
-3??m 2220reg p OK vi.c:623:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:577:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^		i = vi_rendrow\(s, trow, l1, row - vi_rshift\);$4??0?
-4??+1m 2220reg p OK vi.c:623:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 2220reg p OK vi.c:577:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 		preserve\(int, ftidx,\)
 		syn_setft\(nn_ft\);5??0?
-5??-1m 2220reg p OK vi.c:623:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:623:r2352sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:577:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:577:r2352sc %? %@2132sc!0?
 '\''1i 		vi_visual_attrib(s, row);
-??!219reg vi.c:621:r235:m12sc %? %@2142sc!0?
-'\''2d??!219reg vi.c:623:r235:m22sc %? %@2142sc!p compat 235 applied: src=visual.sh src=splits.sh src=linewrap_v2.sh' > "$P2VIF".235
+??!219reg vi.c:575:r235:m12sc %? %@2142sc!0?
+'\''2d??!219reg vi.c:577:r235:m22sc %? %@2142sc!p compat 235 applied: src=visual.sh src=linewrap_v2.sh' > "$P2VIF".235
 EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'conf.c' 'ex.c' 'lbuf.c' 'led.c' 'ren.c' 'treesitter.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".233 "$P2VIF".234 "$P2VIF".235 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -4264,11 +4264,11 @@ exit 0
  	int record = term_record; \
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT 235 src=visual.sh src=splits.sh src=linewrap_v2.sh ===
+=== PATCH2VI COMPAT 235 src=visual.sh src=linewrap_v2.sh ===
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -619,8 +619,8 @@
+@@ -573,8 +573,8 @@
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
