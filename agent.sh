@@ -706,7 +706,6 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	if (term_owned) term_init();
 	xvis = (xvis | 2) & ~1;
 	agent_output("\n");
-	agent_output("Agent (ESC submit, Ctrl-C return, Ctrl-O edit)\n");
 	sbuf_smake(draft, 128)
 	sbuf_smake(line, 128)
 	sbuf_str(line, "> ")
@@ -5189,10 +5188,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..c66b4bfb
+index 00000000..fadb2195
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,732 @@
+@@ -0,0 +1,731 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -5869,7 +5868,6 @@ index 00000000..c66b4bfb
 +	if (term_owned) term_init();
 +	xvis = (xvis | 2) & ~1;
 +	agent_output("\n");
-+	agent_output("Agent (ESC submit, Ctrl-C return, Ctrl-O edit)\n");
 +	sbuf_smake(draft, 128)
 +	sbuf_smake(line, 128)
 +	sbuf_str(line, "> ")
