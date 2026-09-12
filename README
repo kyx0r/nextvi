@@ -360,6 +360,29 @@ current buffer and the argument as a modal script.
 Adds a new phase, ($ ...), to execute ex command chains
 from within the modal script.
 
+agent.sh
+--------------
+Turns Nextvi into an AI agent harness that uses ex commands to inspect
+and edit buffers and run shell commands. Requires curl and a model with
+tool calling support. Configure api_key, endpoint and request_extra in
+conf.c, then rebuild. The default is a local Chat Completions server on
+port 8080. For OpenRouter, set LOCAL to 0 and OPENROUTER to 1, then supply
+the API key and model ID. request_timeout and max_tool_rounds limit requests
+and tool execution.
+
+The new ex command "a" opens or resumes the conversation; a range includes
+that buffer text in the prompt. ESC submits, Enter adds a newline, ^C cancels
+and returns, and ^O enters the editor during a conversation suspending
+the agent. "a!" clears the conversation; "a~" restarts from the edited
+conversation.
+
+Adds temporary buffers /conversation/ for the conversation and /skills/
+for the system prompt. Both restart commands reload the skills buffer.
+These buffers are saved automatically under $HOME/.nextvi/logs, or log_dir
+if set.
+Example: ask about the whole buffer
+:%a Explain this code
+
 lsp.sh
 --------------
 LSP support for Nextvi.
