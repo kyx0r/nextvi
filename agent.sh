@@ -66,8 +66,8 @@ static const char agent_skills[] =
 "Scope is a snapshot, not a live selection.\n"
 "If unsure how an editor command behaves and a mistake could change or lose "
 "data, stop and confirm with the user.\n"
-"Protect context: tool output is uncapped and retained in history. Never use "
-"%p or dump whole buffers. First check :$= for line count (second number). "
+"Protect context: tool output is uncapped and retained in history. DO NOT USE "
+"%p or dump whole buffers. First check $= for line count (second number). "
 "Print needed ranges in separate small chunks, e.g. 1,50p then 51,100p, "
 "within the line count. Stop when you have enough context. For long lines, "
 "use smaller or character ranges.\n"
@@ -692,7 +692,10 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	if (*arg) term_push(arg, strlen(arg));
 	while (!xquit && epoch == agent_epoch) {
 		preserve(int, xled, xled = 1;)
+		preserve(int, ftidx,)
+		syn_setft(_ft);
 		key = led_prompt(line, NULL, &xkmap, &is, prefix, 2|LED_AGENT);
+		restore(ftidx)
 		restore(xled)
 		if (key == TK_CTL('\''c'\'') || !key) break;
 		if (key == TK_CTL('\''o'\'')) {
@@ -5153,10 +5156,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..de5dc289
+index 00000000..88ca3201
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,706 @@
+@@ -0,0 +1,709 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -5193,8 +5196,8 @@ index 00000000..de5dc289
 +"Scope is a snapshot, not a live selection.\n"
 +"If unsure how an editor command behaves and a mistake could change or lose "
 +"data, stop and confirm with the user.\n"
-+"Protect context: tool output is uncapped and retained in history. Never use "
-+"%p or dump whole buffers. First check :$= for line count (second number). "
++"Protect context: tool output is uncapped and retained in history. DO NOT USE "
++"%p or dump whole buffers. First check $= for line count (second number). "
 +"Print needed ranges in separate small chunks, e.g. 1,50p then 51,100p, "
 +"within the line count. Stop when you have enough context. For long lines, "
 +"use smaller or character ranges.\n"
@@ -5819,7 +5822,10 @@ index 00000000..de5dc289
 +	if (*arg) term_push(arg, strlen(arg));
 +	while (!xquit && epoch == agent_epoch) {
 +		preserve(int, xled, xled = 1;)
++		preserve(int, ftidx,)
++		syn_setft(_ft);
 +		key = led_prompt(line, NULL, &xkmap, &is, prefix, 2|LED_AGENT);
++		restore(ftidx)
 +		restore(xled)
 +		if (key == TK_CTL('c') || !key) break;
 +		if (key == TK_CTL('o')) {
