@@ -378,9 +378,9 @@ Incremental Tree-sitter syntax highlighting, with C configured at compile
 time. Apply to the pristine patches-branch sources with ./treesitter.sh.
 The default hl is 2. hl 0 disables highlighting, hl 1 selects the existing
 regex highlighter, and other positive values select Tree-sitter with regex
-fallback. C is selected for .c and .h files, and for unnamed buffers assigned
-ft c. C++/C# filename aliases, other languages, /ex, prompts, messages, status
-bars, and other internal filetypes retain regex highlighting.
+fallback. C is selected for buffers of filetype c whose filename ends in
+.c or .h. C++/C# filename aliases, other languages, /ex, prompts, messages,
+status bars, and other internal filetypes retain regex highlighting.
 
 Build with ./cbuild.sh build (or ./cbuild.sh for the first build).
 The build fetches tree-sitter v0.25.10 and tree-sitter-c v0.24.1 from GitHub,
