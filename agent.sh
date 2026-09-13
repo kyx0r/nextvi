@@ -43,7 +43,8 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
+ * The above copyright notice and this permission notice shall be included in
+ * all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -164,14 +165,22 @@ static void agent_plain(sbuf *out, const char *s)
 		if (c == 27) {
 			if (*s == '\''['\'') {
 				s++;
-				while (*s && !(*s >= '\''@'\'' && *s <= '\''~'\'')) s++;
-				if (*s) s++;
-			} else if (*s == '\'']'\'' || *s == '\''P'\'' || *s == '\''^'\'' || *s == '\''_'\'') {
+				while (*s && !(*s >= '\''@'\'' && *s <= '\''~'\''))
+					s++;
+				if (*s)
+					s++;
+			} else if (*s == '\'']'\'' || *s == '\''P'\'' ||
+					*s == '\''^'\'' || *s == '\''_'\'') {
 				s++;
-				while (*s && *s != 7 && !(*s == 27 && s[1] == '\''\\'\'')) s++;
-				if (*s == 7) s++;
-				else if (*s) s += 2;
-			} else if (*s) s++;
+				while (*s && *s != 7 &&
+						!(*s == 27 && s[1] == '\''\\'\''))
+					s++;
+				if (*s == 7)
+					s++;
+				else if (*s)
+					s += 2;
+			} else if (*s)
+				s++;
 		} else if (c == '\''\n'\'' || c == '\''\t'\'' || (c >= 32 && c != 127))
 			sbuf_chr(out, c)
 	}
@@ -182,8 +191,10 @@ static int agent_writeall(int fd, const char *s, size_t n)
 {
 	while (n) {
 		ssize_t k = write(fd, s, n);
-		if (k < 0 && errno == EINTR) continue;
-		if (k <= 0) return -1;
+		if (k < 0 && errno == EINTR)
+			continue;
+		if (k <= 0)
+			return -1;
 		s += k;
 		n -= k;
 	}
@@ -207,10 +218,14 @@ static int agent_save(int i)
 	fd = mkstemp(path);
 	if (fd >= 0) {
 		ret = lbuf_wr(b->lb, fd, 0, lbuf_len(b->lb));
-		if (fsync(fd)) ret = -1;
-		if (close(fd)) ret = -1;
-		if (!ret && rename(path, b->path)) ret = -1;
-		if (!ret) b->mtime = mtime(b->path);
+		if (fsync(fd))
+			ret = -1;
+		if (close(fd))
+			ret = -1;
+		if (!ret && rename(path, b->path))
+			ret = -1;
+		if (!ret)
+			b->mtime = mtime(b->path);
 		unlink(path);
 	}
 	free(path);
@@ -219,12 +234,15 @@ static int agent_save(int i)
 
 static void agent_sync(struct lbuf *lb)
 {
-	if (!agent_ready || agent_syncing) return;
+	if (!agent_ready || agent_syncing)
+		return;
 	for (int i = 3; i < 5; i++) {
-		if (tempbufs[i].lb != lb) continue;
+		if (tempbufs[i].lb != lb)
+			continue;
 		agent_syncing = 1;
 		if (agent_save(i))
-			ex_print("agent write failed; buffer text retained", msg_ft)
+			ex_print("agent write failed; buffer text retained",
+				msg_ft)
 		agent_syncing = 0;
 	}
 }
@@ -234,13 +252,16 @@ static int agent_mkdir(char *path)
 	struct stat st;
 	for (char *p = path + 1; ; p++) {
 		char c = *p;
-		if (c && c != '\''/'\'') continue;
+		if (c && c != '\''/'\'')
+			continue;
 		*p = 0;
 		int failed = (mkdir(path, 0700) && errno != EEXIST) ||
 			stat(path, &st) || !S_ISDIR(st.st_mode);
 		*p = c;
-		if (failed) return -1;
-		if (!c) return 0;
+		if (failed)
+			return -1;
+		if (!c)
+			return 0;
 	}
 }
 
@@ -271,15 +292,20 @@ static void agent_init(void)
 		return;
 	}
 	dir = emalloc(strlen(log_dir ? log_dir : home) + 64);
-	if (log_dir) strcpy(dir, log_dir);
-	else sprintf(dir, "%s/.nextvi/logs", home);
-	if (agent_mkdir(dir)) goto fail;
+	if (log_dir)
+		strcpy(dir, log_dir);
+	else
+		sprintf(dir, "%s/.nextvi/logs", home);
+	if (agent_mkdir(dir))
+		goto fail;
 	strcat(dir, "/session-XXXXXX");
-	if (!mkdtemp(dir)) goto fail;
+	if (!mkdtemp(dir))
+		goto fail;
 	/* Absolute paths survive :cd during the session. */
 	if (*dir != '\''/'\'') {
 		char *cwd = getcwd(NULL, 0);
-		if (!cwd) goto fail;
+		if (!cwd)
+			goto fail;
 		path = emalloc(strlen(cwd) + strlen(dir) + 2);
 		sprintf(path, "%s/%s", cwd, dir);
 		free(cwd);
@@ -292,13 +318,14 @@ static void agent_init(void)
 		free(tempbufs[i].path);
 		tempbufs[i].path = path;
 		tempbufs[i].plen = strlen(path);
-		if (agent_save(i)) goto fail;
+		if (agent_save(i))
+			goto fail;
 	}
 	agent_ready = 1;
 	agent_history(0);
 	free(dir);
 	return;
-	fail:
+fail:
 	free(dir);
 	agent_init_error = "cannot create agent session files";
 }
@@ -309,7 +336,8 @@ static void agent_log(const char *role, const char *text)
 	sbuf_str(sb, role)
 	sbuf_chr(sb, '\''\n'\'')
 	agent_plain(sb, text);
-	if (sb->s[sb->s_n-1] != '\''\n'\'') sbuf_chr(sb, '\''\n'\'')
+	if (sb->s[sb->s_n-1] != '\''\n'\'')
+		sbuf_chr(sb, '\''\n'\'')
 	sbuf_chr(sb, '\''\n'\'')
 	sbuf_nul(sb)
 	agent_output(sb->s);
@@ -322,21 +350,26 @@ static void agent_log(const char *role, const char *text)
 
 static void agent_key(int c)
 {
-	if (c == TK_CTL('\''c'\'')) agent_cancel = 1;
-	if (c == 27 && !agent_cancel) agent_cancel = 2;
-	if (c == TK_CTL('\''o'\'')) agent_pause = 1;
-	if (c == TK_CTL('\''l'\'')) term_winch = 1;
+	if (c == TK_CTL('\''c'\''))
+		agent_cancel = 1;
+	if (c == 27 && !agent_cancel)
+		agent_cancel = 2;
+	if (c == TK_CTL('\''o'\''))
+		agent_pause = 1;
+	if (c == TK_CTL('\''l'\''))
+		term_winch = 1;
 }
 
 static int agent_boundary(void)
 {
-	while (tibuf_pos < tibuf_cnt) agent_key(term_read(0));
+	while (tibuf_pos < tibuf_cnt)
+		agent_key(term_read(0));
 	while (poll(&term_ufd, 1, 0) > 0 && term_ufd.revents & POLLIN)
 		agent_key(term_read(0));
 	return agent_cancel || agent_pause;
 }
 
-/* File-backed stdin avoids pipe deadlocks; poll output and the terminal together. */
+/* Use file-backed stdin; poll output and terminal together. */
 static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
 {
 	FILE *in = tmpfile();
@@ -344,27 +377,37 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
 	int output[2], pid, done = 0, st = 0, killed = 0;
 	char buf[4097];
 	sbuf *sb;
-	if (!in) return NULL;
+	if (!in)
+		return NULL;
 	if (input && agent_writeall(fileno(in), input->s, input->s_n)) {
 		fclose(in);
 		return NULL;
 	}
 	rewind(in);
-	if (pipe(output)) { fclose(in); return NULL; }
+	if (pipe(output)) {
+		fclose(in);
+		return NULL;
+	}
 	pid = fork();
 	if (!pid) {
 		setsid();
 		dup2(fileno(in), STDIN_FILENO);
 		dup2(output[1], STDOUT_FILENO);
 		dup2(output[1], STDERR_FILENO);
-		close(output[0]); close(output[1]); fclose(in);
+		close(output[0]);
+		close(output[1]);
+		fclose(in);
 		execvp(argv[0], argv);
 		_exit(127);
 	}
 	fclose(in);
 	close(output[1]);
-	if (pid < 0) { close(output[0]); return NULL; }
-	fds[0].fd = output[0]; fds[0].events = POLLIN;
+	if (pid < 0) {
+		close(output[0]);
+		return NULL;
+	}
+	fds[0].fd = output[0];
+	fds[0].events = POLLIN;
 	fds[1] = term_ufd;
 	sbuf_make(sb, 4096)
 	while (!done || fds[0].fd >= 0) {
@@ -373,21 +416,28 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
 			killed = 1;
 		}
 		int n = poll(fds, 2, 100);
-		if (n < 0 && errno != EINTR) { agent_cancel = 1; continue; }
-		if (fds[0].fd >= 0 && fds[0].revents & (POLLIN | POLLHUP | POLLERR)) {
+		if (n < 0 && errno != EINTR) {
+			agent_cancel = 1;
+			continue;
+		}
+		if (fds[0].fd >= 0 &&
+				fds[0].revents & (POLLIN | POLLHUP | POLLERR)) {
 			int nr = read(fds[0].fd, buf, sizeof(buf)-1);
-			if (nr > 0) sbuf_mem(sb, buf, nr)
+			if (nr > 0)
+				sbuf_mem(sb, buf, nr)
 			else if (!nr || errno != EINTR) {
 				close(fds[0].fd);
 				fds[0].fd = -1;
 			}
 		}
-		if (fds[1].revents & POLLIN) agent_key(term_read(0));
+		if (fds[1].revents & POLLIN)
+			agent_key(term_read(0));
 		if (fds[1].revents & (POLLHUP | POLLERR | POLLNVAL)) {
 			agent_cancel = 1;
 			fds[1].fd = -1;
 		}
-		if (!done) done = waitpid(pid, &st, WNOHANG) == pid;
+		if (!done)
+			done = waitpid(pid, &st, WNOHANG) == pid;
 	}
 	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
 	sbufn_ret(sb, sb)
@@ -395,13 +445,20 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
 
 static sbuf *agent_shell(char *cmd, sbuf *input, int *status)
 {
-	char *sh = getenv("SHELL"), *argv[] = {sh && *sh ? sh : "sh", "-c", cmd, NULL};
+	char *sh = getenv("SHELL"),
+	     *argv[] = {sh && *sh ? sh : "sh", "-c", cmd, NULL};
 	int st;
 	sbuf *out = agent_process(argv, input, &st, 0);
-	if (!out) { agent_child_status = 1; return NULL; }
-	if (status) *status = st;
-	if (st) agent_child_status = st;
-	if (agent_capture) agent_plain(agent_capture, out->s);
+	if (!out) {
+		agent_child_status = 1;
+		return NULL;
+	}
+	if (status)
+		*status = st;
+	if (st)
+		agent_child_status = st;
+	if (agent_capture)
+		agent_plain(agent_capture, out->s);
 	return out;
 }
 
@@ -409,16 +466,18 @@ static cJSON *agent_config(void)
 {
 	cJSON *req = cJSON_ParseWithOpts(request_extra, NULL, 1);
 	if (!cJSON_IsObject(req) || !api_key || !*api_key ||
-		strpbrk(api_key, "\r\n") || !endpoint ||
-		(strncmp(endpoint, "http://", 7) && strncmp(endpoint, "https://", 8)) ||
-		request_timeout <= 0 || max_tool_rounds <= 0) {
+			strpbrk(api_key, "\r\n") || !endpoint ||
+			(strncmp(endpoint, "http://", 7) &&
+			strncmp(endpoint, "https://", 8)) ||
+			request_timeout <= 0 || max_tool_rounds <= 0) {
 		cJSON_Delete(req);
 		return NULL;
 	}
-	/* Remove every duplicate too, so no provider can interpret a shadow value. */
+	/* Remove duplicates so providers cannot interpret a shadow value. */
 	const char *owned[] = {"messages", "tools", "stream"};
 	for (int i = 0; i < LEN(owned); i++)
-		while (cJSON_GetObjectItem(req, owned[i])) cJSON_DeleteItemFromObject(req, owned[i]);
+		while (cJSON_GetObjectItem(req, owned[i]))
+			cJSON_DeleteItemFromObject(req, owned[i]);
 	return req;
 }
 
@@ -431,23 +490,33 @@ static char *agent_http(cJSON *req, int *st)
 	sbuf_str(hdr, "Authorization: Bearer ")
 	sbuf_str(hdr, api_key)
 	sbuf_chr(hdr, '\''\n'\'')
-	if (fd < 0) goto ret;
-	if (agent_writeall(fd, hdr->s, hdr->s_n)) { close(fd); goto ret; }
+	if (fd < 0)
+		goto ret;
+	if (agent_writeall(fd, hdr->s, hdr->s_n)) {
+		close(fd);
+		goto ret;
+	}
 	close(fd);
 	snprintf(timeout, sizeof(timeout), "%d", request_timeout);
 	sprintf(hdrarg, "@%s", hdrpath);
-	char *argv[] = {"curl", "--disable", "--silent", "--show-error", "--fail-with-body",
-		"--max-time", timeout, "--header", hdrarg, "--header", "Content-Type: application/json",
-		"--data-binary", "@-", "--url", endpoint, NULL};
+	char *argv[] = {
+		"curl", "--disable", "--silent", "--show-error",
+		"--fail-with-body", "--max-time", timeout, "--header", hdrarg,
+		"--header", "Content-Type: application/json",
+		"--data-binary", "@-", "--url", endpoint, NULL
+	};
 	sbuf body;
 	body.s = cJSON_PrintUnformatted(req);
 	body.s_n = strlen(body.s);
 	out = agent_process(argv, &body, st, 1);
 	free(body.s);
-	ret:
+ret:
 	unlink(hdrpath);
 	free(hdr->s);
-	if (!out) { *st = -1; return NULL; }
+	if (!out) {
+		*st = -1;
+		return NULL;
+	}
 	char *s = out->s;
 	free(out);
 	return s;
@@ -459,19 +528,27 @@ static char *agent_snapshot(char *loc)
 	char info[160];
 	sbuf text;
 	if (loc && ex_region(loc, &beg, &end, &o1, &o2)) {
-		if (lbuf_len(xb) || strcmp(loc, "%")) return NULL;
+		if (lbuf_len(xb) || strcmp(loc, "%"))
+			return NULL;
 		beg = end = 0;
 	}
 	int last = MAX(0, end-1);
-	if (o1 >= 0) o1 = MIN(o1, lbuf_get(xb, beg) ? uc_slen(lbuf_get(xb, beg)) : 0);
-	if (o2 >= 0) o2 = MIN(o2, lbuf_get(xb, last) ? uc_slen(lbuf_get(xb, last)) : 0);
-	int endoff = o2 >= 0 ? o2 : (lbuf_get(xb, last) ? uc_slen(lbuf_get(xb, last)) : 0);
+	if (o1 >= 0)
+		o1 = MIN(o1, lbuf_get(xb, beg) ?
+			uc_slen(lbuf_get(xb, beg)) : 0);
+	if (o2 >= 0)
+		o2 = MIN(o2, lbuf_get(xb, last) ?
+			uc_slen(lbuf_get(xb, last)) : 0);
+	int endoff = o2 >= 0 ? o2 :
+		(lbuf_get(xb, last) ? uc_slen(lbuf_get(xb, last)) : 0);
 	sbuf_smake(sb, 256)
 	snprintf(info, sizeof(info), "Editor snapshot\nbuffer %d\nname ",
-		istempbuf(ex_buf) ? (int)(tempbufs-ex_buf-1) : (int)(ex_buf-bufs));
+		istempbuf(ex_buf) ?
+			(int)(tempbufs-ex_buf-1) : (int)(ex_buf-bufs));
 	sbuf_str(sb, info)
 	sbuf_str(sb, xb_path)
-	snprintf(info, sizeof(info), "\nrange %d;%d,%d;%d (end character exclusive)\n",
+	snprintf(info, sizeof(info),
+		"\nrange %d;%d,%d;%d (end character exclusive)\n",
 		end ? beg+1 : 0, MAX(o1, 0), end, endoff);
 	sbuf_str(sb, info)
 	lbuf_region(xb, &text, beg, MAX(o1, 0), last, o2);
@@ -484,8 +561,10 @@ static void agent_resize(void)
 {
 	struct winsize win;
 	if (!ioctl(term_ufd.fd, TIOCGWINSZ, &win)) {
-		if (win.ws_col) xcols = win.ws_col;
-		if (win.ws_row) xrows = win.ws_row;
+		if (win.ws_col)
+			xcols = win.ws_col;
+		if (win.ws_row)
+			xrows = win.ws_row;
 	}
 	term_winch = 0;
 	term_resized++;
@@ -497,7 +576,8 @@ static void agent_redraw(const char *draft)
 	char *log = agent_text(tempbufs[3].lb);
 	sbuf_smake(sb, 256)
 	agent_plain(sb, log);
-	if (draft) agent_plain(sb, draft);
+	if (draft)
+		agent_plain(sb, draft);
 	int cap = MAX(2, xrows), *starts = emalloc(sizeof(int) * cap);
 	int rows = 1, col = 0;
 	starts[0] = 0;
@@ -517,10 +597,12 @@ static void agent_redraw(const char *draft)
 	term_clean();
 	restore(xled)
 	agent_output(sb->s + start);
-	free(starts); free(log); free(sb->s);
+	free(starts);
+	free(log);
+	free(sb->s);
 }
 
-/* Always recurse from the ex-style conversation into vi, preserving caller state. */
+/* Recurse from the ex-style conversation into vi, preserving caller state. */
 static void agent_editor(void)
 {
 	preserve(int, xvis, xvis = (xvis | 2) & ~1;)
@@ -546,8 +628,10 @@ static void agent_refresh(void)
 
 static void agent_sequence(void)
 {
-	for (int i = 0; i < xbufcur; i++) bufs[i].lb->useq += xseq;
-	for (int i = 0; i < LEN(tempbufs); i++) tempbufs[i].lb->useq += xseq;
+	for (int i = 0; i < xbufcur; i++)
+		bufs[i].lb->useq += xseq;
+	for (int i = 0; i < LEN(tempbufs); i++)
+		tempbufs[i].lb->useq += xseq;
 }
 
 static void agent_run(const char *input)
@@ -561,15 +645,26 @@ static void agent_run(const char *input)
 	agent_log("USER", input);
 	for (int round = 0; ; ) {
 		req = agent_config();
-		if (!req) { agent_log("RESULT", "invalid agent configuration"); return; }
+		if (!req) {
+			agent_log("RESULT", "invalid agent configuration");
+			return;
+		}
 		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
-		cJSON_AddItemToObject(req, "tools", cJSON_Parse("[{\"type\":\"function\",\"function\":{\"name\":\"ex\",\"description\":\"Execute an ex command chain in nextvi\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\"}},\"required\":[\"command\"],\"additionalProperties\":false}}}]"));
+		cJSON_AddItemToObject(req, "tools",
+			cJSON_Parse("[{\"type\":\"function\",\"function\":{"
+			"\"name\":\"ex\",\"description\":"
+			"\"Execute an ex command chain in nextvi\","
+			"\"parameters\":{\"type\":\"object\",\"properties\":{"
+			"\"command\":{\"type\":\"string\"}},"
+			"\"required\":[\"command\"],"
+			"\"additionalProperties\":false}}}]"));
 		cJSON_AddBoolToObject(req, "stream", 0);
 		body = agent_http(req, &st);
 		cJSON_Delete(req);
 		if (agent_cancel) {
 			free(body);
-			if (agent_cancel != 2) agent_log("RESULT", "cancelled");
+			if (agent_cancel != 2)
+				agent_log("RESULT", "cancelled");
 			return;
 		}
 		if (agent_pause) {
@@ -577,66 +672,92 @@ static void agent_run(const char *input)
 			agent_editor();
 			agent_redraw(NULL);
 			agent_pause = 0;
-			if (serial != agent_serial || epoch != agent_epoch || xquit) return;
-			agent_log("RESULT", "response skipped after recursive editing");
+			if (serial != agent_serial ||
+					epoch != agent_epoch || xquit)
+				return;
+			agent_log("RESULT",
+				"response skipped after recursive editing");
 			agent_refresh();
 			continue;
 		}
 		if (st || !body) {
-			agent_log("RESULT", body && *body ? body : "HTTP request failed");
+			agent_log("RESULT",
+				body && *body ? body : "HTTP request failed");
 			free(body);
 			return;
 		}
 		root = cJSON_ParseWithOpts(body, NULL, 1);
 		free(body);
-		text = cJSON_GetObjectItem(cJSON_GetObjectItem(root, "error"), "message");
-		message = cJSON_GetObjectItem(cJSON_GetArrayItem(cJSON_GetObjectItem(root, "choices"), 0), "message");
+		text = cJSON_GetObjectItem(
+			cJSON_GetObjectItem(root, "error"), "message");
+		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
+			cJSON_GetObjectItem(root, "choices"), 0), "message");
 		calls = cJSON_GetObjectItem(message, "tool_calls");
 		cJSON *role = cJSON_GetObjectItem(message, "role");
 		cJSON *content = cJSON_GetObjectItem(message, "content");
 		int valid = cJSON_IsObject(message) && cJSON_IsString(role) &&
 			!strcmp(role->valuestring, "assistant") &&
-			(!content || cJSON_IsNull(content) || cJSON_IsString(content)) &&
+			(!content || cJSON_IsNull(content) ||
+			 cJSON_IsString(content)) &&
 			(!calls || cJSON_IsArray(calls)) &&
 			(cJSON_IsString(content) || cJSON_GetArraySize(calls));
 		cJSON_ArrayForEach(tc, calls) {
 			cJSON *id = cJSON_GetObjectItem(tc, "id");
-			if (!cJSON_IsString(id) || !*id->valuestring) valid = 0;
-			for (cJSON *prev = calls->child; prev != tc; prev = prev->next) {
+			if (!cJSON_IsString(id) || !*id->valuestring)
+				valid = 0;
+			for (cJSON *prev = calls->child; prev != tc;
+					prev = prev->next) {
 				cJSON *pid = cJSON_GetObjectItem(prev, "id");
-				if (cJSON_IsString(id) && cJSON_IsString(pid) && !strcmp(id->valuestring, pid->valuestring)) valid = 0;
+				if (cJSON_IsString(id) && cJSON_IsString(pid) &&
+					!strcmp(id->valuestring,
+						pid->valuestring))
+					valid = 0;
 			}
 		}
 		if (!valid || cJSON_GetObjectItem(root, "error")) {
-			agent_log("RESULT", cJSON_IsString(text) ? text->valuestring : "malformed assistant response");
+			agent_log("RESULT", cJSON_IsString(text) ?
+				text->valuestring :
+				"malformed assistant response");
 			cJSON_Delete(root);
 			return;
 		}
-		/* Complete pairs before allowing recursive editing or nested submissions. */
-		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(message, 1));
-		if (cJSON_IsString(content)) agent_log("ASSISTANT", content->valuestring);
+		/* Complete pairs before recursive editing or submissions. */
+		cJSON_AddItemToArray(agent_messages,
+			cJSON_Duplicate(message, 1));
+		if (cJSON_IsString(content))
+			agent_log("ASSISTANT", content->valuestring);
 		int base = cJSON_GetArraySize(agent_messages), index = 0;
 		cJSON_ArrayForEach(tc, calls) {
-			cJSON *result = agent_msg("tool", "skipped: pending execution");
-			cJSON_AddStringToObject(result, "tool_call_id", cJSON_GetObjectItem(tc, "id")->valuestring);
+			cJSON *result = agent_msg("tool",
+				"skipped: pending execution");
+			cJSON_AddStringToObject(result, "tool_call_id",
+				cJSON_GetObjectItem(tc, "id")->valuestring);
 			cJSON_AddItemToArray(agent_messages, result);
 		}
 		cJSON_ArrayForEach(tc, calls) {
 			cJSON *fn = cJSON_GetObjectItem(tc, "function");
-			cJSON *name = cJSON_GetObjectItem(fn, "name"), *args = cJSON_GetObjectItem(fn, "arguments");
-			cJSON *parsed = cJSON_IsString(args) ? cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
+			cJSON *name = cJSON_GetObjectItem(fn, "name"),
+			      *args = cJSON_GetObjectItem(fn, "arguments");
+			cJSON *parsed = cJSON_IsString(args) ?
+				cJSON_ParseWithOpts(args->valuestring,
+					NULL, 1) : NULL;
 			cJSON *command = cJSON_GetObjectItem(parsed, "command");
 			char *err = NULL;
 			agent_child_status = 0;
 			sbuf_smake(out, 256)
 			sbuf_smake(result, 256)
 			agent_boundary();
-			agent_log("EX", cJSON_IsString(command) ? command->valuestring : "invalid tool call");
-			if (agent_cancel || agent_pause || round == max_tool_rounds)
-				err = "skipped: execution cancelled, suspended, or round limit reached";
-			else if (!cJSON_IsString(name) || strcmp(name->valuestring, "ex"))
+			agent_log("EX", cJSON_IsString(command) ?
+				command->valuestring : "invalid tool call");
+			if (agent_cancel || agent_pause ||
+					round == max_tool_rounds)
+				err = "skipped: execution cancelled, "
+					"suspended, or round limit reached";
+			else if (!cJSON_IsString(name) ||
+					strcmp(name->valuestring, "ex"))
 				err = "unknown tool (expected ex)";
-			else if (!cJSON_IsString(command) || !*command->valuestring)
+			else if (!cJSON_IsString(command) ||
+					!*command->valuestring)
 				err = "ex requires a nonempty command string";
 			else {
 				agent_tool = 1;
@@ -647,38 +768,59 @@ static void agent_run(const char *input)
 				agent_sequence();
 				agent_capture = NULL;
 				agent_tool = 0;
-				if (agent_child_status && (!err || err == xuerr)) err = "external command failed";
-				else if (err == xuerr) err = "command failed";
+				if (agent_child_status &&
+						(!err || err == xuerr))
+					err = "external command failed";
+				else if (err == xuerr)
+					err = "command failed";
 			}
-			if (agent_cancel) sbuf_str(result, "cancelled\n")
-			else if (agent_pause) sbuf_str(result, "suspended; remaining commands skipped\n")
+			if (agent_cancel)
+				sbuf_str(result, "cancelled\n")
+			else if (agent_pause)
+				sbuf_str(result,
+					"suspended; remaining commands "
+					"skipped\n")
 			else {
 				char status[64];
-				snprintf(status, sizeof(status), "status %d\n", agent_child_status ? agent_child_status : !!err);
+				snprintf(status, sizeof(status), "status %d\n",
+					agent_child_status ?
+						agent_child_status : !!err);
 				sbuf_str(result, status)
 			}
-			if (err) { sbuf_str(result, err) sbuf_chr(result, '\''\n'\'') }
+			if (err) {
+				sbuf_str(result, err)
+				sbuf_chr(result, '\''\n'\'')
+			}
 			sbuf_mem(result, out->s, out->s_n)
 			sbuf_nul(result)
-			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(agent_messages, base + index++),
+			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(
+				agent_messages, base + index++),
 				"content", cJSON_CreateString(result->s));
-			if (agent_cancel != 2) agent_log("RESULT", result->s);
+			if (agent_cancel != 2)
+				agent_log("RESULT", result->s);
 			cJSON_Delete(parsed);
-			free(out->s); free(result->s);
+			free(out->s);
+			free(result->s);
 		}
 		int has_calls = cJSON_GetArraySize(calls);
 		cJSON_Delete(root);
-		if (agent_cancel) return;
+		if (agent_cancel)
+			return;
 		if (agent_pause) {
 			agent_editor();
 			agent_redraw(NULL);
 			agent_pause = 0;
-			if (serial != agent_serial || epoch != agent_epoch || xquit) return;
+			if (serial != agent_serial ||
+					epoch != agent_epoch || xquit)
+				return;
 			agent_refresh();
 		}
-		if (!has_calls) return;
+		if (!has_calls)
+			return;
 		if (round++ == max_tool_rounds) {
-			agent_log("RESULT", "maximum tool rounds reached; submit to continue");
+			agent_log("RESULT",
+				"maximum tool rounds reached; "
+				"submit to continue");
 			return;
 		}
 	}
@@ -690,11 +832,15 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
 	cJSON *config;
 	unsigned long epoch;
-	if (cmd[1] && (*loc || *arg)) return "agent restart rejects ranges and arguments";
-	if (agent_init_error) return agent_init_error;
-	if (!(config = agent_config())) return "invalid agent configuration";
+	if (cmd[1] && (*loc || *arg))
+		return "agent restart rejects ranges and arguments";
+	if (agent_init_error)
+		return agent_init_error;
+	if (!(config = agent_config()))
+		return "invalid agent configuration";
 	cJSON_Delete(config);
-	if (*loc && !(scope = agent_snapshot(loc))) return xrerr;
+	if (*loc && !(scope = agent_snapshot(loc)))
+		return xrerr;
 	if (cmd[1]) {
 		agent_epoch++;
 		agent_serial++;
@@ -705,14 +851,19 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 			lbuf_saved(lb, 1);
 			agent_syncing = 0;
 			int fd = open(tempbufs[3].path, O_WRONLY | O_TRUNC);
-			if (fd < 0 || close(fd)) ex_print("agent reset write failed; buffer cleared", msg_ft)
+			if (fd < 0 || close(fd))
+				ex_print("agent reset write failed; "
+					"buffer cleared", msg_ft)
 			tempbufs[3].row = tempbufs[3].off = tempbufs[3].top = 0;
-			if (ex_buf == tempbufs+3) { exbuf_load(ex_buf) }
+			if (ex_buf == tempbufs+3) {
+				exbuf_load(ex_buf)
+			}
 		}
 		agent_history(cmd[1] == '\''~'\'');
 	}
 	epoch = agent_epoch;
-	if (term_owned) term_init();
+	if (term_owned)
+		term_init();
 	xvis = (xvis | 2) & ~1;
 	agent_output("\n");
 	sbuf_smake(draft, 128)
@@ -720,7 +871,8 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	sbuf_str(line, "> ")
 	ins_state is;
 	ins_init(is)
-	if (*arg) term_push(arg, strlen(arg));
+	if (*arg)
+		term_push(arg, strlen(arg));
 	while (!xquit && epoch == agent_epoch) {
 		preserve(int, xled, xled = 1;)
 		preserve(int, ftidx,)
@@ -728,14 +880,17 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 		key = led_prompt(line, NULL, &xkmap, &is, prefix, 2|LED_AGENT);
 		restore(ftidx)
 		restore(xled)
-		if (key == TK_CTL('\''c'\'') || !key) break;
+		if (key == TK_CTL('\''c'\'') || !key)
+			break;
 		if (key == TK_CTL('\''o'\'')) {
 			agent_editor();
-			if (epoch != agent_epoch) break;
+			if (epoch != agent_epoch)
+				break;
 			ins_init(is)
 			agent_redraw(draft->s_n ? draft->s : NULL);
 		} else if (key == TK_CTL('\''b'\'')) {
-			if (epoch != agent_epoch) break;
+			if (epoch != agent_epoch)
+				break;
 			agent_redraw(draft->s_n ? draft->s : NULL);
 		} else if (key == TK_CTL('\''l'\'')) {
 			agent_resize();
@@ -749,25 +904,31 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 				if (scope) {
 					sbuf_chr(draft, '\''\n'\'')
 					sbuf_str(draft, scope)
-					free(scope); scope = NULL;
+					free(scope);
+					scope = NULL;
 				}
 				sbuf_nul(draft)
 				agent_output("\n");
 				agent_run(draft->s);
 				sbufn_cut(draft, 0)
-				if (agent_cancel == 1) break;
+				if (agent_cancel == 1)
+					break;
 				agent_cancel = 0;
 			}
 			prefix = key == '\''\n'\'' ? 0 : 2;
 			sbufn_cut(line, 0)
-			if (prefix) sbuf_str(line, "> ")
+			if (prefix)
+				sbuf_str(line, "> ")
 			ins_init(is)
 		}
 	}
 	agent_output("\n");
-	free(scope); free(draft->s); free(line->s);
+	free(scope);
+	free(draft->s);
+	free(line->s);
 	xvis = savedvis;
-	if (term_owned) term_done();
+	if (term_owned)
+		term_done();
 	syn_setft(xb_ft);
 	return NULL;
 }
@@ -5199,10 +5360,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..fc5e3ae3
+index 00000000..84a48bca
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,741 @@
+@@ -0,0 +1,902 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -5216,7 +5377,8 @@ index 00000000..fc5e3ae3
 + * copies of the Software, and to permit persons to whom the Software is
 + * furnished to do so, subject to the following conditions:
 + *
-+ * The above copyright notice and this permission notice shall be included in all
++ * The above copyright notice and this permission notice shall be included in
++ * all
 + * copies or substantial portions of the Software.
 + *
 + * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -5337,14 +5499,22 @@ index 00000000..fc5e3ae3
 +		if (c == 27) {
 +			if (*s == '[') {
 +				s++;
-+				while (*s && !(*s >= '@' && *s <= '~')) s++;
-+				if (*s) s++;
-+			} else if (*s == ']' || *s == 'P' || *s == '^' || *s == '_') {
++				while (*s && !(*s >= '@' && *s <= '~'))
++					s++;
++				if (*s)
++					s++;
++			} else if (*s == ']' || *s == 'P' ||
++					*s == '^' || *s == '_') {
 +				s++;
-+				while (*s && *s != 7 && !(*s == 27 && s[1] == '\\')) s++;
-+				if (*s == 7) s++;
-+				else if (*s) s += 2;
-+			} else if (*s) s++;
++				while (*s && *s != 7 &&
++						!(*s == 27 && s[1] == '\\'))
++					s++;
++				if (*s == 7)
++					s++;
++				else if (*s)
++					s += 2;
++			} else if (*s)
++				s++;
 +		} else if (c == '\n' || c == '\t' || (c >= 32 && c != 127))
 +			sbuf_chr(out, c)
 +	}
@@ -5355,8 +5525,10 @@ index 00000000..fc5e3ae3
 +{
 +	while (n) {
 +		ssize_t k = write(fd, s, n);
-+		if (k < 0 && errno == EINTR) continue;
-+		if (k <= 0) return -1;
++		if (k < 0 && errno == EINTR)
++			continue;
++		if (k <= 0)
++			return -1;
 +		s += k;
 +		n -= k;
 +	}
@@ -5380,10 +5552,14 @@ index 00000000..fc5e3ae3
 +	fd = mkstemp(path);
 +	if (fd >= 0) {
 +		ret = lbuf_wr(b->lb, fd, 0, lbuf_len(b->lb));
-+		if (fsync(fd)) ret = -1;
-+		if (close(fd)) ret = -1;
-+		if (!ret && rename(path, b->path)) ret = -1;
-+		if (!ret) b->mtime = mtime(b->path);
++		if (fsync(fd))
++			ret = -1;
++		if (close(fd))
++			ret = -1;
++		if (!ret && rename(path, b->path))
++			ret = -1;
++		if (!ret)
++			b->mtime = mtime(b->path);
 +		unlink(path);
 +	}
 +	free(path);
@@ -5392,12 +5568,15 @@ index 00000000..fc5e3ae3
 +
 +static void agent_sync(struct lbuf *lb)
 +{
-+	if (!agent_ready || agent_syncing) return;
++	if (!agent_ready || agent_syncing)
++		return;
 +	for (int i = 3; i < 5; i++) {
-+		if (tempbufs[i].lb != lb) continue;
++		if (tempbufs[i].lb != lb)
++			continue;
 +		agent_syncing = 1;
 +		if (agent_save(i))
-+			ex_print("agent write failed; buffer text retained", msg_ft)
++			ex_print("agent write failed; buffer text retained",
++				msg_ft)
 +		agent_syncing = 0;
 +	}
 +}
@@ -5407,13 +5586,16 @@ index 00000000..fc5e3ae3
 +	struct stat st;
 +	for (char *p = path + 1; ; p++) {
 +		char c = *p;
-+		if (c && c != '/') continue;
++		if (c && c != '/')
++			continue;
 +		*p = 0;
 +		int failed = (mkdir(path, 0700) && errno != EEXIST) ||
 +			stat(path, &st) || !S_ISDIR(st.st_mode);
 +		*p = c;
-+		if (failed) return -1;
-+		if (!c) return 0;
++		if (failed)
++			return -1;
++		if (!c)
++			return 0;
 +	}
 +}
 +
@@ -5444,15 +5626,20 @@ index 00000000..fc5e3ae3
 +		return;
 +	}
 +	dir = emalloc(strlen(log_dir ? log_dir : home) + 64);
-+	if (log_dir) strcpy(dir, log_dir);
-+	else sprintf(dir, "%s/.nextvi/logs", home);
-+	if (agent_mkdir(dir)) goto fail;
++	if (log_dir)
++		strcpy(dir, log_dir);
++	else
++		sprintf(dir, "%s/.nextvi/logs", home);
++	if (agent_mkdir(dir))
++		goto fail;
 +	strcat(dir, "/session-XXXXXX");
-+	if (!mkdtemp(dir)) goto fail;
++	if (!mkdtemp(dir))
++		goto fail;
 +	/* Absolute paths survive :cd during the session. */
 +	if (*dir != '/') {
 +		char *cwd = getcwd(NULL, 0);
-+		if (!cwd) goto fail;
++		if (!cwd)
++			goto fail;
 +		path = emalloc(strlen(cwd) + strlen(dir) + 2);
 +		sprintf(path, "%s/%s", cwd, dir);
 +		free(cwd);
@@ -5465,13 +5652,14 @@ index 00000000..fc5e3ae3
 +		free(tempbufs[i].path);
 +		tempbufs[i].path = path;
 +		tempbufs[i].plen = strlen(path);
-+		if (agent_save(i)) goto fail;
++		if (agent_save(i))
++			goto fail;
 +	}
 +	agent_ready = 1;
 +	agent_history(0);
 +	free(dir);
 +	return;
-+	fail:
++fail:
 +	free(dir);
 +	agent_init_error = "cannot create agent session files";
 +}
@@ -5482,7 +5670,8 @@ index 00000000..fc5e3ae3
 +	sbuf_str(sb, role)
 +	sbuf_chr(sb, '\n')
 +	agent_plain(sb, text);
-+	if (sb->s[sb->s_n-1] != '\n') sbuf_chr(sb, '\n')
++	if (sb->s[sb->s_n-1] != '\n')
++		sbuf_chr(sb, '\n')
 +	sbuf_chr(sb, '\n')
 +	sbuf_nul(sb)
 +	agent_output(sb->s);
@@ -5495,21 +5684,26 @@ index 00000000..fc5e3ae3
 +
 +static void agent_key(int c)
 +{
-+	if (c == TK_CTL('c')) agent_cancel = 1;
-+	if (c == 27 && !agent_cancel) agent_cancel = 2;
-+	if (c == TK_CTL('o')) agent_pause = 1;
-+	if (c == TK_CTL('l')) term_winch = 1;
++	if (c == TK_CTL('c'))
++		agent_cancel = 1;
++	if (c == 27 && !agent_cancel)
++		agent_cancel = 2;
++	if (c == TK_CTL('o'))
++		agent_pause = 1;
++	if (c == TK_CTL('l'))
++		term_winch = 1;
 +}
 +
 +static int agent_boundary(void)
 +{
-+	while (tibuf_pos < tibuf_cnt) agent_key(term_read(0));
++	while (tibuf_pos < tibuf_cnt)
++		agent_key(term_read(0));
 +	while (poll(&term_ufd, 1, 0) > 0 && term_ufd.revents & POLLIN)
 +		agent_key(term_read(0));
 +	return agent_cancel || agent_pause;
 +}
 +
-+/* File-backed stdin avoids pipe deadlocks; poll output and the terminal together. */
++/* Use file-backed stdin; poll output and terminal together. */
 +static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
 +{
 +	FILE *in = tmpfile();
@@ -5517,27 +5711,37 @@ index 00000000..fc5e3ae3
 +	int output[2], pid, done = 0, st = 0, killed = 0;
 +	char buf[4097];
 +	sbuf *sb;
-+	if (!in) return NULL;
++	if (!in)
++		return NULL;
 +	if (input && agent_writeall(fileno(in), input->s, input->s_n)) {
 +		fclose(in);
 +		return NULL;
 +	}
 +	rewind(in);
-+	if (pipe(output)) { fclose(in); return NULL; }
++	if (pipe(output)) {
++		fclose(in);
++		return NULL;
++	}
 +	pid = fork();
 +	if (!pid) {
 +		setsid();
 +		dup2(fileno(in), STDIN_FILENO);
 +		dup2(output[1], STDOUT_FILENO);
 +		dup2(output[1], STDERR_FILENO);
-+		close(output[0]); close(output[1]); fclose(in);
++		close(output[0]);
++		close(output[1]);
++		fclose(in);
 +		execvp(argv[0], argv);
 +		_exit(127);
 +	}
 +	fclose(in);
 +	close(output[1]);
-+	if (pid < 0) { close(output[0]); return NULL; }
-+	fds[0].fd = output[0]; fds[0].events = POLLIN;
++	if (pid < 0) {
++		close(output[0]);
++		return NULL;
++	}
++	fds[0].fd = output[0];
++	fds[0].events = POLLIN;
 +	fds[1] = term_ufd;
 +	sbuf_make(sb, 4096)
 +	while (!done || fds[0].fd >= 0) {
@@ -5546,21 +5750,28 @@ index 00000000..fc5e3ae3
 +			killed = 1;
 +		}
 +		int n = poll(fds, 2, 100);
-+		if (n < 0 && errno != EINTR) { agent_cancel = 1; continue; }
-+		if (fds[0].fd >= 0 && fds[0].revents & (POLLIN | POLLHUP | POLLERR)) {
++		if (n < 0 && errno != EINTR) {
++			agent_cancel = 1;
++			continue;
++		}
++		if (fds[0].fd >= 0 &&
++				fds[0].revents & (POLLIN | POLLHUP | POLLERR)) {
 +			int nr = read(fds[0].fd, buf, sizeof(buf)-1);
-+			if (nr > 0) sbuf_mem(sb, buf, nr)
++			if (nr > 0)
++				sbuf_mem(sb, buf, nr)
 +			else if (!nr || errno != EINTR) {
 +				close(fds[0].fd);
 +				fds[0].fd = -1;
 +			}
 +		}
-+		if (fds[1].revents & POLLIN) agent_key(term_read(0));
++		if (fds[1].revents & POLLIN)
++			agent_key(term_read(0));
 +		if (fds[1].revents & (POLLHUP | POLLERR | POLLNVAL)) {
 +			agent_cancel = 1;
 +			fds[1].fd = -1;
 +		}
-+		if (!done) done = waitpid(pid, &st, WNOHANG) == pid;
++		if (!done)
++			done = waitpid(pid, &st, WNOHANG) == pid;
 +	}
 +	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
 +	sbufn_ret(sb, sb)
@@ -5568,13 +5779,20 @@ index 00000000..fc5e3ae3
 +
 +static sbuf *agent_shell(char *cmd, sbuf *input, int *status)
 +{
-+	char *sh = getenv("SHELL"), *argv[] = {sh && *sh ? sh : "sh", "-c", cmd, NULL};
++	char *sh = getenv("SHELL"),
++	     *argv[] = {sh && *sh ? sh : "sh", "-c", cmd, NULL};
 +	int st;
 +	sbuf *out = agent_process(argv, input, &st, 0);
-+	if (!out) { agent_child_status = 1; return NULL; }
-+	if (status) *status = st;
-+	if (st) agent_child_status = st;
-+	if (agent_capture) agent_plain(agent_capture, out->s);
++	if (!out) {
++		agent_child_status = 1;
++		return NULL;
++	}
++	if (status)
++		*status = st;
++	if (st)
++		agent_child_status = st;
++	if (agent_capture)
++		agent_plain(agent_capture, out->s);
 +	return out;
 +}
 +
@@ -5582,16 +5800,18 @@ index 00000000..fc5e3ae3
 +{
 +	cJSON *req = cJSON_ParseWithOpts(request_extra, NULL, 1);
 +	if (!cJSON_IsObject(req) || !api_key || !*api_key ||
-+		strpbrk(api_key, "\r\n") || !endpoint ||
-+		(strncmp(endpoint, "http://", 7) && strncmp(endpoint, "https://", 8)) ||
-+		request_timeout <= 0 || max_tool_rounds <= 0) {
++			strpbrk(api_key, "\r\n") || !endpoint ||
++			(strncmp(endpoint, "http://", 7) &&
++			strncmp(endpoint, "https://", 8)) ||
++			request_timeout <= 0 || max_tool_rounds <= 0) {
 +		cJSON_Delete(req);
 +		return NULL;
 +	}
-+	/* Remove every duplicate too, so no provider can interpret a shadow value. */
++	/* Remove duplicates so providers cannot interpret a shadow value. */
 +	const char *owned[] = {"messages", "tools", "stream"};
 +	for (int i = 0; i < LEN(owned); i++)
-+		while (cJSON_GetObjectItem(req, owned[i])) cJSON_DeleteItemFromObject(req, owned[i]);
++		while (cJSON_GetObjectItem(req, owned[i]))
++			cJSON_DeleteItemFromObject(req, owned[i]);
 +	return req;
 +}
 +
@@ -5604,23 +5824,33 @@ index 00000000..fc5e3ae3
 +	sbuf_str(hdr, "Authorization: Bearer ")
 +	sbuf_str(hdr, api_key)
 +	sbuf_chr(hdr, '\n')
-+	if (fd < 0) goto ret;
-+	if (agent_writeall(fd, hdr->s, hdr->s_n)) { close(fd); goto ret; }
++	if (fd < 0)
++		goto ret;
++	if (agent_writeall(fd, hdr->s, hdr->s_n)) {
++		close(fd);
++		goto ret;
++	}
 +	close(fd);
 +	snprintf(timeout, sizeof(timeout), "%d", request_timeout);
 +	sprintf(hdrarg, "@%s", hdrpath);
-+	char *argv[] = {"curl", "--disable", "--silent", "--show-error", "--fail-with-body",
-+		"--max-time", timeout, "--header", hdrarg, "--header", "Content-Type: application/json",
-+		"--data-binary", "@-", "--url", endpoint, NULL};
++	char *argv[] = {
++		"curl", "--disable", "--silent", "--show-error",
++		"--fail-with-body", "--max-time", timeout, "--header", hdrarg,
++		"--header", "Content-Type: application/json",
++		"--data-binary", "@-", "--url", endpoint, NULL
++	};
 +	sbuf body;
 +	body.s = cJSON_PrintUnformatted(req);
 +	body.s_n = strlen(body.s);
 +	out = agent_process(argv, &body, st, 1);
 +	free(body.s);
-+	ret:
++ret:
 +	unlink(hdrpath);
 +	free(hdr->s);
-+	if (!out) { *st = -1; return NULL; }
++	if (!out) {
++		*st = -1;
++		return NULL;
++	}
 +	char *s = out->s;
 +	free(out);
 +	return s;
@@ -5632,19 +5862,27 @@ index 00000000..fc5e3ae3
 +	char info[160];
 +	sbuf text;
 +	if (loc && ex_region(loc, &beg, &end, &o1, &o2)) {
-+		if (lbuf_len(xb) || strcmp(loc, "%")) return NULL;
++		if (lbuf_len(xb) || strcmp(loc, "%"))
++			return NULL;
 +		beg = end = 0;
 +	}
 +	int last = MAX(0, end-1);
-+	if (o1 >= 0) o1 = MIN(o1, lbuf_get(xb, beg) ? uc_slen(lbuf_get(xb, beg)) : 0);
-+	if (o2 >= 0) o2 = MIN(o2, lbuf_get(xb, last) ? uc_slen(lbuf_get(xb, last)) : 0);
-+	int endoff = o2 >= 0 ? o2 : (lbuf_get(xb, last) ? uc_slen(lbuf_get(xb, last)) : 0);
++	if (o1 >= 0)
++		o1 = MIN(o1, lbuf_get(xb, beg) ?
++			uc_slen(lbuf_get(xb, beg)) : 0);
++	if (o2 >= 0)
++		o2 = MIN(o2, lbuf_get(xb, last) ?
++			uc_slen(lbuf_get(xb, last)) : 0);
++	int endoff = o2 >= 0 ? o2 :
++		(lbuf_get(xb, last) ? uc_slen(lbuf_get(xb, last)) : 0);
 +	sbuf_smake(sb, 256)
 +	snprintf(info, sizeof(info), "Editor snapshot\nbuffer %d\nname ",
-+		istempbuf(ex_buf) ? (int)(tempbufs-ex_buf-1) : (int)(ex_buf-bufs));
++		istempbuf(ex_buf) ?
++			(int)(tempbufs-ex_buf-1) : (int)(ex_buf-bufs));
 +	sbuf_str(sb, info)
 +	sbuf_str(sb, xb_path)
-+	snprintf(info, sizeof(info), "\nrange %d;%d,%d;%d (end character exclusive)\n",
++	snprintf(info, sizeof(info),
++		"\nrange %d;%d,%d;%d (end character exclusive)\n",
 +		end ? beg+1 : 0, MAX(o1, 0), end, endoff);
 +	sbuf_str(sb, info)
 +	lbuf_region(xb, &text, beg, MAX(o1, 0), last, o2);
@@ -5657,8 +5895,10 @@ index 00000000..fc5e3ae3
 +{
 +	struct winsize win;
 +	if (!ioctl(term_ufd.fd, TIOCGWINSZ, &win)) {
-+		if (win.ws_col) xcols = win.ws_col;
-+		if (win.ws_row) xrows = win.ws_row;
++		if (win.ws_col)
++			xcols = win.ws_col;
++		if (win.ws_row)
++			xrows = win.ws_row;
 +	}
 +	term_winch = 0;
 +	term_resized++;
@@ -5670,7 +5910,8 @@ index 00000000..fc5e3ae3
 +	char *log = agent_text(tempbufs[3].lb);
 +	sbuf_smake(sb, 256)
 +	agent_plain(sb, log);
-+	if (draft) agent_plain(sb, draft);
++	if (draft)
++		agent_plain(sb, draft);
 +	int cap = MAX(2, xrows), *starts = emalloc(sizeof(int) * cap);
 +	int rows = 1, col = 0;
 +	starts[0] = 0;
@@ -5690,10 +5931,12 @@ index 00000000..fc5e3ae3
 +	term_clean();
 +	restore(xled)
 +	agent_output(sb->s + start);
-+	free(starts); free(log); free(sb->s);
++	free(starts);
++	free(log);
++	free(sb->s);
 +}
 +
-+/* Always recurse from the ex-style conversation into vi, preserving caller state. */
++/* Recurse from the ex-style conversation into vi, preserving caller state. */
 +static void agent_editor(void)
 +{
 +	preserve(int, xvis, xvis = (xvis | 2) & ~1;)
@@ -5719,8 +5962,10 @@ index 00000000..fc5e3ae3
 +
 +static void agent_sequence(void)
 +{
-+	for (int i = 0; i < xbufcur; i++) bufs[i].lb->useq += xseq;
-+	for (int i = 0; i < LEN(tempbufs); i++) tempbufs[i].lb->useq += xseq;
++	for (int i = 0; i < xbufcur; i++)
++		bufs[i].lb->useq += xseq;
++	for (int i = 0; i < LEN(tempbufs); i++)
++		tempbufs[i].lb->useq += xseq;
 +}
 +
 +static void agent_run(const char *input)
@@ -5734,15 +5979,26 @@ index 00000000..fc5e3ae3
 +	agent_log("USER", input);
 +	for (int round = 0; ; ) {
 +		req = agent_config();
-+		if (!req) { agent_log("RESULT", "invalid agent configuration"); return; }
++		if (!req) {
++			agent_log("RESULT", "invalid agent configuration");
++			return;
++		}
 +		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
-+		cJSON_AddItemToObject(req, "tools", cJSON_Parse("[{\"type\":\"function\",\"function\":{\"name\":\"ex\",\"description\":\"Execute an ex command chain in nextvi\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\"}},\"required\":[\"command\"],\"additionalProperties\":false}}}]"));
++		cJSON_AddItemToObject(req, "tools",
++			cJSON_Parse("[{\"type\":\"function\",\"function\":{"
++			"\"name\":\"ex\",\"description\":"
++			"\"Execute an ex command chain in nextvi\","
++			"\"parameters\":{\"type\":\"object\",\"properties\":{"
++			"\"command\":{\"type\":\"string\"}},"
++			"\"required\":[\"command\"],"
++			"\"additionalProperties\":false}}}]"));
 +		cJSON_AddBoolToObject(req, "stream", 0);
 +		body = agent_http(req, &st);
 +		cJSON_Delete(req);
 +		if (agent_cancel) {
 +			free(body);
-+			if (agent_cancel != 2) agent_log("RESULT", "cancelled");
++			if (agent_cancel != 2)
++				agent_log("RESULT", "cancelled");
 +			return;
 +		}
 +		if (agent_pause) {
@@ -5750,66 +6006,92 @@ index 00000000..fc5e3ae3
 +			agent_editor();
 +			agent_redraw(NULL);
 +			agent_pause = 0;
-+			if (serial != agent_serial || epoch != agent_epoch || xquit) return;
-+			agent_log("RESULT", "response skipped after recursive editing");
++			if (serial != agent_serial ||
++					epoch != agent_epoch || xquit)
++				return;
++			agent_log("RESULT",
++				"response skipped after recursive editing");
 +			agent_refresh();
 +			continue;
 +		}
 +		if (st || !body) {
-+			agent_log("RESULT", body && *body ? body : "HTTP request failed");
++			agent_log("RESULT",
++				body && *body ? body : "HTTP request failed");
 +			free(body);
 +			return;
 +		}
 +		root = cJSON_ParseWithOpts(body, NULL, 1);
 +		free(body);
-+		text = cJSON_GetObjectItem(cJSON_GetObjectItem(root, "error"), "message");
-+		message = cJSON_GetObjectItem(cJSON_GetArrayItem(cJSON_GetObjectItem(root, "choices"), 0), "message");
++		text = cJSON_GetObjectItem(
++			cJSON_GetObjectItem(root, "error"), "message");
++		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
++			cJSON_GetObjectItem(root, "choices"), 0), "message");
 +		calls = cJSON_GetObjectItem(message, "tool_calls");
 +		cJSON *role = cJSON_GetObjectItem(message, "role");
 +		cJSON *content = cJSON_GetObjectItem(message, "content");
 +		int valid = cJSON_IsObject(message) && cJSON_IsString(role) &&
 +			!strcmp(role->valuestring, "assistant") &&
-+			(!content || cJSON_IsNull(content) || cJSON_IsString(content)) &&
++			(!content || cJSON_IsNull(content) ||
++			 cJSON_IsString(content)) &&
 +			(!calls || cJSON_IsArray(calls)) &&
 +			(cJSON_IsString(content) || cJSON_GetArraySize(calls));
 +		cJSON_ArrayForEach(tc, calls) {
 +			cJSON *id = cJSON_GetObjectItem(tc, "id");
-+			if (!cJSON_IsString(id) || !*id->valuestring) valid = 0;
-+			for (cJSON *prev = calls->child; prev != tc; prev = prev->next) {
++			if (!cJSON_IsString(id) || !*id->valuestring)
++				valid = 0;
++			for (cJSON *prev = calls->child; prev != tc;
++					prev = prev->next) {
 +				cJSON *pid = cJSON_GetObjectItem(prev, "id");
-+				if (cJSON_IsString(id) && cJSON_IsString(pid) && !strcmp(id->valuestring, pid->valuestring)) valid = 0;
++				if (cJSON_IsString(id) && cJSON_IsString(pid) &&
++					!strcmp(id->valuestring,
++						pid->valuestring))
++					valid = 0;
 +			}
 +		}
 +		if (!valid || cJSON_GetObjectItem(root, "error")) {
-+			agent_log("RESULT", cJSON_IsString(text) ? text->valuestring : "malformed assistant response");
++			agent_log("RESULT", cJSON_IsString(text) ?
++				text->valuestring :
++				"malformed assistant response");
 +			cJSON_Delete(root);
 +			return;
 +		}
-+		/* Complete pairs before allowing recursive editing or nested submissions. */
-+		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(message, 1));
-+		if (cJSON_IsString(content)) agent_log("ASSISTANT", content->valuestring);
++		/* Complete pairs before recursive editing or submissions. */
++		cJSON_AddItemToArray(agent_messages,
++			cJSON_Duplicate(message, 1));
++		if (cJSON_IsString(content))
++			agent_log("ASSISTANT", content->valuestring);
 +		int base = cJSON_GetArraySize(agent_messages), index = 0;
 +		cJSON_ArrayForEach(tc, calls) {
-+			cJSON *result = agent_msg("tool", "skipped: pending execution");
-+			cJSON_AddStringToObject(result, "tool_call_id", cJSON_GetObjectItem(tc, "id")->valuestring);
++			cJSON *result = agent_msg("tool",
++				"skipped: pending execution");
++			cJSON_AddStringToObject(result, "tool_call_id",
++				cJSON_GetObjectItem(tc, "id")->valuestring);
 +			cJSON_AddItemToArray(agent_messages, result);
 +		}
 +		cJSON_ArrayForEach(tc, calls) {
 +			cJSON *fn = cJSON_GetObjectItem(tc, "function");
-+			cJSON *name = cJSON_GetObjectItem(fn, "name"), *args = cJSON_GetObjectItem(fn, "arguments");
-+			cJSON *parsed = cJSON_IsString(args) ? cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
++			cJSON *name = cJSON_GetObjectItem(fn, "name"),
++			      *args = cJSON_GetObjectItem(fn, "arguments");
++			cJSON *parsed = cJSON_IsString(args) ?
++				cJSON_ParseWithOpts(args->valuestring,
++					NULL, 1) : NULL;
 +			cJSON *command = cJSON_GetObjectItem(parsed, "command");
 +			char *err = NULL;
 +			agent_child_status = 0;
 +			sbuf_smake(out, 256)
 +			sbuf_smake(result, 256)
 +			agent_boundary();
-+			agent_log("EX", cJSON_IsString(command) ? command->valuestring : "invalid tool call");
-+			if (agent_cancel || agent_pause || round == max_tool_rounds)
-+				err = "skipped: execution cancelled, suspended, or round limit reached";
-+			else if (!cJSON_IsString(name) || strcmp(name->valuestring, "ex"))
++			agent_log("EX", cJSON_IsString(command) ?
++				command->valuestring : "invalid tool call");
++			if (agent_cancel || agent_pause ||
++					round == max_tool_rounds)
++				err = "skipped: execution cancelled, "
++					"suspended, or round limit reached";
++			else if (!cJSON_IsString(name) ||
++					strcmp(name->valuestring, "ex"))
 +				err = "unknown tool (expected ex)";
-+			else if (!cJSON_IsString(command) || !*command->valuestring)
++			else if (!cJSON_IsString(command) ||
++					!*command->valuestring)
 +				err = "ex requires a nonempty command string";
 +			else {
 +				agent_tool = 1;
@@ -5820,38 +6102,59 @@ index 00000000..fc5e3ae3
 +				agent_sequence();
 +				agent_capture = NULL;
 +				agent_tool = 0;
-+				if (agent_child_status && (!err || err == xuerr)) err = "external command failed";
-+				else if (err == xuerr) err = "command failed";
++				if (agent_child_status &&
++						(!err || err == xuerr))
++					err = "external command failed";
++				else if (err == xuerr)
++					err = "command failed";
 +			}
-+			if (agent_cancel) sbuf_str(result, "cancelled\n")
-+			else if (agent_pause) sbuf_str(result, "suspended; remaining commands skipped\n")
++			if (agent_cancel)
++				sbuf_str(result, "cancelled\n")
++			else if (agent_pause)
++				sbuf_str(result,
++					"suspended; remaining commands "
++					"skipped\n")
 +			else {
 +				char status[64];
-+				snprintf(status, sizeof(status), "status %d\n", agent_child_status ? agent_child_status : !!err);
++				snprintf(status, sizeof(status), "status %d\n",
++					agent_child_status ?
++						agent_child_status : !!err);
 +				sbuf_str(result, status)
 +			}
-+			if (err) { sbuf_str(result, err) sbuf_chr(result, '\n') }
++			if (err) {
++				sbuf_str(result, err)
++				sbuf_chr(result, '\n')
++			}
 +			sbuf_mem(result, out->s, out->s_n)
 +			sbuf_nul(result)
-+			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(agent_messages, base + index++),
++			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(
++				agent_messages, base + index++),
 +				"content", cJSON_CreateString(result->s));
-+			if (agent_cancel != 2) agent_log("RESULT", result->s);
++			if (agent_cancel != 2)
++				agent_log("RESULT", result->s);
 +			cJSON_Delete(parsed);
-+			free(out->s); free(result->s);
++			free(out->s);
++			free(result->s);
 +		}
 +		int has_calls = cJSON_GetArraySize(calls);
 +		cJSON_Delete(root);
-+		if (agent_cancel) return;
++		if (agent_cancel)
++			return;
 +		if (agent_pause) {
 +			agent_editor();
 +			agent_redraw(NULL);
 +			agent_pause = 0;
-+			if (serial != agent_serial || epoch != agent_epoch || xquit) return;
++			if (serial != agent_serial ||
++					epoch != agent_epoch || xquit)
++				return;
 +			agent_refresh();
 +		}
-+		if (!has_calls) return;
++		if (!has_calls)
++			return;
 +		if (round++ == max_tool_rounds) {
-+			agent_log("RESULT", "maximum tool rounds reached; submit to continue");
++			agent_log("RESULT",
++				"maximum tool rounds reached; "
++				"submit to continue");
 +			return;
 +		}
 +	}
@@ -5863,11 +6166,15 @@ index 00000000..fc5e3ae3
 +	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
 +	cJSON *config;
 +	unsigned long epoch;
-+	if (cmd[1] && (*loc || *arg)) return "agent restart rejects ranges and arguments";
-+	if (agent_init_error) return agent_init_error;
-+	if (!(config = agent_config())) return "invalid agent configuration";
++	if (cmd[1] && (*loc || *arg))
++		return "agent restart rejects ranges and arguments";
++	if (agent_init_error)
++		return agent_init_error;
++	if (!(config = agent_config()))
++		return "invalid agent configuration";
 +	cJSON_Delete(config);
-+	if (*loc && !(scope = agent_snapshot(loc))) return xrerr;
++	if (*loc && !(scope = agent_snapshot(loc)))
++		return xrerr;
 +	if (cmd[1]) {
 +		agent_epoch++;
 +		agent_serial++;
@@ -5878,14 +6185,19 @@ index 00000000..fc5e3ae3
 +			lbuf_saved(lb, 1);
 +			agent_syncing = 0;
 +			int fd = open(tempbufs[3].path, O_WRONLY | O_TRUNC);
-+			if (fd < 0 || close(fd)) ex_print("agent reset write failed; buffer cleared", msg_ft)
++			if (fd < 0 || close(fd))
++				ex_print("agent reset write failed; "
++					"buffer cleared", msg_ft)
 +			tempbufs[3].row = tempbufs[3].off = tempbufs[3].top = 0;
-+			if (ex_buf == tempbufs+3) { exbuf_load(ex_buf) }
++			if (ex_buf == tempbufs+3) {
++				exbuf_load(ex_buf)
++			}
 +		}
 +		agent_history(cmd[1] == '~');
 +	}
 +	epoch = agent_epoch;
-+	if (term_owned) term_init();
++	if (term_owned)
++		term_init();
 +	xvis = (xvis | 2) & ~1;
 +	agent_output("\n");
 +	sbuf_smake(draft, 128)
@@ -5893,7 +6205,8 @@ index 00000000..fc5e3ae3
 +	sbuf_str(line, "> ")
 +	ins_state is;
 +	ins_init(is)
-+	if (*arg) term_push(arg, strlen(arg));
++	if (*arg)
++		term_push(arg, strlen(arg));
 +	while (!xquit && epoch == agent_epoch) {
 +		preserve(int, xled, xled = 1;)
 +		preserve(int, ftidx,)
@@ -5901,14 +6214,17 @@ index 00000000..fc5e3ae3
 +		key = led_prompt(line, NULL, &xkmap, &is, prefix, 2|LED_AGENT);
 +		restore(ftidx)
 +		restore(xled)
-+		if (key == TK_CTL('c') || !key) break;
++		if (key == TK_CTL('c') || !key)
++			break;
 +		if (key == TK_CTL('o')) {
 +			agent_editor();
-+			if (epoch != agent_epoch) break;
++			if (epoch != agent_epoch)
++				break;
 +			ins_init(is)
 +			agent_redraw(draft->s_n ? draft->s : NULL);
 +		} else if (key == TK_CTL('b')) {
-+			if (epoch != agent_epoch) break;
++			if (epoch != agent_epoch)
++				break;
 +			agent_redraw(draft->s_n ? draft->s : NULL);
 +		} else if (key == TK_CTL('l')) {
 +			agent_resize();
@@ -5922,25 +6238,31 @@ index 00000000..fc5e3ae3
 +				if (scope) {
 +					sbuf_chr(draft, '\n')
 +					sbuf_str(draft, scope)
-+					free(scope); scope = NULL;
++					free(scope);
++					scope = NULL;
 +				}
 +				sbuf_nul(draft)
 +				agent_output("\n");
 +				agent_run(draft->s);
 +				sbufn_cut(draft, 0)
-+				if (agent_cancel == 1) break;
++				if (agent_cancel == 1)
++					break;
 +				agent_cancel = 0;
 +			}
 +			prefix = key == '\n' ? 0 : 2;
 +			sbufn_cut(line, 0)
-+			if (prefix) sbuf_str(line, "> ")
++			if (prefix)
++				sbuf_str(line, "> ")
 +			ins_init(is)
 +		}
 +	}
 +	agent_output("\n");
-+	free(scope); free(draft->s); free(line->s);
++	free(scope);
++	free(draft->s);
++	free(line->s);
 +	xvis = savedvis;
-+	if (term_owned) term_done();
++	if (term_owned)
++		term_done();
 +	syn_setft(xb_ft);
 +	return NULL;
 +}
