@@ -62,7 +62,7 @@ static char *agent_init_error;
 
 static const char agent_skills[] =
 "Inside nextvi, use the ex tool with a JSON object whose command key holds an "
-"ex command chain. Inspect before editing. Tools access all buffers "
+"ex command. Inspect before editing. Tools access all buffers "
 "regardless of scope; scope is a snapshot, not a live selection.\n"
 "Nextvi is not Vim or traditional vi/ex.\n"
 "If unsure how an editor command behaves and a mistake could change or lose "
@@ -72,16 +72,12 @@ static const char agent_skills[] =
 "silently truncated.\n"
 "\n"
 "Ex syntax: [range]command[space arguments]. Use one space before arguments "
-"to avoid command-name ambiguity. Commands are separated by colon, not "
-"vertical bar.\n"
-"In arguments, % expands to the current pathname, %# to the previous "
-"pathname. !command! expands shell stdout/stderr.\n"
-"Escape literal colon, percent and exclamation with backslash.\n"
-"Backslashes directly before specials are halved; an odd "
-"count quotes the special. Elsewhere backslashes are literal.\n"
-"JSON escaping adds another layer: {\"command\":\"p literal\\\\: colon\"}.\n"
-"Top-level % addresses need no escape; nested command bodies need escaped %.\n"
-"Each nested body adds an ex argument-expansion layer.\n"
+"to avoid command-name ambiguity. Use one command per tool call. Ex argument "
+"escaping, command chaining, pathname expansion and shell expansion are "
+"disabled for each call. Colons, percent signs, exclamation marks and "
+"backslashes in arguments are literal. JSON escaping still applies.\n"
+"Ranges and command-specific syntax (such as regex escapes) still apply, "
+"including in nested command bodies.\n"
 "\n"
 "Ranges: lines are one-based, character offsets zero-based with exclusive "
 "ends. . is current position, $ last line or end of line, % whole buffer. "
@@ -109,15 +105,15 @@ static const char agent_skills[] =
 "Example: 1,10!sort replaces lines 1 through 10 with sorted output.\n"
 "\n"
 "Print commands (inspect output):\n"
-"DO NOT USE %p or dump whole buffers. First check :$= for "
+"DO NOT USE %p or dump whole buffers. First check $= for "
 "line count (second number). Print only needed ranges in separate small "
 "chunks, e.g. 1,50p then 51,100p, within the line count. Stop when you have "
 "enough context. Use character ranges for long lines. Bound g prints and "
 "shell output too.\n"
-"[range]p [text]: print addressed text, or the evaluated argument if "
+"[range]p [text]: print addressed text, or the literal argument if "
 "supplied. Prefer explicit ranges.\n"
 "Examples: 10,20p prints lines 10 through 20; 1;1,1;4p prints offsets 1 "
-"through 3 of line 1; p % prints the pathname.\n"
+"through 3 of line 1.\n"
 "$= prints range numbers; the second is the buffer line count.\n"
 "! command WITHOUT A RANGE: run a shell command and return stdout/stderr "
 "without replacing buffer text. Nonzero exit status is an error. The shell "
@@ -135,8 +131,8 @@ static const char agent_skills[] =
 "Example: 1,100f> int. >int>p prints the next line matching int.\n"
 "[range]g/regex/command: execute command on matching lines; g! selects "
 "nonmatching lines. Default range is the whole buffer, or current line when "
-"nested. Returns error if no line matches or command fails. Escape colons "
-"within the body to chain commands there. The body determines whether g "
+"nested. Returns error if no line matches or command fails. Use one command "
+"within the body. The body determines whether g "
 "prints or edits.\n"
 "Print example: 1,50g/TODO/p.\n"
 "Edit example: 1,50g/TODO/s/old/new/g.\n";
@@ -362,10 +358,14 @@ static void agent_key(int c)
 
 static int agent_boundary(void)
 {
+	if (agent_input_blocked)
+		return 1;
+	preserve(int, agent_tool, agent_tool = 0;)
 	while (tibuf_pos < tibuf_cnt)
 		agent_key(term_read(0));
 	while (poll(&term_ufd, 1, 0) > 0 && term_ufd.revents & POLLIN)
 		agent_key(term_read(0));
+	restore(agent_tool)
 	return agent_cancel || agent_pause;
 }
 
@@ -430,8 +430,11 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
 				fds[0].fd = -1;
 			}
 		}
-		if (fds[1].revents & POLLIN)
+		if (fds[1].revents & POLLIN) {
+			preserve(int, agent_tool, agent_tool = 0;)
 			agent_key(term_read(0));
+			restore(agent_tool)
+		}
 		if (fds[1].revents & (POLLHUP | POLLERR | POLLNVAL)) {
 			agent_cancel = 1;
 			fds[1].fd = -1;
@@ -653,7 +656,7 @@ static void agent_run(const char *input)
 		cJSON_AddItemToObject(req, "tools",
 			cJSON_Parse("[{\"type\":\"function\",\"function\":{"
 			"\"name\":\"ex\",\"description\":"
-			"\"Execute an ex command chain in nextvi\","
+			"\"Execute an ex command in nextvi\","
 			"\"parameters\":{\"type\":\"object\",\"properties\":{"
 			"\"command\":{\"type\":\"string\"}},"
 			"\"required\":[\"command\"],"
@@ -768,15 +771,30 @@ static void agent_run(const char *input)
 					!*command->valuestring)
 				err = "ex requires a nonempty command string";
 			else {
+				int savedquit = xquit, savedqprop = xqprop;
+				agent_input_blocked = 0;
 				agent_tool = 1;
 				agent_capture = out;
 				agent_child_status = 0;
 				agent_sequence();
+				preserve(int, xesc, xesc = 0;)
+				preserve(int, xsep, xsep = 0;)
+				preserve(int, xexp, xexp = 0;)
+				preserve(int, xexe, xexe = 0;)
 				err = ex_exec(command->valuestring);
+				restore(xexe)
+				restore(xexp)
+				restore(xsep)
+				restore(xesc)
 				agent_sequence();
 				agent_capture = NULL;
 				agent_tool = 0;
-				if (agent_child_status &&
+				if (agent_input_blocked) {
+					xquit = savedquit;
+					xqprop = savedqprop;
+					agent_input_blocked = 0;
+					err = "interactive input unavailable during agent execution";
+				} else if (agent_child_status &&
 						(!err || err == xuerr))
 					err = "external command failed";
 				else if (err == xuerr)
@@ -872,8 +890,9 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	epoch = agent_epoch;
 	if (term_owned)
 		term_init();
+	if (!(savedvis & 2))
+		agent_output("\n");
 	xvis = (xvis | 2) & ~1;
-	agent_output("\n");
 	sbuf_smake(draft, 128)
 	sbuf_smake(line, 128)
 	sbuf_str(line, "> ")
@@ -944,6 +963,7 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 i /* agent.c: embedded request loop and editor integration */
 /* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 static int agent_tool, agent_cancel, agent_pause;
+static int agent_input_blocked;
 static sbuf *agent_capture;
 static void *ec_agent(char *loc, char *cmd, char *arg);
 static void agent_init(void);
@@ -5215,37 +5235,73 @@ void lbuf_saved\(struct lbuf \*lb, int clear\)
 '\''4c 			if (!(flg & LED_AGENT))
 				vi(1); /* redraw past screen */
 ??!219reg led.c:677:m42sc %? %@2142sc!b8m!%ya 98?0?
-%f> /\* execute a command; pass in input if ibuf and process output if oproc \*/
+%f> \{
+	int cw;
+	if \(tibuf_pos >= tibuf_cnt\) \{
+		if \(texec\) \{
+			xquit = !xquit \? 1 : xquit;
+			if \(texec == '\''&'\''\)1??0?
+1??+2m 11q0?
+%f> \{
+	int cw;
+	if \(tibuf_pos >= tibuf_cnt\) \{4??0?
+4??+2m 1220reg p OK term.c:145:a42sc %? %@2152sc!1q0?
+grp 1%f> \{.*?
+	int cw;.*?
+(	if \(tibuf_pos >= tibuf_cnt\) \{)7??0?
+grp 07??m 1220reg p OK term.c:145:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		memcpy\(tibuf \+ tibuf_cnt, s, n\);
+	tibuf_cnt \+= n;
+}.*(				goto err;)
+		}
+		if \(term_winch && winch\) \{8??0?
+grp 08??-4m 1220reg p OK term.c:145:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		texec_n \+= n;
+		tibuf_prev = tibuf_pos;
+	} else.*(			\*tibuf = winch;	/\* yield until term_winch is cleared \*/)
+			goto ret;
+		}9??0?
+grp 09??-7m 1220reg p OK term.c:145:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg term.c:1452sc %? %@2132sc!0?
+?0?
+%f+ /\* execute a command; pass in input if ibuf and process output if oproc \*/
 sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\)
 \{
 	static char \*sh\[] = \{"\$SHELL", "sh", NULL};
 	struct pollfd fds\[3];
 	char buf\[512];1??0?
-1??+2m 11q0?
-%f> /\* execute a command; pass in input if ibuf and process output if oproc \*/
+1??+2m 21q0?
+%f+ /\* execute a command; pass in input if ibuf and process output if oproc \*/
 sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\)
 \{4??0?
-4??+2m 1220reg p OK term.c:275:a42sc %? %@2152sc!1q0?
-grp 1%f> /\* execute a command; pass in input if ibuf and process output if oproc \*/.*?
+4??+2m 2220reg p OK term.c:275:a42sc %? %@2152sc!1q0?
+grp 1%f+ /\* execute a command; pass in input if ibuf and process output if oproc \*/.*?
 sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 (\{)7??0?
-grp 07??m 1220reg p OK term.c:275:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK term.c:275:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	return r;
 }.*(	int ifd = -1, ofd = -1;)
 	int nw = 0;
 	char \*argv\[5];8??0?
-grp 08??-4m 1220reg p OK term.c:275:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK term.c:275:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		else
 			return \*q;
 		q\+\+;.*(	argv\[0] = xgetenv\(sh\);)
 	argv\[1] = xish \? "-i" : argv\[0];
 	argv\[2] = "-c";9??0?
-grp 09??-7m 1220reg p OK term.c:275:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 2220reg p OK term.c:275:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg term.c:2752sc %? %@2132sc!0?
-'\''1i 	if (agent_tool)
+'\''1i 		if (agent_tool) {
+			agent_input_blocked = 1;
+			xquit = !xquit ? 1 : xquit;
+			*tibuf = TK_CTL('\''c'\'');
+			goto ret;
+		}
+??!219reg term.c:145:m12sc %? %@2142sc!0?
+'\''2i 	if (agent_tool)
 		return agent_shell(cmd, ibuf, status);
-??!219reg term.c:275:m12sc %? %@2142sc!b9m!%ya 98?0?
+??!219reg term.c:275:m22sc %? %@2142sc!b9m!%ya 98?0?
 %f> #include <sys/stat\.h>
 #include <sys/ioctl\.h>
 #include <sys/wait\.h>
@@ -5447,10 +5503,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..c9be2555
+index 00000000..b45f6250
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,910 @@
+@@ -0,0 +1,929 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -5483,7 +5539,7 @@ index 00000000..c9be2555
 +
 +static const char agent_skills[] =
 +"Inside nextvi, use the ex tool with a JSON object whose command key holds an "
-+"ex command chain. Inspect before editing. Tools access all buffers "
++"ex command. Inspect before editing. Tools access all buffers "
 +"regardless of scope; scope is a snapshot, not a live selection.\n"
 +"Nextvi is not Vim or traditional vi/ex.\n"
 +"If unsure how an editor command behaves and a mistake could change or lose "
@@ -5493,16 +5549,12 @@ index 00000000..c9be2555
 +"silently truncated.\n"
 +"\n"
 +"Ex syntax: [range]command[space arguments]. Use one space before arguments "
-+"to avoid command-name ambiguity. Commands are separated by colon, not "
-+"vertical bar.\n"
-+"In arguments, % expands to the current pathname, %# to the previous "
-+"pathname. !command! expands shell stdout/stderr.\n"
-+"Escape literal colon, percent and exclamation with backslash.\n"
-+"Backslashes directly before specials are halved; an odd "
-+"count quotes the special. Elsewhere backslashes are literal.\n"
-+"JSON escaping adds another layer: {\"command\":\"p literal\\\\: colon\"}.\n"
-+"Top-level % addresses need no escape; nested command bodies need escaped %.\n"
-+"Each nested body adds an ex argument-expansion layer.\n"
++"to avoid command-name ambiguity. Use one command per tool call. Ex argument "
++"escaping, command chaining, pathname expansion and shell expansion are "
++"disabled for each call. Colons, percent signs, exclamation marks and "
++"backslashes in arguments are literal. JSON escaping still applies.\n"
++"Ranges and command-specific syntax (such as regex escapes) still apply, "
++"including in nested command bodies.\n"
 +"\n"
 +"Ranges: lines are one-based, character offsets zero-based with exclusive "
 +"ends. . is current position, $ last line or end of line, % whole buffer. "
@@ -5530,15 +5582,15 @@ index 00000000..c9be2555
 +"Example: 1,10!sort replaces lines 1 through 10 with sorted output.\n"
 +"\n"
 +"Print commands (inspect output):\n"
-+"DO NOT USE %p or dump whole buffers. First check :$= for "
++"DO NOT USE %p or dump whole buffers. First check $= for "
 +"line count (second number). Print only needed ranges in separate small "
 +"chunks, e.g. 1,50p then 51,100p, within the line count. Stop when you have "
 +"enough context. Use character ranges for long lines. Bound g prints and "
 +"shell output too.\n"
-+"[range]p [text]: print addressed text, or the evaluated argument if "
++"[range]p [text]: print addressed text, or the literal argument if "
 +"supplied. Prefer explicit ranges.\n"
 +"Examples: 10,20p prints lines 10 through 20; 1;1,1;4p prints offsets 1 "
-+"through 3 of line 1; p % prints the pathname.\n"
++"through 3 of line 1.\n"
 +"$= prints range numbers; the second is the buffer line count.\n"
 +"! command WITHOUT A RANGE: run a shell command and return stdout/stderr "
 +"without replacing buffer text. Nonzero exit status is an error. The shell "
@@ -5556,8 +5608,8 @@ index 00000000..c9be2555
 +"Example: 1,100f> int. >int>p prints the next line matching int.\n"
 +"[range]g/regex/command: execute command on matching lines; g! selects "
 +"nonmatching lines. Default range is the whole buffer, or current line when "
-+"nested. Returns error if no line matches or command fails. Escape colons "
-+"within the body to chain commands there. The body determines whether g "
++"nested. Returns error if no line matches or command fails. Use one command "
++"within the body. The body determines whether g "
 +"prints or edits.\n"
 +"Print example: 1,50g/TODO/p.\n"
 +"Edit example: 1,50g/TODO/s/old/new/g.\n";
@@ -5783,10 +5835,14 @@ index 00000000..c9be2555
 +
 +static int agent_boundary(void)
 +{
++	if (agent_input_blocked)
++		return 1;
++	preserve(int, agent_tool, agent_tool = 0;)
 +	while (tibuf_pos < tibuf_cnt)
 +		agent_key(term_read(0));
 +	while (poll(&term_ufd, 1, 0) > 0 && term_ufd.revents & POLLIN)
 +		agent_key(term_read(0));
++	restore(agent_tool)
 +	return agent_cancel || agent_pause;
 +}
 +
@@ -5851,8 +5907,11 @@ index 00000000..c9be2555
 +				fds[0].fd = -1;
 +			}
 +		}
-+		if (fds[1].revents & POLLIN)
++		if (fds[1].revents & POLLIN) {
++			preserve(int, agent_tool, agent_tool = 0;)
 +			agent_key(term_read(0));
++			restore(agent_tool)
++		}
 +		if (fds[1].revents & (POLLHUP | POLLERR | POLLNVAL)) {
 +			agent_cancel = 1;
 +			fds[1].fd = -1;
@@ -6074,7 +6133,7 @@ index 00000000..c9be2555
 +		cJSON_AddItemToObject(req, "tools",
 +			cJSON_Parse("[{\"type\":\"function\",\"function\":{"
 +			"\"name\":\"ex\",\"description\":"
-+			"\"Execute an ex command chain in nextvi\","
++			"\"Execute an ex command in nextvi\","
 +			"\"parameters\":{\"type\":\"object\",\"properties\":{"
 +			"\"command\":{\"type\":\"string\"}},"
 +			"\"required\":[\"command\"],"
@@ -6189,15 +6248,30 @@ index 00000000..c9be2555
 +					!*command->valuestring)
 +				err = "ex requires a nonempty command string";
 +			else {
++				int savedquit = xquit, savedqprop = xqprop;
++				agent_input_blocked = 0;
 +				agent_tool = 1;
 +				agent_capture = out;
 +				agent_child_status = 0;
 +				agent_sequence();
++				preserve(int, xesc, xesc = 0;)
++				preserve(int, xsep, xsep = 0;)
++				preserve(int, xexp, xexp = 0;)
++				preserve(int, xexe, xexe = 0;)
 +				err = ex_exec(command->valuestring);
++				restore(xexe)
++				restore(xexp)
++				restore(xsep)
++				restore(xesc)
 +				agent_sequence();
 +				agent_capture = NULL;
 +				agent_tool = 0;
-+				if (agent_child_status &&
++				if (agent_input_blocked) {
++					xquit = savedquit;
++					xqprop = savedqprop;
++					agent_input_blocked = 0;
++					err = "interactive input unavailable during agent execution";
++				} else if (agent_child_status &&
 +						(!err || err == xuerr))
 +					err = "external command failed";
 +				else if (err == xuerr)
@@ -6293,8 +6367,9 @@ index 00000000..c9be2555
 +	epoch = agent_epoch;
 +	if (term_owned)
 +		term_init();
++	if (!(savedvis & 2))
++		agent_output("\n");
 +	xvis = (xvis | 2) & ~1;
-+	agent_output("\n");
 +	sbuf_smake(draft, 128)
 +	sbuf_smake(line, 128)
 +	sbuf_str(line, "> ")
@@ -6363,13 +6438,14 @@ index 00000000..c9be2555
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..b675f415
+index 00000000..78cd3073
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,11 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
++static int agent_input_blocked;
 +static sbuf *agent_capture;
 +static void *ec_agent(char *loc, char *cmd, char *arg);
 +static void agent_init(void);
@@ -10108,10 +10184,23 @@ index 375abb35..488ab53f 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 03aa736f..cd36e0fc 100644
+index 03aa736f..a432363c 100644
 --- a/term.c
 +++ b/term.c
-@@ -273,6 +273,8 @@ char *xgetenv(char **q)
+@@ -143,6 +143,12 @@ int term_read(int winch)
+ {
+ 	int cw;
+ 	if (tibuf_pos >= tibuf_cnt) {
++		if (agent_tool) {
++			agent_input_blocked = 1;
++			xquit = !xquit ? 1 : xquit;
++			*tibuf = TK_CTL('c');
++			goto ret;
++		}
+ 		if (texec) {
+ 			xquit = !xquit ? 1 : xquit;
+ 			if (texec == '&')
+@@ -273,6 +279,8 @@ char *xgetenv(char **q)
  /* execute a command; pass in input if ibuf and process output if oproc */
  sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  {
