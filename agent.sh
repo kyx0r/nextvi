@@ -124,6 +124,10 @@ static const char agent_skills[] =
 "Example: !pwd prints the working directory. Do not add % or a line range.\n"
 "\n"
 "Search commands:\n"
+"For literal matches in search, global and substitution patterns, escape "
+"regex specials with backslash: ( ) { + * ? ^ $ [ | \\ .\n"
+"Inside [] expressions, specials are: ( ^ ] -. "
+"\\< and \\> are word-boundary assertions. Double backslashes in JSON.\n"
 "[range]f> regex: search forward within the range and move to the match; no "
 "range searches only the current line. No argument reuses the previous regex. "
 "Returns error if not found.\n"
@@ -5188,10 +5192,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..fadb2195
+index 00000000..b0b102a5
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,731 @@
+@@ -0,0 +1,735 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -5286,6 +5290,10 @@ index 00000000..fadb2195
 +"Example: !pwd prints the working directory. Do not add % or a line range.\n"
 +"\n"
 +"Search commands:\n"
++"For literal matches in search, global and substitution patterns, escape "
++"regex specials with backslash: ( ) { + * ? ^ $ [ | \\ .\n"
++"Inside [] expressions, specials are: ( ^ ] -. "
++"\\< and \\> are word-boundary assertions. Double backslashes in JSON.\n"
 +"[range]f> regex: search forward within the range and move to the match; no "
 +"range searches only the current line. No argument reuses the previous regex. "
 +"Returns error if not found.\n"
