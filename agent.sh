@@ -70,10 +70,10 @@ static const char agent_skills[] =
 "Argument prints the ex specification for a command/range or a topic.\n"
 "PROTECT THE CONTEXT: ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
 "Do not assume. exspec tailored to a command have important instructions for agentic use.\n"
-"Starter kit example:\n"
-"exspec ranges\n"
+"At a minimum, you must execute:\n"
 "exspec p\n"
-"exspec g\n"
+"Optional:\n"
+"exspec ranges\n"
 "\n"
 "Ex spec notation: <x> denotes a character literal, [x] an optional argument, \n"
 "{x} a required argument, and \"x\" a string. <^X> denotes Ctrl-X. Spaces \n"
@@ -4640,8 +4640,9 @@ static struct {
 } conf_exspec[] = {
 	{"i", exspec_insert},
 	{"c", exspec_insert},
+	{"p", "Cursor position is stateful; left at the range position it landed on"},
 	{"p", "Keep reads small and within buffer bounds."},
-	{"p", "Check the line count with $= before printing ranges."},
+	{"p", "Check the position with = and line count with $= before printing ranges."},
 	{"p", "Use character ranges for long lines; stop when you have enough context."},
 	{"p", ""},
 	{"p", "Example: print 5 lines around current position"},
@@ -6985,7 +6986,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..c076ad3c
+index 00000000..bab8e726
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,887 @@
@@ -7029,10 +7030,10 @@ index 00000000..c076ad3c
 +"Argument prints the ex specification for a command/range or a topic.\n"
 +"PROTECT THE CONTEXT: ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
 +"Do not assume. exspec tailored to a command have important instructions for agentic use.\n"
-+"Starter kit example:\n"
-+"exspec ranges\n"
++"At a minimum, you must execute:\n"
 +"exspec p\n"
-+"exspec g\n"
++"Optional:\n"
++"exspec ranges\n"
 +"\n"
 +"Ex spec notation: <x> denotes a character literal, [x] an optional argument, \n"
 +"{x} a required argument, and \"x\" a string. <^X> denotes Ctrl-X. Spaces \n"
@@ -11438,10 +11439,10 @@ index c836c94c..32da3431 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index a51117ca..45fce44c 100644
+index a51117ca..50c8182b 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,50 @@
+@@ -1,5 +1,51 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -11475,8 +11476,9 @@ index a51117ca..45fce44c 100644
 +} conf_exspec[] = {
 +	{"i", exspec_insert},
 +	{"c", exspec_insert},
++	{"p", "Cursor position is stateful; left at the range position it landed on"},
 +	{"p", "Keep reads small and within buffer bounds."},
-+	{"p", "Check the line count with $= before printing ranges."},
++	{"p", "Check the position with = and line count with $= before printing ranges."},
 +	{"p", "Use character ranges for long lines; stop when you have enough context."},
 +	{"p", ""},
 +	{"p", "Example: print 5 lines around current position"},
@@ -11492,7 +11494,7 @@ index a51117ca..45fce44c 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +342,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +343,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
