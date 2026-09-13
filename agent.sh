@@ -5303,7 +5303,9 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 				if (exspec_cmds[i].option != option)
 					continue;
 				if (agent_tool && (!strcmp(exspec_cmds[i].name, "f") ||
-						!strcmp(exspec_cmds[i].name, "@")))
+						!strcmp(exspec_cmds[i].name, "@") ||
+						!strcmp(exspec_cmds[i].name, "ef") ||
+						!strcmp(exspec_cmds[i].name, "ef!")))
 					continue;
 				snprintf(msg, sizeof(msg), "%s  %s",
 					exspec_cmds[i].name, exspec_cmds[i].desc);
@@ -11585,7 +11587,7 @@ index a51117ca..d01fd636 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..e0b84acf 100644
+index 0ce81414..54b593d1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -11688,7 +11690,7 @@ index 0ce81414..e0b84acf 100644
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
  	{"e!", ec_edit},
-@@ -1827,6 +1847,101 @@ static struct excmd {
+@@ -1827,6 +1847,103 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -11725,7 +11727,9 @@ index 0ce81414..e0b84acf 100644
 +				if (exspec_cmds[i].option != option)
 +					continue;
 +				if (agent_tool && (!strcmp(exspec_cmds[i].name, "f") ||
-+						!strcmp(exspec_cmds[i].name, "@")))
++						!strcmp(exspec_cmds[i].name, "@") ||
++						!strcmp(exspec_cmds[i].name, "ef") ||
++						!strcmp(exspec_cmds[i].name, "ef!")))
 +					continue;
 +				snprintf(msg, sizeof(msg), "%s  %s",
 +					exspec_cmds[i].name, exspec_cmds[i].desc);
@@ -11790,7 +11794,7 @@ index 0ce81414..e0b84acf 100644
  /* parse command argument expanding % and ! */
  static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  {
-@@ -1934,8 +2049,35 @@ void *ex_exec(const char *ln)
+@@ -1934,8 +2051,35 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -11828,7 +11832,7 @@ index 0ce81414..e0b84acf 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1954,7 +2096,7 @@ void *ex_exec(const char *ln)
+@@ -1954,7 +2098,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
