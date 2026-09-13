@@ -371,8 +371,9 @@ the API key and model ID. request_timeout and max_tool_rounds limit requests
 and tool execution.
 
 The new ex command "a" opens or resumes the conversation; a range includes
-that buffer text in the prompt. ESC submits, Enter adds a newline, ^C cancels
-and returns, and ^O enters the editor during a conversation suspending
+that buffer text in the prompt. ESC submits a prompt or, while the agent is
+working, stops it and returns to the agent prompt. Enter adds a newline.
+^C cancels and exits the conversation; ^O enters the editor, suspending
 the agent. "a!" clears the conversation; "a~" restarts from the edited
 conversation.
 
