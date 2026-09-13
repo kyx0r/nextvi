@@ -569,7 +569,15 @@ static void agent_editor(void)
 	preserve(sbuf *, agent_capture, agent_capture = NULL;)
 	preserve(int, agent_cancel, agent_cancel = 0;)
 	preserve(int, agent_pause, agent_pause = 0;)
+	preserve(int, xesc, xesc = '\''\\'\'';)
+	preserve(int, xsep, xsep = '\'':'\'';)
+	preserve(int, xexp, xexp = '\''%'\'';)
+	preserve(int, xexe, xexe = '\''!'\'';)
 	led_modeswap();
+	restore(xexe)
+	restore(xexp)
+	restore(xsep)
+	restore(xesc)
 	restore(agent_pause)
 	restore(agent_cancel)
 	restore(agent_capture)
@@ -7047,10 +7055,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..bab8e726
+index 00000000..29f8ebcf
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,887 @@
+@@ -0,0 +1,895 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7590,7 +7598,15 @@ index 00000000..bab8e726
 +	preserve(sbuf *, agent_capture, agent_capture = NULL;)
 +	preserve(int, agent_cancel, agent_cancel = 0;)
 +	preserve(int, agent_pause, agent_pause = 0;)
++	preserve(int, xesc, xesc = '\\';)
++	preserve(int, xsep, xsep = ':';)
++	preserve(int, xexp, xexp = '%';)
++	preserve(int, xexe, xexe = '!';)
 +	led_modeswap();
++	restore(xexe)
++	restore(xexp)
++	restore(xsep)
++	restore(xesc)
 +	restore(agent_pause)
 +	restore(agent_cancel)
 +	restore(agent_capture)
