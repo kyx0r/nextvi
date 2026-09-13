@@ -68,8 +68,12 @@ static const char agent_skills[] =
 "\n"
 "exspec prints the command index and one-line descriptions.\n"
 "Argument prints the ex specification for a command/range or a topic.\n"
-"TO PROTECT THE CONTEXT ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
+"PROTECT THE CONTEXT: ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
 "Do not assume. exspec tailored to a command have important instructions for agentic use.\n"
+"Starter kit example:\n"
+"exspec ranges\n"
+"exspec p\n"
+"exspec g\n"
 "\n"
 "Ex spec notation: <x> denotes a character literal, [x] an optional argument, \n"
 "{x} a required argument, and \"x\" a string. <^X> denotes Ctrl-X. Spaces \n"
@@ -6981,10 +6985,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..772c03f3
+index 00000000..c076ad3c
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,883 @@
+@@ -0,0 +1,887 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7023,8 +7027,12 @@ index 00000000..772c03f3
 +"\n"
 +"exspec prints the command index and one-line descriptions.\n"
 +"Argument prints the ex specification for a command/range or a topic.\n"
-+"TO PROTECT THE CONTEXT ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
++"PROTECT THE CONTEXT: ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
 +"Do not assume. exspec tailored to a command have important instructions for agentic use.\n"
++"Starter kit example:\n"
++"exspec ranges\n"
++"exspec p\n"
++"exspec g\n"
 +"\n"
 +"Ex spec notation: <x> denotes a character literal, [x] an optional argument, \n"
 +"{x} a required argument, and \"x\" a string. <^X> denotes Ctrl-X. Spaces \n"
