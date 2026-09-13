@@ -724,6 +724,14 @@ static void agent_run(const char *input)
 		/* Complete pairs before recursive editing or submissions. */
 		cJSON_AddItemToArray(agent_messages,
 			cJSON_Duplicate(message, 1));
+		if (xar) {
+			cJSON *reasoning = cJSON_GetObjectItem(message,
+				"reasoning_content");
+			if (!cJSON_IsString(reasoning) || !*reasoning->valuestring)
+				reasoning = cJSON_GetObjectItem(message, "reasoning");
+			if (cJSON_IsString(reasoning) && *reasoning->valuestring)
+				agent_log("REASONING", reasoning->valuestring);
+		}
 		if (cJSON_IsString(content))
 			agent_log("ASSISTANT", content->valuestring);
 		int base = cJSON_GetArraySize(agent_messages), index = 0;
@@ -4455,7 +4463,8 @@ const int conf_mode = 0600;
 4??+1m 1220reg p OK conf.c:2:a42sc %? %@2152sc!0?
 1;4??!219reg conf.c:22sc %? %@2132sc!0?
 ?0?
-%f+ \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
+%f+ \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
+\(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
 \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
 \|\[@&!dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?~\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
@@ -4463,47 +4472,50 @@ const int conf_mode = 0600;
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},1??0?
 1??+3m 21q0?
-%f+ \|\[@&!dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?~\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
+%f+ \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
+\|\[@&!dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?~\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
 \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},2??0?
-2??m 2220reg p OK conf.c:301:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^\|\[@&!dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?~\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\$3??0?
-3??m 2220reg p OK conf.c:301:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
-\(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
-\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\4??0?
-4??+3m 2220reg p OK conf.c:301:a42sc %? %@2152sc!1q0?
+2??m 2220reg p OK conf.c:300:a22sc %? %@2152sc!1q0?
+%f+ \(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
+\|\[@&!dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?~\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\3??0?
+3??m 2220reg p OK conf.c:300:a32sc %? %@2152sc!1q0?
+%f+ \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
+\(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
+\(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\4??0?
+4??+3m 2220reg p OK conf.c:300:a42sc %? %@2152sc!1q0?
 %f+ \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
 		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
 	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},5??0?
-5??-1m 2220reg p OK conf.c:301:a52sc %? %@2152sc!1q0?
-%f+ \(\?:..,;..... ...........\(.....\\....\|.\\..\.\?......\[ .........\(..<\(...\^..........\\.......>.\?.\[.>....].\\.........\).\\
-.\?:...-..............9 .t...\?\)\)\(...\[..-...].\[......\[..9]..\[.......\(... ....\\\\....\[.\|\\....\|..\\..\?..\\..\?....\\.....\)\\
-\(\(.a.\|.r.a.\|is.........i........t......a......\|.....\|or.er........]\?...................
-\|........m!.....\?\{..1....\?~.\\.\?...2..\?..........\?...........e.....!\?...-...........c.i....\?.\\
-.....\?.... .t.................\+...d\?.....q..\[.!.....\[..b.]..!\?.y..............\?....
-	.A........Y........,..E...., ..,......M..,.......,..H....E,..R1.....,....\).,
-...._.t.....\\..\........Y..\|.S...B.. ....,6??0?
-6??+3m 2220reg p OK conf.c:301:a62sc %? %@2152sc!1q0?
-grp 1%f+ \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\.*?
+5??-2m 2220reg p OK conf.c:300:a52sc %? %@2152sc!1q0?
+%f+ .....0.9.\+\)....%....0.....]..\?...\?....\*-./..\)\[............ .t......:..\\.....\|..:.......].........................t]\*.
+...\(...].\?....t...\(\?.\\\\\|...........\|.\\.........\?\[ \\..\*.\*.\?........\[.<\\...]...........\|.........\\......\\\.......\|.
+.\?......].\).......\[.-9..........\?:.\[..-./.]....t.....-............\(.....t.\*.\\\|........\\.]...\\\\....\\....\*....]\*\)...
+.\(.....r......h\|.r........g....p........p.\|..........................le.............s..
+......j..m..\|=..\?.......\\..\|...........]......x.................].!\?\|..-.>....]........s....\\
+.\?..!\?\|s.....]..\..\?..............rd.\|...:q.\|........\[................\?......c..\)...
+........\|......., ..........,...,........1...............R......,.......A....
+.....f.,.....\\....,....Y. \| ..N..D.....}.6??0?
+6??+3m 2220reg p OK conf.c:300:a62sc %? %@2152sc!1q0?
+grp 1%f+ \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\.*?
+\(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\.*?
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\.*?
-\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\.*?
-(\|\[@&!dj]\|m!\?\|=\\\\\?\{0,1}\|\\\\\?~\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|ac\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\)7??0?
-grp 07??m 2220reg p OK conf.c:301:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	\{ex_ft, "\.\+", A\(AY1 \| SYN_BD\), 1},
-	\{ex_ft, ":\[ \\t]\*\(\(\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
-\(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\.*(	\{vs_ft, "\.\+", A\(AY1 \| SYN_BD\), 1},)
-	\{vs_ft, "\(\^\[\?/]\)\|\(\\\\\\\\\[<>]\|\\\\\(\\\\\?\[:=!<>#]\|\\\\\[\\\\\^\?\(\(\?:\\\\\\\\\.\?\|\[\^\\\\]]\)\*\)]\|\\\\\[\|\[\.\^\$\\\\\(\)\*\+\|\?]\|\\\\\{\(\[0-9]\*\(,\)\?\[0-9]\*\)\?}\?\)\|\\\\\\\\\(\.\)",
-		A\(SYN_BD, BL1, WH1, GR1, RE1, WH1, YE\)},8??0?
-grp 08??-6m 2220reg p OK conf.c:301:a82sc %? %@2152sc!'\''08??1q0?
+(\(\(pac\|pr\|ai\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\)7??0?
+grp 07??m 2220reg p OK conf.c:300:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\(\?:\(\\n\$\)\|\\n\)\|\\n\|\(\[\^\\n]\+\(\\n\)\)",
 		A\(NA, SYN_BGMK\(RE1\), SYN_BGMK\(AY1\), SYN_BGMK\(AY\)\)},
-	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},.*(	\{vs_ft, "\(\\\\\\\\\)\(\.\)\(\?:\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\[\^\\\\\\\\\\\\]]\)\)\?\|\[\^\\\\\\\\\[\^]\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\.\)\|\\)
+	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},.*(	\{vs_ft, "\.\+", A\(AY1 \| SYN_BD\), 1},)
+	\{vs_ft, "\(\^\[\?/]\)\|\(\\\\\\\\\[<>]\|\\\\\(\\\\\?\[:=!<>#]\|\\\\\[\\\\\^\?\(\(\?:\\\\\\\\\.\?\|\[\^\\\\]]\)\*\)]\|\\\\\[\|\[\.\^\$\\\\\(\)\*\+\|\?]\|\\\\\{\(\[0-9]\*\(,\)\?\[0-9]\*\)\?}\?\)\|\\\\\\\\\(\.\)",
+		A\(SYN_BD, BL1, WH1, GR1, RE1, WH1, YE\)},8??0?
+grp 08??-7m 2220reg p OK conf.c:300:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	\{n_ft, "1\(\[ \\t]\*\[1-9]\[ \\t]\*\)9", A\(RE1, MA1 \| SYN_BD\)},
+	\{n_ft, "9\[ \\t]\*\(\[1-9]\[ \\t]\*\)1", A\(RE1, MA1 \| SYN_BD\)},
+	\{n_ft, "\[1-9]", A\(RE1\)},.*(	\{vs_ft, "\(\\\\\\\\\)\(\.\)\(\?:\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\[\^\\\\\\\\\\\\]]\)\)\?\|\[\^\\\\\\\\\[\^]\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\.\)\|\\)
 \[\^\\\\\\\\\[\^]\\\\\^\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\[\^\\\\\\\\]\)\|\\\\\^\(-\)\[\^\\\\\\\\]",
 		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
-grp 09??-9m 2220reg p OK conf.c:301:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg conf.c:3012sc %? %@2132sc!0?
+grp 09??-10m 2220reg p OK conf.c:300:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg conf.c:3002sc %? %@2132sc!0?
 '\''1i /* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
 static char *log_dir;
 #define LOCAL 1
@@ -4521,9 +4533,12 @@ static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
 
 static int request_timeout = 120;
 static int max_tool_rounds = 200;
+static int xar; /* display returned agent reasoning (:ar) */
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
-'\''2s/\|e/|a[!~]?|e/??!219reg conf.c:301:m22sc %? %@2142sc!b5m!%ya 98?0?
+'\''2,#+1c ((pac|pr|ai|ar|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|a[!~]?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+??!219reg conf.c:300:m22sc %? %@2142sc!b5m!%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
 int xdefreg;			/\* ex default register \*/
 struct buf \*bufs;		/\* main buffers \*/
@@ -4711,34 +4726,103 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 grp 09??-8m 5220reg p OK ex.c:866:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:8662sc %? %@2132sc!0?
 ?0?
-%f+ 	\{"p", ec_print},
+%f+ 
+EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
+EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
+EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
+
+_EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
+_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)1??0?
+1??+3m 61q0?
+%f+ EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
+
+_EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
+_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)2??0?
+2??m 6220reg p OK ex.c:1702:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)$3??0?
+3??m 6220reg p OK ex.c:1702:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 
+EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
+EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)4??0?
+4??+3m 6220reg p OK ex.c:1702:a42sc %? %@2152sc!1q0?
+%f+ 
+_EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
+_EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)5??0?
+5??-1m 6220reg p OK ex.c:1702:a52sc %? %@2152sc!1q0?
+%f+ 
+.....c\).E......EO.......\(...\).E.\(....E...s....O..c...O\(....
+.O...\).........\)...\(..q.......d........... ..\(.l..
+.O....\) E..h.\).EO..i...E.......E.\(..s.
+
+.....s. .t.....a.. . e......a.g..: ...s..x.. ....X....x...; R.._N.......1...\)..e.urn.NU.L.\)
+.E..... ......\*.r. ........\(..g\)...!...........L...,..\).r.t.rn...LL.\)6??0?
+6??+3m 6220reg p OK ex.c:1702:a62sc %? %@2152sc!1q0?
+grp 1%f+ .*?
+EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\).*?
+EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\).*?
+(EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\))7??0?
+grp 07??m 6220reg p OK ex.c:1702:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
+		atoi\(arg\) : \(unsigned char\)\*arg;
+}.*(_EO\(hlr,)
+	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
+	led_ext \*p = led_extfind\(ext_hlr\);8??0?
+grp 08??-6m 6220reg p OK ex.c:1702:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		x->att\[j\+1] = syn_merge\(x->att\[j\+1], conf_hlrev\);
+	}
+}.*(	if \(xhlr && !p\))
+		led_extreg\(\)->ext_func = ext_hlr;
+	else if \(!xhlr && p\)9??0?
+grp 09??-9m 6220reg p OK ex.c:1702:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:17022sc %? %@2132sc!0?
+?0?
+%f+ 	\{"ph", ec_setenc},
+	\{"p", ec_print},
 	EO\(ai\),
-	\{"ac", ec_setacreg},
+	\{"ac", ec_setacreg},1??0?
+1??+2m 71q0?
+%f+ 	\{"ph", ec_setenc},
+	\{"p", ec_print},
+	EO\(ai\),4??0?
+4??+2m 7220reg p OK ex.c:1756:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	\{"ph", ec_setenc},.*?
+	\{"p", ec_print},.*?
+(	EO\(ai\),)7??0?
+grp 07??m 7220reg p OK ex.c:1756:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	EO\(pac\),
+	EO\(pr\),
+	\{"pu", ec_put},.*(	\{"e!", ec_edit},)
+	\{"e", ec_edit},
+	\{"ft", ec_ft},8??0?
+grp 08??-5m 7220reg p OK ex.c:1756:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	\{"bs", ec_bufsave},
+	\{"bx", ec_setbufsmax},
+	\{"b", ec_buffer},.*(	\{"fd", ec_setdir},)
+	\{"fp", ec_setdir},
+	EO\(fr\),9??0?
+grp 09??-8m 7220reg p OK ex.c:1756:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17562sc %? %@2132sc!0?
+?0?
+%f+ 	\{"ac", ec_setacreg},
 	EO\(err\),
 	\{"ef!", ec_fuzz},
 	\{"ef", ec_fuzz},1??0?
-1??+2m 61q0?
-%f+ 	\{"p", ec_print},
-	EO\(ai\),
-	\{"ac", ec_setacreg},4??0?
-4??+2m 6220reg p OK ex.c:1757:a42sc %? %@2152sc!1q0?
-grp 1%f+ 	\{"p", ec_print},.*?
-	EO\(ai\),.*?
-(	\{"ac", ec_setacreg},)7??0?
-grp 07??m 6220reg p OK ex.c:1757:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	EO\(pr\),
-	\{"pu", ec_put},
-	\{"ph", ec_setenc},.*(	\{"e!", ec_edit},)
+1??m 81q0?
+;0fr.,$f+ ^	\{"ac", ec_setacreg},$4??0?
+4??m 8220reg p OK ex.c:1757:a42sc %? %@2152sc!fr 981qfr 980?
+m 01;0grp 1%f> 	EO\(pac\),
+	EO\(pr\),
+	\{"pu", ec_put},.*(	\{"e!", ec_edit},)
 	\{"e", ec_edit},
 	\{"ft", ec_ft},8??0?
-grp 08??-4m 6220reg p OK ex.c:1757:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	\{"bx", ec_setbufsmax},
-	\{"b", ec_buffer},
-	EO\(pac\),.*(	\{"fd", ec_setdir},)
+grp 08??-4m 8220reg p OK ex.c:1757:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	\{"bs", ec_bufsave},
+	\{"bx", ec_setbufsmax},
+	\{"b", ec_buffer},.*(	\{"fd", ec_setdir},)
 	\{"fp", ec_setdir},
 	EO\(fr\),9??0?
-grp 09??-7m 6220reg p OK ex.c:1757:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17572sc %? %@2132sc!0?
+grp 09??-7m 8220reg p OK ex.c:1757:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17572sc %? %@2132sc!0?
 ?0?
 %f+ 	sbuf_smake\(sb, 128\)
 	do \{
@@ -4748,24 +4832,24 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 		xpret = ret;
 		if \(ret && ret != xuerr && xerr & 1\) \{
 			ex_print\(ret, msg_ft\)1??0?
-1??+3m 71q0?
+1??+3m 91q0?
 %f+ 		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);
 		ret = excmds\[idx]\.ec\(sb->s, excmds\[idx]\.name, sb->s \+ arg\);
 		xpret = ret;
 		if \(ret && ret != xuerr && xerr & 1\) \{
 			ex_print\(ret, msg_ft\)2??0?
-2??m 7220reg p OK ex.c:1937:a22sc %? %@2152sc!1q0?
+2??m 9220reg p OK ex.c:1937:a22sc %? %@2152sc!1q0?
 %f+ 		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);
 		ret = excmds\[idx]\.ec\(sb->s, excmds\[idx]\.name, sb->s \+ arg\);3??0?
-3??m 7220reg p OK ex.c:1937:a32sc %? %@2152sc!1q0?
+3??m 9220reg p OK ex.c:1937:a32sc %? %@2152sc!1q0?
 %f+ 	sbuf_smake\(sb, 128\)
 	do \{
 		sbuf_cut\(sb, 0\)4??0?
-4??+3m 7220reg p OK ex.c:1937:a42sc %? %@2152sc!1q0?
+4??+3m 9220reg p OK ex.c:1937:a42sc %? %@2152sc!1q0?
 %f+ 		xpret = ret;
 		if \(ret && ret != xuerr && xerr & 1\) \{
 			ex_print\(ret, msg_ft\)5??0?
-5??-2m 7220reg p OK ex.c:1937:a52sc %? %@2152sc!1q0?
+5??-2m 9220reg p OK ex.c:1937:a52sc %? %@2152sc!1q0?
 %f+ ......s..ke\(.b....8.
 	.o..
 .	..uf...t.... .\)
@@ -4774,24 +4858,24 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 .....e..=.....
 ..i.....t....... .=...... ....e.... .. .
 .......r...\(.e.,........6??0?
-6??+3m 7220reg p OK ex.c:1937:a62sc %? %@2152sc!1q0?
+6??+3m 9220reg p OK ex.c:1937:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	sbuf_smake\(sb, 128\).*?
 	do \{.*?
 		sbuf_cut\(sb, 0\).*?
 (		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);)7??0?
-grp 07??m 7220reg p OK ex.c:1937:a72sc %? %@2152sc!1q0?
+grp 07??m 9220reg p OK ex.c:1937:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(!xexec_dep\)
 		lbuf_mark\(xb, '\''\*'\'', xrow, xoff\);
 	xexec_dep\+\+;.*(			ret = xuerr;)
 		}
 		if \(ret && xerr & 2\)8??0?
-grp 08??-5m 7220reg p OK ex.c:1937:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 9220reg p OK ex.c:1937:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int arg, idx = 0;
 	char \*ret = NULL;
 	preserve\(int, xquit, xquit = 0;\).*(			break;)
 	} while \(\*ln && !xquit\);
 	free\(sb->s\);9??0?
-grp 09??-8m 7220reg p OK ex.c:1937:a92sc %? %@2152sc!'\''00?
+grp 09??-8m 9220reg p OK ex.c:1937:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:19372sc %? %@2132sc!0?
 ?0?
 %f+ 			xcid_free\(\);
@@ -4801,22 +4885,22 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 }
 
 /\* ex main loop \*/1??0?
-1??+3m 81q0?
+1??+3m 101q0?
 %f+ 	return xerr & 4 \? NULL : ret;
 }
 
 /\* ex main loop \*/2??0?
-2??m 8220reg p OK ex.c:1957:a22sc %? %@2152sc!1q0?
+2??m 10220reg p OK ex.c:1957:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	return xerr & 4 \? NULL : ret;$3??0?
-3??m 8220reg p OK ex.c:1957:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 10220reg p OK ex.c:1957:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			xcid_free\(\);
 		xqprop = 0;
 	}4??0?
-4??+3m 8220reg p OK ex.c:1957:a42sc %? %@2152sc!1q0?
+4??+3m 10220reg p OK ex.c:1957:a42sc %? %@2152sc!1q0?
 %f+ }
 
 /\* ex main loop \*/5??0?
-5??-1m 8220reg p OK ex.c:1957:a52sc %? %@2152sc!1q0?
+5??-1m 10220reg p OK ex.c:1957:a52sc %? %@2152sc!1q0?
 %f+ .	..........\(..
 ...qp... ....
 .}
@@ -4824,24 +4908,24 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 }
 
 .......a...l..p...6??0?
-6??+3m 8220reg p OK ex.c:1957:a62sc %? %@2152sc!1q0?
+6??+3m 10220reg p OK ex.c:1957:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			xcid_free\(\);.*?
 		xqprop = 0;.*?
 	}.*?
 (	return xerr & 4 \? NULL : ret;)7??0?
-grp 07??m 8220reg p OK ex.c:1957:a72sc %? %@2152sc!1q0?
+grp 07??m 10220reg p OK ex.c:1957:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		restore\(xquit\)
 	if \(!xexec_dep\) \{
 		if \(xcid && !xcid_keep\).*(void ex\(void\))
 \{
 	xgrec\+\+;8??0?
-grp 08??-4m 8220reg p OK ex.c:1957:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 10220reg p OK ex.c:1957:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	xexec_dep--;
 	if \(\(xquit > 0 && \(xexec_dep \|\| xqprop >= 0\) && --xqprop < 0\)
 			\|\| tmpxquit < -256\).*(	int esc = 0;)
 	sbuf_smake\(sb, xcols\)
 	while \(!xquit\) \{9??0?
-grp 09??-7m 8220reg p OK ex.c:1957:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 10220reg p OK ex.c:1957:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:19572sc %? %@2132sc!0?
 '\''1s/3/5/??!219reg ex.c:45:m12sc %? %@2142sc!0?
 '\''2i 	agent_sync(pxb);
@@ -4857,11 +4941,14 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 ??!219reg ex.c:828:m42sc %? %@2142sc!0?
 ?'\''5s/xvis & 1/(xvis & 1 || agent_tool)/1??1??1q'\''5s/(\(.*1)/(\1 || agent_tool)/2??2??'\''5220reg p OK ex.c:866:s22sc %? %@2162sc!0?
 1;2??!219reg ex.c:866:m52sc %? %@2142sc!0?
-'\''6i 	{"a!", ec_agent},
+'\''6s/s\)/s) EO(ar)/??!219reg ex.c:1702:m62sc %? %@2142sc!0?
+'\''7i 	EO(ar),
+??!219reg ex.c:1756:m72sc %? %@2142sc!0?
+'\''8i 	{"a!", ec_agent},
 	{"a~", ec_agent},
 	{"a", ec_agent},
-??!219reg ex.c:1757:m62sc %? %@2142sc!0?
-'\''7,#+1c 		if (agent_tool && agent_boundary()) {
+??!219reg ex.c:1757:m82sc %? %@2142sc!0?
+'\''9,#+1c 		if (agent_tool && agent_boundary()) {
 			ret = "agent execution interrupted";
 			break;
 		}
@@ -4884,8 +4971,8 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 			ret = "insert/change requires supplied text";
 		else
 			ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
-??!219reg ex.c:1937:m72sc %? %@2142sc!0?
-'\''8s/ x/ !agent_tool && x/??!219reg ex.c:1957:m82sc %? %@2142sc!b6m!%ya 98?0?
+??!219reg ex.c:1937:m92sc %? %@2142sc!0?
+'\''10s/ x/ !agent_tool && x/??!219reg ex.c:1957:m102sc %? %@2142sc!b6m!%ya 98?0?
 %f> 		free\(sb->s\);
 	else
 		lo->ins = \(char\*\*\)sb->s;
@@ -5360,10 +5447,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..84a48bca
+index 00000000..c9be2555
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,902 @@
+@@ -0,0 +1,910 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -6058,6 +6145,14 @@ index 00000000..84a48bca
 +		/* Complete pairs before recursive editing or submissions. */
 +		cJSON_AddItemToArray(agent_messages,
 +			cJSON_Duplicate(message, 1));
++		if (xar) {
++			cJSON *reasoning = cJSON_GetObjectItem(message,
++				"reasoning_content");
++			if (!cJSON_IsString(reasoning) || !*reasoning->valuestring)
++				reasoning = cJSON_GetObjectItem(message, "reasoning");
++			if (cJSON_IsString(reasoning) && *reasoning->valuestring)
++				agent_log("REASONING", reasoning->valuestring);
++		}
 +		if (cJSON_IsString(content))
 +			agent_log("ASSISTANT", content->valuestring);
 +		int base = cJSON_GetArraySize(agent_messages), index = 0;
@@ -9792,10 +9887,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/conf.c b/conf.c
-index a51117ca..8eca19af 100644
+index a51117ca..f77176da 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,23 @@
+@@ -1,5 +1,24 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -9815,21 +9910,24 @@ index a51117ca..8eca19af 100644
 +
 +static int request_timeout = 120;
 +static int max_tool_rounds = 200;
++static int xar; /* display returned agent reasoning (:ar) */
 +
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -298,7 +316,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +316,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+ (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
- ((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+-((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++((pac|pr|ai|ar|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|a[!~]?|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..bfb4e623 100644
+index 0ce81414..0db88c07 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -9879,9 +9977,20 @@ index 0ce81414..bfb4e623 100644
  		sb->s = arg;
  		sb->s_n = 1;
  		key = 127;
-@@ -1755,6 +1763,9 @@ static struct excmd {
+@@ -1699,7 +1707,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+ 
+ EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
+ EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
+-EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
++EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
+ 
+ _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
+ _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
+@@ -1754,7 +1762,11 @@ static struct excmd {
+ 	{"ph", ec_setenc},
  	{"p", ec_print},
  	EO(ai),
++	EO(ar),
  	{"ac", ec_setacreg},
 +	{"a!", ec_agent},
 +	{"a~", ec_agent},
@@ -9889,7 +9998,7 @@ index 0ce81414..bfb4e623 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1934,8 +1945,29 @@ void *ex_exec(const char *ln)
+@@ -1934,8 +1946,29 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -9921,7 +10030,7 @@ index 0ce81414..bfb4e623 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1954,7 +1986,7 @@ void *ex_exec(const char *ln)
+@@ -1954,7 +1987,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
