@@ -377,6 +377,11 @@ working, stops it and returns to the agent prompt. Enter adds a newline.
 the agent. "a!" clears the conversation; "a~" restarts from the edited
 conversation.
 
+"ar" toggles display and logging of returned reasoning; "ar 1" enables it
+and "ar 0" disables it. It defaults to off (xar in conf.c). Reasoning appears
+before the answer after each response completes, if the server supplies
+reasoning_content or reasoning text.
+
 Adds temporary buffers /conversation/ for the conversation and /skills/
 for the system prompt. Both restart commands reload the skills buffer.
 These buffers are saved automatically under $HOME/.nextvi/logs, or log_dir
