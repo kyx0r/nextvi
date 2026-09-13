@@ -323,6 +323,7 @@ static void agent_log(const char *role, const char *text)
 static void agent_key(int c)
 {
 	if (c == TK_CTL('\''c'\'')) agent_cancel = 1;
+	if (c == 27 && !agent_cancel) agent_cancel = 2;
 	if (c == TK_CTL('\''o'\'')) agent_pause = 1;
 	if (c == TK_CTL('\''l'\'')) term_winch = 1;
 }
@@ -566,7 +567,11 @@ static void agent_run(const char *input)
 		cJSON_AddBoolToObject(req, "stream", 0);
 		body = agent_http(req, &st);
 		cJSON_Delete(req);
-		if (agent_cancel) { free(body); agent_log("RESULT", "cancelled"); return; }
+		if (agent_cancel) {
+			free(body);
+			if (agent_cancel != 2) agent_log("RESULT", "cancelled");
+			return;
+		}
 		if (agent_pause) {
 			free(body);
 			agent_editor();
@@ -657,7 +662,7 @@ static void agent_run(const char *input)
 			sbuf_nul(result)
 			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(agent_messages, base + index++),
 				"content", cJSON_CreateString(result->s));
-			agent_log("RESULT", result->s);
+			if (agent_cancel != 2) agent_log("RESULT", result->s);
 			cJSON_Delete(parsed);
 			free(out->s); free(result->s);
 		}
@@ -750,7 +755,8 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 				agent_output("\n");
 				agent_run(draft->s);
 				sbufn_cut(draft, 0)
-				if (agent_cancel) break;
+				if (agent_cancel == 1) break;
+				agent_cancel = 0;
 			}
 			prefix = key == '\''\n'\'' ? 0 : 2;
 			sbufn_cut(line, 0)
@@ -767,6 +773,7 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 }
 ??!219reg agent.c:-1:m2sc %? %@2142sc!b1m!0?
 i /* agent.c: embedded request loop and editor integration */
+/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 static int agent_tool, agent_cancel, agent_pause;
 static sbuf *agent_capture;
 static void *ec_agent(char *loc, char *cmd, char *arg);
@@ -5192,10 +5199,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..b0b102a5
+index 00000000..fc5e3ae3
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,735 @@
+@@ -0,0 +1,741 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -5489,6 +5496,7 @@ index 00000000..b0b102a5
 +static void agent_key(int c)
 +{
 +	if (c == TK_CTL('c')) agent_cancel = 1;
++	if (c == 27 && !agent_cancel) agent_cancel = 2;
 +	if (c == TK_CTL('o')) agent_pause = 1;
 +	if (c == TK_CTL('l')) term_winch = 1;
 +}
@@ -5732,7 +5740,11 @@ index 00000000..b0b102a5
 +		cJSON_AddBoolToObject(req, "stream", 0);
 +		body = agent_http(req, &st);
 +		cJSON_Delete(req);
-+		if (agent_cancel) { free(body); agent_log("RESULT", "cancelled"); return; }
++		if (agent_cancel) {
++			free(body);
++			if (agent_cancel != 2) agent_log("RESULT", "cancelled");
++			return;
++		}
 +		if (agent_pause) {
 +			free(body);
 +			agent_editor();
@@ -5823,7 +5835,7 @@ index 00000000..b0b102a5
 +			sbuf_nul(result)
 +			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(agent_messages, base + index++),
 +				"content", cJSON_CreateString(result->s));
-+			agent_log("RESULT", result->s);
++			if (agent_cancel != 2) agent_log("RESULT", result->s);
 +			cJSON_Delete(parsed);
 +			free(out->s); free(result->s);
 +		}
@@ -5916,7 +5928,8 @@ index 00000000..b0b102a5
 +				agent_output("\n");
 +				agent_run(draft->s);
 +				sbufn_cut(draft, 0)
-+				if (agent_cancel) break;
++				if (agent_cancel == 1) break;
++				agent_cancel = 0;
 +			}
 +			prefix = key == '\n' ? 0 : 2;
 +			sbufn_cut(line, 0)
@@ -5933,11 +5946,12 @@ index 00000000..b0b102a5
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..466cb0d6
+index 00000000..b675f415
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
 +/* agent.c: embedded request loop and editor integration */
++/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
 +static sbuf *agent_capture;
 +static void *ec_agent(char *loc, char *cmd, char *arg);
