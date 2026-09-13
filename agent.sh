@@ -738,10 +738,11 @@ static void agent_run(const char *input)
 				agent_sequence();
 				err = ex_exec(command->valuestring);
 				agent_sequence();
-				if (xgr == 2 && out->s_n >= 1024) {
+				if (xgr == 2 && out->s_n >= 2048) {
 					sbuf_cut(out, 0)
-					sbufn_str(out, "1024 byte context protection limit exceeded: use gr 0 to disable guardrail for 1 turn")
-				}
+					sbufn_str(out, "2048 byte context protection limit exceeded: use gr 0 to disable guardrail for 1 turn")
+				} else if (xgr >= 0 && xgr < 2)
+					xgr++;
 				agent_capture = NULL;
 				agent_tool = 0;
 				if (agent_input_blocked) {
@@ -5244,35 +5245,6 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 grp 09??-7m 17220reg p OK ex.c:1937:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:19372sc %? %@2132sc!0?
 ?0?
-%f+ 	} while \(\*ln && !xquit\);
-	free\(sb->s\);
-	xexec_dep--;
-	if \(\(xquit > 0 && \(xexec_dep \|\| xqprop >= 0\) && --xqprop < 0\)
-			\|\| tmpxquit < -256\)
-		restore\(xquit\)1??0?
-1??+2m 181q0?
-%f+ 	} while \(\*ln && !xquit\);
-	free\(sb->s\);
-	xexec_dep--;4??0?
-4??+2m 18220reg p OK ex.c:1948:a42sc %? %@2152sc!1q0?
-grp 1%f+ 	} while \(\*ln && !xquit\);.*?
-	free\(sb->s\);.*?
-(	xexec_dep--;)7??0?
-grp 07??m 18220reg p OK ex.c:1948:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 		}
-		if \(ret && xerr & 2\)
-			break;.*(	if \(!xexec_dep\) \{)
-		if \(xcid && !xcid_keep\)
-			xcid_free\(\);8??0?
-grp 08??-4m 18220reg p OK ex.c:1948:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		if \(ret && ret != xuerr && xerr & 1\) \{
-			ex_print\(ret, msg_ft\)
-			ret = xuerr;.*(		xqprop = 0;)
-	}
-	return xerr & 4 \? NULL : ret;9??0?
-grp 09??-7m 18220reg p OK ex.c:1948:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:19482sc %? %@2132sc!0?
-?0?
 %f+ 			xcid_free\(\);
 		xqprop = 0;
 	}
@@ -5280,22 +5252,22 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 }
 
 /\* ex main loop \*/1??0?
-1??+3m 191q0?
+1??+3m 181q0?
 %f+ 	return xerr & 4 \? NULL : ret;
 }
 
 /\* ex main loop \*/2??0?
-2??m 19220reg p OK ex.c:1957:a22sc %? %@2152sc!1q0?
+2??m 18220reg p OK ex.c:1957:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	return xerr & 4 \? NULL : ret;$3??0?
-3??m 19220reg p OK ex.c:1957:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 18220reg p OK ex.c:1957:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			xcid_free\(\);
 		xqprop = 0;
 	}4??0?
-4??+3m 19220reg p OK ex.c:1957:a42sc %? %@2152sc!1q0?
+4??+3m 18220reg p OK ex.c:1957:a42sc %? %@2152sc!1q0?
 %f+ }
 
 /\* ex main loop \*/5??0?
-5??-1m 19220reg p OK ex.c:1957:a52sc %? %@2152sc!1q0?
+5??-1m 18220reg p OK ex.c:1957:a52sc %? %@2152sc!1q0?
 %f+ .	..........\(..
 ...qp... ....
 .}
@@ -5303,24 +5275,24 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 }
 
 .......a...l..p...6??0?
-6??+3m 19220reg p OK ex.c:1957:a62sc %? %@2152sc!1q0?
+6??+3m 18220reg p OK ex.c:1957:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			xcid_free\(\);.*?
 		xqprop = 0;.*?
 	}.*?
 (	return xerr & 4 \? NULL : ret;)7??0?
-grp 07??m 19220reg p OK ex.c:1957:a72sc %? %@2152sc!1q0?
+grp 07??m 18220reg p OK ex.c:1957:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		restore\(xquit\)
 	if \(!xexec_dep\) \{
 		if \(xcid && !xcid_keep\).*(void ex\(void\))
 \{
 	xgrec\+\+;8??0?
-grp 08??-4m 19220reg p OK ex.c:1957:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 18220reg p OK ex.c:1957:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	xexec_dep--;
 	if \(\(xquit > 0 && \(xexec_dep \|\| xqprop >= 0\) && --xqprop < 0\)
 			\|\| tmpxquit < -256\).*(	int esc = 0;)
 	sbuf_smake\(sb, xcols\)
 	while \(!xquit\) \{9??0?
-grp 09??-7m 19220reg p OK ex.c:1957:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 18220reg p OK ex.c:1957:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:19572sc %? %@2132sc!0?
 '\''1s/3/5/??!219reg ex.c:45:m12sc %? %@2142sc!0?
 '\''2i 	agent_sync(pxb);
@@ -5487,10 +5459,7 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 			break;
 		}
 ??!219reg ex.c:1937:m172sc %? %@2142sc!0?
-'\''18i 	if (agent_tool && xgr >= 0 && xgr < 2)
-		xgr++;
-??!219reg ex.c:1948:m182sc %? %@2142sc!0?
-'\''19s/ x/ !agent_tool && x/??!219reg ex.c:1957:m192sc %? %@2142sc!b7m!0?
+'\''18s/ x/ !agent_tool && x/??!219reg ex.c:1957:m182sc %? %@2142sc!b7m!0?
 i # Embed the rendered README without indentation or example prompt colons.
 function quote(s,    i, c, out) {
 	out = "\""
@@ -7149,10 +7118,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..1f032f25
+index 00000000..15cef7bf
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,894 @@
+@@ -0,0 +1,895 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7861,10 +7830,11 @@ index 00000000..1f032f25
 +				agent_sequence();
 +				err = ex_exec(command->valuestring);
 +				agent_sequence();
-+				if (xgr == 2 && out->s_n >= 1024) {
++				if (xgr == 2 && out->s_n >= 2048) {
 +					sbuf_cut(out, 0)
-+					sbufn_str(out, "1024 byte context protection limit exceeded: use gr 0 to disable guardrail for 1 turn")
-+				}
++					sbufn_str(out, "2048 byte context protection limit exceeded: use gr 0 to disable guardrail for 1 turn")
++				} else if (xgr >= 0 && xgr < 2)
++					xgr++;
 +				agent_capture = NULL;
 +				agent_tool = 0;
 +				if (agent_input_blocked) {
@@ -11679,7 +11649,7 @@ index a51117ca..c60434e3 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..8ea2a0b2 100644
+index 0ce81414..42585fed 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -11942,16 +11912,7 @@ index 0ce81414..8ea2a0b2 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1946,6 +2091,8 @@ void *ex_exec(const char *ln)
- 	} while (*ln && !xquit);
- 	free(sb->s);
- 	xexec_dep--;
-+	if (agent_tool && xgr >= 0 && xgr < 2)
-+		xgr++;
- 	if ((xquit > 0 && (xexec_dep || xqprop >= 0) && --xqprop < 0)
- 			|| tmpxquit < -256)
- 		restore(xquit)
-@@ -1954,7 +2101,7 @@ void *ex_exec(const char *ln)
+@@ -1954,7 +2099,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
