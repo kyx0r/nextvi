@@ -68,7 +68,6 @@ static const char agent_skills[] =
 "\n"
 "exspec prints the command index and one-line descriptions.\n"
 "Argument prints the ex specification for a command/range or a topic.\n"
-"Use exspec exspec to guide on how to access detailed topics.\n"
 "TO PROTECT THE CONTEXT ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
 "Do not assume. exspec tailored to a command have important instructions for agentic use.\n"
 "\n"
@@ -6982,10 +6981,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..115b4e10
+index 00000000..772c03f3
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,884 @@
+@@ -0,0 +1,883 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7024,7 +7023,6 @@ index 00000000..115b4e10
 +"\n"
 +"exspec prints the command index and one-line descriptions.\n"
 +"Argument prints the ex specification for a command/range or a topic.\n"
-+"Use exspec exspec to guide on how to access detailed topics.\n"
 +"TO PROTECT THE CONTEXT ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
 +"Do not assume. exspec tailored to a command have important instructions for agentic use.\n"
 +"\n"
