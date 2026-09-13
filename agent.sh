@@ -4644,11 +4644,14 @@ static struct {
 	{"p", "Keep reads small and within buffer bounds."},
 	{"p", "Check the position with = and line count with $= before printing ranges."},
 	{"p", "Use character ranges for long lines; stop when you have enough context."},
+	{"p", "%p should not be used on buffers greater than 200 lines. Use it as a last resort."},
 	{"p", ""},
 	{"p", "Example: print 5 lines around current position"},
 	{"p", ".-5,.+5p"},
 	{"p", "Example: print first occurrence of \"int\""},
 	{"p", ">int>p"},
+	{"ranges", "> and < start searching from the current cursor position."},
+	{"ranges", "Verify position with = command to ensure it is where intended."},
 	{"=", "Check the line count with $= before printing ranges."},
 	{"g", exspec_global},
 	{"g!", exspec_global},
@@ -11439,10 +11442,10 @@ index c836c94c..32da3431 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index a51117ca..50c8182b 100644
+index a51117ca..f7c46766 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,51 @@
+@@ -1,5 +1,54 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -11480,11 +11483,14 @@ index a51117ca..50c8182b 100644
 +	{"p", "Keep reads small and within buffer bounds."},
 +	{"p", "Check the position with = and line count with $= before printing ranges."},
 +	{"p", "Use character ranges for long lines; stop when you have enough context."},
++	{"p", "%p should not be used on buffers greater than 200 lines. Use it as a last resort."},
 +	{"p", ""},
 +	{"p", "Example: print 5 lines around current position"},
 +	{"p", ".-5,.+5p"},
 +	{"p", "Example: print first occurrence of \"int\""},
 +	{"p", ">int>p"},
++	{"ranges", "> and < start searching from the current cursor position."},
++	{"ranges", "Verify position with = command to ensure it is where intended."},
 +	{"=", "Check the line count with $= before printing ranges."},
 +	{"g", exspec_global},
 +	{"g!", exspec_global},
@@ -11494,7 +11500,7 @@ index a51117ca..50c8182b 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +343,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +346,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
