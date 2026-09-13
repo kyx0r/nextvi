@@ -5229,6 +5229,9 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 			for (i = 0; i < LEN(exspec_cmds); i++) {
 				if (exspec_cmds[i].option != option)
 					continue;
+				if (agent_tool && (!strcmp(exspec_cmds[i].name, "f") ||
+						!strcmp(exspec_cmds[i].name, "@")))
+					continue;
 				snprintf(msg, sizeof(msg), "%s  %s",
 					exspec_cmds[i].name, exspec_cmds[i].desc);
 				ex_print(msg, msg_ft)
@@ -11495,7 +11498,7 @@ index a51117ca..45fce44c 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..745e53ab 100644
+index 0ce81414..007fee40 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -11586,7 +11589,7 @@ index 0ce81414..745e53ab 100644
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
  	{"e!", ec_edit},
-@@ -1827,6 +1844,98 @@ static struct excmd {
+@@ -1827,6 +1844,101 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -11621,6 +11624,9 @@ index 0ce81414..745e53ab 100644
 +			ex_print(option ? "EX OPTIONS" : "EX COMMANDS", msg_ft)
 +			for (i = 0; i < LEN(exspec_cmds); i++) {
 +				if (exspec_cmds[i].option != option)
++					continue;
++				if (agent_tool && (!strcmp(exspec_cmds[i].name, "f") ||
++						!strcmp(exspec_cmds[i].name, "@")))
 +					continue;
 +				snprintf(msg, sizeof(msg), "%s  %s",
 +					exspec_cmds[i].name, exspec_cmds[i].desc);
@@ -11685,7 +11691,7 @@ index 0ce81414..745e53ab 100644
  /* parse command argument expanding % and ! */
  static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  {
-@@ -1934,8 +2043,35 @@ void *ex_exec(const char *ln)
+@@ -1934,8 +2046,35 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -11723,7 +11729,7 @@ index 0ce81414..745e53ab 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1954,7 +2090,7 @@ void *ex_exec(const char *ln)
+@@ -1954,7 +2093,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
