@@ -4428,67 +4428,121 @@ CJSON_PUBLIC(void) cJSON_free(void *object);
 
 #endif
 ??!219reg cJSON.h:-1:m2sc %? %@2142sc!b4m!%ya 98?0?
-%f> 
-build\(\) \{
-    require "\$\{CC}"
-    log "\$G" "Entering step: \\"Build \\"\$\{BASE##\*/}\\" using \\"\$CC\\"\\""
-    run "\$CC vi\.c -o vi \$CFLAGS" \|\| \{
-        log "\$R" "Failed during step: \\"Build \\"\$\{BASE##\*/}\\" using \\"\$CC\\""1??0?
-1??+2m 11q0?
-%f> 
-build\(\) \{
-    require "\$\{CC}"4??0?
-4??+2m 1220reg p OK cbuild.sh:60:a42sc %? %@2152sc!1q0?
-grp 1%f> .*?
-build\(\) \{.*?
-(    require "\$\{CC}")7??0?
-grp 07??m 1220reg p OK cbuild.sh:60:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> \*Linux\*\) CFLAGS="\$CFLAGS -D_POSIX_C_SOURCE=200809L" ;;
-\*\) CFLAGS="\$CFLAGS -D_DEFAULT_SOURCE" ;;
-esac.*(install\(\) \{)
+%f>     }
+}
+
+install\(\) \{
     run rm -f "\$DESTDIR\$PREFIX/bin/vi" 2> /dev/null
-    command -v "\$STRIP" >/dev/null 2>&1 && run "\$STRIP" vi8??0?
-grp 08??-8m 1220reg p OK cbuild.sh:60:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> case "\$OS" in
-\*_NT\*\) CFLAGS="\$CFLAGS -D_POSIX_C_SOURCE=200809L" ;;
-\*Darwin\*\) CFLAGS="\$CFLAGS -D_POSIX_C_SOURCE=200809L -D_DARWIN_C_SOURCE" ;;.*(    run mkdir -p "\$DESTDIR\$PREFIX/bin/" &&)
+    command -v "\$STRIP" >/dev/null 2>&1 && run "\$STRIP" vi1??0?
+1??+2m 11q0?
+%f>     }
+}
+
+4??0?
+4??+2m 1220reg p OK cbuild.sh:67:a42sc %? %@2152sc!1q0?
+m 01;0grp 1%f>     run "\$CC vi\.c -o vi \$CFLAGS" \|\| \{
+        log "\$R" "Failed during step: \\"Build \\"\$\{BASE##\*/}\\" using \\"\$CC\\""
+        exit 1.*(    run mkdir -p "\$DESTDIR\$PREFIX/bin/" &&)
     run cp -f vi "\$DESTDIR\$PREFIX/bin/vi" &&
-    \[ -x "\$DESTDIR\$PREFIX/bin/vi" ] && log "\$G" "\\"\$\{BASE##\*/}\\" has been installed to \$DESTDIR\$PREFIX/bin/vi" \|\| log "\$R" "Couldn'\''t finish installation"9??0?
-grp 09??-11m 1220reg p OK cbuild.sh:60:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg cbuild.sh:602sc %? %@2132sc!0?
+    \[ -x "\$DESTDIR\$PREFIX/bin/vi" ] && log "\$G" "\\"\$\{BASE##\*/}\\" has been installed to \$DESTDIR\$PREFIX/bin/vi" \|\| log "\$R" "Couldn'\''t finish installation"8??0?
+grp 08??-4m 1220reg p OK cbuild.sh:67:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> build\(\) \{
+    require "\$\{CC}"
+    log "\$G" "Entering step: \\"Build \\"\$\{BASE##\*/}\\" using \\"\$CC\\"\\"".*(print_usage\(\) \{)
+    echo "Usage: \$0 \{install\|pgobuild\|build\|debug\|fetch\|clean\|retrieve\|bench}"
+    echo "Options may be shortened to a prefix"9??0?
+grp 09??-9m 1220reg p OK cbuild.sh:67:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg cbuild.sh:672sc %? %@2132sc!0?
 ?0?
-%f+     p\*\)
+%f+ }
+
+print_usage\(\) \{
+    echo "Usage: \$0 \{install\|pgobuild\|build\|debug\|fetch\|clean\|retrieve\|bench}"
+    echo "Options may be shortened to a prefix"
+    exit "\$1"
+}1??0?
+1??+3m 21q0?
+%f+     echo "Usage: \$0 \{install\|pgobuild\|build\|debug\|fetch\|clean\|retrieve\|bench}"
+    echo "Options may be shortened to a prefix"
+    exit "\$1"
+}2??0?
+2??m 2220reg p OK cbuild.sh:77:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^    echo "Usage: \$0 \{install\|pgobuild\|build\|debug\|fetch\|clean\|retrieve\|bench}"$3??0?
+3??m 2220reg p OK cbuild.sh:77:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ }
+
+print_usage\(\) \{4??0?
+4??+3m 2220reg p OK cbuild.sh:77:a42sc %? %@2152sc!1q0?
+%f+     echo "Options may be shortened to a prefix"
+    exit "\$1"
+}5??0?
+5??-1m 2220reg p OK cbuild.sh:77:a52sc %? %@2152sc!1q0?
+%f+ }
+
+....._u........
+.. ..c.....sa...... ......l...go.............eb....e....c.ean.........\|b......
+.......o.....ion..m.. .. .h.rt.n....o.. ...f...
+......it ..."
+}6??0?
+6??+3m 2220reg p OK cbuild.sh:77:a62sc %? %@2152sc!1q0?
+grp 1%f+ }.*?
+.*?
+print_usage\(\) \{.*?
+(    echo "Usage: \$0 \{install\|pgobuild\|build\|debug\|fetch\|clean\|retrieve\|bench}")7??0?
+grp 07??m 2220reg p OK cbuild.sh:77:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f>     run mkdir -p "\$DESTDIR\$PREFIX/bin/" &&
+    run cp -f vi "\$DESTDIR\$PREFIX/bin/vi" &&
+    \[ -x "\$DESTDIR\$PREFIX/bin/vi" ] && log "\$G" "\\"\$\{BASE##\*/}\\" has been installed to \$DESTDIR\$PREFIX/bin/vi" \|\| log "\$R" "Couldn'\''t finish installation".*(# Argument processing)
+while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do
+    case "\$1" in8??0?
+grp 08??-5m 2220reg p OK cbuild.sh:77:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> install\(\) \{
+    run rm -f "\$DESTDIR\$PREFIX/bin/vi" 2> /dev/null
+    command -v "\$STRIP" >/dev/null 2>&1 && run "\$STRIP" vi.*(    i\*\))
         shift
-        pgobuild\(\) \{
-            ccversion="\$\(\$CC --version\)"
-            case "\$ccversion" in \*clang\*\) clang=1 ;; esac
-            if \[ "\$clang" = 1 ] && \[ -z "\$PROFDATA" ]; then1??0?
-1??+2m 21q0?
-%f+     p\*\)
+        \[ -x \./vi ] && install && exit 0 \|\| build && install && exit 09??0?
+grp 09??-8m 2220reg p OK cbuild.sh:77:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg cbuild.sh:772sc %? %@2132sc!0?
+?0?
+%f+ # Argument processing
+while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do
+    case "\$1" in
+    i\*\)
         shift
-        pgobuild\(\) \{4??0?
-4??+2m 2220reg p OK cbuild.sh:112:a42sc %? %@2152sc!1q0?
-grp 1%f+     p\*\).*?
-        shift.*?
-(        pgobuild\(\) \{)7??0?
-grp 07??m 2220reg p OK cbuild.sh:112:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f>         # Start build process
-        build && exit 0 \|\| exit 1
-        ;;.*(                if command -v llvm-profdata >/dev/null 2>&1; then)
-                    PROFDATA=llvm-profdata
-                elif xcrun -f llvm-profdata >/dev/null 2>&1; then8??0?
-grp 08??-4m 2220reg p OK cbuild.sh:112:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f>                 print_usage 0
-            fi
-        fi.*(                    PROFDATA="xcrun llvm-profdata")
-                fi
-                \[ -z "\$PROFDATA" ] && log "\$R" "pgobuild with clang requires llvm-profdata" && exit 19??0?
-grp 09??-7m 2220reg p OK cbuild.sh:112:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg cbuild.sh:1122sc %? %@2132sc!0?
-'\''1i     awk -f exspec.awk README > exspec.h || exit 1
-??!219reg cbuild.sh:60:m12sc %? %@2142sc!0?
-'\''2i             awk -f exspec.awk README > exspec.h || exit 1
-??!219reg cbuild.sh:112:m22sc %? %@2142sc!b5m!%ya 98?0?
+        \[ -x \./vi ] && install && exit 0 \|\| build && install && exit 01??0?
+1??+2m 31q0?
+%f+ # Argument processing
+while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do
+    case "\$1" in4??0?
+4??+2m 3220reg p OK cbuild.sh:84:a42sc %? %@2152sc!1q0?
+grp 1%f+ # Argument processing.*?
+while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
+(    case "\$1" in)7??0?
+grp 07??m 3220reg p OK cbuild.sh:84:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f>     echo "Options may be shortened to a prefix"
+    exit "\$1"
+}.*(    d\*\))
+        shift
+        if command -v scan-build >/dev/null 2>&1; then8??0?
+grp 08??-5m 3220reg p OK cbuild.sh:84:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f>     run cp -f vi "\$DESTDIR\$PREFIX/bin/vi" &&
+    \[ -x "\$DESTDIR\$PREFIX/bin/vi" ] && log "\$G" "\\"\$\{BASE##\*/}\\" has been installed to \$DESTDIR\$PREFIX/bin/vi" \|\| log "\$R" "Couldn'\''t finish installation"
+}.*(                CC="scan-build \$CC")
+        fi
+        CFLAGS="\$CFLAGS -O0 -g -fsanitize=address -fsanitize=undefined"9??0?
+grp 09??-8m 3220reg p OK cbuild.sh:84:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg cbuild.sh:842sc %? %@2132sc!0?
+'\''1i spec() {
+    require "awk"
+    awk -f exspec.awk README > exspec.h
+}
+
+??!219reg cbuild.sh:67:m12sc %? %@2142sc!0?
+'\''2s/h}/h|spec}/??!219reg cbuild.sh:77:m22sc %? %@2142sc!0?
+'\''3i     s*)
+        spec && exit 0 || exit 1
+        ;;
+??!219reg cbuild.sh:84:m32sc %? %@2142sc!b5m!%ya 98?0?
 %f> #include "kmap\.h"
 
 /\* access mode of new files \*/
@@ -11344,25 +11398,40 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..cecd8318 100755
+index c836c94c..32da3431 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -58,6 +58,7 @@ esac
+@@ -65,6 +65,11 @@ build() {
+     }
+ }
  
- build() {
-     require "${CC}"
-+    awk -f exspec.awk README > exspec.h || exit 1
-     log "$G" "Entering step: \"Build \"${BASE##*/}\" using \"$CC\"\""
-     run "$CC vi.c -o vi $CFLAGS" || {
-         log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\""
-@@ -110,6 +111,7 @@ while [ $# -gt 0 ] || [ "$1" = "" ]; do
-     p*)
++spec() {
++    require "awk"
++    awk -f exspec.awk README > exspec.h
++}
++
+ install() {
+     run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
+     command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
+@@ -74,7 +79,7 @@ install() {
+ }
+ 
+ print_usage() {
+-    echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean|retrieve|bench}"
++    echo "Usage: $0 {install|pgobuild|build|debug|fetch|clean|retrieve|bench|spec}"
+     echo "Options may be shortened to a prefix"
+     exit "$1"
+ }
+@@ -82,6 +87,9 @@ print_usage() {
+ # Argument processing
+ while [ $# -gt 0 ] || [ "$1" = "" ]; do
+     case "$1" in
++    s*)
++        spec && exit 0 || exit 1
++        ;;
+     i*)
          shift
-         pgobuild() {
-+            awk -f exspec.awk README > exspec.h || exit 1
-             ccversion="$($CC --version)"
-             case "$ccversion" in *clang*) clang=1 ;; esac
-             if [ "$clang" = 1 ] && [ -z "$PROFDATA" ]; then
+         [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
 index a51117ca..45fce44c 100644
 --- a/conf.c
