@@ -61,36 +61,34 @@ static int agent_ready, agent_syncing, agent_child_status;
 static char *agent_init_error;
 
 static const char agent_skills[] =
-"Inside nextvi, use the ex tool with a JSON object whose command key holds an "
-"ex command. Inspect before editing. Tools access all buffers "
-"regardless of scope; scope is a snapshot, not a live selection.\n"
-"Nextvi is not Vim or traditional vi/ex.\n"
-"Completed edits survive errors and cancellation; inspect before retrying.\n"
-"Protect context: tool output is uncapped and history is never compacted or "
-"silently truncated.\n"
+"Inside nextvi, use the ex tool with a JSON object whose command \n"
+"key holds an ex command.\n"
 "\n"
-"Ex spec notation: <x> denotes a character literal, [x] an optional argument, "
-"{x} a required argument, and \"x\" a string. <^X> denotes Ctrl-X. Spaces "
-"inside a closure separate alternatives; # denotes decimal representation "
-"inside a closure, and x-y denotes a range. These are notation, not text to "
-"type; use the actual characters or values.\n"
+"Nextvi is NOT Vim or traditional vi/ex\n"
 "\n"
-"Ex syntax: [<sep>][prefix][cmd][<pad>][args]. Use one space pad before arguments "
-"to avoid command-name ambiguity. Your session defaults to vis 3 (raw ex "
-"mode), with all ex special characters disabled: escape, separator, pathname "
-"expansion and shell expansion. With these defaults, command chaining is "
-"unavailable; use one command per tool call. No additional ex argument "
-"escaping is needed. "
-"Colons, percent signs, exclamation marks and "
-"backslashes in arguments are literal. JSON escaping still applies.\n"
-"Ranges and command-specific syntax (such as regex escapes) still apply, "
-"including in nested command bodies.\n"
-"You can change vis and sc during the session.\n"
-"\n"
-"Consult exspec before using unfamiliar commands.\n"
 "exspec prints the command index and one-line descriptions.\n"
 "Argument prints the ex specification for a command/range or a topic.\n"
-"Use exspec exspec to guide on how to access detailed topics.";
+"Use exspec exspec to guide on how to access detailed topics.\n"
+"TO PROTECT THE CONTEXT ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
+"Do not assume. exspec tailored to a command have important instructions for agentic use.\n"
+"\n"
+"Ex spec notation: <x> denotes a character literal, [x] an optional argument, \n"
+"{x} a required argument, and \"x\" a string. <^X> denotes Ctrl-X. Spaces \n"
+"inside a closure separate alternatives; # denotes decimal representation \n"
+"inside a closure, and x-y denotes a range. These are notation, not text to \n"
+"type; use the actual characters or values.\n"
+"\n"
+"Ex syntax: [<sep>][prefix][cmd][<pad>][args]. Use one space pad before arguments \n"
+"to avoid command-name ambiguity. Your session defaults to vis 3 (raw ex \n"
+"mode), with all ex special characters disabled: escape, separator, pathname \n"
+"expansion and shell expansion. With these defaults, command chaining is \n"
+"unavailable; use one command per tool call. No additional ex argument \n"
+"escaping is needed.\n"
+"Colons, percent signs, exclamation marks and backslashes in arguments \n"
+"are literal. JSON escaping still applies.\n"
+"Ranges and command-specific syntax (such as regex escapes) still apply, \n"
+"including in nested command bodies.\n"
+"You can change vis and sc during the session.\n";
 
 static cJSON *agent_msg(const char *role, const char *content)
 {
@@ -6981,10 +6979,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..8865e814
+index 00000000..115b4e10
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,886 @@
+@@ -0,0 +1,884 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7016,36 +7014,34 @@ index 00000000..8865e814
 +static char *agent_init_error;
 +
 +static const char agent_skills[] =
-+"Inside nextvi, use the ex tool with a JSON object whose command key holds an "
-+"ex command. Inspect before editing. Tools access all buffers "
-+"regardless of scope; scope is a snapshot, not a live selection.\n"
-+"Nextvi is not Vim or traditional vi/ex.\n"
-+"Completed edits survive errors and cancellation; inspect before retrying.\n"
-+"Protect context: tool output is uncapped and history is never compacted or "
-+"silently truncated.\n"
++"Inside nextvi, use the ex tool with a JSON object whose command \n"
++"key holds an ex command.\n"
 +"\n"
-+"Ex spec notation: <x> denotes a character literal, [x] an optional argument, "
-+"{x} a required argument, and \"x\" a string. <^X> denotes Ctrl-X. Spaces "
-+"inside a closure separate alternatives; # denotes decimal representation "
-+"inside a closure, and x-y denotes a range. These are notation, not text to "
-+"type; use the actual characters or values.\n"
++"Nextvi is NOT Vim or traditional vi/ex\n"
 +"\n"
-+"Ex syntax: [<sep>][prefix][cmd][<pad>][args]. Use one space pad before arguments "
-+"to avoid command-name ambiguity. Your session defaults to vis 3 (raw ex "
-+"mode), with all ex special characters disabled: escape, separator, pathname "
-+"expansion and shell expansion. With these defaults, command chaining is "
-+"unavailable; use one command per tool call. No additional ex argument "
-+"escaping is needed. "
-+"Colons, percent signs, exclamation marks and "
-+"backslashes in arguments are literal. JSON escaping still applies.\n"
-+"Ranges and command-specific syntax (such as regex escapes) still apply, "
-+"including in nested command bodies.\n"
-+"You can change vis and sc during the session.\n"
-+"\n"
-+"Consult exspec before using unfamiliar commands.\n"
 +"exspec prints the command index and one-line descriptions.\n"
 +"Argument prints the ex specification for a command/range or a topic.\n"
-+"Use exspec exspec to guide on how to access detailed topics.";
++"Use exspec exspec to guide on how to access detailed topics.\n"
++"TO PROTECT THE CONTEXT ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
++"Do not assume. exspec tailored to a command have important instructions for agentic use.\n"
++"\n"
++"Ex spec notation: <x> denotes a character literal, [x] an optional argument, \n"
++"{x} a required argument, and \"x\" a string. <^X> denotes Ctrl-X. Spaces \n"
++"inside a closure separate alternatives; # denotes decimal representation \n"
++"inside a closure, and x-y denotes a range. These are notation, not text to \n"
++"type; use the actual characters or values.\n"
++"\n"
++"Ex syntax: [<sep>][prefix][cmd][<pad>][args]. Use one space pad before arguments \n"
++"to avoid command-name ambiguity. Your session defaults to vis 3 (raw ex \n"
++"mode), with all ex special characters disabled: escape, separator, pathname \n"
++"expansion and shell expansion. With these defaults, command chaining is \n"
++"unavailable; use one command per tool call. No additional ex argument \n"
++"escaping is needed.\n"
++"Colons, percent signs, exclamation marks and backslashes in arguments \n"
++"are literal. JSON escaping still applies.\n"
++"Ranges and command-specific syntax (such as regex escapes) still apply, \n"
++"including in nested command bodies.\n"
++"You can change vis and sc during the session.\n";
 +
 +static cJSON *agent_msg(const char *role, const char *content)
 +{
