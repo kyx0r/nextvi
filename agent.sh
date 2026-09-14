@@ -5509,10 +5509,11 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 		long b = *beg, e = *end;
 		const char *op = e <= b ? b > e ? " > " : " = " : " ";
 		const char *rowop = xrow >= n ? xrow > n ? " > " : " = " : " ";
+		const char *endop = *end > n ? " <= end" : "";
 		snprintf(xirrmsg, sizeof(xirrmsg),
 			"invalid range: beg:%ld%send:%ld o1:%d o2:%d "
-			"xoff:%d xrow:%d%slbuf_len:%d",
-			b, op, e, *o1, *o2, xoff, xrow, rowop, n);
+			"xoff:%d xrow:%d%slbuf_len:%d%s",
+			b, op, e, *o1, *o2, xoff, xrow, rowop, n, endop);
 		xrerr = xirrmsg;
 	}
 	return invalid * ret;
@@ -12022,7 +12023,7 @@ index a51117ca..e496344d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..bfa1b9fc 100644
+index 0ce81414..1cf26d12 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -12063,7 +12064,7 @@ index 0ce81414..bfa1b9fc 100644
  			if (haddr++ % 2)
  				*o2 = ooff;
  			else
-@@ -366,8 +371,19 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
+@@ -366,8 +371,20 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
  		*end = *beg + 1;
  		ret += adj << 1;
  	}
@@ -12075,17 +12076,18 @@ index 0ce81414..bfa1b9fc 100644
 +		long b = *beg, e = *end;
 +		const char *op = e <= b ? b > e ? " > " : " = " : " ";
 +		const char *rowop = xrow >= n ? xrow > n ? " > " : " = " : " ";
++		const char *endop = *end > n ? " <= end" : "";
 +		snprintf(xirrmsg, sizeof(xirrmsg),
 +			"invalid range: beg:%ld%send:%ld o1:%d o2:%d "
-+			"xoff:%d xrow:%d%slbuf_len:%d",
-+			b, op, e, *o1, *o2, xoff, xrow, rowop, n);
++			"xoff:%d xrow:%d%slbuf_len:%d%s",
++			b, op, e, *o1, *o2, xoff, xrow, rowop, n, endop);
 +		xrerr = xirrmsg;
 +	}
 +	return invalid * ret;
  }
  
  static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
-@@ -724,6 +740,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
+@@ -724,6 +741,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
  	xrow = row;
  	xoff = off;
  	xb = pxb;
@@ -12093,7 +12095,7 @@ index 0ce81414..bfa1b9fc 100644
  	if (fd >= 0)
  		close(fd);
  	return ret;
-@@ -819,6 +836,12 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
+@@ -819,6 +837,12 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
  
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  {
@@ -12106,7 +12108,7 @@ index 0ce81414..bfa1b9fc 100644
  	if (xpr > 0) {
  		ex_regput(xpr, line, 1);
  		sbuf *pr = ex_regget(xpr);
-@@ -826,6 +849,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
+@@ -826,6 +850,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  				pr->s[pr->s_n-1] != '\n')
  			ex_regput(xpr, "\n", 1);
  	}
@@ -12115,7 +12117,7 @@ index 0ce81414..bfa1b9fc 100644
  	if (xvis & 1) {
  		term_write(line, dstrlen(line, '\n'))
  		term_write("\n", 1)
-@@ -851,6 +876,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
+@@ -851,6 +877,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  static void *ec_insert(char *loc, char *cmd, char *arg)
  {
  	int beg, end, o1 = -1, o2 = -1, ps = 0, key;
@@ -12124,7 +12126,7 @@ index 0ce81414..bfa1b9fc 100644
  	sbuf _sb, *sb = &_sb;
  	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
  		if (*loc && cmd[0] != 'c' && beg == -1 && end == 0
-@@ -863,7 +890,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
+@@ -863,7 +891,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
  			end = beg + 1;
  		}
  	}
@@ -12133,7 +12135,7 @@ index 0ce81414..bfa1b9fc 100644
  		sb->s = arg;
  		sb->s_n = 1;
  		key = 127;
-@@ -1699,7 +1726,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1699,7 +1727,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
@@ -12142,7 +12144,7 @@ index 0ce81414..bfa1b9fc 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1726,12 +1753,15 @@ _EO(left,
+@@ -1726,12 +1754,15 @@ _EO(left,
  )
  
  #undef EO
@@ -12159,7 +12161,7 @@ index 0ce81414..bfa1b9fc 100644
  } excmds[] = {
  	{"@", ec_termexec},
  	{"&", ec_termexec},
-@@ -1754,8 +1784,14 @@ static struct excmd {
+@@ -1754,8 +1785,14 @@ static struct excmd {
  	{"ph", ec_setenc},
  	{"p", ec_print},
  	EO(ai),
@@ -12174,7 +12176,7 @@ index 0ce81414..bfa1b9fc 100644
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
  	{"e!", ec_edit},
-@@ -1775,6 +1811,7 @@ static struct excmd {
+@@ -1775,6 +1812,7 @@ static struct excmd {
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
@@ -12182,7 +12184,7 @@ index 0ce81414..bfa1b9fc 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1827,6 +1864,101 @@ static struct excmd {
+@@ -1827,6 +1865,101 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -12284,7 +12286,7 @@ index 0ce81414..bfa1b9fc 100644
  /* parse command argument expanding % and ! */
  static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  {
-@@ -1934,7 +2066,25 @@ void *ex_exec(const char *ln)
+@@ -1934,7 +2067,25 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -12311,7 +12313,7 @@ index 0ce81414..bfa1b9fc 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1954,7 +2104,7 @@ void *ex_exec(const char *ln)
+@@ -1954,7 +2105,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
