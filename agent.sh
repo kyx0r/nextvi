@@ -106,36 +106,6 @@ static char *agent_text(struct lbuf *lb)
 	sbufn_ret(sb, sb->s)
 }
 
-/* Remove terminal control sequences before either capture or display. */
-static void agent_plain(sbuf *out, const char *s)
-{
-	while (*s) {
-		unsigned char c = *s++;
-		if (c == 27) {
-			if (*s == '\''['\'') {
-				s++;
-				while (*s && !(*s >= '\''@'\'' && *s <= '\''~'\''))
-					s++;
-				if (*s)
-					s++;
-			} else if (*s == '\'']'\'' || *s == '\''P'\'' ||
-					*s == '\''^'\'' || *s == '\''_'\'') {
-				s++;
-				while (*s && *s != 7 &&
-						!(*s == 27 && s[1] == '\''\\'\''))
-					s++;
-				if (*s == 7)
-					s++;
-				else if (*s)
-					s += 2;
-			} else if (*s)
-				s++;
-		} else if (c == '\''\n'\'' || c == '\''\t'\'' || (c >= 32 && c != 127))
-			sbuf_chr(out, c)
-	}
-	sbuf_nul(out)
-}
-
 static int agent_writeall(int fd, const char *s, size_t n)
 {
 	while (n) {
@@ -152,10 +122,7 @@ static int agent_writeall(int fd, const char *s, size_t n)
 
 static void agent_output(const char *s)
 {
-	sbuf_smake(sb, 256)
-	agent_plain(sb, s);
-	agent_writeall(STDOUT_FILENO, sb->s, sb->s_n);
-	free(sb->s);
+	agent_writeall(STDOUT_FILENO, s, strlen(s));
 }
 
 static int agent_save(int i)
@@ -284,7 +251,7 @@ static void agent_log(const char *role, const char *text)
 	sbuf_smake(sb, 256)
 	sbuf_str(sb, role)
 	sbuf_chr(sb, '\''\n'\'')
-	agent_plain(sb, text);
+	sbuf_str(sb, text);
 	if (sb->s[sb->s_n-1] != '\''\n'\'')
 		sbuf_chr(sb, '\''\n'\'')
 	sbuf_chr(sb, '\''\n'\'')
@@ -402,7 +369,9 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
 static sbuf *agent_shell(char *cmd, sbuf *input, int *status)
 {
 	char *sh = getenv("SHELL"),
-	     *argv[] = {sh && *sh ? sh : "sh", "-c", cmd, NULL};
+	     *argv[] = {sh && *sh ? sh : "sh",
+		xish ? "-i" : "-c", xish ? "-c" : cmd,
+		xish ? cmd : NULL};
 	int st;
 	sbuf *out = agent_process(argv, input, &st, 0);
 	if (!out) {
@@ -414,7 +383,7 @@ static sbuf *agent_shell(char *cmd, sbuf *input, int *status)
 	if (st)
 		agent_child_status = st;
 	if (agent_capture)
-		agent_plain(agent_capture, out->s);
+		sbuf_mem(agent_capture, out->s, out->s_n);
 	return out;
 }
 
@@ -531,9 +500,9 @@ static void agent_redraw(const char *draft)
 {
 	char *log = agent_text(tempbufs[3].lb);
 	sbuf_smake(sb, 256)
-	agent_plain(sb, log);
+	sbuf_str(sb, log);
 	if (draft)
-		agent_plain(sb, draft);
+		sbuf_str(sb, draft);
 	int cap = MAX(2, xrows), *starts = emalloc(sizeof(int) * cap);
 	int rows = 1, col = 0;
 	starts[0] = 0;
@@ -1011,7 +980,6 @@ static void *ec_agent(char *loc, char *cmd, char *arg);
 static void *ec_aco(char *loc, char *cmd, char *arg);
 static void agent_init(void);
 static void agent_sync(struct lbuf *lb);
-static void agent_plain(sbuf *out, const char *s);
 static sbuf *agent_shell(char *cmd, sbuf *input, int *status);
 static int agent_boundary(void);
 ??!219reg agent.h:-1:m2sc %? %@2142sc!b2m!0?
@@ -5337,7 +5305,7 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 '\''2i 	agent_sync(pxb);
 ??!219reg ex.c:726:m22sc %? %@2142sc!0?
 '\''3i 	if (agent_capture) {
-		agent_plain(agent_capture, line);
+		sbuf_str(agent_capture, line);
 		if (flg && (!*line || !agent_capture->s_n ||
 				agent_capture->s[agent_capture->s_n-1] != '\''\n'\''))
 			sbuf_chr(agent_capture, '\''\n'\'')
@@ -7155,10 +7123,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..b55d0fe3
+index 00000000..367b2041
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,971 @@
+@@ -0,0 +1,940 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7235,36 +7203,6 @@ index 00000000..b55d0fe3
 +	sbufn_ret(sb, sb->s)
 +}
 +
-+/* Remove terminal control sequences before either capture or display. */
-+static void agent_plain(sbuf *out, const char *s)
-+{
-+	while (*s) {
-+		unsigned char c = *s++;
-+		if (c == 27) {
-+			if (*s == '[') {
-+				s++;
-+				while (*s && !(*s >= '@' && *s <= '~'))
-+					s++;
-+				if (*s)
-+					s++;
-+			} else if (*s == ']' || *s == 'P' ||
-+					*s == '^' || *s == '_') {
-+				s++;
-+				while (*s && *s != 7 &&
-+						!(*s == 27 && s[1] == '\\'))
-+					s++;
-+				if (*s == 7)
-+					s++;
-+				else if (*s)
-+					s += 2;
-+			} else if (*s)
-+				s++;
-+		} else if (c == '\n' || c == '\t' || (c >= 32 && c != 127))
-+			sbuf_chr(out, c)
-+	}
-+	sbuf_nul(out)
-+}
-+
 +static int agent_writeall(int fd, const char *s, size_t n)
 +{
 +	while (n) {
@@ -7281,10 +7219,7 @@ index 00000000..b55d0fe3
 +
 +static void agent_output(const char *s)
 +{
-+	sbuf_smake(sb, 256)
-+	agent_plain(sb, s);
-+	agent_writeall(STDOUT_FILENO, sb->s, sb->s_n);
-+	free(sb->s);
++	agent_writeall(STDOUT_FILENO, s, strlen(s));
 +}
 +
 +static int agent_save(int i)
@@ -7413,7 +7348,7 @@ index 00000000..b55d0fe3
 +	sbuf_smake(sb, 256)
 +	sbuf_str(sb, role)
 +	sbuf_chr(sb, '\n')
-+	agent_plain(sb, text);
++	sbuf_str(sb, text);
 +	if (sb->s[sb->s_n-1] != '\n')
 +		sbuf_chr(sb, '\n')
 +	sbuf_chr(sb, '\n')
@@ -7531,7 +7466,9 @@ index 00000000..b55d0fe3
 +static sbuf *agent_shell(char *cmd, sbuf *input, int *status)
 +{
 +	char *sh = getenv("SHELL"),
-+	     *argv[] = {sh && *sh ? sh : "sh", "-c", cmd, NULL};
++	     *argv[] = {sh && *sh ? sh : "sh",
++		xish ? "-i" : "-c", xish ? "-c" : cmd,
++		xish ? cmd : NULL};
 +	int st;
 +	sbuf *out = agent_process(argv, input, &st, 0);
 +	if (!out) {
@@ -7543,7 +7480,7 @@ index 00000000..b55d0fe3
 +	if (st)
 +		agent_child_status = st;
 +	if (agent_capture)
-+		agent_plain(agent_capture, out->s);
++		sbuf_mem(agent_capture, out->s, out->s_n);
 +	return out;
 +}
 +
@@ -7660,9 +7597,9 @@ index 00000000..b55d0fe3
 +{
 +	char *log = agent_text(tempbufs[3].lb);
 +	sbuf_smake(sb, 256)
-+	agent_plain(sb, log);
++	sbuf_str(sb, log);
 +	if (draft)
-+		agent_plain(sb, draft);
++		sbuf_str(sb, draft);
 +	int cap = MAX(2, xrows), *starts = emalloc(sizeof(int) * cap);
 +	int rows = 1, col = 0;
 +	starts[0] = 0;
@@ -8132,10 +8069,10 @@ index 00000000..b55d0fe3
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..c1c9349c
+index 00000000..4bb30120
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,11 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -8145,7 +8082,6 @@ index 00000000..c1c9349c
 +static void *ec_aco(char *loc, char *cmd, char *arg);
 +static void agent_init(void);
 +static void agent_sync(struct lbuf *lb);
-+static void agent_plain(sbuf *out, const char *s);
 +static sbuf *agent_shell(char *cmd, sbuf *input, int *status);
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
@@ -11783,7 +11719,7 @@ index a51117ca..e496344d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..3f7a2789 100644
+index 0ce81414..c9b4b2ed 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -11808,7 +11744,7 @@ index 0ce81414..3f7a2789 100644
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  {
 +	if (agent_capture) {
-+		agent_plain(agent_capture, line);
++		sbuf_str(agent_capture, line);
 +		if (flg && (!*line || !agent_capture->s_n ||
 +				agent_capture->s[agent_capture->s_n-1] != '\n'))
 +			sbuf_chr(agent_capture, '\n')
