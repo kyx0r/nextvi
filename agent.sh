@@ -61,15 +61,15 @@ static int agent_ready, agent_syncing, agent_child_status;
 static char *agent_init_error;
 
 static const char agent_skills[] =
-"Inside nextvi, use the ex tool with a JSON object whose command \n"
+"Inside Nextvi, use the ex tool with a JSON object whose command \n"
 "key holds an ex command.\n"
 "\n"
-"Nextvi is NOT Vim or traditional vi/ex\n"
+"Nextvi is NOT a standard vi/ex\n"
 "\n"
-"exspec prints the command index and one-line descriptions.\n"
-"Argument prints the ex specification for a command/range or a topic.\n"
-"PROTECT THE CONTEXT: ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
-"Do not assume. exspec tailored to a command have important instructions for agentic use.\n"
+"Without an argument, exspec prints the command index with one-line descriptions.\n"
+"Given an argument, exspec prints the ex specification for a command or a topic.\n"
+"PROTECT THE CONTEXT: ALWAYS CONSULT EXSPEC WITH FOR A COMMAND NOT USED PREVIOUSLY.\n"
+"Do not assume. exspec is your guide.\n"
 "At a minimum, you must execute:\n"
 "exspec p\n"
 "Optional:\n"
@@ -738,7 +738,7 @@ static void agent_run(const char *input)
 				agent_sequence();
 				err = ex_exec(command->valuestring);
 				agent_sequence();
-				if (xgr == 2 && out->s_n >= 4096) {
+				if (xgr == 2 && out->s_n > 4096) {
 					sbuf_cut(out, 0)
 					sbufn_str(out, "4096 byte context protection limit exceeded: use gr 0 to disable guardrail for 1 turn")
 				} else if (xgr >= 0 && xgr < 2)
@@ -5294,8 +5294,6 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 	int i, j, option, begin = -1, end = 0;
 	char *desc, msg[512];
 	if (!*arg) {
-		ex_print("EX RANGES: % | , ; # . $ '\'' > < - + * / 0 1 2 3 4 5 6 7 8 9", msg_ft)
-		ex_print("", msg_ft)
 		for (option = 0; option <= 1; option++) {
 			if (option)
 				ex_print("", msg_ft)
@@ -5332,7 +5330,7 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 	}
 	if (!strcmp(arg, "exspec")) {
 		ex_print("exspec [command range topic]", msg_ft)
-		ex_print("No argument prints the command index. Arguments are literal.", msg_ft)
+		ex_print("No argument prints the command index.", msg_ft)
 		ex_print("Topics: parsing, escapes, expansion, ranges, commands, options.", msg_ft)
 		exspec_extra(arg);
 		return NULL;
@@ -5383,13 +5381,7 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 			ret = "command unavailable during agent execution";
 			break;
 		}
-		if (excmds[idx].ec == ec_exspec) {
-			arg = sb->s_n;
-			while (*ln && *ln != xsep)
-				sbuf_chr(sb, *ln++)
-			sbuf_nul(sb)
-		} else
-			ln = ex_arg(ln, sb, &arg);
+		ln = ex_arg(ln, sb, &arg);
 		if (agent_tool && (agent_cancel || agent_pause)) {
 			ret = "agent execution interrupted";
 			break;
@@ -7054,7 +7046,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..4147fcdf
+index 00000000..d2c11ab7
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,895 @@
@@ -7089,15 +7081,15 @@ index 00000000..4147fcdf
 +static char *agent_init_error;
 +
 +static const char agent_skills[] =
-+"Inside nextvi, use the ex tool with a JSON object whose command \n"
++"Inside Nextvi, use the ex tool with a JSON object whose command \n"
 +"key holds an ex command.\n"
 +"\n"
-+"Nextvi is NOT Vim or traditional vi/ex\n"
++"Nextvi is NOT a standard vi/ex\n"
 +"\n"
-+"exspec prints the command index and one-line descriptions.\n"
-+"Argument prints the ex specification for a command/range or a topic.\n"
-+"PROTECT THE CONTEXT: ALWAYS CONSULT EXSPEC WITH ARGUMENT FOR A COMMAND PREVIOUSLY NOT USED.\n"
-+"Do not assume. exspec tailored to a command have important instructions for agentic use.\n"
++"Without an argument, exspec prints the command index with one-line descriptions.\n"
++"Given an argument, exspec prints the ex specification for a command or a topic.\n"
++"PROTECT THE CONTEXT: ALWAYS CONSULT EXSPEC WITH FOR A COMMAND NOT USED PREVIOUSLY.\n"
++"Do not assume. exspec is your guide.\n"
 +"At a minimum, you must execute:\n"
 +"exspec p\n"
 +"Optional:\n"
@@ -7766,7 +7758,7 @@ index 00000000..4147fcdf
 +				agent_sequence();
 +				err = ex_exec(command->valuestring);
 +				agent_sequence();
-+				if (xgr == 2 && out->s_n >= 4096) {
++				if (xgr == 2 && out->s_n > 4096) {
 +					sbuf_cut(out, 0)
 +					sbufn_str(out, "4096 byte context protection limit exceeded: use gr 0 to disable guardrail for 1 turn")
 +				} else if (xgr >= 0 && xgr < 2)
@@ -11585,7 +11577,7 @@ index a51117ca..c60434e3 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..e8d4c51e 100644
+index 0ce81414..b9e9b8cd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -11693,7 +11685,7 @@ index 0ce81414..e8d4c51e 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1827,6 +1847,103 @@ static struct excmd {
+@@ -1827,6 +1847,101 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -11720,8 +11712,6 @@ index 0ce81414..e8d4c51e 100644
 +	int i, j, option, begin = -1, end = 0;
 +	char *desc, msg[512];
 +	if (!*arg) {
-+		ex_print("EX RANGES: % | , ; # . $ ' > < - + * / 0 1 2 3 4 5 6 7 8 9", msg_ft)
-+		ex_print("", msg_ft)
 +		for (option = 0; option <= 1; option++) {
 +			if (option)
 +				ex_print("", msg_ft)
@@ -11758,7 +11748,7 @@ index 0ce81414..e8d4c51e 100644
 +	}
 +	if (!strcmp(arg, "exspec")) {
 +		ex_print("exspec [command range topic]", msg_ft)
-+		ex_print("No argument prints the command index. Arguments are literal.", msg_ft)
++		ex_print("No argument prints the command index.", msg_ft)
 +		ex_print("Topics: parsing, escapes, expansion, ranges, commands, options.", msg_ft)
 +		exspec_extra(arg);
 +		return NULL;
@@ -11797,7 +11787,7 @@ index 0ce81414..e8d4c51e 100644
  /* parse command argument expanding % and ! */
  static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  {
-@@ -1934,7 +2051,31 @@ void *ex_exec(const char *ln)
+@@ -1934,7 +2049,25 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -11816,13 +11806,7 @@ index 0ce81414..e8d4c51e 100644
 +			ret = "command unavailable during agent execution";
 +			break;
 +		}
-+		if (excmds[idx].ec == ec_exspec) {
-+			arg = sb->s_n;
-+			while (*ln && *ln != xsep)
-+				sbuf_chr(sb, *ln++)
-+			sbuf_nul(sb)
-+		} else
-+			ln = ex_arg(ln, sb, &arg);
++		ln = ex_arg(ln, sb, &arg);
 +		if (agent_tool && (agent_cancel || agent_pause)) {
 +			ret = "agent execution interrupted";
 +			break;
@@ -11830,7 +11814,7 @@ index 0ce81414..e8d4c51e 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1954,7 +2095,7 @@ void *ex_exec(const char *ln)
+@@ -1954,7 +2087,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
