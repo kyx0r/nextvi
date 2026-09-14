@@ -59,6 +59,8 @@ static cJSON *agent_messages;
 static unsigned long agent_epoch, agent_serial;
 static int agent_ready, agent_syncing, agent_child_status;
 static char *agent_init_error;
+static unsigned long agent_rounds;	/* tool rounds completed in the current run */
+static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
 
 static const char agent_skills[] =
 "Inside Nextvi, use the ex tool with a JSON object whose command \n"
@@ -603,6 +605,7 @@ static void agent_run(const char *input)
 	char *body;
 	int st;
 	agent_cancel = agent_pause = 0;
+	agent_rounds = 0;
 	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
 	agent_log("USER", input);
 	for (int round = 0; ; ) {
@@ -737,6 +740,7 @@ static void agent_run(const char *input)
 				agent_child_status = 0;
 				agent_sequence();
 				err = ex_exec(command->valuestring);
+				agent_tool_calls++;
 				agent_sequence();
 				if (xgr == 2 && out->s_n > 4096) {
 					sbuf_cut(out, 0)
@@ -797,6 +801,7 @@ static void agent_run(const char *input)
 				return;
 			agent_refresh();
 		}
+		agent_rounds = round;
 		if (!has_calls)
 			return;
 		if (round++ == max_tool_rounds) {
@@ -806,6 +811,79 @@ static void agent_run(const char *input)
 			return;
 		}
 	}
+}
+
+/* Print agent context usage and session statistics. */
+static void *ec_aco(char *loc, char *cmd, char *arg)
+{
+	char msg[200];
+	int counts[4] = {0, 0, 0, 0};
+	unsigned long sums[4] = {0, 0, 0, 0};
+	const char *names[4] = {"system", "user", "assistant", "tool"};
+	cJSON *m;
+	ex_print("agent context usage", msg_ft)
+	if (!agent_ready) {
+		ex_print(agent_init_error ? agent_init_error :
+			"agent session is not running", msg_ft)
+		return NULL;
+	}
+	snprintf(msg, sizeof(msg), "state      ready, run %lu, epoch %lu",
+		agent_serial, agent_epoch);
+	ex_print(msg, msg_ft)
+	snprintf(msg, sizeof(msg), "activity   %lu tool calls, %lu rounds this run",
+		agent_tool_calls, agent_rounds);
+	ex_print(msg, msg_ft)
+	if (agent_messages) {
+		cJSON_ArrayForEach(m, agent_messages) {
+			cJSON *role = cJSON_GetObjectItem(m, "role");
+			cJSON *content = cJSON_GetObjectItem(m, "content");
+			int r = 0;
+			if (cJSON_IsString(role)) {
+				if (!strcmp(role->valuestring, "user"))
+					r = 1;
+				else if (!strcmp(role->valuestring, "assistant"))
+					r = 2;
+				else if (!strcmp(role->valuestring, "tool"))
+					r = 3;
+			}
+			counts[r]++;
+			if (cJSON_IsString(content))
+				sums[r] += strlen(content->valuestring);
+		}
+		char *json = cJSON_PrintUnformatted(agent_messages);
+		snprintf(msg, sizeof(msg), "context    %d messages, %ld bytes payload",
+			cJSON_GetArraySize(agent_messages),
+			json ? (long)strlen(json) : 0);
+		ex_print(msg, msg_ft)
+		free(json);
+		for (int r = 0; r < 4; r++) {
+			snprintf(msg, sizeof(msg), "%-9s  %d msgs, %ld bytes",
+				names[r], counts[r], (long)sums[r]);
+			ex_print(msg, msg_ft)
+		}
+	} else
+		ex_print("context    no conversation yet", msg_ft)
+	{
+		char *s = agent_text(tempbufs[3].lb);
+		snprintf(msg, sizeof(msg), "log        %d lines, %ld bytes",
+			lbuf_len(tempbufs[3].lb), (long)strlen(s));
+		ex_print(msg, msg_ft)
+		free(s);
+		s = agent_text(tempbufs[4].lb);
+		snprintf(msg, sizeof(msg), "skills     %d lines, %ld bytes",
+			lbuf_len(tempbufs[4].lb), (long)strlen(s));
+		ex_print(msg, msg_ft)
+		free(s);
+	}
+	snprintf(msg, sizeof(msg), "capture    %ld bytes in current tool output",
+		agent_capture ? (long)agent_capture->s_n : 0);
+	ex_print(msg, msg_ft)
+	snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, guardrail %d",
+		max_tool_rounds, request_timeout, xgr);
+	ex_print(msg, msg_ft)
+	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
+	ex_print(msg, msg_ft)
+	return NULL;
 }
 
 static void *ec_agent(char *loc, char *cmd, char *arg)
@@ -932,6 +1010,7 @@ static int agent_tool, agent_cancel, agent_pause;
 static int agent_input_blocked;
 static sbuf *agent_capture;
 static void *ec_agent(char *loc, char *cmd, char *arg);
+static void *ec_aco(char *loc, char *cmd, char *arg);
 static void agent_init(void);
 static void agent_sync(struct lbuf *lb);
 static void agent_plain(sbuf *out, const char *s);
@@ -4543,7 +4622,27 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
 1;4;7;8;9??!219reg cbuild.sh:842sc %? %@2132sc!0?
 '\''1i spec() {
     require "awk"
-    awk -f exspec.awk README > exspec.h
+    # Agent-only ex specs are injected here so README stays pristine on master.
+    # Keep this block in sync with the agent command table in ex.c.
+    tmp="$(mktemp)"
+    awk '\''
+        /^     ac\[regex\]$/ && !done {
+            print "     aco"
+            print "             Print agent context usage and session statistics"
+            print ""
+            print "             Without an argument, prints the size of the conversation context"
+            print "             (message count and payload bytes), per-role usage, session"
+            print "             activity and the configured limits."
+            print ""
+            print "             Example: current context usage"
+            print "             :aco"
+            print ""
+            done = 1
+        }
+        { print }
+    '\'' README > "$tmp" &&
+    awk -f exspec.awk "$tmp" > exspec.h
+    rm -f "$tmp"
 }
 
 ??!219reg cbuild.sh:67:m12sc %? %@2142sc!0?
@@ -5262,6 +5361,7 @@ static void *ec_exspec(char *loc, char *cmd, char *arg);
 '\''9i 	int option;
 ??!219reg ex.c:1734:m92sc %? %@2142sc!0?
 '\''10i 	EO(ar),
+	{"aco", ec_aco},
 ??!219reg ex.c:1756:m102sc %? %@2142sc!0?
 '\''11i 	{"a!", ec_agent},
 	{"a~", ec_agent},
@@ -6200,6 +6300,16 @@ static char *exspec_lines[] = {
 	"cm![keymap]",
 	"Set an alternative keymap",
 	"",
+	"aco",
+	"Print agent context usage and session statistics",
+	"",
+	"Without an argument, prints the size of the conversation context",
+	"(message count and payload bytes), per-role usage, session",
+	"activity and the configured limits.",
+	"",
+	"Example: current context usage",
+	"aco",
+	"",
 	"ac[regex]",
 	"Set autocomplete filter regex",
 	"",
@@ -6503,37 +6613,38 @@ static const struct {
 	{"ft", "Set a filetype", 716, 722, 0},
 	{"cm", "Set a keymap", 723, 727, 0},
 	{"cm!", "Set an alternative keymap", 728, 730, 0},
-	{"ac", "Set autocomplete filter regex", 731, 739, 0},
-	{"sc", "Set ex special characters", 740, 750, 0},
-	{"sc!", "Set ex special characters", 751, 758, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 759, 766, 0},
-	{"uz", "Toggle zero-width character placeholders", 767, 770, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 771, 775, 0},
-	{"ph", "Redefine placeholders", 776, 792, 0},
-	{"ai", "Indent new lines", 801, 804, 1},
-	{"ic", "Ignore case in regular expressions", 805, 806, 1},
-	{"ish", "Interactive shell", 807, 822, 1},
-	{"grp", "Regex search group", 823, 831, 1},
-	{"hl", "Highlight text based on rules defined in conf.c", 832, 835, 1},
-	{"hlr", "Highlight text in reverse direction", 836, 837, 1},
-	{"hll", "Highlight current line based on filetype hl", 837, 838, 1},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 838, 839, 1},
-	{"hlw", "Highlight current word based on filetype hl", 839, 840, 1},
-	{"led", "Enable all terminal output", 840, 841, 1},
-	{"vis", "Control startup flags", 842, 853, 1},
-	{"mpt", "Control vi prompts", 854, 864, 1},
-	{"order", "Reorder characters based on rules defined in conf.c", 865, 867, 1},
-	{"shape", "Perform Arabic script letter shaping", 867, 869, 1},
-	{"pac", "Print autocomplete suggestions on the fly", 869, 870, 1},
-	{"ts", "Number of spaces used to represent a tab", 870, 871, 1},
-	{"td", "Current text direction context", 871, 877, 1},
-	{"pr", "Print register", 878, 894, 1},
-	{"fr", "Find register", 895, 907, 1},
-	{"rr", "Record register", 908, 921, 1},
-	{"lim", "Line length render limit", 922, 937, 1},
-	{"seq", "Control Undo/Redo", 938, 950, 1},
-	{"left", "Control horizontal scroll", 951, 956, 1},
-	{"err", "Control ex errors", 957, 969, 1},
+	{"aco", "Print agent context usage and session statistics", 731, 740, 0},
+	{"ac", "Set autocomplete filter regex", 741, 749, 0},
+	{"sc", "Set ex special characters", 750, 760, 0},
+	{"sc!", "Set ex special characters", 761, 768, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 769, 776, 0},
+	{"uz", "Toggle zero-width character placeholders", 777, 780, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 781, 785, 0},
+	{"ph", "Redefine placeholders", 786, 802, 0},
+	{"ai", "Indent new lines", 811, 814, 1},
+	{"ic", "Ignore case in regular expressions", 815, 816, 1},
+	{"ish", "Interactive shell", 817, 832, 1},
+	{"grp", "Regex search group", 833, 841, 1},
+	{"hl", "Highlight text based on rules defined in conf.c", 842, 845, 1},
+	{"hlr", "Highlight text in reverse direction", 846, 847, 1},
+	{"hll", "Highlight current line based on filetype hl", 847, 848, 1},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 848, 849, 1},
+	{"hlw", "Highlight current word based on filetype hl", 849, 850, 1},
+	{"led", "Enable all terminal output", 850, 851, 1},
+	{"vis", "Control startup flags", 852, 863, 1},
+	{"mpt", "Control vi prompts", 864, 874, 1},
+	{"order", "Reorder characters based on rules defined in conf.c", 875, 877, 1},
+	{"shape", "Perform Arabic script letter shaping", 877, 879, 1},
+	{"pac", "Print autocomplete suggestions on the fly", 879, 880, 1},
+	{"ts", "Number of spaces used to represent a tab", 880, 881, 1},
+	{"td", "Current text direction context", 881, 887, 1},
+	{"pr", "Print register", 888, 904, 1},
+	{"fr", "Find register", 905, 917, 1},
+	{"rr", "Record register", 918, 931, 1},
+	{"lim", "Line length render limit", 932, 947, 1},
+	{"seq", "Control Undo/Redo", 948, 960, 1},
+	{"left", "Control horizontal scroll", 961, 966, 1},
+	{"err", "Control ex errors", 967, 979, 1},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -7046,10 +7157,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..d2c11ab7
+index 00000000..e5e9810a
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,895 @@
+@@ -0,0 +1,973 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7079,6 +7190,8 @@ index 00000000..d2c11ab7
 +static unsigned long agent_epoch, agent_serial;
 +static int agent_ready, agent_syncing, agent_child_status;
 +static char *agent_init_error;
++static unsigned long agent_rounds;	/* tool rounds completed in the current run */
++static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
 +
 +static const char agent_skills[] =
 +"Inside Nextvi, use the ex tool with a JSON object whose command \n"
@@ -7623,6 +7736,7 @@ index 00000000..d2c11ab7
 +	char *body;
 +	int st;
 +	agent_cancel = agent_pause = 0;
++	agent_rounds = 0;
 +	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
 +	agent_log("USER", input);
 +	for (int round = 0; ; ) {
@@ -7757,6 +7871,7 @@ index 00000000..d2c11ab7
 +				agent_child_status = 0;
 +				agent_sequence();
 +				err = ex_exec(command->valuestring);
++				agent_tool_calls++;
 +				agent_sequence();
 +				if (xgr == 2 && out->s_n > 4096) {
 +					sbuf_cut(out, 0)
@@ -7817,6 +7932,7 @@ index 00000000..d2c11ab7
 +				return;
 +			agent_refresh();
 +		}
++		agent_rounds = round;
 +		if (!has_calls)
 +			return;
 +		if (round++ == max_tool_rounds) {
@@ -7826,6 +7942,79 @@ index 00000000..d2c11ab7
 +			return;
 +		}
 +	}
++}
++
++/* Print agent context usage and session statistics. */
++static void *ec_aco(char *loc, char *cmd, char *arg)
++{
++	char msg[200];
++	int counts[4] = {0, 0, 0, 0};
++	unsigned long sums[4] = {0, 0, 0, 0};
++	const char *names[4] = {"system", "user", "assistant", "tool"};
++	cJSON *m;
++	ex_print("agent context usage", msg_ft)
++	if (!agent_ready) {
++		ex_print(agent_init_error ? agent_init_error :
++			"agent session is not running", msg_ft)
++		return NULL;
++	}
++	snprintf(msg, sizeof(msg), "state      ready, run %lu, epoch %lu",
++		agent_serial, agent_epoch);
++	ex_print(msg, msg_ft)
++	snprintf(msg, sizeof(msg), "activity   %lu tool calls, %lu rounds this run",
++		agent_tool_calls, agent_rounds);
++	ex_print(msg, msg_ft)
++	if (agent_messages) {
++		cJSON_ArrayForEach(m, agent_messages) {
++			cJSON *role = cJSON_GetObjectItem(m, "role");
++			cJSON *content = cJSON_GetObjectItem(m, "content");
++			int r = 0;
++			if (cJSON_IsString(role)) {
++				if (!strcmp(role->valuestring, "user"))
++					r = 1;
++				else if (!strcmp(role->valuestring, "assistant"))
++					r = 2;
++				else if (!strcmp(role->valuestring, "tool"))
++					r = 3;
++			}
++			counts[r]++;
++			if (cJSON_IsString(content))
++				sums[r] += strlen(content->valuestring);
++		}
++		char *json = cJSON_PrintUnformatted(agent_messages);
++		snprintf(msg, sizeof(msg), "context    %d messages, %ld bytes payload",
++			cJSON_GetArraySize(agent_messages),
++			json ? (long)strlen(json) : 0);
++		ex_print(msg, msg_ft)
++		free(json);
++		for (int r = 0; r < 4; r++) {
++			snprintf(msg, sizeof(msg), "%-9s  %d msgs, %ld bytes",
++				names[r], counts[r], (long)sums[r]);
++			ex_print(msg, msg_ft)
++		}
++	} else
++		ex_print("context    no conversation yet", msg_ft)
++	{
++		char *s = agent_text(tempbufs[3].lb);
++		snprintf(msg, sizeof(msg), "log        %d lines, %ld bytes",
++			lbuf_len(tempbufs[3].lb), (long)strlen(s));
++		ex_print(msg, msg_ft)
++		free(s);
++		s = agent_text(tempbufs[4].lb);
++		snprintf(msg, sizeof(msg), "skills     %d lines, %ld bytes",
++			lbuf_len(tempbufs[4].lb), (long)strlen(s));
++		ex_print(msg, msg_ft)
++		free(s);
++	}
++	snprintf(msg, sizeof(msg), "capture    %ld bytes in current tool output",
++		agent_capture ? (long)agent_capture->s_n : 0);
++	ex_print(msg, msg_ft)
++	snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, guardrail %d",
++		max_tool_rounds, request_timeout, xgr);
++	ex_print(msg, msg_ft)
++	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
++	ex_print(msg, msg_ft)
++	return NULL;
 +}
 +
 +static void *ec_agent(char *loc, char *cmd, char *arg)
@@ -7947,16 +8136,17 @@ index 00000000..d2c11ab7
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..78cd3073
+index 00000000..c1c9349c
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,12 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
 +static int agent_input_blocked;
 +static sbuf *agent_capture;
 +static void *ec_agent(char *loc, char *cmd, char *arg);
++static void *ec_aco(char *loc, char *cmd, char *arg);
 +static void agent_init(void);
 +static void agent_sync(struct lbuf *lb);
 +static void agent_plain(sbuf *out, const char *s);
@@ -11472,22 +11662,42 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..32da3431 100755
+index c836c94c..69b1138f 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,11 @@ build() {
+@@ -65,6 +65,31 @@ build() {
      }
  }
  
 +spec() {
 +    require "awk"
-+    awk -f exspec.awk README > exspec.h
++    # Agent-only ex specs are injected here so README stays pristine on master.
++    # Keep this block in sync with the agent command table in ex.c.
++    tmp="$(mktemp)"
++    awk '
++        /^     ac\[regex\]$/ && !done {
++            print "     aco"
++            print "             Print agent context usage and session statistics"
++            print ""
++            print "             Without an argument, prints the size of the conversation context"
++            print "             (message count and payload bytes), per-role usage, session"
++            print "             activity and the configured limits."
++            print ""
++            print "             Example: current context usage"
++            print "             :aco"
++            print ""
++            done = 1
++        }
++        { print }
++    ' README > "$tmp" &&
++    awk -f exspec.awk "$tmp" > exspec.h
++    rm -f "$tmp"
 +}
 +
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +79,7 @@ install() {
+@@ -74,7 +99,7 @@ install() {
  }
  
  print_usage() {
@@ -11496,7 +11706,7 @@ index c836c94c..32da3431 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +87,9 @@ print_usage() {
+@@ -82,6 +107,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -11577,7 +11787,7 @@ index a51117ca..c60434e3 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..b9e9b8cd 100644
+index 0ce81414..3f7a2789 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -11663,11 +11873,12 @@ index 0ce81414..b9e9b8cd 100644
  } excmds[] = {
  	{"@", ec_termexec},
  	{"&", ec_termexec},
-@@ -1754,8 +1768,13 @@ static struct excmd {
+@@ -1754,8 +1768,14 @@ static struct excmd {
  	{"ph", ec_setenc},
  	{"p", ec_print},
  	EO(ai),
 +	EO(ar),
++	{"aco", ec_aco},
  	{"ac", ec_setacreg},
 +	{"a!", ec_agent},
 +	{"a~", ec_agent},
@@ -11677,7 +11888,7 @@ index 0ce81414..b9e9b8cd 100644
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
  	{"e!", ec_edit},
-@@ -1775,6 +1794,7 @@ static struct excmd {
+@@ -1775,6 +1795,7 @@ static struct excmd {
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
@@ -11685,7 +11896,7 @@ index 0ce81414..b9e9b8cd 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1827,6 +1847,101 @@ static struct excmd {
+@@ -1827,6 +1848,101 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -11787,7 +11998,7 @@ index 0ce81414..b9e9b8cd 100644
  /* parse command argument expanding % and ! */
  static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  {
-@@ -1934,7 +2049,25 @@ void *ex_exec(const char *ln)
+@@ -1934,7 +2050,25 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -11814,7 +12025,7 @@ index 0ce81414..b9e9b8cd 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1954,7 +2087,7 @@ void *ex_exec(const char *ln)
+@@ -1954,7 +2088,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -11909,10 +12120,10 @@ index 00000000..65219ffe
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..a0cf598a
+index 00000000..3bc944d4
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1068 @@
+@@ -0,0 +1,1079 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -12646,6 +12857,16 @@ index 00000000..a0cf598a
 +	"cm![keymap]",
 +	"Set an alternative keymap",
 +	"",
++	"aco",
++	"Print agent context usage and session statistics",
++	"",
++	"Without an argument, prints the size of the conversation context",
++	"(message count and payload bytes), per-role usage, session",
++	"activity and the configured limits.",
++	"",
++	"Example: current context usage",
++	"aco",
++	"",
 +	"ac[regex]",
 +	"Set autocomplete filter regex",
 +	"",
@@ -12949,37 +13170,38 @@ index 00000000..a0cf598a
 +	{"ft", "Set a filetype", 716, 722, 0},
 +	{"cm", "Set a keymap", 723, 727, 0},
 +	{"cm!", "Set an alternative keymap", 728, 730, 0},
-+	{"ac", "Set autocomplete filter regex", 731, 739, 0},
-+	{"sc", "Set ex special characters", 740, 750, 0},
-+	{"sc!", "Set ex special characters", 751, 758, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 759, 766, 0},
-+	{"uz", "Toggle zero-width character placeholders", 767, 770, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 771, 775, 0},
-+	{"ph", "Redefine placeholders", 776, 792, 0},
-+	{"ai", "Indent new lines", 801, 804, 1},
-+	{"ic", "Ignore case in regular expressions", 805, 806, 1},
-+	{"ish", "Interactive shell", 807, 822, 1},
-+	{"grp", "Regex search group", 823, 831, 1},
-+	{"hl", "Highlight text based on rules defined in conf.c", 832, 835, 1},
-+	{"hlr", "Highlight text in reverse direction", 836, 837, 1},
-+	{"hll", "Highlight current line based on filetype hl", 837, 838, 1},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 838, 839, 1},
-+	{"hlw", "Highlight current word based on filetype hl", 839, 840, 1},
-+	{"led", "Enable all terminal output", 840, 841, 1},
-+	{"vis", "Control startup flags", 842, 853, 1},
-+	{"mpt", "Control vi prompts", 854, 864, 1},
-+	{"order", "Reorder characters based on rules defined in conf.c", 865, 867, 1},
-+	{"shape", "Perform Arabic script letter shaping", 867, 869, 1},
-+	{"pac", "Print autocomplete suggestions on the fly", 869, 870, 1},
-+	{"ts", "Number of spaces used to represent a tab", 870, 871, 1},
-+	{"td", "Current text direction context", 871, 877, 1},
-+	{"pr", "Print register", 878, 894, 1},
-+	{"fr", "Find register", 895, 907, 1},
-+	{"rr", "Record register", 908, 921, 1},
-+	{"lim", "Line length render limit", 922, 937, 1},
-+	{"seq", "Control Undo/Redo", 938, 950, 1},
-+	{"left", "Control horizontal scroll", 951, 956, 1},
-+	{"err", "Control ex errors", 957, 969, 1},
++	{"aco", "Print agent context usage and session statistics", 731, 740, 0},
++	{"ac", "Set autocomplete filter regex", 741, 749, 0},
++	{"sc", "Set ex special characters", 750, 760, 0},
++	{"sc!", "Set ex special characters", 761, 768, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 769, 776, 0},
++	{"uz", "Toggle zero-width character placeholders", 777, 780, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 781, 785, 0},
++	{"ph", "Redefine placeholders", 786, 802, 0},
++	{"ai", "Indent new lines", 811, 814, 1},
++	{"ic", "Ignore case in regular expressions", 815, 816, 1},
++	{"ish", "Interactive shell", 817, 832, 1},
++	{"grp", "Regex search group", 833, 841, 1},
++	{"hl", "Highlight text based on rules defined in conf.c", 842, 845, 1},
++	{"hlr", "Highlight text in reverse direction", 846, 847, 1},
++	{"hll", "Highlight current line based on filetype hl", 847, 848, 1},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 848, 849, 1},
++	{"hlw", "Highlight current word based on filetype hl", 849, 850, 1},
++	{"led", "Enable all terminal output", 850, 851, 1},
++	{"vis", "Control startup flags", 852, 863, 1},
++	{"mpt", "Control vi prompts", 864, 874, 1},
++	{"order", "Reorder characters based on rules defined in conf.c", 875, 877, 1},
++	{"shape", "Perform Arabic script letter shaping", 877, 879, 1},
++	{"pac", "Print autocomplete suggestions on the fly", 879, 880, 1},
++	{"ts", "Number of spaces used to represent a tab", 880, 881, 1},
++	{"td", "Current text direction context", 881, 887, 1},
++	{"pr", "Print register", 888, 904, 1},
++	{"fr", "Find register", 905, 917, 1},
++	{"rr", "Record register", 918, 931, 1},
++	{"lim", "Line length render limit", 932, 947, 1},
++	{"seq", "Control Undo/Redo", 948, 960, 1},
++	{"left", "Control horizontal scroll", 961, 966, 1},
++	{"err", "Control ex errors", 967, 979, 1},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..50e896e2 100644
