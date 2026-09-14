@@ -863,18 +863,16 @@ static void *ec_aco(char *loc, char *cmd, char *arg)
 		}
 	} else
 		ex_print("context    no conversation yet", msg_ft)
-	{
-		char *s = agent_text(tempbufs[3].lb);
-		snprintf(msg, sizeof(msg), "log        %d lines, %ld bytes",
-			lbuf_len(tempbufs[3].lb), (long)strlen(s));
-		ex_print(msg, msg_ft)
-		free(s);
-		s = agent_text(tempbufs[4].lb);
-		snprintf(msg, sizeof(msg), "skills     %d lines, %ld bytes",
-			lbuf_len(tempbufs[4].lb), (long)strlen(s));
-		ex_print(msg, msg_ft)
-		free(s);
-	}
+	char *s = agent_text(tempbufs[3].lb);
+	snprintf(msg, sizeof(msg), "log        %d lines, %ld bytes",
+		lbuf_len(tempbufs[3].lb), (long)strlen(s));
+	ex_print(msg, msg_ft)
+	free(s);
+	s = agent_text(tempbufs[4].lb);
+	snprintf(msg, sizeof(msg), "skills     %d lines, %ld bytes",
+		lbuf_len(tempbufs[4].lb), (long)strlen(s));
+	ex_print(msg, msg_ft)
+	free(s);
 	snprintf(msg, sizeof(msg), "capture    %ld bytes in current tool output",
 		agent_capture ? (long)agent_capture->s_n : 0);
 	ex_print(msg, msg_ft)
@@ -7157,10 +7155,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..e5e9810a
+index 00000000..b55d0fe3
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,973 @@
+@@ -0,0 +1,971 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7994,18 +7992,16 @@ index 00000000..e5e9810a
 +		}
 +	} else
 +		ex_print("context    no conversation yet", msg_ft)
-+	{
-+		char *s = agent_text(tempbufs[3].lb);
-+		snprintf(msg, sizeof(msg), "log        %d lines, %ld bytes",
-+			lbuf_len(tempbufs[3].lb), (long)strlen(s));
-+		ex_print(msg, msg_ft)
-+		free(s);
-+		s = agent_text(tempbufs[4].lb);
-+		snprintf(msg, sizeof(msg), "skills     %d lines, %ld bytes",
-+			lbuf_len(tempbufs[4].lb), (long)strlen(s));
-+		ex_print(msg, msg_ft)
-+		free(s);
-+	}
++	char *s = agent_text(tempbufs[3].lb);
++	snprintf(msg, sizeof(msg), "log        %d lines, %ld bytes",
++		lbuf_len(tempbufs[3].lb), (long)strlen(s));
++	ex_print(msg, msg_ft)
++	free(s);
++	s = agent_text(tempbufs[4].lb);
++	snprintf(msg, sizeof(msg), "skills     %d lines, %ld bytes",
++		lbuf_len(tempbufs[4].lb), (long)strlen(s));
++	ex_print(msg, msg_ft)
++	free(s);
 +	snprintf(msg, sizeof(msg), "capture    %ld bytes in current tool output",
 +		agent_capture ? (long)agent_capture->s_n : 0);
 +	ex_print(msg, msg_ft)
