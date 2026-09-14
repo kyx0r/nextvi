@@ -387,6 +387,18 @@ static sbuf *agent_shell(char *cmd, sbuf *input, int *status)
 	return out;
 }
 
+static void agent_http_failure(char *body)
+{
+	cJSON *root = body ? cJSON_ParseWithOpts(body, NULL, 0) : NULL;
+	cJSON *error = cJSON_GetObjectItem(root, "error");
+	cJSON *message = cJSON_GetObjectItem(error, "message");
+	if (cJSON_IsString(message) && *message->valuestring)
+		agent_log("RESULT", message->valuestring);
+	else
+		agent_log("RESULT", "HTTP request failed");
+	cJSON_Delete(root);
+}
+
 static cJSON *agent_config(void)
 {
 	cJSON *req = cJSON_ParseWithOpts(request_extra, NULL, 1);
@@ -518,9 +530,7 @@ static void agent_redraw(const char *draft)
 		}
 	}
 	int start = starts[MAX(0, rows - MAX(1, xrows-2)) % cap];
-	preserve(int, xled, xled = 1;)
 	term_clean();
-	restore(xled)
 	agent_output(sb->s + start);
 	free(starts);
 	free(log);
@@ -615,8 +625,7 @@ static void agent_run(const char *input)
 			continue;
 		}
 		if (st || !body) {
-			agent_log("RESULT",
-				body && *body ? body : "HTTP request failed");
+			agent_http_failure(body);
 			free(body);
 			return;
 		}
@@ -906,14 +915,12 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	if (*arg)
 		term_push(arg, strlen(arg));
 	while (!xquit && epoch == agent_epoch) {
-		preserve(int, xled, xled = 1;)
 		preserve(int, ftidx,)
 		preserve(int, xvis, xvis = (xvis | 2) & ~1;)
 		syn_setft(_ft);
 		key = led_prompt(line, NULL, &xkmap, &is, prefix, 2|LED_AGENT);
 		restore(xvis)
 		restore(ftidx)
-		restore(xled)
 		if (key == TK_CTL('\''c'\'') || !key)
 			break;
 		if (key == TK_CTL('\''o'\'')) {
@@ -6975,33 +6982,63 @@ void lbuf_saved\(struct lbuf \*lb, int clear\)
 '\''4c 			if (!(flg & LED_AGENT))
 				vi(1); /* redraw past screen */
 ??!219reg led.c:677:m42sc %? %@2142sc!b11m!%ya 98?0?
-%f> \{
+%f> 		return;
+	term_commit\(\);
+	sbuf_free\(term_sbuf\)
+	tcsetattr\(term_ufd\.fd, 0, &termios\);
+}
+
+1??0?
+1??+2m 11q0?
+%f> 		return;
+	term_commit\(\);
+	sbuf_free\(term_sbuf\)4??0?
+4??+2m 1220reg p OK term.c:42:a42sc %? %@2152sc!1q0?
+grp 1%f> 		return;.*?
+	term_commit\(\);.*?
+(	sbuf_free\(term_sbuf\))7??0?
+grp 07??m 1220reg p OK term.c:42:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> void term_done\(void\)
+\{
+	if \(!term_sbuf\).*(void term_clean\(void\))
+\{
+	term_write\("\\x1b\[2J", 4\)	/\* clear screen \*/8??0?
+grp 08??-4m 1220reg p OK term.c:42:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	xcols = xcols \? xcols : 80;
+	xrows = xrows \? xrows : 25;
+}.*(void term_suspend\(void\))
+\{
+	if \(xvis & 8\)9??0?
+grp 09??-10m 1220reg p OK term.c:42:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg term.c:422sc %? %@2132sc!0?
+?0?
+%f+ \{
 	int cw;
 	if \(tibuf_pos >= tibuf_cnt\) \{
 		if \(texec\) \{
 			xquit = !xquit \? 1 : xquit;
 			if \(texec == '\''&'\''\)1??0?
-1??+2m 11q0?
-%f> \{
+1??+2m 21q0?
+%f+ \{
 	int cw;
 	if \(tibuf_pos >= tibuf_cnt\) \{4??0?
-4??+2m 1220reg p OK term.c:145:a42sc %? %@2152sc!1q0?
-grp 1%f> \{.*?
+4??+2m 2220reg p OK term.c:145:a42sc %? %@2152sc!1q0?
+grp 1%f+ \{.*?
 	int cw;.*?
 (	if \(tibuf_pos >= tibuf_cnt\) \{)7??0?
-grp 07??m 1220reg p OK term.c:145:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK term.c:145:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		memcpy\(tibuf \+ tibuf_cnt, s, n\);
 	tibuf_cnt \+= n;
 }.*(				goto err;)
 		}
 		if \(term_winch && winch\) \{8??0?
-grp 08??-4m 1220reg p OK term.c:145:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK term.c:145:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		texec_n \+= n;
 		tibuf_prev = tibuf_pos;
 	} else.*(			\*tibuf = winch;	/\* yield until term_winch is cleared \*/)
 			goto ret;
 		}9??0?
-grp 09??-7m 1220reg p OK term.c:145:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 2220reg p OK term.c:145:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg term.c:1452sc %? %@2132sc!0?
 ?0?
 %f+ /\* execute a command; pass in input if ibuf and process output if oproc \*/
@@ -7010,38 +7047,80 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\)
 	static char \*sh\[] = \{"\$SHELL", "sh", NULL};
 	struct pollfd fds\[3];
 	char buf\[512];1??0?
-1??+2m 21q0?
+1??+2m 31q0?
 %f+ /\* execute a command; pass in input if ibuf and process output if oproc \*/
 sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\)
 \{4??0?
-4??+2m 2220reg p OK term.c:275:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK term.c:275:a42sc %? %@2152sc!1q0?
 grp 1%f+ /\* execute a command; pass in input if ibuf and process output if oproc \*/.*?
 sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 (\{)7??0?
-grp 07??m 2220reg p OK term.c:275:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK term.c:275:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	return r;
 }.*(	int ifd = -1, ofd = -1;)
 	int nw = 0;
 	char \*argv\[5];8??0?
-grp 08??-4m 2220reg p OK term.c:275:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK term.c:275:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		else
 			return \*q;
 		q\+\+;.*(	argv\[0] = xgetenv\(sh\);)
 	argv\[1] = xish \? "-i" : argv\[0];
 	argv\[2] = "-c";9??0?
-grp 09??-7m 2220reg p OK term.c:275:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 3220reg p OK term.c:275:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg term.c:2752sc %? %@2132sc!0?
-'\''1i 		if (agent_tool) {
+?0?
+%f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);
+	signal\(SIGTTOU, SIG_DFL\);
+	if \(!ibuf\) \{
+		if \(term_sbuf\)
+			term_init\(\);
+		signal\(SIGINT, SIG_DFL\);
+	}1??0?
+1??+3m 41q0?
+%f+ 		if \(term_sbuf\)
+			term_init\(\);
+		signal\(SIGINT, SIG_DFL\);
+	}2??0?
+2??m 4220reg p OK term.c:347:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		if \(term_sbuf\)$3??0?
+3??m 4220reg p OK term.c:347:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);
+	signal\(SIGTTOU, SIG_DFL\);
+	if \(!ibuf\) \{4??0?
+4??+3m 4220reg p OK term.c:347:a42sc %? %@2152sc!1q0?
+%f+ 			term_init\(\);
+		signal\(SIGINT, SIG_DFL\);
+	}5??0?
+5??-1m 4220reg p OK term.c:347:a52sc %? %@2152sc!1q0?
+%f+ 	t...t..r.\(.er._....fd..g.t.g...\).;
+..i...l.S........SI....L\).
+... \(!......\{
+.......e........
+.....rm.i.i.\(\).
+..........I.I.T..SI...F..;
+	.6??0?
+6??+3m 4220reg p OK term.c:347:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);.*?
+	signal\(SIGTTOU, SIG_DFL\);.*?
+	if \(!ibuf\) \{.*?
+(		if \(term_sbuf\))7??0?
+grp 07??m 4220reg p OK term.c:347:a72sc %? %@2152sc!0?
+1;2;3;4;5;6;7??!219reg term.c:3472sc %? %@2132sc!0?
+'\''1i 	term_sbuf = NULL;
+??!219reg term.c:42:m12sc %? %@2142sc!0?
+'\''2i 		if (agent_tool) {
 			agent_input_blocked = 1;
 			xquit = !xquit ? 1 : xquit;
 			*tibuf = TK_CTL('\''c'\'');
 			goto ret;
 		}
-??!219reg term.c:145:m12sc %? %@2142sc!0?
-'\''2i 	if (agent_tool)
+??!219reg term.c:145:m22sc %? %@2142sc!0?
+'\''3i 	int terminal = !ibuf && term_sbuf;
+	if (agent_tool)
 		return agent_shell(cmd, ibuf, status);
-??!219reg term.c:275:m22sc %? %@2142sc!b12m!%ya 98?0?
+??!219reg term.c:275:m32sc %? %@2142sc!0?
+'\''4s/_sbuf/inal/??!219reg term.c:347:m42sc %? %@2142sc!b12m!%ya 98?0?
 %f> #include <sys/stat\.h>
 #include <sys/ioctl\.h>
 #include <sys/wait\.h>
@@ -7243,10 +7322,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..367b2041
+index 00000000..76293504
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,940 @@
+@@ -0,0 +1,947 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7604,6 +7683,18 @@ index 00000000..367b2041
 +	return out;
 +}
 +
++static void agent_http_failure(char *body)
++{
++	cJSON *root = body ? cJSON_ParseWithOpts(body, NULL, 0) : NULL;
++	cJSON *error = cJSON_GetObjectItem(root, "error");
++	cJSON *message = cJSON_GetObjectItem(error, "message");
++	if (cJSON_IsString(message) && *message->valuestring)
++		agent_log("RESULT", message->valuestring);
++	else
++		agent_log("RESULT", "HTTP request failed");
++	cJSON_Delete(root);
++}
++
 +static cJSON *agent_config(void)
 +{
 +	cJSON *req = cJSON_ParseWithOpts(request_extra, NULL, 1);
@@ -7735,9 +7826,7 @@ index 00000000..367b2041
 +		}
 +	}
 +	int start = starts[MAX(0, rows - MAX(1, xrows-2)) % cap];
-+	preserve(int, xled, xled = 1;)
 +	term_clean();
-+	restore(xled)
 +	agent_output(sb->s + start);
 +	free(starts);
 +	free(log);
@@ -7832,8 +7921,7 @@ index 00000000..367b2041
 +			continue;
 +		}
 +		if (st || !body) {
-+			agent_log("RESULT",
-+				body && *body ? body : "HTTP request failed");
++			agent_http_failure(body);
 +			free(body);
 +			return;
 +		}
@@ -8123,14 +8211,12 @@ index 00000000..367b2041
 +	if (*arg)
 +		term_push(arg, strlen(arg));
 +	while (!xquit && epoch == agent_epoch) {
-+		preserve(int, xled, xled = 1;)
 +		preserve(int, ftidx,)
 +		preserve(int, xvis, xvis = (xvis | 2) & ~1;)
 +		syn_setft(_ft);
 +		key = led_prompt(line, NULL, &xkmap, &is, prefix, 2|LED_AGENT);
 +		restore(xvis)
 +		restore(ftidx)
-+		restore(xled)
 +		if (key == TK_CTL('c') || !key)
 +			break;
 +		if (key == TK_CTL('o')) {
@@ -13375,10 +13461,18 @@ index 375abb35..488ab53f 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 03aa736f..a432363c 100644
+index 03aa736f..98219eda 100644
 --- a/term.c
 +++ b/term.c
-@@ -143,6 +143,12 @@ int term_read(int winch)
+@@ -40,6 +40,7 @@ void term_done(void)
+ 		return;
+ 	term_commit();
+ 	sbuf_free(term_sbuf)
++	term_sbuf = NULL;
+ 	tcsetattr(term_ufd.fd, 0, &termios);
+ }
+ 
+@@ -143,6 +144,12 @@ int term_read(int winch)
  {
  	int cw;
  	if (tibuf_pos >= tibuf_cnt) {
@@ -13391,15 +13485,25 @@ index 03aa736f..a432363c 100644
  		if (texec) {
  			xquit = !xquit ? 1 : xquit;
  			if (texec == '&')
-@@ -273,6 +279,8 @@ char *xgetenv(char **q)
+@@ -273,6 +280,9 @@ char *xgetenv(char **q)
  /* execute a command; pass in input if ibuf and process output if oproc */
  sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  {
++	int terminal = !ibuf && term_sbuf;
 +	if (agent_tool)
 +		return agent_shell(cmd, ibuf, status);
  	static char *sh[] = {"$SHELL", "sh", NULL};
  	struct pollfd fds[3];
  	char buf[512];
+@@ -344,7 +354,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+ 	tcsetpgrp(term_ufd.fd, getpgrp());
+ 	signal(SIGTTOU, SIG_DFL);
+ 	if (!ibuf) {
+-		if (term_sbuf)
++		if (terminal)
+ 			term_init();
+ 		signal(SIGINT, SIG_DFL);
+ 	}
 diff --git a/vi.c b/vi.c
 index cc9b1492..c1845627 100644
 --- a/vi.c
