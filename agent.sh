@@ -5398,33 +5398,12 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 		*end <= *beg || *end > n;
 	if (invalid) {
 		long b = (long)*beg + 1;
-		if (*end <= *beg) {
-			if (haddr > 1)
-				snprintf(xirrmsg, sizeof(xirrmsg),
-					"invalid range: (beg) %ld;%d > %ld;%d (end)",
-					b, *o1, (long)*end, *o2);
-			else if (haddr)
-				snprintf(xirrmsg, sizeof(xirrmsg),
-					"invalid range: (beg) %ld;%d > %ld (end)",
-					b, *o1, (long)*end);
-			else
-				snprintf(xirrmsg, sizeof(xirrmsg),
-					"invalid range: (beg) %ld > %ld (end)",
-					b, (long)*end);
-		} else if (*beg < 0)
-			snprintf(xirrmsg, sizeof(xirrmsg),
-				"invalid range: (beg) %ld < 1", b);
-		else if (*beg >= n)
-			if (haddr)
-				snprintf(xirrmsg, sizeof(xirrmsg),
-					"invalid range: (beg) %ld;%d > %d (lines)",
-					b, *o1, n);
-			else
-				snprintf(xirrmsg, sizeof(xirrmsg),
-					"invalid range: (beg) %ld > %d (lines)", b, n);
-		else
-			snprintf(xirrmsg, sizeof(xirrmsg),
-				"invalid range: (end) %d > %d (lines)", *end, n);
+		const char *op = *beg < *end ? "<" :
+			*beg > *end ? ">" : "=";
+		snprintf(xirrmsg, sizeof(xirrmsg),
+			"invalid range: beg:%ld %s end:%d o1:%d o2:%d "
+			"xrow:%d xoff:%d lbuf_len:%d",
+			b, op, *end, *o1, *o2, xrow, xoff, n);
 		xrerr = xirrmsg;
 	}
 	return invalid * ret;
@@ -11925,7 +11904,7 @@ index a51117ca..e496344d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..ae2aa669 100644
+index 0ce81414..467e354f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -11945,7 +11924,7 @@ index 0ce81414..ae2aa669 100644
  static char xrnferr[] = "range not found";
  static char *xrerr;
  static void *xpret;		/* previous ex command return value */
-@@ -366,8 +367,40 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
+@@ -366,8 +367,19 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
  		*end = *beg + 1;
  		ret += adj << 1;
  	}
@@ -11955,40 +11934,19 @@ index 0ce81414..ae2aa669 100644
 +		*end <= *beg || *end > n;
 +	if (invalid) {
 +		long b = (long)*beg + 1;
-+		if (*end <= *beg) {
-+			if (haddr > 1)
-+				snprintf(xirrmsg, sizeof(xirrmsg),
-+					"invalid range: (beg) %ld;%d > %ld;%d (end)",
-+					b, *o1, (long)*end, *o2);
-+			else if (haddr)
-+				snprintf(xirrmsg, sizeof(xirrmsg),
-+					"invalid range: (beg) %ld;%d > %ld (end)",
-+					b, *o1, (long)*end);
-+			else
-+				snprintf(xirrmsg, sizeof(xirrmsg),
-+					"invalid range: (beg) %ld > %ld (end)",
-+					b, (long)*end);
-+		} else if (*beg < 0)
-+			snprintf(xirrmsg, sizeof(xirrmsg),
-+				"invalid range: (beg) %ld < 1", b);
-+		else if (*beg >= n)
-+			if (haddr)
-+				snprintf(xirrmsg, sizeof(xirrmsg),
-+					"invalid range: (beg) %ld;%d > %d (lines)",
-+					b, *o1, n);
-+			else
-+				snprintf(xirrmsg, sizeof(xirrmsg),
-+					"invalid range: (beg) %ld > %d (lines)", b, n);
-+		else
-+			snprintf(xirrmsg, sizeof(xirrmsg),
-+				"invalid range: (end) %d > %d (lines)", *end, n);
++		const char *op = *beg < *end ? "<" :
++			*beg > *end ? ">" : "=";
++		snprintf(xirrmsg, sizeof(xirrmsg),
++			"invalid range: beg:%ld %s end:%d o1:%d o2:%d "
++			"xrow:%d xoff:%d lbuf_len:%d",
++			b, op, *end, *o1, *o2, xrow, xoff, n);
 +		xrerr = xirrmsg;
 +	}
 +	return invalid * ret;
  }
  
  static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
-@@ -724,6 +757,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
+@@ -724,6 +736,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
  	xrow = row;
  	xoff = off;
  	xb = pxb;
@@ -11996,7 +11954,7 @@ index 0ce81414..ae2aa669 100644
  	if (fd >= 0)
  		close(fd);
  	return ret;
-@@ -819,6 +853,12 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
+@@ -819,6 +832,12 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
  
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  {
@@ -12009,7 +11967,7 @@ index 0ce81414..ae2aa669 100644
  	if (xpr > 0) {
  		ex_regput(xpr, line, 1);
  		sbuf *pr = ex_regget(xpr);
-@@ -826,6 +866,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
+@@ -826,6 +845,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  				pr->s[pr->s_n-1] != '\n')
  			ex_regput(xpr, "\n", 1);
  	}
@@ -12018,7 +11976,7 @@ index 0ce81414..ae2aa669 100644
  	if (xvis & 1) {
  		term_write(line, dstrlen(line, '\n'))
  		term_write("\n", 1)
-@@ -851,6 +893,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
+@@ -851,6 +872,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  static void *ec_insert(char *loc, char *cmd, char *arg)
  {
  	int beg, end, o1 = -1, o2 = -1, ps = 0, key;
@@ -12027,7 +11985,7 @@ index 0ce81414..ae2aa669 100644
  	sbuf _sb, *sb = &_sb;
  	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
  		if (*loc && cmd[0] != 'c' && beg == -1 && end == 0
-@@ -863,7 +907,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
+@@ -863,7 +886,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
  			end = beg + 1;
  		}
  	}
@@ -12036,7 +11994,7 @@ index 0ce81414..ae2aa669 100644
  		sb->s = arg;
  		sb->s_n = 1;
  		key = 127;
-@@ -1699,7 +1743,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1699,7 +1722,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
@@ -12045,7 +12003,7 @@ index 0ce81414..ae2aa669 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1726,12 +1770,15 @@ _EO(left,
+@@ -1726,12 +1749,15 @@ _EO(left,
  )
  
  #undef EO
@@ -12062,7 +12020,7 @@ index 0ce81414..ae2aa669 100644
  } excmds[] = {
  	{"@", ec_termexec},
  	{"&", ec_termexec},
-@@ -1754,8 +1801,14 @@ static struct excmd {
+@@ -1754,8 +1780,14 @@ static struct excmd {
  	{"ph", ec_setenc},
  	{"p", ec_print},
  	EO(ai),
@@ -12077,7 +12035,7 @@ index 0ce81414..ae2aa669 100644
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
  	{"e!", ec_edit},
-@@ -1775,6 +1828,7 @@ static struct excmd {
+@@ -1775,6 +1807,7 @@ static struct excmd {
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
@@ -12085,7 +12043,7 @@ index 0ce81414..ae2aa669 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1827,6 +1881,101 @@ static struct excmd {
+@@ -1827,6 +1860,101 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -12187,7 +12145,7 @@ index 0ce81414..ae2aa669 100644
  /* parse command argument expanding % and ! */
  static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  {
-@@ -1934,7 +2083,25 @@ void *ex_exec(const char *ln)
+@@ -1934,7 +2062,25 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -12214,7 +12172,7 @@ index 0ce81414..ae2aa669 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1954,7 +2121,7 @@ void *ex_exec(const char *ln)
+@@ -1954,7 +2100,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
