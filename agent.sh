@@ -732,11 +732,7 @@ static void agent_run(const char *input)
 					xqprop = savedqprop;
 					agent_input_blocked = 0;
 					err = "interactive input unavailable during agent execution";
-				} else if (agent_child_status &&
-						(!err || err == xuerr))
-					err = "external command failed";
-				else if (err == xuerr)
-					err = "command failed";
+				}
 			}
 			if (agent_cancel)
 				sbuf_str(result, "cancelled\n")
@@ -751,7 +747,7 @@ static void agent_run(const char *input)
 						agent_child_status : !!err);
 				sbuf_str(result, status)
 			}
-			if (err) {
+			if (err && err != xuerr) {
 				sbuf_str(result, err)
 				sbuf_chr(result, '\''\n'\'')
 			}
@@ -7401,10 +7397,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..76293504
+index 00000000..c0ac6d09
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,947 @@
+@@ -0,0 +1,943 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8107,11 +8103,7 @@ index 00000000..76293504
 +					xqprop = savedqprop;
 +					agent_input_blocked = 0;
 +					err = "interactive input unavailable during agent execution";
-+				} else if (agent_child_status &&
-+						(!err || err == xuerr))
-+					err = "external command failed";
-+				else if (err == xuerr)
-+					err = "command failed";
++				}
 +			}
 +			if (agent_cancel)
 +				sbuf_str(result, "cancelled\n")
@@ -8126,7 +8118,7 @@ index 00000000..76293504
 +						agent_child_status : !!err);
 +				sbuf_str(result, status)
 +			}
-+			if (err) {
++			if (err && err != xuerr) {
 +				sbuf_str(result, err)
 +				sbuf_chr(result, '\n')
 +			}
