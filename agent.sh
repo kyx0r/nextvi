@@ -289,8 +289,17 @@ static int agent_boundary(void)
 	return agent_cancel || agent_pause;
 }
 
+static void agent_capture_add(const char *s, int n)
+{
+	if (xgr == 2)
+		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
+	sbuf_mem(agent_capture, s, n)
+}
+
+/* Keep one excess byte to detect truncated output; continue draining the pipe. */
 /* Use file-backed stdin; poll output and terminal together. */
-static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
+static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
+	int limited)
 {
 	FILE *in = tmpfile();
 	struct pollfd fds[2];
@@ -343,9 +352,11 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
 		if (fds[0].fd >= 0 &&
 				fds[0].revents & (POLLIN | POLLHUP | POLLERR)) {
 			int nr = read(fds[0].fd, buf, sizeof(buf)-1);
-			if (nr > 0)
+			if (nr > 0) {
+				if (limited)
+					nr = MIN(nr, MAX(0, 4097 - sb->s_n));
 				sbuf_mem(sb, buf, nr)
-			else if (!nr || errno != EINTR) {
+			} else if (!nr || errno != EINTR) {
 				close(fds[0].fd);
 				fds[0].fd = -1;
 			}
@@ -366,14 +377,14 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
 	sbufn_ret(sb, sb)
 }
 
-static sbuf *agent_shell(char *cmd, sbuf *input, int *status)
+static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 {
 	char *sh = getenv("SHELL"),
 	     *argv[] = {sh && *sh ? sh : "sh",
 		xish ? "-i" : "-c", xish ? "-c" : cmd,
 		xish ? cmd : NULL};
 	int st;
-	sbuf *out = agent_process(argv, input, &st, 0);
+	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2);
 	if (!out) {
 		agent_child_status = 1;
 		return NULL;
@@ -383,7 +394,7 @@ static sbuf *agent_shell(char *cmd, sbuf *input, int *status)
 	if (st)
 		agent_child_status = st;
 	if (agent_capture)
-		sbuf_mem(agent_capture, out->s, out->s_n);
+		agent_capture_add(out->s, out->s_n);
 	return out;
 }
 
@@ -445,7 +456,7 @@ static char *agent_http(cJSON *req, int *st)
 	sbuf body;
 	body.s = cJSON_PrintUnformatted(req);
 	body.s_n = strlen(body.s);
-	out = agent_process(argv, &body, st, 1);
+	out = agent_process(argv, &body, st, 1, 0);
 	free(body.s);
 ret:
 	unlink(hdrpath);
@@ -515,6 +526,7 @@ static void agent_redraw(const char *draft)
 	sbuf_str(sb, log);
 	if (draft)
 		sbuf_str(sb, draft);
+	sbuf_nul(sb)
 	int cap = MAX(2, xrows), *starts = emalloc(sizeof(int) * cap);
 	int rows = 1, col = 0;
 	starts[0] = 0;
@@ -983,7 +995,8 @@ static void *ec_agent(char *loc, char *cmd, char *arg);
 static void *ec_aco(char *loc, char *cmd, char *arg);
 static void agent_init(void);
 static void agent_sync(struct lbuf *lb);
-static sbuf *agent_shell(char *cmd, sbuf *input, int *status);
+static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status);
+static void agent_capture_add(const char *s, int n);
 static int agent_boundary(void);
 ??!219reg agent.h:-1:m2sc %? %@2142sc!b2m!0?
 i /*
@@ -5507,10 +5520,10 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 '\''7i 	agent_sync(pxb);
 ??!219reg ex.c:726:m72sc %? %@2142sc!0?
 '\''8i 	if (agent_capture) {
-		sbuf_str(agent_capture, line);
+		agent_capture_add(line, strlen(line));
 		if (flg && (!*line || !agent_capture->s_n ||
 				agent_capture->s[agent_capture->s_n-1] != '\''\n'\''))
-			sbuf_chr(agent_capture, '\''\n'\'')
+			agent_capture_add("\n", 1);
 	}
 ??!219reg ex.c:821:m82sc %? %@2142sc!0?
 '\''9i 	if (agent_capture)
@@ -7087,34 +7100,34 @@ void lbuf_saved\(struct lbuf \*lb, int clear\)
 grp 09??-10m 1220reg p OK term.c:42:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg term.c:422sc %? %@2132sc!0?
 ?0?
-%f+ \{
-	int cw;
-	if \(tibuf_pos >= tibuf_cnt\) \{
-		if \(texec\) \{
-			xquit = !xquit \? 1 : xquit;
-			if \(texec == '\''&'\''\)1??0?
-1??+2m 21q0?
-%f+ \{
-	int cw;
-	if \(tibuf_pos >= tibuf_cnt\) \{4??0?
-4??+2m 2220reg p OK term.c:145:a42sc %? %@2152sc!1q0?
-grp 1%f+ \{.*?
-	int cw;.*?
-(	if \(tibuf_pos >= tibuf_cnt\) \{)7??0?
-grp 07??m 2220reg p OK term.c:145:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 		memcpy\(tibuf \+ tibuf_cnt, s, n\);
-	tibuf_cnt \+= n;
-}.*(				goto err;)
+%f+ 			if \(texec == '\''&'\''\)
+				goto err;
 		}
-		if \(term_winch && winch\) \{8??0?
-grp 08??-4m 2220reg p OK term.c:145:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		texec_n \+= n;
-		tibuf_prev = tibuf_pos;
-	} else.*(			\*tibuf = winch;	/\* yield until term_winch is cleared \*/)
-			goto ret;
-		}9??0?
-grp 09??-7m 2220reg p OK term.c:145:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg term.c:1452sc %? %@2132sc!0?
+		if \(term_winch && winch\) \{
+			\*tibuf = winch;	/\* yield until term_winch is cleared \*/
+			goto ret;1??0?
+1??+2m 21q0?
+%f+ 			if \(texec == '\''&'\''\)
+				goto err;
+		}4??0?
+4??+2m 2220reg p OK term.c:150:a42sc %? %@2152sc!1q0?
+grp 1%f+ 			if \(texec == '\''&'\''\).*?
+				goto err;.*?
+(		})7??0?
+grp 07??m 2220reg p OK term.c:150:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	if \(tibuf_pos >= tibuf_cnt\) \{
+		if \(texec\) \{
+			xquit = !xquit \? 1 : xquit;.*(		cw = 0;)
+		re:
+		/\* read a single input character \*/8??0?
+grp 08??-5m 2220reg p OK term.c:150:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> int term_read\(int winch\)
+\{
+	int cw;.*(		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|)
+				read\(term_ufd\.fd, tibuf, 1\) <= 0\) \{
+			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;9??0?
+grp 09??-8m 2220reg p OK term.c:150:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg term.c:1502sc %? %@2132sc!0?
 ?0?
 %f+ /\* execute a command; pass in input if ibuf and process output if oproc \*/
 sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\)
@@ -7190,10 +7203,10 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 			*tibuf = TK_CTL('\''c'\'');
 			goto ret;
 		}
-??!219reg term.c:145:m22sc %? %@2142sc!0?
+??!219reg term.c:150:m22sc %? %@2142sc!0?
 '\''3i 	int terminal = !ibuf && term_sbuf;
 	if (agent_tool)
-		return agent_shell(cmd, ibuf, status);
+		return agent_shell(cmd, ibuf, oproc, status);
 ??!219reg term.c:275:m32sc %? %@2142sc!0?
 '\''4s/_sbuf/inal/??!219reg term.c:347:m42sc %? %@2142sc!b12m!%ya 98?0?
 %f> #include <sys/stat\.h>
@@ -7397,10 +7410,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..c0ac6d09
+index 00000000..12e58d1c
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,943 @@
+@@ -0,0 +1,955 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7660,8 +7673,17 @@ index 00000000..c0ac6d09
 +	return agent_cancel || agent_pause;
 +}
 +
++static void agent_capture_add(const char *s, int n)
++{
++	if (xgr == 2)
++		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
++	sbuf_mem(agent_capture, s, n)
++}
++
++/* Keep one excess byte to detect truncated output; continue draining the pipe. */
 +/* Use file-backed stdin; poll output and terminal together. */
-+static sbuf *agent_process(char **argv, sbuf *input, int *status, int http)
++static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
++	int limited)
 +{
 +	FILE *in = tmpfile();
 +	struct pollfd fds[2];
@@ -7714,9 +7736,11 @@ index 00000000..c0ac6d09
 +		if (fds[0].fd >= 0 &&
 +				fds[0].revents & (POLLIN | POLLHUP | POLLERR)) {
 +			int nr = read(fds[0].fd, buf, sizeof(buf)-1);
-+			if (nr > 0)
++			if (nr > 0) {
++				if (limited)
++					nr = MIN(nr, MAX(0, 4097 - sb->s_n));
 +				sbuf_mem(sb, buf, nr)
-+			else if (!nr || errno != EINTR) {
++			} else if (!nr || errno != EINTR) {
 +				close(fds[0].fd);
 +				fds[0].fd = -1;
 +			}
@@ -7737,14 +7761,14 @@ index 00000000..c0ac6d09
 +	sbufn_ret(sb, sb)
 +}
 +
-+static sbuf *agent_shell(char *cmd, sbuf *input, int *status)
++static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 +{
 +	char *sh = getenv("SHELL"),
 +	     *argv[] = {sh && *sh ? sh : "sh",
 +		xish ? "-i" : "-c", xish ? "-c" : cmd,
 +		xish ? cmd : NULL};
 +	int st;
-+	sbuf *out = agent_process(argv, input, &st, 0);
++	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2);
 +	if (!out) {
 +		agent_child_status = 1;
 +		return NULL;
@@ -7754,7 +7778,7 @@ index 00000000..c0ac6d09
 +	if (st)
 +		agent_child_status = st;
 +	if (agent_capture)
-+		sbuf_mem(agent_capture, out->s, out->s_n);
++		agent_capture_add(out->s, out->s_n);
 +	return out;
 +}
 +
@@ -7816,7 +7840,7 @@ index 00000000..c0ac6d09
 +	sbuf body;
 +	body.s = cJSON_PrintUnformatted(req);
 +	body.s_n = strlen(body.s);
-+	out = agent_process(argv, &body, st, 1);
++	out = agent_process(argv, &body, st, 1, 0);
 +	free(body.s);
 +ret:
 +	unlink(hdrpath);
@@ -7886,6 +7910,7 @@ index 00000000..c0ac6d09
 +	sbuf_str(sb, log);
 +	if (draft)
 +		sbuf_str(sb, draft);
++	sbuf_nul(sb)
 +	int cap = MAX(2, xrows), *starts = emalloc(sizeof(int) * cap);
 +	int rows = 1, col = 0;
 +	starts[0] = 0;
@@ -8346,10 +8371,10 @@ index 00000000..c0ac6d09
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..4bb30120
+index 00000000..fa1d91af
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,12 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -8359,7 +8384,8 @@ index 00000000..4bb30120
 +static void *ec_aco(char *loc, char *cmd, char *arg);
 +static void agent_init(void);
 +static void agent_sync(struct lbuf *lb);
-+static sbuf *agent_shell(char *cmd, sbuf *input, int *status);
++static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status);
++static void agent_capture_add(const char *s, int n);
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
@@ -11996,7 +12022,7 @@ index a51117ca..e496344d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..2c1fd178 100644
+index 0ce81414..bfa1b9fc 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -12072,10 +12098,10 @@ index 0ce81414..2c1fd178 100644
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  {
 +	if (agent_capture) {
-+		sbuf_str(agent_capture, line);
++		agent_capture_add(line, strlen(line));
 +		if (flg && (!*line || !agent_capture->s_n ||
 +				agent_capture->s[agent_capture->s_n-1] != '\n'))
-+			sbuf_chr(agent_capture, '\n')
++			agent_capture_add("\n", 1);
 +	}
  	if (xpr > 0) {
  		ex_regput(xpr, line, 1);
@@ -13532,7 +13558,7 @@ index 375abb35..488ab53f 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 03aa736f..98219eda 100644
+index 03aa736f..1d90526f 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -13543,26 +13569,26 @@ index 03aa736f..98219eda 100644
  	tcsetattr(term_ufd.fd, 0, &termios);
  }
  
-@@ -143,6 +144,12 @@ int term_read(int winch)
- {
- 	int cw;
- 	if (tibuf_pos >= tibuf_cnt) {
+@@ -148,6 +149,12 @@ int term_read(int winch)
+ 			if (texec == '&')
+ 				goto err;
+ 		}
 +		if (agent_tool) {
 +			agent_input_blocked = 1;
 +			xquit = !xquit ? 1 : xquit;
 +			*tibuf = TK_CTL('c');
 +			goto ret;
 +		}
- 		if (texec) {
- 			xquit = !xquit ? 1 : xquit;
- 			if (texec == '&')
+ 		if (term_winch && winch) {
+ 			*tibuf = winch;	/* yield until term_winch is cleared */
+ 			goto ret;
 @@ -273,6 +280,9 @@ char *xgetenv(char **q)
  /* execute a command; pass in input if ibuf and process output if oproc */
  sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  {
 +	int terminal = !ibuf && term_sbuf;
 +	if (agent_tool)
-+		return agent_shell(cmd, ibuf, status);
++		return agent_shell(cmd, ibuf, oproc, status);
  	static char *sh[] = {"$SHELL", "sh", NULL};
  	struct pollfd fds[3];
  	char buf[512];
