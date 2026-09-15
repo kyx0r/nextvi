@@ -4804,51 +4804,54 @@ static int flog_last_reg(int skip)
 /* The whole command addressing mark <mark>, at whatever depth it sits: a
  * command always starts right after a separator byte, so a quote there is an
  * address and never payload (payload lines are newline-delimited). It ends at
- * the next separator, minus the escapes a nested site carries before it.
+ * the next separator, minus the escapes a nested site carries before it. The
+ * report token must occur after that mark, so location-shaped payload cannot
+ * hide the actual failure report.
  *
- * Mark ids restart for every file in a section. Find the complete failure
- * location first, then accept a mark only from that file's b<N> span; a mark
- * alone can otherwise select the same id in an earlier file. */
+ * Mark ids restart for every file in a section. Pair the report with its mark
+ * only in that file's b<N> span; a mark alone can otherwise select the same id
+ * in an earlier file. */
 static char *stream_site(const char *body, const char *path, int line,
 			 int reg, int mark, int buf)
 {
 	sbuf_smake(loc, SB_INIT)
-	const char *hit, *p = body, *e, *cmd;
+	const char *p, *e, *cmd, *site = NULL, *site_end;
 	int curbuf = -1;
-	sb_printf(loc, "%s:%d", path, line);
+	sb_printf(loc, "?" "?!%dreg %s:%d", REG_LOC, path, line);
 	if (reg > 0)
 		sb_printf(loc, ":r%d", reg);
 	sb_printf(loc, ":m%d", mark);
 	sbuf_nul(loc)
-	hit = body;
-	while ((hit = strstr(hit, loc->s)) && hit != body && hit[-1] != ' ')
-		hit++;
-	if (!hit) {
-		free(loc->s);
-		return NULL;
-	}
-	while ((p = strchr(p, xsep)) && p < hit) {
-		cmd = p + 1;
-		/* A buffer select is an entire separator-delimited command. */
-		if (*cmd == 'b') {
-			const char *q = cmd + 1;
-			int n = 0;
-			while (uc_isdigit(*q))
-				n = n * 10 + *q++ - '0';
-			if (q > cmd + 1 && q == strchr(cmd, xsep))
-				curbuf = n;
+	for (p = body; *p; p++) {
+		if (*p == xsep) {
+			cmd = p + 1;
+			/* A buffer select is an entire separator-delimited command. */
+			if (*cmd == 'b') {
+				const char *q = cmd + 1;
+				int n = 0;
+				while (uc_isdigit(*q))
+					n = n * 10 + *q++ - '0';
+				if (q > cmd + 1 && q == strchr(cmd, xsep)) {
+					curbuf = n;
+					site = NULL;
+				}
+			}
+			if (*cmd == '\'' && curbuf == buf &&
+			    atoi(cmd + 1) == mark) {
+				for (e = cmd + 1; uc_isdigit(*e); e++);
+				if (e == cmd + 1 || !(e = strchr(e, xsep)))
+					break;
+				while (e[-1] == xesc)
+					e--;
+				site = cmd;
+				site_end = e;
+			}
 		}
-		if (*cmd != '\'' || atoi(cmd + 1) != mark || curbuf != buf) {
-			p++;
-			continue;
+		if (site && *p == loc->s[0] &&
+		    !strncmp(p, loc->s, loc->s_n)) {
+			free(loc->s);
+			return dup_n(site, site_end - site);
 		}
-		for (e = cmd + 1; uc_isdigit(*e); e++);
-		if (e == cmd + 1 || !(e = strchr(e, xsep)))
-			break;
-		while (e[-1] == xesc)
-			e--;
-		free(loc->s);
-		return dup_n(cmd, e - cmd);
 	}
 	free(loc->s);
 	return NULL;

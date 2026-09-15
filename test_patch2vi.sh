@@ -2707,6 +2707,24 @@ else
 	printf '    src/conf.c:\n'; sed -n '1p;300p' "$R/src/conf.c" | sed 's/^/    /'
 fi
 
+# A location-shaped string in an earlier search pattern must not hide the
+# actual failure report from placement. The failed command should remain
+# available in the emitted repair block.
+printf 'X ac:2:m1 Y\nthe old value here\nTAIL\n' > "$R/ac"
+printf -- '--- a/ac\n+++ b/ac\n@@ -1,3 +1,3 @@\n X ac:2:m1 Y\n-the old value here\n+the new value here\n TAIL\n' > "$R/decoy.diff"
+"$R_P2VI" -r "$R/decoy.diff" > "$R/decoy.sh"
+printf 'X ac:2:m1 Y\nthe drift value here\nTAIL\n' > "$R/ac"
+pty 'P2VI_EX=q!' \
+	"sh -c 'cd $R && QF2=1 $R_P2VI -E decoy.sh > $R/decoy.fixed.sh 2>$R/decoy.err'" \
+	> /dev/null 2>&1
+if grep -q "^+'1s/old/new/$" "$R/decoy.fixed.sh"; then
+	ok "placement: location text in an anchor does not hide the command"
+else
+	fail "placement: location text in an anchor does not hide the command"
+	tr -d '\r' < "$R/decoy.err" | sed 's/^/    /' | head -3
+	sed -n '/PATCH2VI PATCH/,$p' "$R/decoy.fixed.sh" | sed 's/^/    /'
+fi
+
 
 echo ""
 echo "=== applied-set (env chain) tests ==="
