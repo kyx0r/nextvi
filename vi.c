@@ -716,7 +716,7 @@ static int vi_region(int cmd, int *row, int *off)
 		*off = 0;
 		break;
 	case '^':
-		*off = lbuf_indents(xb, *row);
+		*off = MAX(0, lbuf_indents(xb, *row));
 		break;
 	case '$':
 		*off = lbuf_eol(xb, *row, 1);
@@ -1789,15 +1789,15 @@ void vi(int init)
 					ola[0][2] = hls[k].att[0];
 					p = led_extnew();
 					p->ln = ln;
-					p->ola = ola[0];
-					p->cnt = 1;
+					p->usr = ola[0];
+					p->blen = sizeof(ola[0]);
 					ola[1][0] = off1;
 					ola[1][1] = 1;
 					ola[1][2] = hls[k].att[0];
 					p = led_extnew();
 					p->ln = lbuf_get(xb, row1);
-					p->ola = ola[1];
-					p->cnt = 1;
+					p->usr = ola[1];
+					p->blen = sizeof(ola[1]);
 					vi_mod |= row1 == row && orow == xrow ? 2 : 1;
 				}
 			}
@@ -1885,7 +1885,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-7.5 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-7.6 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}

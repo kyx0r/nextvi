@@ -1836,10 +1836,10 @@ check ':f< with a search register armed is rejected' \
 
 # ── :m! mark unset ────────────────────────────────────────────────────────────
 # An unset mark takes the row of one whose line was deleted (-1), so addressing
-# it is an invalid range; :err 1 prints the error and the chain carries on.
+# it is an mark not set; :err 1 prints the error and the chain carries on.
 printf 'aaa\nbbb\nccc\nddd\neee\n' > "$TMPFILE"
 out=$(run_ex ":err 1:2m 97:m! 97:'97p:??!p gone:q")
-check ':m! unsets the given mark' "$(printf 'invalid range\ngone')" "$out"
+check ':m! unsets the given mark' "$(printf 'mark not set\ngone')" "$out"
 
 # marks that were not listed keep their rows
 out=$(run_ex ":2m 97:3m 115:m! 97:'115p:q")
@@ -1847,22 +1847,22 @@ check ':m! leaves the marks it was not given' 'ccc' "$out"
 
 # the argument is a list of ids, like :m
 out=$(run_ex ":err 1:2m 97:3m 115:m! 97 115:'115p:??!p gone:q")
-check ':m! unsets every mark in the list' "$(printf 'invalid range\ngone')" "$out"
+check ':m! unsets every mark in the list' "$(printf 'mark not set\ngone')" "$out"
 
 # no argument at all: every mark in the buffer goes
 out=$(run_ex ":err 1:2m 97:3m 115:m!:'97p:??!p gone:q")
 check ':m! with no argument unsets the first mark' \
-	"$(printf 'invalid range\ngone')" "$out"
+	"$(printf 'mark not set\ngone')" "$out"
 out=$(run_ex ":err 1:2m 97:3m 115:m!:'115p:??!p gone:q")
 check ':m! with no argument unsets the later marks too' \
-	"$(printf 'invalid range\ngone')" "$out"
+	"$(printf 'mark not set\ngone')" "$out"
 
 # id 91 is '[', which lives outside the mark array; the bare form clears it too
 out=$(run_ex ":1,3m 91:'91p:q")
 check "'[ is reachable as mark 91" 'aaa' "$out"
 out=$(run_ex ":err 1:1,3m 91:m!:'91p:??!p gone:q")
 check ":m! with no argument unsets '[ and '] as well" \
-	"$(printf 'invalid range\ngone')" "$out"
+	"$(printf 'mark not set\ngone')" "$out"
 
 # an unset id is free again, and setting it later in the same chain is enough
 out=$(run_ex ":2m 97:m! 97:4m 97:'97=1:q")
@@ -1870,7 +1870,7 @@ check ':m! an unset mark id can be set again' '4' "$out"
 
 # :m! parses no range, so an address in front of it is ignored, never an error
 out=$(run_ex ":err 1:2m 97:1,2m! 97:'97p:??!p gone:q")
-check ':m! ignores a range' "$(printf 'invalid range\ngone')" "$out"
+check ':m! ignores a range' "$(printf 'mark not set\ngone')" "$out"
 
 # unsetting marks that were never set is a no-op, in both forms
 out=$(run_ex ':m! 97:p ok:q')

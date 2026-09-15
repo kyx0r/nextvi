@@ -41,20 +41,20 @@ void ex_init\(char \*\*files, int n\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1984:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1987:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	syn_setft\(xb_ft\);
 	free\(sb->s\);.*(	ec_setbufsmax\(NULL, NULL, ""\);)
 	char \*s = files\[0] \? files\[0] : "";
 	do \{8??0?
-grp 08??-4m 1220reg p OK ex.c:1984:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1987:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else
 			esc = 0;
 		sbuf_cut\(sb, 0\).*(		xmpt = 0;)
 		ec_edit\("", "e", s\);
 		s = \*\(\+\+files\);9??0?
-grp 09??-7m 1220reg p OK ex.c:1984:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:19842sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1987:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:19872sc %? %@2132sc!0?
 '\''1i void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -71,7 +71,7 @@ void ex_init\(char \*\*files, int n\)
 	free(bufs);
 }
 
-??!219reg ex.c:1984:m12sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg ex.c:1987:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 		sbuf_free\(acsb\)
 	}
 }1??0?
@@ -79,8 +79,8 @@ void ex_init\(char \*\*files, int n\)
 grp 1%f> 		sbuf_free\(acsb\).*?
 	}.*?
 (})7??0?
-grp 07??m 1220reg p OK led.c:811:a72sc %? %@2152sc!0?
-1;7??!219reg led.c:8112sc %? %@2132sc!0?
+grp 07??m 1220reg p OK led.c:812:a72sc %? %@2152sc!0?
+1;7??!219reg led.c:8122sc %? %@2132sc!0?
 '\''1i 
 void led_alldone(void)
 {
@@ -88,7 +88,7 @@ void led_alldone(void)
 	if (extsb)
 		sbuf_free(extsb)
 }
-??!219reg led.c:811:m12sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg led.c:812:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;
@@ -99,26 +99,26 @@ void led_alldone(void)
 %f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;4??0?
-4??+2m 1220reg p OK regex.c:665:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK regex.c:667:a42sc %? %@2152sc!1q0?
 grp 1%f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;.*?
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;.*?
 (	unsigned int sdense\[prog->sparsesz], sparsesz = 0;)7??0?
-grp 07??m 1220reg p OK regex.c:665:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK regex.c:667:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	const char \*_subp\[2], \*lb\[prog->laidx\+1];
 	int rsubsize = prog->presub, suboff = 0;
 	int cnt, spc, i, c, j, osubp = nsubc \* sizeof\(char\*\);.*(	if \(eol_ch\))
 		utf8_length\[eol_ch] = 0;
 	if \(flg & REG_ICASE\)8??0?
-grp 08??-4m 1220reg p OK regex.c:665:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK regex.c:667:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	rsub \*nsub, \*sub, \*matched = NULL, \*freesub = NULL;
 	rthread _clist\[prog->len], _nlist\[prog->len];
 	rthread \*clist = _clist, \*nlist = _nlist, \*tmp;.*(		goto jmp_start1;)
 	goto jmp_start2;
 	match\(1, if \(\(unsigned int\)c < 128\) c = tolower\(c\);\)9??0?
-grp 09??-7m 1220reg p OK regex.c:665:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg regex.c:6652sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK regex.c:667:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg regex.c:6672sc %? %@2132sc!0?
 '\''1i 	memset(sdense, 0, sizeof(int) * prog->sparsesz);
-??!219reg regex.c:665:m12sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg regex.c:667:m12sc %? %@2142sc!b3m!%ya 98?0?
 %f> /\* 0 = current line, 1 = all other lines,
 2 = aux rendering \(never lbuf backed by construction\) \*/
 ren_state rstates\[3];
@@ -214,10 +214,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 0ce81414..8fd32ac9 100644
+index 21f13f54..6d524f06 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1982,6 +1982,22 @@ void ex(void)
+@@ -1985,6 +1985,22 @@ void ex(void)
  	xgrec--;
  }
  
@@ -241,10 +241,10 @@ index 0ce81414..8fd32ac9 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 26a5f232..d614b2b7 100644
+index 375abb35..47ba71de 100644
 --- a/led.c
 +++ b/led.c
-@@ -809,3 +809,10 @@ void led_done(void)
+@@ -810,3 +810,10 @@ void led_done(void)
  		sbuf_free(acsb)
  	}
  }
@@ -256,10 +256,10 @@ index 26a5f232..d614b2b7 100644
 +		sbuf_free(extsb)
 +}
 diff --git a/regex.c b/regex.c
-index 4f841ff4..7f013a12 100644
+index e5aab266..77811bff 100644
 --- a/regex.c
 +++ b/regex.c
-@@ -663,6 +663,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
+@@ -665,6 +665,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
  	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
  	int eol_ch = flg & REG_NEWLINE ? '\n' : 0;
  	unsigned int sdense[prog->sparsesz], sparsesz = 0;
@@ -304,7 +304,7 @@ index 4116d9c1..0abb7884 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 03ed7b03..059751c1 100644
+index cc9b1492..27542651 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1901,6 +1901,11 @@ int main(int argc, char *argv[])

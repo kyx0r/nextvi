@@ -37,6 +37,13 @@ Patch changes:
 9. patch2vi.sh: added dump_patch/view_patch and dump_head/view_head
    helpers.
 
+Source commits:
+master    b1c78886
+manual    df462fb3
+patches   5d03de60
+patch2vi  13ce5789
+test      5f8619a1
+
 ------------------
 7.5 Basilisk
 ------------------

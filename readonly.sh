@@ -99,24 +99,24 @@ int xai = 1;			/\* autoindent option \*/1??0?
 %f+ 	bufs\[i]\.top = 0;
 	bufs\[i]\.td = \+1;
 	bufs\[i]\.mtime = -1;4??0?
-4??+2m 2220reg p OK ex.c:171:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:170:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	bufs\[i]\.top = 0;.*?
 	bufs\[i]\.td = \+1;.*?
 (	bufs\[i]\.mtime = -1;)7??0?
-grp 07??m 2220reg p OK ex.c:171:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:170:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	bufs\[i]\.plen = len;
 	bufs\[i]\.row = 0;
 	bufs\[i]\.off = 0;.*(void temp_open\(int i, char \*name, char \*ft\))
 \{
 	tempbufs\[i]\.path = uc_dup\(name\);8??0?
-grp 08??-4m 2220reg p OK ex.c:171:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:170:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		bufs_free\(--i\);
 	bufs\[i]\.path = uc_dup\(path\);
 	bufs\[i]\.lb = lbuf_make\(\);.*(	tempbufs\[i]\.lb = lbuf_make\(\);)
 	tempbufs\[i]\.row = 0;
 	tempbufs\[i]\.off = 0;9??0?
-grp 09??-7m 2220reg p OK ex.c:171:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:1712sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:170:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:1702sc %? %@2132sc!0?
 ?0?
 %f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/
@@ -128,24 +128,24 @@ int xai = 1;			/\* autoindent option \*/1??0?
 %f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/
 	}4??0?
-4??+2m 3220reg p OK ex.c:431:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:434:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);.*?
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/.*?
 (	})7??0?
-grp 07??m 3220reg p OK ex.c:431:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:434:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			bufs\[xbufsmax - 1]\.lb->modified\) \{
 		return "last buffer modified";
 	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{.*(	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",)
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
 			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);8??0?
-grp 08??-6m 3220reg p OK ex.c:431:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 3220reg p OK ex.c:434:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		bufs_switchwft\(fd\)
 		return NULL;
 	} else if \(xbufcur == xbufsmax && !strchr\(cmd, '\''!'\''\) &&.*(	if \(!\(xvis & 4\)\))
 		ex_print\(msg, bar_ft\)
 	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;9??0?
-grp 09??-9m 3220reg p OK ex.c:431:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:4312sc %? %@2132sc!0?
+grp 09??-9m 3220reg p OK ex.c:434:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:4342sc %? %@2132sc!0?
 ?0?
 %f+ 	} else if \(ret\)
 		return "other buffers modified";
@@ -157,24 +157,24 @@ int xai = 1;			/\* autoindent option \*/1??0?
 %f+ 	} else if \(ret\)
 		return "other buffers modified";
 	if \(!strchr\(cmd, '\''!'\''\)\) \{4??0?
-4??+2m 4220reg p OK ex.c:784:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:787:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	} else if \(ret\).*?
 		return "other buffers modified";.*?
 (	if \(!strchr\(cmd, '\''!'\''\)\) \{)7??0?
-grp 07??m 4220reg p OK ex.c:784:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:787:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		free\(ibuf\.s\);
 		xquit = quit;
 		return ret;.*(			return "write failed: file exists";)
 	}
 	fd = open\(path, O_WRONLY \| O_CREAT \| O_TRUNC, conf_mode\);8??0?
-grp 08??-4m 4220reg p OK ex.c:784:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ex.c:787:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			return ret;
 		lbuf_region\(xb, &ibuf, beg, MAX\(0, o1\), end - 1, o2\);
 		ret = ex_pipeout\(arg \+ 1, &ibuf\);.*(	if \(fd < 0\))
 		return "write failed: cannot create file";
 	if \(o1 >= 0\) \{9??0?
-grp 09??-7m 4220reg p OK ex.c:784:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:7842sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK ex.c:787:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:7872sc %? %@2132sc!0?
 ?0?
 %f+ 	return xkwdrs \? NULL : xserr;
 }
@@ -187,20 +187,20 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 }
 
 4??0?
-4??+2m 5220reg p OK ex.c:1668:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK ex.c:1671:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	int i, j, l, o;)
 	for \(l = 0, i = 0; i < x->cterm;\) \{
 		o = x->off\[i\+\+];8??0?
-grp 08??-4m 5220reg p OK ex.c:1668:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK ex.c:1671:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_nul\(sb\).*(		if \(o < 0\))
 			continue;
 		for \(l\+\+; x->off\[i] == o; i\+\+\);9??0?
-grp 09??-7m 5220reg p OK ex.c:1668:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16682sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK ex.c:1671:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16712sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
@@ -212,43 +212,43 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},4??0?
-4??+2m 6220reg p OK ex.c:1788:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK ex.c:1791:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"reg", ec_regprint},.*?
 	\{"re", ec_krsset},.*?
 (	\{"rd", ec_undoredo},)7??0?
-grp 07??m 6220reg p OK ex.c:1788:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1791:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"q!", ec_quit},
 	\{"q", ec_quit},
 	\{"reg\+", ec_regprint},.*(	\{"wq", ec_write},)
 	\{"w!", ec_write},
 	\{"w", ec_write},8??0?
-grp 08??-4m 6220reg p OK ex.c:1788:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK ex.c:1791:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(mpt\),
 	\{"m!", ec_mark},
 	\{"m", ec_mark},.*(	\{"uc", ec_setenc},)
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},9??0?
-grp 09??-7m 6220reg p OK ex.c:1788:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17882sc %? %@2132sc!0?
+grp 09??-7m 6220reg p OK ex.c:1791:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17912sc %? %@2132sc!0?
 '\''1-1i char readonly = 0;		/* commandline readonly option */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i 	bufs[i].readonly = readonly;
-??!219reg ex.c:171:m22sc %? %@2142sc!0?
+??!219reg ex.c:170:m22sc %? %@2142sc!0?
 '\''3i 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 		ex_buf->readonly = 1;
-??!219reg ex.c:431:m32sc %? %@2142sc!0?
+??!219reg ex.c:434:m32sc %? %@2142sc!0?
 '\''4i 		if (ex_buf->readonly)
 			return "write failed: readonly option is set";
-??!219reg ex.c:784:m42sc %? %@2142sc!0?
+??!219reg ex.c:787:m42sc %? %@2142sc!0?
 '\''5i static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
-??!219reg ex.c:1668:m52sc %? %@2142sc!0?
+??!219reg ex.c:1671:m52sc %? %@2142sc!0?
 '\''6i 	{"ro", ec_readonly},
-??!219reg ex.c:1788:m62sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1791:m62sc %? %@2142sc!b2m!%ya 98?0?
 %f> 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\)
 				xvis \|= 8;
@@ -281,17 +281,17 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 %f+ 				xvis = 0;
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);
-				fprintf\(stderr, "Nextvi-7\.5 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}1??0?
 1??+3m 21q0?
-%f+ 				fprintf\(stderr, "Nextvi-7\.5 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+%f+ 				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}2??0?
 2??m 2220reg p OK vi.c:1888:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.5 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
+;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
 3??m 2220reg p OK vi.c:1888:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				xvis = 0;
 			else \{
@@ -301,18 +301,18 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 			}
 		}5??0?
 5??-1m 2220reg p OK vi.c:1888:a52sc %? %@2152sc!1q0?
-%f+ .........=..;
-.....se.\{
-	......in.....d.......nk...........:..............i......
-..	......tf.....r.......................s.\[.a..... .fi.e..\...........v\[.]..
-.		.re......X.....I.U...
-.	.}
+%f+ ....x..s ....
+	..e.....
+		.	..................n....n ....... .%.......r....]\[....
+..		..r..t....d....."......-... ....e. %..\[.....v] ..i...\..\...."...........
+...	.......E.I..........
+.	..
 	..6??0?
 6??+3m 2220reg p OK vi.c:1888:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				xvis = 0;.*?
 			else \{.*?
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);.*?
-(				fprintf\(stderr, "Nextvi-7\.5 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
+(				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
 grp 07??m 2220reg p OK vi.c:1888:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;
@@ -398,7 +398,7 @@ index a51117ca..e32a76da 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..57cae985 100644
+index 21f13f54..c63b2527 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -406,7 +406,7 @@ index 0ce81414..57cae985 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -169,6 +170,7 @@ static int bufs_open(const char *path, int len)
+@@ -168,6 +169,7 @@ static int bufs_open(const char *path, int len)
  	bufs[i].top = 0;
  	bufs[i].td = +1;
  	bufs[i].mtime = -1;
@@ -414,7 +414,7 @@ index 0ce81414..57cae985 100644
  	return i;
  }
  
-@@ -429,6 +431,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -432,6 +434,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -423,7 +423,7 @@ index 0ce81414..57cae985 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -782,6 +786,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -785,6 +789,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	} else if (ret)
  		return "other buffers modified";
  	if (!strchr(cmd, '!')) {
@@ -432,7 +432,7 @@ index 0ce81414..57cae985 100644
  		if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  			return "write failed: file changed";
  		if (arg[0] && mtime(path) >= 0)
-@@ -1666,6 +1672,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1669,6 +1675,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -445,7 +445,7 @@ index 0ce81414..57cae985 100644
  static void ext_hlr(led_ext *p, led_ctx *x)
  {
  	ren_state *r = x->r;
-@@ -1786,6 +1798,7 @@ static struct excmd {
+@@ -1789,6 +1801,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},
@@ -454,7 +454,7 @@ index 0ce81414..57cae985 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index 03ed7b03..b2049603 100644
+index cc9b1492..e800da17 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1881,11 +1881,13 @@ int main(int argc, char *argv[])
@@ -467,13 +467,13 @@ index 03ed7b03..b2049603 100644
  				xvis = 0;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-7.5 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-7.5 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-7.6 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-7.6 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..8eca1422 100644
+index 514c675e..338f7d51 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -435,6 +435,7 @@ struct buf {

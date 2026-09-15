@@ -31,7 +31,7 @@ ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 '230reg 0fr 2290?
 f> [ /]rstr[.]sh 20??b720?? %ya 231230reg 1231??0?
-fr 98211reg fr 230f> 1??!? %@221fr 98b01b11b21b31b41b510?
+fr 98211reg fr 230f> 1??!? %@221fr 980?
 b6%ya 972sc %? %@972sc!b11b21211reg ? %@2210?
 2sc %? %@2312sc!vis 2b0wb1wb2wb3wb4wb5w2q' > "$P2VIF".d
 printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
@@ -152,16 +152,16 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 grp 07??m 1220reg p OK lbuf.c:502:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
-		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);)
-				continue;
-			}8??0?
-grp 08??-21m 1220reg p OK lbuf.c:502:a82sc %? %@2152sc!'\''08??1q0?
+		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(	if \(ch == '\''\\n'\''\))
+		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
+			\*row \+= dir;8??0?
+grp 08??-42m 1220reg p OK lbuf.c:502:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			n--;
 		if \(n > 0\)
-			\*off \+= dir;.*(			_o \+= uc_off\(s \+ step, off \+ g1 - step\);)
-			if \(dir < 0 && r0 == i && _o > o0 - nskip\)
-				break;9??0?
-grp 09??-24m 1220reg p OK lbuf.c:502:a92sc %? %@2152sc!'\''00?
+			\*off \+= dir;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
+		\*row \+= dir;
+	\*row = MAX\(0, MIN\(\*row, lbuf_len\(lb\) - 1\)\);9??0?
+grp 09??-47m 1220reg p OK lbuf.c:502:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5022sc %? %@2132sc!0?
 ?0?
 %f+ 		_o = 0;
@@ -206,58 +206,108 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 grp 07??m 2220reg p OK lbuf.c:518:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
-		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);)
-				continue;
-			}8??0?
-grp 08??-5m 2220reg p OK lbuf.c:518:a82sc %? %@2152sc!'\''08??1q0?
+		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(	if \(ch == '\''\\n'\''\))
+		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
+			\*row \+= dir;8??0?
+grp 08??-26m 2220reg p OK lbuf.c:518:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			n--;
 		if \(n > 0\)
-			\*off \+= dir;.*(			_o \+= uc_off\(s \+ step, off \+ g1 - step\);)
-			if \(dir < 0 && r0 == i && _o > o0 - nskip\)
-				break;9??0?
-grp 09??-8m 2220reg p OK lbuf.c:518:a92sc %? %@2152sc!'\''00?
+			\*off \+= dir;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
+		\*row \+= dir;
+	\*row = MAX\(0, MIN\(\*row, lbuf_len\(lb\) - 1\)\);9??0?
+grp 09??-31m 2220reg p OK lbuf.c:518:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5182sc %? %@2132sc!0?
+?0?
+%f+ 			flg \|= REG_NOTBOL;
+			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
+			if \(g1 < 0\) \{
+				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);
+				continue;
+			}
+			_o \+= uc_off\(s \+ step, off \+ g1 - step\);1??0?
+1??+3m 31q0?
+%f+ 				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);
+				continue;
+			}
+			_o \+= uc_off\(s \+ step, off \+ g1 - step\);2??0?
+2??m 3220reg p OK lbuf.c:523:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);$3??0?
+3??m 3220reg p OK lbuf.c:523:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 			flg \|= REG_NOTBOL;
+			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
+			if \(g1 < 0\) \{4??0?
+4??+3m 3220reg p OK lbuf.c:523:a42sc %? %@2152sc!1q0?
+%f+ 				continue;
+			}
+			_o \+= uc_off\(s \+ step, off \+ g1 - step\);5??0?
+5??-1m 3220reg p OK lbuf.c:523:a52sc %? %@2152sc!1q0?
+%f+ .	...g..........T..L;
+..	.1.. o....xg.p.. .. =.o..s...r.......
+......\(g1.<..\)..
+	.......\+......\[.] ....\? .f..... ..u._....... .ff..
+......nti....
+..	.
+.	..o..=..._..f\(... ..... ..f..... -..t.p\).6??0?
+6??+3m 3220reg p OK lbuf.c:523:a62sc %? %@2152sc!1q0?
+grp 1%f+ 			flg \|= REG_NOTBOL;.*?
+			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];.*?
+			if \(g1 < 0\) \{.*?
+(				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);)7??0?
+grp 07??m 3220reg p OK lbuf.c:523:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	}
+	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
+		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(	if \(ch == '\''\\n'\''\))
+		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
+			\*row \+= dir;8??0?
+grp 08??-21m 3220reg p OK lbuf.c:523:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			n--;
+		if \(n > 0\)
+			\*off \+= dir;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
+		\*row \+= dir;
+	\*row = MAX\(0, MIN\(\*row, lbuf_len\(lb\) - 1\)\);9??0?
+grp 09??-26m 3220reg p OK lbuf.c:523:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5232sc %? %@2132sc!0?
 ?0?
 %f+ 				continue;
 			}
 			_o \+= uc_off\(s \+ step, off \+ g1 - step\);
 			if \(dir < 0 && r0 == i && _o > o0 - nskip\)
 				break;1??0?
-1??+3m 31q0?
+1??+3m 41q0?
 %f+ 			if \(dir < 0 && r0 == i && _o > o0 - nskip\)
 				break;2??0?
-2??m 3220reg p OK lbuf.c:527:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK lbuf.c:527:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			if \(dir < 0 && r0 == i && _o > o0 - nskip\)$3??0?
-3??m 3220reg p OK lbuf.c:527:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK lbuf.c:527:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				continue;
 			}
 			_o \+= uc_off\(s \+ step, off \+ g1 - step\);4??0?
-4??+3m 3220reg p OK lbuf.c:527:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK lbuf.c:527:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				break;$5??0?
-5??-1m 3220reg p OK lbuf.c:527:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 4220reg p OK lbuf.c:527:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ 	............
 		.}
 ..................\+..t.....f... .. - .....;
 ..... ...... 0...... =.....&..o......- .s.i..
 ..	.......6??0?
-6??+3m 3220reg p OK lbuf.c:527:a62sc %? %@2152sc!1q0?
+6??+3m 4220reg p OK lbuf.c:527:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				continue;.*?
 			}.*?
 			_o \+= uc_off\(s \+ step, off \+ g1 - step\);.*?
 (			if \(dir < 0 && r0 == i && _o > o0 - nskip\))7??0?
-grp 07??m 3220reg p OK lbuf.c:527:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
-			if \(g1 < 0\) \{
-				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);.*(	if \(ch == '\''\\n'\''\))
+grp 07??m 4220reg p OK lbuf.c:527:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	}
+	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
+		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(	if \(ch == '\''\\n'\''\))
 		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
 			\*row \+= dir;8??0?
-grp 08??-17m 3220reg p OK lbuf.c:527:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		s = lb->ln\[i];
-		while \(rset_find\(re, s \+ off, offs, flg\) >= 0\) \{
-			flg \|= REG_NOTBOL;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
+grp 08??-17m 4220reg p OK lbuf.c:527:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			n--;
+		if \(n > 0\)
+			\*off \+= dir;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
 		\*row \+= dir;
 	\*row = MAX\(0, MIN\(\*row, lbuf_len\(lb\) - 1\)\);9??0?
-grp 09??-22m 3220reg p OK lbuf.c:527:a92sc %? %@2152sc!'\''00?
+grp 09??-22m 4220reg p OK lbuf.c:527:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5272sc %? %@2132sc!0?
 ?0?
 %f+ 				break;
@@ -265,49 +315,45 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 			\*r = i;
 			if \(dir > 0\)
 				return 0;
-			step = off \+ g1;
-			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);1??0?
-1??+1m 41q0?
+			step = off \+ g1;1??0?
+1??+1m 51q0?
 %f+ 			\*o = _o;
 			\*r = i;
 			if \(dir > 0\)
 				return 0;
-			step = off \+ g1;
-			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);2??0?
-2??m 4220reg p OK lbuf.c:529:a22sc %? %@2152sc!1q0?
+			step = off \+ g1;2??0?
+2??m 5220reg p OK lbuf.c:529:a22sc %? %@2152sc!1q0?
 %f+ 			\*o = _o;
 			\*r = i;
 			if \(dir > 0\)
 				return 0;3??0?
-3??m 4220reg p OK lbuf.c:529:a32sc %? %@2152sc!1q0?
+3??m 5220reg p OK lbuf.c:529:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				break;$4??0?
-4??+1m 4220reg p OK lbuf.c:529:a42sc %? %@2152sc!fr 981qfr 980?
-%f+ 			step = off \+ g1;
-			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);5??0?
-5??-4m 4220reg p OK lbuf.c:529:a52sc %? %@2152sc!1q0?
-%f+ ..	...e...
-......=....
-....r.= ..
-.......d.... .\)
-...	...u.....
-......p....f. . .1.
-.....f... .... .........uc...n\(. . of..;6??0?
-6??+1m 4220reg p OK lbuf.c:529:a62sc %? %@2152sc!1q0?
+4??+1m 5220reg p OK lbuf.c:529:a42sc %? %@2152sc!fr 981qfr 980?
+;0fr.,$f+ ^			step = off \+ g1;$5??0?
+5??-4m 5220reg p OK lbuf.c:529:a52sc %? %@2152sc!fr 981qfr 980?
+%f+ 		...r.a..
+......=._..
+	.......i.
+..... ...r ...\)
+..	..........
+....... . .f.......6??0?
+6??+1m 5220reg p OK lbuf.c:529:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				break;.*?
 (			\*o = _o;)7??0?
-grp 07??m 4220reg p OK lbuf.c:529:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
-			if \(g1 < 0\) \{
-				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);.*(	if \(ch == '\''\\n'\''\))
+grp 07??m 5220reg p OK lbuf.c:529:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	}
+	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
+		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(	if \(ch == '\''\\n'\''\))
 		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
 			\*row \+= dir;8??0?
-grp 08??-15m 4220reg p OK lbuf.c:529:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		s = lb->ln\[i];
-		while \(rset_find\(re, s \+ off, offs, flg\) >= 0\) \{
-			flg \|= REG_NOTBOL;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
+grp 08??-15m 5220reg p OK lbuf.c:529:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			n--;
+		if \(n > 0\)
+			\*off \+= dir;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
 		\*row \+= dir;
 	\*row = MAX\(0, MIN\(\*row, lbuf_len\(lb\) - 1\)\);9??0?
-grp 09??-20m 4220reg p OK lbuf.c:529:a92sc %? %@2152sc!'\''00?
+grp 09??-20m 5220reg p OK lbuf.c:529:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5292sc %? %@2132sc!0?
 ?0?
 %f+ 			step = off \+ g1;
@@ -316,45 +362,45 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 		}
 		off = 0;
 	}1??0?
-1??+2m 51q0?
-%f+ 			end = -1; /\* break outer loop efficiently \*/
+1??+1m 61q0?
+%f+ 			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);
+			end = -1; /\* break outer loop efficiently \*/
 		}
 		off = 0;
 	}2??0?
-2??m 5220reg p OK lbuf.c:535:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^			end = -1; /\* break outer loop efficiently \*/$3??0?
-3??m 5220reg p OK lbuf.c:535:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 			step = off \+ g1;
-			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);4??0?
-4??+2m 5220reg p OK lbuf.c:535:a42sc %? %@2152sc!1q0?
+2??m 6220reg p OK lbuf.c:534:a22sc %? %@2152sc!1q0?
+%f+ 			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);
+			end = -1; /\* break outer loop efficiently \*/3??0?
+3??m 6220reg p OK lbuf.c:534:a32sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			step = off \+ g1;$4??0?
+4??+1m 6220reg p OK lbuf.c:534:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		}
 		off = 0;
 	}5??0?
-5??-1m 5220reg p OK lbuf.c:535:a52sc %? %@2152sc!1q0?
+5??-2m 6220reg p OK lbuf.c:534:a52sc %? %@2152sc!1q0?
 %f+ 	..................
 ..	...... .2.>....... . uc..e..s.\+.o.f..
 ...... =.-1../...r.a......r ......f.i........./
 	..
 	.of. ....
 .}6??0?
-6??+2m 5220reg p OK lbuf.c:535:a62sc %? %@2152sc!1q0?
+6??+1m 6220reg p OK lbuf.c:534:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			step = off \+ g1;.*?
-			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);.*?
-(			end = -1; /\* break outer loop efficiently \*/)7??0?
-grp 07??m 5220reg p OK lbuf.c:535:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
-			if \(g1 < 0\) \{
-				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);.*(	if \(ch == '\''\\n'\''\))
+(			off \+= g2 > 0 \? g2 : uc_len\(s \+ off\);)7??0?
+grp 07??m 6220reg p OK lbuf.c:534:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	}
+	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
+		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(	if \(ch == '\''\\n'\''\))
 		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
 			\*row \+= dir;8??0?
-grp 08??-9m 5220reg p OK lbuf.c:535:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		s = lb->ln\[i];
-		while \(rset_find\(re, s \+ off, offs, flg\) >= 0\) \{
-			flg \|= REG_NOTBOL;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
+grp 08??-10m 6220reg p OK lbuf.c:534:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			n--;
+		if \(n > 0\)
+			\*off \+= dir;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
 		\*row \+= dir;
 	\*row = MAX\(0, MIN\(\*row, lbuf_len\(lb\) - 1\)\);9??0?
-grp 09??-14m 5220reg p OK lbuf.c:535:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5352sc %? %@2132sc!0?
+grp 09??-15m 6220reg p OK lbuf.c:534:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5342sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		off = 0;
@@ -363,22 +409,22 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 }
 
 int lbuf_sectionbeg\(struct lbuf \*lb, int dir, int \*row, int \*off, int ch\)1??0?
-1??+3m 61q0?
+1??+3m 71q0?
 %f+ 	return end < 0 \? 0 : 1;
 }
 
 int lbuf_sectionbeg\(struct lbuf \*lb, int dir, int \*row, int \*off, int ch\)2??0?
-2??m 6220reg p OK lbuf.c:539:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK lbuf.c:539:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	return end < 0 \? 0 : 1;$3??0?
-3??m 6220reg p OK lbuf.c:539:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 7220reg p OK lbuf.c:539:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		}
 		off = 0;
 	}4??0?
-4??+3m 6220reg p OK lbuf.c:539:a42sc %? %@2152sc!1q0?
+4??+3m 7220reg p OK lbuf.c:539:a42sc %? %@2152sc!1q0?
 %f+ }
 
 int lbuf_sectionbeg\(struct lbuf \*lb, int dir, int \*row, int \*off, int ch\)5??0?
-5??-1m 6220reg p OK lbuf.c:539:a52sc %? %@2152sc!1q0?
+5??-1m 7220reg p OK lbuf.c:539:a52sc %? %@2152sc!1q0?
 %f+ .	.
 	.........
 	.
@@ -386,24 +432,24 @@ int lbuf_sectionbeg\(struct lbuf \*lb, int dir, int \*row, int \*off, int ch\)
 }
 
 ... ......ec...n....s.......... ........ .i.......\*.o.,..n. \*.f....n. c..6??0?
-6??+3m 6220reg p OK lbuf.c:539:a62sc %? %@2152sc!1q0?
+6??+3m 7220reg p OK lbuf.c:539:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		}.*?
 		off = 0;.*?
 	}.*?
 (	return end < 0 \? 0 : 1;)7??0?
-grp 07??m 6220reg p OK lbuf.c:539:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 			g1 = offs\[xgrp], g2 = offs\[xgrp \+ 1];
-			if \(g1 < 0\) \{
-				off \+= offs\[1] > 0 \? offs\[1] : uc_len\(s \+ off\);.*(	if \(ch == '\''\\n'\''\))
+grp 07??m 7220reg p OK lbuf.c:539:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	}
+	if \(!n && \(cmd == '\''t'\'' \|\| cmd == '\''T'\''\)\)
+		\*off = MIN\(MAX\(0, \*off - dir\), r->n-1\);.*(	if \(ch == '\''\\n'\''\))
 		while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) == ch\)
 			\*row \+= dir;8??0?
-grp 08??-5m 6220reg p OK lbuf.c:539:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		s = lb->ln\[i];
-		while \(rset_find\(re, s \+ off, offs, flg\) >= 0\) \{
-			flg \|= REG_NOTBOL;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
+grp 08??-5m 7220reg p OK lbuf.c:539:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			n--;
+		if \(n > 0\)
+			\*off \+= dir;.*(	while \(\*row >= 0 && \*row < lbuf_len\(lb\) && \*lbuf_get\(lb, \*row\) != ch\))
 		\*row \+= dir;
 	\*row = MAX\(0, MIN\(\*row, lbuf_len\(lb\) - 1\)\);9??0?
-grp 09??-10m 6220reg p OK lbuf.c:539:a92sc %? %@2152sc!'\''00?
+grp 09??-10m 7220reg p OK lbuf.c:539:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg lbuf.c:5392sc %? %@2132sc!0?
 '\''1,#+12c struct lsparams
 {
@@ -430,16 +476,19 @@ static void *lsearch(void *arg)
 '\''2,#+1c 		s = a->lb->ln[i];
 		while (rset_find(a->re, s + off, offs, flg) >= 0) {
 ??!219reg lbuf.c:518:m22sc %? %@2142sc!0?
-'\''3c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
-??!219reg lbuf.c:527:m32sc %? %@2142sc!0?
-'\''4,#+3c 			*a->o = _o;
+?'\''3s/uc_len\(s \+ off/MAX(1, uc_len(s + off)/1??1??1q'\''3s/(u.*\))/MAX(1, \1)/2??2??'\''3220reg p OK lbuf.c:523:s22sc %? %@2162sc!0?
+1;2??!219reg lbuf.c:523:m32sc %? %@2142sc!0?
+'\''4c 			if (a->dir < 0 && r0 == i && _o > o0 - a->nskip)
+??!219reg lbuf.c:527:m42sc %? %@2142sc!0?
+'\''5,#+3c 			*a->o = _o;
 			*a->r = i;
-??!219reg lbuf.c:529:m42sc %? %@2142sc!0?
-'\''5c 			a->end = -1; /* break outer loop efficiently */
+??!219reg lbuf.c:529:m52sc %? %@2142sc!0?
+'\''6,#+1c 			off += g2 > 0 ? g2 : MAX(1, uc_len(s + off));
+			a->end = -1; /* break outer loop efficiently */
 			if (a->dir > 0)
 				return NULL;
-??!219reg lbuf.c:535:m52sc %? %@2142sc!0?
-'\''6c 	return NULL;
+??!219reg lbuf.c:534:m62sc %? %@2142sc!0?
+'\''7c 	return NULL;
 }
 
 int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
@@ -507,7 +556,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
 	}
 	utf8_length['\''\n'\''] = 1;
 	return 1;
-??!219reg lbuf.c:539:m62sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg lbuf.c:539:m72sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return prog;
 }
 
@@ -567,39 +616,39 @@ if \(.r...... ...6??0?
 1??+3m 21q0?
 %f+ 	if \(eol_ch\)
 		utf8_length\[eol_ch] = 0;2??0?
-2??m 2220reg p OK regex.c:669:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK regex.c:671:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(eol_ch\)$3??0?
-3??m 2220reg p OK regex.c:669:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK regex.c:671:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	char nsubs\[prog->sub];
 	for \(i = 0; i < prog->laidx; i\+\+\)
 		lb\[i] = NULL;4??0?
-4??+3m 2220reg p OK regex.c:669:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK regex.c:671:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		utf8_length\[eol_ch] = 0;$5??0?
-5??-1m 2220reg p OK regex.c:669:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 2220reg p OK regex.c:671:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .......s.bs............
 ..........0......prog-.l..........
 	...\[i... .U...
 .i.........\)
 	...f8.l.....\[e.......=...6??0?
-6??+3m 2220reg p OK regex.c:669:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK regex.c:671:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	char nsubs\[prog->sub];.*?
 	for \(i = 0; i < prog->laidx; i\+\+\).*?
 		lb\[i] = NULL;.*?
 (	if \(eol_ch\))7??0?
-grp 07??m 2220reg p OK regex.c:669:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK regex.c:671:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;.*(	match\(1, if \(\(unsigned int\)c < 128\) c = tolower\(c\);\))
 	match\(2,\)
 }8??0?
-grp 08??-5m 2220reg p OK regex.c:669:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 2220reg p OK regex.c:671:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	const char \*_subp\[2], \*lb\[prog->laidx\+1];
 	int rsubsize = prog->presub, suboff = 0;
 	int cnt, spc, i, c, j, osubp = nsubc \* sizeof\(char\*\);.*(static int re_groupcount\(char \*s\))
 \{
 	int n;9??0?
-grp 09??-9m 2220reg p OK regex.c:669:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg regex.c:6692sc %? %@2132sc!0?
+grp 09??-9m 2220reg p OK regex.c:671:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:6712sc %? %@2132sc!0?
 ?0?
 %f+ 		utf8_length\[eol_ch] = 0;
 	if \(flg & REG_ICASE\)
@@ -607,25 +656,25 @@ if \(.r...... ...6??0?
 	goto jmp_start2;1??0?
 1??m 31q0?
 ;0fr.,$f+ ^		utf8_length\[eol_ch] = 0;$4??0?
-4??m 3220reg p OK regex.c:670:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 3220reg p OK regex.c:672:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;.*(	match\(1, if \(\(unsigned int\)c < 128\) c = tolower\(c\);\))
 	match\(2,\)
 }8??0?
-grp 08??-4m 3220reg p OK regex.c:670:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK regex.c:672:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	const char \*_subp\[2], \*lb\[prog->laidx\+1];
 	int rsubsize = prog->presub, suboff = 0;
 	int cnt, spc, i, c, j, osubp = nsubc \* sizeof\(char\*\);.*(static int re_groupcount\(char \*s\))
 \{
 	int n;9??0?
-grp 09??-8m 3220reg p OK regex.c:670:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg regex.c:6702sc %? %@2132sc!0?
+grp 09??-8m 3220reg p OK regex.c:672:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg regex.c:6722sc %? %@2132sc!0?
 '\''1s/\(eol_ch/(flg & REG_NEWLINE/??!219reg regex.c:429:m12sc %? %@2142sc!0?
-'\''2s/h\)/h && utf8_length[eol_ch])/??!219reg regex.c:669:m22sc %? %@2142sc!0?
+'\''2s/h\)/h && utf8_length[eol_ch])/??!219reg regex.c:671:m22sc %? %@2142sc!0?
 '\''3i 	else
 		flg &= ~REG_NEWLINE;
-??!219reg regex.c:670:m32sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg regex.c:672:m32sc %? %@2142sc!b3m!%ya 98?0?
 %f> unsigned char utf8_length\[256] = \{
 	/\*	0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F \*/
 	/\* 0 \*/ 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -876,8 +925,8 @@ break##gen:; \\
 break##gen:; \\
 
 4??0?
-4??+2m 1220reg p OK regex.c:836:a42sc %? %@2152sc!0?
-1;4??!219reg regex.c:836:r2312sc %? %@2132sc!0?
+4??+2m 1220reg p OK regex.c:838:a42sc %? %@2152sc!0?
+1;4??!219reg regex.c:838:r2312sc %? %@2132sc!0?
 ?0?
 %f+ #define rstr_match1\(gen, wbeg, wend, cmpcase, stopcond\) \\
 \{ for \(r = beg; stopcond; r\+\+\) \{ \\
@@ -891,25 +940,25 @@ break##gen:; \\
 } } \\
 
 2??0?
-2??m 2220reg p OK regex.c:838:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK regex.c:840:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^\{ for \(r = beg; stopcond; r\+\+\) \{ \\$3??0?
-3??m 2220reg p OK regex.c:838:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK regex.c:840:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^#define rstr_match1\(gen, wbeg, wend, cmpcase, stopcond\) \\$4??0?
-4??+1m 2220reg p OK regex.c:838:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 2220reg p OK regex.c:840:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	rstr_cmp\(2##gen, wbeg, wend, cmpcase\) \\
 } } \\
 
 5??0?
-5??-1m 2220reg p OK regex.c:838:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg regex.c:838:r2312sc %? %@2132sc!0?
+5??-1m 2220reg p OK regex.c:840:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg regex.c:840:r2312sc %? %@2132sc!0?
 '\''1i /* lbuf_search swaps utf8_length for an all zero table to terminate its search
  * threads with no synchronization; entry 1 is never zero in the real table, so
  * reading it is how a scan that never decodes utf-8 notices the same kill */
 #define rstr_live utf8_length[1]
 
-??!219reg regex.c:836:r231:m12sc %? %@2142sc!0?
-?'\''2s/stopcond/(stopcond) && rstr_live/1??1??1q'\''2s/(s.*d)/(\1) && rstr_live/2??2??'\''2220reg p OK regex.c:838:s22sc %? %@2162sc!0?
-1;2??!219reg regex.c:838:r231:m22sc %? %@2142sc!0?
+??!219reg regex.c:838:r231:m12sc %? %@2142sc!0?
+?'\''2s/stopcond/(stopcond) && rstr_live/1??1??1q'\''2s/(s.*d)/(\1) && rstr_live/2??2??'\''2220reg p OK regex.c:840:s22sc %? %@2162sc!0?
+1;2??!219reg regex.c:840:r231:m22sc %? %@2142sc!0?
 p compat 231 applied: src=rstr.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
@@ -963,7 +1012,7 @@ exit 0
  	static pthread_attr_t lsattr;	/* musl caps threads at 128k; main()'s stack */
 --- a/regex.c
 +++ b/regex.c
-@@ -834,8 +834,13 @@
+@@ -836,8 +836,13 @@
  } \
  break##gen:; \
  
@@ -994,10 +1043,10 @@ index c836c94c..276d65ef 100755
  
  case "$OS" in
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..c5f8bb9e 100644
+index 56cb42c6..136de31c 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -499,24 +499,32 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
+@@ -499,44 +499,119 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
  	return n != 0;
  }
  
@@ -1045,7 +1094,8 @@ index 56cb42c6..c5f8bb9e 100644
  			flg |= REG_NOTBOL;
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
-@@ -524,19 +532,86 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
+-				off += offs[1] > 0 ? offs[1] : uc_len(s + off);
++				off += offs[1] > 0 ? offs[1] : MAX(1, uc_len(s + off));
  				continue;
  			}
  			_o += uc_off(s + step, off + g1 - step);
@@ -1059,8 +1109,9 @@ index 56cb42c6..c5f8bb9e 100644
 +			*a->o = _o;
 +			*a->r = i;
  			step = off + g1;
- 			off += g2 > 0 ? g2 : uc_len(s + off);
+-			off += g2 > 0 ? g2 : uc_len(s + off);
 -			end = -1; /* break outer loop efficiently */
++			off += g2 > 0 ? g2 : MAX(1, uc_len(s + off));
 +			a->end = -1; /* break outer loop efficiently */
 +			if (a->dir > 0)
 +				return NULL;
@@ -1140,7 +1191,7 @@ index 56cb42c6..c5f8bb9e 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index 4f841ff4..8e52b277 100644
+index e5aab266..e153076a 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -426,7 +426,7 @@ static rcode *re_make(char *re, int *nsubc, int flg)
@@ -1152,7 +1203,7 @@ index 4f841ff4..8e52b277 100644
  
  #define newsub(init, copy) \
  if (freesub) { \
-@@ -666,8 +666,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
+@@ -668,8 +668,10 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
  	char nsubs[prog->sub];
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
@@ -1183,7 +1234,7 @@ index b1002c4e..d80628bb 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index 03ed7b03..478e4a0f 100644
+index cc9b1492..559ddcf2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@
@@ -1196,7 +1247,7 @@ index 03ed7b03..478e4a0f 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..6c0904fa 100644
+index 514c675e..7474e994 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -272,7 +272,8 @@ int syn_addhl(char *reg, int id);

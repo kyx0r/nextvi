@@ -98,24 +98,24 @@ _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)1
 %f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)4??0?
-4??+2m 2220reg p OK ex.c:1702:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1705:a42sc %? %@2152sc!1q0?
 grp 1%f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\).*?
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 (EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\))7??0?
-grp 07??m 2220reg p OK ex.c:1702:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1705:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
 }.*(_EO\(hlr,)
 	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
 	led_ext \*p = led_extfind\(ext_hlr\);8??0?
-grp 08??-6m 2220reg p OK ex.c:1702:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 2220reg p OK ex.c:1705:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		x->att\[j\+1] = syn_merge\(x->att\[j\+1], conf_hlrev\);
 	}
 }.*(	if \(xhlr && !p\))
 		led_extreg\(\)->ext_func = ext_hlr;
 	else if \(!xhlr && p\)9??0?
-grp 09??-9m 2220reg p OK ex.c:1702:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17022sc %? %@2132sc!0?
+grp 09??-9m 2220reg p OK ex.c:1705:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17052sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(mpt\),
 	\{"m!", ec_mark},
@@ -127,30 +127,30 @@ EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 %f+ 	EO\(mpt\),
 	\{"m!", ec_mark},
 	\{"m", ec_mark},4??0?
-4??+2m 3220reg p OK ex.c:1782:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1785:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(mpt\),.*?
 	\{"m!", ec_mark},.*?
 (	\{"m", ec_mark},)7??0?
-grp 07??m 3220reg p OK ex.c:1782:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1785:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(grp\),
 	\{"g!", ec_glob},
 	\{"g", ec_glob},.*(	\{"reg", ec_regprint},)
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},8??0?
-grp 08??-4m 3220reg p OK ex.c:1782:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1785:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(ic\),
 	\{"i", ec_insert},
 	\{"d", ec_delete},.*(	EO\(rr\),)
 	\{"r", ec_read},
 	\{"wq!", ec_write},9??0?
-grp 09??-7m 3220reg p OK ex.c:1782:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17822sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1785:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17852sc %? %@2132sc!0?
 '\''1-1i int xqe = 1000;			/* exit insert via kj (delay in ms) */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i EO(qe)
-??!219reg ex.c:1702:m22sc %? %@2142sc!0?
+??!219reg ex.c:1705:m22sc %? %@2142sc!0?
 '\''3i 	EO(qe),
-??!219reg ex.c:1782:m32sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1785:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> static sbuf \*suggestsb;
 static sbuf \*acsb;
 static sbuf \*extsb;
@@ -171,24 +171,24 @@ static sbuf \*extsb;
 %f+ 				exbuf_load\(ex_buf\)
 			}
 			continue; }4??0?
-4??+2m 2220reg p OK led.c:720:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK led.c:721:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				exbuf_load\(ex_buf\).*?
 			}.*?
 (			continue; })7??0?
-grp 07??m 2220reg p OK led.c:720:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:721:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				exbuf_load\(ex_buf\)
 			} else if \(bidx != ex_buf - bufs && bidx < xbufcur\) \{
 				ex_buf = bufs \+ bidx;.*(			if \(\(cs = led_read\(kmap, c\)\)\))
 				sbuf_str\(sb, cs\)
 		}8??0?
-grp 08??-4m 2220reg p OK led.c:720:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK led.c:721:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(ex_buf == tmpex_buf\)
 					continue;
 				restore\(ex_buf\).*(		is->sug = NULL;)
 		is->_sug = NULL;
 		if \(ai_max >= 0 && xpac\)9??0?
-grp 09??-7m 2220reg p OK led.c:720:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:7202sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK led.c:721:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:7212sc %? %@2132sc!0?
 '\''1i static long long gettime_ms(void)
 {
 	struct timespec t;
@@ -209,7 +209,7 @@ static sbuf \*extsb;
 		case '\''k'\'':
 			is->quickexit = gettime_ms();
 _default:
-??!219reg led.c:720:m22sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg led.c:721:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> #include <dirent\.h>
 #include <signal\.h>
 #include <unistd\.h>
@@ -390,7 +390,7 @@ index a51117ca..3ae88ef2 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 0ce81414..2adff3ec 100644
+index 21f13f54..a5a0163b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -398,7 +398,7 @@ index 0ce81414..2adff3ec 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1700,6 +1701,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1703,6 +1704,7 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
@@ -406,7 +406,7 @@ index 0ce81414..2adff3ec 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1780,6 +1782,7 @@ static struct excmd {
+@@ -1783,6 +1785,7 @@ static struct excmd {
  	EO(mpt),
  	{"m!", ec_mark},
  	{"m", ec_mark},
@@ -415,7 +415,7 @@ index 0ce81414..2adff3ec 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 26a5f232..3ee74e32 100644
+index 375abb35..ae69bb13 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,4 +1,12 @@
@@ -431,7 +431,7 @@ index 26a5f232..3ee74e32 100644
  static sbuf *acsb;
  static sbuf *extsb;
  
-@@ -718,6 +726,17 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
+@@ -719,6 +727,17 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
  				exbuf_load(ex_buf)
  			}
  			continue; }
@@ -450,7 +450,7 @@ index 26a5f232..3ee74e32 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index 03ed7b03..b8e98781 100644
+index cc9b1492..5f3d2957 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@
@@ -471,7 +471,7 @@ index 03ed7b03..b8e98781 100644
  				break;
  			case 'J':
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..c6cc07da 100644
+index 514c675e..8126a978 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -396,6 +396,7 @@ typedef struct {

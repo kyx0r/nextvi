@@ -49,20 +49,20 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 }
 
 4??0?
-4??+2m 2220reg p OK ex.c:1668:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1671:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	int i, j, l, o;)
 	for \(l = 0, i = 0; i < x->cterm;\) \{
 		o = x->off\[i\+\+];8??0?
-grp 08??-4m 2220reg p OK ex.c:1668:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1671:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_nul\(sb\).*(		if \(o < 0\))
 			continue;
 		for \(l\+\+; x->off\[i] == o; i\+\+\);9??0?
-grp 09??-7m 2220reg p OK ex.c:1668:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16682sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1671:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16712sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
@@ -74,24 +74,24 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},4??0?
-4??+2m 3220reg p OK ex.c:1802:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1805:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
-grp 07??m 3220reg p OK ex.c:1802:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1805:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},
 	EO\(shape\),.*(	\{"ya!", ec_yank},)
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},8??0?
-grp 08??-4m 3220reg p OK ex.c:1802:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1805:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"w", ec_write},
 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
-grp 09??-7m 3220reg p OK ex.c:1802:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:18022sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1805:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18052sc %? %@2132sc!0?
 '\''1-1i char **xenvp;
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i static void *ec_script(char *loc, char *cmd, char *arg)
@@ -131,10 +131,10 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 	return ret ? xuerr : NULL;
 }
 
-??!219reg ex.c:1668:m22sc %? %@2142sc!0?
+??!219reg ex.c:1671:m22sc %? %@2142sc!0?
 '\''3i 	{"sr", ec_script},
 	{"sx", ec_script},
-??!219reg ex.c:1802:m32sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg ex.c:1805:m32sc %? %@2142sc!b1m!%ya 98?0?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
 		}
@@ -218,7 +218,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 0ce81414..b835e112 100644
+index 21f13f54..cce384a9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -226,7 +226,7 @@ index 0ce81414..b835e112 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1666,6 +1667,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1669,6 +1670,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -270,7 +270,7 @@ index 0ce81414..b835e112 100644
  static void ext_hlr(led_ext *p, led_ctx *x)
  {
  	ren_state *r = x->r;
-@@ -1800,6 +1838,8 @@ static struct excmd {
+@@ -1803,6 +1841,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -296,7 +296,7 @@ index 03aa736f..0706305d 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index 7c7d9e2c..dddacac9 100644
+index 514c675e..f5578340 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@

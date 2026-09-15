@@ -42,17 +42,17 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		if \(att_new != att_old\) \\
 			sbuf_str\(out, term_att\(att_new\)\) \\
 		char \*s = ren_translate\(chrs\[o], s0\); \\2??0?
-2??m 1220reg p OK led.c:218:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK led.c:219:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^		att_new = att\[bound \? ctt\[atti\+\+] : o]; \\$3??0?
-3??m 1220reg p OK led.c:218:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK led.c:219:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	o = off\[i]; \\
 	if \(o >= 0\) \{ \\
 		for \(l = i; off\[i] == o; i\+\+\); \\4??0?
-4??+3m 1220reg p OK led.c:218:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK led.c:219:a42sc %? %@2152sc!1q0?
 %f> 		if \(att_new != att_old\) \\
 			sbuf_str\(out, term_att\(att_new\)\) \\
 		char \*s = ren_translate\(chrs\[o], s0\); \\5??0?
-5??-1m 1220reg p OK led.c:218:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK led.c:219:a52sc %? %@2152sc!1q0?
 %f> ........\[..;.\\
 	i...o...... ...
 	.....\(....i......i..=..o. .......
@@ -60,25 +60,25 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 .	.....t..n........._ol....
 	........t...... ...m.a......_..w....
 ..c....\*.....en_.r..s.a..............\)..\\6??0?
-6??+3m 1220reg p OK led.c:218:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK led.c:219:a62sc %? %@2152sc!1q0?
 grp 1%f> 	o = off\[i]; \\.*?
 	if \(o >= 0\) \{ \\.*?
 		for \(l = i; off\[i] == o; i\+\+\); \\.*?
 (		att_new = att\[bound \? ctt\[atti\+\+] : o]; \\)7??0?
-grp 07??m 1220reg p OK led.c:218:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK led.c:219:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{ \\
 for \(i = 0; i < cterm;\) \{ \\
 	int att_new = 0; \\.*(		if \(s\) \\)
 			sbuf_str\(out, s\) \\
 		else if \(uc_isprint\(\*chrs\[o]\)\) \{ \\8??0?
-grp 08??-4m 1220reg p OK led.c:218:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK led.c:219:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	out->s\[out->s_n-1] = '\''>'\''; \\
 else if \(\*chrs\[o] == '\''\\t'\''\) \\
 	out->s\[out->s_n - \(i - l\)] = '\''<'\''; \\.*(			l = uc_len\(chrs\[o]\); \\)
 			print_ch##n\(out\) \\
 		} else \{ \\9??0?
-grp 09??-7m 1220reg p OK led.c:218:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:2182sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK led.c:219:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:2192sc %? %@2132sc!0?
 ?0?
 %f+ 	if \(!xled\)
 		return;
@@ -94,18 +94,18 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\
 	char \*bound = NULL;
 	char \*\*chrs = r->chrs;	/\* chrs\[i]: the i-th character in s0 \*/
 	int off\[cterm\+1];	/\* off\[i]: the character at screen position i \*/2??0?
-2??m 2220reg p OK led.c:248:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK led.c:249:a22sc %? %@2152sc!1q0?
 %f+ 	int j, c, l, i, o, n = r->n;
 	int att_old = 0, atti = 0, cterm = cend - cbeg;
 	char \*bound = NULL;3??0?
-3??m 2220reg p OK led.c:248:a32sc %? %@2152sc!1q0?
+3??m 2220reg p OK led.c:249:a32sc %? %@2152sc!1q0?
 %f+ 	if \(!xled\)
 		return;
 	ren_state \*r = ren_position\(s0\);4??0?
-4??+3m 2220reg p OK led.c:248:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK led.c:249:a42sc %? %@2152sc!1q0?
 %f+ 	char \*\*chrs = r->chrs;	/\* chrs\[i]: the i-th character in s0 \*/
 	int off\[cterm\+1];	/\* off\[i]: the character at screen position i \*/5??0?
-5??-3m 2220reg p OK led.c:248:a52sc %? %@2152sc!1q0?
+5??-3m 2220reg p OK led.c:249:a52sc %? %@2152sc!1q0?
 %f+ ..f........
 	.......;
 	....s.....\*....r.._...i.....s...
@@ -114,25 +114,25 @@ else if \(\*chrs\[o] == '\''\\t'\''\) \\
 	..a. .b............
 ....r.\*\*..rs.=..->...s.......r.\[.]..t.. ...h......c....i.......
 ..n..of.....r....../...f...............c.......s...e.....i..o. .../6??0?
-6??+3m 2220reg p OK led.c:248:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK led.c:249:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	if \(!xled\).*?
 		return;.*?
 	ren_state \*r = ren_position\(s0\);.*?
 (	int j, c, l, i, o, n = r->n;)7??0?
-grp 07??m 2220reg p OK led.c:248:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK led.c:249:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> /\* render and highlight a line \*/
 void led_render\(char \*s0, int cbeg, int cend\)
 \{.*(		o = cbeg;)
 		for \(c = cterm-1; c >= 0; c--, o\+\+\)
 			off\[c] = o <= r->cmax \? r->col\[o] : -1;8??0?
-grp 08??-11m 2220reg p OK led.c:248:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 2220reg p OK led.c:249:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	} \\
 	att_old = att_new; \\
 } } \\.*(		for \(c = cbeg; c < cend; c\+\+\))
 			off\[c - cbeg] = c <= r->cmax \? r->col\[c] : -1;
 	}9??0?
-grp 09??-15m 2220reg p OK led.c:248:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:2482sc %? %@2132sc!0?
+grp 09??-15m 2220reg p OK led.c:249:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:2492sc %? %@2132sc!0?
 ?0?
 %f+ 	char \*\*chrs = r->chrs;	/\* chrs\[i]: the i-th character in s0 \*/
 	int off\[cterm\+1];	/\* off\[i]: the character at screen position i \*/
@@ -149,18 +149,18 @@ void led_render\(char \*s0, int cbeg, int cend\)
 	int ctx = r->ctx;
 	off\[cterm] = -1;
 	if \(ctx < 0\) \{2??0?
-2??m 3220reg p OK led.c:253:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK led.c:254:a22sc %? %@2152sc!1q0?
 %f+ 	int att\[cterm\+1];	/\* att\[i]: the attributes of i-th character \*/
 	int stt\[cterm\+1];	/\* stt\[i]: remap off indexes \*/
 	int ctt\[cterm\+1];	/\* ctt\[i]: cterm bound attrs \*/3??0?
-3??m 3220reg p OK led.c:253:a32sc %? %@2152sc!1q0?
+3??m 3220reg p OK led.c:254:a32sc %? %@2152sc!1q0?
 %f+ 	char \*\*chrs = r->chrs;	/\* chrs\[i]: the i-th character in s0 \*/
 	int off\[cterm\+1];	/\* off\[i]: the character at screen position i \*/4??0?
-4??+2m 3220reg p OK led.c:253:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK led.c:254:a42sc %? %@2152sc!1q0?
 %f+ 	int ctx = r->ctx;
 	off\[cterm] = -1;
 	if \(ctx < 0\) \{5??0?
-5??-3m 3220reg p OK led.c:253:a52sc %? %@2152sc!1q0?
+5??-3m 3220reg p OK led.c:254:a52sc %? %@2152sc!1q0?
 %f+ .ch.. ........ ......s;./......\[.]. .....-.h.......... ........
 .......f..t.........\*........ .....ha.a.... ....cre....os..io..i...
 .i.. ....c........... .t..... ..e.........e. o..............e....
@@ -169,24 +169,24 @@ void led_render\(char \*s0, int cbeg, int cend\)
 ...t ... . r.>....
 	off...........1.
 ..f.\(c...<.....6??0?
-6??+2m 3220reg p OK led.c:253:a62sc %? %@2152sc!1q0?
+6??+2m 3220reg p OK led.c:254:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	char \*\*chrs = r->chrs;	/\* chrs\[i]: the i-th character in s0 \*/.*?
 	int off\[cterm\+1];	/\* off\[i]: the character at screen position i \*/.*?
 (	int att\[cterm\+1];	/\* att\[i]: the attributes of i-th character \*/)7??0?
-grp 07??m 3220reg p OK led.c:253:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK led.c:254:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> /\* render and highlight a line \*/
 void led_render\(char \*s0, int cbeg, int cend\)
 \{.*(		o = cbeg;)
 		for \(c = cterm-1; c >= 0; c--, o\+\+\)
 			off\[c] = o <= r->cmax \? r->col\[o] : -1;8??0?
-grp 08??-6m 3220reg p OK led.c:253:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 3220reg p OK led.c:254:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	} \\
 	att_old = att_new; \\
 } } \\.*(		for \(c = cbeg; c < cend; c\+\+\))
 			off\[c - cbeg] = c <= r->cmax \? r->col\[c] : -1;
 	}9??0?
-grp 09??-10m 3220reg p OK led.c:253:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:2532sc %? %@2132sc!0?
+grp 09??-10m 3220reg p OK led.c:254:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:2542sc %? %@2132sc!0?
 ?0?
 %f+ 		for \(c = cbeg; c < cend; c\+\+\)
 			off\[c - cbeg] = c <= r->cmax \? r->col\[c] : -1;
@@ -272,7 +272,7 @@ void led_render\(char \*s0, int cbeg, int cend\)
 	}
 	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);
 	if \(xhl == 1\)2??0?
-2??m 4220reg p OK led.c:266:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK led.c:267:a22sc %? %@2152sc!1q0?
 %f+ 	if \(r->cmax > cterm \|\| cbeg \|\| n > cterm\) \{
 		i = ctx < 0 \? cterm-1 : 0;
 		o = off\[i];
@@ -312,13 +312,13 @@ void led_render\(char \*s0, int cbeg, int cend\)
 		bound = bsb->s;
 	}
 	memset\(att, 0, MIN\(n, cterm\+1\) \* sizeof\(att\[0]\)\);3??0?
-3??m 4220reg p OK led.c:266:a32sc %? %@2152sc!1q0?
+3??m 4220reg p OK led.c:267:a32sc %? %@2152sc!1q0?
 %f+ 		for \(c = cbeg; c < cend; c\+\+\)
 			off\[c - cbeg] = c <= r->cmax \? r->col\[c] : -1;
 	}4??0?
-4??+3m 4220reg p OK led.c:266:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK led.c:267:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(xhl == 1\)$5??0?
-5??-39m 4220reg p OK led.c:266:a52sc %? %@2152sc!fr 981qfr 980?
+5??-39m 4220reg p OK led.c:267:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ 	...r....=.....;...<.........\+\)
 ...o..\[c...c.....= ..<. ....... .........c. .....
 	.
@@ -362,25 +362,25 @@ void led_render\(char \*s0, int cbeg, int cend\)
 	.
 .m......att...,...N.., ......1. .....e.f.a..\[..\)\).
 ....\(.........6??0?
-6??+3m 4220reg p OK led.c:266:a62sc %? %@2152sc!1q0?
+6??+3m 4220reg p OK led.c:267:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		for \(c = cbeg; c < cend; c\+\+\).*?
 			off\[c - cbeg] = c <= r->cmax \? r->col\[c] : -1;.*?
 	}.*?
 (	if \(r->cmax > cterm \|\| cbeg \|\| n > cterm\) \{)7??0?
-grp 07??m 4220reg p OK led.c:266:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK led.c:267:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		for \(c = cterm-1; c >= 0; c--, o\+\+\)
 			off\[c] = o <= r->cmax \? r->col\[o] : -1;
 	} else \{.*(		led_out\(term_sbuf, 1\))
 	sbufn_mem\(term_sbuf, "\\x1b\[m", 3\)
 	if \(r->holelen\) \{8??0?
-grp 08??-63m 4220reg p OK led.c:266:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-63m 4220reg p OK led.c:267:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	off\[cterm] = -1;
 	if \(ctx < 0\) \{
 		o = cbeg;.*(		memcpy\(chrs\[n], r->nulhole, r->holelen\);)
 		r->holelen = 0;
 	}9??0?
-grp 09??-66m 4220reg p OK led.c:266:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:2662sc %? %@2132sc!0?
+grp 09??-66m 4220reg p OK led.c:267:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:2672sc %? %@2132sc!0?
 ?0?
 %f+ 	if \(xhl == 1\)
 		syn_highlight\(att, bound \? bound : s0, MIN\(n, cterm\)\);
@@ -392,37 +392,37 @@ void led_render\(char \*s0, int cbeg, int cend\)
 	if \(extsb && extsb->s_n && xhl > 0\) \{
 		led_ctx x;
 		x\.att = att;2??0?
-2??m 5220reg p OK led.c:306:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK led.c:307:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		syn_highlight\(att, bound \? bound : s0, MIN\(n, cterm\)\);$3??0?
-3??m 5220reg p OK led.c:306:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK led.c:307:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	if \(xhl == 1\)$4??0?
-4??+1m 5220reg p OK led.c:306:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 5220reg p OK led.c:307:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	if \(extsb && extsb->s_n && xhl > 0\) \{
 		led_ctx x;
 		x\.att = att;5??0?
-5??-1m 5220reg p OK led.c:306:a52sc %? %@2152sc!1q0?
+5??-1m 5220reg p OK led.c:307:a52sc %? %@2152sc!1q0?
 %f+ ... ...l.....\)
 	...n_.i....g......................:.s......\(........\)..
 	...\(...sb... .x.s...... .& ..... ....
 ...e._... ..
 ..x.......a...6??0?
-6??+1m 5220reg p OK led.c:306:a62sc %? %@2152sc!1q0?
+6??+1m 5220reg p OK led.c:307:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	if \(xhl == 1\).*?
 (		syn_highlight\(att, bound \? bound : s0, MIN\(n, cterm\)\);)7??0?
-grp 07??m 5220reg p OK led.c:306:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK led.c:307:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		for \(c = cterm-1; c >= 0; c--, o\+\+\)
 			off\[c] = o <= r->cmax \? r->col\[o] : -1;
 	} else \{.*(		led_out\(term_sbuf, 1\))
 	sbufn_mem\(term_sbuf, "\\x1b\[m", 3\)
 	if \(r->holelen\) \{8??0?
-grp 08??-23m 5220reg p OK led.c:306:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-23m 5220reg p OK led.c:307:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	off\[cterm] = -1;
 	if \(ctx < 0\) \{
 		o = cbeg;.*(		memcpy\(chrs\[n], r->nulhole, r->holelen\);)
 		r->holelen = 0;
 	}9??0?
-grp 09??-26m 5220reg p OK led.c:306:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3062sc %? %@2132sc!0?
+grp 09??-26m 5220reg p OK led.c:307:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3072sc %? %@2132sc!0?
 ?0?
 %f+ 	if \(extsb && extsb->s_n && xhl > 0\) \{
 		led_ctx x;
@@ -432,39 +432,39 @@ void led_render\(char \*s0, int cbeg, int cend\)
 1??+3m 61q0?
 %f+ 		x\.alen = bound \? c : MIN\(n, cterm\);
 		x\.off = off;2??0?
-2??m 6220reg p OK led.c:310:a22sc %? %@2152sc!1q0?
+2??m 6220reg p OK led.c:311:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		x\.alen = bound \? c : MIN\(n, cterm\);$3??0?
-3??m 6220reg p OK led.c:310:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 6220reg p OK led.c:311:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	if \(extsb && extsb->s_n && xhl > 0\) \{
 		led_ctx x;
 		x\.att = att;4??0?
-4??+3m 6220reg p OK led.c:310:a42sc %? %@2152sc!1q0?
+4??+3m 6220reg p OK led.c:311:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		x\.off = off;$5??0?
-5??-1m 6220reg p OK led.c:310:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 6220reg p OK led.c:311:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ....\(..ts...........>._...& ......0..\{
 ...e..c....;
 	.............
 ...\..... =.....d.......M..... c.e..\).
 		.\.o.. ...ff.6??0?
-6??+3m 6220reg p OK led.c:310:a62sc %? %@2152sc!1q0?
+6??+3m 6220reg p OK led.c:311:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	if \(extsb && extsb->s_n && xhl > 0\) \{.*?
 		led_ctx x;.*?
 		x\.att = att;.*?
 (		x\.alen = bound \? c : MIN\(n, cterm\);)7??0?
-grp 07??m 6220reg p OK led.c:310:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK led.c:311:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		for \(c = cterm-1; c >= 0; c--, o\+\+\)
 			off\[c] = o <= r->cmax \? r->col\[o] : -1;
 	} else \{.*(		led_out\(term_sbuf, 1\))
 	sbufn_mem\(term_sbuf, "\\x1b\[m", 3\)
 	if \(r->holelen\) \{8??0?
-grp 08??-19m 6220reg p OK led.c:310:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-19m 6220reg p OK led.c:311:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	off\[cterm] = -1;
 	if \(ctx < 0\) \{
 		o = cbeg;.*(		memcpy\(chrs\[n], r->nulhole, r->holelen\);)
 		r->holelen = 0;
 	}9??0?
-grp 09??-22m 6220reg p OK led.c:310:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3102sc %? %@2132sc!0?
+grp 09??-22m 6220reg p OK led.c:311:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3112sc %? %@2132sc!0?
 ?0?
 %f+ 		x\.off = off;
 		x\.stt = stt;
@@ -478,39 +478,39 @@ void led_render\(char \*s0, int cbeg, int cend\)
 		x\.cterm = cterm;
 		x\.n = n;
 		x\.s0 = s0;2??0?
-2??m 7220reg p OK led.c:312:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK led.c:313:a22sc %? %@2152sc!1q0?
 %f+ 		x\.stt = stt;
 		x\.ctt = ctt;3??0?
-3??m 7220reg p OK led.c:312:a32sc %? %@2152sc!1q0?
+3??m 7220reg p OK led.c:313:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		x\.off = off;$4??0?
-4??+1m 7220reg p OK led.c:312:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 7220reg p OK led.c:313:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		x\.cterm = cterm;
 		x\.n = n;
 		x\.s0 = s0;5??0?
-5??-2m 7220reg p OK led.c:312:a52sc %? %@2152sc!1q0?
+5??-2m 7220reg p OK led.c:313:a52sc %? %@2152sc!1q0?
 %f+ ...\.... . ....
 .	........s...
 ...\..t.......;
 	....te.. .......;
 	...... ..
 	..... =....6??0?
-6??+1m 7220reg p OK led.c:312:a62sc %? %@2152sc!1q0?
+6??+1m 7220reg p OK led.c:313:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		x\.off = off;.*?
 (		x\.stt = stt;)7??0?
-grp 07??m 7220reg p OK led.c:312:a72sc %? %@2152sc!1q0?
+grp 07??m 7220reg p OK led.c:313:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		for \(c = cterm-1; c >= 0; c--, o\+\+\)
 			off\[c] = o <= r->cmax \? r->col\[o] : -1;
 	} else \{.*(		led_out\(term_sbuf, 1\))
 	sbufn_mem\(term_sbuf, "\\x1b\[m", 3\)
 	if \(r->holelen\) \{8??0?
-grp 08??-17m 7220reg p OK led.c:312:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-17m 7220reg p OK led.c:313:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	off\[cterm] = -1;
 	if \(ctx < 0\) \{
 		o = cbeg;.*(		memcpy\(chrs\[n], r->nulhole, r->holelen\);)
 		r->holelen = 0;
 	}9??0?
-grp 09??-20m 7220reg p OK led.c:312:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3122sc %? %@2132sc!0?
+grp 09??-20m 7220reg p OK led.c:313:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3132sc %? %@2132sc!0?
 ?0?
 %f+ 		x\.cterm = cterm;
 		x\.n = n;
@@ -524,17 +524,17 @@ void led_render\(char \*s0, int cbeg, int cend\)
 		x\.r = r;
 		for \(i = 0; i < extsb->s_n; i \+= sizeof\(led_ext\)\) \{
 			led_ext \*p = \(led_ext\*\)&extsb->s\[i];2??0?
-2??m 8220reg p OK led.c:317:a22sc %? %@2152sc!1q0?
+2??m 8220reg p OK led.c:318:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		x\.bound = bound;$3??0?
-3??m 8220reg p OK led.c:317:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 8220reg p OK led.c:318:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		x\.cterm = cterm;
 		x\.n = n;
 		x\.s0 = s0;4??0?
-4??+3m 8220reg p OK led.c:317:a42sc %? %@2152sc!1q0?
+4??+3m 8220reg p OK led.c:318:a42sc %? %@2152sc!1q0?
 %f+ 		x\.r = r;
 		for \(i = 0; i < extsb->s_n; i \+= sizeof\(led_ext\)\) \{
 			led_ext \*p = \(led_ext\*\)&extsb->s\[i];5??0?
-5??-1m 8220reg p OK led.c:317:a52sc %? %@2152sc!1q0?
+5??-1m 8220reg p OK led.c:318:a52sc %? %@2152sc!1q0?
 %f+ 	.............e.m.
 ..x.n....;
 ....s0.=....
@@ -542,25 +542,25 @@ void led_render\(char \*s0, int cbeg, int cend\)
 ....r....;
 ....r .i.= ...i...e.t............=....eof\(..._.......
 ...........\*........_e....&......>..i..6??0?
-6??+3m 8220reg p OK led.c:317:a62sc %? %@2152sc!1q0?
+6??+3m 8220reg p OK led.c:318:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		x\.cterm = cterm;.*?
 		x\.n = n;.*?
 		x\.s0 = s0;.*?
 (		x\.bound = bound;)7??0?
-grp 07??m 8220reg p OK led.c:317:a72sc %? %@2152sc!1q0?
+grp 07??m 8220reg p OK led.c:318:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		for \(c = cterm-1; c >= 0; c--, o\+\+\)
 			off\[c] = o <= r->cmax \? r->col\[o] : -1;
 	} else \{.*(		led_out\(term_sbuf, 1\))
 	sbufn_mem\(term_sbuf, "\\x1b\[m", 3\)
 	if \(r->holelen\) \{8??0?
-grp 08??-12m 8220reg p OK led.c:317:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-12m 8220reg p OK led.c:318:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	off\[cterm] = -1;
 	if \(ctx < 0\) \{
 		o = cbeg;.*(		memcpy\(chrs\[n], r->nulhole, r->holelen\);)
 		r->holelen = 0;
 	}9??0?
-grp 09??-15m 8220reg p OK led.c:317:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3172sc %? %@2132sc!0?
+grp 09??-15m 8220reg p OK led.c:318:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3182sc %? %@2132sc!0?
 ?0?
 %f+ 			p->ext_func\(p, &x\);
 		}
@@ -574,17 +574,17 @@ void led_render\(char \*s0, int cbeg, int cend\)
 	/\* generate term output \*/
 	if \(vi_hidch\)
 		led_out\(term_sbuf, 2\)2??0?
-2??m 9220reg p OK led.c:324:a22sc %? %@2152sc!1q0?
+2??m 9220reg p OK led.c:325:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	free\(bound\);$3??0?
-3??m 9220reg p OK led.c:324:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 9220reg p OK led.c:325:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			p->ext_func\(p, &x\);
 		}
 	}4??0?
-4??+3m 9220reg p OK led.c:324:a42sc %? %@2152sc!1q0?
+4??+3m 9220reg p OK led.c:325:a42sc %? %@2152sc!1q0?
 %f+ 	/\* generate term output \*/
 	if \(vi_hidch\)
 		led_out\(term_sbuf, 2\)5??0?
-5??-1m 9220reg p OK led.c:324:a52sc %? %@2152sc!1q0?
+5??-1m 9220reg p OK led.c:325:a52sc %? %@2152sc!1q0?
 %f+ ...p....._..n.\(p,.&.\).
 	..
 	.
@@ -592,25 +592,25 @@ void led_render\(char \*s0, int cbeg, int cend\)
 ...........e...........t../
 .....v........
 ....d......e...s..., .\)6??0?
-6??+3m 9220reg p OK led.c:324:a62sc %? %@2152sc!1q0?
+6??+3m 9220reg p OK led.c:325:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			p->ext_func\(p, &x\);.*?
 		}.*?
 	}.*?
 (	free\(bound\);)7??0?
-grp 07??m 9220reg p OK led.c:324:a72sc %? %@2152sc!1q0?
+grp 07??m 9220reg p OK led.c:325:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		for \(c = cterm-1; c >= 0; c--, o\+\+\)
 			off\[c] = o <= r->cmax \? r->col\[o] : -1;
 	} else \{.*(		led_out\(term_sbuf, 1\))
 	sbufn_mem\(term_sbuf, "\\x1b\[m", 3\)
 	if \(r->holelen\) \{8??0?
-grp 08??-5m 9220reg p OK led.c:324:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 9220reg p OK led.c:325:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	off\[cterm] = -1;
 	if \(ctx < 0\) \{
 		o = cbeg;.*(		memcpy\(chrs\[n], r->nulhole, r->holelen\);)
 		r->holelen = 0;
 	}9??0?
-grp 09??-8m 9220reg p OK led.c:324:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg led.c:3242sc %? %@2132sc!0?
+grp 09??-8m 9220reg p OK led.c:325:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg led.c:3252sc %? %@2132sc!0?
 ?0?
 %f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);
 		r->holelen = 0;
@@ -622,42 +622,42 @@ static int led_lastchar\(char \*s\)1??0?
 %f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);
 		r->holelen = 0;
 	}4??0?
-4??+2m 10220reg p OK led.c:334:a42sc %? %@2152sc!1q0?
+4??+2m 10220reg p OK led.c:335:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		memcpy\(chrs\[n], r->nulhole, r->holelen\);.*?
 		r->holelen = 0;.*?
 (	})7??0?
-grp 07??m 10220reg p OK led.c:334:a72sc %? %@2152sc!1q0?
+grp 07??m 10220reg p OK led.c:335:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		led_out\(term_sbuf, 1\)
 	sbufn_mem\(term_sbuf, "\\x1b\[m", 3\)
 	if \(r->holelen\) \{.*(	char \*r = \*s \? strchr\(s, '\''\\0'\''\) : s;)
 	if \(r != s\)
 		r = uc_beg\(s, r - 1\);8??0?
-grp 08??-5m 10220reg p OK led.c:334:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 10220reg p OK led.c:335:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(vi_hidch\)
 		led_out\(term_sbuf, 2\)
 	else.*(static int led_lastword\(char \*s\))
 \{
 	char \*r = \*s \? uc_beg\(s, strchr\(s, '\''\\0'\''\) - 1\) : s;9??0?
-grp 09??-11m 10220reg p OK led.c:334:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg led.c:3342sc %? %@2132sc!0?
-'\''1s/bound \? ctt\[atti\+\+] : //??!219reg led.c:218:m12sc %? %@2142sc!0?
+grp 09??-11m 10220reg p OK led.c:335:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg led.c:3352sc %? %@2132sc!0?
+'\''1s/bound \? ctt\[atti\+\+] : //??!219reg led.c:219:m12sc %? %@2142sc!0?
 '\''2,#+2c 	int c, l, i, o, n = r->n;
 	int att_old = 0, cterm = cend - cbeg;
-??!219reg led.c:248:m22sc %? %@2142sc!0?
+??!219reg led.c:249:m22sc %? %@2142sc!0?
 '\''3,#+2c 	int *att = emalloc(n * sizeof(att[0]));
 	memset(att, 0, n * sizeof(att[0]));
-??!219reg led.c:253:m32sc %? %@2142sc!0?
-'\''4,#+38d??!219reg led.c:266:m42sc %? %@2142sc!0?
-?'\''5s/bound \? bound : s0, MIN\(n, cterm\)/s0, n/1??1??1q'\''5s/bound \? bound : (.*)MIN\(n, cterm\)/\1n/2??2??'\''5220reg p OK led.c:306:s22sc %? %@2162sc!0?
-1;2??!219reg led.c:306:m52sc %? %@2142sc!0?
-'\''6s/bound \? c : MIN\(n, cterm\)/n/??!219reg led.c:310:m62sc %? %@2142sc!0?
+??!219reg led.c:254:m32sc %? %@2142sc!0?
+'\''4,#+38d??!219reg led.c:267:m42sc %? %@2142sc!0?
+?'\''5s/bound \? bound : s0, MIN\(n, cterm\)/s0, n/1??1??1q'\''5s/bound \? bound : (.*)MIN\(n, cterm\)/\1n/2??2??'\''5220reg p OK led.c:307:s22sc %? %@2162sc!0?
+1;2??!219reg led.c:307:m52sc %? %@2142sc!0?
+'\''6s/bound \? c : MIN\(n, cterm\)/n/??!219reg led.c:311:m62sc %? %@2142sc!0?
 '\''7,#+1c 		x.stt = NULL;
 		x.ctt = NULL;
-??!219reg led.c:312:m72sc %? %@2142sc!0?
-'\''8s/ bound/ NULL/??!219reg led.c:317:m82sc %? %@2142sc!0?
-'\''9d??!219reg led.c:324:m92sc %? %@2142sc!0?
+??!219reg led.c:313:m72sc %? %@2142sc!0?
+'\''8s/ bound/ NULL/??!219reg led.c:318:m82sc %? %@2142sc!0?
+'\''9d??!219reg led.c:325:m92sc %? %@2142sc!0?
 '\''10i 	free(att);
-??!219reg led.c:334:m102sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
+??!219reg led.c:335:m102sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'led.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -670,10 +670,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 26a5f232..cc204fd5 100644
+index 375abb35..c20c1eb1 100644
 --- a/led.c
 +++ b/led.c
-@@ -215,7 +215,7 @@ for (i = 0; i < cterm;) { \
+@@ -216,7 +216,7 @@ for (i = 0; i < cterm;) { \
  	o = off[i]; \
  	if (o >= 0) { \
  		for (l = i; off[i] == o; i++); \
@@ -682,7 +682,7 @@ index 26a5f232..cc204fd5 100644
  		if (att_new != att_old) \
  			sbuf_str(out, term_att(att_new)) \
  		char *s = ren_translate(chrs[o], s0); \
-@@ -245,14 +245,12 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -246,14 +246,12 @@ void led_render(char *s0, int cbeg, int cend)
  	if (!xled)
  		return;
  	ren_state *r = ren_position(s0);
@@ -701,7 +701,7 @@ index 26a5f232..cc204fd5 100644
  	int ctx = r->ctx;
  	off[cterm] = -1;
  	if (ctx < 0) {
-@@ -263,65 +261,25 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -264,65 +262,25 @@ void led_render(char *s0, int cbeg, int cend)
  		for (c = cbeg; c < cend; c++)
  			off[c - cbeg] = c <= r->cmax ? r->col[c] : -1;
  	}
@@ -772,7 +772,7 @@ index 26a5f232..cc204fd5 100644
  	/* generate term output */
  	if (vi_hidch)
  		led_out(term_sbuf, 2)
-@@ -332,6 +290,7 @@ void led_render(char *s0, int cbeg, int cend)
+@@ -333,6 +291,7 @@ void led_render(char *s0, int cbeg, int cend)
  		memcpy(chrs[n], r->nulhole, r->holelen);
  		r->holelen = 0;
  	}

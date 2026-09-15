@@ -149,7 +149,7 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
 				EMIT(PC++, prog->laidx);
 				bal = 1;
 				s = ++re;
-				la_static = !(flg & REG_ICASE) && *s == '^';
+				la_static = !(flg & REG_ICASE) && *s == '^' && s[1] != ')';
 				while (1) {
 					if (!*s)
 						return -1;
@@ -564,6 +564,8 @@ if (spc > JMP) { \
 		cnt = cnt == j; \
 	} else if (!lb[j] || s0 > lb[j]) { \
 		cnt = re_pikevm(prog->la[j], s0, _subp, 2, 0); \
+		if (eol_ch) \
+			utf8_length[eol_ch] = 0; \
 		lb[j] = cnt ? _subp[0] : NULL; \
 	} else \
 		cnt = !!lb[j]; \

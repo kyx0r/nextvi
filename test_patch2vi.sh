@@ -1597,7 +1597,7 @@ fi
 # The FAIL line names the section register. Mark ids repeat across sections;
 # the register is what joins the line to the stream that ran it, and what -E
 # takes as its block selector.
-if printf '%s\n' "$mm_log" | grep -q '^FAIL mm\.c:[0-9][0-9]*:r231:m[0-9]'; then
+if printf '%s\n' "$mm_log" | grep -q '^FAIL mm\.c:[0-9][0-9]*:r231:m[0-9]$'; then
 	ok "compat: a block's FAIL line names its own register"
 else
 	fail "compat: a block's FAIL line names its own register"
@@ -2300,8 +2300,7 @@ cp "$R/m.orig" "$R/m.c"; rm -f "$R/n.c"
 ( cd "$R" && VI="$VI" sh nf.sh ) > "$R/nfout" 2>&1
 nf_clean=0
 [ ! -e "$R/n.c" ] && [ "$(tr '\n' '|' < "$R/m.c")" = 'L1|L2|L3x|L4|' ] && nf_clean=1
-# the sensors and the rewind address that empty buffer: silenced by err 0,
-# and by nothing else - the host's own rewind is over a file that exists
+# The sensors and the rewind address the empty buffer under err 0.
 nf_noise="$(tr -d '\r' < "$R/nfout" | grep -c 'invalid range' || true)"
 nf_wrap="$(grep -o 'err 0' "$R/nf.sh" | wc -l | tr -d ' ')"
 cp "$R/m.orig" "$R/m.c"; rm -f "$R/n.c"
@@ -2316,6 +2315,33 @@ else
 	echo "    clean=$nf_clean origin=[$nf_orig] noise=$nf_noise wrap=$nf_wrap"
 	tr -d '\r' < "$R/nerr" | sed 's/^/    /' | head -3
 fi
+
+# New host files must not be rewound before their creation body runs.
+sed '/^=== PATCH2VI PATCH ===/q' "$R/nf.sh" > "$R/nh.sh"
+cat "$R/n.diff" >> "$R/nh.sh"
+"$R_P2VI" -o "$R/nh.sh" "$R/nh.sh"
+if awk '/\? %@97/ { sub(/\? %@97.*/, ""); print; exit } { print }' \
+   "$R/nh.sh" | grep -q 'b0.1'; then
+	fail "compat: no rewind before the first section"
+else
+	ok "compat: no rewind before the first section"
+fi
+for runner in shell embedded; do
+	rm -f "$R/n.c"
+	nh_rc=0
+	if [ "$runner" = shell ]; then
+		( cd "$R" && VI="$VI" sh nh.sh ) > "$R/nhout" 2>&1 || nh_rc=$?
+	else
+		( cd "$R" && "$R_P2VI" -e nh.sh ) > "$R/nhout" 2>&1 || nh_rc=$?
+	fi
+	if [ "$nh_rc" = 0 ] && ! grep -q 'invalid range' "$R/nhout" &&
+	   [ "$(tr '\n' '|' < "$R/n.c")" = 'N1|N2|N3|' ]; then
+		ok "compat: new host file rewind is silent ($runner)"
+	else
+		fail "compat: new host file rewind is silent ($runner)"
+	fi
+done
+rm -f "$R/n.c"
 
 # A fix that only a STACK of patches needs: -C repeats, one per origin, and the
 # block gates on all of their landings at once. The two origins land in disjoint
@@ -2623,6 +2649,80 @@ else
 	fail "placement: a delete is never guessed at, and parks the cursor"
 	tr -d '\r' < "$R/gerr" | sed 's/^/    /' | head -3
 	sed -n '/PATCH2VI PATCH/,$p' "$R/gfail.sh" | sed 's/^/    /'
+fi
+
+# File-qualified failure reports. Both files deliberately have one missed
+# group, so both sections allocate mark 1. The report must retain each full
+# path, giving placement enough information to distinguish the two streams.
+printf 'A-old\nA-tail\n' > "$R/a.c"
+printf 'B-old\nB-tail\n' > "$R/b.c"
+printf -- '--- a/a.c\n+++ b/a.c\n@@ -1,2 +1,3 @@\n A-old\n+LEFT1\n A-tail\n--- a/b.c\n+++ b/b.c\n@@ -1,2 +1,3 @@\n B-old\n+RIGHT2\n B-tail\n' > "$R/ab.diff"
+"$R_P2VI" -r "$R/ab.diff" > "$R/ab.sh"
+printf 'A-gone\nA-tail\n' > "$R/a.c"
+printf 'B-gone\nB-tail\n' > "$R/b.c"
+ab_log=$( cd "$R" && VI="$VI" QF2=1 sh ab.sh 2>&1 )
+if printf '%s\n' "$ab_log" | grep -q '^FAIL a\.c:1:m1$' &&
+   printf '%s\n' "$ab_log" | grep -q '^FAIL b\.c:1:m1$' &&
+   [ "$(cat "$R/a.c")" = "$(printf 'A-gone\nA-tail')" ] &&
+   [ "$(cat "$R/b.c")" = "$(printf 'B-gone\nB-tail')" ]; then
+	ok "placement: duplicate marks retain distinct file locations"
+else
+	fail "placement: duplicate marks retain distinct file locations"
+	printf '%s\n' "$ab_log" | grep -E '^(FAIL|OK)' | sed 's/^/    /'
+	printf '    a.c:\n'; sed 's/^/    /' "$R/a.c"
+	printf '    b.c:\n'; sed 's/^/    /' "$R/b.c"
+fi
+
+# Path-boundary placement input. A short filename is also a suffix of the
+# second filename; matching only "conf.c:line:mark" could stop at the wrong
+# location even when the mark is duplicated.
+mkdir -p "$R/src"
+i=1
+: > "$R/conf.c"
+: > "$R/src/conf.c"
+while [ $i -le 300 ]; do
+	printf 'C%03d\n' "$i" >> "$R/conf.c"
+	printf 'S%03d\n' "$i" >> "$R/src/conf.c"
+	i=$((i + 1))
+done
+printf -- '--- a/conf.c\n+++ b/conf.c\n@@ -1,2 +1,3 @@\n C001\n+CONF1\n C002\n@@ -299,3 +299,3 @@\n C299\n-C300\n+CONF300\n C301\n' > "$R/suffix.diff"
+printf -- '--- a/src/conf.c\n+++ b/src/conf.c\n@@ -1,2 +1,3 @@\n S001\n+SRC1\n S002\n@@ -299,3 +299,3 @@\n S299\n-S300\n+SRC300\n S301\n' >> "$R/suffix.diff"
+"$R_P2VI" -r "$R/suffix.diff" > "$R/suffix.sh"
+sed 's/^C[0-9][0-9][0-9]$/X/' "$R/conf.c" > "$R/conf.broken"
+sed 's/^S[0-9][0-9][0-9]$/Y/' "$R/src/conf.c" > "$R/src/conf.broken"
+cp "$R/conf.broken" "$R/conf.c"
+cp "$R/src/conf.broken" "$R/src/conf.c"
+suffix_log=$( cd "$R" && VI="$VI" QF2=1 sh suffix.sh 2>&1 )
+if printf '%s\n' "$suffix_log" | grep -q '^FAIL conf\.c:1:m1$' &&
+   printf '%s\n' "$suffix_log" | grep -q '^FAIL conf\.c:300:m2$' &&
+   printf '%s\n' "$suffix_log" | grep -q '^FAIL src/conf\.c:1:m1$' &&
+   printf '%s\n' "$suffix_log" | grep -q '^FAIL src/conf\.c:300:m2$' &&
+   cmp -s "$R/conf.c" "$R/conf.broken" &&
+   cmp -s "$R/src/conf.c" "$R/src/conf.broken"; then
+	ok "placement: filename suffixes remain distinct in failure locations"
+else
+	fail "placement: filename suffixes remain distinct in failure locations"
+	printf '%s\n' "$suffix_log" | grep -E '^(FAIL|OK)' | sed 's/^/    /'
+	printf '    conf.c:\n'; sed -n '1p;300p' "$R/conf.c" | sed 's/^/    /'
+	printf '    src/conf.c:\n'; sed -n '1p;300p' "$R/src/conf.c" | sed 's/^/    /'
+fi
+
+# A location-shaped string in an earlier search pattern must not hide the
+# actual failure report from placement. The failed command should remain
+# available in the emitted repair block.
+printf 'X ac:2:m1 Y\nthe old value here\nTAIL\n' > "$R/ac"
+printf -- '--- a/ac\n+++ b/ac\n@@ -1,3 +1,3 @@\n X ac:2:m1 Y\n-the old value here\n+the new value here\n TAIL\n' > "$R/decoy.diff"
+"$R_P2VI" -r "$R/decoy.diff" > "$R/decoy.sh"
+printf 'X ac:2:m1 Y\nthe drift value here\nTAIL\n' > "$R/ac"
+pty 'P2VI_EX=q!' \
+	"sh -c 'cd $R && QF2=1 $R_P2VI -E decoy.sh > $R/decoy.fixed.sh 2>$R/decoy.err'" \
+	> /dev/null 2>&1
+if grep -q "^+'1s/old/new/$" "$R/decoy.fixed.sh"; then
+	ok "placement: location text in an anchor does not hide the command"
+else
+	fail "placement: location text in an anchor does not hide the command"
+	tr -d '\r' < "$R/decoy.err" | sed 's/^/    /' | head -3
+	sed -n '/PATCH2VI PATCH/,$p' "$R/decoy.fixed.sh" | sed 's/^/    /'
 fi
 
 

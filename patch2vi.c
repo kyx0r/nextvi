@@ -472,9 +472,8 @@ static int count_substr_range(const char *s, int from, int to)
 static int rune_count_n(const char *s, int len)
 {
 	int n = 0;
-	for (int i = 0; i < len; i++)
-		if ((s[i] & 0xC0) != 0x80)
-			n++;
+	for (int i = 0; i < len; i += uc_len(s + i))
+		n++;
 	return n;
 }
 
@@ -604,16 +603,16 @@ static int diff_expand_left(const char *old, int *os, int *ns)
 	return 1;
 }
 
-/* Step oe forward 1 byte and over UTF-8 continuation bytes, mirroring on ne. */
+/* Step oe forward by one UTF-8 character, mirroring on ne. */
 static int diff_expand_right(const char *old, int olen, int *oe, int *ne)
 {
 	if (*oe >= olen)
 		return 0;
-	int prev = *oe;
-	(*oe)++;
-	while (*oe < olen && (old[*oe] & 0xC0) == 0x80)
-		(*oe)++;
-	*ne += (*oe - prev);
+	int prev = *oe, len = uc_len(old + *oe);
+	if (len <= 0)
+		len = 1;
+	*oe = MIN(*oe + len, olen);
+	*ne += *oe - prev;
 	return 1;
 }
 
@@ -3494,7 +3493,7 @@ static void sb_src_pat(sbuf *out, const char *base)
 {
 	sb_str(out, "[ /]");
 	for (const char *p = base; *p; p++) {
-		if (isalnum((unsigned char)*p) || *p == '_' || *p == '-')
+		if ((uc_isalpha(*p) || uc_isdigit(*p)) || *p == '_' || *p == '-')
 			sb_chr(out, *p);
 		else
 			sb_printf(out, "[%c]", *p);
@@ -3588,31 +3587,29 @@ static void emit_driver_call(sbuf *out, section_t *secs, int nsec, int i,
 			     file_patch_t **uf, int nuf, const char *own)
 {
 	section_t *s = &secs[i];
-	/* Rewind every real file this section touches: an earlier block
-	 * leaves the cursor deep in the buffer, and the body's
-	 * relative searches key off the current line. The rewind is
-	 * unconditional, so a block whose origin is absent still rewinds the
-	 * buffer of the file that origin creates - empty, so line 1 of it is
-	 * "invalid range". Only a section holding such a file pays for
-	 * "err 0": a rewind over a file the host patches cannot fail. */
 	int risky = 0;
-	for (int k = 0; k < s->nf; k++) {
-		int gi = uf_index(uf, nuf, s->files[k]);
-		risky |= gi >= 0 && own[gi];
-	}
-	if (risky) {
-		sb_str(out, "err 0");
-		EMIT_SEP(out);
-	}
-	for (int k = 0; k < s->nf; k++) {
-		sb_printf(out, "b%d", uf_index(uf, nuf, s->files[k]));
-		EMIT_SEP(out);
-		sb_str(out, "1");
-		EMIT_SEP(out);
-	}
-	if (risky) {
-		sb_str(out, "err 1");
-		EMIT_SEP(out);
+	/* Fresh buffers start at line 1, including -e and replay sessions.
+	 * Only later sections need rewinds after earlier edits. Compat-only
+	 * files may still be absent when their origin's gate misses. */
+	if (i > 0) {
+		for (int k = 0; k < s->nf; k++) {
+			int gi = uf_index(uf, nuf, s->files[k]);
+			risky |= gi >= 0 && own[gi];
+		}
+		if (risky) {
+			sb_str(out, "err 0");
+			EMIT_SEP(out);
+		}
+		for (int k = 0; k < s->nf; k++) {
+			sb_printf(out, "b%d", uf_index(uf, nuf, s->files[k]));
+			EMIT_SEP(out);
+			sb_str(out, "1");
+			EMIT_SEP(out);
+		}
+		if (risky) {
+			sb_str(out, "err 1");
+			EMIT_SEP(out);
+		}
 	}
 	/* Set this block's quit policy before its body runs: assert if it is the
 	 * last firing block over its file, suppress otherwise. */
@@ -3927,7 +3924,7 @@ static int sh_err(const char *what, const char *s)
 static char *sh_name(const char **s)
 {
 	sbuf_smake(sb, 32)
-	while (isalnum((unsigned char)**s) || **s == '_')
+	while ((uc_isalpha(**s) || uc_isdigit(**s)) || **s == '_')
 		sbuf_chr(sb, *(*s)++)
 	sbufn_ret(sb, sb->s)
 }
@@ -4043,7 +4040,7 @@ static int sh_expand(const char *s, sbuf *out)
 			s++;	/* the closing brace */
 			continue;
 		}
-		if (isalpha((unsigned char)*s) || *s == '_') {
+		if (uc_isalpha(*s) || *s == '_') {
 			const char *val;
 			name = sh_name(&s);
 			if ((val = sh_get(name)))
@@ -4198,7 +4195,7 @@ static int parse_vi_call(const char *s, p2vi_block_t *blk)
 				const char *d = ++s;
 				while (*s && *s != ' ')
 					s++;
-				if (isdigit((unsigned char)*d)) {
+				if (uc_isdigit(*d)) {
 					blk->secregs = erealloc(blk->secregs,
 						(blk->nsecregs + 1) * sizeof(int));
 					blk->secregs[blk->nsecregs++] = atoi(d);
@@ -4547,7 +4544,7 @@ static int parse_p2vi_script(FILE *in, p2vi_block_t **blks, int *nblks)
 		}
 		/* the name of a leading NAME=value assignment */
 		j = 0;
-		while (isalnum((unsigned char)line[j]) || line[j] == '_')
+		while ((uc_isalpha(line[j]) || uc_isdigit(line[j])) || line[j] == '_')
 			j++;
 		if (j && line[j] == '=')
 			ret = sh_assign(line);
@@ -4631,7 +4628,7 @@ static char *remap_bufnums(const char *body, int sep, int *bmap, int nmap)
 	sbuf_smake(out, SB_INIT)
 	while (*s) {
 		for (e = s; *e && !BODY_DELIM(*e); e++);
-		for (d = s + 1; d < e && isdigit((unsigned char)*d); d++);
+		for (d = s + 1; d < e && uc_isdigit(*d); d++);
 		if (*s == 'b' && d > s + 1 && d == e) {
 			int n = atoi(s + 1);
 			if (n >= nmap) {
@@ -4732,17 +4729,19 @@ static int compat_pre_script;	/* the second positional is a generated script */
  * line per failure, and the command stream itself (P2VI_REG), which the block
  * ran and which still holds every edit verbatim.
  *
- * The two are joined by the mark. A phase-2 FAIL line reads
+ * The two are joined by the complete location and the mark. A phase-2 FAIL
+ * line reads
  * "<path>:<line>:m<id>", a compat section's "<path>:<line>:r<reg>:m<id>", and
- * in the stream a mark address only ever occurs at the head of a whole
- * separator-delimited command, so "<sep>'<id>" names the failed edit and
- * nothing else - within one stream. Ids restart per section, so the stream is
- * the one <reg> names: the block's body, yanked there by its gate. P2VI_REG
- * holds the host's. What is lost is where it should go: its anchor
- * did not resolve, so the only placement left is the line number the FAIL line
- * carries - the site's line in the original file, which is approximate once the
- * hunks above it have shifted things. So the edit is re-aimed at that line and
- * run; if it fails there too, it goes into the buffer verbatim between marker
+ * in the stream the complete location identifies the file's command span;
+ * within that span a mark address at the head of a whole separator-delimited
+ * command, "<sep>'<id>", names the failed edit. Ids restart per file and
+ * section, so the stream is the one <reg> names: the block's body, yanked
+ * there by its gate. P2VI_REG holds the host's. What is lost is where it should
+ * go: its anchor did not resolve, so the only placement left is the line number
+ * the FAIL line carries - the site's line in the original file, which is
+ * approximate once the hunks above it have shifted things. So the edit is
+ * re-aimed at that line and run; if it fails there too, it goes into the buffer
+ * verbatim between marker
  * lines, which loses nothing and is a local edit to fix up. Either way the
  * session is handed over parked on the first such spot.
  */
@@ -4760,19 +4759,19 @@ static int fail_parse(char *s, char **path, int *line, int *reg)
 	int mark;
 	*reg = 0;
 	if (strncmp(s, "FAIL ", 5) || !(c = strrchr(s, ':')) || c[1] != 'm'
-			|| !isdigit((unsigned char)c[2]))
+			|| !uc_isdigit(c[2]))
 		return -1;
 	mark = atoi(c + 2);
 	*c = '\0';
 	if (!(c = strrchr(s, ':')))
 		return -1;
-	if (c[1] == 'r' && isdigit((unsigned char)c[2])) {
+	if (c[1] == 'r' && uc_isdigit(c[2])) {
 		*reg = atoi(c + 2);
 		*c = '\0';
 		if (!(c = strrchr(s, ':')))
 			return -1;
 	}
-	if (!isdigit((unsigned char)c[1]))
+	if (!uc_isdigit(c[1]))
 		return -1;
 	*c = '\0';
 	*line = atoi(c + 1);
@@ -4796,7 +4795,7 @@ static int flog_last_reg(int skip)
 		reg = 0;
 		for (p = s + 5; p < nl; p++)
 			if (p[0] == ':' && p[1] == 'r' &&
-					isdigit((unsigned char)p[2]))
+					uc_isdigit(p[2]))
 				reg = atoi(p + 2);
 	}
 	return reg;
@@ -4805,20 +4804,56 @@ static int flog_last_reg(int skip)
 /* The whole command addressing mark <mark>, at whatever depth it sits: a
  * command always starts right after a separator byte, so a quote there is an
  * address and never payload (payload lines are newline-delimited). It ends at
- * the next separator, minus the escapes a nested site carries before it. */
-static char *stream_site(const char *body, int mark)
+ * the next separator, minus the escapes a nested site carries before it. The
+ * report token must occur after that mark, so location-shaped payload cannot
+ * hide the actual failure report.
+ *
+ * Mark ids restart for every file in a section. Pair the report with its mark
+ * only in that file's b<N> span; a mark alone can otherwise select the same id
+ * in an earlier file. */
+static char *stream_site(const char *body, const char *path, int line,
+			 int reg, int mark, int buf)
 {
-	const char *p = body, *e;
-	while ((p = strchr(p, xsep))) {
-		if (*++p != '\'' || atoi(p + 1) != mark)
-			continue;
-		for (e = p + 1; isdigit((unsigned char)*e); e++);
-		if (e == p + 1 || !(e = strchr(e, xsep)))
-			continue;
-		while (e[-1] == xesc)
-			e--;
-		return dup_n(p, e - p);
+	sbuf_smake(loc, SB_INIT)
+	const char *p, *e, *cmd, *site = NULL, *site_end;
+	int curbuf = -1;
+	sb_printf(loc, "?" "?!%dreg %s:%d", REG_LOC, path, line);
+	if (reg > 0)
+		sb_printf(loc, ":r%d", reg);
+	sb_printf(loc, ":m%d", mark);
+	sbuf_nul(loc)
+	for (p = body; *p; p++) {
+		if (*p == xsep) {
+			cmd = p + 1;
+			/* A buffer select is an entire separator-delimited command. */
+			if (*cmd == 'b') {
+				const char *q = cmd + 1;
+				int n = 0;
+				while (uc_isdigit(*q))
+					n = n * 10 + *q++ - '0';
+				if (q > cmd + 1 && q == strchr(cmd, xsep)) {
+					curbuf = n;
+					site = NULL;
+				}
+			}
+			if (*cmd == '\'' && curbuf == buf &&
+			    atoi(cmd + 1) == mark) {
+				for (e = cmd + 1; uc_isdigit(*e); e++);
+				if (e == cmd + 1 || !(e = strchr(e, xsep)))
+					break;
+				while (e[-1] == xesc)
+					e--;
+				site = cmd;
+				site_end = e;
+			}
+		}
+		if (site && *p == loc->s[0] &&
+		    !strncmp(p, loc->s, loc->s_n)) {
+			free(loc->s);
+			return dup_n(site, site_end - site);
+		}
 	}
+	free(loc->s);
 	return NULL;
 }
 
@@ -4835,15 +4870,15 @@ static int buf_by_path(const char *path)
 static int fail_place(const char *body, const char *path, int line, int mark,
 		      int reg, int *bi, int *shift)
 {
-	char *site = stream_site(body, mark);
 	const char *addr, *verb;
+	char *site;
 	int row, len, ok = 0;
 	sbuf_smake(sb, SB_INIT)
 	if ((*bi = buf_by_path(path)) < 0) {
-		free(site);
 		free(sb->s);
 		return -1;
 	}
+	site = stream_site(body, path, line, reg, mark, *bi);
 	bufs_switch(*bi);
 	/* every block placed above this one pushed the rest of the file down,
 	 * and the failures come in patch order, so the shift simply adds up */
@@ -4853,8 +4888,8 @@ static int fail_place(const char *body, const char *path, int line, int mark,
 	xrow = row;
 	xoff = 0;
 	if (site) {
-		for (addr = site + 1; isdigit((unsigned char)*addr); addr++);
-		for (verb = addr; *verb && !isalpha((unsigned char)*verb); verb++);
+		for (addr = site + 1; uc_isdigit(*addr); addr++);
+		for (verb = addr; *verb && !uc_isalpha(*verb); verb++);
 		/* The mark is what did not resolve, so the same command aimed
 		 * at the reported line is the best guess left - taken only
 		 * where it cannot lose anything: an insert adds, a substitute
@@ -6639,7 +6674,7 @@ static void emit_compat_tail(void)
 static void usage(const char *prog, int err)
 {
 	FILE *f = err ? stderr : stdout;
-	fprintf(f, "Patch2vi-1.1 Usage:\n\n"
+	fprintf(f, "Patch2vi-1.2 Usage:\n\n"
 		"%s [-arh] [-o FILE] [-er TAG] [-ew TAG] [input.patch]\n"
 		"%s -e script.sh [script2.sh...]\n"
 		"%s [-ar]I [nextvi-opts...]\n"
