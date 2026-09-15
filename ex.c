@@ -55,7 +55,6 @@ static char xuerr[] = "unreported error";
 static char xserr[] = "syntax error";
 static char xgerr[] = "invalid grp";
 static char xirerr[] = "invalid range";
-static char xrnferr[] = "range not found";
 static char *xrerr;
 static void *xpret;		/* previous ex command return value */
 static signed char *xcid;	/* capture status by id, -1 if unset */
@@ -254,12 +253,16 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		++*num;
 		break;
 	case '\'':
-		if (!uc_isdigit(*++(*num)))
+		if (!uc_isdigit(*++(*num))) {
+			xrerr = xserr;
 			return -2;
+		}
 		for (off = 0; uc_isdigit(**num); ++*num)
 			off = off * 10 + (**num - '0');
-		if (lbuf_jump(xb, off, &n, row ? &n : &dir))
+		if (lbuf_jump(xb, off, &n, row ? &n : &dir)) {
+			xrerr = "mark not set";
 			return -2;
+		}
 		break;
 	case '>':
 	case '<':
@@ -281,7 +284,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
 		}
 		if (lbuf_search(xb, xkwdrs, xkwddir, row ? beg : 0, end,
 				MIN(dir, 0), !row, &beg, &off)) {
-			xrerr = xrnferr;
+			xrerr = "range not found";
 			return -2;
 		}
 		n = row ? off : beg;
