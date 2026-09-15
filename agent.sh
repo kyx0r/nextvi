@@ -319,7 +319,9 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 	}
 	pid = fork();
 	if (!pid) {
-		setsid();
+		/* Interactive shells must remain in the editor'\''s foreground group. */
+		if (!xish)
+			setpgid(0, 0);
 		dup2(fileno(in), STDIN_FILENO);
 		dup2(output[1], STDOUT_FILENO);
 		dup2(output[1], STDERR_FILENO);
@@ -335,13 +337,15 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 		close(output[0]);
 		return NULL;
 	}
+	if (!xish)
+		setpgid(pid, pid);
 	fds[0].fd = output[0];
 	fds[0].events = POLLIN;
 	fds[1] = term_ufd;
 	sbuf_make(sb, 4096)
 	while (!done || fds[0].fd >= 0) {
 		if ((agent_cancel || (http && agent_pause)) && !killed) {
-			kill(-pid, SIGKILL);
+			kill(xish ? pid : -pid, SIGKILL);
 			killed = 1;
 		}
 		int n = poll(fds, 2, 100);
@@ -382,7 +386,7 @@ static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 	char *sh = getenv("SHELL"),
 	     *argv[] = {sh && *sh ? sh : "sh",
 		xish ? "-i" : "-c", xish ? "-c" : cmd,
-		xish ? cmd : NULL};
+		xish ? cmd : NULL, NULL};
 	int st;
 	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2);
 	if (!out) {
@@ -7477,10 +7481,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..12e58d1c
+index 00000000..2292d2c5
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,955 @@
+@@ -0,0 +1,959 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7770,7 +7774,9 @@ index 00000000..12e58d1c
 +	}
 +	pid = fork();
 +	if (!pid) {
-+		setsid();
++		/* Interactive shells must remain in the editor's foreground group. */
++		if (!xish)
++			setpgid(0, 0);
 +		dup2(fileno(in), STDIN_FILENO);
 +		dup2(output[1], STDOUT_FILENO);
 +		dup2(output[1], STDERR_FILENO);
@@ -7786,13 +7792,15 @@ index 00000000..12e58d1c
 +		close(output[0]);
 +		return NULL;
 +	}
++	if (!xish)
++		setpgid(pid, pid);
 +	fds[0].fd = output[0];
 +	fds[0].events = POLLIN;
 +	fds[1] = term_ufd;
 +	sbuf_make(sb, 4096)
 +	while (!done || fds[0].fd >= 0) {
 +		if ((agent_cancel || (http && agent_pause)) && !killed) {
-+			kill(-pid, SIGKILL);
++			kill(xish ? pid : -pid, SIGKILL);
 +			killed = 1;
 +		}
 +		int n = poll(fds, 2, 100);
@@ -7833,7 +7841,7 @@ index 00000000..12e58d1c
 +	char *sh = getenv("SHELL"),
 +	     *argv[] = {sh && *sh ? sh : "sh",
 +		xish ? "-i" : "-c", xish ? "-c" : cmd,
-+		xish ? cmd : NULL};
++		xish ? cmd : NULL, NULL};
 +	int st;
 +	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2);
 +	if (!out) {
