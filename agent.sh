@@ -299,13 +299,16 @@ static void agent_capture_add(const char *s, int n)
 /* Keep one excess byte to detect truncated output; continue draining the pipe. */
 /* Use file-backed stdin; poll output and terminal together. */
 static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
-	int limited)
+	int limited, sbuf **errout)
 {
 	FILE *in = tmpfile();
-	struct pollfd fds[2];
-	int output[2], pid, done = 0, st = 0, killed = 0;
+	struct pollfd fds[3];
+	int output[2] = {-1, -1}, error[2] = {-1, -1}, pid, done = 0, st = 0,
+		killed = 0, tidx = http ? 2 : 1;
 	char buf[4097];
-	sbuf *sb;
+	sbuf *sb, *eb = NULL;
+	if (errout)
+		*errout = NULL;
 	if (!in)
 		return NULL;
 	if (input && agent_writeall(fileno(in), input->s, input->s_n)) {
@@ -313,8 +316,16 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 		return NULL;
 	}
 	rewind(in);
-	if (pipe(output)) {
+	if (pipe(output) || (http && pipe(error))) {
 		fclose(in);
+		if (output[0] >= 0)
+			close(output[0]);
+		if (output[1] >= 0)
+			close(output[1]);
+		if (error[0] >= 0)
+			close(error[0]);
+		if (error[1] >= 0)
+			close(error[1]);
 		return NULL;
 	}
 	pid = fork();
@@ -324,55 +335,72 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 			setpgid(0, 0);
 		dup2(fileno(in), STDIN_FILENO);
 		dup2(output[1], STDOUT_FILENO);
-		dup2(output[1], STDERR_FILENO);
+		dup2(http ? error[1] : output[1], STDERR_FILENO);
 		close(output[0]);
 		close(output[1]);
+		if (http) {
+			close(error[0]);
+			close(error[1]);
+		}
 		fclose(in);
 		execvp(argv[0], argv);
 		_exit(127);
 	}
 	fclose(in);
 	close(output[1]);
+	if (http)
+		close(error[1]);
 	if (pid < 0) {
 		close(output[0]);
+		if (http)
+			close(error[0]);
 		return NULL;
 	}
 	if (!xish)
 		setpgid(pid, pid);
 	fds[0].fd = output[0];
 	fds[0].events = POLLIN;
-	fds[1] = term_ufd;
+	if (http) {
+		fds[1].fd = error[0];
+		fds[1].events = POLLIN;
+	}
+	fds[tidx] = term_ufd;
 	sbuf_make(sb, 4096)
-	while (!done || fds[0].fd >= 0) {
+	if (http)
+		sbuf_make(eb, 4096)
+	while (!done || fds[0].fd >= 0 || (http && fds[1].fd >= 0)) {
 		if ((agent_cancel || (http && agent_pause)) && !killed) {
 			kill(xish ? pid : -pid, SIGKILL);
 			killed = 1;
 		}
-		int n = poll(fds, 2, 100);
+		int n = poll(fds, tidx + 1, 100);
 		if (n < 0 && errno != EINTR) {
 			agent_cancel = 1;
 			continue;
 		}
-		if (fds[0].fd >= 0 &&
-				fds[0].revents & (POLLIN | POLLHUP | POLLERR)) {
-			int nr = read(fds[0].fd, buf, sizeof(buf)-1);
-			if (nr > 0) {
-				if (limited)
-					nr = MIN(nr, MAX(0, 4097 - sb->s_n));
-				sbuf_mem(sb, buf, nr)
-			} else if (!nr || errno != EINTR) {
-				close(fds[0].fd);
-				fds[0].fd = -1;
+		for (int i = 0; i < (http ? 2 : 1); i++) {
+			if (fds[i].fd >= 0 &&
+					fds[i].revents & (POLLIN | POLLHUP | POLLERR)) {
+				int nr = read(fds[i].fd, buf, sizeof(buf)-1);
+				if (nr > 0) {
+					sbuf *dest = i ? eb : sb;
+					if (i == 0 && limited)
+						nr = MIN(nr, MAX(0, 4097 - dest->s_n));
+					sbuf_mem(dest, buf, nr)
+				} else if (!nr || errno != EINTR) {
+					close(fds[i].fd);
+					fds[i].fd = -1;
+				}
 			}
 		}
-		if (fds[1].revents & POLLIN) {
+		if (fds[tidx].revents & POLLIN) {
 			preserve(int, agent_tool, agent_tool = 0;)
 			agent_key(term_read(0));
 			restore(agent_tool)
 		}
-		if (fds[1].revents & (POLLHUP | POLLERR | POLLNVAL)) {
+		if (fds[tidx].revents & (POLLHUP | POLLERR | POLLNVAL)) {
 			agent_cancel = 1;
-			fds[1].fd = -1;
+			fds[tidx].fd = -1;
 		}
 		if (!done)
 			done = waitpid(pid, &st, WNOHANG) == pid;
@@ -381,6 +409,15 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 	signal(SIGTTOU, SIG_IGN);
 	tcsetpgrp(term_ufd.fd, getpgrp());
 	signal(SIGTTOU, SIG_DFL);
+	if (http) {
+		sbuf_nul(eb)
+		if (errout)
+			*errout = eb;
+		else {
+			free(eb->s);
+			free(eb);
+		}
+	}
 	sbufn_ret(sb, sb)
 }
 
@@ -391,7 +428,8 @@ static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 		xish ? "-i" : "-c", xish ? "-c" : cmd,
 		xish ? cmd : NULL, NULL};
 	int st;
-	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2);
+	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2,
+		NULL);
 	if (!out) {
 		agent_child_status = 1;
 		return NULL;
@@ -405,13 +443,15 @@ static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 	return out;
 }
 
-static void agent_http_failure(char *body)
+static void agent_http_failure(char *body, char *stderr_text)
 {
 	cJSON *root = body ? cJSON_ParseWithOpts(body, NULL, 0) : NULL;
-	cJSON *error = cJSON_GetObjectItem(root, "error");
-	cJSON *message = cJSON_GetObjectItem(error, "message");
+	cJSON *api_error = cJSON_GetObjectItem(root, "error");
+	cJSON *message = cJSON_GetObjectItem(api_error, "message");
 	if (cJSON_IsString(message) && *message->valuestring)
 		agent_log("RESULT", message->valuestring);
+	else if (stderr_text && *stderr_text)
+		agent_log("RESULT", stderr_text);
 	else
 		agent_log("RESULT", "HTTP request failed");
 	cJSON_Delete(root);
@@ -436,11 +476,14 @@ static cJSON *agent_config(void)
 	return req;
 }
 
-static char *agent_http(cJSON *req, int *st)
+static char *agent_http(cJSON *req, int *st, char **stderr_text)
 {
 	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
 	int fd = mkstemp(hdrpath);
 	sbuf *out = NULL;
+	sbuf *err = NULL;
+	if (stderr_text)
+		*stderr_text = NULL;
 	sbuf_smake(hdr, 128)
 	sbuf_str(hdr, "Authorization: Bearer ")
 	sbuf_str(hdr, api_key)
@@ -463,11 +506,18 @@ static char *agent_http(cJSON *req, int *st)
 	sbuf body;
 	body.s = cJSON_PrintUnformatted(req);
 	body.s_n = strlen(body.s);
-	out = agent_process(argv, &body, st, 1, 0);
+	out = agent_process(argv, &body, st, 1, 0, &err);
 	free(body.s);
 ret:
 	unlink(hdrpath);
 	free(hdr->s);
+	if (err) {
+		if (stderr_text)
+			*stderr_text = err->s;
+		else
+			free(err->s);
+		free(err);
+	}
 	if (!out) {
 		*st = -1;
 		return NULL;
@@ -600,7 +650,7 @@ static void agent_run(const char *input)
 {
 	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 	cJSON *req, *root, *message, *calls, *tc, *text;
-	char *body;
+	char *body, *stderr_text;
 	int st;
 	agent_cancel = agent_pause = 0;
 	agent_rounds = 0;
@@ -622,16 +672,18 @@ static void agent_run(const char *input)
 			"\"required\":[\"command\"],"
 			"\"additionalProperties\":false}}}]"));
 		cJSON_AddBoolToObject(req, "stream", 0);
-		body = agent_http(req, &st);
+		body = agent_http(req, &st, &stderr_text);
 		cJSON_Delete(req);
 		if (agent_cancel) {
 			free(body);
+			free(stderr_text);
 			if (agent_cancel != 2)
 				agent_log("RESULT", "cancelled");
 			return;
 		}
 		if (agent_pause) {
 			free(body);
+			free(stderr_text);
 			agent_editor();
 			agent_redraw(NULL);
 			agent_pause = 0;
@@ -644,10 +696,12 @@ static void agent_run(const char *input)
 			continue;
 		}
 		if (st || !body) {
-			agent_http_failure(body);
+			agent_http_failure(body, stderr_text);
 			free(body);
+			free(stderr_text);
 			return;
 		}
+		free(stderr_text);
 		root = cJSON_ParseWithOpts(body, NULL, 1);
 		free(body);
 		text = cJSON_GetObjectItem(
@@ -7406,10 +7460,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..f6394308
+index 00000000..621ffcde
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,962 @@
+@@ -0,0 +1,1016 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7679,13 +7733,16 @@ index 00000000..f6394308
 +/* Keep one excess byte to detect truncated output; continue draining the pipe. */
 +/* Use file-backed stdin; poll output and terminal together. */
 +static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
-+	int limited)
++	int limited, sbuf **errout)
 +{
 +	FILE *in = tmpfile();
-+	struct pollfd fds[2];
-+	int output[2], pid, done = 0, st = 0, killed = 0;
++	struct pollfd fds[3];
++	int output[2] = {-1, -1}, error[2] = {-1, -1}, pid, done = 0, st = 0,
++		killed = 0, tidx = http ? 2 : 1;
 +	char buf[4097];
-+	sbuf *sb;
++	sbuf *sb, *eb = NULL;
++	if (errout)
++		*errout = NULL;
 +	if (!in)
 +		return NULL;
 +	if (input && agent_writeall(fileno(in), input->s, input->s_n)) {
@@ -7693,8 +7750,16 @@ index 00000000..f6394308
 +		return NULL;
 +	}
 +	rewind(in);
-+	if (pipe(output)) {
++	if (pipe(output) || (http && pipe(error))) {
 +		fclose(in);
++		if (output[0] >= 0)
++			close(output[0]);
++		if (output[1] >= 0)
++			close(output[1]);
++		if (error[0] >= 0)
++			close(error[0]);
++		if (error[1] >= 0)
++			close(error[1]);
 +		return NULL;
 +	}
 +	pid = fork();
@@ -7704,55 +7769,72 @@ index 00000000..f6394308
 +			setpgid(0, 0);
 +		dup2(fileno(in), STDIN_FILENO);
 +		dup2(output[1], STDOUT_FILENO);
-+		dup2(output[1], STDERR_FILENO);
++		dup2(http ? error[1] : output[1], STDERR_FILENO);
 +		close(output[0]);
 +		close(output[1]);
++		if (http) {
++			close(error[0]);
++			close(error[1]);
++		}
 +		fclose(in);
 +		execvp(argv[0], argv);
 +		_exit(127);
 +	}
 +	fclose(in);
 +	close(output[1]);
++	if (http)
++		close(error[1]);
 +	if (pid < 0) {
 +		close(output[0]);
++		if (http)
++			close(error[0]);
 +		return NULL;
 +	}
 +	if (!xish)
 +		setpgid(pid, pid);
 +	fds[0].fd = output[0];
 +	fds[0].events = POLLIN;
-+	fds[1] = term_ufd;
++	if (http) {
++		fds[1].fd = error[0];
++		fds[1].events = POLLIN;
++	}
++	fds[tidx] = term_ufd;
 +	sbuf_make(sb, 4096)
-+	while (!done || fds[0].fd >= 0) {
++	if (http)
++		sbuf_make(eb, 4096)
++	while (!done || fds[0].fd >= 0 || (http && fds[1].fd >= 0)) {
 +		if ((agent_cancel || (http && agent_pause)) && !killed) {
 +			kill(xish ? pid : -pid, SIGKILL);
 +			killed = 1;
 +		}
-+		int n = poll(fds, 2, 100);
++		int n = poll(fds, tidx + 1, 100);
 +		if (n < 0 && errno != EINTR) {
 +			agent_cancel = 1;
 +			continue;
 +		}
-+		if (fds[0].fd >= 0 &&
-+				fds[0].revents & (POLLIN | POLLHUP | POLLERR)) {
-+			int nr = read(fds[0].fd, buf, sizeof(buf)-1);
-+			if (nr > 0) {
-+				if (limited)
-+					nr = MIN(nr, MAX(0, 4097 - sb->s_n));
-+				sbuf_mem(sb, buf, nr)
-+			} else if (!nr || errno != EINTR) {
-+				close(fds[0].fd);
-+				fds[0].fd = -1;
++		for (int i = 0; i < (http ? 2 : 1); i++) {
++			if (fds[i].fd >= 0 &&
++					fds[i].revents & (POLLIN | POLLHUP | POLLERR)) {
++				int nr = read(fds[i].fd, buf, sizeof(buf)-1);
++				if (nr > 0) {
++					sbuf *dest = i ? eb : sb;
++					if (i == 0 && limited)
++						nr = MIN(nr, MAX(0, 4097 - dest->s_n));
++					sbuf_mem(dest, buf, nr)
++				} else if (!nr || errno != EINTR) {
++					close(fds[i].fd);
++					fds[i].fd = -1;
++				}
 +			}
 +		}
-+		if (fds[1].revents & POLLIN) {
++		if (fds[tidx].revents & POLLIN) {
 +			preserve(int, agent_tool, agent_tool = 0;)
 +			agent_key(term_read(0));
 +			restore(agent_tool)
 +		}
-+		if (fds[1].revents & (POLLHUP | POLLERR | POLLNVAL)) {
++		if (fds[tidx].revents & (POLLHUP | POLLERR | POLLNVAL)) {
 +			agent_cancel = 1;
-+			fds[1].fd = -1;
++			fds[tidx].fd = -1;
 +		}
 +		if (!done)
 +			done = waitpid(pid, &st, WNOHANG) == pid;
@@ -7761,6 +7843,15 @@ index 00000000..f6394308
 +	signal(SIGTTOU, SIG_IGN);
 +	tcsetpgrp(term_ufd.fd, getpgrp());
 +	signal(SIGTTOU, SIG_DFL);
++	if (http) {
++		sbuf_nul(eb)
++		if (errout)
++			*errout = eb;
++		else {
++			free(eb->s);
++			free(eb);
++		}
++	}
 +	sbufn_ret(sb, sb)
 +}
 +
@@ -7771,7 +7862,8 @@ index 00000000..f6394308
 +		xish ? "-i" : "-c", xish ? "-c" : cmd,
 +		xish ? cmd : NULL, NULL};
 +	int st;
-+	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2);
++	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2,
++		NULL);
 +	if (!out) {
 +		agent_child_status = 1;
 +		return NULL;
@@ -7785,13 +7877,15 @@ index 00000000..f6394308
 +	return out;
 +}
 +
-+static void agent_http_failure(char *body)
++static void agent_http_failure(char *body, char *stderr_text)
 +{
 +	cJSON *root = body ? cJSON_ParseWithOpts(body, NULL, 0) : NULL;
-+	cJSON *error = cJSON_GetObjectItem(root, "error");
-+	cJSON *message = cJSON_GetObjectItem(error, "message");
++	cJSON *api_error = cJSON_GetObjectItem(root, "error");
++	cJSON *message = cJSON_GetObjectItem(api_error, "message");
 +	if (cJSON_IsString(message) && *message->valuestring)
 +		agent_log("RESULT", message->valuestring);
++	else if (stderr_text && *stderr_text)
++		agent_log("RESULT", stderr_text);
 +	else
 +		agent_log("RESULT", "HTTP request failed");
 +	cJSON_Delete(root);
@@ -7816,11 +7910,14 @@ index 00000000..f6394308
 +	return req;
 +}
 +
-+static char *agent_http(cJSON *req, int *st)
++static char *agent_http(cJSON *req, int *st, char **stderr_text)
 +{
 +	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
 +	int fd = mkstemp(hdrpath);
 +	sbuf *out = NULL;
++	sbuf *err = NULL;
++	if (stderr_text)
++		*stderr_text = NULL;
 +	sbuf_smake(hdr, 128)
 +	sbuf_str(hdr, "Authorization: Bearer ")
 +	sbuf_str(hdr, api_key)
@@ -7843,11 +7940,18 @@ index 00000000..f6394308
 +	sbuf body;
 +	body.s = cJSON_PrintUnformatted(req);
 +	body.s_n = strlen(body.s);
-+	out = agent_process(argv, &body, st, 1, 0);
++	out = agent_process(argv, &body, st, 1, 0, &err);
 +	free(body.s);
 +ret:
 +	unlink(hdrpath);
 +	free(hdr->s);
++	if (err) {
++		if (stderr_text)
++			*stderr_text = err->s;
++		else
++			free(err->s);
++		free(err);
++	}
 +	if (!out) {
 +		*st = -1;
 +		return NULL;
@@ -7980,7 +8084,7 @@ index 00000000..f6394308
 +{
 +	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 +	cJSON *req, *root, *message, *calls, *tc, *text;
-+	char *body;
++	char *body, *stderr_text;
 +	int st;
 +	agent_cancel = agent_pause = 0;
 +	agent_rounds = 0;
@@ -8002,16 +8106,18 @@ index 00000000..f6394308
 +			"\"required\":[\"command\"],"
 +			"\"additionalProperties\":false}}}]"));
 +		cJSON_AddBoolToObject(req, "stream", 0);
-+		body = agent_http(req, &st);
++		body = agent_http(req, &st, &stderr_text);
 +		cJSON_Delete(req);
 +		if (agent_cancel) {
 +			free(body);
++			free(stderr_text);
 +			if (agent_cancel != 2)
 +				agent_log("RESULT", "cancelled");
 +			return;
 +		}
 +		if (agent_pause) {
 +			free(body);
++			free(stderr_text);
 +			agent_editor();
 +			agent_redraw(NULL);
 +			agent_pause = 0;
@@ -8024,10 +8130,12 @@ index 00000000..f6394308
 +			continue;
 +		}
 +		if (st || !body) {
-+			agent_http_failure(body);
++			agent_http_failure(body, stderr_text);
 +			free(body);
++			free(stderr_text);
 +			return;
 +		}
++		free(stderr_text);
 +		root = cJSON_ParseWithOpts(body, NULL, 1);
 +		free(body);
 +		text = cJSON_GetObjectItem(
