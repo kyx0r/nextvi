@@ -5500,14 +5500,14 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 		long b = *beg, e = *end;
 		const char *begop = b < 0 ? " < 0" : "";
 		const char *begend = b >= n ? b > n ? " < beg" : " = beg" : "";
-		const char *op = e <= b ? e < b ? " < beg" : " = beg" : "";
+		const char *op = e <= b ? e < b ? " >" : " =" : "";
 		const char *rowop = xrow < 0 ? " < 0" :
 			xrow >= n ? xrow > n ? " >" : " =" : "";
 		const char *endop = e > n ? " < end" : "";
 		snprintf(xirrmsg, sizeof(xirrmsg),
-			"invalid range: beg:%ld%s end:%ld%s o1:%d o2:%d "
+			"invalid range: beg:%ld%s%s end:%ld o1:%d o2:%d "
 			"xoff:%d xrow:%d%s lbuf_len:%d%s%s",
-			b, begop, e, op, *o1, *o2, xoff, xrow, rowop, n,
+			b, begop, op, e, *o1, *o2, xoff, xrow, rowop, n,
 			begend, endop);
 		xrerr = xirrmsg;
 	}
@@ -12025,7 +12025,7 @@ index a51117ca..e496344d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 21f13f54..c60e12c5 100644
+index 21f13f54..b5dfbcc4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -12075,14 +12075,14 @@ index 21f13f54..c60e12c5 100644
 +		long b = *beg, e = *end;
 +		const char *begop = b < 0 ? " < 0" : "";
 +		const char *begend = b >= n ? b > n ? " < beg" : " = beg" : "";
-+		const char *op = e <= b ? e < b ? " < beg" : " = beg" : "";
++		const char *op = e <= b ? e < b ? " >" : " =" : "";
 +		const char *rowop = xrow < 0 ? " < 0" :
 +			xrow >= n ? xrow > n ? " >" : " =" : "";
 +		const char *endop = e > n ? " < end" : "";
 +		snprintf(xirrmsg, sizeof(xirrmsg),
-+			"invalid range: beg:%ld%s end:%ld%s o1:%d o2:%d "
++			"invalid range: beg:%ld%s%s end:%ld o1:%d o2:%d "
 +			"xoff:%d xrow:%d%s lbuf_len:%d%s%s",
-+			b, begop, e, op, *o1, *o2, xoff, xrow, rowop, n,
++			b, begop, op, e, *o1, *o2, xoff, xrow, rowop, n,
 +			begend, endop);
 +		xrerr = xirrmsg;
 +	}
