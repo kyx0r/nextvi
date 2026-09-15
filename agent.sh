@@ -4774,8 +4774,8 @@ static char *endpoint = "https://openrouter.ai/api/v1/chat/completions";
 static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
 #endif
 
-static int request_timeout = 120;
-static int max_tool_rounds = 200;
+static int request_timeout = 500;
+static int max_tool_rounds = 300;
 int xgr = 2;	/* agent guardrails: anything but 2 = disabled */
 int xar;	/* display returned agent reasoning (:ar) */
 
@@ -12063,7 +12063,7 @@ index c836c94c..69b1138f 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index a51117ca..e496344d 100644
+index a51117ca..4d3b724e 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,54 @@
@@ -12084,8 +12084,8 @@ index a51117ca..e496344d 100644
 +static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
 +#endif
 +
-+static int request_timeout = 120;
-+static int max_tool_rounds = 200;
++static int request_timeout = 500;
++static int max_tool_rounds = 300;
 +int xgr = 2;	/* agent guardrails: anything but 2 = disabled */
 +int xar;	/* display returned agent reasoning (:ar) */
 +
