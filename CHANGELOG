@@ -2,6 +2,9 @@
 7.6 Basilisk
 ------------------
 
+New in core:
+1. Added mark error messages in ex ranges.
+
 Bug fixes:
 1. Fixed a rare case of regex engine leaving the utf8_length global out of
    sync after a lookahead sub-match.
@@ -11,6 +14,8 @@ Patch2vi 1.2 changes:
 1. Switched to nextvi's own uc_isalpha/uc_isdigit/uc_len APIs instead of
    libc isalnum/isdigit/isalpha and continuation-byte scanning.
 2. Fixed premature buffer position resets before a script's first section.
+3. Fixed failure placement with -E firing on a wrong mark not validating
+the filename.
 
 Patch changes:
 1. [spell.sh](https://github.com/kyx0r/nextvi/blob/release/spell.sh):
@@ -27,7 +32,9 @@ Patch changes:
    fixed r[len-1] overread on a pattern longer than the target.
 7. [cxref.sh](https://github.com/kyx0r/nextvi/blob/release/cxref.sh):
    compat block for the rstr.sh rename.
-8. patch2vi.sh: added dump_patch/view_patch and dump_head/view_head
+8. New [agent.sh](https://github.com/kyx0r/nextvi/blob/release/agent.sh):
+   Turns Nextvi into a powerful AI agent harness.
+9. patch2vi.sh: added dump_patch/view_patch and dump_head/view_head
    helpers.
 
 ------------------
