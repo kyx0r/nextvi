@@ -378,6 +378,9 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 			done = waitpid(pid, &st, WNOHANG) == pid;
 	}
 	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
+	signal(SIGTTOU, SIG_IGN);
+	tcsetpgrp(term_ufd.fd, getpgrp());
+	signal(SIGTTOU, SIG_DFL);
 	sbufn_ret(sb, sb)
 }
 
@@ -7481,10 +7484,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..2292d2c5
+index 00000000..f6394308
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,959 @@
+@@ -0,0 +1,962 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7833,6 +7836,9 @@ index 00000000..2292d2c5
 +			done = waitpid(pid, &st, WNOHANG) == pid;
 +	}
 +	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
++	signal(SIGTTOU, SIG_IGN);
++	tcsetpgrp(term_ufd.fd, getpgrp());
++	signal(SIGTTOU, SIG_DFL);
 +	sbufn_ret(sb, sb)
 +}
 +
