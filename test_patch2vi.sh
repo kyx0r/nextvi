@@ -1597,7 +1597,7 @@ fi
 # The FAIL line names the section register. Mark ids repeat across sections;
 # the register is what joins the line to the stream that ran it, and what -E
 # takes as its block selector.
-if printf '%s\n' "$mm_log" | grep -q '^FAIL mm\.c:[0-9][0-9]*:r231:m[0-9]'; then
+if printf '%s\n' "$mm_log" | grep -q '^FAIL mm\.c:[0-9][0-9]*:r231:m[0-9]$'; then
 	ok "compat: a block's FAIL line names its own register"
 else
 	fail "compat: a block's FAIL line names its own register"
@@ -2649,6 +2649,62 @@ else
 	fail "placement: a delete is never guessed at, and parks the cursor"
 	tr -d '\r' < "$R/gerr" | sed 's/^/    /' | head -3
 	sed -n '/PATCH2VI PATCH/,$p' "$R/gfail.sh" | sed 's/^/    /'
+fi
+
+# File-qualified failure reports. Both files deliberately have one missed
+# group, so both sections allocate mark 1. The report must retain each full
+# path, giving placement enough information to distinguish the two streams.
+printf 'A-old\nA-tail\n' > "$R/a.c"
+printf 'B-old\nB-tail\n' > "$R/b.c"
+printf -- '--- a/a.c\n+++ b/a.c\n@@ -1,2 +1,3 @@\n A-old\n+LEFT1\n A-tail\n--- a/b.c\n+++ b/b.c\n@@ -1,2 +1,3 @@\n B-old\n+RIGHT2\n B-tail\n' > "$R/ab.diff"
+"$R_P2VI" -r "$R/ab.diff" > "$R/ab.sh"
+printf 'A-gone\nA-tail\n' > "$R/a.c"
+printf 'B-gone\nB-tail\n' > "$R/b.c"
+ab_log=$( cd "$R" && VI="$VI" QF2=1 sh ab.sh 2>&1 )
+if printf '%s\n' "$ab_log" | grep -q '^FAIL a\.c:1:m1$' &&
+   printf '%s\n' "$ab_log" | grep -q '^FAIL b\.c:1:m1$' &&
+   [ "$(cat "$R/a.c")" = "$(printf 'A-gone\nA-tail')" ] &&
+   [ "$(cat "$R/b.c")" = "$(printf 'B-gone\nB-tail')" ]; then
+	ok "placement: duplicate marks retain distinct file locations"
+else
+	fail "placement: duplicate marks retain distinct file locations"
+	printf '%s\n' "$ab_log" | grep -E '^(FAIL|OK)' | sed 's/^/    /'
+	printf '    a.c:\n'; sed 's/^/    /' "$R/a.c"
+	printf '    b.c:\n'; sed 's/^/    /' "$R/b.c"
+fi
+
+# Path-boundary placement input. A short filename is also a suffix of the
+# second filename; matching only "conf.c:line:mark" could stop at the wrong
+# location even when the mark is duplicated.
+mkdir -p "$R/src"
+i=1
+: > "$R/conf.c"
+: > "$R/src/conf.c"
+while [ $i -le 300 ]; do
+	printf 'C%03d\n' "$i" >> "$R/conf.c"
+	printf 'S%03d\n' "$i" >> "$R/src/conf.c"
+	i=$((i + 1))
+done
+printf -- '--- a/conf.c\n+++ b/conf.c\n@@ -1,2 +1,3 @@\n C001\n+CONF1\n C002\n@@ -299,3 +299,3 @@\n C299\n-C300\n+CONF300\n C301\n' > "$R/suffix.diff"
+printf -- '--- a/src/conf.c\n+++ b/src/conf.c\n@@ -1,2 +1,3 @@\n S001\n+SRC1\n S002\n@@ -299,3 +299,3 @@\n S299\n-S300\n+SRC300\n S301\n' >> "$R/suffix.diff"
+"$R_P2VI" -r "$R/suffix.diff" > "$R/suffix.sh"
+sed 's/^C[0-9][0-9][0-9]$/X/' "$R/conf.c" > "$R/conf.broken"
+sed 's/^S[0-9][0-9][0-9]$/Y/' "$R/src/conf.c" > "$R/src/conf.broken"
+cp "$R/conf.broken" "$R/conf.c"
+cp "$R/src/conf.broken" "$R/src/conf.c"
+suffix_log=$( cd "$R" && VI="$VI" QF2=1 sh suffix.sh 2>&1 )
+if printf '%s\n' "$suffix_log" | grep -q '^FAIL conf\.c:1:m1$' &&
+   printf '%s\n' "$suffix_log" | grep -q '^FAIL conf\.c:300:m2$' &&
+   printf '%s\n' "$suffix_log" | grep -q '^FAIL src/conf\.c:1:m1$' &&
+   printf '%s\n' "$suffix_log" | grep -q '^FAIL src/conf\.c:300:m2$' &&
+   cmp -s "$R/conf.c" "$R/conf.broken" &&
+   cmp -s "$R/src/conf.c" "$R/src/conf.broken"; then
+	ok "placement: filename suffixes remain distinct in failure locations"
+else
+	fail "placement: filename suffixes remain distinct in failure locations"
+	printf '%s\n' "$suffix_log" | grep -E '^(FAIL|OK)' | sed 's/^/    /'
+	printf '    conf.c:\n'; sed -n '1p;300p' "$R/conf.c" | sed 's/^/    /'
+	printf '    src/conf.c:\n'; sed -n '1p;300p' "$R/src/conf.c" | sed 's/^/    /'
 fi
 
 
