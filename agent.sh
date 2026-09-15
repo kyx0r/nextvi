@@ -553,7 +553,7 @@ static char *agent_snapshot(char *loc)
 	sbuf_str(sb, info)
 	sbuf_str(sb, xb_path)
 	snprintf(info, sizeof(info),
-		"\nrange %d;%d,%d;%d (end character exclusive)\n",
+		"\nrange %d;%d,%d;%d\n",
 		end ? beg+1 : 0, MAX(o1, 0), end, endoff);
 	sbuf_str(sb, info)
 	lbuf_region(xb, &text, beg, MAX(o1, 0), last, o2);
@@ -7460,7 +7460,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..621ffcde
+index 00000000..6c934513
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,1016 @@
@@ -7987,7 +7987,7 @@ index 00000000..621ffcde
 +	sbuf_str(sb, info)
 +	sbuf_str(sb, xb_path)
 +	snprintf(info, sizeof(info),
-+		"\nrange %d;%d,%d;%d (end character exclusive)\n",
++		"\nrange %d;%d,%d;%d\n",
 +		end ? beg+1 : 0, MAX(o1, 0), end, endoff);
 +	sbuf_str(sb, info)
 +	lbuf_region(xb, &text, beg, MAX(o1, 0), last, o2);
