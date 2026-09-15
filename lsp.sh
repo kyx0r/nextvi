@@ -213,24 +213,24 @@ const int hloptslen = LEN\(hlopts\);8??0?
 %f> 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{
 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);4??0?
-4??+2m 1220reg p OK ex.c:435:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:438:a42sc %? %@2152sc!1q0?
 grp 1%f> 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{.*?
 		ex_bufpostfix\(ex_buf, arg\[0]\);.*?
 (		syn_setft\(xb_ft\);)7??0?
-grp 07??m 1220reg p OK ex.c:435:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK ex.c:438:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/
 	}
 	readfile\(rd =\).*(			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);)
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)8??0?
-grp 08??-4m 1220reg p OK ex.c:435:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:438:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		return "last buffer modified";
 	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{
 		bufs_switch\(bufs_open\(arg\+cd, len\)\);.*(static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\))
 \{
 	rset \*rs;9??0?
-grp 09??-10m 1220reg p OK ex.c:435:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:4352sc %? %@2132sc!0?
+grp 09??-10m 1220reg p OK ex.c:438:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:4382sc %? %@2132sc!0?
 ?0?
 %f+ 		ec_setpath\(NULL, NULL, path\);
 	lbuf_saved\(xb, 0\);
@@ -242,24 +242,24 @@ const int hloptslen = LEN\(hlopts\);8??0?
 %f+ 		ec_setpath\(NULL, NULL, path\);
 	lbuf_saved\(xb, 0\);
 	ex_buf->mtime = mtime\(path\);4??0?
-4??+2m 2220reg p OK ex.c:808:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:811:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		ec_setpath\(NULL, NULL, path\);.*?
 	lbuf_saved\(xb, 0\);.*?
 (	ex_buf->mtime = mtime\(path\);)7??0?
-grp 07??m 2220reg p OK ex.c:808:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:811:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			path, end - beg\);
 	ex_print\(msg, bar_ft\)
 	if \(strcmp\(xb_path, path\)\).*(static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\))
 \{
 	if \(\*arg && term_sbuf\)8??0?
-grp 08??-5m 2220reg p OK ex.c:808:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 2220reg p OK ex.c:811:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(o1 < 0\)
 		return "write failed";
 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[w]",.*(		term_exec\(arg, strlen\(arg\), cmd\[0]\))
 	return term_sbuf \? NULL : "unsupported command";
 }9??0?
-grp 09??-8m 2220reg p OK ex.c:808:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:8082sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK ex.c:811:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:8112sc %? %@2132sc!0?
 ?0?
 %f+ 	return NULL;
 \)
@@ -273,20 +273,20 @@ const int hloptslen = LEN\(hlopts\);8??0?
 \)
 
 4??0?
-4??+2m 3220reg p OK ex.c:1727:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1730:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 3220reg p OK ex.c:1727:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1730:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 3220reg p OK ex.c:1727:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:17272sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1730:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17302sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(left\),
 	EO\(lim\),
@@ -298,30 +298,30 @@ static struct excmd \{
 %f+ 	EO\(left\),
 	EO\(lim\),
 	EO\(led\),4??0?
-4??+2m 4220reg p OK ex.c:1824:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:1827:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(left\),.*?
 	EO\(lim\),.*?
 (	EO\(led\),)7??0?
-grp 07??m 4220reg p OK ex.c:1824:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:1827:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(hlp\),
 	EO\(hlr\),
 	EO\(hl\),.*(/\* parse command argument expanding % and ! \*/)
 static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{8??0?
-grp 08??-6m 4220reg p OK ex.c:1824:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 4220reg p OK ex.c:1827:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(order\),
 	EO\(hll\),
 	EO\(hlw\),.*(	\*arg = sb->s_n;)
 	while \(\*src && \*src != xsep\) \{
 		if \(\*src == xexp\) \{9??0?
-grp 09??-9m 4220reg p OK ex.c:1824:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:18242sc %? %@2132sc!0?
+grp 09??-9m 4220reg p OK ex.c:1827:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18272sc %? %@2132sc!0?
 '\''1i 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
-??!219reg ex.c:435:m12sc %? %@2142sc!0?
+??!219reg ex.c:438:m12sc %? %@2142sc!0?
 '\''2i 	if (*xb_path)
 		lsp_save(xb_path);
-??!219reg ex.c:808:m22sc %? %@2142sc!0?
+??!219reg ex.c:811:m22sc %? %@2142sc!0?
 '\''3i /* :lsp			list the registered servers
  * :lsp <filetype> <cmd>	run <cmd> as the language server of <filetype> */
 static void *ec_lsp(char *loc, char *cmd, char *arg)
@@ -350,9 +350,9 @@ static void *ec_lsp(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-??!219reg ex.c:1727:m32sc %? %@2142sc!0?
+??!219reg ex.c:1730:m32sc %? %@2142sc!0?
 '\''4i 	{"lsp", ec_lsp},
-??!219reg ex.c:1824:m42sc %? %@2142sc!b2m!0?
+??!219reg ex.c:1827:m42sc %? %@2142sc!b2m!0?
 i /*
  * MIT License
  *
@@ -2867,10 +2867,10 @@ index a51117ca..3baa5851 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index 0ce81414..edc618af 100644
+index 21f13f54..8aa05419 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -433,6 +433,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -436,6 +436,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
@@ -2879,7 +2879,7 @@ index 0ce81414..edc618af 100644
  	}
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-@@ -806,6 +808,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -809,6 +811,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		ec_setpath(NULL, NULL, path);
  	lbuf_saved(xb, 0);
  	ex_buf->mtime = mtime(path);
@@ -2888,7 +2888,7 @@ index 0ce81414..edc618af 100644
  	xquit = quit;
  	return NULL;
  }
-@@ -1725,6 +1729,34 @@ _EO(left,
+@@ -1728,6 +1732,34 @@ _EO(left,
  	return NULL;
  )
  
@@ -2923,7 +2923,7 @@ index 0ce81414..edc618af 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1822,6 +1854,7 @@ static struct excmd {
+@@ -1825,6 +1857,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),

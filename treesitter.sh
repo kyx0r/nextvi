@@ -2111,20 +2111,20 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 	term_pos\(-1, winx \+ led_pos\(r->s, pos\) \+ lncol\);
 	sbufn_cut\(sb, psn\)
 	rstate -= 2;2??0?
-2??m 1220reg p OK led.c:401:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK led.c:402:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^		led_crender\(r->s, -1, lncol, xleft, xleft \+ xcols - lncol\);$3??0?
-3??m 1220reg p OK led.c:401:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK led.c:402:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	if \(ts_preview && poff == &xoff\)
 		led_preview_current\(r->s, ps, lncol\);
 	else4??0?
-4??+3m 1220reg p OK led.c:401:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK led.c:402:a42sc %? %@2152sc!1q0?
 %f> 	term_pos\(-1, winx \+ led_pos\(r->s, pos\) \+ lncol\);
 	sbufn_cut\(sb, psn\)
 	rstate -= 2;5??0?
-5??-1m 1220reg p OK led.c:401:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:401:r2312sc %? %@2132sc!0?
-?'\''1s/lncol, xleft, xleft \+ xcols/winx + lncol, xleft, xleft + winw/1??1??1q'\''1s/(lncol,.*\+ )xcols/winx + \1winw/2??2??'\''1220reg p OK led.c:401:s22sc %? %@2162sc!0?
-1;2??!219reg led.c:401:r231:m12sc %? %@2142sc!0?
+5??-1m 1220reg p OK led.c:402:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:402:r2312sc %? %@2132sc!0?
+?'\''1s/lncol, xleft, xleft \+ xcols/winx + lncol, xleft, xleft + winw/1??1??1q'\''1s/(lncol,.*\+ )xcols/winx + \1winw/2??2??'\''1220reg p OK led.c:402:s22sc %? %@2162sc!0?
+1;2??!219reg led.c:402:r231:m12sc %? %@2142sc!0?
 b7m!%ya 98?0?
 %f> 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
 		memset\(c, '\'' '\'', l1 - \(c - tmp\)\);
@@ -2138,18 +2138,18 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 			ts_document\(xb\), row - vi_rshift, 0\)
 		preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 		preserve\(int, ftidx,\)2??0?
-2??m 1220reg p OK vi.c:218:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:216:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^		led_srender\(s, row - xtop, l1, xleft, xleft \+ xcols - l1,$3??0?
-3??m 1220reg p OK vi.c:218:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.c:216:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
 		memset\(c, '\'' '\'', l1 - \(c - tmp\)\);
 		c\[l1 - \(c - tmp\)] = '\''\\0'\'';4??0?
-4??+3m 1220reg p OK vi.c:218:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:216:a42sc %? %@2152sc!1q0?
 %f> 			ts_document\(xb\), row - vi_rshift, 0\)
 		preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 		preserve\(int, ftidx,\)5??0?
-5??-1m 1220reg p OK vi.c:218:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:218:r2312sc %? %@2132sc!0?
+5??-1m 1220reg p OK vi.c:216:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:216:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 		restore\(ftidx\)
 		return;
@@ -2163,22 +2163,22 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 		ts_document\(xb\), row - vi_rshift, 0\)
 	rstate = rstates;
 }2??0?
-2??m 2220reg p OK vi.c:238:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:236:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	led_srender\(s, row - xtop, 0, xleft, xleft \+ xcols,$3??0?
-3??m 2220reg p OK vi.c:238:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:236:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		restore\(ftidx\)
 		return;
 	}4??0?
-4??+3m 2220reg p OK vi.c:238:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:236:a42sc %? %@2152sc!1q0?
 %f+ 		ts_document\(xb\), row - vi_rshift, 0\)
 	rstate = rstates;
 }5??0?
-5??-1m 2220reg p OK vi.c:238:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:238:r2312sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:236:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:236:r2312sc %? %@2132sc!0?
 '\''1c 		led_srender(s, scrrow, wx + l1, xleft, xleft + wcols - l1,
-??!219reg vi.c:218:r231:m12sc %? %@2142sc!0?
+??!219reg vi.c:216:r231:m12sc %? %@2142sc!0?
 '\''2c 	led_srender(s, scrrow, wx, xleft, xleft + wcols,
-??!219reg vi.c:238:r231:m22sc %? %@2142sc!b8m!%ya 98?0?
+??!219reg vi.c:236:r231:m22sc %? %@2142sc!b8m!%ya 98?0?
 %f> 	int record = term_record; \\
 	term_record = 1; \\
 	term_pos\(sr, sc\); \\
@@ -2191,19 +2191,19 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 	led_render_source\(msg, beg, end, view, row, col\); \\
 	if \(!record\) \\
 		term_commit\(\); \\2??0?
-2??m 1220reg p OK vi.h:439:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.h:438:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^	term_kill\(\); \\$3??0?
-3??m 1220reg p OK vi.h:439:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.h:438:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	int record = term_record; \\
 	term_record = 1; \\
 	term_pos\(sr, sc\); \\4??0?
-4??+3m 1220reg p OK vi.h:439:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.h:438:a42sc %? %@2152sc!1q0?
 %f> 	led_render_source\(msg, beg, end, view, row, col\); \\
 	if \(!record\) \\
 		term_commit\(\); \\5??0?
-5??-1m 1220reg p OK vi.h:439:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.h:439:r2312sc %? %@2132sc!0?
-'\''1s/\(/w(end - beg/??!219reg vi.h:439:r231:m12sc %? %@2142sc!b6m!%ya 98?0?
+5??-1m 1220reg p OK vi.h:438:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.h:438:r2312sc %? %@2132sc!0?
+'\''1s/\(/w(end - beg/??!219reg vi.h:438:r231:m12sc %? %@2142sc!b6m!%ya 98?0?
 %f> 
 static void led_preview_current\(char \*text, int ps, int lncol\)
 \{
@@ -2218,19 +2218,19 @@ static void led_preview_current\(char \*text, int ps, int lncol\)
 }
 
 2??0?
-2??m 1220reg p OK treesitter.c:397:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK treesitter.c:439:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^	led_srender\(text, -1, lncol, xleft, xleft \+ xcols - lncol,$3??0?
-3??m 1220reg p OK treesitter.c:397:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK treesitter.c:439:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 
 static void led_preview_current\(char \*text, int ps, int lncol\)
 \{4??0?
-4??+3m 1220reg p OK treesitter.c:397:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK treesitter.c:439:a42sc %? %@2152sc!1q0?
 %f> 		ts_preview, ts_preview_row\(ps\), 0\)
 }
 
 5??0?
-5??-1m 1220reg p OK treesitter.c:397:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:397:r2312sc %? %@2132sc!0?
+5??-1m 1220reg p OK treesitter.c:439:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:439:r2312sc %? %@2132sc!0?
 ?0?
 %f+ \{
 	int current = ts_preview_row\(ps\);
@@ -2244,18 +2244,18 @@ static void led_preview_current\(char \*text, int ps, int lncol\)
 		if \(row == current\)
 			continue;
 		char \*line = ts_line\(ts_preview, row\);2??0?
-2??m 2220reg p OK treesitter.c:405:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK treesitter.c:447:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	for \(int row = xtop; row < xtop \+ xrows; row\+\+\) \{$3??0?
-3??m 2220reg p OK treesitter.c:405:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK treesitter.c:447:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ \{
 	int current = ts_preview_row\(ps\);
 	preserve\(ren_state\*, rstate, rstate = rstates \+ 1;\)4??0?
-4??+3m 2220reg p OK treesitter.c:405:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK treesitter.c:447:a42sc %? %@2152sc!1q0?
 %f+ 		if \(row == current\)
 			continue;
 		char \*line = ts_line\(ts_preview, row\);5??0?
-5??-1m 2220reg p OK treesitter.c:405:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:405:r2312sc %? %@2132sc!0?
+5??-1m 2220reg p OK treesitter.c:447:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:447:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 			char \*copy = emalloc\(len \+ 4\);
 			memcpy\(copy, line, len\);
@@ -2269,18 +2269,18 @@ static void led_preview_current\(char \*text, int ps, int lncol\)
 				ts_preview, row, 0\)
 			rstate->s = NULL;
 			free\(copy\);2??0?
-2??m 3220reg p OK treesitter.c:415:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK treesitter.c:457:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			led_srender\(copy, row - xtop, vi_lncol, xleft, xleft \+ xcols - vi_lncol,$3??0?
-3??m 3220reg p OK treesitter.c:415:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK treesitter.c:457:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			char \*copy = emalloc\(len \+ 4\);
 			memcpy\(copy, line, len\);
 			memset\(copy \+ len, 0, 4\);4??0?
-4??+3m 3220reg p OK treesitter.c:415:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK treesitter.c:457:a42sc %? %@2152sc!1q0?
 %f+ 				ts_preview, row, 0\)
 			rstate->s = NULL;
 			free\(copy\);5??0?
-5??-1m 3220reg p OK treesitter.c:415:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:415:r2312sc %? %@2132sc!0?
+5??-1m 3220reg p OK treesitter.c:457:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:457:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 			rstate->s = NULL;
 			free\(copy\);
@@ -2292,17 +2292,17 @@ static void led_preview_current\(char \*text, int ps, int lncol\)
 %f+ 			led_srender\(line \? line : "~", row - xtop, vi_lncol, xleft,
 				xleft \+ xcols - vi_lncol, ts_preview, row, 0\)
 	}2??0?
-2??m 4220reg p OK treesitter.c:420:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK treesitter.c:462:a22sc %? %@2152sc!1q0?
 %f+ 			led_srender\(line \? line : "~", row - xtop, vi_lncol, xleft,
 				xleft \+ xcols - vi_lncol, ts_preview, row, 0\)3??0?
-3??m 4220reg p OK treesitter.c:420:a32sc %? %@2152sc!1q0?
+3??m 4220reg p OK treesitter.c:462:a32sc %? %@2152sc!1q0?
 %f+ 			rstate->s = NULL;
 			free\(copy\);
 		} else4??0?
-4??+3m 4220reg p OK treesitter.c:420:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK treesitter.c:462:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	}$5??0?
-5??-2m 4220reg p OK treesitter.c:420:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg treesitter.c:420:r2312sc %? %@2132sc!0?
+5??-2m 4220reg p OK treesitter.c:462:a52sc %? %@2152sc!fr 98fr 980?
+1;2;3;4;5??!219reg treesitter.c:462:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 	term_pos\(current - xtop, vi_lncol\);
@@ -2316,27 +2316,27 @@ static void led_preview_current\(char \*text, int ps, int lncol\)
 }
 
 2??0?
-2??m 5220reg p OK treesitter.c:423:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK treesitter.c:465:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	term_pos\(current - xtop, vi_lncol\);$3??0?
-3??m 5220reg p OK treesitter.c:423:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK treesitter.c:465:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	}$4??0?
-4??+1m 5220reg p OK treesitter.c:423:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 5220reg p OK treesitter.c:465:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	restore\(rstate\)
 }
 
 5??0?
-5??-1m 5220reg p OK treesitter.c:423:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:423:r2312sc %? %@2132sc!0?
-?'\''1s/lncol, xleft, xleft \+ xcols/curwin->x + lncol, xleft, xleft + curwin->w/1??1??1q'\''1s/(lncol, .*\+ )xcols/curwin->x + \1curwin->w/2??2??'\''1220reg p OK treesitter.c:397:s22sc %? %@2162sc!0?
-1;2??!219reg treesitter.c:397:r231:m12sc %? %@2142sc!0?
-'\''2s/xrows/curwin->h/??!219reg treesitter.c:405:r231:m22sc %? %@2142sc!0?
+5??-1m 5220reg p OK treesitter.c:465:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:465:r2312sc %? %@2132sc!0?
+?'\''1s/lncol, xleft, xleft \+ xcols/curwin->x + lncol, xleft, xleft + curwin->w/1??1??1q'\''1s/(lncol, .*\+ )xcols/curwin->x + \1curwin->w/2??2??'\''1220reg p OK treesitter.c:439:s22sc %? %@2162sc!0?
+1;2??!219reg treesitter.c:439:r231:m12sc %? %@2142sc!0?
+'\''2s/xrows/curwin->h/??!219reg treesitter.c:447:r231:m22sc %? %@2142sc!0?
 '\''3c 			led_srender(copy, curwin->y + row - xtop, curwin->x + vi_lncol, xleft, xleft + curwin->w - vi_lncol,
-??!219reg treesitter.c:415:r231:m32sc %? %@2142sc!0?
+??!219reg treesitter.c:457:r231:m32sc %? %@2142sc!0?
 '\''4,#+1c 			led_srender(line ? line : "~", curwin->y + row - xtop, curwin->x + vi_lncol, xleft,
 				xleft + curwin->w - vi_lncol, ts_preview, row, 0)
-??!219reg treesitter.c:420:r231:m42sc %? %@2142sc!0?
-?'\''5s/rent - xtop,/win->y + current - xtop, curwin->x +/1??1??1q'\''5s/(cu.*, )/curwin->y + \1curwin->x + /2??2??'\''5220reg p OK treesitter.c:423:s22sc %? %@2162sc!0?
-1;2??!219reg treesitter.c:423:r231:m52sc %? %@2142sc!0?
+??!219reg treesitter.c:462:r231:m42sc %? %@2142sc!0?
+?'\''5s/rent - xtop,/win->y + current - xtop, curwin->x +/1??1??1q'\''5s/(cu.*, )/curwin->y + \1curwin->x + /2??2??'\''5220reg p OK treesitter.c:465:s22sc %? %@2162sc!0?
+1;2??!219reg treesitter.c:465:r231:m52sc %? %@2142sc!0?
 p compat 231 applied: src=splits.sh' > "$P2VIF".231
 # Compat 232 src=linewrap_v2.sh
 printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
@@ -2352,18 +2352,18 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 			led_preview_draw\(ps\);
 	}
 	/\* XXX: O\(n\) insertion; recursive array data structure cannot be optimized\.2??0?
-2??m 1220reg p OK led.c:379:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK led.c:380:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^		if \(ts_preview_update\(ts_preview, sb->s\)\)$3??0?
-3??m 1220reg p OK led.c:379:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK led.c:380:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	sbuf_nul4\(sb\)
 	if \(ts_preview && poff == &xoff\) \{
 		led_preview_ps = ps;4??0?
-4??+3m 1220reg p OK led.c:379:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK led.c:380:a42sc %? %@2152sc!1q0?
 %f> 			led_preview_draw\(ps\);
 	}
 	/\* XXX: O\(n\) insertion; recursive array data structure cannot be optimized\.5??0?
-5??-1m 1220reg p OK led.c:379:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:379:r2322sc %? %@2132sc!0?
+5??-1m 1220reg p OK led.c:380:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:380:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 			term_room\(k\);
 			led_row \+= k;
@@ -2375,8 +2375,8 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 %f+ 			term_room\(k\);
 			led_row \+= k;
 		}4??0?
-4??+2m 2220reg p OK led.c:412:a42sc %? %@2152sc!0?
-1;4??!219reg led.c:412:r2322sc %? %@2132sc!0?
+4??+2m 2220reg p OK led.c:413:a42sc %? %@2152sc!0?
+1;4??!219reg led.c:413:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 				term_pos\(led_row \+ k, 0\);
 				term_kill\(\);
@@ -2390,18 +2390,18 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 		}
 		/\* the rows below shift with the edited line \*/
 		preserve\(ren_state\*, rstate, rstate = rstates;\)2??0?
-2??m 3220reg p OK led.c:418:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK led.c:419:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			led_crender\(r->s, led_row \+ k, lncol, k \* w, k \* w \+ w\);$3??0?
-3??m 3220reg p OK led.c:418:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK led.c:419:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				term_pos\(led_row \+ k, 0\);
 				term_kill\(\);
 			}4??0?
-4??+3m 3220reg p OK led.c:418:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK led.c:419:a42sc %? %@2152sc!1q0?
 %f+ 		}
 		/\* the rows below shift with the edited line \*/
 		preserve\(ren_state\*, rstate, rstate = rstates;\)5??0?
-5??-1m 3220reg p OK led.c:418:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:418:r2322sc %? %@2132sc!0?
+5??-1m 3220reg p OK led.c:419:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:419:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		/\* the rows below shift with the edited line \*/
@@ -2415,18 +2415,18 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 			trow \+= vi_drawline\(b, trow\);
 		restore\(rstate\)
 		term_pos\(led_row \+ pos / w, lncol \+ pos % w\);2??0?
-2??m 4220reg p OK led.c:422:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK led.c:423:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		for \(b = led_nextb, trow = led_row \+ led_rowh; trow < xrows; b\+\+\)$3??0?
-3??m 4220reg p OK led.c:422:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK led.c:423:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		}
 		/\* the rows below shift with the edited line \*/
 		preserve\(ren_state\*, rstate, rstate = rstates;\)4??0?
-4??+3m 4220reg p OK led.c:422:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK led.c:423:a42sc %? %@2152sc!1q0?
 %f+ 			trow \+= vi_drawline\(b, trow\);
 		restore\(rstate\)
 		term_pos\(led_row \+ pos / w, lncol \+ pos % w\);5??0?
-5??-1m 4220reg p OK led.c:422:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:422:r2322sc %? %@2132sc!0?
+5??-1m 4220reg p OK led.c:423:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:423:r2322sc %? %@2132sc!0?
 ?0?
 %f+ /\* redraw the buffer rows above the edited line \*/
 static void led_redrawlw\(int ctop, int crow\)
@@ -2438,24 +2438,24 @@ static void led_redrawlw\(int ctop, int crow\)
 %f+ /\* redraw the buffer rows above the edited line \*/
 static void led_redrawlw\(int ctop, int crow\)
 \{4??0?
-4??+2m 5220reg p OK led.c:503:a42sc %? %@2152sc!0?
-1;4??!219reg led.c:503:r2322sc %? %@2132sc!0?
-'\''1s/\)\)/) && !led_lw)/??!219reg led.c:379:r232:m12sc %? %@2142sc!0?
+4??+2m 5220reg p OK led.c:504:a42sc %? %@2152sc!0?
+1;4??!219reg led.c:504:r2322sc %? %@2132sc!0?
+'\''1s/\)\)/) && !led_lw)/??!219reg led.c:380:r232:m12sc %? %@2142sc!0?
 '\''2i 		if (ts_preview)
 			led_preview_draw(ps);
-??!219reg led.c:412:r232:m22sc %? %@2142sc!0?
+??!219reg led.c:413:r232:m22sc %? %@2142sc!0?
 '\''3c 			if (ts_preview)
 				led_srender(r->s, led_row + k, lncol, k * w, k * w + w,
 					ts_preview, ts_preview_row(ps), 0)
 			else
 				led_crender(r->s, led_row + k, lncol, k * w, k * w + w);
-??!219reg led.c:418:r232:m32sc %? %@2142sc!0?
-'\''4s/; t/; !ts_preview && t/??!219reg led.c:422:r232:m42sc %? %@2142sc!0?
+??!219reg led.c:419:r232:m32sc %? %@2142sc!0?
+'\''4s/; t/; !ts_preview && t/??!219reg led.c:423:r232:m42sc %? %@2142sc!0?
 '\''5i 	if (ts_preview) {
 		led_preview_draw(led_preview_ps);
 		return;
 	}
-??!219reg led.c:503:r232:m52sc %? %@2142sc!b7m!%ya 98?0?
+??!219reg led.c:504:r232:m52sc %? %@2142sc!b7m!%ya 98?0?
 %f> static int vi_rowbeg, vi_rowend;
 
 /\* render a line at terminal row trow; return the rows it occupies \*/
@@ -2545,19 +2545,19 @@ static int vi_rendrow\(char \*s, int trow, int lncol\)
 		preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 		preserve\(int, ftidx,\)
 		syn_setft\(nn_ft\);2??0?
-2??m 4220reg p OK vi.c:438:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.c:436:a22sc %? %@2152sc!1q0?
 %f+ 		led_srender\(s, row - xtop, l1, xleft, xleft \+ xcols - l1,
 			ts_document\(xb\), row - vi_rshift, 0\)3??0?
-3??m 4220reg p OK vi.c:438:a32sc %? %@2152sc!1q0?
+3??m 4220reg p OK vi.c:436:a32sc %? %@2152sc!1q0?
 %f+ 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
 		memset\(c, '\'' '\'', l1 - \(c - tmp\)\);
 		c\[l1 - \(c - tmp\)] = '\''\\0'\'';4??0?
-4??+3m 4220reg p OK vi.c:438:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK vi.c:436:a42sc %? %@2152sc!1q0?
 %f+ 		preserve\(int, syn_blockhl, syn_blockhl = -1;\)
 		preserve\(int, ftidx,\)
 		syn_setft\(nn_ft\);5??0?
-5??-2m 4220reg p OK vi.c:438:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:438:r2322sc %? %@2132sc!0?
+5??-2m 4220reg p OK vi.c:436:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:436:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 		restore\(ftidx\)
 		goto done;
@@ -2571,18 +2571,18 @@ static int vi_rendrow\(char \*s, int trow, int lncol\)
 	rstate = rstates;
 	done:
 	if \(lwx\)			/\* the markers only apply to this line \*/2??0?
-2??m 5220reg p OK vi.c:461:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK vi.c:459:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	i = vi_rendrow\(s, trow, 0\);$3??0?
-3??m 5220reg p OK vi.c:461:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK vi.c:459:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		restore\(ftidx\)
 		goto done;
 	}4??0?
-4??+3m 5220reg p OK vi.c:461:a42sc %? %@2152sc!1q0?
+4??+3m 5220reg p OK vi.c:459:a42sc %? %@2152sc!1q0?
 %f+ 	rstate = rstates;
 	done:
 	if \(lwx\)			/\* the markers only apply to this line \*/5??0?
-5??-1m 5220reg p OK vi.c:461:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:461:r2322sc %? %@2132sc!0?
+5??-1m 5220reg p OK vi.c:459:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:459:r2322sc %? %@2132sc!0?
 '\''1s/l\)/l, int source_row)/??!219reg vi.c:330:r232:m12sc %? %@2142sc!0?
 '\''2c 		led_srender(s, trow, lncol, xleft, xleft + xcols - lncol,
 			ts_document(xb), source_row, 0)
@@ -2591,8 +2591,8 @@ static int vi_rendrow\(char \*s, int trow, int lncol\)
 			ts_document(xb), source_row, 0)
 ??!219reg vi.c:348:r232:m32sc %? %@2142sc!0?
 '\''4,#+1c 		i = vi_rendrow(s, trow, l1, row - vi_rshift);
-??!219reg vi.c:438:r232:m42sc %? %@2142sc!0?
-'\''5s/0\)/0, row - vi_rshift)/??!219reg vi.c:461:r232:m52sc %? %@2142sc!b8m!%ya 98?0?
+??!219reg vi.c:436:r232:m42sc %? %@2142sc!0?
+'\''5s/0\)/0, row - vi_rshift)/??!219reg vi.c:459:r232:m52sc %? %@2142sc!b8m!%ya 98?0?
 %f> extern struct ts_state \*ts_preview;
 extern int ts_redraw;
 static void led_preview_current\(char \*text, int ps, int lncol\);
@@ -2603,14 +2603,14 @@ static void led_preview_current\(char \*text, int ps, int lncol\);
 %f> extern struct ts_state \*ts_preview;
 extern int ts_redraw;
 static void led_preview_current\(char \*text, int ps, int lncol\);4??0?
-4??+2m 1220reg p OK vi.h:433:a42sc %? %@2152sc!0?
-1;4??!219reg vi.h:433:r2322sc %? %@2132sc!0?
+4??+2m 1220reg p OK vi.h:432:a42sc %? %@2152sc!0?
+1;4??!219reg vi.h:432:r2322sc %? %@2132sc!0?
 '\''1i static int ts_preview_row(int ps);
 #define ts_winy 0
 #define ts_winx 0
 #define ts_winh xrows
 #define ts_winw xcols
-??!219reg vi.h:433:r232:m12sc %? %@2142sc!b6m!%ya 98?0?
+??!219reg vi.h:432:r232:m12sc %? %@2142sc!b6m!%ya 98?0?
 %f> 		ts_preview, ts_preview_row\(ps\), 0\)
 }
 
@@ -2622,8 +2622,8 @@ static void led_preview_draw\(int ps\)
 }
 
 4??0?
-4??+2m 1220reg p OK treesitter.c:400:a42sc %? %@2152sc!0?
-1;4??!219reg treesitter.c:400:r2322sc %? %@2132sc!0?
+4??+2m 1220reg p OK treesitter.c:442:a42sc %? %@2152sc!0?
+1;4??!219reg treesitter.c:442:r2322sc %? %@2132sc!0?
 ?0?
 %f+ static void led_preview_draw\(int ps\)
 \{
@@ -2635,8 +2635,8 @@ static void led_preview_draw\(int ps\)
 %f+ static void led_preview_draw\(int ps\)
 \{
 	int current = ts_preview_row\(ps\);4??0?
-4??+2m 2220reg p OK treesitter.c:403:a42sc %? %@2152sc!0?
-1;4??!219reg treesitter.c:403:r2322sc %? %@2132sc!0?
+4??+2m 2220reg p OK treesitter.c:445:a42sc %? %@2152sc!0?
+1;4??!219reg treesitter.c:445:r2322sc %? %@2132sc!0?
 '\''1i /* Preview rows use the same wrap width and character positions as buffer rows. */
 static int led_preview_height(int row, int trow, int paint)
 {
@@ -2669,12 +2669,12 @@ static void led_preview_wrapped(int current)
 	restore(rstate)
 }
 
-??!219reg treesitter.c:400:r232:m12sc %? %@2142sc!0?
+??!219reg treesitter.c:442:r232:m12sc %? %@2142sc!0?
 '\''2i 	if (led_lw) {
 		led_preview_wrapped(current);
 		return;
 	}
-??!219reg treesitter.c:403:r232:m22sc %? %@2142sc!p compat 232 applied: src=linewrap_v2.sh' > "$P2VIF".232
+??!219reg treesitter.c:445:r232:m22sc %? %@2142sc!p compat 232 applied: src=linewrap_v2.sh' > "$P2VIF".232
 # Compat 233 src=linewrap_v1.sh
 printf '%s\n' '2sc!fr 98b3m!%ya 98?0?
 %f> 	if \(lbuf_s\(lo->del\[lo->n_del - 1]\)->lwrap\) \{
@@ -2794,10 +2794,10 @@ struct ts_state \*ts_preview_begin\(struct lbuf \*lb, int beg, int end\);1??
 %f> void ts_done\(void\);
 void ts_free\(struct ts_state \*s\);
 void ts_forget\(struct lbuf \*lb\);4??0?
-4??+2m 1220reg p OK vi.h:430:a42sc %? %@2152sc!0?
-1;4??!219reg vi.h:430:r2332sc %? %@2132sc!0?
+4??+2m 1220reg p OK vi.h:429:a42sc %? %@2152sc!0?
+1;4??!219reg vi.h:429:r2332sc %? %@2132sc!0?
 '\''1i void ts_soft(struct lbuf *lb, int row, int wrap);
-??!219reg vi.h:430:r233:m12sc %? %@2142sc!b6m!%ya 98?0?
+??!219reg vi.h:429:r233:m12sc %? %@2142sc!b6m!%ya 98?0?
 %f> 	TSParser \*parser;
 	TSTree \*tree;
 	uint32_t \*offset;
@@ -2819,16 +2819,16 @@ void ts_forget\(struct lbuf \*lb\);4??0?
 1??+3m 21q0?
 %f+ 	char \*line = ts_line\(s, point\.row\);
 	\*size = 0;2??0?
-2??m 2220reg p OK treesitter.c:91:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK treesitter.c:92:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	char \*line = ts_line\(s, point\.row\);$3??0?
-3??m 2220reg p OK treesitter.c:91:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK treesitter.c:92:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ static const char \*ts_read\(void \*payload, uint32_t byte, TSPoint point, uint32_t \*size\)
 \{
 	struct ts_state \*s = payload;4??0?
-4??+3m 2220reg p OK treesitter.c:91:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK treesitter.c:92:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	\*size = 0;$5??0?
-5??-1m 2220reg p OK treesitter.c:91:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg treesitter.c:91:r2332sc %? %@2132sc!0?
+5??-1m 2220reg p OK treesitter.c:92:a52sc %? %@2152sc!fr 98fr 980?
+1;2;3;4;5??!219reg treesitter.c:92:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	\*size = 0;
 	if \(!line \|\| point\.column >= s->offset\[point\.row \+ 1] - s->offset\[point\.row]\)
@@ -2836,14 +2836,14 @@ void ts_forget\(struct lbuf \*lb\);4??0?
 1??+1m 31q0?
 %f+ 	if \(!line \|\| point\.column >= s->offset\[point\.row \+ 1] - s->offset\[point\.row]\)
 		return "";2??0?
-2??m 3220reg p OK treesitter.c:93:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK treesitter.c:94:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(!line \|\| point\.column >= s->offset\[point\.row \+ 1] - s->offset\[point\.row]\)$3??0?
-3??m 3220reg p OK treesitter.c:93:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK treesitter.c:94:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	\*size = 0;$4??0?
-4??+1m 3220reg p OK treesitter.c:93:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 3220reg p OK treesitter.c:94:a42sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^		return "";$5??0?
-5??-1m 3220reg p OK treesitter.c:93:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg treesitter.c:93:r2332sc %? %@2132sc!0?
+5??-1m 3220reg p OK treesitter.c:94:a52sc %? %@2152sc!fr 98fr 980?
+1;2;3;4;5??!219reg treesitter.c:94:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 		return "";
 	uint32_t len = s->offset\[point\.row \+ 1] - s->offset\[point\.row];
@@ -2857,17 +2857,17 @@ void ts_forget\(struct lbuf \*lb\);4??0?
 	for \(int i = 0; i < 2; i\+\+\) \{
 		ren_state \*r = rstates \+ i;
 		if \(r->s == line && r->holelen\) \{2??0?
-2??m 4220reg p OK treesitter.c:95:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK treesitter.c:96:a22sc %? %@2152sc!1q0?
 %f+ 	uint32_t len = s->offset\[point\.row \+ 1] - s->offset\[point\.row];
 	/\* Slot 1 may temporarily hide bytes beyond lim\. \*/3??0?
-3??m 4220reg p OK treesitter.c:95:a32sc %? %@2152sc!1q0?
+3??m 4220reg p OK treesitter.c:96:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		return "";$4??0?
-4??+1m 4220reg p OK treesitter.c:95:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 4220reg p OK treesitter.c:96:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	for \(int i = 0; i < 2; i\+\+\) \{
 		ren_state \*r = rstates \+ i;
 		if \(r->s == line && r->holelen\) \{5??0?
-5??-2m 4220reg p OK treesitter.c:95:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:95:r2332sc %? %@2132sc!0?
+5??-2m 4220reg p OK treesitter.c:96:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:96:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	for \(int i = 0; i < 2; i\+\+\) \{
 		ren_state \*r = rstates \+ i;
@@ -2881,18 +2881,18 @@ void ts_forget\(struct lbuf \*lb\);4??0?
 			memcpy\(s->readbuf, line, len\);
 			memcpy\(s->readbuf \+ \(r->chrs\[r->n] - line\), r->nulhole, r->holelen\);
 			line = s->readbuf;2??0?
-2??m 5220reg p OK treesitter.c:100:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK treesitter.c:101:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			s->readbuf = erealloc\(s->readbuf, len\);$3??0?
-3??m 5220reg p OK treesitter.c:100:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK treesitter.c:101:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	for \(int i = 0; i < 2; i\+\+\) \{
 		ren_state \*r = rstates \+ i;
 		if \(r->s == line && r->holelen\) \{4??0?
-4??+3m 5220reg p OK treesitter.c:100:a42sc %? %@2152sc!1q0?
+4??+3m 5220reg p OK treesitter.c:101:a42sc %? %@2152sc!1q0?
 %f+ 			memcpy\(s->readbuf, line, len\);
 			memcpy\(s->readbuf \+ \(r->chrs\[r->n] - line\), r->nulhole, r->holelen\);
 			line = s->readbuf;5??0?
-5??-1m 5220reg p OK treesitter.c:100:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:100:r2332sc %? %@2132sc!0?
+5??-1m 5220reg p OK treesitter.c:101:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:101:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 			break;
 		}
@@ -2908,19 +2908,19 @@ static int ts_parse\(struct ts_state \*s\)1??0?
 }
 
 static int ts_parse\(struct ts_state \*s\)2??0?
-2??m 6220reg p OK treesitter.c:107:a22sc %? %@2152sc!1q0?
+2??m 6220reg p OK treesitter.c:108:a22sc %? %@2152sc!1q0?
 %f+ 	\*size = len - point\.column;
 	return line \+ point\.column;3??0?
-3??m 6220reg p OK treesitter.c:107:a32sc %? %@2152sc!1q0?
+3??m 6220reg p OK treesitter.c:108:a32sc %? %@2152sc!1q0?
 %f+ 			break;
 		}
 	}4??0?
-4??+3m 6220reg p OK treesitter.c:107:a42sc %? %@2152sc!1q0?
+4??+3m 6220reg p OK treesitter.c:108:a42sc %? %@2152sc!1q0?
 %f+ }
 
 static int ts_parse\(struct ts_state \*s\)5??0?
-5??-2m 6220reg p OK treesitter.c:107:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:107:r2332sc %? %@2132sc!0?
+5??-2m 6220reg p OK treesitter.c:108:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:108:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	s->rows = lb->ln_n;
 	s->offset = emalloc\(\(s->rows \+ 1\) \* sizeof\(\*s->offset\)\);
@@ -2936,19 +2936,19 @@ static int ts_parse\(struct ts_state \*s\)5??0?
 	s->next = ts_states;
 	ts_states = s;
 	return s;2??0?
-2??m 7220reg p OK treesitter.c:139:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK treesitter.c:140:a22sc %? %@2152sc!1q0?
 %f+ 	for \(int i = 0; i < s->rows; i\+\+\)
 		s->offset\[i \+ 1] = s->offset\[i] \+ lbuf_s\(lb->ln\[i]\)->len \+ 1;3??0?
-3??m 7220reg p OK treesitter.c:139:a32sc %? %@2152sc!1q0?
+3??m 7220reg p OK treesitter.c:140:a32sc %? %@2152sc!1q0?
 %f+ 	s->rows = lb->ln_n;
 	s->offset = emalloc\(\(s->rows \+ 1\) \* sizeof\(\*s->offset\)\);
 	s->offset\[0] = 0;4??0?
-4??+3m 7220reg p OK treesitter.c:139:a42sc %? %@2152sc!1q0?
+4??+3m 7220reg p OK treesitter.c:140:a42sc %? %@2152sc!1q0?
 %f+ 	s->next = ts_states;
 	ts_states = s;
 	return s;5??0?
-5??-2m 7220reg p OK treesitter.c:139:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:139:r2332sc %? %@2132sc!0?
+5??-2m 7220reg p OK treesitter.c:140:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:140:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	free\(s->pending\);
 	free\(s->lines\);
@@ -2961,8 +2961,8 @@ static int ts_parse\(struct ts_state \*s\)5??0?
 %f+ 	free\(s->pending\);
 	free\(s->lines\);
 	free\(s->readbuf\);4??0?
-4??+2m 8220reg p OK treesitter.c:171:a42sc %? %@2152sc!0?
-1;4??!219reg treesitter.c:171:r2332sc %? %@2132sc!0?
+4??+2m 8220reg p OK treesitter.c:172:a42sc %? %@2152sc!0?
+1;4??!219reg treesitter.c:172:r2332sc %? %@2132sc!0?
 ?0?
 %f+ }
 
@@ -2976,18 +2976,18 @@ static void ts_splice\(struct ts_state \*s, int row, int del, uint32_t \*lengths
 \{
 	uint32_t added = 0, start = s->offset\[row], oldend = s->offset\[row \+ del];
 	for \(int i = 0; i < ins; i\+\+\)2??0?
-2??m 9220reg p OK treesitter.c:202:a22sc %? %@2152sc!1q0?
+2??m 9220reg p OK treesitter.c:203:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^static void ts_splice\(struct ts_state \*s, int row, int del, uint32_t \*lengths, int ins\)$3??0?
-3??m 9220reg p OK treesitter.c:202:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 9220reg p OK treesitter.c:203:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ }
 
 /\* Update the old tree and index before the line array moves\. \*/4??0?
-4??+3m 9220reg p OK treesitter.c:202:a42sc %? %@2152sc!1q0?
+4??+3m 9220reg p OK treesitter.c:203:a42sc %? %@2152sc!1q0?
 %f+ \{
 	uint32_t added = 0, start = s->offset\[row], oldend = s->offset\[row \+ del];
 	for \(int i = 0; i < ins; i\+\+\)5??0?
-5??-1m 9220reg p OK treesitter.c:202:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:202:r2332sc %? %@2132sc!0?
+5??-1m 9220reg p OK treesitter.c:203:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:203:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	uint32_t added = 0, start = s->offset\[row], oldend = s->offset\[row \+ del];
 	for \(int i = 0; i < ins; i\+\+\)
@@ -2997,8 +2997,8 @@ static void ts_splice\(struct ts_state \*s, int row, int del, uint32_t \*lengths
 %f+ 	uint32_t added = 0, start = s->offset\[row], oldend = s->offset\[row \+ del];
 	for \(int i = 0; i < ins; i\+\+\)
 		added \+= lengths\[i];4??0?
-4??+2m 10220reg p OK treesitter.c:206:a42sc %? %@2152sc!0?
-1;4??!219reg treesitter.c:206:r2332sc %? %@2132sc!0?
+4??+2m 10220reg p OK treesitter.c:207:a42sc %? %@2152sc!0?
+1;4??!219reg treesitter.c:207:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	TSInputEdit edit = \{start, oldend, start \+ added,
 		\{row, 0}, \{row \+ del, 0}, \{row \+ ins, 0}};
@@ -3010,16 +3010,16 @@ static void ts_splice\(struct ts_state \*s, int row, int del, uint32_t \*lengths
 	if \(s->tree\)
 		ts_tree_edit\(s->tree, &edit\);
 	int rows = s->rows \+ ins - del;2??0?
-2??m 11220reg p OK treesitter.c:208:a22sc %? %@2152sc!1q0?
+2??m 11220reg p OK treesitter.c:209:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		\{row, 0}, \{row \+ del, 0}, \{row \+ ins, 0}};$3??0?
-3??m 11220reg p OK treesitter.c:208:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 11220reg p OK treesitter.c:209:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^	TSInputEdit edit = \{start, oldend, start \+ added,$4??0?
-4??+1m 11220reg p OK treesitter.c:208:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 11220reg p OK treesitter.c:209:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	if \(s->tree\)
 		ts_tree_edit\(s->tree, &edit\);
 	int rows = s->rows \+ ins - del;5??0?
-5??-1m 11220reg p OK treesitter.c:208:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:208:r2332sc %? %@2132sc!0?
+5??-1m 11220reg p OK treesitter.c:209:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:209:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 		index\[row \+ i \+ 1] = index\[row \+ i] \+ lengths\[i];
 	for \(int i = row \+ del \+ 1; i <= s->rows; i\+\+\)
@@ -3031,8 +3031,8 @@ static void ts_splice\(struct ts_state \*s, int row, int del, uint32_t \*lengths
 %f+ 		index\[row \+ i \+ 1] = index\[row \+ i] \+ lengths\[i];
 	for \(int i = row \+ del \+ 1; i <= s->rows; i\+\+\)
 		index\[i \+ ins - del] = s->offset\[i] - oldend \+ start \+ added;4??0?
-4??+2m 12220reg p OK treesitter.c:217:a42sc %? %@2152sc!0?
-1;4??!219reg treesitter.c:217:r2332sc %? %@2132sc!0?
+4??+2m 12220reg p OK treesitter.c:218:a42sc %? %@2152sc!0?
+1;4??!219reg treesitter.c:218:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	if \(!lb->ts\)
 		return;
@@ -3050,20 +3050,20 @@ static void ts_splice\(struct ts_state \*s, int row, int del, uint32_t \*lengths
 	lb->ts->revision = lb->ts_revision;
 	free\(lengths\);
 }2??0?
-2??m 13220reg p OK treesitter.c:233:a22sc %? %@2152sc!1q0?
+2??m 13220reg p OK treesitter.c:234:a22sc %? %@2152sc!1q0?
 %f+ 	for \(int i = 0; i < ins; i\+\+\)
 		lengths\[i] = lbuf_s\(lines\[i]\)->len \+ 1;
 	ts_splice\(lb->ts, row, del, lengths, ins\);3??0?
-3??m 13220reg p OK treesitter.c:233:a32sc %? %@2152sc!1q0?
+3??m 13220reg p OK treesitter.c:234:a32sc %? %@2152sc!1q0?
 %f+ 	if \(!lb->ts\)
 		return;
 	uint32_t \*lengths = emalloc\(MAX\(1, ins\) \* sizeof\(\*lengths\)\);4??0?
-4??+3m 13220reg p OK treesitter.c:233:a42sc %? %@2152sc!1q0?
+4??+3m 13220reg p OK treesitter.c:234:a42sc %? %@2152sc!1q0?
 %f+ 	lb->ts->revision = lb->ts_revision;
 	free\(lengths\);
 }5??0?
-5??-3m 13220reg p OK treesitter.c:233:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:233:r2332sc %? %@2132sc!0?
+5??-3m 13220reg p OK treesitter.c:234:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:234:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	free\(lengths\);
 }
@@ -3076,8 +3076,8 @@ struct ts_state \*ts_preview_begin\(struct lbuf \*lb, int beg, int end\)
 }
 
 4??0?
-4??+2m 14220reg p OK treesitter.c:239:a42sc %? %@2152sc!0?
-1;4??!219reg treesitter.c:239:r2332sc %? %@2132sc!0?
+4??+2m 14220reg p OK treesitter.c:240:a42sc %? %@2152sc!0?
+1;4??!219reg treesitter.c:240:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 		s->rows = s->lb->ln_n;
 		s->offset = erealloc\(s->offset, \(s->rows \+ 1\) \* sizeof\(\*s->offset\)\);
@@ -3089,17 +3089,17 @@ struct ts_state \*ts_preview_begin\(struct lbuf \*lb, int beg, int end\)
 %f+ 		for \(int i = 0; i < s->rows; i\+\+\)
 			s->offset\[i \+ 1] = s->offset\[i] \+ lbuf_s\(s->lb->ln\[i]\)->len \+ 1;
 	}2??0?
-2??m 15220reg p OK treesitter.c:273:a22sc %? %@2152sc!1q0?
+2??m 15220reg p OK treesitter.c:274:a22sc %? %@2152sc!1q0?
 %f+ 		for \(int i = 0; i < s->rows; i\+\+\)
 			s->offset\[i \+ 1] = s->offset\[i] \+ lbuf_s\(s->lb->ln\[i]\)->len \+ 1;3??0?
-3??m 15220reg p OK treesitter.c:273:a32sc %? %@2152sc!1q0?
+3??m 15220reg p OK treesitter.c:274:a32sc %? %@2152sc!1q0?
 %f+ 		s->rows = s->lb->ln_n;
 		s->offset = erealloc\(s->offset, \(s->rows \+ 1\) \* sizeof\(\*s->offset\)\);
 		s->offset\[0] = 0;4??0?
-4??+3m 15220reg p OK treesitter.c:273:a42sc %? %@2152sc!1q0?
+4??+3m 15220reg p OK treesitter.c:274:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	}$5??0?
-5??-2m 15220reg p OK treesitter.c:273:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg treesitter.c:273:r2332sc %? %@2132sc!0?
+5??-2m 15220reg p OK treesitter.c:274:a52sc %? %@2152sc!fr 98fr 980?
+1;2;3;4;5??!219reg treesitter.c:274:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 	if \(s->preview && !memcmp\(s->pending, copy, MIN\(len \+ 1,
@@ -3115,18 +3115,18 @@ struct ts_state \*ts_preview_begin\(struct lbuf \*lb, int beg, int end\)
 		free\(copy\);
 		return 0;
 	}2??0?
-2??m 16220reg p OK treesitter.c:276:a22sc %? %@2152sc!1q0?
+2??m 16220reg p OK treesitter.c:277:a22sc %? %@2152sc!1q0?
 %f+ 	if \(s->preview && !memcmp\(s->pending, copy, MIN\(len \+ 1,
 		\(int\)\(s->offset\[s->beg \+ s->pending_n] - s->offset\[s->beg]\) \+ 1\)\) &&
 		\(uint32_t\)len == s->offset\[s->beg \+ s->pending_n] - s->offset\[s->beg]\) \{3??0?
-3??m 16220reg p OK treesitter.c:276:a32sc %? %@2152sc!1q0?
+3??m 16220reg p OK treesitter.c:277:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	}$4??0?
-4??+1m 16220reg p OK treesitter.c:276:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 16220reg p OK treesitter.c:277:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 		free\(copy\);
 		return 0;
 	}5??0?
-5??-3m 16220reg p OK treesitter.c:276:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:276:r2332sc %? %@2132sc!0?
+5??-3m 16220reg p OK treesitter.c:277:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:277:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 			lengths\[row\+\+] = i \+ 1 - start;
 			start = i \+ 1;
@@ -3138,8 +3138,8 @@ struct ts_state \*ts_preview_begin\(struct lbuf \*lb, int beg, int end\)
 %f+ 			lengths\[row\+\+] = i \+ 1 - start;
 			start = i \+ 1;
 		}4??0?
-4??+2m 17220reg p OK treesitter.c:292:a42sc %? %@2152sc!0?
-1;4??!219reg treesitter.c:292:r2332sc %? %@2132sc!0?
+4??+2m 17220reg p OK treesitter.c:293:a42sc %? %@2152sc!0?
+1;4??!219reg treesitter.c:293:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 		!memcmp\(lines\[count - last - 1], ts_line\(s, s->beg \+ oldcount - last - 1\), lengths\[count - last - 1]\)\)
 		last\+\+;
@@ -3153,18 +3153,18 @@ struct ts_state \*ts_preview_begin\(struct lbuf \*lb, int beg, int end\)
 	free\(lengths\);
 	free\(s->pending\);
 	free\(s->lines\);2??0?
-2??m 18220reg p OK treesitter.c:305:a22sc %? %@2152sc!1q0?
+2??m 18220reg p OK treesitter.c:306:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		lengths \+ first, count - first - last\);$3??0?
-3??m 18220reg p OK treesitter.c:305:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 18220reg p OK treesitter.c:306:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		!memcmp\(lines\[count - last - 1], ts_line\(s, s->beg \+ oldcount - last - 1\), lengths\[count - last - 1]\)\)
 		last\+\+;
 	ts_splice\(s, s->beg \+ first, oldcount - first - last,4??0?
-4??+3m 18220reg p OK treesitter.c:305:a42sc %? %@2152sc!1q0?
+4??+3m 18220reg p OK treesitter.c:306:a42sc %? %@2152sc!1q0?
 %f+ 	free\(lengths\);
 	free\(s->pending\);
 	free\(s->lines\);5??0?
-5??-1m 18220reg p OK treesitter.c:305:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg treesitter.c:305:r2332sc %? %@2132sc!0?
+5??-1m 18220reg p OK treesitter.c:306:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg treesitter.c:306:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 		return;
 	s->cache_beg = row / 64 \* 64;
@@ -3176,8 +3176,8 @@ struct ts_state \*ts_preview_begin\(struct lbuf \*lb, int beg, int end\)
 %f+ 		return;
 	s->cache_beg = row / 64 \* 64;
 	s->cache_end = MIN\(s->rows, s->cache_beg \+ 64\);4??0?
-4??+2m 19220reg p OK treesitter.c:329:a42sc %? %@2152sc!0?
-1;4??!219reg treesitter.c:329:r2332sc %? %@2132sc!0?
+4??+2m 19220reg p OK treesitter.c:330:a42sc %? %@2152sc!0?
+1;4??!219reg treesitter.c:330:r2332sc %? %@2132sc!0?
 '\''1i 	unsigned char *breaks;
 ??!219reg treesitter.c:12:r233:m12sc %? %@2142sc!0?
 '\''2c 	int lo = 0, hi = s->rows;
@@ -3188,13 +3188,13 @@ struct ts_state \*ts_preview_begin\(struct lbuf \*lb, int beg, int end\)
 		else
 			hi = mid;
 	}
-??!219reg treesitter.c:91:r233:m22sc %? %@2142sc!0?
+??!219reg treesitter.c:92:r233:m22sc %? %@2142sc!0?
 '\''3c 	char *line = ts_line(s, lo);
 	if (!line)
-??!219reg treesitter.c:93:r233:m32sc %? %@2142sc!0?
+??!219reg treesitter.c:94:r233:m32sc %? %@2142sc!0?
 '\''4,#+1c 	uint32_t len = s->offset[lo + 1] - s->offset[lo];
-??!219reg treesitter.c:95:r233:m42sc %? %@2142sc!0?
-'\''5s/n\)/n + 4)/??!219reg treesitter.c:100:r233:m52sc %? %@2142sc!0?
+??!219reg treesitter.c:96:r233:m42sc %? %@2142sc!0?
+'\''5s/n\)/n + 4)/??!219reg treesitter.c:101:r233:m52sc %? %@2142sc!0?
 '\''6,#+1c 	*size = s->offset[lo + 1] - byte;
 	return line + byte - s->offset[lo];
 }
@@ -3209,16 +3209,16 @@ static TSPoint ts_point(struct ts_state *s, int row)
 		} else
 			point.column += s->offset[i + 1] - s->offset[i];
 	return point;
-??!219reg treesitter.c:107:r233:m62sc %? %@2142sc!0?
+??!219reg treesitter.c:108:r233:m62sc %? %@2142sc!0?
 '\''7,#+1c 	s->breaks = emalloc(MAX(1, s->rows));
 	for (int i = 0; i < s->rows; i++) {
 		s->offset[i + 1] = s->offset[i] + lbuf_nl(lb->ln[i]);
 		s->breaks[i] = !lbuf_s(lb->ln[i])->lwrap;
 	}
-??!219reg treesitter.c:139:r233:m72sc %? %@2142sc!0?
+??!219reg treesitter.c:140:r233:m72sc %? %@2142sc!0?
 '\''8i 	free(s->breaks);
-??!219reg treesitter.c:171:r233:m82sc %? %@2142sc!0?
-'\''9s/s\)/s, unsigned char *breaks)/??!219reg treesitter.c:202:r233:m92sc %? %@2142sc!0?
+??!219reg treesitter.c:172:r233:m82sc %? %@2142sc!0?
+'\''9s/s\)/s, unsigned char *breaks)/??!219reg treesitter.c:203:r233:m92sc %? %@2142sc!0?
 '\''10i 	TSPoint begin = ts_point(s, row), end = begin;
 	for (int i = 0; i < ins; i++)
 		if (breaks[i]) {
@@ -3226,16 +3226,16 @@ static TSPoint ts_point(struct ts_state *s, int row)
 			end.column = 0;
 		} else
 			end.column += lengths[i];
-??!219reg treesitter.c:206:r233:m102sc %? %@2142sc!0?
+??!219reg treesitter.c:207:r233:m102sc %? %@2142sc!0?
 '\''11c 		begin, ts_point(s, row + del), end};
-??!219reg treesitter.c:208:r233:m112sc %? %@2142sc!0?
+??!219reg treesitter.c:209:r233:m112sc %? %@2142sc!0?
 '\''12i 	unsigned char *newbreaks = emalloc(MAX(1, rows));
 	memcpy(newbreaks, s->breaks, row);
 	memcpy(newbreaks + row, breaks, ins);
 	memcpy(newbreaks + row + ins, s->breaks + row + del, s->rows - row - del);
 	free(s->breaks);
 	s->breaks = newbreaks;
-??!219reg treesitter.c:217:r233:m122sc %? %@2142sc!0?
+??!219reg treesitter.c:218:r233:m122sc %? %@2142sc!0?
 '\''13,#+2c 	unsigned char *breaks = emalloc(MAX(1, ins));
 	for (int i = 0; i < ins; i++) {
 		lengths[i] = lbuf_nl(lines[i]);
@@ -3243,7 +3243,7 @@ static TSPoint ts_point(struct ts_state *s, int row)
 	}
 	ts_splice(lb->ts, row, del, lengths, ins, breaks);
 	free(breaks);
-??!219reg treesitter.c:233:r233:m132sc %? %@2142sc!0?
+??!219reg treesitter.c:234:r233:m132sc %? %@2142sc!0?
 '\''14i /* Soft wrap flags can change after the line replacement. */
 void ts_soft(struct lbuf *lb, int row, int wrap)
 {
@@ -3259,30 +3259,30 @@ void ts_soft(struct lbuf *lb, int row, int wrap)
 	ts_redraw = 1;
 }
 
-??!219reg treesitter.c:239:r233:m142sc %? %@2142sc!0?
+??!219reg treesitter.c:240:r233:m142sc %? %@2142sc!0?
 '\''15,#+1c 		s->breaks = erealloc(s->breaks, MAX(1, s->rows));
 		for (int i = 0; i < s->rows; i++) {
 			s->offset[i + 1] = s->offset[i] + lbuf_nl(s->lb->ln[i]);
 			s->breaks[i] = !lbuf_s(s->lb->ln[i])->lwrap;
 		}
-??!219reg treesitter.c:273:r233:m152sc %? %@2142sc!0?
+??!219reg treesitter.c:274:r233:m152sc %? %@2142sc!0?
 '\''16,#+2c 	if (s->preview && !strcmp(s->pending, copy)) {
-??!219reg treesitter.c:276:r233:m162sc %? %@2142sc!0?
+??!219reg treesitter.c:277:r233:m162sc %? %@2142sc!0?
 '\''17i 	unsigned char *breaks = emalloc(count);
 	memset(breaks, 1, count);
 	if (s->end > s->beg && lbuf_i(s->lb, s->end - 1)->lwrap) {
 		breaks[count - 1] = 0;
 		lengths[count - 1]--;
 	}
-??!219reg treesitter.c:292:r233:m172sc %? %@2142sc!0?
+??!219reg treesitter.c:293:r233:m172sc %? %@2142sc!0?
 '\''18c 		lengths + first, count - first - last, breaks + first);
 	free(breaks);
-??!219reg treesitter.c:305:r233:m182sc %? %@2142sc!0?
+??!219reg treesitter.c:306:r233:m182sc %? %@2142sc!0?
 '\''19i 	while (s->cache_beg && !s->breaks[s->cache_beg - 1])
 		s->cache_beg--;
 	while (s->cache_end < s->rows && !s->breaks[s->cache_end - 1])
 		s->cache_end++;
-??!219reg treesitter.c:329:r233:m192sc %? %@2142sc!p compat 233 applied: src=linewrap_v1.sh' > "$P2VIF".233
+??!219reg treesitter.c:330:r233:m192sc %? %@2142sc!p compat 233 applied: src=linewrap_v1.sh' > "$P2VIF".233
 # Compat 234 src=splits.sh src=linewrap_v2.sh
 printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 %f> 	return r - s;
@@ -3301,22 +3301,22 @@ static void led_preview_draw\(int ps\);
 static int led_lastword\(char \*s\)
 \{
 	char \*r = \*s \? uc_beg\(s, strchr\(s, '\''\\0'\''\) - 1\) : s;2??0?
-2??m 1220reg p OK led.c:346:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK led.c:347:a22sc %? %@2152sc!1q0?
 %f> static int led_preview_ps;
 static void led_preview_draw\(int ps\);
 
 3??0?
-3??m 1220reg p OK led.c:346:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK led.c:347:a32sc %? %@2152sc!1q0?
 %f> 	return r - s;
 }
 
 4??0?
-4??+3m 1220reg p OK led.c:346:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK led.c:347:a42sc %? %@2152sc!1q0?
 %f> static int led_lastword\(char \*s\)
 \{
 	char \*r = \*s \? uc_beg\(s, strchr\(s, '\''\\0'\''\) - 1\) : s;5??0?
-5??-3m 1220reg p OK led.c:346:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:346:r2342sc %? %@2132sc!0?
+5??-3m 1220reg p OK led.c:347:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:347:r2342sc %? %@2132sc!0?
 ?0?
 %f+ static int led_rowh = 1;	/\* the rows the edited line occupies \*/
 static int led_nextb;		/\* the buffer line drawn below the edited line \*/
@@ -3329,8 +3329,8 @@ static void led_printparts\(sbuf \*sb, int pre, int ps,
 static int led_nextb;		/\* the buffer line drawn below the edited line \*/
 
 4??0?
-4??+2m 2220reg p OK led.c:365:a42sc %? %@2152sc!0?
-1;4??!219reg led.c:365:r2342sc %? %@2132sc!0?
+4??+2m 2220reg p OK led.c:366:a42sc %? %@2152sc!0?
+1;4??!219reg led.c:366:r2342sc %? %@2132sc!0?
 ?0?
 %f+ 				term_pos\(winy \+ led_row \+ k, winx\);
 				term_killw\(winw\);
@@ -3340,16 +3340,16 @@ static int led_nextb;		/\* the buffer line drawn below the edited line \*/
 1??+3m 31q0?
 %f+ 			led_crender\(r->s, winy \+ led_row \+ k, winx \+ lncol,
 			if \(ts_preview\)2??0?
-2??m 3220reg p OK led.c:425:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK led.c:426:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			led_crender\(r->s, winy \+ led_row \+ k, winx \+ lncol,$3??0?
-3??m 3220reg p OK led.c:425:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK led.c:426:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				term_pos\(winy \+ led_row \+ k, winx\);
 				term_killw\(winw\);
 			}4??0?
-4??+3m 3220reg p OK led.c:425:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK led.c:426:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			if \(ts_preview\)$5??0?
-5??-1m 3220reg p OK led.c:425:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg led.c:425:r2342sc %? %@2132sc!0?
+5??-1m 3220reg p OK led.c:426:a52sc %? %@2152sc!fr 98fr 980?
+1;2;3;4;5??!219reg led.c:426:r2342sc %? %@2132sc!0?
 ?0?
 %f+ 			if \(ts_preview\)
 				led_srender\(r->s, led_row \+ k, lncol, k \* w, k \* w \+ w,
@@ -3359,15 +3359,15 @@ static int led_nextb;		/\* the buffer line drawn below the edited line \*/
 %f+ 				led_srender\(r->s, led_row \+ k, lncol, k \* w, k \* w \+ w,
 					ts_preview, ts_preview_row\(ps\), 0\)
 			else2??0?
-2??m 4220reg p OK led.c:427:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK led.c:428:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				led_srender\(r->s, led_row \+ k, lncol, k \* w, k \* w \+ w,$3??0?
-3??m 4220reg p OK led.c:427:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK led.c:428:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^			if \(ts_preview\)$4??0?
-4??+1m 4220reg p OK led.c:427:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 4220reg p OK led.c:428:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 					ts_preview, ts_preview_row\(ps\), 0\)
 			else5??0?
-5??-1m 4220reg p OK led.c:427:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:427:r2342sc %? %@2132sc!0?
+5??-1m 4220reg p OK led.c:428:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:428:r2342sc %? %@2132sc!0?
 ?0?
 %f+ 					ts_preview, ts_preview_row\(ps\), 0\)
 			else
@@ -3380,17 +3380,17 @@ static int led_nextb;		/\* the buffer line drawn below the edited line \*/
 		}
 		/\* the rows below shift with the edited line \*/
 		preserve\(ren_state\*, rstate, rstate = rstates;\)2??0?
-2??m 5220reg p OK led.c:430:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK led.c:431:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				led_crender\(r->s, led_row \+ k, lncol, k \* w, k \* w \+ w\);$3??0?
-3??m 5220reg p OK led.c:430:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK led.c:431:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					ts_preview, ts_preview_row\(ps\), 0\)
 			else4??0?
-4??+2m 5220reg p OK led.c:430:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK led.c:431:a42sc %? %@2152sc!1q0?
 %f+ 		}
 		/\* the rows below shift with the edited line \*/
 		preserve\(ren_state\*, rstate, rstate = rstates;\)5??0?
-5??-1m 5220reg p OK led.c:430:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:430:r2342sc %? %@2132sc!0?
+5??-1m 5220reg p OK led.c:431:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:431:r2342sc %? %@2132sc!0?
 ?0?
 %f+ 
 static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg, int inwin\)
@@ -3410,21 +3410,21 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg,
 	if \(ts_preview\) \{
 		led_preview_draw\(led_preview_ps\);
 		return;2??0?
-2??m 6220reg p OK led.c:528:a22sc %? %@2152sc!1q0?
+2??m 6220reg p OK led.c:529:a22sc %? %@2152sc!1q0?
 %f+ 	int winx = inwin \? curwin->x : 0;	/\* prompts own the terminal \*/
 	int winy = inwin \? curwin->y : 0;
 	int winw = inwin \? curwin->w : xcols;
 	int winh = inwin \? curwin->h : xrows;3??0?
-3??m 6220reg p OK led.c:528:a32sc %? %@2152sc!1q0?
+3??m 6220reg p OK led.c:529:a32sc %? %@2152sc!1q0?
 %f+ 
 static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg, int inwin\)
 \{4??0?
-4??+3m 6220reg p OK led.c:528:a42sc %? %@2152sc!1q0?
+4??+3m 6220reg p OK led.c:529:a42sc %? %@2152sc!1q0?
 %f+ 	if \(ts_preview\) \{
 		led_preview_draw\(led_preview_ps\);
 		return;5??0?
-5??-4m 6220reg p OK led.c:528:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:528:r2342sc %? %@2132sc!0?
+5??-4m 6220reg p OK led.c:529:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:529:r2342sc %? %@2132sc!0?
 ?0?
 %f+ 		led_preview_draw\(led_preview_ps\);
 		return;
@@ -3436,8 +3436,8 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg,
 %f+ 		led_preview_draw\(led_preview_ps\);
 		return;
 	}4??0?
-4??+2m 7220reg p OK led.c:535:a42sc %? %@2152sc!0?
-1;4??!219reg led.c:535:r2342sc %? %@2132sc!0?
+4??+2m 7220reg p OK led.c:536:a42sc %? %@2152sc!0?
+1;4??!219reg led.c:536:r2342sc %? %@2132sc!0?
 ?0?
 %f+ 				sb->s\[\*pren] = \*post;
 			free\(postref\);
@@ -3451,18 +3451,18 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg,
 			restore\(ts_preview\)
 			led_row = -1;
 			led_lw = 0;2??0?
-2??m 8220reg p OK led.c:888:a22sc %? %@2152sc!1q0?
+2??m 8220reg p OK led.c:889:a22sc %? %@2152sc!1q0?
 %f+ 			ts_free\(ts_preview\);
 			restore\(ts_preview\)3??0?
-3??m 8220reg p OK led.c:888:a32sc %? %@2152sc!1q0?
+3??m 8220reg p OK led.c:889:a32sc %? %@2152sc!1q0?
 %f+ 				sb->s\[\*pren] = \*post;
 			free\(postref\);
 			xrow = crow;4??0?
-4??+3m 8220reg p OK led.c:888:a42sc %? %@2152sc!1q0?
+4??+3m 8220reg p OK led.c:889:a42sc %? %@2152sc!1q0?
 %f+ 			led_row = -1;
 			led_lw = 0;5??0?
-5??-2m 8220reg p OK led.c:888:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg led.c:888:r2342sc %? %@2132sc!0?
+5??-2m 8220reg p OK led.c:889:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg led.c:889:r2342sc %? %@2132sc!0?
 ?0?
 %f+ 			led_row = -1;
 			led_lw = 0;
@@ -3472,28 +3472,28 @@ static void led_redraw\(char \*cs, int r, int orow, int crow, int ctop, int flg,
 1??+1m 91q0?
 %f+ 			led_row = -1;
 			led_lw = 0;4??0?
-4??+1m 9220reg p OK led.c:891:a42sc %? %@2152sc!0?
-1;4??!219reg led.c:891:r2342sc %? %@2132sc!0?
-'\''1,#+2d??!219reg led.c:346:r234:m12sc %? %@2142sc!0?
+4??+1m 9220reg p OK led.c:892:a42sc %? %@2152sc!0?
+1;4??!219reg led.c:892:r2342sc %? %@2132sc!0?
+'\''1,#+2d??!219reg led.c:347:r234:m12sc %? %@2142sc!0?
 '\''2i static int led_preview_ps;
 static void led_preview_draw(int ps);
 
-??!219reg led.c:365:r234:m22sc %? %@2142sc!0?
-'\''3d??!219reg led.c:425:r234:m32sc %? %@2142sc!0?
-?'\''4s/led_row \+ k,/winy + led_row + k, winx +/1??1??1q'\''4s/(led_r.*k,)/winy + \1 winx +/2??2??'\''4220reg p OK led.c:427:s22sc %? %@2162sc!0?
-1;2??!219reg led.c:427:r234:m42sc %? %@2142sc!0?
-?'\''5s/led_row \+ k,/winy + led_row + k, winx +/1??1??1q'\''5s/(led_r.*k,)/winy + \1 winx +/2??2??'\''5220reg p OK led.c:430:s22sc %? %@2162sc!0?
-1;2??!219reg led.c:430:r234:m52sc %? %@2142sc!0?
-'\''6,#+3d??!219reg led.c:528:r234:m62sc %? %@2142sc!0?
+??!219reg led.c:366:r234:m22sc %? %@2142sc!0?
+'\''3d??!219reg led.c:426:r234:m32sc %? %@2142sc!0?
+?'\''4s/led_row \+ k,/winy + led_row + k, winx +/1??1??1q'\''4s/(led_r.*k,)/winy + \1 winx +/2??2??'\''4220reg p OK led.c:428:s22sc %? %@2162sc!0?
+1;2??!219reg led.c:428:r234:m42sc %? %@2142sc!0?
+?'\''5s/led_row \+ k,/winy + led_row + k, winx +/1??1??1q'\''5s/(led_r.*k,)/winy + \1 winx +/2??2??'\''5220reg p OK led.c:431:s22sc %? %@2162sc!0?
+1;2??!219reg led.c:431:r234:m52sc %? %@2142sc!0?
+'\''6,#+3d??!219reg led.c:529:r234:m62sc %? %@2142sc!0?
 '\''7i 	int winx = inwin ? curwin->x : 0;	/* prompts own the terminal */
 	int winy = inwin ? curwin->y : 0;
 	int winw = inwin ? curwin->w : xcols;
 	int winh = inwin ? curwin->h : xrows;
-??!219reg led.c:535:r234:m72sc %? %@2142sc!0?
-'\''8,#+1d??!219reg led.c:888:r234:m82sc %? %@2142sc!0?
+??!219reg led.c:536:r234:m72sc %? %@2142sc!0?
+'\''8,#+1d??!219reg led.c:889:r234:m82sc %? %@2142sc!0?
 '\''9i 			ts_free(ts_preview);
 			restore(ts_preview)
-??!219reg led.c:891:r234:m92sc %? %@2142sc!b7m!%ya 98?0?
+??!219reg led.c:892:r234:m92sc %? %@2142sc!b7m!%ya 98?0?
 %f> \{
 	int h, w, k, i, beg, lim, wcols = curwin->w, wrows = curwin->h;
 	if \(!xlw\) \{
@@ -3579,26 +3579,26 @@ static int ts_preview_row\(int ps\);
 #define led_srender\(msg, sr, sc, beg, end, view, row, col\) \\
 \{ \\
 	int record = term_record; \\2??0?
-2??m 1220reg p OK vi.h:436:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.h:435:a22sc %? %@2152sc!1q0?
 %f> #define ts_winy 0
 #define ts_winx 0
 #define ts_winh xrows
 #define ts_winw xcols3??0?
-3??m 1220reg p OK vi.h:436:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK vi.h:435:a32sc %? %@2152sc!1q0?
 %f> extern int ts_redraw;
 static void led_preview_current\(char \*text, int ps, int lncol\);
 static int ts_preview_row\(int ps\);4??0?
-4??+3m 1220reg p OK vi.h:436:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.h:435:a42sc %? %@2152sc!1q0?
 %f> #define led_srender\(msg, sr, sc, beg, end, view, row, col\) \\
 \{ \\
 	int record = term_record; \\5??0?
-5??-4m 1220reg p OK vi.h:436:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.h:436:r2342sc %? %@2132sc!0?
+5??-4m 1220reg p OK vi.h:435:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.h:435:r2342sc %? %@2132sc!0?
 '\''1,#+3c #define ts_winy curwin->y
 #define ts_winx curwin->x
 #define ts_winh curwin->h
 #define ts_winw curwin->w
-??!219reg vi.h:436:r234:m12sc %? %@2142sc!p compat 234 applied: src=splits.sh src=linewrap_v2.sh' > "$P2VIF".234
+??!219reg vi.h:435:r234:m12sc %? %@2142sc!p compat 234 applied: src=splits.sh src=linewrap_v2.sh' > "$P2VIF".234
 # Compat 235 src=visual.sh src=linewrap_v2.sh
 printf '%s\n' '2sc!fr 98b7m!%ya 98?0?
 %f> 		vi_lncol = dir_context\(s\) < 0 \? 0 : l1;
@@ -3649,7 +3649,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/led.c
 +++ b/led.c
-@@ -398,7 +398,7 @@
+@@ -399,7 +399,7 @@
  	if (ts_preview && poff == &xoff)
  		led_preview_current(r->s, ps, lncol);
  	else
@@ -3660,7 +3660,7 @@ exit 0
  	rstate -= 2;
 --- a/vi.c
 +++ b/vi.c
-@@ -215,7 +215,7 @@
+@@ -213,7 +213,7 @@
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -3669,7 +3669,7 @@ exit 0
  			ts_document(xb), row - vi_rshift, 0)
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
-@@ -235,7 +235,7 @@
+@@ -233,7 +233,7 @@
  		restore(ftidx)
  		return;
  	}
@@ -3680,7 +3680,7 @@ exit 0
  }
 --- a/vi.h
 +++ b/vi.h
-@@ -436,7 +436,7 @@
+@@ -435,7 +435,7 @@
  	int record = term_record; \
  	term_record = 1; \
  	term_pos(sr, sc); \
@@ -3691,7 +3691,7 @@ exit 0
  		term_commit(); \
 --- a/treesitter.c
 +++ b/treesitter.c
-@@ -394,7 +394,7 @@
+@@ -436,7 +436,7 @@
  
  static void led_preview_current(char *text, int ps, int lncol)
  {
@@ -3700,7 +3700,7 @@ exit 0
  		ts_preview, ts_preview_row(ps), 0)
  }
  
-@@ -402,7 +402,7 @@
+@@ -444,7 +444,7 @@
  {
  	int current = ts_preview_row(ps);
  	preserve(ren_state*, rstate, rstate = rstates + 1;)
@@ -3709,7 +3709,7 @@ exit 0
  		if (row == current)
  			continue;
  		char *line = ts_line(ts_preview, row);
-@@ -412,15 +412,15 @@
+@@ -454,15 +454,15 @@
  			char *copy = emalloc(len + 4);
  			memcpy(copy, line, len);
  			memset(copy + len, 0, 4);
@@ -3735,7 +3735,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/led.c
 +++ b/led.c
-@@ -376,7 +376,7 @@
+@@ -377,7 +377,7 @@
  	sbuf_nul4(sb)
  	if (ts_preview && poff == &xoff) {
  		led_preview_ps = ps;
@@ -3744,7 +3744,7 @@ exit 0
  			led_preview_draw(ps);
  	}
  	/* XXX: O(n) insertion; recursive array data structure cannot be optimized.
-@@ -410,16 +410,22 @@
+@@ -411,16 +411,22 @@
  			term_room(k);
  			led_row += k;
  		}
@@ -3769,7 +3769,7 @@ exit 0
  			trow += vi_drawline(b, trow);
  		restore(rstate)
  		term_pos(led_row + pos / w, lncol + pos % w);
-@@ -501,6 +507,10 @@
+@@ -502,6 +508,10 @@
  /* redraw the buffer rows above the edited line */
  static void led_redrawlw(int ctop, int crow)
  {
@@ -3807,7 +3807,7 @@ exit 0
  	}
  	return h;
  }
-@@ -435,8 +437,7 @@
+@@ -433,8 +435,7 @@
  		vi_lncol = dir_context(s) < 0 ? 0 : l1;
  		memset(c, ' ', l1 - (c - tmp));
  		c[l1 - (c - tmp)] = '\0';
@@ -3817,7 +3817,7 @@ exit 0
  		preserve(int, syn_blockhl, syn_blockhl = -1;)
  		preserve(int, ftidx,)
  		syn_setft(nn_ft);
-@@ -458,7 +459,7 @@
+@@ -456,7 +457,7 @@
  		restore(ftidx)
  		goto done;
  	}
@@ -3828,7 +3828,7 @@ exit 0
  	if (lwx)			/* the markers only apply to this line */
 --- a/vi.h
 +++ b/vi.h
-@@ -431,6 +431,11 @@
+@@ -430,6 +430,11 @@
  extern struct ts_state *ts_preview;
  extern int ts_redraw;
  static void led_preview_current(char *text, int ps, int lncol);
@@ -3842,7 +3842,7 @@ exit 0
  	int record = term_record; \
 --- a/treesitter.c
 +++ b/treesitter.c
-@@ -398,9 +398,45 @@
+@@ -440,9 +440,45 @@
  		ts_preview, ts_preview_row(ps), 0)
  }
  
@@ -3930,7 +3930,7 @@ exit 0
  	*off = MAX(0, lo->pos_off);
 --- a/vi.h
 +++ b/vi.h
-@@ -428,6 +428,7 @@
+@@ -427,6 +427,7 @@
  void ts_done(void);
  void ts_free(struct ts_state *s);
  void ts_forget(struct lbuf *lb);
@@ -3948,7 +3948,7 @@ exit 0
  	int rows, dirty, language;
  	unsigned long revision;
  	struct ts_capture *captures;
-@@ -88,24 +89,43 @@
+@@ -89,24 +90,43 @@
  static const char *ts_read(void *payload, uint32_t byte, TSPoint point, uint32_t *size)
  {
  	struct ts_state *s = payload;
@@ -3999,7 +3999,7 @@ exit 0
  }
  
  static int ts_parse(struct ts_state *s)
-@@ -136,8 +156,11 @@
+@@ -137,8 +157,11 @@
  	s->rows = lb->ln_n;
  	s->offset = emalloc((s->rows + 1) * sizeof(*s->offset));
  	s->offset[0] = 0;
@@ -4013,7 +4013,7 @@ exit 0
  	s->next = ts_states;
  	ts_states = s;
  	return s;
-@@ -169,6 +192,7 @@
+@@ -170,6 +193,7 @@
  	free(s->pending);
  	free(s->lines);
  	free(s->readbuf);
@@ -4021,7 +4021,7 @@ exit 0
  	free(s);
  }
  
-@@ -199,13 +223,20 @@
+@@ -200,13 +224,20 @@
  }
  
  /* Update the old tree and index before the line array moves. */
@@ -4044,7 +4044,7 @@ exit 0
  	if (s->tree)
  		ts_tree_edit(s->tree, &edit);
  	int rows = s->rows + ins - del;
-@@ -215,6 +246,12 @@
+@@ -216,6 +247,12 @@
  		index[row + i + 1] = index[row + i] + lengths[i];
  	for (int i = row + del + 1; i <= s->rows; i++)
  		index[i + ins - del] = s->offset[i] - oldend + start + added;
@@ -4057,7 +4057,7 @@ exit 0
  	free(s->offset);
  	s->offset = index;
  	s->rows = rows;
-@@ -230,13 +267,32 @@
+@@ -231,13 +268,32 @@
  	if (!lb->ts)
  		return;
  	uint32_t *lengths = emalloc(MAX(1, ins) * sizeof(*lengths));
@@ -4093,7 +4093,7 @@ exit 0
  struct ts_state *ts_preview_begin(struct lbuf *lb, int beg, int end)
  {
  	struct ts_state *base = ts_document(lb);
-@@ -270,12 +326,13 @@
+@@ -271,12 +327,13 @@
  		s->rows = s->lb->ln_n;
  		s->offset = erealloc(s->offset, (s->rows + 1) * sizeof(*s->offset));
  		s->offset[0] = 0;
@@ -4112,7 +4112,7 @@ exit 0
  		free(copy);
  		return 0;
  	}
-@@ -290,6 +347,12 @@
+@@ -291,6 +348,12 @@
  			lengths[row++] = i + 1 - start;
  			start = i + 1;
  		}
@@ -4125,7 +4125,7 @@ exit 0
  	/* Common complete lines remain unchanged in the edited tree. */
  	int oldcount = s->preview ? s->pending_n : s->end - s->beg;
  	int first = 0, last = 0;
-@@ -302,7 +365,8 @@
+@@ -303,7 +366,8 @@
  		!memcmp(lines[count - last - 1], ts_line(s, s->beg + oldcount - last - 1), lengths[count - last - 1]))
  		last++;
  	ts_splice(s, s->beg + first, oldcount - first - last,
@@ -4135,7 +4135,7 @@ exit 0
  	free(lengths);
  	free(s->pending);
  	free(s->lines);
-@@ -327,6 +391,10 @@
+@@ -328,6 +392,10 @@
  		return;
  	s->cache_beg = row / 64 * 64;
  	s->cache_end = MIN(s->rows, s->cache_beg + 64);
@@ -4152,7 +4152,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/led.c
 +++ b/led.c
-@@ -343,9 +343,6 @@
+@@ -344,9 +344,6 @@
  	return r - s;
  }
  
@@ -4162,7 +4162,7 @@ exit 0
  static int led_lastword(char *s)
  {
  	char *r = *s ? uc_beg(s, strchr(s, '\0') - 1) : s;
-@@ -363,6 +360,9 @@
+@@ -364,6 +361,9 @@
  static int led_rowh = 1;	/* the rows the edited line occupies */
  static int led_nextb;		/* the buffer line drawn below the edited line */
  
@@ -4172,7 +4172,7 @@ exit 0
  static void led_printparts(sbuf *sb, int pre, int ps,
  	char *post, int postn, int *poff)
  {
-@@ -422,12 +422,11 @@
+@@ -423,12 +423,11 @@
  				term_pos(winy + led_row + k, winx);
  				term_killw(winw);
  			}
@@ -4187,7 +4187,7 @@ exit 0
  		}
  		/* the rows below shift with the edited line */
  		preserve(ren_state*, rstate, rstate = rstates;)
-@@ -525,14 +524,14 @@
+@@ -526,14 +525,14 @@
  
  static void led_redraw(char *cs, int r, int orow, int crow, int ctop, int flg, int inwin)
  {
@@ -4206,7 +4206,7 @@ exit 0
  	rstate++;
  	for (int nl = 0; r < winh; r++) {
  		if (vi_lncol) {
-@@ -885,10 +884,10 @@
+@@ -886,10 +885,10 @@
  				sb->s[*pren] = *post;
  			free(postref);
  			xrow = crow;
@@ -4247,7 +4247,7 @@ exit 0
  }
 --- a/vi.h
 +++ b/vi.h
-@@ -433,10 +433,10 @@
+@@ -432,10 +432,10 @@
  extern int ts_redraw;
  static void led_preview_current(char *text, int ps, int lncol);
  static int ts_preview_row(int ps);
@@ -4389,7 +4389,7 @@ index a51117ca..b44ee770 100644
 +	{"comment", BL | SYN_IT},
 +};
 diff --git a/ex.c b/ex.c
-index 0ce81414..f6513900 100644
+index 21f13f54..06d68fc4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -2,7 +2,7 @@ int xleft;			/* the first visible column */
