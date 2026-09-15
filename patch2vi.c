@@ -4729,17 +4729,19 @@ static int compat_pre_script;	/* the second positional is a generated script */
  * line per failure, and the command stream itself (P2VI_REG), which the block
  * ran and which still holds every edit verbatim.
  *
- * The two are joined by the mark. A phase-2 FAIL line reads
+ * The two are joined by the complete location and the mark. A phase-2 FAIL
+ * line reads
  * "<path>:<line>:m<id>", a compat section's "<path>:<line>:r<reg>:m<id>", and
- * in the stream a mark address only ever occurs at the head of a whole
- * separator-delimited command, so "<sep>'<id>" names the failed edit and
- * nothing else - within one stream. Ids restart per section, so the stream is
- * the one <reg> names: the block's body, yanked there by its gate. P2VI_REG
- * holds the host's. What is lost is where it should go: its anchor
- * did not resolve, so the only placement left is the line number the FAIL line
- * carries - the site's line in the original file, which is approximate once the
- * hunks above it have shifted things. So the edit is re-aimed at that line and
- * run; if it fails there too, it goes into the buffer verbatim between marker
+ * in the stream the complete location identifies the file's command span;
+ * within that span a mark address at the head of a whole separator-delimited
+ * command, "<sep>'<id>", names the failed edit. Ids restart per file and
+ * section, so the stream is the one <reg> names: the block's body, yanked
+ * there by its gate. P2VI_REG holds the host's. What is lost is where it should
+ * go: its anchor did not resolve, so the only placement left is the line number
+ * the FAIL line carries - the site's line in the original file, which is
+ * approximate once the hunks above it have shifted things. So the edit is
+ * re-aimed at that line and run; if it fails there too, it goes into the buffer
+ * verbatim between marker
  * lines, which loses nothing and is a local edit to fix up. Either way the
  * session is handed over parked on the first such spot.
  */
@@ -4802,20 +4804,53 @@ static int flog_last_reg(int skip)
 /* The whole command addressing mark <mark>, at whatever depth it sits: a
  * command always starts right after a separator byte, so a quote there is an
  * address and never payload (payload lines are newline-delimited). It ends at
- * the next separator, minus the escapes a nested site carries before it. */
-static char *stream_site(const char *body, int mark)
+ * the next separator, minus the escapes a nested site carries before it.
+ *
+ * Mark ids restart for every file in a section. Find the complete failure
+ * location first, then accept a mark only from that file's b<N> span; a mark
+ * alone can otherwise select the same id in an earlier file. */
+static char *stream_site(const char *body, const char *path, int line,
+			 int reg, int mark, int buf)
 {
-	const char *p = body, *e;
-	while ((p = strchr(p, xsep))) {
-		if (*++p != '\'' || atoi(p + 1) != mark)
+	sbuf_smake(loc, SB_INIT)
+	const char *hit, *p = body, *e, *cmd;
+	int curbuf = -1;
+	sb_printf(loc, "%s:%d", path, line);
+	if (reg > 0)
+		sb_printf(loc, ":r%d", reg);
+	sb_printf(loc, ":m%d", mark);
+	sbuf_nul(loc)
+	hit = body;
+	while ((hit = strstr(hit, loc->s)) && hit != body && hit[-1] != ' ')
+		hit++;
+	if (!hit) {
+		free(loc->s);
+		return NULL;
+	}
+	while ((p = strchr(p, xsep)) && p < hit) {
+		cmd = p + 1;
+		/* A buffer select is an entire separator-delimited command. */
+		if (*cmd == 'b') {
+			const char *q = cmd + 1;
+			int n = 0;
+			while (uc_isdigit(*q))
+				n = n * 10 + *q++ - '0';
+			if (q > cmd + 1 && q == strchr(cmd, xsep))
+				curbuf = n;
+		}
+		if (*cmd != '\'' || atoi(cmd + 1) != mark || curbuf != buf) {
+			p++;
 			continue;
-		for (e = p + 1; uc_isdigit(*e); e++);
-		if (e == p + 1 || !(e = strchr(e, xsep)))
-			continue;
+		}
+		for (e = cmd + 1; uc_isdigit(*e); e++);
+		if (e == cmd + 1 || !(e = strchr(e, xsep)))
+			break;
 		while (e[-1] == xesc)
 			e--;
-		return dup_n(p, e - p);
+		free(loc->s);
+		return dup_n(cmd, e - cmd);
 	}
+	free(loc->s);
 	return NULL;
 }
 
@@ -4832,15 +4867,15 @@ static int buf_by_path(const char *path)
 static int fail_place(const char *body, const char *path, int line, int mark,
 		      int reg, int *bi, int *shift)
 {
-	char *site = stream_site(body, mark);
 	const char *addr, *verb;
+	char *site;
 	int row, len, ok = 0;
 	sbuf_smake(sb, SB_INIT)
 	if ((*bi = buf_by_path(path)) < 0) {
-		free(site);
 		free(sb->s);
 		return -1;
 	}
+	site = stream_site(body, path, line, reg, mark, *bi);
 	bufs_switch(*bi);
 	/* every block placed above this one pushed the rest of the file down,
 	 * and the failures come in patch order, so the shift simply adds up */
