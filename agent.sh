@@ -358,6 +358,11 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 	}
 	if (!xish)
 		setpgid(pid, pid);
+	/* Hold the ignore for the whole child lifetime: an interactive
+	 * (ish) shell shares our process group and its job control can
+	 * signal the whole group. */
+	void (*old_ttou)(int) = signal(SIGTTOU, SIG_IGN);
+	void (*old_ttin)(int) = signal(SIGTTIN, SIG_IGN);
 	fds[0].fd = output[0];
 	fds[0].events = POLLIN;
 	if (http) {
@@ -406,9 +411,14 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 			done = waitpid(pid, &st, WNOHANG) == pid;
 	}
 	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
-	signal(SIGTTOU, SIG_IGN);
-	tcsetpgrp(term_ufd.fd, getpgrp());
-	signal(SIGTTOU, SIG_DFL);
+	/* Restore only once we are foreground again; otherwise keep the
+	 * ignore so tty signals cannot stop us. */
+	if (tcsetpgrp(term_ufd.fd, getpgrp()) == 0) {
+		if (old_ttou != SIG_ERR)
+			signal(SIGTTOU, old_ttou);
+		if (old_ttin != SIG_ERR)
+			signal(SIGTTIN, old_ttin);
+	}
 	if (http) {
 		sbuf_nul(eb)
 		if (errout)
@@ -7460,10 +7470,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..6c934513
+index 00000000..a0601266
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1016 @@
+@@ -0,0 +1,1026 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -7792,6 +7802,11 @@ index 00000000..6c934513
 +	}
 +	if (!xish)
 +		setpgid(pid, pid);
++	/* Hold the ignore for the whole child lifetime: an interactive
++	 * (ish) shell shares our process group and its job control can
++	 * signal the whole group. */
++	void (*old_ttou)(int) = signal(SIGTTOU, SIG_IGN);
++	void (*old_ttin)(int) = signal(SIGTTIN, SIG_IGN);
 +	fds[0].fd = output[0];
 +	fds[0].events = POLLIN;
 +	if (http) {
@@ -7840,9 +7855,14 @@ index 00000000..6c934513
 +			done = waitpid(pid, &st, WNOHANG) == pid;
 +	}
 +	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
-+	signal(SIGTTOU, SIG_IGN);
-+	tcsetpgrp(term_ufd.fd, getpgrp());
-+	signal(SIGTTOU, SIG_DFL);
++	/* Restore only once we are foreground again; otherwise keep the
++	 * ignore so tty signals cannot stop us. */
++	if (tcsetpgrp(term_ufd.fd, getpgrp()) == 0) {
++		if (old_ttou != SIG_ERR)
++			signal(SIGTTOU, old_ttou);
++		if (old_ttin != SIG_ERR)
++			signal(SIGTTIN, old_ttin);
++	}
 +	if (http) {
 +		sbuf_nul(eb)
 +		if (errout)
