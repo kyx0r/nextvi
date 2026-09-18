@@ -1128,7 +1128,7 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	static char compact_task[] =
 	"Buffer b-4 contains a log of the current session.\n"
 	"It is a temporary/special buffer, running b-4 command\n"
-	"Inside it switches the editor back to the previous main buffer.\n"
+	"inside it switches the editor back to the previous main buffer.\n"
 	"Summarize b-4 buffer. Be very thorough.\n"
 	"Replace b-4 content with summary by running 3 literal commands:\n"
 	"b-4\n"
@@ -7686,7 +7686,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..23c77158
+index 00000000..adf1d8e0
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,1107 @@
@@ -8788,7 +8788,7 @@ index 00000000..23c77158
 +	static char compact_task[] =
 +	"Buffer b-4 contains a log of the current session.\n"
 +	"It is a temporary/special buffer, running b-4 command\n"
-+	"Inside it switches the editor back to the previous main buffer.\n"
++	"inside it switches the editor back to the previous main buffer.\n"
 +	"Summarize b-4 buffer. Be very thorough.\n"
 +	"Replace b-4 content with summary by running 3 literal commands:\n"
 +	"b-4\n"
