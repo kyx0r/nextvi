@@ -1127,6 +1127,8 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 {
 	static char compact_task[] =
 	"Buffer b-4 contains a log of the current session.\n"
+	"It is a temporary/special buffer, running b-4 command\n"
+	"Inside it switches the editor back to the previous main buffer.\n"
 	"Summarize b-4 buffer. Be very thorough.\n"
 	"Replace b-4 content with summary by running 3 literal commands:\n"
 	"b-4\n"
@@ -5786,7 +5788,7 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 	}
 	return invalid * ret;
 ??!219reg ex.c:372:m82sc %? %@2142sc!0?
-'\''9i 	if (*loc && !n && !uc_isdigit(*loc))
+'\''9i 	if (*arg && !n && !uc_isdigit(*arg))
 		return xserr;
 ??!219reg ex.c:630:m92sc %? %@2142sc!0?
 '\''10i 	agent_sync(pxb);
@@ -7684,10 +7686,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..a840dff3
+index 00000000..23c77158
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1105 @@
+@@ -0,0 +1,1107 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8785,6 +8787,8 @@ index 00000000..a840dff3
 +{
 +	static char compact_task[] =
 +	"Buffer b-4 contains a log of the current session.\n"
++	"It is a temporary/special buffer, running b-4 command\n"
++	"Inside it switches the editor back to the previous main buffer.\n"
 +	"Summarize b-4 buffer. Be very thorough.\n"
 +	"Replace b-4 content with summary by running 3 literal commands:\n"
 +	"b-4\n"
@@ -12449,7 +12453,7 @@ index a51117ca..9595b051 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 21f13f54..8ff4e688 100644
+index 21f13f54..36e51256 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -12547,7 +12551,7 @@ index 21f13f54..8ff4e688 100644
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	int n = atoi(arg);
-+	if (*loc && !n && !uc_isdigit(*loc))
++	if (*arg && !n && !uc_isdigit(*arg))
 +		return xserr;
  	if (!arg[0]) {
  		char ln[512];
