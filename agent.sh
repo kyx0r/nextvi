@@ -5760,7 +5760,7 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 ??!219reg ex.c:299:m42sc %? %@2142sc!0?
 '\''5i 		if (agent_tool) {
 			char str[100];
-			snprintf(str, sizeof(str), "info: x:%d %c n:%d = %d", pre, **num, dir, n);
+			snprintf(str, sizeof(str), "info: %d %c %d = %d", pre, **num, dir, n);
 			ex_print(str, msg_ft)
 		}
 ??!219reg ex.c:312:m52sc %? %@2142sc!0?
@@ -12453,7 +12453,7 @@ index a51117ca..9595b051 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 21f13f54..36e51256 100644
+index 21f13f54..4d5bd6f9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -12497,7 +12497,7 @@ index 21f13f54..36e51256 100644
  			break;
 +		if (agent_tool) {
 +			char str[100];
-+			snprintf(str, sizeof(str), "info: x:%d %c n:%d = %d", pre, **num, dir, n);
++			snprintf(str, sizeof(str), "info: %d %c %d = %d", pre, **num, dir, n);
 +			ex_print(str, msg_ft)
 +		}
  		for (++*num; uc_isdigit(**num);)
