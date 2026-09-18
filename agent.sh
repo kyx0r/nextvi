@@ -5033,34 +5033,34 @@ int n = 0, keep, d; \\9??0?
 grp 09??-8m 3220reg p OK ex.c:287:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg ex.c:2872sc %? %@2132sc!0?
 ?0?
-%f+ 	}
-	while \(\*\*num\) \{
-		dir = atoi\(\*num\+1\);
-		if \(\*\*num == '\''-'\''\)
-			n -= dir;
-		else if \(\*\*num == '\''\+'\''\)1??0?
+%f+ 			n %= dir;
+		else
+			break;
+		for \(\+\+\*num; uc_isdigit\(\*\*num\);\)
+			\+\+\*num;
+	}1??0?
 1??+2m 41q0?
-%f+ 	}
-	while \(\*\*num\) \{
-		dir = atoi\(\*num\+1\);4??0?
-4??+2m 4220reg p OK ex.c:300:a42sc %? %@2152sc!1q0?
-grp 1%f+ 	}.*?
-	while \(\*\*num\) \{.*?
-(		dir = atoi\(\*num\+1\);)7??0?
-grp 07??m 4220reg p OK ex.c:300:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 			while \(uc_isdigit\(\*\*num\)\)
-				\+\+\*num;
-		}.*(			n \+= dir;)
-		else if \(\*\*num == '\''\*'\''\)
-			n \*= dir;8??0?
-grp 08??-4m 4220reg p OK ex.c:300:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	default:
-		if \(uc_isdigit\(\*\*num\)\) \{
-			n = atoi\(\*num\);.*(		else if \(\*\*num == '\''/'\'' && dir\))
+%f+ 			n %= dir;
+		else
+			break;4??0?
+4??+2m 4220reg p OK ex.c:312:a42sc %? %@2152sc!1q0?
+grp 1%f+ 			n %= dir;.*?
+		else.*?
+(			break;)7??0?
+grp 07??m 4220reg p OK ex.c:312:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		else if \(\*\*num == '\''/'\'' && dir\)
 			n /= dir;
-		else if \(\*\*num == '\''%'\'' && dir\)9??0?
-grp 09??-7m 4220reg p OK ex.c:300:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:3002sc %? %@2132sc!0?
+		else if \(\*\*num == '\''%'\'' && dir\).*(/\* parse ex command addresses \*/)
+#define ex_vregion\(loc, beg, end\) ex_region\(loc, beg, end, &xoff, &xoff\)
+static int ex_region\(char \*loc, int \*beg, int \*end, int \*o1, int \*o2\)8??0?
+grp 08??-7m 4220reg p OK ex.c:312:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			n \+= dir;
+		else if \(\*\*num == '\''\*'\''\)
+			n \*= dir;.*(	int vaddr = \*loc == '\''%'\'', haddr = 0, update = 0;)
+	int row = xrow, ooff = xoff, ret = 1, adj = 0;
+	char \*ploc = loc, \*cmd = NULL;9??0?
+grp 09??-11m 4220reg p OK ex.c:312:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:3122sc %? %@2132sc!0?
 ?0?
 %f+ 	int row = xrow, ooff = xoff, ret = 1, adj = 0;
 	char \*ploc = loc, \*cmd = NULL;
@@ -5730,7 +5730,7 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 			snprintf(str, sizeof(str), "info: %c is a mathematical operation on a range number", **num);
 			ex_print(str, msg_ft)
 		}
-??!219reg ex.c:300:m42sc %? %@2142sc!0?
+??!219reg ex.c:312:m42sc %? %@2142sc!0?
 '\''5i 	xirrmsg[0] = '\''\0'\'';
 ??!219reg ex.c:326:m52sc %? %@2142sc!0?
 '\''6i 			if (agent_tool)
@@ -12418,7 +12418,7 @@ index a51117ca..9595b051 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 21f13f54..cb46073a 100644
+index 21f13f54..b342bcf7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -12448,18 +12448,18 @@ index 21f13f54..cb46073a 100644
  			return -2;
  		}
  		n = row ? off : beg;
-@@ -298,6 +300,11 @@ static int ex_range(char *ploc, char **num, int n, int *row)
- 	}
- 	while (**num) {
- 		dir = atoi(*num+1);
+@@ -310,6 +312,11 @@ static int ex_range(char *ploc, char **num, int n, int *row)
+ 			n %= dir;
+ 		else
+ 			break;
 +		if (agent_tool) {
 +			char str[100];
 +			snprintf(str, sizeof(str), "info: %c is a mathematical operation on a range number", **num);
 +			ex_print(str, msg_ft)
 +		}
- 		if (**num == '-')
- 			n -= dir;
- 		else if (**num == '+')
+ 		for (++*num; uc_isdigit(**num);)
+ 			++*num;
+ 	}
 @@ -324,6 +331,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
  	int row = xrow, ooff = xoff, ret = 1, adj = 0;
  	char *ploc = loc, *cmd = NULL;
