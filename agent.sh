@@ -1125,16 +1125,18 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 
 static void *ec_compact(char *loc, char *cmd, char *arg)
 {
-	static char compact_task[] =
+	static char compact_task[1024];
+	snprintf(compact_task, sizeof(compact_task),
 	"Buffer b-4 contains a log of the current session.\n"
 	"It is a temporary/special buffer, running b-4 command\n"
 	"inside it switches the editor back to the previous main buffer.\n"
-	"Summarize b-4 buffer. Be very thorough.\n"
+	"Summarize b-4 buffer. Be very thorough. %s\n"
 	"Replace b-4 content with summary by running 3 literal commands:\n"
 	"b-4\n"
-	"%c summary text literal\n"
+	"%%c summary text literal\n"
 	"b-4\n"
-	"Return control to the user once complete.\n";
+	"Return control to the user once complete.\n",
+	arg);
 	return ec_agent(loc, "a", compact_task);
 }
 ??!219reg agent.c:-1:m2sc %? %@2142sc!b1m!0?
@@ -7686,10 +7688,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..adf1d8e0
+index 00000000..28d30fd3
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1107 @@
+@@ -0,0 +1,1109 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8785,16 +8787,18 @@ index 00000000..adf1d8e0
 +
 +static void *ec_compact(char *loc, char *cmd, char *arg)
 +{
-+	static char compact_task[] =
++	static char compact_task[1024];
++	snprintf(compact_task, sizeof(compact_task),
 +	"Buffer b-4 contains a log of the current session.\n"
 +	"It is a temporary/special buffer, running b-4 command\n"
 +	"inside it switches the editor back to the previous main buffer.\n"
-+	"Summarize b-4 buffer. Be very thorough.\n"
++	"Summarize b-4 buffer. Be very thorough. %s\n"
 +	"Replace b-4 content with summary by running 3 literal commands:\n"
 +	"b-4\n"
-+	"%c summary text literal\n"
++	"%%c summary text literal\n"
 +	"b-4\n"
-+	"Return control to the user once complete.\n";
++	"Return control to the user once complete.\n",
++	arg);
 +	return ec_agent(loc, "a", compact_task);
 +}
 diff --git a/agent.h b/agent.h
