@@ -65,10 +65,11 @@ static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
 static char nextvi_skill[] =
 "Inside Nextvi, use the ex tool with a JSON object whose command \n"
 "key holds an ex command.\n"
-"\n"
 "Nextvi is not a standard vi/ex.\n"
 "Use exspec command for a command list.\n"
-"Use exspec with an argument for a topic or command specification.\n";
+"Use exspec with an argument for a topic or command specification.\n"
+"Ex special characters are disabled: \\ % ! :\n"
+"Commands with interactive modes are adapted for agent use or disabled.\n";
 
 static char caveman_skill[] =
 "Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
@@ -645,7 +646,15 @@ static void agent_editor(void)
 	preserve(sbuf *, agent_capture, agent_capture = NULL;)
 	preserve(int, agent_cancel, agent_cancel = 0;)
 	preserve(int, agent_pause, agent_pause = 0;)
+	preserve(int, xesc, xesc = '\''\\'\'';)
+	preserve(int, xsep, xsep = '\'':'\'';)
+	preserve(int, xexp, xexp = '\''%'\'';)
+	preserve(int, xexe, xexe = '\''!'\'';)
 	led_modeswap();
+	restore(xexe)
+	restore(xexp)
+	restore(xsep)
+	restore(xesc)
 	restore(agent_pause)
 	restore(agent_cancel)
 	restore(agent_capture)
@@ -1022,6 +1031,10 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	if (!(savedvis & 2))
 		agent_output("\n");
 	xvis = 3;
+	preserve(int, xesc, xesc = 0;)
+	preserve(int, xsep, xsep = 0;)
+	preserve(int, xexp, xexp = 0;)
+	preserve(int, xexe, xexe = 0;)
 	sbuf_smake(draft, 128)
 	sbuf_smake(line, 128)
 	sbuf_str(line, "> ")
@@ -1082,6 +1095,10 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	free(scope);
 	free(draft->s);
 	free(line->s);
+	restore(xexe)
+	restore(xexp)
+	restore(xsep)
+	restore(xesc)
 	xvis = savedvis;
 	if (term_owned)
 		term_done();
@@ -6114,10 +6131,8 @@ static int exspec_mark(char *arg)
 	return 0;
 }
 
-static void exspec_agent(char *cmd, int ranges)
+static int exspec_agent(char *cmd, int ranges)
 {
-	if (!xaspec)
-		return;
 	if (ranges && !exspec_ranges_read) {
 		exspec_ranges_read = 1;
 		ec_exspec(NULL, "exspec", "ranges");
@@ -6125,9 +6140,11 @@ static void exspec_agent(char *cmd, int ranges)
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		if (!strcmp(cmd, exspec_cmds[i].name) && !exspec_cmds[i].read) {
 			exspec_cmds[i].read = 1;
+			ex_print("\nSpec not read: repeat to execute\n", msg_ft)
 			ec_exspec(NULL, "exspec", cmd);
-			return;
+			return 1;
 		}
+	return 0;
 }
 
 static int exspec_extra(char *cmd)
@@ -6257,7 +6274,7 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 			}
 ??!219reg ex.c:1865:m292sc %? %@2142sc!0?
 '\''30c 	if ((*src && *src == xsep) || (*idx == LEN(excmds) - 1)) {
-		if (agent_tool) {
+		if (agent_tool && xsep) {
 			char buf[512];
 			snprintf(buf, sizeof(buf),
 			"unescaped %c chains ex commands\n"
@@ -6282,8 +6299,9 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 			break;
 		}
 		ln = ex_arg(ln, sb, &arg);
-		if (agent_tool && excmds[idx].ec != ec_exspec)
-			exspec_agent(excmds[idx].name, *sb->s);
+		if (agent_tool && xaspec && excmds[idx].ec != ec_exspec)
+			if (exspec_agent(excmds[idx].name, *sb->s))
+				continue;
 		if (agent_tool && (agent_cancel || agent_pause)) {
 			ret = "agent execution interrupted";
 			break;
@@ -8136,10 +8154,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..ed6adddd
+index 00000000..1e9793e0
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1075 @@
+@@ -0,0 +1,1092 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8175,10 +8193,11 @@ index 00000000..ed6adddd
 +static char nextvi_skill[] =
 +"Inside Nextvi, use the ex tool with a JSON object whose command \n"
 +"key holds an ex command.\n"
-+"\n"
 +"Nextvi is not a standard vi/ex.\n"
 +"Use exspec command for a command list.\n"
-+"Use exspec with an argument for a topic or command specification.\n";
++"Use exspec with an argument for a topic or command specification.\n"
++"Ex special characters are disabled: \\ % ! :\n"
++"Commands with interactive modes are adapted for agent use or disabled.\n";
 +
 +static char caveman_skill[] =
 +"Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
@@ -8755,7 +8774,15 @@ index 00000000..ed6adddd
 +	preserve(sbuf *, agent_capture, agent_capture = NULL;)
 +	preserve(int, agent_cancel, agent_cancel = 0;)
 +	preserve(int, agent_pause, agent_pause = 0;)
++	preserve(int, xesc, xesc = '\\';)
++	preserve(int, xsep, xsep = ':';)
++	preserve(int, xexp, xexp = '%';)
++	preserve(int, xexe, xexe = '!';)
 +	led_modeswap();
++	restore(xexe)
++	restore(xexp)
++	restore(xsep)
++	restore(xesc)
 +	restore(agent_pause)
 +	restore(agent_cancel)
 +	restore(agent_capture)
@@ -9132,6 +9159,10 @@ index 00000000..ed6adddd
 +	if (!(savedvis & 2))
 +		agent_output("\n");
 +	xvis = 3;
++	preserve(int, xesc, xesc = 0;)
++	preserve(int, xsep, xsep = 0;)
++	preserve(int, xexp, xexp = 0;)
++	preserve(int, xexe, xexe = 0;)
 +	sbuf_smake(draft, 128)
 +	sbuf_smake(line, 128)
 +	sbuf_str(line, "> ")
@@ -9192,6 +9223,10 @@ index 00000000..ed6adddd
 +	free(scope);
 +	free(draft->s);
 +	free(line->s);
++	restore(xexe)
++	restore(xexp)
++	restore(xsep)
++	restore(xesc)
 +	xvis = savedvis;
 +	if (term_owned)
 +		term_done();
@@ -12877,7 +12912,7 @@ index a51117ca..4bf32f84 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 21f13f54..7975ce04 100644
+index 21f13f54..b7fecd28 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13148,10 +13183,8 @@ index 21f13f54..7975ce04 100644
 +	return 0;
 +}
 +
-+static void exspec_agent(char *cmd, int ranges)
++static int exspec_agent(char *cmd, int ranges)
 +{
-+	if (!xaspec)
-+		return;
 +	if (ranges && !exspec_ranges_read) {
 +		exspec_ranges_read = 1;
 +		ec_exspec(NULL, "exspec", "ranges");
@@ -13159,9 +13192,11 @@ index 21f13f54..7975ce04 100644
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		if (!strcmp(cmd, exspec_cmds[i].name) && !exspec_cmds[i].read) {
 +			exspec_cmds[i].read = 1;
++			ex_print("\nSpec not read: repeat to execute\n", msg_ft)
 +			ec_exspec(NULL, "exspec", cmd);
-+			return;
++			return 1;
 +		}
++	return 0;
 +}
 +
 +static int exspec_extra(char *cmd)
@@ -13309,7 +13344,7 @@ index 21f13f54..7975ce04 100644
  	int i, j;
 -	if ((*src && *src == xsep) || (*idx == LEN(excmds) - 1))
 +	if ((*src && *src == xsep) || (*idx == LEN(excmds) - 1)) {
-+		if (agent_tool) {
++		if (agent_tool && xsep) {
 +			char buf[512];
 +			snprintf(buf, sizeof(buf),
 +			"unescaped %c chains ex commands\n"
@@ -13321,7 +13356,7 @@ index 21f13f54..7975ce04 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1937,7 +2174,27 @@ void *ex_exec(const char *ln)
+@@ -1937,7 +2174,28 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -13341,8 +13376,9 @@ index 21f13f54..7975ce04 100644
 +			break;
 +		}
 +		ln = ex_arg(ln, sb, &arg);
-+		if (agent_tool && excmds[idx].ec != ec_exspec)
-+			exspec_agent(excmds[idx].name, *sb->s);
++		if (agent_tool && xaspec && excmds[idx].ec != ec_exspec)
++			if (exspec_agent(excmds[idx].name, *sb->s))
++				continue;
 +		if (agent_tool && (agent_cancel || agent_pause)) {
 +			ret = "agent execution interrupted";
 +			break;
@@ -13350,7 +13386,7 @@ index 21f13f54..7975ce04 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1957,7 +2214,7 @@ void *ex_exec(const char *ln)
+@@ -1957,7 +2215,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
