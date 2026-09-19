@@ -6133,14 +6133,19 @@ static int exspec_mark(char *arg)
 
 static int exspec_agent(char *cmd, int ranges)
 {
+	int msg = 0;
 	if (ranges && !exspec_ranges_read) {
 		exspec_ranges_read = 1;
+		msg = 1;
+		ex_print("Spec not read: repeat to execute\n\n", msg_ft)
 		ec_exspec(NULL, "exspec", "ranges");
+		
 	}
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		if (!strcmp(cmd, exspec_cmds[i].name) && !exspec_cmds[i].read) {
 			exspec_cmds[i].read = 1;
-			ex_print("\nSpec not read: repeat to execute\n", msg_ft)
+			if (!msg)
+				ex_print("Spec not read: repeat to execute\n\n", msg_ft)
 			ec_exspec(NULL, "exspec", cmd);
 			return 1;
 		}
@@ -12912,7 +12917,7 @@ index a51117ca..4bf32f84 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 21f13f54..b7fecd28 100644
+index 21f13f54..16b2b7b4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13154,7 +13159,7 @@ index 21f13f54..b7fecd28 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1830,12 +1895,169 @@ static struct excmd {
+@@ -1830,12 +1895,174 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -13185,14 +13190,19 @@ index 21f13f54..b7fecd28 100644
 +
 +static int exspec_agent(char *cmd, int ranges)
 +{
++	int msg = 0;
 +	if (ranges && !exspec_ranges_read) {
 +		exspec_ranges_read = 1;
++		msg = 1;
++		ex_print("Spec not read: repeat to execute\n\n", msg_ft)
 +		ec_exspec(NULL, "exspec", "ranges");
++		
 +	}
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		if (!strcmp(cmd, exspec_cmds[i].name) && !exspec_cmds[i].read) {
 +			exspec_cmds[i].read = 1;
-+			ex_print("\nSpec not read: repeat to execute\n", msg_ft)
++			if (!msg)
++				ex_print("Spec not read: repeat to execute\n\n", msg_ft)
 +			ec_exspec(NULL, "exspec", cmd);
 +			return 1;
 +		}
@@ -13324,7 +13334,7 @@ index 21f13f54..b7fecd28 100644
  			int n;
  			struct buf *pbuf = ex_buf;
  			src++;
-@@ -1863,6 +2085,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1863,6 +2090,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  				sbuf_chr(sb, '@')
  			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
  		} else if (*src == xexe) {
@@ -13338,7 +13348,7 @@ index 21f13f54..b7fecd28 100644
  			int n = sb->s_n;
  			src++;
  			ex_sread(sb, (char**)&src, xexe, xesc);
-@@ -1886,8 +2115,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1886,8 +2120,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  {
  	int i, j;
@@ -13356,7 +13366,7 @@ index 21f13f54..b7fecd28 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1937,7 +2174,28 @@ void *ex_exec(const char *ln)
+@@ -1937,7 +2179,28 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -13386,7 +13396,7 @@ index 21f13f54..b7fecd28 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1957,7 +2215,7 @@ void *ex_exec(const char *ln)
+@@ -1957,7 +2220,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
