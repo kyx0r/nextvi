@@ -1122,13 +1122,20 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 static void *ec_compact(char *loc, char *cmd, char *arg)
 {
 	void *ret;
+	int browse = !strcmp(cmd, "apack!");
 	unsigned long epoch = agent_epoch;
 	sbuf_smake(task, 512)
 	sbuf_str(task,
 	"Buffer b-4 contains a log of the current session.\n"
 	"It is a temporary/special buffer, running b-4 command\n"
-	"inside it switches the editor back to the previous main buffer.\n"
-	"Summarize b-4 buffer. Be very thorough. ")
+	"inside it switches the editor back to the previous main buffer.\n")
+	if (browse)
+		sbuf_str(task,
+		"The log has not been loaded into your context. Inspect b-4 yourself\n"
+		"using ex searches and bounded line ranges. Do not read the entire\n"
+		"buffer into context. Identify the key goals, decisions, changes,\n"
+		"constraints, and unfinished work before writing the summary.\n")
+	sbuf_str(task, "Summarize b-4 buffer. Be very thorough. ")
 	sbuf_str(task, arg)
 	sbuf_str(task,
 	"\nSwitch to b-4 unless already there, then replace its content\n"
@@ -1136,7 +1143,8 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	"Return control to the user once complete.\n\033")
 	sbuf_nul(task)
 	preserve(int, agent_logbuf, agent_logbuf = 2;)
-	ret = ec_agent(loc, "a~", task->s);
+	/* apack! resets history without clearing or importing the log. */
+	ret = ec_agent(loc, browse ? "apack!" : "a~", task->s);
 	restore(agent_logbuf)
 	if (!ret && agent_epoch == epoch + 1)
 		agent_history(1);
@@ -4916,7 +4924,7 @@ static struct {
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|ai|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|apack|ac[om]?|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|apack!?|ac[om]?|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -6152,6 +6160,7 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 '\''22i 	EO(aspec),
 ??!219reg ex.c:1757:m222sc %? %@2142sc!0?
 '\''23i 	EO(ar),
+	{"apack!", ec_compact},
 	{"apack", ec_compact},
 	{"acm", ec_skill},
 	{"aco", ec_aco},
@@ -8221,10 +8230,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..46051a12
+index 00000000..e3558b52
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1113 @@
+@@ -0,0 +1,1121 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9317,13 +9326,20 @@ index 00000000..46051a12
 +static void *ec_compact(char *loc, char *cmd, char *arg)
 +{
 +	void *ret;
++	int browse = !strcmp(cmd, "apack!");
 +	unsigned long epoch = agent_epoch;
 +	sbuf_smake(task, 512)
 +	sbuf_str(task,
 +	"Buffer b-4 contains a log of the current session.\n"
 +	"It is a temporary/special buffer, running b-4 command\n"
-+	"inside it switches the editor back to the previous main buffer.\n"
-+	"Summarize b-4 buffer. Be very thorough. ")
++	"inside it switches the editor back to the previous main buffer.\n")
++	if (browse)
++		sbuf_str(task,
++		"The log has not been loaded into your context. Inspect b-4 yourself\n"
++		"using ex searches and bounded line ranges. Do not read the entire\n"
++		"buffer into context. Identify the key goals, decisions, changes,\n"
++		"constraints, and unfinished work before writing the summary.\n")
++	sbuf_str(task, "Summarize b-4 buffer. Be very thorough. ")
 +	sbuf_str(task, arg)
 +	sbuf_str(task,
 +	"\nSwitch to b-4 unless already there, then replace its content\n"
@@ -9331,7 +9347,8 @@ index 00000000..46051a12
 +	"Return control to the user once complete.\n\033")
 +	sbuf_nul(task)
 +	preserve(int, agent_logbuf, agent_logbuf = 2;)
-+	ret = ec_agent(loc, "a~", task->s);
++	/* apack! resets history without clearing or importing the log. */
++	ret = ec_agent(loc, browse ? "apack!" : "a~", task->s);
 +	restore(agent_logbuf)
 +	if (!ret && agent_epoch == epoch + 1)
 +		agent_history(1);
@@ -12934,7 +12951,7 @@ index c836c94c..1ddba695 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index a51117ca..4bf32f84 100644
+index a51117ca..fc582c0d 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,50 @@
@@ -12995,12 +13012,12 @@ index a51117ca..4bf32f84 100644
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|ai|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|apack|ac[om]?|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|apack!?|ac[om]?|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 4d333baf..bd1580f4 100644
+index 4d333baf..5d6c38cc 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13215,13 +13232,14 @@ index 4d333baf..bd1580f4 100644
  /* commands & opts must be sorted longest of its kind topmost */
  static struct excmd {
  	char *name;
-@@ -1755,9 +1809,18 @@ static struct excmd {
+@@ -1755,9 +1809,19 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
 +	EO(aspec),
  	EO(ai),
 +	EO(ar),
++	{"apack!", ec_compact},
 +	{"apack", ec_compact},
 +	{"acm", ec_skill},
 +	{"aco", ec_aco},
@@ -13234,7 +13252,7 @@ index 4d333baf..bd1580f4 100644
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
  	{"e!", ec_edit},
-@@ -1777,6 +1840,7 @@ static struct excmd {
+@@ -1777,6 +1841,7 @@ static struct excmd {
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
@@ -13242,7 +13260,7 @@ index 4d333baf..bd1580f4 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1829,12 +1893,175 @@ static struct excmd {
+@@ -1829,12 +1894,175 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -13418,7 +13436,7 @@ index 4d333baf..bd1580f4 100644
  			int n;
  			struct buf *pbuf = ex_buf;
  			src++;
-@@ -1862,6 +2089,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1862,6 +2090,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  				sbuf_chr(sb, '@')
  			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
  		} else if (*src == xexe) {
@@ -13432,7 +13450,7 @@ index 4d333baf..bd1580f4 100644
  			int n = sb->s_n;
  			src++;
  			ex_sread(sb, (char**)&src, xexe, xesc);
-@@ -1885,8 +2119,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1885,8 +2120,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  {
  	int i, j;
@@ -13450,7 +13468,7 @@ index 4d333baf..bd1580f4 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1934,9 +2176,32 @@ void *ex_exec(const char *ln)
+@@ -1934,9 +2177,32 @@ void *ex_exec(const char *ln)
  		lbuf_mark(xb, '*', xrow, xoff);
  	xexec_dep++;
  	sbuf_smake(sb, 128)
@@ -13484,7 +13502,7 @@ index 4d333baf..bd1580f4 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1956,7 +2221,7 @@ void *ex_exec(const char *ln)
+@@ -1956,7 +2222,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
