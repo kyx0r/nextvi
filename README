@@ -378,6 +378,8 @@ the agent. "a!" clears the conversation; "a~" restarts from the edited
 conversation.
 
 The new ex command "exspec" prints ex command specifications.
+The new ex option "aspec" forces agent to read specifications before
+executing new commands.
 
 New "ar" ex option toggles display and logging of returned reasoning.
 It defaults to off (xar in conf.c). Reasoning appears before the answer
