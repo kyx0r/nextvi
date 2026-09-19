@@ -6243,14 +6243,16 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 '\''28i 			if (agent_tool) {
 				char buf[512];
 				snprintf(buf, sizeof(buf),
-				"note: unescaped %c expands to buffer pathnames or register content\n", xexp);
+				"unescaped %c expands to buffer pathnames or register content\n"
+				"sc! and sc command can disable/enable ex specials\n", xexp);
 				ex_print(buf, msg_ft)
 			}
 ??!219reg ex.c:1838:m282sc %? %@2142sc!0?
 '\''29i 			if (agent_tool) {
 				char buf[512];
 				snprintf(buf, sizeof(buf),
-				"note: unescaped %c runs external shell command and expands to stdout + stderr\n", xexe);
+				"unescaped %c runs external shell command and expands to stdout + stderr\n"
+				"sc! and sc command can disable/enable ex specials\n", xexe);
 				ex_print(buf, msg_ft)
 			}
 ??!219reg ex.c:1865:m292sc %? %@2142sc!0?
@@ -6258,7 +6260,8 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 		if (agent_tool) {
 			char buf[512];
 			snprintf(buf, sizeof(buf),
-			"note: unescaped %c chains ex commands\n", xexe);
+			"unescaped %c chains ex commands\n"
+			"sc! and sc command can disable/enable ex specials\n", xsep);
 			ex_print(buf, msg_ft)
 		}
 ??!219reg ex.c:1889:m302sc %? %@2142sc!0?
@@ -12865,7 +12868,7 @@ index a51117ca..4bf32f84 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 21f13f54..1aecc19e 100644
+index 21f13f54..7975ce04 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13107,7 +13110,7 @@ index 21f13f54..1aecc19e 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1830,12 +1895,168 @@ static struct excmd {
+@@ -1830,12 +1895,169 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -13270,26 +13273,28 @@ index 21f13f54..1aecc19e 100644
 +			if (agent_tool) {
 +				char buf[512];
 +				snprintf(buf, sizeof(buf),
-+				"note: unescaped %c expands to buffer pathnames or register content\n", xexp);
++				"unescaped %c expands to buffer pathnames or register content\n"
++				"sc! and sc command can disable/enable ex specials\n", xexp);
 +				ex_print(buf, msg_ft)
 +			}
  			int n;
  			struct buf *pbuf = ex_buf;
  			src++;
-@@ -1863,6 +2084,12 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1863,6 +2085,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  				sbuf_chr(sb, '@')
  			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
  		} else if (*src == xexe) {
 +			if (agent_tool) {
 +				char buf[512];
 +				snprintf(buf, sizeof(buf),
-+				"note: unescaped %c runs external shell command and expands to stdout + stderr\n", xexe);
++				"unescaped %c runs external shell command and expands to stdout + stderr\n"
++				"sc! and sc command can disable/enable ex specials\n", xexe);
 +				ex_print(buf, msg_ft)
 +			}
  			int n = sb->s_n;
  			src++;
  			ex_sread(sb, (char**)&src, xexe, xesc);
-@@ -1886,8 +2113,15 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1886,8 +2115,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  {
  	int i, j;
@@ -13298,7 +13303,8 @@ index 21f13f54..1aecc19e 100644
 +		if (agent_tool) {
 +			char buf[512];
 +			snprintf(buf, sizeof(buf),
-+			"note: unescaped %c chains ex commands\n", xexe);
++			"unescaped %c chains ex commands\n"
++			"sc! and sc command can disable/enable ex specials\n", xsep);
 +			ex_print(buf, msg_ft)
 +		}
  		src++;
@@ -13306,7 +13312,7 @@ index 21f13f54..1aecc19e 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1937,7 +2171,27 @@ void *ex_exec(const char *ln)
+@@ -1937,7 +2174,27 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -13335,7 +13341,7 @@ index 21f13f54..1aecc19e 100644
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
-@@ -1957,7 +2211,7 @@ void *ex_exec(const char *ln)
+@@ -1957,7 +2214,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
