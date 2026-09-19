@@ -922,7 +922,7 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 {
 	int i, beg, end, o1 = -1, o2 = -1;
 	char *o, *ln;
-	if (!*cmd && !*loc && *arg)
+	if (!*cmd && *arg)
 		return "unknown command";
 	if (*cmd && *arg) {
 		ex_print(arg, msg_ft)
