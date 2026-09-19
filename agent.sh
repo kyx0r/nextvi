@@ -6059,7 +6059,7 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 ??!219reg ex.c:299:m62sc %? %@2142sc!0?
 '\''7i 		if (agent_tool) {
 			char str[100];
-			if (!uc_isdigit(*(*num+1)))
+			if (!uc_isdigit(*(*num+1)) && *(*num+1) != '\''+'\'' && *(*num+1) != '\''-'\'')
 				snprintf(str, sizeof(str), "invalid ex arithmetic: %c%c", **num, *(*num+1));
 			else
 				snprintf(str, sizeof(str), "ex arithmetic: %d %c %d = %d", pre, **num, dir, n);
@@ -12957,7 +12957,7 @@ index a51117ca..4bf32f84 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 6908c52d..834ad127 100644
+index 6908c52d..f39832c2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13013,7 +13013,7 @@ index 6908c52d..834ad127 100644
  			break;
 +		if (agent_tool) {
 +			char str[100];
-+			if (!uc_isdigit(*(*num+1)))
++			if (!uc_isdigit(*(*num+1)) && *(*num+1) != '+' && *(*num+1) != '-')
 +				snprintf(str, sizeof(str), "invalid ex arithmetic: %c%c", **num, *(*num+1));
 +			else
 +				snprintf(str, sizeof(str), "ex arithmetic: %d %c %d = %d", pre, **num, dir, n);
