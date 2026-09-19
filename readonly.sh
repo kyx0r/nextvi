@@ -157,24 +157,24 @@ int xai = 1;			/\* autoindent option \*/1??0?
 %f+ 	} else if \(ret\)
 		return "other buffers modified";
 	if \(!strchr\(cmd, '\''!'\''\)\) \{4??0?
-4??+2m 4220reg p OK ex.c:787:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:786:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	} else if \(ret\).*?
 		return "other buffers modified";.*?
 (	if \(!strchr\(cmd, '\''!'\''\)\) \{)7??0?
-grp 07??m 4220reg p OK ex.c:787:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:786:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		free\(ibuf\.s\);
 		xquit = quit;
 		return ret;.*(			return "write failed: file exists";)
 	}
 	fd = open\(path, O_WRONLY \| O_CREAT \| O_TRUNC, conf_mode\);8??0?
-grp 08??-4m 4220reg p OK ex.c:787:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ex.c:786:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			return ret;
 		lbuf_region\(xb, &ibuf, beg, MAX\(0, o1\), end - 1, o2\);
 		ret = ex_pipeout\(arg \+ 1, &ibuf\);.*(	if \(fd < 0\))
 		return "write failed: cannot create file";
 	if \(o1 >= 0\) \{9??0?
-grp 09??-7m 4220reg p OK ex.c:787:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:7872sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK ex.c:786:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:7862sc %? %@2132sc!0?
 ?0?
 %f+ 	return xkwdrs \? NULL : xserr;
 }
@@ -187,20 +187,20 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 }
 
 4??0?
-4??+2m 5220reg p OK ex.c:1671:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK ex.c:1670:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	int i, j, l, o;)
 	for \(l = 0, i = 0; i < x->cterm;\) \{
 		o = x->off\[i\+\+];8??0?
-grp 08??-4m 5220reg p OK ex.c:1671:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK ex.c:1670:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_nul\(sb\).*(		if \(o < 0\))
 			continue;
 		for \(l\+\+; x->off\[i] == o; i\+\+\);9??0?
-grp 09??-7m 5220reg p OK ex.c:1671:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16712sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK ex.c:1670:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16702sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
@@ -212,24 +212,24 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},4??0?
-4??+2m 6220reg p OK ex.c:1791:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK ex.c:1790:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"reg", ec_regprint},.*?
 	\{"re", ec_krsset},.*?
 (	\{"rd", ec_undoredo},)7??0?
-grp 07??m 6220reg p OK ex.c:1791:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1790:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"q!", ec_quit},
 	\{"q", ec_quit},
 	\{"reg\+", ec_regprint},.*(	\{"wq", ec_write},)
 	\{"w!", ec_write},
 	\{"w", ec_write},8??0?
-grp 08??-4m 6220reg p OK ex.c:1791:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK ex.c:1790:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(mpt\),
 	\{"m!", ec_mark},
 	\{"m", ec_mark},.*(	\{"uc", ec_setenc},)
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},9??0?
-grp 09??-7m 6220reg p OK ex.c:1791:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17912sc %? %@2132sc!0?
+grp 09??-7m 6220reg p OK ex.c:1790:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17902sc %? %@2132sc!0?
 '\''1-1i char readonly = 0;		/* commandline readonly option */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i 	bufs[i].readonly = readonly;
@@ -239,16 +239,16 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 ??!219reg ex.c:434:m32sc %? %@2142sc!0?
 '\''4i 		if (ex_buf->readonly)
 			return "write failed: readonly option is set";
-??!219reg ex.c:787:m42sc %? %@2142sc!0?
+??!219reg ex.c:786:m42sc %? %@2142sc!0?
 '\''5i static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
-??!219reg ex.c:1671:m52sc %? %@2142sc!0?
+??!219reg ex.c:1670:m52sc %? %@2142sc!0?
 '\''6i 	{"ro", ec_readonly},
-??!219reg ex.c:1791:m62sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1790:m62sc %? %@2142sc!b2m!%ya 98?0?
 %f> 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\)
 				xvis \|= 8;
@@ -281,17 +281,17 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 %f+ 				xvis = 0;
 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);
-				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+				fprintf\(stderr, "Nextvi-7\.7 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}1??0?
 1??+3m 21q0?
-%f+ 				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+%f+ 				fprintf\(stderr, "Nextvi-7\.7 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}2??0?
 2??m 2220reg p OK vi.c:1888:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
+;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.7 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
 3??m 2220reg p OK vi.c:1888:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				xvis = 0;
 			else \{
@@ -301,18 +301,18 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 			}
 		}5??0?
 5??-1m 2220reg p OK vi.c:1888:a52sc %? %@2152sc!1q0?
-%f+ ....x..s ....
-	..e.....
-		.	..................n....n ....... .%.......r....]\[....
-..		..r..t....d....."......-... ....e. %..\[.....v] ..i...\..\...."...........
-...	.......E.I..........
-.	..
+%f+ 		....is...0.
+	.	.... .
+			....in...s....r,....kn... ...........\\.....rg.\[i......
+......ri....st...., .N..t..-......a..:... .........\[..l.......n",.........;
+	...........XI....I..R..
+.		}
 	..6??0?
 6??+3m 2220reg p OK vi.c:1888:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				xvis = 0;.*?
 			else \{.*?
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);.*?
-(				fprintf\(stderr, "Nextvi-7\.6 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
+(				fprintf\(stderr, "Nextvi-7\.7 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
 grp 07??m 2220reg p OK vi.c:1888:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;
@@ -398,7 +398,7 @@ index a51117ca..e32a76da 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 21f13f54..c63b2527 100644
+index 6908c52d..32608c36 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -423,7 +423,7 @@ index 21f13f54..c63b2527 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -785,6 +789,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -784,6 +788,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	} else if (ret)
  		return "other buffers modified";
  	if (!strchr(cmd, '!')) {
@@ -432,7 +432,7 @@ index 21f13f54..c63b2527 100644
  		if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  			return "write failed: file changed";
  		if (arg[0] && mtime(path) >= 0)
-@@ -1669,6 +1675,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1668,6 +1674,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -445,7 +445,7 @@ index 21f13f54..c63b2527 100644
  static void ext_hlr(led_ext *p, led_ctx *x)
  {
  	ren_state *r = x->r;
-@@ -1789,6 +1801,7 @@ static struct excmd {
+@@ -1788,6 +1800,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},
@@ -454,7 +454,7 @@ index 21f13f54..c63b2527 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index cc9b1492..e800da17 100644
+index 09100cde..f5885224 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1881,11 +1881,13 @@ int main(int argc, char *argv[])
@@ -467,8 +467,8 @@ index cc9b1492..e800da17 100644
  				xvis = 0;
  			else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-7.6 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-7.6 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-7.7 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-7.7 Usage: %s [-aemRsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}

@@ -182,7 +182,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index cc9b1492..0b27e79a 100644
+index 09100cde..07a69596 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -504,10 +504,11 @@ static void vc_status(int type)

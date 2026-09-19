@@ -108,9 +108,9 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 grp 08??-4m 2220reg p OK ex.c:627:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	if \(lbuf_search\(xb, xkwdrs, xkwddir, beg, end,
-			pskip, nskip, &nbeg, &off\)\).*(			char c = ex_buf == bufs\+i \? '\''%'\'' : '\'' '\'';)
-			c = ex_pbuf == bufs\+i \? '\''#'\'' : c;
-			snprintf\(ln, LEN\(ln\), "%d %c %s", i,9??0?
+			pskip, nskip, &nbeg, &off\)\).*(			char c = ex_buf == bufs\+i \? '\''%'\'' : \(ex_pbuf == bufs\+i \? '\''#'\'' : '\'' '\''\);)
+			snprintf\(ln, LEN\(ln\), "%d %c %s", i,
+				c \+ \(char\)bufs\[i]\.lb->modified, bufs\[i]\.path\);9??0?
 grp 09??-7m 2220reg p OK ex.c:627:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg ex.c:6272sc %? %@2132sc!0?
 ?0?
@@ -124,24 +124,24 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	EO\(ish\),
 	\{"inc", ec_setincl},
 	EO\(ic\),4??0?
-4??+2m 3220reg p OK ex.c:1777:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1776:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(ish\),.*?
 	\{"inc", ec_setincl},.*?
 (	EO\(ic\),)7??0?
-grp 07??m 3220reg p OK ex.c:1777:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1776:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"f>", ec_find},
 	\{"f<", ec_find},
 	\{"f", ec_fuzz},.*(	\{"g!", ec_glob},)
 	\{"g", ec_glob},
 	EO\(mpt\),8??0?
-grp 08??-4m 3220reg p OK ex.c:1777:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1776:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(fr\),
 	\{"f\+", ec_find},
 	\{"f-", ec_find},.*(	\{"m!", ec_mark},)
 	\{"m", ec_mark},
 	\{"q!", ec_quit},9??0?
-grp 09??-7m 3220reg p OK ex.c:1777:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17772sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1776:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17762sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(mpt\),
 	\{"m!", ec_mark},
@@ -153,24 +153,24 @@ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	EO\(mpt\),
 	\{"m!", ec_mark},
 	\{"m", ec_mark},4??0?
-4??+2m 4220reg p OK ex.c:1785:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:1784:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(mpt\),.*?
 	\{"m!", ec_mark},.*?
 (	\{"m", ec_mark},)7??0?
-grp 07??m 4220reg p OK ex.c:1785:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:1784:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(grp\),
 	\{"g!", ec_glob},
 	\{"g", ec_glob},.*(	\{"reg", ec_regprint},)
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},8??0?
-grp 08??-4m 4220reg p OK ex.c:1785:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ex.c:1784:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(ic\),
 	\{"i", ec_insert},
 	\{"d", ec_delete},.*(	EO\(rr\),)
 	\{"r", ec_read},
 	\{"wq!", ec_write},9??0?
-grp 09??-7m 4220reg p OK ex.c:1785:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17852sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK ex.c:1784:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17842sc %? %@2132sc!0?
 '\''1-1i static char *nmaps[LEN(kmaps)][256];	/* normal mode key remaps */
 static char *imaps[LEN(kmaps)][256];	/* insert mode key remaps */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
@@ -217,10 +217,10 @@ int map_read(int mode, int winch)
 ??!219reg ex.c:627:m22sc %? %@2142sc!0?
 '\''3i 	{"im!", ec_map},
 	{"im", ec_map},
-??!219reg ex.c:1777:m32sc %? %@2142sc!0?
+??!219reg ex.c:1776:m32sc %? %@2142sc!0?
 '\''4i 	{"nm!", ec_map},
 	{"nm", ec_map},
-??!219reg ex.c:1785:m42sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1784:m42sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	do \{
 		led_printparts\(sb, pre, ps, \*post, postn, poff\);
 		len = sb->s_n;
@@ -898,7 +898,7 @@ index a51117ca..3ec85a31 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 21f13f54..23938d5a 100644
+index 6908c52d..225a4cb4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -954,7 +954,7 @@ index 21f13f54..23938d5a 100644
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	int n = atoi(arg);
-@@ -1775,6 +1817,8 @@ static struct excmd {
+@@ -1774,6 +1816,8 @@ static struct excmd {
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
@@ -963,7 +963,7 @@ index 21f13f54..23938d5a 100644
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
-@@ -1783,6 +1827,8 @@ static struct excmd {
+@@ -1782,6 +1826,8 @@ static struct excmd {
  	EO(mpt),
  	{"m!", ec_mark},
  	{"m", ec_mark},
@@ -986,7 +986,7 @@ index 375abb35..a8e308d4 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index cc9b1492..d8051b00 100644
+index 09100cde..d55791c0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -262,7 +262,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)

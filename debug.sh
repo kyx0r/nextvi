@@ -41,20 +41,20 @@ void ex_init\(char \*\*files, int n\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1987:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1986:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	syn_setft\(xb_ft\);
 	free\(sb->s\);.*(	ec_setbufsmax\(NULL, NULL, ""\);)
 	char \*s = files\[0] \? files\[0] : "";
 	do \{8??0?
-grp 08??-4m 1220reg p OK ex.c:1987:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1986:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else
 			esc = 0;
 		sbuf_cut\(sb, 0\).*(		xmpt = 0;)
 		ec_edit\("", "e", s\);
 		s = \*\(\+\+files\);9??0?
-grp 09??-7m 1220reg p OK ex.c:1987:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:19872sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1986:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:19862sc %? %@2132sc!0?
 '\''1i void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -71,7 +71,7 @@ void ex_init\(char \*\*files, int n\)
 	free(bufs);
 }
 
-??!219reg ex.c:1987:m12sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg ex.c:1986:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 		sbuf_free\(acsb\)
 	}
 }1??0?
@@ -214,10 +214,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 21f13f54..6d524f06 100644
+index 6908c52d..2fcc200b 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1985,6 +1985,22 @@ void ex(void)
+@@ -1984,6 +1984,22 @@ void ex(void)
  	xgrec--;
  }
  
@@ -304,7 +304,7 @@ index 4116d9c1..0abb7884 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index cc9b1492..27542651 100644
+index 09100cde..b9818709 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1901,6 +1901,11 @@ int main(int argc, char *argv[])

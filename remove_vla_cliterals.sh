@@ -269,17 +269,17 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	char \*lnb, \*ln, \*suf = "", \*fr = NULL;
 	int b1 = 0, pend, rflg = REG_NEWLINE, hit = 0;
 	sbuf_smake\(r, 256\)2??0?
-2??m 6220reg p OK ex.c:1144:a22sc %? %@2152sc!1q0?
+2??m 6220reg p OK ex.c:1143:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	int offs\[rs->nsubc];$3??0?
-3??m 6220reg p OK ex.c:1144:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 6220reg p OK ex.c:1143:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		rep = ex_re_read\(&s\);
 	}
 	free\(pat\);4??0?
-4??+3m 6220reg p OK ex.c:1144:a42sc %? %@2152sc!1q0?
+4??+3m 6220reg p OK ex.c:1143:a42sc %? %@2152sc!1q0?
 %f+ 	char \*lnb, \*ln, \*suf = "", \*fr = NULL;
 	int b1 = 0, pend, rflg = REG_NEWLINE, hit = 0;
 	sbuf_smake\(r, 256\)5??0?
-5??-1m 6220reg p OK ex.c:1144:a52sc %? %@2152sc!1q0?
+5??-1m 6220reg p OK ex.c:1143:a52sc %? %@2152sc!1q0?
 %f+ .	..p.=....re.....\(....
 	.
 ...e...a.\).
@@ -287,25 +287,25 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 ........n...\*..,........"...\*.r.. ...L;
 ....... ...,...............E.....LI....h...=...
 .........k.....25..6??0?
-6??+3m 6220reg p OK ex.c:1144:a62sc %? %@2152sc!1q0?
+6??+3m 6220reg p OK ex.c:1143:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		rep = ex_re_read\(&s\);.*?
 	}.*?
 	free\(pat\);.*?
 (	int offs\[rs->nsubc];)7??0?
-grp 07??m 6220reg p OK ex.c:1144:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1143:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	if \(pat && \*s\) \{
 		s--;.*(	for \(i = 0, flg = 0; s\[i]; i\+\+\) \{)
 		if \(s\[i] == '\''g'\''\)
 			flg \|= 1;8??0?
-grp 08??-4m 6220reg p OK ex.c:1144:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK ex.c:1143:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			rset_free\(rs\);
 		free\(pat\);
 		return rs \? xgerr : xserr;.*(		else if \(s\[i] == '\''m'\''\))
 			flg \|= 2;
 		else if \(s\[i] == '\''\^'\''\)9??0?
-grp 09??-7m 6220reg p OK ex.c:1144:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:11442sc %? %@2132sc!0?
+grp 09??-7m 6220reg p OK ex.c:1143:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:11432sc %? %@2132sc!0?
 ?0?
 %f+ 	if \(rs != xkwdrs\)
 		rset_free\(rs\);
@@ -318,24 +318,24 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 %f+ 	if \(rs != xkwdrs\)
 		rset_free\(rs\);
 	free\(rep\);4??0?
-4??+2m 7220reg p OK ex.c:1272:a42sc %? %@2152sc!1q0?
+4??+2m 7220reg p OK ex.c:1271:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	if \(rs != xkwdrs\).*?
 		rset_free\(rs\);.*?
 (	free\(rep\);)7??0?
-grp 07??m 7220reg p OK ex.c:1272:a72sc %? %@2152sc!1q0?
+grp 07??m 7220reg p OK ex.c:1271:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	out:
 	free\(fr\);
 	free\(r->s\);.*(static void \*ec_exec\(char \*loc, char \*cmd, char \*arg\))
 \{
 	if \(!\*loc\)8??0?
-grp 08??-4m 7220reg p OK ex.c:1272:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 7220reg p OK ex.c:1271:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		lbuf_smark\(xb, lo, first, MAX\(o1, 0\)\);
 		lbuf_emark\(xb, lo, last, MAX\(o2, 0\)\);
 	}.*(		return ex_pipeout\(arg, NULL\);)
 	int beg, end, o1 = -1, o2 = -1, e;
 	if \(\(e = ex_region\(loc, &beg, &end, &o1, &o2\)\)\) \{9??0?
-grp 09??-7m 7220reg p OK ex.c:1272:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:12722sc %? %@2132sc!0?
+grp 09??-7m 7220reg p OK ex.c:1271:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:12712sc %? %@2132sc!0?
 '\''1c 		int *offs = emalloc(xkwdrs->nsubc * sizeof(int));
 ??!219reg ex.c:586:m12sc %? %@2142sc!0?
 '\''2c 			if (rset_find(xkwdrs, sb->s, offs, 0) < 0 || offs[xgrp] < 0) {
@@ -351,9 +351,9 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		free(offs);
 ??!219reg ex.c:604:m52sc %? %@2142sc!0?
 '\''6c 	int *offs = emalloc(rs->nsubc * sizeof(int));
-??!219reg ex.c:1144:m62sc %? %@2142sc!0?
+??!219reg ex.c:1143:m62sc %? %@2142sc!0?
 '\''7i 	free(offs);
-??!219reg ex.c:1272:m72sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1271:m72sc %? %@2142sc!b2m!%ya 98?0?
 %f> 		int nskip, int \*r, int \*o\)
 \{
 	int r0 = \*r, o0 = \*o;
@@ -1882,7 +1882,7 @@ index a51117ca..364a7fd3 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 21f13f54..1d8fad3e 100644
+index 6908c52d..093cc27e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -583,13 +583,16 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -1917,7 +1917,7 @@ index 21f13f54..1d8fad3e 100644
  		return NULL;
  	}
  	off = xoff;
-@@ -1141,7 +1147,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1140,7 +1146,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  		rep = ex_re_read(&s);
  	}
  	free(pat);
@@ -1926,7 +1926,7 @@ index 21f13f54..1d8fad3e 100644
  	char *lnb, *ln, *suf = "", *fr = NULL;
  	int b1 = 0, pend, rflg = REG_NEWLINE, hit = 0;
  	sbuf_smake(r, 256)
-@@ -1270,6 +1276,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
+@@ -1269,6 +1275,7 @@ static void *ec_substitute(char *loc, char *cmd, char *arg)
  	if (rs != xkwdrs)
  		rset_free(rs);
  	free(rep);
@@ -2154,7 +2154,7 @@ index 4116d9c1..b89a893c 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index cc9b1492..c575366b 100644
+index 09100cde..62ca2994 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -140,7 +140,8 @@ static void vi_drawrow(int row)

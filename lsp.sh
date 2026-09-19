@@ -242,24 +242,24 @@ const int hloptslen = LEN\(hlopts\);8??0?
 %f+ 		ec_setpath\(NULL, NULL, path\);
 	lbuf_saved\(xb, 0\);
 	ex_buf->mtime = mtime\(path\);4??0?
-4??+2m 2220reg p OK ex.c:811:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:810:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		ec_setpath\(NULL, NULL, path\);.*?
 	lbuf_saved\(xb, 0\);.*?
 (	ex_buf->mtime = mtime\(path\);)7??0?
-grp 07??m 2220reg p OK ex.c:811:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:810:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			path, end - beg\);
 	ex_print\(msg, bar_ft\)
 	if \(strcmp\(xb_path, path\)\).*(static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\))
 \{
 	if \(\*arg && term_sbuf\)8??0?
-grp 08??-5m 2220reg p OK ex.c:811:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 2220reg p OK ex.c:810:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(o1 < 0\)
 		return "write failed";
 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[w]",.*(		term_exec\(arg, strlen\(arg\), cmd\[0]\))
 	return term_sbuf \? NULL : "unsupported command";
 }9??0?
-grp 09??-8m 2220reg p OK ex.c:811:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:8112sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK ex.c:810:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:8102sc %? %@2132sc!0?
 ?0?
 %f+ 	return NULL;
 \)
@@ -273,20 +273,20 @@ const int hloptslen = LEN\(hlopts\);8??0?
 \)
 
 4??0?
-4??+2m 3220reg p OK ex.c:1730:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1729:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 3220reg p OK ex.c:1730:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1729:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 3220reg p OK ex.c:1730:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:17302sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1729:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17292sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(left\),
 	EO\(lim\),
@@ -298,30 +298,30 @@ static struct excmd \{
 %f+ 	EO\(left\),
 	EO\(lim\),
 	EO\(led\),4??0?
-4??+2m 4220reg p OK ex.c:1827:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:1826:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(left\),.*?
 	EO\(lim\),.*?
 (	EO\(led\),)7??0?
-grp 07??m 4220reg p OK ex.c:1827:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:1826:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(hlp\),
 	EO\(hlr\),
 	EO\(hl\),.*(/\* parse command argument expanding % and ! \*/)
 static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{8??0?
-grp 08??-6m 4220reg p OK ex.c:1827:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 4220reg p OK ex.c:1826:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(order\),
 	EO\(hll\),
 	EO\(hlw\),.*(	\*arg = sb->s_n;)
 	while \(\*src && \*src != xsep\) \{
 		if \(\*src == xexp\) \{9??0?
-grp 09??-9m 4220reg p OK ex.c:1827:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:18272sc %? %@2132sc!0?
+grp 09??-9m 4220reg p OK ex.c:1826:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18262sc %? %@2132sc!0?
 '\''1i 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
 ??!219reg ex.c:438:m12sc %? %@2142sc!0?
 '\''2i 	if (*xb_path)
 		lsp_save(xb_path);
-??!219reg ex.c:811:m22sc %? %@2142sc!0?
+??!219reg ex.c:810:m22sc %? %@2142sc!0?
 '\''3i /* :lsp			list the registered servers
  * :lsp <filetype> <cmd>	run <cmd> as the language server of <filetype> */
 static void *ec_lsp(char *loc, char *cmd, char *arg)
@@ -350,9 +350,9 @@ static void *ec_lsp(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-??!219reg ex.c:1730:m32sc %? %@2142sc!0?
+??!219reg ex.c:1729:m32sc %? %@2142sc!0?
 '\''4i 	{"lsp", ec_lsp},
-??!219reg ex.c:1827:m42sc %? %@2142sc!b2m!0?
+??!219reg ex.c:1826:m42sc %? %@2142sc!b2m!0?
 i /*
  * MIT License
  *
@@ -2867,7 +2867,7 @@ index a51117ca..3baa5851 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index 21f13f54..8aa05419 100644
+index 6908c52d..9fc86c5a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -436,6 +436,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -2879,7 +2879,7 @@ index 21f13f54..8aa05419 100644
  	}
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-@@ -809,6 +811,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -808,6 +810,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		ec_setpath(NULL, NULL, path);
  	lbuf_saved(xb, 0);
  	ex_buf->mtime = mtime(path);
@@ -2888,7 +2888,7 @@ index 21f13f54..8aa05419 100644
  	xquit = quit;
  	return NULL;
  }
-@@ -1728,6 +1732,34 @@ _EO(left,
+@@ -1727,6 +1731,34 @@ _EO(left,
  	return NULL;
  )
  
@@ -2923,7 +2923,7 @@ index 21f13f54..8aa05419 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1825,6 +1857,7 @@ static struct excmd {
+@@ -1824,6 +1856,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -4682,7 +4682,7 @@ index 03aa736f..adccd79a 100644
  		tibuf_cnt = 1;
  		tibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index cc9b1492..e50aa4c6 100644
+index 09100cde..26298ed6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
