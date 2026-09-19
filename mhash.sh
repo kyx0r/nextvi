@@ -836,7 +836,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 6908c52d..17fc8dd5 100644
+index 4d333baf..97bbde06 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1094,7 +1094,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
