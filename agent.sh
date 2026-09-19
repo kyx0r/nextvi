@@ -68,7 +68,7 @@ static char nextvi_skill[] =
 "\n"
 "Nextvi is not a standard vi/ex.\n"
 "Use exspec command for a command list.\n"
-"Use exspec with an argument for a topic or command or specification.\n";
+"Use exspec with an argument for a topic or command specification.\n";
 
 static char caveman_skill[] =
 "Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
@@ -7984,7 +7984,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..2671ef01
+index 00000000..ed6adddd
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,1075 @@
@@ -8026,7 +8026,7 @@ index 00000000..2671ef01
 +"\n"
 +"Nextvi is not a standard vi/ex.\n"
 +"Use exspec command for a command list.\n"
-+"Use exspec with an argument for a topic or command or specification.\n";
++"Use exspec with an argument for a topic or command specification.\n";
 +
 +static char caveman_skill[] =
 +"Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
