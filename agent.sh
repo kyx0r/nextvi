@@ -4855,8 +4855,6 @@ int xar;	/* display returned agent reasoning (:ar) */
 static char exspec_insert[] =
 	"For tool i/c calls, supply text directly with literal newlines, no dot "
 	"terminator or keyboard escape. Text is required.";
-static char exspec_global[] =
-	"Bound global command output; stop when you have enough context.";
 
 /* Additional :exspec lines; repeat a command to append more lines. */
 static struct {
@@ -4876,9 +4874,6 @@ static struct {
 	{"ranges", "> and < start searching from the current cursor position."},
 	{"ranges", "Verify position with = command to ensure it is where intended."},
 	{"=", "Check the line count with $= before printing ranges."},
-	{"g", exspec_global},
-	{"g!", exspec_global},
-	{"!", "Bound shell output; stop when you have enough context."},
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
@@ -12659,10 +12654,10 @@ index c836c94c..1ddba695 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index a51117ca..874cecde 100644
+index a51117ca..4bf32f84 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,55 @@
+@@ -1,5 +1,50 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -12689,8 +12684,6 @@ index a51117ca..874cecde 100644
 +static char exspec_insert[] =
 +	"For tool i/c calls, supply text directly with literal newlines, no dot "
 +	"terminator or keyboard escape. Text is required.";
-+static char exspec_global[] =
-+	"Bound global command output; stop when you have enough context.";
 +
 +/* Additional :exspec lines; repeat a command to append more lines. */
 +static struct {
@@ -12710,15 +12703,12 @@ index a51117ca..874cecde 100644
 +	{"ranges", "> and < start searching from the current cursor position."},
 +	{"ranges", "Verify position with = command to ensure it is where intended."},
 +	{"=", "Check the line count with $= before printing ranges."},
-+	{"g", exspec_global},
-+	{"g!", exspec_global},
-+	{"!", "Bound shell output; stop when you have enough context."},
 +};
 +
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +347,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +342,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
