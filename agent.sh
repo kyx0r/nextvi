@@ -7602,7 +7602,16 @@ void lbuf_saved\(struct lbuf \*lb, int clear\)
 			lopt_done\(&lb->hist\[i]\);9??0?
 grp 09??-7m 3220reg p OK lbuf.c:453:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg lbuf.c:4532sc %? %@2132sc!0?
-'\''1i 	agent_sync(lb);
+'\''1i 	if (agent_tool) {
+		char msg[64];
+		int first = beg + 1, last = end > beg ? end : first;
+		if (first == last)
+			snprintf(msg, sizeof(msg), "replaced line %d", first);
+		else
+			snprintf(msg, sizeof(msg), "replaced lines %d,%d", first, last);
+		ex_print(msg, msg_ft)
+	}
+	agent_sync(lb);
 ??!219reg lbuf.c:229:m12sc %? %@2142sc!0?
 '\''2i 	agent_sync(lb);
 ??!219reg lbuf.c:426:m22sc %? %@2142sc!0?
@@ -14585,18 +14594,27 @@ index 00000000..855386cf
 +	{"err", "Control ex errors", 974, 986, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..50e896e2 100644
+index 56cb42c6..46734a46 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -227,6 +227,7 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
+@@ -227,6 +227,16 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
  		free(sb->s);
  	else
  		lo->ins = (char**)sb->s;
++	if (agent_tool) {
++		char msg[64];
++		int first = beg + 1, last = end > beg ? end : first;
++		if (first == last)
++			snprintf(msg, sizeof(msg), "replaced line %d", first);
++		else
++			snprintf(msg, sizeof(msg), "replaced lines %d,%d", first, last);
++		ex_print(msg, msg_ft)
++	}
 +	agent_sync(lb);
  }
  
  int lbuf_rd(struct lbuf *lb, int fd, int beg, int end)
-@@ -424,6 +425,7 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
+@@ -424,6 +434,7 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
  	lbuf_copymark(lb->mark_sb, lo->mark_sb)
  	lbuf_copymark(lb->mark_se, lo->mark_se)
  	lb->modified = lb->hist_u != lb->saved;
@@ -14604,7 +14622,7 @@ index 56cb42c6..50e896e2 100644
  	return 0;
  }
  
-@@ -451,6 +453,7 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+@@ -451,6 +462,7 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  		lbuf_copymark(lb->mark_se, (lb->tmp_mark + 2))
  	}
  	lb->modified = lb->hist_u != lb->saved;
