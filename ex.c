@@ -631,8 +631,7 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
 	if (!arg[0]) {
 		char ln[512];
 		for (int i = 0; i < xbufcur; i++) {
-			char c = ex_buf == bufs+i ? '%' : ' ';
-			c = ex_pbuf == bufs+i ? '#' : c;
+			char c = ex_buf == bufs+i ? '%' : (ex_pbuf == bufs+i ? '#' : ' ');
 			snprintf(ln, LEN(ln), "%d %c %s", i,
 				c + (char)bufs[i].lb->modified, bufs[i].path);
 			ex_print(ln, msg_ft)
