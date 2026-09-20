@@ -1009,7 +1009,7 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
 	cJSON *config;
 	unsigned long epoch;
-	if (cmd[1] == '\''!'\'')
+	if (strchr(cmd, '\''!'\''))
 		exspec_reset();
 	if (agent_init_error)
 		return agent_init_error;
@@ -1144,7 +1144,7 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	sbuf_nul(task)
 	preserve(int, agent_logbuf, agent_logbuf = 2;)
 	/* apack! resets history without clearing or importing the log. */
-	ret = ec_agent(loc, browse ? "apack!" : "a~", task->s);
+	ret = ec_agent(loc, browse ? cmd : "a~", task->s);
 	restore(agent_logbuf)
 	if (!ret && agent_epoch == epoch + 1)
 		agent_history(1);
@@ -8230,7 +8230,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..940093ba
+index 00000000..603462ec
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,1121 @@
@@ -9213,7 +9213,7 @@ index 00000000..940093ba
 +	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
 +	cJSON *config;
 +	unsigned long epoch;
-+	if (cmd[1] == '!')
++	if (strchr(cmd, '!'))
 +		exspec_reset();
 +	if (agent_init_error)
 +		return agent_init_error;
@@ -9348,7 +9348,7 @@ index 00000000..940093ba
 +	sbuf_nul(task)
 +	preserve(int, agent_logbuf, agent_logbuf = 2;)
 +	/* apack! resets history without clearing or importing the log. */
-+	ret = ec_agent(loc, browse ? "apack!" : "a~", task->s);
++	ret = ec_agent(loc, browse ? cmd : "a~", task->s);
 +	restore(agent_logbuf)
 +	if (!ret && agent_epoch == epoch + 1)
 +		agent_history(1);
