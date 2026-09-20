@@ -1009,7 +1009,7 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
 	cJSON *config;
 	unsigned long epoch;
-	if (cmd[1])
+	if (cmd[1] == '\''!'\'')
 		exspec_reset();
 	if (agent_init_error)
 		return agent_init_error;
@@ -8230,7 +8230,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..e3558b52
+index 00000000..940093ba
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,1121 @@
@@ -9213,7 +9213,7 @@ index 00000000..e3558b52
 +	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
 +	cJSON *config;
 +	unsigned long epoch;
-+	if (cmd[1])
++	if (cmd[1] == '!')
 +		exspec_reset();
 +	if (agent_init_error)
 +		return agent_init_error;
