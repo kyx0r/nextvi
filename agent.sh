@@ -1078,7 +1078,7 @@ static void *ec_aco(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-static void *ec_agent(char *loc, char *cmd, char *arg)
+static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 {
 	char *scope = NULL;
 	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
@@ -1114,6 +1114,7 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 		agent_history(cmd[1] == '\''~'\'');
 	}
 	epoch = agent_epoch;
+	preserve(int, agent_logbuf, agent_logbuf = compact ? 2 : 3;)
 	if (term_owned)
 		term_init();
 	if (!(savedvis & 2))
@@ -1171,6 +1172,8 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 				if (agent_cancel == 1)
 					break;
 				agent_cancel = 0;
+				if (compact)
+					break;
 			}
 			prefix = key == '\''\n'\'' ? 0 : 2;
 			sbufn_cut(line, 0)
@@ -1187,11 +1190,17 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	restore(xexp)
 	restore(xsep)
 	restore(xesc)
+	restore(agent_logbuf)
 	xvis = savedvis;
 	if (term_owned)
 		term_done();
 	syn_setft(xb_ft);
 	return NULL;
+}
+
+static void *ec_agent(char *loc, char *cmd, char *arg)
+{
+	return agent_session(loc, cmd, arg, 0);
 }
 
 static void *ec_compact(char *loc, char *cmd, char *arg)
@@ -1217,10 +1226,8 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	"with the summary using %c followed by literal summary text.\n"
 	"Return control to the user once complete.\n\033")
 	sbuf_nul(task)
-	preserve(int, agent_logbuf, agent_logbuf = 2;)
 	/* apack! resets history without clearing or importing the log. */
-	ret = ec_agent(loc, browse ? cmd : "a~", task->s);
-	restore(agent_logbuf)
+	ret = agent_session(loc, browse ? cmd : "a~", task->s, 1);
 	if (!ret && agent_epoch == epoch + 1)
 		agent_history(1);
 	free(task->s);
@@ -8288,10 +8295,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..25795b69
+index 00000000..c093c60e
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1196 @@
+@@ -0,0 +1,1203 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9340,7 +9347,7 @@ index 00000000..25795b69
 +	return NULL;
 +}
 +
-+static void *ec_agent(char *loc, char *cmd, char *arg)
++static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 +{
 +	char *scope = NULL;
 +	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
@@ -9376,6 +9383,7 @@ index 00000000..25795b69
 +		agent_history(cmd[1] == '~');
 +	}
 +	epoch = agent_epoch;
++	preserve(int, agent_logbuf, agent_logbuf = compact ? 2 : 3;)
 +	if (term_owned)
 +		term_init();
 +	if (!(savedvis & 2))
@@ -9433,6 +9441,8 @@ index 00000000..25795b69
 +				if (agent_cancel == 1)
 +					break;
 +				agent_cancel = 0;
++				if (compact)
++					break;
 +			}
 +			prefix = key == '\n' ? 0 : 2;
 +			sbufn_cut(line, 0)
@@ -9449,11 +9459,17 @@ index 00000000..25795b69
 +	restore(xexp)
 +	restore(xsep)
 +	restore(xesc)
++	restore(agent_logbuf)
 +	xvis = savedvis;
 +	if (term_owned)
 +		term_done();
 +	syn_setft(xb_ft);
 +	return NULL;
++}
++
++static void *ec_agent(char *loc, char *cmd, char *arg)
++{
++	return agent_session(loc, cmd, arg, 0);
 +}
 +
 +static void *ec_compact(char *loc, char *cmd, char *arg)
@@ -9479,10 +9495,8 @@ index 00000000..25795b69
 +	"with the summary using %c followed by literal summary text.\n"
 +	"Return control to the user once complete.\n\033")
 +	sbuf_nul(task)
-+	preserve(int, agent_logbuf, agent_logbuf = 2;)
 +	/* apack! resets history without clearing or importing the log. */
-+	ret = ec_agent(loc, browse ? cmd : "a~", task->s);
-+	restore(agent_logbuf)
++	ret = agent_session(loc, browse ? cmd : "a~", task->s, 1);
 +	if (!ret && agent_epoch == epoch + 1)
 +		agent_history(1);
 +	free(task->s);
