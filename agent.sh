@@ -6396,6 +6396,9 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 						break;
 				if (agent_tool && *excmds[k].name &&
 						(excmds[k].ec == ec_fuzz ||
+						excmds[k].ec == ec_agent ||
+						excmds[k].ec == ec_compact ||
+						excmds[k].ec == ec_skill ||
 						!strcmp(exspec_cmds[i].name, "@")))
 					continue;
 				snprintf(msg, sizeof(msg), "%s  %s",
@@ -6419,8 +6422,8 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 				desc = excmds[i].ec == ec_exspec ?
 					"Print ex command index or specification" :
 					"unknown ex specification";
-					snprintf(msg, sizeof(msg), "%s  %s", excmds[i].name, desc);
-					ex_print(msg, msg_ft)
+				snprintf(msg, sizeof(msg), "%s  %s", excmds[i].name, desc);
+				ex_print(msg, msg_ft)
 			}
 		}
 		return NULL;
@@ -13308,7 +13311,7 @@ index a51117ca..fc582c0d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 4d333baf..dceb7b0a 100644
+index 4d333baf..a895f125 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13561,7 +13564,7 @@ index 4d333baf..dceb7b0a 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1829,12 +1901,175 @@ static struct excmd {
+@@ -1829,12 +1901,178 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -13653,6 +13656,9 @@ index 4d333baf..dceb7b0a 100644
 +						break;
 +				if (agent_tool && *excmds[k].name &&
 +						(excmds[k].ec == ec_fuzz ||
++						excmds[k].ec == ec_agent ||
++						excmds[k].ec == ec_compact ||
++						excmds[k].ec == ec_skill ||
 +						!strcmp(exspec_cmds[i].name, "@")))
 +					continue;
 +				snprintf(msg, sizeof(msg), "%s  %s",
@@ -13676,8 +13682,8 @@ index 4d333baf..dceb7b0a 100644
 +				desc = excmds[i].ec == ec_exspec ?
 +					"Print ex command index or specification" :
 +					"unknown ex specification";
-+					snprintf(msg, sizeof(msg), "%s  %s", excmds[i].name, desc);
-+					ex_print(msg, msg_ft)
++				snprintf(msg, sizeof(msg), "%s  %s", excmds[i].name, desc);
++				ex_print(msg, msg_ft)
 +			}
 +		}
 +		return NULL;
@@ -13737,7 +13743,7 @@ index 4d333baf..dceb7b0a 100644
  			int n;
  			struct buf *pbuf = ex_buf;
  			src++;
-@@ -1862,6 +2097,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1862,6 +2100,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  				sbuf_chr(sb, '@')
  			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
  		} else if (*src == xexe) {
@@ -13751,7 +13757,7 @@ index 4d333baf..dceb7b0a 100644
  			int n = sb->s_n;
  			src++;
  			ex_sread(sb, (char**)&src, xexe, xesc);
-@@ -1885,8 +2127,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1885,8 +2130,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  {
  	int i, j;
@@ -13769,7 +13775,7 @@ index 4d333baf..dceb7b0a 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1936,8 +2186,34 @@ void *ex_exec(const char *ln)
+@@ -1936,8 +2189,34 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -13805,7 +13811,7 @@ index 4d333baf..dceb7b0a 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1956,7 +2232,7 @@ void *ex_exec(const char *ln)
+@@ -1956,7 +2235,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
