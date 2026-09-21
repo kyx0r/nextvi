@@ -749,12 +749,84 @@ static void agent_sequence(void)
 		tempbufs[i].lb->useq += xseq;
 }
 
+/* Return 1 for envelope errors, 2 for tool calls the model can correct. */
+static int agent_response_error(cJSON *root, char *error, size_t size)
+{
+	cJSON *choices = cJSON_GetObjectItem(root, "choices");
+	cJSON *message = cJSON_GetObjectItem(cJSON_GetArrayItem(choices, 0), "message");
+	cJSON *role = cJSON_GetObjectItem(message, "role");
+	cJSON *content = cJSON_GetObjectItem(message, "content");
+	cJSON *calls = cJSON_GetObjectItem(message, "tool_calls"), *tc;
+	const char *reason = NULL;
+	int index = 0;
+	if (!root)
+		reason = "response: invalid JSON";
+	else if (!cJSON_IsObject(root))
+		reason = "response: expected an object";
+	else if (!cJSON_IsArray(choices) || !cJSON_GetArraySize(choices))
+		reason = "choices: expected a nonempty array";
+	else if (!cJSON_IsObject(message))
+		reason = "choices[0].message: expected an object";
+	else if (!cJSON_IsString(role) || strcmp(role->valuestring, "assistant"))
+		reason = "message.role: expected assistant";
+	else if (content && !cJSON_IsNull(content) && !cJSON_IsString(content))
+		reason = "message.content: expected a string or null";
+	else if (calls && !cJSON_IsArray(calls))
+		reason = "message.tool_calls: expected an array";
+	else if (!cJSON_IsString(content) && !cJSON_GetArraySize(calls))
+		reason = "message: missing text and tool calls";
+	if (reason) {
+		snprintf(error, size, "%s", reason);
+		return 1;
+	}
+	cJSON_ArrayForEach(tc, calls) {
+		cJSON *id = cJSON_GetObjectItem(tc, "id");
+		cJSON *type = cJSON_GetObjectItem(tc, "type");
+		cJSON *fn = cJSON_GetObjectItem(tc, "function");
+		cJSON *name = cJSON_GetObjectItem(fn, "name");
+		cJSON *args = cJSON_GetObjectItem(fn, "arguments");
+		cJSON *parsed = cJSON_IsString(args) ?
+			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
+		cJSON *command = cJSON_GetObjectItem(parsed, "command");
+		if (!cJSON_IsObject(tc))
+			reason = "expected an object";
+		else if (!cJSON_IsString(id) || !*id->valuestring)
+			reason = "id: expected a nonempty string";
+		else if (!cJSON_IsString(type) || strcmp(type->valuestring, "function"))
+			reason = "type: expected function";
+		else if (!cJSON_IsObject(fn))
+			reason = "function: expected an object";
+		else if (!cJSON_IsString(name) || strcmp(name->valuestring, "ex"))
+			reason = "function.name: expected ex";
+		else if (!cJSON_IsString(args))
+			reason = "function.arguments: expected a JSON-encoded string";
+		else if (!parsed)
+			reason = "function.arguments: invalid JSON";
+		else if (!cJSON_IsObject(parsed))
+			reason = "function.arguments: expected a JSON object";
+		else if (!cJSON_IsString(command) || !*command->valuestring)
+			reason = "function.arguments.command: expected a nonempty string";
+		cJSON_Delete(parsed);
+		for (cJSON *prev = calls->child; !reason && prev != tc; prev = prev->next) {
+			cJSON *pid = cJSON_GetObjectItem(prev, "id");
+			if (cJSON_IsString(pid) && !strcmp(id->valuestring, pid->valuestring))
+				reason = "id: duplicate within this response";
+		}
+		if (reason) {
+			snprintf(error, size, "tool_calls[%d].%s", index, reason);
+			return 2;
+		}
+		index++;
+	}
+	return 0;
+}
+
 static void agent_run(const char *input)
 {
 	unsigned long serial = ++agent_serial, epoch = agent_epoch;
-	cJSON *req, *root, *message, *calls, *tc, *text;
+	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
-	int st;
+	int st, retries = 0;
 	agent_cancel = agent_pause = 0;
 	agent_rounds = 0;
 	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
@@ -806,54 +878,53 @@ static void agent_run(const char *input)
 		}
 		free(stderr_text);
 		root = cJSON_ParseWithOpts(body, NULL, 1);
-		free(body);
-		text = cJSON_GetObjectItem(
-			cJSON_GetObjectItem(root, "error"), "message");
-		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
-			cJSON_GetObjectItem(root, "choices"), 0), "message");
-		calls = cJSON_GetObjectItem(message, "tool_calls");
-		cJSON *role = cJSON_GetObjectItem(message, "role");
-		cJSON *content = cJSON_GetObjectItem(message, "content");
-		int valid = cJSON_IsObject(message) && cJSON_IsString(role) &&
-			!strcmp(role->valuestring, "assistant") &&
-			(!content || cJSON_IsNull(content) ||
-			 cJSON_IsString(content)) &&
-			(!calls || cJSON_IsArray(calls)) &&
-			(cJSON_IsString(content) || cJSON_GetArraySize(calls));
-		/* Reject the whole batch before storing or executing any call. */
-		cJSON_ArrayForEach(tc, calls) {
-			cJSON *id = cJSON_GetObjectItem(tc, "id");
-			cJSON *type = cJSON_GetObjectItem(tc, "type");
-			cJSON *fn = cJSON_GetObjectItem(tc, "function");
-			cJSON *name = cJSON_GetObjectItem(fn, "name");
-			cJSON *args = cJSON_GetObjectItem(fn, "arguments");
-			cJSON *parsed = cJSON_IsString(args) ?
-				cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
-			cJSON *command = cJSON_GetObjectItem(parsed, "command");
-			if (!cJSON_IsString(type) || strcmp(type->valuestring, "function") ||
-					!cJSON_IsString(name) || strcmp(name->valuestring, "ex") ||
-					!cJSON_IsObject(parsed) || !cJSON_IsString(command) ||
-					!*command->valuestring)
-				valid = 0;
-			cJSON_Delete(parsed);
-			if (!cJSON_IsString(id) || !*id->valuestring)
-				valid = 0;
-			for (cJSON *prev = calls->child; prev != tc;
-					prev = prev->next) {
-				cJSON *pid = cJSON_GetObjectItem(prev, "id");
-				if (cJSON_IsString(id) && cJSON_IsString(pid) &&
-					!strcmp(id->valuestring,
-						pid->valuestring))
-					valid = 0;
-			}
-		}
-		if (!valid || cJSON_GetObjectItem(root, "error")) {
-			agent_log("RESULT", cJSON_IsString(text) ?
-				text->valuestring :
-				"malformed assistant response; history retained, submit to retry");
+		if (cJSON_GetObjectItem(root, "error")) {
+			agent_http_failure(body, NULL);
+			free(body);
 			cJSON_Delete(root);
 			return;
 		}
+		char error[256], diagnostic[2048], excerpt[513];
+		int invalid = agent_response_error(root, error, sizeof(error));
+		if (invalid) {
+			cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
+				cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
+			snprintf(excerpt, sizeof(excerpt), "%.512s", body);
+			cJSON *quoted = cJSON_CreateString(excerpt);
+			char *encoded = cJSON_PrintUnformatted(quoted);
+			snprintf(diagnostic, sizeof(diagnostic),
+				"malformed assistant response: %s\n"
+				"finish_reason: %.80s; rejected response (first 512 bytes): %.1100s\n"
+				"%s",
+				error, cJSON_IsString(finish) ? finish->valuestring : "unavailable",
+				encoded ? encoded : "(unavailable)",
+				retries < 2 ? "retrying automatically" :
+				"retry limit reached; history retained, submit to retry");
+			agent_log("RESULT", diagnostic);
+			free(encoded);
+			cJSON_Delete(quoted);
+			/* Invalid calls never enter history or execute, even in a mixed batch. */
+			if (invalid == 2) {
+				snprintf(diagnostic, sizeof(diagnostic),
+					"Your previous response was rejected: %s. "
+					"No commands from that response were executed. "
+					"Correct and resubmit the intended calls. "
+					"Use tool type function, name ex, and unique nonempty call IDs. "
+					"Arguments must be a JSON-encoded object with a nonempty "
+					"string command, for example {\"command\":\"1,20p\"}.", error);
+				cJSON_AddItemToArray(agent_messages, agent_msg("user", diagnostic));
+			}
+			free(body);
+			cJSON_Delete(root);
+			if (retries++ < 2)
+				continue;
+			return;
+		}
+		free(body);
+		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
+			cJSON_GetObjectItem(root, "choices"), 0), "message");
+		calls = cJSON_GetObjectItem(message, "tool_calls");
+		cJSON *content = cJSON_GetObjectItem(message, "content");
 		/* Complete pairs before recursive editing or submissions. */
 		cJSON_AddItemToArray(agent_messages,
 			cJSON_Duplicate(message, 1));
@@ -6343,6 +6414,8 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 						break;
 				if (j < LEN(exspec_cmds))
 					continue;
+				if (agent_tool && excmds[i].ec != ec_exspec)
+					continue;
 				desc = excmds[i].ec == ec_exspec ?
 					"Print ex command index or specification" :
 					"unknown ex specification";
@@ -8295,10 +8368,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..c093c60e
+index 00000000..2a691b1a
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1203 @@
+@@ -0,0 +1,1274 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9018,12 +9091,84 @@ index 00000000..c093c60e
 +		tempbufs[i].lb->useq += xseq;
 +}
 +
++/* Return 1 for envelope errors, 2 for tool calls the model can correct. */
++static int agent_response_error(cJSON *root, char *error, size_t size)
++{
++	cJSON *choices = cJSON_GetObjectItem(root, "choices");
++	cJSON *message = cJSON_GetObjectItem(cJSON_GetArrayItem(choices, 0), "message");
++	cJSON *role = cJSON_GetObjectItem(message, "role");
++	cJSON *content = cJSON_GetObjectItem(message, "content");
++	cJSON *calls = cJSON_GetObjectItem(message, "tool_calls"), *tc;
++	const char *reason = NULL;
++	int index = 0;
++	if (!root)
++		reason = "response: invalid JSON";
++	else if (!cJSON_IsObject(root))
++		reason = "response: expected an object";
++	else if (!cJSON_IsArray(choices) || !cJSON_GetArraySize(choices))
++		reason = "choices: expected a nonempty array";
++	else if (!cJSON_IsObject(message))
++		reason = "choices[0].message: expected an object";
++	else if (!cJSON_IsString(role) || strcmp(role->valuestring, "assistant"))
++		reason = "message.role: expected assistant";
++	else if (content && !cJSON_IsNull(content) && !cJSON_IsString(content))
++		reason = "message.content: expected a string or null";
++	else if (calls && !cJSON_IsArray(calls))
++		reason = "message.tool_calls: expected an array";
++	else if (!cJSON_IsString(content) && !cJSON_GetArraySize(calls))
++		reason = "message: missing text and tool calls";
++	if (reason) {
++		snprintf(error, size, "%s", reason);
++		return 1;
++	}
++	cJSON_ArrayForEach(tc, calls) {
++		cJSON *id = cJSON_GetObjectItem(tc, "id");
++		cJSON *type = cJSON_GetObjectItem(tc, "type");
++		cJSON *fn = cJSON_GetObjectItem(tc, "function");
++		cJSON *name = cJSON_GetObjectItem(fn, "name");
++		cJSON *args = cJSON_GetObjectItem(fn, "arguments");
++		cJSON *parsed = cJSON_IsString(args) ?
++			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
++		cJSON *command = cJSON_GetObjectItem(parsed, "command");
++		if (!cJSON_IsObject(tc))
++			reason = "expected an object";
++		else if (!cJSON_IsString(id) || !*id->valuestring)
++			reason = "id: expected a nonempty string";
++		else if (!cJSON_IsString(type) || strcmp(type->valuestring, "function"))
++			reason = "type: expected function";
++		else if (!cJSON_IsObject(fn))
++			reason = "function: expected an object";
++		else if (!cJSON_IsString(name) || strcmp(name->valuestring, "ex"))
++			reason = "function.name: expected ex";
++		else if (!cJSON_IsString(args))
++			reason = "function.arguments: expected a JSON-encoded string";
++		else if (!parsed)
++			reason = "function.arguments: invalid JSON";
++		else if (!cJSON_IsObject(parsed))
++			reason = "function.arguments: expected a JSON object";
++		else if (!cJSON_IsString(command) || !*command->valuestring)
++			reason = "function.arguments.command: expected a nonempty string";
++		cJSON_Delete(parsed);
++		for (cJSON *prev = calls->child; !reason && prev != tc; prev = prev->next) {
++			cJSON *pid = cJSON_GetObjectItem(prev, "id");
++			if (cJSON_IsString(pid) && !strcmp(id->valuestring, pid->valuestring))
++				reason = "id: duplicate within this response";
++		}
++		if (reason) {
++			snprintf(error, size, "tool_calls[%d].%s", index, reason);
++			return 2;
++		}
++		index++;
++	}
++	return 0;
++}
++
 +static void agent_run(const char *input)
 +{
 +	unsigned long serial = ++agent_serial, epoch = agent_epoch;
-+	cJSON *req, *root, *message, *calls, *tc, *text;
++	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
-+	int st;
++	int st, retries = 0;
 +	agent_cancel = agent_pause = 0;
 +	agent_rounds = 0;
 +	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
@@ -9075,54 +9220,53 @@ index 00000000..c093c60e
 +		}
 +		free(stderr_text);
 +		root = cJSON_ParseWithOpts(body, NULL, 1);
-+		free(body);
-+		text = cJSON_GetObjectItem(
-+			cJSON_GetObjectItem(root, "error"), "message");
-+		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
-+			cJSON_GetObjectItem(root, "choices"), 0), "message");
-+		calls = cJSON_GetObjectItem(message, "tool_calls");
-+		cJSON *role = cJSON_GetObjectItem(message, "role");
-+		cJSON *content = cJSON_GetObjectItem(message, "content");
-+		int valid = cJSON_IsObject(message) && cJSON_IsString(role) &&
-+			!strcmp(role->valuestring, "assistant") &&
-+			(!content || cJSON_IsNull(content) ||
-+			 cJSON_IsString(content)) &&
-+			(!calls || cJSON_IsArray(calls)) &&
-+			(cJSON_IsString(content) || cJSON_GetArraySize(calls));
-+		/* Reject the whole batch before storing or executing any call. */
-+		cJSON_ArrayForEach(tc, calls) {
-+			cJSON *id = cJSON_GetObjectItem(tc, "id");
-+			cJSON *type = cJSON_GetObjectItem(tc, "type");
-+			cJSON *fn = cJSON_GetObjectItem(tc, "function");
-+			cJSON *name = cJSON_GetObjectItem(fn, "name");
-+			cJSON *args = cJSON_GetObjectItem(fn, "arguments");
-+			cJSON *parsed = cJSON_IsString(args) ?
-+				cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
-+			cJSON *command = cJSON_GetObjectItem(parsed, "command");
-+			if (!cJSON_IsString(type) || strcmp(type->valuestring, "function") ||
-+					!cJSON_IsString(name) || strcmp(name->valuestring, "ex") ||
-+					!cJSON_IsObject(parsed) || !cJSON_IsString(command) ||
-+					!*command->valuestring)
-+				valid = 0;
-+			cJSON_Delete(parsed);
-+			if (!cJSON_IsString(id) || !*id->valuestring)
-+				valid = 0;
-+			for (cJSON *prev = calls->child; prev != tc;
-+					prev = prev->next) {
-+				cJSON *pid = cJSON_GetObjectItem(prev, "id");
-+				if (cJSON_IsString(id) && cJSON_IsString(pid) &&
-+					!strcmp(id->valuestring,
-+						pid->valuestring))
-+					valid = 0;
-+			}
-+		}
-+		if (!valid || cJSON_GetObjectItem(root, "error")) {
-+			agent_log("RESULT", cJSON_IsString(text) ?
-+				text->valuestring :
-+				"malformed assistant response; history retained, submit to retry");
++		if (cJSON_GetObjectItem(root, "error")) {
++			agent_http_failure(body, NULL);
++			free(body);
 +			cJSON_Delete(root);
 +			return;
 +		}
++		char error[256], diagnostic[2048], excerpt[513];
++		int invalid = agent_response_error(root, error, sizeof(error));
++		if (invalid) {
++			cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
++				cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
++			snprintf(excerpt, sizeof(excerpt), "%.512s", body);
++			cJSON *quoted = cJSON_CreateString(excerpt);
++			char *encoded = cJSON_PrintUnformatted(quoted);
++			snprintf(diagnostic, sizeof(diagnostic),
++				"malformed assistant response: %s\n"
++				"finish_reason: %.80s; rejected response (first 512 bytes): %.1100s\n"
++				"%s",
++				error, cJSON_IsString(finish) ? finish->valuestring : "unavailable",
++				encoded ? encoded : "(unavailable)",
++				retries < 2 ? "retrying automatically" :
++				"retry limit reached; history retained, submit to retry");
++			agent_log("RESULT", diagnostic);
++			free(encoded);
++			cJSON_Delete(quoted);
++			/* Invalid calls never enter history or execute, even in a mixed batch. */
++			if (invalid == 2) {
++				snprintf(diagnostic, sizeof(diagnostic),
++					"Your previous response was rejected: %s. "
++					"No commands from that response were executed. "
++					"Correct and resubmit the intended calls. "
++					"Use tool type function, name ex, and unique nonempty call IDs. "
++					"Arguments must be a JSON-encoded object with a nonempty "
++					"string command, for example {\"command\":\"1,20p\"}.", error);
++				cJSON_AddItemToArray(agent_messages, agent_msg("user", diagnostic));
++			}
++			free(body);
++			cJSON_Delete(root);
++			if (retries++ < 2)
++				continue;
++			return;
++		}
++		free(body);
++		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
++			cJSON_GetObjectItem(root, "choices"), 0), "message");
++		calls = cJSON_GetObjectItem(message, "tool_calls");
++		cJSON *content = cJSON_GetObjectItem(message, "content");
 +		/* Complete pairs before recursive editing or submissions. */
 +		cJSON_AddItemToArray(agent_messages,
 +			cJSON_Duplicate(message, 1));
@@ -13164,7 +13308,7 @@ index a51117ca..fc582c0d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 4d333baf..49cb7758 100644
+index 4d333baf..dceb7b0a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13417,7 +13561,7 @@ index 4d333baf..49cb7758 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1829,12 +1901,173 @@ static struct excmd {
+@@ -1829,12 +1901,175 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -13527,6 +13671,8 @@ index 4d333baf..49cb7758 100644
 +						break;
 +				if (j < LEN(exspec_cmds))
 +					continue;
++				if (agent_tool && excmds[i].ec != ec_exspec)
++					continue;
 +				desc = excmds[i].ec == ec_exspec ?
 +					"Print ex command index or specification" :
 +					"unknown ex specification";
@@ -13591,7 +13737,7 @@ index 4d333baf..49cb7758 100644
  			int n;
  			struct buf *pbuf = ex_buf;
  			src++;
-@@ -1862,6 +2095,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1862,6 +2097,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  				sbuf_chr(sb, '@')
  			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
  		} else if (*src == xexe) {
@@ -13605,7 +13751,7 @@ index 4d333baf..49cb7758 100644
  			int n = sb->s_n;
  			src++;
  			ex_sread(sb, (char**)&src, xexe, xesc);
-@@ -1885,8 +2125,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1885,8 +2127,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  {
  	int i, j;
@@ -13623,7 +13769,7 @@ index 4d333baf..49cb7758 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1936,8 +2184,34 @@ void *ex_exec(const char *ln)
+@@ -1936,8 +2186,34 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -13659,7 +13805,7 @@ index 4d333baf..49cb7758 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1956,7 +2230,7 @@ void *ex_exec(const char *ln)
+@@ -1956,7 +2232,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
