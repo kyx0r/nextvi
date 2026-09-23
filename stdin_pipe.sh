@@ -85,7 +85,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	}
 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
-			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);1??0?
+			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);1??0?
 1??+2m 21q0?
 %f+ 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);
@@ -451,7 +451,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 4d333baf..14f8615d 100644
+index f0ce0805..72d3ad9c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -418,7 +418,9 @@ int ex_edit(const char *path, int len)
@@ -474,7 +474,7 @@ index 4d333baf..14f8615d 100644
 +	ret:
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
- 			fd < 0 || rd ? 'f' : 'r');
+ 			fd < 0 || rd ? cd == 3 ? 'n' : 'f' : 'r');
 @@ -1986,15 +1991,36 @@ void ex(void)
  
  void ex_init(char **files, int n)

@@ -30,7 +30,7 @@ ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 'fr 98b0m!%ya 98?0?
-%f> 			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);
+%f> 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
 	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;
@@ -38,11 +38,11 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 
 1??0?
 1??+2m 11q0?
-%f> 			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);
+%f> 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)4??0?
 4??+2m 1220reg p OK ex.c:444:a42sc %? %@2152sc!1q0?
-grp 1%f> 			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);.*?
+grp 1%f> 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);.*?
 	if \(!\(xvis & 4\)\).*?
 (		ex_print\(msg, bar_ft\))7??0?
 grp 07??m 1220reg p OK ex.c:444:a72sc %? %@2152sc!1q0?
@@ -89,11 +89,11 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 4d333baf..ac885507 100644
+index f0ce0805..fe1fbad4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -442,6 +442,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
- 			fd < 0 || rd ? 'f' : 'r');
+ 			fd < 0 || rd ? cd == 3 ? 'n' : 'f' : 'r');
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)
 +	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {

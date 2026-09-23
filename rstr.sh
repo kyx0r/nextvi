@@ -231,7 +231,7 @@ static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\).*?
 	ins_state is;8??0?
 grp 08??-4m 4220reg p OK ex.c:450:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
-			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);
+			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\).*(	ins_init\(is\))
 	if \(\*cmd !='\''f'\''\)
 		temp_switch\(1, 0\);9??0?
@@ -2210,7 +2210,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 4d333baf..1206c78b 100644
+index f0ce0805..5de1d7e0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,7 +37,7 @@ int xsep = ':';			/* ex command separator */

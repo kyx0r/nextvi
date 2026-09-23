@@ -650,7 +650,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index a51117ca..f9b3db10 100644
+index 2888d7c6..f95025e8 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -63,6 +63,10 @@ const int ftslen = LEN(fts);
@@ -774,7 +774,7 @@ index a51117ca..f9b3db10 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 4d333baf..20be8950 100644
+index f0ce0805..78a263a2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1317,6 +1317,70 @@ static void *ec_ft(char *loc, char *cmd, char *arg)

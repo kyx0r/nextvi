@@ -303,7 +303,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index a51117ca..3042e418 100644
+index 2888d7c6..fa7a3ab2 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -332,6 +332,10 @@ const int hloptslen = LEN(hlopts);

@@ -4257,7 +4257,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index a51117ca..de93f246 100644
+index 2888d7c6..38163179 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -298,7 +298,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -4270,7 +4270,7 @@ index a51117ca..de93f246 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 4d333baf..f86d09df 100644
+index f0ce0805..82b7d673 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@

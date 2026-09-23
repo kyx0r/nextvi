@@ -221,7 +221,7 @@ if \(fd >= 0\) \{ \\.*?
 		return "last buffer modified";
 	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{.*(	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",)
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
-			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);8??0?
+			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);8??0?
 grp 08??-5m 4220reg p OK ex.c:435:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		bufs_switchwft\(fd\)
 		return NULL;
@@ -805,7 +805,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 4d333baf..f02cfebf 100644
+index f0ce0805..d0cfd2bd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -392,10 +392,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)

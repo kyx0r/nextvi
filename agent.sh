@@ -5436,21 +5436,21 @@ static int ex_read\(sbuf \*sb, char \*msg, ins_state \*is, int ps, int flg\)5?
 	}
 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
-			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);
+			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
 	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;1??0?
 1??+3m 111q0?
 %f+ 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
-			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);
+			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
 	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;2??0?
 2??m 11220reg p OK ex.c:440:a22sc %? %@2152sc!1q0?
 %f+ 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
-			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);3??0?
+			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);3??0?
 3??m 11220reg p OK ex.c:440:a32sc %? %@2152sc!1q0?
 %f+ 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);
@@ -5460,15 +5460,15 @@ static int ex_read\(sbuf \*sb, char \*msg, ins_state \*is, int ps, int flg\)5?
 		ex_print\(msg, bar_ft\)
 	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;5??0?
 5??-3m 11220reg p OK ex.c:440:a52sc %? %@2152sc!1q0?
-%f+ 	.ex.b........x..............]..
-	..y..s......b..t..
-.}
-	......t...s.....z..f\(m...,....%......L...c...
-........... .....p..h....un..m.......u._.....b..
-	.........\|...d........ ....;
-.....!..vi. . 4..
-	....p.i..........r....
-	.e..r..............d........g........ .....L.6??0?
+%f+ .................._.u.........\).
+.	.y......t\(....t\);
+	.
+....ri..f......si........\)...."......dL.......
+.	.......t..\?.....a.h....u......., .b....e.\(...,
+	.....<.......d . .d....3...'\''.... ..... '\''..\);
+	.......vi....4\).
+...........m.g....r_f..
+...tu...\(.... ...\| r.. ......g...xu.......UL..6??0?
 6??+3m 11220reg p OK ex.c:440:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		ex_bufpostfix\(ex_buf, arg\[0]\);.*?
 		syn_setft\(xb_ft\);.*?
@@ -13247,7 +13247,7 @@ index c836c94c..9da765c3 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index a51117ca..9f374302 100644
+index 2888d7c6..8370b351 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,45 @@
@@ -13308,7 +13308,7 @@ index a51117ca..9f374302 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 4d333baf..43b858bd 100644
+index f0ce0805..43b858bd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13429,7 +13429,7 @@ index 4d333baf..43b858bd 100644
  	}
 -	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
 -			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
--			fd < 0 || rd ? 'f' : 'r');
+-			fd < 0 || rd ? cd == 3 ? 'n' : 'f' : 'r');
 +	if (agent_tool) {
 +		snprintf(msg, sizeof(msg), "\"%s\" %dL [%s]",
 +				*xb_path ? xb_path : "unnamed", lbuf_len(xb),

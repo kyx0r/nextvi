@@ -244,7 +244,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index a51117ca..2cc98f21 100644
+index 2888d7c6..17efbf6c 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -299,7 +299,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -257,7 +257,7 @@ index a51117ca..2cc98f21 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 4d333baf..850ab29a 100644
+index f0ce0805..ea0f039d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -812,6 +812,38 @@ static void *ec_write(char *loc, char *cmd, char *arg)

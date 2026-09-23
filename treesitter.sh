@@ -4343,7 +4343,7 @@ index c836c94c..76851789 100755
          pgobuild || {
              log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\" and PGO\""
 diff --git a/conf.c b/conf.c
-index a51117ca..b44ee770 100644
+index 2888d7c6..8f6237ef 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -377,3 +377,41 @@ char *conf_digraph(int c1, int c2)
@@ -4389,7 +4389,7 @@ index a51117ca..b44ee770 100644
 +	{"comment", BL | SYN_IT},
 +};
 diff --git a/ex.c b/ex.c
-index 4d333baf..2ae89b40 100644
+index f0ce0805..42e5aae3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -2,7 +2,7 @@ int xleft;			/* the first visible column */

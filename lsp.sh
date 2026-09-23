@@ -185,7 +185,7 @@ const int hlslen = LEN\(hls\);
 const int hlopts\[] = \{1, 2};
 const int hloptslen = LEN\(hlopts\);8??0?
 grp 08??-4m 4220reg p OK conf.c:324:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
+m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[nwrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
 	\{bar_ft, "\^<\(\.\+\)> \(\?:\[\^ ]\+ \)\*\(\[0-9]\+L\) \(\[0-9]\+W\) \(S\[0-9]\+\) \(O\[0-9]\+\) \(C\[0-9]\+\)\$",
 		A\(AY1 \| SYN_BD, RE1, BL, YE, MA, CY1, YE1\)},.*(/\* right-to-left characters \*/)
 #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
@@ -220,7 +220,7 @@ const int hloptslen = LEN\(hlopts\);8??0?
 grp 07??m 1220reg p OK ex.c:438:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/
 	}
-	readfile\(rd =\).*(			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);)
+	readfile\(rd =\).*(			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);)
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)8??0?
 grp 08??-4m 1220reg p OK ex.c:438:a82sc %? %@2152sc!'\''08??1q0?
@@ -2825,7 +2825,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index a51117ca..3baa5851 100644
+index 2888d7c6..784e42f5 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -18,6 +18,7 @@ char vs_ft[] = "/vs";	/* vi search prompt (is never '\n' terminated) */
@@ -2867,7 +2867,7 @@ index a51117ca..3baa5851 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index 4d333baf..e9a13029 100644
+index f0ce0805..f3a678fc 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -436,6 +436,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
