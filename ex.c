@@ -439,7 +439,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 	}
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
 			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-			fd < 0 || rd ? 'f' : 'r');
+			fd < 0 || rd ? cd == 3 ? 'n' : 'f' : 'r');
 	if (!(xvis & 4))
 		ex_print(msg, bar_ft)
 	return (fd < 0 || rd) && *arg ? xuerr : NULL;
