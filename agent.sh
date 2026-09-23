@@ -6252,7 +6252,7 @@ static char xaerr[128];
 	} else {
 		snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
 				*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-				fd < 0 || rd ? '\''f'\'' : '\''r'\'');
+				fd < 0 || rd ? cd == 3 ? '\''n'\'' : '\''f'\'' : '\''r'\'');
 	}
 ??!219reg ex.c:440:m112sc %? %@2142sc!0?
 '\''12i 	if (*arg && !n && !uc_isdigit(*arg))
@@ -13308,7 +13308,7 @@ index 2888d7c6..8370b351 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f0ce0805..43b858bd 100644
+index f0ce0805..5da0f552 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13437,7 +13437,7 @@ index f0ce0805..43b858bd 100644
 +	} else {
 +		snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
 +				*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-+				fd < 0 || rd ? 'f' : 'r');
++				fd < 0 || rd ? cd == 3 ? 'n' : 'f' : 'r');
 +	}
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)
