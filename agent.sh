@@ -5068,6 +5068,9 @@ static struct {
 	{"p", "Use character ranges for long lines; stop when you have enough context."},
 	{"p", "Ex special characters disabled by default. p % example will not work."},
 	{"g", "Ex special characters disabled by default. Command chaining unavailable."},
+	{"parsing", "Ex special characters disabled by default. Command chaining unavailable."},
+	{"escapes", "Ex special characters disabled by default."},
+	{"expansion", "Ex special characters disabled by default. Expansion unavailable."},
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
@@ -13249,10 +13252,10 @@ index c836c94c..9da765c3 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..8370b351 100644
+index 2888d7c6..0737297b 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,45 @@
+@@ -1,5 +1,48 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -13293,12 +13296,15 @@ index 2888d7c6..8370b351 100644
 +	{"p", "Use character ranges for long lines; stop when you have enough context."},
 +	{"p", "Ex special characters disabled by default. p % example will not work."},
 +	{"g", "Ex special characters disabled by default. Command chaining unavailable."},
++	{"parsing", "Ex special characters disabled by default. Command chaining unavailable."},
++	{"escapes", "Ex special characters disabled by default."},
++	{"expansion", "Ex special characters disabled by default. Expansion unavailable."},
 +};
 +
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +337,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +340,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
