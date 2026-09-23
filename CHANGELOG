@@ -1,4 +1,24 @@
 ------------------
+7.7 Basilisk
+------------------
+
+New in core:
+1. New-buffer messages use [n] instead of [f].
+
+Bug fixes:
+1. The buffer list shows % instead of # when the current and previous
+   buffers are the same.
+2. Unknown ex commands after a range now report an error instead of
+   silently moving the cursor and ignoring the argument.
+
+Patch changes:
+1. [agent.sh](https://github.com/kyx0r/nextvi/blob/release/agent.sh):
+   added :apack/:apack! conversation compaction, :acm caveman mode and
+   the aspec option; hardened response recovery and terminal job control.
+2. [undo_branches.sh](https://github.com/kyx0r/nextvi/blob/release/undo_branches.sh):
+   saved-state tracking uses unique edit identities across undo branches.
+
+------------------
 7.6 Basilisk
 ------------------
 
