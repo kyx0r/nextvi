@@ -1289,8 +1289,7 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 		"buffer into context.\n")
 	else
 		sbuf_str(task,
-		"The log is in your context. Do not read the b-4\n"
-		"buffer into context.\n")
+		"The log is in your context. Do not read the b-4 buffer into context.\n")
 	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
 	"constraints, and unfinished work.\n")
 	sbuf_str(task,
@@ -5053,8 +5052,8 @@ int xgr = 2;	/* agent guardrails: anything but 2 = disabled */
 int xar;	/* display returned agent reasoning (:ar) */
 
 static char exspec_insert[] =
-	"Agents have Ex special characters disabled and raw ex mode by default."
-	"Supply literal text as [str] directly. No dot terminator or escapes required."
+	"Ex special characters are disabled and raw ex mode is on by default.\n"
+	"Supply literal text as [str] directly. No dot terminator or escapes required.\n"
 	"[str] is required.";
 
 /* Additional :exspec lines; repeat a command to append more lines. */
@@ -5067,7 +5066,8 @@ static struct {
 	{"p", "Keep reads small and within buffer bounds."},
 	{"p", "Check the position with = and line count with $= before printing ranges."},
 	{"p", "Use character ranges for long lines; stop when you have enough context."},
-	{"p", "Agents have Ex special characters disabled by default. p % example will not work."},
+	{"p", "Ex special characters disabled by default. p % example will not work."},
+	{"g", "Ex special characters disabled by default. Command chaining unavailable."},
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
@@ -8366,10 +8366,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..054c81e1
+index 00000000..0b36ff48
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1275 @@
+@@ -0,0 +1,1274 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9629,8 +9629,7 @@ index 00000000..054c81e1
 +		"buffer into context.\n")
 +	else
 +		sbuf_str(task,
-+		"The log is in your context. Do not read the b-4\n"
-+		"buffer into context.\n")
++		"The log is in your context. Do not read the b-4 buffer into context.\n")
 +	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
 +	"constraints, and unfinished work.\n")
 +	sbuf_str(task,
@@ -13241,10 +13240,10 @@ index c836c94c..1ddba695 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index a51117ca..6542a993 100644
+index a51117ca..9f374302 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,44 @@
+@@ -1,5 +1,45 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -13269,8 +13268,8 @@ index a51117ca..6542a993 100644
 +int xar;	/* display returned agent reasoning (:ar) */
 +
 +static char exspec_insert[] =
-+	"Agents have Ex special characters disabled and raw ex mode by default."
-+	"Supply literal text as [str] directly. No dot terminator or escapes required."
++	"Ex special characters are disabled and raw ex mode is on by default.\n"
++	"Supply literal text as [str] directly. No dot terminator or escapes required.\n"
 +	"[str] is required.";
 +
 +/* Additional :exspec lines; repeat a command to append more lines. */
@@ -13283,13 +13282,14 @@ index a51117ca..6542a993 100644
 +	{"p", "Keep reads small and within buffer bounds."},
 +	{"p", "Check the position with = and line count with $= before printing ranges."},
 +	{"p", "Use character ranges for long lines; stop when you have enough context."},
-+	{"p", "Agents have Ex special characters disabled by default. p % example will not work."},
++	{"p", "Ex special characters disabled by default. p % example will not work."},
++	{"g", "Ex special characters disabled by default. Command chaining unavailable."},
 +};
 +
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +336,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +337,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
