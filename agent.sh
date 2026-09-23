@@ -5067,7 +5067,7 @@ static struct {
 	{"p", "Keep reads small and within buffer bounds."},
 	{"p", "Check the position with = and line count with $= before printing ranges."},
 	{"p", "Use character ranges for long lines; stop when you have enough context."},
-	{"p", "Agents have Ex special characters disabled by default, therefore p % example will not work."},
+	{"p", "Agents have Ex special characters disabled by default. p % example will not work."},
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
@@ -13241,7 +13241,7 @@ index c836c94c..1ddba695 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index a51117ca..76b6f5de 100644
+index a51117ca..6542a993 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,44 @@
@@ -13283,7 +13283,7 @@ index a51117ca..76b6f5de 100644
 +	{"p", "Keep reads small and within buffer bounds."},
 +	{"p", "Check the position with = and line count with $= before printing ranges."},
 +	{"p", "Use character ranges for long lines; stop when you have enough context."},
-+	{"p", "Agents have Ex special characters disabled by default, therefore p % example will not work."},
++	{"p", "Agents have Ex special characters disabled by default. p % example will not work."},
 +};
 +
  /* access mode of new files */
