@@ -828,6 +828,8 @@ EX COMMANDS
              :b-2
              Example: switch to the /sc/ scratch buffer
              :b-3
+             Example: clear history and return to previous (#) main buffer
+             :b-1:%d:b-1
 
      bp[path]
              Set current buffer path
@@ -1475,4 +1477,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.7                    September 19, 2026                    Nextvi 7.7
+Nextvi 7.7                    September 23, 2026                    Nextvi 7.7
