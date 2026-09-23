@@ -4949,7 +4949,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             print "             Without an argument, logically inverts this option."
             print "             Argument 0 disables automatic specifications; argument 1 enables them."
             print ""
-            print "             The option is enabled by default. a! and a~ reset remembered specifications."
+            print "             The option is enabled by default."
             print ""
             aspec_done = 1
         }
@@ -6202,6 +6202,7 @@ static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 ??!219reg ex.c:16:m12sc %? %@2142sc!0?
 '\''2s/3/5/??!219reg ex.c:45:m22sc %? %@2142sc!0?
 '\''3i static char xirrmsg[192];
+static char xaerr[128];
 ??!219reg ex.c:57:m32sc %? %@2142sc!0?
 '\''4c 			sprintf(xirrmsg, "range not found: beg:%d end:%d off:%d dir:%d", beg, end, off, dir);
 			xrerr = xirrmsg;
@@ -6505,7 +6506,10 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 				excmds[idx].ec == ec_quit ||
 				(excmds[idx].ec == ec_write && excmds[idx].name[0] == '\''x'\'') ||
 				!strncmp(excmds[idx].name, "wq", 2))) {
-			ret = "command unavailable during agent execution";
+			snprintf(xaerr, sizeof(xaerr),
+				"%s command unavailable during agent execution",
+				excmds[idx].name);
+			ret = xaerr;
 			break;
 		}
 		ln = ex_arg(ln, sb, &arg);
@@ -7422,7 +7426,7 @@ static char *exspec_lines[] = {
 	"Without an argument, logically inverts this option.",
 	"Argument 0 disables automatic specifications; argument 1 enables them.",
 	"",
-	"The option is enabled by default. a! and a~ reset remembered specifications.",
+	"The option is enabled by default.",
 	"",
 	"ai[1]   Indent new lines",
 	"",
@@ -13178,7 +13182,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..1ddba695 100755
+index c836c94c..9da765c3 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,41 @@ build() {
@@ -13210,7 +13214,7 @@ index c836c94c..1ddba695 100755
 +            print "             Without an argument, logically inverts this option."
 +            print "             Argument 0 disables automatic specifications; argument 1 enables them."
 +            print ""
-+            print "             The option is enabled by default. a! and a~ reset remembered specifications."
++            print "             The option is enabled by default."
 +            print ""
 +            aspec_done = 1
 +        }
@@ -13304,7 +13308,7 @@ index a51117ca..9f374302 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 4d333baf..d72ba01d 100644
+index 4d333baf..77460922 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13324,15 +13328,16 @@ index 4d333baf..d72ba01d 100644
  struct buf *ex_buf;		/* current buffer */
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
-@@ -55,6 +56,7 @@ static char xuerr[] = "unreported error";
+@@ -55,6 +56,8 @@ static char xuerr[] = "unreported error";
  static char xserr[] = "syntax error";
  static char xgerr[] = "invalid grp";
  static char xirerr[] = "invalid range";
 +static char xirrmsg[192];
++static char xaerr[128];
  static char *xrerr;
  static void *xpret;		/* previous ex command return value */
  static signed char *xcid;	/* capture status by id, -1 if unset */
-@@ -284,7 +286,8 @@ static int ex_range(char *ploc, char **num, int n, int *row)
+@@ -284,7 +287,8 @@ static int ex_range(char *ploc, char **num, int n, int *row)
  		}
  		if (lbuf_search(xb, xkwdrs, xkwddir, row ? beg : 0, end,
  				MIN(dir, 0), !row, &beg, &off)) {
@@ -13342,7 +13347,7 @@ index 4d333baf..d72ba01d 100644
  			return -2;
  		}
  		n = row ? off : beg;
-@@ -297,6 +300,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
+@@ -297,6 +301,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
  		}
  	}
  	while (**num) {
@@ -13350,7 +13355,7 @@ index 4d333baf..d72ba01d 100644
  		dir = atoi(*num+1);
  		if (**num == '-')
  			n -= dir;
-@@ -310,6 +314,14 @@ static int ex_range(char *ploc, char **num, int n, int *row)
+@@ -310,6 +315,14 @@ static int ex_range(char *ploc, char **num, int n, int *row)
  			n %= dir;
  		else
  			break;
@@ -13365,7 +13370,7 @@ index 4d333baf..d72ba01d 100644
  		for (++*num; uc_isdigit(**num);)
  			++*num;
  	}
-@@ -324,6 +336,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
+@@ -324,6 +337,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
  	int row = xrow, ooff = xoff, ret = 1, adj = 0;
  	char *ploc = loc, *cmd = NULL;
  	xrerr = xirerr;
@@ -13373,7 +13378,7 @@ index 4d333baf..d72ba01d 100644
  	if (vaddr)
  		*beg = 0;
  	while (*loc) {
-@@ -338,6 +351,8 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
+@@ -338,6 +352,8 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
  			}
  			continue;
  		} else if (*loc == ';') {
@@ -13382,7 +13387,7 @@ index 4d333baf..d72ba01d 100644
  			update = loc[1] == '#';
  			loc += 1 + update;
  			if ((ooff = ex_range(ploc, &loc, update ? ooff : xoff, &row)) < 0)
-@@ -369,8 +384,24 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
+@@ -369,8 +385,24 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
  		*end = *beg + 1;
  		ret += adj << 1;
  	}
@@ -13409,7 +13414,7 @@ index 4d333baf..d72ba01d 100644
  }
  
  static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
-@@ -419,6 +450,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -419,6 +451,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
  	int fd, len, rd = 0, cd = 0;
@@ -13418,7 +13423,7 @@ index 4d333baf..d72ba01d 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -437,9 +470,15 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -437,9 +471,15 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -13437,7 +13442,7 @@ index 4d333baf..d72ba01d 100644
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)
  	return (fd < 0 || rd) && *arg ? xuerr : NULL;
-@@ -628,6 +667,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -628,6 +668,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	int n = atoi(arg);
@@ -13446,7 +13451,7 @@ index 4d333baf..d72ba01d 100644
  	if (!arg[0]) {
  		char ln[512];
  		for (int i = 0; i < xbufcur; i++) {
-@@ -636,6 +677,13 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -636,6 +678,13 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  				c + (char)bufs[i].lb->modified, bufs[i].path);
  			ex_print(ln, msg_ft)
  		}
@@ -13460,7 +13465,7 @@ index 4d333baf..d72ba01d 100644
  		return NULL;
  	} else if (n < 0) {
  		if (-n <= LEN(tempbufs)) {
-@@ -726,6 +774,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
+@@ -726,6 +775,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
  	xrow = row;
  	xoff = off;
  	xb = pxb;
@@ -13468,7 +13473,7 @@ index 4d333baf..d72ba01d 100644
  	if (fd >= 0)
  		close(fd);
  	return ret;
-@@ -821,6 +870,12 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
+@@ -821,6 +871,12 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
  
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  {
@@ -13481,7 +13486,7 @@ index 4d333baf..d72ba01d 100644
  	if (xpr > 0) {
  		ex_regput(xpr, line, 1);
  		sbuf *pr = ex_regget(xpr);
-@@ -828,6 +883,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
+@@ -828,6 +884,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  				pr->s[pr->s_n-1] != '\n')
  			ex_regput(xpr, "\n", 1);
  	}
@@ -13490,7 +13495,7 @@ index 4d333baf..d72ba01d 100644
  	if (xvis & 1) {
  		term_write(line, dstrlen(line, '\n'))
  		term_write("\n", 1)
-@@ -853,6 +910,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
+@@ -853,6 +911,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  static void *ec_insert(char *loc, char *cmd, char *arg)
  {
  	int beg, end, o1 = -1, o2 = -1, ps = 0, key;
@@ -13499,7 +13504,7 @@ index 4d333baf..d72ba01d 100644
  	sbuf _sb, *sb = &_sb;
  	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
  		if (*loc && cmd[0] != 'c' && beg == -1 && end == 0
-@@ -865,7 +924,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
+@@ -865,7 +925,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
  			end = beg + 1;
  		}
  	}
@@ -13508,7 +13513,7 @@ index 4d333baf..d72ba01d 100644
  		sb->s = arg;
  		sb->s_n = 1;
  		key = 127;
-@@ -1699,9 +1758,9 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1699,9 +1759,9 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -13520,7 +13525,7 @@ index 4d333baf..d72ba01d 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,6 +1789,8 @@ _EO(left,
+@@ -1730,6 +1790,8 @@ _EO(left,
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
@@ -13529,7 +13534,7 @@ index 4d333baf..d72ba01d 100644
  /* commands & opts must be sorted longest of its kind topmost */
  static struct excmd {
  	char *name;
-@@ -1755,9 +1816,19 @@ static struct excmd {
+@@ -1755,9 +1817,19 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -13549,7 +13554,7 @@ index 4d333baf..d72ba01d 100644
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
  	{"e!", ec_edit},
-@@ -1777,6 +1848,7 @@ static struct excmd {
+@@ -1777,6 +1849,7 @@ static struct excmd {
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
@@ -13557,7 +13562,7 @@ index 4d333baf..d72ba01d 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1829,12 +1901,181 @@ static struct excmd {
+@@ -1829,12 +1902,181 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -13739,7 +13744,7 @@ index 4d333baf..d72ba01d 100644
  			int n;
  			struct buf *pbuf = ex_buf;
  			src++;
-@@ -1862,6 +2103,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1862,6 +2104,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  				sbuf_chr(sb, '@')
  			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
  		} else if (*src == xexe) {
@@ -13753,7 +13758,7 @@ index 4d333baf..d72ba01d 100644
  			int n = sb->s_n;
  			src++;
  			ex_sread(sb, (char**)&src, xexe, xesc);
-@@ -1885,8 +2133,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1885,8 +2134,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  {
  	int i, j;
@@ -13771,7 +13776,7 @@ index 4d333baf..d72ba01d 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1936,8 +2192,34 @@ void *ex_exec(const char *ln)
+@@ -1936,8 +2193,37 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -13788,7 +13793,10 @@ index 4d333baf..d72ba01d 100644
 +				excmds[idx].ec == ec_quit ||
 +				(excmds[idx].ec == ec_write && excmds[idx].name[0] == 'x') ||
 +				!strncmp(excmds[idx].name, "wq", 2))) {
-+			ret = "command unavailable during agent execution";
++			snprintf(xaerr, sizeof(xaerr),
++				"%s command unavailable during agent execution",
++				excmds[idx].name);
++			ret = xaerr;
 +			break;
 +		}
 +		ln = ex_arg(ln, sb, &arg);
@@ -13807,7 +13815,7 @@ index 4d333baf..d72ba01d 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1956,7 +2238,7 @@ void *ex_exec(const char *ln)
+@@ -1956,7 +2242,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -13904,7 +13912,7 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..855386cf
+index 00000000..c7e9335f
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1142 @@
@@ -14726,7 +14734,7 @@ index 00000000..855386cf
 +	"Without an argument, logically inverts this option.",
 +	"Argument 0 disables automatic specifications; argument 1 enables them.",
 +	"",
-+	"The option is enabled by default. a! and a~ reset remembered specifications.",
++	"The option is enabled by default.",
 +	"",
 +	"ai[1]   Indent new lines",
 +	"",
