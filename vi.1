@@ -1,4 +1,4 @@
-.Dd Sep 19, 2026
+.Dd Sep 23, 2026
 .Dt Nextvi 1
 .Os Nextvi 7.7
 .
@@ -1111,6 +1111,8 @@ Example: switch to the /fm/ directory listing buffer
 :b-2
 Example: switch to the /sc/ scratch buffer
 :b-3
+Example: clear history and return to previous (#) main buffer
+:b-1:%d:b-1
 .Ed
 
 .It Cm bp[\fIpath\fP]
