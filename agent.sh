@@ -68,9 +68,7 @@ static char nextvi_skill[] =
 "key holds an ex command.\n"
 "Nextvi is not a standard vi/ex.\n"
 "Use exspec command for a command list.\n"
-"Use exspec with an argument for a topic or command specification.\n"
-"Ex special characters are disabled: \\ % ! :\n"
-"Commands with interactive modes are adapted for agent use or disabled.\n";
+"Use exspec with an argument for a topic or command specification.\n";
 
 static char caveman_skill[] =
 "Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
@@ -1288,10 +1286,13 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 		sbuf_str(task,
 		"The log has not been loaded into your context. Inspect b-4 yourself\n"
 		"using ex searches and bounded line ranges. Do not read the entire\n"
-		"buffer into context. Identify the key goals, decisions, changes,\n"
-		"constraints, and unfinished work before writing the summary.\n")
-	sbuf_str(task, "Summarize b-4 buffer. Be very thorough. ")
-	sbuf_str(task, arg)
+		"buffer into context.\n")
+	else
+		sbuf_str(task,
+		"The log is in your context. Do not read the b-4\n"
+		"buffer into context.\n")
+	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
+	"constraints, and unfinished work.\n")
 	sbuf_str(task,
 	"\nSwitch to b-4 unless already there, then replace its content\n"
 	"with the summary using %c followed by literal summary text.\n"
@@ -5052,8 +5053,9 @@ int xgr = 2;	/* agent guardrails: anything but 2 = disabled */
 int xar;	/* display returned agent reasoning (:ar) */
 
 static char exspec_insert[] =
-	"For tool i/c calls, supply text directly with literal newlines, no dot "
-	"terminator or keyboard escape. Text is required.";
+	"Agents have Ex special characters disabled and raw ex mode by default."
+	"Supply literal text as [str] directly. No dot terminator or escapes required."
+	"[str] is required.";
 
 /* Additional :exspec lines; repeat a command to append more lines. */
 static struct {
@@ -5061,18 +5063,11 @@ static struct {
 } conf_exspec[] = {
 	{"i", exspec_insert},
 	{"c", exspec_insert},
-	{"p", "Cursor position is stateful; left at the range position it landed on"},
+	{"p", "Cursor position is stateful; left at the range position it landed on."},
 	{"p", "Keep reads small and within buffer bounds."},
 	{"p", "Check the position with = and line count with $= before printing ranges."},
 	{"p", "Use character ranges for long lines; stop when you have enough context."},
-	{"p", ""},
-	{"p", "Example: print 5 lines around current position"},
-	{"p", ".-5,.+5p"},
-	{"p", "Example: print first occurrence of \"int\""},
-	{"p", ">int>p"},
-	{"ranges", "> and < start searching from the current cursor position."},
-	{"ranges", "Verify position with = command to ensure it is where intended."},
-	{"=", "Check the line count with $= before printing ranges."},
+	{"p", "Agents have Ex special characters disabled by default, therefore p % example will not work."},
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
@@ -6361,7 +6356,7 @@ static int exspec_extra(char *cmd)
 			continue;
 		if (!found) {
 			ex_print("", msg_ft)
-			ex_print("Additional guidance:", msg_ft)
+			ex_print("Agent guidance:", msg_ft)
 		}
 		ex_print(conf_exspec[i].text, msg_ft)
 		found = 1;
@@ -8371,10 +8366,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..2a691b1a
+index 00000000..054c81e1
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1274 @@
+@@ -0,0 +1,1275 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8413,9 +8408,7 @@ index 00000000..2a691b1a
 +"key holds an ex command.\n"
 +"Nextvi is not a standard vi/ex.\n"
 +"Use exspec command for a command list.\n"
-+"Use exspec with an argument for a topic or command specification.\n"
-+"Ex special characters are disabled: \\ % ! :\n"
-+"Commands with interactive modes are adapted for agent use or disabled.\n";
++"Use exspec with an argument for a topic or command specification.\n";
 +
 +static char caveman_skill[] =
 +"Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
@@ -9633,10 +9626,13 @@ index 00000000..2a691b1a
 +		sbuf_str(task,
 +		"The log has not been loaded into your context. Inspect b-4 yourself\n"
 +		"using ex searches and bounded line ranges. Do not read the entire\n"
-+		"buffer into context. Identify the key goals, decisions, changes,\n"
-+		"constraints, and unfinished work before writing the summary.\n")
-+	sbuf_str(task, "Summarize b-4 buffer. Be very thorough. ")
-+	sbuf_str(task, arg)
++		"buffer into context.\n")
++	else
++		sbuf_str(task,
++		"The log is in your context. Do not read the b-4\n"
++		"buffer into context.\n")
++	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
++	"constraints, and unfinished work.\n")
 +	sbuf_str(task,
 +	"\nSwitch to b-4 unless already there, then replace its content\n"
 +	"with the summary using %c followed by literal summary text.\n"
@@ -13245,10 +13241,10 @@ index c836c94c..1ddba695 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index a51117ca..fc582c0d 100644
+index a51117ca..76b6f5de 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,50 @@
+@@ -1,5 +1,44 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -13273,8 +13269,9 @@ index a51117ca..fc582c0d 100644
 +int xar;	/* display returned agent reasoning (:ar) */
 +
 +static char exspec_insert[] =
-+	"For tool i/c calls, supply text directly with literal newlines, no dot "
-+	"terminator or keyboard escape. Text is required.";
++	"Agents have Ex special characters disabled and raw ex mode by default."
++	"Supply literal text as [str] directly. No dot terminator or escapes required."
++	"[str] is required.";
 +
 +/* Additional :exspec lines; repeat a command to append more lines. */
 +static struct {
@@ -13282,24 +13279,17 @@ index a51117ca..fc582c0d 100644
 +} conf_exspec[] = {
 +	{"i", exspec_insert},
 +	{"c", exspec_insert},
-+	{"p", "Cursor position is stateful; left at the range position it landed on"},
++	{"p", "Cursor position is stateful; left at the range position it landed on."},
 +	{"p", "Keep reads small and within buffer bounds."},
 +	{"p", "Check the position with = and line count with $= before printing ranges."},
 +	{"p", "Use character ranges for long lines; stop when you have enough context."},
-+	{"p", ""},
-+	{"p", "Example: print 5 lines around current position"},
-+	{"p", ".-5,.+5p"},
-+	{"p", "Example: print first occurrence of \"int\""},
-+	{"p", ">int>p"},
-+	{"ranges", "> and < start searching from the current cursor position."},
-+	{"ranges", "Verify position with = command to ensure it is where intended."},
-+	{"=", "Check the line count with $= before printing ranges."},
++	{"p", "Agents have Ex special characters disabled by default, therefore p % example will not work."},
 +};
 +
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +342,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +336,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
@@ -13311,7 +13301,7 @@ index a51117ca..fc582c0d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 4d333baf..a895f125 100644
+index 4d333baf..3db54348 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13621,7 +13611,7 @@ index 4d333baf..a895f125 100644
 +			continue;
 +		if (!found) {
 +			ex_print("", msg_ft)
-+			ex_print("Additional guidance:", msg_ft)
++			ex_print("Agent guidance:", msg_ft)
 +		}
 +		ex_print(conf_exspec[i].text, msg_ft)
 +		found = 1;
