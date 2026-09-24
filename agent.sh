@@ -4926,11 +4926,51 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
 1;4;7;8;9??!219reg cbuild.sh:842sc %? %@2132sc!0?
 '\''1i spec() {
     require "awk"
-    # Agent-only ex specs are injected here so README stays pristine on master.
+    # Additional ex specs are injected here so README stays pristine on master.
     # Keep this block in sync with the agent command table in ex.c.
     tmp="$(mktemp)"
     awk '\''
+        function spec(name, desc, body) {
+            print "     " name
+            print "             " desc
+            print ""
+            gsub(/\n/, "\n             ", body)
+            print "             " body
+            print ""
+        }
         /^     ac\[regex\]$/ && !done {
+            spec("exspec[command range topic]", "Print ex command catalog or specification",
+                "Without an argument, agents see a selection of useful commands;\n" \
+                "humans see the full catalog. Topic catalog lists all commands and\n" \
+                "options for either caller. Request a command by its exact name.\n" \
+                "Topics include parsing, escapes, expansion, ranges, regex, commands\n" \
+                "and options. Hidden commands still have individual specifications.\n\n" \
+                "Example: show the full catalog\n:exspec catalog")
+            spec("[range]a[text]", "Open or resume the agent conversation",
+                "Keeps the current conversation. Text prefills the prompt; an optional\n" \
+                "range attaches buffer text to the next submission. Enter adds a\n" \
+                "newline; Escape submits. Ctrl-C exits; Ctrl-O opens the editor.\n" \
+                "Ex specials are disabled during the session. Unavailable as an agent tool.")
+            spec("[range]a![text]", "Start a fresh agent conversation and clear its log",
+                "Clears conversation history and the session log, and resets aspec\n" \
+                "tracking and the saved deferred command. Range, text and prompt\n" \
+                "controls work as for a. Unavailable as an agent tool.")
+            spec("[range]a~[text]", "Rebuild the agent conversation from the session log",
+                "Loads the current log as conversation context, including edits made\n" \
+                "in b-4. Preserves aspec tracking. Range, text and prompt controls\n" \
+                "work as for a. Unavailable as an agent tool.")
+            spec("[range]apack[text]", "Compact the agent session using its log as context",
+                "Rebuilds context from b-4 and asks the agent to replace that log with\n" \
+                "a summary, then reloads it. Optional text replaces the default summary\n" \
+                "instructions; range attaches buffer text. Unavailable as an agent tool.")
+            spec("[range]apack![text]", "Compact the agent session by browsing its log",
+                "Starts with fresh context without importing or clearing b-4. The agent\n" \
+                "reads the log in bounded ranges and replaces it with a summary, then\n" \
+                "the summary is loaded as context. Resets aspec tracking. Optional text\n" \
+                "and range work as for apack. Unavailable as an agent tool.")
+            spec("acm", "Toggle the caveman response style skill",
+                "Adds or removes the skill in b-5. During an agent tool call, updates\n" \
+                "the system message; otherwise rebuilds context from the session log.")
             print "     aretry"
             print "             Execute the most recently deferred agent command once"
             print ""
@@ -4955,6 +4995,15 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
+            spec("ar[0]  Display returned agent reasoning",
+                "Without an argument, logically inverts this option.",
+                "A nonzero value includes returned reasoning in the session log.")
+            spec("gr[2]  Control agent output protection",
+                "Without an argument, logically inverts this option.",
+                "Value 2 limits tool output to 4096 bytes and protects captured shell\n" \
+                "output. Other values disable protection. Values 0 and 1 increment\n" \
+                "after each executed tool call, restoring 2 automatically; negative\n" \
+                "values disable protection until changed explicitly.")
             print "     aspec[1]  Automatically print ex specifications for agents"
             print ""
             print "             Without an argument, logically inverts this option."
@@ -6408,8 +6457,13 @@ static int exspec_extra(char *cmd)
 static void *ec_exspec(char *loc, char *cmd, char *arg)
 {
 	int i, j, k, option, begin = -1, end = 0;
-	char *desc, msg[512];
-	if (!*arg) {
+	char msg[512];
+	static char *agent_cmds[] = {
+		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
+		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
+		"ud", "rd", "sc", "sc!", "gr", "aretry"
+	};
+	if (!*arg || !strcmp(arg, "catalog")) {
 		ex_print("EX TOPICS", msg_ft)
 		for (i = 0; i < LEN(exspec_lines); i++) {
 			if (strncmp(exspec_lines[i], "EX ", 3))
@@ -6427,48 +6481,18 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 			for (i = 0; i < LEN(exspec_cmds); i++) {
 				if (exspec_cmds[i].option != option)
 					continue;
-				for (k = 0; *excmds[k].name; k++)
-					if (!strcmp(excmds[k].name, exspec_cmds[i].name))
-						break;
-				if (agent_tool && *excmds[k].name &&
-						(excmds[k].ec == ec_fuzz ||
-						excmds[k].ec == ec_agent ||
-						excmds[k].ec == ec_compact ||
-						excmds[k].ec == ec_skill ||
-						!strcmp(exspec_cmds[i].name, "@")))
-					continue;
+				if (agent_tool && !*arg) {
+					for (k = 0; k < LEN(agent_cmds); k++)
+						if (!strcmp(agent_cmds[k], exspec_cmds[i].name))
+							break;
+					if (k == LEN(agent_cmds))
+						continue;
+				}
 				snprintf(msg, sizeof(msg), "%s  %s",
 					exspec_cmds[i].name, exspec_cmds[i].desc);
 				ex_print(msg, msg_ft)
 			}
-			if (option)
-				continue;
-			for (i = 0; *excmds[i].name; i++) {
-				if (excmds[i].ec != ec_compact &&
-						excmds[i].ec != ec_skill &&
-						excmds[i].ec != ec_exspec)
-					continue;
-				for (j = 0; j < LEN(exspec_cmds); j++)
-					if (!strcmp(excmds[i].name, exspec_cmds[j].name))
-						break;
-				if (j < LEN(exspec_cmds))
-					continue;
-				if (agent_tool && excmds[i].ec != ec_exspec)
-					continue;
-				desc = excmds[i].ec == ec_exspec ?
-					"Print ex command index or specification" :
-					"unknown ex specification";
-				snprintf(msg, sizeof(msg), "%s  %s", excmds[i].name, desc);
-				ex_print(msg, msg_ft)
-			}
 		}
-		return NULL;
-	}
-	if (!strcmp(arg, "exspec")) {
-		ex_print("exspec [command range topic]", msg_ft)
-		ex_print("No argument prints the command index.", msg_ft)
-		ex_print("Topics: parsing, escapes, expansion, ranges, regex, commands, options.", msg_ft)
-		exspec_extra(arg);
 		return NULL;
 	}
 	for (i = 0; i < LEN(exspec_cmds); i++)
@@ -7387,6 +7411,61 @@ static char *exspec_lines[] = {
 	"cm![keymap]",
 	"Set an alternative keymap",
 	"",
+	"exspec[command range topic]",
+	"Print ex command catalog or specification",
+	"",
+	"Without an argument, agents see a selection of useful commands;",
+	"humans see the full catalog. Topic catalog lists all commands and",
+	"options for either caller. Request a command by its exact name.",
+	"Topics include parsing, escapes, expansion, ranges, regex, commands",
+	"and options. Hidden commands still have individual specifications.",
+	"",
+	"Example: show the full catalog",
+	"exspec catalog",
+	"",
+	"[range]a[text]",
+	"Open or resume the agent conversation",
+	"",
+	"Keeps the current conversation. Text prefills the prompt; an optional",
+	"range attaches buffer text to the next submission. Enter adds a",
+	"newline; Escape submits. Ctrl-C exits; Ctrl-O opens the editor.",
+	"Ex specials are disabled during the session. Unavailable as an agent tool.",
+	"",
+	"[range]a![text]",
+	"Start a fresh agent conversation and clear its log",
+	"",
+	"Clears conversation history and the session log, and resets aspec",
+	"tracking and the saved deferred command. Range, text and prompt",
+	"controls work as for a. Unavailable as an agent tool.",
+	"",
+	"[range]a~[text]",
+	"Rebuild the agent conversation from the session log",
+	"",
+	"Loads the current log as conversation context, including edits made",
+	"in b-4. Preserves aspec tracking. Range, text and prompt controls",
+	"work as for a. Unavailable as an agent tool.",
+	"",
+	"[range]apack[text]",
+	"Compact the agent session using its log as context",
+	"",
+	"Rebuilds context from b-4 and asks the agent to replace that log with",
+	"a summary, then reloads it. Optional text replaces the default summary",
+	"instructions; range attaches buffer text. Unavailable as an agent tool.",
+	"",
+	"[range]apack![text]",
+	"Compact the agent session by browsing its log",
+	"",
+	"Starts with fresh context without importing or clearing b-4. The agent",
+	"reads the log in bounded ranges and replaces it with a summary, then",
+	"the summary is loaded as context. Resets aspec tracking. Optional text",
+	"and range work as for apack. Unavailable as an agent tool.",
+	"",
+	"acm",
+	"Toggle the caveman response style skill",
+	"",
+	"Adds or removes the skill in b-5. During an agent tool call, updates",
+	"the system message; otherwise rebuilds context from the session log.",
+	"",
 	"aretry",
 	"Execute the most recently deferred agent command once",
 	"",
@@ -7477,6 +7556,19 @@ static char *exspec_lines[] = {
 	"the current value, unless stated otherwise.",
 	"",
 	"Argument notation shows the default value.",
+	"",
+	"ar[0]  Display returned agent reasoning",
+	"Without an argument, logically inverts this option.",
+	"",
+	"A nonzero value includes returned reasoning in the session log.",
+	"",
+	"gr[2]  Control agent output protection",
+	"Without an argument, logically inverts this option.",
+	"",
+	"Value 2 limits tool output to 4096 bytes and protects captured shell",
+	"output. Other values disable protection. Values 0 and 1 increment",
+	"after each executed tool call, restoring 2 automatically; negative",
+	"values disable protection until changed explicitly.",
 	"",
 	"aspec[1]  Automatically print ex specifications for agents",
 	"",
@@ -7773,40 +7865,49 @@ static struct {
 	{"ft", "Set a filetype", 718, 724, 0, 0},
 	{"cm", "Set a keymap", 725, 729, 0, 0},
 	{"cm!", "Set an alternative keymap", 730, 732, 0, 0},
-	{"aretry", "Execute the most recently deferred agent command once", 733, 743, 0, 0},
-	{"aco", "Print agent context usage and session statistics", 744, 753, 0, 0},
-	{"ac", "Set autocomplete filter regex", 754, 762, 0, 0},
-	{"sc", "Set ex special characters", 763, 773, 0, 0},
-	{"sc!", "Set ex special characters", 774, 781, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 782, 789, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 790, 793, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 794, 798, 0, 0},
-	{"ph", "Redefine placeholders", 799, 815, 0, 0},
-	{"aspec", "Automatically print ex specifications for agents", 824, 830, 1, 0},
-	{"ai", "Indent new lines", 831, 834, 1, 0},
-	{"ic", "Ignore case in regular expressions", 835, 836, 1, 0},
-	{"ish", "Interactive shell", 837, 852, 1, 0},
-	{"grp", "Regex search group", 853, 861, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 862, 865, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 866, 867, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 867, 868, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 868, 869, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 869, 870, 1, 0},
-	{"led", "Enable all terminal output", 870, 871, 1, 0},
-	{"vis", "Control startup flags", 872, 883, 1, 0},
-	{"mpt", "Control vi prompts", 884, 894, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 895, 897, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 897, 899, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 899, 900, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 900, 901, 1, 0},
-	{"td", "Current text direction context", 901, 907, 1, 0},
-	{"pr", "Print register", 908, 924, 1, 0},
-	{"fr", "Find register", 925, 937, 1, 0},
-	{"rr", "Record register", 938, 951, 1, 0},
-	{"lim", "Line length render limit", 952, 967, 1, 0},
-	{"seq", "Control Undo/Redo", 968, 980, 1, 0},
-	{"left", "Control horizontal scroll", 981, 986, 1, 0},
-	{"err", "Control ex errors", 987, 999, 1, 0},
+	{"exspec", "Print ex command catalog or specification", 733, 744, 0, 0},
+	{"a", "Open or resume the agent conversation", 745, 752, 0, 0},
+	{"a!", "Start a fresh agent conversation and clear its log", 753, 759, 0, 0},
+	{"a~", "Rebuild the agent conversation from the session log", 760, 766, 0, 0},
+	{"apack", "Compact the agent session using its log as context", 767, 773, 0, 0},
+	{"apack!", "Compact the agent session by browsing its log", 774, 781, 0, 0},
+	{"acm", "Toggle the caveman response style skill", 782, 787, 0, 0},
+	{"aretry", "Execute the most recently deferred agent command once", 788, 798, 0, 0},
+	{"aco", "Print agent context usage and session statistics", 799, 808, 0, 0},
+	{"ac", "Set autocomplete filter regex", 809, 817, 0, 0},
+	{"sc", "Set ex special characters", 818, 828, 0, 0},
+	{"sc!", "Set ex special characters", 829, 836, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 837, 844, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 845, 848, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 849, 853, 0, 0},
+	{"ph", "Redefine placeholders", 854, 870, 0, 0},
+	{"ar", "Display returned agent reasoning", 879, 883, 1, 0},
+	{"gr", "Control agent output protection", 884, 891, 1, 0},
+	{"aspec", "Automatically print ex specifications for agents", 892, 898, 1, 0},
+	{"ai", "Indent new lines", 899, 902, 1, 0},
+	{"ic", "Ignore case in regular expressions", 903, 904, 1, 0},
+	{"ish", "Interactive shell", 905, 920, 1, 0},
+	{"grp", "Regex search group", 921, 929, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 930, 933, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 934, 935, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 935, 936, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 936, 937, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 937, 938, 1, 0},
+	{"led", "Enable all terminal output", 938, 939, 1, 0},
+	{"vis", "Control startup flags", 940, 951, 1, 0},
+	{"mpt", "Control vi prompts", 952, 962, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 963, 965, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 965, 967, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 967, 968, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 968, 969, 1, 0},
+	{"td", "Current text direction context", 969, 975, 1, 0},
+	{"pr", "Print register", 976, 992, 1, 0},
+	{"fr", "Find register", 993, 1005, 1, 0},
+	{"rr", "Record register", 1006, 1019, 1, 0},
+	{"lim", "Line length render limit", 1020, 1035, 1, 0},
+	{"seq", "Control Undo/Redo", 1036, 1048, 1, 0},
+	{"left", "Control horizontal scroll", 1049, 1054, 1, 0},
+	{"err", "Control ex errors", 1055, 1067, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -13240,20 +13341,60 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..cafa861d 100755
+index c836c94c..d221496a 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,52 @@ build() {
+@@ -65,6 +65,101 @@ build() {
      }
  }
  
 +spec() {
 +    require "awk"
-+    # Agent-only ex specs are injected here so README stays pristine on master.
++    # Additional ex specs are injected here so README stays pristine on master.
 +    # Keep this block in sync with the agent command table in ex.c.
 +    tmp="$(mktemp)"
 +    awk '
++        function spec(name, desc, body) {
++            print "     " name
++            print "             " desc
++            print ""
++            gsub(/\n/, "\n             ", body)
++            print "             " body
++            print ""
++        }
 +        /^     ac\[regex\]$/ && !done {
++            spec("exspec[command range topic]", "Print ex command catalog or specification",
++                "Without an argument, agents see a selection of useful commands;\n" \
++                "humans see the full catalog. Topic catalog lists all commands and\n" \
++                "options for either caller. Request a command by its exact name.\n" \
++                "Topics include parsing, escapes, expansion, ranges, regex, commands\n" \
++                "and options. Hidden commands still have individual specifications.\n\n" \
++                "Example: show the full catalog\n:exspec catalog")
++            spec("[range]a[text]", "Open or resume the agent conversation",
++                "Keeps the current conversation. Text prefills the prompt; an optional\n" \
++                "range attaches buffer text to the next submission. Enter adds a\n" \
++                "newline; Escape submits. Ctrl-C exits; Ctrl-O opens the editor.\n" \
++                "Ex specials are disabled during the session. Unavailable as an agent tool.")
++            spec("[range]a![text]", "Start a fresh agent conversation and clear its log",
++                "Clears conversation history and the session log, and resets aspec\n" \
++                "tracking and the saved deferred command. Range, text and prompt\n" \
++                "controls work as for a. Unavailable as an agent tool.")
++            spec("[range]a~[text]", "Rebuild the agent conversation from the session log",
++                "Loads the current log as conversation context, including edits made\n" \
++                "in b-4. Preserves aspec tracking. Range, text and prompt controls\n" \
++                "work as for a. Unavailable as an agent tool.")
++            spec("[range]apack[text]", "Compact the agent session using its log as context",
++                "Rebuilds context from b-4 and asks the agent to replace that log with\n" \
++                "a summary, then reloads it. Optional text replaces the default summary\n" \
++                "instructions; range attaches buffer text. Unavailable as an agent tool.")
++            spec("[range]apack![text]", "Compact the agent session by browsing its log",
++                "Starts with fresh context without importing or clearing b-4. The agent\n" \
++                "reads the log in bounded ranges and replaces it with a summary, then\n" \
++                "the summary is loaded as context. Resets aspec tracking. Optional text\n" \
++                "and range work as for apack. Unavailable as an agent tool.")
++            spec("acm", "Toggle the caveman response style skill",
++                "Adds or removes the skill in b-5. During an agent tool call, updates\n" \
++                "the system message; otherwise rebuilds context from the session log.")
 +            print "     aretry"
 +            print "             Execute the most recently deferred agent command once"
 +            print ""
@@ -13278,6 +13419,15 @@ index c836c94c..cafa861d 100755
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
++            spec("ar[0]  Display returned agent reasoning",
++                "Without an argument, logically inverts this option.",
++                "A nonzero value includes returned reasoning in the session log.")
++            spec("gr[2]  Control agent output protection",
++                "Without an argument, logically inverts this option.",
++                "Value 2 limits tool output to 4096 bytes and protects captured shell\n" \
++                "output. Other values disable protection. Values 0 and 1 increment\n" \
++                "after each executed tool call, restoring 2 automatically; negative\n" \
++                "values disable protection until changed explicitly.")
 +            print "     aspec[1]  Automatically print ex specifications for agents"
 +            print ""
 +            print "             Without an argument, logically inverts this option."
@@ -13296,7 +13446,7 @@ index c836c94c..cafa861d 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +120,7 @@ install() {
+@@ -74,7 +169,7 @@ install() {
  }
  
  print_usage() {
@@ -13305,7 +13455,7 @@ index c836c94c..cafa861d 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +128,9 @@ print_usage() {
+@@ -82,6 +177,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -13380,7 +13530,7 @@ index 2888d7c6..35334642 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f0ce0805..7c8d36df 100644
+index f0ce0805..5d5a0f27 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13636,7 +13786,7 @@ index f0ce0805..7c8d36df 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1829,12 +1904,202 @@ static struct excmd {
+@@ -1829,12 +1904,177 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -13728,8 +13878,13 @@ index f0ce0805..7c8d36df 100644
 +static void *ec_exspec(char *loc, char *cmd, char *arg)
 +{
 +	int i, j, k, option, begin = -1, end = 0;
-+	char *desc, msg[512];
-+	if (!*arg) {
++	char msg[512];
++	static char *agent_cmds[] = {
++		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
++		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
++		"ud", "rd", "sc", "sc!", "gr", "aretry"
++	};
++	if (!*arg || !strcmp(arg, "catalog")) {
 +		ex_print("EX TOPICS", msg_ft)
 +		for (i = 0; i < LEN(exspec_lines); i++) {
 +			if (strncmp(exspec_lines[i], "EX ", 3))
@@ -13747,48 +13902,18 @@ index f0ce0805..7c8d36df 100644
 +			for (i = 0; i < LEN(exspec_cmds); i++) {
 +				if (exspec_cmds[i].option != option)
 +					continue;
-+				for (k = 0; *excmds[k].name; k++)
-+					if (!strcmp(excmds[k].name, exspec_cmds[i].name))
-+						break;
-+				if (agent_tool && *excmds[k].name &&
-+						(excmds[k].ec == ec_fuzz ||
-+						excmds[k].ec == ec_agent ||
-+						excmds[k].ec == ec_compact ||
-+						excmds[k].ec == ec_skill ||
-+						!strcmp(exspec_cmds[i].name, "@")))
-+					continue;
++				if (agent_tool && !*arg) {
++					for (k = 0; k < LEN(agent_cmds); k++)
++						if (!strcmp(agent_cmds[k], exspec_cmds[i].name))
++							break;
++					if (k == LEN(agent_cmds))
++						continue;
++				}
 +				snprintf(msg, sizeof(msg), "%s  %s",
 +					exspec_cmds[i].name, exspec_cmds[i].desc);
 +				ex_print(msg, msg_ft)
 +			}
-+			if (option)
-+				continue;
-+			for (i = 0; *excmds[i].name; i++) {
-+				if (excmds[i].ec != ec_compact &&
-+						excmds[i].ec != ec_skill &&
-+						excmds[i].ec != ec_exspec)
-+					continue;
-+				for (j = 0; j < LEN(exspec_cmds); j++)
-+					if (!strcmp(excmds[i].name, exspec_cmds[j].name))
-+						break;
-+				if (j < LEN(exspec_cmds))
-+					continue;
-+				if (agent_tool && excmds[i].ec != ec_exspec)
-+					continue;
-+				desc = excmds[i].ec == ec_exspec ?
-+					"Print ex command index or specification" :
-+					"unknown ex specification";
-+				snprintf(msg, sizeof(msg), "%s  %s", excmds[i].name, desc);
-+				ex_print(msg, msg_ft)
-+			}
 +		}
-+		return NULL;
-+	}
-+	if (!strcmp(arg, "exspec")) {
-+		ex_print("exspec [command range topic]", msg_ft)
-+		ex_print("No argument prints the command index.", msg_ft)
-+		ex_print("Topics: parsing, escapes, expansion, ranges, regex, commands, options.", msg_ft)
-+		exspec_extra(arg);
 +		return NULL;
 +	}
 +	for (i = 0; i < LEN(exspec_cmds); i++)
@@ -13839,7 +13964,7 @@ index f0ce0805..7c8d36df 100644
  			int n;
  			struct buf *pbuf = ex_buf;
  			src++;
-@@ -1862,6 +2127,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1862,6 +2102,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  				sbuf_chr(sb, '@')
  			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
  		} else if (*src == xexe) {
@@ -13853,7 +13978,7 @@ index f0ce0805..7c8d36df 100644
  			int n = sb->s_n;
  			src++;
  			ex_sread(sb, (char**)&src, xexe, xesc);
-@@ -1885,8 +2157,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1885,8 +2132,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  {
  	int i, j;
@@ -13871,7 +13996,7 @@ index f0ce0805..7c8d36df 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1936,8 +2216,44 @@ void *ex_exec(const char *ln)
+@@ -1936,8 +2191,44 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -13917,7 +14042,7 @@ index f0ce0805..7c8d36df 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1956,7 +2272,7 @@ void *ex_exec(const char *ln)
+@@ -1956,7 +2247,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -14014,10 +14139,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..9447ab5e
+index 00000000..aaf2523e
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1156 @@
+@@ -0,0 +1,1233 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -14753,6 +14878,61 @@ index 00000000..9447ab5e
 +	"cm![keymap]",
 +	"Set an alternative keymap",
 +	"",
++	"exspec[command range topic]",
++	"Print ex command catalog or specification",
++	"",
++	"Without an argument, agents see a selection of useful commands;",
++	"humans see the full catalog. Topic catalog lists all commands and",
++	"options for either caller. Request a command by its exact name.",
++	"Topics include parsing, escapes, expansion, ranges, regex, commands",
++	"and options. Hidden commands still have individual specifications.",
++	"",
++	"Example: show the full catalog",
++	"exspec catalog",
++	"",
++	"[range]a[text]",
++	"Open or resume the agent conversation",
++	"",
++	"Keeps the current conversation. Text prefills the prompt; an optional",
++	"range attaches buffer text to the next submission. Enter adds a",
++	"newline; Escape submits. Ctrl-C exits; Ctrl-O opens the editor.",
++	"Ex specials are disabled during the session. Unavailable as an agent tool.",
++	"",
++	"[range]a![text]",
++	"Start a fresh agent conversation and clear its log",
++	"",
++	"Clears conversation history and the session log, and resets aspec",
++	"tracking and the saved deferred command. Range, text and prompt",
++	"controls work as for a. Unavailable as an agent tool.",
++	"",
++	"[range]a~[text]",
++	"Rebuild the agent conversation from the session log",
++	"",
++	"Loads the current log as conversation context, including edits made",
++	"in b-4. Preserves aspec tracking. Range, text and prompt controls",
++	"work as for a. Unavailable as an agent tool.",
++	"",
++	"[range]apack[text]",
++	"Compact the agent session using its log as context",
++	"",
++	"Rebuilds context from b-4 and asks the agent to replace that log with",
++	"a summary, then reloads it. Optional text replaces the default summary",
++	"instructions; range attaches buffer text. Unavailable as an agent tool.",
++	"",
++	"[range]apack![text]",
++	"Compact the agent session by browsing its log",
++	"",
++	"Starts with fresh context without importing or clearing b-4. The agent",
++	"reads the log in bounded ranges and replaces it with a summary, then",
++	"the summary is loaded as context. Resets aspec tracking. Optional text",
++	"and range work as for apack. Unavailable as an agent tool.",
++	"",
++	"acm",
++	"Toggle the caveman response style skill",
++	"",
++	"Adds or removes the skill in b-5. During an agent tool call, updates",
++	"the system message; otherwise rebuilds context from the session log.",
++	"",
 +	"aretry",
 +	"Execute the most recently deferred agent command once",
 +	"",
@@ -14843,6 +15023,19 @@ index 00000000..9447ab5e
 +	"the current value, unless stated otherwise.",
 +	"",
 +	"Argument notation shows the default value.",
++	"",
++	"ar[0]  Display returned agent reasoning",
++	"Without an argument, logically inverts this option.",
++	"",
++	"A nonzero value includes returned reasoning in the session log.",
++	"",
++	"gr[2]  Control agent output protection",
++	"Without an argument, logically inverts this option.",
++	"",
++	"Value 2 limits tool output to 4096 bytes and protects captured shell",
++	"output. Other values disable protection. Values 0 and 1 increment",
++	"after each executed tool call, restoring 2 automatically; negative",
++	"values disable protection until changed explicitly.",
 +	"",
 +	"aspec[1]  Automatically print ex specifications for agents",
 +	"",
@@ -15139,40 +15332,49 @@ index 00000000..9447ab5e
 +	{"ft", "Set a filetype", 718, 724, 0, 0},
 +	{"cm", "Set a keymap", 725, 729, 0, 0},
 +	{"cm!", "Set an alternative keymap", 730, 732, 0, 0},
-+	{"aretry", "Execute the most recently deferred agent command once", 733, 743, 0, 0},
-+	{"aco", "Print agent context usage and session statistics", 744, 753, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 754, 762, 0, 0},
-+	{"sc", "Set ex special characters", 763, 773, 0, 0},
-+	{"sc!", "Set ex special characters", 774, 781, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 782, 789, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 790, 793, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 794, 798, 0, 0},
-+	{"ph", "Redefine placeholders", 799, 815, 0, 0},
-+	{"aspec", "Automatically print ex specifications for agents", 824, 830, 1, 0},
-+	{"ai", "Indent new lines", 831, 834, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 835, 836, 1, 0},
-+	{"ish", "Interactive shell", 837, 852, 1, 0},
-+	{"grp", "Regex search group", 853, 861, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 862, 865, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 866, 867, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 867, 868, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 868, 869, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 869, 870, 1, 0},
-+	{"led", "Enable all terminal output", 870, 871, 1, 0},
-+	{"vis", "Control startup flags", 872, 883, 1, 0},
-+	{"mpt", "Control vi prompts", 884, 894, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 895, 897, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 897, 899, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 899, 900, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 900, 901, 1, 0},
-+	{"td", "Current text direction context", 901, 907, 1, 0},
-+	{"pr", "Print register", 908, 924, 1, 0},
-+	{"fr", "Find register", 925, 937, 1, 0},
-+	{"rr", "Record register", 938, 951, 1, 0},
-+	{"lim", "Line length render limit", 952, 967, 1, 0},
-+	{"seq", "Control Undo/Redo", 968, 980, 1, 0},
-+	{"left", "Control horizontal scroll", 981, 986, 1, 0},
-+	{"err", "Control ex errors", 987, 999, 1, 0},
++	{"exspec", "Print ex command catalog or specification", 733, 744, 0, 0},
++	{"a", "Open or resume the agent conversation", 745, 752, 0, 0},
++	{"a!", "Start a fresh agent conversation and clear its log", 753, 759, 0, 0},
++	{"a~", "Rebuild the agent conversation from the session log", 760, 766, 0, 0},
++	{"apack", "Compact the agent session using its log as context", 767, 773, 0, 0},
++	{"apack!", "Compact the agent session by browsing its log", 774, 781, 0, 0},
++	{"acm", "Toggle the caveman response style skill", 782, 787, 0, 0},
++	{"aretry", "Execute the most recently deferred agent command once", 788, 798, 0, 0},
++	{"aco", "Print agent context usage and session statistics", 799, 808, 0, 0},
++	{"ac", "Set autocomplete filter regex", 809, 817, 0, 0},
++	{"sc", "Set ex special characters", 818, 828, 0, 0},
++	{"sc!", "Set ex special characters", 829, 836, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 837, 844, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 845, 848, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 849, 853, 0, 0},
++	{"ph", "Redefine placeholders", 854, 870, 0, 0},
++	{"ar", "Display returned agent reasoning", 879, 883, 1, 0},
++	{"gr", "Control agent output protection", 884, 891, 1, 0},
++	{"aspec", "Automatically print ex specifications for agents", 892, 898, 1, 0},
++	{"ai", "Indent new lines", 899, 902, 1, 0},
++	{"ic", "Ignore case in regular expressions", 903, 904, 1, 0},
++	{"ish", "Interactive shell", 905, 920, 1, 0},
++	{"grp", "Regex search group", 921, 929, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 930, 933, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 934, 935, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 935, 936, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 936, 937, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 937, 938, 1, 0},
++	{"led", "Enable all terminal output", 938, 939, 1, 0},
++	{"vis", "Control startup flags", 940, 951, 1, 0},
++	{"mpt", "Control vi prompts", 952, 962, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 963, 965, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 965, 967, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 967, 968, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 968, 969, 1, 0},
++	{"td", "Current text direction context", 969, 975, 1, 0},
++	{"pr", "Print register", 976, 992, 1, 0},
++	{"fr", "Find register", 993, 1005, 1, 0},
++	{"rr", "Record register", 1006, 1019, 1, 0},
++	{"lim", "Line length render limit", 1020, 1035, 1, 0},
++	{"seq", "Control Undo/Redo", 1036, 1048, 1, 0},
++	{"left", "Control horizontal scroll", 1049, 1054, 1, 0},
++	{"err", "Control ex errors", 1055, 1067, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..46734a46 100644
