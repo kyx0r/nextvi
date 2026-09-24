@@ -1,4 +1,4 @@
-.Dd Sep 23, 2026
+.Dd Sep 24, 2026
 .Dt Nextvi 1
 .Os Nextvi 7.7
 .
@@ -705,7 +705,7 @@ Example: range given
 .It Cm [\fIvrange\fP]f-[\fIregex\fP]
 Incrementing ranged search
 .Bd -literal
-Equivalent to the :f> and :f< commands, except subsequent commands
+Equivalent to the f> and f< commands, except subsequent commands
 advance past match boundary. Cannot match inplace.
 .Ed
 
@@ -936,7 +936,7 @@ Set line mark(s)
 Marks are ids separated by spaces, set alternating between start
 and end of the range.
 
-Example: store ranges in <a> and <s> for later reuse in :f>
+Example: store ranges in <a> and <s> for later reuse in f> command
 :>top>,#>bottom>m 97 115:'97,'115f>middle
 .Ed
 
@@ -1012,12 +1012,12 @@ Open file using fuzzy search prompt
 .Bd -literal
 Requires the b-2 buffer to have a directory listing backfilled.
 
-Example: backfill b-2 using :fd
+Example: backfill b-2 using fd command
 :fd
 Example: backfill b-2 using find
 :b-2:%!find .
 
-Prompt behavior is equivalent to the :f command.
+Prompt behavior is equivalent to the f command.
 
 Example: enter prompt & print entire listing
 :ef
@@ -1026,7 +1026,7 @@ Example: search for pathname containing "v"
 .Ed
 
 .It Cm [\fIvrange\fP]ef![\fIregex\fP]
-Forced version of :ef
+Forced version of ef command
 
 .It Cm [\fIrange\fP]r[\fIpath\fP]
 .It Cm [\fIrange\fP]r[\e!{\fIcmd\fP}]
@@ -1152,7 +1152,7 @@ No argument uses secondary or a working directory path.
 .Ed
 
 .It Cm inc[\fIregex\fP]
-Include regex for :fd calculation
+Include regex for fd command calculation
 .Bd -literal
 No argument disables the filter.
 
@@ -1262,7 +1262,7 @@ Numerical capture id
 , AND (higher precedence)
 ; OR (lower precedence)
 
-Example: calculate directory only if :cd succeeded
+Example: calculate directory only if cd command succeeded
 :cd /blah:?? fd
 Example: print a line only if it contains "int" at offset 5
 :;5;#>^int>:?? p
@@ -1370,7 +1370,7 @@ Toggle multi-byte UTF-8 decoding
 This command is particularly useful when editing files with
 mixed encodings, binary files, or when the terminal does not
 support UTF-8 or lacks the necessary fonts to display UTF-8
-characters. It is often paired with :ph command to achieve
+characters. It is often paired with ph command to achieve
 hex editor-like functionality.
 .Ed
 
@@ -1391,7 +1391,7 @@ for native rendering rather than substituting placeholders.
 Redefine placeholders
 .Bd -literal
 This command replaces placeholders defined in conf.c
-and subsequent :ph commands expand the list of placeholders.
+and subsequent ph commands expand the list of placeholders.
 
 Example: render 8 bit ascii (Extended ASCII) as <~>
 :ph 128 255 1 1~
@@ -1482,7 +1482,7 @@ Control startup flags
 .Bd -literal
 bit 1: raw ex mode
 bit 2: ex mode
-bit 3: disable :e message
+bit 3: disable e command message
 bit 4: alternate terminal screen
 
 Example: enable raw ex mode
@@ -1536,12 +1536,12 @@ be stored in the register.
 If the register is uppercase, <Newline> characters are added
 to match the exact output that was printed.
 
-Print register contents cannot be displayed with R or :reg command
+Print register contents cannot be displayed with R or reg command
 when register is assigned (self-referential problem).
 
-Example: paste current buffer list exactly like from :b command
+Example: paste current buffer list exactly like from b command
 :pr A:ya! 65: b:pu 65
-Example: store a line printed with :p
+Example: store a line printed with p command
 :pr A:ya! 65:p
 .Ed
 
@@ -1549,7 +1549,7 @@ Example: store a line printed with :p
 Find register
 .Bd -literal
 Set a register with a character or a number.
-Once the register is set, the :f> and :f+ commands perform a
+Once the register is set, the f> and f+ commands perform a
 multi-line search forward on the contents of the register instead
 of the current buffer. Range maps the match to a position in
 the current buffer. No range tests the match inplace.
@@ -1672,7 +1672,7 @@ Capture session for a bug report
 
 Recording starts into register <z>. Setting vis 2 makes <Q> toggle
 straight into a regular vi session where the user takes over.
-Quitting it with :q resumes the macro, which writes the recording
+Quitting it with q command resumes the macro, which writes the recording
 to bugreport.txt.
 .El
 .
