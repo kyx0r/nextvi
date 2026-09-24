@@ -6457,7 +6457,7 @@ static int exspec_agent(char *cmd, int ranges)
 	char msgtext[256];
 	snprintf(msgtext, sizeof(msgtext),
 		"%s command execution deferred for specifications. (aspec option)\n"
-		"%s%s command will not be deferred from now on.\n",
+		"%s%s command will not be deferred from now on. (aretry to execute this command)\n\n",
 		cmd, ranges && !exspec_ranges_read ? "ranges and " : "", cmd);
 	if (ranges && !exspec_ranges_read) {
 		exspec_ranges_read = 1;
@@ -7501,7 +7501,7 @@ static char *exspec_lines[] = {
 	"the system message; otherwise rebuilds context from the session log.",
 	"",
 	"aretry",
-	"Execute the most recently deferred agent command once",
+	"Execute the last deferred agent command once",
 	"",
 	"Reuses the range and expanded argument saved by aspec deferral.",
 	"Takes no range or argument. A newer deferral replaces the saved",
@@ -7604,7 +7604,7 @@ static char *exspec_lines[] = {
 	"after each executed tool call, restoring 2 automatically; negative",
 	"values disable protection until changed explicitly.",
 	"",
-	"aspec[1]  Automatically print ex specifications for agents",
+	"aspec[1]  Print ex specifications for agents",
 	"",
 	"Without an argument, logically inverts this option.",
 	"Argument 0 disables automatic specifications; argument 1 enables them.",
@@ -7906,7 +7906,7 @@ static struct {
 	{"apack", "Compact the agent session using its log as context", 767, 773, 0, 0},
 	{"apack!", "Compact the agent session by browsing its log", 774, 781, 0, 0},
 	{"acm", "Toggle the caveman response style skill", 782, 787, 0, 0},
-	{"aretry", "Execute the most recently deferred agent command once", 788, 798, 0, 0},
+	{"aretry", "Execute the last deferred agent command once", 788, 798, 0, 0},
 	{"aco", "Print agent context usage and session statistics", 799, 808, 0, 0},
 	{"ac", "Set autocomplete filter regex", 809, 817, 0, 0},
 	{"sc", "Set ex special characters", 818, 828, 0, 0},
@@ -7917,7 +7917,7 @@ static struct {
 	{"ph", "Redefine placeholders", 854, 870, 0, 0},
 	{"ar", "Display returned agent reasoning", 879, 883, 1, 0},
 	{"gr", "Control agent output protection", 884, 891, 1, 0},
-	{"aspec", "Automatically print ex specifications for agents", 892, 898, 1, 0},
+	{"aspec", "Print ex specifications for agents", 892, 898, 1, 0},
 	{"ai", "Indent new lines", 899, 902, 1, 0},
 	{"ic", "Ignore case in regular expressions", 903, 904, 1, 0},
 	{"ish", "Interactive shell", 905, 920, 1, 0},
@@ -13570,7 +13570,7 @@ index 2888d7c6..35334642 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f0ce0805..f16ee0d8 100644
+index f0ce0805..800978b2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13889,7 +13889,7 @@ index f0ce0805..f16ee0d8 100644
 +	char msgtext[256];
 +	snprintf(msgtext, sizeof(msgtext),
 +		"%s command execution deferred for specifications. (aspec option)\n"
-+		"%s%s command will not be deferred from now on.\n",
++		"%s%s command will not be deferred from now on. (aretry to execute this command)\n\n",
 +		cmd, ranges && !exspec_ranges_read ? "ranges and " : "", cmd);
 +	if (ranges && !exspec_ranges_read) {
 +		exspec_ranges_read = 1;
@@ -14183,7 +14183,7 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..aaf2523e
+index 00000000..0f1fc8e0
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1233 @@
@@ -14978,7 +14978,7 @@ index 00000000..aaf2523e
 +	"the system message; otherwise rebuilds context from the session log.",
 +	"",
 +	"aretry",
-+	"Execute the most recently deferred agent command once",
++	"Execute the last deferred agent command once",
 +	"",
 +	"Reuses the range and expanded argument saved by aspec deferral.",
 +	"Takes no range or argument. A newer deferral replaces the saved",
@@ -15081,7 +15081,7 @@ index 00000000..aaf2523e
 +	"after each executed tool call, restoring 2 automatically; negative",
 +	"values disable protection until changed explicitly.",
 +	"",
-+	"aspec[1]  Automatically print ex specifications for agents",
++	"aspec[1]  Print ex specifications for agents",
 +	"",
 +	"Without an argument, logically inverts this option.",
 +	"Argument 0 disables automatic specifications; argument 1 enables them.",
@@ -15383,7 +15383,7 @@ index 00000000..aaf2523e
 +	{"apack", "Compact the agent session using its log as context", 767, 773, 0, 0},
 +	{"apack!", "Compact the agent session by browsing its log", 774, 781, 0, 0},
 +	{"acm", "Toggle the caveman response style skill", 782, 787, 0, 0},
-+	{"aretry", "Execute the most recently deferred agent command once", 788, 798, 0, 0},
++	{"aretry", "Execute the last deferred agent command once", 788, 798, 0, 0},
 +	{"aco", "Print agent context usage and session statistics", 799, 808, 0, 0},
 +	{"ac", "Set autocomplete filter regex", 809, 817, 0, 0},
 +	{"sc", "Set ex special characters", 818, 828, 0, 0},
@@ -15394,7 +15394,7 @@ index 00000000..aaf2523e
 +	{"ph", "Redefine placeholders", 854, 870, 0, 0},
 +	{"ar", "Display returned agent reasoning", 879, 883, 1, 0},
 +	{"gr", "Control agent output protection", 884, 891, 1, 0},
-+	{"aspec", "Automatically print ex specifications for agents", 892, 898, 1, 0},
++	{"aspec", "Print ex specifications for agents", 892, 898, 1, 0},
 +	{"ai", "Indent new lines", 899, 902, 1, 0},
 +	{"ic", "Ignore case in regular expressions", 903, 904, 1, 0},
 +	{"ish", "Interactive shell", 905, 920, 1, 0},
