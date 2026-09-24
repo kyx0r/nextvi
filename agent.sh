@@ -8037,9 +8037,9 @@ void lbuf_saved\(struct lbuf \*lb, int clear\)
 		char msg[64];
 		int first = beg + 1, last = end > beg ? end : first;
 		if (first == last)
-			snprintf(msg, sizeof(msg), "replaced line %d", first);
+			snprintf(msg, sizeof(msg), "edited line %d", first);
 		else
-			snprintf(msg, sizeof(msg), "replaced lines %d,%d", first, last);
+			snprintf(msg, sizeof(msg), "edited lines %d,%d", first, last);
 		ex_print(msg, msg_ft)
 	}
 	agent_sync(lb);
@@ -15423,7 +15423,7 @@ index 00000000..aaf2523e
 +	{"err", "Control ex errors", 1055, 1067, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..46734a46 100644
+index 56cb42c6..d593e626 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,16 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -15434,9 +15434,9 @@ index 56cb42c6..46734a46 100644
 +		char msg[64];
 +		int first = beg + 1, last = end > beg ? end : first;
 +		if (first == last)
-+			snprintf(msg, sizeof(msg), "replaced line %d", first);
++			snprintf(msg, sizeof(msg), "edited line %d", first);
 +		else
-+			snprintf(msg, sizeof(msg), "replaced lines %d,%d", first, last);
++			snprintf(msg, sizeof(msg), "edited lines %d,%d", first, last);
 +		ex_print(msg, msg_ft)
 +	}
 +	agent_sync(lb);
