@@ -4931,6 +4931,17 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
     tmp="$(mktemp)"
     awk '\''
         /^     ac\[regex\]$/ && !done {
+            print "     aretry"
+            print "             Execute the most recently deferred agent command once"
+            print ""
+            print "             Reuses the range and expanded argument saved by aspec deferral."
+            print "             Takes no range or argument. A newer deferral replaces the saved"
+            print "             command; retrying consumes it, even if execution fails. Starting"
+            print "             a new agent session clears it. Errors if no command is saved."
+            print ""
+            print "             Example: execute the command after reading its specifications"
+            print "             :aretry"
+            print ""
             print "     aco"
             print "             Print agent context usage and session statistics"
             print ""
@@ -5075,7 +5086,7 @@ static struct {
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|ai|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|apack!?|ac[om]?|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|apack!?|ac[om]?|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -6289,15 +6300,17 @@ static char xaerr[128];
 '\''19s/\(e/(aspec) EO(e/??!219reg ex.c:1702:m192sc %? %@2142sc!0?
 '\''20s/s\)/s) EO(ar) EO(gr)/??!219reg ex.c:1704:m202sc %? %@2142sc!0?
 '\''21i static void *ec_exspec(char *loc, char *cmd, char *arg);
+static void *ec_aretry(char *loc, char *cmd, char *arg);
 
 ??!219reg ex.c:1732:m212sc %? %@2142sc!0?
-'\''22i 	EO(aspec),
-??!219reg ex.c:1757:m222sc %? %@2142sc!0?
-'\''23i 	EO(ar),
+'\''22i 	{"aretry", ec_aretry},
 	{"apack!", ec_compact},
 	{"apack", ec_compact},
+	EO(aspec),
 	{"acm", ec_skill},
 	{"aco", ec_aco},
+??!219reg ex.c:1757:m222sc %? %@2142sc!0?
+'\''23i 	EO(ar),
 ??!219reg ex.c:1758:m232sc %? %@2142sc!0?
 '\''24i 	{"a!", ec_agent},
 	{"a~", ec_agent},
@@ -6310,9 +6323,28 @@ static char xaerr[128];
 '\''27i #include "exspec.h"
 
 static int exspec_ranges_read;
+static char *exspec_deferred;
+static int exspec_deferred_idx, exspec_deferred_arg;
+
+static void *ec_aretry(char *loc, char *cmd, char *arg)
+{
+	char *saved = exspec_deferred;
+	int idx = exspec_deferred_idx, off = exspec_deferred_arg;
+	void *ret;
+	if (*loc || *arg)
+		return "aretry takes no range or argument";
+	if (!saved)
+		return "no deferred command";
+	exspec_deferred = NULL;
+	ret = excmds[idx].ec(saved, excmds[idx].name, saved + off);
+	free(saved);
+	return ret;
+}
 
 static void exspec_reset(void)
 {
+	free(exspec_deferred);
+	exspec_deferred = NULL;
 	exspec_ranges_read = 0;
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		exspec_cmds[i].read = 0;
@@ -6335,10 +6367,11 @@ static int exspec_mark(char *arg)
 static int exspec_agent(char *cmd, int ranges)
 {
 	int msg = 0;
-	char msgtext[128];
+	char msgtext[256];
 	snprintf(msgtext, sizeof(msgtext),
 		"%s command execution deferred for specifications. (aspec option)\n"
-		"%s%s command will not be deferred from now on.\n\n",
+		"%s%s command will not be deferred from now on.\n"
+		"Use aretry command to execute the most recently deferred command.\n\n",
 		cmd, ranges && !exspec_ranges_read ? "ranges and " : "", cmd);
 	if (ranges && !exspec_ranges_read) {
 		exspec_ranges_read = 1;
@@ -6517,9 +6550,16 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 			break;
 		}
 		ln = ex_arg(ln, sb, &arg);
-		if (agent_tool && xaspec && excmds[idx].ec != ec_exspec)
-			if (exspec_agent(excmds[idx].name, *sb->s))
+		if (agent_tool && xaspec && excmds[idx].ec != ec_exspec &&
+				excmds[idx].ec != ec_aretry)
+			if (exspec_agent(excmds[idx].name, *sb->s)) {
+				free(exspec_deferred);
+				exspec_deferred = emalloc(sb->s_n + 1);
+				memcpy(exspec_deferred, sb->s, sb->s_n + 1);
+				exspec_deferred_idx = idx;
+				exspec_deferred_arg = arg;
 				continue;
+			}
 		if (agent_tool && (agent_cancel || agent_pause)) {
 			ret = "agent execution interrupted";
 			break;
@@ -7347,6 +7387,17 @@ static char *exspec_lines[] = {
 	"cm![keymap]",
 	"Set an alternative keymap",
 	"",
+	"aretry",
+	"Execute the most recently deferred agent command once",
+	"",
+	"Reuses the range and expanded argument saved by aspec deferral.",
+	"Takes no range or argument. A newer deferral replaces the saved",
+	"command; retrying consumes it, even if execution fails. Starting",
+	"a new agent session clears it. Errors if no command is saved.",
+	"",
+	"Example: execute the command after reading its specifications",
+	"aretry",
+	"",
 	"aco",
 	"Print agent context usage and session statistics",
 	"",
@@ -7722,39 +7773,40 @@ static struct {
 	{"ft", "Set a filetype", 718, 724, 0, 0},
 	{"cm", "Set a keymap", 725, 729, 0, 0},
 	{"cm!", "Set an alternative keymap", 730, 732, 0, 0},
-	{"aco", "Print agent context usage and session statistics", 733, 742, 0, 0},
-	{"ac", "Set autocomplete filter regex", 743, 751, 0, 0},
-	{"sc", "Set ex special characters", 752, 762, 0, 0},
-	{"sc!", "Set ex special characters", 763, 770, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 771, 778, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 779, 782, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 783, 787, 0, 0},
-	{"ph", "Redefine placeholders", 788, 804, 0, 0},
-	{"aspec", "Automatically print ex specifications for agents", 813, 819, 1, 0},
-	{"ai", "Indent new lines", 820, 823, 1, 0},
-	{"ic", "Ignore case in regular expressions", 824, 825, 1, 0},
-	{"ish", "Interactive shell", 826, 841, 1, 0},
-	{"grp", "Regex search group", 842, 850, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 851, 854, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 855, 856, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 856, 857, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 857, 858, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 858, 859, 1, 0},
-	{"led", "Enable all terminal output", 859, 860, 1, 0},
-	{"vis", "Control startup flags", 861, 872, 1, 0},
-	{"mpt", "Control vi prompts", 873, 883, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 884, 886, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 886, 888, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 888, 889, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 889, 890, 1, 0},
-	{"td", "Current text direction context", 890, 896, 1, 0},
-	{"pr", "Print register", 897, 913, 1, 0},
-	{"fr", "Find register", 914, 926, 1, 0},
-	{"rr", "Record register", 927, 940, 1, 0},
-	{"lim", "Line length render limit", 941, 956, 1, 0},
-	{"seq", "Control Undo/Redo", 957, 969, 1, 0},
-	{"left", "Control horizontal scroll", 970, 975, 1, 0},
-	{"err", "Control ex errors", 976, 988, 1, 0},
+	{"aretry", "Execute the most recently deferred agent command once", 733, 743, 0, 0},
+	{"aco", "Print agent context usage and session statistics", 744, 753, 0, 0},
+	{"ac", "Set autocomplete filter regex", 754, 762, 0, 0},
+	{"sc", "Set ex special characters", 763, 773, 0, 0},
+	{"sc!", "Set ex special characters", 774, 781, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 782, 789, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 790, 793, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 794, 798, 0, 0},
+	{"ph", "Redefine placeholders", 799, 815, 0, 0},
+	{"aspec", "Automatically print ex specifications for agents", 824, 830, 1, 0},
+	{"ai", "Indent new lines", 831, 834, 1, 0},
+	{"ic", "Ignore case in regular expressions", 835, 836, 1, 0},
+	{"ish", "Interactive shell", 837, 852, 1, 0},
+	{"grp", "Regex search group", 853, 861, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 862, 865, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 866, 867, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 867, 868, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 868, 869, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 869, 870, 1, 0},
+	{"led", "Enable all terminal output", 870, 871, 1, 0},
+	{"vis", "Control startup flags", 872, 883, 1, 0},
+	{"mpt", "Control vi prompts", 884, 894, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 895, 897, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 897, 899, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 899, 900, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 900, 901, 1, 0},
+	{"td", "Current text direction context", 901, 907, 1, 0},
+	{"pr", "Print register", 908, 924, 1, 0},
+	{"fr", "Find register", 925, 937, 1, 0},
+	{"rr", "Record register", 938, 951, 1, 0},
+	{"lim", "Line length render limit", 952, 967, 1, 0},
+	{"seq", "Control Undo/Redo", 968, 980, 1, 0},
+	{"left", "Control horizontal scroll", 981, 986, 1, 0},
+	{"err", "Control ex errors", 987, 999, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -13188,10 +13240,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..9da765c3 100755
+index c836c94c..cafa861d 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,41 @@ build() {
+@@ -65,6 +65,52 @@ build() {
      }
  }
  
@@ -13202,6 +13254,17 @@ index c836c94c..9da765c3 100755
 +    tmp="$(mktemp)"
 +    awk '
 +        /^     ac\[regex\]$/ && !done {
++            print "     aretry"
++            print "             Execute the most recently deferred agent command once"
++            print ""
++            print "             Reuses the range and expanded argument saved by aspec deferral."
++            print "             Takes no range or argument. A newer deferral replaces the saved"
++            print "             command; retrying consumes it, even if execution fails. Starting"
++            print "             a new agent session clears it. Errors if no command is saved."
++            print ""
++            print "             Example: execute the command after reading its specifications"
++            print "             :aretry"
++            print ""
 +            print "     aco"
 +            print "             Print agent context usage and session statistics"
 +            print ""
@@ -13233,7 +13296,7 @@ index c836c94c..9da765c3 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +109,7 @@ install() {
+@@ -74,7 +120,7 @@ install() {
  }
  
  print_usage() {
@@ -13242,7 +13305,7 @@ index c836c94c..9da765c3 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +117,9 @@ print_usage() {
+@@ -82,6 +128,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -13253,7 +13316,7 @@ index c836c94c..9da765c3 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..0737297b 100644
+index 2888d7c6..35334642 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,48 @@
@@ -13312,12 +13375,12 @@ index 2888d7c6..0737297b 100644
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|ai|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|apack!?|ac[om]?|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|apack!?|ac[om]?|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f0ce0805..6f7dd2cb 100644
+index f0ce0805..7c8d36df 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13534,26 +13597,28 @@ index f0ce0805..6f7dd2cb 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,6 +1790,8 @@ _EO(left,
+@@ -1730,6 +1790,9 @@ _EO(left,
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
 +static void *ec_exspec(char *loc, char *cmd, char *arg);
++static void *ec_aretry(char *loc, char *cmd, char *arg);
 +
  /* commands & opts must be sorted longest of its kind topmost */
  static struct excmd {
  	char *name;
-@@ -1755,9 +1817,19 @@ static struct excmd {
+@@ -1755,9 +1818,20 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
-+	EO(aspec),
- 	EO(ai),
-+	EO(ar),
++	{"aretry", ec_aretry},
 +	{"apack!", ec_compact},
 +	{"apack", ec_compact},
++	EO(aspec),
 +	{"acm", ec_skill},
 +	{"aco", ec_aco},
+ 	EO(ai),
++	EO(ar),
  	{"ac", ec_setacreg},
 +	{"a!", ec_agent},
 +	{"a~", ec_agent},
@@ -13563,7 +13628,7 @@ index f0ce0805..6f7dd2cb 100644
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
  	{"e!", ec_edit},
-@@ -1777,6 +1849,7 @@ static struct excmd {
+@@ -1777,6 +1851,7 @@ static struct excmd {
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
@@ -13571,16 +13636,35 @@ index f0ce0805..6f7dd2cb 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1829,12 +1902,182 @@ static struct excmd {
+@@ -1829,12 +1904,202 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
 +#include "exspec.h"
 +
 +static int exspec_ranges_read;
++static char *exspec_deferred;
++static int exspec_deferred_idx, exspec_deferred_arg;
++
++static void *ec_aretry(char *loc, char *cmd, char *arg)
++{
++	char *saved = exspec_deferred;
++	int idx = exspec_deferred_idx, off = exspec_deferred_arg;
++	void *ret;
++	if (*loc || *arg)
++		return "aretry takes no range or argument";
++	if (!saved)
++		return "no deferred command";
++	exspec_deferred = NULL;
++	ret = excmds[idx].ec(saved, excmds[idx].name, saved + off);
++	free(saved);
++	return ret;
++}
 +
 +static void exspec_reset(void)
 +{
++	free(exspec_deferred);
++	exspec_deferred = NULL;
 +	exspec_ranges_read = 0;
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		exspec_cmds[i].read = 0;
@@ -13603,10 +13687,11 @@ index f0ce0805..6f7dd2cb 100644
 +static int exspec_agent(char *cmd, int ranges)
 +{
 +	int msg = 0;
-+	char msgtext[128];
++	char msgtext[256];
 +	snprintf(msgtext, sizeof(msgtext),
 +		"%s command execution deferred for specifications. (aspec option)\n"
-+		"%s%s command will not be deferred from now on.\n\n",
++		"%s%s command will not be deferred from now on.\n"
++		"Use aretry command to execute the most recently deferred command.\n\n",
 +		cmd, ranges && !exspec_ranges_read ? "ranges and " : "", cmd);
 +	if (ranges && !exspec_ranges_read) {
 +		exspec_ranges_read = 1;
@@ -13754,7 +13839,7 @@ index f0ce0805..6f7dd2cb 100644
  			int n;
  			struct buf *pbuf = ex_buf;
  			src++;
-@@ -1862,6 +2105,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1862,6 +2127,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  				sbuf_chr(sb, '@')
  			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
  		} else if (*src == xexe) {
@@ -13768,7 +13853,7 @@ index f0ce0805..6f7dd2cb 100644
  			int n = sb->s_n;
  			src++;
  			ex_sread(sb, (char**)&src, xexe, xesc);
-@@ -1885,8 +2135,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1885,8 +2157,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  {
  	int i, j;
@@ -13786,7 +13871,7 @@ index f0ce0805..6f7dd2cb 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1936,8 +2194,37 @@ void *ex_exec(const char *ln)
+@@ -1936,8 +2216,44 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -13810,9 +13895,16 @@ index f0ce0805..6f7dd2cb 100644
 +			break;
 +		}
 +		ln = ex_arg(ln, sb, &arg);
-+		if (agent_tool && xaspec && excmds[idx].ec != ec_exspec)
-+			if (exspec_agent(excmds[idx].name, *sb->s))
++		if (agent_tool && xaspec && excmds[idx].ec != ec_exspec &&
++				excmds[idx].ec != ec_aretry)
++			if (exspec_agent(excmds[idx].name, *sb->s)) {
++				free(exspec_deferred);
++				exspec_deferred = emalloc(sb->s_n + 1);
++				memcpy(exspec_deferred, sb->s, sb->s_n + 1);
++				exspec_deferred_idx = idx;
++				exspec_deferred_arg = arg;
 +				continue;
++			}
 +		if (agent_tool && (agent_cancel || agent_pause)) {
 +			ret = "agent execution interrupted";
 +			break;
@@ -13825,7 +13917,7 @@ index f0ce0805..6f7dd2cb 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1956,7 +2243,7 @@ void *ex_exec(const char *ln)
+@@ -1956,7 +2272,7 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -13922,10 +14014,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..d11ecdbd
+index 00000000..9447ab5e
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1144 @@
+@@ -0,0 +1,1156 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -14661,6 +14753,17 @@ index 00000000..d11ecdbd
 +	"cm![keymap]",
 +	"Set an alternative keymap",
 +	"",
++	"aretry",
++	"Execute the most recently deferred agent command once",
++	"",
++	"Reuses the range and expanded argument saved by aspec deferral.",
++	"Takes no range or argument. A newer deferral replaces the saved",
++	"command; retrying consumes it, even if execution fails. Starting",
++	"a new agent session clears it. Errors if no command is saved.",
++	"",
++	"Example: execute the command after reading its specifications",
++	"aretry",
++	"",
 +	"aco",
 +	"Print agent context usage and session statistics",
 +	"",
@@ -15036,39 +15139,40 @@ index 00000000..d11ecdbd
 +	{"ft", "Set a filetype", 718, 724, 0, 0},
 +	{"cm", "Set a keymap", 725, 729, 0, 0},
 +	{"cm!", "Set an alternative keymap", 730, 732, 0, 0},
-+	{"aco", "Print agent context usage and session statistics", 733, 742, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 743, 751, 0, 0},
-+	{"sc", "Set ex special characters", 752, 762, 0, 0},
-+	{"sc!", "Set ex special characters", 763, 770, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 771, 778, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 779, 782, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 783, 787, 0, 0},
-+	{"ph", "Redefine placeholders", 788, 804, 0, 0},
-+	{"aspec", "Automatically print ex specifications for agents", 813, 819, 1, 0},
-+	{"ai", "Indent new lines", 820, 823, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 824, 825, 1, 0},
-+	{"ish", "Interactive shell", 826, 841, 1, 0},
-+	{"grp", "Regex search group", 842, 850, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 851, 854, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 855, 856, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 856, 857, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 857, 858, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 858, 859, 1, 0},
-+	{"led", "Enable all terminal output", 859, 860, 1, 0},
-+	{"vis", "Control startup flags", 861, 872, 1, 0},
-+	{"mpt", "Control vi prompts", 873, 883, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 884, 886, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 886, 888, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 888, 889, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 889, 890, 1, 0},
-+	{"td", "Current text direction context", 890, 896, 1, 0},
-+	{"pr", "Print register", 897, 913, 1, 0},
-+	{"fr", "Find register", 914, 926, 1, 0},
-+	{"rr", "Record register", 927, 940, 1, 0},
-+	{"lim", "Line length render limit", 941, 956, 1, 0},
-+	{"seq", "Control Undo/Redo", 957, 969, 1, 0},
-+	{"left", "Control horizontal scroll", 970, 975, 1, 0},
-+	{"err", "Control ex errors", 976, 988, 1, 0},
++	{"aretry", "Execute the most recently deferred agent command once", 733, 743, 0, 0},
++	{"aco", "Print agent context usage and session statistics", 744, 753, 0, 0},
++	{"ac", "Set autocomplete filter regex", 754, 762, 0, 0},
++	{"sc", "Set ex special characters", 763, 773, 0, 0},
++	{"sc!", "Set ex special characters", 774, 781, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 782, 789, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 790, 793, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 794, 798, 0, 0},
++	{"ph", "Redefine placeholders", 799, 815, 0, 0},
++	{"aspec", "Automatically print ex specifications for agents", 824, 830, 1, 0},
++	{"ai", "Indent new lines", 831, 834, 1, 0},
++	{"ic", "Ignore case in regular expressions", 835, 836, 1, 0},
++	{"ish", "Interactive shell", 837, 852, 1, 0},
++	{"grp", "Regex search group", 853, 861, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 862, 865, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 866, 867, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 867, 868, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 868, 869, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 869, 870, 1, 0},
++	{"led", "Enable all terminal output", 870, 871, 1, 0},
++	{"vis", "Control startup flags", 872, 883, 1, 0},
++	{"mpt", "Control vi prompts", 884, 894, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 895, 897, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 897, 899, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 899, 900, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 900, 901, 1, 0},
++	{"td", "Current text direction context", 901, 907, 1, 0},
++	{"pr", "Print register", 908, 924, 1, 0},
++	{"fr", "Find register", 925, 937, 1, 0},
++	{"rr", "Record register", 938, 951, 1, 0},
++	{"lim", "Line length render limit", 952, 967, 1, 0},
++	{"seq", "Control Undo/Redo", 968, 980, 1, 0},
++	{"left", "Control horizontal scroll", 981, 986, 1, 0},
++	{"err", "Control ex errors", 987, 999, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..46734a46 100644
