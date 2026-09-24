@@ -4978,7 +4978,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Adds or removes the skill in b-5. During an agent tool call, updates\n" \
                 "the system message; otherwise rebuilds context from the session log.")
             print "     aretry"
-            print "             Execute the most recently deferred agent command once"
+            print "             Execute the last deferred agent command once"
             print ""
             print "             Reuses the range and expanded argument saved by aspec deferral."
             print "             Takes no range or argument. A newer deferral replaces the saved"
@@ -5010,7 +5010,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "output. Other values disable protection. Values 0 and 1 increment\n" \
                 "after each executed tool call, restoring 2 automatically; negative\n" \
                 "values disable protection until changed explicitly.")
-            print "     aspec[1]  Automatically print ex specifications for agents"
+            print "     aspec[1]  Print ex specifications for agents"
             print ""
             print "             Without an argument, logically inverts this option."
             print "             Argument 0 disables automatic specifications; argument 1 enables them."
@@ -6457,8 +6457,7 @@ static int exspec_agent(char *cmd, int ranges)
 	char msgtext[256];
 	snprintf(msgtext, sizeof(msgtext),
 		"%s command execution deferred for specifications. (aspec option)\n"
-		"%s%s command will not be deferred from now on.\n"
-		"Use aretry command to execute the most recently deferred command.\n\n",
+		"%s%s command will not be deferred from now on.\n",
 		cmd, ranges && !exspec_ranges_read ? "ranges and " : "", cmd);
 	if (ranges && !exspec_ranges_read) {
 		exspec_ranges_read = 1;
@@ -13382,7 +13381,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..d221496a 100755
+index c836c94c..7649a0bb 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,101 @@ build() {
@@ -13437,7 +13436,7 @@ index c836c94c..d221496a 100755
 +                "Adds or removes the skill in b-5. During an agent tool call, updates\n" \
 +                "the system message; otherwise rebuilds context from the session log.")
 +            print "     aretry"
-+            print "             Execute the most recently deferred agent command once"
++            print "             Execute the last deferred agent command once"
 +            print ""
 +            print "             Reuses the range and expanded argument saved by aspec deferral."
 +            print "             Takes no range or argument. A newer deferral replaces the saved"
@@ -13469,7 +13468,7 @@ index c836c94c..d221496a 100755
 +                "output. Other values disable protection. Values 0 and 1 increment\n" \
 +                "after each executed tool call, restoring 2 automatically; negative\n" \
 +                "values disable protection until changed explicitly.")
-+            print "     aspec[1]  Automatically print ex specifications for agents"
++            print "     aspec[1]  Print ex specifications for agents"
 +            print ""
 +            print "             Without an argument, logically inverts this option."
 +            print "             Argument 0 disables automatic specifications; argument 1 enables them."
@@ -13571,7 +13570,7 @@ index 2888d7c6..35334642 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f0ce0805..628dd49f 100644
+index f0ce0805..f16ee0d8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13836,7 +13835,7 @@ index f0ce0805..628dd49f 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1829,12 +1906,177 @@ static struct excmd {
+@@ -1829,12 +1906,176 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -13890,8 +13889,7 @@ index f0ce0805..628dd49f 100644
 +	char msgtext[256];
 +	snprintf(msgtext, sizeof(msgtext),
 +		"%s command execution deferred for specifications. (aspec option)\n"
-+		"%s%s command will not be deferred from now on.\n"
-+		"Use aretry command to execute the most recently deferred command.\n\n",
++		"%s%s command will not be deferred from now on.\n",
 +		cmd, ranges && !exspec_ranges_read ? "ranges and " : "", cmd);
 +	if (ranges && !exspec_ranges_read) {
 +		exspec_ranges_read = 1;
@@ -14014,7 +14012,7 @@ index f0ce0805..628dd49f 100644
  			int n;
  			struct buf *pbuf = ex_buf;
  			src++;
-@@ -1862,6 +2104,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1862,6 +2103,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  				sbuf_chr(sb, '@')
  			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
  		} else if (*src == xexe) {
@@ -14028,7 +14026,7 @@ index f0ce0805..628dd49f 100644
  			int n = sb->s_n;
  			src++;
  			ex_sread(sb, (char**)&src, xexe, xesc);
-@@ -1885,8 +2134,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1885,8 +2133,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  {
  	int i, j;
@@ -14046,7 +14044,7 @@ index f0ce0805..628dd49f 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1936,8 +2193,38 @@ void *ex_exec(const char *ln)
+@@ -1936,8 +2192,38 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -14086,7 +14084,7 @@ index f0ce0805..628dd49f 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1956,7 +2243,9 @@ void *ex_exec(const char *ln)
+@@ -1956,7 +2242,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
