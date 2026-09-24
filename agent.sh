@@ -6627,7 +6627,7 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 			break;
 ??!219reg ex.c:1940:m342sc %? %@2142sc!0?
 '\''35c 	if (agent_interrupted())
-		return xuerr;
+		return "agent execution interrupted";
 	return !agent_tool && xerr & 4 ? NULL : ret;
 ??!219reg ex.c:1959:m352sc %? %@2142sc!b7m!0?
 i # Embed the rendered README without indentation or example prompt colons.
@@ -13571,7 +13571,7 @@ index 2888d7c6..35334642 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f0ce0805..43810676 100644
+index f0ce0805..628dd49f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -14092,7 +14092,7 @@ index f0ce0805..43810676 100644
  	}
 -	return xerr & 4 ? NULL : ret;
 +	if (agent_interrupted())
-+		return xuerr;
++		return "agent execution interrupted";
 +	return !agent_tool && xerr & 4 ? NULL : ret;
  }
  
