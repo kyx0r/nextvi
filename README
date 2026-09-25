@@ -388,7 +388,7 @@ or reasoning text.
 
 The new ex command "aco" shows model state, context and settings.
 The new ex command "apack" to compact the conversation using current agent 
-and existing context.
+context.
 The new ex command "apack!" to compact the conversation by starting a
 fresh agent.
 The new ex command "acm" activates caveman mode skill.
