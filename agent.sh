@@ -5126,95 +5126,79 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
         }
         /^     ac\[regex\]$/ && !done {
             spec("exspec[command range topic]", "Print ex command catalog or specification",
-                "Without an argument, agents see a selection of useful commands;\n" \
-                "humans see the full catalog. Topic catalog lists all commands and\n" \
-                "options for either caller. Request a command by its exact name.\n" \
-                "Topics include parsing, escapes, expansion, ranges, regex, commands\n" \
-                "and options. Hidden commands still have individual specifications.\n\n" \
-                "Example: show the full catalog\n:exspec catalog")
+                "No argument lists useful commands for agents, the full catalog for\n" \
+                "humans. Use catalog for all commands and options; use a command name\n" \
+                "for its specification, including hidden commands. Topics: parsing,\n" \
+                "escapes, expansion, ranges, regex, commands, options.\n\n" \
+                "Example: list all commands\n:exspec catalog")
             spec("[range]a[text]", "Open or resume the agent conversation",
-                "Keeps the current conversation. Text prefills the prompt; an optional\n" \
-                "range attaches buffer text to the next submission. Enter adds a\n" \
-                "newline; Escape submits. Ctrl-C exits; Ctrl-O opens the editor.\n" \
-                "Ex specials are disabled during the session. Unavailable as an agent tool.")
-            spec("[range]a![text]", "Start a fresh agent conversation and clear its log",
-                "Clears conversation history and the session log, and resets aspec\n" \
-                "tracking and the saved deferred command. Range, text and prompt\n" \
-                "controls work as for a. Unavailable as an agent tool.")
-            spec("[range]a~[text]", "Rebuild the agent conversation from the session log",
-                "Loads the current log as conversation context, including edits made\n" \
-                "in b-4. Preserves aspec tracking. Range, text and prompt controls\n" \
-                "work as for a. Unavailable as an agent tool.")
-            spec("[range]apack[text]", "Compact the agent session using its log as context",
-                "Rebuilds context from b-4 and asks the agent to replace that log with\n" \
-                "a summary. Stays at the conversation prompt for follow-up instructions;\n" \
-                "reloads the log when you leave the session. Optional text replaces the\n" \
-                "default summary instructions; range attaches buffer text. Unavailable\n" \
-                "as an agent tool.")
+                "Keeps the conversation. Text prefills the prompt; range attaches\n" \
+                "buffer text to the next submission. Enter adds a newline; Escape\n" \
+                "submits; Ctrl-C exits; Ctrl-O opens the editor. Ex specials are\n" \
+                "disabled. Unavailable as an agent tool.")
+            spec("[range]a![text]", "Start a new agent conversation",
+                "Clears history and log, aspec tracking and deferred command.\n" \
+                "Range, text and prompt controls work as for a. Unavailable as an agent tool.")
+            spec("[range]a~[text]", "Resume an agent conversation from its log",
+                "Loads b-4 as context, including edits. Keeps aspec tracking.\n" \
+                "Range, text and prompt controls work as for a. Unavailable as an agent tool.")
+            spec("[range]apack[text]", "Compact the agent session from its log",
+                "Loads b-4 as context and asks the agent to replace it with a summary.\n" \
+                "Stays at the prompt; reloads the log on exit. Text replaces the default\n" \
+                "instructions; range attaches buffer text. Unavailable as an agent tool.")
             spec("[range]apack![text]", "Compact the agent session by browsing its log",
-                "Starts with fresh context without importing or clearing b-4. The agent\n" \
-                "reads the log in bounded ranges and replaces it with a summary. Stays\n" \
-                "at the conversation prompt for follow-up instructions; reloads the log\n" \
-                "when you leave the session. Resets aspec tracking. Optional text and\n" \
-                "range work as for apack. Unavailable as an agent tool.")
+                "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
+                "ranges and replaces the log with a summary. Stays at the prompt;\n" \
+                "reloads on exit. Resets aspec tracking. Text and range work as for\n" \
+                "apack. Unavailable as an agent tool.")
             spec("acm", "Toggle the caveman response style skill",
-                "Adds or removes the skill in b-5. During an agent tool call, updates\n" \
-                "the system message; otherwise rebuilds context from the session log.")
+                "Adds or removes the skill in b-5. Tool calls update the system\n" \
+                "message; otherwise context is rebuilt from the log.")
             print "     aretry"
             print "             Execute the last deferred agent command once"
             print ""
-            print "             Reuses the range and expanded argument saved by aspec deferral."
-            print "             Takes no range or argument. A newer deferral replaces the saved"
-            print "             command; retrying consumes it, even if execution fails. Starting"
-            print "             a new agent session clears it. Errors if no command is saved."
+            print "             Uses the saved range and expanded argument. Takes no range or"
+            print "             argument. A new deferral replaces it; retry consumes it even on"
+            print "             failure. A new session clears it. Errors if none is saved."
             print ""
-            print "             Example: execute the command after reading its specifications"
+            print "             Example: execute a deferred command"
             print "             :aretry"
             print ""
             spec("ast", "Print agent status and token usage",
-                "Prints message/payload sizes, per-role usage, activity, limits, and\n" \
-                "the active autocompact mode and threshold. Token usage is the input\n" \
-                "and output count reported for the last accepted response, if available.\n" \
-                "The next input count is an estimate: reported input plus new JSON\n" \
-                "bytes / 3, or all JSON bytes / 3 without a usable usage anchor.\n" \
-                "Estimates include tool definitions and message framing; they are not\n" \
-                "a tokenizer or a guarantee that the next request fits the model.")
+                "Prints sizes, per-role usage, activity, limits and autocompact mode.\n" \
+                "Usage counts come from the last accepted response. Next input is\n" \
+                "estimated from reported input plus new JSON bytes / 3, or all JSON\n" \
+                "bytes / 3 without a usable count. Includes tool definitions and\n" \
+                "framing; not a tokenizer or a guarantee the request fits.")
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
             spec("aco[0]  Automatically compact using the loaded session log",
-                "A positive argument sets the estimated input-token threshold; 0 disables.\n" \
-                "Without an argument, enables this mode at 85000 tokens, or disables\n" \
-                "it if this mode is already active. Negative values disable as well.\n" \
-                "aco and aco! share one threshold: the last setting wins.",
-                "Before requests (after complete tool batches), runs the apack task\n" \
-                "without a prompt and resumes the current request. Compaction never\n" \
-                "recurses. Failed, cancelled, empty, unchanged, or insufficient summaries\n" \
-                "retain the original history/log and stop the run. The threshold must\n" \
-                "leave room for summary instructions and model output. Use aco! if the\n" \
-                "full log no longer fits. This setting does not change the API limit.")
+                "Positive argument sets an estimated input-token threshold; 0 or\n" \
+                "negative disables. No argument enables at 85000 or toggles off.\n" \
+                "aco and aco! share a threshold; the last setting wins.",
+                "After tool batches, runs apack without a prompt and resumes. Never\n" \
+                "recurses. Failed, cancelled or inadequate summaries keep the old\n" \
+                "history and stop the run. Leave room for instructions and output;\n" \
+                "use aco! if the log cannot fit. Does not change the API limit.")
             spec("aco![0]  Automatically compact by browsing the session log",
-                "Same threshold and toggle behavior as aco, with a default of 85000.\n" \
-                "Selecting this mode replaces aco; selecting aco replaces this mode.",
-                "Like apack!, starts a fresh agent without importing the log. The agent\n" \
-                "explores b-4 using bounded reads and replaces it with a summary.\n" \
-                "Automatic compaction keeps the current task and restores the editor\n" \
-                "buffer before continuing. Status and token estimates are shown by ast.")
+                "Threshold and toggle work as for aco (default 85000). Selecting\n" \
+                "either mode replaces the other.",
+                "Runs apack! with fresh context and bounded reads of b-4. Keeps the\n" \
+                "current task and restores the editor buffer. Use ast for status\n" \
+                "and token estimates.")
             spec("ar[0]  Display returned agent reasoning",
-                "Without an argument, logically inverts this option.",
-                "A nonzero value includes returned reasoning in the session log.")
+                "No argument logically inverts the option.",
+                "Nonzero includes returned reasoning in the session log.")
             spec("gr[2]  Control agent output protection",
-                "Without an argument, logically inverts this option.",
+                "No argument logically inverts the option.",
                 "Value 2 limits tool output to 4096 bytes and protects captured shell\n" \
-                "output. Other values disable protection. Values 0 and 1 increment\n" \
-                "after each executed tool call, restoring 2 automatically; negative\n" \
-                "values disable protection until changed explicitly.")
+                "output. Other values disable protection; 0 and 1 increment after\n" \
+                "each tool call until 2. Negative values stay disabled.")
             print "     aspec[1]  Print ex specifications for agents"
             print ""
-            print "             Without an argument, logically inverts this option."
-            print "             Argument 0 disables automatic specifications; argument 1 enables them."
-            print ""
-            print "             The option is enabled by default."
+            print "             No argument logically inverts the option. 0 disables automatic"
+            print "             specifications; 1 enables them (the default)."
             print ""
             aspec_done = 1
         }
@@ -7584,82 +7568,73 @@ static char *exspec_lines[] = {
 	"exspec[command range topic]",
 	"Print ex command catalog or specification",
 	"",
-	"Without an argument, agents see a selection of useful commands;",
-	"humans see the full catalog. Topic catalog lists all commands and",
-	"options for either caller. Request a command by its exact name.",
-	"Topics include parsing, escapes, expansion, ranges, regex, commands",
-	"and options. Hidden commands still have individual specifications.",
+	"No argument lists useful commands for agents, the full catalog for",
+	"humans. Use catalog for all commands and options; use a command name",
+	"for its specification, including hidden commands. Topics: parsing,",
+	"escapes, expansion, ranges, regex, commands, options.",
 	"",
-	"Example: show the full catalog",
+	"Example: list all commands",
 	"exspec catalog",
 	"",
 	"[range]a[text]",
 	"Open or resume the agent conversation",
 	"",
-	"Keeps the current conversation. Text prefills the prompt; an optional",
-	"range attaches buffer text to the next submission. Enter adds a",
-	"newline; Escape submits. Ctrl-C exits; Ctrl-O opens the editor.",
-	"Ex specials are disabled during the session. Unavailable as an agent tool.",
+	"Keeps the conversation. Text prefills the prompt; range attaches",
+	"buffer text to the next submission. Enter adds a newline; Escape",
+	"submits; Ctrl-C exits; Ctrl-O opens the editor. Ex specials are",
+	"disabled. Unavailable as an agent tool.",
 	"",
 	"[range]a![text]",
-	"Start a fresh agent conversation and clear its log",
+	"Start a new agent conversation",
 	"",
-	"Clears conversation history and the session log, and resets aspec",
-	"tracking and the saved deferred command. Range, text and prompt",
-	"controls work as for a. Unavailable as an agent tool.",
+	"Clears history and log, aspec tracking and deferred command.",
+	"Range, text and prompt controls work as for a. Unavailable as an agent tool.",
 	"",
 	"[range]a~[text]",
-	"Rebuild the agent conversation from the session log",
+	"Resume an agent conversation from its log",
 	"",
-	"Loads the current log as conversation context, including edits made",
-	"in b-4. Preserves aspec tracking. Range, text and prompt controls",
-	"work as for a. Unavailable as an agent tool.",
+	"Loads b-4 as context, including edits. Keeps aspec tracking.",
+	"Range, text and prompt controls work as for a. Unavailable as an agent tool.",
 	"",
 	"[range]apack[text]",
-	"Compact the agent session using its log as context",
+	"Compact the agent session from its log",
 	"",
-	"Rebuilds context from b-4 and asks the agent to replace that log with",
-	"a summary. Stays at the conversation prompt for follow-up instructions;",
-	"reloads the log when you leave the session. Optional text replaces the",
-	"default summary instructions; range attaches buffer text. Unavailable",
-	"as an agent tool.",
+	"Loads b-4 as context and asks the agent to replace it with a summary.",
+	"Stays at the prompt; reloads the log on exit. Text replaces the default",
+	"instructions; range attaches buffer text. Unavailable as an agent tool.",
 	"",
 	"[range]apack![text]",
 	"Compact the agent session by browsing its log",
 	"",
-	"Starts with fresh context without importing or clearing b-4. The agent",
-	"reads the log in bounded ranges and replaces it with a summary. Stays",
-	"at the conversation prompt for follow-up instructions; reloads the log",
-	"when you leave the session. Resets aspec tracking. Optional text and",
-	"range work as for apack. Unavailable as an agent tool.",
+	"Starts fresh without loading or clearing b-4. The agent reads bounded",
+	"ranges and replaces the log with a summary. Stays at the prompt;",
+	"reloads on exit. Resets aspec tracking. Text and range work as for",
+	"apack. Unavailable as an agent tool.",
 	"",
 	"acm",
 	"Toggle the caveman response style skill",
 	"",
-	"Adds or removes the skill in b-5. During an agent tool call, updates",
-	"the system message; otherwise rebuilds context from the session log.",
+	"Adds or removes the skill in b-5. Tool calls update the system",
+	"message; otherwise context is rebuilt from the log.",
 	"",
 	"aretry",
 	"Execute the last deferred agent command once",
 	"",
-	"Reuses the range and expanded argument saved by aspec deferral.",
-	"Takes no range or argument. A newer deferral replaces the saved",
-	"command; retrying consumes it, even if execution fails. Starting",
-	"a new agent session clears it. Errors if no command is saved.",
+	"Uses the saved range and expanded argument. Takes no range or",
+	"argument. A new deferral replaces it; retry consumes it even on",
+	"failure. A new session clears it. Errors if none is saved.",
 	"",
-	"Example: execute the command after reading its specifications",
+	"Example: execute a deferred command",
 	"aretry",
 	"",
 	"ast",
 	"Print agent status and token usage",
 	"",
-	"Prints message/payload sizes, per-role usage, activity, limits, and",
-	"the active autocompact mode and threshold. Token usage is the input",
-	"and output count reported for the last accepted response, if available.",
-	"The next input count is an estimate: reported input plus new JSON",
-	"bytes / 3, or all JSON bytes / 3 without a usable usage anchor.",
-	"Estimates include tool definitions and message framing; they are not",
-	"a tokenizer or a guarantee that the next request fits the model.",
+	"Prints sizes, per-role usage, activity, limits and autocompact mode.",
+	"Usage counts come from the last accepted response. Next input is",
+	"estimated from reported input plus new JSON bytes / 3, or all JSON",
+	"bytes / 3 without a usable count. Includes tool definitions and",
+	"framing; not a tokenizer or a guarantee the request fits.",
 	"",
 	"ac[regex]",
 	"Set autocomplete filter regex",
@@ -7732,46 +7707,39 @@ static char *exspec_lines[] = {
 	"Argument notation shows the default value.",
 	"",
 	"aco[0]  Automatically compact using the loaded session log",
-	"A positive argument sets the estimated input-token threshold; 0 disables.",
-	"Without an argument, enables this mode at 85000 tokens, or disables",
-	"it if this mode is already active. Negative values disable as well.",
-	"aco and aco! share one threshold: the last setting wins.",
+	"Positive argument sets an estimated input-token threshold; 0 or",
+	"negative disables. No argument enables at 85000 or toggles off.",
+	"aco and aco! share a threshold; the last setting wins.",
 	"",
-	"Before requests (after complete tool batches), runs the apack task",
-	"without a prompt and resumes the current request. Compaction never",
-	"recurses. Failed, cancelled, empty, unchanged, or insufficient summaries",
-	"retain the original history/log and stop the run. The threshold must",
-	"leave room for summary instructions and model output. Use aco! if the",
-	"full log no longer fits. This setting does not change the API limit.",
+	"After tool batches, runs apack without a prompt and resumes. Never",
+	"recurses. Failed, cancelled or inadequate summaries keep the old",
+	"history and stop the run. Leave room for instructions and output;",
+	"use aco! if the log cannot fit. Does not change the API limit.",
 	"",
 	"aco![0]  Automatically compact by browsing the session log",
-	"Same threshold and toggle behavior as aco, with a default of 85000.",
-	"Selecting this mode replaces aco; selecting aco replaces this mode.",
+	"Threshold and toggle work as for aco (default 85000). Selecting",
+	"either mode replaces the other.",
 	"",
-	"Like apack!, starts a fresh agent without importing the log. The agent",
-	"explores b-4 using bounded reads and replaces it with a summary.",
-	"Automatic compaction keeps the current task and restores the editor",
-	"buffer before continuing. Status and token estimates are shown by ast.",
+	"Runs apack! with fresh context and bounded reads of b-4. Keeps the",
+	"current task and restores the editor buffer. Use ast for status",
+	"and token estimates.",
 	"",
 	"ar[0]  Display returned agent reasoning",
-	"Without an argument, logically inverts this option.",
+	"No argument logically inverts the option.",
 	"",
-	"A nonzero value includes returned reasoning in the session log.",
+	"Nonzero includes returned reasoning in the session log.",
 	"",
 	"gr[2]  Control agent output protection",
-	"Without an argument, logically inverts this option.",
+	"No argument logically inverts the option.",
 	"",
 	"Value 2 limits tool output to 4096 bytes and protects captured shell",
-	"output. Other values disable protection. Values 0 and 1 increment",
-	"after each executed tool call, restoring 2 automatically; negative",
-	"values disable protection until changed explicitly.",
+	"output. Other values disable protection; 0 and 1 increment after",
+	"each tool call until 2. Negative values stay disabled.",
 	"",
 	"aspec[1]  Print ex specifications for agents",
 	"",
-	"Without an argument, logically inverts this option.",
-	"Argument 0 disables automatic specifications; argument 1 enables them.",
-	"",
-	"The option is enabled by default.",
+	"No argument logically inverts the option. 0 disables automatic",
+	"specifications; 1 enables them (the default).",
 	"",
 	"ai[1]   Indent new lines",
 	"",
@@ -8061,51 +8029,51 @@ static struct {
 	{"ft", "Set a filetype", 718, 724, 0, 0},
 	{"cm", "Set a keymap", 725, 729, 0, 0},
 	{"cm!", "Set an alternative keymap", 730, 732, 0, 0},
-	{"exspec", "Print ex command catalog or specification", 733, 744, 0, 0},
-	{"a", "Open or resume the agent conversation", 745, 752, 0, 0},
-	{"a!", "Start a fresh agent conversation and clear its log", 753, 759, 0, 0},
-	{"a~", "Rebuild the agent conversation from the session log", 760, 766, 0, 0},
-	{"apack", "Compact the agent session using its log as context", 767, 775, 0, 0},
-	{"apack!", "Compact the agent session by browsing its log", 776, 784, 0, 0},
-	{"acm", "Toggle the caveman response style skill", 785, 790, 0, 0},
-	{"aretry", "Execute the last deferred agent command once", 791, 801, 0, 0},
-	{"ast", "Print agent status and token usage", 802, 812, 0, 0},
-	{"ac", "Set autocomplete filter regex", 813, 821, 0, 0},
-	{"sc", "Set ex special characters", 822, 832, 0, 0},
-	{"sc!", "Set ex special characters", 833, 840, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 841, 848, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 849, 852, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 853, 857, 0, 0},
-	{"ph", "Redefine placeholders", 858, 874, 0, 0},
-	{"aco", "Automatically compact using the loaded session log", 883, 895, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 896, 904, 1, 0},
-	{"ar", "Display returned agent reasoning", 905, 909, 1, 0},
-	{"gr", "Control agent output protection", 910, 917, 1, 0},
-	{"aspec", "Print ex specifications for agents", 918, 924, 1, 0},
-	{"ai", "Indent new lines", 925, 928, 1, 0},
-	{"ic", "Ignore case in regular expressions", 929, 930, 1, 0},
-	{"ish", "Interactive shell", 931, 946, 1, 0},
-	{"grp", "Regex search group", 947, 955, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 956, 959, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 960, 961, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 961, 962, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 962, 963, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 963, 964, 1, 0},
-	{"led", "Enable all terminal output", 964, 965, 1, 0},
-	{"vis", "Control startup flags", 966, 977, 1, 0},
-	{"mpt", "Control vi prompts", 978, 988, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 989, 991, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 991, 993, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 993, 994, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 994, 995, 1, 0},
-	{"td", "Current text direction context", 995, 1001, 1, 0},
-	{"pr", "Print register", 1002, 1018, 1, 0},
-	{"fr", "Find register", 1019, 1031, 1, 0},
-	{"rr", "Record register", 1032, 1045, 1, 0},
-	{"lim", "Line length render limit", 1046, 1061, 1, 0},
-	{"seq", "Control Undo/Redo", 1062, 1074, 1, 0},
-	{"left", "Control horizontal scroll", 1075, 1080, 1, 0},
-	{"err", "Control ex errors", 1081, 1093, 1, 0},
+	{"exspec", "Print ex command catalog or specification", 733, 743, 0, 0},
+	{"a", "Open or resume the agent conversation", 744, 751, 0, 0},
+	{"a!", "Start a new agent conversation", 752, 757, 0, 0},
+	{"a~", "Resume an agent conversation from its log", 758, 763, 0, 0},
+	{"apack", "Compact the agent session from its log", 764, 770, 0, 0},
+	{"apack!", "Compact the agent session by browsing its log", 771, 778, 0, 0},
+	{"acm", "Toggle the caveman response style skill", 779, 784, 0, 0},
+	{"aretry", "Execute the last deferred agent command once", 785, 794, 0, 0},
+	{"ast", "Print agent status and token usage", 795, 803, 0, 0},
+	{"ac", "Set autocomplete filter regex", 804, 812, 0, 0},
+	{"sc", "Set ex special characters", 813, 823, 0, 0},
+	{"sc!", "Set ex special characters", 824, 831, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 832, 839, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 840, 843, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 844, 848, 0, 0},
+	{"ph", "Redefine placeholders", 849, 865, 0, 0},
+	{"aco", "Automatically compact using the loaded session log", 874, 883, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 884, 891, 1, 0},
+	{"ar", "Display returned agent reasoning", 892, 896, 1, 0},
+	{"gr", "Control agent output protection", 897, 903, 1, 0},
+	{"aspec", "Print ex specifications for agents", 904, 908, 1, 0},
+	{"ai", "Indent new lines", 909, 912, 1, 0},
+	{"ic", "Ignore case in regular expressions", 913, 914, 1, 0},
+	{"ish", "Interactive shell", 915, 930, 1, 0},
+	{"grp", "Regex search group", 931, 939, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 940, 943, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 944, 945, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 945, 946, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 946, 947, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 947, 948, 1, 0},
+	{"led", "Enable all terminal output", 948, 949, 1, 0},
+	{"vis", "Control startup flags", 950, 961, 1, 0},
+	{"mpt", "Control vi prompts", 962, 972, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 973, 975, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 975, 977, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 977, 978, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 978, 979, 1, 0},
+	{"td", "Current text direction context", 979, 985, 1, 0},
+	{"pr", "Print register", 986, 1002, 1, 0},
+	{"fr", "Find register", 1003, 1015, 1, 0},
+	{"rr", "Record register", 1016, 1029, 1, 0},
+	{"lim", "Line length render limit", 1030, 1045, 1, 0},
+	{"seq", "Control Undo/Redo", 1046, 1058, 1, 0},
+	{"left", "Control horizontal scroll", 1059, 1064, 1, 0},
+	{"err", "Control ex errors", 1065, 1077, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -13725,10 +13693,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..f70ef03c 100755
+index c836c94c..204c085b 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,120 @@ build() {
+@@ -65,6 +65,104 @@ build() {
      }
  }
  
@@ -13748,95 +13716,79 @@ index c836c94c..f70ef03c 100755
 +        }
 +        /^     ac\[regex\]$/ && !done {
 +            spec("exspec[command range topic]", "Print ex command catalog or specification",
-+                "Without an argument, agents see a selection of useful commands;\n" \
-+                "humans see the full catalog. Topic catalog lists all commands and\n" \
-+                "options for either caller. Request a command by its exact name.\n" \
-+                "Topics include parsing, escapes, expansion, ranges, regex, commands\n" \
-+                "and options. Hidden commands still have individual specifications.\n\n" \
-+                "Example: show the full catalog\n:exspec catalog")
++                "No argument lists useful commands for agents, the full catalog for\n" \
++                "humans. Use catalog for all commands and options; use a command name\n" \
++                "for its specification, including hidden commands. Topics: parsing,\n" \
++                "escapes, expansion, ranges, regex, commands, options.\n\n" \
++                "Example: list all commands\n:exspec catalog")
 +            spec("[range]a[text]", "Open or resume the agent conversation",
-+                "Keeps the current conversation. Text prefills the prompt; an optional\n" \
-+                "range attaches buffer text to the next submission. Enter adds a\n" \
-+                "newline; Escape submits. Ctrl-C exits; Ctrl-O opens the editor.\n" \
-+                "Ex specials are disabled during the session. Unavailable as an agent tool.")
-+            spec("[range]a![text]", "Start a fresh agent conversation and clear its log",
-+                "Clears conversation history and the session log, and resets aspec\n" \
-+                "tracking and the saved deferred command. Range, text and prompt\n" \
-+                "controls work as for a. Unavailable as an agent tool.")
-+            spec("[range]a~[text]", "Rebuild the agent conversation from the session log",
-+                "Loads the current log as conversation context, including edits made\n" \
-+                "in b-4. Preserves aspec tracking. Range, text and prompt controls\n" \
-+                "work as for a. Unavailable as an agent tool.")
-+            spec("[range]apack[text]", "Compact the agent session using its log as context",
-+                "Rebuilds context from b-4 and asks the agent to replace that log with\n" \
-+                "a summary. Stays at the conversation prompt for follow-up instructions;\n" \
-+                "reloads the log when you leave the session. Optional text replaces the\n" \
-+                "default summary instructions; range attaches buffer text. Unavailable\n" \
-+                "as an agent tool.")
++                "Keeps the conversation. Text prefills the prompt; range attaches\n" \
++                "buffer text to the next submission. Enter adds a newline; Escape\n" \
++                "submits; Ctrl-C exits; Ctrl-O opens the editor. Ex specials are\n" \
++                "disabled. Unavailable as an agent tool.")
++            spec("[range]a![text]", "Start a new agent conversation",
++                "Clears history and log, aspec tracking and deferred command.\n" \
++                "Range, text and prompt controls work as for a. Unavailable as an agent tool.")
++            spec("[range]a~[text]", "Resume an agent conversation from its log",
++                "Loads b-4 as context, including edits. Keeps aspec tracking.\n" \
++                "Range, text and prompt controls work as for a. Unavailable as an agent tool.")
++            spec("[range]apack[text]", "Compact the agent session from its log",
++                "Loads b-4 as context and asks the agent to replace it with a summary.\n" \
++                "Stays at the prompt; reloads the log on exit. Text replaces the default\n" \
++                "instructions; range attaches buffer text. Unavailable as an agent tool.")
 +            spec("[range]apack![text]", "Compact the agent session by browsing its log",
-+                "Starts with fresh context without importing or clearing b-4. The agent\n" \
-+                "reads the log in bounded ranges and replaces it with a summary. Stays\n" \
-+                "at the conversation prompt for follow-up instructions; reloads the log\n" \
-+                "when you leave the session. Resets aspec tracking. Optional text and\n" \
-+                "range work as for apack. Unavailable as an agent tool.")
++                "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
++                "ranges and replaces the log with a summary. Stays at the prompt;\n" \
++                "reloads on exit. Resets aspec tracking. Text and range work as for\n" \
++                "apack. Unavailable as an agent tool.")
 +            spec("acm", "Toggle the caveman response style skill",
-+                "Adds or removes the skill in b-5. During an agent tool call, updates\n" \
-+                "the system message; otherwise rebuilds context from the session log.")
++                "Adds or removes the skill in b-5. Tool calls update the system\n" \
++                "message; otherwise context is rebuilt from the log.")
 +            print "     aretry"
 +            print "             Execute the last deferred agent command once"
 +            print ""
-+            print "             Reuses the range and expanded argument saved by aspec deferral."
-+            print "             Takes no range or argument. A newer deferral replaces the saved"
-+            print "             command; retrying consumes it, even if execution fails. Starting"
-+            print "             a new agent session clears it. Errors if no command is saved."
++            print "             Uses the saved range and expanded argument. Takes no range or"
++            print "             argument. A new deferral replaces it; retry consumes it even on"
++            print "             failure. A new session clears it. Errors if none is saved."
 +            print ""
-+            print "             Example: execute the command after reading its specifications"
++            print "             Example: execute a deferred command"
 +            print "             :aretry"
 +            print ""
 +            spec("ast", "Print agent status and token usage",
-+                "Prints message/payload sizes, per-role usage, activity, limits, and\n" \
-+                "the active autocompact mode and threshold. Token usage is the input\n" \
-+                "and output count reported for the last accepted response, if available.\n" \
-+                "The next input count is an estimate: reported input plus new JSON\n" \
-+                "bytes / 3, or all JSON bytes / 3 without a usable usage anchor.\n" \
-+                "Estimates include tool definitions and message framing; they are not\n" \
-+                "a tokenizer or a guarantee that the next request fits the model.")
++                "Prints sizes, per-role usage, activity, limits and autocompact mode.\n" \
++                "Usage counts come from the last accepted response. Next input is\n" \
++                "estimated from reported input plus new JSON bytes / 3, or all JSON\n" \
++                "bytes / 3 without a usable count. Includes tool definitions and\n" \
++                "framing; not a tokenizer or a guarantee the request fits.")
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
 +            spec("aco[0]  Automatically compact using the loaded session log",
-+                "A positive argument sets the estimated input-token threshold; 0 disables.\n" \
-+                "Without an argument, enables this mode at 85000 tokens, or disables\n" \
-+                "it if this mode is already active. Negative values disable as well.\n" \
-+                "aco and aco! share one threshold: the last setting wins.",
-+                "Before requests (after complete tool batches), runs the apack task\n" \
-+                "without a prompt and resumes the current request. Compaction never\n" \
-+                "recurses. Failed, cancelled, empty, unchanged, or insufficient summaries\n" \
-+                "retain the original history/log and stop the run. The threshold must\n" \
-+                "leave room for summary instructions and model output. Use aco! if the\n" \
-+                "full log no longer fits. This setting does not change the API limit.")
++                "Positive argument sets an estimated input-token threshold; 0 or\n" \
++                "negative disables. No argument enables at 85000 or toggles off.\n" \
++                "aco and aco! share a threshold; the last setting wins.",
++                "After tool batches, runs apack without a prompt and resumes. Never\n" \
++                "recurses. Failed, cancelled or inadequate summaries keep the old\n" \
++                "history and stop the run. Leave room for instructions and output;\n" \
++                "use aco! if the log cannot fit. Does not change the API limit.")
 +            spec("aco![0]  Automatically compact by browsing the session log",
-+                "Same threshold and toggle behavior as aco, with a default of 85000.\n" \
-+                "Selecting this mode replaces aco; selecting aco replaces this mode.",
-+                "Like apack!, starts a fresh agent without importing the log. The agent\n" \
-+                "explores b-4 using bounded reads and replaces it with a summary.\n" \
-+                "Automatic compaction keeps the current task and restores the editor\n" \
-+                "buffer before continuing. Status and token estimates are shown by ast.")
++                "Threshold and toggle work as for aco (default 85000). Selecting\n" \
++                "either mode replaces the other.",
++                "Runs apack! with fresh context and bounded reads of b-4. Keeps the\n" \
++                "current task and restores the editor buffer. Use ast for status\n" \
++                "and token estimates.")
 +            spec("ar[0]  Display returned agent reasoning",
-+                "Without an argument, logically inverts this option.",
-+                "A nonzero value includes returned reasoning in the session log.")
++                "No argument logically inverts the option.",
++                "Nonzero includes returned reasoning in the session log.")
 +            spec("gr[2]  Control agent output protection",
-+                "Without an argument, logically inverts this option.",
++                "No argument logically inverts the option.",
 +                "Value 2 limits tool output to 4096 bytes and protects captured shell\n" \
-+                "output. Other values disable protection. Values 0 and 1 increment\n" \
-+                "after each executed tool call, restoring 2 automatically; negative\n" \
-+                "values disable protection until changed explicitly.")
++                "output. Other values disable protection; 0 and 1 increment after\n" \
++                "each tool call until 2. Negative values stay disabled.")
 +            print "     aspec[1]  Print ex specifications for agents"
 +            print ""
-+            print "             Without an argument, logically inverts this option."
-+            print "             Argument 0 disables automatic specifications; argument 1 enables them."
-+            print ""
-+            print "             The option is enabled by default."
++            print "             No argument logically inverts the option. 0 disables automatic"
++            print "             specifications; 1 enables them (the default)."
 +            print ""
 +            aspec_done = 1
 +        }
@@ -13849,7 +13801,7 @@ index c836c94c..f70ef03c 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +188,7 @@ install() {
+@@ -74,7 +172,7 @@ install() {
  }
  
  print_usage() {
@@ -13858,7 +13810,7 @@ index c836c94c..f70ef03c 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +196,9 @@ print_usage() {
+@@ -82,6 +180,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -14529,10 +14481,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..90c9d3e7
+index 00000000..53b98fed
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1261 @@
+@@ -0,0 +1,1245 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -15271,82 +15223,73 @@ index 00000000..90c9d3e7
 +	"exspec[command range topic]",
 +	"Print ex command catalog or specification",
 +	"",
-+	"Without an argument, agents see a selection of useful commands;",
-+	"humans see the full catalog. Topic catalog lists all commands and",
-+	"options for either caller. Request a command by its exact name.",
-+	"Topics include parsing, escapes, expansion, ranges, regex, commands",
-+	"and options. Hidden commands still have individual specifications.",
++	"No argument lists useful commands for agents, the full catalog for",
++	"humans. Use catalog for all commands and options; use a command name",
++	"for its specification, including hidden commands. Topics: parsing,",
++	"escapes, expansion, ranges, regex, commands, options.",
 +	"",
-+	"Example: show the full catalog",
++	"Example: list all commands",
 +	"exspec catalog",
 +	"",
 +	"[range]a[text]",
 +	"Open or resume the agent conversation",
 +	"",
-+	"Keeps the current conversation. Text prefills the prompt; an optional",
-+	"range attaches buffer text to the next submission. Enter adds a",
-+	"newline; Escape submits. Ctrl-C exits; Ctrl-O opens the editor.",
-+	"Ex specials are disabled during the session. Unavailable as an agent tool.",
++	"Keeps the conversation. Text prefills the prompt; range attaches",
++	"buffer text to the next submission. Enter adds a newline; Escape",
++	"submits; Ctrl-C exits; Ctrl-O opens the editor. Ex specials are",
++	"disabled. Unavailable as an agent tool.",
 +	"",
 +	"[range]a![text]",
-+	"Start a fresh agent conversation and clear its log",
++	"Start a new agent conversation",
 +	"",
-+	"Clears conversation history and the session log, and resets aspec",
-+	"tracking and the saved deferred command. Range, text and prompt",
-+	"controls work as for a. Unavailable as an agent tool.",
++	"Clears history and log, aspec tracking and deferred command.",
++	"Range, text and prompt controls work as for a. Unavailable as an agent tool.",
 +	"",
 +	"[range]a~[text]",
-+	"Rebuild the agent conversation from the session log",
++	"Resume an agent conversation from its log",
 +	"",
-+	"Loads the current log as conversation context, including edits made",
-+	"in b-4. Preserves aspec tracking. Range, text and prompt controls",
-+	"work as for a. Unavailable as an agent tool.",
++	"Loads b-4 as context, including edits. Keeps aspec tracking.",
++	"Range, text and prompt controls work as for a. Unavailable as an agent tool.",
 +	"",
 +	"[range]apack[text]",
-+	"Compact the agent session using its log as context",
++	"Compact the agent session from its log",
 +	"",
-+	"Rebuilds context from b-4 and asks the agent to replace that log with",
-+	"a summary. Stays at the conversation prompt for follow-up instructions;",
-+	"reloads the log when you leave the session. Optional text replaces the",
-+	"default summary instructions; range attaches buffer text. Unavailable",
-+	"as an agent tool.",
++	"Loads b-4 as context and asks the agent to replace it with a summary.",
++	"Stays at the prompt; reloads the log on exit. Text replaces the default",
++	"instructions; range attaches buffer text. Unavailable as an agent tool.",
 +	"",
 +	"[range]apack![text]",
 +	"Compact the agent session by browsing its log",
 +	"",
-+	"Starts with fresh context without importing or clearing b-4. The agent",
-+	"reads the log in bounded ranges and replaces it with a summary. Stays",
-+	"at the conversation prompt for follow-up instructions; reloads the log",
-+	"when you leave the session. Resets aspec tracking. Optional text and",
-+	"range work as for apack. Unavailable as an agent tool.",
++	"Starts fresh without loading or clearing b-4. The agent reads bounded",
++	"ranges and replaces the log with a summary. Stays at the prompt;",
++	"reloads on exit. Resets aspec tracking. Text and range work as for",
++	"apack. Unavailable as an agent tool.",
 +	"",
 +	"acm",
 +	"Toggle the caveman response style skill",
 +	"",
-+	"Adds or removes the skill in b-5. During an agent tool call, updates",
-+	"the system message; otherwise rebuilds context from the session log.",
++	"Adds or removes the skill in b-5. Tool calls update the system",
++	"message; otherwise context is rebuilt from the log.",
 +	"",
 +	"aretry",
 +	"Execute the last deferred agent command once",
 +	"",
-+	"Reuses the range and expanded argument saved by aspec deferral.",
-+	"Takes no range or argument. A newer deferral replaces the saved",
-+	"command; retrying consumes it, even if execution fails. Starting",
-+	"a new agent session clears it. Errors if no command is saved.",
++	"Uses the saved range and expanded argument. Takes no range or",
++	"argument. A new deferral replaces it; retry consumes it even on",
++	"failure. A new session clears it. Errors if none is saved.",
 +	"",
-+	"Example: execute the command after reading its specifications",
++	"Example: execute a deferred command",
 +	"aretry",
 +	"",
 +	"ast",
 +	"Print agent status and token usage",
 +	"",
-+	"Prints message/payload sizes, per-role usage, activity, limits, and",
-+	"the active autocompact mode and threshold. Token usage is the input",
-+	"and output count reported for the last accepted response, if available.",
-+	"The next input count is an estimate: reported input plus new JSON",
-+	"bytes / 3, or all JSON bytes / 3 without a usable usage anchor.",
-+	"Estimates include tool definitions and message framing; they are not",
-+	"a tokenizer or a guarantee that the next request fits the model.",
++	"Prints sizes, per-role usage, activity, limits and autocompact mode.",
++	"Usage counts come from the last accepted response. Next input is",
++	"estimated from reported input plus new JSON bytes / 3, or all JSON",
++	"bytes / 3 without a usable count. Includes tool definitions and",
++	"framing; not a tokenizer or a guarantee the request fits.",
 +	"",
 +	"ac[regex]",
 +	"Set autocomplete filter regex",
@@ -15419,46 +15362,39 @@ index 00000000..90c9d3e7
 +	"Argument notation shows the default value.",
 +	"",
 +	"aco[0]  Automatically compact using the loaded session log",
-+	"A positive argument sets the estimated input-token threshold; 0 disables.",
-+	"Without an argument, enables this mode at 85000 tokens, or disables",
-+	"it if this mode is already active. Negative values disable as well.",
-+	"aco and aco! share one threshold: the last setting wins.",
++	"Positive argument sets an estimated input-token threshold; 0 or",
++	"negative disables. No argument enables at 85000 or toggles off.",
++	"aco and aco! share a threshold; the last setting wins.",
 +	"",
-+	"Before requests (after complete tool batches), runs the apack task",
-+	"without a prompt and resumes the current request. Compaction never",
-+	"recurses. Failed, cancelled, empty, unchanged, or insufficient summaries",
-+	"retain the original history/log and stop the run. The threshold must",
-+	"leave room for summary instructions and model output. Use aco! if the",
-+	"full log no longer fits. This setting does not change the API limit.",
++	"After tool batches, runs apack without a prompt and resumes. Never",
++	"recurses. Failed, cancelled or inadequate summaries keep the old",
++	"history and stop the run. Leave room for instructions and output;",
++	"use aco! if the log cannot fit. Does not change the API limit.",
 +	"",
 +	"aco![0]  Automatically compact by browsing the session log",
-+	"Same threshold and toggle behavior as aco, with a default of 85000.",
-+	"Selecting this mode replaces aco; selecting aco replaces this mode.",
++	"Threshold and toggle work as for aco (default 85000). Selecting",
++	"either mode replaces the other.",
 +	"",
-+	"Like apack!, starts a fresh agent without importing the log. The agent",
-+	"explores b-4 using bounded reads and replaces it with a summary.",
-+	"Automatic compaction keeps the current task and restores the editor",
-+	"buffer before continuing. Status and token estimates are shown by ast.",
++	"Runs apack! with fresh context and bounded reads of b-4. Keeps the",
++	"current task and restores the editor buffer. Use ast for status",
++	"and token estimates.",
 +	"",
 +	"ar[0]  Display returned agent reasoning",
-+	"Without an argument, logically inverts this option.",
++	"No argument logically inverts the option.",
 +	"",
-+	"A nonzero value includes returned reasoning in the session log.",
++	"Nonzero includes returned reasoning in the session log.",
 +	"",
 +	"gr[2]  Control agent output protection",
-+	"Without an argument, logically inverts this option.",
++	"No argument logically inverts the option.",
 +	"",
 +	"Value 2 limits tool output to 4096 bytes and protects captured shell",
-+	"output. Other values disable protection. Values 0 and 1 increment",
-+	"after each executed tool call, restoring 2 automatically; negative",
-+	"values disable protection until changed explicitly.",
++	"output. Other values disable protection; 0 and 1 increment after",
++	"each tool call until 2. Negative values stay disabled.",
 +	"",
 +	"aspec[1]  Print ex specifications for agents",
 +	"",
-+	"Without an argument, logically inverts this option.",
-+	"Argument 0 disables automatic specifications; argument 1 enables them.",
-+	"",
-+	"The option is enabled by default.",
++	"No argument logically inverts the option. 0 disables automatic",
++	"specifications; 1 enables them (the default).",
 +	"",
 +	"ai[1]   Indent new lines",
 +	"",
@@ -15748,51 +15684,51 @@ index 00000000..90c9d3e7
 +	{"ft", "Set a filetype", 718, 724, 0, 0},
 +	{"cm", "Set a keymap", 725, 729, 0, 0},
 +	{"cm!", "Set an alternative keymap", 730, 732, 0, 0},
-+	{"exspec", "Print ex command catalog or specification", 733, 744, 0, 0},
-+	{"a", "Open or resume the agent conversation", 745, 752, 0, 0},
-+	{"a!", "Start a fresh agent conversation and clear its log", 753, 759, 0, 0},
-+	{"a~", "Rebuild the agent conversation from the session log", 760, 766, 0, 0},
-+	{"apack", "Compact the agent session using its log as context", 767, 775, 0, 0},
-+	{"apack!", "Compact the agent session by browsing its log", 776, 784, 0, 0},
-+	{"acm", "Toggle the caveman response style skill", 785, 790, 0, 0},
-+	{"aretry", "Execute the last deferred agent command once", 791, 801, 0, 0},
-+	{"ast", "Print agent status and token usage", 802, 812, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 813, 821, 0, 0},
-+	{"sc", "Set ex special characters", 822, 832, 0, 0},
-+	{"sc!", "Set ex special characters", 833, 840, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 841, 848, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 849, 852, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 853, 857, 0, 0},
-+	{"ph", "Redefine placeholders", 858, 874, 0, 0},
-+	{"aco", "Automatically compact using the loaded session log", 883, 895, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 896, 904, 1, 0},
-+	{"ar", "Display returned agent reasoning", 905, 909, 1, 0},
-+	{"gr", "Control agent output protection", 910, 917, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 918, 924, 1, 0},
-+	{"ai", "Indent new lines", 925, 928, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 929, 930, 1, 0},
-+	{"ish", "Interactive shell", 931, 946, 1, 0},
-+	{"grp", "Regex search group", 947, 955, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 956, 959, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 960, 961, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 961, 962, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 962, 963, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 963, 964, 1, 0},
-+	{"led", "Enable all terminal output", 964, 965, 1, 0},
-+	{"vis", "Control startup flags", 966, 977, 1, 0},
-+	{"mpt", "Control vi prompts", 978, 988, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 989, 991, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 991, 993, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 993, 994, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 994, 995, 1, 0},
-+	{"td", "Current text direction context", 995, 1001, 1, 0},
-+	{"pr", "Print register", 1002, 1018, 1, 0},
-+	{"fr", "Find register", 1019, 1031, 1, 0},
-+	{"rr", "Record register", 1032, 1045, 1, 0},
-+	{"lim", "Line length render limit", 1046, 1061, 1, 0},
-+	{"seq", "Control Undo/Redo", 1062, 1074, 1, 0},
-+	{"left", "Control horizontal scroll", 1075, 1080, 1, 0},
-+	{"err", "Control ex errors", 1081, 1093, 1, 0},
++	{"exspec", "Print ex command catalog or specification", 733, 743, 0, 0},
++	{"a", "Open or resume the agent conversation", 744, 751, 0, 0},
++	{"a!", "Start a new agent conversation", 752, 757, 0, 0},
++	{"a~", "Resume an agent conversation from its log", 758, 763, 0, 0},
++	{"apack", "Compact the agent session from its log", 764, 770, 0, 0},
++	{"apack!", "Compact the agent session by browsing its log", 771, 778, 0, 0},
++	{"acm", "Toggle the caveman response style skill", 779, 784, 0, 0},
++	{"aretry", "Execute the last deferred agent command once", 785, 794, 0, 0},
++	{"ast", "Print agent status and token usage", 795, 803, 0, 0},
++	{"ac", "Set autocomplete filter regex", 804, 812, 0, 0},
++	{"sc", "Set ex special characters", 813, 823, 0, 0},
++	{"sc!", "Set ex special characters", 824, 831, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 832, 839, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 840, 843, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 844, 848, 0, 0},
++	{"ph", "Redefine placeholders", 849, 865, 0, 0},
++	{"aco", "Automatically compact using the loaded session log", 874, 883, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 884, 891, 1, 0},
++	{"ar", "Display returned agent reasoning", 892, 896, 1, 0},
++	{"gr", "Control agent output protection", 897, 903, 1, 0},
++	{"aspec", "Print ex specifications for agents", 904, 908, 1, 0},
++	{"ai", "Indent new lines", 909, 912, 1, 0},
++	{"ic", "Ignore case in regular expressions", 913, 914, 1, 0},
++	{"ish", "Interactive shell", 915, 930, 1, 0},
++	{"grp", "Regex search group", 931, 939, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 940, 943, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 944, 945, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 945, 946, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 946, 947, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 947, 948, 1, 0},
++	{"led", "Enable all terminal output", 948, 949, 1, 0},
++	{"vis", "Control startup flags", 950, 961, 1, 0},
++	{"mpt", "Control vi prompts", 962, 972, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 973, 975, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 975, 977, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 977, 978, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 978, 979, 1, 0},
++	{"td", "Current text direction context", 979, 985, 1, 0},
++	{"pr", "Print register", 986, 1002, 1, 0},
++	{"fr", "Find register", 1003, 1015, 1, 0},
++	{"rr", "Record register", 1016, 1029, 1, 0},
++	{"lim", "Line length render limit", 1030, 1045, 1, 0},
++	{"seq", "Control Undo/Redo", 1046, 1058, 1, 0},
++	{"left", "Control horizontal scroll", 1059, 1064, 1, 0},
++	{"err", "Control ex errors", 1065, 1077, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..d593e626 100644
