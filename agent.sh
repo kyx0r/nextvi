@@ -226,6 +226,33 @@ static int agent_save(int i)
 	return ret;
 }
 
+/* Keep the old on-disk conversation in the same directory. The working
+ * buffer keeps its path, so its next save creates a fresh conversation file. */
+static char *agent_rotate_log(void)
+{
+	char *archive = emalloc(strlen(tempbufs[3].path) + 8);
+	sprintf(archive, "%s.XXXXXX", tempbufs[3].path);
+	int fd = mkstemp(archive);
+	if (fd < 0) {
+		free(archive);
+		return NULL;
+	}
+	if (close(fd) || rename(tempbufs[3].path, archive)) {
+		unlink(archive);
+		free(archive);
+		return NULL;
+	}
+	return archive;
+}
+
+static void agent_restore_log(char *archive)
+{
+	if (rename(archive, tempbufs[3].path))
+		ex_print("cannot restore archived session log", msg_ft)
+	else
+		tempbufs[3].mtime = mtime(tempbufs[3].path);
+}
+
 static void agent_sync(struct lbuf *lb)
 {
 	if (!agent_ready || agent_syncing)
@@ -896,11 +923,17 @@ static void agent_run(const char *input)
 		/* Only complete tool batches reach this boundary. Manual/automatic
 		 * pack agents must never recursively trigger autocompaction. */
 		/* The threshold triggers a pack, not a hard cap on its result. */
+		if (compacted && agent_tokens() < xaco)
+			compacted = 0;
 		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
 				agent_tokens() >= xaco) {
 			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 				return;
+			/* The pack conversation was discarded. Start a fresh tool-round
+			 * budget for the resumed request, without recursing into agent_run. */
 			compacted = 1;
+			round = retries = 0;
+			agent_rounds = 0;
 			serial = agent_serial;
 		}
 		req = agent_config();
@@ -1406,15 +1439,39 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	/* Indices survive buffer-array growth during tool calls. */
 	int savedtemp = istempbuf(ex_buf);
 	int savedbuf = savedtemp ? ex_buf - tempbufs : ex_buf - bufs;
+	char *original = agent_text(tempbufs[3].lb);
+	char *archive = agent_rotate_log();
+	if (!archive) {
+		free(original);
+		free(task);
+		return "cannot archive session log";
+	}
 	/* apack! resets history without clearing or importing the log. */
 	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
-	if (!ret && agent_epoch == epoch + 1)
-		agent_history(1);
+	if (agent_epoch == epoch + 1) {
+		char *summary = agent_text(tempbufs[3].lb);
+		if (!ret && strcmp(original, summary)) {
+			if (agent_save(3))
+				ret = "cannot save compacted session log";
+		} else {
+			agent_restore_log(archive);
+		}
+		free(summary);
+		if (!ret)
+			agent_history(1);
+	} else if (agent_epoch == epoch) {
+		/* Initialization or range validation failed before the prompt. */
+		agent_restore_log(archive);
+	} else if (access(tempbufs[3].path, F_OK)) {
+		agent_save(3);
+	}
 	if (savedtemp)
 		temp_switch(savedbuf, 0);
 	else if (savedbuf < xbufcur) {
 		bufs_switchwft(savedbuf)
 	}
+	free(archive);
+	free(original);
 	free(task);
 	return ret;
 }
@@ -1436,7 +1493,14 @@ static int agent_autocompact(const char *input)
 	exbuf_save(ex_buf)
 	char *original = agent_text(lb);
 	char *task = agent_compact_task(browse, "", 1);
+	char *archive = agent_rotate_log();
 	int ok = 0;
+	if (!archive) {
+		free(original);
+		free(task);
+		agent_log("RESULT", "autocompact failed: cannot archive session log");
+		return 0;
+	}
 
 	agent_logbuf = 2;
 	agent_log("RESULT", browse ? "autocompact: browsing session log" :
@@ -1464,7 +1528,7 @@ static int agent_autocompact(const char *input)
 		text++;
 	if (agent_pack_done && !agent_cancel && !agent_pause && !xquit &&
 			*text && strcmp(original, summary) &&
-			strlen(summary) < strlen(original)) {
+			strlen(summary) < strlen(original) && !agent_save(3)) {
 		agent_history(1);
 		sbuf_smake(resume, 256)
 		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
@@ -1484,11 +1548,17 @@ static int agent_autocompact(const char *input)
 		cJSON_Delete(agent_messages);
 		agent_messages = history;
 		agent_usage = usage;
+		agent_syncing = 1;
 		lbuf_edit(lb, original, 0, lbuf_len(lb), 0, 0);
+		agent_syncing = 0;
+		agent_restore_log(archive);
 		agent_log("RESULT", "autocompact failed or cancelled; "
 			"original history retained. Compact manually or retry.");
 	}
 	done:
+	/* A recursive session may have replaced the conversation while packing. */
+	if (epoch != agent_epoch && access(tempbufs[3].path, F_OK))
+		agent_save(3);
 	if (savedtemp)
 		temp_switch(savedbuf, 0);
 	else if (savedbuf < xbufcur) {
@@ -1497,6 +1567,7 @@ static int agent_autocompact(const char *input)
 	agent_rounds = rounds;
 	agent_logbuf = logbuf;
 	free(original);
+	free(archive);
 	return ok;
 }
 ??!219reg agent.c:-1:m2sc %? %@2142sc!b1m!0?
@@ -8708,10 +8779,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..6d666343
+index 00000000..97229e3e
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1469 @@
+@@ -0,0 +1,1540 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8906,6 +8977,33 @@ index 00000000..6d666343
 +	}
 +	free(path);
 +	return ret;
++}
++
++/* Keep the old on-disk conversation in the same directory. The working
++ * buffer keeps its path, so its next save creates a fresh conversation file. */
++static char *agent_rotate_log(void)
++{
++	char *archive = emalloc(strlen(tempbufs[3].path) + 8);
++	sprintf(archive, "%s.XXXXXX", tempbufs[3].path);
++	int fd = mkstemp(archive);
++	if (fd < 0) {
++		free(archive);
++		return NULL;
++	}
++	if (close(fd) || rename(tempbufs[3].path, archive)) {
++		unlink(archive);
++		free(archive);
++		return NULL;
++	}
++	return archive;
++}
++
++static void agent_restore_log(char *archive)
++{
++	if (rename(archive, tempbufs[3].path))
++		ex_print("cannot restore archived session log", msg_ft)
++	else
++		tempbufs[3].mtime = mtime(tempbufs[3].path);
 +}
 +
 +static void agent_sync(struct lbuf *lb)
@@ -9578,11 +9676,17 @@ index 00000000..6d666343
 +		/* Only complete tool batches reach this boundary. Manual/automatic
 +		 * pack agents must never recursively trigger autocompaction. */
 +		/* The threshold triggers a pack, not a hard cap on its result. */
++		if (compacted && agent_tokens() < xaco)
++			compacted = 0;
 +		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
 +				agent_tokens() >= xaco) {
 +			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 +				return;
++			/* The pack conversation was discarded. Start a fresh tool-round
++			 * budget for the resumed request, without recursing into agent_run. */
 +			compacted = 1;
++			round = retries = 0;
++			agent_rounds = 0;
 +			serial = agent_serial;
 +		}
 +		req = agent_config();
@@ -10088,15 +10192,39 @@ index 00000000..6d666343
 +	/* Indices survive buffer-array growth during tool calls. */
 +	int savedtemp = istempbuf(ex_buf);
 +	int savedbuf = savedtemp ? ex_buf - tempbufs : ex_buf - bufs;
++	char *original = agent_text(tempbufs[3].lb);
++	char *archive = agent_rotate_log();
++	if (!archive) {
++		free(original);
++		free(task);
++		return "cannot archive session log";
++	}
 +	/* apack! resets history without clearing or importing the log. */
 +	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
-+	if (!ret && agent_epoch == epoch + 1)
-+		agent_history(1);
++	if (agent_epoch == epoch + 1) {
++		char *summary = agent_text(tempbufs[3].lb);
++		if (!ret && strcmp(original, summary)) {
++			if (agent_save(3))
++				ret = "cannot save compacted session log";
++		} else {
++			agent_restore_log(archive);
++		}
++		free(summary);
++		if (!ret)
++			agent_history(1);
++	} else if (agent_epoch == epoch) {
++		/* Initialization or range validation failed before the prompt. */
++		agent_restore_log(archive);
++	} else if (access(tempbufs[3].path, F_OK)) {
++		agent_save(3);
++	}
 +	if (savedtemp)
 +		temp_switch(savedbuf, 0);
 +	else if (savedbuf < xbufcur) {
 +		bufs_switchwft(savedbuf)
 +	}
++	free(archive);
++	free(original);
 +	free(task);
 +	return ret;
 +}
@@ -10118,7 +10246,14 @@ index 00000000..6d666343
 +	exbuf_save(ex_buf)
 +	char *original = agent_text(lb);
 +	char *task = agent_compact_task(browse, "", 1);
++	char *archive = agent_rotate_log();
 +	int ok = 0;
++	if (!archive) {
++		free(original);
++		free(task);
++		agent_log("RESULT", "autocompact failed: cannot archive session log");
++		return 0;
++	}
 +
 +	agent_logbuf = 2;
 +	agent_log("RESULT", browse ? "autocompact: browsing session log" :
@@ -10146,7 +10281,7 @@ index 00000000..6d666343
 +		text++;
 +	if (agent_pack_done && !agent_cancel && !agent_pause && !xquit &&
 +			*text && strcmp(original, summary) &&
-+			strlen(summary) < strlen(original)) {
++			strlen(summary) < strlen(original) && !agent_save(3)) {
 +		agent_history(1);
 +		sbuf_smake(resume, 256)
 +		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
@@ -10166,11 +10301,17 @@ index 00000000..6d666343
 +		cJSON_Delete(agent_messages);
 +		agent_messages = history;
 +		agent_usage = usage;
++		agent_syncing = 1;
 +		lbuf_edit(lb, original, 0, lbuf_len(lb), 0, 0);
++		agent_syncing = 0;
++		agent_restore_log(archive);
 +		agent_log("RESULT", "autocompact failed or cancelled; "
 +			"original history retained. Compact manually or retry.");
 +	}
 +	done:
++	/* A recursive session may have replaced the conversation while packing. */
++	if (epoch != agent_epoch && access(tempbufs[3].path, F_OK))
++		agent_save(3);
 +	if (savedtemp)
 +		temp_switch(savedbuf, 0);
 +	else if (savedbuf < xbufcur) {
@@ -10179,6 +10320,7 @@ index 00000000..6d666343
 +	agent_rounds = rounds;
 +	agent_logbuf = logbuf;
 +	free(original);
++	free(archive);
 +	return ok;
 +}
 diff --git a/agent.h b/agent.h
