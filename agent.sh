@@ -887,7 +887,7 @@ static void agent_run(const char *input)
 	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
-	int st, retries = 0;
+	int st, retries = 0, compacted = 0;
 	agent_cancel = agent_pause = 0;
 	agent_rounds = 0;
 	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
@@ -895,10 +895,12 @@ static void agent_run(const char *input)
 	for (int round = 0; ; ) {
 		/* Only complete tool batches reach this boundary. Manual/automatic
 		 * pack agents must never recursively trigger autocompaction. */
-		if (xaco && !agent_packing && agent_logbuf == 3 &&
+		/* The threshold triggers a pack, not a hard cap on its result. */
+		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
 				agent_tokens() >= xaco) {
 			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 				return;
+			compacted = 1;
 			serial = agent_serial;
 		}
 		req = agent_config();
@@ -1462,9 +1464,7 @@ static int agent_autocompact(const char *input)
 		sbuf_nul(resume)
 		cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
 		free(resume->s);
-		/* Tiny budgets or a huge current request cannot be solved by repeatedly
-		 * compacting. Leave the original intact and let the user adjust it. */
-		ok = !xaco || agent_tokens() < xaco;
+		ok = 1;
 	}
 	free(summary);
 	if (ok) {
@@ -1475,8 +1475,8 @@ static int agent_autocompact(const char *input)
 		agent_messages = history;
 		agent_usage = usage;
 		lbuf_edit(lb, original, 0, lbuf_len(lb), 0, 0);
-		agent_log("RESULT", "autocompact failed, cancelled, or still above threshold; "
-			"original history retained. Adjust aco/aco! or compact manually, then retry.");
+		agent_log("RESULT", "autocompact failed or cancelled; "
+			"original history retained. Compact manually or retry.");
 	}
 	if (savedtemp)
 		temp_switch(savedbuf, 0);
@@ -8698,7 +8698,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..8722af27
+index 00000000..046cc071
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,1459 @@
@@ -9559,7 +9559,7 @@ index 00000000..8722af27
 +	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 +	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
-+	int st, retries = 0;
++	int st, retries = 0, compacted = 0;
 +	agent_cancel = agent_pause = 0;
 +	agent_rounds = 0;
 +	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
@@ -9567,10 +9567,12 @@ index 00000000..8722af27
 +	for (int round = 0; ; ) {
 +		/* Only complete tool batches reach this boundary. Manual/automatic
 +		 * pack agents must never recursively trigger autocompaction. */
-+		if (xaco && !agent_packing && agent_logbuf == 3 &&
++		/* The threshold triggers a pack, not a hard cap on its result. */
++		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
 +				agent_tokens() >= xaco) {
 +			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 +				return;
++			compacted = 1;
 +			serial = agent_serial;
 +		}
 +		req = agent_config();
@@ -10134,9 +10136,7 @@ index 00000000..8722af27
 +		sbuf_nul(resume)
 +		cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
 +		free(resume->s);
-+		/* Tiny budgets or a huge current request cannot be solved by repeatedly
-+		 * compacting. Leave the original intact and let the user adjust it. */
-+		ok = !xaco || agent_tokens() < xaco;
++		ok = 1;
 +	}
 +	free(summary);
 +	if (ok) {
@@ -10147,8 +10147,8 @@ index 00000000..8722af27
 +		agent_messages = history;
 +		agent_usage = usage;
 +		lbuf_edit(lb, original, 0, lbuf_len(lb), 0, 0);
-+		agent_log("RESULT", "autocompact failed, cancelled, or still above threshold; "
-+			"original history retained. Adjust aco/aco! or compact manually, then retry.");
++		agent_log("RESULT", "autocompact failed or cancelled; "
++			"original history retained. Compact manually or retry.");
 +	}
 +	if (savedtemp)
 +		temp_switch(savedbuf, 0);
