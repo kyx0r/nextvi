@@ -1415,18 +1415,17 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	"constraints, and unfinished work.\n")
 	sbuf_str(task,
 	"\nReplace the current buffer'\''s content with the summary using %c\n"
-	"followed by literal summary text.\n"
-	"Return control to the user once complete.\n")
+	"followed by literal summary text.\n")
 	if (automatic)
 		sbuf_str(task,
-		"This is automatic compaction, not a new user task. Modify only\n"
-		"the current buffer.\n"
+		"This is automatic compaction, not a new user task.\n"
+		"Modify only the current buffer.\n"
 		"Preserve the latest user request, exact identifiers, critical tool results,\n"
 		"completed actions (do not repeat them), and the next action to take.\n"
 		"Make the summary substantially shorter than the log. Do not execute\n"
 		"the unfinished task. After replacing the buffer, reply briefly and stop.\n")
 	else
-		sbuf_chr(task, '\''\033'\'')
+		sbuf_str(task, "Return control to the user once complete.\n\033")
 	sbufn_ret(task, task->s)
 }
 
@@ -8779,10 +8778,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..97229e3e
+index 00000000..082afbab
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1540 @@
+@@ -0,0 +1,1539 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -10168,18 +10167,17 @@ index 00000000..97229e3e
 +	"constraints, and unfinished work.\n")
 +	sbuf_str(task,
 +	"\nReplace the current buffer's content with the summary using %c\n"
-+	"followed by literal summary text.\n"
-+	"Return control to the user once complete.\n")
++	"followed by literal summary text.\n")
 +	if (automatic)
 +		sbuf_str(task,
-+		"This is automatic compaction, not a new user task. Modify only\n"
-+		"the current buffer.\n"
++		"This is automatic compaction, not a new user task.\n"
++		"Modify only the current buffer.\n"
 +		"Preserve the latest user request, exact identifiers, critical tool results,\n"
 +		"completed actions (do not repeat them), and the next action to take.\n"
 +		"Make the summary substantially shorter than the log. Do not execute\n"
 +		"the unfinished task. After replacing the buffer, reply briefly and stop.\n")
 +	else
-+		sbuf_chr(task, '\033')
++		sbuf_str(task, "Return control to the user once complete.\n\033")
 +	sbufn_ret(task, task->s)
 +}
 +
