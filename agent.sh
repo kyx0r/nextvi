@@ -629,7 +629,7 @@ static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 		sbuf_free(out)
 		return NULL;
 	}
-	if (agent_capture)
+	if (agent_capture && !oproc)
 		agent_capture_add(out->s, out->s_n);
 	return out;
 }
@@ -8778,7 +8778,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..15b708e7
+index 00000000..766b6f07
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,1539 @@
@@ -9381,7 +9381,7 @@ index 00000000..15b708e7
 +		sbuf_free(out)
 +		return NULL;
 +	}
-+	if (agent_capture)
++	if (agent_capture && !oproc)
 +		agent_capture_add(out->s, out->s_n);
 +	return out;
 +}
