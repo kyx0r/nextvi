@@ -1082,7 +1082,7 @@ static void agent_run(const char *input)
 				agent_sequence();
 				if (xgr == 2 && out->s_n > 4096) {
 					sbuf_cut(out, 0)
-					sbufn_str(out, "4096 byte context protection limit exceeded: use gr 0 to disable guardrail for 1 turn")
+					sbufn_str(out, "4096-byte guardrail hit: gr 0 to bypass once")
 				} else if (xgr >= 0 && xgr < 2)
 					xgr++;
 				agent_capture = NULL;
@@ -8778,7 +8778,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..082afbab
+index 00000000..8a2c8f86
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,1539 @@
@@ -9834,7 +9834,7 @@ index 00000000..082afbab
 +				agent_sequence();
 +				if (xgr == 2 && out->s_n > 4096) {
 +					sbuf_cut(out, 0)
-+					sbufn_str(out, "4096 byte context protection limit exceeded: use gr 0 to disable guardrail for 1 turn")
++					sbufn_str(out, "4096-byte guardrail hit: gr 0 to bypass once")
 +				} else if (xgr >= 0 && xgr < 2)
 +					xgr++;
 +				agent_capture = NULL;
