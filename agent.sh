@@ -260,6 +260,8 @@ static void agent_sync(struct lbuf *lb)
 	for (int i = 3; i < 5; i++) {
 		if (tempbufs[i].lb != lb)
 			continue;
+		if (i == 3 && agent_packing)
+			agent_pack_done = 0;
 		agent_syncing = 1;
 		if (agent_save(i))
 			ex_print("agent write failed; buffer text retained",
@@ -915,6 +917,8 @@ static void agent_run(const char *input)
 	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
 	int st, retries = 0, compacted = 0;
+	if (agent_packing)
+		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
 	agent_rounds = 0;
 	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
@@ -1445,24 +1449,51 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 		free(task);
 		return "cannot archive session log";
 	}
+	/* Detach the prior conversation so a failed pack can restore it. */
+	cJSON *history = agent_messages;
+	struct agent_usage usage = agent_usage;
+	int was_packing = agent_packing, was_done = agent_pack_done;
+	agent_messages = NULL;
+	agent_packing = 1;
+	agent_pack_done = 0;
 	/* apack! resets history without clearing or importing the log. */
 	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
+	int complete = agent_pack_done;
+	agent_packing = was_packing;
+	agent_pack_done = was_done;
 	if (agent_epoch == epoch + 1) {
-		char *summary = agent_text(tempbufs[3].lb);
-		if (!ret && strcmp(original, summary)) {
-			if (agent_save(3))
-				ret = "cannot save compacted session log";
+		struct lbuf *lb = tempbufs[3].lb;
+		char *summary = agent_text(lb);
+		int changed = strcmp(original, summary) != 0;
+		if (!ret && complete && changed && !agent_save(3)) {
+			agent_history(1);
+			cJSON_Delete(history);
 		} else {
+			if (!ret)
+				ret = complete && changed ? "cannot save compacted session log" :
+					"compaction incomplete; original session restored";
+			if (changed) {
+				agent_syncing = 1;
+				lbuf_edit(lb, original, 0, lbuf_len(lb), 0, 0);
+				agent_syncing = 0;
+			}
 			agent_restore_log(archive);
+			cJSON_Delete(agent_messages);
+			agent_messages = history;
+			agent_usage = usage;
 		}
 		free(summary);
-		if (!ret)
-			agent_history(1);
 	} else if (agent_epoch == epoch) {
 		/* Initialization or range validation failed before the prompt. */
 		agent_restore_log(archive);
-	} else if (access(tempbufs[3].path, F_OK)) {
-		agent_save(3);
+		cJSON_Delete(agent_messages);
+		agent_messages = history;
+		agent_usage = usage;
+	} else {
+		/* Recursive editing deliberately started a new session. */
+		if (access(tempbufs[3].path, F_OK))
+			agent_save(3);
+		cJSON_Delete(history);
 	}
 	if (savedtemp)
 		temp_switch(savedbuf, 0);
@@ -8778,10 +8809,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..766b6f07
+index 00000000..9305d9cb
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1539 @@
+@@ -0,0 +1,1570 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9012,6 +9043,8 @@ index 00000000..766b6f07
 +	for (int i = 3; i < 5; i++) {
 +		if (tempbufs[i].lb != lb)
 +			continue;
++		if (i == 3 && agent_packing)
++			agent_pack_done = 0;
 +		agent_syncing = 1;
 +		if (agent_save(i))
 +			ex_print("agent write failed; buffer text retained",
@@ -9667,6 +9700,8 @@ index 00000000..766b6f07
 +	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
 +	int st, retries = 0, compacted = 0;
++	if (agent_packing)
++		agent_pack_done = 0;
 +	agent_cancel = agent_pause = 0;
 +	agent_rounds = 0;
 +	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
@@ -10197,24 +10232,51 @@ index 00000000..766b6f07
 +		free(task);
 +		return "cannot archive session log";
 +	}
++	/* Detach the prior conversation so a failed pack can restore it. */
++	cJSON *history = agent_messages;
++	struct agent_usage usage = agent_usage;
++	int was_packing = agent_packing, was_done = agent_pack_done;
++	agent_messages = NULL;
++	agent_packing = 1;
++	agent_pack_done = 0;
 +	/* apack! resets history without clearing or importing the log. */
 +	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
++	int complete = agent_pack_done;
++	agent_packing = was_packing;
++	agent_pack_done = was_done;
 +	if (agent_epoch == epoch + 1) {
-+		char *summary = agent_text(tempbufs[3].lb);
-+		if (!ret && strcmp(original, summary)) {
-+			if (agent_save(3))
-+				ret = "cannot save compacted session log";
++		struct lbuf *lb = tempbufs[3].lb;
++		char *summary = agent_text(lb);
++		int changed = strcmp(original, summary) != 0;
++		if (!ret && complete && changed && !agent_save(3)) {
++			agent_history(1);
++			cJSON_Delete(history);
 +		} else {
++			if (!ret)
++				ret = complete && changed ? "cannot save compacted session log" :
++					"compaction incomplete; original session restored";
++			if (changed) {
++				agent_syncing = 1;
++				lbuf_edit(lb, original, 0, lbuf_len(lb), 0, 0);
++				agent_syncing = 0;
++			}
 +			agent_restore_log(archive);
++			cJSON_Delete(agent_messages);
++			agent_messages = history;
++			agent_usage = usage;
 +		}
 +		free(summary);
-+		if (!ret)
-+			agent_history(1);
 +	} else if (agent_epoch == epoch) {
 +		/* Initialization or range validation failed before the prompt. */
 +		agent_restore_log(archive);
-+	} else if (access(tempbufs[3].path, F_OK)) {
-+		agent_save(3);
++		cJSON_Delete(agent_messages);
++		agent_messages = history;
++		agent_usage = usage;
++	} else {
++		/* Recursive editing deliberately started a new session. */
++		if (access(tempbufs[3].path, F_OK))
++			agent_save(3);
++		cJSON_Delete(history);
 +	}
 +	if (savedtemp)
 +		temp_switch(savedbuf, 0);
