@@ -63,6 +63,63 @@ static char *agent_init_error;
 static unsigned long agent_rounds;	/* tool rounds completed in the current run */
 static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
 
+/* Usage describes the last accepted response. The anchor describes its input;
+ * subsequent messages/tool results are estimated, not provider token counts. */
+static struct agent_usage {
+	double input, output, bytes;
+	int reported, anchored;
+} agent_usage;
+static int agent_packing, agent_pack_done;
+static void agent_run(const char *input);
+static int agent_autocompact(const char *input);
+
+static const char agent_tools[] =
+	"[{\"type\":\"function\",\"function\":{"
+	"\"name\":\"ex\",\"description\":"
+	"\"Execute an ex command in nextvi\","
+	"\"parameters\":{\"type\":\"object\",\"properties\":{"
+	"\"command\":{\"type\":\"string\"}},"
+	"\"required\":[\"command\"],"
+	"\"additionalProperties\":false}}}]";
+
+/* JSON bytes are only a fallback proxy. Include tools and message framing. */
+static double agent_context_bytes(void)
+{
+	char *json = cJSON_PrintUnformatted(agent_messages);
+	double bytes = (json ? strlen(json) : 0) + strlen(agent_tools) +
+		24.0 * cJSON_GetArraySize(agent_messages);
+	free(json);
+	return bytes;
+}
+
+static double agent_tokens(void)
+{
+	double bytes = agent_context_bytes();
+	if (agent_usage.anchored && bytes >= agent_usage.bytes)
+		return agent_usage.input + (bytes - agent_usage.bytes + 2) / 3;
+	return (bytes + 2) / 3;
+}
+
+static void agent_record_usage(cJSON *root, double bytes)
+{
+	cJSON *usage = cJSON_GetObjectItem(root, "usage");
+	cJSON *input = cJSON_GetObjectItem(usage, "prompt_tokens");
+	cJSON *output = cJSON_GetObjectItem(usage, "completion_tokens");
+	/* Some compatible gateways use the Responses-style names. */
+	if (!input)
+		input = cJSON_GetObjectItem(usage, "input_tokens");
+	if (!output)
+		output = cJSON_GetObjectItem(usage, "output_tokens");
+	agent_usage.reported = agent_usage.anchored =
+		cJSON_IsNumber(input) && input->valuedouble >= 0 &&
+		input->valuedouble < 1e15;
+	agent_usage.input = agent_usage.reported ? input->valuedouble : 0;
+	agent_usage.output = cJSON_IsNumber(output) &&
+		output->valuedouble >= 0 && output->valuedouble < 1e15 ?
+		output->valuedouble : -1;
+	agent_usage.bytes = bytes;
+}
+
 static char nextvi_skill[] =
 "Inside Nextvi, use the ex tool with a JSON object whose command \n"
 "key holds an ex command.\n"
@@ -204,6 +261,7 @@ static int agent_mkdir(char *path)
 
 static void agent_history(int edited)
 {
+	agent_usage.anchored = 0;
 	char *s = agent_text(tempbufs[4].lb);
 	cJSON_Delete(agent_messages);
 	agent_messages = cJSON_CreateArray();
@@ -835,21 +893,23 @@ static void agent_run(const char *input)
 	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
 	agent_log("USER", input);
 	for (int round = 0; ; ) {
+		/* Only complete tool batches reach this boundary. Manual/automatic
+		 * pack agents must never recursively trigger autocompaction. */
+		if (xaco && !agent_packing && agent_logbuf == 3 &&
+				agent_tokens() >= xaco) {
+			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
+				return;
+			serial = agent_serial;
+		}
 		req = agent_config();
 		if (!req) {
 			agent_log("RESULT", "invalid agent configuration");
 			return;
 		}
 		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
-		cJSON_AddItemToObject(req, "tools",
-			cJSON_Parse("[{\"type\":\"function\",\"function\":{"
-			"\"name\":\"ex\",\"description\":"
-			"\"Execute an ex command in nextvi\","
-			"\"parameters\":{\"type\":\"object\",\"properties\":{"
-			"\"command\":{\"type\":\"string\"}},"
-			"\"required\":[\"command\"],"
-			"\"additionalProperties\":false}}}]"));
+		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 		cJSON_AddBoolToObject(req, "stream", 0);
+		double request_bytes = agent_context_bytes();
 		body = agent_http(req, &st, &stderr_text);
 		cJSON_Delete(req);
 		if (agent_cancel) {
@@ -923,6 +983,7 @@ static void agent_run(const char *input)
 				continue;
 			return;
 		}
+		agent_record_usage(root, request_bytes);
 		free(body);
 		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
 			cJSON_GetObjectItem(root, "choices"), 0), "message");
@@ -1027,6 +1088,11 @@ static void agent_run(const char *input)
 			free(result->s);
 		}
 		int has_calls = cJSON_GetArraySize(calls);
+		cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
+			cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
+		if (agent_packing && !has_calls && cJSON_IsString(finish) &&
+				!strcmp(finish->valuestring, "stop"))
+			agent_pack_done = 1;
 		cJSON_Delete(root);
 		if (agent_cancel)
 			return;
@@ -1075,6 +1141,7 @@ static void *ec_skill(char *loc, char *cmd, char *arg)
 		if (agent_tool) {
 			s = agent_text(lb);
 			cJSON_ReplaceItemInArray(agent_messages, 0, agent_msg("system", s));
+			agent_usage.anchored = 0;
 			free(s);
 		} else
 			agent_history(1);
@@ -1082,14 +1149,17 @@ static void *ec_skill(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-static void *ec_aco(char *loc, char *cmd, char *arg)
+static void *ec_ast(char *loc, char *cmd, char *arg)
 {
 	char msg[256];
 	int counts[4] = {0, 0, 0, 0};
 	unsigned long sums[4] = {0, 0, 0, 0};
 	const char *names[] = {"system", "user", "assistant", "tool"};
 	cJSON *m;
-	ex_print("agent context usage", msg_ft)
+	ex_print("agent status", msg_ft)
+	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
+		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
+	ex_print(msg, msg_ft)
 	if (!agent_ready) {
 		ex_print(agent_init_error ? agent_init_error :
 			"agent session is not running", msg_ft)
@@ -1101,7 +1171,22 @@ static void *ec_aco(char *loc, char *cmd, char *arg)
 	snprintf(msg, sizeof(msg), "activity   %lu tool calls, %lu rounds this run",
 		agent_tool_calls, agent_rounds);
 	ex_print(msg, msg_ft)
+	if (agent_usage.reported) {
+		snprintf(msg, sizeof(msg), "tokens     %.0f input (last response)",
+			agent_usage.input);
+		ex_print(msg, msg_ft)
+		if (agent_usage.output >= 0) {
+			snprintf(msg, sizeof(msg), "           %.0f output (last response)",
+				agent_usage.output);
+			ex_print(msg, msg_ft)
+		}
+	} else
+		ex_print("tokens     unavailable from endpoint", msg_ft)
 	if (agent_messages) {
+		snprintf(msg, sizeof(msg), "next input ~%.0f tokens (%s)", agent_tokens(),
+			agent_usage.anchored ? "reported input + estimated growth" :
+			"estimated: JSON bytes / 3, including tools and framing");
+		ex_print(msg, msg_ft)
 		cJSON_ArrayForEach(m, agent_messages) {
 			cJSON *role = cJSON_GetObjectItem(m, "role");
 			cJSON *content = cJSON_GetObjectItem(m, "content");
@@ -1276,11 +1361,8 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 	return agent_session(loc, cmd, arg, 0);
 }
 
-static void *ec_compact(char *loc, char *cmd, char *arg)
+static char *agent_compact_task(int browse, char *arg, int automatic)
 {
-	void *ret;
-	int browse = !strcmp(cmd, "apack!");
-	unsigned long epoch = agent_epoch;
 	sbuf_smake(task, 512)
 	sbuf_str(task,
 	"Buffer b-4 contains a log of the current session.\n"
@@ -1299,14 +1381,113 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	sbuf_str(task,
 	"\nSwitch to b-4 unless already there, then replace its content\n"
 	"with the summary using %c followed by literal summary text.\n"
-	"Return control to the user once complete.\n\033")
-	sbuf_nul(task)
+	"Return control to the user once complete.\n")
+	if (automatic)
+		sbuf_str(task,
+		"This is automatic compaction, not a new user task. Modify only b-4.\n"
+		"Preserve the latest user request, exact identifiers, critical tool results,\n"
+		"completed actions (do not repeat them), and the next action to take.\n"
+		"Make the summary substantially shorter than the log. Do not execute\n"
+		"the unfinished task. After replacing b-4, reply briefly and stop.\n")
+	else
+		sbuf_chr(task, '\''\033'\'')
+	sbufn_ret(task, task->s)
+}
+
+static void *ec_compact(char *loc, char *cmd, char *arg)
+{
+	void *ret;
+	int browse = !strcmp(cmd, "apack!");
+	unsigned long epoch = agent_epoch;
+	char *task = agent_compact_task(browse, arg, 0);
 	/* apack! resets history without clearing or importing the log. */
-	ret = agent_session(loc, browse ? cmd : "a~", task->s, 1);
+	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
 	if (!ret && agent_epoch == epoch + 1)
 		agent_history(1);
-	free(task->s);
+	free(task);
 	return ret;
+}
+
+/* Run the same log-editing task as apack, without entering a prompt. Keep the
+ * live conversation detached until the pack agent actually replaces the log.
+ * Logging goes to b-3, as in manual apack, not into the source being summarized. */
+static int agent_autocompact(const char *input)
+{
+	struct lbuf *lb = tempbufs[3].lb;
+	cJSON *history = agent_messages;
+	struct agent_usage usage = agent_usage;
+	unsigned long epoch = agent_epoch, serial = agent_serial;
+	unsigned long rounds = agent_rounds;
+	int logbuf = agent_logbuf, browse = xaco_browse;
+	/* Store indices rather than pointers: a tool can grow the buffer array. */
+	int savedtemp = istempbuf(ex_buf);
+	int savedbuf = savedtemp ? ex_buf - tempbufs : ex_buf - bufs;
+	exbuf_save(ex_buf)
+	char *original = agent_text(lb);
+	char *task = agent_compact_task(browse, "", 1);
+	int ok = 0;
+
+	agent_logbuf = 2;
+	agent_log("RESULT", browse ? "autocompact: browsing session log" :
+		"autocompact: summarizing loaded session log");
+	if (browse)
+		exspec_reset();
+	agent_messages = NULL;
+	agent_history(!browse);
+	agent_packing = 1;
+	agent_pack_done = 0;
+	agent_run(task);
+	agent_packing = 0;
+	free(task);
+
+	/* Recursive editing may have deliberately replaced the session. Never
+	 * overwrite that newer history or log with the saved conversation. */
+	if (epoch != agent_epoch || agent_serial != serial + 1) {
+		cJSON_Delete(history);
+		goto done;
+	}
+	char *summary = agent_text(lb);
+	char *text = summary;
+	while (isspace((unsigned char)*text))
+		text++;
+	if (agent_pack_done && !agent_cancel && !agent_pause && !xquit &&
+			*text && strcmp(original, summary) &&
+			strlen(summary) < strlen(original)) {
+		agent_history(1);
+		sbuf_smake(resume, 256)
+		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
+			"is working memory, not a new task. Continue the request below, using\n"
+			"the summary to avoid repeating completed actions or tool calls.\n\n")
+		sbuf_str(resume, input)
+		sbuf_nul(resume)
+		cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
+		free(resume->s);
+		/* Tiny budgets or a huge current request cannot be solved by repeatedly
+		 * compacting. Leave the original intact and let the user adjust it. */
+		ok = !xaco || agent_tokens() < xaco;
+	}
+	free(summary);
+	if (ok) {
+		cJSON_Delete(history);
+		agent_log("RESULT", "autocompact complete; resuming request");
+	} else {
+		cJSON_Delete(agent_messages);
+		agent_messages = history;
+		agent_usage = usage;
+		lbuf_edit(lb, original, 0, lbuf_len(lb), 0, 0);
+		agent_log("RESULT", "autocompact failed, cancelled, or still above threshold; "
+			"original history retained. Adjust aco/aco! or compact manually, then retry.");
+	}
+	if (savedtemp)
+		temp_switch(savedbuf, 0);
+	else if (savedbuf < xbufcur) {
+		bufs_switchwft(savedbuf)
+	}
+	done:
+	agent_rounds = rounds;
+	agent_logbuf = logbuf;
+	free(original);
+	return ok;
 }
 ??!219reg agent.c:-1:m2sc %? %@2142sc!b1m!0?
 i /* agent.c: embedded request loop and editor integration */
@@ -1317,7 +1498,7 @@ static sbuf *agent_capture;
 static void *ec_agent(char *loc, char *cmd, char *arg);
 static void exspec_reset(void);
 static void *ec_skill(char *loc, char *cmd, char *arg);
-static void *ec_aco(char *loc, char *cmd, char *arg);
+static void *ec_ast(char *loc, char *cmd, char *arg);
 static void *ec_compact(char *loc, char *cmd, char *arg);
 static void agent_init(void);
 static void agent_sync(struct lbuf *lb);
@@ -4990,19 +5171,35 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             print "             Example: execute the command after reading its specifications"
             print "             :aretry"
             print ""
-            print "     aco"
-            print "             Print agent context usage and session statistics"
-            print ""
-            print "             Without an argument, prints the size of the conversation context"
-            print "             (message count and payload bytes), per-role usage, session"
-            print "             activity and the configured limits."
-            print ""
-            print "             Example: current context usage"
-            print "             :aco"
-            print ""
+            spec("ast", "Print agent status and token usage",
+                "Prints message/payload sizes, per-role usage, activity, limits, and\n" \
+                "the active autocompact mode and threshold. Token usage is the input\n" \
+                "and output count reported for the last accepted response, if available.\n" \
+                "The next input count is an estimate: reported input plus new JSON\n" \
+                "bytes / 3, or all JSON bytes / 3 without a usable usage anchor.\n" \
+                "Estimates include tool definitions and message framing; they are not\n" \
+                "a tokenizer or a guarantee that the next request fits the model.")
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
+            spec("aco[0]  Automatically compact using the loaded session log",
+                "A positive argument sets the estimated input-token threshold; 0 disables.\n" \
+                "Without an argument, enables this mode at 85000 tokens, or disables\n" \
+                "it if this mode is already active. Negative values disable as well.\n" \
+                "aco and aco! share one threshold: the last setting wins.",
+                "Before requests (after complete tool batches), runs the apack task\n" \
+                "without a prompt and resumes the current request. Compaction never\n" \
+                "recurses. Failed, cancelled, empty, unchanged, or insufficient summaries\n" \
+                "retain the original history/log and stop the run. The threshold must\n" \
+                "leave room for summary instructions and model output. Use aco! if the\n" \
+                "full log no longer fits. This setting does not change the API limit.")
+            spec("aco![0]  Automatically compact by browsing the session log",
+                "Same threshold and toggle behavior as aco, with a default of 85000.\n" \
+                "Selecting this mode replaces aco; selecting aco replaces this mode.",
+                "Like apack!, starts a fresh agent without importing the log. The agent\n" \
+                "explores b-4 using bounded reads and replaces it with a summary.\n" \
+                "Automatic compaction keeps the current task and restores the editor\n" \
+                "buffer before continuing. Status and token estimates are shown by ast.")
             spec("ar[0]  Display returned agent reasoning",
                 "Without an argument, logically inverts this option.",
                 "A nonzero value includes returned reasoning in the session log.")
@@ -5118,6 +5315,8 @@ static int request_timeout = 500;
 static int max_tool_rounds = 300;
 int xgr = 2;	/* agent guardrails: anything but 2 = disabled */
 int xar;	/* display returned agent reasoning (:ar) */
+int xaco;	/* autocompact input-token threshold; 0 disables */
+static int xaco_browse;	/* last selected mode: aco! rather than aco */
 
 static char exspec_insert[] =
 	"Ex special characters are disabled and raw ex mode is on by default.\n"
@@ -5145,7 +5344,7 @@ static struct {
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|ai|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|apack!?|ac[om]?|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|apack!?|aco!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -6389,7 +6588,17 @@ static char xaerr[128];
 			break;
 ??!219reg ex.c:1434:m192sc %? %@2142sc!0?
 '\''20s/\(e/(aspec) EO(e/??!219reg ex.c:1702:m202sc %? %@2142sc!0?
-'\''21s/s\)/s) EO(ar) EO(gr)/??!219reg ex.c:1704:m212sc %? %@2142sc!0?
+'\''21c EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar) EO(gr)
+
+_EO(aco,
+	int browse = strchr(cmd, '\''!'\'') != NULL;
+	int value = *arg ? eo_val(arg) :
+		(xaco && xaco_browse == browse ? 0 : 85000);
+	xaco = MAX(0, value);
+	xaco_browse = browse;
+	return NULL;
+)
+??!219reg ex.c:1704:m212sc %? %@2142sc!0?
 '\''22i static void *ec_exspec(char *loc, char *cmd, char *arg);
 static void *ec_aretry(char *loc, char *cmd, char *arg);
 
@@ -6399,7 +6608,9 @@ static void *ec_aretry(char *loc, char *cmd, char *arg);
 	{"apack", ec_compact},
 	EO(aspec),
 	{"acm", ec_skill},
-	{"aco", ec_aco},
+	{"aco!", eo_aco},
+	EO(aco),
+	{"ast", ec_ast},
 ??!219reg ex.c:1757:m232sc %? %@2142sc!0?
 '\''24i 	EO(ar),
 ??!219reg ex.c:1758:m242sc %? %@2142sc!0?
@@ -6502,7 +6713,7 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 	static char *agent_cmds[] = {
 		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
 		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-		"ud", "rd", "sc", "sc!", "gr", "aretry"
+		"ud", "rd", "sc", "sc!", "gr", "aretry", "ast"
 	};
 	if (!*arg || !strcmp(arg, "catalog")) {
 		ex_print("EX TOPICS", msg_ft)
@@ -7518,15 +7729,16 @@ static char *exspec_lines[] = {
 	"Example: execute the command after reading its specifications",
 	"aretry",
 	"",
-	"aco",
-	"Print agent context usage and session statistics",
+	"ast",
+	"Print agent status and token usage",
 	"",
-	"Without an argument, prints the size of the conversation context",
-	"(message count and payload bytes), per-role usage, session",
-	"activity and the configured limits.",
-	"",
-	"Example: current context usage",
-	"aco",
+	"Prints message/payload sizes, per-role usage, activity, limits, and",
+	"the active autocompact mode and threshold. Token usage is the input",
+	"and output count reported for the last accepted response, if available.",
+	"The next input count is an estimate: reported input plus new JSON",
+	"bytes / 3, or all JSON bytes / 3 without a usable usage anchor.",
+	"Estimates include tool definitions and message framing; they are not",
+	"a tokenizer or a guarantee that the next request fits the model.",
 	"",
 	"ac[regex]",
 	"Set autocomplete filter regex",
@@ -7597,6 +7809,28 @@ static char *exspec_lines[] = {
 	"the current value, unless stated otherwise.",
 	"",
 	"Argument notation shows the default value.",
+	"",
+	"aco[0]  Automatically compact using the loaded session log",
+	"A positive argument sets the estimated input-token threshold; 0 disables.",
+	"Without an argument, enables this mode at 85000 tokens, or disables",
+	"it if this mode is already active. Negative values disable as well.",
+	"aco and aco! share one threshold: the last setting wins.",
+	"",
+	"Before requests (after complete tool batches), runs the apack task",
+	"without a prompt and resumes the current request. Compaction never",
+	"recurses. Failed, cancelled, empty, unchanged, or insufficient summaries",
+	"retain the original history/log and stop the run. The threshold must",
+	"leave room for summary instructions and model output. Use aco! if the",
+	"full log no longer fits. This setting does not change the API limit.",
+	"",
+	"aco![0]  Automatically compact by browsing the session log",
+	"Same threshold and toggle behavior as aco, with a default of 85000.",
+	"Selecting this mode replaces aco; selecting aco replaces this mode.",
+	"",
+	"Like apack!, starts a fresh agent without importing the log. The agent",
+	"explores b-4 using bounded reads and replaces it with a summary.",
+	"Automatic compaction keeps the current task and restores the editor",
+	"buffer before continuing. Status and token estimates are shown by ast.",
 	"",
 	"ar[0]  Display returned agent reasoning",
 	"Without an argument, logically inverts this option.",
@@ -7914,41 +8148,43 @@ static struct {
 	{"apack!", "Compact the agent session by browsing its log", 776, 784, 0, 0},
 	{"acm", "Toggle the caveman response style skill", 785, 790, 0, 0},
 	{"aretry", "Execute the last deferred agent command once", 791, 801, 0, 0},
-	{"aco", "Print agent context usage and session statistics", 802, 811, 0, 0},
-	{"ac", "Set autocomplete filter regex", 812, 820, 0, 0},
-	{"sc", "Set ex special characters", 821, 831, 0, 0},
-	{"sc!", "Set ex special characters", 832, 839, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 840, 847, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 848, 851, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 852, 856, 0, 0},
-	{"ph", "Redefine placeholders", 857, 873, 0, 0},
-	{"ar", "Display returned agent reasoning", 882, 886, 1, 0},
-	{"gr", "Control agent output protection", 887, 894, 1, 0},
-	{"aspec", "Print ex specifications for agents", 895, 901, 1, 0},
-	{"ai", "Indent new lines", 902, 905, 1, 0},
-	{"ic", "Ignore case in regular expressions", 906, 907, 1, 0},
-	{"ish", "Interactive shell", 908, 923, 1, 0},
-	{"grp", "Regex search group", 924, 932, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 933, 936, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 937, 938, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 938, 939, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 939, 940, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 940, 941, 1, 0},
-	{"led", "Enable all terminal output", 941, 942, 1, 0},
-	{"vis", "Control startup flags", 943, 954, 1, 0},
-	{"mpt", "Control vi prompts", 955, 965, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 966, 968, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 968, 970, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 970, 971, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 971, 972, 1, 0},
-	{"td", "Current text direction context", 972, 978, 1, 0},
-	{"pr", "Print register", 979, 995, 1, 0},
-	{"fr", "Find register", 996, 1008, 1, 0},
-	{"rr", "Record register", 1009, 1022, 1, 0},
-	{"lim", "Line length render limit", 1023, 1038, 1, 0},
-	{"seq", "Control Undo/Redo", 1039, 1051, 1, 0},
-	{"left", "Control horizontal scroll", 1052, 1057, 1, 0},
-	{"err", "Control ex errors", 1058, 1070, 1, 0},
+	{"ast", "Print agent status and token usage", 802, 812, 0, 0},
+	{"ac", "Set autocomplete filter regex", 813, 821, 0, 0},
+	{"sc", "Set ex special characters", 822, 832, 0, 0},
+	{"sc!", "Set ex special characters", 833, 840, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 841, 848, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 849, 852, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 853, 857, 0, 0},
+	{"ph", "Redefine placeholders", 858, 874, 0, 0},
+	{"aco", "Automatically compact using the loaded session log", 883, 895, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 896, 904, 1, 0},
+	{"ar", "Display returned agent reasoning", 905, 909, 1, 0},
+	{"gr", "Control agent output protection", 910, 917, 1, 0},
+	{"aspec", "Print ex specifications for agents", 918, 924, 1, 0},
+	{"ai", "Indent new lines", 925, 928, 1, 0},
+	{"ic", "Ignore case in regular expressions", 929, 930, 1, 0},
+	{"ish", "Interactive shell", 931, 946, 1, 0},
+	{"grp", "Regex search group", 947, 955, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 956, 959, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 960, 961, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 961, 962, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 962, 963, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 963, 964, 1, 0},
+	{"led", "Enable all terminal output", 964, 965, 1, 0},
+	{"vis", "Control startup flags", 966, 977, 1, 0},
+	{"mpt", "Control vi prompts", 978, 988, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 989, 991, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 991, 993, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 993, 994, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 994, 995, 1, 0},
+	{"td", "Current text direction context", 995, 1001, 1, 0},
+	{"pr", "Print register", 1002, 1018, 1, 0},
+	{"fr", "Find register", 1019, 1031, 1, 0},
+	{"rr", "Record register", 1032, 1045, 1, 0},
+	{"lim", "Line length render limit", 1046, 1061, 1, 0},
+	{"seq", "Control Undo/Redo", 1062, 1074, 1, 0},
+	{"left", "Control horizontal scroll", 1075, 1080, 1, 0},
+	{"err", "Control ex errors", 1081, 1093, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -8573,10 +8809,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..3517d7e9
+index 00000000..8722af27
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1278 @@
+@@ -0,0 +1,1459 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8609,6 +8845,63 @@ index 00000000..3517d7e9
 +static char *agent_init_error;
 +static unsigned long agent_rounds;	/* tool rounds completed in the current run */
 +static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
++
++/* Usage describes the last accepted response. The anchor describes its input;
++ * subsequent messages/tool results are estimated, not provider token counts. */
++static struct agent_usage {
++	double input, output, bytes;
++	int reported, anchored;
++} agent_usage;
++static int agent_packing, agent_pack_done;
++static void agent_run(const char *input);
++static int agent_autocompact(const char *input);
++
++static const char agent_tools[] =
++	"[{\"type\":\"function\",\"function\":{"
++	"\"name\":\"ex\",\"description\":"
++	"\"Execute an ex command in nextvi\","
++	"\"parameters\":{\"type\":\"object\",\"properties\":{"
++	"\"command\":{\"type\":\"string\"}},"
++	"\"required\":[\"command\"],"
++	"\"additionalProperties\":false}}}]";
++
++/* JSON bytes are only a fallback proxy. Include tools and message framing. */
++static double agent_context_bytes(void)
++{
++	char *json = cJSON_PrintUnformatted(agent_messages);
++	double bytes = (json ? strlen(json) : 0) + strlen(agent_tools) +
++		24.0 * cJSON_GetArraySize(agent_messages);
++	free(json);
++	return bytes;
++}
++
++static double agent_tokens(void)
++{
++	double bytes = agent_context_bytes();
++	if (agent_usage.anchored && bytes >= agent_usage.bytes)
++		return agent_usage.input + (bytes - agent_usage.bytes + 2) / 3;
++	return (bytes + 2) / 3;
++}
++
++static void agent_record_usage(cJSON *root, double bytes)
++{
++	cJSON *usage = cJSON_GetObjectItem(root, "usage");
++	cJSON *input = cJSON_GetObjectItem(usage, "prompt_tokens");
++	cJSON *output = cJSON_GetObjectItem(usage, "completion_tokens");
++	/* Some compatible gateways use the Responses-style names. */
++	if (!input)
++		input = cJSON_GetObjectItem(usage, "input_tokens");
++	if (!output)
++		output = cJSON_GetObjectItem(usage, "output_tokens");
++	agent_usage.reported = agent_usage.anchored =
++		cJSON_IsNumber(input) && input->valuedouble >= 0 &&
++		input->valuedouble < 1e15;
++	agent_usage.input = agent_usage.reported ? input->valuedouble : 0;
++	agent_usage.output = cJSON_IsNumber(output) &&
++		output->valuedouble >= 0 && output->valuedouble < 1e15 ?
++		output->valuedouble : -1;
++	agent_usage.bytes = bytes;
++}
 +
 +static char nextvi_skill[] =
 +"Inside Nextvi, use the ex tool with a JSON object whose command \n"
@@ -8751,6 +9044,7 @@ index 00000000..3517d7e9
 +
 +static void agent_history(int edited)
 +{
++	agent_usage.anchored = 0;
 +	char *s = agent_text(tempbufs[4].lb);
 +	cJSON_Delete(agent_messages);
 +	agent_messages = cJSON_CreateArray();
@@ -9382,21 +9676,23 @@ index 00000000..3517d7e9
 +	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
 +	agent_log("USER", input);
 +	for (int round = 0; ; ) {
++		/* Only complete tool batches reach this boundary. Manual/automatic
++		 * pack agents must never recursively trigger autocompaction. */
++		if (xaco && !agent_packing && agent_logbuf == 3 &&
++				agent_tokens() >= xaco) {
++			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
++				return;
++			serial = agent_serial;
++		}
 +		req = agent_config();
 +		if (!req) {
 +			agent_log("RESULT", "invalid agent configuration");
 +			return;
 +		}
 +		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
-+		cJSON_AddItemToObject(req, "tools",
-+			cJSON_Parse("[{\"type\":\"function\",\"function\":{"
-+			"\"name\":\"ex\",\"description\":"
-+			"\"Execute an ex command in nextvi\","
-+			"\"parameters\":{\"type\":\"object\",\"properties\":{"
-+			"\"command\":{\"type\":\"string\"}},"
-+			"\"required\":[\"command\"],"
-+			"\"additionalProperties\":false}}}]"));
++		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 +		cJSON_AddBoolToObject(req, "stream", 0);
++		double request_bytes = agent_context_bytes();
 +		body = agent_http(req, &st, &stderr_text);
 +		cJSON_Delete(req);
 +		if (agent_cancel) {
@@ -9470,6 +9766,7 @@ index 00000000..3517d7e9
 +				continue;
 +			return;
 +		}
++		agent_record_usage(root, request_bytes);
 +		free(body);
 +		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
 +			cJSON_GetObjectItem(root, "choices"), 0), "message");
@@ -9574,6 +9871,11 @@ index 00000000..3517d7e9
 +			free(result->s);
 +		}
 +		int has_calls = cJSON_GetArraySize(calls);
++		cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
++			cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
++		if (agent_packing && !has_calls && cJSON_IsString(finish) &&
++				!strcmp(finish->valuestring, "stop"))
++			agent_pack_done = 1;
 +		cJSON_Delete(root);
 +		if (agent_cancel)
 +			return;
@@ -9622,6 +9924,7 @@ index 00000000..3517d7e9
 +		if (agent_tool) {
 +			s = agent_text(lb);
 +			cJSON_ReplaceItemInArray(agent_messages, 0, agent_msg("system", s));
++			agent_usage.anchored = 0;
 +			free(s);
 +		} else
 +			agent_history(1);
@@ -9629,14 +9932,17 @@ index 00000000..3517d7e9
 +	return NULL;
 +}
 +
-+static void *ec_aco(char *loc, char *cmd, char *arg)
++static void *ec_ast(char *loc, char *cmd, char *arg)
 +{
 +	char msg[256];
 +	int counts[4] = {0, 0, 0, 0};
 +	unsigned long sums[4] = {0, 0, 0, 0};
 +	const char *names[] = {"system", "user", "assistant", "tool"};
 +	cJSON *m;
-+	ex_print("agent context usage", msg_ft)
++	ex_print("agent status", msg_ft)
++	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
++		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
++	ex_print(msg, msg_ft)
 +	if (!agent_ready) {
 +		ex_print(agent_init_error ? agent_init_error :
 +			"agent session is not running", msg_ft)
@@ -9648,7 +9954,22 @@ index 00000000..3517d7e9
 +	snprintf(msg, sizeof(msg), "activity   %lu tool calls, %lu rounds this run",
 +		agent_tool_calls, agent_rounds);
 +	ex_print(msg, msg_ft)
++	if (agent_usage.reported) {
++		snprintf(msg, sizeof(msg), "tokens     %.0f input (last response)",
++			agent_usage.input);
++		ex_print(msg, msg_ft)
++		if (agent_usage.output >= 0) {
++			snprintf(msg, sizeof(msg), "           %.0f output (last response)",
++				agent_usage.output);
++			ex_print(msg, msg_ft)
++		}
++	} else
++		ex_print("tokens     unavailable from endpoint", msg_ft)
 +	if (agent_messages) {
++		snprintf(msg, sizeof(msg), "next input ~%.0f tokens (%s)", agent_tokens(),
++			agent_usage.anchored ? "reported input + estimated growth" :
++			"estimated: JSON bytes / 3, including tools and framing");
++		ex_print(msg, msg_ft)
 +		cJSON_ArrayForEach(m, agent_messages) {
 +			cJSON *role = cJSON_GetObjectItem(m, "role");
 +			cJSON *content = cJSON_GetObjectItem(m, "content");
@@ -9823,11 +10144,8 @@ index 00000000..3517d7e9
 +	return agent_session(loc, cmd, arg, 0);
 +}
 +
-+static void *ec_compact(char *loc, char *cmd, char *arg)
++static char *agent_compact_task(int browse, char *arg, int automatic)
 +{
-+	void *ret;
-+	int browse = !strcmp(cmd, "apack!");
-+	unsigned long epoch = agent_epoch;
 +	sbuf_smake(task, 512)
 +	sbuf_str(task,
 +	"Buffer b-4 contains a log of the current session.\n"
@@ -9846,18 +10164,117 @@ index 00000000..3517d7e9
 +	sbuf_str(task,
 +	"\nSwitch to b-4 unless already there, then replace its content\n"
 +	"with the summary using %c followed by literal summary text.\n"
-+	"Return control to the user once complete.\n\033")
-+	sbuf_nul(task)
++	"Return control to the user once complete.\n")
++	if (automatic)
++		sbuf_str(task,
++		"This is automatic compaction, not a new user task. Modify only b-4.\n"
++		"Preserve the latest user request, exact identifiers, critical tool results,\n"
++		"completed actions (do not repeat them), and the next action to take.\n"
++		"Make the summary substantially shorter than the log. Do not execute\n"
++		"the unfinished task. After replacing b-4, reply briefly and stop.\n")
++	else
++		sbuf_chr(task, '\033')
++	sbufn_ret(task, task->s)
++}
++
++static void *ec_compact(char *loc, char *cmd, char *arg)
++{
++	void *ret;
++	int browse = !strcmp(cmd, "apack!");
++	unsigned long epoch = agent_epoch;
++	char *task = agent_compact_task(browse, arg, 0);
 +	/* apack! resets history without clearing or importing the log. */
-+	ret = agent_session(loc, browse ? cmd : "a~", task->s, 1);
++	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
 +	if (!ret && agent_epoch == epoch + 1)
 +		agent_history(1);
-+	free(task->s);
++	free(task);
 +	return ret;
++}
++
++/* Run the same log-editing task as apack, without entering a prompt. Keep the
++ * live conversation detached until the pack agent actually replaces the log.
++ * Logging goes to b-3, as in manual apack, not into the source being summarized. */
++static int agent_autocompact(const char *input)
++{
++	struct lbuf *lb = tempbufs[3].lb;
++	cJSON *history = agent_messages;
++	struct agent_usage usage = agent_usage;
++	unsigned long epoch = agent_epoch, serial = agent_serial;
++	unsigned long rounds = agent_rounds;
++	int logbuf = agent_logbuf, browse = xaco_browse;
++	/* Store indices rather than pointers: a tool can grow the buffer array. */
++	int savedtemp = istempbuf(ex_buf);
++	int savedbuf = savedtemp ? ex_buf - tempbufs : ex_buf - bufs;
++	exbuf_save(ex_buf)
++	char *original = agent_text(lb);
++	char *task = agent_compact_task(browse, "", 1);
++	int ok = 0;
++
++	agent_logbuf = 2;
++	agent_log("RESULT", browse ? "autocompact: browsing session log" :
++		"autocompact: summarizing loaded session log");
++	if (browse)
++		exspec_reset();
++	agent_messages = NULL;
++	agent_history(!browse);
++	agent_packing = 1;
++	agent_pack_done = 0;
++	agent_run(task);
++	agent_packing = 0;
++	free(task);
++
++	/* Recursive editing may have deliberately replaced the session. Never
++	 * overwrite that newer history or log with the saved conversation. */
++	if (epoch != agent_epoch || agent_serial != serial + 1) {
++		cJSON_Delete(history);
++		goto done;
++	}
++	char *summary = agent_text(lb);
++	char *text = summary;
++	while (isspace((unsigned char)*text))
++		text++;
++	if (agent_pack_done && !agent_cancel && !agent_pause && !xquit &&
++			*text && strcmp(original, summary) &&
++			strlen(summary) < strlen(original)) {
++		agent_history(1);
++		sbuf_smake(resume, 256)
++		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
++			"is working memory, not a new task. Continue the request below, using\n"
++			"the summary to avoid repeating completed actions or tool calls.\n\n")
++		sbuf_str(resume, input)
++		sbuf_nul(resume)
++		cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
++		free(resume->s);
++		/* Tiny budgets or a huge current request cannot be solved by repeatedly
++		 * compacting. Leave the original intact and let the user adjust it. */
++		ok = !xaco || agent_tokens() < xaco;
++	}
++	free(summary);
++	if (ok) {
++		cJSON_Delete(history);
++		agent_log("RESULT", "autocompact complete; resuming request");
++	} else {
++		cJSON_Delete(agent_messages);
++		agent_messages = history;
++		agent_usage = usage;
++		lbuf_edit(lb, original, 0, lbuf_len(lb), 0, 0);
++		agent_log("RESULT", "autocompact failed, cancelled, or still above threshold; "
++			"original history retained. Adjust aco/aco! or compact manually, then retry.");
++	}
++	if (savedtemp)
++		temp_switch(savedbuf, 0);
++	else if (savedbuf < xbufcur) {
++		bufs_switchwft(savedbuf)
++	}
++	done:
++	agent_rounds = rounds;
++	agent_logbuf = logbuf;
++	free(original);
++	return ok;
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..16463147
+index 00000000..20885744
 --- /dev/null
 +++ b/agent.h
 @@ -0,0 +1,16 @@
@@ -9869,7 +10286,7 @@ index 00000000..16463147
 +static void *ec_agent(char *loc, char *cmd, char *arg);
 +static void exspec_reset(void);
 +static void *ec_skill(char *loc, char *cmd, char *arg);
-+static void *ec_aco(char *loc, char *cmd, char *arg);
++static void *ec_ast(char *loc, char *cmd, char *arg);
 +static void *ec_compact(char *loc, char *cmd, char *arg);
 +static void agent_init(void);
 +static void agent_sync(struct lbuf *lb);
@@ -13387,10 +13804,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..e45bdc85 100755
+index c836c94c..f70ef03c 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,104 @@ build() {
+@@ -65,6 +65,120 @@ build() {
      }
  }
  
@@ -13455,19 +13872,35 @@ index c836c94c..e45bdc85 100755
 +            print "             Example: execute the command after reading its specifications"
 +            print "             :aretry"
 +            print ""
-+            print "     aco"
-+            print "             Print agent context usage and session statistics"
-+            print ""
-+            print "             Without an argument, prints the size of the conversation context"
-+            print "             (message count and payload bytes), per-role usage, session"
-+            print "             activity and the configured limits."
-+            print ""
-+            print "             Example: current context usage"
-+            print "             :aco"
-+            print ""
++            spec("ast", "Print agent status and token usage",
++                "Prints message/payload sizes, per-role usage, activity, limits, and\n" \
++                "the active autocompact mode and threshold. Token usage is the input\n" \
++                "and output count reported for the last accepted response, if available.\n" \
++                "The next input count is an estimate: reported input plus new JSON\n" \
++                "bytes / 3, or all JSON bytes / 3 without a usable usage anchor.\n" \
++                "Estimates include tool definitions and message framing; they are not\n" \
++                "a tokenizer or a guarantee that the next request fits the model.")
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
++            spec("aco[0]  Automatically compact using the loaded session log",
++                "A positive argument sets the estimated input-token threshold; 0 disables.\n" \
++                "Without an argument, enables this mode at 85000 tokens, or disables\n" \
++                "it if this mode is already active. Negative values disable as well.\n" \
++                "aco and aco! share one threshold: the last setting wins.",
++                "Before requests (after complete tool batches), runs the apack task\n" \
++                "without a prompt and resumes the current request. Compaction never\n" \
++                "recurses. Failed, cancelled, empty, unchanged, or insufficient summaries\n" \
++                "retain the original history/log and stop the run. The threshold must\n" \
++                "leave room for summary instructions and model output. Use aco! if the\n" \
++                "full log no longer fits. This setting does not change the API limit.")
++            spec("aco![0]  Automatically compact by browsing the session log",
++                "Same threshold and toggle behavior as aco, with a default of 85000.\n" \
++                "Selecting this mode replaces aco; selecting aco replaces this mode.",
++                "Like apack!, starts a fresh agent without importing the log. The agent\n" \
++                "explores b-4 using bounded reads and replaces it with a summary.\n" \
++                "Automatic compaction keeps the current task and restores the editor\n" \
++                "buffer before continuing. Status and token estimates are shown by ast.")
 +            spec("ar[0]  Display returned agent reasoning",
 +                "Without an argument, logically inverts this option.",
 +                "A nonzero value includes returned reasoning in the session log.")
@@ -13495,7 +13928,7 @@ index c836c94c..e45bdc85 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +172,7 @@ install() {
+@@ -74,7 +188,7 @@ install() {
  }
  
  print_usage() {
@@ -13504,7 +13937,7 @@ index c836c94c..e45bdc85 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +180,9 @@ print_usage() {
+@@ -82,6 +196,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -13515,10 +13948,10 @@ index c836c94c..e45bdc85 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..ae0ea20e 100644
+index 2888d7c6..b8807aa3 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,50 @@
+@@ -1,5 +1,52 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -13541,6 +13974,8 @@ index 2888d7c6..ae0ea20e 100644
 +static int max_tool_rounds = 300;
 +int xgr = 2;	/* agent guardrails: anything but 2 = disabled */
 +int xar;	/* display returned agent reasoning (:ar) */
++int xaco;	/* autocompact input-token threshold; 0 disables */
++static int xaco_browse;	/* last selected mode: aco! rather than aco */
 +
 +static char exspec_insert[] =
 +	"Ex special characters are disabled and raw ex mode is on by default.\n"
@@ -13569,19 +14004,19 @@ index 2888d7c6..ae0ea20e 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +342,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +344,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|ai|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|apack!?|ac[om]?|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|apack!?|aco!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index f0ce0805..800978b2 100644
+index f0ce0805..4a21e6c8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -13795,7 +14230,7 @@ index f0ce0805..800978b2 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1699,9 +1761,9 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1699,9 +1761,18 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -13804,10 +14239,19 @@ index f0ce0805..800978b2 100644
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
 -EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar) EO(gr)
++
++_EO(aco,
++	int browse = strchr(cmd, '!') != NULL;
++	int value = *arg ? eo_val(arg) :
++		(xaco && xaco_browse == browse ? 0 : 85000);
++	xaco = MAX(0, value);
++	xaco_browse = browse;
++	return NULL;
++)
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,6 +1792,9 @@ _EO(left,
+@@ -1730,6 +1801,9 @@ _EO(left,
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
@@ -13817,7 +14261,7 @@ index f0ce0805..800978b2 100644
  /* commands & opts must be sorted longest of its kind topmost */
  static struct excmd {
  	char *name;
-@@ -1755,9 +1820,20 @@ static struct excmd {
+@@ -1755,9 +1829,22 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -13826,7 +14270,9 @@ index f0ce0805..800978b2 100644
 +	{"apack", ec_compact},
 +	EO(aspec),
 +	{"acm", ec_skill},
-+	{"aco", ec_aco},
++	{"aco!", eo_aco},
++	EO(aco),
++	{"ast", ec_ast},
  	EO(ai),
 +	EO(ar),
  	{"ac", ec_setacreg},
@@ -13838,7 +14284,7 @@ index f0ce0805..800978b2 100644
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
  	{"e!", ec_edit},
-@@ -1777,6 +1853,7 @@ static struct excmd {
+@@ -1777,6 +1864,7 @@ static struct excmd {
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
@@ -13846,7 +14292,7 @@ index f0ce0805..800978b2 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1829,12 +1906,176 @@ static struct excmd {
+@@ -1829,12 +1917,176 @@ static struct excmd {
  	{"", ec_print}, /* do not remove */
  };
  
@@ -13941,7 +14387,7 @@ index f0ce0805..800978b2 100644
 +	static char *agent_cmds[] = {
 +		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
 +		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-+		"ud", "rd", "sc", "sc!", "gr", "aretry"
++		"ud", "rd", "sc", "sc!", "gr", "aretry", "ast"
 +	};
 +	if (!*arg || !strcmp(arg, "catalog")) {
 +		ex_print("EX TOPICS", msg_ft)
@@ -14023,7 +14469,7 @@ index f0ce0805..800978b2 100644
  			int n;
  			struct buf *pbuf = ex_buf;
  			src++;
-@@ -1862,6 +2103,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1862,6 +2114,13 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  				sbuf_chr(sb, '@')
  			src += *src == xesc && src[-1] != '#' && uc_isdigit(src[1]);
  		} else if (*src == xexe) {
@@ -14037,7 +14483,7 @@ index f0ce0805..800978b2 100644
  			int n = sb->s_n;
  			src++;
  			ex_sread(sb, (char**)&src, xexe, xesc);
-@@ -1885,8 +2133,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
+@@ -1885,8 +2144,16 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
  static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  {
  	int i, j;
@@ -14055,7 +14501,7 @@ index f0ce0805..800978b2 100644
  	while (memchr(" \t0123456789+-.,<>/$';%*#|", *src, 26)) {
  		if (*src == '>' || *src == '<' || *src == '|') {
  			int esc = 0;
-@@ -1936,8 +2192,38 @@ void *ex_exec(const char *ln)
+@@ -1936,8 +2203,38 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -14095,7 +14541,7 @@ index f0ce0805..800978b2 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1956,7 +2242,9 @@ void *ex_exec(const char *ln)
+@@ -1956,7 +2253,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -14194,10 +14640,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..8f342174
+index 00000000..90c9d3e7
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1236 @@
+@@ -0,0 +1,1261 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -15002,15 +15448,16 @@ index 00000000..8f342174
 +	"Example: execute the command after reading its specifications",
 +	"aretry",
 +	"",
-+	"aco",
-+	"Print agent context usage and session statistics",
++	"ast",
++	"Print agent status and token usage",
 +	"",
-+	"Without an argument, prints the size of the conversation context",
-+	"(message count and payload bytes), per-role usage, session",
-+	"activity and the configured limits.",
-+	"",
-+	"Example: current context usage",
-+	"aco",
++	"Prints message/payload sizes, per-role usage, activity, limits, and",
++	"the active autocompact mode and threshold. Token usage is the input",
++	"and output count reported for the last accepted response, if available.",
++	"The next input count is an estimate: reported input plus new JSON",
++	"bytes / 3, or all JSON bytes / 3 without a usable usage anchor.",
++	"Estimates include tool definitions and message framing; they are not",
++	"a tokenizer or a guarantee that the next request fits the model.",
 +	"",
 +	"ac[regex]",
 +	"Set autocomplete filter regex",
@@ -15081,6 +15528,28 @@ index 00000000..8f342174
 +	"the current value, unless stated otherwise.",
 +	"",
 +	"Argument notation shows the default value.",
++	"",
++	"aco[0]  Automatically compact using the loaded session log",
++	"A positive argument sets the estimated input-token threshold; 0 disables.",
++	"Without an argument, enables this mode at 85000 tokens, or disables",
++	"it if this mode is already active. Negative values disable as well.",
++	"aco and aco! share one threshold: the last setting wins.",
++	"",
++	"Before requests (after complete tool batches), runs the apack task",
++	"without a prompt and resumes the current request. Compaction never",
++	"recurses. Failed, cancelled, empty, unchanged, or insufficient summaries",
++	"retain the original history/log and stop the run. The threshold must",
++	"leave room for summary instructions and model output. Use aco! if the",
++	"full log no longer fits. This setting does not change the API limit.",
++	"",
++	"aco![0]  Automatically compact by browsing the session log",
++	"Same threshold and toggle behavior as aco, with a default of 85000.",
++	"Selecting this mode replaces aco; selecting aco replaces this mode.",
++	"",
++	"Like apack!, starts a fresh agent without importing the log. The agent",
++	"explores b-4 using bounded reads and replaces it with a summary.",
++	"Automatic compaction keeps the current task and restores the editor",
++	"buffer before continuing. Status and token estimates are shown by ast.",
 +	"",
 +	"ar[0]  Display returned agent reasoning",
 +	"Without an argument, logically inverts this option.",
@@ -15398,41 +15867,43 @@ index 00000000..8f342174
 +	{"apack!", "Compact the agent session by browsing its log", 776, 784, 0, 0},
 +	{"acm", "Toggle the caveman response style skill", 785, 790, 0, 0},
 +	{"aretry", "Execute the last deferred agent command once", 791, 801, 0, 0},
-+	{"aco", "Print agent context usage and session statistics", 802, 811, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 812, 820, 0, 0},
-+	{"sc", "Set ex special characters", 821, 831, 0, 0},
-+	{"sc!", "Set ex special characters", 832, 839, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 840, 847, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 848, 851, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 852, 856, 0, 0},
-+	{"ph", "Redefine placeholders", 857, 873, 0, 0},
-+	{"ar", "Display returned agent reasoning", 882, 886, 1, 0},
-+	{"gr", "Control agent output protection", 887, 894, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 895, 901, 1, 0},
-+	{"ai", "Indent new lines", 902, 905, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 906, 907, 1, 0},
-+	{"ish", "Interactive shell", 908, 923, 1, 0},
-+	{"grp", "Regex search group", 924, 932, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 933, 936, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 937, 938, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 938, 939, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 939, 940, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 940, 941, 1, 0},
-+	{"led", "Enable all terminal output", 941, 942, 1, 0},
-+	{"vis", "Control startup flags", 943, 954, 1, 0},
-+	{"mpt", "Control vi prompts", 955, 965, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 966, 968, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 968, 970, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 970, 971, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 971, 972, 1, 0},
-+	{"td", "Current text direction context", 972, 978, 1, 0},
-+	{"pr", "Print register", 979, 995, 1, 0},
-+	{"fr", "Find register", 996, 1008, 1, 0},
-+	{"rr", "Record register", 1009, 1022, 1, 0},
-+	{"lim", "Line length render limit", 1023, 1038, 1, 0},
-+	{"seq", "Control Undo/Redo", 1039, 1051, 1, 0},
-+	{"left", "Control horizontal scroll", 1052, 1057, 1, 0},
-+	{"err", "Control ex errors", 1058, 1070, 1, 0},
++	{"ast", "Print agent status and token usage", 802, 812, 0, 0},
++	{"ac", "Set autocomplete filter regex", 813, 821, 0, 0},
++	{"sc", "Set ex special characters", 822, 832, 0, 0},
++	{"sc!", "Set ex special characters", 833, 840, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 841, 848, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 849, 852, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 853, 857, 0, 0},
++	{"ph", "Redefine placeholders", 858, 874, 0, 0},
++	{"aco", "Automatically compact using the loaded session log", 883, 895, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 896, 904, 1, 0},
++	{"ar", "Display returned agent reasoning", 905, 909, 1, 0},
++	{"gr", "Control agent output protection", 910, 917, 1, 0},
++	{"aspec", "Print ex specifications for agents", 918, 924, 1, 0},
++	{"ai", "Indent new lines", 925, 928, 1, 0},
++	{"ic", "Ignore case in regular expressions", 929, 930, 1, 0},
++	{"ish", "Interactive shell", 931, 946, 1, 0},
++	{"grp", "Regex search group", 947, 955, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 956, 959, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 960, 961, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 961, 962, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 962, 963, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 963, 964, 1, 0},
++	{"led", "Enable all terminal output", 964, 965, 1, 0},
++	{"vis", "Control startup flags", 966, 977, 1, 0},
++	{"mpt", "Control vi prompts", 978, 988, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 989, 991, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 991, 993, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 993, 994, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 994, 995, 1, 0},
++	{"td", "Current text direction context", 995, 1001, 1, 0},
++	{"pr", "Print register", 1002, 1018, 1, 0},
++	{"fr", "Find register", 1019, 1031, 1, 0},
++	{"rr", "Record register", 1032, 1045, 1, 0},
++	{"lim", "Line length render limit", 1046, 1061, 1, 0},
++	{"seq", "Control Undo/Redo", 1062, 1074, 1, 0},
++	{"left", "Control horizontal scroll", 1075, 1080, 1, 0},
++	{"err", "Control ex errors", 1081, 1093, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..d593e626 100644
