@@ -1254,6 +1254,9 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 	cJSON_Delete(config);
 	if (*loc && !(scope = agent_snapshot(loc)))
 		return xrerr;
+	/* Snapshot the requested range before selecting the session log. */
+	if (compact)
+		temp_switch(3, 0);
 	if (cmd[1]) {
 		agent_epoch++;
 		agent_serial++;
@@ -1366,31 +1369,29 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 static char *agent_compact_task(int browse, char *arg, int automatic)
 {
 	sbuf_smake(task, 512)
-	sbuf_str(task,
-	"Buffer b-4 contains a log of the current session.\n"
-	"It is a temporary/special buffer, running b-4 command\n"
-	"inside it switches the editor back to the previous main buffer.\n")
+	sbuf_str(task, "The current buffer contains a log of the session.\n")
 	if (browse)
 		sbuf_str(task,
-		"The log has not been loaded into your context. Inspect b-4 yourself\n"
-		"using ex searches and bounded line ranges. Do not read the entire\n"
-		"buffer into context.\n")
+		"The log has not been loaded into your context. Inspect the current\n"
+		"buffer using ex searches and bounded line ranges. Do not read the\n"
+		"entire buffer into context.\n")
 	else
 		sbuf_str(task,
-		"The log is in your context. Do not read the b-4 buffer into context.\n")
+		"The log is in your context. Do not read the current buffer into context.\n")
 	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
 	"constraints, and unfinished work.\n")
 	sbuf_str(task,
-	"\nSwitch to b-4 unless already there, then replace its content\n"
-	"with the summary using %c followed by literal summary text.\n"
+	"\nReplace the current buffer'\''s content with the summary using %c\n"
+	"followed by literal summary text.\n"
 	"Return control to the user once complete.\n")
 	if (automatic)
 		sbuf_str(task,
-		"This is automatic compaction, not a new user task. Modify only b-4.\n"
+		"This is automatic compaction, not a new user task. Modify only\n"
+		"the current buffer.\n"
 		"Preserve the latest user request, exact identifiers, critical tool results,\n"
 		"completed actions (do not repeat them), and the next action to take.\n"
 		"Make the summary substantially shorter than the log. Do not execute\n"
-		"the unfinished task. After replacing b-4, reply briefly and stop.\n")
+		"the unfinished task. After replacing the buffer, reply briefly and stop.\n")
 	else
 		sbuf_chr(task, '\''\033'\'')
 	sbufn_ret(task, task->s)
@@ -1402,10 +1403,18 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	int browse = !strcmp(cmd, "apack!");
 	unsigned long epoch = agent_epoch;
 	char *task = agent_compact_task(browse, arg, 0);
+	/* Indices survive buffer-array growth during tool calls. */
+	int savedtemp = istempbuf(ex_buf);
+	int savedbuf = savedtemp ? ex_buf - tempbufs : ex_buf - bufs;
 	/* apack! resets history without clearing or importing the log. */
 	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
 	if (!ret && agent_epoch == epoch + 1)
 		agent_history(1);
+	if (savedtemp)
+		temp_switch(savedbuf, 0);
+	else if (savedbuf < xbufcur) {
+		bufs_switchwft(savedbuf)
+	}
 	free(task);
 	return ret;
 }
@@ -1438,6 +1447,7 @@ static int agent_autocompact(const char *input)
 	agent_history(!browse);
 	agent_packing = 1;
 	agent_pack_done = 0;
+	temp_switch(3, 0);
 	agent_run(task);
 	agent_packing = 0;
 	free(task);
@@ -1478,12 +1488,12 @@ static int agent_autocompact(const char *input)
 		agent_log("RESULT", "autocompact failed or cancelled; "
 			"original history retained. Compact manually or retry.");
 	}
+	done:
 	if (savedtemp)
 		temp_switch(savedbuf, 0);
 	else if (savedbuf < xbufcur) {
 		bufs_switchwft(savedbuf)
 	}
-	done:
 	agent_rounds = rounds;
 	agent_logbuf = logbuf;
 	free(original);
@@ -8698,10 +8708,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..046cc071
+index 00000000..6d666343
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1459 @@
+@@ -0,0 +1,1469 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9926,6 +9936,9 @@ index 00000000..046cc071
 +	cJSON_Delete(config);
 +	if (*loc && !(scope = agent_snapshot(loc)))
 +		return xrerr;
++	/* Snapshot the requested range before selecting the session log. */
++	if (compact)
++		temp_switch(3, 0);
 +	if (cmd[1]) {
 +		agent_epoch++;
 +		agent_serial++;
@@ -10038,31 +10051,29 @@ index 00000000..046cc071
 +static char *agent_compact_task(int browse, char *arg, int automatic)
 +{
 +	sbuf_smake(task, 512)
-+	sbuf_str(task,
-+	"Buffer b-4 contains a log of the current session.\n"
-+	"It is a temporary/special buffer, running b-4 command\n"
-+	"inside it switches the editor back to the previous main buffer.\n")
++	sbuf_str(task, "The current buffer contains a log of the session.\n")
 +	if (browse)
 +		sbuf_str(task,
-+		"The log has not been loaded into your context. Inspect b-4 yourself\n"
-+		"using ex searches and bounded line ranges. Do not read the entire\n"
-+		"buffer into context.\n")
++		"The log has not been loaded into your context. Inspect the current\n"
++		"buffer using ex searches and bounded line ranges. Do not read the\n"
++		"entire buffer into context.\n")
 +	else
 +		sbuf_str(task,
-+		"The log is in your context. Do not read the b-4 buffer into context.\n")
++		"The log is in your context. Do not read the current buffer into context.\n")
 +	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
 +	"constraints, and unfinished work.\n")
 +	sbuf_str(task,
-+	"\nSwitch to b-4 unless already there, then replace its content\n"
-+	"with the summary using %c followed by literal summary text.\n"
++	"\nReplace the current buffer's content with the summary using %c\n"
++	"followed by literal summary text.\n"
 +	"Return control to the user once complete.\n")
 +	if (automatic)
 +		sbuf_str(task,
-+		"This is automatic compaction, not a new user task. Modify only b-4.\n"
++		"This is automatic compaction, not a new user task. Modify only\n"
++		"the current buffer.\n"
 +		"Preserve the latest user request, exact identifiers, critical tool results,\n"
 +		"completed actions (do not repeat them), and the next action to take.\n"
 +		"Make the summary substantially shorter than the log. Do not execute\n"
-+		"the unfinished task. After replacing b-4, reply briefly and stop.\n")
++		"the unfinished task. After replacing the buffer, reply briefly and stop.\n")
 +	else
 +		sbuf_chr(task, '\033')
 +	sbufn_ret(task, task->s)
@@ -10074,10 +10085,18 @@ index 00000000..046cc071
 +	int browse = !strcmp(cmd, "apack!");
 +	unsigned long epoch = agent_epoch;
 +	char *task = agent_compact_task(browse, arg, 0);
++	/* Indices survive buffer-array growth during tool calls. */
++	int savedtemp = istempbuf(ex_buf);
++	int savedbuf = savedtemp ? ex_buf - tempbufs : ex_buf - bufs;
 +	/* apack! resets history without clearing or importing the log. */
 +	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
 +	if (!ret && agent_epoch == epoch + 1)
 +		agent_history(1);
++	if (savedtemp)
++		temp_switch(savedbuf, 0);
++	else if (savedbuf < xbufcur) {
++		bufs_switchwft(savedbuf)
++	}
 +	free(task);
 +	return ret;
 +}
@@ -10110,6 +10129,7 @@ index 00000000..046cc071
 +	agent_history(!browse);
 +	agent_packing = 1;
 +	agent_pack_done = 0;
++	temp_switch(3, 0);
 +	agent_run(task);
 +	agent_packing = 0;
 +	free(task);
@@ -10150,12 +10170,12 @@ index 00000000..046cc071
 +		agent_log("RESULT", "autocompact failed or cancelled; "
 +			"original history retained. Compact manually or retry.");
 +	}
++	done:
 +	if (savedtemp)
 +		temp_switch(savedbuf, 0);
 +	else if (savedbuf < xbufcur) {
 +		bufs_switchwft(savedbuf)
 +	}
-+	done:
 +	agent_rounds = rounds;
 +	agent_logbuf = logbuf;
 +	free(original);
