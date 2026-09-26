@@ -5134,6 +5134,8 @@ static struct {
 	{"p", "Use character ranges for long lines; stop when you have enough context."},
 	{"p", "Ex special characters disabled by default. p % example will not work."},
 	{"g", "Ex special characters disabled by default. Command chaining unavailable."},
+	{"w", "Ex special characters disabled by default. Do not escape ! character."},
+	{"r", "Ex special characters disabled by default. Do not escape ! character."},
 	{"parsing", "Ex special characters disabled by default. Command chaining unavailable."},
 	{"escapes", "Ex special characters disabled by default."},
 	{"expansion", "Ex special characters disabled by default. Expansion unavailable."},
@@ -13506,10 +13508,10 @@ index c836c94c..7649a0bb 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..35334642 100644
+index 2888d7c6..ae0ea20e 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,48 @@
+@@ -1,5 +1,50 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -13550,6 +13552,8 @@ index 2888d7c6..35334642 100644
 +	{"p", "Use character ranges for long lines; stop when you have enough context."},
 +	{"p", "Ex special characters disabled by default. p % example will not work."},
 +	{"g", "Ex special characters disabled by default. Command chaining unavailable."},
++	{"w", "Ex special characters disabled by default. Do not escape ! character."},
++	{"r", "Ex special characters disabled by default. Do not escape ! character."},
 +	{"parsing", "Ex special characters disabled by default. Command chaining unavailable."},
 +	{"escapes", "Ex special characters disabled by default."},
 +	{"expansion", "Ex special characters disabled by default. Expansion unavailable."},
@@ -13558,7 +13562,7 @@ index 2888d7c6..35334642 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +340,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +342,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
