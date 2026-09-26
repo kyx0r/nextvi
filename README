@@ -386,12 +386,16 @@ It defaults to off (xar in conf.c). Reasoning appears before the answer
 after each response completes, if the server supplies reasoning_content
 or reasoning text.
 
-The new ex command "aco" shows model state, context and settings.
+The new ex command "ast" shows model state, context and settings.
 The new ex command "apack" to compact the conversation using current agent 
 context.
 The new ex command "apack!" to compact the conversation by starting a
 fresh agent.
 The new ex command "acm" activates caveman mode skill.
+The new ex option "aco" automatically uses "apack" command once a certain
+token threshold reached. Default is 85k.
+The new ex option "aco!" automatically uses "apack!" command once a certain
+token threshold reached. Default is 85k.
 
 Adds temporary buffers /conversation/ for the conversation and /skills/
 for the system prompt. Both restart commands reload the skills buffer.
