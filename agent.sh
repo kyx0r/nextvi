@@ -780,7 +780,7 @@ static void agent_redraw(const char *draft)
 	starts[0] = 0;
 	for (int i = 0; i < sb->s_n; ) {
 		char *s = sb->s+i;
-		int n = uc_len(s), newline = *s == '\''\n'\'', code;
+		int n, newline = *s == '\''\n'\'', code;
 		uc_code(code, s, n)
 		col += *s == '\''\t'\'' ? 8 - col % 8 : MAX(0, uc_wid(code));
 		i += MAX(1, n);
@@ -8778,7 +8778,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..8a2c8f86
+index 00000000..15b708e7
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,1539 @@
@@ -9532,7 +9532,7 @@ index 00000000..8a2c8f86
 +	starts[0] = 0;
 +	for (int i = 0; i < sb->s_n; ) {
 +		char *s = sb->s+i;
-+		int n = uc_len(s), newline = *s == '\n', code;
++		int n, newline = *s == '\n', code;
 +		uc_code(code, s, n)
 +		col += *s == '\t' ? 8 - col % 8 : MAX(0, uc_wid(code));
 +		i += MAX(1, n);
