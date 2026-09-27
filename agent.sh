@@ -62,6 +62,7 @@ static int agent_logbuf = 3;
 static char *agent_init_error;
 static unsigned long agent_rounds;	/* tool rounds completed in the current run */
 static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
+static size_t agent_capture_total;	/* full tool output, including clipped bytes */
 
 /* Usage describes the last accepted response. The anchor describes its input;
  * subsequent messages/tool results are estimated, not provider token counts. */
@@ -404,6 +405,7 @@ static int agent_boundary(void)
 
 static void agent_capture_add(const char *s, int n)
 {
+	agent_capture_total += n;
 	if (xgr == 2)
 		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
 	sbuf_mem(agent_capture, s, n)
@@ -564,8 +566,12 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 				int nr = read(fds[i].fd, buf, sizeof(buf)-1);
 				if (nr > 0) {
 					sbuf *dest = i ? eb : sb;
-					if (i == 0 && limited)
-						nr = MIN(nr, MAX(0, 4097 - dest->s_n));
+					if (i == 0 && limited) {
+						int kept = MIN(nr, MAX(0, 4097 - dest->s_n));
+						if (agent_capture)
+							agent_capture_total += nr - kept;
+						nr = kept;
+					}
 					sbuf_mem(dest, buf, nr)
 				} else if (!nr || errno != EINTR) {
 					close(fds[i].fd);
@@ -805,6 +811,7 @@ static void agent_editor(void)
 	preserve(int, xvis, xvis = (xvis | 2) & ~1;)
 	preserve(int, agent_tool, agent_tool = 0;)
 	preserve(sbuf *, agent_capture, agent_capture = NULL;)
+	preserve(size_t, agent_capture_total, agent_capture_total = 0;)
 	preserve(int, agent_cancel, agent_cancel = 0;)
 	preserve(int, agent_pause, agent_pause = 0;)
 	preserve(int, xesc, xesc = '\''\\'\'';)
@@ -818,6 +825,7 @@ static void agent_editor(void)
 	restore(xesc)
 	restore(agent_pause)
 	restore(agent_cancel)
+	restore(agent_capture_total)
 	restore(agent_capture)
 	restore(agent_tool)
 	restore(xvis)
@@ -1079,14 +1087,19 @@ static void agent_run(const char *input)
 				agent_input_blocked = 0;
 				agent_tool = 1;
 				agent_capture = out;
+				agent_capture_total = 0;
 				agent_child_status = 0;
 				agent_sequence();
 				err = ex_exec(command->valuestring);
 				agent_tool_calls++;
 				agent_sequence();
-				if (xgr == 2 && out->s_n > 4096) {
+				if (xgr == 2 && agent_capture_total > 4096) {
+					char msg[128];
+					snprintf(msg, sizeof(msg),
+						"%zu > 4096 output guardrail: gr 0 to bypass once",
+						agent_capture_total);
 					sbuf_cut(out, 0)
-					sbufn_str(out, "4096-byte guardrail hit: gr 0 to bypass once")
+					sbufn_str(out, msg)
 				} else if (xgr >= 0 && xgr < 2)
 					xgr++;
 				agent_capture = NULL;
@@ -6606,9 +6619,9 @@ static char xaerr[128];
 '\''13i 	agent_sync(pxb);
 ??!219reg ex.c:729:m132sc %? %@2142sc!0?
 '\''14i 	if (agent_capture) {
-		agent_capture_add(line, strlen(line));
-		if (flg && (!*line || !agent_capture->s_n ||
-				agent_capture->s[agent_capture->s_n-1] != '\''\n'\''))
+		size_t len = strlen(line);
+		agent_capture_add(line, len);
+		if (flg && (!len || line[len-1] != '\''\n'\''))
 			agent_capture_add("\n", 1);
 	}
 ??!219reg ex.c:824:m142sc %? %@2142sc!0?
@@ -8809,10 +8822,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..9305d9cb
+index 00000000..0fdc7c73
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1570 @@
+@@ -0,0 +1,1583 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8845,6 +8858,7 @@ index 00000000..9305d9cb
 +static char *agent_init_error;
 +static unsigned long agent_rounds;	/* tool rounds completed in the current run */
 +static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
++static size_t agent_capture_total;	/* full tool output, including clipped bytes */
 +
 +/* Usage describes the last accepted response. The anchor describes its input;
 + * subsequent messages/tool results are estimated, not provider token counts. */
@@ -9187,6 +9201,7 @@ index 00000000..9305d9cb
 +
 +static void agent_capture_add(const char *s, int n)
 +{
++	agent_capture_total += n;
 +	if (xgr == 2)
 +		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
 +	sbuf_mem(agent_capture, s, n)
@@ -9347,8 +9362,12 @@ index 00000000..9305d9cb
 +				int nr = read(fds[i].fd, buf, sizeof(buf)-1);
 +				if (nr > 0) {
 +					sbuf *dest = i ? eb : sb;
-+					if (i == 0 && limited)
-+						nr = MIN(nr, MAX(0, 4097 - dest->s_n));
++					if (i == 0 && limited) {
++						int kept = MIN(nr, MAX(0, 4097 - dest->s_n));
++						if (agent_capture)
++							agent_capture_total += nr - kept;
++						nr = kept;
++					}
 +					sbuf_mem(dest, buf, nr)
 +				} else if (!nr || errno != EINTR) {
 +					close(fds[i].fd);
@@ -9588,6 +9607,7 @@ index 00000000..9305d9cb
 +	preserve(int, xvis, xvis = (xvis | 2) & ~1;)
 +	preserve(int, agent_tool, agent_tool = 0;)
 +	preserve(sbuf *, agent_capture, agent_capture = NULL;)
++	preserve(size_t, agent_capture_total, agent_capture_total = 0;)
 +	preserve(int, agent_cancel, agent_cancel = 0;)
 +	preserve(int, agent_pause, agent_pause = 0;)
 +	preserve(int, xesc, xesc = '\\';)
@@ -9601,6 +9621,7 @@ index 00000000..9305d9cb
 +	restore(xesc)
 +	restore(agent_pause)
 +	restore(agent_cancel)
++	restore(agent_capture_total)
 +	restore(agent_capture)
 +	restore(agent_tool)
 +	restore(xvis)
@@ -9862,14 +9883,19 @@ index 00000000..9305d9cb
 +				agent_input_blocked = 0;
 +				agent_tool = 1;
 +				agent_capture = out;
++				agent_capture_total = 0;
 +				agent_child_status = 0;
 +				agent_sequence();
 +				err = ex_exec(command->valuestring);
 +				agent_tool_calls++;
 +				agent_sequence();
-+				if (xgr == 2 && out->s_n > 4096) {
++				if (xgr == 2 && agent_capture_total > 4096) {
++					char msg[128];
++					snprintf(msg, sizeof(msg),
++						"%zu > 4096 output guardrail: gr 0 to bypass once",
++						agent_capture_total);
 +					sbuf_cut(out, 0)
-+					sbufn_str(out, "4096-byte guardrail hit: gr 0 to bypass once")
++					sbufn_str(out, msg)
 +				} else if (xgr >= 0 && xgr < 2)
 +					xgr++;
 +				agent_capture = NULL;
@@ -14111,7 +14137,7 @@ index 2888d7c6..118c150e 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7f23552d..00de2863 100644
+index 7f23552d..d6bb833d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -14272,9 +14298,9 @@ index 7f23552d..00de2863 100644
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  {
 +	if (agent_capture) {
-+		agent_capture_add(line, strlen(line));
-+		if (flg && (!*line || !agent_capture->s_n ||
-+				agent_capture->s[agent_capture->s_n-1] != '\n'))
++		size_t len = strlen(line);
++		agent_capture_add(line, len);
++		if (flg && (!len || line[len-1] != '\n'))
 +			agent_capture_add("\n", 1);
 +	}
  	if (xpr > 0) {
