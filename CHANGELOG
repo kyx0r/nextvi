@@ -22,6 +22,13 @@ Patch changes:
 2. [undo_branches.sh](https://github.com/kyx0r/nextvi/blob/release/undo_branches.sh):
    saved-state tracking uses unique edit identities across undo branches.
 
+Source commits:
+master    3684c34e
+manual    e14c991b
+patches   53117f4e
+patch2vi  ef825444
+test      397b0d9d
+
 ------------------
 7.6 Basilisk
 ------------------

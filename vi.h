@@ -19,10 +19,53 @@ value \
 name = tmp##name; \
 
 /* utility funcs */
-void *emalloc(size_t size);
-void *erealloc(void *p, size_t size);
-int dstrlen(const char *s, char delim);
-char *itoa(int n, char s[]);
+static void *emalloc(size_t size)
+{
+	void *p;
+	if (!(p = malloc(size))) {
+		fprintf(stderr, "\nmalloc: out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+	return p;
+}
+
+static void *erealloc(void *p, size_t size)
+{
+	if (!(p = realloc(p, size))) {
+		fprintf(stderr, "\nrealloc: out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+	return p;
+}
+
+static int dstrlen(const char *s, char delim)
+{
+	register const char *i;
+	for (i=s; *i && *i != delim; ++i);
+	return i-s;
+}
+
+static char *itoa(int n, char s[])
+{
+	int i = 0, sign;
+	if ((sign = n) < 0)		/* record sign */
+		n = -n;			/* make n positive */
+	do {				/* generate digits in reverse order */
+		s[i++] = n % 10 + '0';	/* get next digit */
+	} while ((n /= 10) > 0);	/* delete it */
+	if (sign < 0)
+		s[i++] = '-';
+	s[i] = '\0';
+	char *p1 = s;	/* reverse in place */
+	char *p2 = s + i - 1;
+	while (p1 < p2) {
+		char tmp = *p1;
+		*p1++ = *p2;
+		*p2-- = tmp;
+	}
+	return &s[i];
+}
+static char *sdup(const char *s, int n) { n++; return memcpy(emalloc(n), s, n); }
 static int itoalen(int n) { char s[32]; return itoa(n, s) - s; }
 static void swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
 
@@ -111,8 +154,7 @@ typedef struct {
 	int n;			/* number of regular expressions in this set */
 } rset;
 rset *rset_make(int n, char **pat, int flg);
-static rset *rset_smake(char *pat, int flg)
-	{ char *ss[1] = {pat}; return rset_make(1, ss, flg); }
+rset *rset_smake(char *pat, int flg);
 int rset_find(rset *re, char *s, int *grps, int flg);
 int rset_match(rset *rs, char *s, int flg);
 void rset_free(rset *re);
@@ -295,12 +337,10 @@ else \
 int uc_wid(int c);
 int uc_slen(char *s);
 char *uc_chrn(char *s, int off, int *n);
-static char *uc_chr(char *s, int off) { int n; return uc_chrn(s, off, &n); }
+char *uc_chr(char *s, int off);
 int uc_off(char *s, int off);
 char *uc_subl(char *s, int beg, int end, int *rlen);
-static char *uc_sub(char *s, int beg, int end)
-	{ int l; return uc_subl(s, beg, end, &l); }
-char *uc_dup(const char *s);
+char *uc_sub(char *s, int beg, int end);
 #define uc_isspace(c) ((unsigned char)(c) == ' ' || (unsigned char)((unsigned char)(c) - 9) < 5)
 #define uc_isprint(c) ((unsigned char)(c) >= 0x20 && (unsigned char)(c) != 0x7f)
 #define uc_isdigit(c) (((unsigned char)(c) ^ '0') < 10)

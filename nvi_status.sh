@@ -43,39 +43,39 @@ printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 1??+3m 11q0?
 %f> 			"\\"%s\\"%s%dL %d%% L%d C%d B%td",
 			xb_path\[0] \? xb_path : "unnamed",2??0?
-2??m 1220reg p OK vi.c:507:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:462:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			"\\"%s\\"%s%dL %d%% L%d C%d B%td",$3??0?
-3??m 1220reg p OK vi.c:507:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.c:462:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 			xoff, col\);
 	} else \{
 		snprintf\(vi_msg, sizeof\(vi_msg\),4??0?
-4??+3m 1220reg p OK vi.c:507:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:462:a42sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			xb_path\[0] \? xb_path : "unnamed",$5??0?
-5??-1m 1220reg p OK vi.c:507:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 1220reg p OK vi.c:462:a52sc %? %@2152sc!fr 981qfr 980?
 %f> .	....f.....\).
 ....l....
 ........t..v.....,...z.o........\).
 .......s\\.%.......%....d.....B%...,
 	...._p...\[........p..h ...u..a.ed..6??0?
-6??+3m 1220reg p OK vi.c:507:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK vi.c:462:a62sc %? %@2152sc!1q0?
 grp 1%f> 			xoff, col\);.*?
 	} else \{.*?
 		snprintf\(vi_msg, sizeof\(vi_msg\),.*?
 (			"\\"%s\\"%s%dL %d%% L%d C%d B%td",)7??0?
-grp 07??m 1220reg p OK vi.c:507:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:462:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		memcpy\(cbuf, c, l\);
 		snprintf\(vi_msg, sizeof\(vi_msg\), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d",
 			cbuf, cp, cp, cp, l, rstate->wid\[xoff], c - lbuf_get\(xb, xrow\),.*(static int vi_region\(int cmd, int \*row, int \*off\))
 \{
 	static sbuf \*savepath\[5];8??0?
-grp 08??-9m 1220reg p OK vi.c:507:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 1220reg p OK vi.c:462:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(type && lbuf_get\(xb, xrow\)\) \{
 		c = rstate->chrs\[xoff];
 		uc_code\(cp, c, l\).*(	static rset \*bre;)
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;9??0?
-grp 09??-12m 1220reg p OK vi.c:507:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:5072sc %? %@2132sc!0?
+grp 09??-12m 1220reg p OK vi.c:462:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:4622sc %? %@2132sc!0?
 ?0?
 %f+ 			xb_path\[0] \? xb_path : "unnamed",
 			xb->modified \? "\* " : " ", lbuf_len\(xb\),
@@ -89,45 +89,45 @@ printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs\);
 	}
 	vi_drawmsg_mpt\(vi_msg\)2??0?
-2??m 2220reg p OK vi.c:509:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:464:a22sc %? %@2152sc!1q0?
 %f+ 			xb->modified \? "\* " : " ", lbuf_len\(xb\),
 			xrow \* 100 / MAX\(1, lbuf_len\(xb\)-1\), xrow\+1, col,3??0?
-3??m 2220reg p OK vi.c:509:a32sc %? %@2152sc!1q0?
+3??m 2220reg p OK vi.c:464:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			xb_path\[0] \? xb_path : "unnamed",$4??0?
-4??+1m 2220reg p OK vi.c:509:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 2220reg p OK vi.c:464:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs\);
 	}
 	vi_drawmsg_mpt\(vi_msg\)5??0?
-5??-2m 2220reg p OK vi.c:509:a52sc %? %@2152sc!1q0?
+5??-2m 2220reg p OK vi.c:464:a52sc %? %@2152sc!1q0?
 %f+ ......p..h\[0.....b..a...:.....a..d.,
 ...x....o.....d....\* ...." ",....f_l...x...
 .....ow . 1.0.. .AX.1..l..f..e....\).... ..o.\+1..c...
 ...i....p.u......u.....te...u......._... . . ..e._.uf ........
 .}
 .......w.sg.m..\(.......6??0?
-6??+1m 2220reg p OK vi.c:509:a62sc %? %@2152sc!1q0?
+6??+1m 2220reg p OK vi.c:464:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			xb_path\[0] \? xb_path : "unnamed",.*?
 (			xb->modified \? "\* " : " ", lbuf_len\(xb\),)7??0?
-grp 07??m 2220reg p OK vi.c:509:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:464:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		memcpy\(cbuf, c, l\);
 		snprintf\(vi_msg, sizeof\(vi_msg\), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d",
 			cbuf, cp, cp, cp, l, rstate->wid\[xoff], c - lbuf_get\(xb, xrow\),.*(static int vi_region\(int cmd, int \*row, int \*off\))
 \{
 	static sbuf \*savepath\[5];8??0?
-grp 08??-7m 2220reg p OK vi.c:509:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 2220reg p OK vi.c:464:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(type && lbuf_get\(xb, xrow\)\) \{
 		c = rstate->chrs\[xoff];
 		uc_code\(cp, c, l\).*(	static rset \*bre;)
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;9??0?
-grp 09??-10m 2220reg p OK vi.c:509:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:5092sc %? %@2132sc!0?
+grp 09??-10m 2220reg p OK vi.c:464:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:4642sc %? %@2132sc!0?
 '\''1c 			"%s: %s: line %d of %d (%d%%) col %d [b%td]",
-??!219reg vi.c:507:m12sc %? %@2142sc!0?
+??!219reg vi.c:462:m12sc %? %@2142sc!0?
 '\''2,#+1c 			xb->modified ? "modified" : "unmodified",
 			xrow+1, lbuf_len(xb),
 			xrow * 100 / MAX(1, lbuf_len(xb)-1), col,
-??!219reg vi.c:509:m22sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.c:464:m22sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=visual.sh
 printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> 			xoff, col, vs\);
@@ -142,19 +142,19 @@ printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 			xb_path\[0] \? xb_path : "unnamed",
 			xb->modified \? "modified" : "unmodified",
 			xrow\+1, lbuf_len\(xb\),2??0?
-2??m 1220reg p OK vi.c:650:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:605:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			"%s: %s: line %d of %d \(%d%%\) col %d \[b%td]",$3??0?
-3??m 1220reg p OK vi.c:650:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.c:605:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 			xoff, col, vs\);
 	} else \{
 		snprintf\(vi_msg, sizeof\(vi_msg\),4??0?
-4??+3m 1220reg p OK vi.c:650:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:605:a42sc %? %@2152sc!1q0?
 %f> 			xb_path\[0] \? xb_path : "unnamed",
 			xb->modified \? "modified" : "unmodified",
 			xrow\+1, lbuf_len\(xb\),5??0?
-5??-1m 1220reg p OK vi.c:650:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:650:r2312sc %? %@2132sc!0?
-'\''1s/]"/] %s"/??!219reg vi.c:650:r231:m12sc %? %@2142sc!p compat 231 applied: src=visual.sh' > "$P2VIF".231
+5??-1m 1220reg p OK vi.c:605:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:605:r2312sc %? %@2132sc!0?
+'\''1s/]"/] %s"/??!219reg vi.c:605:r231:m12sc %? %@2142sc!p compat 231 applied: src=visual.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -169,7 +169,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -647,7 +647,7 @@
+@@ -602,7 +602,7 @@
  			xoff, col, vs);
  	} else {
  		snprintf(vi_msg, sizeof(vi_msg),
@@ -182,10 +182,10 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index cc9b1492..0b27e79a 100644
+index 93847fac..215f3aeb 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -504,10 +504,11 @@ static void vc_status(int type)
+@@ -459,10 +459,11 @@ static void vc_status(int type)
  			xoff, col);
  	} else {
  		snprintf(vi_msg, sizeof(vi_msg),

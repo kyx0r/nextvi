@@ -769,17 +769,17 @@ extern int bclen, def_bclen;
 extern int zwlen, def_zwlen;
 extern int bclen, def_bclen;
 /\* the length of a given utf-8 character \*/2??0?
-2??m 1220reg p OK vi.h:275:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.h:317:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^extern unsigned char utf8_length\[256];$3??0?
-3??m 1220reg p OK vi.h:275:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.h:317:a32sc %? %@2152sc!fr 981qfr 980?
 %f> void syn_init\(void\);
 
 /\* uc\.c: utf-8 helper functions \*/4??0?
-4??+3m 1220reg p OK vi.h:275:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.h:317:a42sc %? %@2152sc!1q0?
 %f> extern int zwlen, def_zwlen;
 extern int bclen, def_bclen;
 /\* the length of a given utf-8 character \*/5??0?
-5??-1m 1220reg p OK vi.h:275:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK vi.h:317:a52sc %? %@2152sc!1q0?
 %f> ...d..y..i.i.\(..i...
 
 ..........t..8........f.n...o.....
@@ -787,28 +787,28 @@ ex.er. un...... c.a...t.8_l.........].
 ..te...i.. z...., def.....n.
 e..... .........,..e._..le..
 .......l..g.h..f.....v.. ....8...ar.cte....6??0?
-6??+3m 1220reg p OK vi.h:275:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK vi.h:317:a62sc %? %@2152sc!1q0?
 grp 1%f> void syn_init\(void\);.*?
 .*?
 /\* uc\.c: utf-8 helper functions \*/.*?
 (extern unsigned char utf8_length\[256];)7??0?
-grp 07??m 1220reg p OK vi.h:275:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:317:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> void syn_reloadft\(int hl, int flg\);
 int syn_findhl\(int id\);
 int syn_addhl\(char \*reg, int id\);.*(#define uc_len\(s\) utf8_length\[\(unsigned char\)\(s\)\[0]])
 /\* the unicode codepoint of a given utf-8 character \*/
 #define uc_code\(dst, s, l\) \\8??0?
-grp 08??-4m 1220reg p OK vi.h:275:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:317:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void syn_highlight\(int \*att, char \*s, int n\);
 char \*syn_filetype\(char \*path\);
 int syn_merge\(int old, int new\);.*(dst = \(unsigned char\)s\[0]; \\)
 l = utf8_length\[dst]; \\
 if \(l == 1\); \\9??0?
-grp 09??-7m 1220reg p OK vi.h:275:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:2752sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:317:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:3172sc %? %@2132sc!0?
 '\''1c extern unsigned char _utf8_length[256];
 extern unsigned char *utf8_length;
-??!219reg vi.h:275:m12sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.h:317:m12sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=rstr.sh
 printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 %f> struct lsparams
@@ -925,8 +925,8 @@ break##gen:; \\
 break##gen:; \\
 
 4??0?
-4??+2m 1220reg p OK regex.c:838:a42sc %? %@2152sc!0?
-1;4??!219reg regex.c:838:r2312sc %? %@2132sc!0?
+4??+2m 1220reg p OK regex.c:844:a42sc %? %@2152sc!0?
+1;4??!219reg regex.c:844:r2312sc %? %@2132sc!0?
 ?0?
 %f+ #define rstr_match1\(gen, wbeg, wend, cmpcase, stopcond\) \\
 \{ for \(r = beg; stopcond; r\+\+\) \{ \\
@@ -940,25 +940,25 @@ break##gen:; \\
 } } \\
 
 2??0?
-2??m 2220reg p OK regex.c:840:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK regex.c:846:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^\{ for \(r = beg; stopcond; r\+\+\) \{ \\$3??0?
-3??m 2220reg p OK regex.c:840:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK regex.c:846:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^#define rstr_match1\(gen, wbeg, wend, cmpcase, stopcond\) \\$4??0?
-4??+1m 2220reg p OK regex.c:840:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 2220reg p OK regex.c:846:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	rstr_cmp\(2##gen, wbeg, wend, cmpcase\) \\
 } } \\
 
 5??0?
-5??-1m 2220reg p OK regex.c:840:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg regex.c:840:r2312sc %? %@2132sc!0?
+5??-1m 2220reg p OK regex.c:846:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg regex.c:846:r2312sc %? %@2132sc!0?
 '\''1i /* lbuf_search swaps utf8_length for an all zero table to terminate its search
  * threads with no synchronization; entry 1 is never zero in the real table, so
  * reading it is how a scan that never decodes utf-8 notices the same kill */
 #define rstr_live utf8_length[1]
 
-??!219reg regex.c:838:r231:m12sc %? %@2142sc!0?
-?'\''2s/stopcond/(stopcond) && rstr_live/1??1??1q'\''2s/(s.*d)/(\1) && rstr_live/2??2??'\''2220reg p OK regex.c:840:s22sc %? %@2162sc!0?
-1;2??!219reg regex.c:840:r231:m22sc %? %@2142sc!0?
+??!219reg regex.c:844:r231:m12sc %? %@2142sc!0?
+?'\''2s/stopcond/(stopcond) && rstr_live/1??1??1q'\''2s/(s.*d)/(\1) && rstr_live/2??2??'\''2220reg p OK regex.c:846:s22sc %? %@2162sc!0?
+1;2??!219reg regex.c:846:r231:m22sc %? %@2142sc!0?
 p compat 231 applied: src=rstr.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'cbuild.sh' 'lbuf.c' 'regex.c' 'uc.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
@@ -1012,7 +1012,7 @@ exit 0
  	static pthread_attr_t lsattr;	/* musl caps threads at 128k; main()'s stack */
 --- a/regex.c
 +++ b/regex.c
-@@ -836,8 +836,13 @@
+@@ -842,8 +842,13 @@
  } \
  break##gen:; \
  
@@ -1191,7 +1191,7 @@ index 56cb42c6..136de31c 100644
  
  int lbuf_sectionbeg(struct lbuf *lb, int dir, int *row, int *off, int ch)
 diff --git a/regex.c b/regex.c
-index e5aab266..e153076a 100644
+index fd22467f..085d0a7a 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -426,7 +426,7 @@ static rcode *re_make(char *re, int *nsubc, int flg)
@@ -1216,7 +1216,7 @@ index e5aab266..e153076a 100644
  		goto jmp_start1;
  	goto jmp_start2;
 diff --git a/uc.c b/uc.c
-index b1002c4e..d80628bb 100644
+index 02ea9f25..4bb0ddd6 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -1,4 +1,4 @@
@@ -1234,7 +1234,7 @@ index b1002c4e..d80628bb 100644
  /* the number of utf-8 characters in a fat nulled s */
  int uc_slen(char *s)
 diff --git a/vi.c b/vi.c
-index cc9b1492..559ddcf2 100644
+index 93847fac..a2e5b6b5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@
@@ -1247,10 +1247,10 @@ index cc9b1492..559ddcf2 100644
  #include "conf.c"
  #include "ex.c"
 diff --git a/vi.h b/vi.h
-index 514c675e..7474e994 100644
+index c23da595..3879287a 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -272,7 +272,8 @@ int syn_addhl(char *reg, int id);
+@@ -314,7 +314,8 @@ int syn_addhl(char *reg, int id);
  void syn_init(void);
  
  /* uc.c: utf-8 helper functions */

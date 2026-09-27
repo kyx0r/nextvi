@@ -79,8 +79,8 @@ void ex_init\(char \*\*files, int n\)
 grp 1%f> 		sbuf_free\(acsb\).*?
 	}.*?
 (})7??0?
-grp 07??m 1220reg p OK led.c:812:a72sc %? %@2152sc!0?
-1;7??!219reg led.c:8122sc %? %@2132sc!0?
+grp 07??m 1220reg p OK led.c:805:a72sc %? %@2152sc!0?
+1;7??!219reg led.c:8052sc %? %@2132sc!0?
 '\''1i 
 void led_alldone(void)
 {
@@ -88,7 +88,7 @@ void led_alldone(void)
 	if (extsb)
 		sbuf_free(extsb)
 }
-??!219reg led.c:812:m12sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg led.c:805:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	int si = 0, clistidx = 0, nlistidx, mcont = MATCH;
 	int eol_ch = flg & REG_NEWLINE \? '\''\\n'\'' : 0;
 	unsigned int sdense\[prog->sparsesz], sparsesz = 0;
@@ -190,18 +190,18 @@ void syn_done(void)
 %f> 	else
 		vi\(1\);
 	term_done\(\);4??0?
-4??+2m 1220reg p OK vi.c:1903:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1858:a42sc %? %@2152sc!1q0?
 grp 1%f> 	else.*?
 		vi\(1\);.*?
 (	term_done\(\);)7??0?
-grp 07??m 1220reg p OK vi.c:1903:a72sc %? %@2152sc!0?
-1;4;7??!219reg vi.c:19032sc %? %@2132sc!0?
+grp 07??m 1220reg p OK vi.c:1858:a72sc %? %@2152sc!0?
+1;4;7??!219reg vi.c:18582sc %? %@2132sc!0?
 '\''1i 	ex_done();
 	syn_done();
 	ren_done();
 	led_alldone();
 	free(tibuf);
-??!219reg vi.c:1903:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+??!219reg vi.c:1858:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'led.c' 'regex.c' 'ren.c' 'vi.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -214,7 +214,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 21f13f54..6d524f06 100644
+index 7f23552d..23bdcef6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1985,6 +1985,22 @@ void ex(void)
@@ -241,10 +241,10 @@ index 21f13f54..6d524f06 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 375abb35..47ba71de 100644
+index 4893a07e..a1f94c56 100644
 --- a/led.c
 +++ b/led.c
-@@ -810,3 +810,10 @@ void led_done(void)
+@@ -803,3 +803,10 @@ void led_done(void)
  		sbuf_free(acsb)
  	}
  }
@@ -256,7 +256,7 @@ index 375abb35..47ba71de 100644
 +		sbuf_free(extsb)
 +}
 diff --git a/regex.c b/regex.c
-index e5aab266..77811bff 100644
+index fd22467f..af32603a 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -665,6 +665,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
@@ -304,10 +304,10 @@ index 4116d9c1..0abb7884 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index cc9b1492..27542651 100644
+index 93847fac..6f5255ce 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1901,6 +1901,11 @@ int main(int argc, char *argv[])
+@@ -1856,6 +1856,11 @@ int main(int argc, char *argv[])
  	else
  		vi(1);
  	term_done();

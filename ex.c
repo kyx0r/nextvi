@@ -160,7 +160,7 @@ static int bufs_open(const char *path, int len)
 		xbufcur++;
 	else
 		bufs_free(--i);
-	bufs[i].path = uc_dup(path);
+	bufs[i].path = sdup(path, len);
 	bufs[i].lb = lbuf_make();
 	bufs[i].plen = len;
 	bufs[i].row = 0;
@@ -173,7 +173,8 @@ static int bufs_open(const char *path, int len)
 
 void temp_open(int i, char *name, char *ft)
 {
-	tempbufs[i].path = uc_dup(name);
+	tempbufs[i].plen = strlen(name);
+	tempbufs[i].path = sdup(name, tempbufs[i].plen);
 	tempbufs[i].lb = lbuf_make();
 	tempbufs[i].row = 0;
 	tempbufs[i].off = 0;
@@ -439,7 +440,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 	}
 	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
 			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-			fd < 0 || rd ? 'f' : 'r');
+			fd < 0 || rd ? cd == 3 ? 'n' : 'f' : 'r');
 	if (!(xvis & 4))
 		ex_print(msg, bar_ft)
 	return (fd < 0 || rd) && *arg ? xuerr : NULL;
@@ -631,8 +632,7 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
 	if (!arg[0]) {
 		char ln[512];
 		for (int i = 0; i < xbufcur; i++) {
-			char c = ex_buf == bufs+i ? '%' : ' ';
-			c = ex_pbuf == bufs+i ? '#' : c;
+			char c = ex_buf == bufs+i ? '%' : (ex_pbuf == bufs+i ? '#' : ' ');
 			snprintf(ln, LEN(ln), "%d %c %s", i,
 				c + (char)bufs[i].lb->modified, bufs[i].path);
 			ex_print(ln, msg_ft)
@@ -677,8 +677,8 @@ void ex_bufpostfix(struct buf *p, int clear)
 static void *ec_setpath(char *loc, char *cmd, char *arg)
 {
 	free(xb_path);
-	xb_path = uc_dup(arg);
 	ex_buf->plen = strlen(arg);
+	xb_path = sdup(arg, ex_buf->plen);
 	return NULL;
 }
 
@@ -923,7 +923,7 @@ static void *ec_print(char *loc, char *cmd, char *arg)
 {
 	int i, beg, end, o1 = -1, o2 = -1;
 	char *o, *ln;
-	if (!*cmd && !*loc && *arg)
+	if (!*cmd && *arg)
 		return "unknown command";
 	if (*cmd && *arg) {
 		ex_print(arg, msg_ft)
@@ -1452,7 +1452,7 @@ static void *ec_setdir(char *loc, char *cmd, char *arg)
 	static char *exdir;
 	if (cmd[1] == 'p') {
 		free(exdir);
-		exdir = *arg ? uc_dup(arg) : NULL;
+		exdir = *arg ? sdup(arg, strlen(arg)) : NULL;
 	} else if (cmd[1] == 'd')
 		dir_calc(*arg ? arg : (exdir ? exdir : "."));
 	return NULL;
@@ -1494,10 +1494,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
 			c = 0;
 		else if (opath[c] == '/')
 			c++;
-		opath = uc_dup(opath+c);
+		bufs[i].plen = strlen(opath + c);
+		opath = sdup(opath + c, bufs[i].plen);
 		free(bufs[i].path);
 		bufs[i].path = opath;
-		bufs[i].plen = strlen(opath);
 	}
 	return NULL;
 }
@@ -1855,9 +1855,9 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			} else if (uc_isdigit(*src)) {
 				for (n = 0; uc_isdigit(*src); src++)
 					n = n * 10 + (*src - '0');
-				pbuf = &bufs[n];
+				pbuf = n < xbufcur ? &bufs[n] : NULL;
 			}
-			if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
+			if (pbuf && pbuf->path[0])
 				sbuf_mem(sb, pbuf->path, pbuf->plen)
 			if (src[-1] == '@')
 				sbuf_chr(sb, '@')

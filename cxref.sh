@@ -32,7 +32,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 '230reg 0fr 2290?
 f> [ /]grep[.]sh 20??b420?? %ya 231230reg 1231??0?
 f> [ /]splits[.]sh 20??b520?? %ya 232230reg 1232??0?
-f> [ /]grep[.]sh 20??f> [ /]lsp[.]sh 21??f> [ /]rstr[.]sh 22??f> [ /]visual[.]sh 23??f> [ /]splits[.]sh 24??b620,21,22,23,24?? %ya 233230reg 1233??0?
+f> [ /]rstr[.]sh 20??b620?? %ya 233230reg 1233??0?
 fr 98211reg fr 230f> 1??!? %@221fr 980?
 b3%ya 972sc %? %@972sc!b01b11b21232;233??211reg232;233??!211reg ? %@2210?
 2sc %? %@2312sc!b11233??211reg233??!211reg ? %@2210?
@@ -100,20 +100,20 @@ static int rep_len;
 }
 
 4??0?
-4??+2m 1220reg p OK vi.c:486:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:441:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		path = tempbufs\[1]\.lb->ln\[fspos];
 		fssearch\(\)
 	}.*(static void vc_status\(int type\))
 \{
 	int l, col;8??0?
-grp 08??-5m 1220reg p OK vi.c:486:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.c:441:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char \*path;
 	int ret, len;
 	while \(--fspos >= 0\) \{.*(	unsigned int cp;)
 	char cbuf\[8] = "", vi_msg\[512], \*c;
 	col = vi_off2col\(xb, xrow, xoff\);9??0?
-grp 09??-8m 1220reg p OK vi.c:486:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:4862sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.c:441:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:4412sc %? %@2132sc!0?
 ?0?
 %f+ 				n = strlen\(ln\);
 				char buf\[n \+ 4];
@@ -129,18 +129,18 @@ static int rep_len;
 				break; }
 			case TK_CTL\('\''n'\''\):
 				vi_cndir = vi_arg \? -vi_cndir : vi_cndir;2??0?
-2??m 2220reg p OK vi.c:1274:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:1229:a22sc %? %@2152sc!1q0?
 %f+ 				memcpy\(buf\+3, ln, n\);
 				term_push\(buf, n \+ 3\);3??0?
-3??m 2220reg p OK vi.c:1274:a32sc %? %@2152sc!1q0?
+3??m 2220reg p OK vi.c:1229:a32sc %? %@2152sc!1q0?
 %f+ 				n = strlen\(ln\);
 				char buf\[n \+ 4];
 				memcpy\(buf, ":e ", 3\);4??0?
-4??+3m 2220reg p OK vi.c:1274:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:1229:a42sc %? %@2152sc!1q0?
 %f+ 				break; }
 			case TK_CTL\('\''n'\''\):
 				vi_cndir = vi_arg \? -vi_cndir : vi_cndir;5??0?
-5??-2m 2220reg p OK vi.c:1274:a52sc %? %@2152sc!1q0?
+5??-2m 2220reg p OK vi.c:1229:a52sc %? %@2152sc!1q0?
 %f+ ..... . ....e....\).
 .	...h.......n.. ..;
 .			......\(.u...".e... 3.;
@@ -149,25 +149,25 @@ static int rep_len;
 	....r.a....
 ....a.e..K_C.L.'\''.'\''\):
 ....v..c.... .........\? .v...n.i..:..._...i.;6??0?
-6??+3m 2220reg p OK vi.c:1274:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK vi.c:1229:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				n = strlen\(ln\);.*?
 				char buf\[n \+ 4];.*?
 				memcpy\(buf, ":e ", 3\);.*?
 (				memcpy\(buf\+3, ln, n\);)7??0?
-grp 07??m 2220reg p OK vi.c:1274:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1229:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				if \(!\(ln = lbuf_get\(xb, xrow\)\)\)
 					break;
 				ln = uc_chr\(ln, xoff\);.*(				vi_arg = ex_buf - bufs \+ vi_cndir;)
 			case TK_CTL\('\''_'\''\):	/\* this is also \^7 on some systems \*/
 				if \(vi_arg > 0\)8??0?
-grp 08??-5m 2220reg p OK vi.c:1274:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 2220reg p OK vi.c:1229:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				vi_mod \|= 4;
 				break;
 			case TK_CTL\('\''i'\''\): \{.*(					goto switchbuf;)
 				ex_exec\("left0:b:mpt0"\);
 				term_chr\('\''\\n'\''\);9??0?
-grp 09??-8m 2220reg p OK vi.c:1274:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:12742sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK vi.c:1229:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:12292sc %? %@2132sc!0?
 ?0?
 %f+ 				case '\''v'\'':
 					term_push\(k == '\''v'\'' \? ":\\x01" : ":\\x02", 2\); /\* \^a : \^b \*/
@@ -179,24 +179,24 @@ static int rep_len;
 %f+ 				case '\''v'\'':
 					term_push\(k == '\''v'\'' \? ":\\x01" : ":\\x02", 2\); /\* \^a : \^b \*/
 					break;4??0?
-4??+2m 3220reg p OK vi.c:1385:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.c:1340:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				case '\''v'\'':.*?
 					term_push\(k == '\''v'\'' \? ":\\x01" : ":\\x02", 2\); /\* \^a : \^b \*/.*?
 (					break;)7??0?
-grp 07??m 3220reg p OK vi.c:1385:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.c:1340:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					ln = vi_enprompt\(":", restr, &k, &n\);
 					goto do_excmd;
 				case '\''b'\'':.*(				case '\''/'\'': \{)
 					cs = vi_curword\(xb, xrow, xoff, vi_arg, 1\);
 					n = cs \? strlen\(cs\) : 0;8??0?
-grp 08??-4m 3220reg p OK vi.c:1385:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK vi.c:1340:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 						memcpy\(restr, "%s/\^ \{", sizeof\("%s/\^ \{"\)\);
 						memcpy\(itoa\(vi_arg, restr\+6\), "}/\\t/\^", sizeof\("}/\\t/\^"\)\);
 					}.*(					memcpy\(buf, "re ", sizeof\("re "\)\);)
 					if \(cs\)
 						memcpy\(buf\+3, cs, n \+ 1\);9??0?
-grp 09??-8m 3220reg p OK vi.c:1385:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:13852sc %? %@2132sc!0?
+grp 09??-8m 3220reg p OK vi.c:1340:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:13402sc %? %@2132sc!0?
 ?0?
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
@@ -208,24 +208,24 @@ static int rep_len;
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;4??0?
-4??+2m 4220reg p OK vi.c:1647:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK vi.c:1602:a42sc %? %@2152sc!1q0?
 grp 1%f+ 					ex_command\(cmd\).*?
 					restore\(xled\).*?
 (					vi_mod \|= 1;)7??0?
-grp 07??m 4220reg p OK vi.c:1647:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.c:1602:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					preserve\(int, xled, xled = 0;\)
 					char cmd\[64] = "g/\./& ";
 					memcpy\(itoa\(vi_arg, cmd\+5\), "gw", sizeof\("gw"\)\);.*(			case '\''x'\'':)
 				term_push\("d ", 2\);
 				goto motion;8??0?
-grp 08??-4m 4220reg p OK vi.c:1647:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK vi.c:1602:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					restore\(xvis\)
 					vi_mod \|= !texec;
 				} else if \(k == '\''q'\''\) \{.*(			case '\''X'\'':)
 				term_push\("d", 2\);
 				goto motion;9??0?
-grp 09??-7m 4220reg p OK vi.c:1647:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:16472sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK vi.c:1602:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:16022sc %? %@2132sc!0?
 ?0?
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
@@ -237,24 +237,24 @@ static int rep_len;
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);4??0?
-4??+2m 5220reg p OK vi.c:1869:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK vi.c:1824:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	temp_open\(0, "/hist/", _ft\);.*?
 	temp_open\(1, "/fm/", fm_ft\);.*?
 (	temp_open\(2, "/sc/", _ft\);)7??0?
-grp 07??m 5220reg p OK vi.c:1869:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.c:1824:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	setup_signals\(\);
 	dir_init\(\);
 	syn_init\(\);.*(			break;)
 		}
 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{8??0?
-grp 08??-4m 5220reg p OK vi.c:1869:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK vi.c:1824:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> int main\(int argc, char \*argv\[]\)
 \{
 	int i, j;.*(			if \(argv\[i]\[j] == '\''s'\''\))
 				xvis \|= 1\|2;
 			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
-grp 09??-7m 5220reg p OK vi.c:1869:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:18692sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK vi.c:1824:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18242sc %? %@2132sc!0?
 '\''1i /* cxref: a C symbol and its transitive callees, extracted into /xref/ */
 #define XREF_BUDGET 200			/* definitions one closure may hold */
 #define XREF_SPAN 8			/* lines a definition'\''s header may span */
@@ -714,7 +714,7 @@ static char *xref_build(char *sym, int maxdepth)
 	return s;
 }
 
-??!219reg vi.c:486:m12sc %? %@2142sc!0?
+??!219reg vi.c:441:m12sc %? %@2142sc!0?
 '\''2,#+1c 				memcpy(buf+3, ln, n + 1);
 				if (!strcmp(xb_path, "/xref/")) {
 					int subs[2];	/* an xref header opens at its line */
@@ -727,12 +727,12 @@ static char *xref_build(char *sym, int maxdepth)
 					rset_free(rs);
 				}
 				term_push(buf, strlen(buf));
-??!219reg vi.c:1274:m22sc %? %@2142sc!0?
+??!219reg vi.c:1229:m22sc %? %@2142sc!0?
 '\''3i 				case '\''f'\'':	/* to /xref/ and back */
 					temp_switch(XREF_BUF, 1);
 					vi_mod = 1;
 					break;
-??!219reg vi.c:1385:m32sc %? %@2142sc!0?
+??!219reg vi.c:1340:m32sc %? %@2142sc!0?
 '\''4i 				} else if (k == '\''x'\'') {
 					cs = vi_curword(xb, xrow, xoff, 1, 0);
 					n = cs ? strlen(cs) : 0;
@@ -750,9 +750,9 @@ static char *xref_build(char *sym, int maxdepth)
 					}
 					temp_switch(XREF_BUF, 0);
 					vi_mod |= 1;
-??!219reg vi.c:1647:m42sc %? %@2142sc!0?
+??!219reg vi.c:1602:m42sc %? %@2142sc!0?
 '\''5i 	temp_open(XREF_BUF, "/xref/", FT(c));
-??!219reg vi.c:1869:m52sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg vi.c:1824:m52sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
 };
@@ -763,24 +763,24 @@ extern int xvis;1??0?
 %f> 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
 };4??0?
-4??+2m 1220reg p OK vi.h:438:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:478:a42sc %? %@2152sc!1q0?
 grp 1%f> 	long mtime;			/\* modification time \*/.*?
 	signed char td;			/\* text direction \*/.*?
 (};)7??0?
-grp 07??m 1220reg p OK vi.h:438:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:478:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	char \*path;			/\* file path \*/
 	struct lbuf \*lb;
 	int plen, row, off, top;.*(extern int xai;)
 extern int xic;
 extern int xhl;8??0?
-grp 08??-4m 1220reg p OK vi.h:438:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:478:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> /\* ex\.c: command mode \*/
 struct buf \{
 	char \*ft;			/\* file type \*/.*(extern int xhll;)
 extern int xhlw;
 extern int xhlp;9??0?
-grp 09??-7m 1220reg p OK vi.h:438:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:4382sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:478:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:4782sc %? %@2132sc!0?
 ?0?
 %f+ extern int xregs_n;
 extern int xdefreg;
@@ -794,17 +794,17 @@ extern struct buf \*ex_pbuf;
 extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)2??0?
-2??m 2220reg p OK vi.h:483:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.h:523:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^extern struct buf tempbufs\[3];$3??0?
-3??m 2220reg p OK vi.h:483:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.h:523:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ extern int xregs_n;
 extern int xdefreg;
 extern struct buf \*bufs;4??0?
-4??+3m 2220reg p OK vi.h:483:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.h:523:a42sc %? %@2152sc!1q0?
 %f+ extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)5??0?
-5??-1m 2220reg p OK vi.h:483:a52sc %? %@2152sc!1q0?
+5??-1m 2220reg p OK vi.h:523:a52sc %? %@2152sc!1q0?
 %f+ .....n ......e.s_.;
 .x......nt...e..e..
 e.............buf...uf..
@@ -812,30 +812,30 @@ e.............buf...uf..
 e.......t.uc........x.....
 .xt.r.......t.......x.pb...
 ..e..ne .......u..b.f..\(b.. >=..e...... .......<.te...u.. ...EN...........6??0?
-6??+3m 2220reg p OK vi.h:483:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK vi.h:523:a62sc %? %@2152sc!1q0?
 grp 1%f+ extern int xregs_n;.*?
 extern int xdefreg;.*?
 extern struct buf \*bufs;.*?
 (extern struct buf tempbufs\[3];)7??0?
-grp 07??m 2220reg p OK vi.h:483:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.h:523:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> extern sbuf \*xacreg;
 extern rset \*xkwdrs;
 extern sbuf \*\*xregs;.*(#define xb_path ex_buf->path)
 #define xb_ft ex_buf->ft
 #define xb ex_buf->lb8??0?
-grp 08??-4m 2220reg p OK vi.h:483:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.h:523:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> extern int xsep;
 extern int xesc;
 extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 	xrow = buf->row; \\
 	xoff = buf->off; \\9??0?
-grp 09??-7m 2220reg p OK vi.h:483:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:4832sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.h:523:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:5232sc %? %@2132sc!0?
 '\''1i 
 #define XREF_BUF 3			/* the /xref/ temporary buffer */
 
-??!219reg vi.h:438:m12sc %? %@2142sc!0?
-'\''2s/3/4/??!219reg vi.h:483:m22sc %? %@2142sc!' > "$P2VIF".0
+??!219reg vi.h:478:m12sc %? %@2142sc!0?
+'\''2s/3/4/??!219reg vi.h:523:m22sc %? %@2142sc!' > "$P2VIF".0
 # Compat 231 src=grep.sh
 printf '%s\n' '2sc!fr 98b0m!%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
@@ -899,7 +899,7 @@ static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/5??0?
 					if \(rset_find\(rs, buf, subs, 0\) >= 0\) \{
 						buf\[subs\[0]] = xsep;
 						buf\[subs\[1]-1] = '\''\\n'\'';2??0?
-2??m 1220reg p OK vi.c:1769:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:1724:a22sc %? %@2152sc!1q0?
 %f> 				if \(!strcmp\(xb_path, "/xref/"\)\) \{
 					int subs\[2];	/\* an xref header opens at its line \*/
 					rset \*rs = rset_smake\(":\[0-9]\+\\n", 0\);
@@ -913,21 +913,21 @@ static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/5??0?
 				term_push\(buf, strlen\(buf\)\);
 					int subs\[2];
 					rset \*rs = rset_make\(1, \(char\*\[]\)\{":\[0-9]\+:"}, 0\);3??0?
-3??m 1220reg p OK vi.c:1769:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK vi.c:1724:a32sc %? %@2152sc!1q0?
 %f> 				char buf\[n \+ 4];
 				memcpy\(buf, ":e ", 3\);
 				memcpy\(buf\+3, ln, n \+ 1\);4??0?
-4??+3m 1220reg p OK vi.c:1769:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:1724:a42sc %? %@2152sc!1q0?
 %f> 					if \(rset_find\(rs, buf, subs, 0\) >= 0\) \{
 						buf\[subs\[0]] = xsep;
 						buf\[subs\[1]-1] = '\''\\n'\'';5??0?
-5??-13m 1220reg p OK vi.c:1769:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1769:r2312sc %? %@2132sc!0?
+5??-13m 1220reg p OK vi.c:1724:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:1724:r2312sc %? %@2132sc!0?
 '\''1,#+12c 				if (!strcmp(xb_path, "/xref/") ||
 						!strcmp(xb_path, "/grep/")) {
 					int subs[2];	/* a header opens at its line */
 					rset *rs = rset_smake(":[0-9]+(?::|\n)", 0);
-??!219reg vi.c:1769:r231:m12sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg vi.c:1724:r231:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	signed char td;			/\* text direction \*/
 };
 
@@ -940,19 +940,19 @@ extern int xleft;1??0?
 
 /\* ex options \*/
 extern int xleft;2??0?
-2??m 1220reg p OK vi.h:440:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.h:480:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^#define XREF_BUF 3			/\* the /xref/ temporary buffer \*/$3??0?
-3??m 1220reg p OK vi.h:440:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.h:480:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	signed char td;			/\* text direction \*/
 };
 
 4??0?
-4??+3m 1220reg p OK vi.h:440:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.h:480:a42sc %? %@2152sc!1q0?
 %f> 
 /\* ex options \*/
 extern int xleft;5??0?
-5??-1m 1220reg p OK vi.h:440:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.h:440:r2312sc %? %@2132sc!0?
+5??-1m 1220reg p OK vi.h:480:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.h:480:r2312sc %? %@2132sc!0?
 ?0?
 %f+ extern int xregs_n;
 extern int xdefreg;
@@ -966,20 +966,20 @@ extern struct buf \*ex_pbuf;
 extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)2??0?
-2??m 2220reg p OK vi.h:486:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.h:526:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^extern struct buf tempbufs\[4];$3??0?
-3??m 2220reg p OK vi.h:486:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.h:526:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ extern int xregs_n;
 extern int xdefreg;
 extern struct buf \*bufs;4??0?
-4??+3m 2220reg p OK vi.h:486:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.h:526:a42sc %? %@2152sc!1q0?
 %f+ extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)5??0?
-5??-1m 2220reg p OK vi.h:486:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.h:486:r2312sc %? %@2132sc!0?
-'\''1s/3/4/??!219reg vi.h:440:r231:m12sc %? %@2142sc!0?
-'\''2s/4/5/??!219reg vi.h:486:r231:m22sc %? %@2142sc!p compat 231 applied: src=grep.sh' > "$P2VIF".231
+5??-1m 2220reg p OK vi.h:526:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.h:526:r2312sc %? %@2132sc!0?
+'\''1s/3/4/??!219reg vi.h:480:r231:m12sc %? %@2142sc!0?
+'\''2s/4/5/??!219reg vi.h:526:r231:m22sc %? %@2142sc!p compat 231 applied: src=grep.sh' > "$P2VIF".231
 # Compat 232 src=splits.sh
 printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 %f> 	return s;
@@ -993,8 +993,8 @@ static int rep_len;
 }
 
 4??0?
-4??+2m 1220reg p OK vi.c:1025:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:1025:r2322sc %? %@2132sc!0?
+4??+2m 1220reg p OK vi.c:980:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:980:r2322sc %? %@2132sc!0?
 ?0?
 %f+ 						vi_drawmsg_mpt\(ln\)
 						break;
@@ -1008,18 +1008,18 @@ static int rep_len;
 					vi_mod \|= 1;
 				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
 					vc_motion\(k\);2??0?
-2??m 2220reg p OK vi.c:2238:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:2193:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^					temp_switch\(XREF_BUF, 0\);$3??0?
-3??m 2220reg p OK vi.c:2238:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:2193:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 						vi_drawmsg_mpt\(ln\)
 						break;
 					}4??0?
-4??+3m 2220reg p OK vi.c:2238:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:2193:a42sc %? %@2152sc!1q0?
 %f+ 					vi_mod \|= 1;
 				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
 					vc_motion\(k\);5??0?
-5??-1m 2220reg p OK vi.c:2238:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2238:r2322sc %? %@2132sc!0?
+5??-1m 2220reg p OK vi.c:2193:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:2193:r2322sc %? %@2132sc!0?
 '\''1i /* the listing stays in the window it is already open in, rewound to its top:
  * gx never takes over a window, so splits are the user'\''s to lay out */
 static int xref_refresh(void)
@@ -1038,11 +1038,11 @@ static int xref_refresh(void)
 	return 0;
 }
 
-??!219reg vi.c:1025:r232:m12sc %? %@2142sc!0?
+??!219reg vi.c:980:r232:m12sc %? %@2142sc!0?
 '\''2c 					if (!xref_refresh())
 						temp_switch(XREF_BUF, 0);
-??!219reg vi.c:2238:r232:m22sc %? %@2142sc!p compat 232 applied: src=splits.sh' > "$P2VIF".232
-# Compat 233 src=grep.sh src=lsp.sh src=rstr.sh src=visual.sh src=splits.sh
+??!219reg vi.c:2193:r232:m22sc %? %@2142sc!p compat 232 applied: src=splits.sh' > "$P2VIF".232
+# Compat 233 src=rstr.sh
 printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 %f> \{
 	char \*pat = xref_pat\(sym\), \*path;
@@ -1056,18 +1056,18 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 	int i, n = lbuf_len\(ls\), len, row, off, beg = 0, ret = 0, bs;
 	free\(pat\);
 	if \(!rs\)2??0?
-2??m 1220reg p OK vi.c:982:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:676:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^	rset \*rs = rset_smake\(pat, 0\);$3??0?
-3??m 1220reg p OK vi.c:982:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.c:676:a32sc %? %@2152sc!fr 981qfr 980?
 %f> \{
 	char \*pat = xref_pat\(sym\), \*path;
 	struct lbuf \*ls = tempbufs\[1]\.lb;4??0?
-4??+3m 1220reg p OK vi.c:982:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:676:a42sc %? %@2152sc!1q0?
 %f> 	int i, n = lbuf_len\(ls\), len, row, off, beg = 0, ret = 0, bs;
 	free\(pat\);
 	if \(!rs\)5??0?
-5??-1m 1220reg p OK vi.c:982:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:982:r2332sc %? %@2132sc!0?
+5??-1m 1220reg p OK vi.c:676:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:676:r2332sc %? %@2132sc!0?
 ?0?
 %f+ 		path\[len] = '\''\\n'\'';
 	}
@@ -1081,244 +1081,21 @@ printf '%s\n' '2sc!fr 98b1m!%ya 98?0?
 	if \(ret\)
 		\*outline = row;
 	return ret;2??0?
-2??m 2220reg p OK vi.c:1023:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:717:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	rset_free\(rs\);$3??0?
-3??m 2220reg p OK vi.c:1023:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:717:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		path\[len] = '\''\\n'\'';
 	}
 	restore\(xgrp\)4??0?
-4??+3m 2220reg p OK vi.c:1023:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:717:a42sc %? %@2152sc!1q0?
 %f+ 	if \(ret\)
 		\*outline = row;
 	return ret;5??0?
-5??-1m 2220reg p OK vi.c:1023:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1023:r2332sc %? %@2132sc!0?
-?0?
-%f+ 	sbuf_chr\(queue, '\''\\n'\''\)
-}
-
-static rset \*xref_nrs\(void\)
-\{1??0?
-1??+3m 31q0?
-%f+ static rset \*xref_nrs\(void\)
-\{2??0?
-2??m 3220reg p OK vi.c:1051:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^static rset \*xref_nrs\(void\)$3??0?
-3??m 3220reg p OK vi.c:1051:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 	sbuf_chr\(queue, '\''\\n'\''\)
-}
-
-4??0?
-4??+3m 3220reg p OK vi.c:1051:a42sc %? %@2152sc!1q0?
-;0fr.,$f+ ^\{$5??0?
-5??-1m 3220reg p OK vi.c:1051:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg vi.c:1051:r2332sc %? %@2132sc!0?
-?0?
-%f+ \{
-	static rset \*rs;
-	if \(!rs\)1??0?
-1??+1m 41q0?
-%f+ 	static rset \*rs;
-	if \(!rs\)2??0?
-2??m 4220reg p OK vi.c:1053:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	static rset \*rs;$3??0?
-3??m 4220reg p OK vi.c:1053:a32sc %? %@2152sc!fr 981qfr 980?
-;0fr.,$f+ ^\{$4??0?
-4??+1m 4220reg p OK vi.c:1053:a42sc %? %@2152sc!fr 981qfr 980?
-;0fr.,$f+ ^	if \(!rs\)$5??0?
-5??-1m 4220reg p OK vi.c:1053:a52sc %? %@2152sc!fr 98fr 980?
-1;2;3;4;5??!219reg vi.c:1053:r2332sc %? %@2132sc!0?
-?0?
-%f+ 	if \(!rs\)
-		rs = rset_smake\(xref_namepat, 0\);
-	return rs;
-}
-
-1??0?
-1??+1m 51q0?
-%f+ 		rs = rset_smake\(xref_namepat, 0\);
-	return rs;
-}
-
-2??0?
-2??m 5220reg p OK vi.c:1055:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		rs = rset_smake\(xref_namepat, 0\);$3??0?
-3??m 5220reg p OK vi.c:1055:a32sc %? %@2152sc!fr 981qfr 980?
-;0fr.,$f+ ^	if \(!rs\)$4??0?
-4??+1m 5220reg p OK vi.c:1055:a42sc %? %@2152sc!fr 981qfr 980?
-%f+ 	return rs;
-}
-
-5??0?
-5??-1m 5220reg p OK vi.c:1055:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1055:r2332sc %? %@2132sc!0?
-?0?
-%f+  \* says the body means, not whatever else the tree happens to call that \*/
-static void xref_locals\(struct lbuf \*lb, int b, int e, sbuf \*loc\)
-\{
-	rset \*rs = xref_nrs\(\);
-	char \*s, \*p;
-	int grps\[4], off, len, i, j, prev, run, state = 0;
-	if \(!rs\)1??0?
-1??+3m 61q0?
-%f+ 	rset \*rs = xref_nrs\(\);
-	char \*s, \*p;
-	int grps\[4], off, len, i, j, prev, run, state = 0;
-	if \(!rs\)2??0?
-2??m 6220reg p OK vi.c:1064:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	rset \*rs = xref_nrs\(\);$3??0?
-3??m 6220reg p OK vi.c:1064:a32sc %? %@2152sc!fr 981qfr 980?
-%f+  \* says the body means, not whatever else the tree happens to call that \*/
-static void xref_locals\(struct lbuf \*lb, int b, int e, sbuf \*loc\)
-\{4??0?
-4??+3m 6220reg p OK vi.c:1064:a42sc %? %@2152sc!1q0?
-%f+ 	char \*s, \*p;
-	int grps\[4], off, len, i, j, prev, run, state = 0;
-	if \(!rs\)5??0?
-5??-1m 6220reg p OK vi.c:1064:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1064:r2332sc %? %@2132sc!0?
-?0?
-%f+ 			break;
-		s = xref_code\(lbuf_get\(lb, i\), &state\);
-		prev = -1;
-		for \(off = 0; rset_find\(rs, s \+ off, grps, off \? REG_NOTBOL : 0\) >= 0;\) \{
-			p = s \+ off \+ grps\[0];
-			len = grps\[1] - grps\[0];
-			run = prev >= 0;	/\* only blanks and stars between \*/1??0?
-1??+3m 71q0?
-%f+ 		for \(off = 0; rset_find\(rs, s \+ off, grps, off \? REG_NOTBOL : 0\) >= 0;\) \{
-			p = s \+ off \+ grps\[0];
-			len = grps\[1] - grps\[0];
-			run = prev >= 0;	/\* only blanks and stars between \*/2??0?
-2??m 7220reg p OK vi.c:1074:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		for \(off = 0; rset_find\(rs, s \+ off, grps, off \? REG_NOTBOL : 0\) >= 0;\) \{$3??0?
-3??m 7220reg p OK vi.c:1074:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 			break;
-		s = xref_code\(lbuf_get\(lb, i\), &state\);
-		prev = -1;4??0?
-4??+3m 7220reg p OK vi.c:1074:a42sc %? %@2152sc!1q0?
-%f+ 			p = s \+ off \+ grps\[0];
-			len = grps\[1] - grps\[0];
-			run = prev >= 0;	/\* only blanks and stars between \*/5??0?
-5??-1m 7220reg p OK vi.c:1074:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1074:r2332sc %? %@2132sc!0?
-?0?
-%f+ /\* queue every name an extent calls or declares, once each \*/
-static void xref_scan\(struct lbuf \*lb, int b, int e, sbuf \*queue, sbuf \*seen\)
-\{
-	rset \*rs = xref_nrs\(\);
-	char \*s, \*p;
-	int grps\[4], off, len, i, j, state = 0;
-	sbuf_smake\(loc, 256\)1??0?
-1??+3m 81q0?
-%f+ 	rset \*rs = xref_nrs\(\);
-	char \*s, \*p;
-	int grps\[4], off, len, i, j, state = 0;
-	sbuf_smake\(loc, 256\)2??0?
-2??m 8220reg p OK vi.c:1097:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^	rset \*rs = xref_nrs\(\);$3??0?
-3??m 8220reg p OK vi.c:1097:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ /\* queue every name an extent calls or declares, once each \*/
-static void xref_scan\(struct lbuf \*lb, int b, int e, sbuf \*queue, sbuf \*seen\)
-\{4??0?
-4??+3m 8220reg p OK vi.c:1097:a42sc %? %@2152sc!1q0?
-%f+ 	char \*s, \*p;
-	int grps\[4], off, len, i, j, state = 0;
-	sbuf_smake\(loc, 256\)5??0?
-5??-1m 8220reg p OK vi.c:1097:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1097:r2332sc %? %@2132sc!0?
-?0?
-%f+ 		if \(!lbuf_get\(lb, i\)\)
-			break;
-		s = xref_code\(lbuf_get\(lb, i\), &state\);
-		for \(off = 0; rset_find\(rs, s \+ off, grps, off \? REG_NOTBOL : 0\) >= 0;\) \{
-			p = s \+ off \+ grps\[0];
-			len = grps\[1] - grps\[0];
-			for \(j = p - s - 1; j >= 0 && \(s\[j] == '\'' '\'' \|\| s\[j] == '\''\\t'\''\); j--\);1??0?
-1??+3m 91q0?
-%f+ 		for \(off = 0; rset_find\(rs, s \+ off, grps, off \? REG_NOTBOL : 0\) >= 0;\) \{
-			p = s \+ off \+ grps\[0];
-			len = grps\[1] - grps\[0];
-			for \(j = p - s - 1; j >= 0 && \(s\[j] == '\'' '\'' \|\| s\[j] == '\''\\t'\''\); j--\);2??0?
-2??m 9220reg p OK vi.c:1110:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		for \(off = 0; rset_find\(rs, s \+ off, grps, off \? REG_NOTBOL : 0\) >= 0;\) \{$3??0?
-3??m 9220reg p OK vi.c:1110:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 		if \(!lbuf_get\(lb, i\)\)
-			break;
-		s = xref_code\(lbuf_get\(lb, i\), &state\);4??0?
-4??+3m 9220reg p OK vi.c:1110:a42sc %? %@2152sc!1q0?
-%f+ 			p = s \+ off \+ grps\[0];
-			len = grps\[1] - grps\[0];
-			for \(j = p - s - 1; j >= 0 && \(s\[j] == '\'' '\'' \|\| s\[j] == '\''\\t'\''\); j--\);5??0?
-5??-1m 9220reg p OK vi.c:1110:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:1110:r2332sc %? %@2132sc!0?
-?0?
-%f+ 				if \(!strcmp\(xb_path, "/xref/"\) \|\|
-						!strcmp\(xb_path, "/grep/"\)\) \{
-					int subs\[2];	/\* a header opens at its line \*/
-					rset \*rs = rset_smake\(":\[0-9]\+\(\?::\|\\n\)", 0\);
-					if \(rset_find\(rs, buf, subs, 0\) >= 0\) \{
-						buf\[subs\[0]] = xsep;
-						buf\[subs\[1]-1] = '\''\\n'\'';
-						buf\[subs\[1]] = '\''\\0'\'';1??0?
-1??+3m 101q0?
-%f+ 					rset \*rs = rset_smake\(":\[0-9]\+\(\?::\|\\n\)", 0\);
-					if \(rset_find\(rs, buf, subs, 0\) >= 0\) \{
-						buf\[subs\[0]] = xsep;
-						buf\[subs\[1]-1] = '\''\\n'\'';
-						buf\[subs\[1]] = '\''\\0'\'';2??0?
-2??m 10220reg p OK vi.c:2236:a22sc %? %@2152sc!1q0?
-%f+ 					rset \*rs = rset_smake\(":\[0-9]\+\(\?::\|\\n\)", 0\);
-					if \(rset_find\(rs, buf, subs, 0\) >= 0\) \{3??0?
-3??m 10220reg p OK vi.c:2236:a32sc %? %@2152sc!1q0?
-%f+ 				if \(!strcmp\(xb_path, "/xref/"\) \|\|
-						!strcmp\(xb_path, "/grep/"\)\) \{
-					int subs\[2];	/\* a header opens at its line \*/4??0?
-4??+3m 10220reg p OK vi.c:2236:a42sc %? %@2152sc!1q0?
-%f+ 						buf\[subs\[0]] = xsep;
-						buf\[subs\[1]-1] = '\''\\n'\'';
-						buf\[subs\[1]] = '\''\\0'\'';5??0?
-5??-2m 10220reg p OK vi.c:2236:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2236:r2332sc %? %@2132sc!0?
-?0?
-%f+ 						buf\[subs\[1]-1] = '\''\\n'\'';
-						buf\[subs\[1]] = '\''\\0'\'';
-					}
-					rset_free\(rs\);
-				}
-				term_push\(buf, strlen\(buf\)\);
-				break; }1??0?
-1??+3m 111q0?
-%f+ 					rset_free\(rs\);
-				}
-				term_push\(buf, strlen\(buf\)\);
-				break; }2??0?
-2??m 11220reg p OK vi.c:2242:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^					rset_free\(rs\);$3??0?
-3??m 11220reg p OK vi.c:2242:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 						buf\[subs\[1]-1] = '\''\\n'\'';
-						buf\[subs\[1]] = '\''\\0'\'';
-					}4??0?
-4??+3m 11220reg p OK vi.c:2242:a42sc %? %@2152sc!1q0?
-%f+ 				}
-				term_push\(buf, strlen\(buf\)\);
-				break; }5??0?
-5??-1m 11220reg p OK vi.c:2242:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:2242:r2332sc %? %@2132sc!0?
-?'\''1s/et \*rs = rset_s/tr *rs = rstr_/1??1??1q'\''1s/et( \*.* rs)et_s/tr\1tr_/2??2??'\''1220reg p OK vi.c:982:s22sc %? %@2162sc!0?
-1;2??!219reg vi.c:982:r233:m12sc %? %@2142sc!0?
-'\''2s/et/tr/??!219reg vi.c:1023:r233:m22sc %? %@2142sc!0?
-'\''3s/et/tr/??!219reg vi.c:1051:r233:m32sc %? %@2142sc!0?
-'\''4s/et/tr/??!219reg vi.c:1053:r233:m42sc %? %@2142sc!0?
-'\''5s/et_s/tr_/??!219reg vi.c:1055:r233:m52sc %? %@2142sc!0?
-'\''6s/et/tr/??!219reg vi.c:1064:r233:m62sc %? %@2142sc!0?
-'\''7s/et/tr/??!219reg vi.c:1074:r233:m72sc %? %@2142sc!0?
-'\''8s/et/tr/??!219reg vi.c:1097:r233:m82sc %? %@2142sc!0?
-'\''9s/et/tr/??!219reg vi.c:1110:r233:m92sc %? %@2142sc!0?
-'\''10,#+1c 					rstr *rs = rstr_make(":[0-9]+(?::|\n)", 0);
-					if (rstr_find(rs, buf, subs, 0) >= 0) {
-??!219reg vi.c:2236:r233:m102sc %? %@2142sc!0?
-'\''11s/et/tr/??!219reg vi.c:2242:r233:m112sc %? %@2142sc!p compat 233 applied: src=grep.sh src=lsp.sh src=rstr.sh src=visual.sh src=splits.sh' > "$P2VIF".233
+5??-1m 2220reg p OK vi.c:717:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:717:r2332sc %? %@2132sc!0?
+?'\''1s/et \*rs = rset_s/tr *rs = rstr_/1??1??1q'\''1s/et( \*.* rs)et_s/tr\1tr_/2??2??'\''1220reg p OK vi.c:676:s22sc %? %@2162sc!0?
+1;2??!219reg vi.c:676:r233:m12sc %? %@2142sc!0?
+'\''2s/et/tr/??!219reg vi.c:717:r233:m22sc %? %@2142sc!p compat 233 applied: src=rstr.sh' > "$P2VIF".233
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".232 "$P2VIF".233 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -1344,7 +1121,7 @@ exit 0
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 --- a/vi.c
 +++ b/vi.c
-@@ -1766,19 +1766,10 @@
+@@ -1721,19 +1721,10 @@
  				char buf[n + 4];
  				memcpy(buf, ":e ", 3);
  				memcpy(buf+3, ln, n + 1);
@@ -1370,7 +1147,7 @@ exit 0
  						buf[subs[1]-1] = '\n';
 --- a/vi.h
 +++ b/vi.h
-@@ -437,7 +437,7 @@
+@@ -477,7 +477,7 @@
  	signed char td;			/* text direction */
  };
  
@@ -1379,7 +1156,7 @@ exit 0
  
  /* ex options */
  extern int xleft;
-@@ -483,7 +483,7 @@
+@@ -523,7 +523,7 @@
  extern int xregs_n;
  extern int xdefreg;
  extern struct buf *bufs;
@@ -1394,7 +1171,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -1023,6 +1023,24 @@
+@@ -978,6 +978,24 @@
  	return s;
  }
  
@@ -1419,7 +1196,7 @@ exit 0
  static char rep_cmd[sizeof(ticmd)];	/* the last command */
  static int rep_len;
  #define rep_record() memcpy(rep_cmd, ticmd, ticmd_pos); rep_len = ticmd_pos;
-@@ -2235,7 +2253,8 @@
+@@ -2190,7 +2208,8 @@
  						vi_drawmsg_mpt(ln)
  						break;
  					}
@@ -1431,11 +1208,11 @@ exit 0
  					vc_motion(k);
 === END ===
 === END COMPAT ===
-=== PATCH2VI COMPAT 233 src=grep.sh src=lsp.sh src=rstr.sh src=visual.sh src=splits.sh ===
+=== PATCH2VI COMPAT 233 src=rstr.sh ===
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -979,7 +979,7 @@
+@@ -673,7 +673,7 @@
  {
  	char *pat = xref_pat(sym), *path;
  	struct lbuf *ls = tempbufs[1].lb;
@@ -1444,7 +1221,7 @@ exit 0
  	int i, n = lbuf_len(ls), len, row, off, beg = 0, ret = 0, bs;
  	free(pat);
  	if (!rs)
-@@ -1020,7 +1020,7 @@
+@@ -714,7 +714,7 @@
  		path[len] = '\n';
  	}
  	restore(xgrp)
@@ -1453,79 +1230,11 @@ exit 0
  	if (ret)
  		*outline = row;
  	return ret;
-@@ -1048,11 +1048,11 @@
- 	sbuf_chr(queue, '\n')
- }
- 
--static rset *xref_nrs(void)
-+static rstr *xref_nrs(void)
- {
--	static rset *rs;
-+	static rstr *rs;
- 	if (!rs)
--		rs = rset_smake(xref_namepat, 0);
-+		rs = rstr_make(xref_namepat, 0);
- 	return rs;
- }
- 
-@@ -1061,7 +1061,7 @@
-  * says the body means, not whatever else the tree happens to call that */
- static void xref_locals(struct lbuf *lb, int b, int e, sbuf *loc)
- {
--	rset *rs = xref_nrs();
-+	rstr *rs = xref_nrs();
- 	char *s, *p;
- 	int grps[4], off, len, i, j, prev, run, state = 0;
- 	if (!rs)
-@@ -1071,7 +1071,7 @@
- 			break;
- 		s = xref_code(lbuf_get(lb, i), &state);
- 		prev = -1;
--		for (off = 0; rset_find(rs, s + off, grps, off ? REG_NOTBOL : 0) >= 0;) {
-+		for (off = 0; rstr_find(rs, s + off, grps, off ? REG_NOTBOL : 0) >= 0;) {
- 			p = s + off + grps[0];
- 			len = grps[1] - grps[0];
- 			run = prev >= 0;	/* only blanks and stars between */
-@@ -1094,7 +1094,7 @@
- /* queue every name an extent calls or declares, once each */
- static void xref_scan(struct lbuf *lb, int b, int e, sbuf *queue, sbuf *seen)
- {
--	rset *rs = xref_nrs();
-+	rstr *rs = xref_nrs();
- 	char *s, *p;
- 	int grps[4], off, len, i, j, state = 0;
- 	sbuf_smake(loc, 256)
-@@ -1107,7 +1107,7 @@
- 		if (!lbuf_get(lb, i))
- 			break;
- 		s = xref_code(lbuf_get(lb, i), &state);
--		for (off = 0; rset_find(rs, s + off, grps, off ? REG_NOTBOL : 0) >= 0;) {
-+		for (off = 0; rstr_find(rs, s + off, grps, off ? REG_NOTBOL : 0) >= 0;) {
- 			p = s + off + grps[0];
- 			len = grps[1] - grps[0];
- 			for (j = p - s - 1; j >= 0 && (s[j] == ' ' || s[j] == '\t'); j--);
-@@ -2233,13 +2233,13 @@
- 				if (!strcmp(xb_path, "/xref/") ||
- 						!strcmp(xb_path, "/grep/")) {
- 					int subs[2];	/* a header opens at its line */
--					rset *rs = rset_smake(":[0-9]+(?::|\n)", 0);
--					if (rset_find(rs, buf, subs, 0) >= 0) {
-+					rstr *rs = rstr_make(":[0-9]+(?::|\n)", 0);
-+					if (rstr_find(rs, buf, subs, 0) >= 0) {
- 						buf[subs[0]] = xsep;
- 						buf[subs[1]-1] = '\n';
- 						buf[subs[1]] = '\0';
- 					}
--					rset_free(rs);
-+					rstr_free(rs);
- 				}
- 				term_push(buf, strlen(buf));
- 				break; }
 === END ===
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 21f13f54..29d0e9a0 100644
+index 7f23552d..fc3dd408 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -1538,10 +1247,10 @@ index 21f13f54..29d0e9a0 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index cc9b1492..dc5b7402 100644
+index 93847fac..a0ebda3a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -484,6 +484,465 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -439,6 +439,465 @@ static int fs_searchback(int cnt, int *row, int *off)
  	return 0;
  }
  
@@ -2007,7 +1716,7 @@ index cc9b1492..dc5b7402 100644
  static char rep_cmd[sizeof(ticmd)];	/* the last command */
  static int rep_len;
  #define rep_record() memcpy(rep_cmd, ticmd, ticmd_pos); rep_len = ticmd_pos;
-@@ -1271,8 +1730,18 @@ void vi(int init)
+@@ -1226,8 +1685,18 @@ void vi(int init)
  				n = strlen(ln);
  				char buf[n + 4];
  				memcpy(buf, ":e ", 3);
@@ -2028,7 +1737,7 @@ index cc9b1492..dc5b7402 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1383,6 +1852,10 @@ void vi(int init)
+@@ -1338,6 +1807,10 @@ void vi(int init)
  				case 'v':
  					term_push(k == 'v' ? ":\x01" : ":\x02", 2); /* ^a : ^b */
  					break;
@@ -2039,7 +1748,7 @@ index cc9b1492..dc5b7402 100644
  				case ';':
  					ln = vi_enprompt(":", "!", &k, &n);
  					goto do_excmd;
-@@ -1645,6 +2118,23 @@ void vi(int init)
+@@ -1600,6 +2073,23 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -2063,7 +1772,7 @@ index cc9b1492..dc5b7402 100644
  				} else if (k == '~' || k == 'u' || k == 'U')
  					vc_motion(k);
  				break;
-@@ -1867,6 +2357,7 @@ int main(int argc, char *argv[])
+@@ -1822,6 +2312,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
@@ -2072,10 +1781,10 @@ index cc9b1492..dc5b7402 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index 514c675e..0cc753c1 100644
+index c23da595..7fc433dd 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -436,6 +436,9 @@ struct buf {
+@@ -476,6 +476,9 @@ struct buf {
  	long mtime;			/* modification time */
  	signed char td;			/* text direction */
  };
@@ -2085,7 +1794,7 @@ index 514c675e..0cc753c1 100644
  /* ex options */
  extern int xleft;
  extern int xvis;
-@@ -480,7 +483,7 @@ extern sbuf **xregs;
+@@ -520,7 +523,7 @@ extern sbuf **xregs;
  extern int xregs_n;
  extern int xdefreg;
  extern struct buf *bufs;

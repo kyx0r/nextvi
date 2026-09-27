@@ -523,7 +523,7 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},.*(	\
 grp 08??-8m 17220reg p OK conf.c:301:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\(\?:\(\\n\$\)\|\\n\)\|\\n\|\(\[\^\\n]\+\(\\n\)\)",
 		A\(NA, SYN_BGMK\(RE1\), SYN_BGMK\(AY1\), SYN_BGMK\(AY\)\)},
-	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},.*(	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},)
+	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},.*(	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[nwrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},)
 	\{bar_ft, "\^<\(\.\+\)> \(\?:\[\^ ]\+ \)\*\(\[0-9]\+L\) \(\[0-9]\+W\) \(S\[0-9]\+\) \(O\[0-9]\+\) \(C\[0-9]\+\)\$",
 		A\(AY1 \| SYN_BD, RE1, BL, YE, MA, CY1, YE1\)},9??0?
 grp 09??-13m 17220reg p OK conf.c:301:a92sc %? %@2152sc!'\''00?
@@ -552,7 +552,7 @@ return\|select\|switch\|type\|var\)\)\\\\>", A\(GR1, BL1 \| SYN_BD, YE1\)},.*(	\
 grp 08??-4m 18220reg p OK conf.c:305:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\(\?:\(\\n\$\)\|\\n\)\|\\n\|\(\[\^\\n]\+\(\\n\)\)",
 		A\(NA, SYN_BGMK\(RE1\), SYN_BGMK\(AY1\), SYN_BGMK\(AY\)\)},
-	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},.*(	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},)
+	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},.*(	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[nwrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},)
 	\{bar_ft, "\^<\(\.\+\)> \(\?:\[\^ ]\+ \)\*\(\[0-9]\+L\) \(\[0-9]\+W\) \(S\[0-9]\+\) \(O\[0-9]\+\) \(C\[0-9]\+\)\$",
 		A\(AY1 \| SYN_BD, RE1, BL, YE, MA, CY1, YE1\)},9??0?
 grp 09??-9m 18220reg p OK conf.c:305:a92sc %? %@2152sc!'\''00?
@@ -600,7 +600,7 @@ const ....h.......... ............
 #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
 /\* neutral characters \*/8??0?
 grp 08??-6m 19220reg p OK conf.c:329:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[wrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
+m 01;0grp 1%f> 	\{bar_ft, "\^\(\\"\.\*\\"\)\.\*\(\\\\\[\[nwrf]\\\\]\)\.\*\$", A\(AY1 \| SYN_BD, BL, RE\)},
 	\{bar_ft, "\^<\(\.\+\)> \(\?:\[\^ ]\+ \)\*\(\[0-9]\+L\) \(\[0-9]\+W\) \(S\[0-9]\+\) \(O\[0-9]\+\) \(C\[0-9]\+\)\$",
 		A\(AY1 \| SYN_BD, RE1, BL, YE, MA, CY1, YE1\)},.*(struct dircontext dctxs\[] = \{)
 	\{"\^\[" CR2L "]", -1},
@@ -903,20 +903,20 @@ static void vc_execute\(int cmd\)
 }
 
 4??0?
-4??+2m 1220reg p OK vi.c:1125:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1080:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	xrow \+= cnt \* \(cs\[0] == '\''\\n'\''\);
 	free\(sb->s\);
 	rep_record\(\).*(	int c = term_read\(0\), i, n = MAX\(1, vi_arg\);)
 	sbuf \*buf;
 	if \(TK_INT\(c\)\)8??0?
-grp 08??-4m 1220reg p OK vi.c:1125:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.c:1080:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	sbufn_str\(sb, rstate->chrs\[off\+cnt]\)
 	xoff = \(off \+ cnt - 1\) \* \(cs\[0] != '\''\\n'\''\);
 	lbuf_edit\(xb, sb->s, xrow, xrow \+ 1, off, xoff\);.*(	if \(c == cmd && exec_buf >= 0\))
 		c = exec_buf;
 	if \(!ex_regget\(c\)\) \{9??0?
-grp 09??-8m 1220reg p OK vi.c:1125:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:11252sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.c:1080:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:10802sc %? %@2132sc!0?
 ?0?
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
@@ -928,24 +928,24 @@ static void vc_execute\(int cmd\)
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;4??0?
-4??+2m 2220reg p OK vi.c:1647:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.c:1602:a42sc %? %@2152sc!1q0?
 grp 1%f+ 					ex_command\(cmd\).*?
 					restore\(xled\).*?
 (					vi_mod \|= 1;)7??0?
-grp 07??m 2220reg p OK vi.c:1647:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1602:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					preserve\(int, xled, xled = 0;\)
 					char cmd\[64] = "g/\./& ";
 					memcpy\(itoa\(vi_arg, cmd\+5\), "gw", sizeof\("gw"\)\);.*(			case '\''x'\'':)
 				term_push\("d ", 2\);
 				goto motion;8??0?
-grp 08??-4m 2220reg p OK vi.c:1647:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1602:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					restore\(xvis\)
 					vi_mod \|= !texec;
 				} else if \(k == '\''q'\''\) \{.*(			case '\''X'\'':)
 				term_push\("d", 2\);
 				goto motion;9??0?
-grp 09??-7m 2220reg p OK vi.c:1647:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:16472sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.c:1602:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:16022sc %? %@2132sc!0?
 ?0?
 %f+ 			if \(xmpt > 0\)
 				xmpt = 0;
@@ -957,24 +957,24 @@ static void vc_execute\(int cmd\)
 %f+ 			if \(xmpt > 0\)
 				xmpt = 0;
 		}4??0?
-4??+2m 3220reg p OK vi.c:1834:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.c:1789:a42sc %? %@2152sc!1q0?
 grp 1%f+ 			if \(xmpt > 0\).*?
 				xmpt = 0;.*?
 (		})7??0?
-grp 07??m 3220reg p OK vi.c:1834:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.c:1789:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			xrows -= term_resized != vi_status;
 			vi_status = term_resized;
 			vc_status\(vi_tsm\);.*(	if \(--xgrec == 0\) \{)
 		term_pos\(xrows - !vi_status, 0\);
 		if \(xmpt > 0 && !xpln\)8??0?
-grp 08??-5m 3220reg p OK vi.c:1834:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 3220reg p OK vi.c:1789:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			vi_drawrow\(xrow\);
 		}
 		if \(vi_status && xmpt < 1\) \{.*(			term_chr\('\''\\n'\''\);)
 		else
 			term_kill\(\);9??0?
-grp 09??-8m 3220reg p OK vi.c:1834:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:18342sc %? %@2132sc!0?
+grp 09??-8m 3220reg p OK vi.c:1789:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:17892sc %? %@2132sc!0?
 '\''1i /* the word under the cursor in ln, its bytes in len, its offset in beg */
 static char *vi_spellword(char *ln, int *len, int *beg)
 {
@@ -1037,14 +1037,14 @@ static void vi_spellmsg(void)
 	free(sb->s);
 }
 
-??!219reg vi.c:1125:m12sc %? %@2142sc!0?
+??!219reg vi.c:1080:m12sc %? %@2142sc!0?
 '\''2i 				} else if (k == '\''s'\'') {
 					vc_spell();
 					vi_mod |= 2;
-??!219reg vi.c:1647:m22sc %? %@2142sc!0?
+??!219reg vi.c:1602:m22sc %? %@2142sc!0?
 '\''3i 		if (spcnt && !xmpt)		/* drawn last, a scroll carries it along */
 			vi_spellmsg();
-??!219reg vi.c:1834:m32sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg vi.c:1789:m32sc %? %@2142sc!b3m!%ya 98?0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;
@@ -1055,24 +1055,24 @@ char \*conf_digraph\(int c1, int c2\);1??0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;4??0?
-4??+2m 1220reg p OK vi.h:571:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:611:a42sc %? %@2152sc!1q0?
 grp 1%f> extern struct placeholder \*ph;.*?
 extern int phlen;.*?
 (extern const int conf_hlrev;)7??0?
-grp 07??m 1220reg p OK vi.h:571:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:611:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int l;		/\* the length of the codepoint \*/
 };
 extern struct placeholder _ph\[];.*(/\* vi\.c: main \*/)
 void vi\(int init\);
 extern int vi_hidch;8??0?
-grp 08??-5m 1220reg p OK vi.h:571:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.h:611:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int cp\[2];	/\* the source character codepoint \*/
 	char d\[8];	/\* the placeholder \*/
 	int wid;	/\* the width of the placeholder \*/.*(extern int vi_lncol;)
 /\* filesystem \*/
 extern rset \*fsincl;9??0?
-grp 09??-8m 1220reg p OK vi.h:571:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:5712sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.h:611:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:6112sc %? %@2132sc!0?
 '\''1i extern char spell_cmd[];
 struct spellft {
 	char *ft;		/* the filetype */
@@ -1080,7 +1080,7 @@ struct spellft {
 };
 extern struct spellft spell_fts[];
 extern const int spell_ftslen;
-??!219reg vi.h:571:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:611:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -1093,7 +1093,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index a51117ca..59ec8df8 100644
+index 2888d7c6..13b7bf2b 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -2,6 +2,10 @@
@@ -1274,7 +1274,7 @@ index a51117ca..59ec8df8 100644
  
  /* how to highlight text in the reverse direction */
 diff --git a/ex.c b/ex.c
-index 21f13f54..c2c1bb42 100644
+index 7f23552d..7c6ca4d1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1318,6 +1318,170 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
@@ -1458,10 +1458,10 @@ index 21f13f54..c2c1bb42 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/vi.c b/vi.c
-index cc9b1492..c70978b5 100644
+index 93847fac..6d2d8b67 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1123,6 +1123,68 @@ static int vc_replace(void)
+@@ -1078,6 +1078,68 @@ static int vc_replace(void)
  	return cs[0] == '\n' ? 1 : 2;
  }
  
@@ -1530,7 +1530,7 @@ index cc9b1492..c70978b5 100644
  static void vc_execute(int cmd)
  {
  	static int exec_buf = -1;
-@@ -1645,6 +1707,9 @@ void vi(int init)
+@@ -1600,6 +1662,9 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1540,7 +1540,7 @@ index cc9b1492..c70978b5 100644
  				} else if (k == '~' || k == 'u' || k == 'U')
  					vc_motion(k);
  				break;
-@@ -1832,6 +1897,8 @@ void vi(int init)
+@@ -1787,6 +1852,8 @@ void vi(int init)
  			if (xmpt > 0)
  				xmpt = 0;
  		}
@@ -1550,10 +1550,10 @@ index cc9b1492..c70978b5 100644
  		term_commit();
  		xb->useq += xseq;
 diff --git a/vi.h b/vi.h
-index 514c675e..455d0bd9 100644
+index c23da595..c22ad8e6 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -569,6 +569,13 @@ extern struct placeholder _ph[];
+@@ -609,6 +609,13 @@ extern struct placeholder _ph[];
  extern struct placeholder *ph;
  extern int phlen;
  extern const int conf_hlrev;

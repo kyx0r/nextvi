@@ -30,7 +30,7 @@ ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 'fr 98b0m!%ya 98?0?
-%f> 			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);
+%f> 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
 	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;
@@ -38,27 +38,27 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 
 1??0?
 1??+2m 11q0?
-%f> 			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);
+%f> 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)4??0?
-4??+2m 1220reg p OK ex.c:444:a42sc %? %@2152sc!1q0?
-grp 1%f> 			fd < 0 \|\| rd \? '\''f'\'' : '\''r'\''\);.*?
+4??+2m 1220reg p OK ex.c:445:a42sc %? %@2152sc!1q0?
+grp 1%f> 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);.*?
 	if \(!\(xvis & 4\)\).*?
 (		ex_print\(msg, bar_ft\))7??0?
-grp 07??m 1220reg p OK ex.c:444:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK ex.c:445:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),.*(static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\))
 \{
 	rset \*rs;8??0?
-grp 08??-4m 1220reg p OK ex.c:444:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:445:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{
 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);.*(	char \*path, \*p, buf\[128], trunc\[128], \*sret = NULL;)
 	int c, pos, subs\[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX, dwid1, dwid2;9??0?
-grp 09??-7m 1220reg p OK ex.c:444:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:4442sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:445:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:4452sc %? %@2132sc!0?
 '\''1i 	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
 		int adv = 0;
 		while (lbuf_len(xb) > adv+1 && xb->ln[adv][0] == '\''\n'\'')
@@ -76,7 +76,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 			xb_ft = syn_setft(lfts[hl].ft);
 		rset_free(rs);
 	}
-??!219reg ex.c:444:m12sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
+??!219reg ex.c:445:m12sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -89,11 +89,11 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 21f13f54..f5c4c495 100644
+index 7f23552d..977f1d9e 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -442,6 +442,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
- 			fd < 0 || rd ? 'f' : 'r');
+@@ -443,6 +443,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+ 			fd < 0 || rd ? cd == 3 ? 'n' : 'f' : 'r');
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)
 +	if (!rd && fd >= 0 && lbuf_len(xb) > 0) {
