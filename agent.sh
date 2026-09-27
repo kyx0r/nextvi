@@ -411,6 +411,50 @@ static void agent_capture_add(const char *s, int n)
 	sbuf_mem(agent_capture, s, n)
 }
 
+/* Tool output may contain NULs or malformed UTF-8. cJSON strings are
+ * NUL-terminated and cJSON_Print does not validate UTF-8, so convert raw
+ * bytes to readable, valid UTF-8 before adding them to history or the log. */
+static char *agent_safe_text(const char *s, size_t n)
+{
+	sbuf_smake(text, n + 1)
+	static const char hex[] = "0123456789ABCDEF";
+	for (size_t i = 0; i < n; ) {
+		unsigned char c = (unsigned char)s[i];
+		if (c == '\''\n'\'' || c == '\''\r'\'' || c == '\''\t'\'' || (c >= 0x20 && c < 0x7f)) {
+			sbuf_chr(text, c)
+			i++;
+			continue;
+		}
+		/* Accept only shortest-form UTF-8 scalar values. */
+		size_t len = c >= 0xc2 && c <= 0xdf ? 2 :
+			c >= 0xe0 && c <= 0xef ? 3 :
+			c >= 0xf0 && c <= 0xf4 ? 4 : 0;
+		if (len && len <= n - i) {
+			unsigned char b1 = (unsigned char)s[i+1];
+			int valid = b1 >= 0x80 && b1 <= 0xbf &&
+				(c != 0xe0 || b1 >= 0xa0) &&
+				(c != 0xed || b1 < 0xa0) &&
+				(c != 0xf0 || b1 >= 0x90) &&
+				(c != 0xf4 || b1 <= 0x8f);
+			for (size_t j = 2; valid && j < len; j++)
+				valid = (unsigned char)s[i+j] >= 0x80 &&
+					(unsigned char)s[i+j] <= 0xbf;
+			if (valid) {
+				sbuf_mem(text, s + i, len)
+				i += len;
+				continue;
+			}
+		}
+		sbuf_chr(text, '\''\\'\'')
+		sbuf_chr(text, '\''x'\'')
+		sbuf_chr(text, hex[c >> 4])
+		sbuf_chr(text, hex[c & 15])
+		i++;
+	}
+	sbuf_nul(text)
+	return text->s;
+}
+
 /* Interactive shells can put each job in a separate process group. */
 static void agent_killtree(pid_t pid)
 {
@@ -1096,7 +1140,7 @@ static void agent_run(const char *input)
 				if (xgr == 2 && agent_capture_total > 4096) {
 					char msg[128];
 					snprintf(msg, sizeof(msg),
-						"%zu > 4096 output guardrail: gr 0 to bypass once",
+						"output guardrail: %zu > 4096 (gr 0 to bypass once)",
 						agent_capture_total);
 					sbuf_cut(out, 0)
 					sbufn_str(out, msg)
@@ -1129,12 +1173,13 @@ static void agent_run(const char *input)
 				sbuf_chr(result, '\''\n'\'')
 			}
 			sbuf_mem(result, out->s, out->s_n)
-			sbuf_nul(result)
+			char *safe = agent_safe_text(result->s, result->s_n);
 			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(
 				agent_messages, base + index++),
-				"content", cJSON_CreateString(result->s));
+				"content", cJSON_CreateString(safe));
 			if (agent_cancel != 2)
-				agent_log("RESULT", result->s);
+				agent_log("RESULT", safe);
+			free(safe);
 			cJSON_Delete(parsed);
 			free(out->s);
 			free(result->s);
@@ -8822,10 +8867,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..0fdc7c73
+index 00000000..122c15dc
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1583 @@
+@@ -0,0 +1,1628 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9205,6 +9250,50 @@ index 00000000..0fdc7c73
 +	if (xgr == 2)
 +		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
 +	sbuf_mem(agent_capture, s, n)
++}
++
++/* Tool output may contain NULs or malformed UTF-8. cJSON strings are
++ * NUL-terminated and cJSON_Print does not validate UTF-8, so convert raw
++ * bytes to readable, valid UTF-8 before adding them to history or the log. */
++static char *agent_safe_text(const char *s, size_t n)
++{
++	sbuf_smake(text, n + 1)
++	static const char hex[] = "0123456789ABCDEF";
++	for (size_t i = 0; i < n; ) {
++		unsigned char c = (unsigned char)s[i];
++		if (c == '\n' || c == '\r' || c == '\t' || (c >= 0x20 && c < 0x7f)) {
++			sbuf_chr(text, c)
++			i++;
++			continue;
++		}
++		/* Accept only shortest-form UTF-8 scalar values. */
++		size_t len = c >= 0xc2 && c <= 0xdf ? 2 :
++			c >= 0xe0 && c <= 0xef ? 3 :
++			c >= 0xf0 && c <= 0xf4 ? 4 : 0;
++		if (len && len <= n - i) {
++			unsigned char b1 = (unsigned char)s[i+1];
++			int valid = b1 >= 0x80 && b1 <= 0xbf &&
++				(c != 0xe0 || b1 >= 0xa0) &&
++				(c != 0xed || b1 < 0xa0) &&
++				(c != 0xf0 || b1 >= 0x90) &&
++				(c != 0xf4 || b1 <= 0x8f);
++			for (size_t j = 2; valid && j < len; j++)
++				valid = (unsigned char)s[i+j] >= 0x80 &&
++					(unsigned char)s[i+j] <= 0xbf;
++			if (valid) {
++				sbuf_mem(text, s + i, len)
++				i += len;
++				continue;
++			}
++		}
++		sbuf_chr(text, '\\')
++		sbuf_chr(text, 'x')
++		sbuf_chr(text, hex[c >> 4])
++		sbuf_chr(text, hex[c & 15])
++		i++;
++	}
++	sbuf_nul(text)
++	return text->s;
 +}
 +
 +/* Interactive shells can put each job in a separate process group. */
@@ -9892,7 +9981,7 @@ index 00000000..0fdc7c73
 +				if (xgr == 2 && agent_capture_total > 4096) {
 +					char msg[128];
 +					snprintf(msg, sizeof(msg),
-+						"%zu > 4096 output guardrail: gr 0 to bypass once",
++						"output guardrail: %zu > 4096 (gr 0 to bypass once)",
 +						agent_capture_total);
 +					sbuf_cut(out, 0)
 +					sbufn_str(out, msg)
@@ -9925,12 +10014,13 @@ index 00000000..0fdc7c73
 +				sbuf_chr(result, '\n')
 +			}
 +			sbuf_mem(result, out->s, out->s_n)
-+			sbuf_nul(result)
++			char *safe = agent_safe_text(result->s, result->s_n);
 +			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(
 +				agent_messages, base + index++),
-+				"content", cJSON_CreateString(result->s));
++				"content", cJSON_CreateString(safe));
 +			if (agent_cancel != 2)
-+				agent_log("RESULT", result->s);
++				agent_log("RESULT", safe);
++			free(safe);
 +			cJSON_Delete(parsed);
 +			free(out->s);
 +			free(result->s);
