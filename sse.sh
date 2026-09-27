@@ -22,7 +22,7 @@ fi
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 
-# Patch: led.c ren.c uc.c vi.c
+# Patch: ren.c uc.c vi.c vi.h
 printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg prFp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
 "${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
@@ -30,72 +30,6 @@ ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
 'fr 98b0m!%ya 98?0?
-%f> 
-int dstrlen\(const char \*s, char delim\)
-\{
-	register const char \*i;
-	for \(i=s; \*i && \*i != delim; \+\+i\);
-	return i-s;1??0?
-1??+2m 11q0?
-%f> 
-int dstrlen\(const char \*s, char delim\)
-\{4??0?
-4??+2m 1220reg p OK led.c:6:a42sc %? %@2152sc!1q0?
-grp 1%f> .*?
-int dstrlen\(const char \*s, char delim\).*?
-(\{)7??0?
-grp 07??m 1220reg p OK led.c:6:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> static sbuf \*suggestsb;
-static sbuf \*acsb;
-static sbuf \*extsb;.*(	if \(!\*pattern\))
-		return 0;
-	sbuf_cut\(suggestsb, 0\)8??0?
-grp 08??-8m 1220reg p OK led.c:6:a82sc %? %@2152sc!'\''00?
-1;4;7;8??!219reg led.c:62sc %? %@2132sc!0?
-?0?
-%f+ 	register const char \*i;
-	for \(i=s; \*i && \*i != delim; \+\+i\);
-	return i-s;
-}
-
-static int search\(const char \*pattern, int l\)1??0?
-1??+2m 21q0?
-%f+ 	register const char \*i;
-	for \(i=s; \*i && \*i != delim; \+\+i\);
-	return i-s;4??0?
-4??+2m 2220reg p OK led.c:9:a42sc %? %@2152sc!1q0?
-grp 1%f+ 	register const char \*i;.*?
-	for \(i=s; \*i && \*i != delim; \+\+i\);.*?
-(	return i-s;)7??0?
-grp 07??m 2220reg p OK led.c:9:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> static sbuf \*suggestsb;
-static sbuf \*acsb;
-static sbuf \*extsb;.*(	if \(!\*pattern\))
-		return 0;
-	sbuf_cut\(suggestsb, 0\)8??0?
-grp 08??-5m 2220reg p OK led.c:9:a82sc %? %@2152sc!'\''00?
-1;4;7;8??!219reg led.c:92sc %? %@2132sc!0?
-'\''1i #ifdef __SSE2__
-	const char *i = s;
-	/* scalar prefix until 16-byte aligned */
-	while (((uintptr_t)i & 15) && *i && *i != delim)
-		i++;
-	if (!*i || *i == delim)
-		return i - s;
-	__m128i vd = _mm_set1_epi8(delim);
-	__m128i vz = _mm_setzero_si128();
-	for (;;) {
-		__m128i c = _mm_load_si128((const __m128i *)i);
-		int mask = _mm_movemask_epi8(
-			_mm_or_si128(_mm_cmpeq_epi8(c, vd), _mm_cmpeq_epi8(c, vz)));
-		if (mask)
-			return i + __builtin_ctz(mask) - s;
-		i += 16;
-	}
-#else
-??!219reg led.c:6:m12sc %? %@2142sc!0?
-'\''2i #endif
-??!219reg led.c:9:m22sc %? %@2142sc!b1m!%ya 98?0?
 %f> 		rstate->holelen = uc_len\(ss\);
 		memcpy\(rstate->nulhole, ss, rstate->holelen\);
 		memset\(ss, 0, rstate->holelen\);
@@ -116,31 +50,12 @@ static sbuf \*extsb;.*(	if \(!\*pattern\))
 4??+3m 1220reg p OK ren.c:113:a42sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			ss \+= l;$5??0?
 5??-2m 1220reg p OK ren.c:113:a52sc %? %@2152sc!fr 981qfr 980?
-%f> .	....t........en.. .c...n\(s...
-...e.......t.te.>.u....., s.,...t....>.........
-	.m.m.....s.....r......>h...l....
-...e...
-.	....\(. . .;.......c.l..\(......n\+.\)
-	.	s. \+= l.6??0?
-6??+3m 1220reg p OK ren.c:113:a62sc %? %@2152sc!1q0?
 grp 1%f> 		rstate->holelen = uc_len\(ss\);.*?
 		memcpy\(rstate->nulhole, ss, rstate->holelen\);.*?
 		memset\(ss, 0, rstate->holelen\);.*?
 (	} else)7??0?
-grp 07??m 1220reg p OK ren.c:113:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 		max = \(unsigned int\)xlim;
-		for \(n = 0; n < max && \(l = uc_len\(ss\)\); n\+\+\)
-			ss \+= l;.*(	int \*off = &pos\[b];)
-	char \*\*chrs = \(char\*\*\)&off\[b];
-	if \(xorder && dir_reorder\(s, ss, off, n, rstate->ctx\)\) \{8??0?
-grp 08??-6m 1220reg p OK ren.c:113:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	unsigned int n, max, l;
-	char \*ss = s;
-	if \(xlim >= 0 && rstate == rstates\+1\) \{.*(		for \(i = 0; i < b; i\+\+\) \{)
-			chrs\[i] = s;
-			s \+= uc_len\(s\);9??0?
-grp 09??-9m 1220reg p OK ren.c:113:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ren.c:1132sc %? %@2132sc!0?
+grp 07??m 1220reg p OK ren.c:113:a72sc %? %@2152sc!0?
+1;2;3;4;5;7??!219reg ren.c:1132sc %? %@2132sc!0?
 ?0?
 %f+ 			ss \+= l;
 	unsigned int b = n \+ 1, c = 2, i;
@@ -148,20 +63,8 @@ static sbuf \*extsb;.*(	if \(!\*pattern\))
 	int \*pos = emalloc\(\(b \* 2 \* sizeof\(pos\[0]\)\) \+ b \* sizeof\(char\*\)\);1??0?
 1??m 21q0?
 ;0fr.,$f+ ^			ss \+= l;$4??0?
-4??m 2220reg p OK ren.c:115:a42sc %? %@2152sc!fr 981qfr 980?
-m 01;0grp 1%f> 		max = \(unsigned int\)xlim;
-		for \(n = 0; n < max && \(l = uc_len\(ss\)\); n\+\+\)
-			ss \+= l;.*(	int \*off = &pos\[b];)
-	char \*\*chrs = \(char\*\*\)&off\[b];
-	if \(xorder && dir_reorder\(s, ss, off, n, rstate->ctx\)\) \{8??0?
-grp 08??-4m 2220reg p OK ren.c:115:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	unsigned int n, max, l;
-	char \*ss = s;
-	if \(xlim >= 0 && rstate == rstates\+1\) \{.*(		for \(i = 0; i < b; i\+\+\) \{)
-			chrs\[i] = s;
-			s \+= uc_len\(s\);9??0?
-grp 09??-7m 2220reg p OK ren.c:115:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ren.c:1152sc %? %@2132sc!0?
+4??m 2220reg p OK ren.c:115:a42sc %? %@2152sc!fr 98fr 980?
+1;4??!219reg ren.c:1152sc %? %@2132sc!0?
 '\''1,#+1c 	} else {
 		n = 0;
 #ifdef __SSE2__
@@ -198,7 +101,7 @@ static sbuf \*extsb;.*(	if \(!\*pattern\))
 ??!219reg ren.c:113:m12sc %? %@2142sc!0?
 '\''2i count_done:;
 	}
-??!219reg ren.c:115:m22sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ren.c:115:m22sc %? %@2142sc!b1m!%ya 98?0?
 %f> int uc_slen\(char \*s\)
 \{
 	int n = 0, l;
@@ -213,20 +116,8 @@ static sbuf \*extsb;.*(	if \(!\*pattern\))
 grp 1%f> int uc_slen\(char \*s\).*?
 \{.*?
 (	int n = 0, l;)7??0?
-grp 07??m 1220reg p OK uc.c:24:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	/\* E \*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	/\* F \*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
-};.*(/\* find the beginning of the character at s\[i] \*/)
-char \*uc_beg\(char \*beg, char \*s\)
-\{8??0?
-grp 08??-6m 1220reg p OK uc.c:24:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	/\* B \*/ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	/\* C \*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	/\* D \*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,.*(	if \(utf8_length\[0xc0] == 1\))
-		return s;
-	for \(; s > beg && \(\(unsigned char\)\*s & 0xc0\) == 0x80; s--\);9??0?
-grp 09??-9m 1220reg p OK uc.c:24:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg uc.c:242sc %? %@2132sc!0?
+grp 07??m 1220reg p OK uc.c:24:a72sc %? %@2152sc!0?
+1;4;7??!219reg uc.c:242sc %? %@2132sc!0?
 '\''1i #ifdef __SSE2__
 	if (utf8_length[0xc0] != 1) {
 		__m128i v_mask = _mm_set1_epi8((char)0xc0);
@@ -255,7 +146,7 @@ char \*uc_beg\(char \*beg, char \*s\)
 		return n;
 	}
 #endif
-??!219reg uc.c:24:m12sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg uc.c:24:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> #include <ctype\.h>
 #include <fcntl\.h>
 #include <stdio\.h>1??0?
@@ -267,8 +158,58 @@ char \*uc_beg\(char \*beg, char \*s\)
 #include <stdint.h>
 #include <emmintrin.h>
 #endif
-??!219reg vi.c:0:m12sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
-EXINIT='%ya 97:? %@97' $VI -e 'led.c' 'ren.c' 'uc.c' 'vi.c' "$P2VIF"
+??!219reg vi.c:0:m12sc %? %@2142sc!b3m!%ya 98?0?
+%f> 
+static int dstrlen\(const char \*s, char delim\)
+\{
+	register const char \*i;
+	for \(i=s; \*i && \*i != delim; \+\+i\);
+	return i-s;1??0?
+1??+2m 11q0?
+%f> 
+static int dstrlen\(const char \*s, char delim\)
+\{4??0?
+4??+2m 1220reg p OK vi.h:42:a42sc %? %@2152sc!1q0?
+grp 1%f> .*?
+static int dstrlen\(const char \*s, char delim\).*?
+(\{)7??0?
+grp 07??m 1220reg p OK vi.h:42:a72sc %? %@2152sc!0?
+1;4;7??!219reg vi.h:422sc %? %@2132sc!0?
+?0?
+%f+ 	register const char \*i;
+	for \(i=s; \*i && \*i != delim; \+\+i\);
+	return i-s;
+}
+
+static char \*itoa\(int n, char s\[]\)1??0?
+1??+2m 21q0?
+%f+ 	register const char \*i;
+	for \(i=s; \*i && \*i != delim; \+\+i\);
+	return i-s;4??0?
+4??+2m 2220reg p OK vi.h:45:a42sc %? %@2152sc!0?
+1;4??!219reg vi.h:452sc %? %@2132sc!0?
+'\''1i #ifdef __SSE2__
+	const char *i = s;
+	/* scalar prefix until 16-byte aligned */
+	while (((uintptr_t)i & 15) && *i && *i != delim)
+		i++;
+	if (!*i || *i == delim)
+		return i - s;
+	__m128i vd = _mm_set1_epi8(delim);
+	__m128i vz = _mm_setzero_si128();
+	for (;;) {
+		__m128i c = _mm_load_si128((const __m128i *)i);
+		int mask = _mm_movemask_epi8(
+			_mm_or_si128(_mm_cmpeq_epi8(c, vd), _mm_cmpeq_epi8(c, vz)));
+		if (mask)
+			return i + __builtin_ctz(mask) - s;
+		i += 16;
+	}
+#else
+??!219reg vi.h:42:m12sc %? %@2142sc!0?
+'\''2i #endif
+??!219reg vi.h:45:m22sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+EXINIT='%ya 97:? %@97' $VI -e 'ren.c' 'uc.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
@@ -279,39 +220,6 @@ fi
 
 exit 0
 === PATCH2VI PATCH ===
-diff --git a/led.c b/led.c
-index 375abb35..1c698308 100644
---- a/led.c
-+++ b/led.c
-@@ -4,9 +4,28 @@ static sbuf *extsb;
- 
- int dstrlen(const char *s, char delim)
- {
-+#ifdef __SSE2__
-+	const char *i = s;
-+	/* scalar prefix until 16-byte aligned */
-+	while (((uintptr_t)i & 15) && *i && *i != delim)
-+		i++;
-+	if (!*i || *i == delim)
-+		return i - s;
-+	__m128i vd = _mm_set1_epi8(delim);
-+	__m128i vz = _mm_setzero_si128();
-+	for (;;) {
-+		__m128i c = _mm_load_si128((const __m128i *)i);
-+		int mask = _mm_movemask_epi8(
-+			_mm_or_si128(_mm_cmpeq_epi8(c, vd), _mm_cmpeq_epi8(c, vz)));
-+		if (mask)
-+			return i + __builtin_ctz(mask) - s;
-+		i += 16;
-+	}
-+#else
- 	register const char *i;
- 	for (i=s; *i && *i != delim; ++i);
- 	return i-s;
-+#endif
- }
- 
- static int search(const char *pattern, int l)
 diff --git a/ren.c b/ren.c
 index 4116d9c1..b558db09 100644
 --- a/ren.c
@@ -362,7 +270,7 @@ index 4116d9c1..b558db09 100644
  	int cpos = 0, wid, *col;
  	int *pos = emalloc((b * 2 * sizeof(pos[0])) + b * sizeof(char*));
 diff --git a/uc.c b/uc.c
-index b1002c4e..e1637ca5 100644
+index 02ea9f25..79c754f2 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -22,6 +22,34 @@ unsigned char utf8_length[256] = {
@@ -401,7 +309,7 @@ index b1002c4e..e1637ca5 100644
  		s += l;
  	return n;
 diff --git a/vi.c b/vi.c
-index 09100cde..6f6c12ca 100644
+index 93847fac..d3f83ee5 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,3 +1,7 @@
@@ -412,3 +320,36 @@ index 09100cde..6f6c12ca 100644
  #include <ctype.h>
  #include <fcntl.h>
  #include <stdio.h>
+diff --git a/vi.h b/vi.h
+index c23da595..8cbe7e07 100644
+--- a/vi.h
++++ b/vi.h
+@@ -40,9 +40,28 @@ static void *erealloc(void *p, size_t size)
+ 
+ static int dstrlen(const char *s, char delim)
+ {
++#ifdef __SSE2__
++	const char *i = s;
++	/* scalar prefix until 16-byte aligned */
++	while (((uintptr_t)i & 15) && *i && *i != delim)
++		i++;
++	if (!*i || *i == delim)
++		return i - s;
++	__m128i vd = _mm_set1_epi8(delim);
++	__m128i vz = _mm_setzero_si128();
++	for (;;) {
++		__m128i c = _mm_load_si128((const __m128i *)i);
++		int mask = _mm_movemask_epi8(
++			_mm_or_si128(_mm_cmpeq_epi8(c, vd), _mm_cmpeq_epi8(c, vz)));
++		if (mask)
++			return i + __builtin_ctz(mask) - s;
++		i += 16;
++	}
++#else
+ 	register const char *i;
+ 	for (i=s; *i && *i != delim; ++i);
+ 	return i-s;
++#endif
+ }
+ 
+ static char *itoa(int n, char s[])
