@@ -7137,7 +7137,7 @@ index 2888d7c6..3d160ca6 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7f23552d..eb0ce65c 100644
+index 4af09cc5..2c26bb95 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -18,6 +18,8 @@ int xpac;			/* print autocomplete options */
@@ -7407,7 +7407,7 @@ index 4116d9c1..3ee3a07f 100644
  		for (n = 0; n < max && (l = uc_len(ss)); n++)
  			ss += l;
 diff --git a/vi.c b/vi.c
-index 93847fac..67f73ed9 100644
+index 13b97c7d..79675092 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -66,6 +66,195 @@ static int vi_nextcol(char *ln, int dir, int *off)

@@ -848,7 +848,7 @@ index 2888d7c6..129d1629 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 7f23552d..c4fb2da6 100644
+index 4af09cc5..d34a5be4 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -1054,7 +1054,7 @@ index 03aa736f..f1a967dc 100644
  {
  	int cw;
 diff --git a/vi.c b/vi.c
-index 93847fac..44df53ba 100644
+index 13b97c7d..88346d84 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -468,6 +468,9 @@ static void vc_status(int type)

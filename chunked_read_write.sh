@@ -805,7 +805,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7f23552d..f71a4441 100644
+index 4af09cc5..9950729a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -393,10 +393,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)

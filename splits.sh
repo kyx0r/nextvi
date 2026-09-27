@@ -4270,7 +4270,7 @@ index 2888d7c6..38163179 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7f23552d..1b9eae41 100644
+index 4af09cc5..22c6e4aa 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -4705,7 +4705,7 @@ index 03aa736f..df9a62fb 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index 93847fac..15cbebc4 100644
+index 13b97c7d..7cc58eeb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -57,6 +57,23 @@ static void vi_drawmsg(char *msg)

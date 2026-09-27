@@ -390,7 +390,7 @@ index 2888d7c6..d4650cc0 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 7f23552d..a1c1b5ea 100644
+index 4af09cc5..51f5df56 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -450,7 +450,7 @@ index 4893a07e..143861de 100644
  			if (c == '\n' || TK_INT(c))
  				return c;
 diff --git a/vi.c b/vi.c
-index 93847fac..ee52e5ba 100644
+index 13b97c7d..18980a9b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -7,6 +7,7 @@

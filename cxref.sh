@@ -1234,7 +1234,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7f23552d..fc3dd408 100644
+index 4af09cc5..0ff34a72 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -1247,7 +1247,7 @@ index 7f23552d..fc3dd408 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index 93847fac..a0ebda3a 100644
+index 13b97c7d..96e35376 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -439,6 +439,465 @@ static int fs_searchback(int cnt, int *row, int *off)

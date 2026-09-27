@@ -2210,7 +2210,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7f23552d..386de12a 100644
+index 4af09cc5..f9afcb1d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,7 +37,7 @@ int xsep = ':';			/* ex command separator */
@@ -2622,7 +2622,7 @@ index fd22467f..33f6b6fa 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 93847fac..f8bcb736 100644
+index 13b97c7d..e75b7963 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -280,7 +280,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)

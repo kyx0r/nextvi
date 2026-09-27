@@ -1274,7 +1274,7 @@ index 2888d7c6..13b7bf2b 100644
  
  /* how to highlight text in the reverse direction */
 diff --git a/ex.c b/ex.c
-index 7f23552d..7c6ca4d1 100644
+index 4af09cc5..287477dd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1318,6 +1318,170 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
@@ -1458,7 +1458,7 @@ index 7f23552d..7c6ca4d1 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/vi.c b/vi.c
-index 93847fac..6d2d8b67 100644
+index 13b97c7d..2bd198f8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1078,6 +1078,68 @@ static int vc_replace(void)

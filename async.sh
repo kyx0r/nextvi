@@ -586,7 +586,7 @@ index 2888d7c6..60bc3c41 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7f23552d..a3b7e39d 100644
+index 4af09cc5..58ea753e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -57,6 +57,17 @@ static char xgerr[] = "invalid grp";
@@ -772,7 +772,7 @@ index 03aa736f..bc444225 100644
  	}
  	sbufn_ret(sb, sb)
 diff --git a/vi.c b/vi.c
-index 93847fac..81eb7759 100644
+index 13b97c7d..ff102d63 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -8,6 +8,7 @@

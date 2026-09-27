@@ -14225,7 +14225,7 @@ index 2888d7c6..118c150e 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 7f23552d..d6bb833d 100644
+index 4af09cc5..04aec514 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -16186,7 +16186,7 @@ index 03aa736f..1d90526f 100644
  		signal(SIGINT, SIG_DFL);
  	}
 diff --git a/vi.c b/vi.c
-index 93847fac..c51bdff6 100644
+index 13b97c7d..6acada2d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,13 @@

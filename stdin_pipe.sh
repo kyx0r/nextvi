@@ -451,7 +451,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 7f23552d..77aede6c 100644
+index 4af09cc5..ac8dfdf2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -419,7 +419,9 @@ int ex_edit(const char *path, int len)
@@ -547,7 +547,7 @@ index 03aa736f..e05c8844 100644
  
  void term_done(void)
 diff --git a/vi.c b/vi.c
-index 93847fac..b081a03f 100644
+index 13b97c7d..b2b0b2a8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1811,6 +1811,7 @@ static void setup_signals(void)
