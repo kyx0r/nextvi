@@ -50,6 +50,12 @@ char *uc_chrn(char *s, int off, int *n)
 	return s;
 }
 
+char *uc_chr(char *s, int off)
+{
+	int n;
+	return uc_chrn(s, off, &n);
+}
+
 /* the number of characters between s and s + off */
 int uc_off(char *s, int off)
 {
@@ -72,11 +78,10 @@ char *uc_subl(char *s, int beg, int end, int *rlen)
 	return r;
 }
 
-char *uc_dup(const char *s)
+char *uc_sub(char *s, int beg, int end)
 {
-	int n = strlen(s) + 1;
-	char *r = emalloc(n);
-	return memcpy(r, s, n);
+	int l;
+	return uc_subl(s, beg, end, &l);
 }
 
 int uc_kind(char *c)
