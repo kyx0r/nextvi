@@ -1,4 +1,12 @@
 ------------------
+7.8 Basilisk
+------------------
+
+Bug fixes:
+1. Prevent integer overflow when parsing numbered buffer expansions in ex
+   arguments. Regressed in 7.7. Mostly pathological.
+
+------------------
 7.7 Basilisk
 ------------------
 
