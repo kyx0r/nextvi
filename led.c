@@ -2,13 +2,6 @@ static sbuf *suggestsb;
 static sbuf *acsb;
 static sbuf *extsb;
 
-int dstrlen(const char *s, char delim)
-{
-	register const char *i;
-	for (i=s; *i && *i != delim; ++i);
-	return i-s;
-}
-
 static int search(const char *pattern, int l)
 {
 	if (!*pattern)
@@ -530,7 +523,7 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
 				return c;
 			break;
 		case TK_CTL('t'):
-			cs = uc_dup(sb->s + ps);
+			cs = sdup(sb->s + ps, sb->s_n - ps);
 			sbuf_cut(sb, ps)
 			sbuf_chr(sb, '\t')
 			sbuf_str(sb, cs)
@@ -703,7 +696,7 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
 			continue;
 		case TK_CTL('o'): {
 			if (!*postref)
-				*postref = *post = uc_dup(*post);
+				*postref = *post = sdup(*post, strlen(*post));
 			preserve(struct buf*, ex_buf,)
 			int bidx = istempbuf(ex_buf) ? -1 : ex_buf - bufs;
 			preserve(int, ftidx,)
