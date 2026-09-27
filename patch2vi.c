@@ -300,7 +300,7 @@ static void arr_append(char ***arr, int *n, int *cap, const char *s)
 		*cap = *cap ? *cap * 2 : 4;
 		*arr = erealloc(*arr, *cap * sizeof(char *));
 	}
-	(*arr)[(*n)++] = uc_dup(s);
+	(*arr)[(*n)++] = sdup(s, strlen(s));
 }
 
 /* A NUL-terminated copy of n bytes of s (byte-exact, where uc_sub() would
@@ -1146,7 +1146,7 @@ static void sb_pat_lines(sbuf *out, char **lines, int nlines, int pre_escaped,
 	if (wrap)
 		sb_chr(out, '^');
 	for (int i = 0; i < nlines; i++) {
-		char *s = pre_escaped ? uc_dup(lines[i])
+		char *s = pre_escaped ? sdup(lines[i], strlen(lines[i]))
 				      : escape_regex(lines[i]);
 		for (int k = dyn_esc ? 0 : lvl; k-- > 0; ) {
 			char *e = escape_chars(s, "\\");
@@ -3827,7 +3827,7 @@ static char *pending_orig_path;
 static void new_file(const char *path)
 {
 	ARR_PUSH(files, nfiles, files_cap)
-	files[nfiles].path = uc_dup(path);
+	files[nfiles].path = sdup(path, strlen(path));
 	files[nfiles].is_new = pending_is_new;
 	files[nfiles].orig_path = pending_orig_path;
 	pending_is_new = 0;
@@ -3848,7 +3848,7 @@ static void add_op(int type, int oline, const char *text)
 	ARR_PUSH(fp->ops, fp->nops, fp->ops_cap)
 	fp->ops[fp->nops].type = type;
 	fp->ops[fp->nops].oline = oline;
-	fp->ops[fp->nops].text = text ? uc_dup(text) : NULL;
+	fp->ops[fp->nops].text = text ? sdup(text, strlen(text)) : NULL;
 	fp->ops[fp->nops].hunk_lo = cur_hunk_lo;
 	fp->ops[fp->nops].hunk_hi = cur_hunk_hi;
 	fp->nops++;
@@ -3905,12 +3905,12 @@ static void sh_set(const char *name, const char *val)
 	for (int i = 0; i < nshvars; i++)
 		if (!strcmp(shvars[i].name, name)) {
 			free(shvars[i].val);
-			shvars[i].val = uc_dup(val);
+			shvars[i].val = sdup(val, strlen(val));
 			return;
 		}
 	ARR_PUSH(shvars, nshvars, shvars_cap)
-	shvars[nshvars].name = uc_dup(name);
-	shvars[nshvars].val = uc_dup(val);
+	shvars[nshvars].name = sdup(name, strlen(name));
+	shvars[nshvars].val = sdup(val, strlen(val));
 	nshvars++;
 }
 
@@ -4229,7 +4229,7 @@ static int parse_vi_call(const char *s, p2vi_block_t *blk)
 		sbuf_nul(w)
 		blk->paths = erealloc(blk->paths,
 				      (blk->npaths + 1) * sizeof(char *));
-		blk->paths[blk->npaths++] = uc_dup(w->s);
+		blk->paths[blk->npaths++] = sdup(w->s, w->s_n);
 	}
 	free(w->s);
 	return 0;
@@ -4319,7 +4319,7 @@ static int expand_body(const char *raw, char **out)
 	ret = sh_printf_body(raw, exp);
 	sbuf_nul(exp)
 	if (ret >= 0)
-		*out = uc_dup(exp->s);
+		*out = sdup(exp->s, exp->s_n);
 	free(exp->s);
 	return ret;
 }
@@ -4339,8 +4339,8 @@ static void pend_push(pend_t *p, const char *raw, const char *suf)
 	int cap = p->cap;
 	ARR_PUSH(p->raw, p->n, p->cap)
 	ARR_PUSH(p->suf, p->n, cap)
-	p->raw[p->n] = uc_dup(raw);
-	p->suf[p->n++] = uc_dup(suf);
+	p->raw[p->n] = sdup(raw, strlen(raw));
+	p->suf[p->n++] = sdup(suf, strlen(suf));
 }
 
 static void pend_clear(pend_t *p)
@@ -4414,20 +4414,21 @@ static void cur_applied_set(const char **paths, int n)
 	cur_applied_clear();
 	const char *env = getenv("P2VI_PATCH");
 	if (env && *env) {
-		char *cpy = uc_dup(env), *save = NULL;
+		char *cpy = sdup(env, strlen(env)), *save = NULL;
 		for (char *tok = strtok_r(cpy, " ", &save); tok;
 		     tok = strtok_r(NULL, " ", &save)) {
 			if (!*tok)
 				continue;
 			ARR_PUSH(cur_applied, ncur_applied, cur_applied_cap)
-			cur_applied[ncur_applied++] = uc_dup(base_name(tok));
+			const char *b = base_name(tok);
+			cur_applied[ncur_applied++] = sdup(b, strlen(b));
 		}
 		free(cpy);
 	}
 	for (int i = 0; i < n; i++) {
 		const char *b = base_name(paths[i]);
 		ARR_PUSH(cur_applied, ncur_applied, cur_applied_cap)
-		cur_applied[ncur_applied++] = uc_dup(b);
+		cur_applied[ncur_applied++] = sdup(b, strlen(b));
 	}
 }
 
@@ -4654,7 +4655,7 @@ static int sess_buf(char ***paths, int *npaths, const char *path)
 		if (!strcmp((*paths)[i], path))
 			return i;
 	*paths = erealloc(*paths, (*npaths + 1) * sizeof(char *));
-	(*paths)[*npaths] = uc_dup(path);
+	(*paths)[*npaths] = sdup(path, strlen(path));
 	return (*npaths)++;
 }
 
@@ -4677,7 +4678,7 @@ static void snap_bufs(snaps_t *sn)
 		if (!bufs[i].path || !bufs[i].path[0])
 			continue;
 		ARR_PUSH(sn->v, sn->n, sn->cap)
-		sn->v[sn->n].path = uc_dup(bufs[i].path);
+		sn->v[sn->n].path = sdup(bufs[i].path, bufs[i].plen);
 		sn->v[sn->n++].text = lbuf_text(bufs[i].lb);
 	}
 }
@@ -4710,7 +4711,7 @@ static void snap_seed(snaps_t *sn, const char *path)
 	sbuf_nul(sb)
 	free_lines(v, n);
 	ARR_PUSH(sn->v, sn->n, sn->cap)
-	sn->v[sn->n].path = uc_dup(path);
+	sn->v[sn->n].path = sdup(path, strlen(path));
 	sn->v[sn->n++].text = sb->s;
 }
 
@@ -4940,7 +4941,7 @@ static int fail_report(int sepb, int *prow, int bodyreg, int skip)
 	shift = ecalloc(xbufcur, sizeof(int));
 	/* cut up a copy: the register is the run's own record, which the
 	 * handover may well want to read */
-	txt = uc_dup(log->s + skip);
+	txt = sdup(log->s + skip, log->s_n - skip);
 	/* the stream is read and re-run under the body's own specials: xesc is
 	 * still what its "|sc!" prologue set (the stripped tail never put it
 	 * back) and the separator is restated from the block */
@@ -5100,7 +5101,7 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 			bmap[blks[i].npaths + k] = xbufcur;	/* appended next */
 			/* remapped like the driver body below: earlier blocks may
 			 * have opened files that shift the real-file numbers */
-			char *sec_body = uc_dup(blks[i].sects[k]);
+			char *sec_body = sdup(blks[i].sects[k], strlen(blks[i].sects[k]));
 			char *remapped;
 			if (!(remapped = remap_bufnums(sec_body, sep, bmap,
 							 blks[i].npaths + k + 1))) {
@@ -5120,7 +5121,7 @@ static int replay_blocks(p2vi_block_t *blks, int nblks, int handover,
 		xvis &= ~4;
 		sbuf *lg0 = ex_regget(REG_FLOG);	/* what this block adds */
 		logpre = lg0 ? lg0->s_n : 0;
-		body = uc_dup(blks[i].body);
+		body = sdup(blks[i].body, strlen(blks[i].body));
 		if (strip_body_tail(body, sep) < 0
 		    || !(ln = remap_bufnums(body, sep, bmap, nb))) {
 			free(body);
@@ -6089,8 +6090,8 @@ static int derive_diff(sbuf *diff)
 			free(fintext);
 			continue;
 		}
-		bdup = uc_dup(basetext);
-		fdup = uc_dup(fintext);
+		bdup = sdup(basetext, strlen(basetext));
+		fdup = sdup(fintext, strlen(fintext));
 		base = split_lines(bdup, &nbase);
 		fin = split_lines(fdup, &nfin);
 		pre = read_lines(bufs[i].path, &npre, &is_new);
@@ -6489,8 +6490,8 @@ static void parse_diff_line(char *line)
 		pending_is_new = strncmp(p, "/dev/null", 9) == 0
 				 && (!p[9] || p[9] == '\t' || p[9] == ' ');
 		free(pending_orig_path);
-		pending_orig_path = pending_is_new ? NULL
-				    : uc_dup(diff_path(p));
+		char *orig = pending_is_new ? NULL : diff_path(p);
+		pending_orig_path = orig ? sdup(orig, strlen(orig)) : NULL;
 		return;
 	}
 	if (strncmp(line, "diff ", 5) == 0 || strncmp(line, "index ", 6) == 0)
@@ -6614,7 +6615,8 @@ static int read_stored_sections(FILE *in)
 			char *e = src ? strstr(src, " ===") : NULL;
 			if (e)
 				*e = '\0';
-			cur_cb->origin = uc_dup(src ? src + 5 : "");
+			const char *origin = src ? src + 5 : "";
+			cur_cb->origin = sdup(origin, strlen(origin));
 			continue;
 		}
 		if (cur_cb && strcmp(line, "=== END COMPAT ===") == 0) {
