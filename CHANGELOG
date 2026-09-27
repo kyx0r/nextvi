@@ -10,6 +10,7 @@ Bug fixes:
    buffers are the same.
 2. Unknown ex commands after a range now report an error instead of
    silently moving the cursor and ignoring the argument.
+3. Bare % expansion now works for temporary buffers.
 
 Patch changes:
 1. [agent.sh](https://github.com/kyx0r/nextvi/blob/release/agent.sh):
