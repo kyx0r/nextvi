@@ -735,6 +735,12 @@ rset *rset_make(int n, char **re, int flg)
 	return NULL;
 }
 
+rset *rset_smake(char *pat, int flg)
+{
+	char *ss[1] = {pat};
+	return rset_make(1, ss, flg);
+}
+
 /* return the index of the matching regular expression or -1 if none matches */
 int rset_find(rset *rs, char *s, int *grps, int flg)
 {

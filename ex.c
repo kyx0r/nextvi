@@ -160,7 +160,7 @@ static int bufs_open(const char *path, int len)
 		xbufcur++;
 	else
 		bufs_free(--i);
-	bufs[i].path = uc_dup(path);
+	bufs[i].path = sdup(path, len);
 	bufs[i].lb = lbuf_make();
 	bufs[i].plen = len;
 	bufs[i].row = 0;
@@ -173,7 +173,8 @@ static int bufs_open(const char *path, int len)
 
 void temp_open(int i, char *name, char *ft)
 {
-	tempbufs[i].path = uc_dup(name);
+	tempbufs[i].plen = strlen(name);
+	tempbufs[i].path = sdup(name, tempbufs[i].plen);
 	tempbufs[i].lb = lbuf_make();
 	tempbufs[i].row = 0;
 	tempbufs[i].off = 0;
@@ -676,8 +677,8 @@ void ex_bufpostfix(struct buf *p, int clear)
 static void *ec_setpath(char *loc, char *cmd, char *arg)
 {
 	free(xb_path);
-	xb_path = uc_dup(arg);
 	ex_buf->plen = strlen(arg);
+	xb_path = sdup(arg, ex_buf->plen);
 	return NULL;
 }
 
@@ -1451,7 +1452,7 @@ static void *ec_setdir(char *loc, char *cmd, char *arg)
 	static char *exdir;
 	if (cmd[1] == 'p') {
 		free(exdir);
-		exdir = *arg ? uc_dup(arg) : NULL;
+		exdir = *arg ? sdup(arg, strlen(arg)) : NULL;
 	} else if (cmd[1] == 'd')
 		dir_calc(*arg ? arg : (exdir ? exdir : "."));
 	return NULL;
@@ -1493,10 +1494,10 @@ static void *ec_chdir(char *loc, char *cmd, char *arg)
 			c = 0;
 		else if (opath[c] == '/')
 			c++;
-		opath = uc_dup(opath+c);
+		bufs[i].plen = strlen(opath + c);
+		opath = sdup(opath + c, bufs[i].plen);
 		free(bufs[i].path);
 		bufs[i].path = opath;
-		bufs[i].plen = strlen(opath);
 	}
 	return NULL;
 }
@@ -1854,9 +1855,9 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			} else if (uc_isdigit(*src)) {
 				for (n = 0; uc_isdigit(*src); src++)
 					n = n * 10 + (*src - '0');
-				pbuf = &bufs[n];
+				pbuf = n < xbufcur ? &bufs[n] : NULL;
 			}
-			if (pbuf >= bufs && pbuf < &bufs[xbufcur] && pbuf->path[0])
+			if (pbuf && pbuf->path[0])
 				sbuf_mem(sb, pbuf->path, pbuf->plen)
 			if (src[-1] == '@')
 				sbuf_chr(sb, '@')
