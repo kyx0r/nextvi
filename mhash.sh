@@ -42,17 +42,17 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 			xb->mark_sb\[0] = -1;
 			xb->mark_se\[0] = -1;
 			return NULL;2??0?
-2??m 1220reg p OK ex.c:1097:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK ex.c:1098:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			xb->mark_n = 0;$3??0?
-3??m 1220reg p OK ex.c:1097:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK ex.c:1098:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 	int beg, end, o1 = xoff, o2 = xoff;
 	if \(cmd\[1] == '\''!'\''\) \{
 		if \(!\*arg\) \{4??0?
-4??+3m 1220reg p OK ex.c:1097:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK ex.c:1098:a42sc %? %@2152sc!1q0?
 %f> 			xb->mark_sb\[0] = -1;
 			xb->mark_se\[0] = -1;
 			return NULL;5??0?
-5??-1m 1220reg p OK ex.c:1097:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK ex.c:1098:a52sc %? %@2152sc!1q0?
 %f> .... .e...e....o1.. ....,...........
 ....\(........=....\)..
 .	.....\*......
@@ -60,27 +60,27 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 .	......ar....\[......1.
 ...x.........e..] . ..;
 ......... N...;6??0?
-6??+3m 1220reg p OK ex.c:1097:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK ex.c:1098:a62sc %? %@2152sc!1q0?
 grp 1%f> 	int beg, end, o1 = xoff, o2 = xoff;.*?
 	if \(cmd\[1] == '\''!'\''\) \{.*?
 		if \(!\*arg\) \{.*?
 (			xb->mark_n = 0;)7??0?
-grp 07??m 1220reg p OK ex.c:1097:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK ex.c:1098:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	lbuf_saved\(xb, \*arg\);
 	return NULL;
 }.*(		beg = -1;)
 		end = 0;
 	} else if \(ex_region\(loc, &beg, &end, &o1, &o2\)\)8??0?
-grp 08??-5m 1220reg p OK ex.c:1097:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK ex.c:1098:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	return \(cmd\[0] == '\''u'\'' \? lbuf_undo : lbuf_redo\)\(xb, &ref, &ref\) \?
 		xuerr : NULL;
 }.*(	for \(int i = 0; uc_isdigit\(\*arg\); i\+\+\) \{)
 		int mk;
 		for \(mk = 0; uc_isdigit\(\*arg\); arg\+\+\)9??0?
-grp 09??-9m 1220reg p OK ex.c:1097:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:10972sc %? %@2132sc!0?
+grp 09??-9m 1220reg p OK ex.c:1098:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:10982sc %? %@2132sc!0?
 '\''1c 			lbuf_markclear(xb);
-??!219reg ex.c:1097:m12sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg ex.c:1098:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 
 #define lbuf_copymark\(dst, src\) \{ dst\[0] = src\[0]; dst\[1] = src\[1]; }
 
@@ -657,24 +657,24 @@ struct lopt \{
 %f> void rset_free\(rset \*re\);
 
 /\* lbuf\.c: line buffer \*/4??0?
-4??+2m 1220reg p OK vi.h:120:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:162:a42sc %? %@2152sc!1q0?
 grp 1%f> void rset_free\(rset \*re\);.*?
 .*?
 (/\* lbuf\.c: line buffer \*/)7??0?
-grp 07??m 1220reg p OK vi.h:120:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	\{ char \*ss\[1] = \{pat}; return rset_make\(1, ss, flg\); }
+grp 07??m 1220reg p OK vi.h:162:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> rset \*rset_smake\(char \*pat, int flg\);
 int rset_find\(rset \*re, char \*s, int \*grps, int flg\);
 int rset_match\(rset \*rs, char \*s, int flg\);.*(	int n_ins, n_del;	/\* modification range \*/)
 	int seq;		/\* operation number \*/
 	int ref;		/\* ins/del ref exists on lbuf \*/8??0?
-grp 08??-9m 1220reg p OK vi.h:120:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> } rset;
-rset \*rset_make\(int n, char \*\*pat, int flg\);
-static rset \*rset_smake\(char \*pat, int flg\).*(struct linfo \{)
+grp 08??-9m 1220reg p OK vi.h:162:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	int n;			/\* number of regular expressions in this set \*/
+} rset;
+rset \*rset_make\(int n, char \*\*pat, int flg\);.*(struct linfo \{)
 	int len;
 	int grec;9??0?
-grp 09??-13m 1220reg p OK vi.h:120:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:1202sc %? %@2132sc!0?
+grp 09??-13m 1220reg p OK vi.h:162:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:1622sc %? %@2132sc!0?
 ?0?
 %f+ struct lopt \{
 	char \*\*ins;		/\* inserted lines \*/
@@ -690,18 +690,18 @@ static rset \*rset_smake\(char \*pat, int flg\).*(struct linfo \{)
 	int mark_sb\[2];		/\* saved \[ mark row & off \*/
 	int mark_se\[2];		/\* saved ] mark row & off \*/
 	int pos, pos_off;	/\* modification location \*/2??0?
-2??m 2220reg p OK vi.h:124:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.h:166:a22sc %? %@2152sc!1q0?
 %f+ 	int \*mark;		/\* saved marks \*/
 	int mark_n;		/\* number of saved marks \*/3??0?
-3??m 2220reg p OK vi.h:124:a32sc %? %@2152sc!1q0?
+3??m 2220reg p OK vi.h:166:a32sc %? %@2152sc!1q0?
 %f+ struct lopt \{
 	char \*\*ins;		/\* inserted lines \*/
 	char \*\*del;		/\* deleted lines \*/4??0?
-4??+3m 2220reg p OK vi.h:124:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.h:166:a42sc %? %@2152sc!1q0?
 %f+ 	int mark_sb\[2];		/\* saved \[ mark row & off \*/
 	int mark_se\[2];		/\* saved ] mark row & off \*/
 	int pos, pos_off;	/\* modification location \*/5??0?
-5??-2m 2220reg p OK vi.h:124:a52sc %? %@2152sc!1q0?
+5??-2m 2220reg p OK vi.h:166:a52sc %? %@2152sc!1q0?
 %f+ s.r....l.....
 	...r...i....... ....rt....i......
 	.......d...	..........d...... ..
@@ -710,25 +710,25 @@ static rset \*rset_smake\(char \*pat, int flg\).*(struct linfo \{)
 ......a.k.s.\[...../............rk.... ........
 	i..............	....s...d...m.r. .......f..\*/
 .int..o.,.p....f......m.d....ati......at..n../6??0?
-6??+3m 2220reg p OK vi.h:124:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK vi.h:166:a62sc %? %@2152sc!1q0?
 grp 1%f+ struct lopt \{.*?
 	char \*\*ins;		/\* inserted lines \*/.*?
 	char \*\*del;		/\* deleted lines \*/.*?
 (	int \*mark;		/\* saved marks \*/)7??0?
-grp 07??m 2220reg p OK vi.h:124:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	\{ char \*ss\[1] = \{pat}; return rset_make\(1, ss, flg\); }
+grp 07??m 2220reg p OK vi.h:166:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> rset \*rset_smake\(char \*pat, int flg\);
 int rset_find\(rset \*re, char \*s, int \*grps, int flg\);
 int rset_match\(rset \*rs, char \*s, int flg\);.*(	int n_ins, n_del;	/\* modification range \*/)
 	int seq;		/\* operation number \*/
 	int ref;		/\* ins/del ref exists on lbuf \*/8??0?
-grp 08??-5m 2220reg p OK vi.h:124:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> } rset;
-rset \*rset_make\(int n, char \*\*pat, int flg\);
-static rset \*rset_smake\(char \*pat, int flg\).*(struct linfo \{)
+grp 08??-5m 2220reg p OK vi.h:166:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	int n;			/\* number of regular expressions in this set \*/
+} rset;
+rset \*rset_make\(int n, char \*\*pat, int flg\);.*(struct linfo \{)
 	int len;
 	int grec;9??0?
-grp 09??-9m 2220reg p OK vi.h:124:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:1242sc %? %@2132sc!0?
+grp 09??-9m 2220reg p OK vi.h:166:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:1662sc %? %@2132sc!0?
 ?0?
 %f+ struct lbuf \{
 	char \*\*ln;			/\* buffer lines \*/
@@ -744,18 +744,18 @@ static rset \*rset_smake\(char \*pat, int flg\).*(struct linfo \{)
 	int mark_sb\[2];			/\* \[ mark row & off \*/
 	int mark_se\[2];			/\* ] mark row & off \*/
 	int tmp_mark\[4];		/\* aux mark state \*/2??0?
-2??m 3220reg p OK vi.h:140:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK vi.h:182:a22sc %? %@2152sc!1q0?
 %f+ 	int \*mark;			/\* mark id, row & off triplets \*/
 	int mark_n;			/\* number of marks in mark\[] \*/3??0?
-3??m 3220reg p OK vi.h:140:a32sc %? %@2152sc!1q0?
+3??m 3220reg p OK vi.h:182:a32sc %? %@2152sc!1q0?
 %f+ struct lbuf \{
 	char \*\*ln;			/\* buffer lines \*/
 	struct lopt \*hist;		/\* buffer history \*/4??0?
-4??+3m 3220reg p OK vi.h:140:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK vi.h:182:a42sc %? %@2152sc!1q0?
 %f+ 	int mark_sb\[2];			/\* \[ mark row & off \*/
 	int mark_se\[2];			/\* ] mark row & off \*/
 	int tmp_mark\[4];		/\* aux mark state \*/5??0?
-5??-2m 3220reg p OK vi.h:140:a52sc %? %@2152sc!1q0?
+5??-2m 3220reg p OK vi.h:182:a52sc %? %@2152sc!1q0?
 %f+ .....t...uf.\{
 	..a...\*.n.....\*..u...r.l..e. \*.
 ....u.. ..p.............b..........ory...
@@ -764,25 +764,25 @@ static rset \*rset_smake\(char \*pat, int flg\).*(struct linfo \{)
 .i............];	.	/.......k...........\*.
 ..n.........\[.]..	.......ar..r.w &.o.f ..
 ...t..mp_.a.k....	./...ux....k ......\*.6??0?
-6??+3m 3220reg p OK vi.h:140:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK vi.h:182:a62sc %? %@2152sc!1q0?
 grp 1%f+ struct lbuf \{.*?
 	char \*\*ln;			/\* buffer lines \*/.*?
 	struct lopt \*hist;		/\* buffer history \*/.*?
 (	int \*mark;			/\* mark id, row & off triplets \*/)7??0?
-grp 07??m 3220reg p OK vi.h:140:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.h:182:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int len;
 	int grec;
 };.*(	int ln_n;			/\* number of lines in ln\[] \*/)
 	int ln_sz;			/\* size of ln\[] \*/
 	int useq;			/\* current operation sequence \*/8??0?
-grp 08??-5m 3220reg p OK vi.h:140:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 3220reg p OK vi.h:182:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int ref;		/\* ins/del ref exists on lbuf \*/
 };
 struct linfo \{.*(	int modified;			/\* modification state \*/)
 	int saved;			/\* save state \*/
 	int hist_sz;			/\* size of hist\[] \*/9??0?
-grp 09??-8m 3220reg p OK vi.h:140:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:1402sc %? %@2132sc!0?
+grp 09??-8m 3220reg p OK vi.h:182:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:1822sc %? %@2132sc!0?
 ?0?
 %f+ void lbuf_emark\(struct lbuf \*lb, struct lopt \*lo, int end, int o2\);
 struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\);
@@ -794,36 +794,36 @@ int lbuf_redo\(struct lbuf \*lb, int \*row, int \*off\);1??0?
 %f+ void lbuf_emark\(struct lbuf \*lb, struct lopt \*lo, int end, int o2\);
 struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\);
 void lbuf_mark\(struct lbuf \*lb, int mk, int pos, int off\);4??0?
-4??+2m 4220reg p OK vi.h:171:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK vi.h:213:a42sc %? %@2152sc!1q0?
 grp 1%f+ void lbuf_emark\(struct lbuf \*lb, struct lopt \*lo, int end, int o2\);.*?
 struct lopt \*lbuf_opt\(struct lbuf \*lb, int beg, int o1, int n_del\);.*?
 (void lbuf_mark\(struct lbuf \*lb, int mk, int pos, int off\);)7??0?
-grp 07??m 4220reg p OK vi.h:171:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.h:213:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> int lbuf_join\(struct lbuf \*lb, int beg, int end, int o1, int \*o2, int flg\);
 char \*lbuf_get\(struct lbuf \*lb, int pos\);
 void lbuf_smark\(struct lbuf \*lb, struct lopt \*lo, int beg, int o1\);.*(void lbuf_saved\(struct lbuf \*lb, int clear\);)
 int lbuf_indents\(struct lbuf \*lb, int r\);
 int lbuf_eol\(struct lbuf \*lb, int r, int state\);8??0?
-grp 08??-4m 4220reg p OK vi.h:171:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK vi.h:213:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> int lbuf_pos2off\(struct lbuf \*lb, int r1, int o1, int r2, int o2, int row, int off\);
 int lbuf_off2pos\(struct lbuf \*lb, int r1, int o1, int r2, int o2, int boff, int \*row, int \*off\);
 char \*lbuf_joinsb\(struct lbuf \*lb, int r1, int r2, sbuf \*i, int \*o1, int \*o2\);.*(int lbuf_next\(struct lbuf \*lb, int dir, int \*r, int \*o\);)
 int lbuf_findchar\(struct lbuf \*lb, char \*cs, int cmd, int n, int \*r, int \*o\);
 int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,9??0?
-grp 09??-7m 4220reg p OK vi.h:171:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:1712sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK vi.h:213:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:2132sc %? %@2132sc!0?
 '\''1i struct mhash {
 	int sz;			/* capacity, power of 2 */
 	int n;			/* number of used slots */
 	int slot[];		/* mark id, row & off triplets */
 };
-??!219reg vi.h:120:m12sc %? %@2142sc!0?
+??!219reg vi.h:162:m12sc %? %@2142sc!0?
 '\''2,#+1c 	struct mhash *mark;	/* saved marks */
-??!219reg vi.h:124:m22sc %? %@2142sc!0?
+??!219reg vi.h:166:m22sc %? %@2142sc!0?
 '\''3,#+1c 	struct mhash *mark;		/* marks keyed by id */
-??!219reg vi.h:140:m32sc %? %@2142sc!0?
+??!219reg vi.h:182:m32sc %? %@2142sc!0?
 '\''4i void lbuf_markclear(struct lbuf *lb);
-??!219reg vi.h:171:m42sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.h:213:m42sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'lbuf.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -836,10 +836,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index f0ce0805..c85ae42c 100644
+index 7f23552d..17def1d2 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1094,7 +1094,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
+@@ -1095,7 +1095,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
  	int beg, end, o1 = xoff, o2 = xoff;
  	if (cmd[1] == '!') {
  		if (!*arg) {
@@ -973,10 +973,10 @@ index 56cb42c6..30a27915 100644
  	lo->mark_se[0] = -1;
  	lo->pos = beg;
 diff --git a/vi.h b/vi.h
-index 514c675e..58516320 100644
+index c23da595..aaed5cf6 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -118,11 +118,15 @@ int rset_match(rset *rs, char *s, int flg);
+@@ -160,11 +160,15 @@ int rset_match(rset *rs, char *s, int flg);
  void rset_free(rset *re);
  
  /* lbuf.c: line buffer */
@@ -994,7 +994,7 @@ index 514c675e..58516320 100644
  	int mark_sb[2];		/* saved [ mark row & off */
  	int mark_se[2];		/* saved ] mark row & off */
  	int pos, pos_off;	/* modification location */
-@@ -137,8 +141,7 @@ struct linfo {
+@@ -179,8 +183,7 @@ struct linfo {
  struct lbuf {
  	char **ln;			/* buffer lines */
  	struct lopt *hist;		/* buffer history */
@@ -1004,7 +1004,7 @@ index 514c675e..58516320 100644
  	int mark_sb[2];			/* [ mark row & off */
  	int mark_se[2];			/* ] mark row & off */
  	int tmp_mark[4];		/* aux mark state */
-@@ -169,6 +172,7 @@ void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
+@@ -211,6 +214,7 @@ void lbuf_smark(struct lbuf *lb, struct lopt *lo, int beg, int o1);
  void lbuf_emark(struct lbuf *lb, struct lopt *lo, int end, int o2);
  struct lopt *lbuf_opt(struct lbuf *lb, int beg, int o1, int n_del);
  void lbuf_mark(struct lbuf *lb, int mk, int pos, int off);

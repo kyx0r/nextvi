@@ -50,12 +50,31 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 4??+3m 1220reg p OK ren.c:113:a42sc %? %@2152sc!1q0?
 ;0fr.,$f> ^			ss \+= l;$5??0?
 5??-2m 1220reg p OK ren.c:113:a52sc %? %@2152sc!fr 981qfr 980?
+%f> .	....t........en.. .c...n\(s...
+...e.......t.te.>.u....., s.,...t....>.........
+	.m.m.....s.....r......>h...l....
+...e...
+.	....\(. . .;.......c.l..\(......n\+.\)
+	.	s. \+= l.6??0?
+6??+3m 1220reg p OK ren.c:113:a62sc %? %@2152sc!1q0?
 grp 1%f> 		rstate->holelen = uc_len\(ss\);.*?
 		memcpy\(rstate->nulhole, ss, rstate->holelen\);.*?
 		memset\(ss, 0, rstate->holelen\);.*?
 (	} else)7??0?
-grp 07??m 1220reg p OK ren.c:113:a72sc %? %@2152sc!0?
-1;2;3;4;5;7??!219reg ren.c:1132sc %? %@2132sc!0?
+grp 07??m 1220reg p OK ren.c:113:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		max = \(unsigned int\)xlim;
+		for \(n = 0; n < max && \(l = uc_len\(ss\)\); n\+\+\)
+			ss \+= l;.*(	int \*off = &pos\[b];)
+	char \*\*chrs = \(char\*\*\)&off\[b];
+	if \(xorder && dir_reorder\(s, ss, off, n, rstate->ctx\)\) \{8??0?
+grp 08??-6m 1220reg p OK ren.c:113:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	unsigned int n, max, l;
+	char \*ss = s;
+	if \(xlim >= 0 && rstate == rstates\+1\) \{.*(		for \(i = 0; i < b; i\+\+\) \{)
+			chrs\[i] = s;
+			s \+= uc_len\(s\);9??0?
+grp 09??-9m 1220reg p OK ren.c:113:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ren.c:1132sc %? %@2132sc!0?
 ?0?
 %f+ 			ss \+= l;
 	unsigned int b = n \+ 1, c = 2, i;
@@ -63,8 +82,20 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	int \*pos = emalloc\(\(b \* 2 \* sizeof\(pos\[0]\)\) \+ b \* sizeof\(char\*\)\);1??0?
 1??m 21q0?
 ;0fr.,$f+ ^			ss \+= l;$4??0?
-4??m 2220reg p OK ren.c:115:a42sc %? %@2152sc!fr 98fr 980?
-1;4??!219reg ren.c:1152sc %? %@2132sc!0?
+4??m 2220reg p OK ren.c:115:a42sc %? %@2152sc!fr 981qfr 980?
+m 01;0grp 1%f> 		max = \(unsigned int\)xlim;
+		for \(n = 0; n < max && \(l = uc_len\(ss\)\); n\+\+\)
+			ss \+= l;.*(	int \*off = &pos\[b];)
+	char \*\*chrs = \(char\*\*\)&off\[b];
+	if \(xorder && dir_reorder\(s, ss, off, n, rstate->ctx\)\) \{8??0?
+grp 08??-4m 2220reg p OK ren.c:115:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	unsigned int n, max, l;
+	char \*ss = s;
+	if \(xlim >= 0 && rstate == rstates\+1\) \{.*(		for \(i = 0; i < b; i\+\+\) \{)
+			chrs\[i] = s;
+			s \+= uc_len\(s\);9??0?
+grp 09??-7m 2220reg p OK ren.c:115:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ren.c:1152sc %? %@2132sc!0?
 '\''1,#+1c 	} else {
 		n = 0;
 #ifdef __SSE2__
@@ -116,8 +147,20 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 grp 1%f> int uc_slen\(char \*s\).*?
 \{.*?
 (	int n = 0, l;)7??0?
-grp 07??m 1220reg p OK uc.c:24:a72sc %? %@2152sc!0?
-1;4;7??!219reg uc.c:242sc %? %@2132sc!0?
+grp 07??m 1220reg p OK uc.c:24:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	/\* E \*/ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	/\* F \*/ 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1
+};.*(/\* find the beginning of the character at s\[i] \*/)
+char \*uc_beg\(char \*beg, char \*s\)
+\{8??0?
+grp 08??-6m 1220reg p OK uc.c:24:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	/\* B \*/ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	/\* C \*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	/\* D \*/ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,.*(	if \(utf8_length\[0xc0] == 1\))
+		return s;
+	for \(; s > beg && \(\(unsigned char\)\*s & 0xc0\) == 0x80; s--\);9??0?
+grp 09??-9m 1220reg p OK uc.c:24:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg uc.c:242sc %? %@2132sc!0?
 '\''1i #ifdef __SSE2__
 	if (utf8_length[0xc0] != 1) {
 		__m128i v_mask = _mm_set1_epi8((char)0xc0);
@@ -173,8 +216,20 @@ static int dstrlen\(const char \*s, char delim\)
 grp 1%f> .*?
 static int dstrlen\(const char \*s, char delim\).*?
 (\{)7??0?
-grp 07??m 1220reg p OK vi.h:42:a72sc %? %@2152sc!0?
-1;4;7??!219reg vi.h:422sc %? %@2132sc!0?
+grp 07??m 1220reg p OK vi.h:42:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		fprintf\(stderr, "\\nrealloc: out of memory\\n"\);
+		exit\(EXIT_FAILURE\);
+	}.*(	int i = 0, sign;)
+	if \(\(sign = n\) < 0\)		/\* record sign \*/
+		n = -n;			/\* make n positive \*/8??0?
+grp 08??-8m 1220reg p OK vi.h:42:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> static void \*erealloc\(void \*p, size_t size\)
+\{
+	if \(!\(p = realloc\(p, size\)\)\) \{.*(	do \{				/\* generate digits in reverse order \*/)
+		s\[i\+\+] = n % 10 \+ '\''0'\'';	/\* get next digit \*/
+	} while \(\(n /= 10\) > 0\);	/\* delete it \*/9??0?
+grp 09??-11m 1220reg p OK vi.h:42:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:422sc %? %@2132sc!0?
 ?0?
 %f+ 	register const char \*i;
 	for \(i=s; \*i && \*i != delim; \+\+i\);
@@ -186,8 +241,24 @@ static char \*itoa\(int n, char s\[]\)1??0?
 %f+ 	register const char \*i;
 	for \(i=s; \*i && \*i != delim; \+\+i\);
 	return i-s;4??0?
-4??+2m 2220reg p OK vi.h:45:a42sc %? %@2152sc!0?
-1;4??!219reg vi.h:452sc %? %@2132sc!0?
+4??+2m 2220reg p OK vi.h:45:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	register const char \*i;.*?
+	for \(i=s; \*i && \*i != delim; \+\+i\);.*?
+(	return i-s;)7??0?
+grp 07??m 2220reg p OK vi.h:45:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		fprintf\(stderr, "\\nrealloc: out of memory\\n"\);
+		exit\(EXIT_FAILURE\);
+	}.*(	int i = 0, sign;)
+	if \(\(sign = n\) < 0\)		/\* record sign \*/
+		n = -n;			/\* make n positive \*/8??0?
+grp 08??-5m 2220reg p OK vi.h:45:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> static void \*erealloc\(void \*p, size_t size\)
+\{
+	if \(!\(p = realloc\(p, size\)\)\) \{.*(	do \{				/\* generate digits in reverse order \*/)
+		s\[i\+\+] = n % 10 \+ '\''0'\'';	/\* get next digit \*/
+	} while \(\(n /= 10\) > 0\);	/\* delete it \*/9??0?
+grp 09??-8m 2220reg p OK vi.h:45:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:452sc %? %@2132sc!0?
 '\''1i #ifdef __SSE2__
 	const char *i = s;
 	/* scalar prefix until 16-byte aligned */

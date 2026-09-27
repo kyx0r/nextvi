@@ -91,20 +91,20 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1670:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1671:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	int i, j, l, o;)
 	for \(l = 0, i = 0; i < x->cterm;\) \{
 		o = x->off\[i\+\+];8??0?
-grp 08??-4m 1220reg p OK ex.c:1670:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1671:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_nul\(sb\).*(		if \(o < 0\))
 			continue;
 		for \(l\+\+; x->off\[i] == o; i\+\+\);9??0?
-grp 09??-7m 1220reg p OK ex.c:1670:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16702sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1671:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16712sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},
@@ -116,24 +116,24 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 %f+ 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},4??0?
-4??+2m 2220reg p OK ex.c:1799:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1800:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"uc", ec_setenc},.*?
 	\{"uz", ec_setenc},.*?
 (	\{"ub", ec_setenc},)7??0?
-grp 07??m 2220reg p OK ex.c:1799:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1800:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"wq", ec_write},
 	\{"w!", ec_write},
 	\{"w", ec_write},.*(	\{"sc!", ec_specials},)
 	\{"sc", ec_specials},
 	\{"s", ec_substitute},8??0?
-grp 08??-4m 2220reg p OK ex.c:1799:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1800:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(rr\),
 	\{"r", ec_read},
 	\{"wq!", ec_write},.*(	\{"x!", ec_write},)
 	\{"x", ec_write},
 	\{"ya!", ec_yank},9??0?
-grp 09??-7m 2220reg p OK ex.c:1799:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17992sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1800:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18002sc %? %@2132sc!0?
 '\''1i static void *ec_undoleafs(char *loc, char *cmd, char *arg)
 {
 	if (*arg) {
@@ -146,9 +146,9 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 	return NULL;
 }
 
-??!219reg ex.c:1670:m12sc %? %@2142sc!0?
+??!219reg ex.c:1671:m12sc %? %@2142sc!0?
 '\''2i 	{"up", ec_undoleafs},
-??!219reg ex.c:1799:m22sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1800:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> \{
 	struct lbuf \*lb = emalloc\(sizeof\(\*lb\)\);
 	memset\(lb, 0, sizeof\(\*lb\)\);
@@ -782,24 +782,24 @@ struct linfo \{1??0?
 %f> 	int pos, pos_off;	/\* modification location \*/
 	int n_ins, n_del;	/\* modification range \*/
 	int seq;		/\* operation number \*/4??0?
-4??+2m 1220reg p OK vi.h:130:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.h:172:a42sc %? %@2152sc!1q0?
 grp 1%f> 	int pos, pos_off;	/\* modification location \*/.*?
 	int n_ins, n_del;	/\* modification range \*/.*?
 (	int seq;		/\* operation number \*/)7??0?
-grp 07??m 1220reg p OK vi.h:130:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.h:172:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int mark_n;		/\* number of saved marks \*/
 	int mark_sb\[2];		/\* saved \[ mark row & off \*/
 	int mark_se\[2];		/\* saved ] mark row & off \*/.*(	int len;)
 	int grec;
 };8??0?
-grp 08??-4m 1220reg p OK vi.h:130:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.h:172:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char \*\*ins;		/\* inserted lines \*/
 	char \*\*del;		/\* deleted lines \*/
 	int \*mark;		/\* saved marks \*/.*(struct lbuf \{)
 	char \*\*ln;			/\* buffer lines \*/
 	struct lopt \*hist;		/\* buffer history \*/9??0?
-grp 09??-7m 1220reg p OK vi.h:130:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:1302sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.h:172:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:1722sc %? %@2132sc!0?
 ?0?
 %f+ struct lbuf \{
 	char \*\*ln;			/\* buffer lines \*/
@@ -811,24 +811,24 @@ struct linfo \{1??0?
 %f+ struct lbuf \{
 	char \*\*ln;			/\* buffer lines \*/
 	struct lopt \*hist;		/\* buffer history \*/4??0?
-4??+2m 2220reg p OK vi.h:139:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.h:181:a42sc %? %@2152sc!1q0?
 grp 1%f+ struct lbuf \{.*?
 	char \*\*ln;			/\* buffer lines \*/.*?
 (	struct lopt \*hist;		/\* buffer history \*/)7??0?
-grp 07??m 2220reg p OK vi.h:139:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.h:181:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int len;
 	int grec;
 };.*(	int mark_se\[2];			/\* ] mark row & off \*/)
 	int tmp_mark\[4];		/\* aux mark state \*/
 	int ln_n;			/\* number of lines in ln\[] \*/8??0?
-grp 08??-4m 2220reg p OK vi.h:139:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.h:181:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int ref;		/\* ins/del ref exists on lbuf \*/
 };
 struct linfo \{.*(	int ln_sz;			/\* size of ln\[] \*/)
 	int useq;			/\* current operation sequence \*/
 	int modified;			/\* modification state \*/9??0?
-grp 09??-7m 2220reg p OK vi.h:139:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:1392sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.h:181:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:1812sc %? %@2132sc!0?
 ?0?
 %f+ 	int ln_sz;			/\* size of ln\[] \*/
 	int useq;			/\* current operation sequence \*/
@@ -842,17 +842,17 @@ struct linfo \{.*(	int ln_sz;			/\* size of ln\[] \*/)
 	int hist_sz;			/\* size of hist\[] \*/
 	int hist_n;			/\* current history head in hist\[] \*/
 	int hist_u;			/\* current undo head in hist\[] \*/2??0?
-2??m 3220reg p OK vi.h:149:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK vi.h:191:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	int saved;			/\* save state \*/$3??0?
-3??m 3220reg p OK vi.h:149:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK vi.h:191:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	int ln_sz;			/\* size of ln\[] \*/
 	int useq;			/\* current operation sequence \*/
 	int modified;			/\* modification state \*/4??0?
-4??+3m 3220reg p OK vi.h:149:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK vi.h:191:a42sc %? %@2152sc!1q0?
 %f+ 	int hist_sz;			/\* size of hist\[] \*/
 	int hist_n;			/\* current history head in hist\[] \*/
 	int hist_u;			/\* current undo head in hist\[] \*/5??0?
-5??-1m 3220reg p OK vi.h:149:a52sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK vi.h:191:a52sc %? %@2152sc!1q0?
 %f+ ...t .n_s.;.	............l......
 .i.. .......... ...........r..io..se.u.... ..
 .....m......d.............ca.i.........\*.
@@ -860,25 +860,25 @@ struct linfo \{.*(	int ln_sz;			/\* size of ln\[] \*/)
 .... ............\* s....of........./
 ......i...........c..r.n...i.t.......d .......\[. \*/
 	......s......	.\*.c.r.en...n.o.he.. ...h..... ..6??0?
-6??+3m 3220reg p OK vi.h:149:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK vi.h:191:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	int ln_sz;			/\* size of ln\[] \*/.*?
 	int useq;			/\* current operation sequence \*/.*?
 	int modified;			/\* modification state \*/.*?
 (	int saved;			/\* save state \*/)7??0?
-grp 07??m 3220reg p OK vi.h:149:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.h:191:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int mark_se\[2];			/\* ] mark row & off \*/
 	int tmp_mark\[4];		/\* aux mark state \*/
 	int ln_n;			/\* number of lines in ln\[] \*/.*(#define lbuf_len\(lb\) lb->ln_n)
 #define lbuf_s\(ln\) \(\(struct linfo\*\)\(ln - sizeof\(struct linfo\)\)\)
 #define lbuf_i\(lb, pos\) \(\(struct linfo\*\)\(lb->ln\[pos] - sizeof\(struct linfo\)\)\)8??0?
-grp 08??-5m 3220reg p OK vi.h:149:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 3220reg p OK vi.h:191:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int \*mark;			/\* mark id, row & off triplets \*/
 	int mark_n;			/\* number of marks in mark\[] \*/
 	int mark_sb\[2];			/\* \[ mark row & off \*/.*(struct lbuf \*lbuf_make\(void\);)
 void lbuf_free\(struct lbuf \*lb\);
 int lbuf_rd\(struct lbuf \*lb, int fd, int beg, int end\);9??0?
-grp 09??-8m 3220reg p OK vi.h:149:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.h:1492sc %? %@2132sc!0?
+grp 09??-8m 3220reg p OK vi.h:191:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:1912sc %? %@2132sc!0?
 ?0?
 %f+ int lbuf_findchar\(struct lbuf \*lb, char \*cs, int cmd, int n, int \*r, int \*o\);
 int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,
@@ -890,34 +890,34 @@ int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int psk
 %f+ int lbuf_findchar\(struct lbuf \*lb, char \*cs, int cmd, int n, int \*r, int \*o\);
 int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,
 		int nskip, int \*r, int \*o\);4??0?
-4??+2m 4220reg p OK vi.h:181:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK vi.h:223:a42sc %? %@2152sc!1q0?
 grp 1%f+ int lbuf_findchar\(struct lbuf \*lb, char \*cs, int cmd, int n, int \*r, int \*o\);.*?
 int lbuf_search\(struct lbuf \*lb, rset \*re, int dir, int beg, int end, int pskip,.*?
 (		int nskip, int \*r, int \*o\);)7??0?
-grp 07??m 4220reg p OK vi.h:181:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.h:223:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> int lbuf_indents\(struct lbuf \*lb, int r\);
 int lbuf_eol\(struct lbuf \*lb, int r, int state\);
 int lbuf_next\(struct lbuf \*lb, int dir, int \*r, int \*o\);.*(	if \(n == lbuf_s\(s\)->len && !memcmp\(str, s, n\)\) \\)
 		lbuf_edit\(lb, NULL, i, i \+ 1, 0, 0\); \\
 	else \\8??0?
-grp 08??-4m 4220reg p OK vi.h:181:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK vi.h:223:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\);
 int lbuf_redo\(struct lbuf \*lb, int \*row, int \*off\);
 void lbuf_saved\(struct lbuf \*lb, int clear\);.*(/\* regions \*/)
 int lbuf_sectionbeg\(struct lbuf \*lb, int dir, int \*row, int \*off, int ch\);
 int lbuf_wordbeg\(struct lbuf \*lb, int big, int dir, int \*row, int \*off\);9??0?
-grp 09??-10m 4220reg p OK vi.h:181:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.h:1812sc %? %@2132sc!0?
+grp 09??-10m 4220reg p OK vi.h:223:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.h:2232sc %? %@2132sc!0?
 '\''1i 	unsigned long id;	/* edit identity across branches */
-??!219reg vi.h:130:m12sc %? %@2142sc!0?
+??!219reg vi.h:172:m12sc %? %@2142sc!0?
 '\''2i 	sbuf *rehist;		/* alternate redo timelines */
-??!219reg vi.h:139:m22sc %? %@2142sc!0?
+??!219reg vi.h:181:m22sc %? %@2142sc!0?
 '\''3c 	unsigned long saved;		/* saved edit identity */
 	unsigned long edit_id;		/* last allocated edit identity */
-??!219reg vi.h:149:m32sc %? %@2142sc!0?
+??!219reg vi.h:191:m32sc %? %@2142sc!0?
 '\''4i void lbuf_setleaf(struct lbuf *lb, int leaf);
 char *lbuf_getleafs(struct lbuf *lb);
-??!219reg vi.h:181:m42sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
+??!219reg vi.h:223:m42sc %? %@2142sc!vis 2b0wb1wb2wb3w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'lbuf.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -943,10 +943,10 @@ index 2888d7c6..416f9157 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index f0ce0805..7e7eb333 100644
+index 7f23552d..00b80c40 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1668,6 +1668,18 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1669,6 +1669,18 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -965,7 +965,7 @@ index f0ce0805..7e7eb333 100644
  static void ext_hlr(led_ext *p, led_ctx *x)
  {
  	ren_state *r = x->r;
-@@ -1797,6 +1809,7 @@ static struct excmd {
+@@ -1798,6 +1810,7 @@ static struct excmd {
  	{"uc", ec_setenc},
  	{"uz", ec_setenc},
  	{"ub", ec_setenc},
@@ -1170,10 +1170,10 @@ index 56cb42c6..666bbf5b 100644
  
  int lbuf_indents(struct lbuf *lb, int r)
 diff --git a/vi.h b/vi.h
-index 514c675e..2bd71244 100644
+index c23da595..c180951e 100644
 --- a/vi.h
 +++ b/vi.h
-@@ -128,6 +128,7 @@ struct lopt {
+@@ -170,6 +170,7 @@ struct lopt {
  	int pos, pos_off;	/* modification location */
  	int n_ins, n_del;	/* modification range */
  	int seq;		/* operation number */
@@ -1181,7 +1181,7 @@ index 514c675e..2bd71244 100644
  	int ref;		/* ins/del ref exists on lbuf */
  };
  struct linfo {
-@@ -137,6 +138,7 @@ struct linfo {
+@@ -179,6 +180,7 @@ struct linfo {
  struct lbuf {
  	char **ln;			/* buffer lines */
  	struct lopt *hist;		/* buffer history */
@@ -1189,7 +1189,7 @@ index 514c675e..2bd71244 100644
  	int *mark;			/* mark id, row & off triplets */
  	int mark_n;			/* number of marks in mark[] */
  	int mark_sb[2];			/* [ mark row & off */
-@@ -146,7 +148,8 @@ struct lbuf {
+@@ -188,7 +190,8 @@ struct lbuf {
  	int ln_sz;			/* size of ln[] */
  	int useq;			/* current operation sequence */
  	int modified;			/* modification state */
@@ -1199,7 +1199,7 @@ index 514c675e..2bd71244 100644
  	int hist_sz;			/* size of hist[] */
  	int hist_n;			/* current history head in hist[] */
  	int hist_u;			/* current undo head in hist[] */
-@@ -179,6 +182,8 @@ int lbuf_next(struct lbuf *lb, int dir, int *r, int *o);
+@@ -221,6 +224,8 @@ int lbuf_next(struct lbuf *lb, int dir, int *r, int *o);
  int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *r, int *o);
  int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
  		int nskip, int *r, int *o);
