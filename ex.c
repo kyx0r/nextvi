@@ -1836,7 +1836,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 	*arg = sb->s_n;
 	while (*src && *src != xsep) {
 		if (*src == xexp) {
-			int n;
+			unsigned int n;
 			struct buf *pbuf = ex_buf;
 			src++;
 			if (*src == '@') {
@@ -1855,7 +1855,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			} else if (uc_isdigit(*src)) {
 				for (n = 0; uc_isdigit(*src); src++)
 					n = n * 10 + (*src - '0');
-				pbuf = n < xbufcur ? &bufs[n] : NULL;
+				pbuf = n < (unsigned int)xbufcur ? &bufs[n] : NULL;
 			}
 			if (pbuf && pbuf->path[0])
 				sbuf_mem(sb, pbuf->path, pbuf->plen)
