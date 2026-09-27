@@ -8335,11 +8335,9 @@ void lbuf_saved\(struct lbuf \*lb, int clear\)
 1;4;7;8;9??!219reg lbuf.c:4532sc %? %@2132sc!0?
 '\''1i 	if (agent_tool) {
 		char msg[64];
-		int first = beg + 1, last = end > beg ? end : first;
-		if (first == last)
-			snprintf(msg, sizeof(msg), "edited line %d", first);
-		else
-			snprintf(msg, sizeof(msg), "edited lines %d,%d", first, last);
+		/* Report a zero-based, half-open span, like ex range beg/end. */
+		int last = MAX(end, beg + lo->n_ins);
+		snprintf(msg, sizeof(msg), "edited lines beg: %d end: %d", beg, last);
 		ex_print(msg, msg_ft)
 	}
 	agent_sync(lb);
@@ -16069,27 +16067,25 @@ index 00000000..53b98fed
 +	{"err", "Control ex errors", 1065, 1077, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..d593e626 100644
+index 56cb42c6..681c0569 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -227,6 +227,16 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
+@@ -227,6 +227,14 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
  		free(sb->s);
  	else
  		lo->ins = (char**)sb->s;
 +	if (agent_tool) {
 +		char msg[64];
-+		int first = beg + 1, last = end > beg ? end : first;
-+		if (first == last)
-+			snprintf(msg, sizeof(msg), "edited line %d", first);
-+		else
-+			snprintf(msg, sizeof(msg), "edited lines %d,%d", first, last);
++		/* Report a zero-based, half-open span, like ex range beg/end. */
++		int last = MAX(end, beg + lo->n_ins);
++		snprintf(msg, sizeof(msg), "edited lines beg: %d end: %d", beg, last);
 +		ex_print(msg, msg_ft)
 +	}
 +	agent_sync(lb);
  }
  
  int lbuf_rd(struct lbuf *lb, int fd, int beg, int end)
-@@ -424,6 +434,7 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
+@@ -424,6 +432,7 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
  	lbuf_copymark(lb->mark_sb, lo->mark_sb)
  	lbuf_copymark(lb->mark_se, lo->mark_se)
  	lb->modified = lb->hist_u != lb->saved;
@@ -16097,7 +16093,7 @@ index 56cb42c6..d593e626 100644
  	return 0;
  }
  
-@@ -451,6 +462,7 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+@@ -451,6 +460,7 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  		lbuf_copymark(lb->mark_se, (lb->tmp_mark + 2))
  	}
  	lb->modified = lb->hist_u != lb->saved;
