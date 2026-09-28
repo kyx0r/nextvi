@@ -5,6 +5,11 @@
 Bug fixes:
 1. Prevent integer overflow when parsing numbered buffer expansions in ex
    arguments. Regressed in 7.7. Mostly pathological.
+2. Fix the ex :j range off-by-one: multi-line ranges now join only the
+   addressed lines (:1,2j joins two lines, and :%j joins the whole file).
+   Though documented, the old behavior joined a line outside the explicit
+   range. This corrects a bug rather than changing the range model; bare
+   and single-line :j still join the following line.
 
 ------------------
 7.7 Basilisk
