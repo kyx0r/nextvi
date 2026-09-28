@@ -119,11 +119,11 @@ out=$(run_ex ':g/^$/d:%p:q!')
 check 'delete empty lines (global)' "$(printf 'line1\nline2\nline3')" "$out"
 
 printf 'a\nb\nc\n' > "$TMPFILE"
-out=$(run_ex ':%-1j:%p:q!')
+out=$(run_ex ':%j:%p:q!')
 check 'join all no padding' 'abc' "$out"
 
 printf 'a\nb\nc\n' > "$TMPFILE"
-out=$(run_ex ':%-1jj:%p:q!')
+out=$(run_ex ':%jj:%p:q!')
 check 'join all with space padding' 'a b c' "$out"
 
 printf 'hello\nworld\n' > "$TMPFILE"

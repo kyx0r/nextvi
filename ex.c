@@ -1444,7 +1444,9 @@ static void *ec_join(char *loc, char *cmd, char *arg)
 	if (ex_vregion(loc, &beg, &end))
 		return xrerr;
 	xrow = beg;
-	return lbuf_join(xb, beg, end+1, xoff, &o2, arg[0]) ? xuerr : NULL;
+	if (end - beg == 1)
+		end++;
+	return lbuf_join(xb, beg, end, xoff, &o2, arg[0]) ? xuerr : NULL;
 }
 
 static void *ec_setdir(char *loc, char *cmd, char *arg)
@@ -1836,7 +1838,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 	*arg = sb->s_n;
 	while (*src && *src != xsep) {
 		if (*src == xexp) {
-			int n;
+			unsigned int n;
 			struct buf *pbuf = ex_buf;
 			src++;
 			if (*src == '@') {
@@ -1855,7 +1857,7 @@ static const char *ex_arg(const char *src, sbuf *sb, int *arg)
 			} else if (uc_isdigit(*src)) {
 				for (n = 0; uc_isdigit(*src); src++)
 					n = n * 10 + (*src - '0');
-				pbuf = n < xbufcur ? &bufs[n] : NULL;
+				pbuf = n < (unsigned int)xbufcur ? &bufs[n] : NULL;
 			}
 			if (pbuf && pbuf->path[0])
 				sbuf_mem(sb, pbuf->path, pbuf->plen)

@@ -706,24 +706,24 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},4??0?
-4??+2m 2220reg p OK ex.c:1805:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1807:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
-grp 07??m 2220reg p OK ex.c:1805:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1807:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},
 	EO\(shape\),.*(	\{"ya!", ec_yank},)
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},8??0?
-grp 08??-4m 2220reg p OK ex.c:1805:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1807:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"w", ec_write},
 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
-grp 09??-7m 2220reg p OK ex.c:1805:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:18052sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1807:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18072sc %? %@2132sc!0?
 '\''1i /* misspelled words and their suggestions, "word\0sug, sug\0" per entry */
 static sbuf *spsb;
 static char **spidx;		/* spsb entries, sorted by word */
@@ -891,7 +891,7 @@ static void *ec_spell(char *loc, char *cmd, char *arg)
 ??!219reg ex.c:1320:m12sc %? %@2142sc!0?
 '\''2i 	{"sl!", ec_spell},
 	{"sl", ec_spell},
-??!219reg ex.c:1805:m22sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1807:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return cs\[0] == '\''\\n'\'' \? 1 : 2;
 }
 
@@ -1274,7 +1274,7 @@ index 2888d7c6..13b7bf2b 100644
  
  /* how to highlight text in the reverse direction */
 diff --git a/ex.c b/ex.c
-index 7f23552d..7c6ca4d1 100644
+index 76dca408..0978f3e6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1318,6 +1318,170 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
@@ -1448,7 +1448,7 @@ index 7f23552d..7c6ca4d1 100644
  static void *ec_cmap(char *loc, char *cmd, char *arg)
  {
  	if (arg[0])
-@@ -1803,6 +1967,8 @@ static struct excmd {
+@@ -1805,6 +1969,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -1458,7 +1458,7 @@ index 7f23552d..7c6ca4d1 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/vi.c b/vi.c
-index 93847fac..6d2d8b67 100644
+index 13b97c7d..2bd198f8 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1078,6 +1078,68 @@ static int vc_replace(void)

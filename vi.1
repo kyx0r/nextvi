@@ -1,6 +1,6 @@
-.Dd Sep 27, 2026
+.Dd Sep 28, 2026
 .Dt Nextvi 1
-.Os Nextvi 7.7
+.Os Nextvi 7.8
 .
 .Sh NAME
 .Nm Nextvi
@@ -832,13 +832,14 @@ Example: delete from current position to the end of the buffer
 .It Cm [\fIvrange\fP]j[\fIany\fP]
 Join line(s)
 .Bd -literal
+Range of two or more lines joins exactly those lines.
 Any argument activates padding mode.
 Returns error if there is nothing to join.
 
 Example: join all lines
-:%-1j
+:%j
 Example: join all lines with space padding
-:%-1j x
+:%j x
 .Ed
 
 .It Cm [\fIrange\fP]s[<\fIDelim\fP>][\fIregex\fP][<\fIDelim\fP>][\fIstr\fP][<\fIDelim\fP>][<\fIg\fP>][<\fIm\fP>][<\fI^\fP>][\fI#reg\fP]
@@ -1803,9 +1804,9 @@ _
  774 regex.c | pikevm
  805 led.c | insert mode/output
  1862 vi.c | normal mode/general
- 2001 ex.c | ex options/commands
+ 2003 ex.c | ex options/commands
  7199 patch2vi.c | patch converter
- 15128 total | wc -l *.c\(basort
+ 15130 total | wc -l *.c\(basort
 _
 .TE
 .

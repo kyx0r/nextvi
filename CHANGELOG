@@ -11,6 +11,13 @@ Bug fixes:
    range. This corrects a bug rather than changing the range model; bare
    and single-line :j still join the following line.
 
+Source commits:
+master    1635521b
+manual    d16949c9
+patches   08a66e3c
+patch2vi  5a32acb4
+test      73bb9c99
+
 ------------------
 7.7 Basilisk
 ------------------

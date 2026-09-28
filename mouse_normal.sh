@@ -105,20 +105,20 @@ int xai = 1;			/\* autoindent option \*/1??0?
 \)
 
 4??0?
-4??+2m 2220reg p OK ex.c:1730:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1732:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 2220reg p OK ex.c:1730:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1732:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 2220reg p OK ex.c:1730:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:17302sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1732:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17322sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
@@ -130,24 +130,24 @@ static struct excmd \{
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
 	EO\(mpt\),4??0?
-4??+2m 3220reg p OK ex.c:1783:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1785:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g!", ec_glob},.*?
 	\{"g", ec_glob},.*?
 (	EO\(mpt\),)7??0?
-grp 07??m 3220reg p OK ex.c:1783:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1785:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"i", ec_insert},
 	\{"d", ec_delete},
 	EO\(grp\),.*(	\{"q", ec_quit},)
 	\{"reg\+", ec_regprint},
 	\{"reg", ec_regprint},8??0?
-grp 08??-4m 3220reg p OK ex.c:1783:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1785:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(ish\),
 	\{"inc", ec_setincl},
 	EO\(ic\),.*(	\{"re", ec_krsset},)
 	\{"rd", ec_undoredo},
 	EO\(rr\),9??0?
-grp 09??-7m 3220reg p OK ex.c:1783:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17832sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1785:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17852sc %? %@2132sc!0?
 '\''1-1i int xms = 1;			/* mouse in normal mode */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i _EO(ms,
@@ -157,9 +157,9 @@ static struct excmd \{
 	return NULL;
 )
 
-??!219reg ex.c:1730:m22sc %? %@2142sc!0?
+??!219reg ex.c:1732:m22sc %? %@2142sc!0?
 '\''3i 	EO(ms),
-??!219reg ex.c:1783:m32sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1785:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return pos - xleft;
 }
 
@@ -848,7 +848,7 @@ index 2888d7c6..129d1629 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 7f23552d..c4fb2da6 100644
+index 76dca408..423773a5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -856,7 +856,7 @@ index 7f23552d..c4fb2da6 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1728,6 +1729,13 @@ _EO(left,
+@@ -1730,6 +1731,13 @@ _EO(left,
  	return NULL;
  )
  
@@ -870,7 +870,7 @@ index 7f23552d..c4fb2da6 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1781,6 +1789,7 @@ static struct excmd {
+@@ -1783,6 +1791,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -1054,7 +1054,7 @@ index 03aa736f..f1a967dc 100644
  {
  	int cw;
 diff --git a/vi.c b/vi.c
-index 93847fac..44df53ba 100644
+index 13b97c7d..88346d84 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -468,6 +468,9 @@ static void vc_status(int type)
