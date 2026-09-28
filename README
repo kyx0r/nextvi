@@ -571,13 +571,14 @@ EX COMMANDS
      [vrange]j[any]
              Join line(s)
 
+             Range of two or more lines joins exactly those lines.
              Any argument activates padding mode.
              Returns error if there is nothing to join.
 
              Example: join all lines
-             :%-1j
+             :%j
              Example: join all lines with space padding
-             :%-1j x
+             :%j x
 
      [range]s[<Delim>][regex][<Delim>][str][<Delim>][<g>][<m>][<^>][#reg]
              Substitute
@@ -1395,8 +1396,8 @@ CODE MAP
      | 774 regex.c  |  pikevm              |
      | 805 led.c    |  insert mode/output  |
      | 1862 vi.c    |  normal mode/general |
-     | 2001 ex.c    |  ex options/commands |
-     | 7929 total   |  wc -l *.c|sort      |
+     | 2003 ex.c    |  ex options/commands |
+     | 7931 total   |  wc -l *.c|sort      |
      +--------------+----------------------+
 
 COMPILING
@@ -1477,4 +1478,4 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.8                    September 27, 2026                    Nextvi 7.8
+Nextvi 7.8                    September 28, 2026                    Nextvi 7.8
