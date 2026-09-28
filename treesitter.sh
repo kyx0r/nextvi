@@ -4389,7 +4389,7 @@ index 2888d7c6..8f6237ef 100644
 +	{"comment", BL | SYN_IT},
 +};
 diff --git a/ex.c b/ex.c
-index 4af09cc5..e3f3d15b 100644
+index 76dca408..51e60e8e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -2,7 +2,7 @@ int xleft;			/* the first visible column */
