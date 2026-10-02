@@ -1381,8 +1381,8 @@ static void *ec_aout(char *loc, char *cmd, char *arg)
 	if (beg > end || beg >= (long)agent_show_n)
 		return "byte range out of bounds";
 	end = MIN(end, (long)agent_show_n - 1);
-	if (agent_capture)
-		agent_capture_add(agent_show + beg, end - beg + 1);
+	if (agent_capture)	/* exempt from gr: not counted in the total */
+		sbuf_mem(agent_capture, agent_show + beg, end - beg + 1)
 	else {
 		char *s = emalloc(end - beg + 2);
 		memcpy(s, agent_show + beg, end - beg + 1);
@@ -5409,8 +5409,8 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             print "             brange is first,last in 0-based byte offsets, inclusive; $ is"
             print "             the last byte and one offset selects one byte. No range prints"
             print "             everything. Saves each tool call output except calls running"
-            print "             aout; under gr at most 1048576 bytes are kept. Output is still"
-            print "             subject to gr. A new session clears it."
+            print "             aout; under gr at most 1048576 bytes are kept. Output is exempt"
+            print "             from gr. A new session clears it."
             print ""
             print "             Example: bytes 50 through the end"
             print "             :50,$aout"
@@ -7906,8 +7906,8 @@ static char *exspec_lines[] = {
 	"brange is first,last in 0-based byte offsets, inclusive; $ is",
 	"the last byte and one offset selects one byte. No range prints",
 	"everything. Saves each tool call output except calls running",
-	"aout; under gr at most 1048576 bytes are kept. Output is still",
-	"subject to gr. A new session clears it.",
+	"aout; under gr at most 1048576 bytes are kept. Output is exempt",
+	"from gr. A new session clears it.",
 	"",
 	"Example: bytes 50 through the end",
 	"50,$aout",
@@ -8982,7 +8982,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..9adce3b9
+index 00000000..8118886f
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,1687 @@
@@ -10337,8 +10337,8 @@ index 00000000..9adce3b9
 +	if (beg > end || beg >= (long)agent_show_n)
 +		return "byte range out of bounds";
 +	end = MIN(end, (long)agent_show_n - 1);
-+	if (agent_capture)
-+		agent_capture_add(agent_show + beg, end - beg + 1);
++	if (agent_capture)	/* exempt from gr: not counted in the total */
++		sbuf_mem(agent_capture, agent_show + beg, end - beg + 1)
 +	else {
 +		char *s = emalloc(end - beg + 2);
 +		memcpy(s, agent_show + beg, end - beg + 1);
@@ -14213,7 +14213,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..dae4e81f 100755
+index c836c94c..dd323af2 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,119 @@ build() {
@@ -14283,8 +14283,8 @@ index c836c94c..dae4e81f 100755
 +            print "             brange is first,last in 0-based byte offsets, inclusive; $ is"
 +            print "             the last byte and one offset selects one byte. No range prints"
 +            print "             everything. Saves each tool call output except calls running"
-+            print "             aout; under gr at most 1048576 bytes are kept. Output is still"
-+            print "             subject to gr. A new session clears it."
++            print "             aout; under gr at most 1048576 bytes are kept. Output is exempt"
++            print "             from gr. A new session clears it."
 +            print ""
 +            print "             Example: bytes 50 through the end"
 +            print "             :50,$aout"
@@ -15034,7 +15034,7 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..f5d87345
+index 00000000..66f4718f
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1262 @@
@@ -15845,8 +15845,8 @@ index 00000000..f5d87345
 +	"brange is first,last in 0-based byte offsets, inclusive; $ is",
 +	"the last byte and one offset selects one byte. No range prints",
 +	"everything. Saves each tool call output except calls running",
-+	"aout; under gr at most 1048576 bytes are kept. Output is still",
-+	"subject to gr. A new session clears it.",
++	"aout; under gr at most 1048576 bytes are kept. Output is exempt",
++	"from gr. A new session clears it.",
 +	"",
 +	"Example: bytes 50 through the end",
 +	"50,$aout",
