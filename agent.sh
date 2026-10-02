@@ -63,6 +63,7 @@ static char *agent_init_error;
 static unsigned long agent_rounds;	/* tool rounds completed in the current run */
 static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
 static size_t agent_capture_total;	/* full tool output, including clipped bytes */
+#define AGENT_SHOW_MAX (1 << 20)	/* guarded output kept for aout */
 
 /* Usage describes the last accepted response. The anchor describes its input;
  * subsequent messages/tool results are estimated, not provider token counts. */
@@ -407,7 +408,7 @@ static void agent_capture_add(const char *s, int n)
 {
 	agent_capture_total += n;
 	if (xgr && !agent_gr_bypass)
-		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
+		n = MIN(n, MAX(0, AGENT_SHOW_MAX - agent_capture->s_n));
 	sbuf_mem(agent_capture, s, n)
 }
 
@@ -503,10 +504,10 @@ static void agent_killtree(pid_t pid)
 	kill(pid, SIGKILL);
 }
 
-/* Keep one excess byte to detect truncated output; continue draining the pipe. */
+/* Nonzero limit caps kept output bytes; continue draining the pipe. */
 /* Use file-backed stdin; poll output and terminal together. */
 static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
-	int limited, sbuf **errout)
+	int limit, sbuf **errout)
 {
 	FILE *in = tmpfile();
 	struct pollfd fds[3];
@@ -610,8 +611,8 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 				int nr = read(fds[i].fd, buf, sizeof(buf)-1);
 				if (nr > 0) {
 					sbuf *dest = i ? eb : sb;
-					if (i == 0 && limited) {
-						int kept = MIN(nr, MAX(0, 4097 - dest->s_n));
+					if (i == 0 && limit) {
+						int kept = MIN(nr, MAX(0, limit - dest->s_n));
 						if (agent_capture)
 							agent_capture_total += nr - kept;
 						nr = kept;
@@ -667,7 +668,7 @@ static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 		xish ? "-i" : "-c", xish ? "-c" : cmd,
 		xish ? cmd : NULL, NULL};
 	int st;
-	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr && !agent_gr_bypass,
+	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr && !agent_gr_bypass ? AGENT_SHOW_MAX : 0,
 		NULL);
 	if (!out) {
 		agent_child_status = 1;
@@ -1134,16 +1135,23 @@ static void agent_run(const char *input)
 				agent_capture_total = 0;
 				agent_child_status = 0;
 				agent_gr_bypass = 0;
+				agent_shown = 0;
 				agent_tool_dep = xexec_dep + 1;
 				agent_sequence();
 				err = ex_exec(command->valuestring);
 				agent_tool_calls++;
 				agent_sequence();
+				if (!agent_shown) {
+					free(agent_show);
+					agent_show = emalloc(out->s_n + 1);
+					memcpy(agent_show, out->s, out->s_n);
+					agent_show_n = out->s_n;
+				}
 				if (xgr && !agent_gr_bypass &&
 						agent_capture_total > 4096) {
 					char msg[128];
 					snprintf(msg, sizeof(msg),
-						"output guardrail: %zu > 4096 (aretry to bypass once)",
+						"output guardrail: %zu > 4096 bytes (aout to view)",
 						agent_capture_total);
 					sbuf_cut(out, 0)
 					sbufn_str(out, msg)
@@ -1334,6 +1342,54 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	ex_print(msg, msg_ft)
 	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
 	ex_print(msg, msg_ft)
+	return NULL;
+}
+
+static int agent_byteaddr(char **s, long *pos)
+{
+	char *e;
+	if (**s == '\''$'\'') {
+		*pos = (long)agent_show_n - 1;
+		(*s)++;
+		return 0;
+	}
+	if (!isdigit((unsigned char)**s))
+		return 1;
+	errno = 0;
+	*pos = strtol(*s, &e, 10);
+	*s = e;
+	return errno == ERANGE;
+}
+
+/* Print bytes beg through end of the saved tool output; $ is the last byte. */
+static void *ec_aout(char *loc, char *cmd, char *arg)
+{
+	long beg = 0, end = (long)agent_show_n - 1;
+	if (*arg)
+		return "aout takes only a byte range";
+	if (!agent_show_n)
+		return "no agent output to show";
+	if (*loc) {
+		if (agent_byteaddr(&loc, &beg))
+			return "invalid byte range";
+		end = beg;
+		if (*loc == '\'','\'' && (loc++, agent_byteaddr(&loc, &end)))
+			return "invalid byte range";
+		if (*loc)
+			return "invalid byte range";
+	}
+	if (beg > end || beg >= (long)agent_show_n)
+		return "byte range out of bounds";
+	end = MIN(end, (long)agent_show_n - 1);
+	if (agent_capture)
+		agent_capture_add(agent_show + beg, end - beg + 1);
+	else {
+		char *s = emalloc(end - beg + 2);
+		memcpy(s, agent_show + beg, end - beg + 1);
+		s[end - beg + 1] = '\''\0'\'';
+		ex_print(s, msg_ft)
+		free(s);
+	}
 	return NULL;
 }
 
@@ -1669,11 +1725,16 @@ static int agent_input_blocked;
 /* aretry lifts the guardrail for the rest of its tool call;
  * agent_tool_dep is the ex_exec depth of the tool call itself. */
 static int agent_gr_bypass, agent_tool_dep;
+/* full output of the last tool call that did not run or defer aout */
+static char *agent_show;
+static size_t agent_show_n;
+static int agent_shown;
 static sbuf *agent_capture;
 static void *ec_agent(char *loc, char *cmd, char *arg);
 static void exspec_reset(void);
 static void *ec_skill(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
+static void *ec_aout(char *loc, char *cmd, char *arg);
 static void *ec_compact(char *loc, char *cmd, char *arg);
 static void agent_init(void);
 static void agent_sync(struct lbuf *lb);
@@ -5333,12 +5394,26 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             print "             Execute the last agent command once without the guardrail"
             print ""
             print "             Saves each top-level command the agent runs or aspec defers,"
-            print "             with its range and expanded argument. Takes no range or argument."
-            print "             Lifts the gr limit for the rest of the tool call; the saved"
-            print "             command is kept. A new session clears it. Errors if none is saved."
+            print "             with its range and expanded argument; a run aout is not saved."
+            print "             Takes no range or argument. Lifts the gr limit for the rest of"
+            print "             the tool call; the saved command is kept. A new session clears"
+            print "             it. Errors if none is saved. Reruns side effects; prefer aout"
+            print "             to view output."
             print ""
-            print "             Example: execute a deferred or truncated command"
+            print "             Example: execute a deferred command"
             print "             :aretry"
+            print ""
+            print "     [brange]aout"
+            print "             Print the saved output of the last agent tool call"
+            print ""
+            print "             brange is first,last in 0-based byte offsets, inclusive; $ is"
+            print "             the last byte and one offset selects one byte. No range prints"
+            print "             everything. Saves each tool call output except calls running"
+            print "             aout; under gr at most 1048576 bytes are kept. Output is still"
+            print "             subject to gr. A new session clears it."
+            print ""
+            print "             Example: bytes 50 through the end"
+            print "             :50,$aout"
             print ""
             spec("ast", "Print agent status and token usage",
                 "Prints sizes, per-role usage, activity, limits and autocompact mode.\n" \
@@ -5369,7 +5444,8 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             spec("gr[1]  Control agent output protection",
                 "No argument logically inverts the option.",
                 "Nonzero limits tool output to 4096 bytes and protects captured shell\n" \
-                "output; 0 disables protection. aretry bypasses it once.")
+                "output; 0 disables protection. aout views withheld output; aretry\n" \
+                "reruns the last command once unguarded.")
             print "     aspec[1]  Print ex specifications for agents"
             print ""
             print "             No argument logically inverts the option. 0 disables automatic"
@@ -5503,7 +5579,7 @@ static struct {
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|aco!?|ai|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -6722,6 +6798,7 @@ static void *ec_aretry(char *loc, char *cmd, char *arg)
 	/* a deferral inside the retried command replaces the saved one */
 	aretry_saved = NULL;
 	agent_gr_bypass = 1;
+	agent_shown |= aretry_cmd->ec == ec_aout;
 	ret = aretry_cmd->ec(saved, aretry_cmd->name, saved + aretry_arg);
 	if (aretry_saved)
 		free(saved);
@@ -6734,6 +6811,9 @@ static void exspec_reset(void)
 {
 	free(aretry_saved);
 	aretry_saved = NULL;
+	free(agent_show);
+	agent_show = NULL;
+	agent_show_n = 0;
 	exspec_ranges_read = 0;
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		exspec_cmds[i].read = 0;
@@ -6776,7 +6856,7 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 	static char *agent_cmds[] = {
 		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
 		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-		"ud", "rd", "sc", "sc!", "gr", "aretry"
+		"ud", "rd", "sc", "sc!", "gr", "aretry", "aout"
 	};
 	if (!*arg || !strcmp(arg, "catalog")) {
 		ex_print("EX TOPICS", msg_ft)
@@ -6882,6 +6962,7 @@ static int exspec_agent(char *cmd, int ranges)
 '\''24,#+3c static struct excmd excmds[] = {
 ??!219reg ex.c:1737:m242sc %? %@2142sc!0?
 '\''25i 	{"aretry", ec_aretry},
+	{"aout", ec_aout},
 	{"apack!", ec_compact},
 	{"apack", ec_compact},
 	EO(aspec),
@@ -6919,9 +7000,12 @@ static int exspec_agent(char *cmd, int ranges)
 		if (agent_interrupted())
 			break;
 		if (agent_tool && excmds[idx].ec != ec_aretry) {
+			int show = excmds[idx].ec == ec_aout;
+			/* aout takes byte ranges, not line ranges */
 			int defer = xaspec && excmds[idx].ec != ec_exspec &&
-				exspec_agent(excmds[idx].name, *sb->s);
-			if (defer || xexec_dep == agent_tool_dep)
+				exspec_agent(excmds[idx].name, *sb->s && !show);
+			agent_shown |= show;
+			if (defer || (xexec_dep == agent_tool_dep && !show))
 				aretry_save(sb, &excmds[idx], arg);
 			if (defer)
 				continue;
@@ -7807,12 +7891,26 @@ static char *exspec_lines[] = {
 	"Execute the last agent command once without the guardrail",
 	"",
 	"Saves each top-level command the agent runs or aspec defers,",
-	"with its range and expanded argument. Takes no range or argument.",
-	"Lifts the gr limit for the rest of the tool call; the saved",
-	"command is kept. A new session clears it. Errors if none is saved.",
+	"with its range and expanded argument; a run aout is not saved.",
+	"Takes no range or argument. Lifts the gr limit for the rest of",
+	"the tool call; the saved command is kept. A new session clears",
+	"it. Errors if none is saved. Reruns side effects; prefer aout",
+	"to view output.",
 	"",
-	"Example: execute a deferred or truncated command",
+	"Example: execute a deferred command",
 	"aretry",
+	"",
+	"[brange]aout",
+	"Print the saved output of the last agent tool call",
+	"",
+	"brange is first,last in 0-based byte offsets, inclusive; $ is",
+	"the last byte and one offset selects one byte. No range prints",
+	"everything. Saves each tool call output except calls running",
+	"aout; under gr at most 1048576 bytes are kept. Output is still",
+	"subject to gr. A new session clears it.",
+	"",
+	"Example: bytes 50 through the end",
+	"50,$aout",
 	"",
 	"ast",
 	"Print agent status and token usage",
@@ -7920,7 +8018,8 @@ static char *exspec_lines[] = {
 	"No argument logically inverts the option.",
 	"",
 	"Nonzero limits tool output to 4096 bytes and protects captured shell",
-	"output; 0 disables protection. aretry bypasses it once.",
+	"output; 0 disables protection. aout views withheld output; aretry",
+	"reruns the last command once unguarded.",
 	"",
 	"aspec[1]  Print ex specifications for agents",
 	"",
@@ -8222,44 +8321,45 @@ static struct {
 	{"apack", "Compact the agent session from its log", 765, 771, 0, 0},
 	{"apack!", "Compact the agent session by browsing its log", 772, 779, 0, 0},
 	{"acm", "Toggle the caveman response style skill", 780, 785, 0, 0},
-	{"aretry", "Execute the last agent command once without the guardrail", 786, 796, 0, 0},
-	{"ast", "Print agent status and token usage", 797, 805, 0, 0},
-	{"ac", "Set autocomplete filter regex", 806, 814, 0, 0},
-	{"sc", "Set ex special characters", 815, 825, 0, 0},
-	{"sc!", "Set ex special characters", 826, 833, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 834, 841, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 842, 845, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 846, 850, 0, 0},
-	{"ph", "Redefine placeholders", 851, 867, 0, 0},
-	{"aco", "Automatically compact using the loaded session log", 876, 885, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 886, 893, 1, 0},
-	{"ar", "Display returned agent reasoning", 894, 898, 1, 0},
-	{"gr", "Control agent output protection", 899, 904, 1, 0},
-	{"aspec", "Print ex specifications for agents", 905, 909, 1, 0},
-	{"ai", "Indent new lines", 910, 913, 1, 0},
-	{"ic", "Ignore case in regular expressions", 914, 915, 1, 0},
-	{"ish", "Interactive shell", 916, 931, 1, 0},
-	{"grp", "Regex search group", 932, 940, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 941, 944, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 945, 946, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 946, 947, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 947, 948, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 948, 949, 1, 0},
-	{"led", "Enable all terminal output", 949, 950, 1, 0},
-	{"vis", "Control startup flags", 951, 962, 1, 0},
-	{"mpt", "Control vi prompts", 963, 973, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 974, 976, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 976, 978, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 978, 979, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 979, 980, 1, 0},
-	{"td", "Current text direction context", 980, 986, 1, 0},
-	{"pr", "Print register", 987, 1003, 1, 0},
-	{"fr", "Find register", 1004, 1016, 1, 0},
-	{"rr", "Record register", 1017, 1030, 1, 0},
-	{"lim", "Line length render limit", 1031, 1046, 1, 0},
-	{"seq", "Control Undo/Redo", 1047, 1059, 1, 0},
-	{"left", "Control horizontal scroll", 1060, 1065, 1, 0},
-	{"err", "Control ex errors", 1066, 1078, 1, 0},
+	{"aretry", "Execute the last agent command once without the guardrail", 786, 798, 0, 0},
+	{"aout", "Print the saved output of the last agent tool call", 799, 810, 0, 0},
+	{"ast", "Print agent status and token usage", 811, 819, 0, 0},
+	{"ac", "Set autocomplete filter regex", 820, 828, 0, 0},
+	{"sc", "Set ex special characters", 829, 839, 0, 0},
+	{"sc!", "Set ex special characters", 840, 847, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 848, 855, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 856, 859, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 860, 864, 0, 0},
+	{"ph", "Redefine placeholders", 865, 881, 0, 0},
+	{"aco", "Automatically compact using the loaded session log", 890, 899, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 900, 907, 1, 0},
+	{"ar", "Display returned agent reasoning", 908, 912, 1, 0},
+	{"gr", "Control agent output protection", 913, 919, 1, 0},
+	{"aspec", "Print ex specifications for agents", 920, 924, 1, 0},
+	{"ai", "Indent new lines", 925, 928, 1, 0},
+	{"ic", "Ignore case in regular expressions", 929, 930, 1, 0},
+	{"ish", "Interactive shell", 931, 946, 1, 0},
+	{"grp", "Regex search group", 947, 955, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 956, 959, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 960, 961, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 961, 962, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 962, 963, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 963, 964, 1, 0},
+	{"led", "Enable all terminal output", 964, 965, 1, 0},
+	{"vis", "Control startup flags", 966, 977, 1, 0},
+	{"mpt", "Control vi prompts", 978, 988, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 989, 991, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 991, 993, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 993, 994, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 994, 995, 1, 0},
+	{"td", "Current text direction context", 995, 1001, 1, 0},
+	{"pr", "Print register", 1002, 1018, 1, 0},
+	{"fr", "Find register", 1019, 1031, 1, 0},
+	{"rr", "Record register", 1032, 1045, 1, 0},
+	{"lim", "Line length render limit", 1046, 1061, 1, 0},
+	{"seq", "Control Undo/Redo", 1062, 1074, 1, 0},
+	{"left", "Control horizontal scroll", 1075, 1080, 1, 0},
+	{"err", "Control ex errors", 1081, 1093, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -8882,10 +8982,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..7950cb7b
+index 00000000..9adce3b9
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1631 @@
+@@ -0,0 +1,1687 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8919,6 +9019,7 @@ index 00000000..7950cb7b
 +static unsigned long agent_rounds;	/* tool rounds completed in the current run */
 +static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
 +static size_t agent_capture_total;	/* full tool output, including clipped bytes */
++#define AGENT_SHOW_MAX (1 << 20)	/* guarded output kept for aout */
 +
 +/* Usage describes the last accepted response. The anchor describes its input;
 + * subsequent messages/tool results are estimated, not provider token counts. */
@@ -9263,7 +9364,7 @@ index 00000000..7950cb7b
 +{
 +	agent_capture_total += n;
 +	if (xgr && !agent_gr_bypass)
-+		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
++		n = MIN(n, MAX(0, AGENT_SHOW_MAX - agent_capture->s_n));
 +	sbuf_mem(agent_capture, s, n)
 +}
 +
@@ -9359,10 +9460,10 @@ index 00000000..7950cb7b
 +	kill(pid, SIGKILL);
 +}
 +
-+/* Keep one excess byte to detect truncated output; continue draining the pipe. */
++/* Nonzero limit caps kept output bytes; continue draining the pipe. */
 +/* Use file-backed stdin; poll output and terminal together. */
 +static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
-+	int limited, sbuf **errout)
++	int limit, sbuf **errout)
 +{
 +	FILE *in = tmpfile();
 +	struct pollfd fds[3];
@@ -9466,8 +9567,8 @@ index 00000000..7950cb7b
 +				int nr = read(fds[i].fd, buf, sizeof(buf)-1);
 +				if (nr > 0) {
 +					sbuf *dest = i ? eb : sb;
-+					if (i == 0 && limited) {
-+						int kept = MIN(nr, MAX(0, 4097 - dest->s_n));
++					if (i == 0 && limit) {
++						int kept = MIN(nr, MAX(0, limit - dest->s_n));
 +						if (agent_capture)
 +							agent_capture_total += nr - kept;
 +						nr = kept;
@@ -9523,7 +9624,7 @@ index 00000000..7950cb7b
 +		xish ? "-i" : "-c", xish ? "-c" : cmd,
 +		xish ? cmd : NULL, NULL};
 +	int st;
-+	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr && !agent_gr_bypass,
++	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr && !agent_gr_bypass ? AGENT_SHOW_MAX : 0,
 +		NULL);
 +	if (!out) {
 +		agent_child_status = 1;
@@ -9990,16 +10091,23 @@ index 00000000..7950cb7b
 +				agent_capture_total = 0;
 +				agent_child_status = 0;
 +				agent_gr_bypass = 0;
++				agent_shown = 0;
 +				agent_tool_dep = xexec_dep + 1;
 +				agent_sequence();
 +				err = ex_exec(command->valuestring);
 +				agent_tool_calls++;
 +				agent_sequence();
++				if (!agent_shown) {
++					free(agent_show);
++					agent_show = emalloc(out->s_n + 1);
++					memcpy(agent_show, out->s, out->s_n);
++					agent_show_n = out->s_n;
++				}
 +				if (xgr && !agent_gr_bypass &&
 +						agent_capture_total > 4096) {
 +					char msg[128];
 +					snprintf(msg, sizeof(msg),
-+						"output guardrail: %zu > 4096 (aretry to bypass once)",
++						"output guardrail: %zu > 4096 bytes (aout to view)",
 +						agent_capture_total);
 +					sbuf_cut(out, 0)
 +					sbufn_str(out, msg)
@@ -10190,6 +10298,54 @@ index 00000000..7950cb7b
 +	ex_print(msg, msg_ft)
 +	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
 +	ex_print(msg, msg_ft)
++	return NULL;
++}
++
++static int agent_byteaddr(char **s, long *pos)
++{
++	char *e;
++	if (**s == '$') {
++		*pos = (long)agent_show_n - 1;
++		(*s)++;
++		return 0;
++	}
++	if (!isdigit((unsigned char)**s))
++		return 1;
++	errno = 0;
++	*pos = strtol(*s, &e, 10);
++	*s = e;
++	return errno == ERANGE;
++}
++
++/* Print bytes beg through end of the saved tool output; $ is the last byte. */
++static void *ec_aout(char *loc, char *cmd, char *arg)
++{
++	long beg = 0, end = (long)agent_show_n - 1;
++	if (*arg)
++		return "aout takes only a byte range";
++	if (!agent_show_n)
++		return "no agent output to show";
++	if (*loc) {
++		if (agent_byteaddr(&loc, &beg))
++			return "invalid byte range";
++		end = beg;
++		if (*loc == ',' && (loc++, agent_byteaddr(&loc, &end)))
++			return "invalid byte range";
++		if (*loc)
++			return "invalid byte range";
++	}
++	if (beg > end || beg >= (long)agent_show_n)
++		return "byte range out of bounds";
++	end = MIN(end, (long)agent_show_n - 1);
++	if (agent_capture)
++		agent_capture_add(agent_show + beg, end - beg + 1);
++	else {
++		char *s = emalloc(end - beg + 2);
++		memcpy(s, agent_show + beg, end - beg + 1);
++		s[end - beg + 1] = '\0';
++		ex_print(s, msg_ft)
++		free(s);
++	}
 +	return NULL;
 +}
 +
@@ -10519,10 +10675,10 @@ index 00000000..7950cb7b
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..de60bd1c
+index 00000000..0b300cf4
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,24 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -10530,11 +10686,16 @@ index 00000000..de60bd1c
 +/* aretry lifts the guardrail for the rest of its tool call;
 + * agent_tool_dep is the ex_exec depth of the tool call itself. */
 +static int agent_gr_bypass, agent_tool_dep;
++/* full output of the last tool call that did not run or defer aout */
++static char *agent_show;
++static size_t agent_show_n;
++static int agent_shown;
 +static sbuf *agent_capture;
 +static void *ec_agent(char *loc, char *cmd, char *arg);
 +static void exspec_reset(void);
 +static void *ec_skill(char *loc, char *cmd, char *arg);
 +static void *ec_ast(char *loc, char *cmd, char *arg);
++static void *ec_aout(char *loc, char *cmd, char *arg);
 +static void *ec_compact(char *loc, char *cmd, char *arg);
 +static void agent_init(void);
 +static void agent_sync(struct lbuf *lb);
@@ -14052,10 +14213,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..778cc207 100755
+index c836c94c..dae4e81f 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,104 @@ build() {
+@@ -65,6 +65,119 @@ build() {
      }
  }
  
@@ -14107,12 +14268,26 @@ index c836c94c..778cc207 100755
 +            print "             Execute the last agent command once without the guardrail"
 +            print ""
 +            print "             Saves each top-level command the agent runs or aspec defers,"
-+            print "             with its range and expanded argument. Takes no range or argument."
-+            print "             Lifts the gr limit for the rest of the tool call; the saved"
-+            print "             command is kept. A new session clears it. Errors if none is saved."
++            print "             with its range and expanded argument; a run aout is not saved."
++            print "             Takes no range or argument. Lifts the gr limit for the rest of"
++            print "             the tool call; the saved command is kept. A new session clears"
++            print "             it. Errors if none is saved. Reruns side effects; prefer aout"
++            print "             to view output."
 +            print ""
-+            print "             Example: execute a deferred or truncated command"
++            print "             Example: execute a deferred command"
 +            print "             :aretry"
++            print ""
++            print "     [brange]aout"
++            print "             Print the saved output of the last agent tool call"
++            print ""
++            print "             brange is first,last in 0-based byte offsets, inclusive; $ is"
++            print "             the last byte and one offset selects one byte. No range prints"
++            print "             everything. Saves each tool call output except calls running"
++            print "             aout; under gr at most 1048576 bytes are kept. Output is still"
++            print "             subject to gr. A new session clears it."
++            print ""
++            print "             Example: bytes 50 through the end"
++            print "             :50,$aout"
 +            print ""
 +            spec("ast", "Print agent status and token usage",
 +                "Prints sizes, per-role usage, activity, limits and autocompact mode.\n" \
@@ -14143,7 +14318,8 @@ index c836c94c..778cc207 100755
 +            spec("gr[1]  Control agent output protection",
 +                "No argument logically inverts the option.",
 +                "Nonzero limits tool output to 4096 bytes and protects captured shell\n" \
-+                "output; 0 disables protection. aretry bypasses it once.")
++                "output; 0 disables protection. aout views withheld output; aretry\n" \
++                "reruns the last command once unguarded.")
 +            print "     aspec[1]  Print ex specifications for agents"
 +            print ""
 +            print "             No argument logically inverts the option. 0 disables automatic"
@@ -14160,7 +14336,7 @@ index c836c94c..778cc207 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +172,7 @@ install() {
+@@ -74,7 +187,7 @@ install() {
  }
  
  print_usage() {
@@ -14169,7 +14345,7 @@ index c836c94c..778cc207 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +180,9 @@ print_usage() {
+@@ -82,6 +195,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -14180,7 +14356,7 @@ index c836c94c..778cc207 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..97a57341 100644
+index 2888d7c6..91cc4ee7 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,52 @@
@@ -14243,12 +14419,12 @@ index 2888d7c6..97a57341 100644
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|aco!?|ai|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..90258b7b 100644
+index 76dca408..9ee85af9 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -14463,7 +14639,7 @@ index 76dca408..90258b7b 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1635,6 +1696,182 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1635,6 +1696,186 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -14499,6 +14675,7 @@ index 76dca408..90258b7b 100644
 +	/* a deferral inside the retried command replaces the saved one */
 +	aretry_saved = NULL;
 +	agent_gr_bypass = 1;
++	agent_shown |= aretry_cmd->ec == ec_aout;
 +	ret = aretry_cmd->ec(saved, aretry_cmd->name, saved + aretry_arg);
 +	if (aretry_saved)
 +		free(saved);
@@ -14511,6 +14688,9 @@ index 76dca408..90258b7b 100644
 +{
 +	free(aretry_saved);
 +	aretry_saved = NULL;
++	free(agent_show);
++	agent_show = NULL;
++	agent_show_n = 0;
 +	exspec_ranges_read = 0;
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		exspec_cmds[i].read = 0;
@@ -14553,7 +14733,7 @@ index 76dca408..90258b7b 100644
 +	static char *agent_cmds[] = {
 +		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
 +		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-+		"ud", "rd", "sc", "sc!", "gr", "aretry"
++		"ud", "rd", "sc", "sc!", "gr", "aretry", "aout"
 +	};
 +	if (!*arg || !strcmp(arg, "catalog")) {
 +		ex_print("EX TOPICS", msg_ft)
@@ -14646,7 +14826,7 @@ index 76dca408..90258b7b 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1939,9 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1943,9 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -14658,7 +14838,7 @@ index 76dca408..90258b7b 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1967,20 @@ _EO(left,
+@@ -1730,14 +1971,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -14683,11 +14863,12 @@ index 76dca408..90258b7b 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2001,21 @@ static struct excmd {
+@@ -1758,8 +2005,22 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
 +	{"aretry", ec_aretry},
++	{"aout", ec_aout},
 +	{"apack!", ec_compact},
 +	{"apack", ec_compact},
 +	EO(aspec),
@@ -14705,7 +14886,7 @@ index 76dca408..90258b7b 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1780,6 +2036,7 @@ static struct excmd {
+@@ -1780,6 +2041,7 @@ static struct excmd {
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
@@ -14713,7 +14894,7 @@ index 76dca408..90258b7b 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1939,8 +2196,36 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2201,39 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -14738,9 +14919,12 @@ index 76dca408..90258b7b 100644
 +		if (agent_interrupted())
 +			break;
 +		if (agent_tool && excmds[idx].ec != ec_aretry) {
++			int show = excmds[idx].ec == ec_aout;
++			/* aout takes byte ranges, not line ranges */
 +			int defer = xaspec && excmds[idx].ec != ec_exspec &&
-+				exspec_agent(excmds[idx].name, *sb->s);
-+			if (defer || xexec_dep == agent_tool_dep)
++				exspec_agent(excmds[idx].name, *sb->s && !show);
++			agent_shown |= show;
++			if (defer || (xexec_dep == agent_tool_dep && !show))
 +				aretry_save(sb, &excmds[idx], arg);
 +			if (defer)
 +				continue;
@@ -14751,7 +14935,7 @@ index 76dca408..90258b7b 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2244,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2252,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -14850,10 +15034,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..23799d94
+index 00000000..f5d87345
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1246 @@
+@@ -0,0 +1,1262 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -15646,12 +15830,26 @@ index 00000000..23799d94
 +	"Execute the last agent command once without the guardrail",
 +	"",
 +	"Saves each top-level command the agent runs or aspec defers,",
-+	"with its range and expanded argument. Takes no range or argument.",
-+	"Lifts the gr limit for the rest of the tool call; the saved",
-+	"command is kept. A new session clears it. Errors if none is saved.",
++	"with its range and expanded argument; a run aout is not saved.",
++	"Takes no range or argument. Lifts the gr limit for the rest of",
++	"the tool call; the saved command is kept. A new session clears",
++	"it. Errors if none is saved. Reruns side effects; prefer aout",
++	"to view output.",
 +	"",
-+	"Example: execute a deferred or truncated command",
++	"Example: execute a deferred command",
 +	"aretry",
++	"",
++	"[brange]aout",
++	"Print the saved output of the last agent tool call",
++	"",
++	"brange is first,last in 0-based byte offsets, inclusive; $ is",
++	"the last byte and one offset selects one byte. No range prints",
++	"everything. Saves each tool call output except calls running",
++	"aout; under gr at most 1048576 bytes are kept. Output is still",
++	"subject to gr. A new session clears it.",
++	"",
++	"Example: bytes 50 through the end",
++	"50,$aout",
 +	"",
 +	"ast",
 +	"Print agent status and token usage",
@@ -15759,7 +15957,8 @@ index 00000000..23799d94
 +	"No argument logically inverts the option.",
 +	"",
 +	"Nonzero limits tool output to 4096 bytes and protects captured shell",
-+	"output; 0 disables protection. aretry bypasses it once.",
++	"output; 0 disables protection. aout views withheld output; aretry",
++	"reruns the last command once unguarded.",
 +	"",
 +	"aspec[1]  Print ex specifications for agents",
 +	"",
@@ -16061,44 +16260,45 @@ index 00000000..23799d94
 +	{"apack", "Compact the agent session from its log", 765, 771, 0, 0},
 +	{"apack!", "Compact the agent session by browsing its log", 772, 779, 0, 0},
 +	{"acm", "Toggle the caveman response style skill", 780, 785, 0, 0},
-+	{"aretry", "Execute the last agent command once without the guardrail", 786, 796, 0, 0},
-+	{"ast", "Print agent status and token usage", 797, 805, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 806, 814, 0, 0},
-+	{"sc", "Set ex special characters", 815, 825, 0, 0},
-+	{"sc!", "Set ex special characters", 826, 833, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 834, 841, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 842, 845, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 846, 850, 0, 0},
-+	{"ph", "Redefine placeholders", 851, 867, 0, 0},
-+	{"aco", "Automatically compact using the loaded session log", 876, 885, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 886, 893, 1, 0},
-+	{"ar", "Display returned agent reasoning", 894, 898, 1, 0},
-+	{"gr", "Control agent output protection", 899, 904, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 905, 909, 1, 0},
-+	{"ai", "Indent new lines", 910, 913, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 914, 915, 1, 0},
-+	{"ish", "Interactive shell", 916, 931, 1, 0},
-+	{"grp", "Regex search group", 932, 940, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 941, 944, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 945, 946, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 946, 947, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 947, 948, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 948, 949, 1, 0},
-+	{"led", "Enable all terminal output", 949, 950, 1, 0},
-+	{"vis", "Control startup flags", 951, 962, 1, 0},
-+	{"mpt", "Control vi prompts", 963, 973, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 974, 976, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 976, 978, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 978, 979, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 979, 980, 1, 0},
-+	{"td", "Current text direction context", 980, 986, 1, 0},
-+	{"pr", "Print register", 987, 1003, 1, 0},
-+	{"fr", "Find register", 1004, 1016, 1, 0},
-+	{"rr", "Record register", 1017, 1030, 1, 0},
-+	{"lim", "Line length render limit", 1031, 1046, 1, 0},
-+	{"seq", "Control Undo/Redo", 1047, 1059, 1, 0},
-+	{"left", "Control horizontal scroll", 1060, 1065, 1, 0},
-+	{"err", "Control ex errors", 1066, 1078, 1, 0},
++	{"aretry", "Execute the last agent command once without the guardrail", 786, 798, 0, 0},
++	{"aout", "Print the saved output of the last agent tool call", 799, 810, 0, 0},
++	{"ast", "Print agent status and token usage", 811, 819, 0, 0},
++	{"ac", "Set autocomplete filter regex", 820, 828, 0, 0},
++	{"sc", "Set ex special characters", 829, 839, 0, 0},
++	{"sc!", "Set ex special characters", 840, 847, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 848, 855, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 856, 859, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 860, 864, 0, 0},
++	{"ph", "Redefine placeholders", 865, 881, 0, 0},
++	{"aco", "Automatically compact using the loaded session log", 890, 899, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 900, 907, 1, 0},
++	{"ar", "Display returned agent reasoning", 908, 912, 1, 0},
++	{"gr", "Control agent output protection", 913, 919, 1, 0},
++	{"aspec", "Print ex specifications for agents", 920, 924, 1, 0},
++	{"ai", "Indent new lines", 925, 928, 1, 0},
++	{"ic", "Ignore case in regular expressions", 929, 930, 1, 0},
++	{"ish", "Interactive shell", 931, 946, 1, 0},
++	{"grp", "Regex search group", 947, 955, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 956, 959, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 960, 961, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 961, 962, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 962, 963, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 963, 964, 1, 0},
++	{"led", "Enable all terminal output", 964, 965, 1, 0},
++	{"vis", "Control startup flags", 966, 977, 1, 0},
++	{"mpt", "Control vi prompts", 978, 988, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 989, 991, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 991, 993, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 993, 994, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 994, 995, 1, 0},
++	{"td", "Current text direction context", 995, 1001, 1, 0},
++	{"pr", "Print register", 1002, 1018, 1, 0},
++	{"fr", "Find register", 1019, 1031, 1, 0},
++	{"rr", "Record register", 1032, 1045, 1, 0},
++	{"lim", "Line length render limit", 1046, 1061, 1, 0},
++	{"seq", "Control Undo/Redo", 1062, 1074, 1, 0},
++	{"left", "Control horizontal scroll", 1075, 1080, 1, 0},
++	{"err", "Control ex errors", 1081, 1093, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..681c0569 100644
