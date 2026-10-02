@@ -6942,13 +6942,13 @@ _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
 '\''24,#+3c static struct excmd excmds[] = {
 ??!219reg ex.c:1737:m242sc %? %@2142sc!0?
 '\''25i 	{"aretry", ec_aretry},
-	{"aout", ec_aout},
 	{"apack!", ec_compact},
 	{"apack", ec_compact},
 	EO(aspec),
-	{"acm", ec_skill},
+	{"aout", ec_aout},
 	{"aco!", eo_aco},
 	EO(aco),
+	{"acm", ec_skill},
 	{"ast", ec_ast},
 	EO(agr),
 ??!219reg ex.c:1760:m252sc %? %@2142sc!0?
@@ -14410,7 +14410,7 @@ index 2888d7c6..22914a7c 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..ebccd2a3 100644
+index 76dca408..271228a5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -14855,13 +14855,13 @@ index 76dca408..ebccd2a3 100644
  	{"ph", ec_setenc},
  	{"p", ec_print},
 +	{"aretry", ec_aretry},
-+	{"aout", ec_aout},
 +	{"apack!", ec_compact},
 +	{"apack", ec_compact},
 +	EO(aspec),
-+	{"acm", ec_skill},
++	{"aout", ec_aout},
 +	{"aco!", eo_aco},
 +	EO(aco),
++	{"acm", ec_skill},
 +	{"ast", ec_ast},
 +	EO(agr),
  	EO(ai),
