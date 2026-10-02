@@ -406,7 +406,7 @@ static int agent_boundary(void)
 static void agent_capture_add(const char *s, int n)
 {
 	agent_capture_total += n;
-	if (xgr == 2)
+	if (xgr && !agent_gr_bypass)
 		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
 	sbuf_mem(agent_capture, s, n)
 }
@@ -667,7 +667,7 @@ static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 		xish ? "-i" : "-c", xish ? "-c" : cmd,
 		xish ? cmd : NULL, NULL};
 	int st;
-	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2,
+	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr && !agent_gr_bypass,
 		NULL);
 	if (!out) {
 		agent_child_status = 1;
@@ -1133,19 +1133,22 @@ static void agent_run(const char *input)
 				agent_capture = out;
 				agent_capture_total = 0;
 				agent_child_status = 0;
+				agent_gr_bypass = 0;
+				agent_tool_dep = xexec_dep + 1;
 				agent_sequence();
 				err = ex_exec(command->valuestring);
 				agent_tool_calls++;
 				agent_sequence();
-				if (xgr == 2 && agent_capture_total > 4096) {
+				if (xgr && !agent_gr_bypass &&
+						agent_capture_total > 4096) {
 					char msg[128];
 					snprintf(msg, sizeof(msg),
-						"output guardrail: %zu > 4096 (gr 0 to bypass once)",
+						"output guardrail: %zu > 4096 (aretry to bypass once)",
 						agent_capture_total);
 					sbuf_cut(out, 0)
 					sbufn_str(out, msg)
-				} else if (xgr >= 0 && xgr < 2)
-					xgr++;
+				}
+				agent_gr_bypass = 0;
 				agent_capture = NULL;
 				agent_tool = 0;
 				if (agent_input_blocked) {
@@ -1663,6 +1666,9 @@ static int agent_autocompact(const char *input)
 /* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 static int agent_tool, agent_cancel, agent_pause;
 static int agent_input_blocked;
+/* aretry lifts the guardrail for the rest of its tool call;
+ * agent_tool_dep is the ex_exec depth of the tool call itself. */
+static int agent_gr_bypass, agent_tool_dep;
 static sbuf *agent_capture;
 static void *ec_agent(char *loc, char *cmd, char *arg);
 static void exspec_reset(void);
@@ -5324,13 +5330,14 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Adds or removes the skill in b-5. Tool calls update the system\n" \
                 "message; otherwise context is rebuilt from the log.")
             print "     aretry"
-            print "             Execute the last deferred agent command once"
+            print "             Execute the last agent command once without the guardrail"
             print ""
-            print "             Uses the saved range and expanded argument. Takes no range or"
-            print "             argument. A new deferral replaces it; retry consumes it even on"
-            print "             failure. A new session clears it. Errors if none is saved."
+            print "             Saves each top-level command the agent runs or aspec defers,"
+            print "             with its range and expanded argument. Takes no range or argument."
+            print "             Lifts the gr limit for the rest of the tool call; the saved"
+            print "             command is kept. A new session clears it. Errors if none is saved."
             print ""
-            print "             Example: execute a deferred command"
+            print "             Example: execute a deferred or truncated command"
             print "             :aretry"
             print ""
             spec("ast", "Print agent status and token usage",
@@ -5359,11 +5366,10 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             spec("ar[0]  Display returned agent reasoning",
                 "No argument logically inverts the option.",
                 "Nonzero includes returned reasoning in the session log.")
-            spec("gr[2]  Control agent output protection",
+            spec("gr[1]  Control agent output protection",
                 "No argument logically inverts the option.",
-                "Value 2 limits tool output to 4096 bytes and protects captured shell\n" \
-                "output. Other values disable protection; 0 and 1 increment after\n" \
-                "each tool call until 2. Negative values stay disabled.")
+                "Nonzero limits tool output to 4096 bytes and protects captured shell\n" \
+                "output; 0 disables protection. aretry bypasses it once.")
             print "     aspec[1]  Print ex specifications for agents"
             print ""
             print "             No argument logically inverts the option. 0 disables automatic"
@@ -5466,7 +5472,7 @@ static int request_timeout = 500;
 #endif
 
 static int max_tool_rounds = 300;
-int xgr = 2;	/* agent guardrails: anything but 2 = disabled */
+int xgr = 1;	/* agent output guardrail (:gr) */
 int xar;	/* display returned agent reasoning (:ar) */
 int xaco;	/* autocompact input-token threshold; 0 disables */
 static int xaco_browse;	/* last selected mode: aco! rather than aco */
@@ -6692,30 +6698,42 @@ static char xaerr[128];
 #include "exspec.h"
 
 static int exspec_ranges_read;
-static char *exspec_deferred;
-static struct excmd *exspec_deferred_cmd;
-static int exspec_deferred_arg;
+static char *aretry_saved;
+static struct excmd *aretry_cmd;
+static int aretry_arg;
+
+static void aretry_save(sbuf *sb, struct excmd *entry, int arg)
+{
+	free(aretry_saved);
+	aretry_saved = emalloc(sb->s_n + 1);
+	memcpy(aretry_saved, sb->s, sb->s_n + 1);
+	aretry_cmd = entry;
+	aretry_arg = arg;
+}
 
 static void *ec_aretry(char *loc, char *cmd, char *arg)
 {
-	char *saved = exspec_deferred;
-	struct excmd *entry = exspec_deferred_cmd;
-	int off = exspec_deferred_arg;
+	char *saved = aretry_saved;
 	void *ret;
 	if (*loc || *arg)
 		return "aretry takes no range or argument";
 	if (!saved)
-		return "no deferred command";
-	exspec_deferred = NULL;
-	ret = entry->ec(saved, entry->name, saved + off);
-	free(saved);
+		return "no agent command to retry";
+	/* a deferral inside the retried command replaces the saved one */
+	aretry_saved = NULL;
+	agent_gr_bypass = 1;
+	ret = aretry_cmd->ec(saved, aretry_cmd->name, saved + aretry_arg);
+	if (aretry_saved)
+		free(saved);
+	else
+		aretry_saved = saved;
 	return ret;
 }
 
 static void exspec_reset(void)
 {
-	free(exspec_deferred);
-	exspec_deferred = NULL;
+	free(aretry_saved);
+	aretry_saved = NULL;
 	exspec_ranges_read = 0;
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		exspec_cmds[i].read = 0;
@@ -6900,16 +6918,14 @@ static int exspec_agent(char *cmd, int ranges)
 		ln = ex_arg(ln, sb, &arg);
 		if (agent_interrupted())
 			break;
-		if (agent_tool && xaspec && excmds[idx].ec != ec_exspec &&
-				excmds[idx].ec != ec_aretry)
-			if (exspec_agent(excmds[idx].name, *sb->s)) {
-				free(exspec_deferred);
-				exspec_deferred = emalloc(sb->s_n + 1);
-				memcpy(exspec_deferred, sb->s, sb->s_n + 1);
-				exspec_deferred_cmd = &excmds[idx];
-				exspec_deferred_arg = arg;
+		if (agent_tool && excmds[idx].ec != ec_aretry) {
+			int defer = xaspec && excmds[idx].ec != ec_exspec &&
+				exspec_agent(excmds[idx].name, *sb->s);
+			if (defer || xexec_dep == agent_tool_dep)
+				aretry_save(sb, &excmds[idx], arg);
+			if (defer)
 				continue;
-			}
+		}
 ??!219reg ex.c:1942:m292sc %? %@2142sc!0?
 '\''30i 		if (agent_interrupted())
 			break;
@@ -7788,13 +7804,14 @@ static char *exspec_lines[] = {
 	"message; otherwise context is rebuilt from the log.",
 	"",
 	"aretry",
-	"Execute the last deferred agent command once",
+	"Execute the last agent command once without the guardrail",
 	"",
-	"Uses the saved range and expanded argument. Takes no range or",
-	"argument. A new deferral replaces it; retry consumes it even on",
-	"failure. A new session clears it. Errors if none is saved.",
+	"Saves each top-level command the agent runs or aspec defers,",
+	"with its range and expanded argument. Takes no range or argument.",
+	"Lifts the gr limit for the rest of the tool call; the saved",
+	"command is kept. A new session clears it. Errors if none is saved.",
 	"",
-	"Example: execute a deferred command",
+	"Example: execute a deferred or truncated command",
 	"aretry",
 	"",
 	"ast",
@@ -7899,12 +7916,11 @@ static char *exspec_lines[] = {
 	"",
 	"Nonzero includes returned reasoning in the session log.",
 	"",
-	"gr[2]  Control agent output protection",
+	"gr[1]  Control agent output protection",
 	"No argument logically inverts the option.",
 	"",
-	"Value 2 limits tool output to 4096 bytes and protects captured shell",
-	"output. Other values disable protection; 0 and 1 increment after",
-	"each tool call until 2. Negative values stay disabled.",
+	"Nonzero limits tool output to 4096 bytes and protects captured shell",
+	"output; 0 disables protection. aretry bypasses it once.",
 	"",
 	"aspec[1]  Print ex specifications for agents",
 	"",
@@ -8206,19 +8222,19 @@ static struct {
 	{"apack", "Compact the agent session from its log", 765, 771, 0, 0},
 	{"apack!", "Compact the agent session by browsing its log", 772, 779, 0, 0},
 	{"acm", "Toggle the caveman response style skill", 780, 785, 0, 0},
-	{"aretry", "Execute the last deferred agent command once", 786, 795, 0, 0},
-	{"ast", "Print agent status and token usage", 796, 804, 0, 0},
-	{"ac", "Set autocomplete filter regex", 805, 813, 0, 0},
-	{"sc", "Set ex special characters", 814, 824, 0, 0},
-	{"sc!", "Set ex special characters", 825, 832, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 833, 840, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 841, 844, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 845, 849, 0, 0},
-	{"ph", "Redefine placeholders", 850, 866, 0, 0},
-	{"aco", "Automatically compact using the loaded session log", 875, 884, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 885, 892, 1, 0},
-	{"ar", "Display returned agent reasoning", 893, 897, 1, 0},
-	{"gr", "Control agent output protection", 898, 904, 1, 0},
+	{"aretry", "Execute the last agent command once without the guardrail", 786, 796, 0, 0},
+	{"ast", "Print agent status and token usage", 797, 805, 0, 0},
+	{"ac", "Set autocomplete filter regex", 806, 814, 0, 0},
+	{"sc", "Set ex special characters", 815, 825, 0, 0},
+	{"sc!", "Set ex special characters", 826, 833, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 834, 841, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 842, 845, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 846, 850, 0, 0},
+	{"ph", "Redefine placeholders", 851, 867, 0, 0},
+	{"aco", "Automatically compact using the loaded session log", 876, 885, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 886, 893, 1, 0},
+	{"ar", "Display returned agent reasoning", 894, 898, 1, 0},
+	{"gr", "Control agent output protection", 899, 904, 1, 0},
 	{"aspec", "Print ex specifications for agents", 905, 909, 1, 0},
 	{"ai", "Indent new lines", 910, 913, 1, 0},
 	{"ic", "Ignore case in regular expressions", 914, 915, 1, 0},
@@ -8866,10 +8882,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..122c15dc
+index 00000000..7950cb7b
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1628 @@
+@@ -0,0 +1,1631 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9246,7 +9262,7 @@ index 00000000..122c15dc
 +static void agent_capture_add(const char *s, int n)
 +{
 +	agent_capture_total += n;
-+	if (xgr == 2)
++	if (xgr && !agent_gr_bypass)
 +		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
 +	sbuf_mem(agent_capture, s, n)
 +}
@@ -9507,7 +9523,7 @@ index 00000000..122c15dc
 +		xish ? "-i" : "-c", xish ? "-c" : cmd,
 +		xish ? cmd : NULL, NULL};
 +	int st;
-+	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2,
++	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr && !agent_gr_bypass,
 +		NULL);
 +	if (!out) {
 +		agent_child_status = 1;
@@ -9973,19 +9989,22 @@ index 00000000..122c15dc
 +				agent_capture = out;
 +				agent_capture_total = 0;
 +				agent_child_status = 0;
++				agent_gr_bypass = 0;
++				agent_tool_dep = xexec_dep + 1;
 +				agent_sequence();
 +				err = ex_exec(command->valuestring);
 +				agent_tool_calls++;
 +				agent_sequence();
-+				if (xgr == 2 && agent_capture_total > 4096) {
++				if (xgr && !agent_gr_bypass &&
++						agent_capture_total > 4096) {
 +					char msg[128];
 +					snprintf(msg, sizeof(msg),
-+						"output guardrail: %zu > 4096 (gr 0 to bypass once)",
++						"output guardrail: %zu > 4096 (aretry to bypass once)",
 +						agent_capture_total);
 +					sbuf_cut(out, 0)
 +					sbufn_str(out, msg)
-+				} else if (xgr >= 0 && xgr < 2)
-+					xgr++;
++				}
++				agent_gr_bypass = 0;
 +				agent_capture = NULL;
 +				agent_tool = 0;
 +				if (agent_input_blocked) {
@@ -10500,14 +10519,17 @@ index 00000000..122c15dc
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..20885744
+index 00000000..de60bd1c
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,19 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
 +static int agent_input_blocked;
++/* aretry lifts the guardrail for the rest of its tool call;
++ * agent_tool_dep is the ex_exec depth of the tool call itself. */
++static int agent_gr_bypass, agent_tool_dep;
 +static sbuf *agent_capture;
 +static void *ec_agent(char *loc, char *cmd, char *arg);
 +static void exspec_reset(void);
@@ -14030,7 +14052,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..204c085b 100755
+index c836c94c..778cc207 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,104 @@ build() {
@@ -14082,13 +14104,14 @@ index c836c94c..204c085b 100755
 +                "Adds or removes the skill in b-5. Tool calls update the system\n" \
 +                "message; otherwise context is rebuilt from the log.")
 +            print "     aretry"
-+            print "             Execute the last deferred agent command once"
++            print "             Execute the last agent command once without the guardrail"
 +            print ""
-+            print "             Uses the saved range and expanded argument. Takes no range or"
-+            print "             argument. A new deferral replaces it; retry consumes it even on"
-+            print "             failure. A new session clears it. Errors if none is saved."
++            print "             Saves each top-level command the agent runs or aspec defers,"
++            print "             with its range and expanded argument. Takes no range or argument."
++            print "             Lifts the gr limit for the rest of the tool call; the saved"
++            print "             command is kept. A new session clears it. Errors if none is saved."
 +            print ""
-+            print "             Example: execute a deferred command"
++            print "             Example: execute a deferred or truncated command"
 +            print "             :aretry"
 +            print ""
 +            spec("ast", "Print agent status and token usage",
@@ -14117,11 +14140,10 @@ index c836c94c..204c085b 100755
 +            spec("ar[0]  Display returned agent reasoning",
 +                "No argument logically inverts the option.",
 +                "Nonzero includes returned reasoning in the session log.")
-+            spec("gr[2]  Control agent output protection",
++            spec("gr[1]  Control agent output protection",
 +                "No argument logically inverts the option.",
-+                "Value 2 limits tool output to 4096 bytes and protects captured shell\n" \
-+                "output. Other values disable protection; 0 and 1 increment after\n" \
-+                "each tool call until 2. Negative values stay disabled.")
++                "Nonzero limits tool output to 4096 bytes and protects captured shell\n" \
++                "output; 0 disables protection. aretry bypasses it once.")
 +            print "     aspec[1]  Print ex specifications for agents"
 +            print ""
 +            print "             No argument logically inverts the option. 0 disables automatic"
@@ -14158,7 +14180,7 @@ index c836c94c..204c085b 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..118c150e 100644
+index 2888d7c6..97a57341 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,52 @@
@@ -14182,7 +14204,7 @@ index 2888d7c6..118c150e 100644
 +#endif
 +
 +static int max_tool_rounds = 300;
-+int xgr = 2;	/* agent guardrails: anything but 2 = disabled */
++int xgr = 1;	/* agent output guardrail (:gr) */
 +int xar;	/* display returned agent reasoning (:ar) */
 +int xaco;	/* autocompact input-token threshold; 0 disables */
 +static int xaco_browse;	/* last selected mode: aco! rather than aco */
@@ -14226,7 +14248,7 @@ index 2888d7c6..118c150e 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..c47dfbd3 100644
+index 76dca408..90258b7b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -14441,7 +14463,7 @@ index 76dca408..c47dfbd3 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1635,6 +1696,170 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1635,6 +1696,182 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -14453,30 +14475,42 @@ index 76dca408..c47dfbd3 100644
 +#include "exspec.h"
 +
 +static int exspec_ranges_read;
-+static char *exspec_deferred;
-+static struct excmd *exspec_deferred_cmd;
-+static int exspec_deferred_arg;
++static char *aretry_saved;
++static struct excmd *aretry_cmd;
++static int aretry_arg;
++
++static void aretry_save(sbuf *sb, struct excmd *entry, int arg)
++{
++	free(aretry_saved);
++	aretry_saved = emalloc(sb->s_n + 1);
++	memcpy(aretry_saved, sb->s, sb->s_n + 1);
++	aretry_cmd = entry;
++	aretry_arg = arg;
++}
 +
 +static void *ec_aretry(char *loc, char *cmd, char *arg)
 +{
-+	char *saved = exspec_deferred;
-+	struct excmd *entry = exspec_deferred_cmd;
-+	int off = exspec_deferred_arg;
++	char *saved = aretry_saved;
 +	void *ret;
 +	if (*loc || *arg)
 +		return "aretry takes no range or argument";
 +	if (!saved)
-+		return "no deferred command";
-+	exspec_deferred = NULL;
-+	ret = entry->ec(saved, entry->name, saved + off);
-+	free(saved);
++		return "no agent command to retry";
++	/* a deferral inside the retried command replaces the saved one */
++	aretry_saved = NULL;
++	agent_gr_bypass = 1;
++	ret = aretry_cmd->ec(saved, aretry_cmd->name, saved + aretry_arg);
++	if (aretry_saved)
++		free(saved);
++	else
++		aretry_saved = saved;
 +	return ret;
 +}
 +
 +static void exspec_reset(void)
 +{
-+	free(exspec_deferred);
-+	exspec_deferred = NULL;
++	free(aretry_saved);
++	aretry_saved = NULL;
 +	exspec_ranges_read = 0;
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		exspec_cmds[i].read = 0;
@@ -14612,7 +14646,7 @@ index 76dca408..c47dfbd3 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1927,9 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1939,9 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -14624,7 +14658,7 @@ index 76dca408..c47dfbd3 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1955,20 @@ _EO(left,
+@@ -1730,14 +1967,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -14649,7 +14683,7 @@ index 76dca408..c47dfbd3 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +1989,21 @@ static struct excmd {
+@@ -1758,8 +2001,21 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -14671,7 +14705,7 @@ index 76dca408..c47dfbd3 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1780,6 +2024,7 @@ static struct excmd {
+@@ -1780,6 +2036,7 @@ static struct excmd {
  	{"i", ec_insert},
  	{"d", ec_delete},
  	EO(grp),
@@ -14679,7 +14713,7 @@ index 76dca408..c47dfbd3 100644
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
-@@ -1939,8 +2184,38 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2196,36 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -14703,23 +14737,21 @@ index 76dca408..c47dfbd3 100644
 +		ln = ex_arg(ln, sb, &arg);
 +		if (agent_interrupted())
 +			break;
-+		if (agent_tool && xaspec && excmds[idx].ec != ec_exspec &&
-+				excmds[idx].ec != ec_aretry)
-+			if (exspec_agent(excmds[idx].name, *sb->s)) {
-+				free(exspec_deferred);
-+				exspec_deferred = emalloc(sb->s_n + 1);
-+				memcpy(exspec_deferred, sb->s, sb->s_n + 1);
-+				exspec_deferred_cmd = &excmds[idx];
-+				exspec_deferred_arg = arg;
++		if (agent_tool && excmds[idx].ec != ec_aretry) {
++			int defer = xaspec && excmds[idx].ec != ec_exspec &&
++				exspec_agent(excmds[idx].name, *sb->s);
++			if (defer || xexec_dep == agent_tool_dep)
++				aretry_save(sb, &excmds[idx], arg);
++			if (defer)
 +				continue;
-+			}
++		}
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
 +		if (agent_interrupted())
 +			break;
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2234,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2244,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -14818,7 +14850,7 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..92bf1f7e
+index 00000000..23799d94
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1246 @@
@@ -15611,13 +15643,14 @@ index 00000000..92bf1f7e
 +	"message; otherwise context is rebuilt from the log.",
 +	"",
 +	"aretry",
-+	"Execute the last deferred agent command once",
++	"Execute the last agent command once without the guardrail",
 +	"",
-+	"Uses the saved range and expanded argument. Takes no range or",
-+	"argument. A new deferral replaces it; retry consumes it even on",
-+	"failure. A new session clears it. Errors if none is saved.",
++	"Saves each top-level command the agent runs or aspec defers,",
++	"with its range and expanded argument. Takes no range or argument.",
++	"Lifts the gr limit for the rest of the tool call; the saved",
++	"command is kept. A new session clears it. Errors if none is saved.",
 +	"",
-+	"Example: execute a deferred command",
++	"Example: execute a deferred or truncated command",
 +	"aretry",
 +	"",
 +	"ast",
@@ -15722,12 +15755,11 @@ index 00000000..92bf1f7e
 +	"",
 +	"Nonzero includes returned reasoning in the session log.",
 +	"",
-+	"gr[2]  Control agent output protection",
++	"gr[1]  Control agent output protection",
 +	"No argument logically inverts the option.",
 +	"",
-+	"Value 2 limits tool output to 4096 bytes and protects captured shell",
-+	"output. Other values disable protection; 0 and 1 increment after",
-+	"each tool call until 2. Negative values stay disabled.",
++	"Nonzero limits tool output to 4096 bytes and protects captured shell",
++	"output; 0 disables protection. aretry bypasses it once.",
 +	"",
 +	"aspec[1]  Print ex specifications for agents",
 +	"",
@@ -16029,19 +16061,19 @@ index 00000000..92bf1f7e
 +	{"apack", "Compact the agent session from its log", 765, 771, 0, 0},
 +	{"apack!", "Compact the agent session by browsing its log", 772, 779, 0, 0},
 +	{"acm", "Toggle the caveman response style skill", 780, 785, 0, 0},
-+	{"aretry", "Execute the last deferred agent command once", 786, 795, 0, 0},
-+	{"ast", "Print agent status and token usage", 796, 804, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 805, 813, 0, 0},
-+	{"sc", "Set ex special characters", 814, 824, 0, 0},
-+	{"sc!", "Set ex special characters", 825, 832, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 833, 840, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 841, 844, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 845, 849, 0, 0},
-+	{"ph", "Redefine placeholders", 850, 866, 0, 0},
-+	{"aco", "Automatically compact using the loaded session log", 875, 884, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 885, 892, 1, 0},
-+	{"ar", "Display returned agent reasoning", 893, 897, 1, 0},
-+	{"gr", "Control agent output protection", 898, 904, 1, 0},
++	{"aretry", "Execute the last agent command once without the guardrail", 786, 796, 0, 0},
++	{"ast", "Print agent status and token usage", 797, 805, 0, 0},
++	{"ac", "Set autocomplete filter regex", 806, 814, 0, 0},
++	{"sc", "Set ex special characters", 815, 825, 0, 0},
++	{"sc!", "Set ex special characters", 826, 833, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 834, 841, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 842, 845, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 846, 850, 0, 0},
++	{"ph", "Redefine placeholders", 851, 867, 0, 0},
++	{"aco", "Automatically compact using the loaded session log", 876, 885, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 886, 893, 1, 0},
++	{"ar", "Display returned agent reasoning", 894, 898, 1, 0},
++	{"gr", "Control agent output protection", 899, 904, 1, 0},
 +	{"aspec", "Print ex specifications for agents", 905, 909, 1, 0},
 +	{"ai", "Indent new lines", 910, 913, 1, 0},
 +	{"ic", "Ignore case in regular expressions", 914, 915, 1, 0},
