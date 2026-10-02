@@ -6950,9 +6950,9 @@ _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
 	{"aco!", eo_aco},
 	EO(aco),
 	{"ast", ec_ast},
+	EO(agr),
 ??!219reg ex.c:1760:m252sc %? %@2142sc!0?
-'\''26i 	EO(agr),
-	EO(ar),
+'\''26i 	EO(ar),
 ??!219reg ex.c:1761:m262sc %? %@2142sc!0?
 '\''27i 	{"a!", ec_agent},
 	{"a~", ec_agent},
@@ -14410,7 +14410,7 @@ index 2888d7c6..22914a7c 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..2bf09844 100644
+index 76dca408..41d17d4b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -14863,8 +14863,8 @@ index 76dca408..2bf09844 100644
 +	{"aco!", eo_aco},
 +	EO(aco),
 +	{"ast", ec_ast},
- 	EO(ai),
 +	EO(agr),
+ 	EO(ai),
 +	EO(ar),
  	{"ac", ec_setacreg},
 +	{"a!", ec_agent},
