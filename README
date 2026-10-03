@@ -392,10 +392,10 @@ context.
 The new ex command "apack!" to compact the conversation by starting a
 fresh agent.
 The new ex command "acm" activates caveman mode skill.
-The new ex option "aco" automatically uses "apack" command once a certain
-token threshold reached. Default is 85k.
-The new ex option "aco!" automatically uses "apack!" command once a certain
-token threshold reached. Default is 85k.
+The new ex option "aco" automatically uses "apack" command once specified
+token threshold has been reached. Default is 85k.
+The new ex option "aco!" automatically uses "apack!" command once specified
+token threshold has been reached. Default is 85k.
 
 Tool output is protected by an output guardrail. The new ex option "agr"
 sets the tool output limit in bytes shown to the agent, default 4096;
