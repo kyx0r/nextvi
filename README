@@ -397,6 +397,15 @@ token threshold reached. Default is 85k.
 The new ex option "aco!" automatically uses "apack!" command once a certain
 token threshold reached. Default is 85k.
 
+Tool output is protected by an output guardrail. The new ex option "agr"
+sets the tool output limit in bytes shown to the agent, default 4096;
+output over the limit is withheld. No argument toggles between 0, which
+disables it, and 4096.
+The new ex command "aout" prints the saved output of the last agent tool
+call; a byte range selects part of it and its output is exempt from agr.
+The new ex command "aretry" executes the last command the agent ran or
+deferred by aspec once without the guardrail.
+
 Adds temporary buffers /conversation/ for the conversation and /skills/
 for the system prompt. Both restart commands reload the skills buffer.
 These buffers are saved automatically under $HOME/.nextvi/logs, or log_dir
