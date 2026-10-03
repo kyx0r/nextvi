@@ -8433,7 +8433,7 @@ void lbuf_saved\(struct lbuf \*lb, int clear\)
 		char msg[64];
 		/* Report a zero-based, half-open span, like ex range beg/end. */
 		int last = MAX(end, beg + lo->n_ins);
-		snprintf(msg, sizeof(msg), "edited lines beg: %d end: %d", beg, last);
+		snprintf(msg, sizeof(msg), "edited lines beg:%d end:%d", beg, last);
 		ex_print(msg, msg_ft)
 	}
 	agent_sync(lb);
@@ -16281,7 +16281,7 @@ index 00000000..54a203e9
 +	{"err", "Control ex errors", 1081, 1093, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..681c0569 100644
+index 56cb42c6..823e5b39 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,14 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -16292,7 +16292,7 @@ index 56cb42c6..681c0569 100644
 +		char msg[64];
 +		/* Report a zero-based, half-open span, like ex range beg/end. */
 +		int last = MAX(end, beg + lo->n_ins);
-+		snprintf(msg, sizeof(msg), "edited lines beg: %d end: %d", beg, last);
++		snprintf(msg, sizeof(msg), "edited lines beg:%d end:%d", beg, last);
 +		ex_print(msg, msg_ft)
 +	}
 +	agent_sync(lb);
