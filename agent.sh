@@ -81,6 +81,11 @@ static struct agent_usage {
 	int reported, anchored;
 } agent_usage;
 static int agent_packing, agent_pack_done;
+/* Previous request messages; shared JSON prefix of the last request. */
+static char *agent_prev;
+static size_t agent_reused, agent_sent;
+/* Reasoning field name returned by the endpoint, mirrored by acl. */
+static const char *agent_rkey = "reasoning_content";
 static void agent_run(const char *input);
 static int agent_autocompact(const char *input);
 
@@ -137,6 +142,13 @@ static char nextvi_skill[] =
 "Nextvi is not a standard vi/ex.\n"
 "Use exspec command for a command list.\n"
 "Use exspec with an argument for a topic or command specification.\n";
+
+static char acl_skill[] =
+"Your context is rebuilt from the session log b-4 before each request; edits\n"
+"there change what you see next. Entries start with a ROLE N line (USER,\n"
+"ASSISTANT, REASONING, EX, RESULT) and N must increase. Text before the first\n"
+"entry is a user message. Keep context small: delete stale RESULT entries or\n"
+"replace finished work with a short note. Return to your buffer after editing.\n";
 
 static char caveman_skill[] =
 "Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
@@ -382,6 +394,145 @@ static void agent_log(const char *role, const char *text)
 	lbuf_edit(lb, sb->s, lbuf_len(lb), lbuf_len(lb), 0, 0);
 	lb->useq++;
 	free(sb->s);
+}
+
+/* Header "ROLE N" with N above the previous header; returns role + 1. */
+static int agent_header(char *ln, unsigned long last, unsigned long *n)
+{
+	static char *roles[] = {"USER", "ASSISTANT", "REASONING", "EX", "RESULT"};
+	char *e;
+	for (int i = 0; i < LEN(roles); i++) {
+		int k = strlen(roles[i]);
+		if (strncmp(ln, roles[i], k) || ln[k] != '\'' '\'' ||
+				!isdigit((unsigned char)ln[k+1]))
+			continue;
+		errno = 0;
+		*n = strtoul(ln + k + 1, &e, 10);
+		return (*e == '\''\n'\'' || !*e) && !errno && *n > last ? i + 1 : 0;
+	}
+	return 0;
+}
+
+struct agent_parse {
+	cJSON *msgs, *asst, *tools, *wait;
+};
+
+static void agent_flush(struct agent_parse *p)
+{
+	cJSON *t;
+	if (p->asst) {
+		cJSON *content = cJSON_GetObjectItem(p->asst, "content");
+		int calls = cJSON_HasObjectItem(p->asst, "tool_calls");
+		if (calls && !*content->valuestring)
+			cJSON_ReplaceItemInObject(p->asst, "content", cJSON_CreateNull());
+		if (calls || *content->valuestring)
+			cJSON_AddItemToArray(p->msgs, p->asst);
+		else
+			cJSON_Delete(p->asst);
+	}
+	while ((t = cJSON_DetachItemFromArray(p->tools, 0)))
+		cJSON_AddItemToArray(p->msgs, t);
+	p->asst = p->wait = NULL;
+}
+
+/* Calls between ASSISTANT entries form one batch; a RESULT answers the
+ * preceding EX, otherwise it is a user message like preamble text. */
+static void agent_entry(struct agent_parse *p, int role, unsigned long n, char *text)
+{
+	char id[32];
+	cJSON *calls, *tc, *fn, *args;
+	char *json;
+	switch (role) {
+	case 2:		/* ASSISTANT; fills a message opened by REASONING */
+		if (p->asst && !cJSON_HasObjectItem(p->asst, "tool_calls") &&
+				!*cJSON_GetObjectItem(p->asst, "content")->valuestring) {
+			cJSON_ReplaceItemInObject(p->asst, "content",
+				cJSON_CreateString(text));
+			break;
+		}
+		agent_flush(p);
+		p->asst = agent_msg("assistant", text);
+		break;
+	case 3:		/* REASONING */
+		agent_flush(p);
+		p->asst = agent_msg("assistant", "");
+		cJSON_AddStringToObject(p->asst, agent_rkey, text);
+		break;
+	case 4:		/* EX */
+		if (!p->asst)
+			p->asst = agent_msg("assistant", "");
+		if (!(calls = cJSON_GetObjectItem(p->asst, "tool_calls")))
+			calls = cJSON_AddArrayToObject(p->asst, "tool_calls");
+		snprintf(id, sizeof(id), "ex%lu", n);
+		tc = cJSON_CreateObject();
+		cJSON_AddStringToObject(tc, "id", id);
+		cJSON_AddStringToObject(tc, "type", "function");
+		fn = cJSON_AddObjectToObject(tc, "function");
+		cJSON_AddStringToObject(fn, "name", "ex");
+		args = cJSON_CreateObject();
+		cJSON_AddStringToObject(args, "command", text);
+		json = cJSON_PrintUnformatted(args);
+		cJSON_AddStringToObject(fn, "arguments", json);
+		free(json);
+		cJSON_Delete(args);
+		cJSON_AddItemToArray(calls, tc);
+		p->wait = agent_msg("tool", "no result");
+		cJSON_AddStringToObject(p->wait, "tool_call_id", id);
+		cJSON_AddItemToArray(p->tools, p->wait);
+		break;
+	case 5:		/* RESULT */
+		if (p->wait) {
+			cJSON_ReplaceItemInObject(p->wait, "content",
+				cJSON_CreateString(text));
+			p->wait = NULL;
+			break;
+		}
+		/* fallthrough */
+	default:	/* preamble, USER */
+		agent_flush(p);
+		if (*text)
+			cJSON_AddItemToArray(p->msgs, agent_msg("user", text));
+	}
+}
+
+static int agent_live(void)
+{
+	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
+}
+
+/* Rebuild the conversation after the system message from b-4. */
+static void agent_reparse(void)
+{
+	struct lbuf *lb = tempbufs[3].lb;
+	struct agent_parse p = {NULL, NULL, NULL, NULL};
+	unsigned long n = 0, last = 0;
+	int role = 0, r = 0;
+	cJSON *sys = cJSON_DetachItemFromArray(agent_messages, 0);
+	cJSON_Delete(agent_messages);
+	agent_messages = p.msgs = cJSON_CreateArray();
+	cJSON_AddItemToArray(p.msgs, sys);
+	p.tools = cJSON_CreateArray();
+	sbuf_smake(text, 256)
+	for (int i = 0; i <= lbuf_len(lb); i++) {
+		char *ln = i < lbuf_len(lb) ? lb->ln[i] : NULL;
+		if (ln && !(r = agent_header(ln, last, &n))) {
+			sbuf_str(text, ln)
+			continue;
+		}
+		while (text->s_n && text->s[text->s_n-1] == '\''\n'\'')
+			text->s_n--;
+		sbuf_nul(text)
+		agent_entry(&p, role, last, text->s);
+		sbuf_cut(text, 0)
+		if (ln) {
+			role = r;
+			last = n;
+		}
+	}
+	agent_flush(&p);
+	cJSON_Delete(p.tools);
+	free(text->s);
+	agent_entries[1] = MAX(agent_entries[1], last);
 }
 
 static void agent_key(int c)
@@ -979,7 +1130,7 @@ static void agent_run(const char *input)
 	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
-	int st, retries = 0, compacted = 0;
+	int st, retries = 0, compacted = 0, nudged = 0;
 	if (agent_packing)
 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
@@ -990,15 +1141,31 @@ static void agent_run(const char *input)
 		/* Only complete tool batches reach this boundary. Manual/automatic
 		 * pack agents must never recursively trigger autocompaction. */
 		/* The threshold triggers a pack, not a hard cap on its result. */
+		if (agent_live())
+			agent_reparse();
 		if (compacted && agent_tokens() < xaco)
 			compacted = 0;
-		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
+		if (nudged && agent_tokens() < xaco)
+			nudged = 0;
+		/* acl asks the agent to compact once; the pack agent is the fallback. */
+		if (agent_live() && xaco && !compacted && !nudged &&
+				agent_tokens() >= xaco) {
+			char msg[192];
+			snprintf(msg, sizeof(msg), "Context is about %.0f tokens, over the "
+				"%d token aco threshold. Compact b-4 in your next response, "
+				"then continue.", agent_tokens(), xaco);
+			agent_log("USER", msg);
+			agent_reparse();
+			nudged = 1;
+		} else if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
 				agent_tokens() >= xaco) {
 			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 				return;
 			/* The pack conversation was discarded. Start a fresh tool-round
 			 * budget for the resumed request, without recursing into agent_run. */
 			compacted = 1;
+			if (agent_live())
+				agent_reparse();
 			round = retries = 0;
 			agent_rounds = 0;
 			serial = agent_serial;
@@ -1012,6 +1179,14 @@ static void agent_run(const char *input)
 		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 		cJSON_AddBoolToObject(req, "stream", 0);
 		double request_bytes = agent_context_bytes();
+		char *json = cJSON_PrintUnformatted(agent_messages);
+		agent_reused = 0;
+		agent_sent = json ? strlen(json) : 0;
+		while (json && agent_prev && json[agent_reused] &&
+				json[agent_reused] == agent_prev[agent_reused])
+			agent_reused++;
+		free(agent_prev);
+		agent_prev = json;
 		body = agent_http(req, &st, &stderr_text);
 		cJSON_Delete(req);
 		if (agent_cancel) {
@@ -1077,7 +1252,11 @@ static void agent_run(const char *input)
 					"Use tool type function, name ex, and unique nonempty call IDs. "
 					"Arguments must be a JSON-encoded object with a nonempty "
 					"string command, for example {\"command\":\"1,20p\"}.", error);
-				cJSON_AddItemToArray(agent_messages, agent_msg("user", diagnostic));
+				if (agent_live())
+					agent_log("USER", diagnostic);
+				else
+					cJSON_AddItemToArray(agent_messages,
+						agent_msg("user", diagnostic));
 			}
 			free(body);
 			cJSON_Delete(root);
@@ -1097,13 +1276,20 @@ static void agent_run(const char *input)
 		if (xar) {
 			cJSON *reasoning = cJSON_GetObjectItem(message,
 				"reasoning_content");
-			if (!cJSON_IsString(reasoning) || !*reasoning->valuestring)
+			const char *rkey = "reasoning_content";
+			if (!cJSON_IsString(reasoning) || !*reasoning->valuestring) {
 				reasoning = cJSON_GetObjectItem(message, "reasoning");
-			if (cJSON_IsString(reasoning) && *reasoning->valuestring)
+				rkey = "reasoning";
+			}
+			if (cJSON_IsString(reasoning) && *reasoning->valuestring) {
+				agent_rkey = rkey;
 				agent_log("REASONING", reasoning->valuestring);
+			}
 		}
-		if (cJSON_IsString(content))
-			agent_log("ASSISTANT", content->valuestring);
+		/* acl separates tool batches by ASSISTANT entries. */
+		if (cJSON_IsString(content) || (xacl && cJSON_GetArraySize(calls)))
+			agent_log("ASSISTANT", cJSON_IsString(content) ?
+				content->valuestring : "");
 		int base = cJSON_GetArraySize(agent_messages), index = 0;
 		cJSON_ArrayForEach(tc, calls) {
 			cJSON *result = agent_msg("tool",
@@ -1235,35 +1421,49 @@ static void agent_run(const char *input)
 	}
 }
 
-static void *ec_skill(char *loc, char *cmd, char *arg)
+/* Add or remove a skill in b-5; want < 0 toggles. */
+static void agent_skill(char *skill_str, int want)
 {
-	char *skill_str;
-	if (strcmp(cmd, "acm") == 0)
-		skill_str = caveman_skill;
 	struct lbuf *lb = tempbufs[4].lb;
 	char *s = agent_text(lb);
-	if (s) {
-		char *pos = strstr(s, skill_str);
-		if (pos) {
-			int beg = 0;
-			for (char *p = s; p < pos; p++)
-				if (*p == '\''\n'\'') beg++;
-			int len = 0;
-			for (char *p = skill_str; *p; p++)
-				if (*p == '\''\n'\'') len++;
-			lbuf_edit(lb, NULL, beg, beg + len, 0, 0);
-		} else {
-			lbuf_edit(lb, skill_str, lbuf_len(lb), lbuf_len(lb), 0, 0);
-		}
+	char *pos = strstr(s, skill_str);
+	if (want < 0)
+		want = !pos;
+	if (!pos == !want) {
 		free(s);
-		if (agent_tool) {
-			s = agent_text(lb);
-			cJSON_ReplaceItemInArray(agent_messages, 0, agent_msg("system", s));
-			agent_usage.anchored = 0;
-			free(s);
-		} else
-			agent_history(1);
+		return;
 	}
+	if (pos) {
+		int beg = 0;
+		for (char *p = s; p < pos; p++)
+			if (*p == '\''\n'\'') beg++;
+		int len = 0;
+		for (char *p = skill_str; *p; p++)
+			if (*p == '\''\n'\'') len++;
+		lbuf_edit(lb, NULL, beg, beg + len, 0, 0);
+	} else {
+		lbuf_edit(lb, skill_str, lbuf_len(lb), lbuf_len(lb), 0, 0);
+	}
+	free(s);
+	if (agent_tool) {
+		s = agent_text(lb);
+		cJSON_ReplaceItemInArray(agent_messages, 0, agent_msg("system", s));
+		agent_usage.anchored = 0;
+		free(s);
+	} else
+		agent_history(1);
+}
+
+static void *ec_skill(char *loc, char *cmd, char *arg)
+{
+	agent_skill(caveman_skill, -1);
+	return NULL;
+}
+
+static void *ec_acl(char *loc, char *cmd, char *arg)
+{
+	xacl = *arg ? eo_val(arg) : !xacl;
+	agent_skill(acl_skill, !!xacl);
 	return NULL;
 }
 
@@ -1277,6 +1477,8 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	ex_print("agent status", msg_ft)
 	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
+	ex_print(msg, msg_ft)
+	snprintf(msg, sizeof(msg), "acl        %s", xacl ? "on, context rebuilt from b-4" : "off");
 	ex_print(msg, msg_ft)
 	if (!agent_ready) {
 		ex_print(agent_init_error ? agent_init_error :
@@ -1300,6 +1502,11 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 		}
 	} else
 		ex_print("tokens     unavailable from endpoint", msg_ft)
+	if (agent_sent) {
+		snprintf(msg, sizeof(msg), "prefix     %zu of %zu message bytes shared with "
+			"previous request", agent_reused, agent_sent);
+		ex_print(msg, msg_ft)
+	}
 	if (agent_messages) {
 		snprintf(msg, sizeof(msg), "next input ~%.0f tokens (%s)", agent_tokens(),
 			agent_usage.anchored ? "reported input + estimated growth" :
@@ -1697,7 +1904,12 @@ static int agent_autocompact(const char *input)
 			"the summary to avoid repeating completed actions or tool calls.\n\n")
 		sbuf_str(resume, input)
 		sbuf_nul(resume)
-		cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
+		if (xacl) {
+			agent_logbuf = 3;
+			agent_log("USER", resume->s);
+			agent_logbuf = 2;
+		} else
+			cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
 		free(resume->s);
 		ok = 1;
 	}
@@ -1747,6 +1959,7 @@ static sbuf *agent_capture;
 static void *ec_agent(char *loc, char *cmd, char *arg);
 static void exspec_reset(void);
 static void *ec_skill(char *loc, char *cmd, char *arg);
+static void *ec_acl(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
 static void *ec_aout(char *loc, char *cmd, char *arg);
 static void *ec_compact(char *loc, char *cmd, char *arg);
@@ -5430,7 +5643,8 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             print "             :50,$aout"
             print ""
             spec("ast", "Print agent status and token usage",
-                "Prints sizes, per-role usage, activity, limits and autocompact mode.\n" \
+                "Prints sizes, per-role usage, activity, limits, acl and autocompact\n" \
+                "mode, and the message bytes shared with the previous request.\n" \
                 "Usage counts come from the last accepted response. Next input is\n" \
                 "estimated from reported input plus new JSON bytes / 3, or all JSON\n" \
                 "bytes / 3 without a usable count. Includes tool definitions and\n" \
@@ -5438,6 +5652,16 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
+            spec("acl[0]  Rebuild agent context from the session log",
+                "No argument logically inverts the option.",
+                "Nonzero adds a skill to b-5 and rebuilds messages from b-4 before\n" \
+                "each request, so agent or user edits there apply to the next one.\n" \
+                "An entry starts with a ROLE N line; N must exceed the previous\n" \
+                "entry number. EX entries between ASSISTANT entries form one batch;\n" \
+                "a RESULT answers the preceding EX, otherwise it is a user message,\n" \
+                "as is text before the first entry. Reasoning outside the log is\n" \
+                "dropped. With aco, the agent is first asked to compact b-4; apack\n" \
+                "runs if the next batch leaves context over the threshold.")
             spec("aco[0]  Automatically compact using the loaded session log",
                 "Positive argument sets an estimated input-token threshold; 0 or\n" \
                 "negative disables. No argument enables at 85000 or toggles off.\n" \
@@ -5565,6 +5789,7 @@ static int max_tool_rounds = 300;
 int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 int xar;	/* display returned agent reasoning (:ar) */
 int xaco;	/* autocompact input-token threshold; 0 disables */
+int xacl;	/* rebuild agent context from the session log (:acl) */
 static int xaco_browse;	/* last selected mode: aco! rather than aco */
 
 static char exspec_insert[] =
@@ -5593,7 +5818,7 @@ static struct {
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|aco!?|ai|agr|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|apack!?|ac[lm]?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -6955,6 +7180,7 @@ _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
 	{"aout", ec_aout},
 	{"aco!", eo_aco},
 	EO(aco),
+	{"acl", ec_acl},
 	{"acm", ec_skill},
 	{"ast", ec_ast},
 	EO(agr),
@@ -7901,7 +8127,8 @@ static char *exspec_lines[] = {
 	"ast",
 	"Print agent status and token usage",
 	"",
-	"Prints sizes, per-role usage, activity, limits and autocompact mode.",
+	"Prints sizes, per-role usage, activity, limits, acl and autocompact",
+	"mode, and the message bytes shared with the previous request.",
 	"Usage counts come from the last accepted response. Next input is",
 	"estimated from reported input plus new JSON bytes / 3, or all JSON",
 	"bytes / 3 without a usable count. Includes tool definitions and",
@@ -7976,6 +8203,18 @@ static char *exspec_lines[] = {
 	"the current value, unless stated otherwise.",
 	"",
 	"Argument notation shows the default value.",
+	"",
+	"acl[0]  Rebuild agent context from the session log",
+	"No argument logically inverts the option.",
+	"",
+	"Nonzero adds a skill to b-5 and rebuilds messages from b-4 before",
+	"each request, so agent or user edits there apply to the next one.",
+	"An entry starts with a ROLE N line; N must exceed the previous",
+	"entry number. EX entries between ASSISTANT entries form one batch;",
+	"a RESULT answers the preceding EX, otherwise it is a user message,",
+	"as is text before the first entry. Reasoning outside the log is",
+	"dropped. With aco, the agent is first asked to compact b-4; apack",
+	"runs if the next batch leaves context over the threshold.",
 	"",
 	"aco[0]  Automatically compact using the loaded session log",
 	"Positive argument sets an estimated input-token threshold; 0 or",
@@ -8309,43 +8548,44 @@ static struct {
 	{"acm", "Toggle the caveman response style skill", 780, 785, 0, 0},
 	{"aretry", "Execute the last agent command once without the guardrail", 786, 798, 0, 0},
 	{"aout", "Print the saved output of the last agent tool call", 799, 810, 0, 0},
-	{"ast", "Print agent status and token usage", 811, 819, 0, 0},
-	{"ac", "Set autocomplete filter regex", 820, 828, 0, 0},
-	{"sc", "Set ex special characters", 829, 839, 0, 0},
-	{"sc!", "Set ex special characters", 840, 847, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 848, 855, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 856, 859, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 860, 864, 0, 0},
-	{"ph", "Redefine placeholders", 865, 881, 0, 0},
-	{"aco", "Automatically compact using the loaded session log", 890, 899, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 900, 907, 1, 0},
-	{"agr", "Control agent output protection", 908, 914, 1, 0},
-	{"ar", "Display returned agent reasoning", 915, 919, 1, 0},
-	{"aspec", "Print ex specifications for agents", 920, 924, 1, 0},
-	{"ai", "Indent new lines", 925, 928, 1, 0},
-	{"ic", "Ignore case in regular expressions", 929, 930, 1, 0},
-	{"ish", "Interactive shell", 931, 946, 1, 0},
-	{"grp", "Regex search group", 947, 955, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 956, 959, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 960, 961, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 961, 962, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 962, 963, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 963, 964, 1, 0},
-	{"led", "Enable all terminal output", 964, 965, 1, 0},
-	{"vis", "Control startup flags", 966, 977, 1, 0},
-	{"mpt", "Control vi prompts", 978, 988, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 989, 991, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 991, 993, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 993, 994, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 994, 995, 1, 0},
-	{"td", "Current text direction context", 995, 1001, 1, 0},
-	{"pr", "Print register", 1002, 1018, 1, 0},
-	{"fr", "Find register", 1019, 1031, 1, 0},
-	{"rr", "Record register", 1032, 1045, 1, 0},
-	{"lim", "Line length render limit", 1046, 1061, 1, 0},
-	{"seq", "Control Undo/Redo", 1062, 1074, 1, 0},
-	{"left", "Control horizontal scroll", 1075, 1080, 1, 0},
-	{"err", "Control ex errors", 1081, 1093, 1, 0},
+	{"ast", "Print agent status and token usage", 811, 820, 0, 0},
+	{"ac", "Set autocomplete filter regex", 821, 829, 0, 0},
+	{"sc", "Set ex special characters", 830, 840, 0, 0},
+	{"sc!", "Set ex special characters", 841, 848, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 849, 856, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 857, 860, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 861, 865, 0, 0},
+	{"ph", "Redefine placeholders", 866, 882, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 891, 902, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 903, 912, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 913, 920, 1, 0},
+	{"agr", "Control agent output protection", 921, 927, 1, 0},
+	{"ar", "Display returned agent reasoning", 928, 932, 1, 0},
+	{"aspec", "Print ex specifications for agents", 933, 937, 1, 0},
+	{"ai", "Indent new lines", 938, 941, 1, 0},
+	{"ic", "Ignore case in regular expressions", 942, 943, 1, 0},
+	{"ish", "Interactive shell", 944, 959, 1, 0},
+	{"grp", "Regex search group", 960, 968, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 969, 972, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 973, 974, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 974, 975, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 975, 976, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 976, 977, 1, 0},
+	{"led", "Enable all terminal output", 977, 978, 1, 0},
+	{"vis", "Control startup flags", 979, 990, 1, 0},
+	{"mpt", "Control vi prompts", 991, 1001, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1002, 1004, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1004, 1006, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1006, 1007, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1007, 1008, 1, 0},
+	{"td", "Current text direction context", 1008, 1014, 1, 0},
+	{"pr", "Print register", 1015, 1031, 1, 0},
+	{"fr", "Find register", 1032, 1044, 1, 0},
+	{"rr", "Record register", 1045, 1058, 1, 0},
+	{"lim", "Line length render limit", 1059, 1074, 1, 0},
+	{"seq", "Control Undo/Redo", 1075, 1087, 1, 0},
+	{"left", "Control horizontal scroll", 1088, 1093, 1, 0},
+	{"err", "Control ex errors", 1094, 1106, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -8968,10 +9208,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..750eaa8e
+index 00000000..73b041db
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1701 @@
+@@ -0,0 +1,1913 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9023,6 +9263,11 @@ index 00000000..750eaa8e
 +	int reported, anchored;
 +} agent_usage;
 +static int agent_packing, agent_pack_done;
++/* Previous request messages; shared JSON prefix of the last request. */
++static char *agent_prev;
++static size_t agent_reused, agent_sent;
++/* Reasoning field name returned by the endpoint, mirrored by acl. */
++static const char *agent_rkey = "reasoning_content";
 +static void agent_run(const char *input);
 +static int agent_autocompact(const char *input);
 +
@@ -9079,6 +9324,13 @@ index 00000000..750eaa8e
 +"Nextvi is not a standard vi/ex.\n"
 +"Use exspec command for a command list.\n"
 +"Use exspec with an argument for a topic or command specification.\n";
++
++static char acl_skill[] =
++"Your context is rebuilt from the session log b-4 before each request; edits\n"
++"there change what you see next. Entries start with a ROLE N line (USER,\n"
++"ASSISTANT, REASONING, EX, RESULT) and N must increase. Text before the first\n"
++"entry is a user message. Keep context small: delete stale RESULT entries or\n"
++"replace finished work with a short note. Return to your buffer after editing.\n";
 +
 +static char caveman_skill[] =
 +"Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
@@ -9324,6 +9576,145 @@ index 00000000..750eaa8e
 +	lbuf_edit(lb, sb->s, lbuf_len(lb), lbuf_len(lb), 0, 0);
 +	lb->useq++;
 +	free(sb->s);
++}
++
++/* Header "ROLE N" with N above the previous header; returns role + 1. */
++static int agent_header(char *ln, unsigned long last, unsigned long *n)
++{
++	static char *roles[] = {"USER", "ASSISTANT", "REASONING", "EX", "RESULT"};
++	char *e;
++	for (int i = 0; i < LEN(roles); i++) {
++		int k = strlen(roles[i]);
++		if (strncmp(ln, roles[i], k) || ln[k] != ' ' ||
++				!isdigit((unsigned char)ln[k+1]))
++			continue;
++		errno = 0;
++		*n = strtoul(ln + k + 1, &e, 10);
++		return (*e == '\n' || !*e) && !errno && *n > last ? i + 1 : 0;
++	}
++	return 0;
++}
++
++struct agent_parse {
++	cJSON *msgs, *asst, *tools, *wait;
++};
++
++static void agent_flush(struct agent_parse *p)
++{
++	cJSON *t;
++	if (p->asst) {
++		cJSON *content = cJSON_GetObjectItem(p->asst, "content");
++		int calls = cJSON_HasObjectItem(p->asst, "tool_calls");
++		if (calls && !*content->valuestring)
++			cJSON_ReplaceItemInObject(p->asst, "content", cJSON_CreateNull());
++		if (calls || *content->valuestring)
++			cJSON_AddItemToArray(p->msgs, p->asst);
++		else
++			cJSON_Delete(p->asst);
++	}
++	while ((t = cJSON_DetachItemFromArray(p->tools, 0)))
++		cJSON_AddItemToArray(p->msgs, t);
++	p->asst = p->wait = NULL;
++}
++
++/* Calls between ASSISTANT entries form one batch; a RESULT answers the
++ * preceding EX, otherwise it is a user message like preamble text. */
++static void agent_entry(struct agent_parse *p, int role, unsigned long n, char *text)
++{
++	char id[32];
++	cJSON *calls, *tc, *fn, *args;
++	char *json;
++	switch (role) {
++	case 2:		/* ASSISTANT; fills a message opened by REASONING */
++		if (p->asst && !cJSON_HasObjectItem(p->asst, "tool_calls") &&
++				!*cJSON_GetObjectItem(p->asst, "content")->valuestring) {
++			cJSON_ReplaceItemInObject(p->asst, "content",
++				cJSON_CreateString(text));
++			break;
++		}
++		agent_flush(p);
++		p->asst = agent_msg("assistant", text);
++		break;
++	case 3:		/* REASONING */
++		agent_flush(p);
++		p->asst = agent_msg("assistant", "");
++		cJSON_AddStringToObject(p->asst, agent_rkey, text);
++		break;
++	case 4:		/* EX */
++		if (!p->asst)
++			p->asst = agent_msg("assistant", "");
++		if (!(calls = cJSON_GetObjectItem(p->asst, "tool_calls")))
++			calls = cJSON_AddArrayToObject(p->asst, "tool_calls");
++		snprintf(id, sizeof(id), "ex%lu", n);
++		tc = cJSON_CreateObject();
++		cJSON_AddStringToObject(tc, "id", id);
++		cJSON_AddStringToObject(tc, "type", "function");
++		fn = cJSON_AddObjectToObject(tc, "function");
++		cJSON_AddStringToObject(fn, "name", "ex");
++		args = cJSON_CreateObject();
++		cJSON_AddStringToObject(args, "command", text);
++		json = cJSON_PrintUnformatted(args);
++		cJSON_AddStringToObject(fn, "arguments", json);
++		free(json);
++		cJSON_Delete(args);
++		cJSON_AddItemToArray(calls, tc);
++		p->wait = agent_msg("tool", "no result");
++		cJSON_AddStringToObject(p->wait, "tool_call_id", id);
++		cJSON_AddItemToArray(p->tools, p->wait);
++		break;
++	case 5:		/* RESULT */
++		if (p->wait) {
++			cJSON_ReplaceItemInObject(p->wait, "content",
++				cJSON_CreateString(text));
++			p->wait = NULL;
++			break;
++		}
++		/* fallthrough */
++	default:	/* preamble, USER */
++		agent_flush(p);
++		if (*text)
++			cJSON_AddItemToArray(p->msgs, agent_msg("user", text));
++	}
++}
++
++static int agent_live(void)
++{
++	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
++}
++
++/* Rebuild the conversation after the system message from b-4. */
++static void agent_reparse(void)
++{
++	struct lbuf *lb = tempbufs[3].lb;
++	struct agent_parse p = {NULL, NULL, NULL, NULL};
++	unsigned long n = 0, last = 0;
++	int role = 0, r = 0;
++	cJSON *sys = cJSON_DetachItemFromArray(agent_messages, 0);
++	cJSON_Delete(agent_messages);
++	agent_messages = p.msgs = cJSON_CreateArray();
++	cJSON_AddItemToArray(p.msgs, sys);
++	p.tools = cJSON_CreateArray();
++	sbuf_smake(text, 256)
++	for (int i = 0; i <= lbuf_len(lb); i++) {
++		char *ln = i < lbuf_len(lb) ? lb->ln[i] : NULL;
++		if (ln && !(r = agent_header(ln, last, &n))) {
++			sbuf_str(text, ln)
++			continue;
++		}
++		while (text->s_n && text->s[text->s_n-1] == '\n')
++			text->s_n--;
++		sbuf_nul(text)
++		agent_entry(&p, role, last, text->s);
++		sbuf_cut(text, 0)
++		if (ln) {
++			role = r;
++			last = n;
++		}
++	}
++	agent_flush(&p);
++	cJSON_Delete(p.tools);
++	free(text->s);
++	agent_entries[1] = MAX(agent_entries[1], last);
 +}
 +
 +static void agent_key(int c)
@@ -9921,7 +10312,7 @@ index 00000000..750eaa8e
 +	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 +	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
-+	int st, retries = 0, compacted = 0;
++	int st, retries = 0, compacted = 0, nudged = 0;
 +	if (agent_packing)
 +		agent_pack_done = 0;
 +	agent_cancel = agent_pause = 0;
@@ -9932,15 +10323,31 @@ index 00000000..750eaa8e
 +		/* Only complete tool batches reach this boundary. Manual/automatic
 +		 * pack agents must never recursively trigger autocompaction. */
 +		/* The threshold triggers a pack, not a hard cap on its result. */
++		if (agent_live())
++			agent_reparse();
 +		if (compacted && agent_tokens() < xaco)
 +			compacted = 0;
-+		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
++		if (nudged && agent_tokens() < xaco)
++			nudged = 0;
++		/* acl asks the agent to compact once; the pack agent is the fallback. */
++		if (agent_live() && xaco && !compacted && !nudged &&
++				agent_tokens() >= xaco) {
++			char msg[192];
++			snprintf(msg, sizeof(msg), "Context is about %.0f tokens, over the "
++				"%d token aco threshold. Compact b-4 in your next response, "
++				"then continue.", agent_tokens(), xaco);
++			agent_log("USER", msg);
++			agent_reparse();
++			nudged = 1;
++		} else if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
 +				agent_tokens() >= xaco) {
 +			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 +				return;
 +			/* The pack conversation was discarded. Start a fresh tool-round
 +			 * budget for the resumed request, without recursing into agent_run. */
 +			compacted = 1;
++			if (agent_live())
++				agent_reparse();
 +			round = retries = 0;
 +			agent_rounds = 0;
 +			serial = agent_serial;
@@ -9954,6 +10361,14 @@ index 00000000..750eaa8e
 +		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 +		cJSON_AddBoolToObject(req, "stream", 0);
 +		double request_bytes = agent_context_bytes();
++		char *json = cJSON_PrintUnformatted(agent_messages);
++		agent_reused = 0;
++		agent_sent = json ? strlen(json) : 0;
++		while (json && agent_prev && json[agent_reused] &&
++				json[agent_reused] == agent_prev[agent_reused])
++			agent_reused++;
++		free(agent_prev);
++		agent_prev = json;
 +		body = agent_http(req, &st, &stderr_text);
 +		cJSON_Delete(req);
 +		if (agent_cancel) {
@@ -10019,7 +10434,11 @@ index 00000000..750eaa8e
 +					"Use tool type function, name ex, and unique nonempty call IDs. "
 +					"Arguments must be a JSON-encoded object with a nonempty "
 +					"string command, for example {\"command\":\"1,20p\"}.", error);
-+				cJSON_AddItemToArray(agent_messages, agent_msg("user", diagnostic));
++				if (agent_live())
++					agent_log("USER", diagnostic);
++				else
++					cJSON_AddItemToArray(agent_messages,
++						agent_msg("user", diagnostic));
 +			}
 +			free(body);
 +			cJSON_Delete(root);
@@ -10039,13 +10458,20 @@ index 00000000..750eaa8e
 +		if (xar) {
 +			cJSON *reasoning = cJSON_GetObjectItem(message,
 +				"reasoning_content");
-+			if (!cJSON_IsString(reasoning) || !*reasoning->valuestring)
++			const char *rkey = "reasoning_content";
++			if (!cJSON_IsString(reasoning) || !*reasoning->valuestring) {
 +				reasoning = cJSON_GetObjectItem(message, "reasoning");
-+			if (cJSON_IsString(reasoning) && *reasoning->valuestring)
++				rkey = "reasoning";
++			}
++			if (cJSON_IsString(reasoning) && *reasoning->valuestring) {
++				agent_rkey = rkey;
 +				agent_log("REASONING", reasoning->valuestring);
++			}
 +		}
-+		if (cJSON_IsString(content))
-+			agent_log("ASSISTANT", content->valuestring);
++		/* acl separates tool batches by ASSISTANT entries. */
++		if (cJSON_IsString(content) || (xacl && cJSON_GetArraySize(calls)))
++			agent_log("ASSISTANT", cJSON_IsString(content) ?
++				content->valuestring : "");
 +		int base = cJSON_GetArraySize(agent_messages), index = 0;
 +		cJSON_ArrayForEach(tc, calls) {
 +			cJSON *result = agent_msg("tool",
@@ -10177,35 +10603,49 @@ index 00000000..750eaa8e
 +	}
 +}
 +
-+static void *ec_skill(char *loc, char *cmd, char *arg)
++/* Add or remove a skill in b-5; want < 0 toggles. */
++static void agent_skill(char *skill_str, int want)
 +{
-+	char *skill_str;
-+	if (strcmp(cmd, "acm") == 0)
-+		skill_str = caveman_skill;
 +	struct lbuf *lb = tempbufs[4].lb;
 +	char *s = agent_text(lb);
-+	if (s) {
-+		char *pos = strstr(s, skill_str);
-+		if (pos) {
-+			int beg = 0;
-+			for (char *p = s; p < pos; p++)
-+				if (*p == '\n') beg++;
-+			int len = 0;
-+			for (char *p = skill_str; *p; p++)
-+				if (*p == '\n') len++;
-+			lbuf_edit(lb, NULL, beg, beg + len, 0, 0);
-+		} else {
-+			lbuf_edit(lb, skill_str, lbuf_len(lb), lbuf_len(lb), 0, 0);
-+		}
++	char *pos = strstr(s, skill_str);
++	if (want < 0)
++		want = !pos;
++	if (!pos == !want) {
 +		free(s);
-+		if (agent_tool) {
-+			s = agent_text(lb);
-+			cJSON_ReplaceItemInArray(agent_messages, 0, agent_msg("system", s));
-+			agent_usage.anchored = 0;
-+			free(s);
-+		} else
-+			agent_history(1);
++		return;
 +	}
++	if (pos) {
++		int beg = 0;
++		for (char *p = s; p < pos; p++)
++			if (*p == '\n') beg++;
++		int len = 0;
++		for (char *p = skill_str; *p; p++)
++			if (*p == '\n') len++;
++		lbuf_edit(lb, NULL, beg, beg + len, 0, 0);
++	} else {
++		lbuf_edit(lb, skill_str, lbuf_len(lb), lbuf_len(lb), 0, 0);
++	}
++	free(s);
++	if (agent_tool) {
++		s = agent_text(lb);
++		cJSON_ReplaceItemInArray(agent_messages, 0, agent_msg("system", s));
++		agent_usage.anchored = 0;
++		free(s);
++	} else
++		agent_history(1);
++}
++
++static void *ec_skill(char *loc, char *cmd, char *arg)
++{
++	agent_skill(caveman_skill, -1);
++	return NULL;
++}
++
++static void *ec_acl(char *loc, char *cmd, char *arg)
++{
++	xacl = *arg ? eo_val(arg) : !xacl;
++	agent_skill(acl_skill, !!xacl);
 +	return NULL;
 +}
 +
@@ -10219,6 +10659,8 @@ index 00000000..750eaa8e
 +	ex_print("agent status", msg_ft)
 +	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 +		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
++	ex_print(msg, msg_ft)
++	snprintf(msg, sizeof(msg), "acl        %s", xacl ? "on, context rebuilt from b-4" : "off");
 +	ex_print(msg, msg_ft)
 +	if (!agent_ready) {
 +		ex_print(agent_init_error ? agent_init_error :
@@ -10242,6 +10684,11 @@ index 00000000..750eaa8e
 +		}
 +	} else
 +		ex_print("tokens     unavailable from endpoint", msg_ft)
++	if (agent_sent) {
++		snprintf(msg, sizeof(msg), "prefix     %zu of %zu message bytes shared with "
++			"previous request", agent_reused, agent_sent);
++		ex_print(msg, msg_ft)
++	}
 +	if (agent_messages) {
 +		snprintf(msg, sizeof(msg), "next input ~%.0f tokens (%s)", agent_tokens(),
 +			agent_usage.anchored ? "reported input + estimated growth" :
@@ -10639,7 +11086,12 @@ index 00000000..750eaa8e
 +			"the summary to avoid repeating completed actions or tool calls.\n\n")
 +		sbuf_str(resume, input)
 +		sbuf_nul(resume)
-+		cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
++		if (xacl) {
++			agent_logbuf = 3;
++			agent_log("USER", resume->s);
++			agent_logbuf = 2;
++		} else
++			cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
 +		free(resume->s);
 +		ok = 1;
 +	}
@@ -10675,10 +11127,10 @@ index 00000000..750eaa8e
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..0b300cf4
+index 00000000..464cef40
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,25 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -10694,6 +11146,7 @@ index 00000000..0b300cf4
 +static void *ec_agent(char *loc, char *cmd, char *arg);
 +static void exspec_reset(void);
 +static void *ec_skill(char *loc, char *cmd, char *arg);
++static void *ec_acl(char *loc, char *cmd, char *arg);
 +static void *ec_ast(char *loc, char *cmd, char *arg);
 +static void *ec_aout(char *loc, char *cmd, char *arg);
 +static void *ec_compact(char *loc, char *cmd, char *arg);
@@ -14213,10 +14666,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..234585dd 100755
+index c836c94c..ea8242b2 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,119 @@ build() {
+@@ -65,6 +65,130 @@ build() {
      }
  }
  
@@ -14290,7 +14743,8 @@ index c836c94c..234585dd 100755
 +            print "             :50,$aout"
 +            print ""
 +            spec("ast", "Print agent status and token usage",
-+                "Prints sizes, per-role usage, activity, limits and autocompact mode.\n" \
++                "Prints sizes, per-role usage, activity, limits, acl and autocompact\n" \
++                "mode, and the message bytes shared with the previous request.\n" \
 +                "Usage counts come from the last accepted response. Next input is\n" \
 +                "estimated from reported input plus new JSON bytes / 3, or all JSON\n" \
 +                "bytes / 3 without a usable count. Includes tool definitions and\n" \
@@ -14298,6 +14752,16 @@ index c836c94c..234585dd 100755
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
++            spec("acl[0]  Rebuild agent context from the session log",
++                "No argument logically inverts the option.",
++                "Nonzero adds a skill to b-5 and rebuilds messages from b-4 before\n" \
++                "each request, so agent or user edits there apply to the next one.\n" \
++                "An entry starts with a ROLE N line; N must exceed the previous\n" \
++                "entry number. EX entries between ASSISTANT entries form one batch;\n" \
++                "a RESULT answers the preceding EX, otherwise it is a user message,\n" \
++                "as is text before the first entry. Reasoning outside the log is\n" \
++                "dropped. With aco, the agent is first asked to compact b-4; apack\n" \
++                "runs if the next batch leaves context over the threshold.")
 +            spec("aco[0]  Automatically compact using the loaded session log",
 +                "Positive argument sets an estimated input-token threshold; 0 or\n" \
 +                "negative disables. No argument enables at 85000 or toggles off.\n" \
@@ -14336,7 +14800,7 @@ index c836c94c..234585dd 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +187,7 @@ install() {
+@@ -74,7 +198,7 @@ install() {
  }
  
  print_usage() {
@@ -14345,7 +14809,7 @@ index c836c94c..234585dd 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +195,9 @@ print_usage() {
+@@ -82,6 +206,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -14356,10 +14820,10 @@ index c836c94c..234585dd 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..22914a7c 100644
+index 2888d7c6..2d743377 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,52 @@
+@@ -1,5 +1,53 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -14383,6 +14847,7 @@ index 2888d7c6..22914a7c 100644
 +int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 +int xar;	/* display returned agent reasoning (:ar) */
 +int xaco;	/* autocompact input-token threshold; 0 disables */
++int xacl;	/* rebuild agent context from the session log (:acl) */
 +static int xaco_browse;	/* last selected mode: aco! rather than aco */
 +
 +static char exspec_insert[] =
@@ -14412,19 +14877,19 @@ index 2888d7c6..22914a7c 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +344,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +345,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|aco!?|ai|agr|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|apack!?|ac[lm]?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..271228a5 100644
+index 76dca408..10db8b5e 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -14864,7 +15329,7 @@ index 76dca408..271228a5 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2006,23 @@ static struct excmd {
+@@ -1758,8 +2006,24 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -14875,6 +15340,7 @@ index 76dca408..271228a5 100644
 +	{"aout", ec_aout},
 +	{"aco!", eo_aco},
 +	EO(aco),
++	{"acl", ec_acl},
 +	{"acm", ec_skill},
 +	{"ast", ec_ast},
 +	EO(agr),
@@ -14888,7 +15354,7 @@ index 76dca408..271228a5 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2202,39 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2203,39 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -14929,7 +15395,7 @@ index 76dca408..271228a5 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2253,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2254,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -15028,10 +15494,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..54a203e9
+index 00000000..7d8a4d28
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1262 @@
+@@ -0,0 +1,1276 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -15848,7 +16314,8 @@ index 00000000..54a203e9
 +	"ast",
 +	"Print agent status and token usage",
 +	"",
-+	"Prints sizes, per-role usage, activity, limits and autocompact mode.",
++	"Prints sizes, per-role usage, activity, limits, acl and autocompact",
++	"mode, and the message bytes shared with the previous request.",
 +	"Usage counts come from the last accepted response. Next input is",
 +	"estimated from reported input plus new JSON bytes / 3, or all JSON",
 +	"bytes / 3 without a usable count. Includes tool definitions and",
@@ -15923,6 +16390,18 @@ index 00000000..54a203e9
 +	"the current value, unless stated otherwise.",
 +	"",
 +	"Argument notation shows the default value.",
++	"",
++	"acl[0]  Rebuild agent context from the session log",
++	"No argument logically inverts the option.",
++	"",
++	"Nonzero adds a skill to b-5 and rebuilds messages from b-4 before",
++	"each request, so agent or user edits there apply to the next one.",
++	"An entry starts with a ROLE N line; N must exceed the previous",
++	"entry number. EX entries between ASSISTANT entries form one batch;",
++	"a RESULT answers the preceding EX, otherwise it is a user message,",
++	"as is text before the first entry. Reasoning outside the log is",
++	"dropped. With aco, the agent is first asked to compact b-4; apack",
++	"runs if the next batch leaves context over the threshold.",
 +	"",
 +	"aco[0]  Automatically compact using the loaded session log",
 +	"Positive argument sets an estimated input-token threshold; 0 or",
@@ -16256,43 +16735,44 @@ index 00000000..54a203e9
 +	{"acm", "Toggle the caveman response style skill", 780, 785, 0, 0},
 +	{"aretry", "Execute the last agent command once without the guardrail", 786, 798, 0, 0},
 +	{"aout", "Print the saved output of the last agent tool call", 799, 810, 0, 0},
-+	{"ast", "Print agent status and token usage", 811, 819, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 820, 828, 0, 0},
-+	{"sc", "Set ex special characters", 829, 839, 0, 0},
-+	{"sc!", "Set ex special characters", 840, 847, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 848, 855, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 856, 859, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 860, 864, 0, 0},
-+	{"ph", "Redefine placeholders", 865, 881, 0, 0},
-+	{"aco", "Automatically compact using the loaded session log", 890, 899, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 900, 907, 1, 0},
-+	{"agr", "Control agent output protection", 908, 914, 1, 0},
-+	{"ar", "Display returned agent reasoning", 915, 919, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 920, 924, 1, 0},
-+	{"ai", "Indent new lines", 925, 928, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 929, 930, 1, 0},
-+	{"ish", "Interactive shell", 931, 946, 1, 0},
-+	{"grp", "Regex search group", 947, 955, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 956, 959, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 960, 961, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 961, 962, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 962, 963, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 963, 964, 1, 0},
-+	{"led", "Enable all terminal output", 964, 965, 1, 0},
-+	{"vis", "Control startup flags", 966, 977, 1, 0},
-+	{"mpt", "Control vi prompts", 978, 988, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 989, 991, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 991, 993, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 993, 994, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 994, 995, 1, 0},
-+	{"td", "Current text direction context", 995, 1001, 1, 0},
-+	{"pr", "Print register", 1002, 1018, 1, 0},
-+	{"fr", "Find register", 1019, 1031, 1, 0},
-+	{"rr", "Record register", 1032, 1045, 1, 0},
-+	{"lim", "Line length render limit", 1046, 1061, 1, 0},
-+	{"seq", "Control Undo/Redo", 1062, 1074, 1, 0},
-+	{"left", "Control horizontal scroll", 1075, 1080, 1, 0},
-+	{"err", "Control ex errors", 1081, 1093, 1, 0},
++	{"ast", "Print agent status and token usage", 811, 820, 0, 0},
++	{"ac", "Set autocomplete filter regex", 821, 829, 0, 0},
++	{"sc", "Set ex special characters", 830, 840, 0, 0},
++	{"sc!", "Set ex special characters", 841, 848, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 849, 856, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 857, 860, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 861, 865, 0, 0},
++	{"ph", "Redefine placeholders", 866, 882, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 891, 902, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 903, 912, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 913, 920, 1, 0},
++	{"agr", "Control agent output protection", 921, 927, 1, 0},
++	{"ar", "Display returned agent reasoning", 928, 932, 1, 0},
++	{"aspec", "Print ex specifications for agents", 933, 937, 1, 0},
++	{"ai", "Indent new lines", 938, 941, 1, 0},
++	{"ic", "Ignore case in regular expressions", 942, 943, 1, 0},
++	{"ish", "Interactive shell", 944, 959, 1, 0},
++	{"grp", "Regex search group", 960, 968, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 969, 972, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 973, 974, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 974, 975, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 975, 976, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 976, 977, 1, 0},
++	{"led", "Enable all terminal output", 977, 978, 1, 0},
++	{"vis", "Control startup flags", 979, 990, 1, 0},
++	{"mpt", "Control vi prompts", 991, 1001, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1002, 1004, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1004, 1006, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1006, 1007, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1007, 1008, 1, 0},
++	{"td", "Current text direction context", 1008, 1014, 1, 0},
++	{"pr", "Print register", 1015, 1031, 1, 0},
++	{"fr", "Find register", 1032, 1044, 1, 0},
++	{"rr", "Record register", 1045, 1058, 1, 0},
++	{"lim", "Line length render limit", 1059, 1074, 1, 0},
++	{"seq", "Control Undo/Redo", 1075, 1087, 1, 0},
++	{"left", "Control horizontal scroll", 1088, 1093, 1, 0},
++	{"err", "Control ex errors", 1094, 1106, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
