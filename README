@@ -392,6 +392,12 @@ context.
 The new ex command "apack!" to compact the conversation by starting a
 fresh agent.
 The new ex command "acm" activates caveman mode skill.
+
+The new ex command "acl" makes the agent rebuild its context from the
+session log before every request, so edits to the log apply to the next
+request. No argument toggles it; 0 disables. Reasoning kept outside the
+log is dropped. With "aco", a compaction ("apack") may run first.
+
 The new ex option "aco" automatically uses "apack" command once specified
 token threshold has been reached. Default is 85k.
 The new ex option "aco!" automatically uses "apack!" command once specified
