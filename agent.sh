@@ -5680,15 +5680,13 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
         }
         /^     ai\[1\]/ && !aspec_done {
             spec("acl[0]  Rebuild agent context from the session log",
-                "No argument logically inverts the option.",
-                "Nonzero adds a skill to b-5 and rebuilds messages from b-4 before\n" \
-                "each request, so agent or user edits there apply to the next one.\n" \
-                "An entry starts with a ROLE N line; N must exceed the previous\n" \
-                "entry number. EX entries between ASSISTANT entries form one batch;\n" \
-                "a RESULT answers the preceding EX, otherwise it is a user message,\n" \
-                "as is text before the first entry. Reasoning outside the log is\n" \
-                "dropped. With aco, the agent is first asked to compact b-4; apack\n" \
-                "runs if the next batch leaves context over the threshold.")
+                "No argument toggles it. 0 disables.",
+                "Nonzero rebuilds the agent context from the session log (b-4)\n" \
+                "before every request, so edits to the log by the agent or the\n" \
+                "user apply to the next request. Without it, the context is\n" \
+                "built from the running history and log edits have no effect.\n" \
+                "Reasoning kept outside the log is dropped. With aco, a\n" \
+                "compact (apack) may run before the rebuild.")
             spec("aco[0]  Automatically compact using the loaded session log",
                 "Positive argument sets an estimated input-token threshold; 0 or\n" \
                 "negative disables. No argument enables at 85000 or toggles off.\n" \
@@ -14720,10 +14718,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..ea8242b2 100755
+index c836c94c..f7561c0a 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,130 @@ build() {
+@@ -65,6 +65,128 @@ build() {
      }
  }
  
@@ -14807,15 +14805,13 @@ index c836c94c..ea8242b2 100755
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
 +            spec("acl[0]  Rebuild agent context from the session log",
-+                "No argument logically inverts the option.",
-+                "Nonzero adds a skill to b-5 and rebuilds messages from b-4 before\n" \
-+                "each request, so agent or user edits there apply to the next one.\n" \
-+                "An entry starts with a ROLE N line; N must exceed the previous\n" \
-+                "entry number. EX entries between ASSISTANT entries form one batch;\n" \
-+                "a RESULT answers the preceding EX, otherwise it is a user message,\n" \
-+                "as is text before the first entry. Reasoning outside the log is\n" \
-+                "dropped. With aco, the agent is first asked to compact b-4; apack\n" \
-+                "runs if the next batch leaves context over the threshold.")
++                "No argument toggles it. 0 disables.",
++                "Nonzero rebuilds the agent context from the session log (b-4)\n" \
++                "before every request, so edits to the log by the agent or the\n" \
++                "user apply to the next request. Without it, the context is\n" \
++                "built from the running history and log edits have no effect.\n" \
++                "Reasoning kept outside the log is dropped. With aco, a\n" \
++                "compact (apack) may run before the rebuild.")
 +            spec("aco[0]  Automatically compact using the loaded session log",
 +                "Positive argument sets an estimated input-token threshold; 0 or\n" \
 +                "negative disables. No argument enables at 85000 or toggles off.\n" \
@@ -14854,7 +14850,7 @@ index c836c94c..ea8242b2 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +198,7 @@ install() {
+@@ -74,7 +196,7 @@ install() {
  }
  
  print_usage() {
@@ -14863,7 +14859,7 @@ index c836c94c..ea8242b2 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +206,9 @@ print_usage() {
+@@ -82,6 +204,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
