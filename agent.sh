@@ -154,7 +154,8 @@ static char acl_skill[] =
 "there change what you see next. Entries start with a ROLE N line (USER,\n"
 "ASSISTANT, REASONING, EX, RESULT) and N must increase. Text before the first\n"
 "entry is a user message. Keep context small: delete stale RESULT entries or\n"
-"replace finished work with a short note. Return to your buffer after editing.\n";
+"replace finished work with a short note. Keep small USER entries intact.\n"
+"Return to your buffer after editing.\n";
 
 static char caveman_skill[] =
 "Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
@@ -9234,10 +9235,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..a2010888
+index 00000000..4fa84739
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1939 @@
+@@ -0,0 +1,1940 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9362,7 +9363,8 @@ index 00000000..a2010888
 +"there change what you see next. Entries start with a ROLE N line (USER,\n"
 +"ASSISTANT, REASONING, EX, RESULT) and N must increase. Text before the first\n"
 +"entry is a user message. Keep context small: delete stale RESULT entries or\n"
-+"replace finished work with a short note. Return to your buffer after editing.\n";
++"replace finished work with a short note. Keep small USER entries intact.\n"
++"Return to your buffer after editing.\n";
 +
 +static char caveman_skill[] =
 +"Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
