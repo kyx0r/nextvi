@@ -59,6 +59,8 @@ static cJSON *agent_messages;
 static unsigned long agent_epoch, agent_serial;
 static int agent_ready, agent_syncing, agent_child_status;
 static int agent_logbuf = 3;
+/* Last entry number per log: [0] pack transcript (b-3), [1] session (b-4). */
+static unsigned long agent_entries[2];
 static char *agent_init_error;
 static unsigned long agent_rounds;	/* tool rounds completed in the current run */
 static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
@@ -366,9 +368,10 @@ fail:
 static void agent_log(const char *role, const char *text)
 {
 	struct lbuf *lb = tempbufs[agent_logbuf].lb;
+	char head[64];
+	snprintf(head, sizeof(head), "%s %lu\n", role, ++agent_entries[agent_logbuf == 3]);
 	sbuf_smake(sb, 256)
-	sbuf_str(sb, role)
-	sbuf_chr(sb, '\''\n'\'')
+	sbuf_str(sb, head)
 	sbuf_str(sb, text);
 	if (sb->s[sb->s_n-1] != '\''\n'\'')
 		sbuf_chr(sb, '\''\n'\'')
@@ -1426,6 +1429,7 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 			agent_syncing = 1;
 			lbuf_edit(lb, NULL, 0, lbuf_len(lb), 0, 0);
 			lbuf_saved(lb, 1);
+			agent_entries[1] = 0;
 			agent_syncing = 0;
 			int fd = open(tempbufs[3].path, O_WRONLY | O_TRUNC);
 			if (fd < 0 || close(fd))
@@ -1440,6 +1444,8 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 	}
 	epoch = agent_epoch;
 	preserve(int, agent_logbuf, agent_logbuf = compact ? 2 : 3;)
+	if (compact)
+		agent_entries[0] = 0;
 	if (term_owned)
 		term_init();
 	if (!(savedvis & 2))
@@ -1657,6 +1663,7 @@ static int agent_autocompact(const char *input)
 	}
 
 	agent_logbuf = 2;
+	agent_entries[0] = 0;
 	agent_log("RESULT", browse ? "autocompact: browsing session log" :
 		"autocompact: summarizing loaded session log");
 	if (browse)
@@ -8961,10 +8968,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..4f3040f0
+index 00000000..750eaa8e
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1694 @@
+@@ -0,0 +1,1701 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8994,6 +9001,8 @@ index 00000000..4f3040f0
 +static unsigned long agent_epoch, agent_serial;
 +static int agent_ready, agent_syncing, agent_child_status;
 +static int agent_logbuf = 3;
++/* Last entry number per log: [0] pack transcript (b-3), [1] session (b-4). */
++static unsigned long agent_entries[2];
 +static char *agent_init_error;
 +static unsigned long agent_rounds;	/* tool rounds completed in the current run */
 +static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
@@ -9301,9 +9310,10 @@ index 00000000..4f3040f0
 +static void agent_log(const char *role, const char *text)
 +{
 +	struct lbuf *lb = tempbufs[agent_logbuf].lb;
++	char head[64];
++	snprintf(head, sizeof(head), "%s %lu\n", role, ++agent_entries[agent_logbuf == 3]);
 +	sbuf_smake(sb, 256)
-+	sbuf_str(sb, role)
-+	sbuf_chr(sb, '\n')
++	sbuf_str(sb, head)
 +	sbuf_str(sb, text);
 +	if (sb->s[sb->s_n-1] != '\n')
 +		sbuf_chr(sb, '\n')
@@ -10361,6 +10371,7 @@ index 00000000..4f3040f0
 +			agent_syncing = 1;
 +			lbuf_edit(lb, NULL, 0, lbuf_len(lb), 0, 0);
 +			lbuf_saved(lb, 1);
++			agent_entries[1] = 0;
 +			agent_syncing = 0;
 +			int fd = open(tempbufs[3].path, O_WRONLY | O_TRUNC);
 +			if (fd < 0 || close(fd))
@@ -10375,6 +10386,8 @@ index 00000000..4f3040f0
 +	}
 +	epoch = agent_epoch;
 +	preserve(int, agent_logbuf, agent_logbuf = compact ? 2 : 3;)
++	if (compact)
++		agent_entries[0] = 0;
 +	if (term_owned)
 +		term_init();
 +	if (!(savedvis & 2))
@@ -10592,6 +10605,7 @@ index 00000000..4f3040f0
 +	}
 +
 +	agent_logbuf = 2;
++	agent_entries[0] = 0;
 +	agent_log("RESULT", browse ? "autocompact: browsing session log" :
 +		"autocompact: summarizing loaded session log");
 +	if (browse)
