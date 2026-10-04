@@ -81,6 +81,12 @@ static struct agent_usage {
 	int reported, anchored;
 } agent_usage;
 static int agent_packing, agent_pack_done;
+/* Session log text when the current pack started; NULL outside packs. */
+static char *agent_pack_log;
+static char agent_pack_retry[] =
+	"You returned control, but the session log in b-4 is unchanged.\n"
+	"The current buffer is b-4 again. Replace its content with the summary\n"
+	"using %c followed by literal summary text, then stop.";
 /* Previous request messages; shared JSON prefix of the last request. */
 static char *agent_prev;
 static size_t agent_reused, agent_sent;
@@ -1130,7 +1136,7 @@ static void agent_run(const char *input)
 	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
-	int st, retries = 0, compacted = 0, nudged = 0;
+	int st, retries = 0, compacted = 0, nudged = 0, unpacked = 0;
 	if (agent_packing)
 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
@@ -1410,6 +1416,21 @@ static void agent_run(const char *input)
 			agent_refresh();
 		}
 		agent_rounds = round;
+		/* A pack that stops without touching the log gets another try. */
+		if (!has_calls && agent_packing && agent_pack_log && unpacked < 3) {
+			char *log = agent_text(tempbufs[3].lb);
+			int same = !strcmp(log, agent_pack_log);
+			free(log);
+			if (same) {
+				unpacked++;
+				agent_pack_done = 0;
+				temp_switch(3, 0);
+				cJSON_AddItemToArray(agent_messages,
+					agent_msg("user", agent_pack_retry));
+				agent_log("USER", agent_pack_retry);
+				continue;
+			}
+		}
 		if (!has_calls)
 			return;
 		if (round++ == max_tool_rounds) {
@@ -1743,7 +1764,7 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 static char *agent_compact_task(int browse, char *arg, int automatic)
 {
 	sbuf_smake(task, 512)
-	sbuf_str(task, "The current buffer contains a log of the session.\n")
+	sbuf_str(task, "The current buffer is b-4, which contains a log of the session.\n")
 	if (browse)
 		sbuf_str(task,
 		"The log has not been loaded into your context. Inspect the current\n"
@@ -1790,12 +1811,15 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	cJSON *history = agent_messages;
 	struct agent_usage usage = agent_usage;
 	int was_packing = agent_packing, was_done = agent_pack_done;
+	char *was_log = agent_pack_log;
 	agent_messages = NULL;
 	agent_packing = 1;
 	agent_pack_done = 0;
+	agent_pack_log = original;
 	/* apack! resets history without clearing or importing the log. */
 	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
 	int complete = agent_pack_done;
+	agent_pack_log = was_log;
 	agent_packing = was_packing;
 	agent_pack_done = was_done;
 	if (agent_epoch == epoch + 1) {
@@ -1879,8 +1903,10 @@ static int agent_autocompact(const char *input)
 	agent_history(!browse);
 	agent_packing = 1;
 	agent_pack_done = 0;
+	agent_pack_log = original;
 	temp_switch(3, 0);
 	agent_run(task);
+	agent_pack_log = NULL;
 	agent_packing = 0;
 	free(task);
 
@@ -9208,10 +9234,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..73b041db
+index 00000000..a2010888
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1913 @@
+@@ -0,0 +1,1939 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9263,6 +9289,12 @@ index 00000000..73b041db
 +	int reported, anchored;
 +} agent_usage;
 +static int agent_packing, agent_pack_done;
++/* Session log text when the current pack started; NULL outside packs. */
++static char *agent_pack_log;
++static char agent_pack_retry[] =
++	"You returned control, but the session log in b-4 is unchanged.\n"
++	"The current buffer is b-4 again. Replace its content with the summary\n"
++	"using %c followed by literal summary text, then stop.";
 +/* Previous request messages; shared JSON prefix of the last request. */
 +static char *agent_prev;
 +static size_t agent_reused, agent_sent;
@@ -10312,7 +10344,7 @@ index 00000000..73b041db
 +	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 +	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
-+	int st, retries = 0, compacted = 0, nudged = 0;
++	int st, retries = 0, compacted = 0, nudged = 0, unpacked = 0;
 +	if (agent_packing)
 +		agent_pack_done = 0;
 +	agent_cancel = agent_pause = 0;
@@ -10592,6 +10624,21 @@ index 00000000..73b041db
 +			agent_refresh();
 +		}
 +		agent_rounds = round;
++		/* A pack that stops without touching the log gets another try. */
++		if (!has_calls && agent_packing && agent_pack_log && unpacked < 3) {
++			char *log = agent_text(tempbufs[3].lb);
++			int same = !strcmp(log, agent_pack_log);
++			free(log);
++			if (same) {
++				unpacked++;
++				agent_pack_done = 0;
++				temp_switch(3, 0);
++				cJSON_AddItemToArray(agent_messages,
++					agent_msg("user", agent_pack_retry));
++				agent_log("USER", agent_pack_retry);
++				continue;
++			}
++		}
 +		if (!has_calls)
 +			return;
 +		if (round++ == max_tool_rounds) {
@@ -10925,7 +10972,7 @@ index 00000000..73b041db
 +static char *agent_compact_task(int browse, char *arg, int automatic)
 +{
 +	sbuf_smake(task, 512)
-+	sbuf_str(task, "The current buffer contains a log of the session.\n")
++	sbuf_str(task, "The current buffer is b-4, which contains a log of the session.\n")
 +	if (browse)
 +		sbuf_str(task,
 +		"The log has not been loaded into your context. Inspect the current\n"
@@ -10972,12 +11019,15 @@ index 00000000..73b041db
 +	cJSON *history = agent_messages;
 +	struct agent_usage usage = agent_usage;
 +	int was_packing = agent_packing, was_done = agent_pack_done;
++	char *was_log = agent_pack_log;
 +	agent_messages = NULL;
 +	agent_packing = 1;
 +	agent_pack_done = 0;
++	agent_pack_log = original;
 +	/* apack! resets history without clearing or importing the log. */
 +	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
 +	int complete = agent_pack_done;
++	agent_pack_log = was_log;
 +	agent_packing = was_packing;
 +	agent_pack_done = was_done;
 +	if (agent_epoch == epoch + 1) {
@@ -11061,8 +11111,10 @@ index 00000000..73b041db
 +	agent_history(!browse);
 +	agent_packing = 1;
 +	agent_pack_done = 0;
++	agent_pack_log = original;
 +	temp_switch(3, 0);
 +	agent_run(task);
++	agent_pack_log = NULL;
 +	agent_packing = 0;
 +	free(task);
 +
