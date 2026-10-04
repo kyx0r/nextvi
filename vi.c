@@ -344,10 +344,14 @@ void dir_calc(char *path)
 {
 	struct dirent *dirp;
 	struct stat statbuf;
-	int i = 0, ret;
-	char *cpath, *ptrs[1024];
-	int plen[1024];
-	DIR *dp, *sdp, *dps[1024];
+	int ret;
+	unsigned int i = 0, cap = 0;
+	char *cpath;
+	struct {
+		char *path;
+		unsigned int len;
+	} *ptrs = NULL;
+	DIR *dp;
 	unsigned int pathlen = strlen(path), len;
 	if (!(dp = opendir(path)))
 		return;
@@ -357,7 +361,7 @@ void dir_calc(char *path)
 	temp_pos(1, -1, 0, 0);
 	fspos = 0;
 	for (;;) {
-		while ((dirp = readdir(dp))) {
+		while (dp && (dirp = readdir(dp))) {
 			len = strlen(dirp->d_name)+1;
 			if (strcmp(dirp->d_name, ".") == 0 ||
 				strcmp(dirp->d_name, "..") == 0 ||
@@ -367,25 +371,27 @@ void dir_calc(char *path)
 			memcpy(&cpath[pathlen+1], dirp->d_name, len);
 			ret = lstat(cpath, &statbuf);
 			if (ret >= 0 && S_ISDIR(statbuf.st_mode)) {
-				if (i >= LEN(ptrs) || !(sdp = opendir(cpath)))
-					break;
-				dps[i] = sdp;
-				ptrs[i] = cpath;
-				cpath = emalloc(pathlen + 1024);
-				memcpy(cpath, ptrs[i], pathlen + len);
-				plen[i++] = pathlen + len;
+				if (i == cap) {
+					cap = MAX(128, NEXTSZ(cap, 1));
+					ptrs = erealloc(ptrs, cap * sizeof(*ptrs));
+				}
+				ptrs[i].len = pathlen + len;
+				ptrs[i].path = emalloc(ptrs[i].len + 1024);
+				memcpy(ptrs[i].path, cpath, ptrs[i].len + 1);
+				i++;
 			} else if (ret >= 0 && S_ISREG(statbuf.st_mode))
 				if (!fsincl || rset_match(fsincl, cpath, 0)) {
-					sbuf_mem(sb, cpath, (int)(pathlen + len))
+					sbuf_mem(sb, cpath, pathlen + len)
 					sbuf_chr(sb, '\n')
 				}
 		}
-		closedir(dp);
+		if (dp)
+			closedir(dp);
 		free(cpath);
 		if (i > 0) {
-			dp = dps[--i];
-			pathlen = plen[i];
-			cpath = ptrs[i];
+			cpath = ptrs[--i].path;
+			pathlen = ptrs[i].len;
+			dp = opendir(cpath);
 		} else
 			break;
 	}
@@ -393,6 +399,7 @@ void dir_calc(char *path)
 	if (sb->s_n > 1)
 		temp_write(1, sb->s);
 	free(sb->s);
+	free(ptrs);
 }
 
 #define fssearch() \
@@ -1840,7 +1847,7 @@ int main(int argc, char *argv[])
 				xvis = 0;
 			else {
 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
-				fprintf(stderr, "Nextvi-7.8 Usage: %s [-aemsv] [file ...]\n", argv[0]);
+				fprintf(stderr, "Nextvi-7.9 Usage: %s [-aemsv] [file ...]\n", argv[0]);
 				return EXIT_FAILURE;
 			}
 		}
