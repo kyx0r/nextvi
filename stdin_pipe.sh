@@ -366,24 +366,24 @@ int main\(int argc, char \*argv\[]\)1??0?
 %f> 	memset\(&sa, 0, sizeof\(sa\)\);
 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);4??0?
-4??+2m 1220reg p OK vi.c:1813:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1820:a42sc %? %@2152sc!1q0?
 grp 1%f> 	memset\(&sa, 0, sizeof\(sa\)\);.*?
 	sa\.sa_handler = sighandler;.*?
 (	sigaction\(SIGWINCH, &sa, NULL\);)7??0?
-grp 07??m 1220reg p OK vi.c:1813:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:1820:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static void setup_signals\(void\)
 \{
 	struct sigaction sa;.*(	int i, j;)
 	setup_signals\(\);
 	dir_init\(\);8??0?
-grp 08??-5m 1220reg p OK vi.c:1813:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.c:1820:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	term_winch\+\+;
 }.*(	syn_init\(\);)
 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);9??0?
-grp 09??-8m 1220reg p OK vi.c:1813:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:18132sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.c:1820:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18202sc %? %@2132sc!0?
 ?0?
 %f+ 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{
 			i\+\+;
@@ -397,17 +397,17 @@ int main\(int argc, char \*argv\[]\)1??0?
 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
 			if \(argv\[i]\[j] == '\''s'\''\)
 				xvis \|= 1\|2;2??0?
-2??m 2220reg p OK vi.c:1829:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:1836:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		}$3??0?
-3??m 2220reg p OK vi.c:1829:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:1836:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{
 			i\+\+;
 			break;4??0?
-4??+3m 2220reg p OK vi.c:1829:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:1836:a42sc %? %@2152sc!1q0?
 %f+ 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{
 			if \(argv\[i]\[j] == '\''s'\''\)
 				xvis \|= 1\|2;5??0?
-5??-1m 2220reg p OK vi.c:1829:a52sc %? %@2152sc!1q0?
+5??-1m 2220reg p OK vi.c:1836:a52sc %? %@2152sc!1q0?
 %f+ 	.....a...........=...'\''.........\[i.......
 ...i...
 ...b..ak.
@@ -415,30 +415,30 @@ int main\(int argc, char \*argv\[]\)1??0?
 ..f.r ...=.1;..r......j.. .\+.. \{
 	.	...\(.rg..i...] .=..s..
 	...x.i. .......6??0?
-6??+3m 2220reg p OK vi.c:1829:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK vi.c:1836:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{.*?
 			i\+\+;.*?
 			break;.*?
 (		})7??0?
-grp 07??m 2220reg p OK vi.c:1829:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1836:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);
 	for \(i = 1; i < argc && argv\[i]\[0] == '\''-'\''; i\+\+\) \{.*(			else if \(argv\[i]\[j] == '\''e'\''\))
 				xvis \|= 2;
 			else if \(argv\[i]\[j] == '\''m'\''\)8??0?
-grp 08??-4m 2220reg p OK vi.c:1829:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1836:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	dir_init\(\);
 	syn_init\(\);
 	temp_open\(0, "/hist/", _ft\);.*(				xvis \|= 4;)
 			else if \(argv\[i]\[j] == '\''a'\''\)
 				xvis \|= 8;9??0?
-grp 09??-7m 2220reg p OK vi.c:1829:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18292sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.c:1836:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18362sc %? %@2132sc!0?
 '\''1i 	sigaction(SIGINT, &sa, NULL);
-??!219reg vi.c:1813:m12sc %? %@2142sc!0?
+??!219reg vi.c:1820:m12sc %? %@2142sc!0?
 '\''2c 		} else if (!argv[i][1])
 			term_ufd.fd = MAX(0, open(ctermid(NULL), O_RDONLY));
-??!219reg vi.c:1829:m22sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.c:1836:m22sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'term.c' 'vi.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -547,10 +547,10 @@ index 03aa736f..e05c8844 100644
  
  void term_done(void)
 diff --git a/vi.c b/vi.c
-index 13b97c7d..b2b0b2a8 100644
+index b1f9a16f..322ccacc 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1811,6 +1811,7 @@ static void setup_signals(void)
+@@ -1818,6 +1818,7 @@ static void setup_signals(void)
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = sighandler;
  	sigaction(SIGWINCH, &sa, NULL);
@@ -558,7 +558,7 @@ index 13b97c7d..b2b0b2a8 100644
  }
  
  int main(int argc, char *argv[])
-@@ -1826,7 +1827,8 @@ int main(int argc, char *argv[])
+@@ -1833,7 +1834,8 @@ int main(int argc, char *argv[])
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
  			break;

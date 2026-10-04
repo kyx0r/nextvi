@@ -179,24 +179,24 @@ EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 %f> 				word = cs;
 			}
 		}4??0?
-4??+2m 1220reg p OK vi.c:1734:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1741:a42sc %? %@2152sc!1q0?
 grp 1%f> 				word = cs;.*?
 			}.*?
 (		})7??0?
-grp 07??m 1220reg p OK vi.c:1734:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:1741:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					vi_mod \|= 1;
 				}
 				free\(word\);.*(			led_ext \*p;)
 			if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{
 				row1 = row; off1 = off;8??0?
-grp 08??-4m 1220reg p OK vi.c:1734:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.c:1741:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			if \(\(cs = vi_curword\(xb, xrow, xoff, xhlw, 0\)\)\) \{
 				if \(!word \|\| strcmp\(word, cs\)\) \{
 					syn_reloadft\(syn_addhl\(cs, 1\), 0\);.*(				if \(!lbuf_pair\(xb, "\(\)\[]\{}", 6, &row, &off\)\) \{)
 					ola\[0]\[0] = off;
 					ola\[0]\[1] = 1;9??0?
-grp 09??-7m 1220reg p OK vi.c:1734:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:17342sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.c:1741:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:17412sc %? %@2132sc!0?
 '\''1i 		if (xhlm) {
 			int mrow, moff;
 			char marks[] = "abcdefghijklmnopqrstuvwxyz[]`*";
@@ -213,7 +213,7 @@ EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 				p->blen = sizeof(ola[i]);
 			}
 		}
-??!219reg vi.c:1734:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
+??!219reg vi.c:1741:m12sc %? %@2142sc!vis 2b0wb1wb2w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'vi.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -267,10 +267,10 @@ index 76dca408..478ba6b2 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index 13b97c7d..7336c4b4 100644
+index b1f9a16f..5f023503 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1732,6 +1732,22 @@ void vi(int init)
+@@ -1739,6 +1739,22 @@ void vi(int init)
  				word = cs;
  			}
  		}

@@ -777,7 +777,7 @@ index 4893a07e..99336505 100644
  				sbuf_str(sb, cs)
  		}
 diff --git a/vi.c b/vi.c
-index 13b97c7d..04c517a8 100644
+index b1f9a16f..08321f2e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -262,13 +262,130 @@ static int vi_col2off(struct lbuf *lb, int row, int col)

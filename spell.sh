@@ -903,20 +903,20 @@ static void vc_execute\(int cmd\)
 }
 
 4??0?
-4??+2m 1220reg p OK vi.c:1080:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1087:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	xrow \+= cnt \* \(cs\[0] == '\''\\n'\''\);
 	free\(sb->s\);
 	rep_record\(\).*(	int c = term_read\(0\), i, n = MAX\(1, vi_arg\);)
 	sbuf \*buf;
 	if \(TK_INT\(c\)\)8??0?
-grp 08??-4m 1220reg p OK vi.c:1080:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.c:1087:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	sbufn_str\(sb, rstate->chrs\[off\+cnt]\)
 	xoff = \(off \+ cnt - 1\) \* \(cs\[0] != '\''\\n'\''\);
 	lbuf_edit\(xb, sb->s, xrow, xrow \+ 1, off, xoff\);.*(	if \(c == cmd && exec_buf >= 0\))
 		c = exec_buf;
 	if \(!ex_regget\(c\)\) \{9??0?
-grp 09??-8m 1220reg p OK vi.c:1080:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:10802sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.c:1087:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:10872sc %? %@2132sc!0?
 ?0?
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
@@ -928,24 +928,24 @@ static void vc_execute\(int cmd\)
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;4??0?
-4??+2m 2220reg p OK vi.c:1602:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.c:1609:a42sc %? %@2152sc!1q0?
 grp 1%f+ 					ex_command\(cmd\).*?
 					restore\(xled\).*?
 (					vi_mod \|= 1;)7??0?
-grp 07??m 2220reg p OK vi.c:1602:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1609:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					preserve\(int, xled, xled = 0;\)
 					char cmd\[64] = "g/\./& ";
 					memcpy\(itoa\(vi_arg, cmd\+5\), "gw", sizeof\("gw"\)\);.*(			case '\''x'\'':)
 				term_push\("d ", 2\);
 				goto motion;8??0?
-grp 08??-4m 2220reg p OK vi.c:1602:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:1609:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					restore\(xvis\)
 					vi_mod \|= !texec;
 				} else if \(k == '\''q'\''\) \{.*(			case '\''X'\'':)
 				term_push\("d", 2\);
 				goto motion;9??0?
-grp 09??-7m 2220reg p OK vi.c:1602:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:16022sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.c:1609:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:16092sc %? %@2132sc!0?
 ?0?
 %f+ 			if \(xmpt > 0\)
 				xmpt = 0;
@@ -957,24 +957,24 @@ static void vc_execute\(int cmd\)
 %f+ 			if \(xmpt > 0\)
 				xmpt = 0;
 		}4??0?
-4??+2m 3220reg p OK vi.c:1789:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK vi.c:1796:a42sc %? %@2152sc!1q0?
 grp 1%f+ 			if \(xmpt > 0\).*?
 				xmpt = 0;.*?
 (		})7??0?
-grp 07??m 3220reg p OK vi.c:1789:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.c:1796:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			xrows -= term_resized != vi_status;
 			vi_status = term_resized;
 			vc_status\(vi_tsm\);.*(	if \(--xgrec == 0\) \{)
 		term_pos\(xrows - !vi_status, 0\);
 		if \(xmpt > 0 && !xpln\)8??0?
-grp 08??-5m 3220reg p OK vi.c:1789:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 3220reg p OK vi.c:1796:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			vi_drawrow\(xrow\);
 		}
 		if \(vi_status && xmpt < 1\) \{.*(			term_chr\('\''\\n'\''\);)
 		else
 			term_kill\(\);9??0?
-grp 09??-8m 3220reg p OK vi.c:1789:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:17892sc %? %@2132sc!0?
+grp 09??-8m 3220reg p OK vi.c:1796:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:17962sc %? %@2132sc!0?
 '\''1i /* the word under the cursor in ln, its bytes in len, its offset in beg */
 static char *vi_spellword(char *ln, int *len, int *beg)
 {
@@ -1037,14 +1037,14 @@ static void vi_spellmsg(void)
 	free(sb->s);
 }
 
-??!219reg vi.c:1080:m12sc %? %@2142sc!0?
+??!219reg vi.c:1087:m12sc %? %@2142sc!0?
 '\''2i 				} else if (k == '\''s'\'') {
 					vc_spell();
 					vi_mod |= 2;
-??!219reg vi.c:1602:m22sc %? %@2142sc!0?
+??!219reg vi.c:1609:m22sc %? %@2142sc!0?
 '\''3i 		if (spcnt && !xmpt)		/* drawn last, a scroll carries it along */
 			vi_spellmsg();
-??!219reg vi.c:1789:m32sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg vi.c:1796:m32sc %? %@2142sc!b3m!%ya 98?0?
 %f> extern struct placeholder \*ph;
 extern int phlen;
 extern const int conf_hlrev;
@@ -1458,10 +1458,10 @@ index 76dca408..0978f3e6 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/vi.c b/vi.c
-index 13b97c7d..2bd198f8 100644
+index b1f9a16f..a336791a 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1078,6 +1078,68 @@ static int vc_replace(void)
+@@ -1085,6 +1085,68 @@ static int vc_replace(void)
  	return cs[0] == '\n' ? 1 : 2;
  }
  
@@ -1530,7 +1530,7 @@ index 13b97c7d..2bd198f8 100644
  static void vc_execute(int cmd)
  {
  	static int exec_buf = -1;
-@@ -1600,6 +1662,9 @@ void vi(int init)
+@@ -1607,6 +1669,9 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -1540,7 +1540,7 @@ index 13b97c7d..2bd198f8 100644
  				} else if (k == '~' || k == 'u' || k == 'U')
  					vc_motion(k);
  				break;
-@@ -1787,6 +1852,8 @@ void vi(int init)
+@@ -1794,6 +1859,8 @@ void vi(int init)
  			if (xmpt > 0)
  				xmpt = 0;
  		}

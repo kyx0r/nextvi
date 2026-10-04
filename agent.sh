@@ -9082,24 +9082,24 @@ static int vi_lnnum;		/\* line numbers \*/9??0?
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);4??0?
-4??+2m 4220reg p OK vi.c:1824:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK vi.c:1831:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	temp_open\(0, "/hist/", _ft\);.*?
 	temp_open\(1, "/fm/", fm_ft\);.*?
 (	temp_open\(2, "/sc/", _ft\);)7??0?
-grp 07??m 4220reg p OK vi.c:1824:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.c:1831:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	setup_signals\(\);
 	dir_init\(\);
 	syn_init\(\);.*(			break;)
 		}
 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{8??0?
-grp 08??-4m 4220reg p OK vi.c:1824:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK vi.c:1831:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> int main\(int argc, char \*argv\[]\)
 \{
 	int i, j;.*(			if \(argv\[i]\[j] == '\''s'\''\))
 				xvis \|= 1\|2;
 			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
-grp 09??-7m 4220reg p OK vi.c:1824:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:18242sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK vi.c:1831:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18312sc %? %@2132sc!0?
 '\''1i #include <errno.h>
 #include "cJSON.c"
 ??!219reg vi.c:15:m12sc %? %@2142sc!0?
@@ -9108,7 +9108,7 @@ static int vi_lnnum;		/\* line numbers \*/9??0?
 '\''3i #include "agent.c"
 ??!219reg vi.c:18:m32sc %? %@2142sc!0?
 '\''4i 	agent_init();
-??!219reg vi.c:1824:m42sc %? %@2142sc!b13m!%ya 98?0?
+??!219reg vi.c:1831:m42sc %? %@2142sc!b13m!%ya 98?0?
 %f> is\.sug = NULL; \\
 is\._sug = NULL; \\
 
@@ -16940,7 +16940,7 @@ index 03aa736f..1d90526f 100644
  		signal(SIGINT, SIG_DFL);
  	}
 diff --git a/vi.c b/vi.c
-index 13b97c7d..6acada2d 100644
+index b1f9a16f..fdf5c0a3 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,13 @@
@@ -16957,7 +16957,7 @@ index 13b97c7d..6acada2d 100644
  #include "lbuf.c"
  #include "led.c"
  #include "regex.c"
-@@ -1822,6 +1826,7 @@ int main(int argc, char *argv[])
+@@ -1829,6 +1833,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);

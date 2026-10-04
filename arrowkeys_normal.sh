@@ -40,24 +40,24 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 %f> 
 	mv = term_read\(0\);
 	switch \(mv\) \{4??0?
-4??+2m 1220reg p OK vi.c:482:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:489:a42sc %? %@2152sc!1q0?
 grp 1%f> .*?
 	mv = term_read\(0\);.*?
 (	switch \(mv\) \{)7??0?
-grp 07??m 1220reg p OK vi.c:482:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:489:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	char \*cs;
 	int cnt = vi_arg \? vi_arg : 1;
 	int mv, i, dir, var;.*(		if \(mv == '\'','\''\))
 			mv = vi_charcmd == '\''F'\'' \|\| vi_charcmd == '\''T'\''
 				\? tolower\(vi_charcmd\) : toupper\(vi_charcmd\);8??0?
-grp 08??-5m 1220reg p OK vi.c:482:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 1220reg p OK vi.c:489:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	static rset \*bre;
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;.*(			mv = vi_charcmd;)
 		if \(lbuf_findchar\(xb, vi_charlast, mv, cnt, row, off\)\)
 			return -1;9??0?
-grp 09??-9m 1220reg p OK vi.c:482:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:4822sc %? %@2132sc!0?
+grp 09??-9m 1220reg p OK vi.c:489:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:4892sc %? %@2132sc!0?
 '\''1i 	case '\''\033'\'':	/* Arrow keys */
 		/* Nothing queued behind it: a bare ESC, not a sequence. Give it
 		 * back to the caller instead of blocking for a byte that is not
@@ -98,7 +98,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 		} else	/* Not a 033[X command so we abort */
 			return 0;
 		break;
-??!219reg vi.c:482:m12sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
+??!219reg vi.c:489:m12sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -111,10 +111,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 13b97c7d..cd780589 100644
+index b1f9a16f..e61f344d 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -480,6 +480,46 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -487,6 +487,46 @@ static int vi_region(int cmd, int *row, int *off)
  
  	mv = term_read(0);
  	switch (mv) {

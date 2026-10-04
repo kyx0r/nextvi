@@ -190,18 +190,18 @@ void syn_done(void)
 %f> 	else
 		vi\(1\);
 	term_done\(\);4??0?
-4??+2m 1220reg p OK vi.c:1858:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1865:a42sc %? %@2152sc!1q0?
 grp 1%f> 	else.*?
 		vi\(1\);.*?
 (	term_done\(\);)7??0?
-grp 07??m 1220reg p OK vi.c:1858:a72sc %? %@2152sc!0?
-1;4;7??!219reg vi.c:18582sc %? %@2132sc!0?
+grp 07??m 1220reg p OK vi.c:1865:a72sc %? %@2152sc!0?
+1;4;7??!219reg vi.c:18652sc %? %@2132sc!0?
 '\''1i 	ex_done();
 	syn_done();
 	ren_done();
 	led_alldone();
 	free(tibuf);
-??!219reg vi.c:1858:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+??!219reg vi.c:1865:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'led.c' 'regex.c' 'ren.c' 'vi.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -304,10 +304,10 @@ index 4116d9c1..0abb7884 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 13b97c7d..fd4dd0aa 100644
+index b1f9a16f..b29622b0 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1856,6 +1856,11 @@ int main(int argc, char *argv[])
+@@ -1863,6 +1863,11 @@ int main(int argc, char *argv[])
  	else
  		vi(1);
  	term_done();

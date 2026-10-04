@@ -38,24 +38,24 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 %f> 	case '\''w'\'':
 	case '\''W'\'':
 		var = mv == '\''W'\'';4??0?
-4??+2m 1220reg p OK vi.c:563:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:570:a42sc %? %@2152sc!1q0?
 grp 1%f> 	case '\''w'\'':.*?
 	case '\''W'\'':.*?
 (		var = mv == '\''W'\'';)7??0?
-grp 07??m 1220reg p OK vi.c:563:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:570:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			if \(lbuf_wordend\(xb, var, vi_nlmode\+1, row, off\)\)
 				break;
 		break;.*(		dir = mv == '\''\('\'' \? 1 : -1;)
 		if \(!bre\)
 			bre = rset_smake\("\^\[\.\?!]\+\['\''\\\\]\)]\*\(\?:\[ \\t]\+\\n\?\|\\n\)", 0\);8??0?
-grp 08??-7m 1220reg p OK vi.c:563:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 1220reg p OK vi.c:570:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	case '\''E'\'':
 		var = mv == '\''E'\'';
 		for \(i = 0; i < cnt; i\+\+\).*(		int subs\[2], org;)
 		for \(i = 0; i < cnt; i\+\+\) \{
 			var = \*row;9??0?
-grp 09??-10m 1220reg p OK vi.c:563:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:5632sc %? %@2132sc!0?
+grp 09??-10m 1220reg p OK vi.c:570:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:5702sc %? %@2132sc!0?
 ?0?
 %f+ 		for \(i = 0; i < cnt; i\+\+\)
 			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\)
@@ -67,37 +67,37 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 				break;
 		break;
 	case '\''\('\'':2??0?
-2??m 2220reg p OK vi.c:565:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:572:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\)$3??0?
-3??m 2220reg p OK vi.c:565:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:572:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^		for \(i = 0; i < cnt; i\+\+\)$4??0?
-4??+1m 2220reg p OK vi.c:565:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 2220reg p OK vi.c:572:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 				break;
 		break;
 	case '\''\('\'':5??0?
-5??-1m 2220reg p OK vi.c:565:a52sc %? %@2152sc!1q0?
+5??-1m 2220reg p OK vi.c:572:a52sc %? %@2152sc!1q0?
 %f+ 	..or ............c..; i\+..
 ..	.. ..b...w..d.eg\(x.....r. .........\+...r... .f.\).
 	..	b...k.
 ....e...
 .cas......6??0?
-6??+1m 2220reg p OK vi.c:565:a62sc %? %@2152sc!1q0?
+6??+1m 2220reg p OK vi.c:572:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		for \(i = 0; i < cnt; i\+\+\).*?
 (			if \(lbuf_wordbeg\(xb, var, vi_nlmode\+1, row, off\)\))7??0?
-grp 07??m 2220reg p OK vi.c:565:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:572:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			if \(lbuf_wordend\(xb, var, vi_nlmode\+1, row, off\)\)
 				break;
 		break;.*(		dir = mv == '\''\('\'' \? 1 : -1;)
 		if \(!bre\)
 			bre = rset_smake\("\^\[\.\?!]\+\['\''\\\\]\)]\*\(\?:\[ \\t]\+\\n\?\|\\n\)", 0\);8??0?
-grp 08??-5m 2220reg p OK vi.c:565:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 2220reg p OK vi.c:572:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	case '\''E'\'':
 		var = mv == '\''E'\'';
 		for \(i = 0; i < cnt; i\+\+\).*(		int subs\[2], org;)
 		for \(i = 0; i < cnt; i\+\+\) \{
 			var = \*row;9??0?
-grp 09??-8m 2220reg p OK vi.c:565:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:5652sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK vi.c:572:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:5722sc %? %@2132sc!0?
 '\''1i 		if (cmd >= 0 && cnt == 1)
 			dir = 2;
 		else
@@ -113,8 +113,8 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 			*row = prow;
 			*off = poff;
 		}
-??!219reg vi.c:563:m12sc %? %@2142sc!0?
-'\''2s/vi_nlmode\+1/dir/??!219reg vi.c:565:m22sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
+??!219reg vi.c:570:m12sc %? %@2142sc!0?
+'\''2s/vi_nlmode\+1/dir/??!219reg vi.c:572:m22sc %? %@2142sc!vis 2b0w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'vi.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -127,10 +127,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/vi.c b/vi.c
-index 13b97c7d..d4f18d13 100644
+index b1f9a16f..8989fcdb 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -561,8 +561,23 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -568,8 +568,23 @@ static int vi_region(int cmd, int *row, int *off)
  	case 'w':
  	case 'W':
  		var = mv == 'W';

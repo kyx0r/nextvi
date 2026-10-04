@@ -111,17 +111,17 @@ int main\(int argc, char \*argv\[]\)
 	setup_signals\(\);
 	dir_init\(\);
 	syn_init\(\);2??0?
-2??m 1220reg p OK vi.c:1818:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:1825:a22sc %? %@2152sc!1q0?
 ;0fr.,$f> ^	int i, j;$3??0?
-3??m 1220reg p OK vi.c:1818:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 1220reg p OK vi.c:1825:a32sc %? %@2152sc!fr 981qfr 980?
 %f> 
 int main\(int argc, char \*argv\[]\)
 \{4??0?
-4??+3m 1220reg p OK vi.c:1818:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:1825:a42sc %? %@2152sc!1q0?
 %f> 	setup_signals\(\);
 	dir_init\(\);
 	syn_init\(\);5??0?
-5??-1m 1220reg p OK vi.c:1818:a52sc %? %@2152sc!1q0?
+5??-1m 1220reg p OK vi.c:1825:a52sc %? %@2152sc!1q0?
 %f> 
 ..t......... ...c..c.a.......\[.\)
 \{
@@ -129,25 +129,25 @@ int main\(int argc, char \*argv\[]\)
 ...t.p_......s\(..
 	.i.........
 ...n...i..\).6??0?
-6??+3m 1220reg p OK vi.c:1818:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK vi.c:1825:a62sc %? %@2152sc!1q0?
 grp 1%f> .*?
 int main\(int argc, char \*argv\[]\).*?
 \{.*?
 (	int i, j;)7??0?
-grp 07??m 1220reg p OK vi.c:1818:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:1825:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);
 }.*(	temp_open\(0, "/hist/", _ft\);)
 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);8??0?
-grp 08??-4m 1220reg p OK vi.c:1818:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.c:1825:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> \{
 	struct sigaction sa;
 	memset\(&sa, 0, sizeof\(sa\)\);.*(	for \(i = 1; i < argc && argv\[i]\[0] == '\''-'\''; i\+\+\) \{)
 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{
 			i\+\+;9??0?
-grp 09??-7m 1220reg p OK vi.c:1818:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18182sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.c:1825:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18252sc %? %@2132sc!0?
 ?0?
 %f+ 				xvis \|= 8;
 			else if \(argv\[i]\[j] == '\''v'\''\)
@@ -157,81 +157,81 @@ int main\(int argc, char \*argv\[]\).*?
 1??+3m 21q0?
 %f+ 			else \{
 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);2??0?
-2??m 2220reg p OK vi.c:1841:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK vi.c:1848:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^			else \{$3??0?
-3??m 2220reg p OK vi.c:1841:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK vi.c:1848:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				xvis \|= 8;
 			else if \(argv\[i]\[j] == '\''v'\''\)
 				xvis = 0;4??0?
-4??+3m 2220reg p OK vi.c:1841:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK vi.c:1848:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);$5??0?
-5??-1m 2220reg p OK vi.c:1841:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 2220reg p OK vi.c:1848:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ .	..x... .. 8.
 ........i.....g..i..j...=.....
 .	..x.......;
 ....l....
 ........nt.\(.....r...U.k..............%c.....a.......j]\);6??0?
-6??+3m 2220reg p OK vi.c:1841:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK vi.c:1848:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				xvis \|= 8;.*?
 			else if \(argv\[i]\[j] == '\''v'\''\).*?
 				xvis = 0;.*?
 (			else \{)7??0?
-grp 07??m 2220reg p OK vi.c:1841:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:1848:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''m'\''\)
 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\).*(	})
 	tibuf = emalloc\(tibuf_sz\);
 	if \(!\(xvis & 1\)\)8??0?
-grp 08??-6m 2220reg p OK vi.c:1841:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 2220reg p OK vi.c:1848:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				xvis \|= 1\|2;
 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;.*(		term_init\(\);)
 	if \(xvis & 8\)
 		term_scrh\(\)9??0?
-grp 09??-9m 2220reg p OK vi.c:1841:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18412sc %? %@2132sc!0?
+grp 09??-9m 2220reg p OK vi.c:1848:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18482sc %? %@2132sc!0?
 ?0?
 %f+ 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);
-				fprintf\(stderr, "Nextvi-7\.8 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+				fprintf\(stderr, "Nextvi-7\.9 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}1??0?
 1??+1m 31q0?
-%f+ 				fprintf\(stderr, "Nextvi-7\.8 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+%f+ 				fprintf\(stderr, "Nextvi-7\.9 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
 				return EXIT_FAILURE;
 			}
 		}2??0?
-2??m 3220reg p OK vi.c:1843:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.8 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
-3??m 3220reg p OK vi.c:1843:a32sc %? %@2152sc!fr 981qfr 980?
+2??m 3220reg p OK vi.c:1850:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.9 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
+3??m 3220reg p OK vi.c:1850:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);$4??0?
-4??+1m 3220reg p OK vi.c:1843:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 3220reg p OK vi.c:1850:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 				return EXIT_FAILURE;
 			}
 		}5??0?
-5??-1m 3220reg p OK vi.c:1843:a52sc %? %@2152sc!1q0?
-%f+ .	..f..int...........Unk.......t..n...%.\\.........i.\[....
-..........f......r..".........8 U.a... .. .......]....l.........,.a......\).
-......t... ..I........E;
-	...
-	..6??0?
-6??+1m 3220reg p OK vi.c:1843:a62sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK vi.c:1850:a52sc %? %@2152sc!1q0?
+%f+ .		..p.......t......"U..n.w......o.:............v\[...j...
+.		.f.r.n...............t.i-..9...a.e..%...................\..\\n., ...v.0]..
+.	.	.e.......I..F...U...
+..	.
+..}6??0?
+6??+1m 3220reg p OK vi.c:1850:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);.*?
-(				fprintf\(stderr, "Nextvi-7\.8 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
-grp 07??m 3220reg p OK vi.c:1843:a72sc %? %@2152sc!1q0?
+(				fprintf\(stderr, "Nextvi-7\.9 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
+grp 07??m 3220reg p OK vi.c:1850:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''m'\''\)
 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\).*(	})
 	tibuf = emalloc\(tibuf_sz\);
 	if \(!\(xvis & 1\)\)8??0?
-grp 08??-4m 3220reg p OK vi.c:1843:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK vi.c:1850:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				xvis \|= 1\|2;
 			else if \(argv\[i]\[j] == '\''e'\''\)
 				xvis \|= 2;.*(		term_init\(\);)
 	if \(xvis & 8\)
 		term_scrh\(\)9??0?
-grp 09??-7m 3220reg p OK vi.c:1843:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18432sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK vi.c:1850:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18502sc %? %@2132sc!0?
 ?0?
 %f+ 		term_init\(\);
 	if \(xvis & 8\)
@@ -245,17 +245,17 @@ int main\(int argc, char \*argv\[]\).*?
 	if \(xvis & 2\)
 		ex\(\);
 	else2??0?
-2??m 4220reg p OK vi.c:1853:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK vi.c:1860:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	ex_init\(argv \+ i, argc - i\);$3??0?
-3??m 4220reg p OK vi.c:1853:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK vi.c:1860:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		term_init\(\);
 	if \(xvis & 8\)
 		term_scrh\(\)4??0?
-4??+3m 4220reg p OK vi.c:1853:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK vi.c:1860:a42sc %? %@2152sc!1q0?
 %f+ 	if \(xvis & 2\)
 		ex\(\);
 	else5??0?
-5??-1m 4220reg p OK vi.c:1853:a52sc %? %@2152sc!1q0?
+5??-1m 4220reg p OK vi.c:1860:a52sc %? %@2152sc!1q0?
 %f+ ...e.._in.t...
 .i.....i. ....
 	....._......
@@ -263,28 +263,28 @@ int main\(int argc, char \*argv\[]\).*?
 .i. ....... .\)
 	.e.\(..
 ...s.6??0?
-6??+3m 4220reg p OK vi.c:1853:a62sc %? %@2152sc!1q0?
+6??+3m 4220reg p OK vi.c:1860:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		term_init\(\);.*?
 	if \(xvis & 8\).*?
 		term_scrh\(\).*?
 (	ex_init\(argv \+ i, argc - i\);)7??0?
-grp 07??m 4220reg p OK vi.c:1853:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.c:1860:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	tibuf = emalloc\(tibuf_sz\);
 	if \(!\(xvis & 1\)\).*(		vi\(1\);)
 	term_done\(\);
 	if \(xvis & 8\)8??0?
-grp 08??-4m 4220reg p OK vi.c:1853:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK vi.c:1860:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				return EXIT_FAILURE;
 			}
 		}.*(		term_scrl\(\))
 	return xquit < -256 \? \(abs\(xquit\) - 257\) & 255 : abs\(xquit\) - 1;
 }9??0?
-grp 09??-7m 4220reg p OK vi.c:1853:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:18532sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK vi.c:1860:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18602sc %? %@2132sc!0?
 '\''1c 	int i, j, cmdnum = 0;
 	char *ex_cmds[argc - 1];
-??!219reg vi.c:1818:m12sc %? %@2142sc!0?
+??!219reg vi.c:1825:m12sc %? %@2142sc!0?
 '\''2c 			else if (argv[i][j] == '\''c'\'') {
 				if (argv[i][j+1]) {
 					ex_cmds[cmdnum++] = argv[i] + j + 1;
@@ -297,9 +297,9 @@ int main\(int argc, char \*argv\[]\).*?
 					return EXIT_FAILURE;
 				}
 			} else {
-??!219reg vi.c:1841:m22sc %? %@2142sc!0?
-'\''3s/ae/ace/??!219reg vi.c:1843:m32sc %? %@2142sc!0?
-'\''4s/i\)/i, ex_cmds, cmdnum)/??!219reg vi.c:1853:m42sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg vi.c:1848:m22sc %? %@2142sc!0?
+'\''3s/ae/ace/??!219reg vi.c:1850:m32sc %? %@2142sc!0?
+'\''4s/i\)/i, ex_cmds, cmdnum)/??!219reg vi.c:1860:m42sc %? %@2142sc!b2m!%ya 98?0?
 %f> void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\);
 #define ex_cprint2\(line, ft, r, c, left, flg\) \{ RST\(2, ex_cprint\(line, ft, r, c, left, flg\)\); }
 #define ex_print\(line, ft\) \{ RST\(2, ex_cprint\(line, ft, -1, 0, 0, 1\)\); }
@@ -382,10 +382,10 @@ index 76dca408..6d0a3879 100644
 +		ex_command(cmds[i])
  }
 diff --git a/vi.c b/vi.c
-index 13b97c7d..b7881dc4 100644
+index b1f9a16f..6b7fd1cb 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1815,7 +1815,8 @@ static void setup_signals(void)
+@@ -1822,7 +1822,8 @@ static void setup_signals(void)
  
  int main(int argc, char *argv[])
  {
@@ -395,7 +395,7 @@ index 13b97c7d..b7881dc4 100644
  	setup_signals();
  	dir_init();
  	syn_init();
-@@ -1838,9 +1839,20 @@ int main(int argc, char *argv[])
+@@ -1845,9 +1846,20 @@ int main(int argc, char *argv[])
  				xvis |= 8;
  			else if (argv[i][j] == 'v')
  				xvis = 0;
@@ -413,12 +413,12 @@ index 13b97c7d..b7881dc4 100644
 +				}
 +			} else {
  				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
--				fprintf(stderr, "Nextvi-7.8 Usage: %s [-aemsv] [file ...]\n", argv[0]);
-+				fprintf(stderr, "Nextvi-7.8 Usage: %s [-acemsv] [file ...]\n", argv[0]);
+-				fprintf(stderr, "Nextvi-7.9 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-7.9 Usage: %s [-acemsv] [file ...]\n", argv[0]);
  				return EXIT_FAILURE;
  			}
  		}
-@@ -1850,7 +1862,7 @@ int main(int argc, char *argv[])
+@@ -1857,7 +1869,7 @@ int main(int argc, char *argv[])
  		term_init();
  	if (xvis & 8)
  		term_scrh()

@@ -1306,24 +1306,24 @@ s......... ..........ha...s........s\)
 %f+ 				}
 				xoff--;
 				rep_record\(\)4??0?
-4??+2m 5220reg p OK vi.c:1508:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK vi.c:1515:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				}.*?
 				xoff--;.*?
 (				rep_record\(\))7??0?
-grp 07??m 5220reg p OK vi.c:1508:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.c:1515:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					c = xoff != lbuf_eol\(xb, xrow, 1\) \? '\''i'\'' : '\''a'\'';
 					xb->useq \+= xseq;
 					goto insert;.*(				vc_join\(1, vi_arg <= 1 \? 2 : vi_arg\);)
 				rep_record\(\)
 				vi_mod \|= 1;8??0?
-grp 08??-4m 5220reg p OK vi.c:1508:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK vi.c:1515:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 						} else
 							vi_delete\(xrow, xoff - 1, xrow, xoff, 0\);
 					}.*(			case '\''K'\'': \{)
 				preserve\(int, xvis, xvis = 1;\)
 				do \{9??0?
-grp 09??-8m 5220reg p OK vi.c:1508:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:15082sc %? %@2132sc!0?
+grp 09??-8m 5220reg p OK vi.c:1515:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:15152sc %? %@2132sc!0?
 ?0?
 %f+ 				continue;
 			}
@@ -1335,24 +1335,24 @@ s......... ..........ha...s........s\)
 %f+ 				continue;
 			}
 		}4??0?
-4??+2m 6220reg p OK vi.c:1697:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK vi.c:1704:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				continue;.*?
 			}.*?
 (		})7??0?
-grp 07??m 6220reg p OK vi.c:1697:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK vi.c:1704:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				vi_mod \|= 1;
 				break;
 			default:.*(		if \(ln && !rstate->wid\[xoff]\) \{)
 			for \(n = xoff, k = n; k < rstate->n && !rstate->wid\[k];\) \{
 				if \(!k\)8??0?
-grp 08??-4m 6220reg p OK vi.c:1697:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK vi.c:1704:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				else
 					ex_exec\("%d:fd"\);
 				vc_status\(0\);.*(					n = ooff\+1;)
 				k \+= n > ooff \? 1 : -1;
 			}9??0?
-grp 09??-7m 6220reg p OK vi.c:1697:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:16972sc %? %@2132sc!0?
+grp 09??-7m 6220reg p OK vi.c:1704:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:17042sc %? %@2132sc!0?
 '\''1i 	int ola[3];
 	led_ext *lwx = NULL;
 ??!219reg vi.c:85:m12sc %? %@2142sc!0?
@@ -1383,10 +1383,10 @@ s......... ..........ha...s........s\)
 ??!219reg vi.c:171:m42sc %? %@2142sc!0?
 '\''5i 				vi_mod |= lbuf_lwmod;
 				lbuf_lwmod = 0;
-??!219reg vi.c:1508:m52sc %? %@2142sc!0?
+??!219reg vi.c:1515:m52sc %? %@2142sc!0?
 '\''6i 		/* an elastic soft linewrap follows the terminal width */
 		vi_mod |= ex_lwsync();
-??!219reg vi.c:1697:m62sc %? %@2142sc!b5m!%ya 98?0?
+??!219reg vi.c:1704:m62sc %? %@2142sc!b5m!%ya 98?0?
 %f> 	int n_ins, n_del;	/\* modification range \*/
 	int seq;		/\* operation number \*/
 	int ref;		/\* ins/del ref exists on lbuf \*/
@@ -1899,7 +1899,7 @@ index 4116d9c1..dde17c64 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index 13b97c7d..eff58158 100644
+index b1f9a16f..e1cc3dcb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -83,6 +83,8 @@ for (i = 0, ret = 0;; i++) { \
@@ -1951,7 +1951,7 @@ index 13b97c7d..eff58158 100644
  }
  
  /* redraw the screen */
-@@ -1506,6 +1529,8 @@ void vi(int init)
+@@ -1513,6 +1536,8 @@ void vi(int init)
  				}
  				xoff--;
  				rep_record()
@@ -1960,7 +1960,7 @@ index 13b97c7d..eff58158 100644
  				vi_mod |= !xpac && xrow == orow ? 8 : 1;
  				break;
  			case 'J':
-@@ -1695,6 +1720,8 @@ void vi(int init)
+@@ -1702,6 +1727,8 @@ void vi(int init)
  				continue;
  			}
  		}

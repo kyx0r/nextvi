@@ -644,19 +644,19 @@ int xidt = 500;			/* auto-detect indent on file open */
 		}
 		sbufn_str\(sb, ln\)
 		lbuf_edit\(xb, sb->s, i, i \+ 1, 0, 0\);2??0?
-2??m 1220reg p OK vi.c:892:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:899:a22sc %? %@2152sc!1q0?
 %f> 				ln\+\+;
 			} else if \(\*ln != '\''\\n'\'' \|\| r1 == r2\)
 				sbuf_chr\(sb, '\''\\t'\''\)3??0?
-3??m 1220reg p OK vi.c:892:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK vi.c:899:a32sc %? %@2152sc!1q0?
 %f> 			if \(dir < 0\) \{
 				if \(\*ln != '\'' '\'' && \*ln != '\''\\t'\''\)
 					break;4??0?
-4??+3m 1220reg p OK vi.c:892:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:899:a42sc %? %@2152sc!1q0?
 %f> 		}
 		sbufn_str\(sb, ln\)
 		lbuf_edit\(xb, sb->s, i, i \+ 1, 0, 0\);5??0?
-5??-3m 1220reg p OK vi.c:892:a52sc %? %@2152sc!1q0?
+5??-3m 1220reg p OK vi.c:899:a52sc %? %@2152sc!1q0?
 %f> ..	i. ..i... .\)..
 ..	... \(... !......&. .l. ........
 .	........;
@@ -666,25 +666,25 @@ int xidt = 500;			/* auto-detect indent on file open */
 .	.
 .........tr.......\)
 .	.b...e.i..x.....-.s,.i,.i.. ....,..\).6??0?
-6??+3m 1220reg p OK vi.c:892:a62sc %? %@2152sc!1q0?
+6??+3m 1220reg p OK vi.c:899:a62sc %? %@2152sc!1q0?
 grp 1%f> 			if \(dir < 0\) \{.*?
 				if \(\*ln != '\'' '\'' && \*ln != '\''\\t'\''\).*?
 					break;.*?
 (				ln\+\+;)7??0?
-grp 07??m 1220reg p OK vi.c:892:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:899:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		if \(!\(ln = lbuf_get\(xb, i\)\)\)
 			continue;
 		for \(c = 0; c < count; c\+\+\) \{.*(		sbuf_cut\(sb, 0\))
 	}
 	xoff = lbuf_indents\(xb, r1\);8??0?
-grp 08??-6m 1220reg p OK vi.c:892:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 1220reg p OK vi.c:899:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char \*ln;
 	int i, c;
 	for \(i = r1; i <= r2; i\+\+\) \{.*(static int vc_motion\(int cmd\))
 \{
 	int r1 = xrow, r2 = xrow;	/\* region rows \*/9??0?
-grp 09??-12m 1220reg p OK vi.c:892:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:8922sc %? %@2132sc!0?
+grp 09??-12m 1220reg p OK vi.c:899:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:8992sc %? %@2132sc!0?
 '\''1,#+2c 				if (xet && *ln == '\'' '\'') {
 					int k;
 					for (k = 0; k < xsw && *ln == '\'' '\''; k++)
@@ -698,7 +698,7 @@ int xidt = 500;			/* auto-detect indent on file open */
 				} else
 					sbuf_chr(sb, '\''\t'\'')
 			}
-??!219reg vi.c:892:m12sc %? %@2142sc!b4m!%ya 98?0?
+??!219reg vi.c:899:m12sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	int plen, row, off, top;
 	long mtime;			/\* modification time \*/
 	signed char td;			/\* text direction \*/
@@ -1192,10 +1192,10 @@ index 4893a07e..a7728a7b 100644
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
-index 13b97c7d..8f5bb4cf 100644
+index b1f9a16f..f520864c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -889,9 +889,19 @@ static void vi_shift(int r1, int r2, int dir, int count)
+@@ -896,9 +896,19 @@ static void vi_shift(int r1, int r2, int dir, int count)
  			if (dir < 0) {
  				if (*ln != ' ' && *ln != '\t')
  					break;

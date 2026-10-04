@@ -1870,64 +1870,64 @@ static int fsdir;
 m 01;0grp 1%f> 		for \(int i = 8; i > 0; i--\)
 			if \(\(i_s = ex_regget\('\''0'\''\+i\)\)\)
 				ex_regput\('\''0'\'' \+ i \+ 1, i_s->s, 0\);.*(	struct stat statbuf;)
-	int i = 0, ret;
-	char \*cpath, \*ptrs\[1024];9??0?
+	int ret;
+	unsigned int i = 0, cap = 0;9??0?
 grp 09??-7m 2220reg p OK vi.c:339:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg vi.c:3392sc %? %@2132sc!0?
 ?0?
-%f+ 				memcpy\(cpath, ptrs\[i], pathlen \+ len\);
-				plen\[i\+\+] = pathlen \+ len;
+%f+ 				memcpy\(ptrs\[i]\.path, cpath, ptrs\[i]\.len \+ 1\);
+				i\+\+;
 			} else if \(ret >= 0 && S_ISREG\(statbuf\.st_mode\)\)
 				if \(!fsincl \|\| rset_match\(fsincl, cpath, 0\)\) \{
-					sbuf_mem\(sb, cpath, \(int\)\(pathlen \+ len\)\)
+					sbuf_mem\(sb, cpath, pathlen \+ len\)
 					sbuf_chr\(sb, '\''\\n'\''\)
 				}1??0?
 1??+3m 31q0?
 %f+ 				if \(!fsincl \|\| rset_match\(fsincl, cpath, 0\)\) \{
-					sbuf_mem\(sb, cpath, \(int\)\(pathlen \+ len\)\)
+					sbuf_mem\(sb, cpath, pathlen \+ len\)
 					sbuf_chr\(sb, '\''\\n'\''\)
 				}2??0?
-2??m 3220reg p OK vi.c:378:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK vi.c:383:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				if \(!fsincl \|\| rset_match\(fsincl, cpath, 0\)\) \{$3??0?
-3??m 3220reg p OK vi.c:378:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 				memcpy\(cpath, ptrs\[i], pathlen \+ len\);
-				plen\[i\+\+] = pathlen \+ len;
+3??m 3220reg p OK vi.c:383:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 				memcpy\(ptrs\[i]\.path, cpath, ptrs\[i]\.len \+ 1\);
+				i\+\+;
 			} else if \(ret >= 0 && S_ISREG\(statbuf\.st_mode\)\)4??0?
-4??+3m 3220reg p OK vi.c:378:a42sc %? %@2152sc!1q0?
-%f+ 					sbuf_mem\(sb, cpath, \(int\)\(pathlen \+ len\)\)
+4??+3m 3220reg p OK vi.c:383:a42sc %? %@2152sc!1q0?
+%f+ 					sbuf_mem\(sb, cpath, pathlen \+ len\)
 					sbuf_chr\(sb, '\''\\n'\''\)
 				}5??0?
-5??-1m 3220reg p OK vi.c:378:a52sc %? %@2152sc!1q0?
-%f+ 	............a....p..............n........
-....p.e..i......pa....... l.n.
-			}....e.i. ........0... ...........t.u...t_..de..
-			.........nc.... .s..........s...........,...\)..
-.	................cp..h..\(..t....t.....\+..e...
-..	...buf.c..\(.b,.'\''..'\''.
-	....6??0?
-6??+3m 3220reg p OK vi.c:378:a62sc %? %@2152sc!1q0?
-grp 1%f+ 				memcpy\(cpath, ptrs\[i], pathlen \+ len\);.*?
-				plen\[i\+\+] = pathlen \+ len;.*?
+5??-1m 3220reg p OK vi.c:383:a52sc %? %@2152sc!1q0?
+%f+ .	.....c..\(...........h. .......p...\[i]..........
+	..	....
+..........i....e.... . .. ._I.........b...s...o....
+...	...\(.f..n...................inc....p.t.. ..\) .
+.	...s........... .......p.........l.n.
+......b.._c...... .\\...
+.	...6??0?
+6??+3m 3220reg p OK vi.c:383:a62sc %? %@2152sc!1q0?
+grp 1%f+ 				memcpy\(ptrs\[i]\.path, cpath, ptrs\[i]\.len \+ 1\);.*?
+				i\+\+;.*?
 			} else if \(ret >= 0 && S_ISREG\(statbuf\.st_mode\)\).*?
 (				if \(!fsincl \|\| rset_match\(fsincl, cpath, 0\)\) \{)7??0?
-grp 07??m 3220reg p OK vi.c:378:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 				dps\[i] = sdp;
-				ptrs\[i] = cpath;
-				cpath = emalloc\(pathlen \+ 1024\);.*(		closedir\(dp\);)
-		free\(cpath\);
-		if \(i > 0\) \{8??0?
-grp 08??-5m 3220reg p OK vi.c:378:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 			if \(ret >= 0 && S_ISDIR\(statbuf\.st_mode\)\) \{
-				if \(i >= LEN\(ptrs\) \|\| !\(sdp = opendir\(cpath\)\)\)
-					break;.*(			dp = dps\[--i];)
-			pathlen = plen\[i];
-			cpath = ptrs\[i];9??0?
-grp 09??-8m 3220reg p OK vi.c:378:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:3782sc %? %@2132sc!0?
+grp 07??m 3220reg p OK vi.c:383:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 				}
+				ptrs\[i]\.len = pathlen \+ len;
+				ptrs\[i]\.path = emalloc\(ptrs\[i]\.len \+ 1024\);.*(		if \(dp\))
+			closedir\(dp\);
+		free\(cpath\);8??0?
+grp 08??-5m 3220reg p OK vi.c:383:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				if \(i == cap\) \{
+					cap = MAX\(128, NEXTSZ\(cap, 1\)\);
+					ptrs = erealloc\(ptrs, cap \* sizeof\(\*ptrs\)\);.*(		if \(i > 0\) \{)
+			cpath = ptrs\[--i]\.path;
+			pathlen = ptrs\[i]\.len;9??0?
+grp 09??-8m 3220reg p OK vi.c:383:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:3832sc %? %@2132sc!0?
 ?'\''1s/xkwdrs->nsubc/(xkwdrs->rs ? xkwdrs->rs->nsubc : 2)/1??1??1q'\''1s/(xkwd)(rs-.*c)/(\1rs->rs ? xkwdrs->\2 : 2)/2??2??'\''1220reg p OK vi.c:283:s22sc %? %@2162sc!0?
 1;2??!219reg vi.c:283:m12sc %? %@2142sc!0?
 '\''2s/et/tr/??!219reg vi.c:339:m22sc %? %@2142sc!0?
-'\''3s/et/tr/??!219reg vi.c:378:m32sc %? %@2142sc!b4m!%ya 98?0?
+'\''3s/et/tr/??!219reg vi.c:383:m32sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	int nsubc;		/\* total sub count \*/
 	int n;			/\* number of regular expressions in this set \*/
 } rset;
@@ -2622,7 +2622,7 @@ index fd22467f..33f6b6fa 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index 13b97c7d..e75b7963 100644
+index b1f9a16f..1a25559b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -280,7 +280,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
@@ -2643,13 +2643,13 @@ index 13b97c7d..e75b7963 100644
  static int fspos;
  static int fsdir;
  
-@@ -375,7 +375,7 @@ void dir_calc(char *path)
- 				memcpy(cpath, ptrs[i], pathlen + len);
- 				plen[i++] = pathlen + len;
+@@ -380,7 +380,7 @@ void dir_calc(char *path)
+ 				memcpy(ptrs[i].path, cpath, ptrs[i].len + 1);
+ 				i++;
  			} else if (ret >= 0 && S_ISREG(statbuf.st_mode))
 -				if (!fsincl || rset_match(fsincl, cpath, 0)) {
 +				if (!fsincl || rstr_match(fsincl, cpath, 0)) {
- 					sbuf_mem(sb, cpath, (int)(pathlen + len))
+ 					sbuf_mem(sb, cpath, pathlen + len)
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h

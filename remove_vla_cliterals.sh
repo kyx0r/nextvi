@@ -1490,17 +1490,17 @@ void syn_init\(void\).*?
 				memcpy\(buf, ":e ", 3\);
 				memcpy\(buf\+3, ln, n\);
 				term_push\(buf, n \+ 3\);2??0?
-2??m 3220reg p OK vi.c:1227:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK vi.c:1234:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				char buf\[n \+ 4];$3??0?
-3??m 3220reg p OK vi.c:1227:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK vi.c:1234:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					break;
 				ln = uc_chr\(ln, xoff\);
 				n = strlen\(ln\);4??0?
-4??+3m 3220reg p OK vi.c:1227:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK vi.c:1234:a42sc %? %@2152sc!1q0?
 %f+ 				memcpy\(buf, ":e ", 3\);
 				memcpy\(buf\+3, ln, n\);
 				term_push\(buf, n \+ 3\);5??0?
-5??-1m 3220reg p OK vi.c:1227:a52sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK vi.c:1234:a52sc %? %@2152sc!1q0?
 %f+ 	...	.re...
 .........uc.....l........;
 ...	....s..l...l...
@@ -1508,25 +1508,25 @@ void syn_init\(void\).*?
 ....me..p.........e .. ...
 .....e.....bu..3, .., ...
 	........pu.....f, .......6??0?
-6??+3m 3220reg p OK vi.c:1227:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK vi.c:1234:a62sc %? %@2152sc!1q0?
 grp 1%f+ 					break;.*?
 				ln = uc_chr\(ln, xoff\);.*?
 				n = strlen\(ln\);.*?
 (				char buf\[n \+ 4];)7??0?
-grp 07??m 3220reg p OK vi.c:1227:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK vi.c:1234:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				break;
 			case TK_CTL\('\''i'\''\): \{
 				if \(!\(ln = lbuf_get\(xb, xrow\)\)\).*(				vi_arg = ex_buf - bufs \+ vi_cndir;)
 			case TK_CTL\('\''_'\''\):	/\* this is also \^7 on some systems \*/
 				if \(vi_arg > 0\)8??0?
-grp 08??-7m 3220reg p OK vi.c:1227:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-7m 3220reg p OK vi.c:1234:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					xtop = MIN\(lbuf_len\(xb\) - xrows, xtop \+ n\);
 				xoff = lbuf_indents\(xb, xrow\);
 				vi_mod \|= 4;.*(					goto switchbuf;)
 				ex_exec\("left0:b:mpt0"\);
 				term_chr\('\''\\n'\''\);9??0?
-grp 09??-10m 3220reg p OK vi.c:1227:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:12272sc %? %@2132sc!0?
+grp 09??-10m 3220reg p OK vi.c:1234:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:12342sc %? %@2132sc!0?
 ?0?
 %f+ 				memcpy\(buf, ":e ", 3\);
 				memcpy\(buf\+3, ln, n\);
@@ -1538,24 +1538,24 @@ void syn_init\(void\).*?
 %f+ 				memcpy\(buf, ":e ", 3\);
 				memcpy\(buf\+3, ln, n\);
 				term_push\(buf, n \+ 3\);4??0?
-4??+2m 4220reg p OK vi.c:1230:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK vi.c:1237:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				memcpy\(buf, ":e ", 3\);.*?
 				memcpy\(buf\+3, ln, n\);.*?
 (				term_push\(buf, n \+ 3\);)7??0?
-grp 07??m 4220reg p OK vi.c:1230:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.c:1237:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				break;
 			case TK_CTL\('\''i'\''\): \{
 				if \(!\(ln = lbuf_get\(xb, xrow\)\)\).*(				vi_arg = ex_buf - bufs \+ vi_cndir;)
 			case TK_CTL\('\''_'\''\):	/\* this is also \^7 on some systems \*/
 				if \(vi_arg > 0\)8??0?
-grp 08??-4m 4220reg p OK vi.c:1230:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK vi.c:1237:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					xtop = MIN\(lbuf_len\(xb\) - xrows, xtop \+ n\);
 				xoff = lbuf_indents\(xb, xrow\);
 				vi_mod \|= 4;.*(					goto switchbuf;)
 				ex_exec\("left0:b:mpt0"\);
 				term_chr\('\''\\n'\''\);9??0?
-grp 09??-7m 4220reg p OK vi.c:1230:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:12302sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK vi.c:1237:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:12372sc %? %@2132sc!0?
 ?0?
 %f+ 				case '\''/'\'': \{
 					cs = vi_curword\(xb, xrow, xoff, vi_arg, 1\);
@@ -1569,17 +1569,17 @@ void syn_init\(void\).*?
 					memcpy\(buf, "re ", sizeof\("re "\)\);
 					if \(cs\)
 						memcpy\(buf\+3, cs, n \+ 1\);2??0?
-2??m 5220reg p OK vi.c:1347:a22sc %? %@2152sc!1q0?
+2??m 5220reg p OK vi.c:1354:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^					char buf\[n \+ 30];$3??0?
-3??m 5220reg p OK vi.c:1347:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 5220reg p OK vi.c:1354:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				case '\''/'\'': \{
 					cs = vi_curword\(xb, xrow, xoff, vi_arg, 1\);
 					n = cs \? strlen\(cs\) : 0;4??0?
-4??+3m 5220reg p OK vi.c:1347:a42sc %? %@2152sc!1q0?
+4??+3m 5220reg p OK vi.c:1354:a42sc %? %@2152sc!1q0?
 %f+ 					memcpy\(buf, "re ", sizeof\("re "\)\);
 					if \(cs\)
 						memcpy\(buf\+3, cs, n \+ 1\);5??0?
-5??-1m 5220reg p OK vi.c:1347:a52sc %? %@2152sc!1q0?
+5??-1m 5220reg p OK vi.c:1354:a52sc %? %@2152sc!1q0?
 %f+ ........ ...: \{
 .....c.....i.cu..o....b..........f.,..._.rg.....
 	..	....... \?..t............;
@@ -1587,25 +1587,25 @@ void syn_init\(void\).*?
 .		...e...y...f...........z.o..........
 ......f.....
 ..		.....c....u.......... . 1..6??0?
-6??+3m 5220reg p OK vi.c:1347:a62sc %? %@2152sc!1q0?
+6??+3m 5220reg p OK vi.c:1354:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				case '\''/'\'': \{.*?
 					cs = vi_curword\(xb, xrow, xoff, vi_arg, 1\);.*?
 					n = cs \? strlen\(cs\) : 0;.*?
 (					char buf\[n \+ 30];)7??0?
-grp 07??m 5220reg p OK vi.c:1347:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.c:1354:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				case '\'';'\'':
 					ln = vi_enprompt\(":", "!", &k, &n\);
 					goto do_excmd;.*(						memcpy\(buf1\+2, cs, n\);)
 						buf1\[n \+ 2] = '\''/'\'';
 						buf1\[n \+ 3] = '\''\\0'\'';8??0?
-grp 08??-16m 5220reg p OK vi.c:1347:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-16m 5220reg p OK vi.c:1354:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				case '\''v'\'':
 					term_push\(k == '\''v'\'' \? ":\\x01" : ":\\x02", 2\); /\* \^a : \^b \*/
 					break;.*(				case '\''r'\'': \{)
 					cs = vi_curword\(xb, xrow, xoff, vi_arg, 1\);
 					n = cs \? strlen\(cs\) : 0;9??0?
-grp 09??-23m 5220reg p OK vi.c:1347:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:13472sc %? %@2132sc!0?
+grp 09??-23m 5220reg p OK vi.c:1354:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:13542sc %? %@2132sc!0?
 ?0?
 %f+ 						memcpy\(buf\+3, cs, n \+ 1\);
 					free\(cs\);
@@ -1617,24 +1617,24 @@ void syn_init\(void\).*?
 %f+ 						memcpy\(buf\+3, cs, n \+ 1\);
 					free\(cs\);
 					ln = vi_enprompt\(":", buf, &k, &n\);4??0?
-4??+2m 6220reg p OK vi.c:1352:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK vi.c:1359:a42sc %? %@2152sc!1q0?
 grp 1%f+ 						memcpy\(buf\+3, cs, n \+ 1\);.*?
 					free\(cs\);.*?
 (					ln = vi_enprompt\(":", buf, &k, &n\);)7??0?
-grp 07??m 6220reg p OK vi.c:1352:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK vi.c:1359:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				case '\'';'\'':
 					ln = vi_enprompt\(":", "!", &k, &n\);
 					goto do_excmd;.*(						memcpy\(buf1\+2, cs, n\);)
 						buf1\[n \+ 2] = '\''/'\'';
 						buf1\[n \+ 3] = '\''\\0'\'';8??0?
-grp 08??-11m 6220reg p OK vi.c:1352:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-11m 6220reg p OK vi.c:1359:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				case '\''v'\'':
 					term_push\(k == '\''v'\'' \? ":\\x01" : ":\\x02", 2\); /\* \^a : \^b \*/
 					break;.*(				case '\''r'\'': \{)
 					cs = vi_curword\(xb, xrow, xoff, vi_arg, 1\);
 					n = cs \? strlen\(cs\) : 0;9??0?
-grp 09??-18m 6220reg p OK vi.c:1352:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:13522sc %? %@2132sc!0?
+grp 09??-18m 6220reg p OK vi.c:1359:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:13592sc %? %@2132sc!0?
 ?0?
 %f+ 					vi_drawmsg\("arg2:\(0\|#\)"\);
 					cs = vi_curword\(xb, xrow, xoff, vi_prefix\(\), 1\);
@@ -1648,17 +1648,17 @@ void syn_init\(void\).*?
 					memcpy\(buf, "\.,\.\+", sizeof\("\.,\.\+"\)\);
 					char \*buf1 = itoa\(vi_arg, buf\+4\);
 					memcpy\(buf1, "s/", sizeof\("s/"\)\);2??0?
-2??m 7220reg p OK vi.c:1358:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK vi.c:1365:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^					char buf\[n \+ 30];$3??0?
-3??m 7220reg p OK vi.c:1358:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 7220reg p OK vi.c:1365:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					vi_drawmsg\("arg2:\(0\|#\)"\);
 					cs = vi_curword\(xb, xrow, xoff, vi_prefix\(\), 1\);
 					n = cs \? strlen\(cs\) : 0;4??0?
-4??+3m 7220reg p OK vi.c:1358:a42sc %? %@2152sc!1q0?
+4??+3m 7220reg p OK vi.c:1365:a42sc %? %@2152sc!1q0?
 %f+ 					memcpy\(buf, "\.,\.\+", sizeof\("\.,\.\+"\)\);
 					char \*buf1 = itoa\(vi_arg, buf\+4\);
 					memcpy\(buf1, "s/", sizeof\("s/"\)\);5??0?
-5??-1m 7220reg p OK vi.c:1358:a52sc %? %@2152sc!1q0?
+5??-1m 7220reg p OK vi.c:1365:a52sc %? %@2152sc!1q0?
 %f+ ...............\(......\(...\)".;
 .		.	c... v..c........b,....w.............e...\(....\).
 ..	.........\?.s.r.....s\).. .;
@@ -1666,25 +1666,25 @@ void syn_init\(void\).*?
 ..	.....c.....f. ......,.....o...\.......;
 .		.....................i..r.,..u.....
 ...	......y...f..."s.....ize..\("s....;6??0?
-6??+3m 7220reg p OK vi.c:1358:a62sc %? %@2152sc!1q0?
+6??+3m 7220reg p OK vi.c:1365:a62sc %? %@2152sc!1q0?
 grp 1%f+ 					vi_drawmsg\("arg2:\(0\|#\)"\);.*?
 					cs = vi_curword\(xb, xrow, xoff, vi_prefix\(\), 1\);.*?
 					n = cs \? strlen\(cs\) : 0;.*?
 (					char buf\[n \+ 30];)7??0?
-grp 07??m 7220reg p OK vi.c:1358:a72sc %? %@2152sc!1q0?
+grp 07??m 7220reg p OK vi.c:1365:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				case '\'';'\'':
 					ln = vi_enprompt\(":", "!", &k, &n\);
 					goto do_excmd;.*(						memcpy\(buf1\+2, cs, n\);)
 						buf1\[n \+ 2] = '\''/'\'';
 						buf1\[n \+ 3] = '\''\\0'\'';8??0?
-grp 08??-5m 7220reg p OK vi.c:1358:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 7220reg p OK vi.c:1365:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				case '\''v'\'':
 					term_push\(k == '\''v'\'' \? ":\\x01" : ":\\x02", 2\); /\* \^a : \^b \*/
 					break;.*(				case '\''r'\'': \{)
 					cs = vi_curword\(xb, xrow, xoff, vi_arg, 1\);
 					n = cs \? strlen\(cs\) : 0;9??0?
-grp 09??-12m 7220reg p OK vi.c:1358:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:13582sc %? %@2132sc!0?
+grp 09??-12m 7220reg p OK vi.c:1365:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:13652sc %? %@2132sc!0?
 ?0?
 %f+ 						free\(cs\);
 					}
@@ -1696,20 +1696,20 @@ void syn_init\(void\).*?
 %f+ 						free\(cs\);
 					}
 					ln = vi_enprompt\(":", buf, &k, &n\);4??0?
-4??+2m 8220reg p OK vi.c:1368:a42sc %? %@2152sc!1q0?
+4??+2m 8220reg p OK vi.c:1375:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 						memcpy\(buf1\+2, cs, n\);
 						buf1\[n \+ 2] = '\''/'\'';
 						buf1\[n \+ 3] = '\''\\0'\'';.*(						buf\[n \+ 3] = '\''/'\'';)
 						buf\[n \+ 4] = '\''\\0'\'';
 						free\(cs\);8??0?
-grp 08??-9m 8220reg p OK vi.c:1368:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-9m 8220reg p OK vi.c:1375:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					char \*buf1 = itoa\(vi_arg, buf\+4\);
 					memcpy\(buf1, "s/", sizeof\("s/"\)\);
 					if \(cs\) \{.*(					ln = vi_enprompt\(":", buf, &k, &n\);)
 					goto do_excmd; }
 				default:9??0?
-grp 09??-13m 8220reg p OK vi.c:1368:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:13682sc %? %@2132sc!0?
+grp 09??-13m 8220reg p OK vi.c:1375:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:13752sc %? %@2132sc!0?
 ?0?
 %f+ 				case '\''r'\'': \{
 					cs = vi_curword\(xb, xrow, xoff, vi_arg, 1\);
@@ -1723,17 +1723,17 @@ void syn_init\(void\).*?
 					memcpy\(buf, "%s/", sizeof\("%s/"\)\);
 					if \(cs\) \{
 						memcpy\(buf\+3, cs, n\);2??0?
-2??m 9220reg p OK vi.c:1373:a22sc %? %@2152sc!1q0?
+2??m 9220reg p OK vi.c:1380:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^					char buf\[n \+ 30];$3??0?
-3??m 9220reg p OK vi.c:1373:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 9220reg p OK vi.c:1380:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				case '\''r'\'': \{
 					cs = vi_curword\(xb, xrow, xoff, vi_arg, 1\);
 					n = cs \? strlen\(cs\) : 0;4??0?
-4??+3m 9220reg p OK vi.c:1373:a42sc %? %@2152sc!1q0?
+4??+3m 9220reg p OK vi.c:1380:a42sc %? %@2152sc!1q0?
 %f+ 					memcpy\(buf, "%s/", sizeof\("%s/"\)\);
 					if \(cs\) \{
 						memcpy\(buf\+3, cs, n\);5??0?
-5??-1m 9220reg p OK vi.c:1373:a52sc %? %@2152sc!1q0?
+5??-1m 9220reg p OK vi.c:1380:a52sc %? %@2152sc!1q0?
 %f+ .	..........: \{
 .....c. =.v..c.r...........o., ..... ......, .\).
 ...	...= c. ............ ....
@@ -1741,25 +1741,25 @@ void syn_init\(void\).*?
 ......em....b............iz...."../.\).;
 .........cs\) .
 		.........................6??0?
-6??+3m 9220reg p OK vi.c:1373:a62sc %? %@2152sc!1q0?
+6??+3m 9220reg p OK vi.c:1380:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				case '\''r'\'': \{.*?
 					cs = vi_curword\(xb, xrow, xoff, vi_arg, 1\);.*?
 					n = cs \? strlen\(cs\) : 0;.*?
 (					char buf\[n \+ 30];)7??0?
-grp 07??m 9220reg p OK vi.c:1373:a72sc %? %@2152sc!1q0?
+grp 07??m 9220reg p OK vi.c:1380:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 						memcpy\(buf1\+2, cs, n\);
 						buf1\[n \+ 2] = '\''/'\'';
 						buf1\[n \+ 3] = '\''\\0'\'';.*(						buf\[n \+ 3] = '\''/'\'';)
 						buf\[n \+ 4] = '\''\\0'\'';
 						free\(cs\);8??0?
-grp 08??-4m 9220reg p OK vi.c:1373:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 9220reg p OK vi.c:1380:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					char \*buf1 = itoa\(vi_arg, buf\+4\);
 					memcpy\(buf1, "s/", sizeof\("s/"\)\);
 					if \(cs\) \{.*(					ln = vi_enprompt\(":", buf, &k, &n\);)
 					goto do_excmd; }
 				default:9??0?
-grp 09??-8m 9220reg p OK vi.c:1373:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:13732sc %? %@2132sc!0?
+grp 09??-8m 9220reg p OK vi.c:1380:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:13802sc %? %@2132sc!0?
 ?0?
 %f+ 						free\(cs\);
 					}
@@ -1771,42 +1771,42 @@ void syn_init\(void\).*?
 %f+ 						free\(cs\);
 					}
 					ln = vi_enprompt\(":", buf, &k, &n\);4??0?
-4??+2m 10220reg p OK vi.c:1381:a42sc %? %@2152sc!1q0?
+4??+2m 10220reg p OK vi.c:1388:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 						memcpy\(buf\+3, cs, n\);
 						buf\[n \+ 3] = '\''/'\'';
 						buf\[n \+ 4] = '\''\\0'\'';.*(			case '\''V'\'':)
 				vi_hidch = !vi_hidch;
 				vi_mod \|= 1;8??0?
-grp 08??-6m 10220reg p OK vi.c:1381:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 10220reg p OK vi.c:1388:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					char buf\[n \+ 30];
 					memcpy\(buf, "%s/", sizeof\("%s/"\)\);
 					if \(cs\) \{.*(			case TK_CTL\('\''v'\''\):)
 				vi_arg = \(vi_wsel % 5\) \+ !!\*vi_word;
 			case TK_CTL\('\''c'\''\):9??0?
-grp 09??-10m 10220reg p OK vi.c:1381:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:13812sc %? %@2132sc!0?
+grp 09??-10m 10220reg p OK vi.c:1388:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:13882sc %? %@2132sc!0?
 '\''1c 		char *tmp = emalloc(xcols+3);
 		char *snum = emalloc(32);
 ??!219reg vi.c:98:m12sc %? %@2142sc!0?
 '\''2i 		free(tmp);
 		free(snum);
 ??!219reg vi.c:124:m22sc %? %@2142sc!0?
-?'\''3s/buf\[n \+ 4]/*buf = emalloc(n + 4)/1??1??1q'\''3s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''3220reg p OK vi.c:1227:s22sc %? %@2162sc!0?
-1;2??!219reg vi.c:1227:m32sc %? %@2142sc!0?
+?'\''3s/buf\[n \+ 4]/*buf = emalloc(n + 4)/1??1??1q'\''3s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''3220reg p OK vi.c:1234:s22sc %? %@2162sc!0?
+1;2??!219reg vi.c:1234:m32sc %? %@2142sc!0?
 '\''4i 				free(buf);
-??!219reg vi.c:1230:m42sc %? %@2142sc!0?
-?'\''5s/buf\[n \+ 30]/*buf = emalloc(n + 30)/1??1??1q'\''5s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''5220reg p OK vi.c:1347:s22sc %? %@2162sc!0?
-1;2??!219reg vi.c:1347:m52sc %? %@2142sc!0?
+??!219reg vi.c:1237:m42sc %? %@2142sc!0?
+?'\''5s/buf\[n \+ 30]/*buf = emalloc(n + 30)/1??1??1q'\''5s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''5220reg p OK vi.c:1354:s22sc %? %@2162sc!0?
+1;2??!219reg vi.c:1354:m52sc %? %@2142sc!0?
 '\''6i 					free(buf);
-??!219reg vi.c:1352:m62sc %? %@2142sc!0?
-?'\''7s/buf\[n \+ 30]/*buf = emalloc(n + 30)/1??1??1q'\''7s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''7220reg p OK vi.c:1358:s22sc %? %@2162sc!0?
-1;2??!219reg vi.c:1358:m72sc %? %@2142sc!0?
+??!219reg vi.c:1359:m62sc %? %@2142sc!0?
+?'\''7s/buf\[n \+ 30]/*buf = emalloc(n + 30)/1??1??1q'\''7s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''7220reg p OK vi.c:1365:s22sc %? %@2162sc!0?
+1;2??!219reg vi.c:1365:m72sc %? %@2142sc!0?
 '\''8i 					free(buf);
-??!219reg vi.c:1368:m82sc %? %@2142sc!0?
-?'\''9s/buf\[n \+ 30]/*buf = emalloc(n + 30)/1??1??1q'\''9s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''9220reg p OK vi.c:1373:s22sc %? %@2162sc!0?
-1;2??!219reg vi.c:1373:m92sc %? %@2142sc!0?
+??!219reg vi.c:1375:m82sc %? %@2142sc!0?
+?'\''9s/buf\[n \+ 30]/*buf = emalloc(n + 30)/1??1??1q'\''9s/(b.*f)\[(.*)]/*\1 = emalloc(\2)/2??2??'\''9220reg p OK vi.c:1380:s22sc %? %@2162sc!0?
+1;2??!219reg vi.c:1380:m92sc %? %@2142sc!0?
 '\''10i 					free(buf);
-??!219reg vi.c:1381:m102sc %? %@2142sc!b7m!%ya 98?0?
+??!219reg vi.c:1388:m102sc %? %@2142sc!b7m!%ya 98?0?
 %f> struct highlight \{
 	char \*ft;		/\* the filetype of this pattern \*/
 	char \*pat;		/\* regular expression \*/
@@ -2154,7 +2154,7 @@ index 4116d9c1..b89a893c 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index 13b97c7d..184a483e 100644
+index b1f9a16f..532f4970 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -95,7 +95,8 @@ static void vi_drawrow(int row)
@@ -2176,7 +2176,7 @@ index 13b97c7d..184a483e 100644
  		return;
  	}
  	s = lbuf_get(xb, row);
-@@ -1224,10 +1227,11 @@ void vi(int init)
+@@ -1231,10 +1234,11 @@ void vi(int init)
  					break;
  				ln = uc_chr(ln, xoff);
  				n = strlen(ln);
@@ -2189,7 +2189,7 @@ index 13b97c7d..184a483e 100644
  				break; }
  			case TK_CTL('n'):
  				vi_cndir = vi_arg ? -vi_cndir : vi_cndir;
-@@ -1344,18 +1348,19 @@ void vi(int init)
+@@ -1351,18 +1355,19 @@ void vi(int init)
  				case '/': {
  					cs = vi_curword(xb, xrow, xoff, vi_arg, 1);
  					n = cs ? strlen(cs) : 0;
@@ -2211,7 +2211,7 @@ index 13b97c7d..184a483e 100644
  					memcpy(buf, ".,.+", sizeof(".,.+"));
  					char *buf1 = itoa(vi_arg, buf+4);
  					memcpy(buf1, "s/", sizeof("s/"));
-@@ -1366,11 +1371,12 @@ void vi(int init)
+@@ -1373,11 +1378,12 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);
@@ -2225,7 +2225,7 @@ index 13b97c7d..184a483e 100644
  					memcpy(buf, "%s/", sizeof("%s/"));
  					if (cs) {
  						memcpy(buf+3, cs, n);
-@@ -1379,6 +1385,7 @@ void vi(int init)
+@@ -1386,6 +1392,7 @@ void vi(int init)
  						free(cs);
  					}
  					ln = vi_enprompt(":", buf, &k, &n);

@@ -297,24 +297,24 @@ static void vc_status\(int type\)
 %f+ static char rep_cmd\[sizeof\(ticmd\)];	/\* the last command \*/
 static int rep_len;
 #define rep_record\(\) memcpy\(rep_cmd, ticmd, ticmd_pos\); rep_len = ticmd_pos;4??0?
-4??+2m 4220reg p OK vi.c:444:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK vi.c:451:a42sc %? %@2152sc!1q0?
 grp 1%f+ static char rep_cmd\[sizeof\(ticmd\)];	/\* the last command \*/.*?
 static int rep_len;.*?
 (#define rep_record\(\) memcpy\(rep_cmd, ticmd, ticmd_pos\); rep_len = ticmd_pos;)7??0?
-grp 07??m 4220reg p OK vi.c:444:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.c:451:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		fssearch\(\)
 	}
 	return 0;.*(		c = rstate->chrs\[xoff];)
 		uc_code\(cp, c, l\)
 		memcpy\(cbuf, c, l\);8??0?
-grp 08??-10m 4220reg p OK vi.c:444:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-10m 4220reg p OK vi.c:451:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int ret, len;
 	while \(--fspos >= 0\) \{
 		path = tempbufs\[1]\.lb->ln\[fspos];.*(		snprintf\(vi_msg, sizeof\(vi_msg\), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d",)
 			cbuf, cp, cp, cp, l, rstate->wid\[xoff], c - lbuf_get\(xb, xrow\),
 			xoff, col\);9??0?
-grp 09??-13m 4220reg p OK vi.c:444:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:4442sc %? %@2132sc!0?
+grp 09??-13m 4220reg p OK vi.c:451:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:4512sc %? %@2132sc!0?
 ?0?
 %f+ 	int l, col;
 	unsigned int cp;
@@ -326,24 +326,24 @@ static int rep_len;.*?
 %f+ 	int l, col;
 	unsigned int cp;
 	char cbuf\[8] = "", vi_msg\[512], \*c;4??0?
-4??+2m 5220reg p OK vi.c:450:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK vi.c:457:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	int l, col;.*?
 	unsigned int cp;.*?
 (	char cbuf\[8] = "", vi_msg\[512], \*c;)7??0?
-grp 07??m 5220reg p OK vi.c:450:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK vi.c:457:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		fssearch\(\)
 	}
 	return 0;.*(		c = rstate->chrs\[xoff];)
 		uc_code\(cp, c, l\)
 		memcpy\(cbuf, c, l\);8??0?
-grp 08??-4m 5220reg p OK vi.c:450:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK vi.c:457:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int ret, len;
 	while \(--fspos >= 0\) \{
 		path = tempbufs\[1]\.lb->ln\[fspos];.*(		snprintf\(vi_msg, sizeof\(vi_msg\), "<%s> 0x%x 0%o %u %dL %dW S%td O%d C%d",)
 			cbuf, cp, cp, cp, l, rstate->wid\[xoff], c - lbuf_get\(xb, xrow\),
 			xoff, col\);9??0?
-grp 09??-7m 5220reg p OK vi.c:450:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:4502sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK vi.c:457:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:4572sc %? %@2132sc!0?
 ?0?
 %f+ 			xrow \* 100 / MAX\(1, lbuf_len\(xb\)-1\), xrow\+1, col,
 			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs\);
@@ -356,24 +356,24 @@ static int rep_len;.*?
 %f+ 			xrow \* 100 / MAX\(1, lbuf_len\(xb\)-1\), xrow\+1, col,
 			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs\);
 	}4??0?
-4??+2m 6220reg p OK vi.c:467:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK vi.c:474:a42sc %? %@2152sc!1q0?
 grp 1%f+ 			xrow \* 100 / MAX\(1, lbuf_len\(xb\)-1\), xrow\+1, col,.*?
 			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs\);.*?
 (	})7??0?
-grp 07??m 6220reg p OK vi.c:467:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK vi.c:474:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			"\\"%s\\"%s%dL %d%% L%d C%d B%td",
 			xb_path\[0] \? xb_path : "unnamed",
 			xb->modified \? "\* " : " ", lbuf_len\(xb\),.*(static int vi_region\(int cmd, int \*row, int \*off\))
 \{
 	static sbuf \*savepath\[5];8??0?
-grp 08??-4m 6220reg p OK vi.c:467:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK vi.c:474:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			xoff, col\);
 	} else \{
 		snprintf\(vi_msg, sizeof\(vi_msg\),.*(	static rset \*bre;)
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;9??0?
-grp 09??-7m 6220reg p OK vi.c:467:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:4672sc %? %@2132sc!0?
+grp 09??-7m 6220reg p OK vi.c:474:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:4742sc %? %@2132sc!0?
 ?0?
 %f+ 				}
 			}
@@ -387,17 +387,17 @@ static int rep_len;.*?
 		if \(vi_mod & 1 \|\| xleft != oleft
 				\|\| \(vi_lnnum && orow != xrow && !\(vi_lnnum == 2\)\)
 				\|\| \(\*vi_word && orow != xrow\)\)2??0?
-2??m 7220reg p OK vi.c:1760:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK vi.c:1767:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		term_record = 1;$3??0?
-3??m 7220reg p OK vi.c:1760:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 7220reg p OK vi.c:1767:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 				}
 			}
 		}4??0?
-4??+3m 7220reg p OK vi.c:1760:a42sc %? %@2152sc!1q0?
+4??+3m 7220reg p OK vi.c:1767:a42sc %? %@2152sc!1q0?
 %f+ 		if \(vi_mod & 1 \|\| xleft != oleft
 				\|\| \(vi_lnnum && orow != xrow && !\(vi_lnnum == 2\)\)
 				\|\| \(\*vi_word && orow != xrow\)\)5??0?
-5??-1m 7220reg p OK vi.c:1760:a52sc %? %@2152sc!1q0?
+5??-1m 7220reg p OK vi.c:1767:a52sc %? %@2152sc!1q0?
 %f+ .	...
 	...
 	..
@@ -405,25 +405,25 @@ static int rep_len;.*?
 		i..................l.ft .....e..
 ............n....&...... ...x... &. !.v......m... ...
 ..	.\|. .\*.._......&...ow.....r...\)6??0?
-6??+3m 7220reg p OK vi.c:1760:a62sc %? %@2152sc!1q0?
+6??+3m 7220reg p OK vi.c:1767:a62sc %? %@2152sc!1q0?
 grp 1%f+ 				}.*?
 			}.*?
 		}.*?
 (		term_record = 1;)7??0?
-grp 07??m 7220reg p OK vi.c:1760:a72sc %? %@2152sc!1q0?
+grp 07??m 7220reg p OK vi.c:1767:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					p->usr = ola\[1];
 					p->blen = sizeof\(ola\[1]\);
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;.*(			vi_drawagain\(xtop\);)
 		else if \(\*vi_word && \(ooff != xoff \|\| vi_mod & 2\)
 				&& xrow\+1 < xtop \+ xrows\)8??0?
-grp 08??-4m 7220reg p OK vi.c:1760:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 7220reg p OK vi.c:1767:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					ola\[1]\[2] = hls\[k]\.att\[0];
 					p = led_extnew\(\);
 					p->ln = lbuf_get\(xb, row1\);.*(			vi_drawrow\(xrow\+1\);)
 		else if \(xtop != otop\)
 			vi_drawupdate\(otop - xtop\);9??0?
-grp 09??-7m 7220reg p OK vi.c:1760:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:17602sc %? %@2132sc!0?
+grp 09??-7m 7220reg p OK vi.c:1767:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:17672sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 		term_pos\(xrow - xtop, n \+ vi_lncol\);
@@ -433,39 +433,39 @@ static int rep_len;.*?
 1??+3m 81q0?
 %f+ 		xb->useq \+= xseq;
 	}2??0?
-2??m 8220reg p OK vi.c:1792:a22sc %? %@2152sc!1q0?
+2??m 8220reg p OK vi.c:1799:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		xb->useq \+= xseq;$3??0?
-3??m 8220reg p OK vi.c:1792:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 8220reg p OK vi.c:1799:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		}
 		term_pos\(xrow - xtop, n \+ vi_lncol\);
 		term_commit\(\);4??0?
-4??+3m 8220reg p OK vi.c:1792:a42sc %? %@2152sc!1q0?
+4??+3m 8220reg p OK vi.c:1799:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	}$5??0?
-5??-1m 8220reg p OK vi.c:1792:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 8220reg p OK vi.c:1799:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ 	..
 .......po.....w ..x...... .....l....\).
 ............t..;
 	..b.....q... .....
 .}6??0?
-6??+3m 8220reg p OK vi.c:1792:a62sc %? %@2152sc!1q0?
+6??+3m 8220reg p OK vi.c:1799:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		}.*?
 		term_pos\(xrow - xtop, n \+ vi_lncol\);.*?
 		term_commit\(\);.*?
 (		xb->useq \+= xseq;)7??0?
-grp 07??m 8220reg p OK vi.c:1792:a72sc %? %@2152sc!1q0?
+grp 07??m 8220reg p OK vi.c:1799:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			vc_status\(vi_tsm\);
 			if \(xmpt > 0\)
 				xmpt = 0;.*(static void setup_signals\(void\))
 \{
 	struct sigaction sa;8??0?
-grp 08??-16m 8220reg p OK vi.c:1792:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-16m 8220reg p OK vi.c:1799:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(vi_status && xmpt < 1\) \{
 			xrows -= term_resized != vi_status;
 			vi_status = term_resized;.*(	memset\(&sa, 0, sizeof\(sa\)\);)
 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);9??0?
-grp 09??-19m 8220reg p OK vi.c:1792:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:17922sc %? %@2132sc!0?
+grp 09??-19m 8220reg p OK vi.c:1799:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:17992sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 	if \(--xgrec == 0\) \{
@@ -483,16 +483,16 @@ static int rep_len;.*?
 		else
 			term_kill\(\);
 	}2??0?
-2??m 9220reg p OK vi.c:1794:a22sc %? %@2152sc!1q0?
+2??m 9220reg p OK vi.c:1801:a22sc %? %@2152sc!1q0?
 %f+ 	if \(--xgrec == 0\) \{
 		term_pos\(xrows - !vi_status, 0\);
 		if \(xmpt > 0 && !xpln\)
 			term_chr\('\''\\n'\''\);
 		else
 			term_kill\(\);3??0?
-3??m 9220reg p OK vi.c:1794:a32sc %? %@2152sc!1q0?
+3??m 9220reg p OK vi.c:1801:a32sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	}$4??0?
-4??+1m 9220reg p OK vi.c:1794:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 9220reg p OK vi.c:1801:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 	.
 ... ...x...c .......
 .	t..m.p........ ......s...u......
@@ -501,23 +501,23 @@ static int rep_len;.*?
 ..e.se
 ......m_...l..;
 .}6??0?
-6??+1m 9220reg p OK vi.c:1794:a62sc %? %@2152sc!1q0?
+6??+1m 9220reg p OK vi.c:1801:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	}.*?
 (	if \(--xgrec == 0\) \{)7??0?
-grp 07??m 9220reg p OK vi.c:1794:a72sc %? %@2152sc!1q0?
+grp 07??m 9220reg p OK vi.c:1801:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			vc_status\(vi_tsm\);
 			if \(xmpt > 0\)
 				xmpt = 0;.*(static void setup_signals\(void\))
 \{
 	struct sigaction sa;8??0?
-grp 08??-14m 9220reg p OK vi.c:1794:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-14m 9220reg p OK vi.c:1801:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(vi_status && xmpt < 1\) \{
 			xrows -= term_resized != vi_status;
 			vi_status = term_resized;.*(	memset\(&sa, 0, sizeof\(sa\)\);)
 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);9??0?
-grp 09??-17m 9220reg p OK vi.c:1794:a92sc %? %@2152sc!'\''00?
-1;2;3;4;6;7;8;9??!219reg vi.c:17942sc %? %@2132sc!0?
+grp 09??-17m 9220reg p OK vi.c:1801:a92sc %? %@2152sc!'\''00?
+1;2;3;4;6;7;8;9??!219reg vi.c:18012sc %? %@2132sc!0?
 ?0?
 %f+ 	}
 }
@@ -525,20 +525,20 @@ static int rep_len;.*?
 static void sighandler\(int signo\)1??0?
 1??m 101q0?
 ;0fr.,$f+ ^	}$4??0?
-4??m 10220reg p OK vi.c:1800:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 10220reg p OK vi.c:1807:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 			vc_status\(vi_tsm\);
 			if \(xmpt > 0\)
 				xmpt = 0;.*(static void setup_signals\(void\))
 \{
 	struct sigaction sa;8??0?
-grp 08??-8m 10220reg p OK vi.c:1800:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 10220reg p OK vi.c:1807:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(vi_status && xmpt < 1\) \{
 			xrows -= term_resized != vi_status;
 			vi_status = term_resized;.*(	memset\(&sa, 0, sizeof\(sa\)\);)
 	sa\.sa_handler = sighandler;
 	sigaction\(SIGWINCH, &sa, NULL\);9??0?
-grp 09??-11m 10220reg p OK vi.c:1800:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:18002sc %? %@2132sc!0?
+grp 09??-11m 10220reg p OK vi.c:1807:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:18072sc %? %@2132sc!0?
 '\''1i #include <pthread.h>
 #include <sys/resource.h>
 ??!219reg vi.c:15:m12sc %? %@2142sc!0?
@@ -562,13 +562,13 @@ static void vi_rendpost(int mod, int otop, int oleft, int orow, int ooff, int po
 '\''3c 	rstate = rstates+1;
 ??!219reg vi.c:129:m32sc %? %@2142sc!0?
 '\''4i static __thread int redraw_thread;	/* paint thread: never measure on slot 0 */
-??!219reg vi.c:444:m42sc %? %@2142sc!0?
+??!219reg vi.c:451:m42sc %? %@2142sc!0?
 '\''5i 	if (redraw_thread)
 		rstate = rstates+1;
-??!219reg vi.c:450:m52sc %? %@2142sc!0?
+??!219reg vi.c:457:m52sc %? %@2142sc!0?
 '\''6i 	if (redraw_thread)
 		rstate = rstates;
-??!219reg vi.c:467:m62sc %? %@2142sc!0?
+??!219reg vi.c:474:m62sc %? %@2142sc!0?
 '\''7c 		vi_rendpost(vi_mod, otop, oleft, orow, ooff, n);
 		xb->useq += xseq;
 	}
@@ -607,7 +607,7 @@ static void *vi_rendloop(void *arg)
 		n = r->pos;
 		pthread_mutex_unlock(&r->mtx);
 		term_record = 1;	/* one frame, one write */
-??!219reg vi.c:1760:m72sc %? %@2142sc!0?
+??!219reg vi.c:1767:m72sc %? %@2142sc!0?
 '\''8c 		pthread_mutex_lock(&r->mtx);
 		r->busy = 0;
 		pthread_cond_signal(&r->done);
@@ -642,7 +642,7 @@ static void vi_rendpost(int mod, int otop, int oleft, int orow, int ooff, int po
 	if (!xquit && vi_rendpend()) {
 		r->skip = mod | 1;
 		return;
-??!219reg vi.c:1792:m82sc %? %@2142sc!0?
+??!219reg vi.c:1799:m82sc %? %@2142sc!0?
 '\''9,#+5c 	r->skip = 0;
 	if (!r->on) {
 		/* musl caps new threads at 128k; give the thread main()'\''s stack */
@@ -655,7 +655,7 @@ static void vi_rendpost(int mod, int otop, int oleft, int orow, int ooff, int po
 			ap = &attr;
 		if (pthread_create(&r->tid, ap, vi_rendloop, r))
 			r->on = -1;
-??!219reg vi.c:1794:m92sc %? %@2142sc!0?
+??!219reg vi.c:1801:m92sc %? %@2142sc!0?
 '\''10i 	pthread_mutex_lock(&r->mtx);
 	r->mod = mod;
 	r->otop = otop;
@@ -668,7 +668,7 @@ static void vi_rendpost(int mod, int otop, int oleft, int orow, int ooff, int po
 	pthread_mutex_unlock(&r->mtx);
 	if (r->on < 0)
 		vi_rendloop(r);
-??!219reg vi.c:1800:m102sc %? %@2142sc!b4m!%ya 98?0?
+??!219reg vi.c:1807:m102sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	char nulhole\[4];
 } ren_state;
 extern ren_state rstates\[3];
@@ -792,7 +792,7 @@ index 03aa736f..4402a63b 100644
  		ticmd[ticmd_pos++] = tibuf[tibuf_pos];
  	return tibuf[tibuf_pos++];
 diff --git a/vi.c b/vi.c
-index 13b97c7d..b94d65a6 100644
+index b1f9a16f..79cf510f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@
@@ -836,7 +836,7 @@ index 13b97c7d..b94d65a6 100644
  	if (!s)
  		s = row ? ch : ch+1;
  	else if (lnnum && xled) {
-@@ -442,12 +460,15 @@ static int fs_searchback(int cnt, int *row, int *off)
+@@ -449,12 +467,15 @@ static int fs_searchback(int cnt, int *row, int *off)
  static char rep_cmd[sizeof(ticmd)];	/* the last command */
  static int rep_len;
  #define rep_record() memcpy(rep_cmd, ticmd, ticmd_pos); rep_len = ticmd_pos;
@@ -852,7 +852,7 @@ index 13b97c7d..b94d65a6 100644
  	col = vi_off2col(xb, xrow, xoff);
  	col = ren_cursor(lbuf_get(xb, xrow), col) + 1;
  	if (type && lbuf_get(xb, xrow)) {
-@@ -465,6 +486,8 @@ static void vc_status(int type)
+@@ -472,6 +493,8 @@ static void vc_status(int type)
  			xrow * 100 / MAX(1, lbuf_len(xb)-1), xrow+1, col,
  			istempbuf(ex_buf) ? tempbufs - ex_buf - 1 : ex_buf - bufs);
  	}
@@ -861,7 +861,7 @@ index 13b97c7d..b94d65a6 100644
  	vi_drawmsg_mpt(vi_msg)
  }
  
-@@ -1757,7 +1780,44 @@ void vi(int init)
+@@ -1764,7 +1787,44 @@ void vi(int init)
  				}
  			}
  		}
@@ -907,7 +907,7 @@ index 13b97c7d..b94d65a6 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
  				|| (*vi_word && orow != xrow))
-@@ -1789,15 +1849,66 @@ void vi(int init)
+@@ -1796,15 +1856,66 @@ void vi(int init)
  		}
  		term_pos(xrow - xtop, n + vi_lncol);
  		term_commit();

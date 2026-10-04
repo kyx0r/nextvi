@@ -100,24 +100,24 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 %f> 				vi_hidch = !vi_hidch;
 				vi_mod \|= 1;
 				break;4??0?
-4??+2m 1220reg p OK vi.c:1390:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1397:a42sc %? %@2152sc!1q0?
 grp 1%f> 				vi_hidch = !vi_hidch;.*?
 				vi_mod \|= 1;.*?
 (				break;)7??0?
-grp 07??m 1220reg p OK vi.c:1390:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK vi.c:1397:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 				}
 				break;
 			case '\''V'\'':.*(				if \(vi_arg && vi_arg <= 5\) \{)
 					vi_wsel = vi_arg;
 					vi_word = _vi_word \+ vi_arg;8??0?
-grp 08??-4m 1220reg p OK vi.c:1390:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.c:1397:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					goto do_excmd; }
 				default:
 					term_dec\(\).*(					vi_word = _vi_word \+ \(!\*vi_word \* vi_wsel\);)
 				vi_rshift = 0;
 				vi_mod \|= 1;9??0?
-grp 09??-8m 1220reg p OK vi.c:1390:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:13902sc %? %@2132sc!0?
+grp 09??-8m 1220reg p OK vi.c:1397:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:13972sc %? %@2132sc!0?
 '\''1i 			case TK_CTL('\''o'\''):
 				next_hop:
 				if (lbuf_undojump(xb, &xrow, &xoff))
@@ -129,7 +129,7 @@ int lbuf_undo\(struct lbuf \*lb, int \*row, int \*off\)
 				xtop = MAX(0, xrow - xrows / 2);
 				vi_mod = 1;
 				break;
-??!219reg vi.c:1390:m12sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg vi.c:1397:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	int hist_sz;			/\* size of hist\[] \*/
 	int hist_n;			/\* current history head in hist\[] \*/
 	int hist_u;			/\* current undo head in hist\[] \*/
@@ -248,10 +248,10 @@ index 56cb42c6..de6a9e93 100644
  {
  	if (!lb->hist_u)
 diff --git a/vi.c b/vi.c
-index 13b97c7d..24adeaac 100644
+index b1f9a16f..51c3ccd3 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1388,6 +1388,17 @@ void vi(int init)
+@@ -1395,6 +1395,17 @@ void vi(int init)
  				vi_hidch = !vi_hidch;
  				vi_mod |= 1;
  				break;
