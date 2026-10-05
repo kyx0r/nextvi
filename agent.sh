@@ -777,14 +777,16 @@ static const char agent_rating_scale[] =
 
 /* One line per b-4 entry: role number ~tokens, the first line number when
  * lines is set, and [rating] note for commands; then the five largest
- * of the entries worth trimming, ~50 tokens or more. */
+ * of the entries worth trimming, ~50 tokens or more. Without all, NOTICE
+ * entries are not listed and USER entries, which the agent cannot change
+ * by anote, are not among the largest. */
 static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
-		int lines, int notices)
+		int lines, int all)
 {
 	int top[5], ntop = 0, listed = 0, r, row, col, len;
 	char ln[256], *note;
 	for (int k = 0; k < cnt; k++) {
-		if (spans[k].role == 6 && !notices)
+		if (spans[k].role == 6 && !all)
 			continue;
 		listed++;
 		snprintf(ln, sizeof(ln), "%s %lu ~%.0f", agent_span_role(spans + k),
@@ -802,7 +804,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 			sbuf_str(sb, " [unrated]")
 		sbuf_chr(sb, '\''\n'\'')
 		/* Insert into the five largest, kept in descending order. */
-		if (agent_span_tokens(spans + k) < 50)
+		if (agent_span_tokens(spans + k) < 50 || (!all && spans[k].role <= 1))
 			continue;
 		int j = ntop < 5 ? ntop++ : 5;
 		for (; j > 0 && spans[top[j-1]].bytes < spans[k].bytes; j--)
@@ -864,7 +866,9 @@ static const char agent_cp_guide[] =
 	"  rate each EX entry from N through M; deferred commands are rated 1\n"
 	"N[,M]anote [text]\n"
 	"  text replaces entries N through M under entry N'\''s role (ASSISTANT\n"
-	"  for EX); no text removes them; a command and its RESULT stay together\n"
+	"  for EX); no text removes them; a command and its RESULT stay together;\n"
+	"  USER entries in the range stay; the note takes the place of the first\n"
+	"  entry changed\n"
 	"acp\n"
 	"  print the entry list again, with current sizes and ratings\n"
 	"acp!\n"
@@ -1688,17 +1692,18 @@ static void agent_run_loop(const char *input)
 			serial = agent_serial;
 		}
 		/* Notes over the last commands can end the context on assistant
-		 * text, which some servers take as a prefill or reject. */
+		 * text, which some servers take as a prefill or reject. Every
+		 * round rebuilds the context from b-4 and adds this again while
+		 * needed; unlogged, it goes stale and drops once the reply joins
+		 * the note. */
 		if (agent_live() && !agent_checkpointing) {
 			cJSON *last = cJSON_GetArrayItem(agent_messages,
 				cJSON_GetArraySize(agent_messages) - 1);
 			if (!strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(last,
 					"role")), "assistant") &&
-					!cJSON_HasObjectItem(last, "tool_calls")) {
+					!cJSON_HasObjectItem(last, "tool_calls"))
 				cJSON_AddItemToArray(agent_messages,
 					agent_msg("user", agent_continue));
-				agent_log("USER", agent_continue);
-			}
 		}
 		if (agent_checkpointing)
 			agent_cp_build();
@@ -2247,9 +2252,10 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 {
 	struct lbuf *lb = tempbufs[3].lb;
 	struct agent_span *spans;
-	int cnt = agent_spans(&spans), first, last;
+	int cnt = agent_spans(&spans), first, last, note = -1, changed = 0;
+	int keep = agent_tool, kept = 0, klen = 0;
 	double before = 0, after;
-	char msg[160];
+	char msg[320], kmsg[96] = "";
 	void *ret;
 	if ((ret = agent_entryrange(loc, spans, cnt, &first, &last)))
 		goto done;
@@ -2259,20 +2265,33 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 		last++;
 	if (!*arg && spans[first].role == 5 && first && spans[first - 1].role == 4)
 		first--;
-	for (int k = first; k <= last; k++)
-		before += agent_span_tokens(spans + k);
-	for (int k = first; agent_tool && k <= last; k++)
-		if (spans[k].role <= 1) {
-			ret = "USER entries hold the user'\''s instructions; note over the "
-				"ASSISTANT or RESULT entries the findings came from";
-			goto done;
+	/* The agent cannot change USER entries or the preamble; they split
+	 * the range, and the note takes the place of the first part. */
+#define ANOTE_KEPT(k)	(keep && spans[k].role <= 1)
+	for (int k = first; k <= last; k++) {
+		if (ANOTE_KEPT(k)) {
+			if (klen < (int)sizeof(kmsg))
+				klen += snprintf(kmsg + klen, sizeof(kmsg) - klen, "%s%lu",
+					kept ? ", " : "", spans[k].n);
+			kept++;
+			continue;
 		}
+		if (note < 0)
+			note = k;
+		before += agent_span_tokens(spans + k);
+		changed++;
+	}
+	if (note < 0) {
+		ret = "USER entries hold the user'\''s instructions; note over the "
+			"ASSISTANT or RESULT entries the findings came from";
+		goto done;
+	}
 	sbuf_smake(sb, 256)
 	if (*arg) {
 		/* A note under EX would be rebuilt as a call to run the note. */
-		if (spans[first].role) {
-			snprintf(msg, sizeof(msg), "%s %lu\n", spans[first].role == 4 ?
-				"ASSISTANT" : agent_span_role(spans + first), spans[first].n);
+		if (spans[note].role) {
+			snprintf(msg, sizeof(msg), "%s %lu\n", spans[note].role == 4 ?
+				"ASSISTANT" : agent_span_role(spans + note), spans[note].n);
 			sbuf_str(sb, msg)
 		}
 		sbuf_str(sb, arg)
@@ -2282,19 +2301,40 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 	}
 	sbuf_nul(sb)
 	after = *arg ? (strlen(arg) + 2) / 3 : 0;
-	/* The b-4 line span is not the agent'\''s edit; the note below reports it. */
+	/* The b-4 line span is not the agent'\''s edit; the note below reports it.
+	 * Parts are edited last first so earlier line numbers hold; one save. */
 	preserve(int, agent_tool, agent_tool = 0;)
-	lbuf_edit(lb, *arg ? sb->s : NULL, spans[first].beg, spans[last].end, 0, 0);
+	preserve(int, agent_syncing, agent_syncing = 1;)
+	for (int k = last; k >= first; k--) {
+		int end = k;
+		if (ANOTE_KEPT(k))
+			continue;
+		while (k > first && !ANOTE_KEPT(k - 1))
+			k--;
+		lbuf_edit(lb, *arg && k <= note ? sb->s : NULL,
+			spans[k].beg, spans[end].end, 0, 0);
+	}
+	restore(agent_syncing)
 	restore(agent_tool)
+	agent_sync(lb);
 	free(sb->s);
 	if (ex_buf == tempbufs + 3)
 		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
 	else
 		tempbufs[3].row = MAX(0, MIN(tempbufs[3].row, lbuf_len(lb) - 1));
-	snprintf(msg, sizeof(msg), "%s %d %s %lu-%lu, ~%.0f -> ~%.0f tokens%s",
-		*arg ? "noted" : "removed", last - first + 1,
-		last > first ? "entries" : "entry",
-		spans[first].n, spans[last].n, before, after, after > before ?
+	while (ANOTE_KEPT(last))
+		last--;
+#undef ANOTE_KEPT
+	int len = snprintf(msg, sizeof(msg), "%s %d %s %lu-%lu", *arg ? "noted" :
+		"removed", changed, changed > 1 ? "entries" : "entry",
+		spans[note].n, spans[last].n);
+	if (kept && *arg)
+		len += snprintf(msg + len, sizeof(msg) - len, " as entry %lu",
+			spans[note].n);
+	if (kept)
+		len += snprintf(msg + len, sizeof(msg) - len, "; kept USER %s", kmsg);
+	snprintf(msg + len, sizeof(msg) - len, "%s~%.0f -> ~%.0f tokens%s",
+		kept ? "; " : ", ", before, after, after > before ?
 		";\nthe note is larger than the entries it replaced" : "");
 	ex_print(msg, msg_ft)
 done:
@@ -6450,7 +6490,9 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "if N is an EX entry; no text removes them. A range ending at an EX\n" \
                 "takes in its RESULT, and removing a RESULT takes its EX, so commands\n" \
                 "stay whole. The agent cannot change USER entries or the text before\n" \
-                "the first header. Prints the estimated tokens before and after, and\n" \
+                "the first header; anote by the agent keeps them in place, puts the\n" \
+                "note where the first changed entry was and removes the rest. Prints\n" \
+                "the estimated tokens before and after, the USER entries kept, and\n" \
                 "reports a note larger than what it replaced. Changes the agent\n" \
                 "context when acl is set.\n\n" \
                 "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
@@ -10139,10 +10181,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..4946d55d
+index 00000000..d7dcb525
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2701 @@
+@@ -0,0 +1,2741 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -10890,14 +10932,16 @@ index 00000000..4946d55d
 +
 +/* One line per b-4 entry: role number ~tokens, the first line number when
 + * lines is set, and [rating] note for commands; then the five largest
-+ * of the entries worth trimming, ~50 tokens or more. */
++ * of the entries worth trimming, ~50 tokens or more. Without all, NOTICE
++ * entries are not listed and USER entries, which the agent cannot change
++ * by anote, are not among the largest. */
 +static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
-+		int lines, int notices)
++		int lines, int all)
 +{
 +	int top[5], ntop = 0, listed = 0, r, row, col, len;
 +	char ln[256], *note;
 +	for (int k = 0; k < cnt; k++) {
-+		if (spans[k].role == 6 && !notices)
++		if (spans[k].role == 6 && !all)
 +			continue;
 +		listed++;
 +		snprintf(ln, sizeof(ln), "%s %lu ~%.0f", agent_span_role(spans + k),
@@ -10915,7 +10959,7 @@ index 00000000..4946d55d
 +			sbuf_str(sb, " [unrated]")
 +		sbuf_chr(sb, '\n')
 +		/* Insert into the five largest, kept in descending order. */
-+		if (agent_span_tokens(spans + k) < 50)
++		if (agent_span_tokens(spans + k) < 50 || (!all && spans[k].role <= 1))
 +			continue;
 +		int j = ntop < 5 ? ntop++ : 5;
 +		for (; j > 0 && spans[top[j-1]].bytes < spans[k].bytes; j--)
@@ -10977,7 +11021,9 @@ index 00000000..4946d55d
 +	"  rate each EX entry from N through M; deferred commands are rated 1\n"
 +	"N[,M]anote [text]\n"
 +	"  text replaces entries N through M under entry N's role (ASSISTANT\n"
-+	"  for EX); no text removes them; a command and its RESULT stay together\n"
++	"  for EX); no text removes them; a command and its RESULT stay together;\n"
++	"  USER entries in the range stay; the note takes the place of the first\n"
++	"  entry changed\n"
 +	"acp\n"
 +	"  print the entry list again, with current sizes and ratings\n"
 +	"acp!\n"
@@ -11801,17 +11847,18 @@ index 00000000..4946d55d
 +			serial = agent_serial;
 +		}
 +		/* Notes over the last commands can end the context on assistant
-+		 * text, which some servers take as a prefill or reject. */
++		 * text, which some servers take as a prefill or reject. Every
++		 * round rebuilds the context from b-4 and adds this again while
++		 * needed; unlogged, it goes stale and drops once the reply joins
++		 * the note. */
 +		if (agent_live() && !agent_checkpointing) {
 +			cJSON *last = cJSON_GetArrayItem(agent_messages,
 +				cJSON_GetArraySize(agent_messages) - 1);
 +			if (!strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(last,
 +					"role")), "assistant") &&
-+					!cJSON_HasObjectItem(last, "tool_calls")) {
++					!cJSON_HasObjectItem(last, "tool_calls"))
 +				cJSON_AddItemToArray(agent_messages,
 +					agent_msg("user", agent_continue));
-+				agent_log("USER", agent_continue);
-+			}
 +		}
 +		if (agent_checkpointing)
 +			agent_cp_build();
@@ -12360,9 +12407,10 @@ index 00000000..4946d55d
 +{
 +	struct lbuf *lb = tempbufs[3].lb;
 +	struct agent_span *spans;
-+	int cnt = agent_spans(&spans), first, last;
++	int cnt = agent_spans(&spans), first, last, note = -1, changed = 0;
++	int keep = agent_tool, kept = 0, klen = 0;
 +	double before = 0, after;
-+	char msg[160];
++	char msg[320], kmsg[96] = "";
 +	void *ret;
 +	if ((ret = agent_entryrange(loc, spans, cnt, &first, &last)))
 +		goto done;
@@ -12372,20 +12420,33 @@ index 00000000..4946d55d
 +		last++;
 +	if (!*arg && spans[first].role == 5 && first && spans[first - 1].role == 4)
 +		first--;
-+	for (int k = first; k <= last; k++)
-+		before += agent_span_tokens(spans + k);
-+	for (int k = first; agent_tool && k <= last; k++)
-+		if (spans[k].role <= 1) {
-+			ret = "USER entries hold the user's instructions; note over the "
-+				"ASSISTANT or RESULT entries the findings came from";
-+			goto done;
++	/* The agent cannot change USER entries or the preamble; they split
++	 * the range, and the note takes the place of the first part. */
++#define ANOTE_KEPT(k)	(keep && spans[k].role <= 1)
++	for (int k = first; k <= last; k++) {
++		if (ANOTE_KEPT(k)) {
++			if (klen < (int)sizeof(kmsg))
++				klen += snprintf(kmsg + klen, sizeof(kmsg) - klen, "%s%lu",
++					kept ? ", " : "", spans[k].n);
++			kept++;
++			continue;
 +		}
++		if (note < 0)
++			note = k;
++		before += agent_span_tokens(spans + k);
++		changed++;
++	}
++	if (note < 0) {
++		ret = "USER entries hold the user's instructions; note over the "
++			"ASSISTANT or RESULT entries the findings came from";
++		goto done;
++	}
 +	sbuf_smake(sb, 256)
 +	if (*arg) {
 +		/* A note under EX would be rebuilt as a call to run the note. */
-+		if (spans[first].role) {
-+			snprintf(msg, sizeof(msg), "%s %lu\n", spans[first].role == 4 ?
-+				"ASSISTANT" : agent_span_role(spans + first), spans[first].n);
++		if (spans[note].role) {
++			snprintf(msg, sizeof(msg), "%s %lu\n", spans[note].role == 4 ?
++				"ASSISTANT" : agent_span_role(spans + note), spans[note].n);
 +			sbuf_str(sb, msg)
 +		}
 +		sbuf_str(sb, arg)
@@ -12395,19 +12456,40 @@ index 00000000..4946d55d
 +	}
 +	sbuf_nul(sb)
 +	after = *arg ? (strlen(arg) + 2) / 3 : 0;
-+	/* The b-4 line span is not the agent's edit; the note below reports it. */
++	/* The b-4 line span is not the agent's edit; the note below reports it.
++	 * Parts are edited last first so earlier line numbers hold; one save. */
 +	preserve(int, agent_tool, agent_tool = 0;)
-+	lbuf_edit(lb, *arg ? sb->s : NULL, spans[first].beg, spans[last].end, 0, 0);
++	preserve(int, agent_syncing, agent_syncing = 1;)
++	for (int k = last; k >= first; k--) {
++		int end = k;
++		if (ANOTE_KEPT(k))
++			continue;
++		while (k > first && !ANOTE_KEPT(k - 1))
++			k--;
++		lbuf_edit(lb, *arg && k <= note ? sb->s : NULL,
++			spans[k].beg, spans[end].end, 0, 0);
++	}
++	restore(agent_syncing)
 +	restore(agent_tool)
++	agent_sync(lb);
 +	free(sb->s);
 +	if (ex_buf == tempbufs + 3)
 +		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
 +	else
 +		tempbufs[3].row = MAX(0, MIN(tempbufs[3].row, lbuf_len(lb) - 1));
-+	snprintf(msg, sizeof(msg), "%s %d %s %lu-%lu, ~%.0f -> ~%.0f tokens%s",
-+		*arg ? "noted" : "removed", last - first + 1,
-+		last > first ? "entries" : "entry",
-+		spans[first].n, spans[last].n, before, after, after > before ?
++	while (ANOTE_KEPT(last))
++		last--;
++#undef ANOTE_KEPT
++	int len = snprintf(msg, sizeof(msg), "%s %d %s %lu-%lu", *arg ? "noted" :
++		"removed", changed, changed > 1 ? "entries" : "entry",
++		spans[note].n, spans[last].n);
++	if (kept && *arg)
++		len += snprintf(msg + len, sizeof(msg) - len, " as entry %lu",
++			spans[note].n);
++	if (kept)
++		len += snprintf(msg + len, sizeof(msg) - len, "; kept USER %s", kmsg);
++	snprintf(msg + len, sizeof(msg) - len, "%s~%.0f -> ~%.0f tokens%s",
++		kept ? "; " : ", ", before, after, after > before ?
 +		";\nthe note is larger than the entries it replaced" : "");
 +	ex_print(msg, msg_ft)
 +done:
@@ -16394,10 +16476,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..dfa955e2 100755
+index c836c94c..18526d02 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,187 @@ build() {
+@@ -65,6 +65,189 @@ build() {
      }
  }
  
@@ -16481,7 +16563,9 @@ index c836c94c..dfa955e2 100755
 +                "if N is an EX entry; no text removes them. A range ending at an EX\n" \
 +                "takes in its RESULT, and removing a RESULT takes its EX, so commands\n" \
 +                "stay whole. The agent cannot change USER entries or the text before\n" \
-+                "the first header. Prints the estimated tokens before and after, and\n" \
++                "the first header; anote by the agent keeps them in place, puts the\n" \
++                "note where the first changed entry was and removes the rest. Prints\n" \
++                "the estimated tokens before and after, the USER entries kept, and\n" \
 +                "reports a note larger than what it replaced. Changes the agent\n" \
 +                "context when acl is set.\n\n" \
 +                "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
@@ -16585,7 +16669,7 @@ index c836c94c..dfa955e2 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +255,7 @@ install() {
+@@ -74,7 +257,7 @@ install() {
  }
  
  print_usage() {
@@ -16594,7 +16678,7 @@ index c836c94c..dfa955e2 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +263,9 @@ print_usage() {
+@@ -82,6 +265,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
