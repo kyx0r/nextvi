@@ -867,8 +867,8 @@ static const char agent_cp_guide[] =
 	"N[,M]anote [text]\n"
 	"  text replaces entries N through M under entry N'\''s role (ASSISTANT\n"
 	"  for EX); no text removes them; a command and its RESULT stay together;\n"
-	"  USER entries in the range stay; the note takes the place of the first\n"
-	"  entry changed\n"
+	"  USER entries in the range stay; the note replaces the last run of\n"
+	"  other entries, under the role of its first entry\n"
 	"acp\n"
 	"  print the entry list again, with current sizes and ratings\n"
 	"acp!\n"
@@ -2253,9 +2253,9 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 	struct lbuf *lb = tempbufs[3].lb;
 	struct agent_span *spans;
 	int cnt = agent_spans(&spans), first, last, note = -1, changed = 0;
-	int keep = agent_tool, kept = 0, klen = 0;
+	int keep = agent_tool, kept = 0, klen = 0, lo = -1;
 	double before = 0, after;
-	char msg[320], kmsg[96] = "";
+	char msg[400], kmsg[128] = "";
 	void *ret;
 	if ((ret = agent_entryrange(loc, spans, cnt, &first, &last)))
 		goto done;
@@ -2266,21 +2266,25 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 	if (!*arg && spans[first].role == 5 && first && spans[first - 1].role == 4)
 		first--;
 	/* The agent cannot change USER entries or the preamble; they split
-	 * the range, and the note takes the place of the first part. */
+	 * the range, and the note takes the place of the last part, after
+	 * the requests its findings answer. */
 #define ANOTE_KEPT(k)	(keep && spans[k].role <= 1)
 	for (int k = first; k <= last; k++) {
 		if (ANOTE_KEPT(k)) {
-			if (klen < (int)sizeof(kmsg))
+			if (kept++ < 10 && klen < (int)sizeof(kmsg))
 				klen += snprintf(kmsg + klen, sizeof(kmsg) - klen, "%s%lu",
-					kept ? ", " : "", spans[k].n);
-			kept++;
+					kept > 1 ? ", " : "", spans[k].n);
 			continue;
 		}
-		if (note < 0)
+		if (k == first || ANOTE_KEPT(k - 1))
 			note = k;
+		if (lo < 0)
+			lo = k;
 		before += agent_span_tokens(spans + k);
 		changed++;
 	}
+	if (kept > 10 && klen < (int)sizeof(kmsg))
+		snprintf(kmsg + klen, sizeof(kmsg) - klen, " and %d more", kept - 10);
 	if (note < 0) {
 		ret = "USER entries hold the user'\''s instructions; note over the "
 			"ASSISTANT or RESULT entries the findings came from";
@@ -2311,7 +2315,7 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 			continue;
 		while (k > first && !ANOTE_KEPT(k - 1))
 			k--;
-		lbuf_edit(lb, *arg && k <= note ? sb->s : NULL,
+		lbuf_edit(lb, *arg && k == note ? sb->s : NULL,
 			spans[k].beg, spans[end].end, 0, 0);
 	}
 	restore(agent_syncing)
@@ -2327,7 +2331,7 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 #undef ANOTE_KEPT
 	int len = snprintf(msg, sizeof(msg), "%s %d %s %lu-%lu", *arg ? "noted" :
 		"removed", changed, changed > 1 ? "entries" : "entry",
-		spans[note].n, spans[last].n);
+		spans[lo].n, spans[last].n);
 	if (kept && *arg)
 		len += snprintf(msg + len, sizeof(msg) - len, " as entry %lu",
 			spans[note].n);
@@ -6490,11 +6494,12 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "if N is an EX entry; no text removes them. A range ending at an EX\n" \
                 "takes in its RESULT, and removing a RESULT takes its EX, so commands\n" \
                 "stay whole. The agent cannot change USER entries or the text before\n" \
-                "the first header; anote by the agent keeps them in place, puts the\n" \
-                "note where the first changed entry was and removes the rest. Prints\n" \
-                "the estimated tokens before and after, the USER entries kept, and\n" \
-                "reports a note larger than what it replaced. Changes the agent\n" \
-                "context when acl is set.\n\n" \
+                "the first header; anote by the agent keeps them in place, removes\n" \
+                "the other entries and puts the note in place of the last run of\n" \
+                "them, with the role of its first entry, or ASSISTANT for an EX.\n" \
+                "Prints the estimated tokens before and after and the USER entries\n" \
+                "kept, and reports a note larger than what it replaced. Changes the\n" \
+                "agent context when acl is set.\n\n" \
                 "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
             spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
                 "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
@@ -10181,10 +10186,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..d7dcb525
+index 00000000..32933140
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2741 @@
+@@ -0,0 +1,2745 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11022,8 +11027,8 @@ index 00000000..d7dcb525
 +	"N[,M]anote [text]\n"
 +	"  text replaces entries N through M under entry N's role (ASSISTANT\n"
 +	"  for EX); no text removes them; a command and its RESULT stay together;\n"
-+	"  USER entries in the range stay; the note takes the place of the first\n"
-+	"  entry changed\n"
++	"  USER entries in the range stay; the note replaces the last run of\n"
++	"  other entries, under the role of its first entry\n"
 +	"acp\n"
 +	"  print the entry list again, with current sizes and ratings\n"
 +	"acp!\n"
@@ -12408,9 +12413,9 @@ index 00000000..d7dcb525
 +	struct lbuf *lb = tempbufs[3].lb;
 +	struct agent_span *spans;
 +	int cnt = agent_spans(&spans), first, last, note = -1, changed = 0;
-+	int keep = agent_tool, kept = 0, klen = 0;
++	int keep = agent_tool, kept = 0, klen = 0, lo = -1;
 +	double before = 0, after;
-+	char msg[320], kmsg[96] = "";
++	char msg[400], kmsg[128] = "";
 +	void *ret;
 +	if ((ret = agent_entryrange(loc, spans, cnt, &first, &last)))
 +		goto done;
@@ -12421,21 +12426,25 @@ index 00000000..d7dcb525
 +	if (!*arg && spans[first].role == 5 && first && spans[first - 1].role == 4)
 +		first--;
 +	/* The agent cannot change USER entries or the preamble; they split
-+	 * the range, and the note takes the place of the first part. */
++	 * the range, and the note takes the place of the last part, after
++	 * the requests its findings answer. */
 +#define ANOTE_KEPT(k)	(keep && spans[k].role <= 1)
 +	for (int k = first; k <= last; k++) {
 +		if (ANOTE_KEPT(k)) {
-+			if (klen < (int)sizeof(kmsg))
++			if (kept++ < 10 && klen < (int)sizeof(kmsg))
 +				klen += snprintf(kmsg + klen, sizeof(kmsg) - klen, "%s%lu",
-+					kept ? ", " : "", spans[k].n);
-+			kept++;
++					kept > 1 ? ", " : "", spans[k].n);
 +			continue;
 +		}
-+		if (note < 0)
++		if (k == first || ANOTE_KEPT(k - 1))
 +			note = k;
++		if (lo < 0)
++			lo = k;
 +		before += agent_span_tokens(spans + k);
 +		changed++;
 +	}
++	if (kept > 10 && klen < (int)sizeof(kmsg))
++		snprintf(kmsg + klen, sizeof(kmsg) - klen, " and %d more", kept - 10);
 +	if (note < 0) {
 +		ret = "USER entries hold the user's instructions; note over the "
 +			"ASSISTANT or RESULT entries the findings came from";
@@ -12466,7 +12475,7 @@ index 00000000..d7dcb525
 +			continue;
 +		while (k > first && !ANOTE_KEPT(k - 1))
 +			k--;
-+		lbuf_edit(lb, *arg && k <= note ? sb->s : NULL,
++		lbuf_edit(lb, *arg && k == note ? sb->s : NULL,
 +			spans[k].beg, spans[end].end, 0, 0);
 +	}
 +	restore(agent_syncing)
@@ -12482,7 +12491,7 @@ index 00000000..d7dcb525
 +#undef ANOTE_KEPT
 +	int len = snprintf(msg, sizeof(msg), "%s %d %s %lu-%lu", *arg ? "noted" :
 +		"removed", changed, changed > 1 ? "entries" : "entry",
-+		spans[note].n, spans[last].n);
++		spans[lo].n, spans[last].n);
 +	if (kept && *arg)
 +		len += snprintf(msg + len, sizeof(msg) - len, " as entry %lu",
 +			spans[note].n);
@@ -16476,10 +16485,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..18526d02 100755
+index c836c94c..a72b1c74 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,189 @@ build() {
+@@ -65,6 +65,190 @@ build() {
      }
  }
  
@@ -16563,11 +16572,12 @@ index c836c94c..18526d02 100755
 +                "if N is an EX entry; no text removes them. A range ending at an EX\n" \
 +                "takes in its RESULT, and removing a RESULT takes its EX, so commands\n" \
 +                "stay whole. The agent cannot change USER entries or the text before\n" \
-+                "the first header; anote by the agent keeps them in place, puts the\n" \
-+                "note where the first changed entry was and removes the rest. Prints\n" \
-+                "the estimated tokens before and after, the USER entries kept, and\n" \
-+                "reports a note larger than what it replaced. Changes the agent\n" \
-+                "context when acl is set.\n\n" \
++                "the first header; anote by the agent keeps them in place, removes\n" \
++                "the other entries and puts the note in place of the last run of\n" \
++                "them, with the role of its first entry, or ASSISTANT for an EX.\n" \
++                "Prints the estimated tokens before and after and the USER entries\n" \
++                "kept, and reports a note larger than what it replaced. Changes the\n" \
++                "agent context when acl is set.\n\n" \
 +                "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
 +            spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
 +                "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
@@ -16669,7 +16679,7 @@ index c836c94c..18526d02 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +257,7 @@ install() {
+@@ -74,7 +258,7 @@ install() {
  }
  
  print_usage() {
@@ -16678,7 +16688,7 @@ index c836c94c..18526d02 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +265,9 @@ print_usage() {
+@@ -82,6 +266,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
