@@ -676,6 +676,73 @@ static void agent_note_set(unsigned long n, int rate, char *text)
 	free(sb->s);
 }
 
+/* The entry a ranged arate rating names by "same as EX n", or 0. */
+static unsigned long agent_note_ref(char *note)
+{
+	char *e;
+	unsigned long n;
+	if (strncmp(note, "same as EX ", 11) || !isdigit((unsigned char)note[11]))
+		return 0;
+	n = strtoul(note + 11, &e, 10);
+	return *e == '\''\n'\'' || !*e ? n : 0;
+}
+
+/* The sentence a rating stands for, following "same as" references. */
+static char *agent_note_text(char *note)
+{
+	unsigned long n;
+	int r, row;
+	char *t;
+	for (int i = 0; i < 16 && (n = agent_note_ref(note)) &&
+			(t = agent_note(n, &r, &row)); i++)
+		note = t;
+	return note;
+}
+
+/* Whether EX entry n is among spans. */
+static int agent_span_ex(struct agent_span *spans, int cnt, unsigned long n)
+{
+	for (int k = 0; k < cnt; k++)
+		if (spans[k].role == 4 && spans[k].n == n)
+			return 1;
+	return 0;
+}
+
+/* Before the rating of entry n is replaced, its text moves to the first
+ * rating that names n, except those of spans first through last, which
+ * are replaced too; the rest name that one instead. References point to
+ * earlier entries, so replacing a range last first moves each text once. */
+static void agent_note_rehome(unsigned long n, struct agent_span *spans,
+		int first, int last)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	unsigned long m, to = 0;
+	int r, row, rate, len;
+	char *note = agent_note(n, &r, &row), *old, *e, same[32];
+	if (!note)
+		return;
+	len = strcspn(note, "\n");
+	old = memcpy(emalloc(len + 1), note, len);
+	old[len] = '\''\0'\'';
+	for (int i = 0; i < lbuf_len(lb); i++) {
+		char *s = lb->ln[i];
+		if (!isdigit((unsigned char)*s))
+			continue;
+		m = strtoul(s, &e, 10);
+		if (e[0] != '\'' '\'' || e[1] < '\''0'\'' || e[1] > '\''3'\'' || e[2] != '\'' '\'' ||
+				agent_note_ref(e + 3) != n ||
+				agent_span_ex(spans + first, last - first + 1, m))
+			continue;
+		rate = e[1] - '\''0'\'';
+		agent_note_set(m, rate, to ? same : old);
+		if (!to) {
+			to = m;
+			snprintf(same, sizeof(same), "same as EX %lu", to);
+		}
+	}
+	free(old);
+}
+
 /* Count EX entries without a note, listing the first few in buf. */
 static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
 {
@@ -783,8 +850,9 @@ static const char agent_rating_scale[] =
 static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 		int lines, int all)
 {
-	int top[5], ntop = 0, listed = 0, r, row, col, len;
-	char ln[256], *note;
+	int top[5], ntop = 0, listed = 0, r, row, col, len, nmoved = 0;
+	unsigned long *moved = NULL, ref;	/* removed target, entry shown */
+	char ln[256], same[32], *note;
 	for (int k = 0; k < cnt; k++) {
 		if (spans[k].role == 6 && !all)
 			continue;
@@ -799,6 +867,24 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 		if (spans[k].role == 4 && (note = agent_note(spans[k].n, &r, &row))) {
 			snprintf(ln, sizeof(ln), " [%d] ", r);
 			sbuf_str(sb, ln)
+			/* A removed entry'\''s rating is shown in full on the first
+			 * entry that names it; the rest name that entry. */
+			if ((ref = agent_note_ref(note)) && !agent_span_ex(spans, cnt, ref)) {
+				int j = 0;
+				while (j < nmoved && moved[2*j] != ref)
+					j++;
+				if (j < nmoved) {
+					snprintf(same, sizeof(same), "same as EX %lu",
+						moved[2*j+1]);
+					note = same;
+				} else {
+					moved = erealloc(moved, (nmoved + 1) * 2 * sizeof(*moved));
+					moved[2*nmoved] = ref;
+					moved[2*nmoved+1] = spans[k].n;
+					nmoved++;
+					note = agent_note_text(note);
+				}
+			}
 			sbuf_mem(sb, note, (int)strcspn(note, "\n"))
 		} else if (spans[k].role == 4)
 			sbuf_str(sb, " [unrated]")
@@ -829,6 +915,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 		}
 		sbuf_chr(sb, '\''\n'\'')
 	}
+	free(moved);
 }
 
 /* Checkpoint status: sizes, the entry list and what is still unrated. */
@@ -2365,6 +2452,9 @@ static void *ec_arate(char *loc, char *cmd, char *arg)
 	/* One save and no line report for the batch of b-6 edits. */
 	preserve(int, agent_tool, agent_tool = 0;)
 	preserve(int, agent_syncing, agent_syncing = 1;)
+	for (int k = last; k >= first; k--)
+		if (spans[k].role == 4)
+			agent_note_rehome(spans[k].n, spans, first, last);
 	/* The sentence is written once; the rest of the range points to it. */
 	for (int k = first; k <= last; k++) {
 		if (spans[k].role != 4)
@@ -6505,9 +6595,12 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
                 "line per entry: number, rating and sentence, replacing an older\n" \
                 "note. Only the first entry gets the sentence; the rest get \"same as\n" \
-                "EX N\" with N that entry. Ratings: 0 dead weight, no value for the remaining work; 1 low,\n" \
-                "minor, superseded or only mechanics; 2 useful, informs the remaining\n" \
-                "work; 3 essential, a decision, finding or state the task depends on.\n" \
+                "EX N\" with N that entry. Replacing a note that others name moves\n" \
+                "it to the first of them. Lists show the note of a removed entry on\n" \
+                "the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
+                "value for the remaining work; 1 low, minor, superseded or only\n" \
+                "mechanics; 2 useful, informs the remaining work; 3 essential, a\n" \
+                "decision, finding or state the task depends on.\n" \
                 "Entries work as for anote; other roles in the range are skipped.\n" \
                 "With acl above 1, commands deferred by aspec are rated 1 by the\n" \
                 "harness unless already rated.\n" \
@@ -9031,9 +9124,12 @@ static char *exspec_lines[] = {
 	"if N is an EX entry; no text removes them. A range ending at an EX",
 	"takes in its RESULT, and removing a RESULT takes its EX, so commands",
 	"stay whole. The agent cannot change USER entries or the text before",
-	"the first header. Prints the estimated tokens before and after, and",
-	"reports a note larger than what it replaced. Changes the agent",
-	"context when acl is set.",
+	"the first header; anote by the agent keeps them in place, removes",
+	"the other entries and puts the note in place of the last run of",
+	"them, with the role of its first entry, or ASSISTANT for an EX.",
+	"Prints the estimated tokens before and after and the USER entries",
+	"kept, and reports a note larger than what it replaced. Changes the",
+	"agent context when acl is set.",
 	"",
 	"Example: replace a long result with a note",
 	"14anote ls listed 40 files, none relevant",
@@ -9044,9 +9140,12 @@ static char *exspec_lines[] = {
 	"Writes a note for each EX entry from N through M of b-4 to b-6, one",
 	"line per entry: number, rating and sentence, replacing an older",
 	"note. Only the first entry gets the sentence; the rest get \"same as",
-	"EX N\" with N that entry. Ratings: 0 dead weight, no value for the remaining work; 1 low,",
-	"minor, superseded or only mechanics; 2 useful, informs the remaining",
-	"work; 3 essential, a decision, finding or state the task depends on.",
+	"EX N\" with N that entry. Replacing a note that others name moves",
+	"it to the first of them. Lists show the note of a removed entry on",
+	"the first remaining entry that names it. Ratings: 0 dead weight, no",
+	"value for the remaining work; 1 low, minor, superseded or only",
+	"mechanics; 2 useful, informs the remaining work; 3 essential, a",
+	"decision, finding or state the task depends on.",
 	"Entries work as for anote; other roles in the range are skipped.",
 	"With acl above 1, commands deferred by aspec are rated 1 by the",
 	"harness unless already rated.",
@@ -9521,49 +9620,49 @@ static struct {
 	{"acm", "Toggle the caveman response style skill", 784, 789, 0, 0},
 	{"aretry", "Execute the last agent command once without the guardrail", 790, 802, 0, 0},
 	{"aout", "Print the saved output of the last agent tool call", 803, 814, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 815, 830, 0, 0},
-	{"arate", "Rate agent commands in the notes buffer", 831, 848, 0, 0},
-	{"adone", "End an agent checkpoint", 849, 856, 0, 0},
-	{"acp", "Print the agent checkpoint entry list", 857, 863, 0, 0},
-	{"acp!", "Print the agent checkpoint instructions", 864, 870, 0, 0},
-	{"ast", "Print agent status and token usage", 871, 880, 0, 0},
-	{"ac", "Set autocomplete filter regex", 881, 889, 0, 0},
-	{"sc", "Set ex special characters", 890, 900, 0, 0},
-	{"sc!", "Set ex special characters", 901, 908, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 909, 916, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 917, 920, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 921, 925, 0, 0},
-	{"ph", "Redefine placeholders", 926, 942, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 951, 981, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 982, 991, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 992, 999, 1, 0},
-	{"agr", "Control agent output protection", 1000, 1006, 1, 0},
-	{"ar", "Display returned agent reasoning", 1007, 1011, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1012, 1016, 1, 0},
-	{"ai", "Indent new lines", 1017, 1020, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1021, 1022, 1, 0},
-	{"ish", "Interactive shell", 1023, 1038, 1, 0},
-	{"grp", "Regex search group", 1039, 1047, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1048, 1051, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1052, 1053, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1053, 1054, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1054, 1055, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1055, 1056, 1, 0},
-	{"led", "Enable all terminal output", 1056, 1057, 1, 0},
-	{"vis", "Control startup flags", 1058, 1069, 1, 0},
-	{"mpt", "Control vi prompts", 1070, 1080, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1081, 1083, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1083, 1085, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1085, 1086, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1086, 1087, 1, 0},
-	{"td", "Current text direction context", 1087, 1093, 1, 0},
-	{"pr", "Print register", 1094, 1110, 1, 0},
-	{"fr", "Find register", 1111, 1123, 1, 0},
-	{"rr", "Record register", 1124, 1137, 1, 0},
-	{"lim", "Line length render limit", 1138, 1153, 1, 0},
-	{"seq", "Control Undo/Redo", 1154, 1166, 1, 0},
-	{"left", "Control horizontal scroll", 1167, 1172, 1, 0},
-	{"err", "Control ex errors", 1173, 1185, 1, 0},
+	{"anote", "Replace or remove agent session log entries", 815, 833, 0, 0},
+	{"arate", "Rate agent commands in the notes buffer", 834, 854, 0, 0},
+	{"adone", "End an agent checkpoint", 855, 862, 0, 0},
+	{"acp", "Print the agent checkpoint entry list", 863, 869, 0, 0},
+	{"acp!", "Print the agent checkpoint instructions", 870, 876, 0, 0},
+	{"ast", "Print agent status and token usage", 877, 886, 0, 0},
+	{"ac", "Set autocomplete filter regex", 887, 895, 0, 0},
+	{"sc", "Set ex special characters", 896, 906, 0, 0},
+	{"sc!", "Set ex special characters", 907, 914, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 915, 922, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 923, 926, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 927, 931, 0, 0},
+	{"ph", "Redefine placeholders", 932, 948, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 957, 987, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 988, 997, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 998, 1005, 1, 0},
+	{"agr", "Control agent output protection", 1006, 1012, 1, 0},
+	{"ar", "Display returned agent reasoning", 1013, 1017, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1018, 1022, 1, 0},
+	{"ai", "Indent new lines", 1023, 1026, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1027, 1028, 1, 0},
+	{"ish", "Interactive shell", 1029, 1044, 1, 0},
+	{"grp", "Regex search group", 1045, 1053, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1054, 1057, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1058, 1059, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1059, 1060, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1060, 1061, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1061, 1062, 1, 0},
+	{"led", "Enable all terminal output", 1062, 1063, 1, 0},
+	{"vis", "Control startup flags", 1064, 1075, 1, 0},
+	{"mpt", "Control vi prompts", 1076, 1086, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1087, 1089, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1089, 1091, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1091, 1092, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1092, 1093, 1, 0},
+	{"td", "Current text direction context", 1093, 1099, 1, 0},
+	{"pr", "Print register", 1100, 1116, 1, 0},
+	{"fr", "Find register", 1117, 1129, 1, 0},
+	{"rr", "Record register", 1130, 1143, 1, 0},
+	{"lim", "Line length render limit", 1144, 1159, 1, 0},
+	{"seq", "Control Undo/Redo", 1160, 1172, 1, 0},
+	{"left", "Control horizontal scroll", 1173, 1178, 1, 0},
+	{"err", "Control ex errors", 1179, 1191, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -10186,10 +10285,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..32933140
+index 00000000..1ae0948d
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2745 @@
+@@ -0,0 +1,2835 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -10836,6 +10935,73 @@ index 00000000..32933140
 +	free(sb->s);
 +}
 +
++/* The entry a ranged arate rating names by "same as EX n", or 0. */
++static unsigned long agent_note_ref(char *note)
++{
++	char *e;
++	unsigned long n;
++	if (strncmp(note, "same as EX ", 11) || !isdigit((unsigned char)note[11]))
++		return 0;
++	n = strtoul(note + 11, &e, 10);
++	return *e == '\n' || !*e ? n : 0;
++}
++
++/* The sentence a rating stands for, following "same as" references. */
++static char *agent_note_text(char *note)
++{
++	unsigned long n;
++	int r, row;
++	char *t;
++	for (int i = 0; i < 16 && (n = agent_note_ref(note)) &&
++			(t = agent_note(n, &r, &row)); i++)
++		note = t;
++	return note;
++}
++
++/* Whether EX entry n is among spans. */
++static int agent_span_ex(struct agent_span *spans, int cnt, unsigned long n)
++{
++	for (int k = 0; k < cnt; k++)
++		if (spans[k].role == 4 && spans[k].n == n)
++			return 1;
++	return 0;
++}
++
++/* Before the rating of entry n is replaced, its text moves to the first
++ * rating that names n, except those of spans first through last, which
++ * are replaced too; the rest name that one instead. References point to
++ * earlier entries, so replacing a range last first moves each text once. */
++static void agent_note_rehome(unsigned long n, struct agent_span *spans,
++		int first, int last)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	unsigned long m, to = 0;
++	int r, row, rate, len;
++	char *note = agent_note(n, &r, &row), *old, *e, same[32];
++	if (!note)
++		return;
++	len = strcspn(note, "\n");
++	old = memcpy(emalloc(len + 1), note, len);
++	old[len] = '\0';
++	for (int i = 0; i < lbuf_len(lb); i++) {
++		char *s = lb->ln[i];
++		if (!isdigit((unsigned char)*s))
++			continue;
++		m = strtoul(s, &e, 10);
++		if (e[0] != ' ' || e[1] < '0' || e[1] > '3' || e[2] != ' ' ||
++				agent_note_ref(e + 3) != n ||
++				agent_span_ex(spans + first, last - first + 1, m))
++			continue;
++		rate = e[1] - '0';
++		agent_note_set(m, rate, to ? same : old);
++		if (!to) {
++			to = m;
++			snprintf(same, sizeof(same), "same as EX %lu", to);
++		}
++	}
++	free(old);
++}
++
 +/* Count EX entries without a note, listing the first few in buf. */
 +static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
 +{
@@ -10943,8 +11109,9 @@ index 00000000..32933140
 +static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 +		int lines, int all)
 +{
-+	int top[5], ntop = 0, listed = 0, r, row, col, len;
-+	char ln[256], *note;
++	int top[5], ntop = 0, listed = 0, r, row, col, len, nmoved = 0;
++	unsigned long *moved = NULL, ref;	/* removed target, entry shown */
++	char ln[256], same[32], *note;
 +	for (int k = 0; k < cnt; k++) {
 +		if (spans[k].role == 6 && !all)
 +			continue;
@@ -10959,6 +11126,24 @@ index 00000000..32933140
 +		if (spans[k].role == 4 && (note = agent_note(spans[k].n, &r, &row))) {
 +			snprintf(ln, sizeof(ln), " [%d] ", r);
 +			sbuf_str(sb, ln)
++			/* A removed entry's rating is shown in full on the first
++			 * entry that names it; the rest name that entry. */
++			if ((ref = agent_note_ref(note)) && !agent_span_ex(spans, cnt, ref)) {
++				int j = 0;
++				while (j < nmoved && moved[2*j] != ref)
++					j++;
++				if (j < nmoved) {
++					snprintf(same, sizeof(same), "same as EX %lu",
++						moved[2*j+1]);
++					note = same;
++				} else {
++					moved = erealloc(moved, (nmoved + 1) * 2 * sizeof(*moved));
++					moved[2*nmoved] = ref;
++					moved[2*nmoved+1] = spans[k].n;
++					nmoved++;
++					note = agent_note_text(note);
++				}
++			}
 +			sbuf_mem(sb, note, (int)strcspn(note, "\n"))
 +		} else if (spans[k].role == 4)
 +			sbuf_str(sb, " [unrated]")
@@ -10989,6 +11174,7 @@ index 00000000..32933140
 +		}
 +		sbuf_chr(sb, '\n')
 +	}
++	free(moved);
 +}
 +
 +/* Checkpoint status: sizes, the entry list and what is still unrated. */
@@ -12525,6 +12711,9 @@ index 00000000..32933140
 +	/* One save and no line report for the batch of b-6 edits. */
 +	preserve(int, agent_tool, agent_tool = 0;)
 +	preserve(int, agent_syncing, agent_syncing = 1;)
++	for (int k = last; k >= first; k--)
++		if (spans[k].role == 4)
++			agent_note_rehome(spans[k].n, spans, first, last);
 +	/* The sentence is written once; the rest of the range points to it. */
 +	for (int k = first; k <= last; k++) {
 +		if (spans[k].role != 4)
@@ -16485,10 +16674,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..a72b1c74 100755
+index c836c94c..8bac109d 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,190 @@ build() {
+@@ -65,6 +65,193 @@ build() {
      }
  }
  
@@ -16583,9 +16772,12 @@ index c836c94c..a72b1c74 100755
 +                "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
 +                "line per entry: number, rating and sentence, replacing an older\n" \
 +                "note. Only the first entry gets the sentence; the rest get \"same as\n" \
-+                "EX N\" with N that entry. Ratings: 0 dead weight, no value for the remaining work; 1 low,\n" \
-+                "minor, superseded or only mechanics; 2 useful, informs the remaining\n" \
-+                "work; 3 essential, a decision, finding or state the task depends on.\n" \
++                "EX N\" with N that entry. Replacing a note that others name moves\n" \
++                "it to the first of them. Lists show the note of a removed entry on\n" \
++                "the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
++                "value for the remaining work; 1 low, minor, superseded or only\n" \
++                "mechanics; 2 useful, informs the remaining work; 3 essential, a\n" \
++                "decision, finding or state the task depends on.\n" \
 +                "Entries work as for anote; other roles in the range are skipped.\n" \
 +                "With acl above 1, commands deferred by aspec are rated 1 by the\n" \
 +                "harness unless already rated.\n" \
@@ -16679,7 +16871,7 @@ index c836c94c..a72b1c74 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +258,7 @@ install() {
+@@ -74,7 +261,7 @@ install() {
  }
  
  print_usage() {
@@ -16688,7 +16880,7 @@ index c836c94c..a72b1c74 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +266,9 @@ print_usage() {
+@@ -82,6 +269,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -17389,10 +17581,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..d42f94c0
+index 00000000..a0857d0a
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1360 @@
+@@ -0,0 +1,1366 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -18219,9 +18411,12 @@ index 00000000..d42f94c0
 +	"if N is an EX entry; no text removes them. A range ending at an EX",
 +	"takes in its RESULT, and removing a RESULT takes its EX, so commands",
 +	"stay whole. The agent cannot change USER entries or the text before",
-+	"the first header. Prints the estimated tokens before and after, and",
-+	"reports a note larger than what it replaced. Changes the agent",
-+	"context when acl is set.",
++	"the first header; anote by the agent keeps them in place, removes",
++	"the other entries and puts the note in place of the last run of",
++	"them, with the role of its first entry, or ASSISTANT for an EX.",
++	"Prints the estimated tokens before and after and the USER entries",
++	"kept, and reports a note larger than what it replaced. Changes the",
++	"agent context when acl is set.",
 +	"",
 +	"Example: replace a long result with a note",
 +	"14anote ls listed 40 files, none relevant",
@@ -18232,9 +18427,12 @@ index 00000000..d42f94c0
 +	"Writes a note for each EX entry from N through M of b-4 to b-6, one",
 +	"line per entry: number, rating and sentence, replacing an older",
 +	"note. Only the first entry gets the sentence; the rest get \"same as",
-+	"EX N\" with N that entry. Ratings: 0 dead weight, no value for the remaining work; 1 low,",
-+	"minor, superseded or only mechanics; 2 useful, informs the remaining",
-+	"work; 3 essential, a decision, finding or state the task depends on.",
++	"EX N\" with N that entry. Replacing a note that others name moves",
++	"it to the first of them. Lists show the note of a removed entry on",
++	"the first remaining entry that names it. Ratings: 0 dead weight, no",
++	"value for the remaining work; 1 low, minor, superseded or only",
++	"mechanics; 2 useful, informs the remaining work; 3 essential, a",
++	"decision, finding or state the task depends on.",
 +	"Entries work as for anote; other roles in the range are skipped.",
 +	"With acl above 1, commands deferred by aspec are rated 1 by the",
 +	"harness unless already rated.",
@@ -18709,49 +18907,49 @@ index 00000000..d42f94c0
 +	{"acm", "Toggle the caveman response style skill", 784, 789, 0, 0},
 +	{"aretry", "Execute the last agent command once without the guardrail", 790, 802, 0, 0},
 +	{"aout", "Print the saved output of the last agent tool call", 803, 814, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 815, 830, 0, 0},
-+	{"arate", "Rate agent commands in the notes buffer", 831, 848, 0, 0},
-+	{"adone", "End an agent checkpoint", 849, 856, 0, 0},
-+	{"acp", "Print the agent checkpoint entry list", 857, 863, 0, 0},
-+	{"acp!", "Print the agent checkpoint instructions", 864, 870, 0, 0},
-+	{"ast", "Print agent status and token usage", 871, 880, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 881, 889, 0, 0},
-+	{"sc", "Set ex special characters", 890, 900, 0, 0},
-+	{"sc!", "Set ex special characters", 901, 908, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 909, 916, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 917, 920, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 921, 925, 0, 0},
-+	{"ph", "Redefine placeholders", 926, 942, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 951, 981, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 982, 991, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 992, 999, 1, 0},
-+	{"agr", "Control agent output protection", 1000, 1006, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1007, 1011, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1012, 1016, 1, 0},
-+	{"ai", "Indent new lines", 1017, 1020, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1021, 1022, 1, 0},
-+	{"ish", "Interactive shell", 1023, 1038, 1, 0},
-+	{"grp", "Regex search group", 1039, 1047, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1048, 1051, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1052, 1053, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1053, 1054, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1054, 1055, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1055, 1056, 1, 0},
-+	{"led", "Enable all terminal output", 1056, 1057, 1, 0},
-+	{"vis", "Control startup flags", 1058, 1069, 1, 0},
-+	{"mpt", "Control vi prompts", 1070, 1080, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1081, 1083, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1083, 1085, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1085, 1086, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1086, 1087, 1, 0},
-+	{"td", "Current text direction context", 1087, 1093, 1, 0},
-+	{"pr", "Print register", 1094, 1110, 1, 0},
-+	{"fr", "Find register", 1111, 1123, 1, 0},
-+	{"rr", "Record register", 1124, 1137, 1, 0},
-+	{"lim", "Line length render limit", 1138, 1153, 1, 0},
-+	{"seq", "Control Undo/Redo", 1154, 1166, 1, 0},
-+	{"left", "Control horizontal scroll", 1167, 1172, 1, 0},
-+	{"err", "Control ex errors", 1173, 1185, 1, 0},
++	{"anote", "Replace or remove agent session log entries", 815, 833, 0, 0},
++	{"arate", "Rate agent commands in the notes buffer", 834, 854, 0, 0},
++	{"adone", "End an agent checkpoint", 855, 862, 0, 0},
++	{"acp", "Print the agent checkpoint entry list", 863, 869, 0, 0},
++	{"acp!", "Print the agent checkpoint instructions", 870, 876, 0, 0},
++	{"ast", "Print agent status and token usage", 877, 886, 0, 0},
++	{"ac", "Set autocomplete filter regex", 887, 895, 0, 0},
++	{"sc", "Set ex special characters", 896, 906, 0, 0},
++	{"sc!", "Set ex special characters", 907, 914, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 915, 922, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 923, 926, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 927, 931, 0, 0},
++	{"ph", "Redefine placeholders", 932, 948, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 957, 987, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 988, 997, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 998, 1005, 1, 0},
++	{"agr", "Control agent output protection", 1006, 1012, 1, 0},
++	{"ar", "Display returned agent reasoning", 1013, 1017, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1018, 1022, 1, 0},
++	{"ai", "Indent new lines", 1023, 1026, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1027, 1028, 1, 0},
++	{"ish", "Interactive shell", 1029, 1044, 1, 0},
++	{"grp", "Regex search group", 1045, 1053, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1054, 1057, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1058, 1059, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1059, 1060, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1060, 1061, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1061, 1062, 1, 0},
++	{"led", "Enable all terminal output", 1062, 1063, 1, 0},
++	{"vis", "Control startup flags", 1064, 1075, 1, 0},
++	{"mpt", "Control vi prompts", 1076, 1086, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1087, 1089, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1089, 1091, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1091, 1092, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1092, 1093, 1, 0},
++	{"td", "Current text direction context", 1093, 1099, 1, 0},
++	{"pr", "Print register", 1100, 1116, 1, 0},
++	{"fr", "Find register", 1117, 1129, 1, 0},
++	{"rr", "Record register", 1130, 1143, 1, 0},
++	{"lim", "Line length render limit", 1144, 1159, 1, 0},
++	{"seq", "Control Undo/Redo", 1160, 1172, 1, 0},
++	{"left", "Control horizontal scroll", 1173, 1178, 1, 0},
++	{"err", "Control ex errors", 1179, 1191, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
