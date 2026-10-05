@@ -7630,7 +7630,7 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 	static char *agent_cmds[] = {
 		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
 		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-		"ud", "rd", "sc", "sc!", "aretry", "aout", "anote", "arate"
+		"ud", "rd", "sc", "sc!", "aretry", "aout"
 	};
 	if (!*arg || !strcmp(arg, "catalog")) {
 		ex_print("EX TOPICS", msg_ft)
@@ -16117,7 +16117,7 @@ index 2888d7c6..025a1815 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..aaf984e4 100644
+index 76dca408..b346d970 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -16418,7 +16418,7 @@ index 76dca408..aaf984e4 100644
 +	static char *agent_cmds[] = {
 +		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
 +		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-+		"ud", "rd", "sc", "sc!", "aretry", "aout", "anote", "arate"
++		"ud", "rd", "sc", "sc!", "aretry", "aout"
 +	};
 +	if (!*arg || !strcmp(arg, "catalog")) {
 +		ex_print("EX TOPICS", msg_ft)
