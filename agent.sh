@@ -879,9 +879,10 @@ static const char agent_cp_guide[] =
 	"rate their commands. USER entries cannot be changed. To keep findings,\n"
 	"note them over the entries they came from, e.g.\n"
 	"53,59anote findings: ...\n"
-	"Files and buffers cannot be read now; decide from your context. Ratings\n"
-	"are kept in b-6 for later checkpoints and compaction. This exchange is\n"
-	"not kept in the session log.\n";
+	"Your context shows entries as they were; anote changes apply after\n"
+	"adone. Files and buffers cannot be read now; decide from your context.\n"
+	"Ratings are kept in b-6 for later checkpoints and compaction. This\n"
+	"exchange is not kept in the session log.\n";
 
 static void agent_cp_instructions(sbuf *sb)
 {
@@ -927,7 +928,7 @@ static void agent_cp_collect(void)
 	agent_cp_base = -1;
 }
 
-/* Append a current entry list and the exchange to the rebuilt context. */
+/* Append the opening message and the exchange to the context. */
 static void agent_cp_build(void)
 {
 	cJSON *m;
@@ -1651,7 +1652,10 @@ static void agent_run_loop(const char *input)
 		 * pack agents must never recursively trigger autocompaction. */
 		/* The threshold triggers a pack, not a hard cap on its result. */
 		agent_cp_collect();
-		if (agent_live() || agent_checkpointing)
+		/* A checkpoint keeps the context it started with, so anote edits
+		 * to b-4 do not break the server'\''s prompt cache every round; its
+		 * end rebuilds the context once. */
+		if (agent_live())
 			agent_reparse();
 		/* acl > 1 checkpoints growth from the last checkpoint or the
 		 * smallest context since; trimming gets a chance before aco. */
@@ -6502,9 +6506,12 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "acp and adone run. Unrated commands must be rated first:\n" \
                 "adone or a reply without commands is refused while any remain,\n" \
                 "up to twice in a row without new ratings. The list and exchange\n" \
-                "are logged to b-3, not b-4, with headers prefixed CP. It ends with\n" \
-                "adone, a reply without commands or recursive editing; the\n" \
-                "interrupted request then resumes. aco is checked after it.\n\n" \
+                "are logged to b-3, not b-4, with headers prefixed CP. Requests\n" \
+                "keep the context the checkpoint started with, so the prompt\n" \
+                "cache holds; anote edits b-4 at once but reaches the context when\n" \
+                "the checkpoint ends. It ends with adone, a reply without commands\n" \
+                "or recursive editing; the interrupted request then resumes. aco\n" \
+                "is checked after it.\n\n" \
                 "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
             spec("aco[0]  Automatically compact using the loaded session log",
                 "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -9122,9 +9129,12 @@ static char *exspec_lines[] = {
 	"acp and adone run. Unrated commands must be rated first:",
 	"adone or a reply without commands is refused while any remain,",
 	"up to twice in a row without new ratings. The list and exchange",
-	"are logged to b-3, not b-4, with headers prefixed CP. It ends with",
-	"adone, a reply without commands or recursive editing; the",
-	"interrupted request then resumes. aco is checked after it.",
+	"are logged to b-3, not b-4, with headers prefixed CP. Requests",
+	"keep the context the checkpoint started with, so the prompt",
+	"cache holds; anote edits b-4 at once but reaches the context when",
+	"the checkpoint ends. It ends with adone, a reply without commands",
+	"or recursive editing; the interrupted request then resumes. aco",
+	"is checked after it.",
 	"",
 	"Example: checkpoint every 5000 tokens of growth",
 	"acl 5000",
@@ -9474,36 +9484,36 @@ static struct {
 	{"uz", "Toggle zero-width character placeholders", 917, 920, 0, 0},
 	{"ub", "Toggle multi-codepoint sequence placeholders", 921, 925, 0, 0},
 	{"ph", "Redefine placeholders", 926, 942, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 951, 978, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 979, 988, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 989, 996, 1, 0},
-	{"agr", "Control agent output protection", 997, 1003, 1, 0},
-	{"ar", "Display returned agent reasoning", 1004, 1008, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1009, 1013, 1, 0},
-	{"ai", "Indent new lines", 1014, 1017, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1018, 1019, 1, 0},
-	{"ish", "Interactive shell", 1020, 1035, 1, 0},
-	{"grp", "Regex search group", 1036, 1044, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1045, 1048, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1049, 1050, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1050, 1051, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1051, 1052, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1052, 1053, 1, 0},
-	{"led", "Enable all terminal output", 1053, 1054, 1, 0},
-	{"vis", "Control startup flags", 1055, 1066, 1, 0},
-	{"mpt", "Control vi prompts", 1067, 1077, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1078, 1080, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1080, 1082, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1082, 1083, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1083, 1084, 1, 0},
-	{"td", "Current text direction context", 1084, 1090, 1, 0},
-	{"pr", "Print register", 1091, 1107, 1, 0},
-	{"fr", "Find register", 1108, 1120, 1, 0},
-	{"rr", "Record register", 1121, 1134, 1, 0},
-	{"lim", "Line length render limit", 1135, 1150, 1, 0},
-	{"seq", "Control Undo/Redo", 1151, 1163, 1, 0},
-	{"left", "Control horizontal scroll", 1164, 1169, 1, 0},
-	{"err", "Control ex errors", 1170, 1182, 1, 0},
+	{"acl", "Rebuild agent context from the session log", 951, 981, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 982, 991, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 992, 999, 1, 0},
+	{"agr", "Control agent output protection", 1000, 1006, 1, 0},
+	{"ar", "Display returned agent reasoning", 1007, 1011, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1012, 1016, 1, 0},
+	{"ai", "Indent new lines", 1017, 1020, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1021, 1022, 1, 0},
+	{"ish", "Interactive shell", 1023, 1038, 1, 0},
+	{"grp", "Regex search group", 1039, 1047, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1048, 1051, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1052, 1053, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1053, 1054, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1054, 1055, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1055, 1056, 1, 0},
+	{"led", "Enable all terminal output", 1056, 1057, 1, 0},
+	{"vis", "Control startup flags", 1058, 1069, 1, 0},
+	{"mpt", "Control vi prompts", 1070, 1080, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1081, 1083, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1083, 1085, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1085, 1086, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1086, 1087, 1, 0},
+	{"td", "Current text direction context", 1087, 1093, 1, 0},
+	{"pr", "Print register", 1094, 1110, 1, 0},
+	{"fr", "Find register", 1111, 1123, 1, 0},
+	{"rr", "Record register", 1124, 1137, 1, 0},
+	{"lim", "Line length render limit", 1138, 1153, 1, 0},
+	{"seq", "Control Undo/Redo", 1154, 1166, 1, 0},
+	{"left", "Control horizontal scroll", 1167, 1172, 1, 0},
+	{"err", "Control ex errors", 1173, 1185, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -10126,10 +10136,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..9ab8bd3a
+index 00000000..8765e42a
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2694 @@
+@@ -0,0 +1,2698 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -10979,9 +10989,10 @@ index 00000000..9ab8bd3a
 +	"rate their commands. USER entries cannot be changed. To keep findings,\n"
 +	"note them over the entries they came from, e.g.\n"
 +	"53,59anote findings: ...\n"
-+	"Files and buffers cannot be read now; decide from your context. Ratings\n"
-+	"are kept in b-6 for later checkpoints and compaction. This exchange is\n"
-+	"not kept in the session log.\n";
++	"Your context shows entries as they were; anote changes apply after\n"
++	"adone. Files and buffers cannot be read now; decide from your context.\n"
++	"Ratings are kept in b-6 for later checkpoints and compaction. This\n"
++	"exchange is not kept in the session log.\n";
 +
 +static void agent_cp_instructions(sbuf *sb)
 +{
@@ -11027,7 +11038,7 @@ index 00000000..9ab8bd3a
 +	agent_cp_base = -1;
 +}
 +
-+/* Append a current entry list and the exchange to the rebuilt context. */
++/* Append the opening message and the exchange to the context. */
 +static void agent_cp_build(void)
 +{
 +	cJSON *m;
@@ -11751,7 +11762,10 @@ index 00000000..9ab8bd3a
 +		 * pack agents must never recursively trigger autocompaction. */
 +		/* The threshold triggers a pack, not a hard cap on its result. */
 +		agent_cp_collect();
-+		if (agent_live() || agent_checkpointing)
++		/* A checkpoint keeps the context it started with, so anote edits
++		 * to b-4 do not break the server's prompt cache every round; its
++		 * end rebuilds the context once. */
++		if (agent_live())
 +			agent_reparse();
 +		/* acl > 1 checkpoints growth from the last checkpoint or the
 +		 * smallest context since; trimming gets a chance before aco. */
@@ -16374,10 +16388,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..3e3ecb8f 100755
+index c836c94c..dfa955e2 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,184 @@ build() {
+@@ -65,6 +65,187 @@ build() {
      }
  }
  
@@ -16520,9 +16534,12 @@ index c836c94c..3e3ecb8f 100755
 +                "acp and adone run. Unrated commands must be rated first:\n" \
 +                "adone or a reply without commands is refused while any remain,\n" \
 +                "up to twice in a row without new ratings. The list and exchange\n" \
-+                "are logged to b-3, not b-4, with headers prefixed CP. It ends with\n" \
-+                "adone, a reply without commands or recursive editing; the\n" \
-+                "interrupted request then resumes. aco is checked after it.\n\n" \
++                "are logged to b-3, not b-4, with headers prefixed CP. Requests\n" \
++                "keep the context the checkpoint started with, so the prompt\n" \
++                "cache holds; anote edits b-4 at once but reaches the context when\n" \
++                "the checkpoint ends. It ends with adone, a reply without commands\n" \
++                "or recursive editing; the interrupted request then resumes. aco\n" \
++                "is checked after it.\n\n" \
 +                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
 +            spec("aco[0]  Automatically compact using the loaded session log",
 +                "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -16562,7 +16579,7 @@ index c836c94c..3e3ecb8f 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +252,7 @@ install() {
+@@ -74,7 +255,7 @@ install() {
  }
  
  print_usage() {
@@ -16571,7 +16588,7 @@ index c836c94c..3e3ecb8f 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +260,9 @@ print_usage() {
+@@ -82,6 +263,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -17272,10 +17289,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..8c8aaee3
+index 00000000..d42f94c0
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1357 @@
+@@ -0,0 +1,1360 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -18250,9 +18267,12 @@ index 00000000..8c8aaee3
 +	"acp and adone run. Unrated commands must be rated first:",
 +	"adone or a reply without commands is refused while any remain,",
 +	"up to twice in a row without new ratings. The list and exchange",
-+	"are logged to b-3, not b-4, with headers prefixed CP. It ends with",
-+	"adone, a reply without commands or recursive editing; the",
-+	"interrupted request then resumes. aco is checked after it.",
++	"are logged to b-3, not b-4, with headers prefixed CP. Requests",
++	"keep the context the checkpoint started with, so the prompt",
++	"cache holds; anote edits b-4 at once but reaches the context when",
++	"the checkpoint ends. It ends with adone, a reply without commands",
++	"or recursive editing; the interrupted request then resumes. aco",
++	"is checked after it.",
 +	"",
 +	"Example: checkpoint every 5000 tokens of growth",
 +	"acl 5000",
@@ -18602,36 +18622,36 @@ index 00000000..8c8aaee3
 +	{"uz", "Toggle zero-width character placeholders", 917, 920, 0, 0},
 +	{"ub", "Toggle multi-codepoint sequence placeholders", 921, 925, 0, 0},
 +	{"ph", "Redefine placeholders", 926, 942, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 951, 978, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 979, 988, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 989, 996, 1, 0},
-+	{"agr", "Control agent output protection", 997, 1003, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1004, 1008, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1009, 1013, 1, 0},
-+	{"ai", "Indent new lines", 1014, 1017, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1018, 1019, 1, 0},
-+	{"ish", "Interactive shell", 1020, 1035, 1, 0},
-+	{"grp", "Regex search group", 1036, 1044, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1045, 1048, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1049, 1050, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1050, 1051, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1051, 1052, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1052, 1053, 1, 0},
-+	{"led", "Enable all terminal output", 1053, 1054, 1, 0},
-+	{"vis", "Control startup flags", 1055, 1066, 1, 0},
-+	{"mpt", "Control vi prompts", 1067, 1077, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1078, 1080, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1080, 1082, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1082, 1083, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1083, 1084, 1, 0},
-+	{"td", "Current text direction context", 1084, 1090, 1, 0},
-+	{"pr", "Print register", 1091, 1107, 1, 0},
-+	{"fr", "Find register", 1108, 1120, 1, 0},
-+	{"rr", "Record register", 1121, 1134, 1, 0},
-+	{"lim", "Line length render limit", 1135, 1150, 1, 0},
-+	{"seq", "Control Undo/Redo", 1151, 1163, 1, 0},
-+	{"left", "Control horizontal scroll", 1164, 1169, 1, 0},
-+	{"err", "Control ex errors", 1170, 1182, 1, 0},
++	{"acl", "Rebuild agent context from the session log", 951, 981, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 982, 991, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 992, 999, 1, 0},
++	{"agr", "Control agent output protection", 1000, 1006, 1, 0},
++	{"ar", "Display returned agent reasoning", 1007, 1011, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1012, 1016, 1, 0},
++	{"ai", "Indent new lines", 1017, 1020, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1021, 1022, 1, 0},
++	{"ish", "Interactive shell", 1023, 1038, 1, 0},
++	{"grp", "Regex search group", 1039, 1047, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1048, 1051, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1052, 1053, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1053, 1054, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1054, 1055, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1055, 1056, 1, 0},
++	{"led", "Enable all terminal output", 1056, 1057, 1, 0},
++	{"vis", "Control startup flags", 1058, 1069, 1, 0},
++	{"mpt", "Control vi prompts", 1070, 1080, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1081, 1083, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1083, 1085, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1085, 1086, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1086, 1087, 1, 0},
++	{"td", "Current text direction context", 1087, 1093, 1, 0},
++	{"pr", "Print register", 1094, 1110, 1, 0},
++	{"fr", "Find register", 1111, 1123, 1, 0},
++	{"rr", "Record register", 1124, 1137, 1, 0},
++	{"lim", "Line length render limit", 1138, 1153, 1, 0},
++	{"seq", "Control Undo/Redo", 1154, 1166, 1, 0},
++	{"left", "Control horizontal scroll", 1167, 1172, 1, 0},
++	{"err", "Control ex errors", 1173, 1185, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
