@@ -118,9 +118,13 @@ static double agent_context_bytes(void)
 static double agent_tokens(void)
 {
 	double bytes = agent_context_bytes();
-	if (agent_usage.anchored && bytes >= agent_usage.bytes)
+	if (!agent_usage.anchored)
+		return (bytes + 2) / 3;
+	/* Growth is estimated; a smaller context (trimmed, or a checkpoint
+	 * list dropped) keeps the reported input'\''s tokens per byte. */
+	if (bytes >= agent_usage.bytes)
 		return agent_usage.input + (bytes - agent_usage.bytes + 2) / 3;
-	return (bytes + 2) / 3;
+	return agent_usage.input * bytes / agent_usage.bytes;
 }
 
 static void agent_record_usage(cJSON *root, double bytes)
@@ -593,16 +597,37 @@ static char *agent_checkpoint(double tokens)
 		"context is rebuilt from these session log entries (role number "
 		"~tokens):\n", tokens, agent_cp_begin, agent_cp_added);
 	sbuf_str(sb, ln)
+	int top[5], ntop = 0;
 	for (int k = 0; k < cnt; k++) {
 		snprintf(ln, sizeof(ln), "%s %lu ~%.0f\n", agent_span_role(spans + k),
 			spans[k].n, agent_span_tokens(spans + k));
 		sbuf_str(sb, ln)
+		/* Insert into the five largest, kept in descending order. */
+		int j = ntop < 5 ? ntop++ : 5;
+		for (; j > 0 && spans[top[j-1]].bytes < spans[k].bytes; j--)
+			if (j < 5)
+				top[j] = top[j-1];
+		if (j < 5)
+			top[j] = k;
+	}
+	if (cnt > ntop) {
+		sbuf_str(sb, "Largest:")
+		for (int j = 0; j < ntop; j++) {
+			snprintf(ln, sizeof(ln), "%s %s %lu ~%.0f", j ? "," : "",
+				agent_span_role(spans + top[j]), spans[top[j]].n,
+				agent_span_tokens(spans + top[j]));
+			sbuf_str(sb, ln)
+		}
+		sbuf_chr(sb, '\''\n'\'')
 	}
 	sbuf_str(sb, "Until adone, only these ex commands run:\n"
 		"N[,M]anote [text]  text replaces entries N through M under entry N'\''s "
 		"role; no text removes them\n"
 		"adone  end the checkpoint and resume the task\n"
-		"This exchange is not kept in the session log.")
+		"Files and buffers cannot be read now; decide from your context. "
+		"Results you have already acted on are usually safe to remove or "
+		"condense to a short note. This exchange is not kept in the session "
+		"log.")
 	free(spans);
 	sbufn_ret(sb, sb->s)
 }
@@ -647,6 +672,8 @@ static void agent_cp_build(void)
 	char *s = agent_checkpoint(agent_tokens());
 	agent_cp_base = cJSON_GetArraySize(agent_messages);
 	cJSON_AddItemToArray(agent_messages, agent_msg("user", s));
+	/* Show and keep in b-3 each list as sent; it changes after anote. */
+	agent_log("USER", s);
 	free(s);
 	cJSON_ArrayForEach(m, agent_cp)
 		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
@@ -1721,7 +1748,7 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	}
 	if (agent_messages) {
 		snprintf(msg, sizeof(msg), "next input ~%.0f tokens (%s)", agent_tokens(),
-			agent_usage.anchored ? "reported input + estimated growth" :
+			agent_usage.anchored ? "reported input + estimated change" :
 			"estimated: JSON bytes / 3, including tools and framing");
 		ex_print(msg, msg_ft)
 		cJSON_ArrayForEach(m, agent_messages) {
@@ -5982,10 +6009,10 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "by that many tokens from the last checkpoint, or from its smallest\n" \
                 "size since, a checkpoint runs before the next request. Each of its\n" \
                 "requests lists the role, number and estimated tokens of every\n" \
-                "entry, and only anote and adone run. Its exchange is logged to\n" \
-                "b-3, not b-4. It ends with adone, a reply without commands or\n" \
-                "recursive editing; the interrupted request then resumes. aco is\n" \
-                "checked after it.\n\n" \
+                "entry and the largest few; only anote and adone run. The lists and\n" \
+                "exchange are logged to b-3, not b-4. It ends with adone, a reply\n" \
+                "without commands or recursive editing; the interrupted request\n" \
+                "then resumes. aco is checked after it.\n\n" \
                 "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
             spec("aco[0]  Automatically compact using the loaded session log",
                 "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -8546,10 +8573,10 @@ static char *exspec_lines[] = {
 	"by that many tokens from the last checkpoint, or from its smallest",
 	"size since, a checkpoint runs before the next request. Each of its",
 	"requests lists the role, number and estimated tokens of every",
-	"entry, and only anote and adone run. Its exchange is logged to",
-	"b-3, not b-4. It ends with adone, a reply without commands or",
-	"recursive editing; the interrupted request then resumes. aco is",
-	"checked after it.",
+	"entry and the largest few; only anote and adone run. The lists and",
+	"exchange are logged to b-3, not b-4. It ends with adone, a reply",
+	"without commands or recursive editing; the interrupted request",
+	"then resumes. aco is checked after it.",
 	"",
 	"Example: checkpoint every 5000 tokens of growth",
 	"acl 5000",
@@ -9548,10 +9575,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..f1e17a29
+index 00000000..30385c55
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2215 @@
+@@ -0,0 +1,2242 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9640,9 +9667,13 @@ index 00000000..f1e17a29
 +static double agent_tokens(void)
 +{
 +	double bytes = agent_context_bytes();
-+	if (agent_usage.anchored && bytes >= agent_usage.bytes)
++	if (!agent_usage.anchored)
++		return (bytes + 2) / 3;
++	/* Growth is estimated; a smaller context (trimmed, or a checkpoint
++	 * list dropped) keeps the reported input's tokens per byte. */
++	if (bytes >= agent_usage.bytes)
 +		return agent_usage.input + (bytes - agent_usage.bytes + 2) / 3;
-+	return (bytes + 2) / 3;
++	return agent_usage.input * bytes / agent_usage.bytes;
 +}
 +
 +static void agent_record_usage(cJSON *root, double bytes)
@@ -10115,16 +10146,37 @@ index 00000000..f1e17a29
 +		"context is rebuilt from these session log entries (role number "
 +		"~tokens):\n", tokens, agent_cp_begin, agent_cp_added);
 +	sbuf_str(sb, ln)
++	int top[5], ntop = 0;
 +	for (int k = 0; k < cnt; k++) {
 +		snprintf(ln, sizeof(ln), "%s %lu ~%.0f\n", agent_span_role(spans + k),
 +			spans[k].n, agent_span_tokens(spans + k));
 +		sbuf_str(sb, ln)
++		/* Insert into the five largest, kept in descending order. */
++		int j = ntop < 5 ? ntop++ : 5;
++		for (; j > 0 && spans[top[j-1]].bytes < spans[k].bytes; j--)
++			if (j < 5)
++				top[j] = top[j-1];
++		if (j < 5)
++			top[j] = k;
++	}
++	if (cnt > ntop) {
++		sbuf_str(sb, "Largest:")
++		for (int j = 0; j < ntop; j++) {
++			snprintf(ln, sizeof(ln), "%s %s %lu ~%.0f", j ? "," : "",
++				agent_span_role(spans + top[j]), spans[top[j]].n,
++				agent_span_tokens(spans + top[j]));
++			sbuf_str(sb, ln)
++		}
++		sbuf_chr(sb, '\n')
 +	}
 +	sbuf_str(sb, "Until adone, only these ex commands run:\n"
 +		"N[,M]anote [text]  text replaces entries N through M under entry N's "
 +		"role; no text removes them\n"
 +		"adone  end the checkpoint and resume the task\n"
-+		"This exchange is not kept in the session log.")
++		"Files and buffers cannot be read now; decide from your context. "
++		"Results you have already acted on are usually safe to remove or "
++		"condense to a short note. This exchange is not kept in the session "
++		"log.")
 +	free(spans);
 +	sbufn_ret(sb, sb->s)
 +}
@@ -10169,6 +10221,8 @@ index 00000000..f1e17a29
 +	char *s = agent_checkpoint(agent_tokens());
 +	agent_cp_base = cJSON_GetArraySize(agent_messages);
 +	cJSON_AddItemToArray(agent_messages, agent_msg("user", s));
++	/* Show and keep in b-3 each list as sent; it changes after anote. */
++	agent_log("USER", s);
 +	free(s);
 +	cJSON_ArrayForEach(m, agent_cp)
 +		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
@@ -11243,7 +11297,7 @@ index 00000000..f1e17a29
 +	}
 +	if (agent_messages) {
 +		snprintf(msg, sizeof(msg), "next input ~%.0f tokens (%s)", agent_tokens(),
-+			agent_usage.anchored ? "reported input + estimated growth" :
++			agent_usage.anchored ? "reported input + estimated change" :
 +			"estimated: JSON bytes / 3, including tools and framing");
 +		ex_print(msg, msg_ft)
 +		cJSON_ArrayForEach(m, agent_messages) {
@@ -15313,7 +15367,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..55a34767 100755
+index c836c94c..ae2dd84b 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,148 @@ build() {
@@ -15422,10 +15476,10 @@ index c836c94c..55a34767 100755
 +                "by that many tokens from the last checkpoint, or from its smallest\n" \
 +                "size since, a checkpoint runs before the next request. Each of its\n" \
 +                "requests lists the role, number and estimated tokens of every\n" \
-+                "entry, and only anote and adone run. Its exchange is logged to\n" \
-+                "b-3, not b-4. It ends with adone, a reply without commands or\n" \
-+                "recursive editing; the interrupted request then resumes. aco is\n" \
-+                "checked after it.\n\n" \
++                "entry and the largest few; only anote and adone run. The lists and\n" \
++                "exchange are logged to b-3, not b-4. It ends with adone, a reply\n" \
++                "without commands or recursive editing; the interrupted request\n" \
++                "then resumes. aco is checked after it.\n\n" \
 +                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
 +            spec("aco[0]  Automatically compact using the loaded session log",
 +                "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -16166,7 +16220,7 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..97da1970
+index 00000000..f43b4df1
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1307 @@
@@ -17096,10 +17150,10 @@ index 00000000..97da1970
 +	"by that many tokens from the last checkpoint, or from its smallest",
 +	"size since, a checkpoint runs before the next request. Each of its",
 +	"requests lists the role, number and estimated tokens of every",
-+	"entry, and only anote and adone run. Its exchange is logged to",
-+	"b-3, not b-4. It ends with adone, a reply without commands or",
-+	"recursive editing; the interrupted request then resumes. aco is",
-+	"checked after it.",
++	"entry and the largest few; only anote and adone run. The lists and",
++	"exchange are logged to b-3, not b-4. It ends with adone, a reply",
++	"without commands or recursive editing; the interrupted request",
++	"then resumes. aco is checked after it.",
 +	"",
 +	"Example: checkpoint every 5000 tokens of growth",
 +	"acl 5000",
