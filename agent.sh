@@ -1377,7 +1377,7 @@ static cJSON *agent_config(void)
 			strpbrk(api_key, "\r\n") || !endpoint ||
 			(strncmp(endpoint, "http://", 7) &&
 			strncmp(endpoint, "https://", 8)) ||
-			request_timeout <= 0 || max_tool_rounds <= 0) {
+			request_timeout <= 0 || max_tool_rounds < 0) {
 		cJSON_Delete(req);
 		return NULL;
 	}
@@ -1648,6 +1648,12 @@ static void agent_run_loop(const char *input)
 	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
 	agent_log("USER", input);
 	for (int round = 0; ; ) {
+		/* Stop before requesting a reply whose calls could not run. */
+		if (max_tool_rounds && round == max_tool_rounds) {
+			agent_log("NOTICE", "maximum tool rounds reached; "
+				"submit to continue");
+			return;
+		}
 		/* Only complete tool batches reach this boundary. Manual/automatic
 		 * pack agents must never recursively trigger autocompaction. */
 		/* The threshold triggers a pack, not a hard cap on its result. */
@@ -1841,10 +1847,8 @@ static void agent_run_loop(const char *input)
 				command->valuestring : "invalid tool call");
 			unsigned long exn = agent_entries[agent_logbuf == 3];
 			*agent_deferred = '\''\0'\'';
-			if (agent_cancel || agent_pause ||
-					round == max_tool_rounds)
-				err = "skipped: execution cancelled, "
-					"suspended, or round limit reached";
+			if (agent_cancel || agent_pause)
+				err = "skipped: execution cancelled or suspended";
 			else if (!cJSON_IsString(name) ||
 					strcmp(name->valuestring, "ex"))
 				err = "unknown tool (expected ex)";
@@ -1985,12 +1989,7 @@ static void agent_run_loop(const char *input)
 		}
 		if (!has_calls)
 			return;
-		if (round++ == max_tool_rounds) {
-			agent_log("NOTICE",
-				"maximum tool rounds reached; "
-				"submit to continue");
-			return;
-		}
+		round++;
 	}
 }
 
@@ -2142,8 +2141,12 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	snprintf(msg, sizeof(msg), "capture    %ld bytes in current tool output",
 		agent_capture ? (long)agent_capture->s_n : 0);
 	ex_print(msg, msg_ft)
-	snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, guardrail %d",
-		max_tool_rounds, request_timeout, xagr);
+	if (max_tool_rounds)
+		snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, "
+			"guardrail %d", max_tool_rounds, request_timeout, xagr);
+	else
+		snprintf(msg, sizeof(msg), "limits     unlimited rounds, %d sec timeout, "
+			"guardrail %d", request_timeout, xagr);
 	ex_print(msg, msg_ft)
 	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
 	ex_print(msg, msg_ft)
@@ -6636,7 +6639,7 @@ static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
 static int request_timeout = 500;
 #endif
 
-static int max_tool_rounds = 300;
+static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 int xar;	/* display returned agent reasoning (:ar) */
 int xaco;	/* autocompact input-token threshold; 0 disables */
@@ -10136,10 +10139,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..8765e42a
+index 00000000..4946d55d
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2698 @@
+@@ -0,0 +1,2701 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11487,7 +11490,7 @@ index 00000000..8765e42a
 +			strpbrk(api_key, "\r\n") || !endpoint ||
 +			(strncmp(endpoint, "http://", 7) &&
 +			strncmp(endpoint, "https://", 8)) ||
-+			request_timeout <= 0 || max_tool_rounds <= 0) {
++			request_timeout <= 0 || max_tool_rounds < 0) {
 +		cJSON_Delete(req);
 +		return NULL;
 +	}
@@ -11758,6 +11761,12 @@ index 00000000..8765e42a
 +	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
 +	agent_log("USER", input);
 +	for (int round = 0; ; ) {
++		/* Stop before requesting a reply whose calls could not run. */
++		if (max_tool_rounds && round == max_tool_rounds) {
++			agent_log("NOTICE", "maximum tool rounds reached; "
++				"submit to continue");
++			return;
++		}
 +		/* Only complete tool batches reach this boundary. Manual/automatic
 +		 * pack agents must never recursively trigger autocompaction. */
 +		/* The threshold triggers a pack, not a hard cap on its result. */
@@ -11951,10 +11960,8 @@ index 00000000..8765e42a
 +				command->valuestring : "invalid tool call");
 +			unsigned long exn = agent_entries[agent_logbuf == 3];
 +			*agent_deferred = '\0';
-+			if (agent_cancel || agent_pause ||
-+					round == max_tool_rounds)
-+				err = "skipped: execution cancelled, "
-+					"suspended, or round limit reached";
++			if (agent_cancel || agent_pause)
++				err = "skipped: execution cancelled or suspended";
 +			else if (!cJSON_IsString(name) ||
 +					strcmp(name->valuestring, "ex"))
 +				err = "unknown tool (expected ex)";
@@ -12095,12 +12102,7 @@ index 00000000..8765e42a
 +		}
 +		if (!has_calls)
 +			return;
-+		if (round++ == max_tool_rounds) {
-+			agent_log("NOTICE",
-+				"maximum tool rounds reached; "
-+				"submit to continue");
-+			return;
-+		}
++		round++;
 +	}
 +}
 +
@@ -12252,8 +12254,12 @@ index 00000000..8765e42a
 +	snprintf(msg, sizeof(msg), "capture    %ld bytes in current tool output",
 +		agent_capture ? (long)agent_capture->s_n : 0);
 +	ex_print(msg, msg_ft)
-+	snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, guardrail %d",
-+		max_tool_rounds, request_timeout, xagr);
++	if (max_tool_rounds)
++		snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, "
++			"guardrail %d", max_tool_rounds, request_timeout, xagr);
++	else
++		snprintf(msg, sizeof(msg), "limits     unlimited rounds, %d sec timeout, "
++			"guardrail %d", request_timeout, xagr);
 +	ex_print(msg, msg_ft)
 +	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
 +	ex_print(msg, msg_ft)
@@ -16599,7 +16605,7 @@ index c836c94c..dfa955e2 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..d8db57b2 100644
+index 2888d7c6..b1b7f1ad 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,53 @@
@@ -16622,7 +16628,7 @@ index 2888d7c6..d8db57b2 100644
 +static int request_timeout = 500;
 +#endif
 +
-+static int max_tool_rounds = 300;
++static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 +int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 +int xar;	/* display returned agent reasoning (:ar) */
 +int xaco;	/* autocompact input-token threshold; 0 disables */
