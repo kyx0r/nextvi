@@ -94,6 +94,7 @@ static size_t agent_reused, agent_sent;
 static const char *agent_rkey = "reasoning_content";
 static void agent_run(const char *input);
 static int agent_autocompact(const char *input);
+static void agent_reparse(void);
 
 static const char agent_tools[] =
 	"[{\"type\":\"function\",\"function\":{"
@@ -148,14 +149,6 @@ static char nextvi_skill[] =
 "Nextvi is not a standard vi/ex.\n"
 "Use exspec command for a command list.\n"
 "Use exspec with an argument for a topic or command specification.\n";
-
-static char acl_skill[] =
-"Your context is rebuilt from the session log b-4 before each request; edits\n"
-"there change what you see next. Entries start with a ROLE N line (USER,\n"
-"ASSISTANT, REASONING, EX, RESULT) and N must increase. Text before the first\n"
-"entry is a user message. Keep context small: delete stale RESULT entries or\n"
-"replace finished work with a short note. Keep small USER entries intact.\n"
-"Return to your buffer after editing.\n";
 
 static char caveman_skill[] =
 "Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
@@ -340,6 +333,7 @@ static int agent_mkdir(char *path)
 static void agent_history(int edited)
 {
 	agent_usage.anchored = 0;
+	agent_acl_mark = 0;
 	char *s = agent_text(tempbufs[4].lb);
 	cJSON_Delete(agent_messages);
 	agent_messages = cJSON_CreateArray();
@@ -431,14 +425,15 @@ static void agent_log(const char *role, const char *text)
 	free(sb->s);
 }
 
+static char *agent_roles[] = {"USER", "ASSISTANT", "REASONING", "EX", "RESULT"};
+
 /* Header "ROLE N" with N above the previous header; returns role + 1. */
 static int agent_header(char *ln, unsigned long last, unsigned long *n)
 {
-	static char *roles[] = {"USER", "ASSISTANT", "REASONING", "EX", "RESULT"};
 	char *e;
-	for (int i = 0; i < LEN(roles); i++) {
-		int k = strlen(roles[i]);
-		if (strncmp(ln, roles[i], k) || ln[k] != '\'' '\'' ||
+	for (int i = 0; i < LEN(agent_roles); i++) {
+		int k = strlen(agent_roles[i]);
+		if (strncmp(ln, agent_roles[i], k) || ln[k] != '\'' '\'' ||
 				!isdigit((unsigned char)ln[k+1]))
 			continue;
 		errno = 0;
@@ -535,39 +530,184 @@ static int agent_live(void)
 	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
 }
 
+/* An entry of b-4; role 0 and number 0 is the text before the first header. */
+struct agent_span {
+	int role, beg, end;	/* agent_header role; header line, line after */
+	unsigned long n;
+	size_t bytes;		/* body bytes, excluding the header */
+};
+
+/* Split the session log b-4 into entries; the caller frees *spans. */
+static int agent_spans(struct agent_span **spans)
+{
+	struct lbuf *lb = tempbufs[3].lb;
+	unsigned long n, last = 0;
+	int role, cnt = 0, cap = 0;
+	*spans = NULL;
+	for (int i = 0; i < lbuf_len(lb); i++) {
+		if (!(role = agent_header(lb->ln[i], last, &n)) && i) {
+			(*spans)[cnt-1].bytes += strlen(lb->ln[i]);
+			continue;
+		}
+		if (cnt == cap) {
+			cap = cap * 2 + 16;
+			*spans = erealloc(*spans, cap * sizeof(**spans));
+		}
+		if (cnt)
+			(*spans)[cnt-1].end = i;
+		(*spans)[cnt++] = (struct agent_span){role, i, 0, role ? n : 0,
+			role ? 0 : strlen(lb->ln[i])};
+		if (role)
+			last = n;
+	}
+	if (cnt)
+		(*spans)[cnt-1].end = lbuf_len(lb);
+	return cnt;
+}
+
+static double agent_span_tokens(struct agent_span *s)
+{
+	return (s->bytes + 2) / 3;
+}
+
+static char *agent_span_role(struct agent_span *s)
+{
+	return s->role ? agent_roles[s->role - 1] : "TEXT";
+}
+
+/* acl > 1 checkpoint phase: the exchange after the entry list, the list'\''s
+ * index in agent_messages (-1 before it is built), and the saved log buffer. */
+static cJSON *agent_cp;
+static int agent_cp_base = -1, agent_cp_logbuf, agent_cp_done;
+static double agent_cp_begin, agent_cp_added;
+
+/* The model already has the entries in context; list only their sizes. */
+static char *agent_checkpoint(double tokens)
+{
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans);
+	char ln[256];
+	sbuf_smake(sb, 256)
+	snprintf(ln, sizeof(ln), "Context checkpoint: about %.0f tokens now, %.0f at "
+		"the start of this checkpoint, %.0f added since the last one. Your "
+		"context is rebuilt from these session log entries (role number "
+		"~tokens):\n", tokens, agent_cp_begin, agent_cp_added);
+	sbuf_str(sb, ln)
+	for (int k = 0; k < cnt; k++) {
+		snprintf(ln, sizeof(ln), "%s %lu ~%.0f\n", agent_span_role(spans + k),
+			spans[k].n, agent_span_tokens(spans + k));
+		sbuf_str(sb, ln)
+	}
+	sbuf_str(sb, "Until adone, only these ex commands run:\n"
+		"N[,M]anote [text]  text replaces entries N through M under entry N'\''s "
+		"role; no text removes them\n"
+		"adone  end the checkpoint and resume the task\n"
+		"This exchange is not kept in the session log.")
+	free(spans);
+	sbufn_ret(sb, sb->s)
+}
+
+static void agent_checkpoint_begin(double tokens)
+{
+	char note[64];
+	agent_checkpointing = 1;
+	agent_cp_done = 0;
+	agent_cp = cJSON_CreateArray();
+	agent_cp_base = -1;
+	agent_cp_begin = tokens;
+	agent_cp_added = tokens - agent_acl_mark;
+	agent_cp_logbuf = agent_logbuf;
+	agent_logbuf = 2;
+	agent_entries[0] = 0;
+	/* The list explains both commands; do not defer them for specs. */
+	exspec_mark("anote");
+	exspec_mark("adone");
+	snprintf(note, sizeof(note), "[acl checkpoint ~%.0f tokens]\n", tokens);
+	agent_output(note);
+}
+
+/* Detach the exchange that followed the entry list in the last request. */
+static void agent_cp_collect(void)
+{
+	cJSON *m;
+	if (agent_cp_base < 0)
+		return;
+	cJSON_Delete(agent_cp);
+	agent_cp = cJSON_CreateArray();
+	while ((m = cJSON_DetachItemFromArray(agent_messages, agent_cp_base + 1)))
+		cJSON_AddItemToArray(agent_cp, m);
+	cJSON_DeleteItemFromArray(agent_messages, agent_cp_base);
+	agent_cp_base = -1;
+}
+
+/* Append a current entry list and the exchange to the rebuilt context. */
+static void agent_cp_build(void)
+{
+	cJSON *m;
+	char *s = agent_checkpoint(agent_tokens());
+	agent_cp_base = cJSON_GetArraySize(agent_messages);
+	cJSON_AddItemToArray(agent_messages, agent_msg("user", s));
+	free(s);
+	cJSON_ArrayForEach(m, agent_cp)
+		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
+}
+
+static void agent_checkpoint_end(void)
+{
+	char note[96];
+	if (!agent_checkpointing)
+		return;
+	agent_cp_collect();
+	cJSON_Delete(agent_cp);
+	agent_cp = NULL;
+	agent_logbuf = agent_cp_logbuf;
+	agent_checkpointing = agent_cp_done = 0;
+	if (agent_live())
+		agent_reparse();
+	agent_acl_mark = agent_tokens();
+	snprintf(note, sizeof(note), "[acl checkpoint done ~%.0f -> ~%.0f tokens]\n",
+		agent_cp_begin, agent_acl_mark);
+	agent_output(note);
+}
+
+static void *ec_adone(char *loc, char *cmd, char *arg)
+{
+	if (*loc || *arg)
+		return "adone takes no range or argument";
+	if (!agent_checkpointing)
+		return "no checkpoint in progress";
+	agent_cp_done = 1;
+	return NULL;
+}
+
 /* Rebuild the conversation after the system message from b-4. */
 static void agent_reparse(void)
 {
 	struct lbuf *lb = tempbufs[3].lb;
 	struct agent_parse p = {NULL, NULL, NULL, NULL};
-	unsigned long n = 0, last = 0;
-	int role = 0, r = 0;
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans);
 	cJSON *sys = cJSON_DetachItemFromArray(agent_messages, 0);
 	cJSON_Delete(agent_messages);
 	agent_messages = p.msgs = cJSON_CreateArray();
 	cJSON_AddItemToArray(p.msgs, sys);
 	p.tools = cJSON_CreateArray();
 	sbuf_smake(text, 256)
-	for (int i = 0; i <= lbuf_len(lb); i++) {
-		char *ln = i < lbuf_len(lb) ? lb->ln[i] : NULL;
-		if (ln && !(r = agent_header(ln, last, &n))) {
-			sbuf_str(text, ln)
-			continue;
-		}
+	for (int k = 0; k < cnt; k++) {
+		sbuf_cut(text, 0)
+		for (int i = spans[k].beg + !!spans[k].role; i < spans[k].end; i++)
+			sbuf_str(text, lb->ln[i])
 		while (text->s_n && text->s[text->s_n-1] == '\''\n'\'')
 			text->s_n--;
 		sbuf_nul(text)
-		agent_entry(&p, role, last, text->s);
-		sbuf_cut(text, 0)
-		if (ln) {
-			role = r;
-			last = n;
-		}
+		agent_entry(&p, spans[k].role, spans[k].n, text->s);
 	}
 	agent_flush(&p);
 	cJSON_Delete(p.tools);
 	free(text->s);
-	agent_entries[1] = MAX(agent_entries[1], last);
+	if (cnt)
+		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
+	free(spans);
 }
 
 static void agent_key(int c)
@@ -1165,12 +1305,12 @@ static int agent_response_error(cJSON *root, char *error, size_t size)
 	return 0;
 }
 
-static void agent_run(const char *input)
+static void agent_run_loop(const char *input)
 {
 	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
-	int st, retries = 0, compacted = 0, nudged = 0, unpacked = 0;
+	int st, retries = 0, compacted = 0, unpacked = 0;
 	if (agent_packing)
 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
@@ -1181,24 +1321,22 @@ static void agent_run(const char *input)
 		/* Only complete tool batches reach this boundary. Manual/automatic
 		 * pack agents must never recursively trigger autocompaction. */
 		/* The threshold triggers a pack, not a hard cap on its result. */
-		if (agent_live())
+		agent_cp_collect();
+		if (agent_live() || agent_checkpointing)
 			agent_reparse();
+		/* acl > 1 checkpoints growth from the last checkpoint or the
+		 * smallest context since; trimming gets a chance before aco. */
+		if (agent_live() && xacl > 1) {
+			double tokens = agent_tokens();
+			if (!agent_acl_mark || tokens < agent_acl_mark)
+				agent_acl_mark = tokens;
+			else if (tokens - agent_acl_mark >= xacl)
+				agent_checkpoint_begin(tokens);
+		}
 		if (compacted && agent_tokens() < xaco)
 			compacted = 0;
-		if (nudged && agent_tokens() < xaco)
-			nudged = 0;
-		/* acl asks the agent to compact once; the pack agent is the fallback. */
-		if (agent_live() && xaco && !compacted && !nudged &&
-				agent_tokens() >= xaco) {
-			char msg[192];
-			snprintf(msg, sizeof(msg), "Context is about %.0f tokens, over the "
-				"%d token aco threshold. Compact b-4 in your next response, "
-				"then continue.", agent_tokens(), xaco);
-			agent_log("USER", msg);
-			agent_reparse();
-			nudged = 1;
-		} else if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
-				agent_tokens() >= xaco) {
+		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
+				!agent_checkpointing && agent_tokens() >= xaco) {
 			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 				return;
 			/* The pack conversation was discarded. Start a fresh tool-round
@@ -1210,6 +1348,8 @@ static void agent_run(const char *input)
 			agent_rounds = 0;
 			serial = agent_serial;
 		}
+		if (agent_checkpointing)
+			agent_cp_build();
 		req = agent_config();
 		if (!req) {
 			agent_log("RESULT", "invalid agent configuration");
@@ -1239,6 +1379,7 @@ static void agent_run(const char *input)
 		if (agent_pause) {
 			free(body);
 			free(stderr_text);
+			agent_checkpoint_end();
 			agent_editor();
 			agent_redraw(NULL);
 			agent_pause = 0;
@@ -1442,6 +1583,7 @@ static void agent_run(const char *input)
 		if (agent_cancel)
 			return;
 		if (agent_pause) {
+			agent_checkpoint_end();
 			agent_editor();
 			agent_redraw(NULL);
 			agent_pause = 0;
@@ -1466,6 +1608,12 @@ static void agent_run(const char *input)
 				continue;
 			}
 		}
+		/* A reply without commands also ends the checkpoint; the
+		 * interrupted request then resumes. */
+		if (agent_checkpointing && (agent_cp_done || !has_calls)) {
+			agent_checkpoint_end();
+			has_calls = 1;
+		}
 		if (!has_calls)
 			return;
 		if (round++ == max_tool_rounds) {
@@ -1475,6 +1623,13 @@ static void agent_run(const char *input)
 			return;
 		}
 	}
+}
+
+/* Every exit from a run, including errors, ends a checkpoint phase. */
+static void agent_run(const char *input)
+{
+	agent_run_loop(input);
+	agent_checkpoint_end();
 }
 
 /* Add or remove a skill in b-5; want < 0 toggles. */
@@ -1516,13 +1671,6 @@ static void *ec_skill(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-static void *ec_acl(char *loc, char *cmd, char *arg)
-{
-	xacl = *arg ? eo_val(arg) : !xacl;
-	agent_skill(acl_skill, !!xacl);
-	return NULL;
-}
-
 static void *ec_ast(char *loc, char *cmd, char *arg)
 {
 	char msg[256];
@@ -1534,7 +1682,15 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 	ex_print(msg, msg_ft)
-	snprintf(msg, sizeof(msg), "acl        %s", xacl ? "on, context rebuilt from b-4" : "off");
+	if (xacl > 1) {
+		int k = snprintf(msg, sizeof(msg), "acl        %d, context rebuilt "
+			"from b-4, checkpoint every %d tokens", xacl, xacl);
+		if (agent_acl_mark)
+			snprintf(msg + k, sizeof(msg) - k, ", next at ~%.0f",
+				agent_acl_mark + xacl);
+	} else
+		snprintf(msg, sizeof(msg), "acl        %d%s", xacl,
+			xacl ? ", context rebuilt from b-4" : " (off)");
 	ex_print(msg, msg_ft)
 	if (!agent_ready) {
 		ex_print(agent_init_error ? agent_init_error :
@@ -1664,6 +1820,89 @@ static void *ec_aout(char *loc, char *cmd, char *arg)
 		free(s);
 	}
 	return NULL;
+}
+
+static int agent_entryaddr(char **s, unsigned long *n, unsigned long last)
+{
+	char *e;
+	if (**s == '\''$'\'') {
+		*n = last;
+		(*s)++;
+		return 0;
+	}
+	if (!isdigit((unsigned char)**s))
+		return 1;
+	errno = 0;
+	*n = strtoul(*s, &e, 10);
+	*s = e;
+	return errno == ERANGE;
+}
+
+/* Replace log entries N through M with text under entry N'\''s role, or remove
+ * them; entry 0 is the text before the first header. */
+static void *ec_anote(char *loc, char *cmd, char *arg)
+{
+	struct lbuf *lb = tempbufs[3].lb;
+	struct agent_span *spans;
+	unsigned long beg, end;
+	int cnt = agent_spans(&spans), first = -1, last = -1;
+	double before = 0, after;
+	char msg[160];
+	void *ret = NULL;
+	if (!cnt) {
+		ret = "session log has no entries";
+		goto done;
+	}
+	if (agent_entryaddr(&loc, &beg, spans[cnt-1].n)) {
+		ret = "anote requires an entry number";
+		goto done;
+	}
+	end = beg;
+	if ((*loc == '\'','\'' && (loc++, agent_entryaddr(&loc, &end, spans[cnt-1].n))) ||
+			*loc || end < beg) {
+		ret = "invalid entry range";
+		goto done;
+	}
+	for (int k = 0; k < cnt; k++) {
+		if (spans[k].n < beg || spans[k].n > end)
+			continue;
+		if (first < 0)
+			first = k;
+		last = k;
+		before += agent_span_tokens(spans + k);
+	}
+	if (first < 0) {
+		ret = "no entries in range";
+		goto done;
+	}
+	sbuf_smake(sb, 256)
+	if (*arg) {
+		if (spans[first].role) {
+			snprintf(msg, sizeof(msg), "%s %lu\n",
+				agent_span_role(spans + first), spans[first].n);
+			sbuf_str(sb, msg)
+		}
+		sbuf_str(sb, arg)
+		if (sb->s[sb->s_n-1] != '\''\n'\'')
+			sbuf_chr(sb, '\''\n'\'')
+		sbuf_chr(sb, '\''\n'\'')
+	}
+	sbuf_nul(sb)
+	after = *arg ? (strlen(arg) + 2) / 3 : 0;
+	lbuf_edit(lb, *arg ? sb->s : NULL, spans[first].beg, spans[last].end, 0, 0);
+	free(sb->s);
+	if (ex_buf == tempbufs + 3)
+		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
+	else
+		tempbufs[3].row = MAX(0, MIN(tempbufs[3].row, lbuf_len(lb) - 1));
+	snprintf(msg, sizeof(msg), "%s %d %s %lu-%lu, ~%.0f -> ~%.0f tokens",
+		*arg ? "noted" : "removed", last - first + 1,
+		last > first ? "entries" : "entry",
+		spans[first].n, spans[last].n, before, after);
+	ex_print(msg, msg_ft)
+done:
+	free(spans);
+	return ret;
 }
 
 static void *agent_session(char *loc, char *cmd, char *arg, int compact)
@@ -2019,10 +2258,15 @@ static char *agent_show;
 static size_t agent_show_n;
 static int agent_shown;
 static sbuf *agent_capture;
+/* acl > 1: estimated context tokens at the last checkpoint; 0 unset */
+static double agent_acl_mark;
+/* acl > 1: the agent may only trim the session log until adone */
+static int agent_checkpointing;
 static void *ec_agent(char *loc, char *cmd, char *arg);
 static void exspec_reset(void);
 static void *ec_skill(char *loc, char *cmd, char *arg);
-static void *ec_acl(char *loc, char *cmd, char *arg);
+static void *ec_anote(char *loc, char *cmd, char *arg);
+static void *ec_adone(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
 static void *ec_aout(char *loc, char *cmd, char *arg);
 static void *ec_compact(char *loc, char *cmd, char *arg);
@@ -5705,24 +5949,44 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             print "             Example: bytes 50 through the end"
             print "             :50,$aout"
             print ""
+            spec("[entries]anote[text]", "Replace or remove agent session log entries",
+                "entries is N or N,M, matching the numbers in ROLE N headers of b-4;\n" \
+                "$ is the last entry and 0 the text before the first header. Text\n" \
+                "replaces N through M as one entry with the role of N; no text\n" \
+                "removes them. Prints the estimated tokens before and after. Changes\n" \
+                "the agent context when acl is set.\n\n" \
+                "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
+            spec("adone", "End an agent checkpoint",
+                "Ends the acl checkpoint phase; the interrupted request resumes\n" \
+                "from the trimmed session log. Takes no range or argument. Errors\n" \
+                "outside a checkpoint.")
             spec("ast", "Print agent status and token usage",
-                "Prints sizes, per-role usage, activity, limits, acl and autocompact\n" \
-                "mode, and the message bytes shared with the previous request.\n" \
-                "Usage counts come from the last accepted response. Next input is\n" \
-                "estimated from reported input plus new JSON bytes / 3, or all JSON\n" \
-                "bytes / 3 without a usable count. Includes tool definitions and\n" \
-                "framing; not a tokenizer or a guarantee the request fits.")
+                "Prints sizes, per-role usage, activity, limits, acl checkpoint and\n" \
+                "autocompact mode, and the message bytes shared with the previous\n" \
+                "request. Usage counts come from the last accepted response. Next\n" \
+                "input is estimated from reported input plus new JSON bytes / 3, or\n" \
+                "all JSON bytes / 3 without a usable count. Includes tool definitions\n" \
+                "and framing; not a tokenizer or a guarantee the request fits.")
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
             spec("acl[0]  Rebuild agent context from the session log",
-                "No argument toggles it. 0 disables.",
+                "No argument toggles between 0 and 1. 0 disables.",
                 "Nonzero rebuilds the agent context from the session log (b-4)\n" \
                 "before every request, so edits to the log by the agent or the\n" \
                 "user apply to the next request. Without it, the context is\n" \
                 "built from the running history and log edits have no effect.\n" \
-                "Reasoning kept outside the log is dropped. With aco, a\n" \
-                "compact (apack) may run before the rebuild.")
+                "Reasoning not in the log (ar off) is dropped. With aco, a\n" \
+                "compact (apack) may run before the rebuild.\n\n" \
+                "Values above 1 add checkpoints: once the estimated context grows\n" \
+                "by that many tokens from the last checkpoint, or from its smallest\n" \
+                "size since, a checkpoint runs before the next request. Each of its\n" \
+                "requests lists the role, number and estimated tokens of every\n" \
+                "entry, and only anote and adone run. Its exchange is logged to\n" \
+                "b-3, not b-4. It ends with adone, a reply without commands or\n" \
+                "recursive editing; the interrupted request then resumes. aco is\n" \
+                "checked after it.\n\n" \
+                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
             spec("aco[0]  Automatically compact using the loaded session log",
                 "Positive argument sets an estimated input-token threshold; 0 or\n" \
                 "negative disables. No argument enables at 85000 or toggles off.\n" \
@@ -5878,8 +6142,8 @@ static struct {
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
-'\''2,#+1c ((pac|pr|aco!?|ai|agr|ar(?!^etry)|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|apack!?|ac[lm]?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+'\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ar(?!^etry)|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|anote|adone|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -7096,7 +7360,7 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 	static char *agent_cmds[] = {
 		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
 		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-		"ud", "rd", "sc", "sc!", "aretry", "aout"
+		"ud", "rd", "sc", "sc!", "aretry", "aout", "anote"
 	};
 	if (!*arg || !strcmp(arg, "catalog")) {
 		ex_print("EX TOPICS", msg_ft)
@@ -7190,6 +7454,7 @@ static int exspec_agent(char *cmd, int ranges)
 '\''20s/\(e/(aspec) EO(e/??!219reg ex.c:1705:m202sc %? %@2142sc!0?
 '\''21c EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
 _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
+_EO(acl, xacl = *arg ? MAX(0, eo_val(arg)) : !xacl; agent_acl_mark = 0; return NULL;)
 ??!219reg ex.c:1707:m212sc %? %@2142sc!0?
 '\''22i _EO(aco,
 	int browse = strchr(cmd, '\''!'\'') != NULL;
@@ -7208,9 +7473,11 @@ _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
 	{"apack", ec_compact},
 	EO(aspec),
 	{"aout", ec_aout},
+	{"anote", ec_anote},
+	{"adone", ec_adone},
 	{"aco!", eo_aco},
 	EO(aco),
-	{"acl", ec_acl},
+	EO(acl),
 	{"acm", ec_skill},
 	{"ast", ec_ast},
 	EO(agr),
@@ -7238,16 +7505,26 @@ _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
 			ret = xaerr;
 			break;
 		}
+		if (agent_tool && agent_checkpointing && excmds[idx].ec != ec_anote &&
+				excmds[idx].ec != ec_adone) {
+			snprintf(xaerr, sizeof(xaerr), "%s command unavailable during the "
+				"checkpoint; use anote to trim or adone to resume the task",
+				excmds[idx].name);
+			ret = xaerr;
+			break;
+		}
 		ln = ex_arg(ln, sb, &arg);
 		if (agent_interrupted())
 			break;
 		if (agent_tool && excmds[idx].ec != ec_aretry) {
 			int show = excmds[idx].ec == ec_aout;
 			int top = xexec_dep == agent_tool_dep;
+			/* aout and anote take byte and entry ranges, not line ranges */
+			int lines = !show && excmds[idx].ec != ec_anote;
 			/* Defer only top-level commands: a nested deferral skips one
-			 * iteration of the enclosing command. aout takes byte ranges. */
+			 * iteration of the enclosing command. */
 			int defer = top && xaspec && excmds[idx].ec != ec_exspec &&
-				exspec_agent(excmds[idx].name, *sb->s && !show);
+				exspec_agent(excmds[idx].name, *sb->s && lines);
 			agent_shown |= show;
 			if (top && (defer || !show))
 				aretry_save(sb, &excmds[idx], arg);
@@ -8156,15 +8433,34 @@ static char *exspec_lines[] = {
 	"Example: bytes 50 through the end",
 	"50,$aout",
 	"",
+	"[entries]anote[text]",
+	"Replace or remove agent session log entries",
+	"",
+	"entries is N or N,M, matching the numbers in ROLE N headers of b-4;",
+	"$ is the last entry and 0 the text before the first header. Text",
+	"replaces N through M as one entry with the role of N; no text",
+	"removes them. Prints the estimated tokens before and after. Changes",
+	"the agent context when acl is set.",
+	"",
+	"Example: replace a long result with a note",
+	"14anote ls listed 40 files, none relevant",
+	"",
+	"adone",
+	"End an agent checkpoint",
+	"",
+	"Ends the acl checkpoint phase; the interrupted request resumes",
+	"from the trimmed session log. Takes no range or argument. Errors",
+	"outside a checkpoint.",
+	"",
 	"ast",
 	"Print agent status and token usage",
 	"",
-	"Prints sizes, per-role usage, activity, limits, acl and autocompact",
-	"mode, and the message bytes shared with the previous request.",
-	"Usage counts come from the last accepted response. Next input is",
-	"estimated from reported input plus new JSON bytes / 3, or all JSON",
-	"bytes / 3 without a usable count. Includes tool definitions and",
-	"framing; not a tokenizer or a guarantee the request fits.",
+	"Prints sizes, per-role usage, activity, limits, acl checkpoint and",
+	"autocompact mode, and the message bytes shared with the previous",
+	"request. Usage counts come from the last accepted response. Next",
+	"input is estimated from reported input plus new JSON bytes / 3, or",
+	"all JSON bytes / 3 without a usable count. Includes tool definitions",
+	"and framing; not a tokenizer or a guarantee the request fits.",
 	"",
 	"ac[regex]",
 	"Set autocomplete filter regex",
@@ -8237,14 +8533,26 @@ static char *exspec_lines[] = {
 	"Argument notation shows the default value.",
 	"",
 	"acl[0]  Rebuild agent context from the session log",
-	"No argument toggles it. 0 disables.",
+	"No argument toggles between 0 and 1. 0 disables.",
 	"",
 	"Nonzero rebuilds the agent context from the session log (b-4)",
 	"before every request, so edits to the log by the agent or the",
 	"user apply to the next request. Without it, the context is",
 	"built from the running history and log edits have no effect.",
-	"Reasoning kept outside the log is dropped. With aco, a",
+	"Reasoning not in the log (ar off) is dropped. With aco, a",
 	"compact (apack) may run before the rebuild.",
+	"",
+	"Values above 1 add checkpoints: once the estimated context grows",
+	"by that many tokens from the last checkpoint, or from its smallest",
+	"size since, a checkpoint runs before the next request. Each of its",
+	"requests lists the role, number and estimated tokens of every",
+	"entry, and only anote and adone run. Its exchange is logged to",
+	"b-3, not b-4. It ends with adone, a reply without commands or",
+	"recursive editing; the interrupted request then resumes. aco is",
+	"checked after it.",
+	"",
+	"Example: checkpoint every 5000 tokens of growth",
+	"acl 5000",
 	"",
 	"aco[0]  Automatically compact using the loaded session log",
 	"Positive argument sets an estimated input-token threshold; 0 or",
@@ -8578,44 +8886,46 @@ static struct {
 	{"acm", "Toggle the caveman response style skill", 780, 785, 0, 0},
 	{"aretry", "Execute the last agent command once without the guardrail", 786, 798, 0, 0},
 	{"aout", "Print the saved output of the last agent tool call", 799, 810, 0, 0},
-	{"ast", "Print agent status and token usage", 811, 820, 0, 0},
-	{"ac", "Set autocomplete filter regex", 821, 829, 0, 0},
-	{"sc", "Set ex special characters", 830, 840, 0, 0},
-	{"sc!", "Set ex special characters", 841, 848, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 849, 856, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 857, 860, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 861, 865, 0, 0},
-	{"ph", "Redefine placeholders", 866, 882, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 891, 900, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 901, 910, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 911, 918, 1, 0},
-	{"agr", "Control agent output protection", 919, 925, 1, 0},
-	{"ar", "Display returned agent reasoning", 926, 930, 1, 0},
-	{"aspec", "Print ex specifications for agents", 931, 935, 1, 0},
-	{"ai", "Indent new lines", 936, 939, 1, 0},
-	{"ic", "Ignore case in regular expressions", 940, 941, 1, 0},
-	{"ish", "Interactive shell", 942, 957, 1, 0},
-	{"grp", "Regex search group", 958, 966, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 967, 970, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 971, 972, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 972, 973, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 973, 974, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 974, 975, 1, 0},
-	{"led", "Enable all terminal output", 975, 976, 1, 0},
-	{"vis", "Control startup flags", 977, 988, 1, 0},
-	{"mpt", "Control vi prompts", 989, 999, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1000, 1002, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1002, 1004, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1004, 1005, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1005, 1006, 1, 0},
-	{"td", "Current text direction context", 1006, 1012, 1, 0},
-	{"pr", "Print register", 1013, 1029, 1, 0},
-	{"fr", "Find register", 1030, 1042, 1, 0},
-	{"rr", "Record register", 1043, 1056, 1, 0},
-	{"lim", "Line length render limit", 1057, 1072, 1, 0},
-	{"seq", "Control Undo/Redo", 1073, 1085, 1, 0},
-	{"left", "Control horizontal scroll", 1086, 1091, 1, 0},
-	{"err", "Control ex errors", 1092, 1104, 1, 0},
+	{"anote", "Replace or remove agent session log entries", 811, 822, 0, 0},
+	{"adone", "End an agent checkpoint", 823, 829, 0, 0},
+	{"ast", "Print agent status and token usage", 830, 839, 0, 0},
+	{"ac", "Set autocomplete filter regex", 840, 848, 0, 0},
+	{"sc", "Set ex special characters", 849, 859, 0, 0},
+	{"sc!", "Set ex special characters", 860, 867, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 868, 875, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 876, 879, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 880, 884, 0, 0},
+	{"ph", "Redefine placeholders", 885, 901, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 910, 931, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 932, 941, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 942, 949, 1, 0},
+	{"agr", "Control agent output protection", 950, 956, 1, 0},
+	{"ar", "Display returned agent reasoning", 957, 961, 1, 0},
+	{"aspec", "Print ex specifications for agents", 962, 966, 1, 0},
+	{"ai", "Indent new lines", 967, 970, 1, 0},
+	{"ic", "Ignore case in regular expressions", 971, 972, 1, 0},
+	{"ish", "Interactive shell", 973, 988, 1, 0},
+	{"grp", "Regex search group", 989, 997, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 998, 1001, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1002, 1003, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1003, 1004, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1004, 1005, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1005, 1006, 1, 0},
+	{"led", "Enable all terminal output", 1006, 1007, 1, 0},
+	{"vis", "Control startup flags", 1008, 1019, 1, 0},
+	{"mpt", "Control vi prompts", 1020, 1030, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1031, 1033, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1033, 1035, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1035, 1036, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1036, 1037, 1, 0},
+	{"td", "Current text direction context", 1037, 1043, 1, 0},
+	{"pr", "Print register", 1044, 1060, 1, 0},
+	{"fr", "Find register", 1061, 1073, 1, 0},
+	{"rr", "Record register", 1074, 1087, 1, 0},
+	{"lim", "Line length render limit", 1088, 1103, 1, 0},
+	{"seq", "Control Undo/Redo", 1104, 1116, 1, 0},
+	{"left", "Control horizontal scroll", 1117, 1122, 1, 0},
+	{"err", "Control ex errors", 1123, 1135, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -9238,10 +9548,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..11b9925c
+index 00000000..f1e17a29
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1976 @@
+@@ -0,0 +1,2215 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -9306,6 +9616,7 @@ index 00000000..11b9925c
 +static const char *agent_rkey = "reasoning_content";
 +static void agent_run(const char *input);
 +static int agent_autocompact(const char *input);
++static void agent_reparse(void);
 +
 +static const char agent_tools[] =
 +	"[{\"type\":\"function\",\"function\":{"
@@ -9360,14 +9671,6 @@ index 00000000..11b9925c
 +"Nextvi is not a standard vi/ex.\n"
 +"Use exspec command for a command list.\n"
 +"Use exspec with an argument for a topic or command specification.\n";
-+
-+static char acl_skill[] =
-+"Your context is rebuilt from the session log b-4 before each request; edits\n"
-+"there change what you see next. Entries start with a ROLE N line (USER,\n"
-+"ASSISTANT, REASONING, EX, RESULT) and N must increase. Text before the first\n"
-+"entry is a user message. Keep context small: delete stale RESULT entries or\n"
-+"replace finished work with a short note. Keep small USER entries intact.\n"
-+"Return to your buffer after editing.\n";
 +
 +static char caveman_skill[] =
 +"Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries\n"
@@ -9552,6 +9855,7 @@ index 00000000..11b9925c
 +static void agent_history(int edited)
 +{
 +	agent_usage.anchored = 0;
++	agent_acl_mark = 0;
 +	char *s = agent_text(tempbufs[4].lb);
 +	cJSON_Delete(agent_messages);
 +	agent_messages = cJSON_CreateArray();
@@ -9643,14 +9947,15 @@ index 00000000..11b9925c
 +	free(sb->s);
 +}
 +
++static char *agent_roles[] = {"USER", "ASSISTANT", "REASONING", "EX", "RESULT"};
++
 +/* Header "ROLE N" with N above the previous header; returns role + 1. */
 +static int agent_header(char *ln, unsigned long last, unsigned long *n)
 +{
-+	static char *roles[] = {"USER", "ASSISTANT", "REASONING", "EX", "RESULT"};
 +	char *e;
-+	for (int i = 0; i < LEN(roles); i++) {
-+		int k = strlen(roles[i]);
-+		if (strncmp(ln, roles[i], k) || ln[k] != ' ' ||
++	for (int i = 0; i < LEN(agent_roles); i++) {
++		int k = strlen(agent_roles[i]);
++		if (strncmp(ln, agent_roles[i], k) || ln[k] != ' ' ||
 +				!isdigit((unsigned char)ln[k+1]))
 +			continue;
 +		errno = 0;
@@ -9747,39 +10052,184 @@ index 00000000..11b9925c
 +	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
 +}
 +
++/* An entry of b-4; role 0 and number 0 is the text before the first header. */
++struct agent_span {
++	int role, beg, end;	/* agent_header role; header line, line after */
++	unsigned long n;
++	size_t bytes;		/* body bytes, excluding the header */
++};
++
++/* Split the session log b-4 into entries; the caller frees *spans. */
++static int agent_spans(struct agent_span **spans)
++{
++	struct lbuf *lb = tempbufs[3].lb;
++	unsigned long n, last = 0;
++	int role, cnt = 0, cap = 0;
++	*spans = NULL;
++	for (int i = 0; i < lbuf_len(lb); i++) {
++		if (!(role = agent_header(lb->ln[i], last, &n)) && i) {
++			(*spans)[cnt-1].bytes += strlen(lb->ln[i]);
++			continue;
++		}
++		if (cnt == cap) {
++			cap = cap * 2 + 16;
++			*spans = erealloc(*spans, cap * sizeof(**spans));
++		}
++		if (cnt)
++			(*spans)[cnt-1].end = i;
++		(*spans)[cnt++] = (struct agent_span){role, i, 0, role ? n : 0,
++			role ? 0 : strlen(lb->ln[i])};
++		if (role)
++			last = n;
++	}
++	if (cnt)
++		(*spans)[cnt-1].end = lbuf_len(lb);
++	return cnt;
++}
++
++static double agent_span_tokens(struct agent_span *s)
++{
++	return (s->bytes + 2) / 3;
++}
++
++static char *agent_span_role(struct agent_span *s)
++{
++	return s->role ? agent_roles[s->role - 1] : "TEXT";
++}
++
++/* acl > 1 checkpoint phase: the exchange after the entry list, the list's
++ * index in agent_messages (-1 before it is built), and the saved log buffer. */
++static cJSON *agent_cp;
++static int agent_cp_base = -1, agent_cp_logbuf, agent_cp_done;
++static double agent_cp_begin, agent_cp_added;
++
++/* The model already has the entries in context; list only their sizes. */
++static char *agent_checkpoint(double tokens)
++{
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans);
++	char ln[256];
++	sbuf_smake(sb, 256)
++	snprintf(ln, sizeof(ln), "Context checkpoint: about %.0f tokens now, %.0f at "
++		"the start of this checkpoint, %.0f added since the last one. Your "
++		"context is rebuilt from these session log entries (role number "
++		"~tokens):\n", tokens, agent_cp_begin, agent_cp_added);
++	sbuf_str(sb, ln)
++	for (int k = 0; k < cnt; k++) {
++		snprintf(ln, sizeof(ln), "%s %lu ~%.0f\n", agent_span_role(spans + k),
++			spans[k].n, agent_span_tokens(spans + k));
++		sbuf_str(sb, ln)
++	}
++	sbuf_str(sb, "Until adone, only these ex commands run:\n"
++		"N[,M]anote [text]  text replaces entries N through M under entry N's "
++		"role; no text removes them\n"
++		"adone  end the checkpoint and resume the task\n"
++		"This exchange is not kept in the session log.")
++	free(spans);
++	sbufn_ret(sb, sb->s)
++}
++
++static void agent_checkpoint_begin(double tokens)
++{
++	char note[64];
++	agent_checkpointing = 1;
++	agent_cp_done = 0;
++	agent_cp = cJSON_CreateArray();
++	agent_cp_base = -1;
++	agent_cp_begin = tokens;
++	agent_cp_added = tokens - agent_acl_mark;
++	agent_cp_logbuf = agent_logbuf;
++	agent_logbuf = 2;
++	agent_entries[0] = 0;
++	/* The list explains both commands; do not defer them for specs. */
++	exspec_mark("anote");
++	exspec_mark("adone");
++	snprintf(note, sizeof(note), "[acl checkpoint ~%.0f tokens]\n", tokens);
++	agent_output(note);
++}
++
++/* Detach the exchange that followed the entry list in the last request. */
++static void agent_cp_collect(void)
++{
++	cJSON *m;
++	if (agent_cp_base < 0)
++		return;
++	cJSON_Delete(agent_cp);
++	agent_cp = cJSON_CreateArray();
++	while ((m = cJSON_DetachItemFromArray(agent_messages, agent_cp_base + 1)))
++		cJSON_AddItemToArray(agent_cp, m);
++	cJSON_DeleteItemFromArray(agent_messages, agent_cp_base);
++	agent_cp_base = -1;
++}
++
++/* Append a current entry list and the exchange to the rebuilt context. */
++static void agent_cp_build(void)
++{
++	cJSON *m;
++	char *s = agent_checkpoint(agent_tokens());
++	agent_cp_base = cJSON_GetArraySize(agent_messages);
++	cJSON_AddItemToArray(agent_messages, agent_msg("user", s));
++	free(s);
++	cJSON_ArrayForEach(m, agent_cp)
++		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
++}
++
++static void agent_checkpoint_end(void)
++{
++	char note[96];
++	if (!agent_checkpointing)
++		return;
++	agent_cp_collect();
++	cJSON_Delete(agent_cp);
++	agent_cp = NULL;
++	agent_logbuf = agent_cp_logbuf;
++	agent_checkpointing = agent_cp_done = 0;
++	if (agent_live())
++		agent_reparse();
++	agent_acl_mark = agent_tokens();
++	snprintf(note, sizeof(note), "[acl checkpoint done ~%.0f -> ~%.0f tokens]\n",
++		agent_cp_begin, agent_acl_mark);
++	agent_output(note);
++}
++
++static void *ec_adone(char *loc, char *cmd, char *arg)
++{
++	if (*loc || *arg)
++		return "adone takes no range or argument";
++	if (!agent_checkpointing)
++		return "no checkpoint in progress";
++	agent_cp_done = 1;
++	return NULL;
++}
++
 +/* Rebuild the conversation after the system message from b-4. */
 +static void agent_reparse(void)
 +{
 +	struct lbuf *lb = tempbufs[3].lb;
 +	struct agent_parse p = {NULL, NULL, NULL, NULL};
-+	unsigned long n = 0, last = 0;
-+	int role = 0, r = 0;
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans);
 +	cJSON *sys = cJSON_DetachItemFromArray(agent_messages, 0);
 +	cJSON_Delete(agent_messages);
 +	agent_messages = p.msgs = cJSON_CreateArray();
 +	cJSON_AddItemToArray(p.msgs, sys);
 +	p.tools = cJSON_CreateArray();
 +	sbuf_smake(text, 256)
-+	for (int i = 0; i <= lbuf_len(lb); i++) {
-+		char *ln = i < lbuf_len(lb) ? lb->ln[i] : NULL;
-+		if (ln && !(r = agent_header(ln, last, &n))) {
-+			sbuf_str(text, ln)
-+			continue;
-+		}
++	for (int k = 0; k < cnt; k++) {
++		sbuf_cut(text, 0)
++		for (int i = spans[k].beg + !!spans[k].role; i < spans[k].end; i++)
++			sbuf_str(text, lb->ln[i])
 +		while (text->s_n && text->s[text->s_n-1] == '\n')
 +			text->s_n--;
 +		sbuf_nul(text)
-+		agent_entry(&p, role, last, text->s);
-+		sbuf_cut(text, 0)
-+		if (ln) {
-+			role = r;
-+			last = n;
-+		}
++		agent_entry(&p, spans[k].role, spans[k].n, text->s);
 +	}
 +	agent_flush(&p);
 +	cJSON_Delete(p.tools);
 +	free(text->s);
-+	agent_entries[1] = MAX(agent_entries[1], last);
++	if (cnt)
++		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
++	free(spans);
 +}
 +
 +static void agent_key(int c)
@@ -10377,12 +10827,12 @@ index 00000000..11b9925c
 +	return 0;
 +}
 +
-+static void agent_run(const char *input)
++static void agent_run_loop(const char *input)
 +{
 +	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 +	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
-+	int st, retries = 0, compacted = 0, nudged = 0, unpacked = 0;
++	int st, retries = 0, compacted = 0, unpacked = 0;
 +	if (agent_packing)
 +		agent_pack_done = 0;
 +	agent_cancel = agent_pause = 0;
@@ -10393,24 +10843,22 @@ index 00000000..11b9925c
 +		/* Only complete tool batches reach this boundary. Manual/automatic
 +		 * pack agents must never recursively trigger autocompaction. */
 +		/* The threshold triggers a pack, not a hard cap on its result. */
-+		if (agent_live())
++		agent_cp_collect();
++		if (agent_live() || agent_checkpointing)
 +			agent_reparse();
++		/* acl > 1 checkpoints growth from the last checkpoint or the
++		 * smallest context since; trimming gets a chance before aco. */
++		if (agent_live() && xacl > 1) {
++			double tokens = agent_tokens();
++			if (!agent_acl_mark || tokens < agent_acl_mark)
++				agent_acl_mark = tokens;
++			else if (tokens - agent_acl_mark >= xacl)
++				agent_checkpoint_begin(tokens);
++		}
 +		if (compacted && agent_tokens() < xaco)
 +			compacted = 0;
-+		if (nudged && agent_tokens() < xaco)
-+			nudged = 0;
-+		/* acl asks the agent to compact once; the pack agent is the fallback. */
-+		if (agent_live() && xaco && !compacted && !nudged &&
-+				agent_tokens() >= xaco) {
-+			char msg[192];
-+			snprintf(msg, sizeof(msg), "Context is about %.0f tokens, over the "
-+				"%d token aco threshold. Compact b-4 in your next response, "
-+				"then continue.", agent_tokens(), xaco);
-+			agent_log("USER", msg);
-+			agent_reparse();
-+			nudged = 1;
-+		} else if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
-+				agent_tokens() >= xaco) {
++		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
++				!agent_checkpointing && agent_tokens() >= xaco) {
 +			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 +				return;
 +			/* The pack conversation was discarded. Start a fresh tool-round
@@ -10422,6 +10870,8 @@ index 00000000..11b9925c
 +			agent_rounds = 0;
 +			serial = agent_serial;
 +		}
++		if (agent_checkpointing)
++			agent_cp_build();
 +		req = agent_config();
 +		if (!req) {
 +			agent_log("RESULT", "invalid agent configuration");
@@ -10451,6 +10901,7 @@ index 00000000..11b9925c
 +		if (agent_pause) {
 +			free(body);
 +			free(stderr_text);
++			agent_checkpoint_end();
 +			agent_editor();
 +			agent_redraw(NULL);
 +			agent_pause = 0;
@@ -10654,6 +11105,7 @@ index 00000000..11b9925c
 +		if (agent_cancel)
 +			return;
 +		if (agent_pause) {
++			agent_checkpoint_end();
 +			agent_editor();
 +			agent_redraw(NULL);
 +			agent_pause = 0;
@@ -10678,6 +11130,12 @@ index 00000000..11b9925c
 +				continue;
 +			}
 +		}
++		/* A reply without commands also ends the checkpoint; the
++		 * interrupted request then resumes. */
++		if (agent_checkpointing && (agent_cp_done || !has_calls)) {
++			agent_checkpoint_end();
++			has_calls = 1;
++		}
 +		if (!has_calls)
 +			return;
 +		if (round++ == max_tool_rounds) {
@@ -10687,6 +11145,13 @@ index 00000000..11b9925c
 +			return;
 +		}
 +	}
++}
++
++/* Every exit from a run, including errors, ends a checkpoint phase. */
++static void agent_run(const char *input)
++{
++	agent_run_loop(input);
++	agent_checkpoint_end();
 +}
 +
 +/* Add or remove a skill in b-5; want < 0 toggles. */
@@ -10728,13 +11193,6 @@ index 00000000..11b9925c
 +	return NULL;
 +}
 +
-+static void *ec_acl(char *loc, char *cmd, char *arg)
-+{
-+	xacl = *arg ? eo_val(arg) : !xacl;
-+	agent_skill(acl_skill, !!xacl);
-+	return NULL;
-+}
-+
 +static void *ec_ast(char *loc, char *cmd, char *arg)
 +{
 +	char msg[256];
@@ -10746,7 +11204,15 @@ index 00000000..11b9925c
 +	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 +		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 +	ex_print(msg, msg_ft)
-+	snprintf(msg, sizeof(msg), "acl        %s", xacl ? "on, context rebuilt from b-4" : "off");
++	if (xacl > 1) {
++		int k = snprintf(msg, sizeof(msg), "acl        %d, context rebuilt "
++			"from b-4, checkpoint every %d tokens", xacl, xacl);
++		if (agent_acl_mark)
++			snprintf(msg + k, sizeof(msg) - k, ", next at ~%.0f",
++				agent_acl_mark + xacl);
++	} else
++		snprintf(msg, sizeof(msg), "acl        %d%s", xacl,
++			xacl ? ", context rebuilt from b-4" : " (off)");
 +	ex_print(msg, msg_ft)
 +	if (!agent_ready) {
 +		ex_print(agent_init_error ? agent_init_error :
@@ -10876,6 +11342,89 @@ index 00000000..11b9925c
 +		free(s);
 +	}
 +	return NULL;
++}
++
++static int agent_entryaddr(char **s, unsigned long *n, unsigned long last)
++{
++	char *e;
++	if (**s == '$') {
++		*n = last;
++		(*s)++;
++		return 0;
++	}
++	if (!isdigit((unsigned char)**s))
++		return 1;
++	errno = 0;
++	*n = strtoul(*s, &e, 10);
++	*s = e;
++	return errno == ERANGE;
++}
++
++/* Replace log entries N through M with text under entry N's role, or remove
++ * them; entry 0 is the text before the first header. */
++static void *ec_anote(char *loc, char *cmd, char *arg)
++{
++	struct lbuf *lb = tempbufs[3].lb;
++	struct agent_span *spans;
++	unsigned long beg, end;
++	int cnt = agent_spans(&spans), first = -1, last = -1;
++	double before = 0, after;
++	char msg[160];
++	void *ret = NULL;
++	if (!cnt) {
++		ret = "session log has no entries";
++		goto done;
++	}
++	if (agent_entryaddr(&loc, &beg, spans[cnt-1].n)) {
++		ret = "anote requires an entry number";
++		goto done;
++	}
++	end = beg;
++	if ((*loc == ',' && (loc++, agent_entryaddr(&loc, &end, spans[cnt-1].n))) ||
++			*loc || end < beg) {
++		ret = "invalid entry range";
++		goto done;
++	}
++	for (int k = 0; k < cnt; k++) {
++		if (spans[k].n < beg || spans[k].n > end)
++			continue;
++		if (first < 0)
++			first = k;
++		last = k;
++		before += agent_span_tokens(spans + k);
++	}
++	if (first < 0) {
++		ret = "no entries in range";
++		goto done;
++	}
++	sbuf_smake(sb, 256)
++	if (*arg) {
++		if (spans[first].role) {
++			snprintf(msg, sizeof(msg), "%s %lu\n",
++				agent_span_role(spans + first), spans[first].n);
++			sbuf_str(sb, msg)
++		}
++		sbuf_str(sb, arg)
++		if (sb->s[sb->s_n-1] != '\n')
++			sbuf_chr(sb, '\n')
++		sbuf_chr(sb, '\n')
++	}
++	sbuf_nul(sb)
++	after = *arg ? (strlen(arg) + 2) / 3 : 0;
++	lbuf_edit(lb, *arg ? sb->s : NULL, spans[first].beg, spans[last].end, 0, 0);
++	free(sb->s);
++	if (ex_buf == tempbufs + 3)
++		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
++	else
++		tempbufs[3].row = MAX(0, MIN(tempbufs[3].row, lbuf_len(lb) - 1));
++	snprintf(msg, sizeof(msg), "%s %d %s %lu-%lu, ~%.0f -> ~%.0f tokens",
++		*arg ? "noted" : "removed", last - first + 1,
++		last > first ? "entries" : "entry",
++		spans[first].n, spans[last].n, before, after);
++	ex_print(msg, msg_ft)
++done:
++	free(spans);
++	return ret;
 +}
 +
 +static void *agent_session(char *loc, char *cmd, char *arg, int compact)
@@ -11220,10 +11769,10 @@ index 00000000..11b9925c
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..464cef40
+index 00000000..bc15e58b
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,30 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -11236,10 +11785,15 @@ index 00000000..464cef40
 +static size_t agent_show_n;
 +static int agent_shown;
 +static sbuf *agent_capture;
++/* acl > 1: estimated context tokens at the last checkpoint; 0 unset */
++static double agent_acl_mark;
++/* acl > 1: the agent may only trim the session log until adone */
++static int agent_checkpointing;
 +static void *ec_agent(char *loc, char *cmd, char *arg);
 +static void exspec_reset(void);
 +static void *ec_skill(char *loc, char *cmd, char *arg);
-+static void *ec_acl(char *loc, char *cmd, char *arg);
++static void *ec_anote(char *loc, char *cmd, char *arg);
++static void *ec_adone(char *loc, char *cmd, char *arg);
 +static void *ec_ast(char *loc, char *cmd, char *arg);
 +static void *ec_aout(char *loc, char *cmd, char *arg);
 +static void *ec_compact(char *loc, char *cmd, char *arg);
@@ -14759,10 +15313,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..f7561c0a 100755
+index c836c94c..55a34767 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,128 @@ build() {
+@@ -65,6 +65,148 @@ build() {
      }
  }
  
@@ -14835,24 +15389,44 @@ index c836c94c..f7561c0a 100755
 +            print "             Example: bytes 50 through the end"
 +            print "             :50,$aout"
 +            print ""
++            spec("[entries]anote[text]", "Replace or remove agent session log entries",
++                "entries is N or N,M, matching the numbers in ROLE N headers of b-4;\n" \
++                "$ is the last entry and 0 the text before the first header. Text\n" \
++                "replaces N through M as one entry with the role of N; no text\n" \
++                "removes them. Prints the estimated tokens before and after. Changes\n" \
++                "the agent context when acl is set.\n\n" \
++                "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
++            spec("adone", "End an agent checkpoint",
++                "Ends the acl checkpoint phase; the interrupted request resumes\n" \
++                "from the trimmed session log. Takes no range or argument. Errors\n" \
++                "outside a checkpoint.")
 +            spec("ast", "Print agent status and token usage",
-+                "Prints sizes, per-role usage, activity, limits, acl and autocompact\n" \
-+                "mode, and the message bytes shared with the previous request.\n" \
-+                "Usage counts come from the last accepted response. Next input is\n" \
-+                "estimated from reported input plus new JSON bytes / 3, or all JSON\n" \
-+                "bytes / 3 without a usable count. Includes tool definitions and\n" \
-+                "framing; not a tokenizer or a guarantee the request fits.")
++                "Prints sizes, per-role usage, activity, limits, acl checkpoint and\n" \
++                "autocompact mode, and the message bytes shared with the previous\n" \
++                "request. Usage counts come from the last accepted response. Next\n" \
++                "input is estimated from reported input plus new JSON bytes / 3, or\n" \
++                "all JSON bytes / 3 without a usable count. Includes tool definitions\n" \
++                "and framing; not a tokenizer or a guarantee the request fits.")
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
 +            spec("acl[0]  Rebuild agent context from the session log",
-+                "No argument toggles it. 0 disables.",
++                "No argument toggles between 0 and 1. 0 disables.",
 +                "Nonzero rebuilds the agent context from the session log (b-4)\n" \
 +                "before every request, so edits to the log by the agent or the\n" \
 +                "user apply to the next request. Without it, the context is\n" \
 +                "built from the running history and log edits have no effect.\n" \
-+                "Reasoning kept outside the log is dropped. With aco, a\n" \
-+                "compact (apack) may run before the rebuild.")
++                "Reasoning not in the log (ar off) is dropped. With aco, a\n" \
++                "compact (apack) may run before the rebuild.\n\n" \
++                "Values above 1 add checkpoints: once the estimated context grows\n" \
++                "by that many tokens from the last checkpoint, or from its smallest\n" \
++                "size since, a checkpoint runs before the next request. Each of its\n" \
++                "requests lists the role, number and estimated tokens of every\n" \
++                "entry, and only anote and adone run. Its exchange is logged to\n" \
++                "b-3, not b-4. It ends with adone, a reply without commands or\n" \
++                "recursive editing; the interrupted request then resumes. aco is\n" \
++                "checked after it.\n\n" \
++                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
 +            spec("aco[0]  Automatically compact using the loaded session log",
 +                "Positive argument sets an estimated input-token threshold; 0 or\n" \
 +                "negative disables. No argument enables at 85000 or toggles off.\n" \
@@ -14891,7 +15465,7 @@ index c836c94c..f7561c0a 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +196,7 @@ install() {
+@@ -74,7 +216,7 @@ install() {
  }
  
  print_usage() {
@@ -14900,7 +15474,7 @@ index c836c94c..f7561c0a 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +204,9 @@ print_usage() {
+@@ -82,6 +224,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -14911,7 +15485,7 @@ index c836c94c..f7561c0a 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..5894e8bf 100644
+index 2888d7c6..a0d1cc57 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,53 @@
@@ -14974,13 +15548,13 @@ index 2888d7c6..5894e8bf 100644
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
-+((pac|pr|aco!?|ai|agr|ar(?!^etry)|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|apack!?|ac[lm]?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++((pac|pr|aco!?|acl|ai|agr|ar(?!^etry)|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|anote|adone|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..211d1c17 100644
+index 76dca408..2a91849f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -15281,7 +15855,7 @@ index 76dca408..211d1c17 100644
 +	static char *agent_cmds[] = {
 +		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
 +		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-+		"ud", "rd", "sc", "sc!", "aretry", "aout"
++		"ud", "rd", "sc", "sc!", "aretry", "aout", "anote"
 +	};
 +	if (!*arg || !strcmp(arg, "catalog")) {
 +		ex_print("EX TOPICS", msg_ft)
@@ -15374,7 +15948,7 @@ index 76dca408..211d1c17 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1942,10 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1942,11 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -15384,10 +15958,11 @@ index 76dca408..211d1c17 100644
 -EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
 +_EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
++_EO(acl, xacl = *arg ? MAX(0, eo_val(arg)) : !xacl; agent_acl_mark = 0; return NULL;)
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1971,20 @@ _EO(left,
+@@ -1730,14 +1972,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -15412,7 +15987,7 @@ index 76dca408..211d1c17 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2005,24 @@ static struct excmd {
+@@ -1758,8 +2006,26 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -15421,9 +15996,11 @@ index 76dca408..211d1c17 100644
 +	{"apack", ec_compact},
 +	EO(aspec),
 +	{"aout", ec_aout},
++	{"anote", ec_anote},
++	{"adone", ec_adone},
 +	{"aco!", eo_aco},
 +	EO(aco),
-+	{"acl", ec_acl},
++	EO(acl),
 +	{"acm", ec_skill},
 +	{"ast", ec_ast},
 +	EO(agr),
@@ -15437,7 +16014,7 @@ index 76dca408..211d1c17 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2202,41 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2205,51 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -15458,16 +16035,26 @@ index 76dca408..211d1c17 100644
 +			ret = xaerr;
 +			break;
 +		}
++		if (agent_tool && agent_checkpointing && excmds[idx].ec != ec_anote &&
++				excmds[idx].ec != ec_adone) {
++			snprintf(xaerr, sizeof(xaerr), "%s command unavailable during the "
++				"checkpoint; use anote to trim or adone to resume the task",
++				excmds[idx].name);
++			ret = xaerr;
++			break;
++		}
 +		ln = ex_arg(ln, sb, &arg);
 +		if (agent_interrupted())
 +			break;
 +		if (agent_tool && excmds[idx].ec != ec_aretry) {
 +			int show = excmds[idx].ec == ec_aout;
 +			int top = xexec_dep == agent_tool_dep;
++			/* aout and anote take byte and entry ranges, not line ranges */
++			int lines = !show && excmds[idx].ec != ec_anote;
 +			/* Defer only top-level commands: a nested deferral skips one
-+			 * iteration of the enclosing command. aout takes byte ranges. */
++			 * iteration of the enclosing command. */
 +			int defer = top && xaspec && excmds[idx].ec != ec_exspec &&
-+				exspec_agent(excmds[idx].name, *sb->s && !show);
++				exspec_agent(excmds[idx].name, *sb->s && lines);
 +			agent_shown |= show;
 +			if (top && (defer || !show))
 +				aretry_save(sb, &excmds[idx], arg);
@@ -15480,7 +16067,7 @@ index 76dca408..211d1c17 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2255,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2268,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -15579,10 +16166,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..41a9fb62
+index 00000000..97da1970
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1274 @@
+@@ -0,0 +1,1307 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -16396,15 +16983,34 @@ index 00000000..41a9fb62
 +	"Example: bytes 50 through the end",
 +	"50,$aout",
 +	"",
++	"[entries]anote[text]",
++	"Replace or remove agent session log entries",
++	"",
++	"entries is N or N,M, matching the numbers in ROLE N headers of b-4;",
++	"$ is the last entry and 0 the text before the first header. Text",
++	"replaces N through M as one entry with the role of N; no text",
++	"removes them. Prints the estimated tokens before and after. Changes",
++	"the agent context when acl is set.",
++	"",
++	"Example: replace a long result with a note",
++	"14anote ls listed 40 files, none relevant",
++	"",
++	"adone",
++	"End an agent checkpoint",
++	"",
++	"Ends the acl checkpoint phase; the interrupted request resumes",
++	"from the trimmed session log. Takes no range or argument. Errors",
++	"outside a checkpoint.",
++	"",
 +	"ast",
 +	"Print agent status and token usage",
 +	"",
-+	"Prints sizes, per-role usage, activity, limits, acl and autocompact",
-+	"mode, and the message bytes shared with the previous request.",
-+	"Usage counts come from the last accepted response. Next input is",
-+	"estimated from reported input plus new JSON bytes / 3, or all JSON",
-+	"bytes / 3 without a usable count. Includes tool definitions and",
-+	"framing; not a tokenizer or a guarantee the request fits.",
++	"Prints sizes, per-role usage, activity, limits, acl checkpoint and",
++	"autocompact mode, and the message bytes shared with the previous",
++	"request. Usage counts come from the last accepted response. Next",
++	"input is estimated from reported input plus new JSON bytes / 3, or",
++	"all JSON bytes / 3 without a usable count. Includes tool definitions",
++	"and framing; not a tokenizer or a guarantee the request fits.",
 +	"",
 +	"ac[regex]",
 +	"Set autocomplete filter regex",
@@ -16477,14 +17083,26 @@ index 00000000..41a9fb62
 +	"Argument notation shows the default value.",
 +	"",
 +	"acl[0]  Rebuild agent context from the session log",
-+	"No argument toggles it. 0 disables.",
++	"No argument toggles between 0 and 1. 0 disables.",
 +	"",
 +	"Nonzero rebuilds the agent context from the session log (b-4)",
 +	"before every request, so edits to the log by the agent or the",
 +	"user apply to the next request. Without it, the context is",
 +	"built from the running history and log edits have no effect.",
-+	"Reasoning kept outside the log is dropped. With aco, a",
++	"Reasoning not in the log (ar off) is dropped. With aco, a",
 +	"compact (apack) may run before the rebuild.",
++	"",
++	"Values above 1 add checkpoints: once the estimated context grows",
++	"by that many tokens from the last checkpoint, or from its smallest",
++	"size since, a checkpoint runs before the next request. Each of its",
++	"requests lists the role, number and estimated tokens of every",
++	"entry, and only anote and adone run. Its exchange is logged to",
++	"b-3, not b-4. It ends with adone, a reply without commands or",
++	"recursive editing; the interrupted request then resumes. aco is",
++	"checked after it.",
++	"",
++	"Example: checkpoint every 5000 tokens of growth",
++	"acl 5000",
 +	"",
 +	"aco[0]  Automatically compact using the loaded session log",
 +	"Positive argument sets an estimated input-token threshold; 0 or",
@@ -16818,44 +17436,46 @@ index 00000000..41a9fb62
 +	{"acm", "Toggle the caveman response style skill", 780, 785, 0, 0},
 +	{"aretry", "Execute the last agent command once without the guardrail", 786, 798, 0, 0},
 +	{"aout", "Print the saved output of the last agent tool call", 799, 810, 0, 0},
-+	{"ast", "Print agent status and token usage", 811, 820, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 821, 829, 0, 0},
-+	{"sc", "Set ex special characters", 830, 840, 0, 0},
-+	{"sc!", "Set ex special characters", 841, 848, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 849, 856, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 857, 860, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 861, 865, 0, 0},
-+	{"ph", "Redefine placeholders", 866, 882, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 891, 900, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 901, 910, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 911, 918, 1, 0},
-+	{"agr", "Control agent output protection", 919, 925, 1, 0},
-+	{"ar", "Display returned agent reasoning", 926, 930, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 931, 935, 1, 0},
-+	{"ai", "Indent new lines", 936, 939, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 940, 941, 1, 0},
-+	{"ish", "Interactive shell", 942, 957, 1, 0},
-+	{"grp", "Regex search group", 958, 966, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 967, 970, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 971, 972, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 972, 973, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 973, 974, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 974, 975, 1, 0},
-+	{"led", "Enable all terminal output", 975, 976, 1, 0},
-+	{"vis", "Control startup flags", 977, 988, 1, 0},
-+	{"mpt", "Control vi prompts", 989, 999, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1000, 1002, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1002, 1004, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1004, 1005, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1005, 1006, 1, 0},
-+	{"td", "Current text direction context", 1006, 1012, 1, 0},
-+	{"pr", "Print register", 1013, 1029, 1, 0},
-+	{"fr", "Find register", 1030, 1042, 1, 0},
-+	{"rr", "Record register", 1043, 1056, 1, 0},
-+	{"lim", "Line length render limit", 1057, 1072, 1, 0},
-+	{"seq", "Control Undo/Redo", 1073, 1085, 1, 0},
-+	{"left", "Control horizontal scroll", 1086, 1091, 1, 0},
-+	{"err", "Control ex errors", 1092, 1104, 1, 0},
++	{"anote", "Replace or remove agent session log entries", 811, 822, 0, 0},
++	{"adone", "End an agent checkpoint", 823, 829, 0, 0},
++	{"ast", "Print agent status and token usage", 830, 839, 0, 0},
++	{"ac", "Set autocomplete filter regex", 840, 848, 0, 0},
++	{"sc", "Set ex special characters", 849, 859, 0, 0},
++	{"sc!", "Set ex special characters", 860, 867, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 868, 875, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 876, 879, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 880, 884, 0, 0},
++	{"ph", "Redefine placeholders", 885, 901, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 910, 931, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 932, 941, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 942, 949, 1, 0},
++	{"agr", "Control agent output protection", 950, 956, 1, 0},
++	{"ar", "Display returned agent reasoning", 957, 961, 1, 0},
++	{"aspec", "Print ex specifications for agents", 962, 966, 1, 0},
++	{"ai", "Indent new lines", 967, 970, 1, 0},
++	{"ic", "Ignore case in regular expressions", 971, 972, 1, 0},
++	{"ish", "Interactive shell", 973, 988, 1, 0},
++	{"grp", "Regex search group", 989, 997, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 998, 1001, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1002, 1003, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1003, 1004, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1004, 1005, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1005, 1006, 1, 0},
++	{"led", "Enable all terminal output", 1006, 1007, 1, 0},
++	{"vis", "Control startup flags", 1008, 1019, 1, 0},
++	{"mpt", "Control vi prompts", 1020, 1030, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1031, 1033, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1033, 1035, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1035, 1036, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1036, 1037, 1, 0},
++	{"td", "Current text direction context", 1037, 1043, 1, 0},
++	{"pr", "Print register", 1044, 1060, 1, 0},
++	{"fr", "Find register", 1061, 1073, 1, 0},
++	{"rr", "Record register", 1074, 1087, 1, 0},
++	{"lim", "Line length render limit", 1088, 1103, 1, 0},
++	{"seq", "Control Undo/Redo", 1104, 1116, 1, 0},
++	{"left", "Control horizontal scroll", 1117, 1122, 1, 0},
++	{"err", "Control ex errors", 1123, 1135, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
