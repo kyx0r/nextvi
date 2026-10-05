@@ -115,9 +115,8 @@ static double agent_context_bytes(void)
 	return bytes;
 }
 
-static double agent_tokens(void)
+static double agent_tokens_at(double bytes)
 {
-	double bytes = agent_context_bytes();
 	if (!agent_usage.anchored)
 		return (bytes + 2) / 3;
 	/* Growth is estimated; a smaller context (trimmed, or a checkpoint
@@ -125,6 +124,11 @@ static double agent_tokens(void)
 	if (bytes >= agent_usage.bytes)
 		return agent_usage.input + (bytes - agent_usage.bytes + 2) / 3;
 	return agent_usage.input * bytes / agent_usage.bytes;
+}
+
+static double agent_tokens(void)
+{
+	return agent_tokens_at(agent_context_bytes());
 }
 
 static void agent_record_usage(cJSON *root, double bytes)
@@ -680,13 +684,13 @@ static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
 	for (int k = 0; k < cnt; k++) {
 		if (spans[k].role != 4 || agent_note(spans[k].n, &r, &row))
 			continue;
-		if (n < 12 && len < size)
+		if (n < 8 && len < size)
 			len += snprintf(buf + len, size - len, "%s%lu",
 				n ? ", " : "EX ", spans[k].n);
 		n++;
 	}
-	if (n > 12 && len < size)
-		snprintf(buf + len, size - len, " and %d more", n - 12);
+	if (n > 8 && len < size)
+		snprintf(buf + len, size - len, " and %d more", n - 8);
 	return n;
 }
 
@@ -736,22 +740,46 @@ static void agent_notes_archive(char *archive)
  * index in agent_messages (-1 before it is built), and the saved log buffer. */
 static cJSON *agent_cp;
 static int agent_cp_base = -1, agent_cp_logbuf, agent_cp_done;
-static int agent_cp_refused;	/* endings refused for unrated commands */
+static int agent_cp_refused, agent_cp_left;	/* refusals, unrated then */
 static char agent_continue[] = "Continue the task.";
-static double agent_cp_begin, agent_cp_added;
+/* The start is kept in bytes so each report uses the current anchor and an
+ * unchanged log reads the same at both ends. */
+static double agent_cp_bytes, agent_cp_added;
+
+/* Whether to refuse ending the checkpoint for unrated commands. New ratings
+ * restart the count, so only two refusals without progress end it. */
+static int agent_cp_hold(char *unrated, int size)
+{
+	int n = agent_unrated_now(unrated, size);
+	if (n < agent_cp_left)
+		agent_cp_refused = 0;
+	agent_cp_left = n;
+	return n && agent_cp_refused++ < 2;
+}
+
+/* A rating to copy, for the first unrated entry in an agent_unrated list. */
+static char *agent_cp_example(char *unrated)
+{
+	static char ex[64];
+	snprintf(ex, sizeof(ex), "%luarate 1 printed lines 1-50",
+		strtoul(unrated + 3, NULL, 10));
+	return ex;
+}
 
 /* The model already has the entries in context; list only their sizes. */
 static const char agent_rating_scale[] =
-	"Ratings: 0 dead weight, no value for the remaining work; 1 low, minor, "
-	"superseded or only mechanics; 2 useful, informs the remaining work; "
-	"3 essential, a decision, finding or state the task depends on.\n";
+	"Ratings:\n"
+	"0 dead weight, no value for the remaining work\n"
+	"1 low, minor, superseded or only mechanics\n"
+	"2 useful, informs the remaining work\n"
+	"3 essential, a decision, finding or state the task depends on\n";
 
 /* One line per b-4 entry: role number ~tokens, the first line number when
  * lines is set, and [rating] note for commands; then the five largest. */
 static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 		int lines, int notices)
 {
-	int top[5], ntop = 0, listed = 0, r, row;
+	int top[5], ntop = 0, listed = 0, r, row, col, len;
 	char ln[256], *note;
 	for (int k = 0; k < cnt; k++) {
 		if (spans[k].role == 6 && !notices)
@@ -781,11 +809,17 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 	}
 	if (listed > ntop) {
 		sbuf_str(sb, "Largest:")
+		col = 8;
 		for (int j = 0; j < ntop; j++) {
-			snprintf(ln, sizeof(ln), "%s %s %lu ~%.0f", j ? "," : "",
+			len = snprintf(ln, sizeof(ln), " %s %lu ~%.0f%s",
 				agent_span_role(spans + top[j]), spans[top[j]].n,
-				agent_span_tokens(spans + top[j]));
+				agent_span_tokens(spans + top[j]), j + 1 < ntop ? "," : "");
+			if (col + len > 80) {
+				sbuf_chr(sb, '\''\n'\'')
+				col = 0;
+			}
 			sbuf_str(sb, ln)
+			col += len;
 		}
 		sbuf_chr(sb, '\''\n'\'')
 	}
@@ -797,10 +831,12 @@ static char *agent_checkpoint(double tokens)
 	int cnt = agent_spans(&spans);
 	char ln[256], unrated[112];
 	sbuf_smake(sb, 256)
-	snprintf(ln, sizeof(ln), "Context checkpoint: about %.0f tokens now, %.0f at "
-		"the start of this checkpoint, %.0f added since the last one. Your "
-		"context is rebuilt from these session log entries (role number "
-		"~tokens, then [rating] note for commands):\n", tokens, agent_cp_begin,
+	snprintf(ln, sizeof(ln),
+		"Context checkpoint: about %.0f tokens now, %.0f at the start of this\n"
+		"checkpoint, %.0f added since the last one. Your context is rebuilt\n"
+		"from these session log entries (role number ~tokens, then [rating]\n"
+		"note for commands):\n", tokens,
+		agent_tokens_at(agent_cp_bytes),
 		agent_cp_added);
 	sbuf_str(sb, ln)
 	agent_entry_list(sb, spans, cnt, 0, 0);
@@ -808,27 +844,33 @@ static char *agent_checkpoint(double tokens)
 		sbuf_str(sb, "Unrated: ")
 		sbuf_str(sb, unrated)
 		sbuf_str(sb, "\nRate these first: one sentence each on what the command "
-			"did and found.\n")
+			"did and\nfound, e.g. the ex command ")
+		sbuf_str(sb, agent_cp_example(unrated))
+		sbuf_str(sb, ".\n")
 	}
-	sbuf_str(sb, "Until adone, only these ex commands run; several can be sent "
-		"in one reply:\n"
-		"N[,M]arate R sentence  rate each EX entry from N through M; deferred "
-		"commands are rated 1 already\n"
-		"N[,M]anote [text]  text replaces entries N through M under entry N'\''s "
-		"role (ASSISTANT for EX); no text removes them; a command and its "
-		"RESULT stay together\n"
-		"adone  end the checkpoint and resume the task; refused while commands "
-		"are unrated\n")
+	sbuf_str(sb,
+		"Until adone, only these ex commands run. Each command is its own ex\n"
+		"tool call; several calls can go in one reply. Commands written as text\n"
+		"do not run. N,M is a range from N through M, not a list.\n"
+		"N[,M]arate R sentence\n"
+		"  rate each EX entry from N through M; deferred commands are rated 1\n"
+		"N[,M]anote [text]\n"
+		"  text replaces entries N through M under entry N'\''s role (ASSISTANT\n"
+		"  for EX); no text removes them; a command and its RESULT stay together\n"
+		"adone\n"
+		"  end the checkpoint and resume the task; refused while commands are\n"
+		"  unrated\n")
 	sbuf_str(sb, agent_rating_scale)
-	sbuf_str(sb, "Then trim by rating, large entries first: remove 0, condense 1 "
-		"to a short note, condense a large 2 to its findings, keep 3 or condense "
-		"it only to its findings. Do not trim entries under ~50 tokens, but "
-		"still rate their commands. USER "
-		"entries cannot be changed. To keep findings, note them over the "
-		"entries they came from, e.g. 53,59anote findings: ...\n"
-		"Files and buffers cannot be read now; decide from your context. "
-		"Ratings are kept in b-6 for later checkpoints and compaction. This "
-		"exchange is not kept in the session log.")
+	sbuf_str(sb,
+		"Then trim by rating, large entries first: remove 0, condense 1 to a\n"
+		"short note, condense a large 2 to its findings, keep 3 or condense it\n"
+		"only to its findings. Do not trim entries under ~50 tokens, but still\n"
+		"rate their commands. USER entries cannot be changed. To keep findings,\n"
+		"note them over the entries they came from, e.g.\n"
+		"53,59anote findings: ...\n"
+		"Files and buffers cannot be read now; decide from your context. Ratings\n"
+		"are kept in b-6 for later checkpoints and compaction. This exchange is\n"
+		"not kept in the session log.")
 	free(spans);
 	sbufn_ret(sb, sb->s)
 }
@@ -840,7 +882,8 @@ static void agent_checkpoint_begin(double tokens)
 	agent_cp_done = agent_cp_refused = 0;
 	agent_cp = cJSON_CreateArray();
 	agent_cp_base = -1;
-	agent_cp_begin = tokens;
+	agent_cp_bytes = agent_context_bytes();
+	agent_cp_left = INT_MAX;
 	agent_cp_added = tokens - agent_acl_mark;
 	agent_cp_logbuf = agent_logbuf;
 	agent_logbuf = 2;
@@ -896,7 +939,7 @@ static void agent_checkpoint_end(void)
 		agent_reparse();
 	agent_acl_mark = agent_tokens();
 	k = snprintf(note, sizeof(note), "[acl checkpoint done ~%.0f -> ~%.0f tokens",
-		agent_cp_begin, agent_acl_mark);
+		agent_tokens_at(agent_cp_bytes), agent_acl_mark);
 	if ((n = agent_unrated_now(unrated, sizeof(unrated))))
 		snprintf(note + k, sizeof(note) - k, ", %d unrated", n);
 	strcat(note, "]\n");
@@ -911,10 +954,8 @@ static void *ec_adone(char *loc, char *cmd, char *arg)
 	char unrated[112];
 	if (!agent_checkpointing)
 		return "no checkpoint in progress";
-	/* Refuse twice so a stuck model cannot hold the checkpoint open. */
-	if (agent_cp_refused < 2 && agent_unrated_now(unrated, sizeof(unrated))) {
-		agent_cp_refused++;
-		snprintf(err, sizeof(err), "rate %s first: N[,M]arate R sentence",
+	if (agent_cp_hold(unrated, sizeof(unrated))) {
+		snprintf(err, sizeof(err), "rate first with N[,M]arate R sentence:\n%s",
 			unrated);
 		return err;
 	}
@@ -1682,12 +1723,12 @@ static void agent_run_loop(const char *input)
 			/* Invalid calls never enter history or execute, even in a mixed batch. */
 			if (invalid == 2) {
 				snprintf(diagnostic, sizeof(diagnostic),
-					"Your previous response was rejected: %s. "
-					"No commands from that response were executed. "
-					"Correct and resubmit the intended calls. "
-					"Use tool type function, name ex, and unique nonempty call IDs. "
-					"Arguments must be a JSON-encoded object with a nonempty "
-					"string command, for example {\"command\":\"1,20p\"}.", error);
+					"Your previous response was rejected: %s.\n"
+					"No commands from that response were executed. Correct and\n"
+					"resubmit the intended calls. Use tool type function, name ex,\n"
+					"and unique nonempty call IDs. Arguments must be a JSON-encoded\n"
+					"object with a nonempty string command, for example\n"
+					"{\"command\":\"1,20p\"}.", error);
 				agent_log("USER", diagnostic);
 				if (!agent_live())
 					cJSON_AddItemToArray(agent_messages,
@@ -1872,15 +1913,16 @@ static void agent_run_loop(const char *input)
 				continue;
 			}
 		}
-		/* A reply without commands also ends the checkpoint, once
-		 * commands are rated or after two reminders. */
-		if (agent_checkpointing && !has_calls && agent_cp_refused < 2) {
-			char unrated[112], msg[256];
-			if (agent_unrated_now(unrated, sizeof(unrated))) {
-				agent_cp_refused++;
-				snprintf(msg, sizeof(msg), "Rate %s before the checkpoint "
-					"ends: N[,M]arate R sentence for each, then adone.",
-					unrated);
+		/* A reply without commands also ends the checkpoint, once commands
+		 * are rated or after two reminders without new ratings. */
+		if (agent_checkpointing && !has_calls) {
+			char unrated[112], msg[384];
+			if (agent_cp_hold(unrated, sizeof(unrated))) {
+				snprintf(msg, sizeof(msg),
+					"Your reply made no ex tool calls, so nothing ran. Rate "
+					"these before\nthe checkpoint ends: %s\nOne ex tool call "
+					"per command, N[,M]arate R sentence, e.g.\n%s; then "
+					"adone.", unrated, agent_cp_example(unrated));
 				cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 				agent_log("USER", msg);
 				continue;
@@ -2200,7 +2242,7 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 		*arg ? "noted" : "removed", last - first + 1,
 		last > first ? "entries" : "entry",
 		spans[first].n, spans[last].n, before, after, after > before ?
-		"; the note is larger than the entries it replaced" : "");
+		";\nthe note is larger than the entries it replaced" : "");
 	ex_print(msg, msg_ft)
 done:
 	free(spans);
@@ -2403,7 +2445,7 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 		total += agent_span_tokens(spans + k);
 	if (cnt) {
 		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-			"entries (role number ~tokens%s, then [rating] note for commands):\n",
+			"entries\n(role number ~tokens%s, then [rating] note for commands):\n",
 			total, browse ? ", first line" : "");
 		sbuf_str(task, ln)
 		agent_entry_list(task, spans, cnt, browse, 1);
@@ -2427,9 +2469,9 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	}
 	if (lbuf_len(notes)) {
 		sbuf_str(task, agent_rating_scale)
-		sbuf_str(task, "Weigh entries by rating: omit 0, at most a phrase for 1, "
-			"summarize 2, keep the exact details of 3. Judge unrated entries by "
-			"their content.\n")
+		sbuf_str(task,
+			"Weigh entries by rating: omit 0, at most a phrase for 1, summarize 2,\n"
+			"keep the exact details of 3. Judge unrated entries by their content.\n")
 	}
 	free(spans);
 	sbuf_chr(task, '\''\n'\'')
@@ -6368,9 +6410,9 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Example: rate the command of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
             spec("adone", "End an agent checkpoint",
                 "Ends the acl checkpoint phase; the interrupted request resumes\n" \
-                "from the trimmed session log. Takes no range or argument. Refused\n" \
-                "twice per checkpoint while EX entries are unrated. Errors outside\n" \
-                "a checkpoint.")
+                "from the trimmed session log. Takes no range or argument. While EX\n" \
+                "entries are unrated it is refused, up to twice in a row without new\n" \
+                "ratings. Errors outside a checkpoint.")
             spec("ast", "Print agent status and token usage",
                 "Prints sizes, per-role usage, activity, limits, acl checkpoint and\n" \
                 "autocompact mode, and the message bytes shared with the previous\n" \
@@ -6397,8 +6439,8 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "requests lists the role, number and estimated tokens of every\n" \
                 "entry with the arate notes of commands, and the largest few; only\n" \
                 "arate, anote and adone run. Unrated commands must be rated first:\n" \
-                "adone or a reply without commands is refused twice while any\n" \
-                "remain. The lists and exchange are logged to b-3, not b-4, with\n" \
+                "adone or a reply without commands is refused while any remain,\n" \
+                "up to twice in a row without new ratings. The lists and exchange are logged to b-3, not b-4, with\n" \
                 "headers prefixed CP. It ends with adone, a reply without commands\n" \
                 "or recursive editing; the interrupted request then resumes. aco is\n" \
                 "checked after it.\n\n" \
@@ -8896,9 +8938,9 @@ static char *exspec_lines[] = {
 	"End an agent checkpoint",
 	"",
 	"Ends the acl checkpoint phase; the interrupted request resumes",
-	"from the trimmed session log. Takes no range or argument. Refused",
-	"twice per checkpoint while EX entries are unrated. Errors outside",
-	"a checkpoint.",
+	"from the trimmed session log. Takes no range or argument. While EX",
+	"entries are unrated it is refused, up to twice in a row without new",
+	"ratings. Errors outside a checkpoint.",
 	"",
 	"ast",
 	"Print agent status and token usage",
@@ -8998,8 +9040,8 @@ static char *exspec_lines[] = {
 	"requests lists the role, number and estimated tokens of every",
 	"entry with the arate notes of commands, and the largest few; only",
 	"arate, anote and adone run. Unrated commands must be rated first:",
-	"adone or a reply without commands is refused twice while any",
-	"remain. The lists and exchange are logged to b-3, not b-4, with",
+	"adone or a reply without commands is refused while any remain,",
+	"up to twice in a row without new ratings. The lists and exchange are logged to b-3, not b-4, with",
 	"headers prefixed CP. It ends with adone, a reply without commands",
 	"or recursive editing; the interrupted request then resumes. aco is",
 	"checked after it.",
@@ -10002,10 +10044,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..371ed412
+index 00000000..421a2ee5
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2602 @@
+@@ -0,0 +1,2644 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -10091,9 +10133,8 @@ index 00000000..371ed412
 +	return bytes;
 +}
 +
-+static double agent_tokens(void)
++static double agent_tokens_at(double bytes)
 +{
-+	double bytes = agent_context_bytes();
 +	if (!agent_usage.anchored)
 +		return (bytes + 2) / 3;
 +	/* Growth is estimated; a smaller context (trimmed, or a checkpoint
@@ -10101,6 +10142,11 @@ index 00000000..371ed412
 +	if (bytes >= agent_usage.bytes)
 +		return agent_usage.input + (bytes - agent_usage.bytes + 2) / 3;
 +	return agent_usage.input * bytes / agent_usage.bytes;
++}
++
++static double agent_tokens(void)
++{
++	return agent_tokens_at(agent_context_bytes());
 +}
 +
 +static void agent_record_usage(cJSON *root, double bytes)
@@ -10656,13 +10702,13 @@ index 00000000..371ed412
 +	for (int k = 0; k < cnt; k++) {
 +		if (spans[k].role != 4 || agent_note(spans[k].n, &r, &row))
 +			continue;
-+		if (n < 12 && len < size)
++		if (n < 8 && len < size)
 +			len += snprintf(buf + len, size - len, "%s%lu",
 +				n ? ", " : "EX ", spans[k].n);
 +		n++;
 +	}
-+	if (n > 12 && len < size)
-+		snprintf(buf + len, size - len, " and %d more", n - 12);
++	if (n > 8 && len < size)
++		snprintf(buf + len, size - len, " and %d more", n - 8);
 +	return n;
 +}
 +
@@ -10712,22 +10758,46 @@ index 00000000..371ed412
 + * index in agent_messages (-1 before it is built), and the saved log buffer. */
 +static cJSON *agent_cp;
 +static int agent_cp_base = -1, agent_cp_logbuf, agent_cp_done;
-+static int agent_cp_refused;	/* endings refused for unrated commands */
++static int agent_cp_refused, agent_cp_left;	/* refusals, unrated then */
 +static char agent_continue[] = "Continue the task.";
-+static double agent_cp_begin, agent_cp_added;
++/* The start is kept in bytes so each report uses the current anchor and an
++ * unchanged log reads the same at both ends. */
++static double agent_cp_bytes, agent_cp_added;
++
++/* Whether to refuse ending the checkpoint for unrated commands. New ratings
++ * restart the count, so only two refusals without progress end it. */
++static int agent_cp_hold(char *unrated, int size)
++{
++	int n = agent_unrated_now(unrated, size);
++	if (n < agent_cp_left)
++		agent_cp_refused = 0;
++	agent_cp_left = n;
++	return n && agent_cp_refused++ < 2;
++}
++
++/* A rating to copy, for the first unrated entry in an agent_unrated list. */
++static char *agent_cp_example(char *unrated)
++{
++	static char ex[64];
++	snprintf(ex, sizeof(ex), "%luarate 1 printed lines 1-50",
++		strtoul(unrated + 3, NULL, 10));
++	return ex;
++}
 +
 +/* The model already has the entries in context; list only their sizes. */
 +static const char agent_rating_scale[] =
-+	"Ratings: 0 dead weight, no value for the remaining work; 1 low, minor, "
-+	"superseded or only mechanics; 2 useful, informs the remaining work; "
-+	"3 essential, a decision, finding or state the task depends on.\n";
++	"Ratings:\n"
++	"0 dead weight, no value for the remaining work\n"
++	"1 low, minor, superseded or only mechanics\n"
++	"2 useful, informs the remaining work\n"
++	"3 essential, a decision, finding or state the task depends on\n";
 +
 +/* One line per b-4 entry: role number ~tokens, the first line number when
 + * lines is set, and [rating] note for commands; then the five largest. */
 +static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 +		int lines, int notices)
 +{
-+	int top[5], ntop = 0, listed = 0, r, row;
++	int top[5], ntop = 0, listed = 0, r, row, col, len;
 +	char ln[256], *note;
 +	for (int k = 0; k < cnt; k++) {
 +		if (spans[k].role == 6 && !notices)
@@ -10757,11 +10827,17 @@ index 00000000..371ed412
 +	}
 +	if (listed > ntop) {
 +		sbuf_str(sb, "Largest:")
++		col = 8;
 +		for (int j = 0; j < ntop; j++) {
-+			snprintf(ln, sizeof(ln), "%s %s %lu ~%.0f", j ? "," : "",
++			len = snprintf(ln, sizeof(ln), " %s %lu ~%.0f%s",
 +				agent_span_role(spans + top[j]), spans[top[j]].n,
-+				agent_span_tokens(spans + top[j]));
++				agent_span_tokens(spans + top[j]), j + 1 < ntop ? "," : "");
++			if (col + len > 80) {
++				sbuf_chr(sb, '\n')
++				col = 0;
++			}
 +			sbuf_str(sb, ln)
++			col += len;
 +		}
 +		sbuf_chr(sb, '\n')
 +	}
@@ -10773,10 +10849,12 @@ index 00000000..371ed412
 +	int cnt = agent_spans(&spans);
 +	char ln[256], unrated[112];
 +	sbuf_smake(sb, 256)
-+	snprintf(ln, sizeof(ln), "Context checkpoint: about %.0f tokens now, %.0f at "
-+		"the start of this checkpoint, %.0f added since the last one. Your "
-+		"context is rebuilt from these session log entries (role number "
-+		"~tokens, then [rating] note for commands):\n", tokens, agent_cp_begin,
++	snprintf(ln, sizeof(ln),
++		"Context checkpoint: about %.0f tokens now, %.0f at the start of this\n"
++		"checkpoint, %.0f added since the last one. Your context is rebuilt\n"
++		"from these session log entries (role number ~tokens, then [rating]\n"
++		"note for commands):\n", tokens,
++		agent_tokens_at(agent_cp_bytes),
 +		agent_cp_added);
 +	sbuf_str(sb, ln)
 +	agent_entry_list(sb, spans, cnt, 0, 0);
@@ -10784,27 +10862,33 @@ index 00000000..371ed412
 +		sbuf_str(sb, "Unrated: ")
 +		sbuf_str(sb, unrated)
 +		sbuf_str(sb, "\nRate these first: one sentence each on what the command "
-+			"did and found.\n")
++			"did and\nfound, e.g. the ex command ")
++		sbuf_str(sb, agent_cp_example(unrated))
++		sbuf_str(sb, ".\n")
 +	}
-+	sbuf_str(sb, "Until adone, only these ex commands run; several can be sent "
-+		"in one reply:\n"
-+		"N[,M]arate R sentence  rate each EX entry from N through M; deferred "
-+		"commands are rated 1 already\n"
-+		"N[,M]anote [text]  text replaces entries N through M under entry N's "
-+		"role (ASSISTANT for EX); no text removes them; a command and its "
-+		"RESULT stay together\n"
-+		"adone  end the checkpoint and resume the task; refused while commands "
-+		"are unrated\n")
++	sbuf_str(sb,
++		"Until adone, only these ex commands run. Each command is its own ex\n"
++		"tool call; several calls can go in one reply. Commands written as text\n"
++		"do not run. N,M is a range from N through M, not a list.\n"
++		"N[,M]arate R sentence\n"
++		"  rate each EX entry from N through M; deferred commands are rated 1\n"
++		"N[,M]anote [text]\n"
++		"  text replaces entries N through M under entry N's role (ASSISTANT\n"
++		"  for EX); no text removes them; a command and its RESULT stay together\n"
++		"adone\n"
++		"  end the checkpoint and resume the task; refused while commands are\n"
++		"  unrated\n")
 +	sbuf_str(sb, agent_rating_scale)
-+	sbuf_str(sb, "Then trim by rating, large entries first: remove 0, condense 1 "
-+		"to a short note, condense a large 2 to its findings, keep 3 or condense "
-+		"it only to its findings. Do not trim entries under ~50 tokens, but "
-+		"still rate their commands. USER "
-+		"entries cannot be changed. To keep findings, note them over the "
-+		"entries they came from, e.g. 53,59anote findings: ...\n"
-+		"Files and buffers cannot be read now; decide from your context. "
-+		"Ratings are kept in b-6 for later checkpoints and compaction. This "
-+		"exchange is not kept in the session log.")
++	sbuf_str(sb,
++		"Then trim by rating, large entries first: remove 0, condense 1 to a\n"
++		"short note, condense a large 2 to its findings, keep 3 or condense it\n"
++		"only to its findings. Do not trim entries under ~50 tokens, but still\n"
++		"rate their commands. USER entries cannot be changed. To keep findings,\n"
++		"note them over the entries they came from, e.g.\n"
++		"53,59anote findings: ...\n"
++		"Files and buffers cannot be read now; decide from your context. Ratings\n"
++		"are kept in b-6 for later checkpoints and compaction. This exchange is\n"
++		"not kept in the session log.")
 +	free(spans);
 +	sbufn_ret(sb, sb->s)
 +}
@@ -10816,7 +10900,8 @@ index 00000000..371ed412
 +	agent_cp_done = agent_cp_refused = 0;
 +	agent_cp = cJSON_CreateArray();
 +	agent_cp_base = -1;
-+	agent_cp_begin = tokens;
++	agent_cp_bytes = agent_context_bytes();
++	agent_cp_left = INT_MAX;
 +	agent_cp_added = tokens - agent_acl_mark;
 +	agent_cp_logbuf = agent_logbuf;
 +	agent_logbuf = 2;
@@ -10872,7 +10957,7 @@ index 00000000..371ed412
 +		agent_reparse();
 +	agent_acl_mark = agent_tokens();
 +	k = snprintf(note, sizeof(note), "[acl checkpoint done ~%.0f -> ~%.0f tokens",
-+		agent_cp_begin, agent_acl_mark);
++		agent_tokens_at(agent_cp_bytes), agent_acl_mark);
 +	if ((n = agent_unrated_now(unrated, sizeof(unrated))))
 +		snprintf(note + k, sizeof(note) - k, ", %d unrated", n);
 +	strcat(note, "]\n");
@@ -10887,10 +10972,8 @@ index 00000000..371ed412
 +	char unrated[112];
 +	if (!agent_checkpointing)
 +		return "no checkpoint in progress";
-+	/* Refuse twice so a stuck model cannot hold the checkpoint open. */
-+	if (agent_cp_refused < 2 && agent_unrated_now(unrated, sizeof(unrated))) {
-+		agent_cp_refused++;
-+		snprintf(err, sizeof(err), "rate %s first: N[,M]arate R sentence",
++	if (agent_cp_hold(unrated, sizeof(unrated))) {
++		snprintf(err, sizeof(err), "rate first with N[,M]arate R sentence:\n%s",
 +			unrated);
 +		return err;
 +	}
@@ -11658,12 +11741,12 @@ index 00000000..371ed412
 +			/* Invalid calls never enter history or execute, even in a mixed batch. */
 +			if (invalid == 2) {
 +				snprintf(diagnostic, sizeof(diagnostic),
-+					"Your previous response was rejected: %s. "
-+					"No commands from that response were executed. "
-+					"Correct and resubmit the intended calls. "
-+					"Use tool type function, name ex, and unique nonempty call IDs. "
-+					"Arguments must be a JSON-encoded object with a nonempty "
-+					"string command, for example {\"command\":\"1,20p\"}.", error);
++					"Your previous response was rejected: %s.\n"
++					"No commands from that response were executed. Correct and\n"
++					"resubmit the intended calls. Use tool type function, name ex,\n"
++					"and unique nonempty call IDs. Arguments must be a JSON-encoded\n"
++					"object with a nonempty string command, for example\n"
++					"{\"command\":\"1,20p\"}.", error);
 +				agent_log("USER", diagnostic);
 +				if (!agent_live())
 +					cJSON_AddItemToArray(agent_messages,
@@ -11848,15 +11931,16 @@ index 00000000..371ed412
 +				continue;
 +			}
 +		}
-+		/* A reply without commands also ends the checkpoint, once
-+		 * commands are rated or after two reminders. */
-+		if (agent_checkpointing && !has_calls && agent_cp_refused < 2) {
-+			char unrated[112], msg[256];
-+			if (agent_unrated_now(unrated, sizeof(unrated))) {
-+				agent_cp_refused++;
-+				snprintf(msg, sizeof(msg), "Rate %s before the checkpoint "
-+					"ends: N[,M]arate R sentence for each, then adone.",
-+					unrated);
++		/* A reply without commands also ends the checkpoint, once commands
++		 * are rated or after two reminders without new ratings. */
++		if (agent_checkpointing && !has_calls) {
++			char unrated[112], msg[384];
++			if (agent_cp_hold(unrated, sizeof(unrated))) {
++				snprintf(msg, sizeof(msg),
++					"Your reply made no ex tool calls, so nothing ran. Rate "
++					"these before\nthe checkpoint ends: %s\nOne ex tool call "
++					"per command, N[,M]arate R sentence, e.g.\n%s; then "
++					"adone.", unrated, agent_cp_example(unrated));
 +				cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 +				agent_log("USER", msg);
 +				continue;
@@ -12176,7 +12260,7 @@ index 00000000..371ed412
 +		*arg ? "noted" : "removed", last - first + 1,
 +		last > first ? "entries" : "entry",
 +		spans[first].n, spans[last].n, before, after, after > before ?
-+		"; the note is larger than the entries it replaced" : "");
++		";\nthe note is larger than the entries it replaced" : "");
 +	ex_print(msg, msg_ft)
 +done:
 +	free(spans);
@@ -12379,7 +12463,7 @@ index 00000000..371ed412
 +		total += agent_span_tokens(spans + k);
 +	if (cnt) {
 +		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-+			"entries (role number ~tokens%s, then [rating] note for commands):\n",
++			"entries\n(role number ~tokens%s, then [rating] note for commands):\n",
 +			total, browse ? ", first line" : "");
 +		sbuf_str(task, ln)
 +		agent_entry_list(task, spans, cnt, browse, 1);
@@ -12403,9 +12487,9 @@ index 00000000..371ed412
 +	}
 +	if (lbuf_len(notes)) {
 +		sbuf_str(task, agent_rating_scale)
-+		sbuf_str(task, "Weigh entries by rating: omit 0, at most a phrase for 1, "
-+			"summarize 2, keep the exact details of 3. Judge unrated entries by "
-+			"their content.\n")
++		sbuf_str(task,
++			"Weigh entries by rating: omit 0, at most a phrase for 1, summarize 2,\n"
++			"keep the exact details of 3. Judge unrated entries by their content.\n")
 +	}
 +	free(spans);
 +	sbuf_chr(task, '\n')
@@ -16157,7 +16241,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..a892d420 100755
+index c836c94c..464bb3d3 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,174 @@ build() {
@@ -16262,9 +16346,9 @@ index c836c94c..a892d420 100755
 +                "Example: rate the command of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
 +            spec("adone", "End an agent checkpoint",
 +                "Ends the acl checkpoint phase; the interrupted request resumes\n" \
-+                "from the trimmed session log. Takes no range or argument. Refused\n" \
-+                "twice per checkpoint while EX entries are unrated. Errors outside\n" \
-+                "a checkpoint.")
++                "from the trimmed session log. Takes no range or argument. While EX\n" \
++                "entries are unrated it is refused, up to twice in a row without new\n" \
++                "ratings. Errors outside a checkpoint.")
 +            spec("ast", "Print agent status and token usage",
 +                "Prints sizes, per-role usage, activity, limits, acl checkpoint and\n" \
 +                "autocompact mode, and the message bytes shared with the previous\n" \
@@ -16291,8 +16375,8 @@ index c836c94c..a892d420 100755
 +                "requests lists the role, number and estimated tokens of every\n" \
 +                "entry with the arate notes of commands, and the largest few; only\n" \
 +                "arate, anote and adone run. Unrated commands must be rated first:\n" \
-+                "adone or a reply without commands is refused twice while any\n" \
-+                "remain. The lists and exchange are logged to b-3, not b-4, with\n" \
++                "adone or a reply without commands is refused while any remain,\n" \
++                "up to twice in a row without new ratings. The lists and exchange are logged to b-3, not b-4, with\n" \
 +                "headers prefixed CP. It ends with adone, a reply without commands\n" \
 +                "or recursive editing; the interrupted request then resumes. aco is\n" \
 +                "checked after it.\n\n" \
@@ -17042,7 +17126,7 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..cd806c59
+index 00000000..58311565
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1339 @@
@@ -17900,9 +17984,9 @@ index 00000000..cd806c59
 +	"End an agent checkpoint",
 +	"",
 +	"Ends the acl checkpoint phase; the interrupted request resumes",
-+	"from the trimmed session log. Takes no range or argument. Refused",
-+	"twice per checkpoint while EX entries are unrated. Errors outside",
-+	"a checkpoint.",
++	"from the trimmed session log. Takes no range or argument. While EX",
++	"entries are unrated it is refused, up to twice in a row without new",
++	"ratings. Errors outside a checkpoint.",
 +	"",
 +	"ast",
 +	"Print agent status and token usage",
@@ -18002,8 +18086,8 @@ index 00000000..cd806c59
 +	"requests lists the role, number and estimated tokens of every",
 +	"entry with the arate notes of commands, and the largest few; only",
 +	"arate, anote and adone run. Unrated commands must be rated first:",
-+	"adone or a reply without commands is refused twice while any",
-+	"remain. The lists and exchange are logged to b-3, not b-4, with",
++	"adone or a reply without commands is refused while any remain,",
++	"up to twice in a row without new ratings. The lists and exchange are logged to b-3, not b-4, with",
 +	"headers prefixed CP. It ends with adone, a reply without commands",
 +	"or recursive editing; the interrupted request then resumes. aco is",
 +	"checked after it.",
