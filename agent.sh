@@ -692,23 +692,26 @@ static int agent_cp_refused;	/* endings refused for unrated commands */
 static double agent_cp_begin, agent_cp_added;
 
 /* The model already has the entries in context; list only their sizes. */
-static char *agent_checkpoint(double tokens)
+static const char agent_rating_scale[] =
+	"Ratings: 0 dead weight, no value for the remaining work; 1 low, minor, "
+	"superseded or only mechanics; 2 useful, informs the remaining work; "
+	"3 essential, a decision, finding or state the task depends on.\n";
+
+/* One line per b-4 entry: role number ~tokens, the first line number when
+ * lines is set, and [rating] note for commands; then the five largest. */
+static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
+		int lines)
 {
-	struct agent_span *spans;
-	int cnt = agent_spans(&spans), r, row;
-	char ln[256], unrated[112], *note;
-	sbuf_smake(sb, 256)
-	snprintf(ln, sizeof(ln), "Context checkpoint: about %.0f tokens now, %.0f at "
-		"the start of this checkpoint, %.0f added since the last one. Your "
-		"context is rebuilt from these session log entries (role number "
-		"~tokens, then [rating] note for commands):\n", tokens, agent_cp_begin,
-		agent_cp_added);
-	sbuf_str(sb, ln)
-	int top[5], ntop = 0;
+	int top[5], ntop = 0, r, row;
+	char ln[256], *note;
 	for (int k = 0; k < cnt; k++) {
 		snprintf(ln, sizeof(ln), "%s %lu ~%.0f", agent_span_role(spans + k),
 			spans[k].n, agent_span_tokens(spans + k));
 		sbuf_str(sb, ln)
+		if (lines) {
+			snprintf(ln, sizeof(ln), " line %d", spans[k].beg + 1);
+			sbuf_str(sb, ln)
+		}
 		if (spans[k].role == 4 && (note = agent_note(spans[k].n, &r, &row))) {
 			snprintf(ln, sizeof(ln), " [%d] ", r);
 			sbuf_str(sb, ln)
@@ -734,6 +737,21 @@ static char *agent_checkpoint(double tokens)
 		}
 		sbuf_chr(sb, '\''\n'\'')
 	}
+}
+
+static char *agent_checkpoint(double tokens)
+{
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans);
+	char ln[256], unrated[112];
+	sbuf_smake(sb, 256)
+	snprintf(ln, sizeof(ln), "Context checkpoint: about %.0f tokens now, %.0f at "
+		"the start of this checkpoint, %.0f added since the last one. Your "
+		"context is rebuilt from these session log entries (role number "
+		"~tokens, then [rating] note for commands):\n", tokens, agent_cp_begin,
+		agent_cp_added);
+	sbuf_str(sb, ln)
+	agent_entry_list(sb, spans, cnt, 0);
 	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 		sbuf_str(sb, "Unrated: ")
 		sbuf_str(sb, unrated)
@@ -742,15 +760,16 @@ static char *agent_checkpoint(double tokens)
 	}
 	sbuf_str(sb, "Until adone, only these ex commands run; several can be sent "
 		"in one reply:\n"
-		"N[,M]arate R sentence  rate each EX entry from N through M; R is 0 dead "
-		"weight, 1 low, 2 useful, 3 essential\n"
+		"N[,M]arate R sentence  rate each EX entry from N through M\n"
 		"N[,M]anote [text]  text replaces entries N through M under entry N'\''s "
 		"role (ASSISTANT for EX); no text removes them\n"
 		"adone  end the checkpoint and resume the task; refused while commands "
-		"are unrated\n"
-		"Then trim by rating: remove or condense low-rated results, large ones "
-		"first. USER entries cannot be changed. To keep findings, note them over "
-		"the entries they came from, e.g. 53,59anote findings: ...\n"
+		"are unrated\n")
+	sbuf_str(sb, agent_rating_scale)
+	sbuf_str(sb, "Then trim by rating, large entries first: remove 0, condense 1 "
+		"to a short note, condense a large 2 to its findings, keep 3. USER "
+		"entries cannot be changed. To keep findings, note them over the "
+		"entries they came from, e.g. 53,59anote findings: ...\n"
 		"Files and buffers cannot be read now; decide from your context. "
 		"Ratings are kept in b-6 for later checkpoints and compaction. This "
 		"exchange is not kept in the session log.")
@@ -2290,15 +2309,45 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	else
 		sbuf_str(task,
 		"The log is in your context. Do not read the current buffer into context.\n")
-	char *notes = agent_text(tempbufs[5].lb);
-	if (*notes) {
-		sbuf_str(task,
-		"Session notes rate its commands, one line per EX entry: number, importance\n"
-		"0 (dead weight) to 3 (essential), and what the command did. They also\n"
-		"cover entries already trimmed from the log; use them to decide what to keep:\n")
-		sbuf_str(task, notes)
+	struct lbuf *notes = tempbufs[5].lb;
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans), trimmed = 0;
+	double total = 0;
+	char ln[192];
+	for (int k = 0; k < cnt; k++)
+		total += agent_span_tokens(spans + k);
+	if (cnt) {
+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
+			"entries (role number ~tokens%s, then [rating] note for commands):\n",
+			total, browse ? ", first line" : "");
+		sbuf_str(task, ln)
+		agent_entry_list(task, spans, cnt, browse);
 	}
-	free(notes);
+	/* Notes outlive entries trimmed by anote; list those separately. */
+	for (int i = 0; i < lbuf_len(notes); i++) {
+		char *e, *l = notes->ln[i];
+		unsigned long n;
+		int k;
+		if (!isdigit((unsigned char)*l))
+			continue;
+		n = strtoul(l, &e, 10);
+		for (k = 0; k < cnt && (spans[k].role != 4 || spans[k].n != n); k++)
+			;
+		if (k < cnt || *e != '\'' '\'')
+			continue;
+		if (!trimmed++)
+			sbuf_str(task, "Notes on commands already trimmed from the log "
+				"(number rating note):\n")
+		sbuf_str(task, l)
+	}
+	if (lbuf_len(notes)) {
+		sbuf_str(task, agent_rating_scale)
+		sbuf_str(task, "Weigh entries by rating: omit 0, at most a phrase for 1, "
+			"summarize 2, keep the exact details of 3. Judge unrated entries by "
+			"their content.\n")
+	}
+	free(spans);
+	sbuf_chr(task, '\''\n'\'')
 	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
 	"constraints, and unfinished work.\n")
 	sbuf_str(task,
@@ -6170,9 +6219,11 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             spec("[range]apack[text]", "Compact the agent session from its log",
                 "Loads b-4 as context and asks the agent to replace it with a summary.\n" \
                 "Stays at the prompt; reloads the log on exit. Text replaces the default\n" \
-                "instructions; range attaches buffer text. Notes in b-6 (arate) are\n" \
-                "included; on success they move beside the archived log and b-6 is\n" \
-                "cleared. Unavailable as an agent tool.")
+                "instructions; range attaches buffer text. The task lists the log\n" \
+                "entries with estimated tokens and arate notes (b-6), including notes\n" \
+                "on trimmed entries; apack! adds entry line numbers. On success the\n" \
+                "notes move beside the archived log and b-6 is cleared. Unavailable\n" \
+                "as an agent tool.")
             spec("[range]apack![text]", "Compact the agent session by browsing its log",
                 "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
                 "ranges and replaces the log with a summary. Stays at the prompt;\n" \
@@ -6218,10 +6269,12 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
                 "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
                 "line per entry: number, rating and sentence, replacing an older\n" \
-                "note. Ratings: 0 dead weight, 1 low, 2 useful, 3 essential. Entries\n" \
-                "work as for anote; other roles in the range are skipped. Ratings show\n" \
-                "in acl checkpoint lists and are given to apack. b-6 is saved as notes\n" \
-                "in the session directory.\n\n" \
+                "note. Ratings: 0 dead weight, no value for the remaining work; 1 low,\n" \
+                "minor, superseded or only mechanics; 2 useful, informs the remaining\n" \
+                "work; 3 essential, a decision, finding or state the task depends on.\n" \
+                "Entries work as for anote; other roles in the range are skipped.\n" \
+                "Ratings show in acl checkpoint lists and are given to apack. b-6 is\n" \
+                "saved as notes in the session directory.\n\n" \
                 "Example: rate the command of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
             spec("adone", "End an agent checkpoint",
                 "Ends the acl checkpoint phase; the interrupted request resumes\n" \
@@ -8664,9 +8717,11 @@ static char *exspec_lines[] = {
 	"",
 	"Loads b-4 as context and asks the agent to replace it with a summary.",
 	"Stays at the prompt; reloads the log on exit. Text replaces the default",
-	"instructions; range attaches buffer text. Notes in b-6 (arate) are",
-	"included; on success they move beside the archived log and b-6 is",
-	"cleared. Unavailable as an agent tool.",
+	"instructions; range attaches buffer text. The task lists the log",
+	"entries with estimated tokens and arate notes (b-6), including notes",
+	"on trimmed entries; apack! adds entry line numbers. On success the",
+	"notes move beside the archived log and b-6 is cleared. Unavailable",
+	"as an agent tool.",
 	"",
 	"[range]apack![text]",
 	"Compact the agent session by browsing its log",
@@ -8726,10 +8781,12 @@ static char *exspec_lines[] = {
 	"",
 	"Writes a note for each EX entry from N through M of b-4 to b-6, one",
 	"line per entry: number, rating and sentence, replacing an older",
-	"note. Ratings: 0 dead weight, 1 low, 2 useful, 3 essential. Entries",
-	"work as for anote; other roles in the range are skipped. Ratings show",
-	"in acl checkpoint lists and are given to apack. b-6 is saved as notes",
-	"in the session directory.",
+	"note. Ratings: 0 dead weight, no value for the remaining work; 1 low,",
+	"minor, superseded or only mechanics; 2 useful, informs the remaining",
+	"work; 3 essential, a decision, finding or state the task depends on.",
+	"Entries work as for anote; other roles in the range are skipped.",
+	"Ratings show in acl checkpoint lists and are given to apack. b-6 is",
+	"saved as notes in the session directory.",
 	"",
 	"Example: rate the command of entry 52",
 	"52arate 1 read vi.c lines 1-260, nothing relevant",
@@ -9173,52 +9230,52 @@ static struct {
 	{"a", "Open or resume the agent conversation", 745, 752, 0, 0},
 	{"a!", "Start a new agent conversation", 753, 758, 0, 0},
 	{"a~", "Resume an agent conversation from its log", 759, 764, 0, 0},
-	{"apack", "Compact the agent session from its log", 765, 773, 0, 0},
-	{"apack!", "Compact the agent session by browsing its log", 774, 781, 0, 0},
-	{"acm", "Toggle the caveman response style skill", 782, 787, 0, 0},
-	{"aretry", "Execute the last agent command once without the guardrail", 788, 800, 0, 0},
-	{"aout", "Print the saved output of the last agent tool call", 801, 812, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 813, 826, 0, 0},
-	{"arate", "Rate agent commands in the notes buffer", 827, 839, 0, 0},
-	{"adone", "End an agent checkpoint", 840, 847, 0, 0},
-	{"ast", "Print agent status and token usage", 848, 857, 0, 0},
-	{"ac", "Set autocomplete filter regex", 858, 866, 0, 0},
-	{"sc", "Set ex special characters", 867, 877, 0, 0},
-	{"sc!", "Set ex special characters", 878, 885, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 886, 893, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 894, 897, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 898, 902, 0, 0},
-	{"ph", "Redefine placeholders", 903, 919, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 928, 951, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 952, 961, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 962, 969, 1, 0},
-	{"agr", "Control agent output protection", 970, 976, 1, 0},
-	{"ar", "Display returned agent reasoning", 977, 981, 1, 0},
-	{"aspec", "Print ex specifications for agents", 982, 986, 1, 0},
-	{"ai", "Indent new lines", 987, 990, 1, 0},
-	{"ic", "Ignore case in regular expressions", 991, 992, 1, 0},
-	{"ish", "Interactive shell", 993, 1008, 1, 0},
-	{"grp", "Regex search group", 1009, 1017, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1018, 1021, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1022, 1023, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1023, 1024, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1024, 1025, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1025, 1026, 1, 0},
-	{"led", "Enable all terminal output", 1026, 1027, 1, 0},
-	{"vis", "Control startup flags", 1028, 1039, 1, 0},
-	{"mpt", "Control vi prompts", 1040, 1050, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1051, 1053, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1053, 1055, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1055, 1056, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1056, 1057, 1, 0},
-	{"td", "Current text direction context", 1057, 1063, 1, 0},
-	{"pr", "Print register", 1064, 1080, 1, 0},
-	{"fr", "Find register", 1081, 1093, 1, 0},
-	{"rr", "Record register", 1094, 1107, 1, 0},
-	{"lim", "Line length render limit", 1108, 1123, 1, 0},
-	{"seq", "Control Undo/Redo", 1124, 1136, 1, 0},
-	{"left", "Control horizontal scroll", 1137, 1142, 1, 0},
-	{"err", "Control ex errors", 1143, 1155, 1, 0},
+	{"apack", "Compact the agent session from its log", 765, 775, 0, 0},
+	{"apack!", "Compact the agent session by browsing its log", 776, 783, 0, 0},
+	{"acm", "Toggle the caveman response style skill", 784, 789, 0, 0},
+	{"aretry", "Execute the last agent command once without the guardrail", 790, 802, 0, 0},
+	{"aout", "Print the saved output of the last agent tool call", 803, 814, 0, 0},
+	{"anote", "Replace or remove agent session log entries", 815, 828, 0, 0},
+	{"arate", "Rate agent commands in the notes buffer", 829, 843, 0, 0},
+	{"adone", "End an agent checkpoint", 844, 851, 0, 0},
+	{"ast", "Print agent status and token usage", 852, 861, 0, 0},
+	{"ac", "Set autocomplete filter regex", 862, 870, 0, 0},
+	{"sc", "Set ex special characters", 871, 881, 0, 0},
+	{"sc!", "Set ex special characters", 882, 889, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 890, 897, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 898, 901, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 902, 906, 0, 0},
+	{"ph", "Redefine placeholders", 907, 923, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 932, 955, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 956, 965, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 966, 973, 1, 0},
+	{"agr", "Control agent output protection", 974, 980, 1, 0},
+	{"ar", "Display returned agent reasoning", 981, 985, 1, 0},
+	{"aspec", "Print ex specifications for agents", 986, 990, 1, 0},
+	{"ai", "Indent new lines", 991, 994, 1, 0},
+	{"ic", "Ignore case in regular expressions", 995, 996, 1, 0},
+	{"ish", "Interactive shell", 997, 1012, 1, 0},
+	{"grp", "Regex search group", 1013, 1021, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1022, 1025, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1026, 1027, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1027, 1028, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1028, 1029, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1029, 1030, 1, 0},
+	{"led", "Enable all terminal output", 1030, 1031, 1, 0},
+	{"vis", "Control startup flags", 1032, 1043, 1, 0},
+	{"mpt", "Control vi prompts", 1044, 1054, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1055, 1057, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1057, 1059, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1059, 1060, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1060, 1061, 1, 0},
+	{"td", "Current text direction context", 1061, 1067, 1, 0},
+	{"pr", "Print register", 1068, 1084, 1, 0},
+	{"fr", "Find register", 1085, 1097, 1, 0},
+	{"rr", "Record register", 1098, 1111, 1, 0},
+	{"lim", "Line length render limit", 1112, 1127, 1, 0},
+	{"seq", "Control Undo/Redo", 1128, 1140, 1, 0},
+	{"left", "Control horizontal scroll", 1141, 1146, 1, 0},
+	{"err", "Control ex errors", 1147, 1159, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -9841,10 +9898,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..5fd05af2
+index 00000000..7a2d9d89
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2469 @@
+@@ -0,0 +1,2518 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -10507,23 +10564,26 @@ index 00000000..5fd05af2
 +static double agent_cp_begin, agent_cp_added;
 +
 +/* The model already has the entries in context; list only their sizes. */
-+static char *agent_checkpoint(double tokens)
++static const char agent_rating_scale[] =
++	"Ratings: 0 dead weight, no value for the remaining work; 1 low, minor, "
++	"superseded or only mechanics; 2 useful, informs the remaining work; "
++	"3 essential, a decision, finding or state the task depends on.\n";
++
++/* One line per b-4 entry: role number ~tokens, the first line number when
++ * lines is set, and [rating] note for commands; then the five largest. */
++static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
++		int lines)
 +{
-+	struct agent_span *spans;
-+	int cnt = agent_spans(&spans), r, row;
-+	char ln[256], unrated[112], *note;
-+	sbuf_smake(sb, 256)
-+	snprintf(ln, sizeof(ln), "Context checkpoint: about %.0f tokens now, %.0f at "
-+		"the start of this checkpoint, %.0f added since the last one. Your "
-+		"context is rebuilt from these session log entries (role number "
-+		"~tokens, then [rating] note for commands):\n", tokens, agent_cp_begin,
-+		agent_cp_added);
-+	sbuf_str(sb, ln)
-+	int top[5], ntop = 0;
++	int top[5], ntop = 0, r, row;
++	char ln[256], *note;
 +	for (int k = 0; k < cnt; k++) {
 +		snprintf(ln, sizeof(ln), "%s %lu ~%.0f", agent_span_role(spans + k),
 +			spans[k].n, agent_span_tokens(spans + k));
 +		sbuf_str(sb, ln)
++		if (lines) {
++			snprintf(ln, sizeof(ln), " line %d", spans[k].beg + 1);
++			sbuf_str(sb, ln)
++		}
 +		if (spans[k].role == 4 && (note = agent_note(spans[k].n, &r, &row))) {
 +			snprintf(ln, sizeof(ln), " [%d] ", r);
 +			sbuf_str(sb, ln)
@@ -10549,6 +10609,21 @@ index 00000000..5fd05af2
 +		}
 +		sbuf_chr(sb, '\n')
 +	}
++}
++
++static char *agent_checkpoint(double tokens)
++{
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans);
++	char ln[256], unrated[112];
++	sbuf_smake(sb, 256)
++	snprintf(ln, sizeof(ln), "Context checkpoint: about %.0f tokens now, %.0f at "
++		"the start of this checkpoint, %.0f added since the last one. Your "
++		"context is rebuilt from these session log entries (role number "
++		"~tokens, then [rating] note for commands):\n", tokens, agent_cp_begin,
++		agent_cp_added);
++	sbuf_str(sb, ln)
++	agent_entry_list(sb, spans, cnt, 0);
 +	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 +		sbuf_str(sb, "Unrated: ")
 +		sbuf_str(sb, unrated)
@@ -10557,15 +10632,16 @@ index 00000000..5fd05af2
 +	}
 +	sbuf_str(sb, "Until adone, only these ex commands run; several can be sent "
 +		"in one reply:\n"
-+		"N[,M]arate R sentence  rate each EX entry from N through M; R is 0 dead "
-+		"weight, 1 low, 2 useful, 3 essential\n"
++		"N[,M]arate R sentence  rate each EX entry from N through M\n"
 +		"N[,M]anote [text]  text replaces entries N through M under entry N's "
 +		"role (ASSISTANT for EX); no text removes them\n"
 +		"adone  end the checkpoint and resume the task; refused while commands "
-+		"are unrated\n"
-+		"Then trim by rating: remove or condense low-rated results, large ones "
-+		"first. USER entries cannot be changed. To keep findings, note them over "
-+		"the entries they came from, e.g. 53,59anote findings: ...\n"
++		"are unrated\n")
++	sbuf_str(sb, agent_rating_scale)
++	sbuf_str(sb, "Then trim by rating, large entries first: remove 0, condense 1 "
++		"to a short note, condense a large 2 to its findings, keep 3. USER "
++		"entries cannot be changed. To keep findings, note them over the "
++		"entries they came from, e.g. 53,59anote findings: ...\n"
 +		"Files and buffers cannot be read now; decide from your context. "
 +		"Ratings are kept in b-6 for later checkpoints and compaction. This "
 +		"exchange is not kept in the session log.")
@@ -12105,15 +12181,45 @@ index 00000000..5fd05af2
 +	else
 +		sbuf_str(task,
 +		"The log is in your context. Do not read the current buffer into context.\n")
-+	char *notes = agent_text(tempbufs[5].lb);
-+	if (*notes) {
-+		sbuf_str(task,
-+		"Session notes rate its commands, one line per EX entry: number, importance\n"
-+		"0 (dead weight) to 3 (essential), and what the command did. They also\n"
-+		"cover entries already trimmed from the log; use them to decide what to keep:\n")
-+		sbuf_str(task, notes)
++	struct lbuf *notes = tempbufs[5].lb;
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans), trimmed = 0;
++	double total = 0;
++	char ln[192];
++	for (int k = 0; k < cnt; k++)
++		total += agent_span_tokens(spans + k);
++	if (cnt) {
++		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
++			"entries (role number ~tokens%s, then [rating] note for commands):\n",
++			total, browse ? ", first line" : "");
++		sbuf_str(task, ln)
++		agent_entry_list(task, spans, cnt, browse);
 +	}
-+	free(notes);
++	/* Notes outlive entries trimmed by anote; list those separately. */
++	for (int i = 0; i < lbuf_len(notes); i++) {
++		char *e, *l = notes->ln[i];
++		unsigned long n;
++		int k;
++		if (!isdigit((unsigned char)*l))
++			continue;
++		n = strtoul(l, &e, 10);
++		for (k = 0; k < cnt && (spans[k].role != 4 || spans[k].n != n); k++)
++			;
++		if (k < cnt || *e != ' ')
++			continue;
++		if (!trimmed++)
++			sbuf_str(task, "Notes on commands already trimmed from the log "
++				"(number rating note):\n")
++		sbuf_str(task, l)
++	}
++	if (lbuf_len(notes)) {
++		sbuf_str(task, agent_rating_scale)
++		sbuf_str(task, "Weigh entries by rating: omit 0, at most a phrase for 1, "
++			"summarize 2, keep the exact details of 3. Judge unrated entries by "
++			"their content.\n")
++	}
++	free(spans);
++	sbuf_chr(task, '\n')
 +	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
 +	"constraints, and unfinished work.\n")
 +	sbuf_str(task,
@@ -15861,10 +15967,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..1dd60d23 100755
+index c836c94c..7c62bb8f 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,163 @@ build() {
+@@ -65,6 +65,167 @@ build() {
      }
  }
  
@@ -15903,9 +16009,11 @@ index c836c94c..1dd60d23 100755
 +            spec("[range]apack[text]", "Compact the agent session from its log",
 +                "Loads b-4 as context and asks the agent to replace it with a summary.\n" \
 +                "Stays at the prompt; reloads the log on exit. Text replaces the default\n" \
-+                "instructions; range attaches buffer text. Notes in b-6 (arate) are\n" \
-+                "included; on success they move beside the archived log and b-6 is\n" \
-+                "cleared. Unavailable as an agent tool.")
++                "instructions; range attaches buffer text. The task lists the log\n" \
++                "entries with estimated tokens and arate notes (b-6), including notes\n" \
++                "on trimmed entries; apack! adds entry line numbers. On success the\n" \
++                "notes move beside the archived log and b-6 is cleared. Unavailable\n" \
++                "as an agent tool.")
 +            spec("[range]apack![text]", "Compact the agent session by browsing its log",
 +                "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
 +                "ranges and replaces the log with a summary. Stays at the prompt;\n" \
@@ -15951,10 +16059,12 @@ index c836c94c..1dd60d23 100755
 +            spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
 +                "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
 +                "line per entry: number, rating and sentence, replacing an older\n" \
-+                "note. Ratings: 0 dead weight, 1 low, 2 useful, 3 essential. Entries\n" \
-+                "work as for anote; other roles in the range are skipped. Ratings show\n" \
-+                "in acl checkpoint lists and are given to apack. b-6 is saved as notes\n" \
-+                "in the session directory.\n\n" \
++                "note. Ratings: 0 dead weight, no value for the remaining work; 1 low,\n" \
++                "minor, superseded or only mechanics; 2 useful, informs the remaining\n" \
++                "work; 3 essential, a decision, finding or state the task depends on.\n" \
++                "Entries work as for anote; other roles in the range are skipped.\n" \
++                "Ratings show in acl checkpoint lists and are given to apack. b-6 is\n" \
++                "saved as notes in the session directory.\n\n" \
 +                "Example: rate the command of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
 +            spec("adone", "End an agent checkpoint",
 +                "Ends the acl checkpoint phase; the interrupted request resumes\n" \
@@ -16028,7 +16138,7 @@ index c836c94c..1dd60d23 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +231,7 @@ install() {
+@@ -74,7 +235,7 @@ install() {
  }
  
  print_usage() {
@@ -16037,7 +16147,7 @@ index c836c94c..1dd60d23 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +239,9 @@ print_usage() {
+@@ -82,6 +243,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -16731,10 +16841,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..c8e7861a
+index 00000000..53d49df7
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1328 @@
+@@ -0,0 +1,1332 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -17507,9 +17617,11 @@ index 00000000..c8e7861a
 +	"",
 +	"Loads b-4 as context and asks the agent to replace it with a summary.",
 +	"Stays at the prompt; reloads the log on exit. Text replaces the default",
-+	"instructions; range attaches buffer text. Notes in b-6 (arate) are",
-+	"included; on success they move beside the archived log and b-6 is",
-+	"cleared. Unavailable as an agent tool.",
++	"instructions; range attaches buffer text. The task lists the log",
++	"entries with estimated tokens and arate notes (b-6), including notes",
++	"on trimmed entries; apack! adds entry line numbers. On success the",
++	"notes move beside the archived log and b-6 is cleared. Unavailable",
++	"as an agent tool.",
 +	"",
 +	"[range]apack![text]",
 +	"Compact the agent session by browsing its log",
@@ -17569,10 +17681,12 @@ index 00000000..c8e7861a
 +	"",
 +	"Writes a note for each EX entry from N through M of b-4 to b-6, one",
 +	"line per entry: number, rating and sentence, replacing an older",
-+	"note. Ratings: 0 dead weight, 1 low, 2 useful, 3 essential. Entries",
-+	"work as for anote; other roles in the range are skipped. Ratings show",
-+	"in acl checkpoint lists and are given to apack. b-6 is saved as notes",
-+	"in the session directory.",
++	"note. Ratings: 0 dead weight, no value for the remaining work; 1 low,",
++	"minor, superseded or only mechanics; 2 useful, informs the remaining",
++	"work; 3 essential, a decision, finding or state the task depends on.",
++	"Entries work as for anote; other roles in the range are skipped.",
++	"Ratings show in acl checkpoint lists and are given to apack. b-6 is",
++	"saved as notes in the session directory.",
 +	"",
 +	"Example: rate the command of entry 52",
 +	"52arate 1 read vi.c lines 1-260, nothing relevant",
@@ -18016,52 +18130,52 @@ index 00000000..c8e7861a
 +	{"a", "Open or resume the agent conversation", 745, 752, 0, 0},
 +	{"a!", "Start a new agent conversation", 753, 758, 0, 0},
 +	{"a~", "Resume an agent conversation from its log", 759, 764, 0, 0},
-+	{"apack", "Compact the agent session from its log", 765, 773, 0, 0},
-+	{"apack!", "Compact the agent session by browsing its log", 774, 781, 0, 0},
-+	{"acm", "Toggle the caveman response style skill", 782, 787, 0, 0},
-+	{"aretry", "Execute the last agent command once without the guardrail", 788, 800, 0, 0},
-+	{"aout", "Print the saved output of the last agent tool call", 801, 812, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 813, 826, 0, 0},
-+	{"arate", "Rate agent commands in the notes buffer", 827, 839, 0, 0},
-+	{"adone", "End an agent checkpoint", 840, 847, 0, 0},
-+	{"ast", "Print agent status and token usage", 848, 857, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 858, 866, 0, 0},
-+	{"sc", "Set ex special characters", 867, 877, 0, 0},
-+	{"sc!", "Set ex special characters", 878, 885, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 886, 893, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 894, 897, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 898, 902, 0, 0},
-+	{"ph", "Redefine placeholders", 903, 919, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 928, 951, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 952, 961, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 962, 969, 1, 0},
-+	{"agr", "Control agent output protection", 970, 976, 1, 0},
-+	{"ar", "Display returned agent reasoning", 977, 981, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 982, 986, 1, 0},
-+	{"ai", "Indent new lines", 987, 990, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 991, 992, 1, 0},
-+	{"ish", "Interactive shell", 993, 1008, 1, 0},
-+	{"grp", "Regex search group", 1009, 1017, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1018, 1021, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1022, 1023, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1023, 1024, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1024, 1025, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1025, 1026, 1, 0},
-+	{"led", "Enable all terminal output", 1026, 1027, 1, 0},
-+	{"vis", "Control startup flags", 1028, 1039, 1, 0},
-+	{"mpt", "Control vi prompts", 1040, 1050, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1051, 1053, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1053, 1055, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1055, 1056, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1056, 1057, 1, 0},
-+	{"td", "Current text direction context", 1057, 1063, 1, 0},
-+	{"pr", "Print register", 1064, 1080, 1, 0},
-+	{"fr", "Find register", 1081, 1093, 1, 0},
-+	{"rr", "Record register", 1094, 1107, 1, 0},
-+	{"lim", "Line length render limit", 1108, 1123, 1, 0},
-+	{"seq", "Control Undo/Redo", 1124, 1136, 1, 0},
-+	{"left", "Control horizontal scroll", 1137, 1142, 1, 0},
-+	{"err", "Control ex errors", 1143, 1155, 1, 0},
++	{"apack", "Compact the agent session from its log", 765, 775, 0, 0},
++	{"apack!", "Compact the agent session by browsing its log", 776, 783, 0, 0},
++	{"acm", "Toggle the caveman response style skill", 784, 789, 0, 0},
++	{"aretry", "Execute the last agent command once without the guardrail", 790, 802, 0, 0},
++	{"aout", "Print the saved output of the last agent tool call", 803, 814, 0, 0},
++	{"anote", "Replace or remove agent session log entries", 815, 828, 0, 0},
++	{"arate", "Rate agent commands in the notes buffer", 829, 843, 0, 0},
++	{"adone", "End an agent checkpoint", 844, 851, 0, 0},
++	{"ast", "Print agent status and token usage", 852, 861, 0, 0},
++	{"ac", "Set autocomplete filter regex", 862, 870, 0, 0},
++	{"sc", "Set ex special characters", 871, 881, 0, 0},
++	{"sc!", "Set ex special characters", 882, 889, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 890, 897, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 898, 901, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 902, 906, 0, 0},
++	{"ph", "Redefine placeholders", 907, 923, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 932, 955, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 956, 965, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 966, 973, 1, 0},
++	{"agr", "Control agent output protection", 974, 980, 1, 0},
++	{"ar", "Display returned agent reasoning", 981, 985, 1, 0},
++	{"aspec", "Print ex specifications for agents", 986, 990, 1, 0},
++	{"ai", "Indent new lines", 991, 994, 1, 0},
++	{"ic", "Ignore case in regular expressions", 995, 996, 1, 0},
++	{"ish", "Interactive shell", 997, 1012, 1, 0},
++	{"grp", "Regex search group", 1013, 1021, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1022, 1025, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1026, 1027, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1027, 1028, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1028, 1029, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1029, 1030, 1, 0},
++	{"led", "Enable all terminal output", 1030, 1031, 1, 0},
++	{"vis", "Control startup flags", 1032, 1043, 1, 0},
++	{"mpt", "Control vi prompts", 1044, 1054, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1055, 1057, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1057, 1059, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1059, 1060, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1060, 1061, 1, 0},
++	{"td", "Current text direction context", 1061, 1067, 1, 0},
++	{"pr", "Print register", 1068, 1084, 1, 0},
++	{"fr", "Find register", 1085, 1097, 1, 0},
++	{"rr", "Record register", 1098, 1111, 1, 0},
++	{"lim", "Line length render limit", 1112, 1127, 1, 0},
++	{"seq", "Control Undo/Redo", 1128, 1140, 1, 0},
++	{"left", "Control horizontal scroll", 1141, 1146, 1, 0},
++	{"err", "Control ex errors", 1147, 1159, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
