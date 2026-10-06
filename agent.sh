@@ -1151,18 +1151,6 @@ static void *ec_acheck(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-/* acl < 0 reports context growth to the agent at the end of the request;
- * aco is the limit, if set. acheck_skill explains the report. */
-static void agent_nudge_text(sbuf *sb, double tokens)
-{
-	char ln[64];
-	if (xaco)
-		snprintf(ln, sizeof(ln), "[context ~%.0f/%d tokens]\n", tokens, xaco);
-	else
-		snprintf(ln, sizeof(ln), "[context ~%.0f tokens]\n", tokens);
-	sbuf_str(sb, ln)
-}
-
 /* Rebuild the conversation after the system message from b-4. */
 static void agent_reparse(void)
 {
@@ -1868,39 +1856,40 @@ static void agent_run_loop(const char *input)
 				cJSON_AddItemToArray(agent_messages,
 					agent_msg("user", agent_continue));
 		}
+		/* acl < 0 reports growth as a user turn, so the agent heeds it like
+		 * an instruction. It is logged as NOTICE, not USER: rebuilds from
+		 * b-4 drop it. */
+		if (nudge) {
+			char note[128];
+			int k = snprintf(note, sizeof(note), "~%.0f", nudge);
+			if (xaco)
+				k += snprintf(note + k, sizeof(note) - k, "/%d", xaco);
+			snprintf(note + k, sizeof(note) - k, " tokens. Use acheck command "
+				"to trim the session log when ready.");
+			agent_log("NOTICE", note);
+			exspec_mark("acheck");
+			cJSON *last = cJSON_GetArrayItem(agent_messages,
+				cJSON_GetArraySize(agent_messages) - 1);
+			char *prev = cJSON_GetStringValue(cJSON_GetObjectItem(last,
+				"content"));
+			/* Some chat templates require alternating roles. */
+			if (prev && !strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(
+					last, "role")), "user")) {
+				sbuf_smake(sb, 256)
+				sbuf_str(sb, prev)
+				sbuf_str(sb, "\n\n")
+				sbuf_str(sb, note)
+				sbuf_nul(sb)
+				cJSON_ReplaceItemInObject(last, "content",
+					cJSON_CreateString(sb->s));
+				free(sb->s);
+			} else
+				cJSON_AddItemToArray(agent_messages, agent_msg("user", note));
+		}
 		if (agent_checkpointing)
 			agent_cp_build();
-		/* The report ends the last message for this request only: it is
-		 * not logged and does not accumulate in the context. */
-		cJSON *tail = NULL;
-		int tail_n = 0;
-		sbuf_smake(tail_sb, 256)
-		if (nudge) {
-			tail = cJSON_GetArrayItem(agent_messages,
-				cJSON_GetArraySize(agent_messages) - 1);
-			char *s = cJSON_GetStringValue(cJSON_GetObjectItem(tail, "content"));
-			if (s) {
-				char note[64];
-				sbuf_str(tail_sb, s)
-				tail_n = tail_sb->s_n;
-				sbuf_str(tail_sb, tail_n && s[tail_n - 1] == '\''\n'\'' ? "\n" : "\n\n")
-				agent_nudge_text(tail_sb, nudge);
-				sbuf_nul(tail_sb)
-				cJSON_ReplaceItemInObject(tail, "content",
-					cJSON_CreateString(tail_sb->s));
-				snprintf(note, sizeof(note), "[acl report ~%.0f tokens]\n", nudge);
-				agent_output(note);
-			} else
-				tail = NULL;
-		}
 		req = agent_config();
 		if (!req) {
-			if (tail) {
-				tail_sb->s[tail_n] = '\''\0'\'';
-				cJSON_ReplaceItemInObject(tail, "content",
-					cJSON_CreateString(tail_sb->s));
-			}
-			free(tail_sb->s);
 			agent_log("NOTICE", "invalid agent configuration");
 			return;
 		}
@@ -1918,12 +1907,6 @@ static void agent_run_loop(const char *input)
 		agent_prev = json;
 		body = agent_http(req, &st, &stderr_text);
 		cJSON_Delete(req);
-		if (tail) {
-			tail_sb->s[tail_n] = '\''\0'\'';
-			cJSON_ReplaceItemInObject(tail, "content",
-				cJSON_CreateString(tail_sb->s));
-		}
-		free(tail_sb->s);
 		if (agent_cancel) {
 			free(body);
 			free(stderr_text);
@@ -2242,23 +2225,6 @@ static void *ec_skill(char *loc, char *cmd, char *arg)
 {
 	agent_skill(caveman_skill, -1);
 	return NULL;
-}
-
-/* acl < 0: the system message explains the context reports and acheck. */
-static char acheck_skill[] =
-"As the context grows, a message may end with [context ~N/M tokens] or\n"
-"[context ~N tokens]: N is the estimated context size and M the limit\n"
-"at which the session is summarized automatically. At a good stopping\n"
-"point, run the ex command acheck to start a checkpoint, where you rate\n"
-"and trim the session log; the task then resumes.\n";
-
-static void agent_acl_set(int value)
-{
-	xacl = value;
-	agent_acl_mark = 0;
-	agent_skill(acheck_skill, xacl < 0);
-	if (xacl < 0)
-		exspec_mark("acheck");
 }
 
 static void *ec_ast(char *loc, char *cmd, char *arg)
@@ -3024,7 +2990,6 @@ static void *ec_anote(char *loc, char *cmd, char *arg);
 static void *ec_arate(char *loc, char *cmd, char *arg);
 static void *ec_adone(char *loc, char *cmd, char *arg);
 static void *ec_acheck(char *loc, char *cmd, char *arg);
-static void agent_acl_set(int value);
 static void *ec_acp(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
 static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -6800,13 +6765,13 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "the checkpoint ends. It ends with adone, a reply without commands\n" \
                 "or recursive editing; the interrupted request then resumes. aco\n" \
                 "is checked after it.\n\n" \
-                "Negative values leave the checkpoint to the agent: the system\n" \
-                "message (b-5) explains acheck, and each time the estimated context\n" \
-                "grows by -acl tokens from the last checkpoint or report, the next\n" \
-                "request ends with [context ~N/M tokens], M being aco, or [context\n" \
-                "~N tokens] without aco. The report is appended to the last message\n" \
-                "for that request only; it is not logged and does not accumulate.\n" \
-                "aco stays the limit.\n\n" \
+                "Negative values leave the checkpoint to the agent: each time the\n" \
+                "estimated context grows by -acl tokens from the last checkpoint or\n" \
+                "report, the agent gets a user message \"~N/M tokens. Use acheck\n" \
+                "command to trim the session log when ready.\", M being aco, or\n" \
+                "\"~N tokens. ...\" without aco. It is logged as a NOTICE, not USER,\n" \
+                "so it stays in the context until the next rebuild from b-4. aco\n" \
+                "stays the limit.\n\n" \
                 "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
             spec("aco[0]  Automatically compact using the loaded session log",
                 "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -8140,10 +8105,8 @@ static void exspec_reset(void)
 	agent_show = NULL;
 	agent_show_n = 0;
 	exspec_ranges_read = 0;
-	/* acl < 0 explains acheck in the system message. */
 	for (int i = 0; i < LEN(exspec_cmds); i++)
-		exspec_cmds[i].read = xacl < 0 &&
-			!strcmp(exspec_cmds[i].name, "acheck");
+		exspec_cmds[i].read = 0;
 }
 
 static int exspec_mark(char *arg)
@@ -8277,7 +8240,7 @@ static int exspec_agent(char *cmd, int ranges)
 '\''20s/\(e/(aspec) EO(e/??!219reg ex.c:1705:m202sc %? %@2142sc!0?
 '\''21c EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
 _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
-_EO(acl, agent_acl_set(*arg ? eo_val(arg) : !xacl); return NULL;)
+_EO(acl, xacl = *arg ? eo_val(arg) : !xacl; agent_acl_mark = 0; return NULL;)
 ??!219reg ex.c:1707:m212sc %? %@2142sc!0?
 '\''22i _EO(aco,
 	int browse = strchr(cmd, '\''!'\'') != NULL;
@@ -9453,13 +9416,13 @@ static char *exspec_lines[] = {
 	"or recursive editing; the interrupted request then resumes. aco",
 	"is checked after it.",
 	"",
-	"Negative values leave the checkpoint to the agent: the system",
-	"message (b-5) explains acheck, and each time the estimated context",
-	"grows by -acl tokens from the last checkpoint or report, the next",
-	"request ends with [context ~N/M tokens], M being aco, or [context",
-	"~N tokens] without aco. The report is appended to the last message",
-	"for that request only; it is not logged and does not accumulate.",
-	"aco stays the limit.",
+	"Negative values leave the checkpoint to the agent: each time the",
+	"estimated context grows by -acl tokens from the last checkpoint or",
+	"report, the agent gets a user message \"~N/M tokens. Use acheck",
+	"command to trim the session log when ready.\", M being aco, or",
+	"\"~N tokens. ...\" without aco. It is logged as a NOTICE, not USER,",
+	"so it stays in the context until the next rebuild from b-4. aco",
+	"stays the limit.",
 	"",
 	"Example: checkpoint every 5000 tokens of growth",
 	"acl 5000",
@@ -10462,10 +10425,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..0dab4445
+index 00000000..27486ee1
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2967 @@
+@@ -0,0 +1,2933 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11587,18 +11550,6 @@ index 00000000..0dab4445
 +	return NULL;
 +}
 +
-+/* acl < 0 reports context growth to the agent at the end of the request;
-+ * aco is the limit, if set. acheck_skill explains the report. */
-+static void agent_nudge_text(sbuf *sb, double tokens)
-+{
-+	char ln[64];
-+	if (xaco)
-+		snprintf(ln, sizeof(ln), "[context ~%.0f/%d tokens]\n", tokens, xaco);
-+	else
-+		snprintf(ln, sizeof(ln), "[context ~%.0f tokens]\n", tokens);
-+	sbuf_str(sb, ln)
-+}
-+
 +/* Rebuild the conversation after the system message from b-4. */
 +static void agent_reparse(void)
 +{
@@ -12304,39 +12255,40 @@ index 00000000..0dab4445
 +				cJSON_AddItemToArray(agent_messages,
 +					agent_msg("user", agent_continue));
 +		}
++		/* acl < 0 reports growth as a user turn, so the agent heeds it like
++		 * an instruction. It is logged as NOTICE, not USER: rebuilds from
++		 * b-4 drop it. */
++		if (nudge) {
++			char note[128];
++			int k = snprintf(note, sizeof(note), "~%.0f", nudge);
++			if (xaco)
++				k += snprintf(note + k, sizeof(note) - k, "/%d", xaco);
++			snprintf(note + k, sizeof(note) - k, " tokens. Use acheck command "
++				"to trim the session log when ready.");
++			agent_log("NOTICE", note);
++			exspec_mark("acheck");
++			cJSON *last = cJSON_GetArrayItem(agent_messages,
++				cJSON_GetArraySize(agent_messages) - 1);
++			char *prev = cJSON_GetStringValue(cJSON_GetObjectItem(last,
++				"content"));
++			/* Some chat templates require alternating roles. */
++			if (prev && !strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(
++					last, "role")), "user")) {
++				sbuf_smake(sb, 256)
++				sbuf_str(sb, prev)
++				sbuf_str(sb, "\n\n")
++				sbuf_str(sb, note)
++				sbuf_nul(sb)
++				cJSON_ReplaceItemInObject(last, "content",
++					cJSON_CreateString(sb->s));
++				free(sb->s);
++			} else
++				cJSON_AddItemToArray(agent_messages, agent_msg("user", note));
++		}
 +		if (agent_checkpointing)
 +			agent_cp_build();
-+		/* The report ends the last message for this request only: it is
-+		 * not logged and does not accumulate in the context. */
-+		cJSON *tail = NULL;
-+		int tail_n = 0;
-+		sbuf_smake(tail_sb, 256)
-+		if (nudge) {
-+			tail = cJSON_GetArrayItem(agent_messages,
-+				cJSON_GetArraySize(agent_messages) - 1);
-+			char *s = cJSON_GetStringValue(cJSON_GetObjectItem(tail, "content"));
-+			if (s) {
-+				char note[64];
-+				sbuf_str(tail_sb, s)
-+				tail_n = tail_sb->s_n;
-+				sbuf_str(tail_sb, tail_n && s[tail_n - 1] == '\n' ? "\n" : "\n\n")
-+				agent_nudge_text(tail_sb, nudge);
-+				sbuf_nul(tail_sb)
-+				cJSON_ReplaceItemInObject(tail, "content",
-+					cJSON_CreateString(tail_sb->s));
-+				snprintf(note, sizeof(note), "[acl report ~%.0f tokens]\n", nudge);
-+				agent_output(note);
-+			} else
-+				tail = NULL;
-+		}
 +		req = agent_config();
 +		if (!req) {
-+			if (tail) {
-+				tail_sb->s[tail_n] = '\0';
-+				cJSON_ReplaceItemInObject(tail, "content",
-+					cJSON_CreateString(tail_sb->s));
-+			}
-+			free(tail_sb->s);
 +			agent_log("NOTICE", "invalid agent configuration");
 +			return;
 +		}
@@ -12354,12 +12306,6 @@ index 00000000..0dab4445
 +		agent_prev = json;
 +		body = agent_http(req, &st, &stderr_text);
 +		cJSON_Delete(req);
-+		if (tail) {
-+			tail_sb->s[tail_n] = '\0';
-+			cJSON_ReplaceItemInObject(tail, "content",
-+				cJSON_CreateString(tail_sb->s));
-+		}
-+		free(tail_sb->s);
 +		if (agent_cancel) {
 +			free(body);
 +			free(stderr_text);
@@ -12678,23 +12624,6 @@ index 00000000..0dab4445
 +{
 +	agent_skill(caveman_skill, -1);
 +	return NULL;
-+}
-+
-+/* acl < 0: the system message explains the context reports and acheck. */
-+static char acheck_skill[] =
-+"As the context grows, a message may end with [context ~N/M tokens] or\n"
-+"[context ~N tokens]: N is the estimated context size and M the limit\n"
-+"at which the session is summarized automatically. At a good stopping\n"
-+"point, run the ex command acheck to start a checkpoint, where you rate\n"
-+"and trim the session log; the task then resumes.\n";
-+
-+static void agent_acl_set(int value)
-+{
-+	xacl = value;
-+	agent_acl_mark = 0;
-+	agent_skill(acheck_skill, xacl < 0);
-+	if (xacl < 0)
-+		exspec_mark("acheck");
 +}
 +
 +static void *ec_ast(char *loc, char *cmd, char *arg)
@@ -13435,10 +13364,10 @@ index 00000000..0dab4445
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..13798c49
+index 00000000..d31ad8b1
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,36 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -13465,7 +13394,6 @@ index 00000000..13798c49
 +static void *ec_arate(char *loc, char *cmd, char *arg);
 +static void *ec_adone(char *loc, char *cmd, char *arg);
 +static void *ec_acheck(char *loc, char *cmd, char *arg);
-+static void agent_acl_set(int value);
 +static void *ec_acp(char *loc, char *cmd, char *arg);
 +static void *ec_ast(char *loc, char *cmd, char *arg);
 +static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -16986,7 +16914,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..74adc544 100755
+index c836c94c..33d4c8e8 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,210 @@ build() {
@@ -17154,13 +17082,13 @@ index c836c94c..74adc544 100755
 +                "the checkpoint ends. It ends with adone, a reply without commands\n" \
 +                "or recursive editing; the interrupted request then resumes. aco\n" \
 +                "is checked after it.\n\n" \
-+                "Negative values leave the checkpoint to the agent: the system\n" \
-+                "message (b-5) explains acheck, and each time the estimated context\n" \
-+                "grows by -acl tokens from the last checkpoint or report, the next\n" \
-+                "request ends with [context ~N/M tokens], M being aco, or [context\n" \
-+                "~N tokens] without aco. The report is appended to the last message\n" \
-+                "for that request only; it is not logged and does not accumulate.\n" \
-+                "aco stays the limit.\n\n" \
++                "Negative values leave the checkpoint to the agent: each time the\n" \
++                "estimated context grows by -acl tokens from the last checkpoint or\n" \
++                "report, the agent gets a user message \"~N/M tokens. Use acheck\n" \
++                "command to trim the session log when ready.\", M being aco, or\n" \
++                "\"~N tokens. ...\" without aco. It is logged as a NOTICE, not USER,\n" \
++                "so it stays in the context until the next rebuild from b-4. aco\n" \
++                "stays the limit.\n\n" \
 +                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
 +            spec("aco[0]  Automatically compact using the loaded session log",
 +                "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -17289,7 +17217,7 @@ index 2888d7c6..b1b7f1ad 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..1fa1d286 100644
+index 76dca408..44c47b4a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -17496,7 +17424,7 @@ index 76dca408..1fa1d286 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1635,6 +1695,188 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1635,6 +1695,186 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -17549,10 +17477,8 @@ index 76dca408..1fa1d286 100644
 +	agent_show = NULL;
 +	agent_show_n = 0;
 +	exspec_ranges_read = 0;
-+	/* acl < 0 explains acheck in the system message. */
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
-+		exspec_cmds[i].read = xacl < 0 &&
-+			!strcmp(exspec_cmds[i].name, "acheck");
++		exspec_cmds[i].read = 0;
 +}
 +
 +static int exspec_mark(char *arg)
@@ -17685,7 +17611,7 @@ index 76dca408..1fa1d286 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1944,11 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1942,11 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -17695,11 +17621,11 @@ index 76dca408..1fa1d286 100644
 -EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
 +_EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
-+_EO(acl, agent_acl_set(*arg ? eo_val(arg) : !xacl); return NULL;)
++_EO(acl, xacl = *arg ? eo_val(arg) : !xacl; agent_acl_mark = 0; return NULL;)
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1974,20 @@ _EO(left,
+@@ -1730,14 +1972,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -17724,7 +17650,7 @@ index 76dca408..1fa1d286 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2008,30 @@ static struct excmd {
+@@ -1758,8 +2006,30 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -17755,7 +17681,7 @@ index 76dca408..1fa1d286 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2211,57 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2209,57 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -17814,7 +17740,7 @@ index 76dca408..1fa1d286 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2280,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2278,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -17913,7 +17839,7 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..94f1a5a8
+index 00000000..085e32ee
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1388 @@
@@ -18917,13 +18843,13 @@ index 00000000..94f1a5a8
 +	"or recursive editing; the interrupted request then resumes. aco",
 +	"is checked after it.",
 +	"",
-+	"Negative values leave the checkpoint to the agent: the system",
-+	"message (b-5) explains acheck, and each time the estimated context",
-+	"grows by -acl tokens from the last checkpoint or report, the next",
-+	"request ends with [context ~N/M tokens], M being aco, or [context",
-+	"~N tokens] without aco. The report is appended to the last message",
-+	"for that request only; it is not logged and does not accumulate.",
-+	"aco stays the limit.",
++	"Negative values leave the checkpoint to the agent: each time the",
++	"estimated context grows by -acl tokens from the last checkpoint or",
++	"report, the agent gets a user message \"~N/M tokens. Use acheck",
++	"command to trim the session log when ready.\", M being aco, or",
++	"\"~N tokens. ...\" without aco. It is logged as a NOTICE, not USER,",
++	"so it stays in the context until the next rebuild from b-4. aco",
++	"stays the limit.",
 +	"",
 +	"Example: checkpoint every 5000 tokens of growth",
 +	"acl 5000",
