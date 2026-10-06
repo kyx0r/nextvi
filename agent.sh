@@ -1152,19 +1152,15 @@ static void *ec_acheck(char *loc, char *cmd, char *arg)
 }
 
 /* acl < 0 reports context growth to the agent at the end of the request;
- * aco is the limit, if set. */
+ * aco is the limit, if set. acheck_skill explains the report. */
 static void agent_nudge_text(sbuf *sb, double tokens)
 {
-	char ln[160];
+	char ln[64];
 	if (xaco)
-		snprintf(ln, sizeof(ln), "[context ~%.0f/%d tokens; autocompact at "
-			"~%d]\n", tokens, xaco, xaco);
+		snprintf(ln, sizeof(ln), "[context ~%.0f/%d tokens]\n", tokens, xaco);
 	else
-		snprintf(ln, sizeof(ln), "[context ~%.0f tokens; no limit set]\n",
-			tokens);
+		snprintf(ln, sizeof(ln), "[context ~%.0f tokens]\n", tokens);
 	sbuf_str(sb, ln)
-	sbuf_str(sb, "Run the ex command acheck at a good stopping point to start a\n"
-		"checkpoint: rate and trim the session log, then resume the task.\n")
 }
 
 /* Rebuild the conversation after the system message from b-4. */
@@ -1892,7 +1888,6 @@ static void agent_run_loop(const char *input)
 				sbuf_nul(tail_sb)
 				cJSON_ReplaceItemInObject(tail, "content",
 					cJSON_CreateString(tail_sb->s));
-				exspec_mark("acheck");
 				snprintf(note, sizeof(note), "[acl report ~%.0f tokens]\n", nudge);
 				agent_output(note);
 			} else
@@ -2247,6 +2242,23 @@ static void *ec_skill(char *loc, char *cmd, char *arg)
 {
 	agent_skill(caveman_skill, -1);
 	return NULL;
+}
+
+/* acl < 0: the system message explains the context reports and acheck. */
+static char acheck_skill[] =
+"As the context grows, a message may end with [context ~N/M tokens] or\n"
+"[context ~N tokens]: N is the estimated context size and M the limit\n"
+"at which the session is summarized automatically. At a good stopping\n"
+"point, run the ex command acheck to start a checkpoint, where you rate\n"
+"and trim the session log; the task then resumes.\n";
+
+static void agent_acl_set(int value)
+{
+	xacl = value;
+	agent_acl_mark = 0;
+	agent_skill(acheck_skill, xacl < 0);
+	if (xacl < 0)
+		exspec_mark("acheck");
 }
 
 static void *ec_ast(char *loc, char *cmd, char *arg)
@@ -3012,6 +3024,7 @@ static void *ec_anote(char *loc, char *cmd, char *arg);
 static void *ec_arate(char *loc, char *cmd, char *arg);
 static void *ec_adone(char *loc, char *cmd, char *arg);
 static void *ec_acheck(char *loc, char *cmd, char *arg);
+static void agent_acl_set(int value);
 static void *ec_acp(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
 static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -6787,12 +6800,13 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "the checkpoint ends. It ends with adone, a reply without commands\n" \
                 "or recursive editing; the interrupted request then resumes. aco\n" \
                 "is checked after it.\n\n" \
-                "Negative values leave the checkpoint to the agent: each time the\n" \
-                "estimated context grows by -acl tokens from the last checkpoint or\n" \
-                "report, the next request ends with a report of the context size\n" \
-                "and the aco threshold, or no limit without aco, suggesting acheck.\n" \
-                "The report is appended to the last message for that request only;\n" \
-                "it is not logged and does not accumulate. aco stays the limit.\n\n" \
+                "Negative values leave the checkpoint to the agent: the system\n" \
+                "message (b-5) explains acheck, and each time the estimated context\n" \
+                "grows by -acl tokens from the last checkpoint or report, the next\n" \
+                "request ends with [context ~N/M tokens], M being aco, or [context\n" \
+                "~N tokens] without aco. The report is appended to the last message\n" \
+                "for that request only; it is not logged and does not accumulate.\n" \
+                "aco stays the limit.\n\n" \
                 "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
             spec("aco[0]  Automatically compact using the loaded session log",
                 "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -8126,8 +8140,10 @@ static void exspec_reset(void)
 	agent_show = NULL;
 	agent_show_n = 0;
 	exspec_ranges_read = 0;
+	/* acl < 0 explains acheck in the system message. */
 	for (int i = 0; i < LEN(exspec_cmds); i++)
-		exspec_cmds[i].read = 0;
+		exspec_cmds[i].read = xacl < 0 &&
+			!strcmp(exspec_cmds[i].name, "acheck");
 }
 
 static int exspec_mark(char *arg)
@@ -8261,7 +8277,7 @@ static int exspec_agent(char *cmd, int ranges)
 '\''20s/\(e/(aspec) EO(e/??!219reg ex.c:1705:m202sc %? %@2142sc!0?
 '\''21c EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
 _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
-_EO(acl, xacl = *arg ? eo_val(arg) : !xacl; agent_acl_mark = 0; return NULL;)
+_EO(acl, agent_acl_set(*arg ? eo_val(arg) : !xacl); return NULL;)
 ??!219reg ex.c:1707:m212sc %? %@2142sc!0?
 '\''22i _EO(aco,
 	int browse = strchr(cmd, '\''!'\'') != NULL;
@@ -9437,12 +9453,13 @@ static char *exspec_lines[] = {
 	"or recursive editing; the interrupted request then resumes. aco",
 	"is checked after it.",
 	"",
-	"Negative values leave the checkpoint to the agent: each time the",
-	"estimated context grows by -acl tokens from the last checkpoint or",
-	"report, the next request ends with a report of the context size",
-	"and the aco threshold, or no limit without aco, suggesting acheck.",
-	"The report is appended to the last message for that request only;",
-	"it is not logged and does not accumulate. aco stays the limit.",
+	"Negative values leave the checkpoint to the agent: the system",
+	"message (b-5) explains acheck, and each time the estimated context",
+	"grows by -acl tokens from the last checkpoint or report, the next",
+	"request ends with [context ~N/M tokens], M being aco, or [context",
+	"~N tokens] without aco. The report is appended to the last message",
+	"for that request only; it is not logged and does not accumulate.",
+	"aco stays the limit.",
 	"",
 	"Example: checkpoint every 5000 tokens of growth",
 	"acl 5000",
@@ -9793,36 +9810,36 @@ static struct {
 	{"uz", "Toggle zero-width character placeholders", 932, 935, 0, 0},
 	{"ub", "Toggle multi-codepoint sequence placeholders", 936, 940, 0, 0},
 	{"ph", "Redefine placeholders", 941, 957, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 966, 1007, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1008, 1017, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1018, 1025, 1, 0},
-	{"agr", "Control agent output protection", 1026, 1032, 1, 0},
-	{"ar", "Display returned agent reasoning", 1033, 1037, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1038, 1042, 1, 0},
-	{"ai", "Indent new lines", 1043, 1046, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1047, 1048, 1, 0},
-	{"ish", "Interactive shell", 1049, 1064, 1, 0},
-	{"grp", "Regex search group", 1065, 1073, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1074, 1077, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1078, 1079, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1079, 1080, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1080, 1081, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1081, 1082, 1, 0},
-	{"led", "Enable all terminal output", 1082, 1083, 1, 0},
-	{"vis", "Control startup flags", 1084, 1095, 1, 0},
-	{"mpt", "Control vi prompts", 1096, 1106, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1107, 1109, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1109, 1111, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1111, 1112, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1112, 1113, 1, 0},
-	{"td", "Current text direction context", 1113, 1119, 1, 0},
-	{"pr", "Print register", 1120, 1136, 1, 0},
-	{"fr", "Find register", 1137, 1149, 1, 0},
-	{"rr", "Record register", 1150, 1163, 1, 0},
-	{"lim", "Line length render limit", 1164, 1179, 1, 0},
-	{"seq", "Control Undo/Redo", 1180, 1192, 1, 0},
-	{"left", "Control horizontal scroll", 1193, 1198, 1, 0},
-	{"err", "Control ex errors", 1199, 1211, 1, 0},
+	{"acl", "Rebuild agent context from the session log", 966, 1008, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1009, 1018, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1019, 1026, 1, 0},
+	{"agr", "Control agent output protection", 1027, 1033, 1, 0},
+	{"ar", "Display returned agent reasoning", 1034, 1038, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1039, 1043, 1, 0},
+	{"ai", "Indent new lines", 1044, 1047, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1048, 1049, 1, 0},
+	{"ish", "Interactive shell", 1050, 1065, 1, 0},
+	{"grp", "Regex search group", 1066, 1074, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1075, 1078, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1079, 1080, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1080, 1081, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1081, 1082, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1082, 1083, 1, 0},
+	{"led", "Enable all terminal output", 1083, 1084, 1, 0},
+	{"vis", "Control startup flags", 1085, 1096, 1, 0},
+	{"mpt", "Control vi prompts", 1097, 1107, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1108, 1110, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1110, 1112, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1112, 1113, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1113, 1114, 1, 0},
+	{"td", "Current text direction context", 1114, 1120, 1, 0},
+	{"pr", "Print register", 1121, 1137, 1, 0},
+	{"fr", "Find register", 1138, 1150, 1, 0},
+	{"rr", "Record register", 1151, 1164, 1, 0},
+	{"lim", "Line length render limit", 1165, 1180, 1, 0},
+	{"seq", "Control Undo/Redo", 1181, 1193, 1, 0},
+	{"left", "Control horizontal scroll", 1194, 1199, 1, 0},
+	{"err", "Control ex errors", 1200, 1212, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -10445,10 +10462,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..815876d3
+index 00000000..0dab4445
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2955 @@
+@@ -0,0 +1,2967 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11571,19 +11588,15 @@ index 00000000..815876d3
 +}
 +
 +/* acl < 0 reports context growth to the agent at the end of the request;
-+ * aco is the limit, if set. */
++ * aco is the limit, if set. acheck_skill explains the report. */
 +static void agent_nudge_text(sbuf *sb, double tokens)
 +{
-+	char ln[160];
++	char ln[64];
 +	if (xaco)
-+		snprintf(ln, sizeof(ln), "[context ~%.0f/%d tokens; autocompact at "
-+			"~%d]\n", tokens, xaco, xaco);
++		snprintf(ln, sizeof(ln), "[context ~%.0f/%d tokens]\n", tokens, xaco);
 +	else
-+		snprintf(ln, sizeof(ln), "[context ~%.0f tokens; no limit set]\n",
-+			tokens);
++		snprintf(ln, sizeof(ln), "[context ~%.0f tokens]\n", tokens);
 +	sbuf_str(sb, ln)
-+	sbuf_str(sb, "Run the ex command acheck at a good stopping point to start a\n"
-+		"checkpoint: rate and trim the session log, then resume the task.\n")
 +}
 +
 +/* Rebuild the conversation after the system message from b-4. */
@@ -12311,7 +12324,6 @@ index 00000000..815876d3
 +				sbuf_nul(tail_sb)
 +				cJSON_ReplaceItemInObject(tail, "content",
 +					cJSON_CreateString(tail_sb->s));
-+				exspec_mark("acheck");
 +				snprintf(note, sizeof(note), "[acl report ~%.0f tokens]\n", nudge);
 +				agent_output(note);
 +			} else
@@ -12666,6 +12678,23 @@ index 00000000..815876d3
 +{
 +	agent_skill(caveman_skill, -1);
 +	return NULL;
++}
++
++/* acl < 0: the system message explains the context reports and acheck. */
++static char acheck_skill[] =
++"As the context grows, a message may end with [context ~N/M tokens] or\n"
++"[context ~N tokens]: N is the estimated context size and M the limit\n"
++"at which the session is summarized automatically. At a good stopping\n"
++"point, run the ex command acheck to start a checkpoint, where you rate\n"
++"and trim the session log; the task then resumes.\n";
++
++static void agent_acl_set(int value)
++{
++	xacl = value;
++	agent_acl_mark = 0;
++	agent_skill(acheck_skill, xacl < 0);
++	if (xacl < 0)
++		exspec_mark("acheck");
 +}
 +
 +static void *ec_ast(char *loc, char *cmd, char *arg)
@@ -13406,10 +13435,10 @@ index 00000000..815876d3
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..d31ad8b1
+index 00000000..13798c49
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,37 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -13436,6 +13465,7 @@ index 00000000..d31ad8b1
 +static void *ec_arate(char *loc, char *cmd, char *arg);
 +static void *ec_adone(char *loc, char *cmd, char *arg);
 +static void *ec_acheck(char *loc, char *cmd, char *arg);
++static void agent_acl_set(int value);
 +static void *ec_acp(char *loc, char *cmd, char *arg);
 +static void *ec_ast(char *loc, char *cmd, char *arg);
 +static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -16956,10 +16986,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..6adf7fb2 100755
+index c836c94c..74adc544 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,209 @@ build() {
+@@ -65,6 +65,210 @@ build() {
      }
  }
  
@@ -17124,12 +17154,13 @@ index c836c94c..6adf7fb2 100755
 +                "the checkpoint ends. It ends with adone, a reply without commands\n" \
 +                "or recursive editing; the interrupted request then resumes. aco\n" \
 +                "is checked after it.\n\n" \
-+                "Negative values leave the checkpoint to the agent: each time the\n" \
-+                "estimated context grows by -acl tokens from the last checkpoint or\n" \
-+                "report, the next request ends with a report of the context size\n" \
-+                "and the aco threshold, or no limit without aco, suggesting acheck.\n" \
-+                "The report is appended to the last message for that request only;\n" \
-+                "it is not logged and does not accumulate. aco stays the limit.\n\n" \
++                "Negative values leave the checkpoint to the agent: the system\n" \
++                "message (b-5) explains acheck, and each time the estimated context\n" \
++                "grows by -acl tokens from the last checkpoint or report, the next\n" \
++                "request ends with [context ~N/M tokens], M being aco, or [context\n" \
++                "~N tokens] without aco. The report is appended to the last message\n" \
++                "for that request only; it is not logged and does not accumulate.\n" \
++                "aco stays the limit.\n\n" \
 +                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
 +            spec("aco[0]  Automatically compact using the loaded session log",
 +                "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -17169,7 +17200,7 @@ index c836c94c..6adf7fb2 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +277,7 @@ install() {
+@@ -74,7 +278,7 @@ install() {
  }
  
  print_usage() {
@@ -17178,7 +17209,7 @@ index c836c94c..6adf7fb2 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +285,9 @@ print_usage() {
+@@ -82,6 +286,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -17258,7 +17289,7 @@ index 2888d7c6..b1b7f1ad 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..44c47b4a 100644
+index 76dca408..1fa1d286 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -17465,7 +17496,7 @@ index 76dca408..44c47b4a 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1635,6 +1695,186 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1635,6 +1695,188 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -17518,8 +17549,10 @@ index 76dca408..44c47b4a 100644
 +	agent_show = NULL;
 +	agent_show_n = 0;
 +	exspec_ranges_read = 0;
++	/* acl < 0 explains acheck in the system message. */
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
-+		exspec_cmds[i].read = 0;
++		exspec_cmds[i].read = xacl < 0 &&
++			!strcmp(exspec_cmds[i].name, "acheck");
 +}
 +
 +static int exspec_mark(char *arg)
@@ -17652,7 +17685,7 @@ index 76dca408..44c47b4a 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1942,11 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1944,11 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -17662,11 +17695,11 @@ index 76dca408..44c47b4a 100644
 -EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
 +_EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
-+_EO(acl, xacl = *arg ? eo_val(arg) : !xacl; agent_acl_mark = 0; return NULL;)
++_EO(acl, agent_acl_set(*arg ? eo_val(arg) : !xacl); return NULL;)
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1972,20 @@ _EO(left,
+@@ -1730,14 +1974,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -17691,7 +17724,7 @@ index 76dca408..44c47b4a 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2006,30 @@ static struct excmd {
+@@ -1758,8 +2008,30 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -17722,7 +17755,7 @@ index 76dca408..44c47b4a 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2209,57 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2211,57 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -17781,7 +17814,7 @@ index 76dca408..44c47b4a 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2278,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2280,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -17880,10 +17913,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..0b9f7b25
+index 00000000..94f1a5a8
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1387 @@
+@@ -0,0 +1,1388 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -18884,12 +18917,13 @@ index 00000000..0b9f7b25
 +	"or recursive editing; the interrupted request then resumes. aco",
 +	"is checked after it.",
 +	"",
-+	"Negative values leave the checkpoint to the agent: each time the",
-+	"estimated context grows by -acl tokens from the last checkpoint or",
-+	"report, the next request ends with a report of the context size",
-+	"and the aco threshold, or no limit without aco, suggesting acheck.",
-+	"The report is appended to the last message for that request only;",
-+	"it is not logged and does not accumulate. aco stays the limit.",
++	"Negative values leave the checkpoint to the agent: the system",
++	"message (b-5) explains acheck, and each time the estimated context",
++	"grows by -acl tokens from the last checkpoint or report, the next",
++	"request ends with [context ~N/M tokens], M being aco, or [context",
++	"~N tokens] without aco. The report is appended to the last message",
++	"for that request only; it is not logged and does not accumulate.",
++	"aco stays the limit.",
 +	"",
 +	"Example: checkpoint every 5000 tokens of growth",
 +	"acl 5000",
@@ -19240,36 +19274,36 @@ index 00000000..0b9f7b25
 +	{"uz", "Toggle zero-width character placeholders", 932, 935, 0, 0},
 +	{"ub", "Toggle multi-codepoint sequence placeholders", 936, 940, 0, 0},
 +	{"ph", "Redefine placeholders", 941, 957, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 966, 1007, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1008, 1017, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1018, 1025, 1, 0},
-+	{"agr", "Control agent output protection", 1026, 1032, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1033, 1037, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1038, 1042, 1, 0},
-+	{"ai", "Indent new lines", 1043, 1046, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1047, 1048, 1, 0},
-+	{"ish", "Interactive shell", 1049, 1064, 1, 0},
-+	{"grp", "Regex search group", 1065, 1073, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1074, 1077, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1078, 1079, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1079, 1080, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1080, 1081, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1081, 1082, 1, 0},
-+	{"led", "Enable all terminal output", 1082, 1083, 1, 0},
-+	{"vis", "Control startup flags", 1084, 1095, 1, 0},
-+	{"mpt", "Control vi prompts", 1096, 1106, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1107, 1109, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1109, 1111, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1111, 1112, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1112, 1113, 1, 0},
-+	{"td", "Current text direction context", 1113, 1119, 1, 0},
-+	{"pr", "Print register", 1120, 1136, 1, 0},
-+	{"fr", "Find register", 1137, 1149, 1, 0},
-+	{"rr", "Record register", 1150, 1163, 1, 0},
-+	{"lim", "Line length render limit", 1164, 1179, 1, 0},
-+	{"seq", "Control Undo/Redo", 1180, 1192, 1, 0},
-+	{"left", "Control horizontal scroll", 1193, 1198, 1, 0},
-+	{"err", "Control ex errors", 1199, 1211, 1, 0},
++	{"acl", "Rebuild agent context from the session log", 966, 1008, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1009, 1018, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1019, 1026, 1, 0},
++	{"agr", "Control agent output protection", 1027, 1033, 1, 0},
++	{"ar", "Display returned agent reasoning", 1034, 1038, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1039, 1043, 1, 0},
++	{"ai", "Indent new lines", 1044, 1047, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1048, 1049, 1, 0},
++	{"ish", "Interactive shell", 1050, 1065, 1, 0},
++	{"grp", "Regex search group", 1066, 1074, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1075, 1078, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1079, 1080, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1080, 1081, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1081, 1082, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1082, 1083, 1, 0},
++	{"led", "Enable all terminal output", 1083, 1084, 1, 0},
++	{"vis", "Control startup flags", 1085, 1096, 1, 0},
++	{"mpt", "Control vi prompts", 1097, 1107, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1108, 1110, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1110, 1112, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1112, 1113, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1113, 1114, 1, 0},
++	{"td", "Current text direction context", 1114, 1120, 1, 0},
++	{"pr", "Print register", 1121, 1137, 1, 0},
++	{"fr", "Find register", 1138, 1150, 1, 0},
++	{"rr", "Record register", 1151, 1164, 1, 0},
++	{"lim", "Line length render limit", 1165, 1180, 1, 0},
++	{"seq", "Control Undo/Redo", 1181, 1193, 1, 0},
++	{"left", "Control horizontal scroll", 1194, 1199, 1, 0},
++	{"err", "Control ex errors", 1200, 1212, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
