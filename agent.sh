@@ -1020,31 +1020,18 @@ static void agent_cp_instructions(sbuf *sb)
 	free(s);
 }
 
-static const char agent_budget_guide[] =
-	"Context budget check. Your context is about %.0f tokens%s, %.0f more\n"
-	"than at the last check or checkpoint. Estimate the tokens the remaining\n"
-	"work of the task needs, then make one ex tool call; nothing else runs\n"
-	"until then:\n"
-	"acheck N\n"
-	"  continue the task; the next check comes after about N more tokens\n"
-	"acheck\n"
-	"  first rate and trim the session log in a checkpoint, then continue\n"
-	"A checkpoint shrinks the context when it holds entries the remaining\n"
-	"work no longer needs.\n%sThis exchange is not kept in the session log.\n";
-
-/* The budget check message: tokens now and growth since the mark. */
+/* The budget check message: an estimate first, then on each breach the
+ * choice between a checkpoint now and more tokens. */
 static char *agent_budget_open(void)
 {
-	char lim[48] = "", aco[96] = "";
-	double tokens = agent_tokens_at(agent_cp_bytes);
-	char *s = emalloc(sizeof(agent_budget_guide) + sizeof(lim) +
-		sizeof(aco) + 64);
-	if (xaco) {
-		snprintf(lim, sizeof(lim), " of %d", xaco);
-		snprintf(aco, sizeof(aco), "N may pass %d, where autocompaction "
-			"replaces the budget.\n", xaco);
-	}
-	sprintf(s, agent_budget_guide, tokens, lim, tokens - agent_acl_mark, aco);
+	char *s = emalloc(192);
+	int k = sprintf(s, "~%.0f", agent_tokens_at(agent_cp_bytes));
+	if (xaco)
+		k += sprintf(s + k, "/%d", xaco);
+	strcpy(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
+		"the session log or acheck N to defer it for N tokens." :
+		" tokens. Estimate and set the number of tokens the rest of this "
+		"task needs with acheck N command.");
 	return s;
 }
 
@@ -2196,9 +2183,8 @@ static void agent_run_loop(const char *input)
 		if (agent_checkpointing == 2 && !agent_cp_done) {
 			if (agent_cp_refused++ < 2) {
 				if (!has_calls) {
-					char msg[] = "Your reply made no ex tool calls, so nothing "
-						"ran. Make one ex tool\ncall, acheck N or acheck, "
-						"before the task continues.";
+					char msg[] = "Nothing ran; reply with an ex tool call, "
+						"acheck N or acheck.";
 					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 					agent_log("USER", msg);
 				}
@@ -6831,14 +6817,15 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "is checked after it.\n\n" \
                 "Negative values leave the checkpoint to the agent through budget\n" \
                 "checks. The first comes once the estimated context grows by -acl\n" \
-                "tokens from the session start, the last checkpoint or a compaction.\n" \
-                "Its request gives the context size, aco and the growth since, and\n" \
-                "asks the agent to estimate the remaining work. Only acheck runs:\n" \
-                "acheck N sets the next check N tokens of growth later, past aco if\n" \
-                "need be; acheck starts a checkpoint, after which -acl applies again.\n" \
-                "Two more requests are given for an answer, then a checkpoint starts.\n" \
-                "The exchange is logged to b-3 with CP headers and leaves the context\n" \
-                "unchanged. An interrupted check runs again at the next request.\n" \
+                "tokens from the session start, the last checkpoint or a compaction,\n" \
+                "and asks for an estimate of the tokens the rest of the task needs,\n" \
+                "set with acheck N. Once that growth is reached, the next asks\n" \
+                "whether to checkpoint now with acheck or defer by N more tokens with\n" \
+                "acheck N. N may pass aco. Only acheck runs during a check; two more\n" \
+                "requests are given for an answer, then a checkpoint starts. After a\n" \
+                "checkpoint, -acl applies again. The exchange is logged to b-3 with CP\n" \
+                "headers and leaves the context unchanged. An interrupted check runs\n" \
+                "again at the next request.\n" \
                 "aco stays the limit; a compaction drops the budget.\n\n" \
                 "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
             spec("aco[0]  Automatically compact using the loaded session log",
@@ -9501,14 +9488,15 @@ static char *exspec_lines[] = {
 	"",
 	"Negative values leave the checkpoint to the agent through budget",
 	"checks. The first comes once the estimated context grows by -acl",
-	"tokens from the session start, the last checkpoint or a compaction.",
-	"Its request gives the context size, aco and the growth since, and",
-	"asks the agent to estimate the remaining work. Only acheck runs:",
-	"acheck N sets the next check N tokens of growth later, past aco if",
-	"need be; acheck starts a checkpoint, after which -acl applies again.",
-	"Two more requests are given for an answer, then a checkpoint starts.",
-	"The exchange is logged to b-3 with CP headers and leaves the context",
-	"unchanged. An interrupted check runs again at the next request.",
+	"tokens from the session start, the last checkpoint or a compaction,",
+	"and asks for an estimate of the tokens the rest of the task needs,",
+	"set with acheck N. Once that growth is reached, the next asks",
+	"whether to checkpoint now with acheck or defer by N more tokens with",
+	"acheck N. N may pass aco. Only acheck runs during a check; two more",
+	"requests are given for an answer, then a checkpoint starts. After a",
+	"checkpoint, -acl applies again. The exchange is logged to b-3 with CP",
+	"headers and leaves the context unchanged. An interrupted check runs",
+	"again at the next request.",
 	"aco stays the limit; a compaction drops the budget.",
 	"",
 	"Example: checkpoint every 5000 tokens of growth",
@@ -9860,36 +9848,36 @@ static struct {
 	{"uz", "Toggle zero-width character placeholders", 938, 941, 0, 0},
 	{"ub", "Toggle multi-codepoint sequence placeholders", 942, 946, 0, 0},
 	{"ph", "Redefine placeholders", 947, 963, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 972, 1018, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1019, 1028, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1029, 1036, 1, 0},
-	{"agr", "Control agent output protection", 1037, 1043, 1, 0},
-	{"ar", "Display returned agent reasoning", 1044, 1048, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1049, 1053, 1, 0},
-	{"ai", "Indent new lines", 1054, 1057, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1058, 1059, 1, 0},
-	{"ish", "Interactive shell", 1060, 1075, 1, 0},
-	{"grp", "Regex search group", 1076, 1084, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1085, 1088, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1089, 1090, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1090, 1091, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1091, 1092, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1092, 1093, 1, 0},
-	{"led", "Enable all terminal output", 1093, 1094, 1, 0},
-	{"vis", "Control startup flags", 1095, 1106, 1, 0},
-	{"mpt", "Control vi prompts", 1107, 1117, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1118, 1120, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1120, 1122, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1122, 1123, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1123, 1124, 1, 0},
-	{"td", "Current text direction context", 1124, 1130, 1, 0},
-	{"pr", "Print register", 1131, 1147, 1, 0},
-	{"fr", "Find register", 1148, 1160, 1, 0},
-	{"rr", "Record register", 1161, 1174, 1, 0},
-	{"lim", "Line length render limit", 1175, 1190, 1, 0},
-	{"seq", "Control Undo/Redo", 1191, 1203, 1, 0},
-	{"left", "Control horizontal scroll", 1204, 1209, 1, 0},
-	{"err", "Control ex errors", 1210, 1222, 1, 0},
+	{"acl", "Rebuild agent context from the session log", 972, 1019, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1020, 1029, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1030, 1037, 1, 0},
+	{"agr", "Control agent output protection", 1038, 1044, 1, 0},
+	{"ar", "Display returned agent reasoning", 1045, 1049, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1050, 1054, 1, 0},
+	{"ai", "Indent new lines", 1055, 1058, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1059, 1060, 1, 0},
+	{"ish", "Interactive shell", 1061, 1076, 1, 0},
+	{"grp", "Regex search group", 1077, 1085, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1086, 1089, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1090, 1091, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1091, 1092, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1092, 1093, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1093, 1094, 1, 0},
+	{"led", "Enable all terminal output", 1094, 1095, 1, 0},
+	{"vis", "Control startup flags", 1096, 1107, 1, 0},
+	{"mpt", "Control vi prompts", 1108, 1118, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1119, 1121, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1121, 1123, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1123, 1124, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1124, 1125, 1, 0},
+	{"td", "Current text direction context", 1125, 1131, 1, 0},
+	{"pr", "Print register", 1132, 1148, 1, 0},
+	{"fr", "Find register", 1149, 1161, 1, 0},
+	{"rr", "Record register", 1162, 1175, 1, 0},
+	{"lim", "Line length render limit", 1176, 1191, 1, 0},
+	{"seq", "Control Undo/Redo", 1192, 1204, 1, 0},
+	{"left", "Control horizontal scroll", 1205, 1210, 1, 0},
+	{"err", "Control ex errors", 1211, 1223, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -10512,10 +10500,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..bb87a72f
+index 00000000..707fe40e
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2988 @@
+@@ -0,0 +1,2974 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11506,31 +11494,18 @@ index 00000000..bb87a72f
 +	free(s);
 +}
 +
-+static const char agent_budget_guide[] =
-+	"Context budget check. Your context is about %.0f tokens%s, %.0f more\n"
-+	"than at the last check or checkpoint. Estimate the tokens the remaining\n"
-+	"work of the task needs, then make one ex tool call; nothing else runs\n"
-+	"until then:\n"
-+	"acheck N\n"
-+	"  continue the task; the next check comes after about N more tokens\n"
-+	"acheck\n"
-+	"  first rate and trim the session log in a checkpoint, then continue\n"
-+	"A checkpoint shrinks the context when it holds entries the remaining\n"
-+	"work no longer needs.\n%sThis exchange is not kept in the session log.\n";
-+
-+/* The budget check message: tokens now and growth since the mark. */
++/* The budget check message: an estimate first, then on each breach the
++ * choice between a checkpoint now and more tokens. */
 +static char *agent_budget_open(void)
 +{
-+	char lim[48] = "", aco[96] = "";
-+	double tokens = agent_tokens_at(agent_cp_bytes);
-+	char *s = emalloc(sizeof(agent_budget_guide) + sizeof(lim) +
-+		sizeof(aco) + 64);
-+	if (xaco) {
-+		snprintf(lim, sizeof(lim), " of %d", xaco);
-+		snprintf(aco, sizeof(aco), "N may pass %d, where autocompaction "
-+			"replaces the budget.\n", xaco);
-+	}
-+	sprintf(s, agent_budget_guide, tokens, lim, tokens - agent_acl_mark, aco);
++	char *s = emalloc(192);
++	int k = sprintf(s, "~%.0f", agent_tokens_at(agent_cp_bytes));
++	if (xaco)
++		k += sprintf(s + k, "/%d", xaco);
++	strcpy(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
++		"the session log or acheck N to defer it for N tokens." :
++		" tokens. Estimate and set the number of tokens the rest of this "
++		"task needs with acheck N command.");
 +	return s;
 +}
 +
@@ -12682,9 +12657,8 @@ index 00000000..bb87a72f
 +		if (agent_checkpointing == 2 && !agent_cp_done) {
 +			if (agent_cp_refused++ < 2) {
 +				if (!has_calls) {
-+					char msg[] = "Your reply made no ex tool calls, so nothing "
-+						"ran. Make one ex tool\ncall, acheck N or acheck, "
-+						"before the task continues.";
++					char msg[] = "Nothing ran; reply with an ex tool call, "
++						"acheck N or acheck.";
 +					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 +					agent_log("USER", msg);
 +				}
@@ -17061,10 +17035,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..bf67bc8f 100755
+index c836c94c..e4cef366 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,218 @@ build() {
+@@ -65,6 +65,219 @@ build() {
      }
  }
  
@@ -17235,14 +17209,15 @@ index c836c94c..bf67bc8f 100755
 +                "is checked after it.\n\n" \
 +                "Negative values leave the checkpoint to the agent through budget\n" \
 +                "checks. The first comes once the estimated context grows by -acl\n" \
-+                "tokens from the session start, the last checkpoint or a compaction.\n" \
-+                "Its request gives the context size, aco and the growth since, and\n" \
-+                "asks the agent to estimate the remaining work. Only acheck runs:\n" \
-+                "acheck N sets the next check N tokens of growth later, past aco if\n" \
-+                "need be; acheck starts a checkpoint, after which -acl applies again.\n" \
-+                "Two more requests are given for an answer, then a checkpoint starts.\n" \
-+                "The exchange is logged to b-3 with CP headers and leaves the context\n" \
-+                "unchanged. An interrupted check runs again at the next request.\n" \
++                "tokens from the session start, the last checkpoint or a compaction,\n" \
++                "and asks for an estimate of the tokens the rest of the task needs,\n" \
++                "set with acheck N. Once that growth is reached, the next asks\n" \
++                "whether to checkpoint now with acheck or defer by N more tokens with\n" \
++                "acheck N. N may pass aco. Only acheck runs during a check; two more\n" \
++                "requests are given for an answer, then a checkpoint starts. After a\n" \
++                "checkpoint, -acl applies again. The exchange is logged to b-3 with CP\n" \
++                "headers and leaves the context unchanged. An interrupted check runs\n" \
++                "again at the next request.\n" \
 +                "aco stays the limit; a compaction drops the budget.\n\n" \
 +                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
 +            spec("aco[0]  Automatically compact using the loaded session log",
@@ -17283,7 +17258,7 @@ index c836c94c..bf67bc8f 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +286,7 @@ install() {
+@@ -74,7 +287,7 @@ install() {
  }
  
  print_usage() {
@@ -17292,7 +17267,7 @@ index c836c94c..bf67bc8f 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +294,9 @@ print_usage() {
+@@ -82,6 +295,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -18003,10 +17978,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..c322611f
+index 00000000..2d6d8bb5
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1398 @@
+@@ -0,0 +1,1399 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -19015,14 +18990,15 @@ index 00000000..c322611f
 +	"",
 +	"Negative values leave the checkpoint to the agent through budget",
 +	"checks. The first comes once the estimated context grows by -acl",
-+	"tokens from the session start, the last checkpoint or a compaction.",
-+	"Its request gives the context size, aco and the growth since, and",
-+	"asks the agent to estimate the remaining work. Only acheck runs:",
-+	"acheck N sets the next check N tokens of growth later, past aco if",
-+	"need be; acheck starts a checkpoint, after which -acl applies again.",
-+	"Two more requests are given for an answer, then a checkpoint starts.",
-+	"The exchange is logged to b-3 with CP headers and leaves the context",
-+	"unchanged. An interrupted check runs again at the next request.",
++	"tokens from the session start, the last checkpoint or a compaction,",
++	"and asks for an estimate of the tokens the rest of the task needs,",
++	"set with acheck N. Once that growth is reached, the next asks",
++	"whether to checkpoint now with acheck or defer by N more tokens with",
++	"acheck N. N may pass aco. Only acheck runs during a check; two more",
++	"requests are given for an answer, then a checkpoint starts. After a",
++	"checkpoint, -acl applies again. The exchange is logged to b-3 with CP",
++	"headers and leaves the context unchanged. An interrupted check runs",
++	"again at the next request.",
 +	"aco stays the limit; a compaction drops the budget.",
 +	"",
 +	"Example: checkpoint every 5000 tokens of growth",
@@ -19374,36 +19350,36 @@ index 00000000..c322611f
 +	{"uz", "Toggle zero-width character placeholders", 938, 941, 0, 0},
 +	{"ub", "Toggle multi-codepoint sequence placeholders", 942, 946, 0, 0},
 +	{"ph", "Redefine placeholders", 947, 963, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 972, 1018, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1019, 1028, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1029, 1036, 1, 0},
-+	{"agr", "Control agent output protection", 1037, 1043, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1044, 1048, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1049, 1053, 1, 0},
-+	{"ai", "Indent new lines", 1054, 1057, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1058, 1059, 1, 0},
-+	{"ish", "Interactive shell", 1060, 1075, 1, 0},
-+	{"grp", "Regex search group", 1076, 1084, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1085, 1088, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1089, 1090, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1090, 1091, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1091, 1092, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1092, 1093, 1, 0},
-+	{"led", "Enable all terminal output", 1093, 1094, 1, 0},
-+	{"vis", "Control startup flags", 1095, 1106, 1, 0},
-+	{"mpt", "Control vi prompts", 1107, 1117, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1118, 1120, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1120, 1122, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1122, 1123, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1123, 1124, 1, 0},
-+	{"td", "Current text direction context", 1124, 1130, 1, 0},
-+	{"pr", "Print register", 1131, 1147, 1, 0},
-+	{"fr", "Find register", 1148, 1160, 1, 0},
-+	{"rr", "Record register", 1161, 1174, 1, 0},
-+	{"lim", "Line length render limit", 1175, 1190, 1, 0},
-+	{"seq", "Control Undo/Redo", 1191, 1203, 1, 0},
-+	{"left", "Control horizontal scroll", 1204, 1209, 1, 0},
-+	{"err", "Control ex errors", 1210, 1222, 1, 0},
++	{"acl", "Rebuild agent context from the session log", 972, 1019, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1020, 1029, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1030, 1037, 1, 0},
++	{"agr", "Control agent output protection", 1038, 1044, 1, 0},
++	{"ar", "Display returned agent reasoning", 1045, 1049, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1050, 1054, 1, 0},
++	{"ai", "Indent new lines", 1055, 1058, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1059, 1060, 1, 0},
++	{"ish", "Interactive shell", 1061, 1076, 1, 0},
++	{"grp", "Regex search group", 1077, 1085, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1086, 1089, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1090, 1091, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1091, 1092, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1092, 1093, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1093, 1094, 1, 0},
++	{"led", "Enable all terminal output", 1094, 1095, 1, 0},
++	{"vis", "Control startup flags", 1096, 1107, 1, 0},
++	{"mpt", "Control vi prompts", 1108, 1118, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1119, 1121, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1121, 1123, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1123, 1124, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1124, 1125, 1, 0},
++	{"td", "Current text direction context", 1125, 1131, 1, 0},
++	{"pr", "Print register", 1132, 1148, 1, 0},
++	{"fr", "Find register", 1149, 1161, 1, 0},
++	{"rr", "Record register", 1162, 1175, 1, 0},
++	{"lim", "Line length render limit", 1176, 1191, 1, 0},
++	{"seq", "Control Undo/Redo", 1192, 1204, 1, 0},
++	{"left", "Control horizontal scroll", 1205, 1210, 1, 0},
++	{"err", "Control ex errors", 1211, 1223, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
