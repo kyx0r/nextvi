@@ -640,6 +640,27 @@ static char *agent_span_role(struct agent_span *s)
 	return s->role ? agent_roles[s->role - 1] : "TEXT";
 }
 
+/* An ASSISTANT entry without text only separates tool batches. Once its
+ * commands are noted or removed it separates nothing; drop it. Entries are
+ * removed last first so earlier line numbers hold. */
+static void agent_prune(struct lbuf *lb)
+{
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans);
+	for (int k = cnt - 1; k >= 0; k--) {
+		int j = k + 1, i = spans[k].beg + 1;
+		if (spans[k].role != 2)
+			continue;
+		while (i < spans[k].end && !lb->ln[i][strspn(lb->ln[i], " \t\n")])
+			i++;
+		while (j < cnt && spans[j].role == 6)
+			j++;
+		if (i == spans[k].end && (j == cnt || spans[j].role != 4))
+			lbuf_edit(lb, NULL, spans[k].beg, spans[k].end, 0, 0);
+	}
+	free(spans);
+}
+
 /* b-6 rates commands: one line "N R sentence" per EX entry N of b-4, with R
  * from 0 (dead weight) to 3 (essential). Returns the sentence or NULL. */
 static char *agent_note(unsigned long n, int *rate, int *row)
@@ -1919,8 +1940,10 @@ static void agent_run_loop(const char *input)
 				agent_log("REASONING", reasoning->valuestring);
 			}
 		}
-		/* acl separates tool batches by ASSISTANT entries. */
-		if (cJSON_IsString(content) || (xacl && cJSON_GetArraySize(calls)))
+		/* acl separates tool batches by ASSISTANT entries; an empty
+		 * reply without calls has nothing to log. */
+		if ((cJSON_IsString(content) && *content->valuestring) ||
+				(xacl && cJSON_GetArraySize(calls)))
 			agent_log("ASSISTANT", cJSON_IsString(content) ?
 				content->valuestring : "");
 		int base = cJSON_GetArraySize(agent_messages), index = 0;
@@ -2415,6 +2438,7 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 		lbuf_edit(lb, *arg && k == note ? sb->s : NULL,
 			spans[k].beg, spans[end].end, 0, 0);
 	}
+	agent_prune(lb);
 	restore(agent_syncing)
 	restore(agent_tool)
 	agent_sync(lb);
@@ -6598,8 +6622,10 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "the other entries and puts the note in place of the last run of\n" \
                 "them, with the role of its first entry, or ASSISTANT for an EX.\n" \
                 "Prints the estimated tokens before and after and the USER entries\n" \
-                "kept, and reports a note larger than what it replaced. Changes the\n" \
-                "agent context when acl is set.\n\n" \
+                "kept, and reports a note larger than what it replaced. Then removes\n" \
+                "every ASSISTANT entry without text not followed by an EX entry; such\n" \
+                "entries only separate tool batches. Changes the agent context when\n" \
+                "acl is set.\n\n" \
                 "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
             spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
                 "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
@@ -9142,8 +9168,10 @@ static char *exspec_lines[] = {
 	"the other entries and puts the note in place of the last run of",
 	"them, with the role of its first entry, or ASSISTANT for an EX.",
 	"Prints the estimated tokens before and after and the USER entries",
-	"kept, and reports a note larger than what it replaced. Changes the",
-	"agent context when acl is set.",
+	"kept, and reports a note larger than what it replaced. Then removes",
+	"every ASSISTANT entry without text not followed by an EX entry; such",
+	"entries only separate tool batches. Changes the agent context when",
+	"acl is set.",
 	"",
 	"Example: replace a long result with a note",
 	"14anote ls listed 40 files, none relevant",
@@ -9638,49 +9666,49 @@ static struct {
 	{"acm", "Toggle the caveman response style skill", 784, 789, 0, 0},
 	{"aretry", "Execute the last agent command once without the guardrail", 790, 802, 0, 0},
 	{"aout", "Print the saved output of the last agent tool call", 803, 814, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 815, 833, 0, 0},
-	{"arate", "Rate agent commands in the notes buffer", 834, 854, 0, 0},
-	{"adone", "End an agent checkpoint", 855, 862, 0, 0},
-	{"acp", "Print the agent checkpoint entry list", 863, 869, 0, 0},
-	{"acp!", "Print the agent checkpoint instructions", 870, 876, 0, 0},
-	{"ast", "Print agent status and token usage", 877, 886, 0, 0},
-	{"ac", "Set autocomplete filter regex", 887, 895, 0, 0},
-	{"sc", "Set ex special characters", 896, 906, 0, 0},
-	{"sc!", "Set ex special characters", 907, 914, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 915, 922, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 923, 926, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 927, 931, 0, 0},
-	{"ph", "Redefine placeholders", 932, 948, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 957, 991, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 992, 1001, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1002, 1009, 1, 0},
-	{"agr", "Control agent output protection", 1010, 1016, 1, 0},
-	{"ar", "Display returned agent reasoning", 1017, 1021, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1022, 1026, 1, 0},
-	{"ai", "Indent new lines", 1027, 1030, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1031, 1032, 1, 0},
-	{"ish", "Interactive shell", 1033, 1048, 1, 0},
-	{"grp", "Regex search group", 1049, 1057, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1058, 1061, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1062, 1063, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1063, 1064, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1064, 1065, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1065, 1066, 1, 0},
-	{"led", "Enable all terminal output", 1066, 1067, 1, 0},
-	{"vis", "Control startup flags", 1068, 1079, 1, 0},
-	{"mpt", "Control vi prompts", 1080, 1090, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1091, 1093, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1093, 1095, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1095, 1096, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1096, 1097, 1, 0},
-	{"td", "Current text direction context", 1097, 1103, 1, 0},
-	{"pr", "Print register", 1104, 1120, 1, 0},
-	{"fr", "Find register", 1121, 1133, 1, 0},
-	{"rr", "Record register", 1134, 1147, 1, 0},
-	{"lim", "Line length render limit", 1148, 1163, 1, 0},
-	{"seq", "Control Undo/Redo", 1164, 1176, 1, 0},
-	{"left", "Control horizontal scroll", 1177, 1182, 1, 0},
-	{"err", "Control ex errors", 1183, 1195, 1, 0},
+	{"anote", "Replace or remove agent session log entries", 815, 835, 0, 0},
+	{"arate", "Rate agent commands in the notes buffer", 836, 856, 0, 0},
+	{"adone", "End an agent checkpoint", 857, 864, 0, 0},
+	{"acp", "Print the agent checkpoint entry list", 865, 871, 0, 0},
+	{"acp!", "Print the agent checkpoint instructions", 872, 878, 0, 0},
+	{"ast", "Print agent status and token usage", 879, 888, 0, 0},
+	{"ac", "Set autocomplete filter regex", 889, 897, 0, 0},
+	{"sc", "Set ex special characters", 898, 908, 0, 0},
+	{"sc!", "Set ex special characters", 909, 916, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 917, 924, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 925, 928, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 929, 933, 0, 0},
+	{"ph", "Redefine placeholders", 934, 950, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 959, 993, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 994, 1003, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1004, 1011, 1, 0},
+	{"agr", "Control agent output protection", 1012, 1018, 1, 0},
+	{"ar", "Display returned agent reasoning", 1019, 1023, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1024, 1028, 1, 0},
+	{"ai", "Indent new lines", 1029, 1032, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1033, 1034, 1, 0},
+	{"ish", "Interactive shell", 1035, 1050, 1, 0},
+	{"grp", "Regex search group", 1051, 1059, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1060, 1063, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1064, 1065, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1065, 1066, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1066, 1067, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1067, 1068, 1, 0},
+	{"led", "Enable all terminal output", 1068, 1069, 1, 0},
+	{"vis", "Control startup flags", 1070, 1081, 1, 0},
+	{"mpt", "Control vi prompts", 1082, 1092, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1093, 1095, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1095, 1097, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1097, 1098, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1098, 1099, 1, 0},
+	{"td", "Current text direction context", 1099, 1105, 1, 0},
+	{"pr", "Print register", 1106, 1122, 1, 0},
+	{"fr", "Find register", 1123, 1135, 1, 0},
+	{"rr", "Record register", 1136, 1149, 1, 0},
+	{"lim", "Line length render limit", 1150, 1165, 1, 0},
+	{"seq", "Control Undo/Redo", 1166, 1178, 1, 0},
+	{"left", "Control horizontal scroll", 1179, 1184, 1, 0},
+	{"err", "Control ex errors", 1185, 1197, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -10303,10 +10331,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..be553cab
+index 00000000..f7de4244
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2845 @@
+@@ -0,0 +1,2869 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -10915,6 +10943,27 @@ index 00000000..be553cab
 +static char *agent_span_role(struct agent_span *s)
 +{
 +	return s->role ? agent_roles[s->role - 1] : "TEXT";
++}
++
++/* An ASSISTANT entry without text only separates tool batches. Once its
++ * commands are noted or removed it separates nothing; drop it. Entries are
++ * removed last first so earlier line numbers hold. */
++static void agent_prune(struct lbuf *lb)
++{
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans);
++	for (int k = cnt - 1; k >= 0; k--) {
++		int j = k + 1, i = spans[k].beg + 1;
++		if (spans[k].role != 2)
++			continue;
++		while (i < spans[k].end && !lb->ln[i][strspn(lb->ln[i], " \t\n")])
++			i++;
++		while (j < cnt && spans[j].role == 6)
++			j++;
++		if (i == spans[k].end && (j == cnt || spans[j].role != 4))
++			lbuf_edit(lb, NULL, spans[k].beg, spans[k].end, 0, 0);
++	}
++	free(spans);
 +}
 +
 +/* b-6 rates commands: one line "N R sentence" per EX entry N of b-4, with R
@@ -12196,8 +12245,10 @@ index 00000000..be553cab
 +				agent_log("REASONING", reasoning->valuestring);
 +			}
 +		}
-+		/* acl separates tool batches by ASSISTANT entries. */
-+		if (cJSON_IsString(content) || (xacl && cJSON_GetArraySize(calls)))
++		/* acl separates tool batches by ASSISTANT entries; an empty
++		 * reply without calls has nothing to log. */
++		if ((cJSON_IsString(content) && *content->valuestring) ||
++				(xacl && cJSON_GetArraySize(calls)))
 +			agent_log("ASSISTANT", cJSON_IsString(content) ?
 +				content->valuestring : "");
 +		int base = cJSON_GetArraySize(agent_messages), index = 0;
@@ -12692,6 +12743,7 @@ index 00000000..be553cab
 +		lbuf_edit(lb, *arg && k == note ? sb->s : NULL,
 +			spans[k].beg, spans[end].end, 0, 0);
 +	}
++	agent_prune(lb);
 +	restore(agent_syncing)
 +	restore(agent_tool)
 +	agent_sync(lb);
@@ -16702,10 +16754,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..60264d21 100755
+index c836c94c..e0eb3b0e 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,197 @@ build() {
+@@ -65,6 +65,199 @@ build() {
      }
  }
  
@@ -16793,8 +16845,10 @@ index c836c94c..60264d21 100755
 +                "the other entries and puts the note in place of the last run of\n" \
 +                "them, with the role of its first entry, or ASSISTANT for an EX.\n" \
 +                "Prints the estimated tokens before and after and the USER entries\n" \
-+                "kept, and reports a note larger than what it replaced. Changes the\n" \
-+                "agent context when acl is set.\n\n" \
++                "kept, and reports a note larger than what it replaced. Then removes\n" \
++                "every ASSISTANT entry without text not followed by an EX entry; such\n" \
++                "entries only separate tool batches. Changes the agent context when\n" \
++                "acl is set.\n\n" \
 +                "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
 +            spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
 +                "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
@@ -16903,7 +16957,7 @@ index c836c94c..60264d21 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +265,7 @@ install() {
+@@ -74,7 +267,7 @@ install() {
  }
  
  print_usage() {
@@ -16912,7 +16966,7 @@ index c836c94c..60264d21 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +273,9 @@ print_usage() {
+@@ -82,6 +275,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -17613,10 +17667,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..d1de5a09
+index 00000000..1fcc3cd4
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1370 @@
+@@ -0,0 +1,1372 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -18447,8 +18501,10 @@ index 00000000..d1de5a09
 +	"the other entries and puts the note in place of the last run of",
 +	"them, with the role of its first entry, or ASSISTANT for an EX.",
 +	"Prints the estimated tokens before and after and the USER entries",
-+	"kept, and reports a note larger than what it replaced. Changes the",
-+	"agent context when acl is set.",
++	"kept, and reports a note larger than what it replaced. Then removes",
++	"every ASSISTANT entry without text not followed by an EX entry; such",
++	"entries only separate tool batches. Changes the agent context when",
++	"acl is set.",
 +	"",
 +	"Example: replace a long result with a note",
 +	"14anote ls listed 40 files, none relevant",
@@ -18943,49 +18999,49 @@ index 00000000..d1de5a09
 +	{"acm", "Toggle the caveman response style skill", 784, 789, 0, 0},
 +	{"aretry", "Execute the last agent command once without the guardrail", 790, 802, 0, 0},
 +	{"aout", "Print the saved output of the last agent tool call", 803, 814, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 815, 833, 0, 0},
-+	{"arate", "Rate agent commands in the notes buffer", 834, 854, 0, 0},
-+	{"adone", "End an agent checkpoint", 855, 862, 0, 0},
-+	{"acp", "Print the agent checkpoint entry list", 863, 869, 0, 0},
-+	{"acp!", "Print the agent checkpoint instructions", 870, 876, 0, 0},
-+	{"ast", "Print agent status and token usage", 877, 886, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 887, 895, 0, 0},
-+	{"sc", "Set ex special characters", 896, 906, 0, 0},
-+	{"sc!", "Set ex special characters", 907, 914, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 915, 922, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 923, 926, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 927, 931, 0, 0},
-+	{"ph", "Redefine placeholders", 932, 948, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 957, 991, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 992, 1001, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1002, 1009, 1, 0},
-+	{"agr", "Control agent output protection", 1010, 1016, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1017, 1021, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1022, 1026, 1, 0},
-+	{"ai", "Indent new lines", 1027, 1030, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1031, 1032, 1, 0},
-+	{"ish", "Interactive shell", 1033, 1048, 1, 0},
-+	{"grp", "Regex search group", 1049, 1057, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1058, 1061, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1062, 1063, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1063, 1064, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1064, 1065, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1065, 1066, 1, 0},
-+	{"led", "Enable all terminal output", 1066, 1067, 1, 0},
-+	{"vis", "Control startup flags", 1068, 1079, 1, 0},
-+	{"mpt", "Control vi prompts", 1080, 1090, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1091, 1093, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1093, 1095, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1095, 1096, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1096, 1097, 1, 0},
-+	{"td", "Current text direction context", 1097, 1103, 1, 0},
-+	{"pr", "Print register", 1104, 1120, 1, 0},
-+	{"fr", "Find register", 1121, 1133, 1, 0},
-+	{"rr", "Record register", 1134, 1147, 1, 0},
-+	{"lim", "Line length render limit", 1148, 1163, 1, 0},
-+	{"seq", "Control Undo/Redo", 1164, 1176, 1, 0},
-+	{"left", "Control horizontal scroll", 1177, 1182, 1, 0},
-+	{"err", "Control ex errors", 1183, 1195, 1, 0},
++	{"anote", "Replace or remove agent session log entries", 815, 835, 0, 0},
++	{"arate", "Rate agent commands in the notes buffer", 836, 856, 0, 0},
++	{"adone", "End an agent checkpoint", 857, 864, 0, 0},
++	{"acp", "Print the agent checkpoint entry list", 865, 871, 0, 0},
++	{"acp!", "Print the agent checkpoint instructions", 872, 878, 0, 0},
++	{"ast", "Print agent status and token usage", 879, 888, 0, 0},
++	{"ac", "Set autocomplete filter regex", 889, 897, 0, 0},
++	{"sc", "Set ex special characters", 898, 908, 0, 0},
++	{"sc!", "Set ex special characters", 909, 916, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 917, 924, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 925, 928, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 929, 933, 0, 0},
++	{"ph", "Redefine placeholders", 934, 950, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 959, 993, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 994, 1003, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1004, 1011, 1, 0},
++	{"agr", "Control agent output protection", 1012, 1018, 1, 0},
++	{"ar", "Display returned agent reasoning", 1019, 1023, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1024, 1028, 1, 0},
++	{"ai", "Indent new lines", 1029, 1032, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1033, 1034, 1, 0},
++	{"ish", "Interactive shell", 1035, 1050, 1, 0},
++	{"grp", "Regex search group", 1051, 1059, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1060, 1063, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1064, 1065, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1065, 1066, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1066, 1067, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1067, 1068, 1, 0},
++	{"led", "Enable all terminal output", 1068, 1069, 1, 0},
++	{"vis", "Control startup flags", 1070, 1081, 1, 0},
++	{"mpt", "Control vi prompts", 1082, 1092, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1093, 1095, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1095, 1097, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1097, 1098, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1098, 1099, 1, 0},
++	{"td", "Current text direction context", 1099, 1105, 1, 0},
++	{"pr", "Print register", 1106, 1122, 1, 0},
++	{"fr", "Find register", 1123, 1135, 1, 0},
++	{"rr", "Record register", 1136, 1149, 1, 0},
++	{"lim", "Line length render limit", 1150, 1165, 1, 0},
++	{"seq", "Control Undo/Redo", 1166, 1178, 1, 0},
++	{"left", "Control horizontal scroll", 1179, 1184, 1, 0},
++	{"err", "Control ex errors", 1185, 1197, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
