@@ -595,6 +595,13 @@ static int agent_live(void)
 	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
 }
 
+/* acl above 1 or negative: replies stay as returned between rebuilds and
+ * checkpoints trim the log; acl 1 rebuilds every request. */
+static int agent_acl_kept(void)
+{
+	return xacl > 1 || xacl < 0;
+}
+
 /* An entry of b-4; role 0 and number 0 is the text before the first header. */
 struct agent_span {
 	int role, beg, end;	/* agent_header role; header line, line after */
@@ -836,6 +843,7 @@ static void agent_notes_archive(char *archive)
 static cJSON *agent_cp;
 static int agent_cp_base = -1, agent_cp_logbuf, agent_cp_done;
 static int agent_cp_refused, agent_cp_left;	/* refusals, unrated then */
+static int agent_cp_asked;	/* acheck: checkpoint at the next boundary */
 static char agent_continue[] = "Continue the task.";
 /* The start is kept in bytes so each report uses the current anchor and an
  * unchanged log reads the same at both ends. */
@@ -1127,6 +1135,36 @@ static void *ec_adone(char *loc, char *cmd, char *arg)
 	}
 	agent_cp_done = 1;
 	return NULL;
+}
+
+/* The agent asks for a checkpoint; it starts once the batch completes. */
+static void *ec_acheck(char *loc, char *cmd, char *arg)
+{
+	if (*loc || *arg)
+		return "acheck takes no range or argument";
+	if (!agent_acl_kept())
+		return "acheck needs acl above 1 or negative";
+	if (agent_checkpointing)
+		return "checkpoint already in progress";
+	agent_cp_asked = 1;
+	ex_print("checkpoint starts before the next request", msg_ft)
+	return NULL;
+}
+
+/* acl < 0 reports context growth to the agent at the end of the request;
+ * aco is the limit, if set. */
+static void agent_nudge_text(sbuf *sb, double tokens)
+{
+	char ln[160];
+	if (xaco)
+		snprintf(ln, sizeof(ln), "[context ~%.0f/%d tokens; autocompact at "
+			"~%d]\n", tokens, xaco, xaco);
+	else
+		snprintf(ln, sizeof(ln), "[context ~%.0f tokens; no limit set]\n",
+			tokens);
+	sbuf_str(sb, ln)
+	sbuf_str(sb, "Run the ex command acheck at a good stopping point to start a\n"
+		"checkpoint: rate and trim the session log, then resume the task.\n")
 }
 
 /* Rebuild the conversation after the system message from b-4. */
@@ -1761,6 +1799,7 @@ static void agent_run_loop(const char *input)
 	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
 	int st, retries = 0, compacted = 0, unpacked = 0;
+	double nudge;
 	if (agent_packing)
 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
@@ -1786,14 +1825,24 @@ static void agent_run_loop(const char *input)
 		if (agent_live() && (xacl == 1 || agent_log_edited))
 			agent_reparse();
 		/* acl > 1 checkpoints growth from the last checkpoint or the
-		 * smallest context since; trimming gets a chance before aco. */
-		if (agent_live() && xacl > 1) {
+		 * smallest context since; trimming gets a chance before aco.
+		 * acl < 0 reports each -acl tokens of growth to the agent, which
+		 * decides when to checkpoint with acheck; aco stays the backstop. */
+		nudge = 0;
+		if (agent_live() && agent_acl_kept() && !agent_checkpointing) {
 			double tokens = agent_tokens();
-			if (!agent_acl_mark || tokens < agent_acl_mark)
-				agent_acl_mark = tokens;
-			else if (tokens - agent_acl_mark >= xacl)
+			if (agent_cp_asked)
 				agent_checkpoint_begin(tokens);
+			else if (!agent_acl_mark || tokens < agent_acl_mark)
+				agent_acl_mark = tokens;
+			else if (tokens - agent_acl_mark >= abs(xacl)) {
+				if (xacl > 1)
+					agent_checkpoint_begin(tokens);
+				else
+					nudge = agent_acl_mark = tokens;
+			}
 		}
+		agent_cp_asked = 0;
 		if (compacted && agent_tokens() < xaco)
 			compacted = 0;
 		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
@@ -1803,6 +1852,7 @@ static void agent_run_loop(const char *input)
 			/* The pack conversation was discarded. Start a fresh tool-round
 			 * budget for the resumed request, without recursing into agent_run. */
 			compacted = 1;
+			nudge = 0;
 			if (agent_live())
 				agent_reparse();
 			round = retries = 0;
@@ -1824,8 +1874,38 @@ static void agent_run_loop(const char *input)
 		}
 		if (agent_checkpointing)
 			agent_cp_build();
+		/* The report ends the last message for this request only: it is
+		 * not logged and does not accumulate in the context. */
+		cJSON *tail = NULL;
+		int tail_n = 0;
+		sbuf_smake(tail_sb, 256)
+		if (nudge) {
+			tail = cJSON_GetArrayItem(agent_messages,
+				cJSON_GetArraySize(agent_messages) - 1);
+			char *s = cJSON_GetStringValue(cJSON_GetObjectItem(tail, "content"));
+			if (s) {
+				char note[64];
+				sbuf_str(tail_sb, s)
+				tail_n = tail_sb->s_n;
+				sbuf_str(tail_sb, tail_n && s[tail_n - 1] == '\''\n'\'' ? "\n" : "\n\n")
+				agent_nudge_text(tail_sb, nudge);
+				sbuf_nul(tail_sb)
+				cJSON_ReplaceItemInObject(tail, "content",
+					cJSON_CreateString(tail_sb->s));
+				exspec_mark("acheck");
+				snprintf(note, sizeof(note), "[acl report ~%.0f tokens]\n", nudge);
+				agent_output(note);
+			} else
+				tail = NULL;
+		}
 		req = agent_config();
 		if (!req) {
+			if (tail) {
+				tail_sb->s[tail_n] = '\''\0'\'';
+				cJSON_ReplaceItemInObject(tail, "content",
+					cJSON_CreateString(tail_sb->s));
+			}
+			free(tail_sb->s);
 			agent_log("NOTICE", "invalid agent configuration");
 			return;
 		}
@@ -1843,6 +1923,12 @@ static void agent_run_loop(const char *input)
 		agent_prev = json;
 		body = agent_http(req, &st, &stderr_text);
 		cJSON_Delete(req);
+		if (tail) {
+			tail_sb->s[tail_n] = '\''\0'\'';
+			cJSON_ReplaceItemInObject(tail, "content",
+				cJSON_CreateString(tail_sb->s));
+		}
+		free(tail_sb->s);
 		if (agent_cancel) {
 			free(body);
 			free(stderr_text);
@@ -1908,7 +1994,7 @@ static void agent_run_loop(const char *input)
 					"object with a nonempty string command, for example\n"
 					"{\"command\":\"1,20p\"}.", error);
 				agent_log("USER", diagnostic);
-				if (!agent_live() || xacl > 1)
+				if (!agent_live() || agent_acl_kept())
 					cJSON_AddItemToArray(agent_messages,
 						agent_msg("user", diagnostic));
 			}
@@ -2044,7 +2130,7 @@ static void agent_run_loop(const char *input)
 			agent_log("RESULT", safe);
 			/* A deferral only shows a spec; rate it for the checkpoint. */
 			int r, row;
-			if (*agent_deferred && xacl > 1 && agent_logbuf == 3 &&
+			if (*agent_deferred && agent_acl_kept() && agent_logbuf == 3 &&
 					!agent_note(exn, &r, &row)) {
 				char note[96];
 				snprintf(note, sizeof(note), "deferred; printed the %s spec "
@@ -2174,18 +2260,18 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 	ex_print(msg, msg_ft)
-	if (xacl > 1) {
+	if (agent_acl_kept()) {
 		int k = snprintf(msg, sizeof(msg), "acl        %d, context rebuilt "
-			"from b-4 at checkpoints and log edits, checkpoint every %d "
-			"tokens", xacl, xacl);
+			"from b-4 at checkpoints and log edits, %s every %d tokens",
+			xacl, xacl > 1 ? "checkpoint" : "report to agent", abs(xacl));
 		if (agent_acl_mark)
 			snprintf(msg + k, sizeof(msg) - k, ", next at ~%.0f",
-				agent_acl_mark + xacl);
+				agent_acl_mark + abs(xacl));
 	} else
 		snprintf(msg, sizeof(msg), "acl        %d%s", xacl,
 			xacl ? ", context rebuilt from b-4" : " (off)");
 	ex_print(msg, msg_ft)
-	if (xacl > 1 || lbuf_len(tempbufs[5].lb)) {
+	if (agent_acl_kept() || lbuf_len(tempbufs[5].lb)) {
 		char unrated[112];
 		int n = agent_unrated_now(unrated, sizeof(unrated));
 		snprintf(msg, sizeof(msg), "notes      %d in b-6, %d commands unrated",
@@ -2912,9 +2998,10 @@ static char *agent_show;
 static size_t agent_show_n;
 static int agent_shown;
 static sbuf *agent_capture;
-/* acl > 1: estimated context tokens at the last checkpoint; 0 unset */
+/* acl > 1: estimated context tokens at the last checkpoint; acl < 0: at
+ * the last checkpoint or growth report; 0 unset */
 static double agent_acl_mark;
-/* acl > 1: the agent may only trim the session log until adone */
+/* acl > 1 or < 0: the agent may only trim the session log until adone */
 static int agent_checkpointing;
 /* First command of the running tool call that aspec deferred */
 static char agent_deferred[32];
@@ -2924,6 +3011,7 @@ static void *ec_skill(char *loc, char *cmd, char *arg);
 static void *ec_anote(char *loc, char *cmd, char *arg);
 static void *ec_arate(char *loc, char *cmd, char *arg);
 static void *ec_adone(char *loc, char *cmd, char *arg);
+static void *ec_acheck(char *loc, char *cmd, char *arg);
 static void *ec_acp(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
 static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -6638,8 +6726,8 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "mechanics; 2 useful, informs the remaining work; 3 essential, a\n" \
                 "decision, finding or state the task depends on.\n" \
                 "Entries work as for anote; other roles in the range are skipped.\n" \
-                "With acl above 1, commands deferred by aspec are rated 1 by the\n" \
-                "harness unless already rated.\n" \
+                "With acl above 1 or negative, commands deferred by aspec are rated\n" \
+                "1 by the harness unless already rated.\n" \
                 "Ratings show in acl checkpoint lists and are given to apack. b-6 is\n" \
                 "saved as notes in the session directory.\n\n" \
                 "Example: rate the command of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
@@ -6648,6 +6736,10 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "from the trimmed session log. Takes no range or argument. While EX\n" \
                 "entries are unrated it is refused, up to twice in a row without new\n" \
                 "ratings. Errors outside a checkpoint.")
+            spec("acheck", "Start an agent checkpoint",
+                "With acl above 1 or negative, starts an acl checkpoint before the\n" \
+                "next request, once the current tool batch completes. Takes no range\n" \
+                "or argument. Errors with other acl values or during a checkpoint.")
             spec("acp", "Print the agent checkpoint entry list",
                 "Prints the acl checkpoint status as sent at its start, with current\n" \
                 "entry sizes, ratings and unrated commands. Takes no range or\n" \
@@ -6670,12 +6762,12 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "No argument toggles between 0 and 1. 0 disables.",
                 "1 rebuilds the agent context from the session log (b-4)\n" \
                 "before every request, so edits to the log by the agent or the\n" \
-                "user apply to the next request. Values above 1 rebuild only\n" \
-                "after such edits and when a checkpoint ends; between rebuilds,\n" \
-                "replies stay as returned, reasoning included, so the agent keeps\n" \
-                "it and the server cache continues from its output. With 0, the\n" \
-                "context is built from the running history and log edits have no\n" \
-                "effect.\n" \
+                "user apply to the next request. Values above 1 or negative rebuild\n" \
+                "only after such edits and when a checkpoint ends; between\n" \
+                "rebuilds, replies stay as returned, reasoning included, so the\n" \
+                "agent keeps it and the server cache continues from its output.\n" \
+                "With 0, the context is built from the running history and log\n" \
+                "edits have no effect.\n" \
                 "NOTICE entries report harness events such as HTTP errors and are\n" \
                 "never sent to the agent.\n" \
                 "A rebuild drops reasoning not in the log (ar off). With aco, a\n" \
@@ -6695,6 +6787,12 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "the checkpoint ends. It ends with adone, a reply without commands\n" \
                 "or recursive editing; the interrupted request then resumes. aco\n" \
                 "is checked after it.\n\n" \
+                "Negative values leave the checkpoint to the agent: each time the\n" \
+                "estimated context grows by -acl tokens from the last checkpoint or\n" \
+                "report, the next request ends with a report of the context size\n" \
+                "and the aco threshold, or no limit without aco, suggesting acheck.\n" \
+                "The report is appended to the last message for that request only;\n" \
+                "it is not logged and does not accumulate. aco stays the limit.\n\n" \
                 "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
             spec("aco[0]  Automatically compact using the loaded session log",
                 "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -8163,7 +8261,7 @@ static int exspec_agent(char *cmd, int ranges)
 '\''20s/\(e/(aspec) EO(e/??!219reg ex.c:1705:m202sc %? %@2142sc!0?
 '\''21c EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
 _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
-_EO(acl, xacl = *arg ? MAX(0, eo_val(arg)) : !xacl; agent_acl_mark = 0; return NULL;)
+_EO(acl, xacl = *arg ? eo_val(arg) : !xacl; agent_acl_mark = 0; return NULL;)
 ??!219reg ex.c:1707:m212sc %? %@2142sc!0?
 '\''22i _EO(aco,
 	int browse = strchr(cmd, '\''!'\'') != NULL;
@@ -8185,6 +8283,7 @@ _EO(acl, xacl = *arg ? MAX(0, eo_val(arg)) : !xacl; agent_acl_mark = 0; return N
 	{"anote", ec_anote},
 	{"arate", ec_arate},
 	{"adone", ec_adone},
+	{"acheck", ec_acheck},
 	{"acp!", ec_acp},
 	{"acp", ec_acp},
 	{"aco!", eo_aco},
@@ -9189,8 +9288,8 @@ static char *exspec_lines[] = {
 	"mechanics; 2 useful, informs the remaining work; 3 essential, a",
 	"decision, finding or state the task depends on.",
 	"Entries work as for anote; other roles in the range are skipped.",
-	"With acl above 1, commands deferred by aspec are rated 1 by the",
-	"harness unless already rated.",
+	"With acl above 1 or negative, commands deferred by aspec are rated",
+	"1 by the harness unless already rated.",
 	"Ratings show in acl checkpoint lists and are given to apack. b-6 is",
 	"saved as notes in the session directory.",
 	"",
@@ -9204,6 +9303,13 @@ static char *exspec_lines[] = {
 	"from the trimmed session log. Takes no range or argument. While EX",
 	"entries are unrated it is refused, up to twice in a row without new",
 	"ratings. Errors outside a checkpoint.",
+	"",
+	"acheck",
+	"Start an agent checkpoint",
+	"",
+	"With acl above 1 or negative, starts an acl checkpoint before the",
+	"next request, once the current tool batch completes. Takes no range",
+	"or argument. Errors with other acl values or during a checkpoint.",
 	"",
 	"acp",
 	"Print the agent checkpoint entry list",
@@ -9304,12 +9410,12 @@ static char *exspec_lines[] = {
 	"",
 	"1 rebuilds the agent context from the session log (b-4)",
 	"before every request, so edits to the log by the agent or the",
-	"user apply to the next request. Values above 1 rebuild only",
-	"after such edits and when a checkpoint ends; between rebuilds,",
-	"replies stay as returned, reasoning included, so the agent keeps",
-	"it and the server cache continues from its output. With 0, the",
-	"context is built from the running history and log edits have no",
-	"effect.",
+	"user apply to the next request. Values above 1 or negative rebuild",
+	"only after such edits and when a checkpoint ends; between",
+	"rebuilds, replies stay as returned, reasoning included, so the",
+	"agent keeps it and the server cache continues from its output.",
+	"With 0, the context is built from the running history and log",
+	"edits have no effect.",
 	"NOTICE entries report harness events such as HTTP errors and are",
 	"never sent to the agent.",
 	"A rebuild drops reasoning not in the log (ar off). With aco, a",
@@ -9330,6 +9436,13 @@ static char *exspec_lines[] = {
 	"the checkpoint ends. It ends with adone, a reply without commands",
 	"or recursive editing; the interrupted request then resumes. aco",
 	"is checked after it.",
+	"",
+	"Negative values leave the checkpoint to the agent: each time the",
+	"estimated context grows by -acl tokens from the last checkpoint or",
+	"report, the next request ends with a report of the context size",
+	"and the aco threshold, or no limit without aco, suggesting acheck.",
+	"The report is appended to the last message for that request only;",
+	"it is not logged and does not accumulate. aco stays the limit.",
 	"",
 	"Example: checkpoint every 5000 tokens of growth",
 	"acl 5000",
@@ -9669,46 +9782,47 @@ static struct {
 	{"anote", "Replace or remove agent session log entries", 815, 835, 0, 0},
 	{"arate", "Rate agent commands in the notes buffer", 836, 856, 0, 0},
 	{"adone", "End an agent checkpoint", 857, 864, 0, 0},
-	{"acp", "Print the agent checkpoint entry list", 865, 871, 0, 0},
-	{"acp!", "Print the agent checkpoint instructions", 872, 878, 0, 0},
-	{"ast", "Print agent status and token usage", 879, 888, 0, 0},
-	{"ac", "Set autocomplete filter regex", 889, 897, 0, 0},
-	{"sc", "Set ex special characters", 898, 908, 0, 0},
-	{"sc!", "Set ex special characters", 909, 916, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 917, 924, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 925, 928, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 929, 933, 0, 0},
-	{"ph", "Redefine placeholders", 934, 950, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 959, 993, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 994, 1003, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1004, 1011, 1, 0},
-	{"agr", "Control agent output protection", 1012, 1018, 1, 0},
-	{"ar", "Display returned agent reasoning", 1019, 1023, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1024, 1028, 1, 0},
-	{"ai", "Indent new lines", 1029, 1032, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1033, 1034, 1, 0},
-	{"ish", "Interactive shell", 1035, 1050, 1, 0},
-	{"grp", "Regex search group", 1051, 1059, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1060, 1063, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1064, 1065, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1065, 1066, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1066, 1067, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1067, 1068, 1, 0},
-	{"led", "Enable all terminal output", 1068, 1069, 1, 0},
-	{"vis", "Control startup flags", 1070, 1081, 1, 0},
-	{"mpt", "Control vi prompts", 1082, 1092, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1093, 1095, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1095, 1097, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1097, 1098, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1098, 1099, 1, 0},
-	{"td", "Current text direction context", 1099, 1105, 1, 0},
-	{"pr", "Print register", 1106, 1122, 1, 0},
-	{"fr", "Find register", 1123, 1135, 1, 0},
-	{"rr", "Record register", 1136, 1149, 1, 0},
-	{"lim", "Line length render limit", 1150, 1165, 1, 0},
-	{"seq", "Control Undo/Redo", 1166, 1178, 1, 0},
-	{"left", "Control horizontal scroll", 1179, 1184, 1, 0},
-	{"err", "Control ex errors", 1185, 1197, 1, 0},
+	{"acheck", "Start an agent checkpoint", 865, 871, 0, 0},
+	{"acp", "Print the agent checkpoint entry list", 872, 878, 0, 0},
+	{"acp!", "Print the agent checkpoint instructions", 879, 885, 0, 0},
+	{"ast", "Print agent status and token usage", 886, 895, 0, 0},
+	{"ac", "Set autocomplete filter regex", 896, 904, 0, 0},
+	{"sc", "Set ex special characters", 905, 915, 0, 0},
+	{"sc!", "Set ex special characters", 916, 923, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 924, 931, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 932, 935, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 936, 940, 0, 0},
+	{"ph", "Redefine placeholders", 941, 957, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 966, 1007, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1008, 1017, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1018, 1025, 1, 0},
+	{"agr", "Control agent output protection", 1026, 1032, 1, 0},
+	{"ar", "Display returned agent reasoning", 1033, 1037, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1038, 1042, 1, 0},
+	{"ai", "Indent new lines", 1043, 1046, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1047, 1048, 1, 0},
+	{"ish", "Interactive shell", 1049, 1064, 1, 0},
+	{"grp", "Regex search group", 1065, 1073, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1074, 1077, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1078, 1079, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1079, 1080, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1080, 1081, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1081, 1082, 1, 0},
+	{"led", "Enable all terminal output", 1082, 1083, 1, 0},
+	{"vis", "Control startup flags", 1084, 1095, 1, 0},
+	{"mpt", "Control vi prompts", 1096, 1106, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1107, 1109, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1109, 1111, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1111, 1112, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1112, 1113, 1, 0},
+	{"td", "Current text direction context", 1113, 1119, 1, 0},
+	{"pr", "Print register", 1120, 1136, 1, 0},
+	{"fr", "Find register", 1137, 1149, 1, 0},
+	{"rr", "Record register", 1150, 1163, 1, 0},
+	{"lim", "Line length render limit", 1164, 1179, 1, 0},
+	{"seq", "Control Undo/Redo", 1180, 1192, 1, 0},
+	{"left", "Control horizontal scroll", 1193, 1198, 1, 0},
+	{"err", "Control ex errors", 1199, 1211, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -10331,10 +10445,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..f7de4244
+index 00000000..815876d3
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2869 @@
+@@ -0,0 +1,2955 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -10900,6 +11014,13 @@ index 00000000..f7de4244
 +	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
 +}
 +
++/* acl above 1 or negative: replies stay as returned between rebuilds and
++ * checkpoints trim the log; acl 1 rebuilds every request. */
++static int agent_acl_kept(void)
++{
++	return xacl > 1 || xacl < 0;
++}
++
 +/* An entry of b-4; role 0 and number 0 is the text before the first header. */
 +struct agent_span {
 +	int role, beg, end;	/* agent_header role; header line, line after */
@@ -11141,6 +11262,7 @@ index 00000000..f7de4244
 +static cJSON *agent_cp;
 +static int agent_cp_base = -1, agent_cp_logbuf, agent_cp_done;
 +static int agent_cp_refused, agent_cp_left;	/* refusals, unrated then */
++static int agent_cp_asked;	/* acheck: checkpoint at the next boundary */
 +static char agent_continue[] = "Continue the task.";
 +/* The start is kept in bytes so each report uses the current anchor and an
 + * unchanged log reads the same at both ends. */
@@ -11432,6 +11554,36 @@ index 00000000..f7de4244
 +	}
 +	agent_cp_done = 1;
 +	return NULL;
++}
++
++/* The agent asks for a checkpoint; it starts once the batch completes. */
++static void *ec_acheck(char *loc, char *cmd, char *arg)
++{
++	if (*loc || *arg)
++		return "acheck takes no range or argument";
++	if (!agent_acl_kept())
++		return "acheck needs acl above 1 or negative";
++	if (agent_checkpointing)
++		return "checkpoint already in progress";
++	agent_cp_asked = 1;
++	ex_print("checkpoint starts before the next request", msg_ft)
++	return NULL;
++}
++
++/* acl < 0 reports context growth to the agent at the end of the request;
++ * aco is the limit, if set. */
++static void agent_nudge_text(sbuf *sb, double tokens)
++{
++	char ln[160];
++	if (xaco)
++		snprintf(ln, sizeof(ln), "[context ~%.0f/%d tokens; autocompact at "
++			"~%d]\n", tokens, xaco, xaco);
++	else
++		snprintf(ln, sizeof(ln), "[context ~%.0f tokens; no limit set]\n",
++			tokens);
++	sbuf_str(sb, ln)
++	sbuf_str(sb, "Run the ex command acheck at a good stopping point to start a\n"
++		"checkpoint: rate and trim the session log, then resume the task.\n")
 +}
 +
 +/* Rebuild the conversation after the system message from b-4. */
@@ -12066,6 +12218,7 @@ index 00000000..f7de4244
 +	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
 +	int st, retries = 0, compacted = 0, unpacked = 0;
++	double nudge;
 +	if (agent_packing)
 +		agent_pack_done = 0;
 +	agent_cancel = agent_pause = 0;
@@ -12091,14 +12244,24 @@ index 00000000..f7de4244
 +		if (agent_live() && (xacl == 1 || agent_log_edited))
 +			agent_reparse();
 +		/* acl > 1 checkpoints growth from the last checkpoint or the
-+		 * smallest context since; trimming gets a chance before aco. */
-+		if (agent_live() && xacl > 1) {
++		 * smallest context since; trimming gets a chance before aco.
++		 * acl < 0 reports each -acl tokens of growth to the agent, which
++		 * decides when to checkpoint with acheck; aco stays the backstop. */
++		nudge = 0;
++		if (agent_live() && agent_acl_kept() && !agent_checkpointing) {
 +			double tokens = agent_tokens();
-+			if (!agent_acl_mark || tokens < agent_acl_mark)
-+				agent_acl_mark = tokens;
-+			else if (tokens - agent_acl_mark >= xacl)
++			if (agent_cp_asked)
 +				agent_checkpoint_begin(tokens);
++			else if (!agent_acl_mark || tokens < agent_acl_mark)
++				agent_acl_mark = tokens;
++			else if (tokens - agent_acl_mark >= abs(xacl)) {
++				if (xacl > 1)
++					agent_checkpoint_begin(tokens);
++				else
++					nudge = agent_acl_mark = tokens;
++			}
 +		}
++		agent_cp_asked = 0;
 +		if (compacted && agent_tokens() < xaco)
 +			compacted = 0;
 +		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
@@ -12108,6 +12271,7 @@ index 00000000..f7de4244
 +			/* The pack conversation was discarded. Start a fresh tool-round
 +			 * budget for the resumed request, without recursing into agent_run. */
 +			compacted = 1;
++			nudge = 0;
 +			if (agent_live())
 +				agent_reparse();
 +			round = retries = 0;
@@ -12129,8 +12293,38 @@ index 00000000..f7de4244
 +		}
 +		if (agent_checkpointing)
 +			agent_cp_build();
++		/* The report ends the last message for this request only: it is
++		 * not logged and does not accumulate in the context. */
++		cJSON *tail = NULL;
++		int tail_n = 0;
++		sbuf_smake(tail_sb, 256)
++		if (nudge) {
++			tail = cJSON_GetArrayItem(agent_messages,
++				cJSON_GetArraySize(agent_messages) - 1);
++			char *s = cJSON_GetStringValue(cJSON_GetObjectItem(tail, "content"));
++			if (s) {
++				char note[64];
++				sbuf_str(tail_sb, s)
++				tail_n = tail_sb->s_n;
++				sbuf_str(tail_sb, tail_n && s[tail_n - 1] == '\n' ? "\n" : "\n\n")
++				agent_nudge_text(tail_sb, nudge);
++				sbuf_nul(tail_sb)
++				cJSON_ReplaceItemInObject(tail, "content",
++					cJSON_CreateString(tail_sb->s));
++				exspec_mark("acheck");
++				snprintf(note, sizeof(note), "[acl report ~%.0f tokens]\n", nudge);
++				agent_output(note);
++			} else
++				tail = NULL;
++		}
 +		req = agent_config();
 +		if (!req) {
++			if (tail) {
++				tail_sb->s[tail_n] = '\0';
++				cJSON_ReplaceItemInObject(tail, "content",
++					cJSON_CreateString(tail_sb->s));
++			}
++			free(tail_sb->s);
 +			agent_log("NOTICE", "invalid agent configuration");
 +			return;
 +		}
@@ -12148,6 +12342,12 @@ index 00000000..f7de4244
 +		agent_prev = json;
 +		body = agent_http(req, &st, &stderr_text);
 +		cJSON_Delete(req);
++		if (tail) {
++			tail_sb->s[tail_n] = '\0';
++			cJSON_ReplaceItemInObject(tail, "content",
++				cJSON_CreateString(tail_sb->s));
++		}
++		free(tail_sb->s);
 +		if (agent_cancel) {
 +			free(body);
 +			free(stderr_text);
@@ -12213,7 +12413,7 @@ index 00000000..f7de4244
 +					"object with a nonempty string command, for example\n"
 +					"{\"command\":\"1,20p\"}.", error);
 +				agent_log("USER", diagnostic);
-+				if (!agent_live() || xacl > 1)
++				if (!agent_live() || agent_acl_kept())
 +					cJSON_AddItemToArray(agent_messages,
 +						agent_msg("user", diagnostic));
 +			}
@@ -12349,7 +12549,7 @@ index 00000000..f7de4244
 +			agent_log("RESULT", safe);
 +			/* A deferral only shows a spec; rate it for the checkpoint. */
 +			int r, row;
-+			if (*agent_deferred && xacl > 1 && agent_logbuf == 3 &&
++			if (*agent_deferred && agent_acl_kept() && agent_logbuf == 3 &&
 +					!agent_note(exn, &r, &row)) {
 +				char note[96];
 +				snprintf(note, sizeof(note), "deferred; printed the %s spec "
@@ -12479,18 +12679,18 @@ index 00000000..f7de4244
 +	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 +		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 +	ex_print(msg, msg_ft)
-+	if (xacl > 1) {
++	if (agent_acl_kept()) {
 +		int k = snprintf(msg, sizeof(msg), "acl        %d, context rebuilt "
-+			"from b-4 at checkpoints and log edits, checkpoint every %d "
-+			"tokens", xacl, xacl);
++			"from b-4 at checkpoints and log edits, %s every %d tokens",
++			xacl, xacl > 1 ? "checkpoint" : "report to agent", abs(xacl));
 +		if (agent_acl_mark)
 +			snprintf(msg + k, sizeof(msg) - k, ", next at ~%.0f",
-+				agent_acl_mark + xacl);
++				agent_acl_mark + abs(xacl));
 +	} else
 +		snprintf(msg, sizeof(msg), "acl        %d%s", xacl,
 +			xacl ? ", context rebuilt from b-4" : " (off)");
 +	ex_print(msg, msg_ft)
-+	if (xacl > 1 || lbuf_len(tempbufs[5].lb)) {
++	if (agent_acl_kept() || lbuf_len(tempbufs[5].lb)) {
 +		char unrated[112];
 +		int n = agent_unrated_now(unrated, sizeof(unrated));
 +		snprintf(msg, sizeof(msg), "notes      %d in b-6, %d commands unrated",
@@ -13206,10 +13406,10 @@ index 00000000..f7de4244
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..3136fc74
+index 00000000..d31ad8b1
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,36 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -13222,9 +13422,10 @@ index 00000000..3136fc74
 +static size_t agent_show_n;
 +static int agent_shown;
 +static sbuf *agent_capture;
-+/* acl > 1: estimated context tokens at the last checkpoint; 0 unset */
++/* acl > 1: estimated context tokens at the last checkpoint; acl < 0: at
++ * the last checkpoint or growth report; 0 unset */
 +static double agent_acl_mark;
-+/* acl > 1: the agent may only trim the session log until adone */
++/* acl > 1 or < 0: the agent may only trim the session log until adone */
 +static int agent_checkpointing;
 +/* First command of the running tool call that aspec deferred */
 +static char agent_deferred[32];
@@ -13234,6 +13435,7 @@ index 00000000..3136fc74
 +static void *ec_anote(char *loc, char *cmd, char *arg);
 +static void *ec_arate(char *loc, char *cmd, char *arg);
 +static void *ec_adone(char *loc, char *cmd, char *arg);
++static void *ec_acheck(char *loc, char *cmd, char *arg);
 +static void *ec_acp(char *loc, char *cmd, char *arg);
 +static void *ec_ast(char *loc, char *cmd, char *arg);
 +static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -16754,10 +16956,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..e0eb3b0e 100755
+index c836c94c..6adf7fb2 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,199 @@ build() {
+@@ -65,6 +65,209 @@ build() {
      }
  }
  
@@ -16861,8 +17063,8 @@ index c836c94c..e0eb3b0e 100755
 +                "mechanics; 2 useful, informs the remaining work; 3 essential, a\n" \
 +                "decision, finding or state the task depends on.\n" \
 +                "Entries work as for anote; other roles in the range are skipped.\n" \
-+                "With acl above 1, commands deferred by aspec are rated 1 by the\n" \
-+                "harness unless already rated.\n" \
++                "With acl above 1 or negative, commands deferred by aspec are rated\n" \
++                "1 by the harness unless already rated.\n" \
 +                "Ratings show in acl checkpoint lists and are given to apack. b-6 is\n" \
 +                "saved as notes in the session directory.\n\n" \
 +                "Example: rate the command of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
@@ -16871,6 +17073,10 @@ index c836c94c..e0eb3b0e 100755
 +                "from the trimmed session log. Takes no range or argument. While EX\n" \
 +                "entries are unrated it is refused, up to twice in a row without new\n" \
 +                "ratings. Errors outside a checkpoint.")
++            spec("acheck", "Start an agent checkpoint",
++                "With acl above 1 or negative, starts an acl checkpoint before the\n" \
++                "next request, once the current tool batch completes. Takes no range\n" \
++                "or argument. Errors with other acl values or during a checkpoint.")
 +            spec("acp", "Print the agent checkpoint entry list",
 +                "Prints the acl checkpoint status as sent at its start, with current\n" \
 +                "entry sizes, ratings and unrated commands. Takes no range or\n" \
@@ -16893,12 +17099,12 @@ index c836c94c..e0eb3b0e 100755
 +                "No argument toggles between 0 and 1. 0 disables.",
 +                "1 rebuilds the agent context from the session log (b-4)\n" \
 +                "before every request, so edits to the log by the agent or the\n" \
-+                "user apply to the next request. Values above 1 rebuild only\n" \
-+                "after such edits and when a checkpoint ends; between rebuilds,\n" \
-+                "replies stay as returned, reasoning included, so the agent keeps\n" \
-+                "it and the server cache continues from its output. With 0, the\n" \
-+                "context is built from the running history and log edits have no\n" \
-+                "effect.\n" \
++                "user apply to the next request. Values above 1 or negative rebuild\n" \
++                "only after such edits and when a checkpoint ends; between\n" \
++                "rebuilds, replies stay as returned, reasoning included, so the\n" \
++                "agent keeps it and the server cache continues from its output.\n" \
++                "With 0, the context is built from the running history and log\n" \
++                "edits have no effect.\n" \
 +                "NOTICE entries report harness events such as HTTP errors and are\n" \
 +                "never sent to the agent.\n" \
 +                "A rebuild drops reasoning not in the log (ar off). With aco, a\n" \
@@ -16918,6 +17124,12 @@ index c836c94c..e0eb3b0e 100755
 +                "the checkpoint ends. It ends with adone, a reply without commands\n" \
 +                "or recursive editing; the interrupted request then resumes. aco\n" \
 +                "is checked after it.\n\n" \
++                "Negative values leave the checkpoint to the agent: each time the\n" \
++                "estimated context grows by -acl tokens from the last checkpoint or\n" \
++                "report, the next request ends with a report of the context size\n" \
++                "and the aco threshold, or no limit without aco, suggesting acheck.\n" \
++                "The report is appended to the last message for that request only;\n" \
++                "it is not logged and does not accumulate. aco stays the limit.\n\n" \
 +                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
 +            spec("aco[0]  Automatically compact using the loaded session log",
 +                "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -16957,7 +17169,7 @@ index c836c94c..e0eb3b0e 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +267,7 @@ install() {
+@@ -74,7 +277,7 @@ install() {
  }
  
  print_usage() {
@@ -16966,7 +17178,7 @@ index c836c94c..e0eb3b0e 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +275,9 @@ print_usage() {
+@@ -82,6 +285,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -17046,7 +17258,7 @@ index 2888d7c6..b1b7f1ad 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..d768bce0 100644
+index 76dca408..44c47b4a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -17450,7 +17662,7 @@ index 76dca408..d768bce0 100644
 -EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
 +_EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
-+_EO(acl, xacl = *arg ? MAX(0, eo_val(arg)) : !xacl; agent_acl_mark = 0; return NULL;)
++_EO(acl, xacl = *arg ? eo_val(arg) : !xacl; agent_acl_mark = 0; return NULL;)
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
@@ -17479,7 +17691,7 @@ index 76dca408..d768bce0 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2006,29 @@ static struct excmd {
+@@ -1758,8 +2006,30 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -17491,6 +17703,7 @@ index 76dca408..d768bce0 100644
 +	{"anote", ec_anote},
 +	{"arate", ec_arate},
 +	{"adone", ec_adone},
++	{"acheck", ec_acheck},
 +	{"acp!", ec_acp},
 +	{"acp", ec_acp},
 +	{"aco!", eo_aco},
@@ -17509,7 +17722,7 @@ index 76dca408..d768bce0 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2208,57 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2209,57 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -17568,7 +17781,7 @@ index 76dca408..d768bce0 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2277,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2278,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -17667,10 +17880,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..1fcc3cd4
+index 00000000..0b9f7b25
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1372 @@
+@@ -0,0 +1,1387 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -18522,8 +18735,8 @@ index 00000000..1fcc3cd4
 +	"mechanics; 2 useful, informs the remaining work; 3 essential, a",
 +	"decision, finding or state the task depends on.",
 +	"Entries work as for anote; other roles in the range are skipped.",
-+	"With acl above 1, commands deferred by aspec are rated 1 by the",
-+	"harness unless already rated.",
++	"With acl above 1 or negative, commands deferred by aspec are rated",
++	"1 by the harness unless already rated.",
 +	"Ratings show in acl checkpoint lists and are given to apack. b-6 is",
 +	"saved as notes in the session directory.",
 +	"",
@@ -18537,6 +18750,13 @@ index 00000000..1fcc3cd4
 +	"from the trimmed session log. Takes no range or argument. While EX",
 +	"entries are unrated it is refused, up to twice in a row without new",
 +	"ratings. Errors outside a checkpoint.",
++	"",
++	"acheck",
++	"Start an agent checkpoint",
++	"",
++	"With acl above 1 or negative, starts an acl checkpoint before the",
++	"next request, once the current tool batch completes. Takes no range",
++	"or argument. Errors with other acl values or during a checkpoint.",
 +	"",
 +	"acp",
 +	"Print the agent checkpoint entry list",
@@ -18637,12 +18857,12 @@ index 00000000..1fcc3cd4
 +	"",
 +	"1 rebuilds the agent context from the session log (b-4)",
 +	"before every request, so edits to the log by the agent or the",
-+	"user apply to the next request. Values above 1 rebuild only",
-+	"after such edits and when a checkpoint ends; between rebuilds,",
-+	"replies stay as returned, reasoning included, so the agent keeps",
-+	"it and the server cache continues from its output. With 0, the",
-+	"context is built from the running history and log edits have no",
-+	"effect.",
++	"user apply to the next request. Values above 1 or negative rebuild",
++	"only after such edits and when a checkpoint ends; between",
++	"rebuilds, replies stay as returned, reasoning included, so the",
++	"agent keeps it and the server cache continues from its output.",
++	"With 0, the context is built from the running history and log",
++	"edits have no effect.",
 +	"NOTICE entries report harness events such as HTTP errors and are",
 +	"never sent to the agent.",
 +	"A rebuild drops reasoning not in the log (ar off). With aco, a",
@@ -18663,6 +18883,13 @@ index 00000000..1fcc3cd4
 +	"the checkpoint ends. It ends with adone, a reply without commands",
 +	"or recursive editing; the interrupted request then resumes. aco",
 +	"is checked after it.",
++	"",
++	"Negative values leave the checkpoint to the agent: each time the",
++	"estimated context grows by -acl tokens from the last checkpoint or",
++	"report, the next request ends with a report of the context size",
++	"and the aco threshold, or no limit without aco, suggesting acheck.",
++	"The report is appended to the last message for that request only;",
++	"it is not logged and does not accumulate. aco stays the limit.",
 +	"",
 +	"Example: checkpoint every 5000 tokens of growth",
 +	"acl 5000",
@@ -19002,46 +19229,47 @@ index 00000000..1fcc3cd4
 +	{"anote", "Replace or remove agent session log entries", 815, 835, 0, 0},
 +	{"arate", "Rate agent commands in the notes buffer", 836, 856, 0, 0},
 +	{"adone", "End an agent checkpoint", 857, 864, 0, 0},
-+	{"acp", "Print the agent checkpoint entry list", 865, 871, 0, 0},
-+	{"acp!", "Print the agent checkpoint instructions", 872, 878, 0, 0},
-+	{"ast", "Print agent status and token usage", 879, 888, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 889, 897, 0, 0},
-+	{"sc", "Set ex special characters", 898, 908, 0, 0},
-+	{"sc!", "Set ex special characters", 909, 916, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 917, 924, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 925, 928, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 929, 933, 0, 0},
-+	{"ph", "Redefine placeholders", 934, 950, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 959, 993, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 994, 1003, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1004, 1011, 1, 0},
-+	{"agr", "Control agent output protection", 1012, 1018, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1019, 1023, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1024, 1028, 1, 0},
-+	{"ai", "Indent new lines", 1029, 1032, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1033, 1034, 1, 0},
-+	{"ish", "Interactive shell", 1035, 1050, 1, 0},
-+	{"grp", "Regex search group", 1051, 1059, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1060, 1063, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1064, 1065, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1065, 1066, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1066, 1067, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1067, 1068, 1, 0},
-+	{"led", "Enable all terminal output", 1068, 1069, 1, 0},
-+	{"vis", "Control startup flags", 1070, 1081, 1, 0},
-+	{"mpt", "Control vi prompts", 1082, 1092, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1093, 1095, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1095, 1097, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1097, 1098, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1098, 1099, 1, 0},
-+	{"td", "Current text direction context", 1099, 1105, 1, 0},
-+	{"pr", "Print register", 1106, 1122, 1, 0},
-+	{"fr", "Find register", 1123, 1135, 1, 0},
-+	{"rr", "Record register", 1136, 1149, 1, 0},
-+	{"lim", "Line length render limit", 1150, 1165, 1, 0},
-+	{"seq", "Control Undo/Redo", 1166, 1178, 1, 0},
-+	{"left", "Control horizontal scroll", 1179, 1184, 1, 0},
-+	{"err", "Control ex errors", 1185, 1197, 1, 0},
++	{"acheck", "Start an agent checkpoint", 865, 871, 0, 0},
++	{"acp", "Print the agent checkpoint entry list", 872, 878, 0, 0},
++	{"acp!", "Print the agent checkpoint instructions", 879, 885, 0, 0},
++	{"ast", "Print agent status and token usage", 886, 895, 0, 0},
++	{"ac", "Set autocomplete filter regex", 896, 904, 0, 0},
++	{"sc", "Set ex special characters", 905, 915, 0, 0},
++	{"sc!", "Set ex special characters", 916, 923, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 924, 931, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 932, 935, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 936, 940, 0, 0},
++	{"ph", "Redefine placeholders", 941, 957, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 966, 1007, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1008, 1017, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1018, 1025, 1, 0},
++	{"agr", "Control agent output protection", 1026, 1032, 1, 0},
++	{"ar", "Display returned agent reasoning", 1033, 1037, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1038, 1042, 1, 0},
++	{"ai", "Indent new lines", 1043, 1046, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1047, 1048, 1, 0},
++	{"ish", "Interactive shell", 1049, 1064, 1, 0},
++	{"grp", "Regex search group", 1065, 1073, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1074, 1077, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1078, 1079, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1079, 1080, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1080, 1081, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1081, 1082, 1, 0},
++	{"led", "Enable all terminal output", 1082, 1083, 1, 0},
++	{"vis", "Control startup flags", 1084, 1095, 1, 0},
++	{"mpt", "Control vi prompts", 1096, 1106, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1107, 1109, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1109, 1111, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1111, 1112, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1112, 1113, 1, 0},
++	{"td", "Current text direction context", 1113, 1119, 1, 0},
++	{"pr", "Print register", 1120, 1136, 1, 0},
++	{"fr", "Find register", 1137, 1149, 1, 0},
++	{"rr", "Record register", 1150, 1163, 1, 0},
++	{"lim", "Line length render limit", 1164, 1179, 1, 0},
++	{"seq", "Control Undo/Redo", 1180, 1192, 1, 0},
++	{"left", "Control horizontal scroll", 1193, 1198, 1, 0},
++	{"err", "Control ex errors", 1199, 1211, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
