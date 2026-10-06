@@ -73,7 +73,7 @@ static size_t agent_capture_total;	/* full tool output, including clipped bytes 
  * threshold so output under it is never clipped. */
 static int agent_gr_cap(void)
 {
-	return xagr > 0 && !agent_gr_bypass ? MAX(AGENT_SHOW_MAX, xagr) : 0;
+	return xagr > 0 ? MAX(AGENT_SHOW_MAX, xagr) : 0;
 }
 
 /* Usage describes the last accepted response. The anchor describes its input;
@@ -2073,7 +2073,6 @@ static void agent_run_loop(const char *input)
 				agent_capture = out;
 				agent_capture_total = 0;
 				agent_child_status = 0;
-				agent_gr_bypass = 0;
 				agent_shown = 0;
 				agent_tool_dep = xexec_dep + 1;
 				agent_sequence();
@@ -2095,7 +2094,6 @@ static void agent_run_loop(const char *input)
 					sbuf_cut(out, 0)
 					sbufn_str(out, msg)
 				}
-				agent_gr_bypass = 0;
 				agent_capture = NULL;
 				agent_tool = 0;
 				agent_sync_pending();
@@ -3009,9 +3007,8 @@ static int agent_autocompact(const char *input)
 /* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 static int agent_tool, agent_cancel, agent_pause;
 static int agent_input_blocked;
-/* aretry lifts the guardrail for the rest of its tool call;
- * agent_tool_dep is the ex_exec depth of the tool call itself. */
-static int agent_gr_bypass, agent_tool_dep;
+/* ex_exec depth of the running tool call itself */
+static int agent_tool_dep;
 /* full output of the last tool call that did not run or defer aout */
 static char *agent_show;
 static size_t agent_show_n;
@@ -6699,14 +6696,14 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Adds or removes the skill in b-5. Tool calls update the system\n" \
                 "message; otherwise context is rebuilt from the log.")
             print "     aretry"
-            print "             Execute the last agent command once without the guardrail"
+            print "             Execute the last agent command"
             print ""
             print "             Saves each top-level command the agent runs or aspec defers,"
             print "             with its range and expanded argument; a run aout is not saved."
-            print "             Takes no range or argument. Lifts the agr limit for the rest of"
-            print "             the tool call; the saved command is kept. A new session clears"
-            print "             it. Errors if none is saved. Reruns side effects; prefer aout"
-            print "             to view output."
+            print "             Takes no range or argument. The saved command is kept and its"
+            print "             output is guarded by agr like any other. A new session clears"
+            print "             it. Errors if none is saved. Reruns side effects; use aout to"
+            print "             view withheld output."
             print ""
             print "             Example: execute a deferred command"
             print "             :aretry"
@@ -6846,7 +6843,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "No argument toggles between 0 and 4096.",
                 "Positive value is the tool output limit in bytes; output over it is\n" \
                 "withheld. 0 or negative disables protection. aout views withheld\n" \
-                "output; aretry reruns the last command once unguarded.")
+                "output.")
             spec("ar[0]  Display returned agent reasoning",
                 "No argument logically inverts the option.",
                 "Nonzero includes returned reasoning in the session log.")
@@ -8142,7 +8139,6 @@ static void *ec_aretry(char *loc, char *cmd, char *arg)
 		return "no agent command to retry";
 	/* a deferral inside the retried command replaces the saved one */
 	aretry_saved = NULL;
-	agent_gr_bypass = 1;
 	agent_shown |= aretry_cmd->ec == ec_aout;
 	ret = aretry_cmd->ec(saved, aretry_cmd->name, saved + aretry_arg);
 	if (aretry_saved)
@@ -9273,14 +9269,14 @@ static char *exspec_lines[] = {
 	"message; otherwise context is rebuilt from the log.",
 	"",
 	"aretry",
-	"Execute the last agent command once without the guardrail",
+	"Execute the last agent command",
 	"",
 	"Saves each top-level command the agent runs or aspec defers,",
 	"with its range and expanded argument; a run aout is not saved.",
-	"Takes no range or argument. Lifts the agr limit for the rest of",
-	"the tool call; the saved command is kept. A new session clears",
-	"it. Errors if none is saved. Reruns side effects; prefer aout",
-	"to view output.",
+	"Takes no range or argument. The saved command is kept and its",
+	"output is guarded by agr like any other. A new session clears",
+	"it. Errors if none is saved. Reruns side effects; use aout to",
+	"view withheld output.",
 	"",
 	"Example: execute a deferred command",
 	"aretry",
@@ -9525,7 +9521,7 @@ static char *exspec_lines[] = {
 	"",
 	"Positive value is the tool output limit in bytes; output over it is",
 	"withheld. 0 or negative disables protection. aout views withheld",
-	"output; aretry reruns the last command once unguarded.",
+	"output.",
 	"",
 	"ar[0]  Display returned agent reasoning",
 	"No argument logically inverts the option.",
@@ -9832,7 +9828,7 @@ static struct {
 	{"apack", "Compact the agent session from its log", 765, 775, 0, 0},
 	{"apack!", "Compact the agent session by browsing its log", 776, 783, 0, 0},
 	{"acm", "Toggle the caveman response style skill", 784, 789, 0, 0},
-	{"aretry", "Execute the last agent command once without the guardrail", 790, 802, 0, 0},
+	{"aretry", "Execute the last agent command", 790, 802, 0, 0},
 	{"aout", "Print the saved output of the last agent tool call", 803, 814, 0, 0},
 	{"anote", "Replace or remove agent session log entries", 815, 835, 0, 0},
 	{"arate", "Rate agent commands in the notes buffer", 836, 856, 0, 0},
@@ -10500,10 +10496,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..707fe40e
+index 00000000..cb77b390
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2974 @@
+@@ -0,0 +1,2972 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -10547,7 +10543,7 @@ index 00000000..707fe40e
 + * threshold so output under it is never clipped. */
 +static int agent_gr_cap(void)
 +{
-+	return xagr > 0 && !agent_gr_bypass ? MAX(AGENT_SHOW_MAX, xagr) : 0;
++	return xagr > 0 ? MAX(AGENT_SHOW_MAX, xagr) : 0;
 +}
 +
 +/* Usage describes the last accepted response. The anchor describes its input;
@@ -12547,7 +12543,6 @@ index 00000000..707fe40e
 +				agent_capture = out;
 +				agent_capture_total = 0;
 +				agent_child_status = 0;
-+				agent_gr_bypass = 0;
 +				agent_shown = 0;
 +				agent_tool_dep = xexec_dep + 1;
 +				agent_sequence();
@@ -12569,7 +12564,6 @@ index 00000000..707fe40e
 +					sbuf_cut(out, 0)
 +					sbufn_str(out, msg)
 +				}
-+				agent_gr_bypass = 0;
 +				agent_capture = NULL;
 +				agent_tool = 0;
 +				agent_sync_pending();
@@ -13480,17 +13474,16 @@ index 00000000..707fe40e
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..746962d7
+index 00000000..c8120419
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,40 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
 +static int agent_input_blocked;
-+/* aretry lifts the guardrail for the rest of its tool call;
-+ * agent_tool_dep is the ex_exec depth of the tool call itself. */
-+static int agent_gr_bypass, agent_tool_dep;
++/* ex_exec depth of the running tool call itself */
++static int agent_tool_dep;
 +/* full output of the last tool call that did not run or defer aout */
 +static char *agent_show;
 +static size_t agent_show_n;
@@ -17035,7 +17028,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..e4cef366 100755
+index c836c94c..a50485e7 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,219 @@ build() {
@@ -17091,14 +17084,14 @@ index c836c94c..e4cef366 100755
 +                "Adds or removes the skill in b-5. Tool calls update the system\n" \
 +                "message; otherwise context is rebuilt from the log.")
 +            print "     aretry"
-+            print "             Execute the last agent command once without the guardrail"
++            print "             Execute the last agent command"
 +            print ""
 +            print "             Saves each top-level command the agent runs or aspec defers,"
 +            print "             with its range and expanded argument; a run aout is not saved."
-+            print "             Takes no range or argument. Lifts the agr limit for the rest of"
-+            print "             the tool call; the saved command is kept. A new session clears"
-+            print "             it. Errors if none is saved. Reruns side effects; prefer aout"
-+            print "             to view output."
++            print "             Takes no range or argument. The saved command is kept and its"
++            print "             output is guarded by agr like any other. A new session clears"
++            print "             it. Errors if none is saved. Reruns side effects; use aout to"
++            print "             view withheld output."
 +            print ""
 +            print "             Example: execute a deferred command"
 +            print "             :aretry"
@@ -17238,7 +17231,7 @@ index c836c94c..e4cef366 100755
 +                "No argument toggles between 0 and 4096.",
 +                "Positive value is the tool output limit in bytes; output over it is\n" \
 +                "withheld. 0 or negative disables protection. aout views withheld\n" \
-+                "output; aretry reruns the last command once unguarded.")
++                "output.")
 +            spec("ar[0]  Display returned agent reasoning",
 +                "No argument logically inverts the option.",
 +                "Nonzero includes returned reasoning in the session log.")
@@ -17347,7 +17340,7 @@ index 2888d7c6..b1b7f1ad 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..d4b8e21c 100644
+index 76dca408..dcd6fe63 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -17554,7 +17547,7 @@ index 76dca408..d4b8e21c 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1635,6 +1695,186 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1635,6 +1695,185 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -17589,7 +17582,6 @@ index 76dca408..d4b8e21c 100644
 +		return "no agent command to retry";
 +	/* a deferral inside the retried command replaces the saved one */
 +	aretry_saved = NULL;
-+	agent_gr_bypass = 1;
 +	agent_shown |= aretry_cmd->ec == ec_aout;
 +	ret = aretry_cmd->ec(saved, aretry_cmd->name, saved + aretry_arg);
 +	if (aretry_saved)
@@ -17741,7 +17733,7 @@ index 76dca408..d4b8e21c 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1942,12 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1941,12 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -17756,7 +17748,7 @@ index 76dca408..d4b8e21c 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1973,20 @@ _EO(left,
+@@ -1730,14 +1972,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -17781,7 +17773,7 @@ index 76dca408..d4b8e21c 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2007,30 @@ static struct excmd {
+@@ -1758,8 +2006,30 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -17812,7 +17804,7 @@ index 76dca408..d4b8e21c 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2210,65 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2209,65 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -17879,7 +17871,7 @@ index 76dca408..d4b8e21c 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2287,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2286,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -17978,7 +17970,7 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..2d6d8bb5
+index 00000000..f9e6115a
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1399 @@
@@ -18775,14 +18767,14 @@ index 00000000..2d6d8bb5
 +	"message; otherwise context is rebuilt from the log.",
 +	"",
 +	"aretry",
-+	"Execute the last agent command once without the guardrail",
++	"Execute the last agent command",
 +	"",
 +	"Saves each top-level command the agent runs or aspec defers,",
 +	"with its range and expanded argument; a run aout is not saved.",
-+	"Takes no range or argument. Lifts the agr limit for the rest of",
-+	"the tool call; the saved command is kept. A new session clears",
-+	"it. Errors if none is saved. Reruns side effects; prefer aout",
-+	"to view output.",
++	"Takes no range or argument. The saved command is kept and its",
++	"output is guarded by agr like any other. A new session clears",
++	"it. Errors if none is saved. Reruns side effects; use aout to",
++	"view withheld output.",
 +	"",
 +	"Example: execute a deferred command",
 +	"aretry",
@@ -19027,7 +19019,7 @@ index 00000000..2d6d8bb5
 +	"",
 +	"Positive value is the tool output limit in bytes; output over it is",
 +	"withheld. 0 or negative disables protection. aout views withheld",
-+	"output; aretry reruns the last command once unguarded.",
++	"output.",
 +	"",
 +	"ar[0]  Display returned agent reasoning",
 +	"No argument logically inverts the option.",
@@ -19334,7 +19326,7 @@ index 00000000..2d6d8bb5
 +	{"apack", "Compact the agent session from its log", 765, 775, 0, 0},
 +	{"apack!", "Compact the agent session by browsing its log", 776, 783, 0, 0},
 +	{"acm", "Toggle the caveman response style skill", 784, 789, 0, 0},
-+	{"aretry", "Execute the last agent command once without the guardrail", 790, 802, 0, 0},
++	{"aretry", "Execute the last agent command", 790, 802, 0, 0},
 +	{"aout", "Print the saved output of the last agent tool call", 803, 814, 0, 0},
 +	{"anote", "Replace or remove agent session log entries", 815, 835, 0, 0},
 +	{"arate", "Rate agent commands in the notes buffer", 836, 856, 0, 0},
