@@ -7,6 +7,10 @@ Bug fixes:
    Replace the fixed 1024-entry directory queue with a dynamically growing
    path stack and open only one directory at a time, avoiding descriptor
    exhaustion. Unreadable subdirectories no longer stop scanning siblings.
+2. Fix an ex range off-by-one after a numeric line address: ;$, ;>re>
+   and ,# now apply to the addressed line rather than the next one
+   (:5;$c inserts at the end of line 5, :2,#+2 selects lines 2-4).
+   Regressed in 6.0.
 
 Patch changes:
 1. [agent.sh](https://github.com/kyx0r/nextvi/blob/release/agent.sh):
