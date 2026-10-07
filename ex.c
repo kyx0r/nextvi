@@ -853,7 +853,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 
 static void *ec_insert(char *loc, char *cmd, char *arg)
 {
-	int beg, end, o1 = -1, o2 = -1, ps = 0, key;
+	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;
 	sbuf _sb, *sb = &_sb;
 	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
 		if (*loc && cmd[0] != 'c' && beg == -1 && end == 0
@@ -1028,7 +1028,7 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 
 static void *ec_put(char *loc, char *cmd, char *arg)
 {
-	int beg, end, i = 0, reg = xdefreg;
+	int beg, end = -1, i = 0, reg = xdefreg;
 	sbuf *buf;
 	for (; uc_isdigit(arg[i]); i++)
 		reg = i ? reg * 10 + (arg[i] - '0') : arg[i] - '0';
