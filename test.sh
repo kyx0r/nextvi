@@ -608,6 +608,35 @@ printf 'hello world extra\n' > "$TMPFILE"
 out=$(run_ex ':;5;#+10= 3:q')
 check 'N2 ;5;#+10= 3 — second char offset via # rebase is 15' '15' "$out"
 
+# A numeric line address is 1-based; parts after it (;$ ;>re> ,#) must read
+# the addressed line, not the next one. Line lengths differ so that an
+# off-by-one row changes the result. = prints beg end o1 o2.
+printf 'L1\nL2\nL3\nL4\nab\nline six here\n' > "$TMPFILE"
+out=$(run_ex ':5;$=:q')
+check 'N3 5;$= — $ offset is the end of line 5' '4 5 2 -1' "$out"
+out=$(run_ex ':6;$=:q')
+check 'N4 6;$= — $ offset on the last line' '5 6 13 -1' "$out"
+out=$(run_ex ':3,5;$=:q')
+check 'N5 3,5;$= — $ offset uses the second line address' '2 5 2 -1' "$out"
+out=$(run_ex ':5;>ab>=:q')
+check 'N6 5;>ab>= — offset search on line 5' '4 5 0 -1' "$out"
+out=$(EXINIT=':5;>six>=:q' "$VI" -sm "$TMPFILE" </dev/null 2>&1)
+check 'N7 5;>six>= — match on line 6 is outside line 5' 'range not found' "$out"
+out=$(run_ex ':2,#+2=:q')
+check 'N8 2,#+2= — # rebases on line 2, giving lines 2-4' '1 4 -1 -1' "$out"
+out=$(run_ex ':2,#3=:q')
+check 'N9 2,#3= — numeric second address is absolute' '1 3 -1 -1' "$out"
+out=$(run_ex ':2,#+2;$=:q')
+check 'N10 2,#+2;$= — $ offset on rebased end line 4' '1 4 2 -1' "$out"
+out=$(run_ex ':5;$c X:%p:q')
+check 'N11 5;$c X — insert at the end of line 5' \
+	"$(printf 'L1\nL2\nL3\nL4\nabX\nline six here')" "$out"
+out=$(run_ex ':5;>b>c Y:5p:q')
+check 'N12 5;>b>c Y — insert before the match on line 5' 'aYb' "$out"
+out=$(run_ex ':2,#+2d:%p:q')
+check 'N13 2,#+2d — deletes lines 2-4' \
+	"$(printf 'L1\nab\nline six here')" "$out"
+
 # f( lands on (; \% passes a literal % (not buffer path) to the & macro
 printf 'foo(bar)qux\n' > "$TMPFILE"
 out=$(run_vi 'f(\%x')
