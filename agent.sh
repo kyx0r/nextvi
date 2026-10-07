@@ -6977,28 +6977,287 @@ int xaco;	/* autocompact input-token threshold; 0 disables */
 int xacl;	/* rebuild agent context from the session log (:acl) */
 static int xaco_browse;	/* last selected mode: aco! rather than aco */
 
-static char exspec_insert[] =
-	"Ex special characters are disabled and raw ex mode is on by default.\n"
-	"Supply literal text as [str] directly. No dot terminator or escapes required.\n"
-	"[str] is required.";
+/* Complete specifications shown to the agent in place of the README ones.
+ * The README keeps interactive examples for humans; agents run ex with
+ * special characters off and text supplied. */
+static char exspec_agent_i[] =
+	"[vrange]i[str]\n"
+	"Insert lines\n"
+	"\n"
+	"Inserts [str] as lines after line [vrange]; without [vrange], after the\n"
+	"current line. 0i inserts before line 1. Character offsets are ignored.\n"
+	"On an empty buffer only i and 0i work.\n"
+	"[str] is required and literal: no terminator, escapes or special\n"
+	"characters. Newlines in [str] separate lines: \\n in the JSON string,\n"
+	"not \\r.\n"
+	"\n"
+	"Example: insert \"hello\" after the current line\n"
+	"i hello\n"
+	"Example: insert \"hello\" after line 5\n"
+	"5i hello\n"
+	"Example: insert \"hello\" before line 1\n"
+	"0i hello\n"
+	"Example: insert \"hello\" after the last line\n"
+	"$i hello\n"
+	"Example: insert two lines after line 5\n"
+	"5i hello\\nworld";
 
-/* Additional :exspec lines; repeat a command to append more lines. */
+static char exspec_agent_c[] =
+	"[range]c[str]\n"
+	"Change lines or characters\n"
+	"\n"
+	"Replaces the lines of [range] with [str]; without [range], the current\n"
+	"line. Character offsets count from 0 and $ is the end of the line.\n"
+	"With one offset (N;O), inserts [str] at offset O of line N. With two\n"
+	"(N;O;P), replaces the characters from O up to, not including, P.\n"
+	"On an empty buffer only c without a range works.\n"
+	"[str] is required and literal: no terminator, escapes or special\n"
+	"characters. Newlines in [str] separate lines: \\n in the JSON string,\n"
+	"not \\r.\n"
+	"\n"
+	"Example: replace the current line with \"hello\"\n"
+	"c hello\n"
+	"Example: replace lines 1-5 with \"hello\"\n"
+	"1,5c hello\n"
+	"Example: replace the whole buffer with two lines\n"
+	"%c hello\\nworld\n"
+	"Example: insert \"hello\" at offset 3 of line 5\n"
+	"5;3c hello\n"
+	"Example: append \"hello\" to line 5\n"
+	"5;$c hello\n"
+	"Example: replace characters 2 and 3 of line 5 with \"hello\"\n"
+	"5;2;4c hello";
+
+static char exspec_agent_p[] =
+	"[range]p[str]\n"
+	"Print line(s) from a buffer\n"
+	"\n"
+	"No range prints a line based on the value of left ex option.\n"
+	"Argument prints the evaluated argument.\n"
+	"\n"
+	"Example: utilize character offset ranges\n"
+	"1,10;5;5p\n"
+	"Example: interleaved character offset ranges\n"
+	"1;5,10;5p\n"
+	"Example: print current line from offset 5 to 10\n"
+	".;5;10p\n"
+	"\n"
+	"Cursor position is stateful; left at the range position it landed on.\n"
+	"Keep reads small and within buffer bounds.\n"
+	"Check the position with = and line count with $= before printing ranges.\n"
+	"Use character ranges for long lines; stop when you have enough context.";
+
+static char exspec_agent_g[] =
+	"[vrange]g[<Delim>][regex][<Delim>][cmd]\n"
+	"Global command\n"
+	"\n"
+	"Runs [cmd] on each line in [vrange] that matches [regex].\n"
+	"No [vrange] means the whole buffer.\n"
+	"[cmd] is one ex command. It runs with the current line set to the\n"
+	"matching line, so its ranges are relative to that line. No [cmd]\n"
+	"prints the matching lines. Fails if no line matches. Stops at the first\n"
+	"line where [cmd] fails; changes to earlier lines remain.\n"
+	"<Delim> is any character; escape it inside [regex] with a backslash.\n"
+	"Matching ignores case by default; ic 0 makes it case-sensitive.\n"
+	"\n"
+	"Example: print lines containing \"int\"\n"
+	"g/int/p\n"
+	"Example: remove all empty lines\n"
+	"g/^$/d\n"
+	"Example: in lines 10-20, remove lines containing \"int\"\n"
+	"10,20g/int/d\n"
+	"Example: insert \"checked\" after each line containing \"int\"\n"
+	"g/int/i checked\n"
+	"Example: print lines containing \"/usr/bin\"\n"
+	"g|/usr/bin|p";
+
+static char exspec_agent_g_inv[] =
+	"[vrange]g![<Delim>][regex][<Delim>][cmd]\n"
+	"Inverted global command";
+
+static char exspec_agent_w[] =
+	"[range]w[path]\n"
+	"[range]w[!{cmd}]\n"
+	"Write a file or a pipe\n"
+	"\n"
+	"No range evaluates to <%> range.\n"
+	"No argument evaluates to current buffer path.\n"
+	"\n"
+	"Example: write a file\n"
+	"w vi.c\n"
+	"Example: pipe out all data into less\n"
+	"w !less\n"
+	"Example: pipe out only first 10 lines\n"
+	"1,10w !less";
+
+static char exspec_agent_r[] =
+	"[range]r[path]\n"
+	"[range]r[!{cmd}]\n"
+	"Read a file or a pipe\n"
+	"\n"
+	"Range is computed on a target.\n"
+	"No range evaluates to <%> range.\n"
+	"No argument evaluates to current buffer path.\n"
+	"\n"
+	"Example: read a file\n"
+	"r vi.c\n"
+	"Example: pipe in all data\n"
+	"r !ls\n"
+	"Example: pipe in only lines 3,5\n"
+	"3,5r !ls";
+
+static char exspec_agent_parsing[] =
+	"EX PARSING\n"
+	"Parsing follows the structure:\n"
+	"[<sep>][prefix][cmd][<pad>][args]\n"
+	"Ex commands are initiated and separated by <sep>. Fields can\n"
+	"be padded by <Space> or <Tab>. [prefix] is a field consumed by\n"
+	"[cmd], which accepts [range] structure characters. Padding inside\n"
+	"[prefix] structure is collapsed, except within nested blocks.\n"
+	"There can only be one pad in between [cmd] and [args]. To avoid\n"
+	"ambiguity in scripts, it is recommended to always use a pad between\n"
+	"[cmd] and [args].\n"
+	"\n"
+	"Examples:\n"
+	"evi.c\n"
+	"Evaluates to \"e vi.c\"\n"
+	"efbc\n"
+	"Evaluates to \"ef bc\" not \"e fbc\"\n"
+	"e  vi.c\n"
+	"Edit \" vi.c\". <pad> is required\n"
+	"\n"
+	"Command chaining is unavailable by default during agent execution.";
+
+static char exspec_agent_escapes[] =
+	"EX ESCAPES\n"
+	"Special characters in [args] and [prefix] blocks will become\n"
+	"regular when escaped with <\\>. Escapes are governed by a non-POSIX\n"
+	"parity rule: escapes directly before a special are halved, an\n"
+	"odd amount makes the special regular, and escapes anywhere else\n"
+	"are literal.\n"
+	"\n"
+	"( ^ ] -\n"
+	"Specials in regex \"[]\" expression\n"
+	"( ) { + * \? ^ $ [ | \\ . \\< \\>\n"
+	"Specials in regex\n"
+	"\\ : % !\n"
+	"Specials in ex\n"
+	"\n"
+	"Ex special characters are disabled by default during agent execution.";
+
+static char exspec_agent_expansion[] =
+	"EX EXPANSION\n"
+	"<%> in [args] expands to current buffer pathname or any buffer\n"
+	"pathname when followed by a corresponding buffer number.\n"
+	"%# expands to last swapped buffer pathname.\n"
+	"%@ expands to register specified.\n"
+	"\n"
+	"Example: make a copy of the current file and edit it\n"
+	"!cp % %_:e %_\n"
+	"Example: insert current buffer pathname\n"
+	"&i%\n"
+	"Example: echo the value of <a> register\n"
+	"!echo %@97\n"
+	"\n"
+	"<!> in [args] starts and optionally ends a block containing\n"
+	"external commands. This block executes and expands to stdout\n"
+	"and stderr produced.\n"
+	"\n"
+	"Example: substitute \"int\" with the value of $RANDOM\n"
+	"%s/int/!printf \"%s\" $RANDOM!\n"
+	"Example: insert output of ls shell command\n"
+	"&i!ls\n"
+	"\n"
+	"Expansion is unavailable by default during agent execution.";
+
+static char exspec_agent_ranges[] =
+	"EX RANGES\n"
+	"Some ex commands take a range before the command name, as in 1,5p.\n"
+	"[range] selects lines and optionally characters on them, as in 1,5p\n"
+	"or 5;2;4p.\n"
+	"[vrange] selects lines only; a character offset in it does not narrow\n"
+	"the command, as in 10,20g/int/d.\n"
+	"A range without a command moves the cursor, as in 10;50.\n"
+	"\n"
+	"[% |][, ;][#][. $ '\'' > <][- + * / %][#num]\n"
+	"All ranges structure\n"
+	"{|}{cmd}[|]\n"
+	"Ex subcommand structure\n"
+	"{>}[regex][>]\n"
+	"Search forward structure\n"
+	"{<}[regex][<]\n"
+	"Search backward structure\n"
+	"'\''{#mark}\n"
+	"Mark structure\n"
+	"\n"
+	"%       Range from first to last line\n"
+	"|       Begin ex subcommand block\n"
+	",       Vertical range separator\n"
+	";       Horizontal range separator\n"
+	"#       Rebase to previous value in range structure\n"
+	".       Current position\n"
+	"$       Last line of a buffer or end of line\n"
+	"'\''       Begin mark structure\n"
+	">       Begin search forward block\n"
+	"<       Begin search backward block\n"
+	"-       Subtract following number\n"
+	"+       Add following number\n"
+	"*       Multiply by the following number\n"
+	"/       Divide by the following number\n"
+	"%       Modulo by the following number\n"
+	"#num    Number or position\n"
+	"\n"
+	"Examples:\n"
+	"1,5p   Print lines 1,5\n"
+	".-5,.+5p\n"
+	"Print 5 lines around current position\n"
+	">int>p\n"
+	"Print first occurrence of \"int\"\n"
+	"<int<p\n"
+	"Print first occurrence of \"int\" in reverse\n"
+	".,>int>p\n"
+	"Print until \"int\" is found\n"
+	"<int<,.p\n"
+	"Print until \"int\" is found in reverse\n"
+	">      Search using previously set regex keyword\n"
+	"'\''100,'\''97p\n"
+	"Print lines from mark <d> to mark <a>\n"
+	"%p     Print all lines in a buffer\n"
+	"$p     Print last line in a buffer\n"
+	"$*50/100+1\n"
+	"Goto 50% of the file\n"
+	";50    Goto character offset 50\n"
+	"10;50  Goto line 10 character offset 50\n"
+	"10;.+5\n"
+	"Goto line 10 +5 character offset\n"
+	"'\''97;'\''97\n"
+	"Goto line mark <a> offset mark <a>\n"
+	";$     Goto end of line\n"
+	"5;>int>\n"
+	"Search for \"int\" on line 5\n"
+	".;<int<\n"
+	"Search for \"int\" in reverse on the current line\n"
+	";5;+10=\n"
+	"+10 is relative to the initial current offset, not 5\n"
+	";5;#+10=\n"
+	"+10 is relative to 5\n"
+	";>int>+3;#>>p\n"
+	"Print text enclosed by \"int\" on the current line";
+
 static struct {
 	char *cmd, *text;
-} conf_exspec[] = {
-	{"i", exspec_insert},
-	{"c", exspec_insert},
-	{"p", "Cursor position is stateful; left at the range position it landed on."},
-	{"p", "Keep reads small and within buffer bounds."},
-	{"p", "Check the position with = and line count with $= before printing ranges."},
-	{"p", "Use character ranges for long lines; stop when you have enough context."},
-	{"p", "Ex special characters disabled by default. p % example will not work."},
-	{"g", "Ex special characters disabled by default. Command chaining unavailable."},
-	{"w", "Ex special characters disabled by default. Do not escape ! character."},
-	{"r", "Ex special characters disabled by default. Do not escape ! character."},
-	{"parsing", "Ex special characters disabled by default. Command chaining unavailable."},
-	{"escapes", "Ex special characters disabled by default."},
-	{"expansion", "Ex special characters disabled by default. Expansion unavailable."},
+} conf_exspec_agent[] = {
+	{"i", exspec_agent_i},
+	{"c", exspec_agent_c},
+	{"p", exspec_agent_p},
+	{"g", exspec_agent_g},
+	{"g!", exspec_agent_g_inv},
+	{"w", exspec_agent_w},
+	{"r", exspec_agent_r},
+	{"parsing", exspec_agent_parsing},
+	{"escapes", exspec_agent_escapes},
+	{"expansion", exspec_agent_expansion},
+	{"ranges", exspec_agent_ranges},
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
@@ -8209,22 +8468,6 @@ static int exspec_pack(int state)
 	return prev;
 }
 
-static int exspec_extra(char *cmd)
-{
-	int found = 0;
-	for (int i = 0; i < LEN(conf_exspec); i++) {
-		if (strcmp(cmd, conf_exspec[i].cmd))
-			continue;
-		if (!found) {
-			ex_print("", msg_ft)
-			ex_print("Agent guidance:", msg_ft)
-		}
-		ex_print(conf_exspec[i].text, msg_ft)
-		found = 1;
-	}
-	return found;
-}
-
 static void *ec_exspec(char *loc, char *cmd, char *arg)
 {
 	int i, j, k, option, begin = -1, end = 0;
@@ -8288,13 +8531,18 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 		end = i;
 	}
 	if (begin < 0)
-		return exspec_extra(arg) ? NULL : "unknown ex specification";
+		return "unknown ex specification";
 	exspec_mark(arg);
+	/* An agent specification replaces the README one and its guidance. */
+	for (i = 0; agent_tool && i < LEN(conf_exspec_agent); i++)
+		if (!strcmp(arg, conf_exspec_agent[i].cmd)) {
+			ex_print(conf_exspec_agent[i].text, msg_ft)
+			return NULL;
+		}
 	while (end > begin && !*exspec_lines[end - 1])
 		end--;
 	for (i = begin; i < end; i++)
 		ex_print(exspec_lines[i], msg_ft)
-	exspec_extra(arg);
 	return NULL;
 }
 
@@ -17335,10 +17583,10 @@ index c836c94c..0c94e405 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..b1b7f1ad 100644
+index 2888d7c6..d1192832 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,53 @@
+@@ -1,5 +1,312 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -17365,34 +17613,293 @@ index 2888d7c6..b1b7f1ad 100644
 +int xacl;	/* rebuild agent context from the session log (:acl) */
 +static int xaco_browse;	/* last selected mode: aco! rather than aco */
 +
-+static char exspec_insert[] =
-+	"Ex special characters are disabled and raw ex mode is on by default.\n"
-+	"Supply literal text as [str] directly. No dot terminator or escapes required.\n"
-+	"[str] is required.";
++/* Complete specifications shown to the agent in place of the README ones.
++ * The README keeps interactive examples for humans; agents run ex with
++ * special characters off and text supplied. */
++static char exspec_agent_i[] =
++	"[vrange]i[str]\n"
++	"Insert lines\n"
++	"\n"
++	"Inserts [str] as lines after line [vrange]; without [vrange], after the\n"
++	"current line. 0i inserts before line 1. Character offsets are ignored.\n"
++	"On an empty buffer only i and 0i work.\n"
++	"[str] is required and literal: no terminator, escapes or special\n"
++	"characters. Newlines in [str] separate lines: \\n in the JSON string,\n"
++	"not \\r.\n"
++	"\n"
++	"Example: insert \"hello\" after the current line\n"
++	"i hello\n"
++	"Example: insert \"hello\" after line 5\n"
++	"5i hello\n"
++	"Example: insert \"hello\" before line 1\n"
++	"0i hello\n"
++	"Example: insert \"hello\" after the last line\n"
++	"$i hello\n"
++	"Example: insert two lines after line 5\n"
++	"5i hello\\nworld";
 +
-+/* Additional :exspec lines; repeat a command to append more lines. */
++static char exspec_agent_c[] =
++	"[range]c[str]\n"
++	"Change lines or characters\n"
++	"\n"
++	"Replaces the lines of [range] with [str]; without [range], the current\n"
++	"line. Character offsets count from 0 and $ is the end of the line.\n"
++	"With one offset (N;O), inserts [str] at offset O of line N. With two\n"
++	"(N;O;P), replaces the characters from O up to, not including, P.\n"
++	"On an empty buffer only c without a range works.\n"
++	"[str] is required and literal: no terminator, escapes or special\n"
++	"characters. Newlines in [str] separate lines: \\n in the JSON string,\n"
++	"not \\r.\n"
++	"\n"
++	"Example: replace the current line with \"hello\"\n"
++	"c hello\n"
++	"Example: replace lines 1-5 with \"hello\"\n"
++	"1,5c hello\n"
++	"Example: replace the whole buffer with two lines\n"
++	"%c hello\\nworld\n"
++	"Example: insert \"hello\" at offset 3 of line 5\n"
++	"5;3c hello\n"
++	"Example: append \"hello\" to line 5\n"
++	"5;$c hello\n"
++	"Example: replace characters 2 and 3 of line 5 with \"hello\"\n"
++	"5;2;4c hello";
++
++static char exspec_agent_p[] =
++	"[range]p[str]\n"
++	"Print line(s) from a buffer\n"
++	"\n"
++	"No range prints a line based on the value of left ex option.\n"
++	"Argument prints the evaluated argument.\n"
++	"\n"
++	"Example: utilize character offset ranges\n"
++	"1,10;5;5p\n"
++	"Example: interleaved character offset ranges\n"
++	"1;5,10;5p\n"
++	"Example: print current line from offset 5 to 10\n"
++	".;5;10p\n"
++	"\n"
++	"Cursor position is stateful; left at the range position it landed on.\n"
++	"Keep reads small and within buffer bounds.\n"
++	"Check the position with = and line count with $= before printing ranges.\n"
++	"Use character ranges for long lines; stop when you have enough context.";
++
++static char exspec_agent_g[] =
++	"[vrange]g[<Delim>][regex][<Delim>][cmd]\n"
++	"Global command\n"
++	"\n"
++	"Runs [cmd] on each line in [vrange] that matches [regex].\n"
++	"No [vrange] means the whole buffer.\n"
++	"[cmd] is one ex command. It runs with the current line set to the\n"
++	"matching line, so its ranges are relative to that line. No [cmd]\n"
++	"prints the matching lines. Fails if no line matches. Stops at the first\n"
++	"line where [cmd] fails; changes to earlier lines remain.\n"
++	"<Delim> is any character; escape it inside [regex] with a backslash.\n"
++	"Matching ignores case by default; ic 0 makes it case-sensitive.\n"
++	"\n"
++	"Example: print lines containing \"int\"\n"
++	"g/int/p\n"
++	"Example: remove all empty lines\n"
++	"g/^$/d\n"
++	"Example: in lines 10-20, remove lines containing \"int\"\n"
++	"10,20g/int/d\n"
++	"Example: insert \"checked\" after each line containing \"int\"\n"
++	"g/int/i checked\n"
++	"Example: print lines containing \"/usr/bin\"\n"
++	"g|/usr/bin|p";
++
++static char exspec_agent_g_inv[] =
++	"[vrange]g![<Delim>][regex][<Delim>][cmd]\n"
++	"Inverted global command";
++
++static char exspec_agent_w[] =
++	"[range]w[path]\n"
++	"[range]w[!{cmd}]\n"
++	"Write a file or a pipe\n"
++	"\n"
++	"No range evaluates to <%> range.\n"
++	"No argument evaluates to current buffer path.\n"
++	"\n"
++	"Example: write a file\n"
++	"w vi.c\n"
++	"Example: pipe out all data into less\n"
++	"w !less\n"
++	"Example: pipe out only first 10 lines\n"
++	"1,10w !less";
++
++static char exspec_agent_r[] =
++	"[range]r[path]\n"
++	"[range]r[!{cmd}]\n"
++	"Read a file or a pipe\n"
++	"\n"
++	"Range is computed on a target.\n"
++	"No range evaluates to <%> range.\n"
++	"No argument evaluates to current buffer path.\n"
++	"\n"
++	"Example: read a file\n"
++	"r vi.c\n"
++	"Example: pipe in all data\n"
++	"r !ls\n"
++	"Example: pipe in only lines 3,5\n"
++	"3,5r !ls";
++
++static char exspec_agent_parsing[] =
++	"EX PARSING\n"
++	"Parsing follows the structure:\n"
++	"[<sep>][prefix][cmd][<pad>][args]\n"
++	"Ex commands are initiated and separated by <sep>. Fields can\n"
++	"be padded by <Space> or <Tab>. [prefix] is a field consumed by\n"
++	"[cmd], which accepts [range] structure characters. Padding inside\n"
++	"[prefix] structure is collapsed, except within nested blocks.\n"
++	"There can only be one pad in between [cmd] and [args]. To avoid\n"
++	"ambiguity in scripts, it is recommended to always use a pad between\n"
++	"[cmd] and [args].\n"
++	"\n"
++	"Examples:\n"
++	"evi.c\n"
++	"Evaluates to \"e vi.c\"\n"
++	"efbc\n"
++	"Evaluates to \"ef bc\" not \"e fbc\"\n"
++	"e  vi.c\n"
++	"Edit \" vi.c\". <pad> is required\n"
++	"\n"
++	"Command chaining is unavailable by default during agent execution.";
++
++static char exspec_agent_escapes[] =
++	"EX ESCAPES\n"
++	"Special characters in [args] and [prefix] blocks will become\n"
++	"regular when escaped with <\\>. Escapes are governed by a non-POSIX\n"
++	"parity rule: escapes directly before a special are halved, an\n"
++	"odd amount makes the special regular, and escapes anywhere else\n"
++	"are literal.\n"
++	"\n"
++	"( ^ ] -\n"
++	"Specials in regex \"[]\" expression\n"
++	"( ) { + * \? ^ $ [ | \\ . \\< \\>\n"
++	"Specials in regex\n"
++	"\\ : % !\n"
++	"Specials in ex\n"
++	"\n"
++	"Ex special characters are disabled by default during agent execution.";
++
++static char exspec_agent_expansion[] =
++	"EX EXPANSION\n"
++	"<%> in [args] expands to current buffer pathname or any buffer\n"
++	"pathname when followed by a corresponding buffer number.\n"
++	"%# expands to last swapped buffer pathname.\n"
++	"%@ expands to register specified.\n"
++	"\n"
++	"Example: make a copy of the current file and edit it\n"
++	"!cp % %_:e %_\n"
++	"Example: insert current buffer pathname\n"
++	"&i%\n"
++	"Example: echo the value of <a> register\n"
++	"!echo %@97\n"
++	"\n"
++	"<!> in [args] starts and optionally ends a block containing\n"
++	"external commands. This block executes and expands to stdout\n"
++	"and stderr produced.\n"
++	"\n"
++	"Example: substitute \"int\" with the value of $RANDOM\n"
++	"%s/int/!printf \"%s\" $RANDOM!\n"
++	"Example: insert output of ls shell command\n"
++	"&i!ls\n"
++	"\n"
++	"Expansion is unavailable by default during agent execution.";
++
++static char exspec_agent_ranges[] =
++	"EX RANGES\n"
++	"Some ex commands take a range before the command name, as in 1,5p.\n"
++	"[range] selects lines and optionally characters on them, as in 1,5p\n"
++	"or 5;2;4p.\n"
++	"[vrange] selects lines only; a character offset in it does not narrow\n"
++	"the command, as in 10,20g/int/d.\n"
++	"A range without a command moves the cursor, as in 10;50.\n"
++	"\n"
++	"[% |][, ;][#][. $ ' > <][- + * / %][#num]\n"
++	"All ranges structure\n"
++	"{|}{cmd}[|]\n"
++	"Ex subcommand structure\n"
++	"{>}[regex][>]\n"
++	"Search forward structure\n"
++	"{<}[regex][<]\n"
++	"Search backward structure\n"
++	"'{#mark}\n"
++	"Mark structure\n"
++	"\n"
++	"%       Range from first to last line\n"
++	"|       Begin ex subcommand block\n"
++	",       Vertical range separator\n"
++	";       Horizontal range separator\n"
++	"#       Rebase to previous value in range structure\n"
++	".       Current position\n"
++	"$       Last line of a buffer or end of line\n"
++	"'       Begin mark structure\n"
++	">       Begin search forward block\n"
++	"<       Begin search backward block\n"
++	"-       Subtract following number\n"
++	"+       Add following number\n"
++	"*       Multiply by the following number\n"
++	"/       Divide by the following number\n"
++	"%       Modulo by the following number\n"
++	"#num    Number or position\n"
++	"\n"
++	"Examples:\n"
++	"1,5p   Print lines 1,5\n"
++	".-5,.+5p\n"
++	"Print 5 lines around current position\n"
++	">int>p\n"
++	"Print first occurrence of \"int\"\n"
++	"<int<p\n"
++	"Print first occurrence of \"int\" in reverse\n"
++	".,>int>p\n"
++	"Print until \"int\" is found\n"
++	"<int<,.p\n"
++	"Print until \"int\" is found in reverse\n"
++	">      Search using previously set regex keyword\n"
++	"'100,'97p\n"
++	"Print lines from mark <d> to mark <a>\n"
++	"%p     Print all lines in a buffer\n"
++	"$p     Print last line in a buffer\n"
++	"$*50/100+1\n"
++	"Goto 50% of the file\n"
++	";50    Goto character offset 50\n"
++	"10;50  Goto line 10 character offset 50\n"
++	"10;.+5\n"
++	"Goto line 10 +5 character offset\n"
++	"'97;'97\n"
++	"Goto line mark <a> offset mark <a>\n"
++	";$     Goto end of line\n"
++	"5;>int>\n"
++	"Search for \"int\" on line 5\n"
++	".;<int<\n"
++	"Search for \"int\" in reverse on the current line\n"
++	";5;+10=\n"
++	"+10 is relative to the initial current offset, not 5\n"
++	";5;#+10=\n"
++	"+10 is relative to 5\n"
++	";>int>+3;#>>p\n"
++	"Print text enclosed by \"int\" on the current line";
++
 +static struct {
 +	char *cmd, *text;
-+} conf_exspec[] = {
-+	{"i", exspec_insert},
-+	{"c", exspec_insert},
-+	{"p", "Cursor position is stateful; left at the range position it landed on."},
-+	{"p", "Keep reads small and within buffer bounds."},
-+	{"p", "Check the position with = and line count with $= before printing ranges."},
-+	{"p", "Use character ranges for long lines; stop when you have enough context."},
-+	{"p", "Ex special characters disabled by default. p % example will not work."},
-+	{"g", "Ex special characters disabled by default. Command chaining unavailable."},
-+	{"w", "Ex special characters disabled by default. Do not escape ! character."},
-+	{"r", "Ex special characters disabled by default. Do not escape ! character."},
-+	{"parsing", "Ex special characters disabled by default. Command chaining unavailable."},
-+	{"escapes", "Ex special characters disabled by default."},
-+	{"expansion", "Ex special characters disabled by default. Expansion unavailable."},
++} conf_exspec_agent[] = {
++	{"i", exspec_agent_i},
++	{"c", exspec_agent_c},
++	{"p", exspec_agent_p},
++	{"g", exspec_agent_g},
++	{"g!", exspec_agent_g_inv},
++	{"w", exspec_agent_w},
++	{"r", exspec_agent_r},
++	{"parsing", exspec_agent_parsing},
++	{"escapes", exspec_agent_escapes},
++	{"expansion", exspec_agent_expansion},
++	{"ranges", exspec_agent_ranges},
 +};
 +
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +345,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +604,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
@@ -17404,7 +17911,7 @@ index 2888d7c6..b1b7f1ad 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..3d49aab5 100644
+index 76dca408..6547a998 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -17611,7 +18118,7 @@ index 76dca408..3d49aab5 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1635,6 +1695,198 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1635,6 +1695,187 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -17694,22 +18201,6 @@ index 76dca408..3d49aab5 100644
 +	return prev;
 +}
 +
-+static int exspec_extra(char *cmd)
-+{
-+	int found = 0;
-+	for (int i = 0; i < LEN(conf_exspec); i++) {
-+		if (strcmp(cmd, conf_exspec[i].cmd))
-+			continue;
-+		if (!found) {
-+			ex_print("", msg_ft)
-+			ex_print("Agent guidance:", msg_ft)
-+		}
-+		ex_print(conf_exspec[i].text, msg_ft)
-+		found = 1;
-+	}
-+	return found;
-+}
-+
 +static void *ec_exspec(char *loc, char *cmd, char *arg)
 +{
 +	int i, j, k, option, begin = -1, end = 0;
@@ -17773,13 +18264,18 @@ index 76dca408..3d49aab5 100644
 +		end = i;
 +	}
 +	if (begin < 0)
-+		return exspec_extra(arg) ? NULL : "unknown ex specification";
++		return "unknown ex specification";
 +	exspec_mark(arg);
++	/* An agent specification replaces the README one and its guidance. */
++	for (i = 0; agent_tool && i < LEN(conf_exspec_agent); i++)
++		if (!strcmp(arg, conf_exspec_agent[i].cmd)) {
++			ex_print(conf_exspec_agent[i].text, msg_ft)
++			return NULL;
++		}
 +	while (end > begin && !*exspec_lines[end - 1])
 +		end--;
 +	for (i = begin; i < end; i++)
 +		ex_print(exspec_lines[i], msg_ft)
-+	exspec_extra(arg);
 +	return NULL;
 +}
 +
@@ -17810,7 +18306,7 @@ index 76dca408..3d49aab5 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1954,12 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1943,12 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -17825,7 +18321,7 @@ index 76dca408..3d49aab5 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1985,20 @@ _EO(left,
+@@ -1730,14 +1974,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -17850,7 +18346,7 @@ index 76dca408..3d49aab5 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2019,30 @@ static struct excmd {
+@@ -1758,8 +2008,30 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -17881,7 +18377,7 @@ index 76dca408..3d49aab5 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2222,65 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2211,65 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -17948,7 +18444,7 @@ index 76dca408..3d49aab5 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2299,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2288,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
