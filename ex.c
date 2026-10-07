@@ -353,11 +353,11 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 				loc += 1 + update;
 			}
 			adj = uc_isdigit(*loc);
-			row = ex_range(ploc, &loc, update ? row : xrow, NULL);
+			row = ex_range(ploc, &loc, update ? row : xrow, NULL) - adj;
 			if (vaddr++ % 2)
-				*end = row + 1 - adj;
+				*end = row + 1;
 			else
-				*beg = row - adj;
+				*beg = row;
 		}
 		while (*loc && *loc != '|' && *loc != ';' && *loc != ',')
 		        loc++;
