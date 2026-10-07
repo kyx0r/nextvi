@@ -6739,10 +6739,10 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
                 "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
                 "line per entry: number, rating and sentence, replacing an older\n" \
-                "note. Only the first entry gets the sentence; the rest get \"same as\n" \
-                "EX N\" with N that entry. Replacing a note that others name moves\n" \
-                "it to the first of them. Lists show the note of a removed entry on\n" \
-                "the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
+                "note. Only the first entry gets the sentence; the rest get\n" \
+                "\"same as EX N\" with N that entry. Replacing a note that others name\n" \
+                "moves it to the first of them. Lists show the note of a removed entry\n" \
+                "on the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
                 "value for the remaining work; 1 low, minor, superseded or only\n" \
                 "mechanics; 2 useful, informs the remaining work; 3 essential, a\n" \
                 "decision, finding or state the task depends on.\n" \
@@ -6856,8 +6856,9 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
         }
         { print }
     '\'' README > "$tmp" &&
-    awk -f exspec.awk "$tmp" > exspec.h
-    rm -f "$tmp"
+    awk -f exspec.awk "$tmp" > "$tmp.h" &&
+    mv -f "$tmp.h" exspec.h
+    rm -f "$tmp" "$tmp.h"
 }
 
 ??!219reg cbuild.sh:67:m12sc %? %@2142sc!0?
@@ -8423,6 +8424,13 @@ function entry(end,    i) {
 /^SPECIAL MARKS$/ { if (regex) active = 0 }
 active { lines[n++] = $0 }
 END {
+	# ex.c finds topics by the EX prefix, which indented text loses.
+	for (i = 0; i < n; i++)
+		if (lines[i] ~ /^[ \t]+EX /) {
+			printf "exspec.awk: README line \"%s\" starts with EX " \
+				"once unindented; rewrap it\n", lines[i] > "/dev/stderr"
+			exit 1
+		}
 	print "/* Generated from README by exspec.awk. */"
 	print "static char *exspec_lines[] = {"
 	for (i = 0; i < n; i++) {
@@ -9319,10 +9327,10 @@ static char *exspec_lines[] = {
 	"",
 	"Writes a note for each EX entry from N through M of b-4 to b-6, one",
 	"line per entry: number, rating and sentence, replacing an older",
-	"note. Only the first entry gets the sentence; the rest get \"same as",
-	"EX N\" with N that entry. Replacing a note that others name moves",
-	"it to the first of them. Lists show the note of a removed entry on",
-	"the first remaining entry that names it. Ratings: 0 dead weight, no",
+	"note. Only the first entry gets the sentence; the rest get",
+	"\"same as EX N\" with N that entry. Replacing a note that others name",
+	"moves it to the first of them. Lists show the note of a removed entry",
+	"on the first remaining entry that names it. Ratings: 0 dead weight, no",
 	"value for the remaining work; 1 low, minor, superseded or only",
 	"mechanics; 2 useful, informs the remaining work; 3 essential, a",
 	"decision, finding or state the task depends on.",
@@ -17028,10 +17036,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..a50485e7 100755
+index c836c94c..0c94e405 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,219 @@ build() {
+@@ -65,6 +65,220 @@ build() {
      }
  }
  
@@ -17127,10 +17135,10 @@ index c836c94c..a50485e7 100755
 +            spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
 +                "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
 +                "line per entry: number, rating and sentence, replacing an older\n" \
-+                "note. Only the first entry gets the sentence; the rest get \"same as\n" \
-+                "EX N\" with N that entry. Replacing a note that others name moves\n" \
-+                "it to the first of them. Lists show the note of a removed entry on\n" \
-+                "the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
++                "note. Only the first entry gets the sentence; the rest get\n" \
++                "\"same as EX N\" with N that entry. Replacing a note that others name\n" \
++                "moves it to the first of them. Lists show the note of a removed entry\n" \
++                "on the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
 +                "value for the remaining work; 1 low, minor, superseded or only\n" \
 +                "mechanics; 2 useful, informs the remaining work; 3 essential, a\n" \
 +                "decision, finding or state the task depends on.\n" \
@@ -17244,14 +17252,15 @@ index c836c94c..a50485e7 100755
 +        }
 +        { print }
 +    ' README > "$tmp" &&
-+    awk -f exspec.awk "$tmp" > exspec.h
-+    rm -f "$tmp"
++    awk -f exspec.awk "$tmp" > "$tmp.h" &&
++    mv -f "$tmp.h" exspec.h
++    rm -f "$tmp" "$tmp.h"
 +}
 +
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +287,7 @@ install() {
+@@ -74,7 +288,7 @@ install() {
  }
  
  print_usage() {
@@ -17260,7 +17269,7 @@ index c836c94c..a50485e7 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +295,9 @@ print_usage() {
+@@ -82,6 +296,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -17884,10 +17893,10 @@ index 76dca408..dcd6fe63 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 00000000..f303de20
+index 00000000..31004ff5
 --- /dev/null
 +++ b/exspec.awk
-@@ -0,0 +1,80 @@
+@@ -0,0 +1,87 @@
 +# Embed the rendered README without indentation or example prompt colons.
 +function quote(s,    i, c, out) {
 +	out = "\""
@@ -17916,6 +17925,13 @@ index 00000000..f303de20
 +/^SPECIAL MARKS$/ { if (regex) active = 0 }
 +active { lines[n++] = $0 }
 +END {
++	# ex.c finds topics by the EX prefix, which indented text loses.
++	for (i = 0; i < n; i++)
++		if (lines[i] ~ /^[ \t]+EX /) {
++			printf "exspec.awk: README line \"%s\" starts with EX " \
++				"once unindented; rewrap it\n", lines[i] > "/dev/stderr"
++			exit 1
++		}
 +	print "/* Generated from README by exspec.awk. */"
 +	print "static char *exspec_lines[] = {"
 +	for (i = 0; i < n; i++) {
@@ -17970,7 +17986,7 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..f9e6115a
+index 00000000..b8a93339
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1399 @@
@@ -18817,10 +18833,10 @@ index 00000000..f9e6115a
 +	"",
 +	"Writes a note for each EX entry from N through M of b-4 to b-6, one",
 +	"line per entry: number, rating and sentence, replacing an older",
-+	"note. Only the first entry gets the sentence; the rest get \"same as",
-+	"EX N\" with N that entry. Replacing a note that others name moves",
-+	"it to the first of them. Lists show the note of a removed entry on",
-+	"the first remaining entry that names it. Ratings: 0 dead weight, no",
++	"note. Only the first entry gets the sentence; the rest get",
++	"\"same as EX N\" with N that entry. Replacing a note that others name",
++	"moves it to the first of them. Lists show the note of a removed entry",
++	"on the first remaining entry that names it. Ratings: 0 dead weight, no",
 +	"value for the remaining work; 1 low, minor, superseded or only",
 +	"mechanics; 2 useful, informs the remaining work; 3 essential, a",
 +	"decision, finding or state the task depends on.",
