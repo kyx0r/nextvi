@@ -1108,6 +1108,7 @@ static void agent_checkpoint_end(void)
 {
 	char note[128], unrated[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;
+	int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
 	if (!kind)
 		return;
 	agent_cp_collect();
@@ -1125,8 +1126,8 @@ static void agent_checkpoint_end(void)
 		snprintf(note, sizeof(note), agent_cp_asked ?
 			"[acl budget check done, checkpoint next]\n" : !answered ?
 			"[acl budget check unanswered]\n" :
-			"[acl budget check done, next at ~%.0f tokens]\n",
-			agent_acl_mark + agent_acl_budget);
+			"[acl budget check done, next after ~%d more tokens, at ~%.0f]\n",
+			budget, agent_acl_mark + budget);
 		agent_output(note);
 		return;
 	}
@@ -1182,7 +1183,8 @@ static void *ec_adone(char *loc, char *cmd, char *arg)
 
 /* The agent asks for a checkpoint; it starts once the batch completes.
  * With N and acl < 0, the next budget check comes after N tokens of growth;
- * either ends a budget check. */
+ * either ends a budget check, whose end note reports the outcome. Its
+ * exchange is discarded unread, so acheck prints nothing there. */
 static void *ec_acheck(char *loc, char *cmd, char *arg)
 {
 	static char msg[80];
@@ -1204,15 +1206,18 @@ static void *ec_acheck(char *loc, char *cmd, char *arg)
 	agent_cp_done = agent_checkpointing == 2;
 	if (!n) {
 		agent_cp_asked = 1;
-		ex_print("checkpoint starts before the next request", msg_ft)
+		if (!agent_cp_done)
+			ex_print("checkpoint starts before the next request", msg_ft)
 		return NULL;
 	}
 	/* A budget check sets the mark when it ends. */
 	agent_acl_budget = n;
 	if (!agent_checkpointing)
 		agent_acl_mark = agent_tokens();
-	snprintf(msg, sizeof(msg), "next budget check after ~%ld more tokens", n);
-	ex_print(msg, msg_ft)
+	if (!agent_cp_done) {
+		snprintf(msg, sizeof(msg), "next budget check after ~%ld more tokens", n);
+		ex_print(msg, msg_ft)
+	}
 	return NULL;
 }
 
@@ -10533,10 +10538,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..908491b1
+index 00000000..70b4c840
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2988 @@
+@@ -0,0 +1,2993 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11615,6 +11620,7 @@ index 00000000..908491b1
 +{
 +	char note[128], unrated[112];
 +	int k, n, kind = agent_checkpointing, answered = agent_cp_done;
++	int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
 +	if (!kind)
 +		return;
 +	agent_cp_collect();
@@ -11632,8 +11638,8 @@ index 00000000..908491b1
 +		snprintf(note, sizeof(note), agent_cp_asked ?
 +			"[acl budget check done, checkpoint next]\n" : !answered ?
 +			"[acl budget check unanswered]\n" :
-+			"[acl budget check done, next at ~%.0f tokens]\n",
-+			agent_acl_mark + agent_acl_budget);
++			"[acl budget check done, next after ~%d more tokens, at ~%.0f]\n",
++			budget, agent_acl_mark + budget);
 +		agent_output(note);
 +		return;
 +	}
@@ -11689,7 +11695,8 @@ index 00000000..908491b1
 +
 +/* The agent asks for a checkpoint; it starts once the batch completes.
 + * With N and acl < 0, the next budget check comes after N tokens of growth;
-+ * either ends a budget check. */
++ * either ends a budget check, whose end note reports the outcome. Its
++ * exchange is discarded unread, so acheck prints nothing there. */
 +static void *ec_acheck(char *loc, char *cmd, char *arg)
 +{
 +	static char msg[80];
@@ -11711,15 +11718,18 @@ index 00000000..908491b1
 +	agent_cp_done = agent_checkpointing == 2;
 +	if (!n) {
 +		agent_cp_asked = 1;
-+		ex_print("checkpoint starts before the next request", msg_ft)
++		if (!agent_cp_done)
++			ex_print("checkpoint starts before the next request", msg_ft)
 +		return NULL;
 +	}
 +	/* A budget check sets the mark when it ends. */
 +	agent_acl_budget = n;
 +	if (!agent_checkpointing)
 +		agent_acl_mark = agent_tokens();
-+	snprintf(msg, sizeof(msg), "next budget check after ~%ld more tokens", n);
-+	ex_print(msg, msg_ft)
++	if (!agent_cp_done) {
++		snprintf(msg, sizeof(msg), "next budget check after ~%ld more tokens", n);
++		ex_print(msg, msg_ft)
++	}
 +	return NULL;
 +}
 +
