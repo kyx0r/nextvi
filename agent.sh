@@ -161,8 +161,8 @@ static void agent_record_usage(cJSON *root, double bytes)
 }
 
 static char nextvi_skill[] =
-"Inside Nextvi, use the ex tool with a JSON object whose command \n"
-"key holds an ex command.\n"
+"Inside Nextvi, use the ex tool with a JSON object whose command key\n"
+"holds one ex command per call.\n"
 "Nextvi is not a standard vi/ex.\n"
 "Use exspec command for a command list.\n"
 "Use exspec with an argument for a topic or command specification.\n";
@@ -10538,7 +10538,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..70b4c840
+index 00000000..566930f9
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,2993 @@
@@ -10673,8 +10673,8 @@ index 00000000..70b4c840
 +}
 +
 +static char nextvi_skill[] =
-+"Inside Nextvi, use the ex tool with a JSON object whose command \n"
-+"key holds an ex command.\n"
++"Inside Nextvi, use the ex tool with a JSON object whose command key\n"
++"holds one ex command per call.\n"
 +"Nextvi is not a standard vi/ex.\n"
 +"Use exspec command for a command list.\n"
 +"Use exspec with an argument for a topic or command specification.\n";
