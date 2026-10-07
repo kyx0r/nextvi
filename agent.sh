@@ -88,7 +88,14 @@ static char *agent_pack_log;
 static char agent_pack_retry[] =
 	"You returned control, but the session log in b-4 is unchanged.\n"
 	"The current buffer is b-4 again. Replace its content with the summary\n"
-	"using %c followed by literal summary text, then stop.";
+	"in one ex call, then stop:\n"
+	"{\"command\":\"%c Goal: ...\\nDone: ...\\nNext: ...\"}\n"
+	"Text after \"%c \" is literal; newlines separate lines; no terminator.";
+/* Pack prompts carry the %c usage because its spec is not deferred. */
+static char agent_pack_example[] =
+	"\nReplace the current buffer'\''s content with the summary in one ex call:\n"
+	"{\"command\":\"%c Goal: ...\\nDone: ...\\nNext: ...\"}\n"
+	"Text after \"%c \" is literal; newlines separate lines; no terminator.\n";
 /* Previous request messages; shared JSON prefix of the last request. */
 static char *agent_prev;
 static size_t agent_reused, agent_sent;
@@ -885,7 +892,7 @@ static const char agent_rating_scale[] =
  * entries are not listed and USER entries, which the agent cannot change
  * by anote, are not among the largest. */
 static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
-		int lines, int all)
+		int lines, int all, int unrated)
 {
 	int top[5], ntop = 0, listed = 0, r, row, col, len, nmoved = 0;
 	unsigned long *moved = NULL, ref;	/* removed target, entry shown */
@@ -923,7 +930,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 				}
 			}
 			sbuf_mem(sb, note, (int)strcspn(note, "\n"))
-		} else if (spans[k].role == 4)
+		} else if (spans[k].role == 4 && unrated)
 			sbuf_str(sb, " [unrated]")
 		sbuf_chr(sb, '\''\n'\'')
 		/* Insert into the five largest, kept in descending order. */
@@ -970,7 +977,7 @@ static void agent_cp_status(sbuf *sb)
 		"entries, about %.0f tokens (role number ~tokens, then [rating] note\n"
 		"for commands):\n", total);
 	sbuf_str(sb, ln)
-	agent_entry_list(sb, spans, cnt, 0, 0);
+	agent_entry_list(sb, spans, cnt, 0, 0, 1);
 	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 		sbuf_str(sb, "Unrated: ")
 		sbuf_str(sb, unrated)
@@ -2624,7 +2631,7 @@ done:
 static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 {
 	char *scope = NULL;
-	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
+	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf, spec = 0;
 	cJSON *config;
 	unsigned long epoch;
 	if (strchr(cmd, '\''!'\''))
@@ -2637,8 +2644,10 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 	if (*loc && !(scope = agent_snapshot(loc)))
 		return xrerr;
 	/* Snapshot the requested range before selecting the session log. */
-	if (compact)
+	if (compact) {
 		temp_switch(3, 0);
+		spec = exspec_pack(3);
+	}
 	if (cmd[1]) {
 		agent_epoch++;
 		agent_serial++;
@@ -2741,6 +2750,8 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 	restore(xesc)
 	restore(agent_logbuf)
 	xvis = savedvis;
+	if (compact)
+		exspec_pack(spec);
 	if (term_owned)
 		term_done();
 	syn_setft(xb_ft);
@@ -2766,17 +2777,22 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 		"The log is in your context. Do not read the current buffer into context.\n")
 	struct lbuf *notes = tempbufs[5].lb;
 	struct agent_span *spans;
-	int cnt = agent_spans(&spans), trimmed = 0;
+	int cnt = agent_spans(&spans), trimmed = 0, rated = lbuf_len(notes) > 0;
 	double total = 0;
 	char ln[192];
 	for (int k = 0; k < cnt; k++)
 		total += agent_span_tokens(spans + k);
-	if (cnt) {
-		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-			"entries\n(role number ~tokens%s, then [rating] note for commands):\n",
-			total, browse ? ", first line" : "");
+	/* A loaded log already shows each entry; without notes, list only to browse. */
+	if (cnt && !browse && !rated) {
+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
 		sbuf_str(task, ln)
-		agent_entry_list(task, spans, cnt, browse, 1);
+	} else if (cnt) {
+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
+			"entries\n(role number ~tokens%s%s):\n", total,
+			browse ? ", first line" : "",
+			rated ? ", then [rating] note for commands" : "");
+		sbuf_str(task, ln)
+		agent_entry_list(task, spans, cnt, browse, 1, rated);
 	}
 	/* Notes outlive entries trimmed by anote; list those separately. */
 	for (int i = 0; i < lbuf_len(notes); i++) {
@@ -2805,9 +2821,7 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	sbuf_chr(task, '\''\n'\'')
 	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
 	"constraints, and unfinished work.\n")
-	sbuf_str(task,
-	"\nReplace the current buffer'\''s content with the summary using %c\n"
-	"followed by literal summary text.\n")
+	sbuf_str(task, agent_pack_example)
 	if (automatic)
 		sbuf_str(task,
 		"This is automatic compaction, not a new user task.\n"
@@ -2932,6 +2946,7 @@ static int agent_autocompact(const char *input)
 		"autocompact: summarizing loaded session log");
 	if (browse)
 		exspec_reset();
+	int spec = exspec_pack(3);
 	agent_messages = NULL;
 	agent_history(!browse);
 	agent_packing = 1;
@@ -2939,6 +2954,7 @@ static int agent_autocompact(const char *input)
 	agent_pack_log = original;
 	temp_switch(3, 0);
 	agent_run(task);
+	exspec_pack(spec);
 	agent_pack_log = NULL;
 	agent_packing = 0;
 	free(task);
@@ -8175,6 +8191,19 @@ static int exspec_mark(char *arg)
 	return 0;
 }
 
+/* Set the c (bit 1) and ranges (bit 0) read state; return the prior state.
+ * Pack prompts explain %c, so its spec need not defer the summary. */
+static int exspec_pack(int state)
+{
+	int i, prev;
+	for (i = 0; strcmp(exspec_cmds[i].name, "c"); i++)
+		;
+	prev = exspec_cmds[i].read << 1 | exspec_ranges_read;
+	exspec_cmds[i].read = state >> 1;
+	exspec_ranges_read = state & 1;
+	return prev;
+}
+
 static int exspec_extra(char *cmd)
 {
 	int found = 0;
@@ -10504,10 +10533,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..cb77b390
+index 00000000..908491b1
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2972 @@
+@@ -0,0 +1,2988 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -10566,7 +10595,14 @@ index 00000000..cb77b390
 +static char agent_pack_retry[] =
 +	"You returned control, but the session log in b-4 is unchanged.\n"
 +	"The current buffer is b-4 again. Replace its content with the summary\n"
-+	"using %c followed by literal summary text, then stop.";
++	"in one ex call, then stop:\n"
++	"{\"command\":\"%c Goal: ...\\nDone: ...\\nNext: ...\"}\n"
++	"Text after \"%c \" is literal; newlines separate lines; no terminator.";
++/* Pack prompts carry the %c usage because its spec is not deferred. */
++static char agent_pack_example[] =
++	"\nReplace the current buffer's content with the summary in one ex call:\n"
++	"{\"command\":\"%c Goal: ...\\nDone: ...\\nNext: ...\"}\n"
++	"Text after \"%c \" is literal; newlines separate lines; no terminator.\n";
 +/* Previous request messages; shared JSON prefix of the last request. */
 +static char *agent_prev;
 +static size_t agent_reused, agent_sent;
@@ -11363,7 +11399,7 @@ index 00000000..cb77b390
 + * entries are not listed and USER entries, which the agent cannot change
 + * by anote, are not among the largest. */
 +static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
-+		int lines, int all)
++		int lines, int all, int unrated)
 +{
 +	int top[5], ntop = 0, listed = 0, r, row, col, len, nmoved = 0;
 +	unsigned long *moved = NULL, ref;	/* removed target, entry shown */
@@ -11401,7 +11437,7 @@ index 00000000..cb77b390
 +				}
 +			}
 +			sbuf_mem(sb, note, (int)strcspn(note, "\n"))
-+		} else if (spans[k].role == 4)
++		} else if (spans[k].role == 4 && unrated)
 +			sbuf_str(sb, " [unrated]")
 +		sbuf_chr(sb, '\n')
 +		/* Insert into the five largest, kept in descending order. */
@@ -11448,7 +11484,7 @@ index 00000000..cb77b390
 +		"entries, about %.0f tokens (role number ~tokens, then [rating] note\n"
 +		"for commands):\n", total);
 +	sbuf_str(sb, ln)
-+	agent_entry_list(sb, spans, cnt, 0, 0);
++	agent_entry_list(sb, spans, cnt, 0, 0, 1);
 +	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 +		sbuf_str(sb, "Unrated: ")
 +		sbuf_str(sb, unrated)
@@ -13102,7 +13138,7 @@ index 00000000..cb77b390
 +static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 +{
 +	char *scope = NULL;
-+	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
++	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf, spec = 0;
 +	cJSON *config;
 +	unsigned long epoch;
 +	if (strchr(cmd, '!'))
@@ -13115,8 +13151,10 @@ index 00000000..cb77b390
 +	if (*loc && !(scope = agent_snapshot(loc)))
 +		return xrerr;
 +	/* Snapshot the requested range before selecting the session log. */
-+	if (compact)
++	if (compact) {
 +		temp_switch(3, 0);
++		spec = exspec_pack(3);
++	}
 +	if (cmd[1]) {
 +		agent_epoch++;
 +		agent_serial++;
@@ -13219,6 +13257,8 @@ index 00000000..cb77b390
 +	restore(xesc)
 +	restore(agent_logbuf)
 +	xvis = savedvis;
++	if (compact)
++		exspec_pack(spec);
 +	if (term_owned)
 +		term_done();
 +	syn_setft(xb_ft);
@@ -13244,17 +13284,22 @@ index 00000000..cb77b390
 +		"The log is in your context. Do not read the current buffer into context.\n")
 +	struct lbuf *notes = tempbufs[5].lb;
 +	struct agent_span *spans;
-+	int cnt = agent_spans(&spans), trimmed = 0;
++	int cnt = agent_spans(&spans), trimmed = 0, rated = lbuf_len(notes) > 0;
 +	double total = 0;
 +	char ln[192];
 +	for (int k = 0; k < cnt; k++)
 +		total += agent_span_tokens(spans + k);
-+	if (cnt) {
-+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-+			"entries\n(role number ~tokens%s, then [rating] note for commands):\n",
-+			total, browse ? ", first line" : "");
++	/* A loaded log already shows each entry; without notes, list only to browse. */
++	if (cnt && !browse && !rated) {
++		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
 +		sbuf_str(task, ln)
-+		agent_entry_list(task, spans, cnt, browse, 1);
++	} else if (cnt) {
++		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
++			"entries\n(role number ~tokens%s%s):\n", total,
++			browse ? ", first line" : "",
++			rated ? ", then [rating] note for commands" : "");
++		sbuf_str(task, ln)
++		agent_entry_list(task, spans, cnt, browse, 1, rated);
 +	}
 +	/* Notes outlive entries trimmed by anote; list those separately. */
 +	for (int i = 0; i < lbuf_len(notes); i++) {
@@ -13283,9 +13328,7 @@ index 00000000..cb77b390
 +	sbuf_chr(task, '\n')
 +	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
 +	"constraints, and unfinished work.\n")
-+	sbuf_str(task,
-+	"\nReplace the current buffer's content with the summary using %c\n"
-+	"followed by literal summary text.\n")
++	sbuf_str(task, agent_pack_example)
 +	if (automatic)
 +		sbuf_str(task,
 +		"This is automatic compaction, not a new user task.\n"
@@ -13410,6 +13453,7 @@ index 00000000..cb77b390
 +		"autocompact: summarizing loaded session log");
 +	if (browse)
 +		exspec_reset();
++	int spec = exspec_pack(3);
 +	agent_messages = NULL;
 +	agent_history(!browse);
 +	agent_packing = 1;
@@ -13417,6 +13461,7 @@ index 00000000..cb77b390
 +	agent_pack_log = original;
 +	temp_switch(3, 0);
 +	agent_run(task);
++	exspec_pack(spec);
 +	agent_pack_log = NULL;
 +	agent_packing = 0;
 +	free(task);
@@ -17349,7 +17394,7 @@ index 2888d7c6..b1b7f1ad 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..dcd6fe63 100644
+index 76dca408..3d49aab5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -17556,7 +17601,7 @@ index 76dca408..dcd6fe63 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1635,6 +1695,185 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1635,6 +1695,198 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -17624,6 +17669,19 @@ index 76dca408..dcd6fe63 100644
 +			return 1;
 +		}
 +	return 0;
++}
++
++/* Set the c (bit 1) and ranges (bit 0) read state; return the prior state.
++ * Pack prompts explain %c, so its spec need not defer the summary. */
++static int exspec_pack(int state)
++{
++	int i, prev;
++	for (i = 0; strcmp(exspec_cmds[i].name, "c"); i++)
++		;
++	prev = exspec_cmds[i].read << 1 | exspec_ranges_read;
++	exspec_cmds[i].read = state >> 1;
++	exspec_ranges_read = state & 1;
++	return prev;
 +}
 +
 +static int exspec_extra(char *cmd)
@@ -17742,7 +17800,7 @@ index 76dca408..dcd6fe63 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1941,12 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1954,12 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -17757,7 +17815,7 @@ index 76dca408..dcd6fe63 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1972,20 @@ _EO(left,
+@@ -1730,14 +1985,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -17782,7 +17840,7 @@ index 76dca408..dcd6fe63 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2006,30 @@ static struct excmd {
+@@ -1758,8 +2019,30 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -17813,7 +17871,7 @@ index 76dca408..dcd6fe63 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2209,65 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2222,65 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -17880,7 +17938,7 @@ index 76dca408..dcd6fe63 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2286,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2299,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
