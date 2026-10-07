@@ -7768,18 +7768,18 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 ?0?
 %f+ static void \*ec_insert\(char \*loc, char \*cmd, char \*arg\)
 \{
-	int beg, end, o1 = -1, o2 = -1, ps = 0, key;
+	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;
 	sbuf _sb, \*sb = &_sb;
 	if \(!\*loc \|\| \(key = ex_region\(loc, &beg, &end, &o1, &o2\)\)\) \{
 		if \(\*loc && cmd\[0] != '\''c'\'' && beg == -1 && end == 01??0?
 1??+2m 151q0?
 %f+ static void \*ec_insert\(char \*loc, char \*cmd, char \*arg\)
 \{
-	int beg, end, o1 = -1, o2 = -1, ps = 0, key;4??0?
+	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;4??0?
 4??+2m 15220reg p OK ex.c:856:a42sc %? %@2152sc!1q0?
 grp 1%f+ static void \*ec_insert\(char \*loc, char \*cmd, char \*arg\).*?
 \{.*?
-(	int beg, end, o1 = -1, o2 = -1, ps = 0, key;)7??0?
+(	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;)7??0?
 grp 07??m 15220reg p OK ex.c:856:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(flg && xvis & 2\)
 		term_chr\('\''\\n'\''\);
@@ -17911,7 +17911,7 @@ index 2888d7c6..d1192832 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..6547a998 100644
+index 8a133987..27763658 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -18084,7 +18084,7 @@ index 76dca408..6547a998 100644
 @@ -854,6 +909,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  static void *ec_insert(char *loc, char *cmd, char *arg)
  {
- 	int beg, end, o1 = -1, o2 = -1, ps = 0, key;
+ 	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;
 +	if (agent_tool && !*arg)
 +		return "insert/change requires supplied text";
  	sbuf _sb, *sb = &_sb;
