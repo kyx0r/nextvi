@@ -637,6 +637,18 @@ out=$(run_ex ':2,#+2d:%p:q')
 check 'N13 2,#+2d — deletes lines 2-4' \
 	"$(printf 'L1\nab\nline six here')" "$out"
 
+# Line 0 has no text to search, so 0;>re> is invalid even when line 1
+# matches. A failed part after 0 must not reach the 0i/0pu special case.
+out=$(EXINIT=':0;>L>i X:%p:q' "$VI" -sm "$TMPFILE" </dev/null 2>&1)
+check 'N14 0;>L>i X — searching line 0 is an invalid range' \
+	"$(printf 'invalid range\nL1\nL2\nL3\nL4\nab\nline six here')" "$out"
+out=$(EXINIT=":0;'5i X:%p:q" "$VI" -sm "$TMPFILE" </dev/null 2>&1)
+check "N15 0;'5i X — unset mark after 0 leaves the buffer unchanged" \
+	"$(printf 'mark not set\nL1\nL2\nL3\nL4\nab\nline six here')" "$out"
+out=$(EXINIT=':1ya:0;>L>pu:%p:q' "$VI" -sm "$TMPFILE" </dev/null 2>&1)
+check 'N16 0;>L>pu — searching line 0 is an invalid range' \
+	"$(printf 'invalid range\nL1\nL2\nL3\nL4\nab\nline six here')" "$out"
+
 # f( lands on (; \% passes a literal % (not buffer path) to the & macro
 printf 'foo(bar)qux\n' > "$TMPFILE"
 out=$(run_vi 'f(\%x')
