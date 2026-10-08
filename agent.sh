@@ -7367,10 +7367,6 @@ static char exspec_agent_g[] =
 	"Example: print lines containing \"/usr/bin\"\n"
 	"g|/usr/bin|p";
 
-static char exspec_agent_g_inv[] =
-	"[vrange]g![<Delim>][regex][<Delim>][cmd]\n"
-	"Inverted global command";
-
 static char exspec_agent_w[] =
 	"[range]w[path]\n"
 	"[range]w[!{cmd}]\n"
@@ -7547,7 +7543,6 @@ static struct {
 	{"c", exspec_agent_c},
 	{"p", exspec_agent_p},
 	{"g", exspec_agent_g},
-	{"g!", exspec_agent_g_inv},
 	{"w", exspec_agent_w},
 	{"r", exspec_agent_r},
 	{"parsing", exspec_agent_parsing},
@@ -7558,7 +7553,7 @@ static struct {
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acp!?|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp!?|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -18201,10 +18196,10 @@ index c836c94c..56149033 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..3f17cfef 100644
+index 2888d7c6..fcdad034 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,312 @@
+@@ -1,5 +1,307 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -18324,10 +18319,6 @@ index 2888d7c6..3f17cfef 100644
 +	"g/int/i checked\n"
 +	"Example: print lines containing \"/usr/bin\"\n"
 +	"g|/usr/bin|p";
-+
-+static char exspec_agent_g_inv[] =
-+	"[vrange]g![<Delim>][regex][<Delim>][cmd]\n"
-+	"Inverted global command";
 +
 +static char exspec_agent_w[] =
 +	"[range]w[path]\n"
@@ -18505,7 +18496,6 @@ index 2888d7c6..3f17cfef 100644
 +	{"c", exspec_agent_c},
 +	{"p", exspec_agent_p},
 +	{"g", exspec_agent_g},
-+	{"g!", exspec_agent_g_inv},
 +	{"w", exspec_agent_w},
 +	{"r", exspec_agent_r},
 +	{"parsing", exspec_agent_parsing},
@@ -18517,14 +18507,14 @@ index 2888d7c6..3f17cfef 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +604,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +599,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|aco!?|acl|ai|agr|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acp!?|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp!?|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
