@@ -958,7 +958,7 @@ static char *agent_cp_example(char *unrated)
 {
 	static char ex[96];
 	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser and found "
-		"where defaults are set", strtoul(unrated + 3, NULL, 10));
+		"where defaults are set\n", strtoul(unrated + 3, NULL, 10));
 	return ex;
 }
 
@@ -1126,9 +1126,8 @@ static void agent_cp_status(sbuf *sb)
 		sbuf_str(sb, "Unrated: ")
 		sbuf_str(sb, unrated)
 		sbuf_str(sb, "\nRate these first: one sentence each on what the command "
-			"did and\nfound, e.g. the ex command ")
+			"did and found.\n For example:\n")
 		sbuf_str(sb, agent_cp_example(unrated))
-		sbuf_str(sb, ".\n")
 	}
 	free(spans);
 }
@@ -11103,10 +11102,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..830b292a
+index 00000000..bd47c208
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3270 @@
+@@ -0,0 +1,3269 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12035,7 +12034,7 @@ index 00000000..830b292a
 +{
 +	static char ex[96];
 +	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser and found "
-+		"where defaults are set", strtoul(unrated + 3, NULL, 10));
++		"where defaults are set\n", strtoul(unrated + 3, NULL, 10));
 +	return ex;
 +}
 +
@@ -12203,9 +12202,8 @@ index 00000000..830b292a
 +		sbuf_str(sb, "Unrated: ")
 +		sbuf_str(sb, unrated)
 +		sbuf_str(sb, "\nRate these first: one sentence each on what the command "
-+			"did and\nfound, e.g. the ex command ")
++			"did and found.\n For example:\n")
 +		sbuf_str(sb, agent_cp_example(unrated))
-+		sbuf_str(sb, ".\n")
 +	}
 +	free(spans);
 +}
