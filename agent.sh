@@ -308,7 +308,7 @@ static void agent_sync_buf(int i)
 /* A tool call can edit a log line by line; save once after the call. */
 static void agent_sync_pending(void)
 {
-	for (int i = 3; i < 6; i++)
+	for (int i = 3; i < 7; i++)
 		if (agent_unsaved & (1 << (i - 3)))
 			agent_sync_buf(i);
 }
@@ -319,7 +319,7 @@ static void agent_sync(struct lbuf *lb)
 		agent_log_edited = 1;
 	if (!agent_ready || agent_syncing)
 		return;
-	for (int i = 3; i < 6; i++) {
+	for (int i = 3; i < 7; i++) {
 		if (tempbufs[i].lb != lb)
 			continue;
 		if (i == 3 && agent_packing)
@@ -371,6 +371,7 @@ static void agent_init(void)
 	temp_open(3, "/conversation/", _ft);
 	temp_open(4, "/skills/", _ft);
 	temp_open(5, "/notes/", _ft);
+	temp_open(6, "/discarded/", _ft);
 	lbuf_edit(tempbufs[4].lb, nextvi_skill, 0, 0, 0, 0);
 	lbuf_saved(tempbufs[4].lb, 1);
 	agent_history(0);
@@ -408,10 +409,10 @@ static int agent_start(void)
 		free(dir);
 		dir = path;
 	}
-	for (int i = 3; i < 6; i++) {
+	for (int i = 3; i < 7; i++) {
 		path = emalloc(strlen(dir) + 32);
 		sprintf(path, "%s/%s", dir, i == 3 ? "conversation" :
-			i == 4 ? "skills" : "notes");
+			i == 4 ? "skills" : i == 5 ? "notes" : "discarded");
 		free(tempbufs[i].path);
 		tempbufs[i].path = path;
 		tempbufs[i].plen = strlen(path);
@@ -616,10 +617,9 @@ struct agent_span {
 	size_t bytes;		/* body bytes, excluding the header */
 };
 
-/* Split the session log b-4 into entries; the caller frees *spans. */
-static int agent_spans(struct agent_span **spans)
+/* Split a log into entries; the caller frees *spans. */
+static int agent_spans_of(struct lbuf *lb, struct agent_span **spans)
 {
-	struct lbuf *lb = tempbufs[3].lb;
 	unsigned long n, last = 0;
 	int role, cnt = 0, cap = 0;
 	*spans = NULL;
@@ -642,6 +642,89 @@ static int agent_spans(struct agent_span **spans)
 	if (cnt)
 		(*spans)[cnt-1].end = lbuf_len(lb);
 	return cnt;
+}
+
+/* Split the session log b-4 into entries. */
+static int agent_spans(struct agent_span **spans)
+{
+	return agent_spans_of(tempbufs[3].lb, spans);
+}
+
+/* Copy the entries of lb on lines beg to end into b-7, in number order. A
+ * number already there keeps its entry, the original of a later note; text
+ * before the first header is skipped. The caller syncs b-7. */
+static void agent_discard(struct lbuf *lb, int beg, int end)
+{
+	struct lbuf *db = tempbufs[6].lb;
+	struct agent_span *spans;
+	int cnt = agent_spans_of(db, &spans), k = 0, shift = 0, i = beg, j, pos;
+	unsigned long n, m;
+	sbuf_smake(sb, 256)
+	preserve(int, agent_syncing, agent_syncing = 1;)
+	while (i < end) {
+		if (!agent_header(lb->ln[i], 0, &n)) {
+			i++;
+			continue;
+		}
+		for (j = i + 1; j < end && !agent_header(lb->ln[j], n, &m); j++)
+			;
+		while (k < cnt && spans[k].n < n)
+			k++;
+		if (k == cnt || spans[k].n != n) {
+			sbuf_cut(sb, 0)
+			for (int l = i; l < j; l++)
+				sbuf_str(sb, lb->ln[l])
+			sbuf_nul(sb)
+			pos = k < cnt ? spans[k].beg + shift : lbuf_len(db);
+			lbuf_edit(db, sb->s, pos, pos, 0, 0);
+			shift += j - i;
+		}
+		i = j;
+	}
+	restore(agent_syncing)
+	free(sb->s);
+	free(spans);
+}
+
+/* Head a compaction summary as a USER entry numbered after the log it
+ * replaced, now in b-7, so a later compaction moves it there too. */
+static void agent_head_summary(void)
+{
+	struct lbuf *lb = tempbufs[3].lb;
+	struct agent_span *spans;
+	int cnt = agent_spans_of(tempbufs[6].lb, &spans);
+	unsigned long n;
+	char head[48];
+	if (cnt)
+		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
+	free(spans);
+	if (!lbuf_len(lb) || agent_header(lb->ln[0], 0, &n))
+		return;
+	snprintf(head, sizeof(head), "USER %lu\n", ++agent_entries[1]);
+	preserve(int, agent_tool, agent_tool = 0;)
+	preserve(int, agent_syncing, agent_syncing = 1;)
+	/* A blank line ends it, as agent_log ends entries. */
+	if (strcmp(lb->ln[lbuf_len(lb) - 1], "\n"))
+		lbuf_edit(lb, "\n", lbuf_len(lb), lbuf_len(lb), 0, 0);
+	lbuf_edit(lb, head, 0, 0, 0, 0);
+	restore(agent_syncing)
+	restore(agent_tool)
+	if (agent_save(3))
+		ex_print("agent write failed; buffer text retained", msg_ft)
+}
+
+/* Move the entries of a log replaced by compaction, as agent_text
+ * returned it, to b-7. */
+static void agent_discard_log(char *text)
+{
+	struct lbuf *lb = lbuf_make();
+	preserve(int, agent_tool, agent_tool = 0;)
+	if (*text)
+		lbuf_edit(lb, text, 0, 0, 0, 0);
+	agent_discard(lb, 0, lbuf_len(lb));
+	restore(agent_tool)
+	lbuf_free(lb);
+	agent_sync(tempbufs[6].lb);
 }
 
 static double agent_span_tokens(struct agent_span *s)
@@ -812,18 +895,19 @@ static int agent_unrated_now(char *buf, int size)
 	return n;
 }
 
-static void agent_notes_clear(void)
+/* Empty b-6 (notes) or b-7 (discarded entries). */
+static void agent_temp_clear(int i)
 {
-	struct lbuf *lb = tempbufs[5].lb;
+	struct lbuf *lb = tempbufs[i].lb;
 	agent_syncing = 1;
 	lbuf_edit(lb, NULL, 0, lbuf_len(lb), 0, 0);
 	lbuf_saved(lb, 1);
 	agent_syncing = 0;
-	tempbufs[5].row = tempbufs[5].off = tempbufs[5].top = 0;
-	if (ex_buf == tempbufs+5) {
+	tempbufs[i].row = tempbufs[i].off = tempbufs[i].top = 0;
+	if (ex_buf == tempbufs+i) {
 		exbuf_load(ex_buf)
 	}
-	if (agent_ready && agent_save(5))
+	if (agent_ready && agent_save(i))
 		ex_print("agent write failed; buffer text retained", msg_ft)
 }
 
@@ -842,7 +926,7 @@ static void agent_notes_archive(char *archive)
 	if ((fd >= 0 && close(fd)) || failed)
 		ex_print("cannot archive agent notes", msg_ft)
 	free(path);
-	agent_notes_clear();
+	agent_temp_clear(5);
 }
 
 /* Checkpoint or budget check phase: the exchange after the opening message,
@@ -2367,6 +2451,13 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 			lbuf_len(tempbufs[5].lb), n);
 		ex_print(msg, msg_ft)
 	}
+	if (lbuf_len(tempbufs[6].lb)) {
+		struct agent_span *spans;
+		int n = agent_spans_of(tempbufs[6].lb, &spans);
+		free(spans);
+		snprintf(msg, sizeof(msg), "discarded  %d entries in b-7", n);
+		ex_print(msg, msg_ft)
+	}
 	if (!agent_ready) {
 		ex_print(agent_init_error ? agent_init_error :
 			"agent session is not running", msg_ft)
@@ -2543,6 +2634,74 @@ static char *agent_entryrange(char *loc, struct agent_span *spans, int cnt,
 	return *first < 0 ? "no entries in range" : NULL;
 }
 
+/* Print entries N through M of b-4 and of b-7 in number order, those of
+ * b-7 headed "ROLE N trimmed"; role names in arg select roles. */
+static void *ec_aget(char *loc, char *cmd, char *arg)
+{
+	struct lbuf *lbs[2] = {tempbufs[6].lb, tempbufs[3].lb};
+	struct agent_span *spans[2], *sp;
+	int cnt[2], k[2] = {0, 0}, roles = 0, len, b, i;
+	unsigned long beg, end, last = 0;
+	char head[48], *ret = NULL;
+	while (*(arg += strspn(arg, " \t"))) {
+		len = strcspn(arg, " \t");
+		for (i = 0; i < LEN(agent_roles); i++)
+			if ((int)strlen(agent_roles[i]) == len &&
+					!strncmp(agent_roles[i], arg, len))
+				break;
+		if (i == LEN(agent_roles))
+			return "aget takes role names: USER ASSISTANT REASONING EX "
+				"RESULT NOTICE";
+		roles |= 1 << (i + 1);
+		arg += len;
+	}
+	for (b = 0; b < 2; b++) {
+		cnt[b] = agent_spans_of(lbs[b], &spans[b]);
+		if (cnt[b])
+			last = MAX(last, spans[b][cnt[b]-1].n);
+	}
+	if (agent_entryaddr(&loc, &beg, last)) {
+		ret = "an entry number is required, as in 12 or 12,15";
+		goto done;
+	}
+	end = beg;
+	if ((*loc == '\'','\'' && (loc++, agent_entryaddr(&loc, &end, last))) ||
+			*loc || end < beg) {
+		ret = "invalid entry range";
+		goto done;
+	}
+	sbuf_smake(sb, 1024)
+	/* Merge by number; a trimmed original precedes the note numbered
+	 * after it. */
+	while (k[0] < cnt[0] || k[1] < cnt[1]) {
+		b = k[0] == cnt[0] || (k[1] < cnt[1] &&
+			spans[1][k[1]].n < spans[0][k[0]].n);
+		sp = spans[b] + k[b]++;
+		if (sp->n < beg || sp->n > end ||
+				(roles && !(roles & (1 << sp->role))))
+			continue;
+		i = sp->beg;
+		if (sp->role) {
+			snprintf(head, sizeof(head), "%s %lu%s\n", agent_span_role(sp),
+				sp->n, b ? "" : " trimmed");
+			sbuf_str(sb, head)
+			i++;
+		}
+		for (; i < sp->end; i++)
+			sbuf_str(sb, lbs[b]->ln[i])
+	}
+	sbuf_nul(sb)
+	if (sb->s_n)
+		ex_print(sb->s, msg_ft)
+	else
+		ret = "no entries in range";
+	free(sb->s);
+done:
+	free(spans[0]);
+	free(spans[1]);
+	return ret;
+}
+
 static void *ec_anote(char *loc, char *cmd, char *arg)
 {
 	struct lbuf *lb = tempbufs[3].lb;
@@ -2610,6 +2769,10 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 			continue;
 		while (k > first && !ANOTE_KEPT(k - 1))
 			k--;
+		/* A pack keeps the whole log on success and restores it on
+		 * failure. */
+		if (!agent_packing)
+			agent_discard(lb, spans[k].beg, spans[end].end);
 		lbuf_edit(lb, *arg && k == note ? sb->s : NULL,
 			spans[k].beg, spans[end].end, 0, 0);
 	}
@@ -2617,6 +2780,7 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 	restore(agent_syncing)
 	restore(agent_tool)
 	agent_sync(lb);
+	agent_sync(tempbufs[6].lb);
 	free(sb->s);
 	if (ex_buf == tempbufs + 3)
 		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
@@ -2642,8 +2806,8 @@ done:
 	return ret;
 }
 
-/* Remove the EX entries of spans first through last with their results,
- * reporting as anote; their ratings stay in b-6. */
+/* Move the EX entries of spans first through last with their results to
+ * b-7, reporting as anote; their ratings stay in b-6. */
 static void agent_trim_commands(struct agent_span *spans, int cnt, int first,
 		int last)
 {
@@ -2670,12 +2834,14 @@ static void agent_trim_commands(struct agent_span *spans, int cnt, int first,
 			hi = spans[end].n;
 		lo = spans[k].n;
 		removed += end - k + 1;
+		agent_discard(lb, spans[k].beg, spans[end].end);
 		lbuf_edit(lb, NULL, spans[k].beg, spans[end].end, 0, 0);
 	}
 	agent_prune(lb);
 	restore(agent_syncing)
 	restore(agent_tool)
 	agent_sync(lb);
+	agent_sync(tempbufs[6].lb);
 	if (ex_buf == tempbufs + 3)
 		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
 	else
@@ -2782,7 +2948,8 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 			if (ex_buf == tempbufs+3) {
 				exbuf_load(ex_buf)
 			}
-			agent_notes_clear();
+			agent_temp_clear(5);
+			agent_temp_clear(6);
 		}
 		agent_history(cmd[1] == '\''~'\'');
 	}
@@ -2923,6 +3090,10 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 			"Weigh entries by rating: omit 0, at most a phrase for 1, summarize 2,\n"
 			"keep the exact details of 3. Judge unrated entries by their content.\n")
 	}
+	if (lbuf_len(tempbufs[6].lb))
+		sbuf_str(task, "Trimmed entries are kept in full: N[,M]aget prints "
+			"entries N through M,\ntrimmed ones included, when the summary "
+			"needs their details.\n")
 	free(spans);
 	sbuf_chr(task, '\''\n'\'')
 	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
@@ -2981,6 +3152,8 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 		if (!ret && complete && changed && !agent_save(3)) {
 			agent_history(1);
 			agent_notes_archive(archive);
+			agent_discard_log(original);
+			agent_head_summary();
 			cJSON_Delete(history);
 		} else {
 			if (!ret)
@@ -3079,6 +3252,9 @@ static int agent_autocompact(const char *input)
 			*text && strcmp(original, summary) &&
 			strlen(summary) < strlen(original) && !agent_save(3)) {
 		agent_history(1);
+		/* The summary is numbered before the resume entry. */
+		agent_discard_log(original);
+		agent_head_summary();
 		sbuf_smake(resume, 256)
 		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
 			"is working memory, not a new task. Continue the request below, using\n"
@@ -3158,6 +3334,7 @@ static void *ec_acheck(char *loc, char *cmd, char *arg);
 static void *ec_acp(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
 static void *ec_aout(char *loc, char *cmd, char *arg);
+static void *ec_aget(char *loc, char *cmd, char *arg);
 static void *ec_compact(char *loc, char *cmd, char *arg);
 static void agent_init(void);
 static void agent_sync(struct lbuf *lb);
@@ -6796,7 +6973,8 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "submits; Ctrl-C exits; Ctrl-O opens the editor. Ex specials are\n" \
                 "disabled. Unavailable as an agent tool.")
             spec("[range]a![text]", "Start a new agent conversation",
-                "Clears history and log, aspec tracking and deferred command.\n" \
+                "Clears history, the log with its notes and discarded entries, aspec\n" \
+                "tracking and deferred command.\n" \
                 "Range, text and prompt controls work as for a. Unavailable as an agent tool.")
             spec("[range]a~[text]", "Resume an agent conversation from its log",
                 "Loads b-4 as context, including edits. Keeps aspec tracking.\n" \
@@ -6807,8 +6985,10 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "instructions; range attaches buffer text. The task lists the log\n" \
                 "entries with estimated tokens and arate notes (b-6), with the notes\n" \
                 "of trimmed commands in order among them; apack! adds entry line\n" \
-                "numbers. On success the notes move beside the archived log and b-6\n" \
-                "is cleared. Unavailable as an agent tool.")
+                "numbers. While b-7 holds entries, the task offers aget for their\n" \
+                "details. On success the notes move beside the archived log, b-6 is\n" \
+                "cleared and the entries of the replaced log move to b-7, keeping\n" \
+                "those already there. Unavailable as an agent tool.")
             spec("[range]apack![text]", "Compact the agent session by browsing its log",
                 "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
                 "ranges and replaces the log with a summary. Stays at the prompt;\n" \
@@ -6856,8 +7036,21 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "kept, and reports a note larger than what it replaced. Then removes\n" \
                 "every ASSISTANT entry without text not followed by an EX entry; such\n" \
                 "entries only separate tool batches. Changes the agent context when\n" \
-                "acl is set.\n\n" \
+                "acl is set. Removed and replaced entries move to b-7 in number\n" \
+                "order; a number already there keeps its entry, so a note replaced\n" \
+                "later is not kept. b-7 is saved as discarded in the session\n" \
+                "directory.\n\n" \
                 "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
+            spec("[entries]aget[roles]", "Print agent session log entries, trimmed ones included",
+                "Prints entries N through M of b-4 and b-7 in number order with their\n" \
+                "ROLE N headers. Entries from b-7, those removed or replaced by anote,\n" \
+                "a 0 rating or compaction, are headed ROLE N trimmed and precede a\n" \
+                "current entry with the same number. entries works as for anote, with\n" \
+                "$ the last number in either buffer. Role names among USER,\n" \
+                "ASSISTANT, REASONING, EX, RESULT and NOTICE, separated by spaces,\n" \
+                "print only those roles. Output is subject to agr. Unavailable during\n" \
+                "an acl checkpoint.\n\n" \
+                "Example: print the commands of entries 20 through 80\n:20,80aget EX")
             spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
                 "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
                 "line per entry: number, rating and sentence, replacing an older note.\n" \
@@ -6870,7 +7063,9 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "decision, finding or state the task depends on.\n" \
                 "Entries work as for anote; other roles in the range are skipped.\n" \
                 "With acl above 1 or negative, commands deferred by aspec are rated\n" \
-                "1 by the harness unless already rated.\n" \
+                "1 by the harness unless already rated. During an acl checkpoint,\n" \
+                "rating 0 moves the rated commands and their results to b-7,\n" \
+                "reported as by anote; their ratings stay in b-6.\n" \
                 "Ratings show in acl checkpoint lists and are given to apack. b-6 is\n" \
                 "saved as notes in the session directory.\n\n" \
                 "Example: rate the command of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
@@ -7363,7 +7558,7 @@ static struct {
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|anote|arate|adone|acp!?|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acp!?|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -8406,7 +8601,7 @@ static struct excmd \{
 1;2;3;4;5;6;7;8;9??!219reg ex.c:19622sc %? %@2132sc!0?
 '\''1i int xaspec = 1;			/* print each ex spec once for agents */
 ??!219reg ex.c:16:m12sc %? %@2142sc!0?
-'\''2s/3/6/??!219reg ex.c:45:m22sc %? %@2142sc!0?
+'\''2s/3/7/??!219reg ex.c:45:m22sc %? %@2142sc!0?
 '\''3i static char xirrmsg[192];
 static char xaerr[128];
 ??!219reg ex.c:57:m32sc %? %@2142sc!0?
@@ -8695,6 +8890,7 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 	{"apack", ec_compact},
 	EO(aspec),
 	{"aout", ec_aout},
+	{"aget", ec_aget},
 	{"anote", ec_anote},
 	{"arate", ec_arate},
 	{"adone", ec_adone},
@@ -8754,9 +8950,10 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 		if (agent_tool && excmds[idx].ec != ec_aretry) {
 			int show = excmds[idx].ec == ec_aout;
 			int top = xexec_dep == agent_tool_dep;
-			/* aout, anote and arate take byte and entry ranges, not lines */
+			/* aout, aget, anote and arate take byte and entry ranges,
+			 * not lines */
 			int lines = !show && excmds[idx].ec != ec_anote &&
-				excmds[idx].ec != ec_arate;
+				excmds[idx].ec != ec_arate && excmds[idx].ec != ec_aget;
 			/* Defer only top-level commands: a nested deferral skips one
 			 * iteration of the enclosing command. */
 			int defer = top && xaspec && excmds[idx].ec != ec_exspec &&
@@ -9625,7 +9822,8 @@ static char *exspec_lines[] = {
 	"[range]a![text]",
 	"Start a new agent conversation",
 	"",
-	"Clears history and log, aspec tracking and deferred command.",
+	"Clears history, the log with its notes and discarded entries, aspec",
+	"tracking and deferred command.",
 	"Range, text and prompt controls work as for a. Unavailable as an agent tool.",
 	"",
 	"[range]a~[text]",
@@ -9642,8 +9840,10 @@ static char *exspec_lines[] = {
 	"instructions; range attaches buffer text. The task lists the log",
 	"entries with estimated tokens and arate notes (b-6), with the notes",
 	"of trimmed commands in order among them; apack! adds entry line",
-	"numbers. On success the notes move beside the archived log and b-6",
-	"is cleared. Unavailable as an agent tool.",
+	"numbers. While b-7 holds entries, the task offers aget for their",
+	"details. On success the notes move beside the archived log, b-6 is",
+	"cleared and the entries of the replaced log move to b-7, keeping",
+	"those already there. Unavailable as an agent tool.",
 	"",
 	"[range]apack![text]",
 	"Compact the agent session by browsing its log",
@@ -9700,10 +9900,28 @@ static char *exspec_lines[] = {
 	"kept, and reports a note larger than what it replaced. Then removes",
 	"every ASSISTANT entry without text not followed by an EX entry; such",
 	"entries only separate tool batches. Changes the agent context when",
-	"acl is set.",
+	"acl is set. Removed and replaced entries move to b-7 in number",
+	"order; a number already there keeps its entry, so a note replaced",
+	"later is not kept. b-7 is saved as discarded in the session",
+	"directory.",
 	"",
 	"Example: replace a long result with a note",
 	"14anote ls listed 40 files, none relevant",
+	"",
+	"[entries]aget[roles]",
+	"Print agent session log entries, trimmed ones included",
+	"",
+	"Prints entries N through M of b-4 and b-7 in number order with their",
+	"ROLE N headers. Entries from b-7, those removed or replaced by anote,",
+	"a 0 rating or compaction, are headed ROLE N trimmed and precede a",
+	"current entry with the same number. entries works as for anote, with",
+	"$ the last number in either buffer. Role names among USER,",
+	"ASSISTANT, REASONING, EX, RESULT and NOTICE, separated by spaces,",
+	"print only those roles. Output is subject to agr. Unavailable during",
+	"an acl checkpoint.",
+	"",
+	"Example: print the commands of entries 20 through 80",
+	"20,80aget EX",
 	"",
 	"[entries]arate rating sentence",
 	"Rate agent commands in the notes buffer",
@@ -9719,7 +9937,9 @@ static char *exspec_lines[] = {
 	"decision, finding or state the task depends on.",
 	"Entries work as for anote; other roles in the range are skipped.",
 	"With acl above 1 or negative, commands deferred by aspec are rated",
-	"1 by the harness unless already rated.",
+	"1 by the harness unless already rated. During an acl checkpoint,",
+	"rating 0 moves the rated commands and their results to b-7,",
+	"reported as by anote; their ratings stay in b-6.",
 	"Ratings show in acl checkpoint lists and are given to apack. b-6 is",
 	"saved as notes in the session directory.",
 	"",
@@ -10214,57 +10434,58 @@ static struct {
 	{"cm!", "Set an alternative keymap", 731, 733, 0, 0},
 	{"exspec", "Print ex command catalog or specification", 734, 744, 0, 0},
 	{"a", "Open or resume the agent conversation", 745, 752, 0, 0},
-	{"a!", "Start a new agent conversation", 753, 758, 0, 0},
-	{"a~", "Resume an agent conversation from its log", 759, 764, 0, 0},
-	{"apack", "Compact the agent session from its log", 765, 775, 0, 0},
-	{"apack!", "Compact the agent session by browsing its log", 776, 783, 0, 0},
-	{"acm", "Toggle the caveman response style skill", 784, 789, 0, 0},
-	{"aretry", "Execute the last agent command", 790, 802, 0, 0},
-	{"aout", "Print the saved output of the last agent tool call", 803, 814, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 815, 835, 0, 0},
-	{"arate", "Rate agent commands in the notes buffer", 836, 856, 0, 0},
-	{"adone", "End an agent checkpoint", 857, 864, 0, 0},
-	{"acheck", "Start an agent checkpoint or set its budget", 865, 877, 0, 0},
-	{"acp", "Print the agent checkpoint entry list", 878, 884, 0, 0},
-	{"acp!", "Print the agent checkpoint instructions", 885, 891, 0, 0},
-	{"ast", "Print agent status and token usage", 892, 901, 0, 0},
-	{"ac", "Set autocomplete filter regex", 902, 910, 0, 0},
-	{"sc", "Set ex special characters", 911, 921, 0, 0},
-	{"sc!", "Set ex special characters", 922, 929, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 930, 937, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 938, 941, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 942, 946, 0, 0},
-	{"ph", "Redefine placeholders", 947, 963, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 972, 1019, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1020, 1029, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1030, 1037, 1, 0},
-	{"agr", "Control agent output protection", 1038, 1044, 1, 0},
-	{"ar", "Display returned agent reasoning", 1045, 1049, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1050, 1054, 1, 0},
-	{"ai", "Indent new lines", 1055, 1058, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1059, 1060, 1, 0},
-	{"ish", "Interactive shell", 1061, 1076, 1, 0},
-	{"grp", "Regex search group", 1077, 1085, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1086, 1089, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1090, 1091, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1091, 1092, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1092, 1093, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1093, 1094, 1, 0},
-	{"led", "Enable all terminal output", 1094, 1095, 1, 0},
-	{"vis", "Control startup flags", 1096, 1107, 1, 0},
-	{"mpt", "Control vi prompts", 1108, 1118, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1119, 1121, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1121, 1123, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1123, 1124, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1124, 1125, 1, 0},
-	{"td", "Current text direction context", 1125, 1131, 1, 0},
-	{"pr", "Print register", 1132, 1148, 1, 0},
-	{"fr", "Find register", 1149, 1161, 1, 0},
-	{"rr", "Record register", 1162, 1175, 1, 0},
-	{"lim", "Line length render limit", 1176, 1191, 1, 0},
-	{"seq", "Control Undo/Redo", 1192, 1204, 1, 0},
-	{"left", "Control horizontal scroll", 1205, 1210, 1, 0},
-	{"err", "Control ex errors", 1211, 1223, 1, 0},
+	{"a!", "Start a new agent conversation", 753, 759, 0, 0},
+	{"a~", "Resume an agent conversation from its log", 760, 765, 0, 0},
+	{"apack", "Compact the agent session from its log", 766, 778, 0, 0},
+	{"apack!", "Compact the agent session by browsing its log", 779, 786, 0, 0},
+	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
+	{"aretry", "Execute the last agent command", 793, 805, 0, 0},
+	{"aout", "Print the saved output of the last agent tool call", 806, 817, 0, 0},
+	{"anote", "Replace or remove agent session log entries", 818, 841, 0, 0},
+	{"aget", "Print agent session log entries, trimmed ones included", 842, 856, 0, 0},
+	{"arate", "Rate agent commands in the notes buffer", 857, 879, 0, 0},
+	{"adone", "End an agent checkpoint", 880, 887, 0, 0},
+	{"acheck", "Start an agent checkpoint or set its budget", 888, 900, 0, 0},
+	{"acp", "Print the agent checkpoint entry list", 901, 907, 0, 0},
+	{"acp!", "Print the agent checkpoint instructions", 908, 914, 0, 0},
+	{"ast", "Print agent status and token usage", 915, 924, 0, 0},
+	{"ac", "Set autocomplete filter regex", 925, 933, 0, 0},
+	{"sc", "Set ex special characters", 934, 944, 0, 0},
+	{"sc!", "Set ex special characters", 945, 952, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 953, 960, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 961, 964, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 965, 969, 0, 0},
+	{"ph", "Redefine placeholders", 970, 986, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 995, 1042, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1043, 1052, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1053, 1060, 1, 0},
+	{"agr", "Control agent output protection", 1061, 1067, 1, 0},
+	{"ar", "Display returned agent reasoning", 1068, 1072, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1073, 1077, 1, 0},
+	{"ai", "Indent new lines", 1078, 1081, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1082, 1083, 1, 0},
+	{"ish", "Interactive shell", 1084, 1099, 1, 0},
+	{"grp", "Regex search group", 1100, 1108, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1109, 1112, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1113, 1114, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1114, 1115, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1115, 1116, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1116, 1117, 1, 0},
+	{"led", "Enable all terminal output", 1117, 1118, 1, 0},
+	{"vis", "Control startup flags", 1119, 1130, 1, 0},
+	{"mpt", "Control vi prompts", 1131, 1141, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1142, 1144, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1144, 1146, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1146, 1147, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1147, 1148, 1, 0},
+	{"td", "Current text direction context", 1148, 1154, 1, 0},
+	{"pr", "Print register", 1155, 1171, 1, 0},
+	{"fr", "Find register", 1172, 1184, 1, 0},
+	{"rr", "Record register", 1185, 1198, 1, 0},
+	{"lim", "Line length render limit", 1199, 1214, 1, 0},
+	{"seq", "Control Undo/Redo", 1215, 1227, 1, 0},
+	{"left", "Control horizontal scroll", 1228, 1233, 1, 0},
+	{"err", "Control ex errors", 1234, 1246, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -10873,7 +11094,7 @@ extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 ??!219reg vi.h:449:m12sc %? %@2142sc!0?
 '\''2i extern int xaspec;
 ??!219reg vi.h:495:m22sc %? %@2142sc!0?
-'\''3s/3/6/??!219reg vi.h:523:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7wb8wb9wb10wb11wb12wb13w2q' > "$P2VIF"
+'\''3s/3/7/??!219reg vi.h:523:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7wb8wb9wb10wb11wb12wb13w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'agent.c' 'agent.h' 'cJSON.c' 'cJSON.h' 'cbuild.sh' 'conf.c' 'ex.c' 'exspec.awk' 'exspec.h' 'lbuf.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -10887,10 +11108,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..3d46ee59
+index 00000000..830b292a
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3094 @@
+@@ -0,0 +1,3270 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11169,7 +11390,7 @@ index 00000000..3d46ee59
 +/* A tool call can edit a log line by line; save once after the call. */
 +static void agent_sync_pending(void)
 +{
-+	for (int i = 3; i < 6; i++)
++	for (int i = 3; i < 7; i++)
 +		if (agent_unsaved & (1 << (i - 3)))
 +			agent_sync_buf(i);
 +}
@@ -11180,7 +11401,7 @@ index 00000000..3d46ee59
 +		agent_log_edited = 1;
 +	if (!agent_ready || agent_syncing)
 +		return;
-+	for (int i = 3; i < 6; i++) {
++	for (int i = 3; i < 7; i++) {
 +		if (tempbufs[i].lb != lb)
 +			continue;
 +		if (i == 3 && agent_packing)
@@ -11232,6 +11453,7 @@ index 00000000..3d46ee59
 +	temp_open(3, "/conversation/", _ft);
 +	temp_open(4, "/skills/", _ft);
 +	temp_open(5, "/notes/", _ft);
++	temp_open(6, "/discarded/", _ft);
 +	lbuf_edit(tempbufs[4].lb, nextvi_skill, 0, 0, 0, 0);
 +	lbuf_saved(tempbufs[4].lb, 1);
 +	agent_history(0);
@@ -11269,10 +11491,10 @@ index 00000000..3d46ee59
 +		free(dir);
 +		dir = path;
 +	}
-+	for (int i = 3; i < 6; i++) {
++	for (int i = 3; i < 7; i++) {
 +		path = emalloc(strlen(dir) + 32);
 +		sprintf(path, "%s/%s", dir, i == 3 ? "conversation" :
-+			i == 4 ? "skills" : "notes");
++			i == 4 ? "skills" : i == 5 ? "notes" : "discarded");
 +		free(tempbufs[i].path);
 +		tempbufs[i].path = path;
 +		tempbufs[i].plen = strlen(path);
@@ -11477,10 +11699,9 @@ index 00000000..3d46ee59
 +	size_t bytes;		/* body bytes, excluding the header */
 +};
 +
-+/* Split the session log b-4 into entries; the caller frees *spans. */
-+static int agent_spans(struct agent_span **spans)
++/* Split a log into entries; the caller frees *spans. */
++static int agent_spans_of(struct lbuf *lb, struct agent_span **spans)
 +{
-+	struct lbuf *lb = tempbufs[3].lb;
 +	unsigned long n, last = 0;
 +	int role, cnt = 0, cap = 0;
 +	*spans = NULL;
@@ -11503,6 +11724,89 @@ index 00000000..3d46ee59
 +	if (cnt)
 +		(*spans)[cnt-1].end = lbuf_len(lb);
 +	return cnt;
++}
++
++/* Split the session log b-4 into entries. */
++static int agent_spans(struct agent_span **spans)
++{
++	return agent_spans_of(tempbufs[3].lb, spans);
++}
++
++/* Copy the entries of lb on lines beg to end into b-7, in number order. A
++ * number already there keeps its entry, the original of a later note; text
++ * before the first header is skipped. The caller syncs b-7. */
++static void agent_discard(struct lbuf *lb, int beg, int end)
++{
++	struct lbuf *db = tempbufs[6].lb;
++	struct agent_span *spans;
++	int cnt = agent_spans_of(db, &spans), k = 0, shift = 0, i = beg, j, pos;
++	unsigned long n, m;
++	sbuf_smake(sb, 256)
++	preserve(int, agent_syncing, agent_syncing = 1;)
++	while (i < end) {
++		if (!agent_header(lb->ln[i], 0, &n)) {
++			i++;
++			continue;
++		}
++		for (j = i + 1; j < end && !agent_header(lb->ln[j], n, &m); j++)
++			;
++		while (k < cnt && spans[k].n < n)
++			k++;
++		if (k == cnt || spans[k].n != n) {
++			sbuf_cut(sb, 0)
++			for (int l = i; l < j; l++)
++				sbuf_str(sb, lb->ln[l])
++			sbuf_nul(sb)
++			pos = k < cnt ? spans[k].beg + shift : lbuf_len(db);
++			lbuf_edit(db, sb->s, pos, pos, 0, 0);
++			shift += j - i;
++		}
++		i = j;
++	}
++	restore(agent_syncing)
++	free(sb->s);
++	free(spans);
++}
++
++/* Head a compaction summary as a USER entry numbered after the log it
++ * replaced, now in b-7, so a later compaction moves it there too. */
++static void agent_head_summary(void)
++{
++	struct lbuf *lb = tempbufs[3].lb;
++	struct agent_span *spans;
++	int cnt = agent_spans_of(tempbufs[6].lb, &spans);
++	unsigned long n;
++	char head[48];
++	if (cnt)
++		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
++	free(spans);
++	if (!lbuf_len(lb) || agent_header(lb->ln[0], 0, &n))
++		return;
++	snprintf(head, sizeof(head), "USER %lu\n", ++agent_entries[1]);
++	preserve(int, agent_tool, agent_tool = 0;)
++	preserve(int, agent_syncing, agent_syncing = 1;)
++	/* A blank line ends it, as agent_log ends entries. */
++	if (strcmp(lb->ln[lbuf_len(lb) - 1], "\n"))
++		lbuf_edit(lb, "\n", lbuf_len(lb), lbuf_len(lb), 0, 0);
++	lbuf_edit(lb, head, 0, 0, 0, 0);
++	restore(agent_syncing)
++	restore(agent_tool)
++	if (agent_save(3))
++		ex_print("agent write failed; buffer text retained", msg_ft)
++}
++
++/* Move the entries of a log replaced by compaction, as agent_text
++ * returned it, to b-7. */
++static void agent_discard_log(char *text)
++{
++	struct lbuf *lb = lbuf_make();
++	preserve(int, agent_tool, agent_tool = 0;)
++	if (*text)
++		lbuf_edit(lb, text, 0, 0, 0, 0);
++	agent_discard(lb, 0, lbuf_len(lb));
++	restore(agent_tool)
++	lbuf_free(lb);
++	agent_sync(tempbufs[6].lb);
 +}
 +
 +static double agent_span_tokens(struct agent_span *s)
@@ -11673,18 +11977,19 @@ index 00000000..3d46ee59
 +	return n;
 +}
 +
-+static void agent_notes_clear(void)
++/* Empty b-6 (notes) or b-7 (discarded entries). */
++static void agent_temp_clear(int i)
 +{
-+	struct lbuf *lb = tempbufs[5].lb;
++	struct lbuf *lb = tempbufs[i].lb;
 +	agent_syncing = 1;
 +	lbuf_edit(lb, NULL, 0, lbuf_len(lb), 0, 0);
 +	lbuf_saved(lb, 1);
 +	agent_syncing = 0;
-+	tempbufs[5].row = tempbufs[5].off = tempbufs[5].top = 0;
-+	if (ex_buf == tempbufs+5) {
++	tempbufs[i].row = tempbufs[i].off = tempbufs[i].top = 0;
++	if (ex_buf == tempbufs+i) {
 +		exbuf_load(ex_buf)
 +	}
-+	if (agent_ready && agent_save(5))
++	if (agent_ready && agent_save(i))
 +		ex_print("agent write failed; buffer text retained", msg_ft)
 +}
 +
@@ -11703,7 +12008,7 @@ index 00000000..3d46ee59
 +	if ((fd >= 0 && close(fd)) || failed)
 +		ex_print("cannot archive agent notes", msg_ft)
 +	free(path);
-+	agent_notes_clear();
++	agent_temp_clear(5);
 +}
 +
 +/* Checkpoint or budget check phase: the exchange after the opening message,
@@ -13228,6 +13533,13 @@ index 00000000..3d46ee59
 +			lbuf_len(tempbufs[5].lb), n);
 +		ex_print(msg, msg_ft)
 +	}
++	if (lbuf_len(tempbufs[6].lb)) {
++		struct agent_span *spans;
++		int n = agent_spans_of(tempbufs[6].lb, &spans);
++		free(spans);
++		snprintf(msg, sizeof(msg), "discarded  %d entries in b-7", n);
++		ex_print(msg, msg_ft)
++	}
 +	if (!agent_ready) {
 +		ex_print(agent_init_error ? agent_init_error :
 +			"agent session is not running", msg_ft)
@@ -13404,6 +13716,74 @@ index 00000000..3d46ee59
 +	return *first < 0 ? "no entries in range" : NULL;
 +}
 +
++/* Print entries N through M of b-4 and of b-7 in number order, those of
++ * b-7 headed "ROLE N trimmed"; role names in arg select roles. */
++static void *ec_aget(char *loc, char *cmd, char *arg)
++{
++	struct lbuf *lbs[2] = {tempbufs[6].lb, tempbufs[3].lb};
++	struct agent_span *spans[2], *sp;
++	int cnt[2], k[2] = {0, 0}, roles = 0, len, b, i;
++	unsigned long beg, end, last = 0;
++	char head[48], *ret = NULL;
++	while (*(arg += strspn(arg, " \t"))) {
++		len = strcspn(arg, " \t");
++		for (i = 0; i < LEN(agent_roles); i++)
++			if ((int)strlen(agent_roles[i]) == len &&
++					!strncmp(agent_roles[i], arg, len))
++				break;
++		if (i == LEN(agent_roles))
++			return "aget takes role names: USER ASSISTANT REASONING EX "
++				"RESULT NOTICE";
++		roles |= 1 << (i + 1);
++		arg += len;
++	}
++	for (b = 0; b < 2; b++) {
++		cnt[b] = agent_spans_of(lbs[b], &spans[b]);
++		if (cnt[b])
++			last = MAX(last, spans[b][cnt[b]-1].n);
++	}
++	if (agent_entryaddr(&loc, &beg, last)) {
++		ret = "an entry number is required, as in 12 or 12,15";
++		goto done;
++	}
++	end = beg;
++	if ((*loc == ',' && (loc++, agent_entryaddr(&loc, &end, last))) ||
++			*loc || end < beg) {
++		ret = "invalid entry range";
++		goto done;
++	}
++	sbuf_smake(sb, 1024)
++	/* Merge by number; a trimmed original precedes the note numbered
++	 * after it. */
++	while (k[0] < cnt[0] || k[1] < cnt[1]) {
++		b = k[0] == cnt[0] || (k[1] < cnt[1] &&
++			spans[1][k[1]].n < spans[0][k[0]].n);
++		sp = spans[b] + k[b]++;
++		if (sp->n < beg || sp->n > end ||
++				(roles && !(roles & (1 << sp->role))))
++			continue;
++		i = sp->beg;
++		if (sp->role) {
++			snprintf(head, sizeof(head), "%s %lu%s\n", agent_span_role(sp),
++				sp->n, b ? "" : " trimmed");
++			sbuf_str(sb, head)
++			i++;
++		}
++		for (; i < sp->end; i++)
++			sbuf_str(sb, lbs[b]->ln[i])
++	}
++	sbuf_nul(sb)
++	if (sb->s_n)
++		ex_print(sb->s, msg_ft)
++	else
++		ret = "no entries in range";
++	free(sb->s);
++done:
++	free(spans[0]);
++	free(spans[1]);
++	return ret;
++}
++
 +static void *ec_anote(char *loc, char *cmd, char *arg)
 +{
 +	struct lbuf *lb = tempbufs[3].lb;
@@ -13471,6 +13851,10 @@ index 00000000..3d46ee59
 +			continue;
 +		while (k > first && !ANOTE_KEPT(k - 1))
 +			k--;
++		/* A pack keeps the whole log on success and restores it on
++		 * failure. */
++		if (!agent_packing)
++			agent_discard(lb, spans[k].beg, spans[end].end);
 +		lbuf_edit(lb, *arg && k == note ? sb->s : NULL,
 +			spans[k].beg, spans[end].end, 0, 0);
 +	}
@@ -13478,6 +13862,7 @@ index 00000000..3d46ee59
 +	restore(agent_syncing)
 +	restore(agent_tool)
 +	agent_sync(lb);
++	agent_sync(tempbufs[6].lb);
 +	free(sb->s);
 +	if (ex_buf == tempbufs + 3)
 +		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
@@ -13503,8 +13888,8 @@ index 00000000..3d46ee59
 +	return ret;
 +}
 +
-+/* Remove the EX entries of spans first through last with their results,
-+ * reporting as anote; their ratings stay in b-6. */
++/* Move the EX entries of spans first through last with their results to
++ * b-7, reporting as anote; their ratings stay in b-6. */
 +static void agent_trim_commands(struct agent_span *spans, int cnt, int first,
 +		int last)
 +{
@@ -13531,12 +13916,14 @@ index 00000000..3d46ee59
 +			hi = spans[end].n;
 +		lo = spans[k].n;
 +		removed += end - k + 1;
++		agent_discard(lb, spans[k].beg, spans[end].end);
 +		lbuf_edit(lb, NULL, spans[k].beg, spans[end].end, 0, 0);
 +	}
 +	agent_prune(lb);
 +	restore(agent_syncing)
 +	restore(agent_tool)
 +	agent_sync(lb);
++	agent_sync(tempbufs[6].lb);
 +	if (ex_buf == tempbufs + 3)
 +		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
 +	else
@@ -13643,7 +14030,8 @@ index 00000000..3d46ee59
 +			if (ex_buf == tempbufs+3) {
 +				exbuf_load(ex_buf)
 +			}
-+			agent_notes_clear();
++			agent_temp_clear(5);
++			agent_temp_clear(6);
 +		}
 +		agent_history(cmd[1] == '~');
 +	}
@@ -13784,6 +14172,10 @@ index 00000000..3d46ee59
 +			"Weigh entries by rating: omit 0, at most a phrase for 1, summarize 2,\n"
 +			"keep the exact details of 3. Judge unrated entries by their content.\n")
 +	}
++	if (lbuf_len(tempbufs[6].lb))
++		sbuf_str(task, "Trimmed entries are kept in full: N[,M]aget prints "
++			"entries N through M,\ntrimmed ones included, when the summary "
++			"needs their details.\n")
 +	free(spans);
 +	sbuf_chr(task, '\n')
 +	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
@@ -13842,6 +14234,8 @@ index 00000000..3d46ee59
 +		if (!ret && complete && changed && !agent_save(3)) {
 +			agent_history(1);
 +			agent_notes_archive(archive);
++			agent_discard_log(original);
++			agent_head_summary();
 +			cJSON_Delete(history);
 +		} else {
 +			if (!ret)
@@ -13940,6 +14334,9 @@ index 00000000..3d46ee59
 +			*text && strcmp(original, summary) &&
 +			strlen(summary) < strlen(original) && !agent_save(3)) {
 +		agent_history(1);
++		/* The summary is numbered before the resume entry. */
++		agent_discard_log(original);
++		agent_head_summary();
 +		sbuf_smake(resume, 256)
 +		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
 +			"is working memory, not a new task. Continue the request below, using\n"
@@ -13987,10 +14384,10 @@ index 00000000..3d46ee59
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..c8120419
+index 00000000..579085aa
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,41 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -14024,6 +14421,7 @@ index 00000000..c8120419
 +static void *ec_acp(char *loc, char *cmd, char *arg);
 +static void *ec_ast(char *loc, char *cmd, char *arg);
 +static void *ec_aout(char *loc, char *cmd, char *arg);
++static void *ec_aget(char *loc, char *cmd, char *arg);
 +static void *ec_compact(char *loc, char *cmd, char *arg);
 +static void agent_init(void);
 +static void agent_sync(struct lbuf *lb);
@@ -17541,10 +17939,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..c39fab3d 100755
+index c836c94c..56149033 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,220 @@ build() {
+@@ -65,6 +65,238 @@ build() {
      }
  }
  
@@ -17575,7 +17973,8 @@ index c836c94c..c39fab3d 100755
 +                "submits; Ctrl-C exits; Ctrl-O opens the editor. Ex specials are\n" \
 +                "disabled. Unavailable as an agent tool.")
 +            spec("[range]a![text]", "Start a new agent conversation",
-+                "Clears history and log, aspec tracking and deferred command.\n" \
++                "Clears history, the log with its notes and discarded entries, aspec\n" \
++                "tracking and deferred command.\n" \
 +                "Range, text and prompt controls work as for a. Unavailable as an agent tool.")
 +            spec("[range]a~[text]", "Resume an agent conversation from its log",
 +                "Loads b-4 as context, including edits. Keeps aspec tracking.\n" \
@@ -17586,8 +17985,10 @@ index c836c94c..c39fab3d 100755
 +                "instructions; range attaches buffer text. The task lists the log\n" \
 +                "entries with estimated tokens and arate notes (b-6), with the notes\n" \
 +                "of trimmed commands in order among them; apack! adds entry line\n" \
-+                "numbers. On success the notes move beside the archived log and b-6\n" \
-+                "is cleared. Unavailable as an agent tool.")
++                "numbers. While b-7 holds entries, the task offers aget for their\n" \
++                "details. On success the notes move beside the archived log, b-6 is\n" \
++                "cleared and the entries of the replaced log move to b-7, keeping\n" \
++                "those already there. Unavailable as an agent tool.")
 +            spec("[range]apack![text]", "Compact the agent session by browsing its log",
 +                "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
 +                "ranges and replaces the log with a summary. Stays at the prompt;\n" \
@@ -17635,8 +18036,21 @@ index c836c94c..c39fab3d 100755
 +                "kept, and reports a note larger than what it replaced. Then removes\n" \
 +                "every ASSISTANT entry without text not followed by an EX entry; such\n" \
 +                "entries only separate tool batches. Changes the agent context when\n" \
-+                "acl is set.\n\n" \
++                "acl is set. Removed and replaced entries move to b-7 in number\n" \
++                "order; a number already there keeps its entry, so a note replaced\n" \
++                "later is not kept. b-7 is saved as discarded in the session\n" \
++                "directory.\n\n" \
 +                "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
++            spec("[entries]aget[roles]", "Print agent session log entries, trimmed ones included",
++                "Prints entries N through M of b-4 and b-7 in number order with their\n" \
++                "ROLE N headers. Entries from b-7, those removed or replaced by anote,\n" \
++                "a 0 rating or compaction, are headed ROLE N trimmed and precede a\n" \
++                "current entry with the same number. entries works as for anote, with\n" \
++                "$ the last number in either buffer. Role names among USER,\n" \
++                "ASSISTANT, REASONING, EX, RESULT and NOTICE, separated by spaces,\n" \
++                "print only those roles. Output is subject to agr. Unavailable during\n" \
++                "an acl checkpoint.\n\n" \
++                "Example: print the commands of entries 20 through 80\n:20,80aget EX")
 +            spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
 +                "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
 +                "line per entry: number, rating and sentence, replacing an older note.\n" \
@@ -17649,7 +18063,9 @@ index c836c94c..c39fab3d 100755
 +                "decision, finding or state the task depends on.\n" \
 +                "Entries work as for anote; other roles in the range are skipped.\n" \
 +                "With acl above 1 or negative, commands deferred by aspec are rated\n" \
-+                "1 by the harness unless already rated.\n" \
++                "1 by the harness unless already rated. During an acl checkpoint,\n" \
++                "rating 0 moves the rated commands and their results to b-7,\n" \
++                "reported as by anote; their ratings stay in b-6.\n" \
 +                "Ratings show in acl checkpoint lists and are given to apack. b-6 is\n" \
 +                "saved as notes in the session directory.\n\n" \
 +                "Example: rate the command of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
@@ -17765,7 +18181,7 @@ index c836c94c..c39fab3d 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +288,7 @@ install() {
+@@ -74,7 +306,7 @@ install() {
  }
  
  print_usage() {
@@ -17774,7 +18190,7 @@ index c836c94c..c39fab3d 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +296,9 @@ print_usage() {
+@@ -82,6 +314,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -17785,7 +18201,7 @@ index c836c94c..c39fab3d 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..d1192832 100644
+index 2888d7c6..3f17cfef 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,312 @@
@@ -18108,12 +18524,12 @@ index 2888d7c6..d1192832 100644
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|aco!?|acl|ai|agr|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|anote|arate|adone|acp!?|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acp!?|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a133987..27763658 100644
+index 8a133987..723ede7c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -18129,7 +18545,7 @@ index 8a133987..27763658 100644
  int xdefreg;			/* ex default register */
  struct buf *bufs;		/* main buffers */
 -struct buf tempbufs[3];		/* temporary buffers, for internal use */
-+struct buf tempbufs[6];		/* temporary buffers, for internal use */
++struct buf tempbufs[7];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
@@ -18548,7 +18964,7 @@ index 8a133987..27763658 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2008,30 @@ static struct excmd {
+@@ -1758,8 +2008,31 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -18557,6 +18973,7 @@ index 8a133987..27763658 100644
 +	{"apack", ec_compact},
 +	EO(aspec),
 +	{"aout", ec_aout},
++	{"aget", ec_aget},
 +	{"anote", ec_anote},
 +	{"arate", ec_arate},
 +	{"adone", ec_adone},
@@ -18579,7 +18996,7 @@ index 8a133987..27763658 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2211,65 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2212,66 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -18623,9 +19040,10 @@ index 8a133987..27763658 100644
 +		if (agent_tool && excmds[idx].ec != ec_aretry) {
 +			int show = excmds[idx].ec == ec_aout;
 +			int top = xexec_dep == agent_tool_dep;
-+			/* aout, anote and arate take byte and entry ranges, not lines */
++			/* aout, aget, anote and arate take byte and entry ranges,
++			 * not lines */
 +			int lines = !show && excmds[idx].ec != ec_anote &&
-+				excmds[idx].ec != ec_arate;
++				excmds[idx].ec != ec_arate && excmds[idx].ec != ec_aget;
 +			/* Defer only top-level commands: a nested deferral skips one
 +			 * iteration of the enclosing command. */
 +			int defer = top && xaspec && excmds[idx].ec != ec_exspec &&
@@ -18646,7 +19064,7 @@ index 8a133987..27763658 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2288,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2290,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -18752,10 +19170,10 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..b5e75310
+index 00000000..bf79d539
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1399 @@
+@@ -0,0 +1,1423 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -19514,7 +19932,8 @@ index 00000000..b5e75310
 +	"[range]a![text]",
 +	"Start a new agent conversation",
 +	"",
-+	"Clears history and log, aspec tracking and deferred command.",
++	"Clears history, the log with its notes and discarded entries, aspec",
++	"tracking and deferred command.",
 +	"Range, text and prompt controls work as for a. Unavailable as an agent tool.",
 +	"",
 +	"[range]a~[text]",
@@ -19531,8 +19950,10 @@ index 00000000..b5e75310
 +	"instructions; range attaches buffer text. The task lists the log",
 +	"entries with estimated tokens and arate notes (b-6), with the notes",
 +	"of trimmed commands in order among them; apack! adds entry line",
-+	"numbers. On success the notes move beside the archived log and b-6",
-+	"is cleared. Unavailable as an agent tool.",
++	"numbers. While b-7 holds entries, the task offers aget for their",
++	"details. On success the notes move beside the archived log, b-6 is",
++	"cleared and the entries of the replaced log move to b-7, keeping",
++	"those already there. Unavailable as an agent tool.",
 +	"",
 +	"[range]apack![text]",
 +	"Compact the agent session by browsing its log",
@@ -19589,10 +20010,28 @@ index 00000000..b5e75310
 +	"kept, and reports a note larger than what it replaced. Then removes",
 +	"every ASSISTANT entry without text not followed by an EX entry; such",
 +	"entries only separate tool batches. Changes the agent context when",
-+	"acl is set.",
++	"acl is set. Removed and replaced entries move to b-7 in number",
++	"order; a number already there keeps its entry, so a note replaced",
++	"later is not kept. b-7 is saved as discarded in the session",
++	"directory.",
 +	"",
 +	"Example: replace a long result with a note",
 +	"14anote ls listed 40 files, none relevant",
++	"",
++	"[entries]aget[roles]",
++	"Print agent session log entries, trimmed ones included",
++	"",
++	"Prints entries N through M of b-4 and b-7 in number order with their",
++	"ROLE N headers. Entries from b-7, those removed or replaced by anote,",
++	"a 0 rating or compaction, are headed ROLE N trimmed and precede a",
++	"current entry with the same number. entries works as for anote, with",
++	"$ the last number in either buffer. Role names among USER,",
++	"ASSISTANT, REASONING, EX, RESULT and NOTICE, separated by spaces,",
++	"print only those roles. Output is subject to agr. Unavailable during",
++	"an acl checkpoint.",
++	"",
++	"Example: print the commands of entries 20 through 80",
++	"20,80aget EX",
 +	"",
 +	"[entries]arate rating sentence",
 +	"Rate agent commands in the notes buffer",
@@ -19608,7 +20047,9 @@ index 00000000..b5e75310
 +	"decision, finding or state the task depends on.",
 +	"Entries work as for anote; other roles in the range are skipped.",
 +	"With acl above 1 or negative, commands deferred by aspec are rated",
-+	"1 by the harness unless already rated.",
++	"1 by the harness unless already rated. During an acl checkpoint,",
++	"rating 0 moves the rated commands and their results to b-7,",
++	"reported as by anote; their ratings stay in b-6.",
 +	"Ratings show in acl checkpoint lists and are given to apack. b-6 is",
 +	"saved as notes in the session directory.",
 +	"",
@@ -20103,57 +20544,58 @@ index 00000000..b5e75310
 +	{"cm!", "Set an alternative keymap", 731, 733, 0, 0},
 +	{"exspec", "Print ex command catalog or specification", 734, 744, 0, 0},
 +	{"a", "Open or resume the agent conversation", 745, 752, 0, 0},
-+	{"a!", "Start a new agent conversation", 753, 758, 0, 0},
-+	{"a~", "Resume an agent conversation from its log", 759, 764, 0, 0},
-+	{"apack", "Compact the agent session from its log", 765, 775, 0, 0},
-+	{"apack!", "Compact the agent session by browsing its log", 776, 783, 0, 0},
-+	{"acm", "Toggle the caveman response style skill", 784, 789, 0, 0},
-+	{"aretry", "Execute the last agent command", 790, 802, 0, 0},
-+	{"aout", "Print the saved output of the last agent tool call", 803, 814, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 815, 835, 0, 0},
-+	{"arate", "Rate agent commands in the notes buffer", 836, 856, 0, 0},
-+	{"adone", "End an agent checkpoint", 857, 864, 0, 0},
-+	{"acheck", "Start an agent checkpoint or set its budget", 865, 877, 0, 0},
-+	{"acp", "Print the agent checkpoint entry list", 878, 884, 0, 0},
-+	{"acp!", "Print the agent checkpoint instructions", 885, 891, 0, 0},
-+	{"ast", "Print agent status and token usage", 892, 901, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 902, 910, 0, 0},
-+	{"sc", "Set ex special characters", 911, 921, 0, 0},
-+	{"sc!", "Set ex special characters", 922, 929, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 930, 937, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 938, 941, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 942, 946, 0, 0},
-+	{"ph", "Redefine placeholders", 947, 963, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 972, 1019, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1020, 1029, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1030, 1037, 1, 0},
-+	{"agr", "Control agent output protection", 1038, 1044, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1045, 1049, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1050, 1054, 1, 0},
-+	{"ai", "Indent new lines", 1055, 1058, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1059, 1060, 1, 0},
-+	{"ish", "Interactive shell", 1061, 1076, 1, 0},
-+	{"grp", "Regex search group", 1077, 1085, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1086, 1089, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1090, 1091, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1091, 1092, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1092, 1093, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1093, 1094, 1, 0},
-+	{"led", "Enable all terminal output", 1094, 1095, 1, 0},
-+	{"vis", "Control startup flags", 1096, 1107, 1, 0},
-+	{"mpt", "Control vi prompts", 1108, 1118, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1119, 1121, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1121, 1123, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1123, 1124, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1124, 1125, 1, 0},
-+	{"td", "Current text direction context", 1125, 1131, 1, 0},
-+	{"pr", "Print register", 1132, 1148, 1, 0},
-+	{"fr", "Find register", 1149, 1161, 1, 0},
-+	{"rr", "Record register", 1162, 1175, 1, 0},
-+	{"lim", "Line length render limit", 1176, 1191, 1, 0},
-+	{"seq", "Control Undo/Redo", 1192, 1204, 1, 0},
-+	{"left", "Control horizontal scroll", 1205, 1210, 1, 0},
-+	{"err", "Control ex errors", 1211, 1223, 1, 0},
++	{"a!", "Start a new agent conversation", 753, 759, 0, 0},
++	{"a~", "Resume an agent conversation from its log", 760, 765, 0, 0},
++	{"apack", "Compact the agent session from its log", 766, 778, 0, 0},
++	{"apack!", "Compact the agent session by browsing its log", 779, 786, 0, 0},
++	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
++	{"aretry", "Execute the last agent command", 793, 805, 0, 0},
++	{"aout", "Print the saved output of the last agent tool call", 806, 817, 0, 0},
++	{"anote", "Replace or remove agent session log entries", 818, 841, 0, 0},
++	{"aget", "Print agent session log entries, trimmed ones included", 842, 856, 0, 0},
++	{"arate", "Rate agent commands in the notes buffer", 857, 879, 0, 0},
++	{"adone", "End an agent checkpoint", 880, 887, 0, 0},
++	{"acheck", "Start an agent checkpoint or set its budget", 888, 900, 0, 0},
++	{"acp", "Print the agent checkpoint entry list", 901, 907, 0, 0},
++	{"acp!", "Print the agent checkpoint instructions", 908, 914, 0, 0},
++	{"ast", "Print agent status and token usage", 915, 924, 0, 0},
++	{"ac", "Set autocomplete filter regex", 925, 933, 0, 0},
++	{"sc", "Set ex special characters", 934, 944, 0, 0},
++	{"sc!", "Set ex special characters", 945, 952, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 953, 960, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 961, 964, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 965, 969, 0, 0},
++	{"ph", "Redefine placeholders", 970, 986, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 995, 1042, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1043, 1052, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1053, 1060, 1, 0},
++	{"agr", "Control agent output protection", 1061, 1067, 1, 0},
++	{"ar", "Display returned agent reasoning", 1068, 1072, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1073, 1077, 1, 0},
++	{"ai", "Indent new lines", 1078, 1081, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1082, 1083, 1, 0},
++	{"ish", "Interactive shell", 1084, 1099, 1, 0},
++	{"grp", "Regex search group", 1100, 1108, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1109, 1112, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1113, 1114, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1114, 1115, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1115, 1116, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1116, 1117, 1, 0},
++	{"led", "Enable all terminal output", 1117, 1118, 1, 0},
++	{"vis", "Control startup flags", 1119, 1130, 1, 0},
++	{"mpt", "Control vi prompts", 1131, 1141, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1142, 1144, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1144, 1146, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1146, 1147, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1147, 1148, 1, 0},
++	{"td", "Current text direction context", 1148, 1154, 1, 0},
++	{"pr", "Print register", 1155, 1171, 1, 0},
++	{"fr", "Find register", 1172, 1184, 1, 0},
++	{"rr", "Record register", 1185, 1198, 1, 0},
++	{"lim", "Line length render limit", 1199, 1214, 1, 0},
++	{"seq", "Control Undo/Redo", 1215, 1227, 1, 0},
++	{"left", "Control horizontal scroll", 1228, 1233, 1, 0},
++	{"err", "Control ex errors", 1234, 1246, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
@@ -20301,7 +20743,7 @@ index b1f9a16f..fdf5c0a3 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da595..56c8f9f1 100644
+index c23da595..b6ba4958 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
@@ -20325,7 +20767,7 @@ index c23da595..56c8f9f1 100644
  extern int xdefreg;
  extern struct buf *bufs;
 -extern struct buf tempbufs[3];
-+extern struct buf tempbufs[6];
++extern struct buf tempbufs[7];
  extern struct buf *ex_buf;
  extern struct buf *ex_pbuf;
  #define istempbuf(buf) (buf >= tempbufs && buf < tempbufs + LEN(tempbufs))
