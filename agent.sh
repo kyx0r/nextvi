@@ -872,9 +872,9 @@ static int agent_cp_hold(char *unrated, int size)
 /* A rating to copy, for the first unrated entry in an agent_unrated list. */
 static char *agent_cp_example(char *unrated)
 {
-	static char ex[64];
-	snprintf(ex, sizeof(ex), "%luarate 1 printed lines 1-50",
-		strtoul(unrated + 3, NULL, 10));
+	static char ex[96];
+	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser and found "
+		"where defaults are set", strtoul(unrated + 3, NULL, 10));
 	return ex;
 }
 
@@ -886,18 +886,74 @@ static const char agent_rating_scale[] =
 	"2 useful, informs the remaining work\n"
 	"3 essential, a decision, finding or state the task depends on\n";
 
+/* Whether b-6 line l rates a command no longer among spans; sets its
+ * number. */
+static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
+		unsigned long *n)
+{
+	char *e;
+	if (!isdigit((unsigned char)*l))
+		return 0;
+	*n = strtoul(l, &e, 10);
+	return e[0] == '\'' '\'' && e[1] >= '\''0'\'' && e[1] <= '\''3'\'' && e[2] == '\'' '\'' &&
+		!agent_span_ex(spans, cnt, *n);
+}
+
+/* From b-6 line *row, list the notes of trimmed commands numbered up to
+ * upto as "EX N trimmed [R] note". Following notes with the same rating
+ * that name N, or the entry N names, join it as "EX N-M". */
+static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
+		int *row, unsigned long upto)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	unsigned long n, m, ref, end, next;
+	char ln[64], *note, *t;
+	int i;
+	for (i = *row; i < lbuf_len(lb); i++) {
+		if (!isdigit((unsigned char)lb->ln[i][0]))
+			continue;
+		if (strtoul(lb->ln[i], NULL, 10) > upto)
+			break;
+		if (!agent_note_trimmed(lb->ln[i], spans, cnt, &n))
+			continue;
+		note = strchr(lb->ln[i], '\'' '\'') + 3;
+		ref = agent_note_ref(note);
+		end = n;
+		while (i + 1 < lbuf_len(lb) &&
+				agent_note_trimmed(lb->ln[i + 1], spans, cnt, &m) && m <= upto) {
+			t = strchr(lb->ln[i + 1], '\'' '\'') + 3;
+			next = agent_note_ref(t);
+			if (t[-2] != note[-2] || (next != n && (!ref || next != ref)))
+				break;
+			end = m;
+			i++;
+		}
+		if (end > n)
+			snprintf(ln, sizeof(ln), "EX %lu-%lu trimmed [%c] ", n, end, note[-2]);
+		else
+			snprintf(ln, sizeof(ln), "EX %lu trimmed [%c] ", n, note[-2]);
+		sbuf_str(sb, ln)
+		sbuf_mem(sb, note, (int)strcspn(note, "\n"))
+		sbuf_chr(sb, '\''\n'\'')
+	}
+	*row = i;
+}
+
 /* One line per b-4 entry: role number ~tokens, the first line number when
- * lines is set, and [rating] note for commands; then the five largest
+ * lines is set, and [rating] note for commands; with trimmed, the notes of
+ * trimmed commands in number order among them. Then the five largest
  * of the entries worth trimming, ~50 tokens or more. Without all, NOTICE
  * entries are not listed and USER entries, which the agent cannot change
  * by anote, are not among the largest. */
 static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
-		int lines, int all, int unrated)
+		int lines, int all, int unrated, int trimmed)
 {
-	int top[5], ntop = 0, listed = 0, r, row, col, len, nmoved = 0;
+	int top[5], ntop = 0, listed = 0, r, row, col, len, nmoved = 0, trow = 0;
 	unsigned long *moved = NULL, ref;	/* removed target, entry shown */
 	char ln[256], same[32], *note;
 	for (int k = 0; k < cnt; k++) {
+		if (trimmed)
+			agent_trimmed_list(sb, spans, cnt, &trow, spans[k].n);
 		if (spans[k].role == 6 && !all)
 			continue;
 		listed++;
@@ -912,8 +968,10 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 			snprintf(ln, sizeof(ln), " [%d] ", r);
 			sbuf_str(sb, ln)
 			/* A removed entry'\''s rating is shown in full on the first
-			 * entry that names it; the rest name that entry. */
-			if ((ref = agent_note_ref(note)) && !agent_span_ex(spans, cnt, ref)) {
+			 * entry that names it, unless listed among trimmed notes;
+			 * the rest name that entry. */
+			if ((ref = agent_note_ref(note)) && !agent_span_ex(spans, cnt, ref) &&
+					!(trimmed && agent_note(ref, &r, &row))) {
 				int j = 0;
 				while (j < nmoved && moved[2*j] != ref)
 					j++;
@@ -943,6 +1001,8 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 		if (j < 5)
 			top[j] = k;
 	}
+	if (trimmed)
+		agent_trimmed_list(sb, spans, cnt, &trow, ULONG_MAX);
 	if (ntop && listed > ntop) {
 		sbuf_str(sb, "Largest:")
 		col = 8;
@@ -977,7 +1037,7 @@ static void agent_cp_status(sbuf *sb)
 		"entries, about %.0f tokens (role number ~tokens, then [rating] note\n"
 		"for commands):\n", total);
 	sbuf_str(sb, ln)
-	agent_entry_list(sb, spans, cnt, 0, 0, 1);
+	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0);
 	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 		sbuf_str(sb, "Unrated: ")
 		sbuf_str(sb, unrated)
@@ -2582,6 +2642,54 @@ done:
 	return ret;
 }
 
+/* Remove the EX entries of spans first through last with their results,
+ * reporting as anote; their ratings stay in b-6. */
+static void agent_trim_commands(struct agent_span *spans, int cnt, int first,
+		int last)
+{
+	struct lbuf *lb = tempbufs[3].lb;
+	struct agent_span *now;
+	int removed = 0, n;
+	unsigned long lo = 0, hi = 0, from = spans[first].n;
+	double before = 0, after = 0;
+	char msg[128];
+	if (spans[last].role == 4 && last + 1 < cnt && spans[last + 1].role == 5)
+		last++;
+	for (int k = first; k <= last; k++)
+		before += agent_span_tokens(spans + k);
+	preserve(int, agent_tool, agent_tool = 0;)
+	preserve(int, agent_syncing, agent_syncing = 1;)
+	/* Last first so earlier line numbers hold; a RESULT goes with its EX. */
+	for (int k = last; k >= first; k--) {
+		int end = k;
+		if (spans[k].role == 5 && k > first && spans[k - 1].role == 4)
+			k--;
+		else if (spans[k].role != 4)
+			continue;
+		if (!hi)
+			hi = spans[end].n;
+		lo = spans[k].n;
+		removed += end - k + 1;
+		lbuf_edit(lb, NULL, spans[k].beg, spans[end].end, 0, 0);
+	}
+	agent_prune(lb);
+	restore(agent_syncing)
+	restore(agent_tool)
+	agent_sync(lb);
+	if (ex_buf == tempbufs + 3)
+		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
+	else
+		tempbufs[3].row = MAX(0, MIN(tempbufs[3].row, lbuf_len(lb) - 1));
+	n = agent_spans(&now);
+	for (int k = 0; k < n; k++)
+		if (now[k].n >= from && now[k].n <= spans[last].n)
+			after += agent_span_tokens(now + k);
+	free(now);
+	snprintf(msg, sizeof(msg), "removed %d %s %lu-%lu, ~%.0f -> ~%.0f tokens",
+		removed, removed > 1 ? "entries" : "entry", lo, hi, before, after);
+	ex_print(msg, msg_ft)
+}
+
 /* Rate the commands of the EX entries from N through M in b-6. */
 static void *ec_arate(char *loc, char *cmd, char *arg)
 {
@@ -2628,6 +2736,9 @@ static void *ec_arate(char *loc, char *cmd, char *arg)
 	else
 		snprintf(msg, sizeof(msg), "rated EX %lu [%c]", lo, *arg);
 	ex_print(msg, msg_ft)
+	/* A checkpoint drops dead weight from the log at once. */
+	if (*arg == '\''0'\'' && agent_checkpointing == 1)
+		agent_trim_commands(spans, cnt, first, last);
 done:
 	free(spans);
 	return ret;
@@ -2783,38 +2894,28 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	struct lbuf *notes = tempbufs[5].lb;
 	struct agent_span *spans;
 	int cnt = agent_spans(&spans), trimmed = 0, rated = lbuf_len(notes) > 0;
+	unsigned long n;
 	double total = 0;
-	char ln[192];
+	char ln[320];
 	for (int k = 0; k < cnt; k++)
 		total += agent_span_tokens(spans + k);
+	/* Notes outlive the commands trimmed from the log; they keep the
+	 * chronology, so they are listed in order among the entries. */
+	for (int i = 0; i < lbuf_len(notes); i++)
+		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n);
 	/* A loaded log already shows each entry; without notes, list only to browse. */
 	if (cnt && !browse && !rated) {
 		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
 		sbuf_str(task, ln)
-	} else if (cnt) {
+	} else if (cnt || trimmed) {
 		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-			"entries\n(role number ~tokens%s%s):\n", total,
+			"entries\n(role number ~tokens%s%s)%s:\n", total,
 			browse ? ", first line" : "",
-			rated ? ", then [rating] note for commands" : "");
+			rated ? ", then [rating] note for commands" : "",
+			trimmed ? ",\nin order with the notes of commands already trimmed "
+			"from the log\n(EX number trimmed [rating] note)" : "");
 		sbuf_str(task, ln)
-		agent_entry_list(task, spans, cnt, browse, 1, rated);
-	}
-	/* Notes outlive entries trimmed by anote; list those separately. */
-	for (int i = 0; i < lbuf_len(notes); i++) {
-		char *e, *l = notes->ln[i];
-		unsigned long n;
-		int k;
-		if (!isdigit((unsigned char)*l))
-			continue;
-		n = strtoul(l, &e, 10);
-		for (k = 0; k < cnt && (spans[k].role != 4 || spans[k].n != n); k++)
-			;
-		if (k < cnt || *e != '\'' '\'')
-			continue;
-		if (!trimmed++)
-			sbuf_str(task, "Notes on commands already trimmed from the log "
-				"(number rating note):\n")
-		sbuf_str(task, l)
+		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0);
 	}
 	if (lbuf_len(notes)) {
 		sbuf_str(task, agent_rating_scale)
@@ -6704,10 +6805,10 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Loads b-4 as context and asks the agent to replace it with a summary.\n" \
                 "Stays at the prompt; reloads the log on exit. Text replaces the default\n" \
                 "instructions; range attaches buffer text. The task lists the log\n" \
-                "entries with estimated tokens and arate notes (b-6), including notes\n" \
-                "on trimmed entries; apack! adds entry line numbers. On success the\n" \
-                "notes move beside the archived log and b-6 is cleared. Unavailable\n" \
-                "as an agent tool.")
+                "entries with estimated tokens and arate notes (b-6), with the notes\n" \
+                "of trimmed commands in order among them; apack! adds entry line\n" \
+                "numbers. On success the notes move beside the archived log and b-6\n" \
+                "is cleared. Unavailable as an agent tool.")
             spec("[range]apack![text]", "Compact the agent session by browsing its log",
                 "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
                 "ranges and replaces the log with a summary. Stays at the prompt;\n" \
@@ -6759,11 +6860,11 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
             spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
                 "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
-                "line per entry: number, rating and sentence, replacing an older\n" \
-                "note. Only the first entry gets the sentence; the rest get\n" \
-                "\"same as EX N\" with N that entry. Replacing a note that others name\n" \
-                "moves it to the first of them. Lists show the note of a removed entry\n" \
-                "on the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
+                "line per entry: number, rating and sentence, replacing an older note.\n" \
+                "Only the first entry gets the sentence; the rest get \"same as EX N\"\n" \
+                "with N that entry. Replacing a note that others name moves it to the\n" \
+                "first of them. Checkpoint lists show the note of a removed entry on\n" \
+                "the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
                 "value for the remaining work; 1 low, minor, superseded or only\n" \
                 "mechanics; 2 useful, informs the remaining work; 3 essential, a\n" \
                 "decision, finding or state the task depends on.\n" \
@@ -9539,10 +9640,10 @@ static char *exspec_lines[] = {
 	"Loads b-4 as context and asks the agent to replace it with a summary.",
 	"Stays at the prompt; reloads the log on exit. Text replaces the default",
 	"instructions; range attaches buffer text. The task lists the log",
-	"entries with estimated tokens and arate notes (b-6), including notes",
-	"on trimmed entries; apack! adds entry line numbers. On success the",
-	"notes move beside the archived log and b-6 is cleared. Unavailable",
-	"as an agent tool.",
+	"entries with estimated tokens and arate notes (b-6), with the notes",
+	"of trimmed commands in order among them; apack! adds entry line",
+	"numbers. On success the notes move beside the archived log and b-6",
+	"is cleared. Unavailable as an agent tool.",
 	"",
 	"[range]apack![text]",
 	"Compact the agent session by browsing its log",
@@ -9608,11 +9709,11 @@ static char *exspec_lines[] = {
 	"Rate agent commands in the notes buffer",
 	"",
 	"Writes a note for each EX entry from N through M of b-4 to b-6, one",
-	"line per entry: number, rating and sentence, replacing an older",
-	"note. Only the first entry gets the sentence; the rest get",
-	"\"same as EX N\" with N that entry. Replacing a note that others name",
-	"moves it to the first of them. Lists show the note of a removed entry",
-	"on the first remaining entry that names it. Ratings: 0 dead weight, no",
+	"line per entry: number, rating and sentence, replacing an older note.",
+	"Only the first entry gets the sentence; the rest get \"same as EX N\"",
+	"with N that entry. Replacing a note that others name moves it to the",
+	"first of them. Checkpoint lists show the note of a removed entry on",
+	"the first remaining entry that names it. Ratings: 0 dead weight, no",
 	"value for the remaining work; 1 low, minor, superseded or only",
 	"mechanics; 2 useful, informs the remaining work; 3 essential, a",
 	"decision, finding or state the task depends on.",
@@ -10786,10 +10887,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..566930f9
+index 00000000..3d46ee59
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,2993 @@
+@@ -0,0 +1,3094 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11632,9 +11733,9 @@ index 00000000..566930f9
 +/* A rating to copy, for the first unrated entry in an agent_unrated list. */
 +static char *agent_cp_example(char *unrated)
 +{
-+	static char ex[64];
-+	snprintf(ex, sizeof(ex), "%luarate 1 printed lines 1-50",
-+		strtoul(unrated + 3, NULL, 10));
++	static char ex[96];
++	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser and found "
++		"where defaults are set", strtoul(unrated + 3, NULL, 10));
 +	return ex;
 +}
 +
@@ -11646,18 +11747,74 @@ index 00000000..566930f9
 +	"2 useful, informs the remaining work\n"
 +	"3 essential, a decision, finding or state the task depends on\n";
 +
++/* Whether b-6 line l rates a command no longer among spans; sets its
++ * number. */
++static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
++		unsigned long *n)
++{
++	char *e;
++	if (!isdigit((unsigned char)*l))
++		return 0;
++	*n = strtoul(l, &e, 10);
++	return e[0] == ' ' && e[1] >= '0' && e[1] <= '3' && e[2] == ' ' &&
++		!agent_span_ex(spans, cnt, *n);
++}
++
++/* From b-6 line *row, list the notes of trimmed commands numbered up to
++ * upto as "EX N trimmed [R] note". Following notes with the same rating
++ * that name N, or the entry N names, join it as "EX N-M". */
++static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
++		int *row, unsigned long upto)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	unsigned long n, m, ref, end, next;
++	char ln[64], *note, *t;
++	int i;
++	for (i = *row; i < lbuf_len(lb); i++) {
++		if (!isdigit((unsigned char)lb->ln[i][0]))
++			continue;
++		if (strtoul(lb->ln[i], NULL, 10) > upto)
++			break;
++		if (!agent_note_trimmed(lb->ln[i], spans, cnt, &n))
++			continue;
++		note = strchr(lb->ln[i], ' ') + 3;
++		ref = agent_note_ref(note);
++		end = n;
++		while (i + 1 < lbuf_len(lb) &&
++				agent_note_trimmed(lb->ln[i + 1], spans, cnt, &m) && m <= upto) {
++			t = strchr(lb->ln[i + 1], ' ') + 3;
++			next = agent_note_ref(t);
++			if (t[-2] != note[-2] || (next != n && (!ref || next != ref)))
++				break;
++			end = m;
++			i++;
++		}
++		if (end > n)
++			snprintf(ln, sizeof(ln), "EX %lu-%lu trimmed [%c] ", n, end, note[-2]);
++		else
++			snprintf(ln, sizeof(ln), "EX %lu trimmed [%c] ", n, note[-2]);
++		sbuf_str(sb, ln)
++		sbuf_mem(sb, note, (int)strcspn(note, "\n"))
++		sbuf_chr(sb, '\n')
++	}
++	*row = i;
++}
++
 +/* One line per b-4 entry: role number ~tokens, the first line number when
-+ * lines is set, and [rating] note for commands; then the five largest
++ * lines is set, and [rating] note for commands; with trimmed, the notes of
++ * trimmed commands in number order among them. Then the five largest
 + * of the entries worth trimming, ~50 tokens or more. Without all, NOTICE
 + * entries are not listed and USER entries, which the agent cannot change
 + * by anote, are not among the largest. */
 +static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
-+		int lines, int all, int unrated)
++		int lines, int all, int unrated, int trimmed)
 +{
-+	int top[5], ntop = 0, listed = 0, r, row, col, len, nmoved = 0;
++	int top[5], ntop = 0, listed = 0, r, row, col, len, nmoved = 0, trow = 0;
 +	unsigned long *moved = NULL, ref;	/* removed target, entry shown */
 +	char ln[256], same[32], *note;
 +	for (int k = 0; k < cnt; k++) {
++		if (trimmed)
++			agent_trimmed_list(sb, spans, cnt, &trow, spans[k].n);
 +		if (spans[k].role == 6 && !all)
 +			continue;
 +		listed++;
@@ -11672,8 +11829,10 @@ index 00000000..566930f9
 +			snprintf(ln, sizeof(ln), " [%d] ", r);
 +			sbuf_str(sb, ln)
 +			/* A removed entry's rating is shown in full on the first
-+			 * entry that names it; the rest name that entry. */
-+			if ((ref = agent_note_ref(note)) && !agent_span_ex(spans, cnt, ref)) {
++			 * entry that names it, unless listed among trimmed notes;
++			 * the rest name that entry. */
++			if ((ref = agent_note_ref(note)) && !agent_span_ex(spans, cnt, ref) &&
++					!(trimmed && agent_note(ref, &r, &row))) {
 +				int j = 0;
 +				while (j < nmoved && moved[2*j] != ref)
 +					j++;
@@ -11703,6 +11862,8 @@ index 00000000..566930f9
 +		if (j < 5)
 +			top[j] = k;
 +	}
++	if (trimmed)
++		agent_trimmed_list(sb, spans, cnt, &trow, ULONG_MAX);
 +	if (ntop && listed > ntop) {
 +		sbuf_str(sb, "Largest:")
 +		col = 8;
@@ -11737,7 +11898,7 @@ index 00000000..566930f9
 +		"entries, about %.0f tokens (role number ~tokens, then [rating] note\n"
 +		"for commands):\n", total);
 +	sbuf_str(sb, ln)
-+	agent_entry_list(sb, spans, cnt, 0, 0, 1);
++	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0);
 +	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 +		sbuf_str(sb, "Unrated: ")
 +		sbuf_str(sb, unrated)
@@ -13342,6 +13503,54 @@ index 00000000..566930f9
 +	return ret;
 +}
 +
++/* Remove the EX entries of spans first through last with their results,
++ * reporting as anote; their ratings stay in b-6. */
++static void agent_trim_commands(struct agent_span *spans, int cnt, int first,
++		int last)
++{
++	struct lbuf *lb = tempbufs[3].lb;
++	struct agent_span *now;
++	int removed = 0, n;
++	unsigned long lo = 0, hi = 0, from = spans[first].n;
++	double before = 0, after = 0;
++	char msg[128];
++	if (spans[last].role == 4 && last + 1 < cnt && spans[last + 1].role == 5)
++		last++;
++	for (int k = first; k <= last; k++)
++		before += agent_span_tokens(spans + k);
++	preserve(int, agent_tool, agent_tool = 0;)
++	preserve(int, agent_syncing, agent_syncing = 1;)
++	/* Last first so earlier line numbers hold; a RESULT goes with its EX. */
++	for (int k = last; k >= first; k--) {
++		int end = k;
++		if (spans[k].role == 5 && k > first && spans[k - 1].role == 4)
++			k--;
++		else if (spans[k].role != 4)
++			continue;
++		if (!hi)
++			hi = spans[end].n;
++		lo = spans[k].n;
++		removed += end - k + 1;
++		lbuf_edit(lb, NULL, spans[k].beg, spans[end].end, 0, 0);
++	}
++	agent_prune(lb);
++	restore(agent_syncing)
++	restore(agent_tool)
++	agent_sync(lb);
++	if (ex_buf == tempbufs + 3)
++		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
++	else
++		tempbufs[3].row = MAX(0, MIN(tempbufs[3].row, lbuf_len(lb) - 1));
++	n = agent_spans(&now);
++	for (int k = 0; k < n; k++)
++		if (now[k].n >= from && now[k].n <= spans[last].n)
++			after += agent_span_tokens(now + k);
++	free(now);
++	snprintf(msg, sizeof(msg), "removed %d %s %lu-%lu, ~%.0f -> ~%.0f tokens",
++		removed, removed > 1 ? "entries" : "entry", lo, hi, before, after);
++	ex_print(msg, msg_ft)
++}
++
 +/* Rate the commands of the EX entries from N through M in b-6. */
 +static void *ec_arate(char *loc, char *cmd, char *arg)
 +{
@@ -13388,6 +13597,9 @@ index 00000000..566930f9
 +	else
 +		snprintf(msg, sizeof(msg), "rated EX %lu [%c]", lo, *arg);
 +	ex_print(msg, msg_ft)
++	/* A checkpoint drops dead weight from the log at once. */
++	if (*arg == '0' && agent_checkpointing == 1)
++		agent_trim_commands(spans, cnt, first, last);
 +done:
 +	free(spans);
 +	return ret;
@@ -13543,38 +13755,28 @@ index 00000000..566930f9
 +	struct lbuf *notes = tempbufs[5].lb;
 +	struct agent_span *spans;
 +	int cnt = agent_spans(&spans), trimmed = 0, rated = lbuf_len(notes) > 0;
++	unsigned long n;
 +	double total = 0;
-+	char ln[192];
++	char ln[320];
 +	for (int k = 0; k < cnt; k++)
 +		total += agent_span_tokens(spans + k);
++	/* Notes outlive the commands trimmed from the log; they keep the
++	 * chronology, so they are listed in order among the entries. */
++	for (int i = 0; i < lbuf_len(notes); i++)
++		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n);
 +	/* A loaded log already shows each entry; without notes, list only to browse. */
 +	if (cnt && !browse && !rated) {
 +		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
 +		sbuf_str(task, ln)
-+	} else if (cnt) {
++	} else if (cnt || trimmed) {
 +		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-+			"entries\n(role number ~tokens%s%s):\n", total,
++			"entries\n(role number ~tokens%s%s)%s:\n", total,
 +			browse ? ", first line" : "",
-+			rated ? ", then [rating] note for commands" : "");
++			rated ? ", then [rating] note for commands" : "",
++			trimmed ? ",\nin order with the notes of commands already trimmed "
++			"from the log\n(EX number trimmed [rating] note)" : "");
 +		sbuf_str(task, ln)
-+		agent_entry_list(task, spans, cnt, browse, 1, rated);
-+	}
-+	/* Notes outlive entries trimmed by anote; list those separately. */
-+	for (int i = 0; i < lbuf_len(notes); i++) {
-+		char *e, *l = notes->ln[i];
-+		unsigned long n;
-+		int k;
-+		if (!isdigit((unsigned char)*l))
-+			continue;
-+		n = strtoul(l, &e, 10);
-+		for (k = 0; k < cnt && (spans[k].role != 4 || spans[k].n != n); k++)
-+			;
-+		if (k < cnt || *e != ' ')
-+			continue;
-+		if (!trimmed++)
-+			sbuf_str(task, "Notes on commands already trimmed from the log "
-+				"(number rating note):\n")
-+		sbuf_str(task, l)
++		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0);
 +	}
 +	if (lbuf_len(notes)) {
 +		sbuf_str(task, agent_rating_scale)
@@ -17339,7 +17541,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..0c94e405 100755
+index c836c94c..c39fab3d 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,220 @@ build() {
@@ -17382,10 +17584,10 @@ index c836c94c..0c94e405 100755
 +                "Loads b-4 as context and asks the agent to replace it with a summary.\n" \
 +                "Stays at the prompt; reloads the log on exit. Text replaces the default\n" \
 +                "instructions; range attaches buffer text. The task lists the log\n" \
-+                "entries with estimated tokens and arate notes (b-6), including notes\n" \
-+                "on trimmed entries; apack! adds entry line numbers. On success the\n" \
-+                "notes move beside the archived log and b-6 is cleared. Unavailable\n" \
-+                "as an agent tool.")
++                "entries with estimated tokens and arate notes (b-6), with the notes\n" \
++                "of trimmed commands in order among them; apack! adds entry line\n" \
++                "numbers. On success the notes move beside the archived log and b-6\n" \
++                "is cleared. Unavailable as an agent tool.")
 +            spec("[range]apack![text]", "Compact the agent session by browsing its log",
 +                "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
 +                "ranges and replaces the log with a summary. Stays at the prompt;\n" \
@@ -17437,11 +17639,11 @@ index c836c94c..0c94e405 100755
 +                "Example: replace a long result with a note\n:14anote ls listed 40 files, none relevant")
 +            spec("[entries]arate rating sentence", "Rate agent commands in the notes buffer",
 +                "Writes a note for each EX entry from N through M of b-4 to b-6, one\n" \
-+                "line per entry: number, rating and sentence, replacing an older\n" \
-+                "note. Only the first entry gets the sentence; the rest get\n" \
-+                "\"same as EX N\" with N that entry. Replacing a note that others name\n" \
-+                "moves it to the first of them. Lists show the note of a removed entry\n" \
-+                "on the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
++                "line per entry: number, rating and sentence, replacing an older note.\n" \
++                "Only the first entry gets the sentence; the rest get \"same as EX N\"\n" \
++                "with N that entry. Replacing a note that others name moves it to the\n" \
++                "first of them. Checkpoint lists show the note of a removed entry on\n" \
++                "the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
 +                "value for the remaining work; 1 low, minor, superseded or only\n" \
 +                "mechanics; 2 useful, informs the remaining work; 3 essential, a\n" \
 +                "decision, finding or state the task depends on.\n" \
@@ -18550,7 +18752,7 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..b8a93339
+index 00000000..b5e75310
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1399 @@
@@ -19327,10 +19529,10 @@ index 00000000..b8a93339
 +	"Loads b-4 as context and asks the agent to replace it with a summary.",
 +	"Stays at the prompt; reloads the log on exit. Text replaces the default",
 +	"instructions; range attaches buffer text. The task lists the log",
-+	"entries with estimated tokens and arate notes (b-6), including notes",
-+	"on trimmed entries; apack! adds entry line numbers. On success the",
-+	"notes move beside the archived log and b-6 is cleared. Unavailable",
-+	"as an agent tool.",
++	"entries with estimated tokens and arate notes (b-6), with the notes",
++	"of trimmed commands in order among them; apack! adds entry line",
++	"numbers. On success the notes move beside the archived log and b-6",
++	"is cleared. Unavailable as an agent tool.",
 +	"",
 +	"[range]apack![text]",
 +	"Compact the agent session by browsing its log",
@@ -19396,11 +19598,11 @@ index 00000000..b8a93339
 +	"Rate agent commands in the notes buffer",
 +	"",
 +	"Writes a note for each EX entry from N through M of b-4 to b-6, one",
-+	"line per entry: number, rating and sentence, replacing an older",
-+	"note. Only the first entry gets the sentence; the rest get",
-+	"\"same as EX N\" with N that entry. Replacing a note that others name",
-+	"moves it to the first of them. Lists show the note of a removed entry",
-+	"on the first remaining entry that names it. Ratings: 0 dead weight, no",
++	"line per entry: number, rating and sentence, replacing an older note.",
++	"Only the first entry gets the sentence; the rest get \"same as EX N\"",
++	"with N that entry. Replacing a note that others name moves it to the",
++	"first of them. Checkpoint lists show the note of a removed entry on",
++	"the first remaining entry that names it. Ratings: 0 dead weight, no",
 +	"value for the remaining work; 1 low, minor, superseded or only",
 +	"mechanics; 2 useful, informs the remaining work; 3 essential, a",
 +	"decision, finding or state the task depends on.",
