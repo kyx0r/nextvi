@@ -7381,6 +7381,24 @@ static char exspec_agent_w[] =
 	"Example: pipe out only first 10 lines\n"
 	"1,10w !less";
 
+static char exspec_agent_bang[] =
+	"[range]![cmd]\n"
+	"Run an external program\n"
+	"\n"
+	"When a range is specified, the buffer'\''s data is piped to an external\n"
+	"program. The resulting stdout and stderr are then piped back into the\n"
+	"buffer, replacing the contents of the original range.\n"
+	"No range returns an error if shell exit code is not zero.\n"
+	"\n"
+	"Example: infamously sort a buffer\n"
+	"%!sort\n"
+	"Example: replace \"int\" with \"uint\" using sed\n"
+	"%!sed -e '\''s/int/uint/g'\''\n"
+	"Example: pipe in result of ls command without line replacement\n"
+	";$+1!ls\n"
+	"Example: capitalize word at current position using tr\n"
+	";;>\\\\\\>>!tr '\''[:lower:]'\'' '\''[:upper:]'\''";
+
 static char exspec_agent_r[] =
 	"[range]r[path]\n"
 	"[range]r[!{cmd}]\n"
@@ -7544,6 +7562,7 @@ static struct {
 	{"g", exspec_agent_g},
 	{"w", exspec_agent_w},
 	{"r", exspec_agent_r},
+	{"!", exspec_agent_bang},
 	{"parsing", exspec_agent_parsing},
 	{"escapes", exspec_agent_escapes},
 	{"expansion", exspec_agent_expansion},
@@ -18194,10 +18213,10 @@ index c836c94c..56149033 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..fcdad034 100644
+index 2888d7c6..590aa267 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,307 @@
+@@ -1,5 +1,326 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -18332,6 +18351,24 @@ index 2888d7c6..fcdad034 100644
 +	"w !less\n"
 +	"Example: pipe out only first 10 lines\n"
 +	"1,10w !less";
++
++static char exspec_agent_bang[] =
++	"[range]![cmd]\n"
++	"Run an external program\n"
++	"\n"
++	"When a range is specified, the buffer's data is piped to an external\n"
++	"program. The resulting stdout and stderr are then piped back into the\n"
++	"buffer, replacing the contents of the original range.\n"
++	"No range returns an error if shell exit code is not zero.\n"
++	"\n"
++	"Example: infamously sort a buffer\n"
++	"%!sort\n"
++	"Example: replace \"int\" with \"uint\" using sed\n"
++	"%!sed -e 's/int/uint/g'\n"
++	"Example: pipe in result of ls command without line replacement\n"
++	";$+1!ls\n"
++	"Example: capitalize word at current position using tr\n"
++	";;>\\\\\\>>!tr '[:lower:]' '[:upper:]'";
 +
 +static char exspec_agent_r[] =
 +	"[range]r[path]\n"
@@ -18496,6 +18533,7 @@ index 2888d7c6..fcdad034 100644
 +	{"g", exspec_agent_g},
 +	{"w", exspec_agent_w},
 +	{"r", exspec_agent_r},
++	{"!", exspec_agent_bang},
 +	{"parsing", exspec_agent_parsing},
 +	{"escapes", exspec_agent_escapes},
 +	{"expansion", exspec_agent_expansion},
@@ -18505,7 +18543,7 @@ index 2888d7c6..fcdad034 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +599,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +618,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
