@@ -101,6 +101,10 @@ static char *agent_prev;
 static size_t agent_reused, agent_sent;
 /* Reasoning field name returned by the endpoint, mirrored by acl. */
 static const char *agent_rkey = "reasoning_content";
+/* ath request fields: reasoning_budget_tokens, -1 unset; reasoning_effort,
+ * empty unset. Set fields replace those of request_extra. */
+static int agent_think_cap = -1;
+static char agent_effort[32];
 static void agent_run(const char *input);
 static int agent_autocompact(const char *input);
 static void agent_reparse(void);
@@ -2074,6 +2078,17 @@ static void agent_run_loop(const char *input)
 		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
 		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 		cJSON_AddBoolToObject(req, "stream", 0);
+		if (agent_think_cap >= 0) {
+			while (cJSON_GetObjectItem(req, "reasoning_budget_tokens"))
+				cJSON_DeleteItemFromObject(req, "reasoning_budget_tokens");
+			cJSON_AddNumberToObject(req, "reasoning_budget_tokens",
+				agent_think_cap);
+		}
+		if (*agent_effort) {
+			while (cJSON_GetObjectItem(req, "reasoning_effort"))
+				cJSON_DeleteItemFromObject(req, "reasoning_effort");
+			cJSON_AddStringToObject(req, "reasoning_effort", agent_effort);
+		}
 		double request_bytes = agent_context_bytes();
 		char *json = cJSON_PrintUnformatted(agent_messages);
 		agent_reused = 0;
@@ -2430,6 +2445,13 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 	ex_print(msg, msg_ft)
+	if (agent_think_cap >= 0)
+		snprintf(msg, sizeof(msg), "thinking   %d token cap, effort %s",
+			agent_think_cap, *agent_effort ? agent_effort : "unset");
+	else
+		snprintf(msg, sizeof(msg), "thinking   no token cap, effort %s",
+			*agent_effort ? agent_effort : "unset");
+	ex_print(msg, msg_ft)
 	if (agent_acl_kept()) {
 		int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
 		int k = snprintf(msg, sizeof(msg), "acl        %d, context rebuilt "
@@ -2540,6 +2562,20 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	ex_print(msg, msg_ft)
 	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
 	ex_print(msg, msg_ft)
+	return NULL;
+}
+
+static void *ec_ath(char *loc, char *cmd, char *arg)
+{
+	char *s = loc;
+	while (uc_isdigit(*s))
+		s++;
+	if (*s || s - loc > 9)
+		return "ath range must be a token count";
+	if (strlen(arg) >= sizeof(agent_effort) || strpbrk(arg, " \t\n"))
+		return "ath argument must be one effort word";
+	agent_think_cap = *loc ? atoi(loc) : -1;
+	strcpy(agent_effort, arg);
 	return NULL;
 }
 
@@ -3332,6 +3368,7 @@ static void *ec_adone(char *loc, char *cmd, char *arg);
 static void *ec_acheck(char *loc, char *cmd, char *arg);
 static void *ec_acp(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
+static void *ec_ath(char *loc, char *cmd, char *arg);
 static void *ec_aout(char *loc, char *cmd, char *arg);
 static void *ec_aget(char *loc, char *cmd, char *arg);
 static void *ec_compact(char *loc, char *cmd, char *arg);
@@ -7096,6 +7133,15 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "input is estimated from reported input plus new JSON bytes / 3, or\n" \
                 "all JSON bytes / 3 without a usable count. Includes tool definitions\n" \
                 "and framing; not a tokenizer or a guarantee the request fits.")
+            spec("[count]ath[effort]", "Set the agent thinking cap and effort",
+                "count is a hard cap on thinking tokens, sent as\n" \
+                "reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends\n" \
+                "thinking at once on llama.cpp and means no cap on Strata. effort is\n" \
+                "one word sent verbatim as reasoning_effort, such as none, low,\n" \
+                "medium, high or xhigh. An omitted part is not sent; ath alone sends\n" \
+                "neither. Sent fields replace those of request_extra. ast shows the\n" \
+                "setting.\n\n" \
+                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high")
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
@@ -7586,7 +7632,7 @@ static struct {
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp!?|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp!?|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -8930,6 +8976,7 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 	EO(acl),
 	{"acm", ec_skill},
 	{"ast", ec_ast},
+	{"ath", ec_ath},
 	EO(agr),
 ??!219reg ex.c:1760:m242sc %? %@2142sc!0?
 '\''25i 	EO(ar),
@@ -10019,6 +10066,20 @@ static char *exspec_lines[] = {
 	"all JSON bytes / 3 without a usable count. Includes tool definitions",
 	"and framing; not a tokenizer or a guarantee the request fits.",
 	"",
+	"[count]ath[effort]",
+	"Set the agent thinking cap and effort",
+	"",
+	"count is a hard cap on thinking tokens, sent as",
+	"reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends",
+	"thinking at once on llama.cpp and means no cap on Strata. effort is",
+	"one word sent verbatim as reasoning_effort, such as none, low,",
+	"medium, high or xhigh. An omitted part is not sent; ath alone sends",
+	"neither. Sent fields replace those of request_extra. ast shows the",
+	"setting.",
+	"",
+	"Example: cap thinking at 1024 tokens with high effort",
+	"1024ath high",
+	"",
 	"ac[regex]",
 	"Set autocomplete filter regex",
 	"",
@@ -10477,43 +10538,44 @@ static struct {
 	{"acp", "Print the agent checkpoint entry list", 901, 907, 0, 0},
 	{"acp!", "Print the agent checkpoint instructions", 908, 914, 0, 0},
 	{"ast", "Print agent status and token usage", 915, 924, 0, 0},
-	{"ac", "Set autocomplete filter regex", 925, 933, 0, 0},
-	{"sc", "Set ex special characters", 934, 944, 0, 0},
-	{"sc!", "Set ex special characters", 945, 952, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 953, 960, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 961, 964, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 965, 969, 0, 0},
-	{"ph", "Redefine placeholders", 970, 986, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 995, 1042, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1043, 1052, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1053, 1060, 1, 0},
-	{"agr", "Control agent output protection", 1061, 1067, 1, 0},
-	{"ar", "Display returned agent reasoning", 1068, 1072, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1073, 1077, 1, 0},
-	{"ai", "Indent new lines", 1078, 1081, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1082, 1083, 1, 0},
-	{"ish", "Interactive shell", 1084, 1099, 1, 0},
-	{"grp", "Regex search group", 1100, 1108, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1109, 1112, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1113, 1114, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1114, 1115, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1115, 1116, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1116, 1117, 1, 0},
-	{"led", "Enable all terminal output", 1117, 1118, 1, 0},
-	{"vis", "Control startup flags", 1119, 1130, 1, 0},
-	{"mpt", "Control vi prompts", 1131, 1141, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1142, 1144, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1144, 1146, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1146, 1147, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1147, 1148, 1, 0},
-	{"td", "Current text direction context", 1148, 1154, 1, 0},
-	{"pr", "Print register", 1155, 1171, 1, 0},
-	{"fr", "Find register", 1172, 1184, 1, 0},
-	{"rr", "Record register", 1185, 1198, 1, 0},
-	{"lim", "Line length render limit", 1199, 1214, 1, 0},
-	{"seq", "Control Undo/Redo", 1215, 1227, 1, 0},
-	{"left", "Control horizontal scroll", 1228, 1233, 1, 0},
-	{"err", "Control ex errors", 1234, 1246, 1, 0},
+	{"ath", "Set the agent thinking cap and effort", 925, 938, 0, 0},
+	{"ac", "Set autocomplete filter regex", 939, 947, 0, 0},
+	{"sc", "Set ex special characters", 948, 958, 0, 0},
+	{"sc!", "Set ex special characters", 959, 966, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 967, 974, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 975, 978, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 979, 983, 0, 0},
+	{"ph", "Redefine placeholders", 984, 1000, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1009, 1056, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1057, 1066, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1067, 1074, 1, 0},
+	{"agr", "Control agent output protection", 1075, 1081, 1, 0},
+	{"ar", "Display returned agent reasoning", 1082, 1086, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1087, 1091, 1, 0},
+	{"ai", "Indent new lines", 1092, 1095, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1096, 1097, 1, 0},
+	{"ish", "Interactive shell", 1098, 1113, 1, 0},
+	{"grp", "Regex search group", 1114, 1122, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1123, 1126, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1127, 1128, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1128, 1129, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1129, 1130, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1130, 1131, 1, 0},
+	{"led", "Enable all terminal output", 1131, 1132, 1, 0},
+	{"vis", "Control startup flags", 1133, 1144, 1, 0},
+	{"mpt", "Control vi prompts", 1145, 1155, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1156, 1158, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1158, 1160, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1160, 1161, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1161, 1162, 1, 0},
+	{"td", "Current text direction context", 1162, 1168, 1, 0},
+	{"pr", "Print register", 1169, 1185, 1, 0},
+	{"fr", "Find register", 1186, 1198, 1, 0},
+	{"rr", "Record register", 1199, 1212, 1, 0},
+	{"lim", "Line length render limit", 1213, 1228, 1, 0},
+	{"seq", "Control Undo/Redo", 1229, 1241, 1, 0},
+	{"left", "Control horizontal scroll", 1242, 1247, 1, 0},
+	{"err", "Control ex errors", 1248, 1260, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -11136,10 +11198,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..bd47c208
+index 00000000..e7767daa
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3269 @@
+@@ -0,0 +1,3305 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11211,6 +11273,10 @@ index 00000000..bd47c208
 +static size_t agent_reused, agent_sent;
 +/* Reasoning field name returned by the endpoint, mirrored by acl. */
 +static const char *agent_rkey = "reasoning_content";
++/* ath request fields: reasoning_budget_tokens, -1 unset; reasoning_effort,
++ * empty unset. Set fields replace those of request_extra. */
++static int agent_think_cap = -1;
++static char agent_effort[32];
 +static void agent_run(const char *input);
 +static int agent_autocompact(const char *input);
 +static void agent_reparse(void);
@@ -13184,6 +13250,17 @@ index 00000000..bd47c208
 +		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
 +		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 +		cJSON_AddBoolToObject(req, "stream", 0);
++		if (agent_think_cap >= 0) {
++			while (cJSON_GetObjectItem(req, "reasoning_budget_tokens"))
++				cJSON_DeleteItemFromObject(req, "reasoning_budget_tokens");
++			cJSON_AddNumberToObject(req, "reasoning_budget_tokens",
++				agent_think_cap);
++		}
++		if (*agent_effort) {
++			while (cJSON_GetObjectItem(req, "reasoning_effort"))
++				cJSON_DeleteItemFromObject(req, "reasoning_effort");
++			cJSON_AddStringToObject(req, "reasoning_effort", agent_effort);
++		}
 +		double request_bytes = agent_context_bytes();
 +		char *json = cJSON_PrintUnformatted(agent_messages);
 +		agent_reused = 0;
@@ -13540,6 +13617,13 @@ index 00000000..bd47c208
 +	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 +		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 +	ex_print(msg, msg_ft)
++	if (agent_think_cap >= 0)
++		snprintf(msg, sizeof(msg), "thinking   %d token cap, effort %s",
++			agent_think_cap, *agent_effort ? agent_effort : "unset");
++	else
++		snprintf(msg, sizeof(msg), "thinking   no token cap, effort %s",
++			*agent_effort ? agent_effort : "unset");
++	ex_print(msg, msg_ft)
 +	if (agent_acl_kept()) {
 +		int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
 +		int k = snprintf(msg, sizeof(msg), "acl        %d, context rebuilt "
@@ -13650,6 +13734,20 @@ index 00000000..bd47c208
 +	ex_print(msg, msg_ft)
 +	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
 +	ex_print(msg, msg_ft)
++	return NULL;
++}
++
++static void *ec_ath(char *loc, char *cmd, char *arg)
++{
++	char *s = loc;
++	while (uc_isdigit(*s))
++		s++;
++	if (*s || s - loc > 9)
++		return "ath range must be a token count";
++	if (strlen(arg) >= sizeof(agent_effort) || strpbrk(arg, " \t\n"))
++		return "ath argument must be one effort word";
++	agent_think_cap = *loc ? atoi(loc) : -1;
++	strcpy(agent_effort, arg);
 +	return NULL;
 +}
 +
@@ -14411,10 +14509,10 @@ index 00000000..bd47c208
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..579085aa
+index 00000000..77387492
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,42 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -14447,6 +14545,7 @@ index 00000000..579085aa
 +static void *ec_acheck(char *loc, char *cmd, char *arg);
 +static void *ec_acp(char *loc, char *cmd, char *arg);
 +static void *ec_ast(char *loc, char *cmd, char *arg);
++static void *ec_ath(char *loc, char *cmd, char *arg);
 +static void *ec_aout(char *loc, char *cmd, char *arg);
 +static void *ec_aget(char *loc, char *cmd, char *arg);
 +static void *ec_compact(char *loc, char *cmd, char *arg);
@@ -17966,10 +18065,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..56149033 100755
+index c836c94c..e7d14dc6 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,238 @@ build() {
+@@ -65,6 +65,247 @@ build() {
      }
  }
  
@@ -18124,6 +18223,15 @@ index c836c94c..56149033 100755
 +                "input is estimated from reported input plus new JSON bytes / 3, or\n" \
 +                "all JSON bytes / 3 without a usable count. Includes tool definitions\n" \
 +                "and framing; not a tokenizer or a guarantee the request fits.")
++            spec("[count]ath[effort]", "Set the agent thinking cap and effort",
++                "count is a hard cap on thinking tokens, sent as\n" \
++                "reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends\n" \
++                "thinking at once on llama.cpp and means no cap on Strata. effort is\n" \
++                "one word sent verbatim as reasoning_effort, such as none, low,\n" \
++                "medium, high or xhigh. An omitted part is not sent; ath alone sends\n" \
++                "neither. Sent fields replace those of request_extra. ast shows the\n" \
++                "setting.\n\n" \
++                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high")
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
@@ -18208,7 +18316,7 @@ index c836c94c..56149033 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +306,7 @@ install() {
+@@ -74,7 +315,7 @@ install() {
  }
  
  print_usage() {
@@ -18217,7 +18325,7 @@ index c836c94c..56149033 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +314,9 @@ print_usage() {
+@@ -82,6 +323,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -18228,7 +18336,7 @@ index c836c94c..56149033 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..2ba56831 100644
+index 2888d7c6..99342782 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,341 @@
@@ -18580,12 +18688,12 @@ index 2888d7c6..2ba56831 100644
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|aco!?|acl|ai|agr|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp!?|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp!?|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a133987..f767ca86 100644
+index 8a133987..65b0d0bc 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -19020,7 +19128,7 @@ index 8a133987..f767ca86 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2008,31 @@ static struct excmd {
+@@ -1758,8 +2008,32 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -19041,6 +19149,7 @@ index 8a133987..f767ca86 100644
 +	EO(acl),
 +	{"acm", ec_skill},
 +	{"ast", ec_ast},
++	{"ath", ec_ath},
 +	EO(agr),
  	EO(ai),
 +	EO(ar),
@@ -19052,7 +19161,7 @@ index 8a133987..f767ca86 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2212,66 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2213,66 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -19120,7 +19229,7 @@ index 8a133987..f767ca86 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2290,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2291,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -19226,10 +19335,10 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..bf79d539
+index 00000000..33856c75
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1423 @@
+@@ -0,0 +1,1438 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -20157,6 +20266,20 @@ index 00000000..bf79d539
 +	"all JSON bytes / 3 without a usable count. Includes tool definitions",
 +	"and framing; not a tokenizer or a guarantee the request fits.",
 +	"",
++	"[count]ath[effort]",
++	"Set the agent thinking cap and effort",
++	"",
++	"count is a hard cap on thinking tokens, sent as",
++	"reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends",
++	"thinking at once on llama.cpp and means no cap on Strata. effort is",
++	"one word sent verbatim as reasoning_effort, such as none, low,",
++	"medium, high or xhigh. An omitted part is not sent; ath alone sends",
++	"neither. Sent fields replace those of request_extra. ast shows the",
++	"setting.",
++	"",
++	"Example: cap thinking at 1024 tokens with high effort",
++	"1024ath high",
++	"",
 +	"ac[regex]",
 +	"Set autocomplete filter regex",
 +	"",
@@ -20615,43 +20738,44 @@ index 00000000..bf79d539
 +	{"acp", "Print the agent checkpoint entry list", 901, 907, 0, 0},
 +	{"acp!", "Print the agent checkpoint instructions", 908, 914, 0, 0},
 +	{"ast", "Print agent status and token usage", 915, 924, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 925, 933, 0, 0},
-+	{"sc", "Set ex special characters", 934, 944, 0, 0},
-+	{"sc!", "Set ex special characters", 945, 952, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 953, 960, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 961, 964, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 965, 969, 0, 0},
-+	{"ph", "Redefine placeholders", 970, 986, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 995, 1042, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1043, 1052, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1053, 1060, 1, 0},
-+	{"agr", "Control agent output protection", 1061, 1067, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1068, 1072, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1073, 1077, 1, 0},
-+	{"ai", "Indent new lines", 1078, 1081, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1082, 1083, 1, 0},
-+	{"ish", "Interactive shell", 1084, 1099, 1, 0},
-+	{"grp", "Regex search group", 1100, 1108, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1109, 1112, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1113, 1114, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1114, 1115, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1115, 1116, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1116, 1117, 1, 0},
-+	{"led", "Enable all terminal output", 1117, 1118, 1, 0},
-+	{"vis", "Control startup flags", 1119, 1130, 1, 0},
-+	{"mpt", "Control vi prompts", 1131, 1141, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1142, 1144, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1144, 1146, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1146, 1147, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1147, 1148, 1, 0},
-+	{"td", "Current text direction context", 1148, 1154, 1, 0},
-+	{"pr", "Print register", 1155, 1171, 1, 0},
-+	{"fr", "Find register", 1172, 1184, 1, 0},
-+	{"rr", "Record register", 1185, 1198, 1, 0},
-+	{"lim", "Line length render limit", 1199, 1214, 1, 0},
-+	{"seq", "Control Undo/Redo", 1215, 1227, 1, 0},
-+	{"left", "Control horizontal scroll", 1228, 1233, 1, 0},
-+	{"err", "Control ex errors", 1234, 1246, 1, 0},
++	{"ath", "Set the agent thinking cap and effort", 925, 938, 0, 0},
++	{"ac", "Set autocomplete filter regex", 939, 947, 0, 0},
++	{"sc", "Set ex special characters", 948, 958, 0, 0},
++	{"sc!", "Set ex special characters", 959, 966, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 967, 974, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 975, 978, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 979, 983, 0, 0},
++	{"ph", "Redefine placeholders", 984, 1000, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1009, 1056, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1057, 1066, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1067, 1074, 1, 0},
++	{"agr", "Control agent output protection", 1075, 1081, 1, 0},
++	{"ar", "Display returned agent reasoning", 1082, 1086, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1087, 1091, 1, 0},
++	{"ai", "Indent new lines", 1092, 1095, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1096, 1097, 1, 0},
++	{"ish", "Interactive shell", 1098, 1113, 1, 0},
++	{"grp", "Regex search group", 1114, 1122, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1123, 1126, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1127, 1128, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1128, 1129, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1129, 1130, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1130, 1131, 1, 0},
++	{"led", "Enable all terminal output", 1131, 1132, 1, 0},
++	{"vis", "Control startup flags", 1133, 1144, 1, 0},
++	{"mpt", "Control vi prompts", 1145, 1155, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1156, 1158, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1158, 1160, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1160, 1161, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1161, 1162, 1, 0},
++	{"td", "Current text direction context", 1162, 1168, 1, 0},
++	{"pr", "Print register", 1169, 1185, 1, 0},
++	{"fr", "Find register", 1186, 1198, 1, 0},
++	{"rr", "Record register", 1199, 1212, 1, 0},
++	{"lim", "Line length render limit", 1213, 1228, 1, 0},
++	{"seq", "Control Undo/Redo", 1229, 1241, 1, 0},
++	{"left", "Control horizontal scroll", 1242, 1247, 1, 0},
++	{"err", "Control ex errors", 1248, 1260, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..823e5b39 100644
