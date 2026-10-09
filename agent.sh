@@ -7279,12 +7279,9 @@ static char exspec_agent_i[] =
 	"[vrange]i[str]\n"
 	"Insert lines\n"
 	"\n"
-	"Inserts [str] as lines after line [vrange]; without [vrange], after the\n"
-	"current line. 0i inserts before line 1. Character offsets are ignored.\n"
+	"Inserts [str] after the specified line.\n"
+	"[str] is required and literal: all bytes 1-255 are inserted verbatim.\n"
 	"On an empty buffer only i and 0i work.\n"
-	"[str] is required and literal: no terminator, escapes or special\n"
-	"characters. Newlines in [str] separate lines: \\n in the JSON string,\n"
-	"not \\r.\n"
 	"\n"
 	"Example: insert \"hello\" after the current line\n"
 	"i hello\n"
@@ -7295,7 +7292,7 @@ static char exspec_agent_i[] =
 	"Example: insert \"hello\" after the last line\n"
 	"$i hello\n"
 	"Example: insert two lines after line 5\n"
-	"5i hello\\nworld";
+	"5i hello\nworld";
 
 static char exspec_agent_c[] =
 	"[range]c[str]\n"
@@ -7306,16 +7303,14 @@ static char exspec_agent_c[] =
 	"With one offset (N;O), inserts [str] at offset O of line N. With two\n"
 	"(N;O;P), replaces the characters from O up to, not including, P.\n"
 	"On an empty buffer only c without a range works.\n"
-	"[str] is required and literal: no terminator, escapes or special\n"
-	"characters. Newlines in [str] separate lines: \\n in the JSON string,\n"
-	"not \\r.\n"
+	"[str] is required and literal: all bytes 1-255 are inserted verbatim.\n"
 	"\n"
 	"Example: replace the current line with \"hello\"\n"
 	"c hello\n"
 	"Example: replace lines 1-5 with \"hello\"\n"
 	"1,5c hello\n"
 	"Example: replace the whole buffer with two lines\n"
-	"%c hello\\nworld\n"
+	"%c hello\nworld\n"
 	"Example: insert \"hello\" at offset 3 of line 5\n"
 	"5;3c hello\n"
 	"Example: append \"hello\" to line 5\n"
@@ -7414,6 +7409,25 @@ static char exspec_agent_r[] =
 	"r !ls\n"
 	"Example: pipe in only lines 3,5\n"
 	"3,5r !ls";
+
+static char exspec_agent_b[] =
+	"b[#index]\n"
+	"Print buffers or switch to a buffer\n"
+	"\n"
+	"No argument prints buffers.\n"
+	"Temporary buffers are separate from the main buffers\n"
+	"and are selected by a negative index.\n"
+	"A switch command targeting the same temporary buffer\n"
+	"as the current one switches to the previous main buffer.\n"
+	"\n"
+	"Example: switch to the 5th buffer\n"
+	"b5\n"
+	"Example: switch to the /hist/ ex history buffer\n"
+	"b-1\n"
+	"Example: switch to the /fm/ directory listing buffer\n"
+	"b-2\n"
+	"Example: switch to the /sc/ scratch buffer\n"
+	"b-3\n";
 
 static char exspec_agent_parsing[] =
 	"EX PARSING\n"
@@ -7562,6 +7576,7 @@ static struct {
 	{"g", exspec_agent_g},
 	{"w", exspec_agent_w},
 	{"r", exspec_agent_r},
+	{"b", exspec_agent_b},
 	{"!", exspec_agent_bang},
 	{"parsing", exspec_agent_parsing},
 	{"escapes", exspec_agent_escapes},
@@ -18213,10 +18228,10 @@ index c836c94c..56149033 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..590aa267 100644
+index 2888d7c6..2ba56831 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,326 @@
+@@ -1,5 +1,341 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -18250,12 +18265,9 @@ index 2888d7c6..590aa267 100644
 +	"[vrange]i[str]\n"
 +	"Insert lines\n"
 +	"\n"
-+	"Inserts [str] as lines after line [vrange]; without [vrange], after the\n"
-+	"current line. 0i inserts before line 1. Character offsets are ignored.\n"
++	"Inserts [str] after the specified line.\n"
++	"[str] is required and literal: all bytes 1-255 are inserted verbatim.\n"
 +	"On an empty buffer only i and 0i work.\n"
-+	"[str] is required and literal: no terminator, escapes or special\n"
-+	"characters. Newlines in [str] separate lines: \\n in the JSON string,\n"
-+	"not \\r.\n"
 +	"\n"
 +	"Example: insert \"hello\" after the current line\n"
 +	"i hello\n"
@@ -18266,7 +18278,7 @@ index 2888d7c6..590aa267 100644
 +	"Example: insert \"hello\" after the last line\n"
 +	"$i hello\n"
 +	"Example: insert two lines after line 5\n"
-+	"5i hello\\nworld";
++	"5i hello\nworld";
 +
 +static char exspec_agent_c[] =
 +	"[range]c[str]\n"
@@ -18277,16 +18289,14 @@ index 2888d7c6..590aa267 100644
 +	"With one offset (N;O), inserts [str] at offset O of line N. With two\n"
 +	"(N;O;P), replaces the characters from O up to, not including, P.\n"
 +	"On an empty buffer only c without a range works.\n"
-+	"[str] is required and literal: no terminator, escapes or special\n"
-+	"characters. Newlines in [str] separate lines: \\n in the JSON string,\n"
-+	"not \\r.\n"
++	"[str] is required and literal: all bytes 1-255 are inserted verbatim.\n"
 +	"\n"
 +	"Example: replace the current line with \"hello\"\n"
 +	"c hello\n"
 +	"Example: replace lines 1-5 with \"hello\"\n"
 +	"1,5c hello\n"
 +	"Example: replace the whole buffer with two lines\n"
-+	"%c hello\\nworld\n"
++	"%c hello\nworld\n"
 +	"Example: insert \"hello\" at offset 3 of line 5\n"
 +	"5;3c hello\n"
 +	"Example: append \"hello\" to line 5\n"
@@ -18385,6 +18395,25 @@ index 2888d7c6..590aa267 100644
 +	"r !ls\n"
 +	"Example: pipe in only lines 3,5\n"
 +	"3,5r !ls";
++
++static char exspec_agent_b[] =
++	"b[#index]\n"
++	"Print buffers or switch to a buffer\n"
++	"\n"
++	"No argument prints buffers.\n"
++	"Temporary buffers are separate from the main buffers\n"
++	"and are selected by a negative index.\n"
++	"A switch command targeting the same temporary buffer\n"
++	"as the current one switches to the previous main buffer.\n"
++	"\n"
++	"Example: switch to the 5th buffer\n"
++	"b5\n"
++	"Example: switch to the /hist/ ex history buffer\n"
++	"b-1\n"
++	"Example: switch to the /fm/ directory listing buffer\n"
++	"b-2\n"
++	"Example: switch to the /sc/ scratch buffer\n"
++	"b-3\n";
 +
 +static char exspec_agent_parsing[] =
 +	"EX PARSING\n"
@@ -18533,6 +18562,7 @@ index 2888d7c6..590aa267 100644
 +	{"g", exspec_agent_g},
 +	{"w", exspec_agent_w},
 +	{"r", exspec_agent_r},
++	{"b", exspec_agent_b},
 +	{"!", exspec_agent_bang},
 +	{"parsing", exspec_agent_parsing},
 +	{"escapes", exspec_agent_escapes},
@@ -18543,7 +18573,7 @@ index 2888d7c6..590aa267 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +618,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +633,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
