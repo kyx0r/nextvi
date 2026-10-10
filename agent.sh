@@ -1109,8 +1109,9 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 	free(moved);
 }
 
-/* Checkpoint status: sizes, the entry list and what is still unrated. */
-static void agent_cp_status(sbuf *sb)
+/* Session log status: sizes, the entry list and what is still unrated. With
+ * cp it is worded for a checkpoint and asks for the ratings. */
+static void agent_cp_status(sbuf *sb, int cp)
 {
 	struct agent_span *spans;
 	int cnt = agent_spans(&spans);
@@ -1119,18 +1120,23 @@ static void agent_cp_status(sbuf *sb)
 	for (int k = 0; k < cnt; k++)
 		total += agent_span_tokens(spans + k);
 	/* Entry sizes only: they stay comparable as anote changes them. */
-	snprintf(ln, sizeof(ln),
+	snprintf(ln, sizeof(ln), cp ?
 		"Context checkpoint. Your context is rebuilt from these session log\n"
 		"entries, about %.0f tokens (role number ~tokens, then [rating] note\n"
-		"for commands):\n", total);
+		"for commands):\n" :
+		"The session log holds about %.0f tokens in these entries (role number\n"
+		"~tokens, then [rating] note for commands):\n", total);
 	sbuf_str(sb, ln)
 	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0);
 	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 		sbuf_str(sb, "Unrated: ")
 		sbuf_str(sb, unrated)
-		sbuf_str(sb, "\nRate these first: one sentence each on what the command "
-			"did and found.\nFor example:\n")
-		sbuf_str(sb, agent_cp_example(unrated))
+		sbuf_chr(sb, '\''\n'\'')
+		if (cp) {
+			sbuf_str(sb, "Rate these first: one sentence each on what the "
+				"command did and found.\nFor example:\n")
+			sbuf_str(sb, agent_cp_example(unrated))
+		}
 	}
 	free(spans);
 }
@@ -1256,7 +1262,7 @@ static void agent_cp_build(void)
 		agent_log("USER", agent_cp_open);
 	} else if (!agent_cp_open) {
 		sbuf_smake(sb, 1024)
-		agent_cp_status(sb);
+		agent_cp_status(sb, 1);
 		agent_cp_instructions(sb);
 		sbuf_nul(sb)
 		agent_cp_open = sb->s;
@@ -1307,7 +1313,8 @@ static void agent_checkpoint_end(void)
 	agent_output(note);
 }
 
-/* acp prints the instructions, ali the status, auli the unrated commands. */
+/* acp prints the checkpoint instructions, to the agent only during one; ali
+ * the status and auli the unrated commands, of the session log at any time. */
 static void *ec_acp(char *loc, char *cmd, char *arg)
 {
 	static char err[40];
@@ -1315,13 +1322,15 @@ static void *ec_acp(char *loc, char *cmd, char *arg)
 		snprintf(err, sizeof(err), "%s takes no range or argument", cmd);
 		return err;
 	}
-	if (!agent_checkpointing)
+	if (cmd[1] == '\''c'\'' && agent_tool && !agent_checkpointing)
 		return "no checkpoint in progress";
+	if (cmd[1] != '\''c'\'' && !lbuf_len(tempbufs[3].lb))
+		return "session log is empty";
 	sbuf_smake(sb, 1024)
 	if (cmd[1] == '\''c'\'')
 		agent_cp_instructions(sb);
 	else if (cmd[1] == '\''l'\'')
-		agent_cp_status(sb);
+		agent_cp_status(sb, agent_checkpointing == 1);
 	else
 		agent_cp_unrated(sb);
 	if (agent_capture)	/* exempt from agr, as aout */
@@ -7128,16 +7137,18 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             spec("acp", "Print the agent checkpoint instructions",
                 "Prints the commands, rating scale and trimming instructions sent at\n" \
                 "the start of an acl checkpoint. Takes no range or argument; exempt\n" \
-                "from agr. Errors outside a checkpoint.")
-            spec("ali", "Print the agent checkpoint entry list",
-                "Prints the acl checkpoint status as sent at its start, with current\n" \
-                "entry sizes, ratings and unrated commands. Takes no range or\n" \
-                "argument; exempt from agr. Errors outside a checkpoint. The\n" \
+                "from agr. As an agent tool, errors outside a checkpoint.")
+            spec("ali", "Print the agent session log entry list",
+                "Prints the role, number and estimated tokens of every session log\n" \
+                "(b-4) entry with the arate notes of commands, then the largest few\n" \
+                "and the unrated commands. During an acl checkpoint this is the\n" \
+                "status sent at its start, with current sizes and ratings. Takes no\n" \
+                "range or argument; exempt from agr. Errors on an empty log. The\n" \
                 "checkpoint instructions do not name it; a refused adone does.")
-            spec("auli", "Print the unrated agent checkpoint entries",
-                "Prints only the unrated commands of the acl checkpoint entry list,\n" \
-                "one per line. Takes no range or argument; exempt from agr. Errors\n" \
-                "outside a checkpoint. Named as ali is.")
+            spec("auli", "Print the unrated agent session log commands",
+                "Prints only the unrated commands of the ali list, one per line.\n" \
+                "Takes no range or argument; exempt from agr. Errors on an empty\n" \
+                "log. Named as ali is.")
             spec("ast", "Print agent status and token usage",
                 "Prints sizes, per-role usage, activity, limits, acl checkpoint and\n" \
                 "autocompact mode, and the message bytes shared with the previous\n" \
@@ -10068,22 +10079,24 @@ static char *exspec_lines[] = {
 	"",
 	"Prints the commands, rating scale and trimming instructions sent at",
 	"the start of an acl checkpoint. Takes no range or argument; exempt",
-	"from agr. Errors outside a checkpoint.",
+	"from agr. As an agent tool, errors outside a checkpoint.",
 	"",
 	"ali",
-	"Print the agent checkpoint entry list",
+	"Print the agent session log entry list",
 	"",
-	"Prints the acl checkpoint status as sent at its start, with current",
-	"entry sizes, ratings and unrated commands. Takes no range or",
-	"argument; exempt from agr. Errors outside a checkpoint. The",
+	"Prints the role, number and estimated tokens of every session log",
+	"(b-4) entry with the arate notes of commands, then the largest few",
+	"and the unrated commands. During an acl checkpoint this is the",
+	"status sent at its start, with current sizes and ratings. Takes no",
+	"range or argument; exempt from agr. Errors on an empty log. The",
 	"checkpoint instructions do not name it; a refused adone does.",
 	"",
 	"auli",
-	"Print the unrated agent checkpoint entries",
+	"Print the unrated agent session log commands",
 	"",
-	"Prints only the unrated commands of the acl checkpoint entry list,",
-	"one per line. Takes no range or argument; exempt from agr. Errors",
-	"outside a checkpoint. Named as ali is.",
+	"Prints only the unrated commands of the ali list, one per line.",
+	"Takes no range or argument; exempt from agr. Errors on an empty",
+	"log. Named as ali is.",
 	"",
 	"ast",
 	"Print agent status and token usage",
@@ -10566,47 +10579,47 @@ static struct {
 	{"adone", "End an agent checkpoint", 880, 888, 0, 0},
 	{"acheck", "Start an agent checkpoint or set its budget", 889, 901, 0, 0},
 	{"acp", "Print the agent checkpoint instructions", 902, 908, 0, 0},
-	{"ali", "Print the agent checkpoint entry list", 909, 916, 0, 0},
-	{"auli", "Print the unrated agent checkpoint entries", 917, 923, 0, 0},
-	{"ast", "Print agent status and token usage", 924, 933, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 934, 947, 0, 0},
-	{"ac", "Set autocomplete filter regex", 948, 956, 0, 0},
-	{"sc", "Set ex special characters", 957, 967, 0, 0},
-	{"sc!", "Set ex special characters", 968, 975, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 976, 983, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 984, 987, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 988, 992, 0, 0},
-	{"ph", "Redefine placeholders", 993, 1009, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1018, 1066, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1067, 1076, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1077, 1084, 1, 0},
-	{"agr", "Control agent output protection", 1085, 1091, 1, 0},
-	{"ar", "Display returned agent reasoning", 1092, 1096, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1097, 1101, 1, 0},
-	{"ai", "Indent new lines", 1102, 1105, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1106, 1107, 1, 0},
-	{"ish", "Interactive shell", 1108, 1123, 1, 0},
-	{"grp", "Regex search group", 1124, 1132, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1133, 1136, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1137, 1138, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1138, 1139, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1139, 1140, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1140, 1141, 1, 0},
-	{"led", "Enable all terminal output", 1141, 1142, 1, 0},
-	{"vis", "Control startup flags", 1143, 1154, 1, 0},
-	{"mpt", "Control vi prompts", 1155, 1165, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1166, 1168, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1168, 1170, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1170, 1171, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1171, 1172, 1, 0},
-	{"td", "Current text direction context", 1172, 1178, 1, 0},
-	{"pr", "Print register", 1179, 1195, 1, 0},
-	{"fr", "Find register", 1196, 1208, 1, 0},
-	{"rr", "Record register", 1209, 1222, 1, 0},
-	{"lim", "Line length render limit", 1223, 1238, 1, 0},
-	{"seq", "Control Undo/Redo", 1239, 1251, 1, 0},
-	{"left", "Control horizontal scroll", 1252, 1257, 1, 0},
-	{"err", "Control ex errors", 1258, 1270, 1, 0},
+	{"ali", "Print the agent session log entry list", 909, 918, 0, 0},
+	{"auli", "Print the unrated agent session log commands", 919, 925, 0, 0},
+	{"ast", "Print agent status and token usage", 926, 935, 0, 0},
+	{"ath", "Set the agent thinking cap and effort", 936, 949, 0, 0},
+	{"ac", "Set autocomplete filter regex", 950, 958, 0, 0},
+	{"sc", "Set ex special characters", 959, 969, 0, 0},
+	{"sc!", "Set ex special characters", 970, 977, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 978, 985, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 986, 989, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 990, 994, 0, 0},
+	{"ph", "Redefine placeholders", 995, 1011, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1020, 1068, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1069, 1078, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1079, 1086, 1, 0},
+	{"agr", "Control agent output protection", 1087, 1093, 1, 0},
+	{"ar", "Display returned agent reasoning", 1094, 1098, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1099, 1103, 1, 0},
+	{"ai", "Indent new lines", 1104, 1107, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1108, 1109, 1, 0},
+	{"ish", "Interactive shell", 1110, 1125, 1, 0},
+	{"grp", "Regex search group", 1126, 1134, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1135, 1138, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1139, 1140, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1140, 1141, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1141, 1142, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1142, 1143, 1, 0},
+	{"led", "Enable all terminal output", 1143, 1144, 1, 0},
+	{"vis", "Control startup flags", 1145, 1156, 1, 0},
+	{"mpt", "Control vi prompts", 1157, 1167, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1168, 1170, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1170, 1172, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1172, 1173, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1173, 1174, 1, 0},
+	{"td", "Current text direction context", 1174, 1180, 1, 0},
+	{"pr", "Print register", 1181, 1197, 1, 0},
+	{"fr", "Find register", 1198, 1210, 1, 0},
+	{"rr", "Record register", 1211, 1224, 1, 0},
+	{"lim", "Line length render limit", 1225, 1240, 1, 0},
+	{"seq", "Control Undo/Redo", 1241, 1253, 1, 0},
+	{"left", "Control horizontal scroll", 1254, 1259, 1, 0},
+	{"err", "Control ex errors", 1260, 1272, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -11235,10 +11248,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..52feb2967
+index 000000000..e4de55376
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3311 @@
+@@ -0,0 +1,3320 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12318,8 +12331,9 @@ index 000000000..52feb2967
 +	free(moved);
 +}
 +
-+/* Checkpoint status: sizes, the entry list and what is still unrated. */
-+static void agent_cp_status(sbuf *sb)
++/* Session log status: sizes, the entry list and what is still unrated. With
++ * cp it is worded for a checkpoint and asks for the ratings. */
++static void agent_cp_status(sbuf *sb, int cp)
 +{
 +	struct agent_span *spans;
 +	int cnt = agent_spans(&spans);
@@ -12328,18 +12342,23 @@ index 000000000..52feb2967
 +	for (int k = 0; k < cnt; k++)
 +		total += agent_span_tokens(spans + k);
 +	/* Entry sizes only: they stay comparable as anote changes them. */
-+	snprintf(ln, sizeof(ln),
++	snprintf(ln, sizeof(ln), cp ?
 +		"Context checkpoint. Your context is rebuilt from these session log\n"
 +		"entries, about %.0f tokens (role number ~tokens, then [rating] note\n"
-+		"for commands):\n", total);
++		"for commands):\n" :
++		"The session log holds about %.0f tokens in these entries (role number\n"
++		"~tokens, then [rating] note for commands):\n", total);
 +	sbuf_str(sb, ln)
 +	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0);
 +	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 +		sbuf_str(sb, "Unrated: ")
 +		sbuf_str(sb, unrated)
-+		sbuf_str(sb, "\nRate these first: one sentence each on what the command "
-+			"did and found.\nFor example:\n")
-+		sbuf_str(sb, agent_cp_example(unrated))
++		sbuf_chr(sb, '\n')
++		if (cp) {
++			sbuf_str(sb, "Rate these first: one sentence each on what the "
++				"command did and found.\nFor example:\n")
++			sbuf_str(sb, agent_cp_example(unrated))
++		}
 +	}
 +	free(spans);
 +}
@@ -12465,7 +12484,7 @@ index 000000000..52feb2967
 +		agent_log("USER", agent_cp_open);
 +	} else if (!agent_cp_open) {
 +		sbuf_smake(sb, 1024)
-+		agent_cp_status(sb);
++		agent_cp_status(sb, 1);
 +		agent_cp_instructions(sb);
 +		sbuf_nul(sb)
 +		agent_cp_open = sb->s;
@@ -12516,7 +12535,8 @@ index 000000000..52feb2967
 +	agent_output(note);
 +}
 +
-+/* acp prints the instructions, ali the status, auli the unrated commands. */
++/* acp prints the checkpoint instructions, to the agent only during one; ali
++ * the status and auli the unrated commands, of the session log at any time. */
 +static void *ec_acp(char *loc, char *cmd, char *arg)
 +{
 +	static char err[40];
@@ -12524,13 +12544,15 @@ index 000000000..52feb2967
 +		snprintf(err, sizeof(err), "%s takes no range or argument", cmd);
 +		return err;
 +	}
-+	if (!agent_checkpointing)
++	if (cmd[1] == 'c' && agent_tool && !agent_checkpointing)
 +		return "no checkpoint in progress";
++	if (cmd[1] != 'c' && !lbuf_len(tempbufs[3].lb))
++		return "session log is empty";
 +	sbuf_smake(sb, 1024)
 +	if (cmd[1] == 'c')
 +		agent_cp_instructions(sb);
 +	else if (cmd[1] == 'l')
-+		agent_cp_status(sb);
++		agent_cp_status(sb, agent_checkpointing == 1);
 +	else
 +		agent_cp_unrated(sb);
 +	if (agent_capture)	/* exempt from agr, as aout */
@@ -18108,10 +18130,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..5cd2a8e84 100755
+index c836c94c7..800e855a1 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,254 @@ build() {
+@@ -65,6 +65,256 @@ build() {
      }
  }
  
@@ -18255,16 +18277,18 @@ index c836c94c7..5cd2a8e84 100755
 +            spec("acp", "Print the agent checkpoint instructions",
 +                "Prints the commands, rating scale and trimming instructions sent at\n" \
 +                "the start of an acl checkpoint. Takes no range or argument; exempt\n" \
-+                "from agr. Errors outside a checkpoint.")
-+            spec("ali", "Print the agent checkpoint entry list",
-+                "Prints the acl checkpoint status as sent at its start, with current\n" \
-+                "entry sizes, ratings and unrated commands. Takes no range or\n" \
-+                "argument; exempt from agr. Errors outside a checkpoint. The\n" \
++                "from agr. As an agent tool, errors outside a checkpoint.")
++            spec("ali", "Print the agent session log entry list",
++                "Prints the role, number and estimated tokens of every session log\n" \
++                "(b-4) entry with the arate notes of commands, then the largest few\n" \
++                "and the unrated commands. During an acl checkpoint this is the\n" \
++                "status sent at its start, with current sizes and ratings. Takes no\n" \
++                "range or argument; exempt from agr. Errors on an empty log. The\n" \
 +                "checkpoint instructions do not name it; a refused adone does.")
-+            spec("auli", "Print the unrated agent checkpoint entries",
-+                "Prints only the unrated commands of the acl checkpoint entry list,\n" \
-+                "one per line. Takes no range or argument; exempt from agr. Errors\n" \
-+                "outside a checkpoint. Named as ali is.")
++            spec("auli", "Print the unrated agent session log commands",
++                "Prints only the unrated commands of the ali list, one per line.\n" \
++                "Takes no range or argument; exempt from agr. Errors on an empty\n" \
++                "log. Named as ali is.")
 +            spec("ast", "Print agent status and token usage",
 +                "Prints sizes, per-role usage, activity, limits, acl checkpoint and\n" \
 +                "autocompact mode, and the message bytes shared with the previous\n" \
@@ -18366,7 +18390,7 @@ index c836c94c7..5cd2a8e84 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +322,7 @@ install() {
+@@ -74,7 +324,7 @@ install() {
  }
  
  print_usage() {
@@ -18375,7 +18399,7 @@ index c836c94c7..5cd2a8e84 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +330,9 @@ print_usage() {
+@@ -82,6 +332,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -19392,10 +19416,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..2c37e6b80
+index 000000000..fd8c31a71
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1449 @@
+@@ -0,0 +1,1451 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -20305,22 +20329,24 @@ index 000000000..2c37e6b80
 +	"",
 +	"Prints the commands, rating scale and trimming instructions sent at",
 +	"the start of an acl checkpoint. Takes no range or argument; exempt",
-+	"from agr. Errors outside a checkpoint.",
++	"from agr. As an agent tool, errors outside a checkpoint.",
 +	"",
 +	"ali",
-+	"Print the agent checkpoint entry list",
++	"Print the agent session log entry list",
 +	"",
-+	"Prints the acl checkpoint status as sent at its start, with current",
-+	"entry sizes, ratings and unrated commands. Takes no range or",
-+	"argument; exempt from agr. Errors outside a checkpoint. The",
++	"Prints the role, number and estimated tokens of every session log",
++	"(b-4) entry with the arate notes of commands, then the largest few",
++	"and the unrated commands. During an acl checkpoint this is the",
++	"status sent at its start, with current sizes and ratings. Takes no",
++	"range or argument; exempt from agr. Errors on an empty log. The",
 +	"checkpoint instructions do not name it; a refused adone does.",
 +	"",
 +	"auli",
-+	"Print the unrated agent checkpoint entries",
++	"Print the unrated agent session log commands",
 +	"",
-+	"Prints only the unrated commands of the acl checkpoint entry list,",
-+	"one per line. Takes no range or argument; exempt from agr. Errors",
-+	"outside a checkpoint. Named as ali is.",
++	"Prints only the unrated commands of the ali list, one per line.",
++	"Takes no range or argument; exempt from agr. Errors on an empty",
++	"log. Named as ali is.",
 +	"",
 +	"ast",
 +	"Print agent status and token usage",
@@ -20803,47 +20829,47 @@ index 000000000..2c37e6b80
 +	{"adone", "End an agent checkpoint", 880, 888, 0, 0},
 +	{"acheck", "Start an agent checkpoint or set its budget", 889, 901, 0, 0},
 +	{"acp", "Print the agent checkpoint instructions", 902, 908, 0, 0},
-+	{"ali", "Print the agent checkpoint entry list", 909, 916, 0, 0},
-+	{"auli", "Print the unrated agent checkpoint entries", 917, 923, 0, 0},
-+	{"ast", "Print agent status and token usage", 924, 933, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 934, 947, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 948, 956, 0, 0},
-+	{"sc", "Set ex special characters", 957, 967, 0, 0},
-+	{"sc!", "Set ex special characters", 968, 975, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 976, 983, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 984, 987, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 988, 992, 0, 0},
-+	{"ph", "Redefine placeholders", 993, 1009, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1018, 1066, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1067, 1076, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1077, 1084, 1, 0},
-+	{"agr", "Control agent output protection", 1085, 1091, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1092, 1096, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1097, 1101, 1, 0},
-+	{"ai", "Indent new lines", 1102, 1105, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1106, 1107, 1, 0},
-+	{"ish", "Interactive shell", 1108, 1123, 1, 0},
-+	{"grp", "Regex search group", 1124, 1132, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1133, 1136, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1137, 1138, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1138, 1139, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1139, 1140, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1140, 1141, 1, 0},
-+	{"led", "Enable all terminal output", 1141, 1142, 1, 0},
-+	{"vis", "Control startup flags", 1143, 1154, 1, 0},
-+	{"mpt", "Control vi prompts", 1155, 1165, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1166, 1168, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1168, 1170, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1170, 1171, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1171, 1172, 1, 0},
-+	{"td", "Current text direction context", 1172, 1178, 1, 0},
-+	{"pr", "Print register", 1179, 1195, 1, 0},
-+	{"fr", "Find register", 1196, 1208, 1, 0},
-+	{"rr", "Record register", 1209, 1222, 1, 0},
-+	{"lim", "Line length render limit", 1223, 1238, 1, 0},
-+	{"seq", "Control Undo/Redo", 1239, 1251, 1, 0},
-+	{"left", "Control horizontal scroll", 1252, 1257, 1, 0},
-+	{"err", "Control ex errors", 1258, 1270, 1, 0},
++	{"ali", "Print the agent session log entry list", 909, 918, 0, 0},
++	{"auli", "Print the unrated agent session log commands", 919, 925, 0, 0},
++	{"ast", "Print agent status and token usage", 926, 935, 0, 0},
++	{"ath", "Set the agent thinking cap and effort", 936, 949, 0, 0},
++	{"ac", "Set autocomplete filter regex", 950, 958, 0, 0},
++	{"sc", "Set ex special characters", 959, 969, 0, 0},
++	{"sc!", "Set ex special characters", 970, 977, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 978, 985, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 986, 989, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 990, 994, 0, 0},
++	{"ph", "Redefine placeholders", 995, 1011, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1020, 1068, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1069, 1078, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1079, 1086, 1, 0},
++	{"agr", "Control agent output protection", 1087, 1093, 1, 0},
++	{"ar", "Display returned agent reasoning", 1094, 1098, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1099, 1103, 1, 0},
++	{"ai", "Indent new lines", 1104, 1107, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1108, 1109, 1, 0},
++	{"ish", "Interactive shell", 1110, 1125, 1, 0},
++	{"grp", "Regex search group", 1126, 1134, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1135, 1138, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1139, 1140, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1140, 1141, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1141, 1142, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1142, 1143, 1, 0},
++	{"led", "Enable all terminal output", 1143, 1144, 1, 0},
++	{"vis", "Control startup flags", 1145, 1156, 1, 0},
++	{"mpt", "Control vi prompts", 1157, 1167, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1168, 1170, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1170, 1172, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1172, 1173, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1173, 1174, 1, 0},
++	{"td", "Current text direction context", 1174, 1180, 1, 0},
++	{"pr", "Print register", 1181, 1197, 1, 0},
++	{"fr", "Find register", 1198, 1210, 1, 0},
++	{"rr", "Record register", 1211, 1224, 1, 0},
++	{"lim", "Line length render limit", 1225, 1240, 1, 0},
++	{"seq", "Control Undo/Redo", 1241, 1253, 1, 0},
++	{"left", "Control horizontal scroll", 1254, 1259, 1, 0},
++	{"err", "Control ex errors", 1260, 1272, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..823e5b396 100644
