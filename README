@@ -387,26 +387,35 @@ after each response completes, if the server supplies reasoning_content
 or reasoning text.
 
 The new ex command "ast" shows model state, context and settings.
-The new ex command "[N]ath [effort]" sets reasoning effort and an N token
-reasoning cap. No arguments restores request_extra.
+The new ex command "[N]ath [effort]" sets an N token cap on thinking and
+the reasoning effort, one word such as none or high. An omitted part is
+not sent and "ath" alone sends neither, leaving request_extra in charge;
+fields it does send replace those of request_extra.
 The new ex command "apack" to compact the conversation using current agent 
 context.
 The new ex command "apack!" to compact the conversation by starting a
 fresh agent.
-The new ex command "acm" activates caveman mode skill.
+The new ex command "acm" toggles the caveman response style skill.
 
 The new ex option "acl" rebuilds the agent context from the session log,
 so log edits apply to the next request. No argument toggles 0 and 1.
-1 rebuilds every request; reasoning outside the log is dropped.
-N > 1 starts a checkpoint every N tokens of growth, where the agent trims
-the log. N < 0 asks the agent after -N tokens: "acheck" to checkpoint, or
-"acheck N" to defer for N tokens. "aco" may compact first and stays the
-backstop.
+1 rebuilds every request; reasoning outside the log is dropped. A value
+above 1 or below 0 rebuilds only after log edits and when a checkpoint
+ends, keeping replies as returned in between so the prompt cache holds.
+Above 1 a checkpoint runs every N tokens of growth, where the agent
+rates commands and trims the log; only the checkpoint commands run then.
+Negative values leave the checkpoint to the agent: after -N tokens of
+growth it estimates the work left, "acheck" checkpoints and "acheck N"
+defers for N tokens. "aco" may compact first and stays the backstop.
 
 Checkpoint commands:
-"N[,M]arate R text" rates commands 0-3; 0 removes them at checkpoint.
+"N[,M]arate R text" rates commands 0-3; 0 moves them to the
+discarded buffer at checkpoint.
 "N[,M]anote [text]" replaces entries with a note or removes them.
-"acp" prints the entry list; "acp!" prints the instructions.
+"ali" prints the session log entry list with sizes and ratings; "auli"
+prints only the unrated commands; "acp" prints the checkpoint
+instructions.
+"acheck [N]" starts a checkpoint or sets the budget of the next check.
 "adone" ends the checkpoint once all commands are rated.
 The new ex command "N[,M]aget [ROLE...]" prints log entries, trimmed ones
 included, optionally filtered by role.
