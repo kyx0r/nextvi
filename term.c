@@ -277,7 +277,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	struct pollfd fds[3];
 	char buf[512];
 	int ifd = -1, ofd = -1;
-	int nw = 0;
+	int nw = 0, winch = term_winch;
 	char *argv[5];
 	argv[0] = xgetenv(sh);
 	argv[1] = xish ? "-i" : argv[0];
@@ -300,7 +300,13 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	fds[1].events = POLLOUT;
 	fds[2].fd = ibuf ? term_ufd.fd : -1;
 	fds[2].events = POLLIN;
-	while ((fds[0].fd >= 0 || fds[1].fd >= 0) && poll(fds, 3, 200) >= 0) {
+	while (fds[0].fd >= 0 || fds[1].fd >= 0) {
+		if (poll(fds, 3, 200) < 0) {
+			if (winch == term_winch)
+				break;
+			winch = term_winch;
+			continue;
+		}
 		if (fds[0].revents & POLLIN) {
 			int ret = read(fds[0].fd, buf, sizeof(buf));
 			if (ret > 0 && oproc == 2)
@@ -339,7 +345,8 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 		close(ofd);
 	if (fds[1].fd >= 0)
 		close(ifd);
-	waitpid(pid, status, 0);
+	while (waitpid(pid, status, 0) < 0 && winch != term_winch)
+		winch = term_winch;
 	signal(SIGTTOU, SIG_IGN);
 	tcsetpgrp(term_ufd.fd, getpgrp());
 	signal(SIGTTOU, SIG_DFL);
