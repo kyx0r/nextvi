@@ -290,10 +290,10 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 		return NULL;
 	sbuf *sb;
 	sbuf_make(sb, sizeof(buf)+1)
-	if (!ibuf) {
-		signal(SIGINT, SIG_IGN);
+	signal(SIGINT, SIG_IGN);	/* ^C is sent to the foreground group */
+	if (!ibuf)
 		term_done();
-	} else if (ifd >= 0)
+	else if (ifd >= 0)
 		fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) | O_NONBLOCK);
 	fds[0].fd = ofd;
 	fds[0].events = POLLIN;
@@ -335,10 +335,20 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 			fds[1].fd = -1;
 		}
 		if (fds[2].revents & POLLIN) {
+			pid_t fg = tcgetpgrp(fds[2].fd);
+			int own = fg <= 0 || fg == getpgrp();
+			signal(SIGTTOU, SIG_IGN);
+			if (!own)	/* an ish shell took the terminal */
+				tcsetpgrp(fds[2].fd, getpgrp());
 			int ret = read(fds[2].fd, buf, sizeof(buf));
+			if (!own) {
+				tcsetpgrp(fds[2].fd, fg);
+				kill(-fg, SIGCONT);	/* resume fg if it got SIGTTIN */
+			}
+			signal(SIGTTOU, SIG_DFL);
 			for (int i = 0; i < ret; i++)
 				if ((unsigned char) buf[i] == TK_CTL('c'))
-					kill(pid, SIGINT);
+					kill(fg > 0 ? -fg : pid, SIGINT);
 		} else if (fds[2].revents & (POLLERR | POLLHUP | POLLNVAL))
 			fds[2].fd = -1;
 	}
@@ -354,9 +364,9 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	if (!ibuf) {
 		if (term_sbuf)
 			term_init();
-		signal(SIGINT, SIG_DFL);
 	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
 			(win.ws_row != xrows || win.ws_col != xcols))
 		term_winch++;	/* SIGWINCH went to the shell, which owned the tty */
+	signal(SIGINT, SIG_DFL);
 	sbufn_ret(sb, sb)
 }
