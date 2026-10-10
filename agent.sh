@@ -20805,7 +20805,7 @@ index 4893a07e..2641d0ff 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 03aa736f..1d90526f 100644
+index 232afa9a..e9b4a92d 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)

@@ -737,7 +737,7 @@ index 8a133987..645bab79 100644
  			xcid_free();
  		xqprop = 0;
 diff --git a/term.c b/term.c
-index 03aa736f..bc444225 100644
+index 232afa9a..7c68afb8 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,4 +1,6 @@

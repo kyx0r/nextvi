@@ -139,12 +139,12 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 			close\(pipefds1\[1]\);
 		}
 		execvp\(argv\[0], argv\);
-		exit\(1\);
+		_exit\(71\);	/\* EX_OSERR: cannot exec \*/
 	}
 	if \(ifd\)1??0?
 1??+3m 11q0?
 %f> 		execvp\(argv\[0], argv\);
-		exit\(1\);
+		_exit\(71\);	/\* EX_OSERR: cannot exec \*/
 	}
 	if \(ifd\)2??0?
 2??m 1220reg p OK term.c:239:a22sc %? %@2152sc!1q0?
@@ -154,17 +154,17 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 			close\(pipefds1\[1]\);
 		}4??0?
 4??+3m 1220reg p OK term.c:239:a42sc %? %@2152sc!1q0?
-%f> 		exit\(1\);
+%f> 		_exit\(71\);	/\* EX_OSERR: cannot exec \*/
 	}
 	if \(ifd\)5??0?
 5??-1m 1220reg p OK term.c:239:a52sc %? %@2152sc!1q0?
-%f> 	......e.pi....s.\[0]..
-........\(....fd......;
-	..
-...x...p.a.gv\[.].......;
-.........;
-.}
-.i...if..6??0?
+%f> 	..close......d......;
+...cl..e.pi..fds....\).
+..}
+...x........v.0.. ......
+......t....;... .....E.............ec ..
+	.
+	........6??0?
 6??+3m 1220reg p OK term.c:239:a62sc %? %@2152sc!1q0?
 grp 1%f> 			close\(pipefds1\[0]\);.*?
 			close\(pipefds1\[1]\);.*?
@@ -280,7 +280,7 @@ index 8a133987..8e0663ba 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 03aa736f..0706305d 100644
+index 232afa9a..0f2a4239 100644
 --- a/term.c
 +++ b/term.c
 @@ -236,7 +236,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
@@ -292,7 +292,7 @@ index 03aa736f..0706305d 100644
 +			execve(argv[0], argv, xenvp);
 +		else
 +			execvp(argv[0], argv);
- 		exit(1);
+ 		_exit(71);	/* EX_OSERR: cannot exec */
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h

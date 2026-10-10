@@ -780,7 +780,7 @@ index 4116d9c1..0fdb9eb9 100644
  /* specify the screen position of the characters in s */
  ren_state *ren_position(char *s)
 diff --git a/term.c b/term.c
-index 03aa736f..4402a63b 100644
+index 232afa9a..4ddf57d6 100644
 --- a/term.c
 +++ b/term.c
 @@ -176,6 +176,7 @@ int term_read(int winch)

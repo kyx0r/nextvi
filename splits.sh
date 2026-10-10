@@ -4680,7 +4680,7 @@ index 4893a07e..850336e6 100644
  				term_clean();
  			continue;
 diff --git a/term.c b/term.c
-index 03aa736f..df9a62fb 100644
+index 232afa9a..33bb08f0 100644
 --- a/term.c
 +++ b/term.c
 @@ -86,6 +86,20 @@ void term_kill(void)
