@@ -11,6 +11,20 @@ Bug fixes:
    and ,# now apply to the addressed line rather than the next one
    (:5;$c inserts at the end of line 5, :2,#+2 selects lines 2-4).
    Regressed in 6.0.
+3. Fix shell commands under a terminal resize with ish off: SIGWINCH no
+   longer stops vi waiting for the command, which truncated captured
+   output (filters, :r !) and returned from :! while the command was still
+   running.
+4. With ish on, a terminal resize during a filter is no longer missed;
+   the interactive shell owns the terminal and receives SIGWINCH, so vi
+   rechecks the window size afterwards.
+5. ^C during a filter now interrupts the terminal's foreground process
+   group instead of only the shell. It was ignored by shells that fork for
+   -c, such as ksh, and by pipelines such as :%!sleep 5 | cat. With ish on,
+   any keypress during a filter stopped vi with SIGTTIN (tty input); vi now
+   takes the terminal back briefly to read the key.
+6. A shell that cannot be executed exits with status 71 (EX_OSERR)
+   instead of 1, distinguishing it from the command's own failures.
 
 Patch changes:
 1. [agent.sh](https://github.com/kyx0r/nextvi/blob/release/agent.sh):
