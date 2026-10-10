@@ -367,8 +367,8 @@ and edit buffers and run shell commands. Requires curl and a model with
 tool calling support. Configure api_key, endpoint and request_extra in
 conf.c, then rebuild. The default is a local Chat Completions server on
 port 8080. For OpenRouter, set LOCAL to 0 and OPENROUTER to 1, then supply
-the API key and model ID. request_timeout and max_tool_rounds limit requests
-and tool execution.
+the API key and model ID. request_timeout limits requests; max_tool_rounds
+limits tool rounds, 0 (default) is unlimited.
 
 The new ex command "a" opens or resumes the conversation; a range includes
 that buffer text in the prompt. ESC submits a prompt or, while the agent is
@@ -387,16 +387,29 @@ after each response completes, if the server supplies reasoning_content
 or reasoning text.
 
 The new ex command "ast" shows model state, context and settings.
+The new ex command "[N]ath [effort]" sets reasoning effort and an N token
+reasoning cap. No arguments restores request_extra.
 The new ex command "apack" to compact the conversation using current agent 
 context.
 The new ex command "apack!" to compact the conversation by starting a
 fresh agent.
 The new ex command "acm" activates caveman mode skill.
 
-The new ex command "acl" makes the agent rebuild its context from the
-session log before every request, so edits to the log apply to the next
-request. No argument toggles it; 0 disables. Reasoning kept outside the
-log is dropped. With "aco", a compaction ("apack") may run first.
+The new ex option "acl" rebuilds the agent context from the session log,
+so log edits apply to the next request. No argument toggles 0 and 1.
+1 rebuilds every request; reasoning outside the log is dropped.
+N > 1 starts a checkpoint every N tokens of growth, where the agent trims
+the log. N < 0 asks the agent after -N tokens: "acheck" to checkpoint, or
+"acheck N" to defer for N tokens. "aco" may compact first and stays the
+backstop.
+
+Checkpoint commands:
+"N[,M]arate R text" rates commands 0-3; 0 removes them at checkpoint.
+"N[,M]anote [text]" replaces entries with a note or removes them.
+"acp" prints the entry list; "acp!" prints the instructions.
+"adone" ends the checkpoint once all commands are rated.
+The new ex command "N[,M]aget [ROLE...]" prints log entries, trimmed ones
+included, optionally filtered by role.
 
 The new ex option "aco" automatically uses "apack" command once specified
 token threshold has been reached. Default is 85k.
@@ -410,10 +423,11 @@ disables it, and 4096.
 The new ex command "aout" prints the saved output of the last agent tool
 call; a byte range selects part of it and its output is exempt from agr.
 The new ex command "aretry" executes the last command the agent ran or
-deferred by aspec once without the guardrail.
+deferred by aspec, still under agr.
 
-Adds temporary buffers /conversation/ for the conversation and /skills/
-for the system prompt. Both restart commands reload the skills buffer.
+Adds temporary buffers /conversation/, /skills/ (system prompt), /notes/
+(ratings) and /discarded/ (trimmed entries). Both restart commands reload
+skills; "a!" clears notes and discarded.
 These buffers are saved automatically under $HOME/.nextvi/logs, or log_dir
 if set.
 
