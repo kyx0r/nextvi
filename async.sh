@@ -417,55 +417,63 @@ int term_record;1??0?
 4??m 1220reg p OK term.c:1:a42sc %? %@2152sc!fr 98fr 980?
 1;4??!219reg term.c:12sc %? %@2132sc!0?
 ?0?
-%f+ 	sbuf_make\(sb, sizeof\(buf\)\+1\)
+%f+ 	sbuf \*sb;
+	sbuf_make\(sb, sizeof\(buf\)\+1\)
 	signal\(SIGINT, SIG_IGN\);	/\* \^C is sent to the foreground group \*/
 	if \(!ibuf\)
 		term_done\(\);
 	else if \(ifd >= 0\)
 		fcntl\(ifd, F_SETFL, fcntl\(ifd, F_GETFL, 0\) \| O_NONBLOCK\);
-	fds\[0]\.fd = ofd;1??0?
+	fds\[0]\.fd = ofd;
+	fds\[0]\.events = POLLIN;1??0?
 1??+3m 21q0?
-%f+ 		term_done\(\);
+%f+ 	if \(!ibuf\)
+		term_done\(\);
 	else if \(ifd >= 0\)
 		fcntl\(ifd, F_SETFL, fcntl\(ifd, F_GETFL, 0\) \| O_NONBLOCK\);
-	fds\[0]\.fd = ofd;2??0?
-2??m 2220reg p OK term.c:295:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		term_done\(\);$3??0?
-3??m 2220reg p OK term.c:295:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 	sbuf_make\(sb, sizeof\(buf\)\+1\)
-	signal\(SIGINT, SIG_IGN\);	/\* \^C is sent to the foreground group \*/
-	if \(!ibuf\)4??0?
-4??+3m 2220reg p OK term.c:295:a42sc %? %@2152sc!1q0?
-%f+ 	else if \(ifd >= 0\)
-		fcntl\(ifd, F_SETFL, fcntl\(ifd, F_GETFL, 0\) \| O_NONBLOCK\);
-	fds\[0]\.fd = ofd;5??0?
-5??-1m 2220reg p OK term.c:295:a52sc %? %@2152sc!1q0?
-%f+ ...uf_m.k.\(.b..s.z..f\(b.f....
-.s...al\(...I.T,.......N......\^. i...... .........r...o... ..o.p.\*/
-... ..i....
-............\).
-......i..........0\)
-..f..t....d..F............l.i....F...T.....\)........BL.C...
-...s\[0].f........6??0?
-6??+3m 2220reg p OK term.c:295:a62sc %? %@2152sc!1q0?
-grp 1%f+ 	sbuf_make\(sb, sizeof\(buf\)\+1\).*?
+	fds\[0]\.fd = ofd;
+	fds\[0]\.events = POLLIN;2??0?
+2??m 2220reg p OK term.c:294:a22sc %? %@2152sc!1q0?
+%f+ 	if \(!ibuf\)
+		term_done\(\);
+	else if \(ifd >= 0\)3??0?
+3??m 2220reg p OK term.c:294:a32sc %? %@2152sc!1q0?
+%f+ 	sbuf \*sb;
+	sbuf_make\(sb, sizeof\(buf\)\+1\)
+	signal\(SIGINT, SIG_IGN\);	/\* \^C is sent to the foreground group \*/4??0?
+4??+3m 2220reg p OK term.c:294:a42sc %? %@2152sc!1q0?
+%f+ 		fcntl\(ifd, F_SETFL, fcntl\(ifd, F_GETFL, 0\) \| O_NONBLOCK\);
+	fds\[0]\.fd = ofd;
+	fds\[0]\.events = POLLIN;5??0?
+5??-3m 2220reg p OK term.c:294:a52sc %? %@2152sc!1q0?
+%f+ ..... ....
+	..u._.ake...,.............1.
+.........I....,.SI._I...;./.....i.......t..t.. ..r....u......u....
+..f .......
+	....m........
+.e.....f.\(... .=...
+.	.......... F...........t.......F..E.F...0\).. ._.....O.K..
+	f...0]\..d.......
+.fds\[..\....n.... .O.....6??0?
+6??+3m 2220reg p OK term.c:294:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	sbuf \*sb;.*?
+	sbuf_make\(sb, sizeof\(buf\)\+1\).*?
 	signal\(SIGINT, SIG_IGN\);	/\* \^C is sent to the foreground group \*/.*?
-	if \(!ibuf\).*?
-(		term_done\(\);)7??0?
-grp 07??m 2220reg p OK term.c:295:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	if \(pid <= 0\)
-		return NULL;
-	sbuf \*sb;.*(	fds\[0]\.events = POLLIN;)
-	fds\[1]\.fd = ifd;
-	fds\[1]\.events = POLLOUT;8??0?
-grp 08??-4m 2220reg p OK term.c:295:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	argv\[3] = cmd;
-	argv\[4] = NULL;
-	int pid = cmd_make\(argv\+!xish, ibuf \? &ifd : NULL, oproc \? &ofd : NULL\);.*(	fds\[2]\.fd = ibuf \? term_ufd\.fd : -1;)
-	fds\[2]\.events = POLLIN;
-	while \(fds\[0]\.fd >= 0 \|\| fds\[1]\.fd >= 0\) \{9??0?
-grp 09??-7m 2220reg p OK term.c:295:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg term.c:2952sc %? %@2132sc!0?
+(	if \(!ibuf\))7??0?
+grp 07??m 2220reg p OK term.c:294:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	int pid = cmd_make\(argv\+!xish, ibuf \? &ifd : NULL, oproc \? &ofd : NULL\);
+	if \(pid <= 0\)
+		return NULL;.*(	fds\[1]\.fd = ifd;)
+	fds\[1]\.events = POLLOUT;
+	fds\[2]\.fd = ibuf \? term_ufd\.fd : -1;8??0?
+grp 08??-6m 2220reg p OK term.c:294:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	argv\[2] = "-c";
+	argv\[3] = cmd;
+	argv\[4] = NULL;.*(	fds\[2]\.events = POLLIN;)
+	while \(fds\[0]\.fd >= 0 \|\| fds\[1]\.fd >= 0\) \{
+		if \(poll\(fds, 3, -1\) < 0\) \{9??0?
+grp 09??-9m 2220reg p OK term.c:294:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:2942sc %? %@2132sc!0?
 ?0?
 %f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);
 	signal\(SIGTTOU, SIG_DFL\);
@@ -520,11 +528,13 @@ int term_record;1??0?
 '\''1i static int term_susp;		/* nested terminal suspensions of cmd_pipe */
 static pthread_mutex_t term_mtx = PTHREAD_MUTEX_INITIALIZER;
 ??!219reg term.c:1:m12sc %? %@2142sc!0?
-'\''2c 		pthread_mutex_lock(&term_mtx);
+'\''2,#+2c 	if (!ibuf) {
+		pthread_mutex_lock(&term_mtx);
 		if (!term_susp++)
 			term_done();
 		pthread_mutex_unlock(&term_mtx);
-??!219reg term.c:295:m22sc %? %@2142sc!0?
+	} else if (ifd >= 0)
+??!219reg term.c:294:m22sc %? %@2142sc!0?
 '\''3c 		pthread_mutex_lock(&term_mtx);
 		if (!--term_susp && term_sbuf)
 ??!219reg term.c:365:m32sc %? %@2142sc!0?
@@ -572,7 +582,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..9fc634b4 100755
+index c836c94c7..9fc634b41 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -46,7 +46,7 @@ CFLAGS="\
@@ -585,7 +595,7 @@ index c836c94c..9fc634b4 100755
  
  case "$OS" in
 diff --git a/conf.c b/conf.c
-index 2888d7c6..60bc3c41 100644
+index 2888d7c60..60bc3c416 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -298,7 +298,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -598,7 +608,7 @@ index 2888d7c6..60bc3c41 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a133987..645bab79 100644
+index 8a1339874..645bab79a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -57,6 +57,17 @@ static char xgerr[] = "invalid grp";
@@ -749,7 +759,7 @@ index 8a133987..645bab79 100644
  			xcid_free();
  		xqprop = 0;
 diff --git a/term.c b/term.c
-index 4e11ec2f..e09fc81f 100644
+index 4e11ec2f9..3f0ac8dc3 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,4 +1,6 @@
@@ -759,18 +769,22 @@ index 4e11ec2f..e09fc81f 100644
  struct pollfd term_ufd = {STDIN_FILENO, POLLIN};
  sbuf *term_sbuf;
  int term_record;
-@@ -292,7 +294,10 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -291,9 +293,12 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+ 	sbuf *sb;
  	sbuf_make(sb, sizeof(buf)+1)
  	signal(SIGINT, SIG_IGN);	/* ^C is sent to the foreground group */
- 	if (!ibuf)
+-	if (!ibuf)
 -		term_done();
+-	else if (ifd >= 0)
++	if (!ibuf) {
 +		pthread_mutex_lock(&term_mtx);
 +		if (!term_susp++)
 +			term_done();
 +		pthread_mutex_unlock(&term_mtx);
- 	else if (ifd >= 0)
++	} else if (ifd >= 0)
  		fcntl(ifd, F_SETFL, fcntl(ifd, F_GETFL, 0) | O_NONBLOCK);
  	fds[0].fd = ofd;
+ 	fds[0].events = POLLIN;
 @@ -362,8 +367,10 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	tcsetpgrp(term_ufd.fd, getpgrp());
  	signal(SIGTTOU, SIG_DFL);
@@ -784,7 +798,7 @@ index 4e11ec2f..e09fc81f 100644
  			(win.ws_row != xrows || win.ws_col != xcols))
  		term_winch++;	/* SIGWINCH went to the shell, which owned the tty */
 diff --git a/vi.c b/vi.c
-index b1f9a16f..9d62e8c7 100644
+index b1f9a16f1..9d62e8c73 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -8,6 +8,7 @@
