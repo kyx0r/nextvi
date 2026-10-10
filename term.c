@@ -275,6 +275,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 {
 	static char *sh[] = {"$SHELL", "sh", NULL};
 	struct pollfd fds[3];
+	struct winsize win;
 	char buf[512];
 	int ifd = -1, ofd = -1;
 	int nw = 0, winch = term_winch;
@@ -354,6 +355,8 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 		if (term_sbuf)
 			term_init();
 		signal(SIGINT, SIG_DFL);
-	}
+	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
+			(win.ws_row != xrows || win.ws_col != xcols))
+		term_winch++;	/* SIGWINCH went to the shell, which owned the tty */
 	sbufn_ret(sb, sb)
 }
