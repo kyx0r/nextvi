@@ -58,6 +58,8 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 static cJSON *agent_messages;
 static unsigned long agent_epoch, agent_serial;
 static int agent_ready, agent_syncing, agent_child_status;
+static pid_t agent_jobs[16];	/* shells detached by ato, not yet reaped */
+static char agent_jobmsg[512];	/* job notices for the next tool result */
 static int agent_logbuf = 3;
 /* b-4 was edited other than by agent_log since the context was rebuilt. */
 static int agent_logging, agent_log_edited;
@@ -1133,7 +1135,7 @@ static void agent_cp_status(sbuf *sb, int cp)
 		sbuf_str(sb, unrated)
 		sbuf_chr(sb, '\''\n'\'')
 		if (cp) {
-			sbuf_str(sb, "Rate these first: one sentence each on what the "
+			sbuf_str(sb, "Rate these first. Each rating must include a sentence on what the "
 				"command did and found.\nFor example:\n")
 			sbuf_str(sb, agent_cp_example(unrated))
 		}
@@ -1526,6 +1528,67 @@ static void agent_killtree(pid_t pid, int done, pid_t job)
 		kill(-job, SIGKILL);
 }
 
+static void agent_jobnote(char *msg)
+{
+	int n = strlen(agent_jobmsg);
+	snprintf(agent_jobmsg + n, sizeof(agent_jobmsg) - n, "%s\n", msg);
+}
+
+/* A zombie would still answer kill -0. */
+static void agent_reap(void)
+{
+	char msg[64];
+	int st = 0;
+	for (int i = 0; i < LEN(agent_jobs); i++) {
+		if (agent_jobs[i] <= 0 || !waitpid(agent_jobs[i], &st, WNOHANG))
+			continue;
+		snprintf(msg, sizeof(msg), "detached pid %d exited, status %d",
+			(int)agent_jobs[i],
+			WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st));
+		agent_jobnote(msg);
+		agent_jobs[i] = 0;
+	}
+}
+
+/* Leave the command running past ato. Without a reader it would die of
+   SIGPIPE or block, so a cat outside the session copies the pipe to a file. */
+static void agent_detach(int fd, pid_t pid, int done)
+{
+	char path[] = "/tmp/nextvi-job-XXXXXX", msg[160];
+	int ofd, i;
+	pid_t cat;
+	if (fd >= 0) {
+		if ((ofd = mkstemp(path)) < 0) {
+			strcpy(path, "/dev/null");
+			ofd = open(path, O_WRONLY);
+		}
+		if (!(cat = fork())) {
+			if (fork())	/* orphaned, so never a zombie here */
+				_exit(0);
+			setsid();
+			dup2(fd, STDIN_FILENO);
+			dup2(ofd, STDOUT_FILENO);
+			dup2(ofd, STDERR_FILENO);
+			execlp("cat", "cat", (char *)NULL);
+			_exit(127);
+		}
+		while (cat > 0 && waitpid(cat, NULL, 0) < 0 && errno == EINTR)
+			;
+		close(ofd);
+		close(fd);
+	}
+	for (i = 0; !done && i < LEN(agent_jobs); i++) {
+		if (!agent_jobs[i]) {
+			agent_jobs[i] = pid;
+			break;
+		}
+	}
+	snprintf(msg, sizeof(msg), "detached after %d sec: process group %d "
+		"runs in background%s%s", xato, (int)pid,
+		fd >= 0 ? ", later output in " : "", fd >= 0 ? path : "");
+	agent_jobnote(msg);
+}
+
 /* Nonzero limit caps kept output bytes; continue draining the pipe. */
 /* Use file-backed stdin; poll output and terminal together. */
 static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
@@ -1534,8 +1597,10 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 	FILE *in = tmpfile();
 	struct pollfd fds[3];
 	int output[2] = {-1, -1}, error[2] = {-1, -1}, pid, done = 0, st = 0,
-		killed = 0, tidx = http ? 2 : 1, interactive = !http && xish;
+		killed = 0, tidx = http ? 2 : 1, interactive = !http && xish,
+		detached = 0;
 	pid_t job = interactive ? -1 : 0;
+	struct timespec beg, now;
 	void (*old_ttou)(int) = SIG_DFL, (*old_ttin)(int) = SIG_DFL;
 	char buf[4097];
 	sbuf *sb, *eb = NULL;
@@ -1609,7 +1674,16 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 	sbuf_make(sb, 4096)
 	if (http)
 		sbuf_make(eb, 4096)
+	clock_gettime(CLOCK_MONOTONIC, &beg);
 	while (!done || fds[0].fd >= 0 || (http && fds[1].fd >= 0)) {
+		agent_reap();
+		if (!http && xato > 0 && !killed &&
+				!clock_gettime(CLOCK_MONOTONIC, &now) &&
+				now.tv_sec - beg.tv_sec >= xato) {
+			agent_detach(fds[0].fd, pid, done);
+			detached = 1;
+			break;
+		}
 		if ((agent_cancel || (http && agent_pause)) && !killed) {
 			agent_killtree(pid, done, job);
 			for (int i = 0; i < (http ? 2 : 1); i++) {
@@ -1671,6 +1745,8 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 			done = waitpid(pid, &st, WNOHANG) == pid;
 	}
 	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
+	if (detached && !done)
+		*status = 124;	/* unfinished, as timeout(1) reports */
 	if (interactive) {
 		struct winsize win;
 		tcsetpgrp(term_ufd.fd, getpgrp());
@@ -2304,6 +2380,8 @@ static void agent_run_loop(const char *input)
 				sbuf_str(result, err)
 				sbuf_chr(result, '\''\n'\'')
 			}
+			sbuf_str(result, agent_jobmsg)
+			*agent_jobmsg = '\''\0'\'';
 			sbuf_mem(result, out->s, out->s_n)
 			char *safe = agent_safe_text(result->s, result->s_n);
 			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(
@@ -2568,10 +2646,11 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	ex_print(msg, msg_ft)
 	if (max_tool_rounds)
 		snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, "
-			"guardrail %d", max_tool_rounds, request_timeout, xagr);
+			"guardrail %d, detach %d sec", max_tool_rounds,
+			request_timeout, xagr, xato);
 	else
 		snprintf(msg, sizeof(msg), "limits     unlimited rounds, %d sec timeout, "
-			"guardrail %d", request_timeout, xagr);
+			"guardrail %d, detach %d sec", request_timeout, xagr, xato);
 	ex_print(msg, msg_ft)
 	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
 	ex_print(msg, msg_ft)
@@ -7225,6 +7304,12 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Positive value is the tool output limit in bytes; output over it is\n" \
                 "withheld. 0 or negative disables protection. aout views withheld\n" \
                 "output.")
+            spec("ato[0]  Detach long agent shell commands",
+                "No argument toggles between 0 and 30.",
+                "Positive value is the seconds an agent shell command may run in the\n" \
+                "foreground. After that it keeps running in the background; the\n" \
+                "result has status 124, its process group and a file receiving\n" \
+                "later output. A later result reports the exit status. 0 disables.")
             spec("ar[0]  Display returned agent reasoning",
                 "No argument logically inverts the option.",
                 "Nonzero includes returned reasoning in the session log.")
@@ -7332,6 +7417,7 @@ static int request_timeout = 500;
 
 static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
+int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
 int xar;	/* display returned agent reasoning (:ar) */
 int xaco;	/* autocompact input-token threshold; 0 disables */
 int xacl;	/* rebuild agent context from the session log (:acl) */
@@ -7656,7 +7742,7 @@ static struct {
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
-'\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+'\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ato|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 |[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
@@ -8969,6 +9055,7 @@ static int exspec_agent(char *cmd, int ranges)
 '\''20s/\(e/(aspec) EO(e/??!219reg ex.c:1705:m202sc %? %@2142sc!0?
 '\''21c EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
 _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
+_EO(ato, xato = *arg ? MAX(0, eo_val(arg)) : xato ? 0 : 30; return NULL;)
 _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 	agent_acl_mark = agent_acl_budget = 0; return NULL;)
 ??!219reg ex.c:1707:m212sc %? %@2142sc!0?
@@ -9003,6 +9090,7 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 	{"acm", ec_skill},
 	{"ast", ec_ast},
 	{"ath", ec_ath},
+	EO(ato),
 	EO(agr),
 ??!219reg ex.c:1760:m242sc %? %@2142sc!0?
 '\''25i 	EO(ar),
@@ -9498,7 +9586,7 @@ static char *exspec_lines[] = {
 	"Print line(s) from a buffer",
 	"",
 	"No range prints a line based on the value of left ex option.",
-	"Argument prints the evaluated argument.",
+	"Argument is expanded and printed.",
 	"",
 	"Example: utilize character offset ranges",
 	"1,10;5;5p",
@@ -10258,6 +10346,14 @@ static char *exspec_lines[] = {
 	"withheld. 0 or negative disables protection. aout views withheld",
 	"output.",
 	"",
+	"ato[0]  Detach long agent shell commands",
+	"No argument toggles between 0 and 30.",
+	"",
+	"Positive value is the seconds an agent shell command may run in the",
+	"foreground. After that it keeps running in the background; the",
+	"result has status 124, its process group and a file receiving",
+	"later output. A later result reports the exit status. 0 disables.",
+	"",
 	"ar[0]  Display returned agent reasoning",
 	"No argument logically inverts the option.",
 	"",
@@ -10586,32 +10682,33 @@ static struct {
 	{"aco", "Automatically compact using the loaded session log", 1066, 1075, 1, 0},
 	{"aco!", "Automatically compact by browsing the session log", 1076, 1083, 1, 0},
 	{"agr", "Control agent output protection", 1084, 1090, 1, 0},
-	{"ar", "Display returned agent reasoning", 1091, 1095, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1096, 1100, 1, 0},
-	{"ai", "Indent new lines", 1101, 1104, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1105, 1106, 1, 0},
-	{"ish", "Interactive shell", 1107, 1122, 1, 0},
-	{"grp", "Regex search group", 1123, 1131, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1132, 1135, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1136, 1137, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1137, 1138, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1138, 1139, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1139, 1140, 1, 0},
-	{"led", "Enable all terminal output", 1140, 1141, 1, 0},
-	{"vis", "Control startup flags", 1142, 1153, 1, 0},
-	{"mpt", "Control vi prompts", 1154, 1164, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1165, 1167, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1167, 1169, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1169, 1170, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1170, 1171, 1, 0},
-	{"td", "Current text direction context", 1171, 1177, 1, 0},
-	{"pr", "Print register", 1178, 1194, 1, 0},
-	{"fr", "Find register", 1195, 1207, 1, 0},
-	{"rr", "Record register", 1208, 1221, 1, 0},
-	{"lim", "Line length render limit", 1222, 1237, 1, 0},
-	{"seq", "Control Undo/Redo", 1238, 1250, 1, 0},
-	{"left", "Control horizontal scroll", 1251, 1256, 1, 0},
-	{"err", "Control ex errors", 1257, 1269, 1, 0},
+	{"ato", "Detach long agent shell commands", 1091, 1098, 1, 0},
+	{"ar", "Display returned agent reasoning", 1099, 1103, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1104, 1108, 1, 0},
+	{"ai", "Indent new lines", 1109, 1112, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1113, 1114, 1, 0},
+	{"ish", "Interactive shell", 1115, 1130, 1, 0},
+	{"grp", "Regex search group", 1131, 1139, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1140, 1143, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1144, 1145, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1145, 1146, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1146, 1147, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1147, 1148, 1, 0},
+	{"led", "Enable all terminal output", 1148, 1149, 1, 0},
+	{"vis", "Control startup flags", 1150, 1161, 1, 0},
+	{"mpt", "Control vi prompts", 1162, 1172, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1173, 1175, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1175, 1177, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1177, 1178, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1178, 1179, 1, 0},
+	{"td", "Current text direction context", 1179, 1185, 1, 0},
+	{"pr", "Print register", 1186, 1202, 1, 0},
+	{"fr", "Find register", 1203, 1215, 1, 0},
+	{"rr", "Record register", 1216, 1229, 1, 0},
+	{"lim", "Line length render limit", 1230, 1245, 1, 0},
+	{"seq", "Control Undo/Redo", 1246, 1258, 1, 0},
+	{"left", "Control horizontal scroll", 1259, 1264, 1, 0},
+	{"err", "Control ex errors", 1265, 1277, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -11110,6 +11207,7 @@ static int vi_lnnum;		/\* line numbers \*/9??0?
 grp 09??-7m 4220reg p OK vi.c:1831:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:18312sc %? %@2132sc!0?
 '\''1i #include <errno.h>
+#include <time.h>
 #include "cJSON.c"
 ??!219reg vi.c:15:m12sc %? %@2142sc!0?
 '\''2i #include "agent.h"
@@ -11240,10 +11338,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..f6ffac19f
+index 000000000..16b3f1d1e
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3318 @@
+@@ -0,0 +1,3397 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11272,6 +11370,8 @@ index 000000000..f6ffac19f
 +static cJSON *agent_messages;
 +static unsigned long agent_epoch, agent_serial;
 +static int agent_ready, agent_syncing, agent_child_status;
++static pid_t agent_jobs[16];	/* shells detached by ato, not yet reaped */
++static char agent_jobmsg[512];	/* job notices for the next tool result */
 +static int agent_logbuf = 3;
 +/* b-4 was edited other than by agent_log since the context was rebuilt. */
 +static int agent_logging, agent_log_edited;
@@ -12347,7 +12447,7 @@ index 000000000..f6ffac19f
 +		sbuf_str(sb, unrated)
 +		sbuf_chr(sb, '\n')
 +		if (cp) {
-+			sbuf_str(sb, "Rate these first: one sentence each on what the "
++			sbuf_str(sb, "Rate these first. Each rating must include a sentence on what the "
 +				"command did and found.\nFor example:\n")
 +			sbuf_str(sb, agent_cp_example(unrated))
 +		}
@@ -12740,6 +12840,67 @@ index 000000000..f6ffac19f
 +		kill(-job, SIGKILL);
 +}
 +
++static void agent_jobnote(char *msg)
++{
++	int n = strlen(agent_jobmsg);
++	snprintf(agent_jobmsg + n, sizeof(agent_jobmsg) - n, "%s\n", msg);
++}
++
++/* A zombie would still answer kill -0. */
++static void agent_reap(void)
++{
++	char msg[64];
++	int st = 0;
++	for (int i = 0; i < LEN(agent_jobs); i++) {
++		if (agent_jobs[i] <= 0 || !waitpid(agent_jobs[i], &st, WNOHANG))
++			continue;
++		snprintf(msg, sizeof(msg), "detached pid %d exited, status %d",
++			(int)agent_jobs[i],
++			WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st));
++		agent_jobnote(msg);
++		agent_jobs[i] = 0;
++	}
++}
++
++/* Leave the command running past ato. Without a reader it would die of
++   SIGPIPE or block, so a cat outside the session copies the pipe to a file. */
++static void agent_detach(int fd, pid_t pid, int done)
++{
++	char path[] = "/tmp/nextvi-job-XXXXXX", msg[160];
++	int ofd, i;
++	pid_t cat;
++	if (fd >= 0) {
++		if ((ofd = mkstemp(path)) < 0) {
++			strcpy(path, "/dev/null");
++			ofd = open(path, O_WRONLY);
++		}
++		if (!(cat = fork())) {
++			if (fork())	/* orphaned, so never a zombie here */
++				_exit(0);
++			setsid();
++			dup2(fd, STDIN_FILENO);
++			dup2(ofd, STDOUT_FILENO);
++			dup2(ofd, STDERR_FILENO);
++			execlp("cat", "cat", (char *)NULL);
++			_exit(127);
++		}
++		while (cat > 0 && waitpid(cat, NULL, 0) < 0 && errno == EINTR)
++			;
++		close(ofd);
++		close(fd);
++	}
++	for (i = 0; !done && i < LEN(agent_jobs); i++) {
++		if (!agent_jobs[i]) {
++			agent_jobs[i] = pid;
++			break;
++		}
++	}
++	snprintf(msg, sizeof(msg), "detached after %d sec: process group %d "
++		"runs in background%s%s", xato, (int)pid,
++		fd >= 0 ? ", later output in " : "", fd >= 0 ? path : "");
++	agent_jobnote(msg);
++}
++
 +/* Nonzero limit caps kept output bytes; continue draining the pipe. */
 +/* Use file-backed stdin; poll output and terminal together. */
 +static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
@@ -12748,8 +12909,10 @@ index 000000000..f6ffac19f
 +	FILE *in = tmpfile();
 +	struct pollfd fds[3];
 +	int output[2] = {-1, -1}, error[2] = {-1, -1}, pid, done = 0, st = 0,
-+		killed = 0, tidx = http ? 2 : 1, interactive = !http && xish;
++		killed = 0, tidx = http ? 2 : 1, interactive = !http && xish,
++		detached = 0;
 +	pid_t job = interactive ? -1 : 0;
++	struct timespec beg, now;
 +	void (*old_ttou)(int) = SIG_DFL, (*old_ttin)(int) = SIG_DFL;
 +	char buf[4097];
 +	sbuf *sb, *eb = NULL;
@@ -12823,7 +12986,16 @@ index 000000000..f6ffac19f
 +	sbuf_make(sb, 4096)
 +	if (http)
 +		sbuf_make(eb, 4096)
++	clock_gettime(CLOCK_MONOTONIC, &beg);
 +	while (!done || fds[0].fd >= 0 || (http && fds[1].fd >= 0)) {
++		agent_reap();
++		if (!http && xato > 0 && !killed &&
++				!clock_gettime(CLOCK_MONOTONIC, &now) &&
++				now.tv_sec - beg.tv_sec >= xato) {
++			agent_detach(fds[0].fd, pid, done);
++			detached = 1;
++			break;
++		}
 +		if ((agent_cancel || (http && agent_pause)) && !killed) {
 +			agent_killtree(pid, done, job);
 +			for (int i = 0; i < (http ? 2 : 1); i++) {
@@ -12885,6 +13057,8 @@ index 000000000..f6ffac19f
 +			done = waitpid(pid, &st, WNOHANG) == pid;
 +	}
 +	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
++	if (detached && !done)
++		*status = 124;	/* unfinished, as timeout(1) reports */
 +	if (interactive) {
 +		struct winsize win;
 +		tcsetpgrp(term_ufd.fd, getpgrp());
@@ -13518,6 +13692,8 @@ index 000000000..f6ffac19f
 +				sbuf_str(result, err)
 +				sbuf_chr(result, '\n')
 +			}
++			sbuf_str(result, agent_jobmsg)
++			*agent_jobmsg = '\0';
 +			sbuf_mem(result, out->s, out->s_n)
 +			char *safe = agent_safe_text(result->s, result->s_n);
 +			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(
@@ -13782,10 +13958,11 @@ index 000000000..f6ffac19f
 +	ex_print(msg, msg_ft)
 +	if (max_tool_rounds)
 +		snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, "
-+			"guardrail %d", max_tool_rounds, request_timeout, xagr);
++			"guardrail %d, detach %d sec", max_tool_rounds,
++			request_timeout, xagr, xato);
 +	else
 +		snprintf(msg, sizeof(msg), "limits     unlimited rounds, %d sec timeout, "
-+			"guardrail %d", request_timeout, xagr);
++			"guardrail %d, detach %d sec", request_timeout, xagr, xato);
 +	ex_print(msg, msg_ft)
 +	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
 +	ex_print(msg, msg_ft)
@@ -18120,10 +18297,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..677cb19e5 100755
+index c836c94c7..2e14a9686 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,253 @@ build() {
+@@ -65,6 +65,259 @@ build() {
      }
  }
  
@@ -18357,6 +18534,12 @@ index c836c94c7..677cb19e5 100755
 +                "Positive value is the tool output limit in bytes; output over it is\n" \
 +                "withheld. 0 or negative disables protection. aout views withheld\n" \
 +                "output.")
++            spec("ato[0]  Detach long agent shell commands",
++                "No argument toggles between 0 and 30.",
++                "Positive value is the seconds an agent shell command may run in the\n" \
++                "foreground. After that it keeps running in the background; the\n" \
++                "result has status 124, its process group and a file receiving\n" \
++                "later output. A later result reports the exit status. 0 disables.")
 +            spec("ar[0]  Display returned agent reasoning",
 +                "No argument logically inverts the option.",
 +                "Nonzero includes returned reasoning in the session log.")
@@ -18377,7 +18560,7 @@ index c836c94c7..677cb19e5 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +321,7 @@ install() {
+@@ -74,7 +327,7 @@ install() {
  }
  
  print_usage() {
@@ -18386,7 +18569,7 @@ index c836c94c7..677cb19e5 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +329,9 @@ print_usage() {
+@@ -82,6 +335,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -18397,10 +18580,10 @@ index c836c94c7..677cb19e5 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..860c6b6eb 100644
+index 2888d7c60..7c907fa0d 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,347 @@
+@@ -1,5 +1,348 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -18422,6 +18605,7 @@ index 2888d7c60..860c6b6eb 100644
 +
 +static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 +int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
++int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
 +int xar;	/* display returned agent reasoning (:ar) */
 +int xaco;	/* autocompact input-token threshold; 0 disables */
 +int xacl;	/* rebuild agent context from the session log (:acl) */
@@ -18748,19 +18932,19 @@ index 2888d7c60..860c6b6eb 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +639,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +640,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
-+((pac|pr|aco!?|acl|ai|agr|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((pac|pr|aco!?|acl|ai|agr|ato|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..94923d5a9 100644
+index 8a1339874..9fdd1c6f3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -19155,7 +19339,7 @@ index 8a1339874..94923d5a9 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1943,12 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1943,13 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -19165,12 +19349,13 @@ index 8a1339874..94923d5a9 100644
 -EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
 +EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
 +_EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
++_EO(ato, xato = *arg ? MAX(0, eo_val(arg)) : xato ? 0 : 30; return NULL;)
 +_EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 +	agent_acl_mark = agent_acl_budget = 0; return NULL;)
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1974,20 @@ _EO(left,
+@@ -1730,14 +1975,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -19195,7 +19380,7 @@ index 8a1339874..94923d5a9 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2008,33 @@ static struct excmd {
+@@ -1758,8 +2009,34 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -19218,6 +19403,7 @@ index 8a1339874..94923d5a9 100644
 +	{"acm", ec_skill},
 +	{"ast", ec_ast},
 +	{"ath", ec_ath},
++	EO(ato),
 +	EO(agr),
  	EO(ai),
 +	EO(ar),
@@ -19229,7 +19415,7 @@ index 8a1339874..94923d5a9 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2214,66 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2216,66 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -19297,7 +19483,7 @@ index 8a1339874..94923d5a9 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2292,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2294,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -19403,10 +19589,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..59856ffa2
+index 000000000..cb6dfbf44
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1448 @@
+@@ -0,0 +1,1457 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -19740,7 +19926,7 @@ index 000000000..59856ffa2
 +	"Print line(s) from a buffer",
 +	"",
 +	"No range prints a line based on the value of left ex option.",
-+	"Argument prints the evaluated argument.",
++	"Argument is expanded and printed.",
 +	"",
 +	"Example: utilize character offset ranges",
 +	"1,10;5;5p",
@@ -20500,6 +20686,14 @@ index 000000000..59856ffa2
 +	"withheld. 0 or negative disables protection. aout views withheld",
 +	"output.",
 +	"",
++	"ato[0]  Detach long agent shell commands",
++	"No argument toggles between 0 and 30.",
++	"",
++	"Positive value is the seconds an agent shell command may run in the",
++	"foreground. After that it keeps running in the background; the",
++	"result has status 124, its process group and a file receiving",
++	"later output. A later result reports the exit status. 0 disables.",
++	"",
 +	"ar[0]  Display returned agent reasoning",
 +	"No argument logically inverts the option.",
 +	"",
@@ -20828,32 +21022,33 @@ index 000000000..59856ffa2
 +	{"aco", "Automatically compact using the loaded session log", 1066, 1075, 1, 0},
 +	{"aco!", "Automatically compact by browsing the session log", 1076, 1083, 1, 0},
 +	{"agr", "Control agent output protection", 1084, 1090, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1091, 1095, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1096, 1100, 1, 0},
-+	{"ai", "Indent new lines", 1101, 1104, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1105, 1106, 1, 0},
-+	{"ish", "Interactive shell", 1107, 1122, 1, 0},
-+	{"grp", "Regex search group", 1123, 1131, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1132, 1135, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1136, 1137, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1137, 1138, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1138, 1139, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1139, 1140, 1, 0},
-+	{"led", "Enable all terminal output", 1140, 1141, 1, 0},
-+	{"vis", "Control startup flags", 1142, 1153, 1, 0},
-+	{"mpt", "Control vi prompts", 1154, 1164, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1165, 1167, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1167, 1169, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1169, 1170, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1170, 1171, 1, 0},
-+	{"td", "Current text direction context", 1171, 1177, 1, 0},
-+	{"pr", "Print register", 1178, 1194, 1, 0},
-+	{"fr", "Find register", 1195, 1207, 1, 0},
-+	{"rr", "Record register", 1208, 1221, 1, 0},
-+	{"lim", "Line length render limit", 1222, 1237, 1, 0},
-+	{"seq", "Control Undo/Redo", 1238, 1250, 1, 0},
-+	{"left", "Control horizontal scroll", 1251, 1256, 1, 0},
-+	{"err", "Control ex errors", 1257, 1269, 1, 0},
++	{"ato", "Detach long agent shell commands", 1091, 1098, 1, 0},
++	{"ar", "Display returned agent reasoning", 1099, 1103, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1104, 1108, 1, 0},
++	{"ai", "Indent new lines", 1109, 1112, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1113, 1114, 1, 0},
++	{"ish", "Interactive shell", 1115, 1130, 1, 0},
++	{"grp", "Regex search group", 1131, 1139, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1140, 1143, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1144, 1145, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1145, 1146, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1146, 1147, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1147, 1148, 1, 0},
++	{"led", "Enable all terminal output", 1148, 1149, 1, 0},
++	{"vis", "Control startup flags", 1150, 1161, 1, 0},
++	{"mpt", "Control vi prompts", 1162, 1172, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1173, 1175, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1175, 1177, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1177, 1178, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1178, 1179, 1, 0},
++	{"td", "Current text direction context", 1179, 1185, 1, 0},
++	{"pr", "Print register", 1186, 1202, 1, 0},
++	{"fr", "Find register", 1203, 1215, 1, 0},
++	{"rr", "Record register", 1216, 1229, 1, 0},
++	{"lim", "Line length render limit", 1230, 1245, 1, 0},
++	{"seq", "Control Undo/Redo", 1246, 1258, 1, 0},
++	{"left", "Control horizontal scroll", 1259, 1264, 1, 0},
++	{"err", "Control ex errors", 1265, 1277, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..823e5b396 100644
@@ -20975,14 +21170,15 @@ index 4e11ec2f9..4668eda91 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..fdf5c0a31 100644
+index b1f9a16f1..a0a9a3cb4 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -13,9 +13,13 @@
+@@ -13,9 +13,14 @@
  #include <sys/stat.h>
  #include <sys/ioctl.h>
  #include <sys/wait.h>
 +#include <errno.h>
++#include <time.h>
 +#include "cJSON.c"
  #include "vi.h"
  #include "conf.c"
@@ -20992,7 +21188,7 @@ index b1f9a16f1..fdf5c0a31 100644
  #include "lbuf.c"
  #include "led.c"
  #include "regex.c"
-@@ -1829,6 +1833,7 @@ int main(int argc, char *argv[])
+@@ -1829,6 +1834,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
