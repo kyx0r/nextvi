@@ -1135,8 +1135,7 @@ static void agent_cp_status(sbuf *sb, int cp)
 		sbuf_str(sb, unrated)
 		sbuf_chr(sb, '\''\n'\'')
 		if (cp) {
-			sbuf_str(sb, "Rate these first. Each rating must include a sentence on what the "
-				"command did and found.\nFor example:\n")
+			sbuf_str(sb, "Rate these first, e.g.\n")
 			sbuf_str(sb, agent_cp_example(unrated))
 		}
 	}
@@ -1163,30 +1162,25 @@ static void agent_cp_unrated(sbuf *sb)
 }
 
 static const char agent_cp_guide[] =
-	"Until adone, only these ex commands run. Each command is its own ex\n"
-	"tool call; several calls can go in one reply. Commands written as text\n"
-	"do not run. N,M is a range from N through M, not a list.\n"
+	"Only these ex commands run during the checkpoint, so decide from your\n"
+	"context. Each command is its own ex tool call; a reply can hold several\n"
+	"calls. Commands written as text do not run. N,M is a range from N\n"
+	"through M, not a list.\n"
 	"N[,M]arate R sentence\n"
-	"  rate each EX entry from N through M\n"
+	"  rate the EX entries; the sentence says what the command did and\n"
+	"  found; 0 also removes the command and its RESULT\n"
 	"N[,M]anote [text]\n"
-	"  text replaces entries N through M under entry N'\''s role (ASSISTANT\n"
-	"  for EX); no text removes them; a command and its RESULT stay together;\n"
-	"  USER entries in the range stay; the note replaces the last run of\n"
-	"  other entries, under the role of its first entry\n"
+	"  text replaces the entries as one note; no text removes them; USER\n"
+	"  entries stay\n"
 	"adone\n"
-	"  end the checkpoint and resume the task; refused while commands are\n"
-	"  unrated\n"
+	"  apply the trims and resume the task\n"
 	"%s"
-	"Then trim by rating, large entries first: condense 1 to a\n"
-	"short note, condense a large 2 to its findings, keep 3 or condense it\n"
-	"only to its findings.\n"
-	"USER entries cannot be changed. To keep findings,\n"
-	"note them over the entries they came from, e.g.\n"
+	"Then trim by rating, largest entries first: replace 1 with a short\n"
+	"note and a large 2 with its findings; keep 3, or replace a large one\n"
+	"with every detail the task depends on, e.g.\n"
 	"53,59anote findings: ...\n"
-	"Your context shows entries as they were; anote changes apply after\n"
-	"adone. Files and buffers cannot be read now; decide from your context.\n"
-	"Ratings are kept in b-6 for later checkpoints and compaction. This\n"
-	"exchange is not kept in the session log.\n";
+	"This exchange is not kept; ratings show in later checkpoints and\n"
+	"compaction.\n";
 
 static void agent_cp_instructions(sbuf *sb)
 {
@@ -2459,10 +2453,10 @@ static void agent_run_loop(const char *input)
 			char unrated[112], msg[384];
 			if (agent_cp_hold(unrated, sizeof(unrated))) {
 				snprintf(msg, sizeof(msg),
-					"Your reply made no ex tool calls, so nothing ran. Rate "
-					"these before\nthe checkpoint ends: %s\nOne ex tool call "
-					"per command, N[,M]arate R sentence, e.g.\n%s; then "
-					"adone.", unrated, agent_cp_example(unrated));
+					"Nothing ran: your reply made no ex tool calls. Still "
+					"unrated: %s\nSend one ex tool call per command, "
+					"N[,M]arate R sentence, e.g.\n%sThen adone.",
+					unrated, agent_cp_example(unrated));
 				cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 				agent_log("USER", msg);
 				continue;
@@ -11338,10 +11332,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..e92024318
+index 000000000..ac86dbc50
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3397 @@
+@@ -0,0 +1,3391 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12447,8 +12441,7 @@ index 000000000..e92024318
 +		sbuf_str(sb, unrated)
 +		sbuf_chr(sb, '\n')
 +		if (cp) {
-+			sbuf_str(sb, "Rate these first. Each rating must include a sentence on what the "
-+				"command did and found.\nFor example:\n")
++			sbuf_str(sb, "Rate these first, e.g.\n")
 +			sbuf_str(sb, agent_cp_example(unrated))
 +		}
 +	}
@@ -12475,30 +12468,25 @@ index 000000000..e92024318
 +}
 +
 +static const char agent_cp_guide[] =
-+	"Until adone, only these ex commands run. Each command is its own ex\n"
-+	"tool call; several calls can go in one reply. Commands written as text\n"
-+	"do not run. N,M is a range from N through M, not a list.\n"
++	"Only these ex commands run during the checkpoint, so decide from your\n"
++	"context. Each command is its own ex tool call; a reply can hold several\n"
++	"calls. Commands written as text do not run. N,M is a range from N\n"
++	"through M, not a list.\n"
 +	"N[,M]arate R sentence\n"
-+	"  rate each EX entry from N through M\n"
++	"  rate the EX entries; the sentence says what the command did and\n"
++	"  found; 0 also removes the command and its RESULT\n"
 +	"N[,M]anote [text]\n"
-+	"  text replaces entries N through M under entry N's role (ASSISTANT\n"
-+	"  for EX); no text removes them; a command and its RESULT stay together;\n"
-+	"  USER entries in the range stay; the note replaces the last run of\n"
-+	"  other entries, under the role of its first entry\n"
++	"  text replaces the entries as one note; no text removes them; USER\n"
++	"  entries stay\n"
 +	"adone\n"
-+	"  end the checkpoint and resume the task; refused while commands are\n"
-+	"  unrated\n"
++	"  apply the trims and resume the task\n"
 +	"%s"
-+	"Then trim by rating, large entries first: condense 1 to a\n"
-+	"short note, condense a large 2 to its findings, keep 3 or condense it\n"
-+	"only to its findings.\n"
-+	"USER entries cannot be changed. To keep findings,\n"
-+	"note them over the entries they came from, e.g.\n"
++	"Then trim by rating, largest entries first: replace 1 with a short\n"
++	"note and a large 2 with its findings; keep 3, or replace a large one\n"
++	"with every detail the task depends on, e.g.\n"
 +	"53,59anote findings: ...\n"
-+	"Your context shows entries as they were; anote changes apply after\n"
-+	"adone. Files and buffers cannot be read now; decide from your context.\n"
-+	"Ratings are kept in b-6 for later checkpoints and compaction. This\n"
-+	"exchange is not kept in the session log.\n";
++	"This exchange is not kept; ratings show in later checkpoints and\n"
++	"compaction.\n";
 +
 +static void agent_cp_instructions(sbuf *sb)
 +{
@@ -13771,10 +13759,10 @@ index 000000000..e92024318
 +			char unrated[112], msg[384];
 +			if (agent_cp_hold(unrated, sizeof(unrated))) {
 +				snprintf(msg, sizeof(msg),
-+					"Your reply made no ex tool calls, so nothing ran. Rate "
-+					"these before\nthe checkpoint ends: %s\nOne ex tool call "
-+					"per command, N[,M]arate R sentence, e.g.\n%s; then "
-+					"adone.", unrated, agent_cp_example(unrated));
++					"Nothing ran: your reply made no ex tool calls. Still "
++					"unrated: %s\nSend one ex tool call per command, "
++					"N[,M]arate R sentence, e.g.\n%sThen adone.",
++					unrated, agent_cp_example(unrated));
 +				cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 +				agent_log("USER", msg);
 +				continue;
