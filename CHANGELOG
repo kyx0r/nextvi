@@ -46,6 +46,9 @@ Patch changes:
    instead: the agent checkpoints (:acheck) or defers N tokens
    (:acheck N). Ratings live in /notes/, trimmed entries in /discarded/;
    :aget prints entries, trimmed ones included.
+   :ali lists the session log entries with sizes and ratings and :auli
+   only the unrated commands, at any time; :acp prints the checkpoint
+   instructions.
    Added :ath to set reasoning effort and a reasoning token cap.
    max_tool_rounds defaults to 0 (unlimited) instead of 300.
 
