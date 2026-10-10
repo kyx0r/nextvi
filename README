@@ -407,6 +407,8 @@ rates commands and trims the log; only the checkpoint commands run then.
 Negative values leave the checkpoint to the agent: after -N tokens of
 growth it estimates the work left, "acheck" checkpoints and "acheck N"
 defers for N tokens. "aco" may compact first and stays the backstop.
+The new ex command "acheck [N]" starts a checkpoint or sets the budget of
+the next check.
 
 Checkpoint commands:
 "N[,M]arate R text" rates commands 0-3; 0 moves them to the
@@ -415,7 +417,6 @@ discarded buffer at checkpoint.
 "ali" prints the session log entry list with sizes and ratings; "auli"
 prints only the unrated commands; "acp" prints the checkpoint
 instructions.
-"acheck [N]" starts a checkpoint or sets the budget of the next check.
 "adone" ends the checkpoint once all commands are rated.
 The new ex command "N[,M]aget [ROLE...]" prints log entries, trimmed ones
 included, optionally filtered by role.
