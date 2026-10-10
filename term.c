@@ -237,7 +237,7 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
 			close(pipefds1[1]);
 		}
 		execvp(argv[0], argv);
-		exit(1);
+		_exit(71);	/* EX_OSERR: cannot exec */
 	}
 	if (ifd)
 		close(pipefds0[0]);
