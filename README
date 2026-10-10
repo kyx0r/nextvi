@@ -631,7 +631,7 @@ EX COMMANDS
              Print line(s) from a buffer
 
              No range prints a line based on the value of left ex option.
-             Argument prints the evaluated argument.
+             Argument is expanded and printed.
 
              Example: utilize character offset ranges
              :1,10;5;5p
