@@ -1167,7 +1167,7 @@ static const char agent_cp_guide[] =
 	"tool call; several calls can go in one reply. Commands written as text\n"
 	"do not run. N,M is a range from N through M, not a list.\n"
 	"N[,M]arate R sentence\n"
-	"  rate each EX entry from N through M; deferred commands are rated 1\n"
+	"  rate each EX entry from N through M\n"
 	"N[,M]anote [text]\n"
 	"  text replaces entries N through M under entry N'\''s role (ASSISTANT\n"
 	"  for EX); no text removes them; a command and its RESULT stay together;\n"
@@ -1177,10 +1177,10 @@ static const char agent_cp_guide[] =
 	"  end the checkpoint and resume the task; refused while commands are\n"
 	"  unrated\n"
 	"%s"
-	"Then trim by rating, large entries first: remove 0, condense 1 to a\n"
+	"Then trim by rating, large entries first: condense 1 to a\n"
 	"short note, condense a large 2 to its findings, keep 3 or condense it\n"
-	"only to its findings. Do not trim entries under ~50 tokens, but still\n"
-	"rate their commands. USER entries cannot be changed. To keep findings,\n"
+	"only to its findings.\n"
+	"USER entries cannot be changed. To keep findings,\n"
 	"note them over the entries they came from, e.g.\n"
 	"53,59anote findings: ...\n"
 	"Your context shows entries as they were; anote changes apply after\n"
@@ -11338,7 +11338,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..16b3f1d1e
+index 000000000..e92024318
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,3397 @@
@@ -12479,7 +12479,7 @@ index 000000000..16b3f1d1e
 +	"tool call; several calls can go in one reply. Commands written as text\n"
 +	"do not run. N,M is a range from N through M, not a list.\n"
 +	"N[,M]arate R sentence\n"
-+	"  rate each EX entry from N through M; deferred commands are rated 1\n"
++	"  rate each EX entry from N through M\n"
 +	"N[,M]anote [text]\n"
 +	"  text replaces entries N through M under entry N's role (ASSISTANT\n"
 +	"  for EX); no text removes them; a command and its RESULT stay together;\n"
@@ -12489,10 +12489,10 @@ index 000000000..16b3f1d1e
 +	"  end the checkpoint and resume the task; refused while commands are\n"
 +	"  unrated\n"
 +	"%s"
-+	"Then trim by rating, large entries first: remove 0, condense 1 to a\n"
++	"Then trim by rating, large entries first: condense 1 to a\n"
 +	"short note, condense a large 2 to its findings, keep 3 or condense it\n"
-+	"only to its findings. Do not trim entries under ~50 tokens, but still\n"
-+	"rate their commands. USER entries cannot be changed. To keep findings,\n"
++	"only to its findings.\n"
++	"USER entries cannot be changed. To keep findings,\n"
 +	"note them over the entries they came from, e.g.\n"
 +	"53,59anote findings: ...\n"
 +	"Your context shows entries as they were; anote changes apply after\n"
