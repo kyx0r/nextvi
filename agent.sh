@@ -1201,15 +1201,18 @@ static void agent_cp_instructions(sbuf *sb)
  * choice between a checkpoint now and more tokens. */
 static char *agent_budget_open(void)
 {
-	char *s = emalloc(256);
+	char *s = emalloc(512);
 	int k = sprintf(s, "Stop working on the current task and answer this "
 		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
 	if (xaco)
 		k += sprintf(s + k, "/%d", xaco);
-	strcpy(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
+	k += sprintf(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
 		"the session log or acheck N to defer it for N tokens." :
 		" tokens. Estimate and set the number of tokens the rest of this "
 		"task needs with acheck N command.");
+	if (xaco)
+		sprintf(s + k, "\nAn N reaching past %d runs the task until "
+			"compaction.", xaco);
 	return s;
 }
 
@@ -11674,10 +11677,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..c98362e1a
+index 000000000..33c8d296f
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3595 @@
+@@ -0,0 +1,3598 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12849,15 +12852,18 @@ index 000000000..c98362e1a
 + * choice between a checkpoint now and more tokens. */
 +static char *agent_budget_open(void)
 +{
-+	char *s = emalloc(256);
++	char *s = emalloc(512);
 +	int k = sprintf(s, "Stop working on the current task and answer this "
 +		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
 +	if (xaco)
 +		k += sprintf(s + k, "/%d", xaco);
-+	strcpy(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
++	k += sprintf(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
 +		"the session log or acheck N to defer it for N tokens." :
 +		" tokens. Estimate and set the number of tokens the rest of this "
 +		"task needs with acheck N command.");
++	if (xaco)
++		sprintf(s + k, "\nAn N reaching past %d runs the task until "
++			"compaction.", xaco);
 +	return s;
 +}
 +
