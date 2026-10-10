@@ -37,9 +37,17 @@ Patch changes:
    default; 0 disables it) and :aout to retrieve saved tool output, with
    optional byte ranges and no output guardrail.
    Extended :aretry to replay either the last executed command
-   or one deferred by aspec, bypassing the guardrail once.
+   or one deferred by aspec, still under the guardrail.
    Compaction retries when the agent returns without updating the session
    log, rather than accepting an unchanged log as a completed summary.
+   acl above 1 runs a checkpoint every N tokens of growth, where the agent
+   rates commands (:arate, 0-3) and condenses or removes log entries
+   (:anote); rating 0 trims at once. acl below 0 runs a budget check
+   instead: the agent checkpoints (:acheck) or defers N tokens
+   (:acheck N). Ratings live in /notes/, trimmed entries in /discarded/;
+   :aget prints entries, trimmed ones included.
+   Added :ath to set reasoning effort and a reasoning token cap.
+   max_tool_rounds defaults to 0 (unlimited) instead of 300.
 
 ------------------
 7.8 Basilisk
