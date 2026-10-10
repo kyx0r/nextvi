@@ -7388,7 +7388,7 @@ static char exspec_agent_p[] =
 	"Print line(s) from a buffer\n"
 	"\n"
 	"No range prints a line based on the value of left ex option.\n"
-	"Argument prints the evaluated argument.\n"
+	"Argument is printed.\n"
 	"\n"
 	"Example: utilize character offset ranges\n"
 	"1,10;5;5p\n"
@@ -18397,7 +18397,7 @@ index c836c94c7..677cb19e5 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..af8b1335f 100644
+index 2888d7c60..860c6b6eb 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,347 @@
@@ -18478,7 +18478,7 @@ index 2888d7c60..af8b1335f 100644
 +	"Print line(s) from a buffer\n"
 +	"\n"
 +	"No range prints a line based on the value of left ex option.\n"
-+	"Argument prints the evaluated argument.\n"
++	"Argument is printed.\n"
 +	"\n"
 +	"Example: utilize character offset ranges\n"
 +	"1,10;5;5p\n"
