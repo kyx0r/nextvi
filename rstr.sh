@@ -2210,7 +2210,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 8a1339874..9eb6a7af9 100644
+index 8a133987..9eb6a7af 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -37,7 +37,7 @@ int xsep = ':';			/* ex command separator */
@@ -2444,7 +2444,7 @@ index 8a1339874..9eb6a7af9 100644
  	return NULL;
  }
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c63..853b0e3d4 100644
+index 56cb42c6..853b0e3d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -499,11 +499,11 @@ int lbuf_findchar(struct lbuf *lb, char *cs, int cmd, int n, int *row, int *off)
@@ -2471,7 +2471,7 @@ index 56cb42c63..853b0e3d4 100644
  			g1 = offs[xgrp], g2 = offs[xgrp + 1];
  			if (g1 < 0) {
 diff --git a/regex.c b/regex.c
-index fd22467f0..33f6b6fa5 100644
+index fd22467f..33f6b6fa 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -772,3 +772,146 @@ int rset_match(rset *rs, char *s, int flg)
@@ -2622,7 +2622,7 @@ index fd22467f0..33f6b6fa5 100644
 +	free(rs);
 +}
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..1a25559bf 100644
+index b1f9a16f..1a25559b 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -280,7 +280,7 @@ static int vi_search(int cmd, int cnt, int *row, int *off, int msg)
@@ -2653,7 +2653,7 @@ index b1f9a16f1..1a25559bf 100644
  					sbuf_chr(sb, '\n')
  				}
 diff --git a/vi.h b/vi.h
-index c23da5950..838343f87 100644
+index c23da595..838343f8 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -153,11 +153,23 @@ typedef struct {

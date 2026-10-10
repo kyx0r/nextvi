@@ -214,7 +214,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 8a1339874..d5ab3d2c5 100644
+index 8a133987..d5ab3d2c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1987,6 +1987,22 @@ void ex(void)
@@ -241,7 +241,7 @@ index 8a1339874..d5ab3d2c5 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 4893a07e5..a1f94c563 100644
+index 4893a07e..a1f94c56 100644
 --- a/led.c
 +++ b/led.c
 @@ -803,3 +803,10 @@ void led_done(void)
@@ -256,7 +256,7 @@ index 4893a07e5..a1f94c563 100644
 +		sbuf_free(extsb)
 +}
 diff --git a/regex.c b/regex.c
-index fd22467f0..af32603ae 100644
+index fd22467f..af32603a 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -665,6 +665,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
@@ -268,7 +268,7 @@ index fd22467f0..af32603ae 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index 4116d9c18..0abb78846 100644
+index 4116d9c1..0abb7884 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -88,6 +88,19 @@ static int ren_cwid(char *s, int pos)
@@ -304,7 +304,7 @@ index 4116d9c18..0abb78846 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..b29622b0c 100644
+index b1f9a16f..b29622b0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1863,6 +1863,11 @@ int main(int argc, char *argv[])

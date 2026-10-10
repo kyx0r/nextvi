@@ -1093,7 +1093,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..13b7bf2bd 100644
+index 2888d7c6..13b7bf2b 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -2,6 +2,10 @@
@@ -1274,7 +1274,7 @@ index 2888d7c60..13b7bf2bd 100644
  
  /* how to highlight text in the reverse direction */
 diff --git a/ex.c b/ex.c
-index 8a1339874..e3087a1c8 100644
+index 8a133987..e3087a1c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1318,6 +1318,170 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
@@ -1458,7 +1458,7 @@ index 8a1339874..e3087a1c8 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..a336791a8 100644
+index b1f9a16f..a336791a 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1085,6 +1085,68 @@ static int vc_replace(void)
@@ -1550,7 +1550,7 @@ index b1f9a16f1..a336791a8 100644
  		term_commit();
  		xb->useq += xseq;
 diff --git a/vi.h b/vi.h
-index c23da5950..c22ad8e69 100644
+index c23da595..c22ad8e6 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -609,6 +609,13 @@ extern struct placeholder _ph[];

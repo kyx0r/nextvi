@@ -505,7 +505,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/led.c b/led.c
-index 4893a07e5..e6832d98c 100644
+index 4893a07e..e6832d98 100644
 --- a/led.c
 +++ b/led.c
 @@ -2,25 +2,30 @@ static sbuf *suggestsb;

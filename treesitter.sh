@@ -4282,7 +4282,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..768517891 100755
+index c836c94c..76851789 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -56,10 +56,37 @@ case "$OS" in
@@ -4343,7 +4343,7 @@ index c836c94c7..768517891 100755
          pgobuild || {
              log "$R" "Failed during step: \"Build \"${BASE##*/}\" using \"$CC\" and PGO\""
 diff --git a/conf.c b/conf.c
-index 2888d7c60..8f6237ef2 100644
+index 2888d7c6..8f6237ef 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -377,3 +377,41 @@ char *conf_digraph(int c1, int c2)
@@ -4389,7 +4389,7 @@ index 2888d7c60..8f6237ef2 100644
 +	{"comment", BL | SYN_IT},
 +};
 diff --git a/ex.c b/ex.c
-index 8a1339874..28db15485 100644
+index 8a133987..28db1548 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -2,7 +2,7 @@ int xleft;			/* the first visible column */
@@ -4402,7 +4402,7 @@ index 8a1339874..28db15485 100644
  int xhlw;			/* highlight current word */
  int xhlp;			/* highlight {}[]() pair */
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c63..6c3254146 100644
+index 56cb42c6..6c325414 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -86,6 +86,7 @@ int lbuf_jump(struct lbuf *lb, int mk, int *pos, int *off)
@@ -4422,7 +4422,7 @@ index 56cb42c63..6c3254146 100644
  		int nsz = lb->ln_n + n_ins - n_del + 512;
  		char **nln = emalloc(nsz * sizeof(lb->ln[0]));
 diff --git a/led.c b/led.c
-index 4893a07e5..d1942f649 100644
+index 4893a07e..d1942f64 100644
 --- a/led.c
 +++ b/led.c
 @@ -189,6 +189,7 @@ void led_extcut(void)
@@ -4533,7 +4533,7 @@ index 4893a07e5..d1942f649 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/ren.c b/ren.c
-index 4116d9c18..6e3cb895e 100644
+index 4116d9c1..6e3cb895 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -266,6 +266,11 @@ static int syn_initft(int fti, int n, char *name, int flg)
@@ -4559,7 +4559,7 @@ index 4116d9c18..6e3cb895e 100644
  				iatt = &catt[i + 1];
 diff --git a/treesitter.c b/treesitter.c
 new file mode 100644
-index 000000000..f012a08dc
+index 00000000..f012a08d
 --- /dev/null
 +++ b/treesitter.c
 @@ -0,0 +1,504 @@
@@ -5068,7 +5068,7 @@ index 000000000..f012a08dc
 +	}
 +}
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..d99e6c69f 100644
+index b1f9a16f..d99e6c69 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -5177,7 +5177,7 @@ index b1f9a16f1..d99e6c69f 100644
  	if (xvis & 8)
  		term_scrl()
 diff --git a/vi.h b/vi.h
-index c23da5950..d409ae33e 100644
+index c23da595..d409ae33 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -176,7 +176,10 @@ struct linfo {

@@ -835,7 +835,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..129d1629a 100644
+index 2888d7c6..129d1629 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -297,7 +297,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -848,7 +848,7 @@ index 2888d7c60..129d1629a 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..2ee1f5d77 100644
+index 8a133987..2ee1f5d7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -879,7 +879,7 @@ index 8a1339874..2ee1f5d77 100644
  	{"m", ec_mark},
  	{"q!", ec_quit},
 diff --git a/led.c b/led.c
-index 4893a07e5..be5f6387a 100644
+index 4893a07e..be5f6387 100644
 --- a/led.c
 +++ b/led.c
 @@ -91,6 +91,14 @@ int led_pos(char *s, int pos)
@@ -927,7 +927,7 @@ index 4893a07e5..be5f6387a 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 34318202a..4231bf39a 100644
+index 4e11ec2f..1716b30f 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,18 @@
@@ -1054,7 +1054,7 @@ index 34318202a..4231bf39a 100644
  {
  	int cw;
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..76bf793d8 100644
+index b1f9a16f..76bf793d 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -475,6 +475,9 @@ static void vc_status(int type)
@@ -1100,7 +1100,7 @@ index b1f9a16f1..76bf793d8 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index c23da5950..9fa3b21db 100644
+index c23da595..9fa3b21d 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -374,6 +374,9 @@ void term_pos(int r, int c);

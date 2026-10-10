@@ -1589,7 +1589,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..3d160ca67 100644
+index 2888d7c6..3d160ca6 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -297,8 +297,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -1604,7 +1604,7 @@ index 2888d7c60..3d160ca67 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..4c69613b4 100644
+index 8a133987..4c69613b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -1706,7 +1706,7 @@ index 8a1339874..4c69613b4 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c63..fa2ba9408 100644
+index 56cb42c6..fa2ba940 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -1,3 +1,5 @@
@@ -1886,7 +1886,7 @@ index 56cb42c63..fa2ba9408 100644
  	*row = lo->pos;
  	*off = MAX(0, lo->pos_off);
 diff --git a/ren.c b/ren.c
-index 4116d9c18..dde17c64d 100644
+index 4116d9c1..dde17c64 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -72,7 +72,7 @@ void dir_init(void)
@@ -1899,7 +1899,7 @@ index 4116d9c18..dde17c64d 100644
  	if (s[0] == '\t')
  		return xts ? xts - (pos % xts) : 0;
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..e1cc3dcba 100644
+index b1f9a16f..e1cc3dcb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -83,6 +83,8 @@ for (i = 0, ret = 0;; i++) { \
@@ -1970,7 +1970,7 @@ index b1f9a16f1..e1cc3dcba 100644
  		ln = lbuf_get(xb, xrow);
  		xoff = ren_noeol(ln, xoff);
 diff --git a/vi.h b/vi.h
-index c23da5950..66c6b0d7a 100644
+index c23da595..66c6b0d7 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -171,10 +171,12 @@ struct lopt {

@@ -95,7 +95,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/kmap.h b/kmap.h
-index d025f5f10..e549d13ba 100644
+index d025f5f1..e549d13b 100644
 --- a/kmap.h
 +++ b/kmap.h
 @@ -1,5 +1,13 @@
@@ -113,7 +113,7 @@ index d025f5f10..e549d13ba 100644
  
  static char *kmap_fa[256] = {
 diff --git a/term.c b/term.c
-index 34318202a..9e4c6a9ec 100644
+index 4e11ec2f..7d4f3994 100644
 --- a/term.c
 +++ b/term.c
 @@ -172,6 +172,8 @@ int term_read(int winch)

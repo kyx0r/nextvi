@@ -385,7 +385,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..9f5eef939 100644
+index 2888d7c6..9f5eef93 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -299,7 +299,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -398,7 +398,7 @@ index 2888d7c60..9f5eef939 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..776b533fd 100644
+index 8a133987..776b533f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -454,7 +454,7 @@ index 8a1339874..776b533fd 100644
  	{"r", ec_read},
  	{"wq!", ec_write},
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..08db01e09 100644
+index b1f9a16f..08db01e0 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1843,11 +1843,13 @@ int main(int argc, char *argv[])
@@ -473,7 +473,7 @@ index b1f9a16f1..08db01e09 100644
  			}
  		}
 diff --git a/vi.h b/vi.h
-index c23da5950..daa2233f7 100644
+index c23da595..daa2233f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -475,6 +475,7 @@ struct buf {

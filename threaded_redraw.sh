@@ -750,7 +750,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..a6ec99a2a 100755
+index c836c94c..a6ec99a2 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -43,6 +43,7 @@ run() {
@@ -762,7 +762,7 @@ index c836c94c7..a6ec99a2a 100755
  -Wno-unused-parameter \
  -Wno-unused-result \
 diff --git a/ren.c b/ren.c
-index 4116d9c18..0fdb9eb96 100644
+index 4116d9c1..0fdb9eb9 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -85,10 +85,10 @@ static int ren_cwid(char *s, int pos)
@@ -780,7 +780,7 @@ index 4116d9c18..0fdb9eb96 100644
  /* specify the screen position of the characters in s */
  ren_state *ren_position(char *s)
 diff --git a/term.c b/term.c
-index 34318202a..aff69f491 100644
+index 4e11ec2f..1a5e4a01 100644
 --- a/term.c
 +++ b/term.c
 @@ -176,6 +176,7 @@ int term_read(int winch)
@@ -792,7 +792,7 @@ index 34318202a..aff69f491 100644
  		ticmd[ticmd_pos++] = tibuf[tibuf_pos];
  	return tibuf[tibuf_pos++];
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..79cf510fe 100644
+index b1f9a16f..79cf510f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,6 +13,8 @@
@@ -982,7 +982,7 @@ index b1f9a16f1..79cf510fe 100644
  
  static void sighandler(int signo)
 diff --git a/vi.h b/vi.h
-index c23da5950..22f5d632e 100644
+index c23da595..22f5d632 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -250,7 +250,7 @@ typedef struct {

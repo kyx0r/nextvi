@@ -736,7 +736,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..8b188e976 100644
+index 2888d7c6..8b188e97 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -332,6 +332,12 @@ const int hloptslen = LEN(hlopts);
@@ -753,7 +753,7 @@ index 2888d7c60..8b188e976 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index 4893a07e5..993365051 100644
+index 4893a07e..99336505 100644
 --- a/led.c
 +++ b/led.c
 @@ -505,6 +505,11 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -777,7 +777,7 @@ index 4893a07e5..993365051 100644
  				sbuf_str(sb, cs)
  		}
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..08321f2e0 100644
+index b1f9a16f..08321f2e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -262,13 +262,130 @@ static int vi_col2off(struct lbuf *lb, int row, int col)
@@ -924,7 +924,7 @@ index b1f9a16f1..08321f2e0 100644
  				msg ? dir : -1, 1, row, off)) {
  			if (msg) {
 diff --git a/vi.h b/vi.h
-index c23da5950..584f526ff 100644
+index c23da595..584f526f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -609,6 +609,8 @@ extern struct placeholder _ph[];

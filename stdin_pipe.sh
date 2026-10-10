@@ -257,16 +257,16 @@ unsigned int tibuf_pos, tibuf_cnt, tibuf_sz = 128, ticmd_pos;.*?
 grp 07??m 1220reg p OK term.c:9:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> int term_record;
 int term_winch;
-int term_resized;.*(	struct winsize win;)
-	struct termios newtermios;
-	char \*s;8??0?
-grp 08??-5m 1220reg p OK term.c:9:a82sc %? %@2152sc!'\''08??1q0?
+int term_resized;.*(	struct termios newtermios;)
+	char \*s;
+	term_winch = 0;8??0?
+grp 08??-6m 1220reg p OK term.c:9:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static struct termios termios;
 struct pollfd term_ufd = \{STDIN_FILENO, POLLIN};
-sbuf \*term_sbuf;.*(	term_winch = 0;)
-	term_resized\+\+;
-	sbuf_make\(term_sbuf, 2048\)9??0?
-grp 09??-8m 1220reg p OK term.c:9:a92sc %? %@2152sc!'\''00?
+sbuf \*term_sbuf;.*(	term_resized\+\+;)
+	sbuf_make\(term_sbuf, 2048\)
+	tcgetattr\(term_ufd\.fd, &termios\);9??0?
+grp 09??-9m 1220reg p OK term.c:9:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg term.c:92sc %? %@2132sc!0?
 ?0?
 %f+ 	sbuf_make\(term_sbuf, 2048\)
@@ -451,7 +451,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 8a1339874..52482c74d 100644
+index 8a133987..52482c74 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -419,7 +419,9 @@ int ex_edit(const char *path, int len)
@@ -515,7 +515,7 @@ index 8a1339874..52482c74d 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 34318202a..5f93715bd 100644
+index 4e11ec2f..852d0fda 100644
 --- a/term.c
 +++ b/term.c
 @@ -7,6 +7,7 @@ int term_resized;
@@ -547,7 +547,7 @@ index 34318202a..5f93715bd 100644
  
  void term_done(void)
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..322ccacc1 100644
+index b1f9a16f..322ccacc 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1818,6 +1818,7 @@ static void setup_signals(void)

@@ -303,7 +303,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..fa7a3ab2c 100644
+index 2888d7c6..fa7a3ab2 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -332,6 +332,10 @@ const int hloptslen = LEN(hlopts);
@@ -318,7 +318,7 @@ index 2888d7c60..fa7a3ab2c 100644
  #define CR2L		"ء-يپچژکگی‌-‍؛،»«؟ً-ْٔ"
  /* neutral characters */
 diff --git a/led.c b/led.c
-index 4893a07e5..978b4b8ea 100644
+index 4893a07e..978b4b8e 100644
 --- a/led.c
 +++ b/led.c
 @@ -585,9 +585,13 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -368,7 +368,7 @@ index 4893a07e5..978b4b8ea 100644
  			if (!xled) {
  				xoff = uc_slen(sb->s+ps);
 diff --git a/vi.h b/vi.h
-index c23da5950..25798d7f8 100644
+index c23da595..25798d7f 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -609,6 +609,8 @@ extern struct placeholder _ph[];

@@ -571,7 +571,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..a577a8984 100644
+index 2888d7c6..a577a898 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -298,7 +298,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -584,7 +584,7 @@ index 2888d7c60..a577a8984 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..102d80542 100644
+index 8a133987..102d8054 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1730,6 +1730,54 @@ _EO(left,
@@ -652,7 +652,7 @@ index 8a1339874..102d80542 100644
  	{"q!", ec_quit},
 diff --git a/modal.c b/modal.c
 new file mode 100644
-index 000000000..dbaed0bf8
+index 00000000..dbaed0bf
 --- /dev/null
 +++ b/modal.c
 @@ -0,0 +1,336 @@
@@ -994,7 +994,7 @@ index 000000000..dbaed0bf8
 +}
 diff --git a/test b/test
 new file mode 100644
-index 000000000..683c8fe69
+index 00000000..683c8fe6
 --- /dev/null
 +++ b/test
 @@ -0,0 +1,5 @@
@@ -1004,7 +1004,7 @@ index 000000000..683c8fe69
 +(out (3 + 9 - 5 + 23 / 10))
 +(out (asd3+9))
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..4e189fdb4 100644
+index b1f9a16f..4e189fdb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -15,6 +15,7 @@

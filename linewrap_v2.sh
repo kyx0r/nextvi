@@ -7122,7 +7122,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..3d160ca67 100644
+index 2888d7c6..3d160ca6 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -297,8 +297,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -7137,7 +7137,7 @@ index 2888d7c60..3d160ca67 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..9f4cbb1a0 100644
+index 8a133987..9f4cbb1a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -18,6 +18,8 @@ int xpac;			/* print autocomplete options */
@@ -7223,7 +7223,7 @@ index 8a1339874..9f4cbb1a0 100644
  	{"", ec_print}, /* do not remove */
  	{"", ec_print}, /* do not remove */
 diff --git a/led.c b/led.c
-index 4893a07e5..7b7846ffd 100644
+index 4893a07e..7b7846ff 100644
 --- a/led.c
 +++ b/led.c
 @@ -348,6 +348,11 @@ static int led_lastword(char *s)
@@ -7380,7 +7380,7 @@ index 4893a07e5..7b7846ffd 100644
  		n = ps;
  		ps = sb->s_n;
 diff --git a/ren.c b/ren.c
-index 4116d9c18..3ee3a07fd 100644
+index 4116d9c1..3ee3a07f 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -85,6 +85,13 @@ static int ren_cwid(char *s, int pos)
@@ -7407,7 +7407,7 @@ index 4116d9c18..3ee3a07fd 100644
  		for (n = 0; n < max && (l = uc_len(ss)); n++)
  			ss += l;
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..618596af1 100644
+index b1f9a16f..618596af 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -66,6 +66,195 @@ static int vi_nextcol(char *ln, int dir, int *off)
@@ -8231,7 +8231,7 @@ index b1f9a16f1..618596af1 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index c23da5950..b10206023 100644
+index c23da595..b1020602 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -265,6 +265,7 @@ int ren_pos(char *s, int off);

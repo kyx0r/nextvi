@@ -1041,7 +1041,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..05cebec43 100644
+index 2888d7c6..05cebec4 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -297,7 +297,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -1054,7 +1054,7 @@ index 2888d7c60..05cebec43 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..e3908e9f0 100644
+index 8a133987..e3908e9f 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -15,6 +15,7 @@ int xts = 8;			/* number of spaces for tab */
@@ -1083,7 +1083,7 @@ index 8a1339874..e3908e9f0 100644
  	EO(hll),
  	EO(hlw),
 diff --git a/led.c b/led.c
-index 4893a07e5..fa76e104c 100644
+index 4893a07e..fa76e104 100644
 --- a/led.c
 +++ b/led.c
 @@ -1,5 +1,6 @@
@@ -1260,7 +1260,7 @@ index 4893a07e5..fa76e104c 100644
 +	}
  }
 diff --git a/vi.h b/vi.h
-index c23da5950..18b3682e4 100644
+index c23da595..18b3682e 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -494,6 +494,7 @@ extern int xts;

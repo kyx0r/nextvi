@@ -211,7 +211,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..a0dddb72a 100644
+index 2888d7c6..a0dddb72 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -299,7 +299,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -224,7 +224,7 @@ index 2888d7c60..a0dddb72a 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..893853dd2 100644
+index 8a133987..893853dd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1671,6 +1671,67 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)

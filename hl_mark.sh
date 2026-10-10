@@ -226,7 +226,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c60..b57abd3be 100644
+index 2888d7c6..b57abd3b 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -297,7 +297,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -239,7 +239,7 @@ index 2888d7c60..b57abd3be 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..2d0245d80 100644
+index 8a133987..2d0245d8 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -7,6 +7,7 @@ int xhll;			/* highlight current line */
@@ -267,7 +267,7 @@ index 8a1339874..2d0245d80 100644
  	EO(hlw),
  	EO(hlp),
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..5f023503f 100644
+index b1f9a16f..5f023503 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1739,6 +1739,22 @@ void vi(int init)
