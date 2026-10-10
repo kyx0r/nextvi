@@ -1194,8 +1194,9 @@ static void agent_cp_instructions(sbuf *sb)
  * choice between a checkpoint now and more tokens. */
 static char *agent_budget_open(void)
 {
-	char *s = emalloc(192);
-	int k = sprintf(s, "~%.0f", agent_tokens_at(agent_cp_bytes));
+	char *s = emalloc(256);
+	int k = sprintf(s, "Stop working on the current task and answer this "
+		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
 	if (xaco)
 		k += sprintf(s + k, "/%d", xaco);
 	strcpy(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
@@ -11448,10 +11449,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..ac86dbc50
+index 000000000..ed7cd16c6
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3391 @@
+@@ -0,0 +1,3392 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12616,8 +12617,9 @@ index 000000000..ac86dbc50
 + * choice between a checkpoint now and more tokens. */
 +static char *agent_budget_open(void)
 +{
-+	char *s = emalloc(192);
-+	int k = sprintf(s, "~%.0f", agent_tokens_at(agent_cp_bytes));
++	char *s = emalloc(256);
++	int k = sprintf(s, "Stop working on the current task and answer this "
++		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
 +	if (xaco)
 +		k += sprintf(s + k, "/%d", xaco);
 +	strcpy(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
