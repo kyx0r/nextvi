@@ -1481,52 +1481,17 @@ static char *agent_safe_text(const char *s, size_t n)
 	return text->s;
 }
 
-/* Interactive shells can put each job in a separate process group. */
-static void agent_killtree(pid_t pid)
+/* The child leads its own process group. A job that still gets a separate
+   group (job control re-enabled) owns the terminal; job < 0 looks it up. */
+static void agent_killtree(pid_t pid, int done, pid_t job)
 {
-	struct child { pid_t pid, parent; int selected; } *children = NULL;
-	int n = 0, cap = 0, changed;
-	long child, parent;
-	pid_t group;
-	FILE *ps;
-	kill(pid, SIGSTOP);
-	ps = popen("ps -e -o pid= -o ppid=", "r");
-	if (ps) {
-		while (fscanf(ps, "%ld %ld", &child, &parent) == 2) {
-			if (child <= 0 || child == getpid())
-				continue;
-			if (n == cap) {
-				cap += 128;
-				children = erealloc(children, cap * sizeof(*children));
-			}
-			children[n++] = (struct child){child, parent, child == pid};
-		}
-		pclose(ps);
-		do {
-			changed = 0;
-			for (int i = 0; i < n; i++) {
-				if (children[i].selected)
-					continue;
-				for (int j = 0; j < n; j++) {
-					if (!children[j].selected || children[i].parent != children[j].pid)
-						continue;
-					children[i].selected = changed = 1;
-					kill(children[i].pid, SIGSTOP);
-					break;
-				}
-			}
-		} while (changed);
-		for (int i = 0; i < n; i++) {
-			if (!children[i].selected)
-				continue;
-			group = getpgid(children[i].pid);
-			if (group > 0 && group != getpgrp())
-				kill(-group, SIGKILL);
-			kill(children[i].pid, SIGKILL);
-		}
-	}
-	free(children);
-	kill(pid, SIGKILL);
+	kill(-pid, SIGKILL);	/* first, so the shell starts no further jobs */
+	if (!done)
+		kill(pid, SIGKILL); /* also covers cancellation before setpgid */
+	if (job < 0)
+		job = tcgetpgrp(term_ufd.fd);
+	if (job > 0 && job != pid && job != getpgrp())
+		kill(-job, SIGKILL);
 }
 
 /* Nonzero limit caps kept output bytes; continue draining the pipe. */
@@ -1538,6 +1503,7 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 	struct pollfd fds[3];
 	int output[2] = {-1, -1}, error[2] = {-1, -1}, pid, done = 0, st = 0,
 		killed = 0, tidx = http ? 2 : 1, interactive = !http && xish;
+	pid_t job = interactive ? -1 : 0;
 	void (*old_ttou)(int) = SIG_DFL, (*old_ttin)(int) = SIG_DFL;
 	char buf[4097];
 	sbuf *sb, *eb = NULL;
@@ -1568,9 +1534,11 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 	}
 	pid = fork();
 	if (!pid) {
-		/* Interactive startup requires the editor'\''s foreground group. */
-		if (!interactive && setpgid(0, 0) < 0)
+		/* Interactive startup requires a foreground group; SIGTTOU is ignored. */
+		if (setpgid(0, 0) < 0)
 			_exit(127);
+		if (interactive)
+			tcsetpgrp(term_ufd.fd, getpid());
 		dup2(fileno(in), STDIN_FILENO);
 		dup2(output[1], STDOUT_FILENO);
 		dup2(http ? error[1] : output[1], STDERR_FILENO);
@@ -1598,8 +1566,7 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 			close(error[0]);
 		return NULL;
 	}
-	if (!interactive)
-		setpgid(pid, pid);
+	setpgid(pid, pid);
 	fds[0].fd = output[0];
 	fds[0].events = POLLIN;
 	if (http) {
@@ -1612,12 +1579,7 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 		sbuf_make(eb, 4096)
 	while (!done || fds[0].fd >= 0 || (http && fds[1].fd >= 0)) {
 		if ((agent_cancel || (http && agent_pause)) && !killed) {
-			if (interactive && !done)
-				agent_killtree(pid);
-			else if (!interactive)
-				kill(-pid, SIGKILL);
-			if (!done && !interactive)
-				kill(pid, SIGKILL); /* also covers cancellation before setpgid */
+			agent_killtree(pid, done, job);
 			for (int i = 0; i < (http ? 2 : 1); i++) {
 				if (fds[i].fd >= 0)
 					close(fds[i].fd);
@@ -1659,8 +1621,15 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 			preserve(int, agent_tool, agent_tool = 0;)
 			agent_key(term_read(0));
 			restore(agent_tool)
-			if (foreground > 0 && foreground != getpgrp() && !agent_cancel)
-				tcsetpgrp(term_ufd.fd, foreground);
+			if (foreground > 0 && foreground != getpgrp()) {
+				if (agent_cancel)
+					job = foreground;
+				else {
+					tcsetpgrp(term_ufd.fd, foreground);
+					/* resume a group stopped by SIGTTIN meanwhile */
+					kill(-foreground, SIGCONT);
+				}
+			}
 		}
 		if (fds[tidx].revents & (POLLHUP | POLLERR | POLLNVAL)) {
 			agent_cancel = 1;
@@ -1691,13 +1660,20 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 
 static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 {
+	/* Without job control, the whole command stays in the shell'\''s group. */
+	sbuf_smake(icmd, 64)
+	if (xish) {
+		sbuf_str(icmd, "set +m\n")
+		sbufn_str(icmd, cmd)
+	}
 	char *sh = getenv("SHELL"),
 	     *argv[] = {sh && *sh ? sh : "sh",
 		xish ? "-i" : "-c", xish ? "-c" : cmd,
-		xish ? cmd : NULL, NULL};
+		xish ? icmd->s : NULL, NULL};
 	int st;
 	sbuf *out = agent_process(argv, input, &st, 0, !oproc ? agent_gr_cap() : 0,
 		NULL);
+	free(icmd->s);
 	if (!out) {
 		agent_child_status = 1;
 		return NULL;
@@ -11198,10 +11174,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..e7767daa
+index 00000000..000a23e6
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3305 @@
+@@ -0,0 +1,3281 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12653,52 +12629,17 @@ index 00000000..e7767daa
 +	return text->s;
 +}
 +
-+/* Interactive shells can put each job in a separate process group. */
-+static void agent_killtree(pid_t pid)
++/* The child leads its own process group. A job that still gets a separate
++   group (job control re-enabled) owns the terminal; job < 0 looks it up. */
++static void agent_killtree(pid_t pid, int done, pid_t job)
 +{
-+	struct child { pid_t pid, parent; int selected; } *children = NULL;
-+	int n = 0, cap = 0, changed;
-+	long child, parent;
-+	pid_t group;
-+	FILE *ps;
-+	kill(pid, SIGSTOP);
-+	ps = popen("ps -e -o pid= -o ppid=", "r");
-+	if (ps) {
-+		while (fscanf(ps, "%ld %ld", &child, &parent) == 2) {
-+			if (child <= 0 || child == getpid())
-+				continue;
-+			if (n == cap) {
-+				cap += 128;
-+				children = erealloc(children, cap * sizeof(*children));
-+			}
-+			children[n++] = (struct child){child, parent, child == pid};
-+		}
-+		pclose(ps);
-+		do {
-+			changed = 0;
-+			for (int i = 0; i < n; i++) {
-+				if (children[i].selected)
-+					continue;
-+				for (int j = 0; j < n; j++) {
-+					if (!children[j].selected || children[i].parent != children[j].pid)
-+						continue;
-+					children[i].selected = changed = 1;
-+					kill(children[i].pid, SIGSTOP);
-+					break;
-+				}
-+			}
-+		} while (changed);
-+		for (int i = 0; i < n; i++) {
-+			if (!children[i].selected)
-+				continue;
-+			group = getpgid(children[i].pid);
-+			if (group > 0 && group != getpgrp())
-+				kill(-group, SIGKILL);
-+			kill(children[i].pid, SIGKILL);
-+		}
-+	}
-+	free(children);
-+	kill(pid, SIGKILL);
++	kill(-pid, SIGKILL);	/* first, so the shell starts no further jobs */
++	if (!done)
++		kill(pid, SIGKILL); /* also covers cancellation before setpgid */
++	if (job < 0)
++		job = tcgetpgrp(term_ufd.fd);
++	if (job > 0 && job != pid && job != getpgrp())
++		kill(-job, SIGKILL);
 +}
 +
 +/* Nonzero limit caps kept output bytes; continue draining the pipe. */
@@ -12710,6 +12651,7 @@ index 00000000..e7767daa
 +	struct pollfd fds[3];
 +	int output[2] = {-1, -1}, error[2] = {-1, -1}, pid, done = 0, st = 0,
 +		killed = 0, tidx = http ? 2 : 1, interactive = !http && xish;
++	pid_t job = interactive ? -1 : 0;
 +	void (*old_ttou)(int) = SIG_DFL, (*old_ttin)(int) = SIG_DFL;
 +	char buf[4097];
 +	sbuf *sb, *eb = NULL;
@@ -12740,9 +12682,11 @@ index 00000000..e7767daa
 +	}
 +	pid = fork();
 +	if (!pid) {
-+		/* Interactive startup requires the editor's foreground group. */
-+		if (!interactive && setpgid(0, 0) < 0)
++		/* Interactive startup requires a foreground group; SIGTTOU is ignored. */
++		if (setpgid(0, 0) < 0)
 +			_exit(127);
++		if (interactive)
++			tcsetpgrp(term_ufd.fd, getpid());
 +		dup2(fileno(in), STDIN_FILENO);
 +		dup2(output[1], STDOUT_FILENO);
 +		dup2(http ? error[1] : output[1], STDERR_FILENO);
@@ -12770,8 +12714,7 @@ index 00000000..e7767daa
 +			close(error[0]);
 +		return NULL;
 +	}
-+	if (!interactive)
-+		setpgid(pid, pid);
++	setpgid(pid, pid);
 +	fds[0].fd = output[0];
 +	fds[0].events = POLLIN;
 +	if (http) {
@@ -12784,12 +12727,7 @@ index 00000000..e7767daa
 +		sbuf_make(eb, 4096)
 +	while (!done || fds[0].fd >= 0 || (http && fds[1].fd >= 0)) {
 +		if ((agent_cancel || (http && agent_pause)) && !killed) {
-+			if (interactive && !done)
-+				agent_killtree(pid);
-+			else if (!interactive)
-+				kill(-pid, SIGKILL);
-+			if (!done && !interactive)
-+				kill(pid, SIGKILL); /* also covers cancellation before setpgid */
++			agent_killtree(pid, done, job);
 +			for (int i = 0; i < (http ? 2 : 1); i++) {
 +				if (fds[i].fd >= 0)
 +					close(fds[i].fd);
@@ -12831,8 +12769,15 @@ index 00000000..e7767daa
 +			preserve(int, agent_tool, agent_tool = 0;)
 +			agent_key(term_read(0));
 +			restore(agent_tool)
-+			if (foreground > 0 && foreground != getpgrp() && !agent_cancel)
-+				tcsetpgrp(term_ufd.fd, foreground);
++			if (foreground > 0 && foreground != getpgrp()) {
++				if (agent_cancel)
++					job = foreground;
++				else {
++					tcsetpgrp(term_ufd.fd, foreground);
++					/* resume a group stopped by SIGTTIN meanwhile */
++					kill(-foreground, SIGCONT);
++				}
++			}
 +		}
 +		if (fds[tidx].revents & (POLLHUP | POLLERR | POLLNVAL)) {
 +			agent_cancel = 1;
@@ -12863,13 +12808,20 @@ index 00000000..e7767daa
 +
 +static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 +{
++	/* Without job control, the whole command stays in the shell's group. */
++	sbuf_smake(icmd, 64)
++	if (xish) {
++		sbuf_str(icmd, "set +m\n")
++		sbufn_str(icmd, cmd)
++	}
 +	char *sh = getenv("SHELL"),
 +	     *argv[] = {sh && *sh ? sh : "sh",
 +		xish ? "-i" : "-c", xish ? "-c" : cmd,
-+		xish ? cmd : NULL, NULL};
++		xish ? icmd->s : NULL, NULL};
 +	int st;
 +	sbuf *out = agent_process(argv, input, &st, 0, !oproc ? agent_gr_cap() : 0,
 +		NULL);
++	free(icmd->s);
 +	if (!out) {
 +		agent_child_status = 1;
 +		return NULL;
