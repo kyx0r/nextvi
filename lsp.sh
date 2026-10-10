@@ -4602,7 +4602,7 @@ index 000000000..7a709a07b
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index 97bfd4585..33efb2aae 100644
+index 34318202a..20a2ce2dc 100644
 --- a/term.c
 +++ b/term.c
 @@ -141,7 +141,8 @@ void term_push(char *s, unsigned int n)

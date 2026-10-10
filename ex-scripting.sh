@@ -280,7 +280,7 @@ index 8a1339874..8e0663ba7 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 97bfd4585..ad1be89b5 100644
+index 34318202a..057987705 100644
 --- a/term.c
 +++ b/term.c
 @@ -236,7 +236,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
