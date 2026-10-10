@@ -301,7 +301,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
 	fds[2].fd = ibuf ? term_ufd.fd : -1;
 	fds[2].events = POLLIN;
 	while (fds[0].fd >= 0 || fds[1].fd >= 0) {
-		if (poll(fds, 3, 200) < 0) {
+		if (poll(fds, 3, -1) < 0) {
 			if (winch == term_winch)
 				break;
 			winch = term_winch;
