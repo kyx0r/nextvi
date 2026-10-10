@@ -10880,7 +10880,7 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 m 01;0grp 1%f> 	}
 	return r;
 }.*(	int ifd = -1, ofd = -1;)
-	int nw = 0;
+	int nw = 0, winch = term_winch;
 	char \*argv\[5];8??0?
 grp 08??-4m 3220reg p OK term.c:275:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		else
@@ -10903,17 +10903,17 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 			term_init\(\);
 		signal\(SIGINT, SIG_DFL\);
 	}2??0?
-2??m 4220reg p OK term.c:347:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK term.c:354:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(term_sbuf\)$3??0?
-3??m 4220reg p OK term.c:347:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK term.c:354:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);
 	signal\(SIGTTOU, SIG_DFL\);
 	if \(!ibuf\) \{4??0?
-4??+3m 4220reg p OK term.c:347:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK term.c:354:a42sc %? %@2152sc!1q0?
 %f+ 			term_init\(\);
 		signal\(SIGINT, SIG_DFL\);
 	}5??0?
-5??-1m 4220reg p OK term.c:347:a52sc %? %@2152sc!1q0?
+5??-1m 4220reg p OK term.c:354:a52sc %? %@2152sc!1q0?
 %f+ 	t...t..r.\(.er._....fd..g.t.g...\).;
 ..i...l.S........SI....L\).
 ... \(!......\{
@@ -10921,13 +10921,13 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 .....rm.i.i.\(\).
 ..........I.I.T..SI...F..;
 	.6??0?
-6??+3m 4220reg p OK term.c:347:a62sc %? %@2152sc!1q0?
+6??+3m 4220reg p OK term.c:354:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);.*?
 	signal\(SIGTTOU, SIG_DFL\);.*?
 	if \(!ibuf\) \{.*?
 (		if \(term_sbuf\))7??0?
-grp 07??m 4220reg p OK term.c:347:a72sc %? %@2152sc!0?
-1;2;3;4;5;6;7??!219reg term.c:3472sc %? %@2132sc!0?
+grp 07??m 4220reg p OK term.c:354:a72sc %? %@2152sc!0?
+1;2;3;4;5;6;7??!219reg term.c:3542sc %? %@2132sc!0?
 '\''1i 	term_sbuf = NULL;
 ??!219reg term.c:42:m12sc %? %@2142sc!0?
 '\''2i 		if (agent_tool) {
@@ -10941,7 +10941,7 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 	if (agent_tool)
 		return agent_shell(cmd, ibuf, oproc, status);
 ??!219reg term.c:275:m32sc %? %@2142sc!0?
-'\''4s/_sbuf/inal/??!219reg term.c:347:m42sc %? %@2142sc!b12m!%ya 98?0?
+'\''4s/_sbuf/inal/??!219reg term.c:354:m42sc %? %@2142sc!b12m!%ya 98?0?
 %f> #include <sys/stat\.h>
 #include <sys/ioctl\.h>
 #include <sys/wait\.h>
@@ -11174,7 +11174,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..000a23e6
+index 000000000..000a23e69
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,3281 @@
@@ -14461,7 +14461,7 @@ index 00000000..000a23e6
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..77387492
+index 000000000..77387492f
 --- /dev/null
 +++ b/agent.h
 @@ -0,0 +1,42 @@
@@ -14509,7 +14509,7 @@ index 00000000..77387492
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 00000000..6e4fb0dd
+index 000000000..6e4fb0dd3
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -17706,7 +17706,7 @@ index 00000000..6e4fb0dd
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 00000000..cab5feb4
+index 000000000..cab5feb42
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -18017,7 +18017,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..e7d14dc6 100755
+index c836c94c7..e7d14dc6a 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,247 @@ build() {
@@ -18288,7 +18288,7 @@ index c836c94c..e7d14dc6 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..99342782 100644
+index 2888d7c60..99342782f 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,341 @@
@@ -18645,7 +18645,7 @@ index 2888d7c6..99342782 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a133987..65b0d0bc 100644
+index 8a1339874..65b0d0bc0 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -19194,7 +19194,7 @@ index 8a133987..65b0d0bc 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 00000000..31004ff5
+index 000000000..31004ff54
 --- /dev/null
 +++ b/exspec.awk
 @@ -0,0 +1,87 @@
@@ -19287,7 +19287,7 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..33856c75
+index 000000000..33856c756
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1438 @@
@@ -20730,7 +20730,7 @@ index 00000000..33856c75
 +	{"err", "Control ex errors", 1248, 1260, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..823e5b39 100644
+index 56cb42c63..823e5b396 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,14 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -20765,7 +20765,7 @@ index 56cb42c6..823e5b39 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e..2641d0ff 100644
+index 4893a07e5..2641d0ffc 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -20805,7 +20805,7 @@ index 4893a07e..2641d0ff 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 232afa9a..e9b4a92d 100644
+index 97bfd4585..caac7591b 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -20839,7 +20839,7 @@ index 232afa9a..e9b4a92d 100644
  	static char *sh[] = {"$SHELL", "sh", NULL};
  	struct pollfd fds[3];
  	char buf[512];
-@@ -344,7 +354,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+@@ -351,7 +361,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	tcsetpgrp(term_ufd.fd, getpgrp());
  	signal(SIGTTOU, SIG_DFL);
  	if (!ibuf) {
@@ -20849,7 +20849,7 @@ index 232afa9a..e9b4a92d 100644
  		signal(SIGINT, SIG_DFL);
  	}
 diff --git a/vi.c b/vi.c
-index b1f9a16f..fdf5c0a3 100644
+index b1f9a16f1..fdf5c0a31 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,13 @@
@@ -20875,7 +20875,7 @@ index b1f9a16f..fdf5c0a3 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da595..b6ba4958 100644
+index c23da5950..b6ba49586 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \

@@ -218,7 +218,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 8a133987..8e0663ba 100644
+index 8a1339874..8e0663ba7 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -280,7 +280,7 @@ index 8a133987..8e0663ba 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 232afa9a..0f2a4239 100644
+index 97bfd4585..ad1be89b5 100644
 --- a/term.c
 +++ b/term.c
 @@ -236,7 +236,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
@@ -296,7 +296,7 @@ index 232afa9a..0f2a4239 100644
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index c23da595..eb6f931c 100644
+index c23da5950..eb6f931c4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@

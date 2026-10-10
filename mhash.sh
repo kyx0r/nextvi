@@ -836,7 +836,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 8a133987..b4f03e20 100644
+index 8a1339874..b4f03e203 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1095,7 +1095,7 @@ static void *ec_mark(char *loc, char *cmd, char *arg)
@@ -849,7 +849,7 @@ index 8a133987..b4f03e20 100644
  			xb->mark_se[0] = -1;
  			return NULL;
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..30a27915 100644
+index 56cb42c63..30a27915c 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -30,26 +30,45 @@ static void lopt_done(struct lopt *lo)
@@ -973,7 +973,7 @@ index 56cb42c6..30a27915 100644
  	lo->mark_se[0] = -1;
  	lo->pos = beg;
 diff --git a/vi.h b/vi.h
-index c23da595..aaed5cf6 100644
+index c23da5950..aaed5cf68 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -160,11 +160,15 @@ int rset_match(rset *rs, char *s, int flg);

@@ -1869,7 +1869,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c6..4ce3cc45 100644
+index 2888d7c60..4ce3cc453 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -62,7 +62,7 @@ const int ftslen = LEN(fts);
@@ -1882,7 +1882,7 @@ index 2888d7c6..4ce3cc45 100644
  /* At least 1 entry is required in this struct for fallback */
  /* lbuf lines are *always "\n\0" terminated, for $ to work one needs to account for '\n' too */
 diff --git a/ex.c b/ex.c
-index 8a133987..fff0af8e 100644
+index 8a1339874..fff0af8e5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -584,13 +584,16 @@ static void *ec_find(char *loc, char *cmd, char *arg)
@@ -1935,7 +1935,7 @@ index 8a133987..fff0af8e 100644
  }
  
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..3774ec03 100644
+index 56cb42c63..3774ec033 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -503,7 +503,7 @@ int lbuf_search(struct lbuf *lb, rset *re, int dir, int beg, int end, int pskip,
@@ -1967,7 +1967,7 @@ index 56cb42c6..3774ec03 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e..ca5e05ba 100644
+index 4893a07e5..ca5e05ba7 100644
 --- a/led.c
 +++ b/led.c
 @@ -40,7 +40,7 @@ static void file_index(struct lbuf *buf)
@@ -2023,7 +2023,7 @@ index 4893a07e..ca5e05ba 100644
  
  static int led_lastchar(char *s)
 diff --git a/regex.c b/regex.c
-index fd22467f..089bb188 100644
+index fd22467f0..089bb188c 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -426,7 +426,15 @@ static rcode *re_make(char *re, int *nsubc, int flg)
@@ -2092,7 +2092,7 @@ index fd22467f..089bb188 100644
  }
  
 diff --git a/ren.c b/ren.c
-index 4116d9c1..b89a893c 100644
+index 4116d9c18..b89a893cc 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -256,13 +256,14 @@ static int syn_initft(int fti, int n, char *name, int flg)
@@ -2154,7 +2154,7 @@ index 4116d9c1..b89a893c 100644
 +	free(pats);
  }
 diff --git a/vi.c b/vi.c
-index b1f9a16f..532f4970 100644
+index b1f9a16f1..532f49704 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -95,7 +95,8 @@ static void vi_drawrow(int row)
@@ -2234,7 +2234,7 @@ index b1f9a16f..532f4970 100644
  				default:
  					term_dec()
 diff --git a/vi.h b/vi.h
-index c23da595..b87c215f 100644
+index c23da5950..b87c215f0 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -575,7 +575,7 @@ extern const int ftslen;

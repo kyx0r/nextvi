@@ -790,7 +790,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c6..231e8b17 100644
+index 2888d7c60..231e8b178 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -13,6 +13,7 @@ char fm_ft[] = "/fm";	/* file manager */
@@ -820,7 +820,7 @@ index 2888d7c6..231e8b17 100644
  	{ex_ft, ":[ \t]*((((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
 diff --git a/ex.c b/ex.c
-index 8a133987..2c01f5e5 100644
+index 8a1339874..2c01f5e5d 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -42,7 +42,7 @@ sbuf **xregs;			/* string registers */
@@ -833,7 +833,7 @@ index 8a133987..2c01f5e5 100644
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
 diff --git a/vi.c b/vi.c
-index b1f9a16f..c0d6c47a 100644
+index b1f9a16f1..c0d6c47a2 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -402,12 +402,12 @@ void dir_calc(char *path)
@@ -971,7 +971,7 @@ index b1f9a16f..c0d6c47a 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da595..3ff5065c 100644
+index c23da5950..3ff5065cf 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -520,7 +520,7 @@ extern sbuf **xregs;

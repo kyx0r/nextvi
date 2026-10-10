@@ -930,7 +930,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c6..416f9157 100644
+index 2888d7c60..416f91576 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -299,7 +299,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -943,7 +943,7 @@ index 2888d7c6..416f9157 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 8a133987..7401b1ab 100644
+index 8a1339874..7401b1ab3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1671,6 +1671,18 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
@@ -974,7 +974,7 @@ index 8a133987..7401b1ab 100644
  	EO(shape),
  	EO(seq),
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..666bbf5b 100644
+index 56cb42c63..666bbf5b4 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -2,6 +2,7 @@ struct lbuf *lbuf_make(void)
@@ -1170,7 +1170,7 @@ index 56cb42c6..666bbf5b 100644
  
  int lbuf_indents(struct lbuf *lb, int r)
 diff --git a/vi.h b/vi.h
-index c23da595..c180951e 100644
+index c23da5950..c180951e9 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -170,6 +170,7 @@ struct lopt {

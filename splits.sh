@@ -4257,7 +4257,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c6..38163179 100644
+index 2888d7c60..381631799 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -298,7 +298,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -4270,7 +4270,7 @@ index 2888d7c6..38163179 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a133987..abecf277 100644
+index 8a1339874..abecf2779 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,6 @@
@@ -4556,7 +4556,7 @@ index 8a133987..abecf277 100644
  	do {
  		xmpt = 0;
 diff --git a/led.c b/led.c
-index 4893a07e..850336e6 100644
+index 4893a07e5..850336e6f 100644
 --- a/led.c
 +++ b/led.c
 @@ -87,7 +87,7 @@ static char *kmap_map(int kmap, int c)
@@ -4680,7 +4680,7 @@ index 4893a07e..850336e6 100644
  				term_clean();
  			continue;
 diff --git a/term.c b/term.c
-index 232afa9a..33bb08f0 100644
+index 97bfd4585..c933d7058 100644
 --- a/term.c
 +++ b/term.c
 @@ -86,6 +86,20 @@ void term_kill(void)
@@ -4705,7 +4705,7 @@ index 232afa9a..33bb08f0 100644
  {
  	char cmd[64] = "\33[";
 diff --git a/vi.c b/vi.c
-index b1f9a16f..affe37a5 100644
+index b1f9a16f1..affe37a53 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -57,6 +57,23 @@ static void vi_drawmsg(char *msg)
@@ -5193,7 +5193,7 @@ index b1f9a16f..affe37a5 100644
  		xb->useq += xseq;
  	}
 diff --git a/vi.h b/vi.h
-index c23da595..e6ad3f75 100644
+index c23da5950..e6ad3f752 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -372,6 +372,7 @@ void term_suspend(void);

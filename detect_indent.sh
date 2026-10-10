@@ -1004,7 +1004,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c6..725df7dc 100644
+index 2888d7c60..725df7dcf 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -297,7 +297,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -1017,7 +1017,7 @@ index 2888d7c6..725df7dc 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 8a133987..f358e2e6 100644
+index 8a1339874..f358e2e62 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -1147,7 +1147,7 @@ index 8a133987..f358e2e6 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/led.c b/led.c
-index 4893a07e..a7728a7b 100644
+index 4893a07e5..a7728a7b2 100644
 --- a/led.c
 +++ b/led.c
 @@ -525,18 +525,37 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -1192,7 +1192,7 @@ index 4893a07e..a7728a7b 100644
  		case TK_CTL('\\'):
  			if (c == TK_CTL(']')) {
 diff --git a/vi.c b/vi.c
-index b1f9a16f..f520864c 100644
+index b1f9a16f1..f520864ce 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -896,9 +896,19 @@ static void vi_shift(int r1, int r2, int dir, int count)
@@ -1219,7 +1219,7 @@ index b1f9a16f..f520864c 100644
  		sbufn_str(sb, ln)
  		lbuf_edit(xb, sb->s, i, i + 1, 0, 0);
 diff --git a/vi.h b/vi.h
-index c23da595..b2ca5ff2 100644
+index c23da5950..b2ca5ff23 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -475,6 +475,9 @@ struct buf {

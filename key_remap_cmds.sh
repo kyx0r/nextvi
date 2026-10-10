@@ -885,7 +885,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c6..b1c16c00 100644
+index 2888d7c60..b1c16c00c 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -298,7 +298,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -898,7 +898,7 @@ index 2888d7c6..b1c16c00 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a133987..7f788346 100644
+index 8a1339874..7f788346a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,5 @@
@@ -973,7 +973,7 @@ index 8a133987..7f788346 100644
  	{"q", ec_quit},
  	{"reg+", ec_regprint},
 diff --git a/led.c b/led.c
-index 4893a07e..c9368fe2 100644
+index 4893a07e5..c9368fe2e 100644
 --- a/led.c
 +++ b/led.c
 @@ -502,7 +502,7 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -986,7 +986,7 @@ index 4893a07e..c9368fe2 100644
  		switch (c) {
  		case TK_CTL('h'):
 diff --git a/vi.c b/vi.c
-index b1f9a16f..7b5a54c6 100644
+index b1f9a16f1..7b5a54c64 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -217,7 +217,7 @@ static char *vi_enprompt(char *msg, char *insert, int *ret, int *mlen)
@@ -1085,7 +1085,7 @@ index b1f9a16f..7b5a54c6 100644
  					continue;
  				if (k == 'Z') {
 diff --git a/vi.h b/vi.h
-index c23da595..516e8cc7 100644
+index c23da5950..516e8cc78 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -542,6 +542,7 @@ extern struct buf *ex_pbuf;

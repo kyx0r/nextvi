@@ -2825,7 +2825,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c6..784e42f5 100644
+index 2888d7c60..784e42f5d 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -18,6 +18,7 @@ char vs_ft[] = "/vs";	/* vi search prompt (is never '\n' terminated) */
@@ -2867,7 +2867,7 @@ index 2888d7c6..784e42f5 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index 8a133987..626f876a 100644
+index 8a1339874..626f876a1 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -437,6 +437,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -2933,7 +2933,7 @@ index 8a133987..626f876a 100644
  	{"", ec_print}, /* do not remove */
 diff --git a/jsmn.h b/jsmn.h
 new file mode 100644
-index 00000000..8ac14c1b
+index 000000000..8ac14c1bd
 --- /dev/null
 +++ b/jsmn.h
 @@ -0,0 +1,471 @@
@@ -3409,7 +3409,7 @@ index 00000000..8ac14c1b
 +
 +#endif /* JSMN_H */
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..c749f693 100644
+index 56cb42c63..c749f693d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -135,6 +135,7 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
@@ -3422,7 +3422,7 @@ index 56cb42c6..c749f693 100644
  	for (i = 0; i < lb->mark_n; i++) {	/* updating marks */
 diff --git a/lsp.c b/lsp.c
 new file mode 100644
-index 00000000..7a709a07
+index 000000000..7a709a07b
 --- /dev/null
 +++ b/lsp.c
 @@ -0,0 +1,1175 @@
@@ -4602,7 +4602,7 @@ index 00000000..7a709a07
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index 232afa9a..0943fa3f 100644
+index 97bfd4585..33efb2aae 100644
 --- a/term.c
 +++ b/term.c
 @@ -141,7 +141,8 @@ void term_push(char *s, unsigned int n)
@@ -4682,7 +4682,7 @@ index 232afa9a..0943fa3f 100644
  		tibuf_cnt = 1;
  		tibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index b1f9a16f..1b432c3b 100644
+index b1f9a16f1..1b432c3b7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -4821,7 +4821,7 @@ index b1f9a16f..1b432c3b 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 diff --git a/vi.h b/vi.h
-index c23da595..803dc7ac 100644
+index c23da5950..803dc7ace 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -192,6 +192,7 @@ struct lbuf {
