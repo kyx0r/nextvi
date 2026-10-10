@@ -469,9 +469,8 @@ static int agent_header(char *ln, unsigned long last, unsigned long *n)
 		if (strncmp(ln, agent_roles[i], k) || ln[k] != '\'' '\'' ||
 				!isdigit((unsigned char)ln[k+1]))
 			continue;
-		errno = 0;
 		*n = strtoul(ln + k + 1, &e, 10);
-		return (*e == '\''\n'\'' || !*e) && !errno && *n > last ? i + 1 : 0;
+		return (*e == '\''\n'\'' || !*e) && *n > last ? i + 1 : 0;
 	}
 	return 0;
 }
@@ -1640,7 +1639,12 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 	}
 	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
 	if (interactive) {
+		struct winsize win;
 		tcsetpgrp(term_ufd.fd, getpgrp());
+		/* SIGWINCH went to the child while it owned the terminal */
+		if (!ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
+				(win.ws_row != xrows || win.ws_col != xcols))
+			term_winch++;
 		if (old_ttou != SIG_ERR)
 			signal(SIGTTOU, old_ttou);
 		if (old_ttin != SIG_ERR)
@@ -10873,7 +10877,7 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\)
 \{
 	static char \*sh\[] = \{"\$SHELL", "sh", NULL};
 	struct pollfd fds\[3];
-	char buf\[512];1??0?
+	struct winsize win;1??0?
 1??+2m 31q0?
 %f+ /\* execute a command; pass in input if ibuf and process output if oproc \*/
 sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\)
@@ -10885,15 +10889,15 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 grp 07??m 3220reg p OK term.c:275:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	return r;
-}.*(	int ifd = -1, ofd = -1;)
-	int nw = 0, winch = term_winch;
-	char \*argv\[5];8??0?
+}.*(	char buf\[512];)
+	int ifd = -1, ofd = -1;
+	int nw = 0, winch = term_winch;8??0?
 grp 08??-4m 3220reg p OK term.c:275:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		else
 			return \*q;
-		q\+\+;.*(	argv\[0] = xgetenv\(sh\);)
-	argv\[1] = xish \? "-i" : argv\[0];
-	argv\[2] = "-c";9??0?
+		q\+\+;.*(	char \*argv\[5];)
+	argv\[0] = xgetenv\(sh\);
+	argv\[1] = xish \? "-i" : argv\[0];9??0?
 grp 09??-7m 3220reg p OK term.c:275:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg term.c:2752sc %? %@2132sc!0?
 ?0?
@@ -10903,37 +10907,43 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 		if \(term_sbuf\)
 			term_init\(\);
 		signal\(SIGINT, SIG_DFL\);
-	}1??0?
+	} else if \(xish && term_sbuf && !ioctl\(term_ufd\.fd, TIOCGWINSZ, &win\) &&1??0?
 1??+3m 41q0?
 %f+ 		if \(term_sbuf\)
 			term_init\(\);
 		signal\(SIGINT, SIG_DFL\);
-	}2??0?
-2??m 4220reg p OK term.c:354:a22sc %? %@2152sc!1q0?
+	} else if \(xish && term_sbuf && !ioctl\(term_ufd\.fd, TIOCGWINSZ, &win\) &&2??0?
+2??m 4220reg p OK term.c:355:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(term_sbuf\)$3??0?
-3??m 4220reg p OK term.c:354:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK term.c:355:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);
 	signal\(SIGTTOU, SIG_DFL\);
 	if \(!ibuf\) \{4??0?
-4??+3m 4220reg p OK term.c:354:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK term.c:355:a42sc %? %@2152sc!1q0?
 %f+ 			term_init\(\);
 		signal\(SIGINT, SIG_DFL\);
-	}5??0?
-5??-1m 4220reg p OK term.c:354:a52sc %? %@2152sc!1q0?
-%f+ 	t...t..r.\(.er._....fd..g.t.g...\).;
-..i...l.S........SI....L\).
-... \(!......\{
-.......e........
-.....rm.i.i.\(\).
-..........I.I.T..SI...F..;
-	.6??0?
-6??+3m 4220reg p OK term.c:354:a62sc %? %@2152sc!1q0?
+	} else if \(xish && term_sbuf && !ioctl\(term_ufd\.fd, TIOCGWINSZ, &win\) &&5??0?
+5??-1m 4220reg p OK term.c:355:a52sc %? %@2152sc!1q0?
+%f+ ..c..t.....t..._....f.. g..........
+...........T.......G...L.;
+............\{
+		.f.......s...\)
+...t....i....\).
+..s.........I.............
+.. e...... \(xi..... .e.m_sbuf .. ......\(.............T...G.I..., ..i.. &&6??0?
+6??+3m 4220reg p OK term.c:355:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);.*?
 	signal\(SIGTTOU, SIG_DFL\);.*?
 	if \(!ibuf\) \{.*?
 (		if \(term_sbuf\))7??0?
-grp 07??m 4220reg p OK term.c:354:a72sc %? %@2152sc!0?
-1;2;3;4;5;6;7??!219reg term.c:3542sc %? %@2132sc!0?
+grp 07??m 4220reg p OK term.c:355:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	while \(waitpid\(pid, status, 0\) < 0 && winch != term_winch\)
+		winch = term_winch;
+	signal\(SIGTTOU, SIG_IGN\);.*(			\(win\.ws_row != xrows \|\| win\.ws_col != xcols\)\))
+		term_winch\+\+;	/\* SIGWINCH went to the shell, which owned the tty \*/
+	sbufn_ret\(sb, sb\)8??0?
+grp 08??-4m 4220reg p OK term.c:355:a82sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8??!219reg term.c:3552sc %? %@2132sc!0?
 '\''1i 	term_sbuf = NULL;
 ??!219reg term.c:42:m12sc %? %@2142sc!0?
 '\''2i 		if (agent_tool) {
@@ -10947,7 +10957,7 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 	if (agent_tool)
 		return agent_shell(cmd, ibuf, oproc, status);
 ??!219reg term.c:275:m32sc %? %@2142sc!0?
-'\''4s/_sbuf/inal/??!219reg term.c:354:m42sc %? %@2142sc!b12m!%ya 98?0?
+'\''4s/_sbuf/inal/??!219reg term.c:355:m42sc %? %@2142sc!b12m!%ya 98?0?
 %f> #include <sys/stat\.h>
 #include <sys/ioctl\.h>
 #include <sys/wait\.h>
@@ -11180,10 +11190,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..000a23e69
+index 000000000..307d90760
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3281 @@
+@@ -0,0 +1,3285 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11623,9 +11633,8 @@ index 000000000..000a23e69
 +		if (strncmp(ln, agent_roles[i], k) || ln[k] != ' ' ||
 +				!isdigit((unsigned char)ln[k+1]))
 +			continue;
-+		errno = 0;
 +		*n = strtoul(ln + k + 1, &e, 10);
-+		return (*e == '\n' || !*e) && !errno && *n > last ? i + 1 : 0;
++		return (*e == '\n' || !*e) && *n > last ? i + 1 : 0;
 +	}
 +	return 0;
 +}
@@ -12794,7 +12803,12 @@ index 000000000..000a23e69
 +	}
 +	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
 +	if (interactive) {
++		struct winsize win;
 +		tcsetpgrp(term_ufd.fd, getpgrp());
++		/* SIGWINCH went to the child while it owned the terminal */
++		if (!ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
++				(win.ws_row != xrows || win.ws_col != xcols))
++			term_winch++;
 +		if (old_ttou != SIG_ERR)
 +			signal(SIGTTOU, old_ttou);
 +		if (old_ttin != SIG_ERR)
@@ -20817,7 +20831,7 @@ index 4893a07e5..2641d0ffc 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 34318202a..27219f614 100644
+index 446cc70b8..8a2571f7d 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -20850,8 +20864,8 @@ index 34318202a..27219f614 100644
 +		return agent_shell(cmd, ibuf, oproc, status);
  	static char *sh[] = {"$SHELL", "sh", NULL};
  	struct pollfd fds[3];
- 	char buf[512];
-@@ -351,7 +361,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+ 	struct winsize win;
+@@ -352,7 +362,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	tcsetpgrp(term_ufd.fd, getpgrp());
  	signal(SIGTTOU, SIG_DFL);
  	if (!ibuf) {
@@ -20859,7 +20873,7 @@ index 34318202a..27219f614 100644
 +		if (terminal)
  			term_init();
  		signal(SIGINT, SIG_DFL);
- 	}
+ 	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
 diff --git a/vi.c b/vi.c
 index b1f9a16f1..fdf5c0a31 100644
 --- a/vi.c
