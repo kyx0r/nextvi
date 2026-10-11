@@ -437,24 +437,250 @@ fail:
 
 /* A log holds numbered entries, "ROLE N". A TURN entry is one reply: its
  * header line, then parts headed "ROLE N.I". NOTICE entries report harness
- * events to the user; they are never sent. */
+ * events to the user; they are never sent. The body of a USER or NOTICE
+ * entry and of a part runs to its "END" line, so its lines are never taken
+ * as headers. A body that holds a line "END" has an id on its header, as in
+ * "ROLE N id", and runs to "END id". */
 enum { AE_TEXT, AE_USER, AE_TURN, AE_NOTICE };		/* entries */
 enum { AP_REASONING, AP_ASSISTANT, AP_EX, AP_RESULT };	/* turn parts */
 static char *agent_entry_roles[] = {"USER", "TURN", "NOTICE"};
 static char *agent_part_roles[] = {"REASONING", "ASSISTANT", "EX", "RESULT"};
 /* The turn being written per log, indexed as agent_entries; 0 is none. */
 static unsigned long agent_turn[2];
+#define AGENT_ID	12		/* " id" of a header, with its NUL */
+#define AGENT_END	(AGENT_ID + 8)	/* "END id\n", with its NUL */
 
-/* Append a header and its body to the log, ended by a blank line. */
-static void agent_log_write(const char *head, const char *text)
+/* The rest e of a header line after its number: nothing, or a space and an
+ * id of letters and digits. Sets end, unless NULL, to the line that ends
+ * the body. */
+static int agent_header_end(char *e, char *end)
+{
+	int k = 0;
+	if (*e == '\'' '\'') {
+		while (isalnum((unsigned char)e[1 + k]))
+			k++;
+		if (!k || k + 1 >= AGENT_ID)
+			return 0;
+		k++;
+	}
+	if (e[k] != '\''\n'\'' && e[k])
+		return 0;
+	if (end)
+		snprintf(end, AGENT_END, "END%.*s\n", k, e);
+	return 1;
+}
+
+/* Entry header "ROLE N" with N above the previous header; returns the AE_
+ * role, 0 for no header. A TURN header takes no id: its parts have bodies,
+ * it has none. */
+static int agent_header(char *ln, unsigned long last, unsigned long *n, char *end)
+{
+	char *e;
+	for (int i = 0; i < LEN(agent_entry_roles); i++) {
+		int k = strlen(agent_entry_roles[i]);
+		if (strncmp(ln, agent_entry_roles[i], k) || ln[k] != '\'' '\'' ||
+				!isdigit((unsigned char)ln[k+1]))
+			continue;
+		*n = strtoul(ln + k + 1, &e, 10);
+		if (*n <= last)
+			return 0;
+		if (i + 1 == AE_TURN)
+			return *e == '\''\n'\'' || !*e ? i + 1 : 0;
+		return agent_header_end(e, end) ? i + 1 : 0;
+	}
+	return 0;
+}
+
+/* Part header "ROLE N.I" of turn N with I above the previous part'\''s index,
+ * -1 at the turn'\''s start; returns the AP_ role + 1, 0 for no header. */
+static int agent_part_header(char *ln, unsigned long turn, int lastidx, int *idx,
+		char *end)
+{
+	char *e;
+	unsigned long i;
+	for (int r = 0; r < LEN(agent_part_roles); r++) {
+		int k = strlen(agent_part_roles[r]);
+		if (strncmp(ln, agent_part_roles[r], k) || ln[k] != '\'' '\'' ||
+				!isdigit((unsigned char)ln[k+1]))
+			continue;
+		if (strtoul(ln + k + 1, &e, 10) != turn || *e != '\''.'\'' ||
+				!isdigit((unsigned char)e[1]))
+			return 0;
+		i = strtoul(e + 1, &e, 10);
+		if (i > INT_MAX || (int)i <= lastidx || !agent_header_end(e, end))
+			return 0;
+		*idx = i;
+		return r + 1;
+	}
+	return 0;
+}
+
+static int agent_live(void)
+{
+	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
+}
+
+/* acl above 1 or negative: replies stay as returned between rebuilds and
+ * checkpoints trim the log; acl 1 rebuilds every request. */
+static int agent_acl_kept(void)
+{
+	return xacl > 1 || xacl < 0;
+}
+
+/* An entry of b-4; role 0 and number 0 is the text before the first header. */
+struct agent_span {
+	int role, beg, end;	/* AE_ role; header line, line after */
+	unsigned long n;
+	size_t bytes;		/* body bytes, headers and END lines excluded */
+	size_t part[4];		/* TURN: bytes per part role, summed */
+	int calls;		/* TURN: EX parts */
+	int close;		/* USER, NOTICE: the END line, -1 for none */
+	char open[AGENT_END];	/* last entry: the END line its body lacks */
+};
+
+/* Split a log into entries; the caller frees *spans. Lines outside a body,
+ * left by a hand edit, count as text of the entry or part above them. */
+static int agent_spans_of(struct lbuf *lb, struct agent_span **spans)
+{
+	unsigned long n, last = 0;
+	int role, cnt = 0, cap = 0, part = AP_ASSISTANT, idx = -1, r;
+	char end[AGENT_END] = "";	/* ends the body being read; empty outside */
+	struct agent_span *s;
+	*spans = NULL;
+	for (int i = 0; i < lbuf_len(lb); i++) {
+		s = cnt ? *spans + cnt - 1 : NULL;
+		if (*end && !strcmp(lb->ln[i], end)) {
+			*end = '\''\0'\'';
+			if (s->role != AE_TURN)
+				s->close = i;
+			continue;
+		}
+		if (*end || (!(role = agent_header(lb->ln[i], last, &n, end)) && i)) {
+			if (!*end && s->role == AE_TURN && (r = agent_part_header(
+					lb->ln[i], s->n, idx, &idx, end))) {
+				part = r - 1;
+				s->calls += part == AP_EX;
+				continue;
+			}
+			s->bytes += strlen(lb->ln[i]);
+			if (s->role == AE_TURN)
+				s->part[part] += strlen(lb->ln[i]);
+			continue;
+		}
+		if (cnt == cap) {
+			cap = cap * 2 + 16;
+			*spans = erealloc(*spans, cap * sizeof(**spans));
+		}
+		if (cnt)
+			(*spans)[cnt-1].end = i;
+		(*spans)[cnt++] = (struct agent_span){role, i, 0, role ? n : 0,
+			role ? 0 : strlen(lb->ln[i]), {0, 0, 0, 0}, 0, -1, ""};
+		part = AP_ASSISTANT;
+		idx = -1;
+		if (role)
+			last = n;
+	}
+	if (cnt) {
+		(*spans)[cnt-1].end = lbuf_len(lb);
+		strcpy((*spans)[cnt-1].open, end);
+	}
+	return cnt;
+}
+
+/* Header line, line after, and the END line or -1. */
+struct agent_part { int role, idx, beg, end, close; };
+
+/* Split turn s of lb into parts; the caller frees *parts. Lines before the
+ * first part header form a text part with index -1, headed by the TURN
+ * line. */
+static int agent_parts(struct lbuf *lb, struct agent_span *s,
+		struct agent_part **parts)
+{
+	int cnt = 0, cap = 0, idx = -1, r;
+	char end[AGENT_END] = "";
+	*parts = NULL;
+	for (int i = s->beg + 1; i < s->end; i++) {
+		if (*end) {
+			if (!strcmp(lb->ln[i], end)) {
+				*end = '\''\0'\'';
+				(*parts)[cnt-1].close = i;
+			}
+			continue;
+		}
+		r = agent_part_header(lb->ln[i], s->n, idx, &idx, end);
+		if (!r && cnt)
+			continue;
+		if (cnt == cap) {
+			cap = cap * 2 + 8;
+			*parts = erealloc(*parts, cap * sizeof(**parts));
+		}
+		if (cnt)
+			(*parts)[cnt-1].end = i;
+		(*parts)[cnt++] = (struct agent_part){r ? r - 1 : AP_ASSISTANT,
+			r ? idx : -1, r ? i : s->beg, 0, -1};
+	}
+	if (cnt)
+		(*parts)[cnt-1].end = s->end;
+	return cnt;
+}
+
+/* Split the session log b-4 into entries. */
+static int agent_spans(struct agent_span **spans)
+{
+	return agent_spans_of(tempbufs[3].lb, spans);
+}
+
+/* Whether a line of s is ln, which ends in a newline. */
+static int agent_has_line(const char *s, const char *ln)
+{
+	int n = strlen(ln) - 1;
+	while (s) {
+		if (!strncmp(s, ln, n) && (s[n] == '\''\n'\'' || !s[n]))
+			return 1;
+		if ((s = strchr(s, '\''\n'\'')))
+			s++;
+	}
+	return 0;
+}
+
+/* Choose the line that ends a body of text: "END", or "END id" with a
+ * random id while text holds that line. id is " id" for the header, or
+ * empty. */
+static void agent_frame(const char *text, char *id, char *end)
+{
+	static unsigned int seed;
+	*id = '\''\0'\'';
+	strcpy(end, "END\n");
+	while (agent_has_line(text, end)) {
+		if (!seed)
+			seed = time(NULL) ^ getpid();
+		id[0] = '\'' '\'';
+		for (int i = 1; i < 5; i++) {
+			seed = seed * 1103515245u + 12345u;
+			id[i] = "abcdefghijklmnopqrstuvwxyz0123456789"[(seed >> 16) % 36];
+		}
+		id[5] = '\''\0'\'';
+		snprintf(end, AGENT_END, "END%s\n", id);
+	}
+}
+
+/* Append a header, its body and the line that ends it to the log. */
+static void agent_log_write(const char *head, const char *text, const char *end)
 {
 	struct lbuf *lb = tempbufs[agent_logbuf].lb;
+	struct agent_span *spans;
+	int cnt = agent_spans_of(lb, &spans);
 	sbuf_smake(sb, 256)
+	/* A hand edit can remove the last END line; that body would take
+	 * this entry. */
+	if (cnt && *spans[cnt-1].open)
+		sbuf_str(sb, spans[cnt-1].open)
+	free(spans);
 	sbuf_str(sb, head)
 	sbuf_str(sb, text);
 	if (sb->s[sb->s_n-1] != '\''\n'\'')
 		sbuf_chr(sb, '\''\n'\'')
-	sbuf_chr(sb, '\''\n'\'')
+	sbuf_str(sb, end)
 	sbuf_nul(sb)
 	agent_output(sb->s);
 	lb->useq++;
@@ -479,11 +705,12 @@ static void agent_turn_close(void)
 /* Log a USER or NOTICE entry. */
 static void agent_log(const char *role, const char *text)
 {
-	char head[64];
+	char head[64], id[AGENT_ID], end[AGENT_END];
 	agent_turn_close();
-	snprintf(head, sizeof(head), "%s%s %lu\n", agent_log_mark(), role,
-		++agent_entries[agent_logbuf == 3]);
-	agent_log_write(head, text);
+	agent_frame(text, id, end);
+	snprintf(head, sizeof(head), "%s%s %lu%s\n", agent_log_mark(), role,
+		++agent_entries[agent_logbuf == 3], id);
+	agent_log_write(head, text, end);
 }
 
 /* Log part idx of the open turn, opening one first when none is: 0
@@ -492,149 +719,15 @@ static void agent_log(const char *role, const char *text)
 static void agent_turn_part(int idx, const char *text)
 {
 	unsigned long *turn = agent_turn + (agent_logbuf == 3);
-	char open[48] = "", head[128];
+	char open[48] = "", head[128], id[AGENT_ID], end[AGENT_END];
 	if (!*turn) {
 		*turn = ++agent_entries[agent_logbuf == 3];
 		snprintf(open, sizeof(open), "%sTURN %lu\n", agent_log_mark(), *turn);
 	}
-	snprintf(head, sizeof(head), "%s%s%s %lu.%d\n", open, agent_log_mark(),
-		agent_part_roles[idx < 2 ? idx : AP_EX + (idx & 1)], *turn, idx);
-	agent_log_write(head, text);
-}
-
-/* Entry header "ROLE N" with N above the previous header; returns the AE_
- * role, 0 for no header. */
-static int agent_header(char *ln, unsigned long last, unsigned long *n)
-{
-	char *e;
-	for (int i = 0; i < LEN(agent_entry_roles); i++) {
-		int k = strlen(agent_entry_roles[i]);
-		if (strncmp(ln, agent_entry_roles[i], k) || ln[k] != '\'' '\'' ||
-				!isdigit((unsigned char)ln[k+1]))
-			continue;
-		*n = strtoul(ln + k + 1, &e, 10);
-		return (*e == '\''\n'\'' || !*e) && *n > last ? i + 1 : 0;
-	}
-	return 0;
-}
-
-/* Part header "ROLE N.I" of turn N with I above the previous part'\''s index,
- * -1 at the turn'\''s start; returns the AP_ role + 1, 0 for no header. The
- * numbers keep output lines such as "EX" from being taken as headers. */
-static int agent_part_header(char *ln, unsigned long turn, int lastidx, int *idx)
-{
-	char *e;
-	unsigned long i;
-	for (int r = 0; r < LEN(agent_part_roles); r++) {
-		int k = strlen(agent_part_roles[r]);
-		if (strncmp(ln, agent_part_roles[r], k) || ln[k] != '\'' '\'' ||
-				!isdigit((unsigned char)ln[k+1]))
-			continue;
-		if (strtoul(ln + k + 1, &e, 10) != turn || *e != '\''.'\'' ||
-				!isdigit((unsigned char)e[1]))
-			return 0;
-		i = strtoul(e + 1, &e, 10);
-		if ((*e != '\''\n'\'' && *e) || i > INT_MAX || (int)i <= lastidx)
-			return 0;
-		*idx = i;
-		return r + 1;
-	}
-	return 0;
-}
-
-static int agent_live(void)
-{
-	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
-}
-
-/* acl above 1 or negative: replies stay as returned between rebuilds and
- * checkpoints trim the log; acl 1 rebuilds every request. */
-static int agent_acl_kept(void)
-{
-	return xacl > 1 || xacl < 0;
-}
-
-/* An entry of b-4; role 0 and number 0 is the text before the first header. */
-struct agent_span {
-	int role, beg, end;	/* AE_ role; header line, line after */
-	unsigned long n;
-	size_t bytes;		/* body bytes, headers excluded */
-	size_t part[4];		/* TURN: bytes per part role, summed */
-	int calls;		/* TURN: EX parts */
-};
-
-/* Split a log into entries; the caller frees *spans. Lines of a turn before
- * its first part header, left by a hand edit, count as text. */
-static int agent_spans_of(struct lbuf *lb, struct agent_span **spans)
-{
-	unsigned long n, last = 0;
-	int role, cnt = 0, cap = 0, part = AP_ASSISTANT, idx = -1, r;
-	struct agent_span *s;
-	*spans = NULL;
-	for (int i = 0; i < lbuf_len(lb); i++) {
-		if (!(role = agent_header(lb->ln[i], last, &n)) && i) {
-			s = *spans + cnt - 1;
-			if (s->role == AE_TURN && (r = agent_part_header(lb->ln[i],
-					s->n, idx, &idx))) {
-				part = r - 1;
-				s->calls += part == AP_EX;
-				continue;
-			}
-			s->bytes += strlen(lb->ln[i]);
-			if (s->role == AE_TURN)
-				s->part[part] += strlen(lb->ln[i]);
-			continue;
-		}
-		if (cnt == cap) {
-			cap = cap * 2 + 16;
-			*spans = erealloc(*spans, cap * sizeof(**spans));
-		}
-		if (cnt)
-			(*spans)[cnt-1].end = i;
-		(*spans)[cnt++] = (struct agent_span){role, i, 0, role ? n : 0,
-			role ? 0 : strlen(lb->ln[i]), {0, 0, 0, 0}, 0};
-		part = AP_ASSISTANT;
-		idx = -1;
-		if (role)
-			last = n;
-	}
-	if (cnt)
-		(*spans)[cnt-1].end = lbuf_len(lb);
-	return cnt;
-}
-
-struct agent_part { int role, idx, beg, end; };	/* header line, line after */
-
-/* Split turn s of lb into parts; the caller frees *parts. Lines before the
- * first part header form a text part with index -1, headed by the TURN
- * line. */
-static int agent_parts(struct lbuf *lb, struct agent_span *s,
-		struct agent_part **parts)
-{
-	int cnt = 0, cap = 0, idx = -1, r;
-	*parts = NULL;
-	for (int i = s->beg + 1; i < s->end; i++) {
-		r = agent_part_header(lb->ln[i], s->n, idx, &idx);
-		if (!r && cnt)
-			continue;
-		if (cnt == cap) {
-			cap = cap * 2 + 8;
-			*parts = erealloc(*parts, cap * sizeof(**parts));
-		}
-		if (cnt)
-			(*parts)[cnt-1].end = i;
-		(*parts)[cnt++] = (struct agent_part){r ? r - 1 : AP_ASSISTANT,
-			r ? idx : -1, r ? i : s->beg, 0};
-	}
-	if (cnt)
-		(*parts)[cnt-1].end = s->end;
-	return cnt;
-}
-
-/* Split the session log b-4 into entries. */
-static int agent_spans(struct agent_span **spans)
-{
-	return agent_spans_of(tempbufs[3].lb, spans);
+	agent_frame(text, id, end);
+	snprintf(head, sizeof(head), "%s%s%s %lu.%d%s\n", open, agent_log_mark(),
+		agent_part_roles[idx < 2 ? idx : AP_EX + (idx & 1)], *turn, idx, id);
+	agent_log_write(head, text, end);
 }
 
 /* Copy entries first through last of lb, split into spans, into b-7 in
@@ -677,18 +770,19 @@ static void agent_head_summary(void)
 	struct agent_span *spans;
 	int cnt = agent_spans_of(tempbufs[6].lb, &spans);
 	unsigned long n;
-	char head[48];
+	char head[48], id[AGENT_ID], end[AGENT_END], *text;
 	if (cnt)
 		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
 	free(spans);
-	if (!lbuf_len(lb) || agent_header(lb->ln[0], 0, &n))
+	if (!lbuf_len(lb) || agent_header(lb->ln[0], 0, &n, NULL))
 		return;
-	snprintf(head, sizeof(head), "USER %lu\n", ++agent_entries[1]);
+	text = agent_text(lb);
+	agent_frame(text, id, end);
+	free(text);
+	snprintf(head, sizeof(head), "USER %lu%s\n", ++agent_entries[1], id);
 	preserve(int, agent_tool, agent_tool = 0;)
 	preserve(int, agent_syncing, agent_syncing = 1;)
-	/* A blank line ends it, as agent_log ends entries. */
-	if (strcmp(lb->ln[lbuf_len(lb) - 1], "\n"))
-		lbuf_edit(lb, "\n", lbuf_len(lb), lbuf_len(lb), 0, 0);
+	lbuf_edit(lb, end, lbuf_len(lb), lbuf_len(lb), 0, 0);
 	lbuf_edit(lb, head, 0, 0, 0, 0);
 	restore(agent_syncing)
 	restore(agent_tool)
@@ -1408,11 +1502,13 @@ static void *ec_acheck(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-/* Append lines beg to end of lb to sb, less trailing blank lines. */
-static void agent_body(sbuf *sb, struct lbuf *lb, int beg, int end)
+/* Append lines beg to end of lb to sb, less the END line close and trailing
+ * blank lines. */
+static void agent_body(sbuf *sb, struct lbuf *lb, int beg, int end, int close)
 {
 	for (int i = beg; i < end; i++)
-		sbuf_str(sb, lb->ln[i])
+		if (i != close)
+			sbuf_str(sb, lb->ln[i])
 	while (sb->s_n && sb->s[sb->s_n-1] == '\''\n'\'')
 		sb->s_n--;
 	sbuf_nul(sb)
@@ -1447,13 +1543,13 @@ static void agent_add_turn(cJSON *msgs, struct lbuf *lb, struct agent_span *s)
 			sbuf *sb = parts[k].role == AP_ASSISTANT ? text : reason;
 			if (sb->s_n)
 				sbuf_str(sb, "\n\n")
-			agent_body(sb, lb, parts[k].beg + 1, parts[k].end);
+			agent_body(sb, lb, parts[k].beg + 1, parts[k].end, parts[k].close);
 		}
 		if (parts[k].role != AP_EX)
 			continue;
 		snprintf(id, sizeof(id), "ex%lu_%d", s->n, parts[k].idx);
 		sbuf_cut(body, 0)
-		agent_body(body, lb, parts[k].beg + 1, parts[k].end);
+		agent_body(body, lb, parts[k].beg + 1, parts[k].end, parts[k].close);
 		tc = cJSON_CreateObject();
 		cJSON_AddStringToObject(tc, "id", id);
 		cJSON_AddStringToObject(tc, "type", "function");
@@ -1470,7 +1566,8 @@ static void agent_add_turn(cJSON *msgs, struct lbuf *lb, struct agent_span *s)
 			agent_stamp(body, s->n);
 		cJSON_AddItemToArray(calls, tc);
 		if (k + 1 < cnt && parts[k + 1].role == AP_RESULT)
-			agent_body(body, lb, parts[k + 1].beg + 1, parts[k + 1].end);
+			agent_body(body, lb, parts[k + 1].beg + 1, parts[k + 1].end,
+				parts[k + 1].close);
 		else
 			sbufn_str(body, "no result")
 		tool = agent_msg("tool", body->s);
@@ -1561,7 +1658,8 @@ static void agent_reparse(void)
 		if (spans[k].role > AE_USER)
 			continue;
 		sbuf_cut(text, 0)
-		agent_body(text, lb, spans[k].beg + !!spans[k].role, spans[k].end);
+		agent_body(text, lb, spans[k].beg + !!spans[k].role, spans[k].end,
+			spans[k].close);
 		if (text->s_n)
 			agent_add_user(agent_messages, text->s);
 	}
@@ -2951,6 +3049,13 @@ static int agent_islist(char *loc)
 	return c && strchr(c + 1, '\'','\'');
 }
 
+/* Append header line ln, with " trimmed" after it for an entry of b-7. */
+static void agent_aget_head(sbuf *sb, char *ln, int trimmed)
+{
+	sbuf_mem(sb, ln, (int)strcspn(ln, "\n"))
+	sbuf_str(sb, trimmed ? " trimmed\n" : "\n")
+}
+
 /* Print entries N through M of b-4 and of b-7 in number order, those of
  * b-7 with " trimmed" after each header. Part indexes in arg print only
  * those parts of turns; role names only those entries and parts. */
@@ -2964,7 +3069,7 @@ static void *ec_aget(char *loc, char *cmd, char *arg)
 	int cnt[2], k[2] = {0, 0}, eroles = 0, proles = 0, nidx = 0, *idxs = NULL;
 	int len, b, i, j, np, found = 0;
 	unsigned long beg, end, last = 0, idx;
-	char head[64], *ret = NULL, *e;
+	char *ret = NULL, *e;
 	while (*(arg += strspn(arg, " \t"))) {
 		len = strcspn(arg, " \t");
 		found = 0;
@@ -3023,11 +3128,8 @@ static void *ec_aget(char *loc, char *cmd, char *arg)
 		found = 1;
 		/* Whole entries, unless parts or other roles are asked for. */
 		if (!nidx && (!(eroles | proles) || eroles & (1 << sp->role))) {
-			if (sp->role) {
-				snprintf(head, sizeof(head), "%s %lu%s\n",
-					agent_span_role(sp), sp->n, b ? "" : " trimmed");
-				sbuf_str(sb, head)
-			}
+			if (sp->role)
+				agent_aget_head(sb, lbs[b]->ln[sp->beg], !b);
 			if (sp->role != AE_TURN || b) {
 				for (i = sp->beg + !!sp->role; i < sp->end; i++)
 					sbuf_str(sb, lbs[b]->ln[i])
@@ -3045,12 +3147,8 @@ static void *ec_aget(char *loc, char *cmd, char *arg)
 			} else if (!(eroles & (1 << AE_TURN)) && (eroles | proles) &&
 					!(proles & (1 << parts[j].role)))
 				continue;
-			if (parts[j].idx >= 0) {
-				snprintf(head, sizeof(head), "%s %lu.%d%s\n",
-					agent_part_roles[parts[j].role], sp->n,
-					parts[j].idx, b ? "" : " trimmed");
-				sbuf_str(sb, head)
-			}
+			if (parts[j].idx >= 0)
+				agent_aget_head(sb, lbs[b]->ln[parts[j].beg], !b);
 			for (i = parts[j].beg + 1; i < parts[j].end; i++)
 				sbuf_str(sb, lbs[b]->ln[i])
 		}
@@ -3082,7 +3180,7 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 	int keep = agent_tool, kept = 0, klen = 0, lo = -1, split = 1, nlen = 0;
 	int list = agent_islist(loc);
 	double before = 0, after;
-	char msg[400], kmsg[128] = "", nums[128];
+	char msg[400], kmsg[128] = "", nums[128], id[AGENT_ID], fend[AGENT_END];
 	/* 1 an entry to replace, 2 one of the range that stays */
 	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
 	void *ret;
@@ -3141,18 +3239,20 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 	}
 	sbuf_smake(sb, 256)
 	if (*arg) {
+		agent_frame(arg, id, fend);
 		if (spans[note].role == AE_TURN)
-			snprintf(msg, sizeof(msg), "TURN %lu\n%s %lu.%d\n", spans[note].n,
-				agent_part_roles[AP_ASSISTANT], spans[note].n, AP_ASSISTANT);
+			snprintf(msg, sizeof(msg), "TURN %lu\n%s %lu.%d%s\n", spans[note].n,
+				agent_part_roles[AP_ASSISTANT], spans[note].n, AP_ASSISTANT, id);
 		else if (spans[note].role)
-			snprintf(msg, sizeof(msg), "%s %lu\n", agent_span_role(spans + note),
-				spans[note].n);
+			snprintf(msg, sizeof(msg), "%s %lu%s\n", agent_span_role(spans + note),
+				spans[note].n, id);
 		if (spans[note].role)
 			sbuf_str(sb, msg)
 		sbuf_str(sb, arg)
 		if (sb->s[sb->s_n-1] != '\''\n'\'')
 			sbuf_chr(sb, '\''\n'\'')
-		sbuf_chr(sb, '\''\n'\'')
+		/* The text before the first header has no header to end. */
+		sbuf_str(sb, spans[note].role ? fend : "\n")
 	}
 	sbuf_nul(sb)
 	after = *arg ? (strlen(arg) + 2) / 3 : 0;
@@ -7438,19 +7538,22 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N\n" \
                 "headers of b-4; $ is the last entry and 0 the text before the first\n" \
                 "header. A TURN is one reply of the agent: its reasoning, text,\n" \
-                "commands and results, as parts headed ROLE N.I. The first tool\n" \
-                "result of each turn the agent sees starts with TURN N; the log does\n" \
-                "not hold that text. Text replaces N through M as one entry with the\n" \
-                "role and number of N, a turn becoming a turn with only the text; no\n" \
-                "text removes them. Three or more numbers, as in 2,4,7, name those\n" \
-                "turns alone, noted in place of the first; a number that is not a\n" \
-                "TURN rejects the list. The agent cannot change USER entries, entry 0\n" \
-                "or the turn still running: USER entries stay, and its note goes\n" \
-                "after the last one spanned, as a turn. Prints the estimated tokens\n" \
-                "before and after and the USER entries kept. Changes the agent\n" \
-                "context when acl is set. Replaced entries move to b-7, saved as\n" \
-                "discarded in the session directory; a number already there keeps\n" \
-                "its entry.\n\n" \
+                "commands and results, as parts headed ROLE N.I. The text of a USER\n" \
+                "or NOTICE entry and of a part ends at its END line; lines before it\n" \
+                "are text even when they read as headers. Text that holds a line END\n" \
+                "has an id after its header, as in RESULT N.I id, and ends at END id.\n" \
+                "The first tool result of each turn the agent sees starts with TURN\n" \
+                "N; the log does not hold that text. Text replaces N through M as one\n" \
+                "entry with the role and number of N, a turn becoming a turn with\n" \
+                "only the text; no text removes them. Three or more numbers, as in\n" \
+                "2,4,7, name those turns alone, noted in place of the first; a number\n" \
+                "that is not a TURN rejects the list. The agent cannot change USER\n" \
+                "entries, entry 0 or the turn still running: USER entries stay, and\n" \
+                "its note goes after the last one spanned, as a turn. Prints the\n" \
+                "estimated tokens before and after and the USER entries kept. Changes\n" \
+                "the agent context when acl is set. Replaced entries move to b-7,\n" \
+                "saved as discarded in the session directory; a number already there\n" \
+                "keeps its entry.\n\n" \
                 "Example: replace a turn with a note\n:14anote ls listed 40 files, none relevant")
             spec("[entries]aget[parts]", "Print agent session log entries, trimmed ones included",
                 "Prints entries N through M of b-4 and b-7 in number order with their\n" \
@@ -10472,19 +10575,22 @@ static char *exspec_lines[] = {
 	"entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N",
 	"headers of b-4; $ is the last entry and 0 the text before the first",
 	"header. A TURN is one reply of the agent: its reasoning, text,",
-	"commands and results, as parts headed ROLE N.I. The first tool",
-	"result of each turn the agent sees starts with TURN N; the log does",
-	"not hold that text. Text replaces N through M as one entry with the",
-	"role and number of N, a turn becoming a turn with only the text; no",
-	"text removes them. Three or more numbers, as in 2,4,7, name those",
-	"turns alone, noted in place of the first; a number that is not a",
-	"TURN rejects the list. The agent cannot change USER entries, entry 0",
-	"or the turn still running: USER entries stay, and its note goes",
-	"after the last one spanned, as a turn. Prints the estimated tokens",
-	"before and after and the USER entries kept. Changes the agent",
-	"context when acl is set. Replaced entries move to b-7, saved as",
-	"discarded in the session directory; a number already there keeps",
-	"its entry.",
+	"commands and results, as parts headed ROLE N.I. The text of a USER",
+	"or NOTICE entry and of a part ends at its END line; lines before it",
+	"are text even when they read as headers. Text that holds a line END",
+	"has an id after its header, as in RESULT N.I id, and ends at END id.",
+	"The first tool result of each turn the agent sees starts with TURN",
+	"N; the log does not hold that text. Text replaces N through M as one",
+	"entry with the role and number of N, a turn becoming a turn with",
+	"only the text; no text removes them. Three or more numbers, as in",
+	"2,4,7, name those turns alone, noted in place of the first; a number",
+	"that is not a TURN rejects the list. The agent cannot change USER",
+	"entries, entry 0 or the turn still running: USER entries stay, and",
+	"its note goes after the last one spanned, as a turn. Prints the",
+	"estimated tokens before and after and the USER entries kept. Changes",
+	"the agent context when acl is set. Replaced entries move to b-7,",
+	"saved as discarded in the session directory; a number already there",
+	"keeps its entry.",
 	"",
 	"Example: replace a turn with a note",
 	"14anote ls listed 40 files, none relevant",
@@ -11055,54 +11161,54 @@ static struct {
 	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
 	{"aretry", "Execute the last agent command", 793, 804, 0, 0},
 	{"aout", "Print the saved output of the last agent tool call", 805, 816, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 817, 839, 0, 0},
-	{"aget", "Print agent session log entries, trimmed ones included", 840, 857, 0, 0},
-	{"arate", "Rate agent turns in the notes buffer", 858, 880, 0, 0},
-	{"adone", "End an agent checkpoint", 881, 888, 0, 0},
-	{"acheck", "Start an agent checkpoint or set its budget", 889, 901, 0, 0},
-	{"acp", "Print the agent checkpoint instructions", 902, 908, 0, 0},
-	{"ali", "Print the agent session log entry list", 909, 920, 0, 0},
-	{"auli", "Print the unrated agent session log turns", 921, 927, 0, 0},
-	{"ast", "Print agent status and token usage", 928, 937, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 938, 951, 0, 0},
-	{"ac", "Set autocomplete filter regex", 952, 960, 0, 0},
-	{"sc", "Set ex special characters", 961, 971, 0, 0},
-	{"sc!", "Set ex special characters", 972, 979, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 980, 987, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 988, 991, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 992, 996, 0, 0},
-	{"ph", "Redefine placeholders", 997, 1013, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1022, 1062, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1063, 1072, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1073, 1080, 1, 0},
-	{"agr", "Control agent output protection", 1081, 1087, 1, 0},
-	{"ato", "Detach long agent shell commands", 1088, 1095, 1, 0},
-	{"ar", "Display returned agent reasoning", 1096, 1101, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1102, 1108, 1, 0},
-	{"ai", "Indent new lines", 1109, 1112, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1113, 1114, 1, 0},
-	{"ish", "Interactive shell", 1115, 1130, 1, 0},
-	{"grp", "Regex search group", 1131, 1139, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1140, 1143, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1144, 1145, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1145, 1146, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1146, 1147, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1147, 1148, 1, 0},
-	{"led", "Enable all terminal output", 1148, 1149, 1, 0},
-	{"vis", "Control startup flags", 1150, 1161, 1, 0},
-	{"mpt", "Control vi prompts", 1162, 1172, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1173, 1175, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1175, 1177, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1177, 1178, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1178, 1179, 1, 0},
-	{"td", "Current text direction context", 1179, 1185, 1, 0},
-	{"pr", "Print register", 1186, 1202, 1, 0},
-	{"fr", "Find register", 1203, 1215, 1, 0},
-	{"rr", "Record register", 1216, 1229, 1, 0},
-	{"lim", "Line length render limit", 1230, 1245, 1, 0},
-	{"seq", "Control Undo/Redo", 1246, 1258, 1, 0},
-	{"left", "Control horizontal scroll", 1259, 1264, 1, 0},
-	{"err", "Control ex errors", 1265, 1277, 1, 0},
+	{"anote", "Replace or remove agent session log entries", 817, 842, 0, 0},
+	{"aget", "Print agent session log entries, trimmed ones included", 843, 860, 0, 0},
+	{"arate", "Rate agent turns in the notes buffer", 861, 883, 0, 0},
+	{"adone", "End an agent checkpoint", 884, 891, 0, 0},
+	{"acheck", "Start an agent checkpoint or set its budget", 892, 904, 0, 0},
+	{"acp", "Print the agent checkpoint instructions", 905, 911, 0, 0},
+	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
+	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
+	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
+	{"ath", "Set the agent thinking cap and effort", 941, 954, 0, 0},
+	{"ac", "Set autocomplete filter regex", 955, 963, 0, 0},
+	{"sc", "Set ex special characters", 964, 974, 0, 0},
+	{"sc!", "Set ex special characters", 975, 982, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 983, 990, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 991, 994, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 995, 999, 0, 0},
+	{"ph", "Redefine placeholders", 1000, 1016, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1025, 1065, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1066, 1075, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1076, 1083, 1, 0},
+	{"agr", "Control agent output protection", 1084, 1090, 1, 0},
+	{"ato", "Detach long agent shell commands", 1091, 1098, 1, 0},
+	{"ar", "Display returned agent reasoning", 1099, 1104, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1105, 1111, 1, 0},
+	{"ai", "Indent new lines", 1112, 1115, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1116, 1117, 1, 0},
+	{"ish", "Interactive shell", 1118, 1133, 1, 0},
+	{"grp", "Regex search group", 1134, 1142, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1143, 1146, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1147, 1148, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1148, 1149, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1149, 1150, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1150, 1151, 1, 0},
+	{"led", "Enable all terminal output", 1151, 1152, 1, 0},
+	{"vis", "Control startup flags", 1153, 1164, 1, 0},
+	{"mpt", "Control vi prompts", 1165, 1175, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1176, 1178, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1178, 1180, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1180, 1181, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1181, 1182, 1, 0},
+	{"td", "Current text direction context", 1182, 1188, 1, 0},
+	{"pr", "Print register", 1189, 1205, 1, 0},
+	{"fr", "Find register", 1206, 1218, 1, 0},
+	{"rr", "Record register", 1219, 1232, 1, 0},
+	{"lim", "Line length render limit", 1233, 1248, 1, 0},
+	{"seq", "Control Undo/Redo", 1249, 1261, 1, 0},
+	{"left", "Control horizontal scroll", 1262, 1267, 1, 0},
+	{"err", "Control ex errors", 1268, 1280, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -11732,10 +11838,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..e2a0d9f29
+index 000000000..2bb89045e
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3689 @@
+@@ -0,0 +1,3789 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12143,24 +12249,250 @@ index 000000000..e2a0d9f29
 +
 +/* A log holds numbered entries, "ROLE N". A TURN entry is one reply: its
 + * header line, then parts headed "ROLE N.I". NOTICE entries report harness
-+ * events to the user; they are never sent. */
++ * events to the user; they are never sent. The body of a USER or NOTICE
++ * entry and of a part runs to its "END" line, so its lines are never taken
++ * as headers. A body that holds a line "END" has an id on its header, as in
++ * "ROLE N id", and runs to "END id". */
 +enum { AE_TEXT, AE_USER, AE_TURN, AE_NOTICE };		/* entries */
 +enum { AP_REASONING, AP_ASSISTANT, AP_EX, AP_RESULT };	/* turn parts */
 +static char *agent_entry_roles[] = {"USER", "TURN", "NOTICE"};
 +static char *agent_part_roles[] = {"REASONING", "ASSISTANT", "EX", "RESULT"};
 +/* The turn being written per log, indexed as agent_entries; 0 is none. */
 +static unsigned long agent_turn[2];
++#define AGENT_ID	12		/* " id" of a header, with its NUL */
++#define AGENT_END	(AGENT_ID + 8)	/* "END id\n", with its NUL */
 +
-+/* Append a header and its body to the log, ended by a blank line. */
-+static void agent_log_write(const char *head, const char *text)
++/* The rest e of a header line after its number: nothing, or a space and an
++ * id of letters and digits. Sets end, unless NULL, to the line that ends
++ * the body. */
++static int agent_header_end(char *e, char *end)
++{
++	int k = 0;
++	if (*e == ' ') {
++		while (isalnum((unsigned char)e[1 + k]))
++			k++;
++		if (!k || k + 1 >= AGENT_ID)
++			return 0;
++		k++;
++	}
++	if (e[k] != '\n' && e[k])
++		return 0;
++	if (end)
++		snprintf(end, AGENT_END, "END%.*s\n", k, e);
++	return 1;
++}
++
++/* Entry header "ROLE N" with N above the previous header; returns the AE_
++ * role, 0 for no header. A TURN header takes no id: its parts have bodies,
++ * it has none. */
++static int agent_header(char *ln, unsigned long last, unsigned long *n, char *end)
++{
++	char *e;
++	for (int i = 0; i < LEN(agent_entry_roles); i++) {
++		int k = strlen(agent_entry_roles[i]);
++		if (strncmp(ln, agent_entry_roles[i], k) || ln[k] != ' ' ||
++				!isdigit((unsigned char)ln[k+1]))
++			continue;
++		*n = strtoul(ln + k + 1, &e, 10);
++		if (*n <= last)
++			return 0;
++		if (i + 1 == AE_TURN)
++			return *e == '\n' || !*e ? i + 1 : 0;
++		return agent_header_end(e, end) ? i + 1 : 0;
++	}
++	return 0;
++}
++
++/* Part header "ROLE N.I" of turn N with I above the previous part's index,
++ * -1 at the turn's start; returns the AP_ role + 1, 0 for no header. */
++static int agent_part_header(char *ln, unsigned long turn, int lastidx, int *idx,
++		char *end)
++{
++	char *e;
++	unsigned long i;
++	for (int r = 0; r < LEN(agent_part_roles); r++) {
++		int k = strlen(agent_part_roles[r]);
++		if (strncmp(ln, agent_part_roles[r], k) || ln[k] != ' ' ||
++				!isdigit((unsigned char)ln[k+1]))
++			continue;
++		if (strtoul(ln + k + 1, &e, 10) != turn || *e != '.' ||
++				!isdigit((unsigned char)e[1]))
++			return 0;
++		i = strtoul(e + 1, &e, 10);
++		if (i > INT_MAX || (int)i <= lastidx || !agent_header_end(e, end))
++			return 0;
++		*idx = i;
++		return r + 1;
++	}
++	return 0;
++}
++
++static int agent_live(void)
++{
++	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
++}
++
++/* acl above 1 or negative: replies stay as returned between rebuilds and
++ * checkpoints trim the log; acl 1 rebuilds every request. */
++static int agent_acl_kept(void)
++{
++	return xacl > 1 || xacl < 0;
++}
++
++/* An entry of b-4; role 0 and number 0 is the text before the first header. */
++struct agent_span {
++	int role, beg, end;	/* AE_ role; header line, line after */
++	unsigned long n;
++	size_t bytes;		/* body bytes, headers and END lines excluded */
++	size_t part[4];		/* TURN: bytes per part role, summed */
++	int calls;		/* TURN: EX parts */
++	int close;		/* USER, NOTICE: the END line, -1 for none */
++	char open[AGENT_END];	/* last entry: the END line its body lacks */
++};
++
++/* Split a log into entries; the caller frees *spans. Lines outside a body,
++ * left by a hand edit, count as text of the entry or part above them. */
++static int agent_spans_of(struct lbuf *lb, struct agent_span **spans)
++{
++	unsigned long n, last = 0;
++	int role, cnt = 0, cap = 0, part = AP_ASSISTANT, idx = -1, r;
++	char end[AGENT_END] = "";	/* ends the body being read; empty outside */
++	struct agent_span *s;
++	*spans = NULL;
++	for (int i = 0; i < lbuf_len(lb); i++) {
++		s = cnt ? *spans + cnt - 1 : NULL;
++		if (*end && !strcmp(lb->ln[i], end)) {
++			*end = '\0';
++			if (s->role != AE_TURN)
++				s->close = i;
++			continue;
++		}
++		if (*end || (!(role = agent_header(lb->ln[i], last, &n, end)) && i)) {
++			if (!*end && s->role == AE_TURN && (r = agent_part_header(
++					lb->ln[i], s->n, idx, &idx, end))) {
++				part = r - 1;
++				s->calls += part == AP_EX;
++				continue;
++			}
++			s->bytes += strlen(lb->ln[i]);
++			if (s->role == AE_TURN)
++				s->part[part] += strlen(lb->ln[i]);
++			continue;
++		}
++		if (cnt == cap) {
++			cap = cap * 2 + 16;
++			*spans = erealloc(*spans, cap * sizeof(**spans));
++		}
++		if (cnt)
++			(*spans)[cnt-1].end = i;
++		(*spans)[cnt++] = (struct agent_span){role, i, 0, role ? n : 0,
++			role ? 0 : strlen(lb->ln[i]), {0, 0, 0, 0}, 0, -1, ""};
++		part = AP_ASSISTANT;
++		idx = -1;
++		if (role)
++			last = n;
++	}
++	if (cnt) {
++		(*spans)[cnt-1].end = lbuf_len(lb);
++		strcpy((*spans)[cnt-1].open, end);
++	}
++	return cnt;
++}
++
++/* Header line, line after, and the END line or -1. */
++struct agent_part { int role, idx, beg, end, close; };
++
++/* Split turn s of lb into parts; the caller frees *parts. Lines before the
++ * first part header form a text part with index -1, headed by the TURN
++ * line. */
++static int agent_parts(struct lbuf *lb, struct agent_span *s,
++		struct agent_part **parts)
++{
++	int cnt = 0, cap = 0, idx = -1, r;
++	char end[AGENT_END] = "";
++	*parts = NULL;
++	for (int i = s->beg + 1; i < s->end; i++) {
++		if (*end) {
++			if (!strcmp(lb->ln[i], end)) {
++				*end = '\0';
++				(*parts)[cnt-1].close = i;
++			}
++			continue;
++		}
++		r = agent_part_header(lb->ln[i], s->n, idx, &idx, end);
++		if (!r && cnt)
++			continue;
++		if (cnt == cap) {
++			cap = cap * 2 + 8;
++			*parts = erealloc(*parts, cap * sizeof(**parts));
++		}
++		if (cnt)
++			(*parts)[cnt-1].end = i;
++		(*parts)[cnt++] = (struct agent_part){r ? r - 1 : AP_ASSISTANT,
++			r ? idx : -1, r ? i : s->beg, 0, -1};
++	}
++	if (cnt)
++		(*parts)[cnt-1].end = s->end;
++	return cnt;
++}
++
++/* Split the session log b-4 into entries. */
++static int agent_spans(struct agent_span **spans)
++{
++	return agent_spans_of(tempbufs[3].lb, spans);
++}
++
++/* Whether a line of s is ln, which ends in a newline. */
++static int agent_has_line(const char *s, const char *ln)
++{
++	int n = strlen(ln) - 1;
++	while (s) {
++		if (!strncmp(s, ln, n) && (s[n] == '\n' || !s[n]))
++			return 1;
++		if ((s = strchr(s, '\n')))
++			s++;
++	}
++	return 0;
++}
++
++/* Choose the line that ends a body of text: "END", or "END id" with a
++ * random id while text holds that line. id is " id" for the header, or
++ * empty. */
++static void agent_frame(const char *text, char *id, char *end)
++{
++	static unsigned int seed;
++	*id = '\0';
++	strcpy(end, "END\n");
++	while (agent_has_line(text, end)) {
++		if (!seed)
++			seed = time(NULL) ^ getpid();
++		id[0] = ' ';
++		for (int i = 1; i < 5; i++) {
++			seed = seed * 1103515245u + 12345u;
++			id[i] = "abcdefghijklmnopqrstuvwxyz0123456789"[(seed >> 16) % 36];
++		}
++		id[5] = '\0';
++		snprintf(end, AGENT_END, "END%s\n", id);
++	}
++}
++
++/* Append a header, its body and the line that ends it to the log. */
++static void agent_log_write(const char *head, const char *text, const char *end)
 +{
 +	struct lbuf *lb = tempbufs[agent_logbuf].lb;
++	struct agent_span *spans;
++	int cnt = agent_spans_of(lb, &spans);
 +	sbuf_smake(sb, 256)
++	/* A hand edit can remove the last END line; that body would take
++	 * this entry. */
++	if (cnt && *spans[cnt-1].open)
++		sbuf_str(sb, spans[cnt-1].open)
++	free(spans);
 +	sbuf_str(sb, head)
 +	sbuf_str(sb, text);
 +	if (sb->s[sb->s_n-1] != '\n')
 +		sbuf_chr(sb, '\n')
-+	sbuf_chr(sb, '\n')
++	sbuf_str(sb, end)
 +	sbuf_nul(sb)
 +	agent_output(sb->s);
 +	lb->useq++;
@@ -12185,11 +12517,12 @@ index 000000000..e2a0d9f29
 +/* Log a USER or NOTICE entry. */
 +static void agent_log(const char *role, const char *text)
 +{
-+	char head[64];
++	char head[64], id[AGENT_ID], end[AGENT_END];
 +	agent_turn_close();
-+	snprintf(head, sizeof(head), "%s%s %lu\n", agent_log_mark(), role,
-+		++agent_entries[agent_logbuf == 3]);
-+	agent_log_write(head, text);
++	agent_frame(text, id, end);
++	snprintf(head, sizeof(head), "%s%s %lu%s\n", agent_log_mark(), role,
++		++agent_entries[agent_logbuf == 3], id);
++	agent_log_write(head, text, end);
 +}
 +
 +/* Log part idx of the open turn, opening one first when none is: 0
@@ -12198,149 +12531,15 @@ index 000000000..e2a0d9f29
 +static void agent_turn_part(int idx, const char *text)
 +{
 +	unsigned long *turn = agent_turn + (agent_logbuf == 3);
-+	char open[48] = "", head[128];
++	char open[48] = "", head[128], id[AGENT_ID], end[AGENT_END];
 +	if (!*turn) {
 +		*turn = ++agent_entries[agent_logbuf == 3];
 +		snprintf(open, sizeof(open), "%sTURN %lu\n", agent_log_mark(), *turn);
 +	}
-+	snprintf(head, sizeof(head), "%s%s%s %lu.%d\n", open, agent_log_mark(),
-+		agent_part_roles[idx < 2 ? idx : AP_EX + (idx & 1)], *turn, idx);
-+	agent_log_write(head, text);
-+}
-+
-+/* Entry header "ROLE N" with N above the previous header; returns the AE_
-+ * role, 0 for no header. */
-+static int agent_header(char *ln, unsigned long last, unsigned long *n)
-+{
-+	char *e;
-+	for (int i = 0; i < LEN(agent_entry_roles); i++) {
-+		int k = strlen(agent_entry_roles[i]);
-+		if (strncmp(ln, agent_entry_roles[i], k) || ln[k] != ' ' ||
-+				!isdigit((unsigned char)ln[k+1]))
-+			continue;
-+		*n = strtoul(ln + k + 1, &e, 10);
-+		return (*e == '\n' || !*e) && *n > last ? i + 1 : 0;
-+	}
-+	return 0;
-+}
-+
-+/* Part header "ROLE N.I" of turn N with I above the previous part's index,
-+ * -1 at the turn's start; returns the AP_ role + 1, 0 for no header. The
-+ * numbers keep output lines such as "EX" from being taken as headers. */
-+static int agent_part_header(char *ln, unsigned long turn, int lastidx, int *idx)
-+{
-+	char *e;
-+	unsigned long i;
-+	for (int r = 0; r < LEN(agent_part_roles); r++) {
-+		int k = strlen(agent_part_roles[r]);
-+		if (strncmp(ln, agent_part_roles[r], k) || ln[k] != ' ' ||
-+				!isdigit((unsigned char)ln[k+1]))
-+			continue;
-+		if (strtoul(ln + k + 1, &e, 10) != turn || *e != '.' ||
-+				!isdigit((unsigned char)e[1]))
-+			return 0;
-+		i = strtoul(e + 1, &e, 10);
-+		if ((*e != '\n' && *e) || i > INT_MAX || (int)i <= lastidx)
-+			return 0;
-+		*idx = i;
-+		return r + 1;
-+	}
-+	return 0;
-+}
-+
-+static int agent_live(void)
-+{
-+	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
-+}
-+
-+/* acl above 1 or negative: replies stay as returned between rebuilds and
-+ * checkpoints trim the log; acl 1 rebuilds every request. */
-+static int agent_acl_kept(void)
-+{
-+	return xacl > 1 || xacl < 0;
-+}
-+
-+/* An entry of b-4; role 0 and number 0 is the text before the first header. */
-+struct agent_span {
-+	int role, beg, end;	/* AE_ role; header line, line after */
-+	unsigned long n;
-+	size_t bytes;		/* body bytes, headers excluded */
-+	size_t part[4];		/* TURN: bytes per part role, summed */
-+	int calls;		/* TURN: EX parts */
-+};
-+
-+/* Split a log into entries; the caller frees *spans. Lines of a turn before
-+ * its first part header, left by a hand edit, count as text. */
-+static int agent_spans_of(struct lbuf *lb, struct agent_span **spans)
-+{
-+	unsigned long n, last = 0;
-+	int role, cnt = 0, cap = 0, part = AP_ASSISTANT, idx = -1, r;
-+	struct agent_span *s;
-+	*spans = NULL;
-+	for (int i = 0; i < lbuf_len(lb); i++) {
-+		if (!(role = agent_header(lb->ln[i], last, &n)) && i) {
-+			s = *spans + cnt - 1;
-+			if (s->role == AE_TURN && (r = agent_part_header(lb->ln[i],
-+					s->n, idx, &idx))) {
-+				part = r - 1;
-+				s->calls += part == AP_EX;
-+				continue;
-+			}
-+			s->bytes += strlen(lb->ln[i]);
-+			if (s->role == AE_TURN)
-+				s->part[part] += strlen(lb->ln[i]);
-+			continue;
-+		}
-+		if (cnt == cap) {
-+			cap = cap * 2 + 16;
-+			*spans = erealloc(*spans, cap * sizeof(**spans));
-+		}
-+		if (cnt)
-+			(*spans)[cnt-1].end = i;
-+		(*spans)[cnt++] = (struct agent_span){role, i, 0, role ? n : 0,
-+			role ? 0 : strlen(lb->ln[i]), {0, 0, 0, 0}, 0};
-+		part = AP_ASSISTANT;
-+		idx = -1;
-+		if (role)
-+			last = n;
-+	}
-+	if (cnt)
-+		(*spans)[cnt-1].end = lbuf_len(lb);
-+	return cnt;
-+}
-+
-+struct agent_part { int role, idx, beg, end; };	/* header line, line after */
-+
-+/* Split turn s of lb into parts; the caller frees *parts. Lines before the
-+ * first part header form a text part with index -1, headed by the TURN
-+ * line. */
-+static int agent_parts(struct lbuf *lb, struct agent_span *s,
-+		struct agent_part **parts)
-+{
-+	int cnt = 0, cap = 0, idx = -1, r;
-+	*parts = NULL;
-+	for (int i = s->beg + 1; i < s->end; i++) {
-+		r = agent_part_header(lb->ln[i], s->n, idx, &idx);
-+		if (!r && cnt)
-+			continue;
-+		if (cnt == cap) {
-+			cap = cap * 2 + 8;
-+			*parts = erealloc(*parts, cap * sizeof(**parts));
-+		}
-+		if (cnt)
-+			(*parts)[cnt-1].end = i;
-+		(*parts)[cnt++] = (struct agent_part){r ? r - 1 : AP_ASSISTANT,
-+			r ? idx : -1, r ? i : s->beg, 0};
-+	}
-+	if (cnt)
-+		(*parts)[cnt-1].end = s->end;
-+	return cnt;
-+}
-+
-+/* Split the session log b-4 into entries. */
-+static int agent_spans(struct agent_span **spans)
-+{
-+	return agent_spans_of(tempbufs[3].lb, spans);
++	agent_frame(text, id, end);
++	snprintf(head, sizeof(head), "%s%s%s %lu.%d%s\n", open, agent_log_mark(),
++		agent_part_roles[idx < 2 ? idx : AP_EX + (idx & 1)], *turn, idx, id);
++	agent_log_write(head, text, end);
 +}
 +
 +/* Copy entries first through last of lb, split into spans, into b-7 in
@@ -12383,18 +12582,19 @@ index 000000000..e2a0d9f29
 +	struct agent_span *spans;
 +	int cnt = agent_spans_of(tempbufs[6].lb, &spans);
 +	unsigned long n;
-+	char head[48];
++	char head[48], id[AGENT_ID], end[AGENT_END], *text;
 +	if (cnt)
 +		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
 +	free(spans);
-+	if (!lbuf_len(lb) || agent_header(lb->ln[0], 0, &n))
++	if (!lbuf_len(lb) || agent_header(lb->ln[0], 0, &n, NULL))
 +		return;
-+	snprintf(head, sizeof(head), "USER %lu\n", ++agent_entries[1]);
++	text = agent_text(lb);
++	agent_frame(text, id, end);
++	free(text);
++	snprintf(head, sizeof(head), "USER %lu%s\n", ++agent_entries[1], id);
 +	preserve(int, agent_tool, agent_tool = 0;)
 +	preserve(int, agent_syncing, agent_syncing = 1;)
-+	/* A blank line ends it, as agent_log ends entries. */
-+	if (strcmp(lb->ln[lbuf_len(lb) - 1], "\n"))
-+		lbuf_edit(lb, "\n", lbuf_len(lb), lbuf_len(lb), 0, 0);
++	lbuf_edit(lb, end, lbuf_len(lb), lbuf_len(lb), 0, 0);
 +	lbuf_edit(lb, head, 0, 0, 0, 0);
 +	restore(agent_syncing)
 +	restore(agent_tool)
@@ -13114,11 +13314,13 @@ index 000000000..e2a0d9f29
 +	return NULL;
 +}
 +
-+/* Append lines beg to end of lb to sb, less trailing blank lines. */
-+static void agent_body(sbuf *sb, struct lbuf *lb, int beg, int end)
++/* Append lines beg to end of lb to sb, less the END line close and trailing
++ * blank lines. */
++static void agent_body(sbuf *sb, struct lbuf *lb, int beg, int end, int close)
 +{
 +	for (int i = beg; i < end; i++)
-+		sbuf_str(sb, lb->ln[i])
++		if (i != close)
++			sbuf_str(sb, lb->ln[i])
 +	while (sb->s_n && sb->s[sb->s_n-1] == '\n')
 +		sb->s_n--;
 +	sbuf_nul(sb)
@@ -13153,13 +13355,13 @@ index 000000000..e2a0d9f29
 +			sbuf *sb = parts[k].role == AP_ASSISTANT ? text : reason;
 +			if (sb->s_n)
 +				sbuf_str(sb, "\n\n")
-+			agent_body(sb, lb, parts[k].beg + 1, parts[k].end);
++			agent_body(sb, lb, parts[k].beg + 1, parts[k].end, parts[k].close);
 +		}
 +		if (parts[k].role != AP_EX)
 +			continue;
 +		snprintf(id, sizeof(id), "ex%lu_%d", s->n, parts[k].idx);
 +		sbuf_cut(body, 0)
-+		agent_body(body, lb, parts[k].beg + 1, parts[k].end);
++		agent_body(body, lb, parts[k].beg + 1, parts[k].end, parts[k].close);
 +		tc = cJSON_CreateObject();
 +		cJSON_AddStringToObject(tc, "id", id);
 +		cJSON_AddStringToObject(tc, "type", "function");
@@ -13176,7 +13378,8 @@ index 000000000..e2a0d9f29
 +			agent_stamp(body, s->n);
 +		cJSON_AddItemToArray(calls, tc);
 +		if (k + 1 < cnt && parts[k + 1].role == AP_RESULT)
-+			agent_body(body, lb, parts[k + 1].beg + 1, parts[k + 1].end);
++			agent_body(body, lb, parts[k + 1].beg + 1, parts[k + 1].end,
++				parts[k + 1].close);
 +		else
 +			sbufn_str(body, "no result")
 +		tool = agent_msg("tool", body->s);
@@ -13267,7 +13470,8 @@ index 000000000..e2a0d9f29
 +		if (spans[k].role > AE_USER)
 +			continue;
 +		sbuf_cut(text, 0)
-+		agent_body(text, lb, spans[k].beg + !!spans[k].role, spans[k].end);
++		agent_body(text, lb, spans[k].beg + !!spans[k].role, spans[k].end,
++			spans[k].close);
 +		if (text->s_n)
 +			agent_add_user(agent_messages, text->s);
 +	}
@@ -14657,6 +14861,13 @@ index 000000000..e2a0d9f29
 +	return c && strchr(c + 1, ',');
 +}
 +
++/* Append header line ln, with " trimmed" after it for an entry of b-7. */
++static void agent_aget_head(sbuf *sb, char *ln, int trimmed)
++{
++	sbuf_mem(sb, ln, (int)strcspn(ln, "\n"))
++	sbuf_str(sb, trimmed ? " trimmed\n" : "\n")
++}
++
 +/* Print entries N through M of b-4 and of b-7 in number order, those of
 + * b-7 with " trimmed" after each header. Part indexes in arg print only
 + * those parts of turns; role names only those entries and parts. */
@@ -14670,7 +14881,7 @@ index 000000000..e2a0d9f29
 +	int cnt[2], k[2] = {0, 0}, eroles = 0, proles = 0, nidx = 0, *idxs = NULL;
 +	int len, b, i, j, np, found = 0;
 +	unsigned long beg, end, last = 0, idx;
-+	char head[64], *ret = NULL, *e;
++	char *ret = NULL, *e;
 +	while (*(arg += strspn(arg, " \t"))) {
 +		len = strcspn(arg, " \t");
 +		found = 0;
@@ -14729,11 +14940,8 @@ index 000000000..e2a0d9f29
 +		found = 1;
 +		/* Whole entries, unless parts or other roles are asked for. */
 +		if (!nidx && (!(eroles | proles) || eroles & (1 << sp->role))) {
-+			if (sp->role) {
-+				snprintf(head, sizeof(head), "%s %lu%s\n",
-+					agent_span_role(sp), sp->n, b ? "" : " trimmed");
-+				sbuf_str(sb, head)
-+			}
++			if (sp->role)
++				agent_aget_head(sb, lbs[b]->ln[sp->beg], !b);
 +			if (sp->role != AE_TURN || b) {
 +				for (i = sp->beg + !!sp->role; i < sp->end; i++)
 +					sbuf_str(sb, lbs[b]->ln[i])
@@ -14751,12 +14959,8 @@ index 000000000..e2a0d9f29
 +			} else if (!(eroles & (1 << AE_TURN)) && (eroles | proles) &&
 +					!(proles & (1 << parts[j].role)))
 +				continue;
-+			if (parts[j].idx >= 0) {
-+				snprintf(head, sizeof(head), "%s %lu.%d%s\n",
-+					agent_part_roles[parts[j].role], sp->n,
-+					parts[j].idx, b ? "" : " trimmed");
-+				sbuf_str(sb, head)
-+			}
++			if (parts[j].idx >= 0)
++				agent_aget_head(sb, lbs[b]->ln[parts[j].beg], !b);
 +			for (i = parts[j].beg + 1; i < parts[j].end; i++)
 +				sbuf_str(sb, lbs[b]->ln[i])
 +		}
@@ -14788,7 +14992,7 @@ index 000000000..e2a0d9f29
 +	int keep = agent_tool, kept = 0, klen = 0, lo = -1, split = 1, nlen = 0;
 +	int list = agent_islist(loc);
 +	double before = 0, after;
-+	char msg[400], kmsg[128] = "", nums[128];
++	char msg[400], kmsg[128] = "", nums[128], id[AGENT_ID], fend[AGENT_END];
 +	/* 1 an entry to replace, 2 one of the range that stays */
 +	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
 +	void *ret;
@@ -14847,18 +15051,20 @@ index 000000000..e2a0d9f29
 +	}
 +	sbuf_smake(sb, 256)
 +	if (*arg) {
++		agent_frame(arg, id, fend);
 +		if (spans[note].role == AE_TURN)
-+			snprintf(msg, sizeof(msg), "TURN %lu\n%s %lu.%d\n", spans[note].n,
-+				agent_part_roles[AP_ASSISTANT], spans[note].n, AP_ASSISTANT);
++			snprintf(msg, sizeof(msg), "TURN %lu\n%s %lu.%d%s\n", spans[note].n,
++				agent_part_roles[AP_ASSISTANT], spans[note].n, AP_ASSISTANT, id);
 +		else if (spans[note].role)
-+			snprintf(msg, sizeof(msg), "%s %lu\n", agent_span_role(spans + note),
-+				spans[note].n);
++			snprintf(msg, sizeof(msg), "%s %lu%s\n", agent_span_role(spans + note),
++				spans[note].n, id);
 +		if (spans[note].role)
 +			sbuf_str(sb, msg)
 +		sbuf_str(sb, arg)
 +		if (sb->s[sb->s_n-1] != '\n')
 +			sbuf_chr(sb, '\n')
-+		sbuf_chr(sb, '\n')
++		/* The text before the first header has no header to end. */
++		sbuf_str(sb, spans[note].role ? fend : "\n")
 +	}
 +	sbuf_nul(sb)
 +	after = *arg ? (strlen(arg) + 2) / 3 : 0;
@@ -18986,10 +19192,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..c38c3759b 100755
+index c836c94c7..4cdb713d0 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,249 @@ build() {
+@@ -65,6 +65,252 @@ build() {
      }
  }
  
@@ -19062,19 +19268,22 @@ index c836c94c7..c38c3759b 100755
 +                "entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N\n" \
 +                "headers of b-4; $ is the last entry and 0 the text before the first\n" \
 +                "header. A TURN is one reply of the agent: its reasoning, text,\n" \
-+                "commands and results, as parts headed ROLE N.I. The first tool\n" \
-+                "result of each turn the agent sees starts with TURN N; the log does\n" \
-+                "not hold that text. Text replaces N through M as one entry with the\n" \
-+                "role and number of N, a turn becoming a turn with only the text; no\n" \
-+                "text removes them. Three or more numbers, as in 2,4,7, name those\n" \
-+                "turns alone, noted in place of the first; a number that is not a\n" \
-+                "TURN rejects the list. The agent cannot change USER entries, entry 0\n" \
-+                "or the turn still running: USER entries stay, and its note goes\n" \
-+                "after the last one spanned, as a turn. Prints the estimated tokens\n" \
-+                "before and after and the USER entries kept. Changes the agent\n" \
-+                "context when acl is set. Replaced entries move to b-7, saved as\n" \
-+                "discarded in the session directory; a number already there keeps\n" \
-+                "its entry.\n\n" \
++                "commands and results, as parts headed ROLE N.I. The text of a USER\n" \
++                "or NOTICE entry and of a part ends at its END line; lines before it\n" \
++                "are text even when they read as headers. Text that holds a line END\n" \
++                "has an id after its header, as in RESULT N.I id, and ends at END id.\n" \
++                "The first tool result of each turn the agent sees starts with TURN\n" \
++                "N; the log does not hold that text. Text replaces N through M as one\n" \
++                "entry with the role and number of N, a turn becoming a turn with\n" \
++                "only the text; no text removes them. Three or more numbers, as in\n" \
++                "2,4,7, name those turns alone, noted in place of the first; a number\n" \
++                "that is not a TURN rejects the list. The agent cannot change USER\n" \
++                "entries, entry 0 or the turn still running: USER entries stay, and\n" \
++                "its note goes after the last one spanned, as a turn. Prints the\n" \
++                "estimated tokens before and after and the USER entries kept. Changes\n" \
++                "the agent context when acl is set. Replaced entries move to b-7,\n" \
++                "saved as discarded in the session directory; a number already there\n" \
++                "keeps its entry.\n\n" \
 +                "Example: replace a turn with a note\n:14anote ls listed 40 files, none relevant")
 +            spec("[entries]aget[parts]", "Print agent session log entries, trimmed ones included",
 +                "Prints entries N through M of b-4 and b-7 in number order with their\n" \
@@ -19239,7 +19448,7 @@ index c836c94c7..c38c3759b 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +317,7 @@ install() {
+@@ -74,7 +320,7 @@ install() {
  }
  
  print_usage() {
@@ -19248,7 +19457,7 @@ index c836c94c7..c38c3759b 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +325,9 @@ print_usage() {
+@@ -82,6 +328,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -20298,10 +20507,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..ee1507e52
+index 000000000..1bee8c34c
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1457 @@
+@@ -0,0 +1,1460 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -21127,19 +21336,22 @@ index 000000000..ee1507e52
 +	"entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N",
 +	"headers of b-4; $ is the last entry and 0 the text before the first",
 +	"header. A TURN is one reply of the agent: its reasoning, text,",
-+	"commands and results, as parts headed ROLE N.I. The first tool",
-+	"result of each turn the agent sees starts with TURN N; the log does",
-+	"not hold that text. Text replaces N through M as one entry with the",
-+	"role and number of N, a turn becoming a turn with only the text; no",
-+	"text removes them. Three or more numbers, as in 2,4,7, name those",
-+	"turns alone, noted in place of the first; a number that is not a",
-+	"TURN rejects the list. The agent cannot change USER entries, entry 0",
-+	"or the turn still running: USER entries stay, and its note goes",
-+	"after the last one spanned, as a turn. Prints the estimated tokens",
-+	"before and after and the USER entries kept. Changes the agent",
-+	"context when acl is set. Replaced entries move to b-7, saved as",
-+	"discarded in the session directory; a number already there keeps",
-+	"its entry.",
++	"commands and results, as parts headed ROLE N.I. The text of a USER",
++	"or NOTICE entry and of a part ends at its END line; lines before it",
++	"are text even when they read as headers. Text that holds a line END",
++	"has an id after its header, as in RESULT N.I id, and ends at END id.",
++	"The first tool result of each turn the agent sees starts with TURN",
++	"N; the log does not hold that text. Text replaces N through M as one",
++	"entry with the role and number of N, a turn becoming a turn with",
++	"only the text; no text removes them. Three or more numbers, as in",
++	"2,4,7, name those turns alone, noted in place of the first; a number",
++	"that is not a TURN rejects the list. The agent cannot change USER",
++	"entries, entry 0 or the turn still running: USER entries stay, and",
++	"its note goes after the last one spanned, as a turn. Prints the",
++	"estimated tokens before and after and the USER entries kept. Changes",
++	"the agent context when acl is set. Replaced entries move to b-7,",
++	"saved as discarded in the session directory; a number already there",
++	"keeps its entry.",
 +	"",
 +	"Example: replace a turn with a note",
 +	"14anote ls listed 40 files, none relevant",
@@ -21710,54 +21922,54 @@ index 000000000..ee1507e52
 +	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
 +	{"aretry", "Execute the last agent command", 793, 804, 0, 0},
 +	{"aout", "Print the saved output of the last agent tool call", 805, 816, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 817, 839, 0, 0},
-+	{"aget", "Print agent session log entries, trimmed ones included", 840, 857, 0, 0},
-+	{"arate", "Rate agent turns in the notes buffer", 858, 880, 0, 0},
-+	{"adone", "End an agent checkpoint", 881, 888, 0, 0},
-+	{"acheck", "Start an agent checkpoint or set its budget", 889, 901, 0, 0},
-+	{"acp", "Print the agent checkpoint instructions", 902, 908, 0, 0},
-+	{"ali", "Print the agent session log entry list", 909, 920, 0, 0},
-+	{"auli", "Print the unrated agent session log turns", 921, 927, 0, 0},
-+	{"ast", "Print agent status and token usage", 928, 937, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 938, 951, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 952, 960, 0, 0},
-+	{"sc", "Set ex special characters", 961, 971, 0, 0},
-+	{"sc!", "Set ex special characters", 972, 979, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 980, 987, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 988, 991, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 992, 996, 0, 0},
-+	{"ph", "Redefine placeholders", 997, 1013, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1022, 1062, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1063, 1072, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1073, 1080, 1, 0},
-+	{"agr", "Control agent output protection", 1081, 1087, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1088, 1095, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1096, 1101, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1102, 1108, 1, 0},
-+	{"ai", "Indent new lines", 1109, 1112, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1113, 1114, 1, 0},
-+	{"ish", "Interactive shell", 1115, 1130, 1, 0},
-+	{"grp", "Regex search group", 1131, 1139, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1140, 1143, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1144, 1145, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1145, 1146, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1146, 1147, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1147, 1148, 1, 0},
-+	{"led", "Enable all terminal output", 1148, 1149, 1, 0},
-+	{"vis", "Control startup flags", 1150, 1161, 1, 0},
-+	{"mpt", "Control vi prompts", 1162, 1172, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1173, 1175, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1175, 1177, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1177, 1178, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1178, 1179, 1, 0},
-+	{"td", "Current text direction context", 1179, 1185, 1, 0},
-+	{"pr", "Print register", 1186, 1202, 1, 0},
-+	{"fr", "Find register", 1203, 1215, 1, 0},
-+	{"rr", "Record register", 1216, 1229, 1, 0},
-+	{"lim", "Line length render limit", 1230, 1245, 1, 0},
-+	{"seq", "Control Undo/Redo", 1246, 1258, 1, 0},
-+	{"left", "Control horizontal scroll", 1259, 1264, 1, 0},
-+	{"err", "Control ex errors", 1265, 1277, 1, 0},
++	{"anote", "Replace or remove agent session log entries", 817, 842, 0, 0},
++	{"aget", "Print agent session log entries, trimmed ones included", 843, 860, 0, 0},
++	{"arate", "Rate agent turns in the notes buffer", 861, 883, 0, 0},
++	{"adone", "End an agent checkpoint", 884, 891, 0, 0},
++	{"acheck", "Start an agent checkpoint or set its budget", 892, 904, 0, 0},
++	{"acp", "Print the agent checkpoint instructions", 905, 911, 0, 0},
++	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
++	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
++	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
++	{"ath", "Set the agent thinking cap and effort", 941, 954, 0, 0},
++	{"ac", "Set autocomplete filter regex", 955, 963, 0, 0},
++	{"sc", "Set ex special characters", 964, 974, 0, 0},
++	{"sc!", "Set ex special characters", 975, 982, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 983, 990, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 991, 994, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 995, 999, 0, 0},
++	{"ph", "Redefine placeholders", 1000, 1016, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1025, 1065, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1066, 1075, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1076, 1083, 1, 0},
++	{"agr", "Control agent output protection", 1084, 1090, 1, 0},
++	{"ato", "Detach long agent shell commands", 1091, 1098, 1, 0},
++	{"ar", "Display returned agent reasoning", 1099, 1104, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1105, 1111, 1, 0},
++	{"ai", "Indent new lines", 1112, 1115, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1116, 1117, 1, 0},
++	{"ish", "Interactive shell", 1118, 1133, 1, 0},
++	{"grp", "Regex search group", 1134, 1142, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1143, 1146, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1147, 1148, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1148, 1149, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1149, 1150, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1150, 1151, 1, 0},
++	{"led", "Enable all terminal output", 1151, 1152, 1, 0},
++	{"vis", "Control startup flags", 1153, 1164, 1, 0},
++	{"mpt", "Control vi prompts", 1165, 1175, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1176, 1178, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1178, 1180, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1180, 1181, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1181, 1182, 1, 0},
++	{"td", "Current text direction context", 1182, 1188, 1, 0},
++	{"pr", "Print register", 1189, 1205, 1, 0},
++	{"fr", "Find register", 1206, 1218, 1, 0},
++	{"rr", "Record register", 1219, 1232, 1, 0},
++	{"lim", "Line length render limit", 1233, 1248, 1, 0},
++	{"seq", "Control Undo/Redo", 1249, 1261, 1, 0},
++	{"left", "Control horizontal scroll", 1262, 1267, 1, 0},
++	{"err", "Control ex errors", 1268, 1280, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..823e5b396 100644
