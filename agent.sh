@@ -110,10 +110,14 @@ static char agent_effort[32];
 /* ath N,M: the cap ath set and the ceiling the agent may raise it to for
  * one reply; 0 off */
 static int agent_think_base, agent_think_max;
-/* Whether the server cut the last reply'\''s thinking, at the cap
- * agent_think_was; the agent is then asked whether to raise the cap, and
+/* The response of a reply whose thinking the server cut, at the cap
+ * agent_think_was: it is withheld while the agent is asked whether to
+ * replace it with one thought out under a higher cap, and
  * agent_think_more is its answer. */
-static int agent_think_cutoff, agent_think_was, agent_think_more;
+static cJSON *agent_think_held;
+static int agent_think_was, agent_think_more;
+/* The withheld reply is cut thinking alone, without text or calls */
+static int agent_think_empty;
 /* Replies a thinking budget question waits for an answer after the first */
 #define AGENT_THINK_TRIES	5
 static void agent_run(const char *input);
@@ -1015,6 +1019,7 @@ static char agent_continue[] = "Continue the task.";
  * unchanged log reads the same at both ends. */
 static double agent_cp_bytes;
 static char *agent_cp_open;	/* the opening status and instructions */
+static cJSON *agent_cp_lead;	/* a message sent before it, if any */
 
 /* Whether to refuse ending the checkpoint for unrated turns. New ratings
  * restart the count, so only two refusals without progress end it. */
@@ -1385,34 +1390,97 @@ static char *agent_think_retry(void)
 	return s;
 }
 
-/* Start a thinking budget question about the last reply, which stays. */
-static void agent_think_ask(void)
+static void agent_think_drop(void)
 {
-	int cap = agent_think_was;
+	cJSON_Delete(agent_think_held);
+	agent_think_held = NULL;
+}
+
+/* Whether to withhold the reply of response root for a thinking budget
+ * question: its thinking was cut below the ceiling, and it is not the reply
+ * to a question. */
+static int agent_think_cutoff(cJSON *root, int asked)
+{
+	const char *rkey;
+	char *reasoning = agent_reasoning(cJSON_GetObjectItem(cJSON_GetArrayItem(
+		cJSON_GetObjectItem(root, "choices"), 0), "message"), &rkey);
+	return reasoning && !asked && !agent_checkpointing && !agent_packing &&
+		agent_logbuf == 3 && agent_think_cap >= 0 &&
+		agent_think_cap < agent_think_max && agent_think_cut(reasoning);
+}
+
+/* Withhold the reply of response root, whose thinking was cut, and start a
+ * thinking budget question about it: the reply without its calls leads the
+ * question, which lists their commands. */
+static void agent_think_ask(cJSON *root)
+{
+	cJSON *message = cJSON_GetObjectItem(cJSON_GetArrayItem(
+		cJSON_GetObjectItem(root, "choices"), 0), "message");
+	cJSON *calls = cJSON_GetObjectItem(message, "tool_calls"), *tc;
+	cJSON *content = cJSON_GetObjectItem(message, "content");
+	const char *rkey;
+	char *reasoning = agent_reasoning(message, &rkey);
+	char line[320];
+	int cap = agent_think_was, n = 0, cnt = cJSON_GetArraySize(calls);
+	sbuf_smake(sb, 1024)
+	agent_think_held = root;
 	agent_think_more = 0;
+	agent_think_empty = !cnt && !cJSON_IsString(content);
 	agent_checkpoint_begin(cap, 3);
-	agent_cp_open = emalloc(512);
-	sprintf(agent_cp_open, "Stop working on the current task and answer this "
-		"thinking budget question.\nThe thinking of your last reply was cut "
-		"off at the cap of %d tokens. Use ath command to continue as it is "
-		"or ath N to give your next reply a thinking cap of N tokens, above "
-		"%d and up to %d.",
-		cap, cap, agent_think_max);
+	agent_cp_lead = cJSON_Duplicate(message, 1);
+	cJSON_DeleteItemFromObject(agent_cp_lead, "tool_calls");
+	if (!cJSON_IsString(content)) {
+		cJSON_DeleteItemFromObject(agent_cp_lead, "content");
+		cJSON_AddStringToObject(agent_cp_lead, "content", "");
+	}
+	if (xar && reasoning)
+		agent_turn_part(0, reasoning);
+	if (cJSON_IsString(content) && *content->valuestring)
+		agent_turn_part(1, content->valuestring);
+	snprintf(line, sizeof(line), "Stop working on the current task and "
+		"answer this thinking budget question.\nThe thinking of your last "
+		"reply was cut off at the cap of %d tokens. The reply is %s\n", cap,
+		cnt ? "withheld; its commands did not run:" : agent_think_empty ?
+		"discarded; it had no text and made no ex tool calls." :
+		"withheld; it made no ex tool calls.");
+	sbuf_str(sb, line)
+	cJSON_ArrayForEach(tc, calls) {
+		cJSON *args = cJSON_GetObjectItem(cJSON_GetObjectItem(tc,
+			"function"), "arguments");
+		cJSON *parsed = cJSON_IsString(args) ?
+			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
+		char *cmd = cJSON_GetStringValue(cJSON_GetObjectItem(parsed,
+			"command"));
+		snprintf(line, sizeof(line), "%d: ", ++n);
+		sbuf_str(sb, line)
+		sbuf_str(sb, cmd ? cmd : "invalid tool call")
+		sbuf_chr(sb, '\''\n'\'')
+		cJSON_Delete(parsed);
+	}
+	snprintf(line, sizeof(line), "Use ath command to %s or ath N to %sreply "
+		"again with a thinking cap of N tokens, above %d and up to %d.",
+		cnt ? "run the reply as it is" : agent_think_empty ?
+		"reply again under the same cap" : "keep the reply as it is",
+		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
+	sbuf_str(sb, line)
+	sbuf_nul(sb)
+	agent_cp_open = sb->s;
 	agent_log("USER", agent_cp_open);
-	agent_think_cutoff = 0;
 }
 
 /* Detach the exchange that followed the entry list in the last request. */
 static void agent_cp_collect(void)
 {
 	cJSON *m;
+	int open = 1 + !!agent_cp_lead;
 	if (agent_cp_base < 0)
 		return;
 	cJSON_Delete(agent_cp);
 	agent_cp = cJSON_CreateArray();
-	while ((m = cJSON_DetachItemFromArray(agent_messages, agent_cp_base + 1)))
+	while ((m = cJSON_DetachItemFromArray(agent_messages, agent_cp_base + open)))
 		cJSON_AddItemToArray(agent_cp, m);
-	cJSON_DeleteItemFromArray(agent_messages, agent_cp_base);
+	while (open--)
+		cJSON_DeleteItemFromArray(agent_messages, agent_cp_base);
 	agent_cp_base = -1;
 }
 
@@ -1434,6 +1502,9 @@ static void agent_cp_build(void)
 		agent_log("USER", agent_cp_open);
 	}
 	agent_cp_base = cJSON_GetArraySize(agent_messages);
+	if (agent_cp_lead)
+		cJSON_AddItemToArray(agent_messages,
+			cJSON_Duplicate(agent_cp_lead, 1));
 	cJSON_AddItemToArray(agent_messages, agent_msg("user", agent_cp_open));
 	cJSON_ArrayForEach(m, agent_cp)
 		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
@@ -1449,6 +1520,8 @@ static void agent_checkpoint_end(void)
 	agent_cp_collect();
 	cJSON_Delete(agent_cp);
 	agent_cp = NULL;
+	cJSON_Delete(agent_cp_lead);
+	agent_cp_lead = NULL;
 	free(agent_cp_open);
 	agent_cp_open = NULL;
 	agent_logbuf = agent_cp_logbuf;
@@ -1457,8 +1530,9 @@ static void agent_checkpoint_end(void)
 	 * the context and its cached prefix stay. */
 	if (kind == 3) {
 		snprintf(note, sizeof(note), agent_think_more ?
-			"[ath thinking cap %d tokens for the next reply]\n" :
-			"[ath thinking cap unchanged]\n", agent_think_cap);
+			"[ath reply discarded, thinking cap %d tokens for the next]\n" :
+			agent_think_empty ? "[ath reply requested again]\n" :
+			"[ath reply kept as it is]\n", agent_think_cap);
 		if (answered)
 			agent_output(note);
 		return;
@@ -2322,7 +2396,8 @@ static void agent_sequence(void)
 		tempbufs[i].lb->useq += xseq;
 }
 
-/* Return 1 for envelope errors, 2 for tool calls the model can correct. */
+/* Return 1 for envelope errors, 2 for tool calls the model can correct, 3
+ * for a reply without text and tool calls. */
 static int agent_response_error(cJSON *root, char *error, size_t size)
 {
 	cJSON *choices = cJSON_GetObjectItem(root, "choices");
@@ -2331,7 +2406,7 @@ static int agent_response_error(cJSON *root, char *error, size_t size)
 	cJSON *content = cJSON_GetObjectItem(message, "content");
 	cJSON *calls = cJSON_GetObjectItem(message, "tool_calls"), *tc;
 	const char *reason = NULL;
-	int index = 0;
+	int index = 0, empty = 0;
 	if (!root)
 		reason = "response: invalid JSON";
 	else if (!cJSON_IsObject(root))
@@ -2346,11 +2421,13 @@ static int agent_response_error(cJSON *root, char *error, size_t size)
 		reason = "message.content: expected a string or null";
 	else if (calls && !cJSON_IsArray(calls))
 		reason = "message.tool_calls: expected an array";
-	else if (!cJSON_IsString(content) && !cJSON_GetArraySize(calls))
+	else if (!cJSON_IsString(content) && !cJSON_GetArraySize(calls)) {
 		reason = "message: missing text and tool calls";
+		empty = 1;
+	}
 	if (reason) {
 		snprintf(error, size, "%s", reason);
-		return 1;
+		return empty ? 3 : 1;
 	}
 	cJSON_ArrayForEach(tc, calls) {
 		cJSON *id = cJSON_GetObjectItem(tc, "id");
@@ -2394,38 +2471,12 @@ static int agent_response_error(cJSON *root, char *error, size_t size)
 	return 0;
 }
 
-/* The agent raised the cap: assistant text, a turn of its own, that leads
- * its next reply. */
-static void agent_think_lead(void)
-{
-	struct agent_span *spans;
-	char msg[96];
-	int cnt;
-	snprintf(msg, sizeof(msg), "This needs more thinking. Thinking cap %d "
-		"tokens for this turn.", agent_think_cap);
-	agent_turn_close();
-	agent_turn_part(1, msg);
-	agent_turn_close();
-	if (agent_live() && !agent_acl_kept())
-		return;
-	/* As a rebuild adds it: joined to assistant text it follows. */
-	cnt = agent_spans(&spans);
-	if (cnt)
-		agent_add_turn(agent_messages, tempbufs[3].lb, spans + cnt - 1);
-	free(spans);
-	/* With acl the request adds this, so that it does not end on
-	 * assistant text. */
-	if (!agent_live())
-		cJSON_AddItemToArray(agent_messages,
-			agent_msg("user", agent_continue));
-}
-
 static void agent_run_loop(const char *input)
 {
 	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
-	int st, retries = 0, compacted = 0, unpacked = 0, raised = 0, replied = 0;
+	int st, retries = 0, compacted = 0, unpacked = 0, asked = 0;
 	if (agent_packing)
 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
@@ -2443,6 +2494,10 @@ static void agent_run_loop(const char *input)
 		 * pack agents must never recursively trigger autocompaction. */
 		/* The threshold triggers a pack, not a hard cap on its result. */
 		agent_cp_collect();
+		/* A question that ended unanswered, as by a pause: the reply it
+		 * withheld is requested again. */
+		if (!agent_checkpointing)
+			agent_think_drop();
 		/* acl 1 rebuilds every request. Above 1, replies stay as returned,
 		 * reasoning included, so the model keeps it and the server cache
 		 * continues from its output; the context is rebuilt after other
@@ -2564,7 +2619,12 @@ static void agent_run_loop(const char *input)
 		}
 		char error[256], diagnostic[2048], excerpt[513];
 		int invalid = agent_response_error(root, error, sizeof(error));
-		if (invalid) {
+		/* ath N,M: a reply whose thinking was cut below the ceiling is
+		 * withheld for a thinking budget question, also when the cut
+		 * left it without text and calls. The reply that follows a
+		 * question is not asked about. */
+		int cut = (!invalid || invalid == 3) && agent_think_cutoff(root, asked);
+		if (invalid && !cut) {
 			cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
 				cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
 			snprintf(excerpt, sizeof(excerpt), "%.512s", body);
@@ -2607,24 +2667,23 @@ static void agent_run_loop(const char *input)
 		}
 		agent_record_usage(root, request_bytes);
 		free(body);
+		/* A raised cap lasts for one reply. */
+		if (!agent_checkpointing && agent_think_max) {
+			agent_think_was = agent_think_cap;
+			agent_think_cap = agent_think_base;
+			asked = 0;
+		}
+		if (cut) {
+			agent_think_ask(root);
+			continue;
+		}
+reply:
 		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
 			cJSON_GetObjectItem(root, "choices"), 0), "message");
 		calls = cJSON_GetObjectItem(message, "tool_calls");
 		cJSON *content = cJSON_GetObjectItem(message, "content");
 		const char *rkey;
 		char *reasoning = agent_reasoning(message, &rkey);
-		/* ath N,M: a reply whose thinking was cut below the ceiling is
-		 * followed by a thinking budget question, unless it is the reply
-		 * to a raised cap. A raised cap lasts for one reply. */
-		agent_think_cutoff = reasoning && !raised && !agent_checkpointing &&
-			!agent_packing && agent_logbuf == 3 && agent_think_cap >= 0 &&
-			agent_think_cap < agent_think_max &&
-			agent_think_cut(reasoning);
-		if (!agent_checkpointing && agent_think_max) {
-			agent_think_was = agent_think_cap;
-			agent_think_cap = agent_think_base;
-			raised = 0;
-		}
 		/* Complete pairs before recursive editing or submissions. */
 		cJSON_AddItemToArray(agent_messages,
 			cJSON_Duplicate(message, 1));
@@ -2777,6 +2836,9 @@ static void agent_run_loop(const char *input)
 		if (agent_cancel)
 			return;
 		if (agent_pause) {
+			/* The reply a question withheld is requested again. */
+			if (agent_checkpointing == 3)
+				has_calls = 1;
 			agent_checkpoint_end();
 			agent_editor();
 			agent_redraw(NULL);
@@ -2801,13 +2863,6 @@ static void agent_run_loop(const char *input)
 				agent_log("USER", agent_pack_retry);
 				continue;
 			}
-		}
-		/* ath N,M: the cut reply stays as it ran; the agent is asked
-		 * whether its next one needs a higher cap. */
-		if (agent_think_cutoff && !agent_checkpointing) {
-			replied = has_calls;
-			agent_think_ask();
-			continue;
 		}
 		/* A budget check gets two more requests to answer, then becomes
 		 * a checkpoint; a thinking budget question gets AGENT_THINK_TRIES
@@ -2853,13 +2908,18 @@ static void agent_run_loop(const char *input)
 			int think = agent_checkpointing == 3;
 			agent_checkpoint_end();
 			has_calls = 1;
-			/* A raised cap leads the next reply; otherwise the run
-			 * goes on from the cut reply, or ends with it. */
-			if (think && agent_think_more) {
-				raised = 1;
-				agent_think_lead();
-			} else if (think)
-				has_calls = replied;
+			/* A raised cap replaces the withheld reply with a new one,
+			 * as the same cap does one without text and calls;
+			 * otherwise that reply runs now. */
+			if (think && (agent_think_more || agent_think_empty)) {
+				asked = 1;
+				continue;
+			}
+			if (think && agent_think_held) {
+				root = agent_think_held;
+				agent_think_held = NULL;
+				goto reply;
+			}
 		}
 		if (!has_calls)
 			return;
@@ -2876,7 +2936,7 @@ static void agent_run(const char *input)
 	 * nests a run. */
 	if (agent_think_max && !agent_packing)
 		agent_think_cap = agent_think_base;
-	agent_think_cutoff = 0;
+	agent_think_drop();
 }
 
 /* Add or remove a skill in b-5; want < 0 toggles. */
@@ -3094,7 +3154,7 @@ static void *ec_ath(char *loc, char *cmd, char *arg)
 		}
 		if (ask && cap <= agent_think_was) {
 			snprintf(msg, sizeof(msg), "ath N takes a count above the cap "
-				"of %d tokens; ath continues as it is%s", agent_think_was,
+				"of %d tokens; ath alone leaves the cap%s", agent_think_was,
 				agent_think_retry());
 			return msg;
 		}
@@ -7839,16 +7899,18 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "omitted part is not sent; ath alone sends neither. Sent fields\n" \
                 "replace those of request_extra. ast shows the setting.\n\n" \
                 "With N,M the agent may raise the cap up to M for one reply. A reply\n" \
-                "whose thinking the server cut at the cap runs as it is; the agent is\n" \
-                "then asked, in an exchange kept in b-3 only, whether its next reply\n" \
-                "needs more thinking. It answers with ath N, a count above the cap,\n" \
-                "or with ath to continue; nothing else runs then, and after five\n" \
-                "retries the answer is taken as ath. A raised cap is logged as a\n" \
-                "TURN of assistant text leading the next reply and lasts for that\n" \
-                "reply only; that reply is not asked about. The server marks cut\n" \
-                "thinking by ending it with think_cut of conf.c. As an agent tool ath\n" \
-                "takes only a count from 1 to M, as its argument or its range, for\n" \
-                "its next reply, and needs M set. Pack agents are not asked.\n\n" \
+                "whose thinking the server cut at the cap is withheld: it is not\n" \
+                "logged and its commands do not run. The agent is shown the reply and\n" \
+                "its commands, in an exchange kept in b-3 only, and answers with ath\n" \
+                "to run the reply as it is, or with ath N, a count above the cap, to\n" \
+                "discard it and reply again under that cap. Nothing else runs then,\n" \
+                "and after five retries the answer is taken as ath. A cut reply\n" \
+                "without text and commands is requested again either way. The cap\n" \
+                "lasts for the new reply only, and that reply is not asked about. The\n" \
+                "server marks cut thinking by ending it with think_cut of conf.c. As\n" \
+                "an agent tool ath takes only a count from 1 to M, as its argument or\n" \
+                "its range, for its next reply, and needs M set. Pack agents are not\n" \
+                "asked.\n\n" \
                 "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
                 "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
                 ":4096,32768ath medium")
@@ -10939,16 +11001,18 @@ static char *exspec_lines[] = {
 	"replace those of request_extra. ast shows the setting.",
 	"",
 	"With N,M the agent may raise the cap up to M for one reply. A reply",
-	"whose thinking the server cut at the cap runs as it is; the agent is",
-	"then asked, in an exchange kept in b-3 only, whether its next reply",
-	"needs more thinking. It answers with ath N, a count above the cap,",
-	"or with ath to continue; nothing else runs then, and after five",
-	"retries the answer is taken as ath. A raised cap is logged as a",
-	"TURN of assistant text leading the next reply and lasts for that",
-	"reply only; that reply is not asked about. The server marks cut",
-	"thinking by ending it with think_cut of conf.c. As an agent tool ath",
-	"takes only a count from 1 to M, as its argument or its range, for",
-	"its next reply, and needs M set. Pack agents are not asked.",
+	"whose thinking the server cut at the cap is withheld: it is not",
+	"logged and its commands do not run. The agent is shown the reply and",
+	"its commands, in an exchange kept in b-3 only, and answers with ath",
+	"to run the reply as it is, or with ath N, a count above the cap, to",
+	"discard it and reply again under that cap. Nothing else runs then,",
+	"and after five retries the answer is taken as ath. A cut reply",
+	"without text and commands is requested again either way. The cap",
+	"lasts for the new reply only, and that reply is not asked about. The",
+	"server marks cut thinking by ending it with think_cut of conf.c. As",
+	"an agent tool ath takes only a count from 1 to M, as its argument or",
+	"its range, for its next reply, and needs M set. Pack agents are not",
+	"asked.",
 	"",
 	"Example: cap thinking at 1024 tokens with high effort",
 	"1024ath high",
@@ -11419,45 +11483,45 @@ static struct {
 	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
 	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
 	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 941, 969, 0, 0},
-	{"ac", "Set autocomplete filter regex", 970, 978, 0, 0},
-	{"sc", "Set ex special characters", 979, 989, 0, 0},
-	{"sc!", "Set ex special characters", 990, 997, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 998, 1005, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1006, 1009, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1010, 1014, 0, 0},
-	{"ph", "Redefine placeholders", 1015, 1031, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1040, 1080, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1081, 1090, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1091, 1098, 1, 0},
-	{"agr", "Control agent output protection", 1099, 1105, 1, 0},
-	{"ato", "Detach long agent shell commands", 1106, 1113, 1, 0},
-	{"ar", "Display returned agent reasoning", 1114, 1119, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1120, 1126, 1, 0},
-	{"ai", "Indent new lines", 1127, 1130, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1131, 1132, 1, 0},
-	{"ish", "Interactive shell", 1133, 1148, 1, 0},
-	{"grp", "Regex search group", 1149, 1157, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1158, 1161, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1162, 1163, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1163, 1164, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1164, 1165, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1165, 1166, 1, 0},
-	{"led", "Enable all terminal output", 1166, 1167, 1, 0},
-	{"vis", "Control startup flags", 1168, 1179, 1, 0},
-	{"mpt", "Control vi prompts", 1180, 1190, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1191, 1193, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1193, 1195, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1195, 1196, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1196, 1197, 1, 0},
-	{"td", "Current text direction context", 1197, 1203, 1, 0},
-	{"pr", "Print register", 1204, 1220, 1, 0},
-	{"fr", "Find register", 1221, 1233, 1, 0},
-	{"rr", "Record register", 1234, 1247, 1, 0},
-	{"lim", "Line length render limit", 1248, 1263, 1, 0},
-	{"seq", "Control Undo/Redo", 1264, 1276, 1, 0},
-	{"left", "Control horizontal scroll", 1277, 1282, 1, 0},
-	{"err", "Control ex errors", 1283, 1295, 1, 0},
+	{"ath", "Set the agent thinking cap and effort", 941, 971, 0, 0},
+	{"ac", "Set autocomplete filter regex", 972, 980, 0, 0},
+	{"sc", "Set ex special characters", 981, 991, 0, 0},
+	{"sc!", "Set ex special characters", 992, 999, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1000, 1007, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1008, 1011, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1012, 1016, 0, 0},
+	{"ph", "Redefine placeholders", 1017, 1033, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1042, 1082, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1083, 1092, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1093, 1100, 1, 0},
+	{"agr", "Control agent output protection", 1101, 1107, 1, 0},
+	{"ato", "Detach long agent shell commands", 1108, 1115, 1, 0},
+	{"ar", "Display returned agent reasoning", 1116, 1121, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1122, 1128, 1, 0},
+	{"ai", "Indent new lines", 1129, 1132, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1133, 1134, 1, 0},
+	{"ish", "Interactive shell", 1135, 1150, 1, 0},
+	{"grp", "Regex search group", 1151, 1159, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1160, 1163, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1164, 1165, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1165, 1166, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1166, 1167, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1167, 1168, 1, 0},
+	{"led", "Enable all terminal output", 1168, 1169, 1, 0},
+	{"vis", "Control startup flags", 1170, 1181, 1, 0},
+	{"mpt", "Control vi prompts", 1182, 1192, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1193, 1195, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1195, 1197, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1197, 1198, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1198, 1199, 1, 0},
+	{"td", "Current text direction context", 1199, 1205, 1, 0},
+	{"pr", "Print register", 1206, 1222, 1, 0},
+	{"fr", "Find register", 1223, 1235, 1, 0},
+	{"rr", "Record register", 1236, 1249, 1, 0},
+	{"lim", "Line length render limit", 1250, 1265, 1, 0},
+	{"seq", "Control Undo/Redo", 1266, 1278, 1, 0},
+	{"left", "Control horizontal scroll", 1279, 1284, 1, 0},
+	{"err", "Control ex errors", 1285, 1297, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -12082,10 +12146,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..467c44260
+index 000000000..755ce24eb
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3992 @@
+@@ -0,0 +1,4052 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12166,10 +12230,14 @@ index 000000000..467c44260
 +/* ath N,M: the cap ath set and the ceiling the agent may raise it to for
 + * one reply; 0 off */
 +static int agent_think_base, agent_think_max;
-+/* Whether the server cut the last reply's thinking, at the cap
-+ * agent_think_was; the agent is then asked whether to raise the cap, and
++/* The response of a reply whose thinking the server cut, at the cap
++ * agent_think_was: it is withheld while the agent is asked whether to
++ * replace it with one thought out under a higher cap, and
 + * agent_think_more is its answer. */
-+static int agent_think_cutoff, agent_think_was, agent_think_more;
++static cJSON *agent_think_held;
++static int agent_think_was, agent_think_more;
++/* The withheld reply is cut thinking alone, without text or calls */
++static int agent_think_empty;
 +/* Replies a thinking budget question waits for an answer after the first */
 +#define AGENT_THINK_TRIES	5
 +static void agent_run(const char *input);
@@ -13071,6 +13139,7 @@ index 000000000..467c44260
 + * unchanged log reads the same at both ends. */
 +static double agent_cp_bytes;
 +static char *agent_cp_open;	/* the opening status and instructions */
++static cJSON *agent_cp_lead;	/* a message sent before it, if any */
 +
 +/* Whether to refuse ending the checkpoint for unrated turns. New ratings
 + * restart the count, so only two refusals without progress end it. */
@@ -13441,34 +13510,97 @@ index 000000000..467c44260
 +	return s;
 +}
 +
-+/* Start a thinking budget question about the last reply, which stays. */
-+static void agent_think_ask(void)
++static void agent_think_drop(void)
 +{
-+	int cap = agent_think_was;
++	cJSON_Delete(agent_think_held);
++	agent_think_held = NULL;
++}
++
++/* Whether to withhold the reply of response root for a thinking budget
++ * question: its thinking was cut below the ceiling, and it is not the reply
++ * to a question. */
++static int agent_think_cutoff(cJSON *root, int asked)
++{
++	const char *rkey;
++	char *reasoning = agent_reasoning(cJSON_GetObjectItem(cJSON_GetArrayItem(
++		cJSON_GetObjectItem(root, "choices"), 0), "message"), &rkey);
++	return reasoning && !asked && !agent_checkpointing && !agent_packing &&
++		agent_logbuf == 3 && agent_think_cap >= 0 &&
++		agent_think_cap < agent_think_max && agent_think_cut(reasoning);
++}
++
++/* Withhold the reply of response root, whose thinking was cut, and start a
++ * thinking budget question about it: the reply without its calls leads the
++ * question, which lists their commands. */
++static void agent_think_ask(cJSON *root)
++{
++	cJSON *message = cJSON_GetObjectItem(cJSON_GetArrayItem(
++		cJSON_GetObjectItem(root, "choices"), 0), "message");
++	cJSON *calls = cJSON_GetObjectItem(message, "tool_calls"), *tc;
++	cJSON *content = cJSON_GetObjectItem(message, "content");
++	const char *rkey;
++	char *reasoning = agent_reasoning(message, &rkey);
++	char line[320];
++	int cap = agent_think_was, n = 0, cnt = cJSON_GetArraySize(calls);
++	sbuf_smake(sb, 1024)
++	agent_think_held = root;
 +	agent_think_more = 0;
++	agent_think_empty = !cnt && !cJSON_IsString(content);
 +	agent_checkpoint_begin(cap, 3);
-+	agent_cp_open = emalloc(512);
-+	sprintf(agent_cp_open, "Stop working on the current task and answer this "
-+		"thinking budget question.\nThe thinking of your last reply was cut "
-+		"off at the cap of %d tokens. Use ath command to continue as it is "
-+		"or ath N to give your next reply a thinking cap of N tokens, above "
-+		"%d and up to %d.",
-+		cap, cap, agent_think_max);
++	agent_cp_lead = cJSON_Duplicate(message, 1);
++	cJSON_DeleteItemFromObject(agent_cp_lead, "tool_calls");
++	if (!cJSON_IsString(content)) {
++		cJSON_DeleteItemFromObject(agent_cp_lead, "content");
++		cJSON_AddStringToObject(agent_cp_lead, "content", "");
++	}
++	if (xar && reasoning)
++		agent_turn_part(0, reasoning);
++	if (cJSON_IsString(content) && *content->valuestring)
++		agent_turn_part(1, content->valuestring);
++	snprintf(line, sizeof(line), "Stop working on the current task and "
++		"answer this thinking budget question.\nThe thinking of your last "
++		"reply was cut off at the cap of %d tokens. The reply is %s\n", cap,
++		cnt ? "withheld; its commands did not run:" : agent_think_empty ?
++		"discarded; it had no text and made no ex tool calls." :
++		"withheld; it made no ex tool calls.");
++	sbuf_str(sb, line)
++	cJSON_ArrayForEach(tc, calls) {
++		cJSON *args = cJSON_GetObjectItem(cJSON_GetObjectItem(tc,
++			"function"), "arguments");
++		cJSON *parsed = cJSON_IsString(args) ?
++			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
++		char *cmd = cJSON_GetStringValue(cJSON_GetObjectItem(parsed,
++			"command"));
++		snprintf(line, sizeof(line), "%d: ", ++n);
++		sbuf_str(sb, line)
++		sbuf_str(sb, cmd ? cmd : "invalid tool call")
++		sbuf_chr(sb, '\n')
++		cJSON_Delete(parsed);
++	}
++	snprintf(line, sizeof(line), "Use ath command to %s or ath N to %sreply "
++		"again with a thinking cap of N tokens, above %d and up to %d.",
++		cnt ? "run the reply as it is" : agent_think_empty ?
++		"reply again under the same cap" : "keep the reply as it is",
++		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
++	sbuf_str(sb, line)
++	sbuf_nul(sb)
++	agent_cp_open = sb->s;
 +	agent_log("USER", agent_cp_open);
-+	agent_think_cutoff = 0;
 +}
 +
 +/* Detach the exchange that followed the entry list in the last request. */
 +static void agent_cp_collect(void)
 +{
 +	cJSON *m;
++	int open = 1 + !!agent_cp_lead;
 +	if (agent_cp_base < 0)
 +		return;
 +	cJSON_Delete(agent_cp);
 +	agent_cp = cJSON_CreateArray();
-+	while ((m = cJSON_DetachItemFromArray(agent_messages, agent_cp_base + 1)))
++	while ((m = cJSON_DetachItemFromArray(agent_messages, agent_cp_base + open)))
 +		cJSON_AddItemToArray(agent_cp, m);
-+	cJSON_DeleteItemFromArray(agent_messages, agent_cp_base);
++	while (open--)
++		cJSON_DeleteItemFromArray(agent_messages, agent_cp_base);
 +	agent_cp_base = -1;
 +}
 +
@@ -13490,6 +13622,9 @@ index 000000000..467c44260
 +		agent_log("USER", agent_cp_open);
 +	}
 +	agent_cp_base = cJSON_GetArraySize(agent_messages);
++	if (agent_cp_lead)
++		cJSON_AddItemToArray(agent_messages,
++			cJSON_Duplicate(agent_cp_lead, 1));
 +	cJSON_AddItemToArray(agent_messages, agent_msg("user", agent_cp_open));
 +	cJSON_ArrayForEach(m, agent_cp)
 +		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
@@ -13505,6 +13640,8 @@ index 000000000..467c44260
 +	agent_cp_collect();
 +	cJSON_Delete(agent_cp);
 +	agent_cp = NULL;
++	cJSON_Delete(agent_cp_lead);
++	agent_cp_lead = NULL;
 +	free(agent_cp_open);
 +	agent_cp_open = NULL;
 +	agent_logbuf = agent_cp_logbuf;
@@ -13513,8 +13650,9 @@ index 000000000..467c44260
 +	 * the context and its cached prefix stay. */
 +	if (kind == 3) {
 +		snprintf(note, sizeof(note), agent_think_more ?
-+			"[ath thinking cap %d tokens for the next reply]\n" :
-+			"[ath thinking cap unchanged]\n", agent_think_cap);
++			"[ath reply discarded, thinking cap %d tokens for the next]\n" :
++			agent_think_empty ? "[ath reply requested again]\n" :
++			"[ath reply kept as it is]\n", agent_think_cap);
 +		if (answered)
 +			agent_output(note);
 +		return;
@@ -14378,7 +14516,8 @@ index 000000000..467c44260
 +		tempbufs[i].lb->useq += xseq;
 +}
 +
-+/* Return 1 for envelope errors, 2 for tool calls the model can correct. */
++/* Return 1 for envelope errors, 2 for tool calls the model can correct, 3
++ * for a reply without text and tool calls. */
 +static int agent_response_error(cJSON *root, char *error, size_t size)
 +{
 +	cJSON *choices = cJSON_GetObjectItem(root, "choices");
@@ -14387,7 +14526,7 @@ index 000000000..467c44260
 +	cJSON *content = cJSON_GetObjectItem(message, "content");
 +	cJSON *calls = cJSON_GetObjectItem(message, "tool_calls"), *tc;
 +	const char *reason = NULL;
-+	int index = 0;
++	int index = 0, empty = 0;
 +	if (!root)
 +		reason = "response: invalid JSON";
 +	else if (!cJSON_IsObject(root))
@@ -14402,11 +14541,13 @@ index 000000000..467c44260
 +		reason = "message.content: expected a string or null";
 +	else if (calls && !cJSON_IsArray(calls))
 +		reason = "message.tool_calls: expected an array";
-+	else if (!cJSON_IsString(content) && !cJSON_GetArraySize(calls))
++	else if (!cJSON_IsString(content) && !cJSON_GetArraySize(calls)) {
 +		reason = "message: missing text and tool calls";
++		empty = 1;
++	}
 +	if (reason) {
 +		snprintf(error, size, "%s", reason);
-+		return 1;
++		return empty ? 3 : 1;
 +	}
 +	cJSON_ArrayForEach(tc, calls) {
 +		cJSON *id = cJSON_GetObjectItem(tc, "id");
@@ -14450,38 +14591,12 @@ index 000000000..467c44260
 +	return 0;
 +}
 +
-+/* The agent raised the cap: assistant text, a turn of its own, that leads
-+ * its next reply. */
-+static void agent_think_lead(void)
-+{
-+	struct agent_span *spans;
-+	char msg[96];
-+	int cnt;
-+	snprintf(msg, sizeof(msg), "This needs more thinking. Thinking cap %d "
-+		"tokens for this turn.", agent_think_cap);
-+	agent_turn_close();
-+	agent_turn_part(1, msg);
-+	agent_turn_close();
-+	if (agent_live() && !agent_acl_kept())
-+		return;
-+	/* As a rebuild adds it: joined to assistant text it follows. */
-+	cnt = agent_spans(&spans);
-+	if (cnt)
-+		agent_add_turn(agent_messages, tempbufs[3].lb, spans + cnt - 1);
-+	free(spans);
-+	/* With acl the request adds this, so that it does not end on
-+	 * assistant text. */
-+	if (!agent_live())
-+		cJSON_AddItemToArray(agent_messages,
-+			agent_msg("user", agent_continue));
-+}
-+
 +static void agent_run_loop(const char *input)
 +{
 +	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 +	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
-+	int st, retries = 0, compacted = 0, unpacked = 0, raised = 0, replied = 0;
++	int st, retries = 0, compacted = 0, unpacked = 0, asked = 0;
 +	if (agent_packing)
 +		agent_pack_done = 0;
 +	agent_cancel = agent_pause = 0;
@@ -14499,6 +14614,10 @@ index 000000000..467c44260
 +		 * pack agents must never recursively trigger autocompaction. */
 +		/* The threshold triggers a pack, not a hard cap on its result. */
 +		agent_cp_collect();
++		/* A question that ended unanswered, as by a pause: the reply it
++		 * withheld is requested again. */
++		if (!agent_checkpointing)
++			agent_think_drop();
 +		/* acl 1 rebuilds every request. Above 1, replies stay as returned,
 +		 * reasoning included, so the model keeps it and the server cache
 +		 * continues from its output; the context is rebuilt after other
@@ -14620,7 +14739,12 @@ index 000000000..467c44260
 +		}
 +		char error[256], diagnostic[2048], excerpt[513];
 +		int invalid = agent_response_error(root, error, sizeof(error));
-+		if (invalid) {
++		/* ath N,M: a reply whose thinking was cut below the ceiling is
++		 * withheld for a thinking budget question, also when the cut
++		 * left it without text and calls. The reply that follows a
++		 * question is not asked about. */
++		int cut = (!invalid || invalid == 3) && agent_think_cutoff(root, asked);
++		if (invalid && !cut) {
 +			cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
 +				cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
 +			snprintf(excerpt, sizeof(excerpt), "%.512s", body);
@@ -14663,24 +14787,23 @@ index 000000000..467c44260
 +		}
 +		agent_record_usage(root, request_bytes);
 +		free(body);
++		/* A raised cap lasts for one reply. */
++		if (!agent_checkpointing && agent_think_max) {
++			agent_think_was = agent_think_cap;
++			agent_think_cap = agent_think_base;
++			asked = 0;
++		}
++		if (cut) {
++			agent_think_ask(root);
++			continue;
++		}
++reply:
 +		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
 +			cJSON_GetObjectItem(root, "choices"), 0), "message");
 +		calls = cJSON_GetObjectItem(message, "tool_calls");
 +		cJSON *content = cJSON_GetObjectItem(message, "content");
 +		const char *rkey;
 +		char *reasoning = agent_reasoning(message, &rkey);
-+		/* ath N,M: a reply whose thinking was cut below the ceiling is
-+		 * followed by a thinking budget question, unless it is the reply
-+		 * to a raised cap. A raised cap lasts for one reply. */
-+		agent_think_cutoff = reasoning && !raised && !agent_checkpointing &&
-+			!agent_packing && agent_logbuf == 3 && agent_think_cap >= 0 &&
-+			agent_think_cap < agent_think_max &&
-+			agent_think_cut(reasoning);
-+		if (!agent_checkpointing && agent_think_max) {
-+			agent_think_was = agent_think_cap;
-+			agent_think_cap = agent_think_base;
-+			raised = 0;
-+		}
 +		/* Complete pairs before recursive editing or submissions. */
 +		cJSON_AddItemToArray(agent_messages,
 +			cJSON_Duplicate(message, 1));
@@ -14833,6 +14956,9 @@ index 000000000..467c44260
 +		if (agent_cancel)
 +			return;
 +		if (agent_pause) {
++			/* The reply a question withheld is requested again. */
++			if (agent_checkpointing == 3)
++				has_calls = 1;
 +			agent_checkpoint_end();
 +			agent_editor();
 +			agent_redraw(NULL);
@@ -14857,13 +14983,6 @@ index 000000000..467c44260
 +				agent_log("USER", agent_pack_retry);
 +				continue;
 +			}
-+		}
-+		/* ath N,M: the cut reply stays as it ran; the agent is asked
-+		 * whether its next one needs a higher cap. */
-+		if (agent_think_cutoff && !agent_checkpointing) {
-+			replied = has_calls;
-+			agent_think_ask();
-+			continue;
 +		}
 +		/* A budget check gets two more requests to answer, then becomes
 +		 * a checkpoint; a thinking budget question gets AGENT_THINK_TRIES
@@ -14909,13 +15028,18 @@ index 000000000..467c44260
 +			int think = agent_checkpointing == 3;
 +			agent_checkpoint_end();
 +			has_calls = 1;
-+			/* A raised cap leads the next reply; otherwise the run
-+			 * goes on from the cut reply, or ends with it. */
-+			if (think && agent_think_more) {
-+				raised = 1;
-+				agent_think_lead();
-+			} else if (think)
-+				has_calls = replied;
++			/* A raised cap replaces the withheld reply with a new one,
++			 * as the same cap does one without text and calls;
++			 * otherwise that reply runs now. */
++			if (think && (agent_think_more || agent_think_empty)) {
++				asked = 1;
++				continue;
++			}
++			if (think && agent_think_held) {
++				root = agent_think_held;
++				agent_think_held = NULL;
++				goto reply;
++			}
 +		}
 +		if (!has_calls)
 +			return;
@@ -14932,7 +15056,7 @@ index 000000000..467c44260
 +	 * nests a run. */
 +	if (agent_think_max && !agent_packing)
 +		agent_think_cap = agent_think_base;
-+	agent_think_cutoff = 0;
++	agent_think_drop();
 +}
 +
 +/* Add or remove a skill in b-5; want < 0 toggles. */
@@ -15150,7 +15274,7 @@ index 000000000..467c44260
 +		}
 +		if (ask && cap <= agent_think_was) {
 +			snprintf(msg, sizeof(msg), "ath N takes a count above the cap "
-+				"of %d tokens; ath continues as it is%s", agent_think_was,
++				"of %d tokens; ath alone leaves the cap%s", agent_think_was,
 +				agent_think_retry());
 +			return msg;
 +		}
@@ -19643,10 +19767,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..86c620c0f 100755
+index c836c94c7..a64b60f5f 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,267 @@ build() {
+@@ -65,6 +65,269 @@ build() {
      }
  }
  
@@ -19813,16 +19937,18 @@ index c836c94c7..86c620c0f 100755
 +                "omitted part is not sent; ath alone sends neither. Sent fields\n" \
 +                "replace those of request_extra. ast shows the setting.\n\n" \
 +                "With N,M the agent may raise the cap up to M for one reply. A reply\n" \
-+                "whose thinking the server cut at the cap runs as it is; the agent is\n" \
-+                "then asked, in an exchange kept in b-3 only, whether its next reply\n" \
-+                "needs more thinking. It answers with ath N, a count above the cap,\n" \
-+                "or with ath to continue; nothing else runs then, and after five\n" \
-+                "retries the answer is taken as ath. A raised cap is logged as a\n" \
-+                "TURN of assistant text leading the next reply and lasts for that\n" \
-+                "reply only; that reply is not asked about. The server marks cut\n" \
-+                "thinking by ending it with think_cut of conf.c. As an agent tool ath\n" \
-+                "takes only a count from 1 to M, as its argument or its range, for\n" \
-+                "its next reply, and needs M set. Pack agents are not asked.\n\n" \
++                "whose thinking the server cut at the cap is withheld: it is not\n" \
++                "logged and its commands do not run. The agent is shown the reply and\n" \
++                "its commands, in an exchange kept in b-3 only, and answers with ath\n" \
++                "to run the reply as it is, or with ath N, a count above the cap, to\n" \
++                "discard it and reply again under that cap. Nothing else runs then,\n" \
++                "and after five retries the answer is taken as ath. A cut reply\n" \
++                "without text and commands is requested again either way. The cap\n" \
++                "lasts for the new reply only, and that reply is not asked about. The\n" \
++                "server marks cut thinking by ending it with think_cut of conf.c. As\n" \
++                "an agent tool ath takes only a count from 1 to M, as its argument or\n" \
++                "its range, for its next reply, and needs M set. Pack agents are not\n" \
++                "asked.\n\n" \
 +                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
 +                "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
 +                ":4096,32768ath medium")
@@ -19914,7 +20040,7 @@ index c836c94c7..86c620c0f 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +335,7 @@ install() {
+@@ -74,7 +337,7 @@ install() {
  }
  
  print_usage() {
@@ -19923,7 +20049,7 @@ index c836c94c7..86c620c0f 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +343,9 @@ print_usage() {
+@@ -82,6 +345,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -20985,10 +21111,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..ab0e1f77a
+index 000000000..527156128
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1475 @@
+@@ -0,0 +1,1477 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -21944,16 +22070,18 @@ index 000000000..ab0e1f77a
 +	"replace those of request_extra. ast shows the setting.",
 +	"",
 +	"With N,M the agent may raise the cap up to M for one reply. A reply",
-+	"whose thinking the server cut at the cap runs as it is; the agent is",
-+	"then asked, in an exchange kept in b-3 only, whether its next reply",
-+	"needs more thinking. It answers with ath N, a count above the cap,",
-+	"or with ath to continue; nothing else runs then, and after five",
-+	"retries the answer is taken as ath. A raised cap is logged as a",
-+	"TURN of assistant text leading the next reply and lasts for that",
-+	"reply only; that reply is not asked about. The server marks cut",
-+	"thinking by ending it with think_cut of conf.c. As an agent tool ath",
-+	"takes only a count from 1 to M, as its argument or its range, for",
-+	"its next reply, and needs M set. Pack agents are not asked.",
++	"whose thinking the server cut at the cap is withheld: it is not",
++	"logged and its commands do not run. The agent is shown the reply and",
++	"its commands, in an exchange kept in b-3 only, and answers with ath",
++	"to run the reply as it is, or with ath N, a count above the cap, to",
++	"discard it and reply again under that cap. Nothing else runs then,",
++	"and after five retries the answer is taken as ath. A cut reply",
++	"without text and commands is requested again either way. The cap",
++	"lasts for the new reply only, and that reply is not asked about. The",
++	"server marks cut thinking by ending it with think_cut of conf.c. As",
++	"an agent tool ath takes only a count from 1 to M, as its argument or",
++	"its range, for its next reply, and needs M set. Pack agents are not",
++	"asked.",
 +	"",
 +	"Example: cap thinking at 1024 tokens with high effort",
 +	"1024ath high",
@@ -22424,45 +22552,45 @@ index 000000000..ab0e1f77a
 +	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
 +	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
 +	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 941, 969, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 970, 978, 0, 0},
-+	{"sc", "Set ex special characters", 979, 989, 0, 0},
-+	{"sc!", "Set ex special characters", 990, 997, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 998, 1005, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1006, 1009, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1010, 1014, 0, 0},
-+	{"ph", "Redefine placeholders", 1015, 1031, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1040, 1080, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1081, 1090, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1091, 1098, 1, 0},
-+	{"agr", "Control agent output protection", 1099, 1105, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1106, 1113, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1114, 1119, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1120, 1126, 1, 0},
-+	{"ai", "Indent new lines", 1127, 1130, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1131, 1132, 1, 0},
-+	{"ish", "Interactive shell", 1133, 1148, 1, 0},
-+	{"grp", "Regex search group", 1149, 1157, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1158, 1161, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1162, 1163, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1163, 1164, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1164, 1165, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1165, 1166, 1, 0},
-+	{"led", "Enable all terminal output", 1166, 1167, 1, 0},
-+	{"vis", "Control startup flags", 1168, 1179, 1, 0},
-+	{"mpt", "Control vi prompts", 1180, 1190, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1191, 1193, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1193, 1195, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1195, 1196, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1196, 1197, 1, 0},
-+	{"td", "Current text direction context", 1197, 1203, 1, 0},
-+	{"pr", "Print register", 1204, 1220, 1, 0},
-+	{"fr", "Find register", 1221, 1233, 1, 0},
-+	{"rr", "Record register", 1234, 1247, 1, 0},
-+	{"lim", "Line length render limit", 1248, 1263, 1, 0},
-+	{"seq", "Control Undo/Redo", 1264, 1276, 1, 0},
-+	{"left", "Control horizontal scroll", 1277, 1282, 1, 0},
-+	{"err", "Control ex errors", 1283, 1295, 1, 0},
++	{"ath", "Set the agent thinking cap and effort", 941, 971, 0, 0},
++	{"ac", "Set autocomplete filter regex", 972, 980, 0, 0},
++	{"sc", "Set ex special characters", 981, 991, 0, 0},
++	{"sc!", "Set ex special characters", 992, 999, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1000, 1007, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1008, 1011, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1012, 1016, 0, 0},
++	{"ph", "Redefine placeholders", 1017, 1033, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1042, 1082, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1083, 1092, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1093, 1100, 1, 0},
++	{"agr", "Control agent output protection", 1101, 1107, 1, 0},
++	{"ato", "Detach long agent shell commands", 1108, 1115, 1, 0},
++	{"ar", "Display returned agent reasoning", 1116, 1121, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1122, 1128, 1, 0},
++	{"ai", "Indent new lines", 1129, 1132, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1133, 1134, 1, 0},
++	{"ish", "Interactive shell", 1135, 1150, 1, 0},
++	{"grp", "Regex search group", 1151, 1159, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1160, 1163, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1164, 1165, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1165, 1166, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1166, 1167, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1167, 1168, 1, 0},
++	{"led", "Enable all terminal output", 1168, 1169, 1, 0},
++	{"vis", "Control startup flags", 1170, 1181, 1, 0},
++	{"mpt", "Control vi prompts", 1182, 1192, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1193, 1195, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1195, 1197, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1197, 1198, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1198, 1199, 1, 0},
++	{"td", "Current text direction context", 1199, 1205, 1, 0},
++	{"pr", "Print register", 1206, 1222, 1, 0},
++	{"fr", "Find register", 1223, 1235, 1, 0},
++	{"rr", "Record register", 1236, 1249, 1, 0},
++	{"lim", "Line length render limit", 1250, 1265, 1, 0},
++	{"seq", "Control Undo/Redo", 1266, 1278, 1, 0},
++	{"left", "Control horizontal scroll", 1279, 1284, 1, 0},
++	{"err", "Control ex errors", 1285, 1297, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..8fde7a8f9 100644
