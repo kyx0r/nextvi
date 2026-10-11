@@ -118,6 +118,12 @@ static cJSON *agent_think_held;
 static int agent_think_was, agent_think_more;
 /* The withheld reply is cut thinking alone, without text or calls */
 static int agent_think_empty;
+/* The text of an ath N answer: it ends the requests of the reply that
+ * replaces the withheld one, unlogged like the question. */
+static char *agent_think_note;
+static char agent_think_lead[] =
+	"Your last reply was discarded: its thinking was cut off at the cap. "
+	"Your note for the reply that replaces it:\n%s";
 /* Replies a thinking budget question waits for an answer after the first */
 #define AGENT_THINK_TRIES	5
 static void agent_run(const char *input);
@@ -1429,6 +1435,12 @@ static void agent_think_drop(void)
 	agent_think_held = NULL;
 }
 
+static void agent_think_unnote(void)
+{
+	free(agent_think_note);
+	agent_think_note = NULL;
+}
+
 /* Whether to withhold the reply of response root for a thinking budget
  * question: its thinking was cut below the ceiling, and it is not the reply
  * to a question. */
@@ -1496,6 +1508,8 @@ static void agent_think_ask(cJSON *root)
 		"reply again under the same cap" : "keep the reply as it is",
 		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 	sbuf_str(sb, line)
+	sbuf_str(sb, " The new reply sees neither this reply nor its thinking; "
+		"text after N is passed to it as your note.")
 	sbuf_nul(sb)
 	agent_cp_open = sb->s;
 	agent_log("USER", agent_cp_open);
@@ -1563,9 +1577,10 @@ static void agent_checkpoint_end(void)
 	 * the context and its cached prefix stay. */
 	if (kind == 3) {
 		snprintf(note, sizeof(note), agent_think_more ?
-			"[ath reply discarded, thinking cap %d tokens for the next]\n" :
+			"[ath reply discarded, thinking cap %d tokens%s for the next]\n" :
 			agent_think_empty ? "[ath reply requested again]\n" :
-			"[ath reply kept as it is]\n", agent_think_cap);
+			"[ath reply kept as it is]\n", agent_think_cap,
+			agent_think_note ? " and a note" : "");
 		if (answered)
 			agent_output(note);
 		return;
@@ -2582,6 +2597,24 @@ static void agent_run_loop(const char *input)
 				cJSON_AddItemToArray(agent_messages,
 					agent_msg("user", agent_continue));
 		}
+		/* The note is in the context for the request alone; the user
+		 * message it joins is put back. */
+		cJSON *plain = NULL;
+		int noted = agent_think_note && !agent_checkpointing &&
+			!agent_packing && agent_logbuf == 3;
+		if (noted) {
+			cJSON *last = cJSON_GetArrayItem(agent_messages,
+				cJSON_GetArraySize(agent_messages) - 1);
+			char *text = emalloc(sizeof(agent_think_lead) +
+				strlen(agent_think_note));
+			sprintf(text, agent_think_lead, agent_think_note);
+			if (cJSON_IsString(cJSON_GetObjectItem(last, "content")) &&
+					!strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(
+					last, "role")), "user"))
+				plain = cJSON_Duplicate(last, 1);
+			agent_add_user(agent_messages, text);
+			free(text);
+		}
 		if (agent_checkpointing)
 			agent_cp_build();
 		req = agent_config();
@@ -2614,6 +2647,12 @@ static void agent_run_loop(const char *input)
 		agent_prev = json;
 		body = agent_http(req, &st, &stderr_text);
 		cJSON_Delete(req);
+		if (noted) {
+			cJSON_DeleteItemFromArray(agent_messages,
+				cJSON_GetArraySize(agent_messages) - 1);
+			if (plain)
+				cJSON_AddItemToArray(agent_messages, plain);
+		}
 		if (agent_cancel) {
 			free(body);
 			free(stderr_text);
@@ -2700,6 +2739,8 @@ static void agent_run_loop(const char *input)
 		}
 		agent_record_usage(root, request_bytes);
 		free(body);
+		if (noted)
+			agent_think_unnote();
 		/* A raised cap lasts for one reply. */
 		if (!agent_checkpointing && agent_think_max) {
 			agent_think_was = agent_think_cap;
@@ -2969,6 +3010,8 @@ static void agent_run(const char *input)
 	 * nests a run. */
 	if (agent_think_max && !agent_packing)
 		agent_think_cap = agent_think_base;
+	if (!agent_packing)
+		agent_think_unnote();
 	agent_think_drop();
 }
 
@@ -3162,7 +3205,8 @@ static char *agent_count(char *s, int *n)
 
 /* N,M lets the agent raise the cap up to M for its next reply: as a tool ath
  * takes only a count, as its argument like acheck or as its range, and
- * answers a thinking budget question, where ath alone leaves the cap. */
+ * answers a thinking budget question, where ath alone leaves the cap and
+ * text after the count is a note for the new reply. */
 static void *ec_ath(char *loc, char *cmd, char *arg)
 {
 	static char msg[128];
@@ -3177,10 +3221,14 @@ static void *ec_ath(char *loc, char *cmd, char *arg)
 			agent_cp_done = 1;
 			return NULL;
 		}
-		s = *loc && *arg ? NULL : agent_count(*arg ? arg : loc, &cap);
+		s = agent_count(*loc ? loc : arg, &cap);
+		if (s && *loc)
+			s = *s ? NULL : arg;
+		else if (s && *s && *s != '\'' '\'' && *s != '\''\t'\'')
+			s = NULL;
 		while (s && (*s == '\'' '\'' || *s == '\''\t'\''))
 			s++;
-		if (!s || *s || cap < 1) {
+		if (!s || (*s && !ask) || cap < 1) {
 			snprintf(msg, sizeof(msg), "ath takes a positive token count, "
 				"ath N%s%s", ask ? ", or nothing" : "", agent_think_retry());
 			return msg;
@@ -3193,6 +3241,9 @@ static void *ec_ath(char *loc, char *cmd, char *arg)
 		}
 		agent_think_cap = MIN(cap, agent_think_max);
 		if (ask) {
+			agent_think_unnote();
+			if (*s)
+				agent_think_note = agent_safe_text(s, strlen(s));
 			agent_think_more = agent_cp_done = 1;
 			return NULL;
 		}
@@ -7937,13 +7988,15 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "its commands, in an exchange kept in b-3 only, and answers with ath\n" \
                 "to run the reply as it is, or with ath N, a count above the cap, to\n" \
                 "discard it and reply again under that cap. Nothing else runs then,\n" \
-                "and after five retries the answer is taken as ath. A cut reply\n" \
-                "without text and commands is requested again either way. The cap\n" \
-                "lasts for the new reply only, and that reply is not asked about. The\n" \
-                "server marks cut thinking by ending it with think_cut of conf.c. As\n" \
-                "an agent tool ath takes only a count from 1 to M, as its argument or\n" \
-                "its range, for its next reply, and needs M set. Pack agents are not\n" \
-                "asked.\n\n" \
+                "and after five retries the answer is taken as ath. Text after N is a\n" \
+                "note for the new reply, which sees nothing of the discarded one; it\n" \
+                "is sent with the request of that reply only and is not logged. A cut\n" \
+                "reply without text and commands is requested again either way. The\n" \
+                "cap lasts for the new reply only, and that reply is not asked about.\n" \
+                "The server marks cut thinking by ending it with think_cut of conf.c.\n" \
+                "Outside that exchange ath as an agent tool takes only a count from 1\n" \
+                "to M, as its argument or its range, for its next reply, and needs M\n" \
+                "set. Pack agents are not asked.\n\n" \
                 "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
                 "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
                 ":4096,32768ath medium")
@@ -11040,13 +11093,15 @@ static char *exspec_lines[] = {
 	"its commands, in an exchange kept in b-3 only, and answers with ath",
 	"to run the reply as it is, or with ath N, a count above the cap, to",
 	"discard it and reply again under that cap. Nothing else runs then,",
-	"and after five retries the answer is taken as ath. A cut reply",
-	"without text and commands is requested again either way. The cap",
-	"lasts for the new reply only, and that reply is not asked about. The",
-	"server marks cut thinking by ending it with think_cut of conf.c. As",
-	"an agent tool ath takes only a count from 1 to M, as its argument or",
-	"its range, for its next reply, and needs M set. Pack agents are not",
-	"asked.",
+	"and after five retries the answer is taken as ath. Text after N is a",
+	"note for the new reply, which sees nothing of the discarded one; it",
+	"is sent with the request of that reply only and is not logged. A cut",
+	"reply without text and commands is requested again either way. The",
+	"cap lasts for the new reply only, and that reply is not asked about.",
+	"The server marks cut thinking by ending it with think_cut of conf.c.",
+	"Outside that exchange ath as an agent tool takes only a count from 1",
+	"to M, as its argument or its range, for its next reply, and needs M",
+	"set. Pack agents are not asked.",
 	"",
 	"Example: cap thinking at 1024 tokens with high effort",
 	"1024ath high",
@@ -11518,45 +11573,45 @@ static struct {
 	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
 	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
 	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 941, 971, 0, 0},
-	{"ac", "Set autocomplete filter regex", 972, 980, 0, 0},
-	{"sc", "Set ex special characters", 981, 991, 0, 0},
-	{"sc!", "Set ex special characters", 992, 999, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 1000, 1007, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1008, 1011, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1012, 1016, 0, 0},
-	{"ph", "Redefine placeholders", 1017, 1033, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1042, 1082, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1083, 1092, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1093, 1100, 1, 0},
-	{"agr", "Control agent output protection", 1101, 1107, 1, 0},
-	{"ato", "Detach long agent shell commands", 1108, 1115, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1116, 1122, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1123, 1129, 1, 0},
-	{"ai", "Indent new lines", 1130, 1133, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1134, 1135, 1, 0},
-	{"ish", "Interactive shell", 1136, 1151, 1, 0},
-	{"grp", "Regex search group", 1152, 1160, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1161, 1164, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1165, 1166, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1166, 1167, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1167, 1168, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1168, 1169, 1, 0},
-	{"led", "Enable all terminal output", 1169, 1170, 1, 0},
-	{"vis", "Control startup flags", 1171, 1182, 1, 0},
-	{"mpt", "Control vi prompts", 1183, 1193, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1194, 1196, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1196, 1198, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1198, 1199, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1199, 1200, 1, 0},
-	{"td", "Current text direction context", 1200, 1206, 1, 0},
-	{"pr", "Print register", 1207, 1223, 1, 0},
-	{"fr", "Find register", 1224, 1236, 1, 0},
-	{"rr", "Record register", 1237, 1250, 1, 0},
-	{"lim", "Line length render limit", 1251, 1266, 1, 0},
-	{"seq", "Control Undo/Redo", 1267, 1279, 1, 0},
-	{"left", "Control horizontal scroll", 1280, 1285, 1, 0},
-	{"err", "Control ex errors", 1286, 1298, 1, 0},
+	{"ath", "Set the agent thinking cap and effort", 941, 973, 0, 0},
+	{"ac", "Set autocomplete filter regex", 974, 982, 0, 0},
+	{"sc", "Set ex special characters", 983, 993, 0, 0},
+	{"sc!", "Set ex special characters", 994, 1001, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1002, 1009, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1010, 1013, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1014, 1018, 0, 0},
+	{"ph", "Redefine placeholders", 1019, 1035, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1044, 1084, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1085, 1094, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1095, 1102, 1, 0},
+	{"agr", "Control agent output protection", 1103, 1109, 1, 0},
+	{"ato", "Detach long agent shell commands", 1110, 1117, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1118, 1124, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1125, 1131, 1, 0},
+	{"ai", "Indent new lines", 1132, 1135, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1136, 1137, 1, 0},
+	{"ish", "Interactive shell", 1138, 1153, 1, 0},
+	{"grp", "Regex search group", 1154, 1162, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1163, 1166, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1167, 1168, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1168, 1169, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1169, 1170, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1170, 1171, 1, 0},
+	{"led", "Enable all terminal output", 1171, 1172, 1, 0},
+	{"vis", "Control startup flags", 1173, 1184, 1, 0},
+	{"mpt", "Control vi prompts", 1185, 1195, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1196, 1198, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1198, 1200, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1200, 1201, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1201, 1202, 1, 0},
+	{"td", "Current text direction context", 1202, 1208, 1, 0},
+	{"pr", "Print register", 1209, 1225, 1, 0},
+	{"fr", "Find register", 1226, 1238, 1, 0},
+	{"rr", "Record register", 1239, 1252, 1, 0},
+	{"lim", "Line length render limit", 1253, 1268, 1, 0},
+	{"seq", "Control Undo/Redo", 1269, 1281, 1, 0},
+	{"left", "Control horizontal scroll", 1282, 1287, 1, 0},
+	{"err", "Control ex errors", 1288, 1300, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -12181,10 +12236,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..3c218a1e2
+index 000000000..32cbbcaf2
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4085 @@
+@@ -0,0 +1,4136 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12273,6 +12328,12 @@ index 000000000..3c218a1e2
 +static int agent_think_was, agent_think_more;
 +/* The withheld reply is cut thinking alone, without text or calls */
 +static int agent_think_empty;
++/* The text of an ath N answer: it ends the requests of the reply that
++ * replaces the withheld one, unlogged like the question. */
++static char *agent_think_note;
++static char agent_think_lead[] =
++	"Your last reply was discarded: its thinking was cut off at the cap. "
++	"Your note for the reply that replaces it:\n%s";
 +/* Replies a thinking budget question waits for an answer after the first */
 +#define AGENT_THINK_TRIES	5
 +static void agent_run(const char *input);
@@ -13584,6 +13645,12 @@ index 000000000..3c218a1e2
 +	agent_think_held = NULL;
 +}
 +
++static void agent_think_unnote(void)
++{
++	free(agent_think_note);
++	agent_think_note = NULL;
++}
++
 +/* Whether to withhold the reply of response root for a thinking budget
 + * question: its thinking was cut below the ceiling, and it is not the reply
 + * to a question. */
@@ -13651,6 +13718,8 @@ index 000000000..3c218a1e2
 +		"reply again under the same cap" : "keep the reply as it is",
 +		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 +	sbuf_str(sb, line)
++	sbuf_str(sb, " The new reply sees neither this reply nor its thinking; "
++		"text after N is passed to it as your note.")
 +	sbuf_nul(sb)
 +	agent_cp_open = sb->s;
 +	agent_log("USER", agent_cp_open);
@@ -13718,9 +13787,10 @@ index 000000000..3c218a1e2
 +	 * the context and its cached prefix stay. */
 +	if (kind == 3) {
 +		snprintf(note, sizeof(note), agent_think_more ?
-+			"[ath reply discarded, thinking cap %d tokens for the next]\n" :
++			"[ath reply discarded, thinking cap %d tokens%s for the next]\n" :
 +			agent_think_empty ? "[ath reply requested again]\n" :
-+			"[ath reply kept as it is]\n", agent_think_cap);
++			"[ath reply kept as it is]\n", agent_think_cap,
++			agent_think_note ? " and a note" : "");
 +		if (answered)
 +			agent_output(note);
 +		return;
@@ -14737,6 +14807,24 @@ index 000000000..3c218a1e2
 +				cJSON_AddItemToArray(agent_messages,
 +					agent_msg("user", agent_continue));
 +		}
++		/* The note is in the context for the request alone; the user
++		 * message it joins is put back. */
++		cJSON *plain = NULL;
++		int noted = agent_think_note && !agent_checkpointing &&
++			!agent_packing && agent_logbuf == 3;
++		if (noted) {
++			cJSON *last = cJSON_GetArrayItem(agent_messages,
++				cJSON_GetArraySize(agent_messages) - 1);
++			char *text = emalloc(sizeof(agent_think_lead) +
++				strlen(agent_think_note));
++			sprintf(text, agent_think_lead, agent_think_note);
++			if (cJSON_IsString(cJSON_GetObjectItem(last, "content")) &&
++					!strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(
++					last, "role")), "user"))
++				plain = cJSON_Duplicate(last, 1);
++			agent_add_user(agent_messages, text);
++			free(text);
++		}
 +		if (agent_checkpointing)
 +			agent_cp_build();
 +		req = agent_config();
@@ -14769,6 +14857,12 @@ index 000000000..3c218a1e2
 +		agent_prev = json;
 +		body = agent_http(req, &st, &stderr_text);
 +		cJSON_Delete(req);
++		if (noted) {
++			cJSON_DeleteItemFromArray(agent_messages,
++				cJSON_GetArraySize(agent_messages) - 1);
++			if (plain)
++				cJSON_AddItemToArray(agent_messages, plain);
++		}
 +		if (agent_cancel) {
 +			free(body);
 +			free(stderr_text);
@@ -14855,6 +14949,8 @@ index 000000000..3c218a1e2
 +		}
 +		agent_record_usage(root, request_bytes);
 +		free(body);
++		if (noted)
++			agent_think_unnote();
 +		/* A raised cap lasts for one reply. */
 +		if (!agent_checkpointing && agent_think_max) {
 +			agent_think_was = agent_think_cap;
@@ -15124,6 +15220,8 @@ index 000000000..3c218a1e2
 +	 * nests a run. */
 +	if (agent_think_max && !agent_packing)
 +		agent_think_cap = agent_think_base;
++	if (!agent_packing)
++		agent_think_unnote();
 +	agent_think_drop();
 +}
 +
@@ -15317,7 +15415,8 @@ index 000000000..3c218a1e2
 +
 +/* N,M lets the agent raise the cap up to M for its next reply: as a tool ath
 + * takes only a count, as its argument like acheck or as its range, and
-+ * answers a thinking budget question, where ath alone leaves the cap. */
++ * answers a thinking budget question, where ath alone leaves the cap and
++ * text after the count is a note for the new reply. */
 +static void *ec_ath(char *loc, char *cmd, char *arg)
 +{
 +	static char msg[128];
@@ -15332,10 +15431,14 @@ index 000000000..3c218a1e2
 +			agent_cp_done = 1;
 +			return NULL;
 +		}
-+		s = *loc && *arg ? NULL : agent_count(*arg ? arg : loc, &cap);
++		s = agent_count(*loc ? loc : arg, &cap);
++		if (s && *loc)
++			s = *s ? NULL : arg;
++		else if (s && *s && *s != ' ' && *s != '\t')
++			s = NULL;
 +		while (s && (*s == ' ' || *s == '\t'))
 +			s++;
-+		if (!s || *s || cap < 1) {
++		if (!s || (*s && !ask) || cap < 1) {
 +			snprintf(msg, sizeof(msg), "ath takes a positive token count, "
 +				"ath N%s%s", ask ? ", or nothing" : "", agent_think_retry());
 +			return msg;
@@ -15348,6 +15451,9 @@ index 000000000..3c218a1e2
 +		}
 +		agent_think_cap = MIN(cap, agent_think_max);
 +		if (ask) {
++			agent_think_unnote();
++			if (*s)
++				agent_think_note = agent_safe_text(s, strlen(s));
 +			agent_think_more = agent_cp_done = 1;
 +			return NULL;
 +		}
@@ -19835,10 +19941,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..015835389 100755
+index c836c94c7..a374515a0 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,270 @@ build() {
+@@ -65,6 +65,272 @@ build() {
      }
  }
  
@@ -20010,13 +20116,15 @@ index c836c94c7..015835389 100755
 +                "its commands, in an exchange kept in b-3 only, and answers with ath\n" \
 +                "to run the reply as it is, or with ath N, a count above the cap, to\n" \
 +                "discard it and reply again under that cap. Nothing else runs then,\n" \
-+                "and after five retries the answer is taken as ath. A cut reply\n" \
-+                "without text and commands is requested again either way. The cap\n" \
-+                "lasts for the new reply only, and that reply is not asked about. The\n" \
-+                "server marks cut thinking by ending it with think_cut of conf.c. As\n" \
-+                "an agent tool ath takes only a count from 1 to M, as its argument or\n" \
-+                "its range, for its next reply, and needs M set. Pack agents are not\n" \
-+                "asked.\n\n" \
++                "and after five retries the answer is taken as ath. Text after N is a\n" \
++                "note for the new reply, which sees nothing of the discarded one; it\n" \
++                "is sent with the request of that reply only and is not logged. A cut\n" \
++                "reply without text and commands is requested again either way. The\n" \
++                "cap lasts for the new reply only, and that reply is not asked about.\n" \
++                "The server marks cut thinking by ending it with think_cut of conf.c.\n" \
++                "Outside that exchange ath as an agent tool takes only a count from 1\n" \
++                "to M, as its argument or its range, for its next reply, and needs M\n" \
++                "set. Pack agents are not asked.\n\n" \
 +                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
 +                "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
 +                ":4096,32768ath medium")
@@ -20109,7 +20217,7 @@ index c836c94c7..015835389 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +338,7 @@ install() {
+@@ -74,7 +340,7 @@ install() {
  }
  
  print_usage() {
@@ -20118,7 +20226,7 @@ index c836c94c7..015835389 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +346,9 @@ print_usage() {
+@@ -82,6 +348,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -21180,10 +21288,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..b3bd03ec0
+index 000000000..b1fb56480
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1478 @@
+@@ -0,0 +1,1480 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -22144,13 +22252,15 @@ index 000000000..b3bd03ec0
 +	"its commands, in an exchange kept in b-3 only, and answers with ath",
 +	"to run the reply as it is, or with ath N, a count above the cap, to",
 +	"discard it and reply again under that cap. Nothing else runs then,",
-+	"and after five retries the answer is taken as ath. A cut reply",
-+	"without text and commands is requested again either way. The cap",
-+	"lasts for the new reply only, and that reply is not asked about. The",
-+	"server marks cut thinking by ending it with think_cut of conf.c. As",
-+	"an agent tool ath takes only a count from 1 to M, as its argument or",
-+	"its range, for its next reply, and needs M set. Pack agents are not",
-+	"asked.",
++	"and after five retries the answer is taken as ath. Text after N is a",
++	"note for the new reply, which sees nothing of the discarded one; it",
++	"is sent with the request of that reply only and is not logged. A cut",
++	"reply without text and commands is requested again either way. The",
++	"cap lasts for the new reply only, and that reply is not asked about.",
++	"The server marks cut thinking by ending it with think_cut of conf.c.",
++	"Outside that exchange ath as an agent tool takes only a count from 1",
++	"to M, as its argument or its range, for its next reply, and needs M",
++	"set. Pack agents are not asked.",
 +	"",
 +	"Example: cap thinking at 1024 tokens with high effort",
 +	"1024ath high",
@@ -22622,45 +22732,45 @@ index 000000000..b3bd03ec0
 +	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
 +	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
 +	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 941, 971, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 972, 980, 0, 0},
-+	{"sc", "Set ex special characters", 981, 991, 0, 0},
-+	{"sc!", "Set ex special characters", 992, 999, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 1000, 1007, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1008, 1011, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1012, 1016, 0, 0},
-+	{"ph", "Redefine placeholders", 1017, 1033, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1042, 1082, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1083, 1092, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1093, 1100, 1, 0},
-+	{"agr", "Control agent output protection", 1101, 1107, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1108, 1115, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1116, 1122, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1123, 1129, 1, 0},
-+	{"ai", "Indent new lines", 1130, 1133, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1134, 1135, 1, 0},
-+	{"ish", "Interactive shell", 1136, 1151, 1, 0},
-+	{"grp", "Regex search group", 1152, 1160, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1161, 1164, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1165, 1166, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1166, 1167, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1167, 1168, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1168, 1169, 1, 0},
-+	{"led", "Enable all terminal output", 1169, 1170, 1, 0},
-+	{"vis", "Control startup flags", 1171, 1182, 1, 0},
-+	{"mpt", "Control vi prompts", 1183, 1193, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1194, 1196, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1196, 1198, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1198, 1199, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1199, 1200, 1, 0},
-+	{"td", "Current text direction context", 1200, 1206, 1, 0},
-+	{"pr", "Print register", 1207, 1223, 1, 0},
-+	{"fr", "Find register", 1224, 1236, 1, 0},
-+	{"rr", "Record register", 1237, 1250, 1, 0},
-+	{"lim", "Line length render limit", 1251, 1266, 1, 0},
-+	{"seq", "Control Undo/Redo", 1267, 1279, 1, 0},
-+	{"left", "Control horizontal scroll", 1280, 1285, 1, 0},
-+	{"err", "Control ex errors", 1286, 1298, 1, 0},
++	{"ath", "Set the agent thinking cap and effort", 941, 973, 0, 0},
++	{"ac", "Set autocomplete filter regex", 974, 982, 0, 0},
++	{"sc", "Set ex special characters", 983, 993, 0, 0},
++	{"sc!", "Set ex special characters", 994, 1001, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1002, 1009, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1010, 1013, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1014, 1018, 0, 0},
++	{"ph", "Redefine placeholders", 1019, 1035, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1044, 1084, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1085, 1094, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1095, 1102, 1, 0},
++	{"agr", "Control agent output protection", 1103, 1109, 1, 0},
++	{"ato", "Detach long agent shell commands", 1110, 1117, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1118, 1124, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1125, 1131, 1, 0},
++	{"ai", "Indent new lines", 1132, 1135, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1136, 1137, 1, 0},
++	{"ish", "Interactive shell", 1138, 1153, 1, 0},
++	{"grp", "Regex search group", 1154, 1162, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1163, 1166, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1167, 1168, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1168, 1169, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1169, 1170, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1170, 1171, 1, 0},
++	{"led", "Enable all terminal output", 1171, 1172, 1, 0},
++	{"vis", "Control startup flags", 1173, 1184, 1, 0},
++	{"mpt", "Control vi prompts", 1185, 1195, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1196, 1198, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1198, 1200, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1200, 1201, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1201, 1202, 1, 0},
++	{"td", "Current text direction context", 1202, 1208, 1, 0},
++	{"pr", "Print register", 1209, 1225, 1, 0},
++	{"fr", "Find register", 1226, 1238, 1, 0},
++	{"rr", "Record register", 1239, 1252, 1, 0},
++	{"lim", "Line length render limit", 1253, 1268, 1, 0},
++	{"seq", "Control Undo/Redo", 1269, 1281, 1, 0},
++	{"left", "Control horizontal scroll", 1282, 1287, 1, 0},
++	{"err", "Control ex errors", 1288, 1300, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..8fde7a8f9 100644
