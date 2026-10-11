@@ -1621,7 +1621,7 @@ static void agent_add_turn(cJSON *msgs, struct lbuf *lb, struct agent_span *s)
 
 /* Append a user message, joined to a preceding one: some chat templates
  * require alternating roles. */
-static void agent_add_user(cJSON *msgs, char *text)
+static void agent_add_user(cJSON *msgs, const char *text)
 {
 	cJSON *last = cJSON_GetArrayItem(msgs, cJSON_GetArraySize(msgs) - 1);
 	char *prev = cJSON_GetStringValue(cJSON_GetObjectItem(last, "content"));
@@ -2235,7 +2235,7 @@ static void agent_editor(void)
 static void agent_refresh(void)
 {
 	char *s = agent_snapshot(NULL);
-	cJSON_AddItemToArray(agent_messages, agent_msg("user", s));
+	agent_add_user(agent_messages, s);
 	agent_log("USER", s);
 	free(s);
 }
@@ -2330,7 +2330,7 @@ static void agent_run_loop(const char *input)
 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
 	agent_rounds = 0;
-	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
+	agent_add_user(agent_messages, input);
 	agent_log("USER", input);
 	for (int round = 0; ; ) {
 		/* Stop before requesting a reply whose calls could not run. */
@@ -2491,9 +2491,13 @@ static void agent_run_loop(const char *input)
 					"object with a nonempty string command, for example\n"
 					"{\"command\":\"1,20p\"}.", error);
 				agent_log("USER", diagnostic);
-				if (!agent_live() || agent_acl_kept())
+				/* A checkpoint keeps the messages after its opening
+				 * one, so this stays a message of its own there. */
+				if (agent_checkpointing)
 					cJSON_AddItemToArray(agent_messages,
 						agent_msg("user", diagnostic));
+				else if (!agent_live() || agent_acl_kept())
+					agent_add_user(agent_messages, diagnostic);
 			}
 			free(body);
 			cJSON_Delete(root);
@@ -2549,6 +2553,7 @@ static void agent_run_loop(const char *input)
 			cJSON *command = cJSON_GetObjectItem(parsed, "command");
 			char *err = NULL;
 			agent_child_status = 0;
+			agent_edited = 0;
 			sbuf_smake(out, 256)
 			sbuf_smake(result, 256)
 			agent_boundary();
@@ -2615,6 +2620,12 @@ static void agent_run_loop(const char *input)
 					agent_child_status ?
 						agent_child_status : !!err);
 				sbuf_str(result, status)
+			}
+			if (agent_edited) {
+				char edited[48];
+				snprintf(edited, sizeof(edited), "edited %d line%s\n",
+					agent_edited, agent_edited > 1 ? "s" : "");
+				sbuf_str(result, edited)
 			}
 			if (err && err != xuerr) {
 				sbuf_str(result, err)
@@ -3784,7 +3795,7 @@ static int agent_autocompact(const char *input)
 		agent_log("USER", resume->s);
 		agent_logbuf = 2;
 		if (!xacl)
-			cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
+			agent_add_user(agent_messages, resume->s);
 		free(resume->s);
 		ok = 1;
 	}
@@ -3824,6 +3835,8 @@ static int agent_autocompact(const char *input)
 /* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 static int agent_tool, agent_cancel, agent_pause;
 static int agent_input_blocked;
+/* lines of the current buffer the running tool call edited */
+static int agent_edited;
 /* ex_exec depth of the running tool call itself */
 static int agent_tool_dep;
 /* full output of the last tool call that did not run or defer aout */
@@ -7712,7 +7725,9 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
     '\'' README > "$tmp" &&
     awk -f exspec.awk "$tmp" > "$tmp.h" &&
     mv -f "$tmp.h" exspec.h
+    ret=$?
     rm -f "$tmp" "$tmp.h"
+    return "$ret"
 }
 
 ??!219reg cbuild.sh:67:m12sc %? %@2142sc!0?
@@ -11299,13 +11314,8 @@ void lbuf_saved\(struct lbuf \*lb, int clear\)
 			lopt_done\(&lb->hist\[i]\);9??0?
 grp 09??-7m 3220reg p OK lbuf.c:453:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg lbuf.c:4532sc %? %@2132sc!0?
-'\''1i 	if (agent_tool) {
-		char msg[64];
-		/* Report a zero-based, half-open span, like ex range beg/end. */
-		int last = MAX(end, beg + lo->n_ins);
-		snprintf(msg, sizeof(msg), "edited lines beg:%d end:%d", beg, last);
-		ex_print(msg, msg_ft)
-	}
+'\''1i 	if (agent_tool && lb == xb)
+		agent_edited += MAX(lo->n_del, lo->n_ins);
 	agent_sync(lb);
 ??!219reg lbuf.c:229:m12sc %? %@2142sc!0?
 '\''2i 	agent_sync(lb);
@@ -11838,10 +11848,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..2bb89045e
+index 000000000..2cdc93716
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3789 @@
+@@ -0,0 +1,3800 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -13433,7 +13443,7 @@ index 000000000..2bb89045e
 +
 +/* Append a user message, joined to a preceding one: some chat templates
 + * require alternating roles. */
-+static void agent_add_user(cJSON *msgs, char *text)
++static void agent_add_user(cJSON *msgs, const char *text)
 +{
 +	cJSON *last = cJSON_GetArrayItem(msgs, cJSON_GetArraySize(msgs) - 1);
 +	char *prev = cJSON_GetStringValue(cJSON_GetObjectItem(last, "content"));
@@ -14047,7 +14057,7 @@ index 000000000..2bb89045e
 +static void agent_refresh(void)
 +{
 +	char *s = agent_snapshot(NULL);
-+	cJSON_AddItemToArray(agent_messages, agent_msg("user", s));
++	agent_add_user(agent_messages, s);
 +	agent_log("USER", s);
 +	free(s);
 +}
@@ -14142,7 +14152,7 @@ index 000000000..2bb89045e
 +		agent_pack_done = 0;
 +	agent_cancel = agent_pause = 0;
 +	agent_rounds = 0;
-+	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
++	agent_add_user(agent_messages, input);
 +	agent_log("USER", input);
 +	for (int round = 0; ; ) {
 +		/* Stop before requesting a reply whose calls could not run. */
@@ -14303,9 +14313,13 @@ index 000000000..2bb89045e
 +					"object with a nonempty string command, for example\n"
 +					"{\"command\":\"1,20p\"}.", error);
 +				agent_log("USER", diagnostic);
-+				if (!agent_live() || agent_acl_kept())
++				/* A checkpoint keeps the messages after its opening
++				 * one, so this stays a message of its own there. */
++				if (agent_checkpointing)
 +					cJSON_AddItemToArray(agent_messages,
 +						agent_msg("user", diagnostic));
++				else if (!agent_live() || agent_acl_kept())
++					agent_add_user(agent_messages, diagnostic);
 +			}
 +			free(body);
 +			cJSON_Delete(root);
@@ -14361,6 +14375,7 @@ index 000000000..2bb89045e
 +			cJSON *command = cJSON_GetObjectItem(parsed, "command");
 +			char *err = NULL;
 +			agent_child_status = 0;
++			agent_edited = 0;
 +			sbuf_smake(out, 256)
 +			sbuf_smake(result, 256)
 +			agent_boundary();
@@ -14427,6 +14442,12 @@ index 000000000..2bb89045e
 +					agent_child_status ?
 +						agent_child_status : !!err);
 +				sbuf_str(result, status)
++			}
++			if (agent_edited) {
++				char edited[48];
++				snprintf(edited, sizeof(edited), "edited %d line%s\n",
++					agent_edited, agent_edited > 1 ? "s" : "");
++				sbuf_str(result, edited)
 +			}
 +			if (err && err != xuerr) {
 +				sbuf_str(result, err)
@@ -15596,7 +15617,7 @@ index 000000000..2bb89045e
 +		agent_log("USER", resume->s);
 +		agent_logbuf = 2;
 +		if (!xacl)
-+			cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
++			agent_add_user(agent_messages, resume->s);
 +		free(resume->s);
 +		ok = 1;
 +	}
@@ -15633,14 +15654,16 @@ index 000000000..2bb89045e
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 000000000..b566389c7
+index 000000000..b93cd6dbe
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,45 @@
+@@ -0,0 +1,47 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
 +static int agent_input_blocked;
++/* lines of the current buffer the running tool call edited */
++static int agent_edited;
 +/* ex_exec depth of the running tool call itself */
 +static int agent_tool_dep;
 +/* full output of the last tool call that did not run or defer aout */
@@ -19192,10 +19215,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..4cdb713d0 100755
+index c836c94c7..78a9287d1 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,252 @@ build() {
+@@ -65,6 +65,254 @@ build() {
      }
  }
  
@@ -19442,13 +19465,15 @@ index c836c94c7..4cdb713d0 100755
 +    ' README > "$tmp" &&
 +    awk -f exspec.awk "$tmp" > "$tmp.h" &&
 +    mv -f "$tmp.h" exspec.h
++    ret=$?
 +    rm -f "$tmp" "$tmp.h"
++    return "$ret"
 +}
 +
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +320,7 @@ install() {
+@@ -74,7 +322,7 @@ install() {
  }
  
  print_usage() {
@@ -19457,7 +19482,7 @@ index c836c94c7..4cdb713d0 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +328,9 @@ print_usage() {
+@@ -82,6 +330,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -21972,25 +21997,20 @@ index 000000000..1bee8c34c
 +	{"err", "Control ex errors", 1268, 1280, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c63..823e5b396 100644
+index 56cb42c63..8fde7a8f9 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -227,6 +227,14 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
+@@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
  		free(sb->s);
  	else
  		lo->ins = (char**)sb->s;
-+	if (agent_tool) {
-+		char msg[64];
-+		/* Report a zero-based, half-open span, like ex range beg/end. */
-+		int last = MAX(end, beg + lo->n_ins);
-+		snprintf(msg, sizeof(msg), "edited lines beg:%d end:%d", beg, last);
-+		ex_print(msg, msg_ft)
-+	}
++	if (agent_tool && lb == xb)
++		agent_edited += MAX(lo->n_del, lo->n_ins);
 +	agent_sync(lb);
  }
  
  int lbuf_rd(struct lbuf *lb, int fd, int beg, int end)
-@@ -424,6 +432,7 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
+@@ -424,6 +427,7 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
  	lbuf_copymark(lb->mark_sb, lo->mark_sb)
  	lbuf_copymark(lb->mark_se, lo->mark_se)
  	lb->modified = lb->hist_u != lb->saved;
@@ -21998,7 +22018,7 @@ index 56cb42c63..823e5b396 100644
  	return 0;
  }
  
-@@ -451,6 +460,7 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+@@ -451,6 +455,7 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  		lbuf_copymark(lb->mark_se, (lb->tmp_mark + 2))
  	}
  	lb->modified = lb->hist_u != lb->saved;
