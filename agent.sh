@@ -1496,7 +1496,6 @@ static void agent_think_ask(cJSON *root)
 			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
 		char *cmd = cJSON_GetStringValue(cJSON_GetObjectItem(parsed,
 			"command"));
-		sbuf_str(sb, line)
 		sbuf_str(sb, cmd ? cmd : "invalid tool call")
 		sbuf_chr(sb, '\''\n'\'')
 		cJSON_Delete(parsed);
@@ -12235,10 +12234,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..40d80d58d
+index 000000000..cb48555a4
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4135 @@
+@@ -0,0 +1,4134 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -13705,7 +13704,6 @@ index 000000000..40d80d58d
 +			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
 +		char *cmd = cJSON_GetStringValue(cJSON_GetObjectItem(parsed,
 +			"command"));
-+		sbuf_str(sb, line)
 +		sbuf_str(sb, cmd ? cmd : "invalid tool call")
 +		sbuf_chr(sb, '\n')
 +		cJSON_Delete(parsed);
