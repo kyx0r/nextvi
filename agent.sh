@@ -110,11 +110,10 @@ static char agent_effort[32];
 /* ath N,M: the cap ath set and the ceiling the agent may raise it to for
  * one reply; 0 off */
 static int agent_think_base, agent_think_max;
-/* The end of the last reply'\''s thinking if the server cut it at the cap
+/* Whether the server cut the last reply'\''s thinking, at the cap
  * agent_think_was; the agent is then asked whether to raise the cap, and
  * agent_think_more is its answer. */
-static char *agent_think_tail;
-static int agent_think_was, agent_think_more;
+static int agent_think_cutoff, agent_think_was, agent_think_more;
 static void agent_run(const char *input);
 static int agent_autocompact(const char *input);
 static void agent_reparse(void);
@@ -1363,22 +1362,13 @@ static char *agent_reasoning(cJSON *message, const char **key)
 	return cJSON_IsString(r) && *r->valuestring ? r->valuestring : NULL;
 }
 
-/* The last text of reasoning the server cut at the cap; NULL if not cut. */
-static char *agent_think_cut(const char *s)
+/* Whether the server cut the reasoning s at the cap. */
+static int agent_think_cut(const char *s)
 {
-	int n = strlen(s), k = strlen(think_cut), from;
-	char *tail;
+	int n = strlen(s), k = strlen(think_cut);
 	while (n && isspace((unsigned char)s[n - 1]))
 		n--;
-	if (!k || n < k || memcmp(s + n - k, think_cut, k))
-		return NULL;
-	for (n -= k; n && isspace((unsigned char)s[n - 1]); n--);
-	from = n > 600 ? n - 600 : 0;
-	while (from < n && ((unsigned char)s[from] & 0xc0) == 0x80)
-		from++;
-	tail = emalloc(n - from + 4);
-	sprintf(tail, "%s%.*s", from ? "..." : "", n - from, s + from);
-	return tail;
+	return k && n >= k && !memcmp(s + n - k, think_cut, k);
 }
 
 /* Start a thinking budget question about the last reply, which stays. */
@@ -1387,19 +1377,15 @@ static void agent_think_ask(void)
 	int cap = agent_think_was;
 	agent_think_more = 0;
 	agent_checkpoint_begin(cap, 3);
-	agent_cp_open = emalloc(strlen(agent_think_tail) + 512);
+	agent_cp_open = emalloc(512);
 	sprintf(agent_cp_open, "Stop working on the current task and answer this "
 		"thinking budget question.\nThe thinking of your last reply was cut "
-		"off at the cap of %d tokens. It ended:\n%s\n"
-		"Answer with one ex tool call:\n"
-		"Nath\n  your next reply needs more thinking; N is its cap in "
-		"tokens, up to %d, e.g. %dath\n"
-		"ath\n  continue as it is",
-		cap, agent_think_tail, agent_think_max,
-		cap && cap * 2 < agent_think_max ? cap * 2 : agent_think_max);
+		"off at the cap of %d tokens. "
+		"Use Nath command to give your next reply a thinking cap of N "
+		"tokens, above %d and up to %d, or ath to continue as it is.",
+		cap, cap, agent_think_max);
 	agent_log("USER", agent_cp_open);
-	free(agent_think_tail);
-	agent_think_tail = NULL;
+	agent_think_cutoff = 0;
 }
 
 /* Detach the exchange that followed the entry list in the last request. */
@@ -2394,15 +2380,30 @@ static int agent_response_error(cJSON *root, char *error, size_t size)
 	return 0;
 }
 
-/* The agent raised the cap: the message that leads its next reply. */
+/* The agent raised the cap: assistant text, a turn of its own, that leads
+ * its next reply. */
 static void agent_think_lead(void)
 {
-	char msg[80];
+	struct agent_span *spans;
+	char msg[96];
+	int cnt;
 	snprintf(msg, sizeof(msg), "This needs more thinking. Thinking cap %d "
-		"tokens.", agent_think_cap);
-	agent_log("USER", msg);
-	if (!agent_live() || agent_acl_kept())
-		agent_add_user(agent_messages, msg);
+		"tokens for this turn.", agent_think_cap);
+	agent_turn_close();
+	agent_turn_part(1, msg);
+	agent_turn_close();
+	if (agent_live() && !agent_acl_kept())
+		return;
+	/* As a rebuild adds it: joined to assistant text it follows. */
+	cnt = agent_spans(&spans);
+	if (cnt)
+		agent_add_turn(agent_messages, tempbufs[3].lb, spans + cnt - 1);
+	free(spans);
+	/* With acl the request adds this, so that it does not end on
+	 * assistant text. */
+	if (!agent_live())
+		cJSON_AddItemToArray(agent_messages,
+			agent_msg("user", agent_continue));
 }
 
 static void agent_run_loop(const char *input)
@@ -2601,11 +2602,10 @@ static void agent_run_loop(const char *input)
 		/* ath N,M: a reply whose thinking was cut below the ceiling is
 		 * followed by a thinking budget question, unless it is the reply
 		 * to a raised cap. A raised cap lasts for one reply. */
-		free(agent_think_tail);
-		agent_think_tail = reasoning && !raised && !agent_checkpointing &&
+		agent_think_cutoff = reasoning && !raised && !agent_checkpointing &&
 			!agent_packing && agent_logbuf == 3 && agent_think_cap >= 0 &&
-			agent_think_cap < agent_think_max ?
-			agent_think_cut(reasoning) : NULL;
+			agent_think_cap < agent_think_max &&
+			agent_think_cut(reasoning);
 		if (!agent_checkpointing && agent_think_max) {
 			agent_think_was = agent_think_cap;
 			agent_think_cap = agent_think_base;
@@ -2790,7 +2790,7 @@ static void agent_run_loop(const char *input)
 		}
 		/* ath N,M: the cut reply stays as it ran; the agent is asked
 		 * whether its next one needs a higher cap. */
-		if (agent_think_tail && !agent_checkpointing) {
+		if (agent_think_cutoff && !agent_checkpointing) {
 			replied = has_calls;
 			agent_think_ask();
 			continue;
@@ -2804,7 +2804,7 @@ static void agent_run_loop(const char *input)
 						"Nothing ran; reply with an ex tool call, "
 						"acheck N or acheck." :
 						"Nothing ran; reply with an ex tool call, "
-						"Nath, e.g. 8192ath, or ath.";
+						"Nath or ath.";
 					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 					agent_log("USER", msg);
 				}
@@ -2860,8 +2860,7 @@ static void agent_run(const char *input)
 	 * nests a run. */
 	if (agent_think_max && !agent_packing)
 		agent_think_cap = agent_think_base;
-	free(agent_think_tail);
-	agent_think_tail = NULL;
+	agent_think_cutoff = 0;
 }
 
 /* Add or remove a skill in b-5; want < 0 toggles. */
@@ -3057,7 +3056,7 @@ static char *agent_count(char *s, int *n)
  * alone leaves the cap. */
 static void *ec_ath(char *loc, char *cmd, char *arg)
 {
-	static char msg[64];
+	static char msg[96];
 	int cap = -1, max = 0;
 	char *s = loc, *comma = strchr(loc, '\'','\'');
 	if (*s) {
@@ -3077,11 +3076,12 @@ static void *ec_ath(char *loc, char *cmd, char *arg)
 			return NULL;
 		}
 		if (cap < 1 || comma || *arg)
-			return ask ? "answer with Nath, e.g. 8192ath, or with ath" :
-				"ath takes its token count as a range, e.g. 8192ath";
+			return ask ? "only Nath or ath runs; N is a token count before "
+				"the command" :
+				"ath takes its token count N before the command, Nath";
 		if (ask && cap <= agent_think_was) {
-			snprintf(msg, sizeof(msg), "the cap was %d tokens; give a "
-				"count above it, or ath", agent_think_was);
+			snprintf(msg, sizeof(msg), "the cap was %d tokens; use Nath "
+				"with N above it, or ath", agent_think_was);
 			return msg;
 		}
 		agent_think_cap = MIN(cap, agent_think_max);
@@ -7821,11 +7821,11 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "then asked, in an exchange kept in b-3 only, whether its next reply\n" \
                 "needs more thinking. It answers with Nath, a count above the cap, or\n" \
                 "with ath to continue; nothing else runs then. A raised cap is logged\n" \
-                "as a USER entry leading the next reply and lasts for that reply\n" \
-                "only; that reply is not asked about. The server marks cut thinking\n" \
-                "by ending it with think_cut of conf.c. As an agent tool ath takes\n" \
-                "only a count from 1 to M, for its next reply, and needs M set. Pack\n" \
-                "agents are not asked.\n\n" \
+                "as a TURN of assistant text leading the next reply and lasts for\n" \
+                "that reply only; that reply is not asked about. The server marks cut\n" \
+                "thinking by ending it with think_cut of conf.c. As an agent tool ath\n" \
+                "takes only a count from 1 to M, for its next reply, and needs M set.\n" \
+                "Pack agents are not asked.\n\n" \
                 "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
                 "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
                 ":4096,32768ath medium")
@@ -9825,7 +9825,7 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 		if (agent_tool && agent_checkpointing == 3 &&
 				excmds[idx].ec != ec_ath) {
 			snprintf(xaerr, sizeof(xaerr), "%s command unavailable during the "
-				"thinking budget question; only Nath, e.g. 8192ath, or ath runs",
+				"thinking budget question; only Nath or ath runs",
 				excmds[idx].name);
 			ret = xaerr;
 			break;
@@ -10919,11 +10919,11 @@ static char *exspec_lines[] = {
 	"then asked, in an exchange kept in b-3 only, whether its next reply",
 	"needs more thinking. It answers with Nath, a count above the cap, or",
 	"with ath to continue; nothing else runs then. A raised cap is logged",
-	"as a USER entry leading the next reply and lasts for that reply",
-	"only; that reply is not asked about. The server marks cut thinking",
-	"by ending it with think_cut of conf.c. As an agent tool ath takes",
-	"only a count from 1 to M, for its next reply, and needs M set. Pack",
-	"agents are not asked.",
+	"as a TURN of assistant text leading the next reply and lasts for",
+	"that reply only; that reply is not asked about. The server marks cut",
+	"thinking by ending it with think_cut of conf.c. As an agent tool ath",
+	"takes only a count from 1 to M, for its next reply, and needs M set.",
+	"Pack agents are not asked.",
 	"",
 	"Example: cap thinking at 1024 tokens with high effort",
 	"1024ath high",
@@ -12057,7 +12057,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..1f5e059ad
+index 000000000..ff450c067
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,3971 @@
@@ -12141,11 +12141,10 @@ index 000000000..1f5e059ad
 +/* ath N,M: the cap ath set and the ceiling the agent may raise it to for
 + * one reply; 0 off */
 +static int agent_think_base, agent_think_max;
-+/* The end of the last reply's thinking if the server cut it at the cap
++/* Whether the server cut the last reply's thinking, at the cap
 + * agent_think_was; the agent is then asked whether to raise the cap, and
 + * agent_think_more is its answer. */
-+static char *agent_think_tail;
-+static int agent_think_was, agent_think_more;
++static int agent_think_cutoff, agent_think_was, agent_think_more;
 +static void agent_run(const char *input);
 +static int agent_autocompact(const char *input);
 +static void agent_reparse(void);
@@ -13394,22 +13393,13 @@ index 000000000..1f5e059ad
 +	return cJSON_IsString(r) && *r->valuestring ? r->valuestring : NULL;
 +}
 +
-+/* The last text of reasoning the server cut at the cap; NULL if not cut. */
-+static char *agent_think_cut(const char *s)
++/* Whether the server cut the reasoning s at the cap. */
++static int agent_think_cut(const char *s)
 +{
-+	int n = strlen(s), k = strlen(think_cut), from;
-+	char *tail;
++	int n = strlen(s), k = strlen(think_cut);
 +	while (n && isspace((unsigned char)s[n - 1]))
 +		n--;
-+	if (!k || n < k || memcmp(s + n - k, think_cut, k))
-+		return NULL;
-+	for (n -= k; n && isspace((unsigned char)s[n - 1]); n--);
-+	from = n > 600 ? n - 600 : 0;
-+	while (from < n && ((unsigned char)s[from] & 0xc0) == 0x80)
-+		from++;
-+	tail = emalloc(n - from + 4);
-+	sprintf(tail, "%s%.*s", from ? "..." : "", n - from, s + from);
-+	return tail;
++	return k && n >= k && !memcmp(s + n - k, think_cut, k);
 +}
 +
 +/* Start a thinking budget question about the last reply, which stays. */
@@ -13418,19 +13408,15 @@ index 000000000..1f5e059ad
 +	int cap = agent_think_was;
 +	agent_think_more = 0;
 +	agent_checkpoint_begin(cap, 3);
-+	agent_cp_open = emalloc(strlen(agent_think_tail) + 512);
++	agent_cp_open = emalloc(512);
 +	sprintf(agent_cp_open, "Stop working on the current task and answer this "
 +		"thinking budget question.\nThe thinking of your last reply was cut "
-+		"off at the cap of %d tokens. It ended:\n%s\n"
-+		"Answer with one ex tool call:\n"
-+		"Nath\n  your next reply needs more thinking; N is its cap in "
-+		"tokens, up to %d, e.g. %dath\n"
-+		"ath\n  continue as it is",
-+		cap, agent_think_tail, agent_think_max,
-+		cap && cap * 2 < agent_think_max ? cap * 2 : agent_think_max);
++		"off at the cap of %d tokens. "
++		"Use Nath command to give your next reply a thinking cap of N "
++		"tokens, above %d and up to %d, or ath to continue as it is.",
++		cap, cap, agent_think_max);
 +	agent_log("USER", agent_cp_open);
-+	free(agent_think_tail);
-+	agent_think_tail = NULL;
++	agent_think_cutoff = 0;
 +}
 +
 +/* Detach the exchange that followed the entry list in the last request. */
@@ -14425,15 +14411,30 @@ index 000000000..1f5e059ad
 +	return 0;
 +}
 +
-+/* The agent raised the cap: the message that leads its next reply. */
++/* The agent raised the cap: assistant text, a turn of its own, that leads
++ * its next reply. */
 +static void agent_think_lead(void)
 +{
-+	char msg[80];
++	struct agent_span *spans;
++	char msg[96];
++	int cnt;
 +	snprintf(msg, sizeof(msg), "This needs more thinking. Thinking cap %d "
-+		"tokens.", agent_think_cap);
-+	agent_log("USER", msg);
-+	if (!agent_live() || agent_acl_kept())
-+		agent_add_user(agent_messages, msg);
++		"tokens for this turn.", agent_think_cap);
++	agent_turn_close();
++	agent_turn_part(1, msg);
++	agent_turn_close();
++	if (agent_live() && !agent_acl_kept())
++		return;
++	/* As a rebuild adds it: joined to assistant text it follows. */
++	cnt = agent_spans(&spans);
++	if (cnt)
++		agent_add_turn(agent_messages, tempbufs[3].lb, spans + cnt - 1);
++	free(spans);
++	/* With acl the request adds this, so that it does not end on
++	 * assistant text. */
++	if (!agent_live())
++		cJSON_AddItemToArray(agent_messages,
++			agent_msg("user", agent_continue));
 +}
 +
 +static void agent_run_loop(const char *input)
@@ -14632,11 +14633,10 @@ index 000000000..1f5e059ad
 +		/* ath N,M: a reply whose thinking was cut below the ceiling is
 +		 * followed by a thinking budget question, unless it is the reply
 +		 * to a raised cap. A raised cap lasts for one reply. */
-+		free(agent_think_tail);
-+		agent_think_tail = reasoning && !raised && !agent_checkpointing &&
++		agent_think_cutoff = reasoning && !raised && !agent_checkpointing &&
 +			!agent_packing && agent_logbuf == 3 && agent_think_cap >= 0 &&
-+			agent_think_cap < agent_think_max ?
-+			agent_think_cut(reasoning) : NULL;
++			agent_think_cap < agent_think_max &&
++			agent_think_cut(reasoning);
 +		if (!agent_checkpointing && agent_think_max) {
 +			agent_think_was = agent_think_cap;
 +			agent_think_cap = agent_think_base;
@@ -14821,7 +14821,7 @@ index 000000000..1f5e059ad
 +		}
 +		/* ath N,M: the cut reply stays as it ran; the agent is asked
 +		 * whether its next one needs a higher cap. */
-+		if (agent_think_tail && !agent_checkpointing) {
++		if (agent_think_cutoff && !agent_checkpointing) {
 +			replied = has_calls;
 +			agent_think_ask();
 +			continue;
@@ -14835,7 +14835,7 @@ index 000000000..1f5e059ad
 +						"Nothing ran; reply with an ex tool call, "
 +						"acheck N or acheck." :
 +						"Nothing ran; reply with an ex tool call, "
-+						"Nath, e.g. 8192ath, or ath.";
++						"Nath or ath.";
 +					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 +					agent_log("USER", msg);
 +				}
@@ -14891,8 +14891,7 @@ index 000000000..1f5e059ad
 +	 * nests a run. */
 +	if (agent_think_max && !agent_packing)
 +		agent_think_cap = agent_think_base;
-+	free(agent_think_tail);
-+	agent_think_tail = NULL;
++	agent_think_cutoff = 0;
 +}
 +
 +/* Add or remove a skill in b-5; want < 0 toggles. */
@@ -15088,7 +15087,7 @@ index 000000000..1f5e059ad
 + * alone leaves the cap. */
 +static void *ec_ath(char *loc, char *cmd, char *arg)
 +{
-+	static char msg[64];
++	static char msg[96];
 +	int cap = -1, max = 0;
 +	char *s = loc, *comma = strchr(loc, ',');
 +	if (*s) {
@@ -15108,11 +15107,12 @@ index 000000000..1f5e059ad
 +			return NULL;
 +		}
 +		if (cap < 1 || comma || *arg)
-+			return ask ? "answer with Nath, e.g. 8192ath, or with ath" :
-+				"ath takes its token count as a range, e.g. 8192ath";
++			return ask ? "only Nath or ath runs; N is a token count before "
++				"the command" :
++				"ath takes its token count N before the command, Nath";
 +		if (ask && cap <= agent_think_was) {
-+			snprintf(msg, sizeof(msg), "the cap was %d tokens; give a "
-+				"count above it, or ath", agent_think_was);
++			snprintf(msg, sizeof(msg), "the cap was %d tokens; use Nath "
++				"with N above it, or ath", agent_think_was);
 +			return msg;
 +		}
 +		agent_think_cap = MIN(cap, agent_think_max);
@@ -19596,7 +19596,7 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..651d0f35a 100755
+index c836c94c7..1ce730db7 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,266 @@ build() {
@@ -19770,11 +19770,11 @@ index c836c94c7..651d0f35a 100755
 +                "then asked, in an exchange kept in b-3 only, whether its next reply\n" \
 +                "needs more thinking. It answers with Nath, a count above the cap, or\n" \
 +                "with ath to continue; nothing else runs then. A raised cap is logged\n" \
-+                "as a USER entry leading the next reply and lasts for that reply\n" \
-+                "only; that reply is not asked about. The server marks cut thinking\n" \
-+                "by ending it with think_cut of conf.c. As an agent tool ath takes\n" \
-+                "only a count from 1 to M, for its next reply, and needs M set. Pack\n" \
-+                "agents are not asked.\n\n" \
++                "as a TURN of assistant text leading the next reply and lasts for\n" \
++                "that reply only; that reply is not asked about. The server marks cut\n" \
++                "thinking by ending it with think_cut of conf.c. As an agent tool ath\n" \
++                "takes only a count from 1 to M, for its next reply, and needs M set.\n" \
++                "Pack agents are not asked.\n\n" \
 +                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
 +                "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
 +                ":4096,32768ath medium")
@@ -20252,7 +20252,7 @@ index 2888d7c60..fc065337a 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..26c9b5e6c 100644
+index 8a1339874..56ecfbf6c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -20785,7 +20785,7 @@ index 8a1339874..26c9b5e6c 100644
 +		if (agent_tool && agent_checkpointing == 3 &&
 +				excmds[idx].ec != ec_ath) {
 +			snprintf(xaerr, sizeof(xaerr), "%s command unavailable during the "
-+				"thinking budget question; only Nath, e.g. 8192ath, or ath runs",
++				"thinking budget question; only Nath or ath runs",
 +				excmds[idx].name);
 +			ret = xaerr;
 +			break;
@@ -20936,7 +20936,7 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..b68a3123b
+index 000000000..bf252b532
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1474 @@
@@ -21899,11 +21899,11 @@ index 000000000..b68a3123b
 +	"then asked, in an exchange kept in b-3 only, whether its next reply",
 +	"needs more thinking. It answers with Nath, a count above the cap, or",
 +	"with ath to continue; nothing else runs then. A raised cap is logged",
-+	"as a USER entry leading the next reply and lasts for that reply",
-+	"only; that reply is not asked about. The server marks cut thinking",
-+	"by ending it with think_cut of conf.c. As an agent tool ath takes",
-+	"only a count from 1 to M, for its next reply, and needs M set. Pack",
-+	"agents are not asked.",
++	"as a TURN of assistant text leading the next reply and lasts for",
++	"that reply only; that reply is not asked about. The server marks cut",
++	"thinking by ending it with think_cut of conf.c. As an agent tool ath",
++	"takes only a count from 1 to M, for its next reply, and needs M set.",
++	"Pack agents are not asked.",
 +	"",
 +	"Example: cap thinking at 1024 tokens with high effort",
 +	"1024ath high",
