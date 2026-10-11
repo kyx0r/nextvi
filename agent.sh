@@ -7406,12 +7406,12 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Loads b-4 as context and asks the agent to replace it with a summary.\n" \
                 "Stays at the prompt; reloads the log on exit. Text replaces the default\n" \
                 "instructions; range attaches buffer text. The task lists the log\n" \
-                "entries with estimated tokens and arate notes (b-6), with the notes\n" \
-                "of trimmed turns in order among them; apack! adds entry line\n" \
-                "numbers. While b-7 holds entries, the task offers aget for their\n" \
-                "details. On success the notes move beside the archived log, b-6 is\n" \
-                "cleared and the entries of the replaced log move to b-7, keeping\n" \
-                "those already there. Unavailable as an agent tool.")
+                "entries with estimated tokens and arate notes (b-6), those of\n" \
+                "trimmed turns included; apack! adds entry line numbers. While b-7\n" \
+                "holds entries, the task offers aget for them. On success the notes\n" \
+                "are archived beside the log, b-6 is cleared and the replaced entries\n" \
+                "move to b-7, keeping those already there. Unavailable as an agent\n" \
+                "tool.")
             spec("[range]apack![text]", "Compact the agent session by browsing its log",
                 "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
                 "ranges and replaces the log with a summary. Stays at the prompt;\n" \
@@ -7420,88 +7420,68 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             spec("acm", "Toggle the caveman response style skill",
                 "Adds or removes the skill in b-5. Tool calls update the system\n" \
                 "message; otherwise context is rebuilt from the log.")
-            print "     aretry"
-            print "             Execute the last agent command"
-            print ""
-            print "             Saves each top-level command the agent runs or aspec defers,"
-            print "             with its range and expanded argument; a run aout is not saved."
-            print "             Takes no range or argument. The saved command is kept and its"
-            print "             output is guarded by agr like any other. A new session clears"
-            print "             it. Errors if none is saved. Reruns side effects; use aout to"
-            print "             view withheld output."
-            print ""
-            print "             Example: execute a deferred command"
-            print "             :aretry"
-            print ""
-            print "     [brange]aout"
-            print "             Print the saved output of the last agent tool call"
-            print ""
-            print "             brange is first,last in 0-based byte offsets, inclusive; $ is"
-            print "             the last byte and one offset selects one byte. No range prints"
-            print "             everything. Saves each tool call output except calls running"
-            print "             aout; under agr at most 1048576 bytes, or agr if larger, are"
-            print "             kept. Output is exempt from agr. A new session clears it."
-            print ""
-            print "             Example: bytes 50 through the end"
-            print "             :50,$aout"
-            print ""
+            spec("aretry", "Execute the last agent command",
+                "Runs the last top-level command the agent ran or aspec deferred,\n" \
+                "with its range and expanded argument; a run aout is not saved.\n" \
+                "Takes no range or argument. The command stays saved and its output\n" \
+                "is subject to agr. A new session clears it. Errors if none is saved.\n" \
+                "Side effects rerun; use aout to view withheld output.\n\n" \
+                "Example: execute a deferred command\n:aretry")
+            spec("[brange]aout", "Print the saved output of the last agent tool call",
+                "brange is first,last in 0-based byte offsets, inclusive; $ is\n" \
+                "the last byte and one offset selects one byte. No range prints\n" \
+                "everything. Saves each tool call output except calls running\n" \
+                "aout; under agr at most 1048576 bytes, or agr if larger, are\n" \
+                "kept. Output is exempt from agr. A new session clears it.\n\n" \
+                "Example: bytes 50 through the end\n:50,$aout")
             spec("[entries]anote[text]", "Replace or remove agent session log entries",
-                "entries is N or N,M, matching the numbers in the USER N, TURN N and\n" \
-                "NOTICE N headers of b-4; $ is the last entry and 0 the text before\n" \
-                "the first header. A TURN is one reply of the agent: its reasoning,\n" \
-                "text, commands and results, as parts headed ROLE N.I. The first tool\n" \
-                "result of each turn that the agent sees starts with TURN N, with any\n" \
-                "acl value; the log does not hold that text. Text replaces N through\n" \
-                "M as one entry with the role and number of N; a note over a turn is\n" \
-                "a turn holding only the text. No text removes them. The agent cannot\n" \
-                "change USER entries or the text before the first header; anote by\n" \
-                "the agent keeps them in place, removes the other entries and puts\n" \
-                "the note in place of the last run of them, as its first turn, or\n" \
-                "with the role of its first entry when it has no turn. The agent\n" \
-                "cannot note the turn that is still running. Three or more numbers,\n" \
-                "as in 2,4,7, name those turns alone: text replaces them as one note\n" \
-                "in place of the first, or for the agent of the first after the last\n" \
-                "USER entry between them; a number that is not a TURN entry changes\n" \
-                "nothing. Prints the estimated tokens before and after and the USER\n" \
-                "entries kept, and reports a note larger than what it replaced.\n" \
-                "Changes the agent context when acl is set. Removed and replaced\n" \
-                "entries move to b-7 in number order; a number already there keeps\n" \
-                "its entry, so a note replaced later is not kept. b-7 is saved as\n" \
-                "discarded in the session directory.\n\n" \
+                "entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N\n" \
+                "headers of b-4; $ is the last entry and 0 the text before the first\n" \
+                "header. A TURN is one reply of the agent: its reasoning, text,\n" \
+                "commands and results, as parts headed ROLE N.I. The first tool\n" \
+                "result of each turn the agent sees starts with TURN N; the log does\n" \
+                "not hold that text. Text replaces N through M as one entry with the\n" \
+                "role and number of N, a turn becoming a turn with only the text; no\n" \
+                "text removes them. Three or more numbers, as in 2,4,7, name those\n" \
+                "turns alone, noted in place of the first; a number that is not a\n" \
+                "TURN rejects the list. The agent cannot change USER entries, entry 0\n" \
+                "or the turn still running: USER entries stay, and its note goes\n" \
+                "after the last one spanned, as a turn. Prints the estimated tokens\n" \
+                "before and after and the USER entries kept. Changes the agent\n" \
+                "context when acl is set. Replaced entries move to b-7, saved as\n" \
+                "discarded in the session directory; a number already there keeps\n" \
+                "its entry.\n\n" \
                 "Example: replace a turn with a note\n:14anote ls listed 40 files, none relevant")
             spec("[entries]aget[parts]", "Print agent session log entries, trimmed ones included",
                 "Prints entries N through M of b-4 and b-7 in number order with their\n" \
                 "headers, turns with their part headers. Entries from b-7, those\n" \
                 "removed or replaced by anote, a 0 rating or compaction, have trimmed\n" \
-                "after each header, as in TURN N trimmed and RESULT N.3 trimmed, and\n" \
-                "precede a current entry with the same number. entries works as for\n" \
-                "anote, with $ the last number in either buffer. parts is part indexes\n" \
-                "or role names, separated by spaces, not both. Indexes print only\n" \
-                "those parts of each turn: 0 reasoning, 1 text, then the command and\n" \
-                "result of call k at 2+2k and 3+2k; a turn without the part prints\n" \
-                "nothing. USER, TURN and NOTICE print only those entries; REASONING,\n" \
-                "ASSISTANT, EX and RESULT only those parts of turns. Output is subject\n" \
-                "to agr. Unavailable during an acl checkpoint.\n\n" \
+                "after each header, as in TURN N trimmed, and precede a current entry\n" \
+                "with the same number. entries is N or N,M as for anote, with $ the\n" \
+                "last number in either buffer. parts is part indexes or role names,\n" \
+                "separated by spaces, not both. Indexes select parts of each turn: 0\n" \
+                "reasoning, 1 text, then the command and result of call k at 2+2k and\n" \
+                "3+2k. USER, TURN and NOTICE select entries; REASONING, ASSISTANT, EX\n" \
+                "and RESULT parts of turns. Output is subject to agr. Unavailable\n" \
+                "during an acl checkpoint.\n\n" \
                 "Example: print the commands of entries 20 through 80\n:20,80aget EX")
             spec("[entries]arate rating sentence", "Rate agent turns in the notes buffer",
-                "Writes a note for each TURN entry from N through M of b-4 to b-6, one\n" \
-                "line per entry: number, rating and sentence, replacing an older note.\n" \
-                "Only the first entry gets the sentence; the rest get \"same as TURN N\"\n" \
-                "with N that entry. Replacing a note that others name moves it to the\n" \
-                "first of them. Checkpoint lists show the note of a removed entry on\n" \
-                "the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
-                "value for the remaining work; 1 low, minor, superseded or only\n" \
-                "mechanics; 2 useful, informs the remaining work; 3 essential, a\n" \
-                "decision, finding or state the task depends on.\n" \
-                "Entries work as for anote; other roles in the range are skipped.\n" \
-                "Three or more numbers, as in 2,4,7, rate those turns alone; a number\n" \
-                "that is not a TURN entry rates nothing.\n" \
-                "With acl above 1 or negative, a turn whose every command aspec\n" \
-                "deferred is rated 1 by the harness unless already rated. During an\n" \
-                "acl checkpoint, rating 0 moves the rated turns to b-7, reported as\n" \
-                "by anote; their ratings stay in b-6.\n" \
-                "Ratings show in acl checkpoint lists and are given to apack. b-6 is\n" \
-                "saved as notes in the session directory.\n\n" \
+                "Writes one line per TURN entry from N through M of b-4 to b-6:\n" \
+                "number, rating and sentence, replacing an older note. The first\n" \
+                "entry gets the sentence, the rest \"same as TURN N\" naming it;\n" \
+                "replacing a note that others name moves it to the first of them.\n" \
+                "entries works as for anote: other roles in a range are skipped, and\n" \
+                "three or more numbers, as in 2,4,7, rate those turns alone unless\n" \
+                "one is not a TURN.\n" \
+                "Ratings: 0 dead weight, no value for the remaining work; 1 low,\n" \
+                "minor, superseded or only mechanics; 2 useful, informs the remaining\n" \
+                "work; 3 essential, a decision, finding or state the task depends on.\n" \
+                "During an acl checkpoint, rating 0 moves the turns to b-7, reported\n" \
+                "as by anote; their ratings stay in b-6. With acl above 1 or\n" \
+                "negative, the harness rates 1 a turn whose every command aspec\n" \
+                "deferred, unless already rated. Ratings show in acl checkpoint lists\n" \
+                "and are given to apack. b-6 is saved as notes in the session\n" \
+                "directory.\n\n" \
                 "Example: rate the turn of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
             spec("adone", "End an agent checkpoint",
                 "Ends the acl checkpoint phase; the interrupted request resumes\n" \
@@ -7554,29 +7534,22 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
         /^     ai\[1\]/ && !aspec_done {
             spec("acl[0]  Rebuild agent context from the session log",
                 "No argument toggles between 0 and 1. 0 disables.",
-                "1 rebuilds the agent context from the session log (b-4)\n" \
-                "before every request, so edits to the log by the agent or the\n" \
-                "user apply to the next request. Values above 1 or negative rebuild\n" \
-                "only after such edits and when a checkpoint ends; between\n" \
-                "rebuilds, replies stay as returned, reasoning included, so the\n" \
-                "agent keeps it and the server cache continues from its output.\n" \
-                "With 0, the context is built from the running history and log\n" \
-                "edits have no effect.\n" \
-                "NOTICE entries report harness events such as HTTP errors and are\n" \
-                "never sent to the agent.\n" \
-                "A rebuild drops reasoning not in the log (ar off). With aco, a\n" \
-                "compact (apack) may run before the rebuild.\n\n" \
+                "1 rebuilds the agent context from the session log (b-4) before\n" \
+                "every request, so log edits by the agent or the user apply to the\n" \
+                "next one. Values above 1 or negative rebuild only after such edits\n" \
+                "and when a checkpoint ends; in between, replies stay as returned,\n" \
+                "reasoning included, so the server cache continues from them. With\n" \
+                "0, log edits have no effect. NOTICE entries report harness events\n" \
+                "such as HTTP errors and are never sent to the agent. A rebuild\n" \
+                "drops reasoning not in the log (ar off). With aco, a compact\n" \
+                "(apack) may run before the rebuild.\n\n" \
                 "Values above 1 add checkpoints: once the estimated context grows\n" \
                 "by that many tokens from the last checkpoint, or from its smallest\n" \
-                "size since, a checkpoint runs before the next request. Its first\n" \
-                "request lists one line per entry: role, number and estimated\n" \
-                "tokens, turns with the tokens of their parts and their arate\n" \
-                "notes, then one line naming the largest few, followed by\n" \
-                "instructions; ali and acp print them again, auli the unrated\n" \
-                "turns. Only these, arate, anote and adone run. Unrated turns\n" \
-                "must be rated first: adone or a reply without commands is\n" \
-                "refused while any remain, up to twice in a row without new\n" \
-                "ratings. The list and exchange are logged to b-3, not b-4, with\n" \
+                "size since, one runs before the next request. Its first request\n" \
+                "holds the ali entry list and the acp instructions. Only ali, acp,\n" \
+                "auli, arate, anote and adone run. adone or a reply without\n" \
+                "commands is refused while turns are unrated, up to twice in a row\n" \
+                "without new ratings. The exchange is logged to b-3, not b-4, with\n" \
                 "headers prefixed CP. Requests keep the context the checkpoint\n" \
                 "started with, so the prompt cache holds; anote edits b-4 at once\n" \
                 "but reaches the context when the checkpoint ends. It ends with\n" \
@@ -7585,15 +7558,14 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Negative values leave the checkpoint to the agent through budget\n" \
                 "checks. The first comes once the estimated context grows by -acl\n" \
                 "tokens from the session start, the last checkpoint or a compaction,\n" \
-                "and asks for an estimate of the tokens the rest of the task needs,\n" \
-                "set with acheck N. Once that growth is reached, the next asks\n" \
-                "whether to checkpoint now with acheck or defer by N more tokens with\n" \
-                "acheck N. N may pass aco. Only acheck runs during a check; two more\n" \
-                "requests are given for an answer, then a checkpoint starts. After a\n" \
-                "checkpoint, -acl applies again. The exchange is logged to b-3 with CP\n" \
-                "headers and leaves the context unchanged. An interrupted check runs\n" \
-                "again at the next request.\n" \
-                "aco stays the limit; a compaction drops the budget.\n\n" \
+                "and asks for the tokens the rest of the task needs, set with\n" \
+                "acheck N. At that growth the next asks to checkpoint now with\n" \
+                "acheck or defer N more tokens with acheck N. N may pass aco. Only\n" \
+                "acheck runs during a check; after two more requests without an\n" \
+                "answer a checkpoint starts. After a checkpoint, -acl applies again.\n" \
+                "A check is logged to b-3 with CP headers, leaves the context\n" \
+                "unchanged and, if interrupted, runs again at the next request. aco\n" \
+                "stays the limit; a compaction drops the budget.\n\n" \
                 "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
             spec("aco[0]  Automatically compact using the loaded session log",
                 "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -10449,12 +10421,12 @@ static char *exspec_lines[] = {
 	"Loads b-4 as context and asks the agent to replace it with a summary.",
 	"Stays at the prompt; reloads the log on exit. Text replaces the default",
 	"instructions; range attaches buffer text. The task lists the log",
-	"entries with estimated tokens and arate notes (b-6), with the notes",
-	"of trimmed turns in order among them; apack! adds entry line",
-	"numbers. While b-7 holds entries, the task offers aget for their",
-	"details. On success the notes move beside the archived log, b-6 is",
-	"cleared and the entries of the replaced log move to b-7, keeping",
-	"those already there. Unavailable as an agent tool.",
+	"entries with estimated tokens and arate notes (b-6), those of",
+	"trimmed turns included; apack! adds entry line numbers. While b-7",
+	"holds entries, the task offers aget for them. On success the notes",
+	"are archived beside the log, b-6 is cleared and the replaced entries",
+	"move to b-7, keeping those already there. Unavailable as an agent",
+	"tool.",
 	"",
 	"[range]apack![text]",
 	"Compact the agent session by browsing its log",
@@ -10473,12 +10445,11 @@ static char *exspec_lines[] = {
 	"aretry",
 	"Execute the last agent command",
 	"",
-	"Saves each top-level command the agent runs or aspec defers,",
+	"Runs the last top-level command the agent ran or aspec deferred,",
 	"with its range and expanded argument; a run aout is not saved.",
-	"Takes no range or argument. The saved command is kept and its",
-	"output is guarded by agr like any other. A new session clears",
-	"it. Errors if none is saved. Reruns side effects; use aout to",
-	"view withheld output.",
+	"Takes no range or argument. The command stays saved and its output",
+	"is subject to agr. A new session clears it. Errors if none is saved.",
+	"Side effects rerun; use aout to view withheld output.",
 	"",
 	"Example: execute a deferred command",
 	"aretry",
@@ -10498,28 +10469,22 @@ static char *exspec_lines[] = {
 	"[entries]anote[text]",
 	"Replace or remove agent session log entries",
 	"",
-	"entries is N or N,M, matching the numbers in the USER N, TURN N and",
-	"NOTICE N headers of b-4; $ is the last entry and 0 the text before",
-	"the first header. A TURN is one reply of the agent: its reasoning,",
-	"text, commands and results, as parts headed ROLE N.I. The first tool",
-	"result of each turn that the agent sees starts with TURN N, with any",
-	"acl value; the log does not hold that text. Text replaces N through",
-	"M as one entry with the role and number of N; a note over a turn is",
-	"a turn holding only the text. No text removes them. The agent cannot",
-	"change USER entries or the text before the first header; anote by",
-	"the agent keeps them in place, removes the other entries and puts",
-	"the note in place of the last run of them, as its first turn, or",
-	"with the role of its first entry when it has no turn. The agent",
-	"cannot note the turn that is still running. Three or more numbers,",
-	"as in 2,4,7, name those turns alone: text replaces them as one note",
-	"in place of the first, or for the agent of the first after the last",
-	"USER entry between them; a number that is not a TURN entry changes",
-	"nothing. Prints the estimated tokens before and after and the USER",
-	"entries kept, and reports a note larger than what it replaced.",
-	"Changes the agent context when acl is set. Removed and replaced",
-	"entries move to b-7 in number order; a number already there keeps",
-	"its entry, so a note replaced later is not kept. b-7 is saved as",
-	"discarded in the session directory.",
+	"entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N",
+	"headers of b-4; $ is the last entry and 0 the text before the first",
+	"header. A TURN is one reply of the agent: its reasoning, text,",
+	"commands and results, as parts headed ROLE N.I. The first tool",
+	"result of each turn the agent sees starts with TURN N; the log does",
+	"not hold that text. Text replaces N through M as one entry with the",
+	"role and number of N, a turn becoming a turn with only the text; no",
+	"text removes them. Three or more numbers, as in 2,4,7, name those",
+	"turns alone, noted in place of the first; a number that is not a",
+	"TURN rejects the list. The agent cannot change USER entries, entry 0",
+	"or the turn still running: USER entries stay, and its note goes",
+	"after the last one spanned, as a turn. Prints the estimated tokens",
+	"before and after and the USER entries kept. Changes the agent",
+	"context when acl is set. Replaced entries move to b-7, saved as",
+	"discarded in the session directory; a number already there keeps",
+	"its entry.",
 	"",
 	"Example: replace a turn with a note",
 	"14anote ls listed 40 files, none relevant",
@@ -10530,15 +10495,14 @@ static char *exspec_lines[] = {
 	"Prints entries N through M of b-4 and b-7 in number order with their",
 	"headers, turns with their part headers. Entries from b-7, those",
 	"removed or replaced by anote, a 0 rating or compaction, have trimmed",
-	"after each header, as in TURN N trimmed and RESULT N.3 trimmed, and",
-	"precede a current entry with the same number. entries works as for",
-	"anote, with $ the last number in either buffer. parts is part indexes",
-	"or role names, separated by spaces, not both. Indexes print only",
-	"those parts of each turn: 0 reasoning, 1 text, then the command and",
-	"result of call k at 2+2k and 3+2k; a turn without the part prints",
-	"nothing. USER, TURN and NOTICE print only those entries; REASONING,",
-	"ASSISTANT, EX and RESULT only those parts of turns. Output is subject",
-	"to agr. Unavailable during an acl checkpoint.",
+	"after each header, as in TURN N trimmed, and precede a current entry",
+	"with the same number. entries is N or N,M as for anote, with $ the",
+	"last number in either buffer. parts is part indexes or role names,",
+	"separated by spaces, not both. Indexes select parts of each turn: 0",
+	"reasoning, 1 text, then the command and result of call k at 2+2k and",
+	"3+2k. USER, TURN and NOTICE select entries; REASONING, ASSISTANT, EX",
+	"and RESULT parts of turns. Output is subject to agr. Unavailable",
+	"during an acl checkpoint.",
 	"",
 	"Example: print the commands of entries 20 through 80",
 	"20,80aget EX",
@@ -10546,24 +10510,22 @@ static char *exspec_lines[] = {
 	"[entries]arate rating sentence",
 	"Rate agent turns in the notes buffer",
 	"",
-	"Writes a note for each TURN entry from N through M of b-4 to b-6, one",
-	"line per entry: number, rating and sentence, replacing an older note.",
-	"Only the first entry gets the sentence; the rest get \"same as TURN N\"",
-	"with N that entry. Replacing a note that others name moves it to the",
-	"first of them. Checkpoint lists show the note of a removed entry on",
-	"the first remaining entry that names it. Ratings: 0 dead weight, no",
-	"value for the remaining work; 1 low, minor, superseded or only",
-	"mechanics; 2 useful, informs the remaining work; 3 essential, a",
-	"decision, finding or state the task depends on.",
-	"Entries work as for anote; other roles in the range are skipped.",
-	"Three or more numbers, as in 2,4,7, rate those turns alone; a number",
-	"that is not a TURN entry rates nothing.",
-	"With acl above 1 or negative, a turn whose every command aspec",
-	"deferred is rated 1 by the harness unless already rated. During an",
-	"acl checkpoint, rating 0 moves the rated turns to b-7, reported as",
-	"by anote; their ratings stay in b-6.",
-	"Ratings show in acl checkpoint lists and are given to apack. b-6 is",
-	"saved as notes in the session directory.",
+	"Writes one line per TURN entry from N through M of b-4 to b-6:",
+	"number, rating and sentence, replacing an older note. The first",
+	"entry gets the sentence, the rest \"same as TURN N\" naming it;",
+	"replacing a note that others name moves it to the first of them.",
+	"entries works as for anote: other roles in a range are skipped, and",
+	"three or more numbers, as in 2,4,7, rate those turns alone unless",
+	"one is not a TURN.",
+	"Ratings: 0 dead weight, no value for the remaining work; 1 low,",
+	"minor, superseded or only mechanics; 2 useful, informs the remaining",
+	"work; 3 essential, a decision, finding or state the task depends on.",
+	"During an acl checkpoint, rating 0 moves the turns to b-7, reported",
+	"as by anote; their ratings stay in b-6. With acl above 1 or",
+	"negative, the harness rates 1 a turn whose every command aspec",
+	"deferred, unless already rated. Ratings show in acl checkpoint lists",
+	"and are given to apack. b-6 is saved as notes in the session",
+	"directory.",
 	"",
 	"Example: rate the turn of entry 52",
 	"52arate 1 read vi.c lines 1-260, nothing relevant",
@@ -10712,30 +10674,23 @@ static char *exspec_lines[] = {
 	"acl[0]  Rebuild agent context from the session log",
 	"No argument toggles between 0 and 1. 0 disables.",
 	"",
-	"1 rebuilds the agent context from the session log (b-4)",
-	"before every request, so edits to the log by the agent or the",
-	"user apply to the next request. Values above 1 or negative rebuild",
-	"only after such edits and when a checkpoint ends; between",
-	"rebuilds, replies stay as returned, reasoning included, so the",
-	"agent keeps it and the server cache continues from its output.",
-	"With 0, the context is built from the running history and log",
-	"edits have no effect.",
-	"NOTICE entries report harness events such as HTTP errors and are",
-	"never sent to the agent.",
-	"A rebuild drops reasoning not in the log (ar off). With aco, a",
-	"compact (apack) may run before the rebuild.",
+	"1 rebuilds the agent context from the session log (b-4) before",
+	"every request, so log edits by the agent or the user apply to the",
+	"next one. Values above 1 or negative rebuild only after such edits",
+	"and when a checkpoint ends; in between, replies stay as returned,",
+	"reasoning included, so the server cache continues from them. With",
+	"0, log edits have no effect. NOTICE entries report harness events",
+	"such as HTTP errors and are never sent to the agent. A rebuild",
+	"drops reasoning not in the log (ar off). With aco, a compact",
+	"(apack) may run before the rebuild.",
 	"",
 	"Values above 1 add checkpoints: once the estimated context grows",
 	"by that many tokens from the last checkpoint, or from its smallest",
-	"size since, a checkpoint runs before the next request. Its first",
-	"request lists one line per entry: role, number and estimated",
-	"tokens, turns with the tokens of their parts and their arate",
-	"notes, then one line naming the largest few, followed by",
-	"instructions; ali and acp print them again, auli the unrated",
-	"turns. Only these, arate, anote and adone run. Unrated turns",
-	"must be rated first: adone or a reply without commands is",
-	"refused while any remain, up to twice in a row without new",
-	"ratings. The list and exchange are logged to b-3, not b-4, with",
+	"size since, one runs before the next request. Its first request",
+	"holds the ali entry list and the acp instructions. Only ali, acp,",
+	"auli, arate, anote and adone run. adone or a reply without",
+	"commands is refused while turns are unrated, up to twice in a row",
+	"without new ratings. The exchange is logged to b-3, not b-4, with",
 	"headers prefixed CP. Requests keep the context the checkpoint",
 	"started with, so the prompt cache holds; anote edits b-4 at once",
 	"but reaches the context when the checkpoint ends. It ends with",
@@ -10745,15 +10700,14 @@ static char *exspec_lines[] = {
 	"Negative values leave the checkpoint to the agent through budget",
 	"checks. The first comes once the estimated context grows by -acl",
 	"tokens from the session start, the last checkpoint or a compaction,",
-	"and asks for an estimate of the tokens the rest of the task needs,",
-	"set with acheck N. Once that growth is reached, the next asks",
-	"whether to checkpoint now with acheck or defer by N more tokens with",
-	"acheck N. N may pass aco. Only acheck runs during a check; two more",
-	"requests are given for an answer, then a checkpoint starts. After a",
-	"checkpoint, -acl applies again. The exchange is logged to b-3 with CP",
-	"headers and leaves the context unchanged. An interrupted check runs",
-	"again at the next request.",
-	"aco stays the limit; a compaction drops the budget.",
+	"and asks for the tokens the rest of the task needs, set with",
+	"acheck N. At that growth the next asks to checkpoint now with",
+	"acheck or defer N more tokens with acheck N. N may pass aco. Only",
+	"acheck runs during a check; after two more requests without an",
+	"answer a checkpoint starts. After a checkpoint, -acl applies again.",
+	"A check is logged to b-3 with CP headers, leaves the context",
+	"unchanged and, if interrupted, runs again at the next request. aco",
+	"stays the limit; a compaction drops the budget.",
 	"",
 	"Example: checkpoint every 5000 tokens of growth",
 	"acl 5000",
@@ -11099,56 +11053,56 @@ static struct {
 	{"apack", "Compact the agent session from its log", 766, 778, 0, 0},
 	{"apack!", "Compact the agent session by browsing its log", 779, 786, 0, 0},
 	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
-	{"aretry", "Execute the last agent command", 793, 805, 0, 0},
-	{"aout", "Print the saved output of the last agent tool call", 806, 817, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 818, 846, 0, 0},
-	{"aget", "Print agent session log entries, trimmed ones included", 847, 865, 0, 0},
-	{"arate", "Rate agent turns in the notes buffer", 866, 890, 0, 0},
-	{"adone", "End an agent checkpoint", 891, 898, 0, 0},
-	{"acheck", "Start an agent checkpoint or set its budget", 899, 911, 0, 0},
-	{"acp", "Print the agent checkpoint instructions", 912, 918, 0, 0},
-	{"ali", "Print the agent session log entry list", 919, 930, 0, 0},
-	{"auli", "Print the unrated agent session log turns", 931, 937, 0, 0},
-	{"ast", "Print agent status and token usage", 938, 947, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 948, 961, 0, 0},
-	{"ac", "Set autocomplete filter regex", 962, 970, 0, 0},
-	{"sc", "Set ex special characters", 971, 981, 0, 0},
-	{"sc!", "Set ex special characters", 982, 989, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 990, 997, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 998, 1001, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1002, 1006, 0, 0},
-	{"ph", "Redefine placeholders", 1007, 1023, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1032, 1080, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1081, 1090, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1091, 1098, 1, 0},
-	{"agr", "Control agent output protection", 1099, 1105, 1, 0},
-	{"ato", "Detach long agent shell commands", 1106, 1113, 1, 0},
-	{"ar", "Display returned agent reasoning", 1114, 1119, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1120, 1126, 1, 0},
-	{"ai", "Indent new lines", 1127, 1130, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1131, 1132, 1, 0},
-	{"ish", "Interactive shell", 1133, 1148, 1, 0},
-	{"grp", "Regex search group", 1149, 1157, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1158, 1161, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1162, 1163, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1163, 1164, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1164, 1165, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1165, 1166, 1, 0},
-	{"led", "Enable all terminal output", 1166, 1167, 1, 0},
-	{"vis", "Control startup flags", 1168, 1179, 1, 0},
-	{"mpt", "Control vi prompts", 1180, 1190, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1191, 1193, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1193, 1195, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1195, 1196, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1196, 1197, 1, 0},
-	{"td", "Current text direction context", 1197, 1203, 1, 0},
-	{"pr", "Print register", 1204, 1220, 1, 0},
-	{"fr", "Find register", 1221, 1233, 1, 0},
-	{"rr", "Record register", 1234, 1247, 1, 0},
-	{"lim", "Line length render limit", 1248, 1263, 1, 0},
-	{"seq", "Control Undo/Redo", 1264, 1276, 1, 0},
-	{"left", "Control horizontal scroll", 1277, 1282, 1, 0},
-	{"err", "Control ex errors", 1283, 1295, 1, 0},
+	{"aretry", "Execute the last agent command", 793, 804, 0, 0},
+	{"aout", "Print the saved output of the last agent tool call", 805, 816, 0, 0},
+	{"anote", "Replace or remove agent session log entries", 817, 839, 0, 0},
+	{"aget", "Print agent session log entries, trimmed ones included", 840, 857, 0, 0},
+	{"arate", "Rate agent turns in the notes buffer", 858, 880, 0, 0},
+	{"adone", "End an agent checkpoint", 881, 888, 0, 0},
+	{"acheck", "Start an agent checkpoint or set its budget", 889, 901, 0, 0},
+	{"acp", "Print the agent checkpoint instructions", 902, 908, 0, 0},
+	{"ali", "Print the agent session log entry list", 909, 920, 0, 0},
+	{"auli", "Print the unrated agent session log turns", 921, 927, 0, 0},
+	{"ast", "Print agent status and token usage", 928, 937, 0, 0},
+	{"ath", "Set the agent thinking cap and effort", 938, 951, 0, 0},
+	{"ac", "Set autocomplete filter regex", 952, 960, 0, 0},
+	{"sc", "Set ex special characters", 961, 971, 0, 0},
+	{"sc!", "Set ex special characters", 972, 979, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 980, 987, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 988, 991, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 992, 996, 0, 0},
+	{"ph", "Redefine placeholders", 997, 1013, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1022, 1062, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1063, 1072, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1073, 1080, 1, 0},
+	{"agr", "Control agent output protection", 1081, 1087, 1, 0},
+	{"ato", "Detach long agent shell commands", 1088, 1095, 1, 0},
+	{"ar", "Display returned agent reasoning", 1096, 1101, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1102, 1108, 1, 0},
+	{"ai", "Indent new lines", 1109, 1112, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1113, 1114, 1, 0},
+	{"ish", "Interactive shell", 1115, 1130, 1, 0},
+	{"grp", "Regex search group", 1131, 1139, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1140, 1143, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1144, 1145, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1145, 1146, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1146, 1147, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1147, 1148, 1, 0},
+	{"led", "Enable all terminal output", 1148, 1149, 1, 0},
+	{"vis", "Control startup flags", 1150, 1161, 1, 0},
+	{"mpt", "Control vi prompts", 1162, 1172, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1173, 1175, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1175, 1177, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1177, 1178, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1178, 1179, 1, 0},
+	{"td", "Current text direction context", 1179, 1185, 1, 0},
+	{"pr", "Print register", 1186, 1202, 1, 0},
+	{"fr", "Find register", 1203, 1215, 1, 0},
+	{"rr", "Record register", 1216, 1229, 1, 0},
+	{"lim", "Line length render limit", 1230, 1245, 1, 0},
+	{"seq", "Control Undo/Redo", 1246, 1258, 1, 0},
+	{"left", "Control horizontal scroll", 1259, 1264, 1, 0},
+	{"err", "Control ex errors", 1265, 1277, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -19032,10 +18986,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..3ca5e2c94 100755
+index c836c94c7..c38c3759b 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,277 @@ build() {
+@@ -65,6 +65,249 @@ build() {
      }
  }
  
@@ -19076,12 +19030,12 @@ index c836c94c7..3ca5e2c94 100755
 +                "Loads b-4 as context and asks the agent to replace it with a summary.\n" \
 +                "Stays at the prompt; reloads the log on exit. Text replaces the default\n" \
 +                "instructions; range attaches buffer text. The task lists the log\n" \
-+                "entries with estimated tokens and arate notes (b-6), with the notes\n" \
-+                "of trimmed turns in order among them; apack! adds entry line\n" \
-+                "numbers. While b-7 holds entries, the task offers aget for their\n" \
-+                "details. On success the notes move beside the archived log, b-6 is\n" \
-+                "cleared and the entries of the replaced log move to b-7, keeping\n" \
-+                "those already there. Unavailable as an agent tool.")
++                "entries with estimated tokens and arate notes (b-6), those of\n" \
++                "trimmed turns included; apack! adds entry line numbers. While b-7\n" \
++                "holds entries, the task offers aget for them. On success the notes\n" \
++                "are archived beside the log, b-6 is cleared and the replaced entries\n" \
++                "move to b-7, keeping those already there. Unavailable as an agent\n" \
++                "tool.")
 +            spec("[range]apack![text]", "Compact the agent session by browsing its log",
 +                "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
 +                "ranges and replaces the log with a summary. Stays at the prompt;\n" \
@@ -19090,88 +19044,68 @@ index c836c94c7..3ca5e2c94 100755
 +            spec("acm", "Toggle the caveman response style skill",
 +                "Adds or removes the skill in b-5. Tool calls update the system\n" \
 +                "message; otherwise context is rebuilt from the log.")
-+            print "     aretry"
-+            print "             Execute the last agent command"
-+            print ""
-+            print "             Saves each top-level command the agent runs or aspec defers,"
-+            print "             with its range and expanded argument; a run aout is not saved."
-+            print "             Takes no range or argument. The saved command is kept and its"
-+            print "             output is guarded by agr like any other. A new session clears"
-+            print "             it. Errors if none is saved. Reruns side effects; use aout to"
-+            print "             view withheld output."
-+            print ""
-+            print "             Example: execute a deferred command"
-+            print "             :aretry"
-+            print ""
-+            print "     [brange]aout"
-+            print "             Print the saved output of the last agent tool call"
-+            print ""
-+            print "             brange is first,last in 0-based byte offsets, inclusive; $ is"
-+            print "             the last byte and one offset selects one byte. No range prints"
-+            print "             everything. Saves each tool call output except calls running"
-+            print "             aout; under agr at most 1048576 bytes, or agr if larger, are"
-+            print "             kept. Output is exempt from agr. A new session clears it."
-+            print ""
-+            print "             Example: bytes 50 through the end"
-+            print "             :50,$aout"
-+            print ""
++            spec("aretry", "Execute the last agent command",
++                "Runs the last top-level command the agent ran or aspec deferred,\n" \
++                "with its range and expanded argument; a run aout is not saved.\n" \
++                "Takes no range or argument. The command stays saved and its output\n" \
++                "is subject to agr. A new session clears it. Errors if none is saved.\n" \
++                "Side effects rerun; use aout to view withheld output.\n\n" \
++                "Example: execute a deferred command\n:aretry")
++            spec("[brange]aout", "Print the saved output of the last agent tool call",
++                "brange is first,last in 0-based byte offsets, inclusive; $ is\n" \
++                "the last byte and one offset selects one byte. No range prints\n" \
++                "everything. Saves each tool call output except calls running\n" \
++                "aout; under agr at most 1048576 bytes, or agr if larger, are\n" \
++                "kept. Output is exempt from agr. A new session clears it.\n\n" \
++                "Example: bytes 50 through the end\n:50,$aout")
 +            spec("[entries]anote[text]", "Replace or remove agent session log entries",
-+                "entries is N or N,M, matching the numbers in the USER N, TURN N and\n" \
-+                "NOTICE N headers of b-4; $ is the last entry and 0 the text before\n" \
-+                "the first header. A TURN is one reply of the agent: its reasoning,\n" \
-+                "text, commands and results, as parts headed ROLE N.I. The first tool\n" \
-+                "result of each turn that the agent sees starts with TURN N, with any\n" \
-+                "acl value; the log does not hold that text. Text replaces N through\n" \
-+                "M as one entry with the role and number of N; a note over a turn is\n" \
-+                "a turn holding only the text. No text removes them. The agent cannot\n" \
-+                "change USER entries or the text before the first header; anote by\n" \
-+                "the agent keeps them in place, removes the other entries and puts\n" \
-+                "the note in place of the last run of them, as its first turn, or\n" \
-+                "with the role of its first entry when it has no turn. The agent\n" \
-+                "cannot note the turn that is still running. Three or more numbers,\n" \
-+                "as in 2,4,7, name those turns alone: text replaces them as one note\n" \
-+                "in place of the first, or for the agent of the first after the last\n" \
-+                "USER entry between them; a number that is not a TURN entry changes\n" \
-+                "nothing. Prints the estimated tokens before and after and the USER\n" \
-+                "entries kept, and reports a note larger than what it replaced.\n" \
-+                "Changes the agent context when acl is set. Removed and replaced\n" \
-+                "entries move to b-7 in number order; a number already there keeps\n" \
-+                "its entry, so a note replaced later is not kept. b-7 is saved as\n" \
-+                "discarded in the session directory.\n\n" \
++                "entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N\n" \
++                "headers of b-4; $ is the last entry and 0 the text before the first\n" \
++                "header. A TURN is one reply of the agent: its reasoning, text,\n" \
++                "commands and results, as parts headed ROLE N.I. The first tool\n" \
++                "result of each turn the agent sees starts with TURN N; the log does\n" \
++                "not hold that text. Text replaces N through M as one entry with the\n" \
++                "role and number of N, a turn becoming a turn with only the text; no\n" \
++                "text removes them. Three or more numbers, as in 2,4,7, name those\n" \
++                "turns alone, noted in place of the first; a number that is not a\n" \
++                "TURN rejects the list. The agent cannot change USER entries, entry 0\n" \
++                "or the turn still running: USER entries stay, and its note goes\n" \
++                "after the last one spanned, as a turn. Prints the estimated tokens\n" \
++                "before and after and the USER entries kept. Changes the agent\n" \
++                "context when acl is set. Replaced entries move to b-7, saved as\n" \
++                "discarded in the session directory; a number already there keeps\n" \
++                "its entry.\n\n" \
 +                "Example: replace a turn with a note\n:14anote ls listed 40 files, none relevant")
 +            spec("[entries]aget[parts]", "Print agent session log entries, trimmed ones included",
 +                "Prints entries N through M of b-4 and b-7 in number order with their\n" \
 +                "headers, turns with their part headers. Entries from b-7, those\n" \
 +                "removed or replaced by anote, a 0 rating or compaction, have trimmed\n" \
-+                "after each header, as in TURN N trimmed and RESULT N.3 trimmed, and\n" \
-+                "precede a current entry with the same number. entries works as for\n" \
-+                "anote, with $ the last number in either buffer. parts is part indexes\n" \
-+                "or role names, separated by spaces, not both. Indexes print only\n" \
-+                "those parts of each turn: 0 reasoning, 1 text, then the command and\n" \
-+                "result of call k at 2+2k and 3+2k; a turn without the part prints\n" \
-+                "nothing. USER, TURN and NOTICE print only those entries; REASONING,\n" \
-+                "ASSISTANT, EX and RESULT only those parts of turns. Output is subject\n" \
-+                "to agr. Unavailable during an acl checkpoint.\n\n" \
++                "after each header, as in TURN N trimmed, and precede a current entry\n" \
++                "with the same number. entries is N or N,M as for anote, with $ the\n" \
++                "last number in either buffer. parts is part indexes or role names,\n" \
++                "separated by spaces, not both. Indexes select parts of each turn: 0\n" \
++                "reasoning, 1 text, then the command and result of call k at 2+2k and\n" \
++                "3+2k. USER, TURN and NOTICE select entries; REASONING, ASSISTANT, EX\n" \
++                "and RESULT parts of turns. Output is subject to agr. Unavailable\n" \
++                "during an acl checkpoint.\n\n" \
 +                "Example: print the commands of entries 20 through 80\n:20,80aget EX")
 +            spec("[entries]arate rating sentence", "Rate agent turns in the notes buffer",
-+                "Writes a note for each TURN entry from N through M of b-4 to b-6, one\n" \
-+                "line per entry: number, rating and sentence, replacing an older note.\n" \
-+                "Only the first entry gets the sentence; the rest get \"same as TURN N\"\n" \
-+                "with N that entry. Replacing a note that others name moves it to the\n" \
-+                "first of them. Checkpoint lists show the note of a removed entry on\n" \
-+                "the first remaining entry that names it. Ratings: 0 dead weight, no\n" \
-+                "value for the remaining work; 1 low, minor, superseded or only\n" \
-+                "mechanics; 2 useful, informs the remaining work; 3 essential, a\n" \
-+                "decision, finding or state the task depends on.\n" \
-+                "Entries work as for anote; other roles in the range are skipped.\n" \
-+                "Three or more numbers, as in 2,4,7, rate those turns alone; a number\n" \
-+                "that is not a TURN entry rates nothing.\n" \
-+                "With acl above 1 or negative, a turn whose every command aspec\n" \
-+                "deferred is rated 1 by the harness unless already rated. During an\n" \
-+                "acl checkpoint, rating 0 moves the rated turns to b-7, reported as\n" \
-+                "by anote; their ratings stay in b-6.\n" \
-+                "Ratings show in acl checkpoint lists and are given to apack. b-6 is\n" \
-+                "saved as notes in the session directory.\n\n" \
++                "Writes one line per TURN entry from N through M of b-4 to b-6:\n" \
++                "number, rating and sentence, replacing an older note. The first\n" \
++                "entry gets the sentence, the rest \"same as TURN N\" naming it;\n" \
++                "replacing a note that others name moves it to the first of them.\n" \
++                "entries works as for anote: other roles in a range are skipped, and\n" \
++                "three or more numbers, as in 2,4,7, rate those turns alone unless\n" \
++                "one is not a TURN.\n" \
++                "Ratings: 0 dead weight, no value for the remaining work; 1 low,\n" \
++                "minor, superseded or only mechanics; 2 useful, informs the remaining\n" \
++                "work; 3 essential, a decision, finding or state the task depends on.\n" \
++                "During an acl checkpoint, rating 0 moves the turns to b-7, reported\n" \
++                "as by anote; their ratings stay in b-6. With acl above 1 or\n" \
++                "negative, the harness rates 1 a turn whose every command aspec\n" \
++                "deferred, unless already rated. Ratings show in acl checkpoint lists\n" \
++                "and are given to apack. b-6 is saved as notes in the session\n" \
++                "directory.\n\n" \
 +                "Example: rate the turn of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
 +            spec("adone", "End an agent checkpoint",
 +                "Ends the acl checkpoint phase; the interrupted request resumes\n" \
@@ -19224,29 +19158,22 @@ index c836c94c7..3ca5e2c94 100755
 +        /^     ai\[1\]/ && !aspec_done {
 +            spec("acl[0]  Rebuild agent context from the session log",
 +                "No argument toggles between 0 and 1. 0 disables.",
-+                "1 rebuilds the agent context from the session log (b-4)\n" \
-+                "before every request, so edits to the log by the agent or the\n" \
-+                "user apply to the next request. Values above 1 or negative rebuild\n" \
-+                "only after such edits and when a checkpoint ends; between\n" \
-+                "rebuilds, replies stay as returned, reasoning included, so the\n" \
-+                "agent keeps it and the server cache continues from its output.\n" \
-+                "With 0, the context is built from the running history and log\n" \
-+                "edits have no effect.\n" \
-+                "NOTICE entries report harness events such as HTTP errors and are\n" \
-+                "never sent to the agent.\n" \
-+                "A rebuild drops reasoning not in the log (ar off). With aco, a\n" \
-+                "compact (apack) may run before the rebuild.\n\n" \
++                "1 rebuilds the agent context from the session log (b-4) before\n" \
++                "every request, so log edits by the agent or the user apply to the\n" \
++                "next one. Values above 1 or negative rebuild only after such edits\n" \
++                "and when a checkpoint ends; in between, replies stay as returned,\n" \
++                "reasoning included, so the server cache continues from them. With\n" \
++                "0, log edits have no effect. NOTICE entries report harness events\n" \
++                "such as HTTP errors and are never sent to the agent. A rebuild\n" \
++                "drops reasoning not in the log (ar off). With aco, a compact\n" \
++                "(apack) may run before the rebuild.\n\n" \
 +                "Values above 1 add checkpoints: once the estimated context grows\n" \
 +                "by that many tokens from the last checkpoint, or from its smallest\n" \
-+                "size since, a checkpoint runs before the next request. Its first\n" \
-+                "request lists one line per entry: role, number and estimated\n" \
-+                "tokens, turns with the tokens of their parts and their arate\n" \
-+                "notes, then one line naming the largest few, followed by\n" \
-+                "instructions; ali and acp print them again, auli the unrated\n" \
-+                "turns. Only these, arate, anote and adone run. Unrated turns\n" \
-+                "must be rated first: adone or a reply without commands is\n" \
-+                "refused while any remain, up to twice in a row without new\n" \
-+                "ratings. The list and exchange are logged to b-3, not b-4, with\n" \
++                "size since, one runs before the next request. Its first request\n" \
++                "holds the ali entry list and the acp instructions. Only ali, acp,\n" \
++                "auli, arate, anote and adone run. adone or a reply without\n" \
++                "commands is refused while turns are unrated, up to twice in a row\n" \
++                "without new ratings. The exchange is logged to b-3, not b-4, with\n" \
 +                "headers prefixed CP. Requests keep the context the checkpoint\n" \
 +                "started with, so the prompt cache holds; anote edits b-4 at once\n" \
 +                "but reaches the context when the checkpoint ends. It ends with\n" \
@@ -19255,15 +19182,14 @@ index c836c94c7..3ca5e2c94 100755
 +                "Negative values leave the checkpoint to the agent through budget\n" \
 +                "checks. The first comes once the estimated context grows by -acl\n" \
 +                "tokens from the session start, the last checkpoint or a compaction,\n" \
-+                "and asks for an estimate of the tokens the rest of the task needs,\n" \
-+                "set with acheck N. Once that growth is reached, the next asks\n" \
-+                "whether to checkpoint now with acheck or defer by N more tokens with\n" \
-+                "acheck N. N may pass aco. Only acheck runs during a check; two more\n" \
-+                "requests are given for an answer, then a checkpoint starts. After a\n" \
-+                "checkpoint, -acl applies again. The exchange is logged to b-3 with CP\n" \
-+                "headers and leaves the context unchanged. An interrupted check runs\n" \
-+                "again at the next request.\n" \
-+                "aco stays the limit; a compaction drops the budget.\n\n" \
++                "and asks for the tokens the rest of the task needs, set with\n" \
++                "acheck N. At that growth the next asks to checkpoint now with\n" \
++                "acheck or defer N more tokens with acheck N. N may pass aco. Only\n" \
++                "acheck runs during a check; after two more requests without an\n" \
++                "answer a checkpoint starts. After a checkpoint, -acl applies again.\n" \
++                "A check is logged to b-3 with CP headers, leaves the context\n" \
++                "unchanged and, if interrupted, runs again at the next request. aco\n" \
++                "stays the limit; a compaction drops the budget.\n\n" \
 +                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
 +            spec("aco[0]  Automatically compact using the loaded session log",
 +                "Positive argument sets an estimated input-token threshold; 0 or\n" \
@@ -19313,7 +19239,7 @@ index c836c94c7..3ca5e2c94 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +345,7 @@ install() {
+@@ -74,7 +317,7 @@ install() {
  }
  
  print_usage() {
@@ -19322,7 +19248,7 @@ index c836c94c7..3ca5e2c94 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +353,9 @@ print_usage() {
+@@ -82,6 +325,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -20372,10 +20298,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..b592884c2
+index 000000000..ee1507e52
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1475 @@
+@@ -0,0 +1,1457 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -21150,12 +21076,12 @@ index 000000000..b592884c2
 +	"Loads b-4 as context and asks the agent to replace it with a summary.",
 +	"Stays at the prompt; reloads the log on exit. Text replaces the default",
 +	"instructions; range attaches buffer text. The task lists the log",
-+	"entries with estimated tokens and arate notes (b-6), with the notes",
-+	"of trimmed turns in order among them; apack! adds entry line",
-+	"numbers. While b-7 holds entries, the task offers aget for their",
-+	"details. On success the notes move beside the archived log, b-6 is",
-+	"cleared and the entries of the replaced log move to b-7, keeping",
-+	"those already there. Unavailable as an agent tool.",
++	"entries with estimated tokens and arate notes (b-6), those of",
++	"trimmed turns included; apack! adds entry line numbers. While b-7",
++	"holds entries, the task offers aget for them. On success the notes",
++	"are archived beside the log, b-6 is cleared and the replaced entries",
++	"move to b-7, keeping those already there. Unavailable as an agent",
++	"tool.",
 +	"",
 +	"[range]apack![text]",
 +	"Compact the agent session by browsing its log",
@@ -21174,12 +21100,11 @@ index 000000000..b592884c2
 +	"aretry",
 +	"Execute the last agent command",
 +	"",
-+	"Saves each top-level command the agent runs or aspec defers,",
++	"Runs the last top-level command the agent ran or aspec deferred,",
 +	"with its range and expanded argument; a run aout is not saved.",
-+	"Takes no range or argument. The saved command is kept and its",
-+	"output is guarded by agr like any other. A new session clears",
-+	"it. Errors if none is saved. Reruns side effects; use aout to",
-+	"view withheld output.",
++	"Takes no range or argument. The command stays saved and its output",
++	"is subject to agr. A new session clears it. Errors if none is saved.",
++	"Side effects rerun; use aout to view withheld output.",
 +	"",
 +	"Example: execute a deferred command",
 +	"aretry",
@@ -21199,28 +21124,22 @@ index 000000000..b592884c2
 +	"[entries]anote[text]",
 +	"Replace or remove agent session log entries",
 +	"",
-+	"entries is N or N,M, matching the numbers in the USER N, TURN N and",
-+	"NOTICE N headers of b-4; $ is the last entry and 0 the text before",
-+	"the first header. A TURN is one reply of the agent: its reasoning,",
-+	"text, commands and results, as parts headed ROLE N.I. The first tool",
-+	"result of each turn that the agent sees starts with TURN N, with any",
-+	"acl value; the log does not hold that text. Text replaces N through",
-+	"M as one entry with the role and number of N; a note over a turn is",
-+	"a turn holding only the text. No text removes them. The agent cannot",
-+	"change USER entries or the text before the first header; anote by",
-+	"the agent keeps them in place, removes the other entries and puts",
-+	"the note in place of the last run of them, as its first turn, or",
-+	"with the role of its first entry when it has no turn. The agent",
-+	"cannot note the turn that is still running. Three or more numbers,",
-+	"as in 2,4,7, name those turns alone: text replaces them as one note",
-+	"in place of the first, or for the agent of the first after the last",
-+	"USER entry between them; a number that is not a TURN entry changes",
-+	"nothing. Prints the estimated tokens before and after and the USER",
-+	"entries kept, and reports a note larger than what it replaced.",
-+	"Changes the agent context when acl is set. Removed and replaced",
-+	"entries move to b-7 in number order; a number already there keeps",
-+	"its entry, so a note replaced later is not kept. b-7 is saved as",
-+	"discarded in the session directory.",
++	"entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N",
++	"headers of b-4; $ is the last entry and 0 the text before the first",
++	"header. A TURN is one reply of the agent: its reasoning, text,",
++	"commands and results, as parts headed ROLE N.I. The first tool",
++	"result of each turn the agent sees starts with TURN N; the log does",
++	"not hold that text. Text replaces N through M as one entry with the",
++	"role and number of N, a turn becoming a turn with only the text; no",
++	"text removes them. Three or more numbers, as in 2,4,7, name those",
++	"turns alone, noted in place of the first; a number that is not a",
++	"TURN rejects the list. The agent cannot change USER entries, entry 0",
++	"or the turn still running: USER entries stay, and its note goes",
++	"after the last one spanned, as a turn. Prints the estimated tokens",
++	"before and after and the USER entries kept. Changes the agent",
++	"context when acl is set. Replaced entries move to b-7, saved as",
++	"discarded in the session directory; a number already there keeps",
++	"its entry.",
 +	"",
 +	"Example: replace a turn with a note",
 +	"14anote ls listed 40 files, none relevant",
@@ -21231,15 +21150,14 @@ index 000000000..b592884c2
 +	"Prints entries N through M of b-4 and b-7 in number order with their",
 +	"headers, turns with their part headers. Entries from b-7, those",
 +	"removed or replaced by anote, a 0 rating or compaction, have trimmed",
-+	"after each header, as in TURN N trimmed and RESULT N.3 trimmed, and",
-+	"precede a current entry with the same number. entries works as for",
-+	"anote, with $ the last number in either buffer. parts is part indexes",
-+	"or role names, separated by spaces, not both. Indexes print only",
-+	"those parts of each turn: 0 reasoning, 1 text, then the command and",
-+	"result of call k at 2+2k and 3+2k; a turn without the part prints",
-+	"nothing. USER, TURN and NOTICE print only those entries; REASONING,",
-+	"ASSISTANT, EX and RESULT only those parts of turns. Output is subject",
-+	"to agr. Unavailable during an acl checkpoint.",
++	"after each header, as in TURN N trimmed, and precede a current entry",
++	"with the same number. entries is N or N,M as for anote, with $ the",
++	"last number in either buffer. parts is part indexes or role names,",
++	"separated by spaces, not both. Indexes select parts of each turn: 0",
++	"reasoning, 1 text, then the command and result of call k at 2+2k and",
++	"3+2k. USER, TURN and NOTICE select entries; REASONING, ASSISTANT, EX",
++	"and RESULT parts of turns. Output is subject to agr. Unavailable",
++	"during an acl checkpoint.",
 +	"",
 +	"Example: print the commands of entries 20 through 80",
 +	"20,80aget EX",
@@ -21247,24 +21165,22 @@ index 000000000..b592884c2
 +	"[entries]arate rating sentence",
 +	"Rate agent turns in the notes buffer",
 +	"",
-+	"Writes a note for each TURN entry from N through M of b-4 to b-6, one",
-+	"line per entry: number, rating and sentence, replacing an older note.",
-+	"Only the first entry gets the sentence; the rest get \"same as TURN N\"",
-+	"with N that entry. Replacing a note that others name moves it to the",
-+	"first of them. Checkpoint lists show the note of a removed entry on",
-+	"the first remaining entry that names it. Ratings: 0 dead weight, no",
-+	"value for the remaining work; 1 low, minor, superseded or only",
-+	"mechanics; 2 useful, informs the remaining work; 3 essential, a",
-+	"decision, finding or state the task depends on.",
-+	"Entries work as for anote; other roles in the range are skipped.",
-+	"Three or more numbers, as in 2,4,7, rate those turns alone; a number",
-+	"that is not a TURN entry rates nothing.",
-+	"With acl above 1 or negative, a turn whose every command aspec",
-+	"deferred is rated 1 by the harness unless already rated. During an",
-+	"acl checkpoint, rating 0 moves the rated turns to b-7, reported as",
-+	"by anote; their ratings stay in b-6.",
-+	"Ratings show in acl checkpoint lists and are given to apack. b-6 is",
-+	"saved as notes in the session directory.",
++	"Writes one line per TURN entry from N through M of b-4 to b-6:",
++	"number, rating and sentence, replacing an older note. The first",
++	"entry gets the sentence, the rest \"same as TURN N\" naming it;",
++	"replacing a note that others name moves it to the first of them.",
++	"entries works as for anote: other roles in a range are skipped, and",
++	"three or more numbers, as in 2,4,7, rate those turns alone unless",
++	"one is not a TURN.",
++	"Ratings: 0 dead weight, no value for the remaining work; 1 low,",
++	"minor, superseded or only mechanics; 2 useful, informs the remaining",
++	"work; 3 essential, a decision, finding or state the task depends on.",
++	"During an acl checkpoint, rating 0 moves the turns to b-7, reported",
++	"as by anote; their ratings stay in b-6. With acl above 1 or",
++	"negative, the harness rates 1 a turn whose every command aspec",
++	"deferred, unless already rated. Ratings show in acl checkpoint lists",
++	"and are given to apack. b-6 is saved as notes in the session",
++	"directory.",
 +	"",
 +	"Example: rate the turn of entry 52",
 +	"52arate 1 read vi.c lines 1-260, nothing relevant",
@@ -21413,30 +21329,23 @@ index 000000000..b592884c2
 +	"acl[0]  Rebuild agent context from the session log",
 +	"No argument toggles between 0 and 1. 0 disables.",
 +	"",
-+	"1 rebuilds the agent context from the session log (b-4)",
-+	"before every request, so edits to the log by the agent or the",
-+	"user apply to the next request. Values above 1 or negative rebuild",
-+	"only after such edits and when a checkpoint ends; between",
-+	"rebuilds, replies stay as returned, reasoning included, so the",
-+	"agent keeps it and the server cache continues from its output.",
-+	"With 0, the context is built from the running history and log",
-+	"edits have no effect.",
-+	"NOTICE entries report harness events such as HTTP errors and are",
-+	"never sent to the agent.",
-+	"A rebuild drops reasoning not in the log (ar off). With aco, a",
-+	"compact (apack) may run before the rebuild.",
++	"1 rebuilds the agent context from the session log (b-4) before",
++	"every request, so log edits by the agent or the user apply to the",
++	"next one. Values above 1 or negative rebuild only after such edits",
++	"and when a checkpoint ends; in between, replies stay as returned,",
++	"reasoning included, so the server cache continues from them. With",
++	"0, log edits have no effect. NOTICE entries report harness events",
++	"such as HTTP errors and are never sent to the agent. A rebuild",
++	"drops reasoning not in the log (ar off). With aco, a compact",
++	"(apack) may run before the rebuild.",
 +	"",
 +	"Values above 1 add checkpoints: once the estimated context grows",
 +	"by that many tokens from the last checkpoint, or from its smallest",
-+	"size since, a checkpoint runs before the next request. Its first",
-+	"request lists one line per entry: role, number and estimated",
-+	"tokens, turns with the tokens of their parts and their arate",
-+	"notes, then one line naming the largest few, followed by",
-+	"instructions; ali and acp print them again, auli the unrated",
-+	"turns. Only these, arate, anote and adone run. Unrated turns",
-+	"must be rated first: adone or a reply without commands is",
-+	"refused while any remain, up to twice in a row without new",
-+	"ratings. The list and exchange are logged to b-3, not b-4, with",
++	"size since, one runs before the next request. Its first request",
++	"holds the ali entry list and the acp instructions. Only ali, acp,",
++	"auli, arate, anote and adone run. adone or a reply without",
++	"commands is refused while turns are unrated, up to twice in a row",
++	"without new ratings. The exchange is logged to b-3, not b-4, with",
 +	"headers prefixed CP. Requests keep the context the checkpoint",
 +	"started with, so the prompt cache holds; anote edits b-4 at once",
 +	"but reaches the context when the checkpoint ends. It ends with",
@@ -21446,15 +21355,14 @@ index 000000000..b592884c2
 +	"Negative values leave the checkpoint to the agent through budget",
 +	"checks. The first comes once the estimated context grows by -acl",
 +	"tokens from the session start, the last checkpoint or a compaction,",
-+	"and asks for an estimate of the tokens the rest of the task needs,",
-+	"set with acheck N. Once that growth is reached, the next asks",
-+	"whether to checkpoint now with acheck or defer by N more tokens with",
-+	"acheck N. N may pass aco. Only acheck runs during a check; two more",
-+	"requests are given for an answer, then a checkpoint starts. After a",
-+	"checkpoint, -acl applies again. The exchange is logged to b-3 with CP",
-+	"headers and leaves the context unchanged. An interrupted check runs",
-+	"again at the next request.",
-+	"aco stays the limit; a compaction drops the budget.",
++	"and asks for the tokens the rest of the task needs, set with",
++	"acheck N. At that growth the next asks to checkpoint now with",
++	"acheck or defer N more tokens with acheck N. N may pass aco. Only",
++	"acheck runs during a check; after two more requests without an",
++	"answer a checkpoint starts. After a checkpoint, -acl applies again.",
++	"A check is logged to b-3 with CP headers, leaves the context",
++	"unchanged and, if interrupted, runs again at the next request. aco",
++	"stays the limit; a compaction drops the budget.",
 +	"",
 +	"Example: checkpoint every 5000 tokens of growth",
 +	"acl 5000",
@@ -21800,56 +21708,56 @@ index 000000000..b592884c2
 +	{"apack", "Compact the agent session from its log", 766, 778, 0, 0},
 +	{"apack!", "Compact the agent session by browsing its log", 779, 786, 0, 0},
 +	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
-+	{"aretry", "Execute the last agent command", 793, 805, 0, 0},
-+	{"aout", "Print the saved output of the last agent tool call", 806, 817, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 818, 846, 0, 0},
-+	{"aget", "Print agent session log entries, trimmed ones included", 847, 865, 0, 0},
-+	{"arate", "Rate agent turns in the notes buffer", 866, 890, 0, 0},
-+	{"adone", "End an agent checkpoint", 891, 898, 0, 0},
-+	{"acheck", "Start an agent checkpoint or set its budget", 899, 911, 0, 0},
-+	{"acp", "Print the agent checkpoint instructions", 912, 918, 0, 0},
-+	{"ali", "Print the agent session log entry list", 919, 930, 0, 0},
-+	{"auli", "Print the unrated agent session log turns", 931, 937, 0, 0},
-+	{"ast", "Print agent status and token usage", 938, 947, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 948, 961, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 962, 970, 0, 0},
-+	{"sc", "Set ex special characters", 971, 981, 0, 0},
-+	{"sc!", "Set ex special characters", 982, 989, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 990, 997, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 998, 1001, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1002, 1006, 0, 0},
-+	{"ph", "Redefine placeholders", 1007, 1023, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1032, 1080, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1081, 1090, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1091, 1098, 1, 0},
-+	{"agr", "Control agent output protection", 1099, 1105, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1106, 1113, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1114, 1119, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1120, 1126, 1, 0},
-+	{"ai", "Indent new lines", 1127, 1130, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1131, 1132, 1, 0},
-+	{"ish", "Interactive shell", 1133, 1148, 1, 0},
-+	{"grp", "Regex search group", 1149, 1157, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1158, 1161, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1162, 1163, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1163, 1164, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1164, 1165, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1165, 1166, 1, 0},
-+	{"led", "Enable all terminal output", 1166, 1167, 1, 0},
-+	{"vis", "Control startup flags", 1168, 1179, 1, 0},
-+	{"mpt", "Control vi prompts", 1180, 1190, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1191, 1193, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1193, 1195, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1195, 1196, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1196, 1197, 1, 0},
-+	{"td", "Current text direction context", 1197, 1203, 1, 0},
-+	{"pr", "Print register", 1204, 1220, 1, 0},
-+	{"fr", "Find register", 1221, 1233, 1, 0},
-+	{"rr", "Record register", 1234, 1247, 1, 0},
-+	{"lim", "Line length render limit", 1248, 1263, 1, 0},
-+	{"seq", "Control Undo/Redo", 1264, 1276, 1, 0},
-+	{"left", "Control horizontal scroll", 1277, 1282, 1, 0},
-+	{"err", "Control ex errors", 1283, 1295, 1, 0},
++	{"aretry", "Execute the last agent command", 793, 804, 0, 0},
++	{"aout", "Print the saved output of the last agent tool call", 805, 816, 0, 0},
++	{"anote", "Replace or remove agent session log entries", 817, 839, 0, 0},
++	{"aget", "Print agent session log entries, trimmed ones included", 840, 857, 0, 0},
++	{"arate", "Rate agent turns in the notes buffer", 858, 880, 0, 0},
++	{"adone", "End an agent checkpoint", 881, 888, 0, 0},
++	{"acheck", "Start an agent checkpoint or set its budget", 889, 901, 0, 0},
++	{"acp", "Print the agent checkpoint instructions", 902, 908, 0, 0},
++	{"ali", "Print the agent session log entry list", 909, 920, 0, 0},
++	{"auli", "Print the unrated agent session log turns", 921, 927, 0, 0},
++	{"ast", "Print agent status and token usage", 928, 937, 0, 0},
++	{"ath", "Set the agent thinking cap and effort", 938, 951, 0, 0},
++	{"ac", "Set autocomplete filter regex", 952, 960, 0, 0},
++	{"sc", "Set ex special characters", 961, 971, 0, 0},
++	{"sc!", "Set ex special characters", 972, 979, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 980, 987, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 988, 991, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 992, 996, 0, 0},
++	{"ph", "Redefine placeholders", 997, 1013, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1022, 1062, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1063, 1072, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1073, 1080, 1, 0},
++	{"agr", "Control agent output protection", 1081, 1087, 1, 0},
++	{"ato", "Detach long agent shell commands", 1088, 1095, 1, 0},
++	{"ar", "Display returned agent reasoning", 1096, 1101, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1102, 1108, 1, 0},
++	{"ai", "Indent new lines", 1109, 1112, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1113, 1114, 1, 0},
++	{"ish", "Interactive shell", 1115, 1130, 1, 0},
++	{"grp", "Regex search group", 1131, 1139, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1140, 1143, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1144, 1145, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1145, 1146, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1146, 1147, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1147, 1148, 1, 0},
++	{"led", "Enable all terminal output", 1148, 1149, 1, 0},
++	{"vis", "Control startup flags", 1150, 1161, 1, 0},
++	{"mpt", "Control vi prompts", 1162, 1172, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1173, 1175, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1175, 1177, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1177, 1178, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1178, 1179, 1, 0},
++	{"td", "Current text direction context", 1179, 1185, 1, 0},
++	{"pr", "Print register", 1186, 1202, 1, 0},
++	{"fr", "Find register", 1203, 1215, 1, 0},
++	{"rr", "Record register", 1216, 1229, 1, 0},
++	{"lim", "Line length render limit", 1230, 1245, 1, 0},
++	{"seq", "Control Undo/Redo", 1246, 1258, 1, 0},
++	{"left", "Control horizontal scroll", 1259, 1264, 1, 0},
++	{"err", "Control ex errors", 1265, 1277, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..823e5b396 100644
