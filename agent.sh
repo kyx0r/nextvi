@@ -107,6 +107,14 @@ static const char *agent_rkey = "reasoning_content";
  * empty unset. Set fields replace those of request_extra. */
 static int agent_think_cap = -1;
 static char agent_effort[32];
+/* ath N,M: the cap ath set and the ceiling the agent may raise it to for
+ * one reply; 0 off */
+static int agent_think_base, agent_think_max;
+/* The end of the last reply'\''s thinking if the server cut it at the cap
+ * agent_think_was; the agent is then asked whether to raise the cap, and
+ * agent_think_more is its answer. */
+static char *agent_think_tail;
+static int agent_think_was, agent_think_more;
 static void agent_run(const char *input);
 static int agent_autocompact(const char *input);
 static void agent_reparse(void);
@@ -1311,7 +1319,8 @@ static char *agent_budget_open(void)
 	return s;
 }
 
-/* kind 1 starts a checkpoint, 2 a budget check. */
+/* kind 1 starts a checkpoint, 2 a budget check, 3 a thinking budget
+ * question. */
 static void agent_checkpoint_begin(double tokens, int kind)
 {
 	char note[64];
@@ -1332,9 +1341,65 @@ static void agent_checkpoint_begin(double tokens, int kind)
 	exspec_mark("ali");
 	exspec_mark("auli");
 	exspec_mark("acheck");
-	snprintf(note, sizeof(note), "[acl %s ~%.0f tokens]\n",
-		kind == 1 ? "checkpoint" : "budget check", tokens);
+	exspec_mark("ath");
+	if (kind == 3)
+		snprintf(note, sizeof(note), "[ath thinking cut at %.0f tokens]\n",
+			tokens);
+	else
+		snprintf(note, sizeof(note), "[acl %s ~%.0f tokens]\n",
+			kind == 1 ? "checkpoint" : "budget check", tokens);
 	agent_output(note);
+}
+
+/* The reply'\''s reasoning text, NULL if none; key gets its field name. */
+static char *agent_reasoning(cJSON *message, const char **key)
+{
+	cJSON *r = cJSON_GetObjectItem(message, "reasoning_content");
+	*key = "reasoning_content";
+	if (!cJSON_IsString(r) || !*r->valuestring) {
+		r = cJSON_GetObjectItem(message, "reasoning");
+		*key = "reasoning";
+	}
+	return cJSON_IsString(r) && *r->valuestring ? r->valuestring : NULL;
+}
+
+/* The last text of reasoning the server cut at the cap; NULL if not cut. */
+static char *agent_think_cut(const char *s)
+{
+	int n = strlen(s), k = strlen(think_cut), from;
+	char *tail;
+	while (n && isspace((unsigned char)s[n - 1]))
+		n--;
+	if (!k || n < k || memcmp(s + n - k, think_cut, k))
+		return NULL;
+	for (n -= k; n && isspace((unsigned char)s[n - 1]); n--);
+	from = n > 600 ? n - 600 : 0;
+	while (from < n && ((unsigned char)s[from] & 0xc0) == 0x80)
+		from++;
+	tail = emalloc(n - from + 4);
+	sprintf(tail, "%s%.*s", from ? "..." : "", n - from, s + from);
+	return tail;
+}
+
+/* Start a thinking budget question about the last reply, which stays. */
+static void agent_think_ask(void)
+{
+	int cap = agent_think_was;
+	agent_think_more = 0;
+	agent_checkpoint_begin(cap, 3);
+	agent_cp_open = emalloc(strlen(agent_think_tail) + 512);
+	sprintf(agent_cp_open, "Stop working on the current task and answer this "
+		"thinking budget question.\nThe thinking of your last reply was cut "
+		"off at the cap of %d tokens. It ended:\n%s\n"
+		"Answer with one ex tool call:\n"
+		"Nath\n  your next reply needs more thinking; N is its cap in "
+		"tokens, up to %d, e.g. %dath\n"
+		"ath\n  continue as it is",
+		cap, agent_think_tail, agent_think_max,
+		cap && cap * 2 < agent_think_max ? cap * 2 : agent_think_max);
+	agent_log("USER", agent_cp_open);
+	free(agent_think_tail);
+	agent_think_tail = NULL;
 }
 
 /* Detach the exchange that followed the entry list in the last request. */
@@ -1388,8 +1453,17 @@ static void agent_checkpoint_end(void)
 	agent_cp_open = NULL;
 	agent_logbuf = agent_cp_logbuf;
 	agent_checkpointing = agent_cp_done = 0;
-	/* A budget check leaves b-4 as it was; the context and its cached
-	 * prefix stay. Unanswered, it runs again at the next request. */
+	/* A thinking budget question and a budget check leave b-4 as it was;
+	 * the context and its cached prefix stay. */
+	if (kind == 3) {
+		snprintf(note, sizeof(note), agent_think_more ?
+			"[ath thinking cap %d tokens for the next reply]\n" :
+			"[ath thinking cap unchanged]\n", agent_think_cap);
+		if (answered)
+			agent_output(note);
+		return;
+	}
+	/* Unanswered, a budget check runs again at the next request. */
 	if (kind == 2) {
 		if (answered && !agent_cp_asked)
 			agent_acl_mark = agent_tokens();
@@ -2320,12 +2394,23 @@ static int agent_response_error(cJSON *root, char *error, size_t size)
 	return 0;
 }
 
+/* The agent raised the cap: the message that leads its next reply. */
+static void agent_think_lead(void)
+{
+	char msg[80];
+	snprintf(msg, sizeof(msg), "This needs more thinking. Thinking cap %d "
+		"tokens.", agent_think_cap);
+	agent_log("USER", msg);
+	if (!agent_live() || agent_acl_kept())
+		agent_add_user(agent_messages, msg);
+}
+
 static void agent_run_loop(const char *input)
 {
 	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
-	int st, retries = 0, compacted = 0, unpacked = 0;
+	int st, retries = 0, compacted = 0, unpacked = 0, raised = 0, replied = 0;
 	if (agent_packing)
 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
@@ -2511,24 +2596,30 @@ static void agent_run_loop(const char *input)
 			cJSON_GetObjectItem(root, "choices"), 0), "message");
 		calls = cJSON_GetObjectItem(message, "tool_calls");
 		cJSON *content = cJSON_GetObjectItem(message, "content");
+		const char *rkey;
+		char *reasoning = agent_reasoning(message, &rkey);
+		/* ath N,M: a reply whose thinking was cut below the ceiling is
+		 * followed by a thinking budget question, unless it is the reply
+		 * to a raised cap. A raised cap lasts for one reply. */
+		free(agent_think_tail);
+		agent_think_tail = reasoning && !raised && !agent_checkpointing &&
+			!agent_packing && agent_logbuf == 3 && agent_think_cap >= 0 &&
+			agent_think_cap < agent_think_max ?
+			agent_think_cut(reasoning) : NULL;
+		if (!agent_checkpointing && agent_think_max) {
+			agent_think_was = agent_think_cap;
+			agent_think_cap = agent_think_base;
+			raised = 0;
+		}
 		/* Complete pairs before recursive editing or submissions. */
 		cJSON_AddItemToArray(agent_messages,
 			cJSON_Duplicate(message, 1));
 		/* The reply is one TURN entry; its header is written with the
 		 * first part, so an empty reply without calls logs nothing. */
 		agent_turn_close();
-		if (xar) {
-			cJSON *reasoning = cJSON_GetObjectItem(message,
-				"reasoning_content");
-			const char *rkey = "reasoning_content";
-			if (!cJSON_IsString(reasoning) || !*reasoning->valuestring) {
-				reasoning = cJSON_GetObjectItem(message, "reasoning");
-				rkey = "reasoning";
-			}
-			if (cJSON_IsString(reasoning) && *reasoning->valuestring) {
-				agent_rkey = rkey;
-				agent_turn_part(0, reasoning->valuestring);
-			}
+		if (xar && reasoning) {
+			agent_rkey = rkey;
+			agent_turn_part(0, reasoning);
 		}
 		if (cJSON_IsString(content) && *content->valuestring)
 			agent_turn_part(1, content->valuestring);
@@ -2697,21 +2788,34 @@ static void agent_run_loop(const char *input)
 				continue;
 			}
 		}
+		/* ath N,M: the cut reply stays as it ran; the agent is asked
+		 * whether its next one needs a higher cap. */
+		if (agent_think_tail && !agent_checkpointing) {
+			replied = has_calls;
+			agent_think_ask();
+			continue;
+		}
 		/* A budget check gets two more requests to answer, then becomes
-		 * a checkpoint. */
-		if (agent_checkpointing == 2 && !agent_cp_done) {
+		 * a checkpoint; a thinking budget question then leaves the cap. */
+		if (agent_checkpointing >= 2 && !agent_cp_done) {
 			if (agent_cp_refused++ < 2) {
 				if (!has_calls) {
-					char msg[] = "Nothing ran; reply with an ex tool call, "
-						"acheck N or acheck.";
+					const char *msg = agent_checkpointing == 2 ?
+						"Nothing ran; reply with an ex tool call, "
+						"acheck N or acheck." :
+						"Nothing ran; reply with an ex tool call, "
+						"Nath, e.g. 8192ath, or ath.";
 					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 					agent_log("USER", msg);
 				}
 				continue;
 			}
-			agent_cp_asked = 1;
-			agent_checkpoint_end();
-			has_calls = 1;
+			if (agent_checkpointing == 2) {
+				agent_cp_asked = 1;
+				agent_checkpoint_end();
+				has_calls = 1;
+			} else
+				agent_cp_done = 1;
 		}
 		/* A reply without commands also ends the checkpoint, once turns
 		 * are rated or after two reminders without new ratings. */
@@ -2730,8 +2834,16 @@ static void agent_run_loop(const char *input)
 		}
 		/* The interrupted request then resumes. */
 		if (agent_checkpointing && (agent_cp_done || !has_calls)) {
+			int think = agent_checkpointing == 3;
 			agent_checkpoint_end();
 			has_calls = 1;
+			/* A raised cap leads the next reply; otherwise the run
+			 * goes on from the cut reply, or ends with it. */
+			if (think && agent_think_more) {
+				raised = 1;
+				agent_think_lead();
+			} else if (think)
+				has_calls = replied;
 		}
 		if (!has_calls)
 			return;
@@ -2744,6 +2856,12 @@ static void agent_run(const char *input)
 {
 	agent_run_loop(input);
 	agent_checkpoint_end();
+	/* A run can end before the reply a raised cap was for; autocompact
+	 * nests a run. */
+	if (agent_think_max && !agent_packing)
+		agent_think_cap = agent_think_base;
+	free(agent_think_tail);
+	agent_think_tail = NULL;
 }
 
 /* Add or remove a skill in b-5; want < 0 toggles. */
@@ -2796,7 +2914,12 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 	ex_print(msg, msg_ft)
-	if (agent_think_cap >= 0)
+	if (agent_think_max)
+		snprintf(msg, sizeof(msg), "thinking   %d token cap, set by the "
+			"agent from %d up to %d, effort %s", agent_think_cap,
+			agent_think_base, agent_think_max,
+			*agent_effort ? agent_effort : "unset");
+	else if (agent_think_cap >= 0)
 		snprintf(msg, sizeof(msg), "thinking   %d token cap, effort %s",
 			agent_think_cap, *agent_effort ? agent_effort : "unset");
 	else
@@ -2917,16 +3040,64 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
+/* The end of a token count at s, read into n; NULL if not a count. */
+static char *agent_count(char *s, int *n)
+{
+	char *e = s;
+	while (uc_isdigit(*e))
+		e++;
+	if (e == s || e - s > 9)
+		return NULL;
+	*n = atoi(s);
+	return e;
+}
+
+/* N,M lets the agent raise the cap up to M for its next reply: as a tool ath
+ * takes only a count, and answers a thinking budget question, where ath
+ * alone leaves the cap. */
 static void *ec_ath(char *loc, char *cmd, char *arg)
 {
-	char *s = loc;
-	while (uc_isdigit(*s))
-		s++;
-	if (*s || s - loc > 9)
-		return "ath range must be a token count";
+	static char msg[64];
+	int cap = -1, max = 0;
+	char *s = loc, *comma = strchr(loc, '\'','\'');
+	if (*s) {
+		s = agent_count(s, &cap);
+		if (s && s == comma)
+			s = agent_count(s + 1, &max);
+		if (!s || *s || (comma && max <= cap))
+			return "ath range must be a token count N, or N,M with M above N";
+	}
+	if (agent_tool) {
+		int ask = agent_checkpointing == 3;
+		if (!agent_think_max)
+			return "ath needs a ceiling set by the user";
+		/* The exchange of a question is discarded unread. */
+		if (ask && !*loc && !*arg) {
+			agent_cp_done = 1;
+			return NULL;
+		}
+		if (cap < 1 || comma || *arg)
+			return ask ? "answer with Nath, e.g. 8192ath, or with ath" :
+				"ath takes its token count as a range, e.g. 8192ath";
+		if (ask && cap <= agent_think_was) {
+			snprintf(msg, sizeof(msg), "the cap was %d tokens; give a "
+				"count above it, or ath", agent_think_was);
+			return msg;
+		}
+		agent_think_cap = MIN(cap, agent_think_max);
+		if (ask) {
+			agent_think_more = agent_cp_done = 1;
+			return NULL;
+		}
+		snprintf(msg, sizeof(msg), "thinking cap %d tokens for the next "
+			"reply", agent_think_cap);
+		ex_print(msg, msg_ft)
+		return NULL;
+	}
 	if (strlen(arg) >= sizeof(agent_effort) || strpbrk(arg, " \t\n"))
 		return "ath argument must be one effort word";
-	agent_think_cap = *loc ? atoi(loc) : -1;
+	agent_think_cap = agent_think_base = cap;
+	agent_think_max = max;
 	strcpy(agent_effort, arg);
 	return NULL;
 }
@@ -3852,7 +4023,8 @@ static double agent_acl_mark;
  * compaction */
 static int agent_acl_budget;
 /* 1: a checkpoint, only trimming the session log until adone;
- * 2: an acl < 0 budget check, only acheck */
+ * 2: an acl < 0 budget check, only acheck;
+ * 3: an ath N,M thinking budget question, only ath */
 static int agent_checkpointing;
 /* First command of the running tool call that aspec deferred */
 static char agent_deferred[32];
@@ -7636,15 +7808,27 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "input is estimated from reported input plus new JSON bytes / 3, or\n" \
                 "all JSON bytes / 3 without a usable count. Includes tool definitions\n" \
                 "and framing; not a tokenizer or a guarantee the request fits.")
-            spec("[count]ath[effort]", "Set the agent thinking cap and effort",
-                "count is a hard cap on thinking tokens, sent as\n" \
-                "reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends\n" \
-                "thinking at once on llama.cpp and means no cap on Strata. effort is\n" \
-                "one word sent verbatim as reasoning_effort, such as none, low,\n" \
-                "medium, high or xhigh. An omitted part is not sent; ath alone sends\n" \
-                "neither. Sent fields replace those of request_extra. ast shows the\n" \
-                "setting.\n\n" \
-                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high")
+            spec("[budget]ath[effort]", "Set the agent thinking cap and effort",
+                "budget is a token count N or N,M. N is a hard cap on thinking\n" \
+                "tokens, sent as reasoning_budget_tokens (llama.cpp\n" \
+                "--reasoning-budget); 0 ends thinking at once on llama.cpp and means\n" \
+                "no cap on Strata. effort is one word sent verbatim as\n" \
+                "reasoning_effort, such as none, low, medium, high or xhigh. An\n" \
+                "omitted part is not sent; ath alone sends neither. Sent fields\n" \
+                "replace those of request_extra. ast shows the setting.\n\n" \
+                "With N,M the agent may raise the cap up to M for one reply. A reply\n" \
+                "whose thinking the server cut at the cap runs as it is; the agent is\n" \
+                "then asked, in an exchange kept in b-3 only, whether its next reply\n" \
+                "needs more thinking. It answers with Nath, a count above the cap, or\n" \
+                "with ath to continue; nothing else runs then. A raised cap is logged\n" \
+                "as a USER entry leading the next reply and lasts for that reply\n" \
+                "only; that reply is not asked about. The server marks cut thinking\n" \
+                "by ending it with think_cut of conf.c. As an agent tool ath takes\n" \
+                "only a count from 1 to M, for its next reply, and needs M set. Pack\n" \
+                "agents are not asked.\n\n" \
+                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
+                "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
+                ":4096,32768ath medium")
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
@@ -7818,6 +8002,8 @@ static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
 static int request_timeout = 500;
 #endif
 
+/* How the server ends thinking it cut at the ath token cap; "" if unmarked */
+static char *think_cut = "I have thought about this long enough; time to give my answer.";
 static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
@@ -9636,6 +9822,14 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 			ret = xaerr;
 			break;
 		}
+		if (agent_tool && agent_checkpointing == 3 &&
+				excmds[idx].ec != ec_ath) {
+			snprintf(xaerr, sizeof(xaerr), "%s command unavailable during the "
+				"thinking budget question; only Nath, e.g. 8192ath, or ath runs",
+				excmds[idx].name);
+			ret = xaerr;
+			break;
+		}
 		if (agent_tool && agent_checkpointing == 1 && excmds[idx].ec != ec_anote &&
 				excmds[idx].ec != ec_arate && excmds[idx].ec != ec_adone &&
 				excmds[idx].ec != ec_acp) {
@@ -9651,10 +9845,11 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 		if (agent_tool && excmds[idx].ec != ec_aretry) {
 			int show = excmds[idx].ec == ec_aout;
 			int top = xexec_dep == agent_tool_dep;
-			/* aout, aget, anote and arate take byte and entry ranges,
-			 * not lines */
+			/* aout, aget, anote, arate and ath take byte and entry
+			 * ranges and a token count, not lines */
 			int lines = !show && excmds[idx].ec != ec_anote &&
-				excmds[idx].ec != ec_arate && excmds[idx].ec != ec_aget;
+				excmds[idx].ec != ec_arate && excmds[idx].ec != ec_aget &&
+				excmds[idx].ec != ec_ath;
 			/* Defer only top-level commands: a nested deferral skips one
 			 * iteration of the enclosing command. */
 			int defer = top && xaspec && excmds[idx].ec != ec_exspec &&
@@ -10708,19 +10903,33 @@ static char *exspec_lines[] = {
 	"all JSON bytes / 3 without a usable count. Includes tool definitions",
 	"and framing; not a tokenizer or a guarantee the request fits.",
 	"",
-	"[count]ath[effort]",
+	"[budget]ath[effort]",
 	"Set the agent thinking cap and effort",
 	"",
-	"count is a hard cap on thinking tokens, sent as",
-	"reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends",
-	"thinking at once on llama.cpp and means no cap on Strata. effort is",
-	"one word sent verbatim as reasoning_effort, such as none, low,",
-	"medium, high or xhigh. An omitted part is not sent; ath alone sends",
-	"neither. Sent fields replace those of request_extra. ast shows the",
-	"setting.",
+	"budget is a token count N or N,M. N is a hard cap on thinking",
+	"tokens, sent as reasoning_budget_tokens (llama.cpp",
+	"--reasoning-budget); 0 ends thinking at once on llama.cpp and means",
+	"no cap on Strata. effort is one word sent verbatim as",
+	"reasoning_effort, such as none, low, medium, high or xhigh. An",
+	"omitted part is not sent; ath alone sends neither. Sent fields",
+	"replace those of request_extra. ast shows the setting.",
+	"",
+	"With N,M the agent may raise the cap up to M for one reply. A reply",
+	"whose thinking the server cut at the cap runs as it is; the agent is",
+	"then asked, in an exchange kept in b-3 only, whether its next reply",
+	"needs more thinking. It answers with Nath, a count above the cap, or",
+	"with ath to continue; nothing else runs then. A raised cap is logged",
+	"as a USER entry leading the next reply and lasts for that reply",
+	"only; that reply is not asked about. The server marks cut thinking",
+	"by ending it with think_cut of conf.c. As an agent tool ath takes",
+	"only a count from 1 to M, for its next reply, and needs M set. Pack",
+	"agents are not asked.",
 	"",
 	"Example: cap thinking at 1024 tokens with high effort",
 	"1024ath high",
+	"",
+	"Example: start at 4096 tokens; the agent may raise the cap to 32768",
+	"4096,32768ath medium",
 	"",
 	"ac[regex]",
 	"Set autocomplete filter regex",
@@ -11185,45 +11394,45 @@ static struct {
 	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
 	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
 	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 941, 954, 0, 0},
-	{"ac", "Set autocomplete filter regex", 955, 963, 0, 0},
-	{"sc", "Set ex special characters", 964, 974, 0, 0},
-	{"sc!", "Set ex special characters", 975, 982, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 983, 990, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 991, 994, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 995, 999, 0, 0},
-	{"ph", "Redefine placeholders", 1000, 1016, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1025, 1065, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1066, 1075, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1076, 1083, 1, 0},
-	{"agr", "Control agent output protection", 1084, 1090, 1, 0},
-	{"ato", "Detach long agent shell commands", 1091, 1098, 1, 0},
-	{"ar", "Display returned agent reasoning", 1099, 1104, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1105, 1111, 1, 0},
-	{"ai", "Indent new lines", 1112, 1115, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1116, 1117, 1, 0},
-	{"ish", "Interactive shell", 1118, 1133, 1, 0},
-	{"grp", "Regex search group", 1134, 1142, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1143, 1146, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1147, 1148, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1148, 1149, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1149, 1150, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1150, 1151, 1, 0},
-	{"led", "Enable all terminal output", 1151, 1152, 1, 0},
-	{"vis", "Control startup flags", 1153, 1164, 1, 0},
-	{"mpt", "Control vi prompts", 1165, 1175, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1176, 1178, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1178, 1180, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1180, 1181, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1181, 1182, 1, 0},
-	{"td", "Current text direction context", 1182, 1188, 1, 0},
-	{"pr", "Print register", 1189, 1205, 1, 0},
-	{"fr", "Find register", 1206, 1218, 1, 0},
-	{"rr", "Record register", 1219, 1232, 1, 0},
-	{"lim", "Line length render limit", 1233, 1248, 1, 0},
-	{"seq", "Control Undo/Redo", 1249, 1261, 1, 0},
-	{"left", "Control horizontal scroll", 1262, 1267, 1, 0},
-	{"err", "Control ex errors", 1268, 1280, 1, 0},
+	{"ath", "Set the agent thinking cap and effort", 941, 968, 0, 0},
+	{"ac", "Set autocomplete filter regex", 969, 977, 0, 0},
+	{"sc", "Set ex special characters", 978, 988, 0, 0},
+	{"sc!", "Set ex special characters", 989, 996, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 997, 1004, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1005, 1008, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1009, 1013, 0, 0},
+	{"ph", "Redefine placeholders", 1014, 1030, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1039, 1079, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1080, 1089, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1090, 1097, 1, 0},
+	{"agr", "Control agent output protection", 1098, 1104, 1, 0},
+	{"ato", "Detach long agent shell commands", 1105, 1112, 1, 0},
+	{"ar", "Display returned agent reasoning", 1113, 1118, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1119, 1125, 1, 0},
+	{"ai", "Indent new lines", 1126, 1129, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1130, 1131, 1, 0},
+	{"ish", "Interactive shell", 1132, 1147, 1, 0},
+	{"grp", "Regex search group", 1148, 1156, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1157, 1160, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1161, 1162, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1162, 1163, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1163, 1164, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1164, 1165, 1, 0},
+	{"led", "Enable all terminal output", 1165, 1166, 1, 0},
+	{"vis", "Control startup flags", 1167, 1178, 1, 0},
+	{"mpt", "Control vi prompts", 1179, 1189, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1190, 1192, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1192, 1194, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1194, 1195, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1195, 1196, 1, 0},
+	{"td", "Current text direction context", 1196, 1202, 1, 0},
+	{"pr", "Print register", 1203, 1219, 1, 0},
+	{"fr", "Find register", 1220, 1232, 1, 0},
+	{"rr", "Record register", 1233, 1246, 1, 0},
+	{"lim", "Line length render limit", 1247, 1262, 1, 0},
+	{"seq", "Control Undo/Redo", 1263, 1275, 1, 0},
+	{"left", "Control horizontal scroll", 1276, 1281, 1, 0},
+	{"err", "Control ex errors", 1282, 1294, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -11848,10 +12057,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..2cdc93716
+index 000000000..1f5e059ad
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3800 @@
+@@ -0,0 +1,3971 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -11929,6 +12138,14 @@ index 000000000..2cdc93716
 + * empty unset. Set fields replace those of request_extra. */
 +static int agent_think_cap = -1;
 +static char agent_effort[32];
++/* ath N,M: the cap ath set and the ceiling the agent may raise it to for
++ * one reply; 0 off */
++static int agent_think_base, agent_think_max;
++/* The end of the last reply's thinking if the server cut it at the cap
++ * agent_think_was; the agent is then asked whether to raise the cap, and
++ * agent_think_more is its answer. */
++static char *agent_think_tail;
++static int agent_think_was, agent_think_more;
 +static void agent_run(const char *input);
 +static int agent_autocompact(const char *input);
 +static void agent_reparse(void);
@@ -13133,7 +13350,8 @@ index 000000000..2cdc93716
 +	return s;
 +}
 +
-+/* kind 1 starts a checkpoint, 2 a budget check. */
++/* kind 1 starts a checkpoint, 2 a budget check, 3 a thinking budget
++ * question. */
 +static void agent_checkpoint_begin(double tokens, int kind)
 +{
 +	char note[64];
@@ -13154,9 +13372,65 @@ index 000000000..2cdc93716
 +	exspec_mark("ali");
 +	exspec_mark("auli");
 +	exspec_mark("acheck");
-+	snprintf(note, sizeof(note), "[acl %s ~%.0f tokens]\n",
-+		kind == 1 ? "checkpoint" : "budget check", tokens);
++	exspec_mark("ath");
++	if (kind == 3)
++		snprintf(note, sizeof(note), "[ath thinking cut at %.0f tokens]\n",
++			tokens);
++	else
++		snprintf(note, sizeof(note), "[acl %s ~%.0f tokens]\n",
++			kind == 1 ? "checkpoint" : "budget check", tokens);
 +	agent_output(note);
++}
++
++/* The reply's reasoning text, NULL if none; key gets its field name. */
++static char *agent_reasoning(cJSON *message, const char **key)
++{
++	cJSON *r = cJSON_GetObjectItem(message, "reasoning_content");
++	*key = "reasoning_content";
++	if (!cJSON_IsString(r) || !*r->valuestring) {
++		r = cJSON_GetObjectItem(message, "reasoning");
++		*key = "reasoning";
++	}
++	return cJSON_IsString(r) && *r->valuestring ? r->valuestring : NULL;
++}
++
++/* The last text of reasoning the server cut at the cap; NULL if not cut. */
++static char *agent_think_cut(const char *s)
++{
++	int n = strlen(s), k = strlen(think_cut), from;
++	char *tail;
++	while (n && isspace((unsigned char)s[n - 1]))
++		n--;
++	if (!k || n < k || memcmp(s + n - k, think_cut, k))
++		return NULL;
++	for (n -= k; n && isspace((unsigned char)s[n - 1]); n--);
++	from = n > 600 ? n - 600 : 0;
++	while (from < n && ((unsigned char)s[from] & 0xc0) == 0x80)
++		from++;
++	tail = emalloc(n - from + 4);
++	sprintf(tail, "%s%.*s", from ? "..." : "", n - from, s + from);
++	return tail;
++}
++
++/* Start a thinking budget question about the last reply, which stays. */
++static void agent_think_ask(void)
++{
++	int cap = agent_think_was;
++	agent_think_more = 0;
++	agent_checkpoint_begin(cap, 3);
++	agent_cp_open = emalloc(strlen(agent_think_tail) + 512);
++	sprintf(agent_cp_open, "Stop working on the current task and answer this "
++		"thinking budget question.\nThe thinking of your last reply was cut "
++		"off at the cap of %d tokens. It ended:\n%s\n"
++		"Answer with one ex tool call:\n"
++		"Nath\n  your next reply needs more thinking; N is its cap in "
++		"tokens, up to %d, e.g. %dath\n"
++		"ath\n  continue as it is",
++		cap, agent_think_tail, agent_think_max,
++		cap && cap * 2 < agent_think_max ? cap * 2 : agent_think_max);
++	agent_log("USER", agent_cp_open);
++	free(agent_think_tail);
++	agent_think_tail = NULL;
 +}
 +
 +/* Detach the exchange that followed the entry list in the last request. */
@@ -13210,8 +13484,17 @@ index 000000000..2cdc93716
 +	agent_cp_open = NULL;
 +	agent_logbuf = agent_cp_logbuf;
 +	agent_checkpointing = agent_cp_done = 0;
-+	/* A budget check leaves b-4 as it was; the context and its cached
-+	 * prefix stay. Unanswered, it runs again at the next request. */
++	/* A thinking budget question and a budget check leave b-4 as it was;
++	 * the context and its cached prefix stay. */
++	if (kind == 3) {
++		snprintf(note, sizeof(note), agent_think_more ?
++			"[ath thinking cap %d tokens for the next reply]\n" :
++			"[ath thinking cap unchanged]\n", agent_think_cap);
++		if (answered)
++			agent_output(note);
++		return;
++	}
++	/* Unanswered, a budget check runs again at the next request. */
 +	if (kind == 2) {
 +		if (answered && !agent_cp_asked)
 +			agent_acl_mark = agent_tokens();
@@ -14142,12 +14425,23 @@ index 000000000..2cdc93716
 +	return 0;
 +}
 +
++/* The agent raised the cap: the message that leads its next reply. */
++static void agent_think_lead(void)
++{
++	char msg[80];
++	snprintf(msg, sizeof(msg), "This needs more thinking. Thinking cap %d "
++		"tokens.", agent_think_cap);
++	agent_log("USER", msg);
++	if (!agent_live() || agent_acl_kept())
++		agent_add_user(agent_messages, msg);
++}
++
 +static void agent_run_loop(const char *input)
 +{
 +	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 +	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
-+	int st, retries = 0, compacted = 0, unpacked = 0;
++	int st, retries = 0, compacted = 0, unpacked = 0, raised = 0, replied = 0;
 +	if (agent_packing)
 +		agent_pack_done = 0;
 +	agent_cancel = agent_pause = 0;
@@ -14333,24 +14627,30 @@ index 000000000..2cdc93716
 +			cJSON_GetObjectItem(root, "choices"), 0), "message");
 +		calls = cJSON_GetObjectItem(message, "tool_calls");
 +		cJSON *content = cJSON_GetObjectItem(message, "content");
++		const char *rkey;
++		char *reasoning = agent_reasoning(message, &rkey);
++		/* ath N,M: a reply whose thinking was cut below the ceiling is
++		 * followed by a thinking budget question, unless it is the reply
++		 * to a raised cap. A raised cap lasts for one reply. */
++		free(agent_think_tail);
++		agent_think_tail = reasoning && !raised && !agent_checkpointing &&
++			!agent_packing && agent_logbuf == 3 && agent_think_cap >= 0 &&
++			agent_think_cap < agent_think_max ?
++			agent_think_cut(reasoning) : NULL;
++		if (!agent_checkpointing && agent_think_max) {
++			agent_think_was = agent_think_cap;
++			agent_think_cap = agent_think_base;
++			raised = 0;
++		}
 +		/* Complete pairs before recursive editing or submissions. */
 +		cJSON_AddItemToArray(agent_messages,
 +			cJSON_Duplicate(message, 1));
 +		/* The reply is one TURN entry; its header is written with the
 +		 * first part, so an empty reply without calls logs nothing. */
 +		agent_turn_close();
-+		if (xar) {
-+			cJSON *reasoning = cJSON_GetObjectItem(message,
-+				"reasoning_content");
-+			const char *rkey = "reasoning_content";
-+			if (!cJSON_IsString(reasoning) || !*reasoning->valuestring) {
-+				reasoning = cJSON_GetObjectItem(message, "reasoning");
-+				rkey = "reasoning";
-+			}
-+			if (cJSON_IsString(reasoning) && *reasoning->valuestring) {
-+				agent_rkey = rkey;
-+				agent_turn_part(0, reasoning->valuestring);
-+			}
++		if (xar && reasoning) {
++			agent_rkey = rkey;
++			agent_turn_part(0, reasoning);
 +		}
 +		if (cJSON_IsString(content) && *content->valuestring)
 +			agent_turn_part(1, content->valuestring);
@@ -14519,21 +14819,34 @@ index 000000000..2cdc93716
 +				continue;
 +			}
 +		}
++		/* ath N,M: the cut reply stays as it ran; the agent is asked
++		 * whether its next one needs a higher cap. */
++		if (agent_think_tail && !agent_checkpointing) {
++			replied = has_calls;
++			agent_think_ask();
++			continue;
++		}
 +		/* A budget check gets two more requests to answer, then becomes
-+		 * a checkpoint. */
-+		if (agent_checkpointing == 2 && !agent_cp_done) {
++		 * a checkpoint; a thinking budget question then leaves the cap. */
++		if (agent_checkpointing >= 2 && !agent_cp_done) {
 +			if (agent_cp_refused++ < 2) {
 +				if (!has_calls) {
-+					char msg[] = "Nothing ran; reply with an ex tool call, "
-+						"acheck N or acheck.";
++					const char *msg = agent_checkpointing == 2 ?
++						"Nothing ran; reply with an ex tool call, "
++						"acheck N or acheck." :
++						"Nothing ran; reply with an ex tool call, "
++						"Nath, e.g. 8192ath, or ath.";
 +					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 +					agent_log("USER", msg);
 +				}
 +				continue;
 +			}
-+			agent_cp_asked = 1;
-+			agent_checkpoint_end();
-+			has_calls = 1;
++			if (agent_checkpointing == 2) {
++				agent_cp_asked = 1;
++				agent_checkpoint_end();
++				has_calls = 1;
++			} else
++				agent_cp_done = 1;
 +		}
 +		/* A reply without commands also ends the checkpoint, once turns
 +		 * are rated or after two reminders without new ratings. */
@@ -14552,8 +14865,16 @@ index 000000000..2cdc93716
 +		}
 +		/* The interrupted request then resumes. */
 +		if (agent_checkpointing && (agent_cp_done || !has_calls)) {
++			int think = agent_checkpointing == 3;
 +			agent_checkpoint_end();
 +			has_calls = 1;
++			/* A raised cap leads the next reply; otherwise the run
++			 * goes on from the cut reply, or ends with it. */
++			if (think && agent_think_more) {
++				raised = 1;
++				agent_think_lead();
++			} else if (think)
++				has_calls = replied;
 +		}
 +		if (!has_calls)
 +			return;
@@ -14566,6 +14887,12 @@ index 000000000..2cdc93716
 +{
 +	agent_run_loop(input);
 +	agent_checkpoint_end();
++	/* A run can end before the reply a raised cap was for; autocompact
++	 * nests a run. */
++	if (agent_think_max && !agent_packing)
++		agent_think_cap = agent_think_base;
++	free(agent_think_tail);
++	agent_think_tail = NULL;
 +}
 +
 +/* Add or remove a skill in b-5; want < 0 toggles. */
@@ -14618,7 +14945,12 @@ index 000000000..2cdc93716
 +	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 +		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 +	ex_print(msg, msg_ft)
-+	if (agent_think_cap >= 0)
++	if (agent_think_max)
++		snprintf(msg, sizeof(msg), "thinking   %d token cap, set by the "
++			"agent from %d up to %d, effort %s", agent_think_cap,
++			agent_think_base, agent_think_max,
++			*agent_effort ? agent_effort : "unset");
++	else if (agent_think_cap >= 0)
 +		snprintf(msg, sizeof(msg), "thinking   %d token cap, effort %s",
 +			agent_think_cap, *agent_effort ? agent_effort : "unset");
 +	else
@@ -14739,16 +15071,64 @@ index 000000000..2cdc93716
 +	return NULL;
 +}
 +
++/* The end of a token count at s, read into n; NULL if not a count. */
++static char *agent_count(char *s, int *n)
++{
++	char *e = s;
++	while (uc_isdigit(*e))
++		e++;
++	if (e == s || e - s > 9)
++		return NULL;
++	*n = atoi(s);
++	return e;
++}
++
++/* N,M lets the agent raise the cap up to M for its next reply: as a tool ath
++ * takes only a count, and answers a thinking budget question, where ath
++ * alone leaves the cap. */
 +static void *ec_ath(char *loc, char *cmd, char *arg)
 +{
-+	char *s = loc;
-+	while (uc_isdigit(*s))
-+		s++;
-+	if (*s || s - loc > 9)
-+		return "ath range must be a token count";
++	static char msg[64];
++	int cap = -1, max = 0;
++	char *s = loc, *comma = strchr(loc, ',');
++	if (*s) {
++		s = agent_count(s, &cap);
++		if (s && s == comma)
++			s = agent_count(s + 1, &max);
++		if (!s || *s || (comma && max <= cap))
++			return "ath range must be a token count N, or N,M with M above N";
++	}
++	if (agent_tool) {
++		int ask = agent_checkpointing == 3;
++		if (!agent_think_max)
++			return "ath needs a ceiling set by the user";
++		/* The exchange of a question is discarded unread. */
++		if (ask && !*loc && !*arg) {
++			agent_cp_done = 1;
++			return NULL;
++		}
++		if (cap < 1 || comma || *arg)
++			return ask ? "answer with Nath, e.g. 8192ath, or with ath" :
++				"ath takes its token count as a range, e.g. 8192ath";
++		if (ask && cap <= agent_think_was) {
++			snprintf(msg, sizeof(msg), "the cap was %d tokens; give a "
++				"count above it, or ath", agent_think_was);
++			return msg;
++		}
++		agent_think_cap = MIN(cap, agent_think_max);
++		if (ask) {
++			agent_think_more = agent_cp_done = 1;
++			return NULL;
++		}
++		snprintf(msg, sizeof(msg), "thinking cap %d tokens for the next "
++			"reply", agent_think_cap);
++		ex_print(msg, msg_ft)
++		return NULL;
++	}
 +	if (strlen(arg) >= sizeof(agent_effort) || strpbrk(arg, " \t\n"))
 +		return "ath argument must be one effort word";
-+	agent_think_cap = *loc ? atoi(loc) : -1;
++	agent_think_cap = agent_think_base = cap;
++	agent_think_max = max;
 +	strcpy(agent_effort, arg);
 +	return NULL;
 +}
@@ -15654,10 +16034,10 @@ index 000000000..2cdc93716
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 000000000..b93cd6dbe
+index 000000000..1cb044805
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,48 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -15679,7 +16059,8 @@ index 000000000..b93cd6dbe
 + * compaction */
 +static int agent_acl_budget;
 +/* 1: a checkpoint, only trimming the session log until adone;
-+ * 2: an acl < 0 budget check, only acheck */
++ * 2: an acl < 0 budget check, only acheck;
++ * 3: an ath N,M thinking budget question, only ath */
 +static int agent_checkpointing;
 +/* First command of the running tool call that aspec deferred */
 +static char agent_deferred[32];
@@ -19215,10 +19596,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..78a9287d1 100755
+index c836c94c7..651d0f35a 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,254 @@ build() {
+@@ -65,6 +65,266 @@ build() {
      }
  }
  
@@ -19376,15 +19757,27 @@ index c836c94c7..78a9287d1 100755
 +                "input is estimated from reported input plus new JSON bytes / 3, or\n" \
 +                "all JSON bytes / 3 without a usable count. Includes tool definitions\n" \
 +                "and framing; not a tokenizer or a guarantee the request fits.")
-+            spec("[count]ath[effort]", "Set the agent thinking cap and effort",
-+                "count is a hard cap on thinking tokens, sent as\n" \
-+                "reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends\n" \
-+                "thinking at once on llama.cpp and means no cap on Strata. effort is\n" \
-+                "one word sent verbatim as reasoning_effort, such as none, low,\n" \
-+                "medium, high or xhigh. An omitted part is not sent; ath alone sends\n" \
-+                "neither. Sent fields replace those of request_extra. ast shows the\n" \
-+                "setting.\n\n" \
-+                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high")
++            spec("[budget]ath[effort]", "Set the agent thinking cap and effort",
++                "budget is a token count N or N,M. N is a hard cap on thinking\n" \
++                "tokens, sent as reasoning_budget_tokens (llama.cpp\n" \
++                "--reasoning-budget); 0 ends thinking at once on llama.cpp and means\n" \
++                "no cap on Strata. effort is one word sent verbatim as\n" \
++                "reasoning_effort, such as none, low, medium, high or xhigh. An\n" \
++                "omitted part is not sent; ath alone sends neither. Sent fields\n" \
++                "replace those of request_extra. ast shows the setting.\n\n" \
++                "With N,M the agent may raise the cap up to M for one reply. A reply\n" \
++                "whose thinking the server cut at the cap runs as it is; the agent is\n" \
++                "then asked, in an exchange kept in b-3 only, whether its next reply\n" \
++                "needs more thinking. It answers with Nath, a count above the cap, or\n" \
++                "with ath to continue; nothing else runs then. A raised cap is logged\n" \
++                "as a USER entry leading the next reply and lasts for that reply\n" \
++                "only; that reply is not asked about. The server marks cut thinking\n" \
++                "by ending it with think_cut of conf.c. As an agent tool ath takes\n" \
++                "only a count from 1 to M, for its next reply, and needs M set. Pack\n" \
++                "agents are not asked.\n\n" \
++                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
++                "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
++                ":4096,32768ath medium")
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
@@ -19473,7 +19866,7 @@ index c836c94c7..78a9287d1 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +322,7 @@ install() {
+@@ -74,7 +334,7 @@ install() {
  }
  
  print_usage() {
@@ -19482,7 +19875,7 @@ index c836c94c7..78a9287d1 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +330,9 @@ print_usage() {
+@@ -82,6 +342,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -19493,10 +19886,10 @@ index c836c94c7..78a9287d1 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..7c907fa0d 100644
+index 2888d7c60..fc065337a 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,348 @@
+@@ -1,5 +1,350 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -19516,6 +19909,8 @@ index 2888d7c60..7c907fa0d 100644
 +static int request_timeout = 500;
 +#endif
 +
++/* How the server ends thinking it cut at the ath token cap; "" if unmarked */
++static char *think_cut = "I have thought about this long enough; time to give my answer.";
 +static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 +int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 +int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
@@ -19845,7 +20240,7 @@ index 2888d7c60..7c907fa0d 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +640,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +642,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
@@ -19857,7 +20252,7 @@ index 2888d7c60..7c907fa0d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..c251027c3 100644
+index 8a1339874..26c9b5e6c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -20358,7 +20753,7 @@ index 8a1339874..c251027c3 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2232,66 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2232,75 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -20387,6 +20782,14 @@ index 8a1339874..c251027c3 100644
 +			ret = xaerr;
 +			break;
 +		}
++		if (agent_tool && agent_checkpointing == 3 &&
++				excmds[idx].ec != ec_ath) {
++			snprintf(xaerr, sizeof(xaerr), "%s command unavailable during the "
++				"thinking budget question; only Nath, e.g. 8192ath, or ath runs",
++				excmds[idx].name);
++			ret = xaerr;
++			break;
++		}
 +		if (agent_tool && agent_checkpointing == 1 && excmds[idx].ec != ec_anote &&
 +				excmds[idx].ec != ec_arate && excmds[idx].ec != ec_adone &&
 +				excmds[idx].ec != ec_acp) {
@@ -20402,10 +20805,11 @@ index 8a1339874..c251027c3 100644
 +		if (agent_tool && excmds[idx].ec != ec_aretry) {
 +			int show = excmds[idx].ec == ec_aout;
 +			int top = xexec_dep == agent_tool_dep;
-+			/* aout, aget, anote and arate take byte and entry ranges,
-+			 * not lines */
++			/* aout, aget, anote, arate and ath take byte and entry
++			 * ranges and a token count, not lines */
 +			int lines = !show && excmds[idx].ec != ec_anote &&
-+				excmds[idx].ec != ec_arate && excmds[idx].ec != ec_aget;
++				excmds[idx].ec != ec_arate && excmds[idx].ec != ec_aget &&
++				excmds[idx].ec != ec_ath;
 +			/* Defer only top-level commands: a nested deferral skips one
 +			 * iteration of the enclosing command. */
 +			int defer = top && xaspec && excmds[idx].ec != ec_exspec &&
@@ -20426,7 +20830,7 @@ index 8a1339874..c251027c3 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2310,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2319,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -20532,10 +20936,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..1bee8c34c
+index 000000000..b68a3123b
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1460 @@
+@@ -0,0 +1,1474 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -21479,19 +21883,33 @@ index 000000000..1bee8c34c
 +	"all JSON bytes / 3 without a usable count. Includes tool definitions",
 +	"and framing; not a tokenizer or a guarantee the request fits.",
 +	"",
-+	"[count]ath[effort]",
++	"[budget]ath[effort]",
 +	"Set the agent thinking cap and effort",
 +	"",
-+	"count is a hard cap on thinking tokens, sent as",
-+	"reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends",
-+	"thinking at once on llama.cpp and means no cap on Strata. effort is",
-+	"one word sent verbatim as reasoning_effort, such as none, low,",
-+	"medium, high or xhigh. An omitted part is not sent; ath alone sends",
-+	"neither. Sent fields replace those of request_extra. ast shows the",
-+	"setting.",
++	"budget is a token count N or N,M. N is a hard cap on thinking",
++	"tokens, sent as reasoning_budget_tokens (llama.cpp",
++	"--reasoning-budget); 0 ends thinking at once on llama.cpp and means",
++	"no cap on Strata. effort is one word sent verbatim as",
++	"reasoning_effort, such as none, low, medium, high or xhigh. An",
++	"omitted part is not sent; ath alone sends neither. Sent fields",
++	"replace those of request_extra. ast shows the setting.",
++	"",
++	"With N,M the agent may raise the cap up to M for one reply. A reply",
++	"whose thinking the server cut at the cap runs as it is; the agent is",
++	"then asked, in an exchange kept in b-3 only, whether its next reply",
++	"needs more thinking. It answers with Nath, a count above the cap, or",
++	"with ath to continue; nothing else runs then. A raised cap is logged",
++	"as a USER entry leading the next reply and lasts for that reply",
++	"only; that reply is not asked about. The server marks cut thinking",
++	"by ending it with think_cut of conf.c. As an agent tool ath takes",
++	"only a count from 1 to M, for its next reply, and needs M set. Pack",
++	"agents are not asked.",
 +	"",
 +	"Example: cap thinking at 1024 tokens with high effort",
 +	"1024ath high",
++	"",
++	"Example: start at 4096 tokens; the agent may raise the cap to 32768",
++	"4096,32768ath medium",
 +	"",
 +	"ac[regex]",
 +	"Set autocomplete filter regex",
@@ -21956,45 +22374,45 @@ index 000000000..1bee8c34c
 +	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
 +	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
 +	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 941, 954, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 955, 963, 0, 0},
-+	{"sc", "Set ex special characters", 964, 974, 0, 0},
-+	{"sc!", "Set ex special characters", 975, 982, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 983, 990, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 991, 994, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 995, 999, 0, 0},
-+	{"ph", "Redefine placeholders", 1000, 1016, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1025, 1065, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1066, 1075, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1076, 1083, 1, 0},
-+	{"agr", "Control agent output protection", 1084, 1090, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1091, 1098, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1099, 1104, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1105, 1111, 1, 0},
-+	{"ai", "Indent new lines", 1112, 1115, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1116, 1117, 1, 0},
-+	{"ish", "Interactive shell", 1118, 1133, 1, 0},
-+	{"grp", "Regex search group", 1134, 1142, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1143, 1146, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1147, 1148, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1148, 1149, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1149, 1150, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1150, 1151, 1, 0},
-+	{"led", "Enable all terminal output", 1151, 1152, 1, 0},
-+	{"vis", "Control startup flags", 1153, 1164, 1, 0},
-+	{"mpt", "Control vi prompts", 1165, 1175, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1176, 1178, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1178, 1180, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1180, 1181, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1181, 1182, 1, 0},
-+	{"td", "Current text direction context", 1182, 1188, 1, 0},
-+	{"pr", "Print register", 1189, 1205, 1, 0},
-+	{"fr", "Find register", 1206, 1218, 1, 0},
-+	{"rr", "Record register", 1219, 1232, 1, 0},
-+	{"lim", "Line length render limit", 1233, 1248, 1, 0},
-+	{"seq", "Control Undo/Redo", 1249, 1261, 1, 0},
-+	{"left", "Control horizontal scroll", 1262, 1267, 1, 0},
-+	{"err", "Control ex errors", 1268, 1280, 1, 0},
++	{"ath", "Set the agent thinking cap and effort", 941, 968, 0, 0},
++	{"ac", "Set autocomplete filter regex", 969, 977, 0, 0},
++	{"sc", "Set ex special characters", 978, 988, 0, 0},
++	{"sc!", "Set ex special characters", 989, 996, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 997, 1004, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1005, 1008, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1009, 1013, 0, 0},
++	{"ph", "Redefine placeholders", 1014, 1030, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1039, 1079, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1080, 1089, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1090, 1097, 1, 0},
++	{"agr", "Control agent output protection", 1098, 1104, 1, 0},
++	{"ato", "Detach long agent shell commands", 1105, 1112, 1, 0},
++	{"ar", "Display returned agent reasoning", 1113, 1118, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1119, 1125, 1, 0},
++	{"ai", "Indent new lines", 1126, 1129, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1130, 1131, 1, 0},
++	{"ish", "Interactive shell", 1132, 1147, 1, 0},
++	{"grp", "Regex search group", 1148, 1156, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1157, 1160, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1161, 1162, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1162, 1163, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1163, 1164, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1164, 1165, 1, 0},
++	{"led", "Enable all terminal output", 1165, 1166, 1, 0},
++	{"vis", "Control startup flags", 1167, 1178, 1, 0},
++	{"mpt", "Control vi prompts", 1179, 1189, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1190, 1192, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1192, 1194, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1194, 1195, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1195, 1196, 1, 0},
++	{"td", "Current text direction context", 1196, 1202, 1, 0},
++	{"pr", "Print register", 1203, 1219, 1, 0},
++	{"fr", "Find register", 1220, 1232, 1, 0},
++	{"rr", "Record register", 1233, 1246, 1, 0},
++	{"lim", "Line length render limit", 1247, 1262, 1, 0},
++	{"seq", "Control Undo/Redo", 1263, 1275, 1, 0},
++	{"left", "Control horizontal scroll", 1276, 1281, 1, 0},
++	{"err", "Control ex errors", 1282, 1294, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..8fde7a8f9 100644
