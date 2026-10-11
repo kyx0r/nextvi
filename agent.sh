@@ -1466,7 +1466,7 @@ static void agent_think_ask(cJSON *root)
 	const char *rkey;
 	char *reasoning = agent_reasoning(message, &rkey);
 	char line[320];
-	int cap = agent_think_was, n = 0, cnt = cJSON_GetArraySize(calls);
+	int cap = agent_think_was, cnt = cJSON_GetArraySize(calls);
 	sbuf_smake(sb, 1024)
 	agent_think_held = root;
 	agent_think_more = 0;
@@ -1496,7 +1496,6 @@ static void agent_think_ask(cJSON *root)
 			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
 		char *cmd = cJSON_GetStringValue(cJSON_GetObjectItem(parsed,
 			"command"));
-		snprintf(line, sizeof(line), "%d: ", ++n);
 		sbuf_str(sb, line)
 		sbuf_str(sb, cmd ? cmd : "invalid tool call")
 		sbuf_chr(sb, '\''\n'\'')
@@ -1508,8 +1507,8 @@ static void agent_think_ask(cJSON *root)
 		"reply again under the same cap" : "keep the reply as it is",
 		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 	sbuf_str(sb, line)
-	sbuf_str(sb, " The new reply sees neither this reply nor its thinking; "
-		"text after N is passed to it as your note.")
+	sbuf_str(sb, "\nThe new reply sees neither of this exchange except the "
+		"text after N. This text can guide or give insight on how to think better.")
 	sbuf_nul(sb)
 	agent_cp_open = sb->s;
 	agent_log("USER", agent_cp_open);
@@ -12236,10 +12235,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..32cbbcaf2
+index 000000000..40d80d58d
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4136 @@
+@@ -0,0 +1,4135 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -13676,7 +13675,7 @@ index 000000000..32cbbcaf2
 +	const char *rkey;
 +	char *reasoning = agent_reasoning(message, &rkey);
 +	char line[320];
-+	int cap = agent_think_was, n = 0, cnt = cJSON_GetArraySize(calls);
++	int cap = agent_think_was, cnt = cJSON_GetArraySize(calls);
 +	sbuf_smake(sb, 1024)
 +	agent_think_held = root;
 +	agent_think_more = 0;
@@ -13706,7 +13705,6 @@ index 000000000..32cbbcaf2
 +			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
 +		char *cmd = cJSON_GetStringValue(cJSON_GetObjectItem(parsed,
 +			"command"));
-+		snprintf(line, sizeof(line), "%d: ", ++n);
 +		sbuf_str(sb, line)
 +		sbuf_str(sb, cmd ? cmd : "invalid tool call")
 +		sbuf_chr(sb, '\n')
@@ -13718,8 +13716,8 @@ index 000000000..32cbbcaf2
 +		"reply again under the same cap" : "keep the reply as it is",
 +		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 +	sbuf_str(sb, line)
-+	sbuf_str(sb, " The new reply sees neither this reply nor its thinking; "
-+		"text after N is passed to it as your note.")
++	sbuf_str(sb, "\nThe new reply sees neither of this exchange except the "
++		"text after N. This text can guide or give insight on how to think better.")
 +	sbuf_nul(sb)
 +	agent_cp_open = sb->s;
 +	agent_log("USER", agent_cp_open);
