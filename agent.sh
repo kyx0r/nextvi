@@ -677,8 +677,10 @@ static void agent_frame(const char *text, char *id, char *end)
 	}
 }
 
-/* Append a header, its body and the line that ends it to the log. */
-static void agent_log_write(const char *head, const char *text, const char *end)
+/* Append a header, its body and the line that ends it to the log; show
+ * prints them too. */
+static void agent_log_write(const char *head, const char *text, const char *end,
+		int show)
 {
 	struct lbuf *lb = tempbufs[agent_logbuf].lb;
 	struct agent_span *spans;
@@ -695,7 +697,8 @@ static void agent_log_write(const char *head, const char *text, const char *end)
 		sbuf_chr(sb, '\''\n'\'')
 	sbuf_str(sb, end)
 	sbuf_nul(sb)
-	agent_output(sb->s);
+	if (show)
+		agent_output(sb->s);
 	lb->useq++;
 	agent_logging = 1;
 	lbuf_edit(lb, sb->s, lbuf_len(lb), lbuf_len(lb), 0, 0);
@@ -723,16 +726,18 @@ static void agent_log(const char *role, const char *text)
 	agent_frame(text, id, end);
 	snprintf(head, sizeof(head), "%s%s %lu%s\n", agent_log_mark(), role,
 		++agent_entries[agent_logbuf == 3], id);
-	agent_log_write(head, text, end);
+	agent_log_write(head, text, end, 1);
 }
 
 /* Log part idx of the open turn, opening one first when none is: 0
  * reasoning, 1 text, then the command and result of call k at 2 + 2k and
- * 3 + 2k. */
+ * 3 + 2k. Reasoning is printed only with ar above 1; the TURN line it
+ * opens always is. */
 static void agent_turn_part(int idx, const char *text)
 {
 	unsigned long *turn = agent_turn + (agent_logbuf == 3);
 	char open[48] = "", head[128], id[AGENT_ID], end[AGENT_END];
+	int show = idx || xar > 1;
 	if (!*turn) {
 		*turn = ++agent_entries[agent_logbuf == 3];
 		snprintf(open, sizeof(open), "%sTURN %lu\n", agent_log_mark(), *turn);
@@ -740,7 +745,35 @@ static void agent_turn_part(int idx, const char *text)
 	agent_frame(text, id, end);
 	snprintf(head, sizeof(head), "%s%s%s %lu.%d%s\n", open, agent_log_mark(),
 		agent_part_roles[idx < 2 ? idx : AP_EX + (idx & 1)], *turn, idx, id);
-	agent_log_write(head, text, end);
+	if (!show)
+		agent_output(open);
+	agent_log_write(head, text, end, show);
+}
+
+/* The log as the terminal shows it: without reasoning unless ar is above 1. */
+static char *agent_shown_text(struct lbuf *lb)
+{
+	struct agent_span *spans = NULL;
+	struct agent_part *parts;
+	int cnt = xar > 1 ? 0 : agent_spans_of(lb, &spans), pcnt, i = 0;
+	sbuf_smake(sb, 256)
+	for (int k = 0; k < cnt; k++) {
+		if (spans[k].role != AE_TURN)
+			continue;
+		pcnt = agent_parts(lb, spans + k, &parts);
+		for (int p = 0; p < pcnt; p++) {
+			if (parts[p].role != AP_REASONING)
+				continue;
+			for (; i < parts[p].beg; i++)
+				sbuf_str(sb, lb->ln[i])
+			i = parts[p].end;
+		}
+		free(parts);
+	}
+	free(spans);
+	for (; i < lbuf_len(lb); i++)
+		sbuf_str(sb, lb->ln[i])
+	sbufn_ret(sb, sb->s)
 }
 
 /* Copy entries first through last of lb, split into spans, into b-7 in
@@ -2326,7 +2359,7 @@ static void agent_resize(void)
 /* Reconstruct only a screenful, never replay the entire log to scrollback. */
 static void agent_redraw(const char *draft)
 {
-	char *log = agent_text(tempbufs[agent_logbuf].lb);
+	char *log = agent_shown_text(tempbufs[agent_logbuf].lb);
 	sbuf_smake(sb, 256)
 	sbuf_str(sb, log);
 	if (draft)
@@ -7926,7 +7959,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "reasoning included, so the server cache continues from them. With\n" \
                 "0, log edits have no effect. NOTICE entries report harness events\n" \
                 "such as HTTP errors and are never sent to the agent. A rebuild\n" \
-                "drops reasoning not in the log (ar off). With aco, a compact\n" \
+                "drops reasoning not in the log (ar 0). With aco, a compact\n" \
                 "(apack) may run before the rebuild.\n\n" \
                 "Values above 1 add checkpoints: once the estimated context grows\n" \
                 "by that many tokens from the last checkpoint, or from its smallest\n" \
@@ -7977,10 +8010,11 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "foreground. After that it keeps running in the background; the\n" \
                 "result has status 124, its process group and a file receiving\n" \
                 "later output. A later result reports the exit status. 0 disables.")
-            spec("ar[0]  Display returned agent reasoning",
+            spec("ar[1]  Log and display returned agent reasoning",
                 "No argument logically inverts the option.",
-                "Nonzero includes returned reasoning in the session log, as part 0\n" \
-                "of a turn.")
+                "0 drops returned reasoning. 1 includes it in the session log, as\n" \
+                "part 0 of a turn, without printing it during the run. 2 logs and\n" \
+                "prints it.")
             print "     aspec[1]  Print ex specifications for agents"
             print ""
             print "             No argument logically inverts the option. 0 disables automatic"
@@ -8092,7 +8126,7 @@ static char *think_cut = "I have thought about this long enough; time to give my
 static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
-int xar;	/* display returned agent reasoning (:ar) */
+int xar = 1;	/* agent reasoning (:ar): 0 dropped, 1 logged, 2 logged and displayed */
 int xaco;	/* autocompact input-token threshold; 0 disables */
 int xacl;	/* rebuild agent context from the session log (:acl) */
 static int xaco_browse;	/* last selected mode: aco! rather than aco */
@@ -11100,7 +11134,7 @@ static char *exspec_lines[] = {
 	"reasoning included, so the server cache continues from them. With",
 	"0, log edits have no effect. NOTICE entries report harness events",
 	"such as HTTP errors and are never sent to the agent. A rebuild",
-	"drops reasoning not in the log (ar off). With aco, a compact",
+	"drops reasoning not in the log (ar 0). With aco, a compact",
 	"(apack) may run before the rebuild.",
 	"",
 	"Values above 1 add checkpoints: once the estimated context grows",
@@ -11164,11 +11198,12 @@ static char *exspec_lines[] = {
 	"result has status 124, its process group and a file receiving",
 	"later output. A later result reports the exit status. 0 disables.",
 	"",
-	"ar[0]  Display returned agent reasoning",
+	"ar[1]  Log and display returned agent reasoning",
 	"No argument logically inverts the option.",
 	"",
-	"Nonzero includes returned reasoning in the session log, as part 0",
-	"of a turn.",
+	"0 drops returned reasoning. 1 includes it in the session log, as",
+	"part 0 of a turn, without printing it during the run. 2 logs and",
+	"prints it.",
 	"",
 	"aspec[1]  Print ex specifications for agents",
 	"",
@@ -11496,32 +11531,32 @@ static struct {
 	{"aco!", "Automatically compact by browsing the session log", 1093, 1100, 1, 0},
 	{"agr", "Control agent output protection", 1101, 1107, 1, 0},
 	{"ato", "Detach long agent shell commands", 1108, 1115, 1, 0},
-	{"ar", "Display returned agent reasoning", 1116, 1121, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1122, 1128, 1, 0},
-	{"ai", "Indent new lines", 1129, 1132, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1133, 1134, 1, 0},
-	{"ish", "Interactive shell", 1135, 1150, 1, 0},
-	{"grp", "Regex search group", 1151, 1159, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1160, 1163, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1164, 1165, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1165, 1166, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1166, 1167, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1167, 1168, 1, 0},
-	{"led", "Enable all terminal output", 1168, 1169, 1, 0},
-	{"vis", "Control startup flags", 1170, 1181, 1, 0},
-	{"mpt", "Control vi prompts", 1182, 1192, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1193, 1195, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1195, 1197, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1197, 1198, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1198, 1199, 1, 0},
-	{"td", "Current text direction context", 1199, 1205, 1, 0},
-	{"pr", "Print register", 1206, 1222, 1, 0},
-	{"fr", "Find register", 1223, 1235, 1, 0},
-	{"rr", "Record register", 1236, 1249, 1, 0},
-	{"lim", "Line length render limit", 1250, 1265, 1, 0},
-	{"seq", "Control Undo/Redo", 1266, 1278, 1, 0},
-	{"left", "Control horizontal scroll", 1279, 1284, 1, 0},
-	{"err", "Control ex errors", 1285, 1297, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1116, 1122, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1123, 1129, 1, 0},
+	{"ai", "Indent new lines", 1130, 1133, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1134, 1135, 1, 0},
+	{"ish", "Interactive shell", 1136, 1151, 1, 0},
+	{"grp", "Regex search group", 1152, 1160, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1161, 1164, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1165, 1166, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1166, 1167, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1167, 1168, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1168, 1169, 1, 0},
+	{"led", "Enable all terminal output", 1169, 1170, 1, 0},
+	{"vis", "Control startup flags", 1171, 1182, 1, 0},
+	{"mpt", "Control vi prompts", 1183, 1193, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1194, 1196, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1196, 1198, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1198, 1199, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1199, 1200, 1, 0},
+	{"td", "Current text direction context", 1200, 1206, 1, 0},
+	{"pr", "Print register", 1207, 1223, 1, 0},
+	{"fr", "Find register", 1224, 1236, 1, 0},
+	{"rr", "Record register", 1237, 1250, 1, 0},
+	{"lim", "Line length render limit", 1251, 1266, 1, 0},
+	{"seq", "Control Undo/Redo", 1267, 1279, 1, 0},
+	{"left", "Control horizontal scroll", 1280, 1285, 1, 0},
+	{"err", "Control ex errors", 1286, 1298, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -12146,10 +12181,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..755ce24eb
+index 000000000..3c218a1e2
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4052 @@
+@@ -0,0 +1,4085 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12797,8 +12832,10 @@ index 000000000..755ce24eb
 +	}
 +}
 +
-+/* Append a header, its body and the line that ends it to the log. */
-+static void agent_log_write(const char *head, const char *text, const char *end)
++/* Append a header, its body and the line that ends it to the log; show
++ * prints them too. */
++static void agent_log_write(const char *head, const char *text, const char *end,
++		int show)
 +{
 +	struct lbuf *lb = tempbufs[agent_logbuf].lb;
 +	struct agent_span *spans;
@@ -12815,7 +12852,8 @@ index 000000000..755ce24eb
 +		sbuf_chr(sb, '\n')
 +	sbuf_str(sb, end)
 +	sbuf_nul(sb)
-+	agent_output(sb->s);
++	if (show)
++		agent_output(sb->s);
 +	lb->useq++;
 +	agent_logging = 1;
 +	lbuf_edit(lb, sb->s, lbuf_len(lb), lbuf_len(lb), 0, 0);
@@ -12843,16 +12881,18 @@ index 000000000..755ce24eb
 +	agent_frame(text, id, end);
 +	snprintf(head, sizeof(head), "%s%s %lu%s\n", agent_log_mark(), role,
 +		++agent_entries[agent_logbuf == 3], id);
-+	agent_log_write(head, text, end);
++	agent_log_write(head, text, end, 1);
 +}
 +
 +/* Log part idx of the open turn, opening one first when none is: 0
 + * reasoning, 1 text, then the command and result of call k at 2 + 2k and
-+ * 3 + 2k. */
++ * 3 + 2k. Reasoning is printed only with ar above 1; the TURN line it
++ * opens always is. */
 +static void agent_turn_part(int idx, const char *text)
 +{
 +	unsigned long *turn = agent_turn + (agent_logbuf == 3);
 +	char open[48] = "", head[128], id[AGENT_ID], end[AGENT_END];
++	int show = idx || xar > 1;
 +	if (!*turn) {
 +		*turn = ++agent_entries[agent_logbuf == 3];
 +		snprintf(open, sizeof(open), "%sTURN %lu\n", agent_log_mark(), *turn);
@@ -12860,7 +12900,35 @@ index 000000000..755ce24eb
 +	agent_frame(text, id, end);
 +	snprintf(head, sizeof(head), "%s%s%s %lu.%d%s\n", open, agent_log_mark(),
 +		agent_part_roles[idx < 2 ? idx : AP_EX + (idx & 1)], *turn, idx, id);
-+	agent_log_write(head, text, end);
++	if (!show)
++		agent_output(open);
++	agent_log_write(head, text, end, show);
++}
++
++/* The log as the terminal shows it: without reasoning unless ar is above 1. */
++static char *agent_shown_text(struct lbuf *lb)
++{
++	struct agent_span *spans = NULL;
++	struct agent_part *parts;
++	int cnt = xar > 1 ? 0 : agent_spans_of(lb, &spans), pcnt, i = 0;
++	sbuf_smake(sb, 256)
++	for (int k = 0; k < cnt; k++) {
++		if (spans[k].role != AE_TURN)
++			continue;
++		pcnt = agent_parts(lb, spans + k, &parts);
++		for (int p = 0; p < pcnt; p++) {
++			if (parts[p].role != AP_REASONING)
++				continue;
++			for (; i < parts[p].beg; i++)
++				sbuf_str(sb, lb->ln[i])
++			i = parts[p].end;
++		}
++		free(parts);
++	}
++	free(spans);
++	for (; i < lbuf_len(lb); i++)
++		sbuf_str(sb, lb->ln[i])
++	sbufn_ret(sb, sb->s)
 +}
 +
 +/* Copy entries first through last of lb, split into spans, into b-7 in
@@ -14446,7 +14514,7 @@ index 000000000..755ce24eb
 +/* Reconstruct only a screenful, never replay the entire log to scrollback. */
 +static void agent_redraw(const char *draft)
 +{
-+	char *log = agent_text(tempbufs[agent_logbuf].lb);
++	char *log = agent_shown_text(tempbufs[agent_logbuf].lb);
 +	sbuf_smake(sb, 256)
 +	sbuf_str(sb, log);
 +	if (draft)
@@ -19767,10 +19835,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..a64b60f5f 100755
+index c836c94c7..015835389 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,269 @@ build() {
+@@ -65,6 +65,270 @@ build() {
      }
  }
  
@@ -19964,7 +20032,7 @@ index c836c94c7..a64b60f5f 100755
 +                "reasoning included, so the server cache continues from them. With\n" \
 +                "0, log edits have no effect. NOTICE entries report harness events\n" \
 +                "such as HTTP errors and are never sent to the agent. A rebuild\n" \
-+                "drops reasoning not in the log (ar off). With aco, a compact\n" \
++                "drops reasoning not in the log (ar 0). With aco, a compact\n" \
 +                "(apack) may run before the rebuild.\n\n" \
 +                "Values above 1 add checkpoints: once the estimated context grows\n" \
 +                "by that many tokens from the last checkpoint, or from its smallest\n" \
@@ -20015,10 +20083,11 @@ index c836c94c7..a64b60f5f 100755
 +                "foreground. After that it keeps running in the background; the\n" \
 +                "result has status 124, its process group and a file receiving\n" \
 +                "later output. A later result reports the exit status. 0 disables.")
-+            spec("ar[0]  Display returned agent reasoning",
++            spec("ar[1]  Log and display returned agent reasoning",
 +                "No argument logically inverts the option.",
-+                "Nonzero includes returned reasoning in the session log, as part 0\n" \
-+                "of a turn.")
++                "0 drops returned reasoning. 1 includes it in the session log, as\n" \
++                "part 0 of a turn, without printing it during the run. 2 logs and\n" \
++                "prints it.")
 +            print "     aspec[1]  Print ex specifications for agents"
 +            print ""
 +            print "             No argument logically inverts the option. 0 disables automatic"
@@ -20040,7 +20109,7 @@ index c836c94c7..a64b60f5f 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +337,7 @@ install() {
+@@ -74,7 +338,7 @@ install() {
  }
  
  print_usage() {
@@ -20049,7 +20118,7 @@ index c836c94c7..a64b60f5f 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +345,9 @@ print_usage() {
+@@ -82,6 +346,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -20060,7 +20129,7 @@ index c836c94c7..a64b60f5f 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..fc065337a 100644
+index 2888d7c60..353a5f7cc 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,350 @@
@@ -20088,7 +20157,7 @@ index 2888d7c60..fc065337a 100644
 +static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 +int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 +int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
-+int xar;	/* display returned agent reasoning (:ar) */
++int xar = 1;	/* agent reasoning (:ar): 0 dropped, 1 logged, 2 logged and displayed */
 +int xaco;	/* autocompact input-token threshold; 0 disables */
 +int xacl;	/* rebuild agent context from the session log (:acl) */
 +static int xaco_browse;	/* last selected mode: aco! rather than aco */
@@ -21111,10 +21180,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..527156128
+index 000000000..b3bd03ec0
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1477 @@
+@@ -0,0 +1,1478 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -22169,7 +22238,7 @@ index 000000000..527156128
 +	"reasoning included, so the server cache continues from them. With",
 +	"0, log edits have no effect. NOTICE entries report harness events",
 +	"such as HTTP errors and are never sent to the agent. A rebuild",
-+	"drops reasoning not in the log (ar off). With aco, a compact",
++	"drops reasoning not in the log (ar 0). With aco, a compact",
 +	"(apack) may run before the rebuild.",
 +	"",
 +	"Values above 1 add checkpoints: once the estimated context grows",
@@ -22233,11 +22302,12 @@ index 000000000..527156128
 +	"result has status 124, its process group and a file receiving",
 +	"later output. A later result reports the exit status. 0 disables.",
 +	"",
-+	"ar[0]  Display returned agent reasoning",
++	"ar[1]  Log and display returned agent reasoning",
 +	"No argument logically inverts the option.",
 +	"",
-+	"Nonzero includes returned reasoning in the session log, as part 0",
-+	"of a turn.",
++	"0 drops returned reasoning. 1 includes it in the session log, as",
++	"part 0 of a turn, without printing it during the run. 2 logs and",
++	"prints it.",
 +	"",
 +	"aspec[1]  Print ex specifications for agents",
 +	"",
@@ -22565,32 +22635,32 @@ index 000000000..527156128
 +	{"aco!", "Automatically compact by browsing the session log", 1093, 1100, 1, 0},
 +	{"agr", "Control agent output protection", 1101, 1107, 1, 0},
 +	{"ato", "Detach long agent shell commands", 1108, 1115, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1116, 1121, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1122, 1128, 1, 0},
-+	{"ai", "Indent new lines", 1129, 1132, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1133, 1134, 1, 0},
-+	{"ish", "Interactive shell", 1135, 1150, 1, 0},
-+	{"grp", "Regex search group", 1151, 1159, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1160, 1163, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1164, 1165, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1165, 1166, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1166, 1167, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1167, 1168, 1, 0},
-+	{"led", "Enable all terminal output", 1168, 1169, 1, 0},
-+	{"vis", "Control startup flags", 1170, 1181, 1, 0},
-+	{"mpt", "Control vi prompts", 1182, 1192, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1193, 1195, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1195, 1197, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1197, 1198, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1198, 1199, 1, 0},
-+	{"td", "Current text direction context", 1199, 1205, 1, 0},
-+	{"pr", "Print register", 1206, 1222, 1, 0},
-+	{"fr", "Find register", 1223, 1235, 1, 0},
-+	{"rr", "Record register", 1236, 1249, 1, 0},
-+	{"lim", "Line length render limit", 1250, 1265, 1, 0},
-+	{"seq", "Control Undo/Redo", 1266, 1278, 1, 0},
-+	{"left", "Control horizontal scroll", 1279, 1284, 1, 0},
-+	{"err", "Control ex errors", 1285, 1297, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1116, 1122, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1123, 1129, 1, 0},
++	{"ai", "Indent new lines", 1130, 1133, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1134, 1135, 1, 0},
++	{"ish", "Interactive shell", 1136, 1151, 1, 0},
++	{"grp", "Regex search group", 1152, 1160, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1161, 1164, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1165, 1166, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1166, 1167, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1167, 1168, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1168, 1169, 1, 0},
++	{"led", "Enable all terminal output", 1169, 1170, 1, 0},
++	{"vis", "Control startup flags", 1171, 1182, 1, 0},
++	{"mpt", "Control vi prompts", 1183, 1193, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1194, 1196, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1196, 1198, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1198, 1199, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1199, 1200, 1, 0},
++	{"td", "Current text direction context", 1200, 1206, 1, 0},
++	{"pr", "Print register", 1207, 1223, 1, 0},
++	{"fr", "Find register", 1224, 1236, 1, 0},
++	{"rr", "Record register", 1237, 1250, 1, 0},
++	{"lim", "Line length render limit", 1251, 1266, 1, 0},
++	{"seq", "Control Undo/Redo", 1267, 1279, 1, 0},
++	{"left", "Control horizontal scroll", 1280, 1285, 1, 0},
++	{"err", "Control ex errors", 1286, 1298, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..8fde7a8f9 100644
