@@ -1170,7 +1170,7 @@ static const char agent_cp_guide[] =
 	"Only these ex commands run during the checkpoint, so decide from your\n"
 	"context. Each command is its own ex tool call; a reply can hold several\n"
 	"calls. Commands written as text do not run. N,M is a range from N\n"
-	"through M; arate also takes a list of three or more turns, N,M,K.\n"
+	"through M; three or more numbers, N,M,K, are a list of turns.\n"
 	"A TURN is one of your replies: its reasoning, text, commands and results.\n"
 	"Its first result in your context starts with its TURN number; a reply\n"
 	"without commands has the number the list gives it.\n"
@@ -2912,6 +2912,45 @@ static char *agent_entryrange(char *loc, struct agent_span *spans, int cnt,
 	return *first < 0 ? "no entries in range" : NULL;
 }
 
+/* Mark in sel the TURN entries that a list N,M,K of three or more numbers
+ * names, with first and last the span indices of its ends; an error or
+ * NULL. */
+static char *agent_entrylist(char *loc, struct agent_span *spans, int cnt,
+		char *sel, int *first, int *last)
+{
+	static char err[80];
+	struct agent_span *sp;
+	unsigned long n;
+	if (!cnt)
+		return "session log has no entries";
+	do {
+		if (agent_entryaddr(&loc, &n, spans[cnt-1].n) || (*loc && *loc != '\'','\''))
+			return "invalid entry list";
+		if (!(sp = agent_span_turn(spans, cnt, n))) {
+			snprintf(err, sizeof(err),
+				"entry %lu is not a TURN; the list was not applied", n);
+			return err;
+		}
+		sel[sp - spans] = 1;
+	} while (*loc++);
+	*first = *last = -1;
+	for (int k = 0; k < cnt; k++) {
+		if (!sel[k])
+			continue;
+		if (*first < 0)
+			*first = k;
+		*last = k;
+	}
+	return NULL;
+}
+
+/* A list of three or more entry numbers, not N or N,M. */
+static int agent_islist(char *loc)
+{
+	char *c = strchr(loc, '\'','\'');
+	return c && strchr(c + 1, '\'','\'');
+}
+
 /* Print entries N through M of b-4 and of b-7 in number order, those of
  * b-7 with " trimmed" after each header. Part indexes in arg print only
  * those parts of turns; role names only those entries and parts. */
@@ -3030,52 +3069,71 @@ done:
 	return ret;
 }
 
-/* Replace log entries N through M with a note or remove them; entry 0 is
- * the text before the first header. A note over a turn is a turn holding
- * only the text, under the turn'\''s number so its rating stays with it. */
+/* Replace log entries N through M, or the turns of a list N,M,K, with a
+ * note or remove them; entry 0 is the text before the first header. A note
+ * over a turn is a turn holding only the text, under the turn'\''s number so
+ * its rating stays with it. */
 static void *ec_anote(char *loc, char *cmd, char *arg)
 {
 	static char err[80];
 	struct lbuf *lb = tempbufs[3].lb;
 	struct agent_span *spans;
 	int cnt = agent_spans(&spans), first, last, at = -1, note = -1, changed = 0;
-	int keep = agent_tool, kept = 0, klen = 0, lo = -1;
+	int keep = agent_tool, kept = 0, klen = 0, lo = -1, split = 1, nlen = 0;
+	int list = agent_islist(loc);
 	double before = 0, after;
-	char msg[400], kmsg[128] = "";
+	char msg[400], kmsg[128] = "", nums[128];
+	/* 1 an entry to replace, 2 one of the range that stays */
+	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
 	void *ret;
-	if ((ret = agent_entryrange(loc, spans, cnt, &first, &last)))
+	if (list)
+		ret = agent_entrylist(loc, spans, cnt, sel, &first, &last);
+	else
+		ret = agent_entryrange(loc, spans, cnt, &first, &last);
+	if (ret)
 		goto done;
-	/* The results still to come would be logged into the note. */
-	if (keep && agent_turn[1] && spans[first].n <= agent_turn[1] &&
-			spans[last].n >= agent_turn[1]) {
-		snprintf(err, sizeof(err), "turn %lu is still running; note it from "
-			"a later turn", agent_turn[1]);
-		ret = err;
-		goto done;
-	}
 	/* The agent cannot change USER entries or the preamble; they split
-	 * the range, and the note takes the place of the last part, after
+	 * the entries, and the note takes the place of the last part, after
 	 * the requests its findings answer. There it is the first turn, as
 	 * the agent would never see a note under NOTICE. */
-#define ANOTE_KEPT(k)	(keep && spans[k].role <= AE_USER)
 	for (int k = first; k <= last; k++) {
-		if (ANOTE_KEPT(k)) {
+		if (keep && spans[k].role <= AE_USER) {
+			split = 1;
+			if (list)
+				continue;
+			sel[k] = 2;
 			if (kept++ < 10 && klen < (int)sizeof(kmsg))
 				klen += snprintf(kmsg + klen, sizeof(kmsg) - klen, "%s%lu",
 					kept > 1 ? ", " : "", spans[k].n);
 			continue;
 		}
-		if (k == first || ANOTE_KEPT(k - 1))
+		if (list && !sel[k])
+			continue;
+		sel[k] = 1;
+		/* The results still to come would be logged into the note. */
+		if (keep && agent_turn[1] && spans[k].n == agent_turn[1]) {
+			snprintf(err, sizeof(err), "turn %lu is still running; note it from "
+				"a later turn", agent_turn[1]);
+			ret = err;
+			goto done;
+		}
+		if (split)
 			at = note = k;
 		else if (keep && spans[note].role != AE_TURN && spans[k].role == AE_TURN)
 			note = k;
+		split = 0;
 		if (lo < 0)
 			lo = k;
+		if (changed < 8)
+			nlen += snprintf(nums + nlen, sizeof(nums) - nlen, "%s%lu",
+				changed ? ", " : "", spans[k].n);
 		before += agent_span_tokens(spans + k);
 		changed++;
 	}
 	if (kept > 10 && klen < (int)sizeof(kmsg))
 		snprintf(kmsg + klen, sizeof(kmsg) - klen, " and %d more", kept - 10);
+	if (changed > 8)
+		snprintf(nums + nlen, sizeof(nums) - nlen, " and %d more", changed - 8);
 	if (note < 0) {
 		ret = "USER entries hold the user'\''s instructions; note over the "
 			"TURN entries the findings came from";
@@ -3104,9 +3162,9 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 	preserve(int, agent_syncing, agent_syncing = 1;)
 	for (int k = last; k >= first; k--) {
 		int end = k;
-		if (ANOTE_KEPT(k))
+		if (sel[k] != 1)
 			continue;
-		while (k > first && !ANOTE_KEPT(k - 1))
+		while (k > first && sel[k-1] == 1)
 			k--;
 		/* A pack keeps the whole log on success and restores it on
 		 * failure. */
@@ -3124,13 +3182,16 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
 	else
 		tempbufs[3].row = MAX(0, MIN(tempbufs[3].row, lbuf_len(lb) - 1));
-	while (ANOTE_KEPT(last))
+	while (sel[last] != 1)
 		last--;
-#undef ANOTE_KEPT
-	int len = snprintf(msg, sizeof(msg), "%s %d %s %lu-%lu", *arg ? "noted" :
-		"removed", changed, changed > 1 ? "entries" : "entry",
-		spans[lo].n, spans[last].n);
-	if (kept && *arg)
+	int len = snprintf(msg, sizeof(msg), "%s %d %s ", *arg ? "noted" :
+		"removed", changed, changed > 1 ? "entries" : "entry");
+	if (list)
+		len += snprintf(msg + len, sizeof(msg) - len, "%s", nums);
+	else
+		len += snprintf(msg + len, sizeof(msg) - len, "%lu-%lu",
+			spans[lo].n, spans[last].n);
+	if (*arg && (kept || (list && note != lo)))
 		len += snprintf(msg + len, sizeof(msg) - len, " as entry %lu",
 			spans[note].n);
 	if (kept)
@@ -3140,6 +3201,7 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 		";\nthe note is larger than the entries it replaced" : "");
 	ex_print(msg, msg_ft)
 done:
+	free(sel);
 	free(spans);
 	return ret;
 }
@@ -3192,29 +3254,6 @@ static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
 	ex_print(msg, msg_ft)
 }
 
-/* Mark in sel the TURN entries a list of three or more numbers names; an
- * error or NULL. */
-static char *agent_entrylist(char *loc, struct agent_span *spans, int cnt,
-		char *sel)
-{
-	static char err[64];
-	struct agent_span *sp;
-	unsigned long n;
-	if (!cnt)
-		return "session log has no entries";
-	do {
-		if (agent_entryaddr(&loc, &n, spans[cnt-1].n) || (*loc && *loc != '\'','\''))
-			return "invalid entry list";
-		if (!(sp = agent_span_turn(spans, cnt, n))) {
-			snprintf(err, sizeof(err),
-				"entry %lu is not a TURN; nothing rated", n);
-			return err;
-		}
-		sel[sp - spans] = 1;
-	} while (*loc++);
-	return NULL;
-}
-
 /* Rate in b-6 the TURN entries from N through M, or those of a list N,M,K
  * of three or more. */
 static void *ec_arate(char *loc, char *cmd, char *arg)
@@ -3225,10 +3264,10 @@ static void *ec_arate(char *loc, char *cmd, char *arg)
 	char msg[224], nums[128], same[32], *text = arg + 1;
 	/* 1 a turn to rate, 2 another entry of the range */
 	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
-	char *list = strchr(loc, '\'','\'');
+	int list = agent_islist(loc);
 	void *ret;
-	if (list && (list = strchr(list + 1, '\'','\'')))
-		ret = agent_entrylist(loc, spans, cnt, sel);
+	if (list)
+		ret = agent_entrylist(loc, spans, cnt, sel, &first, &last);
 	else if (!(ret = agent_entryrange(loc, spans, cnt, &first, &last)))
 		for (int k = first; k <= last; k++)
 			sel[k] = spans[k].role == AE_TURN ? 1 : 2;
@@ -7419,13 +7458,16 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "the agent keeps them in place, removes the other entries and puts\n" \
                 "the note in place of the last run of them, as its first turn, or\n" \
                 "with the role of its first entry when it has no turn. The agent\n" \
-                "cannot note the turn that is still running. Prints the estimated\n" \
-                "tokens before and after and the USER entries kept, and reports a\n" \
-                "note larger than what it replaced. Changes the agent context when\n" \
-                "acl is set. Removed and replaced entries move to b-7 in number\n" \
-                "order; a number already there keeps its entry, so a note replaced\n" \
-                "later is not kept. b-7 is saved as discarded in the session\n" \
-                "directory.\n\n" \
+                "cannot note the turn that is still running. Three or more numbers,\n" \
+                "as in 2,4,7, name those turns alone: text replaces them as one note\n" \
+                "in place of the first, or for the agent of the first after the last\n" \
+                "USER entry between them; a number that is not a TURN entry changes\n" \
+                "nothing. Prints the estimated tokens before and after and the USER\n" \
+                "entries kept, and reports a note larger than what it replaced.\n" \
+                "Changes the agent context when acl is set. Removed and replaced\n" \
+                "entries move to b-7 in number order; a number already there keeps\n" \
+                "its entry, so a note replaced later is not kept. b-7 is saved as\n" \
+                "discarded in the session directory.\n\n" \
                 "Example: replace a turn with a note\n:14anote ls listed 40 files, none relevant")
             spec("[entries]aget[parts]", "Print agent session log entries, trimmed ones included",
                 "Prints entries N through M of b-4 and b-7 in number order with their\n" \
@@ -10468,13 +10510,16 @@ static char *exspec_lines[] = {
 	"the agent keeps them in place, removes the other entries and puts",
 	"the note in place of the last run of them, as its first turn, or",
 	"with the role of its first entry when it has no turn. The agent",
-	"cannot note the turn that is still running. Prints the estimated",
-	"tokens before and after and the USER entries kept, and reports a",
-	"note larger than what it replaced. Changes the agent context when",
-	"acl is set. Removed and replaced entries move to b-7 in number",
-	"order; a number already there keeps its entry, so a note replaced",
-	"later is not kept. b-7 is saved as discarded in the session",
-	"directory.",
+	"cannot note the turn that is still running. Three or more numbers,",
+	"as in 2,4,7, name those turns alone: text replaces them as one note",
+	"in place of the first, or for the agent of the first after the last",
+	"USER entry between them; a number that is not a TURN entry changes",
+	"nothing. Prints the estimated tokens before and after and the USER",
+	"entries kept, and reports a note larger than what it replaced.",
+	"Changes the agent context when acl is set. Removed and replaced",
+	"entries move to b-7 in number order; a number already there keeps",
+	"its entry, so a note replaced later is not kept. b-7 is saved as",
+	"discarded in the session directory.",
 	"",
 	"Example: replace a turn with a note",
 	"14anote ls listed 40 files, none relevant",
@@ -11056,54 +11101,54 @@ static struct {
 	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
 	{"aretry", "Execute the last agent command", 793, 805, 0, 0},
 	{"aout", "Print the saved output of the last agent tool call", 806, 817, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 818, 843, 0, 0},
-	{"aget", "Print agent session log entries, trimmed ones included", 844, 862, 0, 0},
-	{"arate", "Rate agent turns in the notes buffer", 863, 887, 0, 0},
-	{"adone", "End an agent checkpoint", 888, 895, 0, 0},
-	{"acheck", "Start an agent checkpoint or set its budget", 896, 908, 0, 0},
-	{"acp", "Print the agent checkpoint instructions", 909, 915, 0, 0},
-	{"ali", "Print the agent session log entry list", 916, 927, 0, 0},
-	{"auli", "Print the unrated agent session log turns", 928, 934, 0, 0},
-	{"ast", "Print agent status and token usage", 935, 944, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 945, 958, 0, 0},
-	{"ac", "Set autocomplete filter regex", 959, 967, 0, 0},
-	{"sc", "Set ex special characters", 968, 978, 0, 0},
-	{"sc!", "Set ex special characters", 979, 986, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 987, 994, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 995, 998, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 999, 1003, 0, 0},
-	{"ph", "Redefine placeholders", 1004, 1020, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1029, 1077, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1078, 1087, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1088, 1095, 1, 0},
-	{"agr", "Control agent output protection", 1096, 1102, 1, 0},
-	{"ato", "Detach long agent shell commands", 1103, 1110, 1, 0},
-	{"ar", "Display returned agent reasoning", 1111, 1116, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1117, 1123, 1, 0},
-	{"ai", "Indent new lines", 1124, 1127, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1128, 1129, 1, 0},
-	{"ish", "Interactive shell", 1130, 1145, 1, 0},
-	{"grp", "Regex search group", 1146, 1154, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1155, 1158, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1159, 1160, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1160, 1161, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1161, 1162, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1162, 1163, 1, 0},
-	{"led", "Enable all terminal output", 1163, 1164, 1, 0},
-	{"vis", "Control startup flags", 1165, 1176, 1, 0},
-	{"mpt", "Control vi prompts", 1177, 1187, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1188, 1190, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1190, 1192, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1192, 1193, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1193, 1194, 1, 0},
-	{"td", "Current text direction context", 1194, 1200, 1, 0},
-	{"pr", "Print register", 1201, 1217, 1, 0},
-	{"fr", "Find register", 1218, 1230, 1, 0},
-	{"rr", "Record register", 1231, 1244, 1, 0},
-	{"lim", "Line length render limit", 1245, 1260, 1, 0},
-	{"seq", "Control Undo/Redo", 1261, 1273, 1, 0},
-	{"left", "Control horizontal scroll", 1274, 1279, 1, 0},
-	{"err", "Control ex errors", 1280, 1292, 1, 0},
+	{"anote", "Replace or remove agent session log entries", 818, 846, 0, 0},
+	{"aget", "Print agent session log entries, trimmed ones included", 847, 865, 0, 0},
+	{"arate", "Rate agent turns in the notes buffer", 866, 890, 0, 0},
+	{"adone", "End an agent checkpoint", 891, 898, 0, 0},
+	{"acheck", "Start an agent checkpoint or set its budget", 899, 911, 0, 0},
+	{"acp", "Print the agent checkpoint instructions", 912, 918, 0, 0},
+	{"ali", "Print the agent session log entry list", 919, 930, 0, 0},
+	{"auli", "Print the unrated agent session log turns", 931, 937, 0, 0},
+	{"ast", "Print agent status and token usage", 938, 947, 0, 0},
+	{"ath", "Set the agent thinking cap and effort", 948, 961, 0, 0},
+	{"ac", "Set autocomplete filter regex", 962, 970, 0, 0},
+	{"sc", "Set ex special characters", 971, 981, 0, 0},
+	{"sc!", "Set ex special characters", 982, 989, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 990, 997, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 998, 1001, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1002, 1006, 0, 0},
+	{"ph", "Redefine placeholders", 1007, 1023, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1032, 1080, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1081, 1090, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1091, 1098, 1, 0},
+	{"agr", "Control agent output protection", 1099, 1105, 1, 0},
+	{"ato", "Detach long agent shell commands", 1106, 1113, 1, 0},
+	{"ar", "Display returned agent reasoning", 1114, 1119, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1120, 1126, 1, 0},
+	{"ai", "Indent new lines", 1127, 1130, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1131, 1132, 1, 0},
+	{"ish", "Interactive shell", 1133, 1148, 1, 0},
+	{"grp", "Regex search group", 1149, 1157, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1158, 1161, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1162, 1163, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1163, 1164, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1164, 1165, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1165, 1166, 1, 0},
+	{"led", "Enable all terminal output", 1166, 1167, 1, 0},
+	{"vis", "Control startup flags", 1168, 1179, 1, 0},
+	{"mpt", "Control vi prompts", 1180, 1190, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1191, 1193, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1193, 1195, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1195, 1196, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1196, 1197, 1, 0},
+	{"td", "Current text direction context", 1197, 1203, 1, 0},
+	{"pr", "Print register", 1204, 1220, 1, 0},
+	{"fr", "Find register", 1221, 1233, 1, 0},
+	{"rr", "Record register", 1234, 1247, 1, 0},
+	{"lim", "Line length render limit", 1248, 1263, 1, 0},
+	{"seq", "Control Undo/Redo", 1264, 1276, 1, 0},
+	{"left", "Control horizontal scroll", 1277, 1282, 1, 0},
+	{"err", "Control ex errors", 1283, 1295, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -11733,10 +11778,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..2efaac2bf
+index 000000000..e2a0d9f29
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,3650 @@
+@@ -0,0 +1,3689 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12877,7 +12922,7 @@ index 000000000..2efaac2bf
 +	"Only these ex commands run during the checkpoint, so decide from your\n"
 +	"context. Each command is its own ex tool call; a reply can hold several\n"
 +	"calls. Commands written as text do not run. N,M is a range from N\n"
-+	"through M; arate also takes a list of three or more turns, N,M,K.\n"
++	"through M; three or more numbers, N,M,K, are a list of turns.\n"
 +	"A TURN is one of your replies: its reasoning, text, commands and results.\n"
 +	"Its first result in your context starts with its TURN number; a reply\n"
 +	"without commands has the number the list gives it.\n"
@@ -14619,6 +14664,45 @@ index 000000000..2efaac2bf
 +	return *first < 0 ? "no entries in range" : NULL;
 +}
 +
++/* Mark in sel the TURN entries that a list N,M,K of three or more numbers
++ * names, with first and last the span indices of its ends; an error or
++ * NULL. */
++static char *agent_entrylist(char *loc, struct agent_span *spans, int cnt,
++		char *sel, int *first, int *last)
++{
++	static char err[80];
++	struct agent_span *sp;
++	unsigned long n;
++	if (!cnt)
++		return "session log has no entries";
++	do {
++		if (agent_entryaddr(&loc, &n, spans[cnt-1].n) || (*loc && *loc != ','))
++			return "invalid entry list";
++		if (!(sp = agent_span_turn(spans, cnt, n))) {
++			snprintf(err, sizeof(err),
++				"entry %lu is not a TURN; the list was not applied", n);
++			return err;
++		}
++		sel[sp - spans] = 1;
++	} while (*loc++);
++	*first = *last = -1;
++	for (int k = 0; k < cnt; k++) {
++		if (!sel[k])
++			continue;
++		if (*first < 0)
++			*first = k;
++		*last = k;
++	}
++	return NULL;
++}
++
++/* A list of three or more entry numbers, not N or N,M. */
++static int agent_islist(char *loc)
++{
++	char *c = strchr(loc, ',');
++	return c && strchr(c + 1, ',');
++}
++
 +/* Print entries N through M of b-4 and of b-7 in number order, those of
 + * b-7 with " trimmed" after each header. Part indexes in arg print only
 + * those parts of turns; role names only those entries and parts. */
@@ -14737,52 +14821,71 @@ index 000000000..2efaac2bf
 +	return ret;
 +}
 +
-+/* Replace log entries N through M with a note or remove them; entry 0 is
-+ * the text before the first header. A note over a turn is a turn holding
-+ * only the text, under the turn's number so its rating stays with it. */
++/* Replace log entries N through M, or the turns of a list N,M,K, with a
++ * note or remove them; entry 0 is the text before the first header. A note
++ * over a turn is a turn holding only the text, under the turn's number so
++ * its rating stays with it. */
 +static void *ec_anote(char *loc, char *cmd, char *arg)
 +{
 +	static char err[80];
 +	struct lbuf *lb = tempbufs[3].lb;
 +	struct agent_span *spans;
 +	int cnt = agent_spans(&spans), first, last, at = -1, note = -1, changed = 0;
-+	int keep = agent_tool, kept = 0, klen = 0, lo = -1;
++	int keep = agent_tool, kept = 0, klen = 0, lo = -1, split = 1, nlen = 0;
++	int list = agent_islist(loc);
 +	double before = 0, after;
-+	char msg[400], kmsg[128] = "";
++	char msg[400], kmsg[128] = "", nums[128];
++	/* 1 an entry to replace, 2 one of the range that stays */
++	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
 +	void *ret;
-+	if ((ret = agent_entryrange(loc, spans, cnt, &first, &last)))
++	if (list)
++		ret = agent_entrylist(loc, spans, cnt, sel, &first, &last);
++	else
++		ret = agent_entryrange(loc, spans, cnt, &first, &last);
++	if (ret)
 +		goto done;
-+	/* The results still to come would be logged into the note. */
-+	if (keep && agent_turn[1] && spans[first].n <= agent_turn[1] &&
-+			spans[last].n >= agent_turn[1]) {
-+		snprintf(err, sizeof(err), "turn %lu is still running; note it from "
-+			"a later turn", agent_turn[1]);
-+		ret = err;
-+		goto done;
-+	}
 +	/* The agent cannot change USER entries or the preamble; they split
-+	 * the range, and the note takes the place of the last part, after
++	 * the entries, and the note takes the place of the last part, after
 +	 * the requests its findings answer. There it is the first turn, as
 +	 * the agent would never see a note under NOTICE. */
-+#define ANOTE_KEPT(k)	(keep && spans[k].role <= AE_USER)
 +	for (int k = first; k <= last; k++) {
-+		if (ANOTE_KEPT(k)) {
++		if (keep && spans[k].role <= AE_USER) {
++			split = 1;
++			if (list)
++				continue;
++			sel[k] = 2;
 +			if (kept++ < 10 && klen < (int)sizeof(kmsg))
 +				klen += snprintf(kmsg + klen, sizeof(kmsg) - klen, "%s%lu",
 +					kept > 1 ? ", " : "", spans[k].n);
 +			continue;
 +		}
-+		if (k == first || ANOTE_KEPT(k - 1))
++		if (list && !sel[k])
++			continue;
++		sel[k] = 1;
++		/* The results still to come would be logged into the note. */
++		if (keep && agent_turn[1] && spans[k].n == agent_turn[1]) {
++			snprintf(err, sizeof(err), "turn %lu is still running; note it from "
++				"a later turn", agent_turn[1]);
++			ret = err;
++			goto done;
++		}
++		if (split)
 +			at = note = k;
 +		else if (keep && spans[note].role != AE_TURN && spans[k].role == AE_TURN)
 +			note = k;
++		split = 0;
 +		if (lo < 0)
 +			lo = k;
++		if (changed < 8)
++			nlen += snprintf(nums + nlen, sizeof(nums) - nlen, "%s%lu",
++				changed ? ", " : "", spans[k].n);
 +		before += agent_span_tokens(spans + k);
 +		changed++;
 +	}
 +	if (kept > 10 && klen < (int)sizeof(kmsg))
 +		snprintf(kmsg + klen, sizeof(kmsg) - klen, " and %d more", kept - 10);
++	if (changed > 8)
++		snprintf(nums + nlen, sizeof(nums) - nlen, " and %d more", changed - 8);
 +	if (note < 0) {
 +		ret = "USER entries hold the user's instructions; note over the "
 +			"TURN entries the findings came from";
@@ -14811,9 +14914,9 @@ index 000000000..2efaac2bf
 +	preserve(int, agent_syncing, agent_syncing = 1;)
 +	for (int k = last; k >= first; k--) {
 +		int end = k;
-+		if (ANOTE_KEPT(k))
++		if (sel[k] != 1)
 +			continue;
-+		while (k > first && !ANOTE_KEPT(k - 1))
++		while (k > first && sel[k-1] == 1)
 +			k--;
 +		/* A pack keeps the whole log on success and restores it on
 +		 * failure. */
@@ -14831,13 +14934,16 @@ index 000000000..2efaac2bf
 +		xrow = MAX(0, MIN(xrow, lbuf_len(lb) - 1));
 +	else
 +		tempbufs[3].row = MAX(0, MIN(tempbufs[3].row, lbuf_len(lb) - 1));
-+	while (ANOTE_KEPT(last))
++	while (sel[last] != 1)
 +		last--;
-+#undef ANOTE_KEPT
-+	int len = snprintf(msg, sizeof(msg), "%s %d %s %lu-%lu", *arg ? "noted" :
-+		"removed", changed, changed > 1 ? "entries" : "entry",
-+		spans[lo].n, spans[last].n);
-+	if (kept && *arg)
++	int len = snprintf(msg, sizeof(msg), "%s %d %s ", *arg ? "noted" :
++		"removed", changed, changed > 1 ? "entries" : "entry");
++	if (list)
++		len += snprintf(msg + len, sizeof(msg) - len, "%s", nums);
++	else
++		len += snprintf(msg + len, sizeof(msg) - len, "%lu-%lu",
++			spans[lo].n, spans[last].n);
++	if (*arg && (kept || (list && note != lo)))
 +		len += snprintf(msg + len, sizeof(msg) - len, " as entry %lu",
 +			spans[note].n);
 +	if (kept)
@@ -14847,6 +14953,7 @@ index 000000000..2efaac2bf
 +		";\nthe note is larger than the entries it replaced" : "");
 +	ex_print(msg, msg_ft)
 +done:
++	free(sel);
 +	free(spans);
 +	return ret;
 +}
@@ -14899,29 +15006,6 @@ index 000000000..2efaac2bf
 +	ex_print(msg, msg_ft)
 +}
 +
-+/* Mark in sel the TURN entries a list of three or more numbers names; an
-+ * error or NULL. */
-+static char *agent_entrylist(char *loc, struct agent_span *spans, int cnt,
-+		char *sel)
-+{
-+	static char err[64];
-+	struct agent_span *sp;
-+	unsigned long n;
-+	if (!cnt)
-+		return "session log has no entries";
-+	do {
-+		if (agent_entryaddr(&loc, &n, spans[cnt-1].n) || (*loc && *loc != ','))
-+			return "invalid entry list";
-+		if (!(sp = agent_span_turn(spans, cnt, n))) {
-+			snprintf(err, sizeof(err),
-+				"entry %lu is not a TURN; nothing rated", n);
-+			return err;
-+		}
-+		sel[sp - spans] = 1;
-+	} while (*loc++);
-+	return NULL;
-+}
-+
 +/* Rate in b-6 the TURN entries from N through M, or those of a list N,M,K
 + * of three or more. */
 +static void *ec_arate(char *loc, char *cmd, char *arg)
@@ -14932,10 +15016,10 @@ index 000000000..2efaac2bf
 +	char msg[224], nums[128], same[32], *text = arg + 1;
 +	/* 1 a turn to rate, 2 another entry of the range */
 +	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
-+	char *list = strchr(loc, ',');
++	int list = agent_islist(loc);
 +	void *ret;
-+	if (list && (list = strchr(list + 1, ',')))
-+		ret = agent_entrylist(loc, spans, cnt, sel);
++	if (list)
++		ret = agent_entrylist(loc, spans, cnt, sel, &first, &last);
 +	else if (!(ret = agent_entryrange(loc, spans, cnt, &first, &last)))
 +		for (int k = first; k <= last; k++)
 +			sel[k] = spans[k].role == AE_TURN ? 1 : 2;
@@ -18948,10 +19032,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..27438abfa 100755
+index c836c94c7..3ca5e2c94 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,274 @@ build() {
+@@ -65,6 +65,277 @@ build() {
      }
  }
  
@@ -19044,13 +19128,16 @@ index c836c94c7..27438abfa 100755
 +                "the agent keeps them in place, removes the other entries and puts\n" \
 +                "the note in place of the last run of them, as its first turn, or\n" \
 +                "with the role of its first entry when it has no turn. The agent\n" \
-+                "cannot note the turn that is still running. Prints the estimated\n" \
-+                "tokens before and after and the USER entries kept, and reports a\n" \
-+                "note larger than what it replaced. Changes the agent context when\n" \
-+                "acl is set. Removed and replaced entries move to b-7 in number\n" \
-+                "order; a number already there keeps its entry, so a note replaced\n" \
-+                "later is not kept. b-7 is saved as discarded in the session\n" \
-+                "directory.\n\n" \
++                "cannot note the turn that is still running. Three or more numbers,\n" \
++                "as in 2,4,7, name those turns alone: text replaces them as one note\n" \
++                "in place of the first, or for the agent of the first after the last\n" \
++                "USER entry between them; a number that is not a TURN entry changes\n" \
++                "nothing. Prints the estimated tokens before and after and the USER\n" \
++                "entries kept, and reports a note larger than what it replaced.\n" \
++                "Changes the agent context when acl is set. Removed and replaced\n" \
++                "entries move to b-7 in number order; a number already there keeps\n" \
++                "its entry, so a note replaced later is not kept. b-7 is saved as\n" \
++                "discarded in the session directory.\n\n" \
 +                "Example: replace a turn with a note\n:14anote ls listed 40 files, none relevant")
 +            spec("[entries]aget[parts]", "Print agent session log entries, trimmed ones included",
 +                "Prints entries N through M of b-4 and b-7 in number order with their\n" \
@@ -19226,7 +19313,7 @@ index c836c94c7..27438abfa 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +342,7 @@ install() {
+@@ -74,7 +345,7 @@ install() {
  }
  
  print_usage() {
@@ -19235,7 +19322,7 @@ index c836c94c7..27438abfa 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +350,9 @@ print_usage() {
+@@ -82,6 +353,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -20285,10 +20372,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..fd8363ab0
+index 000000000..b592884c2
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1472 @@
+@@ -0,0 +1,1475 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -21124,13 +21211,16 @@ index 000000000..fd8363ab0
 +	"the agent keeps them in place, removes the other entries and puts",
 +	"the note in place of the last run of them, as its first turn, or",
 +	"with the role of its first entry when it has no turn. The agent",
-+	"cannot note the turn that is still running. Prints the estimated",
-+	"tokens before and after and the USER entries kept, and reports a",
-+	"note larger than what it replaced. Changes the agent context when",
-+	"acl is set. Removed and replaced entries move to b-7 in number",
-+	"order; a number already there keeps its entry, so a note replaced",
-+	"later is not kept. b-7 is saved as discarded in the session",
-+	"directory.",
++	"cannot note the turn that is still running. Three or more numbers,",
++	"as in 2,4,7, name those turns alone: text replaces them as one note",
++	"in place of the first, or for the agent of the first after the last",
++	"USER entry between them; a number that is not a TURN entry changes",
++	"nothing. Prints the estimated tokens before and after and the USER",
++	"entries kept, and reports a note larger than what it replaced.",
++	"Changes the agent context when acl is set. Removed and replaced",
++	"entries move to b-7 in number order; a number already there keeps",
++	"its entry, so a note replaced later is not kept. b-7 is saved as",
++	"discarded in the session directory.",
 +	"",
 +	"Example: replace a turn with a note",
 +	"14anote ls listed 40 files, none relevant",
@@ -21712,54 +21802,54 @@ index 000000000..fd8363ab0
 +	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
 +	{"aretry", "Execute the last agent command", 793, 805, 0, 0},
 +	{"aout", "Print the saved output of the last agent tool call", 806, 817, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 818, 843, 0, 0},
-+	{"aget", "Print agent session log entries, trimmed ones included", 844, 862, 0, 0},
-+	{"arate", "Rate agent turns in the notes buffer", 863, 887, 0, 0},
-+	{"adone", "End an agent checkpoint", 888, 895, 0, 0},
-+	{"acheck", "Start an agent checkpoint or set its budget", 896, 908, 0, 0},
-+	{"acp", "Print the agent checkpoint instructions", 909, 915, 0, 0},
-+	{"ali", "Print the agent session log entry list", 916, 927, 0, 0},
-+	{"auli", "Print the unrated agent session log turns", 928, 934, 0, 0},
-+	{"ast", "Print agent status and token usage", 935, 944, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 945, 958, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 959, 967, 0, 0},
-+	{"sc", "Set ex special characters", 968, 978, 0, 0},
-+	{"sc!", "Set ex special characters", 979, 986, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 987, 994, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 995, 998, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 999, 1003, 0, 0},
-+	{"ph", "Redefine placeholders", 1004, 1020, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1029, 1077, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1078, 1087, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1088, 1095, 1, 0},
-+	{"agr", "Control agent output protection", 1096, 1102, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1103, 1110, 1, 0},
-+	{"ar", "Display returned agent reasoning", 1111, 1116, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1117, 1123, 1, 0},
-+	{"ai", "Indent new lines", 1124, 1127, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1128, 1129, 1, 0},
-+	{"ish", "Interactive shell", 1130, 1145, 1, 0},
-+	{"grp", "Regex search group", 1146, 1154, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1155, 1158, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1159, 1160, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1160, 1161, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1161, 1162, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1162, 1163, 1, 0},
-+	{"led", "Enable all terminal output", 1163, 1164, 1, 0},
-+	{"vis", "Control startup flags", 1165, 1176, 1, 0},
-+	{"mpt", "Control vi prompts", 1177, 1187, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1188, 1190, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1190, 1192, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1192, 1193, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1193, 1194, 1, 0},
-+	{"td", "Current text direction context", 1194, 1200, 1, 0},
-+	{"pr", "Print register", 1201, 1217, 1, 0},
-+	{"fr", "Find register", 1218, 1230, 1, 0},
-+	{"rr", "Record register", 1231, 1244, 1, 0},
-+	{"lim", "Line length render limit", 1245, 1260, 1, 0},
-+	{"seq", "Control Undo/Redo", 1261, 1273, 1, 0},
-+	{"left", "Control horizontal scroll", 1274, 1279, 1, 0},
-+	{"err", "Control ex errors", 1280, 1292, 1, 0},
++	{"anote", "Replace or remove agent session log entries", 818, 846, 0, 0},
++	{"aget", "Print agent session log entries, trimmed ones included", 847, 865, 0, 0},
++	{"arate", "Rate agent turns in the notes buffer", 866, 890, 0, 0},
++	{"adone", "End an agent checkpoint", 891, 898, 0, 0},
++	{"acheck", "Start an agent checkpoint or set its budget", 899, 911, 0, 0},
++	{"acp", "Print the agent checkpoint instructions", 912, 918, 0, 0},
++	{"ali", "Print the agent session log entry list", 919, 930, 0, 0},
++	{"auli", "Print the unrated agent session log turns", 931, 937, 0, 0},
++	{"ast", "Print agent status and token usage", 938, 947, 0, 0},
++	{"ath", "Set the agent thinking cap and effort", 948, 961, 0, 0},
++	{"ac", "Set autocomplete filter regex", 962, 970, 0, 0},
++	{"sc", "Set ex special characters", 971, 981, 0, 0},
++	{"sc!", "Set ex special characters", 982, 989, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 990, 997, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 998, 1001, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1002, 1006, 0, 0},
++	{"ph", "Redefine placeholders", 1007, 1023, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1032, 1080, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1081, 1090, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1091, 1098, 1, 0},
++	{"agr", "Control agent output protection", 1099, 1105, 1, 0},
++	{"ato", "Detach long agent shell commands", 1106, 1113, 1, 0},
++	{"ar", "Display returned agent reasoning", 1114, 1119, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1120, 1126, 1, 0},
++	{"ai", "Indent new lines", 1127, 1130, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1131, 1132, 1, 0},
++	{"ish", "Interactive shell", 1133, 1148, 1, 0},
++	{"grp", "Regex search group", 1149, 1157, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1158, 1161, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1162, 1163, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1163, 1164, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1164, 1165, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1165, 1166, 1, 0},
++	{"led", "Enable all terminal output", 1166, 1167, 1, 0},
++	{"vis", "Control startup flags", 1168, 1179, 1, 0},
++	{"mpt", "Control vi prompts", 1180, 1190, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1191, 1193, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1193, 1195, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1195, 1196, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1196, 1197, 1, 0},
++	{"td", "Current text direction context", 1197, 1203, 1, 0},
++	{"pr", "Print register", 1204, 1220, 1, 0},
++	{"fr", "Find register", 1221, 1233, 1, 0},
++	{"rr", "Record register", 1234, 1247, 1, 0},
++	{"lim", "Line length render limit", 1248, 1263, 1, 0},
++	{"seq", "Control Undo/Redo", 1264, 1276, 1, 0},
++	{"left", "Control horizontal scroll", 1277, 1282, 1, 0},
++	{"err", "Control ex errors", 1283, 1295, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..823e5b396 100644
