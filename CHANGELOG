@@ -41,15 +41,27 @@ Patch changes:
    Compaction retries when the agent returns without updating the session
    log, rather than accepting an unchanged log as a completed summary.
    acl above 1 runs a checkpoint every N tokens of growth, where the agent
-   rates commands (:arate, 0-3) and condenses or removes log entries
+   rates turns (:arate, 0-3) and condenses or removes log entries
    (:anote); rating 0 trims at once. acl below 0 runs a budget check
    instead: the agent checkpoints (:acheck) or defers N tokens
    (:acheck N). Ratings live in /notes/, trimmed entries in /discarded/;
    :aget prints entries, trimmed ones included.
    :ali lists the session log entries with sizes and ratings and :auli
-   only the unrated commands, at any time; :acp prints the checkpoint
-   instructions.
-   Added :ath to set reasoning effort and a reasoning token cap.
+   only the unrated turns, at any time; :acp prints the checkpoint
+   instructions and :adone ends it once all turns with commands are
+   rated.
+   Added :ath to set reasoning effort and a reasoning token cap. A reply
+   cut at the cap is withheld and the agent answers a budget question:
+   keep it as it is or discard it and reply again under a larger cap.
+   An invalid answer is retried up to 5 times; text after N is a note
+   for the new reply. The retry itself is single: if that reply is cut
+   at the cap again, it is taken as is and the conversation moves on.
+   The :ar option now has three states, default 1: drop reasoning, log
+   it without printing it, or log and print it.
+   Added :ato to detach a running agent shell command after N seconds,
+   disabled by default (0); a bare :ato toggles between 0 and 30. The
+   command keeps running in the background (status 124, its own process
+   group, output to a file; a later result reports its exit status).
    max_tool_rounds defaults to 0 (unlimited) instead of 300.
 
 ------------------
