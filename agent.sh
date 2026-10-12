@@ -1100,7 +1100,7 @@ static char *agent_cp_example(char *unrated)
 /* The model already has the entries in context; list only their sizes. */
 static const char agent_rating_scale[] =
 	"Ratings:\n"
-	"0 dead weight, no value for the remaining work\n"
+	"0 mistakes, dead weight, no value for the remaining work\n"
 	"1 low, minor, superseded or only mechanics\n"
 	"2 useful, informs the remaining work\n"
 	"3 essential, a decision, finding or state the task depends on\n";
@@ -12247,7 +12247,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..6c4fc6875
+index 00000000..eea0b422
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,4147 @@
@@ -13321,7 +13321,7 @@ index 000000000..6c4fc6875
 +/* The model already has the entries in context; list only their sizes. */
 +static const char agent_rating_scale[] =
 +	"Ratings:\n"
-+	"0 dead weight, no value for the remaining work\n"
++	"0 mistakes, dead weight, no value for the remaining work\n"
 +	"1 low, minor, superseded or only mechanics\n"
 +	"2 useful, informs the remaining work\n"
 +	"3 essential, a decision, finding or state the task depends on\n";
@@ -16400,7 +16400,7 @@ index 000000000..6c4fc6875
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 000000000..4f5376417
+index 00000000..4f537641
 --- /dev/null
 +++ b/agent.h
 @@ -0,0 +1,49 @@
@@ -16455,7 +16455,7 @@ index 000000000..4f5376417
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 000000000..6e4fb0dd3
+index 00000000..6e4fb0dd
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -19652,7 +19652,7 @@ index 000000000..6e4fb0dd3
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 000000000..cab5feb42
+index 00000000..cab5feb4
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -19963,7 +19963,7 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..a374515a0 100755
+index c836c94c..a374515a 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,272 @@ build() {
@@ -20259,7 +20259,7 @@ index c836c94c7..a374515a0 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..353a5f7cc 100644
+index 2888d7c6..353a5f7c 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,350 @@
@@ -20625,7 +20625,7 @@ index 2888d7c60..353a5f7cc 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..b75e2e097 100644
+index 8a133987..b75e2e09 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -21217,7 +21217,7 @@ index 8a1339874..b75e2e097 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 000000000..31004ff54
+index 00000000..31004ff5
 --- /dev/null
 +++ b/exspec.awk
 @@ -0,0 +1,87 @@
@@ -21310,7 +21310,7 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..b1fb56480
+index 00000000..b1fb5648
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1480 @@
@@ -22795,7 +22795,7 @@ index 000000000..b1fb56480
 +	{"err", "Control ex errors", 1288, 1300, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c63..8fde7a8f9 100644
+index 56cb42c6..8fde7a8f 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -22825,7 +22825,7 @@ index 56cb42c63..8fde7a8f9 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e5..2641d0ffc 100644
+index 4893a07e..2641d0ff 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -22865,7 +22865,7 @@ index 4893a07e5..2641d0ffc 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 4e11ec2f9..4668eda91 100644
+index 4e11ec2f..4668eda9 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -22909,7 +22909,7 @@ index 4e11ec2f9..4668eda91 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..a0a9a3cb4 100644
+index b1f9a16f..a0a9a3cb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,14 @@
@@ -22936,7 +22936,7 @@ index b1f9a16f1..a0a9a3cb4 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da5950..b6ba49586 100644
+index c23da595..b6ba4958 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
