@@ -127,6 +127,8 @@ static char agent_think_lead[] =
 	"must finish thinking within it. My note on how to think:\n%s";
 /* Replies a thinking budget question waits for an answer after the first */
 #define AGENT_THINK_TRIES	5
+/* Automatic retries of a malformed assistant response */
+#define AGENT_BAD_TRIES	5
 static void agent_run(const char *input);
 static int agent_autocompact(const char *input);
 static void agent_reparse(void);
@@ -2721,7 +2723,7 @@ static void agent_run_loop(const char *input)
 				"%s",
 				error, cJSON_IsString(finish) ? finish->valuestring : "unavailable",
 				encoded ? encoded : "(unavailable)",
-				retries < 2 ? "retrying automatically" :
+				retries < AGENT_BAD_TRIES ? "retrying automatically" :
 				"retry limit reached; history retained, submit to retry");
 			agent_log("NOTICE", diagnostic);
 			free(encoded);
@@ -2746,7 +2748,7 @@ static void agent_run_loop(const char *input)
 			}
 			free(body);
 			cJSON_Delete(root);
-			if (retries++ < 2)
+			if (retries++ < AGENT_BAD_TRIES)
 				continue;
 			return;
 		}
@@ -12253,10 +12255,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..c6fd5db5d
+index 000000000..7b0275575
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4153 @@
+@@ -0,0 +1,4155 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12354,6 +12356,8 @@ index 000000000..c6fd5db5d
 +	"must finish thinking within it. My note on how to think:\n%s";
 +/* Replies a thinking budget question waits for an answer after the first */
 +#define AGENT_THINK_TRIES	5
++/* Automatic retries of a malformed assistant response */
++#define AGENT_BAD_TRIES	5
 +static void agent_run(const char *input);
 +static int agent_autocompact(const char *input);
 +static void agent_reparse(void);
@@ -14948,7 +14952,7 @@ index 000000000..c6fd5db5d
 +				"%s",
 +				error, cJSON_IsString(finish) ? finish->valuestring : "unavailable",
 +				encoded ? encoded : "(unavailable)",
-+				retries < 2 ? "retrying automatically" :
++				retries < AGENT_BAD_TRIES ? "retrying automatically" :
 +				"retry limit reached; history retained, submit to retry");
 +			agent_log("NOTICE", diagnostic);
 +			free(encoded);
@@ -14973,7 +14977,7 @@ index 000000000..c6fd5db5d
 +			}
 +			free(body);
 +			cJSON_Delete(root);
-+			if (retries++ < 2)
++			if (retries++ < AGENT_BAD_TRIES)
 +				continue;
 +			return;
 +		}
