@@ -1511,14 +1511,14 @@ static void agent_think_ask(cJSON *root)
 		sbuf_chr(sb, '\''\n'\'')
 		cJSON_Delete(parsed);
 	}
-	snprintf(line, sizeof(line), "Use ath command to %s or ath N to %sreply "
+	snprintf(line, sizeof(line), "Use ath command to %s or ath N [note] to %sreply "
 		"again with a thinking cap of N tokens, above %d and up to %d.",
 		cnt ? "run the reply as it is" : agent_think_empty ?
 		"reply again under the same cap" : "keep the reply as it is",
 		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 	sbuf_str(sb, line)
-	sbuf_str(sb, "\nThe new reply sees neither of this exchange except the "
-		"text after N. This text can guide or give insight on how to think better.")
+	sbuf_str(sb, "\nThe new reply sees neither of this exchange except the optional "
+		"[note] after N. A note directs on how to think better.")
 	sbuf_nul(sb)
 	agent_cp_open = sb->s;
 	agent_log("USER", agent_cp_open);
@@ -2956,7 +2956,7 @@ reply:
 				if (!has_calls) {
 					char msg[96];
 					snprintf(msg, sizeof(msg), "Nothing ran; reply with "
-						"an ex tool call, %s%s", think ? "ath N or ath" :
+						"an ex tool call, %s%s", think ? "ath N [note] or ath" :
 						"acheck N or acheck.", agent_think_retry());
 					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 					agent_log("USER", msg);
@@ -3225,6 +3225,8 @@ static void *ec_ath(char *loc, char *cmd, char *arg)
 		int ask = agent_checkpointing == 3;
 		if (!agent_think_max)
 			return "ath needs a ceiling set by the user";
+		while (*arg && strchr(" \t\n", *arg))
+			arg++;
 		/* The exchange of a question is discarded unread. */
 		if (ask && !*loc && !*arg) {
 			agent_cp_done = 1;
@@ -3233,13 +3235,13 @@ static void *ec_ath(char *loc, char *cmd, char *arg)
 		s = agent_count(*loc ? loc : arg, &cap);
 		if (s && *loc)
 			s = *s ? NULL : arg;
-		else if (s && *s && *s != '\'' '\'' && *s != '\''\t'\'')
+		else if (s && *s && !strchr(" \t\n", *s))
 			s = NULL;
-		while (s && (*s == '\'' '\'' || *s == '\''\t'\''))
+		while (s && *s && strchr(" \t\n", *s))
 			s++;
 		if (!s || (*s && !ask) || cap < 1) {
 			snprintf(msg, sizeof(msg), "ath takes a positive token count, "
-				"ath N%s%s", ask ? ", or nothing" : "", agent_think_retry());
+				"ath N%s%s", ask ? " [note], or nothing" : "", agent_think_retry());
 			return msg;
 		}
 		if (ask && cap <= agent_think_was) {
@@ -10006,7 +10008,7 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 		if (agent_tool && agent_checkpointing == 3 &&
 				excmds[idx].ec != ec_ath) {
 			snprintf(xaerr, sizeof(xaerr), "%s%sduring the thinking budget "
-				"question; only ath N or ath runs%s", excmds[idx].name,
+				"question; only ath N [note] or ath runs%s", excmds[idx].name,
 				*excmds[idx].name ? " command unavailable " :
 				"unknown command ", agent_think_retry());
 			ret = xaerr;
@@ -12245,10 +12247,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..78eee9c46
+index 000000000..6c4fc6875
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4145 @@
+@@ -0,0 +1,4147 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -13730,14 +13732,14 @@ index 000000000..78eee9c46
 +		sbuf_chr(sb, '\n')
 +		cJSON_Delete(parsed);
 +	}
-+	snprintf(line, sizeof(line), "Use ath command to %s or ath N to %sreply "
++	snprintf(line, sizeof(line), "Use ath command to %s or ath N [note] to %sreply "
 +		"again with a thinking cap of N tokens, above %d and up to %d.",
 +		cnt ? "run the reply as it is" : agent_think_empty ?
 +		"reply again under the same cap" : "keep the reply as it is",
 +		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 +	sbuf_str(sb, line)
-+	sbuf_str(sb, "\nThe new reply sees neither of this exchange except the "
-+		"text after N. This text can guide or give insight on how to think better.")
++	sbuf_str(sb, "\nThe new reply sees neither of this exchange except the optional "
++		"[note] after N. A note directs on how to think better.")
 +	sbuf_nul(sb)
 +	agent_cp_open = sb->s;
 +	agent_log("USER", agent_cp_open);
@@ -15175,7 +15177,7 @@ index 000000000..78eee9c46
 +				if (!has_calls) {
 +					char msg[96];
 +					snprintf(msg, sizeof(msg), "Nothing ran; reply with "
-+						"an ex tool call, %s%s", think ? "ath N or ath" :
++						"an ex tool call, %s%s", think ? "ath N [note] or ath" :
 +						"acheck N or acheck.", agent_think_retry());
 +					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 +					agent_log("USER", msg);
@@ -15444,6 +15446,8 @@ index 000000000..78eee9c46
 +		int ask = agent_checkpointing == 3;
 +		if (!agent_think_max)
 +			return "ath needs a ceiling set by the user";
++		while (*arg && strchr(" \t\n", *arg))
++			arg++;
 +		/* The exchange of a question is discarded unread. */
 +		if (ask && !*loc && !*arg) {
 +			agent_cp_done = 1;
@@ -15452,13 +15456,13 @@ index 000000000..78eee9c46
 +		s = agent_count(*loc ? loc : arg, &cap);
 +		if (s && *loc)
 +			s = *s ? NULL : arg;
-+		else if (s && *s && *s != ' ' && *s != '\t')
++		else if (s && *s && !strchr(" \t\n", *s))
 +			s = NULL;
-+		while (s && (*s == ' ' || *s == '\t'))
++		while (s && *s && strchr(" \t\n", *s))
 +			s++;
 +		if (!s || (*s && !ask) || cap < 1) {
 +			snprintf(msg, sizeof(msg), "ath takes a positive token count, "
-+				"ath N%s%s", ask ? ", or nothing" : "", agent_think_retry());
++				"ath N%s%s", ask ? " [note], or nothing" : "", agent_think_retry());
 +			return msg;
 +		}
 +		if (ask && cap <= agent_think_was) {
@@ -20621,7 +20625,7 @@ index 2888d7c60..353a5f7cc 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..68500373e 100644
+index 8a1339874..b75e2e097 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -21154,7 +21158,7 @@ index 8a1339874..68500373e 100644
 +		if (agent_tool && agent_checkpointing == 3 &&
 +				excmds[idx].ec != ec_ath) {
 +			snprintf(xaerr, sizeof(xaerr), "%s%sduring the thinking budget "
-+				"question; only ath N or ath runs%s", excmds[idx].name,
++				"question; only ath N [note] or ath runs%s", excmds[idx].name,
 +				*excmds[idx].name ? " command unavailable " :
 +				"unknown command ", agent_think_retry());
 +			ret = xaerr;
