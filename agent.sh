@@ -127,7 +127,7 @@ static char agent_think_lead[] =
 	"must finish thinking within it. My note on how to think:\n%s";
 /* Replies a thinking budget question waits for an answer after the first */
 #define AGENT_THINK_TRIES	5
-/* Automatic retries of a malformed assistant response */
+/* Automatic retries of a malformed assistant response, before one nudge */
 #define AGENT_BAD_TRIES	5
 static void agent_run(const char *input);
 static int agent_autocompact(const char *input);
@@ -2536,6 +2536,18 @@ static int agent_response_error(cJSON *root, char *error, size_t size)
 	return 0;
 }
 
+/* Log a user message sent within a run and add it to the context. A
+ * checkpoint keeps the messages after its opening one, so it stays a
+ * message of its own there; acl 1 rebuilds it from the log. */
+static void agent_run_user(const char *text)
+{
+	agent_log("USER", text);
+	if (agent_checkpointing)
+		cJSON_AddItemToArray(agent_messages, agent_msg("user", text));
+	else if (!agent_live() || agent_acl_kept())
+		agent_add_user(agent_messages, text);
+}
+
 static void agent_run_loop(const char *input)
 {
 	unsigned long serial = ++agent_serial, epoch = agent_epoch;
@@ -2724,7 +2736,9 @@ static void agent_run_loop(const char *input)
 				error, cJSON_IsString(finish) ? finish->valuestring : "unavailable",
 				encoded ? encoded : "(unavailable)",
 				retries < AGENT_BAD_TRIES ? "retrying automatically" :
-				"retry limit reached; history retained, submit to retry");
+				retries == AGENT_BAD_TRIES ?
+				"retry limit reached; nudging to continue" :
+				"nudge failed; history retained, submit to retry");
 			agent_log("NOTICE", diagnostic);
 			free(encoded);
 			cJSON_Delete(quoted);
@@ -2737,21 +2751,20 @@ static void agent_run_loop(const char *input)
 					"and unique nonempty call IDs. Arguments must be a JSON-encoded\n"
 					"object with a nonempty string command, for example\n"
 					"{\"command\":\"1,20p\"}.", error);
-				agent_log("USER", diagnostic);
-				/* A checkpoint keeps the messages after its opening
-				 * one, so this stays a message of its own there. */
-				if (agent_checkpointing)
-					cJSON_AddItemToArray(agent_messages,
-						agent_msg("user", diagnostic));
-				else if (!agent_live() || agent_acl_kept())
-					agent_add_user(agent_messages, diagnostic);
+				agent_run_user(diagnostic);
 			}
 			free(body);
 			cJSON_Delete(root);
 			if (retries++ < AGENT_BAD_TRIES)
 				continue;
-			return;
+			/* Past the retries one nudge is tried before giving up. */
+			if (retries > AGENT_BAD_TRIES + 1)
+				return;
+			agent_run_user(agent_continue);
+			continue;
 		}
+		/* The limit is on consecutive malformed responses. */
+		retries = 0;
 		agent_record_usage(root, request_bytes);
 		free(body);
 		if (noted)
@@ -12255,10 +12268,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..7b0275575
+index 000000000..32a544937
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4155 @@
+@@ -0,0 +1,4168 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12356,7 +12369,7 @@ index 000000000..7b0275575
 +	"must finish thinking within it. My note on how to think:\n%s";
 +/* Replies a thinking budget question waits for an answer after the first */
 +#define AGENT_THINK_TRIES	5
-+/* Automatic retries of a malformed assistant response */
++/* Automatic retries of a malformed assistant response, before one nudge */
 +#define AGENT_BAD_TRIES	5
 +static void agent_run(const char *input);
 +static int agent_autocompact(const char *input);
@@ -14765,6 +14778,18 @@ index 000000000..7b0275575
 +	return 0;
 +}
 +
++/* Log a user message sent within a run and add it to the context. A
++ * checkpoint keeps the messages after its opening one, so it stays a
++ * message of its own there; acl 1 rebuilds it from the log. */
++static void agent_run_user(const char *text)
++{
++	agent_log("USER", text);
++	if (agent_checkpointing)
++		cJSON_AddItemToArray(agent_messages, agent_msg("user", text));
++	else if (!agent_live() || agent_acl_kept())
++		agent_add_user(agent_messages, text);
++}
++
 +static void agent_run_loop(const char *input)
 +{
 +	unsigned long serial = ++agent_serial, epoch = agent_epoch;
@@ -14953,7 +14978,9 @@ index 000000000..7b0275575
 +				error, cJSON_IsString(finish) ? finish->valuestring : "unavailable",
 +				encoded ? encoded : "(unavailable)",
 +				retries < AGENT_BAD_TRIES ? "retrying automatically" :
-+				"retry limit reached; history retained, submit to retry");
++				retries == AGENT_BAD_TRIES ?
++				"retry limit reached; nudging to continue" :
++				"nudge failed; history retained, submit to retry");
 +			agent_log("NOTICE", diagnostic);
 +			free(encoded);
 +			cJSON_Delete(quoted);
@@ -14966,21 +14993,20 @@ index 000000000..7b0275575
 +					"and unique nonempty call IDs. Arguments must be a JSON-encoded\n"
 +					"object with a nonempty string command, for example\n"
 +					"{\"command\":\"1,20p\"}.", error);
-+				agent_log("USER", diagnostic);
-+				/* A checkpoint keeps the messages after its opening
-+				 * one, so this stays a message of its own there. */
-+				if (agent_checkpointing)
-+					cJSON_AddItemToArray(agent_messages,
-+						agent_msg("user", diagnostic));
-+				else if (!agent_live() || agent_acl_kept())
-+					agent_add_user(agent_messages, diagnostic);
++				agent_run_user(diagnostic);
 +			}
 +			free(body);
 +			cJSON_Delete(root);
 +			if (retries++ < AGENT_BAD_TRIES)
 +				continue;
-+			return;
++			/* Past the retries one nudge is tried before giving up. */
++			if (retries > AGENT_BAD_TRIES + 1)
++				return;
++			agent_run_user(agent_continue);
++			continue;
 +		}
++		/* The limit is on consecutive malformed responses. */
++		retries = 0;
 +		agent_record_usage(root, request_bytes);
 +		free(body);
 +		if (noted)
