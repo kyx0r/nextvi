@@ -409,7 +409,6 @@ static int agent_start(void)
 	char *dir, *path, *leaf;
 	time_t now;
 	struct tm *tm;
-	struct stat st;
 	int n = 0;
 	if (agent_ready)
 		return 0;
@@ -430,10 +429,11 @@ static int agent_start(void)
 	leaf = dir + strlen(dir);
 	if (!tm || !strftime(leaf, 17, "/%Y%m%d-%H%M%S", tm))
 		goto fail;
-	while (!stat(dir, &st) && S_ISDIR(st.st_mode))
+	while (mkdir(dir, 0700)) {
+		if (errno != EEXIST)
+			goto fail;
 		sprintf(leaf + 16, "-%d", ++n);
-	if (agent_mkdir(dir))
-		goto fail;
+	}
 	/* Absolute paths survive :cd during the session. */
 	if (*dir != '\''/'\'') {
 		char *cwd = getcwd(NULL, 0);
@@ -12245,7 +12245,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..b8d2f771c
+index 000000000..78eee9c46
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,4145 @@
@@ -12628,7 +12628,6 @@ index 000000000..b8d2f771c
 +	char *dir, *path, *leaf;
 +	time_t now;
 +	struct tm *tm;
-+	struct stat st;
 +	int n = 0;
 +	if (agent_ready)
 +		return 0;
@@ -12649,10 +12648,11 @@ index 000000000..b8d2f771c
 +	leaf = dir + strlen(dir);
 +	if (!tm || !strftime(leaf, 17, "/%Y%m%d-%H%M%S", tm))
 +		goto fail;
-+	while (!stat(dir, &st) && S_ISDIR(st.st_mode))
++	while (mkdir(dir, 0700)) {
++		if (errno != EEXIST)
++			goto fail;
 +		sprintf(leaf + 16, "-%d", ++n);
-+	if (agent_mkdir(dir))
-+		goto fail;
++	}
 +	/* Absolute paths survive :cd during the session. */
 +	if (*dir != '/') {
 +		char *cwd = getcwd(NULL, 0);
