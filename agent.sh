@@ -123,8 +123,8 @@ static int agent_think_empty;
  * question. */
 static char *agent_think_note;
 static char agent_think_lead[] =
-	"My last reply was discarded: its thinking was cut off at the cap. "
-	"My note for the reply that replaces it:\n%s";
+	"My thinking was cut off at %d tokens; the cap is now %d tokens and I "
+	"must finish thinking within it. My note on how to think:\n%s";
 /* Replies a thinking budget question waits for an answer after the first */
 #define AGENT_THINK_TRIES	5
 static void agent_run(const char *input);
@@ -2614,8 +2614,9 @@ static void agent_run_loop(const char *input)
 			!agent_packing && agent_logbuf == 3;
 		if (noted) {
 			char *text = emalloc(sizeof(agent_think_lead) +
-				strlen(agent_think_note));
-			sprintf(text, agent_think_lead, agent_think_note);
+				strlen(agent_think_note) + 32);
+			sprintf(text, agent_think_lead, agent_think_was,
+				agent_think_cap, agent_think_note);
 			cJSON_AddItemToArray(agent_messages,
 				agent_msg("assistant", text));
 			cJSON_AddItemToArray(agent_messages,
@@ -12245,10 +12246,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..1ad97150a
+index 000000000..dcbcdf369
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4145 @@
+@@ -0,0 +1,4146 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12342,8 +12343,8 @@ index 000000000..1ad97150a
 + * question. */
 +static char *agent_think_note;
 +static char agent_think_lead[] =
-+	"My last reply was discarded: its thinking was cut off at the cap. "
-+	"My note for the reply that replaces it:\n%s";
++	"My thinking was cut off at %d tokens; the cap is now %d tokens and I "
++	"must finish thinking within it. My note on how to think:\n%s";
 +/* Replies a thinking budget question waits for an answer after the first */
 +#define AGENT_THINK_TRIES	5
 +static void agent_run(const char *input);
@@ -14833,8 +14834,9 @@ index 000000000..1ad97150a
 +			!agent_packing && agent_logbuf == 3;
 +		if (noted) {
 +			char *text = emalloc(sizeof(agent_think_lead) +
-+				strlen(agent_think_note));
-+			sprintf(text, agent_think_lead, agent_think_note);
++				strlen(agent_think_note) + 32);
++			sprintf(text, agent_think_lead, agent_think_was,
++				agent_think_cap, agent_think_note);
 +			cJSON_AddItemToArray(agent_messages,
 +				agent_msg("assistant", text));
 +			cJSON_AddItemToArray(agent_messages,
