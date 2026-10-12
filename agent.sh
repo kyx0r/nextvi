@@ -1331,8 +1331,8 @@ static const char agent_cp_guide[] =
 	"calls. Commands written as text do not run. N,M is a range from N\n"
 	"through M; three or more numbers, N,M,K, are a list of turns.\n"
 	"A TURN is one of your replies: its reasoning, text, commands and results.\n"
-	"Its first result in your context starts with its TURN number; a reply\n"
-	"without commands has the number the list gives it.\n"
+	"Its last result in your context ends with a line [turn N end]; a\n"
+	"reply without commands has the number the list gives it.\n"
 	"N[,M]arate R sentence\n"
 	"  rate the TURN entries; the sentence says what the turn did and\n"
 	"  found; 0 also removes the turn\n"
@@ -1720,13 +1720,15 @@ static void agent_body(sbuf *sb, struct lbuf *lb, int beg, int end, int close)
 	sbuf_nul(sb)
 }
 
-/* The context names a turn on its first tool result; the log never holds
- * this text. */
+/* The context names a turn on the line that ends its last tool result; the
+ * log never holds this text. */
 static void agent_stamp(sbuf *sb, unsigned long n)
 {
 	char stamp[40];
-	snprintf(stamp, sizeof(stamp), "TURN %lu ", n);
-	sbuf_str(sb, stamp)
+	snprintf(stamp, sizeof(stamp), "[turn %lu end]", n);
+	if (sb->s_n && sb->s[sb->s_n-1] != '\''\n'\'')
+		sbuf_chr(sb, '\''\n'\'')
+	sbufn_str(sb, stamp)
 }
 
 /* Translate turn s of lb: one assistant message, then a tool message per
@@ -1740,10 +1742,13 @@ static void agent_add_turn(cJSON *msgs, struct lbuf *lb, struct agent_span *s)
 	cJSON *asst, *calls = cJSON_CreateArray(), *tools = cJSON_CreateArray();
 	cJSON *tc, *fn, *args, *tool, *last, *t;
 	char id[48], *json, *prev;
-	int len;
+	int len, lastex = -1;
 	sbuf_smake(text, 256)
 	sbuf_smake(reason, 256)
 	sbuf_smake(body, 256)
+	for (int k = 0; k < cnt; k++)
+		if (parts[k].role == AP_EX)
+			lastex = k;
 	for (int k = 0; k < cnt; k++) {
 		if (parts[k].role == AP_ASSISTANT || parts[k].role == AP_REASONING) {
 			sbuf *sb = parts[k].role == AP_ASSISTANT ? text : reason;
@@ -1767,15 +1772,15 @@ static void agent_add_turn(cJSON *msgs, struct lbuf *lb, struct agent_span *s)
 		cJSON_AddStringToObject(fn, "arguments", json);
 		free(json);
 		cJSON_Delete(args);
-		sbuf_cut(body, 0)
-		if (!cJSON_GetArraySize(calls))
-			agent_stamp(body, s->n);
+		sbufn_cut(body, 0)
 		cJSON_AddItemToArray(calls, tc);
 		if (k + 1 < cnt && parts[k + 1].role == AP_RESULT)
 			agent_body(body, lb, parts[k + 1].beg + 1, parts[k + 1].end,
 				parts[k + 1].close);
 		else
 			sbufn_str(body, "no result")
+		if (k == lastex)
+			agent_stamp(body, s->n);
 		tool = agent_msg("tool", body->s);
 		cJSON_AddStringToObject(tool, "tool_call_id", id);
 		cJSON_AddItemToArray(tools, tool);
@@ -2854,19 +2859,7 @@ reply:
 					err = "interactive input unavailable during agent execution";
 				}
 			}
-			if (agent_cancel)
-				sbuf_str(result, "cancelled\n")
-			else if (agent_pause)
-				sbuf_str(result,
-					"suspended; remaining commands "
-					"skipped\n")
-			else {
-				char status[64];
-				snprintf(status, sizeof(status), "status %d\n",
-					agent_child_status ?
-						agent_child_status : !!err);
-				sbuf_str(result, status)
-			}
+			/* The output comes first, as printed; these lines follow it. */
 			if (agent_edited) {
 				char edited[48];
 				snprintf(edited, sizeof(edited), "edited %d line%s\n",
@@ -2879,14 +2872,28 @@ reply:
 			}
 			sbuf_str(result, agent_jobmsg)
 			*agent_jobmsg = '\''\0'\'';
-			sbuf_mem(result, out->s, out->s_n)
-			char *safe = agent_safe_text(result->s, result->s_n);
+			if (agent_cancel)
+				sbuf_str(result, "cancelled\n")
+			else if (agent_pause)
+				sbuf_str(result,
+					"suspended; remaining commands "
+					"skipped\n")
+			else if (agent_child_status || err) {
+				char status[64];
+				snprintf(status, sizeof(status), "[error %d]\n",
+					agent_child_status ? agent_child_status : 1);
+				sbuf_str(result, status)
+			}
+			if (result->s_n && out->s_n && out->s[out->s_n-1] != '\''\n'\'')
+				sbuf_chr(out, '\''\n'\'')
+			sbuf_mem(out, result->s, result->s_n)
+			char *safe = agent_safe_text(out->s, out->s_n);
 			/* Session context only: checkpoint and pack exchanges are
 			 * discarded. */
 			sbuf_cut(out, 0)
-			if (!index && agent_logbuf == 3)
-				agent_stamp(out, turn);
 			sbufn_str(out, safe)
+			if (index + 1 == cJSON_GetArraySize(calls) && agent_logbuf == 3)
+				agent_stamp(out, turn);
 			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(
 				agent_messages, base + index),
 				"content", cJSON_CreateString(out->s));
@@ -7903,9 +7910,9 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "or NOTICE entry and of a part ends at its END line; lines before it\n" \
                 "are text even when they read as headers. Text that holds a line END\n" \
                 "has an id after its header, as in RESULT N.I id, and ends at END id.\n" \
-                "The first tool result of each turn the agent sees starts with TURN\n" \
-                "N; the log does not hold that text. Text replaces N through M as one\n" \
-                "entry with the role and number of N, a turn becoming a turn with\n" \
+                "The last tool result of each turn the agent sees ends with a line\n" \
+                "[turn N end]; the log does not hold it. Text replaces N through M as\n" \
+                "one entry with the role and number of N, a turn becoming a turn with\n" \
                 "only the text; no text removes them. Three or more numbers, as in\n" \
                 "2,4,7, name those turns alone, noted in place of the first; a number\n" \
                 "that is not a TURN rejects the list. The agent cannot change USER\n" \
@@ -8071,7 +8078,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "No argument toggles between 0 and 30.",
                 "Positive value is the seconds an agent shell command may run in the\n" \
                 "foreground. After that it keeps running in the background; the\n" \
-                "result has status 124, its process group and a file receiving\n" \
+                "result has error 124, its process group and a file receiving\n" \
                 "later output. A later result reports the exit status. 0 disables.")
             spec("ar[1]  Log and display returned agent reasoning",
                 "No argument logically inverts the option.",
@@ -10972,9 +10979,9 @@ static char *exspec_lines[] = {
 	"or NOTICE entry and of a part ends at its END line; lines before it",
 	"are text even when they read as headers. Text that holds a line END",
 	"has an id after its header, as in RESULT N.I id, and ends at END id.",
-	"The first tool result of each turn the agent sees starts with TURN",
-	"N; the log does not hold that text. Text replaces N through M as one",
-	"entry with the role and number of N, a turn becoming a turn with",
+	"The last tool result of each turn the agent sees ends with a line",
+	"[turn N end]; the log does not hold it. Text replaces N through M as",
+	"one entry with the role and number of N, a turn becoming a turn with",
 	"only the text; no text removes them. Three or more numbers, as in",
 	"2,4,7, name those turns alone, noted in place of the first; a number",
 	"that is not a TURN rejects the list. The agent cannot change USER",
@@ -11260,7 +11267,7 @@ static char *exspec_lines[] = {
 	"",
 	"Positive value is the seconds an agent shell command may run in the",
 	"foreground. After that it keeps running in the background; the",
-	"result has status 124, its process group and a file receiving",
+	"result has error 124, its process group and a file receiving",
 	"later output. A later result reports the exit status. 0 disables.",
 	"",
 	"ar[1]  Log and display returned agent reasoning",
@@ -12246,10 +12253,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..dcbcdf369
+index 000000000..c6fd5db5d
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4146 @@
+@@ -0,0 +1,4153 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -13551,8 +13558,8 @@ index 000000000..dcbcdf369
 +	"calls. Commands written as text do not run. N,M is a range from N\n"
 +	"through M; three or more numbers, N,M,K, are a list of turns.\n"
 +	"A TURN is one of your replies: its reasoning, text, commands and results.\n"
-+	"Its first result in your context starts with its TURN number; a reply\n"
-+	"without commands has the number the list gives it.\n"
++	"Its last result in your context ends with a line [turn N end]; a\n"
++	"reply without commands has the number the list gives it.\n"
 +	"N[,M]arate R sentence\n"
 +	"  rate the TURN entries; the sentence says what the turn did and\n"
 +	"  found; 0 also removes the turn\n"
@@ -13940,13 +13947,15 @@ index 000000000..dcbcdf369
 +	sbuf_nul(sb)
 +}
 +
-+/* The context names a turn on its first tool result; the log never holds
-+ * this text. */
++/* The context names a turn on the line that ends its last tool result; the
++ * log never holds this text. */
 +static void agent_stamp(sbuf *sb, unsigned long n)
 +{
 +	char stamp[40];
-+	snprintf(stamp, sizeof(stamp), "TURN %lu ", n);
-+	sbuf_str(sb, stamp)
++	snprintf(stamp, sizeof(stamp), "[turn %lu end]", n);
++	if (sb->s_n && sb->s[sb->s_n-1] != '\n')
++		sbuf_chr(sb, '\n')
++	sbufn_str(sb, stamp)
 +}
 +
 +/* Translate turn s of lb: one assistant message, then a tool message per
@@ -13960,10 +13969,13 @@ index 000000000..dcbcdf369
 +	cJSON *asst, *calls = cJSON_CreateArray(), *tools = cJSON_CreateArray();
 +	cJSON *tc, *fn, *args, *tool, *last, *t;
 +	char id[48], *json, *prev;
-+	int len;
++	int len, lastex = -1;
 +	sbuf_smake(text, 256)
 +	sbuf_smake(reason, 256)
 +	sbuf_smake(body, 256)
++	for (int k = 0; k < cnt; k++)
++		if (parts[k].role == AP_EX)
++			lastex = k;
 +	for (int k = 0; k < cnt; k++) {
 +		if (parts[k].role == AP_ASSISTANT || parts[k].role == AP_REASONING) {
 +			sbuf *sb = parts[k].role == AP_ASSISTANT ? text : reason;
@@ -13987,15 +13999,15 @@ index 000000000..dcbcdf369
 +		cJSON_AddStringToObject(fn, "arguments", json);
 +		free(json);
 +		cJSON_Delete(args);
-+		sbuf_cut(body, 0)
-+		if (!cJSON_GetArraySize(calls))
-+			agent_stamp(body, s->n);
++		sbufn_cut(body, 0)
 +		cJSON_AddItemToArray(calls, tc);
 +		if (k + 1 < cnt && parts[k + 1].role == AP_RESULT)
 +			agent_body(body, lb, parts[k + 1].beg + 1, parts[k + 1].end,
 +				parts[k + 1].close);
 +		else
 +			sbufn_str(body, "no result")
++		if (k == lastex)
++			agent_stamp(body, s->n);
 +		tool = agent_msg("tool", body->s);
 +		cJSON_AddStringToObject(tool, "tool_call_id", id);
 +		cJSON_AddItemToArray(tools, tool);
@@ -15074,19 +15086,7 @@ index 000000000..dcbcdf369
 +					err = "interactive input unavailable during agent execution";
 +				}
 +			}
-+			if (agent_cancel)
-+				sbuf_str(result, "cancelled\n")
-+			else if (agent_pause)
-+				sbuf_str(result,
-+					"suspended; remaining commands "
-+					"skipped\n")
-+			else {
-+				char status[64];
-+				snprintf(status, sizeof(status), "status %d\n",
-+					agent_child_status ?
-+						agent_child_status : !!err);
-+				sbuf_str(result, status)
-+			}
++			/* The output comes first, as printed; these lines follow it. */
 +			if (agent_edited) {
 +				char edited[48];
 +				snprintf(edited, sizeof(edited), "edited %d line%s\n",
@@ -15099,14 +15099,28 @@ index 000000000..dcbcdf369
 +			}
 +			sbuf_str(result, agent_jobmsg)
 +			*agent_jobmsg = '\0';
-+			sbuf_mem(result, out->s, out->s_n)
-+			char *safe = agent_safe_text(result->s, result->s_n);
++			if (agent_cancel)
++				sbuf_str(result, "cancelled\n")
++			else if (agent_pause)
++				sbuf_str(result,
++					"suspended; remaining commands "
++					"skipped\n")
++			else if (agent_child_status || err) {
++				char status[64];
++				snprintf(status, sizeof(status), "[error %d]\n",
++					agent_child_status ? agent_child_status : 1);
++				sbuf_str(result, status)
++			}
++			if (result->s_n && out->s_n && out->s[out->s_n-1] != '\n')
++				sbuf_chr(out, '\n')
++			sbuf_mem(out, result->s, result->s_n)
++			char *safe = agent_safe_text(out->s, out->s_n);
 +			/* Session context only: checkpoint and pack exchanges are
 +			 * discarded. */
 +			sbuf_cut(out, 0)
-+			if (!index && agent_logbuf == 3)
-+				agent_stamp(out, turn);
 +			sbufn_str(out, safe)
++			if (index + 1 == cJSON_GetArraySize(calls) && agent_logbuf == 3)
++				agent_stamp(out, turn);
 +			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(
 +				agent_messages, base + index),
 +				"content", cJSON_CreateString(out->s));
@@ -19961,7 +19975,7 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..a374515a0 100755
+index c836c94c7..9fa7eb112 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,272 @@ build() {
@@ -20041,9 +20055,9 @@ index c836c94c7..a374515a0 100755
 +                "or NOTICE entry and of a part ends at its END line; lines before it\n" \
 +                "are text even when they read as headers. Text that holds a line END\n" \
 +                "has an id after its header, as in RESULT N.I id, and ends at END id.\n" \
-+                "The first tool result of each turn the agent sees starts with TURN\n" \
-+                "N; the log does not hold that text. Text replaces N through M as one\n" \
-+                "entry with the role and number of N, a turn becoming a turn with\n" \
++                "The last tool result of each turn the agent sees ends with a line\n" \
++                "[turn N end]; the log does not hold it. Text replaces N through M as\n" \
++                "one entry with the role and number of N, a turn becoming a turn with\n" \
 +                "only the text; no text removes them. Three or more numbers, as in\n" \
 +                "2,4,7, name those turns alone, noted in place of the first; a number\n" \
 +                "that is not a TURN rejects the list. The agent cannot change USER\n" \
@@ -20209,7 +20223,7 @@ index c836c94c7..a374515a0 100755
 +                "No argument toggles between 0 and 30.",
 +                "Positive value is the seconds an agent shell command may run in the\n" \
 +                "foreground. After that it keeps running in the background; the\n" \
-+                "result has status 124, its process group and a file receiving\n" \
++                "result has error 124, its process group and a file receiving\n" \
 +                "later output. A later result reports the exit status. 0 disables.")
 +            spec("ar[1]  Log and display returned agent reasoning",
 +                "No argument logically inverts the option.",
@@ -21308,7 +21322,7 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..b1fb56480
+index 000000000..641cfbbc4
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1480 @@
@@ -22141,9 +22155,9 @@ index 000000000..b1fb56480
 +	"or NOTICE entry and of a part ends at its END line; lines before it",
 +	"are text even when they read as headers. Text that holds a line END",
 +	"has an id after its header, as in RESULT N.I id, and ends at END id.",
-+	"The first tool result of each turn the agent sees starts with TURN",
-+	"N; the log does not hold that text. Text replaces N through M as one",
-+	"entry with the role and number of N, a turn becoming a turn with",
++	"The last tool result of each turn the agent sees ends with a line",
++	"[turn N end]; the log does not hold it. Text replaces N through M as",
++	"one entry with the role and number of N, a turn becoming a turn with",
 +	"only the text; no text removes them. Three or more numbers, as in",
 +	"2,4,7, name those turns alone, noted in place of the first; a number",
 +	"that is not a TURN rejects the list. The agent cannot change USER",
@@ -22429,7 +22443,7 @@ index 000000000..b1fb56480
 +	"",
 +	"Positive value is the seconds an agent shell command may run in the",
 +	"foreground. After that it keeps running in the background; the",
-+	"result has status 124, its process group and a file receiving",
++	"result has error 124, its process group and a file receiving",
 +	"later output. A later result reports the exit status. 0 disables.",
 +	"",
 +	"ar[1]  Log and display returned agent reasoning",
