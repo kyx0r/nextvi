@@ -118,12 +118,13 @@ static cJSON *agent_think_held;
 static int agent_think_was, agent_think_more;
 /* The withheld reply is cut thinking alone, without text or calls */
 static int agent_think_empty;
-/* The text of an ath N answer: it ends the requests of the reply that
- * replaces the withheld one, unlogged like the question. */
+/* The text of an ath N answer: an assistant message near the end of the
+ * requests of the reply that replaces the withheld one, unlogged like the
+ * question. */
 static char *agent_think_note;
 static char agent_think_lead[] =
-	"Your last reply was discarded: its thinking was cut off at the cap. "
-	"Your note for the reply that replaces it:\n%s";
+	"My last reply was discarded: its thinking was cut off at the cap. "
+	"My note for the reply that replaces it:\n%s";
 /* Replies a thinking budget question waits for an answer after the first */
 #define AGENT_THINK_TRIES	5
 static void agent_run(const char *input);
@@ -2606,22 +2607,19 @@ static void agent_run_loop(const char *input)
 				cJSON_AddItemToArray(agent_messages,
 					agent_msg("user", agent_continue));
 		}
-		/* The note is in the context for the request alone; the user
-		 * message it joins is put back. */
-		cJSON *plain = NULL;
+		/* The note is in the context for the request alone, as assistant
+		 * text: the agent wrote it. The user message after it keeps the
+		 * note from ending the context. */
 		int noted = agent_think_note && !agent_checkpointing &&
 			!agent_packing && agent_logbuf == 3;
 		if (noted) {
-			cJSON *last = cJSON_GetArrayItem(agent_messages,
-				cJSON_GetArraySize(agent_messages) - 1);
 			char *text = emalloc(sizeof(agent_think_lead) +
 				strlen(agent_think_note));
 			sprintf(text, agent_think_lead, agent_think_note);
-			if (cJSON_IsString(cJSON_GetObjectItem(last, "content")) &&
-					!strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(
-					last, "role")), "user"))
-				plain = cJSON_Duplicate(last, 1);
-			agent_add_user(agent_messages, text);
+			cJSON_AddItemToArray(agent_messages,
+				agent_msg("assistant", text));
+			cJSON_AddItemToArray(agent_messages,
+				agent_msg("user", agent_continue));
 			free(text);
 		}
 		if (agent_checkpointing)
@@ -2659,8 +2657,8 @@ static void agent_run_loop(const char *input)
 		if (noted) {
 			cJSON_DeleteItemFromArray(agent_messages,
 				cJSON_GetArraySize(agent_messages) - 1);
-			if (plain)
-				cJSON_AddItemToArray(agent_messages, plain);
+			cJSON_DeleteItemFromArray(agent_messages,
+				cJSON_GetArraySize(agent_messages) - 1);
 		}
 		if (agent_cancel) {
 			free(body);
@@ -9835,8 +9833,8 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 	char msg[512];
 	static char *agent_cmds[] = {
 		"p", "g", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
-		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-		"ud", "rd", "aretry", "aout"
+		"exspec", "d", "j", "s", "cd", "bx", "fd", "inc",
+		"ud", "rd"
 	};
 	if (!*arg || !strcmp(arg, "catalog")) {
 		exspec_listed |= agent_tool;
@@ -12247,10 +12245,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..eea0b422
+index 000000000..1ad97150a
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4147 @@
+@@ -0,0 +1,4145 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12339,12 +12337,13 @@ index 00000000..eea0b422
 +static int agent_think_was, agent_think_more;
 +/* The withheld reply is cut thinking alone, without text or calls */
 +static int agent_think_empty;
-+/* The text of an ath N answer: it ends the requests of the reply that
-+ * replaces the withheld one, unlogged like the question. */
++/* The text of an ath N answer: an assistant message near the end of the
++ * requests of the reply that replaces the withheld one, unlogged like the
++ * question. */
 +static char *agent_think_note;
 +static char agent_think_lead[] =
-+	"Your last reply was discarded: its thinking was cut off at the cap. "
-+	"Your note for the reply that replaces it:\n%s";
++	"My last reply was discarded: its thinking was cut off at the cap. "
++	"My note for the reply that replaces it:\n%s";
 +/* Replies a thinking budget question waits for an answer after the first */
 +#define AGENT_THINK_TRIES	5
 +static void agent_run(const char *input);
@@ -14827,22 +14826,19 @@ index 00000000..eea0b422
 +				cJSON_AddItemToArray(agent_messages,
 +					agent_msg("user", agent_continue));
 +		}
-+		/* The note is in the context for the request alone; the user
-+		 * message it joins is put back. */
-+		cJSON *plain = NULL;
++		/* The note is in the context for the request alone, as assistant
++		 * text: the agent wrote it. The user message after it keeps the
++		 * note from ending the context. */
 +		int noted = agent_think_note && !agent_checkpointing &&
 +			!agent_packing && agent_logbuf == 3;
 +		if (noted) {
-+			cJSON *last = cJSON_GetArrayItem(agent_messages,
-+				cJSON_GetArraySize(agent_messages) - 1);
 +			char *text = emalloc(sizeof(agent_think_lead) +
 +				strlen(agent_think_note));
 +			sprintf(text, agent_think_lead, agent_think_note);
-+			if (cJSON_IsString(cJSON_GetObjectItem(last, "content")) &&
-+					!strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(
-+					last, "role")), "user"))
-+				plain = cJSON_Duplicate(last, 1);
-+			agent_add_user(agent_messages, text);
++			cJSON_AddItemToArray(agent_messages,
++				agent_msg("assistant", text));
++			cJSON_AddItemToArray(agent_messages,
++				agent_msg("user", agent_continue));
 +			free(text);
 +		}
 +		if (agent_checkpointing)
@@ -14880,8 +14876,8 @@ index 00000000..eea0b422
 +		if (noted) {
 +			cJSON_DeleteItemFromArray(agent_messages,
 +				cJSON_GetArraySize(agent_messages) - 1);
-+			if (plain)
-+				cJSON_AddItemToArray(agent_messages, plain);
++			cJSON_DeleteItemFromArray(agent_messages,
++				cJSON_GetArraySize(agent_messages) - 1);
 +		}
 +		if (agent_cancel) {
 +			free(body);
@@ -16400,7 +16396,7 @@ index 00000000..eea0b422
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..4f537641
+index 000000000..4f5376417
 --- /dev/null
 +++ b/agent.h
 @@ -0,0 +1,49 @@
@@ -16455,7 +16451,7 @@ index 00000000..4f537641
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 00000000..6e4fb0dd
+index 000000000..6e4fb0dd3
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -19652,7 +19648,7 @@ index 00000000..6e4fb0dd
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 00000000..cab5feb4
+index 000000000..cab5feb42
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -19963,7 +19959,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..a374515a 100755
+index c836c94c7..a374515a0 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,272 @@ build() {
@@ -20259,7 +20255,7 @@ index c836c94c..a374515a 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..353a5f7c 100644
+index 2888d7c60..353a5f7cc 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,350 @@
@@ -20625,7 +20621,7 @@ index 2888d7c6..353a5f7c 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a133987..b75e2e09 100644
+index 8a1339874..6e6221ceb 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -20950,8 +20946,8 @@ index 8a133987..b75e2e09 100644
 +	char msg[512];
 +	static char *agent_cmds[] = {
 +		"p", "g", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
-+		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-+		"ud", "rd", "aretry", "aout"
++		"exspec", "d", "j", "s", "cd", "bx", "fd", "inc",
++		"ud", "rd"
 +	};
 +	if (!*arg || !strcmp(arg, "catalog")) {
 +		exspec_listed |= agent_tool;
@@ -21217,7 +21213,7 @@ index 8a133987..b75e2e09 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 00000000..31004ff5
+index 000000000..31004ff54
 --- /dev/null
 +++ b/exspec.awk
 @@ -0,0 +1,87 @@
@@ -21310,7 +21306,7 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..b1fb5648
+index 000000000..b1fb56480
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1480 @@
@@ -22795,7 +22791,7 @@ index 00000000..b1fb5648
 +	{"err", "Control ex errors", 1288, 1300, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..8fde7a8f 100644
+index 56cb42c63..8fde7a8f9 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -22825,7 +22821,7 @@ index 56cb42c6..8fde7a8f 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e..2641d0ff 100644
+index 4893a07e5..2641d0ffc 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -22865,7 +22861,7 @@ index 4893a07e..2641d0ff 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 4e11ec2f..4668eda9 100644
+index 4e11ec2f9..4668eda91 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -22909,7 +22905,7 @@ index 4e11ec2f..4668eda9 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f..a0a9a3cb 100644
+index b1f9a16f1..a0a9a3cb4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,14 @@
@@ -22936,7 +22932,7 @@ index b1f9a16f..a0a9a3cb 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da595..b6ba4958 100644
+index c23da5950..b6ba49586 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
