@@ -406,7 +406,11 @@ static void agent_init(void)
 static int agent_start(void)
 {
 	const char *home = getenv("HOME");
-	char *dir, *path;
+	char *dir, *path, *leaf;
+	time_t now;
+	struct tm *tm;
+	struct stat st;
+	int n = 0;
 	if (agent_ready)
 		return 0;
 	if ((!log_dir && (!home || !*home)) || (log_dir && !*log_dir)) {
@@ -420,8 +424,15 @@ static int agent_start(void)
 		sprintf(dir, "%s/.nextvi/logs", home);
 	if (agent_mkdir(dir))
 		goto fail;
-	strcat(dir, "/session-XXXXXX");
-	if (!mkdtemp(dir))
+	/* Name the log directory with the start time. */
+	now = time(NULL);
+	tm = localtime(&now);
+	leaf = dir + strlen(dir);
+	if (!tm || !strftime(leaf, 17, "/%Y%m%d-%H%M%S", tm))
+		goto fail;
+	while (!stat(dir, &st) && S_ISDIR(st.st_mode))
+		sprintf(leaf + 16, "-%d", ++n);
+	if (agent_mkdir(dir))
 		goto fail;
 	/* Absolute paths survive :cd during the session. */
 	if (*dir != '\''/'\'') {
@@ -12234,10 +12245,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..cb48555a4
+index 000000000..b8d2f771c
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4134 @@
+@@ -0,0 +1,4145 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12614,7 +12625,11 @@ index 000000000..cb48555a4
 +static int agent_start(void)
 +{
 +	const char *home = getenv("HOME");
-+	char *dir, *path;
++	char *dir, *path, *leaf;
++	time_t now;
++	struct tm *tm;
++	struct stat st;
++	int n = 0;
 +	if (agent_ready)
 +		return 0;
 +	if ((!log_dir && (!home || !*home)) || (log_dir && !*log_dir)) {
@@ -12628,8 +12643,15 @@ index 000000000..cb48555a4
 +		sprintf(dir, "%s/.nextvi/logs", home);
 +	if (agent_mkdir(dir))
 +		goto fail;
-+	strcat(dir, "/session-XXXXXX");
-+	if (!mkdtemp(dir))
++	/* Name the log directory with the start time. */
++	now = time(NULL);
++	tm = localtime(&now);
++	leaf = dir + strlen(dir);
++	if (!tm || !strftime(leaf, 17, "/%Y%m%d-%H%M%S", tm))
++		goto fail;
++	while (!stat(dir, &st) && S_ISDIR(st.st_mode))
++		sprintf(leaf + 16, "-%d", ++n);
++	if (agent_mkdir(dir))
 +		goto fail;
 +	/* Absolute paths survive :cd during the session. */
 +	if (*dir != '/') {
