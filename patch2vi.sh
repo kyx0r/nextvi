@@ -696,7 +696,7 @@ compat && /^=== END COMPAT ===$/ { compat = 0; next }
 compat && diff { print }
 EOF
 	root=$(git rev-parse --show-toplevel)
-	cd "$root"
+	command cd "$root"
 	mkdir "$work/a" "$work/b"
 	while IFS= read -r s
 	do
@@ -711,7 +711,7 @@ EOF
 			awk -f "$work/extract.awk" "$s" > "$work/b/$s"
 		fi
 	done < "$work/files"
-	cd "$work"
+	command cd "$work"
 	status=0
 	git "$pager" diff --no-index --no-prefix -- a b || status=$?
 	[ "$status" -le 1 ]
