@@ -379,18 +379,31 @@ conversation.
 
 The new ex command "exspec" prints ex command specifications.
 The new ex option "aspec" forces agent to read specifications before
-executing new commands.
+executing new commands. The first unknown agent command of a session also
+printing the exspec command list, unless exspec has printed it.
 
-New "ar" ex option toggles display and logging of returned reasoning.
-It defaults to off (xar in conf.c). Reasoning appears before the answer
-after each response completes, if the server supplies reasoning_content
-or reasoning text.
+New "ar" ex option controls logging and display of returned reasoning. It
+defaults to 1 (xar in conf.c); no argument logically inverts it,
+turning 0 into 1 and any other value into 0.
+0 drops reasoning, 1 logs it as the first part of a turn without
+printing it during the run; 2 logs and prints it. Reasoning shows
+before the answer after a response completes, if the server supplies
+reasoning_content or reasoning text.
 
 The new ex command "ast" shows model state, context and settings.
-The new ex command "[N]ath [effort]" sets an N token cap on thinking and
-the reasoning effort, one word such as none or high. An omitted part is
-not sent and "ath" alone sends neither, leaving request_extra in charge;
-fields it does send replace those of request_extra.
+The new ex command "[N[,M]]ath [effort]" sets an N token cap on thinking
+and the reasoning effort, one word such as none or high. An omitted part
+is not sent and "ath" alone sends neither, leaving request_extra in
+charge; fields it does send replace those of request_extra. With N,M the
+agent may raise the cap up to M for one reply. A reply cut at the cap is
+withheld: its commands do not run and the conversation does not continue
+from it, though its reasoning and text are logged as the lead of the
+question; the agent is asked with "ath" to run it as it
+is or with "ath K", K above the cap, to discard it and retry; text after
+K adds a note to the new reply, which sees nothing of the discarded one.
+Nothing else runs during the question; after 5 retries the answer is
+taken as ath.
+
 The new ex command "apack" to compact the conversation using current agent 
 context.
 The new ex command "apack!" to compact the conversation by starting a
@@ -403,7 +416,7 @@ so log edits apply to the next request. No argument toggles 0 and 1.
 above 1 or below 0 rebuilds only after log edits and when a checkpoint
 ends, keeping replies as returned in between so the prompt cache holds.
 Above 1 a checkpoint runs every N tokens of growth, where the agent
-rates commands and trims the log; only the checkpoint commands run then.
+rates turns and trims the log; only the checkpoint commands run then.
 Negative values leave the checkpoint to the agent: after -N tokens of
 growth it estimates the work left, "acheck" checkpoints and "acheck N"
 defers for N tokens. "aco" may compact first and stays the backstop.
@@ -411,13 +424,14 @@ The new ex command "acheck [N]" starts a checkpoint or sets the budget of
 the next check.
 
 Checkpoint commands:
-"N[,M]arate R text" rates commands 0-3; 0 moves them to the
+"N[,M]arate R text" rates turns 0-3; 0 moves them to the
 discarded buffer at checkpoint.
 "N[,M]anote [text]" replaces entries with a note or removes them.
 "ali" prints the session log entry list with sizes and ratings; "auli"
-prints only the unrated commands; "acp" prints the checkpoint
+prints only the unrated turns; "acp" prints the checkpoint
 instructions.
-"adone" ends the checkpoint once all commands are rated.
+"adone" ends the checkpoint once all turns with commands are rated,
+refusing up to twice without new ratings.
 The new ex command "N[,M]aget [ROLE...]" prints log entries, trimmed ones
 included, optionally filtered by role.
 
@@ -434,6 +448,10 @@ The new ex command "aout" prints the saved output of the last agent tool
 call; a byte range selects part of it and its output is exempt from agr.
 The new ex command "aretry" executes the last command the agent ran or
 deferred by aspec, still under agr.
+The new ex option "ato" detaches a long-running agent shell command
+after N seconds; it is disabled by default (0) and a bare "ato"
+toggles between 0 and 30. The command keeps running in the background
+and its later output goes to a file.
 
 Adds temporary buffers /conversation/, /skills/ (system prompt), /notes/
 (ratings) and /discarded/ (trimmed entries). Both restart commands reload
