@@ -109,7 +109,12 @@ static int agent_think_cap = -1;
 static char agent_effort[32];
 /* ath N,M: the cap ath set and the ceiling the agent may raise it to for
  * one reply; 0 off */
-static int agent_think_base, agent_think_max;
+static int agent_think_base = -1, agent_think_max;
+/* The agent raised the cap for its next reply */
+static int agent_think_up;
+/* ata: thinking tokens of the replies that thought, and their count */
+static double agent_think_sum;
+static int agent_think_cnt;
 /* The response of a reply whose thinking the server cut, at the cap
  * agent_think_was: it is withheld while the agent is asked whether to
  * replace it with one thought out under a higher cap, and
@@ -1431,6 +1436,54 @@ static int agent_think_cut(const char *s)
 	return k && n >= k && !memcmp(s + n - k, think_cut, k);
 }
 
+/* Count the thinking tokens of the reply of response root, unless it did not
+ * think: the cap if it was cut there, else the reported count, else the
+ * output tokens by the thinking'\''s share of the reply'\''s bytes, or its
+ * bytes / 3 without a count. */
+static void agent_think_sample(cJSON *root)
+{
+	cJSON *message = cJSON_GetObjectItem(cJSON_GetArrayItem(
+		cJSON_GetObjectItem(root, "choices"), 0), "message");
+	cJSON *n = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(
+		root, "usage"), "completion_tokens_details"), "reasoning_tokens");
+	cJSON *content = cJSON_GetObjectItem(message, "content"), *tc;
+	const char *rkey;
+	char *reasoning = agent_reasoning(message, &rkey);
+	double tokens = cJSON_IsNumber(n) ? n->valuedouble : 0, bytes, all;
+	if (reasoning && agent_think_cap > 0 && agent_think_cut(reasoning)) {
+		tokens = agent_think_cap;
+	} else if (reasoning && tokens < 1) {
+		bytes = all = strlen(reasoning);
+		if (cJSON_IsString(content))
+			all += strlen(content->valuestring);
+		cJSON_ArrayForEach(tc, cJSON_GetObjectItem(message, "tool_calls")) {
+			char *args = cJSON_GetStringValue(cJSON_GetObjectItem(
+				cJSON_GetObjectItem(tc, "function"), "arguments"));
+			all += args ? strlen(args) : 0;
+		}
+		tokens = agent_usage.output > 0 ? agent_usage.output * bytes / all :
+			(bytes + 2) / 3;
+	}
+	if (tokens >= 1 && tokens < 1e9) {
+		agent_think_sum += tokens;
+		agent_think_cnt++;
+	}
+}
+
+/* Drop a cap the agent raised: the cap is what ath set or, with ata, the
+ * mean thinking of the replies counted, up to the ceiling or that cap. */
+static void agent_think_rebase(void)
+{
+	int top = agent_think_max ? agent_think_max : agent_think_base;
+	agent_think_up = 0;
+	agent_think_cap = agent_think_base;
+	if (xata && agent_think_cnt) {
+		agent_think_cap = agent_think_sum / agent_think_cnt + .5;
+		if (top > 0 && agent_think_cap > top)
+			agent_think_cap = top;
+	}
+}
+
 /* What ends the errors of a thinking budget question: the retry the next
  * reply is, while one is left. */
 static char *agent_think_retry(void)
@@ -2652,6 +2705,9 @@ static void agent_run_loop(const char *input)
 		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
 		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 		cJSON_AddBoolToObject(req, "stream", 0);
+		/* ata moves the cap with every reply counted. */
+		if (!agent_think_up)
+			agent_think_rebase();
 		if (agent_think_cap >= 0) {
 			while (cJSON_GetObjectItem(req, "reasoning_budget_tokens"))
 				cJSON_DeleteItemFromObject(req, "reasoning_budget_tokens");
@@ -2766,13 +2822,14 @@ static void agent_run_loop(const char *input)
 		/* The limit is on consecutive malformed responses. */
 		retries = 0;
 		agent_record_usage(root, request_bytes);
+		agent_think_sample(root);
 		free(body);
 		if (noted)
 			agent_think_unnote();
 		/* A raised cap lasts for one reply. */
 		if (!agent_checkpointing && agent_think_max) {
 			agent_think_was = agent_think_cap;
-			agent_think_cap = agent_think_base;
+			agent_think_rebase();
 			asked = 0;
 		}
 		if (cut) {
@@ -3039,7 +3096,7 @@ static void agent_run(const char *input)
 	/* A run can end before the reply a raised cap was for; autocompact
 	 * nests a run. */
 	if (agent_think_max && !agent_packing)
-		agent_think_cap = agent_think_base;
+		agent_think_rebase();
 	if (!agent_packing)
 		agent_think_unnote();
 	agent_think_drop();
@@ -3095,6 +3152,8 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 	ex_print(msg, msg_ft)
+	if (!agent_think_up)
+		agent_think_rebase();
 	if (agent_think_max)
 		snprintf(msg, sizeof(msg), "thinking   %d token cap, set by the "
 			"agent from %d up to %d, effort %s", agent_think_cap,
@@ -3107,6 +3166,12 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 		snprintf(msg, sizeof(msg), "thinking   no token cap, effort %s",
 			*agent_effort ? agent_effort : "unset");
 	ex_print(msg, msg_ft)
+	if (agent_think_cnt) {
+		snprintf(msg, sizeof(msg), "           %.0f mean thinking tokens over "
+			"%d replies%s", agent_think_sum / agent_think_cnt,
+			agent_think_cnt, xata ? "; ata sets the cap from it" : "");
+		ex_print(msg, msg_ft)
+	}
 	if (agent_acl_kept()) {
 		int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
 		int k = snprintf(msg, sizeof(msg), "acl        %d, context rebuilt "
@@ -3272,6 +3337,7 @@ static void *ec_ath(char *loc, char *cmd, char *arg)
 			return msg;
 		}
 		agent_think_cap = MIN(cap, agent_think_max);
+		agent_think_up = 1;
 		if (ask) {
 			agent_think_unnote();
 			if (*s)
@@ -3293,8 +3359,9 @@ static void *ec_ath(char *loc, char *cmd, char *arg)
 	}
 	if (strlen(arg) >= sizeof(agent_effort) || strpbrk(arg, " \t\n"))
 		return "ath argument must be one effort word";
-	agent_think_cap = agent_think_base = cap;
+	agent_think_base = cap;
 	agent_think_max = max;
+	agent_think_rebase();
 	strcpy(agent_effort, arg);
 	return NULL;
 }
@@ -8100,6 +8167,18 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "0 drops returned reasoning. 1 includes it in the session log, as\n" \
                 "part 0 of a turn, without printing it during the run. 2 logs and\n" \
                 "prints it.")
+            spec("ata[0]  Cap agent thinking at the mean of its replies",
+                "No argument logically inverts the option.",
+                "1 sends the mean thinking tokens of the replies counted as the ath\n" \
+                "cap of every request, in place of N; the mean moves with each\n" \
+                "reply. It stays within M of ath N,M, else within N, and N is sent\n" \
+                "until a reply is counted. Every accepted reply that thought is\n" \
+                "counted, with ata off too, for as long as the editor runs: a reply\n" \
+                "cut at the cap counts as the cap, else the reported\n" \
+                "reasoning_tokens, else the output tokens by the share of the\n" \
+                "thinking in the bytes of the reply. Replies without thinking are\n" \
+                "not counted. A cap the agent raised with ath N lasts for its\n" \
+                "reply. ast shows the mean.")
             print "     aspec[1]  Print ex specifications for agents"
             print ""
             print "             No argument logically inverts the option. 0 disables automatic"
@@ -8211,6 +8290,7 @@ static char *think_cut = "I have thought about this long enough; time to give my
 static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
+int xata;	/* cap agent thinking at the mean of its replies (:ata) */
 int xar = 1;	/* agent reasoning (:ar): 0 dropped, 1 logged, 2 logged and displayed */
 int xaco;	/* autocompact input-token threshold; 0 disables */
 int xacl;	/* rebuild agent context from the session log (:acl) */
@@ -8535,7 +8615,7 @@ static struct {
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
-'\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ato|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+'\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 |[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
@@ -9918,7 +9998,7 @@ static int exspec_agent(char *cmd, int ranges)
 
 ??!219reg ex.c:1637:m202sc %? %@2142sc!0?
 '\''21s/\(e/(aspec) EO(e/??!219reg ex.c:1705:m212sc %? %@2142sc!0?
-'\''22c EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
+'\''22c EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar) EO(ata)
 _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
 _EO(ato, xato = *arg ? MAX(0, eo_val(arg)) : xato ? 0 : 30; return NULL;)
 _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
@@ -9955,6 +10035,7 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 	{"acm", ec_skill},
 	{"ast", ec_ast},
 	{"ath", ec_ath},
+	EO(ata),
 	EO(ato),
 	EO(agr),
 ??!219reg ex.c:1760:m252sc %? %@2142sc!0?
@@ -11255,6 +11336,20 @@ static char *exspec_lines[] = {
 	"part 0 of a turn, without printing it during the run. 2 logs and",
 	"prints it.",
 	"",
+	"ata[0]  Cap agent thinking at the mean of its replies",
+	"No argument logically inverts the option.",
+	"",
+	"1 sends the mean thinking tokens of the replies counted as the ath",
+	"cap of every request, in place of N; the mean moves with each",
+	"reply. It stays within M of ath N,M, else within N, and N is sent",
+	"until a reply is counted. Every accepted reply that thought is",
+	"counted, with ata off too, for as long as the editor runs: a reply",
+	"cut at the cap counts as the cap, else the reported",
+	"reasoning_tokens, else the output tokens by the share of the",
+	"thinking in the bytes of the reply. Replies without thinking are",
+	"not counted. A cap the agent raised with ath N lasts for its",
+	"reply. ast shows the mean.",
+	"",
 	"aspec[1]  Print ex specifications for agents",
 	"",
 	"No argument logically inverts the option. 0 disables automatic",
@@ -11582,31 +11677,32 @@ static struct {
 	{"agr", "Control agent output protection", 1103, 1109, 1, 0},
 	{"ato", "Detach long agent shell commands", 1110, 1117, 1, 0},
 	{"ar", "Log and display returned agent reasoning", 1118, 1124, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1125, 1131, 1, 0},
-	{"ai", "Indent new lines", 1132, 1135, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1136, 1137, 1, 0},
-	{"ish", "Interactive shell", 1138, 1153, 1, 0},
-	{"grp", "Regex search group", 1154, 1162, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1163, 1166, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1167, 1168, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1168, 1169, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1169, 1170, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1170, 1171, 1, 0},
-	{"led", "Enable all terminal output", 1171, 1172, 1, 0},
-	{"vis", "Control startup flags", 1173, 1184, 1, 0},
-	{"mpt", "Control vi prompts", 1185, 1195, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1196, 1198, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1198, 1200, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1200, 1201, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1201, 1202, 1, 0},
-	{"td", "Current text direction context", 1202, 1208, 1, 0},
-	{"pr", "Print register", 1209, 1225, 1, 0},
-	{"fr", "Find register", 1226, 1238, 1, 0},
-	{"rr", "Record register", 1239, 1252, 1, 0},
-	{"lim", "Line length render limit", 1253, 1268, 1, 0},
-	{"seq", "Control Undo/Redo", 1269, 1281, 1, 0},
-	{"left", "Control horizontal scroll", 1282, 1287, 1, 0},
-	{"err", "Control ex errors", 1288, 1300, 1, 0},
+	{"ata", "Cap agent thinking at the mean of its replies", 1125, 1138, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1139, 1145, 1, 0},
+	{"ai", "Indent new lines", 1146, 1149, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1150, 1151, 1, 0},
+	{"ish", "Interactive shell", 1152, 1167, 1, 0},
+	{"grp", "Regex search group", 1168, 1176, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1177, 1180, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1181, 1182, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1182, 1183, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1183, 1184, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1184, 1185, 1, 0},
+	{"led", "Enable all terminal output", 1185, 1186, 1, 0},
+	{"vis", "Control startup flags", 1187, 1198, 1, 0},
+	{"mpt", "Control vi prompts", 1199, 1209, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1210, 1212, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1212, 1214, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1214, 1215, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1215, 1216, 1, 0},
+	{"td", "Current text direction context", 1216, 1222, 1, 0},
+	{"pr", "Print register", 1223, 1239, 1, 0},
+	{"fr", "Find register", 1240, 1252, 1, 0},
+	{"rr", "Record register", 1253, 1266, 1, 0},
+	{"lim", "Line length render limit", 1267, 1282, 1, 0},
+	{"seq", "Control Undo/Redo", 1283, 1295, 1, 0},
+	{"left", "Control horizontal scroll", 1296, 1301, 1, 0},
+	{"err", "Control ex errors", 1302, 1314, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -12231,10 +12327,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..32a544937
+index 000000000..d1ae4e6b1
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4168 @@
+@@ -0,0 +1,4235 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12314,7 +12410,12 @@ index 000000000..32a544937
 +static char agent_effort[32];
 +/* ath N,M: the cap ath set and the ceiling the agent may raise it to for
 + * one reply; 0 off */
-+static int agent_think_base, agent_think_max;
++static int agent_think_base = -1, agent_think_max;
++/* The agent raised the cap for its next reply */
++static int agent_think_up;
++/* ata: thinking tokens of the replies that thought, and their count */
++static double agent_think_sum;
++static int agent_think_cnt;
 +/* The response of a reply whose thinking the server cut, at the cap
 + * agent_think_was: it is withheld while the agent is asked whether to
 + * replace it with one thought out under a higher cap, and
@@ -13636,6 +13737,54 @@ index 000000000..32a544937
 +	return k && n >= k && !memcmp(s + n - k, think_cut, k);
 +}
 +
++/* Count the thinking tokens of the reply of response root, unless it did not
++ * think: the cap if it was cut there, else the reported count, else the
++ * output tokens by the thinking's share of the reply's bytes, or its
++ * bytes / 3 without a count. */
++static void agent_think_sample(cJSON *root)
++{
++	cJSON *message = cJSON_GetObjectItem(cJSON_GetArrayItem(
++		cJSON_GetObjectItem(root, "choices"), 0), "message");
++	cJSON *n = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(
++		root, "usage"), "completion_tokens_details"), "reasoning_tokens");
++	cJSON *content = cJSON_GetObjectItem(message, "content"), *tc;
++	const char *rkey;
++	char *reasoning = agent_reasoning(message, &rkey);
++	double tokens = cJSON_IsNumber(n) ? n->valuedouble : 0, bytes, all;
++	if (reasoning && agent_think_cap > 0 && agent_think_cut(reasoning)) {
++		tokens = agent_think_cap;
++	} else if (reasoning && tokens < 1) {
++		bytes = all = strlen(reasoning);
++		if (cJSON_IsString(content))
++			all += strlen(content->valuestring);
++		cJSON_ArrayForEach(tc, cJSON_GetObjectItem(message, "tool_calls")) {
++			char *args = cJSON_GetStringValue(cJSON_GetObjectItem(
++				cJSON_GetObjectItem(tc, "function"), "arguments"));
++			all += args ? strlen(args) : 0;
++		}
++		tokens = agent_usage.output > 0 ? agent_usage.output * bytes / all :
++			(bytes + 2) / 3;
++	}
++	if (tokens >= 1 && tokens < 1e9) {
++		agent_think_sum += tokens;
++		agent_think_cnt++;
++	}
++}
++
++/* Drop a cap the agent raised: the cap is what ath set or, with ata, the
++ * mean thinking of the replies counted, up to the ceiling or that cap. */
++static void agent_think_rebase(void)
++{
++	int top = agent_think_max ? agent_think_max : agent_think_base;
++	agent_think_up = 0;
++	agent_think_cap = agent_think_base;
++	if (xata && agent_think_cnt) {
++		agent_think_cap = agent_think_sum / agent_think_cnt + .5;
++		if (top > 0 && agent_think_cap > top)
++			agent_think_cap = top;
++	}
++}
++
 +/* What ends the errors of a thinking budget question: the retry the next
 + * reply is, while one is left. */
 +static char *agent_think_retry(void)
@@ -14857,6 +15006,9 @@ index 000000000..32a544937
 +		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
 +		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 +		cJSON_AddBoolToObject(req, "stream", 0);
++		/* ata moves the cap with every reply counted. */
++		if (!agent_think_up)
++			agent_think_rebase();
 +		if (agent_think_cap >= 0) {
 +			while (cJSON_GetObjectItem(req, "reasoning_budget_tokens"))
 +				cJSON_DeleteItemFromObject(req, "reasoning_budget_tokens");
@@ -14971,13 +15123,14 @@ index 000000000..32a544937
 +		/* The limit is on consecutive malformed responses. */
 +		retries = 0;
 +		agent_record_usage(root, request_bytes);
++		agent_think_sample(root);
 +		free(body);
 +		if (noted)
 +			agent_think_unnote();
 +		/* A raised cap lasts for one reply. */
 +		if (!agent_checkpointing && agent_think_max) {
 +			agent_think_was = agent_think_cap;
-+			agent_think_cap = agent_think_base;
++			agent_think_rebase();
 +			asked = 0;
 +		}
 +		if (cut) {
@@ -15244,7 +15397,7 @@ index 000000000..32a544937
 +	/* A run can end before the reply a raised cap was for; autocompact
 +	 * nests a run. */
 +	if (agent_think_max && !agent_packing)
-+		agent_think_cap = agent_think_base;
++		agent_think_rebase();
 +	if (!agent_packing)
 +		agent_think_unnote();
 +	agent_think_drop();
@@ -15300,6 +15453,8 @@ index 000000000..32a544937
 +	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 +		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 +	ex_print(msg, msg_ft)
++	if (!agent_think_up)
++		agent_think_rebase();
 +	if (agent_think_max)
 +		snprintf(msg, sizeof(msg), "thinking   %d token cap, set by the "
 +			"agent from %d up to %d, effort %s", agent_think_cap,
@@ -15312,6 +15467,12 @@ index 000000000..32a544937
 +		snprintf(msg, sizeof(msg), "thinking   no token cap, effort %s",
 +			*agent_effort ? agent_effort : "unset");
 +	ex_print(msg, msg_ft)
++	if (agent_think_cnt) {
++		snprintf(msg, sizeof(msg), "           %.0f mean thinking tokens over "
++			"%d replies%s", agent_think_sum / agent_think_cnt,
++			agent_think_cnt, xata ? "; ata sets the cap from it" : "");
++		ex_print(msg, msg_ft)
++	}
 +	if (agent_acl_kept()) {
 +		int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
 +		int k = snprintf(msg, sizeof(msg), "acl        %d, context rebuilt "
@@ -15477,6 +15638,7 @@ index 000000000..32a544937
 +			return msg;
 +		}
 +		agent_think_cap = MIN(cap, agent_think_max);
++		agent_think_up = 1;
 +		if (ask) {
 +			agent_think_unnote();
 +			if (*s)
@@ -15498,8 +15660,9 @@ index 000000000..32a544937
 +	}
 +	if (strlen(arg) >= sizeof(agent_effort) || strpbrk(arg, " \t\n"))
 +		return "ath argument must be one effort word";
-+	agent_think_cap = agent_think_base = cap;
++	agent_think_base = cap;
 +	agent_think_max = max;
++	agent_think_rebase();
 +	strcpy(agent_effort, arg);
 +	return NULL;
 +}
@@ -19968,10 +20131,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..9fa7eb112 100755
+index c836c94c7..d10b787e7 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,272 @@ build() {
+@@ -65,6 +65,284 @@ build() {
      }
  }
  
@@ -20223,6 +20386,18 @@ index c836c94c7..9fa7eb112 100755
 +                "0 drops returned reasoning. 1 includes it in the session log, as\n" \
 +                "part 0 of a turn, without printing it during the run. 2 logs and\n" \
 +                "prints it.")
++            spec("ata[0]  Cap agent thinking at the mean of its replies",
++                "No argument logically inverts the option.",
++                "1 sends the mean thinking tokens of the replies counted as the ath\n" \
++                "cap of every request, in place of N; the mean moves with each\n" \
++                "reply. It stays within M of ath N,M, else within N, and N is sent\n" \
++                "until a reply is counted. Every accepted reply that thought is\n" \
++                "counted, with ata off too, for as long as the editor runs: a reply\n" \
++                "cut at the cap counts as the cap, else the reported\n" \
++                "reasoning_tokens, else the output tokens by the share of the\n" \
++                "thinking in the bytes of the reply. Replies without thinking are\n" \
++                "not counted. A cap the agent raised with ath N lasts for its\n" \
++                "reply. ast shows the mean.")
 +            print "     aspec[1]  Print ex specifications for agents"
 +            print ""
 +            print "             No argument logically inverts the option. 0 disables automatic"
@@ -20244,7 +20419,7 @@ index c836c94c7..9fa7eb112 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +340,7 @@ install() {
+@@ -74,7 +352,7 @@ install() {
  }
  
  print_usage() {
@@ -20253,7 +20428,7 @@ index c836c94c7..9fa7eb112 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +348,9 @@ print_usage() {
+@@ -82,6 +360,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -20264,10 +20439,10 @@ index c836c94c7..9fa7eb112 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..353a5f7cc 100644
+index 2888d7c60..e784f8894 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,350 @@
+@@ -1,5 +1,351 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -20292,6 +20467,7 @@ index 2888d7c60..353a5f7cc 100644
 +static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 +int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 +int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
++int xata;	/* cap agent thinking at the mean of its replies (:ata) */
 +int xar = 1;	/* agent reasoning (:ar): 0 dropped, 1 logged, 2 logged and displayed */
 +int xaco;	/* autocompact input-token threshold; 0 disables */
 +int xacl;	/* rebuild agent context from the session log (:acl) */
@@ -20618,19 +20794,19 @@ index 2888d7c60..353a5f7cc 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +642,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +643,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
-+((pac|pr|aco!?|acl|ai|agr|ato|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..2e0009aac 100644
+index 8a1339874..64575fa0a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -21059,7 +21235,7 @@ index 8a1339874..2e0009aac 100644
 +EO(pac) EO(pr) EO(ai) EO(aspec) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
 -EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
-+EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
++EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar) EO(ata)
 +_EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
 +_EO(ato, xato = *arg ? MAX(0, eo_val(arg)) : xato ? 0 : 30; return NULL;)
 +_EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
@@ -21092,7 +21268,7 @@ index 8a1339874..2e0009aac 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2024,34 @@ static struct excmd {
+@@ -1758,8 +2024,35 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -21115,6 +21291,7 @@ index 8a1339874..2e0009aac 100644
 +	{"acm", ec_skill},
 +	{"ast", ec_ast},
 +	{"ath", ec_ath},
++	EO(ata),
 +	EO(ato),
 +	EO(agr),
  	EO(ai),
@@ -21127,7 +21304,7 @@ index 8a1339874..2e0009aac 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1939,8 +2231,76 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2232,76 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -21205,7 +21382,7 @@ index 8a1339874..2e0009aac 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2319,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2320,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -21311,10 +21488,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..641cfbbc4
+index 000000000..4a3bdd705
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1480 @@
+@@ -0,0 +1,1495 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -22442,6 +22619,20 @@ index 000000000..641cfbbc4
 +	"part 0 of a turn, without printing it during the run. 2 logs and",
 +	"prints it.",
 +	"",
++	"ata[0]  Cap agent thinking at the mean of its replies",
++	"No argument logically inverts the option.",
++	"",
++	"1 sends the mean thinking tokens of the replies counted as the ath",
++	"cap of every request, in place of N; the mean moves with each",
++	"reply. It stays within M of ath N,M, else within N, and N is sent",
++	"until a reply is counted. Every accepted reply that thought is",
++	"counted, with ata off too, for as long as the editor runs: a reply",
++	"cut at the cap counts as the cap, else the reported",
++	"reasoning_tokens, else the output tokens by the share of the",
++	"thinking in the bytes of the reply. Replies without thinking are",
++	"not counted. A cap the agent raised with ath N lasts for its",
++	"reply. ast shows the mean.",
++	"",
 +	"aspec[1]  Print ex specifications for agents",
 +	"",
 +	"No argument logically inverts the option. 0 disables automatic",
@@ -22769,31 +22960,32 @@ index 000000000..641cfbbc4
 +	{"agr", "Control agent output protection", 1103, 1109, 1, 0},
 +	{"ato", "Detach long agent shell commands", 1110, 1117, 1, 0},
 +	{"ar", "Log and display returned agent reasoning", 1118, 1124, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1125, 1131, 1, 0},
-+	{"ai", "Indent new lines", 1132, 1135, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1136, 1137, 1, 0},
-+	{"ish", "Interactive shell", 1138, 1153, 1, 0},
-+	{"grp", "Regex search group", 1154, 1162, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1163, 1166, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1167, 1168, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1168, 1169, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1169, 1170, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1170, 1171, 1, 0},
-+	{"led", "Enable all terminal output", 1171, 1172, 1, 0},
-+	{"vis", "Control startup flags", 1173, 1184, 1, 0},
-+	{"mpt", "Control vi prompts", 1185, 1195, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1196, 1198, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1198, 1200, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1200, 1201, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1201, 1202, 1, 0},
-+	{"td", "Current text direction context", 1202, 1208, 1, 0},
-+	{"pr", "Print register", 1209, 1225, 1, 0},
-+	{"fr", "Find register", 1226, 1238, 1, 0},
-+	{"rr", "Record register", 1239, 1252, 1, 0},
-+	{"lim", "Line length render limit", 1253, 1268, 1, 0},
-+	{"seq", "Control Undo/Redo", 1269, 1281, 1, 0},
-+	{"left", "Control horizontal scroll", 1282, 1287, 1, 0},
-+	{"err", "Control ex errors", 1288, 1300, 1, 0},
++	{"ata", "Cap agent thinking at the mean of its replies", 1125, 1138, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1139, 1145, 1, 0},
++	{"ai", "Indent new lines", 1146, 1149, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1150, 1151, 1, 0},
++	{"ish", "Interactive shell", 1152, 1167, 1, 0},
++	{"grp", "Regex search group", 1168, 1176, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1177, 1180, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1181, 1182, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1182, 1183, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1183, 1184, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1184, 1185, 1, 0},
++	{"led", "Enable all terminal output", 1185, 1186, 1, 0},
++	{"vis", "Control startup flags", 1187, 1198, 1, 0},
++	{"mpt", "Control vi prompts", 1199, 1209, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1210, 1212, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1212, 1214, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1214, 1215, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1215, 1216, 1, 0},
++	{"td", "Current text direction context", 1216, 1222, 1, 0},
++	{"pr", "Print register", 1223, 1239, 1, 0},
++	{"fr", "Find register", 1240, 1252, 1, 0},
++	{"rr", "Record register", 1253, 1266, 1, 0},
++	{"lim", "Line length render limit", 1267, 1282, 1, 0},
++	{"seq", "Control Undo/Redo", 1283, 1295, 1, 0},
++	{"left", "Control horizontal scroll", 1296, 1301, 1, 0},
++	{"err", "Control ex errors", 1302, 1314, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..8fde7a8f9 100644
