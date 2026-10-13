@@ -608,7 +608,7 @@ index 2888d7c60..60bc3c416 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..645bab79a 100644
+index 8165e6ed1..67dc7f655 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -57,6 +57,17 @@ static char xgerr[] = "invalid grp";

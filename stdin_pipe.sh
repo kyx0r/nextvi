@@ -99,7 +99,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 	readfile\(rd =\)
 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{.*(	if \(!\(xvis & 4\)\))
 		ex_print\(msg, bar_ft\)
-	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;8??0?
+	return rd \|\| \(fd < 0 && cd != 3\) \? xuerr : NULL;8??0?
 grp 08??-4m 2220reg p OK ex.c:440:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{
 		bufs_switch\(bufs_open\(arg\+cd, len\)\);
@@ -451,7 +451,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 8a133987..52482c74 100644
+index 8165e6ed1..dae280b1b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -419,7 +419,9 @@ int ex_edit(const char *path, int len)
@@ -515,7 +515,7 @@ index 8a133987..52482c74 100644
  		ex_command(s)
  }
 diff --git a/term.c b/term.c
-index 4e11ec2f..852d0fda 100644
+index 4e11ec2f9..852d0fda3 100644
 --- a/term.c
 +++ b/term.c
 @@ -7,6 +7,7 @@ int term_resized;
@@ -547,7 +547,7 @@ index 4e11ec2f..852d0fda 100644
  
  void term_done(void)
 diff --git a/vi.c b/vi.c
-index b1f9a16f..322ccacc 100644
+index b1f9a16f1..322ccacc1 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1818,6 +1818,7 @@ static void setup_signals(void)

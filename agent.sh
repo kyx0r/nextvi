@@ -8957,14 +8957,14 @@ static int ex_read\(sbuf \*sb, char \*msg, ins_state \*is, int ps, int flg\)5?
 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
-	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;1??0?
+	return rd \|\| \(fd < 0 && cd != 3\) \? xuerr : NULL;1??0?
 1??+3m 101q0?
 %f+ 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
-	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;2??0?
+	return rd \|\| \(fd < 0 && cd != 3\) \? xuerr : NULL;2??0?
 2??m 10220reg p OK ex.c:441:a22sc %? %@2152sc!1q0?
 %f+ 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
@@ -8976,17 +8976,17 @@ static int ex_read\(sbuf \*sb, char \*msg, ins_state \*is, int ps, int flg\)5?
 4??+3m 10220reg p OK ex.c:441:a42sc %? %@2152sc!1q0?
 %f+ 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
-	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;5??0?
+	return rd \|\| \(fd < 0 && cd != 3\) \? xuerr : NULL;5??0?
 5??-3m 10220reg p OK ex.c:441:a52sc %? %@2152sc!1q0?
-%f+ .................._.u.........\).
-.	.y......t\(....t\);
+%f+ ..ex.............x...f. a.g\[.]\).
+........t...x._....
 	.
-....ri..f......si........\)...."......dL.......
-.	.......t..\?.....a.h....u......., .b....e.\(...,
-	.....<.......d . .d....3...'\''.... ..... '\''..\);
-	.......vi....4\).
-...........m.g....r_f..
-...tu...\(.... ...\| r.. ......g...xu.......UL..6??0?
+.......t.\(.....s.....\(.s..,....%... ..........
+..........h...x..p.......u.n..e.".....f.......\),
+.	.f........... \?....=... \?...... .f... .....
+..f.\(.....s.&....
+.	.x_.......s....a.....
+	..t.rn ......\(.... 0....c........\?.....r.:......6??0?
 6??+3m 10220reg p OK ex.c:441:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		ex_bufpostfix\(ex_buf, arg\[0]\);.*?
 		syn_setft\(xb_ft\);.*?
@@ -20852,7 +20852,7 @@ index 2888d7c60..49476a73f 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..882c211f4 100644
+index 8165e6ed1..0eb49d8d2 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -20976,7 +20976,7 @@ index 8a1339874..882c211f4 100644
 +	}
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)
- 	return (fd < 0 || rd) && *arg ? xuerr : NULL;
+ 	return rd || (fd < 0 && cd != 3) ? xuerr : NULL;
 @@ -629,6 +667,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {

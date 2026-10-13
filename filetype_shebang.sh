@@ -33,7 +33,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 %f> 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
-	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;
+	return rd \|\| \(fd < 0 && cd != 3\) \? xuerr : NULL;
 }
 
 1??0?
@@ -89,7 +89,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 8a133987..266b91a4 100644
+index 8165e6ed1..94cfccd29 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -443,6 +443,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
@@ -113,6 +113,6 @@ index 8a133987..266b91a4 100644
 +			xb_ft = syn_setft(lfts[hl].ft);
 +		rset_free(rs);
 +	}
- 	return (fd < 0 || rd) && *arg ? xuerr : NULL;
+ 	return rd || (fd < 0 && cd != 3) ? xuerr : NULL;
  }
  

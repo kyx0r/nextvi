@@ -292,7 +292,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ren.c b/ren.c
-index 4116d9c1..b558db09 100644
+index 4116d9c18..b558db09d 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -110,9 +110,42 @@ ren_state *ren_position(char *s)
@@ -341,7 +341,7 @@ index 4116d9c1..b558db09 100644
  	int cpos = 0, wid, *col;
  	int *pos = emalloc((b * 2 * sizeof(pos[0])) + b * sizeof(char*));
 diff --git a/uc.c b/uc.c
-index 02ea9f25..79c754f2 100644
+index 02ea9f257..79c754f29 100644
 --- a/uc.c
 +++ b/uc.c
 @@ -22,6 +22,34 @@ unsigned char utf8_length[256] = {
@@ -380,7 +380,7 @@ index 02ea9f25..79c754f2 100644
  		s += l;
  	return n;
 diff --git a/vi.c b/vi.c
-index b1f9a16f..3406aff9 100644
+index b1f9a16f1..3406aff93 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1,3 +1,7 @@
@@ -392,7 +392,7 @@ index b1f9a16f..3406aff9 100644
  #include <fcntl.h>
  #include <stdio.h>
 diff --git a/vi.h b/vi.h
-index c23da595..8cbe7e07 100644
+index c23da5950..8cbe7e07a 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -40,9 +40,28 @@ static void *erealloc(void *p, size_t size)
