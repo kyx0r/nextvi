@@ -119,7 +119,7 @@ static int agent_think_cnt;
 static cJSON *agent_think_held;
 static int agent_think_was, agent_think_more;
 static int agent_think_empty;	/* the withheld reply has no text or calls */
-/* Note of an ath N answer: sent as assistant text with the requests of the
+/* Note of an acap N answer: sent as assistant text with the requests of the
  * replacement reply only, unlogged */
 static char *agent_think_note;
 static char agent_think_lead[] =
@@ -1098,9 +1098,9 @@ static int agent_cp_hold(char *unrated, int size)
 /* A rating to copy, for the first unrated entry in an agent_unrated list. */
 static char *agent_cp_example(char *unrated)
 {
-	static char ex[96];
-	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser and found "
-		"where defaults are set\n", strtoul(unrated + 5, NULL, 10));
+	static char ex[112];
+	snprintf(ex, sizeof(ex), "{\"command\":\"%luarate 2 read the option parser "
+		"and found where defaults are set\"}\n", strtoul(unrated + 5, NULL, 10));
 	return ex;
 }
 
@@ -1341,8 +1341,11 @@ static const char agent_cp_guide[] =
 	"%s"
 	"Then trim by rating, largest turns first: replace 1 with a short\n"
 	"note and a large 2 with its findings; keep 3, or replace a large one\n"
-	"with every detail the task depends on, e.g.\n"
-	"53,59anote findings: ...\n"
+	"with every detail the task depends on.\n"
+	"Example: replace turns 53 through 59 with their findings\n"
+	"{\"command\":\"53,59anote findings: ...\"}\n"
+	"Example: end the checkpoint\n"
+	"{\"command\":\"adone\"}\n"
 	"This exchange is not kept; ratings show in later checkpoints and\n"
 	"compaction.\n";
 
@@ -1368,8 +1371,14 @@ static char *agent_budget_open(void)
 		" tokens. Estimate and set the number of tokens the rest of this "
 		"task needs with acheck N command.");
 	if (xaco)
-		sprintf(s + k, "\nAn N reaching past %d runs the task until "
+		k += sprintf(s + k, "\nAn N reaching past %d runs the task until "
 			"compaction.", xaco);
+	/* N stays a placeholder: a number here would anchor the estimate. */
+	strcpy(s + k, agent_acl_budget ? "\nExample: trim the session log now\n"
+		"{\"command\":\"acheck\"}\nExample: defer it for N tokens\n"
+		"{\"command\":\"acheck N\"}" :
+		"\nExample: the rest of the task needs N tokens\n"
+		"{\"command\":\"acheck N\"}");
 	return s;
 }
 
@@ -1378,7 +1387,7 @@ static char *agent_budget_open(void)
 static void agent_checkpoint_begin(double tokens, int kind)
 {
 	static char *cmds[] = {"arate", "anote", "adone", "acp", "ali", "auli",
-		"acheck", "ath"};
+		"acheck", "acap"};
 	char note[64];
 	if (agent_checkpointing) {
 		agent_cp_outer.kind = agent_checkpointing;
@@ -1535,8 +1544,10 @@ static void agent_think_ask(cJSON *root)
 	cJSON *content = cJSON_GetObjectItem(message, "content");
 	const char *rkey;
 	char *reasoning = agent_reasoning(message, &rkey);
-	char line[320];
+	char line[320], *keep;
 	int cap = agent_think_was, cnt = cJSON_GetArraySize(calls);
+	/* the example cap: twice the cut one, within the ceiling */
+	int more = cap > 0 && cap < agent_think_max / 2 ? cap * 2 : agent_think_max;
 	sbuf_smake(sb, 1024)
 	agent_think_held = root;
 	agent_think_more = 0;
@@ -1570,15 +1581,19 @@ static void agent_think_ask(cJSON *root)
 		sbuf_chr(sb, '\''\n'\'')
 		cJSON_Delete(parsed);
 	}
-	snprintf(line, sizeof(line), "Use ath command to %s or ath N [note] to "
-		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
-		cnt ? "run the reply as it is (no rethink required)" :
+	keep = cnt ? "run the reply as it is (no rethink required)" :
 		agent_think_empty ? "reply again under the same cap" :
-		"keep the reply as it is (no rethink required)",
-		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
+		"keep the reply as it is (no rethink required)";
+	snprintf(line, sizeof(line), "Use acap command to %s or acap N [note] to "
+		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
+		keep, agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 	sbuf_str(sb, line)
 	sbuf_str(sb, "\nThe new reply sees nothing of this exchange except the "
 		"optional [note] after N. A note directs how to think better.")
+	snprintf(line, sizeof(line), "\nExample: %s\n{\"command\":\"acap\"}\n"
+		"Example: reply again under a cap of %d tokens, with a note\n"
+		"{\"command\":\"acap %d focus on ...\"}", keep, more, more);
+	sbuf_str(sb, line)
 	sbuf_nul(sb)
 	agent_cp_open = sb->s;
 	agent_log("USER", agent_cp_open);
@@ -3043,14 +3058,14 @@ reply:
 		}
 		/* An unanswered budget check gets two more requests, then becomes
 		 * a checkpoint; a thinking question gets AGENT_THINK_TRIES, then
-		 * counts as answered by ath alone. */
+		 * counts as answered by acap alone. */
 		if (agent_checkpointing >= 2 && !agent_cp_done) {
 			int think = agent_checkpointing == 3;
 			if (agent_cp_refused < (think ? AGENT_THINK_TRIES : 2)) {
 				if (!has_calls) {
 					char msg[96];
 					snprintf(msg, sizeof(msg), "Nothing ran; reply with "
-						"an ex tool call, %s%s", think ? "ath N [note] or ath" :
+						"an ex tool call, %s%s", think ? "acap N [note] or acap" :
 						"acheck N or acheck.", agent_think_retry());
 					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 					agent_log("USER", msg);
@@ -3306,58 +3321,61 @@ static char *agent_count(char *s, int *n)
 	return e;
 }
 
-/* User: [N[,M]]ath[effort] sets the cap, ceiling and effort. Agent: ath N
- * or Nath raises the cap to N, at most M, for its next reply; in a thinking
- * question ath alone keeps the cap and text after N is a note for the new
- * reply. */
-static void *ec_ath(char *loc, char *cmd, char *arg)
+/* acap N raises the thinking cap to N, at most the ceiling of ath N,M, for
+ * the next reply. In a thinking question that discards the withheld reply,
+ * text after N is a note for the new one and acap alone keeps the reply. */
+static void *ec_acap(char *loc, char *cmd, char *arg)
 {
 	static char msg[128];
-	int cap = -1, max = 0;
-	char *s = loc, *comma = strchr(loc, '\'','\'');
-	if (agent_tool) {
-		int ask = agent_checkpointing == 3;
-		if (!agent_think_max)
-			return "ath needs a ceiling set by the user";
-		while (*arg && strchr(" \t\n", *arg))
-			arg++;
-		/* The exchange of a question is discarded unread. */
-		if (ask && !*loc && !*arg) {
-			agent_cp_done = 1;
-			return NULL;
-		}
-		s = agent_count(*loc ? loc : arg, &cap);
-		if (s && *loc)
-			s = *s ? NULL : arg;
-		else if (s && *s && !strchr(" \t\n", *s))
-			s = NULL;
-		while (s && *s && strchr(" \t\n", *s))
-			s++;
-		if (!s || (*s && !ask) || cap < 1) {
-			snprintf(msg, sizeof(msg), "ath takes a positive token count, "
-				"ath N%s%s", ask ? " [note], or nothing" : "", agent_think_retry());
-			return msg;
-		}
-		if (ask && cap <= agent_think_was) {
-			snprintf(msg, sizeof(msg), "ath N takes a count above the cap "
-				"of %d tokens; ath alone leaves the cap%s", agent_think_was,
-				agent_think_retry());
-			return msg;
-		}
-		agent_think_cap = MIN(cap, agent_think_max);
-		agent_think_up = 1;
-		if (ask) {
-			agent_think_unnote();
-			if (*s)
-				agent_think_note = agent_safe_text(s, strlen(s));
-			agent_think_more = agent_cp_done = 1;
-			return NULL;
-		}
-		snprintf(msg, sizeof(msg), "thinking cap %d tokens for the next "
-			"reply", agent_think_cap);
-		ex_print(msg, msg_ft)
+	int cap = -1, ask = agent_checkpointing == 3;
+	char *s;
+	if (!agent_think_max)
+		return "acap needs a ceiling set by the user with ath N,M";
+	while (*arg && strchr(" \t\n", *arg))
+		arg++;
+	/* The exchange of a question is discarded unread. */
+	if (ask && !*loc && !*arg) {
+		agent_cp_done = 1;
 		return NULL;
 	}
+	s = agent_count(arg, &cap);
+	if (s && *s && !strchr(" \t\n", *s))
+		s = NULL;
+	while (s && *s && strchr(" \t\n", *s))
+		s++;
+	if (*loc || !s || (*s && !ask) || cap < 1) {
+		snprintf(msg, sizeof(msg), "acap takes no range, only a positive "
+			"token count: acap N%s%s", ask ? " [note], or nothing" : "",
+			agent_think_retry());
+		return msg;
+	}
+	if (ask && cap <= agent_think_was) {
+		snprintf(msg, sizeof(msg), "acap N takes a count above the cap "
+			"of %d tokens; acap alone leaves the cap%s", agent_think_was,
+			agent_think_retry());
+		return msg;
+	}
+	agent_think_cap = MIN(cap, agent_think_max);
+	agent_think_up = 1;
+	if (ask) {
+		agent_think_unnote();
+		if (*s)
+			agent_think_note = agent_safe_text(s, strlen(s));
+		agent_think_more = agent_cp_done = 1;
+		return NULL;
+	}
+	snprintf(msg, sizeof(msg), "thinking cap %d tokens for the next "
+		"reply", agent_think_cap);
+	ex_print(msg, msg_ft)
+	return NULL;
+}
+
+/* [N[,M]]ath[effort] sets the thinking cap, the ceiling acap may raise it to
+ * and the effort. */
+static void *ec_ath(char *loc, char *cmd, char *arg)
+{
+	int cap = -1, max = 0;
+	char *s = loc, *comma = strchr(loc, '\'','\'');
 	if (*s) {
 		s = agent_count(s, &cap);
 		if (s && s == comma)
@@ -3899,7 +3917,7 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 	/* The range was read above, before the switch to the session log. */
 	if (compact) {
 		temp_switch(3, 0);
-		spec = exspec_pack(3);
+		spec = exspec_pack(1);
 	}
 	if (cmd[1]) {
 		agent_epoch++;
@@ -4199,7 +4217,7 @@ static int agent_autocompact(const char *input)
 		"autocompact: summarizing loaded session log");
 	if (browse)
 		exspec_reset();
-	int spec = exspec_pack(3);
+	int spec = exspec_pack(1);
 	agent_messages = NULL;
 	agent_history(!browse);
 	agent_packing = 1;
@@ -4292,7 +4310,7 @@ static double agent_acl_mark;
 static int agent_acl_budget;
 /* 1: checkpoint, only log trimming runs until adone;
  * 2: acl < 0 budget check, only acheck runs;
- * 3: ath N,M thinking question, only ath runs; it interrupts the task, a
+ * 3: ath N,M thinking question, only acap runs; it interrupts the task, a
  * pack, 1 or 2, which goes on once it ends */
 static int agent_checkpointing;
 static char agent_deferred[32];	/* first command aspec deferred in the tool call */
@@ -4307,6 +4325,7 @@ static void *ec_adone(char *loc, char *cmd, char *arg);
 static void *ec_acheck(char *loc, char *cmd, char *arg);
 static void *ec_acp(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
+static void *ec_acap(char *loc, char *cmd, char *arg);
 static void *ec_ath(char *loc, char *cmd, char *arg);
 static char *agent_think_retry(void);
 static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -7945,7 +7964,8 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "for humans. catalog lists all commands and options; a command name\n" \
                 "prints its specification, hidden commands included; other text\n" \
                 "with range characters prints ranges. Topics: parsing, escapes,\n" \
-                "expansion, ranges, regex, commands, options.\n\n" \
+                "expansion, ranges, regex, commands, options. As an agent tool, the\n" \
+                "examples of a command print as the arguments of its ex tool call.\n\n" \
                 "Example: list all commands\n:exspec catalog")
             spec("[range]a[text]", "Open or resume the agent conversation",
                 "Keeps the conversation. Text prefills the prompt; range attaches\n" \
@@ -8082,25 +8102,31 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "one word sent as reasoning_effort, such as none, low, medium, high\n" \
                 "or xhigh. An omitted part is not sent; ath alone sends neither. Sent\n" \
                 "fields replace those of request_extra. ast shows the setting.\n\n" \
-                "With N,M the agent may raise the cap for one reply: as an agent\n" \
-                "tool ath takes only a count, as its argument or its range, capped\n" \
-                "at M, for its next reply.\n\n" \
-                "With N,M a reply whose thinking the server cut at a cap below M is\n" \
+                "With N,M the agent may raise the cap up to M for one reply with\n" \
+                "acap, and a reply whose thinking the server cut at a cap below M is\n" \
                 "withheld: not logged, its commands not run. The server marks the cut\n" \
                 "by ending the thinking with think_cut of conf.c. The agent is shown\n" \
                 "the reply and its commands, in an exchange kept in b-8 only, and\n" \
-                "answers ath to run the reply as it is, or ath N, a count above the\n" \
-                "cap, to discard it and reply again under cap N. Text after N is a\n" \
-                "note sent with the requests of the new reply only, unlogged; that\n" \
-                "reply sees nothing else of the exchange and is not asked about.\n" \
-                "Nothing else runs meanwhile; after five retries the answer is taken\n" \
-                "as ath. A cut reply without text and commands is requested again\n" \
-                "either way. Replies of an acl checkpoint, a budget check and a pack\n" \
-                "agent are asked about too; what was interrupted then goes on, and a\n" \
-                "new checkpoint, budget check or compaction waits for the new reply.\n\n" \
+                "answers with acap. Replies of an acl checkpoint, a budget check and\n" \
+                "a pack agent are asked about too; what was interrupted then goes on,\n" \
+                "and a new checkpoint, budget check or compaction waits for the new\n" \
+                "reply. Unavailable as an agent tool.\n\n" \
                 "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
                 "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
                 ":4096,32768ath medium")
+            spec("acap[count note]", "Raise the agent thinking cap for one reply",
+                "count is a token count N: the thinking cap of the next reply, at\n" \
+                "most the ceiling M of ath N,M. Takes no range. Errors without a\n" \
+                "ceiling.\n\n" \
+                "In the question about a reply whose thinking was cut, acap N, a\n" \
+                "count above the cap, discards the reply and requests it again under\n" \
+                "cap N. Text after N is a note sent with the requests of the new\n" \
+                "reply only, unlogged; that reply sees nothing else of the exchange\n" \
+                "and is not asked about. acap alone runs the reply as it is. Nothing\n" \
+                "else runs meanwhile; after five retries the answer is taken as acap.\n" \
+                "A cut reply without text and commands is requested again either\n" \
+                "way.\n\n" \
+                "Example: think up to 8192 tokens in the next reply\n:acap 8192")
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
@@ -8178,17 +8204,16 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "from 1 to M of ath N,M, else to N. Replies are counted with ata off\n" \
                 "too: by the reported reasoning_tokens, else the output tokens by the\n" \
                 "share of the thinking in the bytes of the reply. A cap the agent\n" \
-                "raised with ath N lasts for its reply. ast shows the average.\n\n" \
+                "raised with acap N lasts for its reply. ast shows the average.\n\n" \
                 "Example: start at 2048 tokens and follow the average, up to 16384\n" \
                 ":2048,16384ath:ata\n\n" \
                 "Example: cap at twice the average\n:ata 200")
             spec("aspec[1]  Print ex specifications for agents",
                 "No argument logically inverts the option. 0 disables.",
                 "The first use of a command by the agent prints its specification\n" \
-                "instead of running it, with that of ranges at the first line range;\n" \
-                "aretry then runs the command. The first unknown agent command of a\n" \
-                "session also prints the exspec command list, unless exspec has\n" \
-                "printed it.")
+                "instead of running it; aretry then runs the command. The first\n" \
+                "unknown agent command of a session also prints the exspec command\n" \
+                "list, unless exspec has printed it.")
             aspec_done = 1
         }
         { print }
@@ -8526,80 +8551,6 @@ static char exspec_agent_expansion[] =
 	"\n"
 	"Expansion is unavailable by default during agent execution.";
 
-static char exspec_agent_ranges[] =
-	"EX RANGES\n"
-	"Some ex commands take a range before the command name, as in 1,5p.\n"
-	"[range] selects lines and optionally characters on them, as in 1,5p\n"
-	"or 5;2;4p.\n"
-	"[vrange] selects lines only; a character offset in it does not narrow\n"
-	"the command, as in 10,20g/int/d.\n"
-	"A range without a command moves the cursor, as in 10;50.\n"
-	"\n"
-	"[% |][, ;][#][. $ '\'' > <][- + * / %][#num]\n"
-	"All ranges structure\n"
-	"{|}{cmd}[|]\n"
-	"Ex subcommand structure\n"
-	"{>}[regex][>]\n"
-	"Search forward structure\n"
-	"{<}[regex][<]\n"
-	"Search backward structure\n"
-	"'\''{#mark}\n"
-	"Mark structure\n"
-	"\n"
-	"%       Range from first to last line\n"
-	"|       Begin ex subcommand block\n"
-	",       Vertical range separator\n"
-	";       Horizontal range separator\n"
-	"#       Rebase to previous value in range structure\n"
-	".       Current position\n"
-	"$       Last line of a buffer or end of line\n"
-	"'\''       Begin mark structure\n"
-	">       Begin search forward block\n"
-	"<       Begin search backward block\n"
-	"-       Subtract following number\n"
-	"+       Add following number\n"
-	"*       Multiply by the following number\n"
-	"/       Divide by the following number\n"
-	"%       Modulo by the following number\n"
-	"#num    Number or position\n"
-	"\n"
-	"Examples:\n"
-	"1,5p   Print lines 1,5\n"
-	".-5,.+5p\n"
-	"Print 5 lines around current position\n"
-	">int>p\n"
-	"Print first occurrence of \"int\"\n"
-	"<int<p\n"
-	"Print first occurrence of \"int\" in reverse\n"
-	".,>int>p\n"
-	"Print until \"int\" is found\n"
-	"<int<,.p\n"
-	"Print until \"int\" is found in reverse\n"
-	">      Search using previously set regex keyword\n"
-	"'\''100,'\''97p\n"
-	"Print lines from mark <d> to mark <a>\n"
-	"%p     Print all lines in a buffer\n"
-	"$p     Print last line in a buffer\n"
-	"$*50/100+1\n"
-	"Goto 50% of the file\n"
-	";50    Goto character offset 50\n"
-	"10;50  Goto line 10 character offset 50\n"
-	"10;.+5\n"
-	"Goto line 10 +5 character offset\n"
-	"'\''97;'\''97\n"
-	"Goto line mark <a> offset mark <a>\n"
-	";$     Goto end of line\n"
-	"5;>int>\n"
-	"Search for \"int\" on line 5\n"
-	".;<int<\n"
-	"Search for \"int\" in reverse on the current line\n"
-	";5;+10=\n"
-	"+10 is relative to the initial current offset, not 5\n"
-	";5;#+10=\n"
-	"+10 is relative to 5\n"
-	";>int>+3;#>>p\n"
-	"Print text enclosed by \"int\" on the current line";
-
 static struct {
 	char *cmd, *text;
 } conf_exspec_agent[] = {
@@ -8614,12 +8565,11 @@ static struct {
 	{"parsing", exspec_agent_parsing},
 	{"escapes", exspec_agent_escapes},
 	{"expansion", exspec_agent_expansion},
-	{"ranges", exspec_agent_ranges},
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acap|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -9774,9 +9724,9 @@ static char xaerr[128];
 		const char *endop = e > n ? " < end" : "";
 		snprintf(xirrmsg, sizeof(xirrmsg),
 			"invalid range: beg:%ld%s%s end:%ld o1:%d o2:%d "
-			"xoff:%d xrow:%d%s lbuf_len:%d%s%s",
+			"xoff:%d xrow:%d%s lbuf_len:%d%s%s%s",
 			b, begop, op, e, *o1, *o2, xoff, xrow, rowop, n,
-			begend, endop);
+			begend, endop, agent_tool ? "; see exspec ranges" : "");
 		xrerr = xirrmsg;
 	}
 	return invalid * ret;
@@ -9846,7 +9796,6 @@ static char xaerr[128];
 
 #include "exspec.h"
 
-static int exspec_ranges_read;
 static char *aretry_saved;
 static struct excmd *aretry_cmd;
 static int aretry_arg;
@@ -9886,17 +9835,13 @@ static void exspec_reset(void)
 	free(agent_show);
 	agent_show = NULL;
 	agent_show_n = 0;
-	exspec_ranges_read = exspec_listed = 0;
+	exspec_listed = 0;
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		exspec_cmds[i].read = 0;
 }
 
 static int exspec_mark(char *arg)
 {
-	if (!strcmp(arg, "ranges")) {
-		exspec_ranges_read = 1;
-		return 1;
-	}
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		if (!strcmp(arg, exspec_cmds[i].name)) {
 			exspec_cmds[i].read = 1;
@@ -9905,24 +9850,61 @@ static int exspec_mark(char *arg)
 	return 0;
 }
 
-/* Set the c (bit 1) and ranges (bit 0) read state; return the prior state.
- * Pack prompts explain %c, so its spec need not defer the summary. */
-static int exspec_pack(int state)
+/* Set the read state of c; return the prior one. Pack prompts explain %c,
+ * so its spec need not defer the summary. */
+static int exspec_pack(int read)
 {
-	int prev = exspec_ranges_read;
-	exspec_ranges_read = state & 1;
+	int prev = 0;
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		if (!strcmp(exspec_cmds[i].name, "c")) {
-			prev |= exspec_cmds[i].read << 1;
-			exspec_cmds[i].read = state >> 1;
+			prev = exspec_cmds[i].read;
+			exspec_cmds[i].read = read;
 		}
 	return prev;
 }
 
+/* Append spec text s to sb, each example command as the arguments of its ex
+ * tool call. The command is the lines after an "Example: " one, up to a
+ * blank line or the next example. README examples (!multi) also hold sample
+ * text and <^X> keys for people, so only a lone line without keys converts. */
+static void exspec_json(sbuf *sb, char *s, int multi)
+{
+	char *b, *e, *p;
+	int n, human;
+	for (; *s; s = e) {
+		e = s + strcspn(s, "\n");
+		e += *e == '\''\n'\'';
+		sbuf_mem(sb, s, e - s)
+		if (strncmp(s, "Example: ", 9))
+			continue;
+		for (b = e, n = 0; *e && *e != '\''\n'\'' && strncmp(e, "Example", 7); n++) {
+			e += strcspn(e, "\n");
+			e += *e == '\''\n'\'';
+		}
+		for (p = b, human = n > 1; p < e; p++)
+			human |= p[0] == '\''<'\'' && p[1] == '\''^'\'';
+		if (!n || (!multi && human)) {
+			e = b;
+			continue;
+		}
+		sbuf_str(sb, "{\"command\":\"")
+		for (p = b; p < e - (e[-1] == '\''\n'\''); p++) {
+			if (*p == '\''\n'\'') {
+				sbuf_str(sb, "\\n")
+				continue;
+			}
+			if (*p == '\''"'\'' || *p == '\''\\'\'')
+				sbuf_chr(sb, '\''\\'\'')
+			sbuf_chr(sb, *p)
+		}
+		sbuf_str(sb, e[-1] == '\''\n'\'' ? "\"}\n" : "\"}")
+	}
+}
+
 static void *ec_exspec(char *loc, char *cmd, char *arg)
 {
-	int i, j, k, option, begin = -1, end = 0;
-	char msg[512];
+	int i, j, k, option, json, begin = -1, end = 0;
+	char msg[512], *text = NULL;
 	static char *agent_cmds[] = {
 		"p", "g", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
 		"exspec", "d", "j", "s", "cd", "bx", "fd", "inc",
@@ -9967,6 +9949,8 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 			end = exspec_cmds[i].end;
 			break;
 		}
+	/* topics describe syntax, not calls, and stay as written */
+	json = agent_tool && begin >= 0;
 	if (begin < 0) {
 		if (strpbrk(arg, "%|,;#.$'\''><-+*/0123456789"))
 			arg = "ranges";
@@ -9987,39 +9971,49 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 	exspec_mark(arg);
 	/* An agent specification replaces the README one and its guidance. */
 	for (i = 0; agent_tool && i < LEN(conf_exspec_agent); i++)
-		if (!strcmp(arg, conf_exspec_agent[i].cmd)) {
-			ex_print(conf_exspec_agent[i].text, msg_ft)
-			return NULL;
-		}
+		if (!strcmp(arg, conf_exspec_agent[i].cmd))
+			text = conf_exspec_agent[i].text;
+	if (text && !json) {
+		ex_print(text, msg_ft)
+		return NULL;
+	}
 	while (end > begin && !*exspec_lines[end - 1])
 		end--;
-	for (i = begin; i < end; i++)
-		ex_print(exspec_lines[i], msg_ft)
+	if (!json) {
+		for (i = begin; i < end; i++)
+			ex_print(exspec_lines[i], msg_ft)
+		return NULL;
+	}
+	sbuf_smake(sb, 1024)
+	sbuf_smake(readme, 1024)
+	for (i = begin; !text && i < end; i++) {
+		sbuf_str(readme, exspec_lines[i])
+		sbuf_chr(readme, '\''\n'\'')
+	}
+	sbuf_nul(readme)
+	exspec_json(sb, text ? text : readme->s, !!text);
+	sbuf_nul(sb)
+	ex_print(sb->s, msg_ft)
+	free(readme->s);
+	free(sb->s);
 	return NULL;
 }
 
-static int exspec_agent(char *cmd, int ranges)
+static int exspec_agent(char *cmd)
 {
-	int msg = 0;
-	char msgtext[256];
-	snprintf(msgtext, sizeof(msgtext),
-		"%s command execution deferred for specifications. (aspec option)\n"
-		"%s%s command will not be deferred from now on. (aretry to execute this command)\n\n",
-		cmd, ranges && !exspec_ranges_read ? "ranges and " : "", cmd);
-	if (ranges && !exspec_ranges_read) {
-		exspec_ranges_read = 1;
-		msg = 1;
-		ex_print(msgtext, msg_ft)
-		ec_exspec(NULL, "exspec", "ranges");
-	}
+	char msg[256];
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		if (!strcmp(cmd, exspec_cmds[i].name) && !exspec_cmds[i].read) {
 			exspec_cmds[i].read = 1;
-			ex_print(msg ? "\n" : msgtext, msg_ft)
+			snprintf(msg, sizeof(msg), "%s command execution deferred for "
+				"specifications. (aspec option)\n%s command will not be "
+				"deferred from now on. (aretry to execute this command)\n\n",
+				cmd, cmd);
+			ex_print(msg, msg_ft)
 			ec_exspec(NULL, "exspec", cmd);
 			return 1;
 		}
-	return msg;
+	return 0;
 }
 
 ??!219reg ex.c:1637:m202sc %? %@2142sc!0?
@@ -10053,6 +10047,7 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 	{"arate", ec_arate},
 	{"adone", ec_adone},
 	{"acheck", ec_acheck},
+	{"acap", ec_acap},
 	{"acp", ec_acp},
 	{"ali", ec_acp},
 	{"auli", ec_acp},
@@ -10100,7 +10095,7 @@ static char *agent_gate(struct excmd *c, char *loc)
 		return "/ in a range is division and needs a number; search "
 			"with >regex> or <regex<";
 	if (c->ec == ec_agent || c->ec == ec_compact || c->ec == ec_fuzz ||
-			c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
+			c->ec == ec_ath || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
 			(c->ec == ec_termexec && c->name[0] == '\''@'\'') ||
 			(c->ec == ec_write && c->name[0] == '\''x'\''))
 		why = "agent execution";
@@ -10109,8 +10104,8 @@ static char *agent_gate(struct excmd *c, char *loc)
 		why = "the checkpoint; acp command prints the instructions";
 	else if (agent_checkpointing == 2 && c->ec != ec_acheck)
 		why = "the budget check; only acheck N or acheck runs";
-	else if (agent_checkpointing == 3 && c->ec != ec_ath) {
-		why = "the budget check; only ath N [note] or ath runs";
+	else if (agent_checkpointing == 3 && c->ec != ec_acap) {
+		why = "the budget check; only acap N [note] or acap runs";
 		tail = agent_think_retry();
 	}
 	if (!why)
@@ -10120,17 +10115,13 @@ static char *agent_gate(struct excmd *c, char *loc)
 	return xaerr;
 }
 
-/* aspec: print the unread specs of top-level command c in place of running
+/* aspec: print the unread spec of top-level command c in place of running
  * it; a nested deferral would skip one iteration of the enclosing command.
  * Saves the command for aretry. Returns 1 if deferred. */
 static int agent_defer(struct excmd *c, sbuf *sb, int arg)
 {
 	int show = c->ec == ec_aout, top = xexec_dep == agent_tool_dep;
-	/* these take byte or entry ranges or a token count, not lines */
-	int lines = !show && c->ec != ec_anote && c->ec != ec_arate &&
-		c->ec != ec_aget && c->ec != ec_ath;
-	int defer = top && xaspec && c->ec != ec_exspec &&
-		exspec_agent(c->name, *sb->s && lines);
+	int defer = top && xaspec && c->ec != ec_exspec && exspec_agent(c->name);
 	agent_shown |= show;
 	if (top && (defer || !show))
 		aretry_save(sb, c, arg);
@@ -10990,7 +10981,8 @@ static char *exspec_lines[] = {
 	"for humans. catalog lists all commands and options; a command name",
 	"prints its specification, hidden commands included; other text",
 	"with range characters prints ranges. Topics: parsing, escapes,",
-	"expansion, ranges, regex, commands, options.",
+	"expansion, ranges, regex, commands, options. As an agent tool, the",
+	"examples of a command print as the arguments of its ex tool call.",
 	"",
 	"Example: list all commands",
 	"exspec catalog",
@@ -11197,29 +11189,40 @@ static char *exspec_lines[] = {
 	"or xhigh. An omitted part is not sent; ath alone sends neither. Sent",
 	"fields replace those of request_extra. ast shows the setting.",
 	"",
-	"With N,M the agent may raise the cap for one reply: as an agent",
-	"tool ath takes only a count, as its argument or its range, capped",
-	"at M, for its next reply.",
-	"",
-	"With N,M a reply whose thinking the server cut at a cap below M is",
+	"With N,M the agent may raise the cap up to M for one reply with",
+	"acap, and a reply whose thinking the server cut at a cap below M is",
 	"withheld: not logged, its commands not run. The server marks the cut",
 	"by ending the thinking with think_cut of conf.c. The agent is shown",
 	"the reply and its commands, in an exchange kept in b-8 only, and",
-	"answers ath to run the reply as it is, or ath N, a count above the",
-	"cap, to discard it and reply again under cap N. Text after N is a",
-	"note sent with the requests of the new reply only, unlogged; that",
-	"reply sees nothing else of the exchange and is not asked about.",
-	"Nothing else runs meanwhile; after five retries the answer is taken",
-	"as ath. A cut reply without text and commands is requested again",
-	"either way. Replies of an acl checkpoint, a budget check and a pack",
-	"agent are asked about too; what was interrupted then goes on, and a",
-	"new checkpoint, budget check or compaction waits for the new reply.",
+	"answers with acap. Replies of an acl checkpoint, a budget check and",
+	"a pack agent are asked about too; what was interrupted then goes on,",
+	"and a new checkpoint, budget check or compaction waits for the new",
+	"reply. Unavailable as an agent tool.",
 	"",
 	"Example: cap thinking at 1024 tokens with high effort",
 	"1024ath high",
 	"",
 	"Example: start at 4096 tokens; the agent may raise the cap to 32768",
 	"4096,32768ath medium",
+	"",
+	"acap[count note]",
+	"Raise the agent thinking cap for one reply",
+	"",
+	"count is a token count N: the thinking cap of the next reply, at",
+	"most the ceiling M of ath N,M. Takes no range. Errors without a",
+	"ceiling.",
+	"",
+	"In the question about a reply whose thinking was cut, acap N, a",
+	"count above the cap, discards the reply and requests it again under",
+	"cap N. Text after N is a note sent with the requests of the new",
+	"reply only, unlogged; that reply sees nothing else of the exchange",
+	"and is not asked about. acap alone runs the reply as it is. Nothing",
+	"else runs meanwhile; after five retries the answer is taken as acap.",
+	"A cut reply without text and commands is requested again either",
+	"way.",
+	"",
+	"Example: think up to 8192 tokens in the next reply",
+	"acap 8192",
 	"",
 	"ac[regex]",
 	"Set autocomplete filter regex",
@@ -11383,7 +11386,7 @@ static char *exspec_lines[] = {
 	"from 1 to M of ath N,M, else to N. Replies are counted with ata off",
 	"too: by the reported reasoning_tokens, else the output tokens by the",
 	"share of the thinking in the bytes of the reply. A cap the agent",
-	"raised with ath N lasts for its reply. ast shows the average.",
+	"raised with acap N lasts for its reply. ast shows the average.",
 	"",
 	"Example: start at 2048 tokens and follow the average, up to 16384",
 	"2048,16384ath:ata",
@@ -11395,10 +11398,9 @@ static char *exspec_lines[] = {
 	"No argument logically inverts the option. 0 disables.",
 	"",
 	"The first use of a command by the agent prints its specification",
-	"instead of running it, with that of ranges at the first line range;",
-	"aretry then runs the command. The first unknown agent command of a",
-	"session also prints the exspec command list, unless exspec has",
-	"printed it.",
+	"instead of running it; aretry then runs the command. The first",
+	"unknown agent command of a session also prints the exspec command",
+	"list, unless exspec has printed it.",
 	"",
 	"ai[1]   Indent new lines",
 	"",
@@ -11688,64 +11690,65 @@ static struct {
 	{"ft", "Set a filetype", 719, 725, 0, 0},
 	{"cm", "Set a keymap", 726, 730, 0, 0},
 	{"cm!", "Set an alternative keymap", 731, 733, 0, 0},
-	{"exspec", "Print ex command catalog or specification", 734, 745, 0, 0},
-	{"a", "Open or resume the agent conversation", 746, 753, 0, 0},
-	{"a!", "Start a new agent conversation", 754, 759, 0, 0},
-	{"a~", "Resume an agent conversation from its log", 760, 765, 0, 0},
-	{"apack", "Compact the agent session from its log", 766, 778, 0, 0},
-	{"apack!", "Compact the agent session by browsing its log", 779, 785, 0, 0},
-	{"acm", "Toggle the caveman response style skill", 786, 791, 0, 0},
-	{"aretry", "Execute the last agent command", 792, 803, 0, 0},
-	{"aout", "Print the saved output of the last agent tool call", 804, 815, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 816, 842, 0, 0},
-	{"aget", "Print agent session log entries, trimmed ones included", 843, 859, 0, 0},
-	{"arate", "Rate agent turns in the notes buffer", 860, 880, 0, 0},
-	{"adone", "End an agent checkpoint", 881, 888, 0, 0},
-	{"acheck", "Start an agent checkpoint or set its budget", 889, 901, 0, 0},
-	{"acp", "Print the agent checkpoint instructions", 902, 908, 0, 0},
-	{"ali", "Print the agent session log entry list", 909, 920, 0, 0},
-	{"auli", "Print the unrated agent session log turns", 921, 927, 0, 0},
-	{"ast", "Print agent status and token usage", 928, 937, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 938, 971, 0, 0},
-	{"ac", "Set autocomplete filter regex", 972, 980, 0, 0},
-	{"sc", "Set ex special characters", 981, 991, 0, 0},
-	{"sc!", "Set ex special characters", 992, 999, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 1000, 1007, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1008, 1011, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1012, 1016, 0, 0},
-	{"ph", "Redefine placeholders", 1017, 1033, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1042, 1080, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1081, 1091, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1092, 1098, 1, 0},
-	{"agr", "Control agent output protection", 1099, 1104, 1, 0},
-	{"ato", "Detach long agent shell commands", 1105, 1112, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1113, 1118, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1119, 1141, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1142, 1150, 1, 0},
-	{"ai", "Indent new lines", 1151, 1154, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1155, 1156, 1, 0},
-	{"ish", "Interactive shell", 1157, 1172, 1, 0},
-	{"grp", "Regex search group", 1173, 1181, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1182, 1185, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1186, 1187, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1187, 1188, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1188, 1189, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1189, 1190, 1, 0},
-	{"led", "Enable all terminal output", 1190, 1191, 1, 0},
-	{"vis", "Control startup flags", 1192, 1203, 1, 0},
-	{"mpt", "Control vi prompts", 1204, 1214, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1215, 1217, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1217, 1219, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1219, 1220, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1220, 1221, 1, 0},
-	{"td", "Current text direction context", 1221, 1227, 1, 0},
-	{"pr", "Print register", 1228, 1244, 1, 0},
-	{"fr", "Find register", 1245, 1257, 1, 0},
-	{"rr", "Record register", 1258, 1271, 1, 0},
-	{"lim", "Line length render limit", 1272, 1287, 1, 0},
-	{"seq", "Control Undo/Redo", 1288, 1300, 1, 0},
-	{"left", "Control horizontal scroll", 1301, 1306, 1, 0},
-	{"err", "Control ex errors", 1307, 1319, 1, 0},
+	{"exspec", "Print ex command catalog or specification", 734, 746, 0, 0},
+	{"a", "Open or resume the agent conversation", 747, 754, 0, 0},
+	{"a!", "Start a new agent conversation", 755, 760, 0, 0},
+	{"a~", "Resume an agent conversation from its log", 761, 766, 0, 0},
+	{"apack", "Compact the agent session from its log", 767, 779, 0, 0},
+	{"apack!", "Compact the agent session by browsing its log", 780, 786, 0, 0},
+	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
+	{"aretry", "Execute the last agent command", 793, 804, 0, 0},
+	{"aout", "Print the saved output of the last agent tool call", 805, 816, 0, 0},
+	{"anote", "Replace or remove agent session log entries", 817, 843, 0, 0},
+	{"aget", "Print agent session log entries, trimmed ones included", 844, 860, 0, 0},
+	{"arate", "Rate agent turns in the notes buffer", 861, 881, 0, 0},
+	{"adone", "End an agent checkpoint", 882, 889, 0, 0},
+	{"acheck", "Start an agent checkpoint or set its budget", 890, 902, 0, 0},
+	{"acp", "Print the agent checkpoint instructions", 903, 909, 0, 0},
+	{"ali", "Print the agent session log entry list", 910, 921, 0, 0},
+	{"auli", "Print the unrated agent session log turns", 922, 928, 0, 0},
+	{"ast", "Print agent status and token usage", 929, 938, 0, 0},
+	{"ath", "Set the agent thinking cap and effort", 939, 964, 0, 0},
+	{"acap", "Raise the agent thinking cap for one reply", 965, 983, 0, 0},
+	{"ac", "Set autocomplete filter regex", 984, 992, 0, 0},
+	{"sc", "Set ex special characters", 993, 1003, 0, 0},
+	{"sc!", "Set ex special characters", 1004, 1011, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1012, 1019, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1020, 1023, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1024, 1028, 0, 0},
+	{"ph", "Redefine placeholders", 1029, 1045, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1054, 1092, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1093, 1103, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1104, 1110, 1, 0},
+	{"agr", "Control agent output protection", 1111, 1116, 1, 0},
+	{"ato", "Detach long agent shell commands", 1117, 1124, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1125, 1130, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1131, 1153, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1154, 1161, 1, 0},
+	{"ai", "Indent new lines", 1162, 1165, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1166, 1167, 1, 0},
+	{"ish", "Interactive shell", 1168, 1183, 1, 0},
+	{"grp", "Regex search group", 1184, 1192, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1193, 1196, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1197, 1198, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1198, 1199, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1199, 1200, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1200, 1201, 1, 0},
+	{"led", "Enable all terminal output", 1201, 1202, 1, 0},
+	{"vis", "Control startup flags", 1203, 1214, 1, 0},
+	{"mpt", "Control vi prompts", 1215, 1225, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1226, 1228, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1228, 1230, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1230, 1231, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1231, 1232, 1, 0},
+	{"td", "Current text direction context", 1232, 1238, 1, 0},
+	{"pr", "Print register", 1239, 1255, 1, 0},
+	{"fr", "Find register", 1256, 1268, 1, 0},
+	{"rr", "Record register", 1269, 1282, 1, 0},
+	{"lim", "Line length render limit", 1283, 1298, 1, 0},
+	{"seq", "Control Undo/Redo", 1299, 1311, 1, 0},
+	{"left", "Control horizontal scroll", 1312, 1317, 1, 0},
+	{"err", "Control ex errors", 1318, 1330, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -12370,10 +12373,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..e8369f49e
+index 000000000..6a91d680b
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4243 @@
+@@ -0,0 +1,4261 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12463,7 +12466,7 @@ index 000000000..e8369f49e
 +static cJSON *agent_think_held;
 +static int agent_think_was, agent_think_more;
 +static int agent_think_empty;	/* the withheld reply has no text or calls */
-+/* Note of an ath N answer: sent as assistant text with the requests of the
++/* Note of an acap N answer: sent as assistant text with the requests of the
 + * replacement reply only, unlogged */
 +static char *agent_think_note;
 +static char agent_think_lead[] =
@@ -13442,9 +13445,9 @@ index 000000000..e8369f49e
 +/* A rating to copy, for the first unrated entry in an agent_unrated list. */
 +static char *agent_cp_example(char *unrated)
 +{
-+	static char ex[96];
-+	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser and found "
-+		"where defaults are set\n", strtoul(unrated + 5, NULL, 10));
++	static char ex[112];
++	snprintf(ex, sizeof(ex), "{\"command\":\"%luarate 2 read the option parser "
++		"and found where defaults are set\"}\n", strtoul(unrated + 5, NULL, 10));
 +	return ex;
 +}
 +
@@ -13685,8 +13688,11 @@ index 000000000..e8369f49e
 +	"%s"
 +	"Then trim by rating, largest turns first: replace 1 with a short\n"
 +	"note and a large 2 with its findings; keep 3, or replace a large one\n"
-+	"with every detail the task depends on, e.g.\n"
-+	"53,59anote findings: ...\n"
++	"with every detail the task depends on.\n"
++	"Example: replace turns 53 through 59 with their findings\n"
++	"{\"command\":\"53,59anote findings: ...\"}\n"
++	"Example: end the checkpoint\n"
++	"{\"command\":\"adone\"}\n"
 +	"This exchange is not kept; ratings show in later checkpoints and\n"
 +	"compaction.\n";
 +
@@ -13712,8 +13718,14 @@ index 000000000..e8369f49e
 +		" tokens. Estimate and set the number of tokens the rest of this "
 +		"task needs with acheck N command.");
 +	if (xaco)
-+		sprintf(s + k, "\nAn N reaching past %d runs the task until "
++		k += sprintf(s + k, "\nAn N reaching past %d runs the task until "
 +			"compaction.", xaco);
++	/* N stays a placeholder: a number here would anchor the estimate. */
++	strcpy(s + k, agent_acl_budget ? "\nExample: trim the session log now\n"
++		"{\"command\":\"acheck\"}\nExample: defer it for N tokens\n"
++		"{\"command\":\"acheck N\"}" :
++		"\nExample: the rest of the task needs N tokens\n"
++		"{\"command\":\"acheck N\"}");
 +	return s;
 +}
 +
@@ -13722,7 +13734,7 @@ index 000000000..e8369f49e
 +static void agent_checkpoint_begin(double tokens, int kind)
 +{
 +	static char *cmds[] = {"arate", "anote", "adone", "acp", "ali", "auli",
-+		"acheck", "ath"};
++		"acheck", "acap"};
 +	char note[64];
 +	if (agent_checkpointing) {
 +		agent_cp_outer.kind = agent_checkpointing;
@@ -13879,8 +13891,10 @@ index 000000000..e8369f49e
 +	cJSON *content = cJSON_GetObjectItem(message, "content");
 +	const char *rkey;
 +	char *reasoning = agent_reasoning(message, &rkey);
-+	char line[320];
++	char line[320], *keep;
 +	int cap = agent_think_was, cnt = cJSON_GetArraySize(calls);
++	/* the example cap: twice the cut one, within the ceiling */
++	int more = cap > 0 && cap < agent_think_max / 2 ? cap * 2 : agent_think_max;
 +	sbuf_smake(sb, 1024)
 +	agent_think_held = root;
 +	agent_think_more = 0;
@@ -13914,15 +13928,19 @@ index 000000000..e8369f49e
 +		sbuf_chr(sb, '\n')
 +		cJSON_Delete(parsed);
 +	}
-+	snprintf(line, sizeof(line), "Use ath command to %s or ath N [note] to "
-+		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
-+		cnt ? "run the reply as it is (no rethink required)" :
++	keep = cnt ? "run the reply as it is (no rethink required)" :
 +		agent_think_empty ? "reply again under the same cap" :
-+		"keep the reply as it is (no rethink required)",
-+		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
++		"keep the reply as it is (no rethink required)";
++	snprintf(line, sizeof(line), "Use acap command to %s or acap N [note] to "
++		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
++		keep, agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 +	sbuf_str(sb, line)
 +	sbuf_str(sb, "\nThe new reply sees nothing of this exchange except the "
 +		"optional [note] after N. A note directs how to think better.")
++	snprintf(line, sizeof(line), "\nExample: %s\n{\"command\":\"acap\"}\n"
++		"Example: reply again under a cap of %d tokens, with a note\n"
++		"{\"command\":\"acap %d focus on ...\"}", keep, more, more);
++	sbuf_str(sb, line)
 +	sbuf_nul(sb)
 +	agent_cp_open = sb->s;
 +	agent_log("USER", agent_cp_open);
@@ -15387,14 +15405,14 @@ index 000000000..e8369f49e
 +		}
 +		/* An unanswered budget check gets two more requests, then becomes
 +		 * a checkpoint; a thinking question gets AGENT_THINK_TRIES, then
-+		 * counts as answered by ath alone. */
++		 * counts as answered by acap alone. */
 +		if (agent_checkpointing >= 2 && !agent_cp_done) {
 +			int think = agent_checkpointing == 3;
 +			if (agent_cp_refused < (think ? AGENT_THINK_TRIES : 2)) {
 +				if (!has_calls) {
 +					char msg[96];
 +					snprintf(msg, sizeof(msg), "Nothing ran; reply with "
-+						"an ex tool call, %s%s", think ? "ath N [note] or ath" :
++						"an ex tool call, %s%s", think ? "acap N [note] or acap" :
 +						"acheck N or acheck.", agent_think_retry());
 +					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 +					agent_log("USER", msg);
@@ -15650,58 +15668,61 @@ index 000000000..e8369f49e
 +	return e;
 +}
 +
-+/* User: [N[,M]]ath[effort] sets the cap, ceiling and effort. Agent: ath N
-+ * or Nath raises the cap to N, at most M, for its next reply; in a thinking
-+ * question ath alone keeps the cap and text after N is a note for the new
-+ * reply. */
-+static void *ec_ath(char *loc, char *cmd, char *arg)
++/* acap N raises the thinking cap to N, at most the ceiling of ath N,M, for
++ * the next reply. In a thinking question that discards the withheld reply,
++ * text after N is a note for the new one and acap alone keeps the reply. */
++static void *ec_acap(char *loc, char *cmd, char *arg)
 +{
 +	static char msg[128];
-+	int cap = -1, max = 0;
-+	char *s = loc, *comma = strchr(loc, ',');
-+	if (agent_tool) {
-+		int ask = agent_checkpointing == 3;
-+		if (!agent_think_max)
-+			return "ath needs a ceiling set by the user";
-+		while (*arg && strchr(" \t\n", *arg))
-+			arg++;
-+		/* The exchange of a question is discarded unread. */
-+		if (ask && !*loc && !*arg) {
-+			agent_cp_done = 1;
-+			return NULL;
-+		}
-+		s = agent_count(*loc ? loc : arg, &cap);
-+		if (s && *loc)
-+			s = *s ? NULL : arg;
-+		else if (s && *s && !strchr(" \t\n", *s))
-+			s = NULL;
-+		while (s && *s && strchr(" \t\n", *s))
-+			s++;
-+		if (!s || (*s && !ask) || cap < 1) {
-+			snprintf(msg, sizeof(msg), "ath takes a positive token count, "
-+				"ath N%s%s", ask ? " [note], or nothing" : "", agent_think_retry());
-+			return msg;
-+		}
-+		if (ask && cap <= agent_think_was) {
-+			snprintf(msg, sizeof(msg), "ath N takes a count above the cap "
-+				"of %d tokens; ath alone leaves the cap%s", agent_think_was,
-+				agent_think_retry());
-+			return msg;
-+		}
-+		agent_think_cap = MIN(cap, agent_think_max);
-+		agent_think_up = 1;
-+		if (ask) {
-+			agent_think_unnote();
-+			if (*s)
-+				agent_think_note = agent_safe_text(s, strlen(s));
-+			agent_think_more = agent_cp_done = 1;
-+			return NULL;
-+		}
-+		snprintf(msg, sizeof(msg), "thinking cap %d tokens for the next "
-+			"reply", agent_think_cap);
-+		ex_print(msg, msg_ft)
++	int cap = -1, ask = agent_checkpointing == 3;
++	char *s;
++	if (!agent_think_max)
++		return "acap needs a ceiling set by the user with ath N,M";
++	while (*arg && strchr(" \t\n", *arg))
++		arg++;
++	/* The exchange of a question is discarded unread. */
++	if (ask && !*loc && !*arg) {
++		agent_cp_done = 1;
 +		return NULL;
 +	}
++	s = agent_count(arg, &cap);
++	if (s && *s && !strchr(" \t\n", *s))
++		s = NULL;
++	while (s && *s && strchr(" \t\n", *s))
++		s++;
++	if (*loc || !s || (*s && !ask) || cap < 1) {
++		snprintf(msg, sizeof(msg), "acap takes no range, only a positive "
++			"token count: acap N%s%s", ask ? " [note], or nothing" : "",
++			agent_think_retry());
++		return msg;
++	}
++	if (ask && cap <= agent_think_was) {
++		snprintf(msg, sizeof(msg), "acap N takes a count above the cap "
++			"of %d tokens; acap alone leaves the cap%s", agent_think_was,
++			agent_think_retry());
++		return msg;
++	}
++	agent_think_cap = MIN(cap, agent_think_max);
++	agent_think_up = 1;
++	if (ask) {
++		agent_think_unnote();
++		if (*s)
++			agent_think_note = agent_safe_text(s, strlen(s));
++		agent_think_more = agent_cp_done = 1;
++		return NULL;
++	}
++	snprintf(msg, sizeof(msg), "thinking cap %d tokens for the next "
++		"reply", agent_think_cap);
++	ex_print(msg, msg_ft)
++	return NULL;
++}
++
++/* [N[,M]]ath[effort] sets the thinking cap, the ceiling acap may raise it to
++ * and the effort. */
++static void *ec_ath(char *loc, char *cmd, char *arg)
++{
++	int cap = -1, max = 0;
++	char *s = loc, *comma = strchr(loc, ',');
 +	if (*s) {
 +		s = agent_count(s, &cap);
 +		if (s && s == comma)
@@ -16243,7 +16264,7 @@ index 000000000..e8369f49e
 +	/* The range was read above, before the switch to the session log. */
 +	if (compact) {
 +		temp_switch(3, 0);
-+		spec = exspec_pack(3);
++		spec = exspec_pack(1);
 +	}
 +	if (cmd[1]) {
 +		agent_epoch++;
@@ -16543,7 +16564,7 @@ index 000000000..e8369f49e
 +		"autocompact: summarizing loaded session log");
 +	if (browse)
 +		exspec_reset();
-+	int spec = exspec_pack(3);
++	int spec = exspec_pack(1);
 +	agent_messages = NULL;
 +	agent_history(!browse);
 +	agent_packing = 1;
@@ -16619,10 +16640,10 @@ index 000000000..e8369f49e
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 000000000..4d1467023
+index 000000000..a358d757a
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,45 @@
 +/* agent.c: embedded request loop and editor integration */
 +static int agent_tool;		/* an agent tool call is executing */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
@@ -16641,7 +16662,7 @@ index 000000000..4d1467023
 +static int agent_acl_budget;
 +/* 1: checkpoint, only log trimming runs until adone;
 + * 2: acl < 0 budget check, only acheck runs;
-+ * 3: ath N,M thinking question, only ath runs; it interrupts the task, a
++ * 3: ath N,M thinking question, only acap runs; it interrupts the task, a
 + * pack, 1 or 2, which goes on once it ends */
 +static int agent_checkpointing;
 +static char agent_deferred[32];	/* first command aspec deferred in the tool call */
@@ -16656,6 +16677,7 @@ index 000000000..4d1467023
 +static void *ec_acheck(char *loc, char *cmd, char *arg);
 +static void *ec_acp(char *loc, char *cmd, char *arg);
 +static void *ec_ast(char *loc, char *cmd, char *arg);
++static void *ec_acap(char *loc, char *cmd, char *arg);
 +static void *ec_ath(char *loc, char *cmd, char *arg);
 +static char *agent_think_retry(void);
 +static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -20177,10 +20199,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..6c12632a0 100755
+index c836c94c7..818ddd45c 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,284 @@ build() {
+@@ -65,6 +65,290 @@ build() {
      }
  }
  
@@ -20207,7 +20229,8 @@ index c836c94c7..6c12632a0 100755
 +                "for humans. catalog lists all commands and options; a command name\n" \
 +                "prints its specification, hidden commands included; other text\n" \
 +                "with range characters prints ranges. Topics: parsing, escapes,\n" \
-+                "expansion, ranges, regex, commands, options.\n\n" \
++                "expansion, ranges, regex, commands, options. As an agent tool, the\n" \
++                "examples of a command print as the arguments of its ex tool call.\n\n" \
 +                "Example: list all commands\n:exspec catalog")
 +            spec("[range]a[text]", "Open or resume the agent conversation",
 +                "Keeps the conversation. Text prefills the prompt; range attaches\n" \
@@ -20344,25 +20367,31 @@ index c836c94c7..6c12632a0 100755
 +                "one word sent as reasoning_effort, such as none, low, medium, high\n" \
 +                "or xhigh. An omitted part is not sent; ath alone sends neither. Sent\n" \
 +                "fields replace those of request_extra. ast shows the setting.\n\n" \
-+                "With N,M the agent may raise the cap for one reply: as an agent\n" \
-+                "tool ath takes only a count, as its argument or its range, capped\n" \
-+                "at M, for its next reply.\n\n" \
-+                "With N,M a reply whose thinking the server cut at a cap below M is\n" \
++                "With N,M the agent may raise the cap up to M for one reply with\n" \
++                "acap, and a reply whose thinking the server cut at a cap below M is\n" \
 +                "withheld: not logged, its commands not run. The server marks the cut\n" \
 +                "by ending the thinking with think_cut of conf.c. The agent is shown\n" \
 +                "the reply and its commands, in an exchange kept in b-8 only, and\n" \
-+                "answers ath to run the reply as it is, or ath N, a count above the\n" \
-+                "cap, to discard it and reply again under cap N. Text after N is a\n" \
-+                "note sent with the requests of the new reply only, unlogged; that\n" \
-+                "reply sees nothing else of the exchange and is not asked about.\n" \
-+                "Nothing else runs meanwhile; after five retries the answer is taken\n" \
-+                "as ath. A cut reply without text and commands is requested again\n" \
-+                "either way. Replies of an acl checkpoint, a budget check and a pack\n" \
-+                "agent are asked about too; what was interrupted then goes on, and a\n" \
-+                "new checkpoint, budget check or compaction waits for the new reply.\n\n" \
++                "answers with acap. Replies of an acl checkpoint, a budget check and\n" \
++                "a pack agent are asked about too; what was interrupted then goes on,\n" \
++                "and a new checkpoint, budget check or compaction waits for the new\n" \
++                "reply. Unavailable as an agent tool.\n\n" \
 +                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
 +                "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
 +                ":4096,32768ath medium")
++            spec("acap[count note]", "Raise the agent thinking cap for one reply",
++                "count is a token count N: the thinking cap of the next reply, at\n" \
++                "most the ceiling M of ath N,M. Takes no range. Errors without a\n" \
++                "ceiling.\n\n" \
++                "In the question about a reply whose thinking was cut, acap N, a\n" \
++                "count above the cap, discards the reply and requests it again under\n" \
++                "cap N. Text after N is a note sent with the requests of the new\n" \
++                "reply only, unlogged; that reply sees nothing else of the exchange\n" \
++                "and is not asked about. acap alone runs the reply as it is. Nothing\n" \
++                "else runs meanwhile; after five retries the answer is taken as acap.\n" \
++                "A cut reply without text and commands is requested again either\n" \
++                "way.\n\n" \
++                "Example: think up to 8192 tokens in the next reply\n:acap 8192")
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
@@ -20440,17 +20469,16 @@ index c836c94c7..6c12632a0 100755
 +                "from 1 to M of ath N,M, else to N. Replies are counted with ata off\n" \
 +                "too: by the reported reasoning_tokens, else the output tokens by the\n" \
 +                "share of the thinking in the bytes of the reply. A cap the agent\n" \
-+                "raised with ath N lasts for its reply. ast shows the average.\n\n" \
++                "raised with acap N lasts for its reply. ast shows the average.\n\n" \
 +                "Example: start at 2048 tokens and follow the average, up to 16384\n" \
 +                ":2048,16384ath:ata\n\n" \
 +                "Example: cap at twice the average\n:ata 200")
 +            spec("aspec[1]  Print ex specifications for agents",
 +                "No argument logically inverts the option. 0 disables.",
 +                "The first use of a command by the agent prints its specification\n" \
-+                "instead of running it, with that of ranges at the first line range;\n" \
-+                "aretry then runs the command. The first unknown agent command of a\n" \
-+                "session also prints the exspec command list, unless exspec has\n" \
-+                "printed it.")
++                "instead of running it; aretry then runs the command. The first\n" \
++                "unknown agent command of a session also prints the exspec command\n" \
++                "list, unless exspec has printed it.")
 +            aspec_done = 1
 +        }
 +        { print }
@@ -20465,7 +20493,7 @@ index c836c94c7..6c12632a0 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +352,7 @@ install() {
+@@ -74,7 +358,7 @@ install() {
  }
  
  print_usage() {
@@ -20474,7 +20502,7 @@ index c836c94c7..6c12632a0 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +360,9 @@ print_usage() {
+@@ -82,6 +366,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -20485,10 +20513,10 @@ index c836c94c7..6c12632a0 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..49476a73f 100644
+index 2888d7c60..76b37b80b 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,351 @@
+@@ -1,5 +1,276 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -20746,80 +20774,6 @@ index 2888d7c60..49476a73f 100644
 +	"\n"
 +	"Expansion is unavailable by default during agent execution.";
 +
-+static char exspec_agent_ranges[] =
-+	"EX RANGES\n"
-+	"Some ex commands take a range before the command name, as in 1,5p.\n"
-+	"[range] selects lines and optionally characters on them, as in 1,5p\n"
-+	"or 5;2;4p.\n"
-+	"[vrange] selects lines only; a character offset in it does not narrow\n"
-+	"the command, as in 10,20g/int/d.\n"
-+	"A range without a command moves the cursor, as in 10;50.\n"
-+	"\n"
-+	"[% |][, ;][#][. $ ' > <][- + * / %][#num]\n"
-+	"All ranges structure\n"
-+	"{|}{cmd}[|]\n"
-+	"Ex subcommand structure\n"
-+	"{>}[regex][>]\n"
-+	"Search forward structure\n"
-+	"{<}[regex][<]\n"
-+	"Search backward structure\n"
-+	"'{#mark}\n"
-+	"Mark structure\n"
-+	"\n"
-+	"%       Range from first to last line\n"
-+	"|       Begin ex subcommand block\n"
-+	",       Vertical range separator\n"
-+	";       Horizontal range separator\n"
-+	"#       Rebase to previous value in range structure\n"
-+	".       Current position\n"
-+	"$       Last line of a buffer or end of line\n"
-+	"'       Begin mark structure\n"
-+	">       Begin search forward block\n"
-+	"<       Begin search backward block\n"
-+	"-       Subtract following number\n"
-+	"+       Add following number\n"
-+	"*       Multiply by the following number\n"
-+	"/       Divide by the following number\n"
-+	"%       Modulo by the following number\n"
-+	"#num    Number or position\n"
-+	"\n"
-+	"Examples:\n"
-+	"1,5p   Print lines 1,5\n"
-+	".-5,.+5p\n"
-+	"Print 5 lines around current position\n"
-+	">int>p\n"
-+	"Print first occurrence of \"int\"\n"
-+	"<int<p\n"
-+	"Print first occurrence of \"int\" in reverse\n"
-+	".,>int>p\n"
-+	"Print until \"int\" is found\n"
-+	"<int<,.p\n"
-+	"Print until \"int\" is found in reverse\n"
-+	">      Search using previously set regex keyword\n"
-+	"'100,'97p\n"
-+	"Print lines from mark <d> to mark <a>\n"
-+	"%p     Print all lines in a buffer\n"
-+	"$p     Print last line in a buffer\n"
-+	"$*50/100+1\n"
-+	"Goto 50% of the file\n"
-+	";50    Goto character offset 50\n"
-+	"10;50  Goto line 10 character offset 50\n"
-+	"10;.+5\n"
-+	"Goto line 10 +5 character offset\n"
-+	"'97;'97\n"
-+	"Goto line mark <a> offset mark <a>\n"
-+	";$     Goto end of line\n"
-+	"5;>int>\n"
-+	"Search for \"int\" on line 5\n"
-+	".;<int<\n"
-+	"Search for \"int\" in reverse on the current line\n"
-+	";5;+10=\n"
-+	"+10 is relative to the initial current offset, not 5\n"
-+	";5;#+10=\n"
-+	"+10 is relative to 5\n"
-+	";>int>+3;#>>p\n"
-+	"Print text enclosed by \"int\" on the current line";
-+
 +static struct {
 +	char *cmd, *text;
 +} conf_exspec_agent[] = {
@@ -20834,25 +20788,24 @@ index 2888d7c60..49476a73f 100644
 +	{"parsing", exspec_agent_parsing},
 +	{"escapes", exspec_agent_escapes},
 +	{"expansion", exspec_agent_expansion},
-+	{"ranges", exspec_agent_ranges},
 +};
 +
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +643,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +568,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acap|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8165e6ed1..0eb49d8d2 100644
+index 8165e6ed1..c72875c5b 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -20940,9 +20893,9 @@ index 8165e6ed1..0eb49d8d2 100644
 +		const char *endop = e > n ? " < end" : "";
 +		snprintf(xirrmsg, sizeof(xirrmsg),
 +			"invalid range: beg:%ld%s%s end:%ld o1:%d o2:%d "
-+			"xoff:%d xrow:%d%s lbuf_len:%d%s%s",
++			"xoff:%d xrow:%d%s lbuf_len:%d%s%s%s",
 +			b, begop, op, e, *o1, *o2, xoff, xrow, rowop, n,
-+			begend, endop);
++			begend, endop, agent_tool ? "; see exspec ranges" : "");
 +		xrerr = xirrmsg;
 +	}
 +	return invalid * ret;
@@ -21080,7 +21033,7 @@ index 8165e6ed1..0eb49d8d2 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1635,6 +1705,189 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1635,6 +1705,233 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -21091,7 +21044,6 @@ index 8165e6ed1..0eb49d8d2 100644
 +
 +#include "exspec.h"
 +
-+static int exspec_ranges_read;
 +static char *aretry_saved;
 +static struct excmd *aretry_cmd;
 +static int aretry_arg;
@@ -21131,17 +21083,13 @@ index 8165e6ed1..0eb49d8d2 100644
 +	free(agent_show);
 +	agent_show = NULL;
 +	agent_show_n = 0;
-+	exspec_ranges_read = exspec_listed = 0;
++	exspec_listed = 0;
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		exspec_cmds[i].read = 0;
 +}
 +
 +static int exspec_mark(char *arg)
 +{
-+	if (!strcmp(arg, "ranges")) {
-+		exspec_ranges_read = 1;
-+		return 1;
-+	}
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		if (!strcmp(arg, exspec_cmds[i].name)) {
 +			exspec_cmds[i].read = 1;
@@ -21150,24 +21098,61 @@ index 8165e6ed1..0eb49d8d2 100644
 +	return 0;
 +}
 +
-+/* Set the c (bit 1) and ranges (bit 0) read state; return the prior state.
-+ * Pack prompts explain %c, so its spec need not defer the summary. */
-+static int exspec_pack(int state)
++/* Set the read state of c; return the prior one. Pack prompts explain %c,
++ * so its spec need not defer the summary. */
++static int exspec_pack(int read)
 +{
-+	int prev = exspec_ranges_read;
-+	exspec_ranges_read = state & 1;
++	int prev = 0;
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		if (!strcmp(exspec_cmds[i].name, "c")) {
-+			prev |= exspec_cmds[i].read << 1;
-+			exspec_cmds[i].read = state >> 1;
++			prev = exspec_cmds[i].read;
++			exspec_cmds[i].read = read;
 +		}
 +	return prev;
 +}
 +
++/* Append spec text s to sb, each example command as the arguments of its ex
++ * tool call. The command is the lines after an "Example: " one, up to a
++ * blank line or the next example. README examples (!multi) also hold sample
++ * text and <^X> keys for people, so only a lone line without keys converts. */
++static void exspec_json(sbuf *sb, char *s, int multi)
++{
++	char *b, *e, *p;
++	int n, human;
++	for (; *s; s = e) {
++		e = s + strcspn(s, "\n");
++		e += *e == '\n';
++		sbuf_mem(sb, s, e - s)
++		if (strncmp(s, "Example: ", 9))
++			continue;
++		for (b = e, n = 0; *e && *e != '\n' && strncmp(e, "Example", 7); n++) {
++			e += strcspn(e, "\n");
++			e += *e == '\n';
++		}
++		for (p = b, human = n > 1; p < e; p++)
++			human |= p[0] == '<' && p[1] == '^';
++		if (!n || (!multi && human)) {
++			e = b;
++			continue;
++		}
++		sbuf_str(sb, "{\"command\":\"")
++		for (p = b; p < e - (e[-1] == '\n'); p++) {
++			if (*p == '\n') {
++				sbuf_str(sb, "\\n")
++				continue;
++			}
++			if (*p == '"' || *p == '\\')
++				sbuf_chr(sb, '\\')
++			sbuf_chr(sb, *p)
++		}
++		sbuf_str(sb, e[-1] == '\n' ? "\"}\n" : "\"}")
++	}
++}
++
 +static void *ec_exspec(char *loc, char *cmd, char *arg)
 +{
-+	int i, j, k, option, begin = -1, end = 0;
-+	char msg[512];
++	int i, j, k, option, json, begin = -1, end = 0;
++	char msg[512], *text = NULL;
 +	static char *agent_cmds[] = {
 +		"p", "g", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
 +		"exspec", "d", "j", "s", "cd", "bx", "fd", "inc",
@@ -21212,6 +21197,8 @@ index 8165e6ed1..0eb49d8d2 100644
 +			end = exspec_cmds[i].end;
 +			break;
 +		}
++	/* topics describe syntax, not calls, and stay as written */
++	json = agent_tool && begin >= 0;
 +	if (begin < 0) {
 +		if (strpbrk(arg, "%|,;#.$'><-+*/0123456789"))
 +			arg = "ranges";
@@ -21232,45 +21219,55 @@ index 8165e6ed1..0eb49d8d2 100644
 +	exspec_mark(arg);
 +	/* An agent specification replaces the README one and its guidance. */
 +	for (i = 0; agent_tool && i < LEN(conf_exspec_agent); i++)
-+		if (!strcmp(arg, conf_exspec_agent[i].cmd)) {
-+			ex_print(conf_exspec_agent[i].text, msg_ft)
-+			return NULL;
-+		}
++		if (!strcmp(arg, conf_exspec_agent[i].cmd))
++			text = conf_exspec_agent[i].text;
++	if (text && !json) {
++		ex_print(text, msg_ft)
++		return NULL;
++	}
 +	while (end > begin && !*exspec_lines[end - 1])
 +		end--;
-+	for (i = begin; i < end; i++)
-+		ex_print(exspec_lines[i], msg_ft)
++	if (!json) {
++		for (i = begin; i < end; i++)
++			ex_print(exspec_lines[i], msg_ft)
++		return NULL;
++	}
++	sbuf_smake(sb, 1024)
++	sbuf_smake(readme, 1024)
++	for (i = begin; !text && i < end; i++) {
++		sbuf_str(readme, exspec_lines[i])
++		sbuf_chr(readme, '\n')
++	}
++	sbuf_nul(readme)
++	exspec_json(sb, text ? text : readme->s, !!text);
++	sbuf_nul(sb)
++	ex_print(sb->s, msg_ft)
++	free(readme->s);
++	free(sb->s);
 +	return NULL;
 +}
 +
-+static int exspec_agent(char *cmd, int ranges)
++static int exspec_agent(char *cmd)
 +{
-+	int msg = 0;
-+	char msgtext[256];
-+	snprintf(msgtext, sizeof(msgtext),
-+		"%s command execution deferred for specifications. (aspec option)\n"
-+		"%s%s command will not be deferred from now on. (aretry to execute this command)\n\n",
-+		cmd, ranges && !exspec_ranges_read ? "ranges and " : "", cmd);
-+	if (ranges && !exspec_ranges_read) {
-+		exspec_ranges_read = 1;
-+		msg = 1;
-+		ex_print(msgtext, msg_ft)
-+		ec_exspec(NULL, "exspec", "ranges");
-+	}
++	char msg[256];
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		if (!strcmp(cmd, exspec_cmds[i].name) && !exspec_cmds[i].read) {
 +			exspec_cmds[i].read = 1;
-+			ex_print(msg ? "\n" : msgtext, msg_ft)
++			snprintf(msg, sizeof(msg), "%s command execution deferred for "
++				"specifications. (aspec option)\n%s command will not be "
++				"deferred from now on. (aretry to execute this command)\n\n",
++				cmd, cmd);
++			ex_print(msg, msg_ft)
 +			ec_exspec(NULL, "exspec", cmd);
 +			return 1;
 +		}
-+	return msg;
++	return 0;
 +}
 +
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1955,14 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1999,14 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -21287,7 +21284,7 @@ index 8165e6ed1..0eb49d8d2 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1988,20 @@ _EO(left,
+@@ -1730,14 +2032,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -21312,7 +21309,7 @@ index 8165e6ed1..0eb49d8d2 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2022,35 @@ static struct excmd {
+@@ -1758,8 +2066,36 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -21326,6 +21323,7 @@ index 8165e6ed1..0eb49d8d2 100644
 +	{"arate", ec_arate},
 +	{"adone", ec_adone},
 +	{"acheck", ec_acheck},
++	{"acap", ec_acap},
 +	{"acp", ec_acp},
 +	{"ali", ec_acp},
 +	{"auli", ec_acp},
@@ -21348,7 +21346,7 @@ index 8165e6ed1..0eb49d8d2 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1927,6 +2218,72 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
+@@ -1927,6 +2263,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  	return src;
  }
  
@@ -21379,7 +21377,7 @@ index 8165e6ed1..0eb49d8d2 100644
 +		return "/ in a range is division and needs a number; search "
 +			"with >regex> or <regex<";
 +	if (c->ec == ec_agent || c->ec == ec_compact || c->ec == ec_fuzz ||
-+			c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
++			c->ec == ec_ath || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
 +			(c->ec == ec_termexec && c->name[0] == '@') ||
 +			(c->ec == ec_write && c->name[0] == 'x'))
 +		why = "agent execution";
@@ -21388,8 +21386,8 @@ index 8165e6ed1..0eb49d8d2 100644
 +		why = "the checkpoint; acp command prints the instructions";
 +	else if (agent_checkpointing == 2 && c->ec != ec_acheck)
 +		why = "the budget check; only acheck N or acheck runs";
-+	else if (agent_checkpointing == 3 && c->ec != ec_ath) {
-+		why = "the budget check; only ath N [note] or ath runs";
++	else if (agent_checkpointing == 3 && c->ec != ec_acap) {
++		why = "the budget check; only acap N [note] or acap runs";
 +		tail = agent_think_retry();
 +	}
 +	if (!why)
@@ -21399,17 +21397,13 @@ index 8165e6ed1..0eb49d8d2 100644
 +	return xaerr;
 +}
 +
-+/* aspec: print the unread specs of top-level command c in place of running
++/* aspec: print the unread spec of top-level command c in place of running
 + * it; a nested deferral would skip one iteration of the enclosing command.
 + * Saves the command for aretry. Returns 1 if deferred. */
 +static int agent_defer(struct excmd *c, sbuf *sb, int arg)
 +{
 +	int show = c->ec == ec_aout, top = xexec_dep == agent_tool_dep;
-+	/* these take byte or entry ranges or a token count, not lines */
-+	int lines = !show && c->ec != ec_anote && c->ec != ec_arate &&
-+		c->ec != ec_aget && c->ec != ec_ath;
-+	int defer = top && xaspec && c->ec != ec_exspec &&
-+		exspec_agent(c->name, *sb->s && lines);
++	int defer = top && xaspec && c->ec != ec_exspec && exspec_agent(c->name);
 +	agent_shown |= show;
 +	if (top && (defer || !show))
 +		aretry_save(sb, c, arg);
@@ -21421,7 +21415,7 @@ index 8165e6ed1..0eb49d8d2 100644
  /* execute a single ex command chain */
  void *ex_exec(const char *ln)
  {
-@@ -1939,8 +2296,20 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2337,20 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -21443,7 +21437,7 @@ index 8165e6ed1..0eb49d8d2 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2328,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2369,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -21549,10 +21543,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..f734ee715
+index 000000000..184d0bc8a
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1500 @@
+@@ -0,0 +1,1512 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -22296,7 +22290,8 @@ index 000000000..f734ee715
 +	"for humans. catalog lists all commands and options; a command name",
 +	"prints its specification, hidden commands included; other text",
 +	"with range characters prints ranges. Topics: parsing, escapes,",
-+	"expansion, ranges, regex, commands, options.",
++	"expansion, ranges, regex, commands, options. As an agent tool, the",
++	"examples of a command print as the arguments of its ex tool call.",
 +	"",
 +	"Example: list all commands",
 +	"exspec catalog",
@@ -22503,29 +22498,40 @@ index 000000000..f734ee715
 +	"or xhigh. An omitted part is not sent; ath alone sends neither. Sent",
 +	"fields replace those of request_extra. ast shows the setting.",
 +	"",
-+	"With N,M the agent may raise the cap for one reply: as an agent",
-+	"tool ath takes only a count, as its argument or its range, capped",
-+	"at M, for its next reply.",
-+	"",
-+	"With N,M a reply whose thinking the server cut at a cap below M is",
++	"With N,M the agent may raise the cap up to M for one reply with",
++	"acap, and a reply whose thinking the server cut at a cap below M is",
 +	"withheld: not logged, its commands not run. The server marks the cut",
 +	"by ending the thinking with think_cut of conf.c. The agent is shown",
 +	"the reply and its commands, in an exchange kept in b-8 only, and",
-+	"answers ath to run the reply as it is, or ath N, a count above the",
-+	"cap, to discard it and reply again under cap N. Text after N is a",
-+	"note sent with the requests of the new reply only, unlogged; that",
-+	"reply sees nothing else of the exchange and is not asked about.",
-+	"Nothing else runs meanwhile; after five retries the answer is taken",
-+	"as ath. A cut reply without text and commands is requested again",
-+	"either way. Replies of an acl checkpoint, a budget check and a pack",
-+	"agent are asked about too; what was interrupted then goes on, and a",
-+	"new checkpoint, budget check or compaction waits for the new reply.",
++	"answers with acap. Replies of an acl checkpoint, a budget check and",
++	"a pack agent are asked about too; what was interrupted then goes on,",
++	"and a new checkpoint, budget check or compaction waits for the new",
++	"reply. Unavailable as an agent tool.",
 +	"",
 +	"Example: cap thinking at 1024 tokens with high effort",
 +	"1024ath high",
 +	"",
 +	"Example: start at 4096 tokens; the agent may raise the cap to 32768",
 +	"4096,32768ath medium",
++	"",
++	"acap[count note]",
++	"Raise the agent thinking cap for one reply",
++	"",
++	"count is a token count N: the thinking cap of the next reply, at",
++	"most the ceiling M of ath N,M. Takes no range. Errors without a",
++	"ceiling.",
++	"",
++	"In the question about a reply whose thinking was cut, acap N, a",
++	"count above the cap, discards the reply and requests it again under",
++	"cap N. Text after N is a note sent with the requests of the new",
++	"reply only, unlogged; that reply sees nothing else of the exchange",
++	"and is not asked about. acap alone runs the reply as it is. Nothing",
++	"else runs meanwhile; after five retries the answer is taken as acap.",
++	"A cut reply without text and commands is requested again either",
++	"way.",
++	"",
++	"Example: think up to 8192 tokens in the next reply",
++	"acap 8192",
 +	"",
 +	"ac[regex]",
 +	"Set autocomplete filter regex",
@@ -22689,7 +22695,7 @@ index 000000000..f734ee715
 +	"from 1 to M of ath N,M, else to N. Replies are counted with ata off",
 +	"too: by the reported reasoning_tokens, else the output tokens by the",
 +	"share of the thinking in the bytes of the reply. A cap the agent",
-+	"raised with ath N lasts for its reply. ast shows the average.",
++	"raised with acap N lasts for its reply. ast shows the average.",
 +	"",
 +	"Example: start at 2048 tokens and follow the average, up to 16384",
 +	"2048,16384ath:ata",
@@ -22701,10 +22707,9 @@ index 000000000..f734ee715
 +	"No argument logically inverts the option. 0 disables.",
 +	"",
 +	"The first use of a command by the agent prints its specification",
-+	"instead of running it, with that of ranges at the first line range;",
-+	"aretry then runs the command. The first unknown agent command of a",
-+	"session also prints the exspec command list, unless exspec has",
-+	"printed it.",
++	"instead of running it; aretry then runs the command. The first",
++	"unknown agent command of a session also prints the exspec command",
++	"list, unless exspec has printed it.",
 +	"",
 +	"ai[1]   Indent new lines",
 +	"",
@@ -22994,64 +22999,65 @@ index 000000000..f734ee715
 +	{"ft", "Set a filetype", 719, 725, 0, 0},
 +	{"cm", "Set a keymap", 726, 730, 0, 0},
 +	{"cm!", "Set an alternative keymap", 731, 733, 0, 0},
-+	{"exspec", "Print ex command catalog or specification", 734, 745, 0, 0},
-+	{"a", "Open or resume the agent conversation", 746, 753, 0, 0},
-+	{"a!", "Start a new agent conversation", 754, 759, 0, 0},
-+	{"a~", "Resume an agent conversation from its log", 760, 765, 0, 0},
-+	{"apack", "Compact the agent session from its log", 766, 778, 0, 0},
-+	{"apack!", "Compact the agent session by browsing its log", 779, 785, 0, 0},
-+	{"acm", "Toggle the caveman response style skill", 786, 791, 0, 0},
-+	{"aretry", "Execute the last agent command", 792, 803, 0, 0},
-+	{"aout", "Print the saved output of the last agent tool call", 804, 815, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 816, 842, 0, 0},
-+	{"aget", "Print agent session log entries, trimmed ones included", 843, 859, 0, 0},
-+	{"arate", "Rate agent turns in the notes buffer", 860, 880, 0, 0},
-+	{"adone", "End an agent checkpoint", 881, 888, 0, 0},
-+	{"acheck", "Start an agent checkpoint or set its budget", 889, 901, 0, 0},
-+	{"acp", "Print the agent checkpoint instructions", 902, 908, 0, 0},
-+	{"ali", "Print the agent session log entry list", 909, 920, 0, 0},
-+	{"auli", "Print the unrated agent session log turns", 921, 927, 0, 0},
-+	{"ast", "Print agent status and token usage", 928, 937, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 938, 971, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 972, 980, 0, 0},
-+	{"sc", "Set ex special characters", 981, 991, 0, 0},
-+	{"sc!", "Set ex special characters", 992, 999, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 1000, 1007, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1008, 1011, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1012, 1016, 0, 0},
-+	{"ph", "Redefine placeholders", 1017, 1033, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1042, 1080, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1081, 1091, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1092, 1098, 1, 0},
-+	{"agr", "Control agent output protection", 1099, 1104, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1105, 1112, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1113, 1118, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1119, 1141, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1142, 1150, 1, 0},
-+	{"ai", "Indent new lines", 1151, 1154, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1155, 1156, 1, 0},
-+	{"ish", "Interactive shell", 1157, 1172, 1, 0},
-+	{"grp", "Regex search group", 1173, 1181, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1182, 1185, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1186, 1187, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1187, 1188, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1188, 1189, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1189, 1190, 1, 0},
-+	{"led", "Enable all terminal output", 1190, 1191, 1, 0},
-+	{"vis", "Control startup flags", 1192, 1203, 1, 0},
-+	{"mpt", "Control vi prompts", 1204, 1214, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1215, 1217, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1217, 1219, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1219, 1220, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1220, 1221, 1, 0},
-+	{"td", "Current text direction context", 1221, 1227, 1, 0},
-+	{"pr", "Print register", 1228, 1244, 1, 0},
-+	{"fr", "Find register", 1245, 1257, 1, 0},
-+	{"rr", "Record register", 1258, 1271, 1, 0},
-+	{"lim", "Line length render limit", 1272, 1287, 1, 0},
-+	{"seq", "Control Undo/Redo", 1288, 1300, 1, 0},
-+	{"left", "Control horizontal scroll", 1301, 1306, 1, 0},
-+	{"err", "Control ex errors", 1307, 1319, 1, 0},
++	{"exspec", "Print ex command catalog or specification", 734, 746, 0, 0},
++	{"a", "Open or resume the agent conversation", 747, 754, 0, 0},
++	{"a!", "Start a new agent conversation", 755, 760, 0, 0},
++	{"a~", "Resume an agent conversation from its log", 761, 766, 0, 0},
++	{"apack", "Compact the agent session from its log", 767, 779, 0, 0},
++	{"apack!", "Compact the agent session by browsing its log", 780, 786, 0, 0},
++	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
++	{"aretry", "Execute the last agent command", 793, 804, 0, 0},
++	{"aout", "Print the saved output of the last agent tool call", 805, 816, 0, 0},
++	{"anote", "Replace or remove agent session log entries", 817, 843, 0, 0},
++	{"aget", "Print agent session log entries, trimmed ones included", 844, 860, 0, 0},
++	{"arate", "Rate agent turns in the notes buffer", 861, 881, 0, 0},
++	{"adone", "End an agent checkpoint", 882, 889, 0, 0},
++	{"acheck", "Start an agent checkpoint or set its budget", 890, 902, 0, 0},
++	{"acp", "Print the agent checkpoint instructions", 903, 909, 0, 0},
++	{"ali", "Print the agent session log entry list", 910, 921, 0, 0},
++	{"auli", "Print the unrated agent session log turns", 922, 928, 0, 0},
++	{"ast", "Print agent status and token usage", 929, 938, 0, 0},
++	{"ath", "Set the agent thinking cap and effort", 939, 964, 0, 0},
++	{"acap", "Raise the agent thinking cap for one reply", 965, 983, 0, 0},
++	{"ac", "Set autocomplete filter regex", 984, 992, 0, 0},
++	{"sc", "Set ex special characters", 993, 1003, 0, 0},
++	{"sc!", "Set ex special characters", 1004, 1011, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1012, 1019, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1020, 1023, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1024, 1028, 0, 0},
++	{"ph", "Redefine placeholders", 1029, 1045, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1054, 1092, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1093, 1103, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1104, 1110, 1, 0},
++	{"agr", "Control agent output protection", 1111, 1116, 1, 0},
++	{"ato", "Detach long agent shell commands", 1117, 1124, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1125, 1130, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1131, 1153, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1154, 1161, 1, 0},
++	{"ai", "Indent new lines", 1162, 1165, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1166, 1167, 1, 0},
++	{"ish", "Interactive shell", 1168, 1183, 1, 0},
++	{"grp", "Regex search group", 1184, 1192, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1193, 1196, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1197, 1198, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1198, 1199, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1199, 1200, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1200, 1201, 1, 0},
++	{"led", "Enable all terminal output", 1201, 1202, 1, 0},
++	{"vis", "Control startup flags", 1203, 1214, 1, 0},
++	{"mpt", "Control vi prompts", 1215, 1225, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1226, 1228, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1228, 1230, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1230, 1231, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1231, 1232, 1, 0},
++	{"td", "Current text direction context", 1232, 1238, 1, 0},
++	{"pr", "Print register", 1239, 1255, 1, 0},
++	{"fr", "Find register", 1256, 1268, 1, 0},
++	{"rr", "Record register", 1269, 1282, 1, 0},
++	{"lim", "Line length render limit", 1283, 1298, 1, 0},
++	{"seq", "Control Undo/Redo", 1299, 1311, 1, 0},
++	{"left", "Control horizontal scroll", 1312, 1317, 1, 0},
++	{"err", "Control ex errors", 1318, 1330, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..8fde7a8f9 100644
