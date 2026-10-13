@@ -1080,6 +1080,14 @@ static char agent_continue[] = "Continue the task.";
 static double agent_cp_bytes;
 static char *agent_cp_open;	/* the opening status and instructions */
 static cJSON *agent_cp_lead;	/* a message sent before it, if any */
+/* The checkpoint or budget check a thinking budget question interrupted:
+ * its messages stay in the context and those of the question follow them. */
+static struct {
+	cJSON *cp;
+	char *open;
+	double bytes;
+	int kind, base, logbuf, refused, left;
+} agent_cp_outer;
 
 /* Whether to refuse ending the checkpoint for unrated turns. New ratings
  * restart the count, so only two refusals without progress end it. */
@@ -1386,10 +1394,21 @@ static char *agent_budget_open(void)
 }
 
 /* kind 1 starts a checkpoint, 2 a budget check, 3 a thinking budget
- * question. */
+ * question, which can interrupt the other two and a pack. */
 static void agent_checkpoint_begin(double tokens, int kind)
 {
 	char note[64];
+	if (agent_checkpointing) {
+		agent_cp_outer.kind = agent_checkpointing;
+		agent_cp_outer.cp = agent_cp;
+		agent_cp_outer.open = agent_cp_open;
+		agent_cp_outer.bytes = agent_cp_bytes;
+		agent_cp_outer.base = agent_cp_base;
+		agent_cp_outer.logbuf = agent_cp_logbuf;
+		agent_cp_outer.refused = agent_cp_refused;
+		agent_cp_outer.left = agent_cp_left;
+		agent_cp_open = NULL;
+	}
 	agent_checkpointing = kind;
 	agent_cp_done = agent_cp_refused = 0;
 	agent_cp = cJSON_CreateArray();
@@ -1398,7 +1417,9 @@ static void agent_checkpoint_begin(double tokens, int kind)
 	agent_cp_left = INT_MAX;
 	agent_cp_logbuf = agent_logbuf;
 	agent_logbuf = 7;
-	agent_entries[0] = agent_turn[0] = 0;
+	/* A question there continues the numbering of what it interrupted. */
+	if (agent_cp_logbuf == 3)
+		agent_entries[0] = agent_turn[0] = 0;
 	/* The list explains both commands; do not defer them for specs. */
 	exspec_mark("arate");
 	exspec_mark("anote");
@@ -1514,15 +1535,16 @@ static void agent_think_unnote(void)
 
 /* Whether to withhold the reply of response root for a thinking budget
  * question: its thinking was cut below the ceiling, and it is not the reply
- * to a question. */
+ * to a question. Checkpoint, budget check and pack replies are asked about
+ * like those of the task. */
 static int agent_think_cutoff(cJSON *root, int asked)
 {
 	const char *rkey;
 	char *reasoning = agent_reasoning(cJSON_GetObjectItem(cJSON_GetArrayItem(
 		cJSON_GetObjectItem(root, "choices"), 0), "message"), &rkey);
-	return reasoning && !asked && !agent_checkpointing && !agent_packing &&
-		agent_logbuf == 3 && agent_think_cap >= 0 &&
-		agent_think_cap < agent_think_max && agent_think_cut(reasoning);
+	return reasoning && !asked && agent_checkpointing != 3 &&
+		agent_think_cap >= 0 && agent_think_cap < agent_think_max &&
+		agent_think_cut(reasoning);
 }
 
 /* Withhold the reply of response root, whose thinking was cut, and start a
@@ -1652,6 +1674,17 @@ static void agent_checkpoint_end(void)
 			agent_think_note ? " and a note" : "");
 		if (answered)
 			agent_output(note);
+		if (agent_cp_outer.kind) {
+			agent_checkpointing = agent_cp_outer.kind;
+			agent_cp = agent_cp_outer.cp;
+			agent_cp_open = agent_cp_outer.open;
+			agent_cp_bytes = agent_cp_outer.bytes;
+			agent_cp_base = agent_cp_outer.base;
+			agent_cp_logbuf = agent_cp_outer.logbuf;
+			agent_cp_refused = agent_cp_outer.refused;
+			agent_cp_left = agent_cp_outer.left;
+			agent_cp_outer.kind = 0;
+		}
 		return;
 	}
 	/* Unanswered, a budget check runs again at the next request. */
@@ -1676,6 +1709,13 @@ static void agent_checkpoint_end(void)
 		snprintf(note + k, sizeof(note) - k, ", %d unrated", n);
 	strcat(note, "]\n");
 	agent_output(note);
+}
+
+/* End a question together with what it interrupted. */
+static void agent_checkpoint_stop(void)
+{
+	while (agent_checkpointing)
+		agent_checkpoint_end();
 }
 
 /* acp prints the checkpoint instructions, to the agent only during one; ali
@@ -2630,7 +2670,7 @@ static void agent_run_loop(const char *input)
 		agent_cp_collect();
 		/* A question that ended unanswered, as by a pause: the reply it
 		 * withheld is requested again. */
-		if (!agent_checkpointing)
+		if (agent_checkpointing != 3)
 			agent_think_drop();
 		/* acl 1 rebuilds every request. Above 1, replies stay as returned,
 		 * reasoning included, so the model keeps it and the server cache
@@ -2643,8 +2683,10 @@ static void agent_run_loop(const char *input)
 		 * smallest context since; trimming gets a chance before aco.
 		 * acl < 0 runs a budget check instead: first -acl tokens after the
 		 * session start, a checkpoint or a compaction, then after the
-		 * growth the agent chose with acheck N. aco stays the backstop. */
-		if (agent_live() && agent_acl_kept() && !agent_checkpointing) {
+		 * growth the agent chose with acheck N. aco stays the backstop.
+		 * Both wait for the reply that replaces a withheld one: its cap
+		 * and note are not for them. */
+		if (agent_live() && agent_acl_kept() && !agent_checkpointing && !asked) {
 			double tokens = agent_tokens();
 			int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
 			if (agent_cp_asked)
@@ -2658,7 +2700,7 @@ static void agent_run_loop(const char *input)
 		if (compacted && agent_tokens() < xaco)
 			compacted = 0;
 		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
-				!agent_checkpointing && agent_tokens() >= xaco) {
+				!agent_checkpointing && !asked && agent_tokens() >= xaco) {
 			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 				return;
 			/* The pack conversation was discarded. Start a fresh tool-round
@@ -2683,11 +2725,17 @@ static void agent_run_loop(const char *input)
 				cJSON_AddItemToArray(agent_messages,
 					agent_msg("user", agent_continue));
 		}
+		if (agent_checkpointing)
+			agent_cp_build();
+		req = agent_config();
+		if (!req) {
+			agent_log("NOTICE", "invalid agent configuration");
+			return;
+		}
 		/* The note is in the context for the request alone, as assistant
 		 * text: the agent wrote it. The user message after it keeps the
 		 * note from ending the context. */
-		int noted = agent_think_note && !agent_checkpointing &&
-			!agent_packing && agent_logbuf == 3;
+		int noted = agent_think_note && agent_checkpointing != 3;
 		if (noted) {
 			char *text = emalloc(sizeof(agent_think_lead) +
 				strlen(agent_think_note) + 32);
@@ -2695,16 +2743,11 @@ static void agent_run_loop(const char *input)
 				agent_think_cap, agent_think_note);
 			cJSON_AddItemToArray(agent_messages,
 				agent_msg("assistant", text));
-			cJSON_AddItemToArray(agent_messages,
-				agent_msg("user", agent_continue));
+			cJSON_AddItemToArray(agent_messages, agent_msg("user",
+				agent_checkpointing == 1 ? "Continue the checkpoint." :
+				agent_checkpointing == 2 ? "Answer the budget check." :
+				agent_continue));
 			free(text);
-		}
-		if (agent_checkpointing)
-			agent_cp_build();
-		req = agent_config();
-		if (!req) {
-			agent_log("NOTICE", "invalid agent configuration");
-			return;
 		}
 		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
 		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
@@ -2750,7 +2793,7 @@ static void agent_run_loop(const char *input)
 		if (agent_pause) {
 			free(body);
 			free(stderr_text);
-			agent_checkpoint_end();
+			agent_checkpoint_stop();
 			agent_editor();
 			agent_redraw(NULL);
 			agent_pause = 0;
@@ -2831,7 +2874,7 @@ static void agent_run_loop(const char *input)
 		if (noted)
 			agent_think_unnote();
 		/* A raised cap lasts for one reply. */
-		if (!agent_checkpointing && agent_think_max) {
+		if (agent_checkpointing != 3 && agent_think_max) {
 			agent_think_was = agent_think_cap;
 			agent_think_rebase();
 			asked = 0;
@@ -2994,8 +3037,9 @@ reply:
 		int has_calls = cJSON_GetArraySize(calls);
 		cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
 			cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
-		if (agent_packing && !has_calls && cJSON_IsString(finish) &&
-				!strcmp(finish->valuestring, "stop"))
+		/* The answer to a question does not end the pack it interrupted. */
+		if (agent_packing && !agent_checkpointing && !has_calls &&
+				cJSON_IsString(finish) && !strcmp(finish->valuestring, "stop"))
 			agent_pack_done = 1;
 		cJSON_Delete(root);
 		if (agent_cancel)
@@ -3004,7 +3048,7 @@ reply:
 			/* The reply a question withheld is requested again. */
 			if (agent_checkpointing == 3)
 				has_calls = 1;
-			agent_checkpoint_end();
+			agent_checkpoint_stop();
 			agent_editor();
 			agent_redraw(NULL);
 			agent_pause = 0;
@@ -3015,7 +3059,8 @@ reply:
 		}
 		agent_rounds = round;
 		/* A pack that stops without touching the log gets another try. */
-		if (!has_calls && agent_packing && agent_pack_log && unpacked < 3) {
+		if (!has_calls && agent_packing && !agent_checkpointing &&
+				agent_pack_log && unpacked < 3) {
 			char *log = agent_text(tempbufs[3].lb);
 			int same = !strcmp(log, agent_pack_log);
 			free(log);
@@ -3096,13 +3141,11 @@ reply:
 static void agent_run(const char *input)
 {
 	agent_run_loop(input);
-	agent_checkpoint_end();
-	/* A run can end before the reply a raised cap was for; autocompact
-	 * nests a run. */
-	if (agent_think_max && !agent_packing)
+	agent_checkpoint_stop();
+	/* A run can end before the reply a raised cap and a note were for. */
+	if (agent_think_max)
 		agent_think_rebase();
-	if (!agent_packing)
-		agent_think_unnote();
+	agent_think_unnote();
 	agent_think_drop();
 }
 
@@ -4294,7 +4337,8 @@ static double agent_acl_mark;
 static int agent_acl_budget;
 /* 1: a checkpoint, only trimming the session log until adone;
  * 2: an acl < 0 budget check, only acheck;
- * 3: an ath N,M thinking budget question, only ath */
+ * 3: an ath N,M thinking budget question, only ath; it interrupts the
+ * task, a pack or either of the above, which goes on once it ends */
 static int agent_checkpointing;
 /* First command of the running tool call that aspec deferred */
 static char agent_deferred[32];
@@ -8101,7 +8145,10 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "The server marks cut thinking by ending it with think_cut of conf.c.\n" \
                 "Outside that exchange ath as an agent tool takes only a count from 1\n" \
                 "to M, as its argument or its range, for its next reply, and needs M\n" \
-                "set. Pack agents are not asked.\n\n" \
+                "set. Replies of an acl checkpoint, a budget check and a pack agent\n" \
+                "are asked about too; what the question interrupted then goes on,\n" \
+                "and a new checkpoint, budget check or compaction waits for the\n" \
+                "new reply.\n\n" \
                 "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
                 "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
                 ":4096,32768ath medium")
@@ -11191,7 +11238,10 @@ static char *exspec_lines[] = {
 	"The server marks cut thinking by ending it with think_cut of conf.c.",
 	"Outside that exchange ath as an agent tool takes only a count from 1",
 	"to M, as its argument or its range, for its next reply, and needs M",
-	"set. Pack agents are not asked.",
+	"set. Replies of an acl checkpoint, a budget check and a pack agent",
+	"are asked about too; what the question interrupted then goes on,",
+	"and a new checkpoint, budget check or compaction waits for the",
+	"new reply.",
 	"",
 	"Example: cap thinking at 1024 tokens with high effort",
 	"1024ath high",
@@ -11688,46 +11738,46 @@ static struct {
 	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
 	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
 	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 941, 973, 0, 0},
-	{"ac", "Set autocomplete filter regex", 974, 982, 0, 0},
-	{"sc", "Set ex special characters", 983, 993, 0, 0},
-	{"sc!", "Set ex special characters", 994, 1001, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 1002, 1009, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1010, 1013, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1014, 1018, 0, 0},
-	{"ph", "Redefine placeholders", 1019, 1035, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1044, 1084, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1085, 1094, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1095, 1102, 1, 0},
-	{"agr", "Control agent output protection", 1103, 1109, 1, 0},
-	{"ato", "Detach long agent shell commands", 1110, 1117, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1118, 1124, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1125, 1149, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1150, 1156, 1, 0},
-	{"ai", "Indent new lines", 1157, 1160, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1161, 1162, 1, 0},
-	{"ish", "Interactive shell", 1163, 1178, 1, 0},
-	{"grp", "Regex search group", 1179, 1187, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1188, 1191, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1192, 1193, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1193, 1194, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1194, 1195, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1195, 1196, 1, 0},
-	{"led", "Enable all terminal output", 1196, 1197, 1, 0},
-	{"vis", "Control startup flags", 1198, 1209, 1, 0},
-	{"mpt", "Control vi prompts", 1210, 1220, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1221, 1223, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1223, 1225, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1225, 1226, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1226, 1227, 1, 0},
-	{"td", "Current text direction context", 1227, 1233, 1, 0},
-	{"pr", "Print register", 1234, 1250, 1, 0},
-	{"fr", "Find register", 1251, 1263, 1, 0},
-	{"rr", "Record register", 1264, 1277, 1, 0},
-	{"lim", "Line length render limit", 1278, 1293, 1, 0},
-	{"seq", "Control Undo/Redo", 1294, 1306, 1, 0},
-	{"left", "Control horizontal scroll", 1307, 1312, 1, 0},
-	{"err", "Control ex errors", 1313, 1325, 1, 0},
+	{"ath", "Set the agent thinking cap and effort", 941, 976, 0, 0},
+	{"ac", "Set autocomplete filter regex", 977, 985, 0, 0},
+	{"sc", "Set ex special characters", 986, 996, 0, 0},
+	{"sc!", "Set ex special characters", 997, 1004, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1005, 1012, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1013, 1016, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1017, 1021, 0, 0},
+	{"ph", "Redefine placeholders", 1022, 1038, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1047, 1087, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1088, 1097, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1098, 1105, 1, 0},
+	{"agr", "Control agent output protection", 1106, 1112, 1, 0},
+	{"ato", "Detach long agent shell commands", 1113, 1120, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1121, 1127, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1128, 1152, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1153, 1159, 1, 0},
+	{"ai", "Indent new lines", 1160, 1163, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1164, 1165, 1, 0},
+	{"ish", "Interactive shell", 1166, 1181, 1, 0},
+	{"grp", "Regex search group", 1182, 1190, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1191, 1194, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1195, 1196, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1196, 1197, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1197, 1198, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1198, 1199, 1, 0},
+	{"led", "Enable all terminal output", 1199, 1200, 1, 0},
+	{"vis", "Control startup flags", 1201, 1212, 1, 0},
+	{"mpt", "Control vi prompts", 1213, 1223, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1224, 1226, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1226, 1228, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1228, 1229, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1229, 1230, 1, 0},
+	{"td", "Current text direction context", 1230, 1236, 1, 0},
+	{"pr", "Print register", 1237, 1253, 1, 0},
+	{"fr", "Find register", 1254, 1266, 1, 0},
+	{"rr", "Record register", 1267, 1280, 1, 0},
+	{"lim", "Line length render limit", 1281, 1296, 1, 0},
+	{"seq", "Control Undo/Redo", 1297, 1309, 1, 0},
+	{"left", "Control horizontal scroll", 1310, 1315, 1, 0},
+	{"err", "Control ex errors", 1316, 1328, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -12352,10 +12402,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..ba50612f4
+index 000000000..3d2eb3c37
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4241 @@
+@@ -0,0 +1,4284 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -13406,6 +13456,14 @@ index 000000000..ba50612f4
 +static double agent_cp_bytes;
 +static char *agent_cp_open;	/* the opening status and instructions */
 +static cJSON *agent_cp_lead;	/* a message sent before it, if any */
++/* The checkpoint or budget check a thinking budget question interrupted:
++ * its messages stay in the context and those of the question follow them. */
++static struct {
++	cJSON *cp;
++	char *open;
++	double bytes;
++	int kind, base, logbuf, refused, left;
++} agent_cp_outer;
 +
 +/* Whether to refuse ending the checkpoint for unrated turns. New ratings
 + * restart the count, so only two refusals without progress end it. */
@@ -13712,10 +13770,21 @@ index 000000000..ba50612f4
 +}
 +
 +/* kind 1 starts a checkpoint, 2 a budget check, 3 a thinking budget
-+ * question. */
++ * question, which can interrupt the other two and a pack. */
 +static void agent_checkpoint_begin(double tokens, int kind)
 +{
 +	char note[64];
++	if (agent_checkpointing) {
++		agent_cp_outer.kind = agent_checkpointing;
++		agent_cp_outer.cp = agent_cp;
++		agent_cp_outer.open = agent_cp_open;
++		agent_cp_outer.bytes = agent_cp_bytes;
++		agent_cp_outer.base = agent_cp_base;
++		agent_cp_outer.logbuf = agent_cp_logbuf;
++		agent_cp_outer.refused = agent_cp_refused;
++		agent_cp_outer.left = agent_cp_left;
++		agent_cp_open = NULL;
++	}
 +	agent_checkpointing = kind;
 +	agent_cp_done = agent_cp_refused = 0;
 +	agent_cp = cJSON_CreateArray();
@@ -13724,7 +13793,9 @@ index 000000000..ba50612f4
 +	agent_cp_left = INT_MAX;
 +	agent_cp_logbuf = agent_logbuf;
 +	agent_logbuf = 7;
-+	agent_entries[0] = agent_turn[0] = 0;
++	/* A question there continues the numbering of what it interrupted. */
++	if (agent_cp_logbuf == 3)
++		agent_entries[0] = agent_turn[0] = 0;
 +	/* The list explains both commands; do not defer them for specs. */
 +	exspec_mark("arate");
 +	exspec_mark("anote");
@@ -13840,15 +13911,16 @@ index 000000000..ba50612f4
 +
 +/* Whether to withhold the reply of response root for a thinking budget
 + * question: its thinking was cut below the ceiling, and it is not the reply
-+ * to a question. */
++ * to a question. Checkpoint, budget check and pack replies are asked about
++ * like those of the task. */
 +static int agent_think_cutoff(cJSON *root, int asked)
 +{
 +	const char *rkey;
 +	char *reasoning = agent_reasoning(cJSON_GetObjectItem(cJSON_GetArrayItem(
 +		cJSON_GetObjectItem(root, "choices"), 0), "message"), &rkey);
-+	return reasoning && !asked && !agent_checkpointing && !agent_packing &&
-+		agent_logbuf == 3 && agent_think_cap >= 0 &&
-+		agent_think_cap < agent_think_max && agent_think_cut(reasoning);
++	return reasoning && !asked && agent_checkpointing != 3 &&
++		agent_think_cap >= 0 && agent_think_cap < agent_think_max &&
++		agent_think_cut(reasoning);
 +}
 +
 +/* Withhold the reply of response root, whose thinking was cut, and start a
@@ -13978,6 +14050,17 @@ index 000000000..ba50612f4
 +			agent_think_note ? " and a note" : "");
 +		if (answered)
 +			agent_output(note);
++		if (agent_cp_outer.kind) {
++			agent_checkpointing = agent_cp_outer.kind;
++			agent_cp = agent_cp_outer.cp;
++			agent_cp_open = agent_cp_outer.open;
++			agent_cp_bytes = agent_cp_outer.bytes;
++			agent_cp_base = agent_cp_outer.base;
++			agent_cp_logbuf = agent_cp_outer.logbuf;
++			agent_cp_refused = agent_cp_outer.refused;
++			agent_cp_left = agent_cp_outer.left;
++			agent_cp_outer.kind = 0;
++		}
 +		return;
 +	}
 +	/* Unanswered, a budget check runs again at the next request. */
@@ -14002,6 +14085,13 @@ index 000000000..ba50612f4
 +		snprintf(note + k, sizeof(note) - k, ", %d unrated", n);
 +	strcat(note, "]\n");
 +	agent_output(note);
++}
++
++/* End a question together with what it interrupted. */
++static void agent_checkpoint_stop(void)
++{
++	while (agent_checkpointing)
++		agent_checkpoint_end();
 +}
 +
 +/* acp prints the checkpoint instructions, to the agent only during one; ali
@@ -14956,7 +15046,7 @@ index 000000000..ba50612f4
 +		agent_cp_collect();
 +		/* A question that ended unanswered, as by a pause: the reply it
 +		 * withheld is requested again. */
-+		if (!agent_checkpointing)
++		if (agent_checkpointing != 3)
 +			agent_think_drop();
 +		/* acl 1 rebuilds every request. Above 1, replies stay as returned,
 +		 * reasoning included, so the model keeps it and the server cache
@@ -14969,8 +15059,10 @@ index 000000000..ba50612f4
 +		 * smallest context since; trimming gets a chance before aco.
 +		 * acl < 0 runs a budget check instead: first -acl tokens after the
 +		 * session start, a checkpoint or a compaction, then after the
-+		 * growth the agent chose with acheck N. aco stays the backstop. */
-+		if (agent_live() && agent_acl_kept() && !agent_checkpointing) {
++		 * growth the agent chose with acheck N. aco stays the backstop.
++		 * Both wait for the reply that replaces a withheld one: its cap
++		 * and note are not for them. */
++		if (agent_live() && agent_acl_kept() && !agent_checkpointing && !asked) {
 +			double tokens = agent_tokens();
 +			int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
 +			if (agent_cp_asked)
@@ -14984,7 +15076,7 @@ index 000000000..ba50612f4
 +		if (compacted && agent_tokens() < xaco)
 +			compacted = 0;
 +		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
-+				!agent_checkpointing && agent_tokens() >= xaco) {
++				!agent_checkpointing && !asked && agent_tokens() >= xaco) {
 +			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 +				return;
 +			/* The pack conversation was discarded. Start a fresh tool-round
@@ -15009,11 +15101,17 @@ index 000000000..ba50612f4
 +				cJSON_AddItemToArray(agent_messages,
 +					agent_msg("user", agent_continue));
 +		}
++		if (agent_checkpointing)
++			agent_cp_build();
++		req = agent_config();
++		if (!req) {
++			agent_log("NOTICE", "invalid agent configuration");
++			return;
++		}
 +		/* The note is in the context for the request alone, as assistant
 +		 * text: the agent wrote it. The user message after it keeps the
 +		 * note from ending the context. */
-+		int noted = agent_think_note && !agent_checkpointing &&
-+			!agent_packing && agent_logbuf == 3;
++		int noted = agent_think_note && agent_checkpointing != 3;
 +		if (noted) {
 +			char *text = emalloc(sizeof(agent_think_lead) +
 +				strlen(agent_think_note) + 32);
@@ -15021,16 +15119,11 @@ index 000000000..ba50612f4
 +				agent_think_cap, agent_think_note);
 +			cJSON_AddItemToArray(agent_messages,
 +				agent_msg("assistant", text));
-+			cJSON_AddItemToArray(agent_messages,
-+				agent_msg("user", agent_continue));
++			cJSON_AddItemToArray(agent_messages, agent_msg("user",
++				agent_checkpointing == 1 ? "Continue the checkpoint." :
++				agent_checkpointing == 2 ? "Answer the budget check." :
++				agent_continue));
 +			free(text);
-+		}
-+		if (agent_checkpointing)
-+			agent_cp_build();
-+		req = agent_config();
-+		if (!req) {
-+			agent_log("NOTICE", "invalid agent configuration");
-+			return;
 +		}
 +		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
 +		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
@@ -15076,7 +15169,7 @@ index 000000000..ba50612f4
 +		if (agent_pause) {
 +			free(body);
 +			free(stderr_text);
-+			agent_checkpoint_end();
++			agent_checkpoint_stop();
 +			agent_editor();
 +			agent_redraw(NULL);
 +			agent_pause = 0;
@@ -15157,7 +15250,7 @@ index 000000000..ba50612f4
 +		if (noted)
 +			agent_think_unnote();
 +		/* A raised cap lasts for one reply. */
-+		if (!agent_checkpointing && agent_think_max) {
++		if (agent_checkpointing != 3 && agent_think_max) {
 +			agent_think_was = agent_think_cap;
 +			agent_think_rebase();
 +			asked = 0;
@@ -15320,8 +15413,9 @@ index 000000000..ba50612f4
 +		int has_calls = cJSON_GetArraySize(calls);
 +		cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
 +			cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
-+		if (agent_packing && !has_calls && cJSON_IsString(finish) &&
-+				!strcmp(finish->valuestring, "stop"))
++		/* The answer to a question does not end the pack it interrupted. */
++		if (agent_packing && !agent_checkpointing && !has_calls &&
++				cJSON_IsString(finish) && !strcmp(finish->valuestring, "stop"))
 +			agent_pack_done = 1;
 +		cJSON_Delete(root);
 +		if (agent_cancel)
@@ -15330,7 +15424,7 @@ index 000000000..ba50612f4
 +			/* The reply a question withheld is requested again. */
 +			if (agent_checkpointing == 3)
 +				has_calls = 1;
-+			agent_checkpoint_end();
++			agent_checkpoint_stop();
 +			agent_editor();
 +			agent_redraw(NULL);
 +			agent_pause = 0;
@@ -15341,7 +15435,8 @@ index 000000000..ba50612f4
 +		}
 +		agent_rounds = round;
 +		/* A pack that stops without touching the log gets another try. */
-+		if (!has_calls && agent_packing && agent_pack_log && unpacked < 3) {
++		if (!has_calls && agent_packing && !agent_checkpointing &&
++				agent_pack_log && unpacked < 3) {
 +			char *log = agent_text(tempbufs[3].lb);
 +			int same = !strcmp(log, agent_pack_log);
 +			free(log);
@@ -15422,13 +15517,11 @@ index 000000000..ba50612f4
 +static void agent_run(const char *input)
 +{
 +	agent_run_loop(input);
-+	agent_checkpoint_end();
-+	/* A run can end before the reply a raised cap was for; autocompact
-+	 * nests a run. */
-+	if (agent_think_max && !agent_packing)
++	agent_checkpoint_stop();
++	/* A run can end before the reply a raised cap and a note were for. */
++	if (agent_think_max)
 +		agent_think_rebase();
-+	if (!agent_packing)
-+		agent_think_unnote();
++	agent_think_unnote();
 +	agent_think_drop();
 +}
 +
@@ -16599,10 +16692,10 @@ index 000000000..ba50612f4
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 000000000..4f5376417
+index 000000000..cdf3e413e
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,50 @@
 +/* agent.c: embedded request loop and editor integration */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
 +static int agent_tool, agent_cancel, agent_pause;
@@ -16625,7 +16718,8 @@ index 000000000..4f5376417
 +static int agent_acl_budget;
 +/* 1: a checkpoint, only trimming the session log until adone;
 + * 2: an acl < 0 budget check, only acheck;
-+ * 3: an ath N,M thinking budget question, only ath */
++ * 3: an ath N,M thinking budget question, only ath; it interrupts the
++ * task, a pack or either of the above, which goes on once it ends */
 +static int agent_checkpointing;
 +/* First command of the running tool call that aspec deferred */
 +static char agent_deferred[32];
@@ -20162,10 +20256,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..4e0cc90e1 100755
+index c836c94c7..a47a15a5d 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,291 @@ build() {
+@@ -65,6 +65,294 @@ build() {
      }
  }
  
@@ -20345,7 +20439,10 @@ index c836c94c7..4e0cc90e1 100755
 +                "The server marks cut thinking by ending it with think_cut of conf.c.\n" \
 +                "Outside that exchange ath as an agent tool takes only a count from 1\n" \
 +                "to M, as its argument or its range, for its next reply, and needs M\n" \
-+                "set. Pack agents are not asked.\n\n" \
++                "set. Replies of an acl checkpoint, a budget check and a pack agent\n" \
++                "are asked about too; what the question interrupted then goes on,\n" \
++                "and a new checkpoint, budget check or compaction waits for the\n" \
++                "new reply.\n\n" \
 +                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
 +                "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
 +                ":4096,32768ath medium")
@@ -20457,7 +20554,7 @@ index c836c94c7..4e0cc90e1 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +359,7 @@ install() {
+@@ -74,7 +362,7 @@ install() {
  }
  
  print_usage() {
@@ -20466,7 +20563,7 @@ index c836c94c7..4e0cc90e1 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +367,9 @@ print_usage() {
+@@ -82,6 +370,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -21527,10 +21624,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..05ee399c8
+index 000000000..69d39a2fc
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1506 @@
+@@ -0,0 +1,1509 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -22499,7 +22596,10 @@ index 000000000..05ee399c8
 +	"The server marks cut thinking by ending it with think_cut of conf.c.",
 +	"Outside that exchange ath as an agent tool takes only a count from 1",
 +	"to M, as its argument or its range, for its next reply, and needs M",
-+	"set. Pack agents are not asked.",
++	"set. Replies of an acl checkpoint, a budget check and a pack agent",
++	"are asked about too; what the question interrupted then goes on,",
++	"and a new checkpoint, budget check or compaction waits for the",
++	"new reply.",
 +	"",
 +	"Example: cap thinking at 1024 tokens with high effort",
 +	"1024ath high",
@@ -22996,46 +23096,46 @@ index 000000000..05ee399c8
 +	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
 +	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
 +	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 941, 973, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 974, 982, 0, 0},
-+	{"sc", "Set ex special characters", 983, 993, 0, 0},
-+	{"sc!", "Set ex special characters", 994, 1001, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 1002, 1009, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1010, 1013, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1014, 1018, 0, 0},
-+	{"ph", "Redefine placeholders", 1019, 1035, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1044, 1084, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1085, 1094, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1095, 1102, 1, 0},
-+	{"agr", "Control agent output protection", 1103, 1109, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1110, 1117, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1118, 1124, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1125, 1149, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1150, 1156, 1, 0},
-+	{"ai", "Indent new lines", 1157, 1160, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1161, 1162, 1, 0},
-+	{"ish", "Interactive shell", 1163, 1178, 1, 0},
-+	{"grp", "Regex search group", 1179, 1187, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1188, 1191, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1192, 1193, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1193, 1194, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1194, 1195, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1195, 1196, 1, 0},
-+	{"led", "Enable all terminal output", 1196, 1197, 1, 0},
-+	{"vis", "Control startup flags", 1198, 1209, 1, 0},
-+	{"mpt", "Control vi prompts", 1210, 1220, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1221, 1223, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1223, 1225, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1225, 1226, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1226, 1227, 1, 0},
-+	{"td", "Current text direction context", 1227, 1233, 1, 0},
-+	{"pr", "Print register", 1234, 1250, 1, 0},
-+	{"fr", "Find register", 1251, 1263, 1, 0},
-+	{"rr", "Record register", 1264, 1277, 1, 0},
-+	{"lim", "Line length render limit", 1278, 1293, 1, 0},
-+	{"seq", "Control Undo/Redo", 1294, 1306, 1, 0},
-+	{"left", "Control horizontal scroll", 1307, 1312, 1, 0},
-+	{"err", "Control ex errors", 1313, 1325, 1, 0},
++	{"ath", "Set the agent thinking cap and effort", 941, 976, 0, 0},
++	{"ac", "Set autocomplete filter regex", 977, 985, 0, 0},
++	{"sc", "Set ex special characters", 986, 996, 0, 0},
++	{"sc!", "Set ex special characters", 997, 1004, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1005, 1012, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1013, 1016, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1017, 1021, 0, 0},
++	{"ph", "Redefine placeholders", 1022, 1038, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1047, 1087, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1088, 1097, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1098, 1105, 1, 0},
++	{"agr", "Control agent output protection", 1106, 1112, 1, 0},
++	{"ato", "Detach long agent shell commands", 1113, 1120, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1121, 1127, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1128, 1152, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1153, 1159, 1, 0},
++	{"ai", "Indent new lines", 1160, 1163, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1164, 1165, 1, 0},
++	{"ish", "Interactive shell", 1166, 1181, 1, 0},
++	{"grp", "Regex search group", 1182, 1190, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1191, 1194, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1195, 1196, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1196, 1197, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1197, 1198, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1198, 1199, 1, 0},
++	{"led", "Enable all terminal output", 1199, 1200, 1, 0},
++	{"vis", "Control startup flags", 1201, 1212, 1, 0},
++	{"mpt", "Control vi prompts", 1213, 1223, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1224, 1226, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1226, 1228, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1228, 1229, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1229, 1230, 1, 0},
++	{"td", "Current text direction context", 1230, 1236, 1, 0},
++	{"pr", "Print register", 1237, 1253, 1, 0},
++	{"fr", "Find register", 1254, 1266, 1, 0},
++	{"rr", "Record register", 1267, 1280, 1, 0},
++	{"lim", "Line length render limit", 1281, 1296, 1, 0},
++	{"seq", "Control Undo/Redo", 1297, 1309, 1, 0},
++	{"left", "Control horizontal scroll", 1310, 1315, 1, 0},
++	{"err", "Control ex errors", 1316, 1328, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..8fde7a8f9 100644
