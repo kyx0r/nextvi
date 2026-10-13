@@ -125,13 +125,12 @@ static int agent_think_was, agent_think_more;
 /* The withheld reply is cut thinking alone, without text or calls */
 static int agent_think_empty;
 /* The text of an ath N answer: an assistant message near the end of the
- * requests of the reply that replaces the withheld one, unlogged like the
- * question. */
+ * requests of the reply that replaces the withheld one, unlogged */
 static char *agent_think_note;
 static char agent_think_lead[] =
 	"My thinking was cut off at %d tokens; the cap is now %d tokens and I "
 	"must finish thinking within it. My note on how to think:\n%s";
-/* Replies a thinking budget question waits for an answer after the first */
+/* Replies a thinking budget check waits for an answer after the first */
 #define AGENT_THINK_TRIES	5
 /* Automatic retries of a malformed assistant response, before one nudge */
 #define AGENT_BAD_TRIES	5
@@ -1080,7 +1079,7 @@ static char agent_continue[] = "Continue the task.";
 static double agent_cp_bytes;
 static char *agent_cp_open;	/* the opening status and instructions */
 static cJSON *agent_cp_lead;	/* a message sent before it, if any */
-/* The checkpoint or budget check a thinking budget question interrupted:
+/* The checkpoint or budget check or thinking budget check interrupted:
  * its messages stay in the context and those of the question follow them. */
 static struct {
 	cJSON *cp;
@@ -1379,7 +1378,7 @@ static void agent_cp_instructions(sbuf *sb)
 static char *agent_budget_open(void)
 {
 	char *s = emalloc(512);
-	int k = sprintf(s, "Stop working on the current task and answer this "
+	int k = sprintf(s, "Stop working on the current task and complete this "
 		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
 	if (xaco)
 		k += sprintf(s + k, "/%d", xaco);
@@ -1509,7 +1508,7 @@ static void agent_think_rebase(void)
 		agent_think_cap = MAX(1, (int)MIN(cap, top > 0 ? top : 1e9));
 }
 
-/* What ends the errors of a thinking budget question: the retry the next
+/* What ends the errors of a thinking budget check: the retry the next
  * reply is, while one is left. */
 static char *agent_think_retry(void)
 {
@@ -1534,7 +1533,7 @@ static void agent_think_unnote(void)
 }
 
 /* Whether to withhold the reply of response root for a thinking budget
- * question: its thinking was cut below the ceiling, and it is not the reply
+ * check: its thinking was cut below the ceiling, and it is not the reply
  * to a question. Checkpoint, budget check and pack replies are asked about
  * like those of the task. */
 static int agent_think_cutoff(cJSON *root, int asked)
@@ -1548,7 +1547,7 @@ static int agent_think_cutoff(cJSON *root, int asked)
 }
 
 /* Withhold the reply of response root, whose thinking was cut, and start a
- * thinking budget question about it: the reply without its calls leads the
+ * thinking budget check about it: the reply without its calls leads the
  * question, which lists their commands. */
 static void agent_think_ask(cJSON *root)
 {
@@ -1576,9 +1575,9 @@ static void agent_think_ask(cJSON *root)
 	if (cJSON_IsString(content) && *content->valuestring)
 		agent_turn_part(1, content->valuestring);
 	snprintf(line, sizeof(line), "Stop working on the current task and "
-		"answer this thinking budget question.\nThe thinking of your last "
+		"complete this budget check.\nThe thinking of your last "
 		"reply was cut off at the cap of %d tokens. The reply is %s\n", cap,
-		cnt ? "withheld; its commands did not run:" : agent_think_empty ?
+		cnt ? "withheld and these commands did not run:" : agent_think_empty ?
 		"discarded; it had no text and made no ex tool calls." :
 		"withheld; it made no ex tool calls.");
 	sbuf_str(sb, line)
@@ -1593,7 +1592,7 @@ static void agent_think_ask(cJSON *root)
 		sbuf_chr(sb, '\''\n'\'')
 		cJSON_Delete(parsed);
 	}
-	snprintf(line, sizeof(line), "Use ath command to %s or ath N [note] to %sreply "
+	snprintf(line, sizeof(line), "Use ath command to %s (no rethink required) or ath N [note] to %sreply "
 		"again with a thinking cap of N tokens, above %d and up to %d.",
 		cnt ? "run the reply as it is" : agent_think_empty ?
 		"reply again under the same cap" : "keep the reply as it is",
@@ -1664,7 +1663,7 @@ static void agent_checkpoint_end(void)
 	agent_cp_open = NULL;
 	agent_logbuf = agent_cp_logbuf;
 	agent_checkpointing = agent_cp_done = 0;
-	/* A thinking budget question and a budget check leave b-4 as it was;
+	/* A thinking budget check and a budget check leave b-4 as it was;
 	 * the context and its cached prefix stay. */
 	if (kind == 3) {
 		snprintf(note, sizeof(note), agent_think_more ?
@@ -2668,7 +2667,7 @@ static void agent_run_loop(const char *input)
 		 * pack agents must never recursively trigger autocompaction. */
 		/* The threshold triggers a pack, not a hard cap on its result. */
 		agent_cp_collect();
-		/* A question that ended unanswered, as by a pause: the reply it
+		/* A check that ended unanswered, as by a pause: the reply it
 		 * withheld is requested again. */
 		if (agent_checkpointing != 3)
 			agent_think_drop();
@@ -2822,7 +2821,7 @@ static void agent_run_loop(const char *input)
 		char error[256], diagnostic[2048], excerpt[513];
 		int invalid = agent_response_error(root, error, sizeof(error));
 		/* ath N,M: a reply whose thinking was cut below the ceiling is
-		 * withheld for a thinking budget question, also when the cut
+		 * withheld for a thinking budget check, also when the cut
 		 * left it without text and calls. The reply that follows a
 		 * question is not asked about. */
 		int cut = (!invalid || invalid == 3) && agent_think_cutoff(root, asked);
@@ -3075,7 +3074,7 @@ reply:
 			}
 		}
 		/* A budget check gets two more requests to answer, then becomes
-		 * a checkpoint; a thinking budget question gets AGENT_THINK_TRIES
+		 * a checkpoint; a thinking budget check gets AGENT_THINK_TRIES
 		 * and is then taken as answered by ath alone. */
 		if (agent_checkpointing >= 2 && !agent_cp_done) {
 			int think = agent_checkpointing == 3;
@@ -3348,7 +3347,7 @@ static char *agent_count(char *s, int *n)
 
 /* N,M lets the agent raise the cap up to M for its next reply: as a tool ath
  * takes only a count, as its argument like acheck or as its range, and
- * answers a thinking budget question, where ath alone leaves the cap and
+ * answers a thinking budget check, where ath alone leaves the cap and
  * text after the count is a note for the new reply. */
 static void *ec_ath(char *loc, char *cmd, char *arg)
 {
@@ -10133,8 +10132,8 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 		}
 		if (agent_tool && agent_checkpointing == 3 &&
 				excmds[idx].ec != ec_ath) {
-			snprintf(xaerr, sizeof(xaerr), "%s%sduring the thinking budget "
-				"question; only ath N [note] or ath runs%s", excmds[idx].name,
+			snprintf(xaerr, sizeof(xaerr), "%s%sduring the budget "
+				"check; only ath N [note] or ath runs%s", excmds[idx].name,
 				*excmds[idx].name ? " command unavailable " :
 				"unknown command ", agent_think_retry());
 			ret = xaerr;
@@ -12402,10 +12401,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..3d2eb3c37
+index 00000000..7d5efcc3
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4284 @@
+@@ -0,0 +1,4283 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12501,13 +12500,12 @@ index 000000000..3d2eb3c37
 +/* The withheld reply is cut thinking alone, without text or calls */
 +static int agent_think_empty;
 +/* The text of an ath N answer: an assistant message near the end of the
-+ * requests of the reply that replaces the withheld one, unlogged like the
-+ * question. */
++ * requests of the reply that replaces the withheld one, unlogged */
 +static char *agent_think_note;
 +static char agent_think_lead[] =
 +	"My thinking was cut off at %d tokens; the cap is now %d tokens and I "
 +	"must finish thinking within it. My note on how to think:\n%s";
-+/* Replies a thinking budget question waits for an answer after the first */
++/* Replies a thinking budget check waits for an answer after the first */
 +#define AGENT_THINK_TRIES	5
 +/* Automatic retries of a malformed assistant response, before one nudge */
 +#define AGENT_BAD_TRIES	5
@@ -13456,7 +13454,7 @@ index 000000000..3d2eb3c37
 +static double agent_cp_bytes;
 +static char *agent_cp_open;	/* the opening status and instructions */
 +static cJSON *agent_cp_lead;	/* a message sent before it, if any */
-+/* The checkpoint or budget check a thinking budget question interrupted:
++/* The checkpoint or budget check or thinking budget check interrupted:
 + * its messages stay in the context and those of the question follow them. */
 +static struct {
 +	cJSON *cp;
@@ -13755,7 +13753,7 @@ index 000000000..3d2eb3c37
 +static char *agent_budget_open(void)
 +{
 +	char *s = emalloc(512);
-+	int k = sprintf(s, "Stop working on the current task and answer this "
++	int k = sprintf(s, "Stop working on the current task and complete this "
 +		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
 +	if (xaco)
 +		k += sprintf(s + k, "/%d", xaco);
@@ -13885,7 +13883,7 @@ index 000000000..3d2eb3c37
 +		agent_think_cap = MAX(1, (int)MIN(cap, top > 0 ? top : 1e9));
 +}
 +
-+/* What ends the errors of a thinking budget question: the retry the next
++/* What ends the errors of a thinking budget check: the retry the next
 + * reply is, while one is left. */
 +static char *agent_think_retry(void)
 +{
@@ -13910,7 +13908,7 @@ index 000000000..3d2eb3c37
 +}
 +
 +/* Whether to withhold the reply of response root for a thinking budget
-+ * question: its thinking was cut below the ceiling, and it is not the reply
++ * check: its thinking was cut below the ceiling, and it is not the reply
 + * to a question. Checkpoint, budget check and pack replies are asked about
 + * like those of the task. */
 +static int agent_think_cutoff(cJSON *root, int asked)
@@ -13924,7 +13922,7 @@ index 000000000..3d2eb3c37
 +}
 +
 +/* Withhold the reply of response root, whose thinking was cut, and start a
-+ * thinking budget question about it: the reply without its calls leads the
++ * thinking budget check about it: the reply without its calls leads the
 + * question, which lists their commands. */
 +static void agent_think_ask(cJSON *root)
 +{
@@ -13952,9 +13950,9 @@ index 000000000..3d2eb3c37
 +	if (cJSON_IsString(content) && *content->valuestring)
 +		agent_turn_part(1, content->valuestring);
 +	snprintf(line, sizeof(line), "Stop working on the current task and "
-+		"answer this thinking budget question.\nThe thinking of your last "
++		"complete this budget check.\nThe thinking of your last "
 +		"reply was cut off at the cap of %d tokens. The reply is %s\n", cap,
-+		cnt ? "withheld; its commands did not run:" : agent_think_empty ?
++		cnt ? "withheld and these commands did not run:" : agent_think_empty ?
 +		"discarded; it had no text and made no ex tool calls." :
 +		"withheld; it made no ex tool calls.");
 +	sbuf_str(sb, line)
@@ -13969,7 +13967,7 @@ index 000000000..3d2eb3c37
 +		sbuf_chr(sb, '\n')
 +		cJSON_Delete(parsed);
 +	}
-+	snprintf(line, sizeof(line), "Use ath command to %s or ath N [note] to %sreply "
++	snprintf(line, sizeof(line), "Use ath command to %s (no rethink required) or ath N [note] to %sreply "
 +		"again with a thinking cap of N tokens, above %d and up to %d.",
 +		cnt ? "run the reply as it is" : agent_think_empty ?
 +		"reply again under the same cap" : "keep the reply as it is",
@@ -14040,7 +14038,7 @@ index 000000000..3d2eb3c37
 +	agent_cp_open = NULL;
 +	agent_logbuf = agent_cp_logbuf;
 +	agent_checkpointing = agent_cp_done = 0;
-+	/* A thinking budget question and a budget check leave b-4 as it was;
++	/* A thinking budget check and a budget check leave b-4 as it was;
 +	 * the context and its cached prefix stay. */
 +	if (kind == 3) {
 +		snprintf(note, sizeof(note), agent_think_more ?
@@ -15044,7 +15042,7 @@ index 000000000..3d2eb3c37
 +		 * pack agents must never recursively trigger autocompaction. */
 +		/* The threshold triggers a pack, not a hard cap on its result. */
 +		agent_cp_collect();
-+		/* A question that ended unanswered, as by a pause: the reply it
++		/* A check that ended unanswered, as by a pause: the reply it
 +		 * withheld is requested again. */
 +		if (agent_checkpointing != 3)
 +			agent_think_drop();
@@ -15198,7 +15196,7 @@ index 000000000..3d2eb3c37
 +		char error[256], diagnostic[2048], excerpt[513];
 +		int invalid = agent_response_error(root, error, sizeof(error));
 +		/* ath N,M: a reply whose thinking was cut below the ceiling is
-+		 * withheld for a thinking budget question, also when the cut
++		 * withheld for a thinking budget check, also when the cut
 +		 * left it without text and calls. The reply that follows a
 +		 * question is not asked about. */
 +		int cut = (!invalid || invalid == 3) && agent_think_cutoff(root, asked);
@@ -15451,7 +15449,7 @@ index 000000000..3d2eb3c37
 +			}
 +		}
 +		/* A budget check gets two more requests to answer, then becomes
-+		 * a checkpoint; a thinking budget question gets AGENT_THINK_TRIES
++		 * a checkpoint; a thinking budget check gets AGENT_THINK_TRIES
 +		 * and is then taken as answered by ath alone. */
 +		if (agent_checkpointing >= 2 && !agent_cp_done) {
 +			int think = agent_checkpointing == 3;
@@ -15724,7 +15722,7 @@ index 000000000..3d2eb3c37
 +
 +/* N,M lets the agent raise the cap up to M for its next reply: as a tool ath
 + * takes only a count, as its argument like acheck or as its range, and
-+ * answers a thinking budget question, where ath alone leaves the cap and
++ * answers a thinking budget check, where ath alone leaves the cap and
 + * text after the count is a note for the new reply. */
 +static void *ec_ath(char *loc, char *cmd, char *arg)
 +{
@@ -16692,7 +16690,7 @@ index 000000000..3d2eb3c37
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 000000000..cdf3e413e
+index 00000000..cdf3e413
 --- /dev/null
 +++ b/agent.h
 @@ -0,0 +1,50 @@
@@ -16748,7 +16746,7 @@ index 000000000..cdf3e413e
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 000000000..6e4fb0dd3
+index 00000000..6e4fb0dd
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -19945,7 +19943,7 @@ index 000000000..6e4fb0dd3
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 000000000..cab5feb42
+index 00000000..cab5feb4
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -20256,7 +20254,7 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..a47a15a5d 100755
+index c836c94c..a47a15a5 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,294 @@ build() {
@@ -20574,7 +20572,7 @@ index c836c94c7..a47a15a5d 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..5e317f0f2 100644
+index 2888d7c6..5e317f0f 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,351 @@
@@ -20941,7 +20939,7 @@ index 2888d7c60..5e317f0f2 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..f745e00f5 100644
+index 8a133987..03e50294 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -21471,8 +21469,8 @@ index 8a1339874..f745e00f5 100644
 +		}
 +		if (agent_tool && agent_checkpointing == 3 &&
 +				excmds[idx].ec != ec_ath) {
-+			snprintf(xaerr, sizeof(xaerr), "%s%sduring the thinking budget "
-+				"question; only ath N [note] or ath runs%s", excmds[idx].name,
++			snprintf(xaerr, sizeof(xaerr), "%s%sduring the budget "
++				"check; only ath N [note] or ath runs%s", excmds[idx].name,
 +				*excmds[idx].name ? " command unavailable " :
 +				"unknown command ", agent_think_retry());
 +			ret = xaerr;
@@ -21531,7 +21529,7 @@ index 8a1339874..f745e00f5 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 000000000..31004ff54
+index 00000000..31004ff5
 --- /dev/null
 +++ b/exspec.awk
 @@ -0,0 +1,87 @@
@@ -21624,7 +21622,7 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..69d39a2fc
+index 00000000..69d39a2f
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1509 @@
@@ -23138,7 +23136,7 @@ index 000000000..69d39a2fc
 +	{"err", "Control ex errors", 1316, 1328, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c63..8fde7a8f9 100644
+index 56cb42c6..8fde7a8f 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -23168,7 +23166,7 @@ index 56cb42c63..8fde7a8f9 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e5..2641d0ffc 100644
+index 4893a07e..2641d0ff 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -23208,7 +23206,7 @@ index 4893a07e5..2641d0ffc 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 4e11ec2f9..4668eda91 100644
+index 4e11ec2f..4668eda9 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -23252,7 +23250,7 @@ index 4e11ec2f9..4668eda91 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..a0a9a3cb4 100644
+index b1f9a16f..a0a9a3cb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,14 @@
@@ -23279,7 +23277,7 @@ index b1f9a16f1..a0a9a3cb4 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da5950..f1c422d25 100644
+index c23da595..f1c422d2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
