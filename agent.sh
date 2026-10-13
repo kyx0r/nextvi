@@ -63,7 +63,7 @@ static char agent_jobmsg[512];	/* job notices for the next tool result */
 static int agent_logbuf = 3;
 /* b-4 was edited other than by agent_log since the context was rebuilt. */
 static int agent_logging, agent_log_edited;
-/* Last entry number per log: [0] pack transcript (b-3), [1] session (b-4). */
+/* Last entry number per log: [0] pack transcript (b-8), [1] session (b-4). */
 static unsigned long agent_entries[2];
 static char *agent_init_error;
 static unsigned long agent_rounds;	/* tool rounds completed in the current run */
@@ -406,6 +406,7 @@ static void agent_init(void)
 	temp_open(4, "/skills/", _ft);
 	temp_open(5, "/notes/", _ft);
 	temp_open(6, "/discarded/", _ft);
+	temp_open(7, "/compact/", _ft);
 	lbuf_edit(tempbufs[4].lb, nextvi_skill, 0, 0, 0, 0);
 	lbuf_saved(tempbufs[4].lb, 1);
 	agent_history(0);
@@ -733,10 +734,10 @@ static void agent_log_write(const char *head, const char *text, const char *end,
 	free(sb->s);
 }
 
-/* Checkpoint entries are numbered in b-3; mark them apart from b-4. */
+/* Checkpoint entries are numbered in b-8; mark them apart from b-4. */
 static const char *agent_log_mark(void)
 {
-	return agent_checkpointing && agent_logbuf == 2 ? "CP " : "";
+	return agent_checkpointing && agent_logbuf == 7 ? "CP " : "";
 }
 
 static void agent_turn_close(void)
@@ -1396,7 +1397,7 @@ static void agent_checkpoint_begin(double tokens, int kind)
 	agent_cp_bytes = agent_context_bytes();
 	agent_cp_left = INT_MAX;
 	agent_cp_logbuf = agent_logbuf;
-	agent_logbuf = 2;
+	agent_logbuf = 7;
 	agent_entries[0] = agent_turn[0] = 0;
 	/* The list explains both commands; do not defer them for specs. */
 	exspec_mark("arate");
@@ -3921,7 +3922,7 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 		agent_history(cmd[1] == '\''~'\'');
 	}
 	epoch = agent_epoch;
-	preserve(int, agent_logbuf, agent_logbuf = compact ? 2 : 3;)
+	preserve(int, agent_logbuf, agent_logbuf = compact ? 7 : 3;)
 	if (compact)
 		agent_entries[0] = agent_turn[0] = 0;
 	if (term_owned)
@@ -4165,7 +4166,7 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 
 /* Run the same log-editing task as apack, without entering a prompt. Keep the
  * live conversation detached until the pack agent actually replaces the log.
- * Logging goes to b-3, as in manual apack, not into the source being summarized. */
+ * Logging goes to b-8, as in manual apack, not into the source being summarized. */
 static int agent_autocompact(const char *input)
 {
 	struct lbuf *lb = tempbufs[3].lb;
@@ -4189,7 +4190,7 @@ static int agent_autocompact(const char *input)
 		return 0;
 	}
 
-	agent_logbuf = 2;
+	agent_logbuf = 7;
 	agent_entries[0] = agent_turn[0] = 0;
 	agent_log("NOTICE", browse ? "autocompact: browsing session log" :
 		"autocompact: summarizing loaded session log");
@@ -4233,7 +4234,7 @@ static int agent_autocompact(const char *input)
 		sbuf_nul(resume)
 		agent_logbuf = 3;
 		agent_log("USER", resume->s);
-		agent_logbuf = 2;
+		agent_logbuf = 7;
 		if (!xacl)
 			agent_add_user(agent_messages, resume->s);
 		free(resume->s);
@@ -7965,8 +7966,8 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "trimmed turns included; apack! adds entry line numbers. While b-7\n" \
                 "holds entries, the task offers aget for them. On success the notes\n" \
                 "are archived beside the log, b-6 is cleared and the replaced entries\n" \
-                "move to b-7, keeping those already there. Unavailable as an agent\n" \
-                "tool.")
+                "move to b-7, keeping those already there. The exchange is logged to\n" \
+                "b-8, not b-4. Unavailable as an agent tool.")
             spec("[range]apack![text]", "Compact the agent session by browsing its log",
                 "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
                 "ranges and replaces the log with a summary. Stays at the prompt;\n" \
@@ -8089,7 +8090,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "With N,M the agent may raise the cap up to M for one reply. A reply\n" \
                 "whose thinking the server cut at the cap is withheld: it is not\n" \
                 "logged and its commands do not run. The agent is shown the reply and\n" \
-                "its commands, in an exchange kept in b-3 only, and answers with ath\n" \
+                "its commands, in an exchange kept in b-8 only, and answers with ath\n" \
                 "to run the reply as it is, or with ath N, a count above the cap, to\n" \
                 "discard it and reply again under that cap. Nothing else runs then,\n" \
                 "and after five retries the answer is taken as ath. Text after N is a\n" \
@@ -8124,7 +8125,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "holds the ali entry list and the acp instructions. Only ali, acp,\n" \
                 "auli, arate, anote and adone run. adone or a reply without\n" \
                 "commands is refused while turns are unrated, up to twice in a row\n" \
-                "without new ratings. The exchange is logged to b-3, not b-4, with\n" \
+                "without new ratings. The exchange is logged to b-8, not b-4, with\n" \
                 "headers prefixed CP. Requests keep the context the checkpoint\n" \
                 "started with, so the prompt cache holds; anote edits b-4 at once\n" \
                 "but reaches the context when the checkpoint ends. It ends with\n" \
@@ -8138,7 +8139,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "acheck or defer N more tokens with acheck N. N may pass aco. Only\n" \
                 "acheck runs during a check; after two more requests without an\n" \
                 "answer a checkpoint starts. After a checkpoint, -acl applies again.\n" \
-                "A check is logged to b-3 with CP headers, leaves the context\n" \
+                "A check is logged to b-8 with CP headers, leaves the context\n" \
                 "unchanged and, if interrupted, runs again at the next request. aco\n" \
                 "stays the limit; a compaction drops the budget.\n\n" \
                 "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
@@ -9725,7 +9726,7 @@ static struct excmd \{
 1;2;3;4;5;6;7;8;9??!219reg ex.c:19622sc %? %@2132sc!0?
 '\''1i int xaspec = 1;			/* print each ex spec once for agents */
 ??!219reg ex.c:16:m12sc %? %@2142sc!0?
-'\''2s/3/7/??!219reg ex.c:45:m22sc %? %@2142sc!0?
+'\''2s/3/8/??!219reg ex.c:45:m22sc %? %@2142sc!0?
 '\''3i static char xirrmsg[192];
 static char xaerr[128];
 ??!219reg ex.c:57:m32sc %? %@2142sc!0?
@@ -11000,8 +11001,8 @@ static char *exspec_lines[] = {
 	"trimmed turns included; apack! adds entry line numbers. While b-7",
 	"holds entries, the task offers aget for them. On success the notes",
 	"are archived beside the log, b-6 is cleared and the replaced entries",
-	"move to b-7, keeping those already there. Unavailable as an agent",
-	"tool.",
+	"move to b-7, keeping those already there. The exchange is logged to",
+	"b-8, not b-4. Unavailable as an agent tool.",
 	"",
 	"[range]apack![text]",
 	"Compact the agent session by browsing its log",
@@ -11179,7 +11180,7 @@ static char *exspec_lines[] = {
 	"With N,M the agent may raise the cap up to M for one reply. A reply",
 	"whose thinking the server cut at the cap is withheld: it is not",
 	"logged and its commands do not run. The agent is shown the reply and",
-	"its commands, in an exchange kept in b-3 only, and answers with ath",
+	"its commands, in an exchange kept in b-8 only, and answers with ath",
 	"to run the reply as it is, or with ath N, a count above the cap, to",
 	"discard it and reply again under that cap. Nothing else runs then,",
 	"and after five retries the answer is taken as ath. Text after N is a",
@@ -11287,7 +11288,7 @@ static char *exspec_lines[] = {
 	"holds the ali entry list and the acp instructions. Only ali, acp,",
 	"auli, arate, anote and adone run. adone or a reply without",
 	"commands is refused while turns are unrated, up to twice in a row",
-	"without new ratings. The exchange is logged to b-3, not b-4, with",
+	"without new ratings. The exchange is logged to b-8, not b-4, with",
 	"headers prefixed CP. Requests keep the context the checkpoint",
 	"started with, so the prompt cache holds; anote edits b-4 at once",
 	"but reaches the context when the checkpoint ends. It ends with",
@@ -11302,7 +11303,7 @@ static char *exspec_lines[] = {
 	"acheck or defer N more tokens with acheck N. N may pass aco. Only",
 	"acheck runs during a check; after two more requests without an",
 	"answer a checkpoint starts. After a checkpoint, -acl applies again.",
-	"A check is logged to b-3 with CP headers, leaves the context",
+	"A check is logged to b-8 with CP headers, leaves the context",
 	"unchanged and, if interrupted, runs again at the next request. aco",
 	"stays the limit; a compaction drops the budget.",
 	"",
@@ -12337,7 +12338,7 @@ extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 ??!219reg vi.h:449:m12sc %? %@2142sc!0?
 '\''2i extern int xaspec;
 ??!219reg vi.h:495:m22sc %? %@2142sc!0?
-'\''3s/3/7/??!219reg vi.h:523:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7wb8wb9wb10wb11wb12wb13w2q' > "$P2VIF"
+'\''3s/3/8/??!219reg vi.h:523:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7wb8wb9wb10wb11wb12wb13w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'agent.c' 'agent.h' 'cJSON.c' 'cJSON.h' 'cbuild.sh' 'conf.c' 'ex.c' 'exspec.awk' 'exspec.h' 'lbuf.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -12351,10 +12352,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..85a381a67
+index 000000000..ba50612f4
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4240 @@
+@@ -0,0 +1,4241 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12388,7 +12389,7 @@ index 000000000..85a381a67
 +static int agent_logbuf = 3;
 +/* b-4 was edited other than by agent_log since the context was rebuilt. */
 +static int agent_logging, agent_log_edited;
-+/* Last entry number per log: [0] pack transcript (b-3), [1] session (b-4). */
++/* Last entry number per log: [0] pack transcript (b-8), [1] session (b-4). */
 +static unsigned long agent_entries[2];
 +static char *agent_init_error;
 +static unsigned long agent_rounds;	/* tool rounds completed in the current run */
@@ -12731,6 +12732,7 @@ index 000000000..85a381a67
 +	temp_open(4, "/skills/", _ft);
 +	temp_open(5, "/notes/", _ft);
 +	temp_open(6, "/discarded/", _ft);
++	temp_open(7, "/compact/", _ft);
 +	lbuf_edit(tempbufs[4].lb, nextvi_skill, 0, 0, 0, 0);
 +	lbuf_saved(tempbufs[4].lb, 1);
 +	agent_history(0);
@@ -13058,10 +13060,10 @@ index 000000000..85a381a67
 +	free(sb->s);
 +}
 +
-+/* Checkpoint entries are numbered in b-3; mark them apart from b-4. */
++/* Checkpoint entries are numbered in b-8; mark them apart from b-4. */
 +static const char *agent_log_mark(void)
 +{
-+	return agent_checkpointing && agent_logbuf == 2 ? "CP " : "";
++	return agent_checkpointing && agent_logbuf == 7 ? "CP " : "";
 +}
 +
 +static void agent_turn_close(void)
@@ -13721,7 +13723,7 @@ index 000000000..85a381a67
 +	agent_cp_bytes = agent_context_bytes();
 +	agent_cp_left = INT_MAX;
 +	agent_cp_logbuf = agent_logbuf;
-+	agent_logbuf = 2;
++	agent_logbuf = 7;
 +	agent_entries[0] = agent_turn[0] = 0;
 +	/* The list explains both commands; do not defer them for specs. */
 +	exspec_mark("arate");
@@ -16246,7 +16248,7 @@ index 000000000..85a381a67
 +		agent_history(cmd[1] == '~');
 +	}
 +	epoch = agent_epoch;
-+	preserve(int, agent_logbuf, agent_logbuf = compact ? 2 : 3;)
++	preserve(int, agent_logbuf, agent_logbuf = compact ? 7 : 3;)
 +	if (compact)
 +		agent_entries[0] = agent_turn[0] = 0;
 +	if (term_owned)
@@ -16490,7 +16492,7 @@ index 000000000..85a381a67
 +
 +/* Run the same log-editing task as apack, without entering a prompt. Keep the
 + * live conversation detached until the pack agent actually replaces the log.
-+ * Logging goes to b-3, as in manual apack, not into the source being summarized. */
++ * Logging goes to b-8, as in manual apack, not into the source being summarized. */
 +static int agent_autocompact(const char *input)
 +{
 +	struct lbuf *lb = tempbufs[3].lb;
@@ -16514,7 +16516,7 @@ index 000000000..85a381a67
 +		return 0;
 +	}
 +
-+	agent_logbuf = 2;
++	agent_logbuf = 7;
 +	agent_entries[0] = agent_turn[0] = 0;
 +	agent_log("NOTICE", browse ? "autocompact: browsing session log" :
 +		"autocompact: summarizing loaded session log");
@@ -16558,7 +16560,7 @@ index 000000000..85a381a67
 +		sbuf_nul(resume)
 +		agent_logbuf = 3;
 +		agent_log("USER", resume->s);
-+		agent_logbuf = 2;
++		agent_logbuf = 7;
 +		if (!xacl)
 +			agent_add_user(agent_messages, resume->s);
 +		free(resume->s);
@@ -20160,7 +20162,7 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..da1e96471 100755
+index c836c94c7..4e0cc90e1 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,291 @@ build() {
@@ -20208,8 +20210,8 @@ index c836c94c7..da1e96471 100755
 +                "trimmed turns included; apack! adds entry line numbers. While b-7\n" \
 +                "holds entries, the task offers aget for them. On success the notes\n" \
 +                "are archived beside the log, b-6 is cleared and the replaced entries\n" \
-+                "move to b-7, keeping those already there. Unavailable as an agent\n" \
-+                "tool.")
++                "move to b-7, keeping those already there. The exchange is logged to\n" \
++                "b-8, not b-4. Unavailable as an agent tool.")
 +            spec("[range]apack![text]", "Compact the agent session by browsing its log",
 +                "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
 +                "ranges and replaces the log with a summary. Stays at the prompt;\n" \
@@ -20332,7 +20334,7 @@ index c836c94c7..da1e96471 100755
 +                "With N,M the agent may raise the cap up to M for one reply. A reply\n" \
 +                "whose thinking the server cut at the cap is withheld: it is not\n" \
 +                "logged and its commands do not run. The agent is shown the reply and\n" \
-+                "its commands, in an exchange kept in b-3 only, and answers with ath\n" \
++                "its commands, in an exchange kept in b-8 only, and answers with ath\n" \
 +                "to run the reply as it is, or with ath N, a count above the cap, to\n" \
 +                "discard it and reply again under that cap. Nothing else runs then,\n" \
 +                "and after five retries the answer is taken as ath. Text after N is a\n" \
@@ -20367,7 +20369,7 @@ index c836c94c7..da1e96471 100755
 +                "holds the ali entry list and the acp instructions. Only ali, acp,\n" \
 +                "auli, arate, anote and adone run. adone or a reply without\n" \
 +                "commands is refused while turns are unrated, up to twice in a row\n" \
-+                "without new ratings. The exchange is logged to b-3, not b-4, with\n" \
++                "without new ratings. The exchange is logged to b-8, not b-4, with\n" \
 +                "headers prefixed CP. Requests keep the context the checkpoint\n" \
 +                "started with, so the prompt cache holds; anote edits b-4 at once\n" \
 +                "but reaches the context when the checkpoint ends. It ends with\n" \
@@ -20381,7 +20383,7 @@ index c836c94c7..da1e96471 100755
 +                "acheck or defer N more tokens with acheck N. N may pass aco. Only\n" \
 +                "acheck runs during a check; after two more requests without an\n" \
 +                "answer a checkpoint starts. After a checkpoint, -acl applies again.\n" \
-+                "A check is logged to b-3 with CP headers, leaves the context\n" \
++                "A check is logged to b-8 with CP headers, leaves the context\n" \
 +                "unchanged and, if interrupted, runs again at the next request. aco\n" \
 +                "stays the limit; a compaction drops the budget.\n\n" \
 +                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
@@ -20842,7 +20844,7 @@ index 2888d7c60..5e317f0f2 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8a1339874..21a38f7ed 100644
+index 8a1339874..f745e00f5 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -20858,7 +20860,7 @@ index 8a1339874..21a38f7ed 100644
  int xdefreg;			/* ex default register */
  struct buf *bufs;		/* main buffers */
 -struct buf tempbufs[3];		/* temporary buffers, for internal use */
-+struct buf tempbufs[7];		/* temporary buffers, for internal use */
++struct buf tempbufs[8];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
@@ -21525,7 +21527,7 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..32eb98aca
+index 000000000..05ee399c8
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1506 @@
@@ -22307,8 +22309,8 @@ index 000000000..32eb98aca
 +	"trimmed turns included; apack! adds entry line numbers. While b-7",
 +	"holds entries, the task offers aget for them. On success the notes",
 +	"are archived beside the log, b-6 is cleared and the replaced entries",
-+	"move to b-7, keeping those already there. Unavailable as an agent",
-+	"tool.",
++	"move to b-7, keeping those already there. The exchange is logged to",
++	"b-8, not b-4. Unavailable as an agent tool.",
 +	"",
 +	"[range]apack![text]",
 +	"Compact the agent session by browsing its log",
@@ -22486,7 +22488,7 @@ index 000000000..32eb98aca
 +	"With N,M the agent may raise the cap up to M for one reply. A reply",
 +	"whose thinking the server cut at the cap is withheld: it is not",
 +	"logged and its commands do not run. The agent is shown the reply and",
-+	"its commands, in an exchange kept in b-3 only, and answers with ath",
++	"its commands, in an exchange kept in b-8 only, and answers with ath",
 +	"to run the reply as it is, or with ath N, a count above the cap, to",
 +	"discard it and reply again under that cap. Nothing else runs then,",
 +	"and after five retries the answer is taken as ath. Text after N is a",
@@ -22594,7 +22596,7 @@ index 000000000..32eb98aca
 +	"holds the ali entry list and the acp instructions. Only ali, acp,",
 +	"auli, arate, anote and adone run. adone or a reply without",
 +	"commands is refused while turns are unrated, up to twice in a row",
-+	"without new ratings. The exchange is logged to b-3, not b-4, with",
++	"without new ratings. The exchange is logged to b-8, not b-4, with",
 +	"headers prefixed CP. Requests keep the context the checkpoint",
 +	"started with, so the prompt cache holds; anote edits b-4 at once",
 +	"but reaches the context when the checkpoint ends. It ends with",
@@ -22609,7 +22611,7 @@ index 000000000..32eb98aca
 +	"acheck or defer N more tokens with acheck N. N may pass aco. Only",
 +	"acheck runs during a check; after two more requests without an",
 +	"answer a checkpoint starts. After a checkpoint, -acl applies again.",
-+	"A check is logged to b-3 with CP headers, leaves the context",
++	"A check is logged to b-8 with CP headers, leaves the context",
 +	"unchanged and, if interrupted, runs again at the next request. aco",
 +	"stays the limit; a compaction drops the budget.",
 +	"",
@@ -23177,7 +23179,7 @@ index b1f9a16f1..a0a9a3cb4 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da5950..b6ba49586 100644
+index c23da5950..f1c422d25 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
@@ -23201,7 +23203,7 @@ index c23da5950..b6ba49586 100644
  extern int xdefreg;
  extern struct buf *bufs;
 -extern struct buf tempbufs[3];
-+extern struct buf tempbufs[7];
++extern struct buf tempbufs[8];
  extern struct buf *ex_buf;
  extern struct buf *ex_pbuf;
  #define istempbuf(buf) (buf >= tempbufs && buf < tempbufs + LEN(tempbufs))
