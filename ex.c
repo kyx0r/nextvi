@@ -443,7 +443,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 			fd < 0 || rd ? cd == 3 ? 'n' : 'f' : 'r');
 	if (!(xvis & 4))
 		ex_print(msg, bar_ft)
-	return (fd < 0 || rd) && *arg ? xuerr : NULL;
+	return rd || (fd < 0 && cd != 3) ? xuerr : NULL;
 }
 
 static void *ec_fuzz(char *loc, char *cmd, char *arg)
