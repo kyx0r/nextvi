@@ -390,7 +390,9 @@ printing it during the run; 2 logs and prints it. Reasoning shows
 before the answer after a response completes, if the server supplies
 reasoning_content or reasoning text.
 
-The new ex command "ast" shows model state, context and settings.
+The new ex command "ast" shows model state, context and settings, the
+thinking cap, what acap has banked onto later replies and the average
+that "ata" follows.
 The new ex command "[N[,M]]ath [effort]" sets an N token cap on thinking
 and the reasoning effort, one word such as none or high. An omitted part
 is not sent and "ath" alone sends neither, leaving request_extra in
@@ -398,11 +400,26 @@ charge; fields it does send replace those of request_extra. With N,M the
 agent may raise the cap up to M for one reply. A reply cut at the cap is
 withheld: its commands do not run and the conversation does not continue
 from it, though its reasoning and text are logged as the lead of the
-question; the agent is asked with "ath" to run it as it
-is or with "ath K", K above the cap, to discard it and retry; text after
-K adds a note to the new reply, which sees nothing of the discarded one.
-Nothing else runs during the question; after 5 retries the answer is
-taken as ath.
+question, which the agent answers with "acap"; nothing else runs during
+it and after 5 retries its answer is taken as acap. The question
+interrupts and later resumes a checkpoint, a budget check or a
+compaction; its exchange is kept in /compact/, not in the session log.
+
+The new ex command "acap [N] [note]" raises the thinking cap of the next
+reply to N, at most the ceiling M of "ath N,M", letting the agent ask for
+more thinking itself; it errors without a ceiling. What that reply leaves
+of N is banked onto the caps of later replies, up to M, until their
+thinking spends it, so one raise smoothens out across many turns. In the
+question about a cut reply acap alone runs it as it is, acap N with N
+above the cap discards it and asks for it again under N, and text after N
+adds a note to the new reply, which sees nothing of the discarded one.
+
+The new ex option "ata" caps thinking by its recent average: a percentage
+sends that share of the average thinking tokens in place of N, and a bare
+"ata" toggles it between 0 and 100. A reply that thought moves the average
+a quarter of the way to its tokens; one cut at the cap counts double, so
+cuts raise it. Replies are counted with "ata" off too. The cap stays
+between 1 and M of "ath N,M", else at N; "ath" restarts the average.
 
 The new ex command "apack" to compact the conversation using current agent 
 context.
@@ -454,10 +471,11 @@ toggles between 0 and 30. The command keeps running in the background
 and its later output goes to a file.
 
 Adds temporary buffers /conversation/, /skills/ (system prompt), /notes/
-(ratings) and /discarded/ (trimmed entries). Both restart commands reload
-skills; "a!" clears notes and discarded.
-These buffers are saved automatically under $HOME/.nextvi/logs, or log_dir
-if set.
+(ratings), /discarded/ (trimmed entries) and /compact/, used for
+compaction work and for the acap question exchange. Both restart commands
+reload skills; "a!" clears notes and discarded.
+These buffers are saved automatically under a directory named after the
+session start time, $HOME/.nextvi/logs/YYYYmmdd-HHMMSS, or log_dir if set.
 
 Example: ask about the whole buffer
 :%a Explain this code
