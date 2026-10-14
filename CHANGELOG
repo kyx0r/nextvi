@@ -25,6 +25,8 @@ Bug fixes:
    takes the terminal back briefly to read the key.
 6. A shell that cannot be executed exits with status 71 (EX_OSERR)
    instead of 1, distinguishing it from the command's own failures.
+7. :e! path naming an already open buffer now switches to it and rereads
+   it from disk, discarding unsaved changes, instead of only switching.
 
 Patch changes:
 1. [agent.sh](https://github.com/kyx0r/nextvi/blob/release/agent.sh):
@@ -52,15 +54,18 @@ Patch changes:
    rated.
    Added [N,M]ath[effort] to set a reasoning token cap of N and the
    reasoning effort, one word such as low or high; M is the ceiling the
-   agent may reach for one reply. A reply cut at the cap is withheld:
-   it is not logged and its commands do not run. The agent then answers
-   a budget question kept in /compact/, outside the session log, and
-   nothing else runs meanwhile; the question interrupts a checkpoint,
-   a budget check or a compaction and those resume afterwards. :acap
-   alone keeps the cut reply, :acap N with N above the cap discards it
-   and replies again under N, and text after N is a note only the new
-   reply sees. Retries within budget question are consecutive, up
-   to 5; after that the answer is taken as :acap.
+   agent may reach for one reply. A reply counts as cut when the server
+   ends its thinking with think_cut of conf.c after at least half the
+   cap; think_cut is stripped from all thinking so models cannot copy
+   it. A reply cut at the cap is withheld: it is not logged and its
+   commands do not run. The agent then answers a budget question kept
+   in /compact/, outside the session log, and nothing else runs
+   meanwhile; the question interrupts a checkpoint, a budget check or a
+   compaction and those resume afterwards. :acap alone keeps the cut
+   reply, :acap N with N above the cap discards it and replies again
+   under N, and text after N is a note only the new reply sees. Retries
+   within budget question are consecutive, up to 5; after that the
+   answer is taken as :acap.
    Whatever reply leaves of N is banked onto the caps of later replies,
    up to M, until their thinking spends it, so one raise smoothens out
    across many turns.
@@ -70,6 +75,12 @@ Patch changes:
    its tokens, and one cut at its cap counts as twice the cap, so cuts
    raise it; replies are counted with :ata off too, and :ath restarts the
    average. ast reports the cap, the bank and the average.
+   Added :agoal to set a goal (a bare :agoal clears it). While it is set,
+   a reply without commands does not end the run: the agent is asked
+   whether the goal is finished and keeps working until it clears it;
+   ^C and the tool round limit still end the run. ast reports the goal.
+   Switching to an already open buffer with :e tells the agent the buffer
+   was not reread from disk and that :e! rereads it.
    The :ar option now has three states, default 1: drop reasoning, log
    it without printing it, or log and print it.
    Added :ato to detach a running agent shell command after N seconds,
