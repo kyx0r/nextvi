@@ -27,6 +27,9 @@ Bug fixes:
    instead of 1, distinguishing it from the command's own failures.
 7. :e! path naming an already open buffer now switches to it and rereads
    it from disk, discarding unsaved changes, instead of only switching.
+8. :e of a file that does not exist ([n], a new buffer) no longer fails,
+   so a chain after it goes on. A failed read now fails even without a
+   path: :e! errors when the current file cannot be opened ([f]).
 
 Patch changes:
 1. [agent.sh](https://github.com/kyx0r/nextvi/blob/release/agent.sh):
