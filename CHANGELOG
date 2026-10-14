@@ -62,7 +62,7 @@ Patch changes:
    cap; think_cut is stripped from all thinking so models cannot copy
    it. A reply cut at the cap is withheld: it is not logged and its
    commands do not run. The agent then answers a budget question kept
-   in /compact/, outside the session log, and nothing else runs
+   in /asides/, outside the session log, and nothing else runs
    meanwhile; the question interrupts a checkpoint, a budget check or a
    compaction and those resume afterwards. :acap alone keeps the cut
    reply, :acap N with N above the cap discards it and replies again
@@ -93,8 +93,9 @@ Patch changes:
    Session logs now live in a directory named with the session start time,
    $HOME/.nextvi/logs/YYYYmmdd-HHMMSS, or under log_dir; a colliding name
    takes a -N suffix, so concurrent sessions do not overwrite each other.
-   A new /compact/ temporary buffer holds compaction work and the :acap
-   question exchange, instead of reusing the /sc/ scratch buffer.
+   A new /asides/ temporary buffer, saved with the session logs, holds
+   side exchanges: compactions, checkpoints, budget checks and :acap
+   questions, instead of reusing the /sc/ scratch buffer.
    max_tool_rounds defaults to 0 (unlimited) instead of 300.
 
 ------------------
