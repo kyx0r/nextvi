@@ -210,24 +210,24 @@ static void \*ec_setpath\(char \*loc, char \*cmd, char \*arg\)1??0?
 %f+ 	p->mtime = mtime\(p->path\);
 	p->ft = syn_filetype\(p->path\);
 	lbuf_saved\(p->lb, clear\);4??0?
-4??+2m 5220reg p OK ex.c:674:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK ex.c:676:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	p->mtime = mtime\(p->path\);.*?
 	p->ft = syn_filetype\(p->path\);.*?
 (	lbuf_saved\(p->lb, clear\);)7??0?
-grp 07??m 5220reg p OK ex.c:674:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK ex.c:676:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xquit = \*loc \? -xqprop \* 256 - 257 - \(abs\(xquit\) - 1\) : -xquit;
 	return NULL;
 }.*(	free\(xb_path\);)
 	ex_buf->plen = strlen\(arg\);
 	xb_path = sdup\(arg, ex_buf->plen\);8??0?
-grp 08??-5m 5220reg p OK ex.c:674:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 5220reg p OK ex.c:676:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*arg\)
 		xquit = \(abs\(atoi\(arg\)\) & 255\) \+ 1;
 	if \(strchr\(cmd, '\''!'\''\)\).*(static void \*ec_read\(char \*loc, char \*cmd, char \*arg\))
 \{
 	sbuf obuf, \*sb;9??0?
-grp 09??-11m 5220reg p OK ex.c:674:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:6742sc %? %@2132sc!0?
+grp 09??-11m 5220reg p OK ex.c:676:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:6762sc %? %@2132sc!0?
 ?0?
 %f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
@@ -238,24 +238,24 @@ _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 
 %f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)4??0?
-4??+2m 6220reg p OK ex.c:1707:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK ex.c:1709:a42sc %? %@2152sc!1q0?
 grp 1%f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\).*?
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 (EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\))7??0?
-grp 07??m 6220reg p OK ex.c:1707:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1709:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
 }.*(_EO\(hlr,)
 	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
 	led_ext \*p = led_extfind\(ext_hlr\);8??0?
-grp 08??-6m 6220reg p OK ex.c:1707:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 6220reg p OK ex.c:1709:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		x->att\[j\+1] = syn_merge\(x->att\[j\+1], conf_hlrev\);
 	}
 }.*(	if \(xhlr && !p\))
 		led_extreg\(\)->ext_func = ext_hlr;
 	else if \(!xhlr && p\)9??0?
-grp 09??-9m 6220reg p OK ex.c:1707:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17072sc %? %@2132sc!0?
+grp 09??-9m 6220reg p OK ex.c:1709:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17092sc %? %@2132sc!0?
 ?0?
 %f+ 
 _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
@@ -266,23 +266,23 @@ _EO\(grp, xgrp = \(\*arg \? eo_val\(arg\) : !xgrp\) \* 2; xgrp = MAX\(0, xgrp\);
 1??+1m 71q0?
 %f+ 
 _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)4??0?
-4??+1m 7220reg p OK ex.c:1709:a42sc %? %@2152sc!1q0?
+4??+1m 7220reg p OK ex.c:1711:a42sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 (_EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\))7??0?
-grp 07??m 7220reg p OK ex.c:1709:a72sc %? %@2152sc!1q0?
+grp 07??m 7220reg p OK ex.c:1711:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
 }.*(_EO\(hlr,)
 	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
 	led_ext \*p = led_extfind\(ext_hlr\);8??0?
-grp 08??-4m 7220reg p OK ex.c:1709:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 7220reg p OK ex.c:1711:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		x->att\[j\+1] = syn_merge\(x->att\[j\+1], conf_hlrev\);
 	}
 }.*(	if \(xhlr && !p\))
 		led_extreg\(\)->ext_func = ext_hlr;
 	else if \(!xhlr && p\)9??0?
-grp 09??-7m 7220reg p OK ex.c:1709:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17092sc %? %@2132sc!0?
+grp 09??-7m 7220reg p OK ex.c:1711:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17112sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(err\),
 	\{"ef!", ec_fuzz},
@@ -294,24 +294,24 @@ _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 
 %f+ 	EO\(err\),
 	\{"ef!", ec_fuzz},
 	\{"ef", ec_fuzz},4??0?
-4??+2m 8220reg p OK ex.c:1765:a42sc %? %@2152sc!1q0?
+4??+2m 8220reg p OK ex.c:1767:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(err\),.*?
 	\{"ef!", ec_fuzz},.*?
 (	\{"ef", ec_fuzz},)7??0?
-grp 07??m 8220reg p OK ex.c:1765:a72sc %? %@2152sc!1q0?
+grp 07??m 8220reg p OK ex.c:1767:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"p", ec_print},
 	EO\(ai\),
 	\{"ac", ec_setacreg},.*(	\{"fd", ec_setdir},)
 	\{"fp", ec_setdir},
 	EO\(fr\),8??0?
-grp 08??-4m 8220reg p OK ex.c:1765:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 8220reg p OK ex.c:1767:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(pr\),
 	\{"pu", ec_put},
 	\{"ph", ec_setenc},.*(	\{"f\+", ec_find},)
 	\{"f-", ec_find},
 	\{"f>", ec_find},9??0?
-grp 09??-7m 8220reg p OK ex.c:1765:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17652sc %? %@2132sc!0?
+grp 09??-7m 8220reg p OK ex.c:1767:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17672sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"f>", ec_find},
 	\{"f<", ec_find},
@@ -323,24 +323,24 @@ _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 
 %f+ 	\{"f>", ec_find},
 	\{"f<", ec_find},
 	\{"f", ec_fuzz},4??0?
-4??+2m 9220reg p OK ex.c:1776:a42sc %? %@2152sc!1q0?
+4??+2m 9220reg p OK ex.c:1778:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"f>", ec_find},.*?
 	\{"f<", ec_find},.*?
 (	\{"f", ec_fuzz},)7??0?
-grp 07??m 9220reg p OK ex.c:1776:a72sc %? %@2152sc!1q0?
+grp 07??m 9220reg p OK ex.c:1778:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(fr\),
 	\{"f\+", ec_find},
 	\{"f-", ec_find},.*(	\{"i", ec_insert},)
 	\{"d", ec_delete},
 	EO\(grp\),8??0?
-grp 08??-4m 9220reg p OK ex.c:1776:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 9220reg p OK ex.c:1778:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"ft", ec_ft},
 	\{"fd", ec_setdir},
 	\{"fp", ec_setdir},.*(	\{"g!", ec_glob},)
 	\{"g", ec_glob},
 	EO\(mpt\),9??0?
-grp 09??-7m 9220reg p OK ex.c:1776:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17762sc %? %@2132sc!0?
+grp 09??-7m 9220reg p OK ex.c:1778:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17782sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
@@ -352,24 +352,24 @@ _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},4??0?
-4??+2m 10220reg p OK ex.c:1807:a42sc %? %@2152sc!1q0?
+4??+2m 10220reg p OK ex.c:1809:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
-grp 07??m 10220reg p OK ex.c:1807:a72sc %? %@2152sc!1q0?
+grp 07??m 10220reg p OK ex.c:1809:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},
 	EO\(shape\),.*(	\{"ya!", ec_yank},)
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},8??0?
-grp 08??-4m 10220reg p OK ex.c:1807:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 10220reg p OK ex.c:1809:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"w", ec_write},
 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
-grp 09??-7m 10220reg p OK ex.c:1807:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:18072sc %? %@2132sc!0?
+grp 09??-7m 10220reg p OK ex.c:1809:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18092sc %? %@2132sc!0?
 '\''1i int xet;			/* expandtab - use spaces for indentation */
 int xsw = 8;			/* shiftwidth - indentation step */
 int xidt = 500;			/* auto-detect indent on file open */
@@ -430,17 +430,17 @@ int xidt = 500;			/* auto-detect indent on file open */
 ??!219reg ex.c:418:m42sc %? %@2142sc!0?
 '\''5i 	if (xidt)
 		ex_detect_indent(p);
-??!219reg ex.c:674:m52sc %? %@2142sc!0?
+??!219reg ex.c:676:m52sc %? %@2142sc!0?
 '\''6i EO(et) EO(idt)
-??!219reg ex.c:1707:m62sc %? %@2142sc!0?
+??!219reg ex.c:1709:m62sc %? %@2142sc!0?
 '\''7i _EO(sw, if (*arg) xsw = eo_val(arg); return NULL;)
-??!219reg ex.c:1709:m72sc %? %@2142sc!0?
+??!219reg ex.c:1711:m72sc %? %@2142sc!0?
 '\''8i 	EO(et),
-??!219reg ex.c:1765:m82sc %? %@2142sc!0?
+??!219reg ex.c:1767:m82sc %? %@2142sc!0?
 '\''9i 	EO(idt),
-??!219reg ex.c:1776:m92sc %? %@2142sc!0?
+??!219reg ex.c:1778:m92sc %? %@2142sc!0?
 '\''10i 	EO(sw),
-??!219reg ex.c:1807:m102sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1809:m102sc %? %@2142sc!b2m!%ya 98?0?
 %f> 		case TK_CTL\('\''t'\''\):
 			cs = sdup\(sb->s \+ ps, sb->s_n - ps\);
 			sbuf_cut\(sb, ps\)
@@ -1017,7 +1017,7 @@ index 2888d7c60..725df7dcf 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 8165e6ed1..42bace309 100644
+index d13974a65..f8120c8bd 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -12,6 +12,9 @@ int xtd = +1;			/* current text direction */
@@ -1102,7 +1102,7 @@ index 8165e6ed1..42bace309 100644
  static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
-@@ -672,6 +726,8 @@ void ex_bufpostfix(struct buf *p, int clear)
+@@ -674,6 +728,8 @@ void ex_bufpostfix(struct buf *p, int clear)
  	p->mtime = mtime(p->path);
  	p->ft = syn_filetype(p->path);
  	lbuf_saved(p->lb, clear);
@@ -1111,7 +1111,7 @@ index 8165e6ed1..42bace309 100644
  }
  
  static void *ec_setpath(char *loc, char *cmd, char *arg)
-@@ -1705,8 +1761,10 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1707,8 +1763,10 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  EO(pac) EO(pr) EO(ai) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
  EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
@@ -1122,7 +1122,7 @@ index 8165e6ed1..42bace309 100644
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
  _EO(grp, xgrp = (*arg ? eo_val(arg) : !xgrp) * 2; xgrp = MAX(0, xgrp); return NULL;)
  
-@@ -1763,6 +1821,7 @@ static struct excmd {
+@@ -1765,6 +1823,7 @@ static struct excmd {
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
@@ -1130,7 +1130,7 @@ index 8165e6ed1..42bace309 100644
  	{"e!", ec_edit},
  	{"e", ec_edit},
  	{"ft", ec_ft},
-@@ -1774,6 +1833,7 @@ static struct excmd {
+@@ -1776,6 +1835,7 @@ static struct excmd {
  	{"f>", ec_find},
  	{"f<", ec_find},
  	{"f", ec_fuzz},
@@ -1138,7 +1138,7 @@ index 8165e6ed1..42bace309 100644
  	EO(ish),
  	{"inc", ec_setincl},
  	EO(ic),
-@@ -1805,6 +1865,7 @@ static struct excmd {
+@@ -1807,6 +1867,7 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},

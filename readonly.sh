@@ -128,24 +128,24 @@ int xai = 1;			/\* autoindent option \*/1??0?
 %f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/
 	}4??0?
-4??+2m 3220reg p OK ex.c:435:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:437:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);.*?
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/.*?
 (	})7??0?
-grp 07??m 3220reg p OK ex.c:435:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:437:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			bufs\[xbufsmax - 1]\.lb->modified\) \{
 		return "last buffer modified";
 	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{.*(	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",)
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);8??0?
-grp 08??-6m 3220reg p OK ex.c:435:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		bufs_switchwft\(fd\)
-		return NULL;
+grp 08??-6m 3220reg p OK ex.c:437:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			return NULL;
+		arg = "";
 	} else if \(xbufcur == xbufsmax && !strchr\(cmd, '\''!'\''\) &&.*(	if \(!\(xvis & 4\)\))
 		ex_print\(msg, bar_ft\)
 	return rd \|\| \(fd < 0 && cd != 3\) \? xuerr : NULL;9??0?
-grp 09??-9m 3220reg p OK ex.c:435:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:4352sc %? %@2132sc!0?
+grp 09??-9m 3220reg p OK ex.c:437:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:4372sc %? %@2132sc!0?
 ?0?
 %f+ 	} else if \(ret\)
 		return "other buffers modified";
@@ -157,24 +157,24 @@ int xai = 1;			/\* autoindent option \*/1??0?
 %f+ 	} else if \(ret\)
 		return "other buffers modified";
 	if \(!strchr\(cmd, '\''!'\''\)\) \{4??0?
-4??+2m 4220reg p OK ex.c:787:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:789:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	} else if \(ret\).*?
 		return "other buffers modified";.*?
 (	if \(!strchr\(cmd, '\''!'\''\)\) \{)7??0?
-grp 07??m 4220reg p OK ex.c:787:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:789:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		free\(ibuf\.s\);
 		xquit = quit;
 		return ret;.*(			return "write failed: file exists";)
 	}
 	fd = open\(path, O_WRONLY \| O_CREAT \| O_TRUNC, conf_mode\);8??0?
-grp 08??-4m 4220reg p OK ex.c:787:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK ex.c:789:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			return ret;
 		lbuf_region\(xb, &ibuf, beg, MAX\(0, o1\), end - 1, o2\);
 		ret = ex_pipeout\(arg \+ 1, &ibuf\);.*(	if \(fd < 0\))
 		return "write failed: cannot create file";
 	if \(o1 >= 0\) \{9??0?
-grp 09??-7m 4220reg p OK ex.c:787:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:7872sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK ex.c:789:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:7892sc %? %@2132sc!0?
 ?0?
 %f+ 	return xkwdrs \? NULL : xserr;
 }
@@ -187,20 +187,20 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 }
 
 4??0?
-4??+2m 5220reg p OK ex.c:1673:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK ex.c:1675:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	int i, j, l, o;)
 	for \(l = 0, i = 0; i < x->cterm;\) \{
 		o = x->off\[i\+\+];8??0?
-grp 08??-4m 5220reg p OK ex.c:1673:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 5220reg p OK ex.c:1675:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_nul\(sb\).*(		if \(o < 0\))
 			continue;
 		for \(l\+\+; x->off\[i] == o; i\+\+\);9??0?
-grp 09??-7m 5220reg p OK ex.c:1673:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16732sc %? %@2132sc!0?
+grp 09??-7m 5220reg p OK ex.c:1675:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16752sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
@@ -212,43 +212,43 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 %f+ 	\{"reg", ec_regprint},
 	\{"re", ec_krsset},
 	\{"rd", ec_undoredo},4??0?
-4??+2m 6220reg p OK ex.c:1793:a42sc %? %@2152sc!1q0?
+4??+2m 6220reg p OK ex.c:1795:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"reg", ec_regprint},.*?
 	\{"re", ec_krsset},.*?
 (	\{"rd", ec_undoredo},)7??0?
-grp 07??m 6220reg p OK ex.c:1793:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK ex.c:1795:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"q!", ec_quit},
 	\{"q", ec_quit},
 	\{"reg\+", ec_regprint},.*(	\{"wq", ec_write},)
 	\{"w!", ec_write},
 	\{"w", ec_write},8??0?
-grp 08??-4m 6220reg p OK ex.c:1793:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 6220reg p OK ex.c:1795:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(mpt\),
 	\{"m!", ec_mark},
 	\{"m", ec_mark},.*(	\{"uc", ec_setenc},)
 	\{"uz", ec_setenc},
 	\{"ub", ec_setenc},9??0?
-grp 09??-7m 6220reg p OK ex.c:1793:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17932sc %? %@2132sc!0?
+grp 09??-7m 6220reg p OK ex.c:1795:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17952sc %? %@2132sc!0?
 '\''1-1i char readonly = 0;		/* commandline readonly option */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i 	bufs[i].readonly = readonly;
 ??!219reg ex.c:170:m22sc %? %@2142sc!0?
 '\''3i 	if (access(arg, F_OK) == 0 && access(arg, W_OK) == -1)
 		ex_buf->readonly = 1;
-??!219reg ex.c:435:m32sc %? %@2142sc!0?
+??!219reg ex.c:437:m32sc %? %@2142sc!0?
 '\''4i 		if (ex_buf->readonly)
 			return "write failed: readonly option is set";
-??!219reg ex.c:787:m42sc %? %@2142sc!0?
+??!219reg ex.c:789:m42sc %? %@2142sc!0?
 '\''5i static void *ec_readonly(char *loc, char *cmd, char *arg)
 {
 	ex_buf->readonly = !ex_buf->readonly;
 	return NULL;
 }
 
-??!219reg ex.c:1673:m52sc %? %@2142sc!0?
+??!219reg ex.c:1675:m52sc %? %@2142sc!0?
 '\''6i 	{"ro", ec_readonly},
-??!219reg ex.c:1793:m62sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1795:m62sc %? %@2142sc!b2m!%ya 98?0?
 %f> 				xvis \|= 4;
 			else if \(argv\[i]\[j] == '\''a'\''\)
 				xvis \|= 8;
@@ -398,7 +398,7 @@ index 2888d7c60..9f5eef939 100644
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
  	{ex_ft, "!(?:[^!\\\\]|\\\\.?)*!?|%(?:#|[0-9]+|@([0-9]+))?", A(WH1 | SYN_BD, CY1)},
 diff --git a/ex.c b/ex.c
-index 8165e6ed1..ddba6ac68 100644
+index d13974a65..d0990a730 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -414,7 +414,7 @@ index 8165e6ed1..ddba6ac68 100644
  	return i;
  }
  
-@@ -433,6 +435,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -435,6 +437,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -423,7 +423,7 @@ index 8165e6ed1..ddba6ac68 100644
  	readfile(rd =)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
-@@ -785,6 +789,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -787,6 +791,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  	} else if (ret)
  		return "other buffers modified";
  	if (!strchr(cmd, '!')) {
@@ -432,7 +432,7 @@ index 8165e6ed1..ddba6ac68 100644
  		if (!strcmp(xb_path, path) && mtime(path) > ex_buf->mtime)
  			return "write failed: file changed";
  		if (arg[0] && mtime(path) >= 0)
-@@ -1671,6 +1677,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1673,6 +1679,12 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -445,7 +445,7 @@ index 8165e6ed1..ddba6ac68 100644
  static void ext_hlr(led_ext *p, led_ctx *x)
  {
  	ren_state *r = x->r;
-@@ -1791,6 +1803,7 @@ static struct excmd {
+@@ -1793,6 +1805,7 @@ static struct excmd {
  	{"reg", ec_regprint},
  	{"re", ec_krsset},
  	{"rd", ec_undoredo},

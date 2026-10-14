@@ -681,20 +681,20 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1320:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1322:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	led_extcut\(\);
 	for \(i = 0; i < hloptslen; i\+\+\)
 		syn_reloadft\(syn_findhl\(hlopts\[i]\), 0\);.*(		xkmap_alt = conf_kmapfind\(arg\);)
 	else
 		ex_print\(conf_kmap\(xkmap\)\[0], msg_ft\)8??0?
-grp 08??-4m 1220reg p OK ex.c:1320:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1322:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	xb_ft = loc;
 	if \(!\*arg\)
 		ex_print\(xb_ft, msg_ft\).*(	if \(arg\[0] && !strchr\(cmd, '\''!'\''\)\))
 		xkmap = xkmap_alt;
 	return NULL;9??0?
-grp 09??-7m 1220reg p OK ex.c:1320:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:13202sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1322:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:13222sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
@@ -706,24 +706,24 @@ static void \*ec_cmap\(char \*loc, char \*cmd, char \*arg\)
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},4??0?
-4??+2m 2220reg p OK ex.c:1807:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1809:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
-grp 07??m 2220reg p OK ex.c:1807:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1809:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},
 	EO\(shape\),.*(	\{"ya!", ec_yank},)
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},8??0?
-grp 08??-4m 2220reg p OK ex.c:1807:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1809:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"w", ec_write},
 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
-grp 09??-7m 2220reg p OK ex.c:1807:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:18072sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1809:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18092sc %? %@2132sc!0?
 '\''1i /* misspelled words and their suggestions, "word\0sug, sug\0" per entry */
 static sbuf *spsb;
 static char **spidx;		/* spsb entries, sorted by word */
@@ -888,10 +888,10 @@ static void *ec_spell(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-??!219reg ex.c:1320:m12sc %? %@2142sc!0?
+??!219reg ex.c:1322:m12sc %? %@2142sc!0?
 '\''2i 	{"sl!", ec_spell},
 	{"sl", ec_spell},
-??!219reg ex.c:1807:m22sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1809:m22sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return cs\[0] == '\''\\n'\'' \? 1 : 2;
 }
 
@@ -1274,10 +1274,10 @@ index 2888d7c60..13b7bf2bd 100644
  
  /* how to highlight text in the reverse direction */
 diff --git a/ex.c b/ex.c
-index 8165e6ed1..25593422f 100644
+index d13974a65..b5eedf8e7 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1318,6 +1318,170 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
+@@ -1320,6 +1320,170 @@ static void *ec_ft(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -1448,7 +1448,7 @@ index 8165e6ed1..25593422f 100644
  static void *ec_cmap(char *loc, char *cmd, char *arg)
  {
  	if (arg[0])
-@@ -1805,6 +1969,8 @@ static struct excmd {
+@@ -1807,6 +1971,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
