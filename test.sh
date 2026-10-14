@@ -2092,6 +2092,29 @@ check 'Z12 ?~ inside a :g body frees the outer captures too' 'reached' "$out"
 out=$(run_ex ':s/zzz/y/:?~:??p status reset:q')
 check 'Z13 ?~ returns success and resets the running status' 'status reset' "$out"
 
+# ── e! on an already open path ────────────────────────────────────────────────
+# e on an open path only switches to it; e! also rereads it from disk, as a
+# bare e! does for the current buffer. Status lines carry the temp path, so
+# only printed text is compared.
+EFILE=$(mktemp /tmp/nextvi_test_XXXXXX)
+printf 'a\n' > "$TMPFILE"
+printf 'x\n' > "$EFILE"
+
+out=$(run_ex ":e $EFILE:%s/x/MOD/:e $TMPFILE:e $EFILE:%p:q!" | grep -v '^"')
+check 'GG1 e on an open path keeps its unsaved changes' 'MOD' "$out"
+
+out=$(run_ex ":e $EFILE:%s/x/MOD/:e $TMPFILE:e! $EFILE:%p:q!" | grep -v '^"')
+check 'GG2 e! on another open path rereads it' 'x' "$out"
+
+out=$(run_ex ":%s/a/MOD/:e! $TMPFILE:%p:q!" | grep -v '^"')
+check 'GG3 e! on the current path rereads it' 'a' "$out"
+
+# the reread is an edit: a later chain can undo it
+out=$(printf ':%%s/a/MOD/\n:e! %s\n:ud\n:%%p\n:q!\n' "$TMPFILE" |
+	"$VI" -sm "$TMPFILE" 2>/dev/null | grep -v '^"')
+check 'GG4 ud after e! path restores the discarded changes' 'MOD' "$out"
+rm -f "$EFILE"
+
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 
 printf '\nResults: %d passed, %d failed\n' "$PASS" "$FAIL"
