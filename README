@@ -405,7 +405,7 @@ conversation does not continue from it, though its reasoning and text
 are logged as the lead of the question, which the agent answers with
 "acap"; nothing else runs during it and after 5 retries its answer is
 taken as acap. The question interrupts and later resumes a checkpoint,
-a budget check or a compaction; its exchange is kept in /compact/, not
+a budget check or a compaction; its exchange is kept in /asides/, not
 in the session log.
 
 The new ex command "acap [N] [note]" raises the thinking cap of the next
@@ -480,9 +480,9 @@ toggles between 0 and 30. The command keeps running in the background
 and its later output goes to a file.
 
 Adds temporary buffers /conversation/, /skills/ (system prompt), /notes/
-(ratings), /discarded/ (trimmed entries) and /compact/, used for
-compaction work and for the acap question exchange. Both restart commands
-reload skills; "a!" clears notes and discarded.
+(ratings), /discarded/ (trimmed entries) and /asides/ (side exchanges:
+compactions, checkpoints, budget checks and acap questions). Both
+restart commands reload skills; "a!" clears notes and discarded.
 These buffers are saved automatically under a directory named after the
 session start time, $HOME/.nextvi/logs/YYYYmmdd-HHMMSS, or log_dir if set.
 
