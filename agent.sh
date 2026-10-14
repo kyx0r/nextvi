@@ -89,14 +89,16 @@ static char *agent_pack_log;
 static char agent_pack_retry[] =
 	"You returned control, but the session log in b-4 is unchanged.\n"
 	"The current buffer is b-4 again. Replace its content with the summary\n"
-	"in one ex call, then stop:\n"
-	"{\"command\":\"%c Goal: ...\\nDone: ...\\nNext: ...\"}\n"
-	"Text after \"%c \" is literal; newlines separate lines; no terminator.";
+	"in one ex call, then stop. Text after \"%c \" is literal; newlines\n"
+	"separate lines; no terminator.\n"
+	"Example: a three-line summary\n"
+	"%c Goal: ...\nDone: ...\nNext: ...";
 /* Pack prompts carry the %c usage because its spec is not deferred. */
 static char agent_pack_example[] =
-	"\nReplace the current buffer'\''s content with the summary in one ex call:\n"
-	"{\"command\":\"%c Goal: ...\\nDone: ...\\nNext: ...\"}\n"
-	"Text after \"%c \" is literal; newlines separate lines; no terminator.\n";
+	"\nReplace the current buffer'\''s content with the summary in one ex call.\n"
+	"Text after \"%c \" is literal; newlines separate lines; no terminator.\n"
+	"Example: a three-line summary\n"
+	"%c Goal: ...\nDone: ...\nNext: ...\n\n";
 /* Messages JSON of the last request, and its bytes shared with the one before. */
 static char *agent_prev;
 static size_t agent_reused, agent_sent;
@@ -189,8 +191,8 @@ static void agent_record_usage(cJSON *root, double bytes)
 }
 
 static char nextvi_skill[] =
-"Inside Nextvi, use the ex tool with a JSON object whose command key\n"
-"holds one ex command per call.\n"
+"Inside Nextvi, use the ex tool; its command argument holds one ex command\n"
+"per call.\n"
 "Nextvi is not a standard vi/ex.\n"
 "Use exspec command for a command list.\n"
 "Use exspec with an argument for a topic or command specification.\n";
@@ -1102,8 +1104,8 @@ static int agent_cp_hold(char *unrated, int size)
 static char *agent_cp_example(char *unrated)
 {
 	static char ex[112];
-	snprintf(ex, sizeof(ex), "{\"command\":\"%luarate 2 read the option parser "
-		"and found where defaults are set\"}\n", strtoul(unrated + 5, NULL, 10));
+	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser "
+		"and found where defaults are set\n", strtoul(unrated + 5, NULL, 10));
 	return ex;
 }
 
@@ -1346,9 +1348,9 @@ static const char agent_cp_guide[] =
 	"note and a large 2 with its findings; keep 3, or replace a large one\n"
 	"with every detail the task depends on.\n"
 	"Example: replace turns 53 through 59 with their findings\n"
-	"{\"command\":\"53,59anote findings: ...\"}\n"
+	"53,59anote findings: ...\n"
 	"Example: end the checkpoint\n"
-	"{\"command\":\"adone\"}\n"
+	"adone\n"
 	"This exchange is not kept; ratings show in later checkpoints and\n"
 	"compaction.\n";
 
@@ -1378,10 +1380,10 @@ static char *agent_budget_open(void)
 			"compaction.", xaco);
 	/* N stays a placeholder: a number here would anchor the estimate. */
 	strcpy(s + k, agent_acl_budget ? "\nExample: trim the session log now\n"
-		"{\"command\":\"acheck\"}\nExample: defer it for N tokens\n"
-		"{\"command\":\"acheck N\"}" :
+		"acheck\nExample: defer it for N tokens\n"
+		"acheck N" :
 		"\nExample: the rest of the task needs N tokens\n"
-		"{\"command\":\"acheck N\"}");
+		"acheck N");
 	return s;
 }
 
@@ -1615,9 +1617,9 @@ static void agent_think_ask(cJSON *root)
 	sbuf_str(sb, "\nThe new reply sees nothing of this exchange except the "
 		"optional [note] after N. A note directs how to think better. "
 		"Tokens the new reply leaves of N carry over to later caps.")
-	snprintf(line, sizeof(line), "\nExample: %s\n{\"command\":\"acap\"}\n"
+	snprintf(line, sizeof(line), "\nExample: %s\nacap\n"
 		"Example: reply again under a cap of %d tokens, with a note\n"
-		"{\"command\":\"acap %d focus on ...\"}", keep, more, more);
+		"acap %d focus on ...", keep, more, more);
 	sbuf_str(sb, line)
 	sbuf_nul(sb)
 	agent_cp_open = sb->s;
@@ -2861,9 +2863,8 @@ static void agent_run_loop(const char *input)
 					"Your previous response was rejected: %s.\n"
 					"No commands from that response were executed. Correct and\n"
 					"resubmit the intended calls. Use tool type function, name ex,\n"
-					"and unique nonempty call IDs. Arguments must be a JSON-encoded\n"
-					"object with a nonempty string command, for example\n"
-					"{\"command\":\"1,20p\"}.", error);
+					"and unique nonempty call IDs. Pass one nonempty ex command\n"
+					"in the command argument, for example 1,20p", error);
 				agent_run_user(diagnostic);
 			}
 			free(body);
@@ -7997,8 +7998,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "for humans. catalog lists all commands and options; a command name\n" \
                 "prints its specification, hidden commands included; other text\n" \
                 "with range characters prints ranges. Topics: parsing, escapes,\n" \
-                "expansion, ranges, regex, commands, options. As an agent tool, the\n" \
-                "examples of a command print as the arguments of its ex tool call.\n\n" \
+                "expansion, ranges, regex, commands, options.\n\n" \
                 "Example: list all commands\n:exspec catalog")
             spec("[range]a[text]", "Open or resume the agent conversation",
                 "Keeps the conversation. Text prefills the prompt; range attaches\n" \
@@ -9899,47 +9899,9 @@ static int exspec_pack(int read)
 	return prev;
 }
 
-/* Append spec text s to sb, each example command as the arguments of its ex
- * tool call. The command is the lines after an "Example: " one, up to a
- * blank line or the next example. README examples (!multi) also hold sample
- * text and <^X> keys for people, so only a lone line without keys converts. */
-static void exspec_json(sbuf *sb, char *s, int multi)
-{
-	char *b, *e, *p;
-	int n, human;
-	for (; *s; s = e) {
-		e = s + strcspn(s, "\n");
-		e += *e == '\''\n'\'';
-		sbuf_mem(sb, s, e - s)
-		if (strncmp(s, "Example: ", 9))
-			continue;
-		for (b = e, n = 0; *e && *e != '\''\n'\'' && strncmp(e, "Example", 7); n++) {
-			e += strcspn(e, "\n");
-			e += *e == '\''\n'\'';
-		}
-		for (p = b, human = n > 1; p < e; p++)
-			human |= p[0] == '\''<'\'' && p[1] == '\''^'\'';
-		if (!n || (!multi && human)) {
-			e = b;
-			continue;
-		}
-		sbuf_str(sb, "{\"command\":\"")
-		for (p = b; p < e - (e[-1] == '\''\n'\''); p++) {
-			if (*p == '\''\n'\'') {
-				sbuf_str(sb, "\\n")
-				continue;
-			}
-			if (*p == '\''"'\'' || *p == '\''\\'\'')
-				sbuf_chr(sb, '\''\\'\'')
-			sbuf_chr(sb, *p)
-		}
-		sbuf_str(sb, e[-1] == '\''\n'\'' ? "\"}\n" : "\"}")
-	}
-}
-
 static void *ec_exspec(char *loc, char *cmd, char *arg)
 {
-	int i, j, k, option, json, begin = -1, end = 0;
+	int i, j, k, option, begin = -1, end = 0;
 	char msg[512], *text = NULL;
 	static char *agent_cmds[] = {
 		"p", "g", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
@@ -9985,8 +9947,6 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 			end = exspec_cmds[i].end;
 			break;
 		}
-	/* topics describe syntax, not calls, and stay as written */
-	json = agent_tool && begin >= 0;
 	if (begin < 0) {
 		if (strpbrk(arg, "%|,;#.$'\''><-+*/0123456789"))
 			arg = "ranges";
@@ -10009,29 +9969,14 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 	for (i = 0; agent_tool && i < LEN(conf_exspec_agent); i++)
 		if (!strcmp(arg, conf_exspec_agent[i].cmd))
 			text = conf_exspec_agent[i].text;
-	if (text && !json) {
+	if (text) {
 		ex_print(text, msg_ft)
 		return NULL;
 	}
 	while (end > begin && !*exspec_lines[end - 1])
 		end--;
-	if (!json) {
-		for (i = begin; i < end; i++)
-			ex_print(exspec_lines[i], msg_ft)
-		return NULL;
-	}
-	sbuf_smake(sb, 1024)
-	sbuf_smake(readme, 1024)
-	for (i = begin; !text && i < end; i++) {
-		sbuf_str(readme, exspec_lines[i])
-		sbuf_chr(readme, '\''\n'\'')
-	}
-	sbuf_nul(readme)
-	exspec_json(sb, text ? text : readme->s, !!text);
-	sbuf_nul(sb)
-	ex_print(sb->s, msg_ft)
-	free(readme->s);
-	free(sb->s);
+	for (i = begin; i < end; i++)
+		ex_print(exspec_lines[i], msg_ft)
 	return NULL;
 }
 
@@ -11017,8 +10962,7 @@ static char *exspec_lines[] = {
 	"for humans. catalog lists all commands and options; a command name",
 	"prints its specification, hidden commands included; other text",
 	"with range characters prints ranges. Topics: parsing, escapes,",
-	"expansion, ranges, regex, commands, options. As an agent tool, the",
-	"examples of a command print as the arguments of its ex tool call.",
+	"expansion, ranges, regex, commands, options.",
 	"",
 	"Example: list all commands",
 	"exspec catalog",
@@ -11729,65 +11673,65 @@ static struct {
 	{"ft", "Set a filetype", 719, 725, 0, 0},
 	{"cm", "Set a keymap", 726, 730, 0, 0},
 	{"cm!", "Set an alternative keymap", 731, 733, 0, 0},
-	{"exspec", "Print ex command catalog or specification", 734, 746, 0, 0},
-	{"a", "Open or resume the agent conversation", 747, 754, 0, 0},
-	{"a!", "Start a new agent conversation", 755, 760, 0, 0},
-	{"a~", "Resume an agent conversation from its log", 761, 766, 0, 0},
-	{"apack", "Compact the agent session from its log", 767, 779, 0, 0},
-	{"apack!", "Compact the agent session by browsing its log", 780, 786, 0, 0},
-	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
-	{"aretry", "Execute the last agent command", 793, 804, 0, 0},
-	{"aout", "Print the saved output of the last agent tool call", 805, 816, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 817, 843, 0, 0},
-	{"aget", "Print agent session log entries, trimmed ones included", 844, 860, 0, 0},
-	{"arate", "Rate agent turns in the notes buffer", 861, 881, 0, 0},
-	{"adone", "End an agent checkpoint", 882, 889, 0, 0},
-	{"acheck", "Start an agent checkpoint or set its budget", 890, 902, 0, 0},
-	{"acp", "Print the agent checkpoint instructions", 903, 909, 0, 0},
-	{"ali", "Print the agent session log entry list", 910, 921, 0, 0},
-	{"auli", "Print the unrated agent session log turns", 922, 928, 0, 0},
-	{"ast", "Print agent status and token usage", 929, 938, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 939, 964, 0, 0},
-	{"acap", "Raise the agent thinking cap for one reply", 965, 984, 0, 0},
-	{"ac", "Set autocomplete filter regex", 985, 993, 0, 0},
-	{"sc", "Set ex special characters", 994, 1004, 0, 0},
-	{"sc!", "Set ex special characters", 1005, 1012, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 1013, 1020, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1021, 1024, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1025, 1029, 0, 0},
-	{"ph", "Redefine placeholders", 1030, 1046, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1055, 1093, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1094, 1104, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1105, 1111, 1, 0},
-	{"agr", "Control agent output protection", 1112, 1117, 1, 0},
-	{"ato", "Detach long agent shell commands", 1118, 1125, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1126, 1131, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1132, 1156, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1157, 1164, 1, 0},
-	{"ai", "Indent new lines", 1165, 1168, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1169, 1170, 1, 0},
-	{"ish", "Interactive shell", 1171, 1186, 1, 0},
-	{"grp", "Regex search group", 1187, 1195, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1196, 1199, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1200, 1201, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1201, 1202, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1202, 1203, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1203, 1204, 1, 0},
-	{"led", "Enable all terminal output", 1204, 1205, 1, 0},
-	{"vis", "Control startup flags", 1206, 1217, 1, 0},
-	{"mpt", "Control vi prompts", 1218, 1228, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1229, 1231, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1231, 1233, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1233, 1234, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1234, 1235, 1, 0},
-	{"td", "Current text direction context", 1235, 1241, 1, 0},
-	{"pr", "Print register", 1242, 1258, 1, 0},
-	{"fr", "Find register", 1259, 1271, 1, 0},
-	{"rr", "Record register", 1272, 1285, 1, 0},
-	{"lim", "Line length render limit", 1286, 1301, 1, 0},
-	{"seq", "Control Undo/Redo", 1302, 1314, 1, 0},
-	{"left", "Control horizontal scroll", 1315, 1320, 1, 0},
-	{"err", "Control ex errors", 1321, 1333, 1, 0},
+	{"exspec", "Print ex command catalog or specification", 734, 745, 0, 0},
+	{"a", "Open or resume the agent conversation", 746, 753, 0, 0},
+	{"a!", "Start a new agent conversation", 754, 759, 0, 0},
+	{"a~", "Resume an agent conversation from its log", 760, 765, 0, 0},
+	{"apack", "Compact the agent session from its log", 766, 778, 0, 0},
+	{"apack!", "Compact the agent session by browsing its log", 779, 785, 0, 0},
+	{"acm", "Toggle the caveman response style skill", 786, 791, 0, 0},
+	{"aretry", "Execute the last agent command", 792, 803, 0, 0},
+	{"aout", "Print the saved output of the last agent tool call", 804, 815, 0, 0},
+	{"anote", "Replace or remove agent session log entries", 816, 842, 0, 0},
+	{"aget", "Print agent session log entries, trimmed ones included", 843, 859, 0, 0},
+	{"arate", "Rate agent turns in the notes buffer", 860, 880, 0, 0},
+	{"adone", "End an agent checkpoint", 881, 888, 0, 0},
+	{"acheck", "Start an agent checkpoint or set its budget", 889, 901, 0, 0},
+	{"acp", "Print the agent checkpoint instructions", 902, 908, 0, 0},
+	{"ali", "Print the agent session log entry list", 909, 920, 0, 0},
+	{"auli", "Print the unrated agent session log turns", 921, 927, 0, 0},
+	{"ast", "Print agent status and token usage", 928, 937, 0, 0},
+	{"ath", "Set the agent thinking cap and effort", 938, 963, 0, 0},
+	{"acap", "Raise the agent thinking cap for one reply", 964, 983, 0, 0},
+	{"ac", "Set autocomplete filter regex", 984, 992, 0, 0},
+	{"sc", "Set ex special characters", 993, 1003, 0, 0},
+	{"sc!", "Set ex special characters", 1004, 1011, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1012, 1019, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1020, 1023, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1024, 1028, 0, 0},
+	{"ph", "Redefine placeholders", 1029, 1045, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1054, 1092, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1093, 1103, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1104, 1110, 1, 0},
+	{"agr", "Control agent output protection", 1111, 1116, 1, 0},
+	{"ato", "Detach long agent shell commands", 1117, 1124, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1125, 1130, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1131, 1155, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1156, 1163, 1, 0},
+	{"ai", "Indent new lines", 1164, 1167, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1168, 1169, 1, 0},
+	{"ish", "Interactive shell", 1170, 1185, 1, 0},
+	{"grp", "Regex search group", 1186, 1194, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1195, 1198, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1199, 1200, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1200, 1201, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1201, 1202, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1202, 1203, 1, 0},
+	{"led", "Enable all terminal output", 1203, 1204, 1, 0},
+	{"vis", "Control startup flags", 1205, 1216, 1, 0},
+	{"mpt", "Control vi prompts", 1217, 1227, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1228, 1230, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1230, 1232, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1232, 1233, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1233, 1234, 1, 0},
+	{"td", "Current text direction context", 1234, 1240, 1, 0},
+	{"pr", "Print register", 1241, 1257, 1, 0},
+	{"fr", "Find register", 1258, 1270, 1, 0},
+	{"rr", "Record register", 1271, 1284, 1, 0},
+	{"lim", "Line length render limit", 1285, 1300, 1, 0},
+	{"seq", "Control Undo/Redo", 1301, 1313, 1, 0},
+	{"left", "Control horizontal scroll", 1314, 1319, 1, 0},
+	{"err", "Control ex errors", 1320, 1332, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -12412,10 +12356,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..a4319c967
+index 000000000..d9a016c09
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4294 @@
+@@ -0,0 +1,4295 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12475,14 +12419,16 @@ index 000000000..a4319c967
 +static char agent_pack_retry[] =
 +	"You returned control, but the session log in b-4 is unchanged.\n"
 +	"The current buffer is b-4 again. Replace its content with the summary\n"
-+	"in one ex call, then stop:\n"
-+	"{\"command\":\"%c Goal: ...\\nDone: ...\\nNext: ...\"}\n"
-+	"Text after \"%c \" is literal; newlines separate lines; no terminator.";
++	"in one ex call, then stop. Text after \"%c \" is literal; newlines\n"
++	"separate lines; no terminator.\n"
++	"Example: a three-line summary\n"
++	"%c Goal: ...\nDone: ...\nNext: ...";
 +/* Pack prompts carry the %c usage because its spec is not deferred. */
 +static char agent_pack_example[] =
-+	"\nReplace the current buffer's content with the summary in one ex call:\n"
-+	"{\"command\":\"%c Goal: ...\\nDone: ...\\nNext: ...\"}\n"
-+	"Text after \"%c \" is literal; newlines separate lines; no terminator.\n";
++	"\nReplace the current buffer's content with the summary in one ex call.\n"
++	"Text after \"%c \" is literal; newlines separate lines; no terminator.\n"
++	"Example: a three-line summary\n"
++	"%c Goal: ...\nDone: ...\nNext: ...\n\n";
 +/* Messages JSON of the last request, and its bytes shared with the one before. */
 +static char *agent_prev;
 +static size_t agent_reused, agent_sent;
@@ -12575,8 +12521,8 @@ index 000000000..a4319c967
 +}
 +
 +static char nextvi_skill[] =
-+"Inside Nextvi, use the ex tool with a JSON object whose command key\n"
-+"holds one ex command per call.\n"
++"Inside Nextvi, use the ex tool; its command argument holds one ex command\n"
++"per call.\n"
 +"Nextvi is not a standard vi/ex.\n"
 +"Use exspec command for a command list.\n"
 +"Use exspec with an argument for a topic or command specification.\n";
@@ -13488,8 +13434,8 @@ index 000000000..a4319c967
 +static char *agent_cp_example(char *unrated)
 +{
 +	static char ex[112];
-+	snprintf(ex, sizeof(ex), "{\"command\":\"%luarate 2 read the option parser "
-+		"and found where defaults are set\"}\n", strtoul(unrated + 5, NULL, 10));
++	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser "
++		"and found where defaults are set\n", strtoul(unrated + 5, NULL, 10));
 +	return ex;
 +}
 +
@@ -13732,9 +13678,9 @@ index 000000000..a4319c967
 +	"note and a large 2 with its findings; keep 3, or replace a large one\n"
 +	"with every detail the task depends on.\n"
 +	"Example: replace turns 53 through 59 with their findings\n"
-+	"{\"command\":\"53,59anote findings: ...\"}\n"
++	"53,59anote findings: ...\n"
 +	"Example: end the checkpoint\n"
-+	"{\"command\":\"adone\"}\n"
++	"adone\n"
 +	"This exchange is not kept; ratings show in later checkpoints and\n"
 +	"compaction.\n";
 +
@@ -13764,10 +13710,10 @@ index 000000000..a4319c967
 +			"compaction.", xaco);
 +	/* N stays a placeholder: a number here would anchor the estimate. */
 +	strcpy(s + k, agent_acl_budget ? "\nExample: trim the session log now\n"
-+		"{\"command\":\"acheck\"}\nExample: defer it for N tokens\n"
-+		"{\"command\":\"acheck N\"}" :
++		"acheck\nExample: defer it for N tokens\n"
++		"acheck N" :
 +		"\nExample: the rest of the task needs N tokens\n"
-+		"{\"command\":\"acheck N\"}");
++		"acheck N");
 +	return s;
 +}
 +
@@ -14001,9 +13947,9 @@ index 000000000..a4319c967
 +	sbuf_str(sb, "\nThe new reply sees nothing of this exchange except the "
 +		"optional [note] after N. A note directs how to think better. "
 +		"Tokens the new reply leaves of N carry over to later caps.")
-+	snprintf(line, sizeof(line), "\nExample: %s\n{\"command\":\"acap\"}\n"
++	snprintf(line, sizeof(line), "\nExample: %s\nacap\n"
 +		"Example: reply again under a cap of %d tokens, with a note\n"
-+		"{\"command\":\"acap %d focus on ...\"}", keep, more, more);
++		"acap %d focus on ...", keep, more, more);
 +	sbuf_str(sb, line)
 +	sbuf_nul(sb)
 +	agent_cp_open = sb->s;
@@ -15247,9 +15193,8 @@ index 000000000..a4319c967
 +					"Your previous response was rejected: %s.\n"
 +					"No commands from that response were executed. Correct and\n"
 +					"resubmit the intended calls. Use tool type function, name ex,\n"
-+					"and unique nonempty call IDs. Arguments must be a JSON-encoded\n"
-+					"object with a nonempty string command, for example\n"
-+					"{\"command\":\"1,20p\"}.", error);
++					"and unique nonempty call IDs. Pass one nonempty ex command\n"
++					"in the command argument, for example 1,20p", error);
 +				agent_run_user(diagnostic);
 +			}
 +			free(body);
@@ -20271,10 +20216,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..a949f41b0 100755
+index c836c94c7..5e631af03 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,293 @@ build() {
+@@ -65,6 +65,292 @@ build() {
      }
  }
  
@@ -20301,8 +20246,7 @@ index c836c94c7..a949f41b0 100755
 +                "for humans. catalog lists all commands and options; a command name\n" \
 +                "prints its specification, hidden commands included; other text\n" \
 +                "with range characters prints ranges. Topics: parsing, escapes,\n" \
-+                "expansion, ranges, regex, commands, options. As an agent tool, the\n" \
-+                "examples of a command print as the arguments of its ex tool call.\n\n" \
++                "expansion, ranges, regex, commands, options.\n\n" \
 +                "Example: list all commands\n:exspec catalog")
 +            spec("[range]a[text]", "Open or resume the agent conversation",
 +                "Keeps the conversation. Text prefills the prompt; range attaches\n" \
@@ -20568,7 +20512,7 @@ index c836c94c7..a949f41b0 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +361,7 @@ install() {
+@@ -74,7 +360,7 @@ install() {
  }
  
  print_usage() {
@@ -20577,7 +20521,7 @@ index c836c94c7..a949f41b0 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +369,9 @@ print_usage() {
+@@ -82,6 +368,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -20880,7 +20824,7 @@ index 2888d7c60..76b37b80b 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8165e6ed1..c72875c5b 100644
+index 8165e6ed1..bcf86ca79 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -21108,7 +21052,7 @@ index 8165e6ed1..c72875c5b 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1635,6 +1705,233 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1635,6 +1705,178 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -21186,47 +21130,9 @@ index 8165e6ed1..c72875c5b 100644
 +	return prev;
 +}
 +
-+/* Append spec text s to sb, each example command as the arguments of its ex
-+ * tool call. The command is the lines after an "Example: " one, up to a
-+ * blank line or the next example. README examples (!multi) also hold sample
-+ * text and <^X> keys for people, so only a lone line without keys converts. */
-+static void exspec_json(sbuf *sb, char *s, int multi)
-+{
-+	char *b, *e, *p;
-+	int n, human;
-+	for (; *s; s = e) {
-+		e = s + strcspn(s, "\n");
-+		e += *e == '\n';
-+		sbuf_mem(sb, s, e - s)
-+		if (strncmp(s, "Example: ", 9))
-+			continue;
-+		for (b = e, n = 0; *e && *e != '\n' && strncmp(e, "Example", 7); n++) {
-+			e += strcspn(e, "\n");
-+			e += *e == '\n';
-+		}
-+		for (p = b, human = n > 1; p < e; p++)
-+			human |= p[0] == '<' && p[1] == '^';
-+		if (!n || (!multi && human)) {
-+			e = b;
-+			continue;
-+		}
-+		sbuf_str(sb, "{\"command\":\"")
-+		for (p = b; p < e - (e[-1] == '\n'); p++) {
-+			if (*p == '\n') {
-+				sbuf_str(sb, "\\n")
-+				continue;
-+			}
-+			if (*p == '"' || *p == '\\')
-+				sbuf_chr(sb, '\\')
-+			sbuf_chr(sb, *p)
-+		}
-+		sbuf_str(sb, e[-1] == '\n' ? "\"}\n" : "\"}")
-+	}
-+}
-+
 +static void *ec_exspec(char *loc, char *cmd, char *arg)
 +{
-+	int i, j, k, option, json, begin = -1, end = 0;
++	int i, j, k, option, begin = -1, end = 0;
 +	char msg[512], *text = NULL;
 +	static char *agent_cmds[] = {
 +		"p", "g", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
@@ -21272,8 +21178,6 @@ index 8165e6ed1..c72875c5b 100644
 +			end = exspec_cmds[i].end;
 +			break;
 +		}
-+	/* topics describe syntax, not calls, and stay as written */
-+	json = agent_tool && begin >= 0;
 +	if (begin < 0) {
 +		if (strpbrk(arg, "%|,;#.$'><-+*/0123456789"))
 +			arg = "ranges";
@@ -21296,29 +21200,14 @@ index 8165e6ed1..c72875c5b 100644
 +	for (i = 0; agent_tool && i < LEN(conf_exspec_agent); i++)
 +		if (!strcmp(arg, conf_exspec_agent[i].cmd))
 +			text = conf_exspec_agent[i].text;
-+	if (text && !json) {
++	if (text) {
 +		ex_print(text, msg_ft)
 +		return NULL;
 +	}
 +	while (end > begin && !*exspec_lines[end - 1])
 +		end--;
-+	if (!json) {
-+		for (i = begin; i < end; i++)
-+			ex_print(exspec_lines[i], msg_ft)
-+		return NULL;
-+	}
-+	sbuf_smake(sb, 1024)
-+	sbuf_smake(readme, 1024)
-+	for (i = begin; !text && i < end; i++) {
-+		sbuf_str(readme, exspec_lines[i])
-+		sbuf_chr(readme, '\n')
-+	}
-+	sbuf_nul(readme)
-+	exspec_json(sb, text ? text : readme->s, !!text);
-+	sbuf_nul(sb)
-+	ex_print(sb->s, msg_ft)
-+	free(readme->s);
-+	free(sb->s);
++	for (i = begin; i < end; i++)
++		ex_print(exspec_lines[i], msg_ft)
 +	return NULL;
 +}
 +
@@ -21342,7 +21231,7 @@ index 8165e6ed1..c72875c5b 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1999,14 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1702,9 +1944,14 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -21359,7 +21248,7 @@ index 8165e6ed1..c72875c5b 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +2032,20 @@ _EO(left,
+@@ -1730,14 +1977,20 @@ _EO(left,
  	return NULL;
  )
  
@@ -21384,7 +21273,7 @@ index 8165e6ed1..c72875c5b 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +2066,36 @@ static struct excmd {
+@@ -1758,8 +2011,36 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -21421,7 +21310,7 @@ index 8165e6ed1..c72875c5b 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1927,6 +2263,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
+@@ -1927,6 +2208,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  	return src;
  }
  
@@ -21490,7 +21379,7 @@ index 8165e6ed1..c72875c5b 100644
  /* execute a single ex command chain */
  void *ex_exec(const char *ln)
  {
-@@ -1939,8 +2337,20 @@ void *ex_exec(const char *ln)
+@@ -1939,8 +2282,20 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -21512,7 +21401,7 @@ index 8165e6ed1..c72875c5b 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2369,9 @@ void *ex_exec(const char *ln)
+@@ -1959,7 +2314,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -21618,10 +21507,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..bc17651c7
+index 000000000..9ae65dbd7
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1515 @@
+@@ -0,0 +1,1514 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -22365,8 +22254,7 @@ index 000000000..bc17651c7
 +	"for humans. catalog lists all commands and options; a command name",
 +	"prints its specification, hidden commands included; other text",
 +	"with range characters prints ranges. Topics: parsing, escapes,",
-+	"expansion, ranges, regex, commands, options. As an agent tool, the",
-+	"examples of a command print as the arguments of its ex tool call.",
++	"expansion, ranges, regex, commands, options.",
 +	"",
 +	"Example: list all commands",
 +	"exspec catalog",
@@ -23077,65 +22965,65 @@ index 000000000..bc17651c7
 +	{"ft", "Set a filetype", 719, 725, 0, 0},
 +	{"cm", "Set a keymap", 726, 730, 0, 0},
 +	{"cm!", "Set an alternative keymap", 731, 733, 0, 0},
-+	{"exspec", "Print ex command catalog or specification", 734, 746, 0, 0},
-+	{"a", "Open or resume the agent conversation", 747, 754, 0, 0},
-+	{"a!", "Start a new agent conversation", 755, 760, 0, 0},
-+	{"a~", "Resume an agent conversation from its log", 761, 766, 0, 0},
-+	{"apack", "Compact the agent session from its log", 767, 779, 0, 0},
-+	{"apack!", "Compact the agent session by browsing its log", 780, 786, 0, 0},
-+	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
-+	{"aretry", "Execute the last agent command", 793, 804, 0, 0},
-+	{"aout", "Print the saved output of the last agent tool call", 805, 816, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 817, 843, 0, 0},
-+	{"aget", "Print agent session log entries, trimmed ones included", 844, 860, 0, 0},
-+	{"arate", "Rate agent turns in the notes buffer", 861, 881, 0, 0},
-+	{"adone", "End an agent checkpoint", 882, 889, 0, 0},
-+	{"acheck", "Start an agent checkpoint or set its budget", 890, 902, 0, 0},
-+	{"acp", "Print the agent checkpoint instructions", 903, 909, 0, 0},
-+	{"ali", "Print the agent session log entry list", 910, 921, 0, 0},
-+	{"auli", "Print the unrated agent session log turns", 922, 928, 0, 0},
-+	{"ast", "Print agent status and token usage", 929, 938, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 939, 964, 0, 0},
-+	{"acap", "Raise the agent thinking cap for one reply", 965, 984, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 985, 993, 0, 0},
-+	{"sc", "Set ex special characters", 994, 1004, 0, 0},
-+	{"sc!", "Set ex special characters", 1005, 1012, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 1013, 1020, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1021, 1024, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1025, 1029, 0, 0},
-+	{"ph", "Redefine placeholders", 1030, 1046, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1055, 1093, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1094, 1104, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1105, 1111, 1, 0},
-+	{"agr", "Control agent output protection", 1112, 1117, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1118, 1125, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1126, 1131, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1132, 1156, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1157, 1164, 1, 0},
-+	{"ai", "Indent new lines", 1165, 1168, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1169, 1170, 1, 0},
-+	{"ish", "Interactive shell", 1171, 1186, 1, 0},
-+	{"grp", "Regex search group", 1187, 1195, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1196, 1199, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1200, 1201, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1201, 1202, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1202, 1203, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1203, 1204, 1, 0},
-+	{"led", "Enable all terminal output", 1204, 1205, 1, 0},
-+	{"vis", "Control startup flags", 1206, 1217, 1, 0},
-+	{"mpt", "Control vi prompts", 1218, 1228, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1229, 1231, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1231, 1233, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1233, 1234, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1234, 1235, 1, 0},
-+	{"td", "Current text direction context", 1235, 1241, 1, 0},
-+	{"pr", "Print register", 1242, 1258, 1, 0},
-+	{"fr", "Find register", 1259, 1271, 1, 0},
-+	{"rr", "Record register", 1272, 1285, 1, 0},
-+	{"lim", "Line length render limit", 1286, 1301, 1, 0},
-+	{"seq", "Control Undo/Redo", 1302, 1314, 1, 0},
-+	{"left", "Control horizontal scroll", 1315, 1320, 1, 0},
-+	{"err", "Control ex errors", 1321, 1333, 1, 0},
++	{"exspec", "Print ex command catalog or specification", 734, 745, 0, 0},
++	{"a", "Open or resume the agent conversation", 746, 753, 0, 0},
++	{"a!", "Start a new agent conversation", 754, 759, 0, 0},
++	{"a~", "Resume an agent conversation from its log", 760, 765, 0, 0},
++	{"apack", "Compact the agent session from its log", 766, 778, 0, 0},
++	{"apack!", "Compact the agent session by browsing its log", 779, 785, 0, 0},
++	{"acm", "Toggle the caveman response style skill", 786, 791, 0, 0},
++	{"aretry", "Execute the last agent command", 792, 803, 0, 0},
++	{"aout", "Print the saved output of the last agent tool call", 804, 815, 0, 0},
++	{"anote", "Replace or remove agent session log entries", 816, 842, 0, 0},
++	{"aget", "Print agent session log entries, trimmed ones included", 843, 859, 0, 0},
++	{"arate", "Rate agent turns in the notes buffer", 860, 880, 0, 0},
++	{"adone", "End an agent checkpoint", 881, 888, 0, 0},
++	{"acheck", "Start an agent checkpoint or set its budget", 889, 901, 0, 0},
++	{"acp", "Print the agent checkpoint instructions", 902, 908, 0, 0},
++	{"ali", "Print the agent session log entry list", 909, 920, 0, 0},
++	{"auli", "Print the unrated agent session log turns", 921, 927, 0, 0},
++	{"ast", "Print agent status and token usage", 928, 937, 0, 0},
++	{"ath", "Set the agent thinking cap and effort", 938, 963, 0, 0},
++	{"acap", "Raise the agent thinking cap for one reply", 964, 983, 0, 0},
++	{"ac", "Set autocomplete filter regex", 984, 992, 0, 0},
++	{"sc", "Set ex special characters", 993, 1003, 0, 0},
++	{"sc!", "Set ex special characters", 1004, 1011, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1012, 1019, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1020, 1023, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1024, 1028, 0, 0},
++	{"ph", "Redefine placeholders", 1029, 1045, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1054, 1092, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1093, 1103, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1104, 1110, 1, 0},
++	{"agr", "Control agent output protection", 1111, 1116, 1, 0},
++	{"ato", "Detach long agent shell commands", 1117, 1124, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1125, 1130, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1131, 1155, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1156, 1163, 1, 0},
++	{"ai", "Indent new lines", 1164, 1167, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1168, 1169, 1, 0},
++	{"ish", "Interactive shell", 1170, 1185, 1, 0},
++	{"grp", "Regex search group", 1186, 1194, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1195, 1198, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1199, 1200, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1200, 1201, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1201, 1202, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1202, 1203, 1, 0},
++	{"led", "Enable all terminal output", 1203, 1204, 1, 0},
++	{"vis", "Control startup flags", 1205, 1216, 1, 0},
++	{"mpt", "Control vi prompts", 1217, 1227, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1228, 1230, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1230, 1232, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1232, 1233, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1233, 1234, 1, 0},
++	{"td", "Current text direction context", 1234, 1240, 1, 0},
++	{"pr", "Print register", 1241, 1257, 1, 0},
++	{"fr", "Find register", 1258, 1270, 1, 0},
++	{"rr", "Record register", 1271, 1284, 1, 0},
++	{"lim", "Line length render limit", 1285, 1300, 1, 0},
++	{"seq", "Control Undo/Redo", 1301, 1313, 1, 0},
++	{"left", "Control horizontal scroll", 1314, 1319, 1, 0},
++	{"err", "Control ex errors", 1320, 1332, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..8fde7a8f9 100644
