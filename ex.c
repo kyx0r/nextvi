@@ -425,7 +425,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 	len = strlen(arg+cd);
 	if (len && ((fd = bufs_find(arg+cd, len)) >= 0)) {
 		bufs_switchwft(fd)
-		return NULL;
+		if (!strchr(cmd, '!'))
+			return NULL;
+		arg = "";
 	} else if (xbufcur == xbufsmax && !strchr(cmd, '!') &&
 			bufs[xbufsmax - 1].lb->modified) {
 		return "last buffer modified";
