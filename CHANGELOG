@@ -50,18 +50,37 @@ Patch changes:
    only the unrated turns, at any time; :acp prints the checkpoint
    instructions and :adone ends it once all turns with commands are
    rated.
-   Added :ath to set reasoning effort and a reasoning token cap. A reply
-   cut at the cap is withheld and the agent answers a budget question:
-   keep it as it is or discard it and reply again under a larger cap.
-   An invalid answer is retried up to 5 times; text after N is a note
-   for the new reply. The retry itself is single: if that reply is cut
-   at the cap again, it is taken as is and the conversation moves on.
+   Added [N,M]ath[effort] to set a reasoning token cap of N and the
+   reasoning effort, one word such as low or high; M is the ceiling the
+   agent may reach for one reply. A reply cut at the cap is withheld:
+   it is not logged and its commands do not run. The agent then answers
+   a budget question kept in /compact/, outside the session log, and
+   nothing else runs meanwhile; the question interrupts a checkpoint,
+   a budget check or a compaction and those resume afterwards. :acap
+   alone keeps the cut reply, :acap N with N above the cap discards it
+   and replies again under N, and text after N is a note only the new
+   reply sees. Retries within budget question are consecutive, up
+   to 5; after that the answer is taken as :acap.
+   Whatever reply leaves of N is banked onto the caps of later replies,
+   up to M, until their thinking spends it, so one raise smoothens out
+   across many turns.
+   Added :ata to cap thinking by a percentage of its recent average in
+   place of N (0 disables, a bare :ata toggles between 0 and 100). Each
+   accepted reply that thought moves the average a quarter of the way to
+   its tokens, and one cut at its cap counts as twice the cap, so cuts
+   raise it; replies are counted with :ata off too, and :ath restarts the
+   average. ast reports the cap, the bank and the average.
    The :ar option now has three states, default 1: drop reasoning, log
    it without printing it, or log and print it.
    Added :ato to detach a running agent shell command after N seconds,
    disabled by default (0); a bare :ato toggles between 0 and 30. The
    command keeps running in the background (status 124, its own process
    group, output to a file; a later result reports its exit status).
+   Session logs now live in a directory named with the session start time,
+   $HOME/.nextvi/logs/YYYYmmdd-HHMMSS, or under log_dir; a colliding name
+   takes a -N suffix, so concurrent sessions do not overwrite each other.
+   A new /compact/ temporary buffer holds compaction work and the :acap
+   question exchange, instead of reusing the /sc/ scratch buffer.
    max_tool_rounds defaults to 0 (unlimited) instead of 300.
 
 ------------------
@@ -240,7 +259,7 @@ Patch changes:
 3. [linewrap_v2.sh](https://github.com/kyx0r/nextvi/blob/release/linewrap_v2.sh):
    faster scroll redraw, vi_drawscroll redraws only entering/leaving rows.
 4. New [ex_marks.sh](https://github.com/kyx0r/nextvi/blob/release/ex_marks.sh):
-   letter mark ranges, :'a,'bs/foo/bar; 
+   letter mark ranges, :'a,'bs/foo/bar;
 5. New [nvi_status.sh](https://github.com/kyx0r/nextvi/blob/release/nvi_status.sh):
    nvi style <^G> line.
 6. patch2vi.sh: faster compat_order search, tree snapshot per step,
