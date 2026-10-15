@@ -1653,7 +1653,7 @@ static void agent_think_ask(cJSON *root, double tokens)
 		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
 		keep, agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 	sbuf_str(sb, line)
-	sbuf_str(sb, "Tokens the new reply leaves of N carry over to later caps.\n"
+	sbuf_str(sb, "\nTokens the new reply leaves of N carry over to later caps.\n"
 		"The new reply sees nothing of this exchange except the "
 		"optional [note] after N.\n"
 		"A note directs how to think better.\n"
@@ -12531,7 +12531,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..9f4307a7
+index 00000000..c962ce56
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,4363 @@
@@ -14158,7 +14158,7 @@ index 00000000..9f4307a7
 +		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
 +		keep, agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 +	sbuf_str(sb, line)
-+	sbuf_str(sb, "Tokens the new reply leaves of N carry over to later caps.\n"
++	sbuf_str(sb, "\nTokens the new reply leaves of N carry over to later caps.\n"
 +		"The new reply sees nothing of this exchange except the "
 +		"optional [note] after N.\n"
 +		"A note directs how to think better.\n"
