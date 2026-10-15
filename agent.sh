@@ -131,8 +131,12 @@ static char agent_think_lead[] =
 	"My thinking was cut off at %d tokens; the cap is now %d tokens and I "
 	"must finish thinking within it. My note on how to think:\n%s";
 /* agoal: while set, a reply without commands is answered with
- * agent_goal_ask instead of ending the run */
+ * agent_goal_ask instead of ending the run, and every request opens with
+ * agent_goal_head and the goal: its banner */
 static char *agent_goal;
+static char agent_goal_head[] = "Session goal, set by agoal:\n";
+/* The banner in agent_messages: 1 joined to message 1, 2 a message there */
+static int agent_banner_on;
 static char agent_goal_ask[] =
 	"The goal is still set:\n%s\n\nIs it finished? If so, clear it with "
 	"agoal and then reply. If not, keep working toward it.";
@@ -158,6 +162,8 @@ static double agent_context_bytes(void)
 	double bytes = (json ? strlen(json) : 0) + strlen(agent_tools) +
 		24.0 * cJSON_GetArraySize(agent_messages);
 	free(json);
+	if (agent_goal && !agent_banner_on)
+		bytes += sizeof(agent_goal_head) + strlen(agent_goal) + 2;
 	return bytes;
 }
 
@@ -250,6 +256,43 @@ static cJSON *agent_msg(const char *role, const char *content)
 	cJSON_AddStringToObject(m, "role", role);
 	cJSON_AddStringToObject(m, "content", content);
 	return m;
+}
+
+/* Open the conversation with the goal banner, joined to message 1 if it
+ * is a user message, else as one before it; on 0, undo that. */
+static void agent_banner(int on)
+{
+	static char *prev;	/* the content of message 1 before the join */
+	cJSON *m = cJSON_GetArrayItem(agent_messages, 1);
+	char *s = cJSON_GetStringValue(cJSON_GetObjectItem(m, "content"));
+	char *role = cJSON_GetStringValue(cJSON_GetObjectItem(m, "role"));
+	if (!on) {
+		if (agent_banner_on == 1)
+			cJSON_ReplaceItemInObject(m, "content", cJSON_CreateString(prev));
+		else if (agent_banner_on == 2)
+			cJSON_DeleteItemFromArray(agent_messages, 1);
+		free(prev);
+		prev = NULL;
+		agent_banner_on = 0;
+		return;
+	}
+	if (!agent_goal || agent_banner_on)
+		return;
+	sbuf_smake(sb, 256)
+	sbuf_str(sb, agent_goal_head)
+	sbuf_str(sb, agent_goal)
+	if (s && role && !strcmp(role, "user")) {
+		sbuf_str(sb, "\n\n")
+		sbufn_str(sb, s)
+		prev = memcpy(emalloc(strlen(s) + 1), s, strlen(s) + 1);
+		cJSON_ReplaceItemInObject(m, "content", cJSON_CreateString(sb->s));
+		agent_banner_on = 1;
+	} else {
+		sbuf_nul(sb)
+		cJSON_InsertItemInArray(agent_messages, 1, agent_msg("user", sb->s));
+		agent_banner_on = 2;
+	}
+	free(sb->s);
 }
 
 static char *agent_text(struct lbuf *lb)
@@ -1205,7 +1248,8 @@ static void agent_span_head(char *ln, int size, struct agent_span *s, int reason
  * [rating] for turns and the note for those with commands; with trimmed, the
  * notes of trimmed turns in number order among them. Then the five largest
  * entries of ~50 tokens or more. Without all, NOTICE entries are not listed
- * and USER entries, which the agent cannot note, are not among the largest. */
+ * and, outside a checkpoint, where the agent cannot note them, USER entries
+ * are not among the largest. */
 static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 		int lines, int all, int unrated, int trimmed, int reasoned)
 {
@@ -1258,7 +1302,8 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 			sbuf_str(sb, " [unrated]")
 		sbuf_chr(sb, '\''\n'\'')
 		/* Insert into the five largest, kept in descending order. */
-		if (agent_span_tokens(spans + k) < 50 || (!all && spans[k].role <= AE_USER))
+		if (agent_span_tokens(spans + k) < 50 || (!all &&
+				spans[k].role <= AE_USER && agent_checkpointing != 1))
 			continue;
 		int j = ntop < 5 ? ntop++ : 5;
 		for (; j > 0 && spans[top[j-1]].bytes < spans[k].bytes; j--)
@@ -1347,7 +1392,7 @@ static const char agent_cp_guide[] =
 	"  found; 0 also removes the turn\n"
 	"N[,M]anote [text]\n"
 	"  text replaces the entries as one note; no text removes them; USER\n"
-	"  entries stay\n"
+	"  entries too; keep the instructions the remaining work needs\n"
 	"adone\n"
 	"  apply the trims and resume the task\n"
 	"%s"
@@ -2709,6 +2754,7 @@ static void agent_run_loop(const char *input)
 	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
 	int st, retries = 0, compacted = 0, unpacked = 0, asked = 0;
+	int goal_due = 0;	/* agent_goal_ask waits for the request after it */
 	if (agent_packing)
 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
@@ -2768,6 +2814,18 @@ static void agent_run_loop(const char *input)
 			agent_rounds = 0;
 			serial = agent_serial;
 		}
+		/* The goal question waits out a checkpoint or budget check:
+		 * their opening would follow it as a second user message. */
+		if (goal_due && !agent_checkpointing) {
+			if (!agent_goal)
+				return;
+			char *msg = emalloc(sizeof(agent_goal_ask) + strlen(agent_goal));
+			sprintf(msg, agent_goal_ask, agent_goal);
+			cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
+			agent_log("USER", msg);
+			free(msg);
+			goal_due = 0;
+		}
 		/* Notes over the last turns can end the context on assistant
 		 * text, which some servers take as a prefill or reject. The
 		 * message added is unlogged: the next rebuild drops it. */
@@ -2821,6 +2879,7 @@ static void agent_run_loop(const char *input)
 				cJSON_DeleteItemFromObject(req, "reasoning_effort");
 			cJSON_AddStringToObject(req, "reasoning_effort", agent_effort);
 		}
+		agent_banner(1);
 		double request_bytes = agent_context_bytes();
 		char *json = cJSON_PrintUnformatted(agent_messages);
 		agent_reused = 0;
@@ -2832,6 +2891,7 @@ static void agent_run_loop(const char *input)
 		agent_prev = json;
 		body = agent_http(req, &st, &stderr_text);
 		cJSON_Delete(req);
+		agent_banner(0);
 		if (noted) {
 			cJSON_DeleteItemFromArray(agent_messages,
 				cJSON_GetArraySize(agent_messages) - 1);
@@ -3188,11 +3248,7 @@ reply:
 		if (!has_calls) {
 			if (!agent_goal || agent_packing || agent_logbuf != 3)
 				return;
-			char *msg = emalloc(sizeof(agent_goal_ask) + strlen(agent_goal));
-			sprintf(msg, agent_goal_ask, agent_goal);
-			cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
-			agent_log("USER", msg);
-			free(msg);
+			goal_due = 1;
 		}
 		round++;
 	}
@@ -3751,6 +3807,13 @@ done:
 	return ret;
 }
 
+/* Where an agent note goes: a turn before a USER entry or entry 0, which
+ * come before NOTICE. */
+static int agent_note_rank(struct agent_span *sp)
+{
+	return sp->role == AE_TURN ? 2 : sp->role != AE_NOTICE;
+}
+
 /* Replace log entries N through M, or the turns of a list N,M,K, with a
  * note, or remove them. A note over a turn is a turn holding only the text,
  * under the turn'\''s number, so its rating stays with it. */
@@ -3760,7 +3823,8 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 	struct lbuf *lb = tempbufs[3].lb;
 	struct agent_span *spans;
 	int cnt = agent_spans(&spans), first, last, at = -1, note = -1, changed = 0;
-	int keep = agent_tool, kept = 0, klen = 0, lo = -1, split = 1, nlen = 0;
+	int keep = agent_tool && agent_checkpointing != 1, kept = 0, klen = 0;
+	int lo = -1, split = 1, nlen = 0;
 	int list = agent_islist(loc);
 	double before = 0, after;
 	char msg[400], kmsg[128] = "", nums[128], id[AGENT_ID], fend[AGENT_END];
@@ -3773,9 +3837,10 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 		ret = agent_entryrange(loc, spans, cnt, &first, &last);
 	if (ret)
 		goto done;
-	/* The agent cannot change USER entries or entry 0. They split the
-	 * range; the note goes after the last of them, in place of the first
-	 * turn there: a note under NOTICE would never be sent. */
+	/* Outside a checkpoint the agent cannot change USER entries or entry
+	 * 0. They split the range; the note goes after the last of them. An
+	 * agent note goes in place of the first turn, else of the first USER
+	 * entry or entry 0: a note under NOTICE would never be sent. */
 	for (int k = first; k <= last; k++) {
 		if (keep && spans[k].role <= AE_USER) {
 			split = 1;
@@ -3791,7 +3856,7 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 			continue;
 		sel[k] = 1;
 		/* The results still to come would be logged into the note. */
-		if (keep && agent_turn[1] && spans[k].n == agent_turn[1]) {
+		if (agent_tool && agent_turn[1] && spans[k].n == agent_turn[1]) {
 			snprintf(err, sizeof(err), "turn %lu is still running; note it from "
 				"a later turn", agent_turn[1]);
 			ret = err;
@@ -3799,7 +3864,8 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 		}
 		if (split)
 			at = note = k;
-		else if (keep && spans[note].role != AE_TURN && spans[k].role == AE_TURN)
+		else if (agent_tool &&
+				agent_note_rank(spans + k) > agent_note_rank(spans + note))
 			note = k;
 		split = 0;
 		if (lo < 0)
@@ -3815,8 +3881,8 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 	if (changed > 8)
 		snprintf(nums + nlen, sizeof(nums) - nlen, " and %d more", changed - 8);
 	if (note < 0) {
-		ret = "USER entries hold the user'\''s instructions; note over the "
-			"TURN entries the findings came from";
+		ret = "USER entries change only during an acl checkpoint; note over "
+			"the TURN entries the findings came from";
 		goto done;
 	}
 	sbuf_smake(sb, 256)
@@ -3869,7 +3935,7 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 	else
 		len += snprintf(msg + len, sizeof(msg) - len, "%lu-%lu",
 			spans[lo].n, spans[last].n);
-	if (*arg && (kept || (list && note != lo)))
+	if (*arg && (kept || note != lo))
 		len += snprintf(msg + len, sizeof(msg) - len, " as entry %lu",
 			spans[note].n);
 	if (kept)
@@ -8126,12 +8192,14 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "of N, a turn holding only the text; no text removes them. Three or\n" \
                 "more numbers, as in 2,4,7, are a list of turns, noted in place of\n" \
                 "the first; a number that is not a TURN rejects the list. The agent\n" \
-                "cannot change USER entries, entry 0 or the turn still running: USER\n" \
-                "entries stay and its note goes after the last one spanned, as a\n" \
-                "turn. Prints the estimated tokens before and after and the USER\n" \
-                "entries kept. Changes the agent context when acl is set. Replaced\n" \
-                "entries move to b-7, saved as discarded in the session directory; a\n" \
-                "number already there keeps its entry.\n\n" \
+                "cannot change the turn still running nor, outside an acl\n" \
+                "checkpoint, USER entries or entry 0: those stay and its note goes\n" \
+                "after the last one spanned. An agent note takes the role and number\n" \
+                "of the first turn, else of the first USER entry or entry 0. Prints\n" \
+                "the estimated tokens before and after and the USER entries kept.\n" \
+                "Changes the agent context when acl is set. Replaced entries move to\n" \
+                "b-7, saved as discarded in the session directory; a number already\n" \
+                "there keeps its entry.\n\n" \
                 "Example: replace a turn with a note\n:14anote ls listed 40 files, none relevant")
             spec("[entries]aget[parts]", "Print agent session log entries, trimmed ones included",
                 "Prints entries N through M of b-4 and b-7 in number order, with\n" \
@@ -8235,12 +8303,15 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "way.\n\n" \
                 "Example: think up to 8192 tokens in the next reply\n:acap 8192")
             spec("agoal[text]", "Set or clear the agent goal",
-                "Text sets the goal; agoal alone clears it. While a goal is set, an\n" \
-                "agent reply without commands does not end the run: the agent is\n" \
-                "shown the goal and asked whether it is finished, and the run ends\n" \
-                "only with a reply without commands after the goal is cleared.\n" \
-                "Ctrl-C and the tool round limit still end it. Takes no range. ast\n" \
-                "shows the goal.\n\n" \
+                "Text sets the goal; agoal alone clears it. While a goal is set,\n" \
+                "every agent request opens with it: joined to the front of the first\n" \
+                "message after the system prompt if a user message, else as a user\n" \
+                "message before it. The session log does not hold it, so trimming\n" \
+                "and compaction leave it. An agent reply without commands does not\n" \
+                "end the run: the agent is shown the goal and asked whether it is\n" \
+                "finished, and the run ends only with a reply without commands after\n" \
+                "the goal is cleared. Ctrl-C and the tool round limit still end it.\n" \
+                "Takes no range. ast shows the goal.\n\n" \
                 "Example: keep the agent working until the tests pass\n" \
                 ":agoal all tests in test.sh pass")
             done = 1
@@ -11212,12 +11283,14 @@ static char *exspec_lines[] = {
 	"of N, a turn holding only the text; no text removes them. Three or",
 	"more numbers, as in 2,4,7, are a list of turns, noted in place of",
 	"the first; a number that is not a TURN rejects the list. The agent",
-	"cannot change USER entries, entry 0 or the turn still running: USER",
-	"entries stay and its note goes after the last one spanned, as a",
-	"turn. Prints the estimated tokens before and after and the USER",
-	"entries kept. Changes the agent context when acl is set. Replaced",
-	"entries move to b-7, saved as discarded in the session directory; a",
-	"number already there keeps its entry.",
+	"cannot change the turn still running nor, outside an acl",
+	"checkpoint, USER entries or entry 0: those stay and its note goes",
+	"after the last one spanned. An agent note takes the role and number",
+	"of the first turn, else of the first USER entry or entry 0. Prints",
+	"the estimated tokens before and after and the USER entries kept.",
+	"Changes the agent context when acl is set. Replaced entries move to",
+	"b-7, saved as discarded in the session directory; a number already",
+	"there keeps its entry.",
 	"",
 	"Example: replace a turn with a note",
 	"14anote ls listed 40 files, none relevant",
@@ -11369,12 +11442,15 @@ static char *exspec_lines[] = {
 	"agoal[text]",
 	"Set or clear the agent goal",
 	"",
-	"Text sets the goal; agoal alone clears it. While a goal is set, an",
-	"agent reply without commands does not end the run: the agent is",
-	"shown the goal and asked whether it is finished, and the run ends",
-	"only with a reply without commands after the goal is cleared.",
-	"Ctrl-C and the tool round limit still end it. Takes no range. ast",
-	"shows the goal.",
+	"Text sets the goal; agoal alone clears it. While a goal is set,",
+	"every agent request opens with it: joined to the front of the first",
+	"message after the system prompt if a user message, else as a user",
+	"message before it. The session log does not hold it, so trimming",
+	"and compaction leave it. An agent reply without commands does not",
+	"end the run: the agent is shown the goal and asked whether it is",
+	"finished, and the run ends only with a reply without commands after",
+	"the goal is cleared. Ctrl-C and the tool round limit still end it.",
+	"Takes no range. ast shows the goal.",
 	"",
 	"Example: keep the agent working until the tests pass",
 	"agoal all tests in test.sh pass",
@@ -11856,57 +11932,57 @@ static struct {
 	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
 	{"aretry", "Execute the last agent command", 793, 804, 0, 0},
 	{"aout", "Print the saved output of the last agent tool call", 805, 816, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 817, 843, 0, 0},
-	{"aget", "Print agent session log entries, trimmed ones included", 844, 860, 0, 0},
-	{"arate", "Rate agent turns in the notes buffer", 861, 881, 0, 0},
-	{"adone", "End an agent checkpoint", 882, 889, 0, 0},
-	{"acheck", "Start an agent checkpoint or set its budget", 890, 902, 0, 0},
-	{"acp", "Print the agent checkpoint instructions", 903, 909, 0, 0},
-	{"ali", "Print the agent session log entry list", 910, 921, 0, 0},
-	{"auli", "Print the unrated agent session log turns", 922, 928, 0, 0},
-	{"ast", "Print agent status and token usage", 929, 938, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 939, 967, 0, 0},
-	{"acap", "Raise the agent thinking cap for one reply", 968, 987, 0, 0},
-	{"agoal", "Set or clear the agent goal", 988, 1000, 0, 0},
-	{"ac", "Set autocomplete filter regex", 1001, 1009, 0, 0},
-	{"sc", "Set ex special characters", 1010, 1020, 0, 0},
-	{"sc!", "Set ex special characters", 1021, 1028, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 1029, 1036, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1037, 1040, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1041, 1045, 0, 0},
-	{"ph", "Redefine placeholders", 1046, 1062, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1071, 1109, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1110, 1120, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1121, 1127, 1, 0},
-	{"agr", "Control agent output protection", 1128, 1133, 1, 0},
-	{"ato", "Detach long agent shell commands", 1134, 1141, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1142, 1147, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1148, 1172, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1173, 1180, 1, 0},
-	{"ai", "Indent new lines", 1181, 1184, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1185, 1186, 1, 0},
-	{"ish", "Interactive shell", 1187, 1202, 1, 0},
-	{"grp", "Regex search group", 1203, 1211, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1212, 1215, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1216, 1217, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1217, 1218, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1218, 1219, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1219, 1220, 1, 0},
-	{"led", "Enable all terminal output", 1220, 1221, 1, 0},
-	{"vis", "Control startup flags", 1222, 1233, 1, 0},
-	{"mpt", "Control vi prompts", 1234, 1244, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1245, 1247, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1247, 1249, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1249, 1250, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1250, 1251, 1, 0},
-	{"td", "Current text direction context", 1251, 1257, 1, 0},
-	{"pr", "Print register", 1258, 1274, 1, 0},
-	{"fr", "Find register", 1275, 1287, 1, 0},
-	{"rr", "Record register", 1288, 1301, 1, 0},
-	{"lim", "Line length render limit", 1302, 1317, 1, 0},
-	{"seq", "Control Undo/Redo", 1318, 1330, 1, 0},
-	{"left", "Control horizontal scroll", 1331, 1336, 1, 0},
-	{"err", "Control ex errors", 1337, 1349, 1, 0},
+	{"anote", "Replace or remove agent session log entries", 817, 845, 0, 0},
+	{"aget", "Print agent session log entries, trimmed ones included", 846, 862, 0, 0},
+	{"arate", "Rate agent turns in the notes buffer", 863, 883, 0, 0},
+	{"adone", "End an agent checkpoint", 884, 891, 0, 0},
+	{"acheck", "Start an agent checkpoint or set its budget", 892, 904, 0, 0},
+	{"acp", "Print the agent checkpoint instructions", 905, 911, 0, 0},
+	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
+	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
+	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
+	{"ath", "Set the agent thinking cap and effort", 941, 969, 0, 0},
+	{"acap", "Raise the agent thinking cap for one reply", 970, 989, 0, 0},
+	{"agoal", "Set or clear the agent goal", 990, 1005, 0, 0},
+	{"ac", "Set autocomplete filter regex", 1006, 1014, 0, 0},
+	{"sc", "Set ex special characters", 1015, 1025, 0, 0},
+	{"sc!", "Set ex special characters", 1026, 1033, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1034, 1041, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1042, 1045, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1046, 1050, 0, 0},
+	{"ph", "Redefine placeholders", 1051, 1067, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1076, 1114, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1115, 1125, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1126, 1132, 1, 0},
+	{"agr", "Control agent output protection", 1133, 1138, 1, 0},
+	{"ato", "Detach long agent shell commands", 1139, 1146, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1147, 1152, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1153, 1177, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1178, 1185, 1, 0},
+	{"ai", "Indent new lines", 1186, 1189, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1190, 1191, 1, 0},
+	{"ish", "Interactive shell", 1192, 1207, 1, 0},
+	{"grp", "Regex search group", 1208, 1216, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1217, 1220, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1221, 1222, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1222, 1223, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1223, 1224, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1224, 1225, 1, 0},
+	{"led", "Enable all terminal output", 1225, 1226, 1, 0},
+	{"vis", "Control startup flags", 1227, 1238, 1, 0},
+	{"mpt", "Control vi prompts", 1239, 1249, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1250, 1252, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1252, 1254, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1254, 1255, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1255, 1256, 1, 0},
+	{"td", "Current text direction context", 1256, 1262, 1, 0},
+	{"pr", "Print register", 1263, 1279, 1, 0},
+	{"fr", "Find register", 1280, 1292, 1, 0},
+	{"rr", "Record register", 1293, 1306, 1, 0},
+	{"lim", "Line length render limit", 1307, 1322, 1, 0},
+	{"seq", "Control Undo/Redo", 1323, 1335, 1, 0},
+	{"left", "Control horizontal scroll", 1336, 1341, 1, 0},
+	{"err", "Control ex errors", 1342, 1354, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -12531,10 +12607,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..c962ce56
+index 000000000..b136e101d
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4363 @@
+@@ -0,0 +1,4429 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12636,8 +12712,12 @@ index 00000000..c962ce56
 +	"My thinking was cut off at %d tokens; the cap is now %d tokens and I "
 +	"must finish thinking within it. My note on how to think:\n%s";
 +/* agoal: while set, a reply without commands is answered with
-+ * agent_goal_ask instead of ending the run */
++ * agent_goal_ask instead of ending the run, and every request opens with
++ * agent_goal_head and the goal: its banner */
 +static char *agent_goal;
++static char agent_goal_head[] = "Session goal, set by agoal:\n";
++/* The banner in agent_messages: 1 joined to message 1, 2 a message there */
++static int agent_banner_on;
 +static char agent_goal_ask[] =
 +	"The goal is still set:\n%s\n\nIs it finished? If so, clear it with "
 +	"agoal and then reply. If not, keep working toward it.";
@@ -12663,6 +12743,8 @@ index 00000000..c962ce56
 +	double bytes = (json ? strlen(json) : 0) + strlen(agent_tools) +
 +		24.0 * cJSON_GetArraySize(agent_messages);
 +	free(json);
++	if (agent_goal && !agent_banner_on)
++		bytes += sizeof(agent_goal_head) + strlen(agent_goal) + 2;
 +	return bytes;
 +}
 +
@@ -12755,6 +12837,43 @@ index 00000000..c962ce56
 +	cJSON_AddStringToObject(m, "role", role);
 +	cJSON_AddStringToObject(m, "content", content);
 +	return m;
++}
++
++/* Open the conversation with the goal banner, joined to message 1 if it
++ * is a user message, else as one before it; on 0, undo that. */
++static void agent_banner(int on)
++{
++	static char *prev;	/* the content of message 1 before the join */
++	cJSON *m = cJSON_GetArrayItem(agent_messages, 1);
++	char *s = cJSON_GetStringValue(cJSON_GetObjectItem(m, "content"));
++	char *role = cJSON_GetStringValue(cJSON_GetObjectItem(m, "role"));
++	if (!on) {
++		if (agent_banner_on == 1)
++			cJSON_ReplaceItemInObject(m, "content", cJSON_CreateString(prev));
++		else if (agent_banner_on == 2)
++			cJSON_DeleteItemFromArray(agent_messages, 1);
++		free(prev);
++		prev = NULL;
++		agent_banner_on = 0;
++		return;
++	}
++	if (!agent_goal || agent_banner_on)
++		return;
++	sbuf_smake(sb, 256)
++	sbuf_str(sb, agent_goal_head)
++	sbuf_str(sb, agent_goal)
++	if (s && role && !strcmp(role, "user")) {
++		sbuf_str(sb, "\n\n")
++		sbufn_str(sb, s)
++		prev = memcpy(emalloc(strlen(s) + 1), s, strlen(s) + 1);
++		cJSON_ReplaceItemInObject(m, "content", cJSON_CreateString(sb->s));
++		agent_banner_on = 1;
++	} else {
++		sbuf_nul(sb)
++		cJSON_InsertItemInArray(agent_messages, 1, agent_msg("user", sb->s));
++		agent_banner_on = 2;
++	}
++	free(sb->s);
 +}
 +
 +static char *agent_text(struct lbuf *lb)
@@ -13710,7 +13829,8 @@ index 00000000..c962ce56
 + * [rating] for turns and the note for those with commands; with trimmed, the
 + * notes of trimmed turns in number order among them. Then the five largest
 + * entries of ~50 tokens or more. Without all, NOTICE entries are not listed
-+ * and USER entries, which the agent cannot note, are not among the largest. */
++ * and, outside a checkpoint, where the agent cannot note them, USER entries
++ * are not among the largest. */
 +static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 +		int lines, int all, int unrated, int trimmed, int reasoned)
 +{
@@ -13763,7 +13883,8 @@ index 00000000..c962ce56
 +			sbuf_str(sb, " [unrated]")
 +		sbuf_chr(sb, '\n')
 +		/* Insert into the five largest, kept in descending order. */
-+		if (agent_span_tokens(spans + k) < 50 || (!all && spans[k].role <= AE_USER))
++		if (agent_span_tokens(spans + k) < 50 || (!all &&
++				spans[k].role <= AE_USER && agent_checkpointing != 1))
 +			continue;
 +		int j = ntop < 5 ? ntop++ : 5;
 +		for (; j > 0 && spans[top[j-1]].bytes < spans[k].bytes; j--)
@@ -13852,7 +13973,7 @@ index 00000000..c962ce56
 +	"  found; 0 also removes the turn\n"
 +	"N[,M]anote [text]\n"
 +	"  text replaces the entries as one note; no text removes them; USER\n"
-+	"  entries stay\n"
++	"  entries too; keep the instructions the remaining work needs\n"
 +	"adone\n"
 +	"  apply the trims and resume the task\n"
 +	"%s"
@@ -15214,6 +15335,7 @@ index 00000000..c962ce56
 +	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
 +	int st, retries = 0, compacted = 0, unpacked = 0, asked = 0;
++	int goal_due = 0;	/* agent_goal_ask waits for the request after it */
 +	if (agent_packing)
 +		agent_pack_done = 0;
 +	agent_cancel = agent_pause = 0;
@@ -15273,6 +15395,18 @@ index 00000000..c962ce56
 +			agent_rounds = 0;
 +			serial = agent_serial;
 +		}
++		/* The goal question waits out a checkpoint or budget check:
++		 * their opening would follow it as a second user message. */
++		if (goal_due && !agent_checkpointing) {
++			if (!agent_goal)
++				return;
++			char *msg = emalloc(sizeof(agent_goal_ask) + strlen(agent_goal));
++			sprintf(msg, agent_goal_ask, agent_goal);
++			cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
++			agent_log("USER", msg);
++			free(msg);
++			goal_due = 0;
++		}
 +		/* Notes over the last turns can end the context on assistant
 +		 * text, which some servers take as a prefill or reject. The
 +		 * message added is unlogged: the next rebuild drops it. */
@@ -15326,6 +15460,7 @@ index 00000000..c962ce56
 +				cJSON_DeleteItemFromObject(req, "reasoning_effort");
 +			cJSON_AddStringToObject(req, "reasoning_effort", agent_effort);
 +		}
++		agent_banner(1);
 +		double request_bytes = agent_context_bytes();
 +		char *json = cJSON_PrintUnformatted(agent_messages);
 +		agent_reused = 0;
@@ -15337,6 +15472,7 @@ index 00000000..c962ce56
 +		agent_prev = json;
 +		body = agent_http(req, &st, &stderr_text);
 +		cJSON_Delete(req);
++		agent_banner(0);
 +		if (noted) {
 +			cJSON_DeleteItemFromArray(agent_messages,
 +				cJSON_GetArraySize(agent_messages) - 1);
@@ -15693,11 +15829,7 @@ index 00000000..c962ce56
 +		if (!has_calls) {
 +			if (!agent_goal || agent_packing || agent_logbuf != 3)
 +				return;
-+			char *msg = emalloc(sizeof(agent_goal_ask) + strlen(agent_goal));
-+			sprintf(msg, agent_goal_ask, agent_goal);
-+			cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
-+			agent_log("USER", msg);
-+			free(msg);
++			goal_due = 1;
 +		}
 +		round++;
 +	}
@@ -16256,6 +16388,13 @@ index 00000000..c962ce56
 +	return ret;
 +}
 +
++/* Where an agent note goes: a turn before a USER entry or entry 0, which
++ * come before NOTICE. */
++static int agent_note_rank(struct agent_span *sp)
++{
++	return sp->role == AE_TURN ? 2 : sp->role != AE_NOTICE;
++}
++
 +/* Replace log entries N through M, or the turns of a list N,M,K, with a
 + * note, or remove them. A note over a turn is a turn holding only the text,
 + * under the turn's number, so its rating stays with it. */
@@ -16265,7 +16404,8 @@ index 00000000..c962ce56
 +	struct lbuf *lb = tempbufs[3].lb;
 +	struct agent_span *spans;
 +	int cnt = agent_spans(&spans), first, last, at = -1, note = -1, changed = 0;
-+	int keep = agent_tool, kept = 0, klen = 0, lo = -1, split = 1, nlen = 0;
++	int keep = agent_tool && agent_checkpointing != 1, kept = 0, klen = 0;
++	int lo = -1, split = 1, nlen = 0;
 +	int list = agent_islist(loc);
 +	double before = 0, after;
 +	char msg[400], kmsg[128] = "", nums[128], id[AGENT_ID], fend[AGENT_END];
@@ -16278,9 +16418,10 @@ index 00000000..c962ce56
 +		ret = agent_entryrange(loc, spans, cnt, &first, &last);
 +	if (ret)
 +		goto done;
-+	/* The agent cannot change USER entries or entry 0. They split the
-+	 * range; the note goes after the last of them, in place of the first
-+	 * turn there: a note under NOTICE would never be sent. */
++	/* Outside a checkpoint the agent cannot change USER entries or entry
++	 * 0. They split the range; the note goes after the last of them. An
++	 * agent note goes in place of the first turn, else of the first USER
++	 * entry or entry 0: a note under NOTICE would never be sent. */
 +	for (int k = first; k <= last; k++) {
 +		if (keep && spans[k].role <= AE_USER) {
 +			split = 1;
@@ -16296,7 +16437,7 @@ index 00000000..c962ce56
 +			continue;
 +		sel[k] = 1;
 +		/* The results still to come would be logged into the note. */
-+		if (keep && agent_turn[1] && spans[k].n == agent_turn[1]) {
++		if (agent_tool && agent_turn[1] && spans[k].n == agent_turn[1]) {
 +			snprintf(err, sizeof(err), "turn %lu is still running; note it from "
 +				"a later turn", agent_turn[1]);
 +			ret = err;
@@ -16304,7 +16445,8 @@ index 00000000..c962ce56
 +		}
 +		if (split)
 +			at = note = k;
-+		else if (keep && spans[note].role != AE_TURN && spans[k].role == AE_TURN)
++		else if (agent_tool &&
++				agent_note_rank(spans + k) > agent_note_rank(spans + note))
 +			note = k;
 +		split = 0;
 +		if (lo < 0)
@@ -16320,8 +16462,8 @@ index 00000000..c962ce56
 +	if (changed > 8)
 +		snprintf(nums + nlen, sizeof(nums) - nlen, " and %d more", changed - 8);
 +	if (note < 0) {
-+		ret = "USER entries hold the user's instructions; note over the "
-+			"TURN entries the findings came from";
++		ret = "USER entries change only during an acl checkpoint; note over "
++			"the TURN entries the findings came from";
 +		goto done;
 +	}
 +	sbuf_smake(sb, 256)
@@ -16374,7 +16516,7 @@ index 00000000..c962ce56
 +	else
 +		len += snprintf(msg + len, sizeof(msg) - len, "%lu-%lu",
 +			spans[lo].n, spans[last].n);
-+	if (*arg && (kept || (list && note != lo)))
++	if (*arg && (kept || note != lo))
 +		len += snprintf(msg + len, sizeof(msg) - len, " as entry %lu",
 +			spans[note].n);
 +	if (kept)
@@ -16900,7 +17042,7 @@ index 00000000..c962ce56
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..480fe075
+index 000000000..480fe075e
 --- /dev/null
 +++ b/agent.h
 @@ -0,0 +1,46 @@
@@ -16952,7 +17094,7 @@ index 00000000..480fe075
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 00000000..6e4fb0dd
+index 000000000..6e4fb0dd3
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -20149,7 +20291,7 @@ index 00000000..6e4fb0dd
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 00000000..cab5feb4
+index 000000000..cab5feb42
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -20460,10 +20602,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..4ec3bfc9 100755
+index c836c94c7..a945a9348 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,305 @@ build() {
+@@ -65,6 +65,310 @@ build() {
      }
  }
  
@@ -20549,12 +20691,14 @@ index c836c94c..4ec3bfc9 100755
 +                "of N, a turn holding only the text; no text removes them. Three or\n" \
 +                "more numbers, as in 2,4,7, are a list of turns, noted in place of\n" \
 +                "the first; a number that is not a TURN rejects the list. The agent\n" \
-+                "cannot change USER entries, entry 0 or the turn still running: USER\n" \
-+                "entries stay and its note goes after the last one spanned, as a\n" \
-+                "turn. Prints the estimated tokens before and after and the USER\n" \
-+                "entries kept. Changes the agent context when acl is set. Replaced\n" \
-+                "entries move to b-7, saved as discarded in the session directory; a\n" \
-+                "number already there keeps its entry.\n\n" \
++                "cannot change the turn still running nor, outside an acl\n" \
++                "checkpoint, USER entries or entry 0: those stay and its note goes\n" \
++                "after the last one spanned. An agent note takes the role and number\n" \
++                "of the first turn, else of the first USER entry or entry 0. Prints\n" \
++                "the estimated tokens before and after and the USER entries kept.\n" \
++                "Changes the agent context when acl is set. Replaced entries move to\n" \
++                "b-7, saved as discarded in the session directory; a number already\n" \
++                "there keeps its entry.\n\n" \
 +                "Example: replace a turn with a note\n:14anote ls listed 40 files, none relevant")
 +            spec("[entries]aget[parts]", "Print agent session log entries, trimmed ones included",
 +                "Prints entries N through M of b-4 and b-7 in number order, with\n" \
@@ -20658,12 +20802,15 @@ index c836c94c..4ec3bfc9 100755
 +                "way.\n\n" \
 +                "Example: think up to 8192 tokens in the next reply\n:acap 8192")
 +            spec("agoal[text]", "Set or clear the agent goal",
-+                "Text sets the goal; agoal alone clears it. While a goal is set, an\n" \
-+                "agent reply without commands does not end the run: the agent is\n" \
-+                "shown the goal and asked whether it is finished, and the run ends\n" \
-+                "only with a reply without commands after the goal is cleared.\n" \
-+                "Ctrl-C and the tool round limit still end it. Takes no range. ast\n" \
-+                "shows the goal.\n\n" \
++                "Text sets the goal; agoal alone clears it. While a goal is set,\n" \
++                "every agent request opens with it: joined to the front of the first\n" \
++                "message after the system prompt if a user message, else as a user\n" \
++                "message before it. The session log does not hold it, so trimming\n" \
++                "and compaction leave it. An agent reply without commands does not\n" \
++                "end the run: the agent is shown the goal and asked whether it is\n" \
++                "finished, and the run ends only with a reply without commands after\n" \
++                "the goal is cleared. Ctrl-C and the tool round limit still end it.\n" \
++                "Takes no range. ast shows the goal.\n\n" \
 +                "Example: keep the agent working until the tests pass\n" \
 +                ":agoal all tests in test.sh pass")
 +            done = 1
@@ -20769,7 +20916,7 @@ index c836c94c..4ec3bfc9 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +373,7 @@ install() {
+@@ -74,7 +378,7 @@ install() {
  }
  
  print_usage() {
@@ -20778,7 +20925,7 @@ index c836c94c..4ec3bfc9 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +381,9 @@ print_usage() {
+@@ -82,6 +386,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -20789,7 +20936,7 @@ index c836c94c..4ec3bfc9 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..bdd165a9 100644
+index 2888d7c60..bdd165a9d 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,276 @@
@@ -21081,7 +21228,7 @@ index 2888d7c6..bdd165a9 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index d13974a6..46140357 100644
+index d13974a65..46140357c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -21688,7 +21835,7 @@ index d13974a6..46140357 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 00000000..31004ff5
+index 000000000..31004ff54
 --- /dev/null
 +++ b/exspec.awk
 @@ -0,0 +1,87 @@
@@ -21781,10 +21928,10 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..5550c38f
+index 000000000..2bdc13c03
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1532 @@
+@@ -0,0 +1,1537 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -22621,12 +22768,14 @@ index 00000000..5550c38f
 +	"of N, a turn holding only the text; no text removes them. Three or",
 +	"more numbers, as in 2,4,7, are a list of turns, noted in place of",
 +	"the first; a number that is not a TURN rejects the list. The agent",
-+	"cannot change USER entries, entry 0 or the turn still running: USER",
-+	"entries stay and its note goes after the last one spanned, as a",
-+	"turn. Prints the estimated tokens before and after and the USER",
-+	"entries kept. Changes the agent context when acl is set. Replaced",
-+	"entries move to b-7, saved as discarded in the session directory; a",
-+	"number already there keeps its entry.",
++	"cannot change the turn still running nor, outside an acl",
++	"checkpoint, USER entries or entry 0: those stay and its note goes",
++	"after the last one spanned. An agent note takes the role and number",
++	"of the first turn, else of the first USER entry or entry 0. Prints",
++	"the estimated tokens before and after and the USER entries kept.",
++	"Changes the agent context when acl is set. Replaced entries move to",
++	"b-7, saved as discarded in the session directory; a number already",
++	"there keeps its entry.",
 +	"",
 +	"Example: replace a turn with a note",
 +	"14anote ls listed 40 files, none relevant",
@@ -22778,12 +22927,15 @@ index 00000000..5550c38f
 +	"agoal[text]",
 +	"Set or clear the agent goal",
 +	"",
-+	"Text sets the goal; agoal alone clears it. While a goal is set, an",
-+	"agent reply without commands does not end the run: the agent is",
-+	"shown the goal and asked whether it is finished, and the run ends",
-+	"only with a reply without commands after the goal is cleared.",
-+	"Ctrl-C and the tool round limit still end it. Takes no range. ast",
-+	"shows the goal.",
++	"Text sets the goal; agoal alone clears it. While a goal is set,",
++	"every agent request opens with it: joined to the front of the first",
++	"message after the system prompt if a user message, else as a user",
++	"message before it. The session log does not hold it, so trimming",
++	"and compaction leave it. An agent reply without commands does not",
++	"end the run: the agent is shown the goal and asked whether it is",
++	"finished, and the run ends only with a reply without commands after",
++	"the goal is cleared. Ctrl-C and the tool round limit still end it.",
++	"Takes no range. ast shows the goal.",
 +	"",
 +	"Example: keep the agent working until the tests pass",
 +	"agoal all tests in test.sh pass",
@@ -23265,60 +23417,60 @@ index 00000000..5550c38f
 +	{"acm", "Toggle the caveman response style skill", 787, 792, 0, 0},
 +	{"aretry", "Execute the last agent command", 793, 804, 0, 0},
 +	{"aout", "Print the saved output of the last agent tool call", 805, 816, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 817, 843, 0, 0},
-+	{"aget", "Print agent session log entries, trimmed ones included", 844, 860, 0, 0},
-+	{"arate", "Rate agent turns in the notes buffer", 861, 881, 0, 0},
-+	{"adone", "End an agent checkpoint", 882, 889, 0, 0},
-+	{"acheck", "Start an agent checkpoint or set its budget", 890, 902, 0, 0},
-+	{"acp", "Print the agent checkpoint instructions", 903, 909, 0, 0},
-+	{"ali", "Print the agent session log entry list", 910, 921, 0, 0},
-+	{"auli", "Print the unrated agent session log turns", 922, 928, 0, 0},
-+	{"ast", "Print agent status and token usage", 929, 938, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 939, 967, 0, 0},
-+	{"acap", "Raise the agent thinking cap for one reply", 968, 987, 0, 0},
-+	{"agoal", "Set or clear the agent goal", 988, 1000, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 1001, 1009, 0, 0},
-+	{"sc", "Set ex special characters", 1010, 1020, 0, 0},
-+	{"sc!", "Set ex special characters", 1021, 1028, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 1029, 1036, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1037, 1040, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1041, 1045, 0, 0},
-+	{"ph", "Redefine placeholders", 1046, 1062, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1071, 1109, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1110, 1120, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1121, 1127, 1, 0},
-+	{"agr", "Control agent output protection", 1128, 1133, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1134, 1141, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1142, 1147, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1148, 1172, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1173, 1180, 1, 0},
-+	{"ai", "Indent new lines", 1181, 1184, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1185, 1186, 1, 0},
-+	{"ish", "Interactive shell", 1187, 1202, 1, 0},
-+	{"grp", "Regex search group", 1203, 1211, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1212, 1215, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1216, 1217, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1217, 1218, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1218, 1219, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1219, 1220, 1, 0},
-+	{"led", "Enable all terminal output", 1220, 1221, 1, 0},
-+	{"vis", "Control startup flags", 1222, 1233, 1, 0},
-+	{"mpt", "Control vi prompts", 1234, 1244, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1245, 1247, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1247, 1249, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1249, 1250, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1250, 1251, 1, 0},
-+	{"td", "Current text direction context", 1251, 1257, 1, 0},
-+	{"pr", "Print register", 1258, 1274, 1, 0},
-+	{"fr", "Find register", 1275, 1287, 1, 0},
-+	{"rr", "Record register", 1288, 1301, 1, 0},
-+	{"lim", "Line length render limit", 1302, 1317, 1, 0},
-+	{"seq", "Control Undo/Redo", 1318, 1330, 1, 0},
-+	{"left", "Control horizontal scroll", 1331, 1336, 1, 0},
-+	{"err", "Control ex errors", 1337, 1349, 1, 0},
++	{"anote", "Replace or remove agent session log entries", 817, 845, 0, 0},
++	{"aget", "Print agent session log entries, trimmed ones included", 846, 862, 0, 0},
++	{"arate", "Rate agent turns in the notes buffer", 863, 883, 0, 0},
++	{"adone", "End an agent checkpoint", 884, 891, 0, 0},
++	{"acheck", "Start an agent checkpoint or set its budget", 892, 904, 0, 0},
++	{"acp", "Print the agent checkpoint instructions", 905, 911, 0, 0},
++	{"ali", "Print the agent session log entry list", 912, 923, 0, 0},
++	{"auli", "Print the unrated agent session log turns", 924, 930, 0, 0},
++	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
++	{"ath", "Set the agent thinking cap and effort", 941, 969, 0, 0},
++	{"acap", "Raise the agent thinking cap for one reply", 970, 989, 0, 0},
++	{"agoal", "Set or clear the agent goal", 990, 1005, 0, 0},
++	{"ac", "Set autocomplete filter regex", 1006, 1014, 0, 0},
++	{"sc", "Set ex special characters", 1015, 1025, 0, 0},
++	{"sc!", "Set ex special characters", 1026, 1033, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1034, 1041, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1042, 1045, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1046, 1050, 0, 0},
++	{"ph", "Redefine placeholders", 1051, 1067, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1076, 1114, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1115, 1125, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1126, 1132, 1, 0},
++	{"agr", "Control agent output protection", 1133, 1138, 1, 0},
++	{"ato", "Detach long agent shell commands", 1139, 1146, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1147, 1152, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1153, 1177, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1178, 1185, 1, 0},
++	{"ai", "Indent new lines", 1186, 1189, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1190, 1191, 1, 0},
++	{"ish", "Interactive shell", 1192, 1207, 1, 0},
++	{"grp", "Regex search group", 1208, 1216, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1217, 1220, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1221, 1222, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1222, 1223, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1223, 1224, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1224, 1225, 1, 0},
++	{"led", "Enable all terminal output", 1225, 1226, 1, 0},
++	{"vis", "Control startup flags", 1227, 1238, 1, 0},
++	{"mpt", "Control vi prompts", 1239, 1249, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1250, 1252, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1252, 1254, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1254, 1255, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1255, 1256, 1, 0},
++	{"td", "Current text direction context", 1256, 1262, 1, 0},
++	{"pr", "Print register", 1263, 1279, 1, 0},
++	{"fr", "Find register", 1280, 1292, 1, 0},
++	{"rr", "Record register", 1293, 1306, 1, 0},
++	{"lim", "Line length render limit", 1307, 1322, 1, 0},
++	{"seq", "Control Undo/Redo", 1323, 1335, 1, 0},
++	{"left", "Control horizontal scroll", 1336, 1341, 1, 0},
++	{"err", "Control ex errors", 1342, 1354, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..8fde7a8f 100644
+index 56cb42c63..8fde7a8f9 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -23348,7 +23500,7 @@ index 56cb42c6..8fde7a8f 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e..2641d0ff 100644
+index 4893a07e5..2641d0ffc 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -23388,7 +23540,7 @@ index 4893a07e..2641d0ff 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 4e11ec2f..4668eda9 100644
+index 4e11ec2f9..4668eda91 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -23432,7 +23584,7 @@ index 4e11ec2f..4668eda9 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f..a0a9a3cb 100644
+index b1f9a16f1..a0a9a3cb4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,14 @@
@@ -23459,7 +23611,7 @@ index b1f9a16f..a0a9a3cb 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da595..f1c422d2 100644
+index c23da5950..f1c422d25 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
