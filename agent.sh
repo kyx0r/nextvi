@@ -1649,13 +1649,15 @@ static void agent_think_ask(cJSON *root, double tokens)
 	keep = cnt ? "run the reply as it is" :
 		agent_think_empty ? "reply again under the same cap" :
 		"keep the reply as it is";
-	snprintf(line, sizeof(line), "Use acap command to %s or acap N [note] to "
+	snprintf(line, sizeof(line), "You must use acap command to %s or acap N [note] to "
 		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
 		keep, agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 	sbuf_str(sb, line)
-	sbuf_str(sb, "\nThe new reply sees nothing of this exchange except the "
-		"optional [note] after N. A note directs how to think better. "
-		"Tokens the new reply leaves of N carry over to later caps.")
+	sbuf_str(sb, "Tokens the new reply leaves of N carry over to later caps.\n"
+		"The new reply sees nothing of this exchange except the "
+		"optional [note] after N.\n"
+		"A note directs how to think better.\n"
+		"Do not mention this budget check in a note.")
 	snprintf(line, sizeof(line), "\nExample: %s\nacap\n"
 		"Example: reply again under a cap of %d tokens, with a note\n"
 		"acap %d focus on ...", keep, more, more);
@@ -12529,10 +12531,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..43741aab4
+index 00000000..9f4307a7
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4361 @@
+@@ -0,0 +1,4363 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -14152,13 +14154,15 @@ index 000000000..43741aab4
 +	keep = cnt ? "run the reply as it is" :
 +		agent_think_empty ? "reply again under the same cap" :
 +		"keep the reply as it is";
-+	snprintf(line, sizeof(line), "Use acap command to %s or acap N [note] to "
++	snprintf(line, sizeof(line), "You must use acap command to %s or acap N [note] to "
 +		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
 +		keep, agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 +	sbuf_str(sb, line)
-+	sbuf_str(sb, "\nThe new reply sees nothing of this exchange except the "
-+		"optional [note] after N. A note directs how to think better. "
-+		"Tokens the new reply leaves of N carry over to later caps.")
++	sbuf_str(sb, "Tokens the new reply leaves of N carry over to later caps.\n"
++		"The new reply sees nothing of this exchange except the "
++		"optional [note] after N.\n"
++		"A note directs how to think better.\n"
++		"Do not mention this budget check in a note.")
 +	snprintf(line, sizeof(line), "\nExample: %s\nacap\n"
 +		"Example: reply again under a cap of %d tokens, with a note\n"
 +		"acap %d focus on ...", keep, more, more);
@@ -16896,7 +16900,7 @@ index 000000000..43741aab4
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 000000000..480fe075e
+index 00000000..480fe075
 --- /dev/null
 +++ b/agent.h
 @@ -0,0 +1,46 @@
@@ -16948,7 +16952,7 @@ index 000000000..480fe075e
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 000000000..6e4fb0dd3
+index 00000000..6e4fb0dd
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -20145,7 +20149,7 @@ index 000000000..6e4fb0dd3
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 000000000..cab5feb42
+index 00000000..cab5feb4
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -20456,7 +20460,7 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..4ec3bfc93 100755
+index c836c94c..4ec3bfc9 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,305 @@ build() {
@@ -20785,7 +20789,7 @@ index c836c94c7..4ec3bfc93 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..bdd165a9d 100644
+index 2888d7c6..bdd165a9 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,276 @@
@@ -21077,7 +21081,7 @@ index 2888d7c60..bdd165a9d 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index d13974a65..46140357c 100644
+index d13974a6..46140357 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -21684,7 +21688,7 @@ index d13974a65..46140357c 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 000000000..31004ff54
+index 00000000..31004ff5
 --- /dev/null
 +++ b/exspec.awk
 @@ -0,0 +1,87 @@
@@ -21777,7 +21781,7 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..5550c38f4
+index 00000000..5550c38f
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1532 @@
@@ -23314,7 +23318,7 @@ index 000000000..5550c38f4
 +	{"err", "Control ex errors", 1337, 1349, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c63..8fde7a8f9 100644
+index 56cb42c6..8fde7a8f 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -23344,7 +23348,7 @@ index 56cb42c63..8fde7a8f9 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e5..2641d0ffc 100644
+index 4893a07e..2641d0ff 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -23384,7 +23388,7 @@ index 4893a07e5..2641d0ffc 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 4e11ec2f9..4668eda91 100644
+index 4e11ec2f..4668eda9 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -23428,7 +23432,7 @@ index 4e11ec2f9..4668eda91 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..a0a9a3cb4 100644
+index b1f9a16f..a0a9a3cb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,14 @@
@@ -23455,7 +23459,7 @@ index b1f9a16f1..a0a9a3cb4 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da5950..f1c422d25 100644
+index c23da595..f1c422d2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
