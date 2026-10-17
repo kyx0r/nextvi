@@ -137,6 +137,10 @@ static char *agent_goal;
 static char agent_goal_head[] = "Session goal, set by agoal:\n";
 /* The banner in agent_messages: 1 joined to message 1, 2 a message there */
 static int agent_banner_on;
+/* The goal the last banner sent and message 1 under it, as role\ncontent:
+ * a cleared goal keeps its banner while message 1 extends that one, since
+ * dropping it would change the request prefix and void the server cache */
+static char *agent_banner_was, *agent_banner_was_key;
 static char agent_goal_ask[] =
 	"The goal is still set:\n%s\n\nIs it finished? If so, clear it with "
 	"agoal and then reply. If not, keep working toward it.";
@@ -155,6 +159,35 @@ static const char agent_tools[] =
 	"\"required\":[\"command\"],"
 	"\"additionalProperties\":false}}}]";
 
+static char *agent_banner_key(void)
+{
+	cJSON *m = cJSON_GetArrayItem(agent_messages, 1);
+	char *role = cJSON_GetStringValue(cJSON_GetObjectItem(m, "role"));
+	char *s = cJSON_GetStringValue(cJSON_GetObjectItem(m, "content"));
+	sbuf_smake(sb, 256)
+	sbuf_str(sb, role ? role : "")
+	sbuf_chr(sb, '\''\n'\'')
+	sbufn_str(sb, s ? s : "")
+	return sb->s;
+}
+
+/* The goal for the banner: agent_goal, else a cleared one still kept. */
+static char *agent_banner_goal(void)
+{
+	if (agent_goal || !agent_banner_was)
+		return agent_goal;
+	char *key = agent_banner_key();
+	size_t n = strlen(agent_banner_was_key);
+	int kept = !strncmp(key, agent_banner_was_key, n);
+	free(key);
+	if (!kept) {
+		free(agent_banner_was);
+		free(agent_banner_was_key);
+		agent_banner_was = agent_banner_was_key = NULL;
+	}
+	return agent_banner_was;
+}
+
 /* Context size in JSON bytes, with tools and message framing. */
 static double agent_context_bytes(void)
 {
@@ -162,8 +195,9 @@ static double agent_context_bytes(void)
 	double bytes = (json ? strlen(json) : 0) + strlen(agent_tools) +
 		24.0 * cJSON_GetArraySize(agent_messages);
 	free(json);
-	if (agent_goal && !agent_banner_on)
-		bytes += sizeof(agent_goal_head) + strlen(agent_goal) + 2;
+	char *goal = agent_banner_on ? NULL : agent_banner_goal();
+	if (goal)
+		bytes += sizeof(agent_goal_head) + strlen(goal) + 2;
 	return bytes;
 }
 
@@ -276,11 +310,19 @@ static void agent_banner(int on)
 		agent_banner_on = 0;
 		return;
 	}
-	if (!agent_goal || agent_banner_on)
+	char *goal = agent_banner_on ? NULL : agent_banner_goal();
+	if (!goal)
 		return;
+	if (goal != agent_banner_was) {
+		size_t n = strlen(goal) + 1;
+		free(agent_banner_was);
+		agent_banner_was = memcpy(emalloc(n), goal, n);
+	}
+	free(agent_banner_was_key);
+	agent_banner_was_key = agent_banner_key();
 	sbuf_smake(sb, 256)
 	sbuf_str(sb, agent_goal_head)
-	sbuf_str(sb, agent_goal)
+	sbuf_str(sb, goal)
 	if (s && role && !strcmp(role, "user")) {
 		sbuf_str(sb, "\n\n")
 		sbufn_str(sb, s)
@@ -8311,6 +8353,9 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "end the run: the agent is shown the goal and asked whether it is\n" \
                 "finished, and the run ends only with a reply without commands after\n" \
                 "the goal is cleared. Ctrl-C and the tool round limit still end it.\n" \
+                "A cleared goal stays at the front while the first message only\n" \
+                "extends the one last sent, so the server cache is kept; once that\n" \
+                "message changes, as by compaction or a new conversation, it goes.\n" \
                 "Takes no range. ast shows the goal.\n\n" \
                 "Example: keep the agent working until the tests pass\n" \
                 ":agoal all tests in test.sh pass")
@@ -11450,6 +11495,9 @@ static char *exspec_lines[] = {
 	"end the run: the agent is shown the goal and asked whether it is",
 	"finished, and the run ends only with a reply without commands after",
 	"the goal is cleared. Ctrl-C and the tool round limit still end it.",
+	"A cleared goal stays at the front while the first message only",
+	"extends the one last sent, so the server cache is kept; once that",
+	"message changes, as by compaction or a new conversation, it goes.",
 	"Takes no range. ast shows the goal.",
 	"",
 	"Example: keep the agent working until the tests pass",
@@ -11943,46 +11991,46 @@ static struct {
 	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
 	{"ath", "Set the agent thinking cap and effort", 941, 969, 0, 0},
 	{"acap", "Raise the agent thinking cap for one reply", 970, 989, 0, 0},
-	{"agoal", "Set or clear the agent goal", 990, 1005, 0, 0},
-	{"ac", "Set autocomplete filter regex", 1006, 1014, 0, 0},
-	{"sc", "Set ex special characters", 1015, 1025, 0, 0},
-	{"sc!", "Set ex special characters", 1026, 1033, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 1034, 1041, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1042, 1045, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1046, 1050, 0, 0},
-	{"ph", "Redefine placeholders", 1051, 1067, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1076, 1114, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1115, 1125, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1126, 1132, 1, 0},
-	{"agr", "Control agent output protection", 1133, 1138, 1, 0},
-	{"ato", "Detach long agent shell commands", 1139, 1146, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1147, 1152, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1153, 1177, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1178, 1185, 1, 0},
-	{"ai", "Indent new lines", 1186, 1189, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1190, 1191, 1, 0},
-	{"ish", "Interactive shell", 1192, 1207, 1, 0},
-	{"grp", "Regex search group", 1208, 1216, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1217, 1220, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1221, 1222, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1222, 1223, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1223, 1224, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1224, 1225, 1, 0},
-	{"led", "Enable all terminal output", 1225, 1226, 1, 0},
-	{"vis", "Control startup flags", 1227, 1238, 1, 0},
-	{"mpt", "Control vi prompts", 1239, 1249, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1250, 1252, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1252, 1254, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1254, 1255, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1255, 1256, 1, 0},
-	{"td", "Current text direction context", 1256, 1262, 1, 0},
-	{"pr", "Print register", 1263, 1279, 1, 0},
-	{"fr", "Find register", 1280, 1292, 1, 0},
-	{"rr", "Record register", 1293, 1306, 1, 0},
-	{"lim", "Line length render limit", 1307, 1322, 1, 0},
-	{"seq", "Control Undo/Redo", 1323, 1335, 1, 0},
-	{"left", "Control horizontal scroll", 1336, 1341, 1, 0},
-	{"err", "Control ex errors", 1342, 1354, 1, 0},
+	{"agoal", "Set or clear the agent goal", 990, 1008, 0, 0},
+	{"ac", "Set autocomplete filter regex", 1009, 1017, 0, 0},
+	{"sc", "Set ex special characters", 1018, 1028, 0, 0},
+	{"sc!", "Set ex special characters", 1029, 1036, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1037, 1044, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1045, 1048, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1049, 1053, 0, 0},
+	{"ph", "Redefine placeholders", 1054, 1070, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1079, 1117, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1118, 1128, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1129, 1135, 1, 0},
+	{"agr", "Control agent output protection", 1136, 1141, 1, 0},
+	{"ato", "Detach long agent shell commands", 1142, 1149, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1150, 1155, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1156, 1180, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1181, 1188, 1, 0},
+	{"ai", "Indent new lines", 1189, 1192, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1193, 1194, 1, 0},
+	{"ish", "Interactive shell", 1195, 1210, 1, 0},
+	{"grp", "Regex search group", 1211, 1219, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1220, 1223, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1224, 1225, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1225, 1226, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1226, 1227, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1227, 1228, 1, 0},
+	{"led", "Enable all terminal output", 1228, 1229, 1, 0},
+	{"vis", "Control startup flags", 1230, 1241, 1, 0},
+	{"mpt", "Control vi prompts", 1242, 1252, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1253, 1255, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1255, 1257, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1257, 1258, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1258, 1259, 1, 0},
+	{"td", "Current text direction context", 1259, 1265, 1, 0},
+	{"pr", "Print register", 1266, 1282, 1, 0},
+	{"fr", "Find register", 1283, 1295, 1, 0},
+	{"rr", "Record register", 1296, 1309, 1, 0},
+	{"lim", "Line length render limit", 1310, 1325, 1, 0},
+	{"seq", "Control Undo/Redo", 1326, 1338, 1, 0},
+	{"left", "Control horizontal scroll", 1339, 1344, 1, 0},
+	{"err", "Control ex errors", 1345, 1357, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -12607,10 +12655,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..b136e101d
+index 000000000..46059167f
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4429 @@
+@@ -0,0 +1,4471 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -12718,6 +12766,10 @@ index 000000000..b136e101d
 +static char agent_goal_head[] = "Session goal, set by agoal:\n";
 +/* The banner in agent_messages: 1 joined to message 1, 2 a message there */
 +static int agent_banner_on;
++/* The goal the last banner sent and message 1 under it, as role\ncontent:
++ * a cleared goal keeps its banner while message 1 extends that one, since
++ * dropping it would change the request prefix and void the server cache */
++static char *agent_banner_was, *agent_banner_was_key;
 +static char agent_goal_ask[] =
 +	"The goal is still set:\n%s\n\nIs it finished? If so, clear it with "
 +	"agoal and then reply. If not, keep working toward it.";
@@ -12736,6 +12788,35 @@ index 000000000..b136e101d
 +	"\"required\":[\"command\"],"
 +	"\"additionalProperties\":false}}}]";
 +
++static char *agent_banner_key(void)
++{
++	cJSON *m = cJSON_GetArrayItem(agent_messages, 1);
++	char *role = cJSON_GetStringValue(cJSON_GetObjectItem(m, "role"));
++	char *s = cJSON_GetStringValue(cJSON_GetObjectItem(m, "content"));
++	sbuf_smake(sb, 256)
++	sbuf_str(sb, role ? role : "")
++	sbuf_chr(sb, '\n')
++	sbufn_str(sb, s ? s : "")
++	return sb->s;
++}
++
++/* The goal for the banner: agent_goal, else a cleared one still kept. */
++static char *agent_banner_goal(void)
++{
++	if (agent_goal || !agent_banner_was)
++		return agent_goal;
++	char *key = agent_banner_key();
++	size_t n = strlen(agent_banner_was_key);
++	int kept = !strncmp(key, agent_banner_was_key, n);
++	free(key);
++	if (!kept) {
++		free(agent_banner_was);
++		free(agent_banner_was_key);
++		agent_banner_was = agent_banner_was_key = NULL;
++	}
++	return agent_banner_was;
++}
++
 +/* Context size in JSON bytes, with tools and message framing. */
 +static double agent_context_bytes(void)
 +{
@@ -12743,8 +12824,9 @@ index 000000000..b136e101d
 +	double bytes = (json ? strlen(json) : 0) + strlen(agent_tools) +
 +		24.0 * cJSON_GetArraySize(agent_messages);
 +	free(json);
-+	if (agent_goal && !agent_banner_on)
-+		bytes += sizeof(agent_goal_head) + strlen(agent_goal) + 2;
++	char *goal = agent_banner_on ? NULL : agent_banner_goal();
++	if (goal)
++		bytes += sizeof(agent_goal_head) + strlen(goal) + 2;
 +	return bytes;
 +}
 +
@@ -12857,11 +12939,19 @@ index 000000000..b136e101d
 +		agent_banner_on = 0;
 +		return;
 +	}
-+	if (!agent_goal || agent_banner_on)
++	char *goal = agent_banner_on ? NULL : agent_banner_goal();
++	if (!goal)
 +		return;
++	if (goal != agent_banner_was) {
++		size_t n = strlen(goal) + 1;
++		free(agent_banner_was);
++		agent_banner_was = memcpy(emalloc(n), goal, n);
++	}
++	free(agent_banner_was_key);
++	agent_banner_was_key = agent_banner_key();
 +	sbuf_smake(sb, 256)
 +	sbuf_str(sb, agent_goal_head)
-+	sbuf_str(sb, agent_goal)
++	sbuf_str(sb, goal)
 +	if (s && role && !strcmp(role, "user")) {
 +		sbuf_str(sb, "\n\n")
 +		sbufn_str(sb, s)
@@ -20602,10 +20692,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..a945a9348 100755
+index c836c94c7..bd0ce0e44 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,310 @@ build() {
+@@ -65,6 +65,313 @@ build() {
      }
  }
  
@@ -20810,6 +20900,9 @@ index c836c94c7..a945a9348 100755
 +                "end the run: the agent is shown the goal and asked whether it is\n" \
 +                "finished, and the run ends only with a reply without commands after\n" \
 +                "the goal is cleared. Ctrl-C and the tool round limit still end it.\n" \
++                "A cleared goal stays at the front while the first message only\n" \
++                "extends the one last sent, so the server cache is kept; once that\n" \
++                "message changes, as by compaction or a new conversation, it goes.\n" \
 +                "Takes no range. ast shows the goal.\n\n" \
 +                "Example: keep the agent working until the tests pass\n" \
 +                ":agoal all tests in test.sh pass")
@@ -20916,7 +21009,7 @@ index c836c94c7..a945a9348 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +378,7 @@ install() {
+@@ -74,7 +381,7 @@ install() {
  }
  
  print_usage() {
@@ -20925,7 +21018,7 @@ index c836c94c7..a945a9348 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +386,9 @@ print_usage() {
+@@ -82,6 +389,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -21928,10 +22021,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..2bdc13c03
+index 000000000..1591f7644
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1537 @@
+@@ -0,0 +1,1540 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -22935,6 +23028,9 @@ index 000000000..2bdc13c03
 +	"end the run: the agent is shown the goal and asked whether it is",
 +	"finished, and the run ends only with a reply without commands after",
 +	"the goal is cleared. Ctrl-C and the tool round limit still end it.",
++	"A cleared goal stays at the front while the first message only",
++	"extends the one last sent, so the server cache is kept; once that",
++	"message changes, as by compaction or a new conversation, it goes.",
 +	"Takes no range. ast shows the goal.",
 +	"",
 +	"Example: keep the agent working until the tests pass",
@@ -23428,46 +23524,46 @@ index 000000000..2bdc13c03
 +	{"ast", "Print agent status and token usage", 931, 940, 0, 0},
 +	{"ath", "Set the agent thinking cap and effort", 941, 969, 0, 0},
 +	{"acap", "Raise the agent thinking cap for one reply", 970, 989, 0, 0},
-+	{"agoal", "Set or clear the agent goal", 990, 1005, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 1006, 1014, 0, 0},
-+	{"sc", "Set ex special characters", 1015, 1025, 0, 0},
-+	{"sc!", "Set ex special characters", 1026, 1033, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 1034, 1041, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1042, 1045, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1046, 1050, 0, 0},
-+	{"ph", "Redefine placeholders", 1051, 1067, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1076, 1114, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1115, 1125, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1126, 1132, 1, 0},
-+	{"agr", "Control agent output protection", 1133, 1138, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1139, 1146, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1147, 1152, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1153, 1177, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1178, 1185, 1, 0},
-+	{"ai", "Indent new lines", 1186, 1189, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1190, 1191, 1, 0},
-+	{"ish", "Interactive shell", 1192, 1207, 1, 0},
-+	{"grp", "Regex search group", 1208, 1216, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1217, 1220, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1221, 1222, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1222, 1223, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1223, 1224, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1224, 1225, 1, 0},
-+	{"led", "Enable all terminal output", 1225, 1226, 1, 0},
-+	{"vis", "Control startup flags", 1227, 1238, 1, 0},
-+	{"mpt", "Control vi prompts", 1239, 1249, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1250, 1252, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1252, 1254, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1254, 1255, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1255, 1256, 1, 0},
-+	{"td", "Current text direction context", 1256, 1262, 1, 0},
-+	{"pr", "Print register", 1263, 1279, 1, 0},
-+	{"fr", "Find register", 1280, 1292, 1, 0},
-+	{"rr", "Record register", 1293, 1306, 1, 0},
-+	{"lim", "Line length render limit", 1307, 1322, 1, 0},
-+	{"seq", "Control Undo/Redo", 1323, 1335, 1, 0},
-+	{"left", "Control horizontal scroll", 1336, 1341, 1, 0},
-+	{"err", "Control ex errors", 1342, 1354, 1, 0},
++	{"agoal", "Set or clear the agent goal", 990, 1008, 0, 0},
++	{"ac", "Set autocomplete filter regex", 1009, 1017, 0, 0},
++	{"sc", "Set ex special characters", 1018, 1028, 0, 0},
++	{"sc!", "Set ex special characters", 1029, 1036, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1037, 1044, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1045, 1048, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1049, 1053, 0, 0},
++	{"ph", "Redefine placeholders", 1054, 1070, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1079, 1117, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1118, 1128, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1129, 1135, 1, 0},
++	{"agr", "Control agent output protection", 1136, 1141, 1, 0},
++	{"ato", "Detach long agent shell commands", 1142, 1149, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1150, 1155, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1156, 1180, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1181, 1188, 1, 0},
++	{"ai", "Indent new lines", 1189, 1192, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1193, 1194, 1, 0},
++	{"ish", "Interactive shell", 1195, 1210, 1, 0},
++	{"grp", "Regex search group", 1211, 1219, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1220, 1223, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1224, 1225, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1225, 1226, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1226, 1227, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1227, 1228, 1, 0},
++	{"led", "Enable all terminal output", 1228, 1229, 1, 0},
++	{"vis", "Control startup flags", 1230, 1241, 1, 0},
++	{"mpt", "Control vi prompts", 1242, 1252, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1253, 1255, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1255, 1257, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1257, 1258, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1258, 1259, 1, 0},
++	{"td", "Current text direction context", 1259, 1265, 1, 0},
++	{"pr", "Print register", 1266, 1282, 1, 0},
++	{"fr", "Find register", 1283, 1295, 1, 0},
++	{"rr", "Record register", 1296, 1309, 1, 0},
++	{"lim", "Line length render limit", 1310, 1325, 1, 0},
++	{"seq", "Control Undo/Redo", 1326, 1338, 1, 0},
++	{"left", "Control horizontal scroll", 1339, 1344, 1, 0},
++	{"err", "Control ex errors", 1345, 1357, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..8fde7a8f9 100644
