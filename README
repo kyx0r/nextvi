@@ -631,7 +631,7 @@ EX COMMANDS
              Print line(s) from a buffer
 
              No range prints a line based on the value of left ex option.
-             Argument prints the evaluated argument.
+             Argument is expanded and printed.
 
              Example: utilize character offset ranges
              :1,10;5;5p
@@ -1388,17 +1388,17 @@ CODE MAP
      | 537 kmap.h       |  keymap translation  |
      | 622 vi.h         |  definitions/aux     |
      +------------------+----------------------+
-     | 352 term.c       |  low level IO        |
+     | 372 term.c       |  low level IO        |
      | 379 conf.c       |  hl/ft/td config     |
      | 462 ren.c        |  positioning/syntax  |
      | 620 uc.c         |  UTF-8 support       |
      | 674 lbuf.c       |  file/line buffer    |
      | 774 regex.c      |  pikevm              |
      | 805 led.c        |  insert mode/output  |
-     | 1862 vi.c        |  normal mode/general |
-     | 2003 ex.c        |  ex options/commands |
+     | 1869 vi.c        |  normal mode/general |
+     | 2005 ex.c        |  ex options/commands |
      | 7199 patch2vi.c  |  patch converter     |
-     | 15130 total      |  wc -l *.c|sort      |
+     | 15159 total      |  wc -l *.c|sort      |
      +------------------+----------------------+
 
 COMPILING
@@ -1479,7 +1479,7 @@ AUTHORS
      on neatvi(1), which was written by Ali Gholami Rudi <ali@rudi.ir>.  This
      manual page was inspired by nepeta <nepeta@canaglie.net>.
 
-Nextvi 7.8                    September 28, 2026                    Nextvi 7.8
+Nextvi 7.9                     October 22, 2026                     Nextvi 7.9
 
 NEXTVI PATCHES
 ==============
@@ -1850,8 +1850,8 @@ and edit buffers and run shell commands. Requires curl and a model with
 tool calling support. Configure api_key, endpoint and request_extra in
 conf.c, then rebuild. The default is a local Chat Completions server on
 port 8080. For OpenRouter, set LOCAL to 0 and OPENROUTER to 1, then supply
-the API key and model ID. request_timeout and max_tool_rounds limit requests
-and tool execution.
+the API key and model ID. request_timeout limits requests; max_tool_rounds
+limits tool rounds, 0 (default) is unlimited.
 
 The new ex command "a" opens or resumes the conversation; a range includes
 that buffer text in the prompt. ESC submits a prompt or, while the agent is
@@ -1862,28 +1862,113 @@ conversation.
 
 The new ex command "exspec" prints ex command specifications.
 The new ex option "aspec" forces agent to read specifications before
-executing new commands.
+executing new commands. The first unknown agent command of a session also
+printing the exspec command list, unless exspec has printed it.
 
-New "ar" ex option toggles display and logging of returned reasoning.
-It defaults to off (xar in conf.c). Reasoning appears before the answer
-after each response completes, if the server supplies reasoning_content
-or reasoning text.
+New "ar" ex option controls logging and display of returned reasoning. It
+defaults to 1 (xar in conf.c); no argument logically inverts it,
+turning 0 into 1 and any other value into 0.
+0 drops reasoning, 1 logs it as the first part of a turn without
+printing it during the run; 2 logs and prints it. Reasoning shows
+before the answer after a response completes, if the server supplies
+reasoning_content or reasoning text.
 
-The new ex command "ast" shows model state, context and settings.
+The new ex command "ast" shows model state, context and settings, the
+thinking cap, what acap has banked onto later replies, the average
+that "ata" follows and the goal set by "agoal".
+The new ex command "[N[,M]]ath [effort]" sets an N token cap on thinking
+and the reasoning effort, one word such as none or high. An omitted part
+is not sent and "ath" alone sends neither, leaving request_extra in
+charge; fields it does send replace those of request_extra. With N,M the
+agent may raise the cap up to M for one reply. A reply counts as cut when
+the server ends its thinking with think_cut of conf.c after at least half
+the cap; think_cut is stripped from all thinking so models cannot copy it.
+A reply cut at the cap is withheld: its commands do not run and the
+conversation does not continue from it, though its reasoning and text
+are logged as the lead of the question, which the agent answers with
+"acap"; nothing else runs during it and after 5 retries its answer is
+taken as acap. The question interrupts and later resumes a checkpoint,
+a budget check or a compaction; its exchange is kept in /asides/, not
+in the session log.
+
+The new ex command "acap [N] [note]" raises the thinking cap of the next
+reply to N, at most the ceiling M of "ath N,M", letting the agent ask for
+more thinking itself; it errors without a ceiling. What that reply leaves
+of N is banked onto the caps of later replies, up to M, until their
+thinking spends it, so one raise smoothens out across many turns. In the
+question about a cut reply acap alone runs it as it is, acap N with N
+above the cap discards it and asks for it again under N, and text after N
+adds a note to the new reply, which sees nothing of the discarded one.
+
+The new ex option "ata" caps thinking by its recent average: a percentage
+sends that share of the average thinking tokens in place of N, and a bare
+"ata" toggles it between 0 and 100. A reply that thought moves the average
+a quarter of the way to its tokens; one cut at the cap counts double, so
+cuts raise it. Replies are counted with "ata" off too. The cap stays
+between 1 and M of "ath N,M", else at N; "ath" restarts the average.
+
+The new ex command "agoal [text]" sets the agent goal; "agoal" alone
+clears it. While a goal is set, a reply without commands does not end
+the run: the agent is shown the goal and asked whether it is finished.
+The run ends with a reply without commands once the goal is cleared, or
+by ^C or the tool round limit.
+
 The new ex command "apack" to compact the conversation using current agent 
 context.
 The new ex command "apack!" to compact the conversation by starting a
 fresh agent.
-The new ex command "acm" activates caveman mode skill.
-The new ex option "aco" automatically uses "apack" command once a certain
-token threshold reached. Default is 85k.
-The new ex option "aco!" automatically uses "apack!" command once a certain
-token threshold reached. Default is 85k.
+The new ex command "acm" toggles the caveman response style skill.
+The new ex command "=p" prints lines with line numbers.
 
-Adds temporary buffers /conversation/ for the conversation and /skills/
-for the system prompt. Both restart commands reload the skills buffer.
-These buffers are saved automatically under $HOME/.nextvi/logs, or log_dir
-if set.
+The new ex option "acl" rebuilds the agent context from the session log,
+so log edits apply to the next request. No argument toggles 0 and 1.
+1 rebuilds every request; reasoning outside the log is dropped. A value
+above 1 or below 0 rebuilds only after log edits and when a checkpoint
+ends, keeping replies as returned in between so the prompt cache holds.
+Above 1 a checkpoint runs every N tokens of growth, where the agent
+rates turns and trims the log; only the checkpoint commands run then.
+Negative values leave the checkpoint to the agent: after -N tokens of
+growth it estimates the work left, "acheck" checkpoints and "acheck N"
+defers for N tokens. "aco" may compact first and stays the backstop.
+The new ex command "acheck [N]" starts a checkpoint or sets the budget of
+the next check.
+
+Checkpoint commands:
+"N[,M]arate R text" rates turns 0-3; 0 moves them to the
+discarded buffer at checkpoint.
+"N[,M]anote [text]" replaces entries with a note or removes them.
+"ali" prints the session log entry list with sizes and ratings; "auli"
+prints only the unrated turns; "acp" prints the checkpoint
+instructions.
+"adone" ends the checkpoint once all turns with commands are rated,
+refusing up to twice without new ratings.
+The new ex command "N[,M]aget [ROLE...]" prints log entries, trimmed ones
+included, optionally filtered by role.
+
+The new ex option "aco" automatically uses "apack" command once specified
+token threshold has been reached. Default is 85k.
+The new ex option "aco!" automatically uses "apack!" command once specified
+token threshold has been reached. Default is 85k.
+
+Tool output is protected by an output guardrail. The new ex option "agr"
+sets the tool output limit in bytes shown to the agent, default 4096;
+output over the limit is withheld. No argument toggles between 0, which
+disables it, and 4096.
+The new ex command "aout" prints the saved output of the last agent tool
+call; a byte range selects part of it and its output is exempt from agr.
+The new ex command "aretry" executes the last command the agent ran or
+deferred by aspec, still under agr.
+The new ex option "ato" detaches a long-running agent shell command
+after N seconds; it is disabled by default (0) and a bare "ato"
+toggles between 0 and 30. The command keeps running in the background
+and its later output goes to a file.
+
+Adds temporary buffers /conversation/, /skills/ (system prompt), /notes/
+(ratings), /discarded/ (trimmed entries) and /asides/ (side exchanges:
+compactions, checkpoints, budget checks and acap questions). Both
+restart commands reload skills; "a!" clears notes and discarded.
+These buffers are saved automatically under a directory named after the
+session start time, $HOME/.nextvi/logs/YYYYmmdd-HHMMSS, or log_dir if set.
 
 Example: ask about the whole buffer
 :%a Explain this code

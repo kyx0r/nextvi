@@ -193,17 +193,17 @@ if \(fd >= 0\) \{ \\.*?
 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{
 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);2??0?
-2??m 4220reg p OK ex.c:436:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK ex.c:438:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	readfile\(rd =\)$3??0?
-3??m 4220reg p OK ex.c:436:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK ex.c:438:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/
 	}4??0?
-4??+3m 4220reg p OK ex.c:436:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK ex.c:438:a42sc %? %@2152sc!1q0?
 %f+ 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{
 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);5??0?
-5??-1m 4220reg p OK ex.c:436:a52sc %? %@2152sc!1q0?
+5??-1m 4220reg p OK ex.c:438:a52sc %? %@2152sc!1q0?
 %f+ 	.b..._...t........o......g\+... ...\)..
 .... . 3. .. XX.................i..i...........u. ..
 	.
@@ -211,30 +211,30 @@ if \(fd >= 0\) \{ \\.*?
 .if......=.........d.&..fd..= 0....
 ..ex_b.....t...\(e._.u.........\).
 ..sy...etf...b_.t..6??0?
-6??+3m 4220reg p OK ex.c:436:a62sc %? %@2152sc!1q0?
+6??+3m 4220reg p OK ex.c:438:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		bufs_switch\(bufs_open\(arg\+cd, len\)\);.*?
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/.*?
 	}.*?
 (	readfile\(rd =\))7??0?
-grp 07??m 4220reg p OK ex.c:436:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:438:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			bufs\[xbufsmax - 1]\.lb->modified\) \{
 		return "last buffer modified";
 	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{.*(	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",)
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);8??0?
-grp 08??-5m 4220reg p OK ex.c:436:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		bufs_switchwft\(fd\)
-		return NULL;
+grp 08??-5m 4220reg p OK ex.c:438:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			return NULL;
+		arg = "";
 	} else if \(xbufcur == xbufsmax && !strchr\(cmd, '\''!'\''\) &&.*(	if \(!\(xvis & 4\)\))
 		ex_print\(msg, bar_ft\)
-	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;9??0?
-grp 09??-8m 4220reg p OK ex.c:436:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:4362sc %? %@2132sc!0?
+	return rd \|\| \(fd < 0 && cd != 3\) \? xuerr : NULL;9??0?
+grp 09??-8m 4220reg p OK ex.c:438:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:4382sc %? %@2132sc!0?
 '\''1s/k\)/k, init)/??!219reg ex.c:396:m12sc %? %@2142sc!0?
 '\''2c 	errchk _lbuf_rd(xb, fd, 0, lbuf_len(xb), init); \
 ??!219reg ex.c:399:m22sc %? %@2142sc!0?
 '\''3s/\(\)/(, 1)/??!219reg ex.c:415:m32sc %? %@2142sc!0?
-'\''4s/=\)/=, cd == 3)/??!219reg ex.c:436:m42sc %? %@2142sc!b1m!%ya 98?0?
+'\''4s/=\)/=, cd == 3)/??!219reg ex.c:438:m42sc %? %@2142sc!b1m!%ya 98?0?
 %f> 		lo->ins = \(char\*\*\)sb->s;
 }
 
@@ -805,7 +805,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 76dca408..34f8c64b 100644
+index d13974a65..44f65d5b3 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -393,10 +393,10 @@ static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
@@ -830,7 +830,7 @@ index 76dca408..34f8c64b 100644
  	return 0;
  }
  
-@@ -433,7 +433,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -435,7 +435,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		bufs_switch(bufs_open(arg+cd, len));
  		cd = 3; /* XXX: quick hack to indicate new lbuf */
  	}
@@ -840,7 +840,7 @@ index 76dca408..34f8c64b 100644
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..dba0a56c 100644
+index 56cb42c63..dba0a56c0 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -229,48 +229,129 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -1003,7 +1003,7 @@ index 56cb42c6..dba0a56c 100644
  }
  
 diff --git a/vi.h b/vi.h
-index c23da595..e29e11a1 100644
+index c23da5950..e29e11a1c 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -198,7 +198,8 @@ struct lbuf {

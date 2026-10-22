@@ -353,11 +353,11 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
 				loc += 1 + update;
 			}
 			adj = uc_isdigit(*loc);
-			row = ex_range(ploc, &loc, update ? row : xrow, NULL);
+			row = ex_range(ploc, &loc, update ? row : xrow, NULL) - adj;
 			if (vaddr++ % 2)
-				*end = row + 1 - adj;
+				*end = row + 1;
 			else
-				*beg = row - adj;
+				*beg = row;
 		}
 		while (*loc && *loc != '|' && *loc != ';' && *loc != ',')
 		        loc++;
@@ -425,7 +425,9 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 	len = strlen(arg+cd);
 	if (len && ((fd = bufs_find(arg+cd, len)) >= 0)) {
 		bufs_switchwft(fd)
-		return NULL;
+		if (!strchr(cmd, '!'))
+			return NULL;
+		arg = "";
 	} else if (xbufcur == xbufsmax && !strchr(cmd, '!') &&
 			bufs[xbufsmax - 1].lb->modified) {
 		return "last buffer modified";
@@ -443,7 +445,7 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
 			fd < 0 || rd ? cd == 3 ? 'n' : 'f' : 'r');
 	if (!(xvis & 4))
 		ex_print(msg, bar_ft)
-	return (fd < 0 || rd) && *arg ? xuerr : NULL;
+	return rd || (fd < 0 && cd != 3) ? xuerr : NULL;
 }
 
 static void *ec_fuzz(char *loc, char *cmd, char *arg)
@@ -853,7 +855,7 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
 
 static void *ec_insert(char *loc, char *cmd, char *arg)
 {
-	int beg, end, o1 = -1, o2 = -1, ps = 0, key;
+	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;
 	sbuf _sb, *sb = &_sb;
 	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
 		if (*loc && cmd[0] != 'c' && beg == -1 && end == 0
@@ -1028,7 +1030,7 @@ static void *ec_yank(char *loc, char *cmd, char *arg)
 
 static void *ec_put(char *loc, char *cmd, char *arg)
 {
-	int beg, end, i = 0, reg = xdefreg;
+	int beg, end = -1, i = 0, reg = xdefreg;
 	sbuf *buf;
 	for (; uc_isdigit(arg[i]); i++)
 		reg = i ? reg * 10 + (arg[i] - '0') : arg[i] - '0';

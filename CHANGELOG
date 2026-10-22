@@ -99,6 +99,13 @@ Patch changes:
    questions, instead of reusing the /sc/ scratch buffer.
    max_tool_rounds defaults to 0 (unlimited) instead of 300.
 
+Source commits:
+master    ba3c1c1f
+manual    7b95ccd0
+patches   44157664
+patch2vi  bbfddfb2
+test      8eab22a7
+
 ------------------
 7.8 Basilisk
 ------------------

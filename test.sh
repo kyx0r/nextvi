@@ -608,6 +608,47 @@ printf 'hello world extra\n' > "$TMPFILE"
 out=$(run_ex ':;5;#+10= 3:q')
 check 'N2 ;5;#+10= 3 — second char offset via # rebase is 15' '15' "$out"
 
+# A numeric line address is 1-based; parts after it (;$ ;>re> ,#) must read
+# the addressed line, not the next one. Line lengths differ so that an
+# off-by-one row changes the result. = prints beg end o1 o2.
+printf 'L1\nL2\nL3\nL4\nab\nline six here\n' > "$TMPFILE"
+out=$(run_ex ':5;$=:q')
+check 'N3 5;$= — $ offset is the end of line 5' '4 5 2 -1' "$out"
+out=$(run_ex ':6;$=:q')
+check 'N4 6;$= — $ offset on the last line' '5 6 13 -1' "$out"
+out=$(run_ex ':3,5;$=:q')
+check 'N5 3,5;$= — $ offset uses the second line address' '2 5 2 -1' "$out"
+out=$(run_ex ':5;>ab>=:q')
+check 'N6 5;>ab>= — offset search on line 5' '4 5 0 -1' "$out"
+out=$(EXINIT=':5;>six>=:q' "$VI" -sm "$TMPFILE" </dev/null 2>&1)
+check 'N7 5;>six>= — match on line 6 is outside line 5' 'range not found' "$out"
+out=$(run_ex ':2,#+2=:q')
+check 'N8 2,#+2= — # rebases on line 2, giving lines 2-4' '1 4 -1 -1' "$out"
+out=$(run_ex ':2,#3=:q')
+check 'N9 2,#3= — numeric second address is absolute' '1 3 -1 -1' "$out"
+out=$(run_ex ':2,#+2;$=:q')
+check 'N10 2,#+2;$= — $ offset on rebased end line 4' '1 4 2 -1' "$out"
+out=$(run_ex ':5;$c X:%p:q')
+check 'N11 5;$c X — insert at the end of line 5' \
+	"$(printf 'L1\nL2\nL3\nL4\nabX\nline six here')" "$out"
+out=$(run_ex ':5;>b>c Y:5p:q')
+check 'N12 5;>b>c Y — insert before the match on line 5' 'aYb' "$out"
+out=$(run_ex ':2,#+2d:%p:q')
+check 'N13 2,#+2d — deletes lines 2-4' \
+	"$(printf 'L1\nab\nline six here')" "$out"
+
+# Line 0 has no text to search, so 0;>re> is invalid even when line 1
+# matches. A failed part after 0 must not reach the 0i/0pu special case.
+out=$(EXINIT=':0;>L>i X:%p:q' "$VI" -sm "$TMPFILE" </dev/null 2>&1)
+check 'N14 0;>L>i X — searching line 0 is an invalid range' \
+	"$(printf 'invalid range\nL1\nL2\nL3\nL4\nab\nline six here')" "$out"
+out=$(EXINIT=":0;'5i X:%p:q" "$VI" -sm "$TMPFILE" </dev/null 2>&1)
+check "N15 0;'5i X — unset mark after 0 leaves the buffer unchanged" \
+	"$(printf 'mark not set\nL1\nL2\nL3\nL4\nab\nline six here')" "$out"
+out=$(EXINIT=':1ya:0;>L>pu:%p:q' "$VI" -sm "$TMPFILE" </dev/null 2>&1)
+check 'N16 0;>L>pu — searching line 0 is an invalid range' \
+	"$(printf 'invalid range\nL1\nL2\nL3\nL4\nab\nline six here')" "$out"
+
 # f( lands on (; \% passes a literal % (not buffer path) to the & macro
 printf 'foo(bar)qux\n' > "$TMPFILE"
 out=$(run_vi 'f(\%x')
@@ -1084,7 +1125,7 @@ check 'X16 \/ ends pattern with no replacement section — match deleted' ' z' "
 # Delimiter/separator interaction: an unescaped ':' ends the s command; a
 # backslash before ':' escapes the separator into the replacement text.
 printf 'x z\n' > "$TMPFILE"
-out=$(run_ex ':%s/x/a:b/:%p:q!')
+out=$(run_ex ':%s/x/a:1/:%p:q!')
 check 'X17 : — unescaped separator ends replacement at "a"' 'a z' "$out"
 
 printf 'x z\n' > "$TMPFILE"
@@ -1092,7 +1133,7 @@ out=$(run_ex ':%s/x/a\:b/:%p:q!')
 check 'X18 \: — escaped separator stays literal in replacement' 'a:b z' "$out"
 
 printf 'x z\n' > "$TMPFILE"
-out=$(run_ex ':%s/x/a\\:b/:%p:q!')
+out=$(run_ex ':%s/x/a\\:1/:%p:q!')
 check 'X19 \\\\: — \\ collapses to one \; the bare : still separates' 'a\ z' "$out"
 
 printf 'x z\n' > "$TMPFILE"
@@ -1220,11 +1261,11 @@ printf 'a\nb\nc\n' > "$TMPFILE"
 out=$(run_ex ':-1i TOP:%p:q!')
 check ':-1i from line 1 inserts above first line' "$(printf 'TOP\na\nb\nc')" "$out"
 
-# :a removed; with no address the unknown command is reported (with an address
-# ex just seeks to it and ignores the rest, so use the no-address form here)
+# with no address an unknown command is reported (with an address ex just
+# seeks to it and ignores the rest, so use the no-address form here)
 printf 'a\nb\nc\n' > "$TMPFILE"
-out=$(run_ex ':a X:%p:q!')
-check ':a command removed' "$(printf 'unknown command\na\nb\nc')" "$out"
+out=$(run_ex ':* X:%p:q!')
+check ':* unknown command reported' "$(printf 'unknown command\na\nb\nc')" "$out"
 
 # :c needs a real line to change -> line-0 rejected
 printf 'a\nb\nc\n' > "$TMPFILE"
@@ -2050,6 +2091,29 @@ check 'Z12 ?~ inside a :g body frees the outer captures too' 'reached' "$out"
 # ?~ reports success, so it clears a live error status off the chain
 out=$(run_ex ':s/zzz/y/:?~:??p status reset:q')
 check 'Z13 ?~ returns success and resets the running status' 'status reset' "$out"
+
+# ── e! on an already open path ────────────────────────────────────────────────
+# e on an open path only switches to it; e! also rereads it from disk, as a
+# bare e! does for the current buffer. Status lines carry the temp path, so
+# only printed text is compared.
+EFILE=$(mktemp /tmp/nextvi_test_XXXXXX)
+printf 'a\n' > "$TMPFILE"
+printf 'x\n' > "$EFILE"
+
+out=$(run_ex ":e $EFILE:%s/x/MOD/:e $TMPFILE:e $EFILE:%p:q!" | grep -v '^"')
+check 'GG1 e on an open path keeps its unsaved changes' 'MOD' "$out"
+
+out=$(run_ex ":e $EFILE:%s/x/MOD/:e $TMPFILE:e! $EFILE:%p:q!" | grep -v '^"')
+check 'GG2 e! on another open path rereads it' 'x' "$out"
+
+out=$(run_ex ":%s/a/MOD/:e! $TMPFILE:%p:q!" | grep -v '^"')
+check 'GG3 e! on the current path rereads it' 'a' "$out"
+
+# the reread is an edit: a later chain can undo it
+out=$(printf ':%%s/a/MOD/\n:e! %s\n:ud\n:%%p\n:q!\n' "$TMPFILE" |
+	"$VI" -sm "$TMPFILE" 2>/dev/null | grep -v '^"')
+check 'GG4 ud after e! path restores the discarded changes' 'MOD' "$out"
+rm -f "$EFILE"
 
 printf '\n%s\n' '─── Summary ──────────────────────────────────────────────────────────────────'
 

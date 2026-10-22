@@ -213,24 +213,24 @@ const int hloptslen = LEN\(hlopts\);8??0?
 %f> 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{
 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);4??0?
-4??+2m 1220reg p OK ex.c:439:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:441:a42sc %? %@2152sc!1q0?
 grp 1%f> 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{.*?
 		ex_bufpostfix\(ex_buf, arg\[0]\);.*?
 (		syn_setft\(xb_ft\);)7??0?
-grp 07??m 1220reg p OK ex.c:439:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK ex.c:441:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/
 	}
 	readfile\(rd =\).*(			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);)
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)8??0?
-grp 08??-4m 1220reg p OK ex.c:439:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:441:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		return "last buffer modified";
 	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{
 		bufs_switch\(bufs_open\(arg\+cd, len\)\);.*(static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\))
 \{
 	rset \*rs;9??0?
-grp 09??-10m 1220reg p OK ex.c:439:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:4392sc %? %@2132sc!0?
+grp 09??-10m 1220reg p OK ex.c:441:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:4412sc %? %@2132sc!0?
 ?0?
 %f+ 		ec_setpath\(NULL, NULL, path\);
 	lbuf_saved\(xb, 0\);
@@ -242,24 +242,24 @@ const int hloptslen = LEN\(hlopts\);8??0?
 %f+ 		ec_setpath\(NULL, NULL, path\);
 	lbuf_saved\(xb, 0\);
 	ex_buf->mtime = mtime\(path\);4??0?
-4??+2m 2220reg p OK ex.c:811:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:813:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		ec_setpath\(NULL, NULL, path\);.*?
 	lbuf_saved\(xb, 0\);.*?
 (	ex_buf->mtime = mtime\(path\);)7??0?
-grp 07??m 2220reg p OK ex.c:811:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:813:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			path, end - beg\);
 	ex_print\(msg, bar_ft\)
 	if \(strcmp\(xb_path, path\)\).*(static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\))
 \{
 	if \(\*arg && term_sbuf\)8??0?
-grp 08??-5m 2220reg p OK ex.c:811:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 2220reg p OK ex.c:813:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(o1 < 0\)
 		return "write failed";
 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[w]",.*(		term_exec\(arg, strlen\(arg\), cmd\[0]\))
 	return term_sbuf \? NULL : "unsupported command";
 }9??0?
-grp 09??-8m 2220reg p OK ex.c:811:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:8112sc %? %@2132sc!0?
+grp 09??-8m 2220reg p OK ex.c:813:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:8132sc %? %@2132sc!0?
 ?0?
 %f+ 	return NULL;
 \)
@@ -273,20 +273,20 @@ const int hloptslen = LEN\(hlopts\);8??0?
 \)
 
 4??0?
-4??+2m 3220reg p OK ex.c:1732:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1734:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 3220reg p OK ex.c:1732:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1734:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 3220reg p OK ex.c:1732:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:17322sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1734:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17342sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(left\),
 	EO\(lim\),
@@ -298,30 +298,30 @@ static struct excmd \{
 %f+ 	EO\(left\),
 	EO\(lim\),
 	EO\(led\),4??0?
-4??+2m 4220reg p OK ex.c:1829:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK ex.c:1831:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(left\),.*?
 	EO\(lim\),.*?
 (	EO\(led\),)7??0?
-grp 07??m 4220reg p OK ex.c:1829:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK ex.c:1831:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	EO\(hlp\),
 	EO\(hlr\),
 	EO\(hl\),.*(/\* parse command argument expanding % and ! \*/)
 static const char \*ex_arg\(const char \*src, sbuf \*sb, int \*arg\)
 \{8??0?
-grp 08??-6m 4220reg p OK ex.c:1829:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 4220reg p OK ex.c:1831:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(order\),
 	EO\(hll\),
 	EO\(hlw\),.*(	\*arg = sb->s_n;)
 	while \(\*src && \*src != xsep\) \{
 		if \(\*src == xexp\) \{9??0?
-grp 09??-9m 4220reg p OK ex.c:1829:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:18292sc %? %@2132sc!0?
+grp 09??-9m 4220reg p OK ex.c:1831:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18312sc %? %@2132sc!0?
 '\''1i 		if (*xb_path && xb_ft)
 			lsp_open(xb_path, xb_ft);
-??!219reg ex.c:439:m12sc %? %@2142sc!0?
+??!219reg ex.c:441:m12sc %? %@2142sc!0?
 '\''2i 	if (*xb_path)
 		lsp_save(xb_path);
-??!219reg ex.c:811:m22sc %? %@2142sc!0?
+??!219reg ex.c:813:m22sc %? %@2142sc!0?
 '\''3i /* :lsp			list the registered servers
  * :lsp <filetype> <cmd>	run <cmd> as the language server of <filetype> */
 static void *ec_lsp(char *loc, char *cmd, char *arg)
@@ -350,9 +350,9 @@ static void *ec_lsp(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
-??!219reg ex.c:1732:m32sc %? %@2142sc!0?
+??!219reg ex.c:1734:m32sc %? %@2142sc!0?
 '\''4i 	{"lsp", ec_lsp},
-??!219reg ex.c:1829:m42sc %? %@2142sc!b2m!0?
+??!219reg ex.c:1831:m42sc %? %@2142sc!b2m!0?
 i /*
  * MIT License
  *
@@ -2533,24 +2533,24 @@ static void vi_drawrow\(int row\)
 %f+ 		int oleft = xleft;
 		ticmd_pos = 0;
 		vi_mod = 0;4??0?
-4??+2m 10220reg p OK vi.c:1141:a42sc %? %@2152sc!1q0?
+4??+2m 10220reg p OK vi.c:1148:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		int oleft = xleft;.*?
 		ticmd_pos = 0;.*?
 (		vi_mod = 0;)7??0?
-grp 07??m 10220reg p OK vi.c:1141:a72sc %? %@2152sc!1q0?
+grp 07??m 10220reg p OK vi.c:1148:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		int orow = nrow;
 		int ooff = noff;
 		int otop = xtop;.*(			vi_lnnum = 0;)
 			vi_lncol = 0;
 			vi_mod \|= 1;8??0?
-grp 08??-5m 10220reg p OK vi.c:1141:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 10220reg p OK vi.c:1148:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	while \(!xquit\) \{
 		int nrow = xrow;
 		int noff = xoff;.*(		if \(xmpt == 1\) \{)
 			xmpt = 0;
 			if \(syn_scdirl > 0\)9??0?
-grp 09??-9m 10220reg p OK vi.c:1141:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:11412sc %? %@2132sc!0?
+grp 09??-9m 10220reg p OK vi.c:1148:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:11482sc %? %@2132sc!0?
 ?0?
 %f+ 		vi_ybuf = vi_yankbuf\(TK_CTL\('\''l'\''\)\);
 		vi_arg = vi_prefix\(\);
@@ -2558,20 +2558,20 @@ static void vi_drawrow\(int row\)
 		if \(vi_lnnum == 1\) \{1??0?
 1??m 111q0?
 ;0fr.,$f+ ^		vi_ybuf = vi_yankbuf\(TK_CTL\('\''l'\''\)\);$4??0?
-4??m 11220reg p OK vi.c:1142:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 11220reg p OK vi.c:1149:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 		int orow = nrow;
 		int ooff = noff;
 		int otop = xtop;.*(			vi_lnnum = 0;)
 			vi_lncol = 0;
 			vi_mod \|= 1;8??0?
-grp 08??-4m 11220reg p OK vi.c:1142:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 11220reg p OK vi.c:1149:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	while \(!xquit\) \{
 		int nrow = xrow;
 		int noff = xoff;.*(		if \(xmpt == 1\) \{)
 			xmpt = 0;
 			if \(syn_scdirl > 0\)9??0?
-grp 09??-8m 11220reg p OK vi.c:1142:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:11422sc %? %@2132sc!0?
+grp 09??-8m 11220reg p OK vi.c:1149:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:11492sc %? %@2132sc!0?
 ?0?
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
@@ -2581,39 +2581,39 @@ static void vi_drawrow\(int row\)
 1??+3m 121q0?
 %f+ 				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)
 					vc_motion\(k\);2??0?
-2??m 12220reg p OK vi.c:1603:a22sc %? %@2152sc!1q0?
+2??m 12220reg p OK vi.c:1610:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\)$3??0?
-3??m 12220reg p OK vi.c:1603:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 12220reg p OK vi.c:1610:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 					ex_command\(cmd\)
 					restore\(xled\)
 					vi_mod \|= 1;4??0?
-4??+3m 12220reg p OK vi.c:1603:a42sc %? %@2152sc!1q0?
+4??+3m 12220reg p OK vi.c:1610:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^					vc_motion\(k\);$5??0?
-5??-1m 12220reg p OK vi.c:1603:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 12220reg p OK vi.c:1610:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ....	.x....m......d.
 .....r.........e..
 	.......... .....
 ..		....s..i...k.=....'\''..... ...... \|........U'\''\)
 .	..	vc...t......;6??0?
-6??+3m 12220reg p OK vi.c:1603:a62sc %? %@2152sc!1q0?
+6??+3m 12220reg p OK vi.c:1610:a62sc %? %@2152sc!1q0?
 grp 1%f+ 					ex_command\(cmd\).*?
 					restore\(xled\).*?
 					vi_mod \|= 1;.*?
 (				} else if \(k == '\''~'\'' \|\| k == '\''u'\'' \|\| k == '\''U'\''\))7??0?
-grp 07??m 12220reg p OK vi.c:1603:a72sc %? %@2152sc!1q0?
+grp 07??m 12220reg p OK vi.c:1610:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					preserve\(int, xled, xled = 0;\)
 					char cmd\[64] = "g/\./& ";
 					memcpy\(itoa\(vi_arg, cmd\+5\), "gw", sizeof\("gw"\)\);.*(			case '\''X'\'':)
 				term_push\("d", 2\);
 				goto motion;8??0?
-grp 08??-6m 12220reg p OK vi.c:1603:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 12220reg p OK vi.c:1610:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					restore\(xvis\)
 					vi_mod \|= !texec;
 				} else if \(k == '\''q'\''\) \{.*(			case '\''D'\'':)
 				term_push\("d\$", 2\);
 				goto motion;9??0?
-grp 09??-9m 12220reg p OK vi.c:1603:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg vi.c:16032sc %? %@2132sc!0?
+grp 09??-9m 12220reg p OK vi.c:1610:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:16102sc %? %@2132sc!0?
 ?0?
 %f+ 					vc_motion\(k\);
 				break;
@@ -2621,20 +2621,20 @@ static void vi_drawrow\(int row\)
 				term_push\("d ", 2\);1??0?
 1??m 131q0?
 ;0fr.,$f+ ^					vc_motion\(k\);$4??0?
-4??m 13220reg p OK vi.c:1604:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 13220reg p OK vi.c:1611:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 					preserve\(int, xled, xled = 0;\)
 					char cmd\[64] = "g/\./& ";
 					memcpy\(itoa\(vi_arg, cmd\+5\), "gw", sizeof\("gw"\)\);.*(			case '\''X'\'':)
 				term_push\("d", 2\);
 				goto motion;8??0?
-grp 08??-5m 13220reg p OK vi.c:1604:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 13220reg p OK vi.c:1611:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					restore\(xvis\)
 					vi_mod \|= !texec;
 				} else if \(k == '\''q'\''\) \{.*(			case '\''D'\'':)
 				term_push\("d\$", 2\);
 				goto motion;9??0?
-grp 09??-8m 13220reg p OK vi.c:1604:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:16042sc %? %@2132sc!0?
+grp 09??-8m 13220reg p OK vi.c:1611:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:16112sc %? %@2132sc!0?
 ?0?
 %f+ 				vc_status\(0\);
 				vi_mod \|= 1;
@@ -2646,20 +2646,20 @@ static void vi_drawrow\(int row\)
 %f+ 				vc_status\(0\);
 				vi_mod \|= 1;
 				break;4??0?
-4??+2m 14220reg p OK vi.c:1693:a42sc %? %@2152sc!1q0?
+4??+2m 14220reg p OK vi.c:1700:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					ex_exec\("b-2:%d:fd:b-2"\);
 				else
 					ex_exec\("%d:fd"\);.*(		topfix\(\))
 		ln = lbuf_get\(xb, xrow\);
 		xoff = ren_noeol\(ln, xoff\);8??0?
-grp 08??-5m 14220reg p OK vi.c:1693:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 14220reg p OK vi.c:1700:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				if \(!vi_arg\)
 					ex_exec\("b-2"\);
 				else if \(xb != tempbufs\[1]\.lb\).*(		if \(ln && !rstate->wid\[xoff]\) \{)
 			for \(n = xoff, k = n; k < rstate->n && !rstate->wid\[k];\) \{
 				if \(!k\)9??0?
-grp 09??-8m 14220reg p OK vi.c:1693:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:16932sc %? %@2132sc!0?
+grp 09??-8m 14220reg p OK vi.c:1700:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:17002sc %? %@2132sc!0?
 ?0?
 %f+ 				}
 			}
@@ -2671,20 +2671,20 @@ static void vi_drawrow\(int row\)
 %f+ 				}
 			}
 		}4??0?
-4??+2m 15220reg p OK vi.c:1759:a42sc %? %@2152sc!1q0?
+4??+2m 15220reg p OK vi.c:1766:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 					p->usr = ola\[1];
 					p->blen = sizeof\(ola\[1]\);
 					vi_mod \|= row1 == row && orow == xrow \? 2 : 1;.*(				\|\| \(\*vi_word && orow != xrow\)\))
 			vi_drawagain\(xtop\);
 		else if \(\*vi_word && \(ooff != xoff \|\| vi_mod & 2\)8??0?
-grp 08??-4m 15220reg p OK vi.c:1759:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 15220reg p OK vi.c:1766:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 					ola\[1]\[2] = hls\[k]\.att\[0];
 					p = led_extnew\(\);
 					p->ln = lbuf_get\(xb, row1\);.*(				&& xrow\+1 < xtop \+ xrows\))
 			vi_drawrow\(xrow\+1\);
 		else if \(xtop != otop\)9??0?
-grp 09??-7m 15220reg p OK vi.c:1759:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:17592sc %? %@2132sc!0?
+grp 09??-7m 15220reg p OK vi.c:1766:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:17662sc %? %@2132sc!0?
 '\''1i #include "lsp.c"
 ??!219reg vi.c:24:m12sc %? %@2142sc!0?
 '\''2i void lsp_show_msg(char *msg) { vi_drawmsg_mpt(msg) }
@@ -2730,10 +2730,10 @@ static void vi_drawdiag(const char *diag, int sev, int r, int col)
 		vi_drawdiag(diag, dsev, row - xtop, dcol);
 ??!219reg vi.c:171:m92sc %? %@2142sc!0?
 '\''10i 		lsp_wake = 1;
-??!219reg vi.c:1141:m102sc %? %@2142sc!0?
+??!219reg vi.c:1148:m102sc %? %@2142sc!0?
 '\''11i 		lsp_wake = 0;
-??!219reg vi.c:1142:m112sc %? %@2142sc!0?
-'\''12s/\)/) {/??!219reg vi.c:1603:m122sc %? %@2142sc!0?
+??!219reg vi.c:1149:m112sc %? %@2142sc!0?
+'\''12s/\)/) {/??!219reg vi.c:1610:m122sc %? %@2142sc!0?
 '\''13i 				} else if (k == '\''K'\'') {
 					if (xb_path && xb_path[0])
 						lsp_hover(xb_path, xrow, xoff);
@@ -2744,17 +2744,17 @@ static void vi_drawdiag(const char *diag, int sev, int r, int col)
 						vi_mod |= 1;
 					}
 				}
-??!219reg vi.c:1604:m132sc %? %@2142sc!0?
+??!219reg vi.c:1611:m132sc %? %@2142sc!0?
 '\''14i 			case 0:	/* lsp_wake yield; redraw via lsp_dirty */
 				break;
-??!219reg vi.c:1693:m142sc %? %@2142sc!0?
+??!219reg vi.c:1700:m142sc %? %@2142sc!0?
 '\''15i 		if (xb_path && xb_path[0])
 			lsp_sync(xb_path, xb);
 		if (lsp_dirty) {
 			lsp_dirty = 0;
 			vi_mod |= 1;
 		}
-??!219reg vi.c:1759:m152sc %? %@2142sc!b7m!%ya 98?0?
+??!219reg vi.c:1766:m152sc %? %@2142sc!b7m!%ya 98?0?
 %f> 	int hist_sz;			/\* size of hist\[] \*/
 	int hist_n;			/\* current history head in hist\[] \*/
 	int hist_u;			/\* current undo head in hist\[] \*/
@@ -2825,7 +2825,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c6..784e42f5 100644
+index 2888d7c60..784e42f5d 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -18,6 +18,7 @@ char vs_ft[] = "/vs";	/* vi search prompt (is never '\n' terminated) */
@@ -2867,10 +2867,10 @@ index 2888d7c6..784e42f5 100644
  const int hlslen = LEN(hls);
  
 diff --git a/ex.c b/ex.c
-index 76dca408..afff55bc 100644
+index d13974a65..9d380eb57 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -437,6 +437,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -439,6 +439,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  	if (cd == 3 || (!rd && fd >= 0)) {
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
@@ -2879,7 +2879,7 @@ index 76dca408..afff55bc 100644
  	}
  	snprintf(msg, sizeof(msg), "\"%s\" %dL [%c]",
  			*xb_path ? xb_path : "unnamed", lbuf_len(xb),
-@@ -809,6 +811,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
+@@ -811,6 +813,8 @@ static void *ec_write(char *loc, char *cmd, char *arg)
  		ec_setpath(NULL, NULL, path);
  	lbuf_saved(xb, 0);
  	ex_buf->mtime = mtime(path);
@@ -2888,7 +2888,7 @@ index 76dca408..afff55bc 100644
  	xquit = quit;
  	return NULL;
  }
-@@ -1730,6 +1734,34 @@ _EO(left,
+@@ -1732,6 +1736,34 @@ _EO(left,
  	return NULL;
  )
  
@@ -2923,7 +2923,7 @@ index 76dca408..afff55bc 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1827,6 +1859,7 @@ static struct excmd {
+@@ -1829,6 +1861,7 @@ static struct excmd {
  	EO(left),
  	EO(lim),
  	EO(led),
@@ -2933,7 +2933,7 @@ index 76dca408..afff55bc 100644
  	{"", ec_print}, /* do not remove */
 diff --git a/jsmn.h b/jsmn.h
 new file mode 100644
-index 00000000..8ac14c1b
+index 000000000..8ac14c1bd
 --- /dev/null
 +++ b/jsmn.h
 @@ -0,0 +1,471 @@
@@ -3409,7 +3409,7 @@ index 00000000..8ac14c1b
 +
 +#endif /* JSMN_H */
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..c749f693 100644
+index 56cb42c63..c749f693d 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -135,6 +135,7 @@ static int lbuf_replace(struct lbuf *lb, sbuf *sb, char *s, struct lopt *lo, int
@@ -3422,7 +3422,7 @@ index 56cb42c6..c749f693 100644
  	for (i = 0; i < lb->mark_n; i++) {	/* updating marks */
 diff --git a/lsp.c b/lsp.c
 new file mode 100644
-index 00000000..7a709a07
+index 000000000..7a709a07b
 --- /dev/null
 +++ b/lsp.c
 @@ -0,0 +1,1175 @@
@@ -4602,7 +4602,7 @@ index 00000000..7a709a07
 +	return NULL;
 +}
 diff --git a/term.c b/term.c
-index 03aa736f..adccd79a 100644
+index 4e11ec2f9..4c2885265 100644
 --- a/term.c
 +++ b/term.c
 @@ -141,7 +141,8 @@ void term_push(char *s, unsigned int n)
@@ -4682,7 +4682,7 @@ index 03aa736f..adccd79a 100644
  		tibuf_cnt = 1;
  		tibuf_pos = 0;
 diff --git a/vi.c b/vi.c
-index 13b97c7d..14b07573 100644
+index b1f9a16f1..1b432c3b7 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -22,6 +22,7 @@
@@ -4768,7 +4768,7 @@ index 13b97c7d..14b07573 100644
  }
  
  /* redraw the screen */
-@@ -1139,7 +1174,9 @@ void vi(int init)
+@@ -1146,7 +1181,9 @@ void vi(int init)
  		int oleft = xleft;
  		ticmd_pos = 0;
  		vi_mod = 0;
@@ -4778,7 +4778,7 @@ index 13b97c7d..14b07573 100644
  		vi_arg = vi_prefix();
  		term_dec()
  		if (vi_lnnum == 1) {
-@@ -1600,8 +1637,18 @@ void vi(int init)
+@@ -1607,8 +1644,18 @@ void vi(int init)
  					ex_command(cmd)
  					restore(xled)
  					vi_mod |= 1;
@@ -4798,7 +4798,7 @@ index 13b97c7d..14b07573 100644
  				break;
  			case 'x':
  				term_push("d ", 2);
-@@ -1691,6 +1738,8 @@ void vi(int init)
+@@ -1698,6 +1745,8 @@ void vi(int init)
  				vc_status(0);
  				vi_mod |= 1;
  				break;
@@ -4807,7 +4807,7 @@ index 13b97c7d..14b07573 100644
  			default:
  				continue;
  			}
-@@ -1757,6 +1806,12 @@ void vi(int init)
+@@ -1764,6 +1813,12 @@ void vi(int init)
  				}
  			}
  		}
@@ -4821,7 +4821,7 @@ index 13b97c7d..14b07573 100644
  		if (vi_mod & 1 || xleft != oleft
  				|| (vi_lnnum && orow != xrow && !(vi_lnnum == 2))
 diff --git a/vi.h b/vi.h
-index c23da595..803dc7ac 100644
+index c23da5950..803dc7ace 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -192,6 +192,7 @@ struct lbuf {

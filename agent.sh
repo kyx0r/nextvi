@@ -44,8 +44,7 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
  * furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
- * all
- * copies or substantial portions of the Software.
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -58,21 +57,98 @@ ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! 
 static cJSON *agent_messages;
 static unsigned long agent_epoch, agent_serial;
 static int agent_ready, agent_syncing, agent_child_status;
-static int agent_logbuf = 3;
+static pid_t agent_jobs[16];	/* shells detached by ato, not yet reaped */
+static char agent_jobmsg[512];	/* job notices for the next tool result */
+static int agent_logbuf = 3;	/* tempbufs index logged to: 3 (b-4) or 7 (b-8) */
+/* b-4 was edited other than by agent_log since the context was rebuilt. */
+static int agent_logging, agent_log_edited;
+/* Last entry number per log: [0] b-8, [1] b-4. */
+static unsigned long agent_entries[2];
 static char *agent_init_error;
-static unsigned long agent_rounds;	/* tool rounds completed in the current run */
-static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
-static size_t agent_capture_total;	/* full tool output, including clipped bytes */
+static unsigned long agent_rounds;	/* tool rounds of the current run */
+static unsigned long agent_tool_calls;	/* ex tool calls executed, cumulative */
+static size_t agent_capture_total;	/* tool output bytes, clipped ones included */
+#define AGENT_SHOW_MAX (1 << 20)	/* guarded output kept for aout */
 
-/* Usage describes the last accepted response. The anchor describes its input;
- * subsequent messages/tool results are estimated, not provider token counts. */
+/* Tool output bytes kept, 0 for all; at least agr, so output under it is
+ * never clipped. */
+static int agent_gr_cap(void)
+{
+	return xagr > 0 ? MAX(AGENT_SHOW_MAX, xagr) : 0;
+}
+
+/* Usage of the last accepted response. Its input count anchors estimates at
+ * bytes of context; growth past that is estimated, not reported. */
 static struct agent_usage {
 	double input, output, bytes;
 	int reported, anchored;
 } agent_usage;
 static int agent_packing, agent_pack_done;
+/* Session log text when the current pack started; NULL outside packs. */
+static char *agent_pack_log;
+static char agent_pack_retry[] =
+	"You returned control, but the session log in b-4 is unchanged.\n"
+	"The current buffer is b-4 again. Replace its content with the summary\n"
+	"in one ex call, then stop. Text after \"%c \" is literal; newlines\n"
+	"separate lines; no terminator.\n"
+	"Example: a three-line summary\n"
+	"%c Goal: ...\nDone: ...\nNext: ...";
+/* Pack prompts carry the %c usage because its spec is not deferred. */
+static char agent_pack_example[] =
+	"\nReplace the current buffer'\''s content with the summary in one ex call.\n"
+	"Text after \"%c \" is literal; newlines separate lines; no terminator.\n"
+	"Example: a three-line summary\n"
+	"%c Goal: ...\nDone: ...\nNext: ...\n\n";
+/* Messages JSON of the last request, and its bytes shared with the one before. */
+static char *agent_prev;
+static size_t agent_reused, agent_sent;
+/* Reasoning field name the endpoint returned; rebuilds use it. */
+static const char *agent_rkey = "reasoning_content";
+/* ath request fields: reasoning_budget_tokens, -1 unset; reasoning_effort,
+ * empty unset. Set fields replace those of request_extra. */
+static int agent_think_cap = -1;
+static char agent_effort[32];
+/* ath N,M: N, -1 unset; M, the ceiling the agent may raise the cap to for
+ * one reply, 0 none */
+static int agent_think_base = -1, agent_think_max;
+static int agent_think_up;	/* the agent raised the cap for its next reply */
+/* Thinking tokens the reply to a raised cap left of it, added to later caps
+ * until the thinking of their replies spends them */
+static int agent_think_bank;
+/* ata: average thinking tokens of the replies that thought since the user
+ * set ath, and their count */
+static double agent_think_avg;
+static int agent_think_cnt;
+/* Response whose thinking the server cut at cap agent_think_was, withheld
+ * while the agent is asked about it; agent_think_more: it chose a higher cap */
+static cJSON *agent_think_held;
+static int agent_think_was, agent_think_more;
+static int agent_think_empty;	/* the withheld reply has no text or calls */
+/* Note of an acap N answer: sent as assistant text with the requests of the
+ * replacement reply only, unlogged */
+static char *agent_think_note;
+static char agent_think_lead[] =
+	"My thinking was cut off at %d tokens; the cap is now %d tokens and I "
+	"must finish thinking within it. My note on how to think:\n%s";
+/* agoal: while set, a reply without commands is answered with
+ * agent_goal_ask instead of ending the run, and every request opens with
+ * agent_goal_head and the goal: its banner */
+static char *agent_goal;
+static char agent_goal_head[] = "Session goal, set by agoal:\n";
+/* The banner in agent_messages: 1 joined to message 1, 2 a message there */
+static int agent_banner_on;
+/* The goal the last banner sent and message 1 under it, as role\ncontent:
+ * a cleared goal keeps its banner while message 1 extends that one, since
+ * dropping it would change the request prefix and void the server cache */
+static char *agent_banner_was, *agent_banner_was_key;
+static char agent_goal_ask[] =
+	"The goal is still set:\n%s\n\nIs it finished? If so, clear it with "
+	"agoal and then reply. If not, keep working toward it.";
+#define AGENT_THINK_TRIES	5	/* retries a thinking question allows */
+#define AGENT_BAD_TRIES	5	/* malformed-response retries before one nudge */
 static void agent_run(const char *input);
 static int agent_autocompact(const char *input);
+static void agent_reparse(void);
 
 static const char agent_tools[] =
 	"[{\"type\":\"function\",\"function\":{"
@@ -83,22 +159,61 @@ static const char agent_tools[] =
 	"\"required\":[\"command\"],"
 	"\"additionalProperties\":false}}}]";
 
-/* JSON bytes are only a fallback proxy. Include tools and message framing. */
+static char *agent_banner_key(void)
+{
+	cJSON *m = cJSON_GetArrayItem(agent_messages, 1);
+	char *role = cJSON_GetStringValue(cJSON_GetObjectItem(m, "role"));
+	char *s = cJSON_GetStringValue(cJSON_GetObjectItem(m, "content"));
+	sbuf_smake(sb, 256)
+	sbuf_str(sb, role ? role : "")
+	sbuf_chr(sb, '\''\n'\'')
+	sbufn_str(sb, s ? s : "")
+	return sb->s;
+}
+
+/* The goal for the banner: agent_goal, else a cleared one still kept. */
+static char *agent_banner_goal(void)
+{
+	if (agent_goal || !agent_banner_was)
+		return agent_goal;
+	char *key = agent_banner_key();
+	size_t n = strlen(agent_banner_was_key);
+	int kept = !strncmp(key, agent_banner_was_key, n);
+	free(key);
+	if (!kept) {
+		free(agent_banner_was);
+		free(agent_banner_was_key);
+		agent_banner_was = agent_banner_was_key = NULL;
+	}
+	return agent_banner_was;
+}
+
+/* Context size in JSON bytes, with tools and message framing. */
 static double agent_context_bytes(void)
 {
 	char *json = cJSON_PrintUnformatted(agent_messages);
 	double bytes = (json ? strlen(json) : 0) + strlen(agent_tools) +
 		24.0 * cJSON_GetArraySize(agent_messages);
 	free(json);
+	char *goal = agent_banner_on ? NULL : agent_banner_goal();
+	if (goal)
+		bytes += sizeof(agent_goal_head) + strlen(goal) + 2;
 	return bytes;
+}
+
+static double agent_tokens_at(double bytes)
+{
+	if (!agent_usage.anchored)
+		return (bytes + 2) / 3;
+	/* A context smaller than the anchor keeps its tokens per byte. */
+	if (bytes >= agent_usage.bytes)
+		return agent_usage.input + (bytes - agent_usage.bytes + 2) / 3;
+	return agent_usage.input * bytes / agent_usage.bytes;
 }
 
 static double agent_tokens(void)
 {
-	double bytes = agent_context_bytes();
-	if (agent_usage.anchored && bytes >= agent_usage.bytes)
-		return agent_usage.input + (bytes - agent_usage.bytes + 2) / 3;
-	return (bytes + 2) / 3;
+	return agent_tokens_at(agent_context_bytes());
 }
 
 static void agent_record_usage(cJSON *root, double bytes)
@@ -122,8 +237,8 @@ static void agent_record_usage(cJSON *root, double bytes)
 }
 
 static char nextvi_skill[] =
-"Inside Nextvi, use the ex tool with a JSON object whose command \n"
-"key holds an ex command.\n"
+"Inside Nextvi, use the ex tool; its command argument holds one ex command\n"
+"per call.\n"
 "Nextvi is not a standard vi/ex.\n"
 "Use exspec command for a command list.\n"
 "Use exspec with an argument for a topic or command specification.\n";
@@ -177,6 +292,51 @@ static cJSON *agent_msg(const char *role, const char *content)
 	return m;
 }
 
+/* Open the conversation with the goal banner, joined to message 1 if it
+ * is a user message, else as one before it; on 0, undo that. */
+static void agent_banner(int on)
+{
+	static char *prev;	/* the content of message 1 before the join */
+	cJSON *m = cJSON_GetArrayItem(agent_messages, 1);
+	char *s = cJSON_GetStringValue(cJSON_GetObjectItem(m, "content"));
+	char *role = cJSON_GetStringValue(cJSON_GetObjectItem(m, "role"));
+	if (!on) {
+		if (agent_banner_on == 1)
+			cJSON_ReplaceItemInObject(m, "content", cJSON_CreateString(prev));
+		else if (agent_banner_on == 2)
+			cJSON_DeleteItemFromArray(agent_messages, 1);
+		free(prev);
+		prev = NULL;
+		agent_banner_on = 0;
+		return;
+	}
+	char *goal = agent_banner_on ? NULL : agent_banner_goal();
+	if (!goal)
+		return;
+	if (goal != agent_banner_was) {
+		size_t n = strlen(goal) + 1;
+		free(agent_banner_was);
+		agent_banner_was = memcpy(emalloc(n), goal, n);
+	}
+	free(agent_banner_was_key);
+	agent_banner_was_key = agent_banner_key();
+	sbuf_smake(sb, 256)
+	sbuf_str(sb, agent_goal_head)
+	sbuf_str(sb, goal)
+	if (s && role && !strcmp(role, "user")) {
+		sbuf_str(sb, "\n\n")
+		sbufn_str(sb, s)
+		prev = memcpy(emalloc(strlen(s) + 1), s, strlen(s) + 1);
+		cJSON_ReplaceItemInObject(m, "content", cJSON_CreateString(sb->s));
+		agent_banner_on = 1;
+	} else {
+		sbuf_nul(sb)
+		cJSON_InsertItemInArray(agent_messages, 1, agent_msg("user", sb->s));
+		agent_banner_on = 2;
+	}
+	free(sb->s);
+}
+
 static char *agent_text(struct lbuf *lb)
 {
 	sbuf_smake(sb, 256)
@@ -227,8 +387,8 @@ static int agent_save(int i)
 	return ret;
 }
 
-/* Keep the old on-disk conversation in the same directory. The working
- * buffer keeps its path, so its next save creates a fresh conversation file. */
+/* Rename the on-disk conversation to an archive beside it; the next save of
+ * b-4 creates a fresh file. Returns the archive path or NULL. */
 static char *agent_rotate_log(void)
 {
 	char *archive = emalloc(strlen(tempbufs[3].path) + 8);
@@ -254,20 +414,128 @@ static void agent_restore_log(char *archive)
 		tempbufs[3].mtime = mtime(tempbufs[3].path);
 }
 
+/* Lines [beg, end) the tool call edited in agent_edits_lb; sorted, apart. */
+static int (*agent_edits)[2], agent_edits_n, agent_edits_sz;
+static struct lbuf *agent_edits_lb;
+
+/* Where line x before an edit replacing del lines at pos is after it. */
+static int agent_edit_map(int x, int pos, int del, int d)
+{
+	return x <= pos ? x : x >= pos + del ? x + d : pos;
+}
+
+/* Count an edit of lb replacing del lines at pos with ins and merge its
+ * lines into the ranges; a deletion marks the line that follows it. Ranges
+ * before the edit stay, so top-down edits such as g touch only the last. */
+static void agent_edit(struct lbuf *lb, int pos, int del, int ins)
+{
+	int lo = 0, hi, i, n, d = ins - del, len = lbuf_len(lb);
+	int beg = pos, end = pos + MAX(ins, 1);
+	agent_edited += MAX(del, ins);
+	if (lb != agent_edits_lb || !len) {
+		agent_edits_lb = lb;
+		agent_edits_n = 0;
+	}
+	if (!len)
+		return;
+	if (end > len) {
+		beg = len - 1;
+		end = len;
+	}
+	hi = agent_edits_n;
+	while (lo < hi) {
+		int mid = (lo + hi) / 2;
+		if (agent_edits[mid][1] < beg)
+			lo = mid + 1;
+		else
+			hi = mid;
+	}
+	for (i = lo; i < agent_edits_n; i++) {
+		int b = agent_edit_map(agent_edits[i][0], pos, del, d);
+		if (b > end)
+			break;
+		beg = MIN(beg, b);
+		end = MAX(end, agent_edit_map(agent_edits[i][1], pos, del, d));
+	}
+	n = lo + 1 + agent_edits_n - i;
+	if (n > agent_edits_sz) {
+		agent_edits_sz = MAX(16, n * 2);
+		agent_edits = erealloc(agent_edits, agent_edits_sz * sizeof(agent_edits[0]));
+	}
+	memmove(agent_edits + lo + 1, agent_edits + i,
+		(agent_edits_n - i) * sizeof(agent_edits[0]));
+	for (i = lo + 1; i < n; i++) {
+		agent_edits[i][0] += d;
+		agent_edits[i][1] += d;
+	}
+	agent_edits[lo][0] = beg;
+	agent_edits[lo][1] = end;
+	agent_edits_n = n;
+}
+
+static void agent_edit_range(sbuf *sb, char *sep, int beg, int end)
+{
+	char ln[32];
+	if (end - beg > 1)
+		snprintf(ln, sizeof(ln), "%s%d,%d", sep, beg + 1, end);
+	else
+		snprintf(ln, sizeof(ln), "%s%d", sep, beg + 1);
+	sbuf_str(sb, ln)
+}
+
+/* "edited 40 lines: 3 9,11 ... 70 and 31 more within 3,3980"; 8 shown */
+static void agent_edit_report(sbuf *sb)
+{
+	char ln[64];
+	int k, n = agent_edits_n;
+	snprintf(ln, sizeof(ln), "edited %d line%s", agent_edited,
+		agent_edited > 1 ? "s" : "");
+	sbuf_str(sb, ln)
+	for (k = 0; k < n && k < 8; k++)
+		agent_edit_range(sb, k ? " " : ": ", agent_edits[k][0], agent_edits[k][1]);
+	if (n > 8) {
+		snprintf(ln, sizeof(ln), " and %d more within", n - 8);
+		sbuf_str(sb, ln)
+		agent_edit_range(sb, " ", agent_edits[0][0], agent_edits[n-1][1]);
+	}
+	sbuf_chr(sb, '\''\n'\'')
+}
+
+/* Bit i-3 marks tempbufs[i] edited during a tool call and not yet saved. */
+static int agent_unsaved;
+
+static void agent_sync_buf(int i)
+{
+	agent_unsaved &= ~(1 << (i - 3));
+	agent_syncing = 1;
+	if (agent_save(i))
+		ex_print("agent write failed; buffer text retained", msg_ft)
+	agent_syncing = 0;
+}
+
+/* A tool call can edit a log line by line; save once after the call. */
+static void agent_sync_pending(void)
+{
+	for (int i = 3; i < 8; i++)
+		if (agent_unsaved & (1 << (i - 3)))
+			agent_sync_buf(i);
+}
+
 static void agent_sync(struct lbuf *lb)
 {
+	if (lb == tempbufs[3].lb && !agent_logging)
+		agent_log_edited = 1;
 	if (!agent_ready || agent_syncing)
 		return;
-	for (int i = 3; i < 5; i++) {
+	for (int i = 3; i < 8; i++) {
 		if (tempbufs[i].lb != lb)
 			continue;
 		if (i == 3 && agent_packing)
 			agent_pack_done = 0;
-		agent_syncing = 1;
-		if (agent_save(i))
-			ex_print("agent write failed; buffer text retained",
-				msg_ft)
-		agent_syncing = 0;
+		if (agent_tool)
+			agent_unsaved |= 1 << (i - 3);
+		else
+			agent_sync_buf(i);
 	}
 }
 
@@ -292,6 +560,8 @@ static int agent_mkdir(char *path)
 static void agent_history(int edited)
 {
 	agent_usage.anchored = 0;
+	agent_acl_mark = agent_acl_budget = 0;
+	agent_log_edited = 1;
 	char *s = agent_text(tempbufs[4].lb);
 	cJSON_Delete(agent_messages);
 	agent_messages = cJSON_CreateArray();
@@ -306,15 +576,31 @@ static void agent_history(int edited)
 
 static void agent_init(void)
 {
-	const char *home = getenv("HOME");
-	char *dir, *path;
 	temp_open(3, "/conversation/", _ft);
 	temp_open(4, "/skills/", _ft);
+	temp_open(5, "/notes/", _ft);
+	temp_open(6, "/discarded/", _ft);
+	temp_open(7, "/asides/", _ft);
 	lbuf_edit(tempbufs[4].lb, nextvi_skill, 0, 0, 0, 0);
 	lbuf_saved(tempbufs[4].lb, 1);
+	agent_history(0);
+}
+
+/* Create the session files on first agent use. */
+static int agent_start(void)
+{
+	const char *home = getenv("HOME");
+	static char *names[] = {"conversation", "skills", "notes", "discarded",
+		"asides"};
+	char *dir, *path, *leaf;
+	time_t now;
+	struct tm *tm;
+	int n = 0;
+	if (agent_ready)
+		return 0;
 	if ((!log_dir && (!home || !*home)) || (log_dir && !*log_dir)) {
 		agent_init_error = "agent log directory is not configured";
-		return;
+		return -1;
 	}
 	dir = emalloc(strlen(log_dir ? log_dir : home) + 64);
 	if (log_dir)
@@ -323,9 +609,17 @@ static void agent_init(void)
 		sprintf(dir, "%s/.nextvi/logs", home);
 	if (agent_mkdir(dir))
 		goto fail;
-	strcat(dir, "/session-XXXXXX");
-	if (!mkdtemp(dir))
+	/* Name the log directory with the start time. */
+	now = time(NULL);
+	tm = localtime(&now);
+	leaf = dir + strlen(dir);
+	if (!tm || !strftime(leaf, 17, "/%Y%m%d-%H%M%S", tm))
 		goto fail;
+	while (mkdir(dir, 0700)) {
+		if (errno != EEXIST)
+			goto fail;
+		sprintf(leaf + 16, "-%d", ++n);
+	}
 	/* Absolute paths survive :cd during the session. */
 	if (*dir != '\''/'\'') {
 		char *cwd = getcwd(NULL, 0);
@@ -337,9 +631,9 @@ static void agent_init(void)
 		free(dir);
 		dir = path;
 	}
-	for (int i = 3; i < 5; i++) {
+	for (int i = 3; i < 8; i++) {
 		path = emalloc(strlen(dir) + 32);
-		sprintf(path, "%s/%s", dir, i == 3 ? "conversation" : "skills");
+		sprintf(path, "%s/%s", dir, names[i - 3]);
 		free(tempbufs[i].path);
 		tempbufs[i].path = path;
 		tempbufs[i].plen = strlen(path);
@@ -347,30 +641,1575 @@ static void agent_init(void)
 			goto fail;
 	}
 	agent_ready = 1;
-	agent_history(0);
+	agent_init_error = NULL;
 	free(dir);
-	return;
+	return 0;
 fail:
 	free(dir);
 	agent_init_error = "cannot create agent session files";
+	return -1;
 }
 
-static void agent_log(const char *role, const char *text)
+/* A log holds numbered entries headed "ROLE N". A TURN is one reply: its
+ * header, then parts headed "ROLE N.I". NOTICE entries report harness events
+ * to the user; a rebuild never sends them. The body of a USER or NOTICE entry
+ * and of a part runs to its "END" line, so its lines are never headers. A
+ * body holding a line "END" has an id on its header, "ROLE N id", and runs
+ * to "END id". */
+enum { AE_TEXT, AE_USER, AE_TURN, AE_NOTICE };		/* entries */
+enum { AP_REASONING, AP_ASSISTANT, AP_EX, AP_RESULT };	/* turn parts */
+static char *agent_entry_roles[] = {"USER", "TURN", "NOTICE"};
+static char *agent_part_roles[] = {"REASONING", "ASSISTANT", "EX", "RESULT"};
+/* The turn being written per log, indexed as agent_entries; 0 is none. */
+static unsigned long agent_turn[2];
+#define AGENT_ID	12		/* " id" of a header, with its NUL */
+#define AGENT_END	(AGENT_ID + 8)	/* "END id\n", with its NUL */
+
+/* Whether e, a header line past its number, is empty or " id". Sets end,
+ * unless NULL, to the line that ends the body. */
+static int agent_header_end(char *e, char *end)
+{
+	int k = 0;
+	if (*e == '\'' '\'') {
+		while (isalnum((unsigned char)e[1 + k]))
+			k++;
+		if (!k || k + 1 >= AGENT_ID)
+			return 0;
+		k++;
+	}
+	if (e[k] != '\''\n'\'' && e[k])
+		return 0;
+	if (end)
+		snprintf(end, AGENT_END, "END%.*s\n", k, e);
+	return 1;
+}
+
+/* Entry header "ROLE N" with N above last: returns the AE_ role, else 0.
+ * A TURN header takes no id; only its parts have bodies. */
+static int agent_header(char *ln, unsigned long last, unsigned long *n, char *end)
+{
+	char *e;
+	for (int i = 0; i < LEN(agent_entry_roles); i++) {
+		int k = strlen(agent_entry_roles[i]);
+		if (strncmp(ln, agent_entry_roles[i], k) || ln[k] != '\'' '\'' ||
+				!isdigit((unsigned char)ln[k+1]))
+			continue;
+		*n = strtoul(ln + k + 1, &e, 10);
+		if (*n <= last)
+			return 0;
+		if (i + 1 == AE_TURN)
+			return *e == '\''\n'\'' || !*e ? i + 1 : 0;
+		return agent_header_end(e, end) ? i + 1 : 0;
+	}
+	return 0;
+}
+
+/* Part header "ROLE N.I" of turn N with I above lastidx: returns the AP_
+ * role + 1, else 0. */
+static int agent_part_header(char *ln, unsigned long turn, int lastidx, int *idx,
+		char *end)
+{
+	char *e;
+	unsigned long i;
+	for (int r = 0; r < LEN(agent_part_roles); r++) {
+		int k = strlen(agent_part_roles[r]);
+		if (strncmp(ln, agent_part_roles[r], k) || ln[k] != '\'' '\'' ||
+				!isdigit((unsigned char)ln[k+1]))
+			continue;
+		if (strtoul(ln + k + 1, &e, 10) != turn || *e != '\''.'\'' ||
+				!isdigit((unsigned char)e[1]))
+			return 0;
+		i = strtoul(e + 1, &e, 10);
+		if (i > INT_MAX || (int)i <= lastidx || !agent_header_end(e, end))
+			return 0;
+		*idx = i;
+		return r + 1;
+	}
+	return 0;
+}
+
+static int agent_live(void)
+{
+	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
+}
+
+/* acl above 1 or negative: replies stay as returned between rebuilds and
+ * checkpoints trim the log. */
+static int agent_acl_kept(void)
+{
+	return xacl > 1 || xacl < 0;
+}
+
+/* A log entry; role 0, number 0 is the text before the first header. */
+struct agent_span {
+	int role, beg, end;	/* AE_ role; header line, line after */
+	unsigned long n;
+	size_t bytes;		/* body bytes, headers and END lines excluded */
+	size_t part[4];		/* TURN: bytes per part role, summed */
+	int calls;		/* TURN: EX parts */
+	int close;		/* USER, NOTICE: the END line, -1 for none */
+	char open[AGENT_END];	/* last entry: the END line its body lacks */
+};
+
+/* Split a log into entries; the caller frees *spans. Lines outside a body,
+ * left by a hand edit, count for the entry or part above them. */
+static int agent_spans_of(struct lbuf *lb, struct agent_span **spans)
+{
+	unsigned long n, last = 0;
+	int role, cnt = 0, cap = 0, part = AP_ASSISTANT, idx = -1, r;
+	char end[AGENT_END] = "";	/* ends the body being read; empty outside */
+	struct agent_span *s;
+	*spans = NULL;
+	for (int i = 0; i < lbuf_len(lb); i++) {
+		s = cnt ? *spans + cnt - 1 : NULL;
+		if (*end && !strcmp(lb->ln[i], end)) {
+			*end = '\''\0'\'';
+			if (s->role != AE_TURN)
+				s->close = i;
+			continue;
+		}
+		if (*end || (!(role = agent_header(lb->ln[i], last, &n, end)) && i)) {
+			if (!*end && s->role == AE_TURN && (r = agent_part_header(
+					lb->ln[i], s->n, idx, &idx, end))) {
+				part = r - 1;
+				s->calls += part == AP_EX;
+				continue;
+			}
+			s->bytes += strlen(lb->ln[i]);
+			if (s->role == AE_TURN)
+				s->part[part] += strlen(lb->ln[i]);
+			continue;
+		}
+		if (cnt == cap) {
+			cap = cap * 2 + 16;
+			*spans = erealloc(*spans, cap * sizeof(**spans));
+		}
+		if (cnt)
+			(*spans)[cnt-1].end = i;
+		(*spans)[cnt++] = (struct agent_span){role, i, 0, role ? n : 0,
+			role ? 0 : strlen(lb->ln[i]), {0, 0, 0, 0}, 0, -1, ""};
+		part = AP_ASSISTANT;
+		idx = -1;
+		if (role)
+			last = n;
+	}
+	if (cnt) {
+		(*spans)[cnt-1].end = lbuf_len(lb);
+		strcpy((*spans)[cnt-1].open, end);
+	}
+	return cnt;
+}
+
+/* Header line, line after, and the END line or -1. */
+struct agent_part { int role, idx, beg, end, close; };
+
+/* Split turn s of lb into parts; the caller frees *parts. Lines before the
+ * first part header form a text part of index -1, headed by the TURN line. */
+static int agent_parts(struct lbuf *lb, struct agent_span *s,
+		struct agent_part **parts)
+{
+	int cnt = 0, cap = 0, idx = -1, r;
+	char end[AGENT_END] = "";
+	*parts = NULL;
+	for (int i = s->beg + 1; i < s->end; i++) {
+		if (*end) {
+			if (!strcmp(lb->ln[i], end)) {
+				*end = '\''\0'\'';
+				(*parts)[cnt-1].close = i;
+			}
+			continue;
+		}
+		r = agent_part_header(lb->ln[i], s->n, idx, &idx, end);
+		if (!r && cnt)
+			continue;
+		if (cnt == cap) {
+			cap = cap * 2 + 8;
+			*parts = erealloc(*parts, cap * sizeof(**parts));
+		}
+		if (cnt)
+			(*parts)[cnt-1].end = i;
+		(*parts)[cnt++] = (struct agent_part){r ? r - 1 : AP_ASSISTANT,
+			r ? idx : -1, r ? i : s->beg, 0, -1};
+	}
+	if (cnt)
+		(*parts)[cnt-1].end = s->end;
+	return cnt;
+}
+
+/* Split the session log b-4 into entries. */
+static int agent_spans(struct agent_span **spans)
+{
+	return agent_spans_of(tempbufs[3].lb, spans);
+}
+
+/* Whether a line of s is ln, which ends in a newline. */
+static int agent_has_line(const char *s, const char *ln)
+{
+	int n = strlen(ln) - 1;
+	while (s) {
+		if (!strncmp(s, ln, n) && (s[n] == '\''\n'\'' || !s[n]))
+			return 1;
+		if ((s = strchr(s, '\''\n'\'')))
+			s++;
+	}
+	return 0;
+}
+
+/* Set end to a line text does not hold: "END", else "END id" with a random
+ * id. id gets " id" for the header, or stays empty. */
+static void agent_frame(const char *text, char *id, char *end)
+{
+	static unsigned int seed;
+	*id = '\''\0'\'';
+	strcpy(end, "END\n");
+	while (agent_has_line(text, end)) {
+		if (!seed)
+			seed = time(NULL) ^ getpid();
+		id[0] = '\'' '\'';
+		for (int i = 1; i < 5; i++) {
+			seed = seed * 1103515245u + 12345u;
+			id[i] = "abcdefghijklmnopqrstuvwxyz0123456789"[(seed >> 16) % 36];
+		}
+		id[5] = '\''\0'\'';
+		snprintf(end, AGENT_END, "END%s\n", id);
+	}
+}
+
+/* Append a header, its body and its end line to the log; show prints them. */
+static void agent_log_write(const char *head, const char *text, const char *end,
+		int show)
 {
 	struct lbuf *lb = tempbufs[agent_logbuf].lb;
+	struct agent_span *spans;
+	int cnt = agent_spans_of(lb, &spans);
 	sbuf_smake(sb, 256)
-	sbuf_str(sb, role)
-	sbuf_chr(sb, '\''\n'\'')
+	/* Close a body whose END line a hand edit removed. */
+	if (cnt && *spans[cnt-1].open)
+		sbuf_str(sb, spans[cnt-1].open)
+	free(spans);
+	sbuf_str(sb, head)
 	sbuf_str(sb, text);
 	if (sb->s[sb->s_n-1] != '\''\n'\'')
 		sbuf_chr(sb, '\''\n'\'')
-	sbuf_chr(sb, '\''\n'\'')
+	sbuf_str(sb, end)
 	sbuf_nul(sb)
-	agent_output(sb->s);
+	if (show)
+		agent_output(sb->s);
 	lb->useq++;
+	agent_logging = 1;
 	lbuf_edit(lb, sb->s, lbuf_len(lb), lbuf_len(lb), 0, 0);
+	agent_logging = 0;
 	lb->useq++;
 	free(sb->s);
+}
+
+/* Checkpoint entries in b-8 have their own numbers; mark them apart. */
+static const char *agent_log_mark(void)
+{
+	return agent_checkpointing && agent_logbuf == 7 ? "CP " : "";
+}
+
+static void agent_turn_close(void)
+{
+	agent_turn[agent_logbuf == 3] = 0;
+}
+
+/* Log a USER or NOTICE entry. */
+static void agent_log(const char *role, const char *text)
+{
+	char head[64], id[AGENT_ID], end[AGENT_END];
+	agent_turn_close();
+	agent_frame(text, id, end);
+	snprintf(head, sizeof(head), "%s%s %lu%s\n", agent_log_mark(), role,
+		++agent_entries[agent_logbuf == 3], id);
+	agent_log_write(head, text, end, 1);
+}
+
+/* Log part idx of the open turn, opening one if needed: 0 reasoning, 1 text,
+ * 2 + 2k and 3 + 2k the command and result of call k. Reasoning prints only
+ * with ar above 1; the TURN line always does. */
+static void agent_turn_part(int idx, const char *text)
+{
+	unsigned long *turn = agent_turn + (agent_logbuf == 3);
+	char open[48] = "", head[128], id[AGENT_ID], end[AGENT_END];
+	int show = idx || xar > 1;
+	if (!*turn) {
+		*turn = ++agent_entries[agent_logbuf == 3];
+		snprintf(open, sizeof(open), "%sTURN %lu\n", agent_log_mark(), *turn);
+	}
+	agent_frame(text, id, end);
+	snprintf(head, sizeof(head), "%s%s%s %lu.%d%s\n", open, agent_log_mark(),
+		agent_part_roles[idx < 2 ? idx : AP_EX + (idx & 1)], *turn, idx, id);
+	if (!show)
+		agent_output(open);
+	agent_log_write(head, text, end, show);
+}
+
+/* The log as the terminal shows it: without reasoning unless ar is above 1. */
+static char *agent_shown_text(struct lbuf *lb)
+{
+	struct agent_span *spans = NULL;
+	struct agent_part *parts;
+	int cnt = xar > 1 ? 0 : agent_spans_of(lb, &spans), pcnt, i = 0;
+	sbuf_smake(sb, 256)
+	for (int k = 0; k < cnt; k++) {
+		if (spans[k].role != AE_TURN)
+			continue;
+		pcnt = agent_parts(lb, spans + k, &parts);
+		for (int p = 0; p < pcnt; p++) {
+			if (parts[p].role != AP_REASONING)
+				continue;
+			for (; i < parts[p].beg; i++)
+				sbuf_str(sb, lb->ln[i])
+			i = parts[p].end;
+		}
+		free(parts);
+	}
+	free(spans);
+	for (; i < lbuf_len(lb); i++)
+		sbuf_str(sb, lb->ln[i])
+	sbufn_ret(sb, sb->s)
+}
+
+/* Copy spans first through last of lb into b-7 in number order. A number
+ * already there keeps its entry, the original of a later note; entry 0 is
+ * skipped. The caller syncs b-7. */
+static void agent_discard(struct lbuf *lb, struct agent_span *spans,
+		int first, int last)
+{
+	struct lbuf *db = tempbufs[6].lb;
+	struct agent_span *old;
+	int cnt = agent_spans_of(db, &old), k = 0, shift = 0, pos;
+	sbuf_smake(sb, 256)
+	preserve(int, agent_syncing, agent_syncing = 1;)
+	for (int i = first; i <= last; i++) {
+		if (!spans[i].role)
+			continue;
+		while (k < cnt && old[k].n < spans[i].n)
+			k++;
+		if (k < cnt && old[k].n == spans[i].n)
+			continue;
+		sbuf_cut(sb, 0)
+		for (int l = spans[i].beg; l < spans[i].end; l++)
+			sbuf_str(sb, lb->ln[l])
+		sbuf_nul(sb)
+		pos = k < cnt ? old[k].beg + shift : lbuf_len(db);
+		lbuf_edit(db, sb->s, pos, pos, 0, 0);
+		shift += spans[i].end - spans[i].beg;
+	}
+	restore(agent_syncing)
+	free(sb->s);
+	free(old);
+}
+
+/* Head a compaction summary as a USER entry numbered after the log it
+ * replaced, now in b-7, so a later compaction can move it there too. */
+static void agent_head_summary(void)
+{
+	struct lbuf *lb = tempbufs[3].lb;
+	struct agent_span *spans;
+	int cnt = agent_spans_of(tempbufs[6].lb, &spans);
+	unsigned long n;
+	char head[48], id[AGENT_ID], end[AGENT_END], *text;
+	if (cnt)
+		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
+	free(spans);
+	if (!lbuf_len(lb) || agent_header(lb->ln[0], 0, &n, NULL))
+		return;
+	text = agent_text(lb);
+	agent_frame(text, id, end);
+	free(text);
+	snprintf(head, sizeof(head), "USER %lu%s\n", ++agent_entries[1], id);
+	preserve(int, agent_tool, agent_tool = 0;)
+	preserve(int, agent_syncing, agent_syncing = 1;)
+	lbuf_edit(lb, end, lbuf_len(lb), lbuf_len(lb), 0, 0);
+	lbuf_edit(lb, head, 0, 0, 0, 0);
+	restore(agent_syncing)
+	restore(agent_tool)
+	if (agent_save(3))
+		ex_print("agent write failed; buffer text retained", msg_ft)
+}
+
+/* Move the entries of text, a log replaced by compaction, to b-7. */
+static void agent_discard_log(char *text)
+{
+	struct lbuf *lb = lbuf_make();
+	struct agent_span *spans;
+	int cnt;
+	preserve(int, agent_tool, agent_tool = 0;)
+	if (*text)
+		lbuf_edit(lb, text, 0, 0, 0, 0);
+	cnt = agent_spans_of(lb, &spans);
+	agent_discard(lb, spans, 0, cnt - 1);
+	restore(agent_tool)
+	free(spans);
+	lbuf_free(lb);
+	agent_sync(tempbufs[6].lb);
+}
+
+static double agent_span_tokens(struct agent_span *s)
+{
+	return (s->bytes + 2) / 3;
+}
+
+static char *agent_span_role(struct agent_span *s)
+{
+	return s->role ? agent_entry_roles[s->role - 1] : "TEXT";
+}
+
+/* b-6 rates turns: one line "N R sentence" per TURN entry N of b-4, with R
+ * from 0 (dead weight) to 3 (essential). The sentence of such a line s, or
+ * NULL. */
+static char *agent_note_line(char *s, unsigned long *n, int *rate)
+{
+	char *e;
+	if (!isdigit((unsigned char)*s))
+		return NULL;
+	*n = strtoul(s, &e, 10);
+	if (e[0] != '\'' '\'' || e[1] < '\''0'\'' || e[1] > '\''3'\'' || e[2] != '\'' '\'')
+		return NULL;
+	*rate = e[1] - '\''0'\'';
+	return e + 3;
+}
+
+/* The sentence rating entry n, or NULL. */
+static char *agent_note(unsigned long n, int *rate, int *row)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	unsigned long m;
+	char *s;
+	int r;
+	for (int i = 0; i < lbuf_len(lb); i++)
+		if ((s = agent_note_line(lb->ln[i], &m, &r)) && m == n) {
+			*rate = r;
+			*row = i;
+			return s;
+		}
+	return NULL;
+}
+
+/* Replace the note of entry n, or insert it in entry order. */
+static void agent_note_set(unsigned long n, int rate, char *text)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	int r, row, end;
+	char head[48];
+	if (agent_note(n, &r, &row))
+		end = row + 1;
+	else {
+		for (row = 0; row < lbuf_len(lb); row++)
+			if (isdigit((unsigned char)lb->ln[row][0]) &&
+					strtoul(lb->ln[row], NULL, 10) > n)
+				break;
+		end = row;
+	}
+	snprintf(head, sizeof(head), "%lu %d ", n, rate);
+	sbuf_smake(sb, 128)
+	sbuf_str(sb, head)
+	for (char *t = text; *t; t++)
+		sbuf_chr(sb, *t == '\''\n'\'' ? '\'' '\'' : *t)
+	sbuf_chr(sb, '\''\n'\'')
+	sbuf_nul(sb)
+	lbuf_edit(lb, sb->s, row, end, 0, 0);
+	free(sb->s);
+}
+
+/* The entry a ranged arate rating names by "same as TURN n", or 0. */
+static unsigned long agent_note_ref(char *note)
+{
+	char *e;
+	unsigned long n;
+	if (strncmp(note, "same as TURN ", 13) || !isdigit((unsigned char)note[13]))
+		return 0;
+	n = strtoul(note + 13, &e, 10);
+	return *e == '\''\n'\'' || !*e ? n : 0;
+}
+
+/* The sentence a rating stands for, following "same as" references. */
+static char *agent_note_text(char *note)
+{
+	unsigned long n;
+	int r, row;
+	char *t;
+	for (int i = 0; i < 16 && (n = agent_note_ref(note)) &&
+			(t = agent_note(n, &r, &row)); i++)
+		note = t;
+	return note;
+}
+
+/* TURN entry n among spans, or NULL. */
+static struct agent_span *agent_span_turn(struct agent_span *spans, int cnt,
+		unsigned long n)
+{
+	for (int k = 0; k < cnt; k++)
+		if (spans[k].role == AE_TURN && spans[k].n == n)
+			return spans + k;
+	return NULL;
+}
+
+/* Before the rating of entry n is replaced, move its text to the first
+ * rating that names n; the rest name that one. Ratings of spans with sel 1
+ * are skipped: they are replaced too. References point to earlier entries,
+ * so replacing spans last first moves each text once. */
+static void agent_note_rehome(unsigned long n, struct agent_span *spans,
+		int cnt, char *sel)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	struct agent_span *sp;
+	unsigned long m, to = 0;
+	int r, row, rate, len;
+	char *note = agent_note(n, &r, &row), *old, *s, same[32];
+	if (!note)
+		return;
+	len = strcspn(note, "\n");
+	old = memcpy(emalloc(len + 1), note, len);
+	old[len] = '\''\0'\'';
+	for (int i = 0; i < lbuf_len(lb); i++) {
+		if (!(s = agent_note_line(lb->ln[i], &m, &rate)) ||
+				agent_note_ref(s) != n ||
+				((sp = agent_span_turn(spans, cnt, m)) && sel[sp - spans] == 1))
+			continue;
+		agent_note_set(m, rate, to ? same : old);
+		if (!to) {
+			to = m;
+			snprintf(same, sizeof(same), "same as TURN %lu", to);
+		}
+	}
+	free(old);
+}
+
+/* Count turns with commands and no rating; buf lists the first few. */
+static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
+{
+	int n = 0, len = 0, r, row;
+	*buf = '\''\0'\'';
+	for (int k = 0; k < cnt; k++) {
+		if (spans[k].role != AE_TURN || !spans[k].calls ||
+				agent_note(spans[k].n, &r, &row))
+			continue;
+		if (n < 8 && len < size)
+			len += snprintf(buf + len, size - len, "%s%lu",
+				n ? ", " : "TURN ", spans[k].n);
+		n++;
+	}
+	if (n > 8 && len < size)
+		snprintf(buf + len, size - len, " and %d more", n - 8);
+	return n;
+}
+
+static int agent_unrated_now(char *buf, int size)
+{
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans);
+	int n = agent_unrated(spans, cnt, buf, size);
+	free(spans);
+	return n;
+}
+
+/* Empty b-6 (notes) or b-7 (discarded entries). */
+static void agent_temp_clear(int i)
+{
+	struct lbuf *lb = tempbufs[i].lb;
+	agent_syncing = 1;
+	lbuf_edit(lb, NULL, 0, lbuf_len(lb), 0, 0);
+	lbuf_saved(lb, 1);
+	agent_syncing = 0;
+	tempbufs[i].row = tempbufs[i].off = tempbufs[i].top = 0;
+	if (ex_buf == tempbufs+i) {
+		exbuf_load(ex_buf)
+	}
+	if (agent_ready && agent_save(i))
+		ex_print("agent write failed; buffer text retained", msg_ft)
+}
+
+/* Keep the notes of a compacted log beside its archive; start afresh. */
+static void agent_notes_archive(char *archive)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	char *path;
+	int fd, failed;
+	if (!lbuf_len(lb))
+		return;
+	path = emalloc(strlen(archive) + 8);
+	sprintf(path, "%s.notes", archive);
+	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+	failed = fd < 0 || lbuf_wr(lb, fd, 0, lbuf_len(lb));
+	if ((fd >= 0 && close(fd)) || failed)
+		ex_print("cannot archive agent notes", msg_ft)
+	free(path);
+	agent_temp_clear(5);
+}
+
+/* The phase in progress (agent_checkpointing): its exchange after the
+ * opening message, that message'\''s index in agent_messages (-1 before it is
+ * built), and the log buffer to return to. */
+static cJSON *agent_cp;
+static int agent_cp_base = -1, agent_cp_logbuf, agent_cp_done;
+static int agent_cp_refused, agent_cp_left;	/* refusals, unrated then */
+static int agent_cp_cmds;	/* turns with commands then, rated or not */
+static int agent_cp_asked;	/* acheck: checkpoint at the next boundary */
+static char agent_continue[] = "Continue the task.";
+/* Context bytes at the start; in bytes so reports use the current anchor. */
+static double agent_cp_bytes;
+static char *agent_cp_open;	/* the opening status and instructions */
+static cJSON *agent_cp_lead;	/* a message sent before it, if any */
+/* The checkpoint or budget check a thinking question interrupted; its
+ * messages stay in the context, with the question after them. */
+static struct {
+	cJSON *cp;
+	char *open;
+	double bytes;
+	int kind, base, logbuf, refused, left;
+} agent_cp_outer;
+
+/* Whether to refuse ending the checkpoint for unrated turns: up to twice in
+ * a row; new ratings restart the count. */
+static int agent_cp_hold(char *unrated, int size)
+{
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans);
+	int n = agent_unrated(spans, cnt, unrated, size);
+	agent_cp_cmds = 0;
+	for (int k = 0; k < cnt; k++)
+		agent_cp_cmds += spans[k].role == AE_TURN && spans[k].calls;
+	free(spans);
+	if (n < agent_cp_left)
+		agent_cp_refused = 0;
+	agent_cp_left = n;
+	return n && agent_cp_refused++ < 2;
+}
+
+/* A rating to copy, for the first unrated entry in an agent_unrated list. */
+static char *agent_cp_example(char *unrated)
+{
+	static char ex[112];
+	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser "
+		"and found where defaults are set\n", strtoul(unrated + 5, NULL, 10));
+	return ex;
+}
+
+static const char agent_rating_scale[] =
+	"Ratings:\n"
+	"0 mistakes, dead weight, no value for the remaining work\n"
+	"1 low, minor, superseded or only mechanics\n"
+	"2 useful, informs the remaining work\n"
+	"3 essential, a decision, finding or state the task depends on\n";
+
+/* Whether b-6 line l rates a turn no longer among spans; sets its number. */
+static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
+		unsigned long *n)
+{
+	int r;
+	return agent_note_line(l, n, &r) && !agent_span_turn(spans, cnt, *n);
+}
+
+/* From b-6 line *row, list the notes of trimmed turns numbered up to upto
+ * as "TURN N trimmed [R] note". Following notes with the same rating that
+ * name N, or the entry N names, join it as "TURN N-M". */
+static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
+		int *row, unsigned long upto)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	unsigned long n, m, ref, end, next;
+	char ln[64], *note, *t;
+	int i;
+	for (i = *row; i < lbuf_len(lb); i++) {
+		if (!isdigit((unsigned char)lb->ln[i][0]))
+			continue;
+		if (strtoul(lb->ln[i], NULL, 10) > upto)
+			break;
+		if (!agent_note_trimmed(lb->ln[i], spans, cnt, &n))
+			continue;
+		note = strchr(lb->ln[i], '\'' '\'') + 3;
+		ref = agent_note_ref(note);
+		end = n;
+		while (i + 1 < lbuf_len(lb) &&
+				agent_note_trimmed(lb->ln[i + 1], spans, cnt, &m) && m <= upto) {
+			t = strchr(lb->ln[i + 1], '\'' '\'') + 3;
+			next = agent_note_ref(t);
+			if (t[-2] != note[-2] || (next != n && (!ref || next != ref)))
+				break;
+			end = m;
+			i++;
+		}
+		if (end > n)
+			snprintf(ln, sizeof(ln), "TURN %lu-%lu trimmed [%c] ", n, end, note[-2]);
+		else
+			snprintf(ln, sizeof(ln), "TURN %lu trimmed [%c] ", n, note[-2]);
+		sbuf_str(sb, ln)
+		sbuf_mem(sb, note, (int)strcspn(note, "\n"))
+		sbuf_chr(sb, '\''\n'\'')
+	}
+	*row = i;
+}
+
+/* Whether a turn among spans logged reasoning; turn sizes then list it. */
+static int agent_spans_reasoned(struct agent_span *spans, int cnt)
+{
+	for (int k = 0; k < cnt; k++)
+		if (spans[k].role == AE_TURN && spans[k].part[AP_REASONING])
+			return 1;
+	return 0;
+}
+
+/* "ROLE N ~tokens"; a turn with several parts shows them instead, as
+ * reasoning+text+commands+results=tokens, reasoning only when reasoned. */
+static void agent_span_head(char *ln, int size, struct agent_span *s, int reasoned)
+{
+	size_t t[4], sum = 0;
+	int terms = 0, len = snprintf(ln, size, "%s %lu ", agent_span_role(s), s->n);
+	for (int i = 0; i < 4; i++) {
+		t[i] = (s->part[i] + 2) / 3;
+		sum += t[i];
+		terms += t[i] > 0;
+	}
+	if (s->role != AE_TURN || terms < 2) {
+		snprintf(ln + len, size - len, "~%.0f", agent_span_tokens(s));
+		return;
+	}
+	if (reasoned)
+		len += snprintf(ln + len, size - len, "%zu+", t[AP_REASONING]);
+	snprintf(ln + len, size - len, "%zu+%zu+%zu=%zu", t[AP_ASSISTANT],
+		t[AP_EX], t[AP_RESULT], sum);
+}
+
+/* One line per b-4 entry: agent_span_head, " line N" with lines, then
+ * [rating] for turns and the note for those with commands; with trimmed, the
+ * notes of trimmed turns in number order among them. Then the five largest
+ * entries of ~50 tokens or more. Without all, NOTICE entries are not listed
+ * and, outside a checkpoint, where the agent cannot note them, USER entries
+ * are not among the largest. */
+static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
+		int lines, int all, int unrated, int trimmed, int reasoned)
+{
+	int top[5], ntop = 0, listed = 0, r, row, nmoved = 0, trow = 0;
+	unsigned long *moved = NULL, ref;	/* removed target, entry shown */
+	struct agent_span *t;
+	char ln[256], same[32], *note;
+	for (int k = 0; k < cnt; k++) {
+		if (trimmed)
+			agent_trimmed_list(sb, spans, cnt, &trow, spans[k].n);
+		if (spans[k].role == AE_NOTICE && !all)
+			continue;
+		listed++;
+		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
+		sbuf_str(sb, ln)
+		if (lines) {
+			snprintf(ln, sizeof(ln), " line %d", spans[k].beg + 1);
+			sbuf_str(sb, ln)
+		}
+		if (spans[k].role == AE_TURN && (note = agent_note(spans[k].n, &r, &row))) {
+			snprintf(ln, sizeof(ln), " [%d]", r);
+			sbuf_str(sb, ln)
+			/* A sentence whose own entry is removed, or listed without
+			 * its note, shows on the first entry that names it, unless
+			 * listed among trimmed notes; the rest name that entry. */
+			if (spans[k].calls && (ref = agent_note_ref(note)) &&
+					((t = agent_span_turn(spans, cnt, ref)) ? !t->calls :
+					!(trimmed && agent_note(ref, &r, &row)))) {
+				int j = 0;
+				while (j < nmoved && moved[2*j] != ref)
+					j++;
+				if (j < nmoved) {
+					snprintf(same, sizeof(same), "same as TURN %lu",
+						moved[2*j+1]);
+					note = same;
+				} else {
+					moved = erealloc(moved, (nmoved + 1) * 2 * sizeof(*moved));
+					moved[2*nmoved] = ref;
+					moved[2*nmoved+1] = spans[k].n;
+					nmoved++;
+					note = agent_note_text(note);
+				}
+			}
+			/* A note or a text reply already says its sentence. */
+			if (spans[k].calls) {
+				sbuf_chr(sb, '\'' '\'')
+				sbuf_mem(sb, note, (int)strcspn(note, "\n"))
+			}
+		} else if (spans[k].role == AE_TURN && spans[k].calls && unrated)
+			sbuf_str(sb, " [unrated]")
+		sbuf_chr(sb, '\''\n'\'')
+		/* Insert into the five largest, kept in descending order. */
+		if (agent_span_tokens(spans + k) < 50 || (!all &&
+				spans[k].role <= AE_USER && agent_checkpointing != 1))
+			continue;
+		int j = ntop < 5 ? ntop++ : 5;
+		for (; j > 0 && spans[top[j-1]].bytes < spans[k].bytes; j--)
+			if (j < 5)
+				top[j] = top[j-1];
+		if (j < 5)
+			top[j] = k;
+	}
+	if (trimmed)
+		agent_trimmed_list(sb, spans, cnt, &trow, ULONG_MAX);
+	if (ntop && listed > ntop) {
+		sbuf_str(sb, "Largest:")
+		for (int j = 0; j < ntop; j++) {
+			snprintf(ln, sizeof(ln), "%s %s %lu", j ? "," : "",
+				agent_span_role(spans + top[j]), spans[top[j]].n);
+			sbuf_str(sb, ln)
+		}
+		sbuf_chr(sb, '\''\n'\'')
+	}
+	free(moved);
+}
+
+/* Session log status: total, the entry list and the unrated turns; with cp,
+ * worded for a checkpoint, asking for ratings. */
+static void agent_cp_status(sbuf *sb, int cp)
+{
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans), reasoned = agent_spans_reasoned(spans, cnt);
+	char ln[320], unrated[112];
+	double total = 0;
+	for (int k = 0; k < cnt; k++)
+		total += agent_span_tokens(spans + k);
+	snprintf(ln, sizeof(ln), cp ?
+		"Context checkpoint. Your context is rebuilt from these session log\n"
+		"entries, about %.0f tokens (role number ~tokens;\n"
+		"turns as %stext+commands+results=tokens, then [rating] note):\n" :
+		"The session log holds about %.0f tokens in these entries\n"
+		"(role number ~tokens;\n"
+		"turns as %stext+commands+results=tokens, then [rating] note):\n",
+		total, reasoned ? "reasoning+" : "");
+	sbuf_str(sb, ln)
+	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned);
+	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
+		sbuf_str(sb, "Unrated: ")
+		sbuf_str(sb, unrated)
+		sbuf_chr(sb, '\''\n'\'')
+		if (cp) {
+			sbuf_str(sb, "Rate these first, e.g.\n")
+			sbuf_str(sb, agent_cp_example(unrated))
+		}
+	}
+	free(spans);
+}
+
+/* The unrated turns alone, as lines of the entry list. */
+static void agent_cp_unrated(sbuf *sb)
+{
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans), r, row, n = 0;
+	int reasoned = agent_spans_reasoned(spans, cnt);
+	char ln[256];
+	for (int k = 0; k < cnt; k++) {
+		if (spans[k].role != AE_TURN || !spans[k].calls ||
+				agent_note(spans[k].n, &r, &row))
+			continue;
+		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
+		sbuf_str(sb, ln)
+		sbuf_str(sb, " [unrated]\n")
+		n++;
+	}
+	if (!n)
+		sbuf_str(sb, "No unrated turns.\n")
+	free(spans);
+}
+
+static const char agent_cp_guide[] =
+	"Only these ex commands run during the checkpoint, so decide from your\n"
+	"context. Each command is its own ex tool call; a reply can hold several\n"
+	"calls. Commands written as text do not run. N,M is a range from N\n"
+	"through M; three or more numbers, N,M,K, are a list of turns.\n"
+	"A TURN is one of your replies: its reasoning, text, commands and results.\n"
+	"Its last result in your context ends with a line [turn N end]; a\n"
+	"reply without commands has the number the list gives it.\n"
+	"N[,M]arate R sentence\n"
+	"  rate the TURN entries; the sentence says what the turn did and\n"
+	"  found; 0 also removes the turn\n"
+	"N[,M]anote [text]\n"
+	"  text replaces the entries as one note; no text removes them; USER\n"
+	"  entries too; keep the instructions the remaining work needs\n"
+	"adone\n"
+	"  apply the trims and resume the task\n"
+	"%s"
+	"Then trim by rating, largest turns first: replace 1 with a short\n"
+	"note and a large 2 with its findings; keep 3, or replace a large one\n"
+	"with every detail the task depends on.\n"
+	"Example: replace turns 53 through 59 with their findings\n"
+	"53,59anote findings: ...\n"
+	"Example: end the checkpoint\n"
+	"adone\n"
+	"This exchange is not kept; ratings show in later checkpoints and\n"
+	"compaction.\n";
+
+static void agent_cp_instructions(sbuf *sb)
+{
+	char *s = emalloc(sizeof(agent_cp_guide) + sizeof(agent_rating_scale));
+	sprintf(s, agent_cp_guide, agent_rating_scale);
+	sbuf_str(sb, s)
+	free(s);
+}
+
+/* The budget check message: asks for an estimate first, then between a
+ * checkpoint now and more tokens. */
+static char *agent_budget_open(void)
+{
+	char *s = emalloc(512);
+	int k = sprintf(s, "Stop working on the current task and complete this "
+		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
+	if (xaco)
+		k += sprintf(s + k, "/%d", xaco);
+	k += sprintf(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
+		"the session log or acheck N to defer it for N tokens." :
+		" tokens. Estimate and set the number of tokens the rest of this "
+		"task needs with acheck N command.");
+	if (xaco)
+		k += sprintf(s + k, "\nAn N reaching past %d runs the task until "
+			"compaction.", xaco);
+	/* N stays a placeholder: a number here would anchor the estimate. */
+	strcpy(s + k, agent_acl_budget ? "\nExample: trim the session log now\n"
+		"acheck\nExample: defer it for N tokens\n"
+		"acheck N" :
+		"\nExample: the rest of the task needs N tokens\n"
+		"acheck N");
+	return s;
+}
+
+/* kind 1 starts a checkpoint, 2 a budget check, 3 a thinking budget
+ * question, which can interrupt the other two and a pack. */
+static void agent_checkpoint_begin(double tokens, int kind)
+{
+	static char *cmds[] = {"arate", "anote", "adone", "acp", "ali", "auli",
+		"acheck", "acap"};
+	char note[64];
+	if (agent_checkpointing) {
+		agent_cp_outer.kind = agent_checkpointing;
+		agent_cp_outer.cp = agent_cp;
+		agent_cp_outer.open = agent_cp_open;
+		agent_cp_outer.bytes = agent_cp_bytes;
+		agent_cp_outer.base = agent_cp_base;
+		agent_cp_outer.logbuf = agent_cp_logbuf;
+		agent_cp_outer.refused = agent_cp_refused;
+		agent_cp_outer.left = agent_cp_left;
+		agent_cp_open = NULL;
+	}
+	agent_checkpointing = kind;
+	agent_cp_done = agent_cp_refused = 0;
+	agent_cp = cJSON_CreateArray();
+	agent_cp_base = -1;
+	agent_cp_bytes = agent_context_bytes();
+	agent_cp_left = INT_MAX;
+	agent_cp_logbuf = agent_logbuf;
+	agent_logbuf = 7;
+	/* A question in b-8 continues the numbering of what it interrupted. */
+	if (agent_cp_logbuf == 3)
+		agent_entries[0] = agent_turn[0] = 0;
+	/* The opening message explains these; do not defer them for specs. */
+	for (int i = 0; i < LEN(cmds); i++)
+		exspec_mark(cmds[i]);
+	if (kind == 3)
+		snprintf(note, sizeof(note), "[ath thinking cut at ~%.0f of "
+			"%d tokens]\n", tokens, agent_think_was);
+	else
+		snprintf(note, sizeof(note), "[acl %s ~%.0f tokens]\n",
+			kind == 1 ? "checkpoint" : "budget check", tokens);
+	agent_output(note);
+}
+
+/* The message of response root. */
+static cJSON *agent_reply(cJSON *root)
+{
+	return cJSON_GetObjectItem(cJSON_GetArrayItem(
+		cJSON_GetObjectItem(root, "choices"), 0), "message");
+}
+
+/* The reply'\''s reasoning text, NULL if none; key gets its field name. */
+static char *agent_reasoning(cJSON *message, const char **key)
+{
+	cJSON *r = cJSON_GetObjectItem(message, "reasoning_content");
+	*key = "reasoning_content";
+	if (!cJSON_IsString(r) || !*r->valuestring) {
+		r = cJSON_GetObjectItem(message, "reasoning");
+		*key = "reasoning";
+	}
+	return cJSON_IsString(r) && *r->valuestring ? r->valuestring : NULL;
+}
+
+/* Length of the reasoning s without a trailing think_cut, the sentence the
+ * server ends thinking with at the cap; -1 if s does not end with it. */
+static int agent_think_cut(const char *s)
+{
+	int n = strlen(s), k = strlen(think_cut);
+	while (n && isspace((unsigned char)s[n - 1]))
+		n--;
+	return k && n >= k && !memcmp(s + n - k, think_cut, k) ? n - k : -1;
+}
+
+/* Return the thinking tokens of the reply in root: the reported count, else
+ * the output tokens by the thinking'\''s share of the reply'\''s bytes, else its
+ * bytes / 3. */
+static double agent_think_tokens(cJSON *root)
+{
+	cJSON *message = agent_reply(root), *usage = cJSON_GetObjectItem(root, "usage");
+	cJSON *n = cJSON_GetObjectItem(cJSON_GetObjectItem(usage,
+		"completion_tokens_details"), "reasoning_tokens");
+	cJSON *out = cJSON_GetObjectItem(usage, "completion_tokens");
+	cJSON *content = cJSON_GetObjectItem(message, "content"), *tc;
+	const char *rkey;
+	char *reasoning = agent_reasoning(message, &rkey);
+	double tokens = cJSON_IsNumber(n) ? n->valuedouble : 0, bytes, all;
+	if (!out)
+		out = cJSON_GetObjectItem(usage, "output_tokens");
+	if (reasoning && tokens < 1) {
+		bytes = all = strlen(reasoning);
+		if (cJSON_IsString(content))
+			all += strlen(content->valuestring);
+		cJSON_ArrayForEach(tc, cJSON_GetObjectItem(message, "tool_calls")) {
+			char *args = cJSON_GetStringValue(cJSON_GetObjectItem(
+				cJSON_GetObjectItem(tc, "function"), "arguments"));
+			all += args ? strlen(args) : 0;
+		}
+		tokens = cJSON_IsNumber(out) && out->valuedouble > 0 ?
+			out->valuedouble * bytes / all : (bytes + 2) / 3;
+	}
+	return tokens;
+}
+
+/* Whether the server cut the thinking of the reply in root, which used
+ * tokens: it ends with think_cut and reached half the cap. A model shown its
+ * earlier cut thinking may end short thinking with think_cut itself. */
+static int agent_think_hit(cJSON *root, double tokens)
+{
+	const char *rkey;
+	char *reasoning = agent_reasoning(agent_reply(root), &rkey);
+	return reasoning && agent_think_cap >= 0 &&
+		tokens >= agent_think_cap / 2.0 && agent_think_cut(reasoning) >= 0;
+}
+
+/* Drop think_cut from the thinking of the reply in root, so the context and
+ * the log never show a model the sentence to copy. */
+static void agent_think_strip(cJSON *root)
+{
+	const char *rkey;
+	char *reasoning = agent_reasoning(agent_reply(root), &rkey);
+	int n = reasoning ? agent_think_cut(reasoning) : -1;
+	if (n < 0)
+		return;
+	while (n && isspace((unsigned char)reasoning[n - 1]))
+		n--;
+	reasoning[n] = '\''\0'\'';
+}
+
+/* ata: move the average a quarter of the way to the thinking tokens of the
+ * reply in root, if it thought. A reply the server cut counts as twice the
+ * cap, so cut replies raise the average. It starts at the cap ath set, else
+ * at the first reply. */
+static void agent_think_sample(cJSON *root, double tokens)
+{
+	if (agent_think_cap > 0 && (tokens >= agent_think_cap ||
+			agent_think_hit(root, tokens)))
+		tokens = 2.0 * agent_think_cap;
+	if (tokens < 1 || tokens >= 1e9)
+		return;
+	if (!agent_think_cnt++)
+		agent_think_avg = agent_think_base > 0 ? agent_think_base : tokens;
+	agent_think_avg += (tokens - agent_think_avg) / 4;
+}
+
+/* Spend the thinking tokens used by the reply to a request capped at sent;
+ * the reply to a raised cap banks what it left of it instead. */
+static void agent_think_spend(int raised, int sent, double used)
+{
+	double left = (raised ? sent : agent_think_bank) - used;
+	agent_think_bank = left > 0 ? (int)(left + .5) : 0;
+}
+
+/* Drop a cap the agent raised: back to what ath set or, with ata, that
+ * percentage of the average, from 1 to the ceiling, else to what ath set;
+ * plus the bank, up to the ceiling. */
+static void agent_think_rebase(void)
+{
+	int top = agent_think_max ? agent_think_max : agent_think_base;
+	double cap = agent_think_avg * xata / 100 + .5;
+	agent_think_up = 0;
+	agent_think_cap = agent_think_base;
+	if (xata && agent_think_cnt)
+		agent_think_cap = MAX(1, (int)MIN(cap, top > 0 ? top : 1e9));
+	if (agent_think_bank && agent_think_cap >= 0)
+		agent_think_cap = MIN(agent_think_cap + agent_think_bank,
+			agent_think_max);
+}
+
+/* Suffix for the errors of a thinking question: the retry count, while one
+ * is left. */
+static char *agent_think_retry(void)
+{
+	static char s[32];
+	*s = '\''\0'\'';
+	if (agent_checkpointing == 3 && agent_cp_refused < AGENT_THINK_TRIES)
+		snprintf(s, sizeof(s), "; retry: %d/%d", agent_cp_refused + 1,
+			AGENT_THINK_TRIES);
+	return s;
+}
+
+static void agent_think_drop(void)
+{
+	cJSON_Delete(agent_think_held);
+	agent_think_held = NULL;
+}
+
+static void agent_think_unnote(void)
+{
+	free(agent_think_note);
+	agent_think_note = NULL;
+}
+
+/* Whether to withhold the reply in root, whose thinking used tokens, for a
+ * thinking question: the server cut its thinking below the ceiling, and it
+ * neither answers a question nor replaces a reply one discarded (asked). */
+static int agent_think_cutoff(cJSON *root, double tokens, int asked)
+{
+	return !asked && agent_checkpointing != 3 &&
+		agent_think_cap < agent_think_max && agent_think_hit(root, tokens);
+}
+
+/* Withhold the reply in root, whose thinking used tokens, and start a
+ * thinking question about it: the reply without its calls leads the
+ * question, which lists their commands. */
+static void agent_think_ask(cJSON *root, double tokens)
+{
+	cJSON *message = agent_reply(root);
+	cJSON *calls = cJSON_GetObjectItem(message, "tool_calls"), *tc;
+	cJSON *content = cJSON_GetObjectItem(message, "content");
+	const char *rkey;
+	char *reasoning = agent_reasoning(message, &rkey);
+	char line[320], *keep;
+	int cap = agent_think_was, cnt = cJSON_GetArraySize(calls);
+	/* the example cap: twice the cut one, within the ceiling */
+	int more = cap > 0 && cap < agent_think_max / 2 ? cap * 2 : agent_think_max;
+	sbuf_smake(sb, 1024)
+	agent_think_held = root;
+	agent_think_more = 0;
+	agent_think_empty = !cnt && !cJSON_IsString(content);
+	agent_checkpoint_begin(tokens, 3);
+	agent_cp_lead = cJSON_Duplicate(message, 1);
+	cJSON_DeleteItemFromObject(agent_cp_lead, "tool_calls");
+	if (!cJSON_IsString(content)) {
+		cJSON_DeleteItemFromObject(agent_cp_lead, "content");
+		cJSON_AddStringToObject(agent_cp_lead, "content", "");
+	}
+	if (xar && reasoning)
+		agent_turn_part(0, reasoning);
+	if (cJSON_IsString(content) && *content->valuestring)
+		agent_turn_part(1, content->valuestring);
+	snprintf(line, sizeof(line), "Stop working on the current task and "
+		"complete this budget check.\nThe thinking of your last "
+		"reply was cut off after ~%.0f tokens at the cap of %d tokens. "
+		"The reply is %s\n", tokens, cap,
+		cnt ? "withheld and these commands did not run:" : agent_think_empty ?
+		"discarded; it had no text and made no ex tool calls." :
+		"withheld; it made no ex tool calls.");
+	sbuf_str(sb, line)
+	cJSON_ArrayForEach(tc, calls) {
+		cJSON *args = cJSON_GetObjectItem(cJSON_GetObjectItem(tc,
+			"function"), "arguments");
+		cJSON *parsed = cJSON_IsString(args) ?
+			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
+		char *cmd = cJSON_GetStringValue(cJSON_GetObjectItem(parsed,
+			"command"));
+		sbuf_str(sb, cmd ? cmd : "invalid tool call")
+		sbuf_chr(sb, '\''\n'\'')
+		cJSON_Delete(parsed);
+	}
+	if (!agent_think_empty)
+		sbuf_str(sb, cnt ? "These commands may rest on unfinished "
+			"reasoning; run them only if your thinking had already "
+			"settled them.\n" : "Its text may rest on unfinished "
+			"reasoning; keep it only if your thinking had already "
+			"settled it.\n")
+	keep = cnt ? "run the reply as it is" :
+		agent_think_empty ? "reply again under the same cap" :
+		"keep the reply as it is";
+	snprintf(line, sizeof(line), "You must use acap command to %s or acap N [note] to "
+		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
+		keep, agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
+	sbuf_str(sb, line)
+	sbuf_str(sb, "\nTokens the new reply leaves of N carry over to later caps.\n"
+		"The new reply sees nothing of this exchange except the "
+		"optional [note] after N.\n"
+		"A note directs how to think better.\n"
+		"Do not mention this budget check in a note.")
+	snprintf(line, sizeof(line), "\nExample: %s\nacap\n"
+		"Example: reply again under a cap of %d tokens, with a note\n"
+		"acap %d focus on ...", keep, more, more);
+	sbuf_str(sb, line)
+	sbuf_nul(sb)
+	agent_cp_open = sb->s;
+	agent_log("USER", agent_cp_open);
+}
+
+/* Detach the exchange that followed the opening message in the last request. */
+static void agent_cp_collect(void)
+{
+	cJSON *m;
+	int open = 1 + !!agent_cp_lead;
+	if (agent_cp_base < 0)
+		return;
+	cJSON_Delete(agent_cp);
+	agent_cp = cJSON_CreateArray();
+	while ((m = cJSON_DetachItemFromArray(agent_messages, agent_cp_base + open)))
+		cJSON_AddItemToArray(agent_cp, m);
+	while (open--)
+		cJSON_DeleteItemFromArray(agent_messages, agent_cp_base);
+	agent_cp_base = -1;
+}
+
+/* Append the opening message and the exchange to the context. */
+static void agent_cp_build(void)
+{
+	cJSON *m;
+	/* The opening message is written once; ali and acp print it again. */
+	if (!agent_cp_open && agent_checkpointing == 2) {
+		agent_cp_open = agent_budget_open();
+		agent_log("USER", agent_cp_open);
+	} else if (!agent_cp_open) {
+		sbuf_smake(sb, 1024)
+		agent_cp_status(sb, 1);
+		agent_cp_instructions(sb);
+		sbuf_nul(sb)
+		agent_cp_open = sb->s;
+		agent_log("USER", agent_cp_open);
+	}
+	agent_cp_base = cJSON_GetArraySize(agent_messages);
+	if (agent_cp_lead)
+		cJSON_AddItemToArray(agent_messages,
+			cJSON_Duplicate(agent_cp_lead, 1));
+	cJSON_AddItemToArray(agent_messages, agent_msg("user", agent_cp_open));
+	cJSON_ArrayForEach(m, agent_cp)
+		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
+}
+
+static void agent_checkpoint_end(void)
+{
+	char note[128], unrated[112];
+	int k, n, kind = agent_checkpointing, answered = agent_cp_done;
+	int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
+	if (!kind)
+		return;
+	agent_cp_collect();
+	cJSON_Delete(agent_cp);
+	agent_cp = NULL;
+	cJSON_Delete(agent_cp_lead);
+	agent_cp_lead = NULL;
+	free(agent_cp_open);
+	agent_cp_open = NULL;
+	agent_logbuf = agent_cp_logbuf;
+	agent_checkpointing = agent_cp_done = 0;
+	/* A question and a budget check leave b-4 and the context as they were. */
+	if (kind == 3) {
+		snprintf(note, sizeof(note), agent_think_more ?
+			"[ath reply discarded, thinking cap %d tokens%s for the next]\n" :
+			agent_think_empty ? "[ath reply requested again]\n" :
+			"[ath reply kept as it is]\n", agent_think_cap,
+			agent_think_note ? " and a note" : "");
+		if (answered)
+			agent_output(note);
+		if (agent_cp_outer.kind) {
+			agent_checkpointing = agent_cp_outer.kind;
+			agent_cp = agent_cp_outer.cp;
+			agent_cp_open = agent_cp_outer.open;
+			agent_cp_bytes = agent_cp_outer.bytes;
+			agent_cp_base = agent_cp_outer.base;
+			agent_cp_logbuf = agent_cp_outer.logbuf;
+			agent_cp_refused = agent_cp_outer.refused;
+			agent_cp_left = agent_cp_outer.left;
+			agent_cp_outer.kind = 0;
+		}
+		return;
+	}
+	/* Unanswered, a budget check runs again at the next request. */
+	if (kind == 2) {
+		if (answered && !agent_cp_asked)
+			agent_acl_mark = agent_tokens();
+		snprintf(note, sizeof(note), agent_cp_asked ?
+			"[acl budget check done, checkpoint next]\n" : !answered ?
+			"[acl budget check unanswered]\n" :
+			"[acl budget check done, next after ~%d more tokens, at ~%.0f]\n",
+			budget, agent_acl_mark + budget);
+		agent_output(note);
+		return;
+	}
+	agent_acl_budget = 0;
+	if (agent_live())
+		agent_reparse();
+	agent_acl_mark = agent_tokens();
+	k = snprintf(note, sizeof(note), "[acl checkpoint done ~%.0f -> ~%.0f tokens",
+		agent_tokens_at(agent_cp_bytes), agent_acl_mark);
+	if ((n = agent_unrated_now(unrated, sizeof(unrated))))
+		snprintf(note + k, sizeof(note) - k, ", %d unrated", n);
+	strcat(note, "]\n");
+	agent_output(note);
+}
+
+/* End a question together with what it interrupted. */
+static void agent_checkpoint_stop(void)
+{
+	while (agent_checkpointing)
+		agent_checkpoint_end();
+}
+
+/* acp prints the checkpoint instructions, to the agent only during one; ali
+ * the session log status and auli its unrated turns, at any time. */
+static void *ec_acp(char *loc, char *cmd, char *arg)
+{
+	static char err[40];
+	if (*loc || *arg) {
+		snprintf(err, sizeof(err), "%s takes no range or argument", cmd);
+		return err;
+	}
+	if (cmd[1] == '\''c'\'' && agent_tool && !agent_checkpointing)
+		return "no checkpoint in progress";
+	if (cmd[1] != '\''c'\'' && !lbuf_len(tempbufs[3].lb))
+		return "session log is empty";
+	sbuf_smake(sb, 1024)
+	if (cmd[1] == '\''c'\'')
+		agent_cp_instructions(sb);
+	else if (cmd[1] == '\''l'\'')
+		agent_cp_status(sb, agent_checkpointing == 1);
+	else
+		agent_cp_unrated(sb);
+	if (agent_capture)	/* exempt from agr, as aout */
+		sbuf_mem(agent_capture, sb->s, sb->s_n)
+	else {
+		sbuf_nul(sb)
+		ex_print(sb->s, msg_ft)
+	}
+	free(sb->s);
+	return NULL;
+}
+
+static void *ec_adone(char *loc, char *cmd, char *arg)
+{
+	if (*loc || *arg)
+		return "adone takes no range or argument";
+	static char err[320];
+	char unrated[112];
+	if (!agent_checkpointing)
+		return "no checkpoint in progress";
+	if (agent_cp_hold(unrated, sizeof(unrated))) {
+		snprintf(err, sizeof(err), "%d/%d turns unrated; rate first with "
+			"N[,M]arate R sentence:\n%s\nali command prints the whole "
+			"list, auli command prints the unrated list only",
+			agent_cp_left, agent_cp_cmds, unrated);
+		return err;
+	}
+	agent_cp_done = 1;
+	return NULL;
+}
+
+/* Ask for a checkpoint, started once the tool batch completes; with N and
+ * acl < 0, set the growth to the next budget check instead. Either ends a
+ * budget check, printing nothing: that exchange is discarded. */
+static void *ec_acheck(char *loc, char *cmd, char *arg)
+{
+	static char msg[80];
+	char *end;
+	long n = 0;
+	if (*loc)
+		return "acheck takes no range";
+	if (*arg) {
+		n = strtol(arg, &end, 10);
+		if (*end || n <= 0 || n > INT_MAX)
+			return "acheck takes a positive token count";
+		if (xacl >= 0)
+			return "acheck N needs negative acl";
+	}
+	if (!agent_acl_kept())
+		return "acheck needs acl above 1 or negative";
+	if (agent_checkpointing == 1)
+		return "checkpoint already in progress";
+	agent_cp_done = agent_checkpointing == 2;
+	if (!n) {
+		agent_cp_asked = 1;
+		if (!agent_cp_done)
+			ex_print("checkpoint starts before the next request", msg_ft)
+		return NULL;
+	}
+	/* A budget check sets the mark when it ends. */
+	agent_acl_budget = n;
+	if (!agent_checkpointing)
+		agent_acl_mark = agent_tokens();
+	if (!agent_cp_done) {
+		snprintf(msg, sizeof(msg), "next budget check after ~%ld more tokens", n);
+		ex_print(msg, msg_ft)
+	}
+	return NULL;
+}
+
+/* Append lines beg up to end of lb to sb, less line close (the END line)
+ * and trailing newlines. */
+static void agent_body(sbuf *sb, struct lbuf *lb, int beg, int end, int close)
+{
+	for (int i = beg; i < end; i++)
+		if (i != close)
+			sbuf_str(sb, lb->ln[i])
+	while (sb->s_n && sb->s[sb->s_n-1] == '\''\n'\'')
+		sb->s_n--;
+	sbuf_nul(sb)
+}
+
+/* End a turn'\''s last tool result with a line naming the turn; context only,
+ * never logged. */
+static void agent_stamp(sbuf *sb, unsigned long n)
+{
+	char stamp[40];
+	snprintf(stamp, sizeof(stamp), "[turn %lu end]", n);
+	if (sb->s_n && sb->s[sb->s_n-1] != '\''\n'\'')
+		sbuf_chr(sb, '\''\n'\'')
+	sbufn_str(sb, stamp)
+}
+
+/* Add turn s of lb to msgs: one assistant message, then a tool message per
+ * EX part with the RESULT part that directly follows it. Text or reasoning
+ * parts a hand edit repeated are joined by a blank line. A turn without text
+ * and calls is dropped. */
+static void agent_add_turn(cJSON *msgs, struct lbuf *lb, struct agent_span *s)
+{
+	struct agent_part *parts;
+	int cnt = agent_parts(lb, s, &parts), n;
+	cJSON *asst, *calls = cJSON_CreateArray(), *tools = cJSON_CreateArray();
+	cJSON *tc, *fn, *args, *tool, *last, *t;
+	char id[48], *json, *prev;
+	int len, lastex = -1;
+	sbuf_smake(text, 256)
+	sbuf_smake(reason, 256)
+	sbuf_smake(body, 256)
+	for (int k = 0; k < cnt; k++)
+		if (parts[k].role == AP_EX)
+			lastex = k;
+	for (int k = 0; k < cnt; k++) {
+		if (parts[k].role == AP_ASSISTANT || parts[k].role == AP_REASONING) {
+			sbuf *sb = parts[k].role == AP_ASSISTANT ? text : reason;
+			if (sb->s_n)
+				sbuf_str(sb, "\n\n")
+			agent_body(sb, lb, parts[k].beg + 1, parts[k].end, parts[k].close);
+		}
+		if (parts[k].role != AP_EX)
+			continue;
+		snprintf(id, sizeof(id), "ex%lu_%d", s->n, parts[k].idx);
+		sbuf_cut(body, 0)
+		agent_body(body, lb, parts[k].beg + 1, parts[k].end, parts[k].close);
+		tc = cJSON_CreateObject();
+		cJSON_AddStringToObject(tc, "id", id);
+		cJSON_AddStringToObject(tc, "type", "function");
+		fn = cJSON_AddObjectToObject(tc, "function");
+		cJSON_AddStringToObject(fn, "name", "ex");
+		args = cJSON_CreateObject();
+		cJSON_AddStringToObject(args, "command", body->s);
+		json = cJSON_PrintUnformatted(args);
+		cJSON_AddStringToObject(fn, "arguments", json);
+		free(json);
+		cJSON_Delete(args);
+		sbufn_cut(body, 0)
+		cJSON_AddItemToArray(calls, tc);
+		if (k + 1 < cnt && parts[k + 1].role == AP_RESULT)
+			agent_body(body, lb, parts[k + 1].beg + 1, parts[k + 1].end,
+				parts[k + 1].close);
+		else
+			sbufn_str(body, "no result")
+		if (k == lastex)
+			agent_stamp(body, s->n);
+		tool = agent_msg("tool", body->s);
+		cJSON_AddStringToObject(tool, "tool_call_id", id);
+		cJSON_AddItemToArray(tools, tool);
+	}
+	sbuf_nul(text)
+	sbuf_nul(reason)
+	len = text->s_n;
+	if (cJSON_GetArraySize(calls) || len) {
+		asst = agent_msg("assistant", text->s);
+		if (reason->s_n)
+			cJSON_AddStringToObject(asst, agent_rkey, reason->s);
+		n = cJSON_GetArraySize(msgs);
+		last = cJSON_GetArrayItem(msgs, n - 1);
+		/* Notes can leave assistant text after assistant text; some
+		 * servers reject consecutive assistant messages, so join them. */
+		if (last && !strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(last,
+				"role")), "assistant") &&
+				!cJSON_HasObjectItem(last, "tool_calls")) {
+			prev = cJSON_GetStringValue(cJSON_GetObjectItem(last, "content"));
+			sbuf_cut(body, 0)
+			sbuf_str(body, prev)
+			if (len)
+				sbuf_str(body, "\n\n")
+			sbufn_str(body, text->s)
+			cJSON_ReplaceItemInObject(asst, "content",
+				cJSON_CreateString(body->s));
+			len = body->s_n;
+			if (!reason->s_n && (t = cJSON_DetachItemFromObject(last, agent_rkey)))
+				cJSON_AddItemToObject(asst, agent_rkey, t);
+			cJSON_DeleteItemFromArray(msgs, n - 1);
+		}
+		if (cJSON_GetArraySize(calls)) {
+			if (!len)
+				cJSON_ReplaceItemInObject(asst, "content", cJSON_CreateNull());
+			cJSON_AddItemToObject(asst, "tool_calls", calls);
+			calls = NULL;
+		}
+		cJSON_AddItemToArray(msgs, asst);
+		while ((t = cJSON_DetachItemFromArray(tools, 0)))
+			cJSON_AddItemToArray(msgs, t);
+	}
+	cJSON_Delete(calls);
+	cJSON_Delete(tools);
+	free(text->s);
+	free(reason->s);
+	free(body->s);
+	free(parts);
+}
+
+/* Append a user message, joined to a preceding one: some chat templates
+ * need alternating roles. */
+static void agent_add_user(cJSON *msgs, const char *text)
+{
+	cJSON *last = cJSON_GetArrayItem(msgs, cJSON_GetArraySize(msgs) - 1);
+	char *prev = cJSON_GetStringValue(cJSON_GetObjectItem(last, "content"));
+	if (!prev || strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(last, "role")),
+			"user")) {
+		cJSON_AddItemToArray(msgs, agent_msg("user", text));
+		return;
+	}
+	sbuf_smake(sb, 256)
+	sbuf_str(sb, prev)
+	sbuf_str(sb, "\n\n")
+	sbufn_str(sb, text)
+	cJSON_ReplaceItemInObject(last, "content", cJSON_CreateString(sb->s));
+	free(sb->s);
+}
+
+/* Rebuild the conversation after the system message from b-4: USER entries
+ * and the text before the first header are user messages, NOTICE entries
+ * are skipped. */
+static void agent_reparse(void)
+{
+	struct lbuf *lb = tempbufs[3].lb;
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans);
+	cJSON *sys = cJSON_DetachItemFromArray(agent_messages, 0);
+	agent_log_edited = 0;
+	cJSON_Delete(agent_messages);
+	agent_messages = cJSON_CreateArray();
+	cJSON_AddItemToArray(agent_messages, sys);
+	sbuf_smake(text, 256)
+	for (int k = 0; k < cnt; k++) {
+		if (spans[k].role == AE_TURN)
+			agent_add_turn(agent_messages, lb, spans + k);
+		if (spans[k].role > AE_USER)
+			continue;
+		sbuf_cut(text, 0)
+		agent_body(text, lb, spans[k].beg + !!spans[k].role, spans[k].end,
+			spans[k].close);
+		if (text->s_n)
+			agent_add_user(agent_messages, text->s);
+	}
+	free(text->s);
+	if (cnt)
+		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
+	agent_turn[1] = 0;
+	free(spans);
 }
 
 static void agent_key(int c)
@@ -406,14 +2245,13 @@ static int agent_boundary(void)
 static void agent_capture_add(const char *s, int n)
 {
 	agent_capture_total += n;
-	if (xgr == 2)
-		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
+	if (agent_gr_cap())
+		n = MIN(n, MAX(0, agent_gr_cap() - agent_capture->s_n));
 	sbuf_mem(agent_capture, s, n)
 }
 
-/* Tool output may contain NULs or malformed UTF-8. cJSON strings are
- * NUL-terminated and cJSON_Print does not validate UTF-8, so convert raw
- * bytes to readable, valid UTF-8 before adding them to history or the log. */
+/* Tool output can hold NULs and malformed UTF-8, which cJSON neither
+ * carries nor validates: escape such bytes as \xHH. The caller frees. */
 static char *agent_safe_text(const char *s, size_t n)
 {
 	sbuf_smake(text, n + 1)
@@ -455,63 +2293,93 @@ static char *agent_safe_text(const char *s, size_t n)
 	return text->s;
 }
 
-/* Interactive shells can put each job in a separate process group. */
-static void agent_killtree(pid_t pid)
+/* The child leads its own process group. A job that still gets a separate
+   group (job control re-enabled) owns the terminal; job < 0 looks it up. */
+static void agent_killtree(pid_t pid, int done, pid_t job)
 {
-	struct child { pid_t pid, parent; int selected; } *children = NULL;
-	int n = 0, cap = 0, changed;
-	long child, parent;
-	pid_t group;
-	FILE *ps;
-	kill(pid, SIGSTOP);
-	ps = popen("ps -e -o pid= -o ppid=", "r");
-	if (ps) {
-		while (fscanf(ps, "%ld %ld", &child, &parent) == 2) {
-			if (child <= 0 || child == getpid())
-				continue;
-			if (n == cap) {
-				cap += 128;
-				children = erealloc(children, cap * sizeof(*children));
-			}
-			children[n++] = (struct child){child, parent, child == pid};
-		}
-		pclose(ps);
-		do {
-			changed = 0;
-			for (int i = 0; i < n; i++) {
-				if (children[i].selected)
-					continue;
-				for (int j = 0; j < n; j++) {
-					if (!children[j].selected || children[i].parent != children[j].pid)
-						continue;
-					children[i].selected = changed = 1;
-					kill(children[i].pid, SIGSTOP);
-					break;
-				}
-			}
-		} while (changed);
-		for (int i = 0; i < n; i++) {
-			if (!children[i].selected)
-				continue;
-			group = getpgid(children[i].pid);
-			if (group > 0 && group != getpgrp())
-				kill(-group, SIGKILL);
-			kill(children[i].pid, SIGKILL);
-		}
-	}
-	free(children);
-	kill(pid, SIGKILL);
+	kill(-pid, SIGKILL);	/* first, so the shell starts no further jobs */
+	if (!done)
+		kill(pid, SIGKILL); /* also covers cancellation before setpgid */
+	if (job < 0)
+		job = tcgetpgrp(term_ufd.fd);
+	if (job > 0 && job != pid && job != getpgrp())
+		kill(-job, SIGKILL);
 }
 
-/* Keep one excess byte to detect truncated output; continue draining the pipe. */
-/* Use file-backed stdin; poll output and terminal together. */
+static void agent_jobnote(char *msg)
+{
+	int n = strlen(agent_jobmsg);
+	snprintf(agent_jobmsg + n, sizeof(agent_jobmsg) - n, "%s\n", msg);
+}
+
+/* A zombie would still answer kill -0. */
+static void agent_reap(void)
+{
+	char msg[64];
+	int st = 0;
+	for (int i = 0; i < LEN(agent_jobs); i++) {
+		if (agent_jobs[i] <= 0 || !waitpid(agent_jobs[i], &st, WNOHANG))
+			continue;
+		snprintf(msg, sizeof(msg), "detached pid %d exited, status %d",
+			(int)agent_jobs[i],
+			WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st));
+		agent_jobnote(msg);
+		agent_jobs[i] = 0;
+	}
+}
+
+/* Leave the command running past ato. Without a reader it would die of
+   SIGPIPE or block, so a cat outside the session copies the pipe to a file. */
+static void agent_detach(int fd, pid_t pid, int done)
+{
+	char path[] = "/tmp/nextvi-job-XXXXXX", msg[160];
+	int ofd, i;
+	pid_t cat;
+	if (fd >= 0) {
+		if ((ofd = mkstemp(path)) < 0) {
+			strcpy(path, "/dev/null");
+			ofd = open(path, O_WRONLY);
+		}
+		if (!(cat = fork())) {
+			if (fork())	/* orphaned, so never a zombie here */
+				_exit(0);
+			setsid();
+			dup2(fd, STDIN_FILENO);
+			dup2(ofd, STDOUT_FILENO);
+			dup2(ofd, STDERR_FILENO);
+			execlp("cat", "cat", (char *)NULL);
+			_exit(127);
+		}
+		while (cat > 0 && waitpid(cat, NULL, 0) < 0 && errno == EINTR)
+			;
+		close(ofd);
+		close(fd);
+	}
+	for (i = 0; !done && i < LEN(agent_jobs); i++) {
+		if (!agent_jobs[i]) {
+			agent_jobs[i] = pid;
+			break;
+		}
+	}
+	snprintf(msg, sizeof(msg), "detached after %d sec: process group %d "
+		"runs in background%s%s", xato, (int)pid,
+		fd >= 0 ? ", later output in " : "", fd >= 0 ? path : "");
+	agent_jobnote(msg);
+}
+
+/* Run argv with input on a file-backed stdin, polling its output and the
+ * terminal together. Nonzero limit caps the output bytes kept; the pipe is
+ * drained regardless. http captures stderr apart, into *errout. */
 static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
-	int limited, sbuf **errout)
+	int limit, sbuf **errout)
 {
 	FILE *in = tmpfile();
 	struct pollfd fds[3];
 	int output[2] = {-1, -1}, error[2] = {-1, -1}, pid, done = 0, st = 0,
-		killed = 0, tidx = http ? 2 : 1, interactive = !http && xish;
+		killed = 0, tidx = http ? 2 : 1, interactive = !http && xish,
+		detached = 0;
+	pid_t job = interactive ? -1 : 0;
+	struct timespec beg, now;
 	void (*old_ttou)(int) = SIG_DFL, (*old_ttin)(int) = SIG_DFL;
 	char buf[4097];
 	sbuf *sb, *eb = NULL;
@@ -542,9 +2410,11 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 	}
 	pid = fork();
 	if (!pid) {
-		/* Interactive startup requires the editor'\''s foreground group. */
-		if (!interactive && setpgid(0, 0) < 0)
+		/* Interactive startup requires a foreground group; SIGTTOU is ignored. */
+		if (setpgid(0, 0) < 0)
 			_exit(127);
+		if (interactive)
+			tcsetpgrp(term_ufd.fd, getpid());
 		dup2(fileno(in), STDIN_FILENO);
 		dup2(output[1], STDOUT_FILENO);
 		dup2(http ? error[1] : output[1], STDERR_FILENO);
@@ -572,8 +2442,7 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 			close(error[0]);
 		return NULL;
 	}
-	if (!interactive)
-		setpgid(pid, pid);
+	setpgid(pid, pid);
 	fds[0].fd = output[0];
 	fds[0].events = POLLIN;
 	if (http) {
@@ -584,14 +2453,18 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 	sbuf_make(sb, 4096)
 	if (http)
 		sbuf_make(eb, 4096)
+	clock_gettime(CLOCK_MONOTONIC, &beg);
 	while (!done || fds[0].fd >= 0 || (http && fds[1].fd >= 0)) {
+		agent_reap();
+		if (!http && xato > 0 && !killed &&
+				!clock_gettime(CLOCK_MONOTONIC, &now) &&
+				now.tv_sec - beg.tv_sec >= xato) {
+			agent_detach(fds[0].fd, pid, done);
+			detached = 1;
+			break;
+		}
 		if ((agent_cancel || (http && agent_pause)) && !killed) {
-			if (interactive && !done)
-				agent_killtree(pid);
-			else if (!interactive)
-				kill(-pid, SIGKILL);
-			if (!done && !interactive)
-				kill(pid, SIGKILL); /* also covers cancellation before setpgid */
+			agent_killtree(pid, done, job);
 			for (int i = 0; i < (http ? 2 : 1); i++) {
 				if (fds[i].fd >= 0)
 					close(fds[i].fd);
@@ -600,9 +2473,12 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 			killed = 1;
 		}
 		int n = poll(fds, tidx + 1, 100);
-		if (n < 0 && errno != EINTR) {
-			agent_cancel = 1;
-			continue;
+		/* revents are unspecified after a failed poll; still reap below. */
+		if (n < 0) {
+			if (errno != EINTR)
+				agent_cancel = 1;
+			for (int i = 0; i <= tidx; i++)
+				fds[i].revents = 0;
 		}
 		for (int i = 0; i < (http ? 2 : 1); i++) {
 			if (fds[i].fd >= 0 &&
@@ -610,8 +2486,8 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 				int nr = read(fds[i].fd, buf, sizeof(buf)-1);
 				if (nr > 0) {
 					sbuf *dest = i ? eb : sb;
-					if (i == 0 && limited) {
-						int kept = MIN(nr, MAX(0, 4097 - dest->s_n));
+					if (i == 0 && limit) {
+						int kept = MIN(nr, MAX(0, limit - dest->s_n));
 						if (agent_capture)
 							agent_capture_total += nr - kept;
 						nr = kept;
@@ -630,8 +2506,15 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 			preserve(int, agent_tool, agent_tool = 0;)
 			agent_key(term_read(0));
 			restore(agent_tool)
-			if (foreground > 0 && foreground != getpgrp() && !agent_cancel)
-				tcsetpgrp(term_ufd.fd, foreground);
+			if (foreground > 0 && foreground != getpgrp()) {
+				if (agent_cancel)
+					job = foreground;
+				else {
+					tcsetpgrp(term_ufd.fd, foreground);
+					/* resume a group stopped by SIGTTIN meanwhile */
+					kill(-foreground, SIGCONT);
+				}
+			}
 		}
 		if (fds[tidx].revents & (POLLHUP | POLLERR | POLLNVAL)) {
 			agent_cancel = 1;
@@ -641,8 +2524,15 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 			done = waitpid(pid, &st, WNOHANG) == pid;
 	}
 	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
+	if (detached && !done)
+		*status = 124;	/* unfinished, as timeout(1) reports */
 	if (interactive) {
+		struct winsize win;
 		tcsetpgrp(term_ufd.fd, getpgrp());
+		/* SIGWINCH went to the child while it owned the terminal */
+		if (!ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
+				(win.ws_row != xrows || win.ws_col != xcols))
+			term_winch++;
 		if (old_ttou != SIG_ERR)
 			signal(SIGTTOU, old_ttou);
 		if (old_ttin != SIG_ERR)
@@ -662,13 +2552,20 @@ static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
 
 static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 {
+	/* Without job control, the whole command stays in the shell'\''s group. */
+	sbuf_smake(icmd, 64)
+	if (xish) {
+		sbuf_str(icmd, "set +m\n")
+		sbufn_str(icmd, cmd)
+	}
 	char *sh = getenv("SHELL"),
 	     *argv[] = {sh && *sh ? sh : "sh",
 		xish ? "-i" : "-c", xish ? "-c" : cmd,
-		xish ? cmd : NULL, NULL};
+		xish ? icmd->s : NULL, NULL};
 	int st;
-	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2,
+	sbuf *out = agent_process(argv, input, &st, 0, !oproc ? agent_gr_cap() : 0,
 		NULL);
+	free(icmd->s);
 	if (!out) {
 		agent_child_status = 1;
 		return NULL;
@@ -692,11 +2589,11 @@ static void agent_http_failure(char *body, char *stderr_text)
 	cJSON *api_error = cJSON_GetObjectItem(root, "error");
 	cJSON *message = cJSON_GetObjectItem(api_error, "message");
 	if (cJSON_IsString(message) && *message->valuestring)
-		agent_log("RESULT", message->valuestring);
+		agent_log("NOTICE", message->valuestring);
 	else if (stderr_text && *stderr_text)
-		agent_log("RESULT", stderr_text);
+		agent_log("NOTICE", stderr_text);
 	else
-		agent_log("RESULT", "HTTP request failed");
+		agent_log("NOTICE", "HTTP request failed");
 	cJSON_Delete(root);
 }
 
@@ -707,7 +2604,7 @@ static cJSON *agent_config(void)
 			strpbrk(api_key, "\r\n") || !endpoint ||
 			(strncmp(endpoint, "http://", 7) &&
 			strncmp(endpoint, "https://", 8)) ||
-			request_timeout <= 0 || max_tool_rounds <= 0) {
+			request_timeout <= 0 || max_tool_rounds < 0) {
 		cJSON_Delete(req);
 		return NULL;
 	}
@@ -747,12 +2644,14 @@ static char *agent_http(cJSON *req, int *st, char **stderr_text)
 		"--data-binary", "@-", "--url", endpoint, NULL
 	};
 	sbuf body;
-	body.s = cJSON_PrintUnformatted(req);
-	body.s_n = strlen(body.s);
-	out = agent_process(argv, &body, st, 1, 0, &err);
-	free(body.s);
+	if ((body.s = cJSON_PrintUnformatted(req))) {
+		body.s_n = strlen(body.s);
+		out = agent_process(argv, &body, st, 1, 0, &err);
+		free(body.s);
+	}
 ret:
-	unlink(hdrpath);
+	if (fd >= 0)
+		unlink(hdrpath);
 	free(hdr->s);
 	if (err) {
 		if (stderr_text)
@@ -818,10 +2717,10 @@ static void agent_resize(void)
 	term_resized++;
 }
 
-/* Reconstruct only a screenful, never replay the entire log to scrollback. */
+/* Redraw the last screenful of the log, not all of it into scrollback. */
 static void agent_redraw(const char *draft)
 {
-	char *log = agent_text(tempbufs[agent_logbuf].lb);
+	char *log = agent_shown_text(tempbufs[agent_logbuf].lb);
 	sbuf_smake(sb, 256)
 	sbuf_str(sb, log);
 	if (draft)
@@ -849,7 +2748,7 @@ static void agent_redraw(const char *draft)
 	free(sb->s);
 }
 
-/* Recurse from the ex-style conversation into vi, preserving caller state. */
+/* Recurse from the conversation into vi, preserving caller state. */
 static void agent_editor(void)
 {
 	preserve(int, xvis, xvis = (xvis | 2) & ~1;)
@@ -878,7 +2777,7 @@ static void agent_editor(void)
 static void agent_refresh(void)
 {
 	char *s = agent_snapshot(NULL);
-	cJSON_AddItemToArray(agent_messages, agent_msg("user", s));
+	agent_add_user(agent_messages, s);
 	agent_log("USER", s);
 	free(s);
 }
@@ -891,7 +2790,8 @@ static void agent_sequence(void)
 		tempbufs[i].lb->useq += xseq;
 }
 
-/* Return 1 for envelope errors, 2 for tool calls the model can correct. */
+/* Return 1 for envelope errors, 2 for tool calls the model can correct, 3
+ * for a reply without text and tool calls. */
 static int agent_response_error(cJSON *root, char *error, size_t size)
 {
 	cJSON *choices = cJSON_GetObjectItem(root, "choices");
@@ -900,7 +2800,7 @@ static int agent_response_error(cJSON *root, char *error, size_t size)
 	cJSON *content = cJSON_GetObjectItem(message, "content");
 	cJSON *calls = cJSON_GetObjectItem(message, "tool_calls"), *tc;
 	const char *reason = NULL;
-	int index = 0;
+	int index = 0, empty = 0;
 	if (!root)
 		reason = "response: invalid JSON";
 	else if (!cJSON_IsObject(root))
@@ -915,11 +2815,13 @@ static int agent_response_error(cJSON *root, char *error, size_t size)
 		reason = "message.content: expected a string or null";
 	else if (calls && !cJSON_IsArray(calls))
 		reason = "message.tool_calls: expected an array";
-	else if (!cJSON_IsString(content) && !cJSON_GetArraySize(calls))
+	else if (!cJSON_IsString(content) && !cJSON_GetArraySize(calls)) {
 		reason = "message: missing text and tool calls";
+		empty = 1;
+	}
 	if (reason) {
 		snprintf(error, size, "%s", reason);
-		return 1;
+		return empty ? 3 : 1;
 	}
 	cJSON_ArrayForEach(tc, calls) {
 		cJSON *id = cJSON_GetObjectItem(tc, "id");
@@ -963,63 +2865,186 @@ static int agent_response_error(cJSON *root, char *error, size_t size)
 	return 0;
 }
 
-static void agent_run(const char *input)
+/* Log a user message sent within a run and add it to the context: as its
+ * own message in a checkpoint, which collects those after its opening one;
+ * not at all under acl 1, which rebuilds it from the log. */
+static void agent_run_user(const char *text)
+{
+	agent_log("USER", text);
+	if (agent_checkpointing)
+		cJSON_AddItemToArray(agent_messages, agent_msg("user", text));
+	else if (!agent_live() || agent_acl_kept())
+		agent_add_user(agent_messages, text);
+}
+
+static void agent_run_loop(const char *input)
 {
 	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 	cJSON *req, *root, *message, *calls, *tc;
 	char *body, *stderr_text;
-	int st, retries = 0, compacted = 0;
+	int st, retries = 0, compacted = 0, unpacked = 0, asked = 0;
+	int goal_due = 0;	/* agent_goal_ask waits for the request after it */
 	if (agent_packing)
 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
 	agent_rounds = 0;
-	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
+	agent_add_user(agent_messages, input);
 	agent_log("USER", input);
 	for (int round = 0; ; ) {
-		/* Only complete tool batches reach this boundary. Manual/automatic
-		 * pack agents must never recursively trigger autocompaction. */
-		/* The threshold triggers a pack, not a hard cap on its result. */
+		/* Stop before requesting a reply whose calls could not run. */
+		if (max_tool_rounds && round == max_tool_rounds) {
+			agent_log("NOTICE", "maximum tool rounds reached; "
+				"submit to continue");
+			return;
+		}
+		agent_cp_collect();
+		/* A question that ended unanswered, as by a pause: the reply it
+		 * withheld is requested again. */
+		if (agent_checkpointing != 3)
+			agent_think_drop();
+		/* acl 1 rebuilds every request. Otherwise replies stay as returned,
+		 * reasoning included, so the server cache continues from them, and
+		 * only an edit of b-4 rebuilds. A checkpoint keeps the context it
+		 * started with (agent_live is false), so its edits wait for its end. */
+		if (agent_live() && (xacl == 1 || agent_log_edited))
+			agent_reparse();
+		/* acl > 1 checkpoints once the context grows by acl tokens from
+		 * the mark: the last checkpoint or the smallest context since.
+		 * acl < 0 runs a budget check instead, after -acl tokens or those
+		 * the agent chose with acheck N. Both come before aco, and wait
+		 * for the reply that replaces a withheld one: its cap and note
+		 * are not for them. */
+		if (agent_live() && agent_acl_kept() && !agent_checkpointing && !asked) {
+			double tokens = agent_tokens();
+			int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
+			if (agent_cp_asked)
+				agent_checkpoint_begin(tokens, 1);
+			else if (!agent_acl_mark || tokens < agent_acl_mark)
+				agent_acl_mark = tokens;
+			else if (tokens - agent_acl_mark >= budget)
+				agent_checkpoint_begin(tokens, xacl > 1 ? 1 : 2);
+		}
+		agent_cp_asked = 0;
+		/* aco: only complete tool batches get here. Pack agents never
+		 * compact, and a summary still over the threshold does not
+		 * trigger another. */
 		if (compacted && agent_tokens() < xaco)
 			compacted = 0;
 		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
-				agent_tokens() >= xaco) {
+				!agent_checkpointing && !asked && agent_tokens() >= xaco) {
 			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 				return;
-			/* The pack conversation was discarded. Start a fresh tool-round
-			 * budget for the resumed request, without recursing into agent_run. */
+			/* The pack conversation is gone; the resumed request gets a
+			 * fresh tool-round budget. */
 			compacted = 1;
+			if (agent_live())
+				agent_reparse();
 			round = retries = 0;
 			agent_rounds = 0;
 			serial = agent_serial;
 		}
+		/* The goal question waits out a checkpoint or budget check:
+		 * their opening would follow it as a second user message. */
+		if (goal_due && !agent_checkpointing) {
+			if (!agent_goal)
+				return;
+			char *msg = emalloc(sizeof(agent_goal_ask) + strlen(agent_goal));
+			sprintf(msg, agent_goal_ask, agent_goal);
+			cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
+			agent_log("USER", msg);
+			free(msg);
+			goal_due = 0;
+		}
+		/* Notes over the last turns can end the context on assistant
+		 * text, which some servers take as a prefill or reject. The
+		 * message added is unlogged: the next rebuild drops it. */
+		if (agent_live() && !agent_checkpointing) {
+			cJSON *last = cJSON_GetArrayItem(agent_messages,
+				cJSON_GetArraySize(agent_messages) - 1);
+			if (!strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(last,
+					"role")), "assistant") &&
+					!cJSON_HasObjectItem(last, "tool_calls"))
+				cJSON_AddItemToArray(agent_messages,
+					agent_msg("user", agent_continue));
+		}
+		if (agent_checkpointing)
+			agent_cp_build();
 		req = agent_config();
 		if (!req) {
-			agent_log("RESULT", "invalid agent configuration");
+			agent_log("NOTICE", "invalid agent configuration");
 			return;
+		}
+		/* The note is in the context for this request alone, as assistant
+		 * text; a user message keeps it from ending the context. */
+		int noted = agent_think_note && agent_checkpointing != 3;
+		if (noted) {
+			char *text = emalloc(sizeof(agent_think_lead) +
+				strlen(agent_think_note) + 32);
+			sprintf(text, agent_think_lead, agent_think_was,
+				agent_think_cap, agent_think_note);
+			cJSON_AddItemToArray(agent_messages,
+				agent_msg("assistant", text));
+			cJSON_AddItemToArray(agent_messages, agent_msg("user",
+				agent_checkpointing == 1 ? "Continue the checkpoint." :
+				agent_checkpointing == 2 ? "Answer the budget check." :
+				agent_continue));
+			free(text);
 		}
 		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
 		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 		cJSON_AddBoolToObject(req, "stream", 0);
+		/* ata moves the cap with every reply counted. */
+		if (!agent_think_up)
+			agent_think_rebase();
+		if (agent_think_cap >= 0) {
+			while (cJSON_GetObjectItem(req, "reasoning_budget_tokens"))
+				cJSON_DeleteItemFromObject(req, "reasoning_budget_tokens");
+			cJSON_AddNumberToObject(req, "reasoning_budget_tokens",
+				agent_think_cap);
+		}
+		int raised = agent_think_up, sent = agent_think_cap;
+		if (*agent_effort) {
+			while (cJSON_GetObjectItem(req, "reasoning_effort"))
+				cJSON_DeleteItemFromObject(req, "reasoning_effort");
+			cJSON_AddStringToObject(req, "reasoning_effort", agent_effort);
+		}
+		agent_banner(1);
 		double request_bytes = agent_context_bytes();
+		char *json = cJSON_PrintUnformatted(agent_messages);
+		agent_reused = 0;
+		agent_sent = json ? strlen(json) : 0;
+		while (json && agent_prev && json[agent_reused] &&
+				json[agent_reused] == agent_prev[agent_reused])
+			agent_reused++;
+		free(agent_prev);
+		agent_prev = json;
 		body = agent_http(req, &st, &stderr_text);
 		cJSON_Delete(req);
+		agent_banner(0);
+		if (noted) {
+			cJSON_DeleteItemFromArray(agent_messages,
+				cJSON_GetArraySize(agent_messages) - 1);
+			cJSON_DeleteItemFromArray(agent_messages,
+				cJSON_GetArraySize(agent_messages) - 1);
+		}
 		if (agent_cancel) {
 			free(body);
 			free(stderr_text);
 			if (agent_cancel != 2)
-				agent_log("RESULT", "cancelled");
+				agent_log("NOTICE", "cancelled");
 			return;
 		}
 		if (agent_pause) {
 			free(body);
 			free(stderr_text);
+			agent_checkpoint_stop();
 			agent_editor();
 			agent_redraw(NULL);
 			agent_pause = 0;
 			if (serial != agent_serial ||
 					epoch != agent_epoch || xquit)
 				return;
-			agent_log("RESULT",
+			agent_log("NOTICE",
 				"response skipped after recursive editing");
 			agent_refresh();
 			continue;
@@ -1040,7 +3065,12 @@ static void agent_run(const char *input)
 		}
 		char error[256], diagnostic[2048], excerpt[513];
 		int invalid = agent_response_error(root, error, sizeof(error));
-		if (invalid) {
+		/* ath N,M: withhold a reply whose thinking was cut, also one
+		 * the cut left without text and calls. */
+		double used = agent_think_tokens(root);
+		int cut = (!invalid || invalid == 3) &&
+			agent_think_cutoff(root, used, asked);
+		if (invalid && !cut) {
 			cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
 				cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
 			snprintf(excerpt, sizeof(excerpt), "%.512s", body);
@@ -1052,48 +3082,75 @@ static void agent_run(const char *input)
 				"%s",
 				error, cJSON_IsString(finish) ? finish->valuestring : "unavailable",
 				encoded ? encoded : "(unavailable)",
-				retries < 2 ? "retrying automatically" :
-				"retry limit reached; history retained, submit to retry");
-			agent_log("RESULT", diagnostic);
+				retries < AGENT_BAD_TRIES ? "retrying automatically" :
+				retries == AGENT_BAD_TRIES ?
+				"retry limit reached; nudging to continue" :
+				"nudge failed; history retained, submit to retry");
+			agent_log("NOTICE", diagnostic);
 			free(encoded);
 			cJSON_Delete(quoted);
 			/* Invalid calls never enter history or execute, even in a mixed batch. */
 			if (invalid == 2) {
 				snprintf(diagnostic, sizeof(diagnostic),
-					"Your previous response was rejected: %s. "
-					"No commands from that response were executed. "
-					"Correct and resubmit the intended calls. "
-					"Use tool type function, name ex, and unique nonempty call IDs. "
-					"Arguments must be a JSON-encoded object with a nonempty "
-					"string command, for example {\"command\":\"1,20p\"}.", error);
-				cJSON_AddItemToArray(agent_messages, agent_msg("user", diagnostic));
+					"Your previous response was rejected: %s.\n"
+					"No commands from that response were executed. Correct and\n"
+					"resubmit the intended calls. Use tool type function, name ex,\n"
+					"and unique nonempty call IDs. Pass one nonempty ex command\n"
+					"in the command argument, for example 1,20p", error);
+				agent_run_user(diagnostic);
 			}
 			free(body);
 			cJSON_Delete(root);
-			if (retries++ < 2)
+			if (retries++ < AGENT_BAD_TRIES)
 				continue;
-			return;
+			/* Past the retries one nudge is tried before giving up. */
+			if (retries > AGENT_BAD_TRIES + 1)
+				return;
+			agent_run_user(agent_continue);
+			continue;
 		}
+		/* The limit is on consecutive malformed responses. */
+		retries = 0;
 		agent_record_usage(root, request_bytes);
+		agent_think_sample(root, used);
+		if (agent_think_max)
+			agent_think_spend(raised, sent, used);
 		free(body);
-		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
-			cJSON_GetObjectItem(root, "choices"), 0), "message");
+		if (noted)
+			agent_think_unnote();
+		/* A raised cap lasts for one reply. */
+		if (agent_checkpointing != 3 && agent_think_max) {
+			agent_think_was = agent_think_cap;
+			agent_think_rebase();
+			asked = 0;
+		}
+		agent_think_strip(root);
+		if (cut) {
+			agent_think_ask(root, used);
+			continue;
+		}
+reply:
+		message = agent_reply(root);
 		calls = cJSON_GetObjectItem(message, "tool_calls");
 		cJSON *content = cJSON_GetObjectItem(message, "content");
+		const char *rkey;
+		char *reasoning = agent_reasoning(message, &rkey);
 		/* Complete pairs before recursive editing or submissions. */
 		cJSON_AddItemToArray(agent_messages,
 			cJSON_Duplicate(message, 1));
-		if (xar) {
-			cJSON *reasoning = cJSON_GetObjectItem(message,
-				"reasoning_content");
-			if (!cJSON_IsString(reasoning) || !*reasoning->valuestring)
-				reasoning = cJSON_GetObjectItem(message, "reasoning");
-			if (cJSON_IsString(reasoning) && *reasoning->valuestring)
-				agent_log("REASONING", reasoning->valuestring);
+		/* The TURN header is written with the first part, so an empty
+		 * reply logs nothing. */
+		agent_turn_close();
+		if (xar && reasoning) {
+			agent_rkey = rkey;
+			agent_turn_part(0, reasoning);
 		}
-		if (cJSON_IsString(content))
-			agent_log("ASSISTANT", content->valuestring);
+		if (cJSON_IsString(content) && *content->valuestring)
+			agent_turn_part(1, content->valuestring);
 		int base = cJSON_GetArraySize(agent_messages), index = 0;
+		int deferred = 0, r, row;
+		unsigned long turn = 0;
+		char defname[sizeof(agent_deferred)] = "";
 		cJSON_ArrayForEach(tc, calls) {
 			cJSON *result = agent_msg("tool",
 				"skipped: pending execution");
@@ -1111,15 +3168,19 @@ static void agent_run(const char *input)
 			cJSON *command = cJSON_GetObjectItem(parsed, "command");
 			char *err = NULL;
 			agent_child_status = 0;
+			agent_edited = 0;
+			agent_edits_n = 0;
+			agent_edits_lb = NULL;
 			sbuf_smake(out, 256)
 			sbuf_smake(result, 256)
 			agent_boundary();
-			agent_log("EX", cJSON_IsString(command) ?
+			agent_turn_part(2 + 2 * index, cJSON_IsString(command) ?
 				command->valuestring : "invalid tool call");
-			if (agent_cancel || agent_pause ||
-					round == max_tool_rounds)
-				err = "skipped: execution cancelled, "
-					"suspended, or round limit reached";
+			if (!index)
+				turn = agent_turn[agent_logbuf == 3];
+			*agent_deferred = '\''\0'\'';
+			if (agent_cancel || agent_pause)
+				err = "skipped: execution cancelled or suspended";
 			else if (!cJSON_IsString(name) ||
 					strcmp(name->valuestring, "ex"))
 				err = "unknown tool (expected ex)";
@@ -1133,21 +3194,30 @@ static void agent_run(const char *input)
 				agent_capture = out;
 				agent_capture_total = 0;
 				agent_child_status = 0;
+				agent_shown = 0;
+				agent_tool_dep = xexec_dep + 1;
 				agent_sequence();
 				err = ex_exec(command->valuestring);
 				agent_tool_calls++;
 				agent_sequence();
-				if (xgr == 2 && agent_capture_total > 4096) {
+				if (!agent_shown) {
+					free(agent_show);
+					agent_show = emalloc(out->s_n + 1);
+					memcpy(agent_show, out->s, out->s_n);
+					agent_show_n = out->s_n;
+				}
+				if (agent_gr_cap() &&
+						agent_capture_total > (size_t)xagr) {
 					char msg[128];
 					snprintf(msg, sizeof(msg),
-						"output guardrail: %zu > 4096 (gr 0 to bypass once)",
-						agent_capture_total);
+						"output guardrail: %zu > %d bytes (aout to view)",
+						agent_capture_total, xagr);
 					sbuf_cut(out, 0)
 					sbufn_str(out, msg)
-				} else if (xgr >= 0 && xgr < 2)
-					xgr++;
+				}
 				agent_capture = NULL;
 				agent_tool = 0;
+				agent_sync_pending();
 				if (agent_input_blocked) {
 					xquit = savedquit;
 					xqprop = savedqprop;
@@ -1155,45 +3225,72 @@ static void agent_run(const char *input)
 					err = "interactive input unavailable during agent execution";
 				}
 			}
+			/* The output comes first, as printed; these lines follow it. */
+			if (agent_edited)
+				agent_edit_report(result);
+			if (err && err != xuerr) {
+				sbuf_str(result, err)
+				sbuf_chr(result, '\''\n'\'')
+			}
+			sbuf_str(result, agent_jobmsg)
+			*agent_jobmsg = '\''\0'\'';
 			if (agent_cancel)
 				sbuf_str(result, "cancelled\n")
 			else if (agent_pause)
 				sbuf_str(result,
 					"suspended; remaining commands "
 					"skipped\n")
-			else {
+			else if (agent_child_status || err) {
 				char status[64];
-				snprintf(status, sizeof(status), "status %d\n",
-					agent_child_status ?
-						agent_child_status : !!err);
+				snprintf(status, sizeof(status), "[error %d]\n",
+					agent_child_status ? agent_child_status : 1);
 				sbuf_str(result, status)
 			}
-			if (err && err != xuerr) {
-				sbuf_str(result, err)
-				sbuf_chr(result, '\''\n'\'')
-			}
-			sbuf_mem(result, out->s, out->s_n)
-			char *safe = agent_safe_text(result->s, result->s_n);
+			if (result->s_n && out->s_n && out->s[out->s_n-1] != '\''\n'\'')
+				sbuf_chr(out, '\''\n'\'')
+			sbuf_mem(out, result->s, result->s_n)
+			char *safe = agent_safe_text(out->s, out->s_n);
+			/* Stamp session turns only: other exchanges are discarded. */
+			sbuf_cut(out, 0)
+			sbufn_str(out, safe)
+			if (index + 1 == cJSON_GetArraySize(calls) && agent_logbuf == 3)
+				agent_stamp(out, turn);
 			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(
-				agent_messages, base + index++),
-				"content", cJSON_CreateString(safe));
-			if (agent_cancel != 2)
-				agent_log("RESULT", safe);
+				agent_messages, base + index),
+				"content", cJSON_CreateString(out->s));
+			agent_turn_part(3 + 2 * index, safe);
+			if (*agent_deferred && !deferred++)
+				strcpy(defname, agent_deferred);
+			index++;
 			free(safe);
 			cJSON_Delete(parsed);
 			free(out->s);
 			free(result->s);
 		}
+		/* A turn of deferrals only shows specs; rate it for the checkpoint. */
+		if (index && deferred == index && agent_acl_kept() &&
+				agent_logbuf == 3 && !agent_note(turn, &r, &row)) {
+			char note[96];
+			snprintf(note, sizeof(note), "deferred; printed the %s spec "
+				"instead of running it", defname);
+			agent_note_set(turn, 1, note);
+		}
+		agent_turn_close();
 		int has_calls = cJSON_GetArraySize(calls);
 		cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
 			cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
-		if (agent_packing && !has_calls && cJSON_IsString(finish) &&
-				!strcmp(finish->valuestring, "stop"))
+		/* The answer to a question does not end the pack it interrupted. */
+		if (agent_packing && !agent_checkpointing && !has_calls &&
+				cJSON_IsString(finish) && !strcmp(finish->valuestring, "stop"))
 			agent_pack_done = 1;
 		cJSON_Delete(root);
 		if (agent_cancel)
 			return;
 		if (agent_pause) {
+			/* The reply a question withheld is requested again. */
+			if (agent_checkpointing == 3)
+				has_calls = 1;
+			agent_checkpoint_stop();
 			agent_editor();
 			agent_redraw(NULL);
 			agent_pause = 0;
@@ -1203,46 +3300,135 @@ static void agent_run(const char *input)
 			agent_refresh();
 		}
 		agent_rounds = round;
-		if (!has_calls)
-			return;
-		if (round++ == max_tool_rounds) {
-			agent_log("RESULT",
-				"maximum tool rounds reached; "
-				"submit to continue");
-			return;
+		/* A pack that stops without touching the log gets another try. */
+		if (!has_calls && agent_packing && !agent_checkpointing &&
+				agent_pack_log && unpacked < 3) {
+			char *log = agent_text(tempbufs[3].lb);
+			int same = !strcmp(log, agent_pack_log);
+			free(log);
+			if (same) {
+				unpacked++;
+				agent_pack_done = 0;
+				temp_switch(3, 0);
+				cJSON_AddItemToArray(agent_messages,
+					agent_msg("user", agent_pack_retry));
+				agent_log("USER", agent_pack_retry);
+				continue;
+			}
 		}
+		/* An unanswered budget check gets two more requests, then becomes
+		 * a checkpoint; a thinking question gets AGENT_THINK_TRIES, then
+		 * counts as answered by acap alone. */
+		if (agent_checkpointing >= 2 && !agent_cp_done) {
+			int think = agent_checkpointing == 3;
+			if (agent_cp_refused < (think ? AGENT_THINK_TRIES : 2)) {
+				if (!has_calls) {
+					char msg[96];
+					snprintf(msg, sizeof(msg), "Nothing ran; reply with "
+						"an ex tool call, %s%s", think ? "acap N [note] or acap" :
+						"acheck N or acheck.", agent_think_retry());
+					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
+					agent_log("USER", msg);
+				}
+				agent_cp_refused++;
+				continue;
+			}
+			if (agent_checkpointing == 2) {
+				agent_cp_asked = 1;
+				agent_checkpoint_end();
+				has_calls = 1;
+			} else
+				agent_cp_done = 1;
+		}
+		/* A reply without commands also ends the checkpoint, once turns
+		 * are rated or after two reminders without new ratings. */
+		if (agent_checkpointing == 1 && !has_calls) {
+			char unrated[112], msg[384];
+			if (agent_cp_hold(unrated, sizeof(unrated))) {
+				snprintf(msg, sizeof(msg),
+					"Nothing ran: your reply made no ex tool calls. Still "
+					"unrated: %s\nSend one ex tool call per command, "
+					"N[,M]arate R sentence, e.g.\n%sThen adone.",
+					unrated, agent_cp_example(unrated));
+				cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
+				agent_log("USER", msg);
+				continue;
+			}
+		}
+		/* The interrupted request then resumes. */
+		if (agent_checkpointing && (agent_cp_done || !has_calls)) {
+			int think = agent_checkpointing == 3;
+			agent_checkpoint_end();
+			has_calls = 1;
+			/* A raised cap, or a withheld reply without text and calls,
+			 * requests a new reply; otherwise the withheld one runs now. */
+			if (think && (agent_think_more || agent_think_empty)) {
+				asked = 1;
+				continue;
+			}
+			if (think && agent_think_held) {
+				root = agent_think_held;
+				agent_think_held = NULL;
+				goto reply;
+			}
+		}
+		if (!has_calls) {
+			if (!agent_goal || agent_packing || agent_logbuf != 3)
+				return;
+			goal_due = 1;
+		}
+		round++;
 	}
+}
+
+/* Every exit from a run, including errors, ends a checkpoint phase. */
+static void agent_run(const char *input)
+{
+	agent_run_loop(input);
+	agent_checkpoint_stop();
+	/* A run can end before the reply a raised cap and a note were for. */
+	if (agent_think_max)
+		agent_think_rebase();
+	agent_think_unnote();
+	agent_think_drop();
+}
+
+/* Add or remove a skill in b-5; want < 0 toggles. */
+static void agent_skill(char *skill_str, int want)
+{
+	struct lbuf *lb = tempbufs[4].lb;
+	char *s = agent_text(lb);
+	char *pos = strstr(s, skill_str);
+	if (want < 0)
+		want = !pos;
+	if (!pos == !want) {
+		free(s);
+		return;
+	}
+	if (pos) {
+		int beg = 0;
+		for (char *p = s; p < pos; p++)
+			if (*p == '\''\n'\'') beg++;
+		int len = 0;
+		for (char *p = skill_str; *p; p++)
+			if (*p == '\''\n'\'') len++;
+		lbuf_edit(lb, NULL, beg, beg + len, 0, 0);
+	} else {
+		lbuf_edit(lb, skill_str, lbuf_len(lb), lbuf_len(lb), 0, 0);
+	}
+	free(s);
+	if (agent_tool) {
+		s = agent_text(lb);
+		cJSON_ReplaceItemInArray(agent_messages, 0, agent_msg("system", s));
+		agent_usage.anchored = 0;
+		free(s);
+	} else
+		agent_history(1);
 }
 
 static void *ec_skill(char *loc, char *cmd, char *arg)
 {
-	char *skill_str;
-	if (strcmp(cmd, "acm") == 0)
-		skill_str = caveman_skill;
-	struct lbuf *lb = tempbufs[4].lb;
-	char *s = agent_text(lb);
-	if (s) {
-		char *pos = strstr(s, skill_str);
-		if (pos) {
-			int beg = 0;
-			for (char *p = s; p < pos; p++)
-				if (*p == '\''\n'\'') beg++;
-			int len = 0;
-			for (char *p = skill_str; *p; p++)
-				if (*p == '\''\n'\'') len++;
-			lbuf_edit(lb, NULL, beg, beg + len, 0, 0);
-		} else {
-			lbuf_edit(lb, skill_str, lbuf_len(lb), lbuf_len(lb), 0, 0);
-		}
-		free(s);
-		if (agent_tool) {
-			s = agent_text(lb);
-			cJSON_ReplaceItemInArray(agent_messages, 0, agent_msg("system", s));
-			agent_usage.anchored = 0;
-			free(s);
-		} else
-			agent_history(1);
-	}
+	agent_skill(caveman_skill, -1);
 	return NULL;
 }
 
@@ -1252,11 +3438,67 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	int counts[4] = {0, 0, 0, 0};
 	unsigned long sums[4] = {0, 0, 0, 0};
 	const char *names[] = {"system", "user", "assistant", "tool"};
+	const char *effort = *agent_effort ? agent_effort : "unset";
 	cJSON *m;
 	ex_print("agent status", msg_ft)
 	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 	ex_print(msg, msg_ft)
+	if (!agent_think_up)
+		agent_think_rebase();
+	if (agent_think_max)
+		snprintf(msg, sizeof(msg), "thinking   %d token cap, set by the "
+			"agent from %d up to %d, effort %s", agent_think_cap,
+			agent_think_base, agent_think_max, effort);
+	else if (agent_think_cap >= 0)
+		snprintf(msg, sizeof(msg), "thinking   %d token cap, effort %s",
+			agent_think_cap, effort);
+	else
+		snprintf(msg, sizeof(msg), "thinking   no token cap, effort %s", effort);
+	ex_print(msg, msg_ft)
+	if (agent_think_bank) {
+		snprintf(msg, sizeof(msg), "           %d tokens left of a cap the "
+			"agent raised, added to the cap", agent_think_bank);
+		ex_print(msg, msg_ft)
+	}
+	if (agent_think_cnt) {
+		int k = snprintf(msg, sizeof(msg), "           %.0f tokens recent "
+			"average over %d replies", agent_think_avg, agent_think_cnt);
+		if (xata)
+			snprintf(msg + k, sizeof(msg) - k, "; ata caps at %d%% of it", xata);
+		ex_print(msg, msg_ft)
+	}
+	if (agent_acl_kept()) {
+		int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
+		int k = snprintf(msg, sizeof(msg), "acl        %d, context rebuilt "
+			"from b-4 at checkpoints and log edits, %s after %d tokens%s",
+			xacl, xacl > 1 ? "checkpoint" : "budget check", budget,
+			agent_acl_budget ? " (acheck)" : "");
+		if (agent_acl_mark)
+			snprintf(msg + k, sizeof(msg) - k, ", next at ~%.0f",
+				agent_acl_mark + budget);
+	} else
+		snprintf(msg, sizeof(msg), "acl        %d%s", xacl,
+			xacl ? ", context rebuilt from b-4" : " (off)");
+	ex_print(msg, msg_ft)
+	if (agent_acl_kept() || lbuf_len(tempbufs[5].lb)) {
+		char unrated[112];
+		int n = agent_unrated_now(unrated, sizeof(unrated));
+		snprintf(msg, sizeof(msg), "notes      %d in b-6, %d turns unrated",
+			lbuf_len(tempbufs[5].lb), n);
+		ex_print(msg, msg_ft)
+	}
+	if (agent_goal) {
+		snprintf(msg, sizeof(msg), "goal       %.200s", agent_goal);
+		ex_print(msg, msg_ft)
+	}
+	if (lbuf_len(tempbufs[6].lb)) {
+		struct agent_span *spans;
+		int n = agent_spans_of(tempbufs[6].lb, &spans);
+		free(spans);
+		snprintf(msg, sizeof(msg), "discarded  %d entries in b-7", n);
+		ex_print(msg, msg_ft)
+	}
 	if (!agent_ready) {
 		ex_print(agent_init_error ? agent_init_error :
 			"agent session is not running", msg_ft)
@@ -1279,23 +3521,23 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 		}
 	} else
 		ex_print("tokens     unavailable from endpoint", msg_ft)
+	if (agent_sent) {
+		snprintf(msg, sizeof(msg), "prefix     %zu of %zu message bytes shared with "
+			"previous request", agent_reused, agent_sent);
+		ex_print(msg, msg_ft)
+	}
 	if (agent_messages) {
 		snprintf(msg, sizeof(msg), "next input ~%.0f tokens (%s)", agent_tokens(),
-			agent_usage.anchored ? "reported input + estimated growth" :
+			agent_usage.anchored ? "reported input + estimated change" :
 			"estimated: JSON bytes / 3, including tools and framing");
 		ex_print(msg, msg_ft)
 		cJSON_ArrayForEach(m, agent_messages) {
 			cJSON *role = cJSON_GetObjectItem(m, "role");
 			cJSON *content = cJSON_GetObjectItem(m, "content");
-			int r = 0;
-			if (cJSON_IsString(role)) {
-				if (!strcmp(role->valuestring, "user"))
-					r = 1;
-				else if (!strcmp(role->valuestring, "assistant"))
-					r = 2;
-				else if (!strcmp(role->valuestring, "tool"))
-					r = 3;
-			}
+			int r = 3;
+			while (r && (!cJSON_IsString(role) ||
+					strcmp(role->valuestring, names[r])))
+				r--;
 			counts[r]++;
 			if (cJSON_IsString(content))
 				sums[r] += strlen(content->valuestring);
@@ -1326,32 +3568,652 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	snprintf(msg, sizeof(msg), "capture    %ld bytes in current tool output",
 		agent_capture ? (long)agent_capture->s_n : 0);
 	ex_print(msg, msg_ft)
-	snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, guardrail %d",
-		max_tool_rounds, request_timeout, xgr);
+	if (max_tool_rounds)
+		snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, "
+			"guardrail %d, detach %d sec", max_tool_rounds,
+			request_timeout, xagr, xato);
+	else
+		snprintf(msg, sizeof(msg), "limits     unlimited rounds, %d sec timeout, "
+			"guardrail %d, detach %d sec", request_timeout, xagr, xato);
 	ex_print(msg, msg_ft)
 	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
 	ex_print(msg, msg_ft)
 	return NULL;
 }
 
+/* The end of a token count at s, read into n; NULL if not a count. */
+static char *agent_count(char *s, int *n)
+{
+	char *e = s;
+	while (uc_isdigit(*e))
+		e++;
+	if (e == s || e - s > 9)
+		return NULL;
+	*n = atoi(s);
+	return e;
+}
+
+/* acap N raises the thinking cap to N, at most the ceiling of ath N,M, for
+ * the next reply. In a thinking question that discards the withheld reply,
+ * text after N is a note for the new one and acap alone keeps the reply. */
+static void *ec_acap(char *loc, char *cmd, char *arg)
+{
+	static char msg[128];
+	int cap = -1, ask = agent_checkpointing == 3;
+	char *s;
+	if (!agent_think_max)
+		return "acap needs a ceiling set by the user with ath N,M";
+	while (*arg && strchr(" \t\n", *arg))
+		arg++;
+	/* The exchange of a question is discarded unread. */
+	if (ask && !*loc && !*arg) {
+		agent_cp_done = 1;
+		return NULL;
+	}
+	s = agent_count(arg, &cap);
+	if (s && *s && !strchr(" \t\n", *s))
+		s = NULL;
+	while (s && *s && strchr(" \t\n", *s))
+		s++;
+	if (*loc || !s || (*s && !ask) || cap < 1) {
+		snprintf(msg, sizeof(msg), "acap takes no range, only a positive "
+			"token count: acap N%s%s", ask ? " [note], or nothing" : "",
+			agent_think_retry());
+		return msg;
+	}
+	if (ask && cap <= agent_think_was) {
+		snprintf(msg, sizeof(msg), "acap N takes a count above the cap "
+			"of %d tokens; acap alone leaves the cap%s", agent_think_was,
+			agent_think_retry());
+		return msg;
+	}
+	agent_think_cap = MIN(cap, agent_think_max);
+	agent_think_up = 1;
+	if (ask) {
+		agent_think_unnote();
+		if (*s)
+			agent_think_note = agent_safe_text(s, strlen(s));
+		agent_think_more = agent_cp_done = 1;
+		return NULL;
+	}
+	snprintf(msg, sizeof(msg), "thinking cap %d tokens for the next "
+		"reply", agent_think_cap);
+	ex_print(msg, msg_ft)
+	return NULL;
+}
+
+/* [N[,M]]ath[effort] sets the thinking cap, the ceiling acap may raise it to
+ * and the effort. */
+/* agoal text sets the goal, agoal alone clears it. */
+static void *ec_agoal(char *loc, char *cmd, char *arg)
+{
+	if (*loc)
+		return "agoal takes no range";
+	while (*arg && strchr(" \t\n", *arg))
+		arg++;
+	free(agent_goal);
+	agent_goal = *arg ? agent_safe_text(arg, strlen(arg)) : NULL;
+	ex_print(agent_goal ? "goal set" : "goal cleared", msg_ft)
+	return NULL;
+}
+
+static void *ec_ath(char *loc, char *cmd, char *arg)
+{
+	int cap = -1, max = 0;
+	char *s = loc, *comma = strchr(loc, '\'','\'');
+	if (*s) {
+		s = agent_count(s, &cap);
+		if (s && s == comma)
+			s = agent_count(s + 1, &max);
+		if (!s || *s || (comma && max <= cap))
+			return "ath range must be a token count N, or N,M with M above N";
+	}
+	if (strlen(arg) >= sizeof(agent_effort) || strpbrk(arg, " \t\n"))
+		return "ath argument must be one effort word";
+	agent_think_base = cap;
+	agent_think_max = max;
+	agent_think_cnt = agent_think_bank = 0;
+	agent_think_rebase();
+	strcpy(agent_effort, arg);
+	return NULL;
+}
+
+static int agent_byteaddr(char **s, long *pos)
+{
+	char *e;
+	if (**s == '\''$'\'') {
+		*pos = (long)agent_show_n - 1;
+		(*s)++;
+		return 0;
+	}
+	if (!isdigit((unsigned char)**s))
+		return 1;
+	errno = 0;
+	*pos = strtol(*s, &e, 10);
+	*s = e;
+	return errno == ERANGE;
+}
+
+/* Print bytes beg through end of the saved tool output; $ is the last byte. */
+static void *ec_aout(char *loc, char *cmd, char *arg)
+{
+	long beg = 0, end = (long)agent_show_n - 1;
+	if (*arg)
+		return "aout takes only a byte range";
+	if (!agent_show_n)
+		return "no agent output to show";
+	if (*loc) {
+		if (agent_byteaddr(&loc, &beg))
+			return "invalid byte range";
+		end = beg;
+		if (*loc == '\'','\'' && (loc++, agent_byteaddr(&loc, &end)))
+			return "invalid byte range";
+		if (*loc)
+			return "invalid byte range";
+	}
+	if (beg > end || beg >= (long)agent_show_n)
+		return "byte range out of bounds";
+	end = MIN(end, (long)agent_show_n - 1);
+	if (agent_capture)	/* exempt from agr: not counted in the total */
+		sbuf_mem(agent_capture, agent_show + beg, end - beg + 1)
+	else {
+		char *s = emalloc(end - beg + 2);
+		memcpy(s, agent_show + beg, end - beg + 1);
+		s[end - beg + 1] = '\''\0'\'';
+		ex_print(s, msg_ft)
+		free(s);
+	}
+	return NULL;
+}
+
+static int agent_entryaddr(char **s, unsigned long *n, unsigned long last)
+{
+	char *e;
+	if (**s == '\''$'\'') {
+		*n = last;
+		(*s)++;
+		return 0;
+	}
+	if (!isdigit((unsigned char)**s))
+		return 1;
+	errno = 0;
+	*n = strtoul(*s, &e, 10);
+	*s = e;
+	return errno == ERANGE;
+}
+
+/* Parse entry numbers N or N,M, $ being last; an error or NULL. */
+static char *agent_entrynums(char *loc, unsigned long last, unsigned long *beg,
+		unsigned long *end)
+{
+	if (agent_entryaddr(&loc, beg, last))
+		return "an entry number is required, as in 12 or 12,15";
+	*end = *beg;
+	if ((*loc == '\'','\'' && (loc++, agent_entryaddr(&loc, end, last))) ||
+			*loc || *end < *beg)
+		return "invalid entry range";
+	return NULL;
+}
+
+/* Span indices of entries N through M; an error or NULL. */
+static char *agent_entryrange(char *loc, struct agent_span *spans, int cnt,
+		int *first, int *last)
+{
+	unsigned long beg, end;
+	char *err;
+	*first = *last = -1;
+	if (!cnt)
+		return "session log has no entries";
+	if ((err = agent_entrynums(loc, spans[cnt-1].n, &beg, &end)))
+		return err;
+	for (int k = 0; k < cnt; k++) {
+		if (spans[k].n < beg || spans[k].n > end)
+			continue;
+		if (*first < 0)
+			*first = k;
+		*last = k;
+	}
+	return *first < 0 ? "no entries in range" : NULL;
+}
+
+/* Mark in sel the TURN entries a list N,M,K names; first and last get the
+ * span indices of its ends. An error or NULL. */
+static char *agent_entrylist(char *loc, struct agent_span *spans, int cnt,
+		char *sel, int *first, int *last)
+{
+	static char err[80];
+	struct agent_span *sp;
+	unsigned long n;
+	if (!cnt)
+		return "session log has no entries";
+	do {
+		if (agent_entryaddr(&loc, &n, spans[cnt-1].n) || (*loc && *loc != '\'','\''))
+			return "invalid entry list";
+		if (!(sp = agent_span_turn(spans, cnt, n))) {
+			snprintf(err, sizeof(err),
+				"entry %lu is not a TURN; the list was not applied", n);
+			return err;
+		}
+		sel[sp - spans] = 1;
+	} while (*loc++);
+	*first = *last = -1;
+	for (int k = 0; k < cnt; k++) {
+		if (!sel[k])
+			continue;
+		if (*first < 0)
+			*first = k;
+		*last = k;
+	}
+	return NULL;
+}
+
+/* Keep the b-4 cursor inside a log that lost lines. */
+static void agent_log_clamp(void)
+{
+	int last = MAX(0, lbuf_len(tempbufs[3].lb) - 1);
+	if (ex_buf == tempbufs + 3)
+		xrow = MIN(xrow, last);
+	else
+		tempbufs[3].row = MIN(tempbufs[3].row, last);
+}
+
+/* A list of three or more entry numbers, not N or N,M. */
+static int agent_islist(char *loc)
+{
+	char *c = strchr(loc, '\'','\'');
+	return c && strchr(c + 1, '\'','\'');
+}
+
+/* Append header line ln, with " trimmed" after it for an entry of b-7. */
+static void agent_aget_head(sbuf *sb, char *ln, int trimmed)
+{
+	sbuf_mem(sb, ln, (int)strcspn(ln, "\n"))
+	sbuf_str(sb, trimmed ? " trimmed\n" : "\n")
+}
+
+/* Print entries N through M of b-4 and b-7 in number order, those of b-7
+ * with " trimmed" after each header. Part indexes in arg select parts of
+ * turns; role names select entries and parts. */
+static void *ec_aget(char *loc, char *cmd, char *arg)
+{
+	static char bad[] = "aget takes part indexes or role names: USER TURN "
+		"NOTICE REASONING ASSISTANT EX RESULT";
+	struct lbuf *lbs[2] = {tempbufs[6].lb, tempbufs[3].lb};
+	struct agent_span *spans[2] = {NULL, NULL}, *sp;
+	struct agent_part *parts;
+	int cnt[2], k[2] = {0, 0}, eroles = 0, proles = 0, nidx = 0, *idxs = NULL;
+	int len, b, i, j, np, found = 0;
+	unsigned long beg, end, last = 0, idx;
+	char *ret = NULL, *e;
+	while (*(arg += strspn(arg, " \t"))) {
+		len = strcspn(arg, " \t");
+		found = 0;
+		if (isdigit((unsigned char)*arg)) {
+			idx = strtoul(arg, &e, 10);
+			if ((found = e == arg + len && idx <= INT_MAX)) {
+				idxs = erealloc(idxs, (nidx + 1) * sizeof(*idxs));
+				idxs[nidx++] = idx;
+			}
+		}
+		for (i = 0; i < LEN(agent_entry_roles); i++) {
+			if ((int)strlen(agent_entry_roles[i]) == len &&
+					!strncmp(agent_entry_roles[i], arg, len)) {
+				eroles |= 1 << (i + 1);
+				found = 1;
+			}
+		}
+		for (i = 0; i < LEN(agent_part_roles); i++) {
+			if ((int)strlen(agent_part_roles[i]) == len &&
+					!strncmp(agent_part_roles[i], arg, len)) {
+				proles |= 1 << i;
+				found = 1;
+			}
+		}
+		arg += len;
+		if (!found || (nidx && (eroles || proles))) {
+			ret = bad;
+			goto done;
+		}
+	}
+	found = 0;
+	for (b = 0; b < 2; b++) {
+		cnt[b] = agent_spans_of(lbs[b], &spans[b]);
+		if (cnt[b])
+			last = MAX(last, spans[b][cnt[b]-1].n);
+	}
+	if ((ret = agent_entrynums(loc, last, &beg, &end)))
+		goto done;
+	sbuf_smake(sb, 1024)
+	/* Merge by number; a trimmed original precedes the note numbered
+	 * after it. */
+	while (k[0] < cnt[0] || k[1] < cnt[1]) {
+		b = k[0] == cnt[0] || (k[1] < cnt[1] &&
+			spans[1][k[1]].n < spans[0][k[0]].n);
+		sp = spans[b] + k[b]++;
+		if (sp->n < beg || sp->n > end)
+			continue;
+		found = 1;
+		/* Whole entries, unless parts or other roles are asked for. */
+		if (!nidx && (!(eroles | proles) || eroles & (1 << sp->role))) {
+			if (sp->role)
+				agent_aget_head(sb, lbs[b]->ln[sp->beg], !b);
+			if (sp->role != AE_TURN || b) {
+				for (i = sp->beg + !!sp->role; i < sp->end; i++)
+					sbuf_str(sb, lbs[b]->ln[i])
+				continue;
+			}
+		} else if (sp->role != AE_TURN || (!nidx && !proles))
+			continue;
+		np = agent_parts(lbs[b], sp, &parts);
+		for (j = 0; j < np; j++) {
+			if (nidx) {
+				for (i = 0; i < nidx && idxs[i] != parts[j].idx; i++)
+					;
+				if (i == nidx)
+					continue;
+			} else if (!(eroles & (1 << AE_TURN)) && (eroles | proles) &&
+					!(proles & (1 << parts[j].role)))
+				continue;
+			if (parts[j].idx >= 0)
+				agent_aget_head(sb, lbs[b]->ln[parts[j].beg], !b);
+			for (i = parts[j].beg + 1; i < parts[j].end; i++)
+				sbuf_str(sb, lbs[b]->ln[i])
+		}
+		free(parts);
+	}
+	sbuf_nul(sb)
+	if (sb->s_n)
+		ex_print(sb->s, msg_ft)
+	else if (!found)
+		ret = "no entries in range";
+	free(sb->s);
+done:
+	free(idxs);
+	free(spans[0]);
+	free(spans[1]);
+	return ret;
+}
+
+/* Where an agent note goes: a turn before a USER entry or entry 0, which
+ * come before NOTICE. */
+static int agent_note_rank(struct agent_span *sp)
+{
+	return sp->role == AE_TURN ? 2 : sp->role != AE_NOTICE;
+}
+
+/* Replace log entries N through M, or the turns of a list N,M,K, with a
+ * note, or remove them. A note over a turn is a turn holding only the text,
+ * under the turn'\''s number, so its rating stays with it. */
+static void *ec_anote(char *loc, char *cmd, char *arg)
+{
+	static char err[80];
+	struct lbuf *lb = tempbufs[3].lb;
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans), first, last, at = -1, note = -1, changed = 0;
+	int keep = agent_tool && agent_checkpointing != 1, kept = 0, klen = 0;
+	int lo = -1, split = 1, nlen = 0;
+	int list = agent_islist(loc);
+	double before = 0, after;
+	char msg[400], kmsg[128] = "", nums[128], id[AGENT_ID], fend[AGENT_END];
+	/* 1 an entry to replace, 2 one of the range that stays */
+	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
+	void *ret;
+	if (list)
+		ret = agent_entrylist(loc, spans, cnt, sel, &first, &last);
+	else
+		ret = agent_entryrange(loc, spans, cnt, &first, &last);
+	if (ret)
+		goto done;
+	/* Outside a checkpoint the agent cannot change USER entries or entry
+	 * 0. They split the range; the note goes after the last of them. An
+	 * agent note goes in place of the first turn, else of the first USER
+	 * entry or entry 0: a note under NOTICE would never be sent. */
+	for (int k = first; k <= last; k++) {
+		if (keep && spans[k].role <= AE_USER) {
+			split = 1;
+			if (list)
+				continue;
+			sel[k] = 2;
+			if (kept++ < 10 && klen < (int)sizeof(kmsg))
+				klen += snprintf(kmsg + klen, sizeof(kmsg) - klen, "%s%lu",
+					kept > 1 ? ", " : "", spans[k].n);
+			continue;
+		}
+		if (list && !sel[k])
+			continue;
+		sel[k] = 1;
+		/* The results still to come would be logged into the note. */
+		if (agent_tool && agent_turn[1] && spans[k].n == agent_turn[1]) {
+			snprintf(err, sizeof(err), "turn %lu is still running; note it from "
+				"a later turn", agent_turn[1]);
+			ret = err;
+			goto done;
+		}
+		if (split)
+			at = note = k;
+		else if (agent_tool &&
+				agent_note_rank(spans + k) > agent_note_rank(spans + note))
+			note = k;
+		split = 0;
+		if (lo < 0)
+			lo = k;
+		if (changed < 8)
+			nlen += snprintf(nums + nlen, sizeof(nums) - nlen, "%s%lu",
+				changed ? ", " : "", spans[k].n);
+		before += agent_span_tokens(spans + k);
+		changed++;
+	}
+	if (kept > 10 && klen < (int)sizeof(kmsg))
+		snprintf(kmsg + klen, sizeof(kmsg) - klen, " and %d more", kept - 10);
+	if (changed > 8)
+		snprintf(nums + nlen, sizeof(nums) - nlen, " and %d more", changed - 8);
+	if (note < 0) {
+		ret = "USER entries change only during an acl checkpoint; note over "
+			"the TURN entries the findings came from";
+		goto done;
+	}
+	sbuf_smake(sb, 256)
+	if (*arg) {
+		agent_frame(arg, id, fend);
+		if (spans[note].role == AE_TURN)
+			snprintf(msg, sizeof(msg), "TURN %lu\n%s %lu.%d%s\n", spans[note].n,
+				agent_part_roles[AP_ASSISTANT], spans[note].n, AP_ASSISTANT, id);
+		else if (spans[note].role)
+			snprintf(msg, sizeof(msg), "%s %lu%s\n", agent_span_role(spans + note),
+				spans[note].n, id);
+		if (spans[note].role)
+			sbuf_str(sb, msg)
+		sbuf_str(sb, arg)
+		if (sb->s[sb->s_n-1] != '\''\n'\'')
+			sbuf_chr(sb, '\''\n'\'')
+		/* The text before the first header has no header to end. */
+		sbuf_str(sb, spans[note].role ? fend : "\n")
+	}
+	sbuf_nul(sb)
+	after = *arg ? (strlen(arg) + 2) / 3 : 0;
+	/* Not counted as lines the agent edited. Groups are edited last first,
+	 * so earlier line numbers hold; one save. */
+	preserve(int, agent_tool, agent_tool = 0;)
+	preserve(int, agent_syncing, agent_syncing = 1;)
+	for (int k = last; k >= first; k--) {
+		int end = k;
+		if (sel[k] != 1)
+			continue;
+		while (k > first && sel[k-1] == 1)
+			k--;
+		/* A pack moves the whole log to b-7 itself, if it succeeds. */
+		if (!agent_packing)
+			agent_discard(lb, spans, k, end);
+		lbuf_edit(lb, *arg && k == at ? sb->s : NULL,
+			spans[k].beg, spans[end].end, 0, 0);
+	}
+	restore(agent_syncing)
+	restore(agent_tool)
+	agent_sync(lb);
+	agent_sync(tempbufs[6].lb);
+	free(sb->s);
+	agent_log_clamp();
+	while (sel[last] != 1)
+		last--;
+	int len = snprintf(msg, sizeof(msg), "%s %d %s ", *arg ? "noted" :
+		"removed", changed, changed > 1 ? "entries" : "entry");
+	if (list)
+		len += snprintf(msg + len, sizeof(msg) - len, "%s", nums);
+	else
+		len += snprintf(msg + len, sizeof(msg) - len, "%lu-%lu",
+			spans[lo].n, spans[last].n);
+	if (*arg && (kept || note != lo))
+		len += snprintf(msg + len, sizeof(msg) - len, " as entry %lu",
+			spans[note].n);
+	if (kept)
+		len += snprintf(msg + len, sizeof(msg) - len, "; kept USER %s", kmsg);
+	snprintf(msg + len, sizeof(msg) - len, "%s~%.0f -> ~%.0f tokens%s",
+		kept ? "; " : ", ", before, after, after > before ?
+		";\nthe note is larger than the entries it replaced" : "");
+	ex_print(msg, msg_ft)
+done:
+	free(sel);
+	free(spans);
+	return ret;
+}
+
+/* Move the spans with sel 1 to b-7, reporting as anote does; their ratings
+ * stay in b-6. Spans with sel 2 stay and count in the report. nums lists
+ * the turns of an arate list; NULL reports a range. */
+static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
+		char *nums)
+{
+	struct lbuf *lb = tempbufs[3].lb;
+	int removed = 0, len;
+	unsigned long lo = 0, hi = 0;
+	double before = 0, after = 0;
+	char msg[224];
+	preserve(int, agent_tool, agent_tool = 0;)
+	preserve(int, agent_syncing, agent_syncing = 1;)
+	/* Last first so earlier line numbers hold. */
+	for (int k = cnt - 1; k >= 0; k--) {
+		if (!sel[k])
+			continue;
+		before += agent_span_tokens(spans + k);
+		if (sel[k] == 2) {
+			after += agent_span_tokens(spans + k);
+			continue;
+		}
+		if (!hi)
+			hi = spans[k].n;
+		lo = spans[k].n;
+		removed++;
+		agent_discard(lb, spans, k, k);
+		lbuf_edit(lb, NULL, spans[k].beg, spans[k].end, 0, 0);
+	}
+	restore(agent_syncing)
+	restore(agent_tool)
+	agent_sync(lb);
+	agent_sync(tempbufs[6].lb);
+	agent_log_clamp();
+	len = snprintf(msg, sizeof(msg), "removed %d %s ", removed,
+		removed > 1 ? "turns" : "turn");
+	if (nums)
+		len += snprintf(msg + len, sizeof(msg) - len, "%s", nums);
+	else
+		len += snprintf(msg + len, sizeof(msg) - len, "%lu-%lu", lo, hi);
+	snprintf(msg + len, sizeof(msg) - len, ", ~%.0f -> ~%.0f tokens",
+		before, after);
+	ex_print(msg, msg_ft)
+}
+
+/* Rate in b-6 the TURN entries from N through M, or those of a list N,M,K
+ * of three or more. */
+static void *ec_arate(char *loc, char *cmd, char *arg)
+{
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans), first, last, rated = 0, len = 0;
+	unsigned long lo = 0, hi = 0;
+	char msg[224], nums[128], same[32], *text = arg + !!*arg;
+	/* 1 a turn to rate, 2 another entry of the range */
+	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
+	int list = agent_islist(loc);
+	void *ret;
+	if (list)
+		ret = agent_entrylist(loc, spans, cnt, sel, &first, &last);
+	else if (!(ret = agent_entryrange(loc, spans, cnt, &first, &last)))
+		for (int k = first; k <= last; k++)
+			sel[k] = spans[k].role == AE_TURN ? 1 : 2;
+	if (ret)
+		goto done;
+	while (*text == '\'' '\'' || *text == '\''\t'\'')
+		text++;
+	if (*arg < '\''0'\'' || *arg > '\''3'\'' || text == arg + 1 || !*text) {
+		ret = "arate takes a rating from 0 to 3 and a sentence";
+		goto done;
+	}
+	/* One save and no line report for the batch of b-6 edits. */
+	preserve(int, agent_tool, agent_tool = 0;)
+	preserve(int, agent_syncing, agent_syncing = 1;)
+	for (int k = cnt - 1; k >= 0; k--)
+		if (sel[k] == 1)
+			agent_note_rehome(spans[k].n, spans, cnt, sel);
+	/* The sentence is written once; the other turns point to it. */
+	for (int k = 0; k < cnt; k++) {
+		if (sel[k] != 1)
+			continue;
+		agent_note_set(spans[k].n, *arg - '\''0'\'', rated ? same : text);
+		if (rated < 8)
+			len += snprintf(nums + len, sizeof(nums) - len, "%s%lu",
+				rated ? ", " : "", spans[k].n);
+		if (!rated++) {
+			lo = spans[k].n;
+			snprintf(same, sizeof(same), "same as TURN %lu", lo);
+		}
+		hi = spans[k].n;
+	}
+	restore(agent_syncing)
+	restore(agent_tool)
+	if (!rated) {
+		ret = "no TURN entries in range; rate the TURN entry of each reply";
+		goto done;
+	}
+	if (rated > 8)
+		snprintf(nums + len, sizeof(nums) - len, " and %d more", rated - 8);
+	agent_sync(tempbufs[5].lb);
+	if (rated > 1 && list)
+		snprintf(msg, sizeof(msg), "rated %d turns TURN %s [%c]",
+			rated, nums, *arg);
+	else if (rated > 1)
+		snprintf(msg, sizeof(msg), "rated %d turns TURN %lu-%lu [%c]",
+			rated, lo, hi, *arg);
+	else
+		snprintf(msg, sizeof(msg), "rated TURN %lu [%c]", lo, *arg);
+	ex_print(msg, msg_ft)
+	/* A checkpoint drops dead weight from the log at once. */
+	if (*arg == '\''0'\'' && agent_checkpointing == 1)
+		agent_trim_turns(spans, cnt, sel, list ? nums : NULL);
+done:
+	free(sel);
+	free(spans);
+	return ret;
+}
+
 static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 {
 	char *scope = NULL;
-	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
+	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf, spec = 0;
 	cJSON *config;
 	unsigned long epoch;
 	if (strchr(cmd, '\''!'\''))
 		exspec_reset();
-	if (agent_init_error)
+	if (agent_start())
 		return agent_init_error;
 	if (!(config = agent_config()))
 		return "invalid agent configuration";
 	cJSON_Delete(config);
 	if (*loc && !(scope = agent_snapshot(loc)))
 		return xrerr;
-	/* Snapshot the requested range before selecting the session log. */
-	if (compact)
+	/* The range was read above, before the switch to the session log. */
+	if (compact) {
 		temp_switch(3, 0);
+		spec = exspec_pack(1);
+	}
 	if (cmd[1]) {
 		agent_epoch++;
 		agent_serial++;
@@ -1360,6 +4222,7 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 			agent_syncing = 1;
 			lbuf_edit(lb, NULL, 0, lbuf_len(lb), 0, 0);
 			lbuf_saved(lb, 1);
+			agent_entries[1] = agent_turn[1] = 0;
 			agent_syncing = 0;
 			int fd = open(tempbufs[3].path, O_WRONLY | O_TRUNC);
 			if (fd < 0 || close(fd))
@@ -1369,11 +4232,15 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 			if (ex_buf == tempbufs+3) {
 				exbuf_load(ex_buf)
 			}
+			agent_temp_clear(5);
+			agent_temp_clear(6);
 		}
 		agent_history(cmd[1] == '\''~'\'');
 	}
 	epoch = agent_epoch;
-	preserve(int, agent_logbuf, agent_logbuf = compact ? 2 : 3;)
+	preserve(int, agent_logbuf, agent_logbuf = compact ? 7 : 3;)
+	if (compact)
+		agent_entries[0] = agent_turn[0] = 0;
 	if (term_owned)
 		term_init();
 	if (!(savedvis & 2))
@@ -1450,6 +4317,8 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 	restore(xesc)
 	restore(agent_logbuf)
 	xvis = savedvis;
+	if (compact)
+		exspec_pack(spec);
 	if (term_owned)
 		term_done();
 	syn_setft(xb_ft);
@@ -1464,7 +4333,7 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 static char *agent_compact_task(int browse, char *arg, int automatic)
 {
 	sbuf_smake(task, 512)
-	sbuf_str(task, "The current buffer contains a log of the session.\n")
+	sbuf_str(task, "The current buffer is b-4, which contains a log of the session.\n")
 	if (browse)
 		sbuf_str(task,
 		"The log has not been loaded into your context. Inspect the current\n"
@@ -1473,11 +4342,51 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	else
 		sbuf_str(task,
 		"The log is in your context. Do not read the current buffer into context.\n")
+	struct lbuf *notes = tempbufs[5].lb;
+	struct agent_span *spans;
+	int cnt = agent_spans(&spans), trimmed = 0, rated = lbuf_len(notes) > 0;
+	int reasoned = agent_spans_reasoned(spans, cnt);
+	unsigned long n;
+	double total = 0;
+	char ln[400];
+	for (int k = 0; k < cnt; k++)
+		total += agent_span_tokens(spans + k);
+	/* Notes outlive trimmed turns; they are listed in order among the
+	 * entries. */
+	for (int i = 0; i < lbuf_len(notes); i++)
+		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n);
+	/* A loaded log already shows each entry: list them only for their
+	 * notes, or to browse. */
+	if (cnt && !browse && !rated) {
+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
+		sbuf_str(task, ln)
+	} else if (cnt || trimmed) {
+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
+			"entries\n(role number ~tokens%s;\n"
+			"turns as %stext+commands+results=tokens%s)%s:\n", total,
+			browse ? ", first line" : "", reasoned ? "reasoning+" : "",
+			rated ? ", then [rating] note" : "",
+			trimmed ? ",\nin order with the notes of turns already trimmed "
+			"from the log\n(TURN number trimmed [rating] note)" : "");
+		sbuf_str(task, ln)
+		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
+			reasoned);
+	}
+	if (lbuf_len(notes)) {
+		sbuf_str(task, agent_rating_scale)
+		sbuf_str(task,
+			"Weigh entries by rating: omit 0, at most a phrase for 1, summarize 2,\n"
+			"keep the exact details of 3. Judge unrated entries by their content.\n")
+	}
+	if (lbuf_len(tempbufs[6].lb))
+		sbuf_str(task, "Trimmed entries are kept in full: N[,M]aget prints "
+			"entries N through M,\ntrimmed ones included, when the summary "
+			"needs their details.\n")
+	free(spans);
+	sbuf_chr(task, '\''\n'\'')
 	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
 	"constraints, and unfinished work.\n")
-	sbuf_str(task,
-	"\nReplace the current buffer'\''s content with the summary using %c\n"
-	"followed by literal summary text.\n")
+	sbuf_str(task, agent_pack_example)
 	if (automatic)
 		sbuf_str(task,
 		"This is automatic compaction, not a new user task.\n"
@@ -1496,6 +4405,8 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	void *ret;
 	int browse = !strcmp(cmd, "apack!");
 	unsigned long epoch = agent_epoch;
+	if (agent_start())
+		return agent_init_error;
 	char *task = agent_compact_task(browse, arg, 0);
 	/* Indices survive buffer-array growth during tool calls. */
 	int savedtemp = istempbuf(ex_buf);
@@ -1511,12 +4422,15 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	cJSON *history = agent_messages;
 	struct agent_usage usage = agent_usage;
 	int was_packing = agent_packing, was_done = agent_pack_done;
+	char *was_log = agent_pack_log;
 	agent_messages = NULL;
 	agent_packing = 1;
 	agent_pack_done = 0;
+	agent_pack_log = original;
 	/* apack! resets history without clearing or importing the log. */
 	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
 	int complete = agent_pack_done;
+	agent_pack_log = was_log;
 	agent_packing = was_packing;
 	agent_pack_done = was_done;
 	if (agent_epoch == epoch + 1) {
@@ -1525,6 +4439,9 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 		int changed = strcmp(original, summary) != 0;
 		if (!ret && complete && changed && !agent_save(3)) {
 			agent_history(1);
+			agent_notes_archive(archive);
+			agent_discard_log(original);
+			agent_head_summary();
 			cJSON_Delete(history);
 		} else {
 			if (!ret)
@@ -1542,7 +4459,7 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 		}
 		free(summary);
 	} else if (agent_epoch == epoch) {
-		/* Initialization or range validation failed before the prompt. */
+		/* Configuration or range validation failed before the prompt. */
 		agent_restore_log(archive);
 		cJSON_Delete(agent_messages);
 		agent_messages = history;
@@ -1564,9 +4481,8 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	return ret;
 }
 
-/* Run the same log-editing task as apack, without entering a prompt. Keep the
- * live conversation detached until the pack agent actually replaces the log.
- * Logging goes to b-3, as in manual apack, not into the source being summarized. */
+/* Run the apack task without a prompt. The live conversation stays detached
+ * until the pack agent has replaced the log; the exchange is logged to b-8. */
 static int agent_autocompact(const char *input)
 {
 	struct lbuf *lb = tempbufs[3].lb;
@@ -1586,26 +4502,30 @@ static int agent_autocompact(const char *input)
 	if (!archive) {
 		free(original);
 		free(task);
-		agent_log("RESULT", "autocompact failed: cannot archive session log");
+		agent_log("NOTICE", "autocompact failed: cannot archive session log");
 		return 0;
 	}
 
-	agent_logbuf = 2;
-	agent_log("RESULT", browse ? "autocompact: browsing session log" :
+	agent_logbuf = 7;
+	agent_entries[0] = agent_turn[0] = 0;
+	agent_log("NOTICE", browse ? "autocompact: browsing session log" :
 		"autocompact: summarizing loaded session log");
 	if (browse)
 		exspec_reset();
+	int spec = exspec_pack(1);
 	agent_messages = NULL;
 	agent_history(!browse);
 	agent_packing = 1;
 	agent_pack_done = 0;
+	agent_pack_log = original;
 	temp_switch(3, 0);
 	agent_run(task);
+	exspec_pack(spec);
+	agent_pack_log = NULL;
 	agent_packing = 0;
 	free(task);
 
-	/* Recursive editing may have deliberately replaced the session. Never
-	 * overwrite that newer history or log with the saved conversation. */
+	/* Recursive editing may have started a new session; leave it alone. */
 	if (epoch != agent_epoch || agent_serial != serial + 1) {
 		cJSON_Delete(history);
 		goto done;
@@ -1618,20 +4538,28 @@ static int agent_autocompact(const char *input)
 			*text && strcmp(original, summary) &&
 			strlen(summary) < strlen(original) && !agent_save(3)) {
 		agent_history(1);
+		/* The summary is numbered before the resume entry. */
+		agent_discard_log(original);
+		agent_head_summary();
 		sbuf_smake(resume, 256)
 		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
 			"is working memory, not a new task. Continue the request below, using\n"
 			"the summary to avoid repeating completed actions or tool calls.\n\n")
 		sbuf_str(resume, input)
 		sbuf_nul(resume)
-		cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
+		agent_logbuf = 3;
+		agent_log("USER", resume->s);
+		agent_logbuf = 7;
+		if (!xacl)
+			agent_add_user(agent_messages, resume->s);
 		free(resume->s);
 		ok = 1;
 	}
 	free(summary);
 	if (ok) {
 		cJSON_Delete(history);
-		agent_log("RESULT", "autocompact complete; resuming request");
+		agent_notes_archive(archive);
+		agent_log("NOTICE", "autocompact complete; resuming request");
 	} else {
 		cJSON_Delete(agent_messages);
 		agent_messages = history;
@@ -1640,10 +4568,10 @@ static int agent_autocompact(const char *input)
 		lbuf_edit(lb, original, 0, lbuf_len(lb), 0, 0);
 		agent_syncing = 0;
 		agent_restore_log(archive);
-		agent_log("RESULT", "autocompact failed or cancelled; "
+		agent_log("NOTICE", "autocompact failed or cancelled; "
 			"original history retained. Compact manually or retry.");
 	}
-	done:
+done:
 	/* A recursive session may have replaced the conversation while packing. */
 	if (epoch != agent_epoch && access(tempbufs[3].path, F_OK))
 		agent_save(3);
@@ -1660,14 +4588,44 @@ static int agent_autocompact(const char *input)
 }
 ??!219reg agent.c:-1:m2sc %? %@2142sc!b1m!0?
 i /* agent.c: embedded request loop and editor integration */
+static int agent_tool;		/* an agent tool call is executing */
 /* agent_cancel: 1 exits the session, 2 interrupts the current run. */
-static int agent_tool, agent_cancel, agent_pause;
-static int agent_input_blocked;
-static sbuf *agent_capture;
+static int agent_cancel, agent_pause;
+static int agent_input_blocked;	/* the tool call tried to read the terminal */
+static int agent_edited;	/* current-buffer lines the tool call edited */
+static int agent_tool_dep;	/* ex_exec depth of the tool call itself */
+/* output of the last tool call that did not run or defer aout */
+static char *agent_show;
+static size_t agent_show_n;
+static int agent_shown;		/* the tool call ran or deferred aout */
+static sbuf *agent_capture;	/* collects the tool call output */
+/* estimated context tokens acl growth is measured from; 0 unset */
+static double agent_acl_mark;
+/* acl < 0: growth to the next budget check, set by acheck N; 0 is -acl */
+static int agent_acl_budget;
+/* 1: checkpoint, only log trimming runs until adone;
+ * 2: acl < 0 budget check, only acheck runs;
+ * 3: ath N,M thinking question, only acap runs; it interrupts the task, a
+ * pack, 1 or 2, which goes on once it ends */
+static int agent_checkpointing;
+static char agent_deferred[32];	/* first command aspec deferred in the tool call */
 static void *ec_agent(char *loc, char *cmd, char *arg);
 static void exspec_reset(void);
+static void *ec_exspec(char *loc, char *cmd, char *arg);
+static int exspec_listed;	/* the agent has seen the exspec command list */
 static void *ec_skill(char *loc, char *cmd, char *arg);
+static void *ec_anote(char *loc, char *cmd, char *arg);
+static void *ec_arate(char *loc, char *cmd, char *arg);
+static void *ec_adone(char *loc, char *cmd, char *arg);
+static void *ec_acheck(char *loc, char *cmd, char *arg);
+static void *ec_acp(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
+static void *ec_acap(char *loc, char *cmd, char *arg);
+static void *ec_agoal(char *loc, char *cmd, char *arg);
+static void *ec_ath(char *loc, char *cmd, char *arg);
+static char *agent_think_retry(void);
+static void *ec_aout(char *loc, char *cmd, char *arg);
+static void *ec_aget(char *loc, char *cmd, char *arg);
 static void *ec_compact(char *loc, char *cmd, char *arg);
 static void agent_init(void);
 static void agent_sync(struct lbuf *lb);
@@ -5281,100 +8239,316 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
 1;4;7;8;9??!219reg cbuild.sh:842sc %? %@2132sc!0?
 '\''1i spec() {
     require "awk"
-    # Additional ex specs are injected here so README stays pristine on master.
-    # Keep this block in sync with the agent command table in ex.c.
+    # Agent ex specs are injected here so README stays pristine on master.
+    # Keep in sync with the agent commands of the excmds table in ex.c.
     tmp="$(mktemp)"
     awk '\''
         function spec(name, desc, body) {
+            gsub(/\n/, "\n             ", desc)
+            gsub(/\n/, "\n             ", body)
             print "     " name
             print "             " desc
             print ""
-            gsub(/\n/, "\n             ", body)
-            print "             " body
-            print ""
+            if (body != "") {
+                print "             " body
+                print ""
+            }
+        }
+        /^     \[range\]=\[<0-3 Any>\]\[any\]$/ && !eqp_done {
+            spec("[range]=p", "Print line(s) with line numbers",
+                "Equivalent to the p command, except each line is prefixed by its\n" \
+                "line number and a tab. Argument is ignored.\n\n" \
+                "Example: print lines 1 to 10 numbered\n:1,10=p")
+            eqp_done = 1
         }
         /^     ac\[regex\]$/ && !done {
             spec("exspec[command range topic]", "Print ex command catalog or specification",
-                "No argument lists useful commands for agents, the full catalog for\n" \
-                "humans. Use catalog for all commands and options; use a command name\n" \
-                "for its specification, including hidden commands. Topics: parsing,\n" \
-                "escapes, expansion, ranges, regex, commands, options.\n\n" \
+                "No argument lists the commands useful to agents, or the full catalog\n" \
+                "for humans. catalog lists all commands and options; a command name\n" \
+                "prints its specification, hidden commands included; other text\n" \
+                "with range characters prints ranges. Topics: parsing, escapes,\n" \
+                "expansion, ranges, regex, commands, options.\n\n" \
                 "Example: list all commands\n:exspec catalog")
             spec("[range]a[text]", "Open or resume the agent conversation",
                 "Keeps the conversation. Text prefills the prompt; range attaches\n" \
-                "buffer text to the next submission. Enter adds a newline; Escape\n" \
-                "submits; Ctrl-C exits; Ctrl-O opens the editor. Ex specials are\n" \
+                "buffer text to the next submission. Enter adds a newline, Escape\n" \
+                "submits, Ctrl-C exits, Ctrl-O opens the editor. Ex specials are\n" \
                 "disabled. Unavailable as an agent tool.")
             spec("[range]a![text]", "Start a new agent conversation",
-                "Clears history and log, aspec tracking and deferred command.\n" \
-                "Range, text and prompt controls work as for a. Unavailable as an agent tool.")
+                "Clears history, the log, its notes and discarded entries, aspec\n" \
+                "tracking and what aretry and aout saved. Otherwise as a.")
             spec("[range]a~[text]", "Resume an agent conversation from its log",
-                "Loads b-4 as context, including edits. Keeps aspec tracking.\n" \
-                "Range, text and prompt controls work as for a. Unavailable as an agent tool.")
+                "Loads b-4 as context, edits included. Keeps aspec tracking.\n" \
+                "Otherwise as a.")
             spec("[range]apack[text]", "Compact the agent session from its log",
-                "Loads b-4 as context and asks the agent to replace it with a summary.\n" \
-                "Stays at the prompt; reloads the log on exit. Text replaces the default\n" \
-                "instructions; range attaches buffer text. Unavailable as an agent tool.")
+                "Loads b-4 as context and asks the agent to replace it with a\n" \
+                "summary. Text replaces the default instructions; range attaches\n" \
+                "buffer text. With arate notes (b-6), the task lists the log entries\n" \
+                "with estimated tokens and notes, those of trimmed turns included.\n" \
+                "While b-7 holds entries, it offers aget for them. The prompt stays\n" \
+                "open; on exit a log the agent replaced becomes the session, else\n" \
+                "the old session is restored. On success the notes are archived\n" \
+                "beside the log, b-6 is cleared and the replaced entries move to\n" \
+                "b-7. The exchange is logged to b-8, saved as asides in the session\n" \
+                "directory. Unavailable as an agent tool.")
             spec("[range]apack![text]", "Compact the agent session by browsing its log",
-                "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
-                "ranges and replaces the log with a summary. Stays at the prompt;\n" \
-                "reloads on exit. Resets aspec tracking. Text and range work as for\n" \
-                "apack. Unavailable as an agent tool.")
+                "As apack, but the agent starts without b-4 in its context and reads\n" \
+                "bounded ranges of it. The task always lists the entries, with line\n" \
+                "numbers. Resets aspec tracking.")
             spec("acm", "Toggle the caveman response style skill",
-                "Adds or removes the skill in b-5. Tool calls update the system\n" \
-                "message; otherwise context is rebuilt from the log.")
-            print "     aretry"
-            print "             Execute the last deferred agent command once"
-            print ""
-            print "             Uses the saved range and expanded argument. Takes no range or"
-            print "             argument. A new deferral replaces it; retry consumes it even on"
-            print "             failure. A new session clears it. Errors if none is saved."
-            print ""
-            print "             Example: execute a deferred command"
-            print "             :aretry"
-            print ""
+                "Adds or removes the skill in b-5. As an agent tool it updates the\n" \
+                "system message; otherwise the context is rebuilt from the log.")
+            spec("aretry", "Execute the last agent command",
+                "Runs the last top-level command the agent ran or aspec deferred,\n" \
+                "with its range and expanded argument. A run aout is not saved. The\n" \
+                "command stays saved until a new session. Side effects rerun. Output\n" \
+                "is subject to agr. Takes no range or argument. Errors if none is\n" \
+                "saved.\n\n" \
+                "Example: execute a deferred command\n:aretry")
+            spec("[brange]aout", "Print the saved output of the last agent tool call",
+                "brange is first,last in 0-based byte offsets, inclusive; $ is the\n" \
+                "last byte; one offset selects one byte; none prints everything.\n" \
+                "The output of each tool call is saved, except of calls running\n" \
+                "aout; under agr at most 1048576 bytes, or agr if larger. Exempt\n" \
+                "from agr. A new session clears it.\n\n" \
+                "Example: bytes 50 through the end\n:50,$aout")
+            spec("[entries]anote[text]", "Replace or remove agent session log entries",
+                "entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N\n" \
+                "headers of b-4; $ is the last entry, 0 the text before the first\n" \
+                "header. A TURN is one agent reply: parts headed ROLE N.I holding\n" \
+                "its reasoning, text, commands and results. USER and NOTICE text and\n" \
+                "each part end at an END line; lines before it are text even if they\n" \
+                "read as headers. Text holding a line END has an id on its header,\n" \
+                "as in RESULT N.I id, and ends at END id. In the agent context the\n" \
+                "last tool result of a turn ends with a line [turn N end], which the\n" \
+                "log does not hold.\n\n" \
+                "Text replaces N through M with one entry under the role and number\n" \
+                "of N, a turn holding only the text; no text removes them. Three or\n" \
+                "more numbers, as in 2,4,7, are a list of turns, noted in place of\n" \
+                "the first; a number that is not a TURN rejects the list. The agent\n" \
+                "cannot change the turn still running nor, outside an acl\n" \
+                "checkpoint, USER entries or entry 0: those stay and its note goes\n" \
+                "after the last one spanned. An agent note takes the role and number\n" \
+                "of the first turn, else of the first USER entry or entry 0. Prints\n" \
+                "the estimated tokens before and after and the USER entries kept.\n" \
+                "Changes the agent context when acl is set. Replaced entries move to\n" \
+                "b-7, saved as discarded in the session directory; a number already\n" \
+                "there keeps its entry.\n\n" \
+                "Example: replace a turn with a note\n:14anote ls listed 40 files, none relevant")
+            spec("[entries]aget[parts]", "Print agent session log entries, trimmed ones included",
+                "Prints entries N through M of b-4 and b-7 in number order, with\n" \
+                "their headers. Entries from b-7, those removed or replaced by anote,\n" \
+                "a 0 rating or compaction, have trimmed after each header, as in\n" \
+                "TURN N trimmed, and precede a current entry of the same number.\n" \
+                "entries is as for anote, with $ the last number in either buffer.\n" \
+                "parts is part indexes or role names, separated by spaces, not both.\n" \
+                "Indexes select parts of each turn: 0 reasoning, 1 text, 2+2k and\n" \
+                "3+2k the command and result of call k. USER, TURN and NOTICE select\n" \
+                "entries; REASONING, ASSISTANT, EX and RESULT select parts of turns.\n" \
+                "Output is subject to agr. Unavailable during an acl checkpoint.\n\n" \
+                "Example: print the commands of entries 20 through 80\n:20,80aget EX")
+            spec("[entries]arate rating sentence", "Rate agent turns in the notes buffer",
+                "Writes one line per TURN entry from N through M of b-4 to b-6:\n" \
+                "number, rating and sentence, replacing an older one. The first turn\n" \
+                "gets the sentence, the rest \"same as TURN N\"; a replaced sentence\n" \
+                "that others name moves to the first of them. entries is as for\n" \
+                "anote: other roles in a range are skipped, and three or more\n" \
+                "numbers, as in 2,4,7, are a list of turns.\n" \
+                "Ratings: 0 dead weight, no value for the remaining work; 1 low,\n" \
+                "minor, superseded or only mechanics; 2 useful, informs the remaining\n" \
+                "work; 3 essential, a decision, finding or state the task depends on.\n" \
+                "During an acl checkpoint, rating 0 also moves the turns to b-7,\n" \
+                "reported as by anote. With acl above 1 or negative, the harness\n" \
+                "rates 1 an unrated turn whose every command aspec deferred. Ratings\n" \
+                "show in ali and checkpoint lists and are given to apack. b-6 is\n" \
+                "saved as notes in the session directory.\n\n" \
+                "Example: rate the turn of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
+            spec("adone", "End an agent checkpoint",
+                "Ends the acl checkpoint; the interrupted request resumes with the\n" \
+                "context rebuilt from the trimmed log. While turns with commands are\n" \
+                "unrated it is refused, up to twice in a row without new ratings.\n" \
+                "Takes no range or argument. Errors outside a checkpoint.")
+            spec("acheck", "Start an agent checkpoint or set its budget",
+                "With acl above 1 or negative, starts a checkpoint before the next\n" \
+                "request, once the current tool batch completes. With a token count N\n" \
+                "and negative acl, the next budget check comes after N tokens of\n" \
+                "growth from now instead. Either ends a budget check, where no other\n" \
+                "command runs. Takes no range. Errors with other acl values or\n" \
+                "during a checkpoint.\n\n" \
+                "Example: continue for about 20000 more tokens\n:acheck 20000")
+            spec("acp", "Print the agent checkpoint instructions",
+                "Prints the commands, rating scale and trimming instructions sent at\n" \
+                "the start of an acl checkpoint. Takes no range or argument. Exempt\n" \
+                "from agr. As an agent tool, errors outside a checkpoint.")
+            spec("ali", "Print the agent session log entry list",
+                "Prints one line per USER and TURN entry of the session log (b-4):\n" \
+                "role, number and estimated tokens. A turn with several parts shows\n" \
+                "them instead, as reasoning+text+commands+results=tokens, reasoning\n" \
+                "only if the log holds any, then its arate rating and, for a turn\n" \
+                "with commands, the note. Then a line naming the largest entries and\n" \
+                "one the unrated turns. During an acl checkpoint this is the status\n" \
+                "sent at its start, updated. Takes no range or argument. Exempt from\n" \
+                "agr. Errors on an empty log.")
+            spec("auli", "Print the unrated agent session log turns",
+                "Prints the ali lines of the unrated turns alone; only turns with\n" \
+                "commands count. Takes no range or argument. Exempt from agr. Errors\n" \
+                "on an empty log.")
             spec("ast", "Print agent status and token usage",
-                "Prints sizes, per-role usage, activity, limits and autocompact mode.\n" \
-                "Usage counts come from the last accepted response. Next input is\n" \
-                "estimated from reported input plus new JSON bytes / 3, or all JSON\n" \
-                "bytes / 3 without a usable count. Includes tool definitions and\n" \
-                "framing; not a tokenizer or a guarantee the request fits.")
+                "Prints the autocompact, thinking and acl settings, notes, activity,\n" \
+                "token usage, context sizes per role, log sizes, limits and the\n" \
+                "message bytes shared with the previous request. Usage is that of\n" \
+                "the last accepted response. Next input is its input count plus new\n" \
+                "JSON bytes / 3, or all JSON bytes / 3 without a count, tools and\n" \
+                "framing included: an estimate, not a tokenizer.")
+            spec("[budget]ath[effort]", "Set the agent thinking cap and effort",
+                "budget is a token count N or N,M. N caps thinking tokens, sent as\n" \
+                "reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends\n" \
+                "thinking at once on llama.cpp and means no cap on Strata. effort is\n" \
+                "one word sent as reasoning_effort, such as none, low, medium, high\n" \
+                "or xhigh. An omitted part is not sent; ath alone sends neither. Sent\n" \
+                "fields replace those of request_extra. ast shows the setting.\n\n" \
+                "With N,M the agent may raise the cap up to M for one reply with\n" \
+                "acap, and a reply whose thinking the server cut at a cap below M is\n" \
+                "withheld: not logged, its commands not run. The server marks the cut\n" \
+                "by ending the thinking with think_cut of conf.c; a reply counts as\n" \
+                "cut only if its thinking also used half the cap or more. think_cut\n" \
+                "is dropped from the thinking of every reply, so models cannot copy\n" \
+                "it. The agent is shown the reply and its commands, in an exchange\n" \
+                "kept in b-8 only, and answers with acap. Replies of an acl\n" \
+                "checkpoint, a budget check and a pack agent are asked about too;\n" \
+                "what was interrupted then goes on, and a new checkpoint, budget\n" \
+                "check or compaction waits for the new reply. Unavailable as an\n" \
+                "agent tool.\n\n" \
+                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
+                "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
+                ":4096,32768ath medium")
+            spec("acap[count note]", "Raise the agent thinking cap for one reply",
+                "count is a token count N: the thinking cap of the next reply, at\n" \
+                "most the ceiling M of ath N,M. Takes no range. Errors without a\n" \
+                "ceiling. What that reply leaves of N is added to the caps of later\n" \
+                "replies, up to M, until their thinking spends it.\n\n" \
+                "In the question about a reply whose thinking was cut, acap N, a\n" \
+                "count above the cap, discards the reply and requests it again under\n" \
+                "cap N. Text after N is a note sent with the requests of the new\n" \
+                "reply only, unlogged; that reply sees nothing else of the exchange\n" \
+                "and is not asked about. acap alone runs the reply as it is. Nothing\n" \
+                "else runs meanwhile; after five retries the answer is taken as acap.\n" \
+                "A cut reply without text and commands is requested again either\n" \
+                "way.\n\n" \
+                "Example: think up to 8192 tokens in the next reply\n:acap 8192")
+            spec("agoal[text]", "Set or clear the agent goal",
+                "Text sets the goal; agoal alone clears it. While a goal is set,\n" \
+                "every agent request opens with it: joined to the front of the first\n" \
+                "message after the system prompt if a user message, else as a user\n" \
+                "message before it. The session log does not hold it, so trimming\n" \
+                "and compaction leave it. An agent reply without commands does not\n" \
+                "end the run: the agent is shown the goal and asked whether it is\n" \
+                "finished, and the run ends only with a reply without commands after\n" \
+                "the goal is cleared. Ctrl-C and the tool round limit still end it.\n" \
+                "A cleared goal stays at the front while the first message only\n" \
+                "extends the one last sent, so the server cache is kept; once that\n" \
+                "message changes, as by compaction or a new conversation, it goes.\n" \
+                "Takes no range. ast shows the goal.\n\n" \
+                "Example: keep the agent working until the tests pass\n" \
+                ":agoal all tests in test.sh pass")
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
+            spec("acl[0]  Rebuild agent context from the session log",
+                "No argument toggles between 0 and 1. With 0, log edits do not reach\n" \
+                "the agent.",
+                "1 rebuilds the context from the session log (b-4) before every\n" \
+                "request, so edits of the log apply to the next one. Values above 1\n" \
+                "or negative rebuild only after such edits and when a checkpoint\n" \
+                "ends; in between, replies stay as returned, reasoning included, so\n" \
+                "the server cache continues from them. A rebuild skips NOTICE\n" \
+                "entries, which report harness events such as HTTP errors, and has\n" \
+                "only the reasoning the log holds (ar).\n\n" \
+                "Values above 1 add checkpoints: once the estimated context grows by\n" \
+                "that many tokens from the last checkpoint, or from its smallest size\n" \
+                "since, one runs before the next request. It opens with the ali list\n" \
+                "and the acp instructions. Only ali, acp, auli, arate, anote and\n" \
+                "adone run. It ends with adone, a reply without commands or recursive\n" \
+                "editing; the first two are refused while turns are unrated, up to\n" \
+                "twice in a row without new ratings. The interrupted request then\n" \
+                "resumes; aco is checked after it. The exchange is logged to b-8 with\n" \
+                "headers prefixed CP. Its requests keep the context the checkpoint\n" \
+                "started with, so the prompt cache holds: anote edits b-4 at once but\n" \
+                "reaches the context when the checkpoint ends.\n\n" \
+                "Negative values leave the checkpoint to the agent through budget\n" \
+                "checks. The first comes once the estimated context grows by -acl\n" \
+                "tokens from the session start, the last checkpoint or a compaction,\n" \
+                "and asks for the tokens the rest of the task needs, set with\n" \
+                "acheck N. After that growth the next asks to checkpoint now with\n" \
+                "acheck or defer N more tokens with acheck N. Only acheck runs during\n" \
+                "a check; after two more requests without an answer a checkpoint\n" \
+                "starts. After a checkpoint -acl applies again. A check is logged to\n" \
+                "b-8 with CP headers, leaves the context unchanged and, if\n" \
+                "interrupted, runs again at the next request. N may pass aco, which\n" \
+                "stays the limit; a compaction drops the budget.\n\n" \
+                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
             spec("aco[0]  Automatically compact using the loaded session log",
-                "Positive argument sets an estimated input-token threshold; 0 or\n" \
+                "A positive argument is the estimated input-token threshold; 0 or\n" \
                 "negative disables. No argument enables at 85000 or toggles off.\n" \
-                "aco and aco! share a threshold; the last setting wins.",
-                "After tool batches, runs apack without a prompt and resumes. Never\n" \
-                "recurses. Failed, cancelled or inadequate summaries keep the old\n" \
-                "history and stop the run. Leave room for instructions and output;\n" \
-                "use aco! if the log cannot fit. Does not change the API limit.")
+                "aco and aco! share the threshold; the last one set selects the mode.",
+                "Once the estimate reaches the threshold after a tool batch, runs\n" \
+                "apack without a prompt and resumes the request. Never recurses. A\n" \
+                "failed, cancelled or not shorter summary keeps the old history and\n" \
+                "stops the run. Leave room for the instructions and the summary; use\n" \
+                "aco! if the log cannot fit. Does not change the API limit.")
             spec("aco![0]  Automatically compact by browsing the session log",
-                "Threshold and toggle work as for aco (default 85000). Selecting\n" \
-                "either mode replaces the other.",
-                "Runs apack! with fresh context and bounded reads of b-4. Keeps the\n" \
-                "current task and restores the editor buffer. Use ast for status\n" \
-                "and token estimates.")
-            spec("ar[0]  Display returned agent reasoning",
+                "Threshold and toggle as for aco.",
+                "Runs apack! instead: fresh context and bounded reads of b-4. The\n" \
+                "request resumes and the editor buffer is restored. ast shows the\n" \
+                "mode and token estimates.")
+            spec("agr[4096]  Control agent output protection",
+                "No argument toggles between 0 and 4096. 0 or negative disables.",
+                "A positive value is the limit in bytes of a tool call output; a\n" \
+                "larger output is withheld and aout views it.")
+            spec("ato[0]  Detach long agent shell commands",
+                "No argument toggles between 0 and 30. 0 disables.",
+                "A positive value is the seconds an agent shell command may run in\n" \
+                "the foreground. After that it runs on in the background: the result\n" \
+                "has error 124, its process group and a file receiving later output.\n" \
+                "A later tool result reports its exit status.")
+            spec("ar[1]  Log and display returned agent reasoning",
                 "No argument logically inverts the option.",
-                "Nonzero includes returned reasoning in the session log.")
-            spec("gr[2]  Control agent output protection",
-                "No argument logically inverts the option.",
-                "Value 2 limits tool output to 4096 bytes and protects captured shell\n" \
-                "output. Other values disable protection; 0 and 1 increment after\n" \
-                "each tool call until 2. Negative values stay disabled.")
-            print "     aspec[1]  Print ex specifications for agents"
-            print ""
-            print "             No argument logically inverts the option. 0 disables automatic"
-            print "             specifications; 1 enables them (the default)."
-            print ""
+                "0 does not log returned reasoning. 1 logs it, as part 0 of a turn,\n" \
+                "without printing it during the run. 2 logs and prints it.")
+            spec("ata[0]  Cap agent thinking by its recent average",
+                "No argument toggles between 0 and 100. 0 disables.",
+                "A positive value is a percentage: each request is sent that share\n" \
+                "of the average thinking tokens as the ath cap, in place of N. Each\n" \
+                "accepted reply that thought moves the average a quarter of the way\n" \
+                "to its thinking tokens; one that used up its cap counts as twice the\n" \
+                "cap, so cut replies raise the average. Lower values cut more\n" \
+                "replies.\n\n" \
+                "The average starts at N of ath, else at the first reply; ath\n" \
+                "restarts it, and N is sent until a reply is counted. The cap stays\n" \
+                "from 1 to M of ath N,M, else to N. Replies are counted with ata off\n" \
+                "too: by the reported reasoning_tokens, else the output tokens by the\n" \
+                "share of the thinking in the bytes of the reply. A cap the agent\n" \
+                "raised with acap N lasts for its reply; what that reply leaves of N\n" \
+                "is added to later caps until their thinking spends it. ast shows\n" \
+                "the average.\n\n" \
+                "Example: start at 2048 tokens and follow the average, up to 16384\n" \
+                ":2048,16384ath:ata\n\n" \
+                "Example: cap at twice the average\n:ata 200")
+            spec("aspec[1]  Print ex specifications for agents",
+                "No argument logically inverts the option. 0 disables.",
+                "The first use of a command by the agent prints its specification\n" \
+                "instead of running it; aretry then runs the command. The first\n" \
+                "unknown agent command of a session also prints the exspec command\n" \
+                "list, unless exspec has printed it.")
             aspec_done = 1
         }
         { print }
     '\'' README > "$tmp" &&
-    awk -f exspec.awk "$tmp" > exspec.h
-    rm -f "$tmp"
+    awk -f exspec.awk "$tmp" > "$tmp.h" &&
+    mv -f "$tmp.h" exspec.h
+    ret=$?
+    rm -f "$tmp" "$tmp.h"
+    return "$ret"
 }
 
 ??!219reg cbuild.sh:67:m12sc %? %@2142sc!0?
@@ -5465,39 +8639,263 @@ static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
 static int request_timeout = 500;
 #endif
 
-static int max_tool_rounds = 300;
-int xgr = 2;	/* agent guardrails: anything but 2 = disabled */
-int xar;	/* display returned agent reasoning (:ar) */
+/* How the server ends thinking it cut at the ath token cap; "" if unmarked */
+static char *think_cut = "I have thought about this long enough; time to give my answer.";
+static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
+int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
+int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
+int xata;	/* agent thinking cap, percent of its recent average (:ata); 0 disables */
+int xar = 1;	/* agent reasoning (:ar): 0 dropped, 1 logged, 2 logged and displayed */
 int xaco;	/* autocompact input-token threshold; 0 disables */
+int xacl;	/* rebuild agent context from the session log (:acl) */
 static int xaco_browse;	/* last selected mode: aco! rather than aco */
 
-static char exspec_insert[] =
-	"Ex special characters are disabled and raw ex mode is on by default.\n"
-	"Supply literal text as [str] directly. No dot terminator or escapes required.\n"
-	"[str] is required.";
+/* Complete specifications shown to the agent in place of the README ones.
+ * The README keeps interactive examples for humans; agents run ex with
+ * special characters off and text supplied. */
+static char exspec_agent_i[] =
+	"[vrange]i[str]\n"
+	"Insert lines\n"
+	"\n"
+	"Inserts [str] after the specified line.\n"
+	"[str] is required and literal: all bytes 1-255 are inserted verbatim.\n"
+	"On an empty buffer only i and 0i work.\n"
+	"\n"
+	"Example: insert \"hello\" after the current line\n"
+	"i hello\n"
+	"Example: insert \"hello\" after line 5\n"
+	"5i hello\n"
+	"Example: insert \"hello\" before line 1\n"
+	"0i hello\n"
+	"Example: insert \"hello\" after the last line\n"
+	"$i hello\n"
+	"Example: insert two lines after line 5\n"
+	"5i hello\nworld";
 
-/* Additional :exspec lines; repeat a command to append more lines. */
+static char exspec_agent_c[] =
+	"[range]c[str]\n"
+	"Change lines or characters\n"
+	"\n"
+	"Replaces the lines of [range] with [str]; without [range], the current\n"
+	"line. Character offsets count from 0 and $ is the end of the line.\n"
+	"With one offset (N;O), inserts [str] at offset O of line N. With two\n"
+	"(N;O;P), replaces the characters from O up to, not including, P.\n"
+	"On an empty buffer only c without a range works.\n"
+	"[str] is required and literal: all bytes 1-255 are inserted verbatim.\n"
+	"\n"
+	"Example: replace the current line with \"hello\"\n"
+	"c hello\n"
+	"Example: replace lines 1-5 with \"hello\"\n"
+	"1,5c hello\n"
+	"Example: replace the whole buffer with two lines\n"
+	"%c hello\nworld\n"
+	"Example: insert \"hello\" at offset 3 of line 5\n"
+	"5;3c hello\n"
+	"Example: append \"hello\" to line 5\n"
+	"5;$c hello\n"
+	"Example: replace characters 2 and 3 of line 5 with \"hello\"\n"
+	"5;2;4c hello";
+
+static char exspec_agent_p[] =
+	"[range]p[str]\n"
+	"Print line(s) from a buffer\n"
+	"\n"
+	"No range prints a line based on the value of left ex option.\n"
+	"Argument is printed.\n"
+	"\n"
+	"Example: utilize character offset ranges\n"
+	"1,10;5;5p\n"
+	"Example: interleaved character offset ranges\n"
+	"1;5,10;5p\n"
+	"Example: print current line from offset 5 to 10\n"
+	".;5;10p\n"
+	"\n"
+	"Cursor position is stateful; left at the range position it landed on.\n"
+	"Keep reads small and within buffer bounds.\n"
+	"Check the position with = and line count with $= before printing ranges.\n"
+	"Use character ranges for long lines; stop when you have enough context.";
+
+static char exspec_agent_g[] =
+	"[vrange]g[<Delim>][regex][<Delim>][cmd]\n"
+	"Global command\n"
+	"\n"
+	"Runs [cmd] on each line in [vrange] that matches [regex].\n"
+	"No [vrange] means the whole buffer.\n"
+	"[cmd] is one ex command. It runs with the current line set to the\n"
+	"matching line, so its ranges are relative to that line. No [cmd]\n"
+	"prints the matching lines. Fails if no line matches. Stops at the first\n"
+	"line where [cmd] fails; changes to earlier lines remain.\n"
+	"<Delim> is any character; escape it inside [regex] with a backslash.\n"
+	"Matching ignores case by default; ic 0 makes it case-sensitive.\n"
+	"\n"
+	"Example: print lines containing \"int\"\n"
+	"g/int/p\n"
+	"Example: remove all empty lines\n"
+	"g/^$/d\n"
+	"Example: in lines 10-20, remove lines containing \"int\"\n"
+	"10,20g/int/d\n"
+	"Example: insert \"checked\" after each line containing \"int\"\n"
+	"g/int/i checked\n"
+	"Example: print lines containing \"/usr/bin\"\n"
+	"g|/usr/bin|p";
+
+static char exspec_agent_w[] =
+	"[range]w[path]\n"
+	"[range]w[!{cmd}]\n"
+	"Write a file or a pipe\n"
+	"\n"
+	"No range evaluates to <%> range.\n"
+	"No argument evaluates to current buffer path.\n"
+	"\n"
+	"Example: write a file\n"
+	"w vi.c\n"
+	"Example: pipe out all data into less\n"
+	"w !less\n"
+	"Example: pipe out only first 10 lines\n"
+	"1,10w !less";
+
+static char exspec_agent_bang[] =
+	"[range]![cmd]\n"
+	"Run an external program\n"
+	"\n"
+	"When a range is specified, the buffer'\''s data is piped to an external\n"
+	"program. The resulting stdout and stderr are then piped back into the\n"
+	"buffer, replacing the contents of the original range.\n"
+	"No range returns an error if shell exit code is not zero.\n"
+	"A background task started with & blocks until it exits unless its\n"
+	"stdout and stderr are redirected.\n"
+	"\n"
+	"Example: start a dev server in the background, logging to a file\n"
+	"!npm run dev >/tmp/dev.log 2>&1 &\n"
+	"Example: check the server log\n"
+	"!tail -n 20 /tmp/dev.log\n"
+	"Example: infamously sort a buffer\n"
+	"%!sort\n"
+	"Example: replace \"int\" with \"uint\" using sed\n"
+	"%!sed -e '\''s/int/uint/g'\''\n"
+	"Example: pipe in result of ls command without line replacement\n"
+	";$+1!ls\n"
+	"Example: capitalize word at current position using tr\n"
+	";;>\\\\\\>>!tr '\''[:lower:]'\'' '\''[:upper:]'\''";
+
+static char exspec_agent_r[] =
+	"[range]r[path]\n"
+	"[range]r[!{cmd}]\n"
+	"Read a file or a pipe\n"
+	"\n"
+	"Range is computed on a target.\n"
+	"No range evaluates to <%> range.\n"
+	"No argument evaluates to current buffer path.\n"
+	"\n"
+	"Example: read a file\n"
+	"r vi.c\n"
+	"Example: pipe in all data\n"
+	"r !ls\n"
+	"Example: pipe in only lines 3,5\n"
+	"3,5r !ls";
+
+static char exspec_agent_b[] =
+	"b[#index]\n"
+	"Print buffers or switch to a buffer\n"
+	"\n"
+	"No argument prints buffers.\n"
+	"Temporary buffers are separate from the main buffers\n"
+	"and are selected by a negative index.\n"
+	"A switch command targeting the same temporary buffer\n"
+	"as the current one switches to the previous main buffer.\n"
+	"\n"
+	"Example: switch to the 5th buffer\n"
+	"b5\n"
+	"Example: switch to the /hist/ ex history buffer\n"
+	"b-1\n"
+	"Example: switch to the /fm/ directory listing buffer\n"
+	"b-2\n"
+	"Example: switch to the /sc/ scratch buffer\n"
+	"b-3";
+
+static char exspec_agent_parsing[] =
+	"EX PARSING\n"
+	"Parsing follows the structure:\n"
+	"[<sep>][prefix][cmd][<pad>][args]\n"
+	"Ex commands are initiated and separated by <sep>. Fields can\n"
+	"be padded by <Space> or <Tab>. [prefix] is a field consumed by\n"
+	"[cmd], which accepts [range] structure characters. Padding inside\n"
+	"[prefix] structure is collapsed, except within nested blocks.\n"
+	"There can only be one pad in between [cmd] and [args]. To avoid\n"
+	"ambiguity in scripts, it is recommended to always use a pad between\n"
+	"[cmd] and [args].\n"
+	"\n"
+	"Examples:\n"
+	"evi.c\n"
+	"Evaluates to \"e vi.c\"\n"
+	"efbc\n"
+	"Evaluates to \"ef bc\" not \"e fbc\"\n"
+	"e  vi.c\n"
+	"Edit \" vi.c\". <pad> is required\n"
+	"\n"
+	"Command chaining is unavailable by default during agent execution.";
+
+static char exspec_agent_escapes[] =
+	"EX ESCAPES\n"
+	"Special characters in [args] and [prefix] blocks will become\n"
+	"regular when escaped with <\\>. Escapes are governed by a non-POSIX\n"
+	"parity rule: escapes directly before a special are halved, an\n"
+	"odd amount makes the special regular, and escapes anywhere else\n"
+	"are literal.\n"
+	"\n"
+	"( ^ ] -\n"
+	"Specials in regex \"[]\" expression\n"
+	"( ) { + * \? ^ $ [ | \\ . \\< \\>\n"
+	"Specials in regex\n"
+	"\\ : % !\n"
+	"Specials in ex\n"
+	"\n"
+	"Ex special characters are disabled by default during agent execution.";
+
+static char exspec_agent_expansion[] =
+	"EX EXPANSION\n"
+	"<%> in [args] expands to current buffer pathname or any buffer\n"
+	"pathname when followed by a corresponding buffer number.\n"
+	"%# expands to last swapped buffer pathname.\n"
+	"%@ expands to register specified.\n"
+	"\n"
+	"Example: make a copy of the current file and edit it\n"
+	"!cp % %_:e %_\n"
+	"Example: insert current buffer pathname\n"
+	"&i%\n"
+	"Example: echo the value of <a> register\n"
+	"!echo %@97\n"
+	"\n"
+	"<!> in [args] starts and optionally ends a block containing\n"
+	"external commands. This block executes and expands to stdout\n"
+	"and stderr produced.\n"
+	"\n"
+	"Example: substitute \"int\" with the value of $RANDOM\n"
+	"%s/int/!printf \"%s\" $RANDOM!\n"
+	"Example: insert output of ls shell command\n"
+	"&i!ls\n"
+	"\n"
+	"Expansion is unavailable by default during agent execution.";
+
 static struct {
 	char *cmd, *text;
-} conf_exspec[] = {
-	{"i", exspec_insert},
-	{"c", exspec_insert},
-	{"p", "Cursor position is stateful; left at the range position it landed on."},
-	{"p", "Keep reads small and within buffer bounds."},
-	{"p", "Check the position with = and line count with $= before printing ranges."},
-	{"p", "Use character ranges for long lines; stop when you have enough context."},
-	{"p", "Ex special characters disabled by default. p % example will not work."},
-	{"g", "Ex special characters disabled by default. Command chaining unavailable."},
-	{"w", "Ex special characters disabled by default. Do not escape ! character."},
-	{"r", "Ex special characters disabled by default. Do not escape ! character."},
-	{"parsing", "Ex special characters disabled by default. Command chaining unavailable."},
-	{"escapes", "Ex special characters disabled by default."},
-	{"expansion", "Ex special characters disabled by default. Expansion unavailable."},
+} conf_exspec_agent[] = {
+	{"i", exspec_agent_i},
+	{"c", exspec_agent_c},
+	{"p", exspec_agent_p},
+	{"g", exspec_agent_g},
+	{"w", exspec_agent_w},
+	{"r", exspec_agent_r},
+	{"b", exspec_agent_b},
+	{"!", exspec_agent_bang},
+	{"parsing", exspec_agent_parsing},
+	{"escapes", exspec_agent_escapes},
+	{"expansion", exspec_agent_expansion},
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
-'\''2,#+1c ((pac|pr|aco!?|ai|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+'\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -5607,55 +9005,34 @@ int n = 0, keep, d; \\9??0?
 grp 09??-8m 3220reg p OK ex.c:57:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:572sc %? %@2132sc!0?
 ?0?
-%f+ 		}
-		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,
+%f+ 		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,
 				MIN\(dir, 0\), !row, &beg, &off\)\) \{
 			xrerr = "range not found";
 			return -2;
 		}
 		n = row \? off : beg;1??0?
-1??+3m 41q0?
-%f+ 			xrerr = "range not found";
-			return -2;
-		}
-		n = row \? off : beg;2??0?
-2??m 4220reg p OK ex.c:288:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^			xrerr = "range not found";$3??0?
-3??m 4220reg p OK ex.c:288:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 		}
-		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,
-				MIN\(dir, 0\), !row, &beg, &off\)\) \{4??0?
-4??+3m 4220reg p OK ex.c:288:a42sc %? %@2152sc!1q0?
-%f+ 			return -2;
-		}
-		n = row \? off : beg;5??0?
-5??-1m 4220reg p OK ex.c:288:a52sc %? %@2152sc!1q0?
-%f+ .	.
-..i. ..b.f..e.....x.,.x..d.s..x...di.,.r.. \? .e.....,..n.,
-	...M.N\(d....0.,...o.,...... &....\)..
-......r. . ...ng....t f.u....
-..	..tu....2.
-	..
-	.. ..r........ :..eg.6??0?
-6??+3m 4220reg p OK ex.c:288:a62sc %? %@2152sc!1q0?
-grp 1%f+ 		}.*?
-		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,.*?
+1??+2m 41q0?
+%f+ 		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,
+				MIN\(dir, 0\), !row, &beg, &off\)\) \{
+			xrerr = "range not found";4??0?
+4??+2m 4220reg p OK ex.c:288:a42sc %? %@2152sc!1q0?
+grp 1%f+ 		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,.*?
 				MIN\(dir, 0\), !row, &beg, &off\)\) \{.*?
 (			xrerr = "range not found";)7??0?
 grp 07??m 4220reg p OK ex.c:288:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 		} else if \(xgrp >= xkwdrs->nsubc\) \{
-			xrerr = xgerr;
-			return -2;.*(	default:)
+m 01;0grp 1%f> 			xrerr = xgerr;
+			return -2;
+		}.*(	default:)
 		if \(uc_isdigit\(\*\*num\)\) \{
 			n = atoi\(\*num\);8??0?
 grp 08??-5m 4220reg p OK ex.c:288:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		if \(!xkwdrs\) \{
-			xrerr = xserr;
-			return -2;.*(			while \(uc_isdigit\(\*\*num\)\))
+m 01;0grp 1%f> 			xrerr = xserr;
+			return -2;
+		} else if \(xgrp >= xkwdrs->nsubc\) \{.*(			while \(uc_isdigit\(\*\*num\)\))
 				\+\+\*num;
 		}9??0?
 grp 09??-8m 4220reg p OK ex.c:288:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:2882sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:2882sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 	}
@@ -5815,17 +9192,80 @@ static int ex_read\(sbuf \*sb, char \*msg, ins_state \*is, int ps, int flg\)5?
 grp 07??m 9220reg p OK ex.c:422:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	readfile\(\)
 	return 0;
-}.*(	if \(len && \(\(fd = bufs_find\(arg\+cd, len\)\) >= 0\)\) \{)
-		bufs_switchwft\(fd\)
-		return NULL;8??0?
-grp 08??-4m 9220reg p OK ex.c:422:a82sc %? %@2152sc!'\''08??1q0?
+}.*(		return "last buffer modified";)
+	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{
+		bufs_switch\(bufs_open\(arg\+cd, len\)\);8??0?
+grp 08??-11m 9220reg p OK ex.c:422:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		return 1;
 	}
-	bufs_switch\(bufs_open\(path, len\)\);.*(	} else if \(xbufcur == xbufsmax && !strchr\(cmd, '\''!'\''\) &&)
-			bufs\[xbufsmax - 1]\.lb->modified\) \{
-		return "last buffer modified";9??0?
-grp 09??-7m 9220reg p OK ex.c:422:a92sc %? %@2152sc!'\''00?
+	bufs_switch\(bufs_open\(path, len\)\);.*(		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/)
+	}
+	readfile\(rd =\)9??0?
+grp 09??-14m 9220reg p OK ex.c:422:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:4222sc %? %@2132sc!0?
+?0?
+%f+ 	len = strlen\(arg\+cd\);
+	if \(len && \(\(fd = bufs_find\(arg\+cd, len\)\) >= 0\)\) \{
+		bufs_switchwft\(fd\)
+		if \(!strchr\(cmd, '\''!'\''\)\)
+			return NULL;1??0?
+1??+3m 101q0?
+%f+ 		if \(!strchr\(cmd, '\''!'\''\)\)
+			return NULL;2??0?
+2??m 10220reg p OK ex.c:428:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		if \(!strchr\(cmd, '\''!'\''\)\)$3??0?
+3??m 10220reg p OK ex.c:428:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 	len = strlen\(arg\+cd\);
+	if \(len && \(\(fd = bufs_find\(arg\+cd, len\)\) >= 0\)\) \{
+		bufs_switchwft\(fd\)4??0?
+4??+3m 10220reg p OK ex.c:428:a42sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			return NULL;$5??0?
+5??-1m 10220reg p OK ex.c:428:a52sc %? %@2152sc!fr 981qfr 980?
+%f+ 	.......t.le...r....\);
+	i.....n......f..= ...._..nd...........n...........
+...u.s..w...h..t\(...
+	..f.....r.....md....'\''\).
+	...e......U...6??0?
+6??+3m 10220reg p OK ex.c:428:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	len = strlen\(arg\+cd\);.*?
+	if \(len && \(\(fd = bufs_find\(arg\+cd, len\)\) >= 0\)\) \{.*?
+		bufs_switchwft\(fd\).*?
+(		if \(!strchr\(cmd, '\''!'\''\)\))7??0?
+grp 07??m 10220reg p OK ex.c:428:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	readfile\(\)
+	return 0;
+}.*(		return "last buffer modified";)
+	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{
+		bufs_switch\(bufs_open\(arg\+cd, len\)\);8??0?
+grp 08??-5m 10220reg p OK ex.c:428:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		return 1;
+	}
+	bufs_switch\(bufs_open\(path, len\)\);.*(		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/)
+	}
+	readfile\(rd =\)9??0?
+grp 09??-8m 10220reg p OK ex.c:428:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:4282sc %? %@2132sc!0?
+?0?
+%f+ 			return NULL;
+		arg = "";
+	} else if \(xbufcur == xbufsmax && !strchr\(cmd, '\''!'\''\) &&
+			bufs\[xbufsmax - 1]\.lb->modified\) \{1??0?
+1??m 111q0?
+;0fr.,$f+ ^			return NULL;$4??0?
+4??m 11220reg p OK ex.c:429:a42sc %? %@2152sc!fr 981qfr 980?
+m 01;0grp 1%f> 	readfile\(\)
+	return 0;
+}.*(		return "last buffer modified";)
+	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{
+		bufs_switch\(bufs_open\(arg\+cd, len\)\);8??0?
+grp 08??-4m 11220reg p OK ex.c:429:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		return 1;
+	}
+	bufs_switch\(bufs_open\(path, len\)\);.*(		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/)
+	}
+	readfile\(rd =\)9??0?
+grp 09??-7m 11220reg p OK ex.c:429:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:4292sc %? %@2132sc!0?
 ?0?
 %f+ 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);
@@ -5835,55 +9275,55 @@ static int ex_read\(sbuf \*sb, char \*msg, ins_state \*is, int ps, int flg\)5?
 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
-	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;1??0?
-1??+3m 101q0?
+	return rd \|\| \(fd < 0 && cd != 3\) \? xuerr : NULL;1??0?
+1??+3m 121q0?
 %f+ 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);
 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
-	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;2??0?
-2??m 10220reg p OK ex.c:441:a22sc %? %@2152sc!1q0?
+	return rd \|\| \(fd < 0 && cd != 3\) \? xuerr : NULL;2??0?
+2??m 12220reg p OK ex.c:443:a22sc %? %@2152sc!1q0?
 %f+ 	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",
 			\*xb_path \? xb_path : "unnamed", lbuf_len\(xb\),
 			fd < 0 \|\| rd \? cd == 3 \? '\''n'\'' : '\''f'\'' : '\''r'\''\);3??0?
-3??m 10220reg p OK ex.c:441:a32sc %? %@2152sc!1q0?
+3??m 12220reg p OK ex.c:443:a32sc %? %@2152sc!1q0?
 %f+ 		ex_bufpostfix\(ex_buf, arg\[0]\);
 		syn_setft\(xb_ft\);
 	}4??0?
-4??+3m 10220reg p OK ex.c:441:a42sc %? %@2152sc!1q0?
+4??+3m 12220reg p OK ex.c:443:a42sc %? %@2152sc!1q0?
 %f+ 	if \(!\(xvis & 4\)\)
 		ex_print\(msg, bar_ft\)
-	return \(fd < 0 \|\| rd\) && \*arg \? xuerr : NULL;5??0?
-5??-3m 10220reg p OK ex.c:441:a52sc %? %@2152sc!1q0?
-%f+ .................._.u.........\).
-.	.y......t\(....t\);
+	return rd \|\| \(fd < 0 && cd != 3\) \? xuerr : NULL;5??0?
+5??-3m 12220reg p OK ex.c:443:a52sc %? %@2152sc!1q0?
+%f+ ..ex.............x...f. a.g\[.]\).
+........t...x._....
 	.
-....ri..f......si........\)...."......dL.......
-.	.......t..\?.....a.h....u......., .b....e.\(...,
-	.....<.......d . .d....3...'\''.... ..... '\''..\);
-	.......vi....4\).
-...........m.g....r_f..
-...tu...\(.... ...\| r.. ......g...xu.......UL..6??0?
-6??+3m 10220reg p OK ex.c:441:a62sc %? %@2152sc!1q0?
+.......t.\(.....s.....\(.s..,....%... ..........
+..........h...x..p.......u.n..e.".....f.......\),
+.	.f........... \?....=... \?...... .f... .....
+..f.\(.....s.&....
+.	.x_.......s....a.....
+	..t.rn ......\(.... 0....c........\?.....r.:......6??0?
+6??+3m 12220reg p OK ex.c:443:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		ex_bufpostfix\(ex_buf, arg\[0]\);.*?
 		syn_setft\(xb_ft\);.*?
 	}.*?
 (	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[%c]",)7??0?
-grp 07??m 10220reg p OK ex.c:441:a72sc %? %@2152sc!1q0?
+grp 07??m 12220reg p OK ex.c:443:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	readfile\(rd =\)
 	if \(cd == 3 \|\| \(!rd && fd >= 0\)\) \{.*(static void \*ec_fuzz\(char \*loc, char \*cmd, char \*arg\))
 \{
 	rset \*rs;8??0?
-grp 08??-8m 10220reg p OK ex.c:441:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 12220reg p OK ex.c:443:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	} else if \(len \|\| !xbufcur \|\| !strchr\(cmd, '\''!'\''\)\) \{
 		bufs_switch\(bufs_open\(arg\+cd, len\)\);
 		cd = 3; /\* XXX: quick hack to indicate new lbuf \*/.*(	char \*path, \*p, buf\[128], trunc\[128], \*sret = NULL;)
 	int c, pos, subs\[2], inst = -1, lnum = -1;
 	int beg, end, max = INT_MAX, dwid1, dwid2;9??0?
-grp 09??-11m 10220reg p OK ex.c:441:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:4412sc %? %@2132sc!0?
+grp 09??-11m 12220reg p OK ex.c:443:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:4432sc %? %@2132sc!0?
 ?0?
 %f+ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 \{
@@ -5891,28 +9331,28 @@ static int ex_read\(sbuf \*sb, char \*msg, ins_state \*is, int ps, int flg\)5?
 	if \(!arg\[0]\) \{
 		char ln\[512];
 		for \(int i = 0; i < xbufcur; i\+\+\) \{1??0?
-1??+2m 111q0?
+1??+2m 131q0?
 %f+ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\)
 \{
 	int n = atoi\(arg\);4??0?
-4??+2m 11220reg p OK ex.c:631:a42sc %? %@2152sc!1q0?
+4??+2m 13220reg p OK ex.c:633:a42sc %? %@2152sc!1q0?
 grp 1%f+ static void \*ec_buffer\(char \*loc, char \*cmd, char \*arg\).*?
 \{.*?
 (	int n = atoi\(arg\);)7??0?
-grp 07??m 11220reg p OK ex.c:631:a72sc %? %@2152sc!1q0?
+grp 07??m 13220reg p OK ex.c:633:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	xoff = off;
 	return NULL;
 }.*(			char c = ex_buf == bufs\+i \? '\''%'\'' : \(ex_pbuf == bufs\+i \? '\''#'\'' : '\'' '\''\);)
 			snprintf\(ln, LEN\(ln\), "%d %c %s", i,
 				c \+ \(char\)bufs\[i]\.lb->modified, bufs\[i]\.path\);8??0?
-grp 08??-4m 11220reg p OK ex.c:631:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 13220reg p OK ex.c:633:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			pskip, nskip, &nbeg, &off\)\)
 		return xuerr;
 	xrow = nbeg;.*(			ex_print\(ln, msg_ft\))
 		}
 		return NULL;9??0?
-grp 09??-7m 11220reg p OK ex.c:631:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:6312sc %? %@2132sc!0?
+grp 09??-7m 13220reg p OK ex.c:633:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:6332sc %? %@2132sc!0?
 ?0?
 %f+ 				c \+ \(char\)bufs\[i]\.lb->modified, bufs\[i]\.path\);
 			ex_print\(ln, msg_ft\)
@@ -5920,57 +9360,28 @@ static int ex_read\(sbuf \*sb, char \*msg, ins_state \*is, int ps, int flg\)5?
 		return NULL;
 	} else if \(n < 0\) \{
 		if \(-n <= LEN\(tempbufs\)\) \{1??0?
-1??+2m 121q0?
+1??+2m 141q0?
 %f+ 				c \+ \(char\)bufs\[i]\.lb->modified, bufs\[i]\.path\);
 			ex_print\(ln, msg_ft\)
 		}4??0?
-4??+2m 12220reg p OK ex.c:639:a42sc %? %@2152sc!1q0?
+4??+2m 14220reg p OK ex.c:641:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				c \+ \(char\)bufs\[i]\.lb->modified, bufs\[i]\.path\);.*?
 			ex_print\(ln, msg_ft\).*?
 (		})7??0?
-grp 07??m 12220reg p OK ex.c:639:a72sc %? %@2152sc!1q0?
+grp 07??m 14220reg p OK ex.c:641:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		for \(int i = 0; i < xbufcur; i\+\+\) \{
 			char c = ex_buf == bufs\+i \? '\''%'\'' : \(ex_pbuf == bufs\+i \? '\''#'\'' : '\'' '\''\);
 			snprintf\(ln, LEN\(ln\), "%d %c %s", i,.*(			temp_switch\(-n-1, 1\);)
 			return NULL;
 		}8??0?
-grp 08??-4m 12220reg p OK ex.c:639:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 14220reg p OK ex.c:641:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int n = atoi\(arg\);
 	if \(!arg\[0]\) \{
 		char ln\[512];.*(	} else if \(n < xbufcur\) \{)
 		bufs_switchwft\(n\)
 		return NULL;9??0?
-grp 09??-7m 12220reg p OK ex.c:639:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:6392sc %? %@2132sc!0?
-?0?
-%f+ 	xrow = row;
-	xoff = off;
-	xb = pxb;
-	if \(fd >= 0\)
-		close\(fd\);
-	return ret;1??0?
-1??+2m 131q0?
-%f+ 	xrow = row;
-	xoff = off;
-	xb = pxb;4??0?
-4??+2m 13220reg p OK ex.c:729:a42sc %? %@2152sc!1q0?
-grp 1%f+ 	xrow = row;.*?
-	xoff = off;.*?
-(	xb = pxb;)7??0?
-grp 07??m 13220reg p OK ex.c:729:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	ex_print\(msg, bar_ft\)
-	err:
-	lbuf_free\(lb\);.*(static void \*ex_pipeout\(char \*cmd, sbuf \*buf\))
-\{
-	int ret = 0;8??0?
-grp 08??-6m 13220reg p OK ex.c:729:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	lbuf_edit\(pxb, obuf\.s, row, row, 0, 0\);
-	free\(obuf\.s\);
-	snprintf\(msg, sizeof\(msg\), "\\"%s\\" %dL \[r]", path, end - beg\);.*(	if \(!\(xvis & 2\) && xmpt >= 0 && !xpln\) \{)
-		term_chr\('\''\\n'\''\);
-		xpln = 1;9??0?
-grp 09??-9m 13220reg p OK ex.c:729:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:7292sc %? %@2132sc!0?
+grp 09??-7m 14220reg p OK ex.c:641:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:6412sc %? %@2132sc!0?
 ?0?
 %f+ 
 void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\)
@@ -5978,28 +9389,28 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\)
 	if \(xpr > 0\) \{
 		ex_regput\(xpr, line, 1\);
 		sbuf \*pr = ex_regget\(xpr\);1??0?
-1??+2m 141q0?
+1??+2m 151q0?
 %f+ 
 void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\)
 \{4??0?
-4??+2m 14220reg p OK ex.c:824:a42sc %? %@2152sc!1q0?
+4??+2m 15220reg p OK ex.c:826:a42sc %? %@2152sc!1q0?
 grp 1%f+ .*?
 void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 (\{)7??0?
-grp 07??m 14220reg p OK ex.c:824:a72sc %? %@2152sc!1q0?
+grp 07??m 15220reg p OK ex.c:826:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		term_exec\(arg, strlen\(arg\), cmd\[0]\)
 	return term_sbuf \? NULL : "unsupported command";
 }.*(		if \(flg & 1 && xpr >= '\''A'\'' && xpr <= '\''Z'\'' && pr && pr->s_n &&)
 				pr->s\[pr->s_n-1] != '\''\\n'\''\)
 			ex_regput\(xpr, "\\n", 1\);8??0?
-grp 08??-4m 14220reg p OK ex.c:824:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 15220reg p OK ex.c:826:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static void \*ec_termexec\(char \*loc, char \*cmd, char \*arg\)
 \{
 	if \(\*arg && term_sbuf\).*(	if \(xvis & 1\) \{)
 		term_write\(line, dstrlen\(line, '\''\\n'\''\)\)
 		term_write\("\\n", 1\)9??0?
-grp 09??-8m 14220reg p OK ex.c:824:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:8242sc %? %@2132sc!0?
+grp 09??-8m 15220reg p OK ex.c:826:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:8262sc %? %@2132sc!0?
 ?0?
 %f+ 				pr->s\[pr->s_n-1] != '\''\\n'\''\)
 			ex_regput\(xpr, "\\n", 1\);
@@ -6007,57 +9418,57 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 	if \(xvis & 1\) \{
 		term_write\(line, dstrlen\(line, '\''\\n'\''\)\)
 		term_write\("\\n", 1\)1??0?
-1??+2m 151q0?
+1??+2m 161q0?
 %f+ 				pr->s\[pr->s_n-1] != '\''\\n'\''\)
 			ex_regput\(xpr, "\\n", 1\);
 	}4??0?
-4??+2m 15220reg p OK ex.c:831:a42sc %? %@2152sc!1q0?
+4??+2m 16220reg p OK ex.c:833:a42sc %? %@2152sc!1q0?
 grp 1%f+ 				pr->s\[pr->s_n-1] != '\''\\n'\''\).*?
 			ex_regput\(xpr, "\\n", 1\);.*?
 (	})7??0?
-grp 07??m 15220reg p OK ex.c:831:a72sc %? %@2152sc!1q0?
+grp 07??m 16220reg p OK ex.c:833:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_regput\(xpr, line, 1\);
 		sbuf \*pr = ex_regget\(xpr\);
 		if \(flg & 1 && xpr >= '\''A'\'' && xpr <= '\''Z'\'' && pr && pr->s_n &&.*(		return;)
 	}
 	syn_blockhl = -1;8??0?
-grp 08??-4m 15220reg p OK ex.c:831:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 16220reg p OK ex.c:833:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\)
 \{
 	if \(xpr > 0\) \{.*(	if \(flg && !\(xvis & 2\)\) \{)
 		term_pos\(xrows, 0\);
 		if \(\(!xpln && xmpt > 0\) \|\| flg == 2\)9??0?
-grp 09??-7m 15220reg p OK ex.c:831:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:8312sc %? %@2132sc!0?
+grp 09??-7m 16220reg p OK ex.c:833:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:8332sc %? %@2132sc!0?
 ?0?
 %f+ static void \*ec_insert\(char \*loc, char \*cmd, char \*arg\)
 \{
-	int beg, end, o1 = -1, o2 = -1, ps = 0, key;
+	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;
 	sbuf _sb, \*sb = &_sb;
 	if \(!\*loc \|\| \(key = ex_region\(loc, &beg, &end, &o1, &o2\)\)\) \{
 		if \(\*loc && cmd\[0] != '\''c'\'' && beg == -1 && end == 01??0?
-1??+2m 161q0?
+1??+2m 171q0?
 %f+ static void \*ec_insert\(char \*loc, char \*cmd, char \*arg\)
 \{
-	int beg, end, o1 = -1, o2 = -1, ps = 0, key;4??0?
-4??+2m 16220reg p OK ex.c:856:a42sc %? %@2152sc!1q0?
+	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;4??0?
+4??+2m 17220reg p OK ex.c:858:a42sc %? %@2152sc!1q0?
 grp 1%f+ static void \*ec_insert\(char \*loc, char \*cmd, char \*arg\).*?
 \{.*?
-(	int beg, end, o1 = -1, o2 = -1, ps = 0, key;)7??0?
-grp 07??m 16220reg p OK ex.c:856:a72sc %? %@2152sc!1q0?
+(	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;)7??0?
+grp 07??m 17220reg p OK ex.c:858:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(flg && xvis & 2\)
 		term_chr\('\''\\n'\''\);
 }.*(				&& \(lbuf_len\(xb\) \|\| key == 3\)\))
 			beg = 0;
 		else if \(\*loc && key != 2\)8??0?
-grp 08??-4m 16220reg p OK ex.c:856:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 17220reg p OK ex.c:858:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		syn_setft\(ft\);
 	led_crender\(line, r, c, left, left \+ xcols - c\)
 	restore\(ftidx\).*(	if \(xvis & 1 && \*arg\) \{)
 		sb->s = arg;
 		sb->s_n = 1;9??0?
-grp 09??-13m 16220reg p OK ex.c:856:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:8562sc %? %@2132sc!0?
+grp 09??-13m 17220reg p OK ex.c:858:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:8582sc %? %@2132sc!0?
 ?0?
 %f+ 			end = beg \+ 1;
 		}
@@ -6066,22 +9477,22 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 		sb->s = arg;
 		sb->s_n = 1;
 		key = 127;1??0?
-1??+3m 171q0?
+1??+3m 181q0?
 %f+ 	if \(xvis & 1 && \*arg\) \{
 		sb->s = arg;
 		sb->s_n = 1;
 		key = 127;2??0?
-2??m 17220reg p OK ex.c:869:a22sc %? %@2152sc!1q0?
+2??m 18220reg p OK ex.c:871:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	if \(xvis & 1 && \*arg\) \{$3??0?
-3??m 17220reg p OK ex.c:869:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 18220reg p OK ex.c:871:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			end = beg \+ 1;
 		}
 	}4??0?
-4??+3m 17220reg p OK ex.c:869:a42sc %? %@2152sc!1q0?
+4??+3m 18220reg p OK ex.c:871:a42sc %? %@2152sc!1q0?
 %f+ 		sb->s = arg;
 		sb->s_n = 1;
 		key = 127;5??0?
-5??-1m 17220reg p OK ex.c:869:a52sc %? %@2152sc!1q0?
+5??-1m 18220reg p OK ex.c:871:a52sc %? %@2152sc!1q0?
 %f+ .........b.. ....
 		.
 	.
@@ -6089,25 +9500,241 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 ....-.....ar..
 ....->... ....
 	.k.... ..7.6??0?
-6??+3m 17220reg p OK ex.c:869:a62sc %? %@2152sc!1q0?
+6??+3m 18220reg p OK ex.c:871:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			end = beg \+ 1;.*?
 		}.*?
 	}.*?
 (	if \(xvis & 1 && \*arg\) \{)7??0?
-grp 07??m 17220reg p OK ex.c:869:a72sc %? %@2152sc!1q0?
+grp 07??m 18220reg p OK ex.c:871:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			return xrerr;
 		else \{
 			beg = MAX\(0, MIN\(lbuf_len\(xb\), xrow\)\);.*(		_sbuf_make\(sb, 128,\))
 		if \(\*arg\)
 			term_push\(arg, strlen\(arg\)\);8??0?
-grp 08??-5m 17220reg p OK ex.c:869:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 18220reg p OK ex.c:871:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				&& \(lbuf_len\(xb\) \|\| key == 3\)\)
 			beg = 0;
 		else if \(\*loc && key != 2\).*(		while \(1\) \{)
 			syn_setft\(msg_ft\);
 			if \(\(key = ex_read\(sb, "", NULL, ps, 0\)\) != '\''\\n'\''\)9??0?
-grp 09??-8m 17220reg p OK ex.c:869:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:8692sc %? %@2132sc!0?
+grp 09??-8m 18220reg p OK ex.c:871:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:8712sc %? %@2132sc!0?
+?0?
+%f+ static void \*ec_print\(char \*loc, char \*cmd, char \*arg\)
+\{
+	int i, beg, end, o1 = -1, o2 = -1;
+	char \*o, \*ln;
+	if \(!\*cmd && \*arg\)
+		return "unknown command";
+	if \(\*cmd && \*arg\) \{
+		ex_print\(arg, msg_ft\)
+		return NULL;
+	}1??0?
+1??+3m 191q0?
+%f+ 	char \*o, \*ln;
+	if \(!\*cmd && \*arg\)
+		return "unknown command";
+	if \(\*cmd && \*arg\) \{
+		ex_print\(arg, msg_ft\)
+		return NULL;
+	}2??0?
+2??m 19220reg p OK ex.c:927:a22sc %? %@2152sc!1q0?
+%f+ 	char \*o, \*ln;
+	if \(!\*cmd && \*arg\)
+		return "unknown command";
+	if \(\*cmd && \*arg\) \{3??0?
+3??m 19220reg p OK ex.c:927:a32sc %? %@2152sc!1q0?
+%f+ static void \*ec_print\(char \*loc, char \*cmd, char \*arg\)
+\{
+	int i, beg, end, o1 = -1, o2 = -1;4??0?
+4??+3m 19220reg p OK ex.c:927:a42sc %? %@2152sc!1q0?
+%f+ 		ex_print\(arg, msg_ft\)
+		return NULL;
+	}5??0?
+5??-4m 19220reg p OK ex.c:927:a52sc %? %@2152sc!1q0?
+%f+ .t......... ..._............l....ch....c.., ..a..\*...\)
+\{
+.i....,.b.g,...........-1, o.......
+	...r.... ..n.
+.i...!...d... .....
+	............n..n.......d".
+.i....... &......\).\{
+	......i....r.,...g....
+...e.......LL.
+.}6??0?
+6??+3m 19220reg p OK ex.c:927:a62sc %? %@2152sc!1q0?
+grp 1%f+ static void \*ec_print\(char \*loc, char \*cmd, char \*arg\).*?
+\{.*?
+	int i, beg, end, o1 = -1, o2 = -1;.*?
+(	char \*o, \*ln;)7??0?
+grp 07??m 19220reg p OK ex.c:927:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		free\(sb->s\);
+	return NULL;
+}.*(	if \(\(i = ex_region\(loc, &beg, &end, &o1, &o2\)\)\))
+		return i == 2 && !\*cmd \? NULL : xrerr;
+	if \(o1 >= 0\)8??0?
+grp 08??-7m 19220reg p OK ex.c:927:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		xoff = o1;
+	ret:
+	if \(sb->s != arg\).*(		xoff = o2 >= 0 \? o2 : o1;)
+	if \(!\*cmd && \*loc\) \{
+		xrow = MAX\(beg, end - 1\);9??0?
+grp 09??-10m 19220reg p OK ex.c:927:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:9272sc %? %@2132sc!0?
+?0?
+%f+ 		xrow = MAX\(beg, end - 1\);
+		return NULL;
+	}
+	rstate = rstates\+1;
+	rstate->s = NULL;
+	for \(i = beg; i < end; i\+\+\) \{1??0?
+1??+2m 201q0?
+%f+ 		xrow = MAX\(beg, end - 1\);
+		return NULL;
+	}4??0?
+4??+2m 20220reg p OK ex.c:941:a42sc %? %@2152sc!1q0?
+grp 1%f+ 		xrow = MAX\(beg, end - 1\);.*?
+		return NULL;.*?
+(	})7??0?
+grp 07??m 20220reg p OK ex.c:941:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	if \(o1 >= 0\)
+		xoff = o2 >= 0 \? o2 : o1;
+	if \(!\*cmd && \*loc\) \{.*(		ln = lbuf_get\(xb, i\);)
+		if \(o1 >= 0 && o2 >= 0 && beg == end - 1\)
+			o = uc_sub\(ln, o1, o2\);8??0?
+grp 08??-4m 20220reg p OK ex.c:941:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	}
+	if \(\(i = ex_region\(loc, &beg, &end, &o1, &o2\)\)\)
+		return i == 2 && !\*cmd \? NULL : xrerr;.*(		else if \(o1 >= 0 && i == beg\))
+			o = uc_sub\(ln, o1, -1\);
+		else if \(o2 >= 0 && i == end - 1\)9??0?
+grp 09??-7m 20220reg p OK ex.c:941:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:9412sc %? %@2132sc!0?
+?0?
+%f+ 			o = uc_sub\(ln, o1, -1\);
+		else if \(o2 >= 0 && i == end - 1\)
+			o = uc_sub\(ln, 0, o2\);
+		else \{
+			ex_cprint\(ln, msg_ft, -1, 0, \*loc \? 0 : xleft, 1\);
+			continue;1??0?
+1??+3m 211q0?
+%f+ 		else \{
+			ex_cprint\(ln, msg_ft, -1, 0, \*loc \? 0 : xleft, 1\);
+			continue;2??0?
+2??m 21220reg p OK ex.c:952:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		else \{$3??0?
+3??m 21220reg p OK ex.c:952:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 			o = uc_sub\(ln, o1, -1\);
+		else if \(o2 >= 0 && i == end - 1\)
+			o = uc_sub\(ln, 0, o2\);4??0?
+4??+3m 21220reg p OK ex.c:952:a42sc %? %@2152sc!1q0?
+%f+ 			ex_cprint\(ln, msg_ft, -1, 0, \*loc \? 0 : xleft, 1\);
+			continue;5??0?
+5??-1m 21220reg p OK ex.c:952:a52sc %? %@2152sc!1q0?
+%f+ .	.... .._..b..n. o.,.....
+.	..........2... 0 .& .....e.....1\)
+...o ........\(...... ..\).
+..e... .
+..	e._......\(ln..ms...t...1..0.....c.\?...............
+.....n......6??0?
+6??+3m 21220reg p OK ex.c:952:a62sc %? %@2152sc!1q0?
+grp 1%f+ 			o = uc_sub\(ln, o1, -1\);.*?
+		else if \(o2 >= 0 && i == end - 1\).*?
+			o = uc_sub\(ln, 0, o2\);.*?
+(		else \{)7??0?
+grp 07??m 21220reg p OK ex.c:952:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		if \(o1 >= 0 && o2 >= 0 && beg == end - 1\)
+			o = uc_sub\(ln, o1, o2\);
+		else if \(o1 >= 0 && i == beg\).*(static void \*ec_delete\(char \*loc, char \*cmd, char \*arg\))
+\{
+	int beg, end, o1 = -1, o2 = -1;8??0?
+grp 08??-13m 21220reg p OK ex.c:952:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	rstate->s = NULL;
+	for \(i = beg; i < end; i\+\+\) \{
+		ln = lbuf_get\(xb, i\);.*(	char \*p = NULL;)
+	if \(ex_region\(loc, &beg, &end, &o1, &o2\)\)
+		return xrerr;9??0?
+grp 09??-17m 21220reg p OK ex.c:952:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:9522sc %? %@2132sc!0?
+?0?
+%f+ 			ex_cprint\(ln, msg_ft, -1, 0, \*loc \? 0 : xleft, 1\);
+			continue;
+		}
+		ex_cprint\(o, msg_ft, -1, 0, 0, 1\);
+		free\(o\);
+		rstate->s = NULL;
+	}1??0?
+1??+2m 221q0?
+%f+ 		}
+		ex_cprint\(o, msg_ft, -1, 0, 0, 1\);
+		free\(o\);
+		rstate->s = NULL;
+	}2??0?
+2??m 22220reg p OK ex.c:955:a22sc %? %@2152sc!1q0?
+%f+ 		}
+		ex_cprint\(o, msg_ft, -1, 0, 0, 1\);3??0?
+3??m 22220reg p OK ex.c:955:a32sc %? %@2152sc!1q0?
+%f+ 			ex_cprint\(ln, msg_ft, -1, 0, \*loc \? 0 : xleft, 1\);
+			continue;4??0?
+4??+2m 22220reg p OK ex.c:955:a42sc %? %@2152sc!1q0?
+%f+ 		free\(o\);
+		rstate->s = NULL;
+	}5??0?
+5??-2m 22220reg p OK ex.c:955:a52sc %? %@2152sc!1q0?
+%f+ 	..................g_..,...,... ..o....0.:....f......
+........nu..
+		.
+.	e._....n.\(.. ....ft........ 0,...;
+..f..e....
+..r...............;
+.}6??0?
+6??+2m 22220reg p OK ex.c:955:a62sc %? %@2152sc!1q0?
+grp 1%f+ 			ex_cprint\(ln, msg_ft, -1, 0, \*loc \? 0 : xleft, 1\);.*?
+			continue;.*?
+(		})7??0?
+grp 07??m 22220reg p OK ex.c:955:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		if \(o1 >= 0 && o2 >= 0 && beg == end - 1\)
+			o = uc_sub\(ln, o1, o2\);
+		else if \(o1 >= 0 && i == beg\).*(static void \*ec_delete\(char \*loc, char \*cmd, char \*arg\))
+\{
+	int beg, end, o1 = -1, o2 = -1;8??0?
+grp 08??-10m 22220reg p OK ex.c:955:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	rstate->s = NULL;
+	for \(i = beg; i < end; i\+\+\) \{
+		ln = lbuf_get\(xb, i\);.*(	char \*p = NULL;)
+	if \(ex_region\(loc, &beg, &end, &o1, &o2\)\)
+		return xrerr;9??0?
+grp 09??-14m 22220reg p OK ex.c:955:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:9552sc %? %@2132sc!0?
+?0?
+%f+ 		free\(o\);
+		rstate->s = NULL;
+	}
+	rstate--;
+	xrow = MAX\(beg, end - \(cmd\[0] \|\| loc\[0]\)\);
+	return NULL;1??0?
+1??+2m 231q0?
+%f+ 		free\(o\);
+		rstate->s = NULL;
+	}4??0?
+4??+2m 23220reg p OK ex.c:959:a42sc %? %@2152sc!1q0?
+grp 1%f+ 		free\(o\);.*?
+		rstate->s = NULL;.*?
+(	})7??0?
+grp 07??m 23220reg p OK ex.c:959:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		if \(o1 >= 0 && o2 >= 0 && beg == end - 1\)
+			o = uc_sub\(ln, o1, o2\);
+		else if \(o1 >= 0 && i == beg\).*(static void \*ec_delete\(char \*loc, char \*cmd, char \*arg\))
+\{
+	int beg, end, o1 = -1, o2 = -1;8??0?
+grp 08??-6m 23220reg p OK ex.c:959:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	rstate->s = NULL;
+	for \(i = beg; i < end; i\+\+\) \{
+		ln = lbuf_get\(xb, i\);.*(	char \*p = NULL;)
+	if \(ex_region\(loc, &beg, &end, &o1, &o2\)\)
+		return xrerr;9??0?
+grp 09??-10m 23220reg p OK ex.c:959:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:9592sc %? %@2132sc!0?
 ?0?
 %f+ 	if \(d < 4\)
 		itoa\(arr\[d], msg\);
@@ -6116,22 +9743,22 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 	ex_print\(msg, msg_ft\)
 	return NULL;
 }1??0?
-1??+3m 181q0?
+1??+3m 241q0?
 %f+ 		sprintf\(msg, "%d %d %d %d", arr\[0], arr\[1], arr\[2], arr\[3]\);
 	ex_print\(msg, msg_ft\)
 	return NULL;
 }2??0?
-2??m 18220reg p OK ex.c:1075:a22sc %? %@2152sc!1q0?
+2??m 24220reg p OK ex.c:1077:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		sprintf\(msg, "%d %d %d %d", arr\[0], arr\[1], arr\[2], arr\[3]\);$3??0?
-3??m 18220reg p OK ex.c:1075:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 24220reg p OK ex.c:1077:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	if \(d < 4\)
 		itoa\(arr\[d], msg\);
 	else4??0?
-4??+3m 18220reg p OK ex.c:1075:a42sc %? %@2152sc!1q0?
+4??+3m 24220reg p OK ex.c:1077:a42sc %? %@2152sc!1q0?
 %f+ 	ex_print\(msg, msg_ft\)
 	return NULL;
 }5??0?
-5??-1m 18220reg p OK ex.c:1075:a52sc %? %@2152sc!1q0?
+5??-1m 24220reg p OK ex.c:1077:a52sc %? %@2152sc!1q0?
 %f+ ....\(d.....
 .	.t......\[.........
 ...s.
@@ -6139,25 +9766,25 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 .e..........., .s.....
 .r..u...N....
 }6??0?
-6??+3m 18220reg p OK ex.c:1075:a62sc %? %@2152sc!1q0?
+6??+3m 24220reg p OK ex.c:1077:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	if \(d < 4\).*?
 		itoa\(arr\[d], msg\);.*?
 	else.*?
 (		sprintf\(msg, "%d %d %d %d", arr\[0], arr\[1], arr\[2], arr\[3]\);)7??0?
-grp 07??m 18220reg p OK ex.c:1075:a72sc %? %@2152sc!1q0?
+grp 07??m 24220reg p OK ex.c:1077:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	int d = \(unsigned char\)\*arg \^ '\''0'\'';
 	if \(ret && !\(\(\*arg && arg\[1]\) \|\| \(\*arg && d >= 4\)\)\)
 		return xrerr;.*(static void \*ec_undoredo\(char \*loc, char \*cmd, char \*arg\))
 \{
 	int ref;8??0?
-grp 08??-5m 18220reg p OK ex.c:1075:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 24220reg p OK ex.c:1077:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	char msg\[128];
 	int arr\[4] = \{0, 0, -1, -1};
 	int ret = ex_region\(loc, &arr\[0], &arr\[1], &arr\[2], &arr\[3]\);.*(	return \(cmd\[0] == '\''u'\'' \? lbuf_undo : lbuf_redo\)\(xb, &ref, &ref\) \?)
 		xuerr : NULL;
 }9??0?
-grp 09??-8m 18220reg p OK ex.c:1075:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:10752sc %? %@2132sc!0?
+grp 09??-8m 24220reg p OK ex.c:1077:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:10772sc %? %@2132sc!0?
 ?0?
 %f+ 	int count = \*loc \? \(\*loc == '\''\$'\'' \? INT_MAX : atoi\(loc\)\) : 1;
 	for \(; count && !ret; count--\) \{
@@ -6165,28 +9792,28 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 		ret = inv \? ret \? NULL : xuerr : ret;
 	}
 	return ret;1??0?
-1??+2m 191q0?
+1??+2m 251q0?
 %f+ 	int count = \*loc \? \(\*loc == '\''\$'\'' \? INT_MAX : atoi\(loc\)\) : 1;
 	for \(; count && !ret; count--\) \{
 		ret = ex_exec\(arg\);4??0?
-4??+2m 19220reg p OK ex.c:1435:a42sc %? %@2152sc!1q0?
+4??+2m 25220reg p OK ex.c:1437:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	int count = \*loc \? \(\*loc == '\''\$'\'' \? INT_MAX : atoi\(loc\)\) : 1;.*?
 	for \(; count && !ret; count--\) \{.*?
 (		ret = ex_exec\(arg\);)7??0?
-grp 07??m 19220reg p OK ex.c:1435:a72sc %? %@2152sc!1q0?
+grp 07??m 25220reg p OK ex.c:1437:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		return !ret && \*arg \? ex_exec\(arg\) : ret;
 	} else if \(!\*arg\)
 		return ret;.*(static void \*ec_join\(char \*loc, char \*cmd, char \*arg\))
 \{
 	int beg, end, o2 = 0;8??0?
-grp 08??-6m 19220reg p OK ex.c:1435:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 25220reg p OK ex.c:1437:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		}
 	} else if \(isdq\) \{
 		ret = \(xpret != NULL\) \^ inv \? xuerr : NULL;.*(	if \(ex_vregion\(loc, &beg, &end\)\))
 		return xrerr;
 	xrow = beg;9??0?
-grp 09??-9m 19220reg p OK ex.c:1435:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:14352sc %? %@2132sc!0?
+grp 09??-9m 25220reg p OK ex.c:1437:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:14372sc %? %@2132sc!0?
 ?0?
 %f+ 	return NULL;
 }
@@ -6194,110 +9821,110 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 void ex_regesc\(sbuf \*sb, char \*beg, char \*end, int ex\)
 \{
 	for \(; beg < end; beg\+\+\) \{1??0?
-1??+2m 201q0?
+1??+2m 261q0?
 %f+ 	return NULL;
 }
 
 4??0?
-4??+2m 20220reg p OK ex.c:1637:a42sc %? %@2152sc!1q0?
+4??+2m 26220reg p OK ex.c:1639:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			\*sp\[j] = cmd\[2] \? 0 : "\\\\:%!"\[j];
 	for \(; \*arg && i < LEN\(sp\); i\+\+\)
 		\*sp\[i] = \*arg\+\+;.*(		if \(\*beg == '\''\\\\'\''\) \{)
 			/\* class form is safe in any layer \*/
 			sbuf_str\(sb, "\[\\\\\\\\]"\)8??0?
-grp 08??-4m 20220reg p OK ex.c:1637:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 26220reg p OK ex.c:1639:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			\*sp\[i] = cmd\[2] \? 0 : "\\\\:%!"\[i];
 	} else
 		for \(int j = 0; j < LEN\(sp\); j\+\+\).*(		if \(ex && \(\*beg == xsep \|\| \*beg == xexp \|\| \*beg == xexe\)\))
 			sbuf_chr\(sb, xesc\)
 		else if \(strchr\("!%\{\[\(\)\.\?\^\$\|\*/\+", \*beg\)\)9??0?
-grp 09??-9m 20220reg p OK ex.c:1637:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16372sc %? %@2132sc!0?
+grp 09??-9m 26220reg p OK ex.c:1639:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16392sc %? %@2132sc!0?
 ?0?
 %f+ #define EO\(opt\) \\
 	_EO\(opt, x##opt = \*arg \? eo_val\(arg\) : !x##opt; return NULL;\)
 
 EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)1??0?
-1??+3m 211q0?
+1??+3m 271q0?
 %f+ EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)
 EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)2??0?
-2??m 21220reg p OK ex.c:1705:a22sc %? %@2152sc!1q0?
+2??m 27220reg p OK ex.c:1707:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\)$3??0?
-3??m 21220reg p OK ex.c:1705:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 27220reg p OK ex.c:1707:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ #define EO\(opt\) \\
 	_EO\(opt, x##opt = \*arg \? eo_val\(arg\) : !x##opt; return NULL;\)
 
 4??0?
-4??+3m 21220reg p OK ex.c:1705:a42sc %? %@2152sc!1q0?
+4??+3m 27220reg p OK ex.c:1707:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)$5??0?
-5??-1m 21220reg p OK ex.c:1705:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 27220reg p OK ex.c:1707:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ....i.. ..\(.p....
 .......t.....op... .a.. ..e..va..ar.\) :.......t;..........LL;\)
 
 .O..a.. E.........ai\) .O\(.... E........\(.s.\).E..i...E.\(....
 ..\(....EO......\).E...eq..........\).EO.h... ..\(....6??0?
-6??+3m 21220reg p OK ex.c:1705:a62sc %? %@2152sc!1q0?
+6??+3m 27220reg p OK ex.c:1707:a62sc %? %@2152sc!1q0?
 grp 1%f+ #define EO\(opt\) \\.*?
 	_EO\(opt, x##opt = \*arg \? eo_val\(arg\) : !x##opt; return NULL;\).*?
 .*?
 (EO\(pac\) EO\(pr\) EO\(ai\) EO\(err\) EO\(fr\) EO\(ish\) EO\(ic\) EO\(mpt\))7??0?
-grp 07??m 21220reg p OK ex.c:1705:a72sc %? %@2152sc!1q0?
+grp 07??m 27220reg p OK ex.c:1707:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
 }.*(_EO\(hlr,)
 	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
 	led_ext \*p = led_extfind\(ext_hlr\);8??0?
-grp 08??-8m 21220reg p OK ex.c:1705:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 27220reg p OK ex.c:1707:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		x->att\[j\+1] = syn_merge\(x->att\[j\+1], conf_hlrev\);
 	}
 }.*(	if \(xhlr && !p\))
 		led_extreg\(\)->ext_func = ext_hlr;
 	else if \(!xhlr && p\)9??0?
-grp 09??-11m 21220reg p OK ex.c:1705:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:17052sc %? %@2132sc!0?
+grp 09??-11m 27220reg p OK ex.c:1707:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:17072sc %? %@2132sc!0?
 ?0?
 %f+ EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)
 EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 
 _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
 _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)1??0?
-1??+1m 221q0?
+1??+1m 281q0?
 %f+ EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)
 
 _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
 _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)2??0?
-2??m 22220reg p OK ex.c:1707:a22sc %? %@2152sc!1q0?
+2??m 28220reg p OK ex.c:1709:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\)$3??0?
-3??m 22220reg p OK ex.c:1707:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 28220reg p OK ex.c:1709:a32sc %? %@2152sc!fr 981qfr 980?
 ;0fr.,$f+ ^EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\)$4??0?
-4??+1m 22220reg p OK ex.c:1707:a42sc %? %@2152sc!fr 981qfr 980?
+4??+1m 28220reg p OK ex.c:1709:a42sc %? %@2152sc!fr 981qfr 980?
 %f+ 
 _EO\(ts, xts = \*arg \? eo_val\(arg\) : !xts; xts = MAX\(0, xts\); RST_NULL\(0, 1, 2\) return NULL;\)
 _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)5??0?
-5??-1m 22220reg p OK ex.c:1707:a52sc %? %@2152sc!1q0?
+5??-1m 28220reg p OK ex.c:1709:a52sc %? %@2152sc!1q0?
 %f+ .O..r......hap...........E.\(.r......O...l....\(h..\)
 E.....\)...\(... .......................
 
 _..\(... ..... ..r..\?.....................x...=.M..\(0..xt..;...T_.........,.2..r...r....L..\)
 ............=..ar..\?.e.............!...;...........,.....et.r....L...6??0?
-6??+1m 22220reg p OK ex.c:1707:a62sc %? %@2152sc!1q0?
+6??+1m 28220reg p OK ex.c:1709:a62sc %? %@2152sc!1q0?
 grp 1%f+ EO\(rr\) EO\(shape\) EO\(seq\) EO\(order\) EO\(hll\) EO\(hlw\).*?
 (EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\))7??0?
-grp 07??m 22220reg p OK ex.c:1707:a72sc %? %@2152sc!1q0?
+grp 07??m 28220reg p OK ex.c:1709:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
 }.*(_EO\(hlr,)
 	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
 	led_ext \*p = led_extfind\(ext_hlr\);8??0?
-grp 08??-6m 22220reg p OK ex.c:1707:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 28220reg p OK ex.c:1709:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		x->att\[j\+1] = syn_merge\(x->att\[j\+1], conf_hlrev\);
 	}
 }.*(	if \(xhlr && !p\))
 		led_extreg\(\)->ext_func = ext_hlr;
 	else if \(!xhlr && p\)9??0?
-grp 09??-9m 22220reg p OK ex.c:1707:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:17072sc %? %@2132sc!0?
+grp 09??-9m 28220reg p OK ex.c:1709:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:17092sc %? %@2132sc!0?
 ?0?
 %f+ 	return NULL;
 \)
@@ -6306,25 +9933,25 @@ _..\(... ..... ..r..\?.....................x...=.M..\(0..xt..;...T_.........,.2.
 #define EO\(opt\) \{#opt, eo_##opt}
 
 1??0?
-1??+2m 231q0?
+1??+2m 291q0?
 %f+ 	return NULL;
 \)
 
 4??0?
-4??+2m 23220reg p OK ex.c:1732:a42sc %? %@2152sc!1q0?
+4??+2m 29220reg p OK ex.c:1734:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
-		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(	\{"=\?", ec_num},)
-	\{"=", ec_num},
-	\{"\?\?\?", ec_while},8??0?
-grp 08??-12m 23220reg p OK ex.c:1732:a82sc %? %@2152sc!'\''08??1q0?
+		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(	\{"\?\?", ec_while},)
+	\{"\?!", ec_while},
+	\{"\?~", ec_xcid},8??0?
+grp 08??-16m 29220reg p OK ex.c:1734:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
-	else if \(\*arg\).*(	\{"\?""\?!", ec_while},)
-	\{"\?\?", ec_while},
-	\{"\?!", ec_while},9??0?
-grp 09??-15m 23220reg p OK ex.c:1732:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:17322sc %? %@2132sc!0?
+	else if \(\*arg\).*(	\{"\?", ec_while},)
+	\{"bp", ec_setpath},
+	\{"bs", ec_bufsave},9??0?
+grp 09??-19m 29220reg p OK ex.c:1734:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17342sc %? %@2132sc!0?
 ?0?
 %f+ #define EO\(opt\) \{#opt, eo_##opt}
 
@@ -6336,7 +9963,7 @@ static struct excmd \{
 	\{"@", ec_termexec},
 	\{"&", ec_termexec},
 	\{"!", ec_exec},1??0?
-1??+3m 241q0?
+1??+3m 301q0?
 %f+ static struct excmd \{
 	char \*name;
 	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);
@@ -6344,20 +9971,20 @@ static struct excmd \{
 	\{"@", ec_termexec},
 	\{"&", ec_termexec},
 	\{"!", ec_exec},2??0?
-2??m 24220reg p OK ex.c:1737:a22sc %? %@2152sc!1q0?
+2??m 30220reg p OK ex.c:1739:a22sc %? %@2152sc!1q0?
 %f+ static struct excmd \{
 	char \*name;
 	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);
 } excmds\[] = \{3??0?
-3??m 24220reg p OK ex.c:1737:a32sc %? %@2152sc!1q0?
+3??m 30220reg p OK ex.c:1739:a32sc %? %@2152sc!1q0?
 %f+ #define EO\(opt\) \{#opt, eo_##opt}
 
 /\* commands & opts must be sorted longest of its kind topmost \*/4??0?
-4??+3m 24220reg p OK ex.c:1737:a42sc %? %@2152sc!1q0?
+4??+3m 30220reg p OK ex.c:1739:a42sc %? %@2152sc!1q0?
 %f+ 	\{"@", ec_termexec},
 	\{"&", ec_termexec},
 	\{"!", ec_exec},5??0?
-5??-4m 24220reg p OK ex.c:1737:a52sc %? %@2152sc!1q0?
+5??-4m 30220reg p OK ex.c:1739:a52sc %? %@2152sc!1q0?
 %f+ ..e......O.o... ....., ...##op.}
 
 .\*....m...s.. ...s ..st..e.....ed.l.n.e.t........ki.d.........\*.
@@ -6368,184 +9995,210 @@ static struct excmd \{
 	..... ...t.......}.
 	\{"."......e..ex....
 	...",.e........6??0?
-6??+3m 24220reg p OK ex.c:1737:a62sc %? %@2152sc!1q0?
+6??+3m 30220reg p OK ex.c:1739:a62sc %? %@2152sc!1q0?
 grp 1%f+ #define EO\(opt\) \{#opt, eo_##opt}.*?
 .*?
 /\* commands & opts must be sorted longest of its kind topmost \*/.*?
 (static struct excmd \{)7??0?
-grp 07??m 24220reg p OK ex.c:1737:a72sc %? %@2152sc!1q0?
+grp 07??m 30220reg p OK ex.c:1739:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
-		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(	\{"=\?", ec_num},)
-	\{"=", ec_num},
-	\{"\?\?\?", ec_while},8??0?
-grp 08??-7m 24220reg p OK ex.c:1737:a82sc %? %@2152sc!'\''08??1q0?
+		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(	\{"\?\?", ec_while},)
+	\{"\?!", ec_while},
+	\{"\?~", ec_xcid},8??0?
+grp 08??-11m 30220reg p OK ex.c:1739:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
-	else if \(\*arg\).*(	\{"\?""\?!", ec_while},)
-	\{"\?\?", ec_while},
-	\{"\?!", ec_while},9??0?
-grp 09??-10m 24220reg p OK ex.c:1737:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:17372sc %? %@2132sc!0?
+	else if \(\*arg\).*(	\{"\?", ec_while},)
+	\{"bp", ec_setpath},
+	\{"bs", ec_bufsave},9??0?
+grp 09??-14m 30220reg p OK ex.c:1739:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:17392sc %? %@2132sc!0?
+?0?
+%f+ 	\{"&", ec_termexec},
+	\{"!", ec_exec},
+	\{"=\?", ec_num},
+	\{"=", ec_num},
+	\{"\?\?\?", ec_while},
+	\{"\?""\?!", ec_while},1??0?
+1??+2m 311q0?
+%f+ 	\{"&", ec_termexec},
+	\{"!", ec_exec},
+	\{"=\?", ec_num},4??0?
+4??+2m 31220reg p OK ex.c:1746:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	\{"&", ec_termexec},.*?
+	\{"!", ec_exec},.*?
+(	\{"=\?", ec_num},)7??0?
+grp 07??m 31220reg p OK ex.c:1746:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		xleft = atoi\(arg\);
+	else if \(lbuf_get\(xb, xrow\)\)
+		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(	\{"\?\?", ec_while},)
+	\{"\?!", ec_while},
+	\{"\?~", ec_xcid},8??0?
+grp 08??-4m 31220reg p OK ex.c:1746:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	if \(\*loc\)
+		xleft = \(xcols / 2\) \* atoi\(loc\);
+	else if \(\*arg\).*(	\{"\?", ec_while},)
+	\{"bp", ec_setpath},
+	\{"bs", ec_bufsave},9??0?
+grp 09??-7m 31220reg p OK ex.c:1746:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17462sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"pu", ec_put},
 	\{"ph", ec_setenc},
 	\{"p", ec_print},
 	EO\(ai\),1??0?
-1??+2m 251q0?
+1??+2m 321q0?
 %f+ 	\{"pu", ec_put},
 	\{"ph", ec_setenc},
 	\{"p", ec_print},4??0?
-4??+2m 25220reg p OK ex.c:1760:a42sc %? %@2152sc!1q0?
+4??+2m 32220reg p OK ex.c:1762:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"pu", ec_put},.*?
 	\{"ph", ec_setenc},.*?
 (	\{"p", ec_print},)7??0?
-grp 07??m 25220reg p OK ex.c:1760:a72sc %? %@2152sc!1q0?
+grp 07??m 32220reg p OK ex.c:1762:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"b", ec_buffer},
 	EO\(pac\),
 	EO\(pr\),.*(	\{"e!", ec_edit},)
 	\{"e", ec_edit},
 	\{"ft", ec_ft},8??0?
-grp 08??-6m 25220reg p OK ex.c:1760:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 32220reg p OK ex.c:1762:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"bp", ec_setpath},
 	\{"bs", ec_bufsave},
 	\{"bx", ec_setbufsmax},.*(	\{"fd", ec_setdir},)
 	\{"fp", ec_setdir},
 	EO\(fr\),9??0?
-grp 09??-9m 25220reg p OK ex.c:1760:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17602sc %? %@2132sc!0?
+grp 09??-9m 32220reg p OK ex.c:1762:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17622sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(ai\),
 	\{"ac", ec_setacreg},1??0?
-1??m 261q0?
+1??m 331q0?
 ;0fr.,$f+ ^	EO\(ai\),$4??0?
-4??m 26220reg p OK ex.c:1761:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 33220reg p OK ex.c:1763:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 	\{"b", ec_buffer},
 	EO\(pac\),
 	EO\(pr\),.*(	\{"e!", ec_edit},)
 	\{"e", ec_edit},
 	\{"ft", ec_ft},8??0?
-grp 08??-5m 26220reg p OK ex.c:1761:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 33220reg p OK ex.c:1763:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"bp", ec_setpath},
 	\{"bs", ec_bufsave},
 	\{"bx", ec_setbufsmax},.*(	\{"fd", ec_setdir},)
 	\{"fp", ec_setdir},
 	EO\(fr\),9??0?
-grp 09??-8m 26220reg p OK ex.c:1761:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:17612sc %? %@2132sc!0?
+grp 09??-8m 33220reg p OK ex.c:1763:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17632sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"ac", ec_setacreg},
 	EO\(err\),
 	\{"ef!", ec_fuzz},
 	\{"ef", ec_fuzz},1??0?
-1??m 271q0?
+1??m 341q0?
 ;0fr.,$f+ ^	\{"ac", ec_setacreg},$4??0?
-4??m 27220reg p OK ex.c:1762:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 34220reg p OK ex.c:1764:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 	\{"b", ec_buffer},
 	EO\(pac\),
 	EO\(pr\),.*(	\{"e!", ec_edit},)
 	\{"e", ec_edit},
 	\{"ft", ec_ft},8??0?
-grp 08??-4m 27220reg p OK ex.c:1762:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 34220reg p OK ex.c:1764:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"bp", ec_setpath},
 	\{"bs", ec_bufsave},
 	\{"bx", ec_setbufsmax},.*(	\{"fd", ec_setdir},)
 	\{"fp", ec_setdir},
 	EO\(fr\),9??0?
-grp 09??-7m 27220reg p OK ex.c:1762:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:17622sc %? %@2132sc!0?
+grp 09??-7m 34220reg p OK ex.c:1764:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17642sc %? %@2132sc!0?
 ?0?
-%f+ 	\{"i", ec_insert},
-	\{"d", ec_delete},
-	EO\(grp\),
-	\{"g!", ec_glob},
-	\{"g", ec_glob},
-	EO\(mpt\),1??0?
-1??+2m 281q0?
-%f+ 	\{"i", ec_insert},
-	\{"d", ec_delete},
-	EO\(grp\),4??0?
-4??+2m 28220reg p OK ex.c:1782:a42sc %? %@2152sc!1q0?
-grp 1%f+ 	\{"i", ec_insert},.*?
-	\{"d", ec_delete},.*?
-(	EO\(grp\),)7??0?
-grp 07??m 28220reg p OK ex.c:1782:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	EO\(ish\),
-	\{"inc", ec_setincl},
-	EO\(ic\),.*(	\{"m!", ec_mark},)
-	\{"m", ec_mark},
-	\{"q!", ec_quit},8??0?
-grp 08??-4m 28220reg p OK ex.c:1782:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	\{"f>", ec_find},
-	\{"f<", ec_find},
-	\{"f", ec_fuzz},.*(	\{"q", ec_quit},)
-	\{"reg\+", ec_regprint},
-	\{"reg", ec_regprint},9??0?
-grp 09??-7m 28220reg p OK ex.c:1782:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17822sc %? %@2132sc!0?
+%f+ 	return src;
+}
+
+/\* execute a single ex command chain \*/
+void \*ex_exec\(const char \*ln\)
+\{1??0?
+1??+2m 351q0?
+%f+ 	return src;
+}
+
+4??0?
+4??+2m 35220reg p OK ex.c:1931:a42sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	}
+	if \(\*src == '\'' '\'' \|\| \*src == '\''\\t'\''\)
+		src\+\+;.*(	int arg, idx = 0;)
+	char \*ret = NULL;
+	preserve\(int, xquit, xquit = 0;\)8??0?
+grp 08??-4m 35220reg p OK ex.c:1931:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			src \+= j;
+			break;
+		}.*(		lbuf_mark\(xb, '\''\*'\'', xrow, xoff\);)
+	xexec_dep\+\+;
+	sbuf_smake\(sb, 128\)9??0?
+grp 09??-8m 35220reg p OK ex.c:1931:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:19312sc %? %@2132sc!0?
 ?0?
 %f+ 	sbuf_smake\(sb, 128\)
 	do \{
 		sbuf_cut\(sb, 0\)
 		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);
 		ret = excmds\[idx]\.ec\(sb->s, excmds\[idx]\.name, sb->s \+ arg\);1??0?
-1??+3m 291q0?
+1??+3m 361q0?
 %f+ 		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);
 		ret = excmds\[idx]\.ec\(sb->s, excmds\[idx]\.name, sb->s \+ arg\);2??0?
-2??m 29220reg p OK ex.c:1942:a22sc %? %@2152sc!1q0?
+2??m 36220reg p OK ex.c:1944:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);$3??0?
-3??m 29220reg p OK ex.c:1942:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 36220reg p OK ex.c:1944:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	sbuf_smake\(sb, 128\)
 	do \{
 		sbuf_cut\(sb, 0\)4??0?
-4??+3m 29220reg p OK ex.c:1942:a42sc %? %@2152sc!1q0?
+4??+3m 36220reg p OK ex.c:1944:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		ret = excmds\[idx]\.ec\(sb->s, excmds\[idx]\.name, sb->s \+ arg\);$5??0?
-5??-1m 29220reg p OK ex.c:1942:a52sc %? %@2152sc!fr 981qfr 980?
+5??-1m 36220reg p OK ex.c:1944:a52sc %? %@2152sc!fr 981qfr 980?
 %f+ ...u.......\(.....2..
 .d...
 ............b..0.
 ...n ..e..ar.....cmd\(.n,.s.. ...x\)..... ......
 		..t ....c...\[......c......,.....ds\[.dx]..am..............\);6??0?
-6??+3m 29220reg p OK ex.c:1942:a62sc %? %@2152sc!1q0?
+6??+3m 36220reg p OK ex.c:1944:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	sbuf_smake\(sb, 128\).*?
 	do \{.*?
 		sbuf_cut\(sb, 0\).*?
 (		ln = ex_arg\(ex_cmd\(ln, sb, &idx\), sb, &arg\);)7??0?
-grp 07??m 29220reg p OK ex.c:1942:a72sc %? %@2152sc!1q0?
+grp 07??m 36220reg p OK ex.c:1944:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(!xexec_dep\)
 		lbuf_mark\(xb, '\''\*'\'', xrow, xoff\);
 	xexec_dep\+\+;.*(			ret = xuerr;)
 		}
 		if \(ret && xerr & 2\)8??0?
-grp 08??-5m 29220reg p OK ex.c:1942:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 36220reg p OK ex.c:1944:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int arg, idx = 0;
 	char \*ret = NULL;
 	preserve\(int, xquit, xquit = 0;\).*(			break;)
 	} while \(\*ln && !xquit\);
 	free\(sb->s\);9??0?
-grp 09??-8m 29220reg p OK ex.c:1942:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:19422sc %? %@2132sc!0?
+grp 09??-8m 36220reg p OK ex.c:1944:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:19442sc %? %@2132sc!0?
 ?0?
 %f+ 		ret = excmds\[idx]\.ec\(sb->s, excmds\[idx]\.name, sb->s \+ arg\);
 		xpret = ret;
 		if \(ret && ret != xuerr && xerr & 1\) \{
 			ex_print\(ret, msg_ft\)1??0?
-1??m 301q0?
+1??m 371q0?
 ;0fr.,$f+ ^		ret = excmds\[idx]\.ec\(sb->s, excmds\[idx]\.name, sb->s \+ arg\);$4??0?
-4??m 30220reg p OK ex.c:1943:a42sc %? %@2152sc!fr 981qfr 980?
+4??m 37220reg p OK ex.c:1945:a42sc %? %@2152sc!fr 981qfr 980?
 m 01;0grp 1%f> 	if \(!xexec_dep\)
 		lbuf_mark\(xb, '\''\*'\'', xrow, xoff\);
 	xexec_dep\+\+;.*(			ret = xuerr;)
 		}
 		if \(ret && xerr & 2\)8??0?
-grp 08??-4m 30220reg p OK ex.c:1943:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 37220reg p OK ex.c:1945:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int arg, idx = 0;
 	char \*ret = NULL;
 	preserve\(int, xquit, xquit = 0;\).*(			break;)
 	} while \(\*ln && !xquit\);
 	free\(sb->s\);9??0?
-grp 09??-7m 30220reg p OK ex.c:1943:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:19432sc %? %@2132sc!0?
+grp 09??-7m 37220reg p OK ex.c:1945:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:19452sc %? %@2132sc!0?
 ?0?
 %f+ 			xcid_free\(\);
 		xqprop = 0;
@@ -6554,22 +10207,22 @@ static struct excmd \{
 }
 
 /\* ex main loop \*/1??0?
-1??+3m 311q0?
+1??+3m 381q0?
 %f+ 	return xerr & 4 \? NULL : ret;
 }
 
 /\* ex main loop \*/2??0?
-2??m 31220reg p OK ex.c:1962:a22sc %? %@2152sc!1q0?
+2??m 38220reg p OK ex.c:1964:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	return xerr & 4 \? NULL : ret;$3??0?
-3??m 31220reg p OK ex.c:1962:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 38220reg p OK ex.c:1964:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 			xcid_free\(\);
 		xqprop = 0;
 	}4??0?
-4??+3m 31220reg p OK ex.c:1962:a42sc %? %@2152sc!1q0?
+4??+3m 38220reg p OK ex.c:1964:a42sc %? %@2152sc!1q0?
 %f+ }
 
 /\* ex main loop \*/5??0?
-5??-1m 31220reg p OK ex.c:1962:a52sc %? %@2152sc!1q0?
+5??-1m 38220reg p OK ex.c:1964:a52sc %? %@2152sc!1q0?
 %f+ .	..........\(..
 ...qp... ....
 .}
@@ -6577,40 +10230,43 @@ static struct excmd \{
 }
 
 .......a...l..p...6??0?
-6??+3m 31220reg p OK ex.c:1962:a62sc %? %@2152sc!1q0?
+6??+3m 38220reg p OK ex.c:1964:a62sc %? %@2152sc!1q0?
 grp 1%f+ 			xcid_free\(\);.*?
 		xqprop = 0;.*?
 	}.*?
 (	return xerr & 4 \? NULL : ret;)7??0?
-grp 07??m 31220reg p OK ex.c:1962:a72sc %? %@2152sc!1q0?
+grp 07??m 38220reg p OK ex.c:1964:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		restore\(xquit\)
 	if \(!xexec_dep\) \{
 		if \(xcid && !xcid_keep\).*(void ex\(void\))
 \{
 	xgrec\+\+;8??0?
-grp 08??-4m 31220reg p OK ex.c:1962:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 38220reg p OK ex.c:1964:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	xexec_dep--;
 	if \(\(xquit > 0 && \(xexec_dep \|\| xqprop >= 0\) && --xqprop < 0\)
 			\|\| tmpxquit < -256\).*(	int esc = 0;)
 	sbuf_smake\(sb, xcols\)
 	while \(!xquit\) \{9??0?
-grp 09??-7m 31220reg p OK ex.c:1962:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:19622sc %? %@2132sc!0?
+grp 09??-7m 38220reg p OK ex.c:1964:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:19642sc %? %@2132sc!0?
 '\''1i int xaspec = 1;			/* print each ex spec once for agents */
 ??!219reg ex.c:16:m12sc %? %@2142sc!0?
-'\''2s/3/5/??!219reg ex.c:45:m22sc %? %@2142sc!0?
+'\''2s/3/8/??!219reg ex.c:45:m22sc %? %@2142sc!0?
 '\''3i static char xirrmsg[192];
 static char xaerr[128];
 ??!219reg ex.c:57:m32sc %? %@2142sc!0?
-'\''4c 			sprintf(xirrmsg, "range not found: beg:%d end:%d off:%d dir:%d", beg, end, off, dir);
-			xrerr = xirrmsg;
+'\''4i 			if (agent_tool) {
+				sprintf(xirrmsg, "range not found: beg:%d end:%d off:%d dir:%d",
+					beg, end, off, dir);
+				xrerr = xirrmsg;
+			}
 ??!219reg ex.c:288:m42sc %? %@2142sc!0?
 '\''5i 		int pre = n;
 ??!219reg ex.c:300:m52sc %? %@2142sc!0?
 '\''6i 		if (agent_tool) {
-			char str[100];
-			if (!uc_isdigit(*(*num+1)) && *(*num+1) != '\''+'\'' && *(*num+1) != '\''-'\'')
-				snprintf(str, sizeof(str), "invalid ex arithmetic: %c%c", **num, *(*num+1));
+			char str[100], c = (*num)[1];
+			if (!uc_isdigit(c) && c != '\''+'\'' && c != '\''-'\'')
+				snprintf(str, sizeof(str), "invalid ex arithmetic: %c%c", **num, c);
 			else
 				snprintf(str, sizeof(str), "ex arithmetic: %d %c %d = %d", pre, **num, dir, n);
 			ex_print(str, msg_ft)
@@ -6620,7 +10276,7 @@ static char xaerr[128];
 ??!219reg ex.c:327:m72sc %? %@2142sc!0?
 '\''8,#+1c 	int n = lbuf_len(xb), invalid = *beg < 0 || *beg >= n ||
 		*end <= *beg || *end > n;
-	if (invalid && xrerr == xirerr) {
+	if (invalid && xrerr == xirerr && agent_tool) {
 		long b = *beg, e = *end;
 		const char *begop = b < 0 ? " < 0" : "";
 		const char *begend = b >= n ? b > n ? " < beg" : " = beg" : "";
@@ -6640,7 +10296,18 @@ static char xaerr[128];
 '\''9i 	if (agent_tool && *loc)
 		return "e command takes no range!";
 ??!219reg ex.c:422:m92sc %? %@2142sc!0?
-'\''10,#+2c 	if (agent_tool) {
+'\''10c 		if (!strchr(cmd, '\''!'\'')) {
+			if (agent_tool) {
+				snprintf(msg, sizeof(msg), "\"%s\" %dL [switched%s; "
+					"not re-read from disk, e! reloads it]",
+					xb_path, lbuf_len(xb),
+					xb->modified ? ", modified" : "");
+				ex_print(msg, bar_ft)
+			}
+??!219reg ex.c:428:m102sc %? %@2142sc!0?
+'\''11i 		}
+??!219reg ex.c:429:m112sc %? %@2142sc!0?
+'\''12,#+2c 	if (agent_tool) {
 		snprintf(msg, sizeof(msg), "\"%s\" %dL [%s]",
 				*xb_path ? xb_path : "unnamed", lbuf_len(xb),
 				fd < 0 || rd ? cd == 3 ? "new" : "fail" : "read");
@@ -6649,84 +10316,127 @@ static char xaerr[128];
 				*xb_path ? xb_path : "unnamed", lbuf_len(xb),
 				fd < 0 || rd ? cd == 3 ? '\''n'\'' : '\''f'\'' : '\''r'\'');
 	}
-??!219reg ex.c:441:m102sc %? %@2142sc!0?
-'\''11i 	if (*arg && !n && !uc_isdigit(*arg))
+??!219reg ex.c:443:m122sc %? %@2142sc!0?
+'\''13i 	if (*arg && !n && !uc_isdigit(*arg))
 		return xserr;
-??!219reg ex.c:631:m112sc %? %@2142sc!0?
-'\''12i 		if (agent_tool)
+??!219reg ex.c:633:m132sc %? %@2142sc!0?
+'\''14i 		if (agent_tool)
 			for (int i = 0; i < LEN(tempbufs); i++) {
 				char c = ex_buf == tempbufs+i ? '\''%'\'' : (ex_pbuf == tempbufs+i ? '\''#'\'' : '\'' '\'');
 				snprintf(ln, LEN(ln), "%d %c %s", -i-1,
 					c + (char)tempbufs[i].lb->modified, tempbufs[i].path);
 				ex_print(ln, msg_ft)
 			}
-??!219reg ex.c:639:m122sc %? %@2142sc!0?
-'\''13i 	agent_sync(pxb);
-??!219reg ex.c:729:m132sc %? %@2142sc!0?
-'\''14i 	if (agent_capture) {
+??!219reg ex.c:641:m142sc %? %@2142sc!0?
+'\''15i 	if (agent_capture) {
 		size_t len = strlen(line);
 		agent_capture_add(line, len);
 		if (flg && (!len || line[len-1] != '\''\n'\''))
 			agent_capture_add("\n", 1);
 	}
-??!219reg ex.c:824:m142sc %? %@2142sc!0?
-'\''15i 	if (agent_capture)
+??!219reg ex.c:826:m152sc %? %@2142sc!0?
+'\''16i 	if (agent_capture)
 		return;
-??!219reg ex.c:831:m152sc %? %@2142sc!0?
-'\''16i 	if (agent_tool && !*arg)
+??!219reg ex.c:833:m162sc %? %@2142sc!0?
+'\''17i 	if (agent_tool && !*arg)
 		return "insert/change requires supplied text";
-??!219reg ex.c:856:m162sc %? %@2142sc!0?
-?'\''17s/xvis & 1/(xvis & 1 || agent_tool)/1??1??1q'\''17s/(\(.*1)/(\1 || agent_tool)/2??2??'\''17220reg p OK ex.c:869:s22sc %? %@2162sc!0?
-1;2??!219reg ex.c:869:m172sc %? %@2142sc!0?
-'\''18c 		sprintf(msg, agent_tool ? "beg: %d end: %d offset_beg: %d offset_end: %d" :
+??!219reg ex.c:858:m172sc %? %@2142sc!0?
+?'\''18s/xvis & 1/(xvis & 1 || agent_tool)/1??1??1q'\''18s/(\(.*1)/(\1 || agent_tool)/2??2??'\''18220reg p OK ex.c:871:s22sc %? %@2162sc!0?
+1;2??!219reg ex.c:871:m182sc %? %@2142sc!0?
+'\''19,#+3c 	char *o, *ln, num[16];
+	sbuf *nb = NULL;
+	if (!*cmd && *arg) {
+		/* without chaining, a leading : is not a separator */
+		char *err = agent_tool && *arg == '\'':'\'' ? "unknown command; write "
+			"commands without the : prefix" : "unknown command";
+		if (!agent_tool || !xaspec || exspec_listed)
+			return err;
+		/* the first one of an agent session lists the commands */
+		ex_print(err, msg_ft)
+		ex_print("", msg_ft)
+		ec_exspec(NULL, "exspec", "");
+		return xuerr;
+	}
+	if (*cmd == '\''p'\'' && *arg) {
+??!219reg ex.c:927:m192sc %? %@2142sc!0?
+'\''20i 	if (cmd[0] == '\''='\'')
+		sbuf_make(nb, 128)
+??!219reg ex.c:941:m202sc %? %@2142sc!0?
+'\''21s/ \{/ if (!nb) {/??!219reg ex.c:952:m212sc %? %@2142sc!0?
+'\''22,#+1c 		} else
+			o = NULL;
+		if (nb) {
+			/* one string: agent capture adds a newline per print */
+			sbuf_cut(nb, 0)
+			sbuf_mem(nb, num, itoa(i + 1, num) - num)
+			sbuf_chr(nb, '\''\t'\'')
+			sbufn_str(nb, o ? o : ln)
+			ex_cprint(nb->s, msg_ft, -1, 0, 0, 1);
+		} else
+			ex_cprint(o, msg_ft, -1, 0, 0, 1);
+??!219reg ex.c:955:m222sc %? %@2142sc!0?
+'\''23i 	if (nb)
+		sbuf_free(nb)
+??!219reg ex.c:959:m232sc %? %@2142sc!0?
+'\''24c 		sprintf(msg, agent_tool ? "beg: %d end: %d offset_beg: %d offset_end: %d" :
 			"%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
-??!219reg ex.c:1075:m182sc %? %@2142sc!0?
-'\''19i 		if (agent_interrupted())
+??!219reg ex.c:1077:m242sc %? %@2142sc!0?
+'\''25i 		if (agent_interrupted())
 			break;
-??!219reg ex.c:1435:m192sc %? %@2142sc!0?
-'\''20i struct excmd {
+??!219reg ex.c:1437:m252sc %? %@2142sc!0?
+'\''26i struct excmd {
 	char *name;
 	void *(*ec)(char *loc, char *cmd, char *arg);
 };
 
 #include "exspec.h"
 
-static int exspec_ranges_read;
-static char *exspec_deferred;
-static struct excmd *exspec_deferred_cmd;
-static int exspec_deferred_arg;
+static char *aretry_saved;
+static struct excmd *aretry_cmd;
+static int aretry_arg;
+
+static void aretry_save(sbuf *sb, struct excmd *entry, int arg)
+{
+	free(aretry_saved);
+	aretry_saved = emalloc(sb->s_n + 1);
+	memcpy(aretry_saved, sb->s, sb->s_n + 1);
+	aretry_cmd = entry;
+	aretry_arg = arg;
+}
 
 static void *ec_aretry(char *loc, char *cmd, char *arg)
 {
-	char *saved = exspec_deferred;
-	struct excmd *entry = exspec_deferred_cmd;
-	int off = exspec_deferred_arg;
+	char *saved = aretry_saved;
 	void *ret;
 	if (*loc || *arg)
 		return "aretry takes no range or argument";
 	if (!saved)
-		return "no deferred command";
-	exspec_deferred = NULL;
-	ret = entry->ec(saved, entry->name, saved + off);
-	free(saved);
+		return "no agent command to retry";
+	/* a deferral inside the retried command replaces the saved one */
+	aretry_saved = NULL;
+	agent_shown |= aretry_cmd->ec == ec_aout;
+	ret = aretry_cmd->ec(saved, aretry_cmd->name, saved + aretry_arg);
+	if (aretry_saved)
+		free(saved);
+	else
+		aretry_saved = saved;
 	return ret;
 }
 
 static void exspec_reset(void)
 {
-	free(exspec_deferred);
-	exspec_deferred = NULL;
-	exspec_ranges_read = 0;
+	free(aretry_saved);
+	aretry_saved = NULL;
+	free(agent_show);
+	agent_show = NULL;
+	agent_show_n = 0;
+	exspec_listed = 0;
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		exspec_cmds[i].read = 0;
 }
 
 static int exspec_mark(char *arg)
 {
-	if (!strcmp(arg, "ranges")) {
-		exspec_ranges_read = 1;
-		return 1;
-	}
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		if (!strcmp(arg, exspec_cmds[i].name)) {
 			exspec_cmds[i].read = 1;
@@ -6735,32 +10445,30 @@ static int exspec_mark(char *arg)
 	return 0;
 }
 
-static int exspec_extra(char *cmd)
+/* Set the read state of c; return the prior one. Pack prompts explain %c,
+ * so its spec need not defer the summary. */
+static int exspec_pack(int read)
 {
-	int found = 0;
-	for (int i = 0; i < LEN(conf_exspec); i++) {
-		if (strcmp(cmd, conf_exspec[i].cmd))
-			continue;
-		if (!found) {
-			ex_print("", msg_ft)
-			ex_print("Agent guidance:", msg_ft)
+	int prev = 0;
+	for (int i = 0; i < LEN(exspec_cmds); i++)
+		if (!strcmp(exspec_cmds[i].name, "c")) {
+			prev = exspec_cmds[i].read;
+			exspec_cmds[i].read = read;
 		}
-		ex_print(conf_exspec[i].text, msg_ft)
-		found = 1;
-	}
-	return found;
+	return prev;
 }
 
 static void *ec_exspec(char *loc, char *cmd, char *arg)
 {
 	int i, j, k, option, begin = -1, end = 0;
-	char msg[512];
+	char msg[512], *text = NULL;
 	static char *agent_cmds[] = {
-		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
-		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-		"ud", "rd", "sc", "sc!", "gr", "aretry"
+		"p", "=p", "g", "!", "i", "c", "e", "=", "b", "r", "w",
+		"w!", "exspec", "d", "j", "s", "cd", "bx", "fd", "inc",
+		"ud", "rd"
 	};
 	if (!*arg || !strcmp(arg, "catalog")) {
+		exspec_listed |= agent_tool;
 		ex_print("EX TOPICS", msg_ft)
 		for (i = 0; i < LEN(exspec_lines); i++) {
 			if (strncmp(exspec_lines[i], "EX ", 3))
@@ -6814,44 +10522,50 @@ static void *ec_exspec(char *loc, char *cmd, char *arg)
 		end = i;
 	}
 	if (begin < 0)
-		return exspec_extra(arg) ? NULL : "unknown ex specification";
+		return "unknown ex specification";
 	exspec_mark(arg);
+	/* An agent specification replaces the README one and its guidance. */
+	for (i = 0; agent_tool && i < LEN(conf_exspec_agent); i++)
+		if (!strcmp(arg, conf_exspec_agent[i].cmd))
+			text = conf_exspec_agent[i].text;
+	if (text) {
+		ex_print(text, msg_ft)
+		return NULL;
+	}
 	while (end > begin && !*exspec_lines[end - 1])
 		end--;
 	for (i = begin; i < end; i++)
 		ex_print(exspec_lines[i], msg_ft)
-	exspec_extra(arg);
 	return NULL;
 }
 
-static int exspec_agent(char *cmd, int ranges)
+static int exspec_agent(char *cmd)
 {
-	int msg = 0;
-	char msgtext[256];
-	snprintf(msgtext, sizeof(msgtext),
-		"%s command execution deferred for specifications. (aspec option)\n"
-		"%s%s command will not be deferred from now on. (aretry to execute this command)\n\n",
-		cmd, ranges && !exspec_ranges_read ? "ranges and " : "", cmd);
-	if (ranges && !exspec_ranges_read) {
-		exspec_ranges_read = 1;
-		msg = 1;
-		ex_print(msgtext, msg_ft)
-		ec_exspec(NULL, "exspec", "ranges");
-	}
+	char msg[256];
 	for (int i = 0; i < LEN(exspec_cmds); i++)
 		if (!strcmp(cmd, exspec_cmds[i].name) && !exspec_cmds[i].read) {
 			exspec_cmds[i].read = 1;
-			ex_print(msg ? "\n" : msgtext, msg_ft)
+			snprintf(msg, sizeof(msg), "%s command execution deferred for "
+				"specifications. (aspec option)\n%s command will not be "
+				"deferred from now on. (aretry to execute this command)\n\n",
+				cmd, cmd);
+			ex_print(msg, msg_ft)
 			ec_exspec(NULL, "exspec", cmd);
 			return 1;
 		}
-	return msg;
+	return 0;
 }
 
-??!219reg ex.c:1637:m202sc %? %@2142sc!0?
-'\''21s/\(e/(aspec) EO(e/??!219reg ex.c:1705:m212sc %? %@2142sc!0?
-'\''22s/s\)/s) EO(ar) EO(gr)/??!219reg ex.c:1707:m222sc %? %@2142sc!0?
-'\''23i _EO(aco,
+??!219reg ex.c:1639:m262sc %? %@2142sc!0?
+'\''27s/\(e/(aspec) EO(e/??!219reg ex.c:1707:m272sc %? %@2142sc!0?
+'\''28c EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
+_EO(ata, xata = *arg ? MAX(0, eo_val(arg)) : xata ? 0 : 100; return NULL;)
+_EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
+_EO(ato, xato = *arg ? MAX(0, eo_val(arg)) : xato ? 0 : 30; return NULL;)
+_EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
+	agent_acl_mark = agent_acl_budget = 0; return NULL;)
+??!219reg ex.c:1709:m282sc %? %@2142sc!0?
+'\''29i _EO(aco,
 	int browse = strchr(cmd, '\''!'\'') != NULL;
 	int value = *arg ? eo_val(arg) :
 		(xaco && xaco_browse == browse ? 0 : 85000);
@@ -6860,64 +10574,125 @@ static int exspec_agent(char *cmd, int ranges)
 	return NULL;
 )
 
-??!219reg ex.c:1732:m232sc %? %@2142sc!0?
-'\''24,#+3c static struct excmd excmds[] = {
-??!219reg ex.c:1737:m242sc %? %@2142sc!0?
-'\''25i 	{"aretry", ec_aretry},
+??!219reg ex.c:1734:m292sc %? %@2142sc!0?
+'\''30,#+3c static struct excmd excmds[] = {
+??!219reg ex.c:1739:m302sc %? %@2142sc!0?
+'\''31i 	{"=p", ec_print},
+??!219reg ex.c:1746:m312sc %? %@2142sc!0?
+'\''32i 	{"aretry", ec_aretry},
 	{"apack!", ec_compact},
 	{"apack", ec_compact},
 	EO(aspec),
-	{"acm", ec_skill},
+	{"aout", ec_aout},
+	{"aget", ec_aget},
+	{"anote", ec_anote},
+	{"arate", ec_arate},
+	{"adone", ec_adone},
+	{"acheck", ec_acheck},
+	{"acap", ec_acap},
+	{"agoal", ec_agoal},
+	{"acp", ec_acp},
+	{"ali", ec_acp},
+	{"auli", ec_acp},
 	{"aco!", eo_aco},
 	EO(aco),
+	EO(acl),
+	{"acm", ec_skill},
 	{"ast", ec_ast},
-??!219reg ex.c:1760:m252sc %? %@2142sc!0?
-'\''26i 	EO(ar),
-??!219reg ex.c:1761:m262sc %? %@2142sc!0?
-'\''27i 	{"a!", ec_agent},
+	{"ath", ec_ath},
+	EO(ata),
+	EO(ato),
+	EO(agr),
+??!219reg ex.c:1762:m322sc %? %@2142sc!0?
+'\''33i 	EO(ar),
+??!219reg ex.c:1763:m332sc %? %@2142sc!0?
+'\''34i 	{"a!", ec_agent},
 	{"a~", ec_agent},
 	{"a", ec_agent},
 	{"exspec", ec_exspec},
-??!219reg ex.c:1762:m272sc %? %@2142sc!0?
-'\''28i 	EO(gr),
-??!219reg ex.c:1782:m282sc %? %@2142sc!0?
-'\''29c 		if (agent_tool && agent_boundary())
+??!219reg ex.c:1764:m342sc %? %@2142sc!0?
+'\''35i /* Whether range loc has a / that no number follows, outside search and
+ * subcommand blocks: agents write /regex/ for a search out of habit. */
+static int agent_bare_div(char *loc)
+{
+	for (; *loc; loc++) {
+		if (*loc == '\''>'\'' || *loc == '\''<'\'' || *loc == '\''|'\'') {
+			int end = *loc, e = end == '\''|'\'' ? xesc : '\''\\'\'', esc = 0;
+			do {
+				esc = *loc == e && !esc;
+				loc++;
+			} while (*loc && (*loc != end || esc));
+			if (!*loc)
+				break;
+		} else if (*loc == '\''/'\'' && !uc_isdigit(loc[1]))
+			return 1;
+	}
+	return 0;
+}
+
+/* Why the agent may not run c with range loc now, or NULL. */
+static char *agent_gate(struct excmd *c, char *loc)
+{
+	char *why = NULL, *tail = "";
+	if (agent_bare_div(loc))
+		return "/ in a range is division and needs a number; search "
+			"with >regex> or <regex<";
+	if (c->ec == ec_agent || c->ec == ec_compact || c->ec == ec_fuzz ||
+			c->ec == ec_ath || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
+			(c->ec == ec_termexec && c->name[0] == '\''@'\'') ||
+			(c->ec == ec_write && c->name[0] == '\''x'\''))
+		why = "agent execution";
+	else if (agent_checkpointing == 1 && c->ec != ec_anote &&
+			c->ec != ec_arate && c->ec != ec_adone && c->ec != ec_acp)
+		why = "the checkpoint; acp command prints the instructions";
+	else if (agent_checkpointing == 2 && c->ec != ec_acheck)
+		why = "the budget check; only acheck N or acheck runs";
+	else if (agent_checkpointing == 3 && c->ec != ec_acap) {
+		why = "the budget check; only acap N [note] or acap runs";
+		tail = agent_think_retry();
+	}
+	if (!why)
+		return NULL;
+	snprintf(xaerr, sizeof(xaerr), "%s%sduring %s%s", c->name, *c->name ?
+		" command unavailable " : "unknown command ", why, tail);
+	return xaerr;
+}
+
+/* aspec: print the unread spec of top-level command c in place of running
+ * it; a nested deferral would skip one iteration of the enclosing command.
+ * Saves the command for aretry. Returns 1 if deferred. */
+static int agent_defer(struct excmd *c, sbuf *sb, int arg)
+{
+	int show = c->ec == ec_aout, top = xexec_dep == agent_tool_dep;
+	int defer = top && xaspec && c->ec != ec_exspec && exspec_agent(c->name);
+	agent_shown |= show;
+	if (top && (defer || !show))
+		aretry_save(sb, c, arg);
+	if (defer && !*agent_deferred)
+		snprintf(agent_deferred, sizeof(agent_deferred), "%s", c->name);
+	return defer;
+}
+
+??!219reg ex.c:1931:m352sc %? %@2142sc!0?
+'\''36c 		if (agent_tool && agent_boundary())
 			break;
 		ln = ex_cmd(ln, sb, &idx);
-		if (agent_tool && (excmds[idx].ec == ec_agent ||
-				excmds[idx].ec == ec_compact ||
-				(excmds[idx].ec == ec_termexec && excmds[idx].name[0] == '\''@'\'') ||
-				excmds[idx].ec == ec_fuzz ||
-				excmds[idx].ec == ec_quit ||
-				(excmds[idx].ec == ec_write && excmds[idx].name[0] == '\''x'\'') ||
-				!strncmp(excmds[idx].name, "wq", 2))) {
-			snprintf(xaerr, sizeof(xaerr),
-				"%s command unavailable during agent execution",
-				excmds[idx].name);
-			ret = xaerr;
+		if (agent_tool && (ret = agent_gate(excmds + idx, sb->s)))
 			break;
-		}
 		ln = ex_arg(ln, sb, &arg);
 		if (agent_interrupted())
 			break;
-		if (agent_tool && xaspec && excmds[idx].ec != ec_exspec &&
-				excmds[idx].ec != ec_aretry)
-			if (exspec_agent(excmds[idx].name, *sb->s)) {
-				free(exspec_deferred);
-				exspec_deferred = emalloc(sb->s_n + 1);
-				memcpy(exspec_deferred, sb->s, sb->s_n + 1);
-				exspec_deferred_cmd = &excmds[idx];
-				exspec_deferred_arg = arg;
-				continue;
-			}
-??!219reg ex.c:1942:m292sc %? %@2142sc!0?
-'\''30i 		if (agent_interrupted())
+		if (agent_tool && excmds[idx].ec != ec_aretry &&
+				agent_defer(excmds + idx, sb, arg))
+			continue;
+??!219reg ex.c:1944:m362sc %? %@2142sc!0?
+'\''37i 		if (agent_interrupted())
 			break;
-??!219reg ex.c:1943:m302sc %? %@2142sc!0?
-'\''31c 	if (agent_interrupted())
+??!219reg ex.c:1945:m372sc %? %@2142sc!0?
+'\''38c 	if (agent_interrupted())
 		return "agent execution interrupted";
 	return !agent_tool && xerr & 4 ? NULL : ret;
-??!219reg ex.c:1962:m312sc %? %@2142sc!b7m!0?
+??!219reg ex.c:1964:m382sc %? %@2142sc!b7m!0?
 i # Embed the rendered README without indentation or example prompt colons.
 function quote(s,    i, c, out) {
 	out = "\""
@@ -6946,6 +10721,13 @@ function entry(end,    i) {
 /^SPECIAL MARKS$/ { if (regex) active = 0 }
 active { lines[n++] = $0 }
 END {
+	# ex.c finds topics by the EX prefix, which indented text loses.
+	for (i = 0; i < n; i++)
+		if (lines[i] ~ /^[ \t]+EX /) {
+			printf "exspec.awk: README line \"%s\" starts with EX " \
+				"once unindented; rewrap it\n", lines[i] > "/dev/stderr"
+			exit 1
+		}
 	print "/* Generated from README by exspec.awk. */"
 	print "static char *exspec_lines[] = {"
 	for (i = 0; i < n; i++) {
@@ -7332,7 +11114,7 @@ static char *exspec_lines[] = {
 	"Print line(s) from a buffer",
 	"",
 	"No range prints a line based on the value of left ex option.",
-	"Argument prints the evaluated argument.",
+	"Argument is expanded and printed.",
 	"",
 	"Example: utilize character offset ranges",
 	"1,10;5;5p",
@@ -7342,6 +11124,15 @@ static char *exspec_lines[] = {
 	".;5;10p",
 	"Example: print buffer pathname",
 	"p %",
+	"",
+	"[range]=p",
+	"Print line(s) with line numbers",
+	"",
+	"Equivalent to the p command, except each line is prefixed by its",
+	"line number and a tab. Argument is ignored.",
+	"",
+	"Example: print lines 1 to 10 numbered",
+	"1,10=p",
 	"",
 	"[range]=[<0-3 Any>][any]",
 	"Print range numbers",
@@ -7738,10 +11529,11 @@ static char *exspec_lines[] = {
 	"exspec[command range topic]",
 	"Print ex command catalog or specification",
 	"",
-	"No argument lists useful commands for agents, the full catalog for",
-	"humans. Use catalog for all commands and options; use a command name",
-	"for its specification, including hidden commands. Topics: parsing,",
-	"escapes, expansion, ranges, regex, commands, options.",
+	"No argument lists the commands useful to agents, or the full catalog",
+	"for humans. catalog lists all commands and options; a command name",
+	"prints its specification, hidden commands included; other text",
+	"with range characters prints ranges. Topics: parsing, escapes,",
+	"expansion, ranges, regex, commands, options.",
 	"",
 	"Example: list all commands",
 	"exspec catalog",
@@ -7750,61 +11542,264 @@ static char *exspec_lines[] = {
 	"Open or resume the agent conversation",
 	"",
 	"Keeps the conversation. Text prefills the prompt; range attaches",
-	"buffer text to the next submission. Enter adds a newline; Escape",
-	"submits; Ctrl-C exits; Ctrl-O opens the editor. Ex specials are",
+	"buffer text to the next submission. Enter adds a newline, Escape",
+	"submits, Ctrl-C exits, Ctrl-O opens the editor. Ex specials are",
 	"disabled. Unavailable as an agent tool.",
 	"",
 	"[range]a![text]",
 	"Start a new agent conversation",
 	"",
-	"Clears history and log, aspec tracking and deferred command.",
-	"Range, text and prompt controls work as for a. Unavailable as an agent tool.",
+	"Clears history, the log, its notes and discarded entries, aspec",
+	"tracking and what aretry and aout saved. Otherwise as a.",
 	"",
 	"[range]a~[text]",
 	"Resume an agent conversation from its log",
 	"",
-	"Loads b-4 as context, including edits. Keeps aspec tracking.",
-	"Range, text and prompt controls work as for a. Unavailable as an agent tool.",
+	"Loads b-4 as context, edits included. Keeps aspec tracking.",
+	"Otherwise as a.",
 	"",
 	"[range]apack[text]",
 	"Compact the agent session from its log",
 	"",
-	"Loads b-4 as context and asks the agent to replace it with a summary.",
-	"Stays at the prompt; reloads the log on exit. Text replaces the default",
-	"instructions; range attaches buffer text. Unavailable as an agent tool.",
+	"Loads b-4 as context and asks the agent to replace it with a",
+	"summary. Text replaces the default instructions; range attaches",
+	"buffer text. With arate notes (b-6), the task lists the log entries",
+	"with estimated tokens and notes, those of trimmed turns included.",
+	"While b-7 holds entries, it offers aget for them. The prompt stays",
+	"open; on exit a log the agent replaced becomes the session, else",
+	"the old session is restored. On success the notes are archived",
+	"beside the log, b-6 is cleared and the replaced entries move to",
+	"b-7. The exchange is logged to b-8, saved as asides in the session",
+	"directory. Unavailable as an agent tool.",
 	"",
 	"[range]apack![text]",
 	"Compact the agent session by browsing its log",
 	"",
-	"Starts fresh without loading or clearing b-4. The agent reads bounded",
-	"ranges and replaces the log with a summary. Stays at the prompt;",
-	"reloads on exit. Resets aspec tracking. Text and range work as for",
-	"apack. Unavailable as an agent tool.",
+	"As apack, but the agent starts without b-4 in its context and reads",
+	"bounded ranges of it. The task always lists the entries, with line",
+	"numbers. Resets aspec tracking.",
 	"",
 	"acm",
 	"Toggle the caveman response style skill",
 	"",
-	"Adds or removes the skill in b-5. Tool calls update the system",
-	"message; otherwise context is rebuilt from the log.",
+	"Adds or removes the skill in b-5. As an agent tool it updates the",
+	"system message; otherwise the context is rebuilt from the log.",
 	"",
 	"aretry",
-	"Execute the last deferred agent command once",
+	"Execute the last agent command",
 	"",
-	"Uses the saved range and expanded argument. Takes no range or",
-	"argument. A new deferral replaces it; retry consumes it even on",
-	"failure. A new session clears it. Errors if none is saved.",
+	"Runs the last top-level command the agent ran or aspec deferred,",
+	"with its range and expanded argument. A run aout is not saved. The",
+	"command stays saved until a new session. Side effects rerun. Output",
+	"is subject to agr. Takes no range or argument. Errors if none is",
+	"saved.",
 	"",
 	"Example: execute a deferred command",
 	"aretry",
 	"",
+	"[brange]aout",
+	"Print the saved output of the last agent tool call",
+	"",
+	"brange is first,last in 0-based byte offsets, inclusive; $ is the",
+	"last byte; one offset selects one byte; none prints everything.",
+	"The output of each tool call is saved, except of calls running",
+	"aout; under agr at most 1048576 bytes, or agr if larger. Exempt",
+	"from agr. A new session clears it.",
+	"",
+	"Example: bytes 50 through the end",
+	"50,$aout",
+	"",
+	"[entries]anote[text]",
+	"Replace or remove agent session log entries",
+	"",
+	"entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N",
+	"headers of b-4; $ is the last entry, 0 the text before the first",
+	"header. A TURN is one agent reply: parts headed ROLE N.I holding",
+	"its reasoning, text, commands and results. USER and NOTICE text and",
+	"each part end at an END line; lines before it are text even if they",
+	"read as headers. Text holding a line END has an id on its header,",
+	"as in RESULT N.I id, and ends at END id. In the agent context the",
+	"last tool result of a turn ends with a line [turn N end], which the",
+	"log does not hold.",
+	"",
+	"Text replaces N through M with one entry under the role and number",
+	"of N, a turn holding only the text; no text removes them. Three or",
+	"more numbers, as in 2,4,7, are a list of turns, noted in place of",
+	"the first; a number that is not a TURN rejects the list. The agent",
+	"cannot change the turn still running nor, outside an acl",
+	"checkpoint, USER entries or entry 0: those stay and its note goes",
+	"after the last one spanned. An agent note takes the role and number",
+	"of the first turn, else of the first USER entry or entry 0. Prints",
+	"the estimated tokens before and after and the USER entries kept.",
+	"Changes the agent context when acl is set. Replaced entries move to",
+	"b-7, saved as discarded in the session directory; a number already",
+	"there keeps its entry.",
+	"",
+	"Example: replace a turn with a note",
+	"14anote ls listed 40 files, none relevant",
+	"",
+	"[entries]aget[parts]",
+	"Print agent session log entries, trimmed ones included",
+	"",
+	"Prints entries N through M of b-4 and b-7 in number order, with",
+	"their headers. Entries from b-7, those removed or replaced by anote,",
+	"a 0 rating or compaction, have trimmed after each header, as in",
+	"TURN N trimmed, and precede a current entry of the same number.",
+	"entries is as for anote, with $ the last number in either buffer.",
+	"parts is part indexes or role names, separated by spaces, not both.",
+	"Indexes select parts of each turn: 0 reasoning, 1 text, 2+2k and",
+	"3+2k the command and result of call k. USER, TURN and NOTICE select",
+	"entries; REASONING, ASSISTANT, EX and RESULT select parts of turns.",
+	"Output is subject to agr. Unavailable during an acl checkpoint.",
+	"",
+	"Example: print the commands of entries 20 through 80",
+	"20,80aget EX",
+	"",
+	"[entries]arate rating sentence",
+	"Rate agent turns in the notes buffer",
+	"",
+	"Writes one line per TURN entry from N through M of b-4 to b-6:",
+	"number, rating and sentence, replacing an older one. The first turn",
+	"gets the sentence, the rest \"same as TURN N\"; a replaced sentence",
+	"that others name moves to the first of them. entries is as for",
+	"anote: other roles in a range are skipped, and three or more",
+	"numbers, as in 2,4,7, are a list of turns.",
+	"Ratings: 0 dead weight, no value for the remaining work; 1 low,",
+	"minor, superseded or only mechanics; 2 useful, informs the remaining",
+	"work; 3 essential, a decision, finding or state the task depends on.",
+	"During an acl checkpoint, rating 0 also moves the turns to b-7,",
+	"reported as by anote. With acl above 1 or negative, the harness",
+	"rates 1 an unrated turn whose every command aspec deferred. Ratings",
+	"show in ali and checkpoint lists and are given to apack. b-6 is",
+	"saved as notes in the session directory.",
+	"",
+	"Example: rate the turn of entry 52",
+	"52arate 1 read vi.c lines 1-260, nothing relevant",
+	"",
+	"adone",
+	"End an agent checkpoint",
+	"",
+	"Ends the acl checkpoint; the interrupted request resumes with the",
+	"context rebuilt from the trimmed log. While turns with commands are",
+	"unrated it is refused, up to twice in a row without new ratings.",
+	"Takes no range or argument. Errors outside a checkpoint.",
+	"",
+	"acheck",
+	"Start an agent checkpoint or set its budget",
+	"",
+	"With acl above 1 or negative, starts a checkpoint before the next",
+	"request, once the current tool batch completes. With a token count N",
+	"and negative acl, the next budget check comes after N tokens of",
+	"growth from now instead. Either ends a budget check, where no other",
+	"command runs. Takes no range. Errors with other acl values or",
+	"during a checkpoint.",
+	"",
+	"Example: continue for about 20000 more tokens",
+	"acheck 20000",
+	"",
+	"acp",
+	"Print the agent checkpoint instructions",
+	"",
+	"Prints the commands, rating scale and trimming instructions sent at",
+	"the start of an acl checkpoint. Takes no range or argument. Exempt",
+	"from agr. As an agent tool, errors outside a checkpoint.",
+	"",
+	"ali",
+	"Print the agent session log entry list",
+	"",
+	"Prints one line per USER and TURN entry of the session log (b-4):",
+	"role, number and estimated tokens. A turn with several parts shows",
+	"them instead, as reasoning+text+commands+results=tokens, reasoning",
+	"only if the log holds any, then its arate rating and, for a turn",
+	"with commands, the note. Then a line naming the largest entries and",
+	"one the unrated turns. During an acl checkpoint this is the status",
+	"sent at its start, updated. Takes no range or argument. Exempt from",
+	"agr. Errors on an empty log.",
+	"",
+	"auli",
+	"Print the unrated agent session log turns",
+	"",
+	"Prints the ali lines of the unrated turns alone; only turns with",
+	"commands count. Takes no range or argument. Exempt from agr. Errors",
+	"on an empty log.",
+	"",
 	"ast",
 	"Print agent status and token usage",
 	"",
-	"Prints sizes, per-role usage, activity, limits and autocompact mode.",
-	"Usage counts come from the last accepted response. Next input is",
-	"estimated from reported input plus new JSON bytes / 3, or all JSON",
-	"bytes / 3 without a usable count. Includes tool definitions and",
-	"framing; not a tokenizer or a guarantee the request fits.",
+	"Prints the autocompact, thinking and acl settings, notes, activity,",
+	"token usage, context sizes per role, log sizes, limits and the",
+	"message bytes shared with the previous request. Usage is that of",
+	"the last accepted response. Next input is its input count plus new",
+	"JSON bytes / 3, or all JSON bytes / 3 without a count, tools and",
+	"framing included: an estimate, not a tokenizer.",
+	"",
+	"[budget]ath[effort]",
+	"Set the agent thinking cap and effort",
+	"",
+	"budget is a token count N or N,M. N caps thinking tokens, sent as",
+	"reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends",
+	"thinking at once on llama.cpp and means no cap on Strata. effort is",
+	"one word sent as reasoning_effort, such as none, low, medium, high",
+	"or xhigh. An omitted part is not sent; ath alone sends neither. Sent",
+	"fields replace those of request_extra. ast shows the setting.",
+	"",
+	"With N,M the agent may raise the cap up to M for one reply with",
+	"acap, and a reply whose thinking the server cut at a cap below M is",
+	"withheld: not logged, its commands not run. The server marks the cut",
+	"by ending the thinking with think_cut of conf.c; a reply counts as",
+	"cut only if its thinking also used half the cap or more. think_cut",
+	"is dropped from the thinking of every reply, so models cannot copy",
+	"it. The agent is shown the reply and its commands, in an exchange",
+	"kept in b-8 only, and answers with acap. Replies of an acl",
+	"checkpoint, a budget check and a pack agent are asked about too;",
+	"what was interrupted then goes on, and a new checkpoint, budget",
+	"check or compaction waits for the new reply. Unavailable as an",
+	"agent tool.",
+	"",
+	"Example: cap thinking at 1024 tokens with high effort",
+	"1024ath high",
+	"",
+	"Example: start at 4096 tokens; the agent may raise the cap to 32768",
+	"4096,32768ath medium",
+	"",
+	"acap[count note]",
+	"Raise the agent thinking cap for one reply",
+	"",
+	"count is a token count N: the thinking cap of the next reply, at",
+	"most the ceiling M of ath N,M. Takes no range. Errors without a",
+	"ceiling. What that reply leaves of N is added to the caps of later",
+	"replies, up to M, until their thinking spends it.",
+	"",
+	"In the question about a reply whose thinking was cut, acap N, a",
+	"count above the cap, discards the reply and requests it again under",
+	"cap N. Text after N is a note sent with the requests of the new",
+	"reply only, unlogged; that reply sees nothing else of the exchange",
+	"and is not asked about. acap alone runs the reply as it is. Nothing",
+	"else runs meanwhile; after five retries the answer is taken as acap.",
+	"A cut reply without text and commands is requested again either",
+	"way.",
+	"",
+	"Example: think up to 8192 tokens in the next reply",
+	"acap 8192",
+	"",
+	"agoal[text]",
+	"Set or clear the agent goal",
+	"",
+	"Text sets the goal; agoal alone clears it. While a goal is set,",
+	"every agent request opens with it: joined to the front of the first",
+	"message after the system prompt if a user message, else as a user",
+	"message before it. The session log does not hold it, so trimming",
+	"and compaction leave it. An agent reply without commands does not",
+	"end the run: the agent is shown the goal and asked whether it is",
+	"finished, and the run ends only with a reply without commands after",
+	"the goal is cleared. Ctrl-C and the tool round limit still end it.",
+	"A cleared goal stays at the front while the first message only",
+	"extends the one last sent, so the server cache is kept; once that",
+	"message changes, as by compaction or a new conversation, it goes.",
+	"Takes no range. ast shows the goal.",
+	"",
+	"Example: keep the agent working until the tests pass",
+	"agoal all tests in test.sh pass",
 	"",
 	"ac[regex]",
 	"Set autocomplete filter regex",
@@ -7876,40 +11871,115 @@ static char *exspec_lines[] = {
 	"",
 	"Argument notation shows the default value.",
 	"",
-	"aco[0]  Automatically compact using the loaded session log",
-	"Positive argument sets an estimated input-token threshold; 0 or",
-	"negative disables. No argument enables at 85000 or toggles off.",
-	"aco and aco! share a threshold; the last setting wins.",
+	"acl[0]  Rebuild agent context from the session log",
+	"No argument toggles between 0 and 1. With 0, log edits do not reach",
+	"the agent.",
 	"",
-	"After tool batches, runs apack without a prompt and resumes. Never",
-	"recurses. Failed, cancelled or inadequate summaries keep the old",
-	"history and stop the run. Leave room for instructions and output;",
-	"use aco! if the log cannot fit. Does not change the API limit.",
+	"1 rebuilds the context from the session log (b-4) before every",
+	"request, so edits of the log apply to the next one. Values above 1",
+	"or negative rebuild only after such edits and when a checkpoint",
+	"ends; in between, replies stay as returned, reasoning included, so",
+	"the server cache continues from them. A rebuild skips NOTICE",
+	"entries, which report harness events such as HTTP errors, and has",
+	"only the reasoning the log holds (ar).",
+	"",
+	"Values above 1 add checkpoints: once the estimated context grows by",
+	"that many tokens from the last checkpoint, or from its smallest size",
+	"since, one runs before the next request. It opens with the ali list",
+	"and the acp instructions. Only ali, acp, auli, arate, anote and",
+	"adone run. It ends with adone, a reply without commands or recursive",
+	"editing; the first two are refused while turns are unrated, up to",
+	"twice in a row without new ratings. The interrupted request then",
+	"resumes; aco is checked after it. The exchange is logged to b-8 with",
+	"headers prefixed CP. Its requests keep the context the checkpoint",
+	"started with, so the prompt cache holds: anote edits b-4 at once but",
+	"reaches the context when the checkpoint ends.",
+	"",
+	"Negative values leave the checkpoint to the agent through budget",
+	"checks. The first comes once the estimated context grows by -acl",
+	"tokens from the session start, the last checkpoint or a compaction,",
+	"and asks for the tokens the rest of the task needs, set with",
+	"acheck N. After that growth the next asks to checkpoint now with",
+	"acheck or defer N more tokens with acheck N. Only acheck runs during",
+	"a check; after two more requests without an answer a checkpoint",
+	"starts. After a checkpoint -acl applies again. A check is logged to",
+	"b-8 with CP headers, leaves the context unchanged and, if",
+	"interrupted, runs again at the next request. N may pass aco, which",
+	"stays the limit; a compaction drops the budget.",
+	"",
+	"Example: checkpoint every 5000 tokens of growth",
+	"acl 5000",
+	"",
+	"aco[0]  Automatically compact using the loaded session log",
+	"A positive argument is the estimated input-token threshold; 0 or",
+	"negative disables. No argument enables at 85000 or toggles off.",
+	"aco and aco! share the threshold; the last one set selects the mode.",
+	"",
+	"Once the estimate reaches the threshold after a tool batch, runs",
+	"apack without a prompt and resumes the request. Never recurses. A",
+	"failed, cancelled or not shorter summary keeps the old history and",
+	"stops the run. Leave room for the instructions and the summary; use",
+	"aco! if the log cannot fit. Does not change the API limit.",
 	"",
 	"aco![0]  Automatically compact by browsing the session log",
-	"Threshold and toggle work as for aco (default 85000). Selecting",
-	"either mode replaces the other.",
+	"Threshold and toggle as for aco.",
 	"",
-	"Runs apack! with fresh context and bounded reads of b-4. Keeps the",
-	"current task and restores the editor buffer. Use ast for status",
-	"and token estimates.",
+	"Runs apack! instead: fresh context and bounded reads of b-4. The",
+	"request resumes and the editor buffer is restored. ast shows the",
+	"mode and token estimates.",
 	"",
-	"ar[0]  Display returned agent reasoning",
+	"agr[4096]  Control agent output protection",
+	"No argument toggles between 0 and 4096. 0 or negative disables.",
+	"",
+	"A positive value is the limit in bytes of a tool call output; a",
+	"larger output is withheld and aout views it.",
+	"",
+	"ato[0]  Detach long agent shell commands",
+	"No argument toggles between 0 and 30. 0 disables.",
+	"",
+	"A positive value is the seconds an agent shell command may run in",
+	"the foreground. After that it runs on in the background: the result",
+	"has error 124, its process group and a file receiving later output.",
+	"A later tool result reports its exit status.",
+	"",
+	"ar[1]  Log and display returned agent reasoning",
 	"No argument logically inverts the option.",
 	"",
-	"Nonzero includes returned reasoning in the session log.",
+	"0 does not log returned reasoning. 1 logs it, as part 0 of a turn,",
+	"without printing it during the run. 2 logs and prints it.",
 	"",
-	"gr[2]  Control agent output protection",
-	"No argument logically inverts the option.",
+	"ata[0]  Cap agent thinking by its recent average",
+	"No argument toggles between 0 and 100. 0 disables.",
 	"",
-	"Value 2 limits tool output to 4096 bytes and protects captured shell",
-	"output. Other values disable protection; 0 and 1 increment after",
-	"each tool call until 2. Negative values stay disabled.",
+	"A positive value is a percentage: each request is sent that share",
+	"of the average thinking tokens as the ath cap, in place of N. Each",
+	"accepted reply that thought moves the average a quarter of the way",
+	"to its thinking tokens; one that used up its cap counts as twice the",
+	"cap, so cut replies raise the average. Lower values cut more",
+	"replies.",
+	"",
+	"The average starts at N of ath, else at the first reply; ath",
+	"restarts it, and N is sent until a reply is counted. The cap stays",
+	"from 1 to M of ath N,M, else to N. Replies are counted with ata off",
+	"too: by the reported reasoning_tokens, else the output tokens by the",
+	"share of the thinking in the bytes of the reply. A cap the agent",
+	"raised with acap N lasts for its reply; what that reply leaves of N",
+	"is added to later caps until their thinking spends it. ast shows",
+	"the average.",
+	"",
+	"Example: start at 2048 tokens and follow the average, up to 16384",
+	"2048,16384ath:ata",
+	"",
+	"Example: cap at twice the average",
+	"ata 200",
 	"",
 	"aspec[1]  Print ex specifications for agents",
+	"No argument logically inverts the option. 0 disables.",
 	"",
-	"No argument logically inverts the option. 0 disables automatic",
-	"specifications; 1 enables them (the default).",
+	"The first use of a command by the agent prints its specification",
+	"instead of running it; aretry then runs the command. The first",
+	"unknown agent command of a session also prints the exspec command",
+	"list, unless exspec has printed it.",
 	"",
 	"ai[1]   Indent new lines",
 	"",
@@ -8156,94 +12226,110 @@ static struct {
 	{"ud", "Undo", 319, 322, 0, 0},
 	{"rd", "Redo", 323, 326, 0, 0},
 	{"p", "Print line(s) from a buffer", 327, 341, 0, 0},
-	{"=", "Print range numbers", 342, 355, 0, 0},
-	{"=\?", "Print last error", 356, 360, 0, 0},
-	{"m", "Set line mark(s)", 361, 369, 0, 0},
-	{"m!", "Unset line mark(s)", 370, 374, 0, 0},
-	{"ya", "Yank into a register", 375, 382, 0, 0},
-	{"ya+", "Yank and append to a register", 383, 388, 0, 0},
-	{"ya!", "Free a register", 389, 391, 0, 0},
-	{"pu", "Paste or pipe a register", 392, 403, 0, 0},
-	{"reg", "Print registers or put into a register", 404, 414, 0, 0},
-	{"reg+", "Print registers or append to a register", 415, 417, 0, 0},
-	{"e", "Open a file at a path", 418, 424, 0, 0},
-	{"e!", "Force open a file at a path", 425, 429, 0, 0},
-	{"ef", "Open file using fuzzy search prompt", 430, 446, 0, 0},
-	{"ef!", "Forced version of ef command", 447, 449, 0, 0},
-	{"r", "Read a file or a pipe", 450, 464, 0, 0},
-	{"w", "Write a file or a pipe", 465, 478, 0, 0},
-	{"w!", "Force write a file", 479, 481, 0, 0},
-	{"wq", "Write a file or a pipe and exit", 482, 485, 0, 0},
-	{"wq!", "Force write a file or a pipe and force quit", 486, 489, 0, 0},
-	{"x", "Write unsaved changes and exit", 490, 492, 0, 0},
-	{"x!", "Force write unsaved changes and force quit", 493, 495, 0, 0},
-	{"q", "Exit", 496, 504, 0, 0},
-	{"q!", "Force quit", 505, 514, 0, 0},
-	{"b", "Print buffers or switch to a buffer", 515, 531, 0, 0},
-	{"bp", "Set current buffer path", 532, 534, 0, 0},
-	{"bs", "Set current buffer saved", 535, 539, 0, 0},
-	{"bx", "Set max number of buffers allowed", 540, 545, 0, 0},
-	{"cd", "Set a working directory", 546, 554, 0, 0},
-	{"fp", "Clear or set a secondary directory path", 555, 557, 0, 0},
-	{"fd", "Calculate directory listing in b-2 buffer", 558, 562, 0, 0},
-	{"inc", "Include regex for fd command calculation", 563, 572, 0, 0},
-	{"!", "Run an external program", 573, 589, 0, 0},
-	{"&", "Global non-blocking macro", 590, 608, 0, 0},
-	{"@", "Global blocking macro", 609, 629, 0, 0},
-	{"\?", "While loop", 630, 644, 0, 0},
-	{"\?!", "Inverted while loop", 645, 647, 0, 0},
-	{"\?\?", "Conditional", 648, 685, 0, 0},
-	{"\?\?!", "Inverted conditional", 686, 692, 0, 0},
-	{"\?\?\?", "Evaluate capture ids", 693, 701, 0, 0},
-	{"\?~", "Control capture ids lifetime", 702, 718, 0, 0},
-	{"ft", "Set a filetype", 719, 725, 0, 0},
-	{"cm", "Set a keymap", 726, 730, 0, 0},
-	{"cm!", "Set an alternative keymap", 731, 733, 0, 0},
-	{"exspec", "Print ex command catalog or specification", 734, 744, 0, 0},
-	{"a", "Open or resume the agent conversation", 745, 752, 0, 0},
-	{"a!", "Start a new agent conversation", 753, 758, 0, 0},
-	{"a~", "Resume an agent conversation from its log", 759, 764, 0, 0},
-	{"apack", "Compact the agent session from its log", 765, 771, 0, 0},
-	{"apack!", "Compact the agent session by browsing its log", 772, 779, 0, 0},
-	{"acm", "Toggle the caveman response style skill", 780, 785, 0, 0},
-	{"aretry", "Execute the last deferred agent command once", 786, 795, 0, 0},
-	{"ast", "Print agent status and token usage", 796, 804, 0, 0},
-	{"ac", "Set autocomplete filter regex", 805, 813, 0, 0},
-	{"sc", "Set ex special characters", 814, 824, 0, 0},
-	{"sc!", "Set ex special characters", 825, 832, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 833, 840, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 841, 844, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 845, 849, 0, 0},
-	{"ph", "Redefine placeholders", 850, 866, 0, 0},
-	{"aco", "Automatically compact using the loaded session log", 875, 884, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 885, 892, 1, 0},
-	{"ar", "Display returned agent reasoning", 893, 897, 1, 0},
-	{"gr", "Control agent output protection", 898, 904, 1, 0},
-	{"aspec", "Print ex specifications for agents", 905, 909, 1, 0},
-	{"ai", "Indent new lines", 910, 913, 1, 0},
-	{"ic", "Ignore case in regular expressions", 914, 915, 1, 0},
-	{"ish", "Interactive shell", 916, 931, 1, 0},
-	{"grp", "Regex search group", 932, 940, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 941, 944, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 945, 946, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 946, 947, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 947, 948, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 948, 949, 1, 0},
-	{"led", "Enable all terminal output", 949, 950, 1, 0},
-	{"vis", "Control startup flags", 951, 962, 1, 0},
-	{"mpt", "Control vi prompts", 963, 973, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 974, 976, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 976, 978, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 978, 979, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 979, 980, 1, 0},
-	{"td", "Current text direction context", 980, 986, 1, 0},
-	{"pr", "Print register", 987, 1003, 1, 0},
-	{"fr", "Find register", 1004, 1016, 1, 0},
-	{"rr", "Record register", 1017, 1030, 1, 0},
-	{"lim", "Line length render limit", 1031, 1046, 1, 0},
-	{"seq", "Control Undo/Redo", 1047, 1059, 1, 0},
-	{"left", "Control horizontal scroll", 1060, 1065, 1, 0},
-	{"err", "Control ex errors", 1066, 1078, 1, 0},
+	{"=p", "Print line(s) with line numbers", 342, 350, 0, 0},
+	{"=", "Print range numbers", 351, 364, 0, 0},
+	{"=\?", "Print last error", 365, 369, 0, 0},
+	{"m", "Set line mark(s)", 370, 378, 0, 0},
+	{"m!", "Unset line mark(s)", 379, 383, 0, 0},
+	{"ya", "Yank into a register", 384, 391, 0, 0},
+	{"ya+", "Yank and append to a register", 392, 397, 0, 0},
+	{"ya!", "Free a register", 398, 400, 0, 0},
+	{"pu", "Paste or pipe a register", 401, 412, 0, 0},
+	{"reg", "Print registers or put into a register", 413, 423, 0, 0},
+	{"reg+", "Print registers or append to a register", 424, 426, 0, 0},
+	{"e", "Open a file at a path", 427, 433, 0, 0},
+	{"e!", "Force open a file at a path", 434, 438, 0, 0},
+	{"ef", "Open file using fuzzy search prompt", 439, 455, 0, 0},
+	{"ef!", "Forced version of ef command", 456, 458, 0, 0},
+	{"r", "Read a file or a pipe", 459, 473, 0, 0},
+	{"w", "Write a file or a pipe", 474, 487, 0, 0},
+	{"w!", "Force write a file", 488, 490, 0, 0},
+	{"wq", "Write a file or a pipe and exit", 491, 494, 0, 0},
+	{"wq!", "Force write a file or a pipe and force quit", 495, 498, 0, 0},
+	{"x", "Write unsaved changes and exit", 499, 501, 0, 0},
+	{"x!", "Force write unsaved changes and force quit", 502, 504, 0, 0},
+	{"q", "Exit", 505, 513, 0, 0},
+	{"q!", "Force quit", 514, 523, 0, 0},
+	{"b", "Print buffers or switch to a buffer", 524, 540, 0, 0},
+	{"bp", "Set current buffer path", 541, 543, 0, 0},
+	{"bs", "Set current buffer saved", 544, 548, 0, 0},
+	{"bx", "Set max number of buffers allowed", 549, 554, 0, 0},
+	{"cd", "Set a working directory", 555, 563, 0, 0},
+	{"fp", "Clear or set a secondary directory path", 564, 566, 0, 0},
+	{"fd", "Calculate directory listing in b-2 buffer", 567, 571, 0, 0},
+	{"inc", "Include regex for fd command calculation", 572, 581, 0, 0},
+	{"!", "Run an external program", 582, 598, 0, 0},
+	{"&", "Global non-blocking macro", 599, 617, 0, 0},
+	{"@", "Global blocking macro", 618, 638, 0, 0},
+	{"\?", "While loop", 639, 653, 0, 0},
+	{"\?!", "Inverted while loop", 654, 656, 0, 0},
+	{"\?\?", "Conditional", 657, 694, 0, 0},
+	{"\?\?!", "Inverted conditional", 695, 701, 0, 0},
+	{"\?\?\?", "Evaluate capture ids", 702, 710, 0, 0},
+	{"\?~", "Control capture ids lifetime", 711, 727, 0, 0},
+	{"ft", "Set a filetype", 728, 734, 0, 0},
+	{"cm", "Set a keymap", 735, 739, 0, 0},
+	{"cm!", "Set an alternative keymap", 740, 742, 0, 0},
+	{"exspec", "Print ex command catalog or specification", 743, 754, 0, 0},
+	{"a", "Open or resume the agent conversation", 755, 762, 0, 0},
+	{"a!", "Start a new agent conversation", 763, 768, 0, 0},
+	{"a~", "Resume an agent conversation from its log", 769, 774, 0, 0},
+	{"apack", "Compact the agent session from its log", 775, 788, 0, 0},
+	{"apack!", "Compact the agent session by browsing its log", 789, 795, 0, 0},
+	{"acm", "Toggle the caveman response style skill", 796, 801, 0, 0},
+	{"aretry", "Execute the last agent command", 802, 813, 0, 0},
+	{"aout", "Print the saved output of the last agent tool call", 814, 825, 0, 0},
+	{"anote", "Replace or remove agent session log entries", 826, 854, 0, 0},
+	{"aget", "Print agent session log entries, trimmed ones included", 855, 871, 0, 0},
+	{"arate", "Rate agent turns in the notes buffer", 872, 892, 0, 0},
+	{"adone", "End an agent checkpoint", 893, 900, 0, 0},
+	{"acheck", "Start an agent checkpoint or set its budget", 901, 913, 0, 0},
+	{"acp", "Print the agent checkpoint instructions", 914, 920, 0, 0},
+	{"ali", "Print the agent session log entry list", 921, 932, 0, 0},
+	{"auli", "Print the unrated agent session log turns", 933, 939, 0, 0},
+	{"ast", "Print agent status and token usage", 940, 949, 0, 0},
+	{"ath", "Set the agent thinking cap and effort", 950, 978, 0, 0},
+	{"acap", "Raise the agent thinking cap for one reply", 979, 998, 0, 0},
+	{"agoal", "Set or clear the agent goal", 999, 1017, 0, 0},
+	{"ac", "Set autocomplete filter regex", 1018, 1026, 0, 0},
+	{"sc", "Set ex special characters", 1027, 1037, 0, 0},
+	{"sc!", "Set ex special characters", 1038, 1045, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1046, 1053, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1054, 1057, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1058, 1062, 0, 0},
+	{"ph", "Redefine placeholders", 1063, 1079, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1088, 1126, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1127, 1137, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1138, 1144, 1, 0},
+	{"agr", "Control agent output protection", 1145, 1150, 1, 0},
+	{"ato", "Detach long agent shell commands", 1151, 1158, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1159, 1164, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1165, 1189, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1190, 1197, 1, 0},
+	{"ai", "Indent new lines", 1198, 1201, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1202, 1203, 1, 0},
+	{"ish", "Interactive shell", 1204, 1219, 1, 0},
+	{"grp", "Regex search group", 1220, 1228, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1229, 1232, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1233, 1234, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1234, 1235, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1235, 1236, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1236, 1237, 1, 0},
+	{"led", "Enable all terminal output", 1237, 1238, 1, 0},
+	{"vis", "Control startup flags", 1239, 1250, 1, 0},
+	{"mpt", "Control vi prompts", 1251, 1261, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1262, 1264, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1264, 1266, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1266, 1267, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1267, 1268, 1, 0},
+	{"td", "Current text direction context", 1268, 1274, 1, 0},
+	{"pr", "Print register", 1275, 1291, 1, 0},
+	{"fr", "Find register", 1292, 1304, 1, 0},
+	{"rr", "Record register", 1305, 1318, 1, 0},
+	{"lim", "Line length render limit", 1319, 1334, 1, 0},
+	{"seq", "Control Undo/Redo", 1335, 1347, 1, 0},
+	{"left", "Control horizontal scroll", 1348, 1353, 1, 0},
+	{"err", "Control ex errors", 1354, 1366, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -8334,13 +12420,8 @@ void lbuf_saved\(struct lbuf \*lb, int clear\)
 			lopt_done\(&lb->hist\[i]\);9??0?
 grp 09??-7m 3220reg p OK lbuf.c:453:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg lbuf.c:4532sc %? %@2132sc!0?
-'\''1i 	if (agent_tool) {
-		char msg[64];
-		/* Report a zero-based, half-open span, like ex range beg/end. */
-		int last = MAX(end, beg + lo->n_ins);
-		snprintf(msg, sizeof(msg), "edited lines beg: %d end: %d", beg, last);
-		ex_print(msg, msg_ft)
-	}
+'\''1i 	if (agent_tool && lb == xb)
+		agent_edit(lb, beg, lo->n_del, lo->n_ins);
 	agent_sync(lb);
 ??!219reg lbuf.c:229:m12sc %? %@2142sc!0?
 '\''2i 	agent_sync(lb);
@@ -8559,7 +12640,7 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\)
 \{
 	static char \*sh\[] = \{"\$SHELL", "sh", NULL};
 	struct pollfd fds\[3];
-	char buf\[512];1??0?
+	struct winsize win;1??0?
 1??+2m 31q0?
 %f+ /\* execute a command; pass in input if ibuf and process output if oproc \*/
 sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\)
@@ -8571,15 +12652,15 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 grp 07??m 3220reg p OK term.c:275:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	return r;
-}.*(	int ifd = -1, ofd = -1;)
-	int nw = 0;
-	char \*argv\[5];8??0?
+}.*(	char buf\[512];)
+	int ifd = -1, ofd = -1;
+	int nw = 0, winch = term_winch;8??0?
 grp 08??-4m 3220reg p OK term.c:275:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		else
 			return \*q;
-		q\+\+;.*(	argv\[0] = xgetenv\(sh\);)
-	argv\[1] = xish \? "-i" : argv\[0];
-	argv\[2] = "-c";9??0?
+		q\+\+;.*(	char \*argv\[5];)
+	argv\[0] = xgetenv\(sh\);
+	argv\[1] = xish \? "-i" : argv\[0];9??0?
 grp 09??-7m 3220reg p OK term.c:275:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg term.c:2752sc %? %@2132sc!0?
 ?0?
@@ -8588,38 +12669,44 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 	if \(!ibuf\) \{
 		if \(term_sbuf\)
 			term_init\(\);
-		signal\(SIGINT, SIG_DFL\);
-	}1??0?
+	} else if \(xish && term_sbuf && !ioctl\(term_ufd\.fd, TIOCGWINSZ, &win\) &&
+			\(win\.ws_row != xrows \|\| win\.ws_col != xcols\)\)1??0?
 1??+3m 41q0?
 %f+ 		if \(term_sbuf\)
 			term_init\(\);
-		signal\(SIGINT, SIG_DFL\);
-	}2??0?
-2??m 4220reg p OK term.c:347:a22sc %? %@2152sc!1q0?
+	} else if \(xish && term_sbuf && !ioctl\(term_ufd\.fd, TIOCGWINSZ, &win\) &&
+			\(win\.ws_row != xrows \|\| win\.ws_col != xcols\)\)2??0?
+2??m 4220reg p OK term.c:365:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(term_sbuf\)$3??0?
-3??m 4220reg p OK term.c:347:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK term.c:365:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);
 	signal\(SIGTTOU, SIG_DFL\);
 	if \(!ibuf\) \{4??0?
-4??+3m 4220reg p OK term.c:347:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK term.c:365:a42sc %? %@2152sc!1q0?
 %f+ 			term_init\(\);
-		signal\(SIGINT, SIG_DFL\);
-	}5??0?
-5??-1m 4220reg p OK term.c:347:a52sc %? %@2152sc!1q0?
-%f+ 	t...t..r.\(.er._....fd..g.t.g...\).;
-..i...l.S........SI....L\).
-... \(!......\{
-.......e........
-.....rm.i.i.\(\).
-..........I.I.T..SI...F..;
-	.6??0?
-6??+3m 4220reg p OK term.c:347:a62sc %? %@2152sc!1q0?
+	} else if \(xish && term_sbuf && !ioctl\(term_ufd\.fd, TIOCGWINSZ, &win\) &&
+			\(win\.ws_row != xrows \|\| win\.ws_col != xcols\)\)5??0?
+5??-1m 4220reg p OK term.c:365:a52sc %? %@2152sc!1q0?
+%f+ .t...........r._..d.......t...p.\)..
+	signa...........S.._.....
+... ........\{
+	...............
+....e...i......
+.. ........\(...h..&..e.....u. .. .....l...r....d..d, .I.CGW.N....&w.n\).&.
+	.	.w......... .=...o.s..\|...n.ws.....!.....l.\).6??0?
+6??+3m 4220reg p OK term.c:365:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	tcsetpgrp\(term_ufd\.fd, getpgrp\(\)\);.*?
 	signal\(SIGTTOU, SIG_DFL\);.*?
 	if \(!ibuf\) \{.*?
 (		if \(term_sbuf\))7??0?
-grp 07??m 4220reg p OK term.c:347:a72sc %? %@2152sc!0?
-1;2;3;4;5;6;7??!219reg term.c:3472sc %? %@2132sc!0?
+grp 07??m 4220reg p OK term.c:365:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	while \(waitpid\(pid, status, 0\) < 0 && winch != term_winch\)
+		winch = term_winch;
+	signal\(SIGTTOU, SIG_IGN\);.*(		term_winch\+\+;	/\* SIGWINCH went to the shell, which owned the tty \*/)
+	signal\(SIGINT, SIG_DFL\);
+	sbufn_ret\(sb, sb\)8??0?
+grp 08??-4m 4220reg p OK term.c:365:a82sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8??!219reg term.c:3652sc %? %@2132sc!0?
 '\''1i 	term_sbuf = NULL;
 ??!219reg term.c:42:m12sc %? %@2142sc!0?
 '\''2i 		if (agent_tool) {
@@ -8633,7 +12720,7 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 	if (agent_tool)
 		return agent_shell(cmd, ibuf, oproc, status);
 ??!219reg term.c:275:m32sc %? %@2142sc!0?
-'\''4s/_sbuf/inal/??!219reg term.c:347:m42sc %? %@2142sc!b12m!%ya 98?0?
+'\''4s/_sbuf/inal/??!219reg term.c:365:m42sc %? %@2142sc!b12m!%ya 98?0?
 %f> #include <sys/stat\.h>
 #include <sys/ioctl\.h>
 #include <sys/wait\.h>
@@ -8717,25 +12804,26 @@ static int vi_lnnum;		/\* line numbers \*/9??0?
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);4??0?
-4??+2m 4220reg p OK vi.c:1824:a42sc %? %@2152sc!1q0?
+4??+2m 4220reg p OK vi.c:1831:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	temp_open\(0, "/hist/", _ft\);.*?
 	temp_open\(1, "/fm/", fm_ft\);.*?
 (	temp_open\(2, "/sc/", _ft\);)7??0?
-grp 07??m 4220reg p OK vi.c:1824:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK vi.c:1831:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	setup_signals\(\);
 	dir_init\(\);
 	syn_init\(\);.*(			break;)
 		}
 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{8??0?
-grp 08??-4m 4220reg p OK vi.c:1824:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 4220reg p OK vi.c:1831:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> int main\(int argc, char \*argv\[]\)
 \{
 	int i, j;.*(			if \(argv\[i]\[j] == '\''s'\''\))
 				xvis \|= 1\|2;
 			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
-grp 09??-7m 4220reg p OK vi.c:1824:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:18242sc %? %@2132sc!0?
+grp 09??-7m 4220reg p OK vi.c:1831:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18312sc %? %@2132sc!0?
 '\''1i #include <errno.h>
+#include <time.h>
 #include "cJSON.c"
 ??!219reg vi.c:15:m12sc %? %@2142sc!0?
 '\''2i #include "agent.h"
@@ -8743,7 +12831,7 @@ static int vi_lnnum;		/\* line numbers \*/9??0?
 '\''3i #include "agent.c"
 ??!219reg vi.c:18:m32sc %? %@2142sc!0?
 '\''4i 	agent_init();
-??!219reg vi.c:1824:m42sc %? %@2142sc!b13m!%ya 98?0?
+??!219reg vi.c:1831:m42sc %? %@2142sc!b13m!%ya 98?0?
 %f> is\.sug = NULL; \\
 is\._sug = NULL; \\
 
@@ -8852,7 +12940,7 @@ extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 ??!219reg vi.h:449:m12sc %? %@2142sc!0?
 '\''2i extern int xaspec;
 ??!219reg vi.h:495:m22sc %? %@2142sc!0?
-'\''3s/3/5/??!219reg vi.h:523:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7wb8wb9wb10wb11wb12wb13w2q' > "$P2VIF"
+'\''3s/3/8/??!219reg vi.h:523:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7wb8wb9wb10wb11wb12wb13w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'agent.c' 'agent.h' 'cJSON.c' 'cJSON.h' 'cbuild.sh' 'conf.c' 'ex.c' 'exspec.awk' 'exspec.h' 'lbuf.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -8866,10 +12954,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..122c15dc
+index 000000000..25d696b58
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,1628 @@
+@@ -0,0 +1,4556 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -8884,8 +12972,7 @@ index 00000000..122c15dc
 + * furnished to do so, subject to the following conditions:
 + *
 + * The above copyright notice and this permission notice shall be included in
-+ * all
-+ * copies or substantial portions of the Software.
++ * all copies or substantial portions of the Software.
 + *
 + * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 + * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -8898,21 +12985,98 @@ index 00000000..122c15dc
 +static cJSON *agent_messages;
 +static unsigned long agent_epoch, agent_serial;
 +static int agent_ready, agent_syncing, agent_child_status;
-+static int agent_logbuf = 3;
++static pid_t agent_jobs[16];	/* shells detached by ato, not yet reaped */
++static char agent_jobmsg[512];	/* job notices for the next tool result */
++static int agent_logbuf = 3;	/* tempbufs index logged to: 3 (b-4) or 7 (b-8) */
++/* b-4 was edited other than by agent_log since the context was rebuilt. */
++static int agent_logging, agent_log_edited;
++/* Last entry number per log: [0] b-8, [1] b-4. */
++static unsigned long agent_entries[2];
 +static char *agent_init_error;
-+static unsigned long agent_rounds;	/* tool rounds completed in the current run */
-+static unsigned long agent_tool_calls;	/* cumulative ex tool calls executed */
-+static size_t agent_capture_total;	/* full tool output, including clipped bytes */
++static unsigned long agent_rounds;	/* tool rounds of the current run */
++static unsigned long agent_tool_calls;	/* ex tool calls executed, cumulative */
++static size_t agent_capture_total;	/* tool output bytes, clipped ones included */
++#define AGENT_SHOW_MAX (1 << 20)	/* guarded output kept for aout */
 +
-+/* Usage describes the last accepted response. The anchor describes its input;
-+ * subsequent messages/tool results are estimated, not provider token counts. */
++/* Tool output bytes kept, 0 for all; at least agr, so output under it is
++ * never clipped. */
++static int agent_gr_cap(void)
++{
++	return xagr > 0 ? MAX(AGENT_SHOW_MAX, xagr) : 0;
++}
++
++/* Usage of the last accepted response. Its input count anchors estimates at
++ * bytes of context; growth past that is estimated, not reported. */
 +static struct agent_usage {
 +	double input, output, bytes;
 +	int reported, anchored;
 +} agent_usage;
 +static int agent_packing, agent_pack_done;
++/* Session log text when the current pack started; NULL outside packs. */
++static char *agent_pack_log;
++static char agent_pack_retry[] =
++	"You returned control, but the session log in b-4 is unchanged.\n"
++	"The current buffer is b-4 again. Replace its content with the summary\n"
++	"in one ex call, then stop. Text after \"%c \" is literal; newlines\n"
++	"separate lines; no terminator.\n"
++	"Example: a three-line summary\n"
++	"%c Goal: ...\nDone: ...\nNext: ...";
++/* Pack prompts carry the %c usage because its spec is not deferred. */
++static char agent_pack_example[] =
++	"\nReplace the current buffer's content with the summary in one ex call.\n"
++	"Text after \"%c \" is literal; newlines separate lines; no terminator.\n"
++	"Example: a three-line summary\n"
++	"%c Goal: ...\nDone: ...\nNext: ...\n\n";
++/* Messages JSON of the last request, and its bytes shared with the one before. */
++static char *agent_prev;
++static size_t agent_reused, agent_sent;
++/* Reasoning field name the endpoint returned; rebuilds use it. */
++static const char *agent_rkey = "reasoning_content";
++/* ath request fields: reasoning_budget_tokens, -1 unset; reasoning_effort,
++ * empty unset. Set fields replace those of request_extra. */
++static int agent_think_cap = -1;
++static char agent_effort[32];
++/* ath N,M: N, -1 unset; M, the ceiling the agent may raise the cap to for
++ * one reply, 0 none */
++static int agent_think_base = -1, agent_think_max;
++static int agent_think_up;	/* the agent raised the cap for its next reply */
++/* Thinking tokens the reply to a raised cap left of it, added to later caps
++ * until the thinking of their replies spends them */
++static int agent_think_bank;
++/* ata: average thinking tokens of the replies that thought since the user
++ * set ath, and their count */
++static double agent_think_avg;
++static int agent_think_cnt;
++/* Response whose thinking the server cut at cap agent_think_was, withheld
++ * while the agent is asked about it; agent_think_more: it chose a higher cap */
++static cJSON *agent_think_held;
++static int agent_think_was, agent_think_more;
++static int agent_think_empty;	/* the withheld reply has no text or calls */
++/* Note of an acap N answer: sent as assistant text with the requests of the
++ * replacement reply only, unlogged */
++static char *agent_think_note;
++static char agent_think_lead[] =
++	"My thinking was cut off at %d tokens; the cap is now %d tokens and I "
++	"must finish thinking within it. My note on how to think:\n%s";
++/* agoal: while set, a reply without commands is answered with
++ * agent_goal_ask instead of ending the run, and every request opens with
++ * agent_goal_head and the goal: its banner */
++static char *agent_goal;
++static char agent_goal_head[] = "Session goal, set by agoal:\n";
++/* The banner in agent_messages: 1 joined to message 1, 2 a message there */
++static int agent_banner_on;
++/* The goal the last banner sent and message 1 under it, as role\ncontent:
++ * a cleared goal keeps its banner while message 1 extends that one, since
++ * dropping it would change the request prefix and void the server cache */
++static char *agent_banner_was, *agent_banner_was_key;
++static char agent_goal_ask[] =
++	"The goal is still set:\n%s\n\nIs it finished? If so, clear it with "
++	"agoal and then reply. If not, keep working toward it.";
++#define AGENT_THINK_TRIES	5	/* retries a thinking question allows */
++#define AGENT_BAD_TRIES	5	/* malformed-response retries before one nudge */
 +static void agent_run(const char *input);
 +static int agent_autocompact(const char *input);
++static void agent_reparse(void);
 +
 +static const char agent_tools[] =
 +	"[{\"type\":\"function\",\"function\":{"
@@ -8923,22 +13087,61 @@ index 00000000..122c15dc
 +	"\"required\":[\"command\"],"
 +	"\"additionalProperties\":false}}}]";
 +
-+/* JSON bytes are only a fallback proxy. Include tools and message framing. */
++static char *agent_banner_key(void)
++{
++	cJSON *m = cJSON_GetArrayItem(agent_messages, 1);
++	char *role = cJSON_GetStringValue(cJSON_GetObjectItem(m, "role"));
++	char *s = cJSON_GetStringValue(cJSON_GetObjectItem(m, "content"));
++	sbuf_smake(sb, 256)
++	sbuf_str(sb, role ? role : "")
++	sbuf_chr(sb, '\n')
++	sbufn_str(sb, s ? s : "")
++	return sb->s;
++}
++
++/* The goal for the banner: agent_goal, else a cleared one still kept. */
++static char *agent_banner_goal(void)
++{
++	if (agent_goal || !agent_banner_was)
++		return agent_goal;
++	char *key = agent_banner_key();
++	size_t n = strlen(agent_banner_was_key);
++	int kept = !strncmp(key, agent_banner_was_key, n);
++	free(key);
++	if (!kept) {
++		free(agent_banner_was);
++		free(agent_banner_was_key);
++		agent_banner_was = agent_banner_was_key = NULL;
++	}
++	return agent_banner_was;
++}
++
++/* Context size in JSON bytes, with tools and message framing. */
 +static double agent_context_bytes(void)
 +{
 +	char *json = cJSON_PrintUnformatted(agent_messages);
 +	double bytes = (json ? strlen(json) : 0) + strlen(agent_tools) +
 +		24.0 * cJSON_GetArraySize(agent_messages);
 +	free(json);
++	char *goal = agent_banner_on ? NULL : agent_banner_goal();
++	if (goal)
++		bytes += sizeof(agent_goal_head) + strlen(goal) + 2;
 +	return bytes;
++}
++
++static double agent_tokens_at(double bytes)
++{
++	if (!agent_usage.anchored)
++		return (bytes + 2) / 3;
++	/* A context smaller than the anchor keeps its tokens per byte. */
++	if (bytes >= agent_usage.bytes)
++		return agent_usage.input + (bytes - agent_usage.bytes + 2) / 3;
++	return agent_usage.input * bytes / agent_usage.bytes;
 +}
 +
 +static double agent_tokens(void)
 +{
-+	double bytes = agent_context_bytes();
-+	if (agent_usage.anchored && bytes >= agent_usage.bytes)
-+		return agent_usage.input + (bytes - agent_usage.bytes + 2) / 3;
-+	return (bytes + 2) / 3;
++	return agent_tokens_at(agent_context_bytes());
 +}
 +
 +static void agent_record_usage(cJSON *root, double bytes)
@@ -8962,8 +13165,8 @@ index 00000000..122c15dc
 +}
 +
 +static char nextvi_skill[] =
-+"Inside Nextvi, use the ex tool with a JSON object whose command \n"
-+"key holds an ex command.\n"
++"Inside Nextvi, use the ex tool; its command argument holds one ex command\n"
++"per call.\n"
 +"Nextvi is not a standard vi/ex.\n"
 +"Use exspec command for a command list.\n"
 +"Use exspec with an argument for a topic or command specification.\n";
@@ -9017,6 +13220,51 @@ index 00000000..122c15dc
 +	return m;
 +}
 +
++/* Open the conversation with the goal banner, joined to message 1 if it
++ * is a user message, else as one before it; on 0, undo that. */
++static void agent_banner(int on)
++{
++	static char *prev;	/* the content of message 1 before the join */
++	cJSON *m = cJSON_GetArrayItem(agent_messages, 1);
++	char *s = cJSON_GetStringValue(cJSON_GetObjectItem(m, "content"));
++	char *role = cJSON_GetStringValue(cJSON_GetObjectItem(m, "role"));
++	if (!on) {
++		if (agent_banner_on == 1)
++			cJSON_ReplaceItemInObject(m, "content", cJSON_CreateString(prev));
++		else if (agent_banner_on == 2)
++			cJSON_DeleteItemFromArray(agent_messages, 1);
++		free(prev);
++		prev = NULL;
++		agent_banner_on = 0;
++		return;
++	}
++	char *goal = agent_banner_on ? NULL : agent_banner_goal();
++	if (!goal)
++		return;
++	if (goal != agent_banner_was) {
++		size_t n = strlen(goal) + 1;
++		free(agent_banner_was);
++		agent_banner_was = memcpy(emalloc(n), goal, n);
++	}
++	free(agent_banner_was_key);
++	agent_banner_was_key = agent_banner_key();
++	sbuf_smake(sb, 256)
++	sbuf_str(sb, agent_goal_head)
++	sbuf_str(sb, goal)
++	if (s && role && !strcmp(role, "user")) {
++		sbuf_str(sb, "\n\n")
++		sbufn_str(sb, s)
++		prev = memcpy(emalloc(strlen(s) + 1), s, strlen(s) + 1);
++		cJSON_ReplaceItemInObject(m, "content", cJSON_CreateString(sb->s));
++		agent_banner_on = 1;
++	} else {
++		sbuf_nul(sb)
++		cJSON_InsertItemInArray(agent_messages, 1, agent_msg("user", sb->s));
++		agent_banner_on = 2;
++	}
++	free(sb->s);
++}
++
 +static char *agent_text(struct lbuf *lb)
 +{
 +	sbuf_smake(sb, 256)
@@ -9067,8 +13315,8 @@ index 00000000..122c15dc
 +	return ret;
 +}
 +
-+/* Keep the old on-disk conversation in the same directory. The working
-+ * buffer keeps its path, so its next save creates a fresh conversation file. */
++/* Rename the on-disk conversation to an archive beside it; the next save of
++ * b-4 creates a fresh file. Returns the archive path or NULL. */
 +static char *agent_rotate_log(void)
 +{
 +	char *archive = emalloc(strlen(tempbufs[3].path) + 8);
@@ -9094,20 +13342,128 @@ index 00000000..122c15dc
 +		tempbufs[3].mtime = mtime(tempbufs[3].path);
 +}
 +
++/* Lines [beg, end) the tool call edited in agent_edits_lb; sorted, apart. */
++static int (*agent_edits)[2], agent_edits_n, agent_edits_sz;
++static struct lbuf *agent_edits_lb;
++
++/* Where line x before an edit replacing del lines at pos is after it. */
++static int agent_edit_map(int x, int pos, int del, int d)
++{
++	return x <= pos ? x : x >= pos + del ? x + d : pos;
++}
++
++/* Count an edit of lb replacing del lines at pos with ins and merge its
++ * lines into the ranges; a deletion marks the line that follows it. Ranges
++ * before the edit stay, so top-down edits such as g touch only the last. */
++static void agent_edit(struct lbuf *lb, int pos, int del, int ins)
++{
++	int lo = 0, hi, i, n, d = ins - del, len = lbuf_len(lb);
++	int beg = pos, end = pos + MAX(ins, 1);
++	agent_edited += MAX(del, ins);
++	if (lb != agent_edits_lb || !len) {
++		agent_edits_lb = lb;
++		agent_edits_n = 0;
++	}
++	if (!len)
++		return;
++	if (end > len) {
++		beg = len - 1;
++		end = len;
++	}
++	hi = agent_edits_n;
++	while (lo < hi) {
++		int mid = (lo + hi) / 2;
++		if (agent_edits[mid][1] < beg)
++			lo = mid + 1;
++		else
++			hi = mid;
++	}
++	for (i = lo; i < agent_edits_n; i++) {
++		int b = agent_edit_map(agent_edits[i][0], pos, del, d);
++		if (b > end)
++			break;
++		beg = MIN(beg, b);
++		end = MAX(end, agent_edit_map(agent_edits[i][1], pos, del, d));
++	}
++	n = lo + 1 + agent_edits_n - i;
++	if (n > agent_edits_sz) {
++		agent_edits_sz = MAX(16, n * 2);
++		agent_edits = erealloc(agent_edits, agent_edits_sz * sizeof(agent_edits[0]));
++	}
++	memmove(agent_edits + lo + 1, agent_edits + i,
++		(agent_edits_n - i) * sizeof(agent_edits[0]));
++	for (i = lo + 1; i < n; i++) {
++		agent_edits[i][0] += d;
++		agent_edits[i][1] += d;
++	}
++	agent_edits[lo][0] = beg;
++	agent_edits[lo][1] = end;
++	agent_edits_n = n;
++}
++
++static void agent_edit_range(sbuf *sb, char *sep, int beg, int end)
++{
++	char ln[32];
++	if (end - beg > 1)
++		snprintf(ln, sizeof(ln), "%s%d,%d", sep, beg + 1, end);
++	else
++		snprintf(ln, sizeof(ln), "%s%d", sep, beg + 1);
++	sbuf_str(sb, ln)
++}
++
++/* "edited 40 lines: 3 9,11 ... 70 and 31 more within 3,3980"; 8 shown */
++static void agent_edit_report(sbuf *sb)
++{
++	char ln[64];
++	int k, n = agent_edits_n;
++	snprintf(ln, sizeof(ln), "edited %d line%s", agent_edited,
++		agent_edited > 1 ? "s" : "");
++	sbuf_str(sb, ln)
++	for (k = 0; k < n && k < 8; k++)
++		agent_edit_range(sb, k ? " " : ": ", agent_edits[k][0], agent_edits[k][1]);
++	if (n > 8) {
++		snprintf(ln, sizeof(ln), " and %d more within", n - 8);
++		sbuf_str(sb, ln)
++		agent_edit_range(sb, " ", agent_edits[0][0], agent_edits[n-1][1]);
++	}
++	sbuf_chr(sb, '\n')
++}
++
++/* Bit i-3 marks tempbufs[i] edited during a tool call and not yet saved. */
++static int agent_unsaved;
++
++static void agent_sync_buf(int i)
++{
++	agent_unsaved &= ~(1 << (i - 3));
++	agent_syncing = 1;
++	if (agent_save(i))
++		ex_print("agent write failed; buffer text retained", msg_ft)
++	agent_syncing = 0;
++}
++
++/* A tool call can edit a log line by line; save once after the call. */
++static void agent_sync_pending(void)
++{
++	for (int i = 3; i < 8; i++)
++		if (agent_unsaved & (1 << (i - 3)))
++			agent_sync_buf(i);
++}
++
 +static void agent_sync(struct lbuf *lb)
 +{
++	if (lb == tempbufs[3].lb && !agent_logging)
++		agent_log_edited = 1;
 +	if (!agent_ready || agent_syncing)
 +		return;
-+	for (int i = 3; i < 5; i++) {
++	for (int i = 3; i < 8; i++) {
 +		if (tempbufs[i].lb != lb)
 +			continue;
 +		if (i == 3 && agent_packing)
 +			agent_pack_done = 0;
-+		agent_syncing = 1;
-+		if (agent_save(i))
-+			ex_print("agent write failed; buffer text retained",
-+				msg_ft)
-+		agent_syncing = 0;
++		if (agent_tool)
++			agent_unsaved |= 1 << (i - 3);
++		else
++			agent_sync_buf(i);
 +	}
 +}
 +
@@ -9132,6 +13488,8 @@ index 00000000..122c15dc
 +static void agent_history(int edited)
 +{
 +	agent_usage.anchored = 0;
++	agent_acl_mark = agent_acl_budget = 0;
++	agent_log_edited = 1;
 +	char *s = agent_text(tempbufs[4].lb);
 +	cJSON_Delete(agent_messages);
 +	agent_messages = cJSON_CreateArray();
@@ -9146,15 +13504,31 @@ index 00000000..122c15dc
 +
 +static void agent_init(void)
 +{
-+	const char *home = getenv("HOME");
-+	char *dir, *path;
 +	temp_open(3, "/conversation/", _ft);
 +	temp_open(4, "/skills/", _ft);
++	temp_open(5, "/notes/", _ft);
++	temp_open(6, "/discarded/", _ft);
++	temp_open(7, "/asides/", _ft);
 +	lbuf_edit(tempbufs[4].lb, nextvi_skill, 0, 0, 0, 0);
 +	lbuf_saved(tempbufs[4].lb, 1);
++	agent_history(0);
++}
++
++/* Create the session files on first agent use. */
++static int agent_start(void)
++{
++	const char *home = getenv("HOME");
++	static char *names[] = {"conversation", "skills", "notes", "discarded",
++		"asides"};
++	char *dir, *path, *leaf;
++	time_t now;
++	struct tm *tm;
++	int n = 0;
++	if (agent_ready)
++		return 0;
 +	if ((!log_dir && (!home || !*home)) || (log_dir && !*log_dir)) {
 +		agent_init_error = "agent log directory is not configured";
-+		return;
++		return -1;
 +	}
 +	dir = emalloc(strlen(log_dir ? log_dir : home) + 64);
 +	if (log_dir)
@@ -9163,9 +13537,17 @@ index 00000000..122c15dc
 +		sprintf(dir, "%s/.nextvi/logs", home);
 +	if (agent_mkdir(dir))
 +		goto fail;
-+	strcat(dir, "/session-XXXXXX");
-+	if (!mkdtemp(dir))
++	/* Name the log directory with the start time. */
++	now = time(NULL);
++	tm = localtime(&now);
++	leaf = dir + strlen(dir);
++	if (!tm || !strftime(leaf, 17, "/%Y%m%d-%H%M%S", tm))
 +		goto fail;
++	while (mkdir(dir, 0700)) {
++		if (errno != EEXIST)
++			goto fail;
++		sprintf(leaf + 16, "-%d", ++n);
++	}
 +	/* Absolute paths survive :cd during the session. */
 +	if (*dir != '/') {
 +		char *cwd = getcwd(NULL, 0);
@@ -9177,9 +13559,9 @@ index 00000000..122c15dc
 +		free(dir);
 +		dir = path;
 +	}
-+	for (int i = 3; i < 5; i++) {
++	for (int i = 3; i < 8; i++) {
 +		path = emalloc(strlen(dir) + 32);
-+		sprintf(path, "%s/%s", dir, i == 3 ? "conversation" : "skills");
++		sprintf(path, "%s/%s", dir, names[i - 3]);
 +		free(tempbufs[i].path);
 +		tempbufs[i].path = path;
 +		tempbufs[i].plen = strlen(path);
@@ -9187,30 +13569,1575 @@ index 00000000..122c15dc
 +			goto fail;
 +	}
 +	agent_ready = 1;
-+	agent_history(0);
++	agent_init_error = NULL;
 +	free(dir);
-+	return;
++	return 0;
 +fail:
 +	free(dir);
 +	agent_init_error = "cannot create agent session files";
++	return -1;
 +}
 +
-+static void agent_log(const char *role, const char *text)
++/* A log holds numbered entries headed "ROLE N". A TURN is one reply: its
++ * header, then parts headed "ROLE N.I". NOTICE entries report harness events
++ * to the user; a rebuild never sends them. The body of a USER or NOTICE entry
++ * and of a part runs to its "END" line, so its lines are never headers. A
++ * body holding a line "END" has an id on its header, "ROLE N id", and runs
++ * to "END id". */
++enum { AE_TEXT, AE_USER, AE_TURN, AE_NOTICE };		/* entries */
++enum { AP_REASONING, AP_ASSISTANT, AP_EX, AP_RESULT };	/* turn parts */
++static char *agent_entry_roles[] = {"USER", "TURN", "NOTICE"};
++static char *agent_part_roles[] = {"REASONING", "ASSISTANT", "EX", "RESULT"};
++/* The turn being written per log, indexed as agent_entries; 0 is none. */
++static unsigned long agent_turn[2];
++#define AGENT_ID	12		/* " id" of a header, with its NUL */
++#define AGENT_END	(AGENT_ID + 8)	/* "END id\n", with its NUL */
++
++/* Whether e, a header line past its number, is empty or " id". Sets end,
++ * unless NULL, to the line that ends the body. */
++static int agent_header_end(char *e, char *end)
++{
++	int k = 0;
++	if (*e == ' ') {
++		while (isalnum((unsigned char)e[1 + k]))
++			k++;
++		if (!k || k + 1 >= AGENT_ID)
++			return 0;
++		k++;
++	}
++	if (e[k] != '\n' && e[k])
++		return 0;
++	if (end)
++		snprintf(end, AGENT_END, "END%.*s\n", k, e);
++	return 1;
++}
++
++/* Entry header "ROLE N" with N above last: returns the AE_ role, else 0.
++ * A TURN header takes no id; only its parts have bodies. */
++static int agent_header(char *ln, unsigned long last, unsigned long *n, char *end)
++{
++	char *e;
++	for (int i = 0; i < LEN(agent_entry_roles); i++) {
++		int k = strlen(agent_entry_roles[i]);
++		if (strncmp(ln, agent_entry_roles[i], k) || ln[k] != ' ' ||
++				!isdigit((unsigned char)ln[k+1]))
++			continue;
++		*n = strtoul(ln + k + 1, &e, 10);
++		if (*n <= last)
++			return 0;
++		if (i + 1 == AE_TURN)
++			return *e == '\n' || !*e ? i + 1 : 0;
++		return agent_header_end(e, end) ? i + 1 : 0;
++	}
++	return 0;
++}
++
++/* Part header "ROLE N.I" of turn N with I above lastidx: returns the AP_
++ * role + 1, else 0. */
++static int agent_part_header(char *ln, unsigned long turn, int lastidx, int *idx,
++		char *end)
++{
++	char *e;
++	unsigned long i;
++	for (int r = 0; r < LEN(agent_part_roles); r++) {
++		int k = strlen(agent_part_roles[r]);
++		if (strncmp(ln, agent_part_roles[r], k) || ln[k] != ' ' ||
++				!isdigit((unsigned char)ln[k+1]))
++			continue;
++		if (strtoul(ln + k + 1, &e, 10) != turn || *e != '.' ||
++				!isdigit((unsigned char)e[1]))
++			return 0;
++		i = strtoul(e + 1, &e, 10);
++		if (i > INT_MAX || (int)i <= lastidx || !agent_header_end(e, end))
++			return 0;
++		*idx = i;
++		return r + 1;
++	}
++	return 0;
++}
++
++static int agent_live(void)
++{
++	return xacl && agent_logbuf == 3 && !agent_packing && agent_messages;
++}
++
++/* acl above 1 or negative: replies stay as returned between rebuilds and
++ * checkpoints trim the log. */
++static int agent_acl_kept(void)
++{
++	return xacl > 1 || xacl < 0;
++}
++
++/* A log entry; role 0, number 0 is the text before the first header. */
++struct agent_span {
++	int role, beg, end;	/* AE_ role; header line, line after */
++	unsigned long n;
++	size_t bytes;		/* body bytes, headers and END lines excluded */
++	size_t part[4];		/* TURN: bytes per part role, summed */
++	int calls;		/* TURN: EX parts */
++	int close;		/* USER, NOTICE: the END line, -1 for none */
++	char open[AGENT_END];	/* last entry: the END line its body lacks */
++};
++
++/* Split a log into entries; the caller frees *spans. Lines outside a body,
++ * left by a hand edit, count for the entry or part above them. */
++static int agent_spans_of(struct lbuf *lb, struct agent_span **spans)
++{
++	unsigned long n, last = 0;
++	int role, cnt = 0, cap = 0, part = AP_ASSISTANT, idx = -1, r;
++	char end[AGENT_END] = "";	/* ends the body being read; empty outside */
++	struct agent_span *s;
++	*spans = NULL;
++	for (int i = 0; i < lbuf_len(lb); i++) {
++		s = cnt ? *spans + cnt - 1 : NULL;
++		if (*end && !strcmp(lb->ln[i], end)) {
++			*end = '\0';
++			if (s->role != AE_TURN)
++				s->close = i;
++			continue;
++		}
++		if (*end || (!(role = agent_header(lb->ln[i], last, &n, end)) && i)) {
++			if (!*end && s->role == AE_TURN && (r = agent_part_header(
++					lb->ln[i], s->n, idx, &idx, end))) {
++				part = r - 1;
++				s->calls += part == AP_EX;
++				continue;
++			}
++			s->bytes += strlen(lb->ln[i]);
++			if (s->role == AE_TURN)
++				s->part[part] += strlen(lb->ln[i]);
++			continue;
++		}
++		if (cnt == cap) {
++			cap = cap * 2 + 16;
++			*spans = erealloc(*spans, cap * sizeof(**spans));
++		}
++		if (cnt)
++			(*spans)[cnt-1].end = i;
++		(*spans)[cnt++] = (struct agent_span){role, i, 0, role ? n : 0,
++			role ? 0 : strlen(lb->ln[i]), {0, 0, 0, 0}, 0, -1, ""};
++		part = AP_ASSISTANT;
++		idx = -1;
++		if (role)
++			last = n;
++	}
++	if (cnt) {
++		(*spans)[cnt-1].end = lbuf_len(lb);
++		strcpy((*spans)[cnt-1].open, end);
++	}
++	return cnt;
++}
++
++/* Header line, line after, and the END line or -1. */
++struct agent_part { int role, idx, beg, end, close; };
++
++/* Split turn s of lb into parts; the caller frees *parts. Lines before the
++ * first part header form a text part of index -1, headed by the TURN line. */
++static int agent_parts(struct lbuf *lb, struct agent_span *s,
++		struct agent_part **parts)
++{
++	int cnt = 0, cap = 0, idx = -1, r;
++	char end[AGENT_END] = "";
++	*parts = NULL;
++	for (int i = s->beg + 1; i < s->end; i++) {
++		if (*end) {
++			if (!strcmp(lb->ln[i], end)) {
++				*end = '\0';
++				(*parts)[cnt-1].close = i;
++			}
++			continue;
++		}
++		r = agent_part_header(lb->ln[i], s->n, idx, &idx, end);
++		if (!r && cnt)
++			continue;
++		if (cnt == cap) {
++			cap = cap * 2 + 8;
++			*parts = erealloc(*parts, cap * sizeof(**parts));
++		}
++		if (cnt)
++			(*parts)[cnt-1].end = i;
++		(*parts)[cnt++] = (struct agent_part){r ? r - 1 : AP_ASSISTANT,
++			r ? idx : -1, r ? i : s->beg, 0, -1};
++	}
++	if (cnt)
++		(*parts)[cnt-1].end = s->end;
++	return cnt;
++}
++
++/* Split the session log b-4 into entries. */
++static int agent_spans(struct agent_span **spans)
++{
++	return agent_spans_of(tempbufs[3].lb, spans);
++}
++
++/* Whether a line of s is ln, which ends in a newline. */
++static int agent_has_line(const char *s, const char *ln)
++{
++	int n = strlen(ln) - 1;
++	while (s) {
++		if (!strncmp(s, ln, n) && (s[n] == '\n' || !s[n]))
++			return 1;
++		if ((s = strchr(s, '\n')))
++			s++;
++	}
++	return 0;
++}
++
++/* Set end to a line text does not hold: "END", else "END id" with a random
++ * id. id gets " id" for the header, or stays empty. */
++static void agent_frame(const char *text, char *id, char *end)
++{
++	static unsigned int seed;
++	*id = '\0';
++	strcpy(end, "END\n");
++	while (agent_has_line(text, end)) {
++		if (!seed)
++			seed = time(NULL) ^ getpid();
++		id[0] = ' ';
++		for (int i = 1; i < 5; i++) {
++			seed = seed * 1103515245u + 12345u;
++			id[i] = "abcdefghijklmnopqrstuvwxyz0123456789"[(seed >> 16) % 36];
++		}
++		id[5] = '\0';
++		snprintf(end, AGENT_END, "END%s\n", id);
++	}
++}
++
++/* Append a header, its body and its end line to the log; show prints them. */
++static void agent_log_write(const char *head, const char *text, const char *end,
++		int show)
 +{
 +	struct lbuf *lb = tempbufs[agent_logbuf].lb;
++	struct agent_span *spans;
++	int cnt = agent_spans_of(lb, &spans);
 +	sbuf_smake(sb, 256)
-+	sbuf_str(sb, role)
-+	sbuf_chr(sb, '\n')
++	/* Close a body whose END line a hand edit removed. */
++	if (cnt && *spans[cnt-1].open)
++		sbuf_str(sb, spans[cnt-1].open)
++	free(spans);
++	sbuf_str(sb, head)
 +	sbuf_str(sb, text);
 +	if (sb->s[sb->s_n-1] != '\n')
 +		sbuf_chr(sb, '\n')
-+	sbuf_chr(sb, '\n')
++	sbuf_str(sb, end)
 +	sbuf_nul(sb)
-+	agent_output(sb->s);
++	if (show)
++		agent_output(sb->s);
 +	lb->useq++;
++	agent_logging = 1;
 +	lbuf_edit(lb, sb->s, lbuf_len(lb), lbuf_len(lb), 0, 0);
++	agent_logging = 0;
 +	lb->useq++;
 +	free(sb->s);
++}
++
++/* Checkpoint entries in b-8 have their own numbers; mark them apart. */
++static const char *agent_log_mark(void)
++{
++	return agent_checkpointing && agent_logbuf == 7 ? "CP " : "";
++}
++
++static void agent_turn_close(void)
++{
++	agent_turn[agent_logbuf == 3] = 0;
++}
++
++/* Log a USER or NOTICE entry. */
++static void agent_log(const char *role, const char *text)
++{
++	char head[64], id[AGENT_ID], end[AGENT_END];
++	agent_turn_close();
++	agent_frame(text, id, end);
++	snprintf(head, sizeof(head), "%s%s %lu%s\n", agent_log_mark(), role,
++		++agent_entries[agent_logbuf == 3], id);
++	agent_log_write(head, text, end, 1);
++}
++
++/* Log part idx of the open turn, opening one if needed: 0 reasoning, 1 text,
++ * 2 + 2k and 3 + 2k the command and result of call k. Reasoning prints only
++ * with ar above 1; the TURN line always does. */
++static void agent_turn_part(int idx, const char *text)
++{
++	unsigned long *turn = agent_turn + (agent_logbuf == 3);
++	char open[48] = "", head[128], id[AGENT_ID], end[AGENT_END];
++	int show = idx || xar > 1;
++	if (!*turn) {
++		*turn = ++agent_entries[agent_logbuf == 3];
++		snprintf(open, sizeof(open), "%sTURN %lu\n", agent_log_mark(), *turn);
++	}
++	agent_frame(text, id, end);
++	snprintf(head, sizeof(head), "%s%s%s %lu.%d%s\n", open, agent_log_mark(),
++		agent_part_roles[idx < 2 ? idx : AP_EX + (idx & 1)], *turn, idx, id);
++	if (!show)
++		agent_output(open);
++	agent_log_write(head, text, end, show);
++}
++
++/* The log as the terminal shows it: without reasoning unless ar is above 1. */
++static char *agent_shown_text(struct lbuf *lb)
++{
++	struct agent_span *spans = NULL;
++	struct agent_part *parts;
++	int cnt = xar > 1 ? 0 : agent_spans_of(lb, &spans), pcnt, i = 0;
++	sbuf_smake(sb, 256)
++	for (int k = 0; k < cnt; k++) {
++		if (spans[k].role != AE_TURN)
++			continue;
++		pcnt = agent_parts(lb, spans + k, &parts);
++		for (int p = 0; p < pcnt; p++) {
++			if (parts[p].role != AP_REASONING)
++				continue;
++			for (; i < parts[p].beg; i++)
++				sbuf_str(sb, lb->ln[i])
++			i = parts[p].end;
++		}
++		free(parts);
++	}
++	free(spans);
++	for (; i < lbuf_len(lb); i++)
++		sbuf_str(sb, lb->ln[i])
++	sbufn_ret(sb, sb->s)
++}
++
++/* Copy spans first through last of lb into b-7 in number order. A number
++ * already there keeps its entry, the original of a later note; entry 0 is
++ * skipped. The caller syncs b-7. */
++static void agent_discard(struct lbuf *lb, struct agent_span *spans,
++		int first, int last)
++{
++	struct lbuf *db = tempbufs[6].lb;
++	struct agent_span *old;
++	int cnt = agent_spans_of(db, &old), k = 0, shift = 0, pos;
++	sbuf_smake(sb, 256)
++	preserve(int, agent_syncing, agent_syncing = 1;)
++	for (int i = first; i <= last; i++) {
++		if (!spans[i].role)
++			continue;
++		while (k < cnt && old[k].n < spans[i].n)
++			k++;
++		if (k < cnt && old[k].n == spans[i].n)
++			continue;
++		sbuf_cut(sb, 0)
++		for (int l = spans[i].beg; l < spans[i].end; l++)
++			sbuf_str(sb, lb->ln[l])
++		sbuf_nul(sb)
++		pos = k < cnt ? old[k].beg + shift : lbuf_len(db);
++		lbuf_edit(db, sb->s, pos, pos, 0, 0);
++		shift += spans[i].end - spans[i].beg;
++	}
++	restore(agent_syncing)
++	free(sb->s);
++	free(old);
++}
++
++/* Head a compaction summary as a USER entry numbered after the log it
++ * replaced, now in b-7, so a later compaction can move it there too. */
++static void agent_head_summary(void)
++{
++	struct lbuf *lb = tempbufs[3].lb;
++	struct agent_span *spans;
++	int cnt = agent_spans_of(tempbufs[6].lb, &spans);
++	unsigned long n;
++	char head[48], id[AGENT_ID], end[AGENT_END], *text;
++	if (cnt)
++		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
++	free(spans);
++	if (!lbuf_len(lb) || agent_header(lb->ln[0], 0, &n, NULL))
++		return;
++	text = agent_text(lb);
++	agent_frame(text, id, end);
++	free(text);
++	snprintf(head, sizeof(head), "USER %lu%s\n", ++agent_entries[1], id);
++	preserve(int, agent_tool, agent_tool = 0;)
++	preserve(int, agent_syncing, agent_syncing = 1;)
++	lbuf_edit(lb, end, lbuf_len(lb), lbuf_len(lb), 0, 0);
++	lbuf_edit(lb, head, 0, 0, 0, 0);
++	restore(agent_syncing)
++	restore(agent_tool)
++	if (agent_save(3))
++		ex_print("agent write failed; buffer text retained", msg_ft)
++}
++
++/* Move the entries of text, a log replaced by compaction, to b-7. */
++static void agent_discard_log(char *text)
++{
++	struct lbuf *lb = lbuf_make();
++	struct agent_span *spans;
++	int cnt;
++	preserve(int, agent_tool, agent_tool = 0;)
++	if (*text)
++		lbuf_edit(lb, text, 0, 0, 0, 0);
++	cnt = agent_spans_of(lb, &spans);
++	agent_discard(lb, spans, 0, cnt - 1);
++	restore(agent_tool)
++	free(spans);
++	lbuf_free(lb);
++	agent_sync(tempbufs[6].lb);
++}
++
++static double agent_span_tokens(struct agent_span *s)
++{
++	return (s->bytes + 2) / 3;
++}
++
++static char *agent_span_role(struct agent_span *s)
++{
++	return s->role ? agent_entry_roles[s->role - 1] : "TEXT";
++}
++
++/* b-6 rates turns: one line "N R sentence" per TURN entry N of b-4, with R
++ * from 0 (dead weight) to 3 (essential). The sentence of such a line s, or
++ * NULL. */
++static char *agent_note_line(char *s, unsigned long *n, int *rate)
++{
++	char *e;
++	if (!isdigit((unsigned char)*s))
++		return NULL;
++	*n = strtoul(s, &e, 10);
++	if (e[0] != ' ' || e[1] < '0' || e[1] > '3' || e[2] != ' ')
++		return NULL;
++	*rate = e[1] - '0';
++	return e + 3;
++}
++
++/* The sentence rating entry n, or NULL. */
++static char *agent_note(unsigned long n, int *rate, int *row)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	unsigned long m;
++	char *s;
++	int r;
++	for (int i = 0; i < lbuf_len(lb); i++)
++		if ((s = agent_note_line(lb->ln[i], &m, &r)) && m == n) {
++			*rate = r;
++			*row = i;
++			return s;
++		}
++	return NULL;
++}
++
++/* Replace the note of entry n, or insert it in entry order. */
++static void agent_note_set(unsigned long n, int rate, char *text)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	int r, row, end;
++	char head[48];
++	if (agent_note(n, &r, &row))
++		end = row + 1;
++	else {
++		for (row = 0; row < lbuf_len(lb); row++)
++			if (isdigit((unsigned char)lb->ln[row][0]) &&
++					strtoul(lb->ln[row], NULL, 10) > n)
++				break;
++		end = row;
++	}
++	snprintf(head, sizeof(head), "%lu %d ", n, rate);
++	sbuf_smake(sb, 128)
++	sbuf_str(sb, head)
++	for (char *t = text; *t; t++)
++		sbuf_chr(sb, *t == '\n' ? ' ' : *t)
++	sbuf_chr(sb, '\n')
++	sbuf_nul(sb)
++	lbuf_edit(lb, sb->s, row, end, 0, 0);
++	free(sb->s);
++}
++
++/* The entry a ranged arate rating names by "same as TURN n", or 0. */
++static unsigned long agent_note_ref(char *note)
++{
++	char *e;
++	unsigned long n;
++	if (strncmp(note, "same as TURN ", 13) || !isdigit((unsigned char)note[13]))
++		return 0;
++	n = strtoul(note + 13, &e, 10);
++	return *e == '\n' || !*e ? n : 0;
++}
++
++/* The sentence a rating stands for, following "same as" references. */
++static char *agent_note_text(char *note)
++{
++	unsigned long n;
++	int r, row;
++	char *t;
++	for (int i = 0; i < 16 && (n = agent_note_ref(note)) &&
++			(t = agent_note(n, &r, &row)); i++)
++		note = t;
++	return note;
++}
++
++/* TURN entry n among spans, or NULL. */
++static struct agent_span *agent_span_turn(struct agent_span *spans, int cnt,
++		unsigned long n)
++{
++	for (int k = 0; k < cnt; k++)
++		if (spans[k].role == AE_TURN && spans[k].n == n)
++			return spans + k;
++	return NULL;
++}
++
++/* Before the rating of entry n is replaced, move its text to the first
++ * rating that names n; the rest name that one. Ratings of spans with sel 1
++ * are skipped: they are replaced too. References point to earlier entries,
++ * so replacing spans last first moves each text once. */
++static void agent_note_rehome(unsigned long n, struct agent_span *spans,
++		int cnt, char *sel)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	struct agent_span *sp;
++	unsigned long m, to = 0;
++	int r, row, rate, len;
++	char *note = agent_note(n, &r, &row), *old, *s, same[32];
++	if (!note)
++		return;
++	len = strcspn(note, "\n");
++	old = memcpy(emalloc(len + 1), note, len);
++	old[len] = '\0';
++	for (int i = 0; i < lbuf_len(lb); i++) {
++		if (!(s = agent_note_line(lb->ln[i], &m, &rate)) ||
++				agent_note_ref(s) != n ||
++				((sp = agent_span_turn(spans, cnt, m)) && sel[sp - spans] == 1))
++			continue;
++		agent_note_set(m, rate, to ? same : old);
++		if (!to) {
++			to = m;
++			snprintf(same, sizeof(same), "same as TURN %lu", to);
++		}
++	}
++	free(old);
++}
++
++/* Count turns with commands and no rating; buf lists the first few. */
++static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
++{
++	int n = 0, len = 0, r, row;
++	*buf = '\0';
++	for (int k = 0; k < cnt; k++) {
++		if (spans[k].role != AE_TURN || !spans[k].calls ||
++				agent_note(spans[k].n, &r, &row))
++			continue;
++		if (n < 8 && len < size)
++			len += snprintf(buf + len, size - len, "%s%lu",
++				n ? ", " : "TURN ", spans[k].n);
++		n++;
++	}
++	if (n > 8 && len < size)
++		snprintf(buf + len, size - len, " and %d more", n - 8);
++	return n;
++}
++
++static int agent_unrated_now(char *buf, int size)
++{
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans);
++	int n = agent_unrated(spans, cnt, buf, size);
++	free(spans);
++	return n;
++}
++
++/* Empty b-6 (notes) or b-7 (discarded entries). */
++static void agent_temp_clear(int i)
++{
++	struct lbuf *lb = tempbufs[i].lb;
++	agent_syncing = 1;
++	lbuf_edit(lb, NULL, 0, lbuf_len(lb), 0, 0);
++	lbuf_saved(lb, 1);
++	agent_syncing = 0;
++	tempbufs[i].row = tempbufs[i].off = tempbufs[i].top = 0;
++	if (ex_buf == tempbufs+i) {
++		exbuf_load(ex_buf)
++	}
++	if (agent_ready && agent_save(i))
++		ex_print("agent write failed; buffer text retained", msg_ft)
++}
++
++/* Keep the notes of a compacted log beside its archive; start afresh. */
++static void agent_notes_archive(char *archive)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	char *path;
++	int fd, failed;
++	if (!lbuf_len(lb))
++		return;
++	path = emalloc(strlen(archive) + 8);
++	sprintf(path, "%s.notes", archive);
++	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
++	failed = fd < 0 || lbuf_wr(lb, fd, 0, lbuf_len(lb));
++	if ((fd >= 0 && close(fd)) || failed)
++		ex_print("cannot archive agent notes", msg_ft)
++	free(path);
++	agent_temp_clear(5);
++}
++
++/* The phase in progress (agent_checkpointing): its exchange after the
++ * opening message, that message's index in agent_messages (-1 before it is
++ * built), and the log buffer to return to. */
++static cJSON *agent_cp;
++static int agent_cp_base = -1, agent_cp_logbuf, agent_cp_done;
++static int agent_cp_refused, agent_cp_left;	/* refusals, unrated then */
++static int agent_cp_cmds;	/* turns with commands then, rated or not */
++static int agent_cp_asked;	/* acheck: checkpoint at the next boundary */
++static char agent_continue[] = "Continue the task.";
++/* Context bytes at the start; in bytes so reports use the current anchor. */
++static double agent_cp_bytes;
++static char *agent_cp_open;	/* the opening status and instructions */
++static cJSON *agent_cp_lead;	/* a message sent before it, if any */
++/* The checkpoint or budget check a thinking question interrupted; its
++ * messages stay in the context, with the question after them. */
++static struct {
++	cJSON *cp;
++	char *open;
++	double bytes;
++	int kind, base, logbuf, refused, left;
++} agent_cp_outer;
++
++/* Whether to refuse ending the checkpoint for unrated turns: up to twice in
++ * a row; new ratings restart the count. */
++static int agent_cp_hold(char *unrated, int size)
++{
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans);
++	int n = agent_unrated(spans, cnt, unrated, size);
++	agent_cp_cmds = 0;
++	for (int k = 0; k < cnt; k++)
++		agent_cp_cmds += spans[k].role == AE_TURN && spans[k].calls;
++	free(spans);
++	if (n < agent_cp_left)
++		agent_cp_refused = 0;
++	agent_cp_left = n;
++	return n && agent_cp_refused++ < 2;
++}
++
++/* A rating to copy, for the first unrated entry in an agent_unrated list. */
++static char *agent_cp_example(char *unrated)
++{
++	static char ex[112];
++	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser "
++		"and found where defaults are set\n", strtoul(unrated + 5, NULL, 10));
++	return ex;
++}
++
++static const char agent_rating_scale[] =
++	"Ratings:\n"
++	"0 mistakes, dead weight, no value for the remaining work\n"
++	"1 low, minor, superseded or only mechanics\n"
++	"2 useful, informs the remaining work\n"
++	"3 essential, a decision, finding or state the task depends on\n";
++
++/* Whether b-6 line l rates a turn no longer among spans; sets its number. */
++static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
++		unsigned long *n)
++{
++	int r;
++	return agent_note_line(l, n, &r) && !agent_span_turn(spans, cnt, *n);
++}
++
++/* From b-6 line *row, list the notes of trimmed turns numbered up to upto
++ * as "TURN N trimmed [R] note". Following notes with the same rating that
++ * name N, or the entry N names, join it as "TURN N-M". */
++static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
++		int *row, unsigned long upto)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	unsigned long n, m, ref, end, next;
++	char ln[64], *note, *t;
++	int i;
++	for (i = *row; i < lbuf_len(lb); i++) {
++		if (!isdigit((unsigned char)lb->ln[i][0]))
++			continue;
++		if (strtoul(lb->ln[i], NULL, 10) > upto)
++			break;
++		if (!agent_note_trimmed(lb->ln[i], spans, cnt, &n))
++			continue;
++		note = strchr(lb->ln[i], ' ') + 3;
++		ref = agent_note_ref(note);
++		end = n;
++		while (i + 1 < lbuf_len(lb) &&
++				agent_note_trimmed(lb->ln[i + 1], spans, cnt, &m) && m <= upto) {
++			t = strchr(lb->ln[i + 1], ' ') + 3;
++			next = agent_note_ref(t);
++			if (t[-2] != note[-2] || (next != n && (!ref || next != ref)))
++				break;
++			end = m;
++			i++;
++		}
++		if (end > n)
++			snprintf(ln, sizeof(ln), "TURN %lu-%lu trimmed [%c] ", n, end, note[-2]);
++		else
++			snprintf(ln, sizeof(ln), "TURN %lu trimmed [%c] ", n, note[-2]);
++		sbuf_str(sb, ln)
++		sbuf_mem(sb, note, (int)strcspn(note, "\n"))
++		sbuf_chr(sb, '\n')
++	}
++	*row = i;
++}
++
++/* Whether a turn among spans logged reasoning; turn sizes then list it. */
++static int agent_spans_reasoned(struct agent_span *spans, int cnt)
++{
++	for (int k = 0; k < cnt; k++)
++		if (spans[k].role == AE_TURN && spans[k].part[AP_REASONING])
++			return 1;
++	return 0;
++}
++
++/* "ROLE N ~tokens"; a turn with several parts shows them instead, as
++ * reasoning+text+commands+results=tokens, reasoning only when reasoned. */
++static void agent_span_head(char *ln, int size, struct agent_span *s, int reasoned)
++{
++	size_t t[4], sum = 0;
++	int terms = 0, len = snprintf(ln, size, "%s %lu ", agent_span_role(s), s->n);
++	for (int i = 0; i < 4; i++) {
++		t[i] = (s->part[i] + 2) / 3;
++		sum += t[i];
++		terms += t[i] > 0;
++	}
++	if (s->role != AE_TURN || terms < 2) {
++		snprintf(ln + len, size - len, "~%.0f", agent_span_tokens(s));
++		return;
++	}
++	if (reasoned)
++		len += snprintf(ln + len, size - len, "%zu+", t[AP_REASONING]);
++	snprintf(ln + len, size - len, "%zu+%zu+%zu=%zu", t[AP_ASSISTANT],
++		t[AP_EX], t[AP_RESULT], sum);
++}
++
++/* One line per b-4 entry: agent_span_head, " line N" with lines, then
++ * [rating] for turns and the note for those with commands; with trimmed, the
++ * notes of trimmed turns in number order among them. Then the five largest
++ * entries of ~50 tokens or more. Without all, NOTICE entries are not listed
++ * and, outside a checkpoint, where the agent cannot note them, USER entries
++ * are not among the largest. */
++static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
++		int lines, int all, int unrated, int trimmed, int reasoned)
++{
++	int top[5], ntop = 0, listed = 0, r, row, nmoved = 0, trow = 0;
++	unsigned long *moved = NULL, ref;	/* removed target, entry shown */
++	struct agent_span *t;
++	char ln[256], same[32], *note;
++	for (int k = 0; k < cnt; k++) {
++		if (trimmed)
++			agent_trimmed_list(sb, spans, cnt, &trow, spans[k].n);
++		if (spans[k].role == AE_NOTICE && !all)
++			continue;
++		listed++;
++		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
++		sbuf_str(sb, ln)
++		if (lines) {
++			snprintf(ln, sizeof(ln), " line %d", spans[k].beg + 1);
++			sbuf_str(sb, ln)
++		}
++		if (spans[k].role == AE_TURN && (note = agent_note(spans[k].n, &r, &row))) {
++			snprintf(ln, sizeof(ln), " [%d]", r);
++			sbuf_str(sb, ln)
++			/* A sentence whose own entry is removed, or listed without
++			 * its note, shows on the first entry that names it, unless
++			 * listed among trimmed notes; the rest name that entry. */
++			if (spans[k].calls && (ref = agent_note_ref(note)) &&
++					((t = agent_span_turn(spans, cnt, ref)) ? !t->calls :
++					!(trimmed && agent_note(ref, &r, &row)))) {
++				int j = 0;
++				while (j < nmoved && moved[2*j] != ref)
++					j++;
++				if (j < nmoved) {
++					snprintf(same, sizeof(same), "same as TURN %lu",
++						moved[2*j+1]);
++					note = same;
++				} else {
++					moved = erealloc(moved, (nmoved + 1) * 2 * sizeof(*moved));
++					moved[2*nmoved] = ref;
++					moved[2*nmoved+1] = spans[k].n;
++					nmoved++;
++					note = agent_note_text(note);
++				}
++			}
++			/* A note or a text reply already says its sentence. */
++			if (spans[k].calls) {
++				sbuf_chr(sb, ' ')
++				sbuf_mem(sb, note, (int)strcspn(note, "\n"))
++			}
++		} else if (spans[k].role == AE_TURN && spans[k].calls && unrated)
++			sbuf_str(sb, " [unrated]")
++		sbuf_chr(sb, '\n')
++		/* Insert into the five largest, kept in descending order. */
++		if (agent_span_tokens(spans + k) < 50 || (!all &&
++				spans[k].role <= AE_USER && agent_checkpointing != 1))
++			continue;
++		int j = ntop < 5 ? ntop++ : 5;
++		for (; j > 0 && spans[top[j-1]].bytes < spans[k].bytes; j--)
++			if (j < 5)
++				top[j] = top[j-1];
++		if (j < 5)
++			top[j] = k;
++	}
++	if (trimmed)
++		agent_trimmed_list(sb, spans, cnt, &trow, ULONG_MAX);
++	if (ntop && listed > ntop) {
++		sbuf_str(sb, "Largest:")
++		for (int j = 0; j < ntop; j++) {
++			snprintf(ln, sizeof(ln), "%s %s %lu", j ? "," : "",
++				agent_span_role(spans + top[j]), spans[top[j]].n);
++			sbuf_str(sb, ln)
++		}
++		sbuf_chr(sb, '\n')
++	}
++	free(moved);
++}
++
++/* Session log status: total, the entry list and the unrated turns; with cp,
++ * worded for a checkpoint, asking for ratings. */
++static void agent_cp_status(sbuf *sb, int cp)
++{
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans), reasoned = agent_spans_reasoned(spans, cnt);
++	char ln[320], unrated[112];
++	double total = 0;
++	for (int k = 0; k < cnt; k++)
++		total += agent_span_tokens(spans + k);
++	snprintf(ln, sizeof(ln), cp ?
++		"Context checkpoint. Your context is rebuilt from these session log\n"
++		"entries, about %.0f tokens (role number ~tokens;\n"
++		"turns as %stext+commands+results=tokens, then [rating] note):\n" :
++		"The session log holds about %.0f tokens in these entries\n"
++		"(role number ~tokens;\n"
++		"turns as %stext+commands+results=tokens, then [rating] note):\n",
++		total, reasoned ? "reasoning+" : "");
++	sbuf_str(sb, ln)
++	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned);
++	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
++		sbuf_str(sb, "Unrated: ")
++		sbuf_str(sb, unrated)
++		sbuf_chr(sb, '\n')
++		if (cp) {
++			sbuf_str(sb, "Rate these first, e.g.\n")
++			sbuf_str(sb, agent_cp_example(unrated))
++		}
++	}
++	free(spans);
++}
++
++/* The unrated turns alone, as lines of the entry list. */
++static void agent_cp_unrated(sbuf *sb)
++{
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans), r, row, n = 0;
++	int reasoned = agent_spans_reasoned(spans, cnt);
++	char ln[256];
++	for (int k = 0; k < cnt; k++) {
++		if (spans[k].role != AE_TURN || !spans[k].calls ||
++				agent_note(spans[k].n, &r, &row))
++			continue;
++		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
++		sbuf_str(sb, ln)
++		sbuf_str(sb, " [unrated]\n")
++		n++;
++	}
++	if (!n)
++		sbuf_str(sb, "No unrated turns.\n")
++	free(spans);
++}
++
++static const char agent_cp_guide[] =
++	"Only these ex commands run during the checkpoint, so decide from your\n"
++	"context. Each command is its own ex tool call; a reply can hold several\n"
++	"calls. Commands written as text do not run. N,M is a range from N\n"
++	"through M; three or more numbers, N,M,K, are a list of turns.\n"
++	"A TURN is one of your replies: its reasoning, text, commands and results.\n"
++	"Its last result in your context ends with a line [turn N end]; a\n"
++	"reply without commands has the number the list gives it.\n"
++	"N[,M]arate R sentence\n"
++	"  rate the TURN entries; the sentence says what the turn did and\n"
++	"  found; 0 also removes the turn\n"
++	"N[,M]anote [text]\n"
++	"  text replaces the entries as one note; no text removes them; USER\n"
++	"  entries too; keep the instructions the remaining work needs\n"
++	"adone\n"
++	"  apply the trims and resume the task\n"
++	"%s"
++	"Then trim by rating, largest turns first: replace 1 with a short\n"
++	"note and a large 2 with its findings; keep 3, or replace a large one\n"
++	"with every detail the task depends on.\n"
++	"Example: replace turns 53 through 59 with their findings\n"
++	"53,59anote findings: ...\n"
++	"Example: end the checkpoint\n"
++	"adone\n"
++	"This exchange is not kept; ratings show in later checkpoints and\n"
++	"compaction.\n";
++
++static void agent_cp_instructions(sbuf *sb)
++{
++	char *s = emalloc(sizeof(agent_cp_guide) + sizeof(agent_rating_scale));
++	sprintf(s, agent_cp_guide, agent_rating_scale);
++	sbuf_str(sb, s)
++	free(s);
++}
++
++/* The budget check message: asks for an estimate first, then between a
++ * checkpoint now and more tokens. */
++static char *agent_budget_open(void)
++{
++	char *s = emalloc(512);
++	int k = sprintf(s, "Stop working on the current task and complete this "
++		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
++	if (xaco)
++		k += sprintf(s + k, "/%d", xaco);
++	k += sprintf(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
++		"the session log or acheck N to defer it for N tokens." :
++		" tokens. Estimate and set the number of tokens the rest of this "
++		"task needs with acheck N command.");
++	if (xaco)
++		k += sprintf(s + k, "\nAn N reaching past %d runs the task until "
++			"compaction.", xaco);
++	/* N stays a placeholder: a number here would anchor the estimate. */
++	strcpy(s + k, agent_acl_budget ? "\nExample: trim the session log now\n"
++		"acheck\nExample: defer it for N tokens\n"
++		"acheck N" :
++		"\nExample: the rest of the task needs N tokens\n"
++		"acheck N");
++	return s;
++}
++
++/* kind 1 starts a checkpoint, 2 a budget check, 3 a thinking budget
++ * question, which can interrupt the other two and a pack. */
++static void agent_checkpoint_begin(double tokens, int kind)
++{
++	static char *cmds[] = {"arate", "anote", "adone", "acp", "ali", "auli",
++		"acheck", "acap"};
++	char note[64];
++	if (agent_checkpointing) {
++		agent_cp_outer.kind = agent_checkpointing;
++		agent_cp_outer.cp = agent_cp;
++		agent_cp_outer.open = agent_cp_open;
++		agent_cp_outer.bytes = agent_cp_bytes;
++		agent_cp_outer.base = agent_cp_base;
++		agent_cp_outer.logbuf = agent_cp_logbuf;
++		agent_cp_outer.refused = agent_cp_refused;
++		agent_cp_outer.left = agent_cp_left;
++		agent_cp_open = NULL;
++	}
++	agent_checkpointing = kind;
++	agent_cp_done = agent_cp_refused = 0;
++	agent_cp = cJSON_CreateArray();
++	agent_cp_base = -1;
++	agent_cp_bytes = agent_context_bytes();
++	agent_cp_left = INT_MAX;
++	agent_cp_logbuf = agent_logbuf;
++	agent_logbuf = 7;
++	/* A question in b-8 continues the numbering of what it interrupted. */
++	if (agent_cp_logbuf == 3)
++		agent_entries[0] = agent_turn[0] = 0;
++	/* The opening message explains these; do not defer them for specs. */
++	for (int i = 0; i < LEN(cmds); i++)
++		exspec_mark(cmds[i]);
++	if (kind == 3)
++		snprintf(note, sizeof(note), "[ath thinking cut at ~%.0f of "
++			"%d tokens]\n", tokens, agent_think_was);
++	else
++		snprintf(note, sizeof(note), "[acl %s ~%.0f tokens]\n",
++			kind == 1 ? "checkpoint" : "budget check", tokens);
++	agent_output(note);
++}
++
++/* The message of response root. */
++static cJSON *agent_reply(cJSON *root)
++{
++	return cJSON_GetObjectItem(cJSON_GetArrayItem(
++		cJSON_GetObjectItem(root, "choices"), 0), "message");
++}
++
++/* The reply's reasoning text, NULL if none; key gets its field name. */
++static char *agent_reasoning(cJSON *message, const char **key)
++{
++	cJSON *r = cJSON_GetObjectItem(message, "reasoning_content");
++	*key = "reasoning_content";
++	if (!cJSON_IsString(r) || !*r->valuestring) {
++		r = cJSON_GetObjectItem(message, "reasoning");
++		*key = "reasoning";
++	}
++	return cJSON_IsString(r) && *r->valuestring ? r->valuestring : NULL;
++}
++
++/* Length of the reasoning s without a trailing think_cut, the sentence the
++ * server ends thinking with at the cap; -1 if s does not end with it. */
++static int agent_think_cut(const char *s)
++{
++	int n = strlen(s), k = strlen(think_cut);
++	while (n && isspace((unsigned char)s[n - 1]))
++		n--;
++	return k && n >= k && !memcmp(s + n - k, think_cut, k) ? n - k : -1;
++}
++
++/* Return the thinking tokens of the reply in root: the reported count, else
++ * the output tokens by the thinking's share of the reply's bytes, else its
++ * bytes / 3. */
++static double agent_think_tokens(cJSON *root)
++{
++	cJSON *message = agent_reply(root), *usage = cJSON_GetObjectItem(root, "usage");
++	cJSON *n = cJSON_GetObjectItem(cJSON_GetObjectItem(usage,
++		"completion_tokens_details"), "reasoning_tokens");
++	cJSON *out = cJSON_GetObjectItem(usage, "completion_tokens");
++	cJSON *content = cJSON_GetObjectItem(message, "content"), *tc;
++	const char *rkey;
++	char *reasoning = agent_reasoning(message, &rkey);
++	double tokens = cJSON_IsNumber(n) ? n->valuedouble : 0, bytes, all;
++	if (!out)
++		out = cJSON_GetObjectItem(usage, "output_tokens");
++	if (reasoning && tokens < 1) {
++		bytes = all = strlen(reasoning);
++		if (cJSON_IsString(content))
++			all += strlen(content->valuestring);
++		cJSON_ArrayForEach(tc, cJSON_GetObjectItem(message, "tool_calls")) {
++			char *args = cJSON_GetStringValue(cJSON_GetObjectItem(
++				cJSON_GetObjectItem(tc, "function"), "arguments"));
++			all += args ? strlen(args) : 0;
++		}
++		tokens = cJSON_IsNumber(out) && out->valuedouble > 0 ?
++			out->valuedouble * bytes / all : (bytes + 2) / 3;
++	}
++	return tokens;
++}
++
++/* Whether the server cut the thinking of the reply in root, which used
++ * tokens: it ends with think_cut and reached half the cap. A model shown its
++ * earlier cut thinking may end short thinking with think_cut itself. */
++static int agent_think_hit(cJSON *root, double tokens)
++{
++	const char *rkey;
++	char *reasoning = agent_reasoning(agent_reply(root), &rkey);
++	return reasoning && agent_think_cap >= 0 &&
++		tokens >= agent_think_cap / 2.0 && agent_think_cut(reasoning) >= 0;
++}
++
++/* Drop think_cut from the thinking of the reply in root, so the context and
++ * the log never show a model the sentence to copy. */
++static void agent_think_strip(cJSON *root)
++{
++	const char *rkey;
++	char *reasoning = agent_reasoning(agent_reply(root), &rkey);
++	int n = reasoning ? agent_think_cut(reasoning) : -1;
++	if (n < 0)
++		return;
++	while (n && isspace((unsigned char)reasoning[n - 1]))
++		n--;
++	reasoning[n] = '\0';
++}
++
++/* ata: move the average a quarter of the way to the thinking tokens of the
++ * reply in root, if it thought. A reply the server cut counts as twice the
++ * cap, so cut replies raise the average. It starts at the cap ath set, else
++ * at the first reply. */
++static void agent_think_sample(cJSON *root, double tokens)
++{
++	if (agent_think_cap > 0 && (tokens >= agent_think_cap ||
++			agent_think_hit(root, tokens)))
++		tokens = 2.0 * agent_think_cap;
++	if (tokens < 1 || tokens >= 1e9)
++		return;
++	if (!agent_think_cnt++)
++		agent_think_avg = agent_think_base > 0 ? agent_think_base : tokens;
++	agent_think_avg += (tokens - agent_think_avg) / 4;
++}
++
++/* Spend the thinking tokens used by the reply to a request capped at sent;
++ * the reply to a raised cap banks what it left of it instead. */
++static void agent_think_spend(int raised, int sent, double used)
++{
++	double left = (raised ? sent : agent_think_bank) - used;
++	agent_think_bank = left > 0 ? (int)(left + .5) : 0;
++}
++
++/* Drop a cap the agent raised: back to what ath set or, with ata, that
++ * percentage of the average, from 1 to the ceiling, else to what ath set;
++ * plus the bank, up to the ceiling. */
++static void agent_think_rebase(void)
++{
++	int top = agent_think_max ? agent_think_max : agent_think_base;
++	double cap = agent_think_avg * xata / 100 + .5;
++	agent_think_up = 0;
++	agent_think_cap = agent_think_base;
++	if (xata && agent_think_cnt)
++		agent_think_cap = MAX(1, (int)MIN(cap, top > 0 ? top : 1e9));
++	if (agent_think_bank && agent_think_cap >= 0)
++		agent_think_cap = MIN(agent_think_cap + agent_think_bank,
++			agent_think_max);
++}
++
++/* Suffix for the errors of a thinking question: the retry count, while one
++ * is left. */
++static char *agent_think_retry(void)
++{
++	static char s[32];
++	*s = '\0';
++	if (agent_checkpointing == 3 && agent_cp_refused < AGENT_THINK_TRIES)
++		snprintf(s, sizeof(s), "; retry: %d/%d", agent_cp_refused + 1,
++			AGENT_THINK_TRIES);
++	return s;
++}
++
++static void agent_think_drop(void)
++{
++	cJSON_Delete(agent_think_held);
++	agent_think_held = NULL;
++}
++
++static void agent_think_unnote(void)
++{
++	free(agent_think_note);
++	agent_think_note = NULL;
++}
++
++/* Whether to withhold the reply in root, whose thinking used tokens, for a
++ * thinking question: the server cut its thinking below the ceiling, and it
++ * neither answers a question nor replaces a reply one discarded (asked). */
++static int agent_think_cutoff(cJSON *root, double tokens, int asked)
++{
++	return !asked && agent_checkpointing != 3 &&
++		agent_think_cap < agent_think_max && agent_think_hit(root, tokens);
++}
++
++/* Withhold the reply in root, whose thinking used tokens, and start a
++ * thinking question about it: the reply without its calls leads the
++ * question, which lists their commands. */
++static void agent_think_ask(cJSON *root, double tokens)
++{
++	cJSON *message = agent_reply(root);
++	cJSON *calls = cJSON_GetObjectItem(message, "tool_calls"), *tc;
++	cJSON *content = cJSON_GetObjectItem(message, "content");
++	const char *rkey;
++	char *reasoning = agent_reasoning(message, &rkey);
++	char line[320], *keep;
++	int cap = agent_think_was, cnt = cJSON_GetArraySize(calls);
++	/* the example cap: twice the cut one, within the ceiling */
++	int more = cap > 0 && cap < agent_think_max / 2 ? cap * 2 : agent_think_max;
++	sbuf_smake(sb, 1024)
++	agent_think_held = root;
++	agent_think_more = 0;
++	agent_think_empty = !cnt && !cJSON_IsString(content);
++	agent_checkpoint_begin(tokens, 3);
++	agent_cp_lead = cJSON_Duplicate(message, 1);
++	cJSON_DeleteItemFromObject(agent_cp_lead, "tool_calls");
++	if (!cJSON_IsString(content)) {
++		cJSON_DeleteItemFromObject(agent_cp_lead, "content");
++		cJSON_AddStringToObject(agent_cp_lead, "content", "");
++	}
++	if (xar && reasoning)
++		agent_turn_part(0, reasoning);
++	if (cJSON_IsString(content) && *content->valuestring)
++		agent_turn_part(1, content->valuestring);
++	snprintf(line, sizeof(line), "Stop working on the current task and "
++		"complete this budget check.\nThe thinking of your last "
++		"reply was cut off after ~%.0f tokens at the cap of %d tokens. "
++		"The reply is %s\n", tokens, cap,
++		cnt ? "withheld and these commands did not run:" : agent_think_empty ?
++		"discarded; it had no text and made no ex tool calls." :
++		"withheld; it made no ex tool calls.");
++	sbuf_str(sb, line)
++	cJSON_ArrayForEach(tc, calls) {
++		cJSON *args = cJSON_GetObjectItem(cJSON_GetObjectItem(tc,
++			"function"), "arguments");
++		cJSON *parsed = cJSON_IsString(args) ?
++			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
++		char *cmd = cJSON_GetStringValue(cJSON_GetObjectItem(parsed,
++			"command"));
++		sbuf_str(sb, cmd ? cmd : "invalid tool call")
++		sbuf_chr(sb, '\n')
++		cJSON_Delete(parsed);
++	}
++	if (!agent_think_empty)
++		sbuf_str(sb, cnt ? "These commands may rest on unfinished "
++			"reasoning; run them only if your thinking had already "
++			"settled them.\n" : "Its text may rest on unfinished "
++			"reasoning; keep it only if your thinking had already "
++			"settled it.\n")
++	keep = cnt ? "run the reply as it is" :
++		agent_think_empty ? "reply again under the same cap" :
++		"keep the reply as it is";
++	snprintf(line, sizeof(line), "You must use acap command to %s or acap N [note] to "
++		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
++		keep, agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
++	sbuf_str(sb, line)
++	sbuf_str(sb, "\nTokens the new reply leaves of N carry over to later caps.\n"
++		"The new reply sees nothing of this exchange except the "
++		"optional [note] after N.\n"
++		"A note directs how to think better.\n"
++		"Do not mention this budget check in a note.")
++	snprintf(line, sizeof(line), "\nExample: %s\nacap\n"
++		"Example: reply again under a cap of %d tokens, with a note\n"
++		"acap %d focus on ...", keep, more, more);
++	sbuf_str(sb, line)
++	sbuf_nul(sb)
++	agent_cp_open = sb->s;
++	agent_log("USER", agent_cp_open);
++}
++
++/* Detach the exchange that followed the opening message in the last request. */
++static void agent_cp_collect(void)
++{
++	cJSON *m;
++	int open = 1 + !!agent_cp_lead;
++	if (agent_cp_base < 0)
++		return;
++	cJSON_Delete(agent_cp);
++	agent_cp = cJSON_CreateArray();
++	while ((m = cJSON_DetachItemFromArray(agent_messages, agent_cp_base + open)))
++		cJSON_AddItemToArray(agent_cp, m);
++	while (open--)
++		cJSON_DeleteItemFromArray(agent_messages, agent_cp_base);
++	agent_cp_base = -1;
++}
++
++/* Append the opening message and the exchange to the context. */
++static void agent_cp_build(void)
++{
++	cJSON *m;
++	/* The opening message is written once; ali and acp print it again. */
++	if (!agent_cp_open && agent_checkpointing == 2) {
++		agent_cp_open = agent_budget_open();
++		agent_log("USER", agent_cp_open);
++	} else if (!agent_cp_open) {
++		sbuf_smake(sb, 1024)
++		agent_cp_status(sb, 1);
++		agent_cp_instructions(sb);
++		sbuf_nul(sb)
++		agent_cp_open = sb->s;
++		agent_log("USER", agent_cp_open);
++	}
++	agent_cp_base = cJSON_GetArraySize(agent_messages);
++	if (agent_cp_lead)
++		cJSON_AddItemToArray(agent_messages,
++			cJSON_Duplicate(agent_cp_lead, 1));
++	cJSON_AddItemToArray(agent_messages, agent_msg("user", agent_cp_open));
++	cJSON_ArrayForEach(m, agent_cp)
++		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
++}
++
++static void agent_checkpoint_end(void)
++{
++	char note[128], unrated[112];
++	int k, n, kind = agent_checkpointing, answered = agent_cp_done;
++	int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
++	if (!kind)
++		return;
++	agent_cp_collect();
++	cJSON_Delete(agent_cp);
++	agent_cp = NULL;
++	cJSON_Delete(agent_cp_lead);
++	agent_cp_lead = NULL;
++	free(agent_cp_open);
++	agent_cp_open = NULL;
++	agent_logbuf = agent_cp_logbuf;
++	agent_checkpointing = agent_cp_done = 0;
++	/* A question and a budget check leave b-4 and the context as they were. */
++	if (kind == 3) {
++		snprintf(note, sizeof(note), agent_think_more ?
++			"[ath reply discarded, thinking cap %d tokens%s for the next]\n" :
++			agent_think_empty ? "[ath reply requested again]\n" :
++			"[ath reply kept as it is]\n", agent_think_cap,
++			agent_think_note ? " and a note" : "");
++		if (answered)
++			agent_output(note);
++		if (agent_cp_outer.kind) {
++			agent_checkpointing = agent_cp_outer.kind;
++			agent_cp = agent_cp_outer.cp;
++			agent_cp_open = agent_cp_outer.open;
++			agent_cp_bytes = agent_cp_outer.bytes;
++			agent_cp_base = agent_cp_outer.base;
++			agent_cp_logbuf = agent_cp_outer.logbuf;
++			agent_cp_refused = agent_cp_outer.refused;
++			agent_cp_left = agent_cp_outer.left;
++			agent_cp_outer.kind = 0;
++		}
++		return;
++	}
++	/* Unanswered, a budget check runs again at the next request. */
++	if (kind == 2) {
++		if (answered && !agent_cp_asked)
++			agent_acl_mark = agent_tokens();
++		snprintf(note, sizeof(note), agent_cp_asked ?
++			"[acl budget check done, checkpoint next]\n" : !answered ?
++			"[acl budget check unanswered]\n" :
++			"[acl budget check done, next after ~%d more tokens, at ~%.0f]\n",
++			budget, agent_acl_mark + budget);
++		agent_output(note);
++		return;
++	}
++	agent_acl_budget = 0;
++	if (agent_live())
++		agent_reparse();
++	agent_acl_mark = agent_tokens();
++	k = snprintf(note, sizeof(note), "[acl checkpoint done ~%.0f -> ~%.0f tokens",
++		agent_tokens_at(agent_cp_bytes), agent_acl_mark);
++	if ((n = agent_unrated_now(unrated, sizeof(unrated))))
++		snprintf(note + k, sizeof(note) - k, ", %d unrated", n);
++	strcat(note, "]\n");
++	agent_output(note);
++}
++
++/* End a question together with what it interrupted. */
++static void agent_checkpoint_stop(void)
++{
++	while (agent_checkpointing)
++		agent_checkpoint_end();
++}
++
++/* acp prints the checkpoint instructions, to the agent only during one; ali
++ * the session log status and auli its unrated turns, at any time. */
++static void *ec_acp(char *loc, char *cmd, char *arg)
++{
++	static char err[40];
++	if (*loc || *arg) {
++		snprintf(err, sizeof(err), "%s takes no range or argument", cmd);
++		return err;
++	}
++	if (cmd[1] == 'c' && agent_tool && !agent_checkpointing)
++		return "no checkpoint in progress";
++	if (cmd[1] != 'c' && !lbuf_len(tempbufs[3].lb))
++		return "session log is empty";
++	sbuf_smake(sb, 1024)
++	if (cmd[1] == 'c')
++		agent_cp_instructions(sb);
++	else if (cmd[1] == 'l')
++		agent_cp_status(sb, agent_checkpointing == 1);
++	else
++		agent_cp_unrated(sb);
++	if (agent_capture)	/* exempt from agr, as aout */
++		sbuf_mem(agent_capture, sb->s, sb->s_n)
++	else {
++		sbuf_nul(sb)
++		ex_print(sb->s, msg_ft)
++	}
++	free(sb->s);
++	return NULL;
++}
++
++static void *ec_adone(char *loc, char *cmd, char *arg)
++{
++	if (*loc || *arg)
++		return "adone takes no range or argument";
++	static char err[320];
++	char unrated[112];
++	if (!agent_checkpointing)
++		return "no checkpoint in progress";
++	if (agent_cp_hold(unrated, sizeof(unrated))) {
++		snprintf(err, sizeof(err), "%d/%d turns unrated; rate first with "
++			"N[,M]arate R sentence:\n%s\nali command prints the whole "
++			"list, auli command prints the unrated list only",
++			agent_cp_left, agent_cp_cmds, unrated);
++		return err;
++	}
++	agent_cp_done = 1;
++	return NULL;
++}
++
++/* Ask for a checkpoint, started once the tool batch completes; with N and
++ * acl < 0, set the growth to the next budget check instead. Either ends a
++ * budget check, printing nothing: that exchange is discarded. */
++static void *ec_acheck(char *loc, char *cmd, char *arg)
++{
++	static char msg[80];
++	char *end;
++	long n = 0;
++	if (*loc)
++		return "acheck takes no range";
++	if (*arg) {
++		n = strtol(arg, &end, 10);
++		if (*end || n <= 0 || n > INT_MAX)
++			return "acheck takes a positive token count";
++		if (xacl >= 0)
++			return "acheck N needs negative acl";
++	}
++	if (!agent_acl_kept())
++		return "acheck needs acl above 1 or negative";
++	if (agent_checkpointing == 1)
++		return "checkpoint already in progress";
++	agent_cp_done = agent_checkpointing == 2;
++	if (!n) {
++		agent_cp_asked = 1;
++		if (!agent_cp_done)
++			ex_print("checkpoint starts before the next request", msg_ft)
++		return NULL;
++	}
++	/* A budget check sets the mark when it ends. */
++	agent_acl_budget = n;
++	if (!agent_checkpointing)
++		agent_acl_mark = agent_tokens();
++	if (!agent_cp_done) {
++		snprintf(msg, sizeof(msg), "next budget check after ~%ld more tokens", n);
++		ex_print(msg, msg_ft)
++	}
++	return NULL;
++}
++
++/* Append lines beg up to end of lb to sb, less line close (the END line)
++ * and trailing newlines. */
++static void agent_body(sbuf *sb, struct lbuf *lb, int beg, int end, int close)
++{
++	for (int i = beg; i < end; i++)
++		if (i != close)
++			sbuf_str(sb, lb->ln[i])
++	while (sb->s_n && sb->s[sb->s_n-1] == '\n')
++		sb->s_n--;
++	sbuf_nul(sb)
++}
++
++/* End a turn's last tool result with a line naming the turn; context only,
++ * never logged. */
++static void agent_stamp(sbuf *sb, unsigned long n)
++{
++	char stamp[40];
++	snprintf(stamp, sizeof(stamp), "[turn %lu end]", n);
++	if (sb->s_n && sb->s[sb->s_n-1] != '\n')
++		sbuf_chr(sb, '\n')
++	sbufn_str(sb, stamp)
++}
++
++/* Add turn s of lb to msgs: one assistant message, then a tool message per
++ * EX part with the RESULT part that directly follows it. Text or reasoning
++ * parts a hand edit repeated are joined by a blank line. A turn without text
++ * and calls is dropped. */
++static void agent_add_turn(cJSON *msgs, struct lbuf *lb, struct agent_span *s)
++{
++	struct agent_part *parts;
++	int cnt = agent_parts(lb, s, &parts), n;
++	cJSON *asst, *calls = cJSON_CreateArray(), *tools = cJSON_CreateArray();
++	cJSON *tc, *fn, *args, *tool, *last, *t;
++	char id[48], *json, *prev;
++	int len, lastex = -1;
++	sbuf_smake(text, 256)
++	sbuf_smake(reason, 256)
++	sbuf_smake(body, 256)
++	for (int k = 0; k < cnt; k++)
++		if (parts[k].role == AP_EX)
++			lastex = k;
++	for (int k = 0; k < cnt; k++) {
++		if (parts[k].role == AP_ASSISTANT || parts[k].role == AP_REASONING) {
++			sbuf *sb = parts[k].role == AP_ASSISTANT ? text : reason;
++			if (sb->s_n)
++				sbuf_str(sb, "\n\n")
++			agent_body(sb, lb, parts[k].beg + 1, parts[k].end, parts[k].close);
++		}
++		if (parts[k].role != AP_EX)
++			continue;
++		snprintf(id, sizeof(id), "ex%lu_%d", s->n, parts[k].idx);
++		sbuf_cut(body, 0)
++		agent_body(body, lb, parts[k].beg + 1, parts[k].end, parts[k].close);
++		tc = cJSON_CreateObject();
++		cJSON_AddStringToObject(tc, "id", id);
++		cJSON_AddStringToObject(tc, "type", "function");
++		fn = cJSON_AddObjectToObject(tc, "function");
++		cJSON_AddStringToObject(fn, "name", "ex");
++		args = cJSON_CreateObject();
++		cJSON_AddStringToObject(args, "command", body->s);
++		json = cJSON_PrintUnformatted(args);
++		cJSON_AddStringToObject(fn, "arguments", json);
++		free(json);
++		cJSON_Delete(args);
++		sbufn_cut(body, 0)
++		cJSON_AddItemToArray(calls, tc);
++		if (k + 1 < cnt && parts[k + 1].role == AP_RESULT)
++			agent_body(body, lb, parts[k + 1].beg + 1, parts[k + 1].end,
++				parts[k + 1].close);
++		else
++			sbufn_str(body, "no result")
++		if (k == lastex)
++			agent_stamp(body, s->n);
++		tool = agent_msg("tool", body->s);
++		cJSON_AddStringToObject(tool, "tool_call_id", id);
++		cJSON_AddItemToArray(tools, tool);
++	}
++	sbuf_nul(text)
++	sbuf_nul(reason)
++	len = text->s_n;
++	if (cJSON_GetArraySize(calls) || len) {
++		asst = agent_msg("assistant", text->s);
++		if (reason->s_n)
++			cJSON_AddStringToObject(asst, agent_rkey, reason->s);
++		n = cJSON_GetArraySize(msgs);
++		last = cJSON_GetArrayItem(msgs, n - 1);
++		/* Notes can leave assistant text after assistant text; some
++		 * servers reject consecutive assistant messages, so join them. */
++		if (last && !strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(last,
++				"role")), "assistant") &&
++				!cJSON_HasObjectItem(last, "tool_calls")) {
++			prev = cJSON_GetStringValue(cJSON_GetObjectItem(last, "content"));
++			sbuf_cut(body, 0)
++			sbuf_str(body, prev)
++			if (len)
++				sbuf_str(body, "\n\n")
++			sbufn_str(body, text->s)
++			cJSON_ReplaceItemInObject(asst, "content",
++				cJSON_CreateString(body->s));
++			len = body->s_n;
++			if (!reason->s_n && (t = cJSON_DetachItemFromObject(last, agent_rkey)))
++				cJSON_AddItemToObject(asst, agent_rkey, t);
++			cJSON_DeleteItemFromArray(msgs, n - 1);
++		}
++		if (cJSON_GetArraySize(calls)) {
++			if (!len)
++				cJSON_ReplaceItemInObject(asst, "content", cJSON_CreateNull());
++			cJSON_AddItemToObject(asst, "tool_calls", calls);
++			calls = NULL;
++		}
++		cJSON_AddItemToArray(msgs, asst);
++		while ((t = cJSON_DetachItemFromArray(tools, 0)))
++			cJSON_AddItemToArray(msgs, t);
++	}
++	cJSON_Delete(calls);
++	cJSON_Delete(tools);
++	free(text->s);
++	free(reason->s);
++	free(body->s);
++	free(parts);
++}
++
++/* Append a user message, joined to a preceding one: some chat templates
++ * need alternating roles. */
++static void agent_add_user(cJSON *msgs, const char *text)
++{
++	cJSON *last = cJSON_GetArrayItem(msgs, cJSON_GetArraySize(msgs) - 1);
++	char *prev = cJSON_GetStringValue(cJSON_GetObjectItem(last, "content"));
++	if (!prev || strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(last, "role")),
++			"user")) {
++		cJSON_AddItemToArray(msgs, agent_msg("user", text));
++		return;
++	}
++	sbuf_smake(sb, 256)
++	sbuf_str(sb, prev)
++	sbuf_str(sb, "\n\n")
++	sbufn_str(sb, text)
++	cJSON_ReplaceItemInObject(last, "content", cJSON_CreateString(sb->s));
++	free(sb->s);
++}
++
++/* Rebuild the conversation after the system message from b-4: USER entries
++ * and the text before the first header are user messages, NOTICE entries
++ * are skipped. */
++static void agent_reparse(void)
++{
++	struct lbuf *lb = tempbufs[3].lb;
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans);
++	cJSON *sys = cJSON_DetachItemFromArray(agent_messages, 0);
++	agent_log_edited = 0;
++	cJSON_Delete(agent_messages);
++	agent_messages = cJSON_CreateArray();
++	cJSON_AddItemToArray(agent_messages, sys);
++	sbuf_smake(text, 256)
++	for (int k = 0; k < cnt; k++) {
++		if (spans[k].role == AE_TURN)
++			agent_add_turn(agent_messages, lb, spans + k);
++		if (spans[k].role > AE_USER)
++			continue;
++		sbuf_cut(text, 0)
++		agent_body(text, lb, spans[k].beg + !!spans[k].role, spans[k].end,
++			spans[k].close);
++		if (text->s_n)
++			agent_add_user(agent_messages, text->s);
++	}
++	free(text->s);
++	if (cnt)
++		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
++	agent_turn[1] = 0;
++	free(spans);
 +}
 +
 +static void agent_key(int c)
@@ -9246,14 +15173,13 @@ index 00000000..122c15dc
 +static void agent_capture_add(const char *s, int n)
 +{
 +	agent_capture_total += n;
-+	if (xgr == 2)
-+		n = MIN(n, MAX(0, 4097 - agent_capture->s_n));
++	if (agent_gr_cap())
++		n = MIN(n, MAX(0, agent_gr_cap() - agent_capture->s_n));
 +	sbuf_mem(agent_capture, s, n)
 +}
 +
-+/* Tool output may contain NULs or malformed UTF-8. cJSON strings are
-+ * NUL-terminated and cJSON_Print does not validate UTF-8, so convert raw
-+ * bytes to readable, valid UTF-8 before adding them to history or the log. */
++/* Tool output can hold NULs and malformed UTF-8, which cJSON neither
++ * carries nor validates: escape such bytes as \xHH. The caller frees. */
 +static char *agent_safe_text(const char *s, size_t n)
 +{
 +	sbuf_smake(text, n + 1)
@@ -9295,63 +15221,93 @@ index 00000000..122c15dc
 +	return text->s;
 +}
 +
-+/* Interactive shells can put each job in a separate process group. */
-+static void agent_killtree(pid_t pid)
++/* The child leads its own process group. A job that still gets a separate
++   group (job control re-enabled) owns the terminal; job < 0 looks it up. */
++static void agent_killtree(pid_t pid, int done, pid_t job)
 +{
-+	struct child { pid_t pid, parent; int selected; } *children = NULL;
-+	int n = 0, cap = 0, changed;
-+	long child, parent;
-+	pid_t group;
-+	FILE *ps;
-+	kill(pid, SIGSTOP);
-+	ps = popen("ps -e -o pid= -o ppid=", "r");
-+	if (ps) {
-+		while (fscanf(ps, "%ld %ld", &child, &parent) == 2) {
-+			if (child <= 0 || child == getpid())
-+				continue;
-+			if (n == cap) {
-+				cap += 128;
-+				children = erealloc(children, cap * sizeof(*children));
-+			}
-+			children[n++] = (struct child){child, parent, child == pid};
-+		}
-+		pclose(ps);
-+		do {
-+			changed = 0;
-+			for (int i = 0; i < n; i++) {
-+				if (children[i].selected)
-+					continue;
-+				for (int j = 0; j < n; j++) {
-+					if (!children[j].selected || children[i].parent != children[j].pid)
-+						continue;
-+					children[i].selected = changed = 1;
-+					kill(children[i].pid, SIGSTOP);
-+					break;
-+				}
-+			}
-+		} while (changed);
-+		for (int i = 0; i < n; i++) {
-+			if (!children[i].selected)
-+				continue;
-+			group = getpgid(children[i].pid);
-+			if (group > 0 && group != getpgrp())
-+				kill(-group, SIGKILL);
-+			kill(children[i].pid, SIGKILL);
-+		}
-+	}
-+	free(children);
-+	kill(pid, SIGKILL);
++	kill(-pid, SIGKILL);	/* first, so the shell starts no further jobs */
++	if (!done)
++		kill(pid, SIGKILL); /* also covers cancellation before setpgid */
++	if (job < 0)
++		job = tcgetpgrp(term_ufd.fd);
++	if (job > 0 && job != pid && job != getpgrp())
++		kill(-job, SIGKILL);
 +}
 +
-+/* Keep one excess byte to detect truncated output; continue draining the pipe. */
-+/* Use file-backed stdin; poll output and terminal together. */
++static void agent_jobnote(char *msg)
++{
++	int n = strlen(agent_jobmsg);
++	snprintf(agent_jobmsg + n, sizeof(agent_jobmsg) - n, "%s\n", msg);
++}
++
++/* A zombie would still answer kill -0. */
++static void agent_reap(void)
++{
++	char msg[64];
++	int st = 0;
++	for (int i = 0; i < LEN(agent_jobs); i++) {
++		if (agent_jobs[i] <= 0 || !waitpid(agent_jobs[i], &st, WNOHANG))
++			continue;
++		snprintf(msg, sizeof(msg), "detached pid %d exited, status %d",
++			(int)agent_jobs[i],
++			WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st));
++		agent_jobnote(msg);
++		agent_jobs[i] = 0;
++	}
++}
++
++/* Leave the command running past ato. Without a reader it would die of
++   SIGPIPE or block, so a cat outside the session copies the pipe to a file. */
++static void agent_detach(int fd, pid_t pid, int done)
++{
++	char path[] = "/tmp/nextvi-job-XXXXXX", msg[160];
++	int ofd, i;
++	pid_t cat;
++	if (fd >= 0) {
++		if ((ofd = mkstemp(path)) < 0) {
++			strcpy(path, "/dev/null");
++			ofd = open(path, O_WRONLY);
++		}
++		if (!(cat = fork())) {
++			if (fork())	/* orphaned, so never a zombie here */
++				_exit(0);
++			setsid();
++			dup2(fd, STDIN_FILENO);
++			dup2(ofd, STDOUT_FILENO);
++			dup2(ofd, STDERR_FILENO);
++			execlp("cat", "cat", (char *)NULL);
++			_exit(127);
++		}
++		while (cat > 0 && waitpid(cat, NULL, 0) < 0 && errno == EINTR)
++			;
++		close(ofd);
++		close(fd);
++	}
++	for (i = 0; !done && i < LEN(agent_jobs); i++) {
++		if (!agent_jobs[i]) {
++			agent_jobs[i] = pid;
++			break;
++		}
++	}
++	snprintf(msg, sizeof(msg), "detached after %d sec: process group %d "
++		"runs in background%s%s", xato, (int)pid,
++		fd >= 0 ? ", later output in " : "", fd >= 0 ? path : "");
++	agent_jobnote(msg);
++}
++
++/* Run argv with input on a file-backed stdin, polling its output and the
++ * terminal together. Nonzero limit caps the output bytes kept; the pipe is
++ * drained regardless. http captures stderr apart, into *errout. */
 +static sbuf *agent_process(char **argv, sbuf *input, int *status, int http,
-+	int limited, sbuf **errout)
++	int limit, sbuf **errout)
 +{
 +	FILE *in = tmpfile();
 +	struct pollfd fds[3];
 +	int output[2] = {-1, -1}, error[2] = {-1, -1}, pid, done = 0, st = 0,
-+		killed = 0, tidx = http ? 2 : 1, interactive = !http && xish;
++		killed = 0, tidx = http ? 2 : 1, interactive = !http && xish,
++		detached = 0;
++	pid_t job = interactive ? -1 : 0;
++	struct timespec beg, now;
 +	void (*old_ttou)(int) = SIG_DFL, (*old_ttin)(int) = SIG_DFL;
 +	char buf[4097];
 +	sbuf *sb, *eb = NULL;
@@ -9382,9 +15338,11 @@ index 00000000..122c15dc
 +	}
 +	pid = fork();
 +	if (!pid) {
-+		/* Interactive startup requires the editor's foreground group. */
-+		if (!interactive && setpgid(0, 0) < 0)
++		/* Interactive startup requires a foreground group; SIGTTOU is ignored. */
++		if (setpgid(0, 0) < 0)
 +			_exit(127);
++		if (interactive)
++			tcsetpgrp(term_ufd.fd, getpid());
 +		dup2(fileno(in), STDIN_FILENO);
 +		dup2(output[1], STDOUT_FILENO);
 +		dup2(http ? error[1] : output[1], STDERR_FILENO);
@@ -9412,8 +15370,7 @@ index 00000000..122c15dc
 +			close(error[0]);
 +		return NULL;
 +	}
-+	if (!interactive)
-+		setpgid(pid, pid);
++	setpgid(pid, pid);
 +	fds[0].fd = output[0];
 +	fds[0].events = POLLIN;
 +	if (http) {
@@ -9424,14 +15381,18 @@ index 00000000..122c15dc
 +	sbuf_make(sb, 4096)
 +	if (http)
 +		sbuf_make(eb, 4096)
++	clock_gettime(CLOCK_MONOTONIC, &beg);
 +	while (!done || fds[0].fd >= 0 || (http && fds[1].fd >= 0)) {
++		agent_reap();
++		if (!http && xato > 0 && !killed &&
++				!clock_gettime(CLOCK_MONOTONIC, &now) &&
++				now.tv_sec - beg.tv_sec >= xato) {
++			agent_detach(fds[0].fd, pid, done);
++			detached = 1;
++			break;
++		}
 +		if ((agent_cancel || (http && agent_pause)) && !killed) {
-+			if (interactive && !done)
-+				agent_killtree(pid);
-+			else if (!interactive)
-+				kill(-pid, SIGKILL);
-+			if (!done && !interactive)
-+				kill(pid, SIGKILL); /* also covers cancellation before setpgid */
++			agent_killtree(pid, done, job);
 +			for (int i = 0; i < (http ? 2 : 1); i++) {
 +				if (fds[i].fd >= 0)
 +					close(fds[i].fd);
@@ -9440,9 +15401,12 @@ index 00000000..122c15dc
 +			killed = 1;
 +		}
 +		int n = poll(fds, tidx + 1, 100);
-+		if (n < 0 && errno != EINTR) {
-+			agent_cancel = 1;
-+			continue;
++		/* revents are unspecified after a failed poll; still reap below. */
++		if (n < 0) {
++			if (errno != EINTR)
++				agent_cancel = 1;
++			for (int i = 0; i <= tidx; i++)
++				fds[i].revents = 0;
 +		}
 +		for (int i = 0; i < (http ? 2 : 1); i++) {
 +			if (fds[i].fd >= 0 &&
@@ -9450,8 +15414,8 @@ index 00000000..122c15dc
 +				int nr = read(fds[i].fd, buf, sizeof(buf)-1);
 +				if (nr > 0) {
 +					sbuf *dest = i ? eb : sb;
-+					if (i == 0 && limited) {
-+						int kept = MIN(nr, MAX(0, 4097 - dest->s_n));
++					if (i == 0 && limit) {
++						int kept = MIN(nr, MAX(0, limit - dest->s_n));
 +						if (agent_capture)
 +							agent_capture_total += nr - kept;
 +						nr = kept;
@@ -9470,8 +15434,15 @@ index 00000000..122c15dc
 +			preserve(int, agent_tool, agent_tool = 0;)
 +			agent_key(term_read(0));
 +			restore(agent_tool)
-+			if (foreground > 0 && foreground != getpgrp() && !agent_cancel)
-+				tcsetpgrp(term_ufd.fd, foreground);
++			if (foreground > 0 && foreground != getpgrp()) {
++				if (agent_cancel)
++					job = foreground;
++				else {
++					tcsetpgrp(term_ufd.fd, foreground);
++					/* resume a group stopped by SIGTTIN meanwhile */
++					kill(-foreground, SIGCONT);
++				}
++			}
 +		}
 +		if (fds[tidx].revents & (POLLHUP | POLLERR | POLLNVAL)) {
 +			agent_cancel = 1;
@@ -9481,8 +15452,15 @@ index 00000000..122c15dc
 +			done = waitpid(pid, &st, WNOHANG) == pid;
 +	}
 +	*status = WIFEXITED(st) ? WEXITSTATUS(st) : 128 + WTERMSIG(st);
++	if (detached && !done)
++		*status = 124;	/* unfinished, as timeout(1) reports */
 +	if (interactive) {
++		struct winsize win;
 +		tcsetpgrp(term_ufd.fd, getpgrp());
++		/* SIGWINCH went to the child while it owned the terminal */
++		if (!ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
++				(win.ws_row != xrows || win.ws_col != xcols))
++			term_winch++;
 +		if (old_ttou != SIG_ERR)
 +			signal(SIGTTOU, old_ttou);
 +		if (old_ttin != SIG_ERR)
@@ -9502,13 +15480,20 @@ index 00000000..122c15dc
 +
 +static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status)
 +{
++	/* Without job control, the whole command stays in the shell's group. */
++	sbuf_smake(icmd, 64)
++	if (xish) {
++		sbuf_str(icmd, "set +m\n")
++		sbufn_str(icmd, cmd)
++	}
 +	char *sh = getenv("SHELL"),
 +	     *argv[] = {sh && *sh ? sh : "sh",
 +		xish ? "-i" : "-c", xish ? "-c" : cmd,
-+		xish ? cmd : NULL, NULL};
++		xish ? icmd->s : NULL, NULL};
 +	int st;
-+	sbuf *out = agent_process(argv, input, &st, 0, !oproc && xgr == 2,
++	sbuf *out = agent_process(argv, input, &st, 0, !oproc ? agent_gr_cap() : 0,
 +		NULL);
++	free(icmd->s);
 +	if (!out) {
 +		agent_child_status = 1;
 +		return NULL;
@@ -9532,11 +15517,11 @@ index 00000000..122c15dc
 +	cJSON *api_error = cJSON_GetObjectItem(root, "error");
 +	cJSON *message = cJSON_GetObjectItem(api_error, "message");
 +	if (cJSON_IsString(message) && *message->valuestring)
-+		agent_log("RESULT", message->valuestring);
++		agent_log("NOTICE", message->valuestring);
 +	else if (stderr_text && *stderr_text)
-+		agent_log("RESULT", stderr_text);
++		agent_log("NOTICE", stderr_text);
 +	else
-+		agent_log("RESULT", "HTTP request failed");
++		agent_log("NOTICE", "HTTP request failed");
 +	cJSON_Delete(root);
 +}
 +
@@ -9547,7 +15532,7 @@ index 00000000..122c15dc
 +			strpbrk(api_key, "\r\n") || !endpoint ||
 +			(strncmp(endpoint, "http://", 7) &&
 +			strncmp(endpoint, "https://", 8)) ||
-+			request_timeout <= 0 || max_tool_rounds <= 0) {
++			request_timeout <= 0 || max_tool_rounds < 0) {
 +		cJSON_Delete(req);
 +		return NULL;
 +	}
@@ -9587,12 +15572,14 @@ index 00000000..122c15dc
 +		"--data-binary", "@-", "--url", endpoint, NULL
 +	};
 +	sbuf body;
-+	body.s = cJSON_PrintUnformatted(req);
-+	body.s_n = strlen(body.s);
-+	out = agent_process(argv, &body, st, 1, 0, &err);
-+	free(body.s);
++	if ((body.s = cJSON_PrintUnformatted(req))) {
++		body.s_n = strlen(body.s);
++		out = agent_process(argv, &body, st, 1, 0, &err);
++		free(body.s);
++	}
 +ret:
-+	unlink(hdrpath);
++	if (fd >= 0)
++		unlink(hdrpath);
 +	free(hdr->s);
 +	if (err) {
 +		if (stderr_text)
@@ -9658,10 +15645,10 @@ index 00000000..122c15dc
 +	term_resized++;
 +}
 +
-+/* Reconstruct only a screenful, never replay the entire log to scrollback. */
++/* Redraw the last screenful of the log, not all of it into scrollback. */
 +static void agent_redraw(const char *draft)
 +{
-+	char *log = agent_text(tempbufs[agent_logbuf].lb);
++	char *log = agent_shown_text(tempbufs[agent_logbuf].lb);
 +	sbuf_smake(sb, 256)
 +	sbuf_str(sb, log);
 +	if (draft)
@@ -9689,7 +15676,7 @@ index 00000000..122c15dc
 +	free(sb->s);
 +}
 +
-+/* Recurse from the ex-style conversation into vi, preserving caller state. */
++/* Recurse from the conversation into vi, preserving caller state. */
 +static void agent_editor(void)
 +{
 +	preserve(int, xvis, xvis = (xvis | 2) & ~1;)
@@ -9718,7 +15705,7 @@ index 00000000..122c15dc
 +static void agent_refresh(void)
 +{
 +	char *s = agent_snapshot(NULL);
-+	cJSON_AddItemToArray(agent_messages, agent_msg("user", s));
++	agent_add_user(agent_messages, s);
 +	agent_log("USER", s);
 +	free(s);
 +}
@@ -9731,7 +15718,8 @@ index 00000000..122c15dc
 +		tempbufs[i].lb->useq += xseq;
 +}
 +
-+/* Return 1 for envelope errors, 2 for tool calls the model can correct. */
++/* Return 1 for envelope errors, 2 for tool calls the model can correct, 3
++ * for a reply without text and tool calls. */
 +static int agent_response_error(cJSON *root, char *error, size_t size)
 +{
 +	cJSON *choices = cJSON_GetObjectItem(root, "choices");
@@ -9740,7 +15728,7 @@ index 00000000..122c15dc
 +	cJSON *content = cJSON_GetObjectItem(message, "content");
 +	cJSON *calls = cJSON_GetObjectItem(message, "tool_calls"), *tc;
 +	const char *reason = NULL;
-+	int index = 0;
++	int index = 0, empty = 0;
 +	if (!root)
 +		reason = "response: invalid JSON";
 +	else if (!cJSON_IsObject(root))
@@ -9755,11 +15743,13 @@ index 00000000..122c15dc
 +		reason = "message.content: expected a string or null";
 +	else if (calls && !cJSON_IsArray(calls))
 +		reason = "message.tool_calls: expected an array";
-+	else if (!cJSON_IsString(content) && !cJSON_GetArraySize(calls))
++	else if (!cJSON_IsString(content) && !cJSON_GetArraySize(calls)) {
 +		reason = "message: missing text and tool calls";
++		empty = 1;
++	}
 +	if (reason) {
 +		snprintf(error, size, "%s", reason);
-+		return 1;
++		return empty ? 3 : 1;
 +	}
 +	cJSON_ArrayForEach(tc, calls) {
 +		cJSON *id = cJSON_GetObjectItem(tc, "id");
@@ -9803,63 +15793,186 @@ index 00000000..122c15dc
 +	return 0;
 +}
 +
-+static void agent_run(const char *input)
++/* Log a user message sent within a run and add it to the context: as its
++ * own message in a checkpoint, which collects those after its opening one;
++ * not at all under acl 1, which rebuilds it from the log. */
++static void agent_run_user(const char *text)
++{
++	agent_log("USER", text);
++	if (agent_checkpointing)
++		cJSON_AddItemToArray(agent_messages, agent_msg("user", text));
++	else if (!agent_live() || agent_acl_kept())
++		agent_add_user(agent_messages, text);
++}
++
++static void agent_run_loop(const char *input)
 +{
 +	unsigned long serial = ++agent_serial, epoch = agent_epoch;
 +	cJSON *req, *root, *message, *calls, *tc;
 +	char *body, *stderr_text;
-+	int st, retries = 0, compacted = 0;
++	int st, retries = 0, compacted = 0, unpacked = 0, asked = 0;
++	int goal_due = 0;	/* agent_goal_ask waits for the request after it */
 +	if (agent_packing)
 +		agent_pack_done = 0;
 +	agent_cancel = agent_pause = 0;
 +	agent_rounds = 0;
-+	cJSON_AddItemToArray(agent_messages, agent_msg("user", input));
++	agent_add_user(agent_messages, input);
 +	agent_log("USER", input);
 +	for (int round = 0; ; ) {
-+		/* Only complete tool batches reach this boundary. Manual/automatic
-+		 * pack agents must never recursively trigger autocompaction. */
-+		/* The threshold triggers a pack, not a hard cap on its result. */
++		/* Stop before requesting a reply whose calls could not run. */
++		if (max_tool_rounds && round == max_tool_rounds) {
++			agent_log("NOTICE", "maximum tool rounds reached; "
++				"submit to continue");
++			return;
++		}
++		agent_cp_collect();
++		/* A question that ended unanswered, as by a pause: the reply it
++		 * withheld is requested again. */
++		if (agent_checkpointing != 3)
++			agent_think_drop();
++		/* acl 1 rebuilds every request. Otherwise replies stay as returned,
++		 * reasoning included, so the server cache continues from them, and
++		 * only an edit of b-4 rebuilds. A checkpoint keeps the context it
++		 * started with (agent_live is false), so its edits wait for its end. */
++		if (agent_live() && (xacl == 1 || agent_log_edited))
++			agent_reparse();
++		/* acl > 1 checkpoints once the context grows by acl tokens from
++		 * the mark: the last checkpoint or the smallest context since.
++		 * acl < 0 runs a budget check instead, after -acl tokens or those
++		 * the agent chose with acheck N. Both come before aco, and wait
++		 * for the reply that replaces a withheld one: its cap and note
++		 * are not for them. */
++		if (agent_live() && agent_acl_kept() && !agent_checkpointing && !asked) {
++			double tokens = agent_tokens();
++			int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
++			if (agent_cp_asked)
++				agent_checkpoint_begin(tokens, 1);
++			else if (!agent_acl_mark || tokens < agent_acl_mark)
++				agent_acl_mark = tokens;
++			else if (tokens - agent_acl_mark >= budget)
++				agent_checkpoint_begin(tokens, xacl > 1 ? 1 : 2);
++		}
++		agent_cp_asked = 0;
++		/* aco: only complete tool batches get here. Pack agents never
++		 * compact, and a summary still over the threshold does not
++		 * trigger another. */
 +		if (compacted && agent_tokens() < xaco)
 +			compacted = 0;
 +		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
-+				agent_tokens() >= xaco) {
++				!agent_checkpointing && !asked && agent_tokens() >= xaco) {
 +			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
 +				return;
-+			/* The pack conversation was discarded. Start a fresh tool-round
-+			 * budget for the resumed request, without recursing into agent_run. */
++			/* The pack conversation is gone; the resumed request gets a
++			 * fresh tool-round budget. */
 +			compacted = 1;
++			if (agent_live())
++				agent_reparse();
 +			round = retries = 0;
 +			agent_rounds = 0;
 +			serial = agent_serial;
 +		}
++		/* The goal question waits out a checkpoint or budget check:
++		 * their opening would follow it as a second user message. */
++		if (goal_due && !agent_checkpointing) {
++			if (!agent_goal)
++				return;
++			char *msg = emalloc(sizeof(agent_goal_ask) + strlen(agent_goal));
++			sprintf(msg, agent_goal_ask, agent_goal);
++			cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
++			agent_log("USER", msg);
++			free(msg);
++			goal_due = 0;
++		}
++		/* Notes over the last turns can end the context on assistant
++		 * text, which some servers take as a prefill or reject. The
++		 * message added is unlogged: the next rebuild drops it. */
++		if (agent_live() && !agent_checkpointing) {
++			cJSON *last = cJSON_GetArrayItem(agent_messages,
++				cJSON_GetArraySize(agent_messages) - 1);
++			if (!strcmp(cJSON_GetStringValue(cJSON_GetObjectItem(last,
++					"role")), "assistant") &&
++					!cJSON_HasObjectItem(last, "tool_calls"))
++				cJSON_AddItemToArray(agent_messages,
++					agent_msg("user", agent_continue));
++		}
++		if (agent_checkpointing)
++			agent_cp_build();
 +		req = agent_config();
 +		if (!req) {
-+			agent_log("RESULT", "invalid agent configuration");
++			agent_log("NOTICE", "invalid agent configuration");
 +			return;
++		}
++		/* The note is in the context for this request alone, as assistant
++		 * text; a user message keeps it from ending the context. */
++		int noted = agent_think_note && agent_checkpointing != 3;
++		if (noted) {
++			char *text = emalloc(sizeof(agent_think_lead) +
++				strlen(agent_think_note) + 32);
++			sprintf(text, agent_think_lead, agent_think_was,
++				agent_think_cap, agent_think_note);
++			cJSON_AddItemToArray(agent_messages,
++				agent_msg("assistant", text));
++			cJSON_AddItemToArray(agent_messages, agent_msg("user",
++				agent_checkpointing == 1 ? "Continue the checkpoint." :
++				agent_checkpointing == 2 ? "Answer the budget check." :
++				agent_continue));
++			free(text);
 +		}
 +		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
 +		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 +		cJSON_AddBoolToObject(req, "stream", 0);
++		/* ata moves the cap with every reply counted. */
++		if (!agent_think_up)
++			agent_think_rebase();
++		if (agent_think_cap >= 0) {
++			while (cJSON_GetObjectItem(req, "reasoning_budget_tokens"))
++				cJSON_DeleteItemFromObject(req, "reasoning_budget_tokens");
++			cJSON_AddNumberToObject(req, "reasoning_budget_tokens",
++				agent_think_cap);
++		}
++		int raised = agent_think_up, sent = agent_think_cap;
++		if (*agent_effort) {
++			while (cJSON_GetObjectItem(req, "reasoning_effort"))
++				cJSON_DeleteItemFromObject(req, "reasoning_effort");
++			cJSON_AddStringToObject(req, "reasoning_effort", agent_effort);
++		}
++		agent_banner(1);
 +		double request_bytes = agent_context_bytes();
++		char *json = cJSON_PrintUnformatted(agent_messages);
++		agent_reused = 0;
++		agent_sent = json ? strlen(json) : 0;
++		while (json && agent_prev && json[agent_reused] &&
++				json[agent_reused] == agent_prev[agent_reused])
++			agent_reused++;
++		free(agent_prev);
++		agent_prev = json;
 +		body = agent_http(req, &st, &stderr_text);
 +		cJSON_Delete(req);
++		agent_banner(0);
++		if (noted) {
++			cJSON_DeleteItemFromArray(agent_messages,
++				cJSON_GetArraySize(agent_messages) - 1);
++			cJSON_DeleteItemFromArray(agent_messages,
++				cJSON_GetArraySize(agent_messages) - 1);
++		}
 +		if (agent_cancel) {
 +			free(body);
 +			free(stderr_text);
 +			if (agent_cancel != 2)
-+				agent_log("RESULT", "cancelled");
++				agent_log("NOTICE", "cancelled");
 +			return;
 +		}
 +		if (agent_pause) {
 +			free(body);
 +			free(stderr_text);
++			agent_checkpoint_stop();
 +			agent_editor();
 +			agent_redraw(NULL);
 +			agent_pause = 0;
 +			if (serial != agent_serial ||
 +					epoch != agent_epoch || xquit)
 +				return;
-+			agent_log("RESULT",
++			agent_log("NOTICE",
 +				"response skipped after recursive editing");
 +			agent_refresh();
 +			continue;
@@ -9880,7 +15993,12 @@ index 00000000..122c15dc
 +		}
 +		char error[256], diagnostic[2048], excerpt[513];
 +		int invalid = agent_response_error(root, error, sizeof(error));
-+		if (invalid) {
++		/* ath N,M: withhold a reply whose thinking was cut, also one
++		 * the cut left without text and calls. */
++		double used = agent_think_tokens(root);
++		int cut = (!invalid || invalid == 3) &&
++			agent_think_cutoff(root, used, asked);
++		if (invalid && !cut) {
 +			cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
 +				cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
 +			snprintf(excerpt, sizeof(excerpt), "%.512s", body);
@@ -9892,48 +16010,75 @@ index 00000000..122c15dc
 +				"%s",
 +				error, cJSON_IsString(finish) ? finish->valuestring : "unavailable",
 +				encoded ? encoded : "(unavailable)",
-+				retries < 2 ? "retrying automatically" :
-+				"retry limit reached; history retained, submit to retry");
-+			agent_log("RESULT", diagnostic);
++				retries < AGENT_BAD_TRIES ? "retrying automatically" :
++				retries == AGENT_BAD_TRIES ?
++				"retry limit reached; nudging to continue" :
++				"nudge failed; history retained, submit to retry");
++			agent_log("NOTICE", diagnostic);
 +			free(encoded);
 +			cJSON_Delete(quoted);
 +			/* Invalid calls never enter history or execute, even in a mixed batch. */
 +			if (invalid == 2) {
 +				snprintf(diagnostic, sizeof(diagnostic),
-+					"Your previous response was rejected: %s. "
-+					"No commands from that response were executed. "
-+					"Correct and resubmit the intended calls. "
-+					"Use tool type function, name ex, and unique nonempty call IDs. "
-+					"Arguments must be a JSON-encoded object with a nonempty "
-+					"string command, for example {\"command\":\"1,20p\"}.", error);
-+				cJSON_AddItemToArray(agent_messages, agent_msg("user", diagnostic));
++					"Your previous response was rejected: %s.\n"
++					"No commands from that response were executed. Correct and\n"
++					"resubmit the intended calls. Use tool type function, name ex,\n"
++					"and unique nonempty call IDs. Pass one nonempty ex command\n"
++					"in the command argument, for example 1,20p", error);
++				agent_run_user(diagnostic);
 +			}
 +			free(body);
 +			cJSON_Delete(root);
-+			if (retries++ < 2)
++			if (retries++ < AGENT_BAD_TRIES)
 +				continue;
-+			return;
++			/* Past the retries one nudge is tried before giving up. */
++			if (retries > AGENT_BAD_TRIES + 1)
++				return;
++			agent_run_user(agent_continue);
++			continue;
 +		}
++		/* The limit is on consecutive malformed responses. */
++		retries = 0;
 +		agent_record_usage(root, request_bytes);
++		agent_think_sample(root, used);
++		if (agent_think_max)
++			agent_think_spend(raised, sent, used);
 +		free(body);
-+		message = cJSON_GetObjectItem(cJSON_GetArrayItem(
-+			cJSON_GetObjectItem(root, "choices"), 0), "message");
++		if (noted)
++			agent_think_unnote();
++		/* A raised cap lasts for one reply. */
++		if (agent_checkpointing != 3 && agent_think_max) {
++			agent_think_was = agent_think_cap;
++			agent_think_rebase();
++			asked = 0;
++		}
++		agent_think_strip(root);
++		if (cut) {
++			agent_think_ask(root, used);
++			continue;
++		}
++reply:
++		message = agent_reply(root);
 +		calls = cJSON_GetObjectItem(message, "tool_calls");
 +		cJSON *content = cJSON_GetObjectItem(message, "content");
++		const char *rkey;
++		char *reasoning = agent_reasoning(message, &rkey);
 +		/* Complete pairs before recursive editing or submissions. */
 +		cJSON_AddItemToArray(agent_messages,
 +			cJSON_Duplicate(message, 1));
-+		if (xar) {
-+			cJSON *reasoning = cJSON_GetObjectItem(message,
-+				"reasoning_content");
-+			if (!cJSON_IsString(reasoning) || !*reasoning->valuestring)
-+				reasoning = cJSON_GetObjectItem(message, "reasoning");
-+			if (cJSON_IsString(reasoning) && *reasoning->valuestring)
-+				agent_log("REASONING", reasoning->valuestring);
++		/* The TURN header is written with the first part, so an empty
++		 * reply logs nothing. */
++		agent_turn_close();
++		if (xar && reasoning) {
++			agent_rkey = rkey;
++			agent_turn_part(0, reasoning);
 +		}
-+		if (cJSON_IsString(content))
-+			agent_log("ASSISTANT", content->valuestring);
++		if (cJSON_IsString(content) && *content->valuestring)
++			agent_turn_part(1, content->valuestring);
 +		int base = cJSON_GetArraySize(agent_messages), index = 0;
++		int deferred = 0, r, row;
++		unsigned long turn = 0;
++		char defname[sizeof(agent_deferred)] = "";
 +		cJSON_ArrayForEach(tc, calls) {
 +			cJSON *result = agent_msg("tool",
 +				"skipped: pending execution");
@@ -9951,15 +16096,19 @@ index 00000000..122c15dc
 +			cJSON *command = cJSON_GetObjectItem(parsed, "command");
 +			char *err = NULL;
 +			agent_child_status = 0;
++			agent_edited = 0;
++			agent_edits_n = 0;
++			agent_edits_lb = NULL;
 +			sbuf_smake(out, 256)
 +			sbuf_smake(result, 256)
 +			agent_boundary();
-+			agent_log("EX", cJSON_IsString(command) ?
++			agent_turn_part(2 + 2 * index, cJSON_IsString(command) ?
 +				command->valuestring : "invalid tool call");
-+			if (agent_cancel || agent_pause ||
-+					round == max_tool_rounds)
-+				err = "skipped: execution cancelled, "
-+					"suspended, or round limit reached";
++			if (!index)
++				turn = agent_turn[agent_logbuf == 3];
++			*agent_deferred = '\0';
++			if (agent_cancel || agent_pause)
++				err = "skipped: execution cancelled or suspended";
 +			else if (!cJSON_IsString(name) ||
 +					strcmp(name->valuestring, "ex"))
 +				err = "unknown tool (expected ex)";
@@ -9973,21 +16122,30 @@ index 00000000..122c15dc
 +				agent_capture = out;
 +				agent_capture_total = 0;
 +				agent_child_status = 0;
++				agent_shown = 0;
++				agent_tool_dep = xexec_dep + 1;
 +				agent_sequence();
 +				err = ex_exec(command->valuestring);
 +				agent_tool_calls++;
 +				agent_sequence();
-+				if (xgr == 2 && agent_capture_total > 4096) {
++				if (!agent_shown) {
++					free(agent_show);
++					agent_show = emalloc(out->s_n + 1);
++					memcpy(agent_show, out->s, out->s_n);
++					agent_show_n = out->s_n;
++				}
++				if (agent_gr_cap() &&
++						agent_capture_total > (size_t)xagr) {
 +					char msg[128];
 +					snprintf(msg, sizeof(msg),
-+						"output guardrail: %zu > 4096 (gr 0 to bypass once)",
-+						agent_capture_total);
++						"output guardrail: %zu > %d bytes (aout to view)",
++						agent_capture_total, xagr);
 +					sbuf_cut(out, 0)
 +					sbufn_str(out, msg)
-+				} else if (xgr >= 0 && xgr < 2)
-+					xgr++;
++				}
 +				agent_capture = NULL;
 +				agent_tool = 0;
++				agent_sync_pending();
 +				if (agent_input_blocked) {
 +					xquit = savedquit;
 +					xqprop = savedqprop;
@@ -9995,45 +16153,72 @@ index 00000000..122c15dc
 +					err = "interactive input unavailable during agent execution";
 +				}
 +			}
++			/* The output comes first, as printed; these lines follow it. */
++			if (agent_edited)
++				agent_edit_report(result);
++			if (err && err != xuerr) {
++				sbuf_str(result, err)
++				sbuf_chr(result, '\n')
++			}
++			sbuf_str(result, agent_jobmsg)
++			*agent_jobmsg = '\0';
 +			if (agent_cancel)
 +				sbuf_str(result, "cancelled\n")
 +			else if (agent_pause)
 +				sbuf_str(result,
 +					"suspended; remaining commands "
 +					"skipped\n")
-+			else {
++			else if (agent_child_status || err) {
 +				char status[64];
-+				snprintf(status, sizeof(status), "status %d\n",
-+					agent_child_status ?
-+						agent_child_status : !!err);
++				snprintf(status, sizeof(status), "[error %d]\n",
++					agent_child_status ? agent_child_status : 1);
 +				sbuf_str(result, status)
 +			}
-+			if (err && err != xuerr) {
-+				sbuf_str(result, err)
-+				sbuf_chr(result, '\n')
-+			}
-+			sbuf_mem(result, out->s, out->s_n)
-+			char *safe = agent_safe_text(result->s, result->s_n);
++			if (result->s_n && out->s_n && out->s[out->s_n-1] != '\n')
++				sbuf_chr(out, '\n')
++			sbuf_mem(out, result->s, result->s_n)
++			char *safe = agent_safe_text(out->s, out->s_n);
++			/* Stamp session turns only: other exchanges are discarded. */
++			sbuf_cut(out, 0)
++			sbufn_str(out, safe)
++			if (index + 1 == cJSON_GetArraySize(calls) && agent_logbuf == 3)
++				agent_stamp(out, turn);
 +			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(
-+				agent_messages, base + index++),
-+				"content", cJSON_CreateString(safe));
-+			if (agent_cancel != 2)
-+				agent_log("RESULT", safe);
++				agent_messages, base + index),
++				"content", cJSON_CreateString(out->s));
++			agent_turn_part(3 + 2 * index, safe);
++			if (*agent_deferred && !deferred++)
++				strcpy(defname, agent_deferred);
++			index++;
 +			free(safe);
 +			cJSON_Delete(parsed);
 +			free(out->s);
 +			free(result->s);
 +		}
++		/* A turn of deferrals only shows specs; rate it for the checkpoint. */
++		if (index && deferred == index && agent_acl_kept() &&
++				agent_logbuf == 3 && !agent_note(turn, &r, &row)) {
++			char note[96];
++			snprintf(note, sizeof(note), "deferred; printed the %s spec "
++				"instead of running it", defname);
++			agent_note_set(turn, 1, note);
++		}
++		agent_turn_close();
 +		int has_calls = cJSON_GetArraySize(calls);
 +		cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
 +			cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
-+		if (agent_packing && !has_calls && cJSON_IsString(finish) &&
-+				!strcmp(finish->valuestring, "stop"))
++		/* The answer to a question does not end the pack it interrupted. */
++		if (agent_packing && !agent_checkpointing && !has_calls &&
++				cJSON_IsString(finish) && !strcmp(finish->valuestring, "stop"))
 +			agent_pack_done = 1;
 +		cJSON_Delete(root);
 +		if (agent_cancel)
 +			return;
 +		if (agent_pause) {
++			/* The reply a question withheld is requested again. */
++			if (agent_checkpointing == 3)
++				has_calls = 1;
++			agent_checkpoint_stop();
 +			agent_editor();
 +			agent_redraw(NULL);
 +			agent_pause = 0;
@@ -10043,46 +16228,135 @@ index 00000000..122c15dc
 +			agent_refresh();
 +		}
 +		agent_rounds = round;
-+		if (!has_calls)
-+			return;
-+		if (round++ == max_tool_rounds) {
-+			agent_log("RESULT",
-+				"maximum tool rounds reached; "
-+				"submit to continue");
-+			return;
++		/* A pack that stops without touching the log gets another try. */
++		if (!has_calls && agent_packing && !agent_checkpointing &&
++				agent_pack_log && unpacked < 3) {
++			char *log = agent_text(tempbufs[3].lb);
++			int same = !strcmp(log, agent_pack_log);
++			free(log);
++			if (same) {
++				unpacked++;
++				agent_pack_done = 0;
++				temp_switch(3, 0);
++				cJSON_AddItemToArray(agent_messages,
++					agent_msg("user", agent_pack_retry));
++				agent_log("USER", agent_pack_retry);
++				continue;
++			}
 +		}
++		/* An unanswered budget check gets two more requests, then becomes
++		 * a checkpoint; a thinking question gets AGENT_THINK_TRIES, then
++		 * counts as answered by acap alone. */
++		if (agent_checkpointing >= 2 && !agent_cp_done) {
++			int think = agent_checkpointing == 3;
++			if (agent_cp_refused < (think ? AGENT_THINK_TRIES : 2)) {
++				if (!has_calls) {
++					char msg[96];
++					snprintf(msg, sizeof(msg), "Nothing ran; reply with "
++						"an ex tool call, %s%s", think ? "acap N [note] or acap" :
++						"acheck N or acheck.", agent_think_retry());
++					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
++					agent_log("USER", msg);
++				}
++				agent_cp_refused++;
++				continue;
++			}
++			if (agent_checkpointing == 2) {
++				agent_cp_asked = 1;
++				agent_checkpoint_end();
++				has_calls = 1;
++			} else
++				agent_cp_done = 1;
++		}
++		/* A reply without commands also ends the checkpoint, once turns
++		 * are rated or after two reminders without new ratings. */
++		if (agent_checkpointing == 1 && !has_calls) {
++			char unrated[112], msg[384];
++			if (agent_cp_hold(unrated, sizeof(unrated))) {
++				snprintf(msg, sizeof(msg),
++					"Nothing ran: your reply made no ex tool calls. Still "
++					"unrated: %s\nSend one ex tool call per command, "
++					"N[,M]arate R sentence, e.g.\n%sThen adone.",
++					unrated, agent_cp_example(unrated));
++				cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
++				agent_log("USER", msg);
++				continue;
++			}
++		}
++		/* The interrupted request then resumes. */
++		if (agent_checkpointing && (agent_cp_done || !has_calls)) {
++			int think = agent_checkpointing == 3;
++			agent_checkpoint_end();
++			has_calls = 1;
++			/* A raised cap, or a withheld reply without text and calls,
++			 * requests a new reply; otherwise the withheld one runs now. */
++			if (think && (agent_think_more || agent_think_empty)) {
++				asked = 1;
++				continue;
++			}
++			if (think && agent_think_held) {
++				root = agent_think_held;
++				agent_think_held = NULL;
++				goto reply;
++			}
++		}
++		if (!has_calls) {
++			if (!agent_goal || agent_packing || agent_logbuf != 3)
++				return;
++			goal_due = 1;
++		}
++		round++;
 +	}
++}
++
++/* Every exit from a run, including errors, ends a checkpoint phase. */
++static void agent_run(const char *input)
++{
++	agent_run_loop(input);
++	agent_checkpoint_stop();
++	/* A run can end before the reply a raised cap and a note were for. */
++	if (agent_think_max)
++		agent_think_rebase();
++	agent_think_unnote();
++	agent_think_drop();
++}
++
++/* Add or remove a skill in b-5; want < 0 toggles. */
++static void agent_skill(char *skill_str, int want)
++{
++	struct lbuf *lb = tempbufs[4].lb;
++	char *s = agent_text(lb);
++	char *pos = strstr(s, skill_str);
++	if (want < 0)
++		want = !pos;
++	if (!pos == !want) {
++		free(s);
++		return;
++	}
++	if (pos) {
++		int beg = 0;
++		for (char *p = s; p < pos; p++)
++			if (*p == '\n') beg++;
++		int len = 0;
++		for (char *p = skill_str; *p; p++)
++			if (*p == '\n') len++;
++		lbuf_edit(lb, NULL, beg, beg + len, 0, 0);
++	} else {
++		lbuf_edit(lb, skill_str, lbuf_len(lb), lbuf_len(lb), 0, 0);
++	}
++	free(s);
++	if (agent_tool) {
++		s = agent_text(lb);
++		cJSON_ReplaceItemInArray(agent_messages, 0, agent_msg("system", s));
++		agent_usage.anchored = 0;
++		free(s);
++	} else
++		agent_history(1);
 +}
 +
 +static void *ec_skill(char *loc, char *cmd, char *arg)
 +{
-+	char *skill_str;
-+	if (strcmp(cmd, "acm") == 0)
-+		skill_str = caveman_skill;
-+	struct lbuf *lb = tempbufs[4].lb;
-+	char *s = agent_text(lb);
-+	if (s) {
-+		char *pos = strstr(s, skill_str);
-+		if (pos) {
-+			int beg = 0;
-+			for (char *p = s; p < pos; p++)
-+				if (*p == '\n') beg++;
-+			int len = 0;
-+			for (char *p = skill_str; *p; p++)
-+				if (*p == '\n') len++;
-+			lbuf_edit(lb, NULL, beg, beg + len, 0, 0);
-+		} else {
-+			lbuf_edit(lb, skill_str, lbuf_len(lb), lbuf_len(lb), 0, 0);
-+		}
-+		free(s);
-+		if (agent_tool) {
-+			s = agent_text(lb);
-+			cJSON_ReplaceItemInArray(agent_messages, 0, agent_msg("system", s));
-+			agent_usage.anchored = 0;
-+			free(s);
-+		} else
-+			agent_history(1);
-+	}
++	agent_skill(caveman_skill, -1);
 +	return NULL;
 +}
 +
@@ -10092,11 +16366,67 @@ index 00000000..122c15dc
 +	int counts[4] = {0, 0, 0, 0};
 +	unsigned long sums[4] = {0, 0, 0, 0};
 +	const char *names[] = {"system", "user", "assistant", "tool"};
++	const char *effort = *agent_effort ? agent_effort : "unset";
 +	cJSON *m;
 +	ex_print("agent status", msg_ft)
 +	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 +		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 +	ex_print(msg, msg_ft)
++	if (!agent_think_up)
++		agent_think_rebase();
++	if (agent_think_max)
++		snprintf(msg, sizeof(msg), "thinking   %d token cap, set by the "
++			"agent from %d up to %d, effort %s", agent_think_cap,
++			agent_think_base, agent_think_max, effort);
++	else if (agent_think_cap >= 0)
++		snprintf(msg, sizeof(msg), "thinking   %d token cap, effort %s",
++			agent_think_cap, effort);
++	else
++		snprintf(msg, sizeof(msg), "thinking   no token cap, effort %s", effort);
++	ex_print(msg, msg_ft)
++	if (agent_think_bank) {
++		snprintf(msg, sizeof(msg), "           %d tokens left of a cap the "
++			"agent raised, added to the cap", agent_think_bank);
++		ex_print(msg, msg_ft)
++	}
++	if (agent_think_cnt) {
++		int k = snprintf(msg, sizeof(msg), "           %.0f tokens recent "
++			"average over %d replies", agent_think_avg, agent_think_cnt);
++		if (xata)
++			snprintf(msg + k, sizeof(msg) - k, "; ata caps at %d%% of it", xata);
++		ex_print(msg, msg_ft)
++	}
++	if (agent_acl_kept()) {
++		int budget = agent_acl_budget ? agent_acl_budget : abs(xacl);
++		int k = snprintf(msg, sizeof(msg), "acl        %d, context rebuilt "
++			"from b-4 at checkpoints and log edits, %s after %d tokens%s",
++			xacl, xacl > 1 ? "checkpoint" : "budget check", budget,
++			agent_acl_budget ? " (acheck)" : "");
++		if (agent_acl_mark)
++			snprintf(msg + k, sizeof(msg) - k, ", next at ~%.0f",
++				agent_acl_mark + budget);
++	} else
++		snprintf(msg, sizeof(msg), "acl        %d%s", xacl,
++			xacl ? ", context rebuilt from b-4" : " (off)");
++	ex_print(msg, msg_ft)
++	if (agent_acl_kept() || lbuf_len(tempbufs[5].lb)) {
++		char unrated[112];
++		int n = agent_unrated_now(unrated, sizeof(unrated));
++		snprintf(msg, sizeof(msg), "notes      %d in b-6, %d turns unrated",
++			lbuf_len(tempbufs[5].lb), n);
++		ex_print(msg, msg_ft)
++	}
++	if (agent_goal) {
++		snprintf(msg, sizeof(msg), "goal       %.200s", agent_goal);
++		ex_print(msg, msg_ft)
++	}
++	if (lbuf_len(tempbufs[6].lb)) {
++		struct agent_span *spans;
++		int n = agent_spans_of(tempbufs[6].lb, &spans);
++		free(spans);
++		snprintf(msg, sizeof(msg), "discarded  %d entries in b-7", n);
++		ex_print(msg, msg_ft)
++	}
 +	if (!agent_ready) {
 +		ex_print(agent_init_error ? agent_init_error :
 +			"agent session is not running", msg_ft)
@@ -10119,23 +16449,23 @@ index 00000000..122c15dc
 +		}
 +	} else
 +		ex_print("tokens     unavailable from endpoint", msg_ft)
++	if (agent_sent) {
++		snprintf(msg, sizeof(msg), "prefix     %zu of %zu message bytes shared with "
++			"previous request", agent_reused, agent_sent);
++		ex_print(msg, msg_ft)
++	}
 +	if (agent_messages) {
 +		snprintf(msg, sizeof(msg), "next input ~%.0f tokens (%s)", agent_tokens(),
-+			agent_usage.anchored ? "reported input + estimated growth" :
++			agent_usage.anchored ? "reported input + estimated change" :
 +			"estimated: JSON bytes / 3, including tools and framing");
 +		ex_print(msg, msg_ft)
 +		cJSON_ArrayForEach(m, agent_messages) {
 +			cJSON *role = cJSON_GetObjectItem(m, "role");
 +			cJSON *content = cJSON_GetObjectItem(m, "content");
-+			int r = 0;
-+			if (cJSON_IsString(role)) {
-+				if (!strcmp(role->valuestring, "user"))
-+					r = 1;
-+				else if (!strcmp(role->valuestring, "assistant"))
-+					r = 2;
-+				else if (!strcmp(role->valuestring, "tool"))
-+					r = 3;
-+			}
++			int r = 3;
++			while (r && (!cJSON_IsString(role) ||
++					strcmp(role->valuestring, names[r])))
++				r--;
 +			counts[r]++;
 +			if (cJSON_IsString(content))
 +				sums[r] += strlen(content->valuestring);
@@ -10166,32 +16496,652 @@ index 00000000..122c15dc
 +	snprintf(msg, sizeof(msg), "capture    %ld bytes in current tool output",
 +		agent_capture ? (long)agent_capture->s_n : 0);
 +	ex_print(msg, msg_ft)
-+	snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, guardrail %d",
-+		max_tool_rounds, request_timeout, xgr);
++	if (max_tool_rounds)
++		snprintf(msg, sizeof(msg), "limits     %d rounds max, %d sec timeout, "
++			"guardrail %d, detach %d sec", max_tool_rounds,
++			request_timeout, xagr, xato);
++	else
++		snprintf(msg, sizeof(msg), "limits     unlimited rounds, %d sec timeout, "
++			"guardrail %d, detach %d sec", request_timeout, xagr, xato);
 +	ex_print(msg, msg_ft)
 +	snprintf(msg, sizeof(msg), "session    %s", tempbufs[3].path);
 +	ex_print(msg, msg_ft)
 +	return NULL;
 +}
 +
++/* The end of a token count at s, read into n; NULL if not a count. */
++static char *agent_count(char *s, int *n)
++{
++	char *e = s;
++	while (uc_isdigit(*e))
++		e++;
++	if (e == s || e - s > 9)
++		return NULL;
++	*n = atoi(s);
++	return e;
++}
++
++/* acap N raises the thinking cap to N, at most the ceiling of ath N,M, for
++ * the next reply. In a thinking question that discards the withheld reply,
++ * text after N is a note for the new one and acap alone keeps the reply. */
++static void *ec_acap(char *loc, char *cmd, char *arg)
++{
++	static char msg[128];
++	int cap = -1, ask = agent_checkpointing == 3;
++	char *s;
++	if (!agent_think_max)
++		return "acap needs a ceiling set by the user with ath N,M";
++	while (*arg && strchr(" \t\n", *arg))
++		arg++;
++	/* The exchange of a question is discarded unread. */
++	if (ask && !*loc && !*arg) {
++		agent_cp_done = 1;
++		return NULL;
++	}
++	s = agent_count(arg, &cap);
++	if (s && *s && !strchr(" \t\n", *s))
++		s = NULL;
++	while (s && *s && strchr(" \t\n", *s))
++		s++;
++	if (*loc || !s || (*s && !ask) || cap < 1) {
++		snprintf(msg, sizeof(msg), "acap takes no range, only a positive "
++			"token count: acap N%s%s", ask ? " [note], or nothing" : "",
++			agent_think_retry());
++		return msg;
++	}
++	if (ask && cap <= agent_think_was) {
++		snprintf(msg, sizeof(msg), "acap N takes a count above the cap "
++			"of %d tokens; acap alone leaves the cap%s", agent_think_was,
++			agent_think_retry());
++		return msg;
++	}
++	agent_think_cap = MIN(cap, agent_think_max);
++	agent_think_up = 1;
++	if (ask) {
++		agent_think_unnote();
++		if (*s)
++			agent_think_note = agent_safe_text(s, strlen(s));
++		agent_think_more = agent_cp_done = 1;
++		return NULL;
++	}
++	snprintf(msg, sizeof(msg), "thinking cap %d tokens for the next "
++		"reply", agent_think_cap);
++	ex_print(msg, msg_ft)
++	return NULL;
++}
++
++/* [N[,M]]ath[effort] sets the thinking cap, the ceiling acap may raise it to
++ * and the effort. */
++/* agoal text sets the goal, agoal alone clears it. */
++static void *ec_agoal(char *loc, char *cmd, char *arg)
++{
++	if (*loc)
++		return "agoal takes no range";
++	while (*arg && strchr(" \t\n", *arg))
++		arg++;
++	free(agent_goal);
++	agent_goal = *arg ? agent_safe_text(arg, strlen(arg)) : NULL;
++	ex_print(agent_goal ? "goal set" : "goal cleared", msg_ft)
++	return NULL;
++}
++
++static void *ec_ath(char *loc, char *cmd, char *arg)
++{
++	int cap = -1, max = 0;
++	char *s = loc, *comma = strchr(loc, ',');
++	if (*s) {
++		s = agent_count(s, &cap);
++		if (s && s == comma)
++			s = agent_count(s + 1, &max);
++		if (!s || *s || (comma && max <= cap))
++			return "ath range must be a token count N, or N,M with M above N";
++	}
++	if (strlen(arg) >= sizeof(agent_effort) || strpbrk(arg, " \t\n"))
++		return "ath argument must be one effort word";
++	agent_think_base = cap;
++	agent_think_max = max;
++	agent_think_cnt = agent_think_bank = 0;
++	agent_think_rebase();
++	strcpy(agent_effort, arg);
++	return NULL;
++}
++
++static int agent_byteaddr(char **s, long *pos)
++{
++	char *e;
++	if (**s == '$') {
++		*pos = (long)agent_show_n - 1;
++		(*s)++;
++		return 0;
++	}
++	if (!isdigit((unsigned char)**s))
++		return 1;
++	errno = 0;
++	*pos = strtol(*s, &e, 10);
++	*s = e;
++	return errno == ERANGE;
++}
++
++/* Print bytes beg through end of the saved tool output; $ is the last byte. */
++static void *ec_aout(char *loc, char *cmd, char *arg)
++{
++	long beg = 0, end = (long)agent_show_n - 1;
++	if (*arg)
++		return "aout takes only a byte range";
++	if (!agent_show_n)
++		return "no agent output to show";
++	if (*loc) {
++		if (agent_byteaddr(&loc, &beg))
++			return "invalid byte range";
++		end = beg;
++		if (*loc == ',' && (loc++, agent_byteaddr(&loc, &end)))
++			return "invalid byte range";
++		if (*loc)
++			return "invalid byte range";
++	}
++	if (beg > end || beg >= (long)agent_show_n)
++		return "byte range out of bounds";
++	end = MIN(end, (long)agent_show_n - 1);
++	if (agent_capture)	/* exempt from agr: not counted in the total */
++		sbuf_mem(agent_capture, agent_show + beg, end - beg + 1)
++	else {
++		char *s = emalloc(end - beg + 2);
++		memcpy(s, agent_show + beg, end - beg + 1);
++		s[end - beg + 1] = '\0';
++		ex_print(s, msg_ft)
++		free(s);
++	}
++	return NULL;
++}
++
++static int agent_entryaddr(char **s, unsigned long *n, unsigned long last)
++{
++	char *e;
++	if (**s == '$') {
++		*n = last;
++		(*s)++;
++		return 0;
++	}
++	if (!isdigit((unsigned char)**s))
++		return 1;
++	errno = 0;
++	*n = strtoul(*s, &e, 10);
++	*s = e;
++	return errno == ERANGE;
++}
++
++/* Parse entry numbers N or N,M, $ being last; an error or NULL. */
++static char *agent_entrynums(char *loc, unsigned long last, unsigned long *beg,
++		unsigned long *end)
++{
++	if (agent_entryaddr(&loc, beg, last))
++		return "an entry number is required, as in 12 or 12,15";
++	*end = *beg;
++	if ((*loc == ',' && (loc++, agent_entryaddr(&loc, end, last))) ||
++			*loc || *end < *beg)
++		return "invalid entry range";
++	return NULL;
++}
++
++/* Span indices of entries N through M; an error or NULL. */
++static char *agent_entryrange(char *loc, struct agent_span *spans, int cnt,
++		int *first, int *last)
++{
++	unsigned long beg, end;
++	char *err;
++	*first = *last = -1;
++	if (!cnt)
++		return "session log has no entries";
++	if ((err = agent_entrynums(loc, spans[cnt-1].n, &beg, &end)))
++		return err;
++	for (int k = 0; k < cnt; k++) {
++		if (spans[k].n < beg || spans[k].n > end)
++			continue;
++		if (*first < 0)
++			*first = k;
++		*last = k;
++	}
++	return *first < 0 ? "no entries in range" : NULL;
++}
++
++/* Mark in sel the TURN entries a list N,M,K names; first and last get the
++ * span indices of its ends. An error or NULL. */
++static char *agent_entrylist(char *loc, struct agent_span *spans, int cnt,
++		char *sel, int *first, int *last)
++{
++	static char err[80];
++	struct agent_span *sp;
++	unsigned long n;
++	if (!cnt)
++		return "session log has no entries";
++	do {
++		if (agent_entryaddr(&loc, &n, spans[cnt-1].n) || (*loc && *loc != ','))
++			return "invalid entry list";
++		if (!(sp = agent_span_turn(spans, cnt, n))) {
++			snprintf(err, sizeof(err),
++				"entry %lu is not a TURN; the list was not applied", n);
++			return err;
++		}
++		sel[sp - spans] = 1;
++	} while (*loc++);
++	*first = *last = -1;
++	for (int k = 0; k < cnt; k++) {
++		if (!sel[k])
++			continue;
++		if (*first < 0)
++			*first = k;
++		*last = k;
++	}
++	return NULL;
++}
++
++/* Keep the b-4 cursor inside a log that lost lines. */
++static void agent_log_clamp(void)
++{
++	int last = MAX(0, lbuf_len(tempbufs[3].lb) - 1);
++	if (ex_buf == tempbufs + 3)
++		xrow = MIN(xrow, last);
++	else
++		tempbufs[3].row = MIN(tempbufs[3].row, last);
++}
++
++/* A list of three or more entry numbers, not N or N,M. */
++static int agent_islist(char *loc)
++{
++	char *c = strchr(loc, ',');
++	return c && strchr(c + 1, ',');
++}
++
++/* Append header line ln, with " trimmed" after it for an entry of b-7. */
++static void agent_aget_head(sbuf *sb, char *ln, int trimmed)
++{
++	sbuf_mem(sb, ln, (int)strcspn(ln, "\n"))
++	sbuf_str(sb, trimmed ? " trimmed\n" : "\n")
++}
++
++/* Print entries N through M of b-4 and b-7 in number order, those of b-7
++ * with " trimmed" after each header. Part indexes in arg select parts of
++ * turns; role names select entries and parts. */
++static void *ec_aget(char *loc, char *cmd, char *arg)
++{
++	static char bad[] = "aget takes part indexes or role names: USER TURN "
++		"NOTICE REASONING ASSISTANT EX RESULT";
++	struct lbuf *lbs[2] = {tempbufs[6].lb, tempbufs[3].lb};
++	struct agent_span *spans[2] = {NULL, NULL}, *sp;
++	struct agent_part *parts;
++	int cnt[2], k[2] = {0, 0}, eroles = 0, proles = 0, nidx = 0, *idxs = NULL;
++	int len, b, i, j, np, found = 0;
++	unsigned long beg, end, last = 0, idx;
++	char *ret = NULL, *e;
++	while (*(arg += strspn(arg, " \t"))) {
++		len = strcspn(arg, " \t");
++		found = 0;
++		if (isdigit((unsigned char)*arg)) {
++			idx = strtoul(arg, &e, 10);
++			if ((found = e == arg + len && idx <= INT_MAX)) {
++				idxs = erealloc(idxs, (nidx + 1) * sizeof(*idxs));
++				idxs[nidx++] = idx;
++			}
++		}
++		for (i = 0; i < LEN(agent_entry_roles); i++) {
++			if ((int)strlen(agent_entry_roles[i]) == len &&
++					!strncmp(agent_entry_roles[i], arg, len)) {
++				eroles |= 1 << (i + 1);
++				found = 1;
++			}
++		}
++		for (i = 0; i < LEN(agent_part_roles); i++) {
++			if ((int)strlen(agent_part_roles[i]) == len &&
++					!strncmp(agent_part_roles[i], arg, len)) {
++				proles |= 1 << i;
++				found = 1;
++			}
++		}
++		arg += len;
++		if (!found || (nidx && (eroles || proles))) {
++			ret = bad;
++			goto done;
++		}
++	}
++	found = 0;
++	for (b = 0; b < 2; b++) {
++		cnt[b] = agent_spans_of(lbs[b], &spans[b]);
++		if (cnt[b])
++			last = MAX(last, spans[b][cnt[b]-1].n);
++	}
++	if ((ret = agent_entrynums(loc, last, &beg, &end)))
++		goto done;
++	sbuf_smake(sb, 1024)
++	/* Merge by number; a trimmed original precedes the note numbered
++	 * after it. */
++	while (k[0] < cnt[0] || k[1] < cnt[1]) {
++		b = k[0] == cnt[0] || (k[1] < cnt[1] &&
++			spans[1][k[1]].n < spans[0][k[0]].n);
++		sp = spans[b] + k[b]++;
++		if (sp->n < beg || sp->n > end)
++			continue;
++		found = 1;
++		/* Whole entries, unless parts or other roles are asked for. */
++		if (!nidx && (!(eroles | proles) || eroles & (1 << sp->role))) {
++			if (sp->role)
++				agent_aget_head(sb, lbs[b]->ln[sp->beg], !b);
++			if (sp->role != AE_TURN || b) {
++				for (i = sp->beg + !!sp->role; i < sp->end; i++)
++					sbuf_str(sb, lbs[b]->ln[i])
++				continue;
++			}
++		} else if (sp->role != AE_TURN || (!nidx && !proles))
++			continue;
++		np = agent_parts(lbs[b], sp, &parts);
++		for (j = 0; j < np; j++) {
++			if (nidx) {
++				for (i = 0; i < nidx && idxs[i] != parts[j].idx; i++)
++					;
++				if (i == nidx)
++					continue;
++			} else if (!(eroles & (1 << AE_TURN)) && (eroles | proles) &&
++					!(proles & (1 << parts[j].role)))
++				continue;
++			if (parts[j].idx >= 0)
++				agent_aget_head(sb, lbs[b]->ln[parts[j].beg], !b);
++			for (i = parts[j].beg + 1; i < parts[j].end; i++)
++				sbuf_str(sb, lbs[b]->ln[i])
++		}
++		free(parts);
++	}
++	sbuf_nul(sb)
++	if (sb->s_n)
++		ex_print(sb->s, msg_ft)
++	else if (!found)
++		ret = "no entries in range";
++	free(sb->s);
++done:
++	free(idxs);
++	free(spans[0]);
++	free(spans[1]);
++	return ret;
++}
++
++/* Where an agent note goes: a turn before a USER entry or entry 0, which
++ * come before NOTICE. */
++static int agent_note_rank(struct agent_span *sp)
++{
++	return sp->role == AE_TURN ? 2 : sp->role != AE_NOTICE;
++}
++
++/* Replace log entries N through M, or the turns of a list N,M,K, with a
++ * note, or remove them. A note over a turn is a turn holding only the text,
++ * under the turn's number, so its rating stays with it. */
++static void *ec_anote(char *loc, char *cmd, char *arg)
++{
++	static char err[80];
++	struct lbuf *lb = tempbufs[3].lb;
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans), first, last, at = -1, note = -1, changed = 0;
++	int keep = agent_tool && agent_checkpointing != 1, kept = 0, klen = 0;
++	int lo = -1, split = 1, nlen = 0;
++	int list = agent_islist(loc);
++	double before = 0, after;
++	char msg[400], kmsg[128] = "", nums[128], id[AGENT_ID], fend[AGENT_END];
++	/* 1 an entry to replace, 2 one of the range that stays */
++	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
++	void *ret;
++	if (list)
++		ret = agent_entrylist(loc, spans, cnt, sel, &first, &last);
++	else
++		ret = agent_entryrange(loc, spans, cnt, &first, &last);
++	if (ret)
++		goto done;
++	/* Outside a checkpoint the agent cannot change USER entries or entry
++	 * 0. They split the range; the note goes after the last of them. An
++	 * agent note goes in place of the first turn, else of the first USER
++	 * entry or entry 0: a note under NOTICE would never be sent. */
++	for (int k = first; k <= last; k++) {
++		if (keep && spans[k].role <= AE_USER) {
++			split = 1;
++			if (list)
++				continue;
++			sel[k] = 2;
++			if (kept++ < 10 && klen < (int)sizeof(kmsg))
++				klen += snprintf(kmsg + klen, sizeof(kmsg) - klen, "%s%lu",
++					kept > 1 ? ", " : "", spans[k].n);
++			continue;
++		}
++		if (list && !sel[k])
++			continue;
++		sel[k] = 1;
++		/* The results still to come would be logged into the note. */
++		if (agent_tool && agent_turn[1] && spans[k].n == agent_turn[1]) {
++			snprintf(err, sizeof(err), "turn %lu is still running; note it from "
++				"a later turn", agent_turn[1]);
++			ret = err;
++			goto done;
++		}
++		if (split)
++			at = note = k;
++		else if (agent_tool &&
++				agent_note_rank(spans + k) > agent_note_rank(spans + note))
++			note = k;
++		split = 0;
++		if (lo < 0)
++			lo = k;
++		if (changed < 8)
++			nlen += snprintf(nums + nlen, sizeof(nums) - nlen, "%s%lu",
++				changed ? ", " : "", spans[k].n);
++		before += agent_span_tokens(spans + k);
++		changed++;
++	}
++	if (kept > 10 && klen < (int)sizeof(kmsg))
++		snprintf(kmsg + klen, sizeof(kmsg) - klen, " and %d more", kept - 10);
++	if (changed > 8)
++		snprintf(nums + nlen, sizeof(nums) - nlen, " and %d more", changed - 8);
++	if (note < 0) {
++		ret = "USER entries change only during an acl checkpoint; note over "
++			"the TURN entries the findings came from";
++		goto done;
++	}
++	sbuf_smake(sb, 256)
++	if (*arg) {
++		agent_frame(arg, id, fend);
++		if (spans[note].role == AE_TURN)
++			snprintf(msg, sizeof(msg), "TURN %lu\n%s %lu.%d%s\n", spans[note].n,
++				agent_part_roles[AP_ASSISTANT], spans[note].n, AP_ASSISTANT, id);
++		else if (spans[note].role)
++			snprintf(msg, sizeof(msg), "%s %lu%s\n", agent_span_role(spans + note),
++				spans[note].n, id);
++		if (spans[note].role)
++			sbuf_str(sb, msg)
++		sbuf_str(sb, arg)
++		if (sb->s[sb->s_n-1] != '\n')
++			sbuf_chr(sb, '\n')
++		/* The text before the first header has no header to end. */
++		sbuf_str(sb, spans[note].role ? fend : "\n")
++	}
++	sbuf_nul(sb)
++	after = *arg ? (strlen(arg) + 2) / 3 : 0;
++	/* Not counted as lines the agent edited. Groups are edited last first,
++	 * so earlier line numbers hold; one save. */
++	preserve(int, agent_tool, agent_tool = 0;)
++	preserve(int, agent_syncing, agent_syncing = 1;)
++	for (int k = last; k >= first; k--) {
++		int end = k;
++		if (sel[k] != 1)
++			continue;
++		while (k > first && sel[k-1] == 1)
++			k--;
++		/* A pack moves the whole log to b-7 itself, if it succeeds. */
++		if (!agent_packing)
++			agent_discard(lb, spans, k, end);
++		lbuf_edit(lb, *arg && k == at ? sb->s : NULL,
++			spans[k].beg, spans[end].end, 0, 0);
++	}
++	restore(agent_syncing)
++	restore(agent_tool)
++	agent_sync(lb);
++	agent_sync(tempbufs[6].lb);
++	free(sb->s);
++	agent_log_clamp();
++	while (sel[last] != 1)
++		last--;
++	int len = snprintf(msg, sizeof(msg), "%s %d %s ", *arg ? "noted" :
++		"removed", changed, changed > 1 ? "entries" : "entry");
++	if (list)
++		len += snprintf(msg + len, sizeof(msg) - len, "%s", nums);
++	else
++		len += snprintf(msg + len, sizeof(msg) - len, "%lu-%lu",
++			spans[lo].n, spans[last].n);
++	if (*arg && (kept || note != lo))
++		len += snprintf(msg + len, sizeof(msg) - len, " as entry %lu",
++			spans[note].n);
++	if (kept)
++		len += snprintf(msg + len, sizeof(msg) - len, "; kept USER %s", kmsg);
++	snprintf(msg + len, sizeof(msg) - len, "%s~%.0f -> ~%.0f tokens%s",
++		kept ? "; " : ", ", before, after, after > before ?
++		";\nthe note is larger than the entries it replaced" : "");
++	ex_print(msg, msg_ft)
++done:
++	free(sel);
++	free(spans);
++	return ret;
++}
++
++/* Move the spans with sel 1 to b-7, reporting as anote does; their ratings
++ * stay in b-6. Spans with sel 2 stay and count in the report. nums lists
++ * the turns of an arate list; NULL reports a range. */
++static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
++		char *nums)
++{
++	struct lbuf *lb = tempbufs[3].lb;
++	int removed = 0, len;
++	unsigned long lo = 0, hi = 0;
++	double before = 0, after = 0;
++	char msg[224];
++	preserve(int, agent_tool, agent_tool = 0;)
++	preserve(int, agent_syncing, agent_syncing = 1;)
++	/* Last first so earlier line numbers hold. */
++	for (int k = cnt - 1; k >= 0; k--) {
++		if (!sel[k])
++			continue;
++		before += agent_span_tokens(spans + k);
++		if (sel[k] == 2) {
++			after += agent_span_tokens(spans + k);
++			continue;
++		}
++		if (!hi)
++			hi = spans[k].n;
++		lo = spans[k].n;
++		removed++;
++		agent_discard(lb, spans, k, k);
++		lbuf_edit(lb, NULL, spans[k].beg, spans[k].end, 0, 0);
++	}
++	restore(agent_syncing)
++	restore(agent_tool)
++	agent_sync(lb);
++	agent_sync(tempbufs[6].lb);
++	agent_log_clamp();
++	len = snprintf(msg, sizeof(msg), "removed %d %s ", removed,
++		removed > 1 ? "turns" : "turn");
++	if (nums)
++		len += snprintf(msg + len, sizeof(msg) - len, "%s", nums);
++	else
++		len += snprintf(msg + len, sizeof(msg) - len, "%lu-%lu", lo, hi);
++	snprintf(msg + len, sizeof(msg) - len, ", ~%.0f -> ~%.0f tokens",
++		before, after);
++	ex_print(msg, msg_ft)
++}
++
++/* Rate in b-6 the TURN entries from N through M, or those of a list N,M,K
++ * of three or more. */
++static void *ec_arate(char *loc, char *cmd, char *arg)
++{
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans), first, last, rated = 0, len = 0;
++	unsigned long lo = 0, hi = 0;
++	char msg[224], nums[128], same[32], *text = arg + !!*arg;
++	/* 1 a turn to rate, 2 another entry of the range */
++	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
++	int list = agent_islist(loc);
++	void *ret;
++	if (list)
++		ret = agent_entrylist(loc, spans, cnt, sel, &first, &last);
++	else if (!(ret = agent_entryrange(loc, spans, cnt, &first, &last)))
++		for (int k = first; k <= last; k++)
++			sel[k] = spans[k].role == AE_TURN ? 1 : 2;
++	if (ret)
++		goto done;
++	while (*text == ' ' || *text == '\t')
++		text++;
++	if (*arg < '0' || *arg > '3' || text == arg + 1 || !*text) {
++		ret = "arate takes a rating from 0 to 3 and a sentence";
++		goto done;
++	}
++	/* One save and no line report for the batch of b-6 edits. */
++	preserve(int, agent_tool, agent_tool = 0;)
++	preserve(int, agent_syncing, agent_syncing = 1;)
++	for (int k = cnt - 1; k >= 0; k--)
++		if (sel[k] == 1)
++			agent_note_rehome(spans[k].n, spans, cnt, sel);
++	/* The sentence is written once; the other turns point to it. */
++	for (int k = 0; k < cnt; k++) {
++		if (sel[k] != 1)
++			continue;
++		agent_note_set(spans[k].n, *arg - '0', rated ? same : text);
++		if (rated < 8)
++			len += snprintf(nums + len, sizeof(nums) - len, "%s%lu",
++				rated ? ", " : "", spans[k].n);
++		if (!rated++) {
++			lo = spans[k].n;
++			snprintf(same, sizeof(same), "same as TURN %lu", lo);
++		}
++		hi = spans[k].n;
++	}
++	restore(agent_syncing)
++	restore(agent_tool)
++	if (!rated) {
++		ret = "no TURN entries in range; rate the TURN entry of each reply";
++		goto done;
++	}
++	if (rated > 8)
++		snprintf(nums + len, sizeof(nums) - len, " and %d more", rated - 8);
++	agent_sync(tempbufs[5].lb);
++	if (rated > 1 && list)
++		snprintf(msg, sizeof(msg), "rated %d turns TURN %s [%c]",
++			rated, nums, *arg);
++	else if (rated > 1)
++		snprintf(msg, sizeof(msg), "rated %d turns TURN %lu-%lu [%c]",
++			rated, lo, hi, *arg);
++	else
++		snprintf(msg, sizeof(msg), "rated TURN %lu [%c]", lo, *arg);
++	ex_print(msg, msg_ft)
++	/* A checkpoint drops dead weight from the log at once. */
++	if (*arg == '0' && agent_checkpointing == 1)
++		agent_trim_turns(spans, cnt, sel, list ? nums : NULL);
++done:
++	free(sel);
++	free(spans);
++	return ret;
++}
++
 +static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 +{
 +	char *scope = NULL;
-+	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf;
++	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf, spec = 0;
 +	cJSON *config;
 +	unsigned long epoch;
 +	if (strchr(cmd, '!'))
 +		exspec_reset();
-+	if (agent_init_error)
++	if (agent_start())
 +		return agent_init_error;
 +	if (!(config = agent_config()))
 +		return "invalid agent configuration";
 +	cJSON_Delete(config);
 +	if (*loc && !(scope = agent_snapshot(loc)))
 +		return xrerr;
-+	/* Snapshot the requested range before selecting the session log. */
-+	if (compact)
++	/* The range was read above, before the switch to the session log. */
++	if (compact) {
 +		temp_switch(3, 0);
++		spec = exspec_pack(1);
++	}
 +	if (cmd[1]) {
 +		agent_epoch++;
 +		agent_serial++;
@@ -10200,6 +17150,7 @@ index 00000000..122c15dc
 +			agent_syncing = 1;
 +			lbuf_edit(lb, NULL, 0, lbuf_len(lb), 0, 0);
 +			lbuf_saved(lb, 1);
++			agent_entries[1] = agent_turn[1] = 0;
 +			agent_syncing = 0;
 +			int fd = open(tempbufs[3].path, O_WRONLY | O_TRUNC);
 +			if (fd < 0 || close(fd))
@@ -10209,11 +17160,15 @@ index 00000000..122c15dc
 +			if (ex_buf == tempbufs+3) {
 +				exbuf_load(ex_buf)
 +			}
++			agent_temp_clear(5);
++			agent_temp_clear(6);
 +		}
 +		agent_history(cmd[1] == '~');
 +	}
 +	epoch = agent_epoch;
-+	preserve(int, agent_logbuf, agent_logbuf = compact ? 2 : 3;)
++	preserve(int, agent_logbuf, agent_logbuf = compact ? 7 : 3;)
++	if (compact)
++		agent_entries[0] = agent_turn[0] = 0;
 +	if (term_owned)
 +		term_init();
 +	if (!(savedvis & 2))
@@ -10290,6 +17245,8 @@ index 00000000..122c15dc
 +	restore(xesc)
 +	restore(agent_logbuf)
 +	xvis = savedvis;
++	if (compact)
++		exspec_pack(spec);
 +	if (term_owned)
 +		term_done();
 +	syn_setft(xb_ft);
@@ -10304,7 +17261,7 @@ index 00000000..122c15dc
 +static char *agent_compact_task(int browse, char *arg, int automatic)
 +{
 +	sbuf_smake(task, 512)
-+	sbuf_str(task, "The current buffer contains a log of the session.\n")
++	sbuf_str(task, "The current buffer is b-4, which contains a log of the session.\n")
 +	if (browse)
 +		sbuf_str(task,
 +		"The log has not been loaded into your context. Inspect the current\n"
@@ -10313,11 +17270,51 @@ index 00000000..122c15dc
 +	else
 +		sbuf_str(task,
 +		"The log is in your context. Do not read the current buffer into context.\n")
++	struct lbuf *notes = tempbufs[5].lb;
++	struct agent_span *spans;
++	int cnt = agent_spans(&spans), trimmed = 0, rated = lbuf_len(notes) > 0;
++	int reasoned = agent_spans_reasoned(spans, cnt);
++	unsigned long n;
++	double total = 0;
++	char ln[400];
++	for (int k = 0; k < cnt; k++)
++		total += agent_span_tokens(spans + k);
++	/* Notes outlive trimmed turns; they are listed in order among the
++	 * entries. */
++	for (int i = 0; i < lbuf_len(notes); i++)
++		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n);
++	/* A loaded log already shows each entry: list them only for their
++	 * notes, or to browse. */
++	if (cnt && !browse && !rated) {
++		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
++		sbuf_str(task, ln)
++	} else if (cnt || trimmed) {
++		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
++			"entries\n(role number ~tokens%s;\n"
++			"turns as %stext+commands+results=tokens%s)%s:\n", total,
++			browse ? ", first line" : "", reasoned ? "reasoning+" : "",
++			rated ? ", then [rating] note" : "",
++			trimmed ? ",\nin order with the notes of turns already trimmed "
++			"from the log\n(TURN number trimmed [rating] note)" : "");
++		sbuf_str(task, ln)
++		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
++			reasoned);
++	}
++	if (lbuf_len(notes)) {
++		sbuf_str(task, agent_rating_scale)
++		sbuf_str(task,
++			"Weigh entries by rating: omit 0, at most a phrase for 1, summarize 2,\n"
++			"keep the exact details of 3. Judge unrated entries by their content.\n")
++	}
++	if (lbuf_len(tempbufs[6].lb))
++		sbuf_str(task, "Trimmed entries are kept in full: N[,M]aget prints "
++			"entries N through M,\ntrimmed ones included, when the summary "
++			"needs their details.\n")
++	free(spans);
++	sbuf_chr(task, '\n')
 +	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
 +	"constraints, and unfinished work.\n")
-+	sbuf_str(task,
-+	"\nReplace the current buffer's content with the summary using %c\n"
-+	"followed by literal summary text.\n")
++	sbuf_str(task, agent_pack_example)
 +	if (automatic)
 +		sbuf_str(task,
 +		"This is automatic compaction, not a new user task.\n"
@@ -10336,6 +17333,8 @@ index 00000000..122c15dc
 +	void *ret;
 +	int browse = !strcmp(cmd, "apack!");
 +	unsigned long epoch = agent_epoch;
++	if (agent_start())
++		return agent_init_error;
 +	char *task = agent_compact_task(browse, arg, 0);
 +	/* Indices survive buffer-array growth during tool calls. */
 +	int savedtemp = istempbuf(ex_buf);
@@ -10351,12 +17350,15 @@ index 00000000..122c15dc
 +	cJSON *history = agent_messages;
 +	struct agent_usage usage = agent_usage;
 +	int was_packing = agent_packing, was_done = agent_pack_done;
++	char *was_log = agent_pack_log;
 +	agent_messages = NULL;
 +	agent_packing = 1;
 +	agent_pack_done = 0;
++	agent_pack_log = original;
 +	/* apack! resets history without clearing or importing the log. */
 +	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
 +	int complete = agent_pack_done;
++	agent_pack_log = was_log;
 +	agent_packing = was_packing;
 +	agent_pack_done = was_done;
 +	if (agent_epoch == epoch + 1) {
@@ -10365,6 +17367,9 @@ index 00000000..122c15dc
 +		int changed = strcmp(original, summary) != 0;
 +		if (!ret && complete && changed && !agent_save(3)) {
 +			agent_history(1);
++			agent_notes_archive(archive);
++			agent_discard_log(original);
++			agent_head_summary();
 +			cJSON_Delete(history);
 +		} else {
 +			if (!ret)
@@ -10382,7 +17387,7 @@ index 00000000..122c15dc
 +		}
 +		free(summary);
 +	} else if (agent_epoch == epoch) {
-+		/* Initialization or range validation failed before the prompt. */
++		/* Configuration or range validation failed before the prompt. */
 +		agent_restore_log(archive);
 +		cJSON_Delete(agent_messages);
 +		agent_messages = history;
@@ -10404,9 +17409,8 @@ index 00000000..122c15dc
 +	return ret;
 +}
 +
-+/* Run the same log-editing task as apack, without entering a prompt. Keep the
-+ * live conversation detached until the pack agent actually replaces the log.
-+ * Logging goes to b-3, as in manual apack, not into the source being summarized. */
++/* Run the apack task without a prompt. The live conversation stays detached
++ * until the pack agent has replaced the log; the exchange is logged to b-8. */
 +static int agent_autocompact(const char *input)
 +{
 +	struct lbuf *lb = tempbufs[3].lb;
@@ -10426,26 +17430,30 @@ index 00000000..122c15dc
 +	if (!archive) {
 +		free(original);
 +		free(task);
-+		agent_log("RESULT", "autocompact failed: cannot archive session log");
++		agent_log("NOTICE", "autocompact failed: cannot archive session log");
 +		return 0;
 +	}
 +
-+	agent_logbuf = 2;
-+	agent_log("RESULT", browse ? "autocompact: browsing session log" :
++	agent_logbuf = 7;
++	agent_entries[0] = agent_turn[0] = 0;
++	agent_log("NOTICE", browse ? "autocompact: browsing session log" :
 +		"autocompact: summarizing loaded session log");
 +	if (browse)
 +		exspec_reset();
++	int spec = exspec_pack(1);
 +	agent_messages = NULL;
 +	agent_history(!browse);
 +	agent_packing = 1;
 +	agent_pack_done = 0;
++	agent_pack_log = original;
 +	temp_switch(3, 0);
 +	agent_run(task);
++	exspec_pack(spec);
++	agent_pack_log = NULL;
 +	agent_packing = 0;
 +	free(task);
 +
-+	/* Recursive editing may have deliberately replaced the session. Never
-+	 * overwrite that newer history or log with the saved conversation. */
++	/* Recursive editing may have started a new session; leave it alone. */
 +	if (epoch != agent_epoch || agent_serial != serial + 1) {
 +		cJSON_Delete(history);
 +		goto done;
@@ -10458,20 +17466,28 @@ index 00000000..122c15dc
 +			*text && strcmp(original, summary) &&
 +			strlen(summary) < strlen(original) && !agent_save(3)) {
 +		agent_history(1);
++		/* The summary is numbered before the resume entry. */
++		agent_discard_log(original);
++		agent_head_summary();
 +		sbuf_smake(resume, 256)
 +		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
 +			"is working memory, not a new task. Continue the request below, using\n"
 +			"the summary to avoid repeating completed actions or tool calls.\n\n")
 +		sbuf_str(resume, input)
 +		sbuf_nul(resume)
-+		cJSON_AddItemToArray(agent_messages, agent_msg("user", resume->s));
++		agent_logbuf = 3;
++		agent_log("USER", resume->s);
++		agent_logbuf = 7;
++		if (!xacl)
++			agent_add_user(agent_messages, resume->s);
 +		free(resume->s);
 +		ok = 1;
 +	}
 +	free(summary);
 +	if (ok) {
 +		cJSON_Delete(history);
-+		agent_log("RESULT", "autocompact complete; resuming request");
++		agent_notes_archive(archive);
++		agent_log("NOTICE", "autocompact complete; resuming request");
 +	} else {
 +		cJSON_Delete(agent_messages);
 +		agent_messages = history;
@@ -10480,10 +17496,10 @@ index 00000000..122c15dc
 +		lbuf_edit(lb, original, 0, lbuf_len(lb), 0, 0);
 +		agent_syncing = 0;
 +		agent_restore_log(archive);
-+		agent_log("RESULT", "autocompact failed or cancelled; "
++		agent_log("NOTICE", "autocompact failed or cancelled; "
 +			"original history retained. Compact manually or retry.");
 +	}
-+	done:
++done:
 +	/* A recursive session may have replaced the conversation while packing. */
 +	if (epoch != agent_epoch && access(tempbufs[3].path, F_OK))
 +		agent_save(3);
@@ -10500,19 +17516,49 @@ index 00000000..122c15dc
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..20885744
+index 000000000..480fe075e
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,46 @@
 +/* agent.c: embedded request loop and editor integration */
++static int agent_tool;		/* an agent tool call is executing */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
-+static int agent_tool, agent_cancel, agent_pause;
-+static int agent_input_blocked;
-+static sbuf *agent_capture;
++static int agent_cancel, agent_pause;
++static int agent_input_blocked;	/* the tool call tried to read the terminal */
++static int agent_edited;	/* current-buffer lines the tool call edited */
++static int agent_tool_dep;	/* ex_exec depth of the tool call itself */
++/* output of the last tool call that did not run or defer aout */
++static char *agent_show;
++static size_t agent_show_n;
++static int agent_shown;		/* the tool call ran or deferred aout */
++static sbuf *agent_capture;	/* collects the tool call output */
++/* estimated context tokens acl growth is measured from; 0 unset */
++static double agent_acl_mark;
++/* acl < 0: growth to the next budget check, set by acheck N; 0 is -acl */
++static int agent_acl_budget;
++/* 1: checkpoint, only log trimming runs until adone;
++ * 2: acl < 0 budget check, only acheck runs;
++ * 3: ath N,M thinking question, only acap runs; it interrupts the task, a
++ * pack, 1 or 2, which goes on once it ends */
++static int agent_checkpointing;
++static char agent_deferred[32];	/* first command aspec deferred in the tool call */
 +static void *ec_agent(char *loc, char *cmd, char *arg);
 +static void exspec_reset(void);
++static void *ec_exspec(char *loc, char *cmd, char *arg);
++static int exspec_listed;	/* the agent has seen the exspec command list */
 +static void *ec_skill(char *loc, char *cmd, char *arg);
++static void *ec_anote(char *loc, char *cmd, char *arg);
++static void *ec_arate(char *loc, char *cmd, char *arg);
++static void *ec_adone(char *loc, char *cmd, char *arg);
++static void *ec_acheck(char *loc, char *cmd, char *arg);
++static void *ec_acp(char *loc, char *cmd, char *arg);
 +static void *ec_ast(char *loc, char *cmd, char *arg);
++static void *ec_acap(char *loc, char *cmd, char *arg);
++static void *ec_agoal(char *loc, char *cmd, char *arg);
++static void *ec_ath(char *loc, char *cmd, char *arg);
++static char *agent_think_retry(void);
++static void *ec_aout(char *loc, char *cmd, char *arg);
++static void *ec_aget(char *loc, char *cmd, char *arg);
 +static void *ec_compact(char *loc, char *cmd, char *arg);
 +static void agent_init(void);
 +static void agent_sync(struct lbuf *lb);
@@ -10522,7 +17568,7 @@ index 00000000..20885744
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 00000000..6e4fb0dd
+index 000000000..6e4fb0dd3
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -13719,7 +20765,7 @@ index 00000000..6e4fb0dd
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 00000000..cab5feb4
+index 000000000..cab5feb42
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -14030,115 +21076,331 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..204c085b 100755
+index c836c94c7..2ec422a6e 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,104 @@ build() {
+@@ -65,6 +65,320 @@ build() {
      }
  }
  
 +spec() {
 +    require "awk"
-+    # Additional ex specs are injected here so README stays pristine on master.
-+    # Keep this block in sync with the agent command table in ex.c.
++    # Agent ex specs are injected here so README stays pristine on master.
++    # Keep in sync with the agent commands of the excmds table in ex.c.
 +    tmp="$(mktemp)"
 +    awk '
 +        function spec(name, desc, body) {
++            gsub(/\n/, "\n             ", desc)
++            gsub(/\n/, "\n             ", body)
 +            print "     " name
 +            print "             " desc
 +            print ""
-+            gsub(/\n/, "\n             ", body)
-+            print "             " body
-+            print ""
++            if (body != "") {
++                print "             " body
++                print ""
++            }
++        }
++        /^     \[range\]=\[<0-3 Any>\]\[any\]$/ && !eqp_done {
++            spec("[range]=p", "Print line(s) with line numbers",
++                "Equivalent to the p command, except each line is prefixed by its\n" \
++                "line number and a tab. Argument is ignored.\n\n" \
++                "Example: print lines 1 to 10 numbered\n:1,10=p")
++            eqp_done = 1
 +        }
 +        /^     ac\[regex\]$/ && !done {
 +            spec("exspec[command range topic]", "Print ex command catalog or specification",
-+                "No argument lists useful commands for agents, the full catalog for\n" \
-+                "humans. Use catalog for all commands and options; use a command name\n" \
-+                "for its specification, including hidden commands. Topics: parsing,\n" \
-+                "escapes, expansion, ranges, regex, commands, options.\n\n" \
++                "No argument lists the commands useful to agents, or the full catalog\n" \
++                "for humans. catalog lists all commands and options; a command name\n" \
++                "prints its specification, hidden commands included; other text\n" \
++                "with range characters prints ranges. Topics: parsing, escapes,\n" \
++                "expansion, ranges, regex, commands, options.\n\n" \
 +                "Example: list all commands\n:exspec catalog")
 +            spec("[range]a[text]", "Open or resume the agent conversation",
 +                "Keeps the conversation. Text prefills the prompt; range attaches\n" \
-+                "buffer text to the next submission. Enter adds a newline; Escape\n" \
-+                "submits; Ctrl-C exits; Ctrl-O opens the editor. Ex specials are\n" \
++                "buffer text to the next submission. Enter adds a newline, Escape\n" \
++                "submits, Ctrl-C exits, Ctrl-O opens the editor. Ex specials are\n" \
 +                "disabled. Unavailable as an agent tool.")
 +            spec("[range]a![text]", "Start a new agent conversation",
-+                "Clears history and log, aspec tracking and deferred command.\n" \
-+                "Range, text and prompt controls work as for a. Unavailable as an agent tool.")
++                "Clears history, the log, its notes and discarded entries, aspec\n" \
++                "tracking and what aretry and aout saved. Otherwise as a.")
 +            spec("[range]a~[text]", "Resume an agent conversation from its log",
-+                "Loads b-4 as context, including edits. Keeps aspec tracking.\n" \
-+                "Range, text and prompt controls work as for a. Unavailable as an agent tool.")
++                "Loads b-4 as context, edits included. Keeps aspec tracking.\n" \
++                "Otherwise as a.")
 +            spec("[range]apack[text]", "Compact the agent session from its log",
-+                "Loads b-4 as context and asks the agent to replace it with a summary.\n" \
-+                "Stays at the prompt; reloads the log on exit. Text replaces the default\n" \
-+                "instructions; range attaches buffer text. Unavailable as an agent tool.")
++                "Loads b-4 as context and asks the agent to replace it with a\n" \
++                "summary. Text replaces the default instructions; range attaches\n" \
++                "buffer text. With arate notes (b-6), the task lists the log entries\n" \
++                "with estimated tokens and notes, those of trimmed turns included.\n" \
++                "While b-7 holds entries, it offers aget for them. The prompt stays\n" \
++                "open; on exit a log the agent replaced becomes the session, else\n" \
++                "the old session is restored. On success the notes are archived\n" \
++                "beside the log, b-6 is cleared and the replaced entries move to\n" \
++                "b-7. The exchange is logged to b-8, saved as asides in the session\n" \
++                "directory. Unavailable as an agent tool.")
 +            spec("[range]apack![text]", "Compact the agent session by browsing its log",
-+                "Starts fresh without loading or clearing b-4. The agent reads bounded\n" \
-+                "ranges and replaces the log with a summary. Stays at the prompt;\n" \
-+                "reloads on exit. Resets aspec tracking. Text and range work as for\n" \
-+                "apack. Unavailable as an agent tool.")
++                "As apack, but the agent starts without b-4 in its context and reads\n" \
++                "bounded ranges of it. The task always lists the entries, with line\n" \
++                "numbers. Resets aspec tracking.")
 +            spec("acm", "Toggle the caveman response style skill",
-+                "Adds or removes the skill in b-5. Tool calls update the system\n" \
-+                "message; otherwise context is rebuilt from the log.")
-+            print "     aretry"
-+            print "             Execute the last deferred agent command once"
-+            print ""
-+            print "             Uses the saved range and expanded argument. Takes no range or"
-+            print "             argument. A new deferral replaces it; retry consumes it even on"
-+            print "             failure. A new session clears it. Errors if none is saved."
-+            print ""
-+            print "             Example: execute a deferred command"
-+            print "             :aretry"
-+            print ""
++                "Adds or removes the skill in b-5. As an agent tool it updates the\n" \
++                "system message; otherwise the context is rebuilt from the log.")
++            spec("aretry", "Execute the last agent command",
++                "Runs the last top-level command the agent ran or aspec deferred,\n" \
++                "with its range and expanded argument. A run aout is not saved. The\n" \
++                "command stays saved until a new session. Side effects rerun. Output\n" \
++                "is subject to agr. Takes no range or argument. Errors if none is\n" \
++                "saved.\n\n" \
++                "Example: execute a deferred command\n:aretry")
++            spec("[brange]aout", "Print the saved output of the last agent tool call",
++                "brange is first,last in 0-based byte offsets, inclusive; $ is the\n" \
++                "last byte; one offset selects one byte; none prints everything.\n" \
++                "The output of each tool call is saved, except of calls running\n" \
++                "aout; under agr at most 1048576 bytes, or agr if larger. Exempt\n" \
++                "from agr. A new session clears it.\n\n" \
++                "Example: bytes 50 through the end\n:50,$aout")
++            spec("[entries]anote[text]", "Replace or remove agent session log entries",
++                "entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N\n" \
++                "headers of b-4; $ is the last entry, 0 the text before the first\n" \
++                "header. A TURN is one agent reply: parts headed ROLE N.I holding\n" \
++                "its reasoning, text, commands and results. USER and NOTICE text and\n" \
++                "each part end at an END line; lines before it are text even if they\n" \
++                "read as headers. Text holding a line END has an id on its header,\n" \
++                "as in RESULT N.I id, and ends at END id. In the agent context the\n" \
++                "last tool result of a turn ends with a line [turn N end], which the\n" \
++                "log does not hold.\n\n" \
++                "Text replaces N through M with one entry under the role and number\n" \
++                "of N, a turn holding only the text; no text removes them. Three or\n" \
++                "more numbers, as in 2,4,7, are a list of turns, noted in place of\n" \
++                "the first; a number that is not a TURN rejects the list. The agent\n" \
++                "cannot change the turn still running nor, outside an acl\n" \
++                "checkpoint, USER entries or entry 0: those stay and its note goes\n" \
++                "after the last one spanned. An agent note takes the role and number\n" \
++                "of the first turn, else of the first USER entry or entry 0. Prints\n" \
++                "the estimated tokens before and after and the USER entries kept.\n" \
++                "Changes the agent context when acl is set. Replaced entries move to\n" \
++                "b-7, saved as discarded in the session directory; a number already\n" \
++                "there keeps its entry.\n\n" \
++                "Example: replace a turn with a note\n:14anote ls listed 40 files, none relevant")
++            spec("[entries]aget[parts]", "Print agent session log entries, trimmed ones included",
++                "Prints entries N through M of b-4 and b-7 in number order, with\n" \
++                "their headers. Entries from b-7, those removed or replaced by anote,\n" \
++                "a 0 rating or compaction, have trimmed after each header, as in\n" \
++                "TURN N trimmed, and precede a current entry of the same number.\n" \
++                "entries is as for anote, with $ the last number in either buffer.\n" \
++                "parts is part indexes or role names, separated by spaces, not both.\n" \
++                "Indexes select parts of each turn: 0 reasoning, 1 text, 2+2k and\n" \
++                "3+2k the command and result of call k. USER, TURN and NOTICE select\n" \
++                "entries; REASONING, ASSISTANT, EX and RESULT select parts of turns.\n" \
++                "Output is subject to agr. Unavailable during an acl checkpoint.\n\n" \
++                "Example: print the commands of entries 20 through 80\n:20,80aget EX")
++            spec("[entries]arate rating sentence", "Rate agent turns in the notes buffer",
++                "Writes one line per TURN entry from N through M of b-4 to b-6:\n" \
++                "number, rating and sentence, replacing an older one. The first turn\n" \
++                "gets the sentence, the rest \"same as TURN N\"; a replaced sentence\n" \
++                "that others name moves to the first of them. entries is as for\n" \
++                "anote: other roles in a range are skipped, and three or more\n" \
++                "numbers, as in 2,4,7, are a list of turns.\n" \
++                "Ratings: 0 dead weight, no value for the remaining work; 1 low,\n" \
++                "minor, superseded or only mechanics; 2 useful, informs the remaining\n" \
++                "work; 3 essential, a decision, finding or state the task depends on.\n" \
++                "During an acl checkpoint, rating 0 also moves the turns to b-7,\n" \
++                "reported as by anote. With acl above 1 or negative, the harness\n" \
++                "rates 1 an unrated turn whose every command aspec deferred. Ratings\n" \
++                "show in ali and checkpoint lists and are given to apack. b-6 is\n" \
++                "saved as notes in the session directory.\n\n" \
++                "Example: rate the turn of entry 52\n:52arate 1 read vi.c lines 1-260, nothing relevant")
++            spec("adone", "End an agent checkpoint",
++                "Ends the acl checkpoint; the interrupted request resumes with the\n" \
++                "context rebuilt from the trimmed log. While turns with commands are\n" \
++                "unrated it is refused, up to twice in a row without new ratings.\n" \
++                "Takes no range or argument. Errors outside a checkpoint.")
++            spec("acheck", "Start an agent checkpoint or set its budget",
++                "With acl above 1 or negative, starts a checkpoint before the next\n" \
++                "request, once the current tool batch completes. With a token count N\n" \
++                "and negative acl, the next budget check comes after N tokens of\n" \
++                "growth from now instead. Either ends a budget check, where no other\n" \
++                "command runs. Takes no range. Errors with other acl values or\n" \
++                "during a checkpoint.\n\n" \
++                "Example: continue for about 20000 more tokens\n:acheck 20000")
++            spec("acp", "Print the agent checkpoint instructions",
++                "Prints the commands, rating scale and trimming instructions sent at\n" \
++                "the start of an acl checkpoint. Takes no range or argument. Exempt\n" \
++                "from agr. As an agent tool, errors outside a checkpoint.")
++            spec("ali", "Print the agent session log entry list",
++                "Prints one line per USER and TURN entry of the session log (b-4):\n" \
++                "role, number and estimated tokens. A turn with several parts shows\n" \
++                "them instead, as reasoning+text+commands+results=tokens, reasoning\n" \
++                "only if the log holds any, then its arate rating and, for a turn\n" \
++                "with commands, the note. Then a line naming the largest entries and\n" \
++                "one the unrated turns. During an acl checkpoint this is the status\n" \
++                "sent at its start, updated. Takes no range or argument. Exempt from\n" \
++                "agr. Errors on an empty log.")
++            spec("auli", "Print the unrated agent session log turns",
++                "Prints the ali lines of the unrated turns alone; only turns with\n" \
++                "commands count. Takes no range or argument. Exempt from agr. Errors\n" \
++                "on an empty log.")
 +            spec("ast", "Print agent status and token usage",
-+                "Prints sizes, per-role usage, activity, limits and autocompact mode.\n" \
-+                "Usage counts come from the last accepted response. Next input is\n" \
-+                "estimated from reported input plus new JSON bytes / 3, or all JSON\n" \
-+                "bytes / 3 without a usable count. Includes tool definitions and\n" \
-+                "framing; not a tokenizer or a guarantee the request fits.")
++                "Prints the autocompact, thinking and acl settings, notes, activity,\n" \
++                "token usage, context sizes per role, log sizes, limits and the\n" \
++                "message bytes shared with the previous request. Usage is that of\n" \
++                "the last accepted response. Next input is its input count plus new\n" \
++                "JSON bytes / 3, or all JSON bytes / 3 without a count, tools and\n" \
++                "framing included: an estimate, not a tokenizer.")
++            spec("[budget]ath[effort]", "Set the agent thinking cap and effort",
++                "budget is a token count N or N,M. N caps thinking tokens, sent as\n" \
++                "reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends\n" \
++                "thinking at once on llama.cpp and means no cap on Strata. effort is\n" \
++                "one word sent as reasoning_effort, such as none, low, medium, high\n" \
++                "or xhigh. An omitted part is not sent; ath alone sends neither. Sent\n" \
++                "fields replace those of request_extra. ast shows the setting.\n\n" \
++                "With N,M the agent may raise the cap up to M for one reply with\n" \
++                "acap, and a reply whose thinking the server cut at a cap below M is\n" \
++                "withheld: not logged, its commands not run. The server marks the cut\n" \
++                "by ending the thinking with think_cut of conf.c; a reply counts as\n" \
++                "cut only if its thinking also used half the cap or more. think_cut\n" \
++                "is dropped from the thinking of every reply, so models cannot copy\n" \
++                "it. The agent is shown the reply and its commands, in an exchange\n" \
++                "kept in b-8 only, and answers with acap. Replies of an acl\n" \
++                "checkpoint, a budget check and a pack agent are asked about too;\n" \
++                "what was interrupted then goes on, and a new checkpoint, budget\n" \
++                "check or compaction waits for the new reply. Unavailable as an\n" \
++                "agent tool.\n\n" \
++                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
++                "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
++                ":4096,32768ath medium")
++            spec("acap[count note]", "Raise the agent thinking cap for one reply",
++                "count is a token count N: the thinking cap of the next reply, at\n" \
++                "most the ceiling M of ath N,M. Takes no range. Errors without a\n" \
++                "ceiling. What that reply leaves of N is added to the caps of later\n" \
++                "replies, up to M, until their thinking spends it.\n\n" \
++                "In the question about a reply whose thinking was cut, acap N, a\n" \
++                "count above the cap, discards the reply and requests it again under\n" \
++                "cap N. Text after N is a note sent with the requests of the new\n" \
++                "reply only, unlogged; that reply sees nothing else of the exchange\n" \
++                "and is not asked about. acap alone runs the reply as it is. Nothing\n" \
++                "else runs meanwhile; after five retries the answer is taken as acap.\n" \
++                "A cut reply without text and commands is requested again either\n" \
++                "way.\n\n" \
++                "Example: think up to 8192 tokens in the next reply\n:acap 8192")
++            spec("agoal[text]", "Set or clear the agent goal",
++                "Text sets the goal; agoal alone clears it. While a goal is set,\n" \
++                "every agent request opens with it: joined to the front of the first\n" \
++                "message after the system prompt if a user message, else as a user\n" \
++                "message before it. The session log does not hold it, so trimming\n" \
++                "and compaction leave it. An agent reply without commands does not\n" \
++                "end the run: the agent is shown the goal and asked whether it is\n" \
++                "finished, and the run ends only with a reply without commands after\n" \
++                "the goal is cleared. Ctrl-C and the tool round limit still end it.\n" \
++                "A cleared goal stays at the front while the first message only\n" \
++                "extends the one last sent, so the server cache is kept; once that\n" \
++                "message changes, as by compaction or a new conversation, it goes.\n" \
++                "Takes no range. ast shows the goal.\n\n" \
++                "Example: keep the agent working until the tests pass\n" \
++                ":agoal all tests in test.sh pass")
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
++            spec("acl[0]  Rebuild agent context from the session log",
++                "No argument toggles between 0 and 1. With 0, log edits do not reach\n" \
++                "the agent.",
++                "1 rebuilds the context from the session log (b-4) before every\n" \
++                "request, so edits of the log apply to the next one. Values above 1\n" \
++                "or negative rebuild only after such edits and when a checkpoint\n" \
++                "ends; in between, replies stay as returned, reasoning included, so\n" \
++                "the server cache continues from them. A rebuild skips NOTICE\n" \
++                "entries, which report harness events such as HTTP errors, and has\n" \
++                "only the reasoning the log holds (ar).\n\n" \
++                "Values above 1 add checkpoints: once the estimated context grows by\n" \
++                "that many tokens from the last checkpoint, or from its smallest size\n" \
++                "since, one runs before the next request. It opens with the ali list\n" \
++                "and the acp instructions. Only ali, acp, auli, arate, anote and\n" \
++                "adone run. It ends with adone, a reply without commands or recursive\n" \
++                "editing; the first two are refused while turns are unrated, up to\n" \
++                "twice in a row without new ratings. The interrupted request then\n" \
++                "resumes; aco is checked after it. The exchange is logged to b-8 with\n" \
++                "headers prefixed CP. Its requests keep the context the checkpoint\n" \
++                "started with, so the prompt cache holds: anote edits b-4 at once but\n" \
++                "reaches the context when the checkpoint ends.\n\n" \
++                "Negative values leave the checkpoint to the agent through budget\n" \
++                "checks. The first comes once the estimated context grows by -acl\n" \
++                "tokens from the session start, the last checkpoint or a compaction,\n" \
++                "and asks for the tokens the rest of the task needs, set with\n" \
++                "acheck N. After that growth the next asks to checkpoint now with\n" \
++                "acheck or defer N more tokens with acheck N. Only acheck runs during\n" \
++                "a check; after two more requests without an answer a checkpoint\n" \
++                "starts. After a checkpoint -acl applies again. A check is logged to\n" \
++                "b-8 with CP headers, leaves the context unchanged and, if\n" \
++                "interrupted, runs again at the next request. N may pass aco, which\n" \
++                "stays the limit; a compaction drops the budget.\n\n" \
++                "Example: checkpoint every 5000 tokens of growth\n:acl 5000")
 +            spec("aco[0]  Automatically compact using the loaded session log",
-+                "Positive argument sets an estimated input-token threshold; 0 or\n" \
++                "A positive argument is the estimated input-token threshold; 0 or\n" \
 +                "negative disables. No argument enables at 85000 or toggles off.\n" \
-+                "aco and aco! share a threshold; the last setting wins.",
-+                "After tool batches, runs apack without a prompt and resumes. Never\n" \
-+                "recurses. Failed, cancelled or inadequate summaries keep the old\n" \
-+                "history and stop the run. Leave room for instructions and output;\n" \
-+                "use aco! if the log cannot fit. Does not change the API limit.")
++                "aco and aco! share the threshold; the last one set selects the mode.",
++                "Once the estimate reaches the threshold after a tool batch, runs\n" \
++                "apack without a prompt and resumes the request. Never recurses. A\n" \
++                "failed, cancelled or not shorter summary keeps the old history and\n" \
++                "stops the run. Leave room for the instructions and the summary; use\n" \
++                "aco! if the log cannot fit. Does not change the API limit.")
 +            spec("aco![0]  Automatically compact by browsing the session log",
-+                "Threshold and toggle work as for aco (default 85000). Selecting\n" \
-+                "either mode replaces the other.",
-+                "Runs apack! with fresh context and bounded reads of b-4. Keeps the\n" \
-+                "current task and restores the editor buffer. Use ast for status\n" \
-+                "and token estimates.")
-+            spec("ar[0]  Display returned agent reasoning",
++                "Threshold and toggle as for aco.",
++                "Runs apack! instead: fresh context and bounded reads of b-4. The\n" \
++                "request resumes and the editor buffer is restored. ast shows the\n" \
++                "mode and token estimates.")
++            spec("agr[4096]  Control agent output protection",
++                "No argument toggles between 0 and 4096. 0 or negative disables.",
++                "A positive value is the limit in bytes of a tool call output; a\n" \
++                "larger output is withheld and aout views it.")
++            spec("ato[0]  Detach long agent shell commands",
++                "No argument toggles between 0 and 30. 0 disables.",
++                "A positive value is the seconds an agent shell command may run in\n" \
++                "the foreground. After that it runs on in the background: the result\n" \
++                "has error 124, its process group and a file receiving later output.\n" \
++                "A later tool result reports its exit status.")
++            spec("ar[1]  Log and display returned agent reasoning",
 +                "No argument logically inverts the option.",
-+                "Nonzero includes returned reasoning in the session log.")
-+            spec("gr[2]  Control agent output protection",
-+                "No argument logically inverts the option.",
-+                "Value 2 limits tool output to 4096 bytes and protects captured shell\n" \
-+                "output. Other values disable protection; 0 and 1 increment after\n" \
-+                "each tool call until 2. Negative values stay disabled.")
-+            print "     aspec[1]  Print ex specifications for agents"
-+            print ""
-+            print "             No argument logically inverts the option. 0 disables automatic"
-+            print "             specifications; 1 enables them (the default)."
-+            print ""
++                "0 does not log returned reasoning. 1 logs it, as part 0 of a turn,\n" \
++                "without printing it during the run. 2 logs and prints it.")
++            spec("ata[0]  Cap agent thinking by its recent average",
++                "No argument toggles between 0 and 100. 0 disables.",
++                "A positive value is a percentage: each request is sent that share\n" \
++                "of the average thinking tokens as the ath cap, in place of N. Each\n" \
++                "accepted reply that thought moves the average a quarter of the way\n" \
++                "to its thinking tokens; one that used up its cap counts as twice the\n" \
++                "cap, so cut replies raise the average. Lower values cut more\n" \
++                "replies.\n\n" \
++                "The average starts at N of ath, else at the first reply; ath\n" \
++                "restarts it, and N is sent until a reply is counted. The cap stays\n" \
++                "from 1 to M of ath N,M, else to N. Replies are counted with ata off\n" \
++                "too: by the reported reasoning_tokens, else the output tokens by the\n" \
++                "share of the thinking in the bytes of the reply. A cap the agent\n" \
++                "raised with acap N lasts for its reply; what that reply leaves of N\n" \
++                "is added to later caps until their thinking spends it. ast shows\n" \
++                "the average.\n\n" \
++                "Example: start at 2048 tokens and follow the average, up to 16384\n" \
++                ":2048,16384ath:ata\n\n" \
++                "Example: cap at twice the average\n:ata 200")
++            spec("aspec[1]  Print ex specifications for agents",
++                "No argument logically inverts the option. 0 disables.",
++                "The first use of a command by the agent prints its specification\n" \
++                "instead of running it; aretry then runs the command. The first\n" \
++                "unknown agent command of a session also prints the exspec command\n" \
++                "list, unless exspec has printed it.")
 +            aspec_done = 1
 +        }
 +        { print }
 +    ' README > "$tmp" &&
-+    awk -f exspec.awk "$tmp" > exspec.h
-+    rm -f "$tmp"
++    awk -f exspec.awk "$tmp" > "$tmp.h" &&
++    mv -f "$tmp.h" exspec.h
++    ret=$?
++    rm -f "$tmp" "$tmp.h"
++    return "$ret"
 +}
 +
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +172,7 @@ install() {
+@@ -74,7 +388,7 @@ install() {
  }
  
  print_usage() {
@@ -14147,7 +21409,7 @@ index c836c94c..204c085b 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +180,9 @@ print_usage() {
+@@ -82,6 +396,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -14158,10 +21420,10 @@ index c836c94c..204c085b 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..118c150e 100644
+index 2888d7c60..9bc042a94 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,52 @@
+@@ -1,5 +1,276 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -14181,52 +21443,276 @@ index 2888d7c6..118c150e 100644
 +static int request_timeout = 500;
 +#endif
 +
-+static int max_tool_rounds = 300;
-+int xgr = 2;	/* agent guardrails: anything but 2 = disabled */
-+int xar;	/* display returned agent reasoning (:ar) */
++/* How the server ends thinking it cut at the ath token cap; "" if unmarked */
++static char *think_cut = "I have thought about this long enough; time to give my answer.";
++static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
++int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
++int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
++int xata;	/* agent thinking cap, percent of its recent average (:ata); 0 disables */
++int xar = 1;	/* agent reasoning (:ar): 0 dropped, 1 logged, 2 logged and displayed */
 +int xaco;	/* autocompact input-token threshold; 0 disables */
++int xacl;	/* rebuild agent context from the session log (:acl) */
 +static int xaco_browse;	/* last selected mode: aco! rather than aco */
 +
-+static char exspec_insert[] =
-+	"Ex special characters are disabled and raw ex mode is on by default.\n"
-+	"Supply literal text as [str] directly. No dot terminator or escapes required.\n"
-+	"[str] is required.";
++/* Complete specifications shown to the agent in place of the README ones.
++ * The README keeps interactive examples for humans; agents run ex with
++ * special characters off and text supplied. */
++static char exspec_agent_i[] =
++	"[vrange]i[str]\n"
++	"Insert lines\n"
++	"\n"
++	"Inserts [str] after the specified line.\n"
++	"[str] is required and literal: all bytes 1-255 are inserted verbatim.\n"
++	"On an empty buffer only i and 0i work.\n"
++	"\n"
++	"Example: insert \"hello\" after the current line\n"
++	"i hello\n"
++	"Example: insert \"hello\" after line 5\n"
++	"5i hello\n"
++	"Example: insert \"hello\" before line 1\n"
++	"0i hello\n"
++	"Example: insert \"hello\" after the last line\n"
++	"$i hello\n"
++	"Example: insert two lines after line 5\n"
++	"5i hello\nworld";
 +
-+/* Additional :exspec lines; repeat a command to append more lines. */
++static char exspec_agent_c[] =
++	"[range]c[str]\n"
++	"Change lines or characters\n"
++	"\n"
++	"Replaces the lines of [range] with [str]; without [range], the current\n"
++	"line. Character offsets count from 0 and $ is the end of the line.\n"
++	"With one offset (N;O), inserts [str] at offset O of line N. With two\n"
++	"(N;O;P), replaces the characters from O up to, not including, P.\n"
++	"On an empty buffer only c without a range works.\n"
++	"[str] is required and literal: all bytes 1-255 are inserted verbatim.\n"
++	"\n"
++	"Example: replace the current line with \"hello\"\n"
++	"c hello\n"
++	"Example: replace lines 1-5 with \"hello\"\n"
++	"1,5c hello\n"
++	"Example: replace the whole buffer with two lines\n"
++	"%c hello\nworld\n"
++	"Example: insert \"hello\" at offset 3 of line 5\n"
++	"5;3c hello\n"
++	"Example: append \"hello\" to line 5\n"
++	"5;$c hello\n"
++	"Example: replace characters 2 and 3 of line 5 with \"hello\"\n"
++	"5;2;4c hello";
++
++static char exspec_agent_p[] =
++	"[range]p[str]\n"
++	"Print line(s) from a buffer\n"
++	"\n"
++	"No range prints a line based on the value of left ex option.\n"
++	"Argument is printed.\n"
++	"\n"
++	"Example: utilize character offset ranges\n"
++	"1,10;5;5p\n"
++	"Example: interleaved character offset ranges\n"
++	"1;5,10;5p\n"
++	"Example: print current line from offset 5 to 10\n"
++	".;5;10p\n"
++	"\n"
++	"Cursor position is stateful; left at the range position it landed on.\n"
++	"Keep reads small and within buffer bounds.\n"
++	"Check the position with = and line count with $= before printing ranges.\n"
++	"Use character ranges for long lines; stop when you have enough context.";
++
++static char exspec_agent_g[] =
++	"[vrange]g[<Delim>][regex][<Delim>][cmd]\n"
++	"Global command\n"
++	"\n"
++	"Runs [cmd] on each line in [vrange] that matches [regex].\n"
++	"No [vrange] means the whole buffer.\n"
++	"[cmd] is one ex command. It runs with the current line set to the\n"
++	"matching line, so its ranges are relative to that line. No [cmd]\n"
++	"prints the matching lines. Fails if no line matches. Stops at the first\n"
++	"line where [cmd] fails; changes to earlier lines remain.\n"
++	"<Delim> is any character; escape it inside [regex] with a backslash.\n"
++	"Matching ignores case by default; ic 0 makes it case-sensitive.\n"
++	"\n"
++	"Example: print lines containing \"int\"\n"
++	"g/int/p\n"
++	"Example: remove all empty lines\n"
++	"g/^$/d\n"
++	"Example: in lines 10-20, remove lines containing \"int\"\n"
++	"10,20g/int/d\n"
++	"Example: insert \"checked\" after each line containing \"int\"\n"
++	"g/int/i checked\n"
++	"Example: print lines containing \"/usr/bin\"\n"
++	"g|/usr/bin|p";
++
++static char exspec_agent_w[] =
++	"[range]w[path]\n"
++	"[range]w[!{cmd}]\n"
++	"Write a file or a pipe\n"
++	"\n"
++	"No range evaluates to <%> range.\n"
++	"No argument evaluates to current buffer path.\n"
++	"\n"
++	"Example: write a file\n"
++	"w vi.c\n"
++	"Example: pipe out all data into less\n"
++	"w !less\n"
++	"Example: pipe out only first 10 lines\n"
++	"1,10w !less";
++
++static char exspec_agent_bang[] =
++	"[range]![cmd]\n"
++	"Run an external program\n"
++	"\n"
++	"When a range is specified, the buffer's data is piped to an external\n"
++	"program. The resulting stdout and stderr are then piped back into the\n"
++	"buffer, replacing the contents of the original range.\n"
++	"No range returns an error if shell exit code is not zero.\n"
++	"A background task started with & blocks until it exits unless its\n"
++	"stdout and stderr are redirected.\n"
++	"\n"
++	"Example: start a dev server in the background, logging to a file\n"
++	"!npm run dev >/tmp/dev.log 2>&1 &\n"
++	"Example: check the server log\n"
++	"!tail -n 20 /tmp/dev.log\n"
++	"Example: infamously sort a buffer\n"
++	"%!sort\n"
++	"Example: replace \"int\" with \"uint\" using sed\n"
++	"%!sed -e 's/int/uint/g'\n"
++	"Example: pipe in result of ls command without line replacement\n"
++	";$+1!ls\n"
++	"Example: capitalize word at current position using tr\n"
++	";;>\\\\\\>>!tr '[:lower:]' '[:upper:]'";
++
++static char exspec_agent_r[] =
++	"[range]r[path]\n"
++	"[range]r[!{cmd}]\n"
++	"Read a file or a pipe\n"
++	"\n"
++	"Range is computed on a target.\n"
++	"No range evaluates to <%> range.\n"
++	"No argument evaluates to current buffer path.\n"
++	"\n"
++	"Example: read a file\n"
++	"r vi.c\n"
++	"Example: pipe in all data\n"
++	"r !ls\n"
++	"Example: pipe in only lines 3,5\n"
++	"3,5r !ls";
++
++static char exspec_agent_b[] =
++	"b[#index]\n"
++	"Print buffers or switch to a buffer\n"
++	"\n"
++	"No argument prints buffers.\n"
++	"Temporary buffers are separate from the main buffers\n"
++	"and are selected by a negative index.\n"
++	"A switch command targeting the same temporary buffer\n"
++	"as the current one switches to the previous main buffer.\n"
++	"\n"
++	"Example: switch to the 5th buffer\n"
++	"b5\n"
++	"Example: switch to the /hist/ ex history buffer\n"
++	"b-1\n"
++	"Example: switch to the /fm/ directory listing buffer\n"
++	"b-2\n"
++	"Example: switch to the /sc/ scratch buffer\n"
++	"b-3";
++
++static char exspec_agent_parsing[] =
++	"EX PARSING\n"
++	"Parsing follows the structure:\n"
++	"[<sep>][prefix][cmd][<pad>][args]\n"
++	"Ex commands are initiated and separated by <sep>. Fields can\n"
++	"be padded by <Space> or <Tab>. [prefix] is a field consumed by\n"
++	"[cmd], which accepts [range] structure characters. Padding inside\n"
++	"[prefix] structure is collapsed, except within nested blocks.\n"
++	"There can only be one pad in between [cmd] and [args]. To avoid\n"
++	"ambiguity in scripts, it is recommended to always use a pad between\n"
++	"[cmd] and [args].\n"
++	"\n"
++	"Examples:\n"
++	"evi.c\n"
++	"Evaluates to \"e vi.c\"\n"
++	"efbc\n"
++	"Evaluates to \"ef bc\" not \"e fbc\"\n"
++	"e  vi.c\n"
++	"Edit \" vi.c\". <pad> is required\n"
++	"\n"
++	"Command chaining is unavailable by default during agent execution.";
++
++static char exspec_agent_escapes[] =
++	"EX ESCAPES\n"
++	"Special characters in [args] and [prefix] blocks will become\n"
++	"regular when escaped with <\\>. Escapes are governed by a non-POSIX\n"
++	"parity rule: escapes directly before a special are halved, an\n"
++	"odd amount makes the special regular, and escapes anywhere else\n"
++	"are literal.\n"
++	"\n"
++	"( ^ ] -\n"
++	"Specials in regex \"[]\" expression\n"
++	"( ) { + * \? ^ $ [ | \\ . \\< \\>\n"
++	"Specials in regex\n"
++	"\\ : % !\n"
++	"Specials in ex\n"
++	"\n"
++	"Ex special characters are disabled by default during agent execution.";
++
++static char exspec_agent_expansion[] =
++	"EX EXPANSION\n"
++	"<%> in [args] expands to current buffer pathname or any buffer\n"
++	"pathname when followed by a corresponding buffer number.\n"
++	"%# expands to last swapped buffer pathname.\n"
++	"%@ expands to register specified.\n"
++	"\n"
++	"Example: make a copy of the current file and edit it\n"
++	"!cp % %_:e %_\n"
++	"Example: insert current buffer pathname\n"
++	"&i%\n"
++	"Example: echo the value of <a> register\n"
++	"!echo %@97\n"
++	"\n"
++	"<!> in [args] starts and optionally ends a block containing\n"
++	"external commands. This block executes and expands to stdout\n"
++	"and stderr produced.\n"
++	"\n"
++	"Example: substitute \"int\" with the value of $RANDOM\n"
++	"%s/int/!printf \"%s\" $RANDOM!\n"
++	"Example: insert output of ls shell command\n"
++	"&i!ls\n"
++	"\n"
++	"Expansion is unavailable by default during agent execution.";
++
 +static struct {
 +	char *cmd, *text;
-+} conf_exspec[] = {
-+	{"i", exspec_insert},
-+	{"c", exspec_insert},
-+	{"p", "Cursor position is stateful; left at the range position it landed on."},
-+	{"p", "Keep reads small and within buffer bounds."},
-+	{"p", "Check the position with = and line count with $= before printing ranges."},
-+	{"p", "Use character ranges for long lines; stop when you have enough context."},
-+	{"p", "Ex special characters disabled by default. p % example will not work."},
-+	{"g", "Ex special characters disabled by default. Command chaining unavailable."},
-+	{"w", "Ex special characters disabled by default. Do not escape ! character."},
-+	{"r", "Ex special characters disabled by default. Do not escape ! character."},
-+	{"parsing", "Ex special characters disabled by default. Command chaining unavailable."},
-+	{"escapes", "Ex special characters disabled by default."},
-+	{"expansion", "Ex special characters disabled by default. Expansion unavailable."},
++} conf_exspec_agent[] = {
++	{"i", exspec_agent_i},
++	{"c", exspec_agent_c},
++	{"p", exspec_agent_p},
++	{"g", exspec_agent_g},
++	{"w", exspec_agent_w},
++	{"r", exspec_agent_r},
++	{"b", exspec_agent_b},
++	{"!", exspec_agent_bang},
++	{"parsing", exspec_agent_parsing},
++	{"escapes", exspec_agent_escapes},
++	{"expansion", exspec_agent_expansion},
 +};
 +
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +344,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +568,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
-+((pac|pr|aco!?|ai|ar|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|apack!?|acm?|ast|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 76dca408..c47dfbd3 100644
+index d13974a65..47550561a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -14242,7 +21728,7 @@ index 76dca408..c47dfbd3 100644
  int xdefreg;			/* ex default register */
  struct buf *bufs;		/* main buffers */
 -struct buf tempbufs[3];		/* temporary buffers, for internal use */
-+struct buf tempbufs[5];		/* temporary buffers, for internal use */
++struct buf tempbufs[8];		/* temporary buffers, for internal use */
  struct buf *ex_buf;		/* current buffer */
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
@@ -14255,17 +21741,19 @@ index 76dca408..c47dfbd3 100644
  static char *xrerr;
  static void *xpret;		/* previous ex command return value */
  static signed char *xcid;	/* capture status by id, -1 if unset */
-@@ -285,7 +288,8 @@ static int ex_range(char *ploc, char **num, int n, int *row)
- 		}
+@@ -286,6 +289,11 @@ static int ex_range(char *ploc, char **num, int n, int *row)
  		if (lbuf_search(xb, xkwdrs, xkwddir, row ? beg : 0, end,
  				MIN(dir, 0), !row, &beg, &off)) {
--			xrerr = "range not found";
-+			sprintf(xirrmsg, "range not found: beg:%d end:%d off:%d dir:%d", beg, end, off, dir);
-+			xrerr = xirrmsg;
+ 			xrerr = "range not found";
++			if (agent_tool) {
++				sprintf(xirrmsg, "range not found: beg:%d end:%d off:%d dir:%d",
++					beg, end, off, dir);
++				xrerr = xirrmsg;
++			}
  			return -2;
  		}
  		n = row ? off : beg;
-@@ -298,6 +302,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
+@@ -298,6 +306,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
  		}
  	}
  	while (**num) {
@@ -14273,14 +21761,14 @@ index 76dca408..c47dfbd3 100644
  		dir = atoi(*num+1);
  		if (**num == '-')
  			n -= dir;
-@@ -311,6 +316,14 @@ static int ex_range(char *ploc, char **num, int n, int *row)
+@@ -311,6 +320,14 @@ static int ex_range(char *ploc, char **num, int n, int *row)
  			n %= dir;
  		else
  			break;
 +		if (agent_tool) {
-+			char str[100];
-+			if (!uc_isdigit(*(*num+1)) && *(*num+1) != '+' && *(*num+1) != '-')
-+				snprintf(str, sizeof(str), "invalid ex arithmetic: %c%c", **num, *(*num+1));
++			char str[100], c = (*num)[1];
++			if (!uc_isdigit(c) && c != '+' && c != '-')
++				snprintf(str, sizeof(str), "invalid ex arithmetic: %c%c", **num, c);
 +			else
 +				snprintf(str, sizeof(str), "ex arithmetic: %d %c %d = %d", pre, **num, dir, n);
 +			ex_print(str, msg_ft)
@@ -14288,7 +21776,7 @@ index 76dca408..c47dfbd3 100644
  		for (++*num; uc_isdigit(**num);)
  			++*num;
  	}
-@@ -325,6 +338,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
+@@ -325,6 +342,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
  	int row = xrow, ooff = xoff, ret = 1, adj = 0;
  	char *ploc = loc, *cmd = NULL;
  	xrerr = xirerr;
@@ -14296,7 +21784,7 @@ index 76dca408..c47dfbd3 100644
  	if (vaddr)
  		*beg = 0;
  	while (*loc) {
-@@ -370,8 +384,24 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
+@@ -370,8 +388,24 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
  		*end = *beg + 1;
  		ret += adj << 1;
  	}
@@ -14304,7 +21792,7 @@ index 76dca408..c47dfbd3 100644
 -		*end <= *beg || *end > lbuf_len(xb)) * ret;
 +	int n = lbuf_len(xb), invalid = *beg < 0 || *beg >= n ||
 +		*end <= *beg || *end > n;
-+	if (invalid && xrerr == xirerr) {
++	if (invalid && xrerr == xirerr && agent_tool) {
 +		long b = *beg, e = *end;
 +		const char *begop = b < 0 ? " < 0" : "";
 +		const char *begend = b >= n ? b > n ? " < beg" : " = beg" : "";
@@ -14323,7 +21811,7 @@ index 76dca408..c47dfbd3 100644
  }
  
  static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
-@@ -420,6 +450,8 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -420,13 +454,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
  	int fd, len, rd = 0, cd = 0;
@@ -14332,7 +21820,23 @@ index 76dca408..c47dfbd3 100644
  	if (arg[0] == '.' && arg[1] == '/')
  		cd = 2;
  	len = strlen(arg+cd);
-@@ -438,9 +470,15 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+ 	if (len && ((fd = bufs_find(arg+cd, len)) >= 0)) {
+ 		bufs_switchwft(fd)
+-		if (!strchr(cmd, '!'))
++		if (!strchr(cmd, '!')) {
++			if (agent_tool) {
++				snprintf(msg, sizeof(msg), "\"%s\" %dL [switched%s; "
++					"not re-read from disk, e! reloads it]",
++					xb_path, lbuf_len(xb),
++					xb->modified ? ", modified" : "");
++				ex_print(msg, bar_ft)
++			}
+ 			return NULL;
++		}
+ 		arg = "";
+ 	} else if (xbufcur == xbufsmax && !strchr(cmd, '!') &&
+ 			bufs[xbufsmax - 1].lb->modified) {
+@@ -440,9 +484,15 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -14350,8 +21854,8 @@ index 76dca408..c47dfbd3 100644
 +	}
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)
- 	return (fd < 0 || rd) && *arg ? xuerr : NULL;
-@@ -629,6 +667,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+ 	return rd || (fd < 0 && cd != 3) ? xuerr : NULL;
+@@ -631,6 +681,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	int n = atoi(arg);
@@ -14360,7 +21864,7 @@ index 76dca408..c47dfbd3 100644
  	if (!arg[0]) {
  		char ln[512];
  		for (int i = 0; i < xbufcur; i++) {
-@@ -637,6 +677,13 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -639,6 +691,13 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  				c + (char)bufs[i].lb->modified, bufs[i].path);
  			ex_print(ln, msg_ft)
  		}
@@ -14374,15 +21878,7 @@ index 76dca408..c47dfbd3 100644
  		return NULL;
  	} else if (n < 0) {
  		if (-n <= LEN(tempbufs)) {
-@@ -727,6 +774,7 @@ static void *ec_read(char *loc, char *cmd, char *arg)
- 	xrow = row;
- 	xoff = off;
- 	xb = pxb;
-+	agent_sync(pxb);
- 	if (fd >= 0)
- 		close(fd);
- 	return ret;
-@@ -822,6 +870,12 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
+@@ -824,6 +883,12 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
  
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  {
@@ -14395,7 +21891,7 @@ index 76dca408..c47dfbd3 100644
  	if (xpr > 0) {
  		ex_regput(xpr, line, 1);
  		sbuf *pr = ex_regget(xpr);
-@@ -829,6 +883,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
+@@ -831,6 +896,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  				pr->s[pr->s_n-1] != '\n')
  			ex_regput(xpr, "\n", 1);
  	}
@@ -14404,16 +21900,16 @@ index 76dca408..c47dfbd3 100644
  	if (xvis & 1) {
  		term_write(line, dstrlen(line, '\n'))
  		term_write("\n", 1)
-@@ -854,6 +910,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
+@@ -856,6 +923,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  static void *ec_insert(char *loc, char *cmd, char *arg)
  {
- 	int beg, end, o1 = -1, o2 = -1, ps = 0, key;
+ 	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;
 +	if (agent_tool && !*arg)
 +		return "insert/change requires supplied text";
  	sbuf _sb, *sb = &_sb;
  	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
  		if (*loc && cmd[0] != 'c' && beg == -1 && end == 0
-@@ -866,7 +924,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
+@@ -868,7 +937,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
  			end = beg + 1;
  		}
  	}
@@ -14422,7 +21918,71 @@ index 76dca408..c47dfbd3 100644
  		sb->s = arg;
  		sb->s_n = 1;
  		key = 127;
-@@ -1072,7 +1130,8 @@ static void *ec_num(char *loc, char *cmd, char *arg)
+@@ -924,10 +993,21 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
+ static void *ec_print(char *loc, char *cmd, char *arg)
+ {
+ 	int i, beg, end, o1 = -1, o2 = -1;
+-	char *o, *ln;
+-	if (!*cmd && *arg)
+-		return "unknown command";
+-	if (*cmd && *arg) {
++	char *o, *ln, num[16];
++	sbuf *nb = NULL;
++	if (!*cmd && *arg) {
++		/* without chaining, a leading : is not a separator */
++		char *err = agent_tool && *arg == ':' ? "unknown command; write "
++			"commands without the : prefix" : "unknown command";
++		if (!agent_tool || !xaspec || exspec_listed)
++			return err;
++		/* the first one of an agent session lists the commands */
++		ex_print(err, msg_ft)
++		ex_print("", msg_ft)
++		ec_exspec(NULL, "exspec", "");
++		return xuerr;
++	}
++	if (*cmd == 'p' && *arg) {
+ 		ex_print(arg, msg_ft)
+ 		return NULL;
+ 	}
+@@ -939,6 +1019,8 @@ static void *ec_print(char *loc, char *cmd, char *arg)
+ 		xrow = MAX(beg, end - 1);
+ 		return NULL;
+ 	}
++	if (cmd[0] == '=')
++		sbuf_make(nb, 128)
+ 	rstate = rstates+1;
+ 	rstate->s = NULL;
+ 	for (i = beg; i < end; i++) {
+@@ -949,14 +1031,25 @@ static void *ec_print(char *loc, char *cmd, char *arg)
+ 			o = uc_sub(ln, o1, -1);
+ 		else if (o2 >= 0 && i == end - 1)
+ 			o = uc_sub(ln, 0, o2);
+-		else {
++		else if (!nb) {
+ 			ex_cprint(ln, msg_ft, -1, 0, *loc ? 0 : xleft, 1);
+ 			continue;
+-		}
+-		ex_cprint(o, msg_ft, -1, 0, 0, 1);
++		} else
++			o = NULL;
++		if (nb) {
++			/* one string: agent capture adds a newline per print */
++			sbuf_cut(nb, 0)
++			sbuf_mem(nb, num, itoa(i + 1, num) - num)
++			sbuf_chr(nb, '\t')
++			sbufn_str(nb, o ? o : ln)
++			ex_cprint(nb->s, msg_ft, -1, 0, 0, 1);
++		} else
++			ex_cprint(o, msg_ft, -1, 0, 0, 1);
+ 		free(o);
+ 		rstate->s = NULL;
+ 	}
++	if (nb)
++		sbuf_free(nb)
+ 	rstate--;
+ 	xrow = MAX(beg, end - (cmd[0] || loc[0]));
+ 	return NULL;
+@@ -1074,7 +1167,8 @@ static void *ec_num(char *loc, char *cmd, char *arg)
  	if (d < 4)
  		itoa(arr[d], msg);
  	else
@@ -14432,7 +21992,7 @@ index 76dca408..c47dfbd3 100644
  	ex_print(msg, msg_ft)
  	return NULL;
  }
-@@ -1433,6 +1492,8 @@ static void *ec_while(char *loc, char *cmd, char *arg)
+@@ -1435,6 +1529,8 @@ static void *ec_while(char *loc, char *cmd, char *arg)
  	int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
  	for (; count && !ret; count--) {
  		ret = ex_exec(arg);
@@ -14441,7 +22001,7 @@ index 76dca408..c47dfbd3 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1635,6 +1696,170 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1637,6 +1733,178 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -14452,42 +22012,52 @@ index 76dca408..c47dfbd3 100644
 +
 +#include "exspec.h"
 +
-+static int exspec_ranges_read;
-+static char *exspec_deferred;
-+static struct excmd *exspec_deferred_cmd;
-+static int exspec_deferred_arg;
++static char *aretry_saved;
++static struct excmd *aretry_cmd;
++static int aretry_arg;
++
++static void aretry_save(sbuf *sb, struct excmd *entry, int arg)
++{
++	free(aretry_saved);
++	aretry_saved = emalloc(sb->s_n + 1);
++	memcpy(aretry_saved, sb->s, sb->s_n + 1);
++	aretry_cmd = entry;
++	aretry_arg = arg;
++}
 +
 +static void *ec_aretry(char *loc, char *cmd, char *arg)
 +{
-+	char *saved = exspec_deferred;
-+	struct excmd *entry = exspec_deferred_cmd;
-+	int off = exspec_deferred_arg;
++	char *saved = aretry_saved;
 +	void *ret;
 +	if (*loc || *arg)
 +		return "aretry takes no range or argument";
 +	if (!saved)
-+		return "no deferred command";
-+	exspec_deferred = NULL;
-+	ret = entry->ec(saved, entry->name, saved + off);
-+	free(saved);
++		return "no agent command to retry";
++	/* a deferral inside the retried command replaces the saved one */
++	aretry_saved = NULL;
++	agent_shown |= aretry_cmd->ec == ec_aout;
++	ret = aretry_cmd->ec(saved, aretry_cmd->name, saved + aretry_arg);
++	if (aretry_saved)
++		free(saved);
++	else
++		aretry_saved = saved;
 +	return ret;
 +}
 +
 +static void exspec_reset(void)
 +{
-+	free(exspec_deferred);
-+	exspec_deferred = NULL;
-+	exspec_ranges_read = 0;
++	free(aretry_saved);
++	aretry_saved = NULL;
++	free(agent_show);
++	agent_show = NULL;
++	agent_show_n = 0;
++	exspec_listed = 0;
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		exspec_cmds[i].read = 0;
 +}
 +
 +static int exspec_mark(char *arg)
 +{
-+	if (!strcmp(arg, "ranges")) {
-+		exspec_ranges_read = 1;
-+		return 1;
-+	}
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		if (!strcmp(arg, exspec_cmds[i].name)) {
 +			exspec_cmds[i].read = 1;
@@ -14496,32 +22066,30 @@ index 76dca408..c47dfbd3 100644
 +	return 0;
 +}
 +
-+static int exspec_extra(char *cmd)
++/* Set the read state of c; return the prior one. Pack prompts explain %c,
++ * so its spec need not defer the summary. */
++static int exspec_pack(int read)
 +{
-+	int found = 0;
-+	for (int i = 0; i < LEN(conf_exspec); i++) {
-+		if (strcmp(cmd, conf_exspec[i].cmd))
-+			continue;
-+		if (!found) {
-+			ex_print("", msg_ft)
-+			ex_print("Agent guidance:", msg_ft)
++	int prev = 0;
++	for (int i = 0; i < LEN(exspec_cmds); i++)
++		if (!strcmp(exspec_cmds[i].name, "c")) {
++			prev = exspec_cmds[i].read;
++			exspec_cmds[i].read = read;
 +		}
-+		ex_print(conf_exspec[i].text, msg_ft)
-+		found = 1;
-+	}
-+	return found;
++	return prev;
 +}
 +
 +static void *ec_exspec(char *loc, char *cmd, char *arg)
 +{
 +	int i, j, k, option, begin = -1, end = 0;
-+	char msg[512];
++	char msg[512], *text = NULL;
 +	static char *agent_cmds[] = {
-+		"p", "g", "g!", "!", "i", "c", "e", "=", "b", "r", "w", "w!",
-+		"exspec", "d", "j", "s", "aspec", "cd", "bx", "fd", "inc",
-+		"ud", "rd", "sc", "sc!", "gr", "aretry"
++		"p", "=p", "g", "!", "i", "c", "e", "=", "b", "r", "w",
++		"w!", "exspec", "d", "j", "s", "cd", "bx", "fd", "inc",
++		"ud", "rd"
 +	};
 +	if (!*arg || !strcmp(arg, "catalog")) {
++		exspec_listed |= agent_tool;
 +		ex_print("EX TOPICS", msg_ft)
 +		for (i = 0; i < LEN(exspec_lines); i++) {
 +			if (strncmp(exspec_lines[i], "EX ", 3))
@@ -14575,44 +22143,44 @@ index 76dca408..c47dfbd3 100644
 +		end = i;
 +	}
 +	if (begin < 0)
-+		return exspec_extra(arg) ? NULL : "unknown ex specification";
++		return "unknown ex specification";
 +	exspec_mark(arg);
++	/* An agent specification replaces the README one and its guidance. */
++	for (i = 0; agent_tool && i < LEN(conf_exspec_agent); i++)
++		if (!strcmp(arg, conf_exspec_agent[i].cmd))
++			text = conf_exspec_agent[i].text;
++	if (text) {
++		ex_print(text, msg_ft)
++		return NULL;
++	}
 +	while (end > begin && !*exspec_lines[end - 1])
 +		end--;
 +	for (i = begin; i < end; i++)
 +		ex_print(exspec_lines[i], msg_ft)
-+	exspec_extra(arg);
 +	return NULL;
 +}
 +
-+static int exspec_agent(char *cmd, int ranges)
++static int exspec_agent(char *cmd)
 +{
-+	int msg = 0;
-+	char msgtext[256];
-+	snprintf(msgtext, sizeof(msgtext),
-+		"%s command execution deferred for specifications. (aspec option)\n"
-+		"%s%s command will not be deferred from now on. (aretry to execute this command)\n\n",
-+		cmd, ranges && !exspec_ranges_read ? "ranges and " : "", cmd);
-+	if (ranges && !exspec_ranges_read) {
-+		exspec_ranges_read = 1;
-+		msg = 1;
-+		ex_print(msgtext, msg_ft)
-+		ec_exspec(NULL, "exspec", "ranges");
-+	}
++	char msg[256];
 +	for (int i = 0; i < LEN(exspec_cmds); i++)
 +		if (!strcmp(cmd, exspec_cmds[i].name) && !exspec_cmds[i].read) {
 +			exspec_cmds[i].read = 1;
-+			ex_print(msg ? "\n" : msgtext, msg_ft)
++			snprintf(msg, sizeof(msg), "%s command execution deferred for "
++				"specifications. (aspec option)\n%s command will not be "
++				"deferred from now on. (aretry to execute this command)\n\n",
++				cmd, cmd);
++			ex_print(msg, msg_ft)
 +			ec_exspec(NULL, "exspec", cmd);
 +			return 1;
 +		}
-+	return msg;
++	return 0;
 +}
 +
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1702,9 +1927,9 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1704,9 +1972,14 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -14620,11 +22188,16 @@ index 76dca408..c47dfbd3 100644
 +EO(pac) EO(pr) EO(ai) EO(aspec) EO(err) EO(fr) EO(ish) EO(ic) EO(mpt)
  EO(rr) EO(shape) EO(seq) EO(order) EO(hll) EO(hlw)
 -EO(hlp) EO(hl) EO(lim) EO(led) EO(vis)
-+EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar) EO(gr)
++EO(hlp) EO(hl) EO(lim) EO(led) EO(vis) EO(ar)
++_EO(ata, xata = *arg ? MAX(0, eo_val(arg)) : xata ? 0 : 100; return NULL;)
++_EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
++_EO(ato, xato = *arg ? MAX(0, eo_val(arg)) : xato ? 0 : 30; return NULL;)
++_EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
++	agent_acl_mark = agent_acl_budget = 0; return NULL;)
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1730,14 +1955,20 @@ _EO(left,
+@@ -1732,18 +2005,25 @@ _EO(left,
  	return NULL;
  )
  
@@ -14649,7 +22222,12 @@ index 76dca408..c47dfbd3 100644
  	{"@", ec_termexec},
  	{"&", ec_termexec},
  	{"!", ec_exec},
-@@ -1758,8 +1989,21 @@ static struct excmd {
+ 	{"=?", ec_num},
++	{"=p", ec_print},
+ 	{"=", ec_num},
+ 	{"???", ec_while},
+ 	{"?""?!", ec_while},
+@@ -1760,8 +2040,37 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -14657,10 +22235,26 @@ index 76dca408..c47dfbd3 100644
 +	{"apack!", ec_compact},
 +	{"apack", ec_compact},
 +	EO(aspec),
-+	{"acm", ec_skill},
++	{"aout", ec_aout},
++	{"aget", ec_aget},
++	{"anote", ec_anote},
++	{"arate", ec_arate},
++	{"adone", ec_adone},
++	{"acheck", ec_acheck},
++	{"acap", ec_acap},
++	{"agoal", ec_agoal},
++	{"acp", ec_acp},
++	{"ali", ec_acp},
++	{"auli", ec_acp},
 +	{"aco!", eo_aco},
 +	EO(aco),
++	EO(acl),
++	{"acm", ec_skill},
 +	{"ast", ec_ast},
++	{"ath", ec_ath},
++	EO(ata),
++	EO(ato),
++	EO(agr),
  	EO(ai),
 +	EO(ar),
  	{"ac", ec_setacreg},
@@ -14671,15 +22265,76 @@ index 76dca408..c47dfbd3 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1780,6 +2024,7 @@ static struct excmd {
- 	{"i", ec_insert},
- 	{"d", ec_delete},
- 	EO(grp),
-+	EO(gr),
- 	{"g!", ec_glob},
- 	{"g", ec_glob},
- 	EO(mpt),
-@@ -1939,8 +2184,38 @@ void *ex_exec(const char *ln)
+@@ -1929,6 +2238,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
+ 	return src;
+ }
+ 
++/* Whether range loc has a / that no number follows, outside search and
++ * subcommand blocks: agents write /regex/ for a search out of habit. */
++static int agent_bare_div(char *loc)
++{
++	for (; *loc; loc++) {
++		if (*loc == '>' || *loc == '<' || *loc == '|') {
++			int end = *loc, e = end == '|' ? xesc : '\\', esc = 0;
++			do {
++				esc = *loc == e && !esc;
++				loc++;
++			} while (*loc && (*loc != end || esc));
++			if (!*loc)
++				break;
++		} else if (*loc == '/' && !uc_isdigit(loc[1]))
++			return 1;
++	}
++	return 0;
++}
++
++/* Why the agent may not run c with range loc now, or NULL. */
++static char *agent_gate(struct excmd *c, char *loc)
++{
++	char *why = NULL, *tail = "";
++	if (agent_bare_div(loc))
++		return "/ in a range is division and needs a number; search "
++			"with >regex> or <regex<";
++	if (c->ec == ec_agent || c->ec == ec_compact || c->ec == ec_fuzz ||
++			c->ec == ec_ath || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
++			(c->ec == ec_termexec && c->name[0] == '@') ||
++			(c->ec == ec_write && c->name[0] == 'x'))
++		why = "agent execution";
++	else if (agent_checkpointing == 1 && c->ec != ec_anote &&
++			c->ec != ec_arate && c->ec != ec_adone && c->ec != ec_acp)
++		why = "the checkpoint; acp command prints the instructions";
++	else if (agent_checkpointing == 2 && c->ec != ec_acheck)
++		why = "the budget check; only acheck N or acheck runs";
++	else if (agent_checkpointing == 3 && c->ec != ec_acap) {
++		why = "the budget check; only acap N [note] or acap runs";
++		tail = agent_think_retry();
++	}
++	if (!why)
++		return NULL;
++	snprintf(xaerr, sizeof(xaerr), "%s%sduring %s%s", c->name, *c->name ?
++		" command unavailable " : "unknown command ", why, tail);
++	return xaerr;
++}
++
++/* aspec: print the unread spec of top-level command c in place of running
++ * it; a nested deferral would skip one iteration of the enclosing command.
++ * Saves the command for aretry. Returns 1 if deferred. */
++static int agent_defer(struct excmd *c, sbuf *sb, int arg)
++{
++	int show = c->ec == ec_aout, top = xexec_dep == agent_tool_dep;
++	int defer = top && xaspec && c->ec != ec_exspec && exspec_agent(c->name);
++	agent_shown |= show;
++	if (top && (defer || !show))
++		aretry_save(sb, c, arg);
++	if (defer && !*agent_deferred)
++		snprintf(agent_deferred, sizeof(agent_deferred), "%s", c->name);
++	return defer;
++}
++
+ /* execute a single ex command chain */
+ void *ex_exec(const char *ln)
+ {
+@@ -1941,8 +2312,20 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -14687,39 +22342,21 @@ index 76dca408..c47dfbd3 100644
 +		if (agent_tool && agent_boundary())
 +			break;
 +		ln = ex_cmd(ln, sb, &idx);
-+		if (agent_tool && (excmds[idx].ec == ec_agent ||
-+				excmds[idx].ec == ec_compact ||
-+				(excmds[idx].ec == ec_termexec && excmds[idx].name[0] == '@') ||
-+				excmds[idx].ec == ec_fuzz ||
-+				excmds[idx].ec == ec_quit ||
-+				(excmds[idx].ec == ec_write && excmds[idx].name[0] == 'x') ||
-+				!strncmp(excmds[idx].name, "wq", 2))) {
-+			snprintf(xaerr, sizeof(xaerr),
-+				"%s command unavailable during agent execution",
-+				excmds[idx].name);
-+			ret = xaerr;
++		if (agent_tool && (ret = agent_gate(excmds + idx, sb->s)))
 +			break;
-+		}
 +		ln = ex_arg(ln, sb, &arg);
 +		if (agent_interrupted())
 +			break;
-+		if (agent_tool && xaspec && excmds[idx].ec != ec_exspec &&
-+				excmds[idx].ec != ec_aretry)
-+			if (exspec_agent(excmds[idx].name, *sb->s)) {
-+				free(exspec_deferred);
-+				exspec_deferred = emalloc(sb->s_n + 1);
-+				memcpy(exspec_deferred, sb->s, sb->s_n + 1);
-+				exspec_deferred_cmd = &excmds[idx];
-+				exspec_deferred_arg = arg;
-+				continue;
-+			}
++		if (agent_tool && excmds[idx].ec != ec_aretry &&
++				agent_defer(excmds + idx, sb, arg))
++			continue;
  		ret = excmds[idx].ec(sb->s, excmds[idx].name, sb->s + arg);
 +		if (agent_interrupted())
 +			break;
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1959,7 +2234,9 @@ void *ex_exec(const char *ln)
+@@ -1961,7 +2344,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -14732,10 +22369,10 @@ index 76dca408..c47dfbd3 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 00000000..f303de20
+index 000000000..31004ff54
 --- /dev/null
 +++ b/exspec.awk
-@@ -0,0 +1,80 @@
+@@ -0,0 +1,87 @@
 +# Embed the rendered README without indentation or example prompt colons.
 +function quote(s,    i, c, out) {
 +	out = "\""
@@ -14764,6 +22401,13 @@ index 00000000..f303de20
 +/^SPECIAL MARKS$/ { if (regex) active = 0 }
 +active { lines[n++] = $0 }
 +END {
++	# ex.c finds topics by the EX prefix, which indented text loses.
++	for (i = 0; i < n; i++)
++		if (lines[i] ~ /^[ \t]+EX /) {
++			printf "exspec.awk: README line \"%s\" starts with EX " \
++				"once unindented; rewrap it\n", lines[i] > "/dev/stderr"
++			exit 1
++		}
 +	print "/* Generated from README by exspec.awk. */"
 +	print "static char *exspec_lines[] = {"
 +	for (i = 0; i < n; i++) {
@@ -14818,10 +22462,10 @@ index 00000000..f303de20
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..92bf1f7e
+index 000000000..337d24b8b
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1246 @@
+@@ -0,0 +1,1550 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -15155,7 +22799,7 @@ index 00000000..92bf1f7e
 +	"Print line(s) from a buffer",
 +	"",
 +	"No range prints a line based on the value of left ex option.",
-+	"Argument prints the evaluated argument.",
++	"Argument is expanded and printed.",
 +	"",
 +	"Example: utilize character offset ranges",
 +	"1,10;5;5p",
@@ -15165,6 +22809,15 @@ index 00000000..92bf1f7e
 +	".;5;10p",
 +	"Example: print buffer pathname",
 +	"p %",
++	"",
++	"[range]=p",
++	"Print line(s) with line numbers",
++	"",
++	"Equivalent to the p command, except each line is prefixed by its",
++	"line number and a tab. Argument is ignored.",
++	"",
++	"Example: print lines 1 to 10 numbered",
++	"1,10=p",
 +	"",
 +	"[range]=[<0-3 Any>][any]",
 +	"Print range numbers",
@@ -15561,10 +23214,11 @@ index 00000000..92bf1f7e
 +	"exspec[command range topic]",
 +	"Print ex command catalog or specification",
 +	"",
-+	"No argument lists useful commands for agents, the full catalog for",
-+	"humans. Use catalog for all commands and options; use a command name",
-+	"for its specification, including hidden commands. Topics: parsing,",
-+	"escapes, expansion, ranges, regex, commands, options.",
++	"No argument lists the commands useful to agents, or the full catalog",
++	"for humans. catalog lists all commands and options; a command name",
++	"prints its specification, hidden commands included; other text",
++	"with range characters prints ranges. Topics: parsing, escapes,",
++	"expansion, ranges, regex, commands, options.",
 +	"",
 +	"Example: list all commands",
 +	"exspec catalog",
@@ -15573,61 +23227,264 @@ index 00000000..92bf1f7e
 +	"Open or resume the agent conversation",
 +	"",
 +	"Keeps the conversation. Text prefills the prompt; range attaches",
-+	"buffer text to the next submission. Enter adds a newline; Escape",
-+	"submits; Ctrl-C exits; Ctrl-O opens the editor. Ex specials are",
++	"buffer text to the next submission. Enter adds a newline, Escape",
++	"submits, Ctrl-C exits, Ctrl-O opens the editor. Ex specials are",
 +	"disabled. Unavailable as an agent tool.",
 +	"",
 +	"[range]a![text]",
 +	"Start a new agent conversation",
 +	"",
-+	"Clears history and log, aspec tracking and deferred command.",
-+	"Range, text and prompt controls work as for a. Unavailable as an agent tool.",
++	"Clears history, the log, its notes and discarded entries, aspec",
++	"tracking and what aretry and aout saved. Otherwise as a.",
 +	"",
 +	"[range]a~[text]",
 +	"Resume an agent conversation from its log",
 +	"",
-+	"Loads b-4 as context, including edits. Keeps aspec tracking.",
-+	"Range, text and prompt controls work as for a. Unavailable as an agent tool.",
++	"Loads b-4 as context, edits included. Keeps aspec tracking.",
++	"Otherwise as a.",
 +	"",
 +	"[range]apack[text]",
 +	"Compact the agent session from its log",
 +	"",
-+	"Loads b-4 as context and asks the agent to replace it with a summary.",
-+	"Stays at the prompt; reloads the log on exit. Text replaces the default",
-+	"instructions; range attaches buffer text. Unavailable as an agent tool.",
++	"Loads b-4 as context and asks the agent to replace it with a",
++	"summary. Text replaces the default instructions; range attaches",
++	"buffer text. With arate notes (b-6), the task lists the log entries",
++	"with estimated tokens and notes, those of trimmed turns included.",
++	"While b-7 holds entries, it offers aget for them. The prompt stays",
++	"open; on exit a log the agent replaced becomes the session, else",
++	"the old session is restored. On success the notes are archived",
++	"beside the log, b-6 is cleared and the replaced entries move to",
++	"b-7. The exchange is logged to b-8, saved as asides in the session",
++	"directory. Unavailable as an agent tool.",
 +	"",
 +	"[range]apack![text]",
 +	"Compact the agent session by browsing its log",
 +	"",
-+	"Starts fresh without loading or clearing b-4. The agent reads bounded",
-+	"ranges and replaces the log with a summary. Stays at the prompt;",
-+	"reloads on exit. Resets aspec tracking. Text and range work as for",
-+	"apack. Unavailable as an agent tool.",
++	"As apack, but the agent starts without b-4 in its context and reads",
++	"bounded ranges of it. The task always lists the entries, with line",
++	"numbers. Resets aspec tracking.",
 +	"",
 +	"acm",
 +	"Toggle the caveman response style skill",
 +	"",
-+	"Adds or removes the skill in b-5. Tool calls update the system",
-+	"message; otherwise context is rebuilt from the log.",
++	"Adds or removes the skill in b-5. As an agent tool it updates the",
++	"system message; otherwise the context is rebuilt from the log.",
 +	"",
 +	"aretry",
-+	"Execute the last deferred agent command once",
++	"Execute the last agent command",
 +	"",
-+	"Uses the saved range and expanded argument. Takes no range or",
-+	"argument. A new deferral replaces it; retry consumes it even on",
-+	"failure. A new session clears it. Errors if none is saved.",
++	"Runs the last top-level command the agent ran or aspec deferred,",
++	"with its range and expanded argument. A run aout is not saved. The",
++	"command stays saved until a new session. Side effects rerun. Output",
++	"is subject to agr. Takes no range or argument. Errors if none is",
++	"saved.",
 +	"",
 +	"Example: execute a deferred command",
 +	"aretry",
 +	"",
++	"[brange]aout",
++	"Print the saved output of the last agent tool call",
++	"",
++	"brange is first,last in 0-based byte offsets, inclusive; $ is the",
++	"last byte; one offset selects one byte; none prints everything.",
++	"The output of each tool call is saved, except of calls running",
++	"aout; under agr at most 1048576 bytes, or agr if larger. Exempt",
++	"from agr. A new session clears it.",
++	"",
++	"Example: bytes 50 through the end",
++	"50,$aout",
++	"",
++	"[entries]anote[text]",
++	"Replace or remove agent session log entries",
++	"",
++	"entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N",
++	"headers of b-4; $ is the last entry, 0 the text before the first",
++	"header. A TURN is one agent reply: parts headed ROLE N.I holding",
++	"its reasoning, text, commands and results. USER and NOTICE text and",
++	"each part end at an END line; lines before it are text even if they",
++	"read as headers. Text holding a line END has an id on its header,",
++	"as in RESULT N.I id, and ends at END id. In the agent context the",
++	"last tool result of a turn ends with a line [turn N end], which the",
++	"log does not hold.",
++	"",
++	"Text replaces N through M with one entry under the role and number",
++	"of N, a turn holding only the text; no text removes them. Three or",
++	"more numbers, as in 2,4,7, are a list of turns, noted in place of",
++	"the first; a number that is not a TURN rejects the list. The agent",
++	"cannot change the turn still running nor, outside an acl",
++	"checkpoint, USER entries or entry 0: those stay and its note goes",
++	"after the last one spanned. An agent note takes the role and number",
++	"of the first turn, else of the first USER entry or entry 0. Prints",
++	"the estimated tokens before and after and the USER entries kept.",
++	"Changes the agent context when acl is set. Replaced entries move to",
++	"b-7, saved as discarded in the session directory; a number already",
++	"there keeps its entry.",
++	"",
++	"Example: replace a turn with a note",
++	"14anote ls listed 40 files, none relevant",
++	"",
++	"[entries]aget[parts]",
++	"Print agent session log entries, trimmed ones included",
++	"",
++	"Prints entries N through M of b-4 and b-7 in number order, with",
++	"their headers. Entries from b-7, those removed or replaced by anote,",
++	"a 0 rating or compaction, have trimmed after each header, as in",
++	"TURN N trimmed, and precede a current entry of the same number.",
++	"entries is as for anote, with $ the last number in either buffer.",
++	"parts is part indexes or role names, separated by spaces, not both.",
++	"Indexes select parts of each turn: 0 reasoning, 1 text, 2+2k and",
++	"3+2k the command and result of call k. USER, TURN and NOTICE select",
++	"entries; REASONING, ASSISTANT, EX and RESULT select parts of turns.",
++	"Output is subject to agr. Unavailable during an acl checkpoint.",
++	"",
++	"Example: print the commands of entries 20 through 80",
++	"20,80aget EX",
++	"",
++	"[entries]arate rating sentence",
++	"Rate agent turns in the notes buffer",
++	"",
++	"Writes one line per TURN entry from N through M of b-4 to b-6:",
++	"number, rating and sentence, replacing an older one. The first turn",
++	"gets the sentence, the rest \"same as TURN N\"; a replaced sentence",
++	"that others name moves to the first of them. entries is as for",
++	"anote: other roles in a range are skipped, and three or more",
++	"numbers, as in 2,4,7, are a list of turns.",
++	"Ratings: 0 dead weight, no value for the remaining work; 1 low,",
++	"minor, superseded or only mechanics; 2 useful, informs the remaining",
++	"work; 3 essential, a decision, finding or state the task depends on.",
++	"During an acl checkpoint, rating 0 also moves the turns to b-7,",
++	"reported as by anote. With acl above 1 or negative, the harness",
++	"rates 1 an unrated turn whose every command aspec deferred. Ratings",
++	"show in ali and checkpoint lists and are given to apack. b-6 is",
++	"saved as notes in the session directory.",
++	"",
++	"Example: rate the turn of entry 52",
++	"52arate 1 read vi.c lines 1-260, nothing relevant",
++	"",
++	"adone",
++	"End an agent checkpoint",
++	"",
++	"Ends the acl checkpoint; the interrupted request resumes with the",
++	"context rebuilt from the trimmed log. While turns with commands are",
++	"unrated it is refused, up to twice in a row without new ratings.",
++	"Takes no range or argument. Errors outside a checkpoint.",
++	"",
++	"acheck",
++	"Start an agent checkpoint or set its budget",
++	"",
++	"With acl above 1 or negative, starts a checkpoint before the next",
++	"request, once the current tool batch completes. With a token count N",
++	"and negative acl, the next budget check comes after N tokens of",
++	"growth from now instead. Either ends a budget check, where no other",
++	"command runs. Takes no range. Errors with other acl values or",
++	"during a checkpoint.",
++	"",
++	"Example: continue for about 20000 more tokens",
++	"acheck 20000",
++	"",
++	"acp",
++	"Print the agent checkpoint instructions",
++	"",
++	"Prints the commands, rating scale and trimming instructions sent at",
++	"the start of an acl checkpoint. Takes no range or argument. Exempt",
++	"from agr. As an agent tool, errors outside a checkpoint.",
++	"",
++	"ali",
++	"Print the agent session log entry list",
++	"",
++	"Prints one line per USER and TURN entry of the session log (b-4):",
++	"role, number and estimated tokens. A turn with several parts shows",
++	"them instead, as reasoning+text+commands+results=tokens, reasoning",
++	"only if the log holds any, then its arate rating and, for a turn",
++	"with commands, the note. Then a line naming the largest entries and",
++	"one the unrated turns. During an acl checkpoint this is the status",
++	"sent at its start, updated. Takes no range or argument. Exempt from",
++	"agr. Errors on an empty log.",
++	"",
++	"auli",
++	"Print the unrated agent session log turns",
++	"",
++	"Prints the ali lines of the unrated turns alone; only turns with",
++	"commands count. Takes no range or argument. Exempt from agr. Errors",
++	"on an empty log.",
++	"",
 +	"ast",
 +	"Print agent status and token usage",
 +	"",
-+	"Prints sizes, per-role usage, activity, limits and autocompact mode.",
-+	"Usage counts come from the last accepted response. Next input is",
-+	"estimated from reported input plus new JSON bytes / 3, or all JSON",
-+	"bytes / 3 without a usable count. Includes tool definitions and",
-+	"framing; not a tokenizer or a guarantee the request fits.",
++	"Prints the autocompact, thinking and acl settings, notes, activity,",
++	"token usage, context sizes per role, log sizes, limits and the",
++	"message bytes shared with the previous request. Usage is that of",
++	"the last accepted response. Next input is its input count plus new",
++	"JSON bytes / 3, or all JSON bytes / 3 without a count, tools and",
++	"framing included: an estimate, not a tokenizer.",
++	"",
++	"[budget]ath[effort]",
++	"Set the agent thinking cap and effort",
++	"",
++	"budget is a token count N or N,M. N caps thinking tokens, sent as",
++	"reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends",
++	"thinking at once on llama.cpp and means no cap on Strata. effort is",
++	"one word sent as reasoning_effort, such as none, low, medium, high",
++	"or xhigh. An omitted part is not sent; ath alone sends neither. Sent",
++	"fields replace those of request_extra. ast shows the setting.",
++	"",
++	"With N,M the agent may raise the cap up to M for one reply with",
++	"acap, and a reply whose thinking the server cut at a cap below M is",
++	"withheld: not logged, its commands not run. The server marks the cut",
++	"by ending the thinking with think_cut of conf.c; a reply counts as",
++	"cut only if its thinking also used half the cap or more. think_cut",
++	"is dropped from the thinking of every reply, so models cannot copy",
++	"it. The agent is shown the reply and its commands, in an exchange",
++	"kept in b-8 only, and answers with acap. Replies of an acl",
++	"checkpoint, a budget check and a pack agent are asked about too;",
++	"what was interrupted then goes on, and a new checkpoint, budget",
++	"check or compaction waits for the new reply. Unavailable as an",
++	"agent tool.",
++	"",
++	"Example: cap thinking at 1024 tokens with high effort",
++	"1024ath high",
++	"",
++	"Example: start at 4096 tokens; the agent may raise the cap to 32768",
++	"4096,32768ath medium",
++	"",
++	"acap[count note]",
++	"Raise the agent thinking cap for one reply",
++	"",
++	"count is a token count N: the thinking cap of the next reply, at",
++	"most the ceiling M of ath N,M. Takes no range. Errors without a",
++	"ceiling. What that reply leaves of N is added to the caps of later",
++	"replies, up to M, until their thinking spends it.",
++	"",
++	"In the question about a reply whose thinking was cut, acap N, a",
++	"count above the cap, discards the reply and requests it again under",
++	"cap N. Text after N is a note sent with the requests of the new",
++	"reply only, unlogged; that reply sees nothing else of the exchange",
++	"and is not asked about. acap alone runs the reply as it is. Nothing",
++	"else runs meanwhile; after five retries the answer is taken as acap.",
++	"A cut reply without text and commands is requested again either",
++	"way.",
++	"",
++	"Example: think up to 8192 tokens in the next reply",
++	"acap 8192",
++	"",
++	"agoal[text]",
++	"Set or clear the agent goal",
++	"",
++	"Text sets the goal; agoal alone clears it. While a goal is set,",
++	"every agent request opens with it: joined to the front of the first",
++	"message after the system prompt if a user message, else as a user",
++	"message before it. The session log does not hold it, so trimming",
++	"and compaction leave it. An agent reply without commands does not",
++	"end the run: the agent is shown the goal and asked whether it is",
++	"finished, and the run ends only with a reply without commands after",
++	"the goal is cleared. Ctrl-C and the tool round limit still end it.",
++	"A cleared goal stays at the front while the first message only",
++	"extends the one last sent, so the server cache is kept; once that",
++	"message changes, as by compaction or a new conversation, it goes.",
++	"Takes no range. ast shows the goal.",
++	"",
++	"Example: keep the agent working until the tests pass",
++	"agoal all tests in test.sh pass",
 +	"",
 +	"ac[regex]",
 +	"Set autocomplete filter regex",
@@ -15699,40 +23556,115 @@ index 00000000..92bf1f7e
 +	"",
 +	"Argument notation shows the default value.",
 +	"",
-+	"aco[0]  Automatically compact using the loaded session log",
-+	"Positive argument sets an estimated input-token threshold; 0 or",
-+	"negative disables. No argument enables at 85000 or toggles off.",
-+	"aco and aco! share a threshold; the last setting wins.",
++	"acl[0]  Rebuild agent context from the session log",
++	"No argument toggles between 0 and 1. With 0, log edits do not reach",
++	"the agent.",
 +	"",
-+	"After tool batches, runs apack without a prompt and resumes. Never",
-+	"recurses. Failed, cancelled or inadequate summaries keep the old",
-+	"history and stop the run. Leave room for instructions and output;",
-+	"use aco! if the log cannot fit. Does not change the API limit.",
++	"1 rebuilds the context from the session log (b-4) before every",
++	"request, so edits of the log apply to the next one. Values above 1",
++	"or negative rebuild only after such edits and when a checkpoint",
++	"ends; in between, replies stay as returned, reasoning included, so",
++	"the server cache continues from them. A rebuild skips NOTICE",
++	"entries, which report harness events such as HTTP errors, and has",
++	"only the reasoning the log holds (ar).",
++	"",
++	"Values above 1 add checkpoints: once the estimated context grows by",
++	"that many tokens from the last checkpoint, or from its smallest size",
++	"since, one runs before the next request. It opens with the ali list",
++	"and the acp instructions. Only ali, acp, auli, arate, anote and",
++	"adone run. It ends with adone, a reply without commands or recursive",
++	"editing; the first two are refused while turns are unrated, up to",
++	"twice in a row without new ratings. The interrupted request then",
++	"resumes; aco is checked after it. The exchange is logged to b-8 with",
++	"headers prefixed CP. Its requests keep the context the checkpoint",
++	"started with, so the prompt cache holds: anote edits b-4 at once but",
++	"reaches the context when the checkpoint ends.",
++	"",
++	"Negative values leave the checkpoint to the agent through budget",
++	"checks. The first comes once the estimated context grows by -acl",
++	"tokens from the session start, the last checkpoint or a compaction,",
++	"and asks for the tokens the rest of the task needs, set with",
++	"acheck N. After that growth the next asks to checkpoint now with",
++	"acheck or defer N more tokens with acheck N. Only acheck runs during",
++	"a check; after two more requests without an answer a checkpoint",
++	"starts. After a checkpoint -acl applies again. A check is logged to",
++	"b-8 with CP headers, leaves the context unchanged and, if",
++	"interrupted, runs again at the next request. N may pass aco, which",
++	"stays the limit; a compaction drops the budget.",
++	"",
++	"Example: checkpoint every 5000 tokens of growth",
++	"acl 5000",
++	"",
++	"aco[0]  Automatically compact using the loaded session log",
++	"A positive argument is the estimated input-token threshold; 0 or",
++	"negative disables. No argument enables at 85000 or toggles off.",
++	"aco and aco! share the threshold; the last one set selects the mode.",
++	"",
++	"Once the estimate reaches the threshold after a tool batch, runs",
++	"apack without a prompt and resumes the request. Never recurses. A",
++	"failed, cancelled or not shorter summary keeps the old history and",
++	"stops the run. Leave room for the instructions and the summary; use",
++	"aco! if the log cannot fit. Does not change the API limit.",
 +	"",
 +	"aco![0]  Automatically compact by browsing the session log",
-+	"Threshold and toggle work as for aco (default 85000). Selecting",
-+	"either mode replaces the other.",
++	"Threshold and toggle as for aco.",
 +	"",
-+	"Runs apack! with fresh context and bounded reads of b-4. Keeps the",
-+	"current task and restores the editor buffer. Use ast for status",
-+	"and token estimates.",
++	"Runs apack! instead: fresh context and bounded reads of b-4. The",
++	"request resumes and the editor buffer is restored. ast shows the",
++	"mode and token estimates.",
 +	"",
-+	"ar[0]  Display returned agent reasoning",
++	"agr[4096]  Control agent output protection",
++	"No argument toggles between 0 and 4096. 0 or negative disables.",
++	"",
++	"A positive value is the limit in bytes of a tool call output; a",
++	"larger output is withheld and aout views it.",
++	"",
++	"ato[0]  Detach long agent shell commands",
++	"No argument toggles between 0 and 30. 0 disables.",
++	"",
++	"A positive value is the seconds an agent shell command may run in",
++	"the foreground. After that it runs on in the background: the result",
++	"has error 124, its process group and a file receiving later output.",
++	"A later tool result reports its exit status.",
++	"",
++	"ar[1]  Log and display returned agent reasoning",
 +	"No argument logically inverts the option.",
 +	"",
-+	"Nonzero includes returned reasoning in the session log.",
++	"0 does not log returned reasoning. 1 logs it, as part 0 of a turn,",
++	"without printing it during the run. 2 logs and prints it.",
 +	"",
-+	"gr[2]  Control agent output protection",
-+	"No argument logically inverts the option.",
++	"ata[0]  Cap agent thinking by its recent average",
++	"No argument toggles between 0 and 100. 0 disables.",
 +	"",
-+	"Value 2 limits tool output to 4096 bytes and protects captured shell",
-+	"output. Other values disable protection; 0 and 1 increment after",
-+	"each tool call until 2. Negative values stay disabled.",
++	"A positive value is a percentage: each request is sent that share",
++	"of the average thinking tokens as the ath cap, in place of N. Each",
++	"accepted reply that thought moves the average a quarter of the way",
++	"to its thinking tokens; one that used up its cap counts as twice the",
++	"cap, so cut replies raise the average. Lower values cut more",
++	"replies.",
++	"",
++	"The average starts at N of ath, else at the first reply; ath",
++	"restarts it, and N is sent until a reply is counted. The cap stays",
++	"from 1 to M of ath N,M, else to N. Replies are counted with ata off",
++	"too: by the reported reasoning_tokens, else the output tokens by the",
++	"share of the thinking in the bytes of the reply. A cap the agent",
++	"raised with acap N lasts for its reply; what that reply leaves of N",
++	"is added to later caps until their thinking spends it. ast shows",
++	"the average.",
++	"",
++	"Example: start at 2048 tokens and follow the average, up to 16384",
++	"2048,16384ath:ata",
++	"",
++	"Example: cap at twice the average",
++	"ata 200",
 +	"",
 +	"aspec[1]  Print ex specifications for agents",
++	"No argument logically inverts the option. 0 disables.",
 +	"",
-+	"No argument logically inverts the option. 0 disables automatic",
-+	"specifications; 1 enables them (the default).",
++	"The first use of a command by the agent prints its specification",
++	"instead of running it; aretry then runs the command. The first",
++	"unknown agent command of a session also prints the exspec command",
++	"list, unless exspec has printed it.",
 +	"",
 +	"ai[1]   Indent new lines",
 +	"",
@@ -15979,115 +23911,126 @@ index 00000000..92bf1f7e
 +	{"ud", "Undo", 319, 322, 0, 0},
 +	{"rd", "Redo", 323, 326, 0, 0},
 +	{"p", "Print line(s) from a buffer", 327, 341, 0, 0},
-+	{"=", "Print range numbers", 342, 355, 0, 0},
-+	{"=\?", "Print last error", 356, 360, 0, 0},
-+	{"m", "Set line mark(s)", 361, 369, 0, 0},
-+	{"m!", "Unset line mark(s)", 370, 374, 0, 0},
-+	{"ya", "Yank into a register", 375, 382, 0, 0},
-+	{"ya+", "Yank and append to a register", 383, 388, 0, 0},
-+	{"ya!", "Free a register", 389, 391, 0, 0},
-+	{"pu", "Paste or pipe a register", 392, 403, 0, 0},
-+	{"reg", "Print registers or put into a register", 404, 414, 0, 0},
-+	{"reg+", "Print registers or append to a register", 415, 417, 0, 0},
-+	{"e", "Open a file at a path", 418, 424, 0, 0},
-+	{"e!", "Force open a file at a path", 425, 429, 0, 0},
-+	{"ef", "Open file using fuzzy search prompt", 430, 446, 0, 0},
-+	{"ef!", "Forced version of ef command", 447, 449, 0, 0},
-+	{"r", "Read a file or a pipe", 450, 464, 0, 0},
-+	{"w", "Write a file or a pipe", 465, 478, 0, 0},
-+	{"w!", "Force write a file", 479, 481, 0, 0},
-+	{"wq", "Write a file or a pipe and exit", 482, 485, 0, 0},
-+	{"wq!", "Force write a file or a pipe and force quit", 486, 489, 0, 0},
-+	{"x", "Write unsaved changes and exit", 490, 492, 0, 0},
-+	{"x!", "Force write unsaved changes and force quit", 493, 495, 0, 0},
-+	{"q", "Exit", 496, 504, 0, 0},
-+	{"q!", "Force quit", 505, 514, 0, 0},
-+	{"b", "Print buffers or switch to a buffer", 515, 531, 0, 0},
-+	{"bp", "Set current buffer path", 532, 534, 0, 0},
-+	{"bs", "Set current buffer saved", 535, 539, 0, 0},
-+	{"bx", "Set max number of buffers allowed", 540, 545, 0, 0},
-+	{"cd", "Set a working directory", 546, 554, 0, 0},
-+	{"fp", "Clear or set a secondary directory path", 555, 557, 0, 0},
-+	{"fd", "Calculate directory listing in b-2 buffer", 558, 562, 0, 0},
-+	{"inc", "Include regex for fd command calculation", 563, 572, 0, 0},
-+	{"!", "Run an external program", 573, 589, 0, 0},
-+	{"&", "Global non-blocking macro", 590, 608, 0, 0},
-+	{"@", "Global blocking macro", 609, 629, 0, 0},
-+	{"\?", "While loop", 630, 644, 0, 0},
-+	{"\?!", "Inverted while loop", 645, 647, 0, 0},
-+	{"\?\?", "Conditional", 648, 685, 0, 0},
-+	{"\?\?!", "Inverted conditional", 686, 692, 0, 0},
-+	{"\?\?\?", "Evaluate capture ids", 693, 701, 0, 0},
-+	{"\?~", "Control capture ids lifetime", 702, 718, 0, 0},
-+	{"ft", "Set a filetype", 719, 725, 0, 0},
-+	{"cm", "Set a keymap", 726, 730, 0, 0},
-+	{"cm!", "Set an alternative keymap", 731, 733, 0, 0},
-+	{"exspec", "Print ex command catalog or specification", 734, 744, 0, 0},
-+	{"a", "Open or resume the agent conversation", 745, 752, 0, 0},
-+	{"a!", "Start a new agent conversation", 753, 758, 0, 0},
-+	{"a~", "Resume an agent conversation from its log", 759, 764, 0, 0},
-+	{"apack", "Compact the agent session from its log", 765, 771, 0, 0},
-+	{"apack!", "Compact the agent session by browsing its log", 772, 779, 0, 0},
-+	{"acm", "Toggle the caveman response style skill", 780, 785, 0, 0},
-+	{"aretry", "Execute the last deferred agent command once", 786, 795, 0, 0},
-+	{"ast", "Print agent status and token usage", 796, 804, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 805, 813, 0, 0},
-+	{"sc", "Set ex special characters", 814, 824, 0, 0},
-+	{"sc!", "Set ex special characters", 825, 832, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 833, 840, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 841, 844, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 845, 849, 0, 0},
-+	{"ph", "Redefine placeholders", 850, 866, 0, 0},
-+	{"aco", "Automatically compact using the loaded session log", 875, 884, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 885, 892, 1, 0},
-+	{"ar", "Display returned agent reasoning", 893, 897, 1, 0},
-+	{"gr", "Control agent output protection", 898, 904, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 905, 909, 1, 0},
-+	{"ai", "Indent new lines", 910, 913, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 914, 915, 1, 0},
-+	{"ish", "Interactive shell", 916, 931, 1, 0},
-+	{"grp", "Regex search group", 932, 940, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 941, 944, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 945, 946, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 946, 947, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 947, 948, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 948, 949, 1, 0},
-+	{"led", "Enable all terminal output", 949, 950, 1, 0},
-+	{"vis", "Control startup flags", 951, 962, 1, 0},
-+	{"mpt", "Control vi prompts", 963, 973, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 974, 976, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 976, 978, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 978, 979, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 979, 980, 1, 0},
-+	{"td", "Current text direction context", 980, 986, 1, 0},
-+	{"pr", "Print register", 987, 1003, 1, 0},
-+	{"fr", "Find register", 1004, 1016, 1, 0},
-+	{"rr", "Record register", 1017, 1030, 1, 0},
-+	{"lim", "Line length render limit", 1031, 1046, 1, 0},
-+	{"seq", "Control Undo/Redo", 1047, 1059, 1, 0},
-+	{"left", "Control horizontal scroll", 1060, 1065, 1, 0},
-+	{"err", "Control ex errors", 1066, 1078, 1, 0},
++	{"=p", "Print line(s) with line numbers", 342, 350, 0, 0},
++	{"=", "Print range numbers", 351, 364, 0, 0},
++	{"=\?", "Print last error", 365, 369, 0, 0},
++	{"m", "Set line mark(s)", 370, 378, 0, 0},
++	{"m!", "Unset line mark(s)", 379, 383, 0, 0},
++	{"ya", "Yank into a register", 384, 391, 0, 0},
++	{"ya+", "Yank and append to a register", 392, 397, 0, 0},
++	{"ya!", "Free a register", 398, 400, 0, 0},
++	{"pu", "Paste or pipe a register", 401, 412, 0, 0},
++	{"reg", "Print registers or put into a register", 413, 423, 0, 0},
++	{"reg+", "Print registers or append to a register", 424, 426, 0, 0},
++	{"e", "Open a file at a path", 427, 433, 0, 0},
++	{"e!", "Force open a file at a path", 434, 438, 0, 0},
++	{"ef", "Open file using fuzzy search prompt", 439, 455, 0, 0},
++	{"ef!", "Forced version of ef command", 456, 458, 0, 0},
++	{"r", "Read a file or a pipe", 459, 473, 0, 0},
++	{"w", "Write a file or a pipe", 474, 487, 0, 0},
++	{"w!", "Force write a file", 488, 490, 0, 0},
++	{"wq", "Write a file or a pipe and exit", 491, 494, 0, 0},
++	{"wq!", "Force write a file or a pipe and force quit", 495, 498, 0, 0},
++	{"x", "Write unsaved changes and exit", 499, 501, 0, 0},
++	{"x!", "Force write unsaved changes and force quit", 502, 504, 0, 0},
++	{"q", "Exit", 505, 513, 0, 0},
++	{"q!", "Force quit", 514, 523, 0, 0},
++	{"b", "Print buffers or switch to a buffer", 524, 540, 0, 0},
++	{"bp", "Set current buffer path", 541, 543, 0, 0},
++	{"bs", "Set current buffer saved", 544, 548, 0, 0},
++	{"bx", "Set max number of buffers allowed", 549, 554, 0, 0},
++	{"cd", "Set a working directory", 555, 563, 0, 0},
++	{"fp", "Clear or set a secondary directory path", 564, 566, 0, 0},
++	{"fd", "Calculate directory listing in b-2 buffer", 567, 571, 0, 0},
++	{"inc", "Include regex for fd command calculation", 572, 581, 0, 0},
++	{"!", "Run an external program", 582, 598, 0, 0},
++	{"&", "Global non-blocking macro", 599, 617, 0, 0},
++	{"@", "Global blocking macro", 618, 638, 0, 0},
++	{"\?", "While loop", 639, 653, 0, 0},
++	{"\?!", "Inverted while loop", 654, 656, 0, 0},
++	{"\?\?", "Conditional", 657, 694, 0, 0},
++	{"\?\?!", "Inverted conditional", 695, 701, 0, 0},
++	{"\?\?\?", "Evaluate capture ids", 702, 710, 0, 0},
++	{"\?~", "Control capture ids lifetime", 711, 727, 0, 0},
++	{"ft", "Set a filetype", 728, 734, 0, 0},
++	{"cm", "Set a keymap", 735, 739, 0, 0},
++	{"cm!", "Set an alternative keymap", 740, 742, 0, 0},
++	{"exspec", "Print ex command catalog or specification", 743, 754, 0, 0},
++	{"a", "Open or resume the agent conversation", 755, 762, 0, 0},
++	{"a!", "Start a new agent conversation", 763, 768, 0, 0},
++	{"a~", "Resume an agent conversation from its log", 769, 774, 0, 0},
++	{"apack", "Compact the agent session from its log", 775, 788, 0, 0},
++	{"apack!", "Compact the agent session by browsing its log", 789, 795, 0, 0},
++	{"acm", "Toggle the caveman response style skill", 796, 801, 0, 0},
++	{"aretry", "Execute the last agent command", 802, 813, 0, 0},
++	{"aout", "Print the saved output of the last agent tool call", 814, 825, 0, 0},
++	{"anote", "Replace or remove agent session log entries", 826, 854, 0, 0},
++	{"aget", "Print agent session log entries, trimmed ones included", 855, 871, 0, 0},
++	{"arate", "Rate agent turns in the notes buffer", 872, 892, 0, 0},
++	{"adone", "End an agent checkpoint", 893, 900, 0, 0},
++	{"acheck", "Start an agent checkpoint or set its budget", 901, 913, 0, 0},
++	{"acp", "Print the agent checkpoint instructions", 914, 920, 0, 0},
++	{"ali", "Print the agent session log entry list", 921, 932, 0, 0},
++	{"auli", "Print the unrated agent session log turns", 933, 939, 0, 0},
++	{"ast", "Print agent status and token usage", 940, 949, 0, 0},
++	{"ath", "Set the agent thinking cap and effort", 950, 978, 0, 0},
++	{"acap", "Raise the agent thinking cap for one reply", 979, 998, 0, 0},
++	{"agoal", "Set or clear the agent goal", 999, 1017, 0, 0},
++	{"ac", "Set autocomplete filter regex", 1018, 1026, 0, 0},
++	{"sc", "Set ex special characters", 1027, 1037, 0, 0},
++	{"sc!", "Set ex special characters", 1038, 1045, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1046, 1053, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1054, 1057, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1058, 1062, 0, 0},
++	{"ph", "Redefine placeholders", 1063, 1079, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1088, 1126, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1127, 1137, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1138, 1144, 1, 0},
++	{"agr", "Control agent output protection", 1145, 1150, 1, 0},
++	{"ato", "Detach long agent shell commands", 1151, 1158, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1159, 1164, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1165, 1189, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1190, 1197, 1, 0},
++	{"ai", "Indent new lines", 1198, 1201, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1202, 1203, 1, 0},
++	{"ish", "Interactive shell", 1204, 1219, 1, 0},
++	{"grp", "Regex search group", 1220, 1228, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1229, 1232, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1233, 1234, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1234, 1235, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1235, 1236, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1236, 1237, 1, 0},
++	{"led", "Enable all terminal output", 1237, 1238, 1, 0},
++	{"vis", "Control startup flags", 1239, 1250, 1, 0},
++	{"mpt", "Control vi prompts", 1251, 1261, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1262, 1264, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1264, 1266, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1266, 1267, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1267, 1268, 1, 0},
++	{"td", "Current text direction context", 1268, 1274, 1, 0},
++	{"pr", "Print register", 1275, 1291, 1, 0},
++	{"fr", "Find register", 1292, 1304, 1, 0},
++	{"rr", "Record register", 1305, 1318, 1, 0},
++	{"lim", "Line length render limit", 1319, 1334, 1, 0},
++	{"seq", "Control Undo/Redo", 1335, 1347, 1, 0},
++	{"left", "Control horizontal scroll", 1348, 1353, 1, 0},
++	{"err", "Control ex errors", 1354, 1366, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..681c0569 100644
+index 56cb42c63..f62aad734 100644
 --- a/lbuf.c
 +++ b/lbuf.c
-@@ -227,6 +227,14 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
+@@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
  		free(sb->s);
  	else
  		lo->ins = (char**)sb->s;
-+	if (agent_tool) {
-+		char msg[64];
-+		/* Report a zero-based, half-open span, like ex range beg/end. */
-+		int last = MAX(end, beg + lo->n_ins);
-+		snprintf(msg, sizeof(msg), "edited lines beg: %d end: %d", beg, last);
-+		ex_print(msg, msg_ft)
-+	}
++	if (agent_tool && lb == xb)
++		agent_edit(lb, beg, lo->n_del, lo->n_ins);
 +	agent_sync(lb);
  }
  
  int lbuf_rd(struct lbuf *lb, int fd, int beg, int end)
-@@ -424,6 +432,7 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
+@@ -424,6 +427,7 @@ int lbuf_undo(struct lbuf *lb, int *row, int *off)
  	lbuf_copymark(lb->mark_sb, lo->mark_sb)
  	lbuf_copymark(lb->mark_se, lo->mark_se)
  	lb->modified = lb->hist_u != lb->saved;
@@ -16095,7 +24038,7 @@ index 56cb42c6..681c0569 100644
  	return 0;
  }
  
-@@ -451,6 +460,7 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
+@@ -451,6 +455,7 @@ int lbuf_redo(struct lbuf *lb, int *row, int *off)
  		lbuf_copymark(lb->mark_se, (lb->tmp_mark + 2))
  	}
  	lb->modified = lb->hist_u != lb->saved;
@@ -16104,7 +24047,7 @@ index 56cb42c6..681c0569 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e..2641d0ff 100644
+index 4893a07e5..2641d0ffc 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -16144,7 +24087,7 @@ index 4893a07e..2641d0ff 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 03aa736f..1d90526f 100644
+index 4e11ec2f9..4668eda91 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -16177,25 +24120,26 @@ index 03aa736f..1d90526f 100644
 +		return agent_shell(cmd, ibuf, oproc, status);
  	static char *sh[] = {"$SHELL", "sh", NULL};
  	struct pollfd fds[3];
- 	char buf[512];
-@@ -344,7 +354,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
+ 	struct winsize win;
+@@ -362,7 +372,7 @@ sbuf *cmd_pipe(char *cmd, sbuf *ibuf, int oproc, int *status)
  	tcsetpgrp(term_ufd.fd, getpgrp());
  	signal(SIGTTOU, SIG_DFL);
  	if (!ibuf) {
 -		if (term_sbuf)
 +		if (terminal)
  			term_init();
- 		signal(SIGINT, SIG_DFL);
- 	}
+ 	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
+ 			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index 13b97c7d..6acada2d 100644
+index b1f9a16f1..a0a9a3cb4 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -13,9 +13,13 @@
+@@ -13,9 +13,14 @@
  #include <sys/stat.h>
  #include <sys/ioctl.h>
  #include <sys/wait.h>
 +#include <errno.h>
++#include <time.h>
 +#include "cJSON.c"
  #include "vi.h"
  #include "conf.c"
@@ -16205,7 +24149,7 @@ index 13b97c7d..6acada2d 100644
  #include "lbuf.c"
  #include "led.c"
  #include "regex.c"
-@@ -1822,6 +1826,7 @@ int main(int argc, char *argv[])
+@@ -1829,6 +1834,7 @@ int main(int argc, char *argv[])
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
@@ -16214,7 +24158,7 @@ index 13b97c7d..6acada2d 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da595..e3149a80 100644
+index c23da5950..f1c422d25 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
@@ -16238,7 +24182,7 @@ index c23da595..e3149a80 100644
  extern int xdefreg;
  extern struct buf *bufs;
 -extern struct buf tempbufs[3];
-+extern struct buf tempbufs[5];
++extern struct buf tempbufs[8];
  extern struct buf *ex_buf;
  extern struct buf *ex_pbuf;
  #define istempbuf(buf) (buf >= tempbufs && buf < tempbufs + LEN(tempbufs))

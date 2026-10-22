@@ -105,20 +105,20 @@ int xai = 1;			/\* autoindent option \*/1??0?
 \)
 
 4??0?
-4??+2m 2220reg p OK ex.c:1732:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1734:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		xleft = atoi\(arg\);
 	else if \(lbuf_get\(xb, xrow\)\)
 		xleft = ren_position\(lbuf_get\(xb, xrow\)\)->pos\[MIN\(xoff, rstate->n\)];.*(/\* commands & opts must be sorted longest of its kind topmost \*/)
 static struct excmd \{
 	char \*name;8??0?
-grp 08??-4m 2220reg p OK ex.c:1732:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1734:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	if \(\*loc\)
 		xleft = \(xcols / 2\) \* atoi\(loc\);
 	else if \(\*arg\).*(	void \*\(\*ec\)\(char \*loc, char \*cmd, char \*arg\);)
 } excmds\[] = \{
 	\{"@", ec_termexec},9??0?
-grp 09??-7m 2220reg p OK ex.c:1732:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:17322sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1734:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:17342sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
@@ -130,24 +130,24 @@ static struct excmd \{
 %f+ 	\{"g!", ec_glob},
 	\{"g", ec_glob},
 	EO\(mpt\),4??0?
-4??+2m 3220reg p OK ex.c:1785:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1787:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"g!", ec_glob},.*?
 	\{"g", ec_glob},.*?
 (	EO\(mpt\),)7??0?
-grp 07??m 3220reg p OK ex.c:1785:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1787:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"i", ec_insert},
 	\{"d", ec_delete},
 	EO\(grp\),.*(	\{"q", ec_quit},)
 	\{"reg\+", ec_regprint},
 	\{"reg", ec_regprint},8??0?
-grp 08??-4m 3220reg p OK ex.c:1785:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1787:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	EO\(ish\),
 	\{"inc", ec_setincl},
 	EO\(ic\),.*(	\{"re", ec_krsset},)
 	\{"rd", ec_undoredo},
 	EO\(rr\),9??0?
-grp 09??-7m 3220reg p OK ex.c:1785:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:17852sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1787:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:17872sc %? %@2132sc!0?
 '\''1-1i int xms = 1;			/* mouse in normal mode */
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i _EO(ms,
@@ -157,9 +157,9 @@ static struct excmd \{
 	return NULL;
 )
 
-??!219reg ex.c:1732:m22sc %? %@2142sc!0?
+??!219reg ex.c:1734:m22sc %? %@2142sc!0?
 '\''3i 	EO(ms),
-??!219reg ex.c:1785:m32sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg ex.c:1787:m32sc %? %@2142sc!b2m!%ya 98?0?
 %f> 	return pos - xleft;
 }
 
@@ -523,20 +523,20 @@ static int vi_region\(int cmd, int \*row, int \*off\)
 }
 
 4??0?
-4??+2m 1220reg p OK vi.c:470:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:477:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			xrow \* 100 / MAX\(1, lbuf_len\(xb\)-1\), xrow\+1, col,
 			istempbuf\(ex_buf\) \? tempbufs - ex_buf - 1 : ex_buf - bufs\);
 	}.*(	static rset \*bre;)
 	static int srow\[5], soff\[5], lkwdcnt;
 	static int cadir = 1;8??0?
-grp 08??-4m 1220reg p OK vi.c:470:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK vi.c:477:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			"\\"%s\\"%s%dL %d%% L%d C%d B%td",
 			xb_path\[0] \? xb_path : "unnamed",
 			xb->modified \? "\* " : " ", lbuf_len\(xb\),.*(	char \*cs;)
 	int cnt = vi_arg \? vi_arg : 1;
 	int mv, i, dir, var;9??0?
-grp 09??-7m 1220reg p OK vi.c:470:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg vi.c:4702sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK vi.c:477:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:4772sc %? %@2132sc!0?
 ?0?
 %f+ 	int mv, i, dir, var;
 
@@ -548,28 +548,28 @@ static int vi_region\(int cmd, int \*row, int \*off\)
 %f+ 	int mv, i, dir, var;
 
 	mv = term_read\(0\);4??0?
-4??+2m 2220reg p OK vi.c:481:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK vi.c:488:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	int mv, i, dir, var;.*?
 .*?
 (	mv = term_read\(0\);)7??0?
-grp 07??m 2220reg p OK vi.c:481:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK vi.c:488:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	static int cadir = 1;
 	char \*cs;
 	int cnt = vi_arg \? vi_arg : 1;.*(		if \(!vi_charlast\[0]\))
 			return -1;
 		if \(mv == '\'','\''\)8??0?
-grp 08??-4m 2220reg p OK vi.c:481:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK vi.c:488:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	static sbuf \*savepath\[5];
 	static rset \*bre;
 	static int srow\[5], soff\[5], lkwdcnt;.*(			mv = vi_charcmd == '\''F'\'' \|\| vi_charcmd == '\''T'\'')
 				\? tolower\(vi_charcmd\) : toupper\(vi_charcmd\);
 		else9??0?
-grp 09??-7m 2220reg p OK vi.c:481:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg vi.c:4812sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK vi.c:488:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:4882sc %? %@2132sc!0?
 '\''1i static void vi_scrollforward(int cnt);
 static void vi_scrollbackward(int cnt);
 
-??!219reg vi.c:470:m12sc %? %@2142sc!0?
+??!219reg vi.c:477:m12sc %? %@2142sc!0?
 '\''2i 	if (mv == 27 && xms) {
 		int r = term_try_mouse();
 		if (r == 1) {
@@ -595,7 +595,7 @@ static void vi_scrollbackward(int cnt);
 		} else if (r == 2)	/* stray release from a prior click; restart */
 			return -1;
 	}
-??!219reg vi.c:481:m22sc %? %@2142sc!b5m!%ya 98?0?
+??!219reg vi.c:488:m22sc %? %@2142sc!b5m!%ya 98?0?
 %f> void term_kill\(void\);
 void term_room\(int n\);
 int term_read\(int winch\);
@@ -738,19 +738,19 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 			if \(\*row >= lbuf_len\(xb\)\)
 				\*row = lbuf_len\(xb\) - 1;
 			if \(\*row < 0\)2??0?
-2??m 1220reg p OK vi.c:788:a22sc %? %@2152sc!1q0?
+2??m 1220reg p OK vi.c:795:a22sc %? %@2152sc!1q0?
 %f> 			int p;
 			\*row = xtop \+ xmouse_row;3??0?
-3??m 1220reg p OK vi.c:788:a32sc %? %@2152sc!1q0?
+3??m 1220reg p OK vi.c:795:a32sc %? %@2152sc!1q0?
 %f> 		int r = term_try_mouse\(\);
 		if \(r == 1\) \{
 			char \*mln;4??0?
-4??+3m 1220reg p OK vi.c:788:a42sc %? %@2152sc!1q0?
+4??+3m 1220reg p OK vi.c:795:a42sc %? %@2152sc!1q0?
 %f> 			if \(\*row >= lbuf_len\(xb\)\)
 				\*row = lbuf_len\(xb\) - 1;
 			if \(\*row < 0\)5??0?
-5??-2m 1220reg p OK vi.c:788:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.c:788:r2312sc %? %@2132sc!0?
+5??-2m 1220reg p OK vi.c:795:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg vi.c:795:r2312sc %? %@2132sc!0?
 ?0?
 %f+ 				\*row = 0;
 			mln = lbuf_get\(xb, \*row\);
@@ -762,8 +762,8 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 %f+ 				\*row = 0;
 			mln = lbuf_get\(xb, \*row\);
 			p = mln \? led_col\(mln, MAX\(0, xmouse_col - vi_lncol\)\) : 0;4??0?
-4??+2m 2220reg p OK vi.c:795:a42sc %? %@2152sc!0?
-1;4??!219reg vi.c:795:r2312sc %? %@2132sc!0?
+4??+2m 2220reg p OK vi.c:802:a42sc %? %@2152sc!0?
+1;4??!219reg vi.c:802:r2312sc %? %@2132sc!0?
 '\''1,#+1c 			int p, k = 0, h;
 			if (xlw) {		/* the clicked row may be a wrapped segment */
 				int trow = -xtopsub;
@@ -778,12 +778,12 @@ printf '%s\n' '2sc!fr 98b4m!%ya 98?0?
 				k = MAX(0, xmouse_row - trow);
 			} else
 				*row = xtop + xmouse_row;
-??!219reg vi.c:788:r231:m12sc %? %@2142sc!0?
+??!219reg vi.c:795:r231:m12sc %? %@2142sc!0?
 '\''2i 			if (mln && xlw) {	/* the segment holds a window of columns */
 				h = vi_lnrows(mln);
 				p += MIN(k, h - 1) * ren_wrapw(vi_lncol);
 			}
-??!219reg vi.c:795:r231:m22sc %? %@2142sc!p compat 231 applied: src=linewrap_v2.sh' > "$P2VIF".231
+??!219reg vi.c:802:r231:m22sc %? %@2142sc!p compat 231 applied: src=linewrap_v2.sh' > "$P2VIF".231
 EXINIT='%ya 97:? %@97' $VI -e 'conf.c' 'ex.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF".0 "$P2VIF".231 "$P2VIF".d
 
 if [ $# -gt 0 ]; then
@@ -798,7 +798,7 @@ exit 0
 === COMPAT PATCH ===
 --- a/vi.c
 +++ b/vi.c
-@@ -785,14 +785,30 @@
+@@ -792,14 +792,30 @@
  		int r = term_try_mouse();
  		if (r == 1) {
  			char *mln;
@@ -835,7 +835,7 @@ exit 0
 === END COMPAT ===
 === PATCH2VI PATCH ===
 diff --git a/conf.c b/conf.c
-index 2888d7c6..129d1629 100644
+index 2888d7c60..129d1629a 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -297,7 +297,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
@@ -848,7 +848,7 @@ index 2888d7c6..129d1629 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 76dca408..423773a5 100644
+index d13974a65..7dfb5aa39 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -856,7 +856,7 @@ index 76dca408..423773a5 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1730,6 +1731,13 @@ _EO(left,
+@@ -1732,6 +1733,13 @@ _EO(left,
  	return NULL;
  )
  
@@ -870,7 +870,7 @@ index 76dca408..423773a5 100644
  #undef EO
  #define EO(opt) {#opt, eo_##opt}
  
-@@ -1783,6 +1791,7 @@ static struct excmd {
+@@ -1785,6 +1793,7 @@ static struct excmd {
  	{"g!", ec_glob},
  	{"g", ec_glob},
  	EO(mpt),
@@ -879,7 +879,7 @@ index 76dca408..423773a5 100644
  	{"m", ec_mark},
  	{"q!", ec_quit},
 diff --git a/led.c b/led.c
-index 4893a07e..be5f6387 100644
+index 4893a07e5..be5f6387a 100644
 --- a/led.c
 +++ b/led.c
 @@ -91,6 +91,14 @@ int led_pos(char *s, int pos)
@@ -927,7 +927,7 @@ index 4893a07e..be5f6387 100644
  		}
  		sbuf_chr(sb, key)
 diff --git a/term.c b/term.c
-index 03aa736f..f1a967dc 100644
+index 4e11ec2f9..1716b30f7 100644
 --- a/term.c
 +++ b/term.c
 @@ -1,3 +1,18 @@
@@ -1054,10 +1054,10 @@ index 03aa736f..f1a967dc 100644
  {
  	int cw;
 diff --git a/vi.c b/vi.c
-index 13b97c7d..88346d84 100644
+index b1f9a16f1..76bf793d8 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -468,6 +468,9 @@ static void vc_status(int type)
+@@ -475,6 +475,9 @@ static void vc_status(int type)
  	vi_drawmsg_mpt(vi_msg)
  }
  
@@ -1067,7 +1067,7 @@ index 13b97c7d..88346d84 100644
  static int vi_region(int cmd, int *row, int *off)
  {
  	static sbuf *savepath[5];
-@@ -479,6 +482,31 @@ static int vi_region(int cmd, int *row, int *off)
+@@ -486,6 +489,31 @@ static int vi_region(int cmd, int *row, int *off)
  	int mv, i, dir, var;
  
  	mv = term_read(0);
@@ -1100,7 +1100,7 @@ index 13b97c7d..88346d84 100644
  	case ',':
  	case ';':
 diff --git a/vi.h b/vi.h
-index c23da595..9fa3b21d 100644
+index c23da5950..9fa3b21db 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -374,6 +374,9 @@ void term_pos(int r, int c);

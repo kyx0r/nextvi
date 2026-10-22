@@ -41,20 +41,20 @@ void ex_init\(char \*\*files, int n\)
 }
 
 4??0?
-4??+2m 1220reg p OK ex.c:1989:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK ex.c:1991:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	}
 	syn_setft\(xb_ft\);
 	free\(sb->s\);.*(	ec_setbufsmax\(NULL, NULL, ""\);)
 	char \*s = files\[0] \? files\[0] : "";
 	do \{8??0?
-grp 08??-4m 1220reg p OK ex.c:1989:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK ex.c:1991:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		} else
 			esc = 0;
 		sbuf_cut\(sb, 0\).*(		xmpt = 0;)
 		ec_edit\("", "e", s\);
 		s = \*\(\+\+files\);9??0?
-grp 09??-7m 1220reg p OK ex.c:1989:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:19892sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK ex.c:1991:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:19912sc %? %@2132sc!0?
 '\''1i void ex_done(void)
 {
 	for (int i = 0; i < LEN(tempbufs); i++)
@@ -71,7 +71,7 @@ void ex_init\(char \*\*files, int n\)
 	free(bufs);
 }
 
-??!219reg ex.c:1989:m12sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg ex.c:1991:m12sc %? %@2142sc!b1m!%ya 98?0?
 %f> 		sbuf_free\(acsb\)
 	}
 }1??0?
@@ -190,18 +190,18 @@ void syn_done(void)
 %f> 	else
 		vi\(1\);
 	term_done\(\);4??0?
-4??+2m 1220reg p OK vi.c:1858:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK vi.c:1865:a42sc %? %@2152sc!1q0?
 grp 1%f> 	else.*?
 		vi\(1\);.*?
 (	term_done\(\);)7??0?
-grp 07??m 1220reg p OK vi.c:1858:a72sc %? %@2152sc!0?
-1;4;7??!219reg vi.c:18582sc %? %@2132sc!0?
+grp 07??m 1220reg p OK vi.c:1865:a72sc %? %@2152sc!0?
+1;4;7??!219reg vi.c:18652sc %? %@2132sc!0?
 '\''1i 	ex_done();
 	syn_done();
 	ren_done();
 	led_alldone();
 	free(tibuf);
-??!219reg vi.c:1858:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
+??!219reg vi.c:1865:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'ex.c' 'led.c' 'regex.c' 'ren.c' 'vi.c' "$P2VIF"
 
 if [ $# -gt 0 ]; then
@@ -214,10 +214,10 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 76dca408..ea6015c6 100644
+index d13974a65..cad0baa14 100644
 --- a/ex.c
 +++ b/ex.c
-@@ -1987,6 +1987,22 @@ void ex(void)
+@@ -1989,6 +1989,22 @@ void ex(void)
  	xgrec--;
  }
  
@@ -241,7 +241,7 @@ index 76dca408..ea6015c6 100644
  {
  	xbufsalloc = MAX(n, xbufsalloc);
 diff --git a/led.c b/led.c
-index 4893a07e..a1f94c56 100644
+index 4893a07e5..a1f94c563 100644
 --- a/led.c
 +++ b/led.c
 @@ -803,3 +803,10 @@ void led_done(void)
@@ -256,7 +256,7 @@ index 4893a07e..a1f94c56 100644
 +		sbuf_free(extsb)
 +}
 diff --git a/regex.c b/regex.c
-index fd22467f..af32603a 100644
+index fd22467f0..af32603ae 100644
 --- a/regex.c
 +++ b/regex.c
 @@ -665,6 +665,7 @@ static int re_pikevm(rcode *prog, const char *s, const char **subp, int nsubc, i
@@ -268,7 +268,7 @@ index fd22467f..af32603a 100644
  	for (i = 0; i < prog->laidx; i++)
  		lb[i] = NULL;
 diff --git a/ren.c b/ren.c
-index 4116d9c1..0abb7884 100644
+index 4116d9c18..0abb78846 100644
 --- a/ren.c
 +++ b/ren.c
 @@ -88,6 +88,19 @@ static int ren_cwid(char *s, int pos)
@@ -304,10 +304,10 @@ index 4116d9c1..0abb7884 100644
 +	rset_free(syn_ftrs);
 +}
 diff --git a/vi.c b/vi.c
-index 13b97c7d..fd4dd0aa 100644
+index b1f9a16f1..b29622b0c 100644
 --- a/vi.c
 +++ b/vi.c
-@@ -1856,6 +1856,11 @@ int main(int argc, char *argv[])
+@@ -1863,6 +1863,11 @@ int main(int argc, char *argv[])
  	else
  		vi(1);
  	term_done();

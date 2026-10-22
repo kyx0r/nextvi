@@ -49,20 +49,20 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 }
 
 4??0?
-4??+2m 2220reg p OK ex.c:1673:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1675:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_krsset\(sb->s, \+1\);
 		free\(sb->s\);
 	}.*(	int i, j, l, o;)
 	for \(l = 0, i = 0; i < x->cterm;\) \{
 		o = x->off\[i\+\+];8??0?
-grp 08??-4m 2220reg p OK ex.c:1673:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK ex.c:1675:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		ex_regesc\(sb, reg\.s, reg\.s \+ reg\.s_n, 1\);
 		free\(reg\.s\);
 		sbuf_nul\(sb\).*(		if \(o < 0\))
 			continue;
 		for \(l\+\+; x->off\[i] == o; i\+\+\);9??0?
-grp 09??-7m 2220reg p OK ex.c:1673:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg ex.c:16732sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK ex.c:1675:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg ex.c:16752sc %? %@2132sc!0?
 ?0?
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
@@ -74,24 +74,24 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 %f+ 	EO\(seq\),
 	\{"sc!", ec_specials},
 	\{"sc", ec_specials},4??0?
-4??+2m 3220reg p OK ex.c:1807:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:1809:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	EO\(seq\),.*?
 	\{"sc!", ec_specials},.*?
 (	\{"sc", ec_specials},)7??0?
-grp 07??m 3220reg p OK ex.c:1807:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:1809:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"ub", ec_setenc},
 	\{"ud", ec_undoredo},
 	EO\(shape\),.*(	\{"ya!", ec_yank},)
 	\{"ya\+", ec_yank},
 	\{"ya", ec_yank},8??0?
-grp 08??-4m 3220reg p OK ex.c:1807:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:1809:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"w", ec_write},
 	\{"uc", ec_setenc},
 	\{"uz", ec_setenc},.*(	\{"cm!", ec_cmap},)
 	\{"cm", ec_cmap},
 	\{"cd", ec_chdir},9??0?
-grp 09??-7m 3220reg p OK ex.c:1807:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:18072sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:1809:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:18092sc %? %@2132sc!0?
 '\''1-1i char **xenvp;
 ??!219reg ex.c:0:m12sc %? %@2142sc!0?
 '\''2i static void *ec_script(char *loc, char *cmd, char *arg)
@@ -131,20 +131,20 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 	return ret ? xuerr : NULL;
 }
 
-??!219reg ex.c:1673:m22sc %? %@2142sc!0?
+??!219reg ex.c:1675:m22sc %? %@2142sc!0?
 '\''3i 	{"sr", ec_script},
 	{"sx", ec_script},
-??!219reg ex.c:1807:m32sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg ex.c:1809:m32sc %? %@2142sc!b1m!%ya 98?0?
 %f> 			close\(pipefds1\[0]\);
 			close\(pipefds1\[1]\);
 		}
 		execvp\(argv\[0], argv\);
-		exit\(1\);
+		_exit\(71\);	/\* EX_OSERR: cannot exec \*/
 	}
 	if \(ifd\)1??0?
 1??+3m 11q0?
 %f> 		execvp\(argv\[0], argv\);
-		exit\(1\);
+		_exit\(71\);	/\* EX_OSERR: cannot exec \*/
 	}
 	if \(ifd\)2??0?
 2??m 1220reg p OK term.c:239:a22sc %? %@2152sc!1q0?
@@ -154,17 +154,17 @@ static void ext_hlr\(led_ext \*p, led_ctx \*x\)
 			close\(pipefds1\[1]\);
 		}4??0?
 4??+3m 1220reg p OK term.c:239:a42sc %? %@2152sc!1q0?
-%f> 		exit\(1\);
+%f> 		_exit\(71\);	/\* EX_OSERR: cannot exec \*/
 	}
 	if \(ifd\)5??0?
 5??-1m 1220reg p OK term.c:239:a52sc %? %@2152sc!1q0?
-%f> 	......e.pi....s.\[0]..
-........\(....fd......;
-	..
-...x...p.a.gv\[.].......;
-.........;
-.}
-.i...if..6??0?
+%f> 	..close......d......;
+...cl..e.pi..fds....\).
+..}
+...x........v.0.. ......
+......t....;... .....E.............ec ..
+	.
+	........6??0?
 6??+3m 1220reg p OK term.c:239:a62sc %? %@2152sc!1q0?
 grp 1%f> 			close\(pipefds1\[0]\);.*?
 			close\(pipefds1\[1]\);.*?
@@ -218,7 +218,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/ex.c b/ex.c
-index 76dca408..43c32ace 100644
+index d13974a65..118e45b40 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -1,3 +1,4 @@
@@ -226,7 +226,7 @@ index 76dca408..43c32ace 100644
  int xleft;			/* the first visible column */
  int xvis;			/* startup flags */
  int xai = 1;			/* autoindent option */
-@@ -1671,6 +1672,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
+@@ -1673,6 +1674,43 @@ static void *ec_krsset(char *loc, char *cmd, char *arg)
  	return xkwdrs ? NULL : xserr;
  }
  
@@ -270,7 +270,7 @@ index 76dca408..43c32ace 100644
  static void ext_hlr(led_ext *p, led_ctx *x)
  {
  	ren_state *r = x->r;
-@@ -1805,6 +1843,8 @@ static struct excmd {
+@@ -1807,6 +1845,8 @@ static struct excmd {
  	EO(seq),
  	{"sc!", ec_specials},
  	{"sc", ec_specials},
@@ -280,7 +280,7 @@ index 76dca408..43c32ace 100644
  	{"x!", ec_write},
  	{"x", ec_write},
 diff --git a/term.c b/term.c
-index 03aa736f..0706305d 100644
+index 4e11ec2f9..d5ad806db 100644
 --- a/term.c
 +++ b/term.c
 @@ -236,7 +236,10 @@ static int cmd_make(char **argv, int *ifd, int *ofd)
@@ -292,11 +292,11 @@ index 03aa736f..0706305d 100644
 +			execve(argv[0], argv, xenvp);
 +		else
 +			execvp(argv[0], argv);
- 		exit(1);
+ 		_exit(71);	/* EX_OSERR: cannot exec */
  	}
  	if (ifd)
 diff --git a/vi.h b/vi.h
-index c23da595..eb6f931c 100644
+index c23da5950..eb6f931c4 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -1,4 +1,12 @@
