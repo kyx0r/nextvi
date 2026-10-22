@@ -1125,7 +1125,7 @@ check 'X16 \/ ends pattern with no replacement section — match deleted' ' z' "
 # Delimiter/separator interaction: an unescaped ':' ends the s command; a
 # backslash before ':' escapes the separator into the replacement text.
 printf 'x z\n' > "$TMPFILE"
-out=$(run_ex ':%s/x/a:b/:%p:q!')
+out=$(run_ex ':%s/x/a:1/:%p:q!')
 check 'X17 : — unescaped separator ends replacement at "a"' 'a z' "$out"
 
 printf 'x z\n' > "$TMPFILE"
@@ -1133,7 +1133,7 @@ out=$(run_ex ':%s/x/a\:b/:%p:q!')
 check 'X18 \: — escaped separator stays literal in replacement' 'a:b z' "$out"
 
 printf 'x z\n' > "$TMPFILE"
-out=$(run_ex ':%s/x/a\\:b/:%p:q!')
+out=$(run_ex ':%s/x/a\\:1/:%p:q!')
 check 'X19 \\\\: — \\ collapses to one \; the bare : still separates' 'a\ z' "$out"
 
 printf 'x z\n' > "$TMPFILE"
@@ -1261,11 +1261,11 @@ printf 'a\nb\nc\n' > "$TMPFILE"
 out=$(run_ex ':-1i TOP:%p:q!')
 check ':-1i from line 1 inserts above first line' "$(printf 'TOP\na\nb\nc')" "$out"
 
-# :a removed; with no address the unknown command is reported (with an address
-# ex just seeks to it and ignores the rest, so use the no-address form here)
+# with no address an unknown command is reported (with an address ex just
+# seeks to it and ignores the rest, so use the no-address form here)
 printf 'a\nb\nc\n' > "$TMPFILE"
-out=$(run_ex ':a X:%p:q!')
-check ':a command removed' "$(printf 'unknown command\na\nb\nc')" "$out"
+out=$(run_ex ':* X:%p:q!')
+check ':* unknown command reported' "$(printf 'unknown command\na\nb\nc')" "$out"
 
 # :c needs a real line to change -> line-0 rejected
 printf 'a\nb\nc\n' > "$TMPFILE"
