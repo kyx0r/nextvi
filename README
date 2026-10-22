@@ -435,6 +435,7 @@ context.
 The new ex command "apack!" to compact the conversation by starting a
 fresh agent.
 The new ex command "acm" toggles the caveman response style skill.
+The new ex command "=p" prints lines with line numbers.
 
 The new ex option "acl" rebuilds the agent context from the session log,
 so log edits apply to the next request. No argument toggles 0 and 1.
