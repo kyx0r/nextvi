@@ -72,6 +72,7 @@ Patch changes:
    Whatever reply leaves of N is banked onto the caps of later replies,
    up to M, until their thinking spends it, so one raise smoothens out
    across many turns.
+   Added :=p to print lines with line numbers.
    Added :ata to cap thinking by a percentage of its recent average in
    place of N (0 disables, a bare :ata toggles between 0 and 100). Each
    accepted reply that thought moves the average a quarter of the way to
