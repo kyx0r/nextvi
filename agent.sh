@@ -9005,55 +9005,34 @@ int n = 0, keep, d; \\9??0?
 grp 09??-8m 3220reg p OK ex.c:57:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:572sc %? %@2132sc!0?
 ?0?
-%f+ 		}
-		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,
+%f+ 		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,
 				MIN\(dir, 0\), !row, &beg, &off\)\) \{
 			xrerr = "range not found";
 			return -2;
 		}
 		n = row \? off : beg;1??0?
-1??+3m 41q0?
-%f+ 			xrerr = "range not found";
-			return -2;
-		}
-		n = row \? off : beg;2??0?
-2??m 4220reg p OK ex.c:288:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^			xrerr = "range not found";$3??0?
-3??m 4220reg p OK ex.c:288:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 		}
-		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,
-				MIN\(dir, 0\), !row, &beg, &off\)\) \{4??0?
-4??+3m 4220reg p OK ex.c:288:a42sc %? %@2152sc!1q0?
-%f+ 			return -2;
-		}
-		n = row \? off : beg;5??0?
-5??-1m 4220reg p OK ex.c:288:a52sc %? %@2152sc!1q0?
-%f+ .	.
-..i. ..b.f..e.....x.,.x..d.s..x...di.,.r.. \? .e.....,..n.,
-	...M.N\(d....0.,...o.,...... &....\)..
-......r. . ...ng....t f.u....
-..	..tu....2.
-	..
-	.. ..r........ :..eg.6??0?
-6??+3m 4220reg p OK ex.c:288:a62sc %? %@2152sc!1q0?
-grp 1%f+ 		}.*?
-		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,.*?
+1??+2m 41q0?
+%f+ 		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,
+				MIN\(dir, 0\), !row, &beg, &off\)\) \{
+			xrerr = "range not found";4??0?
+4??+2m 4220reg p OK ex.c:288:a42sc %? %@2152sc!1q0?
+grp 1%f+ 		if \(lbuf_search\(xb, xkwdrs, xkwddir, row \? beg : 0, end,.*?
 				MIN\(dir, 0\), !row, &beg, &off\)\) \{.*?
 (			xrerr = "range not found";)7??0?
 grp 07??m 4220reg p OK ex.c:288:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 		} else if \(xgrp >= xkwdrs->nsubc\) \{
-			xrerr = xgerr;
-			return -2;.*(	default:)
+m 01;0grp 1%f> 			xrerr = xgerr;
+			return -2;
+		}.*(	default:)
 		if \(uc_isdigit\(\*\*num\)\) \{
 			n = atoi\(\*num\);8??0?
 grp 08??-5m 4220reg p OK ex.c:288:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 		if \(!xkwdrs\) \{
-			xrerr = xserr;
-			return -2;.*(			while \(uc_isdigit\(\*\*num\)\))
+m 01;0grp 1%f> 			xrerr = xserr;
+			return -2;
+		} else if \(xgrp >= xkwdrs->nsubc\) \{.*(			while \(uc_isdigit\(\*\*num\)\))
 				\+\+\*num;
 		}9??0?
 grp 09??-8m 4220reg p OK ex.c:288:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:2882sc %? %@2132sc!0?
+1;4;7;8;9??!219reg ex.c:2882sc %? %@2132sc!0?
 ?0?
 %f+ 		}
 	}
@@ -10276,8 +10255,11 @@ void \*ex_exec\(const char \*ln\)
 '\''3i static char xirrmsg[192];
 static char xaerr[128];
 ??!219reg ex.c:57:m32sc %? %@2142sc!0?
-'\''4c 			sprintf(xirrmsg, "range not found: beg:%d end:%d off:%d dir:%d", beg, end, off, dir);
-			xrerr = xirrmsg;
+'\''4i 			if (agent_tool) {
+				sprintf(xirrmsg, "range not found: beg:%d end:%d off:%d dir:%d",
+					beg, end, off, dir);
+				xrerr = xirrmsg;
+			}
 ??!219reg ex.c:288:m42sc %? %@2142sc!0?
 '\''5i 		int pre = n;
 ??!219reg ex.c:300:m52sc %? %@2142sc!0?
@@ -10294,7 +10276,7 @@ static char xaerr[128];
 ??!219reg ex.c:327:m72sc %? %@2142sc!0?
 '\''8,#+1c 	int n = lbuf_len(xb), invalid = *beg < 0 || *beg >= n ||
 		*end <= *beg || *end > n;
-	if (invalid && xrerr == xirerr) {
+	if (invalid && xrerr == xirerr && agent_tool) {
 		long b = *beg, e = *end;
 		const char *begop = b < 0 ? " < 0" : "";
 		const char *begend = b >= n ? b > n ? " < beg" : " = beg" : "";
@@ -10304,9 +10286,9 @@ static char xaerr[128];
 		const char *endop = e > n ? " < end" : "";
 		snprintf(xirrmsg, sizeof(xirrmsg),
 			"invalid range: beg:%ld%s%s end:%ld o1:%d o2:%d "
-			"xoff:%d xrow:%d%s lbuf_len:%d%s%s%s",
+			"xoff:%d xrow:%d%s lbuf_len:%d%s%s",
 			b, begop, op, e, *o1, *o2, xoff, xrow, rowop, n,
-			begend, endop, agent_tool ? "; see exspec ranges" : "");
+			begend, endop);
 		xrerr = xirrmsg;
 	}
 	return invalid * ret;
@@ -12972,7 +12954,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..25d696b5
+index 000000000..25d696b58
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,4556 @@
@@ -17534,7 +17516,7 @@ index 00000000..25d696b5
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..480fe075
+index 000000000..480fe075e
 --- /dev/null
 +++ b/agent.h
 @@ -0,0 +1,46 @@
@@ -17586,7 +17568,7 @@ index 00000000..480fe075
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 00000000..6e4fb0dd
+index 000000000..6e4fb0dd3
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -20783,7 +20765,7 @@ index 00000000..6e4fb0dd
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 00000000..cab5feb4
+index 000000000..cab5feb42
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -21094,7 +21076,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..2ec422a6 100755
+index c836c94c7..2ec422a6e 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,320 @@ build() {
@@ -21438,7 +21420,7 @@ index c836c94c..2ec422a6 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..9bc042a9 100644
+index 2888d7c60..9bc042a94 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,276 @@
@@ -21730,7 +21712,7 @@ index 2888d7c6..9bc042a9 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index d13974a6..707e0494 100644
+index d13974a65..47550561a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -21759,17 +21741,19 @@ index d13974a6..707e0494 100644
  static char *xrerr;
  static void *xpret;		/* previous ex command return value */
  static signed char *xcid;	/* capture status by id, -1 if unset */
-@@ -285,7 +288,8 @@ static int ex_range(char *ploc, char **num, int n, int *row)
- 		}
+@@ -286,6 +289,11 @@ static int ex_range(char *ploc, char **num, int n, int *row)
  		if (lbuf_search(xb, xkwdrs, xkwddir, row ? beg : 0, end,
  				MIN(dir, 0), !row, &beg, &off)) {
--			xrerr = "range not found";
-+			sprintf(xirrmsg, "range not found: beg:%d end:%d off:%d dir:%d", beg, end, off, dir);
-+			xrerr = xirrmsg;
+ 			xrerr = "range not found";
++			if (agent_tool) {
++				sprintf(xirrmsg, "range not found: beg:%d end:%d off:%d dir:%d",
++					beg, end, off, dir);
++				xrerr = xirrmsg;
++			}
  			return -2;
  		}
  		n = row ? off : beg;
-@@ -298,6 +302,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
+@@ -298,6 +306,7 @@ static int ex_range(char *ploc, char **num, int n, int *row)
  		}
  	}
  	while (**num) {
@@ -21777,7 +21761,7 @@ index d13974a6..707e0494 100644
  		dir = atoi(*num+1);
  		if (**num == '-')
  			n -= dir;
-@@ -311,6 +316,14 @@ static int ex_range(char *ploc, char **num, int n, int *row)
+@@ -311,6 +320,14 @@ static int ex_range(char *ploc, char **num, int n, int *row)
  			n %= dir;
  		else
  			break;
@@ -21792,7 +21776,7 @@ index d13974a6..707e0494 100644
  		for (++*num; uc_isdigit(**num);)
  			++*num;
  	}
-@@ -325,6 +338,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
+@@ -325,6 +342,7 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
  	int row = xrow, ooff = xoff, ret = 1, adj = 0;
  	char *ploc = loc, *cmd = NULL;
  	xrerr = xirerr;
@@ -21800,7 +21784,7 @@ index d13974a6..707e0494 100644
  	if (vaddr)
  		*beg = 0;
  	while (*loc) {
-@@ -370,8 +384,24 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
+@@ -370,8 +388,24 @@ static int ex_region(char *loc, int *beg, int *end, int *o1, int *o2)
  		*end = *beg + 1;
  		ret += adj << 1;
  	}
@@ -21808,7 +21792,7 @@ index d13974a6..707e0494 100644
 -		*end <= *beg || *end > lbuf_len(xb)) * ret;
 +	int n = lbuf_len(xb), invalid = *beg < 0 || *beg >= n ||
 +		*end <= *beg || *end > n;
-+	if (invalid && xrerr == xirerr) {
++	if (invalid && xrerr == xirerr && agent_tool) {
 +		long b = *beg, e = *end;
 +		const char *begop = b < 0 ? " < 0" : "";
 +		const char *begend = b >= n ? b > n ? " < beg" : " = beg" : "";
@@ -21818,16 +21802,16 @@ index d13974a6..707e0494 100644
 +		const char *endop = e > n ? " < end" : "";
 +		snprintf(xirrmsg, sizeof(xirrmsg),
 +			"invalid range: beg:%ld%s%s end:%ld o1:%d o2:%d "
-+			"xoff:%d xrow:%d%s lbuf_len:%d%s%s%s",
++			"xoff:%d xrow:%d%s lbuf_len:%d%s%s",
 +			b, begop, op, e, *o1, *o2, xoff, xrow, rowop, n,
-+			begend, endop, agent_tool ? "; see exspec ranges" : "");
++			begend, endop);
 +		xrerr = xirrmsg;
 +	}
 +	return invalid * ret;
  }
  
  static int ex_read(sbuf *sb, char *msg, ins_state *is, int ps, int flg)
-@@ -420,13 +450,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -420,13 +454,23 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  {
  	char msg[512];
  	int fd, len, rd = 0, cd = 0;
@@ -21852,7 +21836,7 @@ index d13974a6..707e0494 100644
  		arg = "";
  	} else if (xbufcur == xbufsmax && !strchr(cmd, '!') &&
  			bufs[xbufsmax - 1].lb->modified) {
-@@ -440,9 +480,15 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
+@@ -440,9 +484,15 @@ static void *ec_edit(char *loc, char *cmd, char *arg)
  		ex_bufpostfix(ex_buf, arg[0]);
  		syn_setft(xb_ft);
  	}
@@ -21871,7 +21855,7 @@ index d13974a6..707e0494 100644
  	if (!(xvis & 4))
  		ex_print(msg, bar_ft)
  	return rd || (fd < 0 && cd != 3) ? xuerr : NULL;
-@@ -631,6 +677,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
+@@ -631,6 +681,8 @@ static void *ec_find(char *loc, char *cmd, char *arg)
  static void *ec_buffer(char *loc, char *cmd, char *arg)
  {
  	int n = atoi(arg);
@@ -21880,7 +21864,7 @@ index d13974a6..707e0494 100644
  	if (!arg[0]) {
  		char ln[512];
  		for (int i = 0; i < xbufcur; i++) {
-@@ -639,6 +687,13 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
+@@ -639,6 +691,13 @@ static void *ec_buffer(char *loc, char *cmd, char *arg)
  				c + (char)bufs[i].lb->modified, bufs[i].path);
  			ex_print(ln, msg_ft)
  		}
@@ -21894,7 +21878,7 @@ index d13974a6..707e0494 100644
  		return NULL;
  	} else if (n < 0) {
  		if (-n <= LEN(tempbufs)) {
-@@ -824,6 +879,12 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
+@@ -824,6 +883,12 @@ static void *ec_termexec(char *loc, char *cmd, char *arg)
  
  void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  {
@@ -21907,7 +21891,7 @@ index d13974a6..707e0494 100644
  	if (xpr > 0) {
  		ex_regput(xpr, line, 1);
  		sbuf *pr = ex_regget(xpr);
-@@ -831,6 +892,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
+@@ -831,6 +896,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  				pr->s[pr->s_n-1] != '\n')
  			ex_regput(xpr, "\n", 1);
  	}
@@ -21916,7 +21900,7 @@ index d13974a6..707e0494 100644
  	if (xvis & 1) {
  		term_write(line, dstrlen(line, '\n'))
  		term_write("\n", 1)
-@@ -856,6 +919,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
+@@ -856,6 +923,8 @@ void ex_cprint(char *line, char *ft, int r, int c, int left, int flg)
  static void *ec_insert(char *loc, char *cmd, char *arg)
  {
  	int beg, end = -1, o1 = -1, o2 = -1, ps = 0, key;
@@ -21925,7 +21909,7 @@ index d13974a6..707e0494 100644
  	sbuf _sb, *sb = &_sb;
  	if (!*loc || (key = ex_region(loc, &beg, &end, &o1, &o2))) {
  		if (*loc && cmd[0] != 'c' && beg == -1 && end == 0
-@@ -868,7 +933,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
+@@ -868,7 +937,7 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
  			end = beg + 1;
  		}
  	}
@@ -21934,7 +21918,7 @@ index d13974a6..707e0494 100644
  		sb->s = arg;
  		sb->s_n = 1;
  		key = 127;
-@@ -924,10 +989,21 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
+@@ -924,10 +993,21 @@ static void *ec_insert(char *loc, char *cmd, char *arg)
  static void *ec_print(char *loc, char *cmd, char *arg)
  {
  	int i, beg, end, o1 = -1, o2 = -1;
@@ -21960,7 +21944,7 @@ index d13974a6..707e0494 100644
  		ex_print(arg, msg_ft)
  		return NULL;
  	}
-@@ -939,6 +1015,8 @@ static void *ec_print(char *loc, char *cmd, char *arg)
+@@ -939,6 +1019,8 @@ static void *ec_print(char *loc, char *cmd, char *arg)
  		xrow = MAX(beg, end - 1);
  		return NULL;
  	}
@@ -21969,7 +21953,7 @@ index d13974a6..707e0494 100644
  	rstate = rstates+1;
  	rstate->s = NULL;
  	for (i = beg; i < end; i++) {
-@@ -949,14 +1027,25 @@ static void *ec_print(char *loc, char *cmd, char *arg)
+@@ -949,14 +1031,25 @@ static void *ec_print(char *loc, char *cmd, char *arg)
  			o = uc_sub(ln, o1, -1);
  		else if (o2 >= 0 && i == end - 1)
  			o = uc_sub(ln, 0, o2);
@@ -21998,7 +21982,7 @@ index d13974a6..707e0494 100644
  	rstate--;
  	xrow = MAX(beg, end - (cmd[0] || loc[0]));
  	return NULL;
-@@ -1074,7 +1163,8 @@ static void *ec_num(char *loc, char *cmd, char *arg)
+@@ -1074,7 +1167,8 @@ static void *ec_num(char *loc, char *cmd, char *arg)
  	if (d < 4)
  		itoa(arr[d], msg);
  	else
@@ -22008,7 +21992,7 @@ index d13974a6..707e0494 100644
  	ex_print(msg, msg_ft)
  	return NULL;
  }
-@@ -1435,6 +1525,8 @@ static void *ec_while(char *loc, char *cmd, char *arg)
+@@ -1435,6 +1529,8 @@ static void *ec_while(char *loc, char *cmd, char *arg)
  	int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
  	for (; count && !ret; count--) {
  		ret = ex_exec(arg);
@@ -22017,7 +22001,7 @@ index d13974a6..707e0494 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1637,6 +1729,178 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1637,6 +1733,178 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -22196,7 +22180,7 @@ index d13974a6..707e0494 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1704,9 +1968,14 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1704,9 +1972,14 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -22213,7 +22197,7 @@ index d13974a6..707e0494 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1732,18 +2001,25 @@ _EO(left,
+@@ -1732,18 +2005,25 @@ _EO(left,
  	return NULL;
  )
  
@@ -22243,7 +22227,7 @@ index d13974a6..707e0494 100644
  	{"=", ec_num},
  	{"???", ec_while},
  	{"?""?!", ec_while},
-@@ -1760,8 +2036,37 @@ static struct excmd {
+@@ -1760,8 +2040,37 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -22281,7 +22265,7 @@ index d13974a6..707e0494 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1929,6 +2234,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
+@@ -1929,6 +2238,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  	return src;
  }
  
@@ -22350,7 +22334,7 @@ index d13974a6..707e0494 100644
  /* execute a single ex command chain */
  void *ex_exec(const char *ln)
  {
-@@ -1941,8 +2308,20 @@ void *ex_exec(const char *ln)
+@@ -1941,8 +2312,20 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -22372,7 +22356,7 @@ index d13974a6..707e0494 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1961,7 +2340,9 @@ void *ex_exec(const char *ln)
+@@ -1961,7 +2344,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -22385,7 +22369,7 @@ index d13974a6..707e0494 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 00000000..31004ff5
+index 000000000..31004ff54
 --- /dev/null
 +++ b/exspec.awk
 @@ -0,0 +1,87 @@
@@ -22478,7 +22462,7 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..337d24b8
+index 000000000..337d24b8b
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1550 @@
@@ -24033,7 +24017,7 @@ index 00000000..337d24b8
 +	{"err", "Control ex errors", 1354, 1366, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..f62aad73 100644
+index 56cb42c63..f62aad734 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -24063,7 +24047,7 @@ index 56cb42c6..f62aad73 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e..2641d0ff 100644
+index 4893a07e5..2641d0ffc 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -24103,7 +24087,7 @@ index 4893a07e..2641d0ff 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 4e11ec2f..4668eda9 100644
+index 4e11ec2f9..4668eda91 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -24147,7 +24131,7 @@ index 4e11ec2f..4668eda9 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f..a0a9a3cb 100644
+index b1f9a16f1..a0a9a3cb4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,14 @@
@@ -24174,7 +24158,7 @@ index b1f9a16f..a0a9a3cb 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da595..f1c422d2 100644
+index c23da5950..f1c422d25 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
