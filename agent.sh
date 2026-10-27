@@ -1628,16 +1628,6 @@ static char *agent_reasoning(cJSON *message, const char **key)
 	return cJSON_IsString(r) && *r->valuestring ? r->valuestring : NULL;
 }
 
-/* Length of the reasoning s without a trailing think_cut, the sentence the
- * server ends thinking with at the cap; -1 if s does not end with it. */
-static int agent_think_cut(const char *s)
-{
-	int n = strlen(s), k = strlen(think_cut);
-	while (n && isspace((unsigned char)s[n - 1]))
-		n--;
-	return k && n >= k && !memcmp(s + n - k, think_cut, k) ? n - k : -1;
-}
-
 /* Return the thinking tokens of the reply in root: the reported count, else
  * the output tokens by the thinking'\''s share of the reply'\''s bytes, else its
  * bytes / 3. */
@@ -1668,39 +1658,21 @@ static double agent_think_tokens(cJSON *root)
 	return tokens;
 }
 
-/* Whether the server cut the thinking of the reply in root, which used
- * tokens: it ends with think_cut and reached half the cap. A model shown its
- * earlier cut thinking may end short thinking with think_cut itself. */
-static int agent_think_hit(cJSON *root, double tokens)
+/* Whether the server cut the thinking of a reply that used tokens: they
+ * reached think_cut percent of the cap. */
+static int agent_think_hit(double tokens)
 {
-	const char *rkey;
-	char *reasoning = agent_reasoning(agent_reply(root), &rkey);
-	return reasoning && agent_think_cap >= 0 &&
-		tokens >= agent_think_cap / 2.0 && agent_think_cut(reasoning) >= 0;
+	return agent_think_cap > 0 && tokens >= 1 &&
+		tokens >= agent_think_cap * think_cut / 100.0;
 }
 
-/* Drop think_cut from the thinking of the reply in root, so the context and
- * the log never show a model the sentence to copy. */
-static void agent_think_strip(cJSON *root)
-{
-	const char *rkey;
-	char *reasoning = agent_reasoning(agent_reply(root), &rkey);
-	int n = reasoning ? agent_think_cut(reasoning) : -1;
-	if (n < 0)
-		return;
-	while (n && isspace((unsigned char)reasoning[n - 1]))
-		n--;
-	reasoning[n] = '\''\0'\'';
-}
-
-/* ata: move the average a quarter of the way to the thinking tokens of the
- * reply in root, if it thought. A reply the server cut counts as twice the
+/* ata: move the average a quarter of the way to the thinking tokens of a
+ * reply, if it thought. A reply the server cut counts as twice the
  * cap, so cut replies raise the average. It starts at the cap ath set, else
  * at the first reply. */
-static void agent_think_sample(cJSON *root, double tokens)
+static void agent_think_sample(double tokens)
 {
-	if (agent_think_cap > 0 && (tokens >= agent_think_cap ||
-			agent_think_hit(root, tokens)))
+	if (agent_think_hit(tokens))
 		tokens = 2.0 * agent_think_cap;
 	if (tokens < 1 || tokens >= 1e9)
 		return;
@@ -1757,13 +1729,13 @@ static void agent_think_unnote(void)
 	agent_think_note = NULL;
 }
 
-/* Whether to withhold the reply in root, whose thinking used tokens, for a
- * thinking question: the server cut its thinking below the ceiling, and it
+/* Whether to withhold a reply whose thinking used tokens for a thinking
+ * question: the server cut its thinking below the ceiling, and it
  * neither answers a question nor replaces a reply one discarded (asked). */
-static int agent_think_cutoff(cJSON *root, double tokens, int asked)
+static int agent_think_cutoff(double tokens, int asked)
 {
 	return !asked && agent_checkpointing != 3 &&
-		agent_think_cap < agent_think_max && agent_think_hit(root, tokens);
+		agent_think_cap < agent_think_max && agent_think_hit(tokens);
 }
 
 /* Withhold the reply in root, whose thinking used tokens, and start a
@@ -3069,7 +3041,7 @@ static void agent_run_loop(const char *input)
 		 * the cut left without text and calls. */
 		double used = agent_think_tokens(root);
 		int cut = (!invalid || invalid == 3) &&
-			agent_think_cutoff(root, used, asked);
+			agent_think_cutoff(used, asked);
 		if (invalid && !cut) {
 			cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
 				cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
@@ -3112,7 +3084,7 @@ static void agent_run_loop(const char *input)
 		/* The limit is on consecutive malformed responses. */
 		retries = 0;
 		agent_record_usage(root, request_bytes);
-		agent_think_sample(root, used);
+		agent_think_sample(used);
 		if (agent_think_max)
 			agent_think_spend(raised, sent, used);
 		free(body);
@@ -3124,7 +3096,6 @@ static void agent_run_loop(const char *input)
 			agent_think_rebase();
 			asked = 0;
 		}
-		agent_think_strip(root);
 		if (cut) {
 			agent_think_ask(root, used);
 			continue;
@@ -8409,16 +8380,14 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "fields replace those of request_extra. ast shows the setting.\n\n" \
                 "With N,M the agent may raise the cap up to M for one reply with\n" \
                 "acap, and a reply whose thinking the server cut at a cap below M is\n" \
-                "withheld: not logged, its commands not run. The server marks the cut\n" \
-                "by ending the thinking with think_cut of conf.c; a reply counts as\n" \
-                "cut only if its thinking also used half the cap or more. think_cut\n" \
-                "is dropped from the thinking of every reply, so models cannot copy\n" \
-                "it. The agent is shown the reply and its commands, in an exchange\n" \
-                "kept in b-8 only, and answers with acap. Replies of an acl\n" \
-                "checkpoint, a budget check and a pack agent are asked about too;\n" \
-                "what was interrupted then goes on, and a new checkpoint, budget\n" \
-                "check or compaction waits for the new reply. Unavailable as an\n" \
-                "agent tool.\n\n" \
+                "withheld: not logged, its commands not run. A reply counts as cut\n" \
+                "if its thinking used think_cut percent of the cap (conf.c, 90) or\n" \
+                "more: the reported reasoning tokens, else an estimate. The agent is\n" \
+                "shown the reply and its commands, in an exchange kept in b-8 only,\n" \
+                "and answers with acap. Replies of an acl checkpoint, a budget check\n" \
+                "and a pack agent are asked about too; what was interrupted then\n" \
+                "goes on, and a new checkpoint, budget check or compaction waits for\n" \
+                "the new reply. Unavailable as an agent tool.\n\n" \
                 "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
                 "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
                 ":4096,32768ath medium")
@@ -8520,8 +8489,8 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "A positive value is a percentage: each request is sent that share\n" \
                 "of the average thinking tokens as the ath cap, in place of N. Each\n" \
                 "accepted reply that thought moves the average a quarter of the way\n" \
-                "to its thinking tokens; one that used up its cap counts as twice the\n" \
-                "cap, so cut replies raise the average. Lower values cut more\n" \
+                "to its thinking tokens; one cut, as ath defines, counts as twice\n" \
+                "the cap, so cut replies raise the average. Lower values cut more\n" \
                 "replies.\n\n" \
                 "The average starts at N of ath, else at the first reply; ath\n" \
                 "restarts it, and N is sent until a reply is counted. The cap stays\n" \
@@ -8639,8 +8608,8 @@ static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
 static int request_timeout = 500;
 #endif
 
-/* How the server ends thinking it cut at the ath token cap; "" if unmarked */
-static char *think_cut = "I have thought about this long enough; time to give my answer.";
+/* Percent of the ath token cap a reply'\''s thinking must use to count as cut */
+static int think_cut = 90;
 static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
@@ -11745,16 +11714,14 @@ static char *exspec_lines[] = {
 	"",
 	"With N,M the agent may raise the cap up to M for one reply with",
 	"acap, and a reply whose thinking the server cut at a cap below M is",
-	"withheld: not logged, its commands not run. The server marks the cut",
-	"by ending the thinking with think_cut of conf.c; a reply counts as",
-	"cut only if its thinking also used half the cap or more. think_cut",
-	"is dropped from the thinking of every reply, so models cannot copy",
-	"it. The agent is shown the reply and its commands, in an exchange",
-	"kept in b-8 only, and answers with acap. Replies of an acl",
-	"checkpoint, a budget check and a pack agent are asked about too;",
-	"what was interrupted then goes on, and a new checkpoint, budget",
-	"check or compaction waits for the new reply. Unavailable as an",
-	"agent tool.",
+	"withheld: not logged, its commands not run. A reply counts as cut",
+	"if its thinking used think_cut percent of the cap (conf.c, 90) or",
+	"more: the reported reasoning tokens, else an estimate. The agent is",
+	"shown the reply and its commands, in an exchange kept in b-8 only,",
+	"and answers with acap. Replies of an acl checkpoint, a budget check",
+	"and a pack agent are asked about too; what was interrupted then",
+	"goes on, and a new checkpoint, budget check or compaction waits for",
+	"the new reply. Unavailable as an agent tool.",
 	"",
 	"Example: cap thinking at 1024 tokens with high effort",
 	"1024ath high",
@@ -11954,8 +11921,8 @@ static char *exspec_lines[] = {
 	"A positive value is a percentage: each request is sent that share",
 	"of the average thinking tokens as the ath cap, in place of N. Each",
 	"accepted reply that thought moves the average a quarter of the way",
-	"to its thinking tokens; one that used up its cap counts as twice the",
-	"cap, so cut replies raise the average. Lower values cut more",
+	"to its thinking tokens; one cut, as ath defines, counts as twice",
+	"the cap, so cut replies raise the average. Lower values cut more",
 	"replies.",
 	"",
 	"The average starts at N of ath, else at the first reply; ath",
@@ -12288,48 +12255,48 @@ static struct {
 	{"ali", "Print the agent session log entry list", 921, 932, 0, 0},
 	{"auli", "Print the unrated agent session log turns", 933, 939, 0, 0},
 	{"ast", "Print agent status and token usage", 940, 949, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 950, 978, 0, 0},
-	{"acap", "Raise the agent thinking cap for one reply", 979, 998, 0, 0},
-	{"agoal", "Set or clear the agent goal", 999, 1017, 0, 0},
-	{"ac", "Set autocomplete filter regex", 1018, 1026, 0, 0},
-	{"sc", "Set ex special characters", 1027, 1037, 0, 0},
-	{"sc!", "Set ex special characters", 1038, 1045, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 1046, 1053, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1054, 1057, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1058, 1062, 0, 0},
-	{"ph", "Redefine placeholders", 1063, 1079, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1088, 1126, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1127, 1137, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1138, 1144, 1, 0},
-	{"agr", "Control agent output protection", 1145, 1150, 1, 0},
-	{"ato", "Detach long agent shell commands", 1151, 1158, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1159, 1164, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1165, 1189, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1190, 1197, 1, 0},
-	{"ai", "Indent new lines", 1198, 1201, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1202, 1203, 1, 0},
-	{"ish", "Interactive shell", 1204, 1219, 1, 0},
-	{"grp", "Regex search group", 1220, 1228, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1229, 1232, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1233, 1234, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1234, 1235, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1235, 1236, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1236, 1237, 1, 0},
-	{"led", "Enable all terminal output", 1237, 1238, 1, 0},
-	{"vis", "Control startup flags", 1239, 1250, 1, 0},
-	{"mpt", "Control vi prompts", 1251, 1261, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1262, 1264, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1264, 1266, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1266, 1267, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1267, 1268, 1, 0},
-	{"td", "Current text direction context", 1268, 1274, 1, 0},
-	{"pr", "Print register", 1275, 1291, 1, 0},
-	{"fr", "Find register", 1292, 1304, 1, 0},
-	{"rr", "Record register", 1305, 1318, 1, 0},
-	{"lim", "Line length render limit", 1319, 1334, 1, 0},
-	{"seq", "Control Undo/Redo", 1335, 1347, 1, 0},
-	{"left", "Control horizontal scroll", 1348, 1353, 1, 0},
-	{"err", "Control ex errors", 1354, 1366, 1, 0},
+	{"ath", "Set the agent thinking cap and effort", 950, 976, 0, 0},
+	{"acap", "Raise the agent thinking cap for one reply", 977, 996, 0, 0},
+	{"agoal", "Set or clear the agent goal", 997, 1015, 0, 0},
+	{"ac", "Set autocomplete filter regex", 1016, 1024, 0, 0},
+	{"sc", "Set ex special characters", 1025, 1035, 0, 0},
+	{"sc!", "Set ex special characters", 1036, 1043, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1044, 1051, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1052, 1055, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1056, 1060, 0, 0},
+	{"ph", "Redefine placeholders", 1061, 1077, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1086, 1124, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1125, 1135, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1136, 1142, 1, 0},
+	{"agr", "Control agent output protection", 1143, 1148, 1, 0},
+	{"ato", "Detach long agent shell commands", 1149, 1156, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1157, 1162, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1163, 1187, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1188, 1195, 1, 0},
+	{"ai", "Indent new lines", 1196, 1199, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1200, 1201, 1, 0},
+	{"ish", "Interactive shell", 1202, 1217, 1, 0},
+	{"grp", "Regex search group", 1218, 1226, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1227, 1230, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1231, 1232, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1232, 1233, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1233, 1234, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1234, 1235, 1, 0},
+	{"led", "Enable all terminal output", 1235, 1236, 1, 0},
+	{"vis", "Control startup flags", 1237, 1248, 1, 0},
+	{"mpt", "Control vi prompts", 1249, 1259, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1260, 1262, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1262, 1264, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1264, 1265, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1265, 1266, 1, 0},
+	{"td", "Current text direction context", 1266, 1272, 1, 0},
+	{"pr", "Print register", 1273, 1289, 1, 0},
+	{"fr", "Find register", 1290, 1302, 1, 0},
+	{"rr", "Record register", 1303, 1316, 1, 0},
+	{"lim", "Line length render limit", 1317, 1332, 1, 0},
+	{"seq", "Control Undo/Redo", 1333, 1345, 1, 0},
+	{"left", "Control horizontal scroll", 1346, 1351, 1, 0},
+	{"err", "Control ex errors", 1352, 1364, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -12954,10 +12921,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..25d696b58
+index 000000000..b094ad9c7
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4556 @@
+@@ -0,0 +1,4527 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -14556,16 +14523,6 @@ index 000000000..25d696b58
 +	return cJSON_IsString(r) && *r->valuestring ? r->valuestring : NULL;
 +}
 +
-+/* Length of the reasoning s without a trailing think_cut, the sentence the
-+ * server ends thinking with at the cap; -1 if s does not end with it. */
-+static int agent_think_cut(const char *s)
-+{
-+	int n = strlen(s), k = strlen(think_cut);
-+	while (n && isspace((unsigned char)s[n - 1]))
-+		n--;
-+	return k && n >= k && !memcmp(s + n - k, think_cut, k) ? n - k : -1;
-+}
-+
 +/* Return the thinking tokens of the reply in root: the reported count, else
 + * the output tokens by the thinking's share of the reply's bytes, else its
 + * bytes / 3. */
@@ -14596,39 +14553,21 @@ index 000000000..25d696b58
 +	return tokens;
 +}
 +
-+/* Whether the server cut the thinking of the reply in root, which used
-+ * tokens: it ends with think_cut and reached half the cap. A model shown its
-+ * earlier cut thinking may end short thinking with think_cut itself. */
-+static int agent_think_hit(cJSON *root, double tokens)
++/* Whether the server cut the thinking of a reply that used tokens: they
++ * reached think_cut percent of the cap. */
++static int agent_think_hit(double tokens)
 +{
-+	const char *rkey;
-+	char *reasoning = agent_reasoning(agent_reply(root), &rkey);
-+	return reasoning && agent_think_cap >= 0 &&
-+		tokens >= agent_think_cap / 2.0 && agent_think_cut(reasoning) >= 0;
++	return agent_think_cap > 0 && tokens >= 1 &&
++		tokens >= agent_think_cap * think_cut / 100.0;
 +}
 +
-+/* Drop think_cut from the thinking of the reply in root, so the context and
-+ * the log never show a model the sentence to copy. */
-+static void agent_think_strip(cJSON *root)
-+{
-+	const char *rkey;
-+	char *reasoning = agent_reasoning(agent_reply(root), &rkey);
-+	int n = reasoning ? agent_think_cut(reasoning) : -1;
-+	if (n < 0)
-+		return;
-+	while (n && isspace((unsigned char)reasoning[n - 1]))
-+		n--;
-+	reasoning[n] = '\0';
-+}
-+
-+/* ata: move the average a quarter of the way to the thinking tokens of the
-+ * reply in root, if it thought. A reply the server cut counts as twice the
++/* ata: move the average a quarter of the way to the thinking tokens of a
++ * reply, if it thought. A reply the server cut counts as twice the
 + * cap, so cut replies raise the average. It starts at the cap ath set, else
 + * at the first reply. */
-+static void agent_think_sample(cJSON *root, double tokens)
++static void agent_think_sample(double tokens)
 +{
-+	if (agent_think_cap > 0 && (tokens >= agent_think_cap ||
-+			agent_think_hit(root, tokens)))
++	if (agent_think_hit(tokens))
 +		tokens = 2.0 * agent_think_cap;
 +	if (tokens < 1 || tokens >= 1e9)
 +		return;
@@ -14685,13 +14624,13 @@ index 000000000..25d696b58
 +	agent_think_note = NULL;
 +}
 +
-+/* Whether to withhold the reply in root, whose thinking used tokens, for a
-+ * thinking question: the server cut its thinking below the ceiling, and it
++/* Whether to withhold a reply whose thinking used tokens for a thinking
++ * question: the server cut its thinking below the ceiling, and it
 + * neither answers a question nor replaces a reply one discarded (asked). */
-+static int agent_think_cutoff(cJSON *root, double tokens, int asked)
++static int agent_think_cutoff(double tokens, int asked)
 +{
 +	return !asked && agent_checkpointing != 3 &&
-+		agent_think_cap < agent_think_max && agent_think_hit(root, tokens);
++		agent_think_cap < agent_think_max && agent_think_hit(tokens);
 +}
 +
 +/* Withhold the reply in root, whose thinking used tokens, and start a
@@ -15997,7 +15936,7 @@ index 000000000..25d696b58
 +		 * the cut left without text and calls. */
 +		double used = agent_think_tokens(root);
 +		int cut = (!invalid || invalid == 3) &&
-+			agent_think_cutoff(root, used, asked);
++			agent_think_cutoff(used, asked);
 +		if (invalid && !cut) {
 +			cJSON *finish = cJSON_GetObjectItem(cJSON_GetArrayItem(
 +				cJSON_GetObjectItem(root, "choices"), 0), "finish_reason");
@@ -16040,7 +15979,7 @@ index 000000000..25d696b58
 +		/* The limit is on consecutive malformed responses. */
 +		retries = 0;
 +		agent_record_usage(root, request_bytes);
-+		agent_think_sample(root, used);
++		agent_think_sample(used);
 +		if (agent_think_max)
 +			agent_think_spend(raised, sent, used);
 +		free(body);
@@ -16052,7 +15991,6 @@ index 000000000..25d696b58
 +			agent_think_rebase();
 +			asked = 0;
 +		}
-+		agent_think_strip(root);
 +		if (cut) {
 +			agent_think_ask(root, used);
 +			continue;
@@ -21076,10 +21014,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..2ec422a6e 100755
+index c836c94c7..de918b888 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,320 @@ build() {
+@@ -65,6 +65,318 @@ build() {
      }
  }
  
@@ -21255,16 +21193,14 @@ index c836c94c7..2ec422a6e 100755
 +                "fields replace those of request_extra. ast shows the setting.\n\n" \
 +                "With N,M the agent may raise the cap up to M for one reply with\n" \
 +                "acap, and a reply whose thinking the server cut at a cap below M is\n" \
-+                "withheld: not logged, its commands not run. The server marks the cut\n" \
-+                "by ending the thinking with think_cut of conf.c; a reply counts as\n" \
-+                "cut only if its thinking also used half the cap or more. think_cut\n" \
-+                "is dropped from the thinking of every reply, so models cannot copy\n" \
-+                "it. The agent is shown the reply and its commands, in an exchange\n" \
-+                "kept in b-8 only, and answers with acap. Replies of an acl\n" \
-+                "checkpoint, a budget check and a pack agent are asked about too;\n" \
-+                "what was interrupted then goes on, and a new checkpoint, budget\n" \
-+                "check or compaction waits for the new reply. Unavailable as an\n" \
-+                "agent tool.\n\n" \
++                "withheld: not logged, its commands not run. A reply counts as cut\n" \
++                "if its thinking used think_cut percent of the cap (conf.c, 90) or\n" \
++                "more: the reported reasoning tokens, else an estimate. The agent is\n" \
++                "shown the reply and its commands, in an exchange kept in b-8 only,\n" \
++                "and answers with acap. Replies of an acl checkpoint, a budget check\n" \
++                "and a pack agent are asked about too; what was interrupted then\n" \
++                "goes on, and a new checkpoint, budget check or compaction waits for\n" \
++                "the new reply. Unavailable as an agent tool.\n\n" \
 +                "Example: cap thinking at 1024 tokens with high effort\n:1024ath high\n\n" \
 +                "Example: start at 4096 tokens; the agent may raise the cap to 32768\n" \
 +                ":4096,32768ath medium")
@@ -21366,8 +21302,8 @@ index c836c94c7..2ec422a6e 100755
 +                "A positive value is a percentage: each request is sent that share\n" \
 +                "of the average thinking tokens as the ath cap, in place of N. Each\n" \
 +                "accepted reply that thought moves the average a quarter of the way\n" \
-+                "to its thinking tokens; one that used up its cap counts as twice the\n" \
-+                "cap, so cut replies raise the average. Lower values cut more\n" \
++                "to its thinking tokens; one cut, as ath defines, counts as twice\n" \
++                "the cap, so cut replies raise the average. Lower values cut more\n" \
 +                "replies.\n\n" \
 +                "The average starts at N of ath, else at the first reply; ath\n" \
 +                "restarts it, and N is sent until a reply is counted. The cap stays\n" \
@@ -21400,7 +21336,7 @@ index c836c94c7..2ec422a6e 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +388,7 @@ install() {
+@@ -74,7 +386,7 @@ install() {
  }
  
  print_usage() {
@@ -21409,7 +21345,7 @@ index c836c94c7..2ec422a6e 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +396,9 @@ print_usage() {
+@@ -82,6 +394,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -21420,7 +21356,7 @@ index c836c94c7..2ec422a6e 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..9bc042a94 100644
+index 2888d7c60..96c87bb1b 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,276 @@
@@ -21443,8 +21379,8 @@ index 2888d7c60..9bc042a94 100644
 +static int request_timeout = 500;
 +#endif
 +
-+/* How the server ends thinking it cut at the ath token cap; "" if unmarked */
-+static char *think_cut = "I have thought about this long enough; time to give my answer.";
++/* Percent of the ath token cap a reply's thinking must use to count as cut */
++static int think_cut = 90;
 +static int max_tool_rounds;	/* tool rounds per run; 0 is unlimited */
 +int xagr = 4096;	/* agent output guardrail in bytes (:agr); 0 disables */
 +int xato;	/* seconds before an agent shell command is detached (:ato); 0 disables */
@@ -22462,10 +22398,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..337d24b8b
+index 000000000..0ee9364b9
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1550 @@
+@@ -0,0 +1,1548 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -23430,16 +23366,14 @@ index 000000000..337d24b8b
 +	"",
 +	"With N,M the agent may raise the cap up to M for one reply with",
 +	"acap, and a reply whose thinking the server cut at a cap below M is",
-+	"withheld: not logged, its commands not run. The server marks the cut",
-+	"by ending the thinking with think_cut of conf.c; a reply counts as",
-+	"cut only if its thinking also used half the cap or more. think_cut",
-+	"is dropped from the thinking of every reply, so models cannot copy",
-+	"it. The agent is shown the reply and its commands, in an exchange",
-+	"kept in b-8 only, and answers with acap. Replies of an acl",
-+	"checkpoint, a budget check and a pack agent are asked about too;",
-+	"what was interrupted then goes on, and a new checkpoint, budget",
-+	"check or compaction waits for the new reply. Unavailable as an",
-+	"agent tool.",
++	"withheld: not logged, its commands not run. A reply counts as cut",
++	"if its thinking used think_cut percent of the cap (conf.c, 90) or",
++	"more: the reported reasoning tokens, else an estimate. The agent is",
++	"shown the reply and its commands, in an exchange kept in b-8 only,",
++	"and answers with acap. Replies of an acl checkpoint, a budget check",
++	"and a pack agent are asked about too; what was interrupted then",
++	"goes on, and a new checkpoint, budget check or compaction waits for",
++	"the new reply. Unavailable as an agent tool.",
 +	"",
 +	"Example: cap thinking at 1024 tokens with high effort",
 +	"1024ath high",
@@ -23639,8 +23573,8 @@ index 000000000..337d24b8b
 +	"A positive value is a percentage: each request is sent that share",
 +	"of the average thinking tokens as the ath cap, in place of N. Each",
 +	"accepted reply that thought moves the average a quarter of the way",
-+	"to its thinking tokens; one that used up its cap counts as twice the",
-+	"cap, so cut replies raise the average. Lower values cut more",
++	"to its thinking tokens; one cut, as ath defines, counts as twice",
++	"the cap, so cut replies raise the average. Lower values cut more",
 +	"replies.",
 +	"",
 +	"The average starts at N of ath, else at the first reply; ath",
@@ -23973,48 +23907,48 @@ index 000000000..337d24b8b
 +	{"ali", "Print the agent session log entry list", 921, 932, 0, 0},
 +	{"auli", "Print the unrated agent session log turns", 933, 939, 0, 0},
 +	{"ast", "Print agent status and token usage", 940, 949, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 950, 978, 0, 0},
-+	{"acap", "Raise the agent thinking cap for one reply", 979, 998, 0, 0},
-+	{"agoal", "Set or clear the agent goal", 999, 1017, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 1018, 1026, 0, 0},
-+	{"sc", "Set ex special characters", 1027, 1037, 0, 0},
-+	{"sc!", "Set ex special characters", 1038, 1045, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 1046, 1053, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1054, 1057, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1058, 1062, 0, 0},
-+	{"ph", "Redefine placeholders", 1063, 1079, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1088, 1126, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1127, 1137, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1138, 1144, 1, 0},
-+	{"agr", "Control agent output protection", 1145, 1150, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1151, 1158, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1159, 1164, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1165, 1189, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1190, 1197, 1, 0},
-+	{"ai", "Indent new lines", 1198, 1201, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1202, 1203, 1, 0},
-+	{"ish", "Interactive shell", 1204, 1219, 1, 0},
-+	{"grp", "Regex search group", 1220, 1228, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1229, 1232, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1233, 1234, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1234, 1235, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1235, 1236, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1236, 1237, 1, 0},
-+	{"led", "Enable all terminal output", 1237, 1238, 1, 0},
-+	{"vis", "Control startup flags", 1239, 1250, 1, 0},
-+	{"mpt", "Control vi prompts", 1251, 1261, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1262, 1264, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1264, 1266, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1266, 1267, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1267, 1268, 1, 0},
-+	{"td", "Current text direction context", 1268, 1274, 1, 0},
-+	{"pr", "Print register", 1275, 1291, 1, 0},
-+	{"fr", "Find register", 1292, 1304, 1, 0},
-+	{"rr", "Record register", 1305, 1318, 1, 0},
-+	{"lim", "Line length render limit", 1319, 1334, 1, 0},
-+	{"seq", "Control Undo/Redo", 1335, 1347, 1, 0},
-+	{"left", "Control horizontal scroll", 1348, 1353, 1, 0},
-+	{"err", "Control ex errors", 1354, 1366, 1, 0},
++	{"ath", "Set the agent thinking cap and effort", 950, 976, 0, 0},
++	{"acap", "Raise the agent thinking cap for one reply", 977, 996, 0, 0},
++	{"agoal", "Set or clear the agent goal", 997, 1015, 0, 0},
++	{"ac", "Set autocomplete filter regex", 1016, 1024, 0, 0},
++	{"sc", "Set ex special characters", 1025, 1035, 0, 0},
++	{"sc!", "Set ex special characters", 1036, 1043, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1044, 1051, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1052, 1055, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1056, 1060, 0, 0},
++	{"ph", "Redefine placeholders", 1061, 1077, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1086, 1124, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1125, 1135, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1136, 1142, 1, 0},
++	{"agr", "Control agent output protection", 1143, 1148, 1, 0},
++	{"ato", "Detach long agent shell commands", 1149, 1156, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1157, 1162, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1163, 1187, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1188, 1195, 1, 0},
++	{"ai", "Indent new lines", 1196, 1199, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1200, 1201, 1, 0},
++	{"ish", "Interactive shell", 1202, 1217, 1, 0},
++	{"grp", "Regex search group", 1218, 1226, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1227, 1230, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1231, 1232, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1232, 1233, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1233, 1234, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1234, 1235, 1, 0},
++	{"led", "Enable all terminal output", 1235, 1236, 1, 0},
++	{"vis", "Control startup flags", 1237, 1248, 1, 0},
++	{"mpt", "Control vi prompts", 1249, 1259, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1260, 1262, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1262, 1264, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1264, 1265, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1265, 1266, 1, 0},
++	{"td", "Current text direction context", 1266, 1272, 1, 0},
++	{"pr", "Print register", 1273, 1289, 1, 0},
++	{"fr", "Find register", 1290, 1302, 1, 0},
++	{"rr", "Record register", 1303, 1316, 1, 0},
++	{"lim", "Line length render limit", 1317, 1332, 1, 0},
++	{"seq", "Control Undo/Redo", 1333, 1345, 1, 0},
++	{"left", "Control horizontal scroll", 1346, 1351, 1, 0},
++	{"err", "Control ex errors", 1352, 1364, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c63..f62aad734 100644
