@@ -1738,6 +1738,42 @@ static int agent_think_cutoff(double tokens, int asked)
 		agent_think_cap < agent_think_max && agent_think_hit(tokens);
 }
 
+/* The command of tool call tc, its raw arguments if they do not parse;
+ * free *parsed after use. */
+static char *agent_call_cmd(cJSON *tc, cJSON **parsed)
+{
+	cJSON *fn = cJSON_GetObjectItem(tc, "function");
+	cJSON *args = cJSON_GetObjectItem(fn, "arguments");
+	char *cmd;
+	*parsed = cJSON_IsString(args) ?
+		cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
+	cmd = cJSON_GetStringValue(cJSON_GetObjectItem(*parsed, "command"));
+	return cmd ? cmd : cJSON_GetStringValue(args);
+}
+
+/* Whether the reply in root repeats the tool calls of the withheld reply:
+ * the same names and commands in the same order. That answers a thinking
+ * question like acap alone. */
+static int agent_think_same(cJSON *root)
+{
+	cJSON *a = cJSON_GetObjectItem(agent_reply(root), "tool_calls");
+	cJSON *b = cJSON_GetObjectItem(agent_reply(agent_think_held), "tool_calls");
+	int n = cJSON_GetArraySize(b), same = n > 0 && cJSON_GetArraySize(a) == n;
+	for (int i = 0; same && i < n; i++) {
+		cJSON *x = cJSON_GetArrayItem(a, i), *y = cJSON_GetArrayItem(b, i);
+		cJSON *px, *py;
+		char *nx = cJSON_GetStringValue(cJSON_GetObjectItem(
+			cJSON_GetObjectItem(x, "function"), "name"));
+		char *ny = cJSON_GetStringValue(cJSON_GetObjectItem(
+			cJSON_GetObjectItem(y, "function"), "name"));
+		char *cx = agent_call_cmd(x, &px), *cy = agent_call_cmd(y, &py);
+		same = nx && ny && cx && cy && !strcmp(nx, ny) && !strcmp(cx, cy);
+		cJSON_Delete(px);
+		cJSON_Delete(py);
+	}
+	return same;
+}
+
 /* Withhold the reply in root, whose thinking used tokens, and start a
  * thinking question about it: the reply without its calls leads the
  * question, which lists their commands. */
@@ -3099,6 +3135,16 @@ static void agent_run_loop(const char *input)
 		if (cut) {
 			agent_think_ask(root, used);
 			continue;
+		}
+		/* Repeating the withheld calls keeps that reply, as acap does;
+		 * the repeat itself does not run. */
+		if (agent_checkpointing == 3 && agent_think_held &&
+				agent_think_same(root)) {
+			cJSON_Delete(root);
+			agent_cp_done = 1;
+			agent_checkpoint_end();
+			root = agent_think_held;
+			agent_think_held = NULL;
 		}
 reply:
 		message = agent_reply(root);
@@ -12921,10 +12967,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..b094ad9c7
+index 000000000..90f3718d9
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4527 @@
+@@ -0,0 +1,4573 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -14633,6 +14679,42 @@ index 000000000..b094ad9c7
 +		agent_think_cap < agent_think_max && agent_think_hit(tokens);
 +}
 +
++/* The command of tool call tc, its raw arguments if they do not parse;
++ * free *parsed after use. */
++static char *agent_call_cmd(cJSON *tc, cJSON **parsed)
++{
++	cJSON *fn = cJSON_GetObjectItem(tc, "function");
++	cJSON *args = cJSON_GetObjectItem(fn, "arguments");
++	char *cmd;
++	*parsed = cJSON_IsString(args) ?
++		cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
++	cmd = cJSON_GetStringValue(cJSON_GetObjectItem(*parsed, "command"));
++	return cmd ? cmd : cJSON_GetStringValue(args);
++}
++
++/* Whether the reply in root repeats the tool calls of the withheld reply:
++ * the same names and commands in the same order. That answers a thinking
++ * question like acap alone. */
++static int agent_think_same(cJSON *root)
++{
++	cJSON *a = cJSON_GetObjectItem(agent_reply(root), "tool_calls");
++	cJSON *b = cJSON_GetObjectItem(agent_reply(agent_think_held), "tool_calls");
++	int n = cJSON_GetArraySize(b), same = n > 0 && cJSON_GetArraySize(a) == n;
++	for (int i = 0; same && i < n; i++) {
++		cJSON *x = cJSON_GetArrayItem(a, i), *y = cJSON_GetArrayItem(b, i);
++		cJSON *px, *py;
++		char *nx = cJSON_GetStringValue(cJSON_GetObjectItem(
++			cJSON_GetObjectItem(x, "function"), "name"));
++		char *ny = cJSON_GetStringValue(cJSON_GetObjectItem(
++			cJSON_GetObjectItem(y, "function"), "name"));
++		char *cx = agent_call_cmd(x, &px), *cy = agent_call_cmd(y, &py);
++		same = nx && ny && cx && cy && !strcmp(nx, ny) && !strcmp(cx, cy);
++		cJSON_Delete(px);
++		cJSON_Delete(py);
++	}
++	return same;
++}
++
 +/* Withhold the reply in root, whose thinking used tokens, and start a
 + * thinking question about it: the reply without its calls leads the
 + * question, which lists their commands. */
@@ -15994,6 +16076,16 @@ index 000000000..b094ad9c7
 +		if (cut) {
 +			agent_think_ask(root, used);
 +			continue;
++		}
++		/* Repeating the withheld calls keeps that reply, as acap does;
++		 * the repeat itself does not run. */
++		if (agent_checkpointing == 3 && agent_think_held &&
++				agent_think_same(root)) {
++			cJSON_Delete(root);
++			agent_cp_done = 1;
++			agent_checkpoint_end();
++			root = agent_think_held;
++			agent_think_held = NULL;
 +		}
 +reply:
 +		message = agent_reply(root);
