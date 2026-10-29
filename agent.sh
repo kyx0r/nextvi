@@ -4262,7 +4262,7 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 		term_init();
 	if (!(savedvis & 2))
 		agent_output("\n");
-	xvis = 3;
+	xvis = 3 | (savedvis & 8);
 	preserve(int, xesc, xesc = 0;)
 	preserve(int, xsep, xsep = 0;)
 	preserve(int, xexp, xexp = 0;)
@@ -12967,7 +12967,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..90f3718d9
+index 00000000..ca89aa5b
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,4573 @@
@@ -17203,7 +17203,7 @@ index 000000000..90f3718d9
 +		term_init();
 +	if (!(savedvis & 2))
 +		agent_output("\n");
-+	xvis = 3;
++	xvis = 3 | (savedvis & 8);
 +	preserve(int, xesc, xesc = 0;)
 +	preserve(int, xsep, xsep = 0;)
 +	preserve(int, xexp, xexp = 0;)
@@ -17546,7 +17546,7 @@ index 000000000..90f3718d9
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 000000000..480fe075e
+index 00000000..480fe075
 --- /dev/null
 +++ b/agent.h
 @@ -0,0 +1,46 @@
@@ -17598,7 +17598,7 @@ index 000000000..480fe075e
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 000000000..6e4fb0dd3
+index 00000000..6e4fb0dd
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -20795,7 +20795,7 @@ index 000000000..6e4fb0dd3
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 000000000..cab5feb42
+index 00000000..cab5feb4
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -21106,7 +21106,7 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..de918b888 100755
+index c836c94c..de918b88 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,318 @@ build() {
@@ -21448,7 +21448,7 @@ index c836c94c7..de918b888 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..96c87bb1b 100644
+index 2888d7c6..96c87bb1 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,276 @@
@@ -21740,7 +21740,7 @@ index 2888d7c60..96c87bb1b 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index d13974a65..47550561a 100644
+index d13974a6..47550561 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -22397,7 +22397,7 @@ index d13974a65..47550561a 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 000000000..31004ff54
+index 00000000..31004ff5
 --- /dev/null
 +++ b/exspec.awk
 @@ -0,0 +1,87 @@
@@ -22490,7 +22490,7 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..0ee9364b9
+index 00000000..0ee9364b
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1548 @@
@@ -24043,7 +24043,7 @@ index 000000000..0ee9364b9
 +	{"err", "Control ex errors", 1352, 1364, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c63..f62aad734 100644
+index 56cb42c6..f62aad73 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -24073,7 +24073,7 @@ index 56cb42c63..f62aad734 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e5..2641d0ffc 100644
+index 4893a07e..2641d0ff 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -24113,7 +24113,7 @@ index 4893a07e5..2641d0ffc 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 4e11ec2f9..4668eda91 100644
+index 4e11ec2f..4668eda9 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -24157,7 +24157,7 @@ index 4e11ec2f9..4668eda91 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..a0a9a3cb4 100644
+index b1f9a16f..a0a9a3cb 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,14 @@
@@ -24184,7 +24184,7 @@ index b1f9a16f1..a0a9a3cb4 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da5950..f1c422d25 100644
+index c23da595..f1c422d2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
