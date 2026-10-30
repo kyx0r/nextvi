@@ -1552,18 +1552,20 @@ static char *agent_budget_open(void)
 		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
 	if (xaco)
 		k += sprintf(s + k, "/%d", xaco);
-	k += sprintf(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
-		"the session log or acheck N to defer it for N tokens." :
-		" tokens. Estimate and set the number of tokens the rest of this "
-		"task needs with acheck N command.");
+	k += sprintf(s + k, agent_acl_budget ? " tokens. acheck is not a tool: "
+		"call the ex tool with command acheck to trim the session log or "
+		"with acheck N to defer it for N tokens." :
+		" tokens. Estimate the number of tokens the rest of this task needs "
+		"and set it: acheck is not a tool; call the ex tool with command "
+		"acheck N.");
 	if (xaco)
 		k += sprintf(s + k, "\nAn N reaching past %d runs the task until "
 			"compaction.", xaco);
 	/* N stays a placeholder: a number here would anchor the estimate. */
-	strcpy(s + k, agent_acl_budget ? "\nExample: trim the session log now\n"
-		"acheck\nExample: defer it for N tokens\n"
+	strcpy(s + k, agent_acl_budget ? "\nExample ex command to trim the session log now:\n"
+		"acheck\nExample ex command to defer it for N tokens:\n"
 		"acheck N" :
-		"\nExample: the rest of the task needs N tokens\n"
+		"\nExample ex command, the rest of the task needs N tokens:\n"
 		"acheck N");
 	return s;
 }
@@ -1775,8 +1777,10 @@ static int agent_think_same(cJSON *root)
 }
 
 /* Withhold the reply in root, whose thinking used tokens, and start a
- * thinking question about it: the reply without its calls leads the
- * question, which lists their commands. */
+ * thinking question about it. A reply with calls leads the question whole,
+ * the question its last call'\''s result, so the context ends on results as
+ * at any boundary. Otherwise the question quotes the reply: an assistant
+ * turn without calls before it invites calls written as text. */
 static void agent_think_ask(cJSON *root, double tokens)
 {
 	cJSON *message = agent_reply(root);
@@ -1793,12 +1797,8 @@ static void agent_think_ask(cJSON *root, double tokens)
 	agent_think_more = 0;
 	agent_think_empty = !cnt && !cJSON_IsString(content);
 	agent_checkpoint_begin(tokens, 3);
-	agent_cp_lead = cJSON_Duplicate(message, 1);
-	cJSON_DeleteItemFromObject(agent_cp_lead, "tool_calls");
-	if (!cJSON_IsString(content)) {
-		cJSON_DeleteItemFromObject(agent_cp_lead, "content");
-		cJSON_AddStringToObject(agent_cp_lead, "content", "");
-	}
+	if (cnt)
+		agent_cp_lead = cJSON_Duplicate(message, 1);
 	if (xar && reasoning)
 		agent_turn_part(0, reasoning);
 	if (cJSON_IsString(content) && *content->valuestring)
@@ -1806,21 +1806,28 @@ static void agent_think_ask(cJSON *root, double tokens)
 	snprintf(line, sizeof(line), "Stop working on the current task and "
 		"complete this budget check.\nThe thinking of your last "
 		"reply was cut off after ~%.0f tokens at the cap of %d tokens. "
-		"The reply is %s\n", tokens, cap,
-		cnt ? "withheld and these commands did not run:" : agent_think_empty ?
-		"discarded; it had no text and made no ex tool calls." :
-		"withheld; it made no ex tool calls.");
+		"%s\n", tokens, cap,
+		cnt ? "Its ex tool calls were withheld and did not run:" :
+		agent_think_empty ? "The reply is discarded; it had no text and "
+		"made no ex tool calls." :
+		"The reply is withheld; it made no ex tool calls.");
 	sbuf_str(sb, line)
 	cJSON_ArrayForEach(tc, calls) {
-		cJSON *args = cJSON_GetObjectItem(cJSON_GetObjectItem(tc,
-			"function"), "arguments");
-		cJSON *parsed = cJSON_IsString(args) ?
-			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
-		char *cmd = cJSON_GetStringValue(cJSON_GetObjectItem(parsed,
-			"command"));
+		cJSON *parsed;
+		char *cmd = agent_call_cmd(tc, &parsed);
 		sbuf_str(sb, cmd ? cmd : "invalid tool call")
 		sbuf_chr(sb, '\''\n'\'')
 		cJSON_Delete(parsed);
+	}
+	if (!cnt && !agent_think_empty) {
+		if (reasoning) {
+			sbuf_str(sb, "Its thinking, as cut:\n\"\"\"\n")
+			sbuf_str(sb, reasoning)
+			sbuf_str(sb, "\n\"\"\"\n")
+		}
+		sbuf_str(sb, "Its text:\n\"\"\"\n")
+		sbuf_str(sb, content->valuestring)
+		sbuf_str(sb, "\n\"\"\"\n")
 	}
 	if (!agent_think_empty)
 		sbuf_str(sb, cnt ? "These commands may rest on unfinished "
@@ -1831,29 +1838,38 @@ static void agent_think_ask(cJSON *root, double tokens)
 	keep = cnt ? "run the reply as it is" :
 		agent_think_empty ? "reply again under the same cap" :
 		"keep the reply as it is";
-	snprintf(line, sizeof(line), "You must use acap command to %s or acap N [note] to "
-		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
-		keep, agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
+	snprintf(line, sizeof(line), "acap is not a tool: call the ex tool with "
+		"command acap to %s, or with acap N [note] to %sreply again with a "
+		"thinking cap of N tokens, above %d and up to %d.", keep,
+		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 	sbuf_str(sb, line)
 	sbuf_str(sb, "\nTokens the new reply leaves of N carry over to later caps.\n"
 		"The new reply sees nothing of this exchange except the "
 		"optional [note] after N.\n"
 		"A note directs how to think better.\n"
 		"Do not mention this budget check in a note.")
-	snprintf(line, sizeof(line), "\nExample: %s\nacap\n"
-		"Example: reply again under a cap of %d tokens, with a note\n"
-		"acap %d focus on ...", keep, more, more);
+	snprintf(line, sizeof(line), "\nExample ex command to %s:\nacap\n"
+		"Example ex command to reply again under a cap of %d tokens, "
+		"with a note:\nacap %d focus on ...", keep, more, more);
 	sbuf_str(sb, line)
 	sbuf_nul(sb)
 	agent_cp_open = sb->s;
 	agent_log("USER", agent_cp_open);
 }
 
+/* Messages that open the phase: the lead, its calls'\'' results, else the
+ * opening user message. */
+static int agent_cp_opens(void)
+{
+	return agent_cp_lead ? 1 + cJSON_GetArraySize(
+		cJSON_GetObjectItem(agent_cp_lead, "tool_calls")) : 1;
+}
+
 /* Detach the exchange that followed the opening message in the last request. */
 static void agent_cp_collect(void)
 {
 	cJSON *m;
-	int open = 1 + !!agent_cp_lead;
+	int open = agent_cp_opens();
 	if (agent_cp_base < 0)
 		return;
 	cJSON_Delete(agent_cp);
@@ -1882,10 +1898,19 @@ static void agent_cp_build(void)
 		agent_log("USER", agent_cp_open);
 	}
 	agent_cp_base = cJSON_GetArraySize(agent_messages);
-	if (agent_cp_lead)
+	if (agent_cp_lead) {
+		cJSON *calls = cJSON_GetObjectItem(agent_cp_lead, "tool_calls");
 		cJSON_AddItemToArray(agent_messages,
 			cJSON_Duplicate(agent_cp_lead, 1));
-	cJSON_AddItemToArray(agent_messages, agent_msg("user", agent_cp_open));
+		cJSON_ArrayForEach(m, calls) {
+			cJSON *result = agent_msg("tool", m->next ? "not run: "
+				"budget check, see the last result" : agent_cp_open);
+			cJSON_AddStringToObject(result, "tool_call_id",
+				cJSON_GetStringValue(cJSON_GetObjectItem(m, "id")));
+			cJSON_AddItemToArray(agent_messages, result);
+		}
+	} else
+		cJSON_AddItemToArray(agent_messages, agent_msg("user", agent_cp_open));
 	cJSON_ArrayForEach(m, agent_cp)
 		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
 }
@@ -3152,9 +3177,20 @@ reply:
 		cJSON *content = cJSON_GetObjectItem(message, "content");
 		const char *rkey;
 		char *reasoning = agent_reasoning(message, &rkey);
+		/* A call of an undeclared tool, such as one named after an ex
+		 * command, comes back as text. In a phase, that text would be
+		 * imitated by the retries, so the context drops it. */
+		int textcall = !cJSON_GetArraySize(calls) &&
+			cJSON_IsString(content) &&
+			(strstr(content->valuestring, "<tool_call>") ||
+			strstr(content->valuestring, "<function="));
 		/* Complete pairs before recursive editing or submissions. */
 		cJSON_AddItemToArray(agent_messages,
 			cJSON_Duplicate(message, 1));
+		if (textcall && agent_checkpointing)
+			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(agent_messages,
+				cJSON_GetArraySize(agent_messages) - 1), "content",
+				cJSON_CreateString(""));
 		/* The TURN header is written with the first part, so an empty
 		 * reply logs nothing. */
 		agent_turn_close();
@@ -3340,10 +3376,13 @@ reply:
 			int think = agent_checkpointing == 3;
 			if (agent_cp_refused < (think ? AGENT_THINK_TRIES : 2)) {
 				if (!has_calls) {
-					char msg[96];
-					snprintf(msg, sizeof(msg), "Nothing ran; reply with "
-						"an ex tool call, %s%s", think ? "acap N [note] or acap" :
-						"acheck N or acheck.", agent_think_retry());
+					char msg[224];
+					snprintf(msg, sizeof(msg), "Nothing ran%s; call the "
+						"ex tool with command %s%s", textcall ? ": your reply "
+						"wrote a tool call as text, or called a tool that does "
+						"not exist. The only tool is ex" : "",
+						think ? "acap N [note] or acap" : "acheck N or acheck",
+						agent_think_retry());
 					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 					agent_log("USER", msg);
 				}
@@ -12967,10 +13006,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..ca89aa5b
+index 000000000..c3d8de0cf
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4573 @@
+@@ -0,0 +1,4612 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -14493,18 +14532,20 @@ index 00000000..ca89aa5b
 +		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
 +	if (xaco)
 +		k += sprintf(s + k, "/%d", xaco);
-+	k += sprintf(s + k, agent_acl_budget ? " tokens. Use acheck command to trim "
-+		"the session log or acheck N to defer it for N tokens." :
-+		" tokens. Estimate and set the number of tokens the rest of this "
-+		"task needs with acheck N command.");
++	k += sprintf(s + k, agent_acl_budget ? " tokens. acheck is not a tool: "
++		"call the ex tool with command acheck to trim the session log or "
++		"with acheck N to defer it for N tokens." :
++		" tokens. Estimate the number of tokens the rest of this task needs "
++		"and set it: acheck is not a tool; call the ex tool with command "
++		"acheck N.");
 +	if (xaco)
 +		k += sprintf(s + k, "\nAn N reaching past %d runs the task until "
 +			"compaction.", xaco);
 +	/* N stays a placeholder: a number here would anchor the estimate. */
-+	strcpy(s + k, agent_acl_budget ? "\nExample: trim the session log now\n"
-+		"acheck\nExample: defer it for N tokens\n"
++	strcpy(s + k, agent_acl_budget ? "\nExample ex command to trim the session log now:\n"
++		"acheck\nExample ex command to defer it for N tokens:\n"
 +		"acheck N" :
-+		"\nExample: the rest of the task needs N tokens\n"
++		"\nExample ex command, the rest of the task needs N tokens:\n"
 +		"acheck N");
 +	return s;
 +}
@@ -14716,8 +14757,10 @@ index 00000000..ca89aa5b
 +}
 +
 +/* Withhold the reply in root, whose thinking used tokens, and start a
-+ * thinking question about it: the reply without its calls leads the
-+ * question, which lists their commands. */
++ * thinking question about it. A reply with calls leads the question whole,
++ * the question its last call's result, so the context ends on results as
++ * at any boundary. Otherwise the question quotes the reply: an assistant
++ * turn without calls before it invites calls written as text. */
 +static void agent_think_ask(cJSON *root, double tokens)
 +{
 +	cJSON *message = agent_reply(root);
@@ -14734,12 +14777,8 @@ index 00000000..ca89aa5b
 +	agent_think_more = 0;
 +	agent_think_empty = !cnt && !cJSON_IsString(content);
 +	agent_checkpoint_begin(tokens, 3);
-+	agent_cp_lead = cJSON_Duplicate(message, 1);
-+	cJSON_DeleteItemFromObject(agent_cp_lead, "tool_calls");
-+	if (!cJSON_IsString(content)) {
-+		cJSON_DeleteItemFromObject(agent_cp_lead, "content");
-+		cJSON_AddStringToObject(agent_cp_lead, "content", "");
-+	}
++	if (cnt)
++		agent_cp_lead = cJSON_Duplicate(message, 1);
 +	if (xar && reasoning)
 +		agent_turn_part(0, reasoning);
 +	if (cJSON_IsString(content) && *content->valuestring)
@@ -14747,21 +14786,28 @@ index 00000000..ca89aa5b
 +	snprintf(line, sizeof(line), "Stop working on the current task and "
 +		"complete this budget check.\nThe thinking of your last "
 +		"reply was cut off after ~%.0f tokens at the cap of %d tokens. "
-+		"The reply is %s\n", tokens, cap,
-+		cnt ? "withheld and these commands did not run:" : agent_think_empty ?
-+		"discarded; it had no text and made no ex tool calls." :
-+		"withheld; it made no ex tool calls.");
++		"%s\n", tokens, cap,
++		cnt ? "Its ex tool calls were withheld and did not run:" :
++		agent_think_empty ? "The reply is discarded; it had no text and "
++		"made no ex tool calls." :
++		"The reply is withheld; it made no ex tool calls.");
 +	sbuf_str(sb, line)
 +	cJSON_ArrayForEach(tc, calls) {
-+		cJSON *args = cJSON_GetObjectItem(cJSON_GetObjectItem(tc,
-+			"function"), "arguments");
-+		cJSON *parsed = cJSON_IsString(args) ?
-+			cJSON_ParseWithOpts(args->valuestring, NULL, 1) : NULL;
-+		char *cmd = cJSON_GetStringValue(cJSON_GetObjectItem(parsed,
-+			"command"));
++		cJSON *parsed;
++		char *cmd = agent_call_cmd(tc, &parsed);
 +		sbuf_str(sb, cmd ? cmd : "invalid tool call")
 +		sbuf_chr(sb, '\n')
 +		cJSON_Delete(parsed);
++	}
++	if (!cnt && !agent_think_empty) {
++		if (reasoning) {
++			sbuf_str(sb, "Its thinking, as cut:\n\"\"\"\n")
++			sbuf_str(sb, reasoning)
++			sbuf_str(sb, "\n\"\"\"\n")
++		}
++		sbuf_str(sb, "Its text:\n\"\"\"\n")
++		sbuf_str(sb, content->valuestring)
++		sbuf_str(sb, "\n\"\"\"\n")
 +	}
 +	if (!agent_think_empty)
 +		sbuf_str(sb, cnt ? "These commands may rest on unfinished "
@@ -14772,29 +14818,38 @@ index 00000000..ca89aa5b
 +	keep = cnt ? "run the reply as it is" :
 +		agent_think_empty ? "reply again under the same cap" :
 +		"keep the reply as it is";
-+	snprintf(line, sizeof(line), "You must use acap command to %s or acap N [note] to "
-+		"%sreply again with a thinking cap of N tokens, above %d and up to %d.",
-+		keep, agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
++	snprintf(line, sizeof(line), "acap is not a tool: call the ex tool with "
++		"command acap to %s, or with acap N [note] to %sreply again with a "
++		"thinking cap of N tokens, above %d and up to %d.", keep,
++		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 +	sbuf_str(sb, line)
 +	sbuf_str(sb, "\nTokens the new reply leaves of N carry over to later caps.\n"
 +		"The new reply sees nothing of this exchange except the "
 +		"optional [note] after N.\n"
 +		"A note directs how to think better.\n"
 +		"Do not mention this budget check in a note.")
-+	snprintf(line, sizeof(line), "\nExample: %s\nacap\n"
-+		"Example: reply again under a cap of %d tokens, with a note\n"
-+		"acap %d focus on ...", keep, more, more);
++	snprintf(line, sizeof(line), "\nExample ex command to %s:\nacap\n"
++		"Example ex command to reply again under a cap of %d tokens, "
++		"with a note:\nacap %d focus on ...", keep, more, more);
 +	sbuf_str(sb, line)
 +	sbuf_nul(sb)
 +	agent_cp_open = sb->s;
 +	agent_log("USER", agent_cp_open);
 +}
 +
++/* Messages that open the phase: the lead, its calls' results, else the
++ * opening user message. */
++static int agent_cp_opens(void)
++{
++	return agent_cp_lead ? 1 + cJSON_GetArraySize(
++		cJSON_GetObjectItem(agent_cp_lead, "tool_calls")) : 1;
++}
++
 +/* Detach the exchange that followed the opening message in the last request. */
 +static void agent_cp_collect(void)
 +{
 +	cJSON *m;
-+	int open = 1 + !!agent_cp_lead;
++	int open = agent_cp_opens();
 +	if (agent_cp_base < 0)
 +		return;
 +	cJSON_Delete(agent_cp);
@@ -14823,10 +14878,19 @@ index 00000000..ca89aa5b
 +		agent_log("USER", agent_cp_open);
 +	}
 +	agent_cp_base = cJSON_GetArraySize(agent_messages);
-+	if (agent_cp_lead)
++	if (agent_cp_lead) {
++		cJSON *calls = cJSON_GetObjectItem(agent_cp_lead, "tool_calls");
 +		cJSON_AddItemToArray(agent_messages,
 +			cJSON_Duplicate(agent_cp_lead, 1));
-+	cJSON_AddItemToArray(agent_messages, agent_msg("user", agent_cp_open));
++		cJSON_ArrayForEach(m, calls) {
++			cJSON *result = agent_msg("tool", m->next ? "not run: "
++				"budget check, see the last result" : agent_cp_open);
++			cJSON_AddStringToObject(result, "tool_call_id",
++				cJSON_GetStringValue(cJSON_GetObjectItem(m, "id")));
++			cJSON_AddItemToArray(agent_messages, result);
++		}
++	} else
++		cJSON_AddItemToArray(agent_messages, agent_msg("user", agent_cp_open));
 +	cJSON_ArrayForEach(m, agent_cp)
 +		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
 +}
@@ -16093,9 +16157,20 @@ index 00000000..ca89aa5b
 +		cJSON *content = cJSON_GetObjectItem(message, "content");
 +		const char *rkey;
 +		char *reasoning = agent_reasoning(message, &rkey);
++		/* A call of an undeclared tool, such as one named after an ex
++		 * command, comes back as text. In a phase, that text would be
++		 * imitated by the retries, so the context drops it. */
++		int textcall = !cJSON_GetArraySize(calls) &&
++			cJSON_IsString(content) &&
++			(strstr(content->valuestring, "<tool_call>") ||
++			strstr(content->valuestring, "<function="));
 +		/* Complete pairs before recursive editing or submissions. */
 +		cJSON_AddItemToArray(agent_messages,
 +			cJSON_Duplicate(message, 1));
++		if (textcall && agent_checkpointing)
++			cJSON_ReplaceItemInObject(cJSON_GetArrayItem(agent_messages,
++				cJSON_GetArraySize(agent_messages) - 1), "content",
++				cJSON_CreateString(""));
 +		/* The TURN header is written with the first part, so an empty
 +		 * reply logs nothing. */
 +		agent_turn_close();
@@ -16281,10 +16356,13 @@ index 00000000..ca89aa5b
 +			int think = agent_checkpointing == 3;
 +			if (agent_cp_refused < (think ? AGENT_THINK_TRIES : 2)) {
 +				if (!has_calls) {
-+					char msg[96];
-+					snprintf(msg, sizeof(msg), "Nothing ran; reply with "
-+						"an ex tool call, %s%s", think ? "acap N [note] or acap" :
-+						"acheck N or acheck.", agent_think_retry());
++					char msg[224];
++					snprintf(msg, sizeof(msg), "Nothing ran%s; call the "
++						"ex tool with command %s%s", textcall ? ": your reply "
++						"wrote a tool call as text, or called a tool that does "
++						"not exist. The only tool is ex" : "",
++						think ? "acap N [note] or acap" : "acheck N or acheck",
++						agent_think_retry());
 +					cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 +					agent_log("USER", msg);
 +				}
@@ -17546,7 +17624,7 @@ index 00000000..ca89aa5b
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..480fe075
+index 000000000..480fe075e
 --- /dev/null
 +++ b/agent.h
 @@ -0,0 +1,46 @@
@@ -17598,7 +17676,7 @@ index 00000000..480fe075
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 00000000..6e4fb0dd
+index 000000000..6e4fb0dd3
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -20795,7 +20873,7 @@ index 00000000..6e4fb0dd
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 00000000..cab5feb4
+index 000000000..cab5feb42
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -21106,7 +21184,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..de918b88 100755
+index c836c94c7..de918b888 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,318 @@ build() {
@@ -21448,7 +21526,7 @@ index c836c94c..de918b88 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..96c87bb1 100644
+index 2888d7c60..96c87bb1b 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,276 @@
@@ -21740,7 +21818,7 @@ index 2888d7c6..96c87bb1 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index d13974a6..47550561 100644
+index d13974a65..47550561a 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -22397,7 +22475,7 @@ index d13974a6..47550561 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 00000000..31004ff5
+index 000000000..31004ff54
 --- /dev/null
 +++ b/exspec.awk
 @@ -0,0 +1,87 @@
@@ -22490,7 +22568,7 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..0ee9364b
+index 000000000..0ee9364b9
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1548 @@
@@ -24043,7 +24121,7 @@ index 00000000..0ee9364b
 +	{"err", "Control ex errors", 1352, 1364, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c6..f62aad73 100644
+index 56cb42c63..f62aad734 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -24073,7 +24151,7 @@ index 56cb42c6..f62aad73 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e..2641d0ff 100644
+index 4893a07e5..2641d0ffc 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -24113,7 +24191,7 @@ index 4893a07e..2641d0ff 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 4e11ec2f..4668eda9 100644
+index 4e11ec2f9..4668eda91 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -24157,7 +24235,7 @@ index 4e11ec2f..4668eda9 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f..a0a9a3cb 100644
+index b1f9a16f1..a0a9a3cb4 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,14 @@
@@ -24184,7 +24262,7 @@ index b1f9a16f..a0a9a3cb 100644
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
 diff --git a/vi.h b/vi.h
-index c23da595..f1c422d2 100644
+index c23da5950..f1c422d25 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
