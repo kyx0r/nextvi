@@ -62,6 +62,9 @@ static char agent_jobmsg[512];	/* job notices for the next tool result */
 static int agent_logbuf = 3;	/* tempbufs index logged to: 3 (b-4) or 7 (b-8) */
 /* b-4 was edited other than by agent_log since the context was rebuilt. */
 static int agent_logging, agent_log_edited;
+/* Per log, indexed as agent_entries: edited other than by agent_log_write,
+ * so its last number and open body need a parse. */
+static int agent_log_stale[2] = {1, 1};
 /* Last entry number per log: [0] b-8, [1] b-4. */
 static unsigned long agent_entries[2];
 static char *agent_init_error;
@@ -524,7 +527,9 @@ static void agent_sync_pending(void)
 static void agent_sync(struct lbuf *lb)
 {
 	if (lb == tempbufs[3].lb && !agent_logging)
-		agent_log_edited = 1;
+		agent_log_edited = agent_log_stale[1] = 1;
+	if (lb == tempbufs[7].lb && !agent_logging)
+		agent_log_stale[0] = 1;
 	if (!agent_ready || agent_syncing)
 		return;
 	for (int i = 3; i < 8; i++) {
@@ -875,18 +880,44 @@ static void agent_frame(const char *text, char *id, char *end)
 	}
 }
 
-/* Append a header, its body and its end line to the log; show prints them. */
-static void agent_log_write(const char *head, const char *text, const char *end,
-		int show)
+/* The number of the last entry of the log being written; sets open to the
+ * END line of a body a hand edit left open, else empty. Only an edit from
+ * outside agent_log_write needs a parse: its own entries are closed and
+ * numbered by the counter. */
+static unsigned long agent_log_tail(char *open)
+{
+	struct agent_span *spans;
+	int i = agent_logbuf == 3, cnt;
+	unsigned long n;
+	*open = '\''\0'\'';
+	if (!agent_log_stale[i])
+		return agent_entries[i];
+	cnt = agent_spans_of(tempbufs[agent_logbuf].lb, &spans);
+	n = cnt ? spans[cnt-1].n : 0;
+	if (cnt)
+		strcpy(open, spans[cnt-1].open);
+	free(spans);
+	agent_log_stale[i] = 0;
+	return n;
+}
+
+/* Number a new entry. In b-4 it follows the last one there, which a
+ * resume or hand edit can leave above the counter. */
+static unsigned long agent_entry_next(unsigned long last)
+{
+	if (agent_logbuf == 3)
+		agent_entries[1] = MAX(agent_entries[1], last);
+	return ++agent_entries[agent_logbuf == 3];
+}
+
+/* Append open, closing a body, then a header, its body and its end line to
+ * the log; show prints them. */
+static void agent_log_write(const char *open, const char *head, const char *text,
+		const char *end, int show)
 {
 	struct lbuf *lb = tempbufs[agent_logbuf].lb;
-	struct agent_span *spans;
-	int cnt = agent_spans_of(lb, &spans);
 	sbuf_smake(sb, 256)
-	/* Close a body whose END line a hand edit removed. */
-	if (cnt && *spans[cnt-1].open)
-		sbuf_str(sb, spans[cnt-1].open)
-	free(spans);
+	sbuf_str(sb, open)
 	sbuf_str(sb, head)
 	sbuf_str(sb, text);
 	if (sb->s[sb->s_n-1] != '\''\n'\'')
@@ -917,12 +948,13 @@ static void agent_turn_close(void)
 /* Log a USER or NOTICE entry. */
 static void agent_log(const char *role, const char *text)
 {
-	char head[64], id[AGENT_ID], end[AGENT_END];
+	char head[64], id[AGENT_ID], end[AGENT_END], open[AGENT_END];
+	unsigned long last = agent_log_tail(open);
 	agent_turn_close();
 	agent_frame(text, id, end);
 	snprintf(head, sizeof(head), "%s%s %lu%s\n", agent_log_mark(), role,
-		++agent_entries[agent_logbuf == 3], id);
-	agent_log_write(head, text, end, 1);
+		agent_entry_next(last), id);
+	agent_log_write(open, head, text, end, 1);
 }
 
 /* Log part idx of the open turn, opening one if needed: 0 reasoning, 1 text,
@@ -932,9 +964,11 @@ static void agent_turn_part(int idx, const char *text)
 {
 	unsigned long *turn = agent_turn + (agent_logbuf == 3);
 	char open[48] = "", head[128], id[AGENT_ID], end[AGENT_END];
+	char close[AGENT_END];
+	unsigned long last = agent_log_tail(close);
 	int show = idx || xar > 1;
 	if (!*turn) {
-		*turn = ++agent_entries[agent_logbuf == 3];
+		*turn = agent_entry_next(last);
 		snprintf(open, sizeof(open), "%sTURN %lu\n", agent_log_mark(), *turn);
 	}
 	agent_frame(text, id, end);
@@ -942,7 +976,7 @@ static void agent_turn_part(int idx, const char *text)
 		agent_part_roles[idx < 2 ? idx : AP_EX + (idx & 1)], *turn, idx, id);
 	if (!show)
 		agent_output(open);
-	agent_log_write(head, text, end, show);
+	agent_log_write(close, head, text, end, show);
 }
 
 /* The log as the terminal shows it: without reasoning unless ar is above 1. */
@@ -13006,10 +13040,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..c3d8de0cf
+index 000000000..f859be3a3
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4612 @@
+@@ -0,0 +1,4646 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -13042,6 +13076,9 @@ index 000000000..c3d8de0cf
 +static int agent_logbuf = 3;	/* tempbufs index logged to: 3 (b-4) or 7 (b-8) */
 +/* b-4 was edited other than by agent_log since the context was rebuilt. */
 +static int agent_logging, agent_log_edited;
++/* Per log, indexed as agent_entries: edited other than by agent_log_write,
++ * so its last number and open body need a parse. */
++static int agent_log_stale[2] = {1, 1};
 +/* Last entry number per log: [0] b-8, [1] b-4. */
 +static unsigned long agent_entries[2];
 +static char *agent_init_error;
@@ -13504,7 +13541,9 @@ index 000000000..c3d8de0cf
 +static void agent_sync(struct lbuf *lb)
 +{
 +	if (lb == tempbufs[3].lb && !agent_logging)
-+		agent_log_edited = 1;
++		agent_log_edited = agent_log_stale[1] = 1;
++	if (lb == tempbufs[7].lb && !agent_logging)
++		agent_log_stale[0] = 1;
 +	if (!agent_ready || agent_syncing)
 +		return;
 +	for (int i = 3; i < 8; i++) {
@@ -13855,18 +13894,44 @@ index 000000000..c3d8de0cf
 +	}
 +}
 +
-+/* Append a header, its body and its end line to the log; show prints them. */
-+static void agent_log_write(const char *head, const char *text, const char *end,
-+		int show)
++/* The number of the last entry of the log being written; sets open to the
++ * END line of a body a hand edit left open, else empty. Only an edit from
++ * outside agent_log_write needs a parse: its own entries are closed and
++ * numbered by the counter. */
++static unsigned long agent_log_tail(char *open)
++{
++	struct agent_span *spans;
++	int i = agent_logbuf == 3, cnt;
++	unsigned long n;
++	*open = '\0';
++	if (!agent_log_stale[i])
++		return agent_entries[i];
++	cnt = agent_spans_of(tempbufs[agent_logbuf].lb, &spans);
++	n = cnt ? spans[cnt-1].n : 0;
++	if (cnt)
++		strcpy(open, spans[cnt-1].open);
++	free(spans);
++	agent_log_stale[i] = 0;
++	return n;
++}
++
++/* Number a new entry. In b-4 it follows the last one there, which a
++ * resume or hand edit can leave above the counter. */
++static unsigned long agent_entry_next(unsigned long last)
++{
++	if (agent_logbuf == 3)
++		agent_entries[1] = MAX(agent_entries[1], last);
++	return ++agent_entries[agent_logbuf == 3];
++}
++
++/* Append open, closing a body, then a header, its body and its end line to
++ * the log; show prints them. */
++static void agent_log_write(const char *open, const char *head, const char *text,
++		const char *end, int show)
 +{
 +	struct lbuf *lb = tempbufs[agent_logbuf].lb;
-+	struct agent_span *spans;
-+	int cnt = agent_spans_of(lb, &spans);
 +	sbuf_smake(sb, 256)
-+	/* Close a body whose END line a hand edit removed. */
-+	if (cnt && *spans[cnt-1].open)
-+		sbuf_str(sb, spans[cnt-1].open)
-+	free(spans);
++	sbuf_str(sb, open)
 +	sbuf_str(sb, head)
 +	sbuf_str(sb, text);
 +	if (sb->s[sb->s_n-1] != '\n')
@@ -13897,12 +13962,13 @@ index 000000000..c3d8de0cf
 +/* Log a USER or NOTICE entry. */
 +static void agent_log(const char *role, const char *text)
 +{
-+	char head[64], id[AGENT_ID], end[AGENT_END];
++	char head[64], id[AGENT_ID], end[AGENT_END], open[AGENT_END];
++	unsigned long last = agent_log_tail(open);
 +	agent_turn_close();
 +	agent_frame(text, id, end);
 +	snprintf(head, sizeof(head), "%s%s %lu%s\n", agent_log_mark(), role,
-+		++agent_entries[agent_logbuf == 3], id);
-+	agent_log_write(head, text, end, 1);
++		agent_entry_next(last), id);
++	agent_log_write(open, head, text, end, 1);
 +}
 +
 +/* Log part idx of the open turn, opening one if needed: 0 reasoning, 1 text,
@@ -13912,9 +13978,11 @@ index 000000000..c3d8de0cf
 +{
 +	unsigned long *turn = agent_turn + (agent_logbuf == 3);
 +	char open[48] = "", head[128], id[AGENT_ID], end[AGENT_END];
++	char close[AGENT_END];
++	unsigned long last = agent_log_tail(close);
 +	int show = idx || xar > 1;
 +	if (!*turn) {
-+		*turn = ++agent_entries[agent_logbuf == 3];
++		*turn = agent_entry_next(last);
 +		snprintf(open, sizeof(open), "%sTURN %lu\n", agent_log_mark(), *turn);
 +	}
 +	agent_frame(text, id, end);
@@ -13922,7 +13990,7 @@ index 000000000..c3d8de0cf
 +		agent_part_roles[idx < 2 ? idx : AP_EX + (idx & 1)], *turn, idx, id);
 +	if (!show)
 +		agent_output(open);
-+	agent_log_write(head, text, end, show);
++	agent_log_write(close, head, text, end, show);
 +}
 +
 +/* The log as the terminal shows it: without reasoning unless ar is above 1. */
