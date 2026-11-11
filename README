@@ -486,6 +486,10 @@ compactions, checkpoints, budget checks and acap questions). Both
 restart commands reload skills; "a!" clears notes and discarded.
 These buffers are saved automatically under a directory named after the
 session start time, $HOME/.nextvi/logs/YYYYmmdd-HHMMSS, or log_dir if set.
+The new command line flag "-r [dir]" resumes the session saved in dir:
+its files fill these buffers, the log becomes the context as with "a~",
+and the session goes on being saved there. Without dir it resumes the
+session whose log was written last.
 
 Example: ask about the whole buffer
 :%a Explain this code

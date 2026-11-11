@@ -67,7 +67,6 @@ static int agent_logging, agent_log_edited;
 static int agent_log_stale[2] = {1, 1};
 /* Last entry number per log: [0] b-8, [1] b-4. */
 static unsigned long agent_entries[2];
-static char *agent_init_error;
 static unsigned long agent_rounds;	/* tool rounds of the current run */
 static unsigned long agent_tool_calls;	/* ex tool calls executed, cumulative */
 static size_t agent_capture_total;	/* tool output bytes, clipped ones included */
@@ -591,27 +590,76 @@ static void agent_init(void)
 	agent_history(0);
 }
 
+static char *agent_names[] = {"conversation", "skills", "notes", "discarded",
+	"asides"};
+
+/* The log directory with room for a session name appended, or NULL. */
+static char *agent_logs(void)
+{
+	const char *home = getenv("HOME");
+	char *dir;
+	if ((!log_dir && (!home || !*home)) || (log_dir && !*log_dir))
+		return NULL;
+	dir = emalloc(strlen(log_dir ? log_dir : home) + NAME_MAX + 64);
+	if (log_dir)
+		strcpy(dir, log_dir);
+	else
+		sprintf(dir, "%s/.nextvi/logs", home);
+	return dir;
+}
+
+/* Read the session file of tempbufs[i] into it; one that is missing is
+ * created from the buffer. */
+static int agent_load(int i)
+{
+	struct buf *b = tempbufs + i;
+	int fd = open(b->path, O_RDONLY), ret;
+	if (fd < 0)
+		return errno == ENOENT ? agent_save(i) : -1;
+	agent_syncing = 1;
+	ret = lbuf_rd(b->lb, fd, 0, lbuf_len(b->lb));
+	lbuf_saved(b->lb, 1);
+	agent_syncing = 0;
+	close(fd);
+	b->mtime = mtime(b->path);
+	return ret;
+}
+
+/* Make dir the session directory: b-4 to b-8 are saved to its files, or
+ * with load filled from those it has. */
+static int agent_attach(const char *dir, int load)
+{
+	char *cwd = NULL, *path;
+	int ret = 0;
+	/* Absolute paths survive :cd during the session. */
+	if (*dir != '\''/'\'' && !(cwd = getcwd(NULL, 0)))
+		return -1;
+	for (int i = 3; i < 8 && !ret; i++) {
+		path = emalloc((cwd ? strlen(cwd) : 0) + strlen(dir) + 32);
+		sprintf(path, "%s%s%s/%s", cwd ? cwd : "", cwd ? "/" : "", dir,
+			agent_names[i - 3]);
+		free(tempbufs[i].path);
+		tempbufs[i].path = path;
+		tempbufs[i].plen = strlen(path);
+		ret = load ? agent_load(i) : agent_save(i);
+	}
+	free(cwd);
+	return ret;
+}
+
 /* Create the session files on first agent use. */
 static int agent_start(void)
 {
-	const char *home = getenv("HOME");
-	static char *names[] = {"conversation", "skills", "notes", "discarded",
-		"asides"};
-	char *dir, *path, *leaf;
+	char *dir, *leaf;
 	time_t now;
 	struct tm *tm;
 	int n = 0;
 	if (agent_ready)
 		return 0;
-	if ((!log_dir && (!home || !*home)) || (log_dir && !*log_dir)) {
+	if (!(dir = agent_logs())) {
 		agent_init_error = "agent log directory is not configured";
 		return -1;
 	}
-	dir = emalloc(strlen(log_dir ? log_dir : home) + 64);
-	if (log_dir)
-		strcpy(dir, log_dir);
-	else
-		sprintf(dir, "%s/.nextvi/logs", home);
 	if (agent_mkdir(dir))
 		goto fail;
 	/* Name the log directory with the start time. */
@@ -625,26 +673,8 @@ static int agent_start(void)
 			goto fail;
 		sprintf(leaf + 16, "-%d", ++n);
 	}
-	/* Absolute paths survive :cd during the session. */
-	if (*dir != '\''/'\'') {
-		char *cwd = getcwd(NULL, 0);
-		if (!cwd)
-			goto fail;
-		path = emalloc(strlen(cwd) + strlen(dir) + 2);
-		sprintf(path, "%s/%s", cwd, dir);
-		free(cwd);
-		free(dir);
-		dir = path;
-	}
-	for (int i = 3; i < 8; i++) {
-		path = emalloc(strlen(dir) + 32);
-		sprintf(path, "%s/%s", dir, names[i - 3]);
-		free(tempbufs[i].path);
-		tempbufs[i].path = path;
-		tempbufs[i].plen = strlen(path);
-		if (agent_save(i))
-			goto fail;
-	}
+	if (agent_attach(dir, 0))
+		goto fail;
 	agent_ready = 1;
 	agent_init_error = NULL;
 	free(dir);
@@ -653,6 +683,60 @@ fail:
 	free(dir);
 	agent_init_error = "cannot create agent session files";
 	return -1;
+}
+
+/* vi -r: continue the session saved in dir, or with an empty dir the one
+ * in the log directory whose log was written last. Its files fill b-4 to
+ * b-8 and the log becomes the context, as a~ loads it. */
+static int agent_resume(const char *dir)
+{
+	char *logs = NULL, *path = NULL, *best = NULL;
+	struct dirent *e;
+	struct stat st;
+	time_t at = 0;
+	DIR *d;
+	int n = strlen(dir);
+	agent_init_error = "agent log directory has no session";
+	if (!n && (logs = agent_logs()) && (d = opendir(logs))) {
+		path = emalloc(strlen(logs) + NAME_MAX + 32);
+		while ((e = readdir(d))) {
+			sprintf(path, "%s/%s/conversation", logs, e->d_name);
+			if (*e->d_name == '\''.'\'' || stat(path, &st) ||
+					(best && st.st_mtime < at))
+				continue;
+			at = st.st_mtime;
+			free(best);
+			best = emalloc(strlen(path) + 1);
+			sprintf(best, "%s/%s", logs, e->d_name);
+		}
+		closedir(d);
+	} else if (n) {
+		while (n > 1 && dir[n - 1] == '\''/'\'')
+			n--;
+		best = emalloc(n + 1);
+		sprintf(best, "%.*s", n, dir);
+		path = emalloc(n + 32);
+		sprintf(path, "%s/conversation", best);
+		if (access(path, R_OK)) {
+			agent_init_error = "not an agent session directory";
+			free(best);
+			best = NULL;
+		}
+	}
+	free(logs);
+	free(path);
+	if (!best)
+		return -1;
+	if (agent_attach(best, 1)) {
+		agent_init_error = "cannot read agent session files";
+		free(best);
+		return -1;
+	}
+	free(best);
+	agent_ready = 1;
+	agent_init_error = NULL;
+	agent_history(lbuf_len(tempbufs[3].lb) > 0);
+	return 0;
 }
 
 /* A log holds numbered entries headed "ROLE N". A TURN is one reply: its
@@ -4718,6 +4802,8 @@ static void *ec_aout(char *loc, char *cmd, char *arg);
 static void *ec_aget(char *loc, char *cmd, char *arg);
 static void *ec_compact(char *loc, char *cmd, char *arg);
 static void agent_init(void);
+static int agent_resume(const char *dir);
+static char *agent_init_error;
 static void agent_sync(struct lbuf *lb);
 static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status);
 static void agent_capture_add(const char *s, int n);
@@ -12880,34 +12966,172 @@ static int vi_lnnum;		/\* line numbers \*/9??0?
 grp 09??-8m 3220reg p OK vi.c:18:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg vi.c:182sc %? %@2132sc!0?
 ?0?
+%f+ int main\(int argc, char \*argv\[]\)
+\{
+	int i, j;
+	setup_signals\(\);
+	dir_init\(\);
+	syn_init\(\);1??0?
+1??+2m 41q0?
+%f+ int main\(int argc, char \*argv\[]\)
+\{
+	int i, j;4??0?
+4??+2m 4220reg p OK vi.c:1825:a42sc %? %@2152sc!1q0?
+grp 1%f+ int main\(int argc, char \*argv\[]\).*?
+\{.*?
+(	int i, j;)7??0?
+grp 07??m 4220reg p OK vi.c:1825:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	sa\.sa_handler = sighandler;
+	sigaction\(SIGWINCH, &sa, NULL\);
+}.*(			break;)
+		}
+		for \(j = 1; argv\[i]\[j]; j\+\+\) \{8??0?
+grp 08??-10m 4220reg p OK vi.c:1825:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> \{
+	struct sigaction sa;
+	memset\(&sa, 0, sizeof\(sa\)\);.*(			if \(argv\[i]\[j] == '\''s'\''\))
+				xvis \|= 1\|2;
+			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
+grp 09??-13m 4220reg p OK vi.c:1825:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg vi.c:18252sc %? %@2132sc!0?
+?0?
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);
 	for \(i = 1; i < argc && argv\[i]\[0] == '\''-'\''; i\+\+\) \{
 		if \(argv\[i]\[1] == '\''-'\'' && !argv\[i]\[2]\) \{
 			i\+\+;1??0?
-1??+2m 41q0?
+1??+2m 51q0?
 %f+ 	temp_open\(0, "/hist/", _ft\);
 	temp_open\(1, "/fm/", fm_ft\);
 	temp_open\(2, "/sc/", _ft\);4??0?
-4??+2m 4220reg p OK vi.c:1831:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK vi.c:1831:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	temp_open\(0, "/hist/", _ft\);.*?
 	temp_open\(1, "/fm/", fm_ft\);.*?
 (	temp_open\(2, "/sc/", _ft\);)7??0?
-grp 07??m 4220reg p OK vi.c:1831:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	setup_signals\(\);
-	dir_init\(\);
-	syn_init\(\);.*(			break;)
+grp 07??m 5220reg p OK vi.c:1831:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	sa\.sa_handler = sighandler;
+	sigaction\(SIGWINCH, &sa, NULL\);
+}.*(			break;)
 		}
 		for \(j = 1; argv\[i]\[j]; j\+\+\) \{8??0?
-grp 08??-4m 4220reg p OK vi.c:1831:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> int main\(int argc, char \*argv\[]\)
-\{
-	int i, j;.*(			if \(argv\[i]\[j] == '\''s'\''\))
+grp 08??-4m 5220reg p OK vi.c:1831:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> \{
+	struct sigaction sa;
+	memset\(&sa, 0, sizeof\(sa\)\);.*(			if \(argv\[i]\[j] == '\''s'\''\))
 				xvis \|= 1\|2;
 			else if \(argv\[i]\[j] == '\''e'\''\)9??0?
-grp 09??-7m 4220reg p OK vi.c:1831:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 5220reg p OK vi.c:1831:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg vi.c:18312sc %? %@2132sc!0?
+?0?
+%f+ 				xvis \|= 8;
+			else if \(argv\[i]\[j] == '\''v'\''\)
+				xvis = 0;
+			else \{
+				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);1??0?
+1??+3m 61q0?
+%f+ 			else \{
+				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);2??0?
+2??m 6220reg p OK vi.c:1848:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			else \{$3??0?
+3??m 6220reg p OK vi.c:1848:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 				xvis \|= 8;
+			else if \(argv\[i]\[j] == '\''v'\''\)
+				xvis = 0;4??0?
+4??+3m 6220reg p OK vi.c:1848:a42sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);$5??0?
+5??-1m 6220reg p OK vi.c:1848:a52sc %? %@2152sc!fr 981qfr 980?
+%f+ .	..x... .. 8.
+........i.....g..i..j...=.....
+.	..x.......;
+....l....
+........nt.\(.....r...U.k..............%c.....a.......j]\);6??0?
+6??+3m 6220reg p OK vi.c:1848:a62sc %? %@2152sc!1q0?
+grp 1%f+ 				xvis \|= 8;.*?
+			else if \(argv\[i]\[j] == '\''v'\''\).*?
+				xvis = 0;.*?
+(			else \{)7??0?
+grp 07??m 6220reg p OK vi.c:1848:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''m'\''\)
+				xvis \|= 4;
+			else if \(argv\[i]\[j] == '\''a'\''\).*(		term_scrh\(\))
+	ex_init\(argv \+ i, argc - i\);
+	if \(xvis & 2\)8??0?
+grp 08??-11m 6220reg p OK vi.c:1848:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				xvis \|= 1\|2;
+			else if \(argv\[i]\[j] == '\''e'\''\)
+				xvis \|= 2;.*(		ex\(\);)
+	else
+		vi\(1\);9??0?
+grp 09??-14m 6220reg p OK vi.c:1848:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18482sc %? %@2132sc!0?
+?0?
+%f+ 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);
+				fprintf\(stderr, "Nextvi-7\.9 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+				return EXIT_FAILURE;
+			}
+		}1??0?
+1??+1m 71q0?
+%f+ 				fprintf\(stderr, "Nextvi-7\.9 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);
+				return EXIT_FAILURE;
+			}
+		}2??0?
+2??m 7220reg p OK vi.c:1850:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				fprintf\(stderr, "Nextvi-7\.9 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);$3??0?
+3??m 7220reg p OK vi.c:1850:a32sc %? %@2152sc!fr 981qfr 980?
+;0fr.,$f+ ^				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);$4??0?
+4??+1m 7220reg p OK vi.c:1850:a42sc %? %@2152sc!fr 981qfr 980?
+%f+ 				return EXIT_FAILURE;
+			}
+		}5??0?
+5??-1m 7220reg p OK vi.c:1850:a52sc %? %@2152sc!1q0?
+%f+ .		..p.......t......"U..n.w......o.:............v\[...j...
+.		.f.r.n...............t.i-..9...a.e..%...................\..\\n., ...v.0]..
+.	.	.e.......I..F...U...
+..	.
+..}6??0?
+6??+1m 7220reg p OK vi.c:1850:a62sc %? %@2152sc!1q0?
+grp 1%f+ 				fprintf\(stderr, "Unknown option: -%c\\n", argv\[i]\[j]\);.*?
+(				fprintf\(stderr, "Nextvi-7\.9 Usage: %s \[-aemsv] \[file \.\.\.]\\n", argv\[0]\);)7??0?
+grp 07??m 7220reg p OK vi.c:1850:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''m'\''\)
+				xvis \|= 4;
+			else if \(argv\[i]\[j] == '\''a'\''\).*(		term_scrh\(\))
+	ex_init\(argv \+ i, argc - i\);
+	if \(xvis & 2\)8??0?
+grp 08??-9m 7220reg p OK vi.c:1850:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				xvis \|= 1\|2;
+			else if \(argv\[i]\[j] == '\''e'\''\)
+				xvis \|= 2;.*(		ex\(\);)
+	else
+		vi\(1\);9??0?
+grp 09??-12m 7220reg p OK vi.c:1850:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.c:18502sc %? %@2132sc!0?
+?0?
+%f+ 			}
+		}
+	}
+	tibuf = emalloc\(tibuf_sz\);
+	if \(!\(xvis & 1\)\)
+		term_init\(\);1??0?
+1??+2m 81q0?
+%f+ 			}
+		}
+	}4??0?
+4??+2m 8220reg p OK vi.c:1854:a42sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			else if \(argv\[i]\[j] == '\''m'\''\)
+				xvis \|= 4;
+			else if \(argv\[i]\[j] == '\''a'\''\).*(		term_scrh\(\))
+	ex_init\(argv \+ i, argc - i\);
+	if \(xvis & 2\)8??0?
+grp 08??-5m 8220reg p OK vi.c:1854:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				xvis \|= 1\|2;
+			else if \(argv\[i]\[j] == '\''e'\''\)
+				xvis \|= 2;.*(		ex\(\);)
+	else
+		vi\(1\);9??0?
+grp 09??-8m 8220reg p OK vi.c:1854:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg vi.c:18542sc %? %@2132sc!0?
 '\''1i #include <errno.h>
 #include <time.h>
 #include "cJSON.c"
@@ -12916,8 +13140,27 @@ static int vi_lnnum;		/\* line numbers \*/9??0?
 ??!219reg vi.c:17:m22sc %? %@2142sc!0?
 '\''3i #include "agent.c"
 ??!219reg vi.c:18:m32sc %? %@2142sc!0?
-'\''4i 	agent_init();
-??!219reg vi.c:1831:m42sc %? %@2142sc!b13m!%ya 98?0?
+'\''4i 	char *resume = NULL;
+	struct stat st;
+??!219reg vi.c:1825:m42sc %? %@2142sc!0?
+'\''5i 	agent_init();
+??!219reg vi.c:1831:m52sc %? %@2142sc!0?
+'\''6c 			else if (argv[i][j] == '\''r'\'') {
+				/* a directory after the last flag is the session */
+				resume = "";
+				if (!argv[i][j+1] && i + 1 < argc &&
+						!stat(argv[i+1], &st) && S_ISDIR(st.st_mode)) {
+					resume = argv[++i];
+					break;
+				}
+			} else {
+??!219reg vi.c:1848:m62sc %? %@2142sc!0?
+'\''7s/\[f/[-r [dir]] [f/??!219reg vi.c:1850:m72sc %? %@2142sc!0?
+'\''8i 	if (resume && agent_resume(resume)) {
+		fprintf(stderr, "%s: %s\n", *resume ? resume : "-r", agent_init_error);
+		return EXIT_FAILURE;
+	}
+??!219reg vi.c:1854:m82sc %? %@2142sc!b13m!%ya 98?0?
 %f> is\.sug = NULL; \\
 is\._sug = NULL; \\
 
@@ -13040,10 +13283,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..f859be3a3
+index 000000000..c241f3910
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4646 @@
+@@ -0,0 +1,4730 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -13081,7 +13324,6 @@ index 000000000..f859be3a3
 +static int agent_log_stale[2] = {1, 1};
 +/* Last entry number per log: [0] b-8, [1] b-4. */
 +static unsigned long agent_entries[2];
-+static char *agent_init_error;
 +static unsigned long agent_rounds;	/* tool rounds of the current run */
 +static unsigned long agent_tool_calls;	/* ex tool calls executed, cumulative */
 +static size_t agent_capture_total;	/* tool output bytes, clipped ones included */
@@ -13605,27 +13847,76 @@ index 000000000..f859be3a3
 +	agent_history(0);
 +}
 +
++static char *agent_names[] = {"conversation", "skills", "notes", "discarded",
++	"asides"};
++
++/* The log directory with room for a session name appended, or NULL. */
++static char *agent_logs(void)
++{
++	const char *home = getenv("HOME");
++	char *dir;
++	if ((!log_dir && (!home || !*home)) || (log_dir && !*log_dir))
++		return NULL;
++	dir = emalloc(strlen(log_dir ? log_dir : home) + NAME_MAX + 64);
++	if (log_dir)
++		strcpy(dir, log_dir);
++	else
++		sprintf(dir, "%s/.nextvi/logs", home);
++	return dir;
++}
++
++/* Read the session file of tempbufs[i] into it; one that is missing is
++ * created from the buffer. */
++static int agent_load(int i)
++{
++	struct buf *b = tempbufs + i;
++	int fd = open(b->path, O_RDONLY), ret;
++	if (fd < 0)
++		return errno == ENOENT ? agent_save(i) : -1;
++	agent_syncing = 1;
++	ret = lbuf_rd(b->lb, fd, 0, lbuf_len(b->lb));
++	lbuf_saved(b->lb, 1);
++	agent_syncing = 0;
++	close(fd);
++	b->mtime = mtime(b->path);
++	return ret;
++}
++
++/* Make dir the session directory: b-4 to b-8 are saved to its files, or
++ * with load filled from those it has. */
++static int agent_attach(const char *dir, int load)
++{
++	char *cwd = NULL, *path;
++	int ret = 0;
++	/* Absolute paths survive :cd during the session. */
++	if (*dir != '/' && !(cwd = getcwd(NULL, 0)))
++		return -1;
++	for (int i = 3; i < 8 && !ret; i++) {
++		path = emalloc((cwd ? strlen(cwd) : 0) + strlen(dir) + 32);
++		sprintf(path, "%s%s%s/%s", cwd ? cwd : "", cwd ? "/" : "", dir,
++			agent_names[i - 3]);
++		free(tempbufs[i].path);
++		tempbufs[i].path = path;
++		tempbufs[i].plen = strlen(path);
++		ret = load ? agent_load(i) : agent_save(i);
++	}
++	free(cwd);
++	return ret;
++}
++
 +/* Create the session files on first agent use. */
 +static int agent_start(void)
 +{
-+	const char *home = getenv("HOME");
-+	static char *names[] = {"conversation", "skills", "notes", "discarded",
-+		"asides"};
-+	char *dir, *path, *leaf;
++	char *dir, *leaf;
 +	time_t now;
 +	struct tm *tm;
 +	int n = 0;
 +	if (agent_ready)
 +		return 0;
-+	if ((!log_dir && (!home || !*home)) || (log_dir && !*log_dir)) {
++	if (!(dir = agent_logs())) {
 +		agent_init_error = "agent log directory is not configured";
 +		return -1;
 +	}
-+	dir = emalloc(strlen(log_dir ? log_dir : home) + 64);
-+	if (log_dir)
-+		strcpy(dir, log_dir);
-+	else
-+		sprintf(dir, "%s/.nextvi/logs", home);
 +	if (agent_mkdir(dir))
 +		goto fail;
 +	/* Name the log directory with the start time. */
@@ -13639,26 +13930,8 @@ index 000000000..f859be3a3
 +			goto fail;
 +		sprintf(leaf + 16, "-%d", ++n);
 +	}
-+	/* Absolute paths survive :cd during the session. */
-+	if (*dir != '/') {
-+		char *cwd = getcwd(NULL, 0);
-+		if (!cwd)
-+			goto fail;
-+		path = emalloc(strlen(cwd) + strlen(dir) + 2);
-+		sprintf(path, "%s/%s", cwd, dir);
-+		free(cwd);
-+		free(dir);
-+		dir = path;
-+	}
-+	for (int i = 3; i < 8; i++) {
-+		path = emalloc(strlen(dir) + 32);
-+		sprintf(path, "%s/%s", dir, names[i - 3]);
-+		free(tempbufs[i].path);
-+		tempbufs[i].path = path;
-+		tempbufs[i].plen = strlen(path);
-+		if (agent_save(i))
-+			goto fail;
-+	}
++	if (agent_attach(dir, 0))
++		goto fail;
 +	agent_ready = 1;
 +	agent_init_error = NULL;
 +	free(dir);
@@ -13667,6 +13940,60 @@ index 000000000..f859be3a3
 +	free(dir);
 +	agent_init_error = "cannot create agent session files";
 +	return -1;
++}
++
++/* vi -r: continue the session saved in dir, or with an empty dir the one
++ * in the log directory whose log was written last. Its files fill b-4 to
++ * b-8 and the log becomes the context, as a~ loads it. */
++static int agent_resume(const char *dir)
++{
++	char *logs = NULL, *path = NULL, *best = NULL;
++	struct dirent *e;
++	struct stat st;
++	time_t at = 0;
++	DIR *d;
++	int n = strlen(dir);
++	agent_init_error = "agent log directory has no session";
++	if (!n && (logs = agent_logs()) && (d = opendir(logs))) {
++		path = emalloc(strlen(logs) + NAME_MAX + 32);
++		while ((e = readdir(d))) {
++			sprintf(path, "%s/%s/conversation", logs, e->d_name);
++			if (*e->d_name == '.' || stat(path, &st) ||
++					(best && st.st_mtime < at))
++				continue;
++			at = st.st_mtime;
++			free(best);
++			best = emalloc(strlen(path) + 1);
++			sprintf(best, "%s/%s", logs, e->d_name);
++		}
++		closedir(d);
++	} else if (n) {
++		while (n > 1 && dir[n - 1] == '/')
++			n--;
++		best = emalloc(n + 1);
++		sprintf(best, "%.*s", n, dir);
++		path = emalloc(n + 32);
++		sprintf(path, "%s/conversation", best);
++		if (access(path, R_OK)) {
++			agent_init_error = "not an agent session directory";
++			free(best);
++			best = NULL;
++		}
++	}
++	free(logs);
++	free(path);
++	if (!best)
++		return -1;
++	if (agent_attach(best, 1)) {
++		agent_init_error = "cannot read agent session files";
++		free(best);
++		return -1;
++	}
++	free(best);
++	agent_ready = 1;
++	agent_init_error = NULL;
++	agent_history(lbuf_len(tempbufs[3].lb) > 0);
++	return 0;
 +}
 +
 +/* A log holds numbered entries headed "ROLE N". A TURN is one reply: its
@@ -17692,10 +18019,10 @@ index 000000000..f859be3a3
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 000000000..480fe075e
+index 000000000..9bfcf306c
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,46 @@
+@@ -0,0 +1,48 @@
 +/* agent.c: embedded request loop and editor integration */
 +static int agent_tool;		/* an agent tool call is executing */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
@@ -17737,6 +18064,8 @@ index 000000000..480fe075e
 +static void *ec_aget(char *loc, char *cmd, char *arg);
 +static void *ec_compact(char *loc, char *cmd, char *arg);
 +static void agent_init(void);
++static int agent_resume(const char *dir);
++static char *agent_init_error;
 +static void agent_sync(struct lbuf *lb);
 +static sbuf *agent_shell(char *cmd, sbuf *input, int oproc, int *status);
 +static void agent_capture_add(const char *s, int n);
@@ -24303,7 +24632,7 @@ index 4e11ec2f9..4668eda91 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..a0a9a3cb4 100644
+index b1f9a16f1..53bbabc6c 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,14 @@
@@ -24321,7 +24650,15 @@ index b1f9a16f1..a0a9a3cb4 100644
  #include "lbuf.c"
  #include "led.c"
  #include "regex.c"
-@@ -1829,6 +1834,7 @@ int main(int argc, char *argv[])
+@@ -1823,12 +1828,15 @@ static void setup_signals(void)
+ int main(int argc, char *argv[])
+ {
+ 	int i, j;
++	char *resume = NULL;
++	struct stat st;
+ 	setup_signals();
+ 	dir_init();
+ 	syn_init();
  	temp_open(0, "/hist/", _ft);
  	temp_open(1, "/fm/", fm_ft);
  	temp_open(2, "/sc/", _ft);
@@ -24329,6 +24666,34 @@ index b1f9a16f1..a0a9a3cb4 100644
  	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
  		if (argv[i][1] == '-' && !argv[i][2]) {
  			i++;
+@@ -1845,13 +1853,25 @@ int main(int argc, char *argv[])
+ 				xvis |= 8;
+ 			else if (argv[i][j] == 'v')
+ 				xvis = 0;
+-			else {
++			else if (argv[i][j] == 'r') {
++				/* a directory after the last flag is the session */
++				resume = "";
++				if (!argv[i][j+1] && i + 1 < argc &&
++						!stat(argv[i+1], &st) && S_ISDIR(st.st_mode)) {
++					resume = argv[++i];
++					break;
++				}
++			} else {
+ 				fprintf(stderr, "Unknown option: -%c\n", argv[i][j]);
+-				fprintf(stderr, "Nextvi-7.9 Usage: %s [-aemsv] [file ...]\n", argv[0]);
++				fprintf(stderr, "Nextvi-7.9 Usage: %s [-aemsv] [-r [dir]] [file ...]\n", argv[0]);
+ 				return EXIT_FAILURE;
+ 			}
+ 		}
+ 	}
++	if (resume && agent_resume(resume)) {
++		fprintf(stderr, "%s: %s\n", *resume ? resume : "-r", agent_init_error);
++		return EXIT_FAILURE;
++	}
+ 	tibuf = emalloc(tibuf_sz);
+ 	if (!(xvis & 1))
+ 		term_init();
 diff --git a/vi.h b/vi.h
 index c23da5950..f1c422d25 100644
 --- a/vi.h
