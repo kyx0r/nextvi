@@ -3831,6 +3831,92 @@ static void *ec_agoal(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
+/* Split url u into scheme with "://", host, ":port" (or empty) and path
+ * (or empty); each output holds 256 bytes. */
+static void agent_ep_split(const char *u, char *sch, char *host,
+		char *port, char *path)
+{
+	const char *s = strstr(u, "://"), *h, *e, *c;
+	*sch = *host = *port = *path = '\''\0'\'';
+	if (s) {
+		snprintf(sch, 256, "%.*s", (int)(s - u + 3), u);
+		h = s + 3;
+	} else
+		h = u;
+	e = h + strcspn(h, "/");
+	snprintf(path, 256, "%s", e);
+	c = *h == '\''['\'' ? memchr(h, '\'']'\'', e - h) : h;
+	c = c ? memchr(c, '\'':'\'', e - c) : NULL;
+	if (!c)
+		c = e;
+	snprintf(host, 256, "%.*s", (int)(c - h), h);
+	snprintf(port, 256, "%.*s", (int)(e - c), c);
+}
+
+
+/* aep sets the endpoint, keeping the parts the argument omits:
+ * 8080 or :8080 the port, /path the path, host or host:port the host,
+ * scheme://... the scheme, host and port; aep alone prints it. */
+static void *ec_aep(char *loc, char *cmd, char *arg)
+{
+	static char buf[1024];
+	char sch[256], host[256], port[256], path[256];
+	char ns[256], nh[256], np[256], npath[256], msg[1100];
+	char in[256], *a = arg, *t;
+	int n;
+	if (*loc)
+		return "aep takes no range";
+	while (*a == '\'' '\'' || *a == '\''\t'\'' || *a == '\''\n'\'')
+		a++;
+	snprintf(in, sizeof(in), "%s", a);
+	for (t = in + strlen(in); t > in && strchr(" \t\n", t[-1]); t--)
+		;
+	*t = '\''\0'\'';
+	if (!*in) {
+		snprintf(msg, sizeof(msg), "endpoint   %s", endpoint ? endpoint : "");
+		ex_print(msg, msg_ft)
+		return NULL;
+	}
+	if (strlen(a) >= sizeof(in) - 1 || strpbrk(in, " \t\r\n"))
+		return "aep argument must be one url, host, host:port, port or /path";
+	agent_ep_split(endpoint ? endpoint : "", sch, host, port, path);
+	if (!*sch)
+		strcpy(sch, "http://");
+	n = strspn(in + (*in == '\'':'\''), "0123456789");
+	if (n && !in[(*in == '\'':'\'') + n])
+		snprintf(port, sizeof(port), ":%s", in + (*in == '\'':'\''));
+	else if (*in == '\''/'\'')
+		strcpy(path, in);
+	else {
+		agent_ep_split(in, ns, nh, np, npath);
+		if (!*nh)
+			return "aep host is empty";
+		strcpy(host, nh);
+		if (*ns)	/* scheme given: a missing port is the scheme default */
+			strcpy(sch, ns), strcpy(port, np);
+		else if (*np)
+			strcpy(port, np);
+		if (*npath)
+			strcpy(path, npath);
+	}
+
+
+	char nb[sizeof(buf)];
+	n = snprintf(nb, sizeof(nb), "%s%s%s%s", sch, host, port, path);
+	if (n >= (int)sizeof(nb))
+		return "aep endpoint too long";
+	if (strncmp(nb, "http://", 7) && strncmp(nb, "https://", 8))
+		return "aep scheme must be http:// or https://";
+	if (*port && (port[1] == '\''\0'\'' || strspn(port + 1, "0123456789") !=
+			strlen(port + 1) || atoi(port + 1) < 1 || atoi(port + 1) > 65535))
+		return "aep port must be 1-65535";
+	strcpy(buf, nb);
+	endpoint = buf;
+	snprintf(msg, sizeof(msg), "endpoint   %s", endpoint);
+	ex_print(msg, msg_ft)
+	return NULL;
+}
+
 static void *ec_ath(char *loc, char *cmd, char *arg)
 {
 	int cap = -1, max = 0;
@@ -4796,6 +4882,7 @@ static void *ec_acp(char *loc, char *cmd, char *arg);
 static void *ec_ast(char *loc, char *cmd, char *arg);
 static void *ec_acap(char *loc, char *cmd, char *arg);
 static void *ec_agoal(char *loc, char *cmd, char *arg);
+static void *ec_aep(char *loc, char *cmd, char *arg);
 static void *ec_ath(char *loc, char *cmd, char *arg);
 static char *agent_think_retry(void);
 static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -8625,6 +8712,17 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Takes no range. ast shows the goal.\n\n" \
                 "Example: keep the agent working until the tests pass\n" \
                 ":agoal all tests in test.sh pass")
+            spec("aep[endpoint]", "Set the agent endpoint",
+                "Changes the parts of the endpoint url the argument names and keeps\n" \
+                "the rest. A number or :number sets the port; /path sets the path;\n" \
+                "host or host:port sets the host, and the port if given; a url with\n" \
+                "a scheme (http:// or https://) sets scheme, host and port, a\n" \
+                "missing port being the scheme default, and the path if it has one.\n" \
+                "aep alone prints the endpoint. Takes no range. Agents cannot run it.\n\n" \
+                "Example: change only the port\n:aep 8081\n" \
+                "Example: change the host, keeping the port\n:aep 192.168.1.5\n" \
+                "Example: set the whole endpoint\n" \
+                ":aep http://127.0.0.1:8080/v1/chat/completions")
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
@@ -9069,7 +9167,7 @@ static struct {
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -10765,6 +10863,7 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 	{"acheck", ec_acheck},
 	{"acap", ec_acap},
 	{"agoal", ec_agoal},
+	{"aep", ec_aep},
 	{"acp", ec_acp},
 	{"ali", ec_acp},
 	{"auli", ec_acp},
@@ -10812,7 +10911,7 @@ static char *agent_gate(struct excmd *c, char *loc)
 		return "/ in a range is division and needs a number; search "
 			"with >regex> or <regex<";
 	if (c->ec == ec_agent || c->ec == ec_compact || c->ec == ec_fuzz ||
-			c->ec == ec_ath || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
+			c->ec == ec_ath || c->ec == ec_aep || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
 			(c->ec == ec_termexec && c->name[0] == '\''@'\'') ||
 			(c->ec == ec_write && c->name[0] == '\''x'\''))
 		why = "agent execution";
@@ -11973,6 +12072,23 @@ static char *exspec_lines[] = {
 	"Example: keep the agent working until the tests pass",
 	"agoal all tests in test.sh pass",
 	"",
+	"aep[endpoint]",
+	"Set the agent endpoint",
+	"",
+	"Changes the parts of the endpoint url the argument names and keeps",
+	"the rest. A number or :number sets the port; /path sets the path;",
+	"host or host:port sets the host, and the port if given; a url with",
+	"a scheme (http:// or https://) sets scheme, host and port, a",
+	"missing port being the scheme default, and the path if it has one.",
+	"aep alone prints the endpoint. Takes no range. Agents cannot run it.",
+	"",
+	"Example: change only the port",
+	"aep 8081",
+	"Example: change the host, keeping the port",
+	"aep 192.168.1.5",
+	"Example: set the whole endpoint",
+	"aep http://127.0.0.1:8080/v1/chat/completions",
+	"",
 	"ac[regex]",
 	"Set autocomplete filter regex",
 	"",
@@ -12463,45 +12579,46 @@ static struct {
 	{"ath", "Set the agent thinking cap and effort", 950, 976, 0, 0},
 	{"acap", "Raise the agent thinking cap for one reply", 977, 996, 0, 0},
 	{"agoal", "Set or clear the agent goal", 997, 1015, 0, 0},
-	{"ac", "Set autocomplete filter regex", 1016, 1024, 0, 0},
-	{"sc", "Set ex special characters", 1025, 1035, 0, 0},
-	{"sc!", "Set ex special characters", 1036, 1043, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 1044, 1051, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1052, 1055, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1056, 1060, 0, 0},
-	{"ph", "Redefine placeholders", 1061, 1077, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1086, 1124, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1125, 1135, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1136, 1142, 1, 0},
-	{"agr", "Control agent output protection", 1143, 1148, 1, 0},
-	{"ato", "Detach long agent shell commands", 1149, 1156, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1157, 1162, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1163, 1187, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1188, 1195, 1, 0},
-	{"ai", "Indent new lines", 1196, 1199, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1200, 1201, 1, 0},
-	{"ish", "Interactive shell", 1202, 1217, 1, 0},
-	{"grp", "Regex search group", 1218, 1226, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1227, 1230, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1231, 1232, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1232, 1233, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1233, 1234, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1234, 1235, 1, 0},
-	{"led", "Enable all terminal output", 1235, 1236, 1, 0},
-	{"vis", "Control startup flags", 1237, 1248, 1, 0},
-	{"mpt", "Control vi prompts", 1249, 1259, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1260, 1262, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1262, 1264, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1264, 1265, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1265, 1266, 1, 0},
-	{"td", "Current text direction context", 1266, 1272, 1, 0},
-	{"pr", "Print register", 1273, 1289, 1, 0},
-	{"fr", "Find register", 1290, 1302, 1, 0},
-	{"rr", "Record register", 1303, 1316, 1, 0},
-	{"lim", "Line length render limit", 1317, 1332, 1, 0},
-	{"seq", "Control Undo/Redo", 1333, 1345, 1, 0},
-	{"left", "Control horizontal scroll", 1346, 1351, 1, 0},
-	{"err", "Control ex errors", 1352, 1364, 1, 0},
+	{"aep", "Set the agent endpoint", 1016, 1032, 0, 0},
+	{"ac", "Set autocomplete filter regex", 1033, 1041, 0, 0},
+	{"sc", "Set ex special characters", 1042, 1052, 0, 0},
+	{"sc!", "Set ex special characters", 1053, 1060, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1061, 1068, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1069, 1072, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1073, 1077, 0, 0},
+	{"ph", "Redefine placeholders", 1078, 1094, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1103, 1141, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1142, 1152, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1153, 1159, 1, 0},
+	{"agr", "Control agent output protection", 1160, 1165, 1, 0},
+	{"ato", "Detach long agent shell commands", 1166, 1173, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1174, 1179, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1180, 1204, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1205, 1212, 1, 0},
+	{"ai", "Indent new lines", 1213, 1216, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1217, 1218, 1, 0},
+	{"ish", "Interactive shell", 1219, 1234, 1, 0},
+	{"grp", "Regex search group", 1235, 1243, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1244, 1247, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1248, 1249, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1249, 1250, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1250, 1251, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1251, 1252, 1, 0},
+	{"led", "Enable all terminal output", 1252, 1253, 1, 0},
+	{"vis", "Control startup flags", 1254, 1265, 1, 0},
+	{"mpt", "Control vi prompts", 1266, 1276, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1277, 1279, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1279, 1281, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1281, 1282, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1282, 1283, 1, 0},
+	{"td", "Current text direction context", 1283, 1289, 1, 0},
+	{"pr", "Print register", 1290, 1306, 1, 0},
+	{"fr", "Find register", 1307, 1319, 1, 0},
+	{"rr", "Record register", 1320, 1333, 1, 0},
+	{"lim", "Line length render limit", 1334, 1349, 1, 0},
+	{"seq", "Control Undo/Redo", 1350, 1362, 1, 0},
+	{"left", "Control horizontal scroll", 1363, 1368, 1, 0},
+	{"err", "Control ex errors", 1369, 1381, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -13283,10 +13400,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 000000000..c241f3910
+index 00000000..5de52fce
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4730 @@
+@@ -0,0 +1,4816 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -17088,6 +17205,92 @@ index 000000000..c241f3910
 +	return NULL;
 +}
 +
++/* Split url u into scheme with "://", host, ":port" (or empty) and path
++ * (or empty); each output holds 256 bytes. */
++static void agent_ep_split(const char *u, char *sch, char *host,
++		char *port, char *path)
++{
++	const char *s = strstr(u, "://"), *h, *e, *c;
++	*sch = *host = *port = *path = '\0';
++	if (s) {
++		snprintf(sch, 256, "%.*s", (int)(s - u + 3), u);
++		h = s + 3;
++	} else
++		h = u;
++	e = h + strcspn(h, "/");
++	snprintf(path, 256, "%s", e);
++	c = *h == '[' ? memchr(h, ']', e - h) : h;
++	c = c ? memchr(c, ':', e - c) : NULL;
++	if (!c)
++		c = e;
++	snprintf(host, 256, "%.*s", (int)(c - h), h);
++	snprintf(port, 256, "%.*s", (int)(e - c), c);
++}
++
++
++/* aep sets the endpoint, keeping the parts the argument omits:
++ * 8080 or :8080 the port, /path the path, host or host:port the host,
++ * scheme://... the scheme, host and port; aep alone prints it. */
++static void *ec_aep(char *loc, char *cmd, char *arg)
++{
++	static char buf[1024];
++	char sch[256], host[256], port[256], path[256];
++	char ns[256], nh[256], np[256], npath[256], msg[1100];
++	char in[256], *a = arg, *t;
++	int n;
++	if (*loc)
++		return "aep takes no range";
++	while (*a == ' ' || *a == '\t' || *a == '\n')
++		a++;
++	snprintf(in, sizeof(in), "%s", a);
++	for (t = in + strlen(in); t > in && strchr(" \t\n", t[-1]); t--)
++		;
++	*t = '\0';
++	if (!*in) {
++		snprintf(msg, sizeof(msg), "endpoint   %s", endpoint ? endpoint : "");
++		ex_print(msg, msg_ft)
++		return NULL;
++	}
++	if (strlen(a) >= sizeof(in) - 1 || strpbrk(in, " \t\r\n"))
++		return "aep argument must be one url, host, host:port, port or /path";
++	agent_ep_split(endpoint ? endpoint : "", sch, host, port, path);
++	if (!*sch)
++		strcpy(sch, "http://");
++	n = strspn(in + (*in == ':'), "0123456789");
++	if (n && !in[(*in == ':') + n])
++		snprintf(port, sizeof(port), ":%s", in + (*in == ':'));
++	else if (*in == '/')
++		strcpy(path, in);
++	else {
++		agent_ep_split(in, ns, nh, np, npath);
++		if (!*nh)
++			return "aep host is empty";
++		strcpy(host, nh);
++		if (*ns)	/* scheme given: a missing port is the scheme default */
++			strcpy(sch, ns), strcpy(port, np);
++		else if (*np)
++			strcpy(port, np);
++		if (*npath)
++			strcpy(path, npath);
++	}
++
++
++	char nb[sizeof(buf)];
++	n = snprintf(nb, sizeof(nb), "%s%s%s%s", sch, host, port, path);
++	if (n >= (int)sizeof(nb))
++		return "aep endpoint too long";
++	if (strncmp(nb, "http://", 7) && strncmp(nb, "https://", 8))
++		return "aep scheme must be http:// or https://";
++	if (*port && (port[1] == '\0' || strspn(port + 1, "0123456789") !=
++			strlen(port + 1) || atoi(port + 1) < 1 || atoi(port + 1) > 65535))
++		return "aep port must be 1-65535";
++	strcpy(buf, nb);
++	endpoint = buf;
++	snprintf(msg, sizeof(msg), "endpoint   %s", endpoint);
++	ex_print(msg, msg_ft)
++	return NULL;
++}
++
 +static void *ec_ath(char *loc, char *cmd, char *arg)
 +{
 +	int cap = -1, max = 0;
@@ -18019,10 +18222,10 @@ index 000000000..c241f3910
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 000000000..9bfcf306c
+index 00000000..02237685
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,48 @@
+@@ -0,0 +1,49 @@
 +/* agent.c: embedded request loop and editor integration */
 +static int agent_tool;		/* an agent tool call is executing */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
@@ -18058,6 +18261,7 @@ index 000000000..9bfcf306c
 +static void *ec_ast(char *loc, char *cmd, char *arg);
 +static void *ec_acap(char *loc, char *cmd, char *arg);
 +static void *ec_agoal(char *loc, char *cmd, char *arg);
++static void *ec_aep(char *loc, char *cmd, char *arg);
 +static void *ec_ath(char *loc, char *cmd, char *arg);
 +static char *agent_think_retry(void);
 +static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -18073,7 +18277,7 @@ index 000000000..9bfcf306c
 +static int agent_boundary(void);
 diff --git a/cJSON.c b/cJSON.c
 new file mode 100644
-index 000000000..6e4fb0dd3
+index 00000000..6e4fb0dd
 --- /dev/null
 +++ b/cJSON.c
 @@ -0,0 +1,3191 @@
@@ -21270,7 +21474,7 @@ index 000000000..6e4fb0dd3
 +}
 diff --git a/cJSON.h b/cJSON.h
 new file mode 100644
-index 000000000..cab5feb42
+index 00000000..cab5feb4
 --- /dev/null
 +++ b/cJSON.h
 @@ -0,0 +1,306 @@
@@ -21581,10 +21785,10 @@ index 000000000..cab5feb42
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c7..de918b888 100755
+index c836c94c..359d834b 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,318 @@ build() {
+@@ -65,6 +65,329 @@ build() {
      }
  }
  
@@ -21800,6 +22004,17 @@ index c836c94c7..de918b888 100755
 +                "Takes no range. ast shows the goal.\n\n" \
 +                "Example: keep the agent working until the tests pass\n" \
 +                ":agoal all tests in test.sh pass")
++            spec("aep[endpoint]", "Set the agent endpoint",
++                "Changes the parts of the endpoint url the argument names and keeps\n" \
++                "the rest. A number or :number sets the port; /path sets the path;\n" \
++                "host or host:port sets the host, and the port if given; a url with\n" \
++                "a scheme (http:// or https://) sets scheme, host and port, a\n" \
++                "missing port being the scheme default, and the path if it has one.\n" \
++                "aep alone prints the endpoint. Takes no range. Agents cannot run it.\n\n" \
++                "Example: change only the port\n:aep 8081\n" \
++                "Example: change the host, keeping the port\n:aep 192.168.1.5\n" \
++                "Example: set the whole endpoint\n" \
++                ":aep http://127.0.0.1:8080/v1/chat/completions")
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
@@ -21903,7 +22118,7 @@ index c836c94c7..de918b888 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +386,7 @@ install() {
+@@ -74,7 +397,7 @@ install() {
  }
  
  print_usage() {
@@ -21912,7 +22127,7 @@ index c836c94c7..de918b888 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +394,9 @@ print_usage() {
+@@ -82,6 +405,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -21923,7 +22138,7 @@ index c836c94c7..de918b888 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c60..96c87bb1b 100644
+index 2888d7c6..97a4aab4 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,276 @@
@@ -22210,12 +22425,12 @@ index 2888d7c60..96c87bb1b 100644
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index d13974a65..47550561a 100644
+index d13974a6..d6a7a730 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -22730,7 +22945,7 @@ index d13974a65..47550561a 100644
  	{"=", ec_num},
  	{"???", ec_while},
  	{"?""?!", ec_while},
-@@ -1760,8 +2040,37 @@ static struct excmd {
+@@ -1760,8 +2040,38 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -22746,6 +22961,7 @@ index d13974a65..47550561a 100644
 +	{"acheck", ec_acheck},
 +	{"acap", ec_acap},
 +	{"agoal", ec_agoal},
++	{"aep", ec_aep},
 +	{"acp", ec_acp},
 +	{"ali", ec_acp},
 +	{"auli", ec_acp},
@@ -22768,7 +22984,7 @@ index d13974a65..47550561a 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1929,6 +2238,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
+@@ -1929,6 +2239,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  	return src;
  }
  
@@ -22799,7 +23015,7 @@ index d13974a65..47550561a 100644
 +		return "/ in a range is division and needs a number; search "
 +			"with >regex> or <regex<";
 +	if (c->ec == ec_agent || c->ec == ec_compact || c->ec == ec_fuzz ||
-+			c->ec == ec_ath || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
++			c->ec == ec_ath || c->ec == ec_aep || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
 +			(c->ec == ec_termexec && c->name[0] == '@') ||
 +			(c->ec == ec_write && c->name[0] == 'x'))
 +		why = "agent execution";
@@ -22837,7 +23053,7 @@ index d13974a65..47550561a 100644
  /* execute a single ex command chain */
  void *ex_exec(const char *ln)
  {
-@@ -1941,8 +2312,20 @@ void *ex_exec(const char *ln)
+@@ -1941,8 +2313,20 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -22859,7 +23075,7 @@ index d13974a65..47550561a 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1961,7 +2344,9 @@ void *ex_exec(const char *ln)
+@@ -1961,7 +2345,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -22872,7 +23088,7 @@ index d13974a65..47550561a 100644
  /* ex main loop */
 diff --git a/exspec.awk b/exspec.awk
 new file mode 100644
-index 000000000..31004ff54
+index 00000000..31004ff5
 --- /dev/null
 +++ b/exspec.awk
 @@ -0,0 +1,87 @@
@@ -22965,10 +23181,10 @@ index 000000000..31004ff54
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 000000000..0ee9364b9
+index 00000000..a74bbd0d
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1548 @@
+@@ -0,0 +1,1566 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -23987,6 +24203,23 @@ index 000000000..0ee9364b9
 +	"Example: keep the agent working until the tests pass",
 +	"agoal all tests in test.sh pass",
 +	"",
++	"aep[endpoint]",
++	"Set the agent endpoint",
++	"",
++	"Changes the parts of the endpoint url the argument names and keeps",
++	"the rest. A number or :number sets the port; /path sets the path;",
++	"host or host:port sets the host, and the port if given; a url with",
++	"a scheme (http:// or https://) sets scheme, host and port, a",
++	"missing port being the scheme default, and the path if it has one.",
++	"aep alone prints the endpoint. Takes no range. Agents cannot run it.",
++	"",
++	"Example: change only the port",
++	"aep 8081",
++	"Example: change the host, keeping the port",
++	"aep 192.168.1.5",
++	"Example: set the whole endpoint",
++	"aep http://127.0.0.1:8080/v1/chat/completions",
++	"",
 +	"ac[regex]",
 +	"Set autocomplete filter regex",
 +	"",
@@ -24477,48 +24710,49 @@ index 000000000..0ee9364b9
 +	{"ath", "Set the agent thinking cap and effort", 950, 976, 0, 0},
 +	{"acap", "Raise the agent thinking cap for one reply", 977, 996, 0, 0},
 +	{"agoal", "Set or clear the agent goal", 997, 1015, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 1016, 1024, 0, 0},
-+	{"sc", "Set ex special characters", 1025, 1035, 0, 0},
-+	{"sc!", "Set ex special characters", 1036, 1043, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 1044, 1051, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1052, 1055, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1056, 1060, 0, 0},
-+	{"ph", "Redefine placeholders", 1061, 1077, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1086, 1124, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1125, 1135, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1136, 1142, 1, 0},
-+	{"agr", "Control agent output protection", 1143, 1148, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1149, 1156, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1157, 1162, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1163, 1187, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1188, 1195, 1, 0},
-+	{"ai", "Indent new lines", 1196, 1199, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1200, 1201, 1, 0},
-+	{"ish", "Interactive shell", 1202, 1217, 1, 0},
-+	{"grp", "Regex search group", 1218, 1226, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1227, 1230, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1231, 1232, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1232, 1233, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1233, 1234, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1234, 1235, 1, 0},
-+	{"led", "Enable all terminal output", 1235, 1236, 1, 0},
-+	{"vis", "Control startup flags", 1237, 1248, 1, 0},
-+	{"mpt", "Control vi prompts", 1249, 1259, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1260, 1262, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1262, 1264, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1264, 1265, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1265, 1266, 1, 0},
-+	{"td", "Current text direction context", 1266, 1272, 1, 0},
-+	{"pr", "Print register", 1273, 1289, 1, 0},
-+	{"fr", "Find register", 1290, 1302, 1, 0},
-+	{"rr", "Record register", 1303, 1316, 1, 0},
-+	{"lim", "Line length render limit", 1317, 1332, 1, 0},
-+	{"seq", "Control Undo/Redo", 1333, 1345, 1, 0},
-+	{"left", "Control horizontal scroll", 1346, 1351, 1, 0},
-+	{"err", "Control ex errors", 1352, 1364, 1, 0},
++	{"aep", "Set the agent endpoint", 1016, 1032, 0, 0},
++	{"ac", "Set autocomplete filter regex", 1033, 1041, 0, 0},
++	{"sc", "Set ex special characters", 1042, 1052, 0, 0},
++	{"sc!", "Set ex special characters", 1053, 1060, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1061, 1068, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1069, 1072, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1073, 1077, 0, 0},
++	{"ph", "Redefine placeholders", 1078, 1094, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1103, 1141, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1142, 1152, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1153, 1159, 1, 0},
++	{"agr", "Control agent output protection", 1160, 1165, 1, 0},
++	{"ato", "Detach long agent shell commands", 1166, 1173, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1174, 1179, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1180, 1204, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1205, 1212, 1, 0},
++	{"ai", "Indent new lines", 1213, 1216, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1217, 1218, 1, 0},
++	{"ish", "Interactive shell", 1219, 1234, 1, 0},
++	{"grp", "Regex search group", 1235, 1243, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1244, 1247, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1248, 1249, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1249, 1250, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1250, 1251, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1251, 1252, 1, 0},
++	{"led", "Enable all terminal output", 1252, 1253, 1, 0},
++	{"vis", "Control startup flags", 1254, 1265, 1, 0},
++	{"mpt", "Control vi prompts", 1266, 1276, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1277, 1279, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1279, 1281, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1281, 1282, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1282, 1283, 1, 0},
++	{"td", "Current text direction context", 1283, 1289, 1, 0},
++	{"pr", "Print register", 1290, 1306, 1, 0},
++	{"fr", "Find register", 1307, 1319, 1, 0},
++	{"rr", "Record register", 1320, 1333, 1, 0},
++	{"lim", "Line length render limit", 1334, 1349, 1, 0},
++	{"seq", "Control Undo/Redo", 1350, 1362, 1, 0},
++	{"left", "Control horizontal scroll", 1363, 1368, 1, 0},
++	{"err", "Control ex errors", 1369, 1381, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
-index 56cb42c63..f62aad734 100644
+index 56cb42c6..f62aad73 100644
 --- a/lbuf.c
 +++ b/lbuf.c
 @@ -227,6 +227,9 @@ void lbuf_edit(struct lbuf *lb, char *buf, int beg, int end, int o1, int o2)
@@ -24548,7 +24782,7 @@ index 56cb42c63..f62aad734 100644
  }
  
 diff --git a/led.c b/led.c
-index 4893a07e5..2641d0ffc 100644
+index 4893a07e..2641d0ff 100644
 --- a/led.c
 +++ b/led.c
 @@ -504,6 +504,8 @@ static int led_line(sbuf *sb, int pre, int ps, char **post, int postn, char **po
@@ -24588,7 +24822,7 @@ index 4893a07e5..2641d0ffc 100644
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
 diff --git a/term.c b/term.c
-index 4e11ec2f9..4668eda91 100644
+index 4e11ec2f..4668eda9 100644
 --- a/term.c
 +++ b/term.c
 @@ -40,6 +40,7 @@ void term_done(void)
@@ -24632,7 +24866,7 @@ index 4e11ec2f9..4668eda91 100644
  	} else if (xish && term_sbuf && !ioctl(term_ufd.fd, TIOCGWINSZ, &win) &&
  			(win.ws_row != xrows || win.ws_col != xcols))
 diff --git a/vi.c b/vi.c
-index b1f9a16f1..53bbabc6c 100644
+index b1f9a16f..53bbabc6 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -13,9 +13,14 @@
@@ -24695,7 +24929,7 @@ index b1f9a16f1..53bbabc6c 100644
  	if (!(xvis & 1))
  		term_init();
 diff --git a/vi.h b/vi.h
-index c23da5950..f1c422d25 100644
+index c23da595..f1c422d2 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -447,6 +447,7 @@ is.sug_pt = -1; \
