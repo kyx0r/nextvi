@@ -2512,8 +2512,8 @@ static void agent_detach(int fd, pid_t pid, int done)
 			break;
 		}
 	}
-	snprintf(msg, sizeof(msg), "detached after %d sec: process group %d "
-		"runs in background%s%s", xato, (int)pid,
+	snprintf(msg, sizeof(msg), "detached after %d sec (ato option): "
+		"process group %d runs in background%s%s", xato, (int)pid,
 		fd >= 0 ? ", later output in " : "", fd >= 0 ? path : "");
 	agent_jobnote(msg);
 }
@@ -3615,6 +3615,8 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	const char *effort = *agent_effort ? agent_effort : "unset";
 	cJSON *m;
 	ex_print("agent status", msg_ft)
+	snprintf(msg, sizeof(msg), "endpoint   %.240s", endpoint ? endpoint : "");
+	ex_print(msg, msg_ft)
 	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 	ex_print(msg, msg_ft)
@@ -3856,10 +3858,10 @@ static void agent_ep_split(const char *u, char *sch, char *host,
 
 /* aep sets the endpoint, keeping the parts the argument omits:
  * 8080 or :8080 the port, /path the path, host or host:port the host,
- * scheme://... the scheme, host and port; aep alone prints it. */
+ * scheme://... the scheme, host and port; aep alone restores the default. */
 static void *ec_aep(char *loc, char *cmd, char *arg)
 {
-	static char buf[1024];
+	static char buf[1024], *def;
 	char sch[256], host[256], port[256], path[256];
 	char ns[256], nh[256], np[256], npath[256], msg[1100];
 	char in[256], *a = arg, *t;
@@ -3872,7 +3874,10 @@ static void *ec_aep(char *loc, char *cmd, char *arg)
 	for (t = in + strlen(in); t > in && strchr(" \t\n", t[-1]); t--)
 		;
 	*t = '\''\0'\'';
+	if (!def)	/* only aep changes endpoint: the first call sees conf.c'\''s */
+		def = endpoint;
 	if (!*in) {
+		endpoint = def;
 		snprintf(msg, sizeof(msg), "endpoint   %s", endpoint ? endpoint : "");
 		ex_print(msg, msg_ft)
 		return NULL;
@@ -8657,12 +8662,12 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "commands count. Takes no range or argument. Exempt from agr. Errors\n" \
                 "on an empty log.")
             spec("ast", "Print agent status and token usage",
-                "Prints the autocompact, thinking and acl settings, notes, activity,\n" \
-                "token usage, context sizes per role, log sizes, limits and the\n" \
-                "message bytes shared with the previous request. Usage is that of\n" \
-                "the last accepted response. Next input is its input count plus new\n" \
-                "JSON bytes / 3, or all JSON bytes / 3 without a count, tools and\n" \
-                "framing included: an estimate, not a tokenizer.")
+                "Prints the endpoint, the autocompact, thinking and acl settings,\n" \
+                "notes, activity, token usage, context sizes per role, log sizes,\n" \
+                "limits and the message bytes shared with the previous request.\n" \
+                "Usage is that of the last accepted response. Next input is its\n" \
+                "input count plus new JSON bytes / 3, or all JSON bytes / 3 without\n" \
+                "a count, tools and framing included: an estimate, not a tokenizer.")
             spec("[budget]ath[effort]", "Set the agent thinking cap and effort",
                 "budget is a token count N or N,M. N caps thinking tokens, sent as\n" \
                 "reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends\n" \
@@ -8718,7 +8723,10 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "host or host:port sets the host, and the port if given; a url with\n" \
                 "a scheme (http:// or https://) sets scheme, host and port, a\n" \
                 "missing port being the scheme default, and the path if it has one.\n" \
-                "aep alone prints the endpoint. Takes no range. Agents cannot run it.\n\n" \
+                "aep alone restores the default endpoint from conf.c. Every aep\n" \
+                "prints the endpoint; ast shows it too. Takes no range. Agents\n" \
+                "cannot run it.\n\n" \
+                "Example: restore the default endpoint\n:aep\n" \
                 "Example: change only the port\n:aep 8081\n" \
                 "Example: change the host, keeping the port\n:aep 192.168.1.5\n" \
                 "Example: set the whole endpoint\n" \
@@ -11999,12 +12007,12 @@ static char *exspec_lines[] = {
 	"ast",
 	"Print agent status and token usage",
 	"",
-	"Prints the autocompact, thinking and acl settings, notes, activity,",
-	"token usage, context sizes per role, log sizes, limits and the",
-	"message bytes shared with the previous request. Usage is that of",
-	"the last accepted response. Next input is its input count plus new",
-	"JSON bytes / 3, or all JSON bytes / 3 without a count, tools and",
-	"framing included: an estimate, not a tokenizer.",
+	"Prints the endpoint, the autocompact, thinking and acl settings,",
+	"notes, activity, token usage, context sizes per role, log sizes,",
+	"limits and the message bytes shared with the previous request.",
+	"Usage is that of the last accepted response. Next input is its",
+	"input count plus new JSON bytes / 3, or all JSON bytes / 3 without",
+	"a count, tools and framing included: an estimate, not a tokenizer.",
 	"",
 	"[budget]ath[effort]",
 	"Set the agent thinking cap and effort",
@@ -12080,8 +12088,12 @@ static char *exspec_lines[] = {
 	"host or host:port sets the host, and the port if given; a url with",
 	"a scheme (http:// or https://) sets scheme, host and port, a",
 	"missing port being the scheme default, and the path if it has one.",
-	"aep alone prints the endpoint. Takes no range. Agents cannot run it.",
+	"aep alone restores the default endpoint from conf.c. Every aep",
+	"prints the endpoint; ast shows it too. Takes no range. Agents",
+	"cannot run it.",
 	"",
+	"Example: restore the default endpoint",
+	"aep",
 	"Example: change only the port",
 	"aep 8081",
 	"Example: change the host, keeping the port",
@@ -12579,46 +12591,46 @@ static struct {
 	{"ath", "Set the agent thinking cap and effort", 950, 976, 0, 0},
 	{"acap", "Raise the agent thinking cap for one reply", 977, 996, 0, 0},
 	{"agoal", "Set or clear the agent goal", 997, 1015, 0, 0},
-	{"aep", "Set the agent endpoint", 1016, 1032, 0, 0},
-	{"ac", "Set autocomplete filter regex", 1033, 1041, 0, 0},
-	{"sc", "Set ex special characters", 1042, 1052, 0, 0},
-	{"sc!", "Set ex special characters", 1053, 1060, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 1061, 1068, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1069, 1072, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1073, 1077, 0, 0},
-	{"ph", "Redefine placeholders", 1078, 1094, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1103, 1141, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1142, 1152, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1153, 1159, 1, 0},
-	{"agr", "Control agent output protection", 1160, 1165, 1, 0},
-	{"ato", "Detach long agent shell commands", 1166, 1173, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1174, 1179, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1180, 1204, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1205, 1212, 1, 0},
-	{"ai", "Indent new lines", 1213, 1216, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1217, 1218, 1, 0},
-	{"ish", "Interactive shell", 1219, 1234, 1, 0},
-	{"grp", "Regex search group", 1235, 1243, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1244, 1247, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1248, 1249, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1249, 1250, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1250, 1251, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1251, 1252, 1, 0},
-	{"led", "Enable all terminal output", 1252, 1253, 1, 0},
-	{"vis", "Control startup flags", 1254, 1265, 1, 0},
-	{"mpt", "Control vi prompts", 1266, 1276, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1277, 1279, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1279, 1281, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1281, 1282, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1282, 1283, 1, 0},
-	{"td", "Current text direction context", 1283, 1289, 1, 0},
-	{"pr", "Print register", 1290, 1306, 1, 0},
-	{"fr", "Find register", 1307, 1319, 1, 0},
-	{"rr", "Record register", 1320, 1333, 1, 0},
-	{"lim", "Line length render limit", 1334, 1349, 1, 0},
-	{"seq", "Control Undo/Redo", 1350, 1362, 1, 0},
-	{"left", "Control horizontal scroll", 1363, 1368, 1, 0},
-	{"err", "Control ex errors", 1369, 1381, 1, 0},
+	{"aep", "Set the agent endpoint", 1016, 1036, 0, 0},
+	{"ac", "Set autocomplete filter regex", 1037, 1045, 0, 0},
+	{"sc", "Set ex special characters", 1046, 1056, 0, 0},
+	{"sc!", "Set ex special characters", 1057, 1064, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1065, 1072, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1073, 1076, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1077, 1081, 0, 0},
+	{"ph", "Redefine placeholders", 1082, 1098, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1107, 1145, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1146, 1156, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1157, 1163, 1, 0},
+	{"agr", "Control agent output protection", 1164, 1169, 1, 0},
+	{"ato", "Detach long agent shell commands", 1170, 1177, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1178, 1183, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1184, 1208, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1209, 1216, 1, 0},
+	{"ai", "Indent new lines", 1217, 1220, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1221, 1222, 1, 0},
+	{"ish", "Interactive shell", 1223, 1238, 1, 0},
+	{"grp", "Regex search group", 1239, 1247, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1248, 1251, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1252, 1253, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1253, 1254, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1254, 1255, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1255, 1256, 1, 0},
+	{"led", "Enable all terminal output", 1256, 1257, 1, 0},
+	{"vis", "Control startup flags", 1258, 1269, 1, 0},
+	{"mpt", "Control vi prompts", 1270, 1280, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1281, 1283, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1283, 1285, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1285, 1286, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1286, 1287, 1, 0},
+	{"td", "Current text direction context", 1287, 1293, 1, 0},
+	{"pr", "Print register", 1294, 1310, 1, 0},
+	{"fr", "Find register", 1311, 1323, 1, 0},
+	{"rr", "Record register", 1324, 1337, 1, 0},
+	{"lim", "Line length render limit", 1338, 1353, 1, 0},
+	{"seq", "Control Undo/Redo", 1354, 1366, 1, 0},
+	{"left", "Control horizontal scroll", 1367, 1372, 1, 0},
+	{"err", "Control ex errors", 1373, 1385, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -13400,10 +13412,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..5de52fce
+index 00000000..caa1e700
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4816 @@
+@@ -0,0 +1,4821 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15886,8 +15898,8 @@ index 00000000..5de52fce
 +			break;
 +		}
 +	}
-+	snprintf(msg, sizeof(msg), "detached after %d sec: process group %d "
-+		"runs in background%s%s", xato, (int)pid,
++	snprintf(msg, sizeof(msg), "detached after %d sec (ato option): "
++		"process group %d runs in background%s%s", xato, (int)pid,
 +		fd >= 0 ? ", later output in " : "", fd >= 0 ? path : "");
 +	agent_jobnote(msg);
 +}
@@ -16989,6 +17001,8 @@ index 00000000..5de52fce
 +	const char *effort = *agent_effort ? agent_effort : "unset";
 +	cJSON *m;
 +	ex_print("agent status", msg_ft)
++	snprintf(msg, sizeof(msg), "endpoint   %.240s", endpoint ? endpoint : "");
++	ex_print(msg, msg_ft)
 +	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 +		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
 +	ex_print(msg, msg_ft)
@@ -17230,10 +17244,10 @@ index 00000000..5de52fce
 +
 +/* aep sets the endpoint, keeping the parts the argument omits:
 + * 8080 or :8080 the port, /path the path, host or host:port the host,
-+ * scheme://... the scheme, host and port; aep alone prints it. */
++ * scheme://... the scheme, host and port; aep alone restores the default. */
 +static void *ec_aep(char *loc, char *cmd, char *arg)
 +{
-+	static char buf[1024];
++	static char buf[1024], *def;
 +	char sch[256], host[256], port[256], path[256];
 +	char ns[256], nh[256], np[256], npath[256], msg[1100];
 +	char in[256], *a = arg, *t;
@@ -17246,7 +17260,10 @@ index 00000000..5de52fce
 +	for (t = in + strlen(in); t > in && strchr(" \t\n", t[-1]); t--)
 +		;
 +	*t = '\0';
++	if (!def)	/* only aep changes endpoint: the first call sees conf.c's */
++		def = endpoint;
 +	if (!*in) {
++		endpoint = def;
 +		snprintf(msg, sizeof(msg), "endpoint   %s", endpoint ? endpoint : "");
 +		ex_print(msg, msg_ft)
 +		return NULL;
@@ -21785,10 +21802,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..359d834b 100755
+index c836c94c..00ede263 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,329 @@ build() {
+@@ -65,6 +65,332 @@ build() {
      }
  }
  
@@ -21949,12 +21966,12 @@ index c836c94c..359d834b 100755
 +                "commands count. Takes no range or argument. Exempt from agr. Errors\n" \
 +                "on an empty log.")
 +            spec("ast", "Print agent status and token usage",
-+                "Prints the autocompact, thinking and acl settings, notes, activity,\n" \
-+                "token usage, context sizes per role, log sizes, limits and the\n" \
-+                "message bytes shared with the previous request. Usage is that of\n" \
-+                "the last accepted response. Next input is its input count plus new\n" \
-+                "JSON bytes / 3, or all JSON bytes / 3 without a count, tools and\n" \
-+                "framing included: an estimate, not a tokenizer.")
++                "Prints the endpoint, the autocompact, thinking and acl settings,\n" \
++                "notes, activity, token usage, context sizes per role, log sizes,\n" \
++                "limits and the message bytes shared with the previous request.\n" \
++                "Usage is that of the last accepted response. Next input is its\n" \
++                "input count plus new JSON bytes / 3, or all JSON bytes / 3 without\n" \
++                "a count, tools and framing included: an estimate, not a tokenizer.")
 +            spec("[budget]ath[effort]", "Set the agent thinking cap and effort",
 +                "budget is a token count N or N,M. N caps thinking tokens, sent as\n" \
 +                "reasoning_budget_tokens (llama.cpp --reasoning-budget); 0 ends\n" \
@@ -22010,7 +22027,10 @@ index c836c94c..359d834b 100755
 +                "host or host:port sets the host, and the port if given; a url with\n" \
 +                "a scheme (http:// or https://) sets scheme, host and port, a\n" \
 +                "missing port being the scheme default, and the path if it has one.\n" \
-+                "aep alone prints the endpoint. Takes no range. Agents cannot run it.\n\n" \
++                "aep alone restores the default endpoint from conf.c. Every aep\n" \
++                "prints the endpoint; ast shows it too. Takes no range. Agents\n" \
++                "cannot run it.\n\n" \
++                "Example: restore the default endpoint\n:aep\n" \
 +                "Example: change only the port\n:aep 8081\n" \
 +                "Example: change the host, keeping the port\n:aep 192.168.1.5\n" \
 +                "Example: set the whole endpoint\n" \
@@ -22118,7 +22138,7 @@ index c836c94c..359d834b 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +397,7 @@ install() {
+@@ -74,7 +400,7 @@ install() {
  }
  
  print_usage() {
@@ -22127,7 +22147,7 @@ index c836c94c..359d834b 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +405,9 @@ print_usage() {
+@@ -82,6 +408,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -23181,10 +23201,10 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..a74bbd0d
+index 00000000..4fb77466
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1566 @@
+@@ -0,0 +1,1570 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -24130,12 +24150,12 @@ index 00000000..a74bbd0d
 +	"ast",
 +	"Print agent status and token usage",
 +	"",
-+	"Prints the autocompact, thinking and acl settings, notes, activity,",
-+	"token usage, context sizes per role, log sizes, limits and the",
-+	"message bytes shared with the previous request. Usage is that of",
-+	"the last accepted response. Next input is its input count plus new",
-+	"JSON bytes / 3, or all JSON bytes / 3 without a count, tools and",
-+	"framing included: an estimate, not a tokenizer.",
++	"Prints the endpoint, the autocompact, thinking and acl settings,",
++	"notes, activity, token usage, context sizes per role, log sizes,",
++	"limits and the message bytes shared with the previous request.",
++	"Usage is that of the last accepted response. Next input is its",
++	"input count plus new JSON bytes / 3, or all JSON bytes / 3 without",
++	"a count, tools and framing included: an estimate, not a tokenizer.",
 +	"",
 +	"[budget]ath[effort]",
 +	"Set the agent thinking cap and effort",
@@ -24211,8 +24231,12 @@ index 00000000..a74bbd0d
 +	"host or host:port sets the host, and the port if given; a url with",
 +	"a scheme (http:// or https://) sets scheme, host and port, a",
 +	"missing port being the scheme default, and the path if it has one.",
-+	"aep alone prints the endpoint. Takes no range. Agents cannot run it.",
++	"aep alone restores the default endpoint from conf.c. Every aep",
++	"prints the endpoint; ast shows it too. Takes no range. Agents",
++	"cannot run it.",
 +	"",
++	"Example: restore the default endpoint",
++	"aep",
 +	"Example: change only the port",
 +	"aep 8081",
 +	"Example: change the host, keeping the port",
@@ -24710,46 +24734,46 @@ index 00000000..a74bbd0d
 +	{"ath", "Set the agent thinking cap and effort", 950, 976, 0, 0},
 +	{"acap", "Raise the agent thinking cap for one reply", 977, 996, 0, 0},
 +	{"agoal", "Set or clear the agent goal", 997, 1015, 0, 0},
-+	{"aep", "Set the agent endpoint", 1016, 1032, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 1033, 1041, 0, 0},
-+	{"sc", "Set ex special characters", 1042, 1052, 0, 0},
-+	{"sc!", "Set ex special characters", 1053, 1060, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 1061, 1068, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1069, 1072, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1073, 1077, 0, 0},
-+	{"ph", "Redefine placeholders", 1078, 1094, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1103, 1141, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1142, 1152, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1153, 1159, 1, 0},
-+	{"agr", "Control agent output protection", 1160, 1165, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1166, 1173, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1174, 1179, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1180, 1204, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1205, 1212, 1, 0},
-+	{"ai", "Indent new lines", 1213, 1216, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1217, 1218, 1, 0},
-+	{"ish", "Interactive shell", 1219, 1234, 1, 0},
-+	{"grp", "Regex search group", 1235, 1243, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1244, 1247, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1248, 1249, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1249, 1250, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1250, 1251, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1251, 1252, 1, 0},
-+	{"led", "Enable all terminal output", 1252, 1253, 1, 0},
-+	{"vis", "Control startup flags", 1254, 1265, 1, 0},
-+	{"mpt", "Control vi prompts", 1266, 1276, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1277, 1279, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1279, 1281, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1281, 1282, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1282, 1283, 1, 0},
-+	{"td", "Current text direction context", 1283, 1289, 1, 0},
-+	{"pr", "Print register", 1290, 1306, 1, 0},
-+	{"fr", "Find register", 1307, 1319, 1, 0},
-+	{"rr", "Record register", 1320, 1333, 1, 0},
-+	{"lim", "Line length render limit", 1334, 1349, 1, 0},
-+	{"seq", "Control Undo/Redo", 1350, 1362, 1, 0},
-+	{"left", "Control horizontal scroll", 1363, 1368, 1, 0},
-+	{"err", "Control ex errors", 1369, 1381, 1, 0},
++	{"aep", "Set the agent endpoint", 1016, 1036, 0, 0},
++	{"ac", "Set autocomplete filter regex", 1037, 1045, 0, 0},
++	{"sc", "Set ex special characters", 1046, 1056, 0, 0},
++	{"sc!", "Set ex special characters", 1057, 1064, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1065, 1072, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1073, 1076, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1077, 1081, 0, 0},
++	{"ph", "Redefine placeholders", 1082, 1098, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1107, 1145, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1146, 1156, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1157, 1163, 1, 0},
++	{"agr", "Control agent output protection", 1164, 1169, 1, 0},
++	{"ato", "Detach long agent shell commands", 1170, 1177, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1178, 1183, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1184, 1208, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1209, 1216, 1, 0},
++	{"ai", "Indent new lines", 1217, 1220, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1221, 1222, 1, 0},
++	{"ish", "Interactive shell", 1223, 1238, 1, 0},
++	{"grp", "Regex search group", 1239, 1247, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1248, 1251, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1252, 1253, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1253, 1254, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1254, 1255, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1255, 1256, 1, 0},
++	{"led", "Enable all terminal output", 1256, 1257, 1, 0},
++	{"vis", "Control startup flags", 1258, 1269, 1, 0},
++	{"mpt", "Control vi prompts", 1270, 1280, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1281, 1283, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1283, 1285, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1285, 1286, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1286, 1287, 1, 0},
++	{"td", "Current text direction context", 1287, 1293, 1, 0},
++	{"pr", "Print register", 1294, 1310, 1, 0},
++	{"fr", "Find register", 1311, 1323, 1, 0},
++	{"rr", "Record register", 1324, 1337, 1, 0},
++	{"lim", "Line length render limit", 1338, 1353, 1, 0},
++	{"seq", "Control Undo/Redo", 1354, 1366, 1, 0},
++	{"left", "Control horizontal scroll", 1367, 1372, 1, 0},
++	{"err", "Control ex errors", 1373, 1385, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..f62aad73 100644
