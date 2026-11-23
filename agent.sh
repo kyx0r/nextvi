@@ -1267,6 +1267,30 @@ static struct agent_span *agent_span_turn(struct agent_span *spans, int cnt,
 	return NULL;
 }
 
+/* Whether entry s takes a rating: every turn, and a USER entry the agent
+ * chooses to rate. */
+static int agent_ratable(struct agent_span *s)
+{
+	return s->role == AE_TURN || s->role == AE_USER;
+}
+
+/* Whether a listing shows the note of rated entry s; a text reply already
+ * says its sentence. */
+static int agent_noted(struct agent_span *s)
+{
+	return s->calls || s->role == AE_USER;
+}
+
+/* Entry n among spans if it takes a rating, or NULL. */
+static struct agent_span *agent_span_rated(struct agent_span *spans, int cnt,
+		unsigned long n)
+{
+	for (int k = 0; k < cnt; k++)
+		if (agent_ratable(spans + k) && spans[k].n == n)
+			return spans + k;
+	return NULL;
+}
+
 /* Before the rating of entry n is replaced, move its text to the first
  * rating that names n; the rest name that one. Ratings of spans with sel 1
  * are skipped: they are replaced too. References point to earlier entries,
@@ -1287,7 +1311,7 @@ static void agent_note_rehome(unsigned long n, struct agent_span *spans,
 	for (int i = 0; i < lbuf_len(lb); i++) {
 		if (!(s = agent_note_line(lb->ln[i], &m, &rate)) ||
 				agent_note_ref(s) != n ||
-				((sp = agent_span_turn(spans, cnt, m)) && sel[sp - spans] == 1))
+				((sp = agent_span_rated(spans, cnt, m)) && sel[sp - spans] == 1))
 			continue;
 		agent_note_set(m, rate, to ? same : old);
 		if (!to) {
@@ -1298,13 +1322,13 @@ static void agent_note_rehome(unsigned long n, struct agent_span *spans,
 	free(old);
 }
 
-/* Count turns with commands and no rating; buf lists the first few. */
+/* Count turns with no rating; buf lists the first few. */
 static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
 {
 	int n = 0, len = 0, r, row;
 	*buf = '\''\0'\'';
 	for (int k = 0; k < cnt; k++) {
-		if (spans[k].role != AE_TURN || !spans[k].calls ||
+		if (spans[k].role != AE_TURN ||
 				agent_note(spans[k].n, &r, &row))
 			continue;
 		if (n < 8 && len < size)
@@ -1415,12 +1439,12 @@ static const char agent_rating_scale[] =
 	"2 useful, informs the remaining work\n"
 	"3 essential, a decision, finding or state the task depends on\n";
 
-/* Whether b-6 line l rates a turn no longer among spans; sets its number. */
+/* Whether b-6 line l rates an entry no longer among spans; sets its number. */
 static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
 		unsigned long *n)
 {
 	int r;
-	return agent_note_line(l, n, &r) && !agent_span_turn(spans, cnt, *n);
+	return agent_note_line(l, n, &r) && !agent_span_rated(spans, cnt, *n);
 }
 
 /* From b-6 line *row, list the notes of trimmed turns numbered up to upto
@@ -1472,31 +1496,29 @@ static int agent_spans_reasoned(struct agent_span *spans, int cnt)
 	return 0;
 }
 
-/* "ROLE N ~tokens"; a turn with several parts shows them instead, as
- * reasoning+text+commands+results=tokens, reasoning only when reasoned. */
+/* "ROLE N reasoning+text+commands+results=tokens", reasoning only when
+ * reasoned; an entry other than a turn is all text. */
 static void agent_span_head(char *ln, int size, struct agent_span *s, int reasoned)
 {
 	size_t t[4], sum = 0;
-	int terms = 0, len = snprintf(ln, size, "%s %lu ", agent_span_role(s), s->n);
-	for (int i = 0; i < 4; i++) {
-		t[i] = (s->part[i] + 2) / 3;
+	int len = snprintf(ln, size, "%s %lu ", agent_span_role(s), s->n);
+	for (int i = 0; i < 4; i++)
+		t[i] = s->role == AE_TURN ? (s->part[i] + 2) / 3 : 0;
+	if (s->role != AE_TURN)
+		t[AP_ASSISTANT] = agent_span_tokens(s);
+	for (int i = 0; i < 4; i++)
 		sum += t[i];
-		terms += t[i] > 0;
-	}
-	if (s->role != AE_TURN || terms < 2) {
-		snprintf(ln + len, size - len, "~%.0f", agent_span_tokens(s));
-		return;
-	}
 	if (reasoned)
 		len += snprintf(ln + len, size - len, "%zu+", t[AP_REASONING]);
 	snprintf(ln + len, size - len, "%zu+%zu+%zu=%zu", t[AP_ASSISTANT],
 		t[AP_EX], t[AP_RESULT], sum);
 }
 
-/* One line per b-4 entry: agent_span_head, " line N" with lines, then
- * the rating for turns and the note for those with commands; with trimmed, the
- * notes of trimmed turns in number order among them. Then the five largest
- * entries of ~50 tokens or more. Without all, NOTICE entries are not listed
+/* One line per b-4 entry: agent_span_head, " N" (b-4 line) with lines, then
+ * the rating or ? of turns and USER entries, with the note unless a text
+ * reply; with trimmed, the notes of trimmed entries in number order among
+ * them. Then the five largest entries of ~50 tokens or more. Without all,
+ * NOTICE entries are not listed
  * and, outside a checkpoint, where the agent cannot note them, USER entries
  * are not among the largest. */
 static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
@@ -1515,17 +1537,17 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
 		sbuf_str(sb, ln)
 		if (lines) {
-			snprintf(ln, sizeof(ln), " line %d", spans[k].beg + 1);
+			snprintf(ln, sizeof(ln), " %d", spans[k].beg + 1);
 			sbuf_str(sb, ln)
 		}
-		if (spans[k].role == AE_TURN && (note = agent_note(spans[k].n, &r, &row))) {
+		if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
 			snprintf(ln, sizeof(ln), " %d", r);
 			sbuf_str(sb, ln)
 			/* A sentence whose own entry is removed, or listed without
 			 * its note, shows on the first entry that names it, unless
 			 * listed among trimmed notes; the rest name that entry. */
-			if (spans[k].calls && (ref = agent_note_ref(note)) &&
-					((t = agent_span_turn(spans, cnt, ref)) ? !t->calls :
+			if (agent_noted(spans + k) && (ref = agent_note_ref(note)) &&
+					((t = agent_span_rated(spans, cnt, ref)) ? !agent_noted(t) :
 					!(trimmed && agent_note(ref, &r, &row)))) {
 				int j = 0;
 				while (j < nmoved && moved[2*j] != ref)
@@ -1543,11 +1565,11 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 				}
 			}
 			/* A note or a text reply already says its sentence. */
-			if (spans[k].calls) {
+			if (agent_noted(spans + k)) {
 				sbuf_chr(sb, '\'' '\'')
 				sbuf_mem(sb, note, (int)strcspn(note, "\n"))
 			}
-		} else if (spans[k].role == AE_TURN && spans[k].calls && unrated)
+		} else if (agent_ratable(spans + k) && unrated)
 			sbuf_str(sb, " ?")
 		sbuf_chr(sb, '\''\n'\'')
 		/* Insert into the five largest, kept in descending order. */
@@ -1614,7 +1636,7 @@ static void agent_cp_unrated(sbuf *sb)
 	int reasoned = agent_spans_reasoned(spans, cnt);
 	char ln[256];
 	for (int k = 0; k < cnt; k++) {
-		if (spans[k].role != AE_TURN || !spans[k].calls ||
+		if (spans[k].role != AE_TURN ||
 				agent_note(spans[k].n, &r, &row))
 			continue;
 		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
@@ -4444,7 +4466,7 @@ static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
 }
 
 /* Rate in b-6 the TURN entries from N through M, or those of a list N,M,K
- * of three or more. */
+ * of three or more, or a USER entry N alone. */
 static void *ec_arate(char *loc, char *cmd, char *arg)
 {
 	struct agent_span *spans;
@@ -4460,6 +4482,9 @@ static void *ec_arate(char *loc, char *cmd, char *arg)
 	else if (!(ret = agent_entryrange(loc, spans, cnt, &first, &last)))
 		for (int k = first; k <= last; k++)
 			sel[k] = spans[k].role == AE_TURN ? 1 : 2;
+	/* A USER entry is rated only when named alone; ranges rate turns. */
+	if (!ret && !list && first == last && spans[first].role == AE_USER)
+		sel[first] = 1;
 	if (ret)
 		goto done;
 	while (*text == '\'' '\'' || *text == '\''\t'\'')
@@ -4504,10 +4529,12 @@ static void *ec_arate(char *loc, char *cmd, char *arg)
 		snprintf(msg, sizeof(msg), "rated %d turns TURN %lu-%lu %c",
 			rated, lo, hi, *arg);
 	else
-		snprintf(msg, sizeof(msg), "rated TURN %lu %c", lo, *arg);
+		snprintf(msg, sizeof(msg), "rated %s %lu %c",
+			agent_span_role(agent_span_rated(spans, cnt, lo)), lo, *arg);
 	ex_print(msg, msg_ft)
 	/* A checkpoint drops dead weight from the log at once. */
-	if (*arg == '\''0'\'' && agent_checkpointing == 1)
+	if (*arg == '\''0'\'' && agent_checkpointing == 1 &&
+			agent_span_rated(spans, cnt, lo)->role == AE_TURN)
 		agent_trim_turns(spans, cnt, sel, list ? nums : NULL);
 done:
 	free(sel);
@@ -4727,11 +4754,10 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 		sbuf_str(task, ln)
 	} else if (cnt || trimmed) {
 		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n%s",
+			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n",
 			total, trimmed ? ",\nin order with the notes of turns already "
 			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
-			browse ? " line" : "", rated ? " rating note" : "",
-			trimmed ? "TURN number trimmed rating note\n" : "");
+			browse ? " line" : "", rated ? " rating note" : "");
 		sbuf_str(task, ln)
 		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
 			reasoned);
@@ -4750,7 +4776,7 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 			if (agent_note_line(notes->ln[i], &n, &r))
 				seen |= 1 << r;
 		for (int k = 0; k < cnt && !unrated; k++)
-			unrated = spans[k].role == AE_TURN && spans[k].calls &&
+			unrated = agent_ratable(spans + k) &&
 				!agent_note(spans[k].n, &r, &row);
 		sbuf_str(task, "Ratings:\n")
 		if (unrated)
@@ -13559,10 +13585,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..baeb1405
+index 00000000..e0a93317
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4947 @@
+@@ -0,0 +1,4973 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -14800,6 +14826,30 @@ index 00000000..baeb1405
 +	return NULL;
 +}
 +
++/* Whether entry s takes a rating: every turn, and a USER entry the agent
++ * chooses to rate. */
++static int agent_ratable(struct agent_span *s)
++{
++	return s->role == AE_TURN || s->role == AE_USER;
++}
++
++/* Whether a listing shows the note of rated entry s; a text reply already
++ * says its sentence. */
++static int agent_noted(struct agent_span *s)
++{
++	return s->calls || s->role == AE_USER;
++}
++
++/* Entry n among spans if it takes a rating, or NULL. */
++static struct agent_span *agent_span_rated(struct agent_span *spans, int cnt,
++		unsigned long n)
++{
++	for (int k = 0; k < cnt; k++)
++		if (agent_ratable(spans + k) && spans[k].n == n)
++			return spans + k;
++	return NULL;
++}
++
 +/* Before the rating of entry n is replaced, move its text to the first
 + * rating that names n; the rest name that one. Ratings of spans with sel 1
 + * are skipped: they are replaced too. References point to earlier entries,
@@ -14820,7 +14870,7 @@ index 00000000..baeb1405
 +	for (int i = 0; i < lbuf_len(lb); i++) {
 +		if (!(s = agent_note_line(lb->ln[i], &m, &rate)) ||
 +				agent_note_ref(s) != n ||
-+				((sp = agent_span_turn(spans, cnt, m)) && sel[sp - spans] == 1))
++				((sp = agent_span_rated(spans, cnt, m)) && sel[sp - spans] == 1))
 +			continue;
 +		agent_note_set(m, rate, to ? same : old);
 +		if (!to) {
@@ -14831,13 +14881,13 @@ index 00000000..baeb1405
 +	free(old);
 +}
 +
-+/* Count turns with commands and no rating; buf lists the first few. */
++/* Count turns with no rating; buf lists the first few. */
 +static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
 +{
 +	int n = 0, len = 0, r, row;
 +	*buf = '\0';
 +	for (int k = 0; k < cnt; k++) {
-+		if (spans[k].role != AE_TURN || !spans[k].calls ||
++		if (spans[k].role != AE_TURN ||
 +				agent_note(spans[k].n, &r, &row))
 +			continue;
 +		if (n < 8 && len < size)
@@ -14948,12 +14998,12 @@ index 00000000..baeb1405
 +	"2 useful, informs the remaining work\n"
 +	"3 essential, a decision, finding or state the task depends on\n";
 +
-+/* Whether b-6 line l rates a turn no longer among spans; sets its number. */
++/* Whether b-6 line l rates an entry no longer among spans; sets its number. */
 +static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
 +		unsigned long *n)
 +{
 +	int r;
-+	return agent_note_line(l, n, &r) && !agent_span_turn(spans, cnt, *n);
++	return agent_note_line(l, n, &r) && !agent_span_rated(spans, cnt, *n);
 +}
 +
 +/* From b-6 line *row, list the notes of trimmed turns numbered up to upto
@@ -15005,31 +15055,29 @@ index 00000000..baeb1405
 +	return 0;
 +}
 +
-+/* "ROLE N ~tokens"; a turn with several parts shows them instead, as
-+ * reasoning+text+commands+results=tokens, reasoning only when reasoned. */
++/* "ROLE N reasoning+text+commands+results=tokens", reasoning only when
++ * reasoned; an entry other than a turn is all text. */
 +static void agent_span_head(char *ln, int size, struct agent_span *s, int reasoned)
 +{
 +	size_t t[4], sum = 0;
-+	int terms = 0, len = snprintf(ln, size, "%s %lu ", agent_span_role(s), s->n);
-+	for (int i = 0; i < 4; i++) {
-+		t[i] = (s->part[i] + 2) / 3;
++	int len = snprintf(ln, size, "%s %lu ", agent_span_role(s), s->n);
++	for (int i = 0; i < 4; i++)
++		t[i] = s->role == AE_TURN ? (s->part[i] + 2) / 3 : 0;
++	if (s->role != AE_TURN)
++		t[AP_ASSISTANT] = agent_span_tokens(s);
++	for (int i = 0; i < 4; i++)
 +		sum += t[i];
-+		terms += t[i] > 0;
-+	}
-+	if (s->role != AE_TURN || terms < 2) {
-+		snprintf(ln + len, size - len, "~%.0f", agent_span_tokens(s));
-+		return;
-+	}
 +	if (reasoned)
 +		len += snprintf(ln + len, size - len, "%zu+", t[AP_REASONING]);
 +	snprintf(ln + len, size - len, "%zu+%zu+%zu=%zu", t[AP_ASSISTANT],
 +		t[AP_EX], t[AP_RESULT], sum);
 +}
 +
-+/* One line per b-4 entry: agent_span_head, " line N" with lines, then
-+ * the rating for turns and the note for those with commands; with trimmed, the
-+ * notes of trimmed turns in number order among them. Then the five largest
-+ * entries of ~50 tokens or more. Without all, NOTICE entries are not listed
++/* One line per b-4 entry: agent_span_head, " N" (b-4 line) with lines, then
++ * the rating or ? of turns and USER entries, with the note unless a text
++ * reply; with trimmed, the notes of trimmed entries in number order among
++ * them. Then the five largest entries of ~50 tokens or more. Without all,
++ * NOTICE entries are not listed
 + * and, outside a checkpoint, where the agent cannot note them, USER entries
 + * are not among the largest. */
 +static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
@@ -15048,17 +15096,17 @@ index 00000000..baeb1405
 +		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
 +		sbuf_str(sb, ln)
 +		if (lines) {
-+			snprintf(ln, sizeof(ln), " line %d", spans[k].beg + 1);
++			snprintf(ln, sizeof(ln), " %d", spans[k].beg + 1);
 +			sbuf_str(sb, ln)
 +		}
-+		if (spans[k].role == AE_TURN && (note = agent_note(spans[k].n, &r, &row))) {
++		if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
 +			snprintf(ln, sizeof(ln), " %d", r);
 +			sbuf_str(sb, ln)
 +			/* A sentence whose own entry is removed, or listed without
 +			 * its note, shows on the first entry that names it, unless
 +			 * listed among trimmed notes; the rest name that entry. */
-+			if (spans[k].calls && (ref = agent_note_ref(note)) &&
-+					((t = agent_span_turn(spans, cnt, ref)) ? !t->calls :
++			if (agent_noted(spans + k) && (ref = agent_note_ref(note)) &&
++					((t = agent_span_rated(spans, cnt, ref)) ? !agent_noted(t) :
 +					!(trimmed && agent_note(ref, &r, &row)))) {
 +				int j = 0;
 +				while (j < nmoved && moved[2*j] != ref)
@@ -15076,11 +15124,11 @@ index 00000000..baeb1405
 +				}
 +			}
 +			/* A note or a text reply already says its sentence. */
-+			if (spans[k].calls) {
++			if (agent_noted(spans + k)) {
 +				sbuf_chr(sb, ' ')
 +				sbuf_mem(sb, note, (int)strcspn(note, "\n"))
 +			}
-+		} else if (spans[k].role == AE_TURN && spans[k].calls && unrated)
++		} else if (agent_ratable(spans + k) && unrated)
 +			sbuf_str(sb, " ?")
 +		sbuf_chr(sb, '\n')
 +		/* Insert into the five largest, kept in descending order. */
@@ -15147,7 +15195,7 @@ index 00000000..baeb1405
 +	int reasoned = agent_spans_reasoned(spans, cnt);
 +	char ln[256];
 +	for (int k = 0; k < cnt; k++) {
-+		if (spans[k].role != AE_TURN || !spans[k].calls ||
++		if (spans[k].role != AE_TURN ||
 +				agent_note(spans[k].n, &r, &row))
 +			continue;
 +		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
@@ -17977,7 +18025,7 @@ index 00000000..baeb1405
 +}
 +
 +/* Rate in b-6 the TURN entries from N through M, or those of a list N,M,K
-+ * of three or more. */
++ * of three or more, or a USER entry N alone. */
 +static void *ec_arate(char *loc, char *cmd, char *arg)
 +{
 +	struct agent_span *spans;
@@ -17993,6 +18041,9 @@ index 00000000..baeb1405
 +	else if (!(ret = agent_entryrange(loc, spans, cnt, &first, &last)))
 +		for (int k = first; k <= last; k++)
 +			sel[k] = spans[k].role == AE_TURN ? 1 : 2;
++	/* A USER entry is rated only when named alone; ranges rate turns. */
++	if (!ret && !list && first == last && spans[first].role == AE_USER)
++		sel[first] = 1;
 +	if (ret)
 +		goto done;
 +	while (*text == ' ' || *text == '\t')
@@ -18037,10 +18088,12 @@ index 00000000..baeb1405
 +		snprintf(msg, sizeof(msg), "rated %d turns TURN %lu-%lu %c",
 +			rated, lo, hi, *arg);
 +	else
-+		snprintf(msg, sizeof(msg), "rated TURN %lu %c", lo, *arg);
++		snprintf(msg, sizeof(msg), "rated %s %lu %c",
++			agent_span_role(agent_span_rated(spans, cnt, lo)), lo, *arg);
 +	ex_print(msg, msg_ft)
 +	/* A checkpoint drops dead weight from the log at once. */
-+	if (*arg == '0' && agent_checkpointing == 1)
++	if (*arg == '0' && agent_checkpointing == 1 &&
++			agent_span_rated(spans, cnt, lo)->role == AE_TURN)
 +		agent_trim_turns(spans, cnt, sel, list ? nums : NULL);
 +done:
 +	free(sel);
@@ -18260,11 +18313,10 @@ index 00000000..baeb1405
 +		sbuf_str(task, ln)
 +	} else if (cnt || trimmed) {
 +		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-+			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n%s",
++			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n",
 +			total, trimmed ? ",\nin order with the notes of turns already "
 +			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
-+			browse ? " line" : "", rated ? " rating note" : "",
-+			trimmed ? "TURN number trimmed rating note\n" : "");
++			browse ? " line" : "", rated ? " rating note" : "");
 +		sbuf_str(task, ln)
 +		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
 +			reasoned);
@@ -18283,7 +18335,7 @@ index 00000000..baeb1405
 +			if (agent_note_line(notes->ln[i], &n, &r))
 +				seen |= 1 << r;
 +		for (int k = 0; k < cnt && !unrated; k++)
-+			unrated = spans[k].role == AE_TURN && spans[k].calls &&
++			unrated = agent_ratable(spans + k) &&
 +				!agent_note(spans[k].n, &r, &row);
 +		sbuf_str(task, "Ratings:\n")
 +		if (unrated)
