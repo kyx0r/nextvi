@@ -9035,20 +9035,17 @@ static char exspec_agent_p[] =
 	"[range]p[str]\n"
 	"Print line(s) from a buffer\n"
 	"\n"
-	"No range prints a line based on the value of left ex option.\n"
-	"Argument is printed.\n"
+	"If given, [str] is printed/echoed instead of the buffer lines.\n"
 	"\n"
-	"Example: utilize character offset ranges\n"
-	"1,10;5;5p\n"
-	"Example: interleaved character offset ranges\n"
-	"1;5,10;5p\n"
-	"Example: print current line from offset 5 to 10\n"
+	"Example: print lines 1,5\n"
+	"1,5p\n"
+	"Example: print current line from character offset 5 to 10\n"
 	".;5;10p\n"
 	"\n"
 	"Cursor position is stateful; left at the range position it landed on.\n"
-	"Keep reads small and within buffer bounds.\n"
 	"Check the position with = and line count with $= before printing ranges.\n"
-	"Use character ranges for long lines; stop when you have enough context.";
+	"Keep reads small and within buffer bounds.\n"
+	"Use character ranges for long lines.";
 
 static char exspec_agent_g[] =
 	"[vrange]g[<Delim>][regex][<Delim>][cmd]\n"
@@ -22299,10 +22296,10 @@ index c836c94c..91b2002d 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..ef062da0 100644
+index 2888d7c6..67de562a 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,266 @@
+@@ -1,5 +1,263 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
@@ -22373,20 +22370,17 @@ index 2888d7c6..ef062da0 100644
 +	"[range]p[str]\n"
 +	"Print line(s) from a buffer\n"
 +	"\n"
-+	"No range prints a line based on the value of left ex option.\n"
-+	"Argument is printed.\n"
++	"If given, [str] is printed/echoed instead of the buffer lines.\n"
 +	"\n"
-+	"Example: utilize character offset ranges\n"
-+	"1,10;5;5p\n"
-+	"Example: interleaved character offset ranges\n"
-+	"1;5,10;5p\n"
-+	"Example: print current line from offset 5 to 10\n"
++	"Example: print lines 1,5\n"
++	"1,5p\n"
++	"Example: print current line from character offset 5 to 10\n"
 +	".;5;10p\n"
 +	"\n"
 +	"Cursor position is stateful; left at the range position it landed on.\n"
-+	"Keep reads small and within buffer bounds.\n"
 +	"Check the position with = and line count with $= before printing ranges.\n"
-+	"Use character ranges for long lines; stop when you have enough context.";
++	"Keep reads small and within buffer bounds.\n"
++	"Use character ranges for long lines.";
 +
 +static char exspec_agent_g[] =
 +	"[vrange]g[<Delim>][regex][<Delim>][cmd]\n"
@@ -22569,7 +22563,7 @@ index 2888d7c6..ef062da0 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +558,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +555,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
