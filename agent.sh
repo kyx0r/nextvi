@@ -2369,8 +2369,11 @@ static void agent_key(int c)
 {
 	if (c == TK_CTL('\''c'\''))
 		agent_cancel = 1;
-	if (c == 27 && !agent_cancel)
+	if (c == 27 && !agent_cancel) {
 		agent_cancel = 2;
+		if (agent_packing)
+			ex_print("compaction stopped: steer it or cancel with ^C", msg_ft)
+	}
 	if (c == TK_CTL('\''o'\''))
 		agent_pause = 1;
 	if (c == TK_CTL('\''l'\''))
@@ -4533,9 +4536,8 @@ static int agent_pack_accept(char *original)
 	agent_discard_log(original);
 	agent_head_summary();
 	sbuf_smake(resume, 256)
-	sbuf_str(resume, "Manual compaction is complete. The preceding log summary\n"
-		"is working memory, not a new task. Continue the session, using the\n"
-		"summary to avoid repeating completed actions or tool calls.\n")
+	sbuf_str(resume, "Manual compaction is complete. The preceding log summary"
+		"is working memory, not a new task.\n")
 	sbuf_nul(resume)
 	agent_logbuf = 3;
 	agent_log("USER", resume->s);
@@ -13539,10 +13541,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..354b3932
+index 00000000..da6219e7
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4927 @@
+@@ -0,0 +1,4929 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15882,8 +15884,11 @@ index 00000000..354b3932
 +{
 +	if (c == TK_CTL('c'))
 +		agent_cancel = 1;
-+	if (c == 27 && !agent_cancel)
++	if (c == 27 && !agent_cancel) {
 +		agent_cancel = 2;
++		if (agent_packing)
++			ex_print("compaction stopped: steer it or cancel with ^C", msg_ft)
++	}
 +	if (c == TK_CTL('o'))
 +		agent_pause = 1;
 +	if (c == TK_CTL('l'))
@@ -18046,9 +18051,8 @@ index 00000000..354b3932
 +	agent_discard_log(original);
 +	agent_head_summary();
 +	sbuf_smake(resume, 256)
-+	sbuf_str(resume, "Manual compaction is complete. The preceding log summary\n"
-+		"is working memory, not a new task. Continue the session, using the\n"
-+		"summary to avoid repeating completed actions or tool calls.\n")
++	sbuf_str(resume, "Manual compaction is complete. The preceding log summary"
++		"is working memory, not a new task.\n")
 +	sbuf_nul(resume)
 +	agent_logbuf = 3;
 +	agent_log("USER", resume->s);
