@@ -1608,23 +1608,26 @@ static void agent_cp_status(sbuf *sb, int cp)
 	double total = 0;
 	for (int k = 0; k < cnt; k++)
 		total += agent_span_tokens(spans + k);
-	snprintf(ln, sizeof(ln), cp ?
-		"Context checkpoint. Your context is rebuilt from these session log\n"
-		"entries, about %.0f tokens:\n"
-		"role number %stext+commands+results=tokens rating note\n" :
-		"The session log holds about %.0f tokens in these entries:\n"
-		"role number %stext+commands+results=tokens rating note\n",
-		total, reasoned ? "reasoning+" : "");
+	if (cp) {
+		snprintf(ln, sizeof(ln), "Context checkpoint. Your context is "
+			"rebuilt from the session log entries\nbelow, about %.0f "
+			"tokens. Rate them, trim them, then resume.\n\n", total);
+		sbuf_str(sb, ln)
+		sbuf_str(sb, agent_rating_scale)
+		sbuf_chr(sb, '\''\n'\'')
+	} else {
+		snprintf(ln, sizeof(ln), "The session log holds about %.0f "
+			"tokens in these entries:\n", total);
+		sbuf_str(sb, ln)
+	}
+	snprintf(ln, sizeof(ln), "role number %stext+commands+results=tokens "
+		"rating note\n", reasoned ? "reasoning+" : "");
 	sbuf_str(sb, ln)
 	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned);
 	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 		sbuf_str(sb, "Unrated: ")
 		sbuf_str(sb, unrated)
 		sbuf_chr(sb, '\''\n'\'')
-		if (cp) {
-			sbuf_str(sb, "Rate these first, e.g.\n")
-			sbuf_str(sb, agent_cp_example(unrated))
-		}
 	}
 	free(spans);
 }
@@ -1649,15 +1652,16 @@ static void agent_cp_unrated(sbuf *sb)
 		sbuf_str(sb, "No unrated turns.\n")
 	free(spans);
 }
-
-static const char agent_cp_guide[] =
+static const char agent_cp_turns[] =
+	"A TURN is one of your replies: its reasoning, text, commands and\n"
+	"results. Its last result in your context ends with a line\n"
+	"[turn N end]; a reply without commands has the number the list\n"
+	"gives it.\n"
+	"\n"
 	"Only these ex commands run during the checkpoint, so decide from your\n"
 	"context. Each command is its own ex tool call; a reply can hold several\n"
 	"calls. Commands written as text do not run. N,M is a range from N\n"
 	"through M; three or more numbers, N,M,K, are a list of turns.\n"
-	"A TURN is one of your replies: its reasoning, text, commands and results.\n"
-	"Its last result in your context ends with a line [turn N end]; a\n"
-	"reply without commands has the number the list gives it.\n"
 	"N[,M]arate R sentence\n"
 	"  rate the TURN entries; the sentence says what the turn did and\n"
 	"  found; 0 also removes the turn\n"
@@ -1666,23 +1670,39 @@ static const char agent_cp_guide[] =
 	"  entries too; keep the instructions the remaining work needs\n"
 	"adone\n"
 	"  apply the trims and resume the task\n"
-	"%s"
-	"Then trim by rating, largest turns first: replace 1 with a short\n"
-	"note and a large 2 with its findings; keep 3, or replace a large one\n"
-	"with every detail the task depends on.\n"
-	"Example: replace turns 53 through 59 with their findings\n"
+	"\n";
+
+static const char agent_cp_trim[] =
+	"Trim by rating, largest first:\n"
+	"replace 1 with a short note\n"
+	"replace a large 2 with its findings\n"
+	"keep 3, or replace a large one with every detail the task depends on\n"
+	"e.g.\n"
 	"53,59anote findings: ...\n"
-	"Example: end the checkpoint\n"
+	"\n"
+	"Then end the checkpoint, e.g.\n"
 	"adone\n"
+	"\n"
 	"This exchange is not kept; ratings show in later checkpoints and\n"
 	"compaction.\n";
 
-static void agent_cp_instructions(sbuf *sb)
+/* The checkpoint guide: what a TURN is, the commands, then the steps in
+ * order; with scale, the rating scale first (acp, printed alone). */
+static void agent_cp_instructions(sbuf *sb, int scale)
 {
-	char *s = emalloc(sizeof(agent_cp_guide) + sizeof(agent_rating_scale));
-	sprintf(s, agent_cp_guide, agent_rating_scale);
-	sbuf_str(sb, s)
-	free(s);
+	char unrated[112];
+	if (scale) {
+		sbuf_str(sb, agent_rating_scale)
+		sbuf_chr(sb, '\''\n'\'')
+	}
+	sbuf_str(sb, agent_cp_turns)
+	if (agent_unrated_now(unrated, sizeof(unrated))) {
+		sbuf_str(sb, "Rate the unrated turns first, e.g.\n")
+		sbuf_str(sb, agent_cp_example(unrated))
+		sbuf_str(sb, "\nThen t")
+		sbuf_str(sb, agent_cp_trim + 1)
+	} else
+		sbuf_str(sb, agent_cp_trim)
 }
 
 /* The budget check message: asks for an estimate first, then between a
@@ -2034,7 +2054,8 @@ static void agent_cp_build(void)
 	} else if (!agent_cp_open) {
 		sbuf_smake(sb, 1024)
 		agent_cp_status(sb, 1);
-		agent_cp_instructions(sb);
+		sbuf_chr(sb, '\''\n'\'')
+		agent_cp_instructions(sb, 0);
 		sbuf_nul(sb)
 		agent_cp_open = sb->s;
 		agent_log("USER", agent_cp_open);
@@ -2141,7 +2162,7 @@ static void *ec_acp(char *loc, char *cmd, char *arg)
 		return "session log is empty";
 	sbuf_smake(sb, 1024)
 	if (cmd[1] == '\''c'\'')
-		agent_cp_instructions(sb);
+		agent_cp_instructions(sb, 1);
 	else if (cmd[1] == '\''l'\'')
 		agent_cp_status(sb, agent_checkpointing == 1);
 	else
@@ -14133,10 +14154,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..76562d61
+index 00000000..06e12b5a
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4976 @@
+@@ -0,0 +1,4997 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15715,23 +15736,26 @@ index 00000000..76562d61
 +	double total = 0;
 +	for (int k = 0; k < cnt; k++)
 +		total += agent_span_tokens(spans + k);
-+	snprintf(ln, sizeof(ln), cp ?
-+		"Context checkpoint. Your context is rebuilt from these session log\n"
-+		"entries, about %.0f tokens:\n"
-+		"role number %stext+commands+results=tokens rating note\n" :
-+		"The session log holds about %.0f tokens in these entries:\n"
-+		"role number %stext+commands+results=tokens rating note\n",
-+		total, reasoned ? "reasoning+" : "");
++	if (cp) {
++		snprintf(ln, sizeof(ln), "Context checkpoint. Your context is "
++			"rebuilt from the session log entries\nbelow, about %.0f "
++			"tokens. Rate them, trim them, then resume.\n\n", total);
++		sbuf_str(sb, ln)
++		sbuf_str(sb, agent_rating_scale)
++		sbuf_chr(sb, '\n')
++	} else {
++		snprintf(ln, sizeof(ln), "The session log holds about %.0f "
++			"tokens in these entries:\n", total);
++		sbuf_str(sb, ln)
++	}
++	snprintf(ln, sizeof(ln), "role number %stext+commands+results=tokens "
++		"rating note\n", reasoned ? "reasoning+" : "");
 +	sbuf_str(sb, ln)
 +	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned);
 +	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 +		sbuf_str(sb, "Unrated: ")
 +		sbuf_str(sb, unrated)
 +		sbuf_chr(sb, '\n')
-+		if (cp) {
-+			sbuf_str(sb, "Rate these first, e.g.\n")
-+			sbuf_str(sb, agent_cp_example(unrated))
-+		}
 +	}
 +	free(spans);
 +}
@@ -15756,15 +15780,16 @@ index 00000000..76562d61
 +		sbuf_str(sb, "No unrated turns.\n")
 +	free(spans);
 +}
-+
-+static const char agent_cp_guide[] =
++static const char agent_cp_turns[] =
++	"A TURN is one of your replies: its reasoning, text, commands and\n"
++	"results. Its last result in your context ends with a line\n"
++	"[turn N end]; a reply without commands has the number the list\n"
++	"gives it.\n"
++	"\n"
 +	"Only these ex commands run during the checkpoint, so decide from your\n"
 +	"context. Each command is its own ex tool call; a reply can hold several\n"
 +	"calls. Commands written as text do not run. N,M is a range from N\n"
 +	"through M; three or more numbers, N,M,K, are a list of turns.\n"
-+	"A TURN is one of your replies: its reasoning, text, commands and results.\n"
-+	"Its last result in your context ends with a line [turn N end]; a\n"
-+	"reply without commands has the number the list gives it.\n"
 +	"N[,M]arate R sentence\n"
 +	"  rate the TURN entries; the sentence says what the turn did and\n"
 +	"  found; 0 also removes the turn\n"
@@ -15773,23 +15798,39 @@ index 00000000..76562d61
 +	"  entries too; keep the instructions the remaining work needs\n"
 +	"adone\n"
 +	"  apply the trims and resume the task\n"
-+	"%s"
-+	"Then trim by rating, largest turns first: replace 1 with a short\n"
-+	"note and a large 2 with its findings; keep 3, or replace a large one\n"
-+	"with every detail the task depends on.\n"
-+	"Example: replace turns 53 through 59 with their findings\n"
++	"\n";
++
++static const char agent_cp_trim[] =
++	"Trim by rating, largest first:\n"
++	"replace 1 with a short note\n"
++	"replace a large 2 with its findings\n"
++	"keep 3, or replace a large one with every detail the task depends on\n"
++	"e.g.\n"
 +	"53,59anote findings: ...\n"
-+	"Example: end the checkpoint\n"
++	"\n"
++	"Then end the checkpoint, e.g.\n"
 +	"adone\n"
++	"\n"
 +	"This exchange is not kept; ratings show in later checkpoints and\n"
 +	"compaction.\n";
 +
-+static void agent_cp_instructions(sbuf *sb)
++/* The checkpoint guide: what a TURN is, the commands, then the steps in
++ * order; with scale, the rating scale first (acp, printed alone). */
++static void agent_cp_instructions(sbuf *sb, int scale)
 +{
-+	char *s = emalloc(sizeof(agent_cp_guide) + sizeof(agent_rating_scale));
-+	sprintf(s, agent_cp_guide, agent_rating_scale);
-+	sbuf_str(sb, s)
-+	free(s);
++	char unrated[112];
++	if (scale) {
++		sbuf_str(sb, agent_rating_scale)
++		sbuf_chr(sb, '\n')
++	}
++	sbuf_str(sb, agent_cp_turns)
++	if (agent_unrated_now(unrated, sizeof(unrated))) {
++		sbuf_str(sb, "Rate the unrated turns first, e.g.\n")
++		sbuf_str(sb, agent_cp_example(unrated))
++		sbuf_str(sb, "\nThen t")
++		sbuf_str(sb, agent_cp_trim + 1)
++	} else
++		sbuf_str(sb, agent_cp_trim)
 +}
 +
 +/* The budget check message: asks for an estimate first, then between a
@@ -16141,7 +16182,8 @@ index 00000000..76562d61
 +	} else if (!agent_cp_open) {
 +		sbuf_smake(sb, 1024)
 +		agent_cp_status(sb, 1);
-+		agent_cp_instructions(sb);
++		sbuf_chr(sb, '\n')
++		agent_cp_instructions(sb, 0);
 +		sbuf_nul(sb)
 +		agent_cp_open = sb->s;
 +		agent_log("USER", agent_cp_open);
@@ -16248,7 +16290,7 @@ index 00000000..76562d61
 +		return "session log is empty";
 +	sbuf_smake(sb, 1024)
 +	if (cmd[1] == 'c')
-+		agent_cp_instructions(sb);
++		agent_cp_instructions(sb, 1);
 +	else if (cmd[1] == 'l')
 +		agent_cp_status(sb, agent_checkpointing == 1);
 +	else
