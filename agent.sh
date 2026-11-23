@@ -3371,15 +3371,17 @@ reply:
 				err = ex_exec(command->valuestring);
 				agent_tool_calls++;
 				agent_sequence();
-				if (!agent_shown) {
-					free(agent_show);
-					agent_show = emalloc(out->s_n + 1);
-					memcpy(agent_show, out->s, out->s_n);
-					agent_show_n = out->s_n;
-				}
 				if (agent_gr_cap() &&
 						agent_capture_total > (size_t)xagr) {
 					char msg[128];
+					/* only withheld output is saved for aout: the
+					 * agent already has the rest */
+					if (!agent_shown) {
+						free(agent_show);
+						agent_show = emalloc(out->s_n + 1);
+						memcpy(agent_show, out->s, out->s_n);
+						agent_show_n = out->s_n;
+					}
 					snprintf(msg, sizeof(msg),
 						"output guardrail: %zu > %d bytes (aout to view)",
 						agent_capture_total, xagr);
@@ -3616,6 +3618,8 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	cJSON *m;
 	ex_print("agent status", msg_ft)
 	snprintf(msg, sizeof(msg), "endpoint   %.240s", endpoint ? endpoint : "");
+	ex_print(msg, msg_ft)
+	snprintf(msg, sizeof(msg), "request    %.240s", request_extra ? request_extra : "");
 	ex_print(msg, msg_ft)
 	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
@@ -3922,6 +3926,54 @@ static void *ec_aep(char *loc, char *cmd, char *arg)
 	return NULL;
 }
 
+/* arq merges a JSON object into request_extra: a null member removes the
+ * key; arq alone restores the default from conf.c. Every arq prints it. */
+static void *ec_arq(char *loc, char *cmd, char *arg)
+{
+	static char *def, *buf;
+	cJSON *cur, *add, *it;
+	char *s, msg[1100];
+	if (*loc)
+		return "arq takes no range";
+	if (!def)	/* only arq changes request_extra: the first call sees conf.c'\''s */
+		def = request_extra;
+	while (*arg == '\'' '\'' || *arg == '\''\t'\'' || *arg == '\''\n'\'')
+		arg++;
+	if (!*arg) {
+		request_extra = def;
+		free(buf);
+		buf = NULL;
+	} else {
+		add = cJSON_ParseWithOpts(arg, NULL, 1);
+		if (!cJSON_IsObject(add)) {
+			cJSON_Delete(add);
+			return "arq argument must be one JSON object";
+		}
+		cur = cJSON_ParseWithOpts(request_extra, NULL, 1);
+		if (!cJSON_IsObject(cur)) {
+			cJSON_Delete(cur);
+			cur = cJSON_CreateObject();
+		}
+		for (it = add->child; it; it = it->next) {
+			while (cJSON_GetObjectItem(cur, it->string))
+				cJSON_DeleteItemFromObject(cur, it->string);
+			if (!cJSON_IsNull(it))
+				cJSON_AddItemToObject(cur, it->string,
+					cJSON_Duplicate(it, 1));
+		}
+		s = cJSON_PrintUnformatted(cur);
+		cJSON_Delete(cur);
+		cJSON_Delete(add);
+		if (!s)
+			return "arq out of memory";
+		free(buf);
+		buf = request_extra = s;
+	}
+	snprintf(msg, sizeof(msg), "request    %.1000s", request_extra);
+	ex_print(msg, msg_ft)
+	return NULL;
+}
+
 static void *ec_ath(char *loc, char *cmd, char *arg)
 {
 	int cap = -1, max = 0;
@@ -3966,7 +4018,7 @@ static void *ec_aout(char *loc, char *cmd, char *arg)
 	if (*arg)
 		return "aout takes only a byte range";
 	if (!agent_show_n)
-		return "no agent output to show";
+		return "no withheld agent output to show";
 	if (*loc) {
 		if (agent_byteaddr(&loc, &beg))
 			return "invalid byte range";
@@ -4888,6 +4940,7 @@ static void *ec_ast(char *loc, char *cmd, char *arg);
 static void *ec_acap(char *loc, char *cmd, char *arg);
 static void *ec_agoal(char *loc, char *cmd, char *arg);
 static void *ec_aep(char *loc, char *cmd, char *arg);
+static void *ec_arq(char *loc, char *cmd, char *arg);
 static void *ec_ath(char *loc, char *cmd, char *arg);
 static char *agent_think_retry(void);
 static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -8573,12 +8626,13 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "is subject to agr. Takes no range or argument. Errors if none is\n" \
                 "saved.\n\n" \
                 "Example: execute a deferred command\n:aretry")
-            spec("[brange]aout", "Print the saved output of the last agent tool call",
+            spec("[brange]aout", "Print the last agent tool output the guardrail withheld",
                 "brange is first,last in 0-based byte offsets, inclusive; $ is the\n" \
                 "last byte; one offset selects one byte; none prints everything.\n" \
-                "The output of each tool call is saved, except of calls running\n" \
-                "aout; under agr at most 1048576 bytes, or agr if larger. Exempt\n" \
-                "from agr. A new session clears it.\n\n" \
+                "Only output the agr guardrail withheld is saved, at most 1048576\n" \
+                "bytes or agr if larger; it stays until the next withheld output\n" \
+                "or a new session. Output the agent received is not saved, and\n" \
+                "aout never saves its own. Exempt from agr.\n\n" \
                 "Example: bytes 50 through the end\n:50,$aout")
             spec("[entries]anote[text]", "Replace or remove agent session log entries",
                 "entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N\n" \
@@ -8731,6 +8785,17 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Example: change the host, keeping the port\n:aep 192.168.1.5\n" \
                 "Example: set the whole endpoint\n" \
                 ":aep http://127.0.0.1:8080/v1/chat/completions")
+            spec("arq[json]", "Set the agent request fields",
+                "Merges a JSON object into request_extra (conf.c), the fields sent\n" \
+                "with every agent request: a member replaces the field of its name,\n" \
+                "a null member removes it. messages, tools and stream are never\n" \
+                "sent from it; ath fields replace its reasoning fields. arq alone\n" \
+                "restores the default from conf.c. Every arq prints the fields; ast\n" \
+                "shows them too. Takes no range. Agents cannot run it. Write each\n" \
+                "colon of the JSON as \\:, since : separates ex commands.\n\n" \
+                "Example: limit replies to 8192 tokens\n:arq {\"max_tokens\"\\:8192}\n" \
+                "Example: remove the limit again\n:arq {\"max_tokens\"\\:null}\n" \
+                "Example: restore the default fields\n:arq")
             done = 1
         }
         /^     ai\[1\]/ && !aspec_done {
@@ -8904,20 +8969,10 @@ const int conf_mode = 0600;
 1;2;3;4;5;6;7;8;9??!219reg conf.c:3002sc %? %@2132sc!0?
 '\''1i /* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
 static char *log_dir;
-#define LOCAL 1
-#define OPENROUTER 1
-
-#if LOCAL == 1
 static char *api_key = "local";
 static char *endpoint = "http://127.0.0.1:8080/v1/chat/completions";
-static char *request_extra = "{}";
-static int request_timeout = 5000;
-#elif OPENROUTER == 1
-static char *api_key = "YOUR_OPENROUTER_API_KEY";
-static char *endpoint = "https://openrouter.ai/api/v1/chat/completions";
-static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
+static char *request_extra = "{}";	/* extra JSON request fields; arq changes them */
 static int request_timeout = 500;
-#endif
 
 /* Percent of the ath token cap a reply'\''s thinking must use to count as cut */
 static int think_cut = 90;
@@ -9175,7 +9230,7 @@ static struct {
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
 '\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|arq|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
 int xish;			/\* interactive shell \*/
@@ -10872,6 +10927,7 @@ _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
 	{"acap", ec_acap},
 	{"agoal", ec_agoal},
 	{"aep", ec_aep},
+	{"arq", ec_arq},
 	{"acp", ec_acp},
 	{"ali", ec_acp},
 	{"auli", ec_acp},
@@ -10919,7 +10975,7 @@ static char *agent_gate(struct excmd *c, char *loc)
 		return "/ in a range is division and needs a number; search "
 			"with >regex> or <regex<";
 	if (c->ec == ec_agent || c->ec == ec_compact || c->ec == ec_fuzz ||
-			c->ec == ec_ath || c->ec == ec_aep || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
+			c->ec == ec_ath || c->ec == ec_aep || c->ec == ec_arq || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
 			(c->ec == ec_termexec && c->name[0] == '\''@'\'') ||
 			(c->ec == ec_write && c->name[0] == '\''x'\''))
 		why = "agent execution";
@@ -11879,13 +11935,14 @@ static char *exspec_lines[] = {
 	"aretry",
 	"",
 	"[brange]aout",
-	"Print the saved output of the last agent tool call",
+	"Print the last agent tool output the guardrail withheld",
 	"",
 	"brange is first,last in 0-based byte offsets, inclusive; $ is the",
 	"last byte; one offset selects one byte; none prints everything.",
-	"The output of each tool call is saved, except of calls running",
-	"aout; under agr at most 1048576 bytes, or agr if larger. Exempt",
-	"from agr. A new session clears it.",
+	"Only output the agr guardrail withheld is saved, at most 1048576",
+	"bytes or agr if larger; it stays until the next withheld output",
+	"or a new session. Output the agent received is not saved, and",
+	"aout never saves its own. Exempt from agr.",
 	"",
 	"Example: bytes 50 through the end",
 	"50,$aout",
@@ -12100,6 +12157,24 @@ static char *exspec_lines[] = {
 	"aep 192.168.1.5",
 	"Example: set the whole endpoint",
 	"aep http://127.0.0.1:8080/v1/chat/completions",
+	"",
+	"arq[json]",
+	"Set the agent request fields",
+	"",
+	"Merges a JSON object into request_extra (conf.c), the fields sent",
+	"with every agent request: a member replaces the field of its name,",
+	"a null member removes it. messages, tools and stream are never",
+	"sent from it; ath fields replace its reasoning fields. arq alone",
+	"restores the default from conf.c. Every arq prints the fields; ast",
+	"shows them too. Takes no range. Agents cannot run it. Write each",
+	"colon of the JSON as \\:, since : separates ex commands.",
+	"",
+	"Example: limit replies to 8192 tokens",
+	"arq {\"max_tokens\"\\:8192}",
+	"Example: remove the limit again",
+	"arq {\"max_tokens\"\\:null}",
+	"Example: restore the default fields",
+	"arq",
 	"",
 	"ac[regex]",
 	"Set autocomplete filter regex",
@@ -12578,59 +12653,60 @@ static struct {
 	{"apack!", "Compact the agent session by browsing its log", 789, 795, 0, 0},
 	{"acm", "Toggle the caveman response style skill", 796, 801, 0, 0},
 	{"aretry", "Execute the last agent command", 802, 813, 0, 0},
-	{"aout", "Print the saved output of the last agent tool call", 814, 825, 0, 0},
-	{"anote", "Replace or remove agent session log entries", 826, 854, 0, 0},
-	{"aget", "Print agent session log entries, trimmed ones included", 855, 871, 0, 0},
-	{"arate", "Rate agent turns in the notes buffer", 872, 892, 0, 0},
-	{"adone", "End an agent checkpoint", 893, 900, 0, 0},
-	{"acheck", "Start an agent checkpoint or set its budget", 901, 913, 0, 0},
-	{"acp", "Print the agent checkpoint instructions", 914, 920, 0, 0},
-	{"ali", "Print the agent session log entry list", 921, 932, 0, 0},
-	{"auli", "Print the unrated agent session log turns", 933, 939, 0, 0},
-	{"ast", "Print agent status and token usage", 940, 949, 0, 0},
-	{"ath", "Set the agent thinking cap and effort", 950, 976, 0, 0},
-	{"acap", "Raise the agent thinking cap for one reply", 977, 996, 0, 0},
-	{"agoal", "Set or clear the agent goal", 997, 1015, 0, 0},
-	{"aep", "Set the agent endpoint", 1016, 1036, 0, 0},
-	{"ac", "Set autocomplete filter regex", 1037, 1045, 0, 0},
-	{"sc", "Set ex special characters", 1046, 1056, 0, 0},
-	{"sc!", "Set ex special characters", 1057, 1064, 0, 0},
-	{"uc", "Toggle multi-byte UTF-8 decoding", 1065, 1072, 0, 0},
-	{"uz", "Toggle zero-width character placeholders", 1073, 1076, 0, 0},
-	{"ub", "Toggle multi-codepoint sequence placeholders", 1077, 1081, 0, 0},
-	{"ph", "Redefine placeholders", 1082, 1098, 0, 0},
-	{"acl", "Rebuild agent context from the session log", 1107, 1145, 1, 0},
-	{"aco", "Automatically compact using the loaded session log", 1146, 1156, 1, 0},
-	{"aco!", "Automatically compact by browsing the session log", 1157, 1163, 1, 0},
-	{"agr", "Control agent output protection", 1164, 1169, 1, 0},
-	{"ato", "Detach long agent shell commands", 1170, 1177, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1178, 1183, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1184, 1208, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1209, 1216, 1, 0},
-	{"ai", "Indent new lines", 1217, 1220, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1221, 1222, 1, 0},
-	{"ish", "Interactive shell", 1223, 1238, 1, 0},
-	{"grp", "Regex search group", 1239, 1247, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1248, 1251, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1252, 1253, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1253, 1254, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1254, 1255, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1255, 1256, 1, 0},
-	{"led", "Enable all terminal output", 1256, 1257, 1, 0},
-	{"vis", "Control startup flags", 1258, 1269, 1, 0},
-	{"mpt", "Control vi prompts", 1270, 1280, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1281, 1283, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1283, 1285, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1285, 1286, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1286, 1287, 1, 0},
-	{"td", "Current text direction context", 1287, 1293, 1, 0},
-	{"pr", "Print register", 1294, 1310, 1, 0},
-	{"fr", "Find register", 1311, 1323, 1, 0},
-	{"rr", "Record register", 1324, 1337, 1, 0},
-	{"lim", "Line length render limit", 1338, 1353, 1, 0},
-	{"seq", "Control Undo/Redo", 1354, 1366, 1, 0},
-	{"left", "Control horizontal scroll", 1367, 1372, 1, 0},
-	{"err", "Control ex errors", 1373, 1385, 1, 0},
+	{"aout", "Print the last agent tool output the guardrail withheld", 814, 826, 0, 0},
+	{"anote", "Replace or remove agent session log entries", 827, 855, 0, 0},
+	{"aget", "Print agent session log entries, trimmed ones included", 856, 872, 0, 0},
+	{"arate", "Rate agent turns in the notes buffer", 873, 893, 0, 0},
+	{"adone", "End an agent checkpoint", 894, 901, 0, 0},
+	{"acheck", "Start an agent checkpoint or set its budget", 902, 914, 0, 0},
+	{"acp", "Print the agent checkpoint instructions", 915, 921, 0, 0},
+	{"ali", "Print the agent session log entry list", 922, 933, 0, 0},
+	{"auli", "Print the unrated agent session log turns", 934, 940, 0, 0},
+	{"ast", "Print agent status and token usage", 941, 950, 0, 0},
+	{"ath", "Set the agent thinking cap and effort", 951, 977, 0, 0},
+	{"acap", "Raise the agent thinking cap for one reply", 978, 997, 0, 0},
+	{"agoal", "Set or clear the agent goal", 998, 1016, 0, 0},
+	{"aep", "Set the agent endpoint", 1017, 1037, 0, 0},
+	{"arq", "Set the agent request fields", 1038, 1055, 0, 0},
+	{"ac", "Set autocomplete filter regex", 1056, 1064, 0, 0},
+	{"sc", "Set ex special characters", 1065, 1075, 0, 0},
+	{"sc!", "Set ex special characters", 1076, 1083, 0, 0},
+	{"uc", "Toggle multi-byte UTF-8 decoding", 1084, 1091, 0, 0},
+	{"uz", "Toggle zero-width character placeholders", 1092, 1095, 0, 0},
+	{"ub", "Toggle multi-codepoint sequence placeholders", 1096, 1100, 0, 0},
+	{"ph", "Redefine placeholders", 1101, 1117, 0, 0},
+	{"acl", "Rebuild agent context from the session log", 1126, 1164, 1, 0},
+	{"aco", "Automatically compact using the loaded session log", 1165, 1175, 1, 0},
+	{"aco!", "Automatically compact by browsing the session log", 1176, 1182, 1, 0},
+	{"agr", "Control agent output protection", 1183, 1188, 1, 0},
+	{"ato", "Detach long agent shell commands", 1189, 1196, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1197, 1202, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1203, 1227, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1228, 1235, 1, 0},
+	{"ai", "Indent new lines", 1236, 1239, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1240, 1241, 1, 0},
+	{"ish", "Interactive shell", 1242, 1257, 1, 0},
+	{"grp", "Regex search group", 1258, 1266, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1267, 1270, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1271, 1272, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1272, 1273, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1273, 1274, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1274, 1275, 1, 0},
+	{"led", "Enable all terminal output", 1275, 1276, 1, 0},
+	{"vis", "Control startup flags", 1277, 1288, 1, 0},
+	{"mpt", "Control vi prompts", 1289, 1299, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1300, 1302, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1302, 1304, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1304, 1305, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1305, 1306, 1, 0},
+	{"td", "Current text direction context", 1306, 1312, 1, 0},
+	{"pr", "Print register", 1313, 1329, 1, 0},
+	{"fr", "Find register", 1330, 1342, 1, 0},
+	{"rr", "Record register", 1343, 1356, 1, 0},
+	{"lim", "Line length render limit", 1357, 1372, 1, 0},
+	{"seq", "Control Undo/Redo", 1373, 1385, 1, 0},
+	{"left", "Control horizontal scroll", 1386, 1391, 1, 0},
+	{"err", "Control ex errors", 1392, 1404, 1, 0},
 };
 ??!219reg exspec.h:-1:m2sc %? %@2142sc!b9m!%ya 98?0?
 %f> 		free\(sb->s\);
@@ -13412,10 +13488,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..caa1e700
+index 00000000..03c74cd4
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4821 @@
+@@ -0,0 +1,4873 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -16757,15 +16833,17 @@ index 00000000..caa1e700
 +				err = ex_exec(command->valuestring);
 +				agent_tool_calls++;
 +				agent_sequence();
-+				if (!agent_shown) {
-+					free(agent_show);
-+					agent_show = emalloc(out->s_n + 1);
-+					memcpy(agent_show, out->s, out->s_n);
-+					agent_show_n = out->s_n;
-+				}
 +				if (agent_gr_cap() &&
 +						agent_capture_total > (size_t)xagr) {
 +					char msg[128];
++					/* only withheld output is saved for aout: the
++					 * agent already has the rest */
++					if (!agent_shown) {
++						free(agent_show);
++						agent_show = emalloc(out->s_n + 1);
++						memcpy(agent_show, out->s, out->s_n);
++						agent_show_n = out->s_n;
++					}
 +					snprintf(msg, sizeof(msg),
 +						"output guardrail: %zu > %d bytes (aout to view)",
 +						agent_capture_total, xagr);
@@ -17002,6 +17080,8 @@ index 00000000..caa1e700
 +	cJSON *m;
 +	ex_print("agent status", msg_ft)
 +	snprintf(msg, sizeof(msg), "endpoint   %.240s", endpoint ? endpoint : "");
++	ex_print(msg, msg_ft)
++	snprintf(msg, sizeof(msg), "request    %.240s", request_extra ? request_extra : "");
 +	ex_print(msg, msg_ft)
 +	snprintf(msg, sizeof(msg), "autocompact %s, %d input tokens (%s)",
 +		xaco ? "on" : "off", xaco, xaco_browse ? "aco! browse" : "aco loaded log");
@@ -17308,6 +17388,54 @@ index 00000000..caa1e700
 +	return NULL;
 +}
 +
++/* arq merges a JSON object into request_extra: a null member removes the
++ * key; arq alone restores the default from conf.c. Every arq prints it. */
++static void *ec_arq(char *loc, char *cmd, char *arg)
++{
++	static char *def, *buf;
++	cJSON *cur, *add, *it;
++	char *s, msg[1100];
++	if (*loc)
++		return "arq takes no range";
++	if (!def)	/* only arq changes request_extra: the first call sees conf.c's */
++		def = request_extra;
++	while (*arg == ' ' || *arg == '\t' || *arg == '\n')
++		arg++;
++	if (!*arg) {
++		request_extra = def;
++		free(buf);
++		buf = NULL;
++	} else {
++		add = cJSON_ParseWithOpts(arg, NULL, 1);
++		if (!cJSON_IsObject(add)) {
++			cJSON_Delete(add);
++			return "arq argument must be one JSON object";
++		}
++		cur = cJSON_ParseWithOpts(request_extra, NULL, 1);
++		if (!cJSON_IsObject(cur)) {
++			cJSON_Delete(cur);
++			cur = cJSON_CreateObject();
++		}
++		for (it = add->child; it; it = it->next) {
++			while (cJSON_GetObjectItem(cur, it->string))
++				cJSON_DeleteItemFromObject(cur, it->string);
++			if (!cJSON_IsNull(it))
++				cJSON_AddItemToObject(cur, it->string,
++					cJSON_Duplicate(it, 1));
++		}
++		s = cJSON_PrintUnformatted(cur);
++		cJSON_Delete(cur);
++		cJSON_Delete(add);
++		if (!s)
++			return "arq out of memory";
++		free(buf);
++		buf = request_extra = s;
++	}
++	snprintf(msg, sizeof(msg), "request    %.1000s", request_extra);
++	ex_print(msg, msg_ft)
++	return NULL;
++}
++
 +static void *ec_ath(char *loc, char *cmd, char *arg)
 +{
 +	int cap = -1, max = 0;
@@ -17352,7 +17480,7 @@ index 00000000..caa1e700
 +	if (*arg)
 +		return "aout takes only a byte range";
 +	if (!agent_show_n)
-+		return "no agent output to show";
++		return "no withheld agent output to show";
 +	if (*loc) {
 +		if (agent_byteaddr(&loc, &beg))
 +			return "invalid byte range";
@@ -18239,10 +18367,10 @@ index 00000000..caa1e700
 +}
 diff --git a/agent.h b/agent.h
 new file mode 100644
-index 00000000..02237685
+index 00000000..cd3c8383
 --- /dev/null
 +++ b/agent.h
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,50 @@
 +/* agent.c: embedded request loop and editor integration */
 +static int agent_tool;		/* an agent tool call is executing */
 +/* agent_cancel: 1 exits the session, 2 interrupts the current run. */
@@ -18279,6 +18407,7 @@ index 00000000..02237685
 +static void *ec_acap(char *loc, char *cmd, char *arg);
 +static void *ec_agoal(char *loc, char *cmd, char *arg);
 +static void *ec_aep(char *loc, char *cmd, char *arg);
++static void *ec_arq(char *loc, char *cmd, char *arg);
 +static void *ec_ath(char *loc, char *cmd, char *arg);
 +static char *agent_think_retry(void);
 +static void *ec_aout(char *loc, char *cmd, char *arg);
@@ -21802,10 +21931,10 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..00ede263 100755
+index c836c94c..a054bdc7 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
-@@ -65,6 +65,332 @@ build() {
+@@ -65,6 +65,344 @@ build() {
      }
  }
  
@@ -21877,12 +22006,13 @@ index c836c94c..00ede263 100755
 +                "is subject to agr. Takes no range or argument. Errors if none is\n" \
 +                "saved.\n\n" \
 +                "Example: execute a deferred command\n:aretry")
-+            spec("[brange]aout", "Print the saved output of the last agent tool call",
++            spec("[brange]aout", "Print the last agent tool output the guardrail withheld",
 +                "brange is first,last in 0-based byte offsets, inclusive; $ is the\n" \
 +                "last byte; one offset selects one byte; none prints everything.\n" \
-+                "The output of each tool call is saved, except of calls running\n" \
-+                "aout; under agr at most 1048576 bytes, or agr if larger. Exempt\n" \
-+                "from agr. A new session clears it.\n\n" \
++                "Only output the agr guardrail withheld is saved, at most 1048576\n" \
++                "bytes or agr if larger; it stays until the next withheld output\n" \
++                "or a new session. Output the agent received is not saved, and\n" \
++                "aout never saves its own. Exempt from agr.\n\n" \
 +                "Example: bytes 50 through the end\n:50,$aout")
 +            spec("[entries]anote[text]", "Replace or remove agent session log entries",
 +                "entries is N or N,M, the numbers in the USER N, TURN N and NOTICE N\n" \
@@ -22035,6 +22165,17 @@ index c836c94c..00ede263 100755
 +                "Example: change the host, keeping the port\n:aep 192.168.1.5\n" \
 +                "Example: set the whole endpoint\n" \
 +                ":aep http://127.0.0.1:8080/v1/chat/completions")
++            spec("arq[json]", "Set the agent request fields",
++                "Merges a JSON object into request_extra (conf.c), the fields sent\n" \
++                "with every agent request: a member replaces the field of its name,\n" \
++                "a null member removes it. messages, tools and stream are never\n" \
++                "sent from it; ath fields replace its reasoning fields. arq alone\n" \
++                "restores the default from conf.c. Every arq prints the fields; ast\n" \
++                "shows them too. Takes no range. Agents cannot run it. Write each\n" \
++                "colon of the JSON as \\:, since : separates ex commands.\n\n" \
++                "Example: limit replies to 8192 tokens\n:arq {\"max_tokens\"\\:8192}\n" \
++                "Example: remove the limit again\n:arq {\"max_tokens\"\\:null}\n" \
++                "Example: restore the default fields\n:arq")
 +            done = 1
 +        }
 +        /^     ai\[1\]/ && !aspec_done {
@@ -22138,7 +22279,7 @@ index c836c94c..00ede263 100755
  install() {
      run rm -f "$DESTDIR$PREFIX/bin/vi" 2> /dev/null
      command -v "$STRIP" >/dev/null 2>&1 && run "$STRIP" vi
-@@ -74,7 +400,7 @@ install() {
+@@ -74,7 +412,7 @@ install() {
  }
  
  print_usage() {
@@ -22147,7 +22288,7 @@ index c836c94c..00ede263 100755
      echo "Options may be shortened to a prefix"
      exit "$1"
  }
-@@ -82,6 +408,9 @@ print_usage() {
+@@ -82,6 +420,9 @@ print_usage() {
  # Argument processing
  while [ $# -gt 0 ] || [ "$1" = "" ]; do
      case "$1" in
@@ -22158,28 +22299,18 @@ index c836c94c..00ede263 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..97a4aab4 100644
+index 2888d7c6..310a7a04 100644
 --- a/conf.c
 +++ b/conf.c
-@@ -1,5 +1,276 @@
+@@ -1,5 +1,266 @@
  #include "kmap.h"
  
 +/* Embedded subzeroclaw configuration. NULL log_dir uses $HOME/.nextvi/logs. */
 +static char *log_dir;
-+#define LOCAL 1
-+#define OPENROUTER 1
-+
-+#if LOCAL == 1
 +static char *api_key = "local";
 +static char *endpoint = "http://127.0.0.1:8080/v1/chat/completions";
-+static char *request_extra = "{}";
-+static int request_timeout = 5000;
-+#elif OPENROUTER == 1
-+static char *api_key = "YOUR_OPENROUTER_API_KEY";
-+static char *endpoint = "https://openrouter.ai/api/v1/chat/completions";
-+static char *request_extra = "{\"model\":\"PROVIDER/MODEL_ID\"}";
++static char *request_extra = "{}";	/* extra JSON request fields; arq changes them */
 +static int request_timeout = 500;
-+#endif
 +
 +/* Percent of the ath token cap a reply's thinking must use to count as cut */
 +static int think_cut = 90;
@@ -22438,19 +22569,19 @@ index 2888d7c6..97a4aab4 100644
  /* access mode of new files */
  const int conf_mode = 0600;
  #define FTGEN(ft) static char ft##_ft[] = #ft;
-@@ -297,8 +568,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -297,8 +558,8 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
  (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 +((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
-+|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
++|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|arq|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index d13974a6..d6a7a730 100644
+index d13974a6..8f07498c 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -22965,7 +23096,7 @@ index d13974a6..d6a7a730 100644
  	{"=", ec_num},
  	{"???", ec_while},
  	{"?""?!", ec_while},
-@@ -1760,8 +2040,38 @@ static struct excmd {
+@@ -1760,8 +2040,39 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -22982,6 +23113,7 @@ index d13974a6..d6a7a730 100644
 +	{"acap", ec_acap},
 +	{"agoal", ec_agoal},
 +	{"aep", ec_aep},
++	{"arq", ec_arq},
 +	{"acp", ec_acp},
 +	{"ali", ec_acp},
 +	{"auli", ec_acp},
@@ -23004,7 +23136,7 @@ index d13974a6..d6a7a730 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1929,6 +2239,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
+@@ -1929,6 +2240,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  	return src;
  }
  
@@ -23035,7 +23167,7 @@ index d13974a6..d6a7a730 100644
 +		return "/ in a range is division and needs a number; search "
 +			"with >regex> or <regex<";
 +	if (c->ec == ec_agent || c->ec == ec_compact || c->ec == ec_fuzz ||
-+			c->ec == ec_ath || c->ec == ec_aep || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
++			c->ec == ec_ath || c->ec == ec_aep || c->ec == ec_arq || c->ec == ec_quit || !strncmp(c->name, "wq", 2) ||
 +			(c->ec == ec_termexec && c->name[0] == '@') ||
 +			(c->ec == ec_write && c->name[0] == 'x'))
 +		why = "agent execution";
@@ -23073,7 +23205,7 @@ index d13974a6..d6a7a730 100644
  /* execute a single ex command chain */
  void *ex_exec(const char *ln)
  {
-@@ -1941,8 +2313,20 @@ void *ex_exec(const char *ln)
+@@ -1941,8 +2314,20 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -23095,7 +23227,7 @@ index d13974a6..d6a7a730 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1961,7 +2345,9 @@ void *ex_exec(const char *ln)
+@@ -1961,7 +2346,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
@@ -23201,10 +23333,10 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..4fb77466
+index 00000000..4ae1fbf1
 --- /dev/null
 +++ b/exspec.h
-@@ -0,0 +1,1570 @@
+@@ -0,0 +1,1590 @@
 +/* Generated from README by exspec.awk. */
 +static char *exspec_lines[] = {
 +	"EX PARSING",
@@ -24022,13 +24154,14 @@ index 00000000..4fb77466
 +	"aretry",
 +	"",
 +	"[brange]aout",
-+	"Print the saved output of the last agent tool call",
++	"Print the last agent tool output the guardrail withheld",
 +	"",
 +	"brange is first,last in 0-based byte offsets, inclusive; $ is the",
 +	"last byte; one offset selects one byte; none prints everything.",
-+	"The output of each tool call is saved, except of calls running",
-+	"aout; under agr at most 1048576 bytes, or agr if larger. Exempt",
-+	"from agr. A new session clears it.",
++	"Only output the agr guardrail withheld is saved, at most 1048576",
++	"bytes or agr if larger; it stays until the next withheld output",
++	"or a new session. Output the agent received is not saved, and",
++	"aout never saves its own. Exempt from agr.",
 +	"",
 +	"Example: bytes 50 through the end",
 +	"50,$aout",
@@ -24243,6 +24376,24 @@ index 00000000..4fb77466
 +	"aep 192.168.1.5",
 +	"Example: set the whole endpoint",
 +	"aep http://127.0.0.1:8080/v1/chat/completions",
++	"",
++	"arq[json]",
++	"Set the agent request fields",
++	"",
++	"Merges a JSON object into request_extra (conf.c), the fields sent",
++	"with every agent request: a member replaces the field of its name,",
++	"a null member removes it. messages, tools and stream are never",
++	"sent from it; ath fields replace its reasoning fields. arq alone",
++	"restores the default from conf.c. Every arq prints the fields; ast",
++	"shows them too. Takes no range. Agents cannot run it. Write each",
++	"colon of the JSON as \\:, since : separates ex commands.",
++	"",
++	"Example: limit replies to 8192 tokens",
++	"arq {\"max_tokens\"\\:8192}",
++	"Example: remove the limit again",
++	"arq {\"max_tokens\"\\:null}",
++	"Example: restore the default fields",
++	"arq",
 +	"",
 +	"ac[regex]",
 +	"Set autocomplete filter regex",
@@ -24721,59 +24872,60 @@ index 00000000..4fb77466
 +	{"apack!", "Compact the agent session by browsing its log", 789, 795, 0, 0},
 +	{"acm", "Toggle the caveman response style skill", 796, 801, 0, 0},
 +	{"aretry", "Execute the last agent command", 802, 813, 0, 0},
-+	{"aout", "Print the saved output of the last agent tool call", 814, 825, 0, 0},
-+	{"anote", "Replace or remove agent session log entries", 826, 854, 0, 0},
-+	{"aget", "Print agent session log entries, trimmed ones included", 855, 871, 0, 0},
-+	{"arate", "Rate agent turns in the notes buffer", 872, 892, 0, 0},
-+	{"adone", "End an agent checkpoint", 893, 900, 0, 0},
-+	{"acheck", "Start an agent checkpoint or set its budget", 901, 913, 0, 0},
-+	{"acp", "Print the agent checkpoint instructions", 914, 920, 0, 0},
-+	{"ali", "Print the agent session log entry list", 921, 932, 0, 0},
-+	{"auli", "Print the unrated agent session log turns", 933, 939, 0, 0},
-+	{"ast", "Print agent status and token usage", 940, 949, 0, 0},
-+	{"ath", "Set the agent thinking cap and effort", 950, 976, 0, 0},
-+	{"acap", "Raise the agent thinking cap for one reply", 977, 996, 0, 0},
-+	{"agoal", "Set or clear the agent goal", 997, 1015, 0, 0},
-+	{"aep", "Set the agent endpoint", 1016, 1036, 0, 0},
-+	{"ac", "Set autocomplete filter regex", 1037, 1045, 0, 0},
-+	{"sc", "Set ex special characters", 1046, 1056, 0, 0},
-+	{"sc!", "Set ex special characters", 1057, 1064, 0, 0},
-+	{"uc", "Toggle multi-byte UTF-8 decoding", 1065, 1072, 0, 0},
-+	{"uz", "Toggle zero-width character placeholders", 1073, 1076, 0, 0},
-+	{"ub", "Toggle multi-codepoint sequence placeholders", 1077, 1081, 0, 0},
-+	{"ph", "Redefine placeholders", 1082, 1098, 0, 0},
-+	{"acl", "Rebuild agent context from the session log", 1107, 1145, 1, 0},
-+	{"aco", "Automatically compact using the loaded session log", 1146, 1156, 1, 0},
-+	{"aco!", "Automatically compact by browsing the session log", 1157, 1163, 1, 0},
-+	{"agr", "Control agent output protection", 1164, 1169, 1, 0},
-+	{"ato", "Detach long agent shell commands", 1170, 1177, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1178, 1183, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1184, 1208, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1209, 1216, 1, 0},
-+	{"ai", "Indent new lines", 1217, 1220, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1221, 1222, 1, 0},
-+	{"ish", "Interactive shell", 1223, 1238, 1, 0},
-+	{"grp", "Regex search group", 1239, 1247, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1248, 1251, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1252, 1253, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1253, 1254, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1254, 1255, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1255, 1256, 1, 0},
-+	{"led", "Enable all terminal output", 1256, 1257, 1, 0},
-+	{"vis", "Control startup flags", 1258, 1269, 1, 0},
-+	{"mpt", "Control vi prompts", 1270, 1280, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1281, 1283, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1283, 1285, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1285, 1286, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1286, 1287, 1, 0},
-+	{"td", "Current text direction context", 1287, 1293, 1, 0},
-+	{"pr", "Print register", 1294, 1310, 1, 0},
-+	{"fr", "Find register", 1311, 1323, 1, 0},
-+	{"rr", "Record register", 1324, 1337, 1, 0},
-+	{"lim", "Line length render limit", 1338, 1353, 1, 0},
-+	{"seq", "Control Undo/Redo", 1354, 1366, 1, 0},
-+	{"left", "Control horizontal scroll", 1367, 1372, 1, 0},
-+	{"err", "Control ex errors", 1373, 1385, 1, 0},
++	{"aout", "Print the last agent tool output the guardrail withheld", 814, 826, 0, 0},
++	{"anote", "Replace or remove agent session log entries", 827, 855, 0, 0},
++	{"aget", "Print agent session log entries, trimmed ones included", 856, 872, 0, 0},
++	{"arate", "Rate agent turns in the notes buffer", 873, 893, 0, 0},
++	{"adone", "End an agent checkpoint", 894, 901, 0, 0},
++	{"acheck", "Start an agent checkpoint or set its budget", 902, 914, 0, 0},
++	{"acp", "Print the agent checkpoint instructions", 915, 921, 0, 0},
++	{"ali", "Print the agent session log entry list", 922, 933, 0, 0},
++	{"auli", "Print the unrated agent session log turns", 934, 940, 0, 0},
++	{"ast", "Print agent status and token usage", 941, 950, 0, 0},
++	{"ath", "Set the agent thinking cap and effort", 951, 977, 0, 0},
++	{"acap", "Raise the agent thinking cap for one reply", 978, 997, 0, 0},
++	{"agoal", "Set or clear the agent goal", 998, 1016, 0, 0},
++	{"aep", "Set the agent endpoint", 1017, 1037, 0, 0},
++	{"arq", "Set the agent request fields", 1038, 1055, 0, 0},
++	{"ac", "Set autocomplete filter regex", 1056, 1064, 0, 0},
++	{"sc", "Set ex special characters", 1065, 1075, 0, 0},
++	{"sc!", "Set ex special characters", 1076, 1083, 0, 0},
++	{"uc", "Toggle multi-byte UTF-8 decoding", 1084, 1091, 0, 0},
++	{"uz", "Toggle zero-width character placeholders", 1092, 1095, 0, 0},
++	{"ub", "Toggle multi-codepoint sequence placeholders", 1096, 1100, 0, 0},
++	{"ph", "Redefine placeholders", 1101, 1117, 0, 0},
++	{"acl", "Rebuild agent context from the session log", 1126, 1164, 1, 0},
++	{"aco", "Automatically compact using the loaded session log", 1165, 1175, 1, 0},
++	{"aco!", "Automatically compact by browsing the session log", 1176, 1182, 1, 0},
++	{"agr", "Control agent output protection", 1183, 1188, 1, 0},
++	{"ato", "Detach long agent shell commands", 1189, 1196, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1197, 1202, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1203, 1227, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1228, 1235, 1, 0},
++	{"ai", "Indent new lines", 1236, 1239, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1240, 1241, 1, 0},
++	{"ish", "Interactive shell", 1242, 1257, 1, 0},
++	{"grp", "Regex search group", 1258, 1266, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1267, 1270, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1271, 1272, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1272, 1273, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1273, 1274, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1274, 1275, 1, 0},
++	{"led", "Enable all terminal output", 1275, 1276, 1, 0},
++	{"vis", "Control startup flags", 1277, 1288, 1, 0},
++	{"mpt", "Control vi prompts", 1289, 1299, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1300, 1302, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1302, 1304, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1304, 1305, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1305, 1306, 1, 0},
++	{"td", "Current text direction context", 1306, 1312, 1, 0},
++	{"pr", "Print register", 1313, 1329, 1, 0},
++	{"fr", "Find register", 1330, 1342, 1, 0},
++	{"rr", "Record register", 1343, 1356, 1, 0},
++	{"lim", "Line length render limit", 1357, 1372, 1, 0},
++	{"seq", "Control Undo/Redo", 1373, 1385, 1, 0},
++	{"left", "Control horizontal scroll", 1386, 1391, 1, 0},
++	{"err", "Control ex errors", 1392, 1404, 1, 0},
 +};
 diff --git a/lbuf.c b/lbuf.c
 index 56cb42c6..f62aad73 100644
