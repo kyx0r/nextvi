@@ -22,7 +22,7 @@ fi
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 
-# Patch: agent.c agent.h cJSON.c cJSON.h cbuild.sh conf.c ex.c exspec.awk exspec.h lbuf.c led.c term.c vi.c vi.h
+# Patch: agent.c agent.h cJSON.c cJSON.h cbuild.sh conf.c ex.c exspec.awk exspec.h lbuf.c led.c regex.c term.c vi.c vi.h
 printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg prFp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
 "${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
@@ -13053,6 +13053,551 @@ void lbuf_saved\(struct lbuf \*lb, int clear\)
 '\''4c 			if (!(flg & LED_AGENT))
 				vi(1); /* redraw past screen */
 ??!219reg led.c:670:m42sc %? %@2142sc!b11m!%ya 98?0?
+%f> 	free\(p->la\);
+	free\(p\);
+}
+
+static int compilecode\(char \*re_loc, rcode \*prog, rctx \*ctx, int sizecode, int flg\)
+\{1??0?
+1??+2m 11q0?
+%f> 	free\(p->la\);
+	free\(p\);
+}4??0?
+4??+2m 1220reg p OK regex.c:60:a42sc %? %@2152sc!1q0?
+grp 1%f> 	free\(p->la\);.*?
+	free\(p\);.*?
+(})7??0?
+grp 07??m 1220reg p OK regex.c:60:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> \{
+	for \(int i = 0; i < p->laidx; i\+\+\)
+		reg_free\(p->la\[i]\);.*(	char \*re = re_loc, \*s, \*p;)
+	int \*code = sizecode \? NULL : prog->insts;
+	int start = PC, term = PC, lb_start = 0;8??0?
+grp 08??-4m 1220reg p OK regex.c:60:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> #define REL\(at, to\) \(to - at - 2\)
+#define EMIT\(at, byte\) \(code \? \(code\[at] = byte\) : at\)
+#define PC \(prog->unilen\).*(	int alt_label = 0, c, l, altc = 0, capc = 0, maxcapc = 0;)
+	int capsz = code \? ctx->capsz : 0;
+	int \*cap_stack = ctx->mem;9??0?
+grp 09??-7m 1220reg p OK regex.c:60:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg regex.c:602sc %? %@2132sc!0?
+?0?
+%f+ 		case '\''\\\\'\'':
+			re\+\+;
+			if \(!\*re\)
+				return -1; /\* Trailing backslash \*/
+			if \(\*re == '\''<'\'' \|\| \*re == '\''>'\''\) \{
+				EMIT\(PC\+\+, \*re == '\''<'\'' \? WBEG : WEND\);
+				term = PC;1??0?
+1??+3m 21q0?
+%f+ 				return -1; /\* Trailing backslash \*/
+			if \(\*re == '\''<'\'' \|\| \*re == '\''>'\''\) \{
+				EMIT\(PC\+\+, \*re == '\''<'\'' \? WBEG : WEND\);
+				term = PC;2??0?
+2??m 2220reg p OK regex.c:77:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				return -1; /\* Trailing backslash \*/$3??0?
+3??m 2220reg p OK regex.c:77:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 		case '\''\\\\'\'':
+			re\+\+;
+			if \(!\*re\)4??0?
+4??+3m 2220reg p OK regex.c:77:a42sc %? %@2152sc!1q0?
+%f+ 			if \(\*re == '\''<'\'' \|\| \*re == '\''>'\''\) \{
+				EMIT\(PC\+\+, \*re == '\''<'\'' \? WBEG : WEND\);
+				term = PC;5??0?
+5??-1m 2220reg p OK regex.c:77:a52sc %? %@2152sc!1q0?
+%f+ ..c..e...\\.:
+.....\+\+;
+.......!...\)
+.		...t..n...;./. ...i.i.g......l......
+		.i...... ==.... .......=..'\''.....
+	.	.E......... ..e..=..<.......... WE.D..
+	.	...r......;6??0?
+6??+3m 2220reg p OK regex.c:77:a62sc %? %@2152sc!1q0?
+grp 1%f+ 		case '\''\\\\'\'':.*?
+			re\+\+;.*?
+			if \(!\*re\).*?
+(				return -1; /\* Trailing backslash \*/)7??0?
+grp 07??m 2220reg p OK regex.c:77:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	int capsz = code \? ctx->capsz : 0;
+	int \*cap_stack = ctx->mem;
+	int \*alt_stack = code && cap_stack \? cap_stack \+ capsz : NULL;.*(		default:)
+			term = PC;
+			uc_code\(c, re, l\)8??0?
+grp 08??-6m 2220reg p OK regex.c:77:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	int \*code = sizecode \? NULL : prog->insts;
+	int start = PC, term = PC, lb_start = 0;
+	int alt_label = 0, c, l, altc = 0, capc = 0, maxcapc = 0;.*(			emit_char:)
+			if \(flg & REG_ICASE && \(unsigned int\)c < 128\)
+				c = tolower\(c\);9??0?
+grp 09??-9m 2220reg p OK regex.c:77:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:772sc %? %@2132sc!0?
+?0?
+%f+ 				}
+				EMIT\(PC\+\+, c\);
+				if \(!l\)
+					return -1;
+				re \+= l;
+			}
+			EMIT\(term, CLASS\);1??0?
+1??+3m 31q0?
+%f+ 					return -1;
+				re \+= l;
+			}
+			EMIT\(term, CLASS\);2??0?
+2??m 3220reg p OK regex.c:126:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^					return -1;$3??0?
+3??m 3220reg p OK regex.c:126:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 				}
+				EMIT\(PC\+\+, c\);
+				if \(!l\)4??0?
+4??+3m 3220reg p OK regex.c:126:a42sc %? %@2152sc!1q0?
+%f+ 				re \+= l;
+			}
+			EMIT\(term, CLASS\);5??0?
+5??-1m 3220reg p OK regex.c:126:a52sc %? %@2152sc!1q0?
+%f+ 	....
+..........C.\+. ..;
+.	..i. ....
+...		..........
+	.	.r.... ..
+..	.
+....M.......,..LA.S..6??0?
+6??+3m 3220reg p OK regex.c:126:a62sc %? %@2152sc!1q0?
+grp 1%f+ 				}.*?
+				EMIT\(PC\+\+, c\);.*?
+				if \(!l\).*?
+(					return -1;)7??0?
+grp 07??m 3220reg p OK regex.c:126:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 					uc_code\(c, re, l\)
+					if \(flg & REG_ICASE && \(unsigned int\)c < 128\)
+						c = tolower\(c\);.*(			EMIT\(term \+ 1, neq\);)
+			EMIT\(term \+ 2, cnt\);
+			break;8??0?
+grp 08??-4m 3220reg p OK regex.c:126:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				EMIT\(PC\+\+, c\);
+				if \(re\[l] == '\''-'\'' && re\[l\+1] != '\'']'\''\) \{
+					re \+= l \+ 1 \+ \(re\[l\+1] == '\''\\\\'\''\);.*(		case '\''\('\'':;)
+			term = PC;
+			int sub, bal, la_static;9??0?
+grp 09??-7m 3220reg p OK regex.c:126:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:1262sc %? %@2132sc!0?
+?0?
+%f+ 				else if \(\*re == '\''#'\''\) \{
+					lb_start = atoi\(re\+1\);
+					if \(!\(re = strchr\(re, '\''\)'\''\)\)\)
+						return -1;
+					break;
+				} else if \(\*re != '\''='\'' && \*re != '\''!'\'' && \*re != '\''>'\'' && \*re != '\''<'\''\)1??0?
+1??+3m 41q0?
+%f+ 						return -1;
+					break;
+				} else if \(\*re != '\''='\'' && \*re != '\''!'\'' && \*re != '\''>'\'' && \*re != '\''<'\''\)2??0?
+2??m 4220reg p OK regex.c:143:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^						return -1;$3??0?
+3??m 4220reg p OK regex.c:143:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 				else if \(\*re == '\''#'\''\) \{
+					lb_start = atoi\(re\+1\);
+					if \(!\(re = strchr\(re, '\''\)'\''\)\)\)4??0?
+4??+3m 4220reg p OK regex.c:143:a42sc %? %@2152sc!1q0?
+%f+ 					break;
+				} else if \(\*re != '\''='\'' && \*re != '\''!'\'' && \*re != '\''>'\'' && \*re != '\''<'\''\)5??0?
+5??-1m 4220reg p OK regex.c:143:a52sc %? %@2152sc!1q0?
+%f+ ........ ............... .
+..	.	.........=........\+...
+......f...\(.. .....c...r., '\''\)....
+	...	.re........
+.		.......;
+...	. .........\*...!..... .....e..=...'\''... .....=..>..&& .re.....<'\''\)6??0?
+6??+3m 4220reg p OK regex.c:143:a62sc %? %@2152sc!1q0?
+grp 1%f+ 				else if \(\*re == '\''#'\''\) \{.*?
+					lb_start = atoi\(re\+1\);.*?
+					if \(!\(re = strchr\(re, '\''\)'\''\)\)\).*?
+(						return -1;)7??0?
+grp 07??m 4220reg p OK regex.c:143:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 				re \+= 2;
+				if \(\*re == '\'':'\''\)
+					goto non_capture;.*(				bal = 1;)
+				s = \+\+re;
+				la_static = !\(flg & REG_ICASE\) && \*s == '\''\^'\'' && s\[1] != '\''\)'\'';8??0?
+grp 08??-7m 4220reg p OK regex.c:143:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			term = PC;
+			int sub, bal, la_static;
+			if \(re\[1] == '\''\?'\''\) \{.*(				while \(1\) \{)
+					if \(!\*s\)
+						return -1;9??0?
+grp 09??-10m 4220reg p OK regex.c:143:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:1432sc %? %@2132sc!0?
+?0?
+%f+ 					break;
+				} else if \(\*re != '\''='\'' && \*re != '\''!'\'' && \*re != '\''>'\'' && \*re != '\''<'\''\)
+					return -1;
+				EMIT\(PC\+\+, LOOKAROUND\);
+				EMIT\(PC\+\+, \*re == '\''='\'' \? 1 : \*re == '\''!'\'' \? -3 : \*re == '\''>'\'' \? 2 : -2\);
+				EMIT\(PC\+\+, prog->laidx\);1??0?
+1??+2m 51q0?
+%f+ 					return -1;
+				EMIT\(PC\+\+, LOOKAROUND\);
+				EMIT\(PC\+\+, \*re == '\''='\'' \? 1 : \*re == '\''!'\'' \? -3 : \*re == '\''>'\'' \? 2 : -2\);
+				EMIT\(PC\+\+, prog->laidx\);2??0?
+2??m 5220reg p OK regex.c:146:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^					return -1;$3??0?
+3??m 5220reg p OK regex.c:146:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 					break;
+				} else if \(\*re != '\''='\'' && \*re != '\''!'\'' && \*re != '\''>'\'' && \*re != '\''<'\''\)4??0?
+4??+2m 5220reg p OK regex.c:146:a42sc %? %@2152sc!1q0?
+%f+ 				EMIT\(PC\+\+, LOOKAROUND\);
+				EMIT\(PC\+\+, \*re == '\''='\'' \? 1 : \*re == '\''!'\'' \? -3 : \*re == '\''>'\'' \? 2 : -2\);
+				EMIT\(PC\+\+, prog->laidx\);5??0?
+5??-1m 5220reg p OK regex.c:146:a52sc %? %@2152sc!1q0?
+%f+ ......re...
+..... ..s........e.........& ... .. ....&& \*..... ...... ... .=....\)
+.			....... ...
+..	......PC................
+...	EMI..PC....\*.. =...='\'' . 1......... ... .....:...e.=. .>....... ....
+...	E..T....\+,..r.g.........6??0?
+6??+2m 5220reg p OK regex.c:146:a62sc %? %@2152sc!1q0?
+grp 1%f+ 					break;.*?
+				} else if \(\*re != '\''='\'' && \*re != '\''!'\'' && \*re != '\''>'\'' && \*re != '\''<'\''\).*?
+(					return -1;)7??0?
+grp 07??m 5220reg p OK regex.c:146:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 				re \+= 2;
+				if \(\*re == '\'':'\''\)
+					goto non_capture;.*(				bal = 1;)
+				s = \+\+re;
+				la_static = !\(flg & REG_ICASE\) && \*s == '\''\^'\'' && s\[1] != '\''\)'\'';8??0?
+grp 08??-4m 5220reg p OK regex.c:146:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			term = PC;
+			int sub, bal, la_static;
+			if \(re\[1] == '\''\?'\''\) \{.*(				while \(1\) \{)
+					if \(!\*s\)
+						return -1;9??0?
+grp 09??-7m 5220reg p OK regex.c:146:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:1462sc %? %@2132sc!0?
+?0?
+%f+ 				la_static = !\(flg & REG_ICASE\) && \*s == '\''\^'\'' && s\[1] != '\''\)'\'';
+				while \(1\) \{
+					if \(!\*s\)
+						return -1;
+					else if \(\*s == '\''\\\\'\''\) \{
+						s\+\+;
+						if \(code && \(\*s == '\''<'\'' \|\| \*s == '\''>'\''\)\)1??0?
+1??+3m 61q0?
+%f+ 						return -1;
+					else if \(\*s == '\''\\\\'\''\) \{
+						s\+\+;
+						if \(code && \(\*s == '\''<'\'' \|\| \*s == '\''>'\''\)\)2??0?
+2??m 6220reg p OK regex.c:155:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^						return -1;$3??0?
+3??m 6220reg p OK regex.c:155:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 				la_static = !\(flg & REG_ICASE\) && \*s == '\''\^'\'' && s\[1] != '\''\)'\'';
+				while \(1\) \{
+					if \(!\*s\)4??0?
+4??+3m 6220reg p OK regex.c:155:a42sc %? %@2152sc!1q0?
+%f+ 					else if \(\*s == '\''\\\\'\''\) \{
+						s\+\+;
+						if \(code && \(\*s == '\''<'\'' \|\| \*s == '\''>'\''\)\)5??0?
+5??-1m 6220reg p OK regex.c:155:a52sc %? %@2152sc!1q0?
+%f+ 	......s....c.. ......&...G_.C...........=....'\''......1.... ..'\''.
+...	w.il. .....
+		.	... .....
+..	.....t......;
+.	..	.... .f.\(.s .=....'\''...
+...	..s\+..
+..		......co.e... .\*s... ... ....s .= '\''>.\)\)6??0?
+6??+3m 6220reg p OK regex.c:155:a62sc %? %@2152sc!1q0?
+grp 1%f+ 				la_static = !\(flg & REG_ICASE\) && \*s == '\''\^'\'' && s\[1] != '\''\)'\'';.*?
+				while \(1\) \{.*?
+					if \(!\*s\).*?
+(						return -1;)7??0?
+grp 07??m 6220reg p OK regex.c:155:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 				EMIT\(PC\+\+, prog->laidx\);
+				bal = 1;
+				s = \+\+re;.*(							la_static = 0;)
+					} else if \(\*s == '\''\('\''\) \{
+						bal\+\+;8??0?
+grp 08??-4m 6220reg p OK regex.c:155:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 					return -1;
+				EMIT\(PC\+\+, LOOKAROUND\);
+				EMIT\(PC\+\+, \*re == '\''='\'' \? 1 : \*re == '\''!'\'' \? -3 : \*re == '\''>'\'' \? 2 : -2\);.*(					} else if \(\*s == '\''\)'\''\) \{)
+						if \(--bal == 0\)
+							break;9??0?
+grp 09??-8m 6220reg p OK regex.c:155:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:1552sc %? %@2132sc!0?
+?0?
+%f+ 			break;
+		case '\''\)'\'':
+			if \(--capc-4 < 0\)
+				return -1;
+			if \(code && alt_label\) \{
+				EMIT\(alt_label, REL\(alt_label, PC\) \+ 1\);
+				int _altc = cap_stack\[capc];1??0?
+1??+3m 71q0?
+%f+ 				return -1;
+			if \(code && alt_label\) \{
+				EMIT\(alt_label, REL\(alt_label, PC\) \+ 1\);
+				int _altc = cap_stack\[capc];2??0?
+2??m 7220reg p OK regex.c:218:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				return -1;$3??0?
+3??m 7220reg p OK regex.c:218:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 			break;
+		case '\''\)'\'':
+			if \(--capc-4 < 0\)4??0?
+4??+3m 7220reg p OK regex.c:218:a42sc %? %@2152sc!1q0?
+%f+ 			if \(code && alt_label\) \{
+				EMIT\(alt_label, REL\(alt_label, PC\) \+ 1\);
+				int _altc = cap_stack\[capc];5??0?
+5??-1m 7220reg p OK regex.c:218:a52sc %? %@2152sc!1q0?
+%f+ 	......k.
+...a.. ....
+..................0.
+			...t.r.....
+	........d..&&......a..l...
+.	.	.M..\(.l._.a.........a....a......C.......
+.........al...=.c....t.....a.c.;6??0?
+6??+3m 7220reg p OK regex.c:218:a62sc %? %@2152sc!1q0?
+grp 1%f+ 			break;.*?
+		case '\''\)'\'':.*?
+			if \(--capc-4 < 0\).*?
+(				return -1;)7??0?
+grp 07??m 7220reg p OK regex.c:218:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 				maxcapc = capc;
+			alt_label = 0;
+			start = PC;.*(				for \(int alts = altc; altc > _altc; altc--\) \{)
+					int at = alt_stack\[_altc\+alts-altc]\+\(altc-_altc\)\*2;
+					EMIT\(at, REL\(at, PC\) \+ 1\);8??0?
+grp 08??-4m 7220reg p OK regex.c:218:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			cap_stack\[capc\+\+] = start;
+			cap_stack\[capc\+\+] = altc;
+			if \(capc > maxcapc\).*(			start = cap_stack\[--capc];)
+			alt_label = cap_stack\[--capc];
+			term = cap_stack\[--capc];9??0?
+grp 09??-9m 7220reg p OK regex.c:218:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:2182sc %? %@2132sc!0?
+?0?
+%f+ 			break;
+		case '\''\?'\'':
+			if \(PC == term\)
+				return -1;
+			INSERT_CODE\(term, 2, PC\);
+			if \(re\[1] == '\''\?'\''\) \{
+				EMIT\(term, RSPLIT\);1??0?
+1??+3m 81q0?
+%f+ 				return -1;
+			INSERT_CODE\(term, 2, PC\);
+			if \(re\[1] == '\''\?'\''\) \{
+				EMIT\(term, RSPLIT\);2??0?
+2??m 8220reg p OK regex.c:282:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				return -1;$3??0?
+3??m 8220reg p OK regex.c:282:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 			break;
+		case '\''\?'\'':
+			if \(PC == term\)4??0?
+4??+3m 8220reg p OK regex.c:282:a42sc %? %@2152sc!1q0?
+%f+ 			INSERT_CODE\(term, 2, PC\);
+			if \(re\[1] == '\''\?'\''\) \{
+				EMIT\(term, RSPLIT\);5??0?
+5??-1m 8220reg p OK regex.c:282:a52sc %? %@2152sc!1q0?
+%f+ .		br.ak.
+....se.'\''\?.:
+	.	....PC.=.......
+....r........;
+......E.._CO.E....., ......;
+..	.. ........= '\''.....
+.....MI............I...6??0?
+6??+3m 8220reg p OK regex.c:282:a62sc %? %@2152sc!1q0?
+grp 1%f+ 			break;.*?
+		case '\''\?'\'':.*?
+			if \(PC == term\).*?
+(				return -1;)7??0?
+grp 07??m 8220reg p OK regex.c:282:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			}
+			if \(nojmp == 2\)
+				goto zcase;.*(		case '\''\*'\'':)
+			if \(PC == term\)
+				return -1;8??0?
+grp 08??-10m 8220reg p OK regex.c:282:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				EMIT\(PC\+\+, REL\(PC, PC\+\(\(size\+2\)\*i\)\)\);
+				if \(code\)
+					memcpy\(&code\[PC], &code\[term], size\*sizeof\(int\)\);.*(			INSERT_CODE\(term, 2, PC\);)
+			EMIT\(PC, JMP\);
+			EMIT\(PC \+ 1, REL\(PC, term\)\);9??0?
+grp 09??-13m 8220reg p OK regex.c:282:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:2822sc %? %@2132sc!0?
+?0?
+%f+ 			break;
+		case '\''\*'\'':
+			if \(PC == term\)
+				return -1;
+			INSERT_CODE\(term, 2, PC\);
+			EMIT\(PC, JMP\);
+			EMIT\(PC \+ 1, REL\(PC, term\)\);1??0?
+1??+3m 91q0?
+%f+ 				return -1;
+			INSERT_CODE\(term, 2, PC\);
+			EMIT\(PC, JMP\);
+			EMIT\(PC \+ 1, REL\(PC, term\)\);2??0?
+2??m 9220reg p OK regex.c:294:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				return -1;$3??0?
+3??m 9220reg p OK regex.c:294:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 			break;
+		case '\''\*'\'':
+			if \(PC == term\)4??0?
+4??+3m 9220reg p OK regex.c:294:a42sc %? %@2152sc!1q0?
+%f+ 			INSERT_CODE\(term, 2, PC\);
+			EMIT\(PC, JMP\);
+			EMIT\(PC \+ 1, REL\(PC, term\)\);5??0?
+5??-1m 9220reg p OK regex.c:294:a52sc %? %@2152sc!1q0?
+%f+ .	...eak.
+	.c........
+....f..P..==......
+.	..r.........
+.......R._...........2......
+.......\(P.......;
+.....I.\(........R..\(.., ..r.\)..6??0?
+6??+3m 9220reg p OK regex.c:294:a62sc %? %@2152sc!1q0?
+grp 1%f+ 			break;.*?
+		case '\''\*'\'':.*?
+			if \(PC == term\).*?
+(				return -1;)7??0?
+grp 07??m 9220reg p OK regex.c:294:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			INSERT_CODE\(term, 2, PC\);
+			if \(re\[1] == '\''\?'\''\) \{
+				EMIT\(term, RSPLIT\);.*(		case '\''\+'\'':)
+			if \(PC == term\)
+				return -1;8??0?
+grp 08??-13m 9220reg p OK regex.c:294:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		case '\''\?'\'':
+			if \(PC == term\)
+				return -1;.*(			if \(re\[1] == '\''\?'\''\) \{)
+				EMIT\(PC, SPLIT\);
+				re\+\+;9??0?
+grp 09??-16m 9220reg p OK regex.c:294:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:2942sc %? %@2132sc!0?
+?0?
+%f+ 			break;
+		case '\''\+'\'':
+			if \(PC == term\)
+				return -1;
+			if \(re\[1] == '\''\?'\''\) \{
+				EMIT\(PC, SPLIT\);
+				re\+\+;1??0?
+1??+3m 101q0?
+%f+ 				return -1;
+			if \(re\[1] == '\''\?'\''\) \{
+				EMIT\(PC, SPLIT\);
+				re\+\+;2??0?
+2??m 10220reg p OK regex.c:309:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				return -1;$3??0?
+3??m 10220reg p OK regex.c:309:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 			break;
+		case '\''\+'\'':
+			if \(PC == term\)4??0?
+4??+3m 10220reg p OK regex.c:309:a42sc %? %@2152sc!1q0?
+%f+ 			if \(re\[1] == '\''\?'\''\) \{
+				EMIT\(PC, SPLIT\);
+				re\+\+;5??0?
+5??-1m 10220reg p OK regex.c:309:a52sc %? %@2152sc!1q0?
+%f+ ...b.....
+.......'\''...
+.	....\(.......e...
+.........n...;
+.		i...re\[.. =. ..'\''...
+...	......., SP...\);
+.	.......6??0?
+6??+3m 10220reg p OK regex.c:309:a62sc %? %@2152sc!1q0?
+grp 1%f+ 			break;.*?
+		case '\''\+'\'':.*?
+			if \(PC == term\).*?
+(				return -1;)7??0?
+grp 07??m 10220reg p OK regex.c:309:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			PC \+= 2;
+			if \(re\[1] == '\''\?'\''\) \{
+				EMIT\(term, RSPLIT\);.*(				EMIT\(PC, RSPLIT\);)
+			EMIT\(PC \+ 1, REL\(PC, term\)\);
+			PC \+= 2;8??0?
+grp 08??-5m 10220reg p OK regex.c:309:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			INSERT_CODE\(term, 2, PC\);
+			EMIT\(PC, JMP\);
+			EMIT\(PC \+ 1, REL\(PC, term\)\);.*(		case '\''\|'\'':)
+			if \(alt_label\) \{
+				if \(code\)9??0?
+grp 09??-10m 10220reg p OK regex.c:309:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:3092sc %? %@2132sc!0?
+?0?
+%f+ 		if \(maxcapc \+ altc > capsz\)
+			ctx->mem = erealloc\(ctx->mem, \(maxcapc \+ altc\) \* sizeof\(int\)\);
+	}
+	return capc \? -1 : 0;
+}
+
+static int reg_comp\(rcode \*prog, char \*re, rcode \*hdr, rctx \*ctx, int flg\)1??0?
+1??+3m 111q0?
+%f+ 	return capc \? -1 : 0;
+}
+
+static int reg_comp\(rcode \*prog, char \*re, rcode \*hdr, rctx \*ctx, int flg\)2??0?
+2??m 11220reg p OK regex.c:354:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	return capc \? -1 : 0;$3??0?
+3??m 11220reg p OK regex.c:354:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 		if \(maxcapc \+ altc > capsz\)
+			ctx->mem = erealloc\(ctx->mem, \(maxcapc \+ altc\) \* sizeof\(int\)\);
+	}4??0?
+4??+3m 11220reg p OK regex.c:354:a42sc %? %@2152sc!1q0?
+%f+ }
+
+static int reg_comp\(rcode \*prog, char \*re, rcode \*hdr, rctx \*ctx, int flg\)5??0?
+5??-1m 11220reg p OK regex.c:354:a52sc %? %@2152sc!1q0?
+%f+ .	....ma.c......alt......p...
+...............r.........x-.m.m, .ma.ca.. \+.......\*..i...........
+	.
+..etur.....c.\?... :...
+}
+
+...t...i.....g.c..........\*.ro.....a.....,...... ..d.....t..\*.t.. ... f.g.6??0?
+6??+3m 11220reg p OK regex.c:354:a62sc %? %@2152sc!1q0?
+grp 1%f+ 		if \(maxcapc \+ altc > capsz\).*?
+			ctx->mem = erealloc\(ctx->mem, \(maxcapc \+ altc\) \* sizeof\(int\)\);.*?
+	}.*?
+(	return capc \? -1 : 0;)7??0?
+grp 07??m 11220reg p OK regex.c:354:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		}
+	} else if \(!code\) \{
+		ctx->capsz = maxcapc;.*(	prog->len = 0;)
+	prog->unilen = 0;
+	prog->sub = 0;8??0?
+grp 08??-5m 11220reg p OK regex.c:354:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		for \(int alts = altc; altc; altc--\) \{
+			int at = alt_stack\[alts-altc]\+altc\*2;
+			EMIT\(at, REL\(at, PC\) \+ 1\);.*(	prog->presub = hdr->sub;)
+	prog->splits = 0;
+	prog->laidx = 0;9??0?
+grp 09??-8m 11220reg p OK regex.c:354:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg regex.c:3542sc %? %@2132sc!0?
+'\''1i /* agents get the reason a regex fails; ex reports only a syntax error */
+#define RERR(msg) { if (agent_tool) ex_print("regex: " msg, msg_ft) return -1; }
+??!219reg regex.c:60:m12sc %? %@2142sc!0?
+'\''2c 				RERR("trailing backslash")
+??!219reg regex.c:77:m22sc %? %@2142sc!0?
+'\''3c 					RERR("unterminated [ bracket")
+??!219reg regex.c:126:m32sc %? %@2142sc!0?
+'\''4c 						RERR("unterminated (?# group")
+??!219reg regex.c:143:m42sc %? %@2142sc!0?
+'\''5c 					RERR("unknown (? group; escape a literal ( as \\(")
+??!219reg regex.c:146:m52sc %? %@2142sc!0?
+'\''6c 						RERR("unbalanced parenthesis in lookaround; escape a literal ( as \\(")
+??!219reg regex.c:155:m62sc %? %@2142sc!0?
+'\''7c 				RERR("unbalanced parenthesis; escape a literal ) as \\)")
+??!219reg regex.c:218:m72sc %? %@2142sc!0?
+'\''8c 				RERR("nothing to repeat; escape a literal ?, * or + with \\")
+??!219reg regex.c:282:m82sc %? %@2142sc!0?
+'\''9c 				RERR("nothing to repeat; escape a literal ?, * or + with \\")
+??!219reg regex.c:294:m92sc %? %@2142sc!0?
+'\''10c 				RERR("nothing to repeat; escape a literal ?, * or + with \\")
+??!219reg regex.c:309:m102sc %? %@2142sc!0?
+'\''11c 	if (capc)
+		RERR("unbalanced parenthesis; escape a literal ( as \\(")
+	return 0;
+??!219reg regex.c:354:m112sc %? %@2142sc!b12m!%ya 98?0?
 %f> 		return;
 	term_commit\(\);
 	sbuf_free\(term_sbuf\)
@@ -13197,7 +13742,7 @@ sbuf \*cmd_pipe\(char \*cmd, sbuf \*ibuf, int oproc, int \*status\).*?
 	if (agent_tool)
 		return agent_shell(cmd, ibuf, oproc, status);
 ??!219reg term.c:275:m32sc %? %@2142sc!0?
-'\''4s/_sbuf/inal/??!219reg term.c:365:m42sc %? %@2142sc!b12m!%ya 98?0?
+'\''4s/_sbuf/inal/??!219reg term.c:365:m42sc %? %@2142sc!b13m!%ya 98?0?
 %f> #include <sys/stat\.h>
 #include <sys/ioctl\.h>
 #include <sys/wait\.h>
@@ -13465,7 +14010,7 @@ static int vi_lnnum;		/\* line numbers \*/9??0?
 		fprintf(stderr, "%s: %s\n", *resume ? resume : "-r", agent_init_error);
 		return EXIT_FAILURE;
 	}
-??!219reg vi.c:1854:m82sc %? %@2142sc!b13m!%ya 98?0?
+??!219reg vi.c:1854:m82sc %? %@2142sc!b14m!%ya 98?0?
 %f> is\.sug = NULL; \\
 is\._sug = NULL; \\
 
@@ -13574,8 +14119,8 @@ extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
 ??!219reg vi.h:449:m12sc %? %@2142sc!0?
 '\''2i extern int xaspec;
 ??!219reg vi.h:495:m22sc %? %@2142sc!0?
-'\''3s/3/8/??!219reg vi.h:523:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7wb8wb9wb10wb11wb12wb13w2q' > "$P2VIF"
-EXINIT='%ya 97:? %@97' $VI -e 'agent.c' 'agent.h' 'cJSON.c' 'cJSON.h' 'cbuild.sh' 'conf.c' 'ex.c' 'exspec.awk' 'exspec.h' 'lbuf.c' 'led.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
+'\''3s/3/8/??!219reg vi.h:523:m32sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7wb8wb9wb10wb11wb12wb13wb14w2q' > "$P2VIF"
+EXINIT='%ya 97:? %@97' $VI -e 'agent.c' 'agent.h' 'cJSON.c' 'cJSON.h' 'cbuild.sh' 'conf.c' 'ex.c' 'exspec.awk' 'exspec.h' 'lbuf.c' 'led.c' 'regex.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
@@ -25197,6 +25742,106 @@ index 4893a07e..2641d0ff 100644
  			restore(ftidx)
  			term_pos(xrows, 0);
  			if (xquit > 0 || (xquit < -256 && xquit >= -512))
+diff --git a/regex.c b/regex.c
+index fd22467f..cb0f050b 100644
+--- a/regex.c
++++ b/regex.c
+@@ -58,6 +58,8 @@ static void reg_free(rcode *p)
+ 	free(p->la);
+ 	free(p);
+ }
++/* agents get the reason a regex fails; ex reports only a syntax error */
++#define RERR(msg) { if (agent_tool) ex_print("regex: " msg, msg_ft) return -1; }
+ 
+ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int flg)
+ {
+@@ -74,7 +76,7 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
+ 		case '\\':
+ 			re++;
+ 			if (!*re)
+-				return -1; /* Trailing backslash */
++				RERR("trailing backslash")
+ 			if (*re == '<' || *re == '>') {
+ 				EMIT(PC++, *re == '<' ? WBEG : WEND);
+ 				term = PC;
+@@ -123,7 +125,7 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
+ 				}
+ 				EMIT(PC++, c);
+ 				if (!l)
+-					return -1;
++					RERR("unterminated [ bracket")
+ 				re += l;
+ 			}
+ 			EMIT(term, CLASS);
+@@ -140,10 +142,10 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
+ 				else if (*re == '#') {
+ 					lb_start = atoi(re+1);
+ 					if (!(re = strchr(re, ')')))
+-						return -1;
++						RERR("unterminated (?# group")
+ 					break;
+ 				} else if (*re != '=' && *re != '!' && *re != '>' && *re != '<')
+-					return -1;
++					RERR("unknown (? group; escape a literal ( as \\(")
+ 				EMIT(PC++, LOOKAROUND);
+ 				EMIT(PC++, *re == '=' ? 1 : *re == '!' ? -3 : *re == '>' ? 2 : -2);
+ 				EMIT(PC++, prog->laidx);
+@@ -152,7 +154,7 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
+ 				la_static = !(flg & REG_ICASE) && *s == '^' && s[1] != ')';
+ 				while (1) {
+ 					if (!*s)
+-						return -1;
++						RERR("unbalanced parenthesis in lookaround; escape a literal ( as \\(")
+ 					else if (*s == '\\') {
+ 						s++;
+ 						if (code && (*s == '<' || *s == '>'))
+@@ -215,7 +217,7 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
+ 			break;
+ 		case ')':
+ 			if (--capc-4 < 0)
+-				return -1;
++				RERR("unbalanced parenthesis; escape a literal ) as \\)")
+ 			if (code && alt_label) {
+ 				EMIT(alt_label, REL(alt_label, PC) + 1);
+ 				int _altc = cap_stack[capc];
+@@ -279,7 +281,7 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
+ 			break;
+ 		case '?':
+ 			if (PC == term)
+-				return -1;
++				RERR("nothing to repeat; escape a literal ?, * or + with \\")
+ 			INSERT_CODE(term, 2, PC);
+ 			if (re[1] == '?') {
+ 				EMIT(term, RSPLIT);
+@@ -291,7 +293,7 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
+ 			break;
+ 		case '*':
+ 			if (PC == term)
+-				return -1;
++				RERR("nothing to repeat; escape a literal ?, * or + with \\")
+ 			INSERT_CODE(term, 2, PC);
+ 			EMIT(PC, JMP);
+ 			EMIT(PC + 1, REL(PC, term));
+@@ -306,7 +308,7 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
+ 			break;
+ 		case '+':
+ 			if (PC == term)
+-				return -1;
++				RERR("nothing to repeat; escape a literal ?, * or + with \\")
+ 			if (re[1] == '?') {
+ 				EMIT(PC, SPLIT);
+ 				re++;
+@@ -351,7 +353,9 @@ static int compilecode(char *re_loc, rcode *prog, rctx *ctx, int sizecode, int f
+ 		if (maxcapc + altc > capsz)
+ 			ctx->mem = erealloc(ctx->mem, (maxcapc + altc) * sizeof(int));
+ 	}
+-	return capc ? -1 : 0;
++	if (capc)
++		RERR("unbalanced parenthesis; escape a literal ( as \\(")
++	return 0;
+ }
+ 
+ static int reg_comp(rcode *prog, char *re, rcode *hdr, rctx *ctx, int flg)
 diff --git a/term.c b/term.c
 index 4e11ec2f..4668eda9 100644
 --- a/term.c
