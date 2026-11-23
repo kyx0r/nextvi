@@ -86,6 +86,8 @@ static struct agent_usage {
 	int reported, anchored;
 } agent_usage;
 static int agent_packing, agent_pack_done;
+/* The pack prompt accepted its summary and became a normal session. */
+static int agent_pack_accepted;
 /* Session log text when the current pack started; NULL outside packs. */
 static char *agent_pack_log;
 static char agent_pack_retry[] =
@@ -4511,9 +4513,45 @@ done:
 	return ret;
 }
 
+/* Accept a pack whose agent replaced the log in b-4: keep the log it
+ * replaced in b-7, rebuild the context from the summary, and log a resume
+ * entry to b-4 so the prompt carries on as a normal session. Returns 1 when
+ * the summary was accepted, 0 while b-4 still holds the original log. */
+static int agent_pack_accept(char *original)
+{
+	char *summary = agent_text(tempbufs[3].lb);
+	char *text = summary;
+	while (isspace((unsigned char)*text))
+		text++;
+	if (!*text || !strcmp(original, summary) ||
+			strlen(summary) >= strlen(original) || agent_save(3)) {
+		free(summary);
+		return 0;
+	}
+	agent_history(1);
+	/* The summary is numbered before the resume entry. */
+	agent_discard_log(original);
+	agent_head_summary();
+	sbuf_smake(resume, 256)
+	sbuf_str(resume, "Manual compaction is complete. The preceding log summary\n"
+		"is working memory, not a new task. Continue the session, using the\n"
+		"summary to avoid repeating completed actions or tool calls.\n")
+	sbuf_nul(resume)
+	agent_logbuf = 3;
+	agent_log("USER", resume->s);
+	if (!xacl)
+		agent_add_user(agent_messages, resume->s);
+	free(resume->s);
+	free(summary);
+	if (agent_save(3))
+		ex_print("agent write failed; buffer text retained", msg_ft)
+	agent_pack_accepted = 1;
+	return 1;
+}
+
 static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 {
-	char *scope = NULL;
+	char *scope = NULL, *original = NULL;
 	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf, spec = 0;
 	cJSON *config;
 	unsigned long epoch;
@@ -4530,6 +4568,7 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 	if (compact) {
 		temp_switch(3, 0);
 		spec = exspec_pack(1);
+		original = agent_text(tempbufs[3].lb);
 	}
 	if (cmd[1]) {
 		agent_epoch++;
@@ -4616,6 +4655,14 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 					break;
 				agent_cancel = 0;
 				/* A reply is not proof of completed compaction; allow follow-ups. */
+				/* Once the summary is in b-4 the pack is over: archive the
+				 * log it replaced and carry on as a normal session, with
+				 * the summary as context and b-4 as the log to append to. */
+				if (compact && !xquit && epoch == agent_epoch &&
+						agent_pack_accept(original)) {
+					exspec_pack(spec);
+					compact = 0;
+				}
 			}
 			prefix = key == '\''\n'\'' ? 0 : 2;
 			sbufn_cut(line, 0)
@@ -4626,6 +4673,7 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 	}
 	agent_output("\n");
 	free(scope);
+	free(original);
 	free(draft->s);
 	free(line->s);
 	restore(xexe)
@@ -4739,6 +4787,7 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	cJSON *history = agent_messages;
 	struct agent_usage usage = agent_usage;
 	int was_packing = agent_packing, was_done = agent_pack_done;
+	int was_accepted = agent_pack_accepted;
 	char *was_log = agent_pack_log;
 	agent_messages = NULL;
 	agent_packing = 1;
@@ -4746,11 +4795,16 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	agent_pack_log = original;
 	/* apack! resets history without clearing or importing the log. */
 	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
-	int complete = agent_pack_done;
+	int complete = agent_pack_done, accepted = agent_pack_accepted;
+	agent_pack_accepted = was_accepted;
 	agent_pack_log = was_log;
 	agent_packing = was_packing;
 	agent_pack_done = was_done;
-	if (agent_epoch == epoch + 1) {
+	/* A pack the prompt accepted has already resumed the session from its
+	 * summary: keep that log and drop the detached prior context. */
+	if (accepted)
+		cJSON_Delete(history);
+	else if (agent_epoch == epoch + 1) {
 		struct lbuf *lb = tempbufs[3].lb;
 		char *summary = agent_text(lb);
 		int changed = strcmp(original, summary) != 0;
@@ -13485,10 +13539,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..03c74cd4
+index 00000000..354b3932
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4873 @@
+@@ -0,0 +1,4927 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -13545,6 +13599,8 @@ index 00000000..03c74cd4
 +	int reported, anchored;
 +} agent_usage;
 +static int agent_packing, agent_pack_done;
++/* The pack prompt accepted its summary and became a normal session. */
++static int agent_pack_accepted;
 +/* Session log text when the current pack started; NULL outside packs. */
 +static char *agent_pack_log;
 +static char agent_pack_retry[] =
@@ -17970,9 +18026,45 @@ index 00000000..03c74cd4
 +	return ret;
 +}
 +
++/* Accept a pack whose agent replaced the log in b-4: keep the log it
++ * replaced in b-7, rebuild the context from the summary, and log a resume
++ * entry to b-4 so the prompt carries on as a normal session. Returns 1 when
++ * the summary was accepted, 0 while b-4 still holds the original log. */
++static int agent_pack_accept(char *original)
++{
++	char *summary = agent_text(tempbufs[3].lb);
++	char *text = summary;
++	while (isspace((unsigned char)*text))
++		text++;
++	if (!*text || !strcmp(original, summary) ||
++			strlen(summary) >= strlen(original) || agent_save(3)) {
++		free(summary);
++		return 0;
++	}
++	agent_history(1);
++	/* The summary is numbered before the resume entry. */
++	agent_discard_log(original);
++	agent_head_summary();
++	sbuf_smake(resume, 256)
++	sbuf_str(resume, "Manual compaction is complete. The preceding log summary\n"
++		"is working memory, not a new task. Continue the session, using the\n"
++		"summary to avoid repeating completed actions or tool calls.\n")
++	sbuf_nul(resume)
++	agent_logbuf = 3;
++	agent_log("USER", resume->s);
++	if (!xacl)
++		agent_add_user(agent_messages, resume->s);
++	free(resume->s);
++	free(summary);
++	if (agent_save(3))
++		ex_print("agent write failed; buffer text retained", msg_ft)
++	agent_pack_accepted = 1;
++	return 1;
++}
++
 +static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 +{
-+	char *scope = NULL;
++	char *scope = NULL, *original = NULL;
 +	int key, prefix = 2, savedvis = xvis, term_owned = !term_sbuf, spec = 0;
 +	cJSON *config;
 +	unsigned long epoch;
@@ -17989,6 +18081,7 @@ index 00000000..03c74cd4
 +	if (compact) {
 +		temp_switch(3, 0);
 +		spec = exspec_pack(1);
++		original = agent_text(tempbufs[3].lb);
 +	}
 +	if (cmd[1]) {
 +		agent_epoch++;
@@ -18075,6 +18168,14 @@ index 00000000..03c74cd4
 +					break;
 +				agent_cancel = 0;
 +				/* A reply is not proof of completed compaction; allow follow-ups. */
++				/* Once the summary is in b-4 the pack is over: archive the
++				 * log it replaced and carry on as a normal session, with
++				 * the summary as context and b-4 as the log to append to. */
++				if (compact && !xquit && epoch == agent_epoch &&
++						agent_pack_accept(original)) {
++					exspec_pack(spec);
++					compact = 0;
++				}
 +			}
 +			prefix = key == '\n' ? 0 : 2;
 +			sbufn_cut(line, 0)
@@ -18085,6 +18186,7 @@ index 00000000..03c74cd4
 +	}
 +	agent_output("\n");
 +	free(scope);
++	free(original);
 +	free(draft->s);
 +	free(line->s);
 +	restore(xexe)
@@ -18198,6 +18300,7 @@ index 00000000..03c74cd4
 +	cJSON *history = agent_messages;
 +	struct agent_usage usage = agent_usage;
 +	int was_packing = agent_packing, was_done = agent_pack_done;
++	int was_accepted = agent_pack_accepted;
 +	char *was_log = agent_pack_log;
 +	agent_messages = NULL;
 +	agent_packing = 1;
@@ -18205,11 +18308,16 @@ index 00000000..03c74cd4
 +	agent_pack_log = original;
 +	/* apack! resets history without clearing or importing the log. */
 +	ret = agent_session(loc, browse ? cmd : "a~", task, 1);
-+	int complete = agent_pack_done;
++	int complete = agent_pack_done, accepted = agent_pack_accepted;
++	agent_pack_accepted = was_accepted;
 +	agent_pack_log = was_log;
 +	agent_packing = was_packing;
 +	agent_pack_done = was_done;
-+	if (agent_epoch == epoch + 1) {
++	/* A pack the prompt accepted has already resumed the session from its
++	 * summary: keep that log and drop the detached prior context. */
++	if (accepted)
++		cJSON_Delete(history);
++	else if (agent_epoch == epoch + 1) {
 +		struct lbuf *lb = tempbufs[3].lb;
 +		char *summary = agent_text(lb);
 +		int changed = strcmp(original, summary) != 0;
