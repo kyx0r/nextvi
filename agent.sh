@@ -1548,7 +1548,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 				sbuf_mem(sb, note, (int)strcspn(note, "\n"))
 			}
 		} else if (spans[k].role == AE_TURN && spans[k].calls && unrated)
-			sbuf_str(sb, " unrated")
+			sbuf_str(sb, " ?")
 		sbuf_chr(sb, '\''\n'\'')
 		/* Insert into the five largest, kept in descending order. */
 		if (agent_span_tokens(spans + k) < 50 || (!all &&
@@ -1619,7 +1619,7 @@ static void agent_cp_unrated(sbuf *sb)
 			continue;
 		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
 		sbuf_str(sb, ln)
-		sbuf_str(sb, " unrated\n")
+		sbuf_str(sb, " ?\n")
 		n++;
 	}
 	if (!n)
@@ -4702,8 +4702,7 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	sbuf_str(task, "The current buffer is b-4, which contains a log of the session.\n")
 	if (browse)
 		sbuf_str(task,
-		"The log has not been loaded into your context. Inspect the current\n"
-		"buffer using ex searches and bounded line ranges. Do not read the\n"
+		"The log has not been loaded into your context. Do not read the\n"
 		"entire buffer into context.\n")
 	else
 		sbuf_str(task,
@@ -4741,11 +4740,11 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 		/* The legend covers only the ratings listed, each with its
 		 * weighting; every note is listed, current or trimmed. */
 		static char *legend[] = {
-			"0 dead weight: omit\n",
-			"1 low, minor, superseded or only mechanics: a phrase at most\n",
-			"2 useful, informs the remaining work: a summary\n",
-			"3 essential, a decision, finding or state the task depends on:\n"
-			"  the exact details\n"};
+			"0 - dead weight: omit\n",
+			"1 - low, minor, superseded or only mechanics: a phrase at most\n",
+			"2 - useful, informs the remaining work: a summary\n",
+			"3 - essential, a decision, finding or state the task depends on:\n"
+			"    the exact details\n"};
 		int seen = 0, r, row, unrated = 0;
 		for (int i = 0; i < lbuf_len(notes); i++)
 			if (agent_note_line(notes->ln[i], &n, &r))
@@ -4753,12 +4752,12 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 		for (int k = 0; k < cnt && !unrated; k++)
 			unrated = spans[k].role == AE_TURN && spans[k].calls &&
 				!agent_note(spans[k].n, &r, &row);
-		sbuf_str(task, "Ratings and how much of the entry to keep:\n")
+		sbuf_str(task, "Ratings:\n")
+		if (unrated)
+			sbuf_str(task, "? - judge by content\n")
 		for (r = 0; r < 4; r++)
 			if (seen & 1 << r)
 				sbuf_str(task, legend[r])
-		if (unrated)
-			sbuf_str(task, "unrated: judge by content\n")
 	}
 	if (cnt || trimmed)
 		sbuf_str(task, lbuf_len(tempbufs[6].lb) ?
@@ -13560,10 +13559,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..6e93f646
+index 00000000..baeb1405
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4948 @@
+@@ -0,0 +1,4947 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15082,7 +15081,7 @@ index 00000000..6e93f646
 +				sbuf_mem(sb, note, (int)strcspn(note, "\n"))
 +			}
 +		} else if (spans[k].role == AE_TURN && spans[k].calls && unrated)
-+			sbuf_str(sb, " unrated")
++			sbuf_str(sb, " ?")
 +		sbuf_chr(sb, '\n')
 +		/* Insert into the five largest, kept in descending order. */
 +		if (agent_span_tokens(spans + k) < 50 || (!all &&
@@ -15153,7 +15152,7 @@ index 00000000..6e93f646
 +			continue;
 +		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
 +		sbuf_str(sb, ln)
-+		sbuf_str(sb, " unrated\n")
++		sbuf_str(sb, " ?\n")
 +		n++;
 +	}
 +	if (!n)
@@ -18236,8 +18235,7 @@ index 00000000..6e93f646
 +	sbuf_str(task, "The current buffer is b-4, which contains a log of the session.\n")
 +	if (browse)
 +		sbuf_str(task,
-+		"The log has not been loaded into your context. Inspect the current\n"
-+		"buffer using ex searches and bounded line ranges. Do not read the\n"
++		"The log has not been loaded into your context. Do not read the\n"
 +		"entire buffer into context.\n")
 +	else
 +		sbuf_str(task,
@@ -18275,11 +18273,11 @@ index 00000000..6e93f646
 +		/* The legend covers only the ratings listed, each with its
 +		 * weighting; every note is listed, current or trimmed. */
 +		static char *legend[] = {
-+			"0 dead weight: omit\n",
-+			"1 low, minor, superseded or only mechanics: a phrase at most\n",
-+			"2 useful, informs the remaining work: a summary\n",
-+			"3 essential, a decision, finding or state the task depends on:\n"
-+			"  the exact details\n"};
++			"0 - dead weight: omit\n",
++			"1 - low, minor, superseded or only mechanics: a phrase at most\n",
++			"2 - useful, informs the remaining work: a summary\n",
++			"3 - essential, a decision, finding or state the task depends on:\n"
++			"    the exact details\n"};
 +		int seen = 0, r, row, unrated = 0;
 +		for (int i = 0; i < lbuf_len(notes); i++)
 +			if (agent_note_line(notes->ln[i], &n, &r))
@@ -18287,12 +18285,12 @@ index 00000000..6e93f646
 +		for (int k = 0; k < cnt && !unrated; k++)
 +			unrated = spans[k].role == AE_TURN && spans[k].calls &&
 +				!agent_note(spans[k].n, &r, &row);
-+		sbuf_str(task, "Ratings and how much of the entry to keep:\n")
++		sbuf_str(task, "Ratings:\n")
++		if (unrated)
++			sbuf_str(task, "? - judge by content\n")
 +		for (r = 0; r < 4; r++)
 +			if (seen & 1 << r)
 +				sbuf_str(task, legend[r])
-+		if (unrated)
-+			sbuf_str(task, "unrated: judge by content\n")
 +	}
 +	if (cnt || trimmed)
 +		sbuf_str(task, lbuf_len(tempbufs[6].lb) ?
