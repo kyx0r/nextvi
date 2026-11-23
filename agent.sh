@@ -1423,14 +1423,8 @@ static int agent_cp_hold(char *unrated, int size)
 	return n && agent_cp_refused++ < 2;
 }
 
-/* A rating to copy, for the first unrated entry in an agent_unrated list. */
-static char *agent_cp_example(char *unrated)
-{
-	static char ex[112];
-	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser "
-		"and found where defaults are set\n", strtoul(unrated + 5, NULL, 10));
-	return ex;
-}
+/* A literal rating example; a fixed turn so it is not copied as is. */
+static char agent_cp_example[] = "53arate 2 justification: ...\n";
 
 static const char agent_rating_scale[] =
 	"Ratings:\n"
@@ -1698,7 +1692,7 @@ static void agent_cp_instructions(sbuf *sb, int scale)
 	sbuf_str(sb, agent_cp_turns)
 	if (agent_unrated_now(unrated, sizeof(unrated))) {
 		sbuf_str(sb, "Rate the unrated turns first, e.g.\n")
-		sbuf_str(sb, agent_cp_example(unrated))
+		sbuf_str(sb, agent_cp_example)
 		sbuf_str(sb, "\nThen t")
 		sbuf_str(sb, agent_cp_trim + 1)
 	} else
@@ -3573,7 +3567,7 @@ reply:
 					"Nothing ran: your reply made no ex tool calls. Still "
 					"unrated: %s\nSend one ex tool call per command, "
 					"N[,M]arate R sentence, e.g.\n%sThen adone.",
-					unrated, agent_cp_example(unrated));
+					unrated, agent_cp_example);
 				cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 				agent_log("USER", msg);
 				continue;
@@ -14154,10 +14148,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..06e12b5a
+index 00000000..6f913573
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4997 @@
+@@ -0,0 +1,4991 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15551,14 +15545,8 @@ index 00000000..06e12b5a
 +	return n && agent_cp_refused++ < 2;
 +}
 +
-+/* A rating to copy, for the first unrated entry in an agent_unrated list. */
-+static char *agent_cp_example(char *unrated)
-+{
-+	static char ex[112];
-+	snprintf(ex, sizeof(ex), "%luarate 2 read the option parser "
-+		"and found where defaults are set\n", strtoul(unrated + 5, NULL, 10));
-+	return ex;
-+}
++/* A literal rating example; a fixed turn so it is not copied as is. */
++static char agent_cp_example[] = "53arate 2 justification: ...\n";
 +
 +static const char agent_rating_scale[] =
 +	"Ratings:\n"
@@ -15826,7 +15814,7 @@ index 00000000..06e12b5a
 +	sbuf_str(sb, agent_cp_turns)
 +	if (agent_unrated_now(unrated, sizeof(unrated))) {
 +		sbuf_str(sb, "Rate the unrated turns first, e.g.\n")
-+		sbuf_str(sb, agent_cp_example(unrated))
++		sbuf_str(sb, agent_cp_example)
 +		sbuf_str(sb, "\nThen t")
 +		sbuf_str(sb, agent_cp_trim + 1)
 +	} else
@@ -17701,7 +17689,7 @@ index 00000000..06e12b5a
 +					"Nothing ran: your reply made no ex tool calls. Still "
 +					"unrated: %s\nSend one ex tool call per command, "
 +					"N[,M]arate R sentence, e.g.\n%sThen adone.",
-+					unrated, agent_cp_example(unrated));
++					unrated, agent_cp_example);
 +				cJSON_AddItemToArray(agent_messages, agent_msg("user", msg));
 +				agent_log("USER", msg);
 +				continue;
