@@ -8784,7 +8784,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "Example: change only the port\n:aep 8081\n" \
                 "Example: change the host, keeping the port\n:aep 192.168.1.5\n" \
                 "Example: set the whole endpoint\n" \
-                ":aep http://127.0.0.1:8080/v1/chat/completions")
+                ":aep http\\://127.0.0.1\\:8080/v1/chat/completions")
             spec("arq[json]", "Set the agent request fields",
                 "Merges a JSON object into request_extra (conf.c), the fields sent\n" \
                 "with every agent request: a member replaces the field of its name,\n" \
@@ -9229,7 +9229,7 @@ static struct {
 };
 
 ??!219reg conf.c:2:m12sc %? %@2142sc!0?
-'\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+'\''2,#+1c ((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate|q))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 |[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|arq|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
 ??!219reg conf.c:300:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> int xts = 8;			/\* number of spaces for tab \*/
@@ -12156,7 +12156,7 @@ static char *exspec_lines[] = {
 	"Example: change the host, keeping the port",
 	"aep 192.168.1.5",
 	"Example: set the whole endpoint",
-	"aep http://127.0.0.1:8080/v1/chat/completions",
+	"aep http\\://127.0.0.1\\:8080/v1/chat/completions",
 	"",
 	"arq[json]",
 	"Set the agent request fields",
@@ -21931,7 +21931,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..a054bdc7 100755
+index c836c94c..91b2002d 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,344 @@ build() {
@@ -22164,7 +22164,7 @@ index c836c94c..a054bdc7 100755
 +                "Example: change only the port\n:aep 8081\n" \
 +                "Example: change the host, keeping the port\n:aep 192.168.1.5\n" \
 +                "Example: set the whole endpoint\n" \
-+                ":aep http://127.0.0.1:8080/v1/chat/completions")
++                ":aep http\\://127.0.0.1\\:8080/v1/chat/completions")
 +            spec("arq[json]", "Set the agent request fields",
 +                "Merges a JSON object into request_extra (conf.c), the fields sent\n" \
 +                "with every agent request: a member replaces the field of its name,\n" \
@@ -22299,7 +22299,7 @@ index c836c94c..a054bdc7 100755
          shift
          [ -x ./vi ] && install && exit 0 || build && install && exit 0
 diff --git a/conf.c b/conf.c
-index 2888d7c6..310a7a04 100644
+index 2888d7c6..ef062da0 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -1,5 +1,266 @@
@@ -22575,7 +22575,7 @@ index 2888d7c6..310a7a04 100644
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
 -((pac|pr|ai|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 -|[@&!dj]|m!?|=\\?{0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|ac|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
-+((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate|q))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
 +|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|arq|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
@@ -23333,7 +23333,7 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..4ae1fbf1
+index 00000000..7b7c96df
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1590 @@
@@ -24375,7 +24375,7 @@ index 00000000..4ae1fbf1
 +	"Example: change the host, keeping the port",
 +	"aep 192.168.1.5",
 +	"Example: set the whole endpoint",
-+	"aep http://127.0.0.1:8080/v1/chat/completions",
++	"aep http\\://127.0.0.1\\:8080/v1/chat/completions",
 +	"",
 +	"arq[json]",
 +	"Set the agent request fields",
