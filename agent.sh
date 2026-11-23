@@ -4752,6 +4752,7 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	else
 		sbuf_str(task,
 		"The log is in your context. Do not read the current buffer into context.\n")
+	sbuf_chr(task, '\''\n'\'')
 	struct lbuf *notes = tempbufs[5].lb;
 	struct agent_span *spans;
 	int cnt = agent_spans(&spans), trimmed = 0, rated = lbuf_len(notes) > 0;
@@ -4765,21 +4766,6 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	 * entries. */
 	for (int i = 0; i < lbuf_len(notes); i++)
 		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n);
-	/* A loaded log already shows each entry: list them only for their
-	 * notes, or to browse. */
-	if (cnt && !browse && !rated) {
-		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
-		sbuf_str(task, ln)
-	} else if (cnt || trimmed) {
-		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n",
-			total, trimmed ? ",\nin order with the notes of turns already "
-			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
-			browse ? " line" : "", rated ? " rating note" : "");
-		sbuf_str(task, ln)
-		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
-			reasoned);
-	}
 	if (lbuf_len(notes)) {
 		/* The legend covers only the ratings listed, each with its
 		 * weighting; every note is listed, current or trimmed. */
@@ -4802,6 +4788,22 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 		for (r = 0; r < 4; r++)
 			if (seen & 1 << r)
 				sbuf_str(task, legend[r])
+		sbuf_chr(task, '\''\n'\'')
+	}
+	/* A loaded log already shows each entry: list them only for their
+	 * notes, or to browse. */
+	if (cnt && !browse && !rated) {
+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
+		sbuf_str(task, ln)
+	} else if (cnt || trimmed) {
+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
+			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n",
+			total, trimmed ? ",\nin order with the notes of turns already "
+			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
+			browse ? " line" : "", rated ? " rating note" : "");
+		sbuf_str(task, ln)
+		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
+			reasoned);
 	}
 	if (cnt || trimmed)
 		sbuf_str(task, lbuf_len(tempbufs[6].lb) ?
@@ -14148,10 +14150,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..6f913573
+index 00000000..1eaeae92
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4991 @@
+@@ -0,0 +1,4993 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -18874,6 +18876,7 @@ index 00000000..6f913573
 +	else
 +		sbuf_str(task,
 +		"The log is in your context. Do not read the current buffer into context.\n")
++	sbuf_chr(task, '\n')
 +	struct lbuf *notes = tempbufs[5].lb;
 +	struct agent_span *spans;
 +	int cnt = agent_spans(&spans), trimmed = 0, rated = lbuf_len(notes) > 0;
@@ -18887,21 +18890,6 @@ index 00000000..6f913573
 +	 * entries. */
 +	for (int i = 0; i < lbuf_len(notes); i++)
 +		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n);
-+	/* A loaded log already shows each entry: list them only for their
-+	 * notes, or to browse. */
-+	if (cnt && !browse && !rated) {
-+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
-+		sbuf_str(task, ln)
-+	} else if (cnt || trimmed) {
-+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-+			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n",
-+			total, trimmed ? ",\nin order with the notes of turns already "
-+			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
-+			browse ? " line" : "", rated ? " rating note" : "");
-+		sbuf_str(task, ln)
-+		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
-+			reasoned);
-+	}
 +	if (lbuf_len(notes)) {
 +		/* The legend covers only the ratings listed, each with its
 +		 * weighting; every note is listed, current or trimmed. */
@@ -18924,6 +18912,22 @@ index 00000000..6f913573
 +		for (r = 0; r < 4; r++)
 +			if (seen & 1 << r)
 +				sbuf_str(task, legend[r])
++		sbuf_chr(task, '\n')
++	}
++	/* A loaded log already shows each entry: list them only for their
++	 * notes, or to browse. */
++	if (cnt && !browse && !rated) {
++		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
++		sbuf_str(task, ln)
++	} else if (cnt || trimmed) {
++		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
++			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n",
++			total, trimmed ? ",\nin order with the notes of turns already "
++			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
++			browse ? " line" : "", rated ? " rating note" : "");
++		sbuf_str(task, ln)
++		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
++			reasoned);
 +	}
 +	if (cnt || trimmed)
 +		sbuf_str(task, lbuf_len(tempbufs[6].lb) ?
