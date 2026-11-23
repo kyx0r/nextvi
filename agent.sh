@@ -1434,10 +1434,11 @@ static char *agent_cp_example(char *unrated)
 
 static const char agent_rating_scale[] =
 	"Ratings:\n"
-	"0 mistakes, dead weight, no value for the remaining work\n"
-	"1 low, minor, superseded or only mechanics\n"
-	"2 useful, informs the remaining work\n"
-	"3 essential, a decision, finding or state the task depends on\n";
+	"? - not yet rated\n"
+	"0 - mistakes, dead weight, no value for the remaining work\n"
+	"1 - low, minor, superseded or only mechanics\n"
+	"2 - useful, informs the remaining work\n"
+	"3 - essential, a decision, finding or state the task depends on\n";
 
 /* Whether b-6 line l rates an entry no longer among spans; sets its number. */
 static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
@@ -4689,6 +4690,8 @@ static void *agent_session(char *loc, char *cmd, char *arg, int compact)
 				if (compact && !xquit && epoch == agent_epoch &&
 						agent_pack_accept(original)) {
 					exspec_pack(spec);
+					/* The session continues as a normal one. */
+					agent_packing = 0;
 					compact = 0;
 				}
 			}
@@ -13585,10 +13588,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..e0a93317
+index 00000000..76562d61
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4973 @@
+@@ -0,0 +1,4976 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -14993,10 +14996,11 @@ index 00000000..e0a93317
 +
 +static const char agent_rating_scale[] =
 +	"Ratings:\n"
-+	"0 mistakes, dead weight, no value for the remaining work\n"
-+	"1 low, minor, superseded or only mechanics\n"
-+	"2 useful, informs the remaining work\n"
-+	"3 essential, a decision, finding or state the task depends on\n";
++	"? - not yet rated\n"
++	"0 - mistakes, dead weight, no value for the remaining work\n"
++	"1 - low, minor, superseded or only mechanics\n"
++	"2 - useful, informs the remaining work\n"
++	"3 - essential, a decision, finding or state the task depends on\n";
 +
 +/* Whether b-6 line l rates an entry no longer among spans; sets its number. */
 +static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
@@ -18248,6 +18252,8 @@ index 00000000..e0a93317
 +				if (compact && !xquit && epoch == agent_epoch &&
 +						agent_pack_accept(original)) {
 +					exspec_pack(spec);
++					/* The session continues as a normal one. */
++					agent_packing = 0;
 +					compact = 0;
 +				}
 +			}
