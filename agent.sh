@@ -4536,7 +4536,7 @@ static int agent_pack_accept(char *original)
 	agent_discard_log(original);
 	agent_head_summary();
 	sbuf_smake(resume, 256)
-	sbuf_str(resume, "Manual compaction is complete. The preceding log summary"
+	sbuf_str(resume, "Manual compaction is complete. The preceding log summary "
 		"is working memory, not a new task.\n")
 	sbuf_nul(resume)
 	agent_logbuf = 3;
@@ -13541,7 +13541,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..da6219e7
+index 00000000..6c241041
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,4929 @@
@@ -18051,7 +18051,7 @@ index 00000000..da6219e7
 +	agent_discard_log(original);
 +	agent_head_summary();
 +	sbuf_smake(resume, 256)
-+	sbuf_str(resume, "Manual compaction is complete. The preceding log summary"
++	sbuf_str(resume, "Manual compaction is complete. The preceding log summary "
 +		"is working memory, not a new task.\n")
 +	sbuf_nul(resume)
 +	agent_logbuf = 3;
