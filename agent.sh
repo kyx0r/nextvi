@@ -1274,11 +1274,12 @@ static int agent_ratable(struct agent_span *s)
 	return s->role == AE_TURN || s->role == AE_USER;
 }
 
-/* Whether a listing shows the note of rated entry s; a text reply already
- * says its sentence. */
+/* Whether a listing shows the note of rated entry s: every entry that
+ * takes a rating, text replies included, since the reply itself is not
+ * in the listing. */
 static int agent_noted(struct agent_span *s)
 {
-	return s->calls || s->role == AE_USER;
+	return agent_ratable(s);
 }
 
 /* Entry n among spans if it takes a rating, or NULL. */
@@ -1510,8 +1511,8 @@ static void agent_span_head(char *ln, int size, struct agent_span *s, int reason
 }
 
 /* One line per b-4 entry: agent_span_head, " N" (b-4 line) with lines, then
- * the rating or ? of turns and USER entries, with the note unless a text
- * reply; with trimmed, the notes of trimmed entries in number order among
+ * the rating or ? of turns and USER entries, with the note; with trimmed,
+ * the notes of trimmed entries in number order among
  * them. Then the five largest entries of ~50 tokens or more. Without all,
  * NOTICE entries are not listed
  * and, outside a checkpoint, where the agent cannot note them, USER entries
@@ -1559,7 +1560,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 					note = agent_note_text(note);
 				}
 			}
-			/* A note or a text reply already says its sentence. */
+			/* The sentence follows the rating. */
 			if (agent_noted(spans + k)) {
 				sbuf_chr(sb, '\'' '\'')
 				sbuf_mem(sb, note, (int)strcspn(note, "\n"))
@@ -14150,10 +14151,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..1eaeae92
+index 00000000..bf9ed98c
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4993 @@
+@@ -0,0 +1,4994 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15398,11 +15399,12 @@ index 00000000..1eaeae92
 +	return s->role == AE_TURN || s->role == AE_USER;
 +}
 +
-+/* Whether a listing shows the note of rated entry s; a text reply already
-+ * says its sentence. */
++/* Whether a listing shows the note of rated entry s: every entry that
++ * takes a rating, text replies included, since the reply itself is not
++ * in the listing. */
 +static int agent_noted(struct agent_span *s)
 +{
-+	return s->calls || s->role == AE_USER;
++	return agent_ratable(s);
 +}
 +
 +/* Entry n among spans if it takes a rating, or NULL. */
@@ -15634,8 +15636,8 @@ index 00000000..1eaeae92
 +}
 +
 +/* One line per b-4 entry: agent_span_head, " N" (b-4 line) with lines, then
-+ * the rating or ? of turns and USER entries, with the note unless a text
-+ * reply; with trimmed, the notes of trimmed entries in number order among
++ * the rating or ? of turns and USER entries, with the note; with trimmed,
++ * the notes of trimmed entries in number order among
 + * them. Then the five largest entries of ~50 tokens or more. Without all,
 + * NOTICE entries are not listed
 + * and, outside a checkpoint, where the agent cannot note them, USER entries
@@ -15683,7 +15685,7 @@ index 00000000..1eaeae92
 +					note = agent_note_text(note);
 +				}
 +			}
-+			/* A note or a text reply already says its sentence. */
++			/* The sentence follows the rating. */
 +			if (agent_noted(spans + k)) {
 +				sbuf_chr(sb, ' ')
 +				sbuf_mem(sb, note, (int)strcspn(note, "\n"))
