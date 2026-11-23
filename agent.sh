@@ -1424,7 +1424,7 @@ static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
 }
 
 /* From b-6 line *row, list the notes of trimmed turns numbered up to upto
- * as "TURN N trimmed [R] note". Following notes with the same rating that
+ * as "TURN N trimmed R note". Following notes with the same rating that
  * name N, or the entry N names, join it as "TURN N-M". */
 static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
 		int *row, unsigned long upto)
@@ -1453,9 +1453,9 @@ static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
 			i++;
 		}
 		if (end > n)
-			snprintf(ln, sizeof(ln), "TURN %lu-%lu trimmed [%c] ", n, end, note[-2]);
+			snprintf(ln, sizeof(ln), "TURN %lu-%lu trimmed %c ", n, end, note[-2]);
 		else
-			snprintf(ln, sizeof(ln), "TURN %lu trimmed [%c] ", n, note[-2]);
+			snprintf(ln, sizeof(ln), "TURN %lu trimmed %c ", n, note[-2]);
 		sbuf_str(sb, ln)
 		sbuf_mem(sb, note, (int)strcspn(note, "\n"))
 		sbuf_chr(sb, '\''\n'\'')
@@ -1494,7 +1494,7 @@ static void agent_span_head(char *ln, int size, struct agent_span *s, int reason
 }
 
 /* One line per b-4 entry: agent_span_head, " line N" with lines, then
- * [rating] for turns and the note for those with commands; with trimmed, the
+ * the rating for turns and the note for those with commands; with trimmed, the
  * notes of trimmed turns in number order among them. Then the five largest
  * entries of ~50 tokens or more. Without all, NOTICE entries are not listed
  * and, outside a checkpoint, where the agent cannot note them, USER entries
@@ -1519,7 +1519,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 			sbuf_str(sb, ln)
 		}
 		if (spans[k].role == AE_TURN && (note = agent_note(spans[k].n, &r, &row))) {
-			snprintf(ln, sizeof(ln), " [%d]", r);
+			snprintf(ln, sizeof(ln), " %d", r);
 			sbuf_str(sb, ln)
 			/* A sentence whose own entry is removed, or listed without
 			 * its note, shows on the first entry that names it, unless
@@ -1548,7 +1548,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 				sbuf_mem(sb, note, (int)strcspn(note, "\n"))
 			}
 		} else if (spans[k].role == AE_TURN && spans[k].calls && unrated)
-			sbuf_str(sb, " [unrated]")
+			sbuf_str(sb, " unrated")
 		sbuf_chr(sb, '\''\n'\'')
 		/* Insert into the five largest, kept in descending order. */
 		if (agent_span_tokens(spans + k) < 50 || (!all &&
@@ -1587,11 +1587,10 @@ static void agent_cp_status(sbuf *sb, int cp)
 		total += agent_span_tokens(spans + k);
 	snprintf(ln, sizeof(ln), cp ?
 		"Context checkpoint. Your context is rebuilt from these session log\n"
-		"entries, about %.0f tokens (role number ~tokens;\n"
-		"turns as %stext+commands+results=tokens, then [rating] note):\n" :
-		"The session log holds about %.0f tokens in these entries\n"
-		"(role number ~tokens;\n"
-		"turns as %stext+commands+results=tokens, then [rating] note):\n",
+		"entries, about %.0f tokens:\n"
+		"role number %stext+commands+results=tokens rating note\n" :
+		"The session log holds about %.0f tokens in these entries:\n"
+		"role number %stext+commands+results=tokens rating note\n",
 		total, reasoned ? "reasoning+" : "");
 	sbuf_str(sb, ln)
 	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned);
@@ -1620,7 +1619,7 @@ static void agent_cp_unrated(sbuf *sb)
 			continue;
 		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
 		sbuf_str(sb, ln)
-		sbuf_str(sb, " [unrated]\n")
+		sbuf_str(sb, " unrated\n")
 		n++;
 	}
 	if (!n)
@@ -4499,13 +4498,13 @@ static void *ec_arate(char *loc, char *cmd, char *arg)
 		snprintf(nums + len, sizeof(nums) - len, " and %d more", rated - 8);
 	agent_sync(tempbufs[5].lb);
 	if (rated > 1 && list)
-		snprintf(msg, sizeof(msg), "rated %d turns TURN %s [%c]",
+		snprintf(msg, sizeof(msg), "rated %d turns TURN %s %c",
 			rated, nums, *arg);
 	else if (rated > 1)
-		snprintf(msg, sizeof(msg), "rated %d turns TURN %lu-%lu [%c]",
+		snprintf(msg, sizeof(msg), "rated %d turns TURN %lu-%lu %c",
 			rated, lo, hi, *arg);
 	else
-		snprintf(msg, sizeof(msg), "rated TURN %lu [%c]", lo, *arg);
+		snprintf(msg, sizeof(msg), "rated TURN %lu %c", lo, *arg);
 	ex_print(msg, msg_ft)
 	/* A checkpoint drops dead weight from the log at once. */
 	if (*arg == '\''0'\'' && agent_checkpointing == 1)
@@ -4729,26 +4728,46 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 		sbuf_str(task, ln)
 	} else if (cnt || trimmed) {
 		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-			"entries\n(role number ~tokens%s;\n"
-			"turns as %stext+commands+results=tokens%s)%s:\n", total,
-			browse ? ", first line" : "", reasoned ? "reasoning+" : "",
-			rated ? ", then [rating] note" : "",
-			trimmed ? ",\nin order with the notes of turns already trimmed "
-			"from the log\n(TURN number trimmed [rating] note)" : "");
+			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n%s",
+			total, trimmed ? ",\nin order with the notes of turns already "
+			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
+			browse ? " line" : "", rated ? " rating note" : "",
+			trimmed ? "TURN number trimmed rating note\n" : "");
 		sbuf_str(task, ln)
 		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
 			reasoned);
 	}
 	if (lbuf_len(notes)) {
-		sbuf_str(task, agent_rating_scale)
-		sbuf_str(task,
-			"Weigh entries by rating: omit 0, at most a phrase for 1, summarize 2,\n"
-			"keep the exact details of 3. Judge unrated entries by their content.\n")
+		/* The legend covers only the ratings listed, each with its
+		 * weighting; every note is listed, current or trimmed. */
+		static char *legend[] = {
+			"0 dead weight: omit\n",
+			"1 low, minor, superseded or only mechanics: a phrase at most\n",
+			"2 useful, informs the remaining work: a summary\n",
+			"3 essential, a decision, finding or state the task depends on:\n"
+			"  the exact details\n"};
+		int seen = 0, r, row, unrated = 0;
+		for (int i = 0; i < lbuf_len(notes); i++)
+			if (agent_note_line(notes->ln[i], &n, &r))
+				seen |= 1 << r;
+		for (int k = 0; k < cnt && !unrated; k++)
+			unrated = spans[k].role == AE_TURN && spans[k].calls &&
+				!agent_note(spans[k].n, &r, &row);
+		sbuf_str(task, "Ratings and how much of the entry to keep:\n")
+		for (r = 0; r < 4; r++)
+			if (seen & 1 << r)
+				sbuf_str(task, legend[r])
+		if (unrated)
+			sbuf_str(task, "unrated: judge by content\n")
 	}
-	if (lbuf_len(tempbufs[6].lb))
-		sbuf_str(task, "Trimmed entries are kept in full: N[,M]aget prints "
-			"entries N through M,\ntrimmed ones included, when the summary "
-			"needs their details.\n")
+	if (cnt || trimmed)
+		sbuf_str(task, lbuf_len(tempbufs[6].lb) ?
+			"N[,M]aget[parts] prints entries N through M with their headers,\n"
+			"trimmed ones included, kept in full; parts selects part indexes or\n"
+			"roles, e.g. 20,80aget EX. Use it when the summary needs details.\n" :
+			"N[,M]aget[parts] prints entries N through M with their headers;\n"
+			"parts selects part indexes or roles, e.g. 20,80aget EX.\n"
+			"Use it when the summary needs details.\n");
 	free(spans);
 	sbuf_chr(task, '\''\n'\'')
 	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
@@ -8662,7 +8681,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
                 "summary. Text replaces the default instructions; range attaches\n" \
                 "buffer text. With arate notes (b-6), the task lists the log entries\n" \
                 "with estimated tokens and notes, those of trimmed turns included.\n" \
-                "While b-7 holds entries, it offers aget for them. The prompt stays\n" \
+                "It offers aget for the entries, trimmed included. The prompt stays\n" \
                 "open; on exit a log the agent replaced becomes the session, else\n" \
                 "the old session is restored. On success the notes are archived\n" \
                 "beside the log, b-6 is cleared and the replaced entries move to\n" \
@@ -11955,7 +11974,7 @@ static char *exspec_lines[] = {
 	"summary. Text replaces the default instructions; range attaches",
 	"buffer text. With arate notes (b-6), the task lists the log entries",
 	"with estimated tokens and notes, those of trimmed turns included.",
-	"While b-7 holds entries, it offers aget for them. The prompt stays",
+	"It offers aget for the entries, trimmed included. The prompt stays",
 	"open; on exit a log the agent replaced becomes the session, else",
 	"the old session is restored. On success the notes are archived",
 	"beside the log, b-6 is cleared and the replaced entries move to",
@@ -13541,10 +13560,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..6c241041
+index 00000000..6e93f646
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4929 @@
+@@ -0,0 +1,4948 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -14939,7 +14958,7 @@ index 00000000..6c241041
 +}
 +
 +/* From b-6 line *row, list the notes of trimmed turns numbered up to upto
-+ * as "TURN N trimmed [R] note". Following notes with the same rating that
++ * as "TURN N trimmed R note". Following notes with the same rating that
 + * name N, or the entry N names, join it as "TURN N-M". */
 +static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
 +		int *row, unsigned long upto)
@@ -14968,9 +14987,9 @@ index 00000000..6c241041
 +			i++;
 +		}
 +		if (end > n)
-+			snprintf(ln, sizeof(ln), "TURN %lu-%lu trimmed [%c] ", n, end, note[-2]);
++			snprintf(ln, sizeof(ln), "TURN %lu-%lu trimmed %c ", n, end, note[-2]);
 +		else
-+			snprintf(ln, sizeof(ln), "TURN %lu trimmed [%c] ", n, note[-2]);
++			snprintf(ln, sizeof(ln), "TURN %lu trimmed %c ", n, note[-2]);
 +		sbuf_str(sb, ln)
 +		sbuf_mem(sb, note, (int)strcspn(note, "\n"))
 +		sbuf_chr(sb, '\n')
@@ -15009,7 +15028,7 @@ index 00000000..6c241041
 +}
 +
 +/* One line per b-4 entry: agent_span_head, " line N" with lines, then
-+ * [rating] for turns and the note for those with commands; with trimmed, the
++ * the rating for turns and the note for those with commands; with trimmed, the
 + * notes of trimmed turns in number order among them. Then the five largest
 + * entries of ~50 tokens or more. Without all, NOTICE entries are not listed
 + * and, outside a checkpoint, where the agent cannot note them, USER entries
@@ -15034,7 +15053,7 @@ index 00000000..6c241041
 +			sbuf_str(sb, ln)
 +		}
 +		if (spans[k].role == AE_TURN && (note = agent_note(spans[k].n, &r, &row))) {
-+			snprintf(ln, sizeof(ln), " [%d]", r);
++			snprintf(ln, sizeof(ln), " %d", r);
 +			sbuf_str(sb, ln)
 +			/* A sentence whose own entry is removed, or listed without
 +			 * its note, shows on the first entry that names it, unless
@@ -15063,7 +15082,7 @@ index 00000000..6c241041
 +				sbuf_mem(sb, note, (int)strcspn(note, "\n"))
 +			}
 +		} else if (spans[k].role == AE_TURN && spans[k].calls && unrated)
-+			sbuf_str(sb, " [unrated]")
++			sbuf_str(sb, " unrated")
 +		sbuf_chr(sb, '\n')
 +		/* Insert into the five largest, kept in descending order. */
 +		if (agent_span_tokens(spans + k) < 50 || (!all &&
@@ -15102,11 +15121,10 @@ index 00000000..6c241041
 +		total += agent_span_tokens(spans + k);
 +	snprintf(ln, sizeof(ln), cp ?
 +		"Context checkpoint. Your context is rebuilt from these session log\n"
-+		"entries, about %.0f tokens (role number ~tokens;\n"
-+		"turns as %stext+commands+results=tokens, then [rating] note):\n" :
-+		"The session log holds about %.0f tokens in these entries\n"
-+		"(role number ~tokens;\n"
-+		"turns as %stext+commands+results=tokens, then [rating] note):\n",
++		"entries, about %.0f tokens:\n"
++		"role number %stext+commands+results=tokens rating note\n" :
++		"The session log holds about %.0f tokens in these entries:\n"
++		"role number %stext+commands+results=tokens rating note\n",
 +		total, reasoned ? "reasoning+" : "");
 +	sbuf_str(sb, ln)
 +	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned);
@@ -15135,7 +15153,7 @@ index 00000000..6c241041
 +			continue;
 +		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
 +		sbuf_str(sb, ln)
-+		sbuf_str(sb, " [unrated]\n")
++		sbuf_str(sb, " unrated\n")
 +		n++;
 +	}
 +	if (!n)
@@ -18014,13 +18032,13 @@ index 00000000..6c241041
 +		snprintf(nums + len, sizeof(nums) - len, " and %d more", rated - 8);
 +	agent_sync(tempbufs[5].lb);
 +	if (rated > 1 && list)
-+		snprintf(msg, sizeof(msg), "rated %d turns TURN %s [%c]",
++		snprintf(msg, sizeof(msg), "rated %d turns TURN %s %c",
 +			rated, nums, *arg);
 +	else if (rated > 1)
-+		snprintf(msg, sizeof(msg), "rated %d turns TURN %lu-%lu [%c]",
++		snprintf(msg, sizeof(msg), "rated %d turns TURN %lu-%lu %c",
 +			rated, lo, hi, *arg);
 +	else
-+		snprintf(msg, sizeof(msg), "rated TURN %lu [%c]", lo, *arg);
++		snprintf(msg, sizeof(msg), "rated TURN %lu %c", lo, *arg);
 +	ex_print(msg, msg_ft)
 +	/* A checkpoint drops dead weight from the log at once. */
 +	if (*arg == '0' && agent_checkpointing == 1)
@@ -18244,26 +18262,46 @@ index 00000000..6c241041
 +		sbuf_str(task, ln)
 +	} else if (cnt || trimmed) {
 +		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-+			"entries\n(role number ~tokens%s;\n"
-+			"turns as %stext+commands+results=tokens%s)%s:\n", total,
-+			browse ? ", first line" : "", reasoned ? "reasoning+" : "",
-+			rated ? ", then [rating] note" : "",
-+			trimmed ? ",\nin order with the notes of turns already trimmed "
-+			"from the log\n(TURN number trimmed [rating] note)" : "");
++			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n%s",
++			total, trimmed ? ",\nin order with the notes of turns already "
++			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
++			browse ? " line" : "", rated ? " rating note" : "",
++			trimmed ? "TURN number trimmed rating note\n" : "");
 +		sbuf_str(task, ln)
 +		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
 +			reasoned);
 +	}
 +	if (lbuf_len(notes)) {
-+		sbuf_str(task, agent_rating_scale)
-+		sbuf_str(task,
-+			"Weigh entries by rating: omit 0, at most a phrase for 1, summarize 2,\n"
-+			"keep the exact details of 3. Judge unrated entries by their content.\n")
++		/* The legend covers only the ratings listed, each with its
++		 * weighting; every note is listed, current or trimmed. */
++		static char *legend[] = {
++			"0 dead weight: omit\n",
++			"1 low, minor, superseded or only mechanics: a phrase at most\n",
++			"2 useful, informs the remaining work: a summary\n",
++			"3 essential, a decision, finding or state the task depends on:\n"
++			"  the exact details\n"};
++		int seen = 0, r, row, unrated = 0;
++		for (int i = 0; i < lbuf_len(notes); i++)
++			if (agent_note_line(notes->ln[i], &n, &r))
++				seen |= 1 << r;
++		for (int k = 0; k < cnt && !unrated; k++)
++			unrated = spans[k].role == AE_TURN && spans[k].calls &&
++				!agent_note(spans[k].n, &r, &row);
++		sbuf_str(task, "Ratings and how much of the entry to keep:\n")
++		for (r = 0; r < 4; r++)
++			if (seen & 1 << r)
++				sbuf_str(task, legend[r])
++		if (unrated)
++			sbuf_str(task, "unrated: judge by content\n")
 +	}
-+	if (lbuf_len(tempbufs[6].lb))
-+		sbuf_str(task, "Trimmed entries are kept in full: N[,M]aget prints "
-+			"entries N through M,\ntrimmed ones included, when the summary "
-+			"needs their details.\n")
++	if (cnt || trimmed)
++		sbuf_str(task, lbuf_len(tempbufs[6].lb) ?
++			"N[,M]aget[parts] prints entries N through M with their headers,\n"
++			"trimmed ones included, kept in full; parts selects part indexes or\n"
++			"roles, e.g. 20,80aget EX. Use it when the summary needs details.\n" :
++			"N[,M]aget[parts] prints entries N through M with their headers;\n"
++			"parts selects part indexes or roles, e.g. 20,80aget EX.\n"
++			"Use it when the summary needs details.\n");
 +	free(spans);
 +	sbuf_chr(task, '\n')
 +	sbuf_str(task, *arg ? arg : "Summarize identifying the key goals, decisions, changes,\n"
@@ -22040,7 +22078,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..91b2002d 100755
+index c836c94c..7e8736fe 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,344 @@ build() {
@@ -22095,7 +22133,7 @@ index c836c94c..91b2002d 100755
 +                "summary. Text replaces the default instructions; range attaches\n" \
 +                "buffer text. With arate notes (b-6), the task lists the log entries\n" \
 +                "with estimated tokens and notes, those of trimmed turns included.\n" \
-+                "While b-7 holds entries, it offers aget for them. The prompt stays\n" \
++                "It offers aget for the entries, trimmed included. The prompt stays\n" \
 +                "open; on exit a log the agent replaced becomes the session, else\n" \
 +                "the old session is restored. On success the notes are archived\n" \
 +                "beside the log, b-6 is cleared and the replaced entries move to\n" \
@@ -23439,7 +23477,7 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..7b7c96df
+index 00000000..13a6f8d6
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1590 @@
@@ -24227,7 +24265,7 @@ index 00000000..7b7c96df
 +	"summary. Text replaces the default instructions; range attaches",
 +	"buffer text. With arate notes (b-6), the task lists the log entries",
 +	"with estimated tokens and notes, those of trimmed turns included.",
-+	"While b-7 holds entries, it offers aget for them. The prompt stays",
++	"It offers aget for the entries, trimmed included. The prompt stays",
 +	"open; on exit a log the agent replaced becomes the session, else",
 +	"the old session is restored. On success the notes are archived",
 +	"beside the log, b-6 is cleared and the replaced entries move to",
