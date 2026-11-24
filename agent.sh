@@ -1471,7 +1471,6 @@ static void agent_temp_clear(int i)
 static cJSON *agent_cp;
 static int agent_cp_base = -1, agent_cp_logbuf, agent_cp_done;
 static int agent_cp_refused, agent_cp_left;	/* refusals, unrated then */
-static int agent_cp_cmds;	/* turns with commands then, rated or not */
 static int agent_cp_asked;	/* acheck: checkpoint at the next boundary */
 static char agent_continue[] = "Continue the task.";
 /* Context bytes at the start; in bytes so reports use the current anchor. */
@@ -1494,9 +1493,6 @@ static int agent_cp_hold(char *unrated, int size)
 	struct agent_span *spans;
 	int cnt = agent_spans(&spans);
 	int n = agent_unrated(spans, cnt, unrated, size);
-	agent_cp_cmds = 0;
-	for (int k = 0; k < cnt; k++)
-		agent_cp_cmds += spans[k].role == AE_TURN && spans[k].calls;
 	free(spans);
 	if (n < agent_cp_left)
 		agent_cp_refused = 0;
@@ -2275,10 +2271,10 @@ static void *ec_adone(char *loc, char *cmd, char *arg)
 	if (!agent_checkpointing)
 		return "no checkpoint in progress";
 	if (agent_cp_hold(unrated, sizeof(unrated))) {
-		snprintf(err, sizeof(err), "%d/%d turns unrated; rate first with "
+		snprintf(err, sizeof(err), "%d entries unrated; rate with "
 			"N[,M]arate R sentence:\n%s\nali command prints the whole "
 			"list, auli command prints the unrated list only",
-			agent_cp_left, agent_cp_cmds, unrated);
+			agent_cp_left, unrated);
 		return err;
 	}
 	agent_cp_done = 1;
@@ -3807,7 +3803,7 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 			epochs += !strncmp(tempbufs[5].lb->ln[i], "EPOCH ", 6);
 		}
 		snprintf(msg, sizeof(msg), "notes      %d in b-6, %d removed, "
-			"%d epochs, %d turns unrated", agent_notes_live(0), removed,
+			"%d epochs, %d entries unrated", agent_notes_live(0), removed,
 			epochs, n);
 		ex_print(msg, msg_ft)
 	}
@@ -14268,10 +14264,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..1f845494
+index 00000000..6ae6aec3
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5111 @@
+@@ -0,0 +1,5107 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15713,7 +15709,6 @@ index 00000000..1f845494
 +static cJSON *agent_cp;
 +static int agent_cp_base = -1, agent_cp_logbuf, agent_cp_done;
 +static int agent_cp_refused, agent_cp_left;	/* refusals, unrated then */
-+static int agent_cp_cmds;	/* turns with commands then, rated or not */
 +static int agent_cp_asked;	/* acheck: checkpoint at the next boundary */
 +static char agent_continue[] = "Continue the task.";
 +/* Context bytes at the start; in bytes so reports use the current anchor. */
@@ -15736,9 +15731,6 @@ index 00000000..1f845494
 +	struct agent_span *spans;
 +	int cnt = agent_spans(&spans);
 +	int n = agent_unrated(spans, cnt, unrated, size);
-+	agent_cp_cmds = 0;
-+	for (int k = 0; k < cnt; k++)
-+		agent_cp_cmds += spans[k].role == AE_TURN && spans[k].calls;
 +	free(spans);
 +	if (n < agent_cp_left)
 +		agent_cp_refused = 0;
@@ -16517,10 +16509,10 @@ index 00000000..1f845494
 +	if (!agent_checkpointing)
 +		return "no checkpoint in progress";
 +	if (agent_cp_hold(unrated, sizeof(unrated))) {
-+		snprintf(err, sizeof(err), "%d/%d turns unrated; rate first with "
++		snprintf(err, sizeof(err), "%d entries unrated; rate with "
 +			"N[,M]arate R sentence:\n%s\nali command prints the whole "
 +			"list, auli command prints the unrated list only",
-+			agent_cp_left, agent_cp_cmds, unrated);
++			agent_cp_left, unrated);
 +		return err;
 +	}
 +	agent_cp_done = 1;
@@ -18049,7 +18041,7 @@ index 00000000..1f845494
 +			epochs += !strncmp(tempbufs[5].lb->ln[i], "EPOCH ", 6);
 +		}
 +		snprintf(msg, sizeof(msg), "notes      %d in b-6, %d removed, "
-+			"%d epochs, %d turns unrated", agent_notes_live(0), removed,
++			"%d epochs, %d entries unrated", agent_notes_live(0), removed,
 +			epochs, n);
 +		ex_print(msg, msg_ft)
 +	}
