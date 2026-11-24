@@ -1709,12 +1709,11 @@ static char *agent_budget_open(void)
 		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
 	if (xaco)
 		k += sprintf(s + k, "/%d", xaco);
-	k += sprintf(s + k, agent_acl_budget ? " tokens. acheck is not a tool: "
-		"call the ex tool with command acheck to trim the session log or "
-		"with acheck N to defer it for N tokens." :
-		" tokens. Estimate the number of tokens the rest of this task needs "
-		"and set it: acheck is not a tool; call the ex tool with command "
-		"acheck N.");
+	k += sprintf(s + k, agent_acl_budget ?
+		" tokens. Call the ex tool: command acheck to trim the session log, "
+		"or acheck N to defer it for N tokens." :
+		" tokens. Estimate the tokens this task needs and call the ex tool "
+		"with command acheck N.");
 	if (xaco)
 		k += sprintf(s + k, "\nAn N reaching past %d runs the task until "
 			"compaction.", xaco);
@@ -14151,10 +14150,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..bf9ed98c
+index 00000000..d590f372
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4994 @@
+@@ -0,0 +1,4993 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15834,12 +15833,11 @@ index 00000000..bf9ed98c
 +		"budget check.\n~%.0f", agent_tokens_at(agent_cp_bytes));
 +	if (xaco)
 +		k += sprintf(s + k, "/%d", xaco);
-+	k += sprintf(s + k, agent_acl_budget ? " tokens. acheck is not a tool: "
-+		"call the ex tool with command acheck to trim the session log or "
-+		"with acheck N to defer it for N tokens." :
-+		" tokens. Estimate the number of tokens the rest of this task needs "
-+		"and set it: acheck is not a tool; call the ex tool with command "
-+		"acheck N.");
++	k += sprintf(s + k, agent_acl_budget ?
++		" tokens. Call the ex tool: command acheck to trim the session log, "
++		"or acheck N to defer it for N tokens." :
++		" tokens. Estimate the tokens this task needs and call the ex tool "
++		"with command acheck N.");
 +	if (xaco)
 +		k += sprintf(s + k, "\nAn N reaching past %d runs the task until "
 +			"compaction.", xaco);
