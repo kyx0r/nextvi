@@ -8906,7 +8906,7 @@ while \[ \$# -gt 0 ] \|\| \[ "\$1" = "" ]; do.*?
             spec("[entries]arate rating sentence", "Rate agent turns in the notes buffer",
                 "Writes one line per TURN entry from N through M of b-4 to b-6:\n" \
                 "number, rating and sentence, replacing an older one. The first turn\n" \
-                "gets the sentence, the rest \"same as TURN N\"; a replaced sentence\n" \
+                "gets the sentence, the rest \"same as entry N\"; a replaced sentence\n" \
                 "that others name moves to the first of them. entries is as for\n" \
                 "anote: other roles in a range are skipped, and three or more\n" \
                 "numbers, as in 2,4,7, are a list of turns.\n" \
@@ -12229,7 +12229,7 @@ static char *exspec_lines[] = {
 	"",
 	"Writes one line per TURN entry from N through M of b-4 to b-6:",
 	"number, rating and sentence, replacing an older one. The first turn",
-	"gets the sentence, the rest \"same as TURN N\"; a replaced sentence",
+	"gets the sentence, the rest \"same as entry N\"; a replaced sentence",
 	"that others name moves to the first of them. entries is as for",
 	"anote: other roles in a range are skipped, and three or more",
 	"numbers, as in 2,4,7, are a list of turns.",
@@ -22941,7 +22941,7 @@ index 00000000..cab5feb4
 +
 +#endif
 diff --git a/cbuild.sh b/cbuild.sh
-index c836c94c..7e8736fe 100755
+index c836c94c..c71b06e2 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -65,6 +65,344 @@ build() {
@@ -23062,7 +23062,7 @@ index c836c94c..7e8736fe 100755
 +            spec("[entries]arate rating sentence", "Rate agent turns in the notes buffer",
 +                "Writes one line per TURN entry from N through M of b-4 to b-6:\n" \
 +                "number, rating and sentence, replacing an older one. The first turn\n" \
-+                "gets the sentence, the rest \"same as TURN N\"; a replaced sentence\n" \
++                "gets the sentence, the rest \"same as entry N\"; a replaced sentence\n" \
 +                "that others name moves to the first of them. entries is as for\n" \
 +                "anote: other roles in a range are skipped, and three or more\n" \
 +                "numbers, as in 2,4,7, are a list of turns.\n" \
@@ -24340,7 +24340,7 @@ index 00000000..31004ff5
 +}
 diff --git a/exspec.h b/exspec.h
 new file mode 100644
-index 00000000..13a6f8d6
+index 00000000..7f429cb2
 --- /dev/null
 +++ b/exspec.h
 @@ -0,0 +1,1590 @@
@@ -25224,7 +25224,7 @@ index 00000000..13a6f8d6
 +	"",
 +	"Writes one line per TURN entry from N through M of b-4 to b-6:",
 +	"number, rating and sentence, replacing an older one. The first turn",
-+	"gets the sentence, the rest \"same as TURN N\"; a replaced sentence",
++	"gets the sentence, the rest \"same as entry N\"; a replaced sentence",
 +	"that others name moves to the first of them. entries is as for",
 +	"anote: other roles in a range are skipped, and three or more",
 +	"numbers, as in 2,4,7, are a list of turns.",
