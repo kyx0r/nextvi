@@ -418,6 +418,14 @@ static void agent_restore_log(char *archive)
 		tempbufs[3].mtime = mtime(tempbufs[3].path);
 }
 
+/* A compaction that succeeded no longer needs its rollback copy: b-7
+ * already holds the replaced entries. */
+static void agent_drop_log(char *archive)
+{
+	if (unlink(archive) && errno != ENOENT)
+		ex_print("cannot remove archived session log", msg_ft)
+}
+
 /* Lines [beg, end) the tool call edited in agent_edits_lb; sorted, apart. */
 static int (*agent_edits)[2], agent_edits_n, agent_edits_sz;
 static struct lbuf *agent_edits_lb;
@@ -4864,10 +4872,12 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 	agent_packing = was_packing;
 	agent_pack_done = was_done;
 	/* A pack the prompt accepted has already resumed the session from its
-	 * summary: keep that log and drop the detached prior context. */
-	if (accepted)
+	 * summary: keep that log, drop the rollback copy and the detached
+	 * prior context. */
+	if (accepted) {
+		agent_drop_log(archive);
 		cJSON_Delete(history);
-	else if (agent_epoch == epoch + 1) {
+	} else if (agent_epoch == epoch + 1) {
 		struct lbuf *lb = tempbufs[3].lb;
 		char *summary = agent_text(lb);
 		int changed = strcmp(original, summary) != 0;
@@ -4877,6 +4887,7 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 			agent_discard_log(original);
 			agent_head_summary();
 			cJSON_Delete(history);
+			agent_drop_log(archive);
 		} else {
 			if (!ret)
 				ret = complete && changed ? "cannot save compacted session log" :
@@ -4993,6 +5004,7 @@ static int agent_autocompact(const char *input)
 	if (ok) {
 		cJSON_Delete(history);
 		agent_notes_archive(archive);
+		agent_drop_log(archive);
 		agent_log("NOTICE", "autocompact complete; resuming request");
 	} else {
 		cJSON_Delete(agent_messages);
@@ -14147,10 +14159,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..5b97c98e
+index 00000000..0c049a3e
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4990 @@
+@@ -0,0 +1,5002 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -14537,6 +14549,14 @@ index 00000000..5b97c98e
 +		ex_print("cannot restore archived session log", msg_ft)
 +	else
 +		tempbufs[3].mtime = mtime(tempbufs[3].path);
++}
++
++/* A compaction that succeeded no longer needs its rollback copy: b-7
++ * already holds the replaced entries. */
++static void agent_drop_log(char *archive)
++{
++	if (unlink(archive) && errno != ENOENT)
++		ex_print("cannot remove archived session log", msg_ft)
 +}
 +
 +/* Lines [beg, end) the tool call edited in agent_edits_lb; sorted, apart. */
@@ -18985,10 +19005,12 @@ index 00000000..5b97c98e
 +	agent_packing = was_packing;
 +	agent_pack_done = was_done;
 +	/* A pack the prompt accepted has already resumed the session from its
-+	 * summary: keep that log and drop the detached prior context. */
-+	if (accepted)
++	 * summary: keep that log, drop the rollback copy and the detached
++	 * prior context. */
++	if (accepted) {
++		agent_drop_log(archive);
 +		cJSON_Delete(history);
-+	else if (agent_epoch == epoch + 1) {
++	} else if (agent_epoch == epoch + 1) {
 +		struct lbuf *lb = tempbufs[3].lb;
 +		char *summary = agent_text(lb);
 +		int changed = strcmp(original, summary) != 0;
@@ -18998,6 +19020,7 @@ index 00000000..5b97c98e
 +			agent_discard_log(original);
 +			agent_head_summary();
 +			cJSON_Delete(history);
++			agent_drop_log(archive);
 +		} else {
 +			if (!ret)
 +				ret = complete && changed ? "cannot save compacted session log" :
@@ -19114,6 +19137,7 @@ index 00000000..5b97c98e
 +	if (ok) {
 +		cJSON_Delete(history);
 +		agent_notes_archive(archive);
++		agent_drop_log(archive);
 +		agent_log("NOTICE", "autocompact complete; resuming request");
 +	} else {
 +		cJSON_Delete(agent_messages);
