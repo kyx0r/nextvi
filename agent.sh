@@ -695,6 +695,8 @@ fail:
 	return -1;
 }
 
+static unsigned long agent_entries_max(void);
+
 /* vi -r: continue the session saved in dir, or with an empty dir the one
  * in the log directory whose log was written last. Its files fill b-4 to
  * b-8 and the log becomes the context, as a~ loads it. */
@@ -743,6 +745,9 @@ static int agent_resume(const char *dir)
 		return -1;
 	}
 	free(best);
+	/* Trimmed entries and notes keep their numbers: the next entry
+	 * follows every number in b-4, b-6 and b-7. */
+	agent_entries[1] = agent_entries_max();
 	agent_ready = 1;
 	agent_init_error = NULL;
 	agent_history(lbuf_len(tempbufs[3].lb) > 0);
@@ -1131,30 +1136,36 @@ static void agent_discard(struct lbuf *lb, struct agent_span *spans,
 }
 
 /* Head a compaction summary as a USER entry numbered after the log it
- * replaced, now in b-7, so a later compaction can move it there too. */
+ * replaced, now in b-7, so a later compaction can move it there too, and
+ * mark the compaction in b-6 as "EPOCH N", N the summary'\''s entry. Notes
+ * outlive the compaction: those before the marker rate replaced entries. */
 static void agent_head_summary(void)
 {
 	struct lbuf *lb = tempbufs[3].lb;
-	struct agent_span *spans;
-	int cnt = agent_spans_of(tempbufs[6].lb, &spans);
 	unsigned long n;
 	char head[48], id[AGENT_ID], end[AGENT_END], *text;
-	if (cnt)
-		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
-	free(spans);
-	if (!lbuf_len(lb) || agent_header(lb->ln[0], 0, &n, NULL))
+	agent_entries[1] = MAX(agent_entries[1], agent_entries_max());
+	if (!lbuf_len(lb))
 		return;
-	text = agent_text(lb);
-	agent_frame(text, id, end);
-	free(text);
-	snprintf(head, sizeof(head), "USER %lu%s\n", ++agent_entries[1], id);
 	preserve(int, agent_tool, agent_tool = 0;)
 	preserve(int, agent_syncing, agent_syncing = 1;)
-	lbuf_edit(lb, end, lbuf_len(lb), lbuf_len(lb), 0, 0);
-	lbuf_edit(lb, head, 0, 0, 0, 0);
+	if (!agent_header(lb->ln[0], 0, &n, NULL)) {
+		text = agent_text(lb);
+		agent_frame(text, id, end);
+		free(text);
+		n = ++agent_entries[1];
+		snprintf(head, sizeof(head), "USER %lu%s\n", n, id);
+		lbuf_edit(lb, end, lbuf_len(lb), lbuf_len(lb), 0, 0);
+		lbuf_edit(lb, head, 0, 0, 0, 0);
+		if (agent_save(3))
+			ex_print("agent write failed; buffer text retained", msg_ft)
+	}
+	snprintf(head, sizeof(head), "EPOCH %lu\n", n);
+	lbuf_edit(tempbufs[5].lb, head, lbuf_len(tempbufs[5].lb),
+		lbuf_len(tempbufs[5].lb), 0, 0);
 	restore(agent_syncing)
 	restore(agent_tool)
-	if (agent_save(3))
+	if (agent_save(5))
 		ex_print("agent write failed; buffer text retained", msg_ft)
 }
 
@@ -1186,8 +1197,9 @@ static char *agent_span_role(struct agent_span *s)
 }
 
 /* b-6 rates turns: one line "N R sentence" per TURN entry N of b-4, with R
- * from 0 (dead weight) to 3 (essential). The sentence of such a line s, or
- * NULL. */
+ * from 0 (dead weight) to 3 (essential). It also holds records, never
+ * digit-led: "REMOVED N R sentence" for an entry removed for good and
+ * "EPOCH N" for a compaction. The sentence of a live note s, or NULL. */
 static char *agent_note_line(char *s, unsigned long *n, int *rate)
 {
 	char *e;
@@ -1216,18 +1228,77 @@ static char *agent_note(unsigned long n, int *rate, int *row)
 	return NULL;
 }
 
-/* Replace the note of entry n, or insert it in entry order. */
+/* The number of b-6 line ln in any of its forms: "N R sentence" (a live
+ * note), "REMOVED N R sentence" (the final record of a note whose entry was
+ * removed) or "EPOCH N" (a compaction, summarized as entry N). */
+static int agent_note_lineno(char *ln, unsigned long *n)
+{
+	char *s = ln, *e;
+	if (!strncmp(s, "REMOVED ", 8))
+		s += 8;
+	else if (!strncmp(s, "EPOCH ", 6))
+		s += 6;
+	if (!isdigit((unsigned char)*s))
+		return 0;
+	*n = strtoul(s, &e, 10);
+	return e > s;
+}
+
+/* The summary number of the last compaction, from its "EPOCH N" line in
+ * b-6, or 0: entries numbered below it were replaced by summaries. */
+static unsigned long agent_epoch_floor(void)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	for (int i = lbuf_len(lb) - 1; i >= 0; i--)
+		if (!strncmp(lb->ln[i], "EPOCH ", 6))
+			return strtoul(lb->ln[i] + 6, NULL, 10);
+	return 0;
+}
+
+/* The live notes of b-6 numbered from from on. */
+static int agent_notes_live(unsigned long from)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	unsigned long n;
+	int r, live = 0;
+	for (int i = 0; i < lbuf_len(lb); i++)
+		live += agent_note_line(lb->ln[i], &n, &r) && n >= from;
+	return live;
+}
+
+/* The highest entry number the session used: the last entry of b-4 or b-7,
+ * or a number b-6 holds; numbers of trimmed entries are not reused. */
+static unsigned long agent_entries_max(void)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	struct agent_span *spans;
+	unsigned long max = 0, n;
+	int cnt;
+	for (int i = 3; i <= 6; i += 3) {
+		cnt = agent_spans_of(tempbufs[i].lb, &spans);
+		if (cnt)
+			max = MAX(max, spans[cnt-1].n);
+		free(spans);
+	}
+	for (int i = 0; i < lbuf_len(lb); i++)
+		if (agent_note_lineno(lb->ln[i], &n))
+			max = MAX(max, n);
+	return max;
+}
+
+/* Replace the note of entry n, or insert it in entry order among notes,
+ * REMOVED records and EPOCH lines. */
 static void agent_note_set(unsigned long n, int rate, char *text)
 {
 	struct lbuf *lb = tempbufs[5].lb;
+	unsigned long m;
 	int r, row, end;
 	char head[48];
 	if (agent_note(n, &r, &row))
 		end = row + 1;
 	else {
 		for (row = 0; row < lbuf_len(lb); row++)
-			if (isdigit((unsigned char)lb->ln[row][0]) &&
-					strtoul(lb->ln[row], NULL, 10) > n)
+			if (agent_note_lineno(lb->ln[row], &m) && m > n)
 				break;
 		end = row;
 	}
@@ -1242,18 +1313,16 @@ static void agent_note_set(unsigned long n, int rate, char *text)
 	free(sb->s);
 }
 
-/* The entry a ranged arate rating names by "same as <role> n", or 0. */
+/* The entry a rating names by "same as entry N", the exact form arate and
+ * rehoming write, or 0. Any other sentence is plain text. */
 static unsigned long agent_note_ref(char *note)
 {
 	char *e;
 	unsigned long n;
-	if (strncmp(note, "same as ", 8))
+	if (strncmp(note, "same as entry ", 14) ||
+			!isdigit((unsigned char)note[14]))
 		return 0;
-	while (*note && !isdigit((unsigned char)*note))
-		note++;
-	if (!*note)
-		return 0;
-	n = strtoul(note, &e, 10);
+	n = strtoul(note + 14, &e, 10);
 	return *e == '\''\n'\'' || !*e ? n : 0;
 }
 
@@ -1325,6 +1394,33 @@ static void agent_note_rehome(unsigned long n, struct agent_span *spans,
 	free(old);
 }
 
+/* Before entry n leaves the log for good, make its live note a final
+ * record "REMOVED N R sentence": first move its text to the notes that
+ * name it, then resolve its own reference, so no live note depends on it
+ * and the record reads alone. Called last first, as arate rehomes. */
+static void agent_note_retire(unsigned long n, struct agent_span *spans,
+		int cnt, char *sel)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	int r, row, len;
+	char *note, head[48];
+	if (!agent_note(n, &r, &row))
+		return;
+	agent_note_rehome(n, spans, cnt, sel);
+	if (!(note = agent_note(n, &r, &row)))
+		return;
+	note = agent_note_text(note);
+	len = strcspn(note, "\n");
+	snprintf(head, sizeof(head), "REMOVED %lu %d ", n, r);
+	sbuf_smake(sb, 128)
+	sbuf_str(sb, head)
+	sbuf_mem(sb, note, len)
+	sbuf_chr(sb, '\''\n'\'')
+	sbuf_nul(sb)
+	lbuf_edit(lb, sb->s, row, row + 1, 0, 0);
+	free(sb->s);
+}
+
 /* Count turns with no rating; buf lists the first few. */
 static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
 {
@@ -1367,24 +1463,6 @@ static void agent_temp_clear(int i)
 	}
 	if (agent_ready && agent_save(i))
 		ex_print("agent write failed; buffer text retained", msg_ft)
-}
-
-/* Keep the notes of a compacted log beside its archive; start afresh. */
-static void agent_notes_archive(char *archive)
-{
-	struct lbuf *lb = tempbufs[5].lb;
-	char *path;
-	int fd, failed;
-	if (!lbuf_len(lb))
-		return;
-	path = emalloc(strlen(archive) + 8);
-	sprintf(path, "%s.notes", archive);
-	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
-	failed = fd < 0 || lbuf_wr(lb, fd, 0, lbuf_len(lb));
-	if ((fd >= 0 && close(fd)) || failed)
-		ex_print("cannot archive agent notes", msg_ft)
-	free(path);
-	agent_temp_clear(5);
 }
 
 /* The phase in progress (agent_checkpointing): its exchange after the
@@ -1445,22 +1523,35 @@ static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
 	return agent_note_line(l, n, &r) && !agent_span_rated(spans, cnt, *n);
 }
 
-/* From b-6 line *row, list the notes of trimmed turns numbered up to upto
- * as "TURN N trimmed R note". Following notes with the same rating that
- * name N, or the entry N names, join it as "TURN N-M". */
+/* From b-6 line *row, list the notes of trimmed turns numbered from from
+ * up to upto as "TURN N trimmed R note". Following notes with the same
+ * rating that name N, or the entry N names, join it as "TURN N-M"; a run
+ * stops at any other line. With from 0 every epoch is listed, each
+ * "EPOCH N" line as "EPOCH N: summarized as USER N". */
 static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
-		int *row, unsigned long upto)
+		int *row, unsigned long from, unsigned long upto)
 {
 	struct lbuf *lb = tempbufs[5].lb;
 	unsigned long n, m, ref, end, next;
 	char ln[64], *note, *t;
 	int i;
 	for (i = *row; i < lbuf_len(lb); i++) {
+		if (!strncmp(lb->ln[i], "EPOCH ", 6)) {
+			n = strtoul(lb->ln[i] + 6, NULL, 10);
+			if (n > upto)
+				break;
+			if (!from) {
+				snprintf(ln, sizeof(ln), "EPOCH %lu: summarized as USER %lu\n",
+					n, n);
+				sbuf_str(sb, ln)
+			}
+			continue;
+		}
 		if (!isdigit((unsigned char)lb->ln[i][0]))
 			continue;
 		if (strtoul(lb->ln[i], NULL, 10) > upto)
 			break;
-		if (!agent_note_trimmed(lb->ln[i], spans, cnt, &n))
+		if (!agent_note_trimmed(lb->ln[i], spans, cnt, &n) || n < from)
 			continue;
 		note = strchr(lb->ln[i], '\'' '\'') + 3;
 		ref = agent_note_ref(note);
@@ -1520,7 +1611,8 @@ static void agent_span_head(char *ln, int size, struct agent_span *s, int reason
  * and, outside a checkpoint, where the agent cannot note them, USER entries
  * are not among the largest. */
 static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
-		int lines, int all, int unrated, int trimmed, int reasoned)
+		int lines, int all, int unrated, int trimmed, int reasoned,
+		unsigned long from)
 {
 	int top[5], ntop = 0, listed = 0, r, row, nmoved = 0, trow = 0;
 	unsigned long *moved = NULL, ref;	/* removed target, entry shown */
@@ -1528,7 +1620,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 	char ln[256], same[32], *note;
 	for (int k = 0; k < cnt; k++) {
 		if (trimmed)
-			agent_trimmed_list(sb, spans, cnt, &trow, spans[k].n);
+			agent_trimmed_list(sb, spans, cnt, &trow, from, spans[k].n);
 		if (spans[k].role == AE_NOTICE && !all)
 			continue;
 		listed++;
@@ -1546,17 +1638,13 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 			 * listed among trimmed notes; the rest name that entry. */
 			if (agent_noted(spans + k) && (ref = agent_note_ref(note)) &&
 					((t = agent_span_rated(spans, cnt, ref)) ? !agent_noted(t) :
-					!(trimmed && agent_note(ref, &r, &row)))) {
+				!(trimmed && ref >= from && agent_note(ref, &r, &row)))) {
 				int j = 0;
 				while (j < nmoved && moved[2*j] != ref)
 					j++;
-			if (j < nmoved) {
-					const char *role = "TURN";
-					for (int m = 0; m < cnt; m++)
-						if (spans[m].n == moved[2*j+1])
-							role = agent_span_role(spans + m);
-					snprintf(same, sizeof(same), "same as %s %lu",
-						role, moved[2*j+1]);
+				if (j < nmoved) {
+					snprintf(same, sizeof(same), "same as entry %lu",
+						moved[2*j+1]);
 					note = same;
 				} else {
 					moved = erealloc(moved, (nmoved + 1) * 2 * sizeof(*moved));
@@ -1565,7 +1653,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 					nmoved++;
 					note = agent_note_text(note);
 				}
-				}
+			}
 			/* The sentence follows the rating. */
 			if (agent_noted(spans + k)) {
 				sbuf_chr(sb, '\'' '\'')
@@ -1586,7 +1674,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 			top[j] = k;
 	}
 	if (trimmed)
-		agent_trimmed_list(sb, spans, cnt, &trow, ULONG_MAX);
+		agent_trimmed_list(sb, spans, cnt, &trow, from, ULONG_MAX);
 	if (ntop && listed > ntop) {
 		sbuf_str(sb, "Largest:")
 		for (int j = 0; j < ntop; j++) {
@@ -1624,7 +1712,7 @@ static void agent_cp_status(sbuf *sb, int cp)
 	snprintf(ln, sizeof(ln), "role entry %stext+commands+results=tokens "
 		"rating note\n", reasoned ? "reasoning+" : "");
 	sbuf_str(sb, ln)
-	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned);
+	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned, 0);
 	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 		sbuf_str(sb, "Unrated: ")
 		sbuf_str(sb, unrated)
@@ -1665,10 +1753,10 @@ static const char agent_cp_turns[] =
 	"through M; three or more numbers, N,M,K, are a list of turns.\n"
 	"N[,M]arate R sentence\n"
 	"  rate the TURN entries; the sentence says what the turn did and\n"
-	"  found; 0 also removes the turn\n"
+	"  found; 0 also removes the turn for good\n"
 	"N[,M]anote [text]\n"
-	"  text replaces the entries as one note; no text removes them; USER\n"
-	"  entries too; keep the instructions the remaining work needs\n"
+	"  text replaces the entries as one note; no text removes them for good;\n"
+	"  USER entries too; keep the instructions the remaining work needs\n"
 	"adone\n"
 	"  apply the trims and resume the task\n"
 	"\n";
@@ -1684,8 +1772,9 @@ static const char agent_cp_trim[] =
 	"Then end the checkpoint, e.g.\n"
 	"adone\n"
 	"\n"
-	"This exchange is not kept; ratings show in later checkpoints and\n"
-	"compaction.\n";
+	"This exchange is not kept; ratings of kept entries show in later\n"
+	"checkpoints and compaction. A removed entry'\''s rating is dropped; to\n"
+	"keep findings, note them with text.\n";
 
 /* The checkpoint guide: what a TURN is, the commands, then the steps in
  * order; with scale, the rating scale first (acp, printed alone). */
@@ -2402,8 +2491,8 @@ static void agent_reparse(void)
 			agent_add_user(agent_messages, text->s);
 	}
 	free(text->s);
-	if (cnt)
-		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
+	/* Numbers used by trimmed entries and notes are not reused. */
+	agent_entries[1] = MAX(agent_entries[1], agent_entries_max());
 	agent_turn[1] = 0;
 	free(spans);
 }
@@ -3711,9 +3800,15 @@ static void *ec_ast(char *loc, char *cmd, char *arg)
 	ex_print(msg, msg_ft)
 	if (agent_acl_kept() || lbuf_len(tempbufs[5].lb)) {
 		char unrated[112];
-		int n = agent_unrated_now(unrated, sizeof(unrated));
-		snprintf(msg, sizeof(msg), "notes      %d in b-6, %d turns unrated",
-			lbuf_len(tempbufs[5].lb), n);
+		int n = agent_unrated_now(unrated, sizeof(unrated)), removed = 0;
+		int epochs = 0;
+		for (int i = 0; i < lbuf_len(tempbufs[5].lb); i++) {
+			removed += !strncmp(tempbufs[5].lb->ln[i], "REMOVED ", 8);
+			epochs += !strncmp(tempbufs[5].lb->ln[i], "EPOCH ", 6);
+		}
+		snprintf(msg, sizeof(msg), "notes      %d in b-6, %d removed, "
+			"%d epochs, %d turns unrated", agent_notes_live(0), removed,
+			epochs, n);
 		ex_print(msg, msg_ft)
 	}
 	if (agent_goal) {
@@ -4308,7 +4403,8 @@ static int agent_note_rank(struct agent_span *sp)
 
 /* Replace log entries N through M, or the turns of a list N,M,K, with a
  * note, or remove them. A note over a turn is a turn holding only the text,
- * under the turn'\''s number, so its rating stays with it. */
+ * under the turn'\''s number; the ratings of the entries replaced, its own
+ * included, become REMOVED records in b-6, so the note starts unrated. */
 static void *ec_anote(char *loc, char *cmd, char *arg)
 {
 	static char err[80];
@@ -4409,12 +4505,17 @@ static void *ec_anote(char *loc, char *cmd, char *arg)
 		/* A pack moves the whole log to b-7 itself, if it succeeds. */
 		if (!agent_packing)
 			agent_discard(lb, spans, k, end);
+		/* The ratings described the entries replaced, the note target
+		 * included: they become final records; the note starts unrated. */
+		for (int j = end; j >= k; j--)
+			agent_note_retire(spans[j].n, spans, cnt, sel);
 		lbuf_edit(lb, *arg && k == at ? sb->s : NULL,
 			spans[k].beg, spans[end].end, 0, 0);
 	}
 	restore(agent_syncing)
 	restore(agent_tool)
 	agent_sync(lb);
+	agent_sync(tempbufs[5].lb);
 	agent_sync(tempbufs[6].lb);
 	free(sb->s);
 	agent_log_clamp();
@@ -4443,8 +4544,9 @@ done:
 }
 
 /* Move the spans with sel 1 to b-7, reporting as anote does; their ratings
- * stay in b-6. Spans with sel 2 stay and count in the report. nums lists
- * the entries of an arate list; NULL reports a range. */
+ * become REMOVED records in b-6, so the removal is final. Spans with sel 2
+ * stay and count in the report. nums lists the entries of an arate list;
+ * NULL reports a range. */
 static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
 		char *nums)
 {
@@ -4469,11 +4571,13 @@ static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
 		lo = spans[k].n;
 		removed++;
 		agent_discard(lb, spans, k, k);
+		agent_note_retire(spans[k].n, spans, cnt, sel);
 		lbuf_edit(lb, NULL, spans[k].beg, spans[k].end, 0, 0);
 	}
 	restore(agent_syncing)
 	restore(agent_tool)
 	agent_sync(lb);
+	agent_sync(tempbufs[5].lb);
 	agent_sync(tempbufs[6].lb);
 	agent_log_clamp();
 	len = snprintf(msg, sizeof(msg), "removed %d %s ", removed,
@@ -4760,18 +4864,21 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	sbuf_chr(task, '\''\n'\'')
 	struct lbuf *notes = tempbufs[5].lb;
 	struct agent_span *spans;
-	int cnt = agent_spans(&spans), trimmed = 0, rated = lbuf_len(notes) > 0;
+	int cnt = agent_spans(&spans), trimmed = 0, rated;
 	int reasoned = agent_spans_reasoned(spans, cnt);
-	unsigned long n;
+	unsigned long n, from = browse ? 0 : agent_epoch_floor();
 	double total = 0;
 	char ln[400];
 	for (int k = 0; k < cnt; k++)
 		total += agent_span_tokens(spans + k);
 	/* Notes outlive trimmed turns; they are listed in order among the
-	 * entries. */
+	 * entries. A loaded pack lists those from the last summary on; a
+	 * browsing one lists every epoch. */
+	rated = agent_notes_live(from) > 0;
 	for (int i = 0; i < lbuf_len(notes); i++)
-		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n);
-	if (lbuf_len(notes)) {
+		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n) &&
+			n >= from;
+	if (rated) {
 		/* The legend covers only the ratings listed, each with its
 		 * weighting; every note is listed, current or trimmed. */
 		static char *legend[] = {
@@ -4782,7 +4889,7 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 			"    the exact details\n"};
 		int seen = 0, r, row, unrated = 0;
 		for (int i = 0; i < lbuf_len(notes); i++)
-			if (agent_note_line(notes->ln[i], &n, &r))
+			if (agent_note_line(notes->ln[i], &n, &r) && n >= from)
 				seen |= 1 << r;
 		for (int k = 0; k < cnt && !unrated; k++)
 			unrated = agent_ratable(spans + k) &&
@@ -4808,8 +4915,12 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 			browse ? " line" : "", rated ? " rating note" : "");
 		sbuf_str(task, ln)
 		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
-			reasoned);
+			reasoned, from);
 	}
+	if (browse && trimmed && agent_epoch_floor())
+		sbuf_str(task, "A line \"EPOCH N: summarized as USER N\" marks an "
+			"earlier compaction:\nthe notes above it rate entries that summary "
+			"replaced; aget still reads them.\n")
 	if (cnt || trimmed)
 		sbuf_str(task, lbuf_len(tempbufs[6].lb) ?
 			"N[,M]aget[parts] prints entries N through M with their headers,\n"
@@ -4883,7 +4994,6 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 		int changed = strcmp(original, summary) != 0;
 		if (!ret && complete && changed && !agent_save(3)) {
 			agent_history(1);
-			agent_notes_archive(archive);
 			agent_discard_log(original);
 			agent_head_summary();
 			cJSON_Delete(history);
@@ -5003,7 +5113,6 @@ static int agent_autocompact(const char *input)
 	free(summary);
 	if (ok) {
 		cJSON_Delete(history);
-		agent_notes_archive(archive);
 		agent_drop_log(archive);
 		agent_log("NOTICE", "autocompact complete; resuming request");
 	} else {
@@ -14159,10 +14268,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..0c049a3e
+index 00000000..1f845494
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5002 @@
+@@ -0,0 +1,5111 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -14828,6 +14937,8 @@ index 00000000..0c049a3e
 +	return -1;
 +}
 +
++static unsigned long agent_entries_max(void);
++
 +/* vi -r: continue the session saved in dir, or with an empty dir the one
 + * in the log directory whose log was written last. Its files fill b-4 to
 + * b-8 and the log becomes the context, as a~ loads it. */
@@ -14876,6 +14987,9 @@ index 00000000..0c049a3e
 +		return -1;
 +	}
 +	free(best);
++	/* Trimmed entries and notes keep their numbers: the next entry
++	 * follows every number in b-4, b-6 and b-7. */
++	agent_entries[1] = agent_entries_max();
 +	agent_ready = 1;
 +	agent_init_error = NULL;
 +	agent_history(lbuf_len(tempbufs[3].lb) > 0);
@@ -15264,30 +15378,36 @@ index 00000000..0c049a3e
 +}
 +
 +/* Head a compaction summary as a USER entry numbered after the log it
-+ * replaced, now in b-7, so a later compaction can move it there too. */
++ * replaced, now in b-7, so a later compaction can move it there too, and
++ * mark the compaction in b-6 as "EPOCH N", N the summary's entry. Notes
++ * outlive the compaction: those before the marker rate replaced entries. */
 +static void agent_head_summary(void)
 +{
 +	struct lbuf *lb = tempbufs[3].lb;
-+	struct agent_span *spans;
-+	int cnt = agent_spans_of(tempbufs[6].lb, &spans);
 +	unsigned long n;
 +	char head[48], id[AGENT_ID], end[AGENT_END], *text;
-+	if (cnt)
-+		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
-+	free(spans);
-+	if (!lbuf_len(lb) || agent_header(lb->ln[0], 0, &n, NULL))
++	agent_entries[1] = MAX(agent_entries[1], agent_entries_max());
++	if (!lbuf_len(lb))
 +		return;
-+	text = agent_text(lb);
-+	agent_frame(text, id, end);
-+	free(text);
-+	snprintf(head, sizeof(head), "USER %lu%s\n", ++agent_entries[1], id);
 +	preserve(int, agent_tool, agent_tool = 0;)
 +	preserve(int, agent_syncing, agent_syncing = 1;)
-+	lbuf_edit(lb, end, lbuf_len(lb), lbuf_len(lb), 0, 0);
-+	lbuf_edit(lb, head, 0, 0, 0, 0);
++	if (!agent_header(lb->ln[0], 0, &n, NULL)) {
++		text = agent_text(lb);
++		agent_frame(text, id, end);
++		free(text);
++		n = ++agent_entries[1];
++		snprintf(head, sizeof(head), "USER %lu%s\n", n, id);
++		lbuf_edit(lb, end, lbuf_len(lb), lbuf_len(lb), 0, 0);
++		lbuf_edit(lb, head, 0, 0, 0, 0);
++		if (agent_save(3))
++			ex_print("agent write failed; buffer text retained", msg_ft)
++	}
++	snprintf(head, sizeof(head), "EPOCH %lu\n", n);
++	lbuf_edit(tempbufs[5].lb, head, lbuf_len(tempbufs[5].lb),
++		lbuf_len(tempbufs[5].lb), 0, 0);
 +	restore(agent_syncing)
 +	restore(agent_tool)
-+	if (agent_save(3))
++	if (agent_save(5))
 +		ex_print("agent write failed; buffer text retained", msg_ft)
 +}
 +
@@ -15319,8 +15439,9 @@ index 00000000..0c049a3e
 +}
 +
 +/* b-6 rates turns: one line "N R sentence" per TURN entry N of b-4, with R
-+ * from 0 (dead weight) to 3 (essential). The sentence of such a line s, or
-+ * NULL. */
++ * from 0 (dead weight) to 3 (essential). It also holds records, never
++ * digit-led: "REMOVED N R sentence" for an entry removed for good and
++ * "EPOCH N" for a compaction. The sentence of a live note s, or NULL. */
 +static char *agent_note_line(char *s, unsigned long *n, int *rate)
 +{
 +	char *e;
@@ -15349,18 +15470,77 @@ index 00000000..0c049a3e
 +	return NULL;
 +}
 +
-+/* Replace the note of entry n, or insert it in entry order. */
++/* The number of b-6 line ln in any of its forms: "N R sentence" (a live
++ * note), "REMOVED N R sentence" (the final record of a note whose entry was
++ * removed) or "EPOCH N" (a compaction, summarized as entry N). */
++static int agent_note_lineno(char *ln, unsigned long *n)
++{
++	char *s = ln, *e;
++	if (!strncmp(s, "REMOVED ", 8))
++		s += 8;
++	else if (!strncmp(s, "EPOCH ", 6))
++		s += 6;
++	if (!isdigit((unsigned char)*s))
++		return 0;
++	*n = strtoul(s, &e, 10);
++	return e > s;
++}
++
++/* The summary number of the last compaction, from its "EPOCH N" line in
++ * b-6, or 0: entries numbered below it were replaced by summaries. */
++static unsigned long agent_epoch_floor(void)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	for (int i = lbuf_len(lb) - 1; i >= 0; i--)
++		if (!strncmp(lb->ln[i], "EPOCH ", 6))
++			return strtoul(lb->ln[i] + 6, NULL, 10);
++	return 0;
++}
++
++/* The live notes of b-6 numbered from from on. */
++static int agent_notes_live(unsigned long from)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	unsigned long n;
++	int r, live = 0;
++	for (int i = 0; i < lbuf_len(lb); i++)
++		live += agent_note_line(lb->ln[i], &n, &r) && n >= from;
++	return live;
++}
++
++/* The highest entry number the session used: the last entry of b-4 or b-7,
++ * or a number b-6 holds; numbers of trimmed entries are not reused. */
++static unsigned long agent_entries_max(void)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	struct agent_span *spans;
++	unsigned long max = 0, n;
++	int cnt;
++	for (int i = 3; i <= 6; i += 3) {
++		cnt = agent_spans_of(tempbufs[i].lb, &spans);
++		if (cnt)
++			max = MAX(max, spans[cnt-1].n);
++		free(spans);
++	}
++	for (int i = 0; i < lbuf_len(lb); i++)
++		if (agent_note_lineno(lb->ln[i], &n))
++			max = MAX(max, n);
++	return max;
++}
++
++/* Replace the note of entry n, or insert it in entry order among notes,
++ * REMOVED records and EPOCH lines. */
 +static void agent_note_set(unsigned long n, int rate, char *text)
 +{
 +	struct lbuf *lb = tempbufs[5].lb;
++	unsigned long m;
 +	int r, row, end;
 +	char head[48];
 +	if (agent_note(n, &r, &row))
 +		end = row + 1;
 +	else {
 +		for (row = 0; row < lbuf_len(lb); row++)
-+			if (isdigit((unsigned char)lb->ln[row][0]) &&
-+					strtoul(lb->ln[row], NULL, 10) > n)
++			if (agent_note_lineno(lb->ln[row], &m) && m > n)
 +				break;
 +		end = row;
 +	}
@@ -15375,18 +15555,16 @@ index 00000000..0c049a3e
 +	free(sb->s);
 +}
 +
-+/* The entry a ranged arate rating names by "same as <role> n", or 0. */
++/* The entry a rating names by "same as entry N", the exact form arate and
++ * rehoming write, or 0. Any other sentence is plain text. */
 +static unsigned long agent_note_ref(char *note)
 +{
 +	char *e;
 +	unsigned long n;
-+	if (strncmp(note, "same as ", 8))
++	if (strncmp(note, "same as entry ", 14) ||
++			!isdigit((unsigned char)note[14]))
 +		return 0;
-+	while (*note && !isdigit((unsigned char)*note))
-+		note++;
-+	if (!*note)
-+		return 0;
-+	n = strtoul(note, &e, 10);
++	n = strtoul(note + 14, &e, 10);
 +	return *e == '\n' || !*e ? n : 0;
 +}
 +
@@ -15458,6 +15636,33 @@ index 00000000..0c049a3e
 +	free(old);
 +}
 +
++/* Before entry n leaves the log for good, make its live note a final
++ * record "REMOVED N R sentence": first move its text to the notes that
++ * name it, then resolve its own reference, so no live note depends on it
++ * and the record reads alone. Called last first, as arate rehomes. */
++static void agent_note_retire(unsigned long n, struct agent_span *spans,
++		int cnt, char *sel)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	int r, row, len;
++	char *note, head[48];
++	if (!agent_note(n, &r, &row))
++		return;
++	agent_note_rehome(n, spans, cnt, sel);
++	if (!(note = agent_note(n, &r, &row)))
++		return;
++	note = agent_note_text(note);
++	len = strcspn(note, "\n");
++	snprintf(head, sizeof(head), "REMOVED %lu %d ", n, r);
++	sbuf_smake(sb, 128)
++	sbuf_str(sb, head)
++	sbuf_mem(sb, note, len)
++	sbuf_chr(sb, '\n')
++	sbuf_nul(sb)
++	lbuf_edit(lb, sb->s, row, row + 1, 0, 0);
++	free(sb->s);
++}
++
 +/* Count turns with no rating; buf lists the first few. */
 +static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
 +{
@@ -15500,24 +15705,6 @@ index 00000000..0c049a3e
 +	}
 +	if (agent_ready && agent_save(i))
 +		ex_print("agent write failed; buffer text retained", msg_ft)
-+}
-+
-+/* Keep the notes of a compacted log beside its archive; start afresh. */
-+static void agent_notes_archive(char *archive)
-+{
-+	struct lbuf *lb = tempbufs[5].lb;
-+	char *path;
-+	int fd, failed;
-+	if (!lbuf_len(lb))
-+		return;
-+	path = emalloc(strlen(archive) + 8);
-+	sprintf(path, "%s.notes", archive);
-+	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
-+	failed = fd < 0 || lbuf_wr(lb, fd, 0, lbuf_len(lb));
-+	if ((fd >= 0 && close(fd)) || failed)
-+		ex_print("cannot archive agent notes", msg_ft)
-+	free(path);
-+	agent_temp_clear(5);
 +}
 +
 +/* The phase in progress (agent_checkpointing): its exchange after the
@@ -15578,22 +15765,35 @@ index 00000000..0c049a3e
 +	return agent_note_line(l, n, &r) && !agent_span_rated(spans, cnt, *n);
 +}
 +
-+/* From b-6 line *row, list the notes of trimmed turns numbered up to upto
-+ * as "TURN N trimmed R note". Following notes with the same rating that
-+ * name N, or the entry N names, join it as "TURN N-M". */
++/* From b-6 line *row, list the notes of trimmed turns numbered from from
++ * up to upto as "TURN N trimmed R note". Following notes with the same
++ * rating that name N, or the entry N names, join it as "TURN N-M"; a run
++ * stops at any other line. With from 0 every epoch is listed, each
++ * "EPOCH N" line as "EPOCH N: summarized as USER N". */
 +static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
-+		int *row, unsigned long upto)
++		int *row, unsigned long from, unsigned long upto)
 +{
 +	struct lbuf *lb = tempbufs[5].lb;
 +	unsigned long n, m, ref, end, next;
 +	char ln[64], *note, *t;
 +	int i;
 +	for (i = *row; i < lbuf_len(lb); i++) {
++		if (!strncmp(lb->ln[i], "EPOCH ", 6)) {
++			n = strtoul(lb->ln[i] + 6, NULL, 10);
++			if (n > upto)
++				break;
++			if (!from) {
++				snprintf(ln, sizeof(ln), "EPOCH %lu: summarized as USER %lu\n",
++					n, n);
++				sbuf_str(sb, ln)
++			}
++			continue;
++		}
 +		if (!isdigit((unsigned char)lb->ln[i][0]))
 +			continue;
 +		if (strtoul(lb->ln[i], NULL, 10) > upto)
 +			break;
-+		if (!agent_note_trimmed(lb->ln[i], spans, cnt, &n))
++		if (!agent_note_trimmed(lb->ln[i], spans, cnt, &n) || n < from)
 +			continue;
 +		note = strchr(lb->ln[i], ' ') + 3;
 +		ref = agent_note_ref(note);
@@ -15653,7 +15853,8 @@ index 00000000..0c049a3e
 + * and, outside a checkpoint, where the agent cannot note them, USER entries
 + * are not among the largest. */
 +static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
-+		int lines, int all, int unrated, int trimmed, int reasoned)
++		int lines, int all, int unrated, int trimmed, int reasoned,
++		unsigned long from)
 +{
 +	int top[5], ntop = 0, listed = 0, r, row, nmoved = 0, trow = 0;
 +	unsigned long *moved = NULL, ref;	/* removed target, entry shown */
@@ -15661,7 +15862,7 @@ index 00000000..0c049a3e
 +	char ln[256], same[32], *note;
 +	for (int k = 0; k < cnt; k++) {
 +		if (trimmed)
-+			agent_trimmed_list(sb, spans, cnt, &trow, spans[k].n);
++			agent_trimmed_list(sb, spans, cnt, &trow, from, spans[k].n);
 +		if (spans[k].role == AE_NOTICE && !all)
 +			continue;
 +		listed++;
@@ -15679,17 +15880,13 @@ index 00000000..0c049a3e
 +			 * listed among trimmed notes; the rest name that entry. */
 +			if (agent_noted(spans + k) && (ref = agent_note_ref(note)) &&
 +					((t = agent_span_rated(spans, cnt, ref)) ? !agent_noted(t) :
-+					!(trimmed && agent_note(ref, &r, &row)))) {
++				!(trimmed && ref >= from && agent_note(ref, &r, &row)))) {
 +				int j = 0;
 +				while (j < nmoved && moved[2*j] != ref)
 +					j++;
-+			if (j < nmoved) {
-+					const char *role = "TURN";
-+					for (int m = 0; m < cnt; m++)
-+						if (spans[m].n == moved[2*j+1])
-+							role = agent_span_role(spans + m);
-+					snprintf(same, sizeof(same), "same as %s %lu",
-+						role, moved[2*j+1]);
++				if (j < nmoved) {
++					snprintf(same, sizeof(same), "same as entry %lu",
++						moved[2*j+1]);
 +					note = same;
 +				} else {
 +					moved = erealloc(moved, (nmoved + 1) * 2 * sizeof(*moved));
@@ -15698,7 +15895,7 @@ index 00000000..0c049a3e
 +					nmoved++;
 +					note = agent_note_text(note);
 +				}
-+				}
++			}
 +			/* The sentence follows the rating. */
 +			if (agent_noted(spans + k)) {
 +				sbuf_chr(sb, ' ')
@@ -15719,7 +15916,7 @@ index 00000000..0c049a3e
 +			top[j] = k;
 +	}
 +	if (trimmed)
-+		agent_trimmed_list(sb, spans, cnt, &trow, ULONG_MAX);
++		agent_trimmed_list(sb, spans, cnt, &trow, from, ULONG_MAX);
 +	if (ntop && listed > ntop) {
 +		sbuf_str(sb, "Largest:")
 +		for (int j = 0; j < ntop; j++) {
@@ -15757,7 +15954,7 @@ index 00000000..0c049a3e
 +	snprintf(ln, sizeof(ln), "role entry %stext+commands+results=tokens "
 +		"rating note\n", reasoned ? "reasoning+" : "");
 +	sbuf_str(sb, ln)
-+	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned);
++	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned, 0);
 +	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 +		sbuf_str(sb, "Unrated: ")
 +		sbuf_str(sb, unrated)
@@ -15798,10 +15995,10 @@ index 00000000..0c049a3e
 +	"through M; three or more numbers, N,M,K, are a list of turns.\n"
 +	"N[,M]arate R sentence\n"
 +	"  rate the TURN entries; the sentence says what the turn did and\n"
-+	"  found; 0 also removes the turn\n"
++	"  found; 0 also removes the turn for good\n"
 +	"N[,M]anote [text]\n"
-+	"  text replaces the entries as one note; no text removes them; USER\n"
-+	"  entries too; keep the instructions the remaining work needs\n"
++	"  text replaces the entries as one note; no text removes them for good;\n"
++	"  USER entries too; keep the instructions the remaining work needs\n"
 +	"adone\n"
 +	"  apply the trims and resume the task\n"
 +	"\n";
@@ -15817,8 +16014,9 @@ index 00000000..0c049a3e
 +	"Then end the checkpoint, e.g.\n"
 +	"adone\n"
 +	"\n"
-+	"This exchange is not kept; ratings show in later checkpoints and\n"
-+	"compaction.\n";
++	"This exchange is not kept; ratings of kept entries show in later\n"
++	"checkpoints and compaction. A removed entry's rating is dropped; to\n"
++	"keep findings, note them with text.\n";
 +
 +/* The checkpoint guide: what a TURN is, the commands, then the steps in
 + * order; with scale, the rating scale first (acp, printed alone). */
@@ -16535,8 +16733,8 @@ index 00000000..0c049a3e
 +			agent_add_user(agent_messages, text->s);
 +	}
 +	free(text->s);
-+	if (cnt)
-+		agent_entries[1] = MAX(agent_entries[1], spans[cnt-1].n);
++	/* Numbers used by trimmed entries and notes are not reused. */
++	agent_entries[1] = MAX(agent_entries[1], agent_entries_max());
 +	agent_turn[1] = 0;
 +	free(spans);
 +}
@@ -17844,9 +18042,15 @@ index 00000000..0c049a3e
 +	ex_print(msg, msg_ft)
 +	if (agent_acl_kept() || lbuf_len(tempbufs[5].lb)) {
 +		char unrated[112];
-+		int n = agent_unrated_now(unrated, sizeof(unrated));
-+		snprintf(msg, sizeof(msg), "notes      %d in b-6, %d turns unrated",
-+			lbuf_len(tempbufs[5].lb), n);
++		int n = agent_unrated_now(unrated, sizeof(unrated)), removed = 0;
++		int epochs = 0;
++		for (int i = 0; i < lbuf_len(tempbufs[5].lb); i++) {
++			removed += !strncmp(tempbufs[5].lb->ln[i], "REMOVED ", 8);
++			epochs += !strncmp(tempbufs[5].lb->ln[i], "EPOCH ", 6);
++		}
++		snprintf(msg, sizeof(msg), "notes      %d in b-6, %d removed, "
++			"%d epochs, %d turns unrated", agent_notes_live(0), removed,
++			epochs, n);
 +		ex_print(msg, msg_ft)
 +	}
 +	if (agent_goal) {
@@ -18441,7 +18645,8 @@ index 00000000..0c049a3e
 +
 +/* Replace log entries N through M, or the turns of a list N,M,K, with a
 + * note, or remove them. A note over a turn is a turn holding only the text,
-+ * under the turn's number, so its rating stays with it. */
++ * under the turn's number; the ratings of the entries replaced, its own
++ * included, become REMOVED records in b-6, so the note starts unrated. */
 +static void *ec_anote(char *loc, char *cmd, char *arg)
 +{
 +	static char err[80];
@@ -18542,12 +18747,17 @@ index 00000000..0c049a3e
 +		/* A pack moves the whole log to b-7 itself, if it succeeds. */
 +		if (!agent_packing)
 +			agent_discard(lb, spans, k, end);
++		/* The ratings described the entries replaced, the note target
++		 * included: they become final records; the note starts unrated. */
++		for (int j = end; j >= k; j--)
++			agent_note_retire(spans[j].n, spans, cnt, sel);
 +		lbuf_edit(lb, *arg && k == at ? sb->s : NULL,
 +			spans[k].beg, spans[end].end, 0, 0);
 +	}
 +	restore(agent_syncing)
 +	restore(agent_tool)
 +	agent_sync(lb);
++	agent_sync(tempbufs[5].lb);
 +	agent_sync(tempbufs[6].lb);
 +	free(sb->s);
 +	agent_log_clamp();
@@ -18576,8 +18786,9 @@ index 00000000..0c049a3e
 +}
 +
 +/* Move the spans with sel 1 to b-7, reporting as anote does; their ratings
-+ * stay in b-6. Spans with sel 2 stay and count in the report. nums lists
-+ * the entries of an arate list; NULL reports a range. */
++ * become REMOVED records in b-6, so the removal is final. Spans with sel 2
++ * stay and count in the report. nums lists the entries of an arate list;
++ * NULL reports a range. */
 +static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
 +		char *nums)
 +{
@@ -18602,11 +18813,13 @@ index 00000000..0c049a3e
 +		lo = spans[k].n;
 +		removed++;
 +		agent_discard(lb, spans, k, k);
++		agent_note_retire(spans[k].n, spans, cnt, sel);
 +		lbuf_edit(lb, NULL, spans[k].beg, spans[k].end, 0, 0);
 +	}
 +	restore(agent_syncing)
 +	restore(agent_tool)
 +	agent_sync(lb);
++	agent_sync(tempbufs[5].lb);
 +	agent_sync(tempbufs[6].lb);
 +	agent_log_clamp();
 +	len = snprintf(msg, sizeof(msg), "removed %d %s ", removed,
@@ -18893,18 +19106,21 @@ index 00000000..0c049a3e
 +	sbuf_chr(task, '\n')
 +	struct lbuf *notes = tempbufs[5].lb;
 +	struct agent_span *spans;
-+	int cnt = agent_spans(&spans), trimmed = 0, rated = lbuf_len(notes) > 0;
++	int cnt = agent_spans(&spans), trimmed = 0, rated;
 +	int reasoned = agent_spans_reasoned(spans, cnt);
-+	unsigned long n;
++	unsigned long n, from = browse ? 0 : agent_epoch_floor();
 +	double total = 0;
 +	char ln[400];
 +	for (int k = 0; k < cnt; k++)
 +		total += agent_span_tokens(spans + k);
 +	/* Notes outlive trimmed turns; they are listed in order among the
-+	 * entries. */
++	 * entries. A loaded pack lists those from the last summary on; a
++	 * browsing one lists every epoch. */
++	rated = agent_notes_live(from) > 0;
 +	for (int i = 0; i < lbuf_len(notes); i++)
-+		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n);
-+	if (lbuf_len(notes)) {
++		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n) &&
++			n >= from;
++	if (rated) {
 +		/* The legend covers only the ratings listed, each with its
 +		 * weighting; every note is listed, current or trimmed. */
 +		static char *legend[] = {
@@ -18915,7 +19131,7 @@ index 00000000..0c049a3e
 +			"    the exact details\n"};
 +		int seen = 0, r, row, unrated = 0;
 +		for (int i = 0; i < lbuf_len(notes); i++)
-+			if (agent_note_line(notes->ln[i], &n, &r))
++			if (agent_note_line(notes->ln[i], &n, &r) && n >= from)
 +				seen |= 1 << r;
 +		for (int k = 0; k < cnt && !unrated; k++)
 +			unrated = agent_ratable(spans + k) &&
@@ -18941,8 +19157,12 @@ index 00000000..0c049a3e
 +			browse ? " line" : "", rated ? " rating note" : "");
 +		sbuf_str(task, ln)
 +		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
-+			reasoned);
++			reasoned, from);
 +	}
++	if (browse && trimmed && agent_epoch_floor())
++		sbuf_str(task, "A line \"EPOCH N: summarized as USER N\" marks an "
++			"earlier compaction:\nthe notes above it rate entries that summary "
++			"replaced; aget still reads them.\n")
 +	if (cnt || trimmed)
 +		sbuf_str(task, lbuf_len(tempbufs[6].lb) ?
 +			"N[,M]aget[parts] prints entries N through M with their headers,\n"
@@ -19016,7 +19236,6 @@ index 00000000..0c049a3e
 +		int changed = strcmp(original, summary) != 0;
 +		if (!ret && complete && changed && !agent_save(3)) {
 +			agent_history(1);
-+			agent_notes_archive(archive);
 +			agent_discard_log(original);
 +			agent_head_summary();
 +			cJSON_Delete(history);
@@ -19136,7 +19355,6 @@ index 00000000..0c049a3e
 +	free(summary);
 +	if (ok) {
 +		cJSON_Delete(history);
-+		agent_notes_archive(archive);
 +		agent_drop_log(archive);
 +		agent_log("NOTICE", "autocompact complete; resuming request");
 +	} else {
