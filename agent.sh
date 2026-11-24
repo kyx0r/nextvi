@@ -1234,14 +1234,18 @@ static void agent_note_set(unsigned long n, int rate, char *text)
 	free(sb->s);
 }
 
-/* The entry a ranged arate rating names by "same as TURN n", or 0. */
+/* The entry a ranged arate rating names by "same as <role> n", or 0. */
 static unsigned long agent_note_ref(char *note)
 {
 	char *e;
 	unsigned long n;
-	if (strncmp(note, "same as TURN ", 13) || !isdigit((unsigned char)note[13]))
+	if (strncmp(note, "same as ", 8))
 		return 0;
-	n = strtoul(note + 13, &e, 10);
+	while (*note && !isdigit((unsigned char)*note))
+		note++;
+	if (!*note)
+		return 0;
+	n = strtoul(note, &e, 10);
 	return *e == '\''\n'\'' || !*e ? n : 0;
 }
 
@@ -1255,16 +1259,6 @@ static char *agent_note_text(char *note)
 			(t = agent_note(n, &r, &row)); i++)
 		note = t;
 	return note;
-}
-
-/* TURN entry n among spans, or NULL. */
-static struct agent_span *agent_span_turn(struct agent_span *spans, int cnt,
-		unsigned long n)
-{
-	for (int k = 0; k < cnt; k++)
-		if (spans[k].role == AE_TURN && spans[k].n == n)
-			return spans + k;
-	return NULL;
 }
 
 /* Whether entry s takes a rating: every turn, and a USER entry the agent
@@ -1317,7 +1311,7 @@ static void agent_note_rehome(unsigned long n, struct agent_span *spans,
 		agent_note_set(m, rate, to ? same : old);
 		if (!to) {
 			to = m;
-			snprintf(same, sizeof(same), "same as TURN %lu", to);
+			snprintf(same, sizeof(same), "same as entry %lu", to);
 		}
 	}
 	free(old);
@@ -1329,12 +1323,12 @@ static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
 	int n = 0, len = 0, r, row;
 	*buf = '\''\0'\'';
 	for (int k = 0; k < cnt; k++) {
-		if (spans[k].role != AE_TURN ||
+		if (!agent_ratable(spans + k) ||
 				agent_note(spans[k].n, &r, &row))
 			continue;
 		if (n < 8 && len < size)
-			len += snprintf(buf + len, size - len, "%s%lu",
-				n ? ", " : "TURN ", spans[k].n);
+			len += snprintf(buf + len, size - len, "%s%s %lu",
+				n ? ", " : "", agent_span_role(spans + k), spans[k].n);
 		n++;
 	}
 	if (n > 8 && len < size)
@@ -1548,9 +1542,13 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 				int j = 0;
 				while (j < nmoved && moved[2*j] != ref)
 					j++;
-				if (j < nmoved) {
-					snprintf(same, sizeof(same), "same as TURN %lu",
-						moved[2*j+1]);
+			if (j < nmoved) {
+					const char *role = "TURN";
+					for (int m = 0; m < cnt; m++)
+						if (spans[m].n == moved[2*j+1])
+							role = agent_span_role(spans + m);
+					snprintf(same, sizeof(same), "same as %s %lu",
+						role, moved[2*j+1]);
 					note = same;
 				} else {
 					moved = erealloc(moved, (nmoved + 1) * 2 * sizeof(*moved));
@@ -1559,7 +1557,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 					nmoved++;
 					note = agent_note_text(note);
 				}
-			}
+				}
 			/* The sentence follows the rating. */
 			if (agent_noted(spans + k)) {
 				sbuf_chr(sb, '\'' '\'')
@@ -1615,7 +1613,7 @@ static void agent_cp_status(sbuf *sb, int cp)
 			"tokens in these entries:\n", total);
 		sbuf_str(sb, ln)
 	}
-	snprintf(ln, sizeof(ln), "role number %stext+commands+results=tokens "
+	snprintf(ln, sizeof(ln), "role entry %stext+commands+results=tokens "
 		"rating note\n", reasoned ? "reasoning+" : "");
 	sbuf_str(sb, ln)
 	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned);
@@ -1635,7 +1633,7 @@ static void agent_cp_unrated(sbuf *sb)
 	int reasoned = agent_spans_reasoned(spans, cnt);
 	char ln[256];
 	for (int k = 0; k < cnt; k++) {
-		if (spans[k].role != AE_TURN ||
+		if (!agent_ratable(spans + k) ||
 				agent_note(spans[k].n, &r, &row))
 			continue;
 		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
@@ -4135,7 +4133,7 @@ static char *agent_entryrange(char *loc, struct agent_span *spans, int cnt,
 	return *first < 0 ? "no entries in range" : NULL;
 }
 
-/* Mark in sel the TURN entries a list N,M,K names; first and last get the
+/* Mark in sel the TURN and USER entries a list N,M,K names; first and last get the
  * span indices of its ends. An error or NULL. */
 static char *agent_entrylist(char *loc, struct agent_span *spans, int cnt,
 		char *sel, int *first, int *last)
@@ -4148,9 +4146,9 @@ static char *agent_entrylist(char *loc, struct agent_span *spans, int cnt,
 	do {
 		if (agent_entryaddr(&loc, &n, spans[cnt-1].n) || (*loc && *loc != '\'','\''))
 			return "invalid entry list";
-		if (!(sp = agent_span_turn(spans, cnt, n))) {
+		if (!(sp = agent_span_rated(spans, cnt, n))) {
 			snprintf(err, sizeof(err),
-				"entry %lu is not a TURN; the list was not applied", n);
+				"entry %lu is not a TURN or USER entry; the list was not applied", n);
 			return err;
 		}
 		sel[sp - spans] = 1;
@@ -4438,7 +4436,7 @@ done:
 
 /* Move the spans with sel 1 to b-7, reporting as anote does; their ratings
  * stay in b-6. Spans with sel 2 stay and count in the report. nums lists
- * the turns of an arate list; NULL reports a range. */
+ * the entries of an arate list; NULL reports a range. */
 static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
 		char *nums)
 {
@@ -4471,7 +4469,7 @@ static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
 	agent_sync(tempbufs[6].lb);
 	agent_log_clamp();
 	len = snprintf(msg, sizeof(msg), "removed %d %s ", removed,
-		removed > 1 ? "turns" : "turn");
+		removed > 1 ? "entries" : "entry");
 	if (nums)
 		len += snprintf(msg + len, sizeof(msg) - len, "%s", nums);
 	else
@@ -4481,15 +4479,15 @@ static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
 	ex_print(msg, msg_ft)
 }
 
-/* Rate in b-6 the TURN entries from N through M, or those of a list N,M,K
- * of three or more, or a USER entry N alone. */
+/* Rate in b-6 the turns from N through M, or those of a list N,M,K
+ * of three or more (USER entries included), or a USER entry N alone. */
 static void *ec_arate(char *loc, char *cmd, char *arg)
 {
 	struct agent_span *spans;
 	int cnt = agent_spans(&spans), first, last, rated = 0, len = 0;
 	unsigned long lo = 0, hi = 0;
 	char msg[224], nums[128], same[32], *text = arg + !!*arg;
-	/* 1 a turn to rate, 2 another entry of the range */
+	/* 1 an entry to rate, 2 another entry of the range */
 	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
 	int list = agent_islist(loc);
 	void *ret;
@@ -4525,32 +4523,31 @@ static void *ec_arate(char *loc, char *cmd, char *arg)
 				rated ? ", " : "", spans[k].n);
 		if (!rated++) {
 			lo = spans[k].n;
-			snprintf(same, sizeof(same), "same as TURN %lu", lo);
+			snprintf(same, sizeof(same), "same as entry %lu", lo);
 		}
 		hi = spans[k].n;
 	}
 	restore(agent_syncing)
 	restore(agent_tool)
 	if (!rated) {
-		ret = "no TURN entries in range; rate the TURN entry of each reply";
+		ret = "no ratable entries in range";
 		goto done;
 	}
 	if (rated > 8)
 		snprintf(nums + len, sizeof(nums) - len, " and %d more", rated - 8);
 	agent_sync(tempbufs[5].lb);
 	if (rated > 1 && list)
-		snprintf(msg, sizeof(msg), "rated %d turns TURN %s %c",
+		snprintf(msg, sizeof(msg), "rated %d entries %s %c",
 			rated, nums, *arg);
 	else if (rated > 1)
-		snprintf(msg, sizeof(msg), "rated %d turns TURN %lu-%lu %c",
+		snprintf(msg, sizeof(msg), "rated %d entries %lu-%lu %c",
 			rated, lo, hi, *arg);
 	else
 		snprintf(msg, sizeof(msg), "rated %s %lu %c",
 			agent_span_role(agent_span_rated(spans, cnt, lo)), lo, *arg);
 	ex_print(msg, msg_ft)
 	/* A checkpoint drops dead weight from the log at once. */
-	if (*arg == '\''0'\'' && agent_checkpointing == 1 &&
-			agent_span_rated(spans, cnt, lo)->role == AE_TURN)
+	if (*arg == '\''0'\'' && agent_checkpointing == 1)
 		agent_trim_turns(spans, cnt, sel, list ? nums : NULL);
 done:
 	free(sel);
@@ -4797,7 +4794,7 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 		sbuf_str(task, ln)
 	} else if (cnt || trimmed) {
 		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n",
+			"entries%s:\nrole entry %stext+commands+results=tokens%s%s\n",
 			total, trimmed ? ",\nin order with the notes of turns already "
 			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
 			browse ? " line" : "", rated ? " rating note" : "");
@@ -14150,10 +14147,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..d590f372
+index 00000000..5b97c98e
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,4993 @@
+@@ -0,0 +1,4990 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15358,14 +15355,18 @@ index 00000000..d590f372
 +	free(sb->s);
 +}
 +
-+/* The entry a ranged arate rating names by "same as TURN n", or 0. */
++/* The entry a ranged arate rating names by "same as <role> n", or 0. */
 +static unsigned long agent_note_ref(char *note)
 +{
 +	char *e;
 +	unsigned long n;
-+	if (strncmp(note, "same as TURN ", 13) || !isdigit((unsigned char)note[13]))
++	if (strncmp(note, "same as ", 8))
 +		return 0;
-+	n = strtoul(note + 13, &e, 10);
++	while (*note && !isdigit((unsigned char)*note))
++		note++;
++	if (!*note)
++		return 0;
++	n = strtoul(note, &e, 10);
 +	return *e == '\n' || !*e ? n : 0;
 +}
 +
@@ -15379,16 +15380,6 @@ index 00000000..d590f372
 +			(t = agent_note(n, &r, &row)); i++)
 +		note = t;
 +	return note;
-+}
-+
-+/* TURN entry n among spans, or NULL. */
-+static struct agent_span *agent_span_turn(struct agent_span *spans, int cnt,
-+		unsigned long n)
-+{
-+	for (int k = 0; k < cnt; k++)
-+		if (spans[k].role == AE_TURN && spans[k].n == n)
-+			return spans + k;
-+	return NULL;
 +}
 +
 +/* Whether entry s takes a rating: every turn, and a USER entry the agent
@@ -15441,7 +15432,7 @@ index 00000000..d590f372
 +		agent_note_set(m, rate, to ? same : old);
 +		if (!to) {
 +			to = m;
-+			snprintf(same, sizeof(same), "same as TURN %lu", to);
++			snprintf(same, sizeof(same), "same as entry %lu", to);
 +		}
 +	}
 +	free(old);
@@ -15453,12 +15444,12 @@ index 00000000..d590f372
 +	int n = 0, len = 0, r, row;
 +	*buf = '\0';
 +	for (int k = 0; k < cnt; k++) {
-+		if (spans[k].role != AE_TURN ||
++		if (!agent_ratable(spans + k) ||
 +				agent_note(spans[k].n, &r, &row))
 +			continue;
 +		if (n < 8 && len < size)
-+			len += snprintf(buf + len, size - len, "%s%lu",
-+				n ? ", " : "TURN ", spans[k].n);
++			len += snprintf(buf + len, size - len, "%s%s %lu",
++				n ? ", " : "", agent_span_role(spans + k), spans[k].n);
 +		n++;
 +	}
 +	if (n > 8 && len < size)
@@ -15672,9 +15663,13 @@ index 00000000..d590f372
 +				int j = 0;
 +				while (j < nmoved && moved[2*j] != ref)
 +					j++;
-+				if (j < nmoved) {
-+					snprintf(same, sizeof(same), "same as TURN %lu",
-+						moved[2*j+1]);
++			if (j < nmoved) {
++					const char *role = "TURN";
++					for (int m = 0; m < cnt; m++)
++						if (spans[m].n == moved[2*j+1])
++							role = agent_span_role(spans + m);
++					snprintf(same, sizeof(same), "same as %s %lu",
++						role, moved[2*j+1]);
 +					note = same;
 +				} else {
 +					moved = erealloc(moved, (nmoved + 1) * 2 * sizeof(*moved));
@@ -15683,7 +15678,7 @@ index 00000000..d590f372
 +					nmoved++;
 +					note = agent_note_text(note);
 +				}
-+			}
++				}
 +			/* The sentence follows the rating. */
 +			if (agent_noted(spans + k)) {
 +				sbuf_chr(sb, ' ')
@@ -15739,7 +15734,7 @@ index 00000000..d590f372
 +			"tokens in these entries:\n", total);
 +		sbuf_str(sb, ln)
 +	}
-+	snprintf(ln, sizeof(ln), "role number %stext+commands+results=tokens "
++	snprintf(ln, sizeof(ln), "role entry %stext+commands+results=tokens "
 +		"rating note\n", reasoned ? "reasoning+" : "");
 +	sbuf_str(sb, ln)
 +	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned);
@@ -15759,7 +15754,7 @@ index 00000000..d590f372
 +	int reasoned = agent_spans_reasoned(spans, cnt);
 +	char ln[256];
 +	for (int k = 0; k < cnt; k++) {
-+		if (spans[k].role != AE_TURN ||
++		if (!agent_ratable(spans + k) ||
 +				agent_note(spans[k].n, &r, &row))
 +			continue;
 +		agent_span_head(ln, sizeof(ln), spans + k, reasoned);
@@ -18259,7 +18254,7 @@ index 00000000..d590f372
 +	return *first < 0 ? "no entries in range" : NULL;
 +}
 +
-+/* Mark in sel the TURN entries a list N,M,K names; first and last get the
++/* Mark in sel the TURN and USER entries a list N,M,K names; first and last get the
 + * span indices of its ends. An error or NULL. */
 +static char *agent_entrylist(char *loc, struct agent_span *spans, int cnt,
 +		char *sel, int *first, int *last)
@@ -18272,9 +18267,9 @@ index 00000000..d590f372
 +	do {
 +		if (agent_entryaddr(&loc, &n, spans[cnt-1].n) || (*loc && *loc != ','))
 +			return "invalid entry list";
-+		if (!(sp = agent_span_turn(spans, cnt, n))) {
++		if (!(sp = agent_span_rated(spans, cnt, n))) {
 +			snprintf(err, sizeof(err),
-+				"entry %lu is not a TURN; the list was not applied", n);
++				"entry %lu is not a TURN or USER entry; the list was not applied", n);
 +			return err;
 +		}
 +		sel[sp - spans] = 1;
@@ -18562,7 +18557,7 @@ index 00000000..d590f372
 +
 +/* Move the spans with sel 1 to b-7, reporting as anote does; their ratings
 + * stay in b-6. Spans with sel 2 stay and count in the report. nums lists
-+ * the turns of an arate list; NULL reports a range. */
++ * the entries of an arate list; NULL reports a range. */
 +static void agent_trim_turns(struct agent_span *spans, int cnt, char *sel,
 +		char *nums)
 +{
@@ -18595,7 +18590,7 @@ index 00000000..d590f372
 +	agent_sync(tempbufs[6].lb);
 +	agent_log_clamp();
 +	len = snprintf(msg, sizeof(msg), "removed %d %s ", removed,
-+		removed > 1 ? "turns" : "turn");
++		removed > 1 ? "entries" : "entry");
 +	if (nums)
 +		len += snprintf(msg + len, sizeof(msg) - len, "%s", nums);
 +	else
@@ -18605,15 +18600,15 @@ index 00000000..d590f372
 +	ex_print(msg, msg_ft)
 +}
 +
-+/* Rate in b-6 the TURN entries from N through M, or those of a list N,M,K
-+ * of three or more, or a USER entry N alone. */
++/* Rate in b-6 the turns from N through M, or those of a list N,M,K
++ * of three or more (USER entries included), or a USER entry N alone. */
 +static void *ec_arate(char *loc, char *cmd, char *arg)
 +{
 +	struct agent_span *spans;
 +	int cnt = agent_spans(&spans), first, last, rated = 0, len = 0;
 +	unsigned long lo = 0, hi = 0;
 +	char msg[224], nums[128], same[32], *text = arg + !!*arg;
-+	/* 1 a turn to rate, 2 another entry of the range */
++	/* 1 an entry to rate, 2 another entry of the range */
 +	char *sel = memset(emalloc(cnt + 1), 0, cnt + 1);
 +	int list = agent_islist(loc);
 +	void *ret;
@@ -18649,32 +18644,31 @@ index 00000000..d590f372
 +				rated ? ", " : "", spans[k].n);
 +		if (!rated++) {
 +			lo = spans[k].n;
-+			snprintf(same, sizeof(same), "same as TURN %lu", lo);
++			snprintf(same, sizeof(same), "same as entry %lu", lo);
 +		}
 +		hi = spans[k].n;
 +	}
 +	restore(agent_syncing)
 +	restore(agent_tool)
 +	if (!rated) {
-+		ret = "no TURN entries in range; rate the TURN entry of each reply";
++		ret = "no ratable entries in range";
 +		goto done;
 +	}
 +	if (rated > 8)
 +		snprintf(nums + len, sizeof(nums) - len, " and %d more", rated - 8);
 +	agent_sync(tempbufs[5].lb);
 +	if (rated > 1 && list)
-+		snprintf(msg, sizeof(msg), "rated %d turns TURN %s %c",
++		snprintf(msg, sizeof(msg), "rated %d entries %s %c",
 +			rated, nums, *arg);
 +	else if (rated > 1)
-+		snprintf(msg, sizeof(msg), "rated %d turns TURN %lu-%lu %c",
++		snprintf(msg, sizeof(msg), "rated %d entries %lu-%lu %c",
 +			rated, lo, hi, *arg);
 +	else
 +		snprintf(msg, sizeof(msg), "rated %s %lu %c",
 +			agent_span_role(agent_span_rated(spans, cnt, lo)), lo, *arg);
 +	ex_print(msg, msg_ft)
 +	/* A checkpoint drops dead weight from the log at once. */
-+	if (*arg == '0' && agent_checkpointing == 1 &&
-+			agent_span_rated(spans, cnt, lo)->role == AE_TURN)
++	if (*arg == '0' && agent_checkpointing == 1)
 +		agent_trim_turns(spans, cnt, sel, list ? nums : NULL);
 +done:
 +	free(sel);
@@ -18921,7 +18915,7 @@ index 00000000..d590f372
 +		sbuf_str(task, ln)
 +	} else if (cnt || trimmed) {
 +		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-+			"entries%s:\nrole number %stext+commands+results=tokens%s%s\n",
++			"entries%s:\nrole entry %stext+commands+results=tokens%s%s\n",
 +			total, trimmed ? ",\nin order with the notes of turns already "
 +			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
 +			browse ? " line" : "", rated ? " rating note" : "");
