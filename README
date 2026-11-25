@@ -514,6 +514,28 @@ session whose log was written last.
 Example: ask about the whole buffer
 :%a Explain this code
 
+advagent.sh
+--------------
+Adds a second model, the "adversary", that rates the work of the main
+agent. It runs beside the agent, has no nextvi access and never acts: every
+closed USER and TURN entry of the session log b-4 is sent to it in batches
+and it answers with one "N R sentence" line per entry, R from 0 to 3. The
+replies are staged in memory, never written to b-6 as they arrive: they are
+merged into b-6 only at a kind 1 acl checkpoint, where a rating the main
+agent gave itself wins, so the adversary reviews the entries the agent left
+unrated. Raw replies, retries and errors are logged in b-9.
+Requires curl and a second chat completions endpoint. It applies on top of
+agent.sh, so run the two as a chain: ./agent.sh advagent.sh
+Configure adv_endpoint (default 127.0.0.1:8081), adv_api_key and
+adv_request_extra in conf.c, then rebuild. adv_timeout limits requests,
+120 seconds by default.
+
+The new option "adv", the ex command ":adv", turns the adversary on; it is
+off by default and turning it off stops any in-flight request. An endpoint
+that cannot be reached is reported once and the adversary stays off for the
+rest of the session. Three attempts are made at a batch whose ratings are
+missing or malformed, after which those entries are left unrated.
+
 lsp.sh
 --------------
 LSP support for Nextvi.
