@@ -1647,9 +1647,12 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 			snprintf(ln, sizeof(ln), " %d", spans[k].beg + 1);
 			sbuf_str(sb, ln)
 		}
-		if (agent_epoch_summary(spans[k].n))
-			sbuf_str(sb, " compaction summary that replaced entries above")
-		else if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
+		if (agent_epoch_summary(spans[k].n)) {
+			snprintf(ln, sizeof(ln),
+				" compaction summary that replaced entries 1-%lu",
+				spans[k].n - 1);
+			sbuf_str(sb, ln)
+		} else if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
 			snprintf(ln, sizeof(ln), " %d", r);
 			sbuf_str(sb, ln)
 			/* A sentence whose own entry is removed, or listed without
@@ -1784,6 +1787,9 @@ static const char agent_cp_trim[] =
 	"keep 3, or replace a large one with every detail the task depends on\n"
 	"e.g.\n"
 	"53,59anote findings: ...\n"
+	"\n"
+	"Rate the trimmed turns, e.g.\n"
+	"53arate 2 justification: ...\n"
 	"\n"
 	"Then end the checkpoint, e.g.\n"
 	"adone\n"
@@ -14278,10 +14284,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..478075bc
+index 00000000..6d2c9d7a
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5121 @@
+@@ -0,0 +1,5127 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15899,9 +15905,12 @@ index 00000000..478075bc
 +			snprintf(ln, sizeof(ln), " %d", spans[k].beg + 1);
 +			sbuf_str(sb, ln)
 +		}
-+		if (agent_epoch_summary(spans[k].n))
-+			sbuf_str(sb, " compaction summary that replaced entries above")
-+		else if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
++		if (agent_epoch_summary(spans[k].n)) {
++			snprintf(ln, sizeof(ln),
++				" compaction summary that replaced entries 1-%lu",
++				spans[k].n - 1);
++			sbuf_str(sb, ln)
++		} else if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
 +			snprintf(ln, sizeof(ln), " %d", r);
 +			sbuf_str(sb, ln)
 +			/* A sentence whose own entry is removed, or listed without
@@ -16036,6 +16045,9 @@ index 00000000..478075bc
 +	"keep 3, or replace a large one with every detail the task depends on\n"
 +	"e.g.\n"
 +	"53,59anote findings: ...\n"
++	"\n"
++	"Rate the trimmed turns, e.g.\n"
++	"53arate 2 justification: ...\n"
 +	"\n"
 +	"Then end the checkpoint, e.g.\n"
 +	"adone\n"
