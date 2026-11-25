@@ -22,280 +22,14 @@ fi
 ( : > /tmp/p2vi.$$ ) 2>/dev/null && P2VIF=/tmp/p2vi.$$ || P2VIF=./p2vi.$$
 trap 'rm -f "$P2VIF"' EXIT
 
-# Patch: ADVERSARY_HANDOFF.md agent.c agent.h conf.c ex.c term.c vi.c vi.h
+# Patch: agent.c agent.h conf.c ex.c term.c vi.c vi.h
 printf '%s%s%s\n' '|sc! |:vis 3ic 0217reg prFp FAIL %@219pr? %@212214reg ? %@217? %@211216reg ? %@220221reg vis 2q!1211reg ? %@221'\
 "${DBG1:+213reg ? %@217? %@210215reg ? %@220}\
 ${DBG2:+ya!214ya!216}\
 ${QF1:+210reg vis 2q!1}\
 ${QF2:+ya!221}\
 ${INTR:+212reg |sc|vis 2:fr 0:e $0:83reg %@47:%f> 219reg %@219:&Q:b0:|sc! |:vis 3q1}"\
-'fr 98b0m!0?
-i # Adversarial reviewer: implementation handoff
-
-## Goal
-Add a second model, the "adversary", that runs alongside the main agent
-and rates every closed USER and TURN entry of the session log b-4. It
-does not act as a subagent and has no nextvi access: it only rates.
-The main agent (spear) only sees these ratings at a kind 1 acl
-checkpoint.
-
-## Agreed design
-- Endpoint: a separate one, set in conf.c (default local port 8081).
-  It speaks portable OpenAI chat completions only. Do not use
-  llama-specific grammar, json_schema or response_format.
-- Concurrency: one background curl child at a time, polled from the
-  single-threaded main loop. No threads.
-- Input: every closed USER and TURN entry of b-4, in full: REASONING,
-  ASSISTANT, EX and RESULT parts. Truncate huge RESULT bodies. CP
-  entries (b-8) are never sent.
-- Context is rebuilt for each request: fixed instructions (including
-  agent_rating_scale), then its previous notes and ratings (live b-6
-  notes plus staged ratings), then the batch of new unreviewed entries
-  (everything closed since the last completed review). The prompt ends
-  with a template listing the batch'\''s actual numbers, one
-  "N R sentence" line each.
-- Output: plain text lines "N R sentence", with R from 0 to 3.
-  - Parse leniently: strip leading whitespace, '\''-'\'', '\''*'\'' and backticks,
-    and ignore lines that do not match.
-  - N must be in the batch. When N repeats, the last line wins.
-  - Parse only message.content, never the reasoning.
-- Retry: when entries are missing or malformed, send the previous reply
-  as an assistant message plus a user correction asking only for the
-  missing numbers. Make at most 3 attempts in total, then leave those
-  entries unrated (a "given up" set, so they are not resent forever).
-- Staging: ratings go to an in-memory staged list, NOT into b-6.
-- Kind 1 checkpoint (agent_checkpoint_begin(tokens, 1)):
-  - Kill any in-flight adversary request.
-  - Merge staged ratings into b-6 with agent_note_set, only for entries
-    that have no note yet (a spear rating wins), are still live
-    (agent_span_rated finds them) and are at or above
-    agent_epoch_floor(). Skip REMOVED entries.
-  - Clear the staged list and wrap the edits in
-    preserve(agent_syncing=1)/restore, then agent_sync(tempbufs[5].lb).
-  - The spear then rates whatever is still unrated, as it does today.
-- Kind 2 and 3 checkpoints do not stop the adversary.
-- Rating 0 from the adversary removes nothing. Only the spear'\''s arate 0
-  during a checkpoint trims, and the merge goes through agent_note_set,
-  which never trims.
-- Resync: after a checkpoint end, a compaction (agent_head_summary or
-  EPOCH) or a resume (agent_resume), drop staged ratings for entries no
-  longer live. Collection skips entries already noted in b-6, so the
-  adversary picks up again from b-6.
-- Unreachable endpoint (curl exit 7, or a connection failure in
-  stderr): show one notice (agent_output or ex_print) and disable the
-  adversary for the rest of the session.
-- b-9 (tempbufs[8], "/adversary/") dumps each raw reply plus the parsed
-  ratings, retries and errors, for observation.
-- Option int xadv, toggled with :adv. It is off by default (conf.c).
-
-## Done so far
-1. ex.c:46 and vi.h:525: tempbufs[8] is now tempbufs[9]. Everything
-   else uses LEN(tempbufs), so ":b" and "b-9" switching work as is.
-2. conf.c (after request_timeout): adv_endpoint, adv_api_key,
-   adv_request_extra "{}", adv_timeout 120, and int xadv.
-3. agent.c agent_init: temp_open(8, "/adversary/", _ft).
-4. b-9 is saved with the session (decided):
-   - "adversary" was added to agent_names.
-   - The loops in agent_sync_pending, agent_sync and agent_attach now run
-     `i < 9`.
-   - The unsaved bitmask bit 5 (1<<(9-1-3)) fits in the int.
-   - Old sessions get an empty adversary file the first time they are
-     attached.
-Build status (./cbuild.sh build): it compiles. The only warnings are
-"defined but not used" for adv_endpoint, adv_api_key, adv_request_extra
-and adv_timeout, and they go away once agent_adv_config uses them.
-Note: the bare ./cbuild.sh only prints usage; use `./cbuild.sh build`.
-
-## Remaining steps
-1. (done: b-9 is saved, see above)
-2. ex.c options:
-   - After the EO(...) lines near line 1977, add `EO(adv)`.
-   - In the command table near line 2062, add `EO(adv),` next to
-     EO(acl).
-   - Turning it off should kill any in-flight request. Either make it
-     `_EO(adv, xadv = ...; if (!xadv) agent_adv_kill(); return NULL;)`
-     with a forward declaration in agent.h, or check xadv in poll.
-3. Add agent.c code, best placed after agent_http (~line 2940), since it
-   needs agent_spans, agent_parts, agent_note*, agent_killtree and
-   agent_msg:
-   ```
-   static struct {
-       pid_t pid; int out, err;      /* -1 when idle */
-       sbuf *ob, *eb;
-       unsigned long *batch; int nbatch, attempt;
-       char *prev;                   /* previous reply, for a retry */
-       int disabled;                 /* unreachable: off for the session */
-   } agent_adv = {0, -1, -1};
-   struct agent_adv_rating { unsigned long n; int rate; char *text; };
-   static struct agent_adv_rating *agent_adv_staged; static int agent_adv_nstaged;
-   static unsigned long *agent_adv_gaveup; static int agent_adv_ngaveup;
-   ```
-   Functions:
-   - agent_adv_config(): copy of agent_config that uses
-     adv_request_extra, adv_api_key, adv_endpoint and adv_timeout. Strip
-     messages, tools, stream, tool_choice and response_format.
-   - agent_adv_collect(): call agent_spans. Take entries that are
-     USER/TURN, closed (USER: close >= 0; any span: open[0] empty if it
-     is the last one; TURN: n != agent_turn[1] while a turn is open),
-     have no b-6 note, are not staged, are not in the batch or given-up
-     set, and are >= agent_epoch_floor().
-   - agent_adv_entry(sb, lb, span): copy the header and lines verbatim.
-     For RESULT parts (agent_parts) cap each body at ~4000 bytes and add
-     "[... N bytes truncated]".
-   - agent_adv_prompt(): system message (role, scale, output format,
-     "one line per entry, no other text"). User message: "Previous
-     ratings:" (b-6 live lines and staged), then "Entries:", then the
-     template lines "N R sentence" for each batch number.
-   - agent_adv_start(cJSON *req): like agent_http plus the fork half of
-     agent_process.
-     - Write the header file with "Authorization: Bearer adv_api_key".
-       The child can unlink it after curl reads it, or the parent
-       unlinks it in finish (keep the path in the struct).
-     - Feed the body through a tmpfile on stdin, with pipes for stdout
-       and stderr. Set O_NONBLOCK on the read ends and setpgid the
-       child.
-     - Do NOT add its pid to agent_jobs: agent_reap would steal its
-       exit status.
-   - agent_adv_poll(): if idle and xadv, not disabled, agent_ready and
-     the collect step finds entries, start a batch. If running, call
-     poll() with timeout 0 on out/err, read what is there, and once
-     both reach EOF call waitpid(pid, WNOHANG), then finish.
-   - agent_adv_finish(st):
-     - st 7 (or "Couldn'\''t connect" in stderr): one notice, set
-       disabled.
-     - Any other failure: write it to b-9 and drop the batch (retried
-       later).
-     - Success: parse with agent_reply(root) and the "content" string.
-       Write the raw reply to b-9 (temp_write(8, ...)), parse the lines
-       and stage them (keeping the text), then write the parsed list to
-       b-9.
-     - Missing numbers and attempt < 3: attempt++, then resend
-       [system, user, assistant prev, user "Missing ratings for N, M;
-       reply only those lines"].
-     - Otherwise add the missing numbers to the given-up set and clear
-       the batch.
-   - agent_adv_kill(): agent_killtree(pid, 0, 0), close the fds,
-     waitpid(pid, NULL, 0), free the buffers and clear the batch
-     without staging, so its entries are collected again later.
-   - agent_adv_merge(): as described under Staging above.
-   - agent_adv_resync(): drop staged and given-up entries that are not
-     live (agent_span_rated) or are below the floor.
-4. Hooks:
-   - agent_checkpoint_begin (agent.c:1807): if kind == 1, call
-     agent_adv_kill() then agent_adv_merge() BEFORE agent_logbuf = 7
-     and before the opening message, so agent_cp_instructions/
-     agent_unrated_now see the merged ratings.
-   - agent_checkpoint_end (agent.c:2151), compaction (after
-     agent_head_summary) and agent_resume (after agent_attach): call
-     agent_adv_resync().
-   - Polling:
-     (a) inside the agent_process loop next to agent_reap()
-         (agent.c:2725);
-     (b) in agent_run_loop each iteration;
-     (c) when idle, in term.c term_read (~line 165). Do not block in
-         poll(-1) while agent_adv.pid > 0: loop with a 200 ms timeout
-         and call agent_adv_poll() between waits. term.c is included
-         after agent.c in vi.c, so the call resolves. Also trigger a
-         start check after each agent_turn_close/agent_log (in practice
-         calling agent_adv_poll() at the top of the request loop and
-         from term_read is enough).
-   - Skip collection while agent_packing, and when agent_logbuf != 3
-     (checkpointing) only for kind 1. Kind 2/3 may keep running, but
-     entries they write go to b-8 and are never collected anyway.
-   - Edits to b-9: wrap them in preserve(agent_syncing=1) and call
-     agent_sync_buf(8) / agent_sync(tempbufs[8].lb) if it is saved.
-5. Build with ./cbuild.sh and fix warnings.
-6. Test:
-   - Run a dummy server on 8081 (e.g. a python http.server returning a
-     fixed chat completion). Check that b-9 fills, that staged ratings
-     appear in b-6 only at a checkpoint, that a spear rating wins, and
-     that a missing line triggers a retry.
-   - With nothing on 8081, check for exactly one notice and that the
-     adversary then disables.
-
-## Notes and pitfalls
-- b-9 is only an observation log. Never read adversary state back from
-  it. On resume it is restored as text, but staged ratings are in memory
-  and are lost. That is fine: collection re-sends entries that have no
-  b-6 note. agent_resume could call agent_adv_resync() just to be safe.
-- Writes to b-9: append with temp_write(8, ...) or lbuf_edit at
-  lbuf_len, inside preserve(int, agent_syncing, agent_syncing = 1;),
-  then restore and call agent_sync_buf(8).
-  - agent_sync_buf saves right away. Inside a tool call (agent_tool),
-    use agent_sync(tempbufs[8].lb) instead, so the save waits for
-    agent_sync_pending.
-  - Do not use agent_log: that writes NOTICE entries into b-4, which
-    would feed back into the adversary and the spear'\''s context.
-- The "unreachable" notice goes to the user only (agent_output), not to
-  b-4.
-- agent_sync has special cases for tempbufs[3] and [7] (stale log
-  flags). b-9 needs none.
-- Cap the size of b-9: trim the oldest lines past a limit (e.g. 5000
-  lines) so long sessions don'\''t grow the saved file without bound.
-  Optional.
-- Do not touch the agent_cancel/agent_pause handling in agent_process
-  for the adversary child. Ctrl-C on the spear must not kill the
-  adversary unless xadv is turned off or a kind 1 checkpoint starts.
-- agent_killtree(pid, 0, 0): with job 0 it skips the tcgetpgrp branch
-  (job > 0 is false). Pass 0, not -1, so the terminal'\''s foreground job
-  is never killed.
-- Make sure no curl child is left behind on exit: call agent_adv_kill()
-  wherever the session shuts down (look for agent_cancel == 1 exit paths
-  and the editor quit path).
-
-## Code map (line numbers as of this handoff)
-- agent.c: agent_sync_pending 497, agent_sync 504, agent_init 559,
-  agent_names 572, agent_attach 610, agent_resume ~690-722, enums
-  AE_/AP_ 732.
-- Log parsing: struct agent_span 816, agent_spans_of 829,
-  agent_parts 881, agent_spans 913.
-- Logging: agent_log_write 1083, agent_turn_close 1011, agent_log 1017,
-  agent_turn_part 1031, agent_head_summary 1111.
-- Notes: agent_note_line 1172, agent_note 1185, agent_epoch_floor 1218,
-  agent_note_set 1281, agent_ratable 1333, agent_span_rated ~1347,
-  agent_unrated 1416, agent_rating_scale 1496.
-- Checkpoints: agent_cp_instructions 1766, agent_checkpoint_begin
-  1807, agent_reply 1847, agent_checkpoint_end 2151.
-- Processes and HTTP: agent_killtree 2567, agent_reap 2585,
-  agent_process 2642 (poll loop 2725-2790), agent_config 2869,
-  agent_http 2888.
-- Request loop: agent_run_loop 3149 (checkpoint triggers at 3190 and
-  3194), ec_arate 4577.
-- ex.c: temp_open 177, temp_write 219, option macros 1969-1982,
-  command table ~2040-2070.
-- term.c: term_read 143 (blocking poll at 165).
-
-## Final state (packaged as advagent.sh)
-- Code complete, ./cbuild.sh build clean, no warnings.
-- tempbufs[9]; conf.c gains adv_endpoint (default 127.0.0.1:8081),
-  adv_api_key, adv_request_extra, adv_timeout 120 and int xadv; ex.c gains
-  EO(adv) so ":adv" toggles it; agent_init does temp_open(8, "/adversary/");
-  "adversary" is in agent_names and the sync loops run i < 9.
-- The agent_adv_* block sits in agent.c after agent_http (about lines
-  2941-3680): config, collect, entry, prompt, start, poll, finish, merge,
-  kill, resync and the staged add with the given-up fix.
-- Hooks: agent.c:722 and agent.c:2204 (collection points), agent.c:1836
-  (kind 1 checkpoint: kill the in-flight request and merge staged ratings
-  before agent_logbuf is switched to 7), agent.c:4020 (agent_adv_poll at
-  the top of the run loop) and term.c:164-165 (term_wait polls too).
-- Idle rating fix: static int agent_adv_dirty, set in agent_turn_close and
-  in agent_log_write when agent_logbuf == 3 and when a request fails to
-  start, cleared in agent_adv_poll. The busy test (renamed from
-  agent_adv_busy to agent_adv_pending) is pid > 0 or dirty and xadv and not
-  disabled, so an idle editor rates the last turn without a keypress.
-- Test harness /tmp/adv/{srv.py,run.py}: a dummy OpenAI server and a pty
-  driver. A tool call is
-  {"id","type":"function","function":{"name":"ex","arguments":"..."}}
-  with usage prompt_tokens and completion_tokens.
-- Harness blockers: port 8080 belongs to another service (EADDRINUSE with
-  nothing shown by ss), so point spear elsewhere with :aep; adv_endpoint has
-  no ex command and no rc setting, it is compiled in, so the dummy
-  adversary has to listen on the conf.c port.
-- Packaging: advagent.sh carries this document and the whole adversary
-  delta on top of the agent.sh tree, so run them as a chain:
-  ./agent.sh advagent.sh
-  Applying advagent.sh alone fails, since its hunks need the agent.sh tree.
-??!219reg ADVERSARY_HANDOFF.md:-1:m2sc %? %@2142sc!b1m!%ya 98?0?
+'fr 98b0m!%ya 98?0?
 %f> static cJSON \*agent_messages;
 static unsigned long agent_epoch, agent_serial;
 static int agent_ready, agent_syncing, agent_child_status;
@@ -516,8 +250,8 @@ static int agent_attach\(const char \*dir, int load\)
 %f+ 	agent_cp_base = -1;
 	agent_cp_bytes = agent_context_bytes\(\);
 	agent_cp_left = INT_MAX;4??0?
-4??+2m 12220reg p OK agent.c:1827:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:18272sc %? %@2132sc!0?
+4??+2m 12220reg p OK agent.c:1826:a42sc %? %@2152sc!0?
+1;4??!219reg agent.c:18262sc %? %@2132sc!0?
 ?0?
 %f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);
 }
@@ -531,19 +265,19 @@ static void agent_checkpoint_end\(void\)
 \{
 	char note\[128], unrated\[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;2??0?
-2??m 13220reg p OK agent.c:2150:a22sc %? %@2152sc!1q0?
+2??m 13220reg p OK agent.c:2149:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^static void agent_checkpoint_end\(void\)$3??0?
-3??m 13220reg p OK agent.c:2150:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 13220reg p OK agent.c:2149:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);
 }
 
 4??0?
-4??+3m 13220reg p OK agent.c:2150:a42sc %? %@2152sc!1q0?
+4??+3m 13220reg p OK agent.c:2149:a42sc %? %@2152sc!1q0?
 %f+ \{
 	char note\[128], unrated\[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;5??0?
-5??-1m 13220reg p OK agent.c:2150:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg agent.c:21502sc %? %@2132sc!0?
+5??-1m 13220reg p OK agent.c:2149:a52sc %? %@2152sc!0?
+1;2;3;4;5??!219reg agent.c:21492sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_output\(note\);
 }
@@ -556,8 +290,8 @@ static void agent_checkpoint_stop\(void\)
 }
 
 4??0?
-4??+2m 14220reg p OK agent.c:2211:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:22112sc %? %@2132sc!0?
+4??+2m 14220reg p OK agent.c:2210:a42sc %? %@2152sc!0?
+1;4??!219reg agent.c:22102sc %? %@2132sc!0?
 ?0?
 %f+ 	return s;
 }
@@ -570,8 +304,8 @@ static char \*agent_snapshot\(char \*loc\)
 }
 
 4??0?
-4??+2m 15220reg p OK agent.c:2939:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:29392sc %? %@2132sc!0?
+4??+2m 15220reg p OK agent.c:2938:a42sc %? %@2152sc!0?
+1;4??!219reg agent.c:29382sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_add_user\(agent_messages, input\);
 	agent_log\("USER", input\);
@@ -583,8 +317,8 @@ static char \*agent_snapshot\(char \*loc\)
 %f+ 	agent_add_user\(agent_messages, input\);
 	agent_log\("USER", input\);
 	for \(int round = 0; ; \) \{4??0?
-4??+2m 16220reg p OK agent.c:3161:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:31612sc %? %@2132sc!0?
+4??+2m 16220reg p OK agent.c:3160:a42sc %? %@2152sc!0?
+1;4??!219reg agent.c:31602sc %? %@2132sc!0?
 '\''1i /* The adversary may have work: an entry closed since it last looked. The
  * flag lets term_wait block in poll(-1) until there is a reason to look. */
 static int agent_adv_dirty;
@@ -613,8 +347,8 @@ static int agent_adv_dirty;
 		agent_adv_kill();
 		agent_adv_merge();
 	}
-??!219reg agent.c:1827:m122sc %? %@2142sc!0?
-'\''13s/d\(/d_(/??!219reg agent.c:2150:m132sc %? %@2142sc!0?
+??!219reg agent.c:1826:m122sc %? %@2142sc!0?
+'\''13s/d\(/d_(/??!219reg agent.c:2149:m132sc %? %@2142sc!0?
 '\''14i /* The phase is over: entries a checkpoint trimmed or moved have nothing
  * left to rate, so the adversary forgets them. */
 static void agent_checkpoint_end(void)
@@ -624,7 +358,7 @@ static void agent_checkpoint_end(void)
 }
 
 
-??!219reg agent.c:2211:m142sc %? %@2142sc!0?
+??!219reg agent.c:2210:m142sc %? %@2142sc!0?
 '\''15i 
 /* The adversary: a second model running beside the spear that rates the
  * closed USER and TURN entries of the session log. It never acts and has no
@@ -910,6 +644,7 @@ static int agent_adv_collect(unsigned long **nums)
 	struct lbuf *lb = tempbufs[3].lb;
 	unsigned long floor = agent_epoch_floor(), n;
 	int cnt = agent_spans(&spans), last = cnt - 1, nr = 0, rate, row;
+	sbuf *sz = NULL;
 	*nums = emalloc((cnt ? cnt : 1) * sizeof(**nums));
 	for (int k = 0; k < cnt && nr < ADV_BATCH_MAX; k++) {
 		if ((spans[k].role != AE_USER && spans[k].role != AE_TURN) ||
@@ -925,19 +660,25 @@ static int agent_adv_collect(unsigned long **nums)
 		for (int i = 0; i < agent_adv_nstaged; i++)
 			if (agent_adv_staged[i].n == n)
 				goto next;
-		/* Stop the batch at the size cap; the rest waits for the next. */
-		if (nr && lb->ln[spans[k].beg]) {
-			sbuf_smake(sb, 1024)
-			agent_adv_entry(sb, lb, spans + k);
-			if (sb->s_n > ADV_BATCH_BYTES) {
-				free(sb->s);
+		/* The cap holds the whole batch: render what is picked so far
+		 * into one buffer and stop when its total passes the cap. The
+		 * first entry goes in whatever it weighs, so that an odd
+		 * giant of an entry still gets reviewed. */
+		if (lb->ln[spans[k].beg]) {
+			if (!sz)
+				sbuf_make(sz, 1024)
+			agent_adv_entry(sz, lb, spans + k);
+			if (nr && sz->s_n > ADV_BATCH_BYTES) {
+				sbuf_free(sz);
+				sz = NULL;
 				break;
 			}
-			free(sb->s);
 		}
 		(*nums)[nr++] = n;
 		next:;
 	}
+	if (sz)
+		sbuf_free(sz);
 	free(spans);
 	return nr;
 }
@@ -1003,13 +744,26 @@ static void agent_adv_nb(int fd)
 static int agent_adv_start(cJSON *req)
 {
 	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
-	int fd = mkstemp(hdrpath), out[2] = {-1, -1}, err[2] = {-1, -1};
+	int fd, out[2] = {-1, -1}, err[2] = {-1, -1};
+	/* Drop the file of the request this one replaces before mkstemp
+	 * overwrites the saved path; finish leaves it for here. */
+	if (*agent_adv.hdpath) {
+		unlink(agent_adv.hdpath);
+		*agent_adv.hdpath = '\''\0'\'';
+	}
+	fd = mkstemp(hdrpath);
 	FILE *in = tmpfile();
 	pid_t pid;
 	char *body = req ? cJSON_PrintUnformatted(req) : NULL;
 	sbuf_smake(hdr, 128)
+	sbuf_str(hdr, "Authorization: Bearer ")
+	sbuf_str(hdr, adv_api_key)
+	sbuf_chr(hdr, '\''\n'\'')
+	/* The child reads the body from in where its offset is, as in
+	 * agent_process: rewound, or curl posts an empty request. */
 	if (fd < 0 || !in || !body || agent_writeall(fd, hdr->s, hdr->s_n) ||
-			agent_writeall(fileno(in), body, strlen(body))) {
+			agent_writeall(fileno(in), body, strlen(body)) ||
+			lseek(fileno(in), 0, SEEK_SET) < 0) {
 		if (fd >= 0) {
 			close(fd);
 			unlink(hdrpath);
@@ -1227,9 +981,9 @@ static void agent_adv_finish(int st)
 	}
 	root = cJSON_ParseWithOpts(body ? body : "", NULL, 1);
 	if (cJSON_GetObjectItem(root, "error")) {
-		agent_adv_note("endpoint error: %s",
-			cJSON_GetStringValue(cJSON_GetObjectItem(
-				cJSON_GetObjectItem(root, "error"), "message")));
+		char *em = cJSON_GetStringValue(cJSON_GetObjectItem(
+			cJSON_GetObjectItem(root, "error"), "message"));
+		agent_adv_note("endpoint error: %s", em ? em : "no message");
 		cJSON_Delete(root);
 		agent_adv_batch_drop();
 		return;
@@ -1253,6 +1007,7 @@ static void agent_adv_finish(int st)
 		agent_adv_note("%s; asking again", note);
 		free(agent_adv.prev);
 		agent_adv.prev = content ? sdup(content, strlen(content)) : NULL;
+		agent_adv.attempt++;
 		if (agent_adv_request(1, miss, nmiss)) {
 			free(miss);
 			cJSON_Delete(root);
@@ -1302,7 +1057,7 @@ static void agent_adv_poll(void)
 			if (nr > 0) {
 				sbuf *d = i ? agent_adv.eb : agent_adv.ob;
 				if (d->s_n < ADV_REPLY_MAX)
-					sbuf_mem(d, buf, MIN(nr,
+					sbufn_mem(d, buf, MIN(nr,
 						ADV_REPLY_MAX - d->s_n))
 			} else if (!nr || errno != EINTR) {
 				close(fds[i].fd);
@@ -1420,11 +1175,11 @@ static void agent_adv_resync(void)
 			n == 1 ? "" : "s");
 }
 
-??!219reg agent.c:2939:m152sc %? %@2142sc!0?
+??!219reg agent.c:2938:m152sc %? %@2142sc!0?
 '\''16i 		/* The adversary'\''s curl, if any, is read between rounds: it never
 		   blocks the run, and its ratings reach b-6 at a checkpoint. */
 		agent_adv_poll();
-??!219reg agent.c:3161:m162sc %? %@2142sc!b2m!%ya 98?0?
+??!219reg agent.c:3160:m162sc %? %@2142sc!b1m!%ya 98?0?
 %f> static int agent_resume\(const char \*dir\);
 static char \*agent_init_error;
 static void agent_sync\(struct lbuf \*lb\);
@@ -1442,10 +1197,15 @@ static char \*agent_init_error;.*?
 grp 07??m 1220reg p OK agent.h:46:a72sc %? %@2152sc!0?
 1;4;7??!219reg agent.h:462sc %? %@2132sc!0?
 '\''1i /* the adversary: a second model that rates the log; see agent.c */
+/* The adversary'\''s curl is polled from term_wait and the run loop, and the two
+ * are called from term.c, which is included after agent.c only by luck of the
+ * include order in vi.c: keep the declarations here. */
+static void agent_adv_poll(void);
+static int agent_adv_pending(void);
 static void agent_adv_kill(void);
 static void agent_adv_merge(void);
 static void agent_adv_resync(void);
-??!219reg agent.h:46:m12sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg agent.h:46:m12sc %? %@2142sc!b2m!%ya 98?0?
 %f> static char \*endpoint = "http://127\.0\.0\.1:8080/v1/chat/completions";
 static char \*request_extra = "\{}";	/\* extra JSON request fields; arq changes them \*/
 static int request_timeout = 500;
@@ -1469,7 +1229,7 @@ static char *adv_api_key = "local";
 static char *adv_request_extra = "{}";
 static int adv_timeout = 120;
 int xadv;	/* adversarial reviewer enabled (:adv) */
-??!219reg conf.c:8:m12sc %? %@2142sc!b4m!%ya 98?0?
+??!219reg conf.c:8:m12sc %? %@2142sc!b3m!%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
 int xdefreg;			/\* ex default register \*/
 struct buf \*bufs;		/\* main buffers \*/
@@ -1531,7 +1291,7 @@ _EO\(acl, xacl = \*arg \? eo_val\(arg\) : !xacl;.*?
 	return NULL;)
 ??!219reg ex.c:1982:m22sc %? %@2142sc!0?
 '\''3i 	EO(adv),
-??!219reg ex.c:2062:m32sc %? %@2142sc!b5m!%ya 98?0?
+??!219reg ex.c:2062:m32sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	tibuf_cnt \+= n;
 }
 
@@ -1587,7 +1347,7 @@ static int term_wait(void)
 ??!219reg term.c:142:m12sc %? %@2142sc!0?
 ?'\''2s/poll\(&term_ufd, 1, -1/term_wait(/1??1??1q'\''2s/poll\(&(.*)ufd, 1, -1/\1wait(/2??2??'\''2220reg p OK term.c:165:s22sc %? %@2162sc!0?
 1;2??!219reg term.c:165:m22sc %? %@2142sc!0?
-b6m!%ya 98?0?
+b5m!%ya 98?0?
 %f> 		ex\(\);
 	else
 		vi\(1\);
@@ -1606,7 +1366,7 @@ static int term_wait(void)
 1;4;7??!219reg vi.c:18842sc %? %@2132sc!0?
 '\''1i 	/* never leave the adversary'\''s curl behind */
 	agent_adv_kill();
-??!219reg vi.c:1884:m12sc %? %@2142sc!b7m!%ya 98?0?
+??!219reg vi.c:1884:m12sc %? %@2142sc!b6m!%ya 98?0?
 %f> extern int xregs_n;
 extern int xdefreg;
 extern struct buf \*bufs;
@@ -1631,8 +1391,8 @@ extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)5??0?
 5??-1m 1220reg p OK vi.h:525:a52sc %? %@2152sc!0?
 1;2;3;4;5??!219reg vi.h:5252sc %? %@2132sc!0?
-'\''1s/8/9/??!219reg vi.h:525:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6wb7w2q' > "$P2VIF"
-EXINIT='%ya 97:? %@97' $VI -e 'ADVERSARY_HANDOFF.md' 'agent.c' 'agent.h' 'conf.c' 'ex.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
+'\''1s/8/9/??!219reg vi.h:525:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6w2q' > "$P2VIF"
+EXINIT='%ya 97:? %@97' $VI -e 'agent.c' 'agent.h' 'conf.c' 'ex.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
 if [ $# -gt 0 ]; then
     export P2VI_PATCH="$P2VI_PATCH ${0##*/}"
@@ -1643,279 +1403,8 @@ fi
 
 exit 0
 === PATCH2VI PATCH ===
-diff --git a/ADVERSARY_HANDOFF.md b/ADVERSARY_HANDOFF.md
-new file mode 100644
-index 00000000..73e51518
---- /dev/null
-+++ b/ADVERSARY_HANDOFF.md
-@@ -0,0 +1,265 @@
-+# Adversarial reviewer: implementation handoff
-+
-+## Goal
-+Add a second model, the "adversary", that runs alongside the main agent
-+and rates every closed USER and TURN entry of the session log b-4. It
-+does not act as a subagent and has no nextvi access: it only rates.
-+The main agent (spear) only sees these ratings at a kind 1 acl
-+checkpoint.
-+
-+## Agreed design
-+- Endpoint: a separate one, set in conf.c (default local port 8081).
-+  It speaks portable OpenAI chat completions only. Do not use
-+  llama-specific grammar, json_schema or response_format.
-+- Concurrency: one background curl child at a time, polled from the
-+  single-threaded main loop. No threads.
-+- Input: every closed USER and TURN entry of b-4, in full: REASONING,
-+  ASSISTANT, EX and RESULT parts. Truncate huge RESULT bodies. CP
-+  entries (b-8) are never sent.
-+- Context is rebuilt for each request: fixed instructions (including
-+  agent_rating_scale), then its previous notes and ratings (live b-6
-+  notes plus staged ratings), then the batch of new unreviewed entries
-+  (everything closed since the last completed review). The prompt ends
-+  with a template listing the batch's actual numbers, one
-+  "N R sentence" line each.
-+- Output: plain text lines "N R sentence", with R from 0 to 3.
-+  - Parse leniently: strip leading whitespace, '-', '*' and backticks,
-+    and ignore lines that do not match.
-+  - N must be in the batch. When N repeats, the last line wins.
-+  - Parse only message.content, never the reasoning.
-+- Retry: when entries are missing or malformed, send the previous reply
-+  as an assistant message plus a user correction asking only for the
-+  missing numbers. Make at most 3 attempts in total, then leave those
-+  entries unrated (a "given up" set, so they are not resent forever).
-+- Staging: ratings go to an in-memory staged list, NOT into b-6.
-+- Kind 1 checkpoint (agent_checkpoint_begin(tokens, 1)):
-+  - Kill any in-flight adversary request.
-+  - Merge staged ratings into b-6 with agent_note_set, only for entries
-+    that have no note yet (a spear rating wins), are still live
-+    (agent_span_rated finds them) and are at or above
-+    agent_epoch_floor(). Skip REMOVED entries.
-+  - Clear the staged list and wrap the edits in
-+    preserve(agent_syncing=1)/restore, then agent_sync(tempbufs[5].lb).
-+  - The spear then rates whatever is still unrated, as it does today.
-+- Kind 2 and 3 checkpoints do not stop the adversary.
-+- Rating 0 from the adversary removes nothing. Only the spear's arate 0
-+  during a checkpoint trims, and the merge goes through agent_note_set,
-+  which never trims.
-+- Resync: after a checkpoint end, a compaction (agent_head_summary or
-+  EPOCH) or a resume (agent_resume), drop staged ratings for entries no
-+  longer live. Collection skips entries already noted in b-6, so the
-+  adversary picks up again from b-6.
-+- Unreachable endpoint (curl exit 7, or a connection failure in
-+  stderr): show one notice (agent_output or ex_print) and disable the
-+  adversary for the rest of the session.
-+- b-9 (tempbufs[8], "/adversary/") dumps each raw reply plus the parsed
-+  ratings, retries and errors, for observation.
-+- Option int xadv, toggled with :adv. It is off by default (conf.c).
-+
-+## Done so far
-+1. ex.c:46 and vi.h:525: tempbufs[8] is now tempbufs[9]. Everything
-+   else uses LEN(tempbufs), so ":b" and "b-9" switching work as is.
-+2. conf.c (after request_timeout): adv_endpoint, adv_api_key,
-+   adv_request_extra "{}", adv_timeout 120, and int xadv.
-+3. agent.c agent_init: temp_open(8, "/adversary/", _ft).
-+4. b-9 is saved with the session (decided):
-+   - "adversary" was added to agent_names.
-+   - The loops in agent_sync_pending, agent_sync and agent_attach now run
-+     `i < 9`.
-+   - The unsaved bitmask bit 5 (1<<(9-1-3)) fits in the int.
-+   - Old sessions get an empty adversary file the first time they are
-+     attached.
-+Build status (./cbuild.sh build): it compiles. The only warnings are
-+"defined but not used" for adv_endpoint, adv_api_key, adv_request_extra
-+and adv_timeout, and they go away once agent_adv_config uses them.
-+Note: the bare ./cbuild.sh only prints usage; use `./cbuild.sh build`.
-+
-+## Remaining steps
-+1. (done: b-9 is saved, see above)
-+2. ex.c options:
-+   - After the EO(...) lines near line 1977, add `EO(adv)`.
-+   - In the command table near line 2062, add `EO(adv),` next to
-+     EO(acl).
-+   - Turning it off should kill any in-flight request. Either make it
-+     `_EO(adv, xadv = ...; if (!xadv) agent_adv_kill(); return NULL;)`
-+     with a forward declaration in agent.h, or check xadv in poll.
-+3. Add agent.c code, best placed after agent_http (~line 2940), since it
-+   needs agent_spans, agent_parts, agent_note*, agent_killtree and
-+   agent_msg:
-+   ```
-+   static struct {
-+       pid_t pid; int out, err;      /* -1 when idle */
-+       sbuf *ob, *eb;
-+       unsigned long *batch; int nbatch, attempt;
-+       char *prev;                   /* previous reply, for a retry */
-+       int disabled;                 /* unreachable: off for the session */
-+   } agent_adv = {0, -1, -1};
-+   struct agent_adv_rating { unsigned long n; int rate; char *text; };
-+   static struct agent_adv_rating *agent_adv_staged; static int agent_adv_nstaged;
-+   static unsigned long *agent_adv_gaveup; static int agent_adv_ngaveup;
-+   ```
-+   Functions:
-+   - agent_adv_config(): copy of agent_config that uses
-+     adv_request_extra, adv_api_key, adv_endpoint and adv_timeout. Strip
-+     messages, tools, stream, tool_choice and response_format.
-+   - agent_adv_collect(): call agent_spans. Take entries that are
-+     USER/TURN, closed (USER: close >= 0; any span: open[0] empty if it
-+     is the last one; TURN: n != agent_turn[1] while a turn is open),
-+     have no b-6 note, are not staged, are not in the batch or given-up
-+     set, and are >= agent_epoch_floor().
-+   - agent_adv_entry(sb, lb, span): copy the header and lines verbatim.
-+     For RESULT parts (agent_parts) cap each body at ~4000 bytes and add
-+     "[... N bytes truncated]".
-+   - agent_adv_prompt(): system message (role, scale, output format,
-+     "one line per entry, no other text"). User message: "Previous
-+     ratings:" (b-6 live lines and staged), then "Entries:", then the
-+     template lines "N R sentence" for each batch number.
-+   - agent_adv_start(cJSON *req): like agent_http plus the fork half of
-+     agent_process.
-+     - Write the header file with "Authorization: Bearer adv_api_key".
-+       The child can unlink it after curl reads it, or the parent
-+       unlinks it in finish (keep the path in the struct).
-+     - Feed the body through a tmpfile on stdin, with pipes for stdout
-+       and stderr. Set O_NONBLOCK on the read ends and setpgid the
-+       child.
-+     - Do NOT add its pid to agent_jobs: agent_reap would steal its
-+       exit status.
-+   - agent_adv_poll(): if idle and xadv, not disabled, agent_ready and
-+     the collect step finds entries, start a batch. If running, call
-+     poll() with timeout 0 on out/err, read what is there, and once
-+     both reach EOF call waitpid(pid, WNOHANG), then finish.
-+   - agent_adv_finish(st):
-+     - st 7 (or "Couldn't connect" in stderr): one notice, set
-+       disabled.
-+     - Any other failure: write it to b-9 and drop the batch (retried
-+       later).
-+     - Success: parse with agent_reply(root) and the "content" string.
-+       Write the raw reply to b-9 (temp_write(8, ...)), parse the lines
-+       and stage them (keeping the text), then write the parsed list to
-+       b-9.
-+     - Missing numbers and attempt < 3: attempt++, then resend
-+       [system, user, assistant prev, user "Missing ratings for N, M;
-+       reply only those lines"].
-+     - Otherwise add the missing numbers to the given-up set and clear
-+       the batch.
-+   - agent_adv_kill(): agent_killtree(pid, 0, 0), close the fds,
-+     waitpid(pid, NULL, 0), free the buffers and clear the batch
-+     without staging, so its entries are collected again later.
-+   - agent_adv_merge(): as described under Staging above.
-+   - agent_adv_resync(): drop staged and given-up entries that are not
-+     live (agent_span_rated) or are below the floor.
-+4. Hooks:
-+   - agent_checkpoint_begin (agent.c:1807): if kind == 1, call
-+     agent_adv_kill() then agent_adv_merge() BEFORE agent_logbuf = 7
-+     and before the opening message, so agent_cp_instructions/
-+     agent_unrated_now see the merged ratings.
-+   - agent_checkpoint_end (agent.c:2151), compaction (after
-+     agent_head_summary) and agent_resume (after agent_attach): call
-+     agent_adv_resync().
-+   - Polling:
-+     (a) inside the agent_process loop next to agent_reap()
-+         (agent.c:2725);
-+     (b) in agent_run_loop each iteration;
-+     (c) when idle, in term.c term_read (~line 165). Do not block in
-+         poll(-1) while agent_adv.pid > 0: loop with a 200 ms timeout
-+         and call agent_adv_poll() between waits. term.c is included
-+         after agent.c in vi.c, so the call resolves. Also trigger a
-+         start check after each agent_turn_close/agent_log (in practice
-+         calling agent_adv_poll() at the top of the request loop and
-+         from term_read is enough).
-+   - Skip collection while agent_packing, and when agent_logbuf != 3
-+     (checkpointing) only for kind 1. Kind 2/3 may keep running, but
-+     entries they write go to b-8 and are never collected anyway.
-+   - Edits to b-9: wrap them in preserve(agent_syncing=1) and call
-+     agent_sync_buf(8) / agent_sync(tempbufs[8].lb) if it is saved.
-+5. Build with ./cbuild.sh and fix warnings.
-+6. Test:
-+   - Run a dummy server on 8081 (e.g. a python http.server returning a
-+     fixed chat completion). Check that b-9 fills, that staged ratings
-+     appear in b-6 only at a checkpoint, that a spear rating wins, and
-+     that a missing line triggers a retry.
-+   - With nothing on 8081, check for exactly one notice and that the
-+     adversary then disables.
-+
-+## Notes and pitfalls
-+- b-9 is only an observation log. Never read adversary state back from
-+  it. On resume it is restored as text, but staged ratings are in memory
-+  and are lost. That is fine: collection re-sends entries that have no
-+  b-6 note. agent_resume could call agent_adv_resync() just to be safe.
-+- Writes to b-9: append with temp_write(8, ...) or lbuf_edit at
-+  lbuf_len, inside preserve(int, agent_syncing, agent_syncing = 1;),
-+  then restore and call agent_sync_buf(8).
-+  - agent_sync_buf saves right away. Inside a tool call (agent_tool),
-+    use agent_sync(tempbufs[8].lb) instead, so the save waits for
-+    agent_sync_pending.
-+  - Do not use agent_log: that writes NOTICE entries into b-4, which
-+    would feed back into the adversary and the spear's context.
-+- The "unreachable" notice goes to the user only (agent_output), not to
-+  b-4.
-+- agent_sync has special cases for tempbufs[3] and [7] (stale log
-+  flags). b-9 needs none.
-+- Cap the size of b-9: trim the oldest lines past a limit (e.g. 5000
-+  lines) so long sessions don't grow the saved file without bound.
-+  Optional.
-+- Do not touch the agent_cancel/agent_pause handling in agent_process
-+  for the adversary child. Ctrl-C on the spear must not kill the
-+  adversary unless xadv is turned off or a kind 1 checkpoint starts.
-+- agent_killtree(pid, 0, 0): with job 0 it skips the tcgetpgrp branch
-+  (job > 0 is false). Pass 0, not -1, so the terminal's foreground job
-+  is never killed.
-+- Make sure no curl child is left behind on exit: call agent_adv_kill()
-+  wherever the session shuts down (look for agent_cancel == 1 exit paths
-+  and the editor quit path).
-+
-+## Code map (line numbers as of this handoff)
-+- agent.c: agent_sync_pending 497, agent_sync 504, agent_init 559,
-+  agent_names 572, agent_attach 610, agent_resume ~690-722, enums
-+  AE_/AP_ 732.
-+- Log parsing: struct agent_span 816, agent_spans_of 829,
-+  agent_parts 881, agent_spans 913.
-+- Logging: agent_log_write 1083, agent_turn_close 1011, agent_log 1017,
-+  agent_turn_part 1031, agent_head_summary 1111.
-+- Notes: agent_note_line 1172, agent_note 1185, agent_epoch_floor 1218,
-+  agent_note_set 1281, agent_ratable 1333, agent_span_rated ~1347,
-+  agent_unrated 1416, agent_rating_scale 1496.
-+- Checkpoints: agent_cp_instructions 1766, agent_checkpoint_begin
-+  1807, agent_reply 1847, agent_checkpoint_end 2151.
-+- Processes and HTTP: agent_killtree 2567, agent_reap 2585,
-+  agent_process 2642 (poll loop 2725-2790), agent_config 2869,
-+  agent_http 2888.
-+- Request loop: agent_run_loop 3149 (checkpoint triggers at 3190 and
-+  3194), ec_arate 4577.
-+- ex.c: temp_open 177, temp_write 219, option macros 1969-1982,
-+  command table ~2040-2070.
-+- term.c: term_read 143 (blocking poll at 165).
-+
-+## Final state (packaged as advagent.sh)
-+- Code complete, ./cbuild.sh build clean, no warnings.
-+- tempbufs[9]; conf.c gains adv_endpoint (default 127.0.0.1:8081),
-+  adv_api_key, adv_request_extra, adv_timeout 120 and int xadv; ex.c gains
-+  EO(adv) so ":adv" toggles it; agent_init does temp_open(8, "/adversary/");
-+  "adversary" is in agent_names and the sync loops run i < 9.
-+- The agent_adv_* block sits in agent.c after agent_http (about lines
-+  2941-3680): config, collect, entry, prompt, start, poll, finish, merge,
-+  kill, resync and the staged add with the given-up fix.
-+- Hooks: agent.c:722 and agent.c:2204 (collection points), agent.c:1836
-+  (kind 1 checkpoint: kill the in-flight request and merge staged ratings
-+  before agent_logbuf is switched to 7), agent.c:4020 (agent_adv_poll at
-+  the top of the run loop) and term.c:164-165 (term_wait polls too).
-+- Idle rating fix: static int agent_adv_dirty, set in agent_turn_close and
-+  in agent_log_write when agent_logbuf == 3 and when a request fails to
-+  start, cleared in agent_adv_poll. The busy test (renamed from
-+  agent_adv_busy to agent_adv_pending) is pid > 0 or dirty and xadv and not
-+  disabled, so an idle editor rates the last turn without a keypress.
-+- Test harness /tmp/adv/{srv.py,run.py}: a dummy OpenAI server and a pty
-+  driver. A tool call is
-+  {"id","type":"function","function":{"name":"ex","arguments":"..."}}
-+  with usage prompt_tokens and completion_tokens.
-+- Harness blockers: port 8080 belongs to another service (EADDRINUSE with
-+  nothing shown by ss), so point spear elsewhere with :aep; adv_endpoint has
-+  no ex command and no rc setting, it is compiled in, so the dummy
-+  adversary has to listen on the conf.c port.
-+- Packaging: advagent.sh carries this document and the whole adversary
-+  delta on top of the agent.sh tree, so run them as a chain:
-+  ./agent.sh advagent.sh
-+  Applying advagent.sh alone fails, since its hunks need the agent.sh tree.
 diff --git a/agent.c b/agent.c
-index 8073bbe5..cf769487 100644
+index 478075bc..ad7d9b53 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -25,6 +25,9 @@
@@ -2015,7 +1504,7 @@ index 8073bbe5..cf769487 100644
  }
  
  /* Move the entries of text, a log replaced by compaction, to b-7. */
-@@ -1825,6 +1836,12 @@ static void agent_checkpoint_begin(double tokens, int kind)
+@@ -1824,6 +1835,12 @@ static void agent_checkpoint_begin(double tokens, int kind)
  	agent_cp_base = -1;
  	agent_cp_bytes = agent_context_bytes();
  	agent_cp_left = INT_MAX;
@@ -2028,7 +1517,7 @@ index 8073bbe5..cf769487 100644
  	agent_cp_logbuf = agent_logbuf;
  	agent_logbuf = 7;
  	/* A question in b-8 continues the numbering of what it interrupted. */
-@@ -2147,7 +2164,7 @@ static void agent_cp_build(void)
+@@ -2146,7 +2163,7 @@ static void agent_cp_build(void)
  		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
  }
  
@@ -2037,7 +1526,7 @@ index 8073bbe5..cf769487 100644
  {
  	char note[128], unrated[112];
  	int k, n, kind = agent_checkpointing, answered = agent_cp_done;
-@@ -2209,6 +2226,15 @@ static void agent_checkpoint_end(void)
+@@ -2208,6 +2225,15 @@ static void agent_checkpoint_end(void)
  	agent_output(note);
  }
  
@@ -2053,7 +1542,7 @@ index 8073bbe5..cf769487 100644
  /* End a question together with what it interrupted. */
  static void agent_checkpoint_stop(void)
  {
-@@ -2937,6 +2963,801 @@ ret:
+@@ -2936,6 +2962,822 @@ ret:
  	return s;
  }
  
@@ -2342,6 +1831,7 @@ index 8073bbe5..cf769487 100644
 +	struct lbuf *lb = tempbufs[3].lb;
 +	unsigned long floor = agent_epoch_floor(), n;
 +	int cnt = agent_spans(&spans), last = cnt - 1, nr = 0, rate, row;
++	sbuf *sz = NULL;
 +	*nums = emalloc((cnt ? cnt : 1) * sizeof(**nums));
 +	for (int k = 0; k < cnt && nr < ADV_BATCH_MAX; k++) {
 +		if ((spans[k].role != AE_USER && spans[k].role != AE_TURN) ||
@@ -2357,19 +1847,25 @@ index 8073bbe5..cf769487 100644
 +		for (int i = 0; i < agent_adv_nstaged; i++)
 +			if (agent_adv_staged[i].n == n)
 +				goto next;
-+		/* Stop the batch at the size cap; the rest waits for the next. */
-+		if (nr && lb->ln[spans[k].beg]) {
-+			sbuf_smake(sb, 1024)
-+			agent_adv_entry(sb, lb, spans + k);
-+			if (sb->s_n > ADV_BATCH_BYTES) {
-+				free(sb->s);
++		/* The cap holds the whole batch: render what is picked so far
++		 * into one buffer and stop when its total passes the cap. The
++		 * first entry goes in whatever it weighs, so that an odd
++		 * giant of an entry still gets reviewed. */
++		if (lb->ln[spans[k].beg]) {
++			if (!sz)
++				sbuf_make(sz, 1024)
++			agent_adv_entry(sz, lb, spans + k);
++			if (nr && sz->s_n > ADV_BATCH_BYTES) {
++				sbuf_free(sz);
++				sz = NULL;
 +				break;
 +			}
-+			free(sb->s);
 +		}
 +		(*nums)[nr++] = n;
 +		next:;
 +	}
++	if (sz)
++		sbuf_free(sz);
 +	free(spans);
 +	return nr;
 +}
@@ -2435,13 +1931,26 @@ index 8073bbe5..cf769487 100644
 +static int agent_adv_start(cJSON *req)
 +{
 +	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
-+	int fd = mkstemp(hdrpath), out[2] = {-1, -1}, err[2] = {-1, -1};
++	int fd, out[2] = {-1, -1}, err[2] = {-1, -1};
++	/* Drop the file of the request this one replaces before mkstemp
++	 * overwrites the saved path; finish leaves it for here. */
++	if (*agent_adv.hdpath) {
++		unlink(agent_adv.hdpath);
++		*agent_adv.hdpath = '\0';
++	}
++	fd = mkstemp(hdrpath);
 +	FILE *in = tmpfile();
 +	pid_t pid;
 +	char *body = req ? cJSON_PrintUnformatted(req) : NULL;
 +	sbuf_smake(hdr, 128)
++	sbuf_str(hdr, "Authorization: Bearer ")
++	sbuf_str(hdr, adv_api_key)
++	sbuf_chr(hdr, '\n')
++	/* The child reads the body from in where its offset is, as in
++	 * agent_process: rewound, or curl posts an empty request. */
 +	if (fd < 0 || !in || !body || agent_writeall(fd, hdr->s, hdr->s_n) ||
-+			agent_writeall(fileno(in), body, strlen(body))) {
++			agent_writeall(fileno(in), body, strlen(body)) ||
++			lseek(fileno(in), 0, SEEK_SET) < 0) {
 +		if (fd >= 0) {
 +			close(fd);
 +			unlink(hdrpath);
@@ -2659,9 +2168,9 @@ index 8073bbe5..cf769487 100644
 +	}
 +	root = cJSON_ParseWithOpts(body ? body : "", NULL, 1);
 +	if (cJSON_GetObjectItem(root, "error")) {
-+		agent_adv_note("endpoint error: %s",
-+			cJSON_GetStringValue(cJSON_GetObjectItem(
-+				cJSON_GetObjectItem(root, "error"), "message")));
++		char *em = cJSON_GetStringValue(cJSON_GetObjectItem(
++			cJSON_GetObjectItem(root, "error"), "message"));
++		agent_adv_note("endpoint error: %s", em ? em : "no message");
 +		cJSON_Delete(root);
 +		agent_adv_batch_drop();
 +		return;
@@ -2685,6 +2194,7 @@ index 8073bbe5..cf769487 100644
 +		agent_adv_note("%s; asking again", note);
 +		free(agent_adv.prev);
 +		agent_adv.prev = content ? sdup(content, strlen(content)) : NULL;
++		agent_adv.attempt++;
 +		if (agent_adv_request(1, miss, nmiss)) {
 +			free(miss);
 +			cJSON_Delete(root);
@@ -2734,7 +2244,7 @@ index 8073bbe5..cf769487 100644
 +			if (nr > 0) {
 +				sbuf *d = i ? agent_adv.eb : agent_adv.ob;
 +				if (d->s_n < ADV_REPLY_MAX)
-+					sbuf_mem(d, buf, MIN(nr,
++					sbufn_mem(d, buf, MIN(nr,
 +						ADV_REPLY_MAX - d->s_n))
 +			} else if (!nr || errno != EINTR) {
 +				close(fds[i].fd);
@@ -2855,7 +2365,7 @@ index 8073bbe5..cf769487 100644
  static char *agent_snapshot(char *loc)
  {
  	int beg = 0, end = lbuf_len(xb), o1 = -1, o2 = -1;
-@@ -3159,6 +3980,9 @@ static void agent_run_loop(const char *input)
+@@ -3158,6 +4000,9 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -2866,14 +2376,19 @@ index 8073bbe5..cf769487 100644
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
 diff --git a/agent.h b/agent.h
-index cd3c8383..20308c66 100644
+index cd3c8383..ff49f53f 100644
 --- a/agent.h
 +++ b/agent.h
-@@ -44,6 +44,10 @@ static void agent_init(void);
+@@ -44,6 +44,15 @@ static void agent_init(void);
  static int agent_resume(const char *dir);
  static char *agent_init_error;
  static void agent_sync(struct lbuf *lb);
 +/* the adversary: a second model that rates the log; see agent.c */
++/* The adversary's curl is polled from term_wait and the run loop, and the two
++ * are called from term.c, which is included after agent.c only by luck of the
++ * include order in vi.c: keep the declarations here. */
++static void agent_adv_poll(void);
++static int agent_adv_pending(void);
 +static void agent_adv_kill(void);
 +static void agent_adv_merge(void);
 +static void agent_adv_resync(void);
