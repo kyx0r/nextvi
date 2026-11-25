@@ -44,8 +44,20 @@ static int agent_ready, agent_syncing, agent_child_status;4??0?
 grp 1%f> static cJSON \*agent_messages;.*?
 static unsigned long agent_epoch, agent_serial;.*?
 (static int agent_ready, agent_syncing, agent_child_status;)7??0?
-grp 07??m 1220reg p OK agent.c:27:a72sc %? %@2152sc!0?
-1;4;7??!219reg agent.c:272sc %? %@2132sc!0?
+grp 07??m 1220reg p OK agent.c:27:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f>  \* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ \* SOFTWARE\.
+ \*/.*(/\* b-4 was edited other than by agent_log since the context was rebuilt\. \*/)
+static int agent_logging, agent_log_edited;
+/\* Per log, indexed as agent_entries: edited other than by agent_log_write,8??0?
+grp 08??-4m 1220reg p OK agent.c:27:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f>  \* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\. IN NO EVENT SHALL THE
+ \* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ \* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,.*( \* so its last number and open body need a parse\. \*/)
+static int agent_log_stale\[2] = \{1, 1};
+/\* Last entry number per log: \[0] b-8, \[1] b-4\. \*/9??0?
+grp 09??-7m 1220reg p OK agent.c:27:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:272sc %? %@2132sc!0?
 ?0?
 %f+ /\* A tool call can edit a log line by line; save once after the call\. \*/
 static void agent_sync_pending\(void\)
@@ -69,8 +81,33 @@ static void agent_sync_pending\(void\)
 %f+ 		if \(agent_unsaved & \(1 << \(i - 3\)\)\)
 			agent_sync_buf\(i\);
 }5??0?
-5??-1m 2220reg p OK agent.c:499:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg agent.c:4992sc %? %@2132sc!0?
+5??-1m 2220reg p OK agent.c:499:a52sc %? %@2152sc!1q0?
+%f+ /\*...........l................l..e.b...........e..nce..ft.. th..c.l.....
+...tic.vo.d....nt...n..p....n.......
+\{
+.f...\(in..i.. .;.....8;.....
+	.........t.u..a.e...... <..\(i -.....
+	.	.........c....\(...
+}6??0?
+6??+3m 2220reg p OK agent.c:499:a62sc %? %@2152sc!1q0?
+grp 1%f+ /\* A tool call can edit a log line by line; save once after the call\. \*/.*?
+static void agent_sync_pending\(void\).*?
+\{.*?
+(	for \(int i = 3; i < 8; i\+\+\))7??0?
+grp 07??m 2220reg p OK agent.c:499:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		ex_print\("agent write failed; buffer text retained", msg_ft\)
+	agent_syncing = 0;
+}.*(static void agent_sync\(struct lbuf \*lb\))
+\{
+	if \(lb == tempbufs\[3]\.lb && !agent_logging\)8??0?
+grp 08??-5m 2220reg p OK agent.c:499:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	agent_unsaved &= ~\(1 << \(i - 3\)\);
+	agent_syncing = 1;
+	if \(agent_save\(i\)\).*(		agent_log_edited = agent_log_stale\[1] = 1;)
+	if \(lb == tempbufs\[7]\.lb && !agent_logging\)
+		agent_log_stale\[0] = 1;9??0?
+grp 09??-8m 2220reg p OK agent.c:499:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:4992sc %? %@2132sc!0?
 ?0?
 %f+ 		agent_log_stale\[0] = 1;
 	if \(!agent_ready \|\| agent_syncing\)
@@ -94,8 +131,33 @@ static void agent_sync_pending\(void\)
 %f+ 		if \(tempbufs\[i]\.lb != lb\)
 			continue;
 		if \(i == 3 && agent_packing\)5??0?
-5??-1m 3220reg p OK agent.c:512:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg agent.c:5122sc %? %@2132sc!0?
+5??-1m 3220reg p OK agent.c:512:a52sc %? %@2152sc!1q0?
+%f+ ......t.l...s........=..;
+	i..\(!.......e..y....a.e....y......
+.....u..;
+.f.r...n..i...................
+.	........b..s\[..\.l.......\)
+		.......u..
+.... .i..... ...a...t.......g.6??0?
+6??+3m 3220reg p OK agent.c:512:a62sc %? %@2152sc!1q0?
+grp 1%f+ 		agent_log_stale\[0] = 1;.*?
+	if \(!agent_ready \|\| agent_syncing\).*?
+		return;.*?
+(	for \(int i = 3; i < 8; i\+\+\) \{)7??0?
+grp 07??m 3220reg p OK agent.c:512:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	if \(lb == tempbufs\[3]\.lb && !agent_logging\)
+		agent_log_edited = agent_log_stale\[1] = 1;
+	if \(lb == tempbufs\[7]\.lb && !agent_logging\).*(		if \(agent_tool\))
+			agent_unsaved \|= 1 << \(i - 3\);
+		else8??0?
+grp 08??-5m 3220reg p OK agent.c:512:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		if \(agent_unsaved & \(1 << \(i - 3\)\)\)
+			agent_sync_buf\(i\);
+}.*(			agent_sync_buf\(i\);)
+	}
+}9??0?
+grp 09??-8m 3220reg p OK agent.c:512:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:5122sc %? %@2132sc!0?
 ?0?
 %f+ 	temp_open\(5, "/notes/", _ft\);
 	temp_open\(6, "/discarded/", _ft\);
@@ -107,8 +169,24 @@ static void agent_sync_pending\(void\)
 %f+ 	temp_open\(5, "/notes/", _ft\);
 	temp_open\(6, "/discarded/", _ft\);
 	temp_open\(7, "/asides/", _ft\);4??0?
-4??+2m 4220reg p OK agent.c:565:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:5652sc %? %@2132sc!0?
+4??+2m 4220reg p OK agent.c:565:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	temp_open\(5, "/notes/", _ft\);.*?
+	temp_open\(6, "/discarded/", _ft\);.*?
+(	temp_open\(7, "/asides/", _ft\);)7??0?
+grp 07??m 4220reg p OK agent.c:565:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> \{
+	temp_open\(3, "/conversation/", _ft\);
+	temp_open\(4, "/skills/", _ft\);.*(	const char \*home = getenv\("HOME"\);)
+	char \*dir;
+	if \(\(!log_dir && \(!home \|\| !\*home\)\) \|\| \(log_dir && !\*log_dir\)\)8??0?
+grp 08??-12m 4220reg p OK agent.c:565:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		free\(s\);
+	}
+}.*(	dir = emalloc\(strlen\(log_dir \? log_dir : home\) \+ NAME_MAX \+ 64\);)
+	if \(log_dir\)
+		strcpy\(dir, log_dir\);9??0?
+grp 09??-16m 4220reg p OK agent.c:565:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:5652sc %? %@2132sc!0?
 ?0?
 %f+ }
 
@@ -132,8 +210,33 @@ static char \*agent_names\[] = \{"conversation", "skills", "notes", "discarded",
 %f+ 
 /\* The log directory with room for a session name appended, or NULL\. \*/
 static char \*agent_logs\(void\)5??0?
-5??-1m 5220reg p OK agent.c:572:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg agent.c:5722sc %? %@2132sc!0?
+5??-1m 5220reg p OK agent.c:572:a52sc %? %@2152sc!1q0?
+%f+ }
+
+.tat......r..a..n._n.......=...c.nv.r.a..o... ..k...s.....ot..".."..........,
+."a..d.....
+
+...T.e l.g............i.h....m.....a...s..o..n.m........... .r.N.......
+s..... ..a......nt.......o...6??0?
+6??+3m 5220reg p OK agent.c:572:a62sc %? %@2152sc!1q0?
+grp 1%f+ }.*?
+.*?
+static char \*agent_names\[] = \{"conversation", "skills", "notes", "discarded",.*?
+(	"asides"};)7??0?
+grp 07??m 5220reg p OK agent.c:572:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> \{
+	temp_open\(3, "/conversation/", _ft\);
+	temp_open\(4, "/skills/", _ft\);.*(	const char \*home = getenv\("HOME"\);)
+	char \*dir;
+	if \(\(!log_dir && \(!home \|\| !\*home\)\) \|\| \(log_dir && !\*log_dir\)\)8??0?
+grp 08??-5m 5220reg p OK agent.c:572:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		free\(s\);
+	}
+}.*(	dir = emalloc\(strlen\(log_dir \? log_dir : home\) \+ NAME_MAX \+ 64\);)
+	if \(log_dir\)
+		strcpy\(dir, log_dir\);9??0?
+grp 09??-9m 5220reg p OK agent.c:572:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:5722sc %? %@2132sc!0?
 ?0?
 %f+ 	return ret;
 }
@@ -158,8 +261,33 @@ static int agent_attach\(const char \*dir, int load\)
 %f+  \* with load filled from those it has\. \*/
 static int agent_attach\(const char \*dir, int load\)
 \{5??0?
-5??-1m 6220reg p OK agent.c:606:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg agent.c:6062sc %? %@2132sc!0?
+5??-1m 6220reg p OK agent.c:606:a52sc %? %@2152sc!1q0?
+%f+ ...tu.n ....
+}
+
+/.....e.d...t...........d.....o....... ....-........ve. .........l..,...
+.\*.........d.............t.os..i...a.....
+..a.........g..._.t........s.....r....r. i.. ...d.
+\{6??0?
+6??+3m 6220reg p OK agent.c:606:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	return ret;.*?
+}.*?
+.*?
+(/\* Make dir the session directory: b-4 to b-8 are saved to its files, or)7??0?
+grp 07??m 6220reg p OK agent.c:606:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	agent_syncing = 0;
+	close\(fd\);
+	b->mtime = mtime\(b->path\);.*(	char \*cwd = NULL, \*path;)
+	int ret = 0;
+	/\* Absolute paths survive :cd during the session\. \*/8??0?
+grp 08??-4m 6220reg p OK agent.c:606:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	agent_syncing = 1;
+	ret = lbuf_rd\(b->lb, fd, 0, lbuf_len\(b->lb\)\);
+	lbuf_saved\(b->lb, 1\);.*(	if \(\*dir != '\''/'\'' && !\(cwd = getcwd\(NULL, 0\)\)\))
+		return -1;
+	for \(int i = 3; i < 8 && !ret; i\+\+\) \{9??0?
+grp 09??-7m 6220reg p OK agent.c:606:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:6062sc %? %@2132sc!0?
 ?0?
 %f+ 	/\* Absolute paths survive :cd during the session\. \*/
 	if \(\*dir != '\''/'\'' && !\(cwd = getcwd\(NULL, 0\)\)\)
@@ -183,8 +311,33 @@ static int agent_attach\(const char \*dir, int load\)
 %f+ 		path = emalloc\(\(cwd \? strlen\(cwd\) : 0\) \+ strlen\(dir\) \+ 32\);
 		sprintf\(path, "%s%s%s/%s", cwd \? cwd : "", cwd \? "/" : "", dir,
 			agent_names\[i - 3]\);5??0?
-5??-1m 7220reg p OK agent.c:615:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg agent.c:6152sc %? %@2132sc!0?
+5??-1m 7220reg p OK agent.c:615:a52sc %? %@2152sc!1q0?
+%f+ ..\* ...ol....p.t.. ....iv..:......i........es........
+	........... ./'\''..&........ ............ ....
+	.r.tu......
+...r..i...... .. . .......!.... ......
+...........al..c...w..\?..t.l..\(...\)....\)........n.di......2.;
+..s.r.n..\(....,.".s........,.....\? .................."...........
+	.............\[i.-.....6??0?
+6??+3m 7220reg p OK agent.c:615:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	/\* Absolute paths survive :cd during the session\. \*/.*?
+	if \(\*dir != '\''/'\'' && !\(cwd = getcwd\(NULL, 0\)\)\).*?
+		return -1;.*?
+(	for \(int i = 3; i < 8 && !ret; i\+\+\) \{)7??0?
+grp 07??m 7220reg p OK agent.c:615:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> \{
+	char \*cwd = NULL, \*path;
+	int ret = 0;.*(		free\(tempbufs\[i]\.path\);)
+		tempbufs\[i]\.path = path;
+		tempbufs\[i]\.plen = strlen\(path\);8??0?
+grp 08??-4m 7220reg p OK agent.c:615:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> /\* Make dir the session directory: b-4 to b-8 are saved to its files, or
+ \* with load filled from those it has\. \*/
+static int agent_attach\(const char \*dir, int load\).*(		ret = load \? agent_load\(i\) : agent_save\(i\);)
+	}
+	free\(cwd\);9??0?
+grp 09??-7m 7220reg p OK agent.c:615:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:6152sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_ready = 1;
 	agent_init_error = NULL;
@@ -197,8 +350,24 @@ static int agent_attach\(const char \*dir, int load\)
 %f+ 	agent_ready = 1;
 	agent_init_error = NULL;
 	agent_history\(lbuf_len\(tempbufs\[3]\.lb\) > 0\);4??0?
-4??+2m 8220reg p OK agent.c:721:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:7212sc %? %@2132sc!0?
+4??+2m 8220reg p OK agent.c:721:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	agent_ready = 1;.*?
+	agent_init_error = NULL;.*?
+(	agent_history\(lbuf_len\(tempbufs\[3]\.lb\) > 0\);)7??0?
+grp 07??m 8220reg p OK agent.c:721:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	/\* Trimmed entries and notes keep their numbers: the next entry
+	 \* follows every number in b-4, b-6 and b-7\. \*/
+	agent_entries\[1] = agent_entries_max\(\);.*(/\* A log holds numbered entries headed "ROLE N"\. A TURN is one reply: its)
+ \* header, then parts headed "ROLE N\.I"\. NOTICE entries report harness events
+ \* to the user; a rebuild never sends them\. The body of a USER or NOTICE entry8??0?
+grp 08??-4m 8220reg p OK agent.c:721:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		return -1;
+	}
+	free\(best\);.*( \* and of a part runs to its "END" line, so its lines are never headers\. A)
+ \* body holding a line "END" has an id on its header, "ROLE N id", and runs
+ \* to "END id"\. \*/9??0?
+grp 09??-7m 8220reg p OK agent.c:721:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:7212sc %? %@2132sc!0?
 ?0?
 %f+ 	lbuf_edit\(lb, sb->s, lbuf_len\(lb\), lbuf_len\(lb\), 0, 0\);
 	agent_logging = 0;
@@ -211,8 +380,24 @@ static int agent_attach\(const char \*dir, int load\)
 %f+ 	lbuf_edit\(lb, sb->s, lbuf_len\(lb\), lbuf_len\(lb\), 0, 0\);
 	agent_logging = 0;
 	lb->useq\+\+;4??0?
-4??+2m 9220reg p OK agent.c:1000:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:10002sc %? %@2132sc!0?
+4??+2m 9220reg p OK agent.c:1000:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	lbuf_edit\(lb, sb->s, lbuf_len\(lb\), lbuf_len\(lb\), 0, 0\);.*?
+	agent_logging = 0;.*?
+(	lb->useq\+\+;)7??0?
+grp 07??m 9220reg p OK agent.c:1000:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		agent_output\(sb->s\);
+	lb->useq\+\+;
+	agent_logging = 1;.*(/\* Checkpoint entries in b-8 have their own numbers; mark them apart\. \*/)
+static const char \*agent_log_mark\(void\)
+\{8??0?
+grp 08??-4m 9220reg p OK agent.c:1000:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	sbuf_str\(sb, end\)
+	sbuf_nul\(sb\)
+	if \(show\).*(static void agent_turn_close\(void\))
+\{
+	agent_turn\[agent_logbuf == 3] = 0;9??0?
+grp 09??-10m 9220reg p OK agent.c:1000:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:10002sc %? %@2132sc!0?
 ?0?
 %f+ static void agent_turn_close\(void\)
 \{
@@ -224,8 +409,24 @@ static int agent_attach\(const char \*dir, int load\)
 %f+ static void agent_turn_close\(void\)
 \{
 	agent_turn\[agent_logbuf == 3] = 0;4??0?
-4??+2m 10220reg p OK agent.c:1012:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:10122sc %? %@2132sc!0?
+4??+2m 10220reg p OK agent.c:1012:a42sc %? %@2152sc!1q0?
+grp 1%f+ static void agent_turn_close\(void\).*?
+\{.*?
+(	agent_turn\[agent_logbuf == 3] = 0;)7??0?
+grp 07??m 10220reg p OK agent.c:1012:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> \{
+	return agent_checkpointing && agent_logbuf == 7 \? "CP " : "";
+}.*(static void agent_log\(const char \*role, const char \*text\))
+\{
+	char head\[64], id\[AGENT_ID], end\[AGENT_END], open\[AGENT_END];8??0?
+grp 08??-4m 10220reg p OK agent.c:1012:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	lb->useq\+\+;
+	free\(sb->s\);
+}.*(	unsigned long last = agent_log_tail\(open\);)
+	agent_turn_close\(\);
+	agent_frame\(text, id, end\);9??0?
+grp 09??-7m 10220reg p OK agent.c:1012:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:10122sc %? %@2132sc!0?
 ?0?
 %f+ 	restore\(agent_tool\)
 	if \(agent_save\(5\)\)
@@ -237,8 +438,24 @@ static int agent_attach\(const char \*dir, int load\)
 %f+ 	restore\(agent_tool\)
 	if \(agent_save\(5\)\)
 		ex_print\("agent write failed; buffer text retained", msg_ft\)4??0?
-4??+2m 11220reg p OK agent.c:1137:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:11372sc %? %@2132sc!0?
+4??+2m 11220reg p OK agent.c:1137:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	restore\(agent_tool\).*?
+	if \(agent_save\(5\)\).*?
+(		ex_print\("agent write failed; buffer text retained", msg_ft\))7??0?
+grp 07??m 11220reg p OK agent.c:1137:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	lbuf_edit\(tempbufs\[5]\.lb, head, lbuf_len\(tempbufs\[5]\.lb\),
+		lbuf_len\(tempbufs\[5]\.lb\), 0, 0\);
+	restore\(agent_syncing\).*(static void agent_discard_log\(char \*text\))
+\{
+	struct lbuf \*lb = lbuf_make\(\);8??0?
+grp 08??-4m 11220reg p OK agent.c:1137:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			ex_print\("agent write failed; buffer text retained", msg_ft\)
+	}
+	snprintf\(head, sizeof\(head\), "EPOCH %lu\\n", n\);.*(	if \(\*text\))
+		lbuf_edit\(lb, text, 0, 0, 0, 0\);
+	cnt = agent_spans_of\(lb, &spans\);9??0?
+grp 09??-10m 11220reg p OK agent.c:1137:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:11372sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_cp_base = -1;
 	agent_cp_bytes = agent_context_bytes\(\);
@@ -250,8 +467,24 @@ static int agent_attach\(const char \*dir, int load\)
 %f+ 	agent_cp_base = -1;
 	agent_cp_bytes = agent_context_bytes\(\);
 	agent_cp_left = INT_MAX;4??0?
-4??+2m 12220reg p OK agent.c:1826:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:18262sc %? %@2132sc!0?
+4??+2m 12220reg p OK agent.c:1832:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	agent_cp_base = -1;.*?
+	agent_cp_bytes = agent_context_bytes\(\);.*?
+(	agent_cp_left = INT_MAX;)7??0?
+grp 07??m 12220reg p OK agent.c:1832:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	agent_checkpointing = kind;
+	agent_cp_done = agent_cp_refused = 0;
+	agent_cp = cJSON_CreateArray\(\);.*(	if \(agent_cp_logbuf == 3\))
+		agent_entries\[0] = agent_turn\[0] = 0;
+	/\* The opening message explains these; do not defer them for specs\. \*/8??0?
+grp 08??-4m 12220reg p OK agent.c:1832:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		agent_cp_outer\.left = agent_cp_left;
+		agent_cp_open = NULL;
+	}.*(	for \(int i = 0; i < LEN\(cmds\); i\+\+\))
+		exspec_mark\(cmds\[i]\);
+	if \(kind == 3\)9??0?
+grp 09??-7m 12220reg p OK agent.c:1832:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:18322sc %? %@2132sc!0?
 ?0?
 %f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);
 }
@@ -265,19 +498,44 @@ static void agent_checkpoint_end\(void\)
 \{
 	char note\[128], unrated\[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;2??0?
-2??m 13220reg p OK agent.c:2149:a22sc %? %@2152sc!1q0?
+2??m 13220reg p OK agent.c:2155:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^static void agent_checkpoint_end\(void\)$3??0?
-3??m 13220reg p OK agent.c:2149:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 13220reg p OK agent.c:2155:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);
 }
 
 4??0?
-4??+3m 13220reg p OK agent.c:2149:a42sc %? %@2152sc!1q0?
+4??+3m 13220reg p OK agent.c:2155:a42sc %? %@2152sc!1q0?
 %f+ \{
 	char note\[128], unrated\[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;5??0?
-5??-1m 13220reg p OK agent.c:2149:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg agent.c:21492sc %? %@2132sc!0?
+5??-1m 13220reg p OK agent.c:2155:a52sc %? %@2152sc!1q0?
+%f+ ...J.O._..dIt..T.....y......_..s.....,.cJS.N....l.ca..\(....\).;
+}
+
+.t..ic..o.d........h..kp..n..........\)
+\{
+....r.n......8]. .n..t......];
+....... .. .......a.e.....eckpo..ti.g,.a.s.e.ed ..a.....cp.....;6??0?
+6??+3m 13220reg p OK agent.c:2155:a62sc %? %@2152sc!1q0?
+grp 1%f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);.*?
+}.*?
+.*?
+(static void agent_checkpoint_end\(void\))7??0?
+grp 07??m 13220reg p OK agent.c:2155:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	} else
+		cJSON_AddItemToArray\(agent_messages, agent_msg\("user", agent_cp_open\)\);
+	cJSON_ArrayForEach\(m, agent_cp\).*(	if \(!kind\))
+		return;
+	agent_cp_collect\(\);8??0?
+grp 08??-5m 13220reg p OK agent.c:2155:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 				cJSON_GetStringValue\(cJSON_GetObjectItem\(m, "id"\)\)\);
+			cJSON_AddItemToArray\(agent_messages, result\);
+		}.*(	cJSON_Delete\(agent_cp\);)
+	agent_cp = NULL;
+	cJSON_Delete\(agent_cp_lead\);9??0?
+grp 09??-8m 13220reg p OK agent.c:2155:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:21552sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_output\(note\);
 }
@@ -290,8 +548,20 @@ static void agent_checkpoint_stop\(void\)
 }
 
 4??0?
-4??+2m 14220reg p OK agent.c:2210:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:22102sc %? %@2132sc!0?
+4??+2m 14220reg p OK agent.c:2216:a42sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	if \(\(n = agent_unrated_now\(unrated, sizeof\(unrated\)\)\)\)
+		snprintf\(note \+ k, sizeof\(note\) - k, ", %d unrated", n\);
+	strcat\(note, "]\\n"\);.*(	while \(agent_checkpointing\))
+		agent_checkpoint_end\(\);
+}8??0?
+grp 08??-4m 14220reg p OK agent.c:2216:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	agent_acl_mark = agent_tokens\(\);
+	k = snprintf\(note, sizeof\(note\), "\[acl checkpoint done ~%\.0f -> ~%\.0f tokens",
+		agent_tokens_at\(agent_cp_bytes\), agent_acl_mark\);.*(/\* acp prints the checkpoint instructions, to the agent only during one; ali)
+ \* the session log status and auli its unrated turns, at any time\. \*/
+static void \*ec_acp\(char \*loc, char \*cmd, char \*arg\)9??0?
+grp 09??-8m 14220reg p OK agent.c:2216:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg agent.c:22162sc %? %@2132sc!0?
 ?0?
 %f+ 	return s;
 }
@@ -304,8 +574,20 @@ static char \*agent_snapshot\(char \*loc\)
 }
 
 4??0?
-4??+2m 15220reg p OK agent.c:2938:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:29382sc %? %@2132sc!0?
+4??+2m 15220reg p OK agent.c:2944:a42sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	}
+	char \*s = out->s;
+	free\(out\);.*(	char info\[160];)
+	sbuf text;
+	if \(loc && ex_region\(loc, &beg, &end, &o1, &o2\)\) \{8??0?
+grp 08??-4m 15220reg p OK agent.c:2944:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	if \(!out\) \{
+		\*st = -1;
+		return NULL;.*(		if \(lbuf_len\(xb\) \|\| strcmp\(loc, "%"\)\))
+			return NULL;
+		beg = end = 0;9??0?
+grp 09??-7m 15220reg p OK agent.c:2944:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg agent.c:29442sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_add_user\(agent_messages, input\);
 	agent_log\("USER", input\);
@@ -317,8 +599,24 @@ static char \*agent_snapshot\(char \*loc\)
 %f+ 	agent_add_user\(agent_messages, input\);
 	agent_log\("USER", input\);
 	for \(int round = 0; ; \) \{4??0?
-4??+2m 16220reg p OK agent.c:3160:a42sc %? %@2152sc!0?
-1;4??!219reg agent.c:31602sc %? %@2132sc!0?
+4??+2m 16220reg p OK agent.c:3166:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	agent_add_user\(agent_messages, input\);.*?
+	agent_log\("USER", input\);.*?
+(	for \(int round = 0; ; \) \{)7??0?
+grp 07??m 16220reg p OK agent.c:3166:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		agent_pack_done = 0;
+	agent_cancel = agent_pause = 0;
+	agent_rounds = 0;.*(				"submit to continue"\);)
+			return;
+		}8??0?
+grp 08??-4m 16220reg p OK agent.c:3166:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	int st, retries = 0, compacted = 0, unpacked = 0, asked = 0;
+	int goal_due = 0;	/\* agent_goal_ask waits for the request after it \*/
+	if \(agent_packing\).*(		agent_cp_collect\(\);)
+		/\* A question that ended unanswered, as by a pause: the reply it
+		 \* withheld is requested again\. \*/9??0?
+grp 09??-7m 16220reg p OK agent.c:3166:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:31662sc %? %@2132sc!0?
 '\''1i /* The adversary may have work: an entry closed since it last looked. The
  * flag lets term_wait block in poll(-1) until there is a reason to look. */
 static int agent_adv_dirty;
@@ -347,8 +645,8 @@ static int agent_adv_dirty;
 		agent_adv_kill();
 		agent_adv_merge();
 	}
-??!219reg agent.c:1826:m122sc %? %@2142sc!0?
-'\''13s/d\(/d_(/??!219reg agent.c:2149:m132sc %? %@2142sc!0?
+??!219reg agent.c:1832:m122sc %? %@2142sc!0?
+'\''13s/d\(/d_(/??!219reg agent.c:2155:m132sc %? %@2142sc!0?
 '\''14i /* The phase is over: entries a checkpoint trimmed or moved have nothing
  * left to rate, so the adversary forgets them. */
 static void agent_checkpoint_end(void)
@@ -358,7 +656,7 @@ static void agent_checkpoint_end(void)
 }
 
 
-??!219reg agent.c:2210:m142sc %? %@2142sc!0?
+??!219reg agent.c:2216:m142sc %? %@2142sc!0?
 '\''15i 
 /* The adversary: a second model running beside the spear that rates the
  * closed USER and TURN entries of the session log. It never acts and has no
@@ -1207,11 +1505,11 @@ static void agent_adv_resync(void)
 			n == 1 ? "" : "s");
 }
 
-??!219reg agent.c:2938:m152sc %? %@2142sc!0?
+??!219reg agent.c:2944:m152sc %? %@2142sc!0?
 '\''16i 		/* The adversary'\''s curl, if any, is read between rounds: it never
 		   blocks the run, and its ratings reach b-6 at a checkpoint. */
 		agent_adv_poll();
-??!219reg agent.c:3160:m162sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg agent.c:3166:m162sc %? %@2142sc!b1m!%ya 98?0?
 %f> static int agent_resume\(const char \*dir\);
 static char \*agent_init_error;
 static void agent_sync\(struct lbuf \*lb\);
@@ -1252,42 +1550,73 @@ static int request_timeout = 500;4??0?
 grp 1%f> static char \*endpoint = "http://127\.0\.0\.1:8080/v1/chat/completions";.*?
 static char \*request_extra = "\{}";	/\* extra JSON request fields; arq changes them \*/.*?
 (static int request_timeout = 500;)7??0?
-grp 07??m 1220reg p OK conf.c:8:a72sc %? %@2152sc!0?
-1;4;7??!219reg conf.c:82sc %? %@2132sc!0?
+grp 07??m 1220reg p OK conf.c:8:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> /\* Embedded subzeroclaw configuration\. NULL log_dir uses \$HOME/\.nextvi/logs\. \*/
+static char \*log_dir;
+static char \*api_key = "local";.*(static int max_tool_rounds;	/\* tool rounds per run; 0 is unlimited \*/)
+int xagr = 4096;	/\* agent output guardrail in bytes \(:agr\); 0 disables \*/
+int xato;	/\* seconds before an agent shell command is detached \(:ato\); 0 disables \*/8??0?
+grp 08??-4m 1220reg p OK conf.c:8:a82sc %? %@2152sc!'\''00?
+1;4;7;8??!219reg conf.c:82sc %? %@2132sc!0?
 ?0?
-%f+ \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
+%f+ \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
+\(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
 \(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
 \(\(pac\|pr\|aco!\?\|acl\|ai\|agr\|ato\|ata\|ar\(\?!\^\(\?:etry\|ate\|q\)\)\|aspec\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
 \|\[@&!dj]\|m!\?\|=\(\?:\\\\\?\|p\)\{0,1}\|\\\\\?~\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|aretry\|aep\|arq\|aout\|aget\|anote\|arate\|adone\|acheck\|acap\|agoal\|acp\|ali\|auli\|apack!\?\|acm\?\|ast\|ath\|a\[!~]\?\|exspec\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
 \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
-		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
-	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},1??0?
+		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},1??0?
 1??+3m 21q0?
+%f+ \(\(pac\|pr\|aco!\?\|acl\|ai\|agr\|ato\|ata\|ar\(\?!\^\(\?:etry\|ate\|q\)\)\|aspec\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\
+\|\[@&!dj]\|m!\?\|=\(\?:\\\\\?\|p\)\{0,1}\|\\\\\?~\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|aretry\|aep\|arq\|aout\|aget\|anote\|arate\|adone\|acheck\|acap\|agoal\|acp\|ali\|auli\|apack!\?\|acm\?\|ast\|ath\|a\[!~]\?\|exspec\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
+\(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
+		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},2??0?
+2??m 2220reg p OK conf.c:558:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^\(\(pac\|pr\|aco!\?\|acl\|ai\|agr\|ato\|ata\|ar\(\?!\^\(\?:etry\|ate\|q\)\)\|aspec\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\$3??0?
+3??m 2220reg p OK conf.c:558:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\
+\(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
+\(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\4??0?
+4??+3m 2220reg p OK conf.c:558:a42sc %? %@2152sc!1q0?
 %f+ \|\[@&!dj]\|m!\?\|=\(\?:\\\\\?\|p\)\{0,1}\|\\\\\?~\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|aretry\|aep\|arq\|aout\|aget\|anote\|arate\|adone\|acheck\|acap\|agoal\|acp\|ali\|auli\|apack!\?\|acm\?\|ast\|ath\|a\[!~]\?\|exspec\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\
 \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
-		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
-	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},2??0?
-2??m 2220reg p OK conf.c:559:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^\|\[@&!dj]\|m!\?\|=\(\?:\\\\\?\|p\)\{0,1}\|\\\\\?~\|\\\\\?\{1,2}\[\?!]\?\|b\[psx]\?\|p\[uh]\?\|aretry\|aep\|arq\|aout\|aget\|anote\|arate\|adone\|acheck\|acap\|agoal\|acp\|ali\|auli\|apack!\?\|acm\?\|ast\|ath\|a\[!~]\?\|exspec\|e\[f!]\?!\?\|f\[-\+><tdp]\?\|inc\|i\|sc!\?\|\\$3??0?
-3??m 2220reg p OK conf.c:559:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ \(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\
-\(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\
-\(\(pac\|pr\|aco!\?\|acl\|ai\|agr\|ato\|ata\|ar\(\?!\^\(\?:etry\|ate\|q\)\)\|aspec\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\4??0?
-4??+3m 2220reg p OK conf.c:559:a42sc %? %@2152sc!1q0?
-%f+ \(\?:g!\?\|s\)\[ \\t]\?\(\.\)\?\|q!\?\|reg\?\\\\\+\?\|rd\?\|w\(\?:q!\|\[q!]\)\?\|u\[czbd]\|x!\?\|ya\[!\+]\?\|cm!\?\|cd\?\)\?",
-		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},
-	\{ex_ft, "\\\\\\\\\(\.\)", A\(AY1 \| SYN_BD, YE\)},5??0?
-5??-1m 2220reg p OK conf.c:559:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg conf.c:5592sc %? %@2132sc!0?
+		A\(BL1 \| SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1\)},5??0?
+5??-1m 2220reg p OK conf.c:558:a52sc %? %@2152sc!1q0?
+%f+ \(......9]\+......\$............\?..\(..\(......%..\[..t..\[...............:\[...]..\\.\(..\[\^...\\..\|.\\\\.\..\).........].\).\).......
+.\?.\(.,.]...\[ ........\\\\.\(..\[.\|....].....\.\?..\\..\?.........\?.\(\?...\?.....\\..].\\.........\|..\?:\[..\\.\\.........\)...\)..
+\(\?:'\''\[........\[.\$...0.9 ......\)..\?...-..\+/.].\[.\\t..\(\[......\[ ........:........\|\(..\[........\\................t..\)..\\
+\(.p.c...\|...!\?............a.o\|.t..a.\(......e...\|.t.........e.\|.............\|g......\|....h..e\|s....s\|t...rde....\[l...........l....e..v.s..
+\|\[@..d..\|m.\?.......\?.p.\{..1}...\?~\|\\\\.\{1,.}....\?.b...x.........\|a...r..........a..t...e.........r....a...e.a.he........a.o.l......l..a..i\|.......\|..m.\|a..\|......!.......p...e.........\[-...t.p].....\|i.sc....
+\(..g....\)\[..t..\(\.....!.\|r...\\.\+\?\|.d\?.....q.....]..\|.\[.zbd......y.......cm.\?...\?.\?..
+	.A.....\| .Y._B...R.....,.... ... ...,......R.,.R....H.. ..,...1....., ...\).,6??0?
+6??+3m 2220reg p OK conf.c:558:a62sc %? %@2152sc!1q0?
+grp 1%f+ \(\?:'\''\[0-9]\+\)\|\(\[\.%\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\[0-9]\+\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\)\[ \\t]\*\\.*?
+\(\?:\(\[,;]#\?\)\[ \\t]\*\(\(\?:\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\[ \\t]\*\)\*\(\?:\(\?:<\(\?:\[\^<\\\\\\\\]\|\\\\\\\\\.\?\)\*<\?\|>\(\?:\[\^>\\\\\\\\]\|\\\\\\\\\.\?\)\*>\?\)\|\\.*?
+\(\?:'\''\[0-9]\+\)\|\(\[\.\$]\|\[0-9 \\t]\*\)\?\)\)\(\?:\(\[-\*-\+/%]\)\[ \\t]\*\(\[0-9]\+\)\[ \\t]\*\)\*\(\?:\[ \\t]\*\\\\\|\(\?:\[\^\|\\\\\\\\]\|\\\\\\\\\.\?\)\*\\\\\|\?\)\*\[ \\t]\*\)\*\)\\.*?
+(\(\(pac\|pr\|aco!\?\|acl\|ai\|agr\|ato\|ata\|ar\(\?!\^\(\?:etry\|ate\|q\)\)\|aspec\|ish\|err\|fr\|ic\|grp\|mpt\|rr\|shape\|seq\|ts\|td\|order\|hl\[lwpr]\?\|left\|lim\|led\|vis\)\\)7??0?
+grp 07??m 2220reg p OK conf.c:558:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\(\?:\(\\n\$\)\|\\n\)\|\\n\|\(\[\^\\n]\+\(\\n\)\)",
+		A\(NA, SYN_BGMK\(RE1\), SYN_BGMK\(AY1\), SYN_BGMK\(AY\)\)},
+	\{ac_ft, "\[\^ \\t-/:-@\[-\^\{-~]\+\$\|\(\.\+\$\)", A\(NA, SYN_BGMK\(AY1\)\)},.*(	\{vs_ft, "\.\+", A\(AY1 \| SYN_BD\), 1},)
+	\{vs_ft, "\(\^\[\?/]\)\|\(\\\\\\\\\[<>]\|\\\\\(\\\\\?\[:=!<>#]\|\\\\\[\\\\\^\?\(\(\?:\\\\\\\\\.\?\|\[\^\\\\]]\)\*\)]\|\\\\\[\|\[\.\^\$\\\\\(\)\*\+\|\?]\|\\\\\{\(\[0-9]\*\(,\)\?\[0-9]\*\)\?}\?\)\|\\\\\\\\\(\.\)",
+		A\(SYN_BD, BL1, WH1, GR1, RE1, WH1, YE\)},8??0?
+grp 08??-7m 2220reg p OK conf.c:558:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	\{n_ft, "1\(\[ \\t]\*\[1-9]\[ \\t]\*\)9", A\(RE1, MA1 \| SYN_BD\)},
+	\{n_ft, "9\[ \\t]\*\(\[1-9]\[ \\t]\*\)1", A\(RE1, MA1 \| SYN_BD\)},
+	\{n_ft, "\[1-9]", A\(RE1\)},.*(	\{vs_ft, "\(\\\\\\\\\)\(\.\)\(\?:\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\[\^\\\\\\\\\\\\]]\)\)\?\|\[\^\\\\\\\\\[\^]\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\.\)\|\\)
+\[\^\\\\\\\\\[\^]\\\\\^\(-\)\(\?:\(\\\\\\\\\(\.\)\)\|\[\^\\\\\\\\]\)\|\\\\\^\(-\)\[\^\\\\\\\\]",
+		A\(GR1 \| SYN_BD \| SYN_ATT, 1, GR1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1, AY1, YE, WH1\), 2},9??0?
+grp 09??-10m 2220reg p OK conf.c:558:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg conf.c:5582sc %? %@2132sc!0?
 '\''1i /* Adversarial reviewer: a second model rating closed log entries in parallel.
  * It uses portable OpenAI chat completions only. */
 static char *adv_endpoint = "http://127.0.0.1:8081/v1/chat/completions";
 static char *adv_api_key = "local";
 static char *adv_request_extra = "{}";
 static int adv_timeout = 120;
-int xadv;	/* adversarial reviewer enabled (:adv) */
+int xadv;	/* adversarial reviewer enabled */
 ??!219reg conf.c:8:m12sc %? %@2142sc!0?
-'\''2s/a\[/adv|a[/??!219reg conf.c:559:m22sc %? %@2142sc!b3m!%ya 98?0?
+'\''2s/\|ata/|adv|ata/??!219reg conf.c:558:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> int xregs_n;			/\* allocated register count \*/
 int xdefreg;			/\* ex default register \*/
 struct buf \*bufs;		/\* main buffers \*/
@@ -1310,8 +1639,33 @@ struct buf \*bufs;		/\* main buffers \*/4??0?
 %f> struct buf \*ex_buf;		/\* current buffer \*/
 struct buf \*ex_pbuf;		/\* prev buffer \*/
 static struct buf \*ex_tpbuf;	/\* temp prev buffer \*/5??0?
-5??-1m 1220reg p OK ex.c:46:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg ex.c:462sc %? %@2132sc!0?
+5??-1m 1220reg p OK ex.c:46:a52sc %? %@2152sc!1q0?
+%f> ... .r..._n..	....a..oc..........t.r.....t../
+... ............. .x .e.a.........t.r ./
+.tru.. b.. .bu...../\*..a.. .u..e..../
+...u.. b........ufs.8]....\*....................f.. ....r.a...s....
+.............x_...........r.e........r...
+.t.u........e...b....	.\* ..ev..u..e....
+s.a... s....t.... ..x.....f.... .... .rev.bu....../6??0?
+6??+3m 1220reg p OK ex.c:46:a62sc %? %@2152sc!1q0?
+grp 1%f> int xregs_n;			/\* allocated register count \*/.*?
+int xdefreg;			/\* ex default register \*/.*?
+struct buf \*bufs;		/\* main buffers \*/.*?
+(struct buf tempbufs\[8];		/\* temporary buffers, for internal use \*/)7??0?
+grp 07??m 1220reg p OK ex.c:46:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> sbuf \*xacreg;			/\* autocomplete db filter regex \*/
+rset \*xkwdrs;			/\* the last searched keyword rset \*/
+sbuf \*\*xregs;			/\* string registers \*/.*(static int xbufsmax;		/\* number of buffers \*/)
+static int xbufsalloc = 10;	/\* initial number of buffers \*/
+static int xgdep;		/\* global command recursion depth \*/8??0?
+grp 08??-4m 1220reg p OK ex.c:46:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> int xsep = '\'':'\'';			/\* ex command separator \*/
+int xesc = '\''\\\\'\'';		/\* ex command arg escape character \*/
+int xexec_dep;			/\* ex_exec recursion depth \*/.*(static int xexp = '\''%'\'';		/\* ex command internal state expand  \*/)
+static int xexe = '\''!'\'';		/\* ex command external command expand \*/
+static char xuerr\[] = "unreported error";9??0?
+grp 09??-7m 1220reg p OK ex.c:46:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:462sc %? %@2132sc!0?
 ?0?
 %f+ _EO\(ato, xato = \*arg \? MAX\(0, eo_val\(arg\)\) : xato \? 0 : 30; return NULL;\)
 _EO\(acl, xacl = \*arg \? eo_val\(arg\) : !xacl;
@@ -1327,8 +1681,20 @@ _EO\(acl, xacl = \*arg \? eo_val\(arg\) : !xacl;
 grp 1%f+ _EO\(ato, xato = \*arg \? MAX\(0, eo_val\(arg\)\) : xato \? 0 : 30; return NULL;\).*?
 _EO\(acl, xacl = \*arg \? eo_val\(arg\) : !xacl;.*?
 (	agent_acl_mark = agent_acl_budget = 0; return NULL;\))7??0?
-grp 07??m 2220reg p OK ex.c:1982:a72sc %? %@2152sc!0?
-1;4;7??!219reg ex.c:19822sc %? %@2132sc!0?
+grp 07??m 2220reg p OK ex.c:1982:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\) EO\(ar\)
+_EO\(ata, xata = \*arg \? MAX\(0, eo_val\(arg\)\) : xata \? 0 : 100; return NULL;\)
+_EO\(agr, xagr = \*arg \? MAX\(0, eo_val\(arg\)\) : xagr \? 0 : 4096; return NULL;\).*(_EO\(hlr,)
+	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
+	led_ext \*p = led_extfind\(ext_hlr\);8??0?
+grp 08??-6m 2220reg p OK ex.c:1982:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
+		atoi\(arg\) : \(unsigned char\)\*arg;
+}.*(	if \(xhlr && !p\))
+		led_extreg\(\)->ext_func = ext_hlr;
+	else if \(!xhlr && p\)9??0?
+grp 09??-9m 2220reg p OK ex.c:1982:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:19822sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"aco!", eo_aco},
 	EO\(aco\),
@@ -1340,8 +1706,24 @@ _EO\(acl, xacl = \*arg \? eo_val\(arg\) : !xacl;.*?
 %f+ 	\{"aco!", eo_aco},
 	EO\(aco\),
 	EO\(acl\),4??0?
-4??+2m 3220reg p OK ex.c:2062:a42sc %? %@2152sc!0?
-1;4??!219reg ex.c:20622sc %? %@2132sc!0?
+4??+2m 3220reg p OK ex.c:2062:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	\{"aco!", eo_aco},.*?
+	EO\(aco\),.*?
+(	EO\(acl\),)7??0?
+grp 07??m 3220reg p OK ex.c:2062:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	\{"acp", ec_acp},
+	\{"ali", ec_acp},
+	\{"auli", ec_acp},.*(	EO\(ata\),)
+	EO\(ato\),
+	EO\(agr\),8??0?
+grp 08??-4m 3220reg p OK ex.c:2062:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	\{"agoal", ec_agoal},
+	\{"aep", ec_aep},
+	\{"arq", ec_arq},.*(	EO\(ai\),)
+	EO\(ar\),
+	\{"ac", ec_setacreg},9??0?
+grp 09??-7m 3220reg p OK ex.c:2062:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:20622sc %? %@2132sc!0?
 '\''1s/8/9/??!219reg ex.c:46:m12sc %? %@2142sc!0?
 '\''2i _EO(adv, xadv = *arg ? eo_val(arg) : !xadv;
 	if (!xadv)
@@ -1361,8 +1743,20 @@ int term_read\(int winch\)
 }
 
 4??0?
-4??+2m 1220reg p OK term.c:142:a42sc %? %@2152sc!0?
-1;4??!219reg term.c:1422sc %? %@2132sc!0?
+4??+2m 1220reg p OK term.c:142:a42sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		tibuf_prev = tibuf_pos;
+	} else
+		memcpy\(tibuf \+ tibuf_cnt, s, n\);.*(	if \(tibuf_pos >= tibuf_cnt\) \{)
+		if \(texec\) \{
+			xquit = !xquit \? 1 : xquit;8??0?
+grp 08??-4m 1220reg p OK term.c:142:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			tibuf_cnt - tibuf_pos - texec_n\);
+		memcpy\(tibuf \+ tibuf_pos \+ texec_n, s, n\);
+		texec_n \+= n;.*(			if \(texec == '\''&'\''\))
+				goto err;
+		}9??0?
+grp 09??-7m 1220reg p OK term.c:142:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg term.c:1422sc %? %@2132sc!0?
 ?0?
 %f+ 		cw = 0;
 		re:
@@ -1386,8 +1780,33 @@ int term_read\(int winch\)
 %f+ 				read\(term_ufd\.fd, tibuf, 1\) <= 0\) \{
 			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;
 			if \(term_winch && winch && xquit >= 0\) \{5??0?
-5??-1m 2220reg p OK term.c:165:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg term.c:1652sc %? %@2132sc!0?
+5??-1m 2220reg p OK term.c:165:a52sc %? %@2152sc!1q0?
+%f+ ..cw.= ..
+....:
+.	/............... .n..t.....a..e....
+	.......u.. ..0..\|.....\(...............1...=.....
+.	.	.ea....rm.........t......1.....0..\{
+	....u.. ..!.sat....erm_..d.fd..\? .1...x...t;
+......\(..rm..in......w.....&. .q.....= 0\) .6??0?
+6??+3m 2220reg p OK term.c:165:a62sc %? %@2152sc!1q0?
+grp 1%f+ 		cw = 0;.*?
+		re:.*?
+		/\* read a single input character \*/.*?
+(		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|)7??0?
+grp 07??m 2220reg p OK term.c:165:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 			\*tibuf = winch;	/\* yield until term_winch is cleared \*/
+			goto ret;
+		}.*(				\*tibuf = winch;)
+				goto ret;
+			} else if \(term_winch != cw && !winch && xquit >= 0\) \{8??0?
+grp 08??-4m 2220reg p OK term.c:165:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			goto ret;
+		}
+		if \(term_winch && winch\) \{.*(				cw = term_winch;)
+				goto re;
+			}9??0?
+grp 09??-7m 2220reg p OK term.c:165:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg term.c:1652sc %? %@2132sc!0?
 '\''1i /* Wait for terminal input. The wait is cut short while the adversary has a
  * curl running, so the main loop can drain its pipes, and while entries
  * have closed for it to review: a single poll(-1) would leave the last turn
@@ -1447,8 +1866,33 @@ extern struct buf \*bufs;4??0?
 %f> extern struct buf \*ex_buf;
 extern struct buf \*ex_pbuf;
 #define istempbuf\(buf\) \(buf >= tempbufs && buf < tempbufs \+ LEN\(tempbufs\)\)5??0?
-5??-1m 1220reg p OK vi.h:525:a52sc %? %@2152sc!0?
-1;2;3;4;5??!219reg vi.h:5252sc %? %@2132sc!0?
+5??-1m 1220reg p OK vi.h:525:a52sc %? %@2152sc!1q0?
+%f> ..t.rn..n. ..e.s_..
+e......i...x....e..
+..t.r. ..r....b.........
+.xtern..t...t ..f.t.m.b.f.....
+...........ct...f......u..
+.xt... .............._....;
+........i.t...b.f\(.u.. ......= t......s..&..u..<..e.......\+ ......m...f..\)6??0?
+6??+3m 1220reg p OK vi.h:525:a62sc %? %@2152sc!1q0?
+grp 1%f> extern int xregs_n;.*?
+extern int xdefreg;.*?
+extern struct buf \*bufs;.*?
+(extern struct buf tempbufs\[8];)7??0?
+grp 07??m 1220reg p OK vi.h:525:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> extern sbuf \*xacreg;
+extern rset \*xkwdrs;
+extern sbuf \*\*xregs;.*(#define xb_path ex_buf->path)
+#define xb_ft ex_buf->ft
+#define xb ex_buf->lb8??0?
+grp 08??-4m 1220reg p OK vi.h:525:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> extern int xsep;
+extern int xesc;
+extern int xexec_dep;.*(#define exbuf_load\(buf\) \\)
+	xrow = buf->row; \\
+	xoff = buf->off; \\9??0?
+grp 09??-7m 1220reg p OK vi.h:525:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg vi.h:5252sc %? %@2132sc!0?
 '\''1s/8/9/??!219reg vi.h:525:m12sc %? %@2142sc!vis 2b0wb1wb2wb3wb4wb5wb6w2q' > "$P2VIF"
 EXINIT='%ya 97:? %@97' $VI -e 'agent.c' 'agent.h' 'conf.c' 'ex.c' 'term.c' 'vi.c' 'vi.h' "$P2VIF"
 
@@ -1462,7 +1906,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index 478075b..87f254a 100644
+index 6d2c9d7a..7c133de5 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -25,6 +25,9 @@
@@ -1562,7 +2006,7 @@ index 478075b..87f254a 100644
  }
  
  /* Move the entries of text, a log replaced by compaction, to b-7. */
-@@ -1824,6 +1835,12 @@ static void agent_checkpoint_begin(double tokens, int kind)
+@@ -1830,6 +1841,12 @@ static void agent_checkpoint_begin(double tokens, int kind)
  	agent_cp_base = -1;
  	agent_cp_bytes = agent_context_bytes();
  	agent_cp_left = INT_MAX;
@@ -1575,7 +2019,7 @@ index 478075b..87f254a 100644
  	agent_cp_logbuf = agent_logbuf;
  	agent_logbuf = 7;
  	/* A question in b-8 continues the numbering of what it interrupted. */
-@@ -2146,7 +2163,7 @@ static void agent_cp_build(void)
+@@ -2152,7 +2169,7 @@ static void agent_cp_build(void)
  		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
  }
  
@@ -1584,7 +2028,7 @@ index 478075b..87f254a 100644
  {
  	char note[128], unrated[112];
  	int k, n, kind = agent_checkpointing, answered = agent_cp_done;
-@@ -2208,6 +2225,15 @@ static void agent_checkpoint_end(void)
+@@ -2214,6 +2231,15 @@ static void agent_checkpoint_end(void)
  	agent_output(note);
  }
  
@@ -1600,7 +2044,7 @@ index 478075b..87f254a 100644
  /* End a question together with what it interrupted. */
  static void agent_checkpoint_stop(void)
  {
-@@ -2936,6 +2962,854 @@ ret:
+@@ -2942,6 +2968,854 @@ ret:
  	return s;
  }
  
@@ -2455,7 +2899,7 @@ index 478075b..87f254a 100644
  static char *agent_snapshot(char *loc)
  {
  	int beg = 0, end = lbuf_len(xb), o1 = -1, o2 = -1;
-@@ -3158,6 +4032,9 @@ static void agent_run_loop(const char *input)
+@@ -3164,6 +4038,9 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -2466,7 +2910,7 @@ index 478075b..87f254a 100644
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
 diff --git a/agent.h b/agent.h
-index cd3c838..ff49f53 100644
+index cd3c8383..ff49f53f 100644
 --- a/agent.h
 +++ b/agent.h
 @@ -44,6 +44,15 @@ static void agent_init(void);
@@ -2486,7 +2930,7 @@ index cd3c838..ff49f53 100644
  static void agent_capture_add(const char *s, int n);
  static int agent_interrupted(void);
 diff --git a/conf.c b/conf.c
-index 67de562..fb65b7d 100644
+index 67de562a..b5304985 100644
 --- a/conf.c
 +++ b/conf.c
 @@ -6,6 +6,13 @@ static char *api_key = "local";
@@ -2499,21 +2943,21 @@ index 67de562..fb65b7d 100644
 +static char *adv_api_key = "local";
 +static char *adv_request_extra = "{}";
 +static int adv_timeout = 120;
-+int xadv;	/* adversarial reviewer enabled (:adv) */
++int xadv;	/* adversarial reviewer enabled */
  
  /* Percent of the ath token cap a reply's thinking must use to count as cut */
  static int think_cut = 90;
-@@ -556,7 +563,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+@@ -555,7 +562,7 @@ return|select|switch|type|var))\\>", A(GR1, BL1 | SYN_BD, YE1)},
+ (?:'[0-9]+)|([.%$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*[0-9]+[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*)[ \t]*\
  (?:([,;]#?)[ \t]*((?:\\|(?:[^|\\\\]|\\\\.?)*\\|?[ \t]*)*(?:(?:<(?:[^<\\\\]|\\\\.?)*<?|>(?:[^>\\\\]|\\\\.?)*>?)|\
  (?:'[0-9]+)|([.$]|[0-9 \t]*)?))(?:([-*-+/%])[ \t]*([0-9]+)[ \t]*)*(?:[ \t]*\\|(?:[^|\\\\]|\\\\.?)*\\|?)*[ \t]*)*)\
- ((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate|q))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
--|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|arq|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
-+|[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|arq|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|adv|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
+-((pac|pr|aco!?|acl|ai|agr|ato|ata|ar(?!^(?:etry|ate|q))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
++((pac|pr|aco!?|acl|ai|agr|ato|adv|ata|ar(?!^(?:etry|ate|q))|aspec|ish|err|fr|ic|grp|mpt|rr|shape|seq|ts|td|order|hl[lwpr]?|left|lim|led|vis)\
+ |[@&!dj]|m!?|=(?:\\?|p){0,1}|\\?~|\\?{1,2}[?!]?|b[psx]?|p[uh]?|aretry|aep|arq|aout|aget|anote|arate|adone|acheck|acap|agoal|acp|ali|auli|apack!?|acm?|ast|ath|a[!~]?|exspec|e[f!]?!?|f[-+><tdp]?|inc|i|sc!?|\
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
- 	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index 8f07498..926d3c0 100644
+index 8f07498c..926d3c00 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -43,7 +43,7 @@ sbuf **xregs;			/* string registers */
@@ -2545,7 +2989,7 @@ index 8f07498..926d3c0 100644
  	{"ast", ec_ast},
  	{"ath", ec_ath},
 diff --git a/term.c b/term.c
-index 4668eda..6a95c44 100644
+index 4668eda9..6a95c44e 100644
 --- a/term.c
 +++ b/term.c
 @@ -140,6 +140,20 @@ void term_push(char *s, unsigned int n)
@@ -2579,7 +3023,7 @@ index 4668eda..6a95c44 100644
  			xquit = !isatty(term_ufd.fd) ? -1 : xquit;
  			if (term_winch && winch && xquit >= 0) {
 diff --git a/vi.c b/vi.c
-index 53bbabc..8e851c5 100644
+index 53bbabc6..8e851c5f 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -1882,6 +1882,8 @@ int main(int argc, char *argv[])
@@ -2592,7 +3036,7 @@ index 53bbabc..8e851c5 100644
  	if (xvis & 8)
  		term_scrl()
 diff --git a/vi.h b/vi.h
-index f1c422d..dad9a2c 100644
+index f1c422d2..dad9a2c1 100644
 --- a/vi.h
 +++ b/vi.h
 @@ -522,7 +522,7 @@ extern sbuf **xregs;
