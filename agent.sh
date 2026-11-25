@@ -5107,9 +5107,6 @@ static int agent_autocompact(void)
 		/* The summary is numbered before the resume entry. */
 		agent_discard_log(original);
 		agent_head_summary();
-		/* The pack prompt makes the summary carry the pending request, so the
-		 * resume entry does not repeat it: each interrupted autocompact would
-		 * otherwise re-stamp the same text into every new log. */
 		sbuf_smake(resume, 256)
 		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
 			"is working memory, not a new task. It carries the request in progress;\n"
@@ -14281,10 +14278,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..c494089f
+index 00000000..478075bc
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5124 @@
+@@ -0,0 +1,5121 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -19362,9 +19359,6 @@ index 00000000..c494089f
 +		/* The summary is numbered before the resume entry. */
 +		agent_discard_log(original);
 +		agent_head_summary();
-+		/* The pack prompt makes the summary carry the pending request, so the
-+		 * resume entry does not repeat it: each interrupted autocompact would
-+		 * otherwise re-stamp the same text into every new log. */
 +		sbuf_smake(resume, 256)
 +		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
 +			"is working memory, not a new task. It carries the request in progress;\n"
