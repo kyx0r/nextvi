@@ -1255,6 +1255,27 @@ static unsigned long agent_epoch_floor(void)
 	return 0;
 }
 
+/* Whether b-6 holds an "EPOCH N" line for summary entry n: the entry is a
+ * compaction summary and lists as the EPOCH role. */
+static int agent_epoch_summary(unsigned long n)
+{
+	struct lbuf *lb = tempbufs[5].lb;
+	for (int i = 0; i < lbuf_len(lb); i++)
+		if (!strncmp(lb->ln[i], "EPOCH ", 6) &&
+				strtoul(lb->ln[i] + 6, NULL, 10) == n)
+			return 1;
+	return 0;
+}
+
+/* Whether spans holds the entry numbered n. */
+static int agent_span_numbered(struct agent_span *spans, int cnt, unsigned long n)
+{
+	for (int k = 0; k < cnt; k++)
+		if (spans[k].n == n)
+			return 1;
+	return 0;
+}
+
 /* The live notes of b-6 numbered from from on. */
 static int agent_notes_live(unsigned long from)
 {
@@ -1523,7 +1544,7 @@ static int agent_note_trimmed(char *l, struct agent_span *spans, int cnt,
  * up to upto as "TURN N trimmed R note". Following notes with the same
  * rating that name N, or the entry N names, join it as "TURN N-M"; a run
  * stops at any other line. With from 0 every epoch is listed, each
- * "EPOCH N" line as "EPOCH N: summarized as USER N". */
+ * "EPOCH N" line as "EPOCH N"; its summary entry lists as EPOCH. */
 static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
 		int *row, unsigned long from, unsigned long upto)
 {
@@ -1536,9 +1557,8 @@ static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
 			n = strtoul(lb->ln[i] + 6, NULL, 10);
 			if (n > upto)
 				break;
-			if (!from) {
-				snprintf(ln, sizeof(ln), "EPOCH %lu: summarized as USER %lu\n",
-					n, n);
+			if (!from && !agent_span_numbered(spans, cnt, n)) {
+				snprintf(ln, sizeof(ln), "EPOCH %lu\n", n);
 				sbuf_str(sb, ln)
 			}
 			continue;
@@ -1586,7 +1606,8 @@ static int agent_spans_reasoned(struct agent_span *spans, int cnt)
 static void agent_span_head(char *ln, int size, struct agent_span *s, int reasoned)
 {
 	size_t t[4], sum = 0;
-	int len = snprintf(ln, size, "%s %lu ", agent_span_role(s), s->n);
+	int len = snprintf(ln, size, "%s %lu ",
+		agent_epoch_summary(s->n) ? "EPOCH" : agent_span_role(s), s->n);
 	for (int i = 0; i < 4; i++)
 		t[i] = s->role == AE_TURN ? (s->part[i] + 2) / 3 : 0;
 	if (s->role != AE_TURN)
@@ -1626,7 +1647,10 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 			snprintf(ln, sizeof(ln), " %d", spans[k].beg + 1);
 			sbuf_str(sb, ln)
 		}
-		if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
+		if (agent_epoch_summary(spans[k].n))
+			sbuf_str(sb, " compaction summary; the notes above rate the"
+				" entries it replaced, aget still reads them")
+		else if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
 			snprintf(ln, sizeof(ln), " %d", r);
 			sbuf_str(sb, ln)
 			/* A sentence whose own entry is removed, or listed without
@@ -1675,7 +1699,8 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 		sbuf_str(sb, "Largest:")
 		for (int j = 0; j < ntop; j++) {
 			snprintf(ln, sizeof(ln), "%s %s %lu", j ? "," : "",
-				agent_span_role(spans + top[j]), spans[top[j]].n);
+				agent_epoch_summary(spans[top[j]].n) ? "EPOCH" :
+					agent_span_role(spans + top[j]), spans[top[j]].n);
 			sbuf_str(sb, ln)
 		}
 		sbuf_chr(sb, '\''\n'\'')
@@ -1698,8 +1723,6 @@ static void agent_cp_status(sbuf *sb, int cp)
 			"rebuilt from the session log entries\nbelow, about %.0f "
 			"tokens. Rate them, trim them, then resume.\n\n", total);
 		sbuf_str(sb, ln)
-		sbuf_str(sb, agent_rating_scale)
-		sbuf_chr(sb, '\''\n'\'')
 	} else {
 		snprintf(ln, sizeof(ln), "The session log holds about %.0f "
 			"tokens in these entries:\n", total);
@@ -1709,6 +1732,11 @@ static void agent_cp_status(sbuf *sb, int cp)
 		"rating note\n", reasoned ? "reasoning+" : "");
 	sbuf_str(sb, ln)
 	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned, 0);
+	if (cp) {
+		sbuf_chr(sb, '\''\n'\'')
+		sbuf_str(sb, agent_rating_scale)
+		sbuf_chr(sb, '\''\n'\'')
+	}
 	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 		sbuf_str(sb, "Unrated: ")
 		sbuf_str(sb, unrated)
@@ -1738,10 +1766,6 @@ static void agent_cp_unrated(sbuf *sb)
 	free(spans);
 }
 static const char agent_cp_turns[] =
-	"A TURN is one of your replies: its reasoning, text, commands and\n"
-	"results. Its last result in your context ends with a line\n"
-	"[turn N end]; a reply without commands has the number the list\n"
-	"gives it.\n"
 	"\n"
 	"Only these ex commands run during the checkpoint, so decide from your\n"
 	"context. Each command is its own ex tool call; a reply can hold several\n"
@@ -1772,7 +1796,7 @@ static const char agent_cp_trim[] =
 	"checkpoints and compaction. A removed entry'\''s rating is dropped; to\n"
 	"keep findings, note them with text.\n";
 
-/* The checkpoint guide: what a TURN is, the commands, then the steps in
+/* The checkpoint guide: the commands, then the steps in
  * order; with scale, the rating scale first (acp, printed alone). */
 static void agent_cp_instructions(sbuf *sb, int scale)
 {
@@ -4848,16 +4872,6 @@ static void *ec_agent(char *loc, char *cmd, char *arg)
 
 static char *agent_compact_task(int browse, char *arg, int automatic)
 {
-	sbuf_smake(task, 512)
-	sbuf_str(task, "The current buffer is b-4, which contains a log of the session.\n")
-	if (browse)
-		sbuf_str(task,
-		"The log has not been loaded into your context. Do not read the\n"
-		"entire buffer into context.\n")
-	else
-		sbuf_str(task,
-		"The log is in your context. Do not read the current buffer into context.\n")
-	sbuf_chr(task, '\''\n'\'')
 	struct lbuf *notes = tempbufs[5].lb;
 	struct agent_span *spans;
 	int cnt = agent_spans(&spans), trimmed = 0, rated;
@@ -4874,6 +4888,35 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 	for (int i = 0; i < lbuf_len(notes); i++)
 		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n) &&
 			n >= from;
+	sbuf_smake(task, 512)
+	sbuf_str(task, "The current buffer is b-4, which contains a log of the session.\n")
+	if (browse)
+		sbuf_str(task,
+		"The log has not been loaded into your context. Do not read the\n"
+		"entire buffer into context.\n")
+	else
+		sbuf_str(task,
+		"The log is in your context. Do not read the current buffer into context.\n")
+	if (cnt || trimmed) {
+		snprintf(ln, sizeof(ln), "The log holds ~%.0f tokens.\n", total);
+		sbuf_str(task, ln)
+	}
+	sbuf_chr(task, '\''\n'\'')
+	if (cnt || trimmed) {
+		sbuf_str(task, "Legend:\n")
+		sbuf_str(task, "role entry ")
+		if (reasoned)
+			sbuf_str(task, "reasoning+")
+		sbuf_str(task, "text+commands+results=tokens")
+		if (browse)
+			sbuf_str(task, " line")
+		if (rated)
+			sbuf_str(task, " rating note")
+		sbuf_chr(task, '\''\n'\'')
+		sbuf_chr(task, '\''\n'\'')
+		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
+			reasoned, from);
+	}
 	if (rated) {
 		/* The legend covers only the ratings listed, each with its
 		 * weighting; every note is listed, current or trimmed. */
@@ -4898,25 +4941,6 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 				sbuf_str(task, legend[r])
 		sbuf_chr(task, '\''\n'\'')
 	}
-	/* A loaded log already shows each entry: list them only for their
-	 * notes, or to browse. */
-	if (cnt && !browse && !rated) {
-		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
-		sbuf_str(task, ln)
-	} else if (cnt || trimmed) {
-		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-			"entries%s:\nrole entry %stext+commands+results=tokens%s%s\n",
-			total, trimmed ? ",\nin order with the notes of turns already "
-			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
-			browse ? " line" : "", rated ? " rating note" : "");
-		sbuf_str(task, ln)
-		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
-			reasoned, from);
-	}
-	if (browse && trimmed && agent_epoch_floor())
-		sbuf_str(task, "A line \"EPOCH N: summarized as USER N\" marks an "
-			"earlier compaction:\nthe notes above it rate entries that summary "
-			"replaced; aget still reads them.\n")
 	if (cnt || trimmed)
 		sbuf_str(task, lbuf_len(tempbufs[6].lb) ?
 			"N[,M]aget[parts] prints entries N through M with their headers,\n"
@@ -14264,10 +14288,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..6ae6aec3
+index 00000000..63404573
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5107 @@
+@@ -0,0 +1,5131 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15493,6 +15517,27 @@ index 00000000..6ae6aec3
 +	return 0;
 +}
 +
++/* Whether b-6 holds an "EPOCH N" line for summary entry n: the entry is a
++ * compaction summary and lists as the EPOCH role. */
++static int agent_epoch_summary(unsigned long n)
++{
++	struct lbuf *lb = tempbufs[5].lb;
++	for (int i = 0; i < lbuf_len(lb); i++)
++		if (!strncmp(lb->ln[i], "EPOCH ", 6) &&
++				strtoul(lb->ln[i] + 6, NULL, 10) == n)
++			return 1;
++	return 0;
++}
++
++/* Whether spans holds the entry numbered n. */
++static int agent_span_numbered(struct agent_span *spans, int cnt, unsigned long n)
++{
++	for (int k = 0; k < cnt; k++)
++		if (spans[k].n == n)
++			return 1;
++	return 0;
++}
++
 +/* The live notes of b-6 numbered from from on. */
 +static int agent_notes_live(unsigned long from)
 +{
@@ -15761,7 +15806,7 @@ index 00000000..6ae6aec3
 + * up to upto as "TURN N trimmed R note". Following notes with the same
 + * rating that name N, or the entry N names, join it as "TURN N-M"; a run
 + * stops at any other line. With from 0 every epoch is listed, each
-+ * "EPOCH N" line as "EPOCH N: summarized as USER N". */
++ * "EPOCH N" line as "EPOCH N"; its summary entry lists as EPOCH. */
 +static void agent_trimmed_list(sbuf *sb, struct agent_span *spans, int cnt,
 +		int *row, unsigned long from, unsigned long upto)
 +{
@@ -15774,9 +15819,8 @@ index 00000000..6ae6aec3
 +			n = strtoul(lb->ln[i] + 6, NULL, 10);
 +			if (n > upto)
 +				break;
-+			if (!from) {
-+				snprintf(ln, sizeof(ln), "EPOCH %lu: summarized as USER %lu\n",
-+					n, n);
++			if (!from && !agent_span_numbered(spans, cnt, n)) {
++				snprintf(ln, sizeof(ln), "EPOCH %lu\n", n);
 +				sbuf_str(sb, ln)
 +			}
 +			continue;
@@ -15824,7 +15868,8 @@ index 00000000..6ae6aec3
 +static void agent_span_head(char *ln, int size, struct agent_span *s, int reasoned)
 +{
 +	size_t t[4], sum = 0;
-+	int len = snprintf(ln, size, "%s %lu ", agent_span_role(s), s->n);
++	int len = snprintf(ln, size, "%s %lu ",
++		agent_epoch_summary(s->n) ? "EPOCH" : agent_span_role(s), s->n);
 +	for (int i = 0; i < 4; i++)
 +		t[i] = s->role == AE_TURN ? (s->part[i] + 2) / 3 : 0;
 +	if (s->role != AE_TURN)
@@ -15864,7 +15909,10 @@ index 00000000..6ae6aec3
 +			snprintf(ln, sizeof(ln), " %d", spans[k].beg + 1);
 +			sbuf_str(sb, ln)
 +		}
-+		if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
++		if (agent_epoch_summary(spans[k].n))
++			sbuf_str(sb, " compaction summary; the notes above rate the"
++				" entries it replaced, aget still reads them")
++		else if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
 +			snprintf(ln, sizeof(ln), " %d", r);
 +			sbuf_str(sb, ln)
 +			/* A sentence whose own entry is removed, or listed without
@@ -15913,7 +15961,8 @@ index 00000000..6ae6aec3
 +		sbuf_str(sb, "Largest:")
 +		for (int j = 0; j < ntop; j++) {
 +			snprintf(ln, sizeof(ln), "%s %s %lu", j ? "," : "",
-+				agent_span_role(spans + top[j]), spans[top[j]].n);
++				agent_epoch_summary(spans[top[j]].n) ? "EPOCH" :
++					agent_span_role(spans + top[j]), spans[top[j]].n);
 +			sbuf_str(sb, ln)
 +		}
 +		sbuf_chr(sb, '\n')
@@ -15936,8 +15985,6 @@ index 00000000..6ae6aec3
 +			"rebuilt from the session log entries\nbelow, about %.0f "
 +			"tokens. Rate them, trim them, then resume.\n\n", total);
 +		sbuf_str(sb, ln)
-+		sbuf_str(sb, agent_rating_scale)
-+		sbuf_chr(sb, '\n')
 +	} else {
 +		snprintf(ln, sizeof(ln), "The session log holds about %.0f "
 +			"tokens in these entries:\n", total);
@@ -15947,6 +15994,11 @@ index 00000000..6ae6aec3
 +		"rating note\n", reasoned ? "reasoning+" : "");
 +	sbuf_str(sb, ln)
 +	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned, 0);
++	if (cp) {
++		sbuf_chr(sb, '\n')
++		sbuf_str(sb, agent_rating_scale)
++		sbuf_chr(sb, '\n')
++	}
 +	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 +		sbuf_str(sb, "Unrated: ")
 +		sbuf_str(sb, unrated)
@@ -15976,10 +16028,6 @@ index 00000000..6ae6aec3
 +	free(spans);
 +}
 +static const char agent_cp_turns[] =
-+	"A TURN is one of your replies: its reasoning, text, commands and\n"
-+	"results. Its last result in your context ends with a line\n"
-+	"[turn N end]; a reply without commands has the number the list\n"
-+	"gives it.\n"
 +	"\n"
 +	"Only these ex commands run during the checkpoint, so decide from your\n"
 +	"context. Each command is its own ex tool call; a reply can hold several\n"
@@ -16010,7 +16058,7 @@ index 00000000..6ae6aec3
 +	"checkpoints and compaction. A removed entry's rating is dropped; to\n"
 +	"keep findings, note them with text.\n";
 +
-+/* The checkpoint guide: what a TURN is, the commands, then the steps in
++/* The checkpoint guide: the commands, then the steps in
 + * order; with scale, the rating scale first (acp, printed alone). */
 +static void agent_cp_instructions(sbuf *sb, int scale)
 +{
@@ -19086,16 +19134,6 @@ index 00000000..6ae6aec3
 +
 +static char *agent_compact_task(int browse, char *arg, int automatic)
 +{
-+	sbuf_smake(task, 512)
-+	sbuf_str(task, "The current buffer is b-4, which contains a log of the session.\n")
-+	if (browse)
-+		sbuf_str(task,
-+		"The log has not been loaded into your context. Do not read the\n"
-+		"entire buffer into context.\n")
-+	else
-+		sbuf_str(task,
-+		"The log is in your context. Do not read the current buffer into context.\n")
-+	sbuf_chr(task, '\n')
 +	struct lbuf *notes = tempbufs[5].lb;
 +	struct agent_span *spans;
 +	int cnt = agent_spans(&spans), trimmed = 0, rated;
@@ -19112,6 +19150,35 @@ index 00000000..6ae6aec3
 +	for (int i = 0; i < lbuf_len(notes); i++)
 +		trimmed += agent_note_trimmed(notes->ln[i], spans, cnt, &n) &&
 +			n >= from;
++	sbuf_smake(task, 512)
++	sbuf_str(task, "The current buffer is b-4, which contains a log of the session.\n")
++	if (browse)
++		sbuf_str(task,
++		"The log has not been loaded into your context. Do not read the\n"
++		"entire buffer into context.\n")
++	else
++		sbuf_str(task,
++		"The log is in your context. Do not read the current buffer into context.\n")
++	if (cnt || trimmed) {
++		snprintf(ln, sizeof(ln), "The log holds ~%.0f tokens.\n", total);
++		sbuf_str(task, ln)
++	}
++	sbuf_chr(task, '\n')
++	if (cnt || trimmed) {
++		sbuf_str(task, "Legend:\n")
++		sbuf_str(task, "role entry ")
++		if (reasoned)
++			sbuf_str(task, "reasoning+")
++		sbuf_str(task, "text+commands+results=tokens")
++		if (browse)
++			sbuf_str(task, " line")
++		if (rated)
++			sbuf_str(task, " rating note")
++		sbuf_chr(task, '\n')
++		sbuf_chr(task, '\n')
++		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
++			reasoned, from);
++	}
 +	if (rated) {
 +		/* The legend covers only the ratings listed, each with its
 +		 * weighting; every note is listed, current or trimmed. */
@@ -19136,25 +19203,6 @@ index 00000000..6ae6aec3
 +				sbuf_str(task, legend[r])
 +		sbuf_chr(task, '\n')
 +	}
-+	/* A loaded log already shows each entry: list them only for their
-+	 * notes, or to browse. */
-+	if (cnt && !browse && !rated) {
-+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens.\n", total);
-+		sbuf_str(task, ln)
-+	} else if (cnt || trimmed) {
-+		snprintf(ln, sizeof(ln), "The log holds about %.0f tokens in these "
-+			"entries%s:\nrole entry %stext+commands+results=tokens%s%s\n",
-+			total, trimmed ? ",\nin order with the notes of turns already "
-+			"trimmed from the log" : "", reasoned ? "reasoning+" : "",
-+			browse ? " line" : "", rated ? " rating note" : "");
-+		sbuf_str(task, ln)
-+		agent_entry_list(task, spans, cnt, browse, 1, rated, trimmed > 0,
-+			reasoned, from);
-+	}
-+	if (browse && trimmed && agent_epoch_floor())
-+		sbuf_str(task, "A line \"EPOCH N: summarized as USER N\" marks an "
-+			"earlier compaction:\nthe notes above it rate entries that summary "
-+			"replaced; aget still reads them.\n")
 +	if (cnt || trimmed)
 +		sbuf_str(task, lbuf_len(tempbufs[6].lb) ?
 +			"N[,M]aget[parts] prints entries N through M with their headers,\n"
