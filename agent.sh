@@ -1738,10 +1738,8 @@ static void agent_cp_status(sbuf *sb, int cp)
 		sbuf_str(sb, unrated)
 		sbuf_chr(sb, '\''\n'\'')
 	}
-	if (cp) {
+	if (cp)
 		sbuf_str(sb, agent_rating_scale)
-		sbuf_chr(sb, '\''\n'\'')
-	}
 	free(spans);
 }
 
@@ -1766,7 +1764,6 @@ static void agent_cp_unrated(sbuf *sb)
 	free(spans);
 }
 static const char agent_cp_turns[] =
-	"\n"
 	"Only these ex commands run during the checkpoint, so decide from your\n"
 	"context. Each command is its own ex tool call; a reply can hold several\n"
 	"calls. Commands written as text do not run. N,M is a range from N\n"
@@ -1796,15 +1793,10 @@ static const char agent_cp_trim[] =
 	"checkpoints and compaction. A removed entry'\''s rating is dropped; to\n"
 	"keep findings, note them with text.\n";
 
-/* The checkpoint guide: the commands, then the steps in
- * order; with scale, the rating scale first (acp, printed alone). */
-static void agent_cp_instructions(sbuf *sb, int scale)
+/* The checkpoint guide: the commands, then the steps in order. */
+static void agent_cp_instructions(sbuf *sb)
 {
 	char unrated[112];
-	if (scale) {
-		sbuf_str(sb, agent_rating_scale)
-		sbuf_chr(sb, '\''\n'\'')
-	}
 	sbuf_str(sb, agent_cp_turns)
 	if (agent_unrated_now(unrated, sizeof(unrated))) {
 		sbuf_str(sb, "Rate the unrated turns first, e.g.\n")
@@ -2164,7 +2156,7 @@ static void agent_cp_build(void)
 		sbuf_smake(sb, 1024)
 		agent_cp_status(sb, 1);
 		sbuf_chr(sb, '\''\n'\'')
-		agent_cp_instructions(sb, 0);
+		agent_cp_instructions(sb);
 		sbuf_nul(sb)
 		agent_cp_open = sb->s;
 		agent_log("USER", agent_cp_open);
@@ -2271,7 +2263,7 @@ static void *ec_acp(char *loc, char *cmd, char *arg)
 		return "session log is empty";
 	sbuf_smake(sb, 1024)
 	if (cmd[1] == '\''c'\'')
-		agent_cp_instructions(sb, 1);
+		agent_cp_instructions(sb);
 	else if (cmd[1] == '\''l'\'')
 		agent_cp_status(sb, agent_checkpointing == 1);
 	else
@@ -14288,10 +14280,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..c275be63
+index 00000000..8073bbe5
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5131 @@
+@@ -0,0 +1,5123 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -16000,10 +15992,8 @@ index 00000000..c275be63
 +		sbuf_str(sb, unrated)
 +		sbuf_chr(sb, '\n')
 +	}
-+	if (cp) {
++	if (cp)
 +		sbuf_str(sb, agent_rating_scale)
-+		sbuf_chr(sb, '\n')
-+	}
 +	free(spans);
 +}
 +
@@ -16028,7 +16018,6 @@ index 00000000..c275be63
 +	free(spans);
 +}
 +static const char agent_cp_turns[] =
-+	"\n"
 +	"Only these ex commands run during the checkpoint, so decide from your\n"
 +	"context. Each command is its own ex tool call; a reply can hold several\n"
 +	"calls. Commands written as text do not run. N,M is a range from N\n"
@@ -16058,15 +16047,10 @@ index 00000000..c275be63
 +	"checkpoints and compaction. A removed entry's rating is dropped; to\n"
 +	"keep findings, note them with text.\n";
 +
-+/* The checkpoint guide: the commands, then the steps in
-+ * order; with scale, the rating scale first (acp, printed alone). */
-+static void agent_cp_instructions(sbuf *sb, int scale)
++/* The checkpoint guide: the commands, then the steps in order. */
++static void agent_cp_instructions(sbuf *sb)
 +{
 +	char unrated[112];
-+	if (scale) {
-+		sbuf_str(sb, agent_rating_scale)
-+		sbuf_chr(sb, '\n')
-+	}
 +	sbuf_str(sb, agent_cp_turns)
 +	if (agent_unrated_now(unrated, sizeof(unrated))) {
 +		sbuf_str(sb, "Rate the unrated turns first, e.g.\n")
@@ -16426,7 +16410,7 @@ index 00000000..c275be63
 +		sbuf_smake(sb, 1024)
 +		agent_cp_status(sb, 1);
 +		sbuf_chr(sb, '\n')
-+		agent_cp_instructions(sb, 0);
++		agent_cp_instructions(sb);
 +		sbuf_nul(sb)
 +		agent_cp_open = sb->s;
 +		agent_log("USER", agent_cp_open);
@@ -16533,7 +16517,7 @@ index 00000000..c275be63
 +		return "session log is empty";
 +	sbuf_smake(sb, 1024)
 +	if (cmd[1] == 'c')
-+		agent_cp_instructions(sb, 1);
++		agent_cp_instructions(sb);
 +	else if (cmd[1] == 'l')
 +		agent_cp_status(sb, agent_checkpointing == 1);
 +	else
