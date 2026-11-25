@@ -1648,8 +1648,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
 			sbuf_str(sb, ln)
 		}
 		if (agent_epoch_summary(spans[k].n))
-			sbuf_str(sb, " compaction summary; the notes above rate the"
-				" entries it replaced, aget still reads them")
+			sbuf_str(sb, " compaction summary that replaced entries above")
 		else if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
 			snprintf(ln, sizeof(ln), " %d", r);
 			sbuf_str(sb, ln)
@@ -14280,10 +14279,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..8073bbe5
+index 00000000..6629c9e1
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5123 @@
+@@ -0,0 +1,5122 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -15902,8 +15901,7 @@ index 00000000..8073bbe5
 +			sbuf_str(sb, ln)
 +		}
 +		if (agent_epoch_summary(spans[k].n))
-+			sbuf_str(sb, " compaction summary; the notes above rate the"
-+				" entries it replaced, aget still reads them")
++			sbuf_str(sb, " compaction summary that replaced entries above")
 +		else if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
 +			snprintf(ln, sizeof(ln), " %d", r);
 +			sbuf_str(sb, ln)
