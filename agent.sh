@@ -151,7 +151,7 @@ static char agent_goal_ask[] =
 #define AGENT_THINK_TRIES	5	/* retries a thinking question allows */
 #define AGENT_BAD_TRIES	5	/* malformed-response retries before one nudge */
 static void agent_run(const char *input);
-static int agent_autocompact(const char *input);
+static int agent_autocompact(void);
 static void agent_reparse(void);
 
 static const char agent_tools[] =
@@ -3231,7 +3231,7 @@ static void agent_run_loop(const char *input)
 			compacted = 0;
 		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
 				!agent_checkpointing && !asked && agent_tokens() >= xaco) {
-			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
+			if (!agent_autocompact() || epoch != agent_epoch || xquit)
 				return;
 			/* The pack conversation is gone; the resumed request gets a
 			 * fresh tool-round budget. */
@@ -5049,7 +5049,7 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 
 /* Run the apack task without a prompt. The live conversation stays detached
  * until the pack agent has replaced the log; the exchange is logged to b-8. */
-static int agent_autocompact(const char *input)
+static int agent_autocompact(void)
 {
 	struct lbuf *lb = tempbufs[3].lb;
 	cJSON *history = agent_messages;
@@ -5107,11 +5107,13 @@ static int agent_autocompact(const char *input)
 		/* The summary is numbered before the resume entry. */
 		agent_discard_log(original);
 		agent_head_summary();
+		/* The pack prompt makes the summary carry the pending request, so the
+		 * resume entry does not repeat it: each interrupted autocompact would
+		 * otherwise re-stamp the same text into every new log. */
 		sbuf_smake(resume, 256)
 		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
-			"is working memory, not a new task. Continue the request below, using\n"
-			"the summary to avoid repeating completed actions or tool calls.\n\n")
-		sbuf_str(resume, input)
+			"is working memory, not a new task. It carries the request in progress;\n"
+			"continue it from the summary, avoiding repeated actions or tool calls.\n")
 		sbuf_nul(resume)
 		agent_logbuf = 3;
 		agent_log("USER", resume->s);
@@ -14279,10 +14281,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..6629c9e1
+index 00000000..c494089f
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5122 @@
+@@ -0,0 +1,5124 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -14404,7 +14406,7 @@ index 00000000..6629c9e1
 +#define AGENT_THINK_TRIES	5	/* retries a thinking question allows */
 +#define AGENT_BAD_TRIES	5	/* malformed-response retries before one nudge */
 +static void agent_run(const char *input);
-+static int agent_autocompact(const char *input);
++static int agent_autocompact(void);
 +static void agent_reparse(void);
 +
 +static const char agent_tools[] =
@@ -17484,7 +17486,7 @@ index 00000000..6629c9e1
 +			compacted = 0;
 +		if (xaco && !compacted && !agent_packing && agent_logbuf == 3 &&
 +				!agent_checkpointing && !asked && agent_tokens() >= xaco) {
-+			if (!agent_autocompact(input) || epoch != agent_epoch || xquit)
++			if (!agent_autocompact() || epoch != agent_epoch || xquit)
 +				return;
 +			/* The pack conversation is gone; the resumed request gets a
 +			 * fresh tool-round budget. */
@@ -19302,7 +19304,7 @@ index 00000000..6629c9e1
 +
 +/* Run the apack task without a prompt. The live conversation stays detached
 + * until the pack agent has replaced the log; the exchange is logged to b-8. */
-+static int agent_autocompact(const char *input)
++static int agent_autocompact(void)
 +{
 +	struct lbuf *lb = tempbufs[3].lb;
 +	cJSON *history = agent_messages;
@@ -19360,11 +19362,13 @@ index 00000000..6629c9e1
 +		/* The summary is numbered before the resume entry. */
 +		agent_discard_log(original);
 +		agent_head_summary();
++		/* The pack prompt makes the summary carry the pending request, so the
++		 * resume entry does not repeat it: each interrupted autocompact would
++		 * otherwise re-stamp the same text into every new log. */
 +		sbuf_smake(resume, 256)
 +		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
-+			"is working memory, not a new task. Continue the request below, using\n"
-+			"the summary to avoid repeating completed actions or tool calls.\n\n")
-+		sbuf_str(resume, input)
++			"is working memory, not a new task. It carries the request in progress;\n"
++			"continue it from the summary, avoiding repeated actions or tool calls.\n")
 +		sbuf_nul(resume)
 +		agent_logbuf = 3;
 +		agent_log("USER", resume->s);
