@@ -1728,18 +1728,18 @@ static void agent_cp_status(sbuf *sb, int cp)
 			"tokens in these entries:\n", total);
 		sbuf_str(sb, ln)
 	}
+	sbuf_str(sb, "Legend:\n")
 	snprintf(ln, sizeof(ln), "role entry %stext+commands+results=tokens "
-		"rating note\n", reasoned ? "reasoning+" : "");
+		"rating note\n\n", reasoned ? "reasoning+" : "");
 	sbuf_str(sb, ln)
 	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned, 0);
-	if (cp) {
-		sbuf_chr(sb, '\''\n'\'')
-		sbuf_str(sb, agent_rating_scale)
-		sbuf_chr(sb, '\''\n'\'')
-	}
 	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 		sbuf_str(sb, "Unrated: ")
 		sbuf_str(sb, unrated)
+		sbuf_chr(sb, '\''\n'\'')
+	}
+	if (cp) {
+		sbuf_str(sb, agent_rating_scale)
 		sbuf_chr(sb, '\''\n'\'')
 	}
 	free(spans);
@@ -14288,7 +14288,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..63404573
+index 00000000..c275be63
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,5131 @@
@@ -15990,18 +15990,18 @@ index 00000000..63404573
 +			"tokens in these entries:\n", total);
 +		sbuf_str(sb, ln)
 +	}
++	sbuf_str(sb, "Legend:\n")
 +	snprintf(ln, sizeof(ln), "role entry %stext+commands+results=tokens "
-+		"rating note\n", reasoned ? "reasoning+" : "");
++		"rating note\n\n", reasoned ? "reasoning+" : "");
 +	sbuf_str(sb, ln)
 +	agent_entry_list(sb, spans, cnt, 0, 0, 1, 0, reasoned, 0);
-+	if (cp) {
-+		sbuf_chr(sb, '\n')
-+		sbuf_str(sb, agent_rating_scale)
-+		sbuf_chr(sb, '\n')
-+	}
 +	if (agent_unrated(spans, cnt, unrated, sizeof(unrated))) {
 +		sbuf_str(sb, "Unrated: ")
 +		sbuf_str(sb, unrated)
++		sbuf_chr(sb, '\n')
++	}
++	if (cp) {
++		sbuf_str(sb, agent_rating_scale)
 +		sbuf_chr(sb, '\n')
 +	}
 +	free(spans);
