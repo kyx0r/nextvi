@@ -631,24 +631,24 @@ static char \*agent_snapshot\(char \*loc\)
 %f+ 	unsigned long epoch = agent_epoch;
 	if \(agent_start\(\)\)
 		return agent_init_error;4??0?
-4??+2m 17220reg p OK agent.c:4946:a42sc %? %@2152sc!1q0?
+4??+2m 17220reg p OK agent.c:4945:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	unsigned long epoch = agent_epoch;.*?
 	if \(agent_start\(\)\).*?
 (		return agent_init_error;)7??0?
-grp 07??m 17220reg p OK agent.c:4946:a72sc %? %@2152sc!1q0?
+grp 07??m 17220reg p OK agent.c:4945:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	void \*ret;
 	int browse = !strcmp\(cmd, "apack!"\);.*(	char \*original = agent_text\(tempbufs\[3]\.lb\);)
 	char \*archive = agent_rotate_log\(\);
 	if \(!archive\) \{8??0?
-grp 08??-5m 17220reg p OK agent.c:4946:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 17220reg p OK agent.c:4945:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		sbuf_str\(task, "Return control to the user once complete\.\\n\\033"\)
 	sbufn_ret\(task, task->s\)
 }.*(		return "cannot archive session log";)
 	}
 	/\* Detach the prior conversation so a failed pack can restore it\. \*/9??0?
-grp 09??-10m 17220reg p OK agent.c:4946:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:49462sc %? %@2132sc!0?
+grp 09??-10m 17220reg p OK agent.c:4945:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:49452sc %? %@2132sc!0?
 ?0?
 %f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
 	unsigned long rounds = agent_rounds;
@@ -660,24 +660,24 @@ static char \*agent_snapshot\(char \*loc\)
 %f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
 	unsigned long rounds = agent_rounds;
 	int logbuf = agent_logbuf, browse = xaco_browse;4??0?
-4??+2m 18220reg p OK agent.c:5038:a42sc %? %@2152sc!1q0?
+4??+2m 18220reg p OK agent.c:5037:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;.*?
 	unsigned long rounds = agent_rounds;.*?
 (	int logbuf = agent_logbuf, browse = xaco_browse;)7??0?
-grp 07??m 18220reg p OK agent.c:5038:a72sc %? %@2152sc!1q0?
+grp 07??m 18220reg p OK agent.c:5037:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	struct lbuf \*lb = tempbufs\[3]\.lb;
 	cJSON \*history = agent_messages;
 	struct agent_usage usage = agent_usage;.*(	exbuf_save\(ex_buf\))
 	char \*original = agent_text\(lb\);
 	char \*task = agent_compact_task\(browse, "", 1\);8??0?
-grp 08??-4m 18220reg p OK agent.c:5038:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 18220reg p OK agent.c:5037:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* until the pack agent has replaced the log; the exchange is logged to b-8\. \*/
 static int agent_autocompact\(void\)
 \{.*(	char \*archive = agent_rotate_log\(\);)
 	int ok = 0;
 	if \(!archive\) \{9??0?
-grp 09??-7m 18220reg p OK agent.c:5038:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:50382sc %? %@2132sc!0?
+grp 09??-7m 18220reg p OK agent.c:5037:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:50372sc %? %@2132sc!0?
 '\''1i /* The adversary may have work: an entry closed since it last looked. The
  * flag lets term_wait block in poll(-1) until there is a reason to look. */
 static int agent_adv_dirty;
@@ -742,7 +742,7 @@ static char agent_adv_intro[] =
 	"N R sentence\n\n"
 	"N is the entry number\n"
 	"R is the rating\n"
-	"sentence is one short sentence of justification.\n\n"
+	"sentence is one short sentence of justification.\n\n";
 
 static struct {
 	pid_t pid;		/* the curl child; 0 when idle */
@@ -1506,12 +1506,12 @@ static void agent_adv_resync(void)
 	 * summarized: with acl 0 no checkpoint merges them. */
 	agent_adv_kill();
 	agent_adv_merge();
-??!219reg agent.c:4946:m172sc %? %@2142sc!0?
+??!219reg agent.c:4945:m172sc %? %@2142sc!0?
 '\''18i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
 	 * summarized: with acl 0 no checkpoint merges them. */
 	agent_adv_kill();
 	agent_adv_merge();
-??!219reg agent.c:5038:m182sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg agent.c:5037:m182sc %? %@2142sc!b1m!%ya 98?0?
 %f> static int agent_resume\(const char \*dir\);
 static char \*agent_init_error;
 static void agent_sync\(struct lbuf \*lb\);
@@ -1908,7 +1908,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index 7e3e1121..dc5f929f 100644
+index 91bd0c4d..356f6f99 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -25,6 +25,9 @@
@@ -2074,7 +2074,7 @@ index 7e3e1121..dc5f929f 100644
 +	"N R sentence\n\n"
 +	"N is the entry number\n"
 +	"R is the rating\n"
-+	"sentence is one short sentence of justification.\n\n"
++	"sentence is one short sentence of justification.\n\n";
 +
 +static struct {
 +	pid_t pid;		/* the curl child; 0 when idle */
@@ -2842,7 +2842,7 @@ index 7e3e1121..dc5f929f 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4944,6 +5752,10 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4943,6 +5751,10 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -2853,7 +2853,7 @@ index 7e3e1121..dc5f929f 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5036,6 +5848,10 @@ static int agent_autocompact(void)
+@@ -5035,6 +5847,10 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
