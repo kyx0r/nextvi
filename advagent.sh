@@ -563,31 +563,34 @@ static void \*ec_acp\(char \*loc, char \*cmd, char \*arg\)9??0?
 grp 09??-8m 14220reg p OK agent.c:2216:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg agent.c:22162sc %? %@2132sc!0?
 ?0?
-%f+ 	return s;
+%f+ 	free\(out\);
+	return s;
 }
 
 static char \*agent_snapshot\(char \*loc\)
-\{
-	int beg = 0, end = lbuf_len\(xb\), o1 = -1, o2 = -1;1??0?
+\{1??0?
 1??+2m 151q0?
-%f+ 	return s;
-}
-
-4??0?
-4??+2m 15220reg p OK agent.c:2944:a42sc %? %@2152sc!1q0?
+%f+ 	free\(out\);
+	return s;
+}4??0?
+4??+2m 15220reg p OK agent.c:2943:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	free\(out\);.*?
+	return s;.*?
+(})7??0?
+grp 07??m 15220reg p OK agent.c:2943:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		return NULL;
+	}
+	char \*s = out->s;.*(	int beg = 0, end = lbuf_len\(xb\), o1 = -1, o2 = -1;)
+	char info\[160];
+	sbuf text;8??0?
+grp 08??-4m 15220reg p OK agent.c:2943:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
-	char \*s = out->s;
-	free\(out\);.*(	char info\[160];)
-	sbuf text;
-	if \(loc && ex_region\(loc, &beg, &end, &o1, &o2\)\) \{8??0?
-grp 08??-4m 15220reg p OK agent.c:2944:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	if \(!out\) \{
-		\*st = -1;
-		return NULL;.*(		if \(lbuf_len\(xb\) \|\| strcmp\(loc, "%"\)\))
-			return NULL;
-		beg = end = 0;9??0?
-grp 09??-7m 15220reg p OK agent.c:2944:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg agent.c:29442sc %? %@2132sc!0?
+	if \(!out\) \{
+		\*st = -1;.*(	if \(loc && ex_region\(loc, &beg, &end, &o1, &o2\)\) \{)
+		if \(lbuf_len\(xb\) \|\| strcmp\(loc, "%"\)\)
+			return NULL;9??0?
+grp 09??-7m 15220reg p OK agent.c:2943:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:29432sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_add_user\(agent_messages, input\);
 	agent_log\("USER", input\);
@@ -628,24 +631,24 @@ static char \*agent_snapshot\(char \*loc\)
 %f+ 	unsigned long epoch = agent_epoch;
 	if \(agent_start\(\)\)
 		return agent_init_error;4??0?
-4??+2m 17220reg p OK agent.c:4941:a42sc %? %@2152sc!1q0?
+4??+2m 17220reg p OK agent.c:4946:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	unsigned long epoch = agent_epoch;.*?
 	if \(agent_start\(\)\).*?
 (		return agent_init_error;)7??0?
-grp 07??m 17220reg p OK agent.c:4941:a72sc %? %@2152sc!1q0?
+grp 07??m 17220reg p OK agent.c:4946:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	void \*ret;
 	int browse = !strcmp\(cmd, "apack!"\);.*(	char \*original = agent_text\(tempbufs\[3]\.lb\);)
 	char \*archive = agent_rotate_log\(\);
 	if \(!archive\) \{8??0?
-grp 08??-5m 17220reg p OK agent.c:4941:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 17220reg p OK agent.c:4946:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		sbuf_str\(task, "Return control to the user once complete\.\\n\\033"\)
 	sbufn_ret\(task, task->s\)
 }.*(		return "cannot archive session log";)
 	}
 	/\* Detach the prior conversation so a failed pack can restore it\. \*/9??0?
-grp 09??-10m 17220reg p OK agent.c:4941:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:49412sc %? %@2132sc!0?
+grp 09??-10m 17220reg p OK agent.c:4946:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:49462sc %? %@2132sc!0?
 ?0?
 %f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
 	unsigned long rounds = agent_rounds;
@@ -657,24 +660,24 @@ static char \*agent_snapshot\(char \*loc\)
 %f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
 	unsigned long rounds = agent_rounds;
 	int logbuf = agent_logbuf, browse = xaco_browse;4??0?
-4??+2m 18220reg p OK agent.c:5033:a42sc %? %@2152sc!1q0?
+4??+2m 18220reg p OK agent.c:5038:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;.*?
 	unsigned long rounds = agent_rounds;.*?
 (	int logbuf = agent_logbuf, browse = xaco_browse;)7??0?
-grp 07??m 18220reg p OK agent.c:5033:a72sc %? %@2152sc!1q0?
+grp 07??m 18220reg p OK agent.c:5038:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	struct lbuf \*lb = tempbufs\[3]\.lb;
 	cJSON \*history = agent_messages;
 	struct agent_usage usage = agent_usage;.*(	exbuf_save\(ex_buf\))
 	char \*original = agent_text\(lb\);
 	char \*task = agent_compact_task\(browse, "", 1\);8??0?
-grp 08??-4m 18220reg p OK agent.c:5033:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 18220reg p OK agent.c:5038:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* until the pack agent has replaced the log; the exchange is logged to b-8\. \*/
 static int agent_autocompact\(void\)
 \{.*(	char \*archive = agent_rotate_log\(\);)
 	int ok = 0;
 	if \(!archive\) \{9??0?
-grp 09??-7m 18220reg p OK agent.c:5033:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:50332sc %? %@2132sc!0?
+grp 09??-7m 18220reg p OK agent.c:5038:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:50382sc %? %@2132sc!0?
 '\''1i /* The adversary may have work: an entry closed since it last looked. The
  * flag lets term_wait block in poll(-1) until there is a reason to look. */
 static int agent_adv_dirty;
@@ -715,35 +718,33 @@ static void agent_checkpoint_end(void)
 
 
 ??!219reg agent.c:2216:m142sc %? %@2142sc!0?
-'\''15i 
-/* The adversary: a second model running beside the spear that rates the
+'\''15i /* The adversary: a second model running beside the spear that rates the
  * closed USER and TURN entries of the session log. It never acts and has no
  * nextvi access, only ratings; the spear sees them when a kind 1 checkpoint
- * or a compaction opens. One background curl at a time, polled from the
- * single threaded main loop, portable OpenAI chat completions only: no
- * grammar, json_schema or response_format. Ratings are staged in memory and
- * reach b-6 at that checkpoint or compaction. b-9 logs raw replies, parsed
- * lines, retries and errors for observation; no adversary state is ever read
- * back from it. */
+ * or a compaction opens. One background curl at a time, each asking about a
+ * single entry, oldest first, polled from the single threaded main loop;
+ * asking about several at once lets the model answer some and let the rest
+ * go unrated. Portable OpenAI chat completions only: no grammar, json_schema
+ * or response_format. Ratings are staged in memory and reach b-6 at that
+ * checkpoint or compaction. b-9 logs raw replies, parsed lines, retries and
+ * errors for observation; no adversary state is ever read back from it. */
 #define ADV_RESULT_MAX 4000		/* RESULT body bytes sent per part */
-#define ADV_ATTEMPTS 3			/* requests per batch, the first one */
-#define ADV_BATCH_MAX 64		/* entries per request */
-#define ADV_BATCH_BYTES (512 * 1024)	/* log bytes per request */
+#define ADV_ATTEMPTS 3			/* requests per entry, the first one */
 #define ADV_REPLY_MAX (4 << 20)		/* reply bytes kept */
 #define ADV_LOG_MAX 5000		/* b-9 lines kept */
 
 static char agent_adv_intro[] =
 	"You are an adversarial reviewer of the session log of another model,\n"
 	"the spear. You do not act and you have no access to the editor: you\n"
-	"only rate. Read the entries listed under \"Entries:\" below, then rate\n"
-	"each entry by the value it has for the work that follows it. Be\n"
-	"strict: routine mechanics and repeated attempts rate 1 at most.\n"
+	"only rate. One entry of that log is listed under \"Entry:\" below;\n"
+	"rate it by the value it has for the work that follows it. Be strict:\n"
+	"routine mechanics and repeated attempts rate 1 at most.\n"
 	"A USER entry is what the user wrote. A TURN entry is one spear reply\n"
 	"with its REASONING, the EX commands it ran and their RESULT bodies;\n"
 	"a RESULT body may be truncated. Judge what an entry contributed, not\n"
 	"the run as a whole.\n"
-	"Reply with only the requested lines, one per entry and no other text,\n"
-	"no heading and no code fence:\n"
+	"Reply with only the one line asked for, with no heading, no code fence\n"
+	"and no other text:\n"
 	"N R sentence\n"
 	"N is the entry number, R the rating, sentence one short sentence of\n"
 	"justification.\n\n";
@@ -752,8 +753,8 @@ static struct {
 	pid_t pid;		/* the curl child; 0 when idle */
 	int out, err;		/* read ends of its pipes; -1 when idle */
 	sbuf *ob, *eb;		/* what has been read from them */
-	unsigned long *batch;	/* entry numbers of the running request */
-	int nbatch, attempt;	/* batch size, requests made for it */
+unsigned long num;		/* the entry under review */
+	int active, attempt;	/* num is asked for, requests made for it */
 	char *prompt;		/* its user message, kept for a retry */
 	char *prev;		/* previous reply, sent as an assistant turn */
 	char hdpath[64];	/* header file handed to curl */
@@ -853,13 +854,12 @@ static void agent_adv_stage(unsigned long n, int rate, const char *text)
 	r->text = sdup(text, strlen(text));
 }
 
-/* Forget the running request, staging nothing: its entries are collected
- * again later. Staged ratings and the given-up set are kept. */
-static void agent_adv_batch_drop(void)
+/* Forget the entry under review, staging nothing: it is picked up again
+ * later. Staged ratings and the given-up set are kept. */
+static void agent_adv_clear(void)
 {
-	free(agent_adv.batch);
-	agent_adv.batch = NULL;
-	agent_adv.nbatch = 0;
+	agent_adv.num = 0;
+	agent_adv.active = 0;
 	agent_adv.attempt = 0;
 	free(agent_adv.prompt);
 	agent_adv.prompt = NULL;
@@ -893,7 +893,7 @@ static void agent_adv_kill(void)
 		unlink(agent_adv.hdpath);
 		*agent_adv.hdpath = '\''\0'\'';
 	}
-	agent_adv_batch_drop();
+	agent_adv_clear();
 }
 
 /* A copy of agent_config for the adversary'\''s own endpoint: portable OpenAI
@@ -992,62 +992,46 @@ static void agent_adv_entry(sbuf *sb, struct lbuf *lb, struct agent_span *s)
 	free(parts);
 }
 
-/* Numbers of closed USER and TURN entries the adversary has not rated: not
- * in b-6, not staged, not asked for, not given up on, at or above the last
- * compaction. Returns the count and sets *nums, which the caller frees. */
-static int agent_adv_collect(unsigned long **nums)
+/* The number of the oldest closed USER or TURN entry the adversary has
+ * not rated: not in b-6, not staged, not asked for, not given up on, at or
+ * above the last compaction. One entry per request, oldest first: a batch
+ * lets the model answer some of it and let the rest go unseen, and the
+ * review of one turn gains nothing from the turns beside it. Returns 0 when
+ * nothing is left. */
+static int agent_adv_next(unsigned long *num)
 {
 	struct agent_span *spans;
-	struct lbuf *lb = tempbufs[3].lb;
 	unsigned long floor = agent_epoch_floor(), n;
-	int cnt = agent_spans(&spans), last = cnt - 1, nr = 0, rate, row;
-	sbuf *sz = NULL;
-	*nums = emalloc((cnt ? cnt : 1) * sizeof(**nums));
-	for (int k = 0; k < cnt && nr < ADV_BATCH_MAX; k++) {
-		if ((spans[k].role != AE_USER && spans[k].role != AE_TURN) ||
-				spans[k].n < floor ||
-				!agent_adv_closed(spans + k, k == last) ||
-				agent_note(spans[k].n, &rate, &row) ||
-				agent_adv_has(agent_adv_gaveup, agent_adv_ngaveup,
-					spans[k].n) ||
-				agent_adv_has(agent_adv.batch, agent_adv.nbatch,
-					spans[k].n))
-			continue;
+	int cnt = agent_spans(&spans), last = cnt - 1, rate, row;
+	for (int k = 0; k < cnt; k++) {
 		n = spans[k].n;
+		if ((spans[k].role != AE_USER && spans[k].role != AE_TURN) ||
+				n < floor ||
+				!agent_adv_closed(spans + k, k == last) ||
+				agent_note(n, &rate, &row) ||
+				agent_adv_has(agent_adv_gaveup, agent_adv_ngaveup, n) ||
+				(agent_adv.active && n == agent_adv.num))
+			continue;
 		for (int i = 0; i < agent_adv_nstaged; i++)
 			if (agent_adv_staged[i].n == n)
 				goto next;
-		/* The cap holds the whole batch: render what is picked so far
-		 * into one buffer and stop when its total passes the cap. The
-		 * first entry goes in whatever it weighs, so that an odd
-		 * giant of an entry still gets reviewed. */
-		if (lb->ln[spans[k].beg]) {
-			if (!sz)
-				sbuf_make(sz, 1024)
-			agent_adv_entry(sz, lb, spans + k);
-			if (nr && sz->s_n > ADV_BATCH_BYTES) {
-				sbuf_free(sz);
-				sz = NULL;
-				break;
-			}
-		}
-		(*nums)[nr++] = n;
+		free(spans);
+		*num = n;
+		return 1;
 		next:;
 	}
-	if (sz)
-		sbuf_free(sz);
 	free(spans);
-	return nr;
+	return 0;
 }
-
-/* Its context: the instructions, then its previous ratings, live ones of b-6
- * and the staged ones not in the log yet, then the entries of this batch and
- * the lines it must answer with. */
-static char *agent_adv_prompt(unsigned long *nums, int nr)
+/* Its context: the instructions, then its previous ratings, live ones of
+ * b-6 and the staged ones not in the log yet, then the single entry and the
+ * one line it must answer with. */
+static char *agent_adv_prompt(unsigned long n)
 {
 	struct lbuf *lb = tempbufs[3].lb, *nb = tempbufs[5].lb;
 	struct agent_span *spans;
-	unsigned long floor = agent_epoch_floor(), n;
+	unsigned long floor = agent_epoch_floor(), m;
+	struct agent_span *s;
 	int cnt = agent_spans(&spans), rate;
 	char head[64];
 	sbuf_smake(sb, 4096)
@@ -1055,7 +1039,7 @@ static char *agent_adv_prompt(unsigned long *nums, int nr)
 	sbuf_str(sb, agent_rating_scale)
 	sbuf_str(sb, "\nPrevious ratings:\n")
 	for (int i = 0; i < lbuf_len(nb); i++)
-		if (agent_note_line(nb->ln[i], &n, &rate) && n >= floor)
+		if (agent_note_line(nb->ln[i], &m, &rate) && m >= floor)
 			sbuf_str(sb, nb->ln[i])
 	for (int i = 0; i < agent_adv_nstaged; i++) {
 		if (agent_adv_staged[i].n < floor)
@@ -1067,19 +1051,13 @@ static char *agent_adv_prompt(unsigned long *nums, int nr)
 			sbuf_str(sb, agent_adv_staged[i].text)
 		sbuf_chr(sb, '\''\n'\'')
 	}
-	sbuf_str(sb, "\nEntries:\n")
-	for (int i = 0; i < nr; i++) {
-		struct agent_span *s = agent_adv_span(spans, cnt, nums[i]);
-		if (!s)
-			continue;
+	s = agent_adv_span(spans, cnt, n);
+	sbuf_str(sb, "\nEntry:\n")
+	if (s)
 		agent_adv_entry(sb, lb, s);
-		sbuf_chr(sb, '\''\n'\'')
-	}
-	sbuf_str(sb, "Rate every entry listed, replying only with these lines:\n")
-	for (int i = 0; i < nr; i++) {
-		snprintf(head, sizeof(head), "%lu R sentence\n", nums[i]);
-		sbuf_str(sb, head)
-	}
+	sbuf_str(sb, "\nRate this entry, replying only with this line:\n")
+	snprintf(head, sizeof(head), "%lu R sentence\n", n);
+	sbuf_str(sb, head)
 	free(spans);
 	sbufn_ret(sb, sb->s)
 }
@@ -1211,9 +1189,9 @@ static int agent_adv_staged_has(unsigned long n)
 	return 0;
 }
 
-/* Stage every "N R sentence" line of reply: leading whitespace, '\''-'\'', '\''*'\'',
- * '\''>'\'' and backticks are stripped, a line that does not match is ignored, N
- * must be in the batch and a repeated N keeps its last line. */
+/* Stage the "N R sentence" line that rates the entry asked about: leading
+ * whitespace, '\''-'\'', '\''*'\'', '\''>'\'' and backticks are stripped, a line that does
+ * not match is ignored, and of several for the entry the last one wins. */
 static void agent_adv_parse(const char *reply)
 {
 	char ln[2048], *p, *q;
@@ -1233,7 +1211,7 @@ static void agent_adv_parse(const char *reply)
 				*p == '\''>'\'' || *p == '\''`'\'')
 			p++;
 		n = strtoul(p, &q, 10);
-		if (q == p || !agent_adv_has(agent_adv.batch, agent_adv.nbatch, n))
+		if (q == p || n != agent_adv.num)
 			continue;
 		while (*q == '\'' '\'' || *q == '\''\t'\'' || *q == '\'':'\'' || *q == '\''='\'')
 			q++;
@@ -1245,33 +1223,14 @@ static void agent_adv_parse(const char *reply)
 	}
 }
 
-/* The batch numbers with no staged rating; sets *set, which the caller
- * frees, and returns how many they are. */
-static int agent_adv_missing(unsigned long **set)
-{
-	int n = 0;
-	*set = NULL;
-	for (int i = 0; i < agent_adv.nbatch; i++)
-		if (!agent_adv_staged_has(agent_adv.batch[i]))
-			n++;
-	if (!n)
-		return 0;
-	*set = emalloc(n * sizeof(**set));
-	n = 0;
-	for (int i = 0; i < agent_adv.nbatch; i++)
-		if (!agent_adv_staged_has(agent_adv.batch[i]))
-			(*set)[n++] = agent_adv.batch[i];
-	return n;
-}
-/* Ask the adversary for the batch: its instructions, the prompt kept from
- * the first request and, on a retry, its previous answer as an assistant
- * turn and a correction naming only the numbers still wanted. */
-static int agent_adv_request(int retry, unsigned long *miss, int nmiss)
+/* Ask the adversary about its one entry: its instructions, the prompt
+ * kept from the first request and, on a retry, its previous answer as an
+ * assistant turn and a correction naming only the entry still wanted. */
+static int agent_adv_request(int retry)
 {
 	cJSON *req = agent_adv_config(), *msgs;
-	char num[32];
+	char msg[192];
 	sbuf_smake(sys, 2048)
-	sbuf_smake(corr, 256)
 	if (!req) {
 		agent_adv.disabled = 1;
 		agent_adv_note("invalid adversary configuration; :adv off");
@@ -1287,62 +1246,46 @@ static int agent_adv_request(int retry, unsigned long *miss, int nmiss)
 	if (retry) {
 		cJSON_AddItemToArray(msgs, agent_msg("assistant",
 			agent_adv.prev ? agent_adv.prev : ""));
-		sbuf_str(corr, "Missing ratings for")
-		for (int i = 0; i < nmiss; i++) {
-			snprintf(num, sizeof(num), " %s%lu", i ? "," : "", miss[i]);
-			sbuf_str(corr, num)
-		}
-		sbuf_str(corr, "; reply only those lines, one per entry, and no "
-			"other text.")
-		sbuf_nul(corr)
-		cJSON_AddItemToArray(msgs, agent_msg("user", corr->s));
+		snprintf(msg, sizeof(msg), "No rating for entry %lu; reply "
+			"only its line, and no other text.", agent_adv.num);
+		cJSON_AddItemToArray(msgs, agent_msg("user", msg));
 	}
 	cJSON_AddItemReferenceToObject(req, "messages", msgs);
 	if (!agent_adv_start(req)) {
 		cJSON_Delete(msgs);
 		cJSON_Delete(req);
 		free(sys->s);
-		free(corr->s);
 		return 0;
 	}
 	cJSON_Delete(msgs);
 	cJSON_Delete(req);
 	free(sys->s);
-	free(corr->s);
 	return 1;
 }
-/* Drop from the batch the numbers the spear has rated itself or that the
- * log no longer holds: while a request ran the checkpoint may have rated or
- * compacted them, and asking again for a rating nobody wants is wasted
- * tokens. Returns how many numbers the batch still has. */
-static int agent_adv_batch_prune(void)
+/* Whether the entry under review still wants a rating: while the request
+ * ran the spear may have rated it itself or a compaction may have dropped
+ * it, and asking again for a rating nobody wants is wasted tokens. */
+static int agent_adv_wanted(void)
 {
 	struct agent_span *spans;
 	unsigned long floor = agent_epoch_floor();
 	int cnt = agent_spans(&spans), rate, row;
-	for (int i = 0; i < agent_adv.nbatch; ) {
-		unsigned long num = agent_adv.batch[i];
-		if (num >= floor && agent_span_rated(spans, cnt, num) &&
-				!agent_note(num, &rate, &row)) {
-			i++;
-			continue;
-		}
-		agent_adv.batch[i] = agent_adv.batch[--agent_adv.nbatch];
-	}
+	int keep = agent_adv.num >= floor &&
+		agent_span_rated(spans, cnt, agent_adv.num) &&
+		!agent_note(agent_adv.num, &rate, &row);
 	free(spans);
-	return agent_adv.nbatch;
+	return keep;
 }
 
-/* The reply is in: read it, log it, stage what parses and ask again for the
- * rest while attempts are left. */
+/* The reply is in: read it, log it, stage what parses and ask again
+ * while attempts are left. */
 static void agent_adv_finish(int st)
 {
 	cJSON *root, *msg;
 	char *body = agent_adv.ob && agent_adv.ob->s ? agent_adv.ob->s : NULL;
 	char *err = agent_adv.eb && agent_adv.eb->s ? agent_adv.eb->s : NULL;
-	char *content = NULL, note[256];
-	unsigned long *miss = NULL;
-	int nmiss, nwant;
+	char *content = NULL;
+	unsigned long n = agent_adv.num;
 	if (st == 7 || (err && (strstr(err, "Couldn'\''t connect") ||
 			strstr(err, "Could not resolve")))) {
 		ex_print("adversary endpoint unreachable; :adv is off for this "
@@ -1354,7 +1297,7 @@ static void agent_adv_finish(int st)
 	if (st && (!body || !*body)) {
 		agent_adv_note("request failed, status %d%s%s", st,
 			err && *err ? ": " : "", err ? err : "");
-		agent_adv_batch_drop();
+		agent_adv_clear();
 		return;
 	}
 	root = cJSON_ParseWithOpts(body ? body : "", NULL, 1);
@@ -1363,54 +1306,44 @@ static void agent_adv_finish(int st)
 			cJSON_GetObjectItem(root, "error"), "message"));
 		agent_adv_note("endpoint error: %s", em ? em : "no message");
 		cJSON_Delete(root);
-		agent_adv_batch_drop();
+		agent_adv_clear();
 		return;
 	}
 	msg = agent_reply(root);
 	if (cJSON_IsString(cJSON_GetObjectItem(msg, "content")))
 		content = cJSON_GetObjectItem(msg, "content")->valuestring;
-	agent_adv_note("--- reply, attempt %d of %d, status %d ---",
-		agent_adv.attempt, ADV_ATTEMPTS, st);
+	agent_adv_note("--- reply, entry %lu, attempt %d of %d, status %d ---",
+		n, agent_adv.attempt, ADV_ATTEMPTS, st);
 	agent_adv_log(content ? content : "");
 	agent_adv_parse(content);
-	/* The spear may have rated or compacted entries while this request
-	 * ran: count the staged ratings of the batch as it was sent, then go
-	 * on only for numbers still wanting a rating. */
-	nwant = agent_adv.nbatch;
-	if (!agent_adv_batch_prune()) {
-		agent_adv_note("all %d entr%s already rated or gone; "
-			"nothing staged", nwant, nwant == 1 ? "y" : "ies");
-		agent_adv_batch_drop();
+	/* The spear may have rated the entry itself or compacted it away
+	 * while this request ran. */
+	if (!agent_adv_wanted()) {
+		agent_adv_note("entry %lu already rated or gone; nothing staged",
+			n);
 		cJSON_Delete(root);
+		agent_adv_clear();
 		return;
 	}
-	nmiss = agent_adv_missing(&miss);
-	if (!nmiss)
-		agent_adv_note("staged %d rating%s", nwant,
-			nwant == 1 ? "" : "s");
+	if (agent_adv_staged_has(n))
+		agent_adv_note("staged the rating for entry %lu", n);
 	else if (agent_adv.attempt < ADV_ATTEMPTS) {
-		snprintf(note, sizeof(note), "missing");
-		for (int i = 0; i < nmiss; i++)
-			snprintf(note + strlen(note), sizeof(note) - strlen(note),
-				" %lu", miss[i]);
-		agent_adv_note("%s; asking again", note);
+		agent_adv_note("no rating for %lu; asking again", n);
 		free(agent_adv.prev);
 		agent_adv.prev = content ? sdup(content, strlen(content)) : NULL;
 		agent_adv.attempt++;
-		if (agent_adv_request(1, miss, nmiss)) {
-			free(miss);
+		if (agent_adv_request(1)) {
 			cJSON_Delete(root);
 			return;
 		}
-		agent_adv_note("could not ask again; leaving them unrated");
+		agent_adv_note("could not ask again; leaving it unrated");
 	} else
-		agent_adv_note("still missing %d after %d attempts; giving up",
-			nmiss, ADV_ATTEMPTS);
-	for (int i = 0; i < nmiss; i++)
-		agent_adv_add(&agent_adv_gaveup, &agent_adv_ngaveup, miss[i]);
-	free(miss);
+		agent_adv_note("no rating for %lu after %d attempts; giving up",
+			n, ADV_ATTEMPTS);
+	if (!agent_adv_staged_has(n))
+		agent_adv_add(&agent_adv_gaveup, &agent_adv_ngaveup, n);
 	cJSON_Delete(root);
-	agent_adv_batch_drop();
+	agent_adv_clear();
 }
 
 /* Drain the running curl without ever waiting: read what is there, and once
@@ -1418,7 +1351,7 @@ static void agent_adv_finish(int st)
 static void agent_adv_poll(void)
 {
 	struct pollfd fds[2];
-	unsigned long *nums = NULL;
+	unsigned long n = 0;
 	char buf[4096];
 	int st = 0, live = 0, nr;
 	if (agent_adv.disabled || !xadv) {
@@ -1447,7 +1380,7 @@ static void agent_adv_poll(void)
 				sbuf *d = i ? agent_adv.eb : agent_adv.ob;
 				if (d->s_n < ADV_REPLY_MAX)
 					sbufn_mem(d, buf, MIN(nr,
-						ADV_REPLY_MAX - d->s_n))
+						ADV_REPLY_MAX - d->s_n));
 			} else if (!nr || errno != EINTR) {
 				close(fds[i].fd);
 				*(i ? &agent_adv.err : &agent_adv.out) = -1;
@@ -1462,28 +1395,32 @@ static void agent_adv_poll(void)
 		agent_adv_finish(st);
 		/* the reply buffers stay: a retry replaced them, else a kill or
 		   the next request frees them */
+		/* One entry per request: the reply for one entry says nothing
+		   about the rest, so another may still be owed. Nothing else
+		   wakes the loop once the curl is gone, so keep it turning; the
+		   next poll clears the flag and stops once nothing is left to
+		   ask about. */
+		agent_adv_dirty = 1;
 		return;
 	}
-	/* Nothing runs: start the next batch when the log is the one being
-	 * written, no pack or checkpoint holds it and the editor is idle. */
+	/* Nothing runs: ask about the next entry when the log is the one
+	 * being written, no pack or checkpoint holds it and the editor is
+	 * idle. One entry per request: a batch of them lets the model answer
+	 * some and let the rest go. */
 	if (!agent_ready || agent_packing || agent_logbuf != 3 ||
 			agent_cancel || agent_pause)
 		return;
-	nr = agent_adv_collect(&nums);
 	agent_adv_dirty = 0;
-	if (!nr) {
-		free(nums);
+	if (!agent_adv_next(&n))
 		return;
-	}
-	agent_adv.batch = nums;
-	agent_adv.nbatch = nr;
+	agent_adv.num = n;
+	agent_adv.active = 1;
 	agent_adv.attempt = 1;
-	agent_adv.prompt = agent_adv_prompt(nums, nr);
-	agent_adv_note("--- asking for %d entr%s ---", nr,
-		nr == 1 ? "y" : "ies");
-	if (!agent_adv_request(0, nums, nr)) {
+	agent_adv.prompt = agent_adv_prompt(n);
+	agent_adv_note("--- asking about entry %lu ---", n);
+	if (!agent_adv_request(0)) {
 		agent_adv_note("could not start the request; trying later");
-		agent_adv_batch_drop();
+		agent_adv_clear();
 		agent_adv_dirty = 1;
 	}
 }
@@ -1564,8 +1501,7 @@ static void agent_adv_resync(void)
 		agent_adv_note("dropped %d staged rating%s no longer live", n,
 			n == 1 ? "" : "s");
 }
-
-??!219reg agent.c:2944:m152sc %? %@2142sc!0?
+??!219reg agent.c:2943:m152sc %? %@2142sc!0?
 '\''16i 		/* The adversary'\''s curl, if any, is read between rounds: it never
 		   blocks the run; its ratings reach b-6 at a checkpoint or before
 		   a compaction. */
@@ -1575,12 +1511,12 @@ static void agent_adv_resync(void)
 	 * summarized: with acl 0 no checkpoint merges them. */
 	agent_adv_kill();
 	agent_adv_merge();
-??!219reg agent.c:4941:m172sc %? %@2142sc!0?
+??!219reg agent.c:4946:m172sc %? %@2142sc!0?
 '\''18i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
 	 * summarized: with acl 0 no checkpoint merges them. */
 	agent_adv_kill();
 	agent_adv_merge();
-??!219reg agent.c:5033:m182sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg agent.c:5038:m182sc %? %@2142sc!b1m!%ya 98?0?
 %f> static int agent_resume\(const char \*dir\);
 static char \*agent_init_error;
 static void agent_sync\(struct lbuf \*lb\);
@@ -1748,24 +1684,24 @@ _EO\(td, xtd = \*arg \? eo_val\(arg\) : !xtd; RST_NULL\(0, 1\) return NULL;\)1
 %f+ _EO\(ato, xato = \*arg \? MAX\(0, eo_val\(arg\)\) : xato \? 0 : 30; return NULL;\)
 _EO\(acl, xacl = \*arg \? eo_val\(arg\) : !xacl;
 	agent_acl_mark = agent_acl_budget = 0; return NULL;\)4??0?
-4??+2m 2220reg p OK ex.c:1982:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK ex.c:1989:a42sc %? %@2152sc!1q0?
 grp 1%f+ _EO\(ato, xato = \*arg \? MAX\(0, eo_val\(arg\)\) : xato \? 0 : 30; return NULL;\).*?
 _EO\(acl, xacl = \*arg \? eo_val\(arg\) : !xacl;.*?
 (	agent_acl_mark = agent_acl_budget = 0; return NULL;\))7??0?
-grp 07??m 2220reg p OK ex.c:1982:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK ex.c:1989:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> EO\(hlp\) EO\(hl\) EO\(lim\) EO\(led\) EO\(vis\) EO\(ar\)
 _EO\(ata, xata = \*arg \? MAX\(0, eo_val\(arg\)\) : xata \? 0 : 100; return NULL;\)
 _EO\(agr, xagr = \*arg \? MAX\(0, eo_val\(arg\)\) : xagr \? 0 : 4096; return NULL;\).*(_EO\(hlr,)
 	xhlr = \*arg \? eo_val\(arg\) : !xhlr;
 	led_ext \*p = led_extfind\(ext_hlr\);8??0?
-grp 08??-6m 2220reg p OK ex.c:1982:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 2220reg p OK ex.c:1989:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	return uc_isdigit\(\*arg\) \|\| \(\*arg == '\''-'\'' && uc_isdigit\(arg\[1]\)\) \?
 		atoi\(arg\) : \(unsigned char\)\*arg;
 }.*(	if \(xhlr && !p\))
 		led_extreg\(\)->ext_func = ext_hlr;
 	else if \(!xhlr && p\)9??0?
-grp 09??-9m 2220reg p OK ex.c:1982:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:19822sc %? %@2132sc!0?
+grp 09??-9m 2220reg p OK ex.c:1989:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:19892sc %? %@2132sc!0?
 ?0?
 %f+ 	\{"aco!", eo_aco},
 	EO\(aco\),
@@ -1777,32 +1713,32 @@ _EO\(agr, xagr = \*arg \? MAX\(0, eo_val\(arg\)\) : xagr \? 0 : 4096; return NUL
 %f+ 	\{"aco!", eo_aco},
 	EO\(aco\),
 	EO\(acl\),4??0?
-4??+2m 3220reg p OK ex.c:2062:a42sc %? %@2152sc!1q0?
+4??+2m 3220reg p OK ex.c:2069:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	\{"aco!", eo_aco},.*?
 	EO\(aco\),.*?
 (	EO\(acl\),)7??0?
-grp 07??m 3220reg p OK ex.c:2062:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK ex.c:2069:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	\{"acp", ec_acp},
 	\{"ali", ec_acp},
 	\{"auli", ec_acp},.*(	EO\(ata\),)
 	EO\(ato\),
 	EO\(agr\),8??0?
-grp 08??-4m 3220reg p OK ex.c:2062:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 3220reg p OK ex.c:2069:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	\{"agoal", ec_agoal},
 	\{"aep", ec_aep},
 	\{"arq", ec_arq},.*(	EO\(ai\),)
 	EO\(ar\),
 	\{"ac", ec_setacreg},9??0?
-grp 09??-7m 3220reg p OK ex.c:2062:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg ex.c:20622sc %? %@2132sc!0?
+grp 09??-7m 3220reg p OK ex.c:2069:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg ex.c:20692sc %? %@2132sc!0?
 '\''1s/8/9/??!219reg ex.c:46:m12sc %? %@2142sc!0?
 '\''2i _EO(adv, xadv = *arg ? eo_val(arg) : !xadv;
 	if (!xadv)
 		agent_adv_kill();
 	return NULL;)
-??!219reg ex.c:1982:m22sc %? %@2142sc!0?
+??!219reg ex.c:1989:m22sc %? %@2142sc!0?
 '\''3i 	EO(adv),
-??!219reg ex.c:2062:m32sc %? %@2142sc!b4m!%ya 98?0?
+??!219reg ex.c:2069:m32sc %? %@2142sc!b4m!%ya 98?0?
 %f> 	tibuf_cnt \+= n;
 }
 
@@ -1977,7 +1913,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index 6d2c9d7a..f8d42d15 100644
+index 7e3e1121..7b68ed87 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -25,6 +25,9 @@
@@ -2115,39 +2051,37 @@ index 6d2c9d7a..f8d42d15 100644
  /* End a question together with what it interrupted. */
  static void agent_checkpoint_stop(void)
  {
-@@ -2942,6 +2968,856 @@ ret:
+@@ -2941,6 +2967,789 @@ ret:
+ 	free(out);
  	return s;
  }
- 
-+
 +/* The adversary: a second model running beside the spear that rates the
 + * closed USER and TURN entries of the session log. It never acts and has no
 + * nextvi access, only ratings; the spear sees them when a kind 1 checkpoint
-+ * or a compaction opens. One background curl at a time, polled from the
-+ * single threaded main loop, portable OpenAI chat completions only: no
-+ * grammar, json_schema or response_format. Ratings are staged in memory and
-+ * reach b-6 at that checkpoint or compaction. b-9 logs raw replies, parsed
-+ * lines, retries and errors for observation; no adversary state is ever read
-+ * back from it. */
++ * or a compaction opens. One background curl at a time, each asking about a
++ * single entry, oldest first, polled from the single threaded main loop;
++ * asking about several at once lets the model answer some and let the rest
++ * go unrated. Portable OpenAI chat completions only: no grammar, json_schema
++ * or response_format. Ratings are staged in memory and reach b-6 at that
++ * checkpoint or compaction. b-9 logs raw replies, parsed lines, retries and
++ * errors for observation; no adversary state is ever read back from it. */
 +#define ADV_RESULT_MAX 4000		/* RESULT body bytes sent per part */
-+#define ADV_ATTEMPTS 3			/* requests per batch, the first one */
-+#define ADV_BATCH_MAX 64		/* entries per request */
-+#define ADV_BATCH_BYTES (512 * 1024)	/* log bytes per request */
++#define ADV_ATTEMPTS 3			/* requests per entry, the first one */
 +#define ADV_REPLY_MAX (4 << 20)		/* reply bytes kept */
 +#define ADV_LOG_MAX 5000		/* b-9 lines kept */
 +
 +static char agent_adv_intro[] =
 +	"You are an adversarial reviewer of the session log of another model,\n"
 +	"the spear. You do not act and you have no access to the editor: you\n"
-+	"only rate. Read the entries listed under \"Entries:\" below, then rate\n"
-+	"each entry by the value it has for the work that follows it. Be\n"
-+	"strict: routine mechanics and repeated attempts rate 1 at most.\n"
++	"only rate. One entry of that log is listed under \"Entry:\" below;\n"
++	"rate it by the value it has for the work that follows it. Be strict:\n"
++	"routine mechanics and repeated attempts rate 1 at most.\n"
 +	"A USER entry is what the user wrote. A TURN entry is one spear reply\n"
 +	"with its REASONING, the EX commands it ran and their RESULT bodies;\n"
 +	"a RESULT body may be truncated. Judge what an entry contributed, not\n"
 +	"the run as a whole.\n"
-+	"Reply with only the requested lines, one per entry and no other text,\n"
-+	"no heading and no code fence:\n"
++	"Reply with only the one line asked for, with no heading, no code fence\n"
++	"and no other text:\n"
 +	"N R sentence\n"
 +	"N is the entry number, R the rating, sentence one short sentence of\n"
 +	"justification.\n\n";
@@ -2156,8 +2090,8 @@ index 6d2c9d7a..f8d42d15 100644
 +	pid_t pid;		/* the curl child; 0 when idle */
 +	int out, err;		/* read ends of its pipes; -1 when idle */
 +	sbuf *ob, *eb;		/* what has been read from them */
-+	unsigned long *batch;	/* entry numbers of the running request */
-+	int nbatch, attempt;	/* batch size, requests made for it */
++unsigned long num;		/* the entry under review */
++	int active, attempt;	/* num is asked for, requests made for it */
 +	char *prompt;		/* its user message, kept for a retry */
 +	char *prev;		/* previous reply, sent as an assistant turn */
 +	char hdpath[64];	/* header file handed to curl */
@@ -2257,13 +2191,12 @@ index 6d2c9d7a..f8d42d15 100644
 +	r->text = sdup(text, strlen(text));
 +}
 +
-+/* Forget the running request, staging nothing: its entries are collected
-+ * again later. Staged ratings and the given-up set are kept. */
-+static void agent_adv_batch_drop(void)
++/* Forget the entry under review, staging nothing: it is picked up again
++ * later. Staged ratings and the given-up set are kept. */
++static void agent_adv_clear(void)
 +{
-+	free(agent_adv.batch);
-+	agent_adv.batch = NULL;
-+	agent_adv.nbatch = 0;
++	agent_adv.num = 0;
++	agent_adv.active = 0;
 +	agent_adv.attempt = 0;
 +	free(agent_adv.prompt);
 +	agent_adv.prompt = NULL;
@@ -2297,7 +2230,7 @@ index 6d2c9d7a..f8d42d15 100644
 +		unlink(agent_adv.hdpath);
 +		*agent_adv.hdpath = '\0';
 +	}
-+	agent_adv_batch_drop();
++	agent_adv_clear();
 +}
 +
 +/* A copy of agent_config for the adversary's own endpoint: portable OpenAI
@@ -2396,62 +2329,46 @@ index 6d2c9d7a..f8d42d15 100644
 +	free(parts);
 +}
 +
-+/* Numbers of closed USER and TURN entries the adversary has not rated: not
-+ * in b-6, not staged, not asked for, not given up on, at or above the last
-+ * compaction. Returns the count and sets *nums, which the caller frees. */
-+static int agent_adv_collect(unsigned long **nums)
++/* The number of the oldest closed USER or TURN entry the adversary has
++ * not rated: not in b-6, not staged, not asked for, not given up on, at or
++ * above the last compaction. One entry per request, oldest first: a batch
++ * lets the model answer some of it and let the rest go unseen, and the
++ * review of one turn gains nothing from the turns beside it. Returns 0 when
++ * nothing is left. */
++static int agent_adv_next(unsigned long *num)
 +{
 +	struct agent_span *spans;
-+	struct lbuf *lb = tempbufs[3].lb;
 +	unsigned long floor = agent_epoch_floor(), n;
-+	int cnt = agent_spans(&spans), last = cnt - 1, nr = 0, rate, row;
-+	sbuf *sz = NULL;
-+	*nums = emalloc((cnt ? cnt : 1) * sizeof(**nums));
-+	for (int k = 0; k < cnt && nr < ADV_BATCH_MAX; k++) {
-+		if ((spans[k].role != AE_USER && spans[k].role != AE_TURN) ||
-+				spans[k].n < floor ||
-+				!agent_adv_closed(spans + k, k == last) ||
-+				agent_note(spans[k].n, &rate, &row) ||
-+				agent_adv_has(agent_adv_gaveup, agent_adv_ngaveup,
-+					spans[k].n) ||
-+				agent_adv_has(agent_adv.batch, agent_adv.nbatch,
-+					spans[k].n))
-+			continue;
++	int cnt = agent_spans(&spans), last = cnt - 1, rate, row;
++	for (int k = 0; k < cnt; k++) {
 +		n = spans[k].n;
++		if ((spans[k].role != AE_USER && spans[k].role != AE_TURN) ||
++				n < floor ||
++				!agent_adv_closed(spans + k, k == last) ||
++				agent_note(n, &rate, &row) ||
++				agent_adv_has(agent_adv_gaveup, agent_adv_ngaveup, n) ||
++				(agent_adv.active && n == agent_adv.num))
++			continue;
 +		for (int i = 0; i < agent_adv_nstaged; i++)
 +			if (agent_adv_staged[i].n == n)
 +				goto next;
-+		/* The cap holds the whole batch: render what is picked so far
-+		 * into one buffer and stop when its total passes the cap. The
-+		 * first entry goes in whatever it weighs, so that an odd
-+		 * giant of an entry still gets reviewed. */
-+		if (lb->ln[spans[k].beg]) {
-+			if (!sz)
-+				sbuf_make(sz, 1024)
-+			agent_adv_entry(sz, lb, spans + k);
-+			if (nr && sz->s_n > ADV_BATCH_BYTES) {
-+				sbuf_free(sz);
-+				sz = NULL;
-+				break;
-+			}
-+		}
-+		(*nums)[nr++] = n;
++		free(spans);
++		*num = n;
++		return 1;
 +		next:;
 +	}
-+	if (sz)
-+		sbuf_free(sz);
 +	free(spans);
-+	return nr;
++	return 0;
 +}
-+
-+/* Its context: the instructions, then its previous ratings, live ones of b-6
-+ * and the staged ones not in the log yet, then the entries of this batch and
-+ * the lines it must answer with. */
-+static char *agent_adv_prompt(unsigned long *nums, int nr)
++/* Its context: the instructions, then its previous ratings, live ones of
++ * b-6 and the staged ones not in the log yet, then the single entry and the
++ * one line it must answer with. */
++static char *agent_adv_prompt(unsigned long n)
 +{
 +	struct lbuf *lb = tempbufs[3].lb, *nb = tempbufs[5].lb;
 +	struct agent_span *spans;
-+	unsigned long floor = agent_epoch_floor(), n;
++	unsigned long floor = agent_epoch_floor(), m;
++	struct agent_span *s;
 +	int cnt = agent_spans(&spans), rate;
 +	char head[64];
 +	sbuf_smake(sb, 4096)
@@ -2459,7 +2376,7 @@ index 6d2c9d7a..f8d42d15 100644
 +	sbuf_str(sb, agent_rating_scale)
 +	sbuf_str(sb, "\nPrevious ratings:\n")
 +	for (int i = 0; i < lbuf_len(nb); i++)
-+		if (agent_note_line(nb->ln[i], &n, &rate) && n >= floor)
++		if (agent_note_line(nb->ln[i], &m, &rate) && m >= floor)
 +			sbuf_str(sb, nb->ln[i])
 +	for (int i = 0; i < agent_adv_nstaged; i++) {
 +		if (agent_adv_staged[i].n < floor)
@@ -2471,19 +2388,13 @@ index 6d2c9d7a..f8d42d15 100644
 +			sbuf_str(sb, agent_adv_staged[i].text)
 +		sbuf_chr(sb, '\n')
 +	}
-+	sbuf_str(sb, "\nEntries:\n")
-+	for (int i = 0; i < nr; i++) {
-+		struct agent_span *s = agent_adv_span(spans, cnt, nums[i]);
-+		if (!s)
-+			continue;
++	s = agent_adv_span(spans, cnt, n);
++	sbuf_str(sb, "\nEntry:\n")
++	if (s)
 +		agent_adv_entry(sb, lb, s);
-+		sbuf_chr(sb, '\n')
-+	}
-+	sbuf_str(sb, "Rate every entry listed, replying only with these lines:\n")
-+	for (int i = 0; i < nr; i++) {
-+		snprintf(head, sizeof(head), "%lu R sentence\n", nums[i]);
-+		sbuf_str(sb, head)
-+	}
++	sbuf_str(sb, "\nRate this entry, replying only with this line:\n")
++	snprintf(head, sizeof(head), "%lu R sentence\n", n);
++	sbuf_str(sb, head)
 +	free(spans);
 +	sbufn_ret(sb, sb->s)
 +}
@@ -2615,9 +2526,9 @@ index 6d2c9d7a..f8d42d15 100644
 +	return 0;
 +}
 +
-+/* Stage every "N R sentence" line of reply: leading whitespace, '-', '*',
-+ * '>' and backticks are stripped, a line that does not match is ignored, N
-+ * must be in the batch and a repeated N keeps its last line. */
++/* Stage the "N R sentence" line that rates the entry asked about: leading
++ * whitespace, '-', '*', '>' and backticks are stripped, a line that does
++ * not match is ignored, and of several for the entry the last one wins. */
 +static void agent_adv_parse(const char *reply)
 +{
 +	char ln[2048], *p, *q;
@@ -2637,7 +2548,7 @@ index 6d2c9d7a..f8d42d15 100644
 +				*p == '>' || *p == '`')
 +			p++;
 +		n = strtoul(p, &q, 10);
-+		if (q == p || !agent_adv_has(agent_adv.batch, agent_adv.nbatch, n))
++		if (q == p || n != agent_adv.num)
 +			continue;
 +		while (*q == ' ' || *q == '\t' || *q == ':' || *q == '=')
 +			q++;
@@ -2649,33 +2560,14 @@ index 6d2c9d7a..f8d42d15 100644
 +	}
 +}
 +
-+/* The batch numbers with no staged rating; sets *set, which the caller
-+ * frees, and returns how many they are. */
-+static int agent_adv_missing(unsigned long **set)
-+{
-+	int n = 0;
-+	*set = NULL;
-+	for (int i = 0; i < agent_adv.nbatch; i++)
-+		if (!agent_adv_staged_has(agent_adv.batch[i]))
-+			n++;
-+	if (!n)
-+		return 0;
-+	*set = emalloc(n * sizeof(**set));
-+	n = 0;
-+	for (int i = 0; i < agent_adv.nbatch; i++)
-+		if (!agent_adv_staged_has(agent_adv.batch[i]))
-+			(*set)[n++] = agent_adv.batch[i];
-+	return n;
-+}
-+/* Ask the adversary for the batch: its instructions, the prompt kept from
-+ * the first request and, on a retry, its previous answer as an assistant
-+ * turn and a correction naming only the numbers still wanted. */
-+static int agent_adv_request(int retry, unsigned long *miss, int nmiss)
++/* Ask the adversary about its one entry: its instructions, the prompt
++ * kept from the first request and, on a retry, its previous answer as an
++ * assistant turn and a correction naming only the entry still wanted. */
++static int agent_adv_request(int retry)
 +{
 +	cJSON *req = agent_adv_config(), *msgs;
-+	char num[32];
++	char msg[192];
 +	sbuf_smake(sys, 2048)
-+	sbuf_smake(corr, 256)
 +	if (!req) {
 +		agent_adv.disabled = 1;
 +		agent_adv_note("invalid adversary configuration; :adv off");
@@ -2691,62 +2583,46 @@ index 6d2c9d7a..f8d42d15 100644
 +	if (retry) {
 +		cJSON_AddItemToArray(msgs, agent_msg("assistant",
 +			agent_adv.prev ? agent_adv.prev : ""));
-+		sbuf_str(corr, "Missing ratings for")
-+		for (int i = 0; i < nmiss; i++) {
-+			snprintf(num, sizeof(num), " %s%lu", i ? "," : "", miss[i]);
-+			sbuf_str(corr, num)
-+		}
-+		sbuf_str(corr, "; reply only those lines, one per entry, and no "
-+			"other text.")
-+		sbuf_nul(corr)
-+		cJSON_AddItemToArray(msgs, agent_msg("user", corr->s));
++		snprintf(msg, sizeof(msg), "No rating for entry %lu; reply "
++			"only its line, and no other text.", agent_adv.num);
++		cJSON_AddItemToArray(msgs, agent_msg("user", msg));
 +	}
 +	cJSON_AddItemReferenceToObject(req, "messages", msgs);
 +	if (!agent_adv_start(req)) {
 +		cJSON_Delete(msgs);
 +		cJSON_Delete(req);
 +		free(sys->s);
-+		free(corr->s);
 +		return 0;
 +	}
 +	cJSON_Delete(msgs);
 +	cJSON_Delete(req);
 +	free(sys->s);
-+	free(corr->s);
 +	return 1;
 +}
-+/* Drop from the batch the numbers the spear has rated itself or that the
-+ * log no longer holds: while a request ran the checkpoint may have rated or
-+ * compacted them, and asking again for a rating nobody wants is wasted
-+ * tokens. Returns how many numbers the batch still has. */
-+static int agent_adv_batch_prune(void)
++/* Whether the entry under review still wants a rating: while the request
++ * ran the spear may have rated it itself or a compaction may have dropped
++ * it, and asking again for a rating nobody wants is wasted tokens. */
++static int agent_adv_wanted(void)
 +{
 +	struct agent_span *spans;
 +	unsigned long floor = agent_epoch_floor();
 +	int cnt = agent_spans(&spans), rate, row;
-+	for (int i = 0; i < agent_adv.nbatch; ) {
-+		unsigned long num = agent_adv.batch[i];
-+		if (num >= floor && agent_span_rated(spans, cnt, num) &&
-+				!agent_note(num, &rate, &row)) {
-+			i++;
-+			continue;
-+		}
-+		agent_adv.batch[i] = agent_adv.batch[--agent_adv.nbatch];
-+	}
++	int keep = agent_adv.num >= floor &&
++		agent_span_rated(spans, cnt, agent_adv.num) &&
++		!agent_note(agent_adv.num, &rate, &row);
 +	free(spans);
-+	return agent_adv.nbatch;
++	return keep;
 +}
 +
-+/* The reply is in: read it, log it, stage what parses and ask again for the
-+ * rest while attempts are left. */
++/* The reply is in: read it, log it, stage what parses and ask again
++ * while attempts are left. */
 +static void agent_adv_finish(int st)
 +{
 +	cJSON *root, *msg;
 +	char *body = agent_adv.ob && agent_adv.ob->s ? agent_adv.ob->s : NULL;
 +	char *err = agent_adv.eb && agent_adv.eb->s ? agent_adv.eb->s : NULL;
-+	char *content = NULL, note[256];
-+	unsigned long *miss = NULL;
-+	int nmiss, nwant;
++	char *content = NULL;
++	unsigned long n = agent_adv.num;
 +	if (st == 7 || (err && (strstr(err, "Couldn't connect") ||
 +			strstr(err, "Could not resolve")))) {
 +		ex_print("adversary endpoint unreachable; :adv is off for this "
@@ -2758,7 +2634,7 @@ index 6d2c9d7a..f8d42d15 100644
 +	if (st && (!body || !*body)) {
 +		agent_adv_note("request failed, status %d%s%s", st,
 +			err && *err ? ": " : "", err ? err : "");
-+		agent_adv_batch_drop();
++		agent_adv_clear();
 +		return;
 +	}
 +	root = cJSON_ParseWithOpts(body ? body : "", NULL, 1);
@@ -2767,54 +2643,44 @@ index 6d2c9d7a..f8d42d15 100644
 +			cJSON_GetObjectItem(root, "error"), "message"));
 +		agent_adv_note("endpoint error: %s", em ? em : "no message");
 +		cJSON_Delete(root);
-+		agent_adv_batch_drop();
++		agent_adv_clear();
 +		return;
 +	}
 +	msg = agent_reply(root);
 +	if (cJSON_IsString(cJSON_GetObjectItem(msg, "content")))
 +		content = cJSON_GetObjectItem(msg, "content")->valuestring;
-+	agent_adv_note("--- reply, attempt %d of %d, status %d ---",
-+		agent_adv.attempt, ADV_ATTEMPTS, st);
++	agent_adv_note("--- reply, entry %lu, attempt %d of %d, status %d ---",
++		n, agent_adv.attempt, ADV_ATTEMPTS, st);
 +	agent_adv_log(content ? content : "");
 +	agent_adv_parse(content);
-+	/* The spear may have rated or compacted entries while this request
-+	 * ran: count the staged ratings of the batch as it was sent, then go
-+	 * on only for numbers still wanting a rating. */
-+	nwant = agent_adv.nbatch;
-+	if (!agent_adv_batch_prune()) {
-+		agent_adv_note("all %d entr%s already rated or gone; "
-+			"nothing staged", nwant, nwant == 1 ? "y" : "ies");
-+		agent_adv_batch_drop();
++	/* The spear may have rated the entry itself or compacted it away
++	 * while this request ran. */
++	if (!agent_adv_wanted()) {
++		agent_adv_note("entry %lu already rated or gone; nothing staged",
++			n);
 +		cJSON_Delete(root);
++		agent_adv_clear();
 +		return;
 +	}
-+	nmiss = agent_adv_missing(&miss);
-+	if (!nmiss)
-+		agent_adv_note("staged %d rating%s", nwant,
-+			nwant == 1 ? "" : "s");
++	if (agent_adv_staged_has(n))
++		agent_adv_note("staged the rating for entry %lu", n);
 +	else if (agent_adv.attempt < ADV_ATTEMPTS) {
-+		snprintf(note, sizeof(note), "missing");
-+		for (int i = 0; i < nmiss; i++)
-+			snprintf(note + strlen(note), sizeof(note) - strlen(note),
-+				" %lu", miss[i]);
-+		agent_adv_note("%s; asking again", note);
++		agent_adv_note("no rating for %lu; asking again", n);
 +		free(agent_adv.prev);
 +		agent_adv.prev = content ? sdup(content, strlen(content)) : NULL;
 +		agent_adv.attempt++;
-+		if (agent_adv_request(1, miss, nmiss)) {
-+			free(miss);
++		if (agent_adv_request(1)) {
 +			cJSON_Delete(root);
 +			return;
 +		}
-+		agent_adv_note("could not ask again; leaving them unrated");
++		agent_adv_note("could not ask again; leaving it unrated");
 +	} else
-+		agent_adv_note("still missing %d after %d attempts; giving up",
-+			nmiss, ADV_ATTEMPTS);
-+	for (int i = 0; i < nmiss; i++)
-+		agent_adv_add(&agent_adv_gaveup, &agent_adv_ngaveup, miss[i]);
-+	free(miss);
++		agent_adv_note("no rating for %lu after %d attempts; giving up",
++			n, ADV_ATTEMPTS);
++	if (!agent_adv_staged_has(n))
++		agent_adv_add(&agent_adv_gaveup, &agent_adv_ngaveup, n);
 +	cJSON_Delete(root);
-+	agent_adv_batch_drop();
++	agent_adv_clear();
 +}
 +
 +/* Drain the running curl without ever waiting: read what is there, and once
@@ -2822,7 +2688,7 @@ index 6d2c9d7a..f8d42d15 100644
 +static void agent_adv_poll(void)
 +{
 +	struct pollfd fds[2];
-+	unsigned long *nums = NULL;
++	unsigned long n = 0;
 +	char buf[4096];
 +	int st = 0, live = 0, nr;
 +	if (agent_adv.disabled || !xadv) {
@@ -2851,7 +2717,7 @@ index 6d2c9d7a..f8d42d15 100644
 +				sbuf *d = i ? agent_adv.eb : agent_adv.ob;
 +				if (d->s_n < ADV_REPLY_MAX)
 +					sbufn_mem(d, buf, MIN(nr,
-+						ADV_REPLY_MAX - d->s_n))
++						ADV_REPLY_MAX - d->s_n));
 +			} else if (!nr || errno != EINTR) {
 +				close(fds[i].fd);
 +				*(i ? &agent_adv.err : &agent_adv.out) = -1;
@@ -2866,28 +2732,32 @@ index 6d2c9d7a..f8d42d15 100644
 +		agent_adv_finish(st);
 +		/* the reply buffers stay: a retry replaced them, else a kill or
 +		   the next request frees them */
++		/* One entry per request: the reply for one entry says nothing
++		   about the rest, so another may still be owed. Nothing else
++		   wakes the loop once the curl is gone, so keep it turning; the
++		   next poll clears the flag and stops once nothing is left to
++		   ask about. */
++		agent_adv_dirty = 1;
 +		return;
 +	}
-+	/* Nothing runs: start the next batch when the log is the one being
-+	 * written, no pack or checkpoint holds it and the editor is idle. */
++	/* Nothing runs: ask about the next entry when the log is the one
++	 * being written, no pack or checkpoint holds it and the editor is
++	 * idle. One entry per request: a batch of them lets the model answer
++	 * some and let the rest go. */
 +	if (!agent_ready || agent_packing || agent_logbuf != 3 ||
 +			agent_cancel || agent_pause)
 +		return;
-+	nr = agent_adv_collect(&nums);
 +	agent_adv_dirty = 0;
-+	if (!nr) {
-+		free(nums);
++	if (!agent_adv_next(&n))
 +		return;
-+	}
-+	agent_adv.batch = nums;
-+	agent_adv.nbatch = nr;
++	agent_adv.num = n;
++	agent_adv.active = 1;
 +	agent_adv.attempt = 1;
-+	agent_adv.prompt = agent_adv_prompt(nums, nr);
-+	agent_adv_note("--- asking for %d entr%s ---", nr,
-+		nr == 1 ? "y" : "ies");
-+	if (!agent_adv_request(0, nums, nr)) {
++	agent_adv.prompt = agent_adv_prompt(n);
++	agent_adv_note("--- asking about entry %lu ---", n);
++	if (!agent_adv_request(0)) {
 +		agent_adv_note("could not start the request; trying later");
-+		agent_adv_batch_drop();
++		agent_adv_clear();
 +		agent_adv_dirty = 1;
 +	}
 +}
@@ -2968,11 +2838,10 @@ index 6d2c9d7a..f8d42d15 100644
 +		agent_adv_note("dropped %d staged rating%s no longer live", n,
 +			n == 1 ? "" : "s");
 +}
-+
+ 
  static char *agent_snapshot(char *loc)
  {
- 	int beg = 0, end = lbuf_len(xb), o1 = -1, o2 = -1;
-@@ -3164,6 +4040,10 @@ static void agent_run_loop(const char *input)
+@@ -3164,6 +3973,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -2983,7 +2852,7 @@ index 6d2c9d7a..f8d42d15 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4939,6 +5819,10 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4944,6 +5757,10 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -2994,7 +2863,7 @@ index 6d2c9d7a..f8d42d15 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5031,6 +5915,10 @@ static int agent_autocompact(void)
+@@ -5036,6 +5853,10 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
@@ -3053,7 +2922,7 @@ index 67de562a..b5304985 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index 8f07498c..926d3c00 100644
+index b9c3c718..35f1c237 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -43,7 +43,7 @@ sbuf **xregs;			/* string registers */
@@ -3065,7 +2934,7 @@ index 8f07498c..926d3c00 100644
  struct buf *ex_buf;		/* current buffer */
  struct buf *ex_pbuf;		/* prev buffer */
  static struct buf *ex_tpbuf;	/* temp prev buffer */
-@@ -1980,6 +1980,10 @@ _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
+@@ -1987,6 +1987,10 @@ _EO(agr, xagr = *arg ? MAX(0, eo_val(arg)) : xagr ? 0 : 4096; return NULL;)
  _EO(ato, xato = *arg ? MAX(0, eo_val(arg)) : xato ? 0 : 30; return NULL;)
  _EO(acl, xacl = *arg ? eo_val(arg) : !xacl;
  	agent_acl_mark = agent_acl_budget = 0; return NULL;)
@@ -3076,7 +2945,7 @@ index 8f07498c..926d3c00 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -2060,6 +2064,7 @@ static struct excmd excmds[] = {
+@@ -2067,6 +2071,7 @@ static struct excmd excmds[] = {
  	{"aco!", eo_aco},
  	EO(aco),
  	EO(acl),
