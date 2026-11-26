@@ -734,26 +734,21 @@ static void agent_checkpoint_end(void)
 #define ADV_LOG_MAX 5000		/* b-9 lines kept */
 
 static char agent_adv_intro[] =
-	"You are an adversarial reviewer of the session log of another model,\n"
-	"the spear. You do not act and you have no access to the editor: you\n"
-	"only rate. One entry of that log is listed under \"Entry:\" below;\n"
-	"rate it by the value it has for the work that follows it. Be strict:\n"
-	"routine mechanics and repeated attempts rate 1 at most.\n"
+	"You are an adversarial reviewer of the session log of another model, the spear.\n"
+	"You do not act and you have no access to the editor: you only rate and note.\n"
 	"A USER entry is what the user wrote. A TURN entry is one spear reply\n"
-	"with its REASONING, the EX commands it ran and their RESULT bodies;\n"
-	"a RESULT body may be truncated. Judge what an entry contributed, not\n"
-	"the run as a whole.\n"
-	"Reply with only the one line asked for, with no heading, no code fence\n"
-	"and no other text:\n"
-	"N R sentence\n"
-	"N is the entry number, R the rating, sentence one short sentence of\n"
-	"justification.\n\n";
+	"with its REASONING, the EX commands it ran and their RESULT bodies.\n"
+	"Reply with one line and no other text that follows the format:\n"
+	"N R sentence\n\n"
+	"N is the entry number\n"
+	"R is the rating\n"
+	"sentence is one short sentence of justification.\n\n"
 
 static struct {
 	pid_t pid;		/* the curl child; 0 when idle */
 	int out, err;		/* read ends of its pipes; -1 when idle */
 	sbuf *ob, *eb;		/* what has been read from them */
-unsigned long num;		/* the entry under review */
+	unsigned long num;	/* the entry under review */
 	int active, attempt;	/* num is asked for, requests made for it */
 	char *prompt;		/* its user message, kept for a retry */
 	char *prev;		/* previous reply, sent as an assistant turn */
@@ -1913,7 +1908,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index 7e3e1121..7b68ed87 100644
+index 7e3e1121..dc5f929f 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -25,6 +25,9 @@
@@ -2051,7 +2046,7 @@ index 7e3e1121..7b68ed87 100644
  /* End a question together with what it interrupted. */
  static void agent_checkpoint_stop(void)
  {
-@@ -2941,6 +2967,789 @@ ret:
+@@ -2941,6 +2967,784 @@ ret:
  	free(out);
  	return s;
  }
@@ -2071,26 +2066,21 @@ index 7e3e1121..7b68ed87 100644
 +#define ADV_LOG_MAX 5000		/* b-9 lines kept */
 +
 +static char agent_adv_intro[] =
-+	"You are an adversarial reviewer of the session log of another model,\n"
-+	"the spear. You do not act and you have no access to the editor: you\n"
-+	"only rate. One entry of that log is listed under \"Entry:\" below;\n"
-+	"rate it by the value it has for the work that follows it. Be strict:\n"
-+	"routine mechanics and repeated attempts rate 1 at most.\n"
++	"You are an adversarial reviewer of the session log of another model, the spear.\n"
++	"You do not act and you have no access to the editor: you only rate and note.\n"
 +	"A USER entry is what the user wrote. A TURN entry is one spear reply\n"
-+	"with its REASONING, the EX commands it ran and their RESULT bodies;\n"
-+	"a RESULT body may be truncated. Judge what an entry contributed, not\n"
-+	"the run as a whole.\n"
-+	"Reply with only the one line asked for, with no heading, no code fence\n"
-+	"and no other text:\n"
-+	"N R sentence\n"
-+	"N is the entry number, R the rating, sentence one short sentence of\n"
-+	"justification.\n\n";
++	"with its REASONING, the EX commands it ran and their RESULT bodies.\n"
++	"Reply with one line and no other text that follows the format:\n"
++	"N R sentence\n\n"
++	"N is the entry number\n"
++	"R is the rating\n"
++	"sentence is one short sentence of justification.\n\n"
 +
 +static struct {
 +	pid_t pid;		/* the curl child; 0 when idle */
 +	int out, err;		/* read ends of its pipes; -1 when idle */
 +	sbuf *ob, *eb;		/* what has been read from them */
-+unsigned long num;		/* the entry under review */
++	unsigned long num;	/* the entry under review */
 +	int active, attempt;	/* num is asked for, requests made for it */
 +	char *prompt;		/* its user message, kept for a retry */
 +	char *prev;		/* previous reply, sent as an assistant turn */
@@ -2841,7 +2831,7 @@ index 7e3e1121..7b68ed87 100644
  
  static char *agent_snapshot(char *loc)
  {
-@@ -3164,6 +3973,10 @@ static void agent_run_loop(const char *input)
+@@ -3164,6 +3968,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -2852,7 +2842,7 @@ index 7e3e1121..7b68ed87 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4944,6 +5757,10 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4944,6 +5752,10 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -2863,7 +2853,7 @@ index 7e3e1121..7b68ed87 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5036,6 +5853,10 @@ static int agent_autocompact(void)
+@@ -5036,6 +5848,10 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
