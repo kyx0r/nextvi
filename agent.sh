@@ -4926,8 +4926,7 @@ static char *agent_compact_task(int browse, char *arg, int automatic)
 			"0 - dead weight: omit\n",
 			"1 - low, minor, superseded or only mechanics: a phrase at most\n",
 			"2 - useful, informs the remaining work: a summary\n",
-			"3 - essential, a decision, finding or state the task depends on:\n"
-			"    the exact details\n"};
+			"3 - essential, a decision, finding or state the task depends on\n"};
 		int seen = 0, r, row, unrated = 0;
 		for (int i = 0; i < lbuf_len(notes); i++)
 			if (agent_note_line(notes->ln[i], &n, &r) && n >= from)
@@ -14301,10 +14300,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..7e3e1121
+index 00000000..91bd0c4d
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5132 @@
+@@ -0,0 +1,5131 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -19201,8 +19200,7 @@ index 00000000..7e3e1121
 +			"0 - dead weight: omit\n",
 +			"1 - low, minor, superseded or only mechanics: a phrase at most\n",
 +			"2 - useful, informs the remaining work: a summary\n",
-+			"3 - essential, a decision, finding or state the task depends on:\n"
-+			"    the exact details\n"};
++			"3 - essential, a decision, finding or state the task depends on\n"};
 +		int seen = 0, r, row, unrated = 0;
 +		for (int i = 0; i < lbuf_len(notes); i++)
 +			if (agent_note_line(notes->ln[i], &n, &r) && n >= from)
