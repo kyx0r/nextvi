@@ -617,6 +617,64 @@ static char \*agent_snapshot\(char \*loc\)
 		 \* withheld is requested again\. \*/9??0?
 grp 09??-7m 16220reg p OK agent.c:3166:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg agent.c:31662sc %? %@2132sc!0?
+?0?
+%f+ 	unsigned long epoch = agent_epoch;
+	if \(agent_start\(\)\)
+		return agent_init_error;
+	char \*task = agent_compact_task\(browse, arg, 0\);
+	/\* Indices survive buffer-array growth during tool calls\. \*/
+	int savedtemp = istempbuf\(ex_buf\);1??0?
+1??+2m 171q0?
+%f+ 	unsigned long epoch = agent_epoch;
+	if \(agent_start\(\)\)
+		return agent_init_error;4??0?
+4??+2m 17220reg p OK agent.c:4941:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	unsigned long epoch = agent_epoch;.*?
+	if \(agent_start\(\)\).*?
+(		return agent_init_error;)7??0?
+grp 07??m 17220reg p OK agent.c:4941:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> \{
+	void \*ret;
+	int browse = !strcmp\(cmd, "apack!"\);.*(	char \*original = agent_text\(tempbufs\[3]\.lb\);)
+	char \*archive = agent_rotate_log\(\);
+	if \(!archive\) \{8??0?
+grp 08??-5m 17220reg p OK agent.c:4941:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		sbuf_str\(task, "Return control to the user once complete\.\\n\\033"\)
+	sbufn_ret\(task, task->s\)
+}.*(		return "cannot archive session log";)
+	}
+	/\* Detach the prior conversation so a failed pack can restore it\. \*/9??0?
+grp 09??-10m 17220reg p OK agent.c:4941:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:49412sc %? %@2132sc!0?
+?0?
+%f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
+	unsigned long rounds = agent_rounds;
+	int logbuf = agent_logbuf, browse = xaco_browse;
+	/\* Store indices rather than pointers: a tool can grow the buffer array\. \*/
+	int savedtemp = istempbuf\(ex_buf\);
+	int savedbuf = savedtemp \? ex_buf - tempbufs : ex_buf - bufs;1??0?
+1??+2m 181q0?
+%f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
+	unsigned long rounds = agent_rounds;
+	int logbuf = agent_logbuf, browse = xaco_browse;4??0?
+4??+2m 18220reg p OK agent.c:5033:a42sc %? %@2152sc!1q0?
+grp 1%f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;.*?
+	unsigned long rounds = agent_rounds;.*?
+(	int logbuf = agent_logbuf, browse = xaco_browse;)7??0?
+grp 07??m 18220reg p OK agent.c:5033:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	struct lbuf \*lb = tempbufs\[3]\.lb;
+	cJSON \*history = agent_messages;
+	struct agent_usage usage = agent_usage;.*(	exbuf_save\(ex_buf\))
+	char \*original = agent_text\(lb\);
+	char \*task = agent_compact_task\(browse, "", 1\);8??0?
+grp 08??-4m 18220reg p OK agent.c:5033:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f>  \* until the pack agent has replaced the log; the exchange is logged to b-8\. \*/
+static int agent_autocompact\(void\)
+\{.*(	char \*archive = agent_rotate_log\(\);)
+	int ok = 0;
+	if \(!archive\) \{9??0?
+grp 09??-7m 18220reg p OK agent.c:5033:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:50332sc %? %@2132sc!0?
 '\''1i /* The adversary may have work: an entry closed since it last looked. The
  * flag lets term_wait block in poll(-1) until there is a reason to look. */
 static int agent_adv_dirty;
@@ -640,7 +698,7 @@ static int agent_adv_dirty;
 	agent_adv_resync();
 ??!219reg agent.c:1137:m112sc %? %@2142sc!0?
 '\''12i 	/* A checkpoint the spear rates at: whatever the adversary staged
-	   belongs in b-6 before the unrated list is built. */
+	 * belongs in b-6 before the unrated list is built. */
 	if (kind == 1) {
 		agent_adv_kill();
 		agent_adv_merge();
@@ -661,11 +719,12 @@ static void agent_checkpoint_end(void)
 /* The adversary: a second model running beside the spear that rates the
  * closed USER and TURN entries of the session log. It never acts and has no
  * nextvi access, only ratings; the spear sees them when a kind 1 checkpoint
- * opens. One background curl at a time, polled from the single threaded main
- * loop, portable OpenAI chat completions only: no grammar, json_schema or
- * response_format. Ratings are staged in memory and reach b-6 at that
- * checkpoint. b-9 logs raw replies, parsed lines, retries and errors for
- * observation; no adversary state is ever read back from it. */
+ * or a compaction opens. One background curl at a time, polled from the
+ * single threaded main loop, portable OpenAI chat completions only: no
+ * grammar, json_schema or response_format. Ratings are staged in memory and
+ * reach b-6 at that checkpoint or compaction. b-9 logs raw replies, parsed
+ * lines, retries and errors for observation; no adversary state is ever read
+ * back from it. */
 #define ADV_RESULT_MAX 4000		/* RESULT body bytes sent per part */
 #define ADV_ATTEMPTS 3			/* requests per batch, the first one */
 #define ADV_BATCH_MAX 64		/* entries per request */
@@ -701,7 +760,7 @@ static struct {
 	int disabled;		/* endpoint unreachable: off for the session */
 } agent_adv = {0, -1, -1};
 
-/* A staged rating: not in b-6 until a kind 1 checkpoint merges it. */
+/* A staged rating: not in b-6 until a checkpoint or compaction merges it. */
 struct agent_adv_rating { unsigned long n; int rate; char *text; };
 static struct agent_adv_rating *agent_adv_staged;
 static int agent_adv_nstaged;
@@ -1438,9 +1497,10 @@ static int agent_adv_pending(void)
 		!agent_adv.disabled);
 }
 
-/* A kind 1 checkpoint opens: the spear is about to rate, so the staged
- * ratings go into b-6 first and only for entries it has not rated itself.
- * agent_note_set never trims, so a 0 here removes nothing. */
+/* A kind 1 checkpoint or compaction opens: the spear is about to rate,
+ * so the staged ratings go into b-6 first and only for entries it has
+ * not rated itself. agent_note_set never trims, so a 0 here removes
+ * nothing. */
 static void agent_adv_merge(void)
 {
 	struct agent_span *spans;
@@ -1507,9 +1567,20 @@ static void agent_adv_resync(void)
 
 ??!219reg agent.c:2944:m152sc %? %@2142sc!0?
 '\''16i 		/* The adversary'\''s curl, if any, is read between rounds: it never
-		   blocks the run, and its ratings reach b-6 at a checkpoint. */
+		   blocks the run; its ratings reach b-6 at a checkpoint or before
+		   a compaction. */
 		agent_adv_poll();
-??!219reg agent.c:3166:m162sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg agent.c:3166:m162sc %? %@2142sc!0?
+'\''17i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
+	 * summarized: with acl 0 no checkpoint merges them. */
+	agent_adv_kill();
+	agent_adv_merge();
+??!219reg agent.c:4941:m172sc %? %@2142sc!0?
+'\''18i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
+	 * summarized: with acl 0 no checkpoint merges them. */
+	agent_adv_kill();
+	agent_adv_merge();
+??!219reg agent.c:5033:m182sc %? %@2142sc!b1m!%ya 98?0?
 %f> static int agent_resume\(const char \*dir\);
 static char \*agent_init_error;
 static void agent_sync\(struct lbuf \*lb\);
@@ -1906,7 +1977,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index 6d2c9d7a..7c133de5 100644
+index 6d2c9d7a..f8d42d15 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -25,6 +25,9 @@
@@ -2011,7 +2082,7 @@ index 6d2c9d7a..7c133de5 100644
  	agent_cp_bytes = agent_context_bytes();
  	agent_cp_left = INT_MAX;
 +	/* A checkpoint the spear rates at: whatever the adversary staged
-+	   belongs in b-6 before the unrated list is built. */
++	 * belongs in b-6 before the unrated list is built. */
 +	if (kind == 1) {
 +		agent_adv_kill();
 +		agent_adv_merge();
@@ -2044,7 +2115,7 @@ index 6d2c9d7a..7c133de5 100644
  /* End a question together with what it interrupted. */
  static void agent_checkpoint_stop(void)
  {
-@@ -2942,6 +2968,854 @@ ret:
+@@ -2942,6 +2968,856 @@ ret:
  	return s;
  }
  
@@ -2052,11 +2123,12 @@ index 6d2c9d7a..7c133de5 100644
 +/* The adversary: a second model running beside the spear that rates the
 + * closed USER and TURN entries of the session log. It never acts and has no
 + * nextvi access, only ratings; the spear sees them when a kind 1 checkpoint
-+ * opens. One background curl at a time, polled from the single threaded main
-+ * loop, portable OpenAI chat completions only: no grammar, json_schema or
-+ * response_format. Ratings are staged in memory and reach b-6 at that
-+ * checkpoint. b-9 logs raw replies, parsed lines, retries and errors for
-+ * observation; no adversary state is ever read back from it. */
++ * or a compaction opens. One background curl at a time, polled from the
++ * single threaded main loop, portable OpenAI chat completions only: no
++ * grammar, json_schema or response_format. Ratings are staged in memory and
++ * reach b-6 at that checkpoint or compaction. b-9 logs raw replies, parsed
++ * lines, retries and errors for observation; no adversary state is ever read
++ * back from it. */
 +#define ADV_RESULT_MAX 4000		/* RESULT body bytes sent per part */
 +#define ADV_ATTEMPTS 3			/* requests per batch, the first one */
 +#define ADV_BATCH_MAX 64		/* entries per request */
@@ -2092,7 +2164,7 @@ index 6d2c9d7a..7c133de5 100644
 +	int disabled;		/* endpoint unreachable: off for the session */
 +} agent_adv = {0, -1, -1};
 +
-+/* A staged rating: not in b-6 until a kind 1 checkpoint merges it. */
++/* A staged rating: not in b-6 until a checkpoint or compaction merges it. */
 +struct agent_adv_rating { unsigned long n; int rate; char *text; };
 +static struct agent_adv_rating *agent_adv_staged;
 +static int agent_adv_nstaged;
@@ -2829,9 +2901,10 @@ index 6d2c9d7a..7c133de5 100644
 +		!agent_adv.disabled);
 +}
 +
-+/* A kind 1 checkpoint opens: the spear is about to rate, so the staged
-+ * ratings go into b-6 first and only for entries it has not rated itself.
-+ * agent_note_set never trims, so a 0 here removes nothing. */
++/* A kind 1 checkpoint or compaction opens: the spear is about to rate,
++ * so the staged ratings go into b-6 first and only for entries it has
++ * not rated itself. agent_note_set never trims, so a 0 here removes
++ * nothing. */
 +static void agent_adv_merge(void)
 +{
 +	struct agent_span *spans;
@@ -2899,16 +2972,39 @@ index 6d2c9d7a..7c133de5 100644
  static char *agent_snapshot(char *loc)
  {
  	int beg = 0, end = lbuf_len(xb), o1 = -1, o2 = -1;
-@@ -3164,6 +4038,9 @@ static void agent_run_loop(const char *input)
+@@ -3164,6 +4040,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
 +		/* The adversary's curl, if any, is read between rounds: it never
-+		   blocks the run, and its ratings reach b-6 at a checkpoint. */
++		   blocks the run; its ratings reach b-6 at a checkpoint or before
++		   a compaction. */
 +		agent_adv_poll();
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
+@@ -4939,6 +5819,10 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+ 	unsigned long epoch = agent_epoch;
+ 	if (agent_start())
+ 		return agent_init_error;
++	/* The adversary's staged ratings belong in b-6 before the log is
++	 * summarized: with acl 0 no checkpoint merges them. */
++	agent_adv_kill();
++	agent_adv_merge();
+ 	char *task = agent_compact_task(browse, arg, 0);
+ 	/* Indices survive buffer-array growth during tool calls. */
+ 	int savedtemp = istempbuf(ex_buf);
+@@ -5031,6 +5915,10 @@ static int agent_autocompact(void)
+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
+ 	unsigned long rounds = agent_rounds;
+ 	int logbuf = agent_logbuf, browse = xaco_browse;
++	/* The adversary's staged ratings belong in b-6 before the log is
++	 * summarized: with acl 0 no checkpoint merges them. */
++	agent_adv_kill();
++	agent_adv_merge();
+ 	/* Store indices rather than pointers: a tool can grow the buffer array. */
+ 	int savedtemp = istempbuf(ex_buf);
+ 	int savedbuf = savedtemp ? ex_buf - tempbufs : ex_buf - bufs;
 diff --git a/agent.h b/agent.h
 index cd3c8383..ff49f53f 100644
 --- a/agent.h
