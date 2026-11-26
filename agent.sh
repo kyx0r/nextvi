@@ -3298,9 +3298,14 @@ static void agent_run_loop(const char *input)
 		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
 		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 		cJSON_AddBoolToObject(req, "stream", 0);
-		/* ata moves the cap with every reply counted. */
-		if (!agent_think_up)
-			agent_think_rebase();
+		/* ata moves the cap with every reply counted; the request of a
+		 * thinking budget check always runs at the cap ath set. */
+		if (!agent_think_up) {
+			if (agent_checkpointing == 3 && agent_think_base >= 0)
+				agent_think_cap = agent_think_base;
+			else
+				agent_think_rebase();
+		}
 		if (agent_think_cap >= 0) {
 			while (cJSON_GetObjectItem(req, "reasoning_budget_tokens"))
 				cJSON_DeleteItemFromObject(req, "reasoning_budget_tokens");
@@ -10322,7 +10327,8 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 grp 09??-10m 23220reg p OK ex.c:959:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg ex.c:9592sc %? %@2132sc!0?
 ?0?
-%f+ 	if \(d < 4\)
+%f+ 		return xrerr;
+	if \(d < 4\)
 		itoa\(arr\[d], msg\);
 	else
 		sprintf\(msg, "%d %d %d %d", arr\[0], arr\[1], arr\[2], arr\[3]\);
@@ -10330,47 +10336,50 @@ void ex_cprint\(char \*line, char \*ft, int r, int c, int left, int flg\).*?
 	return NULL;
 }1??0?
 1??+3m 241q0?
-%f+ 		sprintf\(msg, "%d %d %d %d", arr\[0], arr\[1], arr\[2], arr\[3]\);
+%f+ 	else
+		sprintf\(msg, "%d %d %d %d", arr\[0], arr\[1], arr\[2], arr\[3]\);
 	ex_print\(msg, msg_ft\)
 	return NULL;
 }2??0?
-2??m 24220reg p OK ex.c:1077:a22sc %? %@2152sc!1q0?
-;0fr.,$f+ ^		sprintf\(msg, "%d %d %d %d", arr\[0], arr\[1], arr\[2], arr\[3]\);$3??0?
-3??m 24220reg p OK ex.c:1077:a32sc %? %@2152sc!fr 981qfr 980?
-%f+ 	if \(d < 4\)
-		itoa\(arr\[d], msg\);
-	else4??0?
-4??+3m 24220reg p OK ex.c:1077:a42sc %? %@2152sc!1q0?
+2??m 24220reg p OK ex.c:1076:a22sc %? %@2152sc!1q0?
+%f+ 	else
+		sprintf\(msg, "%d %d %d %d", arr\[0], arr\[1], arr\[2], arr\[3]\);3??0?
+3??m 24220reg p OK ex.c:1076:a32sc %? %@2152sc!1q0?
+%f+ 		return xrerr;
+	if \(d < 4\)
+		itoa\(arr\[d], msg\);4??0?
+4??+3m 24220reg p OK ex.c:1076:a42sc %? %@2152sc!1q0?
 %f+ 	ex_print\(msg, msg_ft\)
 	return NULL;
 }5??0?
-5??-1m 24220reg p OK ex.c:1077:a52sc %? %@2152sc!1q0?
-%f+ ....\(d.....
-.	.t......\[.........
+5??-2m 24220reg p OK ex.c:1076:a52sc %? %@2152sc!1q0?
+%f+ 	....... x..r..
+... .......
+.	...........,.m..\).
 ...s.
-......nt............d.%............]. .....]. a....., ...\[3..;
-.e..........., .s.....
-.r..u...N....
+..s......\(.... ".d.......%."......0., a.......a....., ...\[....
+..._........g........\)
+.re.... ....;
 }6??0?
-6??+3m 24220reg p OK ex.c:1077:a62sc %? %@2152sc!1q0?
-grp 1%f+ 	if \(d < 4\).*?
+6??+3m 24220reg p OK ex.c:1076:a62sc %? %@2152sc!1q0?
+grp 1%f+ 		return xrerr;.*?
+	if \(d < 4\).*?
 		itoa\(arr\[d], msg\);.*?
-	else.*?
-(		sprintf\(msg, "%d %d %d %d", arr\[0], arr\[1], arr\[2], arr\[3]\);)7??0?
-grp 07??m 24220reg p OK ex.c:1077:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	int d = \(unsigned char\)\*arg \^ '\''0'\'';
-	if \(ret && !\(\(\*arg && arg\[1]\) \|\| \(\*arg && d >= 4\)\)\)
-		return xrerr;.*(static void \*ec_undoredo\(char \*loc, char \*cmd, char \*arg\))
+(	else)7??0?
+grp 07??m 24220reg p OK ex.c:1076:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	int ret = ex_region\(loc, &arr\[0], &arr\[1], &arr\[2], &arr\[3]\);
+	int d = \(unsigned char\)\*arg \^ '\''0'\'';
+	if \(ret && !\(\(\*arg && arg\[1]\) \|\| \(\*arg && d >= 4\)\)\).*(static void \*ec_undoredo\(char \*loc, char \*cmd, char \*arg\))
 \{
 	int ref;8??0?
-grp 08??-5m 24220reg p OK ex.c:1077:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	char msg\[128];
-	int arr\[4] = \{0, 0, -1, -1};
-	int ret = ex_region\(loc, &arr\[0], &arr\[1], &arr\[2], &arr\[3]\);.*(	return \(cmd\[0] == '\''u'\'' \? lbuf_undo : lbuf_redo\)\(xb, &ref, &ref\) \?)
+grp 08??-6m 24220reg p OK ex.c:1076:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	}
+	char msg\[128];
+	int arr\[4] = \{0, 0, -1, -1};.*(	return \(cmd\[0] == '\''u'\'' \? lbuf_undo : lbuf_redo\)\(xb, &ref, &ref\) \?)
 		xuerr : NULL;
 }9??0?
-grp 09??-8m 24220reg p OK ex.c:1077:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg ex.c:10772sc %? %@2132sc!0?
+grp 09??-9m 24220reg p OK ex.c:1076:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg ex.c:10762sc %? %@2132sc!0?
 ?0?
 %f+ 	int count = \*loc \? \(\*loc == '\''\$'\'' \? INT_MAX : atoi\(loc\)\) : 1;
 	for \(; count && !ret; count--\) \{
@@ -10964,9 +10973,17 @@ static char xaerr[128];
 '\''23i 	if (nb)
 		sbuf_free(nb)
 ??!219reg ex.c:959:m232sc %? %@2142sc!0?
-'\''24c 		sprintf(msg, agent_tool ? "beg: %d end: %d offset_beg: %d offset_end: %d" :
-			"%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
-??!219reg ex.c:1077:m242sc %? %@2142sc!0?
+'\''24,#+1c 	else {
+		if (agent_tool) {
+			int n = sprintf(msg, "beg: %d end: %d", arr[0], arr[1]);
+			if (arr[2] != -1)
+				n += sprintf(msg + n, " offset_beg: %d", arr[2]);
+			if (arr[3] != -1)
+				n += sprintf(msg + n, " offset_end: %d", arr[3]);
+		} else
+			sprintf(msg, "%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
+	}
+??!219reg ex.c:1076:m242sc %? %@2142sc!0?
 '\''25i 		if (agent_interrupted())
 			break;
 ??!219reg ex.c:1437:m252sc %? %@2142sc!0?
@@ -14284,10 +14301,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..65897fd1
+index 00000000..7e3e1121
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5127 @@
+@@ -0,0 +1,5132 @@
 +/* Embedded subzeroclaw, adapted from e39b51b8eccc1cfc35a209d728df8a32b312ddf1.
 + *
 + * MIT License
@@ -17556,9 +17573,14 @@ index 00000000..65897fd1
 +		cJSON_AddItemReferenceToObject(req, "messages", agent_messages);
 +		cJSON_AddItemToObject(req, "tools", cJSON_Parse(agent_tools));
 +		cJSON_AddBoolToObject(req, "stream", 0);
-+		/* ata moves the cap with every reply counted. */
-+		if (!agent_think_up)
-+			agent_think_rebase();
++		/* ata moves the cap with every reply counted; the request of a
++		 * thinking budget check always runs at the cap ath set. */
++		if (!agent_think_up) {
++			if (agent_checkpointing == 3 && agent_think_base >= 0)
++				agent_think_cap = agent_think_base;
++			else
++				agent_think_rebase();
++		}
 +		if (agent_think_cap >= 0) {
 +			while (cJSON_GetObjectItem(req, "reasoning_budget_tokens"))
 +				cJSON_DeleteItemFromObject(req, "reasoning_budget_tokens");
@@ -23628,7 +23650,7 @@ index 2888d7c6..67de562a 100644
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
  	{ex_ft, "\\\\(.)", A(AY1 | SYN_BD, YE)},
 diff --git a/ex.c b/ex.c
-index d13974a6..8f07498c 100644
+index d13974a6..b9c3c718 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -14,6 +14,7 @@ int xorder = 1;			/* change the order of characters */
@@ -23898,17 +23920,26 @@ index d13974a6..8f07498c 100644
  	rstate--;
  	xrow = MAX(beg, end - (cmd[0] || loc[0]));
  	return NULL;
-@@ -1074,7 +1167,8 @@ static void *ec_num(char *loc, char *cmd, char *arg)
+@@ -1073,8 +1166,16 @@ static void *ec_num(char *loc, char *cmd, char *arg)
+ 		return xrerr;
  	if (d < 4)
  		itoa(arr[d], msg);
- 	else
+-	else
 -		sprintf(msg, "%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
-+		sprintf(msg, agent_tool ? "beg: %d end: %d offset_beg: %d offset_end: %d" :
-+			"%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
++	else {
++		if (agent_tool) {
++			int n = sprintf(msg, "beg: %d end: %d", arr[0], arr[1]);
++			if (arr[2] != -1)
++				n += sprintf(msg + n, " offset_beg: %d", arr[2]);
++			if (arr[3] != -1)
++				n += sprintf(msg + n, " offset_end: %d", arr[3]);
++		} else
++			sprintf(msg, "%d %d %d %d", arr[0], arr[1], arr[2], arr[3]);
++	}
  	ex_print(msg, msg_ft)
  	return NULL;
  }
-@@ -1435,6 +1529,8 @@ static void *ec_while(char *loc, char *cmd, char *arg)
+@@ -1435,6 +1536,8 @@ static void *ec_while(char *loc, char *cmd, char *arg)
  	int count = *loc ? (*loc == '$' ? INT_MAX : atoi(loc)) : 1;
  	for (; count && !ret; count--) {
  		ret = ex_exec(arg);
@@ -23917,7 +23948,7 @@ index d13974a6..8f07498c 100644
  		ret = inv ? ret ? NULL : xuerr : ret;
  	}
  	return ret;
-@@ -1637,6 +1733,178 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
+@@ -1637,6 +1740,178 @@ static void *ec_specials(char *loc, char *cmd, char *arg)
  	return NULL;
  }
  
@@ -24096,7 +24127,7 @@ index d13974a6..8f07498c 100644
  void ex_regesc(sbuf *sb, char *beg, char *end, int ex)
  {
  	for (; beg < end; beg++) {
-@@ -1704,9 +1972,14 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
+@@ -1704,9 +1979,14 @@ static void *eo_##opt(char *loc, char *cmd, char *arg) { inner }
  #define EO(opt) \
  	_EO(opt, x##opt = *arg ? eo_val(arg) : !x##opt; return NULL;)
  
@@ -24113,7 +24144,7 @@ index d13974a6..8f07498c 100644
  
  _EO(ts, xts = *arg ? eo_val(arg) : !xts; xts = MAX(0, xts); RST_NULL(0, 1, 2) return NULL;)
  _EO(td, xtd = *arg ? eo_val(arg) : !xtd; RST_NULL(0, 1) return NULL;)
-@@ -1732,18 +2005,25 @@ _EO(left,
+@@ -1732,18 +2012,25 @@ _EO(left,
  	return NULL;
  )
  
@@ -24143,7 +24174,7 @@ index d13974a6..8f07498c 100644
  	{"=", ec_num},
  	{"???", ec_while},
  	{"?""?!", ec_while},
-@@ -1760,8 +2040,39 @@ static struct excmd {
+@@ -1760,8 +2047,39 @@ static struct excmd {
  	{"pu", ec_put},
  	{"ph", ec_setenc},
  	{"p", ec_print},
@@ -24183,7 +24214,7 @@ index d13974a6..8f07498c 100644
  	EO(err),
  	{"ef!", ec_fuzz},
  	{"ef", ec_fuzz},
-@@ -1929,6 +2240,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
+@@ -1929,6 +2247,68 @@ static const char *ex_cmd(const char *src, sbuf *sb, int *idx)
  	return src;
  }
  
@@ -24252,7 +24283,7 @@ index d13974a6..8f07498c 100644
  /* execute a single ex command chain */
  void *ex_exec(const char *ln)
  {
-@@ -1941,8 +2314,20 @@ void *ex_exec(const char *ln)
+@@ -1941,8 +2321,20 @@ void *ex_exec(const char *ln)
  	sbuf_smake(sb, 128)
  	do {
  		sbuf_cut(sb, 0)
@@ -24274,7 +24305,7 @@ index d13974a6..8f07498c 100644
  		xpret = ret;
  		if (ret && ret != xuerr && xerr & 1) {
  			ex_print(ret, msg_ft)
-@@ -1961,7 +2346,9 @@ void *ex_exec(const char *ln)
+@@ -1961,7 +2353,9 @@ void *ex_exec(const char *ln)
  			xcid_free();
  		xqprop = 0;
  	}
