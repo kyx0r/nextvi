@@ -2073,7 +2073,7 @@ static void agent_think_ask(cJSON *root, double tokens)
 		agent_turn_part(1, content->valuestring);
 	snprintf(line, sizeof(line), "Stop working on the current task and "
 		"complete this budget check.\nThe thinking of your last "
-		"reply was cut off after ~%.0f tokens at the cap of %d tokens. "
+		"reply was cut off after ~%.0f tokens at the cap of %d tokens.\n"
 		"%s\n", tokens, cap,
 		cnt ? "Its ex tool calls were withheld and did not run:" :
 		agent_think_empty ? "The reply is discarded; it had no text and "
@@ -2106,9 +2106,9 @@ static void agent_think_ask(cJSON *root, double tokens)
 	keep = cnt ? "run the reply as it is" :
 		agent_think_empty ? "reply again under the same cap" :
 		"keep the reply as it is";
-	snprintf(line, sizeof(line), "acap is not a tool: call the ex tool with "
-		"command acap to %s, or with acap N [note] to %sreply again with a "
-		"thinking cap of N tokens, above %d and up to %d.", keep,
+	snprintf(line, sizeof(line), "Call the ex tool with "
+		"command acap to %s,\nor with acap N [note] to %sreply again with a "
+		"thinking cap of N tokens,\nabove %d and up to %d.", keep,
 		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 	sbuf_str(sb, line)
 	sbuf_str(sb, "\nTokens the new reply leaves of N carry over to later caps.\n"
@@ -14284,7 +14284,7 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..6d2c9d7a
+index 00000000..65897fd1
 --- /dev/null
 +++ b/agent.c
 @@ -0,0 +1,5127 @@
@@ -16331,7 +16331,7 @@ index 00000000..6d2c9d7a
 +		agent_turn_part(1, content->valuestring);
 +	snprintf(line, sizeof(line), "Stop working on the current task and "
 +		"complete this budget check.\nThe thinking of your last "
-+		"reply was cut off after ~%.0f tokens at the cap of %d tokens. "
++		"reply was cut off after ~%.0f tokens at the cap of %d tokens.\n"
 +		"%s\n", tokens, cap,
 +		cnt ? "Its ex tool calls were withheld and did not run:" :
 +		agent_think_empty ? "The reply is discarded; it had no text and "
@@ -16364,9 +16364,9 @@ index 00000000..6d2c9d7a
 +	keep = cnt ? "run the reply as it is" :
 +		agent_think_empty ? "reply again under the same cap" :
 +		"keep the reply as it is";
-+	snprintf(line, sizeof(line), "acap is not a tool: call the ex tool with "
-+		"command acap to %s, or with acap N [note] to %sreply again with a "
-+		"thinking cap of N tokens, above %d and up to %d.", keep,
++	snprintf(line, sizeof(line), "Call the ex tool with "
++		"command acap to %s,\nor with acap N [note] to %sreply again with a "
++		"thinking cap of N tokens,\nabove %d and up to %d.", keep,
 +		agent_think_empty ? "" : "discard it and ", cap, agent_think_max);
 +	sbuf_str(sb, line)
 +	sbuf_str(sb, "\nTokens the new reply leaves of N carry over to later caps.\n"
