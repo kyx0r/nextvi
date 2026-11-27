@@ -854,19 +854,13 @@ static void agent_checkpoint_end(void)
 ??!219reg agent.c:2867:m172sc %? %@2142sc!0?
 '\''18i 	agent_adv_activity();
 ??!219reg agent.c:2869:m182sc %? %@2142sc!0?
-'\''19i /* The adversary: a second model beside the spear that rates the closed
- * USER and TURN entries of the log. It never acts and has no editor
- * access; the spear reads the ratings when a kind 1 checkpoint or a
- * compaction opens. It shares the spear endpoint, so one request is in
- * flight at a time and only the prompt says which task the model has.
- * A sleeper thread, not a session: it wakes when the model is free and
- * rates one entry per request, oldest first, and dies when the spear
- * takes the endpoint back. Nothing is cancelled half way, so each entry
- * is rated in a context holding nothing else, which is the point.
- * The worker blocks only in fork, waitpid and file reads, and touches no
- * nextvi state but two mutexed queues of heap strings it owns; all lbuf
- * work stays on the main thread at the input wait. Portable chat
- * completions only. */
+'\''19i /* The adversary: a second model that rates the closed USER and TURN entries
+ * of the log; the spear reads the ratings when a kind 1 checkpoint or a
+ * compaction opens. It never acts, has no editor access, and shares the
+ * spear endpoint, so one request is in flight at a time. A sleeper thread
+ * wakes when the model is free and rates one entry per request, oldest
+ * first, blocking only in fork, waitpid and file reads; all lbuf work stays
+ * on the main thread. Portable chat completions only. */
 #define ADV_RESULT_MAX 4000		/* RESULT body bytes sent per part */
 #define ADV_ATTEMPTS 3			/* requests per entry, the first one */
 #define ADV_REPLY_MAX (4 << 20)		/* reply bytes kept */
@@ -899,19 +893,17 @@ static char agent_adv_intro[] =
 	"R is the rating\n"
 	"sentence is one short sentence of justification.\n\n";
 
-/* One prompt waiting for the worker, and one answer waiting for the main
- * thread: each owns the heap text it carries across. The endpoint travels
- * with the prompt, since :set endpoint= would otherwise move under a
- * request. */
+/* One prompt waiting for the worker, one answer waiting for the main
+ * thread; each owns the heap text it carries. The endpoint travels with the
+ * prompt, since :set endpoint= must not move under a request. */
 struct agent_adv_work {
 	unsigned long n;
 	int attempt, timeout;
 	char *sys, *prompt, *prev, *url, *key, *extra;
 };
 struct agent_adv_job { unsigned long n; char *text; int st, attempt; };
-/* Whether the endpoint is the sleeper'\''s for the moment: the session sets it
- *   o n   i t s   w a y   i n t o   t h e   i n p u t   p o l l   a n d   t a k e s   i t   b a c k   t h e   i n s t a n t   i t   w a n t s 
-* the model. The sleeper reads this and nothing else of the session. */
+/* Whether the endpoint is the sleeper'\''s: the session sets it before the
+ * input wait and takes it back the moment it wants the model. */
 static volatile sig_atomic_t agent_adv_free;
 
 static struct {
@@ -919,7 +911,6 @@ static struct {
 	int disabled;		/* endpoint unreachable: off for the session */
 	/* the worker thread owns all of these, under mtx */
 	pthread_mutex_t mtx;
-	unsigned long grace;	/* ticks free so far: the sleeper'\''s clock, reset when the session takes the endpoint back */
 	int quit;		/* process exit */
 	int stop;		/* a runner holds the endpoint: ^Z, or the spear asked */
 	int thread;		/* the worker is running */
@@ -1228,9 +1219,9 @@ static int agent_adv_queued(unsigned long n)
 }
 
 /* The oldest closed USER or TURN entry it has not rated: not in b-6, not
- * staged, not queued, not given up on, at or above the last compaction;
- * 0 when none is left. One entry per request, since a batch lets the
- * model skip part of it unseen. */
+ * staged, not queued, not given up on, at or above the last compaction; 0
+ * when none. One entry per request, since a batch lets the model skip
+ * part of it unseen. */
 static int agent_adv_next(unsigned long *num)
 {
 	struct agent_span *spans;
@@ -1267,10 +1258,10 @@ static void agent_adv_qadd(struct agent_adv_work *w)
 	}
 	agent_adv.queue[agent_adv.nqueue++] = *w;
 }
-/* The topic request. The sleeper asks what the session is about and renames
- * its directory from the start time to "<topic>_<start time>", so that a
- * later resume or an ls of the log directory says what a session holds.
- * Asked once, of the first entries, with the same rules as a rating. */
+/* The topic request: asks what the session is about and renames its
+ * directory from the start time to "<topic>_<start time>", so that a resume
+ * or an ls says what a session holds. Asked once, under the rules of a
+ * rating. */
 static char agent_adv_name_intro[] =
 	"You name the session log of another model, the spear.\n"
 	"You have no access to the editor: you only answer with a name.\n"
@@ -1384,10 +1375,9 @@ next:
 }
 
 /* The identifier a name reply carries: lower case words joined with
- * underscores, at most ADV_NAME_WORDS words, or NULL. The last such token
- * wins, so prose around the answer costs nothing: a sentence has no
- * underscore between its words. The reply leads with "T"; a reply holding
- * the name alone is read as it. */
+ * underscores, at most ADV_NAME_WORDS, or NULL. The last such token wins, so
+ * prose around the answer costs nothing. The reply leads with "T"; a reply
+ * holding the name alone is read as it. */
 static char *agent_adv_name_parse(const char *reply)
 {
 	const char *s, *pick = NULL;
@@ -1504,8 +1494,7 @@ static void agent_adv_name_requeue(int attempt, const char *prev)
 	pthread_mutex_unlock(&agent_adv.mtx);
 }
 
-/* Why a request came back with nothing: one set of words for the naming request
- * and for an entry alike, so that no bare curl number reaches b-9. */
+/* Why a request came back with nothing: no bare curl status reaches b-9. */
 static const char *agent_adv_why(int st)
 {
 	return st == -2 ? "not asked" : st < 0 ? "killed" :
@@ -1655,8 +1644,7 @@ static char *agent_adv_slurp(int fd, int max)
 
 /* Ask the model about one entry and wait, on the worker thread: answer and
  * errors go to two files, so the wait is a plain waitpid and the read a
- * plain read, with no poll and no pipe that can fill. Reply body, or NULL
- * with the curl status in *st. */
+ * plain read. Reply body, or NULL with the curl status in *st. */
 static char *agent_adv_ask(struct agent_adv_work *w, int *st)
 {
 	char hdrpath[] = "/tmp/nextvi-header-XXXXXX",
@@ -1821,18 +1809,13 @@ static void agent_adv_untake(void)
 		free(agent_adv.queue[i].extra);
 	}
 	agent_adv.nqueue = 0;
-	agent_adv.grace = 0;	/* the tick clock restarts with the queue */
 }
 
-/* The sleeper thread. It sleeps while the spear owns the model, while a
- * runner holds the endpoint, or while nothing is queued: one flag says
- * whether answers may be freed and another says whether the endpoint is
- * taken, so no condition variable, clock or epoch decides when the sleeper
- * works and no signal that might never arrive can leave it asleep with
- * entries queued to rate. Once a run has begun, an answer is followed by
- * the next submission, not by another wait. A request already sent is
- * never cancelled: killing curl mid-answer would leave an entry half
- * rated, so the entry goes back to the queue. */
+/* The sleeper thread: ticks on ADV_TICK while the spear owns the model, a
+ * runner holds the endpoint, or nothing is queued, so no missed wake-up can
+ * leave entries queued unrated. An answer is followed by the next
+ * submission, not another wait; a request already sent is never cancelled,
+ * so an interrupted entry goes back to the queue whole. */
 static void *agent_adv_worker(void *unused)
 {
 	struct timespec ts;
@@ -2053,10 +2036,9 @@ static int agent_adv_staged_has(unsigned long n)
 }
 
 /* Stage the rating a reply carries. Models wrap the answer in prose, so
- * lines that are not a rating are ignored, and markdown or the separators
- * after a number are stripped. The entry number is advisory, the model
- * echoing an earlier one as often as the one asked about: an exact match
- * wins, and a reply with one rating for anything else is read as it. */
+ * lines that are not a rating are ignored and markdown or separators after
+ * a number are stripped. The entry number is advisory: an exact match
+ * wins, and a reply with one rating is read as it. */
 static void agent_adv_parse(unsigned long want, const char *reply)
 {
 	char ln[2048], *p, *q, *d, *alt = NULL;
@@ -2150,13 +2132,12 @@ static void agent_adv_nb(int fd)
 
 #define ADV_HELP 4			/* requests a stopped editor may finish */
 
-/* A stopped editor cannot rate: SIGSTOP takes every thread, and ^Z reaches
+/* A stopped editor cannot rate: SIGSTOP takes every thread and ^Z reaches
  * the curl child in the foreground group. So the quiet run goes on in a
- * process of its own, in its own group, out of reach of both: it takes the
- * prompts the sleeper had queued, waits, asks, and leaves each answer in a
- * file; only the reading, the b-9 line and the staging wait for the return,
- * which is the next input wait. Forked after the worker is joined, so the
- * child copies a heap with one thread in it. */
+ * process of its own, in its own group: it takes the prompts the sleeper
+ * queued, asks, and leaves each answer in a file; only the reading, the
+ * b-9 line and the staging wait for the return. Forked after the worker is
+ * joined, so the child copies a heap with one thread in it. */
 struct agent_adv_help {
 	pid_t pid;
 	int njob;
@@ -2192,8 +2173,7 @@ static char *agent_adv_rstr(FILE *f)
 	return s;
 }
 
-/* The runner'\''s job: one entry, in a file only this user can read, which owns
- * the name mkstemp made. */
+/* The runner'\''s job: one entry, in a file only this user can read. */
 static int agent_adv_help_job(struct agent_adv_work *w, int i)
 {
 	struct agent_adv_help *h = &agent_help;
@@ -2224,8 +2204,8 @@ static int agent_adv_help_job(struct agent_adv_work *w, int i)
 	return 1;
 }
 
-/* What the sleeper'\''s thread does with a prompt, done here instead: quiet
- * first, then the request, then the answer where the editor will find it. */
+/* What the sleeper'\''s thread does with a prompt, done here instead: the
+ * request, then the answer where the editor will find it. */
 static void agent_adv_help_run(int n)
 {
 	struct timespec ts;
@@ -2419,17 +2399,12 @@ void agent_adv_resume(void)
 		agent_adv_start();
 }
 
-/* The handshake is one flag: the main thread sets agent_adv_free before
- * it waits for input and clears it the moment the session wants the model,
- * and the sleeper reads nothing else of the session. A clock, an epoch and
- * a condition variable once decided when it might work, and a wake-up that
- * never arrived left it asleep with entries still queued to rate. */
+/* The handshake is one flag: agent_adv_free is set before the input wait
+ * and cleared the moment the session wants the model. */
 
-/* End the request the sleeper has in flight, if any, and mark it ended: the
- * entry goes back to the queue unrated, so the next downtime asks it again.
- * The pid is read under the mutex, so it is never a process already reaped.
- * The sleeper'\''s curl runs in a group of its own, so ^Z stops neither it nor
- * the editor'\''s own wait; see agent_adv_suspend. */
+/* End the request the sleeper has in flight, if any: the entry goes back to
+ * the queue unrated, so the next downtime asks it again. The pid is read
+ * under the mutex, so it is never a process already reaped. */
 static void agent_adv_stop(void)
 {
 	pid_t pid;
@@ -2460,9 +2435,8 @@ void agent_adv_service(void)
 	agent_adv_free = 1;
 }
 
-/* Entering or leaving the input wait. Leaving is work of its own: the
- * session has the endpoint back the moment it wants it, and a request still
- * waiting is ended rather than waited for. */
+/* Entering or leaving the input wait: leaving takes the endpoint back at
+ * once and ends a request still waiting. */
 void agent_adv_wait(int on)
 {
 	if (!agent_adv.on)
@@ -2493,7 +2467,7 @@ void agent_adv_activity(void)
 }
 
 /* The spear takes the endpoint back for good, or is about to rate what the
- * sleeper staged: what the sleeper holds is the spear'\''s to rate. */
+ * sleeper staged. */
 void agent_adv_preempt(void)
 {
 	if (!agent_adv.on)
@@ -3450,7 +3424,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index c8c3d21f..c2c10978 100644
+index c8c3d21f..a47e6966 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -1,6 +1,8 @@
@@ -3626,23 +3600,17 @@ index c8c3d21f..c2c10978 100644
  	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
  	int fd = mkstemp(hdrpath);
  	sbuf *out = NULL;
-@@ -2917,6 +2956,1783 @@ ret:
+@@ -2917,6 +2956,1757 @@ ret:
  	free(out);
  	return s;
  }
-+/* The adversary: a second model beside the spear that rates the closed
-+ * USER and TURN entries of the log. It never acts and has no editor
-+ * access; the spear reads the ratings when a kind 1 checkpoint or a
-+ * compaction opens. It shares the spear endpoint, so one request is in
-+ * flight at a time and only the prompt says which task the model has.
-+ * A sleeper thread, not a session: it wakes when the model is free and
-+ * rates one entry per request, oldest first, and dies when the spear
-+ * takes the endpoint back. Nothing is cancelled half way, so each entry
-+ * is rated in a context holding nothing else, which is the point.
-+ * The worker blocks only in fork, waitpid and file reads, and touches no
-+ * nextvi state but two mutexed queues of heap strings it owns; all lbuf
-+ * work stays on the main thread at the input wait. Portable chat
-+ * completions only. */
++/* The adversary: a second model that rates the closed USER and TURN entries
++ * of the log; the spear reads the ratings when a kind 1 checkpoint or a
++ * compaction opens. It never acts, has no editor access, and shares the
++ * spear endpoint, so one request is in flight at a time. A sleeper thread
++ * wakes when the model is free and rates one entry per request, oldest
++ * first, blocking only in fork, waitpid and file reads; all lbuf work stays
++ * on the main thread. Portable chat completions only. */
 +#define ADV_RESULT_MAX 4000		/* RESULT body bytes sent per part */
 +#define ADV_ATTEMPTS 3			/* requests per entry, the first one */
 +#define ADV_REPLY_MAX (4 << 20)		/* reply bytes kept */
@@ -3675,19 +3643,17 @@ index c8c3d21f..c2c10978 100644
 +	"R is the rating\n"
 +	"sentence is one short sentence of justification.\n\n";
 +
-+/* One prompt waiting for the worker, and one answer waiting for the main
-+ * thread: each owns the heap text it carries across. The endpoint travels
-+ * with the prompt, since :set endpoint= would otherwise move under a
-+ * request. */
++/* One prompt waiting for the worker, one answer waiting for the main
++ * thread; each owns the heap text it carries. The endpoint travels with the
++ * prompt, since :set endpoint= must not move under a request. */
 +struct agent_adv_work {
 +	unsigned long n;
 +	int attempt, timeout;
 +	char *sys, *prompt, *prev, *url, *key, *extra;
 +};
 +struct agent_adv_job { unsigned long n; char *text; int st, attempt; };
-+/* Whether the endpoint is the sleeper's for the moment: the session sets it
-+ *   o n   i t s   w a y   i n t o   t h e   i n p u t   p o l l   a n d   t a k e s   i t   b a c k   t h e   i n s t a n t   i t   w a n t s 
-+* the model. The sleeper reads this and nothing else of the session. */
++/* Whether the endpoint is the sleeper's: the session sets it before the
++ * input wait and takes it back the moment it wants the model. */
 +static volatile sig_atomic_t agent_adv_free;
 +
 +static struct {
@@ -3695,7 +3661,6 @@ index c8c3d21f..c2c10978 100644
 +	int disabled;		/* endpoint unreachable: off for the session */
 +	/* the worker thread owns all of these, under mtx */
 +	pthread_mutex_t mtx;
-+	unsigned long grace;	/* ticks free so far: the sleeper's clock, reset when the session takes the endpoint back */
 +	int quit;		/* process exit */
 +	int stop;		/* a runner holds the endpoint: ^Z, or the spear asked */
 +	int thread;		/* the worker is running */
@@ -4004,9 +3969,9 @@ index c8c3d21f..c2c10978 100644
 +}
 +
 +/* The oldest closed USER or TURN entry it has not rated: not in b-6, not
-+ * staged, not queued, not given up on, at or above the last compaction;
-+ * 0 when none is left. One entry per request, since a batch lets the
-+ * model skip part of it unseen. */
++ * staged, not queued, not given up on, at or above the last compaction; 0
++ * when none. One entry per request, since a batch lets the model skip
++ * part of it unseen. */
 +static int agent_adv_next(unsigned long *num)
 +{
 +	struct agent_span *spans;
@@ -4043,10 +4008,10 @@ index c8c3d21f..c2c10978 100644
 +	}
 +	agent_adv.queue[agent_adv.nqueue++] = *w;
 +}
-+/* The topic request. The sleeper asks what the session is about and renames
-+ * its directory from the start time to "<topic>_<start time>", so that a
-+ * later resume or an ls of the log directory says what a session holds.
-+ * Asked once, of the first entries, with the same rules as a rating. */
++/* The topic request: asks what the session is about and renames its
++ * directory from the start time to "<topic>_<start time>", so that a resume
++ * or an ls says what a session holds. Asked once, under the rules of a
++ * rating. */
 +static char agent_adv_name_intro[] =
 +	"You name the session log of another model, the spear.\n"
 +	"You have no access to the editor: you only answer with a name.\n"
@@ -4160,10 +4125,9 @@ index c8c3d21f..c2c10978 100644
 +}
 +
 +/* The identifier a name reply carries: lower case words joined with
-+ * underscores, at most ADV_NAME_WORDS words, or NULL. The last such token
-+ * wins, so prose around the answer costs nothing: a sentence has no
-+ * underscore between its words. The reply leads with "T"; a reply holding
-+ * the name alone is read as it. */
++ * underscores, at most ADV_NAME_WORDS, or NULL. The last such token wins, so
++ * prose around the answer costs nothing. The reply leads with "T"; a reply
++ * holding the name alone is read as it. */
 +static char *agent_adv_name_parse(const char *reply)
 +{
 +	const char *s, *pick = NULL;
@@ -4280,8 +4244,7 @@ index c8c3d21f..c2c10978 100644
 +	pthread_mutex_unlock(&agent_adv.mtx);
 +}
 +
-+/* Why a request came back with nothing: one set of words for the naming request
-+ * and for an entry alike, so that no bare curl number reaches b-9. */
++/* Why a request came back with nothing: no bare curl status reaches b-9. */
 +static const char *agent_adv_why(int st)
 +{
 +	return st == -2 ? "not asked" : st < 0 ? "killed" :
@@ -4431,8 +4394,7 @@ index c8c3d21f..c2c10978 100644
 +
 +/* Ask the model about one entry and wait, on the worker thread: answer and
 + * errors go to two files, so the wait is a plain waitpid and the read a
-+ * plain read, with no poll and no pipe that can fill. Reply body, or NULL
-+ * with the curl status in *st. */
++ * plain read. Reply body, or NULL with the curl status in *st. */
 +static char *agent_adv_ask(struct agent_adv_work *w, int *st)
 +{
 +	char hdrpath[] = "/tmp/nextvi-header-XXXXXX",
@@ -4597,18 +4559,13 @@ index c8c3d21f..c2c10978 100644
 +		free(agent_adv.queue[i].extra);
 +	}
 +	agent_adv.nqueue = 0;
-+	agent_adv.grace = 0;	/* the tick clock restarts with the queue */
 +}
 +
-+/* The sleeper thread. It sleeps while the spear owns the model, while a
-+ * runner holds the endpoint, or while nothing is queued: one flag says
-+ * whether answers may be freed and another says whether the endpoint is
-+ * taken, so no condition variable, clock or epoch decides when the sleeper
-+ * works and no signal that might never arrive can leave it asleep with
-+ * entries queued to rate. Once a run has begun, an answer is followed by
-+ * the next submission, not by another wait. A request already sent is
-+ * never cancelled: killing curl mid-answer would leave an entry half
-+ * rated, so the entry goes back to the queue. */
++/* The sleeper thread: ticks on ADV_TICK while the spear owns the model, a
++ * runner holds the endpoint, or nothing is queued, so no missed wake-up can
++ * leave entries queued unrated. An answer is followed by the next
++ * submission, not another wait; a request already sent is never cancelled,
++ * so an interrupted entry goes back to the queue whole. */
 +static void *agent_adv_worker(void *unused)
 +{
 +	struct timespec ts;
@@ -4829,10 +4786,9 @@ index c8c3d21f..c2c10978 100644
 +}
 +
 +/* Stage the rating a reply carries. Models wrap the answer in prose, so
-+ * lines that are not a rating are ignored, and markdown or the separators
-+ * after a number are stripped. The entry number is advisory, the model
-+ * echoing an earlier one as often as the one asked about: an exact match
-+ * wins, and a reply with one rating for anything else is read as it. */
++ * lines that are not a rating are ignored and markdown or separators after
++ * a number are stripped. The entry number is advisory: an exact match
++ * wins, and a reply with one rating is read as it. */
 +static void agent_adv_parse(unsigned long want, const char *reply)
 +{
 +	char ln[2048], *p, *q, *d, *alt = NULL;
@@ -4926,13 +4882,12 @@ index c8c3d21f..c2c10978 100644
 +
 +#define ADV_HELP 4			/* requests a stopped editor may finish */
 +
-+/* A stopped editor cannot rate: SIGSTOP takes every thread, and ^Z reaches
++/* A stopped editor cannot rate: SIGSTOP takes every thread and ^Z reaches
 + * the curl child in the foreground group. So the quiet run goes on in a
-+ * process of its own, in its own group, out of reach of both: it takes the
-+ * prompts the sleeper had queued, waits, asks, and leaves each answer in a
-+ * file; only the reading, the b-9 line and the staging wait for the return,
-+ * which is the next input wait. Forked after the worker is joined, so the
-+ * child copies a heap with one thread in it. */
++ * process of its own, in its own group: it takes the prompts the sleeper
++ * queued, asks, and leaves each answer in a file; only the reading, the
++ * b-9 line and the staging wait for the return. Forked after the worker is
++ * joined, so the child copies a heap with one thread in it. */
 +struct agent_adv_help {
 +	pid_t pid;
 +	int njob;
@@ -4968,8 +4923,7 @@ index c8c3d21f..c2c10978 100644
 +	return s;
 +}
 +
-+/* The runner's job: one entry, in a file only this user can read, which owns
-+ * the name mkstemp made. */
++/* The runner's job: one entry, in a file only this user can read. */
 +static int agent_adv_help_job(struct agent_adv_work *w, int i)
 +{
 +	struct agent_adv_help *h = &agent_help;
@@ -5000,8 +4954,8 @@ index c8c3d21f..c2c10978 100644
 +	return 1;
 +}
 +
-+/* What the sleeper's thread does with a prompt, done here instead: quiet
-+ * first, then the request, then the answer where the editor will find it. */
++/* What the sleeper's thread does with a prompt, done here instead: the
++ * request, then the answer where the editor will find it. */
 +static void agent_adv_help_run(int n)
 +{
 +	struct timespec ts;
@@ -5195,17 +5149,12 @@ index c8c3d21f..c2c10978 100644
 +		agent_adv_start();
 +}
 +
-+/* The handshake is one flag: the main thread sets agent_adv_free before
-+ * it waits for input and clears it the moment the session wants the model,
-+ * and the sleeper reads nothing else of the session. A clock, an epoch and
-+ * a condition variable once decided when it might work, and a wake-up that
-+ * never arrived left it asleep with entries still queued to rate. */
++/* The handshake is one flag: agent_adv_free is set before the input wait
++ * and cleared the moment the session wants the model. */
 +
-+/* End the request the sleeper has in flight, if any, and mark it ended: the
-+ * entry goes back to the queue unrated, so the next downtime asks it again.
-+ * The pid is read under the mutex, so it is never a process already reaped.
-+ * The sleeper's curl runs in a group of its own, so ^Z stops neither it nor
-+ * the editor's own wait; see agent_adv_suspend. */
++/* End the request the sleeper has in flight, if any: the entry goes back to
++ * the queue unrated, so the next downtime asks it again. The pid is read
++ * under the mutex, so it is never a process already reaped. */
 +static void agent_adv_stop(void)
 +{
 +	pid_t pid;
@@ -5236,9 +5185,8 @@ index c8c3d21f..c2c10978 100644
 +	agent_adv_free = 1;
 +}
 +
-+/* Entering or leaving the input wait. Leaving is work of its own: the
-+ * session has the endpoint back the moment it wants it, and a request still
-+ * waiting is ended rather than waited for. */
++/* Entering or leaving the input wait: leaving takes the endpoint back at
++ * once and ends a request still waiting. */
 +void agent_adv_wait(int on)
 +{
 +	if (!agent_adv.on)
@@ -5269,7 +5217,7 @@ index c8c3d21f..c2c10978 100644
 +}
 +
 +/* The spear takes the endpoint back for good, or is about to rate what the
-+ * sleeper staged: what the sleeper holds is the spear's to rate. */
++ * sleeper staged. */
 +void agent_adv_preempt(void)
 +{
 +	if (!agent_adv.on)
@@ -5410,7 +5358,7 @@ index c8c3d21f..c2c10978 100644
  
  static char *agent_snapshot(char *loc)
  {
-@@ -3140,6 +4956,10 @@ static void agent_run_loop(const char *input)
+@@ -3140,6 +4930,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -5421,7 +5369,7 @@ index c8c3d21f..c2c10978 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4919,6 +6739,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4919,6 +6713,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -5433,7 +5381,7 @@ index c8c3d21f..c2c10978 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5011,6 +6836,11 @@ static int agent_autocompact(void)
+@@ -5011,6 +6810,11 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
