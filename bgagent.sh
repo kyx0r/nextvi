@@ -2843,25 +2843,28 @@ case "\$OS" in5??0?
 '\''1s/ \\\\/ -pthread \\\\/??!219reg cbuild.sh:49:m12sc %? %@2142sc!0?
 '\''2i             spec("adv[0]  Rate the session log with the adversary",
                 "No argument toggles between 0 and 1. 0 disables.",
-                "With 1 a second model, the adversary, reviews closed USER and TURN\n" \
-                "entries of b-4 while the spear is idle: one entry per request, oldest\n" \
-                "first, preempted the moment the spear takes the endpoint back. It\n" \
-                "cannot act and sees no editor state; it rates an entry 0 to 3, as\n" \
-                "arate does, and justifies the rating in one short sentence. Ratings\n" \
-                "stage until a checkpoint or a compaction merges them into b-6, where\n" \
-                "arate reads and replaces them; ali and checkpoint lists show them.\n" \
-                "The endpoint is shared, so one request is in flight at a time. b-9\n" \
-                "shows the review and the session directory keeps it as adversary.\n" \
-                "It names the session too: of the first entries it asks for\n" \
-                "two or three short lower case words, and renames the session\n" \
-                "directory from its start time, so that 20261126-232040 becomes\n" \
-                "blockchain_question_20261126-232040 and a later resume or ls of\n" \
-                "the log directory says what a session holds. A directory the\n" \
-                "user named keeps its name.\n" \
-                "A ^Z does not stop the rating: the prompts the sleeper had built\n" \
-                "are finished by a runner of its own, in a group of its own, and\n" \
-                "the answers it brought in while the editor was stopped are staged\n" \
-                "at the first input wait back.")
+                "With 1 a second model, the adversary, rates the closed USER and\n" \
+                "TURN entries of b-4 while the spear is idle: one entry per request,\n" \
+                "oldest first, only entries at or above the last EPOCH, so a\n" \
+                "compaction drops what it covered. Skipped are entries the spear\n" \
+                "rated itself, ones still queued or staged, ones it gave up on.\n" \
+                "The newest 64 ratings of b-6 and the staged ones ride along as\n" \
+                "context. It rates an entry 0 to 3, as arate does, with one short\n" \
+                "sentence; a reply with no rating stages as ? for the spear to\n" \
+                "rate. An entry is never asked twice. Ratings stage until a kind 1\n" \
+                "checkpoint or a compaction merges them into b-6, where arate\n" \
+                "reads and replaces them; ali and checkpoint lists show them.\n" \
+                "One request is in flight at a time: the worker wakes and stops\n" \
+                "within 250 ms of the spear going idle or busy, and an in-flight\n" \
+                "request is killed with its entry requeued unrated. At most 8\n" \
+                "prompts, 64 KiB of prompt text and 8 answers may wait.\n" \
+                "endpoint, api_key and request_extra must all be set. b-9 shows\n" \
+                "the review, latest 5000 lines, kept as adversary in the session\n" \
+                "directory. That directory is also named: from the first 2000 log\n" \
+                "bytes the worker asks, up to 3 times, for two or three lower case\n" \
+                "words, at most 48 bytes, so 20261126-232040 becomes\n" \
+                "blockchain_question_20261126-232040; a user-named directory keeps\n" \
+                "its name. ^Z stops the worker with the editor.")
 ??!219reg cbuild.sh:365:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> static char \*endpoint = "http://127\.0\.0\.1:8080/v1/chat/completions";
 static char \*request_extra = "\{}";	/\* extra JSON request fields; arq changes them \*/
@@ -3216,55 +3219,58 @@ _EO\(agr, xagr = \*arg \? MAX\(0, eo_val\(arg\)\) : xagr \? 0 : 4096; return NUL
 '\''1i 	"adv[0]  Rate the session log with the adversary",
 	"No argument toggles between 0 and 1. 0 disables.",
 	"",
-	"With 1 a second model, the adversary, reviews closed USER and TURN",
-	"entries of b-4 while the spear is idle: one entry per request, oldest",
-	"first, preempted the moment the spear takes the endpoint back. It",
-	"cannot act and sees no editor state; it rates an entry 0 to 3, as",
-	"arate does, and justifies the rating in one short sentence. Ratings",
-	"stage until a checkpoint or a compaction merges them into b-6, where",
-	"arate reads and replaces them; ali and checkpoint lists show them.",
-	"The endpoint is shared, so one request is in flight at a time. b-9",
-	"shows the review and the session directory keeps it as adversary.",
-	"It names the session too: of the first entries it asks for",
-	"two or three short lower case words, and renames the session",
-	"directory from its start time, so that 20261126-232040 becomes",
-	"blockchain_question_20261126-232040 and a later resume or ls of",
-	"the log directory says what a session holds. A directory the",
-	"user named keeps its name.",
-	"A ^Z does not stop the rating: the prompts the sleeper had built",
-	"are finished by a runner of its own, in a group of its own, and",
-	"the answers it brought in while the editor was stopped are staged",
-	"at the first input wait back.",
+	"With 1 a second model, the adversary, rates the closed USER and",
+	"TURN entries of b-4 while the spear is idle: one entry per request,",
+	"oldest first, only entries at or above the last EPOCH, so a",
+	"compaction drops what it covered. Skipped are entries the spear",
+	"rated itself, ones still queued or staged, ones it gave up on.",
+	"The newest 64 ratings of b-6 and the staged ones ride along as",
+	"context. It rates an entry 0 to 3, as arate does, with one short",
+	"sentence; a reply with no rating stages as \? for the spear to",
+	"rate. An entry is never asked twice. Ratings stage until a kind 1",
+	"checkpoint or a compaction merges them into b-6, where arate",
+	"reads and replaces them; ali and checkpoint lists show them.",
+	"One request is in flight at a time: the worker wakes and stops",
+	"within 250 ms of the spear going idle or busy, and an in-flight",
+	"request is killed with its entry requeued unrated. At most 8",
+	"prompts, 64 KiB of prompt text and 8 answers may wait.",
+	"endpoint, api_key and request_extra must all be set. b-9 shows",
+	"the review, latest 5000 lines, kept as adversary in the session",
+	"directory. That directory is also named: from the first 2000 log",
+	"bytes the worker asks, up to 3 times, for two or three lower case",
+	"words, at most 48 bytes, so 20261126-232040 becomes",
+	"blockchain_question_20261126-232040; a user-named directory keeps",
+	"its name. ^Z stops the worker with the editor.",
 	"",
 ??!219reg exspec.h:1199:m12sc %? %@2142sc!0?
-'\''2,#+26c 	{"adv", "Rate the session log with the adversary", 1197, 1219, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1220, 1225, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1226, 1250, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1251, 1258, 1, 0},
-	{"ai", "Indent new lines", 1259, 1262, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1263, 1264, 1, 0},
-	{"ish", "Interactive shell", 1265, 1280, 1, 0},
-	{"grp", "Regex search group", 1281, 1289, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1290, 1293, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1294, 1295, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1295, 1296, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1296, 1297, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1297, 1298, 1, 0},
-	{"led", "Enable all terminal output", 1298, 1299, 1, 0},
-	{"vis", "Control startup flags", 1300, 1311, 1, 0},
-	{"mpt", "Control vi prompts", 1312, 1322, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1323, 1325, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1325, 1327, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1327, 1328, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1328, 1329, 1, 0},
-	{"td", "Current text direction context", 1329, 1335, 1, 0},
-	{"pr", "Print register", 1336, 1352, 1, 0},
-	{"fr", "Find register", 1353, 1365, 1, 0},
-	{"rr", "Record register", 1366, 1379, 1, 0},
-	{"lim", "Line length render limit", 1380, 1395, 1, 0},
-	{"seq", "Control Undo/Redo", 1396, 1408, 1, 0},
-	{"left", "Control horizontal scroll", 1409, 1414, 1, 0},
-	{"err", "Control ex errors", 1415, 1427, 1, 0},
+'\''2,#+26c 	{"adv", "Rate the session log with the adversary", 1197, 1222, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1223, 1228, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1229, 1253, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1254, 1261, 1, 0},
+	{"ai", "Indent new lines", 1262, 1265, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1266, 1267, 1, 0},
+	{"ish", "Interactive shell", 1268, 1283, 1, 0},
+	{"grp", "Regex search group", 1284, 1292, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1293, 1296, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1297, 1298, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1298, 1299, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1299, 1300, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1300, 1301, 1, 0},
+	{"led", "Enable all terminal output", 1301, 1302, 1, 0},
+	{"vis", "Control startup flags", 1303, 1314, 1, 0},
+	{"mpt", "Control vi prompts", 1315, 1325, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1326, 1328, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1328, 1330, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1330, 1331, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1331, 1332, 1, 0},
+	{"td", "Current text direction context", 1332, 1338, 1, 0},
+	{"pr", "Print register", 1339, 1355, 1, 0},
+	{"fr", "Find register", 1356, 1368, 1, 0},
+	{"rr", "Record register", 1369, 1382, 1, 0},
+	{"lim", "Line length render limit", 1383, 1398, 1, 0},
+	{"seq", "Control Undo/Redo", 1399, 1411, 1, 0},
+	{"left", "Control horizontal scroll", 1412, 1417, 1, 0},
+	{"err", "Control ex errors", 1418, 1430, 1, 0},
 ??!219reg exspec.h:1563:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> 	tibuf_cnt \+= n;
 }
@@ -5213,7 +5219,7 @@ index cd3c8383..ff853b9a 100644
  static void agent_capture_add(const char *s, int n);
  static int agent_interrupted(void);
 diff --git a/cbuild.sh b/cbuild.sh
-index c71b06e2..f8de413d 100755
+index c71b06e2..23207611 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -46,7 +46,7 @@ CFLAGS="\
@@ -5225,31 +5231,34 @@ index c71b06e2..f8de413d 100755
  $CFLAGS"
  
  case "$OS" in
-@@ -363,6 +363,27 @@ spec() {
+@@ -363,6 +363,30 @@ spec() {
                  "the foreground. After that it runs on in the background: the result\n" \
                  "has error 124, its process group and a file receiving later output.\n" \
                  "A later tool result reports its exit status.")
 +            spec("adv[0]  Rate the session log with the adversary",
 +                "No argument toggles between 0 and 1. 0 disables.",
-+                "With 1 a second model, the adversary, reviews closed USER and TURN\n" \
-+                "entries of b-4 while the spear is idle: one entry per request, oldest\n" \
-+                "first, preempted the moment the spear takes the endpoint back. It\n" \
-+                "cannot act and sees no editor state; it rates an entry 0 to 3, as\n" \
-+                "arate does, and justifies the rating in one short sentence. Ratings\n" \
-+                "stage until a checkpoint or a compaction merges them into b-6, where\n" \
-+                "arate reads and replaces them; ali and checkpoint lists show them.\n" \
-+                "The endpoint is shared, so one request is in flight at a time. b-9\n" \
-+                "shows the review and the session directory keeps it as adversary.\n" \
-+                "It names the session too: of the first entries it asks for\n" \
-+                "two or three short lower case words, and renames the session\n" \
-+                "directory from its start time, so that 20261126-232040 becomes\n" \
-+                "blockchain_question_20261126-232040 and a later resume or ls of\n" \
-+                "the log directory says what a session holds. A directory the\n" \
-+                "user named keeps its name.\n" \
-+                "A ^Z does not stop the rating: the prompts the sleeper had built\n" \
-+                "are finished by a runner of its own, in a group of its own, and\n" \
-+                "the answers it brought in while the editor was stopped are staged\n" \
-+                "at the first input wait back.")
++                "With 1 a second model, the adversary, rates the closed USER and\n" \
++                "TURN entries of b-4 while the spear is idle: one entry per request,\n" \
++                "oldest first, only entries at or above the last EPOCH, so a\n" \
++                "compaction drops what it covered. Skipped are entries the spear\n" \
++                "rated itself, ones still queued or staged, ones it gave up on.\n" \
++                "The newest 64 ratings of b-6 and the staged ones ride along as\n" \
++                "context. It rates an entry 0 to 3, as arate does, with one short\n" \
++                "sentence; a reply with no rating stages as ? for the spear to\n" \
++                "rate. An entry is never asked twice. Ratings stage until a kind 1\n" \
++                "checkpoint or a compaction merges them into b-6, where arate\n" \
++                "reads and replaces them; ali and checkpoint lists show them.\n" \
++                "One request is in flight at a time: the worker wakes and stops\n" \
++                "within 250 ms of the spear going idle or busy, and an in-flight\n" \
++                "request is killed with its entry requeued unrated. At most 8\n" \
++                "prompts, 64 KiB of prompt text and 8 answers may wait.\n" \
++                "endpoint, api_key and request_extra must all be set. b-9 shows\n" \
++                "the review, latest 5000 lines, kept as adversary in the session\n" \
++                "directory. That directory is also named: from the first 2000 log\n" \
++                "bytes the worker asks, up to 3 times, for two or three lower case\n" \
++                "words, at most 48 bytes, so 20261126-232040 becomes\n" \
++                "blockchain_question_20261126-232040; a user-named directory keeps\n" \
++                "its name. ^Z stops the worker with the editor.")
              spec("ar[1]  Log and display returned agent reasoning",
                  "No argument logically inverts the option.",
                  "0 does not log returned reasoning. 1 logs it, as part 0 of a turn,\n" \
@@ -5305,40 +5314,43 @@ index b9c3c718..36cef1c2 100644
  	{"ast", ec_ast},
  	{"ath", ec_ath},
 diff --git a/exspec.h b/exspec.h
-index 7f429cb2..74089568 100644
+index 7f429cb2..1dbda6d4 100644
 --- a/exspec.h
 +++ b/exspec.h
-@@ -1197,6 +1197,29 @@ static char *exspec_lines[] = {
+@@ -1197,6 +1197,32 @@ static char *exspec_lines[] = {
  	"has error 124, its process group and a file receiving later output.",
  	"A later tool result reports its exit status.",
  	"",
 +	"adv[0]  Rate the session log with the adversary",
 +	"No argument toggles between 0 and 1. 0 disables.",
 +	"",
-+	"With 1 a second model, the adversary, reviews closed USER and TURN",
-+	"entries of b-4 while the spear is idle: one entry per request, oldest",
-+	"first, preempted the moment the spear takes the endpoint back. It",
-+	"cannot act and sees no editor state; it rates an entry 0 to 3, as",
-+	"arate does, and justifies the rating in one short sentence. Ratings",
-+	"stage until a checkpoint or a compaction merges them into b-6, where",
-+	"arate reads and replaces them; ali and checkpoint lists show them.",
-+	"The endpoint is shared, so one request is in flight at a time. b-9",
-+	"shows the review and the session directory keeps it as adversary.",
-+	"It names the session too: of the first entries it asks for",
-+	"two or three short lower case words, and renames the session",
-+	"directory from its start time, so that 20261126-232040 becomes",
-+	"blockchain_question_20261126-232040 and a later resume or ls of",
-+	"the log directory says what a session holds. A directory the",
-+	"user named keeps its name.",
-+	"A ^Z does not stop the rating: the prompts the sleeper had built",
-+	"are finished by a runner of its own, in a group of its own, and",
-+	"the answers it brought in while the editor was stopped are staged",
-+	"at the first input wait back.",
++	"With 1 a second model, the adversary, rates the closed USER and",
++	"TURN entries of b-4 while the spear is idle: one entry per request,",
++	"oldest first, only entries at or above the last EPOCH, so a",
++	"compaction drops what it covered. Skipped are entries the spear",
++	"rated itself, ones still queued or staged, ones it gave up on.",
++	"The newest 64 ratings of b-6 and the staged ones ride along as",
++	"context. It rates an entry 0 to 3, as arate does, with one short",
++	"sentence; a reply with no rating stages as \? for the spear to",
++	"rate. An entry is never asked twice. Ratings stage until a kind 1",
++	"checkpoint or a compaction merges them into b-6, where arate",
++	"reads and replaces them; ali and checkpoint lists show them.",
++	"One request is in flight at a time: the worker wakes and stops",
++	"within 250 ms of the spear going idle or busy, and an in-flight",
++	"request is killed with its entry requeued unrated. At most 8",
++	"prompts, 64 KiB of prompt text and 8 answers may wait.",
++	"endpoint, api_key and request_extra must all be set. b-9 shows",
++	"the review, latest 5000 lines, kept as adversary in the session",
++	"directory. That directory is also named: from the first 2000 log",
++	"bytes the worker asks, up to 3 times, for two or three lower case",
++	"words, at most 48 bytes, so 20261126-232040 becomes",
++	"blockchain_question_20261126-232040; a user-named directory keeps",
++	"its name. ^Z stops the worker with the editor.",
 +	"",
  	"ar[1]  Log and display returned agent reasoning",
  	"No argument logically inverts the option.",
  	"",
-@@ -1560,31 +1583,32 @@ static struct {
+@@ -1560,31 +1586,32 @@ static struct {
  	{"aco!", "Automatically compact by browsing the session log", 1176, 1182, 1, 0},
  	{"agr", "Control agent output protection", 1183, 1188, 1, 0},
  	{"ato", "Detach long agent shell commands", 1189, 1196, 1, 0},
@@ -5369,34 +5381,34 @@ index 7f429cb2..74089568 100644
 -	{"seq", "Control Undo/Redo", 1373, 1385, 1, 0},
 -	{"left", "Control horizontal scroll", 1386, 1391, 1, 0},
 -	{"err", "Control ex errors", 1392, 1404, 1, 0},
-+	{"adv", "Rate the session log with the adversary", 1197, 1219, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1220, 1225, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1226, 1250, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1251, 1258, 1, 0},
-+	{"ai", "Indent new lines", 1259, 1262, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1263, 1264, 1, 0},
-+	{"ish", "Interactive shell", 1265, 1280, 1, 0},
-+	{"grp", "Regex search group", 1281, 1289, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1290, 1293, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1294, 1295, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1295, 1296, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1296, 1297, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1297, 1298, 1, 0},
-+	{"led", "Enable all terminal output", 1298, 1299, 1, 0},
-+	{"vis", "Control startup flags", 1300, 1311, 1, 0},
-+	{"mpt", "Control vi prompts", 1312, 1322, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1323, 1325, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1325, 1327, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1327, 1328, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1328, 1329, 1, 0},
-+	{"td", "Current text direction context", 1329, 1335, 1, 0},
-+	{"pr", "Print register", 1336, 1352, 1, 0},
-+	{"fr", "Find register", 1353, 1365, 1, 0},
-+	{"rr", "Record register", 1366, 1379, 1, 0},
-+	{"lim", "Line length render limit", 1380, 1395, 1, 0},
-+	{"seq", "Control Undo/Redo", 1396, 1408, 1, 0},
-+	{"left", "Control horizontal scroll", 1409, 1414, 1, 0},
-+	{"err", "Control ex errors", 1415, 1427, 1, 0},
++	{"adv", "Rate the session log with the adversary", 1197, 1222, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1223, 1228, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1229, 1253, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1254, 1261, 1, 0},
++	{"ai", "Indent new lines", 1262, 1265, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1266, 1267, 1, 0},
++	{"ish", "Interactive shell", 1268, 1283, 1, 0},
++	{"grp", "Regex search group", 1284, 1292, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1293, 1296, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1297, 1298, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1298, 1299, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1299, 1300, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1300, 1301, 1, 0},
++	{"led", "Enable all terminal output", 1301, 1302, 1, 0},
++	{"vis", "Control startup flags", 1303, 1314, 1, 0},
++	{"mpt", "Control vi prompts", 1315, 1325, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1326, 1328, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1328, 1330, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1330, 1331, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1331, 1332, 1, 0},
++	{"td", "Current text direction context", 1332, 1338, 1, 0},
++	{"pr", "Print register", 1339, 1355, 1, 0},
++	{"fr", "Find register", 1356, 1368, 1, 0},
++	{"rr", "Record register", 1369, 1382, 1, 0},
++	{"lim", "Line length render limit", 1383, 1398, 1, 0},
++	{"seq", "Control Undo/Redo", 1399, 1411, 1, 0},
++	{"left", "Control horizontal scroll", 1412, 1417, 1, 0},
++	{"err", "Control ex errors", 1418, 1430, 1, 0},
  };
 diff --git a/term.c b/term.c
 index 4668eda9..ddcc8703 100644
