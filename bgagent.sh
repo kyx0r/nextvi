@@ -866,7 +866,6 @@ static void agent_checkpoint_end(void)
 #define ADV_REPLY_MAX (4 << 20)		/* reply bytes kept */
 #define ADV_LOG_MAX 5000		/* b-9 lines kept */
 #define ADV_PRIOR 64			/* earlier ratings the model may lean on */
-#define ADV_GRACE 5000			/* ms free before the sleeper works */
 #define ADV_TICK 250			/* ms between the sleeper'\''s wake-ups */
 #define ADV_QUEUE 8			/* prompts the sleeper may hold */
 #define ADV_QUEUE_MAX (64 << 10)	/* prompt bytes the sleeper may hold */
@@ -912,7 +911,6 @@ static struct {
 	/* the worker thread owns all of these, under mtx */
 	pthread_mutex_t mtx;
 	int quit;		/* process exit */
-	int stop;		/* a runner holds the endpoint: ^Z, or the spear asked */
 	int thread;		/* the worker is running */
 	pthread_t td;
 	int busy;		/* a request is in flight */
@@ -940,8 +938,6 @@ static void agent_adv_nudge(void);
 static void agent_adv_stop(void);
 static void agent_adv_collect(void);
 static int agent_adv_staged_has(unsigned long n);
-static void agent_adv_help_read(void);
-static void agent_adv_help_drop(void);
 static int agent_adv_wanted(void);
 static void agent_adv_parse(unsigned long want, const char *reply);
 static char *agent_adv_sys(unsigned long n);
@@ -1811,11 +1807,11 @@ static void agent_adv_untake(void)
 	agent_adv.nqueue = 0;
 }
 
-/* The sleeper thread: ticks on ADV_TICK while the spear owns the model, a
- * runner holds the endpoint, or nothing is queued, so no missed wake-up can
- * leave entries queued unrated. An answer is followed by the next
- * submission, not another wait; a request already sent is never cancelled,
- * so an interrupted entry goes back to the queue whole. */
+/* The sleeper thread: ticks on ADV_TICK while the spear owns the model or
+ * nothing is queued, so no missed wake-up can leave entries queued unrated.
+ * An answer is followed by the next submission, not another wait; a request
+ * already sent is never cancelled, so an interrupted entry goes back to the
+ * queue whole. */
 static void *agent_adv_worker(void *unused)
 {
 	struct timespec ts;
@@ -1839,8 +1835,7 @@ static void *agent_adv_worker(void *unused)
 		for (;;) {
 			if (agent_adv.quit)
 				break;
-			if (agent_adv_free && !agent_adv.stop &&
-				agent_adv.nqueue)
+			if (agent_adv_free && agent_adv.nqueue)
 				break;
 			pthread_mutex_unlock(&agent_adv.mtx);
 			ts.tv_sec = ADV_TICK / 1000;
@@ -2130,275 +2125,6 @@ static void agent_adv_nb(int fd)
 		fcntl(fd, F_SETFL, fl | O_NONBLOCK);
 }
 
-#define ADV_HELP 4			/* requests a stopped editor may finish */
-
-/* A stopped editor cannot rate: SIGSTOP takes every thread and ^Z reaches
- * the curl child in the foreground group. So the quiet run goes on in a
- * process of its own, in its own group: it takes the prompts the sleeper
- * queued, asks, and leaves each answer in a file; only the reading, the
- * b-9 line and the staging wait for the return. Forked after the worker is
- * joined, so the child copies a heap with one thread in it. */
-struct agent_adv_help {
-	pid_t pid;
-	int njob;
-	struct {
-		unsigned long n;
-		int attempt, got, timeout;
-		char path[64], out[64], st[64];
-	} j[ADV_HELP];
-};
-static struct agent_adv_help agent_help = { .pid = -1 };
-
-/* A string with its length first, so that newlines inside it mean nothing. */
-static void agent_adv_wstr(FILE *f, const char *s)
-{
-	size_t l = s ? strlen(s) : 0;
-	if (fprintf(f, "%zu\n", l) >= 0 && l)
-		fwrite(s, 1, l, f);
-}
-
-static char *agent_adv_rstr(FILE *f)
-{
-	size_t l;
-	char *s;
-	if (fscanf(f, "%zu", &l) != 1 || l > (size_t)ADV_REPLY_MAX)
-		return NULL;
-	if (!(s = malloc(l + 1)))
-		return NULL;
-	if (l && fread(s, 1, l, f) != l) {
-		free(s);
-		return NULL;
-	}
-	s[l] = '\''\0'\'';
-	return s;
-}
-
-/* The runner'\''s job: one entry, in a file only this user can read. */
-static int agent_adv_help_job(struct agent_adv_work *w, int i)
-{
-	struct agent_adv_help *h = &agent_help;
-	char tmpl[] = "/tmp/nextvi-advrun-XXXXXX";
-	FILE *f;
-	int fd = mkstemp(tmpl);
-	if (fd < 0)
-		return 0;
-	close(fd);
-	snprintf(h->j[i].path, sizeof(h->j[i].path), "%s", tmpl);
-	snprintf(h->j[i].out, sizeof(h->j[i].out), "%s.out", tmpl);
-	snprintf(h->j[i].st, sizeof(h->j[i].st), "%s.st", tmpl);
-	h->j[i].n = w->n;
-	h->j[i].attempt = w->attempt;
-	h->j[i].timeout = w->timeout;
-	h->j[i].got = 0;
-	if (!(f = fopen(tmpl, "w"))) {
-		unlink(tmpl);
-		return 0;
-	}
-	agent_adv_wstr(f, w->sys);
-	agent_adv_wstr(f, w->prompt);
-	agent_adv_wstr(f, w->prev);
-	agent_adv_wstr(f, w->url);
-	agent_adv_wstr(f, w->key);
-	agent_adv_wstr(f, w->extra);
-	fclose(f);
-	return 1;
-}
-
-/* What the sleeper'\''s thread does with a prompt, done here instead: the
- * request, then the answer where the editor will find it. */
-static void agent_adv_help_run(int n)
-{
-	struct timespec ts;
-	char num[24];
-	struct agent_adv_work j;
-	struct agent_adv_help *h = &agent_help;
-	FILE *f;
-	char *text;
-	int i, st, fd;
-	/* The fork shares the sleeper'\''s curl file description and header name,
-	 * so the runner asks through temp files of its own, in its own group. */
-	agent_adv.fd[0] = agent_adv.fd[1] = -1;
-	*agent_adv.hdpath = 0;
-	setpgid(0, 0);
-	signal(SIGTTOU, SIG_IGN);
-	signal(SIGTTIN, SIG_IGN);
-	signal(SIGHUP, SIG_IGN);
-	signal(SIGINT, SIG_IGN);
-	for (i = 0; i < n; i++) {
-		ts.tv_sec = ADV_GRACE / 1000;
-		ts.tv_nsec = (long)(ADV_GRACE % 1000) * 1000000;
-		nanosleep(&ts, NULL);
-		if (!(f = fopen(h->j[i].path, "r")))
-			break;
-		j.n = h->j[i].n;
-		j.attempt = h->j[i].attempt;
-		j.timeout = h->j[i].timeout;
-		j.sys = agent_adv_rstr(f);
-		j.prompt = agent_adv_rstr(f);
-		j.prev = agent_adv_rstr(f);
-		j.url = agent_adv_rstr(f);
-		j.key = agent_adv_rstr(f);
-		j.extra = agent_adv_rstr(f);
-		fclose(f);
-		unlink(h->j[i].path);
-		text = j.sys && j.prompt && j.url && j.key ?
-			agent_adv_ask(&j, &st) : NULL;
-		if (text && (fd = open(h->j[i].out,
-				O_WRONLY | O_CREAT | O_TRUNC, 0600)) >= 0) {
-			agent_writeall(fd, text, strlen(text));
-			close(fd);
-		}
-		snprintf(num, sizeof(num), "%d\n", st);
-		if ((fd = open(h->j[i].st,
-				O_WRONLY | O_CREAT | O_TRUNC, 0600)) >= 0) {
-			agent_writeall(fd, num, strlen(num));
-			close(fd);
-		}
-		free(text);
-		free(j.sys);
-		free(j.prompt);
-		free(j.prev);
-		free(j.url);
-		free(j.key);
-		free(j.extra);
-	}
-	for (; i < n; i++)
-		unlink(h->j[i].path);
-	_exit(0);
-}
-
-/* Hand the queued prompts to a runner of its own and let the sleeper rest:
- * while the editor is stopped the runner is the only thing that asks. */
-void agent_adv_suspend(void)
-{
-	struct agent_adv_help *h = &agent_help;
-	struct agent_adv_work take[ADV_HELP];
-	int i, n = 0;
-	if (!agent_adv.on || agent_adv.disabled || h->pid > 0)
-		return;
-	agent_adv_fill();
-	pthread_mutex_lock(&agent_adv.mtx);
-	n = (int)(sizeof(take) / sizeof(*take));
-	if (n > agent_adv.nqueue)
-		n = agent_adv.nqueue;
-	for (i = 0; i < n; i++) {
-		if (!agent_adv_help_job(&agent_adv.queue[i], i))
-			break;
-		take[i] = agent_adv.queue[i];
-	}
-	n = i;
-	h->njob = n;
-	agent_adv.nqueue -= n;
-	if (agent_adv.nqueue)
-		memmove(agent_adv.queue, agent_adv.queue + n,
-			agent_adv.nqueue * sizeof(*agent_adv.queue));
-	/* The runner asks while the editor is stopped; the sleeper must not. */
-	agent_adv.stop = 1;
-	pthread_mutex_unlock(&agent_adv.mtx);
-	agent_adv_stop();
-	agent_adv_halt();	/* one thread left when the child is forked */
-	if (n <= 0)
-		return;
-	h->pid = fork();
-	if (!h->pid)
-		agent_adv_help_run(n);	/* does not return */
-	if (h->pid < 0)
-		agent_adv_help_drop();
-	else
-		setpgid(h->pid, h->pid);
-	for (i = 0; i < n; i++) {	/* the child has a copy of its own */
-		free(take[i].sys);
-		free(take[i].prompt);
-		free(take[i].prev);
-		free(take[i].url);
-		free(take[i].key);
-		free(take[i].extra);
-	}
-}
-
-/* Kill the runner and its group and remove what it left; an entry it never
- * got to is unrated, as after a pre-empt. */
-static void agent_adv_help_drop(void)
-{
-	struct agent_adv_help *h = &agent_help;
-	int i;
-	if (h->pid <= 0)
-		return;
-	kill(-h->pid, SIGKILL);
-	waitpid(h->pid, NULL, 0);
-	for (i = 0; i < h->njob; i++) {
-		unlink(h->j[i].path);
-		unlink(h->j[i].out);
-		unlink(h->j[i].st);
-	}
-	h->pid = -1;
-	h->njob = 0;
-}
-
-/* Answers the runner left behind: staged at the first wait back, like an
- * answer from the sleeper'\''s own thread. */
-static void agent_adv_help_read(void)
-{
-	struct agent_adv_help *h = &agent_help;
-	struct agent_adv_job j;
-	char num[24];
-	FILE *f;
-	int i, fd, gone;
-	if (h->pid <= 0)
-		return;
-	gone = waitpid(h->pid, NULL, WNOHANG) != 0;
-	for (i = 0; i < h->njob; i++) {
-		if (h->j[i].got || !(f = fopen(h->j[i].st, "r")))
-			continue;
-		if (fscanf(f, "%23s", num) != 1)
-			*num = '\''\0'\'';
-		fclose(f);
-		j.n = h->j[i].n;
-		j.attempt = h->j[i].attempt;
-		j.st = *num ? atoi(num) : -2;
-		j.text = NULL;
-		if ((fd = open(h->j[i].out, O_RDONLY)) >= 0) {
-			j.text = agent_adv_slurp(fd, (int)ADV_REPLY_MAX);
-			close(fd);
-		}
-		unlink(h->j[i].out);
-		unlink(h->j[i].st);
-		h->j[i].got = 1;
-		pthread_mutex_lock(&agent_adv.mtx);
-		if (agent_adv.nout < ADV_OUT_MAX) {
-			if (agent_adv.nout == agent_adv.omax) {
-				agent_adv.omax = agent_adv.omax ?
-					agent_adv.omax * 2 : 8;
-				agent_adv.out = erealloc(agent_adv.out,
-					agent_adv.omax *
-					sizeof(*agent_adv.out));
-			}
-			agent_adv.out[agent_adv.nout++] = j;
-		}
-		else
-			free(j.text);
-		pthread_mutex_unlock(&agent_adv.mtx);
-	}
-	if (!gone)
-		return;
-	for (i = 0; i < h->njob; i++)
-		if (!h->j[i].got) {
-			unlink(h->j[i].path);
-			unlink(h->j[i].out);
-			unlink(h->j[i].st);
-		}
-	h->pid = -1;
-	h->njob = 0;
-}
-
-/* Back from a suspend: the runner'\''s answers are taken at the input wait
- * itself, so all that is left is to give the sleeper its thread again. */
-void agent_adv_resume(void)
-{
-	if (agent_adv.on)
-		agent_adv_start();
-}
-
 /* The handshake is one flag: agent_adv_free is set before the input wait
  * and cleared the moment the session wants the model. */
 
@@ -2427,7 +2153,6 @@ void agent_adv_service(void)
 		return;
 	while (agent_adv.notify[0] >= 0 &&
 			read(agent_adv.notify[0], buf, sizeof(buf)) > 0);
-	agent_adv_help_read();
 	agent_adv_collect();
 	if (!agent_adv.on || agent_adv.disabled)
 		return;
@@ -2441,11 +2166,6 @@ void agent_adv_wait(int on)
 {
 	if (!agent_adv.on)
 		return;
-	/* A runner left behind by a ^Z answers while the editor is stopped:
-	 * what it answered is taken up here, so a rating the model finished
-	 * during the suspend is staged at the first wait back and is never
-	 * left sitting in a file. */
-	agent_adv_help_read();
 	if (on)
 		agent_adv_free = 1;
 	else
@@ -2472,7 +2192,6 @@ void agent_adv_preempt(void)
 {
 	if (!agent_adv.on)
 		return;
-	agent_adv_help_drop();
 	agent_adv_stop();
 	pthread_mutex_lock(&agent_adv.mtx);
 	agent_adv_untake();
@@ -2493,7 +2212,6 @@ int agent_adv_start(void)
 		/* a kill left over from the last run would blacken the first
 		 * answer of this one */
 		agent_adv.killed = 0;
-		agent_adv.stop = 0;	/* a thread made after a ^Z may ask again */
 		pthread_mutex_unlock(&agent_adv.mtx);
 		if (pthread_create(&agent_adv.td, NULL, agent_adv_worker,
 				NULL))
@@ -2510,16 +2228,12 @@ int agent_adv_start(void)
 void agent_adv_off(void)
 {
 	agent_adv.on = 0;
-	/* :adv off leaves nothing asking behind, runner included */
-	agent_adv_help_drop();
-	agent_adv_stop();
+	agent_adv_stop();	/* :adv off leaves nothing asking behind */
 	agent_adv_clear();
 }
 
 void agent_adv_halt(void)
 {
-	/* a runner left by a ^Z is not left running behind the editor */
-	agent_adv_help_drop();
 	if (!agent_adv.thread)
 		return;
 	pthread_mutex_lock(&agent_adv.mtx);
@@ -2648,8 +2362,6 @@ void agent_adv_wait(int on);	/* the editor is at, or away from, its wait */
 void agent_adv_service(void);	/* input wait: collect answers, feed the sleeper */
 int agent_adv_fd(void);		/* the descriptor its wake-up arrives on */
 void agent_adv_activity(void);	/* the spear used the model or the editor */
-void agent_adv_suspend(void);	/* ^Z: hand the queued prompts to a runner */
-void agent_adv_resume(void);	/* ^Z back: the sleeper takes its thread again */
 static void agent_adv_collect(void);
 static void agent_adv_merge(void);
 static void agent_adv_resync(void);
@@ -3158,84 +2870,30 @@ _EO\(agr, xagr = \*arg \? MAX\(0, eo_val\(arg\)\) : xagr \? 0 : 4096; return NUL
 	{"left", "Control horizontal scroll", 1409, 1414, 1, 0},
 	{"err", "Control ex errors", 1415, 1427, 1, 0},
 ??!219reg exspec.h:1563:m22sc %? %@2142sc!b6m!%ya 98?0?
-%f> 	if \(xvis & 8\)
-		term_scrl\(\)
-	term_done\(\);
-	kill\(0, SIGSTOP\);
-	term_init\(\);1??0?
-1??+2m 11q0?
-%f> 	if \(xvis & 8\)
-		term_scrl\(\)
-	term_done\(\);4??0?
-4??+2m 1220reg p OK term.c:57:a42sc %? %@2152sc!1q0?
-grp 1%f> 	if \(xvis & 8\).*?
-		term_scrl\(\).*?
-(	term_done\(\);)7??0?
-grp 07??m 1220reg p OK term.c:57:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	term_write\("\\x1b\[2J", 4\)	/\* clear screen \*/
-	term_write\("\\x1b\[H", 3\)		/\* cursor topleft \*/
-}.*(void term_commit\(void\))
-\{
-	term_write\(term_sbuf->s, term_sbuf->s_n\)8??0?
-grp 08??-7m 1220reg p OK term.c:57:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	term_sbuf = NULL;
-	tcsetattr\(term_ufd\.fd, 0, &termios\);
-}.*(	sbuf_cut\(term_sbuf, 0\))
-	term_record = 0;
-}9??0?
-grp 09??-10m 1220reg p OK term.c:57:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg term.c:572sc %? %@2132sc!0?
-?0?
-%f+ 	kill\(0, SIGSTOP\);
-	term_init\(\);
-	if \(xvis & 8\)
-		term_scrh\(\)
-}1??0?
-1??+1m 21q0?
-%f+ 	kill\(0, SIGSTOP\);
-	term_init\(\);4??0?
-4??+1m 2220reg p OK term.c:59:a42sc %? %@2152sc!1q0?
-grp 1%f+ 	kill\(0, SIGSTOP\);.*?
-(	term_init\(\);)7??0?
-grp 07??m 2220reg p OK term.c:59:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 	term_write\("\\x1b\[2J", 4\)	/\* clear screen \*/
-	term_write\("\\x1b\[H", 3\)		/\* cursor topleft \*/
-}.*(void term_commit\(void\))
-\{
-	term_write\(term_sbuf->s, term_sbuf->s_n\)8??0?
-grp 08??-5m 2220reg p OK term.c:59:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	term_sbuf = NULL;
-	tcsetattr\(term_ufd\.fd, 0, &termios\);
-}.*(	sbuf_cut\(term_sbuf, 0\))
-	term_record = 0;
-}9??0?
-grp 09??-8m 2220reg p OK term.c:59:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg term.c:592sc %? %@2132sc!0?
-?0?
-%f+ 	tibuf_cnt \+= n;
+%f> 	tibuf_cnt \+= n;
 }
 
 int term_read\(int winch\)
 \{
 	int cw;1??0?
-1??+2m 31q0?
-%f+ 	tibuf_cnt \+= n;
+1??+2m 11q0?
+%f> 	tibuf_cnt \+= n;
 }
 
 4??0?
-4??+2m 3220reg p OK term.c:142:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK term.c:142:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		tibuf_prev = tibuf_pos;
 	} else
 		memcpy\(tibuf \+ tibuf_cnt, s, n\);.*(	if \(tibuf_pos >= tibuf_cnt\) \{)
 		if \(texec\) \{
 			xquit = !xquit \? 1 : xquit;8??0?
-grp 08??-4m 3220reg p OK term.c:142:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK term.c:142:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			tibuf_cnt - tibuf_pos - texec_n\);
 		memcpy\(tibuf \+ tibuf_pos \+ texec_n, s, n\);
 		texec_n \+= n;.*(			if \(texec == '\''&'\''\))
 				goto err;
 		}9??0?
-grp 09??-7m 3220reg p OK term.c:142:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 1220reg p OK term.c:142:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg term.c:1422sc %? %@2132sc!0?
 ?0?
 %f+ 		cw = 0;
@@ -3245,22 +2903,22 @@ int term_read\(int winch\)
 				read\(term_ufd\.fd, tibuf, 1\) <= 0\) \{
 			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;
 			if \(term_winch && winch && xquit >= 0\) \{1??0?
-1??+3m 41q0?
+1??+3m 21q0?
 %f+ 		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|
 				read\(term_ufd\.fd, tibuf, 1\) <= 0\) \{
 			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;
 			if \(term_winch && winch && xquit >= 0\) \{2??0?
-2??m 4220reg p OK term.c:165:a22sc %? %@2152sc!1q0?
+2??m 2220reg p OK term.c:165:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|$3??0?
-3??m 4220reg p OK term.c:165:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 2220reg p OK term.c:165:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		cw = 0;
 		re:
 		/\* read a single input character \*/4??0?
-4??+3m 4220reg p OK term.c:165:a42sc %? %@2152sc!1q0?
+4??+3m 2220reg p OK term.c:165:a42sc %? %@2152sc!1q0?
 %f+ 				read\(term_ufd\.fd, tibuf, 1\) <= 0\) \{
 			xquit = !isatty\(term_ufd\.fd\) \? -1 : xquit;
 			if \(term_winch && winch && xquit >= 0\) \{5??0?
-5??-1m 4220reg p OK term.c:165:a52sc %? %@2152sc!1q0?
+5??-1m 2220reg p OK term.c:165:a52sc %? %@2152sc!1q0?
 %f+ ..cw.= ..
 ....:
 .	/............... .n..t.....a..e....
@@ -3268,32 +2926,26 @@ int term_read\(int winch\)
 .	.	.ea....rm.........t......1.....0..\{
 	....u.. ..!.sat....erm_..d.fd..\? .1...x...t;
 ......\(..rm..in......w.....&. .q.....= 0\) .6??0?
-6??+3m 4220reg p OK term.c:165:a62sc %? %@2152sc!1q0?
+6??+3m 2220reg p OK term.c:165:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		cw = 0;.*?
 		re:.*?
 		/\* read a single input character \*/.*?
 (		if \(xquit < 0 \|\| poll\(&term_ufd, 1, -1\) <= 0 \|\|)7??0?
-grp 07??m 4220reg p OK term.c:165:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK term.c:165:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			\*tibuf = winch;	/\* yield until term_winch is cleared \*/
 			goto ret;
 		}.*(				\*tibuf = winch;)
 				goto ret;
 			} else if \(term_winch != cw && !winch && xquit >= 0\) \{8??0?
-grp 08??-4m 4220reg p OK term.c:165:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK term.c:165:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			goto ret;
 		}
 		if \(term_winch && winch\) \{.*(				cw = term_winch;)
 				goto re;
 			}9??0?
-grp 09??-7m 4220reg p OK term.c:165:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 2220reg p OK term.c:165:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg term.c:1652sc %? %@2132sc!0?
-'\''1i 	/* SIGSTOP takes every thread, so the prompts the sleeper queued go
-	 * to a runner in a group of its own; see agent.c */
-	agent_adv_suspend();
-??!219reg term.c:57:m12sc %? %@2142sc!0?
-'\''2i 	agent_adv_resume();
-??!219reg term.c:59:m22sc %? %@2142sc!0?
-'\''3i /* Poll terminal input together with the adversary'\''s wake byte.  An answer
+'\''1i /* Poll terminal input together with the adversary'\''s wake byte.  An answer
  * that lands while the editor idles is collected here and the poll restarts. */
 static int term_wait(void)
 {
@@ -3314,9 +2966,9 @@ static int term_wait(void)
 	return n;
 }
 
-??!219reg term.c:142:m32sc %? %@2142sc!0?
-?'\''4s/poll\(&term_ufd, 1, -1/term_wait(/1??1??1q'\''4s/poll\(&(.*)ufd, 1, -1/\1wait(/2??2??'\''4220reg p OK term.c:165:s22sc %? %@2162sc!0?
-1;2??!219reg term.c:165:m42sc %? %@2142sc!0?
+??!219reg term.c:142:m12sc %? %@2142sc!0?
+?'\''2s/poll\(&term_ufd, 1, -1/term_wait(/1??1??1q'\''2s/poll\(&(.*)ufd, 1, -1/\1wait(/2??2??'\''2220reg p OK term.c:165:s22sc %? %@2162sc!0?
+1;2??!219reg term.c:165:m22sc %? %@2142sc!0?
 b7m!%ya 98?0?
 %f> #include <string\.h>
 #include <dirent\.h>
@@ -3424,7 +3076,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index c8c3d21f..a47e6966 100644
+index c8c3d21f..865c2f3f 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -1,6 +1,8 @@
@@ -3600,7 +3252,7 @@ index c8c3d21f..a47e6966 100644
  	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
  	int fd = mkstemp(hdrpath);
  	sbuf *out = NULL;
-@@ -2917,6 +2956,1757 @@ ret:
+@@ -2917,6 +2956,1471 @@ ret:
  	free(out);
  	return s;
  }
@@ -3616,7 +3268,6 @@ index c8c3d21f..a47e6966 100644
 +#define ADV_REPLY_MAX (4 << 20)		/* reply bytes kept */
 +#define ADV_LOG_MAX 5000		/* b-9 lines kept */
 +#define ADV_PRIOR 64			/* earlier ratings the model may lean on */
-+#define ADV_GRACE 5000			/* ms free before the sleeper works */
 +#define ADV_TICK 250			/* ms between the sleeper's wake-ups */
 +#define ADV_QUEUE 8			/* prompts the sleeper may hold */
 +#define ADV_QUEUE_MAX (64 << 10)	/* prompt bytes the sleeper may hold */
@@ -3662,7 +3313,6 @@ index c8c3d21f..a47e6966 100644
 +	/* the worker thread owns all of these, under mtx */
 +	pthread_mutex_t mtx;
 +	int quit;		/* process exit */
-+	int stop;		/* a runner holds the endpoint: ^Z, or the spear asked */
 +	int thread;		/* the worker is running */
 +	pthread_t td;
 +	int busy;		/* a request is in flight */
@@ -3690,8 +3340,6 @@ index c8c3d21f..a47e6966 100644
 +static void agent_adv_stop(void);
 +static void agent_adv_collect(void);
 +static int agent_adv_staged_has(unsigned long n);
-+static void agent_adv_help_read(void);
-+static void agent_adv_help_drop(void);
 +static int agent_adv_wanted(void);
 +static void agent_adv_parse(unsigned long want, const char *reply);
 +static char *agent_adv_sys(unsigned long n);
@@ -4561,11 +4209,11 @@ index c8c3d21f..a47e6966 100644
 +	agent_adv.nqueue = 0;
 +}
 +
-+/* The sleeper thread: ticks on ADV_TICK while the spear owns the model, a
-+ * runner holds the endpoint, or nothing is queued, so no missed wake-up can
-+ * leave entries queued unrated. An answer is followed by the next
-+ * submission, not another wait; a request already sent is never cancelled,
-+ * so an interrupted entry goes back to the queue whole. */
++/* The sleeper thread: ticks on ADV_TICK while the spear owns the model or
++ * nothing is queued, so no missed wake-up can leave entries queued unrated.
++ * An answer is followed by the next submission, not another wait; a request
++ * already sent is never cancelled, so an interrupted entry goes back to the
++ * queue whole. */
 +static void *agent_adv_worker(void *unused)
 +{
 +	struct timespec ts;
@@ -4589,8 +4237,7 @@ index c8c3d21f..a47e6966 100644
 +		for (;;) {
 +			if (agent_adv.quit)
 +				break;
-+			if (agent_adv_free && !agent_adv.stop &&
-+				agent_adv.nqueue)
++			if (agent_adv_free && agent_adv.nqueue)
 +				break;
 +			pthread_mutex_unlock(&agent_adv.mtx);
 +			ts.tv_sec = ADV_TICK / 1000;
@@ -4880,275 +4527,6 @@ index c8c3d21f..a47e6966 100644
 +		fcntl(fd, F_SETFL, fl | O_NONBLOCK);
 +}
 +
-+#define ADV_HELP 4			/* requests a stopped editor may finish */
-+
-+/* A stopped editor cannot rate: SIGSTOP takes every thread and ^Z reaches
-+ * the curl child in the foreground group. So the quiet run goes on in a
-+ * process of its own, in its own group: it takes the prompts the sleeper
-+ * queued, asks, and leaves each answer in a file; only the reading, the
-+ * b-9 line and the staging wait for the return. Forked after the worker is
-+ * joined, so the child copies a heap with one thread in it. */
-+struct agent_adv_help {
-+	pid_t pid;
-+	int njob;
-+	struct {
-+		unsigned long n;
-+		int attempt, got, timeout;
-+		char path[64], out[64], st[64];
-+	} j[ADV_HELP];
-+};
-+static struct agent_adv_help agent_help = { .pid = -1 };
-+
-+/* A string with its length first, so that newlines inside it mean nothing. */
-+static void agent_adv_wstr(FILE *f, const char *s)
-+{
-+	size_t l = s ? strlen(s) : 0;
-+	if (fprintf(f, "%zu\n", l) >= 0 && l)
-+		fwrite(s, 1, l, f);
-+}
-+
-+static char *agent_adv_rstr(FILE *f)
-+{
-+	size_t l;
-+	char *s;
-+	if (fscanf(f, "%zu", &l) != 1 || l > (size_t)ADV_REPLY_MAX)
-+		return NULL;
-+	if (!(s = malloc(l + 1)))
-+		return NULL;
-+	if (l && fread(s, 1, l, f) != l) {
-+		free(s);
-+		return NULL;
-+	}
-+	s[l] = '\0';
-+	return s;
-+}
-+
-+/* The runner's job: one entry, in a file only this user can read. */
-+static int agent_adv_help_job(struct agent_adv_work *w, int i)
-+{
-+	struct agent_adv_help *h = &agent_help;
-+	char tmpl[] = "/tmp/nextvi-advrun-XXXXXX";
-+	FILE *f;
-+	int fd = mkstemp(tmpl);
-+	if (fd < 0)
-+		return 0;
-+	close(fd);
-+	snprintf(h->j[i].path, sizeof(h->j[i].path), "%s", tmpl);
-+	snprintf(h->j[i].out, sizeof(h->j[i].out), "%s.out", tmpl);
-+	snprintf(h->j[i].st, sizeof(h->j[i].st), "%s.st", tmpl);
-+	h->j[i].n = w->n;
-+	h->j[i].attempt = w->attempt;
-+	h->j[i].timeout = w->timeout;
-+	h->j[i].got = 0;
-+	if (!(f = fopen(tmpl, "w"))) {
-+		unlink(tmpl);
-+		return 0;
-+	}
-+	agent_adv_wstr(f, w->sys);
-+	agent_adv_wstr(f, w->prompt);
-+	agent_adv_wstr(f, w->prev);
-+	agent_adv_wstr(f, w->url);
-+	agent_adv_wstr(f, w->key);
-+	agent_adv_wstr(f, w->extra);
-+	fclose(f);
-+	return 1;
-+}
-+
-+/* What the sleeper's thread does with a prompt, done here instead: the
-+ * request, then the answer where the editor will find it. */
-+static void agent_adv_help_run(int n)
-+{
-+	struct timespec ts;
-+	char num[24];
-+	struct agent_adv_work j;
-+	struct agent_adv_help *h = &agent_help;
-+	FILE *f;
-+	char *text;
-+	int i, st, fd;
-+	/* The fork shares the sleeper's curl file description and header name,
-+	 * so the runner asks through temp files of its own, in its own group. */
-+	agent_adv.fd[0] = agent_adv.fd[1] = -1;
-+	*agent_adv.hdpath = 0;
-+	setpgid(0, 0);
-+	signal(SIGTTOU, SIG_IGN);
-+	signal(SIGTTIN, SIG_IGN);
-+	signal(SIGHUP, SIG_IGN);
-+	signal(SIGINT, SIG_IGN);
-+	for (i = 0; i < n; i++) {
-+		ts.tv_sec = ADV_GRACE / 1000;
-+		ts.tv_nsec = (long)(ADV_GRACE % 1000) * 1000000;
-+		nanosleep(&ts, NULL);
-+		if (!(f = fopen(h->j[i].path, "r")))
-+			break;
-+		j.n = h->j[i].n;
-+		j.attempt = h->j[i].attempt;
-+		j.timeout = h->j[i].timeout;
-+		j.sys = agent_adv_rstr(f);
-+		j.prompt = agent_adv_rstr(f);
-+		j.prev = agent_adv_rstr(f);
-+		j.url = agent_adv_rstr(f);
-+		j.key = agent_adv_rstr(f);
-+		j.extra = agent_adv_rstr(f);
-+		fclose(f);
-+		unlink(h->j[i].path);
-+		text = j.sys && j.prompt && j.url && j.key ?
-+			agent_adv_ask(&j, &st) : NULL;
-+		if (text && (fd = open(h->j[i].out,
-+				O_WRONLY | O_CREAT | O_TRUNC, 0600)) >= 0) {
-+			agent_writeall(fd, text, strlen(text));
-+			close(fd);
-+		}
-+		snprintf(num, sizeof(num), "%d\n", st);
-+		if ((fd = open(h->j[i].st,
-+				O_WRONLY | O_CREAT | O_TRUNC, 0600)) >= 0) {
-+			agent_writeall(fd, num, strlen(num));
-+			close(fd);
-+		}
-+		free(text);
-+		free(j.sys);
-+		free(j.prompt);
-+		free(j.prev);
-+		free(j.url);
-+		free(j.key);
-+		free(j.extra);
-+	}
-+	for (; i < n; i++)
-+		unlink(h->j[i].path);
-+	_exit(0);
-+}
-+
-+/* Hand the queued prompts to a runner of its own and let the sleeper rest:
-+ * while the editor is stopped the runner is the only thing that asks. */
-+void agent_adv_suspend(void)
-+{
-+	struct agent_adv_help *h = &agent_help;
-+	struct agent_adv_work take[ADV_HELP];
-+	int i, n = 0;
-+	if (!agent_adv.on || agent_adv.disabled || h->pid > 0)
-+		return;
-+	agent_adv_fill();
-+	pthread_mutex_lock(&agent_adv.mtx);
-+	n = (int)(sizeof(take) / sizeof(*take));
-+	if (n > agent_adv.nqueue)
-+		n = agent_adv.nqueue;
-+	for (i = 0; i < n; i++) {
-+		if (!agent_adv_help_job(&agent_adv.queue[i], i))
-+			break;
-+		take[i] = agent_adv.queue[i];
-+	}
-+	n = i;
-+	h->njob = n;
-+	agent_adv.nqueue -= n;
-+	if (agent_adv.nqueue)
-+		memmove(agent_adv.queue, agent_adv.queue + n,
-+			agent_adv.nqueue * sizeof(*agent_adv.queue));
-+	/* The runner asks while the editor is stopped; the sleeper must not. */
-+	agent_adv.stop = 1;
-+	pthread_mutex_unlock(&agent_adv.mtx);
-+	agent_adv_stop();
-+	agent_adv_halt();	/* one thread left when the child is forked */
-+	if (n <= 0)
-+		return;
-+	h->pid = fork();
-+	if (!h->pid)
-+		agent_adv_help_run(n);	/* does not return */
-+	if (h->pid < 0)
-+		agent_adv_help_drop();
-+	else
-+		setpgid(h->pid, h->pid);
-+	for (i = 0; i < n; i++) {	/* the child has a copy of its own */
-+		free(take[i].sys);
-+		free(take[i].prompt);
-+		free(take[i].prev);
-+		free(take[i].url);
-+		free(take[i].key);
-+		free(take[i].extra);
-+	}
-+}
-+
-+/* Kill the runner and its group and remove what it left; an entry it never
-+ * got to is unrated, as after a pre-empt. */
-+static void agent_adv_help_drop(void)
-+{
-+	struct agent_adv_help *h = &agent_help;
-+	int i;
-+	if (h->pid <= 0)
-+		return;
-+	kill(-h->pid, SIGKILL);
-+	waitpid(h->pid, NULL, 0);
-+	for (i = 0; i < h->njob; i++) {
-+		unlink(h->j[i].path);
-+		unlink(h->j[i].out);
-+		unlink(h->j[i].st);
-+	}
-+	h->pid = -1;
-+	h->njob = 0;
-+}
-+
-+/* Answers the runner left behind: staged at the first wait back, like an
-+ * answer from the sleeper's own thread. */
-+static void agent_adv_help_read(void)
-+{
-+	struct agent_adv_help *h = &agent_help;
-+	struct agent_adv_job j;
-+	char num[24];
-+	FILE *f;
-+	int i, fd, gone;
-+	if (h->pid <= 0)
-+		return;
-+	gone = waitpid(h->pid, NULL, WNOHANG) != 0;
-+	for (i = 0; i < h->njob; i++) {
-+		if (h->j[i].got || !(f = fopen(h->j[i].st, "r")))
-+			continue;
-+		if (fscanf(f, "%23s", num) != 1)
-+			*num = '\0';
-+		fclose(f);
-+		j.n = h->j[i].n;
-+		j.attempt = h->j[i].attempt;
-+		j.st = *num ? atoi(num) : -2;
-+		j.text = NULL;
-+		if ((fd = open(h->j[i].out, O_RDONLY)) >= 0) {
-+			j.text = agent_adv_slurp(fd, (int)ADV_REPLY_MAX);
-+			close(fd);
-+		}
-+		unlink(h->j[i].out);
-+		unlink(h->j[i].st);
-+		h->j[i].got = 1;
-+		pthread_mutex_lock(&agent_adv.mtx);
-+		if (agent_adv.nout < ADV_OUT_MAX) {
-+			if (agent_adv.nout == agent_adv.omax) {
-+				agent_adv.omax = agent_adv.omax ?
-+					agent_adv.omax * 2 : 8;
-+				agent_adv.out = erealloc(agent_adv.out,
-+					agent_adv.omax *
-+					sizeof(*agent_adv.out));
-+			}
-+			agent_adv.out[agent_adv.nout++] = j;
-+		}
-+		else
-+			free(j.text);
-+		pthread_mutex_unlock(&agent_adv.mtx);
-+	}
-+	if (!gone)
-+		return;
-+	for (i = 0; i < h->njob; i++)
-+		if (!h->j[i].got) {
-+			unlink(h->j[i].path);
-+			unlink(h->j[i].out);
-+			unlink(h->j[i].st);
-+		}
-+	h->pid = -1;
-+	h->njob = 0;
-+}
-+
-+/* Back from a suspend: the runner's answers are taken at the input wait
-+ * itself, so all that is left is to give the sleeper its thread again. */
-+void agent_adv_resume(void)
-+{
-+	if (agent_adv.on)
-+		agent_adv_start();
-+}
-+
 +/* The handshake is one flag: agent_adv_free is set before the input wait
 + * and cleared the moment the session wants the model. */
 +
@@ -5177,7 +4555,6 @@ index c8c3d21f..a47e6966 100644
 +		return;
 +	while (agent_adv.notify[0] >= 0 &&
 +			read(agent_adv.notify[0], buf, sizeof(buf)) > 0);
-+	agent_adv_help_read();
 +	agent_adv_collect();
 +	if (!agent_adv.on || agent_adv.disabled)
 +		return;
@@ -5191,11 +4568,6 @@ index c8c3d21f..a47e6966 100644
 +{
 +	if (!agent_adv.on)
 +		return;
-+	/* A runner left behind by a ^Z answers while the editor is stopped:
-+	 * what it answered is taken up here, so a rating the model finished
-+	 * during the suspend is staged at the first wait back and is never
-+	 * left sitting in a file. */
-+	agent_adv_help_read();
 +	if (on)
 +		agent_adv_free = 1;
 +	else
@@ -5222,7 +4594,6 @@ index c8c3d21f..a47e6966 100644
 +{
 +	if (!agent_adv.on)
 +		return;
-+	agent_adv_help_drop();
 +	agent_adv_stop();
 +	pthread_mutex_lock(&agent_adv.mtx);
 +	agent_adv_untake();
@@ -5243,7 +4614,6 @@ index c8c3d21f..a47e6966 100644
 +		/* a kill left over from the last run would blacken the first
 +		 * answer of this one */
 +		agent_adv.killed = 0;
-+		agent_adv.stop = 0;	/* a thread made after a ^Z may ask again */
 +		pthread_mutex_unlock(&agent_adv.mtx);
 +		if (pthread_create(&agent_adv.td, NULL, agent_adv_worker,
 +				NULL))
@@ -5260,16 +4630,12 @@ index c8c3d21f..a47e6966 100644
 +void agent_adv_off(void)
 +{
 +	agent_adv.on = 0;
-+	/* :adv off leaves nothing asking behind, runner included */
-+	agent_adv_help_drop();
-+	agent_adv_stop();
++	agent_adv_stop();	/* :adv off leaves nothing asking behind */
 +	agent_adv_clear();
 +}
 +
 +void agent_adv_halt(void)
 +{
-+	/* a runner left by a ^Z is not left running behind the editor */
-+	agent_adv_help_drop();
 +	if (!agent_adv.thread)
 +		return;
 +	pthread_mutex_lock(&agent_adv.mtx);
@@ -5358,7 +4724,7 @@ index c8c3d21f..a47e6966 100644
  
  static char *agent_snapshot(char *loc)
  {
-@@ -3140,6 +4930,10 @@ static void agent_run_loop(const char *input)
+@@ -3140,6 +4644,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -5369,7 +4735,7 @@ index c8c3d21f..a47e6966 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4919,6 +6713,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4919,6 +6427,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -5381,7 +4747,7 @@ index c8c3d21f..a47e6966 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5011,6 +6810,11 @@ static int agent_autocompact(void)
+@@ -5011,6 +6524,11 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
@@ -5394,10 +4760,10 @@ index c8c3d21f..a47e6966 100644
  	int savedtemp = istempbuf(ex_buf);
  	int savedbuf = savedtemp ? ex_buf - tempbufs : ex_buf - bufs;
 diff --git a/agent.h b/agent.h
-index cd3c8383..9913638f 100644
+index cd3c8383..0d3816f1 100644
 --- a/agent.h
 +++ b/agent.h
-@@ -44,6 +44,20 @@ static void agent_init(void);
+@@ -44,6 +44,18 @@ static void agent_init(void);
  static int agent_resume(const char *dir);
  static char *agent_init_error;
  static void agent_sync(struct lbuf *lb);
@@ -5410,8 +4776,6 @@ index cd3c8383..9913638f 100644
 +void agent_adv_service(void);	/* input wait: collect answers, feed the sleeper */
 +int agent_adv_fd(void);		/* the descriptor its wake-up arrives on */
 +void agent_adv_activity(void);	/* the spear used the model or the editor */
-+void agent_adv_suspend(void);	/* ^Z: hand the queued prompts to a runner */
-+void agent_adv_resume(void);	/* ^Z back: the sleeper takes its thread again */
 +static void agent_adv_collect(void);
 +static void agent_adv_merge(void);
 +static void agent_adv_resync(void);
@@ -5605,23 +4969,10 @@ index 7f429cb2..74089568 100644
 +	{"err", "Control ex errors", 1415, 1427, 1, 0},
  };
 diff --git a/term.c b/term.c
-index 4668eda9..1a03cb15 100644
+index 4668eda9..ddcc8703 100644
 --- a/term.c
 +++ b/term.c
-@@ -55,8 +55,12 @@ void term_suspend(void)
- 	if (xvis & 8)
- 		term_scrl()
- 	term_done();
-+	/* SIGSTOP takes every thread, so the prompts the sleeper queued go
-+	 * to a runner in a group of its own; see agent.c */
-+	agent_adv_suspend();
- 	kill(0, SIGSTOP);
- 	term_init();
-+	agent_adv_resume();
- 	if (xvis & 8)
- 		term_scrh()
- }
-@@ -140,6 +144,27 @@ void term_push(char *s, unsigned int n)
+@@ -140,6 +140,27 @@ void term_push(char *s, unsigned int n)
  	tibuf_cnt += n;
  }
  
@@ -5649,7 +5000,7 @@ index 4668eda9..1a03cb15 100644
  int term_read(int winch)
  {
  	int cw;
-@@ -162,7 +187,7 @@ int term_read(int winch)
+@@ -162,7 +183,7 @@ int term_read(int winch)
  		cw = 0;
  		re:
  		/* read a single input character */
