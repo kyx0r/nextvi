@@ -1238,8 +1238,7 @@ static int agent_adv_name_try;
 ??!219reg agent.c:697:m102sc %? %@2142sc!0?
 '\''11i 	agent_adv_activity();
 ??!219reg agent.c:960:m112sc %? %@2142sc!0?
-'\''12c 	if (agent_logbuf == 3)
-??!219reg agent.c:976:m122sc %? %@2142sc!0?
+'\''12d??!219reg agent.c:976:m122sc %? %@2142sc!0?
 '\''13i 	/* The entries the summary replaced are gone from the log. */
 	agent_adv_resync();
 ??!219reg agent.c:1113:m132sc %? %@2142sc!0?
@@ -1367,6 +1366,20 @@ static struct {
 } agent_adv = {
 	.pid = -1, .fd = {-1, -1}, .notify = {-1, -1}, .logfd = -1
 };
+
+/* A zeroed static pthread_mutex_t is what glibc uses for
+ * PTHREAD_MUTEX_INITIALIZER, but the first lock can come from ":adv 0"
+ * or from exit cleanup when no thread was ever created, so init it
+ * once before any lock rather than relying on the zero pattern. */
+static int agent_adv_mtxdone;
+
+static void agent_adv_mtxinit(void)
+{
+	if (!agent_adv_mtxdone) {
+		pthread_mutex_init(&agent_adv.mtx, NULL);
+		agent_adv_mtxdone = 1;
+	}
+}
 
 /* The sleeper polls the queue on a tick, so a nudge only has to exist. */
 static void agent_adv_nudge(void);
@@ -1584,9 +1597,11 @@ static void agent_adv_priors(sbuf *sb)
 		"\"entry number rating note\":\n")
 	for (int i = 0; i < lbuf_len(nb); i++)
 		if (agent_note_line(nb->ln[i], &m, &rate) && m >= floor) {
-			if (nkeep == LEN(keep))
+			if (nkeep == LEN(keep)) {
 				memmove(keep, keep + 1,
 					sizeof(keep[0]) * (LEN(keep) - 1));
+				nkeep--;
+			}
 			keep[nkeep++] = i;
 		}
 	for (int i = 0; i < nkeep; i++)
@@ -1626,6 +1641,7 @@ static char *agent_adv_prompt(unsigned long n)
 	sbuf_str(sb, "Entry:\n")
 	if (s)
 		agent_adv_entry(sb, lb, s);
+	free(spans);
 	sbufn_ret(sb, sb->s)
 }
 
@@ -1634,6 +1650,7 @@ static char *agent_adv_prompt(unsigned long n)
 static int agent_adv_queued(unsigned long n)
 {
 	int found = 0;
+	agent_adv_mtxinit();
 	pthread_mutex_lock(&agent_adv.mtx);
 	for (int i = 0; i < agent_adv.nqueue; i++)
 		found |= agent_adv.queue[i].n == n;
@@ -1682,19 +1699,12 @@ static void agent_adv_qadd(struct agent_adv_work *w)
 	}
 	agent_adv.queue[agent_adv.nqueue++] = *w;
 }
-/* The topic request: asks what the session is about and renames its
- * directory from the start time to "<topic>_<start time>", so that a resume
- * or an ls says what a session holds. Asked once, under the rules of a
- * rating. */
+
 static char agent_adv_name_intro[] =
-	"You name the session log of another model, the spear.\n"
+	"You name the session log of another model.\n"
 	"You have no access to the editor: you only answer with a name.\n"
-	"Reply with one line and no other text that follows the format:\n"
-	"T name\n\n"
-	"name is two or three short words in lower case joined with\n"
-	"underscores that say what the session is about, as\n"
-	"blockchain_question or fix_tls_handshake.\n"
-	"No spaces, no punctuation, no article, no sentence.\n";
+	"Reply with a name that is two or three short words in lower case joined with\n"
+	"underscores that say what the session is about.\n";
 
 /* Whether leaf is the name agent_start gives a session: %Y%m%d-%H%M%S, plus
  * the -N it adds when that name is taken. A directory the user named, or one
@@ -2492,14 +2502,26 @@ static void agent_adv_nb(int fd)
 /* The handshake is one flag: agent_adv_free is set before the input wait
  * and cleared the moment the session wants the model. */
 
+/* Both directions of the handshake cross a thread, so both take the mutex
+ * that the sleeper reads the flag under.  The flag itself is only a word,
+ * but a bare store next to a locked load is the one place where the
+ * handshake could be seen half-done. */
+static void agent_adv_free_set(int on)
+{
+	pthread_mutex_lock(&agent_adv.mtx);
+	agent_adv_free = on;
+	pthread_mutex_unlock(&agent_adv.mtx);
+}
+
 /* End the request the sleeper has in flight, if any: the entry goes back to
  * the queue unrated, so the next downtime asks it again. The pid is read
  * under the mutex, so it is never a process already reaped. */
 static void agent_adv_stop(void)
 {
+	agent_adv_mtxinit();
 	pid_t pid;
-	agent_adv_free = 0;
 	pthread_mutex_lock(&agent_adv.mtx);
+	agent_adv_free = 0;
 	pid = agent_adv.pid;
 	if (pid > 0)
 		agent_adv.killed = 1;
@@ -2521,7 +2543,7 @@ void agent_adv_service(void)
 	if (!agent_adv.on || agent_adv.disabled)
 		return;
 	agent_adv_fill();
-	agent_adv_free = 1;
+	agent_adv_free_set(1);
 }
 
 /* Entering or leaving the input wait: leaving takes the endpoint back at
@@ -2531,7 +2553,7 @@ void agent_adv_wait(int on)
 	if (!agent_adv.on)
 		return;
 	if (on)
-		agent_adv_free = 1;
+		agent_adv_free_set(1);
 	else
 		agent_adv_stop();
 }
@@ -2566,6 +2588,7 @@ void agent_adv_preempt(void)
  * without another thread. */
 int agent_adv_start(void)
 {
+	agent_adv_mtxinit();
 	if (agent_adv.notify[1] < 0 && pipe(agent_adv.notify))
 		return 0;
 	agent_adv_nb(agent_adv.notify[0]);
@@ -2583,7 +2606,7 @@ int agent_adv_start(void)
 		agent_adv.thread = 1;
 	}
 	agent_adv.on = 1;
-	agent_adv_free = 1;
+	agent_adv_free_set(1);
 	agent_adv_nudge();
 	return 1;
 }
@@ -2596,18 +2619,23 @@ void agent_adv_off(void)
 	agent_adv_clear();
 }
 
+/* Exit.  The sleeper is not waited for: the kernel takes the thread down
+ * with the process, and a curl still running is reparented, so the reaper
+ * collects it.  The kill stops a session that is gone from holding the
+ * endpoint for its whole timeout; the join only delayed a leaving nobody
+ * watches, by up to a tick, and a child forked but not published yet
+ * slipped past it anyway. */
 void agent_adv_halt(void)
 {
+	pid_t pid;
 	if (!agent_adv.thread)
 		return;
 	pthread_mutex_lock(&agent_adv.mtx);
 	agent_adv.quit = 1;
+	pid = agent_adv.pid;	/* under the mutex, so never a reaped pid */
 	pthread_mutex_unlock(&agent_adv.mtx);
-	agent_adv_free = 0;
-	if (agent_adv.pid > 0)
-		kill(-agent_adv.pid, SIGKILL);
-	pthread_join(agent_adv.td, NULL);
-	agent_adv.thread = 0;
+	if (pid > 0)
+		kill(-pid, SIGKILL);
 }
 /* :adv on and off. */
 void agent_adv_toggle(int on)
@@ -2721,7 +2749,7 @@ static char \*agent_init_error;.*?
 /* called from term.c, which vi.c includes after agent.c */
 void agent_adv_toggle(int on);	/* :adv on and off */
 void agent_adv_preempt(void);	/* the spear takes the endpoint back */
-void agent_adv_halt(void);	/* exit */
+void agent_adv_halt(void);	/* exit: kill the sleeper'\''s curl, never wait for it */
 void agent_adv_wait(int on);	/* the editor is at, or away from, its wait */
 void agent_adv_service(void);	/* input wait: collect answers, feed the sleeper */
 int agent_adv_fd(void);		/* the descriptor its wake-up arrives on */
@@ -3375,7 +3403,7 @@ static int term_wait(void)
 1;4;7??!219reg vi.c:18842sc %? %@2132sc!0?
 '\''1i #include <pthread.h>
 ??!219reg vi.c:8:m12sc %? %@2142sc!0?
-'\''2i 	/* never leave the adversary'\''s curl behind */
+'\''2i 	/* stop the adversary'\''s curl on the way out, without waiting */
 	agent_adv_halt();
 ??!219reg vi.c:1884:m22sc %? %@2142sc!b8m!%ya 98?0?
 %f> extern int xregs_n;
@@ -3440,7 +3468,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index c8c3d21f..2f46f65b 100644
+index c8c3d21f..08fffda0 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -1,6 +1,8 @@
@@ -3547,16 +3575,15 @@ index c8c3d21f..2f46f65b 100644
  	struct lbuf *lb = tempbufs[agent_logbuf].lb;
  	sbuf_smake(sb, 256)
  	sbuf_str(sb, open)
-@@ -973,7 +991,7 @@ static void agent_log_write(const char *open, const char *head, const char *text
+@@ -973,7 +991,6 @@ static void agent_log_write(const char *open, const char *head, const char *text
  	agent_logging = 1;
  	lbuf_edit(lb, sb->s, lbuf_len(lb), lbuf_len(lb), 0, 0);
  	agent_logging = 0;
 -	lb->useq++;
-+	if (agent_logbuf == 3)
  	free(sb->s);
  }
  
-@@ -1111,6 +1129,8 @@ static void agent_head_summary(void)
+@@ -1111,6 +1128,8 @@ static void agent_head_summary(void)
  	restore(agent_tool)
  	if (agent_save(5))
  		ex_print("agent write failed; buffer text retained", msg_ft)
@@ -3565,7 +3592,7 @@ index c8c3d21f..2f46f65b 100644
  }
  
  /* Move the entries of text, a log replaced by compaction, to b-7. */
-@@ -1140,19 +1160,28 @@ static char *agent_span_role(struct agent_span *s)
+@@ -1140,19 +1159,28 @@ static char *agent_span_role(struct agent_span *s)
  	return s->role ? agent_entry_roles[s->role - 1] : "TEXT";
  }
  
@@ -3599,7 +3626,7 @@ index c8c3d21f..2f46f65b 100644
  	return e + 3;
  }
  
-@@ -1267,7 +1296,7 @@ static void agent_note_set(unsigned long n, int rate, char *text)
+@@ -1267,7 +1295,7 @@ static void agent_note_set(unsigned long n, int rate, char *text)
  				break;
  		end = row;
  	}
@@ -3608,7 +3635,7 @@ index c8c3d21f..2f46f65b 100644
  	sbuf_smake(sb, 128)
  	sbuf_str(sb, head)
  	for (char *t = text; *t; t++)
-@@ -1376,7 +1405,7 @@ static void agent_note_retire(unsigned long n, struct agent_span *spans,
+@@ -1376,7 +1404,7 @@ static void agent_note_retire(unsigned long n, struct agent_span *spans,
  		return;
  	note = agent_note_text(note);
  	len = strcspn(note, "\n");
@@ -3617,7 +3644,7 @@ index c8c3d21f..2f46f65b 100644
  	sbuf_smake(sb, 128)
  	sbuf_str(sb, head)
  	sbuf_mem(sb, note, len)
-@@ -1386,14 +1415,16 @@ static void agent_note_retire(unsigned long n, struct agent_span *spans,
+@@ -1386,14 +1414,16 @@ static void agent_note_retire(unsigned long n, struct agent_span *spans,
  	free(sb->s);
  }
  
@@ -3636,7 +3663,7 @@ index c8c3d21f..2f46f65b 100644
  			continue;
  		if (n < 8 && len < size)
  			len += snprintf(buf + len, size - len, "%s%s %lu",
-@@ -1597,7 +1628,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
+@@ -1597,7 +1627,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
  				spans[k].n - 1);
  			sbuf_str(sb, ln)
  		} else if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
@@ -3645,7 +3672,7 @@ index c8c3d21f..2f46f65b 100644
  			sbuf_str(sb, ln)
  			/* A sentence whose own entry is removed, or listed without
  			 * its note, shows on the first entry that names it, unless
-@@ -1806,6 +1837,13 @@ static void agent_checkpoint_begin(double tokens, int kind)
+@@ -1806,6 +1836,13 @@ static void agent_checkpoint_begin(double tokens, int kind)
  	agent_cp_base = -1;
  	agent_cp_bytes = agent_context_bytes();
  	agent_cp_left = INT_MAX;
@@ -3659,7 +3686,7 @@ index c8c3d21f..2f46f65b 100644
  	agent_cp_logbuf = agent_logbuf;
  	agent_logbuf = 7;
  	/* A question in b-8 continues the numbering of what it interrupted. */
-@@ -2128,7 +2166,7 @@ static void agent_cp_build(void)
+@@ -2128,7 +2165,7 @@ static void agent_cp_build(void)
  		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
  }
  
@@ -3668,7 +3695,7 @@ index c8c3d21f..2f46f65b 100644
  {
  	char note[128], unrated[112];
  	int k, n, kind = agent_checkpointing, answered = agent_cp_done;
-@@ -2190,6 +2228,15 @@ static void agent_checkpoint_end(void)
+@@ -2190,6 +2227,15 @@ static void agent_checkpoint_end(void)
  	agent_output(note);
  }
  
@@ -3684,7 +3711,7 @@ index c8c3d21f..2f46f65b 100644
  /* End a question together with what it interrupted. */
  static void agent_checkpoint_stop(void)
  {
-@@ -2865,8 +2912,11 @@ static cJSON *agent_config(void)
+@@ -2865,8 +2911,11 @@ static cJSON *agent_config(void)
  	return req;
  }
  
@@ -3696,7 +3723,7 @@ index c8c3d21f..2f46f65b 100644
  	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
  	int fd = mkstemp(hdrpath);
  	sbuf *out = NULL;
-@@ -2917,6 +2967,1393 @@ ret:
+@@ -2917,6 +2966,1422 @@ ret:
  	free(out);
  	return s;
  }
@@ -3771,6 +3798,20 @@ index c8c3d21f..2f46f65b 100644
 +} agent_adv = {
 +	.pid = -1, .fd = {-1, -1}, .notify = {-1, -1}, .logfd = -1
 +};
++
++/* A zeroed static pthread_mutex_t is what glibc uses for
++ * PTHREAD_MUTEX_INITIALIZER, but the first lock can come from ":adv 0"
++ * or from exit cleanup when no thread was ever created, so init it
++ * once before any lock rather than relying on the zero pattern. */
++static int agent_adv_mtxdone;
++
++static void agent_adv_mtxinit(void)
++{
++	if (!agent_adv_mtxdone) {
++		pthread_mutex_init(&agent_adv.mtx, NULL);
++		agent_adv_mtxdone = 1;
++	}
++}
 +
 +/* The sleeper polls the queue on a tick, so a nudge only has to exist. */
 +static void agent_adv_nudge(void);
@@ -3988,9 +4029,11 @@ index c8c3d21f..2f46f65b 100644
 +		"\"entry number rating note\":\n")
 +	for (int i = 0; i < lbuf_len(nb); i++)
 +		if (agent_note_line(nb->ln[i], &m, &rate) && m >= floor) {
-+			if (nkeep == LEN(keep))
++			if (nkeep == LEN(keep)) {
 +				memmove(keep, keep + 1,
 +					sizeof(keep[0]) * (LEN(keep) - 1));
++				nkeep--;
++			}
 +			keep[nkeep++] = i;
 +		}
 +	for (int i = 0; i < nkeep; i++)
@@ -4030,6 +4073,7 @@ index c8c3d21f..2f46f65b 100644
 +	sbuf_str(sb, "Entry:\n")
 +	if (s)
 +		agent_adv_entry(sb, lb, s);
++	free(spans);
 +	sbufn_ret(sb, sb->s)
 +}
 +
@@ -4038,6 +4082,7 @@ index c8c3d21f..2f46f65b 100644
 +static int agent_adv_queued(unsigned long n)
 +{
 +	int found = 0;
++	agent_adv_mtxinit();
 +	pthread_mutex_lock(&agent_adv.mtx);
 +	for (int i = 0; i < agent_adv.nqueue; i++)
 +		found |= agent_adv.queue[i].n == n;
@@ -4086,19 +4131,12 @@ index c8c3d21f..2f46f65b 100644
 +	}
 +	agent_adv.queue[agent_adv.nqueue++] = *w;
 +}
-+/* The topic request: asks what the session is about and renames its
-+ * directory from the start time to "<topic>_<start time>", so that a resume
-+ * or an ls says what a session holds. Asked once, under the rules of a
-+ * rating. */
++
 +static char agent_adv_name_intro[] =
-+	"You name the session log of another model, the spear.\n"
++	"You name the session log of another model.\n"
 +	"You have no access to the editor: you only answer with a name.\n"
-+	"Reply with one line and no other text that follows the format:\n"
-+	"T name\n\n"
-+	"name is two or three short words in lower case joined with\n"
-+	"underscores that say what the session is about, as\n"
-+	"blockchain_question or fix_tls_handshake.\n"
-+	"No spaces, no punctuation, no article, no sentence.\n";
++	"Reply with a name that is two or three short words in lower case joined with\n"
++	"underscores that say what the session is about.\n";
 +
 +/* Whether leaf is the name agent_start gives a session: %Y%m%d-%H%M%S, plus
 + * the -N it adds when that name is taken. A directory the user named, or one
@@ -4896,14 +4934,26 @@ index c8c3d21f..2f46f65b 100644
 +/* The handshake is one flag: agent_adv_free is set before the input wait
 + * and cleared the moment the session wants the model. */
 +
++/* Both directions of the handshake cross a thread, so both take the mutex
++ * that the sleeper reads the flag under.  The flag itself is only a word,
++ * but a bare store next to a locked load is the one place where the
++ * handshake could be seen half-done. */
++static void agent_adv_free_set(int on)
++{
++	pthread_mutex_lock(&agent_adv.mtx);
++	agent_adv_free = on;
++	pthread_mutex_unlock(&agent_adv.mtx);
++}
++
 +/* End the request the sleeper has in flight, if any: the entry goes back to
 + * the queue unrated, so the next downtime asks it again. The pid is read
 + * under the mutex, so it is never a process already reaped. */
 +static void agent_adv_stop(void)
 +{
++	agent_adv_mtxinit();
 +	pid_t pid;
-+	agent_adv_free = 0;
 +	pthread_mutex_lock(&agent_adv.mtx);
++	agent_adv_free = 0;
 +	pid = agent_adv.pid;
 +	if (pid > 0)
 +		agent_adv.killed = 1;
@@ -4925,7 +4975,7 @@ index c8c3d21f..2f46f65b 100644
 +	if (!agent_adv.on || agent_adv.disabled)
 +		return;
 +	agent_adv_fill();
-+	agent_adv_free = 1;
++	agent_adv_free_set(1);
 +}
 +
 +/* Entering or leaving the input wait: leaving takes the endpoint back at
@@ -4935,7 +4985,7 @@ index c8c3d21f..2f46f65b 100644
 +	if (!agent_adv.on)
 +		return;
 +	if (on)
-+		agent_adv_free = 1;
++		agent_adv_free_set(1);
 +	else
 +		agent_adv_stop();
 +}
@@ -4970,6 +5020,7 @@ index c8c3d21f..2f46f65b 100644
 + * without another thread. */
 +int agent_adv_start(void)
 +{
++	agent_adv_mtxinit();
 +	if (agent_adv.notify[1] < 0 && pipe(agent_adv.notify))
 +		return 0;
 +	agent_adv_nb(agent_adv.notify[0]);
@@ -4987,7 +5038,7 @@ index c8c3d21f..2f46f65b 100644
 +		agent_adv.thread = 1;
 +	}
 +	agent_adv.on = 1;
-+	agent_adv_free = 1;
++	agent_adv_free_set(1);
 +	agent_adv_nudge();
 +	return 1;
 +}
@@ -5000,18 +5051,23 @@ index c8c3d21f..2f46f65b 100644
 +	agent_adv_clear();
 +}
 +
++/* Exit.  The sleeper is not waited for: the kernel takes the thread down
++ * with the process, and a curl still running is reparented, so the reaper
++ * collects it.  The kill stops a session that is gone from holding the
++ * endpoint for its whole timeout; the join only delayed a leaving nobody
++ * watches, by up to a tick, and a child forked but not published yet
++ * slipped past it anyway. */
 +void agent_adv_halt(void)
 +{
++	pid_t pid;
 +	if (!agent_adv.thread)
 +		return;
 +	pthread_mutex_lock(&agent_adv.mtx);
 +	agent_adv.quit = 1;
++	pid = agent_adv.pid;	/* under the mutex, so never a reaped pid */
 +	pthread_mutex_unlock(&agent_adv.mtx);
-+	agent_adv_free = 0;
-+	if (agent_adv.pid > 0)
-+		kill(-agent_adv.pid, SIGKILL);
-+	pthread_join(agent_adv.td, NULL);
-+	agent_adv.thread = 0;
++	if (pid > 0)
++		kill(-pid, SIGKILL);
 +}
 +/* :adv on and off. */
 +void agent_adv_toggle(int on)
@@ -5090,7 +5146,7 @@ index c8c3d21f..2f46f65b 100644
  
  static char *agent_snapshot(char *loc)
  {
-@@ -3140,6 +4577,10 @@ static void agent_run_loop(const char *input)
+@@ -3140,6 +4605,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -5101,7 +5157,7 @@ index c8c3d21f..2f46f65b 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4919,6 +6360,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4919,6 +6388,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -5113,7 +5169,7 @@ index c8c3d21f..2f46f65b 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5011,6 +6457,11 @@ static int agent_autocompact(void)
+@@ -5011,6 +6485,11 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
@@ -5126,7 +5182,7 @@ index c8c3d21f..2f46f65b 100644
  	int savedtemp = istempbuf(ex_buf);
  	int savedbuf = savedtemp ? ex_buf - tempbufs : ex_buf - bufs;
 diff --git a/agent.h b/agent.h
-index cd3c8383..0d3816f1 100644
+index cd3c8383..ff853b9a 100644
 --- a/agent.h
 +++ b/agent.h
 @@ -44,6 +44,18 @@ static void agent_init(void);
@@ -5137,7 +5193,7 @@ index cd3c8383..0d3816f1 100644
 +/* called from term.c, which vi.c includes after agent.c */
 +void agent_adv_toggle(int on);	/* :adv on and off */
 +void agent_adv_preempt(void);	/* the spear takes the endpoint back */
-+void agent_adv_halt(void);	/* exit */
++void agent_adv_halt(void);	/* exit: kill the sleeper's curl, never wait for it */
 +void agent_adv_wait(int on);	/* the editor is at, or away from, its wait */
 +void agent_adv_service(void);	/* input wait: collect answers, feed the sleeper */
 +int agent_adv_fd(void);		/* the descriptor its wake-up arrives on */
@@ -5376,7 +5432,7 @@ index 4668eda9..ddcc8703 100644
  			xquit = !isatty(term_ufd.fd) ? -1 : xquit;
  			if (term_winch && winch && xquit >= 0) {
 diff --git a/vi.c b/vi.c
-index 53bbabc6..3f96c4b9 100644
+index 53bbabc6..4141390e 100644
 --- a/vi.c
 +++ b/vi.c
 @@ -6,6 +6,7 @@
@@ -5391,7 +5447,7 @@ index 53bbabc6..3f96c4b9 100644
  		ex();
  	else
  		vi(1);
-+	/* never leave the adversary's curl behind */
++	/* stop the adversary's curl on the way out, without waiting */
 +	agent_adv_halt();
  	term_done();
  	if (xvis & 8)
