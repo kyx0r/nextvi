@@ -945,6 +945,7 @@ static struct {
 	pthread_t td;
 	int busy;		/* a request is in flight */
 	unsigned long epoch, seen;	/* spear activity: the sleeper'\''s timer */
+	unsigned long primed;	/* epoch whose quiet run has already begun */
 	struct agent_adv_work *queue;	/* prompts waiting to be asked */
 	int nqueue, qmax;
 	struct agent_adv_job *out;	/* answers waiting to be read */
@@ -962,6 +963,7 @@ static struct {
 	int killed;		/* the main thread ended the request in flight */
 	char *prev;		/* previous reply, sent as an assistant turn */
 } agent_adv = {
+	.primed = ~0UL,	/* so the first quiet stretch waits out ADV_IDLE */
 	.pid = -1, .fd = {-1, -1}, .notify = {-1, -1}, .logfd = -1
 };
 
@@ -1838,9 +1840,21 @@ static void agent_adv_untake(void)
 	agent_adv.awake = 0;
 }
 
+/* Whether the sleeper may take the next prompt without the main thread'\''s
+ * leave: a quiet run is under way and prompts are queued, so the endpoint
+ * goes to the next answer at once instead of idling until the next scan.
+ * agent_adv.mtx is held. */
+static int agent_adv_go(void)
+{
+	return agent_adv.idle && !agent_adv.stop &&
+		agent_adv.primed == agent_adv.epoch && agent_adv.nqueue;
+}
+
 /* The sleeper thread. It waits while the spear owns the model, then after
  * ADV_IDLE without a sign of work it rates one entry per request, oldest
- * first, until the spear returns. A request already sent is never
+ * first, until the spear returns. The wait buys a quiet stretch, not each
+ * request: once the run has begun an answer is followed by the next
+ * submission, not by another ADV_IDLE. A request already sent is never
  * cancelled: killing curl mid-answer would leave an entry half rated, so
  * the entry goes back to the queue. */
 static void *agent_adv_worker(void *unused)
@@ -1856,7 +1870,7 @@ static void *agent_adv_worker(void *unused)
 	pthread_sigmask(SIG_SETMASK, &all, NULL);
 	pthread_mutex_lock(&agent_adv.mtx);
 	for (;;) {
-		while (!agent_adv.quit && !agent_adv.awake)
+		while (!agent_adv.quit && !agent_adv.awake && !agent_adv_go())
 			pthread_cond_wait(&agent_adv.cv, &agent_adv.mtx);
 		if (agent_adv.quit)
 			break;
@@ -1864,10 +1878,18 @@ static void *agent_adv_worker(void *unused)
 			agent_adv_untake();
 			continue;
 		}
-		if (agent_adv.idle) {
-			/* The quiet run starts here: spear work bumps the epoch
-			 * and this deadline is thrown away with the run, so the
-			 * sleeper only acts on a stretch that went by unused. */
+		if (!agent_adv.idle) {
+			/* active, or the editor is not at its input: sleep
+			 * until either changes */
+			agent_adv.awake = 0;
+			continue;
+		}
+		if (agent_adv.primed != agent_adv.epoch) {
+			/* The quiet run starts here, once per stretch: spear
+			 * work bumps the epoch and this deadline is thrown away
+			 * with the run, so the sleeper only acts on a stretch that
+			 * went by unused. Past it primed says the run is under way,
+			 * and nothing waits between two requests. */
 			agent_adv.seen = agent_adv.epoch;
 			clock_gettime(CLOCK_REALTIME, &ts);
 			ts.tv_sec += ADV_IDLE / 1000;
@@ -1885,12 +1907,7 @@ static void *agent_adv_worker(void *unused)
 			if (agent_adv.quit || agent_adv.stop ||
 					agent_adv.epoch != agent_adv.seen)
 				continue;
-		}
-		else {
-			/* active, or the editor is not at its input: sleep
-			 * until either changes */
-			agent_adv.awake = 0;
-			continue;
+			agent_adv.primed = agent_adv.seen;
 		}
 		if (!agent_adv.nqueue) {	/* it needs prompts */
 			agent_adv.want = 1;
@@ -3511,7 +3528,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index 91bd0c4d..08222772 100644
+index 91bd0c4d..40e5c608 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -25,6 +25,9 @@
@@ -3697,7 +3714,7 @@ index 91bd0c4d..08222772 100644
  	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
  	int fd = mkstemp(hdrpath);
  	sbuf *out = NULL;
-@@ -2941,6 +2985,1822 @@ ret:
+@@ -2941,6 +2985,1839 @@ ret:
  	free(out);
  	return s;
  }
@@ -3770,6 +3787,7 @@ index 91bd0c4d..08222772 100644
 +	pthread_t td;
 +	int busy;		/* a request is in flight */
 +	unsigned long epoch, seen;	/* spear activity: the sleeper's timer */
++	unsigned long primed;	/* epoch whose quiet run has already begun */
 +	struct agent_adv_work *queue;	/* prompts waiting to be asked */
 +	int nqueue, qmax;
 +	struct agent_adv_job *out;	/* answers waiting to be read */
@@ -3787,6 +3805,7 @@ index 91bd0c4d..08222772 100644
 +	int killed;		/* the main thread ended the request in flight */
 +	char *prev;		/* previous reply, sent as an assistant turn */
 +} agent_adv = {
++	.primed = ~0UL,	/* so the first quiet stretch waits out ADV_IDLE */
 +	.pid = -1, .fd = {-1, -1}, .notify = {-1, -1}, .logfd = -1
 +};
 +
@@ -4663,9 +4682,21 @@ index 91bd0c4d..08222772 100644
 +	agent_adv.awake = 0;
 +}
 +
++/* Whether the sleeper may take the next prompt without the main thread's
++ * leave: a quiet run is under way and prompts are queued, so the endpoint
++ * goes to the next answer at once instead of idling until the next scan.
++ * agent_adv.mtx is held. */
++static int agent_adv_go(void)
++{
++	return agent_adv.idle && !agent_adv.stop &&
++		agent_adv.primed == agent_adv.epoch && agent_adv.nqueue;
++}
++
 +/* The sleeper thread. It waits while the spear owns the model, then after
 + * ADV_IDLE without a sign of work it rates one entry per request, oldest
-+ * first, until the spear returns. A request already sent is never
++ * first, until the spear returns. The wait buys a quiet stretch, not each
++ * request: once the run has begun an answer is followed by the next
++ * submission, not by another ADV_IDLE. A request already sent is never
 + * cancelled: killing curl mid-answer would leave an entry half rated, so
 + * the entry goes back to the queue. */
 +static void *agent_adv_worker(void *unused)
@@ -4681,7 +4712,7 @@ index 91bd0c4d..08222772 100644
 +	pthread_sigmask(SIG_SETMASK, &all, NULL);
 +	pthread_mutex_lock(&agent_adv.mtx);
 +	for (;;) {
-+		while (!agent_adv.quit && !agent_adv.awake)
++		while (!agent_adv.quit && !agent_adv.awake && !agent_adv_go())
 +			pthread_cond_wait(&agent_adv.cv, &agent_adv.mtx);
 +		if (agent_adv.quit)
 +			break;
@@ -4689,10 +4720,18 @@ index 91bd0c4d..08222772 100644
 +			agent_adv_untake();
 +			continue;
 +		}
-+		if (agent_adv.idle) {
-+			/* The quiet run starts here: spear work bumps the epoch
-+			 * and this deadline is thrown away with the run, so the
-+			 * sleeper only acts on a stretch that went by unused. */
++		if (!agent_adv.idle) {
++			/* active, or the editor is not at its input: sleep
++			 * until either changes */
++			agent_adv.awake = 0;
++			continue;
++		}
++		if (agent_adv.primed != agent_adv.epoch) {
++			/* The quiet run starts here, once per stretch: spear
++			 * work bumps the epoch and this deadline is thrown away
++			 * with the run, so the sleeper only acts on a stretch that
++			 * went by unused. Past it primed says the run is under way,
++			 * and nothing waits between two requests. */
 +			agent_adv.seen = agent_adv.epoch;
 +			clock_gettime(CLOCK_REALTIME, &ts);
 +			ts.tv_sec += ADV_IDLE / 1000;
@@ -4710,12 +4749,7 @@ index 91bd0c4d..08222772 100644
 +			if (agent_adv.quit || agent_adv.stop ||
 +					agent_adv.epoch != agent_adv.seen)
 +				continue;
-+		}
-+		else {
-+			/* active, or the editor is not at its input: sleep
-+			 * until either changes */
-+			agent_adv.awake = 0;
-+			continue;
++			agent_adv.primed = agent_adv.seen;
 +		}
 +		if (!agent_adv.nqueue) {	/* it needs prompts */
 +			agent_adv.want = 1;
@@ -5520,7 +5554,7 @@ index 91bd0c4d..08222772 100644
  
  static char *agent_snapshot(char *loc)
  {
-@@ -3164,6 +5024,10 @@ static void agent_run_loop(const char *input)
+@@ -3164,6 +5041,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -5531,7 +5565,7 @@ index 91bd0c4d..08222772 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4943,6 +6807,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4943,6 +6824,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -5543,7 +5577,7 @@ index 91bd0c4d..08222772 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5035,6 +6904,11 @@ static int agent_autocompact(void)
+@@ -5035,6 +6921,11 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
