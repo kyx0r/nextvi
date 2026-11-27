@@ -2137,6 +2137,10 @@ static char *agent_adv_ask(struct agent_adv_work *w, int *st)
 		goto done;
 	}
 	rc = agent_writeall(bf, body, strlen(body));
+	/* Dead after the write: the two success returns below never reach
+	 * done:, so releasing it here is the only free every path sees. */
+	free(body);
+	body = NULL;
 	snprintf(agent_adv.hdpath, sizeof(agent_adv.hdpath), "%s", hdrpath);
 	close(bf);
 	bf = -1;
@@ -3468,7 +3472,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index c8c3d21f..08fffda0 100644
+index c8c3d21f..06cc09bd 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -1,6 +1,8 @@
@@ -3723,7 +3727,7 @@ index c8c3d21f..08fffda0 100644
  	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
  	int fd = mkstemp(hdrpath);
  	sbuf *out = NULL;
-@@ -2917,6 +2966,1422 @@ ret:
+@@ -2917,6 +2966,1426 @@ ret:
  	free(out);
  	return s;
  }
@@ -4569,6 +4573,10 @@ index c8c3d21f..08fffda0 100644
 +		goto done;
 +	}
 +	rc = agent_writeall(bf, body, strlen(body));
++	/* Dead after the write: the two success returns below never reach
++	 * done:, so releasing it here is the only free every path sees. */
++	free(body);
++	body = NULL;
 +	snprintf(agent_adv.hdpath, sizeof(agent_adv.hdpath), "%s", hdrpath);
 +	close(bf);
 +	bf = -1;
@@ -5146,7 +5154,7 @@ index c8c3d21f..08fffda0 100644
  
  static char *agent_snapshot(char *loc)
  {
-@@ -3140,6 +4605,10 @@ static void agent_run_loop(const char *input)
+@@ -3140,6 +4609,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -5157,7 +5165,7 @@ index c8c3d21f..08fffda0 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4919,6 +6388,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4919,6 +6392,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -5169,7 +5177,7 @@ index c8c3d21f..08fffda0 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5011,6 +6485,11 @@ static int agent_autocompact(void)
+@@ -5011,6 +6489,11 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
