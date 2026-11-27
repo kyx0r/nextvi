@@ -887,8 +887,7 @@ static char agent_adv_intro[] =
 	"than the work it claims, say so. Answering 3 to everything is a\n"
 	"failure of review, not a streak of good work.\n"
 	"Reply with one line and no other text that follows the format:\n"
-	"N R sentence\n\n"
-	"N is the entry number\n"
+	"R sentence\n\n"
 	"R is the rating\n"
 	"sentence is one short sentence of justification.\n\n";
 
@@ -940,7 +939,7 @@ static void agent_adv_collect(void);
 static int agent_adv_staged_has(unsigned long n);
 static int agent_adv_wanted(void);
 static void agent_adv_parse(unsigned long want, const char *reply);
-static char *agent_adv_sys(unsigned long n);
+static char *agent_adv_sys(void);
 static char *agent_adv_prompt(unsigned long n);
 int agent_adv_start(void);
 void agent_adv_off(void);
@@ -1146,7 +1145,8 @@ static void agent_adv_priors(sbuf *sb)
 	unsigned long floor = agent_epoch_floor(), m;
 	char head[32];
 	int keep[ADV_PRIOR], nkeep = 0, rate;
-	sbuf_str(sb, "\nPrevious ratings:\n")
+	sbuf_str(sb, "\nRatings it gave for other entries, one per line as\n"
+		"\"entry number rating note\":\n")
 	for (int i = 0; i < lbuf_len(nb); i++)
 		if (agent_note_line(nb->ln[i], &m, &rate) && m >= floor) {
 			if (nkeep == LEN(keep))
@@ -1170,9 +1170,8 @@ static void agent_adv_priors(sbuf *sb)
 
 /* Its system message: what it is, how to rate, what it already decided and
  * the one line it answers with. */
-static char *agent_adv_sys(unsigned long n)
+static char *agent_adv_sys(void)
 {
-	char head[80];
 	sbuf_smake(sb, 4096)
 	sbuf_str(sb, agent_adv_intro)
 	sbuf_str(sb, agent_rating_scale)
@@ -1180,9 +1179,8 @@ static char *agent_adv_sys(unsigned long n)
 		"no other number. Most entries are 0 or 1: answer 3 for the "
 		"few the remaining work truly depends on.\n")
 	agent_adv_priors(sb);
-	snprintf(head, sizeof(head), "\nRate one entry, replying only with "
-		"the line:\n%lu R sentence\n", n);
-	sbuf_str(sb, head)
+	sbuf_str(sb, "\nRate the entry, replying only with the line:\n"
+		"R sentence\n")
 	sbufn_ret(sb, sb->s)
 }
 
@@ -1601,7 +1599,7 @@ static void agent_adv_fill(void)
 		w.attempt = 0;
 		w.prev = NULL;
 		w.timeout = request_timeout;
-		w.sys = agent_adv_sys(n);
+		w.sys = agent_adv_sys();
 		w.prompt = agent_adv_prompt(n);
 		w.url = endpoint ? sdup(endpoint, strlen(endpoint)) : NULL;
 		w.key = api_key ? sdup(api_key, strlen(api_key)) : NULL;
@@ -1909,7 +1907,7 @@ static void agent_adv_requeue(unsigned long n, int attempt, const char *prev)
 	w.n = n;
 	w.attempt = attempt;
 	w.timeout = request_timeout;
-	w.sys = agent_adv_sys(n);
+	w.sys = agent_adv_sys();
 	w.prompt = agent_adv_prompt(n);
 	w.prev = prev && *prev ? sdup(prev, strlen(prev)) : NULL;
 	w.url = endpoint ? sdup(endpoint, strlen(endpoint)) : NULL;
@@ -2031,15 +2029,15 @@ static int agent_adv_staged_has(unsigned long n)
 }
 
 /* Stage the rating a reply carries. Models wrap the answer in prose, so
- * lines that are not a rating are ignored and markdown or separators after
- * a number are stripped. The entry number is advisory: an exact match
- * wins, and a reply with one rating is read as it. */
+ * lines that are not a rating are ignored and markdown or separators
+ * around it are stripped. The reply names no entry: want is the one under
+ * review, so the first line with a rating answers it, and a number the
+ * model echoes ahead of the rating is skipped. */
 static void agent_adv_parse(unsigned long want, const char *reply)
 {
-	char ln[2048], *p, *q, *d, *alt = NULL;
-	const char *s = reply, *text;
-	unsigned long n, altn = 0;
-	int len, rate, altrate = 0, nalt = 0, exact = 0;
+	char ln[2048], *p, *q, *r;
+	const char *s = reply;
+	int len, rate;
 	while (s && *s) {
 		const char *nl = strchr(s, '\''\n'\'');
 		len = nl ? (int)(nl - s) : (int)strlen(s);
@@ -2052,55 +2050,26 @@ static void agent_adv_parse(unsigned long want, const char *reply)
 		while (*p == '\'' '\'' || *p == '\''\t'\'' || *p == '\''-'\'' || *p == '\''*'\'' ||
 				*p == '\''>'\'' || *p == '\''`'\'' || *p == '\''#'\'')
 			p++;
-		n = strtoul(p, &q, 10);
-		if (q == p)
+		if (!isdigit((unsigned char)*p))
 			continue;
-		d = q;
-		while (*d == '\'' '\'' || *d == '\''\t'\'' || *d == '\'':'\'' || *d == '\''='\'' ||
-				*d == '\''*'\'' || *d == '\''`'\'' || *d == '\''.'\'' || *d == '\'')'\'')
-			d++;
-		if (!isdigit((unsigned char)*d) || d[1] > '\'' '\'')
-			d = NULL;
-		else if (*d > '\''3'\'') {
-			agent_adv_note("entry %lu: rating %c is off the 0 to 3 "
-				"scale", want, *d);
-			continue;
+		q = p + strspn(p, "0123456789");
+		if (q != p + 1 || *p > '\''3'\'') {	/* a number it echoed first */
+			r = q + strspn(q, " \t:=*`.)");
+			if (!isdigit((unsigned char)*r) || *r > '\''3'\'' ||
+					r[1] > '\'' '\'') {
+				if (*p > '\''3'\'')
+					agent_adv_note("entry %lu: rating "
+						"%c is off the 0 to 3 scale",
+						want, *p);
+				continue;
+			}
+			p = r;
 		}
-		/* "2 sentence": the rating with its entry number left off. */
-		if (!d && q == p + 1 && *p <= '\''3'\'' && (*q == '\'' '\'' || *q == '\''\t'\'')) {
-			d = p;
-			n = 0;
-		}
-		if (!d)
-			continue;
-		rate = *d - '\''0'\'';
-		text = d + 1 + strspn(d + 1, " \t");
-		if (n == want) {
-			agent_adv_stage(want, rate, text);
-			exact = 1;
-			continue;
-		}
-		nalt++;
-		altrate = rate;
-		altn = n;
-		free(alt);
-		alt = sdup(text, strlen(text));
-	}
-	if (exact || nalt != 1) {
-		free(alt);
+		rate = *p - '\''0'\'';
+		p = p + 1 + strspn(p + 1, " \t:=-.*`)");
+		agent_adv_stage(want, rate, p);
 		return;
 	}
-	/* The lone rating names an entry the model echoed instead, or it left
-	 * the number off: the entry asked about is the only other thing the
-	 * reply can mean, and asking again buys nothing. */
-	if (altn)
-		agent_adv_note("entry %lu: took its lone rating %d for "
-			"entry %lu", want, altrate, altn);
-	else
-		agent_adv_note("entry %lu: took its lone rating, which "
-			"names no entry", want);
-	agent_adv_stage(want, altrate, alt);
-	free(alt);
 }
 
 /* Whether the entry under review still wants a rating: the spear may have
@@ -3076,7 +3045,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index c8c3d21f..865c2f3f 100644
+index c8c3d21f..09f015c6 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -1,6 +1,8 @@
@@ -3252,7 +3221,7 @@ index c8c3d21f..865c2f3f 100644
  	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
  	int fd = mkstemp(hdrpath);
  	sbuf *out = NULL;
-@@ -2917,6 +2956,1471 @@ ret:
+@@ -2917,6 +2956,1440 @@ ret:
  	free(out);
  	return s;
  }
@@ -3289,8 +3258,7 @@ index c8c3d21f..865c2f3f 100644
 +	"than the work it claims, say so. Answering 3 to everything is a\n"
 +	"failure of review, not a streak of good work.\n"
 +	"Reply with one line and no other text that follows the format:\n"
-+	"N R sentence\n\n"
-+	"N is the entry number\n"
++	"R sentence\n\n"
 +	"R is the rating\n"
 +	"sentence is one short sentence of justification.\n\n";
 +
@@ -3342,7 +3310,7 @@ index c8c3d21f..865c2f3f 100644
 +static int agent_adv_staged_has(unsigned long n);
 +static int agent_adv_wanted(void);
 +static void agent_adv_parse(unsigned long want, const char *reply);
-+static char *agent_adv_sys(unsigned long n);
++static char *agent_adv_sys(void);
 +static char *agent_adv_prompt(unsigned long n);
 +int agent_adv_start(void);
 +void agent_adv_off(void);
@@ -3548,7 +3516,8 @@ index c8c3d21f..865c2f3f 100644
 +	unsigned long floor = agent_epoch_floor(), m;
 +	char head[32];
 +	int keep[ADV_PRIOR], nkeep = 0, rate;
-+	sbuf_str(sb, "\nPrevious ratings:\n")
++	sbuf_str(sb, "\nRatings it gave for other entries, one per line as\n"
++		"\"entry number rating note\":\n")
 +	for (int i = 0; i < lbuf_len(nb); i++)
 +		if (agent_note_line(nb->ln[i], &m, &rate) && m >= floor) {
 +			if (nkeep == LEN(keep))
@@ -3572,9 +3541,8 @@ index c8c3d21f..865c2f3f 100644
 +
 +/* Its system message: what it is, how to rate, what it already decided and
 + * the one line it answers with. */
-+static char *agent_adv_sys(unsigned long n)
++static char *agent_adv_sys(void)
 +{
-+	char head[80];
 +	sbuf_smake(sb, 4096)
 +	sbuf_str(sb, agent_adv_intro)
 +	sbuf_str(sb, agent_rating_scale)
@@ -3582,9 +3550,8 @@ index c8c3d21f..865c2f3f 100644
 +		"no other number. Most entries are 0 or 1: answer 3 for the "
 +		"few the remaining work truly depends on.\n")
 +	agent_adv_priors(sb);
-+	snprintf(head, sizeof(head), "\nRate one entry, replying only with "
-+		"the line:\n%lu R sentence\n", n);
-+	sbuf_str(sb, head)
++	sbuf_str(sb, "\nRate the entry, replying only with the line:\n"
++		"R sentence\n")
 +	sbufn_ret(sb, sb->s)
 +}
 +
@@ -4003,7 +3970,7 @@ index c8c3d21f..865c2f3f 100644
 +		w.attempt = 0;
 +		w.prev = NULL;
 +		w.timeout = request_timeout;
-+		w.sys = agent_adv_sys(n);
++		w.sys = agent_adv_sys();
 +		w.prompt = agent_adv_prompt(n);
 +		w.url = endpoint ? sdup(endpoint, strlen(endpoint)) : NULL;
 +		w.key = api_key ? sdup(api_key, strlen(api_key)) : NULL;
@@ -4311,7 +4278,7 @@ index c8c3d21f..865c2f3f 100644
 +	w.n = n;
 +	w.attempt = attempt;
 +	w.timeout = request_timeout;
-+	w.sys = agent_adv_sys(n);
++	w.sys = agent_adv_sys();
 +	w.prompt = agent_adv_prompt(n);
 +	w.prev = prev && *prev ? sdup(prev, strlen(prev)) : NULL;
 +	w.url = endpoint ? sdup(endpoint, strlen(endpoint)) : NULL;
@@ -4433,15 +4400,15 @@ index c8c3d21f..865c2f3f 100644
 +}
 +
 +/* Stage the rating a reply carries. Models wrap the answer in prose, so
-+ * lines that are not a rating are ignored and markdown or separators after
-+ * a number are stripped. The entry number is advisory: an exact match
-+ * wins, and a reply with one rating is read as it. */
++ * lines that are not a rating are ignored and markdown or separators
++ * around it are stripped. The reply names no entry: want is the one under
++ * review, so the first line with a rating answers it, and a number the
++ * model echoes ahead of the rating is skipped. */
 +static void agent_adv_parse(unsigned long want, const char *reply)
 +{
-+	char ln[2048], *p, *q, *d, *alt = NULL;
-+	const char *s = reply, *text;
-+	unsigned long n, altn = 0;
-+	int len, rate, altrate = 0, nalt = 0, exact = 0;
++	char ln[2048], *p, *q, *r;
++	const char *s = reply;
++	int len, rate;
 +	while (s && *s) {
 +		const char *nl = strchr(s, '\n');
 +		len = nl ? (int)(nl - s) : (int)strlen(s);
@@ -4454,55 +4421,26 @@ index c8c3d21f..865c2f3f 100644
 +		while (*p == ' ' || *p == '\t' || *p == '-' || *p == '*' ||
 +				*p == '>' || *p == '`' || *p == '#')
 +			p++;
-+		n = strtoul(p, &q, 10);
-+		if (q == p)
++		if (!isdigit((unsigned char)*p))
 +			continue;
-+		d = q;
-+		while (*d == ' ' || *d == '\t' || *d == ':' || *d == '=' ||
-+				*d == '*' || *d == '`' || *d == '.' || *d == ')')
-+			d++;
-+		if (!isdigit((unsigned char)*d) || d[1] > ' ')
-+			d = NULL;
-+		else if (*d > '3') {
-+			agent_adv_note("entry %lu: rating %c is off the 0 to 3 "
-+				"scale", want, *d);
-+			continue;
++		q = p + strspn(p, "0123456789");
++		if (q != p + 1 || *p > '3') {	/* a number it echoed first */
++			r = q + strspn(q, " \t:=*`.)");
++			if (!isdigit((unsigned char)*r) || *r > '3' ||
++					r[1] > ' ') {
++				if (*p > '3')
++					agent_adv_note("entry %lu: rating "
++						"%c is off the 0 to 3 scale",
++						want, *p);
++				continue;
++			}
++			p = r;
 +		}
-+		/* "2 sentence": the rating with its entry number left off. */
-+		if (!d && q == p + 1 && *p <= '3' && (*q == ' ' || *q == '\t')) {
-+			d = p;
-+			n = 0;
-+		}
-+		if (!d)
-+			continue;
-+		rate = *d - '0';
-+		text = d + 1 + strspn(d + 1, " \t");
-+		if (n == want) {
-+			agent_adv_stage(want, rate, text);
-+			exact = 1;
-+			continue;
-+		}
-+		nalt++;
-+		altrate = rate;
-+		altn = n;
-+		free(alt);
-+		alt = sdup(text, strlen(text));
-+	}
-+	if (exact || nalt != 1) {
-+		free(alt);
++		rate = *p - '0';
++		p = p + 1 + strspn(p + 1, " \t:=-.*`)");
++		agent_adv_stage(want, rate, p);
 +		return;
 +	}
-+	/* The lone rating names an entry the model echoed instead, or it left
-+	 * the number off: the entry asked about is the only other thing the
-+	 * reply can mean, and asking again buys nothing. */
-+	if (altn)
-+		agent_adv_note("entry %lu: took its lone rating %d for "
-+			"entry %lu", want, altrate, altn);
-+	else
-+		agent_adv_note("entry %lu: took its lone rating, which "
-+			"names no entry", want);
-+	agent_adv_stage(want, altrate, alt);
-+	free(alt);
 +}
 +
 +/* Whether the entry under review still wants a rating: the spear may have
@@ -4724,7 +4662,7 @@ index c8c3d21f..865c2f3f 100644
  
  static char *agent_snapshot(char *loc)
  {
-@@ -3140,6 +4644,10 @@ static void agent_run_loop(const char *input)
+@@ -3140,6 +4613,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -4735,7 +4673,7 @@ index c8c3d21f..865c2f3f 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4919,6 +6427,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4919,6 +6396,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -4747,7 +4685,7 @@ index c8c3d21f..865c2f3f 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5011,6 +6524,11 @@ static int agent_autocompact(void)
+@@ -5011,6 +6493,11 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
