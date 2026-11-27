@@ -40,24 +40,12 @@ static int agent_logbuf = 3;	/\* tempbufs index logged to: 3 \(b-4\) or 7 \(b-8\
 %f> static cJSON \*agent_messages;
 static unsigned long agent_epoch, agent_serial;
 static int agent_ready, agent_syncing, agent_child_status;4??0?
-4??+2m 1220reg p OK agent.c:27:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK agent.c:3:a42sc %? %@2152sc!1q0?
 grp 1%f> static cJSON \*agent_messages;.*?
 static unsigned long agent_epoch, agent_serial;.*?
 (static int agent_ready, agent_syncing, agent_child_status;)7??0?
-grp 07??m 1220reg p OK agent.c:27:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f>  \* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- \* SOFTWARE\.
- \*/.*(/\* b-4 was edited other than by agent_log since the context was rebuilt\. \*/)
-static int agent_logging, agent_log_edited;
-/\* Per log, indexed as agent_entries: edited other than by agent_log_write,8??0?
-grp 08??-4m 1220reg p OK agent.c:27:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f>  \* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\. IN NO EVENT SHALL THE
- \* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- \* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,.*( \* so its last number and open body need a parse\. \*/)
-static int agent_log_stale\[2] = \{1, 1};
-/\* Last entry number per log: \[0] b-8, \[1] b-4\. \*/9??0?
-grp 09??-7m 1220reg p OK agent.c:27:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:272sc %? %@2132sc!0?
+grp 07??m 1220reg p OK agent.c:3:a72sc %? %@2152sc!0?
+1;4;7??!219reg agent.c:32sc %? %@2132sc!0?
 ?0?
 %f+ static size_t agent_capture_total;	/\* tool output bytes, clipped ones included \*/
 #define AGENT_SHOW_MAX \(1 << 20\)	/\* guarded output kept for aout \*/
@@ -70,20 +58,20 @@ static int agent_gr_cap\(void\)1??0?
 #define AGENT_SHOW_MAX \(1 << 20\)	/\* guarded output kept for aout \*/
 
 4??0?
-4??+2m 2220reg p OK agent.c:42:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK agent.c:18:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> static unsigned long agent_entries\[2];
 static unsigned long agent_rounds;	/\* tool rounds of the current run \*/
 static unsigned long agent_tool_calls;	/\* ex tool calls executed, cumulative \*/.*(/\* Usage of the last accepted response\. Its input count anchors estimates at)
  \* bytes of context; growth past that is estimated, not reported\. \*/
 static struct agent_usage \{8??0?
-grp 08??-8m 2220reg p OK agent.c:42:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-8m 2220reg p OK agent.c:18:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* so its last number and open body need a parse\. \*/
 static int agent_log_stale\[2] = \{1, 1};
 /\* Last entry number per log: \[0] b-8, \[1] b-4\. \*/.*(	double input, output, bytes;)
 	int reported, anchored;
 } agent_usage;9??0?
-grp 09??-11m 2220reg p OK agent.c:42:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg agent.c:422sc %? %@2132sc!0?
+grp 09??-11m 2220reg p OK agent.c:18:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg agent.c:182sc %? %@2132sc!0?
 ?0?
 %f+ /\* A tool call can edit a log line by line; save once after the call\. \*/
 static void agent_sync_pending\(void\)
@@ -97,17 +85,17 @@ static void agent_sync_pending\(void\)
 		if \(agent_unsaved & \(1 << \(i - 3\)\)\)
 			agent_sync_buf\(i\);
 }2??0?
-2??m 3220reg p OK agent.c:499:a22sc %? %@2152sc!1q0?
+2??m 3220reg p OK agent.c:475:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	for \(int i = 3; i < 8; i\+\+\)$3??0?
-3??m 3220reg p OK agent.c:499:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 3220reg p OK agent.c:475:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ /\* A tool call can edit a log line by line; save once after the call\. \*/
 static void agent_sync_pending\(void\)
 \{4??0?
-4??+3m 3220reg p OK agent.c:499:a42sc %? %@2152sc!1q0?
+4??+3m 3220reg p OK agent.c:475:a42sc %? %@2152sc!1q0?
 %f+ 		if \(agent_unsaved & \(1 << \(i - 3\)\)\)
 			agent_sync_buf\(i\);
 }5??0?
-5??-1m 3220reg p OK agent.c:499:a52sc %? %@2152sc!1q0?
+5??-1m 3220reg p OK agent.c:475:a52sc %? %@2152sc!1q0?
 %f+ /\*...........l................l..e.b...........e..nce..ft.. th..c.l.....
 ...tic.vo.d....nt...n..p....n.......
 \{
@@ -115,25 +103,25 @@ static void agent_sync_pending\(void\)
 	.........t.u..a.e...... <..\(i -.....
 	.	.........c....\(...
 }6??0?
-6??+3m 3220reg p OK agent.c:499:a62sc %? %@2152sc!1q0?
+6??+3m 3220reg p OK agent.c:475:a62sc %? %@2152sc!1q0?
 grp 1%f+ /\* A tool call can edit a log line by line; save once after the call\. \*/.*?
 static void agent_sync_pending\(void\).*?
 \{.*?
 (	for \(int i = 3; i < 8; i\+\+\))7??0?
-grp 07??m 3220reg p OK agent.c:499:a72sc %? %@2152sc!1q0?
+grp 07??m 3220reg p OK agent.c:475:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		ex_print\("agent write failed; buffer text retained", msg_ft\)
 	agent_syncing = 0;
 }.*(static void agent_sync\(struct lbuf \*lb\))
 \{
 	if \(lb == tempbufs\[3]\.lb && !agent_logging\)8??0?
-grp 08??-5m 3220reg p OK agent.c:499:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 3220reg p OK agent.c:475:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	agent_unsaved &= ~\(1 << \(i - 3\)\);
 	agent_syncing = 1;
 	if \(agent_save\(i\)\).*(		agent_log_edited = agent_log_stale\[1] = 1;)
 	if \(lb == tempbufs\[7]\.lb && !agent_logging\)
 		agent_log_stale\[0] = 1;9??0?
-grp 09??-8m 3220reg p OK agent.c:499:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg agent.c:4992sc %? %@2132sc!0?
+grp 09??-8m 3220reg p OK agent.c:475:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:4752sc %? %@2132sc!0?
 ?0?
 %f+ 		agent_log_stale\[0] = 1;
 	if \(!agent_ready \|\| agent_syncing\)
@@ -147,17 +135,17 @@ static void agent_sync_pending\(void\).*?
 		if \(tempbufs\[i]\.lb != lb\)
 			continue;
 		if \(i == 3 && agent_packing\)2??0?
-2??m 4220reg p OK agent.c:512:a22sc %? %@2152sc!1q0?
+2??m 4220reg p OK agent.c:488:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	for \(int i = 3; i < 8; i\+\+\) \{$3??0?
-3??m 4220reg p OK agent.c:512:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 4220reg p OK agent.c:488:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		agent_log_stale\[0] = 1;
 	if \(!agent_ready \|\| agent_syncing\)
 		return;4??0?
-4??+3m 4220reg p OK agent.c:512:a42sc %? %@2152sc!1q0?
+4??+3m 4220reg p OK agent.c:488:a42sc %? %@2152sc!1q0?
 %f+ 		if \(tempbufs\[i]\.lb != lb\)
 			continue;
 		if \(i == 3 && agent_packing\)5??0?
-5??-1m 4220reg p OK agent.c:512:a52sc %? %@2152sc!1q0?
+5??-1m 4220reg p OK agent.c:488:a52sc %? %@2152sc!1q0?
 %f+ ......t.l...s........=..;
 	i..\(!.......e..y....a.e....y......
 .....u..;
@@ -165,25 +153,25 @@ static void agent_sync_pending\(void\).*?
 .	........b..s\[..\.l.......\)
 		.......u..
 .... .i..... ...a...t.......g.6??0?
-6??+3m 4220reg p OK agent.c:512:a62sc %? %@2152sc!1q0?
+6??+3m 4220reg p OK agent.c:488:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		agent_log_stale\[0] = 1;.*?
 	if \(!agent_ready \|\| agent_syncing\).*?
 		return;.*?
 (	for \(int i = 3; i < 8; i\+\+\) \{)7??0?
-grp 07??m 4220reg p OK agent.c:512:a72sc %? %@2152sc!1q0?
+grp 07??m 4220reg p OK agent.c:488:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(lb == tempbufs\[3]\.lb && !agent_logging\)
 		agent_log_edited = agent_log_stale\[1] = 1;
 	if \(lb == tempbufs\[7]\.lb && !agent_logging\).*(		if \(agent_tool\))
 			agent_unsaved \|= 1 << \(i - 3\);
 		else8??0?
-grp 08??-5m 4220reg p OK agent.c:512:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 4220reg p OK agent.c:488:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		if \(agent_unsaved & \(1 << \(i - 3\)\)\)
 			agent_sync_buf\(i\);
 }.*(			agent_sync_buf\(i\);)
 	}
 }9??0?
-grp 09??-8m 4220reg p OK agent.c:512:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg agent.c:5122sc %? %@2132sc!0?
+grp 09??-8m 4220reg p OK agent.c:488:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:4882sc %? %@2132sc!0?
 ?0?
 %f+ 	temp_open\(5, "/notes/", _ft\);
 	temp_open\(6, "/discarded/", _ft\);
@@ -195,24 +183,24 @@ static void agent_sync_pending\(void\).*?
 %f+ 	temp_open\(5, "/notes/", _ft\);
 	temp_open\(6, "/discarded/", _ft\);
 	temp_open\(7, "/asides/", _ft\);4??0?
-4??+2m 5220reg p OK agent.c:565:a42sc %? %@2152sc!1q0?
+4??+2m 5220reg p OK agent.c:541:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	temp_open\(5, "/notes/", _ft\);.*?
 	temp_open\(6, "/discarded/", _ft\);.*?
 (	temp_open\(7, "/asides/", _ft\);)7??0?
-grp 07??m 5220reg p OK agent.c:565:a72sc %? %@2152sc!1q0?
+grp 07??m 5220reg p OK agent.c:541:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	temp_open\(3, "/conversation/", _ft\);
 	temp_open\(4, "/skills/", _ft\);.*(	const char \*home = getenv\("HOME"\);)
 	char \*dir;
 	if \(\(!log_dir && \(!home \|\| !\*home\)\) \|\| \(log_dir && !\*log_dir\)\)8??0?
-grp 08??-12m 5220reg p OK agent.c:565:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-12m 5220reg p OK agent.c:541:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		free\(s\);
 	}
 }.*(	dir = emalloc\(strlen\(log_dir \? log_dir : home\) \+ NAME_MAX \+ 64\);)
 	if \(log_dir\)
 		strcpy\(dir, log_dir\);9??0?
-grp 09??-16m 5220reg p OK agent.c:565:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:5652sc %? %@2132sc!0?
+grp 09??-16m 5220reg p OK agent.c:541:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:5412sc %? %@2132sc!0?
 ?0?
 %f+ }
 
@@ -226,17 +214,17 @@ static char \*agent_logs\(void\)1??0?
 
 /\* The log directory with room for a session name appended, or NULL\. \*/
 static char \*agent_logs\(void\)2??0?
-2??m 6220reg p OK agent.c:572:a22sc %? %@2152sc!1q0?
+2??m 6220reg p OK agent.c:548:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	"asides"};$3??0?
-3??m 6220reg p OK agent.c:572:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 6220reg p OK agent.c:548:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ }
 
 static char \*agent_names\[] = \{"conversation", "skills", "notes", "discarded",4??0?
-4??+3m 6220reg p OK agent.c:572:a42sc %? %@2152sc!1q0?
+4??+3m 6220reg p OK agent.c:548:a42sc %? %@2152sc!1q0?
 %f+ 
 /\* The log directory with room for a session name appended, or NULL\. \*/
 static char \*agent_logs\(void\)5??0?
-5??-1m 6220reg p OK agent.c:572:a52sc %? %@2152sc!1q0?
+5??-1m 6220reg p OK agent.c:548:a52sc %? %@2152sc!1q0?
 %f+ }
 
 .tat......r..a..n._n.......=...c.nv.r.a..o... ..k...s.....ot..".."..........,
@@ -244,25 +232,25 @@ static char \*agent_logs\(void\)5??0?
 
 ...T.e l.g............i.h....m.....a...s..o..n.m........... .r.N.......
 s..... ..a......nt.......o...6??0?
-6??+3m 6220reg p OK agent.c:572:a62sc %? %@2152sc!1q0?
+6??+3m 6220reg p OK agent.c:548:a62sc %? %@2152sc!1q0?
 grp 1%f+ }.*?
 .*?
 static char \*agent_names\[] = \{"conversation", "skills", "notes", "discarded",.*?
 (	"asides"};)7??0?
-grp 07??m 6220reg p OK agent.c:572:a72sc %? %@2152sc!1q0?
+grp 07??m 6220reg p OK agent.c:548:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	temp_open\(3, "/conversation/", _ft\);
 	temp_open\(4, "/skills/", _ft\);.*(	const char \*home = getenv\("HOME"\);)
 	char \*dir;
 	if \(\(!log_dir && \(!home \|\| !\*home\)\) \|\| \(log_dir && !\*log_dir\)\)8??0?
-grp 08??-5m 6220reg p OK agent.c:572:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 6220reg p OK agent.c:548:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		free\(s\);
 	}
 }.*(	dir = emalloc\(strlen\(log_dir \? log_dir : home\) \+ NAME_MAX \+ 64\);)
 	if \(log_dir\)
 		strcpy\(dir, log_dir\);9??0?
-grp 09??-9m 6220reg p OK agent.c:572:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg agent.c:5722sc %? %@2132sc!0?
+grp 09??-9m 6220reg p OK agent.c:548:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:5482sc %? %@2132sc!0?
 ?0?
 %f+ 	return ret;
 }
@@ -276,18 +264,18 @@ static int agent_attach\(const char \*dir, int load\)
  \* with load filled from those it has\. \*/
 static int agent_attach\(const char \*dir, int load\)
 \{2??0?
-2??m 7220reg p OK agent.c:606:a22sc %? %@2152sc!1q0?
+2??m 7220reg p OK agent.c:582:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^/\* Make dir the session directory: b-4 to b-8 are saved to its files, or$3??0?
-3??m 7220reg p OK agent.c:606:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 7220reg p OK agent.c:582:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	return ret;
 }
 
 4??0?
-4??+3m 7220reg p OK agent.c:606:a42sc %? %@2152sc!1q0?
+4??+3m 7220reg p OK agent.c:582:a42sc %? %@2152sc!1q0?
 %f+  \* with load filled from those it has\. \*/
 static int agent_attach\(const char \*dir, int load\)
 \{5??0?
-5??-1m 7220reg p OK agent.c:606:a52sc %? %@2152sc!1q0?
+5??-1m 7220reg p OK agent.c:582:a52sc %? %@2152sc!1q0?
 %f+ ...tu.n ....
 }
 
@@ -295,25 +283,25 @@ static int agent_attach\(const char \*dir, int load\)
 .\*.........d.............t.os..i...a.....
 ..a.........g..._.t........s.....r....r. i.. ...d.
 \{6??0?
-6??+3m 7220reg p OK agent.c:606:a62sc %? %@2152sc!1q0?
+6??+3m 7220reg p OK agent.c:582:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	return ret;.*?
 }.*?
 .*?
 (/\* Make dir the session directory: b-4 to b-8 are saved to its files, or)7??0?
-grp 07??m 7220reg p OK agent.c:606:a72sc %? %@2152sc!1q0?
+grp 07??m 7220reg p OK agent.c:582:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	agent_syncing = 0;
 	close\(fd\);
 	b->mtime = mtime\(b->path\);.*(	char \*cwd = NULL, \*path;)
 	int ret = 0;
 	/\* Absolute paths survive :cd during the session\. \*/8??0?
-grp 08??-4m 7220reg p OK agent.c:606:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 7220reg p OK agent.c:582:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	agent_syncing = 1;
 	ret = lbuf_rd\(b->lb, fd, 0, lbuf_len\(b->lb\)\);
 	lbuf_saved\(b->lb, 1\);.*(	if \(\*dir != '\''/'\'' && !\(cwd = getcwd\(NULL, 0\)\)\))
 		return -1;
 	for \(int i = 3; i < 8 && !ret; i\+\+\) \{9??0?
-grp 09??-7m 7220reg p OK agent.c:606:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg agent.c:6062sc %? %@2132sc!0?
+grp 09??-7m 7220reg p OK agent.c:582:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:5822sc %? %@2132sc!0?
 ?0?
 %f+ 	/\* Absolute paths survive :cd during the session\. \*/
 	if \(\*dir != '\''/'\'' && !\(cwd = getcwd\(NULL, 0\)\)\)
@@ -327,17 +315,17 @@ static int agent_attach\(const char \*dir, int load\)
 		path = emalloc\(\(cwd \? strlen\(cwd\) : 0\) \+ strlen\(dir\) \+ 32\);
 		sprintf\(path, "%s%s%s/%s", cwd \? cwd : "", cwd \? "/" : "", dir,
 			agent_names\[i - 3]\);2??0?
-2??m 8220reg p OK agent.c:615:a22sc %? %@2152sc!1q0?
+2??m 8220reg p OK agent.c:591:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^	for \(int i = 3; i < 8 && !ret; i\+\+\) \{$3??0?
-3??m 8220reg p OK agent.c:615:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 8220reg p OK agent.c:591:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 	/\* Absolute paths survive :cd during the session\. \*/
 	if \(\*dir != '\''/'\'' && !\(cwd = getcwd\(NULL, 0\)\)\)
 		return -1;4??0?
-4??+3m 8220reg p OK agent.c:615:a42sc %? %@2152sc!1q0?
+4??+3m 8220reg p OK agent.c:591:a42sc %? %@2152sc!1q0?
 %f+ 		path = emalloc\(\(cwd \? strlen\(cwd\) : 0\) \+ strlen\(dir\) \+ 32\);
 		sprintf\(path, "%s%s%s/%s", cwd \? cwd : "", cwd \? "/" : "", dir,
 			agent_names\[i - 3]\);5??0?
-5??-1m 8220reg p OK agent.c:615:a52sc %? %@2152sc!1q0?
+5??-1m 8220reg p OK agent.c:591:a52sc %? %@2152sc!1q0?
 %f+ ..\* ...ol....p.t.. ....iv..:......i........es........
 	........... ./'\''..&........ ............ ....
 	.r.tu......
@@ -345,25 +333,25 @@ static int agent_attach\(const char \*dir, int load\)
 ...........al..c...w..\?..t.l..\(...\)....\)........n.di......2.;
 ..s.r.n..\(....,.".s........,.....\? .................."...........
 	.............\[i.-.....6??0?
-6??+3m 8220reg p OK agent.c:615:a62sc %? %@2152sc!1q0?
+6??+3m 8220reg p OK agent.c:591:a62sc %? %@2152sc!1q0?
 grp 1%f+ 	/\* Absolute paths survive :cd during the session\. \*/.*?
 	if \(\*dir != '\''/'\'' && !\(cwd = getcwd\(NULL, 0\)\)\).*?
 		return -1;.*?
 (	for \(int i = 3; i < 8 && !ret; i\+\+\) \{)7??0?
-grp 07??m 8220reg p OK agent.c:615:a72sc %? %@2152sc!1q0?
+grp 07??m 8220reg p OK agent.c:591:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	char \*cwd = NULL, \*path;
 	int ret = 0;.*(		free\(tempbufs\[i]\.path\);)
 		tempbufs\[i]\.path = path;
 		tempbufs\[i]\.plen = strlen\(path\);8??0?
-grp 08??-4m 8220reg p OK agent.c:615:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 8220reg p OK agent.c:591:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> /\* Make dir the session directory: b-4 to b-8 are saved to its files, or
  \* with load filled from those it has\. \*/
 static int agent_attach\(const char \*dir, int load\).*(		ret = load \? agent_load\(i\) : agent_save\(i\);)
 	}
 	free\(cwd\);9??0?
-grp 09??-7m 8220reg p OK agent.c:615:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg agent.c:6152sc %? %@2132sc!0?
+grp 09??-7m 8220reg p OK agent.c:591:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:5912sc %? %@2132sc!0?
 ?0?
 %f+ 		tempbufs\[i]\.plen = strlen\(path\);
 		ret = load \? agent_load\(i\) : agent_save\(i\);
@@ -375,24 +363,24 @@ static int agent_attach\(const char \*dir, int load\).*(		ret = load \? agent_lo
 %f+ 		tempbufs\[i]\.plen = strlen\(path\);
 		ret = load \? agent_load\(i\) : agent_save\(i\);
 	}4??0?
-4??+2m 9220reg p OK agent.c:623:a42sc %? %@2152sc!1q0?
+4??+2m 9220reg p OK agent.c:599:a42sc %? %@2152sc!1q0?
 grp 1%f+ 		tempbufs\[i]\.plen = strlen\(path\);.*?
 		ret = load \? agent_load\(i\) : agent_save\(i\);.*?
 (	})7??0?
-grp 07??m 9220reg p OK agent.c:623:a72sc %? %@2152sc!1q0?
+grp 07??m 9220reg p OK agent.c:599:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 			agent_names\[i - 3]\);
 		free\(tempbufs\[i]\.path\);
 		tempbufs\[i]\.path = path;.*(/\* Create the session files on first agent use\. \*/)
 static int agent_start\(void\)
 \{8??0?
-grp 08??-5m 9220reg p OK agent.c:623:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 9220reg p OK agent.c:599:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	for \(int i = 3; i < 8 && !ret; i\+\+\) \{
 		path = emalloc\(\(cwd \? strlen\(cwd\) : 0\) \+ strlen\(dir\) \+ 32\);
 		sprintf\(path, "%s%s%s/%s", cwd \? cwd : "", cwd \? "/" : "", dir,.*(	char \*dir, \*leaf;)
 	time_t now;
 	struct tm \*tm;9??0?
-grp 09??-8m 9220reg p OK agent.c:623:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:6232sc %? %@2132sc!0?
+grp 09??-8m 9220reg p OK agent.c:599:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:5992sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_ready = 1;
 	agent_init_error = NULL;
@@ -405,24 +393,24 @@ static int agent_start\(void\)
 %f+ 	agent_ready = 1;
 	agent_init_error = NULL;
 	agent_history\(lbuf_len\(tempbufs\[3]\.lb\) > 0\);4??0?
-4??+2m 10220reg p OK agent.c:721:a42sc %? %@2152sc!1q0?
+4??+2m 10220reg p OK agent.c:697:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	agent_ready = 1;.*?
 	agent_init_error = NULL;.*?
 (	agent_history\(lbuf_len\(tempbufs\[3]\.lb\) > 0\);)7??0?
-grp 07??m 10220reg p OK agent.c:721:a72sc %? %@2152sc!1q0?
+grp 07??m 10220reg p OK agent.c:697:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	/\* Trimmed entries and notes keep their numbers: the next entry
 	 \* follows every number in b-4, b-6 and b-7\. \*/
 	agent_entries\[1] = agent_entries_max\(\);.*(/\* A log holds numbered entries headed "ROLE N"\. A TURN is one reply: its)
  \* header, then parts headed "ROLE N\.I"\. NOTICE entries report harness events
  \* to the user; a rebuild never sends them\. The body of a USER or NOTICE entry8??0?
-grp 08??-4m 10220reg p OK agent.c:721:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 10220reg p OK agent.c:697:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		return -1;
 	}
 	free\(best\);.*( \* and of a part runs to its "END" line, so its lines are never headers\. A)
  \* body holding a line "END" has an id on its header, "ROLE N id", and runs
  \* to "END id"\. \*/9??0?
-grp 09??-7m 10220reg p OK agent.c:721:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:7212sc %? %@2132sc!0?
+grp 09??-7m 10220reg p OK agent.c:697:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:6972sc %? %@2132sc!0?
 ?0?
 %f+ static void agent_log_write\(const char \*open, const char \*head, const char \*text,
 		const char \*end, int show\)
@@ -434,83 +422,78 @@ static int agent_start\(void\)
 %f+ static void agent_log_write\(const char \*open, const char \*head, const char \*text,
 		const char \*end, int show\)
 \{4??0?
-4??+2m 11220reg p OK agent.c:984:a42sc %? %@2152sc!1q0?
+4??+2m 11220reg p OK agent.c:960:a42sc %? %@2152sc!1q0?
 grp 1%f+ static void agent_log_write\(const char \*open, const char \*head, const char \*text,.*?
 		const char \*end, int show\).*?
 (\{)7??0?
-grp 07??m 11220reg p OK agent.c:984:a72sc %? %@2152sc!1q0?
+grp 07??m 11220reg p OK agent.c:960:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		agent_entries\[1] = MAX\(agent_entries\[1], last\);
 	return \+\+agent_entries\[agent_logbuf == 3];
 }.*(	sbuf_str\(sb, text\);)
 	if \(sb->s\[sb->s_n-1] != '\''\\n'\''\)
 		sbuf_chr\(sb, '\''\\n'\''\)8??0?
-grp 08??-5m 11220reg p OK agent.c:984:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 11220reg p OK agent.c:960:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> static unsigned long agent_entry_next\(unsigned long last\)
 \{
 	if \(agent_logbuf == 3\).*(	sbuf_str\(sb, end\))
 	sbuf_nul\(sb\)
 	if \(show\)9??0?
-grp 09??-8m 11220reg p OK agent.c:984:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:9842sc %? %@2132sc!0?
+grp 09??-8m 11220reg p OK agent.c:960:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:9602sc %? %@2132sc!0?
 ?0?
-%f+ 	lbuf_edit\(lb, sb->s, lbuf_len\(lb\), lbuf_len\(lb\), 0, 0\);
+%f+ 	agent_logging = 1;
+	lbuf_edit\(lb, sb->s, lbuf_len\(lb\), lbuf_len\(lb\), 0, 0\);
 	agent_logging = 0;
 	lb->useq\+\+;
 	free\(sb->s\);
 }
 
 1??0?
-1??+2m 121q0?
-%f+ 	lbuf_edit\(lb, sb->s, lbuf_len\(lb\), lbuf_len\(lb\), 0, 0\);
-	agent_logging = 0;
-	lb->useq\+\+;4??0?
-4??+2m 12220reg p OK agent.c:1000:a42sc %? %@2152sc!1q0?
-grp 1%f+ 	lbuf_edit\(lb, sb->s, lbuf_len\(lb\), lbuf_len\(lb\), 0, 0\);.*?
-	agent_logging = 0;.*?
-(	lb->useq\+\+;)7??0?
-grp 07??m 12220reg p OK agent.c:1000:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> 		agent_output\(sb->s\);
-	lb->useq\+\+;
-	agent_logging = 1;.*(/\* Checkpoint entries in b-8 have their own numbers; mark them apart\. \*/)
-static const char \*agent_log_mark\(void\)
-\{8??0?
-grp 08??-4m 12220reg p OK agent.c:1000:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	sbuf_str\(sb, end\)
-	sbuf_nul\(sb\)
-	if \(show\).*(static void agent_turn_close\(void\))
-\{
-	agent_turn\[agent_logbuf == 3] = 0;9??0?
-grp 09??-10m 12220reg p OK agent.c:1000:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:10002sc %? %@2132sc!0?
-?0?
-%f+ static void agent_turn_close\(void\)
-\{
-	agent_turn\[agent_logbuf == 3] = 0;
+1??+3m 121q0?
+%f+ 	lb->useq\+\+;
+	free\(sb->s\);
 }
 
-/\* Log a USER or NOTICE entry\. \*/1??0?
-1??+2m 131q0?
-%f+ static void agent_turn_close\(void\)
+2??0?
+2??m 12220reg p OK agent.c:976:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	lb->useq\+\+;$3??0?
+3??m 12220reg p OK agent.c:976:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 	agent_logging = 1;
+	lbuf_edit\(lb, sb->s, lbuf_len\(lb\), lbuf_len\(lb\), 0, 0\);
+	agent_logging = 0;4??0?
+4??+3m 12220reg p OK agent.c:976:a42sc %? %@2152sc!1q0?
+%f+ 	free\(sb->s\);
+}
+
+5??0?
+5??-1m 12220reg p OK agent.c:976:a52sc %? %@2152sc!1q0?
+%f+ .....t...g.... =...
+....._.d............,....f_...\(........._..........,...;
+	a.ent.......g =.0.
+	l..>....\+..
+..r...s......
+}
+
+6??0?
+6??+3m 12220reg p OK agent.c:976:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	agent_logging = 1;.*?
+	lbuf_edit\(lb, sb->s, lbuf_len\(lb\), lbuf_len\(lb\), 0, 0\);.*?
+	agent_logging = 0;.*?
+(	lb->useq\+\+;)7??0?
+grp 07??m 12220reg p OK agent.c:976:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	if \(show\)
+		agent_output\(sb->s\);
+	lb->useq\+\+;.*(/\* Checkpoint entries in b-8 have their own numbers; mark them apart\. \*/)
+static const char \*agent_log_mark\(void\)
+\{8??0?
+grp 08??-4m 12220reg p OK agent.c:976:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 		sbuf_chr\(sb, '\''\\n'\''\)
+	sbuf_str\(sb, end\)
+	sbuf_nul\(sb\).*(static void agent_turn_close\(void\))
 \{
-	agent_turn\[agent_logbuf == 3] = 0;4??0?
-4??+2m 13220reg p OK agent.c:1012:a42sc %? %@2152sc!1q0?
-grp 1%f+ static void agent_turn_close\(void\).*?
-\{.*?
-(	agent_turn\[agent_logbuf == 3] = 0;)7??0?
-grp 07??m 13220reg p OK agent.c:1012:a72sc %? %@2152sc!1q0?
-m 01;0grp 1%f> \{
-	return agent_checkpointing && agent_logbuf == 7 \? "CP " : "";
-}.*(static void agent_log\(const char \*role, const char \*text\))
-\{
-	char head\[64], id\[AGENT_ID], end\[AGENT_END], open\[AGENT_END];8??0?
-grp 08??-4m 13220reg p OK agent.c:1012:a82sc %? %@2152sc!'\''08??1q0?
-m 01;0grp 1%f> 	lb->useq\+\+;
-	free\(sb->s\);
-}.*(	unsigned long last = agent_log_tail\(open\);)
-	agent_turn_close\(\);
-	agent_frame\(text, id, end\);9??0?
-grp 09??-7m 13220reg p OK agent.c:1012:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:10122sc %? %@2132sc!0?
+	agent_turn\[agent_logbuf == 3] = 0;9??0?
+grp 09??-10m 12220reg p OK agent.c:976:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:9762sc %? %@2132sc!0?
 ?0?
 %f+ 	restore\(agent_tool\)
 	if \(agent_save\(5\)\)
@@ -518,28 +501,28 @@ static const char \*agent_log_mark\(void\)
 }
 
 /\* Move the entries of text, a log replaced by compaction, to b-7\. \*/1??0?
-1??+2m 141q0?
+1??+2m 131q0?
 %f+ 	restore\(agent_tool\)
 	if \(agent_save\(5\)\)
 		ex_print\("agent write failed; buffer text retained", msg_ft\)4??0?
-4??+2m 14220reg p OK agent.c:1137:a42sc %? %@2152sc!1q0?
+4??+2m 13220reg p OK agent.c:1113:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	restore\(agent_tool\).*?
 	if \(agent_save\(5\)\).*?
 (		ex_print\("agent write failed; buffer text retained", msg_ft\))7??0?
-grp 07??m 14220reg p OK agent.c:1137:a72sc %? %@2152sc!1q0?
+grp 07??m 13220reg p OK agent.c:1113:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	lbuf_edit\(tempbufs\[5]\.lb, head, lbuf_len\(tempbufs\[5]\.lb\),
 		lbuf_len\(tempbufs\[5]\.lb\), 0, 0\);
 	restore\(agent_syncing\).*(static void agent_discard_log\(char \*text\))
 \{
 	struct lbuf \*lb = lbuf_make\(\);8??0?
-grp 08??-4m 14220reg p OK agent.c:1137:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 13220reg p OK agent.c:1113:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 			ex_print\("agent write failed; buffer text retained", msg_ft\)
 	}
 	snprintf\(head, sizeof\(head\), "EPOCH %lu\\n", n\);.*(	if \(\*text\))
 		lbuf_edit\(lb, text, 0, 0, 0, 0\);
 	cnt = agent_spans_of\(lb, &spans\);9??0?
-grp 09??-10m 14220reg p OK agent.c:1137:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:11372sc %? %@2132sc!0?
+grp 09??-10m 13220reg p OK agent.c:1113:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:11132sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_cp_base = -1;
 	agent_cp_bytes = agent_context_bytes\(\);
@@ -547,28 +530,28 @@ static const char \*agent_log_mark\(void\)
 	agent_cp_logbuf = agent_logbuf;
 	agent_logbuf = 7;
 	/\* A question in b-8 continues the numbering of what it interrupted\. \*/1??0?
-1??+2m 151q0?
+1??+2m 141q0?
 %f+ 	agent_cp_base = -1;
 	agent_cp_bytes = agent_context_bytes\(\);
 	agent_cp_left = INT_MAX;4??0?
-4??+2m 15220reg p OK agent.c:1832:a42sc %? %@2152sc!1q0?
+4??+2m 14220reg p OK agent.c:1808:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	agent_cp_base = -1;.*?
 	agent_cp_bytes = agent_context_bytes\(\);.*?
 (	agent_cp_left = INT_MAX;)7??0?
-grp 07??m 15220reg p OK agent.c:1832:a72sc %? %@2152sc!1q0?
+grp 07??m 14220reg p OK agent.c:1808:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	agent_checkpointing = kind;
 	agent_cp_done = agent_cp_refused = 0;
 	agent_cp = cJSON_CreateArray\(\);.*(	if \(agent_cp_logbuf == 3\))
 		agent_entries\[0] = agent_turn\[0] = 0;
 	/\* The opening message explains these; do not defer them for specs\. \*/8??0?
-grp 08??-4m 15220reg p OK agent.c:1832:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 14220reg p OK agent.c:1808:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		agent_cp_outer\.left = agent_cp_left;
 		agent_cp_open = NULL;
 	}.*(	for \(int i = 0; i < LEN\(cmds\); i\+\+\))
 		exspec_mark\(cmds\[i]\);
 	if \(kind == 3\)9??0?
-grp 09??-7m 15220reg p OK agent.c:1832:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:18322sc %? %@2132sc!0?
+grp 09??-7m 14220reg p OK agent.c:1808:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:18082sc %? %@2132sc!0?
 ?0?
 %f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);
 }
@@ -577,23 +560,23 @@ static void agent_checkpoint_end\(void\)
 \{
 	char note\[128], unrated\[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;1??0?
-1??+3m 161q0?
+1??+3m 151q0?
 %f+ static void agent_checkpoint_end\(void\)
 \{
 	char note\[128], unrated\[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;2??0?
-2??m 16220reg p OK agent.c:2155:a22sc %? %@2152sc!1q0?
+2??m 15220reg p OK agent.c:2131:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^static void agent_checkpoint_end\(void\)$3??0?
-3??m 16220reg p OK agent.c:2155:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 15220reg p OK agent.c:2131:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);
 }
 
 4??0?
-4??+3m 16220reg p OK agent.c:2155:a42sc %? %@2152sc!1q0?
+4??+3m 15220reg p OK agent.c:2131:a42sc %? %@2152sc!1q0?
 %f+ \{
 	char note\[128], unrated\[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;5??0?
-5??-1m 16220reg p OK agent.c:2155:a52sc %? %@2152sc!1q0?
+5??-1m 15220reg p OK agent.c:2131:a52sc %? %@2152sc!1q0?
 %f+ ...J.O._..dIt..T.....y......_..s.....,.cJS.N....l.ca..\(....\).;
 }
 
@@ -601,25 +584,25 @@ static void agent_checkpoint_end\(void\)
 \{
 ....r.n......8]. .n..t......];
 ....... .. .......a.e.....eckpo..ti.g,.a.s.e.ed ..a.....cp.....;6??0?
-6??+3m 16220reg p OK agent.c:2155:a62sc %? %@2152sc!1q0?
+6??+3m 15220reg p OK agent.c:2131:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);.*?
 }.*?
 .*?
 (static void agent_checkpoint_end\(void\))7??0?
-grp 07??m 16220reg p OK agent.c:2155:a72sc %? %@2152sc!1q0?
+grp 07??m 15220reg p OK agent.c:2131:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	} else
 		cJSON_AddItemToArray\(agent_messages, agent_msg\("user", agent_cp_open\)\);
 	cJSON_ArrayForEach\(m, agent_cp\).*(	if \(!kind\))
 		return;
 	agent_cp_collect\(\);8??0?
-grp 08??-5m 16220reg p OK agent.c:2155:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 15220reg p OK agent.c:2131:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				cJSON_GetStringValue\(cJSON_GetObjectItem\(m, "id"\)\)\);
 			cJSON_AddItemToArray\(agent_messages, result\);
 		}.*(	cJSON_Delete\(agent_cp\);)
 	agent_cp = NULL;
 	cJSON_Delete\(agent_cp_lead\);9??0?
-grp 09??-8m 16220reg p OK agent.c:2155:a92sc %? %@2152sc!'\''00?
-1;2;3;4;5;6;7;8;9??!219reg agent.c:21552sc %? %@2132sc!0?
+grp 09??-8m 15220reg p OK agent.c:2131:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:21312sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_output\(note\);
 }
@@ -627,76 +610,76 @@ static void agent_checkpoint_end\(void\)
 /\* End a question together with what it interrupted\. \*/
 static void agent_checkpoint_stop\(void\)
 \{1??0?
-1??+2m 171q0?
+1??+2m 161q0?
 %f+ 	agent_output\(note\);
 }
 
 4??0?
-4??+2m 17220reg p OK agent.c:2216:a42sc %? %@2152sc!1q0?
+4??+2m 16220reg p OK agent.c:2192:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(\(n = agent_unrated_now\(unrated, sizeof\(unrated\)\)\)\)
 		snprintf\(note \+ k, sizeof\(note\) - k, ", %d unrated", n\);
 	strcat\(note, "]\\n"\);.*(	while \(agent_checkpointing\))
 		agent_checkpoint_end\(\);
 }8??0?
-grp 08??-4m 17220reg p OK agent.c:2216:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 16220reg p OK agent.c:2192:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	agent_acl_mark = agent_tokens\(\);
 	k = snprintf\(note, sizeof\(note\), "\[acl checkpoint done ~%\.0f -> ~%\.0f tokens",
 		agent_tokens_at\(agent_cp_bytes\), agent_acl_mark\);.*(/\* acp prints the checkpoint instructions, to the agent only during one; ali)
  \* the session log status and auli its unrated turns, at any time\. \*/
 static void \*ec_acp\(char \*loc, char \*cmd, char \*arg\)9??0?
-grp 09??-8m 17220reg p OK agent.c:2216:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg agent.c:22162sc %? %@2132sc!0?
+grp 09??-8m 16220reg p OK agent.c:2192:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg agent.c:21922sc %? %@2132sc!0?
 ?0?
 %f+ 	return req;
 }
 
 static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\)
 \{1??0?
-1??+2m 181q0?
+1??+2m 171q0?
 %f+ 	return req;
 }
 
 4??0?
-4??+2m 18220reg p OK agent.c:2891:a42sc %? %@2152sc!1q0?
+4??+2m 17220reg p OK agent.c:2867:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	for \(int i = 0; i < LEN\(owned\); i\+\+\)
 		while \(cJSON_GetObjectItem\(req, owned\[i]\)\)
 			cJSON_DeleteItemFromObject\(req, owned\[i]\);.*(	sbuf \*err = NULL;)
 	if \(stderr_text\)
 		\*stderr_text = NULL;8??0?
-grp 08??-6m 18220reg p OK agent.c:2891:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 17220reg p OK agent.c:2867:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	/\* Remove duplicates so providers cannot interpret a shadow value\. \*/
 	const char \*owned\[] = \{"messages", "tools", "stream"};.*(	sbuf_smake\(hdr, 128\))
 	sbuf_str\(hdr, "Authorization: Bearer "\)
 	sbuf_str\(hdr, api_key\)9??0?
-grp 09??-9m 18220reg p OK agent.c:2891:a92sc %? %@2152sc!'\''00?
-1;4;8;9??!219reg agent.c:28912sc %? %@2132sc!0?
+grp 09??-9m 17220reg p OK agent.c:2867:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg agent.c:28672sc %? %@2132sc!0?
 ?0?
 %f+ static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\)
 \{
 	char hdrpath\[] = "/tmp/nextvi-header-XXXXXX", timeout\[32], hdrarg\[80];
 	int fd = mkstemp\(hdrpath\);
 	sbuf \*out = NULL;1??0?
-1??+1m 191q0?
+1??+1m 181q0?
 %f+ static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\)
 \{4??0?
-4??+1m 19220reg p OK agent.c:2893:a42sc %? %@2152sc!1q0?
+4??+1m 18220reg p OK agent.c:2869:a42sc %? %@2152sc!1q0?
 grp 1%f+ static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\).*?
 (\{)7??0?
-grp 07??m 19220reg p OK agent.c:2893:a72sc %? %@2152sc!1q0?
+grp 07??m 18220reg p OK agent.c:2869:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	for \(int i = 0; i < LEN\(owned\); i\+\+\)
 		while \(cJSON_GetObjectItem\(req, owned\[i]\)\)
 			cJSON_DeleteItemFromObject\(req, owned\[i]\);.*(	sbuf \*err = NULL;)
 	if \(stderr_text\)
 		\*stderr_text = NULL;8??0?
-grp 08??-4m 19220reg p OK agent.c:2893:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 18220reg p OK agent.c:2869:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	/\* Remove duplicates so providers cannot interpret a shadow value\. \*/
 	const char \*owned\[] = \{"messages", "tools", "stream"};.*(	sbuf_smake\(hdr, 128\))
 	sbuf_str\(hdr, "Authorization: Bearer "\)
 	sbuf_str\(hdr, api_key\)9??0?
-grp 09??-7m 19220reg p OK agent.c:2893:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:28932sc %? %@2132sc!0?
+grp 09??-7m 18220reg p OK agent.c:2869:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:28692sc %? %@2132sc!0?
 ?0?
 %f+ 	free\(out\);
 	return s;
@@ -704,28 +687,28 @@ static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\)
 
 static char \*agent_snapshot\(char \*loc\)
 \{1??0?
-1??+2m 201q0?
+1??+2m 191q0?
 %f+ 	free\(out\);
 	return s;
 }4??0?
-4??+2m 20220reg p OK agent.c:2943:a42sc %? %@2152sc!1q0?
+4??+2m 19220reg p OK agent.c:2919:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	free\(out\);.*?
 	return s;.*?
 (})7??0?
-grp 07??m 20220reg p OK agent.c:2943:a72sc %? %@2152sc!1q0?
+grp 07??m 19220reg p OK agent.c:2919:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		return NULL;
 	}
 	char \*s = out->s;.*(	int beg = 0, end = lbuf_len\(xb\), o1 = -1, o2 = -1;)
 	char info\[160];
 	sbuf text;8??0?
-grp 08??-4m 20220reg p OK agent.c:2943:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 19220reg p OK agent.c:2919:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	if \(!out\) \{
 		\*st = -1;.*(	if \(loc && ex_region\(loc, &beg, &end, &o1, &o2\)\) \{)
 		if \(lbuf_len\(xb\) \|\| strcmp\(loc, "%"\)\)
 			return NULL;9??0?
-grp 09??-7m 20220reg p OK agent.c:2943:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:29432sc %? %@2132sc!0?
+grp 09??-7m 19220reg p OK agent.c:2919:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:29192sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_add_user\(agent_messages, input\);
 	agent_log\("USER", input\);
@@ -733,28 +716,28 @@ static char \*agent_snapshot\(char \*loc\)
 		/\* Stop before requesting a reply whose calls could not run\. \*/
 		if \(max_tool_rounds && round == max_tool_rounds\) \{
 			agent_log\("NOTICE", "maximum tool rounds reached; "1??0?
-1??+2m 211q0?
+1??+2m 201q0?
 %f+ 	agent_add_user\(agent_messages, input\);
 	agent_log\("USER", input\);
 	for \(int round = 0; ; \) \{4??0?
-4??+2m 21220reg p OK agent.c:3166:a42sc %? %@2152sc!1q0?
+4??+2m 20220reg p OK agent.c:3142:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	agent_add_user\(agent_messages, input\);.*?
 	agent_log\("USER", input\);.*?
 (	for \(int round = 0; ; \) \{)7??0?
-grp 07??m 21220reg p OK agent.c:3166:a72sc %? %@2152sc!1q0?
+grp 07??m 20220reg p OK agent.c:3142:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
 	agent_rounds = 0;.*(				"submit to continue"\);)
 			return;
 		}8??0?
-grp 08??-4m 21220reg p OK agent.c:3166:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 20220reg p OK agent.c:3142:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int st, retries = 0, compacted = 0, unpacked = 0, asked = 0;
 	int goal_due = 0;	/\* agent_goal_ask waits for the request after it \*/
 	if \(agent_packing\).*(		agent_cp_collect\(\);)
 		/\* A question that ended unanswered, as by a pause: the reply it
 		 \* withheld is requested again\. \*/9??0?
-grp 09??-7m 21220reg p OK agent.c:3166:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:31662sc %? %@2132sc!0?
+grp 09??-7m 20220reg p OK agent.c:3142:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:31422sc %? %@2132sc!0?
 ?0?
 %f+ 	unsigned long epoch = agent_epoch;
 	if \(agent_start\(\)\)
@@ -762,28 +745,28 @@ static char \*agent_snapshot\(char \*loc\)
 	char \*task = agent_compact_task\(browse, arg, 0\);
 	/\* Indices survive buffer-array growth during tool calls\. \*/
 	int savedtemp = istempbuf\(ex_buf\);1??0?
-1??+2m 221q0?
+1??+2m 211q0?
 %f+ 	unsigned long epoch = agent_epoch;
 	if \(agent_start\(\)\)
 		return agent_init_error;4??0?
-4??+2m 22220reg p OK agent.c:4945:a42sc %? %@2152sc!1q0?
+4??+2m 21220reg p OK agent.c:4921:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	unsigned long epoch = agent_epoch;.*?
 	if \(agent_start\(\)\).*?
 (		return agent_init_error;)7??0?
-grp 07??m 22220reg p OK agent.c:4945:a72sc %? %@2152sc!1q0?
+grp 07??m 21220reg p OK agent.c:4921:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	void \*ret;
 	int browse = !strcmp\(cmd, "apack!"\);.*(	char \*original = agent_text\(tempbufs\[3]\.lb\);)
 	char \*archive = agent_rotate_log\(\);
 	if \(!archive\) \{8??0?
-grp 08??-5m 22220reg p OK agent.c:4945:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 21220reg p OK agent.c:4921:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		sbuf_str\(task, "Return control to the user once complete\.\\n\\033"\)
 	sbufn_ret\(task, task->s\)
 }.*(		return "cannot archive session log";)
 	}
 	/\* Detach the prior conversation so a failed pack can restore it\. \*/9??0?
-grp 09??-10m 22220reg p OK agent.c:4945:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:49452sc %? %@2132sc!0?
+grp 09??-10m 21220reg p OK agent.c:4921:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:49212sc %? %@2132sc!0?
 ?0?
 %f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
 	unsigned long rounds = agent_rounds;
@@ -791,32 +774,31 @@ static char \*agent_snapshot\(char \*loc\)
 	/\* Store indices rather than pointers: a tool can grow the buffer array\. \*/
 	int savedtemp = istempbuf\(ex_buf\);
 	int savedbuf = savedtemp \? ex_buf - tempbufs : ex_buf - bufs;1??0?
-1??+2m 231q0?
+1??+2m 221q0?
 %f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
 	unsigned long rounds = agent_rounds;
 	int logbuf = agent_logbuf, browse = xaco_browse;4??0?
-4??+2m 23220reg p OK agent.c:5037:a42sc %? %@2152sc!1q0?
+4??+2m 22220reg p OK agent.c:5013:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;.*?
 	unsigned long rounds = agent_rounds;.*?
 (	int logbuf = agent_logbuf, browse = xaco_browse;)7??0?
-grp 07??m 23220reg p OK agent.c:5037:a72sc %? %@2152sc!1q0?
+grp 07??m 22220reg p OK agent.c:5013:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	struct lbuf \*lb = tempbufs\[3]\.lb;
 	cJSON \*history = agent_messages;
 	struct agent_usage usage = agent_usage;.*(	exbuf_save\(ex_buf\))
 	char \*original = agent_text\(lb\);
 	char \*task = agent_compact_task\(browse, "", 1\);8??0?
-grp 08??-4m 23220reg p OK agent.c:5037:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 22220reg p OK agent.c:5013:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* until the pack agent has replaced the log; the exchange is logged to b-8\. \*/
 static int agent_autocompact\(void\)
 \{.*(	char \*archive = agent_rotate_log\(\);)
 	int ok = 0;
 	if \(!archive\) \{9??0?
-grp 09??-7m 23220reg p OK agent.c:5037:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg agent.c:50372sc %? %@2132sc!0?
+grp 09??-7m 22220reg p OK agent.c:5013:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg agent.c:50132sc %? %@2132sc!0?
 '\''1i /* The adversary may have work: an entry closed since it last looked. The
  * flag lets term_wait block in poll(-1) until there is a reason to look. */
-static int agent_adv_dirty;
-??!219reg agent.c:27:m12sc %? %@2142sc!0?
+??!219reg agent.c:3:m12sc %? %@2142sc!0?
 '\''2i /* The directory holding the session files b-4 to b-9. The sleeper renames it
  * to lead with the topic the session is about; see agent_adv_name_apply. */
 static char *agent_sessdir;
@@ -824,44 +806,40 @@ static char *agent_sessdir;
 static int agent_adv_named;
 /* Name requests that came back with nothing usable. */
 static int agent_adv_name_try;
-??!219reg agent.c:42:m22sc %? %@2142sc!0?
-'\''3s/8/9/??!219reg agent.c:499:m32sc %? %@2142sc!0?
-'\''4s/8/9/??!219reg agent.c:512:m42sc %? %@2142sc!0?
+??!219reg agent.c:18:m22sc %? %@2142sc!0?
+'\''3s/8/9/??!219reg agent.c:475:m32sc %? %@2142sc!0?
+'\''4s/8/9/??!219reg agent.c:488:m42sc %? %@2142sc!0?
 '\''5i 	temp_open(8, "/adversary/", _ft);
-??!219reg agent.c:565:m52sc %? %@2142sc!0?
-'\''6s/"}/", "adversary"}/??!219reg agent.c:572:m62sc %? %@2142sc!0?
-'\''7s/8/9/??!219reg agent.c:606:m72sc %? %@2142sc!0?
-'\''8s/8/9/??!219reg agent.c:615:m82sc %? %@2142sc!0?
+??!219reg agent.c:541:m52sc %? %@2142sc!0?
+'\''6s/"}/", "adversary"}/??!219reg agent.c:548:m62sc %? %@2142sc!0?
+'\''7s/8/9/??!219reg agent.c:582:m72sc %? %@2142sc!0?
+'\''8s/8/9/??!219reg agent.c:591:m82sc %? %@2142sc!0?
 '\''9i 	/* Where the session lives, so that the sleeper can rename it. A new
 	 * session and a resumed one both ask for their topic. */
 	free(agent_sessdir);
 	agent_sessdir = emalloc((cwd ? strlen(cwd) : 0) + strlen(dir) + 2);
 	sprintf(agent_sessdir, "%s%s%s", cwd ? cwd : "", cwd ? "/" : "", dir);
 	agent_adv_named = agent_adv_name_try = 0;
-??!219reg agent.c:623:m92sc %? %@2142sc!0?
+??!219reg agent.c:599:m92sc %? %@2142sc!0?
 '\''10i 	agent_adv_resync();
-??!219reg agent.c:721:m102sc %? %@2142sc!0?
+??!219reg agent.c:697:m102sc %? %@2142sc!0?
 '\''11i 	agent_adv_activity();
-??!219reg agent.c:984:m112sc %? %@2142sc!0?
-'\''12i 	if (agent_logbuf == 3)
-		agent_adv_dirty = 1;
-??!219reg agent.c:1000:m122sc %? %@2142sc!0?
-'\''13i 	if (agent_logbuf == 3)
-		agent_adv_dirty = 1;
-??!219reg agent.c:1012:m132sc %? %@2142sc!0?
-'\''14i 	/* The entries the summary replaced are gone from the log. */
+??!219reg agent.c:960:m112sc %? %@2142sc!0?
+'\''12c 	if (agent_logbuf == 3)
+??!219reg agent.c:976:m122sc %? %@2142sc!0?
+'\''13i 	/* The entries the summary replaced are gone from the log. */
 	agent_adv_resync();
-??!219reg agent.c:1137:m142sc %? %@2142sc!0?
-'\''15i 	/* A checkpoint the spear rates at: whatever the adversary staged
+??!219reg agent.c:1113:m132sc %? %@2142sc!0?
+'\''14i 	/* A checkpoint the spear rates at: whatever the adversary staged
 	 * belongs in b-6 before the unrated list is built. */
 	if (kind == 1) {
 		agent_adv_preempt();
 		agent_adv_collect();
 		agent_adv_merge();
 	}
-??!219reg agent.c:1832:m152sc %? %@2142sc!0?
-'\''16s/d\(/d_(/??!219reg agent.c:2155:m162sc %? %@2142sc!0?
-'\''17i /* The phase is over: entries a checkpoint trimmed or moved have nothing
+??!219reg agent.c:1808:m142sc %? %@2142sc!0?
+'\''15s/d\(/d_(/??!219reg agent.c:2131:m152sc %? %@2142sc!0?
+'\''16i /* The phase is over: entries a checkpoint trimmed or moved have nothing
  * left to rate, so the adversary forgets them. */
 static void agent_checkpoint_end(void)
 {
@@ -870,13 +848,13 @@ static void agent_checkpoint_end(void)
 }
 
 
-??!219reg agent.c:2216:m172sc %? %@2142sc!0?
-'\''18i /* The spear is using the model itself: whatever the sleeper was about to
+??!219reg agent.c:2192:m162sc %? %@2142sc!0?
+'\''17i /* The spear is using the model itself: whatever the sleeper was about to
  * ask waits until the session is done with it. */
-??!219reg agent.c:2891:m182sc %? %@2142sc!0?
-'\''19i 	agent_adv_activity();
-??!219reg agent.c:2893:m192sc %? %@2142sc!0?
-'\''20i /* The adversary: a second model beside the spear that rates the closed
+??!219reg agent.c:2867:m172sc %? %@2142sc!0?
+'\''18i 	agent_adv_activity();
+??!219reg agent.c:2869:m182sc %? %@2142sc!0?
+'\''19i /* The adversary: a second model beside the spear that rates the closed
  * USER and TURN entries of the log. It never acts and has no editor
  * access; the spear reads the ratings when a kind 1 checkpoint or a
  * compaction opens. It shares the spear endpoint, so one request is in
@@ -894,7 +872,8 @@ static void agent_checkpoint_end(void)
 #define ADV_REPLY_MAX (4 << 20)		/* reply bytes kept */
 #define ADV_LOG_MAX 5000		/* b-9 lines kept */
 #define ADV_PRIOR 64			/* earlier ratings the model may lean on */
-#define ADV_IDLE 5000			/* ms free before the sleeper works */
+#define ADV_GRACE 5000			/* ms free before the sleeper works */
+#define ADV_TICK 250			/* ms between the sleeper'\''s wake-ups */
 #define ADV_QUEUE 8			/* prompts the sleeper may hold */
 #define ADV_QUEUE_MAX (64 << 10)	/* prompt bytes the sleeper may hold */
 #define ADV_OUT_MAX 8			/* answers kept for the main thread */
@@ -930,27 +909,26 @@ struct agent_adv_work {
 	char *sys, *prompt, *prev, *url, *key, *extra;
 };
 struct agent_adv_job { unsigned long n; char *text; int st, attempt; };
+/* Whether the endpoint is the sleeper'\''s for the moment: the session sets it
+ *   o n   i t s   w a y   i n t o   t h e   i n p u t   p o l l   a n d   t a k e s   i t   b a c k   t h e   i n s t a n t   i t   w a n t s 
+* the model. The sleeper reads this and nothing else of the session. */
+static volatile sig_atomic_t agent_adv_free;
 
 static struct {
 	int on;			/* :adv is on */
 	int disabled;		/* endpoint unreachable: off for the session */
 	/* the worker thread owns all of these, under mtx */
 	pthread_mutex_t mtx;
-	pthread_cond_t cv;
-	int idle;		/* the editor waits for input */
-	int awake;		/* the sleeper may look for work */
-	int stop;		/* the spear wants the endpoint back */
+	unsigned long grace;	/* ticks free so far: the sleeper'\''s clock, reset when the session takes the endpoint back */
 	int quit;		/* process exit */
+	int stop;		/* a runner holds the endpoint: ^Z, or the spear asked */
 	int thread;		/* the worker is running */
 	pthread_t td;
 	int busy;		/* a request is in flight */
-	unsigned long epoch, seen;	/* spear activity: the sleeper'\''s timer */
-	unsigned long primed;	/* epoch whose quiet run has already begun */
 	struct agent_adv_work *queue;	/* prompts waiting to be asked */
 	int nqueue, qmax;
 	struct agent_adv_job *out;	/* answers waiting to be read */
 	int nout, omax;
-	int want;		/* the sleeper has run dry and wants a scan */
 	unsigned long num;	/* the entry its request is about */
 	int attempt;		/* requests made for num, the first one */
 	/* main thread, or handed across the queues */
@@ -963,12 +941,11 @@ static struct {
 	int killed;		/* the main thread ended the request in flight */
 	char *prev;		/* previous reply, sent as an assistant turn */
 } agent_adv = {
-	.primed = ~0UL,	/* so the first quiet stretch waits out ADV_IDLE */
 	.pid = -1, .fd = {-1, -1}, .notify = {-1, -1}, .logfd = -1
 };
 
-
-/* The sleeper parts, each in the order the next one needs it. */
+/* The sleeper polls the queue on a tick, so a nudge only has to exist. */
+static void agent_adv_nudge(void);
 static void agent_adv_stop(void);
 static void agent_adv_collect(void);
 static int agent_adv_staged_has(unsigned long n);
@@ -1523,9 +1500,16 @@ static void agent_adv_name_requeue(int attempt, const char *prev)
 	}
 	pthread_mutex_lock(&agent_adv.mtx);
 	agent_adv_qadd(&w);
-	agent_adv.awake = 1;
-	pthread_cond_signal(&agent_adv.cv);
+	agent_adv_nudge();
 	pthread_mutex_unlock(&agent_adv.mtx);
+}
+
+/* Why a request came back with nothing: one set of words for the naming request
+ * and for an entry alike, so that no bare curl number reaches b-9. */
+static const char *agent_adv_why(int st)
+{
+	return st == -2 ? "not asked" : st < 0 ? "killed" :
+		st ? "curl error" : "no answer";
 }
 
 /* What the topic request answered: the name applied, or another try while
@@ -1535,7 +1519,8 @@ static void agent_adv_name_reply(char *text, int st, int attempt)
 	char *name = NULL, *content = NULL, *prev = NULL;
 	cJSON *root, *msg;
 	if (!text) {
-		agent_adv_note("no reply naming the session, status %d", st);
+		agent_adv_note("no reply naming the session, %s",
+			agent_adv_why(st));
 		if (attempt + 1 >= ADV_ATTEMPTS) {
 			agent_adv_named = 2;
 			return;
@@ -1682,7 +1667,7 @@ static char *agent_adv_ask(struct agent_adv_work *w, int *st)
 	sigset_t none;
 	int hf = -1, bf = -1, rc;
 	pid_t pid;
-	*st = -1;
+	*st = -2;	/* the request never went out */
 	if (!req) {
 		return NULL;
 	}
@@ -1836,27 +1821,18 @@ static void agent_adv_untake(void)
 		free(agent_adv.queue[i].extra);
 	}
 	agent_adv.nqueue = 0;
-	agent_adv.want = 0;
-	agent_adv.awake = 0;
+	agent_adv.grace = 0;	/* the tick clock restarts with the queue */
 }
 
-/* Whether the sleeper may take the next prompt without the main thread'\''s
- * leave: a quiet run is under way and prompts are queued, so the endpoint
- * goes to the next answer at once instead of idling until the next scan.
- * agent_adv.mtx is held. */
-static int agent_adv_go(void)
-{
-	return agent_adv.idle && !agent_adv.stop &&
-		agent_adv.primed == agent_adv.epoch && agent_adv.nqueue;
-}
-
-/* The sleeper thread. It waits while the spear owns the model, then after
- * ADV_IDLE without a sign of work it rates one entry per request, oldest
- * first, until the spear returns. The wait buys a quiet stretch, not each
- * request: once the run has begun an answer is followed by the next
- * submission, not by another ADV_IDLE. A request already sent is never
- * cancelled: killing curl mid-answer would leave an entry half rated, so
- * the entry goes back to the queue. */
+/* The sleeper thread. It sleeps while the spear owns the model, while a
+ * runner holds the endpoint, or while nothing is queued: one flag says
+ * whether answers may be freed and another says whether the endpoint is
+ * taken, so no condition variable, clock or epoch decides when the sleeper
+ * works and no signal that might never arrive can leave it asleep with
+ * entries queued to rate. Once a run has begun, an answer is followed by
+ * the next submission, not by another wait. A request already sent is
+ * never cancelled: killing curl mid-answer would leave an entry half
+ * rated, so the entry goes back to the queue. */
 static void *agent_adv_worker(void *unused)
 {
 	struct timespec ts;
@@ -1865,58 +1841,36 @@ static void *agent_adv_worker(void *unused)
 	sigset_t all;
 	char *text;
 	int st, post, killed;
+
 	(void)unused;
 	sigfillset(&all);
 	pthread_sigmask(SIG_SETMASK, &all, NULL);
-	pthread_mutex_lock(&agent_adv.mtx);
 	for (;;) {
-		while (!agent_adv.quit && !agent_adv.awake && !agent_adv_go())
-			pthread_cond_wait(&agent_adv.cv, &agent_adv.mtx);
-		if (agent_adv.quit)
-			break;
-		if (agent_adv.stop) {
-			agent_adv_untake();
-			continue;
-		}
-		if (!agent_adv.idle) {
-			/* active, or the editor is not at its input: sleep
-			 * until either changes */
-			agent_adv.awake = 0;
-			continue;
-		}
-		if (agent_adv.primed != agent_adv.epoch) {
-			/* The quiet run starts here, once per stretch: spear
-			 * work bumps the epoch and this deadline is thrown away
-			 * with the run, so the sleeper only acts on a stretch that
-			 * went by unused. Past it primed says the run is under way,
-			 * and nothing waits between two requests. */
-			agent_adv.seen = agent_adv.epoch;
-			clock_gettime(CLOCK_REALTIME, &ts);
-			ts.tv_sec += ADV_IDLE / 1000;
-			ts.tv_nsec += (long)(ADV_IDLE % 1000) * 1000000;
-			if (ts.tv_nsec >= 1000000000) {
-				ts.tv_sec++;
-				ts.tv_nsec -= 1000000000;
-			}
-			while (!agent_adv.quit && !agent_adv.stop &&
-					agent_adv.epoch == agent_adv.seen)
-				if (pthread_cond_timedwait(&agent_adv.cv,
-						&agent_adv.mtx, &ts) ==
-						ETIMEDOUT)
-					break;
-			if (agent_adv.quit || agent_adv.stop ||
-					agent_adv.epoch != agent_adv.seen)
-				continue;
-			agent_adv.primed = agent_adv.seen;
-		}
-		if (!agent_adv.nqueue) {	/* it needs prompts */
-			agent_adv.want = 1;
-			agent_adv.awake = 0;
+		/* One flag says whether the sleeper may work: the editor is
+		 * at its input, nothing of the spear'\''s is in flight, and an
+		 * entry is queued. The deadline is retaken on every tick, so
+		 * nothing has to signal this thread to start or to stop it:
+		 * it begins within ADV_TICK of the spear'\''s going quiet and
+		 * stops within ADV_TICK of its coming back. */
+		pthread_mutex_lock(&agent_adv.mtx);
+		for (;;) {
+			if (agent_adv.quit)
+				break;
+			if (agent_adv_free && !agent_adv.stop &&
+				agent_adv.nqueue)
+				break;
 			pthread_mutex_unlock(&agent_adv.mtx);
-			agent_adv_nudge();
+			ts.tv_sec = ADV_TICK / 1000;
+			ts.tv_nsec = (long)(ADV_TICK % 1000) * 1000000;
+			nanosleep(&ts, NULL);
 			pthread_mutex_lock(&agent_adv.mtx);
-			continue;
 		}
+		if (agent_adv.quit) {
+			/* The mutex is held: the tail below lets it go. */
+			agent_adv_untake();
+			break;
+		}
+
 		w = agent_adv.queue[0];
 		agent_adv.nqueue--;
 		if (agent_adv.nqueue)
@@ -1926,17 +1880,13 @@ static void *agent_adv_worker(void *unused)
 		agent_adv.num = w.n;
 		agent_adv.attempt = w.attempt;
 		pthread_mutex_unlock(&agent_adv.mtx);
+
 		text = agent_adv_ask(&w, &st);
+
 		pthread_mutex_lock(&agent_adv.mtx);
 		agent_adv.busy = 0;
-		agent_adv.awake = 0;
-		/* Ended by the editor'\''s return: the entry was never answered, so
-		 * it goes back wanted and uncounted, with nothing said about it.
-		 * Counting it would give up on an entry only because the user
-		 * came back while it was being read. */
 		killed = agent_adv.killed;
 		agent_adv.killed = 0;
-		agent_adv.want = !text || killed;
 		j.n = w.n;
 		j.text = text;
 		j.st = st;
@@ -1999,9 +1949,8 @@ static void agent_adv_requeue(unsigned long n, int attempt, const char *prev)
 	}
 	pthread_mutex_lock(&agent_adv.mtx);
 	agent_adv_qadd(&w);
-	agent_adv.awake = 1;
-	pthread_cond_signal(&agent_adv.cv);
 	pthread_mutex_unlock(&agent_adv.mtx);
+	agent_adv_nudge();
 }
 
 /* What the sleeper answered, oldest first: raw text to b-9, rating staged,
@@ -2018,7 +1967,6 @@ static void agent_adv_collect(void)
 	cnt = agent_adv.nout;
 	agent_adv.out = NULL;
 	agent_adv.nout = agent_adv.omax = 0;
-	agent_adv.want = 0;
 	pthread_mutex_unlock(&agent_adv.mtx);
 	for (i = 0; i < cnt; i++) {
 		n = js[i].n;
@@ -2037,12 +1985,11 @@ static void agent_adv_collect(void)
 				agent_adv_note("endpoint unreachable; "
 					":adv off for this session");
 				agent_adv.disabled = 1;
-				agent_adv_stop();
 				i++;	/* the rest are not looked at */
 				break;
 			}
-			agent_adv_note("no reply for entry %lu, status %d",
-				n, st);
+			agent_adv_note("no reply for entry %lu, %s", n,
+				agent_adv_why(st));
 			if (attempt + 1 < ADV_ATTEMPTS)
 				agent_adv_requeue(n, attempt + 1, NULL);
 			else
@@ -2201,114 +2148,6 @@ static void agent_adv_nb(int fd)
 		fcntl(fd, F_SETFL, fl | O_NONBLOCK);
 }
 
-/* The input wait returned: take what the sleeper sent and, if the model is
- * still free, give it more to do. */
-void agent_adv_service(void)
-{
-	char buf[64];
-	if (!agent_adv.on || agent_adv.disabled || agent_adv.stop)
-		return;
-	while (agent_adv.notify[0] >= 0 &&
-			read(agent_adv.notify[0], buf, sizeof(buf)) > 0);
-	agent_adv_collect();
-	if (!agent_adv.on || agent_adv.disabled || agent_adv.stop)
-		return;
-	pthread_mutex_lock(&agent_adv.mtx);
-	if (agent_adv.want || agent_adv.nqueue == 0)
-		agent_adv.awake = 1;
-	pthread_mutex_unlock(&agent_adv.mtx);
-	agent_adv_fill();
-	pthread_mutex_lock(&agent_adv.mtx);
-	if (agent_adv.nqueue)
-		agent_adv.awake = 1;
-	if (agent_adv.awake)
-		pthread_cond_signal(&agent_adv.cv);
-	pthread_mutex_unlock(&agent_adv.mtx);
-}
-
-/* Entering or leaving the input wait. Leaving is work of its own, so a
- * request in flight is killed here rather than waited for: the session has
- * the endpoint back the moment it wants it, and the worker reaps the child
- * with the entry back on the queue. */
-void agent_adv_wait(int on)
-{
-	if (!agent_adv.on)
-		return;
-	/* A runner left behind by a ^Z answers while the editor is
-	 * stopped: what it answered is taken up here, so a rating the
-	 * model finished during the suspend is staged at the first wait
-	 * back and is never left sitting in a file. */
-	agent_adv_help_read();
-	pthread_mutex_lock(&agent_adv.mtx);
-	agent_adv.idle = on;
-	if (on) {
-		if (!agent_adv.stop && !agent_adv.disabled)
-			agent_adv.awake = 1;
-		pthread_cond_signal(&agent_adv.cv);
-	}
-	else {
-		agent_adv.epoch++;
-		agent_adv.awake = 0;
-		/* The session is back to its own work, so a request the sleeper
-		 * still has waiting is ended here rather than waited for: the
-		 * endpoint is the session'\''s the moment it wants it. The worker
-		 * reaps it and drops the half answer; the entry is asked again
-		 * in the next downtime. The pid is read and cleared under the
-		 * mutex, so it is never a process that has already been reaped.
-		 */
-		if (agent_adv.pid > 0) {
-			agent_adv.killed = 1;
-			kill(-agent_adv.pid, SIGKILL);
-		}
-		pthread_cond_broadcast(&agent_adv.cv);
-	}
-	pthread_mutex_unlock(&agent_adv.mtx);
-}
-
-/* The self-pipe the input poll watches, or -1 when the sleeper is off. */
-int agent_adv_fd(void)
-{
-	return agent_adv.on && !agent_adv.disabled ? agent_adv.notify[0] : -1;
-}
-
-/* The spear used the model or the editor: the sleeper'\''s quiet run has to
- * start over from now. */
-void agent_adv_activity(void)
-{
-	pthread_mutex_lock(&agent_adv.mtx);
-	agent_adv.epoch++;
-	agent_adv.awake = 0;
-	pthread_cond_broadcast(&agent_adv.cv);
-	pthread_mutex_unlock(&agent_adv.mtx);
-}
-
-/* The spear is back: stop the sleeper and kill the request it has waiting.
- * Called on input, on a tool, on a resume and when :adv goes off. */
-static void agent_adv_stop(void)
-{
-	pid_t pid;
-	pthread_mutex_lock(&agent_adv.mtx);
-	agent_adv.stop = 1;
-	agent_adv.idle = 0;
-	agent_adv.awake = 0;
-	agent_adv.epoch++;
-	pid = agent_adv.pid;
-	if (pid > 0)
-		agent_adv.killed = 1;
-	pthread_mutex_unlock(&agent_adv.mtx);
-	if (pid > 0)
-		kill(-pid, SIGKILL);
-}
-
-/* :adv on and off. */
-void agent_adv_toggle(int on)
-{
-	if (on)
-		agent_adv_start();
-	else
-		agent_adv_off();
-}
-
 #define ADV_HELP 4			/* requests a stopped editor may finish */
 
 /* A stopped editor cannot rate: SIGSTOP takes every thread, and ^Z reaches
@@ -2406,8 +2245,8 @@ static void agent_adv_help_run(int n)
 	signal(SIGHUP, SIG_IGN);
 	signal(SIGINT, SIG_IGN);
 	for (i = 0; i < n; i++) {
-		ts.tv_sec = ADV_IDLE / 1000;
-		ts.tv_nsec = (long)(ADV_IDLE % 1000) * 1000000;
+		ts.tv_sec = ADV_GRACE / 1000;
+		ts.tv_nsec = (long)(ADV_GRACE % 1000) * 1000000;
 		nanosleep(&ts, NULL);
 		if (!(f = fopen(h->j[i].path, "r")))
 			break;
@@ -2429,7 +2268,7 @@ static void agent_adv_help_run(int n)
 			agent_writeall(fd, text, strlen(text));
 			close(fd);
 		}
-		snprintf(num, sizeof(num), "%d\n", text ? st : -1);
+		snprintf(num, sizeof(num), "%d\n", st);
 		if ((fd = open(h->j[i].st,
 				O_WRONLY | O_CREAT | O_TRUNC, 0600)) >= 0) {
 			agent_writeall(fd, num, strlen(num));
@@ -2473,6 +2312,8 @@ void agent_adv_suspend(void)
 	if (agent_adv.nqueue)
 		memmove(agent_adv.queue, agent_adv.queue + n,
 			agent_adv.nqueue * sizeof(*agent_adv.queue));
+	/* The runner asks while the editor is stopped; the sleeper must not. */
+	agent_adv.stop = 1;
 	pthread_mutex_unlock(&agent_adv.mtx);
 	agent_adv_stop();
 	agent_adv_halt();	/* one thread left when the child is forked */
@@ -2534,7 +2375,7 @@ static void agent_adv_help_read(void)
 		fclose(f);
 		j.n = h->j[i].n;
 		j.attempt = h->j[i].attempt;
-		j.st = *num ? atoi(num) : -1;
+		j.st = *num ? atoi(num) : -2;
 		j.text = NULL;
 		if ((fd = open(h->j[i].out, O_RDONLY)) >= 0) {
 			j.text = agent_adv_slurp(fd, (int)ADV_REPLY_MAX);
@@ -2578,16 +2419,90 @@ void agent_adv_resume(void)
 		agent_adv_start();
 }
 
-/* Take the model back: the sleeper sleeps again and everything it holds is
- * dropped, because an entry it never asked about is the spear'\''s to rate. */
+/* The handshake is one flag: the main thread sets agent_adv_free before
+ * it waits for input and clears it the moment the session wants the model,
+ * and the sleeper reads nothing else of the session. A clock, an epoch and
+ * a condition variable once decided when it might work, and a wake-up that
+ * never arrived left it asleep with entries still queued to rate. */
+
+/* End the request the sleeper has in flight, if any, and mark it ended: the
+ * entry goes back to the queue unrated, so the next downtime asks it again.
+ * The pid is read under the mutex, so it is never a process already reaped.
+ * The sleeper'\''s curl runs in a group of its own, so ^Z stops neither it nor
+ * the editor'\''s own wait; see agent_adv_suspend. */
+static void agent_adv_stop(void)
+{
+	pid_t pid;
+	agent_adv_free = 0;
+	pthread_mutex_lock(&agent_adv.mtx);
+	pid = agent_adv.pid;
+	if (pid > 0)
+		agent_adv.killed = 1;
+	pthread_mutex_unlock(&agent_adv.mtx);
+	if (pid > 0)
+		kill(-pid, SIGKILL);
+}
+
+/* The input wait returned, or a round ended: take what the sleeper answered
+ * and hand it more prompts, then give it the endpoint back. */
+void agent_adv_service(void)
+{
+	char buf[64];
+	if (!agent_adv.on || agent_adv.disabled)
+		return;
+	while (agent_adv.notify[0] >= 0 &&
+			read(agent_adv.notify[0], buf, sizeof(buf)) > 0);
+	agent_adv_help_read();
+	agent_adv_collect();
+	if (!agent_adv.on || agent_adv.disabled)
+		return;
+	agent_adv_fill();
+	agent_adv_free = 1;
+}
+
+/* Entering or leaving the input wait. Leaving is work of its own: the
+ * session has the endpoint back the moment it wants it, and a request still
+ * waiting is ended rather than waited for. */
+void agent_adv_wait(int on)
+{
+	if (!agent_adv.on)
+		return;
+	/* A runner left behind by a ^Z answers while the editor is stopped:
+	 * what it answered is taken up here, so a rating the model finished
+	 * during the suspend is staged at the first wait back and is never
+	 * left sitting in a file. */
+	agent_adv_help_read();
+	if (on)
+		agent_adv_free = 1;
+	else
+		agent_adv_stop();
+}
+
+/* The self-pipe the input poll watches, or -1 when the sleeper is off. */
+int agent_adv_fd(void)
+{
+	return agent_adv.on && !agent_adv.disabled ? agent_adv.notify[0] : -1;
+}
+
+/* The spear used the model or the editor: the endpoint goes back to it, and
+ * a request the sleeper has waiting is ended at once. */
+void agent_adv_activity(void)
+{
+	if (agent_adv.on)
+		agent_adv_stop();
+}
+
+/* The spear takes the endpoint back for good, or is about to rate what the
+ * sleeper staged: what the sleeper holds is the spear'\''s to rate. */
 void agent_adv_preempt(void)
 {
 	if (!agent_adv.on)
 		return;
-	/* a runner from a ^Z gives the endpoint back the same way:
-	 * an entry it never got to is the spear'\''s to rate. */
 	agent_adv_help_drop();
 	agent_adv_stop();
+	pthread_mutex_lock(&agent_adv.mtx);
+	agent_adv_untake();
+	pthread_mutex_unlock(&agent_adv.mtx);
 }
 
 /* Start the sleeper once per session; :adv may be turned off and on again
@@ -2598,21 +2513,21 @@ int agent_adv_start(void)
 		return 0;
 	agent_adv_nb(agent_adv.notify[0]);
 	if (!agent_adv.thread) {
-		agent_adv.stop = 0;
 		agent_adv.disabled = 0;
 		agent_adv.quit = 0;	/* halt left it set: the thread would exit */
+		pthread_mutex_lock(&agent_adv.mtx);
+		/* a kill left over from the last run would blacken the first
+		 * answer of this one */
+		agent_adv.killed = 0;
+		agent_adv.stop = 0;	/* a thread made after a ^Z may ask again */
+		pthread_mutex_unlock(&agent_adv.mtx);
 		if (pthread_create(&agent_adv.td, NULL, agent_adv_worker,
 				NULL))
 			return 0;
 		agent_adv.thread = 1;
 	}
 	agent_adv.on = 1;
-	agent_adv.stop = 0;
-	pthread_mutex_lock(&agent_adv.mtx);
-	agent_adv.awake = 1;
-	agent_adv.seen = agent_adv.epoch;
-	pthread_cond_signal(&agent_adv.cv);
-	pthread_mutex_unlock(&agent_adv.mtx);
+	agent_adv_free = 1;
 	agent_adv_nudge();
 	return 1;
 }
@@ -2635,13 +2550,20 @@ void agent_adv_halt(void)
 		return;
 	pthread_mutex_lock(&agent_adv.mtx);
 	agent_adv.quit = 1;
-	agent_adv.awake = 1;
-	pthread_cond_broadcast(&agent_adv.cv);
 	pthread_mutex_unlock(&agent_adv.mtx);
+	agent_adv_free = 0;
 	if (agent_adv.pid > 0)
 		kill(-agent_adv.pid, SIGKILL);
 	pthread_join(agent_adv.td, NULL);
 	agent_adv.thread = 0;
+}
+/* :adv on and off. */
+void agent_adv_toggle(int on)
+{
+	if (on)
+		agent_adv_start();
+	else
+		agent_adv_off();
 }
 
 /* A kind 1 checkpoint or compaction opens: staged ratings go into b-6,
@@ -2709,24 +2631,24 @@ static void agent_adv_resync(void)
 		agent_adv_note("dropped %d staged rating%s no longer live", n,
 			n == 1 ? "" : "s");
 }
-??!219reg agent.c:2943:m202sc %? %@2142sc!0?
-'\''21i 		/* The adversary'\''s curl, if any, is read between rounds: it never
+??!219reg agent.c:2919:m192sc %? %@2142sc!0?
+'\''20i 		/* The adversary'\''s curl, if any, is read between rounds: it never
 		   blocks the run; its ratings reach b-6 at a checkpoint or before
 		   a compaction. */
 		agent_adv_service();
-??!219reg agent.c:3166:m212sc %? %@2142sc!0?
+??!219reg agent.c:3142:m202sc %? %@2142sc!0?
+'\''21i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
+	 * summarized: with acl 0 no checkpoint merges them. */
+	agent_adv_preempt();
+	agent_adv_collect();
+	agent_adv_merge();
+??!219reg agent.c:4921:m212sc %? %@2142sc!0?
 '\''22i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
 	 * summarized: with acl 0 no checkpoint merges them. */
 	agent_adv_preempt();
 	agent_adv_collect();
 	agent_adv_merge();
-??!219reg agent.c:4945:m222sc %? %@2142sc!0?
-'\''23i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
-	 * summarized: with acl 0 no checkpoint merges them. */
-	agent_adv_preempt();
-	agent_adv_collect();
-	agent_adv_merge();
-??!219reg agent.c:5037:m232sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg agent.c:5013:m222sc %? %@2142sc!b1m!%ya 98?0?
 %f> static int agent_resume\(const char \*dir\);
 static char \*agent_init_error;
 static void agent_sync\(struct lbuf \*lb\);
@@ -3528,20 +3450,19 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index 91bd0c4d..40e5c608 100644
+index c8c3d21f..c2c10978 100644
 --- a/agent.c
 +++ b/agent.c
-@@ -25,6 +25,9 @@
+@@ -1,6 +1,8 @@
  static cJSON *agent_messages;
  static unsigned long agent_epoch, agent_serial;
  static int agent_ready, agent_syncing, agent_child_status;
 +/* The adversary may have work: an entry closed since it last looked. The
 + * flag lets term_wait block in poll(-1) until there is a reason to look. */
-+static int agent_adv_dirty;
  static pid_t agent_jobs[16];	/* shells detached by ato, not yet reaped */
  static char agent_jobmsg[512];	/* job notices for the next tool result */
  static int agent_logbuf = 3;	/* tempbufs index logged to: 3 (b-4) or 7 (b-8) */
-@@ -40,6 +43,13 @@ static unsigned long agent_tool_calls;	/* ex tool calls executed, cumulative */
+@@ -16,6 +18,13 @@ static unsigned long agent_tool_calls;	/* ex tool calls executed, cumulative */
  static size_t agent_capture_total;	/* tool output bytes, clipped ones included */
  #define AGENT_SHOW_MAX (1 << 20)	/* guarded output kept for aout */
  
@@ -3555,7 +3476,7 @@ index 91bd0c4d..40e5c608 100644
  /* Tool output bytes kept, 0 for all; at least agr, so output under it is
   * never clipped. */
  static int agent_gr_cap(void)
-@@ -496,7 +506,7 @@ static void agent_sync_buf(int i)
+@@ -472,7 +481,7 @@ static void agent_sync_buf(int i)
  /* A tool call can edit a log line by line; save once after the call. */
  static void agent_sync_pending(void)
  {
@@ -3564,7 +3485,7 @@ index 91bd0c4d..40e5c608 100644
  		if (agent_unsaved & (1 << (i - 3)))
  			agent_sync_buf(i);
  }
-@@ -509,7 +519,7 @@ static void agent_sync(struct lbuf *lb)
+@@ -485,7 +494,7 @@ static void agent_sync(struct lbuf *lb)
  		agent_log_stale[0] = 1;
  	if (!agent_ready || agent_syncing)
  		return;
@@ -3573,7 +3494,7 @@ index 91bd0c4d..40e5c608 100644
  		if (tempbufs[i].lb != lb)
  			continue;
  		if (i == 3 && agent_packing)
-@@ -563,13 +573,14 @@ static void agent_init(void)
+@@ -539,13 +548,14 @@ static void agent_init(void)
  	temp_open(5, "/notes/", _ft);
  	temp_open(6, "/discarded/", _ft);
  	temp_open(7, "/asides/", _ft);
@@ -3589,7 +3510,7 @@ index 91bd0c4d..40e5c608 100644
  
  /* The log directory with room for a session name appended, or NULL. */
  static char *agent_logs(void)
-@@ -603,7 +614,7 @@ static int agent_load(int i)
+@@ -579,7 +589,7 @@ static int agent_load(int i)
  	return ret;
  }
  
@@ -3598,7 +3519,7 @@ index 91bd0c4d..40e5c608 100644
   * with load filled from those it has. */
  static int agent_attach(const char *dir, int load)
  {
-@@ -612,7 +623,7 @@ static int agent_attach(const char *dir, int load)
+@@ -588,7 +598,7 @@ static int agent_attach(const char *dir, int load)
  	/* Absolute paths survive :cd during the session. */
  	if (*dir != '/' && !(cwd = getcwd(NULL, 0)))
  		return -1;
@@ -3607,7 +3528,7 @@ index 91bd0c4d..40e5c608 100644
  		path = emalloc((cwd ? strlen(cwd) : 0) + strlen(dir) + 32);
  		sprintf(path, "%s%s%s/%s", cwd ? cwd : "", cwd ? "/" : "", dir,
  			agent_names[i - 3]);
-@@ -621,6 +632,12 @@ static int agent_attach(const char *dir, int load)
+@@ -597,6 +607,12 @@ static int agent_attach(const char *dir, int load)
  		tempbufs[i].plen = strlen(path);
  		ret = load ? agent_load(i) : agent_save(i);
  	}
@@ -3620,7 +3541,7 @@ index 91bd0c4d..40e5c608 100644
  	free(cwd);
  	return ret;
  }
-@@ -719,6 +736,7 @@ static int agent_resume(const char *dir)
+@@ -695,6 +711,7 @@ static int agent_resume(const char *dir)
  	agent_ready = 1;
  	agent_init_error = NULL;
  	agent_history(lbuf_len(tempbufs[3].lb) > 0);
@@ -3628,7 +3549,7 @@ index 91bd0c4d..40e5c608 100644
  	return 0;
  }
  
-@@ -982,6 +1000,7 @@ static unsigned long agent_entry_next(unsigned long last)
+@@ -958,6 +975,7 @@ static unsigned long agent_entry_next(unsigned long last)
  static void agent_log_write(const char *open, const char *head, const char *text,
  		const char *end, int show)
  {
@@ -3636,25 +3557,16 @@ index 91bd0c4d..40e5c608 100644
  	struct lbuf *lb = tempbufs[agent_logbuf].lb;
  	sbuf_smake(sb, 256)
  	sbuf_str(sb, open)
-@@ -998,6 +1017,8 @@ static void agent_log_write(const char *open, const char *head, const char *text
+@@ -973,7 +991,7 @@ static void agent_log_write(const char *open, const char *head, const char *text
+ 	agent_logging = 1;
  	lbuf_edit(lb, sb->s, lbuf_len(lb), lbuf_len(lb), 0, 0);
  	agent_logging = 0;
- 	lb->useq++;
+-	lb->useq++;
 +	if (agent_logbuf == 3)
-+		agent_adv_dirty = 1;
  	free(sb->s);
  }
  
-@@ -1010,6 +1031,8 @@ static const char *agent_log_mark(void)
- static void agent_turn_close(void)
- {
- 	agent_turn[agent_logbuf == 3] = 0;
-+	if (agent_logbuf == 3)
-+		agent_adv_dirty = 1;
- }
- 
- /* Log a USER or NOTICE entry. */
-@@ -1135,6 +1158,8 @@ static void agent_head_summary(void)
+@@ -1111,6 +1129,8 @@ static void agent_head_summary(void)
  	restore(agent_tool)
  	if (agent_save(5))
  		ex_print("agent write failed; buffer text retained", msg_ft)
@@ -3663,7 +3575,7 @@ index 91bd0c4d..40e5c608 100644
  }
  
  /* Move the entries of text, a log replaced by compaction, to b-7. */
-@@ -1830,6 +1855,13 @@ static void agent_checkpoint_begin(double tokens, int kind)
+@@ -1806,6 +1826,13 @@ static void agent_checkpoint_begin(double tokens, int kind)
  	agent_cp_base = -1;
  	agent_cp_bytes = agent_context_bytes();
  	agent_cp_left = INT_MAX;
@@ -3677,7 +3589,7 @@ index 91bd0c4d..40e5c608 100644
  	agent_cp_logbuf = agent_logbuf;
  	agent_logbuf = 7;
  	/* A question in b-8 continues the numbering of what it interrupted. */
-@@ -2152,7 +2184,7 @@ static void agent_cp_build(void)
+@@ -2128,7 +2155,7 @@ static void agent_cp_build(void)
  		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
  }
  
@@ -3686,7 +3598,7 @@ index 91bd0c4d..40e5c608 100644
  {
  	char note[128], unrated[112];
  	int k, n, kind = agent_checkpointing, answered = agent_cp_done;
-@@ -2214,6 +2246,15 @@ static void agent_checkpoint_end(void)
+@@ -2190,6 +2217,15 @@ static void agent_checkpoint_end(void)
  	agent_output(note);
  }
  
@@ -3702,7 +3614,7 @@ index 91bd0c4d..40e5c608 100644
  /* End a question together with what it interrupted. */
  static void agent_checkpoint_stop(void)
  {
-@@ -2889,8 +2930,11 @@ static cJSON *agent_config(void)
+@@ -2865,8 +2901,11 @@ static cJSON *agent_config(void)
  	return req;
  }
  
@@ -3714,7 +3626,7 @@ index 91bd0c4d..40e5c608 100644
  	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
  	int fd = mkstemp(hdrpath);
  	sbuf *out = NULL;
-@@ -2941,6 +2985,1839 @@ ret:
+@@ -2917,6 +2956,1783 @@ ret:
  	free(out);
  	return s;
  }
@@ -3736,7 +3648,8 @@ index 91bd0c4d..40e5c608 100644
 +#define ADV_REPLY_MAX (4 << 20)		/* reply bytes kept */
 +#define ADV_LOG_MAX 5000		/* b-9 lines kept */
 +#define ADV_PRIOR 64			/* earlier ratings the model may lean on */
-+#define ADV_IDLE 5000			/* ms free before the sleeper works */
++#define ADV_GRACE 5000			/* ms free before the sleeper works */
++#define ADV_TICK 250			/* ms between the sleeper's wake-ups */
 +#define ADV_QUEUE 8			/* prompts the sleeper may hold */
 +#define ADV_QUEUE_MAX (64 << 10)	/* prompt bytes the sleeper may hold */
 +#define ADV_OUT_MAX 8			/* answers kept for the main thread */
@@ -3772,27 +3685,26 @@ index 91bd0c4d..40e5c608 100644
 +	char *sys, *prompt, *prev, *url, *key, *extra;
 +};
 +struct agent_adv_job { unsigned long n; char *text; int st, attempt; };
++/* Whether the endpoint is the sleeper's for the moment: the session sets it
++ *   o n   i t s   w a y   i n t o   t h e   i n p u t   p o l l   a n d   t a k e s   i t   b a c k   t h e   i n s t a n t   i t   w a n t s 
++* the model. The sleeper reads this and nothing else of the session. */
++static volatile sig_atomic_t agent_adv_free;
 +
 +static struct {
 +	int on;			/* :adv is on */
 +	int disabled;		/* endpoint unreachable: off for the session */
 +	/* the worker thread owns all of these, under mtx */
 +	pthread_mutex_t mtx;
-+	pthread_cond_t cv;
-+	int idle;		/* the editor waits for input */
-+	int awake;		/* the sleeper may look for work */
-+	int stop;		/* the spear wants the endpoint back */
++	unsigned long grace;	/* ticks free so far: the sleeper's clock, reset when the session takes the endpoint back */
 +	int quit;		/* process exit */
++	int stop;		/* a runner holds the endpoint: ^Z, or the spear asked */
 +	int thread;		/* the worker is running */
 +	pthread_t td;
 +	int busy;		/* a request is in flight */
-+	unsigned long epoch, seen;	/* spear activity: the sleeper's timer */
-+	unsigned long primed;	/* epoch whose quiet run has already begun */
 +	struct agent_adv_work *queue;	/* prompts waiting to be asked */
 +	int nqueue, qmax;
 +	struct agent_adv_job *out;	/* answers waiting to be read */
 +	int nout, omax;
-+	int want;		/* the sleeper has run dry and wants a scan */
 +	unsigned long num;	/* the entry its request is about */
 +	int attempt;		/* requests made for num, the first one */
 +	/* main thread, or handed across the queues */
@@ -3805,12 +3717,11 @@ index 91bd0c4d..40e5c608 100644
 +	int killed;		/* the main thread ended the request in flight */
 +	char *prev;		/* previous reply, sent as an assistant turn */
 +} agent_adv = {
-+	.primed = ~0UL,	/* so the first quiet stretch waits out ADV_IDLE */
 +	.pid = -1, .fd = {-1, -1}, .notify = {-1, -1}, .logfd = -1
 +};
 +
-+
-+/* The sleeper parts, each in the order the next one needs it. */
++/* The sleeper polls the queue on a tick, so a nudge only has to exist. */
++static void agent_adv_nudge(void);
 +static void agent_adv_stop(void);
 +static void agent_adv_collect(void);
 +static int agent_adv_staged_has(unsigned long n);
@@ -4365,9 +4276,16 @@ index 91bd0c4d..40e5c608 100644
 +	}
 +	pthread_mutex_lock(&agent_adv.mtx);
 +	agent_adv_qadd(&w);
-+	agent_adv.awake = 1;
-+	pthread_cond_signal(&agent_adv.cv);
++	agent_adv_nudge();
 +	pthread_mutex_unlock(&agent_adv.mtx);
++}
++
++/* Why a request came back with nothing: one set of words for the naming request
++ * and for an entry alike, so that no bare curl number reaches b-9. */
++static const char *agent_adv_why(int st)
++{
++	return st == -2 ? "not asked" : st < 0 ? "killed" :
++		st ? "curl error" : "no answer";
 +}
 +
 +/* What the topic request answered: the name applied, or another try while
@@ -4377,7 +4295,8 @@ index 91bd0c4d..40e5c608 100644
 +	char *name = NULL, *content = NULL, *prev = NULL;
 +	cJSON *root, *msg;
 +	if (!text) {
-+		agent_adv_note("no reply naming the session, status %d", st);
++		agent_adv_note("no reply naming the session, %s",
++			agent_adv_why(st));
 +		if (attempt + 1 >= ADV_ATTEMPTS) {
 +			agent_adv_named = 2;
 +			return;
@@ -4524,7 +4443,7 @@ index 91bd0c4d..40e5c608 100644
 +	sigset_t none;
 +	int hf = -1, bf = -1, rc;
 +	pid_t pid;
-+	*st = -1;
++	*st = -2;	/* the request never went out */
 +	if (!req) {
 +		return NULL;
 +	}
@@ -4678,27 +4597,18 @@ index 91bd0c4d..40e5c608 100644
 +		free(agent_adv.queue[i].extra);
 +	}
 +	agent_adv.nqueue = 0;
-+	agent_adv.want = 0;
-+	agent_adv.awake = 0;
++	agent_adv.grace = 0;	/* the tick clock restarts with the queue */
 +}
 +
-+/* Whether the sleeper may take the next prompt without the main thread's
-+ * leave: a quiet run is under way and prompts are queued, so the endpoint
-+ * goes to the next answer at once instead of idling until the next scan.
-+ * agent_adv.mtx is held. */
-+static int agent_adv_go(void)
-+{
-+	return agent_adv.idle && !agent_adv.stop &&
-+		agent_adv.primed == agent_adv.epoch && agent_adv.nqueue;
-+}
-+
-+/* The sleeper thread. It waits while the spear owns the model, then after
-+ * ADV_IDLE without a sign of work it rates one entry per request, oldest
-+ * first, until the spear returns. The wait buys a quiet stretch, not each
-+ * request: once the run has begun an answer is followed by the next
-+ * submission, not by another ADV_IDLE. A request already sent is never
-+ * cancelled: killing curl mid-answer would leave an entry half rated, so
-+ * the entry goes back to the queue. */
++/* The sleeper thread. It sleeps while the spear owns the model, while a
++ * runner holds the endpoint, or while nothing is queued: one flag says
++ * whether answers may be freed and another says whether the endpoint is
++ * taken, so no condition variable, clock or epoch decides when the sleeper
++ * works and no signal that might never arrive can leave it asleep with
++ * entries queued to rate. Once a run has begun, an answer is followed by
++ * the next submission, not by another wait. A request already sent is
++ * never cancelled: killing curl mid-answer would leave an entry half
++ * rated, so the entry goes back to the queue. */
 +static void *agent_adv_worker(void *unused)
 +{
 +	struct timespec ts;
@@ -4707,58 +4617,36 @@ index 91bd0c4d..40e5c608 100644
 +	sigset_t all;
 +	char *text;
 +	int st, post, killed;
++
 +	(void)unused;
 +	sigfillset(&all);
 +	pthread_sigmask(SIG_SETMASK, &all, NULL);
-+	pthread_mutex_lock(&agent_adv.mtx);
 +	for (;;) {
-+		while (!agent_adv.quit && !agent_adv.awake && !agent_adv_go())
-+			pthread_cond_wait(&agent_adv.cv, &agent_adv.mtx);
-+		if (agent_adv.quit)
-+			break;
-+		if (agent_adv.stop) {
-+			agent_adv_untake();
-+			continue;
-+		}
-+		if (!agent_adv.idle) {
-+			/* active, or the editor is not at its input: sleep
-+			 * until either changes */
-+			agent_adv.awake = 0;
-+			continue;
-+		}
-+		if (agent_adv.primed != agent_adv.epoch) {
-+			/* The quiet run starts here, once per stretch: spear
-+			 * work bumps the epoch and this deadline is thrown away
-+			 * with the run, so the sleeper only acts on a stretch that
-+			 * went by unused. Past it primed says the run is under way,
-+			 * and nothing waits between two requests. */
-+			agent_adv.seen = agent_adv.epoch;
-+			clock_gettime(CLOCK_REALTIME, &ts);
-+			ts.tv_sec += ADV_IDLE / 1000;
-+			ts.tv_nsec += (long)(ADV_IDLE % 1000) * 1000000;
-+			if (ts.tv_nsec >= 1000000000) {
-+				ts.tv_sec++;
-+				ts.tv_nsec -= 1000000000;
-+			}
-+			while (!agent_adv.quit && !agent_adv.stop &&
-+					agent_adv.epoch == agent_adv.seen)
-+				if (pthread_cond_timedwait(&agent_adv.cv,
-+						&agent_adv.mtx, &ts) ==
-+						ETIMEDOUT)
-+					break;
-+			if (agent_adv.quit || agent_adv.stop ||
-+					agent_adv.epoch != agent_adv.seen)
-+				continue;
-+			agent_adv.primed = agent_adv.seen;
-+		}
-+		if (!agent_adv.nqueue) {	/* it needs prompts */
-+			agent_adv.want = 1;
-+			agent_adv.awake = 0;
++		/* One flag says whether the sleeper may work: the editor is
++		 * at its input, nothing of the spear's is in flight, and an
++		 * entry is queued. The deadline is retaken on every tick, so
++		 * nothing has to signal this thread to start or to stop it:
++		 * it begins within ADV_TICK of the spear's going quiet and
++		 * stops within ADV_TICK of its coming back. */
++		pthread_mutex_lock(&agent_adv.mtx);
++		for (;;) {
++			if (agent_adv.quit)
++				break;
++			if (agent_adv_free && !agent_adv.stop &&
++				agent_adv.nqueue)
++				break;
 +			pthread_mutex_unlock(&agent_adv.mtx);
-+			agent_adv_nudge();
++			ts.tv_sec = ADV_TICK / 1000;
++			ts.tv_nsec = (long)(ADV_TICK % 1000) * 1000000;
++			nanosleep(&ts, NULL);
 +			pthread_mutex_lock(&agent_adv.mtx);
-+			continue;
 +		}
++		if (agent_adv.quit) {
++			/* The mutex is held: the tail below lets it go. */
++			agent_adv_untake();
++			break;
++		}
++
 +		w = agent_adv.queue[0];
 +		agent_adv.nqueue--;
 +		if (agent_adv.nqueue)
@@ -4768,17 +4656,13 @@ index 91bd0c4d..40e5c608 100644
 +		agent_adv.num = w.n;
 +		agent_adv.attempt = w.attempt;
 +		pthread_mutex_unlock(&agent_adv.mtx);
++
 +		text = agent_adv_ask(&w, &st);
++
 +		pthread_mutex_lock(&agent_adv.mtx);
 +		agent_adv.busy = 0;
-+		agent_adv.awake = 0;
-+		/* Ended by the editor's return: the entry was never answered, so
-+		 * it goes back wanted and uncounted, with nothing said about it.
-+		 * Counting it would give up on an entry only because the user
-+		 * came back while it was being read. */
 +		killed = agent_adv.killed;
 +		agent_adv.killed = 0;
-+		agent_adv.want = !text || killed;
 +		j.n = w.n;
 +		j.text = text;
 +		j.st = st;
@@ -4841,9 +4725,8 @@ index 91bd0c4d..40e5c608 100644
 +	}
 +	pthread_mutex_lock(&agent_adv.mtx);
 +	agent_adv_qadd(&w);
-+	agent_adv.awake = 1;
-+	pthread_cond_signal(&agent_adv.cv);
 +	pthread_mutex_unlock(&agent_adv.mtx);
++	agent_adv_nudge();
 +}
 +
 +/* What the sleeper answered, oldest first: raw text to b-9, rating staged,
@@ -4860,7 +4743,6 @@ index 91bd0c4d..40e5c608 100644
 +	cnt = agent_adv.nout;
 +	agent_adv.out = NULL;
 +	agent_adv.nout = agent_adv.omax = 0;
-+	agent_adv.want = 0;
 +	pthread_mutex_unlock(&agent_adv.mtx);
 +	for (i = 0; i < cnt; i++) {
 +		n = js[i].n;
@@ -4879,12 +4761,11 @@ index 91bd0c4d..40e5c608 100644
 +				agent_adv_note("endpoint unreachable; "
 +					":adv off for this session");
 +				agent_adv.disabled = 1;
-+				agent_adv_stop();
 +				i++;	/* the rest are not looked at */
 +				break;
 +			}
-+			agent_adv_note("no reply for entry %lu, status %d",
-+				n, st);
++			agent_adv_note("no reply for entry %lu, %s", n,
++				agent_adv_why(st));
 +			if (attempt + 1 < ADV_ATTEMPTS)
 +				agent_adv_requeue(n, attempt + 1, NULL);
 +			else
@@ -5043,114 +4924,6 @@ index 91bd0c4d..40e5c608 100644
 +		fcntl(fd, F_SETFL, fl | O_NONBLOCK);
 +}
 +
-+/* The input wait returned: take what the sleeper sent and, if the model is
-+ * still free, give it more to do. */
-+void agent_adv_service(void)
-+{
-+	char buf[64];
-+	if (!agent_adv.on || agent_adv.disabled || agent_adv.stop)
-+		return;
-+	while (agent_adv.notify[0] >= 0 &&
-+			read(agent_adv.notify[0], buf, sizeof(buf)) > 0);
-+	agent_adv_collect();
-+	if (!agent_adv.on || agent_adv.disabled || agent_adv.stop)
-+		return;
-+	pthread_mutex_lock(&agent_adv.mtx);
-+	if (agent_adv.want || agent_adv.nqueue == 0)
-+		agent_adv.awake = 1;
-+	pthread_mutex_unlock(&agent_adv.mtx);
-+	agent_adv_fill();
-+	pthread_mutex_lock(&agent_adv.mtx);
-+	if (agent_adv.nqueue)
-+		agent_adv.awake = 1;
-+	if (agent_adv.awake)
-+		pthread_cond_signal(&agent_adv.cv);
-+	pthread_mutex_unlock(&agent_adv.mtx);
-+}
-+
-+/* Entering or leaving the input wait. Leaving is work of its own, so a
-+ * request in flight is killed here rather than waited for: the session has
-+ * the endpoint back the moment it wants it, and the worker reaps the child
-+ * with the entry back on the queue. */
-+void agent_adv_wait(int on)
-+{
-+	if (!agent_adv.on)
-+		return;
-+	/* A runner left behind by a ^Z answers while the editor is
-+	 * stopped: what it answered is taken up here, so a rating the
-+	 * model finished during the suspend is staged at the first wait
-+	 * back and is never left sitting in a file. */
-+	agent_adv_help_read();
-+	pthread_mutex_lock(&agent_adv.mtx);
-+	agent_adv.idle = on;
-+	if (on) {
-+		if (!agent_adv.stop && !agent_adv.disabled)
-+			agent_adv.awake = 1;
-+		pthread_cond_signal(&agent_adv.cv);
-+	}
-+	else {
-+		agent_adv.epoch++;
-+		agent_adv.awake = 0;
-+		/* The session is back to its own work, so a request the sleeper
-+		 * still has waiting is ended here rather than waited for: the
-+		 * endpoint is the session's the moment it wants it. The worker
-+		 * reaps it and drops the half answer; the entry is asked again
-+		 * in the next downtime. The pid is read and cleared under the
-+		 * mutex, so it is never a process that has already been reaped.
-+		 */
-+		if (agent_adv.pid > 0) {
-+			agent_adv.killed = 1;
-+			kill(-agent_adv.pid, SIGKILL);
-+		}
-+		pthread_cond_broadcast(&agent_adv.cv);
-+	}
-+	pthread_mutex_unlock(&agent_adv.mtx);
-+}
-+
-+/* The self-pipe the input poll watches, or -1 when the sleeper is off. */
-+int agent_adv_fd(void)
-+{
-+	return agent_adv.on && !agent_adv.disabled ? agent_adv.notify[0] : -1;
-+}
-+
-+/* The spear used the model or the editor: the sleeper's quiet run has to
-+ * start over from now. */
-+void agent_adv_activity(void)
-+{
-+	pthread_mutex_lock(&agent_adv.mtx);
-+	agent_adv.epoch++;
-+	agent_adv.awake = 0;
-+	pthread_cond_broadcast(&agent_adv.cv);
-+	pthread_mutex_unlock(&agent_adv.mtx);
-+}
-+
-+/* The spear is back: stop the sleeper and kill the request it has waiting.
-+ * Called on input, on a tool, on a resume and when :adv goes off. */
-+static void agent_adv_stop(void)
-+{
-+	pid_t pid;
-+	pthread_mutex_lock(&agent_adv.mtx);
-+	agent_adv.stop = 1;
-+	agent_adv.idle = 0;
-+	agent_adv.awake = 0;
-+	agent_adv.epoch++;
-+	pid = agent_adv.pid;
-+	if (pid > 0)
-+		agent_adv.killed = 1;
-+	pthread_mutex_unlock(&agent_adv.mtx);
-+	if (pid > 0)
-+		kill(-pid, SIGKILL);
-+}
-+
-+/* :adv on and off. */
-+void agent_adv_toggle(int on)
-+{
-+	if (on)
-+		agent_adv_start();
-+	else
-+		agent_adv_off();
-+}
-+
 +#define ADV_HELP 4			/* requests a stopped editor may finish */
 +
 +/* A stopped editor cannot rate: SIGSTOP takes every thread, and ^Z reaches
@@ -5248,8 +5021,8 @@ index 91bd0c4d..40e5c608 100644
 +	signal(SIGHUP, SIG_IGN);
 +	signal(SIGINT, SIG_IGN);
 +	for (i = 0; i < n; i++) {
-+		ts.tv_sec = ADV_IDLE / 1000;
-+		ts.tv_nsec = (long)(ADV_IDLE % 1000) * 1000000;
++		ts.tv_sec = ADV_GRACE / 1000;
++		ts.tv_nsec = (long)(ADV_GRACE % 1000) * 1000000;
 +		nanosleep(&ts, NULL);
 +		if (!(f = fopen(h->j[i].path, "r")))
 +			break;
@@ -5271,7 +5044,7 @@ index 91bd0c4d..40e5c608 100644
 +			agent_writeall(fd, text, strlen(text));
 +			close(fd);
 +		}
-+		snprintf(num, sizeof(num), "%d\n", text ? st : -1);
++		snprintf(num, sizeof(num), "%d\n", st);
 +		if ((fd = open(h->j[i].st,
 +				O_WRONLY | O_CREAT | O_TRUNC, 0600)) >= 0) {
 +			agent_writeall(fd, num, strlen(num));
@@ -5315,6 +5088,8 @@ index 91bd0c4d..40e5c608 100644
 +	if (agent_adv.nqueue)
 +		memmove(agent_adv.queue, agent_adv.queue + n,
 +			agent_adv.nqueue * sizeof(*agent_adv.queue));
++	/* The runner asks while the editor is stopped; the sleeper must not. */
++	agent_adv.stop = 1;
 +	pthread_mutex_unlock(&agent_adv.mtx);
 +	agent_adv_stop();
 +	agent_adv_halt();	/* one thread left when the child is forked */
@@ -5376,7 +5151,7 @@ index 91bd0c4d..40e5c608 100644
 +		fclose(f);
 +		j.n = h->j[i].n;
 +		j.attempt = h->j[i].attempt;
-+		j.st = *num ? atoi(num) : -1;
++		j.st = *num ? atoi(num) : -2;
 +		j.text = NULL;
 +		if ((fd = open(h->j[i].out, O_RDONLY)) >= 0) {
 +			j.text = agent_adv_slurp(fd, (int)ADV_REPLY_MAX);
@@ -5420,16 +5195,90 @@ index 91bd0c4d..40e5c608 100644
 +		agent_adv_start();
 +}
 +
-+/* Take the model back: the sleeper sleeps again and everything it holds is
-+ * dropped, because an entry it never asked about is the spear's to rate. */
++/* The handshake is one flag: the main thread sets agent_adv_free before
++ * it waits for input and clears it the moment the session wants the model,
++ * and the sleeper reads nothing else of the session. A clock, an epoch and
++ * a condition variable once decided when it might work, and a wake-up that
++ * never arrived left it asleep with entries still queued to rate. */
++
++/* End the request the sleeper has in flight, if any, and mark it ended: the
++ * entry goes back to the queue unrated, so the next downtime asks it again.
++ * The pid is read under the mutex, so it is never a process already reaped.
++ * The sleeper's curl runs in a group of its own, so ^Z stops neither it nor
++ * the editor's own wait; see agent_adv_suspend. */
++static void agent_adv_stop(void)
++{
++	pid_t pid;
++	agent_adv_free = 0;
++	pthread_mutex_lock(&agent_adv.mtx);
++	pid = agent_adv.pid;
++	if (pid > 0)
++		agent_adv.killed = 1;
++	pthread_mutex_unlock(&agent_adv.mtx);
++	if (pid > 0)
++		kill(-pid, SIGKILL);
++}
++
++/* The input wait returned, or a round ended: take what the sleeper answered
++ * and hand it more prompts, then give it the endpoint back. */
++void agent_adv_service(void)
++{
++	char buf[64];
++	if (!agent_adv.on || agent_adv.disabled)
++		return;
++	while (agent_adv.notify[0] >= 0 &&
++			read(agent_adv.notify[0], buf, sizeof(buf)) > 0);
++	agent_adv_help_read();
++	agent_adv_collect();
++	if (!agent_adv.on || agent_adv.disabled)
++		return;
++	agent_adv_fill();
++	agent_adv_free = 1;
++}
++
++/* Entering or leaving the input wait. Leaving is work of its own: the
++ * session has the endpoint back the moment it wants it, and a request still
++ * waiting is ended rather than waited for. */
++void agent_adv_wait(int on)
++{
++	if (!agent_adv.on)
++		return;
++	/* A runner left behind by a ^Z answers while the editor is stopped:
++	 * what it answered is taken up here, so a rating the model finished
++	 * during the suspend is staged at the first wait back and is never
++	 * left sitting in a file. */
++	agent_adv_help_read();
++	if (on)
++		agent_adv_free = 1;
++	else
++		agent_adv_stop();
++}
++
++/* The self-pipe the input poll watches, or -1 when the sleeper is off. */
++int agent_adv_fd(void)
++{
++	return agent_adv.on && !agent_adv.disabled ? agent_adv.notify[0] : -1;
++}
++
++/* The spear used the model or the editor: the endpoint goes back to it, and
++ * a request the sleeper has waiting is ended at once. */
++void agent_adv_activity(void)
++{
++	if (agent_adv.on)
++		agent_adv_stop();
++}
++
++/* The spear takes the endpoint back for good, or is about to rate what the
++ * sleeper staged: what the sleeper holds is the spear's to rate. */
 +void agent_adv_preempt(void)
 +{
 +	if (!agent_adv.on)
 +		return;
-+	/* a runner from a ^Z gives the endpoint back the same way:
-+	 * an entry it never got to is the spear's to rate. */
 +	agent_adv_help_drop();
 +	agent_adv_stop();
++	pthread_mutex_lock(&agent_adv.mtx);
++	agent_adv_untake();
++	pthread_mutex_unlock(&agent_adv.mtx);
 +}
 +
 +/* Start the sleeper once per session; :adv may be turned off and on again
@@ -5440,21 +5289,21 @@ index 91bd0c4d..40e5c608 100644
 +		return 0;
 +	agent_adv_nb(agent_adv.notify[0]);
 +	if (!agent_adv.thread) {
-+		agent_adv.stop = 0;
 +		agent_adv.disabled = 0;
 +		agent_adv.quit = 0;	/* halt left it set: the thread would exit */
++		pthread_mutex_lock(&agent_adv.mtx);
++		/* a kill left over from the last run would blacken the first
++		 * answer of this one */
++		agent_adv.killed = 0;
++		agent_adv.stop = 0;	/* a thread made after a ^Z may ask again */
++		pthread_mutex_unlock(&agent_adv.mtx);
 +		if (pthread_create(&agent_adv.td, NULL, agent_adv_worker,
 +				NULL))
 +			return 0;
 +		agent_adv.thread = 1;
 +	}
 +	agent_adv.on = 1;
-+	agent_adv.stop = 0;
-+	pthread_mutex_lock(&agent_adv.mtx);
-+	agent_adv.awake = 1;
-+	agent_adv.seen = agent_adv.epoch;
-+	pthread_cond_signal(&agent_adv.cv);
-+	pthread_mutex_unlock(&agent_adv.mtx);
++	agent_adv_free = 1;
 +	agent_adv_nudge();
 +	return 1;
 +}
@@ -5477,13 +5326,20 @@ index 91bd0c4d..40e5c608 100644
 +		return;
 +	pthread_mutex_lock(&agent_adv.mtx);
 +	agent_adv.quit = 1;
-+	agent_adv.awake = 1;
-+	pthread_cond_broadcast(&agent_adv.cv);
 +	pthread_mutex_unlock(&agent_adv.mtx);
++	agent_adv_free = 0;
 +	if (agent_adv.pid > 0)
 +		kill(-agent_adv.pid, SIGKILL);
 +	pthread_join(agent_adv.td, NULL);
 +	agent_adv.thread = 0;
++}
++/* :adv on and off. */
++void agent_adv_toggle(int on)
++{
++	if (on)
++		agent_adv_start();
++	else
++		agent_adv_off();
 +}
 +
 +/* A kind 1 checkpoint or compaction opens: staged ratings go into b-6,
@@ -5554,7 +5410,7 @@ index 91bd0c4d..40e5c608 100644
  
  static char *agent_snapshot(char *loc)
  {
-@@ -3164,6 +5041,10 @@ static void agent_run_loop(const char *input)
+@@ -3140,6 +4956,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -5565,7 +5421,7 @@ index 91bd0c4d..40e5c608 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4943,6 +6824,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4919,6 +6739,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -5577,7 +5433,7 @@ index 91bd0c4d..40e5c608 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5035,6 +6921,11 @@ static int agent_autocompact(void)
+@@ -5011,6 +6836,11 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
