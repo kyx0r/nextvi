@@ -524,33 +524,446 @@ static const char \*agent_log_mark\(void\)
 grp 09??-10m 13220reg p OK agent.c:1113:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg agent.c:11132sc %? %@2132sc!0?
 ?0?
+%f+ 	return s->role \? agent_entry_roles\[s->role - 1] : "TEXT";
+}
+
+/\* b-6 rates turns: one line "N R sentence" per TURN entry N of b-4, with R1??0?
+1??+2m 141q0?
+%f+ 	return s->role \? agent_entry_roles\[s->role - 1] : "TEXT";
+}
+
+4??0?
+4??+2m 14220reg p OK agent.c:1142:a42sc %? %@2152sc!1q0?
+m 01;0grp 1%f> \{
+	return \(s->bytes \+ 2\) / 3;
+}.*(/\* The sentence rating entry n, or NULL\. \*/)
+static char \*agent_note\(unsigned long n, int \*rate, int \*row\)
+\{8??0?
+grp 08??-17m 14220reg p OK agent.c:1142:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	lbuf_free\(lb\);
+	agent_sync\(tempbufs\[6]\.lb\);
+}.*(		if \(\(s = agent_note_line\(lb->ln\[i], &m, &r\)\) && m == n\) \{)
+			\*rate = r;
+			\*row = i;9??0?
+grp 09??-25m 14220reg p OK agent.c:1142:a92sc %? %@2152sc!'\''00?
+1;4;8;9??!219reg agent.c:11422sc %? %@2132sc!0?
+?0?
+%f+ /\* b-6 rates turns: one line "N R sentence" per TURN entry N of b-4, with R
+ \* from 0 \(dead weight\) to 3 \(essential\)\. It also holds records, never
+ \* digit-led: "REMOVED N R sentence" for an entry removed for good and
+ \* "EPOCH N" for a compaction\. The sentence of a live note s, or NULL\. \*/
+static char \*agent_note_line\(char \*s, unsigned long \*n, int \*rate\)
+\{
+	char \*e;1??0?
+1??+1m 151q0?
+%f+  \* from 0 \(dead weight\) to 3 \(essential\)\. It also holds records, never
+ \* digit-led: "REMOVED N R sentence" for an entry removed for good and
+ \* "EPOCH N" for a compaction\. The sentence of a live note s, or NULL\. \*/
+static char \*agent_note_line\(char \*s, unsigned long \*n, int \*rate\)
+\{
+	char \*e;2??0?
+2??m 15220reg p OK agent.c:1144:a22sc %? %@2152sc!1q0?
+%f+  \* from 0 \(dead weight\) to 3 \(essential\)\. It also holds records, never
+ \* digit-led: "REMOVED N R sentence" for an entry removed for good and
+ \* "EPOCH N" for a compaction\. The sentence of a live note s, or NULL\. \*/3??0?
+3??m 15220reg p OK agent.c:1144:a32sc %? %@2152sc!1q0?
+;0fr.,$f+ ^/\* b-6 rates turns: one line "N R sentence" per TURN entry N of b-4, with R$4??0?
+4??+1m 15220reg p OK agent.c:1144:a42sc %? %@2152sc!fr 981qfr 980?
+%f+ static char \*agent_note_line\(char \*s, unsigned long \*n, int \*rate\)
+\{
+	char \*e;5??0?
+5??-3m 15220reg p OK agent.c:1144:a52sc %? %@2152sc!1q0?
+%f+ /........... .....:.o.....n..". ..s....n....p.r..U.N..........f.b... w... .
+.. f..m ..\(................. ......t.a.....t..ls. ......r.....s,......
+.. ....t.l.d........E. ... ...ten.....o.... ...ry........ ....g... ...
+........H.N" f.. .....p.c...n.........t..c.....a .......te....or....L....
+...t......r.\*..e....o.e...ne........,.un.....d.l..g......n..\*.....
+\{
+	.......;6??0?
+6??+1m 15220reg p OK agent.c:1144:a62sc %? %@2152sc!1q0?
+grp 1%f+ /\* b-6 rates turns: one line "N R sentence" per TURN entry N of b-4, with R.*?
+( \* from 0 \(dead weight\) to 3 \(essential\)\. It also holds records, never)7??0?
+grp 07??m 15220reg p OK agent.c:1144:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> \{
+	return \(s->bytes \+ 2\) / 3;
+}.*(/\* The sentence rating entry n, or NULL\. \*/)
+static char \*agent_note\(unsigned long n, int \*rate, int \*row\)
+\{8??0?
+grp 08??-15m 15220reg p OK agent.c:1144:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	lbuf_free\(lb\);
+	agent_sync\(tempbufs\[6]\.lb\);
+}.*(		if \(\(s = agent_note_line\(lb->ln\[i], &m, &r\)\) && m == n\) \{)
+			\*rate = r;
+			\*row = i;9??0?
+grp 09??-23m 15220reg p OK agent.c:1144:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:11442sc %? %@2132sc!0?
+?0?
+%f+ 	if \(!isdigit\(\(unsigned char\)\*s\)\)
+		return NULL;
+	\*n = strtoul\(s, &e, 10\);
+	if \(e\[0] != '\'' '\'' \|\| e\[1] < '\''0'\'' \|\| e\[1] > '\''3'\'' \|\| e\[2] != '\'' '\''\)
+		return NULL;1??0?
+1??+3m 161q0?
+%f+ 	if \(e\[0] != '\'' '\'' \|\| e\[1] < '\''0'\'' \|\| e\[1] > '\''3'\'' \|\| e\[2] != '\'' '\''\)
+		return NULL;2??0?
+2??m 16220reg p OK agent.c:1153:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	if \(e\[0] != '\'' '\'' \|\| e\[1] < '\''0'\'' \|\| e\[1] > '\''3'\'' \|\| e\[2] != '\'' '\''\)$3??0?
+3??m 16220reg p OK agent.c:1153:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 	if \(!isdigit\(\(unsigned char\)\*s\)\)
+		return NULL;
+	\*n = strtoul\(s, &e, 10\);4??0?
+4??+3m 16220reg p OK agent.c:1153:a42sc %? %@2152sc!1q0?
+;0fr.,$f+ ^		return NULL;$5??0?
+5??-1m 16220reg p OK agent.c:1153:a52sc %? %@2152sc!fr 981qfr 980?
+%f+ ..f..!..d....\(..n..g.e..c........
+...et.r......;
+... .....to...s...e,.....
+.....e\[....=.'\'' ...\|...1....'\''....\|....]...'\''.........].!=.. ..
+.	.e.....NUL..6??0?
+6??+3m 16220reg p OK agent.c:1153:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	if \(!isdigit\(\(unsigned char\)\*s\)\).*?
+		return NULL;.*?
+	\*n = strtoul\(s, &e, 10\);.*?
+(	if \(e\[0] != '\'' '\'' \|\| e\[1] < '\''0'\'' \|\| e\[1] > '\''3'\'' \|\| e\[2] != '\'' '\''\))7??0?
+grp 07??m 16220reg p OK agent.c:1153:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> \{
+	return \(s->bytes \+ 2\) / 3;
+}.*(/\* The sentence rating entry n, or NULL\. \*/)
+static char \*agent_note\(unsigned long n, int \*rate, int \*row\)
+\{8??0?
+grp 08??-6m 16220reg p OK agent.c:1153:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	lbuf_free\(lb\);
+	agent_sync\(tempbufs\[6]\.lb\);
+}.*(		if \(\(s = agent_note_line\(lb->ln\[i], &m, &r\)\) && m == n\) \{)
+			\*rate = r;
+			\*row = i;9??0?
+grp 09??-14m 16220reg p OK agent.c:1153:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:11532sc %? %@2132sc!0?
+?0?
+%f+ 		return NULL;
+	\*rate = e\[1] - '\''0'\'';
+	return e \+ 3;
+}
+
+1??0?
+1??+1m 171q0?
+%f+ 	\*rate = e\[1] - '\''0'\'';
+	return e \+ 3;
+}
+
+2??0?
+2??m 17220reg p OK agent.c:1155:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	\*rate = e\[1] - '\''0'\'';$3??0?
+3??m 17220reg p OK agent.c:1155:a32sc %? %@2152sc!fr 981qfr 980?
+;0fr.,$f+ ^		return NULL;$4??0?
+4??+1m 17220reg p OK agent.c:1155:a42sc %? %@2152sc!fr 981qfr 980?
+%f+ 	return e \+ 3;
+}
+
+5??0?
+5??-1m 17220reg p OK agent.c:1155:a52sc %? %@2152sc!1q0?
+%f+ .	.....n....L.
+...at... .\[...-....;
+	r..... e.\+ ..
+}
+
+6??0?
+6??+1m 17220reg p OK agent.c:1155:a62sc %? %@2152sc!1q0?
+grp 1%f+ 		return NULL;.*?
+(	\*rate = e\[1] - '\''0'\'';)7??0?
+grp 07??m 17220reg p OK agent.c:1155:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> \{
+	return \(s->bytes \+ 2\) / 3;
+}.*(/\* The sentence rating entry n, or NULL\. \*/)
+static char \*agent_note\(unsigned long n, int \*rate, int \*row\)
+\{8??0?
+grp 08??-4m 17220reg p OK agent.c:1155:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	lbuf_free\(lb\);
+	agent_sync\(tempbufs\[6]\.lb\);
+}.*(		if \(\(s = agent_note_line\(lb->ln\[i], &m, &r\)\) && m == n\) \{)
+			\*rate = r;
+			\*row = i;9??0?
+grp 09??-12m 17220reg p OK agent.c:1155:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:11552sc %? %@2132sc!0?
+?0?
+%f+ 				break;
+		end = row;
+	}
+	snprintf\(head, sizeof\(head\), "%lu %d ", n, rate\);
+	sbuf_smake\(sb, 128\)
+	sbuf_str\(sb, head\)
+	for \(char \*t = text; \*t; t\+\+\)1??0?
+1??+3m 181q0?
+%f+ 	snprintf\(head, sizeof\(head\), "%lu %d ", n, rate\);
+	sbuf_smake\(sb, 128\)
+	sbuf_str\(sb, head\)
+	for \(char \*t = text; \*t; t\+\+\)2??0?
+2??m 18220reg p OK agent.c:1270:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	snprintf\(head, sizeof\(head\), "%lu %d ", n, rate\);$3??0?
+3??m 18220reg p OK agent.c:1270:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 				break;
+		end = row;
+	}4??0?
+4??+3m 18220reg p OK agent.c:1270:a42sc %? %@2152sc!1q0?
+%f+ 	sbuf_smake\(sb, 128\)
+	sbuf_str\(sb, head\)
+	for \(char \*t = text; \*t; t\+\+\)5??0?
+5??-1m 18220reg p OK agent.c:1270:a52sc %? %@2152sc!1q0?
+%f+ .	.	....k.
+......=....;
+	.
+..n..i.............e...he.......l...d.., n. ....\).
+..bu._..a...........
+	s.....t...b..he...
+.........r.\*... .e........t.\+.6??0?
+6??+3m 18220reg p OK agent.c:1270:a62sc %? %@2152sc!1q0?
+grp 1%f+ 				break;.*?
+		end = row;.*?
+	}.*?
+(	snprintf\(head, sizeof\(head\), "%lu %d ", n, rate\);)7??0?
+grp 07??m 18220reg p OK agent.c:1270:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	else \{
+		for \(row = 0; row < lbuf_len\(lb\); row\+\+\)
+			if \(agent_note_lineno\(lb->ln\[row], &m\) && m > n\).*(		sbuf_chr\(sb, \*t == '\''\\n'\'' \? '\'' '\'' : \*t\))
+	sbuf_chr\(sb, '\''\\n'\''\)
+	sbuf_nul\(sb\)8??0?
+grp 08??-4m 18220reg p OK agent.c:1270:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	char head\[48];
+	if \(agent_note\(n, &r, &row\)\)
+		end = row \+ 1;.*(	lbuf_edit\(lb, sb->s, row, end, 0, 0\);)
+	free\(sb->s\);
+}9??0?
+grp 09??-7m 18220reg p OK agent.c:1270:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:12702sc %? %@2132sc!0?
+?0?
+%f+ 		return;
+	note = agent_note_text\(note\);
+	len = strcspn\(note, "\\n"\);
+	snprintf\(head, sizeof\(head\), "REMOVED %lu %d ", n, r\);
+	sbuf_smake\(sb, 128\)
+	sbuf_str\(sb, head\)
+	sbuf_mem\(sb, note, len\)1??0?
+1??+3m 191q0?
+%f+ 	snprintf\(head, sizeof\(head\), "REMOVED %lu %d ", n, r\);
+	sbuf_smake\(sb, 128\)
+	sbuf_str\(sb, head\)
+	sbuf_mem\(sb, note, len\)2??0?
+2??m 19220reg p OK agent.c:1379:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^	snprintf\(head, sizeof\(head\), "REMOVED %lu %d ", n, r\);$3??0?
+3??m 19220reg p OK agent.c:1379:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 		return;
+	note = agent_note_text\(note\);
+	len = strcspn\(note, "\\n"\);4??0?
+4??+3m 19220reg p OK agent.c:1379:a42sc %? %@2152sc!1q0?
+%f+ 	sbuf_smake\(sb, 128\)
+	sbuf_str\(sb, head\)
+	sbuf_mem\(sb, note, len\)5??0?
+5??-1m 19220reg p OK agent.c:1379:a52sc %? %@2152sc!1q0?
+%f+ 	........
+..o.......en..n..._........e.;
+	l.... .....p...........".;
+......nt....... s.z.........,."....V......... "...,....
+.......m..e\(... ....
+....._s....b,......
+..buf.......,..o........6??0?
+6??+3m 19220reg p OK agent.c:1379:a62sc %? %@2152sc!1q0?
+grp 1%f+ 		return;.*?
+	note = agent_note_text\(note\);.*?
+	len = strcspn\(note, "\\n"\);.*?
+(	snprintf\(head, sizeof\(head\), "REMOVED %lu %d ", n, r\);)7??0?
+grp 07??m 19220reg p OK agent.c:1379:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		return;
+	agent_note_rehome\(n, spans, cnt, sel\);
+	if \(!\(note = agent_note\(n, &r, &row\)\)\).*(	lbuf_edit\(lb, sb->s, row, row \+ 1, 0, 0\);)
+	free\(sb->s\);
+}8??0?
+grp 08??-6m 19220reg p OK agent.c:1379:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	int r, row, len;
+	char \*note, head\[48];
+	if \(!agent_note\(n, &r, &row\)\).*(/\* Count turns with no rating; buf lists the first few\. \*/)
+static int agent_unrated\(struct agent_span \*spans, int cnt, char \*buf, int size\)
+\{9??0?
+grp 09??-10m 19220reg p OK agent.c:1379:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:13792sc %? %@2132sc!0?
+?0?
+%f+ 	free\(sb->s\);
+}
+
+/\* Count turns with no rating; buf lists the first few\. \*/
+static int agent_unrated\(struct agent_span \*spans, int cnt, char \*buf, int size\)
+\{
+	int n = 0, len = 0, r, row;1??0?
+1??+3m 201q0?
+%f+ /\* Count turns with no rating; buf lists the first few\. \*/
+static int agent_unrated\(struct agent_span \*spans, int cnt, char \*buf, int size\)
+\{
+	int n = 0, len = 0, r, row;2??0?
+2??m 20220reg p OK agent.c:1389:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^/\* Count turns with no rating; buf lists the first few\. \*/$3??0?
+3??m 20220reg p OK agent.c:1389:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 	free\(sb->s\);
+}
+
+4??0?
+4??+3m 20220reg p OK agent.c:1389:a42sc %? %@2152sc!1q0?
+%f+ static int agent_unrated\(struct agent_span \*spans, int cnt, char \*buf, int size\)
+\{
+	int n = 0, len = 0, r, row;5??0?
+5??-1m 20220reg p OK agent.c:1389:a52sc %? %@2152sc!1q0?
+%f+ 	f.e..sb...\).
+}
+
+/.........u........ ...r.t..........i.t..t...f...t .... ..
+.t.t.......a...._u......\(..r.......n.......\*s......i....n.. .h.r.\*.u....n. ...e.
+\{
+.......=......n....,........6??0?
+6??+3m 20220reg p OK agent.c:1389:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	free\(sb->s\);.*?
+}.*?
+.*?
+(/\* Count turns with no rating; buf lists the first few\. \*/)7??0?
+grp 07??m 20220reg p OK agent.c:1389:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	sbuf_chr\(sb, '\''\\n'\''\)
+	sbuf_nul\(sb\)
+	lbuf_edit\(lb, sb->s, row, row \+ 1, 0, 0\);.*(				n \? ", " : "", agent_span_role\(spans \+ k\), spans\[k]\.n\);)
+		n\+\+;
+	}8??0?
+grp 08??-11m 20220reg p OK agent.c:1389:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	sbuf_smake\(sb, 128\)
+	sbuf_str\(sb, head\)
+	sbuf_mem\(sb, note, len\).*(	if \(n > 8 && len < size\))
+		snprintf\(buf \+ len, size - len, " and %d more", n - 8\);
+	return n;9??0?
+grp 09??-14m 20220reg p OK agent.c:1389:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:13892sc %? %@2132sc!0?
+?0?
+%f+ 	\*buf = '\''\\0'\'';
+	for \(int k = 0; k < cnt; k\+\+\) \{
+		if \(!agent_ratable\(spans \+ k\) \|\|
+				agent_note\(spans\[k]\.n, &r, &row\)\)
+			continue;
+		if \(n < 8 && len < size\)
+			len \+= snprintf\(buf \+ len, size - len, "%s%s %lu",1??0?
+1??+3m 211q0?
+%f+ 				agent_note\(spans\[k]\.n, &r, &row\)\)
+			continue;
+		if \(n < 8 && len < size\)
+			len \+= snprintf\(buf \+ len, size - len, "%s%s %lu",2??0?
+2??m 21220reg p OK agent.c:1396:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^				agent_note\(spans\[k]\.n, &r, &row\)\)$3??0?
+3??m 21220reg p OK agent.c:1396:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 	\*buf = '\''\\0'\'';
+	for \(int k = 0; k < cnt; k\+\+\) \{
+		if \(!agent_ratable\(spans \+ k\) \|\|4??0?
+4??+3m 21220reg p OK agent.c:1396:a42sc %? %@2152sc!1q0?
+%f+ 			continue;
+		if \(n < 8 && len < size\)
+			len \+= snprintf\(buf \+ len, size - len, "%s%s %lu",5??0?
+5??-1m 21220reg p OK agent.c:1396:a52sc %? %@2152sc!1q0?
+%f+ ...u.........
+.f.r.\(..t...=..............\+....
+.........e....at..l....a.....k\).\|\|
+	......n.........................o..\)
+	.......n.e.
+.... \(. ..8.&....n <...z.\)
+.....n .. ...r.n..\(buf.....n...i.e ....n. ....s.....,6??0?
+6??+3m 21220reg p OK agent.c:1396:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	\*buf = '\''\\0'\'';.*?
+	for \(int k = 0; k < cnt; k\+\+\) \{.*?
+		if \(!agent_ratable\(spans \+ k\) \|\|.*?
+(				agent_note\(spans\[k]\.n, &r, &row\)\))7??0?
+grp 07??m 21220reg p OK agent.c:1396:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 	sbuf_chr\(sb, '\''\\n'\''\)
+	sbuf_nul\(sb\)
+	lbuf_edit\(lb, sb->s, row, row \+ 1, 0, 0\);.*(				n \? ", " : "", agent_span_role\(spans \+ k\), spans\[k]\.n\);)
+		n\+\+;
+	}8??0?
+grp 08??-4m 21220reg p OK agent.c:1396:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 	sbuf_smake\(sb, 128\)
+	sbuf_str\(sb, head\)
+	sbuf_mem\(sb, note, len\).*(	if \(n > 8 && len < size\))
+		snprintf\(buf \+ len, size - len, " and %d more", n - 8\);
+	return n;9??0?
+grp 09??-7m 21220reg p OK agent.c:1396:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:13962sc %? %@2132sc!0?
+?0?
+%f+ 				spans\[k]\.n - 1\);
+			sbuf_str\(sb, ln\)
+		} else if \(agent_ratable\(spans \+ k\) && \(note = agent_note\(spans\[k]\.n, &r, &row\)\)\) \{
+			snprintf\(ln, sizeof\(ln\), " %d", r\);
+			sbuf_str\(sb, ln\)
+			/\* A sentence whose own entry is removed, or listed without
+			 \* its note, shows on the first entry that names it, unless1??0?
+1??+3m 221q0?
+%f+ 			snprintf\(ln, sizeof\(ln\), " %d", r\);
+			sbuf_str\(sb, ln\)
+			/\* A sentence whose own entry is removed, or listed without
+			 \* its note, shows on the first entry that names it, unless2??0?
+2??m 22220reg p OK agent.c:1600:a22sc %? %@2152sc!1q0?
+;0fr.,$f+ ^			snprintf\(ln, sizeof\(ln\), " %d", r\);$3??0?
+3??m 22220reg p OK agent.c:1600:a32sc %? %@2152sc!fr 981qfr 980?
+%f+ 				spans\[k]\.n - 1\);
+			sbuf_str\(sb, ln\)
+		} else if \(agent_ratable\(spans \+ k\) && \(note = agent_note\(spans\[k]\.n, &r, &row\)\)\) \{4??0?
+4??+3m 22220reg p OK agent.c:1600:a42sc %? %@2152sc!1q0?
+%f+ 			sbuf_str\(sb, ln\)
+			/\* A sentence whose own entry is removed, or listed without
+			 \* its note, shows on the first entry that names it, unless5??0?
+5??-1m 22220reg p OK agent.c:1600:a52sc %? %@2152sc!1q0?
+%f+ ...	...n....\........
+..	s.u._.t.......n.
+..}..............t_...abl..........k. .&...... ......t....e..p.....]....&., .r.w.\)...
+....n......\(l...sizeo....\), " ........
+		..........sb..l..
+..	...A..e.t.....w..s. ... .n..y... .e...... or..........t...t
+	.	...it....te....o.s.on...e.........t.y......n.....it. ..l...6??0?
+6??+3m 22220reg p OK agent.c:1600:a62sc %? %@2152sc!1q0?
+grp 1%f+ 				spans\[k]\.n - 1\);.*?
+			sbuf_str\(sb, ln\).*?
+		} else if \(agent_ratable\(spans \+ k\) && \(note = agent_note\(spans\[k]\.n, &r, &row\)\)\) \{.*?
+(			snprintf\(ln, sizeof\(ln\), " %d", r\);)7??0?
+grp 07??m 22220reg p OK agent.c:1600:a72sc %? %@2152sc!1q0?
+m 01;0grp 1%f> 		if \(agent_epoch_summary\(spans\[k]\.n\)\) \{
+			snprintf\(ln, sizeof\(ln\),
+				" compaction summary that replaced entries 1-%lu",.*(			 \* listed among trimmed notes; the rest name that entry\. \*/)
+			if \(agent_noted\(spans \+ k\) && \(ref = agent_note_ref\(note\)\) &&
+					\(\(t = agent_span_rated\(spans, cnt, ref\)\) \? !agent_noted\(t\) :8??0?
+grp 08??-4m 22220reg p OK agent.c:1600:a82sc %? %@2152sc!'\''08??1q0?
+m 01;0grp 1%f> 			snprintf\(ln, sizeof\(ln\), " %d", spans\[k]\.beg \+ 1\);
+			sbuf_str\(sb, ln\)
+		}.*(				!\(trimmed && ref >= from && agent_note\(ref, &r, &row\)\)\)\) \{)
+				int j = 0;
+				while \(j < nmoved && moved\[2\*j] != ref\)9??0?
+grp 09??-7m 22220reg p OK agent.c:1600:a92sc %? %@2152sc!'\''00?
+1;2;3;4;5;6;7;8;9??!219reg agent.c:16002sc %? %@2132sc!0?
+?0?
 %f+ 	agent_cp_base = -1;
 	agent_cp_bytes = agent_context_bytes\(\);
 	agent_cp_left = INT_MAX;
 	agent_cp_logbuf = agent_logbuf;
 	agent_logbuf = 7;
 	/\* A question in b-8 continues the numbering of what it interrupted\. \*/1??0?
-1??+2m 141q0?
+1??+2m 231q0?
 %f+ 	agent_cp_base = -1;
 	agent_cp_bytes = agent_context_bytes\(\);
 	agent_cp_left = INT_MAX;4??0?
-4??+2m 14220reg p OK agent.c:1808:a42sc %? %@2152sc!1q0?
+4??+2m 23220reg p OK agent.c:1808:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	agent_cp_base = -1;.*?
 	agent_cp_bytes = agent_context_bytes\(\);.*?
 (	agent_cp_left = INT_MAX;)7??0?
-grp 07??m 14220reg p OK agent.c:1808:a72sc %? %@2152sc!1q0?
+grp 07??m 23220reg p OK agent.c:1808:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	agent_checkpointing = kind;
 	agent_cp_done = agent_cp_refused = 0;
 	agent_cp = cJSON_CreateArray\(\);.*(	if \(agent_cp_logbuf == 3\))
 		agent_entries\[0] = agent_turn\[0] = 0;
 	/\* The opening message explains these; do not defer them for specs\. \*/8??0?
-grp 08??-4m 14220reg p OK agent.c:1808:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 23220reg p OK agent.c:1808:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		agent_cp_outer\.left = agent_cp_left;
 		agent_cp_open = NULL;
 	}.*(	for \(int i = 0; i < LEN\(cmds\); i\+\+\))
 		exspec_mark\(cmds\[i]\);
 	if \(kind == 3\)9??0?
-grp 09??-7m 14220reg p OK agent.c:1808:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 23220reg p OK agent.c:1808:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg agent.c:18082sc %? %@2132sc!0?
 ?0?
 %f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);
@@ -560,23 +973,23 @@ static void agent_checkpoint_end\(void\)
 \{
 	char note\[128], unrated\[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;1??0?
-1??+3m 151q0?
+1??+3m 241q0?
 %f+ static void agent_checkpoint_end\(void\)
 \{
 	char note\[128], unrated\[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;2??0?
-2??m 15220reg p OK agent.c:2131:a22sc %? %@2152sc!1q0?
+2??m 24220reg p OK agent.c:2131:a22sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^static void agent_checkpoint_end\(void\)$3??0?
-3??m 15220reg p OK agent.c:2131:a32sc %? %@2152sc!fr 981qfr 980?
+3??m 24220reg p OK agent.c:2131:a32sc %? %@2152sc!fr 981qfr 980?
 %f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);
 }
 
 4??0?
-4??+3m 15220reg p OK agent.c:2131:a42sc %? %@2152sc!1q0?
+4??+3m 24220reg p OK agent.c:2131:a42sc %? %@2152sc!1q0?
 %f+ \{
 	char note\[128], unrated\[112];
 	int k, n, kind = agent_checkpointing, answered = agent_cp_done;5??0?
-5??-1m 15220reg p OK agent.c:2131:a52sc %? %@2152sc!1q0?
+5??-1m 24220reg p OK agent.c:2131:a52sc %? %@2152sc!1q0?
 %f+ ...J.O._..dIt..T.....y......_..s.....,.cJS.N....l.ca..\(....\).;
 }
 
@@ -584,24 +997,24 @@ static void agent_checkpoint_end\(void\)
 \{
 ....r.n......8]. .n..t......];
 ....... .. .......a.e.....eckpo..ti.g,.a.s.e.ed ..a.....cp.....;6??0?
-6??+3m 15220reg p OK agent.c:2131:a62sc %? %@2152sc!1q0?
+6??+3m 24220reg p OK agent.c:2131:a62sc %? %@2152sc!1q0?
 grp 1%f+ 		cJSON_AddItemToArray\(agent_messages, cJSON_Duplicate\(m, 1\)\);.*?
 }.*?
 .*?
 (static void agent_checkpoint_end\(void\))7??0?
-grp 07??m 15220reg p OK agent.c:2131:a72sc %? %@2152sc!1q0?
+grp 07??m 24220reg p OK agent.c:2131:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	} else
 		cJSON_AddItemToArray\(agent_messages, agent_msg\("user", agent_cp_open\)\);
 	cJSON_ArrayForEach\(m, agent_cp\).*(	if \(!kind\))
 		return;
 	agent_cp_collect\(\);8??0?
-grp 08??-5m 15220reg p OK agent.c:2131:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 24220reg p OK agent.c:2131:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 				cJSON_GetStringValue\(cJSON_GetObjectItem\(m, "id"\)\)\);
 			cJSON_AddItemToArray\(agent_messages, result\);
 		}.*(	cJSON_Delete\(agent_cp\);)
 	agent_cp = NULL;
 	cJSON_Delete\(agent_cp_lead\);9??0?
-grp 09??-8m 15220reg p OK agent.c:2131:a92sc %? %@2152sc!'\''00?
+grp 09??-8m 24220reg p OK agent.c:2131:a92sc %? %@2152sc!'\''00?
 1;2;3;4;5;6;7;8;9??!219reg agent.c:21312sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_output\(note\);
@@ -610,24 +1023,24 @@ static void agent_checkpoint_end\(void\)
 /\* End a question together with what it interrupted\. \*/
 static void agent_checkpoint_stop\(void\)
 \{1??0?
-1??+2m 161q0?
+1??+2m 251q0?
 %f+ 	agent_output\(note\);
 }
 
 4??0?
-4??+2m 16220reg p OK agent.c:2192:a42sc %? %@2152sc!1q0?
+4??+2m 25220reg p OK agent.c:2192:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	if \(\(n = agent_unrated_now\(unrated, sizeof\(unrated\)\)\)\)
 		snprintf\(note \+ k, sizeof\(note\) - k, ", %d unrated", n\);
 	strcat\(note, "]\\n"\);.*(	while \(agent_checkpointing\))
 		agent_checkpoint_end\(\);
 }8??0?
-grp 08??-4m 16220reg p OK agent.c:2192:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 25220reg p OK agent.c:2192:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	agent_acl_mark = agent_tokens\(\);
 	k = snprintf\(note, sizeof\(note\), "\[acl checkpoint done ~%\.0f -> ~%\.0f tokens",
 		agent_tokens_at\(agent_cp_bytes\), agent_acl_mark\);.*(/\* acp prints the checkpoint instructions, to the agent only during one; ali)
  \* the session log status and auli its unrated turns, at any time\. \*/
 static void \*ec_acp\(char \*loc, char \*cmd, char \*arg\)9??0?
-grp 09??-8m 16220reg p OK agent.c:2192:a92sc %? %@2152sc!'\''00?
+grp 09??-8m 25220reg p OK agent.c:2192:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg agent.c:21922sc %? %@2132sc!0?
 ?0?
 %f+ 	return req;
@@ -635,24 +1048,24 @@ static void \*ec_acp\(char \*loc, char \*cmd, char \*arg\)9??0?
 
 static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\)
 \{1??0?
-1??+2m 171q0?
+1??+2m 261q0?
 %f+ 	return req;
 }
 
 4??0?
-4??+2m 17220reg p OK agent.c:2867:a42sc %? %@2152sc!1q0?
+4??+2m 26220reg p OK agent.c:2867:a42sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	for \(int i = 0; i < LEN\(owned\); i\+\+\)
 		while \(cJSON_GetObjectItem\(req, owned\[i]\)\)
 			cJSON_DeleteItemFromObject\(req, owned\[i]\);.*(	sbuf \*err = NULL;)
 	if \(stderr_text\)
 		\*stderr_text = NULL;8??0?
-grp 08??-6m 17220reg p OK agent.c:2867:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-6m 26220reg p OK agent.c:2867:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	/\* Remove duplicates so providers cannot interpret a shadow value\. \*/
 	const char \*owned\[] = \{"messages", "tools", "stream"};.*(	sbuf_smake\(hdr, 128\))
 	sbuf_str\(hdr, "Authorization: Bearer "\)
 	sbuf_str\(hdr, api_key\)9??0?
-grp 09??-9m 17220reg p OK agent.c:2867:a92sc %? %@2152sc!'\''00?
+grp 09??-9m 26220reg p OK agent.c:2867:a92sc %? %@2152sc!'\''00?
 1;4;8;9??!219reg agent.c:28672sc %? %@2132sc!0?
 ?0?
 %f+ static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\)
@@ -660,25 +1073,25 @@ static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\)
 	char hdrpath\[] = "/tmp/nextvi-header-XXXXXX", timeout\[32], hdrarg\[80];
 	int fd = mkstemp\(hdrpath\);
 	sbuf \*out = NULL;1??0?
-1??+1m 181q0?
+1??+1m 271q0?
 %f+ static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\)
 \{4??0?
-4??+1m 18220reg p OK agent.c:2869:a42sc %? %@2152sc!1q0?
+4??+1m 27220reg p OK agent.c:2869:a42sc %? %@2152sc!1q0?
 grp 1%f+ static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\).*?
 (\{)7??0?
-grp 07??m 18220reg p OK agent.c:2869:a72sc %? %@2152sc!1q0?
+grp 07??m 27220reg p OK agent.c:2869:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	for \(int i = 0; i < LEN\(owned\); i\+\+\)
 		while \(cJSON_GetObjectItem\(req, owned\[i]\)\)
 			cJSON_DeleteItemFromObject\(req, owned\[i]\);.*(	sbuf \*err = NULL;)
 	if \(stderr_text\)
 		\*stderr_text = NULL;8??0?
-grp 08??-4m 18220reg p OK agent.c:2869:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 27220reg p OK agent.c:2869:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	/\* Remove duplicates so providers cannot interpret a shadow value\. \*/
 	const char \*owned\[] = \{"messages", "tools", "stream"};.*(	sbuf_smake\(hdr, 128\))
 	sbuf_str\(hdr, "Authorization: Bearer "\)
 	sbuf_str\(hdr, api_key\)9??0?
-grp 09??-7m 18220reg p OK agent.c:2869:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 27220reg p OK agent.c:2869:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg agent.c:28692sc %? %@2132sc!0?
 ?0?
 %f+ 	free\(out\);
@@ -687,27 +1100,27 @@ static char \*agent_http\(cJSON \*req, int \*st, char \*\*stderr_text\)
 
 static char \*agent_snapshot\(char \*loc\)
 \{1??0?
-1??+2m 191q0?
+1??+2m 281q0?
 %f+ 	free\(out\);
 	return s;
 }4??0?
-4??+2m 19220reg p OK agent.c:2919:a42sc %? %@2152sc!1q0?
+4??+2m 28220reg p OK agent.c:2919:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	free\(out\);.*?
 	return s;.*?
 (})7??0?
-grp 07??m 19220reg p OK agent.c:2919:a72sc %? %@2152sc!1q0?
+grp 07??m 28220reg p OK agent.c:2919:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		return NULL;
 	}
 	char \*s = out->s;.*(	int beg = 0, end = lbuf_len\(xb\), o1 = -1, o2 = -1;)
 	char info\[160];
 	sbuf text;8??0?
-grp 08??-4m 19220reg p OK agent.c:2919:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 28220reg p OK agent.c:2919:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	}
 	if \(!out\) \{
 		\*st = -1;.*(	if \(loc && ex_region\(loc, &beg, &end, &o1, &o2\)\) \{)
 		if \(lbuf_len\(xb\) \|\| strcmp\(loc, "%"\)\)
 			return NULL;9??0?
-grp 09??-7m 19220reg p OK agent.c:2919:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 28220reg p OK agent.c:2919:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg agent.c:29192sc %? %@2132sc!0?
 ?0?
 %f+ 	agent_add_user\(agent_messages, input\);
@@ -716,27 +1129,27 @@ static char \*agent_snapshot\(char \*loc\)
 		/\* Stop before requesting a reply whose calls could not run\. \*/
 		if \(max_tool_rounds && round == max_tool_rounds\) \{
 			agent_log\("NOTICE", "maximum tool rounds reached; "1??0?
-1??+2m 201q0?
+1??+2m 291q0?
 %f+ 	agent_add_user\(agent_messages, input\);
 	agent_log\("USER", input\);
 	for \(int round = 0; ; \) \{4??0?
-4??+2m 20220reg p OK agent.c:3142:a42sc %? %@2152sc!1q0?
+4??+2m 29220reg p OK agent.c:3142:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	agent_add_user\(agent_messages, input\);.*?
 	agent_log\("USER", input\);.*?
 (	for \(int round = 0; ; \) \{)7??0?
-grp 07??m 20220reg p OK agent.c:3142:a72sc %? %@2152sc!1q0?
+grp 07??m 29220reg p OK agent.c:3142:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 		agent_pack_done = 0;
 	agent_cancel = agent_pause = 0;
 	agent_rounds = 0;.*(				"submit to continue"\);)
 			return;
 		}8??0?
-grp 08??-4m 20220reg p OK agent.c:3142:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 29220reg p OK agent.c:3142:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	int st, retries = 0, compacted = 0, unpacked = 0, asked = 0;
 	int goal_due = 0;	/\* agent_goal_ask waits for the request after it \*/
 	if \(agent_packing\).*(		agent_cp_collect\(\);)
 		/\* A question that ended unanswered, as by a pause: the reply it
 		 \* withheld is requested again\. \*/9??0?
-grp 09??-7m 20220reg p OK agent.c:3142:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 29220reg p OK agent.c:3142:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg agent.c:31422sc %? %@2132sc!0?
 ?0?
 %f+ 	unsigned long epoch = agent_epoch;
@@ -745,27 +1158,27 @@ static char \*agent_snapshot\(char \*loc\)
 	char \*task = agent_compact_task\(browse, arg, 0\);
 	/\* Indices survive buffer-array growth during tool calls\. \*/
 	int savedtemp = istempbuf\(ex_buf\);1??0?
-1??+2m 211q0?
+1??+2m 301q0?
 %f+ 	unsigned long epoch = agent_epoch;
 	if \(agent_start\(\)\)
 		return agent_init_error;4??0?
-4??+2m 21220reg p OK agent.c:4921:a42sc %? %@2152sc!1q0?
+4??+2m 30220reg p OK agent.c:4921:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	unsigned long epoch = agent_epoch;.*?
 	if \(agent_start\(\)\).*?
 (		return agent_init_error;)7??0?
-grp 07??m 21220reg p OK agent.c:4921:a72sc %? %@2152sc!1q0?
+grp 07??m 30220reg p OK agent.c:4921:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> \{
 	void \*ret;
 	int browse = !strcmp\(cmd, "apack!"\);.*(	char \*original = agent_text\(tempbufs\[3]\.lb\);)
 	char \*archive = agent_rotate_log\(\);
 	if \(!archive\) \{8??0?
-grp 08??-5m 21220reg p OK agent.c:4921:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-5m 30220reg p OK agent.c:4921:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 		sbuf_str\(task, "Return control to the user once complete\.\\n\\033"\)
 	sbufn_ret\(task, task->s\)
 }.*(		return "cannot archive session log";)
 	}
 	/\* Detach the prior conversation so a failed pack can restore it\. \*/9??0?
-grp 09??-10m 21220reg p OK agent.c:4921:a92sc %? %@2152sc!'\''00?
+grp 09??-10m 30220reg p OK agent.c:4921:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg agent.c:49212sc %? %@2132sc!0?
 ?0?
 %f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
@@ -774,27 +1187,27 @@ static char \*agent_snapshot\(char \*loc\)
 	/\* Store indices rather than pointers: a tool can grow the buffer array\. \*/
 	int savedtemp = istempbuf\(ex_buf\);
 	int savedbuf = savedtemp \? ex_buf - tempbufs : ex_buf - bufs;1??0?
-1??+2m 221q0?
+1??+2m 311q0?
 %f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;
 	unsigned long rounds = agent_rounds;
 	int logbuf = agent_logbuf, browse = xaco_browse;4??0?
-4??+2m 22220reg p OK agent.c:5013:a42sc %? %@2152sc!1q0?
+4??+2m 31220reg p OK agent.c:5013:a42sc %? %@2152sc!1q0?
 grp 1%f+ 	unsigned long epoch = agent_epoch, serial = agent_serial;.*?
 	unsigned long rounds = agent_rounds;.*?
 (	int logbuf = agent_logbuf, browse = xaco_browse;)7??0?
-grp 07??m 22220reg p OK agent.c:5013:a72sc %? %@2152sc!1q0?
+grp 07??m 31220reg p OK agent.c:5013:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	struct lbuf \*lb = tempbufs\[3]\.lb;
 	cJSON \*history = agent_messages;
 	struct agent_usage usage = agent_usage;.*(	exbuf_save\(ex_buf\))
 	char \*original = agent_text\(lb\);
 	char \*task = agent_compact_task\(browse, "", 1\);8??0?
-grp 08??-4m 22220reg p OK agent.c:5013:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 31220reg p OK agent.c:5013:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>  \* until the pack agent has replaced the log; the exchange is logged to b-8\. \*/
 static int agent_autocompact\(void\)
 \{.*(	char \*archive = agent_rotate_log\(\);)
 	int ok = 0;
 	if \(!archive\) \{9??0?
-grp 09??-7m 22220reg p OK agent.c:5013:a92sc %? %@2152sc!'\''00?
+grp 09??-7m 31220reg p OK agent.c:5013:a92sc %? %@2152sc!'\''00?
 1;4;7;8;9??!219reg agent.c:50132sc %? %@2132sc!0?
 '\''1i /* The adversary may have work: an entry closed since it last looked. The
  * flag lets term_wait block in poll(-1) until there is a reason to look. */
@@ -830,16 +1243,45 @@ static int agent_adv_name_try;
 '\''13i 	/* The entries the summary replaced are gone from the log. */
 	agent_adv_resync();
 ??!219reg agent.c:1113:m132sc %? %@2142sc!0?
-'\''14i 	/* A checkpoint the spear rates at: whatever the adversary staged
+'\''14i /* A rating as it reads in b-6: 0 to 3, or ? when the sentence came without a
+ * rating. A ? note is a note the spear still has to rate. */
+static char agent_rate_char(int rate)
+{
+	return rate < 0 ? '\''?'\'' : '\''0'\'' + rate;
+}
+
+??!219reg agent.c:1142:m142sc %? %@2142sc!0?
+'\''15,#+2c  * from 0 (dead weight) to 3 (essential) or ? (the adversary'\''s sentence with
+ * no rating on it). It also holds records, never digit-led: "REMOVED N R
+ * sentence" for an entry removed for good and "EPOCH N" for a compaction.
+ * The sentence of a live note s, or NULL. */
+??!219reg agent.c:1144:m152sc %? %@2142sc!0?
+'\''16c 	if (e[0] != '\'' '\'' || (e[1] != '\''?'\'' && (e[1] < '\''0'\'' || e[1] > '\''3'\'')) ||
+			e[2] != '\'' '\'')
+??!219reg agent.c:1153:m162sc %? %@2142sc!0?
+'\''17s/ -/ == '\''?'\'' ? -1 : e[1] -/??!219reg agent.c:1155:m172sc %? %@2142sc!0?
+?'\''18s/d ", n, rate/c ", n, agent_rate_char(rate)/1??1??1q'\''18s/d( ",.*n, )(ra.*e\))/c\1agent_rate_char(\2)/2??2??'\''18220reg p OK agent.c:1270:s22sc %? %@2162sc!0?
+1;2??!219reg agent.c:1270:m182sc %? %@2142sc!0?
+?'\''19s/d ", n, r/c ", n, agent_rate_char(r)/1??1??1q'\''19s/d( ",.*n, )r\)/c\1agent_rate_char(r))/2??2??'\''19220reg p OK agent.c:1379:s22sc %? %@2162sc!0?
+1;2??!219reg agent.c:1379:m192sc %? %@2142sc!0?
+'\''20c /* Count turns the spear has not rated: no note, or a ? note the adversary
+ * wrote without a rating on it. Those still wait for arate. buf lists the
+ * first few. */
+??!219reg agent.c:1389:m202sc %? %@2142sc!0?
+'\''21c 				(agent_note(spans[k].n, &r, &row) && r >= 0))
+??!219reg agent.c:1396:m212sc %? %@2142sc!0?
+?'\''22s/d", r/c", agent_rate_char(r)/1??1??1q'\''22s/d(.*)r\)/c\1agent_rate_char(r))/2??2??'\''22220reg p OK agent.c:1600:s22sc %? %@2162sc!0?
+1;2??!219reg agent.c:1600:m222sc %? %@2142sc!0?
+'\''23i 	/* A checkpoint the spear rates at: whatever the adversary staged
 	 * belongs in b-6 before the unrated list is built. */
 	if (kind == 1) {
 		agent_adv_preempt();
 		agent_adv_collect();
 		agent_adv_merge();
 	}
-??!219reg agent.c:1808:m142sc %? %@2142sc!0?
-'\''15s/d\(/d_(/??!219reg agent.c:2131:m152sc %? %@2142sc!0?
-'\''16i /* The phase is over: entries a checkpoint trimmed or moved have nothing
+??!219reg agent.c:1808:m232sc %? %@2142sc!0?
+'\''24s/d\(/d_(/??!219reg agent.c:2131:m242sc %? %@2142sc!0?
+'\''25i /* The phase is over: entries a checkpoint trimmed or moved have nothing
  * left to rate, so the adversary forgets them. */
 static void agent_checkpoint_end(void)
 {
@@ -848,13 +1290,13 @@ static void agent_checkpoint_end(void)
 }
 
 
-??!219reg agent.c:2192:m162sc %? %@2142sc!0?
-'\''17i /* The spear is using the model itself: whatever the sleeper was about to
+??!219reg agent.c:2192:m252sc %? %@2142sc!0?
+'\''26i /* The spear is using the model itself: whatever the sleeper was about to
  * ask waits until the session is done with it. */
-??!219reg agent.c:2867:m172sc %? %@2142sc!0?
-'\''18i 	agent_adv_activity();
-??!219reg agent.c:2869:m182sc %? %@2142sc!0?
-'\''19i /* The adversary: a second model that rates the closed USER and TURN entries
+??!219reg agent.c:2867:m262sc %? %@2142sc!0?
+'\''27i 	agent_adv_activity();
+??!219reg agent.c:2869:m272sc %? %@2142sc!0?
+'\''28i /* The adversary: a second model that rates the closed USER and TURN entries
  * of the log; the spear reads the ratings when a kind 1 checkpoint or a
  * compaction opens. It never acts, has no editor access, and shares the
  * spear endpoint, so one request is in flight at a time. A sleeper thread
@@ -862,7 +1304,7 @@ static void agent_checkpoint_end(void)
  * first, blocking only in fork, waitpid and file reads; all lbuf work stays
  * on the main thread. Portable chat completions only. */
 #define ADV_RESULT_MAX 4000		/* RESULT body bytes sent per part */
-#define ADV_ATTEMPTS 3			/* requests per entry, the first one */
+#define ADV_ATTEMPTS 3			/* asks for the session name, the first */
 #define ADV_REPLY_MAX (4 << 20)		/* reply bytes kept */
 #define ADV_LOG_MAX 5000		/* b-9 lines kept */
 #define ADV_PRIOR 64			/* earlier ratings the model may lean on */
@@ -882,14 +1324,9 @@ static char agent_adv_intro[] =
 	"You do not act and you have no access to the editor: you only rate and note.\n"
 	"A USER entry is what the user wrote. A TURN entry is one spear reply\n"
 	"with its REASONING, the EX commands it ran and their RESULT bodies.\n"
-	"Rate the entry on the 0 to 3 scale given below.\n"
-	"Do not grade on a curve and do not inflate: if the entry shows less\n"
-	"than the work it claims, say so. Answering 3 to everything is a\n"
-	"failure of review, not a streak of good work.\n"
-	"Reply with one line and no other text that follows the format:\n"
-	"R sentence\n\n"
-	"R is the rating\n"
-	"sentence is one short sentence of justification.\n\n";
+	"Reply with one line that contains a rating followed by\n"
+	"a sentence and no other text. e.g:\n"
+	"2 review note goes here ...\n\n";
 
 /* One prompt waiting for the worker, one answer waiting for the main
  * thread; each owns the heap text it carries. The endpoint travels with the
@@ -918,7 +1355,6 @@ static struct {
 	struct agent_adv_job *out;	/* answers waiting to be read */
 	int nout, omax;
 	unsigned long num;	/* the entry its request is about */
-	int attempt;		/* requests made for num, the first one */
 	/* main thread, or handed across the queues */
 	pid_t pid;		/* the curl child the worker waits for */
 	int fd[2];		/* curl stdout and stderr files */
@@ -958,7 +1394,6 @@ static int agent_adv_ngaveup;
 static void agent_adv_clear(void)
 {
 	agent_adv.num = 0;
-	agent_adv.attempt = 0;
 }
 
 /* Append s to b-9, keeping the file bounded, and let the session save it:
@@ -1159,8 +1594,8 @@ static void agent_adv_priors(sbuf *sb)
 	for (int i = 0; i < agent_adv_nstaged; i++) {
 		if (agent_adv_staged[i].n < floor)
 			continue;
-		snprintf(head, sizeof(head), "%lu %d ", agent_adv_staged[i].n,
-			agent_adv_staged[i].rate);
+		snprintf(head, sizeof(head), "%lu %c ", agent_adv_staged[i].n,
+			agent_rate_char(agent_adv_staged[i].rate));
 		sbuf_str(sb, head)
 		if (agent_adv_staged[i].text)
 			sbuf_str(sb, agent_adv_staged[i].text)
@@ -1175,12 +1610,7 @@ static char *agent_adv_sys(void)
 	sbuf_smake(sb, 4096)
 	sbuf_str(sb, agent_adv_intro)
 	sbuf_str(sb, agent_rating_scale)
-	sbuf_str(sb, "R is the rating, one of 0, 1, 2 or 3 as defined above; "
-		"no other number. Most entries are 0 or 1: answer 3 for the "
-		"few the remaining work truly depends on.\n")
 	agent_adv_priors(sb);
-	sbuf_str(sb, "\nRate the entry, replying only with the line:\n"
-		"R sentence\n")
 	sbufn_ret(sb, sb->s)
 }
 
@@ -1854,7 +2284,6 @@ static void *agent_adv_worker(void *unused)
 				agent_adv.nqueue * sizeof(*agent_adv.queue));
 		agent_adv.busy = 1;
 		agent_adv.num = w.n;
-		agent_adv.attempt = w.attempt;
 		pthread_mutex_unlock(&agent_adv.mtx);
 
 		text = agent_adv_ask(&w, &st);
@@ -1899,38 +2328,9 @@ static void *agent_adv_worker(void *unused)
 	return NULL;
 }
 
-/* Ask again about an entry whose answer did not parse: same entry, its
- * previous answer back as an assistant turn. Built on the main thread. */
-static void agent_adv_requeue(unsigned long n, int attempt, const char *prev)
-{
-	struct agent_adv_work w;
-	w.n = n;
-	w.attempt = attempt;
-	w.timeout = request_timeout;
-	w.sys = agent_adv_sys();
-	w.prompt = agent_adv_prompt(n);
-	w.prev = prev && *prev ? sdup(prev, strlen(prev)) : NULL;
-	w.url = endpoint ? sdup(endpoint, strlen(endpoint)) : NULL;
-	w.key = api_key ? sdup(api_key, strlen(api_key)) : NULL;
-	w.extra = request_extra ?
-		sdup(request_extra, strlen(request_extra)) : NULL;
-	if (!w.sys || !w.prompt || !w.url || !w.key || !w.extra) {
-		free(w.sys);
-		free(w.prompt);
-		free(w.prev);
-		free(w.url);
-		free(w.key);
-		free(w.extra);
-		return;
-	}
-	pthread_mutex_lock(&agent_adv.mtx);
-	agent_adv_qadd(&w);
-	pthread_mutex_unlock(&agent_adv.mtx);
-	agent_adv_nudge();
-}
-
-/* What the sleeper answered, oldest first: raw text to b-9, rating staged,
- * another try while the entry is still worth asking. Main thread. */
+/* What the sleeper answered, oldest first: raw text to b-9, rating staged.
+ * One answer per entry: what the model said is taken as it came, so an
+ * entry is never asked twice. Main thread. */
 static void agent_adv_collect(void)
 {
 	struct agent_adv_job *js;
@@ -1955,7 +2355,6 @@ static void agent_adv_collect(void)
 			continue;
 		}
 		agent_adv.num = n;
-		agent_adv.attempt = attempt;
 		if (!js[i].text) {
 			if (st == 7) {
 				agent_adv_note("endpoint unreachable; "
@@ -1966,17 +2365,11 @@ static void agent_adv_collect(void)
 			}
 			agent_adv_note("no reply for entry %lu, %s", n,
 				agent_adv_why(st));
-			if (attempt + 1 < ADV_ATTEMPTS)
-				agent_adv_requeue(n, attempt + 1, NULL);
-			else
-				agent_adv_note("no reply for %lu after %d "
-					"attempts; giving up", n,
-					ADV_ATTEMPTS);
+			agent_adv_add(&agent_adv_gaveup, &agent_adv_ngaveup, n);
 			free(js[i].text);
 			continue;
 		}
-		agent_adv_note("--- reply, entry %lu, attempt %d of %d, "
-			"status %d ---", n, attempt, ADV_ATTEMPTS, st);
+		agent_adv_note("--- reply, entry %lu, status %d ---", n, st);
 		agent_adv_log(js[i].text);
 		root = cJSON_ParseWithOpts(js[i].text, NULL, 1);
 		if (cJSON_GetObjectItem(root, "error")) {
@@ -2002,15 +2395,10 @@ static void agent_adv_collect(void)
 				"nothing staged", n);
 		else if (agent_adv_staged_has(n))
 			agent_adv_note("staged the rating for entry %lu", n);
-		else if (attempt + 1 < ADV_ATTEMPTS) {
-			agent_adv_note("no rating for %lu; asking again", n);
-			agent_adv_requeue(n, attempt + 1, content);
-		}
 		else
-			agent_adv_note("no rating for %lu after %d attempts; "
-				"giving up", n, ADV_ATTEMPTS);
-		if (!agent_adv_staged_has(n) && attempt + 1 >= ADV_ATTEMPTS &&
-				agent_adv_wanted())
+			agent_adv_note("entry %lu reply held nothing to stage",
+				n);
+		if (!agent_adv_staged_has(n) && agent_adv_wanted())
 			agent_adv_add(&agent_adv_gaveup, &agent_adv_ngaveup, n);
 		cJSON_Delete(root);
 		free(js[i].text);
@@ -2028,14 +2416,17 @@ static int agent_adv_staged_has(unsigned long n)
 	return 0;
 }
 
-/* Stage the rating a reply carries. Models wrap the answer in prose, so
- * lines that are not a rating are ignored and markdown or separators
- * around it are stripped. The reply names no entry: want is the one under
- * review, so the first line with a rating answers it, and a number the
- * model echoes ahead of the rating is skipped. */
+/* Stage what the reply carries: the model is never asked twice, so whatever
+ * it says wins. The reply names no entry: want is the one under review, so
+ * the first line that leads with a rating answers it; markdown and
+ * separators around the rating are stripped, and so is an entry number the
+ * model echoes ahead of it from its priors. A reply with no rating on it
+ * still keeps its sentence, with ? as the rating: the note is worth having
+ * even when the number is missing, and the spear rates it at the next
+ * checkpoint. */
 static void agent_adv_parse(unsigned long want, const char *reply)
 {
-	char ln[2048], *p, *q, *r;
+	char ln[2048], *p, *q, *r, *prose = NULL;
 	const char *s = reply;
 	int len, rate;
 	while (s && *s) {
@@ -2050,26 +2441,30 @@ static void agent_adv_parse(unsigned long want, const char *reply)
 		while (*p == '\'' '\'' || *p == '\''\t'\'' || *p == '\''-'\'' || *p == '\''*'\'' ||
 				*p == '\''>'\'' || *p == '\''`'\'' || *p == '\''#'\'')
 			p++;
-		if (!isdigit((unsigned char)*p))
+		if (!*p)
 			continue;
+		if (!prose && !isdigit((unsigned char)*p))
+			prose = sdup(p, strlen(p));	/* keep, if nothing rates */
 		q = p + strspn(p, "0123456789");
 		if (q != p + 1 || *p > '\''3'\'') {	/* a number it echoed first */
 			r = q + strspn(q, " \t:=*`.)");
 			if (!isdigit((unsigned char)*r) || *r > '\''3'\'' ||
-					r[1] > '\'' '\'') {
-				if (*p > '\''3'\'')
-					agent_adv_note("entry %lu: rating "
-						"%c is off the 0 to 3 scale",
-						want, *p);
+					r[1] > '\'' '\'')
 				continue;
-			}
 			p = r;
 		}
 		rate = *p - '\''0'\'';
 		p = p + 1 + strspn(p + 1, " \t:=-.*`)");
 		agent_adv_stage(want, rate, p);
-		return;
+		goto done;
 	}
+	if (prose) {
+		agent_adv_note("entry %lu: no rating on the reply; staged as ?",
+			want);
+		agent_adv_stage(want, -1, prose);
+	}
+done:
+	free(prose);
 }
 
 /* Whether the entry under review still wants a rating: the spear may have
@@ -2288,24 +2683,24 @@ static void agent_adv_resync(void)
 		agent_adv_note("dropped %d staged rating%s no longer live", n,
 			n == 1 ? "" : "s");
 }
-??!219reg agent.c:2919:m192sc %? %@2142sc!0?
-'\''20i 		/* The adversary'\''s curl, if any, is read between rounds: it never
+??!219reg agent.c:2919:m282sc %? %@2142sc!0?
+'\''29i 		/* The adversary'\''s curl, if any, is read between rounds: it never
 		   blocks the run; its ratings reach b-6 at a checkpoint or before
 		   a compaction. */
 		agent_adv_service();
-??!219reg agent.c:3142:m202sc %? %@2142sc!0?
-'\''21i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
+??!219reg agent.c:3142:m292sc %? %@2142sc!0?
+'\''30i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
 	 * summarized: with acl 0 no checkpoint merges them. */
 	agent_adv_preempt();
 	agent_adv_collect();
 	agent_adv_merge();
-??!219reg agent.c:4921:m212sc %? %@2142sc!0?
-'\''22i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
+??!219reg agent.c:4921:m302sc %? %@2142sc!0?
+'\''31i 	/* The adversary'\''s staged ratings belong in b-6 before the log is
 	 * summarized: with acl 0 no checkpoint merges them. */
 	agent_adv_preempt();
 	agent_adv_collect();
 	agent_adv_merge();
-??!219reg agent.c:5013:m222sc %? %@2142sc!b1m!%ya 98?0?
+??!219reg agent.c:5013:m312sc %? %@2142sc!b1m!%ya 98?0?
 %f> static int agent_resume\(const char \*dir\);
 static char \*agent_init_error;
 static void agent_sync\(struct lbuf \*lb\);
@@ -3045,7 +3440,7 @@ fi
 exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
-index c8c3d21f..09f015c6 100644
+index c8c3d21f..2f46f65b 100644
 --- a/agent.c
 +++ b/agent.c
 @@ -1,6 +1,8 @@
@@ -3170,7 +3565,87 @@ index c8c3d21f..09f015c6 100644
  }
  
  /* Move the entries of text, a log replaced by compaction, to b-7. */
-@@ -1806,6 +1826,13 @@ static void agent_checkpoint_begin(double tokens, int kind)
+@@ -1140,19 +1160,28 @@ static char *agent_span_role(struct agent_span *s)
+ 	return s->role ? agent_entry_roles[s->role - 1] : "TEXT";
+ }
+ 
++/* A rating as it reads in b-6: 0 to 3, or ? when the sentence came without a
++ * rating. A ? note is a note the spear still has to rate. */
++static char agent_rate_char(int rate)
++{
++	return rate < 0 ? '?' : '0' + rate;
++}
++
+ /* b-6 rates turns: one line "N R sentence" per TURN entry N of b-4, with R
+- * from 0 (dead weight) to 3 (essential). It also holds records, never
+- * digit-led: "REMOVED N R sentence" for an entry removed for good and
+- * "EPOCH N" for a compaction. The sentence of a live note s, or NULL. */
++ * from 0 (dead weight) to 3 (essential) or ? (the adversary's sentence with
++ * no rating on it). It also holds records, never digit-led: "REMOVED N R
++ * sentence" for an entry removed for good and "EPOCH N" for a compaction.
++ * The sentence of a live note s, or NULL. */
+ static char *agent_note_line(char *s, unsigned long *n, int *rate)
+ {
+ 	char *e;
+ 	if (!isdigit((unsigned char)*s))
+ 		return NULL;
+ 	*n = strtoul(s, &e, 10);
+-	if (e[0] != ' ' || e[1] < '0' || e[1] > '3' || e[2] != ' ')
++	if (e[0] != ' ' || (e[1] != '?' && (e[1] < '0' || e[1] > '3')) ||
++			e[2] != ' ')
+ 		return NULL;
+-	*rate = e[1] - '0';
++	*rate = e[1] == '?' ? -1 : e[1] - '0';
+ 	return e + 3;
+ }
+ 
+@@ -1267,7 +1296,7 @@ static void agent_note_set(unsigned long n, int rate, char *text)
+ 				break;
+ 		end = row;
+ 	}
+-	snprintf(head, sizeof(head), "%lu %d ", n, rate);
++	snprintf(head, sizeof(head), "%lu %c ", n, agent_rate_char(rate));
+ 	sbuf_smake(sb, 128)
+ 	sbuf_str(sb, head)
+ 	for (char *t = text; *t; t++)
+@@ -1376,7 +1405,7 @@ static void agent_note_retire(unsigned long n, struct agent_span *spans,
+ 		return;
+ 	note = agent_note_text(note);
+ 	len = strcspn(note, "\n");
+-	snprintf(head, sizeof(head), "REMOVED %lu %d ", n, r);
++	snprintf(head, sizeof(head), "REMOVED %lu %c ", n, agent_rate_char(r));
+ 	sbuf_smake(sb, 128)
+ 	sbuf_str(sb, head)
+ 	sbuf_mem(sb, note, len)
+@@ -1386,14 +1415,16 @@ static void agent_note_retire(unsigned long n, struct agent_span *spans,
+ 	free(sb->s);
+ }
+ 
+-/* Count turns with no rating; buf lists the first few. */
++/* Count turns the spear has not rated: no note, or a ? note the adversary
++ * wrote without a rating on it. Those still wait for arate. buf lists the
++ * first few. */
+ static int agent_unrated(struct agent_span *spans, int cnt, char *buf, int size)
+ {
+ 	int n = 0, len = 0, r, row;
+ 	*buf = '\0';
+ 	for (int k = 0; k < cnt; k++) {
+ 		if (!agent_ratable(spans + k) ||
+-				agent_note(spans[k].n, &r, &row))
++				(agent_note(spans[k].n, &r, &row) && r >= 0))
+ 			continue;
+ 		if (n < 8 && len < size)
+ 			len += snprintf(buf + len, size - len, "%s%s %lu",
+@@ -1597,7 +1628,7 @@ static void agent_entry_list(sbuf *sb, struct agent_span *spans, int cnt,
+ 				spans[k].n - 1);
+ 			sbuf_str(sb, ln)
+ 		} else if (agent_ratable(spans + k) && (note = agent_note(spans[k].n, &r, &row))) {
+-			snprintf(ln, sizeof(ln), " %d", r);
++			snprintf(ln, sizeof(ln), " %c", agent_rate_char(r));
+ 			sbuf_str(sb, ln)
+ 			/* A sentence whose own entry is removed, or listed without
+ 			 * its note, shows on the first entry that names it, unless
+@@ -1806,6 +1837,13 @@ static void agent_checkpoint_begin(double tokens, int kind)
  	agent_cp_base = -1;
  	agent_cp_bytes = agent_context_bytes();
  	agent_cp_left = INT_MAX;
@@ -3184,7 +3659,7 @@ index c8c3d21f..09f015c6 100644
  	agent_cp_logbuf = agent_logbuf;
  	agent_logbuf = 7;
  	/* A question in b-8 continues the numbering of what it interrupted. */
-@@ -2128,7 +2155,7 @@ static void agent_cp_build(void)
+@@ -2128,7 +2166,7 @@ static void agent_cp_build(void)
  		cJSON_AddItemToArray(agent_messages, cJSON_Duplicate(m, 1));
  }
  
@@ -3193,7 +3668,7 @@ index c8c3d21f..09f015c6 100644
  {
  	char note[128], unrated[112];
  	int k, n, kind = agent_checkpointing, answered = agent_cp_done;
-@@ -2190,6 +2217,15 @@ static void agent_checkpoint_end(void)
+@@ -2190,6 +2228,15 @@ static void agent_checkpoint_end(void)
  	agent_output(note);
  }
  
@@ -3209,7 +3684,7 @@ index c8c3d21f..09f015c6 100644
  /* End a question together with what it interrupted. */
  static void agent_checkpoint_stop(void)
  {
-@@ -2865,8 +2901,11 @@ static cJSON *agent_config(void)
+@@ -2865,8 +2912,11 @@ static cJSON *agent_config(void)
  	return req;
  }
  
@@ -3221,7 +3696,7 @@ index c8c3d21f..09f015c6 100644
  	char hdrpath[] = "/tmp/nextvi-header-XXXXXX", timeout[32], hdrarg[80];
  	int fd = mkstemp(hdrpath);
  	sbuf *out = NULL;
-@@ -2917,6 +2956,1440 @@ ret:
+@@ -2917,6 +2967,1393 @@ ret:
  	free(out);
  	return s;
  }
@@ -3233,7 +3708,7 @@ index c8c3d21f..09f015c6 100644
 + * first, blocking only in fork, waitpid and file reads; all lbuf work stays
 + * on the main thread. Portable chat completions only. */
 +#define ADV_RESULT_MAX 4000		/* RESULT body bytes sent per part */
-+#define ADV_ATTEMPTS 3			/* requests per entry, the first one */
++#define ADV_ATTEMPTS 3			/* asks for the session name, the first */
 +#define ADV_REPLY_MAX (4 << 20)		/* reply bytes kept */
 +#define ADV_LOG_MAX 5000		/* b-9 lines kept */
 +#define ADV_PRIOR 64			/* earlier ratings the model may lean on */
@@ -3253,14 +3728,9 @@ index c8c3d21f..09f015c6 100644
 +	"You do not act and you have no access to the editor: you only rate and note.\n"
 +	"A USER entry is what the user wrote. A TURN entry is one spear reply\n"
 +	"with its REASONING, the EX commands it ran and their RESULT bodies.\n"
-+	"Rate the entry on the 0 to 3 scale given below.\n"
-+	"Do not grade on a curve and do not inflate: if the entry shows less\n"
-+	"than the work it claims, say so. Answering 3 to everything is a\n"
-+	"failure of review, not a streak of good work.\n"
-+	"Reply with one line and no other text that follows the format:\n"
-+	"R sentence\n\n"
-+	"R is the rating\n"
-+	"sentence is one short sentence of justification.\n\n";
++	"Reply with one line that contains a rating followed by\n"
++	"a sentence and no other text. e.g:\n"
++	"2 review note goes here ...\n\n";
 +
 +/* One prompt waiting for the worker, one answer waiting for the main
 + * thread; each owns the heap text it carries. The endpoint travels with the
@@ -3289,7 +3759,6 @@ index c8c3d21f..09f015c6 100644
 +	struct agent_adv_job *out;	/* answers waiting to be read */
 +	int nout, omax;
 +	unsigned long num;	/* the entry its request is about */
-+	int attempt;		/* requests made for num, the first one */
 +	/* main thread, or handed across the queues */
 +	pid_t pid;		/* the curl child the worker waits for */
 +	int fd[2];		/* curl stdout and stderr files */
@@ -3329,7 +3798,6 @@ index c8c3d21f..09f015c6 100644
 +static void agent_adv_clear(void)
 +{
 +	agent_adv.num = 0;
-+	agent_adv.attempt = 0;
 +}
 +
 +/* Append s to b-9, keeping the file bounded, and let the session save it:
@@ -3530,8 +3998,8 @@ index c8c3d21f..09f015c6 100644
 +	for (int i = 0; i < agent_adv_nstaged; i++) {
 +		if (agent_adv_staged[i].n < floor)
 +			continue;
-+		snprintf(head, sizeof(head), "%lu %d ", agent_adv_staged[i].n,
-+			agent_adv_staged[i].rate);
++		snprintf(head, sizeof(head), "%lu %c ", agent_adv_staged[i].n,
++			agent_rate_char(agent_adv_staged[i].rate));
 +		sbuf_str(sb, head)
 +		if (agent_adv_staged[i].text)
 +			sbuf_str(sb, agent_adv_staged[i].text)
@@ -3546,12 +4014,7 @@ index c8c3d21f..09f015c6 100644
 +	sbuf_smake(sb, 4096)
 +	sbuf_str(sb, agent_adv_intro)
 +	sbuf_str(sb, agent_rating_scale)
-+	sbuf_str(sb, "R is the rating, one of 0, 1, 2 or 3 as defined above; "
-+		"no other number. Most entries are 0 or 1: answer 3 for the "
-+		"few the remaining work truly depends on.\n")
 +	agent_adv_priors(sb);
-+	sbuf_str(sb, "\nRate the entry, replying only with the line:\n"
-+		"R sentence\n")
 +	sbufn_ret(sb, sb->s)
 +}
 +
@@ -4225,7 +4688,6 @@ index c8c3d21f..09f015c6 100644
 +				agent_adv.nqueue * sizeof(*agent_adv.queue));
 +		agent_adv.busy = 1;
 +		agent_adv.num = w.n;
-+		agent_adv.attempt = w.attempt;
 +		pthread_mutex_unlock(&agent_adv.mtx);
 +
 +		text = agent_adv_ask(&w, &st);
@@ -4270,38 +4732,9 @@ index c8c3d21f..09f015c6 100644
 +	return NULL;
 +}
 +
-+/* Ask again about an entry whose answer did not parse: same entry, its
-+ * previous answer back as an assistant turn. Built on the main thread. */
-+static void agent_adv_requeue(unsigned long n, int attempt, const char *prev)
-+{
-+	struct agent_adv_work w;
-+	w.n = n;
-+	w.attempt = attempt;
-+	w.timeout = request_timeout;
-+	w.sys = agent_adv_sys();
-+	w.prompt = agent_adv_prompt(n);
-+	w.prev = prev && *prev ? sdup(prev, strlen(prev)) : NULL;
-+	w.url = endpoint ? sdup(endpoint, strlen(endpoint)) : NULL;
-+	w.key = api_key ? sdup(api_key, strlen(api_key)) : NULL;
-+	w.extra = request_extra ?
-+		sdup(request_extra, strlen(request_extra)) : NULL;
-+	if (!w.sys || !w.prompt || !w.url || !w.key || !w.extra) {
-+		free(w.sys);
-+		free(w.prompt);
-+		free(w.prev);
-+		free(w.url);
-+		free(w.key);
-+		free(w.extra);
-+		return;
-+	}
-+	pthread_mutex_lock(&agent_adv.mtx);
-+	agent_adv_qadd(&w);
-+	pthread_mutex_unlock(&agent_adv.mtx);
-+	agent_adv_nudge();
-+}
-+
-+/* What the sleeper answered, oldest first: raw text to b-9, rating staged,
-+ * another try while the entry is still worth asking. Main thread. */
++/* What the sleeper answered, oldest first: raw text to b-9, rating staged.
++ * One answer per entry: what the model said is taken as it came, so an
++ * entry is never asked twice. Main thread. */
 +static void agent_adv_collect(void)
 +{
 +	struct agent_adv_job *js;
@@ -4326,7 +4759,6 @@ index c8c3d21f..09f015c6 100644
 +			continue;
 +		}
 +		agent_adv.num = n;
-+		agent_adv.attempt = attempt;
 +		if (!js[i].text) {
 +			if (st == 7) {
 +				agent_adv_note("endpoint unreachable; "
@@ -4337,17 +4769,11 @@ index c8c3d21f..09f015c6 100644
 +			}
 +			agent_adv_note("no reply for entry %lu, %s", n,
 +				agent_adv_why(st));
-+			if (attempt + 1 < ADV_ATTEMPTS)
-+				agent_adv_requeue(n, attempt + 1, NULL);
-+			else
-+				agent_adv_note("no reply for %lu after %d "
-+					"attempts; giving up", n,
-+					ADV_ATTEMPTS);
++			agent_adv_add(&agent_adv_gaveup, &agent_adv_ngaveup, n);
 +			free(js[i].text);
 +			continue;
 +		}
-+		agent_adv_note("--- reply, entry %lu, attempt %d of %d, "
-+			"status %d ---", n, attempt, ADV_ATTEMPTS, st);
++		agent_adv_note("--- reply, entry %lu, status %d ---", n, st);
 +		agent_adv_log(js[i].text);
 +		root = cJSON_ParseWithOpts(js[i].text, NULL, 1);
 +		if (cJSON_GetObjectItem(root, "error")) {
@@ -4373,15 +4799,10 @@ index c8c3d21f..09f015c6 100644
 +				"nothing staged", n);
 +		else if (agent_adv_staged_has(n))
 +			agent_adv_note("staged the rating for entry %lu", n);
-+		else if (attempt + 1 < ADV_ATTEMPTS) {
-+			agent_adv_note("no rating for %lu; asking again", n);
-+			agent_adv_requeue(n, attempt + 1, content);
-+		}
 +		else
-+			agent_adv_note("no rating for %lu after %d attempts; "
-+				"giving up", n, ADV_ATTEMPTS);
-+		if (!agent_adv_staged_has(n) && attempt + 1 >= ADV_ATTEMPTS &&
-+				agent_adv_wanted())
++			agent_adv_note("entry %lu reply held nothing to stage",
++				n);
++		if (!agent_adv_staged_has(n) && agent_adv_wanted())
 +			agent_adv_add(&agent_adv_gaveup, &agent_adv_ngaveup, n);
 +		cJSON_Delete(root);
 +		free(js[i].text);
@@ -4399,14 +4820,17 @@ index c8c3d21f..09f015c6 100644
 +	return 0;
 +}
 +
-+/* Stage the rating a reply carries. Models wrap the answer in prose, so
-+ * lines that are not a rating are ignored and markdown or separators
-+ * around it are stripped. The reply names no entry: want is the one under
-+ * review, so the first line with a rating answers it, and a number the
-+ * model echoes ahead of the rating is skipped. */
++/* Stage what the reply carries: the model is never asked twice, so whatever
++ * it says wins. The reply names no entry: want is the one under review, so
++ * the first line that leads with a rating answers it; markdown and
++ * separators around the rating are stripped, and so is an entry number the
++ * model echoes ahead of it from its priors. A reply with no rating on it
++ * still keeps its sentence, with ? as the rating: the note is worth having
++ * even when the number is missing, and the spear rates it at the next
++ * checkpoint. */
 +static void agent_adv_parse(unsigned long want, const char *reply)
 +{
-+	char ln[2048], *p, *q, *r;
++	char ln[2048], *p, *q, *r, *prose = NULL;
 +	const char *s = reply;
 +	int len, rate;
 +	while (s && *s) {
@@ -4421,26 +4845,30 @@ index c8c3d21f..09f015c6 100644
 +		while (*p == ' ' || *p == '\t' || *p == '-' || *p == '*' ||
 +				*p == '>' || *p == '`' || *p == '#')
 +			p++;
-+		if (!isdigit((unsigned char)*p))
++		if (!*p)
 +			continue;
++		if (!prose && !isdigit((unsigned char)*p))
++			prose = sdup(p, strlen(p));	/* keep, if nothing rates */
 +		q = p + strspn(p, "0123456789");
 +		if (q != p + 1 || *p > '3') {	/* a number it echoed first */
 +			r = q + strspn(q, " \t:=*`.)");
 +			if (!isdigit((unsigned char)*r) || *r > '3' ||
-+					r[1] > ' ') {
-+				if (*p > '3')
-+					agent_adv_note("entry %lu: rating "
-+						"%c is off the 0 to 3 scale",
-+						want, *p);
++					r[1] > ' ')
 +				continue;
-+			}
 +			p = r;
 +		}
 +		rate = *p - '0';
 +		p = p + 1 + strspn(p + 1, " \t:=-.*`)");
 +		agent_adv_stage(want, rate, p);
-+		return;
++		goto done;
 +	}
++	if (prose) {
++		agent_adv_note("entry %lu: no rating on the reply; staged as ?",
++			want);
++		agent_adv_stage(want, -1, prose);
++	}
++done:
++	free(prose);
 +}
 +
 +/* Whether the entry under review still wants a rating: the spear may have
@@ -4662,7 +5090,7 @@ index c8c3d21f..09f015c6 100644
  
  static char *agent_snapshot(char *loc)
  {
-@@ -3140,6 +4613,10 @@ static void agent_run_loop(const char *input)
+@@ -3140,6 +4577,10 @@ static void agent_run_loop(const char *input)
  	agent_add_user(agent_messages, input);
  	agent_log("USER", input);
  	for (int round = 0; ; ) {
@@ -4673,7 +5101,7 @@ index c8c3d21f..09f015c6 100644
  		/* Stop before requesting a reply whose calls could not run. */
  		if (max_tool_rounds && round == max_tool_rounds) {
  			agent_log("NOTICE", "maximum tool rounds reached; "
-@@ -4919,6 +6396,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
+@@ -4919,6 +6360,11 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
  	unsigned long epoch = agent_epoch;
  	if (agent_start())
  		return agent_init_error;
@@ -4685,7 +5113,7 @@ index c8c3d21f..09f015c6 100644
  	char *task = agent_compact_task(browse, arg, 0);
  	/* Indices survive buffer-array growth during tool calls. */
  	int savedtemp = istempbuf(ex_buf);
-@@ -5011,6 +6493,11 @@ static int agent_autocompact(void)
+@@ -5011,6 +6457,11 @@ static int agent_autocompact(void)
  	unsigned long epoch = agent_epoch, serial = agent_serial;
  	unsigned long rounds = agent_rounds;
  	int logbuf = agent_logbuf, browse = xaco_browse;
