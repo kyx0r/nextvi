@@ -2859,24 +2859,24 @@ case "\$OS" in5??0?
 %f+                 "the foreground\. After that it runs on in the background: the result\\n" \\
                 "has error 124, its process group and a file receiving later output\.\\n" \\
                 "A later tool result reports its exit status\."\)4??0?
-4??+2m 2220reg p OK cbuild.sh:365:a42sc %? %@2152sc!1q0?
+4??+2m 2220reg p OK cbuild.sh:367:a42sc %? %@2152sc!1q0?
 grp 1%f+                 "the foreground\. After that it runs on in the background: the result\\n" \\.*?
                 "has error 124, its process group and a file receiving later output\.\\n" \\.*?
 (                "A later tool result reports its exit status\."\))7??0?
-grp 07??m 2220reg p OK cbuild.sh:365:a72sc %? %@2152sc!1q0?
+grp 07??m 2220reg p OK cbuild.sh:367:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f>             spec\("ato\[0]  Detach long agent shell commands",
                 "No argument toggles between 0 and 30\. 0 disables\.",
                 "A positive value is the seconds an agent shell command may run in\\n" \\.*(                "without printing it during the run\. 2 logs and prints it\."\))
             spec\("ata\[0]  Cap agent thinking by its recent average",
                 "No argument toggles between 0 and 100\. 0 disables\.",8??0?
-grp 08??-4m 2220reg p OK cbuild.sh:365:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 2220reg p OK cbuild.sh:367:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f>                 "No argument toggles between 0 and 4096\. 0 or negative disables\.",
                 "A positive value is the limit in bytes of a tool call output; a\\n" \\
                 "larger output is withheld and aout views it\."\).*(                "A positive value is a percentage: each request is sent that share\\n" \\)
                 "of the average thinking tokens as the ath cap, in place of N\. Each\\n" \\
                 "accepted reply that thought moves the average a quarter of the way\\n" \\9??0?
-grp 09??-7m 2220reg p OK cbuild.sh:365:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg cbuild.sh:3652sc %? %@2132sc!0?
+grp 09??-7m 2220reg p OK cbuild.sh:367:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg cbuild.sh:3672sc %? %@2132sc!0?
 '\''1s/ \\\\/ -pthread \\\\/??!219reg cbuild.sh:49:m12sc %? %@2142sc!0?
 '\''2i             spec("adv[0]  Rate the session log with the adversary",
                 "No argument toggles between 0 and 1. 0 disables.",
@@ -2902,7 +2902,7 @@ case "\$OS" in5??0?
                 "words, at most 48 bytes, so 20261126-232040 becomes\n" \
                 "blockchain_question_20261126-232040; a user-named directory keeps\n" \
                 "its name. ^Z stops the worker with the editor.")
-??!219reg cbuild.sh:365:m22sc %? %@2142sc!b3m!%ya 98?0?
+??!219reg cbuild.sh:367:m22sc %? %@2142sc!b3m!%ya 98?0?
 %f> static char \*endpoint = "http://127\.0\.0\.1:8080/v1/chat/completions";
 static char \*request_extra = "\{}";	/\* extra JSON request fields; arq changes them \*/
 static int request_timeout = 500;
@@ -3101,158 +3101,158 @@ _EO\(agr, xagr = \*arg \? MAX\(0, eo_val\(arg\)\) : xagr \? 0 : 4096; return NUL
 %f> 	"has error 124, its process group and a file receiving later output\.",
 	"A later tool result reports its exit status\.",
 	"",4??0?
-4??+2m 1220reg p OK exspec.h:1199:a42sc %? %@2152sc!1q0?
+4??+2m 1220reg p OK exspec.h:1201:a42sc %? %@2152sc!1q0?
 grp 1%f> 	"has error 124, its process group and a file receiving later output\.",.*?
 	"A later tool result reports its exit status\.",.*?
 (	"",)7??0?
-grp 07??m 1220reg p OK exspec.h:1199:a72sc %? %@2152sc!1q0?
+grp 07??m 1220reg p OK exspec.h:1201:a72sc %? %@2152sc!1q0?
 m 01;0grp 1%f> 	"",
 	"A positive value is the seconds an agent shell command may run in",
 	"the foreground\. After that it runs on in the background: the result",.*(	"0 does not log returned reasoning\. 1 logs it, as part 0 of a turn,",)
 	"without printing it during the run\. 2 logs and prints it\.",
 	"",8??0?
-grp 08??-4m 1220reg p OK exspec.h:1199:a82sc %? %@2152sc!'\''08??1q0?
+grp 08??-4m 1220reg p OK exspec.h:1201:a82sc %? %@2152sc!'\''08??1q0?
 m 01;0grp 1%f> 	"",
 	"ato\[0]  Detach long agent shell commands",
 	"No argument toggles between 0 and 30\. 0 disables\.",.*(	"ata\[0]  Cap agent thinking by its recent average",)
 	"No argument toggles between 0 and 100\. 0 disables\.",
 	"",9??0?
-grp 09??-7m 1220reg p OK exspec.h:1199:a92sc %? %@2152sc!'\''00?
-1;4;7;8;9??!219reg exspec.h:11992sc %? %@2132sc!0?
+grp 09??-7m 1220reg p OK exspec.h:1201:a92sc %? %@2152sc!'\''00?
+1;4;7;8;9??!219reg exspec.h:12012sc %? %@2132sc!0?
 ?0?
-%f+ 	\{"aco!", "Automatically compact by browsing the session log", 1176, 1182, 1, 0},
-	\{"agr", "Control agent output protection", 1183, 1188, 1, 0},
-	\{"ato", "Detach long agent shell commands", 1189, 1196, 1, 0},
-	\{"ar", "Log and display returned agent reasoning", 1197, 1202, 1, 0},
-	\{"ata", "Cap agent thinking by its recent average", 1203, 1227, 1, 0},
-	\{"aspec", "Print ex specifications for agents", 1228, 1235, 1, 0},
-	\{"ai", "Indent new lines", 1236, 1239, 1, 0},
-	\{"ic", "Ignore case in regular expressions", 1240, 1241, 1, 0},
-	\{"ish", "Interactive shell", 1242, 1257, 1, 0},
-	\{"grp", "Regex search group", 1258, 1266, 1, 0},
-	\{"hl", "Highlight text based on rules defined in conf\.c", 1267, 1270, 1, 0},
-	\{"hlr", "Highlight text in reverse direction", 1271, 1272, 1, 0},
-	\{"hll", "Highlight current line based on filetype hl", 1272, 1273, 1, 0},
-	\{"hlp", "Highlight \\"\[]\\" \\"\(\)\\" \\"\{}\\" pairs based on filetype hl", 1273, 1274, 1, 0},
-	\{"hlw", "Highlight current word based on filetype hl", 1274, 1275, 1, 0},
-	\{"led", "Enable all terminal output", 1275, 1276, 1, 0},
-	\{"vis", "Control startup flags", 1277, 1288, 1, 0},
-	\{"mpt", "Control vi prompts", 1289, 1299, 1, 0},
-	\{"order", "Reorder characters based on rules defined in conf\.c", 1300, 1302, 1, 0},
-	\{"shape", "Perform Arabic script letter shaping", 1302, 1304, 1, 0},
-	\{"pac", "Print autocomplete suggestions on the fly", 1304, 1305, 1, 0},
-	\{"ts", "Number of spaces used to represent a tab", 1305, 1306, 1, 0},
-	\{"td", "Current text direction context", 1306, 1312, 1, 0},
-	\{"pr", "Print register", 1313, 1329, 1, 0},
-	\{"fr", "Find register", 1330, 1342, 1, 0},
-	\{"rr", "Record register", 1343, 1356, 1, 0},
-	\{"lim", "Line length render limit", 1357, 1372, 1, 0},
-	\{"seq", "Control Undo/Redo", 1373, 1385, 1, 0},
-	\{"left", "Control horizontal scroll", 1386, 1391, 1, 0},
-	\{"err", "Control ex errors", 1392, 1404, 1, 0},
+%f+ 	\{"aco!", "Automatically compact by browsing the session log", 1178, 1184, 1, 0},
+	\{"agr", "Control agent output protection", 1185, 1190, 1, 0},
+	\{"ato", "Detach long agent shell commands", 1191, 1198, 1, 0},
+	\{"ar", "Log and display returned agent reasoning", 1199, 1204, 1, 0},
+	\{"ata", "Cap agent thinking by its recent average", 1205, 1229, 1, 0},
+	\{"aspec", "Print ex specifications for agents", 1230, 1237, 1, 0},
+	\{"ai", "Indent new lines", 1238, 1241, 1, 0},
+	\{"ic", "Ignore case in regular expressions", 1242, 1243, 1, 0},
+	\{"ish", "Interactive shell", 1244, 1259, 1, 0},
+	\{"grp", "Regex search group", 1260, 1268, 1, 0},
+	\{"hl", "Highlight text based on rules defined in conf\.c", 1269, 1272, 1, 0},
+	\{"hlr", "Highlight text in reverse direction", 1273, 1274, 1, 0},
+	\{"hll", "Highlight current line based on filetype hl", 1274, 1275, 1, 0},
+	\{"hlp", "Highlight \\"\[]\\" \\"\(\)\\" \\"\{}\\" pairs based on filetype hl", 1275, 1276, 1, 0},
+	\{"hlw", "Highlight current word based on filetype hl", 1276, 1277, 1, 0},
+	\{"led", "Enable all terminal output", 1277, 1278, 1, 0},
+	\{"vis", "Control startup flags", 1279, 1290, 1, 0},
+	\{"mpt", "Control vi prompts", 1291, 1301, 1, 0},
+	\{"order", "Reorder characters based on rules defined in conf\.c", 1302, 1304, 1, 0},
+	\{"shape", "Perform Arabic script letter shaping", 1304, 1306, 1, 0},
+	\{"pac", "Print autocomplete suggestions on the fly", 1306, 1307, 1, 0},
+	\{"ts", "Number of spaces used to represent a tab", 1307, 1308, 1, 0},
+	\{"td", "Current text direction context", 1308, 1314, 1, 0},
+	\{"pr", "Print register", 1315, 1331, 1, 0},
+	\{"fr", "Find register", 1332, 1344, 1, 0},
+	\{"rr", "Record register", 1345, 1358, 1, 0},
+	\{"lim", "Line length render limit", 1359, 1374, 1, 0},
+	\{"seq", "Control Undo/Redo", 1375, 1387, 1, 0},
+	\{"left", "Control horizontal scroll", 1388, 1393, 1, 0},
+	\{"err", "Control ex errors", 1394, 1406, 1, 0},
 };1??0?
 1??+3m 21q0?
-%f+ 	\{"ar", "Log and display returned agent reasoning", 1197, 1202, 1, 0},
-	\{"ata", "Cap agent thinking by its recent average", 1203, 1227, 1, 0},
-	\{"aspec", "Print ex specifications for agents", 1228, 1235, 1, 0},
-	\{"ai", "Indent new lines", 1236, 1239, 1, 0},
-	\{"ic", "Ignore case in regular expressions", 1240, 1241, 1, 0},
-	\{"ish", "Interactive shell", 1242, 1257, 1, 0},
-	\{"grp", "Regex search group", 1258, 1266, 1, 0},
-	\{"hl", "Highlight text based on rules defined in conf\.c", 1267, 1270, 1, 0},
-	\{"hlr", "Highlight text in reverse direction", 1271, 1272, 1, 0},
-	\{"hll", "Highlight current line based on filetype hl", 1272, 1273, 1, 0},
-	\{"hlp", "Highlight \\"\[]\\" \\"\(\)\\" \\"\{}\\" pairs based on filetype hl", 1273, 1274, 1, 0},
-	\{"hlw", "Highlight current word based on filetype hl", 1274, 1275, 1, 0},
-	\{"led", "Enable all terminal output", 1275, 1276, 1, 0},
-	\{"vis", "Control startup flags", 1277, 1288, 1, 0},
-	\{"mpt", "Control vi prompts", 1289, 1299, 1, 0},
-	\{"order", "Reorder characters based on rules defined in conf\.c", 1300, 1302, 1, 0},
-	\{"shape", "Perform Arabic script letter shaping", 1302, 1304, 1, 0},
-	\{"pac", "Print autocomplete suggestions on the fly", 1304, 1305, 1, 0},
-	\{"ts", "Number of spaces used to represent a tab", 1305, 1306, 1, 0},
-	\{"td", "Current text direction context", 1306, 1312, 1, 0},
-	\{"pr", "Print register", 1313, 1329, 1, 0},
-	\{"fr", "Find register", 1330, 1342, 1, 0},
-	\{"rr", "Record register", 1343, 1356, 1, 0},
-	\{"lim", "Line length render limit", 1357, 1372, 1, 0},
-	\{"seq", "Control Undo/Redo", 1373, 1385, 1, 0},
-	\{"left", "Control horizontal scroll", 1386, 1391, 1, 0},
-	\{"err", "Control ex errors", 1392, 1404, 1, 0},
+%f+ 	\{"ar", "Log and display returned agent reasoning", 1199, 1204, 1, 0},
+	\{"ata", "Cap agent thinking by its recent average", 1205, 1229, 1, 0},
+	\{"aspec", "Print ex specifications for agents", 1230, 1237, 1, 0},
+	\{"ai", "Indent new lines", 1238, 1241, 1, 0},
+	\{"ic", "Ignore case in regular expressions", 1242, 1243, 1, 0},
+	\{"ish", "Interactive shell", 1244, 1259, 1, 0},
+	\{"grp", "Regex search group", 1260, 1268, 1, 0},
+	\{"hl", "Highlight text based on rules defined in conf\.c", 1269, 1272, 1, 0},
+	\{"hlr", "Highlight text in reverse direction", 1273, 1274, 1, 0},
+	\{"hll", "Highlight current line based on filetype hl", 1274, 1275, 1, 0},
+	\{"hlp", "Highlight \\"\[]\\" \\"\(\)\\" \\"\{}\\" pairs based on filetype hl", 1275, 1276, 1, 0},
+	\{"hlw", "Highlight current word based on filetype hl", 1276, 1277, 1, 0},
+	\{"led", "Enable all terminal output", 1277, 1278, 1, 0},
+	\{"vis", "Control startup flags", 1279, 1290, 1, 0},
+	\{"mpt", "Control vi prompts", 1291, 1301, 1, 0},
+	\{"order", "Reorder characters based on rules defined in conf\.c", 1302, 1304, 1, 0},
+	\{"shape", "Perform Arabic script letter shaping", 1304, 1306, 1, 0},
+	\{"pac", "Print autocomplete suggestions on the fly", 1306, 1307, 1, 0},
+	\{"ts", "Number of spaces used to represent a tab", 1307, 1308, 1, 0},
+	\{"td", "Current text direction context", 1308, 1314, 1, 0},
+	\{"pr", "Print register", 1315, 1331, 1, 0},
+	\{"fr", "Find register", 1332, 1344, 1, 0},
+	\{"rr", "Record register", 1345, 1358, 1, 0},
+	\{"lim", "Line length render limit", 1359, 1374, 1, 0},
+	\{"seq", "Control Undo/Redo", 1375, 1387, 1, 0},
+	\{"left", "Control horizontal scroll", 1388, 1393, 1, 0},
+	\{"err", "Control ex errors", 1394, 1406, 1, 0},
 };2??0?
-2??m 2220reg p OK exspec.h:1563:a22sc %? %@2152sc!1q0?
-%f+ 	\{"ar", "Log and display returned agent reasoning", 1197, 1202, 1, 0},
-	\{"ata", "Cap agent thinking by its recent average", 1203, 1227, 1, 0},
-	\{"aspec", "Print ex specifications for agents", 1228, 1235, 1, 0},
-	\{"ai", "Indent new lines", 1236, 1239, 1, 0},
-	\{"ic", "Ignore case in regular expressions", 1240, 1241, 1, 0},
-	\{"ish", "Interactive shell", 1242, 1257, 1, 0},
-	\{"grp", "Regex search group", 1258, 1266, 1, 0},
-	\{"hl", "Highlight text based on rules defined in conf\.c", 1267, 1270, 1, 0},
-	\{"hlr", "Highlight text in reverse direction", 1271, 1272, 1, 0},
-	\{"hll", "Highlight current line based on filetype hl", 1272, 1273, 1, 0},
-	\{"hlp", "Highlight \\"\[]\\" \\"\(\)\\" \\"\{}\\" pairs based on filetype hl", 1273, 1274, 1, 0},
-	\{"hlw", "Highlight current word based on filetype hl", 1274, 1275, 1, 0},
-	\{"led", "Enable all terminal output", 1275, 1276, 1, 0},
-	\{"vis", "Control startup flags", 1277, 1288, 1, 0},
-	\{"mpt", "Control vi prompts", 1289, 1299, 1, 0},
-	\{"order", "Reorder characters based on rules defined in conf\.c", 1300, 1302, 1, 0},
-	\{"shape", "Perform Arabic script letter shaping", 1302, 1304, 1, 0},
-	\{"pac", "Print autocomplete suggestions on the fly", 1304, 1305, 1, 0},
-	\{"ts", "Number of spaces used to represent a tab", 1305, 1306, 1, 0},
-	\{"td", "Current text direction context", 1306, 1312, 1, 0},
-	\{"pr", "Print register", 1313, 1329, 1, 0},
-	\{"fr", "Find register", 1330, 1342, 1, 0},
-	\{"rr", "Record register", 1343, 1356, 1, 0},
-	\{"lim", "Line length render limit", 1357, 1372, 1, 0},
-	\{"seq", "Control Undo/Redo", 1373, 1385, 1, 0},
-	\{"left", "Control horizontal scroll", 1386, 1391, 1, 0},
-	\{"err", "Control ex errors", 1392, 1404, 1, 0},3??0?
-3??m 2220reg p OK exspec.h:1563:a32sc %? %@2152sc!1q0?
-%f+ 	\{"aco!", "Automatically compact by browsing the session log", 1176, 1182, 1, 0},
-	\{"agr", "Control agent output protection", 1183, 1188, 1, 0},
-	\{"ato", "Detach long agent shell commands", 1189, 1196, 1, 0},4??0?
-4??+3m 2220reg p OK exspec.h:1563:a42sc %? %@2152sc!1q0?
+2??m 2220reg p OK exspec.h:1565:a22sc %? %@2152sc!1q0?
+%f+ 	\{"ar", "Log and display returned agent reasoning", 1199, 1204, 1, 0},
+	\{"ata", "Cap agent thinking by its recent average", 1205, 1229, 1, 0},
+	\{"aspec", "Print ex specifications for agents", 1230, 1237, 1, 0},
+	\{"ai", "Indent new lines", 1238, 1241, 1, 0},
+	\{"ic", "Ignore case in regular expressions", 1242, 1243, 1, 0},
+	\{"ish", "Interactive shell", 1244, 1259, 1, 0},
+	\{"grp", "Regex search group", 1260, 1268, 1, 0},
+	\{"hl", "Highlight text based on rules defined in conf\.c", 1269, 1272, 1, 0},
+	\{"hlr", "Highlight text in reverse direction", 1273, 1274, 1, 0},
+	\{"hll", "Highlight current line based on filetype hl", 1274, 1275, 1, 0},
+	\{"hlp", "Highlight \\"\[]\\" \\"\(\)\\" \\"\{}\\" pairs based on filetype hl", 1275, 1276, 1, 0},
+	\{"hlw", "Highlight current word based on filetype hl", 1276, 1277, 1, 0},
+	\{"led", "Enable all terminal output", 1277, 1278, 1, 0},
+	\{"vis", "Control startup flags", 1279, 1290, 1, 0},
+	\{"mpt", "Control vi prompts", 1291, 1301, 1, 0},
+	\{"order", "Reorder characters based on rules defined in conf\.c", 1302, 1304, 1, 0},
+	\{"shape", "Perform Arabic script letter shaping", 1304, 1306, 1, 0},
+	\{"pac", "Print autocomplete suggestions on the fly", 1306, 1307, 1, 0},
+	\{"ts", "Number of spaces used to represent a tab", 1307, 1308, 1, 0},
+	\{"td", "Current text direction context", 1308, 1314, 1, 0},
+	\{"pr", "Print register", 1315, 1331, 1, 0},
+	\{"fr", "Find register", 1332, 1344, 1, 0},
+	\{"rr", "Record register", 1345, 1358, 1, 0},
+	\{"lim", "Line length render limit", 1359, 1374, 1, 0},
+	\{"seq", "Control Undo/Redo", 1375, 1387, 1, 0},
+	\{"left", "Control horizontal scroll", 1388, 1393, 1, 0},
+	\{"err", "Control ex errors", 1394, 1406, 1, 0},3??0?
+3??m 2220reg p OK exspec.h:1565:a32sc %? %@2152sc!1q0?
+%f+ 	\{"aco!", "Automatically compact by browsing the session log", 1178, 1184, 1, 0},
+	\{"agr", "Control agent output protection", 1185, 1190, 1, 0},
+	\{"ato", "Detach long agent shell commands", 1191, 1198, 1, 0},4??0?
+4??+3m 2220reg p OK exspec.h:1565:a42sc %? %@2152sc!1q0?
 ;0fr.,$f+ ^};$5??0?
-5??-27m 2220reg p OK exspec.h:1563:a52sc %? %@2152sc!fr 981qfr 980?
-%f+ ......!.,..Au...a..ca... ....... .....ow..n...h. ..s...........1...,.1...........
-.."..r.. ..o.tr........ o...ut..rot............3......,..,..}.
-...a...,...et......n...g.n...h..l c...a.ds",..18..............,
-...a..,........d...sp........rned .g....r...oni.g". .1.7........1...}.
-........."..p..g....t.i..... .y.... ..c..t...e...... 1........7. .. .}.
-.\{.a.pe.".............p......at...s..or.a.e....,..2.8,....5,.......
-.\{.a..,............ ....s.......,.1..9, ....}.
-.....".......re......i........r e......i.n..,....0,.......1...}.
-.....h....I....ac.....she.."......, ....,......,
-......"..............h.g..up.,........2.........,
-.....". ...g..igh.......b.se. on....e. d.............f.......6...1.7.. .. ...
-...h.r., "..g....h................e.........n.....71..12.2. ......
-......., "....lig.. ...ren...i.. .a.....n...le...........27.....7..... ..,
-.."........i.hl..h......."...\(....\\..... pa.r. b.... o.....e.y.e.........3. .27.,... 0..
-.."h.....".i...i.ht...rre......d b...d.on.fi...yp...... .2.., ....,....0.,
-...le..,..E.a..e.....t.....al o....t". ........... ....}.
-..".i."......t..l.st..t................ .........0..
-	....... ......ol..i ...mp.......8....2.....,.0.,
-.\{.....r.. "Reo..e...........s...... .n....e..d...... i...........1.0.. ..... ....}.
-......p...............a.ic .cr....le.... ....in..,....2. .304,.1,....
-	\{...... ..r.nt aut...m..... ..g........ o...he...y.. ...., ......1...}.
-..".s....Nu....... .......u.........p............", .30....3....., .}.
-..............n...... .....t....co..e.........,.......1,..},
-	\{"pr"...........g..t.... 13.3...3.....,....
-.\{....,........e..s.e.".....0....4..... ...
-	.....,...e.o.d...g...e..,..3..........1..0.,
-	."..."...L..e...n......n..r.l...t",...... .37.......}.
-......", .C.n..o. ..d....d."...3..,...... ....}.
-	\{....."....o...o...o....n.al...r.......386, 1.9., ......
-.\{.er.". "Co.t........rro.... .3.2. ..... .,....
-.;6??0?
-6??+3m 2220reg p OK exspec.h:1563:a62sc %? %@2152sc!1q0?
-grp 1%f+ 	\{"aco!", "Automatically compact by browsing the session log", 1176, 1182, 1, 0},.*?
-	\{"agr", "Control agent output protection", 1183, 1188, 1, 0},.*?
-	\{"ato", "Detach long agent shell commands", 1189, 1196, 1, 0},.*?
-(	\{"ar", "Log and display returned agent reasoning", 1197, 1202, 1, 0},)7??0?
-grp 07??m 2220reg p OK exspec.h:1563:a72sc %? %@2152sc!0?
-1;2;3;4;5;6;7??!219reg exspec.h:15632sc %? %@2132sc!0?
+5??-27m 2220reg p OK exspec.h:1565:a52sc %? %@2152sc!fr 981qfr 980?
+%f+ 	...........u.om..i.a......m.... ...br...i...... s.s.ion ..g....17., .18...1.....
+	."a.... .........a..n..o...ut...o.e...o."..........9., .. ...
+................ .on..a..n....e...c......s........ ..... 1....,
+	.....,....g.....d.s..ay....u..e..age.....a..n..g.,.1...,..204. ...0..
+..".t...."....ag..t...i..i....y ......ce....v..a.... 120.....2......0}.
+	\{................e......i.i.a.i.n......a..nts........ ........ .}.
+.\{.a.". ................... ........4.,.1,...,
+	\{"...,..I....e..ase .n.r........x...s...n... ..4.,.......1. ...
+	\{...h.,.".....a..i......l... ..... 12........}.
+	...rp.,..R...x....rc..g.o..". .2.0..1.6....,....
+.\{".l..."..g.l.gh. te...b.... ......e. ..f.... .n..o...."..1..9...2....1,....
+	....r....Hi.h.i......x..i......r......ec..o.....2..,..2.......0..
+.....l"...H..hligh.............e.b.sed............ ............27., ...0},
+.."............i..t \\...\\. ...... \\.\{}.".p......ased....f.l..y.. h... .2..,...7.. .. ...
+	."..w........l.... cu....t ...d.b.s......file.y.....",.127......7. 1..0..
+.\{...... .E...l...l......i....ou...........,.....,.1,....
+	\{...... "C.n..o...t...u....ags......9. ..90,.......
+	......, ...ntr...vi.p.om.t."..1......3... .,....
+.\{..r..."........er ....a.t........d .. ru.....e.i.ed.i........". 1.......0., .....,
+....h.pe....P..f..m ....ic.s..... ....e...hap.n....13... .3..,.1.....
+....a... ...i.t.......m........g..........n.t..........30.............},
+	."........m..r o.....c.. u.e. .o.re.r..e...........130.....0.......}.
+.\{..... ....re...te.t........o..c.nt...",.......1...,.1, 0}.
+	...........n. ...i...r"....1........ 1, .},
+	\{......"..n...eg.st.r.....3...1..4.... ...
+	.".....".e.o...r.gi.......1..5......,.1,..}.
+	..........i.e....... r..d.. l.................,.......
+....e......o.............do", ..... ....,..,....
+.......",...o..r.. h...z..t.l..c...."....88. ......1.....
+.\{......."..nt.o.... ....r."...3..,......... .},
+}.6??0?
+6??+3m 2220reg p OK exspec.h:1565:a62sc %? %@2152sc!1q0?
+grp 1%f+ 	\{"aco!", "Automatically compact by browsing the session log", 1178, 1184, 1, 0},.*?
+	\{"agr", "Control agent output protection", 1185, 1190, 1, 0},.*?
+	\{"ato", "Detach long agent shell commands", 1191, 1198, 1, 0},.*?
+(	\{"ar", "Log and display returned agent reasoning", 1199, 1204, 1, 0},)7??0?
+grp 07??m 2220reg p OK exspec.h:1565:a72sc %? %@2152sc!0?
+1;2;3;4;5;6;7??!219reg exspec.h:15652sc %? %@2132sc!0?
 '\''1i 	"adv[0]  Rate the session log with the adversary",
 	"No argument toggles between 0 and 1. 0 disables.",
 	"",
@@ -3279,36 +3279,36 @@ _EO\(agr, xagr = \*arg \? MAX\(0, eo_val\(arg\)\) : xagr \? 0 : 4096; return NUL
 	"blockchain_question_20261126-232040; a user-named directory keeps",
 	"its name. ^Z stops the worker with the editor.",
 	"",
-??!219reg exspec.h:1199:m12sc %? %@2142sc!0?
-'\''2,#+26c 	{"adv", "Rate the session log with the adversary", 1197, 1222, 1, 0},
-	{"ar", "Log and display returned agent reasoning", 1223, 1228, 1, 0},
-	{"ata", "Cap agent thinking by its recent average", 1229, 1253, 1, 0},
-	{"aspec", "Print ex specifications for agents", 1254, 1261, 1, 0},
-	{"ai", "Indent new lines", 1262, 1265, 1, 0},
-	{"ic", "Ignore case in regular expressions", 1266, 1267, 1, 0},
-	{"ish", "Interactive shell", 1268, 1283, 1, 0},
-	{"grp", "Regex search group", 1284, 1292, 1, 0},
-	{"hl", "Highlight text based on rules defined in conf.c", 1293, 1296, 1, 0},
-	{"hlr", "Highlight text in reverse direction", 1297, 1298, 1, 0},
-	{"hll", "Highlight current line based on filetype hl", 1298, 1299, 1, 0},
-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1299, 1300, 1, 0},
-	{"hlw", "Highlight current word based on filetype hl", 1300, 1301, 1, 0},
-	{"led", "Enable all terminal output", 1301, 1302, 1, 0},
-	{"vis", "Control startup flags", 1303, 1314, 1, 0},
-	{"mpt", "Control vi prompts", 1315, 1325, 1, 0},
-	{"order", "Reorder characters based on rules defined in conf.c", 1326, 1328, 1, 0},
-	{"shape", "Perform Arabic script letter shaping", 1328, 1330, 1, 0},
-	{"pac", "Print autocomplete suggestions on the fly", 1330, 1331, 1, 0},
-	{"ts", "Number of spaces used to represent a tab", 1331, 1332, 1, 0},
-	{"td", "Current text direction context", 1332, 1338, 1, 0},
-	{"pr", "Print register", 1339, 1355, 1, 0},
-	{"fr", "Find register", 1356, 1368, 1, 0},
-	{"rr", "Record register", 1369, 1382, 1, 0},
-	{"lim", "Line length render limit", 1383, 1398, 1, 0},
-	{"seq", "Control Undo/Redo", 1399, 1411, 1, 0},
-	{"left", "Control horizontal scroll", 1412, 1417, 1, 0},
-	{"err", "Control ex errors", 1418, 1430, 1, 0},
-??!219reg exspec.h:1563:m22sc %? %@2142sc!b6m!%ya 98?0?
+??!219reg exspec.h:1201:m12sc %? %@2142sc!0?
+'\''2,#+26c 	{"adv", "Rate the session log with the adversary", 1199, 1224, 1, 0},
+	{"ar", "Log and display returned agent reasoning", 1225, 1230, 1, 0},
+	{"ata", "Cap agent thinking by its recent average", 1231, 1255, 1, 0},
+	{"aspec", "Print ex specifications for agents", 1256, 1263, 1, 0},
+	{"ai", "Indent new lines", 1264, 1267, 1, 0},
+	{"ic", "Ignore case in regular expressions", 1268, 1269, 1, 0},
+	{"ish", "Interactive shell", 1270, 1285, 1, 0},
+	{"grp", "Regex search group", 1286, 1294, 1, 0},
+	{"hl", "Highlight text based on rules defined in conf.c", 1295, 1298, 1, 0},
+	{"hlr", "Highlight text in reverse direction", 1299, 1300, 1, 0},
+	{"hll", "Highlight current line based on filetype hl", 1300, 1301, 1, 0},
+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1301, 1302, 1, 0},
+	{"hlw", "Highlight current word based on filetype hl", 1302, 1303, 1, 0},
+	{"led", "Enable all terminal output", 1303, 1304, 1, 0},
+	{"vis", "Control startup flags", 1305, 1316, 1, 0},
+	{"mpt", "Control vi prompts", 1317, 1327, 1, 0},
+	{"order", "Reorder characters based on rules defined in conf.c", 1328, 1330, 1, 0},
+	{"shape", "Perform Arabic script letter shaping", 1330, 1332, 1, 0},
+	{"pac", "Print autocomplete suggestions on the fly", 1332, 1333, 1, 0},
+	{"ts", "Number of spaces used to represent a tab", 1333, 1334, 1, 0},
+	{"td", "Current text direction context", 1334, 1340, 1, 0},
+	{"pr", "Print register", 1341, 1357, 1, 0},
+	{"fr", "Find register", 1358, 1370, 1, 0},
+	{"rr", "Record register", 1371, 1384, 1, 0},
+	{"lim", "Line length render limit", 1385, 1400, 1, 0},
+	{"seq", "Control Undo/Redo", 1401, 1413, 1, 0},
+	{"left", "Control horizontal scroll", 1414, 1419, 1, 0},
+	{"err", "Control ex errors", 1420, 1432, 1, 0},
+??!219reg exspec.h:1565:m22sc %? %@2142sc!b6m!%ya 98?0?
 %f> 	tibuf_cnt \+= n;
 }
 
@@ -5327,7 +5327,7 @@ index cd3c8383..ff853b9a 100644
  static void agent_capture_add(const char *s, int n);
  static int agent_interrupted(void);
 diff --git a/cbuild.sh b/cbuild.sh
-index c71b06e2..23207611 100755
+index 8c39373c..8671d7d4 100755
 --- a/cbuild.sh
 +++ b/cbuild.sh
 @@ -46,7 +46,7 @@ CFLAGS="\
@@ -5339,7 +5339,7 @@ index c71b06e2..23207611 100755
  $CFLAGS"
  
  case "$OS" in
-@@ -363,6 +363,30 @@ spec() {
+@@ -365,6 +365,30 @@ spec() {
                  "the foreground. After that it runs on in the background: the result\n" \
                  "has error 124, its process group and a file receiving later output.\n" \
                  "A later tool result reports its exit status.")
@@ -5393,7 +5393,7 @@ index 67de562a..d30fc703 100644
  (?:g!?|s)[ \t]?(.)?|q!?|reg?\\+?|rd?|w(?:q!|[q!])?|u[czbd]|x!?|ya[!+]?|cm!?|cd?)?",
  		A(BL1 | SYN_BD, RE, RE, RE, RE, WH1, MA1, RE, RE, WH1, RE, GR1, CY1, MA1)},
 diff --git a/ex.c b/ex.c
-index b9c3c718..36cef1c2 100644
+index a41739ff..9bbc01e6 100644
 --- a/ex.c
 +++ b/ex.c
 @@ -43,7 +43,7 @@ sbuf **xregs;			/* string registers */
@@ -5422,10 +5422,10 @@ index b9c3c718..36cef1c2 100644
  	{"ast", ec_ast},
  	{"ath", ec_ath},
 diff --git a/exspec.h b/exspec.h
-index 7f429cb2..1dbda6d4 100644
+index 567b7a0e..c119072a 100644
 --- a/exspec.h
 +++ b/exspec.h
-@@ -1197,6 +1197,32 @@ static char *exspec_lines[] = {
+@@ -1199,6 +1199,32 @@ static char *exspec_lines[] = {
  	"has error 124, its process group and a file receiving later output.",
  	"A later tool result reports its exit status.",
  	"",
@@ -5458,65 +5458,65 @@ index 7f429cb2..1dbda6d4 100644
  	"ar[1]  Log and display returned agent reasoning",
  	"No argument logically inverts the option.",
  	"",
-@@ -1560,31 +1586,32 @@ static struct {
- 	{"aco!", "Automatically compact by browsing the session log", 1176, 1182, 1, 0},
- 	{"agr", "Control agent output protection", 1183, 1188, 1, 0},
- 	{"ato", "Detach long agent shell commands", 1189, 1196, 1, 0},
--	{"ar", "Log and display returned agent reasoning", 1197, 1202, 1, 0},
--	{"ata", "Cap agent thinking by its recent average", 1203, 1227, 1, 0},
--	{"aspec", "Print ex specifications for agents", 1228, 1235, 1, 0},
--	{"ai", "Indent new lines", 1236, 1239, 1, 0},
--	{"ic", "Ignore case in regular expressions", 1240, 1241, 1, 0},
--	{"ish", "Interactive shell", 1242, 1257, 1, 0},
--	{"grp", "Regex search group", 1258, 1266, 1, 0},
--	{"hl", "Highlight text based on rules defined in conf.c", 1267, 1270, 1, 0},
--	{"hlr", "Highlight text in reverse direction", 1271, 1272, 1, 0},
--	{"hll", "Highlight current line based on filetype hl", 1272, 1273, 1, 0},
--	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1273, 1274, 1, 0},
--	{"hlw", "Highlight current word based on filetype hl", 1274, 1275, 1, 0},
--	{"led", "Enable all terminal output", 1275, 1276, 1, 0},
--	{"vis", "Control startup flags", 1277, 1288, 1, 0},
--	{"mpt", "Control vi prompts", 1289, 1299, 1, 0},
--	{"order", "Reorder characters based on rules defined in conf.c", 1300, 1302, 1, 0},
--	{"shape", "Perform Arabic script letter shaping", 1302, 1304, 1, 0},
--	{"pac", "Print autocomplete suggestions on the fly", 1304, 1305, 1, 0},
--	{"ts", "Number of spaces used to represent a tab", 1305, 1306, 1, 0},
--	{"td", "Current text direction context", 1306, 1312, 1, 0},
--	{"pr", "Print register", 1313, 1329, 1, 0},
--	{"fr", "Find register", 1330, 1342, 1, 0},
--	{"rr", "Record register", 1343, 1356, 1, 0},
--	{"lim", "Line length render limit", 1357, 1372, 1, 0},
--	{"seq", "Control Undo/Redo", 1373, 1385, 1, 0},
--	{"left", "Control horizontal scroll", 1386, 1391, 1, 0},
--	{"err", "Control ex errors", 1392, 1404, 1, 0},
-+	{"adv", "Rate the session log with the adversary", 1197, 1222, 1, 0},
-+	{"ar", "Log and display returned agent reasoning", 1223, 1228, 1, 0},
-+	{"ata", "Cap agent thinking by its recent average", 1229, 1253, 1, 0},
-+	{"aspec", "Print ex specifications for agents", 1254, 1261, 1, 0},
-+	{"ai", "Indent new lines", 1262, 1265, 1, 0},
-+	{"ic", "Ignore case in regular expressions", 1266, 1267, 1, 0},
-+	{"ish", "Interactive shell", 1268, 1283, 1, 0},
-+	{"grp", "Regex search group", 1284, 1292, 1, 0},
-+	{"hl", "Highlight text based on rules defined in conf.c", 1293, 1296, 1, 0},
-+	{"hlr", "Highlight text in reverse direction", 1297, 1298, 1, 0},
-+	{"hll", "Highlight current line based on filetype hl", 1298, 1299, 1, 0},
-+	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1299, 1300, 1, 0},
-+	{"hlw", "Highlight current word based on filetype hl", 1300, 1301, 1, 0},
-+	{"led", "Enable all terminal output", 1301, 1302, 1, 0},
-+	{"vis", "Control startup flags", 1303, 1314, 1, 0},
-+	{"mpt", "Control vi prompts", 1315, 1325, 1, 0},
-+	{"order", "Reorder characters based on rules defined in conf.c", 1326, 1328, 1, 0},
-+	{"shape", "Perform Arabic script letter shaping", 1328, 1330, 1, 0},
-+	{"pac", "Print autocomplete suggestions on the fly", 1330, 1331, 1, 0},
-+	{"ts", "Number of spaces used to represent a tab", 1331, 1332, 1, 0},
-+	{"td", "Current text direction context", 1332, 1338, 1, 0},
-+	{"pr", "Print register", 1339, 1355, 1, 0},
-+	{"fr", "Find register", 1356, 1368, 1, 0},
-+	{"rr", "Record register", 1369, 1382, 1, 0},
-+	{"lim", "Line length render limit", 1383, 1398, 1, 0},
-+	{"seq", "Control Undo/Redo", 1399, 1411, 1, 0},
-+	{"left", "Control horizontal scroll", 1412, 1417, 1, 0},
-+	{"err", "Control ex errors", 1418, 1430, 1, 0},
+@@ -1562,31 +1588,32 @@ static struct {
+ 	{"aco!", "Automatically compact by browsing the session log", 1178, 1184, 1, 0},
+ 	{"agr", "Control agent output protection", 1185, 1190, 1, 0},
+ 	{"ato", "Detach long agent shell commands", 1191, 1198, 1, 0},
+-	{"ar", "Log and display returned agent reasoning", 1199, 1204, 1, 0},
+-	{"ata", "Cap agent thinking by its recent average", 1205, 1229, 1, 0},
+-	{"aspec", "Print ex specifications for agents", 1230, 1237, 1, 0},
+-	{"ai", "Indent new lines", 1238, 1241, 1, 0},
+-	{"ic", "Ignore case in regular expressions", 1242, 1243, 1, 0},
+-	{"ish", "Interactive shell", 1244, 1259, 1, 0},
+-	{"grp", "Regex search group", 1260, 1268, 1, 0},
+-	{"hl", "Highlight text based on rules defined in conf.c", 1269, 1272, 1, 0},
+-	{"hlr", "Highlight text in reverse direction", 1273, 1274, 1, 0},
+-	{"hll", "Highlight current line based on filetype hl", 1274, 1275, 1, 0},
+-	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1275, 1276, 1, 0},
+-	{"hlw", "Highlight current word based on filetype hl", 1276, 1277, 1, 0},
+-	{"led", "Enable all terminal output", 1277, 1278, 1, 0},
+-	{"vis", "Control startup flags", 1279, 1290, 1, 0},
+-	{"mpt", "Control vi prompts", 1291, 1301, 1, 0},
+-	{"order", "Reorder characters based on rules defined in conf.c", 1302, 1304, 1, 0},
+-	{"shape", "Perform Arabic script letter shaping", 1304, 1306, 1, 0},
+-	{"pac", "Print autocomplete suggestions on the fly", 1306, 1307, 1, 0},
+-	{"ts", "Number of spaces used to represent a tab", 1307, 1308, 1, 0},
+-	{"td", "Current text direction context", 1308, 1314, 1, 0},
+-	{"pr", "Print register", 1315, 1331, 1, 0},
+-	{"fr", "Find register", 1332, 1344, 1, 0},
+-	{"rr", "Record register", 1345, 1358, 1, 0},
+-	{"lim", "Line length render limit", 1359, 1374, 1, 0},
+-	{"seq", "Control Undo/Redo", 1375, 1387, 1, 0},
+-	{"left", "Control horizontal scroll", 1388, 1393, 1, 0},
+-	{"err", "Control ex errors", 1394, 1406, 1, 0},
++	{"adv", "Rate the session log with the adversary", 1199, 1224, 1, 0},
++	{"ar", "Log and display returned agent reasoning", 1225, 1230, 1, 0},
++	{"ata", "Cap agent thinking by its recent average", 1231, 1255, 1, 0},
++	{"aspec", "Print ex specifications for agents", 1256, 1263, 1, 0},
++	{"ai", "Indent new lines", 1264, 1267, 1, 0},
++	{"ic", "Ignore case in regular expressions", 1268, 1269, 1, 0},
++	{"ish", "Interactive shell", 1270, 1285, 1, 0},
++	{"grp", "Regex search group", 1286, 1294, 1, 0},
++	{"hl", "Highlight text based on rules defined in conf.c", 1295, 1298, 1, 0},
++	{"hlr", "Highlight text in reverse direction", 1299, 1300, 1, 0},
++	{"hll", "Highlight current line based on filetype hl", 1300, 1301, 1, 0},
++	{"hlp", "Highlight \"[]\" \"()\" \"{}\" pairs based on filetype hl", 1301, 1302, 1, 0},
++	{"hlw", "Highlight current word based on filetype hl", 1302, 1303, 1, 0},
++	{"led", "Enable all terminal output", 1303, 1304, 1, 0},
++	{"vis", "Control startup flags", 1305, 1316, 1, 0},
++	{"mpt", "Control vi prompts", 1317, 1327, 1, 0},
++	{"order", "Reorder characters based on rules defined in conf.c", 1328, 1330, 1, 0},
++	{"shape", "Perform Arabic script letter shaping", 1330, 1332, 1, 0},
++	{"pac", "Print autocomplete suggestions on the fly", 1332, 1333, 1, 0},
++	{"ts", "Number of spaces used to represent a tab", 1333, 1334, 1, 0},
++	{"td", "Current text direction context", 1334, 1340, 1, 0},
++	{"pr", "Print register", 1341, 1357, 1, 0},
++	{"fr", "Find register", 1358, 1370, 1, 0},
++	{"rr", "Record register", 1371, 1384, 1, 0},
++	{"lim", "Line length render limit", 1385, 1400, 1, 0},
++	{"seq", "Control Undo/Redo", 1401, 1413, 1, 0},
++	{"left", "Control horizontal scroll", 1414, 1419, 1, 0},
++	{"err", "Control ex errors", 1420, 1432, 1, 0},
  };
 diff --git a/term.c b/term.c
 index 4668eda9..ddcc8703 100644
