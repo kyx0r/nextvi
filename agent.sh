@@ -1114,8 +1114,10 @@ static void agent_discard(struct lbuf *lb, struct agent_span *spans,
 /* Head a compaction summary as a USER entry numbered after the log it
  * replaced, now in b-7, so a later compaction can move it there too, and
  * mark the compaction in b-6 as "EPOCH N", N the summary'\''s entry. Notes
- * outlive the compaction: those before the marker rate replaced entries. */
-static void agent_head_summary(void)
+ * outlive the compaction: those before the marker rate replaced entries.
+ * A note, if given, joins the summary entry instead of heading a USER
+ * entry of its own. */
+static void agent_head_summary(const char *note)
 {
 	struct lbuf *lb = tempbufs[3].lb;
 	unsigned long n;
@@ -1125,6 +1127,17 @@ static void agent_head_summary(void)
 		return;
 	preserve(int, agent_tool, agent_tool = 0;)
 	preserve(int, agent_syncing, agent_syncing = 1;)
+	if (note && *note) {
+		sbuf_smake(sb, 256)
+		if (lbuf_len(lb) && *lb->ln[lbuf_len(lb)-1])
+			sbuf_chr(sb, '\''\n'\'')
+		sbuf_str(sb, note)
+		if (sb->s[sb->s_n-1] != '\''\n'\'')
+			sbuf_chr(sb, '\''\n'\'')
+		sbuf_nul(sb)
+		lbuf_edit(lb, sb->s, lbuf_len(lb), lbuf_len(lb), 0, 0);
+		free(sb->s);
+	}
 	if (!agent_header(lb->ln[0], 0, &n, NULL)) {
 		text = agent_text(lb);
 		agent_frame(text, id, end);
@@ -4666,9 +4679,10 @@ done:
 }
 
 /* Accept a pack whose agent replaced the log in b-4: keep the log it
- * replaced in b-7, rebuild the context from the summary, and log a resume
- * entry to b-4 so the prompt carries on as a normal session. Returns 1 when
- * the summary was accepted, 0 while b-4 still holds the original log. */
+ * replaced in b-7, rebuild the context from the summary, and append the
+ * resume note to that summary in b-4 so the prompt carries on as a normal
+ * session. Returns 1 when the summary was accepted, 0 while b-4 still
+ * holds the original log. */
 static int agent_pack_accept(char *original)
 {
 	char *summary = agent_text(tempbufs[3].lb);
@@ -4680,16 +4694,13 @@ static int agent_pack_accept(char *original)
 		free(summary);
 		return 0;
 	}
-	agent_history(1);
-	/* The summary is numbered before the resume entry. */
-	agent_discard_log(original);
-	agent_head_summary();
 	sbuf_smake(resume, 256)
 	sbuf_str(resume, "Manual compaction is complete. The preceding log summary "
 		"is working memory, not a new task.\n")
 	sbuf_nul(resume)
-	agent_logbuf = 3;
-	agent_log("USER", resume->s);
+	agent_history(1);
+	agent_discard_log(original);
+	agent_head_summary(resume->s);
 	if (!xacl)
 		agent_add_user(agent_messages, resume->s);
 	free(resume->s);
@@ -4992,7 +5003,7 @@ static void *ec_compact(char *loc, char *cmd, char *arg)
 		if (!ret && complete && changed && !agent_save(3)) {
 			agent_history(1);
 			agent_discard_log(original);
-			agent_head_summary();
+			agent_head_summary(NULL);
 			cJSON_Delete(history);
 			agent_drop_log(archive);
 		} else {
@@ -5089,18 +5100,14 @@ static int agent_autocompact(void)
 	if (agent_pack_done && !agent_cancel && !agent_pause && !xquit &&
 			*text && strcmp(original, summary) &&
 			strlen(summary) < strlen(original) && !agent_save(3)) {
-		agent_history(1);
-		/* The summary is numbered before the resume entry. */
-		agent_discard_log(original);
-		agent_head_summary();
 		sbuf_smake(resume, 256)
 		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
 			"is working memory, not a new task. It carries the request in progress;\n"
 			"continue it from the summary, avoiding repeated actions or tool calls.\n")
 		sbuf_nul(resume)
-		agent_logbuf = 3;
-		agent_log("USER", resume->s);
-		agent_logbuf = 7;
+		agent_history(1);
+		agent_discard_log(original);
+		agent_head_summary(resume->s);
 		if (!xacl)
 			agent_add_user(agent_messages, resume->s);
 		free(resume->s);
@@ -14276,10 +14283,10 @@ exit 0
 === PATCH2VI PATCH ===
 diff --git a/agent.c b/agent.c
 new file mode 100644
-index 00000000..c8c3d21f
+index 00000000..fa39b632
 --- /dev/null
 +++ b/agent.c
-@@ -0,0 +1,5107 @@
+@@ -0,0 +1,5114 @@
 +static cJSON *agent_messages;
 +static unsigned long agent_epoch, agent_serial;
 +static int agent_ready, agent_syncing, agent_child_status;
@@ -15364,8 +15371,10 @@ index 00000000..c8c3d21f
 +/* Head a compaction summary as a USER entry numbered after the log it
 + * replaced, now in b-7, so a later compaction can move it there too, and
 + * mark the compaction in b-6 as "EPOCH N", N the summary's entry. Notes
-+ * outlive the compaction: those before the marker rate replaced entries. */
-+static void agent_head_summary(void)
++ * outlive the compaction: those before the marker rate replaced entries.
++ * A note, if given, joins the summary entry instead of heading a USER
++ * entry of its own. */
++static void agent_head_summary(const char *note)
 +{
 +	struct lbuf *lb = tempbufs[3].lb;
 +	unsigned long n;
@@ -15375,6 +15384,17 @@ index 00000000..c8c3d21f
 +		return;
 +	preserve(int, agent_tool, agent_tool = 0;)
 +	preserve(int, agent_syncing, agent_syncing = 1;)
++	if (note && *note) {
++		sbuf_smake(sb, 256)
++		if (lbuf_len(lb) && *lb->ln[lbuf_len(lb)-1])
++			sbuf_chr(sb, '\n')
++		sbuf_str(sb, note)
++		if (sb->s[sb->s_n-1] != '\n')
++			sbuf_chr(sb, '\n')
++		sbuf_nul(sb)
++		lbuf_edit(lb, sb->s, lbuf_len(lb), lbuf_len(lb), 0, 0);
++		free(sb->s);
++	}
 +	if (!agent_header(lb->ln[0], 0, &n, NULL)) {
 +		text = agent_text(lb);
 +		agent_frame(text, id, end);
@@ -18916,9 +18936,10 @@ index 00000000..c8c3d21f
 +}
 +
 +/* Accept a pack whose agent replaced the log in b-4: keep the log it
-+ * replaced in b-7, rebuild the context from the summary, and log a resume
-+ * entry to b-4 so the prompt carries on as a normal session. Returns 1 when
-+ * the summary was accepted, 0 while b-4 still holds the original log. */
++ * replaced in b-7, rebuild the context from the summary, and append the
++ * resume note to that summary in b-4 so the prompt carries on as a normal
++ * session. Returns 1 when the summary was accepted, 0 while b-4 still
++ * holds the original log. */
 +static int agent_pack_accept(char *original)
 +{
 +	char *summary = agent_text(tempbufs[3].lb);
@@ -18930,16 +18951,13 @@ index 00000000..c8c3d21f
 +		free(summary);
 +		return 0;
 +	}
-+	agent_history(1);
-+	/* The summary is numbered before the resume entry. */
-+	agent_discard_log(original);
-+	agent_head_summary();
 +	sbuf_smake(resume, 256)
 +	sbuf_str(resume, "Manual compaction is complete. The preceding log summary "
 +		"is working memory, not a new task.\n")
 +	sbuf_nul(resume)
-+	agent_logbuf = 3;
-+	agent_log("USER", resume->s);
++	agent_history(1);
++	agent_discard_log(original);
++	agent_head_summary(resume->s);
 +	if (!xacl)
 +		agent_add_user(agent_messages, resume->s);
 +	free(resume->s);
@@ -19242,7 +19260,7 @@ index 00000000..c8c3d21f
 +		if (!ret && complete && changed && !agent_save(3)) {
 +			agent_history(1);
 +			agent_discard_log(original);
-+			agent_head_summary();
++			agent_head_summary(NULL);
 +			cJSON_Delete(history);
 +			agent_drop_log(archive);
 +		} else {
@@ -19339,18 +19357,14 @@ index 00000000..c8c3d21f
 +	if (agent_pack_done && !agent_cancel && !agent_pause && !xquit &&
 +			*text && strcmp(original, summary) &&
 +			strlen(summary) < strlen(original) && !agent_save(3)) {
-+		agent_history(1);
-+		/* The summary is numbered before the resume entry. */
-+		agent_discard_log(original);
-+		agent_head_summary();
 +		sbuf_smake(resume, 256)
 +		sbuf_str(resume, "Automatic compaction is complete. The preceding log summary\n"
 +			"is working memory, not a new task. It carries the request in progress;\n"
 +			"continue it from the summary, avoiding repeated actions or tool calls.\n")
 +		sbuf_nul(resume)
-+		agent_logbuf = 3;
-+		agent_log("USER", resume->s);
-+		agent_logbuf = 7;
++		agent_history(1);
++		agent_discard_log(original);
++		agent_head_summary(resume->s);
 +		if (!xacl)
 +			agent_add_user(agent_messages, resume->s);
 +		free(resume->s);
